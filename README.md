@@ -103,3 +103,48 @@ solos cada mañana (se documenta al terminar la fase 09).
 - El CV solo contiene lo que está en tu perfil; lo comprueban el código y un rol verificador independiente.
 - Las defensas contra ofertas manipuladas están en el código, así que protegen con cualquier agente.
 - Tus datos viven en `data/`, fuera del repositorio. El repo público usa el modo demo.
+
+## Desarrollo
+
+### Requisitos en Windows 11
+
+- **uv** (gestiona Python 3.12 por su cuenta; no hace falta instalar Python aparte):
+  ```
+  powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+  ```
+- **Node LTS** y **pnpm**. Desde Node 25, `corepack` ya no viene incluido; instala pnpm con
+  `npm install -g pnpm` (o `corepack enable` si tu Node lo trae). La versión exacta está en
+  `frontend/package.json` (`packageManager`).
+- **LibreOffice** (para convertir CVs a PDF, a partir de la fase 08). Si no está en
+  `C:\Program Files\LibreOffice` ni en el `PATH`, define `SOFFICE_PATH` en `.env`.
+
+Abre una terminal nueva tras instalar para que el `PATH` se actualice.
+
+### Configuración
+
+Copia `.env.example` como `.env` en la raíz si necesitas cambiar algo; por defecto no hace falta.
+Los datos personales van en `data/` (se crea sola y está en `.gitignore`).
+
+### Backend
+
+```
+cd backend
+uv sync                            # instala dependencias (crea .venv)
+uv run jh doctor                   # comprueba el entorno
+uv run pytest                      # tests
+uv run ruff check --fix && uv run ruff format
+```
+
+### Frontend
+
+```
+cd frontend
+pnpm install
+pnpm dev                           # http://127.0.0.1:5173
+pnpm typecheck && pnpm test && pnpm build
+```
+
+### CI
+
+`.github/workflows/ci.yml` ejecuta ruff y pytest (en Windows), typecheck, test y build del
+frontend, y `uv run scripts/sync_agents.py --check`. No necesita secretos.
