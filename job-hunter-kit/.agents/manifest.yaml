@@ -1,0 +1,55 @@
+# Configuración para agentes: FUENTE ÚNICA de lo específico de cada herramienta.
+# Tras editar cualquier cosa en .agents/, regenera desde la raíz del repo:
+#   uv run scripts/sync_agents.py           # escribe .claude/, .codex/ y .mcp.json
+#   uv run scripts/sync_agents.py --check   # CI: falla si lo generado no está al día
+# Las rutas y formatos de cada agente cambian con el tiempo: si algo deja de cargar, se corrige aquí.
+
+mcp_server:
+  name: jobhunter
+  command: uv
+  args: [run, --directory, backend, jh-mcp]
+  env: {}
+
+targets:
+  claude:                         # Claude Code
+    enabled: true
+    skills_dir: .claude/skills    # copia de .agents/skills con extras de Claude
+    agents_dir: .claude/agents
+    mcp_file: .mcp.json
+    models: {fast: haiku, capable: sonnet}
+    tools:                        # herramientas lógicas → nombres nativos
+      mcp_prefix: "mcp__jobhunter__"
+      read: [Read]
+      search: [Grep, Glob]
+      git_read: ["Bash(git diff *)", "Bash(git status *)", "Bash(git log *)"]
+      web: [WebSearch, WebFetch]
+      jh_profile_cli: ["Bash(uv run --directory backend jh profile *)"]
+    skill_extras:                 # campos de frontmatter que solo entiende Claude Code
+      implementar-fase:
+        disable-model-invocation: true
+        argument-hint: "[número de fase, p. ej. 03]"
+      procesar-ofertas:
+        allowed-tools: ["mcp:get_status", "mcp:list_jobs"]
+      evaluar-encaje:
+        allowed-tools: ["mcp:list_jobs", "mcp:get_match", "mcp:get_extraction", "mcp:get_profile"]
+      generar-cv:
+        argument-hint: "[job_id o 'pendientes']"
+        allowed-tools: ["mcp:list_jobs", "mcp:get_match", "mcp:get_extraction"]
+      preparar-candidatura:
+        argument-hint: "[job_id] [preguntas pegadas o 'carta']"
+        allowed-tools: ["mcp:get_extraction", "mcp:get_profile", "mcp:get_cv_content"]
+      preparar-entrevista:
+        argument-hint: "[job_id] [rrhh|tecnica|caso|final]"
+      actualizar-perfil:
+        allowed-tools: ["read", "jh_profile_cli"]
+      resumen-diario:
+        allowed-tools: ["mcp:get_status", "mcp:list_followups_due", "mcp:list_upcoming", "mcp:list_jobs"]
+
+  codex:                          # Codex (ChatGPT): CLI, extensión IDE o app
+    enabled: true
+    skills_dir: null              # Codex lee .agents/skills directamente
+    agents_dir: .codex/agents
+    config_file: .codex/config.toml
+    models: {fast: null, capable: null}   # null = hereda el modelo de la sesión; pon aquí los de tu plan
+    # Codex no permite limitar herramientas por subagente: se aplica sandbox_mode del rol.
+    # Los subagentes heredan la política de la sesión padre (ver docs/AGENTS_COMPAT.md, nivel B).

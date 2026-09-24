@@ -1,0 +1,5 @@
+# GENERADO por scripts/sync_agents.py desde .agents/. No editar a mano: edita la fuente y regenera.
+
+[mcp_servers.jobhunter]
+command = "uv"
+args = ["run", "--directory", "backend", "jh-mcp"]

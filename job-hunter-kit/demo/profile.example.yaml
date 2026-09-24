@@ -1,0 +1,136 @@
+# Perfil de ejemplo: candidata FICTICIA. Sirve de esquema de referencia y para el modo demo.
+# Tu perfil real va en data/profile.yaml (gitignored); créalo con el skill actualizar-perfil.
+schema_version: 1
+
+personal:
+  name: Lucía Varela Otero
+  email: lucia.varela@example.com          # get_profile no lo devuelve
+  phone: "+34 600 000 000"                 # get_profile no lo devuelve; solo va en el CV entregado
+  linkedin: linkedin.com/in/lucia-varela-demo
+  github: github.com/lucia-varela-demo
+  city: Santiago de Compostela
+  profile_location: Galicia, España
+  availability: 15 días
+  mobility: carnet B y vehículo propio
+
+headline: Data Engineer · Python · SQL · Snowflake · Power BI
+
+summary:
+  es: >
+    Data Engineer con tres años construyendo pipelines ETL y modelos analíticos sobre Snowflake
+    para clientes de retail y banca. Me muevo cómodo entre la ingeniería (Python, SQL, orquestación)
+    y el negocio (Power BI, definición de KPIs), y últimamente aplico LLMs a problemas de datos.
+  en: >
+    Data Engineer with three years building ETL pipelines and analytical models on Snowflake for
+    retail and banking clients, comfortable between engineering (Python, SQL, orchestration) and
+    business (Power BI, KPI design), recently applying LLMs to data problems.
+
+experience:
+  - id: exp-norteconsulting
+    company: Norte Consulting (ficticia)
+    city: A Coruña
+    role: Data Engineer
+    start: 2024-03
+    end: present
+    context: Consultora tecnológica; proyectos de datos para clientes de retail.
+    achievements:
+      - id: a1
+        text: Migré 40 procesos ETL de SSIS a pipelines en Python sobre Snowflake.
+        metrics: "-35 % en tiempo de carga nocturna"
+        skills: [Python, Snowflake, ETL, SQL]
+      - id: a2
+        text: Diseñé el modelo dimensional de ventas y stock usado por 3 equipos de negocio.
+        skills: [SQL, Snowflake, Modelado dimensional]
+      - id: a3
+        text: Construí un asistente interno con LangChain para consultar documentación técnica de proyectos.
+        nda: true
+        skills: [Python, LangChain, LLMs]
+  - id: exp-datagal
+    company: DataGal (ficticia)
+    city: Vigo
+    role: Junior Data Engineer
+    start: 2023-01
+    end: 2024-02
+    context: Equipo de datos de una empresa de software industrial.
+    achievements:
+      - id: a1
+        text: Automaticé informes semanales en Power BI que antes se preparaban a mano.
+        metrics: "6 h/semana ahorradas al equipo de operaciones"
+        skills: [Power BI, SQL, DAX]
+      - id: a2
+        text: Participé en la creación de pipelines de ingesta de datos de sensores.
+        skills: [Python, ETL]
+
+projects:
+  - id: prj-tfg
+    name: Detección de anomalías en consumo eléctrico (TFG)
+    date: 2022-06
+    text: Modelo de detección de anomalías sobre series temporales de consumo de 500 hogares.
+    skills: [Python, scikit-learn, Series temporales]
+
+education:
+  - id: edu-grado
+    title: Grado en Ciencia e Ingeniería de Datos
+    center: Universidad ficticia de Galicia
+    start: 2018-09
+    end: 2022-06
+
+certifications:
+  - id: cert-aws-ccp
+    name: AWS Certified Cloud Practitioner
+    issuer: Amazon Web Services
+    date: 2024-05
+
+languages:
+  - {language: Español, level: Nativo}
+  - {language: Gallego, level: Nativo, regional: Galicia}
+  - {language: Inglés, level: B2}
+
+skills:                      # niveles privados: F fuerte · C+ · C conozco · B básico
+  - {name: Python, level: F, category: Lenguajes}
+  - {name: SQL, level: F, category: Lenguajes}
+  - {name: Snowflake, level: F, category: Datos}
+  - {name: ETL, level: F, category: Datos}
+  - {name: Power BI, level: C+, category: BI}
+  - {name: DAX, level: C, category: BI}
+  - {name: Modelado dimensional, level: C+, category: Datos}
+  - {name: LangChain, level: C+, category: IA}
+  - {name: LLMs, level: C+, category: IA}
+  - {name: AWS, level: C, category: Cloud}
+  - {name: scikit-learn, level: C, category: ML}
+  - {name: Series temporales, level: C, category: ML}
+
+basic_skills: [dbt, Apache Airflow, Docker]   # solo si la oferta lo pide, como "conocimientos de X"
+
+stories:                     # historias STAR para entrevistas; cita logros como evidencia
+  - id: st-migracion
+    title: Migración de SSIS a Python
+    situation: Cargas nocturnas lentas y frágiles en SSIS.
+    task: Migrar sin parar el reporting diario.
+    action: Migración por dominios con validación de datos en paralelo durante dos semanas por dominio.
+    result: -35 % de tiempo de carga y cero incidencias en el cambio.
+    evidence: [exp-norteconsulting/a1]
+  - id: st-informes
+    title: Automatizar informes manuales
+    situation: Operaciones perdía horas cada semana montando informes.
+    task: Automatizarlos sin cambiar lo que miraban.
+    action: Reproduje los informes en Power BI con fuentes automáticas y los validé con ellos.
+    result: 6 h/semana ahorradas.
+    evidence: [exp-datagal/a1]
+
+preferences:
+  roles: [Data Engineer, Analytics Engineer, Data Analyst]   # por prioridad
+  seniority_target: [junior, mid]
+  max_years_required: 4
+  remote_modes: [remote, hybrid]
+  locations:
+    preferred: [A Coruña, Santiago de Compostela, Vigo]
+    allowed: [Madrid]              # solo si es híbrido o remoto
+    excluded: []
+  languages_for_work: [es, en]
+  cv:
+    max_pages: 1
+    photo_policy: {default: true, by_country: {GB: false, IE: false, US: false, NL: false}}
+
+private:                     # nunca sale por la MCP ni en ningún documento
+  salary_floor_eur: null

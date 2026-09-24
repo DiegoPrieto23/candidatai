@@ -1,0 +1,40 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(uv run pytest *)",
+      "Bash(uv run ruff *)",
+      "Bash(uv run alembic *)",
+      "Bash(uv run jh *)",
+      "Bash(uv run --directory backend jh *)",
+      "Bash(pnpm test *)",
+      "Bash(pnpm lint *)",
+      "Bash(pnpm build *)",
+      "Bash(pnpm typecheck *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "mcp__jobhunter__get_status",
+      "mcp__jobhunter__list_jobs",
+      "mcp__jobhunter__get_extraction",
+      "mcp__jobhunter__get_timeline",
+      "mcp__jobhunter__get_profile",
+      "mcp__jobhunter__get_match",
+      "mcp__jobhunter__get_cv_content",
+      "mcp__jobhunter__list_followups_due",
+      "mcp__jobhunter__list_upcoming",
+      "mcp__jobhunter__get_funnel_stats"
+    ],
+    "ask": [
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(uv add *)",
+      "Bash(pnpm add *)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./data/browser-profile/**)",
+      "Edit(./data/browser-profile/**)"
+    ]
+  }
+}

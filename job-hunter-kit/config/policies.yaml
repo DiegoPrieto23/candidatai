@@ -1,0 +1,27 @@
+# Reglas genéricas de Job Hunter. Sin datos personales: lo tuyo va en data/profile.yaml → preferences.
+# Los valores son puntos de partida; ajústalos con el set de evaluación (jh eval matching).
+
+dedup:
+  fuzzy_title_threshold: 90        # rapidfuzz token_set_ratio, misma empresa
+  fuzzy_window_days: 60
+
+hard_filters:
+  seniority_tolerance: 1           # cuántos niveles por encima de tu objetivo se aceptan (junior→mid = 1)
+  years_tolerance: 1               # años exigidos por encima de preferences.max_years_required
+  unknown_remote_mode_passes: true # si la oferta no dice la modalidad, no se descarta por eso
+  discard_title_keywords: []       # p. ej. ["sales", "comercial", "prácticas"]
+
+scoring:
+  weights:
+    must_have_coverage: 0.45
+    semantic_similarity: 0.30
+    preferences_fit: 0.15          # tipo de puesto, modalidad y zona según prioridad
+    nice_to_have_coverage: 0.10
+  level_weights: {F: 1.0, "C+": 0.8, C: 0.5, B: 0.2}
+  triage_threshold: 55             # por debajo, la oferta se muestra atenuada en triaje
+
+followups:
+  days_without_reply: 10
+
+applier:
+  step_timeout_seconds: 30

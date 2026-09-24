@@ -1,0 +1,21 @@
+# Patrones de posible inyección de instrucciones en ofertas (detección al guardar, ADR-012).
+# Se comparan sobre texto normalizado: minúsculas, sin acentos y con espacios simples.
+# Es una red de seguridad, no un filtro perfecto: amplíala cuando veas casos nuevos.
+phrases:
+  - ignore previous instructions
+  - ignore all previous instructions
+  - disregard the above
+  - if you are an ai
+  - if you are a language model
+  - as a large language model
+  - you are chatgpt
+  - you are claude
+  - system prompt
+  - ignora las instrucciones anteriores
+  - ignora todas las instrucciones
+  - si eres una ia
+  - si eres un modelo de lenguaje
+  - si eres un asistente
+  - include the word
+  - incluye la palabra
+hidden_text_min_chars: 20     # texto oculto más corto que esto se ignora (iconos, etiquetas)
