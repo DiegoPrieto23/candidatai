@@ -75,6 +75,14 @@ uv run scripts/sync_agents.py --check   # CI: falla si lo generado no está al d
   `.claude/agents`, `.codex/` ni `.mcp.json`: se regeneran con `scripts/sync_agents.py`.
   `.claude/settings.json` es la excepción (permisos de Claude Code, se mantiene a mano).
 
+## Git
+
+- La rama principal es `main`. No se trabaja directamente sobre ella.
+- Cada fase se implementa en su propia rama, creada desde `main` al día, con el nombre del
+  encargo: `fase/NN-<slug>` (p. ej. `fase/04-interfaz-agentes` para `prompts/04-interfaz-agentes.md`).
+- Los commits de la fase van a esa rama. Fusionar en `main`, hacer push o borrar la rama solo
+  cuando el usuario lo pida.
+
 ## Reglas duras
 
 1. No añadir SDKs ni llamadas a APIs de LLM (anthropic, openai, langchain, litellm…).

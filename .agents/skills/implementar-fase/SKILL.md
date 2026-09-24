@@ -10,14 +10,18 @@ Vas a implementar la fase de Job Hunter indicada en los argumentos (p. ej. `03`)
    fase anterior no está ✅, avisa y pregunta si seguimos.
 3. **Antes de editar nada**, presenta un plan breve: ficheros que crearás o cambiarás, migraciones,
    dependencias nuevas, tests y cualquier duda o ambigüedad del encargo. Espera el OK.
-4. Implementa en pasos pequeños. Después de cada paso, ejecuta los tests afectados y ruff. Si algo
+4. Con el OK, crea la rama de la fase desde `main` al día: `fase/NN-<slug>`, con el nombre del
+   fichero del encargo (ver «Git» en `AGENTS.md`). Si hay cambios sin commitear o no estás en
+   `main`, avisa y pregunta antes de crearla.
+5. Implementa en pasos pequeños. Después de cada paso, ejecuta los tests afectados y ruff. Si algo
    del encargo choca con `AGENTS.md` o con `docs/`, para y pregunta: los docs mandan salvo que
    decidamos cambiarlos (y entonces se añade un ADR en `docs/DECISIONS.md`).
-5. Comprueba los criterios de aceptación uno a uno, ejecutando de verdad los comandos. Di cuáles
+6. Comprueba los criterios de aceptación uno a uno, ejecutando de verdad los comandos. Di cuáles
    requieren una prueba manual del usuario y cómo hacerla.
-6. Delega en el rol `revisor` la revisión de los cambios de la fase y aplica lo razonable.
-7. Cierra: ejecuta `uv run scripts/sync_agents.py --check`, marca la fase en `docs/ROADMAP.md`,
+7. Delega en el rol `revisor` la revisión de los cambios de la fase y aplica lo razonable.
+8. Cierra: ejecuta `uv run scripts/sync_agents.py --check`, marca la fase en `docs/ROADMAP.md`,
    añade una entrada al registro (fecha, agente usado, resumen, decisiones y deuda pendiente) y
-   propón un mensaje de commit. No hagas commit sin que te lo pidan.
+   propón un mensaje de commit. No hagas commit sin que te lo pidan; cuando lo pidan, va a la
+   rama de la fase. Fusionar en `main` o hacer push, solo si lo piden.
 
 Si la fase es demasiado grande para una sesión, propón partirla en subfases y hazlas de una en una.
