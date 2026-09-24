@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     data_dir: Path = Field(default=REPO_ROOT / "data", validation_alias="JH_DATA_DIR")
     db_url: str | None = Field(default=None, validation_alias="JH_DB_URL")
     soffice_path: Path | None = Field(default=None, validation_alias="SOFFICE_PATH")
+    # Qué agente usa la CLI (`claude-code`, `codex`…), para auditar. Por MCP lo dice el cliente.
+    client_name: str | None = Field(default=None, validation_alias="JH_CLIENT_NAME")
 
     @model_validator(mode="after")
     def _resolve_paths(self) -> "Settings":
@@ -31,6 +33,15 @@ class Settings(BaseSettings):
         if self.db_url is None:
             self.db_url = f"sqlite:///{(self.data_dir / 'jobhunter.db').as_posix()}"
         return self
+
+    @property
+    def tmp_dir(self) -> Path:
+        """Entradas largas de la CLI (`--file`). Se borran tras procesarse bien."""
+        return self.data_dir / "tmp"
+
+    @property
+    def logs_dir(self) -> Path:
+        return self.data_dir / "logs"
 
     @property
     def cv_template_path(self) -> Path:

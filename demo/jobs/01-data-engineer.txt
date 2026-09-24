@@ -1,0 +1,27 @@
+Data Engineer (m/f/d) – Brétema Analytics
+
+Brétema Analytics (empresa ficticia) ayuda a cadenas de distribución gallegas a tomar decisiones con datos. Buscamos una persona para reforzar nuestro equipo de plataforma de datos en Santiago de Compostela, en modalidad híbrida (dos días de oficina a la semana).
+
+Qué harás
+- Diseñar y mantener pipelines ELT sobre Snowflake con dbt.
+- Orquestar cargas diarias con Apache Airflow.
+- Modelar datos de ventas e inventario para los equipos de negocio.
+- Revisar código y documentar los modelos.
+
+Requisitos
+- 2 años o más de experiencia como Data Engineer o similar.
+- Python y SQL avanzados.
+- Experiencia con Snowflake y dbt.
+- Inglés B2 para documentación y reuniones puntuales.
+
+Valorable
+- Power BI.
+- Experiencia en retail.
+- Docker.
+
+Ofrecemos
+- Contrato indefinido a jornada completa.
+- Salario entre 36.000 y 42.000 € brutos anuales.
+- 23 días de vacaciones y horario flexible.
+
+Envía tu candidatura antes del 31 de octubre de 2026.

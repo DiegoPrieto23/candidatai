@@ -12,7 +12,7 @@ regenera y actualiza esta página.
 
 | | Claude Code | Codex (ChatGPT) | Otros (Gemini CLI, Cursor, Copilot, OpenCode…) |
 |---|---|---|---|
-| Estado | Referencia (se desarrolla con él) | Probado como segundo agente | Sin probar |
+| Estado | Referencia (se desarrolla con él) | Segundo agente; prueba manual pendiente (fase 04) | Sin probar |
 | Cuenta | Plan de Claude con Claude Code | Cuenta de ChatGPT con acceso a Codex (CLI, extensión IDE o app) | La de cada herramienta |
 | Instrucciones | `CLAUDE.md` → importa `AGENTS.md` | `AGENTS.md` | `AGENTS.md` (Gemini: `GEMINI.md` → `AGENTS.md`) |
 | Skills | `.claude/skills/` (generado) | `.agents/skills/` (lo lee directamente) | `.agents/skills/` si la herramienta sigue el estándar Agent Skills |
@@ -40,7 +40,12 @@ ofertas marcadas con riesgo antes de aprobarlas.
 ## Notas por agente
 
 ### Claude Code
-- La primera vez te pedirá aprobar el servidor MCP del proyecto.
+- La primera vez te pedirá aprobar el servidor MCP del proyecto. Tras cambiar el código del
+  servidor, reinicia Claude Code (o reconecta en `/mcp`) para que arranque la versión nueva.
+- `get_job` y `save_extraction` están permitidas en `.claude/settings.json` para que el subagente
+  `extractor` procese ofertas sin pedir permiso en cada una. Las herramientas que escriben
+  (`add_job_*`, `add_event`) siguen pidiéndolo.
+- Informa `clientInfo.name = "claude-code"`, que queda en `mcp_calls` y en `events.agent_name`.
 - `disable-model-invocation`, `argument-hint` y `allowed-tools` de los skills se añaden al generar
   (`.agents/manifest.yaml` → `targets.claude.skill_extras`); los skills canónicos no los llevan.
 
@@ -52,6 +57,17 @@ ofertas marcadas con riesgo antes de aprobarlas.
 - Para delegar en un rol, pídelo explícitamente: "lanza el subagente `extractor` con el job_id 42".
 - Los modelos por rol están vacíos en el manifiesto a propósito (heredan el de la sesión). Si
   quieres un modelo rápido para `extractor`, pon su nombre en `targets.codex.models.fast` y regenera.
+
+### Sin MCP (cualquier agente que ejecute comandos)
+- Usa los comandos `jh … --json` de `docs/AGENT_INTERFACE.md`: misma salida y mismos errores.
+- Las entradas largas van en `data/tmp/` con `--file`. Exporta `JH_CLIENT_NAME=<tu-agente>` para
+  que la auditoría sepa quién llama.
+- Un test de extremo a extremo (`tests/test_e2e_cli.py`) recorre el flujo de `procesar-ofertas`
+  solo con comandos.
+
+### Comprobado en código (fase 04)
+- `jh-mcp` arranca por stdio, lista las 9 herramientas y responde (test con el proceso real).
+  stdout queda reservado al protocolo; los logs van a stderr y a `data/logs/mcp.log`.
 
 ### Añadir otro agente
 1. Añade su bloque a `targets` en `.agents/manifest.yaml` (rutas, modelos, formato MCP).

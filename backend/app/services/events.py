@@ -6,7 +6,7 @@ from typing import Any
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from app.models import Event, Job
+from app.models import Application, Event, Job
 from app.models.base import utcnow
 from app.services.pipeline import (
     Actor,
@@ -113,3 +113,66 @@ def get_timeline(session: Session, job_id: int) -> Timeline:
         stage=project(events).stage if events else None,
         events=[EventOut.model_validate(e, from_attributes=True) for e in events],
     )
+
+
+def current_stage(session: Session, job_id: int) -> Stage:
+    """Etapa actual según la proyección. Solo para ofertas que ya tienen eventos."""
+    application = session.get(Application, job_id)
+    if application is None:
+        raise JobNotFoundError(f"La oferta {job_id} no tiene eventos.")
+    return Stage(application.stage)
+
+
+# Eventos que tienen su propia herramienta o que solo registra el sistema: `add_event` no los
+# acepta, para que nadie se salte la validación que hay detrás (p. ej. `extracted` sin extracción).
+RESERVED_EVENTS = frozenset(
+    {
+        EventType.FOUND,
+        EventType.DUPLICATE_DETECTED,
+        EventType.EXTRACTED,
+        EventType.HARD_FILTER_FAILED,
+        EventType.SCORED,
+        EventType.FIT_ASSESSED,
+        EventType.CV_GENERATED,
+        EventType.CV_VERIFIED,
+        EventType.CV_REJECTED,
+        EventType.APPLICATION_PREPARED,
+    }
+)
+
+
+class ReservedEventError(ValueError):
+    pass
+
+
+class AddEventResult(BaseModel):
+    ok: bool
+    event_id: int
+    stage: Stage
+
+
+def add_event(
+    session: Session,
+    job_id: int,
+    type: str,
+    note: str | None = None,
+    occurred_at: datetime | None = None,
+    agent_name: str | None = None,
+) -> AddEventResult:
+    """Registra un evento pedido por un agente (actor `agent`). La nota va en `payload.note`."""
+    event_type = parse_event_type(type)
+    if event_type in RESERVED_EVENTS:
+        raise ReservedEventError(
+            f"El evento «{event_type}» no se registra con `add_event`: lo registra su propia "
+            "herramienta o el sistema."
+        )
+    event = record(
+        session,
+        job_id,
+        event_type,
+        Actor.AGENT,
+        payload={"note": note} if note else None,
+        occurred_at=occurred_at,
+        agent_name=agent_name,
+    )
+    return AddEventResult(ok=True, event_id=event.id, stage=current_stage(session, job_id))

@@ -37,7 +37,9 @@ def _seed_job() -> int:
 def test_commands_require_migrated_db() -> None:
     result = runner.invoke(cli.app, ["status", "--json"])
     assert result.exit_code == 1
-    assert "jh db upgrade" in json.loads(result.stdout)["error"]
+    error = json.loads(result.stdout)["error"]
+    assert error["type"] == "database_not_ready"
+    assert "jh db upgrade" in error["message"]
 
     result = runner.invoke(cli.app, ["status"])
     assert result.exit_code == 1
@@ -100,4 +102,7 @@ def test_events_list_unknown_job() -> None:
     runner.invoke(cli.app, ["db", "upgrade"])
     result = runner.invoke(cli.app, ["events", "list", "999", "--json"])
     assert result.exit_code == 1
-    assert json.loads(result.stdout) == {"ok": False, "error": "No existe la oferta 999."}
+    assert json.loads(result.stdout) == {
+        "ok": False,
+        "error": {"type": "not_found", "message": "No existe la oferta 999.", "details": []},
+    }

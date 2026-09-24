@@ -9,6 +9,7 @@ import respx
 from typer.testing import CliRunner
 
 from app import cli
+from app.core.config import get_settings
 
 runner = CliRunner()
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -20,8 +21,10 @@ def migrated_db() -> None:
     assert runner.invoke(cli.app, ["db", "upgrade"]).exit_code == 0
 
 
-def _write(tmp_path: Path, text: str, encoding: str = "utf-8") -> Path:
-    path = tmp_path / "oferta.txt"
+def _write(text: str, encoding: str = "utf-8", name: str = "oferta.txt") -> Path:
+    tmp_dir = get_settings().tmp_dir
+    tmp_dir.mkdir(parents=True, exist_ok=True)
+    path = tmp_dir / name
     path.write_text(text, encoding=encoding)
     return path
 
@@ -65,18 +68,21 @@ def test_add_url_linkedin_error() -> None:
     assert result.exit_code == 1
     data = json.loads(result.stdout)
     assert data["ok"] is False
-    assert "add-text" in data["error"]
+    assert data["error"]["type"] == "invalid_request"
+    assert "add-text" in data["error"]["message"]
 
 
-def test_add_text_and_list(tmp_path: Path) -> None:
+def test_add_text_and_list() -> None:
     # Con BOM, como lo guardan el Bloc de notas o PowerShell.
-    path = _write(tmp_path, TEXT, encoding="utf-8-sig")
+    path = _write(TEXT, encoding="utf-8-sig")
     args = ["jobs", "add-text", "--title", "Data Analyst", "--company", "Acme", "--file"]
 
     result = runner.invoke(cli.app, [*args, str(path), "--location", "Bilbao", "--json"])
     assert result.exit_code == 0, result.output
     assert json.loads(result.stdout)["job_id"] == 1
+    assert not path.exists()  # procesado bien: se borra
 
+    path = _write(TEXT)
     result = runner.invoke(
         cli.app, ["jobs", "add-text", "--title", "Data Analyst SQL", "--company", "Acme",
                   "--file", str(path)]
@@ -99,14 +105,42 @@ def test_add_text_and_list(tmp_path: Path) -> None:
     assert "Data Analyst SQL · Acme (duplicado de 1)" in result.stdout
 
 
-def test_add_text_missing_file(tmp_path: Path) -> None:
+def test_add_text_missing_file() -> None:
     result = runner.invoke(
         cli.app,
         ["jobs", "add-text", "--title", "T", "--company", "C", "--file",
-         str(tmp_path / "nope.txt"), "--json"],
+         str(get_settings().tmp_dir / "nope.txt"), "--json"],
     )  # fmt: skip
     assert result.exit_code == 1
-    assert "No se pudo leer" in json.loads(result.stdout)["error"]
+    error = json.loads(result.stdout)["error"]
+    assert error["type"] == "invalid_file"
+    assert "No se pudo leer" in error["message"]
+
+
+def test_add_text_file_outside_tmp(tmp_path: Path) -> None:
+    path = tmp_path / "oferta.txt"
+    path.write_text(TEXT, encoding="utf-8")
+    args = ["jobs", "add-text", "--title", "T", "--company", "C", "--file", str(path), "--json"]
+    result = runner.invoke(cli.app, args)
+    assert result.exit_code == 1
+    assert json.loads(result.stdout)["error"]["type"] == "invalid_file"
+    assert path.exists()
+
+    # Tampoco vale escapar de data/tmp/ con `..`.
+    sneaky = get_settings().tmp_dir / ".." / "oferta.txt"
+    sneaky.parent.mkdir(parents=True, exist_ok=True)
+    sneaky.write_text(TEXT, encoding="utf-8")
+    args[-2] = str(sneaky)
+    result = runner.invoke(cli.app, args)
+    assert json.loads(result.stdout)["error"]["type"] == "invalid_file"
+
+
+def test_add_text_failure_keeps_file() -> None:
+    path = _write("Muy corto.")
+    args = ["jobs", "add-text", "--title", "T", "--company", "C", "--file", str(path), "--json"]
+    result = runner.invoke(cli.app, [*args, "--url", "ftp://nope"])
+    assert result.exit_code == 1
+    assert path.exists()  # si falla, el fichero se queda para corregir y reintentar
 
 
 def test_list_empty_and_invalid_stage() -> None:
@@ -116,4 +150,8 @@ def test_list_empty_and_invalid_stage() -> None:
 
     result = runner.invoke(cli.app, ["jobs", "list", "--stage", "nope", "--json"])
     assert result.exit_code == 1
-    assert "Etapa desconocida" in json.loads(result.stdout)["error"]
+    error = json.loads(result.stdout)["error"]
+    assert error["type"] == "validation_error"
+    assert error["details"][0]["field"] == "stage"
+    assert error["details"][0]["received"] == "nope"
+    assert "pending_triage" in error["details"][0]["reason"]

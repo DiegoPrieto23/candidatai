@@ -85,3 +85,18 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   aislamiento por rol es una capa adicional donde exista.
 - **Consecuencias:** las garantías mínimas son iguales para todos los agentes; `AGENTS_COMPAT.md`
   documenta las capas extra de cada uno.
+
+## ADR-013 · Servidor MCP con el `Server` de bajo nivel y registro único de herramientas
+- **Contexto:** el encargo de la fase 04 pedía FastMCP (en el SDK 2.x, `MCPServer`). FastMCP
+  construye el esquema desde la firma de cada función y valida los argumentos por su cuenta:
+  sus errores no coincidirían con los de la CLI y no admite pasarle un esquema propio sin tocar
+  su API interna.
+- **Decisión:** `app/agent_interface/` define cada herramienta una sola vez (`ToolSpec`: nombre,
+  modelo de entrada y de salida, servicio y forma del comando). El servidor MCP usa el `Server` de
+  bajo nivel del SDK oficial, publica los esquemas de esos modelos y delega en el mismo `runner`
+  que la CLI, que valida, ejecuta, audita y traduce los errores a un formato común. La CLI
+  recibe todo como texto y deja la validación al modelo.
+- **Consecuencias:** paridad por construcción (misma validación, salida y errores) y un test que
+  la comprueba herramienta a herramienta. Añadir una herramienta es añadir un `ToolSpec`. A
+  cambio, se depende de la API de bajo nivel del SDK, que es más verbosa. El campo `received` de
+  los errores va siempre como texto para que coincida en los dos canales.

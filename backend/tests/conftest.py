@@ -17,6 +17,7 @@ def isolated_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Pa
     monkeypatch.setenv("JH_DATA_DIR", str(data_dir))
     monkeypatch.delenv("JH_DB_URL", raising=False)
     monkeypatch.delenv("SOFFICE_PATH", raising=False)
+    monkeypatch.delenv("JH_CLIENT_NAME", raising=False)
     get_settings.cache_clear()
     get_engine.cache_clear()
     yield data_dir

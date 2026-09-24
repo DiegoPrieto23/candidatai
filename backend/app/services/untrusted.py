@@ -14,6 +14,7 @@ import re
 import unicodedata
 from dataclasses import dataclass
 from enum import StrEnum
+from html import escape as html_escape
 
 import lxml.html
 from lxml.etree import ParserError, _Element
@@ -282,3 +283,35 @@ def assess(text: str, html: str | None = None) -> RiskReport:
     elif suspicious:
         excerpt = suspicious[0].text[:EXCERPT_MAX_CHARS]
     return RiskReport(flags=flags, excerpt=excerpt)
+
+
+# --- Envoltorio para entregar el texto a un agente -----------------------------------------------
+
+WRAPPER_TAG = "untrusted_job_posting"
+# Cualquier cosa que un modelo pudiera leer como apertura o cierre del envoltorio: `<` normal o
+# sus parecidos Unicode, espacios, `/` opcional y el nombre con separadores o mayúsculas variadas.
+_TAG_LOOKALIKE = re.compile(
+    r"[<＜﹤〈〈⟨‹](\s*/?\s*untrusted[\s_\-]*job[\s_\-]*posting)",
+    re.IGNORECASE,
+)
+
+
+def _strip_format_chars(text: str) -> str:
+    # Caracteres invisibles (ZWSP, ZWJ, marcas de dirección…) que podrían partir el nombre de la
+    # etiqueta para esquivar la detección. No aportan nada al texto de una oferta.
+    return "".join(ch for ch in text if unicodedata.category(ch) != "Cf")
+
+
+def escape_wrapper_tag(text: str) -> str:
+    """Neutraliza cualquier apertura o cierre del envoltorio que aparezca dentro del texto."""
+    return _TAG_LOOKALIKE.sub(r"&lt;\1", _strip_format_chars(text))
+
+
+def wrap_untrusted(job_id: int, text: str, risk_flags: list[str]) -> str:
+    """Envuelve el texto crudo de una oferta como contenido no confiable."""
+    flags = html_escape(",".join(risk_flags), quote=True)
+    return (
+        f'<{WRAPPER_TAG} id="{job_id}" risk_flags="{flags}">\n'
+        f"{escape_wrapper_tag(text)}\n"
+        f"</{WRAPPER_TAG}>"
+    )
