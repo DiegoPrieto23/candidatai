@@ -10,7 +10,7 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 01 | Arranque del repo | ✅ | `uv run pytest` y `pnpm build` funcionan; CI mínimo con `sync_agents.py --check` |
 | 02 | Núcleo de datos | ✅ | Esquema, migraciones, eventos, proyección de etapas, CLI `jh` |
 | 03 | Alta de ofertas | ✅ | `jh jobs add-url` y `add-text` crean ofertas deduplicadas y con `risk_flags` |
-| 04 | Interfaz para agentes | 🚧 | Servidor MCP + CLI con paridad; funciona desde Claude Code y Codex |
+| 04 | Interfaz para agentes | ✅ | Servidor MCP + CLI con paridad; funciona desde Claude Code y Codex |
 | 05 | Perfil del candidato | ⏳ | `data/profile.yaml` validado y versionado; `get_profile` |
 | 06 | Frontend base | ⏳ | UI con bandeja de ofertas, ficha y alta por URL |
 | 07 | Matching y triaje | ⏳ | Filtros duros, score, skill `evaluar-encaje`, aprobar o descartar en la UI |
@@ -99,7 +99,9 @@ decisiones tomadas y deuda técnica pendiente. -->
   MCP y comando `jh`), servidor `jh-mcp` por stdio con el SDK `mcp` 2.2, las 9 herramientas de la
   fase, `JobExtraction` (schema_version 1), `get_job` con envoltorio blindado, `save_extraction`
   con `injection_suspected` del agente, auditoría en `mcp_calls`, formato de error común y
-  `jh agents sync | check`. Dos ofertas ficticias en `demo/jobs/`. 491 tests.
+  `jh agents sync | check`. Dos ofertas ficticias en `demo/jobs/`. 492 tests. Probado a mano con
+  Claude Code (`/mcp` + `/procesar-ofertas` → `pending_triage`); guía en
+  `docs/pruebas/fase-04-prueba-manual.txt`.
 - **Decisiones:**
   - `Server` de bajo nivel en vez de FastMCP para que MCP y CLI validen con el mismo modelo y den
     errores idénticos (ADR-013). Por CLI todo llega como texto; `received` va siempre como texto.
@@ -111,12 +113,16 @@ decisiones tomadas y deuda técnica pendiente. -->
   - Auditoría: MCP siempre, CLI solo con `--json`; cliente por `clientInfo.name` o
     `JH_CLIENT_NAME`. `args_summary` guarda ids/URLs/etapas y, del resto, solo longitudes.
   - `--file` solo dentro de `data/tmp/` (también `add-text`, que antes aceptaba cualquier ruta);
-    se borra tras el éxito.
+    se borra tras el éxito. Una ruta relativa vale desde el directorio actual o desde la raíz
+    (con `uv run --directory backend` el proceso corre en `backend/`).
   - `get_job` y `save_extraction` permitidas en `.claude/settings.json` (el extractor no pide
     permiso por oferta); las herramientas `add_*` siguen pidiéndolo.
   - Envoltorio: se neutraliza cualquier variante de la etiqueta (mayúsculas, espacios, guiones,
     `<` Unicode parecidos, caracteres invisibles) escapando su `<`.
 - **Deuda:**
-  - Pruebas manuales pendientes: Claude Code (`/mcp` + `/procesar-ofertas`) y Codex.
+  - Extractor: `responsibilities` salió en inglés con una oferta en español y `domain` como
+    "data" en vez del sector. Precisar el rol al evaluar el matching (fase 07).
+  - **Prueba con Codex pendiente:** el usuario aún no tiene Codex instalado. Cuando lo tenga,
+    seguir la parte 3 de la guía y actualizar `docs/AGENTS_COMPAT.md`.
   - El test de paridad tarda ~0,5 s por caso (migra dos BD por caso).
 

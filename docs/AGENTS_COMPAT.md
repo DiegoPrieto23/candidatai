@@ -12,7 +12,7 @@ regenera y actualiza esta página.
 
 | | Claude Code | Codex (ChatGPT) | Otros (Gemini CLI, Cursor, Copilot, OpenCode…) |
 |---|---|---|---|
-| Estado | Referencia (se desarrolla con él) | Segundo agente; prueba manual pendiente (fase 04) | Sin probar |
+| Estado | Referencia (se desarrolla con él); probado en la fase 04 | Segundo agente; prueba manual pendiente | Sin probar |
 | Cuenta | Plan de Claude con Claude Code | Cuenta de ChatGPT con acceso a Codex (CLI, extensión IDE o app) | La de cada herramienta |
 | Instrucciones | `CLAUDE.md` → importa `AGENTS.md` | `AGENTS.md` | `AGENTS.md` (Gemini: `GEMINI.md` → `AGENTS.md`) |
 | Skills | `.claude/skills/` (generado) | `.agents/skills/` (lo lee directamente) | `.agents/skills/` si la herramienta sigue el estándar Agent Skills |
@@ -64,6 +64,17 @@ ofertas marcadas con riesgo antes de aprobarlas.
   que la auditoría sepa quién llama.
 - Un test de extremo a extremo (`tests/test_e2e_cli.py`) recorre el flujo de `procesar-ofertas`
   solo con comandos.
+
+### Observado en la prueba manual con Claude Code (fase 04, 2026-09-24)
+- Tras reiniciar, `/mcp` muestra `jobhunter` conectado con sus 9 herramientas.
+- `/procesar-ofertas` con `demo/jobs/01-data-engineer.txt`: la sesión principal solo usó
+  `get_status` y `list_jobs` y delegó en el subagente `extractor` (Haiku), que llamó a `get_job` y
+  `save_extraction` sin pedir permiso. La oferta acabó en `pending_triage`, con el evento
+  `extracted` como `agent/claude-code`.
+- Calidad de la extracción: correcta en salario, años, modalidad, idioma, plazo y skills. Dos
+  detalles menores: redactó `responsibilities` en inglés aunque la oferta está en español, y puso
+  `domain: "data"` en vez del sector de la empresa (distribución/retail). Candidatos a precisar en
+  `.agents/roles/extractor.md` cuando se evalúe el matching (fase 07).
 
 ### Comprobado en código (fase 04)
 - `jh-mcp` arranca por stdio, lista las 9 herramientas y responde (test con el proceso real).

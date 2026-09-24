@@ -18,7 +18,7 @@ from app.agent_interface.errors import ToolError
 from app.agent_interface.registry import CallContext, ToolSpec
 from app.agent_interface.runner import call_tool
 from app.agent_interface.tools import TOOLS
-from app.core.config import get_settings
+from app.core.config import REPO_ROOT, get_settings
 
 
 def dump_json(payload: BaseModel | dict[str, Any]) -> str:
@@ -38,25 +38,32 @@ def _fail(error: ToolError, as_json: bool) -> NoReturn:
     raise typer.Exit(code=1)
 
 
-def _check_tmp_path(path: Path) -> Path:
+def resolve_input_file(path: Path) -> Path:
+    """Ruta absoluta de `--file`, que debe estar dentro de `data/tmp/`.
+
+    Una ruta relativa vale desde el directorio actual o desde la raíz del repo: con
+    `uv run --directory backend jh …` (lo que usan los agentes) el proceso corre en `backend/`,
+    pero la ruta se escribe pensando en la raíz (`data/tmp/oferta.txt`).
+    """
     tmp_dir = get_settings().tmp_dir.resolve()
-    resolved = path.resolve()
-    if not resolved.is_relative_to(tmp_dir):
-        raise ToolError(
-            "invalid_file",
-            f"`--file` debe estar dentro de {tmp_dir} (se borra tras procesarse bien).",
-        )
-    return resolved
+    candidates = [path] if path.is_absolute() else [Path.cwd() / path, REPO_ROOT / path]
+    for candidate in candidates:
+        resolved = candidate.resolve()
+        if resolved.is_relative_to(tmp_dir):
+            return resolved
+    raise ToolError(
+        "invalid_file",
+        f"`--file` debe estar dentro de {tmp_dir} (se borra tras procesarse bien).",
+    )
 
 
-def read_input_file(path: Path, file_format: str) -> Any:
-    """Lee una entrada larga de `data/tmp/`: texto (UTF-8, con o sin BOM) o JSON."""
-    resolved = _check_tmp_path(path)
+def read_input_file(resolved: Path, file_format: str) -> Any:
+    """Lee una entrada larga ya resuelta en `data/tmp/`: texto (UTF-8, con o sin BOM) o JSON."""
     try:
         # `utf-8-sig`: el Bloc de notas y PowerShell pueden guardar con BOM.
         text = resolved.read_text(encoding="utf-8-sig")
     except (OSError, UnicodeDecodeError) as exc:
-        raise ToolError("invalid_file", f"No se pudo leer {path}: {exc}") from exc
+        raise ToolError("invalid_file", f"No se pudo leer {resolved}: {exc}") from exc
     if file_format == "text":
         return text
     try:
@@ -64,7 +71,7 @@ def read_input_file(path: Path, file_format: str) -> Any:
     except json.JSONDecodeError as exc:
         raise ToolError(
             "invalid_file",
-            f"{path} no es JSON válido (línea {exc.lineno}, columna {exc.colno}): {exc.msg}.",
+            f"{resolved} no es JSON válido (línea {exc.lineno}, columna {exc.colno}): {exc.msg}.",
         ) from exc
 
 
@@ -111,6 +118,7 @@ def make_command(spec: ToolSpec, render: Callable[[Any], None] | None) -> Callab
         raw_args = {name: value for name, value in kwargs.items() if value is not None}
         try:
             if spec.cli.file_field and file is not None:
+                file = resolve_input_file(file)
                 raw_args[spec.cli.file_field] = read_input_file(file, spec.cli.file_format)
             settings = get_settings()
             ctx = CallContext(channel="cli", client_name=settings.client_name, audit=as_json)

@@ -135,6 +135,23 @@ def test_add_text_file_outside_tmp(tmp_path: Path) -> None:
     assert json.loads(result.stdout)["error"]["type"] == "invalid_file"
 
 
+def test_add_text_relative_path_from_repo_root(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # `uv run --directory backend jh …` corre en backend/, pero la ruta se escribe desde la raíz.
+    from app.agent_interface import cli as agent_cli
+
+    monkeypatch.setattr(agent_cli, "REPO_ROOT", tmp_path)  # data/ del test = tmp_path/data
+    backend = tmp_path / "backend"
+    backend.mkdir()
+    monkeypatch.chdir(backend)
+    path = _write(TEXT)
+    args = ["jobs", "add-text", "--title", "T", "--company", "C", "--json"]
+    result = runner.invoke(cli.app, [*args, "--file", f"data/tmp/{path.name}"])
+    assert result.exit_code == 0, result.output
+    assert not path.exists()
+
+
 def test_add_text_failure_keeps_file() -> None:
     path = _write("Muy corto.")
     args = ["jobs", "add-text", "--title", "T", "--company", "C", "--file", str(path), "--json"]
