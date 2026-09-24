@@ -18,7 +18,7 @@ from app.core import migrations
 from app.core.config import get_settings
 from app.core.db import get_engine, session_scope
 from app.schemas.llm_io import JobExtraction
-from app.services import events, extractions, ingest
+from app.services import events, extractions, ingest, profile
 from tests.agent_support import POSTING_TEXT, cli_call, extraction, mcp_call, write_tmp
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -47,6 +47,11 @@ def seed_closed() -> None:
     seed_job()
     with session_scope() as session:
         events.record(session, 1, "discarded", "user", payload={"reason": "no encaja"})
+
+
+def seed_profile() -> None:
+    with session_scope() as session:
+        profile.import_profile(session, profile.EXAMPLE_PATH)
 
 
 @dataclass
@@ -145,6 +150,13 @@ CASES = [
          seed=seed_extracted),
     Case("timeline-unknown", "get_timeline", {"job_id": 2}, ["events", "list", "2"],
          expect_error="not_found"),
+    Case("profile", "get_profile", {}, ["profile", "show"], seed=seed_profile),
+    Case("profile-sections", "get_profile", {"sections": ["personal", "skills"]},
+         ["profile", "show", "--sections", "personal, skills"], seed=seed_profile),
+    Case("profile-bad-section", "get_profile", {"sections": ["skills", "private"]},
+         ["profile", "show", "--sections", "skills,private"], seed=seed_profile,
+         expect_error="validation_error"),
+    Case("profile-none", "get_profile", {}, ["profile", "show"], expect_error="not_found"),
 ]  # fmt: skip
 
 

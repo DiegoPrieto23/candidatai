@@ -39,6 +39,8 @@ def summarize_args(args: Mapping[str, Any], safe_fields: Iterable[str]) -> str:
             summary[key] = value
         elif key in safe and isinstance(value, str):
             summary[key] = value[:MAX_VALUE_CHARS]
+        elif key in safe and isinstance(value, list) and all(isinstance(v, str) for v in value):
+            summary[key] = [v[:MAX_VALUE_CHARS] for v in value]  # p. ej. `sections`
         else:
             summary[key] = _shape(value)
     return json.dumps(summary, ensure_ascii=False)[:MAX_SUMMARY_CHARS]

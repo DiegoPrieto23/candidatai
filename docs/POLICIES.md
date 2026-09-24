@@ -51,7 +51,8 @@ Las reglas con valores ajustables tienen su parámetro en `config/policies.yaml`
   `needs_user_input` y decides tú la cifra.
 - **NDA**: los proyectos marcados `nda: true` se describen a alto nivel, sin cliente ni detalles
   internos.
-- `get_profile` no devuelve teléfono ni datos salariales: el agente no los necesita para redactar.
+- `get_profile` no devuelve email, teléfono ni la sección `private` (datos salariales incluidos): el
+  agente no los necesita para redactar. El teléfono lo añade el código al generar el CV entregado.
 
 ## 5. Candidaturas
 

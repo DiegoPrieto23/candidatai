@@ -12,5 +12,5 @@ class ProfileVersion(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     data: Mapped[dict[str, Any]] = mapped_column(JSON)
-    content_hash: Mapped[str] = mapped_column(String(64), unique=True)
+    content_hash: Mapped[str] = mapped_column(String(64), index=True)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)

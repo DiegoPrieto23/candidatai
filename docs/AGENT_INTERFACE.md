@@ -49,7 +49,7 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | `get_extraction` | `jh jobs extraction ID --json` | 04 | `job_id` | `JobExtraction` vigente con `extraction_id`, `schema_version`, `created_at` | — |
 | `add_event` | `jh events add ID TYPE [--note N] [--at FECHA] --json` | 04 | `job_id, type, note?, occurred_at?` | `ok`, `event_id`, `stage` resultante | el indicado |
 | `get_timeline` | `jh events list ID --json` | 04 | `job_id` | Etapa actual y eventos (sin texto crudo) | — |
-| `get_profile` | `jh profile show --public --json` | 05 | `sections?` | `CandidateProfile` sin datos privados | — |
+| `get_profile` | `jh profile show [--sections S1,S2] --json` | 05 | `sections?` | `profile_version_id`, `created_at`, `profile`: `CandidateProfile` sin email, teléfono ni `private` | — |
 | `get_match` | `jh match show ID --json` | 07 | `job_id` | Filtros duros, score, desglose, skills cubiertas y ausentes | — |
 | `save_fit_assessment` | `jh match save-assessment ID --file F` | 07 | `job_id, assessment: FitAssessment` | `ok` | `fit_assessed` |
 | `save_cv_content` | `jh cv save ID --file F --json` | 08 | `job_id, content: CvContent` | `document_id`, rutas, páginas, cobertura, avisos | `cv_generated` |
@@ -63,6 +63,27 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 Aprobar o descartar **no tiene herramienta propia a propósito**: esa decisión se toma en la UI. Si
 el usuario la dicta a su agente, este puede usar `add_event` con `approved` o `discarded` y el
 motivo que él dé en `note`, nunca por iniciativa propia. El evento queda con actor `agent`.
+
+`get_profile` devuelve la última versión importada (no lee `data/profile.yaml`). `sections` admite
+`personal`, `headline`, `summary`, `experience`, `projects`, `education`, `certifications`,
+`languages`, `skills`, `basic_skills`, `stories` y `preferences`; por MCP es una lista y por CLI va
+separada por comas. `schema_version` sale siempre. De `personal` solo salen los campos de una lista
+blanca (`PUBLIC_PERSONAL_FIELDS`): un campo nuevo no se expone hasta añadirlo ahí. Los niveles
+F/C+/C/B y las marcas `nda` sí salen: el agente los necesita para aplicar `POLICIES.md` §1.
+
+### Comandos del perfil (solo CLI)
+
+Mantenimiento de `data/profile.yaml`; los usa el skill `actualizar-perfil`. Todos aceptan `--json`
+(errores con el formato común; en `validation_error`, `field` es la ruta del campo, p. ej.
+`experience[1].achievements[0].id`). Una ruta relativa vale desde el directorio actual o desde la
+raíz del repo.
+
+| Comando | Qué hace |
+|---|---|
+| `jh profile init` | Copia `demo/profile.example.yaml` a `data/profile.yaml` si no existe (si existe: error `exists`) |
+| `jh profile validate [RUTA]` | Valida sin importar. Por defecto, `data/profile.yaml` |
+| `jh profile import [RUTA]` | Valida y crea una versión nueva si el contenido cambia respecto a la vigente (`created: false` si no) |
+| `jh profile diff` | Diff unificado entre las dos últimas versiones; `private` sale como `<oculto>` |
 
 `add_event` no acepta los eventos que registra su propia herramienta o el sistema: `found`,
 `duplicate_detected`, `extracted`, `hard_filter_failed`, `scored`, `fit_assessed`,
@@ -83,7 +104,7 @@ Mismo JSON por los dos canales (por MCP, con `isError: true`; por CLI, con códi
 | `type` | Cuándo |
 |---|---|
 | `validation_error` | La entrada no cumple el esquema. `details` lista cada campo, el valor recibido (como texto, recortado) y el motivo |
-| `not_found` | No existe la oferta o aún no tiene extracción |
+| `not_found` | No existe la oferta, aún no tiene extracción o no hay perfil importado |
 | `invalid_transition` | El evento no es válido en la etapa actual de la oferta |
 | `invalid_request` | El servicio rechaza la petición (URL de LinkedIn, evento reservado…) |
 | `database_not_ready` | Falta `jh db upgrade` |

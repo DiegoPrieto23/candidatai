@@ -14,12 +14,14 @@ from app.services.audit import record_call, summarize_args
 from app.services.events import JobNotFoundError
 from app.services.extractions import ExtractionNotFoundError
 from app.services.pipeline import InvalidTransitionError
+from app.services.profile import ProfileNotFoundError
 
 logger = logging.getLogger(__name__)
 
 _ERROR_TYPES: tuple[tuple[type[Exception], str], ...] = (
     (JobNotFoundError, "not_found"),
     (ExtractionNotFoundError, "not_found"),
+    (ProfileNotFoundError, "not_found"),
     (migrations.DatabaseNotReadyError, "database_not_ready"),
     (InvalidTransitionError, "invalid_transition"),
     # IngestError, InvalidQueryError, UnknownEventTypeError, ReservedEventError…

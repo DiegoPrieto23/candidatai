@@ -62,7 +62,7 @@ Una fila por extracción; la vigente es la más reciente.
 |---|---|---|
 | id | int PK | |
 | data | JSON | Validado con `CandidateProfile`, importado desde `data/profile.yaml` |
-| content_hash | str | Evita versiones idénticas |
+| content_hash | str | sha256 del JSON canónico. Importar un contenido igual al de la versión vigente no crea versión; volver a uno anterior sí (índice, no único) |
 | created_at | datetime | |
 
 ### `matches`

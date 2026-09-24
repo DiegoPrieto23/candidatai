@@ -4,12 +4,14 @@ Tabla de referencia en `docs/AGENT_INTERFACE.md`. Los handlers solo adaptan la e
 servicio: la lógica vive en `app/services/`.
 """
 
-from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
+from typing import Any
+
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, field_validator
 from sqlalchemy.orm import Session
 
 from app.agent_interface.registry import CallContext, CliSpec, ToolSpec
 from app.schemas.llm_io import JobExtraction
-from app.services import events, extractions, ingest, jobs, status
+from app.services import events, extractions, ingest, jobs, profile, status
 from app.services.pipeline import EventType, Stage
 
 
@@ -58,6 +60,24 @@ class AddEventInput(_Input):
     occurred_at: AwareDatetime | None = Field(
         default=None, description="Cuándo ocurrió (ISO 8601 con zona). Por defecto, ahora."
     )
+
+
+class GetProfileInput(_Input):
+    sections: list[profile.ProfileSection] | None = Field(
+        default=None,
+        description=(
+            "Secciones que devolver (por CLI, separadas por comas). Por defecto, todas. "
+            "Nunca incluye email, teléfono ni `private`."
+        ),
+    )
+
+    @field_validator("sections", mode="before")
+    @classmethod
+    def _split_text(cls, value: Any) -> Any:
+        # Por CLI llega «experience,skills»; por MCP, normalmente como lista.
+        if isinstance(value, str):
+            return [part.strip() for part in value.split(",") if part.strip()]
+        return value
 
 
 class JobList(BaseModel):
@@ -123,6 +143,12 @@ def _add_event(session: Session, args: AddEventInput, ctx: CallContext) -> event
 
 def _get_timeline(session: Session, args: JobIdInput, _ctx: CallContext) -> events.Timeline:
     return events.get_timeline(session, args.job_id)
+
+
+def _get_profile(
+    session: Session, args: GetProfileInput, _ctx: CallContext
+) -> profile.PublicProfile:
+    return profile.get_public_profile(session, args.sections)
 
 
 TOOLS: tuple[ToolSpec, ...] = (
@@ -222,6 +248,18 @@ TOOLS: tuple[ToolSpec, ...] = (
         output_model=events.Timeline,
         handler=_get_timeline,
         cli=CliSpec(path=("events", "list"), arguments=("job_id",)),
+    ),
+    ToolSpec(
+        name="get_profile",
+        description=(
+            "Perfil del candidato (versión vigente) sin email, teléfono ni datos privados. Es la "
+            "única fuente de lo que se puede afirmar en un CV o una respuesta."
+        ),
+        input_model=GetProfileInput,
+        output_model=profile.PublicProfile,
+        handler=_get_profile,
+        cli=CliSpec(path=("profile", "show")),
+        audit_fields=("sections",),
     ),
 )
 

@@ -11,7 +11,7 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 02 | Núcleo de datos | ✅ | Esquema, migraciones, eventos, proyección de etapas, CLI `jh` |
 | 03 | Alta de ofertas | ✅ | `jh jobs add-url` y `add-text` crean ofertas deduplicadas y con `risk_flags` |
 | 04 | Interfaz para agentes | ✅ | Servidor MCP + CLI con paridad; funciona desde Claude Code y Codex |
-| 05 | Perfil del candidato | ⏳ | `data/profile.yaml` validado y versionado; `get_profile` |
+| 05 | Perfil del candidato | ✅ | `data/profile.yaml` validado y versionado; `get_profile` |
 | 06 | Frontend base | ⏳ | UI con bandeja de ofertas, ficha y alta por URL |
 | 07 | Matching y triaje | ⏳ | Filtros duros, score, skill `evaluar-encaje`, aprobar o descartar en la UI |
 | 08 | CV a medida | ⏳ | Skill `generar-cv` produce DOCX + PDF verificados |
@@ -126,3 +126,36 @@ decisiones tomadas y deuda técnica pendiente. -->
     seguir la parte 3 de la guía y actualizar `docs/AGENTS_COMPAT.md`.
   - El test de paridad tarda ~0,5 s por caso (migra dos BD por caso).
 
+### 05 · Perfil del candidato — 2026-09-24 · Claude Code (Opus 5.5)
+- **Resumen:** `CandidateProfile` (`app/schemas/profile.py`) valida la estructura de
+  `demo/profile.example.yaml`; `services/profile.py` con `load_from_yaml` (errores con la ruta del
+  campo, p. ej. `experience[1].achievements[0].id`), `import_profile`, `current`, `public_view`,
+  `diff_last_two`, `init_profile` y `resolve_evidence`; herramienta `get_profile(sections?)`; CLI
+  `jh profile validate | import | diff | init | show`. Migración `0002`. 574 tests;
+  `services/profile.py` al 100 %.
+- **Decisiones:**
+  - Ids de primer nivel (experiencias, proyectos, formación, certificaciones, historias) únicos en
+    todo el perfil; los de logro, dentro de su experiencia. Las evidencias son `exp-x/a1` o el id
+    de una experiencia, un proyecto, una formación o una certificación.
+  - Es un error que un logro o un proyecto cite una skill que no esté en `skills` ni en
+    `basic_skills`. Una skill solo puede estar en una de las dos listas.
+  - Las comprobaciones entre secciones se lanzan juntas (`ProfileConsistencyError`), pero solo
+    cuando los campos ya validan: un perfil muy roto se corrige en dos pasadas.
+  - Hash = sha256 del JSON canónico: los comentarios y el formato del YAML no crean versión.
+    Migración `0002`: `content_hash` pasa de único a índice. Importar lo mismo que la versión
+    vigente no crea versión; volver a un contenido anterior sí.
+  - `get_profile` sale de una lista blanca de secciones y de campos de `personal`: nunca email,
+    teléfono ni `private`. Sí devuelve los niveles F/C+/C/B y las marcas `nda`. La CLI es
+    `jh profile show [--sections a,b]`, siempre con la vista pública (se quita `--public`).
+  - `jh profile diff` muestra `private` como `<oculto>`.
+  - `resolve_evidence(profile, ref)` es una función pura sobre una versión concreta: los CVs se
+    verifican contra la versión con la que se redactaron.
+  - Traducción de errores de Pydantic movida a `app/core/validation.py`, compartida por la
+    interfaz para agentes y el perfil.
+  - La auditoría guarda tal cual las listas de texto de los campos seguros (las `sections`).
+- **Deuda:**
+  - `preferences.locations.allowed` («solo si es híbrido o remoto») no se valida en el esquema:
+    lo aplicarán los filtros duros de la fase 07.
+  - Importar un perfil nuevo aún no recalcula los scores; llega con la fase 07.
+  - Una clave YAML `NO` (Noruega) en `photo_policy.by_country` se lee como booleano: hay que
+    escribirla entre comillas.

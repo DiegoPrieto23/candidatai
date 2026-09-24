@@ -98,6 +98,9 @@ def test_cli_without_json_is_not_audited() -> None:
         ({"text": "Oferta…", "limit": 5, "ok": True, "n": None}, (),
          {"text": "<texto: 7 caracteres>", "limit": 5, "ok": True, "n": None}),
         ({"items": [1, 2]}, (), {"items": "<lista: 2 elementos>"}),
+        ({"sections": ["skills", "stories"]}, ("sections",), {"sections": ["skills", "stories"]}),
+        ({"sections": ["skills", 1]}, ("sections",), {"sections": "<lista: 2 elementos>"}),
+        ({"tags": ["a"]}, (), {"tags": "<lista: 1 elementos>"}),
         ({"stage": "x" * 500}, ("stage",), {"stage": "x" * 200}),
     ],
 )  # fmt: skip
