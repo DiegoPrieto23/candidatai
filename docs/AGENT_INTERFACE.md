@@ -32,8 +32,8 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | MCP | CLI | Fase | Entrada | Salida | Evento |
 |---|---|---|---|---|---|
 | `get_status` | `jh status --json` | 04 | — | Recuento por etapa, tareas pendientes | — |
-| `add_job_from_url` | `jh jobs add-url URL --json` | 04 | `url` | `job_id`, `duplicate_of?` | `found` |
-| `add_job_from_text` | `jh jobs add-text --title T --company C --file F --json` | 04 | `title, company, text, url?` | `job_id`, `duplicate_of?` | `found` |
+| `add_job_from_url` | `jh jobs add-url URL --json` | 04 | `url` | `job_id`, `created`, `duplicate_of?`, `risk_flags` | `found` |
+| `add_job_from_text` | `jh jobs add-text --title T --company C --file F [--url U] [--location L] --json` | 04 | `title, company, text, url?, location?` | `job_id`, `created`, `duplicate_of?`, `risk_flags` | `found` |
 | `list_jobs` | `jh jobs list --stage S --limit N --json` | 04 | `stage, limit=20, order="score_desc"` | Lista resumida (sin texto crudo) | — |
 | `get_job` | `jh jobs show ID --raw --json` | 04 | `job_id` | Metadatos + texto envuelto como no confiable | — |
 | `save_extraction` | `jh jobs save-extraction ID --file F` | 04 | `job_id, extraction: JobExtraction` | `ok`, errores | `extracted` / `injection_suspected` |

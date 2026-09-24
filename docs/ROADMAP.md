@@ -9,7 +9,7 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 |---|---|---|---|
 | 01 | Arranque del repo | ✅ | `uv run pytest` y `pnpm build` funcionan; CI mínimo con `sync_agents.py --check` |
 | 02 | Núcleo de datos | ✅ | Esquema, migraciones, eventos, proyección de etapas, CLI `jh` |
-| 03 | Alta de ofertas | ⏳ | `jh jobs add-url` y `add-text` crean ofertas deduplicadas y con `risk_flags` |
+| 03 | Alta de ofertas | ✅ | `jh jobs add-url` y `add-text` crean ofertas deduplicadas y con `risk_flags` |
 | 04 | Interfaz para agentes | ⏳ | Servidor MCP + CLI con paridad; funciona desde Claude Code y Codex |
 | 05 | Perfil del candidato | ⏳ | `data/profile.yaml` validado y versionado; `get_profile` |
 | 06 | Frontend base | ⏳ | UI con bandeja de ofertas, ficha y alta por URL |
@@ -63,3 +63,34 @@ decisiones tomadas y deuda técnica pendiente. -->
     antes del callback que fuerza UTF-8. Ya pasaba en la fase 01.
   - El JSON de error de la CLI (`{ok: false, error}`) es provisional hasta fijar el formato de
     errores común con la MCP en la fase 04.
+
+### 03 · Alta de ofertas — 2026-09-24 · Claude Code (Opus 5.5)
+- **Resumen:** `services/ingest.py` (`add_from_url` con httpx + trafilatura + JSON-LD/`og:`,
+  `add_from_text`, duplicados exactos por huella y difusos con rapidfuzz), `services/untrusted.py`
+  (texto oculto en el HTML original y frases de `injection_patterns.yaml`), `services/jobs.py`
+  (`list_jobs`), `core/policies.py` (carga de `config/`) y CLI `jh jobs add-url | add-text | list`
+  con `--json`. Cinco fixtures inventados; 398 tests, `services/` al 98 %.
+- **Decisiones:**
+  - Duplicado difuso: `duplicate_of` + evento `duplicate_detected` (cierra la oferta, reabrible),
+    en el orden `found` → `injection_suspected` → `duplicate_detected`. Siempre apunta a la
+    original, no a otro duplicado.
+  - Duplicado exacto (misma huella, o misma URL en `add-url`, sin descargar): devuelve la oferta
+    existente con `created: false` y no registra eventos.
+  - Salida de alta `{job_id, created, duplicate_of, risk_flags}`; `add-text` admite `--location`
+    (entra en la huella) y guarda `url = ""` si no hay. `AGENT_INTERFACE.md` actualizado.
+  - Texto oculto en zonas benignas (nav, header, footer, diálogos, listas de enlaces) no activa
+    `hidden_text`, pero sí se busca en él una frase de inyección. Documentado en `POLICIES.md` §6.
+  - trafilatura descarta el texto con `display:none`: la detección se hace sobre el HTML original.
+    Si la página se pinta con JavaScript pero trae la oferta en el JSON-LD, se usa su
+    `description`.
+  - La descarga comprueba cada salto (hook de httpx): no sigue a LinkedIn ni a IPs locales o
+    privadas tras una redirección. Máximo 5 MB, sin cookies previas.
+- **Deuda:**
+  - La protección SSRF solo mira IPs literales y `localhost`; un dominio que resuelva a una IP
+    privada pasaría (resolver DNS en el código rompería los tests sin red).
+  - Si una oferta se dio de alta por texto (sin URL) y luego llega por URL con la misma huella, no
+    se completa su `url`.
+  - El patrón `system prompt` puede dar falsos positivos en ofertas reales de ingeniería de LLM.
+  - `jh jobs list` ordena por `first_seen_at`; el orden `score_desc` de la interfaz llega con la
+    fase 07. Las llamadas aún no se registran en `mcp_calls` (fase 04).
+

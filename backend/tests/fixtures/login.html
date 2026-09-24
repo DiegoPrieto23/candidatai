@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<!-- Página de login inventada para tests. -->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Inicia sesión · Portal de Empleo Ficticio</title>
+  <meta property="og:title" content="Inicia sesión para ver la oferta">
+  <meta property="og:site_name" content="Portal de Empleo Ficticio">
+</head>
+<body>
+  <main>
+    <h1>Inicia sesión para ver esta oferta</h1>
+    <form action="/login" method="post">
+      <label>Email <input type="email" name="email"></label>
+      <label>Contraseña <input type="password" name="password"></label>
+      <button type="submit">Entrar</button>
+    </form>
+    <p>¿No tienes cuenta? <a href="/registro">Regístrate gratis</a></p>
+  </main>
+</body>
+</html>
