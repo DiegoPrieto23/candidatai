@@ -41,6 +41,14 @@ target-version = "py312"
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
 
+[tool.ruff.lint.per-file-ignores]
+# Migraciones autogeneradas: líneas largas de restricciones con nombre.
+"alembic/versions/*" = ["E501"]
+
+[tool.ruff.lint.isort]
+# La carpeta `alembic/` del proyecto no debe hacer que ruff trate el paquete como propio.
+known-third-party = ["alembic"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra"
