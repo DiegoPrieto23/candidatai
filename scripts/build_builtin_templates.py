@@ -1,0 +1,289 @@
+"""Genera las plantillas integradas de CV en `templates/` con python-docx (reproducible).
+
+Uso (desde la raíz del repo):
+    uv run --directory backend python ../scripts/build_builtin_templates.py [--no-preview]
+
+Cada plantilla se crea desde cero: `template.docx` (con los marcadores de docxtpl de una pieza,
+cada uno en su propio fragmento) y `template.yaml`. Dos ejecuciones dan exactamente los mismos
+bytes: el zip se escribe con fecha fija y las propiedades del documento no llevan fechas.
+Después, salvo `--no-preview`, renderiza `preview.pdf` con el perfil y un contenido FICTICIOS de
+`demo/` (necesita LibreOffice o Word).
+"""
+
+import argparse
+import io
+import sys
+import zipfile
+from collections.abc import Callable
+from datetime import datetime
+from pathlib import Path
+from typing import Any
+
+import yaml
+from docx import Document
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
+from docx.shared import Mm, Pt, RGBColor
+from docx.text.paragraph import Paragraph
+
+from app.core.config import REPO_ROOT
+
+TEMPLATES_DIR = REPO_ROOT / "templates"
+_FIXED_ZIP_DATE = (1980, 1, 1, 0, 0, 0)
+_FIXED_CORE_DATE = datetime(2026, 1, 1)
+
+TEXT = RGBColor(0x1A, 0x1A, 0x1A)
+MUTED = RGBColor(0x55, 0x55, 0x55)
+
+
+# --- Utilidades de python-docx --------------------------------------------------------------
+
+
+def _bottom_border(paragraph: Paragraph, color: str = "808080") -> None:
+    p_pr = paragraph._p.get_or_add_pPr()
+    borders = OxmlElement("w:pBdr")
+    bottom = OxmlElement("w:bottom")
+    for key, value in {"w:val": "single", "w:sz": "4", "w:space": "1", "w:color": color}.items():
+        bottom.set(qn(key), value)
+    borders.append(bottom)
+    p_pr.append(borders)
+
+
+def _spacing(paragraph: Paragraph, before: float = 0, after: float = 0) -> None:
+    paragraph.paragraph_format.space_before = Pt(before)
+    paragraph.paragraph_format.space_after = Pt(after)
+
+
+def _add(doc: Any, *runs: tuple[str, dict[str, Any]] | str, style: str | None = None) -> Paragraph:
+    """Párrafo con un fragmento por elemento: cada marcador queda entero en su fragmento."""
+    paragraph = doc.add_paragraph(style=style)
+    for item in runs:
+        text, fmt = (item, {}) if isinstance(item, str) else item
+        run = paragraph.add_run(text)
+        run.bold = fmt.get("bold")
+        run.italic = fmt.get("italic")
+        if "size" in fmt:
+            run.font.size = Pt(fmt["size"])
+        if "color" in fmt:
+            run.font.color.rgb = fmt["color"]
+    return paragraph
+
+
+def _tag(doc: Any, tag: str) -> None:
+    """Párrafo de control de docxtpl (`{%p … %}`): desaparece al renderizar."""
+    doc.add_paragraph(tag)
+
+
+def _base_document(font: str, size: float) -> Any:
+    doc = Document()
+    section = doc.sections[0]
+    section.page_width, section.page_height = Mm(210), Mm(297)
+    for side in ("left_margin", "right_margin"):
+        setattr(section, side, Mm(18))
+    section.top_margin = section.bottom_margin = Mm(15)
+
+    normal = doc.styles["Normal"]
+    normal.font.name = font
+    normal.font.size = Pt(size)
+    normal.font.color.rgb = TEXT
+    # El nombre de la fuente también para texto asiático y complejo: si no, Word usa otra.
+    r_fonts = normal.element.get_or_add_rPr().get_or_add_rFonts()
+    for attr in ("w:ascii", "w:hAnsi", "w:eastAsia", "w:cs"):
+        r_fonts.set(qn(attr), font)
+    normal.paragraph_format.space_after = Pt(0)
+    normal.paragraph_format.line_spacing = 1.05
+
+    bullet = doc.styles["List Bullet"]
+    bullet.font.name = font
+    bullet.font.size = Pt(size)
+    bullet.paragraph_format.space_after = Pt(1)
+
+    core = doc.core_properties
+    core.author = core.last_modified_by = "Job Hunter"
+    core.title = core.subject = core.keywords = core.comments = ""
+    core.created = core.modified = _FIXED_CORE_DATE
+    core.revision = 1
+    return doc
+
+
+def _section(doc: Any, name: str, body: Callable[[], None]) -> None:
+    _tag(doc, f"{{%p if show.{name} %}}")
+    heading = _add(doc, (f"{{{{ labels.{name}|upper }}}}", {"bold": True, "size": 11}))
+    _spacing(heading, before=8, after=3)
+    _bottom_border(heading)
+    body()
+    _tag(doc, "{%p endif %}")
+
+
+def _save_reproducible(doc: Any, path: Path) -> None:
+    buffer = io.BytesIO()
+    doc.save(buffer)
+    buffer.seek(0)
+    out = io.BytesIO()
+    with zipfile.ZipFile(buffer) as src, zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as dst:
+        for info in sorted(src.infolist(), key=lambda i: i.filename):
+            data = src.read(info.filename)
+            fixed = zipfile.ZipInfo(info.filename, date_time=_FIXED_ZIP_DATE)
+            fixed.compress_type = zipfile.ZIP_DEFLATED
+            fixed.external_attr = 0o644 << 16
+            dst.writestr(fixed, data)
+    path.write_bytes(out.getvalue())
+
+
+# --- ats-simple -----------------------------------------------------------------------------
+
+ATS_SIMPLE_META: dict[str, Any] = {
+    "id": "ats-simple",
+    "name": "ATS sencilla",
+    "engine": "docx",
+    "origin": "builtin",
+    "description": (
+        "Una columna, sin foto ni tablas, con los datos de contacto en el cuerpo y tipografía "
+        "estándar. La opción segura para portales con ATS."
+    ),
+    "tags": ["ats", "sobria"],
+    "layout": {"columns": 1, "uses_tables": False},
+    "ats_friendly": True,
+    "photo": {"supported": False, "shape": "circle", "size_mm": 30},
+    "page": {"size": "A4", "max_pages": 1},
+    "capacity": {"summary_chars": 450, "experience_bullets": 9, "skill_groups": 4},
+    "sections": [
+        "summary",
+        "experience",
+        "projects",
+        "education",
+        "certifications",
+        "skills",
+        "languages",
+    ],
+    "fonts": ["Calibri"],
+    "languages": ["es", "en"],
+}
+
+CONTACT_LINE = (
+    "{{ [contact.city, contact.phone, contact.email, contact.linkedin, contact.github]"
+    "|select|join('  ·  ') }}"
+)
+
+
+def build_ats_simple(dest: Path) -> None:
+    doc = _base_document("Calibri", 10.5)
+
+    name = _add(doc, ("{{ name }}", {"bold": True, "size": 20}))
+    _spacing(name, after=1)
+    subtitle = _add(doc, ("{{ subtitle }}", {"size": 11.5, "color": MUTED}))
+    _spacing(subtitle, after=2)
+    _add(doc, (CONTACT_LINE, {"size": 9.5}))
+
+    _section(doc, "summary", lambda: _add(doc, "{{ summary }}"))
+
+    def experience() -> None:
+        _tag(doc, "{%p for e in experience %}")
+        role = _add(
+            doc,
+            ("{{ e.role }}", {"bold": True}),
+            " — ",
+            "{{ e.company }}",
+            "{% if e.city %}, {{ e.city }}{% endif %}",
+        )
+        _spacing(role, before=4)
+        _add(doc, ("{{ e.start }} – {{ e.end }}", {"italic": True, "color": MUTED, "size": 9.5}))
+        _tag(doc, "{%p for b in e.bullets %}")
+        _add(doc, "{{ b }}", style="List Bullet")
+        _tag(doc, "{%p endfor %}")
+        _tag(doc, "{%p endfor %}")
+
+    _section(doc, "experience", experience)
+
+    def projects() -> None:
+        _tag(doc, "{%p for p in projects %}")
+        title = _add(
+            doc,
+            ("{{ p.name }}", {"bold": True}),
+            ("{% if p.date %} · {{ p.date }}{% endif %}", {"color": MUTED, "size": 9.5}),
+        )
+        _spacing(title, before=3)
+        _tag(doc, "{%p for b in p.bullets %}")
+        _add(doc, "{{ b }}", style="List Bullet")
+        _tag(doc, "{%p endfor %}")
+        _tag(doc, "{%p endfor %}")
+
+    _section(doc, "projects", projects)
+
+    def education() -> None:
+        _tag(doc, "{%p for ed in education %}")
+        _add(
+            doc,
+            ("{{ ed.title }}", {"bold": True}),
+            " — {{ ed.center }}",
+            ("{% if ed.end %} · {% if ed.start %}{{ ed.start }} – {% endif %}{{ ed.end }}"
+             "{% endif %}", {"color": MUTED, "size": 9.5}),
+        )  # fmt: skip
+        _tag(doc, "{%p if ed.detail %}")
+        _add(doc, "{{ ed.detail }}")
+        _tag(doc, "{%p endif %}")
+        _tag(doc, "{%p endfor %}")
+
+    _section(doc, "education", education)
+
+    def certifications() -> None:
+        _tag(doc, "{%p for c in certifications %}")
+        _add(
+            doc,
+            ("{{ c.name }}", {"bold": True}),
+            "{% if c.issuer %} — {{ c.issuer }}{% endif %}",
+            ("{% if c.date %} · {{ c.date }}{% endif %}", {"color": MUTED, "size": 9.5}),
+        )
+        _tag(doc, "{%p endfor %}")
+
+    _section(doc, "certifications", certifications)
+
+    def skills() -> None:
+        _tag(doc, "{%p for s in skills %}")
+        _add(doc, ("{{ s.group }}: ", {"bold": True}), "{{ s.items|join(', ') }}")
+        _tag(doc, "{%p endfor %}")
+
+    _section(doc, "skills", skills)
+
+    languages_line = "{% for l in languages %}{{ l.language }}: {{ l.level }}{% if not loop.last %}  ·  {% endif %}{% endfor %}"  # noqa: E501
+    _section(doc, "languages", lambda: _add(doc, languages_line))
+
+    dest.mkdir(parents=True, exist_ok=True)
+    _save_reproducible(doc, dest / "template.docx")
+    (dest / "template.yaml").write_text(
+        yaml.safe_dump(ATS_SIMPLE_META, allow_unicode=True, sort_keys=False), encoding="utf-8"
+    )
+
+
+BUILDERS: dict[str, Callable[[Path], None]] = {"ats-simple": build_ats_simple}
+
+
+def build_all(root: Path = TEMPLATES_DIR) -> list[Path]:
+    built = []
+    for template_id, builder in BUILDERS.items():
+        builder(root / template_id)
+        built.append(root / template_id)
+    return built
+
+
+def build_previews(root: Path = TEMPLATES_DIR) -> None:
+    from app.services.documents import preview
+
+    for template_id in BUILDERS:
+        preview.write_builtin_preview(root / template_id)
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--no-preview", action="store_true", help="No generar preview.pdf")
+    args = parser.parse_args(argv)
+    for path in build_all():
+        print(f"Plantilla: {path.relative_to(REPO_ROOT).as_posix()}")
+    if not args.no_preview:
+        build_previews()
+        print("Previews generadas con el perfil demo.")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

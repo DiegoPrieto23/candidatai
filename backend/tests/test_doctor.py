@@ -8,15 +8,18 @@ from app import cli
 from app.core.config import get_settings
 from app.services import doctor
 from app.services.doctor import CheckStatus, run_doctor
+from app.services.documents import pdf
+from tests.cv_support import fake_converter, write_template
 
 runner = CliRunner()
 
 
 @pytest.fixture
 def no_system_soffice(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    """Simula una máquina sin LibreOffice, independientemente de la real."""
-    monkeypatch.setattr(doctor.shutil, "which", lambda _name: None)
-    monkeypatch.setattr(doctor, "WINDOWS_SOFFICE_PATHS", (tmp_path / "missing.exe",))
+    """Simula una máquina sin LibreOffice ni Word, independientemente de la real."""
+    monkeypatch.setattr(pdf, "word_converter", lambda: None)
+    monkeypatch.setattr(pdf.shutil, "which", lambda _name: None)
+    monkeypatch.setattr(pdf, "WINDOWS_SOFFICE_PATHS", (tmp_path / "missing.exe",))
 
 
 def test_check_python() -> None:
@@ -58,18 +61,51 @@ def test_cv_templates(tmp_path: Path) -> None:
     builtin, own = tmp_path / "templates", tmp_path / "data" / "templates"
     check = doctor.check_cv_templates(builtin, own)
     assert check.status == CheckStatus.WARN
-    assert "fase 08" in check.detail
-    (builtin / "ats-simple").mkdir(parents=True)
-    (builtin / "ats-simple" / "template.yaml").touch()
+    assert "falta «ats-simple»" in check.detail
+    write_template(builtin, "ats-simple", origin="builtin")
     (builtin / "sin-yaml").mkdir()  # una carpeta sin template.yaml no cuenta
     check = doctor.check_cv_templates(builtin, own)
     assert (check.status, check.detail) == (CheckStatus.OK, "integradas: ats-simple")
-    (own / "mi-cv").mkdir(parents=True)
-    (own / "mi-cv" / "template.yaml").touch()
+    write_template(own, "mi-cv")
     assert doctor.check_cv_templates(builtin, own).detail == "integradas: ats-simple; tuyas: mi-cv"
-    (builtin / "ats-simple" / "template.yaml").unlink()
+    (own / "rota").mkdir()
+    (own / "rota" / "template.yaml").write_text("id: rota\n", encoding="utf-8")
     check = doctor.check_cv_templates(builtin, own)
-    assert (check.status, check.detail) == (CheckStatus.OK, "integradas: ninguna; tuyas: mi-cv")
+    assert check.status == CheckStatus.WARN
+    assert check.detail.endswith("no válidas: rota (jh templates list)")
+
+
+def test_pdf_conversion_ok(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(pdf, "converter_name", lambda: "Falso")
+    monkeypatch.setattr(pdf, "get_converter", lambda: fake_converter())
+    check = doctor.check_pdf_conversion()
+    assert check.status == CheckStatus.OK
+    assert check.detail.startswith("Falso: «ats-simple» → PDF de 1 pág.")
+
+
+def test_pdf_conversion_font_substituted(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(pdf, "converter_name", lambda: "Falso")
+    monkeypatch.setattr(pdf, "get_converter", lambda: fake_converter(font="Carlito"))
+    check = doctor.check_pdf_conversion()
+    assert check.status == CheckStatus.WARN and "Calibri" in check.detail
+
+
+def test_pdf_conversion_without_converter(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(pdf, "converter_name", lambda: None)
+    assert doctor.check_pdf_conversion().status == CheckStatus.WARN
+
+
+def test_pdf_conversion_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    def broken(_docx: Path, _pdf: Path, _timeout: int) -> None:
+        raise pdf.PdfConversionError("LibreOffice no terminó la conversión en 60 s.")
+
+    monkeypatch.setattr(pdf, "converter_name", lambda: "Falso")
+    monkeypatch.setattr(pdf, "get_converter", lambda: broken)
+    check = doctor.check_pdf_conversion()
+    assert (check.status, check.detail) == (
+        CheckStatus.ERROR,
+        "Falso: LibreOffice no terminó la conversión en 60 s.",
+    )
 
 
 @pytest.mark.usefixtures("no_system_soffice")
@@ -79,7 +115,8 @@ def test_run_doctor_only_warns_on_fresh_setup() -> None:
     assert report.ok
     assert statuses["Directorio de datos"] == CheckStatus.OK
     assert statuses["LibreOffice"] == CheckStatus.WARN
-    assert statuses["Plantillas de CV"] == CheckStatus.WARN
+    assert statuses["Plantillas de CV"] == CheckStatus.OK
+    assert statuses["Conversión a PDF"] == CheckStatus.WARN
 
 
 @pytest.mark.usefixtures("no_system_soffice")
@@ -102,6 +139,7 @@ def test_cli_doctor_json() -> None:
         "Directorio de datos",
         "LibreOffice",
         "Plantillas de CV",
+        "Conversión a PDF",
         "Embeddings",
     ]
 

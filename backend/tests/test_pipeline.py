@@ -41,16 +41,18 @@ def seq(*types: str | Ev) -> list[Ev]:
     ]
 
 
-VERIFIED = Ev("cv_verified", {"passed": True})
+RENDERED = Ev("cv_rendered", {"document_id": 1, "render_id": 1, "too_long": False})
+TOO_LONG = Ev("cv_rendered", {"document_id": 1, "render_id": 2, "too_long": True})
+VERIFIED = Ev("cv_verified", {"document_id": 1, "passed": True})
 
 # Una secuencia mínima para llegar a cada etapa. El cierre se hace desde `pending_triage`.
 PATHS: dict[Stage, list[str | Ev]] = {
     PE: ["found"],
     PT: ["found", "extracted"],
     AP: ["found", "extracted", "approved"],
-    CR: ["found", "extracted", "approved", VERIFIED],
-    AD: ["found", "extracted", "approved", VERIFIED, "applied"],
-    IP: ["found", "extracted", "approved", VERIFIED, "applied", "reply_received"],
+    CR: ["found", "extracted", "approved", RENDERED, VERIFIED],
+    AD: ["found", "extracted", "approved", RENDERED, VERIFIED, "applied"],
+    IP: ["found", "extracted", "approved", RENDERED, VERIFIED, "applied", "reply_received"],
     CL: ["found", "extracted", "discarded"],
 }
 
@@ -77,6 +79,7 @@ EXPECTED: dict[EventType, dict[Stage, Stage]] = {
     EventType.APPROVED: _to(AP, (PT,)),
     EventType.DISCARDED: _to(CL, (PE, PT, AP, CR)),
     EventType.CV_GENERATED: _same((AP, CR)),
+    EventType.CV_RENDERED: _same((AP, CR)),  # sin payload; con documento verificado, aparte
     EventType.CV_VERIFIED: _same((AP, CR)),  # sin `passed`; con `passed` se prueba aparte
     EventType.CV_REJECTED: _same((AP, CR)),
     EventType.APPLICATION_PREPARED: _same(OPEN),
@@ -135,12 +138,36 @@ def test_unknown_event_type_rejected() -> None:
 
 
 def test_cv_verified_only_advances_when_passed() -> None:
-    base = ["found", "extracted", "approved"]
-    assert stage_for(seq(*base, Ev("cv_verified", {"passed": False}))) == AP
-    assert stage_for(seq(*base, Ev("cv_verified", {}))) == AP
-    assert stage_for(seq(*base, Ev("cv_verified", {"passed": True}))) == CR
+    base = ["found", "extracted", "approved", RENDERED]
+    assert stage_for(seq(*base, Ev("cv_verified", {"document_id": 1, "passed": False}))) == AP
+    assert stage_for(seq(*base, Ev("cv_verified", {"document_id": 1}))) == AP
+    assert stage_for(seq(*base, VERIFIED)) == CR
     # Una verificación fallida posterior no retrocede: el CV ya verificado sigue listo.
-    assert stage_for(seq(*base, VERIFIED, Ev("cv_verified", {"passed": False}))) == CR
+    failed = Ev("cv_verified", {"document_id": 1, "passed": False})
+    assert stage_for(seq(*base, VERIFIED, failed)) == CR
+
+
+def test_cv_verified_needs_a_render_that_fits() -> None:
+    base = ["found", "extracted", "approved"]
+    assert stage_for(seq(*base, VERIFIED)) == AP
+    assert stage_for(seq(*base, TOO_LONG, VERIFIED)) == AP
+    # Sin `document_id` no se sabe de qué documento es: no avanza.
+    assert stage_for(seq(*base, RENDERED, Ev("cv_verified", {"passed": True}))) == AP
+
+
+def test_cv_verified_and_render_must_be_same_document() -> None:
+    other = Ev("cv_rendered", {"document_id": 2, "render_id": 3, "too_long": False})
+    assert stage_for(seq("found", "extracted", "approved", other, VERIFIED)) == AP
+
+
+def test_render_that_fits_after_verification_reaches_cv_ready() -> None:
+    base = ["found", "extracted", "approved", TOO_LONG, VERIFIED]
+    assert stage_for(seq(*base)) == AP
+    assert stage_for(seq(*base, RENDERED)) == CR
+    # Un render de otro documento, o sin `too_long` explícito, no basta.
+    other = Ev("cv_rendered", {"document_id": 2, "render_id": 3, "too_long": False})
+    assert stage_for(seq(*base, other)) == AP
+    assert stage_for(seq(*base, Ev("cv_rendered", {"document_id": 1}))) == AP
 
 
 def test_applied_without_cv_ready_explains_alternative() -> None:
@@ -154,7 +181,7 @@ def test_applied_without_cv_ready_explains_alternative() -> None:
         (["found", "duplicate_detected"], PE),
         (["found", "extracted", "hard_filter_failed"], PT),
         (["found", "extracted", "approved", "discarded"], AP),
-        (["found", "extracted", "approved", VERIFIED, "applied", "rejected"], AD),
+        (["found", "extracted", "approved", RENDERED, VERIFIED, "applied", "rejected"], AD),
         (["found", "extracted", "applied_manually", "offer_received", "withdrawn"], IP),
     ],
 )
@@ -171,13 +198,13 @@ def test_projection_tracks_application_fields() -> None:
     events = seq(
         "found",
         "extracted",
-        Ev("applied_manually", {"channel": "portal_manual", "document_id": 7}),
+        Ev("applied_manually", {"channel": "portal_manual", "render_id": 7}),
         "reply_received",
     )
     state = project(events)
     assert state.stage == IP
     assert state.channel == "portal_manual"
-    assert state.document_id == 7
+    assert state.render_id == 7
     assert state.applied_at == events[2].occurred_at
     assert state.last_event_at == events[3].occurred_at
 

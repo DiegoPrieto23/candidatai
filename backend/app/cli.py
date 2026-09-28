@@ -27,6 +27,8 @@ agents_app = typer.Typer(help="Configuración de los agentes de IA.", no_args_is
 profile_app = typer.Typer(help="Perfil del candidato.", no_args_is_help=True)
 match_app = typer.Typer(help="Encaje de las ofertas con el perfil.", no_args_is_help=True)
 eval_app = typer.Typer(help="Evaluación de la calidad del matching.", no_args_is_help=True)
+cv_app = typer.Typer(help="CVs a medida: contenido, renders y verificación.", no_args_is_help=True)
+templates_app = typer.Typer(help="Plantillas de CV.", no_args_is_help=True)
 app.add_typer(db_app, name="db")
 app.add_typer(events_app, name="events")
 app.add_typer(jobs_app, name="jobs")
@@ -34,6 +36,8 @@ app.add_typer(agents_app, name="agents")
 app.add_typer(profile_app, name="profile")
 app.add_typer(match_app, name="match")
 app.add_typer(eval_app, name="eval")
+app.add_typer(cv_app, name="cv")
+app.add_typer(templates_app, name="templates")
 
 JSON_OPTION = typer.Option(False, "--json", help="Salida en JSON.")
 SYNC_SCRIPT = REPO_ROOT / "scripts" / "sync_agents.py"
@@ -224,9 +228,72 @@ def _render_profile(result: Any) -> None:
     typer.echo(yaml.safe_dump(result.profile, allow_unicode=True, sort_keys=False, width=100))
 
 
+def _render_templates(result: Any) -> None:
+    for t in result.templates:
+        tags = ["ATS" if t.ats_friendly else "no ATS", "foto" if t.photo_supported else "sin foto"]
+        if t.accent_colors:
+            tags.append("color")
+        origin = "integrada" if t.origin == "builtin" else "tuya"
+        typer.echo(f"{t.id:<20} {t.name} ({t.engine}, {origin}; {', '.join(tags)})")
+    for bad in result.invalid:
+        typer.secho(f"{bad.id:<20} NO VÁLIDA: {bad.reason}", fg="yellow")
+    typer.echo(f"Por defecto, si ninguna regla elige otra: {result.fallback_template}")
+
+
+def _render_cv_render(render: Any) -> None:
+    pages = f"{render.pages}/{render.max_pages} pág."
+    mark = " · seleccionado para enviar" if render.selected else ""
+    typer.echo(f"Render {render.render_id} con «{render.template_id}» · {pages}{mark}")
+    typer.echo(f"  PDF:  data/{render.pdf_path}")
+    if render.docx_path:
+        typer.echo(f"  DOCX: data/{render.docx_path}")
+    cov = render.keyword_coverage
+    typer.echo(
+        f"  Keywords: {', '.join(cov.present) or '-'}; ausentes: {', '.join(cov.missing) or '-'}"
+    )
+    for warning in render.warnings:
+        typer.secho(f"  Aviso {warning.code}: {warning.message}", fg="yellow")
+
+
+def _render_cv_saved(result: Any) -> None:
+    typer.echo(f"CV {result.document_id} guardado para la oferta {result.job_id}.")
+    _render_cv_render(result.render)
+
+
+def _render_cv_view(view: Any) -> None:
+    content = view.content
+    typer.echo(f"CV {view.document_id} de la oferta {view.job_id} ({content.language})")
+    typer.echo(f"{content.subtitle}\n\n{content.summary}")
+    for exp in content.experience:
+        typer.echo(f"\n[{exp.experience_id}]")
+        for bullet in exp.bullets:
+            typer.echo(f"  - {bullet.text}  ({', '.join(bullet.evidence)})")
+    if view.verification is None:
+        typer.echo("\nSin verificar.")
+    else:
+        verdict = "PASA" if view.verification.passed else "NO PASA"
+        typer.echo(f"\nVerificación: {verdict} ({len(view.verification.issues)} problemas)")
+    for render in view.renders:
+        _render_cv_render(render)
+
+
+def _render_cv_verification(result: Any) -> None:
+    verdict = "verificado" if result.passed else "rechazado"
+    typer.echo(f"CV {result.document_id} {verdict}. Etapa de la oferta: {result.stage}.")
+    if result.note:
+        typer.secho(result.note, fg="yellow")
+
+
 register_tools(
     app,
-    {"jobs": jobs_app, "events": events_app, "profile": profile_app, "match": match_app},
+    {
+        "jobs": jobs_app,
+        "events": events_app,
+        "profile": profile_app,
+        "match": match_app,
+        "cv": cv_app,
+        "templates": templates_app,
+    },
     {
         "get_status": _render_status,
         "add_job_from_url": _render_added,
@@ -239,6 +306,11 @@ register_tools(
         "get_profile": _render_profile,
         "get_match": _render_match,
         "save_fit_assessment": _render_saved_assessment,
+        "list_cv_templates": _render_templates,
+        "save_cv_content": _render_cv_saved,
+        "render_cv": _render_cv_render,
+        "get_cv_content": _render_cv_view,
+        "save_cv_verification": _render_cv_verification,
     },
 )
 

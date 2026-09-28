@@ -15,7 +15,10 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 05b | Preferencias de CV en el perfil | ✅ | El perfil admite plantilla por defecto, foto y reglas de plantilla; `demo/profile.example.yaml` vuelve a validar |
 | 06 | Frontend base | ✅ | UI con bandeja de ofertas, ficha y alta por URL o texto; `jh serve` |
 | 07 | Matching y triaje | ✅ | Filtros duros, score, skill `evaluar-encaje`, aprobar o descartar en la UI |
-| 08 | CV a medida con plantillas | ⏳ | `generar-cv` produce CVs verificados; plantilla, foto y color se cambian en la UI sin agente; importar plantillas desde Word |
+| 08 | CV a medida con plantillas | 🚧 | `generar-cv` produce CVs verificados; plantilla, foto y color se cambian en la UI sin agente; importar plantillas desde Word |
+| 08.1 | ↳ Contenido, verificación y motor docx | ✅ | `generar-cv` produce un PDF verificado con `ats-simple` y la oferta pasa a `cv_ready` |
+| 08.2 | ↳ Foto, renders múltiples y UI | ⏳ | Plantilla, foto y color se cambian en la UI sin agente; `clasica-foto` |
+| 08.3 | ↳ Importar plantillas desde Word | ⏳ | `importar-plantilla-cv` convierte un `.docx` en plantilla |
 | 08b | Plantillas html | ⏳ | Importar diseños desde PDF o imagen (Canva…) y plantilla integrada de dos columnas |
 | 09 | Conectores de ATS y scheduler | ⏳ | Ingesta diaria de empresas objetivo sin intervención |
 | 10 | Seguimiento y analítica | ⏳ | Kanban, seguimientos pendientes, dashboard del embudo |
@@ -273,4 +276,42 @@ decisiones tomadas y deuda técnica pendiente. -->
   - `save_fit_assessment` sigue pidiendo permiso en Claude Code (no está en
     `.claude/settings.json`): en `evaluar-encaje` con muchas ofertas, un permiso por oferta.
   - La BD real del usuario necesita `jh db upgrade` (hasta 0004).
+
+### 08.1 · CV: contenido, verificación y motor docx — 2026-09-28 · Claude Code (Opus 5.5)
+- **Resumen:** migración `0005` (`document_renders`; `documents` sin rutas; `applications.render_id`),
+  evento `cv_rendered`, esquemas `CvContent`, `CvRenderOptions`, `CvVerification` y `TemplateMeta`
+  (`app/schemas/cv.py`) y `services/documents/`: registro de plantillas, resolución de opciones
+  (ATS por URL, país con `config/countries.yaml`, sector, idioma), contexto del contrato (fechas y
+  `labels` es/en, contacto desde el perfil), motor docx, PDF con LibreOffice o Word, comprobaciones
+  (contenido, páginas, cobertura, avisos), previews y servicio. Plantilla `ats-simple` generada por
+  `scripts/build_builtin_templates.py` (reproducible, con test que compara con la versionada). Cinco
+  herramientas MCP/CLI con paridad y `jh doctor` con una conversión real. 966 tests de backend.
+  Flujo probado por CLI con LibreOffice: rechazo con detalle → PDF de 1 página → `cv_ready`.
+- **Decisiones** (ADR-016):
+  - `cv_ready` cuando un mismo documento está verificado con `passed` y tiene un render sin
+    `too_long`, en cualquier orden; `cv_rendered` es reservado (solo el servicio de render).
+  - País por `countries.yaml` (sin nombres ambiguos); varios países: la regla encaja con alguno y la
+    foto `auto` exige que todos la permitan. Si la regla o `default_template` piden una plantilla
+    que no existe, aviso `template_not_found` y se sigue (el perfil demo pide `clasica-foto`, que
+    llega en la 08.2).
+  - Contacto e idioma regional los decide el código; «conocimientos de X» cuenta como X; las skills
+    de nivel B cuentan como básicas.
+  - `jh cv save --file F` recibe `{content, render_options}` (`CliSpec.file_keys`).
+  - Primer render sin `too_long` seleccionado; un render fallido borra sus ficheros.
+  - `alembic/env.py` desactiva las claves foráneas durante las migraciones en SQLite y comprueba
+    al final que no queda ninguna rota (la recreación de `documents` en modo batch lo necesitaba).
+  - Los grupos de skills del contexto son objetos: en Jinja, `s.items` de un dict es el método.
+  - `find_soffice` pasa de `doctor.py` a `documents/pdf.py`; errores nuevos `pdf_unavailable` y
+    `pdf_failed`.
+- **Deuda:**
+  - Cada conversión arranca LibreOffice: unos 15 s por render en Windows. Un LibreOffice en
+    segundo plano lo bajaría a 1-2 s si la UI de la 08.2 lo necesita.
+  - `preferences.cv.max_pages` del perfil no se usa: manda `max_pages` de la opción o de la
+    plantilla (como dicen `CV_TEMPLATES.md` y `POLICIES.md` §3). Decidir en la 08.2.
+  - Mientras el servidor MCP de Claude Code está abierto, `uv run`/`uv sync` fallan al reinstalar
+    `jh-mcp.exe` (fichero en uso): usar `uv run --no-sync` o cerrar la sesión. Afecta también a
+    `pnpm gen:api`.
+  - `validate` de plantillas solo comprueba variables de primer nivel (`labels.foo` inexistente no
+    se detecta hasta renderizar).
+  - La BD real necesita `jh db upgrade` (hasta 0005).
 

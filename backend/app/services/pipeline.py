@@ -39,6 +39,7 @@ class EventType(StrEnum):
     APPROVED = "approved"
     DISCARDED = "discarded"
     CV_GENERATED = "cv_generated"
+    CV_RENDERED = "cv_rendered"
     CV_VERIFIED = "cv_verified"
     CV_REJECTED = "cv_rejected"
     APPLICATION_PREPARED = "application_prepared"
@@ -84,8 +85,9 @@ class Transition:
 
 _IN_PROCESS = Transition(AFTER_APPLIED, Stage.IN_PROCESS)
 
-# `found` (primer evento), `reopened` (vuelve a la etapa previa al cierre) y `cv_verified`
-# (solo avanza si `passed`) tienen además un tratamiento especial en `apply_event`.
+# `found` (primer evento), `reopened` (vuelve a la etapa previa al cierre), `cv_verified` y
+# `cv_rendered` (llevan a `cv_ready` cuando un mismo documento está verificado con `passed` y
+# tiene un render sin `too_long`) tienen además un tratamiento especial en `apply_event`.
 TRANSITIONS: dict[EventType, Transition] = {
     EventType.FOUND: Transition(frozenset(), Stage.PENDING_EXTRACTION),
     EventType.DUPLICATE_DETECTED: Transition(
@@ -102,6 +104,7 @@ TRANSITIONS: dict[EventType, Transition] = {
     EventType.APPROVED: Transition(frozenset({Stage.PENDING_TRIAGE}), Stage.APPROVED),
     EventType.DISCARDED: Transition(BEFORE_APPLIED, Stage.CLOSED),
     EventType.CV_GENERATED: Transition(CV_STAGES, None),
+    EventType.CV_RENDERED: Transition(CV_STAGES, None),
     EventType.CV_VERIFIED: Transition(CV_STAGES, None),
     EventType.CV_REJECTED: Transition(CV_STAGES, None),
     EventType.APPLICATION_PREPARED: Transition(OPEN_STAGES, None),
@@ -151,8 +154,11 @@ class ProjectionState:
     # `closed`), y un cierre posterior lo sobrescribe con la etapa de ese momento.
     stage_before_close: Stage | None = None
     channel: str | None = None
-    document_id: int | None = None
+    render_id: int | None = None
     applied_at: datetime | None = None
+    # Documentos (CV) verificados con `passed` y documentos con algún render sin `too_long`.
+    verified_documents: frozenset[int] = frozenset()
+    fitting_documents: frozenset[int] = frozenset()
 
 
 def _invalid(event_type: EventType, stage: Stage | None, transition: Transition) -> str:
@@ -164,6 +170,21 @@ def _invalid(event_type: EventType, stage: Stage | None, transition: Transition)
         expected = f"solo es válido en: {allowed}"
     msg = f"El evento «{event_type}» no es válido en {current}; {expected}."
     return f"{msg} {transition.hint}" if transition.hint else msg
+
+
+def _track_cv(
+    state: ProjectionState, event_type: EventType, payload: dict[str, Any]
+) -> ProjectionState:
+    document_id = payload.get("document_id")
+    if not isinstance(document_id, int):
+        return state
+    # Una verificación que pasa no se retira: un `cv_rejected` o un `cv_verified` fallido
+    # posteriores del mismo documento son informativos y no sacan la oferta de `cv_ready`.
+    if event_type == EventType.CV_VERIFIED and payload.get("passed") is True:
+        return replace(state, verified_documents=state.verified_documents | {document_id})
+    if event_type == EventType.CV_RENDERED and payload.get("too_long") is False:
+        return replace(state, fitting_documents=state.fitting_documents | {document_id})
+    return state
 
 
 def apply_event(state: ProjectionState | None, event: EventLike) -> ProjectionState:
@@ -186,15 +207,18 @@ def apply_event(state: ProjectionState | None, event: EventLike) -> ProjectionSt
     target = transition.to
     if event_type == EventType.REOPENED:
         target = state.stage_before_close or Stage.PENDING_EXTRACTION
-    elif event_type == EventType.CV_VERIFIED and payload.get("passed") is True:
-        target = Stage.CV_READY
+    elif event_type in (EventType.CV_VERIFIED, EventType.CV_RENDERED):
+        new = _track_cv(new, event_type, payload)
+        document_id = payload.get("document_id")
+        if document_id in new.verified_documents and document_id in new.fitting_documents:
+            target = Stage.CV_READY
 
     if event_type in (EventType.APPLIED, EventType.APPLIED_MANUALLY):
         new = replace(
             new,
             applied_at=event.occurred_at,
             channel=payload.get("channel"),
-            document_id=payload.get("document_id"),
+            render_id=payload.get("render_id"),
         )
 
     if target is None:
@@ -235,7 +259,7 @@ def save_projection(session: Session, job_id: int, state: ProjectionState) -> Ap
         session.add(app)
     app.stage = state.stage.value
     app.channel = state.channel
-    app.document_id = state.document_id
+    app.render_id = state.render_id
     app.applied_at = state.applied_at
     app.last_event_at = state.last_event_at
     return app

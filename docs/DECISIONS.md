@@ -141,3 +141,23 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
 - **Consecuencias:** el triaje funciona sin worker, a costa de que una consulta (`get_match`,
   `GET /triage`) pueda escribir un match y un evento `scored`. La primera consulta con embeddings
   carga el modelo (y lo descarga la primera vez).
+
+## ADR-016 · CV: cuándo está listo, país de la oferta y contacto
+- **Contexto:** la fase 08 separa contenido y renders (ADR-014), así que «CV verificado» y «PDF que
+  cabe» pueden llegar en cualquier orden, con varios documentos por oferta. Las reglas de plantilla
+  y la política de foto necesitan el país, y la extracción solo trae ubicaciones en texto libre.
+- **Decisión:**
+  - la oferta pasa a `cv_ready` cuando un **mismo** documento tiene `cv_verified` con `passed` y un
+    `cv_rendered` sin `too_long`, en el orden que sea. Los eventos llevan `document_id` y la
+    proyección lo sigue. `cv_rendered` es un evento reservado: solo lo registra el servicio de
+    render, porque uno suelto podría llevar a `cv_ready` sin ficheros;
+  - el país se deduce con `config/countries.yaml` (lista corta y editable, sin nombres ambiguos).
+    Si no se sabe, ninguna regla de país encaja y la foto sigue `photo_policy.default`;
+  - el contacto lo añade el código desde el perfil: `get_profile` no lo devuelve (POLICIES §4);
+  - el primer render sin `too_long` de un documento queda seleccionado para enviar; cambiarlo es
+    decisión del usuario en la UI;
+  - un render que falla borra sus ficheros y no deja nada en la BD.
+- **Consecuencias:** el agente no puede marcar un CV como listo sin un PDF que quepa. Un país que no
+  esté en la lista no aplica sus reglas: hay que ampliar `countries.yaml`. Cada conversión arranca
+  LibreOffice (unos 10-20 s en Windows).
+

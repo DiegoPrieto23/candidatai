@@ -63,3 +63,63 @@ def test_url_with_percent_is_escaped(isolated_env: Path) -> None:
     folder.mkdir(parents=True)
     url = f"sqlite:///{(folder / 'x.db').as_posix()}"
     assert migrations.alembic_config(url).get_main_option("sqlalchemy.url") == url
+
+
+def test_0005_moves_document_files_to_a_render_and_back(db_url: str) -> None:
+    migrations.upgrade(db_url, "0004")
+    engine = create_engine(db_url)
+    now = "2026-09-01 09:00:00"
+    try:
+        with engine.begin() as conn:
+            conn.exec_driver_sql(
+                "INSERT INTO sources (id, kind, name, config, active) "
+                "VALUES (1, 'manual_text', 'x', '{}', 1)"
+            )
+            conn.exec_driver_sql(
+                "INSERT INTO companies (id, name, normalized_name, watchlist) "
+                "VALUES (1, 'Acme', 'acme', 0)"
+            )
+            conn.exec_driver_sql(
+                "INSERT INTO jobs (id, source_id, company_id, url, title, raw_text, risk_flags, "
+                f"fingerprint, first_seen_at) VALUES (1, 1, 1, '', 'T', 'x', '[]', 'f', '{now}')"
+            )
+            conn.exec_driver_sql(
+                "INSERT INTO profile_versions (id, data, content_hash, created_at) "
+                f"VALUES (1, '{{}}', 'h', '{now}')"
+            )
+            conn.exec_driver_sql(
+                "INSERT INTO documents (id, job_id, profile_version_id, kind, language, content, "
+                "docx_path, pdf_path, pages, created_at) VALUES "
+                f"(1, 1, 1, 'cv', 'es', '{{}}', 'cvs/1.docx', 'cvs/1.pdf', 1, '{now}'), "
+                f"(2, 1, 1, 'cv', 'es', '{{}}', NULL, NULL, NULL, '{now}')"
+            )
+            conn.exec_driver_sql(
+                "INSERT INTO applications (job_id, stage, document_id, last_event_at) "
+                f"VALUES (1, 'applied', 1, '{now}')"
+            )
+        engine.dispose()
+
+        migrations.upgrade(db_url, "0005")
+        with engine.connect() as conn:
+            renders = conn.exec_driver_sql(
+                "SELECT id, document_id, template_id, docx_path, pdf_path, pages, selected "
+                "FROM document_renders"
+            ).all()
+            assert [tuple(r) for r in renders] == [
+                (1, 1, "legacy", "cvs/1.docx", "cvs/1.pdf", 1, 1)
+            ]
+            assert conn.exec_driver_sql("SELECT render_id FROM applications").scalar() == 1
+        engine.dispose()
+
+        migrations.downgrade(db_url, "0004")
+        with engine.connect() as conn:
+            docs = conn.exec_driver_sql(
+                "SELECT id, docx_path, pdf_path, pages FROM documents ORDER BY id"
+            ).all()
+            assert [tuple(d) for d in docs] == [
+                (1, "cvs/1.docx", "cvs/1.pdf", 1),
+                (2, None, None, None),
+            ]
+            assert conn.exec_driver_sql("SELECT document_id FROM applications").scalar() == 1
+    finally:
+        engine.dispose()

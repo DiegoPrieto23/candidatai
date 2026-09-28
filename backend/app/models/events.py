@@ -31,6 +31,6 @@ class Application(Base):
     job_id: Mapped[int] = mapped_column(ForeignKey("jobs.id"), primary_key=True)
     stage: Mapped[str] = mapped_column(String(32), index=True)
     channel: Mapped[str | None] = mapped_column(String(32))
-    document_id: Mapped[int | None] = mapped_column(ForeignKey("documents.id"))
+    render_id: Mapped[int | None] = mapped_column(ForeignKey("document_renders.id"))
     applied_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
     last_event_at: Mapped[datetime] = mapped_column(UTCDateTime)

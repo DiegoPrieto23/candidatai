@@ -4,14 +4,23 @@ Tabla de referencia en `docs/AGENT_INTERFACE.md`. Los handlers solo adaptan la e
 servicio: la lógica vive en `app/services/`.
 """
 
-from typing import Any
+from typing import Any, Self
 
-from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, field_validator
+from pydantic import (
+    AwareDatetime,
+    BaseModel,
+    ConfigDict,
+    Field,
+    field_validator,
+    model_validator,
+)
 from sqlalchemy.orm import Session
 
 from app.agent_interface.registry import CallContext, CliSpec, ToolSpec
+from app.schemas.cv import CvContent, CvRenderOptions, CvVerification
 from app.schemas.llm_io import FitAssessment, JobExtraction
 from app.services import events, extractions, ingest, jobs, profile, status
+from app.services.documents import service as cv
 from app.services.matching import service as matching
 from app.services.pipeline import EventType, Stage
 
@@ -84,6 +93,39 @@ class GetProfileInput(_Input):
         if isinstance(value, str):
             return [part.strip() for part in value.split(",") if part.strip()]
         return value
+
+
+class SaveCvContentInput(_Input):
+    job_id: int = Field(ge=1, description="Id de la oferta (aprobada).")
+    content: CvContent
+    render_options: CvRenderOptions | None = Field(
+        default=None,
+        description="Opciones del primer render; lo que falte lo decide la app con sus reglas.",
+    )
+
+
+class RenderCvInput(_Input):
+    document_id: int = Field(ge=1, description="Id del CV (`document_id`).")
+    options: CvRenderOptions = Field(
+        default_factory=CvRenderOptions,
+        description="Plantilla, foto, color, páginas, secciones ocultas y tamaño de página.",
+    )
+
+
+class GetCvContentInput(_Input):
+    job_id: int | None = Field(default=None, ge=1, description="Último CV de esta oferta.")
+    document_id: int | None = Field(default=None, ge=1, description="Un CV concreto.")
+
+    @model_validator(mode="after")
+    def _one_of(self) -> Self:
+        if (self.job_id is None) == (self.document_id is None):
+            raise ValueError("Indica `job_id` o `document_id`, uno de los dos.")
+        return self
+
+
+class SaveCvVerificationInput(_Input):
+    document_id: int = Field(ge=1, description="Id del CV verificado.")
+    verification: CvVerification
 
 
 class JobList(BaseModel):
@@ -167,6 +209,34 @@ def _get_profile(
     session: Session, args: GetProfileInput, _ctx: CallContext
 ) -> profile.PublicProfile:
     return profile.get_public_profile(session, args.sections)
+
+
+def _list_cv_templates(_session: Session, _args: NoInput, _ctx: CallContext) -> cv.TemplateList:
+    return cv.list_cv_templates()
+
+
+def _save_cv_content(
+    session: Session, args: SaveCvContentInput, ctx: CallContext
+) -> cv.SaveContentResult:
+    return cv.save_content(
+        session, args.job_id, args.content, args.render_options, agent_name=ctx.client_name
+    )
+
+
+def _render_cv(session: Session, args: RenderCvInput, ctx: CallContext) -> cv.RenderResult:
+    return cv.render(session, args.document_id, args.options, agent_name=ctx.client_name)
+
+
+def _get_cv_content(session: Session, args: GetCvContentInput, _ctx: CallContext) -> cv.CvView:
+    return cv.get_content(session, job_id=args.job_id, document_id=args.document_id)
+
+
+def _save_cv_verification(
+    session: Session, args: SaveCvVerificationInput, ctx: CallContext
+) -> cv.SaveVerificationResult:
+    return cv.save_verification(
+        session, args.document_id, args.verification, agent_name=ctx.client_name
+    )
 
 
 TOOLS: tuple[ToolSpec, ...] = (
@@ -304,6 +374,79 @@ TOOLS: tuple[ToolSpec, ...] = (
             path=("match", "save-assessment"),
             arguments=("job_id",),
             file_field="assessment",
+            file_format="json",
+        ),
+    ),
+    ToolSpec(
+        name="list_cv_templates",
+        description=(
+            "Plantillas de CV disponibles: motor, apta para ATS, foto, `capacity` (cuánto cabe) y "
+            "secciones. El contenido del CV no depende de la plantilla; úsala para ajustar la "
+            "extensión y para elegir un `template_id` que exista."
+        ),
+        input_model=NoInput,
+        output_model=cv.TemplateList,
+        handler=_list_cv_templates,
+        cli=CliSpec(path=("templates", "list")),
+    ),
+    ToolSpec(
+        name="save_cv_content",
+        description=(
+            "Valida y guarda el CvContent de una oferta aprobada y hace el primer render (DOCX y "
+            "PDF). Rechaza evidencias inexistentes, skills fuera del perfil y skills básicas que "
+            "la oferta no pide: corrige lo que diga y reintenta. Devuelve páginas, cobertura de "
+            "keywords y avisos (con `too_long`, recorta contenido)."
+        ),
+        input_model=SaveCvContentInput,
+        output_model=cv.SaveContentResult,
+        handler=_save_cv_content,
+        cli=CliSpec(
+            path=("cv", "save"), arguments=("job_id",), file_keys=("content", "render_options")
+        ),
+    ),
+    ToolSpec(
+        name="render_cv",
+        description=(
+            "Renderiza un CV ya guardado con otra plantilla u opciones (foto, color, páginas, "
+            "secciones ocultas). No cambia el contenido ni hace falta redactar de nuevo."
+        ),
+        input_model=RenderCvInput,
+        output_model=cv.RenderResult,
+        handler=_render_cv,
+        cli=CliSpec(
+            path=("cv", "render"),
+            arguments=("document_id",),
+            file_field="options",
+            file_format="json",
+        ),
+    ),
+    ToolSpec(
+        name="get_cv_content",
+        description=(
+            "Un CV (el último de la oferta o uno concreto) con el texto de las evidencias que cita "
+            "(de la versión del perfil con que se redactó), su verificación y sus renders."
+        ),
+        input_model=GetCvContentInput,
+        output_model=cv.CvView,
+        handler=_get_cv_content,
+        cli=CliSpec(
+            path=("cv", "show"), arguments=("job_id",), option_names={"document_id": "--document"}
+        ),
+    ),
+    ToolSpec(
+        name="save_cv_verification",
+        description=(
+            "Guarda la verificación independiente de un CV (`passed` y problemas). Registra "
+            "`cv_verified` o `cv_rejected`; con `passed` y un render que cabe, la oferta pasa a "
+            "`cv_ready`."
+        ),
+        input_model=SaveCvVerificationInput,
+        output_model=cv.SaveVerificationResult,
+        handler=_save_cv_verification,
+        cli=CliSpec(
+            path=("cv", "save-verification"),
+            arguments=("document_id",),
+            file_field="verification",
             file_format="json",
         ),
     ),

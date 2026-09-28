@@ -54,6 +54,7 @@ uv run jh --help                   # CLI
 uv run jh serve                    # API en http://127.0.0.1:8000
 uv run jh worker                   # tareas en segundo plano (--once: vacía la cola)
 uv run jh eval matching            # precision/recall del matching (evals/matching/)
+uv run python ../scripts/build_builtin_templates.py   # regenerar las plantillas de templates/
 cd frontend && pnpm dev            # UI en http://127.0.0.1:5173
 uv run scripts/sync_agents.py      # regenerar configuración de agentes (desde la raíz)
 uv run scripts/sync_agents.py --check   # CI: falla si lo generado no está al día

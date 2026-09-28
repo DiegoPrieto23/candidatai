@@ -2,7 +2,18 @@
 
 ## Contexto
 Lee `docs/CV_TEMPLATES.md` (§Motor html), `docs/DECISIONS.md` ADR-014 y
-`.agents/skills/importar-plantilla-cv/SKILL.md`. Requiere la fase 08.
+`.agents/skills/importar-plantilla-cv/SKILL.md`. Requiere la fase 08 completa (08.1, 08.2 y 08.3):
+lee su registro en `docs/ROADMAP.md`.
+
+### Qué deja hecho la fase 08 y aquí se reutiliza
+- `TemplateMeta` ya admite `engine: html`; renderizar una plantilla html da el error «motor html:
+  fase 08b», que esta fase sustituye por el motor real.
+- La detección de fuentes sustituidas (`pdf.py`), las comprobaciones y avisos (`checks.py`), la
+  resolución de opciones y el contexto del contrato de variables son comunes a los dos motores.
+- `preview.py` (PDF + PNG con `pypdfium2`) y `jh templates preview`, `validate` e `inspect`
+  (solo `.docx`): aquí se amplían, no se reescriben.
+- La galería de Plantillas y la subida de ficheros a `data/uploads/` (que ya acepta PDF e imagen
+  y avisa de que requieren esta fase).
 
 ## Objetivo
 Poder usar como plantilla un CV que solo existe en PDF o imagen (Canva, diseños descargados,
@@ -27,7 +38,11 @@ exportaciones de otras herramientas), recreando su diseño con fidelidad.
    - `compare <id> --source <fichero>`: pone lado a lado el original y la preview de la plantilla
      con el perfil demo, en un PNG, y calcula una métrica simple de parecido (SSIM) como orientación.
 6. **UI**: en la galería, para plantillas importadas, vista "Original | Recreación" y aviso
-   "solo PDF" en plantillas html.
+   "solo PDF" en plantillas html (aviso `pdf_only` en los renders). La subida deja de avisar de que
+   PDF e imagen requieren esta fase.
+7. **`jh doctor`**: comprueba que Playwright tiene Chromium instalado y que renderiza
+   `moderna-2col` sin red (si falta, indica `uv run playwright install chromium`). Playwright
+   entra aquí como dependencia; la fase 11 la reutiliza.
 
 ## Fuera de alcance
 Conversión de html a DOCX (la calidad sería mala: si hace falta Word, se usa una plantilla docx).

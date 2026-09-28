@@ -6,11 +6,15 @@ from typing import Any
 
 from pydantic import BaseModel, ValidationError
 
-from app.agent_interface.errors import ToolError, from_validation_error
+from app.agent_interface.errors import ErrorDetail, ToolError, from_validation_error
 from app.agent_interface.registry import CallContext, ToolSpec
 from app.core import migrations
 from app.core.db import session_scope
 from app.services.audit import record_call, summarize_args
+from app.services.documents.checks import CvContentError
+from app.services.documents.pdf import PdfConversionError, PdfConverterUnavailableError
+from app.services.documents.service import DocumentNotFoundError
+from app.services.documents.templates import TemplateNotFoundError
 from app.services.events import JobNotFoundError
 from app.services.extractions import ExtractionNotFoundError
 from app.services.pipeline import InvalidTransitionError
@@ -22,6 +26,10 @@ _ERROR_TYPES: tuple[tuple[type[Exception], str], ...] = (
     (JobNotFoundError, "not_found"),
     (ExtractionNotFoundError, "not_found"),
     (ProfileNotFoundError, "not_found"),
+    (DocumentNotFoundError, "not_found"),
+    (TemplateNotFoundError, "not_found"),
+    (PdfConverterUnavailableError, "pdf_unavailable"),
+    (PdfConversionError, "pdf_failed"),
     (migrations.DatabaseNotReadyError, "database_not_ready"),
     (InvalidTransitionError, "invalid_transition"),
     # IngestError, InvalidQueryError, UnknownEventTypeError, ReservedEventError…
@@ -34,6 +42,9 @@ def to_tool_error(exc: Exception) -> ToolError:
         return exc
     if isinstance(exc, ValidationError):
         return from_validation_error(exc)
+    if isinstance(exc, CvContentError):
+        details = [ErrorDetail(**issue.model_dump()) for issue in exc.issues]
+        return ToolError("validation_error", str(exc), details)
     for exc_type, error_type in _ERROR_TYPES:
         if isinstance(exc, exc_type):
             return ToolError(error_type, str(exc))

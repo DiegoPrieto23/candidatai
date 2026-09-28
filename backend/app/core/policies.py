@@ -1,4 +1,5 @@
-"""Reglas genéricas de `config/`: `policies.yaml`, `injection_patterns.yaml` y `skill_aliases.yaml`.
+"""Reglas genéricas de `config/`: `policies.yaml`, `injection_patterns.yaml`, `skill_aliases.yaml`
+y `countries.yaml`.
 
 Solo se modelan las secciones que usa el código; el resto del YAML se ignora hasta que haga falta.
 """
@@ -74,12 +75,20 @@ class ScoringPolicy(BaseModel):
     preferences: PreferencesPolicy
 
 
+class CvPolicy(BaseModel):
+    fallback_template: str
+    # ATS -> dominios de sus URLs (se compara el dominio de la oferta y sus subdominios).
+    ats_platforms: dict[str, list[str]]
+    pdf_timeout_seconds: int = Field(gt=0)
+
+
 class Policies(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
     dedup: DedupPolicy
     hard_filters: HardFilterPolicy
     scoring: ScoringPolicy
+    cv: CvPolicy
 
 
 class InjectionPatterns(BaseModel):
@@ -109,3 +118,12 @@ def get_skill_aliases() -> dict[str, list[str]]:
     if not isinstance(data, dict):
         raise ValueError("config/skill_aliases.yaml debe ser un diccionario nombre -> sinónimos.")
     return {str(name): [str(alias) for alias in (aliases or [])] for name, aliases in data.items()}
+
+
+@lru_cache
+def get_countries() -> dict[str, list[str]]:
+    """Código ISO 3166-1 -> nombres de país, regiones y ciudades que lo identifican."""
+    data = _read_yaml(CONFIG_DIR / "countries.yaml") or {}
+    if not isinstance(data, dict):
+        raise ValueError("config/countries.yaml debe ser un diccionario código -> nombres.")
+    return {str(code): [str(name) for name in (names or [])] for code, names in data.items()}

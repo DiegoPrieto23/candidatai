@@ -32,6 +32,9 @@ class CliSpec:
     option_names: Mapping[str, str] = field(default_factory=dict)  # campo -> "--opcion"
     file_field: str | None = None  # campo que se lee de `--file` (solo rutas en data/tmp/)
     file_format: Literal["text", "json"] = "text"
+    # Alternativa a `file_field`: el `--file` es un objeto JSON con estos campos (los que falten
+    # toman su valor por defecto), p. ej. `{"content": …, "render_options": …}`.
+    file_keys: tuple[str, ...] = ()
 
 
 Handler = Callable[[Session, Any, CallContext], BaseModel]

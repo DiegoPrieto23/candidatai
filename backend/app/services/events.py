@@ -134,6 +134,7 @@ RESERVED_EVENTS = frozenset(
         EventType.SCORED,
         EventType.FIT_ASSESSED,
         EventType.CV_GENERATED,
+        EventType.CV_RENDERED,
         EventType.CV_VERIFIED,
         EventType.CV_REJECTED,
         EventType.APPLICATION_PREPARED,
@@ -179,7 +180,8 @@ def add_event(
 
 
 # Eventos que registra el usuario desde la UI (actor `user` en el catálogo de DATA_MODEL.md).
-# `cv_rendered` también admite `user`, pero lo registra el servicio de render (fase 08).
+# `cv_rendered` también admite `user`, pero solo lo registra el servicio de render al crear un
+# render de verdad: un `cv_rendered` suelto podría llevar a `cv_ready` sin ficheros.
 USER_EVENTS = frozenset(
     {
         EventType.APPROVED,

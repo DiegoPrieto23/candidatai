@@ -75,6 +75,23 @@ def read_input_file(resolved: Path, file_format: str) -> Any:
         ) from exc
 
 
+def read_json_fields(resolved: Path, keys: tuple[str, ...]) -> dict[str, Any]:
+    """Lee un `--file` que es un objeto JSON con algunos campos de la entrada (`file_keys`)."""
+    data = read_input_file(resolved, "json")
+    if not isinstance(data, dict):
+        raise ToolError(
+            "invalid_file", f"{resolved} debe ser un objeto JSON con: {', '.join(keys)}."
+        )
+    unknown = sorted(set(data) - set(keys))
+    if unknown:
+        raise ToolError(
+            "invalid_file",
+            f"{resolved} tiene claves que no se esperan ({', '.join(unknown)}); "
+            f"solo: {', '.join(keys)}.",
+        )
+    return data
+
+
 def _option_name(spec: ToolSpec, field: str) -> str:
     return spec.cli.option_names.get(field, "--" + field.replace("_", "-"))
 
@@ -92,12 +109,15 @@ def _parameters(spec: ToolSpec) -> list[inspect.Parameter]:
             )
         )
     for name, info in fields.items():
-        if name in spec.cli.arguments or name == spec.cli.file_field:
+        if name in spec.cli.arguments or name == spec.cli.file_field or name in spec.cli.file_keys:
             continue
         option = typer.Option(None, _option_name(spec, name), help=info.description)
         params.append(inspect.Parameter(name, kind, default=option, annotation=str | None))
-    if spec.cli.file_field:
-        what = "texto de la oferta" if spec.cli.file_format == "text" else "JSON"
+    if spec.cli.file_field or spec.cli.file_keys:
+        if spec.cli.file_keys:
+            what = "JSON con " + ", ".join(f"`{k}`" for k in spec.cli.file_keys)
+        else:
+            what = "texto de la oferta" if spec.cli.file_format == "text" else "JSON"
         option = typer.Option(None, "--file", help=f"Fichero con el {what}, dentro de data/tmp/.")
         params.append(inspect.Parameter("file", kind, default=option, annotation=Path | None))
     params.append(
@@ -120,6 +140,9 @@ def make_command(spec: ToolSpec, render: Callable[[Any], None] | None) -> Callab
             if spec.cli.file_field and file is not None:
                 file = resolve_input_file(file)
                 raw_args[spec.cli.file_field] = read_input_file(file, spec.cli.file_format)
+            elif spec.cli.file_keys and file is not None:
+                file = resolve_input_file(file)
+                raw_args.update(read_json_fields(file, spec.cli.file_keys))
             settings = get_settings()
             ctx = CallContext(channel="cli", client_name=settings.client_name, audit=as_json)
             result = call_tool(spec, raw_args, ctx)

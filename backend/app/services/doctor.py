@@ -3,20 +3,17 @@
 import shutil
 import sys
 import tempfile
+import time
 from enum import StrEnum
 from pathlib import Path
 
 from pydantic import BaseModel
 
 from app.core.config import REPO_ROOT, Settings
+from app.services.documents import pdf
 
 MIN_PYTHON = (3, 12)
 BUILTIN_TEMPLATES_DIR = REPO_ROOT / "templates"
-
-WINDOWS_SOFFICE_PATHS = (
-    Path(r"C:\Program Files\LibreOffice\program\soffice.exe"),
-    Path(r"C:\Program Files (x86)\LibreOffice\program\soffice.exe"),
-)
 
 
 class CheckStatus(StrEnum):
@@ -65,18 +62,9 @@ def check_data_dir(data_dir: Path) -> CheckResult:
     return CheckResult(name=name, status=CheckStatus.OK, detail=f"{data_dir} (escribible)")
 
 
-def find_soffice(configured: Path | None) -> Path | None:
-    if configured is not None:
-        return configured if configured.is_file() else None
-    found = shutil.which("soffice")
-    if found:
-        return Path(found)
-    return next((p for p in WINDOWS_SOFFICE_PATHS if p.is_file()), None)
-
-
 def check_soffice(configured: Path | None) -> CheckResult:
     name = "LibreOffice"
-    path = find_soffice(configured)
+    path = pdf.find_soffice(configured)
     if path is not None:
         return CheckResult(name=name, status=CheckStatus.OK, detail=str(path))
     if configured is not None:
@@ -86,26 +74,68 @@ def check_soffice(configured: Path | None) -> CheckResult:
     return CheckResult(name=name, status=CheckStatus.WARN, detail=detail)
 
 
-def _template_ids(root: Path) -> list[str]:
-    """Carpetas de `root` con un `template.yaml` (una plantilla cada una)."""
-    if not root.is_dir():
-        return []
-    return sorted(d.name for d in root.iterdir() if (d / "template.yaml").is_file())
-
-
 def check_cv_templates(builtin_dir: Path, user_dir: Path) -> CheckResult:
     """Plantillas de CV integradas (`templates/`) y del usuario (`data/templates/`). ADR-014."""
+    from app.core.policies import get_policies
+    from app.services.documents import templates
+
     name = "Plantillas de CV"
-    builtin, own = _template_ids(builtin_dir), _template_ids(user_dir)
-    if not builtin and not own:
-        detail = (
-            "aún no hay ninguna (las integradas llegan con la fase 08; necesarias para los CVs)"
-        )
-        return CheckResult(name=name, status=CheckStatus.WARN, detail=detail)
+    found, invalid = templates.list_templates(builtin_dir, user_dir)
+    builtin = [t.id for t in found if t.path.parent == builtin_dir]
+    own = [t.id for t in found if t.path.parent != builtin_dir]
+    fallback = get_policies().cv.fallback_template
     parts = [f"integradas: {', '.join(builtin) or 'ninguna'}"]
     if own:
         parts.append(f"tuyas: {', '.join(own)}")
-    return CheckResult(name=name, status=CheckStatus.OK, detail="; ".join(parts))
+    problems = []
+    if invalid:
+        problems.append(f"no válidas: {', '.join(i.id for i in invalid)} (jh templates list)")
+    if fallback not in [t.id for t in found]:
+        problems.append(
+            f"falta «{fallback}», la de reserva: regenérala con scripts/build_builtin_templates.py"
+        )
+    status = CheckStatus.WARN if problems else CheckStatus.OK
+    return CheckResult(name=name, status=status, detail="; ".join(parts + problems))
+
+
+def check_pdf_conversion() -> CheckResult:
+    """Renderiza `ats-simple` con el perfil demo y lo convierte a PDF de verdad (tarda unos s)."""
+    from app.core.policies import get_policies
+    from app.services.documents import templates
+    from app.services.documents.preview import render_preview
+    from app.services.profile import EXAMPLE_PATH, load_from_yaml
+
+    name = "Conversión a PDF"
+    converter = pdf.converter_name()
+    if converter is None:
+        return CheckResult(
+            name=name,
+            status=CheckStatus.WARN,
+            detail="sin LibreOffice ni Word: no se pueden generar los PDF de los CVs",
+        )
+    fallback = get_policies().cv.fallback_template
+    try:
+        template = templates.get(fallback)
+    except templates.TemplateNotFoundError as exc:
+        return CheckResult(name=name, status=CheckStatus.WARN, detail=str(exc))
+    workdir = Path(tempfile.mkdtemp(prefix="jh-doctor-"))
+    start = time.monotonic()
+    try:
+        output = render_preview(template, load_from_yaml(EXAMPLE_PATH), workdir / "doctor.pdf")
+        info = pdf.read_pdf(output)
+    except Exception as exc:  # cualquier fallo del conversor se enseña tal cual
+        return CheckResult(
+            name=name, status=CheckStatus.ERROR, detail=f"{converter}: {exc}".strip()
+        )
+    finally:
+        shutil.rmtree(workdir, ignore_errors=True)
+    seconds = time.monotonic() - start
+    detail = f"{converter}: «{fallback}» → PDF de {info.pages} pág. en {seconds:.0f} s"
+    missing = pdf.missing_fonts(template.meta.fonts, info.fonts)
+    if missing:
+        detail += f"; falta la fuente {', '.join(missing)} y el PDF usa otra"
+        return CheckResult(name=name, status=CheckStatus.WARN, detail=detail)
+    return CheckResult(name=name, status=CheckStatus.OK, detail=detail)
 
 
 def check_embeddings(settings: Settings) -> CheckResult:
@@ -130,6 +160,7 @@ def run_doctor(settings: Settings) -> DoctorReport:
             check_data_dir(settings.data_dir),
             check_soffice(settings.soffice_path),
             check_cv_templates(BUILTIN_TEMPLATES_DIR, settings.user_templates_dir),
+            check_pdf_conversion(),
             check_embeddings(settings),
         ]
     )

@@ -1,0 +1,37 @@
+id: ats-simple
+name: ATS sencilla
+engine: docx
+origin: builtin
+description: Una columna, sin foto ni tablas, con los datos de contacto en el cuerpo
+  y tipografía estándar. La opción segura para portales con ATS.
+tags:
+- ats
+- sobria
+layout:
+  columns: 1
+  uses_tables: false
+ats_friendly: true
+photo:
+  supported: false
+  shape: circle
+  size_mm: 30
+page:
+  size: A4
+  max_pages: 1
+capacity:
+  summary_chars: 450
+  experience_bullets: 9
+  skill_groups: 4
+sections:
+- summary
+- experience
+- projects
+- education
+- certifications
+- skills
+- languages
+fonts:
+- Calibri
+languages:
+- es
+- en

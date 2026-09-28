@@ -27,7 +27,7 @@ MakeJob = Callable[..., Job]
 def _snapshot(session: Session) -> list[tuple[object, ...]]:
     rows = session.scalars(select(Application).order_by(Application.job_id))
     return [
-        (a.job_id, a.stage, a.channel, a.document_id, a.applied_at, a.last_event_at) for a in rows
+        (a.job_id, a.stage, a.channel, a.render_id, a.applied_at, a.last_event_at) for a in rows
     ]
 
 
@@ -99,9 +99,10 @@ SCRIPTS: list[list[tuple[str, dict[str, object] | None]]] = [
         ("extracted", None),
         ("fit_assessed", None),
         ("approved", None),
-        ("cv_generated", None),
-        ("cv_rejected", None),
-        ("cv_verified", {"passed": True}),
+        ("cv_generated", {"document_id": 1}),
+        ("cv_rendered", {"document_id": 1, "render_id": 1, "too_long": False}),
+        ("cv_rejected", {"document_id": 1}),
+        ("cv_verified", {"document_id": 1, "passed": True}),
         ("application_prepared", None),
         ("applied", {"channel": "ats_form"}),
         ("followup_sent", None),

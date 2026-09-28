@@ -102,12 +102,12 @@ cambia `documents` ni necesita al agente.
 | document_id | FK documents | |
 | template_id | str | Id de la plantilla (integrada o del usuario) |
 | template_hash | str | Hash de los ficheros de la plantilla al renderizar, para saber si cambió después |
-| options | JSON | `CvRenderOptions` ya resueltas (plantilla, foto sí/no, color…) |
-| docx_path / pdf_path | str? | Relativos a `data/`; `docx_path` vacío en el motor html |
+| options | JSON | `CvRenderOptions` ya resueltas (plantilla y de dónde sale, foto sí/no, color, páginas, secciones, tamaño) y lo que se supo de la oferta (ATS, países, sector, idioma) |
+| docx_path / pdf_path | str? | Relativos a `data/` (`cvs/<job_id>/<document_id>/<render_id>/CV-<Nombre>.pdf`); `docx_path` vacío en el motor html |
 | pages | int | |
 | keyword_coverage | JSON | Keywords de la oferta presentes y ausentes en el PDF |
-| warnings | JSON | `too_long`, `not_ats_friendly`, `font_substituted`… |
-| selected | bool | El que se usará al enviar; como mucho uno por documento |
+| warnings | JSON | `[{code, message}]`: `too_long`, `not_ats_friendly`, `font_substituted`… |
+| selected | bool | El que se usará al enviar; como mucho uno por documento. El primer render sin `too_long` queda seleccionado |
 | created_at | datetime | |
 
 ### `applications`
@@ -163,12 +163,12 @@ Nunca guarda texto crudo de ofertas ni datos del perfil en `args_summary`.
 | `scored` / `fit_assessed` | system / agent | sin cambio; `payload`: `match_id` y `score`/`passed` o `verdict` |
 | `approved` | user | `approved` |
 | `discarded` | user | `closed`; desde la UI, `payload.reason` (`skills`, `seniority`, `location`, `salary`, `company`, `other`) y `note` opcional (obligatoria con `other`) |
-| `cv_generated` | agent | sin cambio |
-| `cv_rendered` | system / user / agent | sin cambio |
-| `cv_verified` | agent | `cv_ready` si `passed` y hay un render sin `too_long` |
-| `cv_rejected` | agent | sin cambio |
+| `cv_generated` | agent | sin cambio; `payload.document_id` |
+| `cv_rendered` | system / user / agent | `cv_ready` si el render no es `too_long` y su documento ya está verificado con `passed`; si no, sin cambio. `payload`: `document_id`, `render_id`, `template_id`, `too_long`. Solo lo registra el servicio de render |
+| `cv_verified` | agent | `cv_ready` si `passed` y ese documento tiene un render sin `too_long`; `payload`: `document_id`, `passed` |
+| `cv_rejected` | agent | sin cambio; `payload`: `document_id`, `blockers` |
 | `application_prepared` | system | sin cambio |
-| `applied` / `applied_manually` | user | `applied` |
+| `applied` / `applied_manually` | user | `applied`; `payload.render_id` (el CV enviado) y `channel` |
 | `reply_received`, `interview_scheduled`, `interview_done`, `test_assigned` | user | `in_process` |
 | `followup_sent` | user | sin cambio |
 | `offer_received` | user | `in_process` |

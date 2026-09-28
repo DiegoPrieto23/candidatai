@@ -67,9 +67,23 @@ def run_migrations_online() -> None:
 
     engine = make_engine(_url())
     with engine.connect() as conn:
+        sqlite = conn.dialect.name == "sqlite"
+        if sqlite:
+            # Recrear una tabla en modo batch (DROP + RENAME) falla si otra la referencia con las
+            # claves foráneas activas. Se desactivan durante la migración (fuera de transacción,
+            # como exige SQLite) y al final se comprueba que no ha quedado ninguna rota.
+            conn.exec_driver_sql("PRAGMA foreign_keys=OFF")
+            conn.commit()
         _configure(conn)
         with context.begin_transaction():
             context.run_migrations()
+            if sqlite:
+                broken = conn.exec_driver_sql("PRAGMA foreign_key_check").all()
+                if broken:
+                    raise RuntimeError(f"La migración deja claves foráneas rotas: {broken[:5]}")
+        if sqlite:
+            conn.commit()
+            conn.exec_driver_sql("PRAGMA foreign_keys=ON")
     engine.dispose()
 
 

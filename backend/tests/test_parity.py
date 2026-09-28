@@ -17,9 +17,13 @@ from app.agent_interface.tools import TOOLS_BY_NAME
 from app.core import migrations
 from app.core.config import get_settings
 from app.core.db import get_engine, session_scope
+from app.schemas.cv import CvContent
 from app.schemas.llm_io import JobExtraction
 from app.services import events, extractions, ingest, profile
+from app.services.documents import pdf
+from app.services.documents import service as cv_service
 from tests.agent_support import POSTING_TEXT, cli_call, extraction, mcp_call, write_tmp
+from tests.cv_support import demo_content_data, fake_converter
 
 FIXTURES = Path(__file__).parent / "fixtures"
 URL = "https://careers.example.com/jobs/1"
@@ -70,6 +74,41 @@ def seed_filtered() -> None:
     """Perfil de demo y oferta 1 extraída en Bilbao (fuera de zona): cerrada por los filtros."""
     _seed_profile_and_extract()
 
+
+def seed_approved() -> None:
+    """Oferta 1 aprobada (perfil de demo, extraída en Vigo)."""
+    seed_matched()
+    with session_scope() as session:
+        events.record(session, 1, "approved", "user")
+
+
+def seed_cv() -> None:
+    """Oferta 1 aprobada con el CV 1 guardado y renderizado (render 1)."""
+    seed_approved()
+    with session_scope() as session:
+        cv_service.save_content(session, 1, CvContent.model_validate(CV_CONTENT))
+
+
+CV_CONTENT = demo_content_data()
+CV_BAD_EVIDENCE = demo_content_data(
+    projects=[{"project_id": "prj-tfg", "bullets": [{"text": "x", "evidence": ["prj-nada"]}]}]
+)
+CV_OPTIONS: dict[str, Any] = {"template_id": "ats-simple", "hidden_sections": ["projects"]}
+VERIFICATION: dict[str, Any] = {
+    "passed": True,
+    "issues": [
+        {
+            "severity": "warning",
+            "location": "summary",
+            "problem": "Falta dbt, que la oferta pide.",
+            "suggestion": "Solo si el perfil lo respalda.",
+        }
+    ],
+}
+BAD_VERIFICATION: dict[str, Any] = {
+    "passed": True,
+    "issues": [{"severity": "blocker", "location": "summary", "problem": "Cifra inventada."}],
+}
 
 ASSESSMENT: dict[str, Any] = {
     "verdict": "possible",
@@ -200,6 +239,54 @@ CASES = [
     Case("assessment-closed", "save_fit_assessment", {"job_id": 1, "assessment": ASSESSMENT},
          ["match", "save-assessment", "1", "--file", "{tmp}/a.json"],
          seed=seed_filtered, files={"a.json": ASSESSMENT}, expect_error="invalid_transition"),
+    Case("templates", "list_cv_templates", {}, ["templates", "list"], seed=None),
+    Case("cv-save", "save_cv_content", {"job_id": 1, "content": CV_CONTENT},
+         ["cv", "save", "1", "--file", "{tmp}/cv.json"],
+         seed=seed_approved, files={"cv.json": {"content": CV_CONTENT}}),
+    Case("cv-save-options", "save_cv_content",
+         {"job_id": 1, "content": CV_CONTENT, "render_options": CV_OPTIONS},
+         ["cv", "save", "1", "--file", "{tmp}/cv.json"],
+         seed=seed_approved,
+         files={"cv.json": {"content": CV_CONTENT, "render_options": CV_OPTIONS}}),
+    Case("cv-save-bad-evidence", "save_cv_content", {"job_id": 1, "content": CV_BAD_EVIDENCE},
+         ["cv", "save", "1", "--file", "{tmp}/cv.json"],
+         seed=seed_approved, files={"cv.json": {"content": CV_BAD_EVIDENCE}},
+         expect_error="validation_error"),
+    Case("cv-save-invalid", "save_cv_content",
+         {"job_id": 1, "content": {**CV_CONTENT, "language": "fr", "experience": []}},
+         ["cv", "save", "1", "--file", "{tmp}/cv.json"],
+         seed=seed_approved,
+         files={"cv.json": {"content": {**CV_CONTENT, "language": "fr", "experience": []}}},
+         expect_error="validation_error"),
+    Case("cv-save-not-approved", "save_cv_content", {"job_id": 1, "content": CV_CONTENT},
+         ["cv", "save", "1", "--file", "{tmp}/cv.json"],
+         seed=seed_matched, files={"cv.json": {"content": CV_CONTENT}},
+         expect_error="invalid_transition"),
+    Case("cv-render", "render_cv", {"document_id": 1, "options": {"max_pages": 2}},
+         ["cv", "render", "1", "--file", "{tmp}/o.json"],
+         seed=seed_cv, files={"o.json": {"max_pages": 2}}),
+    Case("cv-render-default", "render_cv", {"document_id": 1}, ["cv", "render", "1"],
+         seed=seed_cv),
+    Case("cv-render-unknown-template", "render_cv",
+         {"document_id": 1, "options": {"template_id": "nada"}},
+         ["cv", "render", "1", "--file", "{tmp}/o.json"],
+         seed=seed_cv, files={"o.json": {"template_id": "nada"}}, expect_error="not_found"),
+    Case("cv-render-unknown-doc", "render_cv", {"document_id": 9}, ["cv", "render", "9"],
+         seed=seed_cv, expect_error="not_found"),
+    Case("cv-show", "get_cv_content", {"job_id": 1}, ["cv", "show", "1"], seed=seed_cv),
+    Case("cv-show-document", "get_cv_content", {"document_id": 1},
+         ["cv", "show", "--document", "1"], seed=seed_cv),
+    Case("cv-show-neither", "get_cv_content", {}, ["cv", "show"], seed=seed_cv,
+         expect_error="validation_error"),
+    Case("cv-show-none", "get_cv_content", {"job_id": 1}, ["cv", "show", "1"],
+         seed=seed_approved, expect_error="not_found"),
+    Case("cv-verify", "save_cv_verification", {"document_id": 1, "verification": VERIFICATION},
+         ["cv", "save-verification", "1", "--file", "{tmp}/v.json"],
+         seed=seed_cv, files={"v.json": VERIFICATION}),
+    Case("cv-verify-invalid", "save_cv_verification",
+         {"document_id": 1, "verification": BAD_VERIFICATION},
+         ["cv", "save-verification", "1", "--file", "{tmp}/v.json"],
+         seed=seed_cv, files={"v.json": BAD_VERIFICATION}, expect_error="validation_error"),
 ]  # fmt: skip
 
 
@@ -243,6 +330,7 @@ def _run_cli(case: Case) -> tuple[bool, dict[str, Any]]:
 @respx.mock
 @pytest.mark.parametrize("case", CASES, ids=[c.id for c in CASES])
 def test_parity(case: Case, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(pdf, "get_converter", lambda: fake_converter())  # sin LibreOffice
     html = (FIXTURES / "hidden_ai.html").read_text(encoding="utf-8")
     respx.get(URL).mock(return_value=httpx.Response(200, text=html))
 

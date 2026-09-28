@@ -35,6 +35,7 @@ export const EVENT_LABEL: Record<Schemas['EventType'], string> = {
   approved: 'Aprobada',
   discarded: 'Descartada',
   cv_generated: 'CV redactado',
+  cv_rendered: 'CV renderizado',
   cv_verified: 'CV verificado',
   cv_rejected: 'CV rechazado',
   application_prepared: 'Candidatura preparada',

@@ -52,11 +52,11 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | `get_profile` | `jh profile show [--sections S1,S2] --json` | 05 | `sections?` | `profile_version_id`, `created_at`, `profile`: `CandidateProfile` sin email, teléfono ni `private` | — |
 | `get_match` | `jh match show ID --json` | 07 | `job_id` | `MatchView`: `score`, `triage_threshold`, `below_threshold`, `hard_filters`, `breakdown` (componentes, skills cubiertas con su nivel y ausentes, similitud, preferencias, notas), `assessment`, `assessment_stale` | `scored` si lo recalcula |
 | `save_fit_assessment` | `jh match save-assessment ID --file F --json` | 07 | `job_id, assessment: FitAssessment` | `ok`, `job_id`, `match_id` | `fit_assessed` |
-| `list_cv_templates` | `jh templates list --json` | 08 | — | Plantillas: `id`, nombre, motor, `ats_friendly`, foto, `capacity`, `sections`, opciones | — |
-| `save_cv_content` | `jh cv save ID --file F --json` | 08 | `job_id, content: CvContent, render_options?: CvRenderOptions` | `document_id` + primer render: plantilla, rutas, páginas, cobertura, avisos | `cv_generated`, `cv_rendered` |
-| `render_cv` | `jh cv render DOC --file F --json` | 08 | `document_id, options: CvRenderOptions` | `render_id`, plantilla, rutas, páginas, avisos | `cv_rendered` |
-| `get_cv_content` | `jh cv show (ID \| --document DOC) --json` | 08 | `job_id` o `document_id` | `CvContent` + evidencias resueltas + renders | — |
-| `save_cv_verification` | `jh cv save-verification DOC --file F` | 08 | `document_id, verification: CvVerification` | `ok` | `cv_verified` / `cv_rejected` |
+| `list_cv_templates` | `jh templates list --json` | 08 | — | `templates` (`id`, nombre, motor, origen, `ats_friendly`, foto, columnas, página, `capacity`, `sections`, `accent_colors`, fuentes, idiomas), `invalid` (con el motivo) y `fallback_template` | — |
+| `save_cv_content` | `jh cv save ID --file F --json` | 08 | `job_id, content: CvContent, render_options?: CvRenderOptions`; por CLI, `F` = `{"content": …, "render_options": …}` | `document_id` + primer render (`RenderResult`) | `cv_generated`, `cv_rendered` |
+| `render_cv` | `jh cv render DOC [--file F] --json` | 08 | `document_id, options?: CvRenderOptions` (por defecto, todo `auto`); por CLI, `F` = las opciones | `RenderResult` | `cv_rendered` |
+| `get_cv_content` | `jh cv show (ID \| --document DOC) --json` | 08 | `job_id` (su último CV) o `document_id` | `CvContent`, `evidence` (texto de cada evidencia citada), `verification` y `renders` | — |
+| `save_cv_verification` | `jh cv save-verification DOC --file F --json` | 08 | `document_id, verification: CvVerification` | `ok`, `passed`, `stage` y `note` (por qué no pasa a `cv_ready`, si no pasa) | `cv_verified` / `cv_rejected` |
 | `save_application_answers` | `jh applications save-answers ID --file F` | 10 | `job_id, answers: ApplicationAnswers` | `document_id` | `application_prepared` |
 | `list_followups_due` | `jh followups --days N --json` | 10 | `days_without_reply=10` | Candidaturas sin respuesta | — |
 | `list_upcoming` | `jh upcoming --days N --json` | 10 | `days=7` | Entrevistas, pruebas y plazos próximos | — |
@@ -93,7 +93,7 @@ raíz del repo.
 
 `add_event` no acepta los eventos que registra su propia herramienta o el sistema: `found`,
 `duplicate_detected`, `extracted`, `hard_filter_failed`, `scored`, `fit_assessed`,
-`cv_generated`, `cv_verified`, `cv_rejected` y `application_prepared`. `list_jobs` con
+`cv_generated`, `cv_rendered`, `cv_verified`, `cv_rejected` y `application_prepared`. `list_jobs` con
 `order="score_desc"` ordena por el score del último match; las ofertas sin score van al final,
 las más recientes primero.
 
@@ -106,6 +106,27 @@ las más recientes primero.
   `invalid_transition`. Si después cambia el perfil o la extracción, `get_match` sigue
   devolviendo esa valoración con `assessment_stale: true` hasta que se guarde otra.
 - El score lo calcula el código (`POLICIES.md` §2); el agente no lo corrige, lo explica.
+
+### CV (fase 08)
+
+- `save_cv_content` solo admite ofertas en `approved` o `cv_ready` (si no, `invalid_transition`).
+  Antes de guardar comprueba lo que el código puede comprobar de `POLICIES.md` §1: ids de
+  experiencia, proyecto, formación y certificación, evidencias que existen en el perfil, skills que
+  están en el perfil (con los sinónimos de `config/skill_aliases.yaml`) y skills básicas (nivel B o
+  `basic_skills`) solo si la oferta las pide («conocimientos de dbt» cuenta como dbt). Si algo
+  falla, `validation_error` con un `details` por problema y no se guarda nada.
+- El contacto (email, teléfono, ciudad, LinkedIn, GitHub) lo pone el código desde el perfil; el
+  agente no lo ve ni lo escribe. Un idioma regional del perfil solo sale con
+  `include_regional_language: true`.
+- `RenderResult`: `render_id`, `job_id`, `document_id`, `template_id`, `template_hash`, `options`
+  (resueltas: plantilla y de dónde sale —`option`, `rule`, `default_template` o `fallback`—, foto,
+  color, páginas, secciones ocultas, tamaño y lo que se sabe de la oferta: ATS, países, sector e
+  idioma), `docx_path` y `pdf_path` (relativos a `data/`), `pages`, `max_pages`,
+  `keyword_coverage` (`present` y `missing`: skills de la oferta que aparecen o no en el PDF),
+  `warnings` (`[{code, message}]`, ver `CV_TEMPLATES.md` §Avisos) y `selected`.
+- El primer render sin `too_long` de un CV queda `selected` (el que se enviará). La oferta pasa a
+  `cv_ready` cuando un mismo CV está verificado con `passed` y tiene un render sin `too_long`, en
+  el orden en que ocurra.
 
 ### Comandos de matching y worker (solo CLI)
 
@@ -129,11 +150,13 @@ Mismo JSON por los dos canales (por MCP, con `isError: true`; por CLI, con códi
 | `type` | Cuándo |
 |---|---|
 | `validation_error` | La entrada no cumple el esquema. `details` lista cada campo, el valor recibido (como texto, recortado) y el motivo |
-| `not_found` | No existe la oferta, aún no tiene extracción o no hay perfil importado |
+| `not_found` | No existe la oferta, aún no tiene extracción, no hay perfil importado, no existe el CV o la plantilla |
 | `invalid_transition` | El evento no es válido en la etapa actual de la oferta |
 | `invalid_request` | El servicio rechaza la petición (URL de LinkedIn, evento reservado…) |
 | `database_not_ready` | Falta `jh db upgrade` |
-| `invalid_file` | Solo CLI: `--file` fuera de `data/tmp/`, ilegible o JSON mal formado |
+| `pdf_unavailable` | No hay LibreOffice ni Word para convertir a PDF (`jh doctor`) |
+| `pdf_failed` | La conversión a PDF falló o superó `cv.pdf_timeout_seconds` |
+| `invalid_file` | Solo CLI: `--file` fuera de `data/tmp/`, ilegible, JSON mal formado o con claves que no se esperan |
 | `unknown_tool` | Solo MCP: la herramienta no existe |
 | `internal_error` | Fallo inesperado; el detalle queda en `data/logs/` |
 
@@ -192,8 +215,10 @@ languages: [{language: str, level: str}]
 include_regional_language: bool
 keywords_targeted: [str]               # keywords de la oferta que el CV cubre de verdad
 ```
-`save_cv_content` rechaza el contenido si alguna evidencia no existe en el perfil, si aparece una
-skill que no está en el perfil o si una skill de `basic_skills` no la pide la oferta.
+`experience` necesita al menos una entrada y cada bullet al menos una evidencia; el resto de
+listas pueden ir vacías. `save_cv_content` rechaza el contenido si algún id o alguna evidencia
+no existen en el perfil, si aparece una skill que no está en el perfil o si una skill básica
+(nivel B o `basic_skills`) no la pide la oferta.
 
 ### `CvRenderOptions`
 Opciones de presentación, independientes del contenido. `null`/`auto` = lo decide la app con las
@@ -212,6 +237,7 @@ page_size: A4|Letter|null
 passed: bool
 issues: [{severity: blocker|warning, location: str, problem: str, suggestion: str}]
 ```
+`passed: true` con algún `blocker` es un `validation_error`. `suggestion` es opcional.
 
 ### `ApplicationAnswers`
 ```

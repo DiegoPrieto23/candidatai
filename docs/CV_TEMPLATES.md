@@ -86,13 +86,15 @@ Lo que recibe cualquier plantilla, en los dos motores:
 | `projects[]` | `name`, `date`, `bullets[]` |
 | `education[]` | `title`, `center`, `start`, `end`, `detail` |
 | `certifications[]` | `name`, `issuer`, `date` |
-| `skills[]` | `group`, `items[]` |
+| `skills[]` | `group`, `items[]` (objetos, no diccionarios: `{{ s.items }}` funciona) |
 | `languages[]` | `language`, `level` |
 | `labels.*` | Títulos de sección en el idioma del CV (`labels.experience` = «Experiencia» / «Experience») |
 | `accent_color` | Color elegido, si la plantilla lo admite |
-| `show.<sección>` | `false` si esa sección se ha ocultado para esta oferta |
+| `show.<sección>` | `false` si esa sección se ha ocultado para esta oferta o está vacía (así no quedan títulos sin contenido) |
 
-Las fechas llegan ya formateadas en el idioma del CV («mar. 2024 – actualidad» / «Mar 2024 – Present»).
+Las fechas llegan ya formateadas en el idioma del CV: `start` = «mar. 2024» / «Mar 2024» y
+`end` = «actualidad» / «Present» si sigue. El contacto lo pone el código desde el perfil (el
+agente no lo ve). `education[].detail` va vacío de momento: el perfil no tiene ese campo.
 
 ### Motor docx (docxtpl)
 - Variables `{{ subtitle }}`; bucles de párrafo `{%p for e in experience %}` … `{%p endfor %}`;
@@ -131,7 +133,16 @@ Cómo se resuelve lo que queda en `null` o `auto`:
 3. Lo demás, lo que diga la plantilla.
 
 Las reglas pueden mirar el país de la oferta, el ATS detectado por su URL
-(`config/policies.yaml` → `ats_platforms`), el `domain` de la extracción y el idioma:
+(`config/policies.yaml` → `ats_platforms`, el dominio o un subdominio suyo), el `domain` de la
+extracción (palabras completas, sin tildes) y el idioma del CV. Encaja la regla que cumple
+todas sus condiciones; la primera que encaje decide, y si su plantilla no existe se avisa
+(`template_not_found`) y se sigue con `default_template`.
+
+El **país** sale de las ubicaciones de la extracción y de la oferta con `config/countries.yaml`
+(nombres de país, regiones y ciudades en es/en, por palabra completa y sin tildes; los nombres
+ambiguos, como Valencia, no cuentan). Si la oferta está en varios países, una regla de país
+encaja si alguno está en su lista y la foto `auto` solo va si la política la permite en todos.
+Si no se reconoce ningún país, se aplica `photo_policy.default`.
 
 ```yaml
 template_rules:
@@ -150,6 +161,7 @@ El render nunca se bloquea en silencio: devuelve avisos que ves en la UI y recib
 | Aviso | Cuándo |
 |---|---|
 | `too_long` | Supera `max_pages` |
+| `template_not_found` | Una regla o `default_template` piden una plantilla que no existe o no es válida; se usa la siguiente opción |
 | `not_ats_friendly` | La oferta usa un ATS conocido y la plantilla no es `ats_friendly` |
 | `photo_excluded` | Pediste foto pero la plantilla no la admite o no hay foto |
 | `section_not_supported` | El contenido tiene una sección que la plantilla no muestra |

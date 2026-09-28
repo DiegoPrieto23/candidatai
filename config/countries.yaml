@@ -1,0 +1,42 @@
+# País de una oferta a partir de su ubicación (texto libre de la extracción y de la oferta).
+# Lo usan las reglas de plantilla (`template_rules.when.country`) y la política de foto
+# (`photo_policy.by_country`). Se busca cada nombre como palabras completas, sin tildes ni
+# mayúsculas; gana el nombre más largo («Nueva York» antes que «York»).
+# Nombres ambiguos entre países (Valencia, Córdoba, Santiago, London…) se dejan fuera a propósito:
+# mejor no saber el país que equivocarse. Amplía la lista cuando veas ofertas de otros sitios.
+
+ES: [España, Spain, Espanya, Madrid, Barcelona, Sevilla, Seville, Bilbao, Málaga, Zaragoza,
+     A Coruña, La Coruña, Coruña, Santiago de Compostela, Vigo, Ourense, Lugo, Pontevedra,
+     Oviedo, Gijón, Santander, San Sebastián, Donostia, Vitoria, Pamplona, Logroño, Valladolid,
+     Salamanca, León, Burgos, Alicante, Murcia, Granada, Palma de Mallorca, Las Palmas,
+     Santa Cruz de Tenerife, Galicia, Cataluña, Catalunya, Andalucía, País Vasco, Euskadi,
+     Comunidad de Madrid, Comunidad Valenciana, Castilla y León, Castilla-La Mancha, Aragón,
+     Asturias, Cantabria, Navarra, Extremadura, Islas Baleares, Canarias]
+PT: [Portugal, Lisboa, Lisbon, Oporto, Porto, Braga, Coimbra]
+FR: [Francia, France, París, Paris, Lyon, Marsella, Marseille, Toulouse, Burdeos, Bordeaux]
+DE: [Alemania, Germany, Deutschland, Berlín, Berlin, Múnich, Munich, München, Hamburgo, Hamburg,
+     Fráncfort, Frankfurt, Colonia, Köln, Cologne, Stuttgart, Düsseldorf]
+IT: [Italia, Italy, Roma, Rome, Milán, Milan, Milano, Turín, Turin, Torino]
+GB: [Reino Unido, United Kingdom, UK, Gran Bretaña, Great Britain, Inglaterra, England,
+     Escocia, Scotland, Gales, Wales, Londres, Greater London, Manchester, Edimburgo, Edinburgh,
+     Glasgow, Bristol, Leeds, Cambridge UK, Oxford UK]
+IE: [Irlanda, Ireland, Dublín, Dublin, Cork, Galway]
+NL: [Países Bajos, Paises Bajos, Holanda, Netherlands, The Netherlands, Ámsterdam, Amsterdam,
+     Róterdam, Rotterdam, Utrecht, Eindhoven, La Haya, The Hague, Den Haag]
+BE: [Bélgica, Belgium, Bruselas, Brussels, Amberes, Antwerp, Gante, Ghent]
+LU: [Luxemburgo, Luxembourg]
+CH: [Suiza, Switzerland, Zúrich, Zurich, Ginebra, Geneva, Basilea, Basel, Lausana, Lausanne]
+AT: [Austria, Viena, Vienna, Wien]
+DK: [Dinamarca, Denmark, Copenhague, Copenhagen]
+SE: [Suecia, Sweden, Estocolmo, Stockholm, Gotemburgo, Gothenburg]
+"NO": [Noruega, Norway, Oslo]
+FI: [Finlandia, Finland, Helsinki]
+PL: [Polonia, Poland, Varsovia, Warsaw, Cracovia, Krakow, Kraków, Breslavia, Wroclaw, Wrocław]
+US: [Estados Unidos, EEUU, EE UU, United States, United States of America, USA, Nueva York,
+     New York, NYC, San Francisco, Los Ángeles, Los Angeles, Seattle, Boston, Chicago, Austin,
+     Miami, Washington DC]
+CA: [Canadá, Canada, Toronto, Montreal, Vancouver]
+MX: [México, Mexico, Ciudad de México, CDMX, Guadalajara, Monterrey]
+AR: [Argentina, Buenos Aires]
+CO: [Colombia, Bogotá, Bogota, Medellín, Medellin]
+CL: [Chile, Santiago de Chile]

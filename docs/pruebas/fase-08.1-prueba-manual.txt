@@ -1,0 +1,218 @@
+PRUEBA MANUAL · FASE 08.1 · CV: CONTENIDO, VERIFICACIÓN Y MOTOR DOCX
+=====================================================================
+
+Objetivo: comprobar que tu agente genera con el skill generar-cv un CV a medida de una oferta
+aprobada, que la app lo rechaza si cita algo que no está en tu perfil, que el PDF sale bien con la
+plantilla ats-simple y LibreOffice, y que se puede volver a renderizar con otras opciones sin
+volver a usar el agente.
+
+Duración aproximada: 30 minutos.
+
+Qué NO entra todavía: foto, plantilla clasica-foto, sección "CV" en la UI (fase 08.2) e importar
+tu CV de Word como plantilla (fase 08.3). En la UI solo verás la etapa "CV listo" y los eventos.
+
+
+REQUISITOS
+----------
+- LibreOffice instalado (C:\Program Files\LibreOffice\program\soffice.exe) o SOFFICE_PATH en .env.
+- Tu perfil importado y al menos una oferta que puedas aprobar (de la prueba de la fase 07 o una
+  real que ya tengas extraída).
+- Dos terminales de PowerShell (API y UI) y la sesión de Claude Code.
+- Los comandos se ejecutan desde la RAÍZ del repo salvo que se diga otra cosa:
+      cd <carpeta-del-repo>   # p. ej. "C:\Users\<tu-usuario>\...\job-search"
+- Rama de la fase:
+      git switch fase/08-cv
+
+Esta prueba escribe en tu base de datos (data/jobhunter.db) y crea ficheros en data/cvs/. Todo
+queda fuera de git.
+
+
+PARTE 1 · PREPARAR
+------------------
+1. CIERRA Claude Code antes de este paso. Con su servidor MCP abierto, `uv sync` falla con
+   "El proceso no tiene acceso al archivo… jh-mcp.exe" (el fichero está en uso).
+   Dependencias (el backend añade docxtpl, pypdf y pillow; el frontend no cambia):
+
+      uv sync --directory backend
+      cd frontend; pnpm install; cd ..
+
+   Opcional, solo si NO tienes LibreOffice pero sí Microsoft Word:
+      uv sync --directory backend --extra word
+
+2. Migra la base de datos. Esta fase añade la migración 0005 (tabla document_renders):
+
+      uv run --directory backend jh db upgrade
+
+   Esperado: "Base de datos actualizada: 0004 -> 0005."
+
+3. Comprueba el entorno (tarda unos segundos más que antes: ahora hace una conversión real):
+
+      uv run --directory backend jh doctor
+
+   Esperado, y termina con "Todo listo.":
+      [ OK  ] LibreOffice          C:\Program Files\LibreOffice\program\soffice.exe
+      [ OK  ] Plantillas de CV     integradas: ats-simple
+      [ OK  ] Conversión a PDF     LibreOffice (…): «ats-simple» → PDF de 1 pág. en N s
+   Si "Conversión a PDF" sale en AVISO por una fuente ("falta la fuente Calibri"), dímelo: el
+   PDF saldría con otra tipografía. Si sale en ERROR, copia el mensaje.
+
+4. Vuelve a abrir Claude Code en la raíz del repo y comprueba /mcp → jobhunter conectado. Tiene
+   que ser una sesión NUEVA para que cargue las herramientas nuevas (list_cv_templates,
+   save_cv_content, render_cv, get_cv_content y save_cv_verification).
+
+5. (Opcional) Pasa los tests automáticos tú mismo:
+
+      cd backend; uv run pytest -q; cd ..
+
+   Esperado: todo en verde (966 tests), incluido uno que convierte con tu LibreOffice.
+
+
+PARTE 2 · PLANTILLA INTEGRADA
+-----------------------------
+6. Lista las plantillas:
+
+      uv run --directory backend jh templates list
+
+   Esperado:
+      ats-simple           ATS sencilla (docx, integrada; ATS, sin foto)
+      Por defecto, si ninguna regla elige otra: ats-simple
+
+7. Abre templates\ats-simple\preview.pdf (es la candidata FICTICIA de demo/).
+   Mira: una columna, nombre grande, subtítulo, una línea de contacto, títulos de sección en
+   mayúsculas con una raya debajo, fechas en cursiva gris y viñetas.
+   Lo que quiero saber: ¿te parece un CV sobrio y legible? ¿Cambiarías algo del diseño
+   (tamaños, espacios, orden de las secciones)?
+
+
+PARTE 3 · CV CON TU AGENTE (criterio de aceptación)
+---------------------------------------------------
+8. Arranca la API y la UI, cada una en su terminal:
+
+      uv run --directory backend jh serve
+      cd frontend; pnpm dev
+
+   En http://127.0.0.1:5173 aprueba UNA oferta en el triaje (tecla A) que te interese de verdad.
+   Apunta su id (sale en la URL de la ficha: /jobs/<id>).
+
+9. En Claude Code:
+
+      /generar-cv <id>
+
+   Esperado, en este orden:
+   a) Si a la oferta le faltan skills obligatorias que no están en tu perfil, te pregunta por
+      ellas TODAS en un solo mensaje ("¿Has trabajado con…?"). Si contestas que sí a alguna,
+      debe parar y proponerte el skill actualizar-perfil; si contestas que no, sigue.
+   b) Lanza el subagente "redactor": llama a get_profile, get_extraction, get_match y
+      list_cv_templates, y te pide permiso para save_cv_content (es una escritura). Si la app
+      rechaza el contenido, el redactor corrige y reintenta solo (máximo 3 veces).
+   c) Lanza el subagente "verificador" (otra ejecución distinta): llama a get_cv_content y te pide
+      permiso para save_cv_verification.
+   d) Termina con un resumen: plantilla (ats-simple), foto (no), ruta del PDF, páginas, keywords
+      cubiertas y ausentes, avisos y el resultado de la verificación.
+
+   Con tu perfil actual no deberías ver avisos de plantilla: no tienes default_template ni
+   template_rules, así que se usa ats-simple.
+
+10. Abre el PDF que indica el resumen (data\cvs\<id>\<documento>\<render>\CV-<Tu-Nombre>.pdf)
+    y el .docx de la misma carpeta. Comprueba:
+    - Una sola página.
+    - Tu email, teléfono, ciudad, LinkedIn y GitHub en la línea de contacto (los pone la app
+      desde tu perfil: el agente nunca los ve).
+    - Fechas en español ("mar. 2024 – actualidad") si la oferta está en español.
+    - Nada que no esté en tu perfil: cifras, tecnologías, responsabilidades.
+    - El subtítulo NO es el título literal de la oferta.
+    - Las skills básicas (basic_skills) solo aparecen si la oferta las pide, y como
+      "conocimientos de X".
+    - El gallego (idioma regional) solo si la oferta es de Galicia.
+
+11. Mira el estado y el historial:
+
+      uv run --directory backend jh events list <id>
+
+    Esperado, al final: cv_generated, cv_rendered (con "too_long": false) y cv_verified (con
+    "passed": true). En la UI (recarga la ficha), la oferta está en "CV listo" y el historial
+    muestra "CV redactado", "CV renderizado" y "CV verificado".
+    Si la verificación falló, verás cv_rejected y el agente habrá hecho como mucho 2 vueltas
+    más con el redactor antes de pararse y enseñarte los problemas.
+
+
+PARTE 4 · OTROS RENDERS SIN AGENTE
+----------------------------------
+Todo esto se hace sin Claude Code: no gasta cuota. Sustituye <id> por el id de la oferta y <doc>
+por el id del CV (el "CV N" del paso 12).
+
+12. Consulta el CV guardado:
+
+      uv run --directory backend jh cv show <id>
+
+    Esperado: "CV <doc> de la oferta <id> (es)", el subtítulo, el resumen, cada experiencia con
+    sus bullets y, entre paréntesis, las evidencias que cita (p. ej. exp-acme/a2),
+    "Verificación: PASA" y el render del paso 9 marcado "seleccionado para enviar".
+
+13. Renderiza el mismo contenido en tamaño carta y sin proyectos:
+
+      '{"page_size": "Letter", "hidden_sections": ["projects"]}' | Out-File -Encoding utf8 data/tmp/opciones.json
+      Measure-Command { uv run --directory backend jh cv render <doc> --file data/tmp/opciones.json } | Select-Object TotalSeconds
+      uv run --directory backend jh cv show <id>
+
+    Esperado: un render nuevo (Render 2) en otra carpeta, SIN "seleccionado para enviar" (sigue
+    el primero), en unos 10-20 s. Ábrelo: tamaño carta y sin la sección PROYECTOS. El fichero
+    data/tmp/opciones.json se borra solo tras el éxito.
+    Lo que quiero saber: ¿cuánto tardó? (en la 08.2 lo harás desde la UI y quiero saber si
+    hace falta acelerarlo).
+
+14. Opciones que la plantilla no admite:
+
+      '{"accent_color": "#1F4E79"}' | Out-File -Encoding utf8 data/tmp/opciones.json
+      uv run --directory backend jh cv render <doc> --file data/tmp/opciones.json
+
+    Esperado: "Error: La plantilla «ats-simple» no admite color de acento (`accent_color`)."
+
+      '{"template_id": "moderna"}' | Out-File -Encoding utf8 data/tmp/opciones.json
+      uv run --directory backend jh cv render <doc> --file data/tmp/opciones.json
+
+    Esperado: "Error: La plantilla «moderna» no existe. Disponibles: ats-simple."
+    Borra el fichero: Remove-Item data/tmp/opciones.json
+
+
+PARTE 5 · LA APP RECHAZA LO INVENTADO
+-------------------------------------
+15. Crea una copia del contenido con una evidencia que no existe y una skill que no tienes:
+
+      $cv = uv run --directory backend jh cv show <id> --json | ConvertFrom-Json
+      $cv.content.experience[0].bullets[0].evidence = @("exp-inventada/a9")
+      $cv.content.skills[0].items += "Kubernetes"
+      @{content = $cv.content} | ConvertTo-Json -Depth 20 | Out-File -Encoding utf8 data/tmp/malo.json
+      uv run --directory backend jh cv save <id> --file data/tmp/malo.json
+
+    Esperado: "Error: El contenido del CV no es válido (2 problemas): …" con una línea por
+    problema:
+      - experience[0].bullets[0].evidence[0]: La evidencia no existe en el perfil… (recibido:
+        'exp-inventada/a9')
+      - skills[0].items[N]: Esta skill no está en el perfil… (recibido: 'Kubernetes')
+    (Si Kubernetes SÍ está en tu perfil, pon otra que no tengas.)
+    El fichero data/tmp/malo.json se queda (para corregir y reintentar) y NO se crea ningún CV
+    nuevo: `jh cv show <id>` sigue enseñando el mismo número de CV. Bórralo:
+      Remove-Item data/tmp/malo.json
+
+16. (Opcional) Lo mismo con una skill de basic_skills que la oferta no pide: pon en
+    $cv.content.skills[0].items una de tu lista basic_skills que NO esté en las skills de la
+    oferta (`jh jobs extraction <id>`). Esperado: "Es una skill básica (nivel B o
+    `basic_skills`) y la oferta no la pide: quítala del CV."
+
+
+LIMPIAR AL TERMINAR (OPCIONAL)
+------------------------------
+Los CVs de prueba viven en data\cvs\ y en la BD. No hay (todavía) un comando para borrarlos; si
+quieres empezar de cero con esa oferta, dímelo y lo vemos. Para cerrar la API y la UI, Ctrl+C en
+cada terminal.
+
+
+QUÉ ME CUENTAS AL TERMINAR
+--------------------------
+- La salida de jh doctor (paso 3), sobre todo la línea "Conversión a PDF".
+- Qué te parece el diseño de ats-simple (paso 7).
+- El resumen final de /generar-cv (paso 9) y si el PDF tiene algo inventado, exagerado o raro
+  (paso 10). Si el verificador lo aprobó pero tú ves un problema, es lo más importante.
+- Cuánto tardó el render del paso 13.
+- Cualquier error o mensaje que no se entienda.
