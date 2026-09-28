@@ -7,6 +7,7 @@ final y se lanzan juntas como `ProfileConsistencyError`, cada una con la ruta de
 
 import re
 from collections.abc import Iterator
+from pathlib import PureWindowsPath
 from typing import Annotated, Any, Literal, Self
 
 from pydantic import AfterValidator, BaseModel, BeforeValidator, ConfigDict, Field, model_validator
@@ -44,10 +45,10 @@ def _id(value: str) -> str:
     return value
 
 
-def _pattern(regex: re.Pattern[str], example: str) -> AfterValidator:
+def _pattern(regex: re.Pattern[str], what: str) -> AfterValidator:
     def check(value: str) -> str:
         if not regex.match(value):
-            raise ValueError(f"Formato no válido (p. ej. {example}).")
+            raise ValueError(f"Formato no válido: {what}.")
         return value
 
     return AfterValidator(check)
@@ -57,8 +58,12 @@ YearMonth = Annotated[str, BeforeValidator(_year_month)]
 YearMonthOrPresent = Annotated[str, BeforeValidator(_year_month_or_present)]
 Id = Annotated[str, Field(min_length=1), AfterValidator(_id)]
 Text = Annotated[str, Field(min_length=1)]
-LanguageCode = Annotated[str, _pattern(_LANG, "es, en")]
-CountryCode = Annotated[str, _pattern(_COUNTRY, "ES, GB")]
+LanguageCode = Annotated[
+    str, _pattern(_LANG, "código de idioma de 2 letras en minúsculas (p. ej. es, en)")
+]
+CountryCode = Annotated[
+    str, _pattern(_COUNTRY, "código de país ISO 3166-1 de 2 letras en mayúsculas (p. ej. ES, GB)")
+]
 
 
 class _Strict(BaseModel):
@@ -178,9 +183,48 @@ class PhotoPolicy(_Strict):
     by_country: dict[CountryCode, bool] = {}
 
 
+def _data_relative_path(value: str) -> str:
+    # Ruta dentro de `data/`. `PureWindowsPath` también entiende `/`, así que su `anchor` cubre
+    # `/x`, `\x` (en Windows, `data / "\x"` acaba en la raíz de la unidad), `C:x`, `C:\x` y UNC.
+    path = PureWindowsPath(value)
+    if path.anchor or ".." in path.parts:
+        raise ValueError(
+            "Debe ser una ruta relativa dentro de `data/`, sin `..` ni unidad (p. ej. `photo.jpg`)."
+        )
+    return value
+
+
+DataRelativePath = Annotated[str, Field(min_length=1), AfterValidator(_data_relative_path)]
+
+
+class TemplateRuleWhen(_Strict):
+    """Condiciones de una regla: encaja si la oferta cumple todas las listas informadas."""
+
+    ats: list[Text] = []
+    country: list[CountryCode] = []
+    domain: list[Text] = []
+    language: list[LanguageCode] = []
+
+    @model_validator(mode="after")
+    def _at_least_one(self) -> Self:
+        if not (self.ats or self.country or self.domain or self.language):
+            raise ValueError(
+                "La regla necesita al menos una condición: `ats`, `country`, `domain` o `language`."
+            )
+        return self
+
+
+class TemplateRule(_Strict):
+    when: TemplateRuleWhen
+    use: Id  # id de plantilla; su existencia se comprueba al renderizar (fase 08)
+
+
 class CvPreferences(_Strict):
+    default_template: Id | None = None  # id de plantilla; ver docs/CV_TEMPLATES.md
+    photo_file: DataRelativePath = "photo.jpg"
     max_pages: int = Field(default=1, ge=1, le=3)
     photo_policy: PhotoPolicy
+    template_rules: list[TemplateRule] = []  # la primera que encaje gana
 
 
 class Preferences(_Strict):

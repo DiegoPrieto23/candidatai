@@ -193,6 +193,82 @@ def test_preferences_validation(tmp_path: Path) -> None:
     }
 
 
+def test_example_cv_preferences() -> None:
+    cv = load_from_yaml(EXAMPLE_PATH).preferences.cv
+    assert cv.default_template == "clasica-foto"
+    assert cv.photo_file == "photo.jpg"
+    assert [rule.use for rule in cv.template_rules] == ["ats-simple", "ats-simple"]
+    assert cv.template_rules[1].when.country == ["GB", "IE", "US", "NL"]
+
+
+def test_old_cv_block_still_valid(tmp_path: Path) -> None:
+    # Perfiles creados antes de la 05b: solo `max_pages` y `photo_policy`.
+    data = copy.deepcopy(EXAMPLE)
+    data["preferences"]["cv"] = {"max_pages": 2, "photo_policy": {"default": False}}
+    cv = load_from_yaml(_write(tmp_path, data)).preferences.cv
+    assert (cv.max_pages, cv.default_template, cv.photo_file) == (2, None, "photo.jpg")
+    assert cv.template_rules == []
+
+
+@pytest.mark.parametrize("when", [{}, {"ats": [], "country": []}])
+def test_template_rule_needs_a_condition(tmp_path: Path, when: dict[str, Any]) -> None:
+    def change(d: dict[str, Any]) -> None:
+        d["preferences"]["cv"]["template_rules"] = [{"when": when, "use": "ats-simple"}]
+
+    issues = _issues(tmp_path, change)
+    issue = issues["preferences.cv.template_rules[0].when"]
+    assert "al menos una condición" in issue.reason
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "../photo.jpg",
+        "fotos/../../x.jpg",
+        "/etc/photo.jpg",
+        "C:\\photo.jpg",
+        "C:photo.jpg",
+        "\\photo.jpg",
+        "\\\\server\\share\\photo.jpg",
+        "..\\photo.jpg",
+        "",
+    ],
+)
+def test_photo_file_must_stay_inside_data(tmp_path: Path, value: str) -> None:
+    issues = _issues(tmp_path, lambda d: d["preferences"]["cv"].update(photo_file=value))
+    assert set(issues) == {"preferences.cv.photo_file"}
+
+
+@pytest.mark.parametrize("value", ["photo.png", "fotos/yo.webp", "fotos\\yo.jpg"])
+def test_photo_file_relative_is_fine(tmp_path: Path, value: str) -> None:
+    data = copy.deepcopy(EXAMPLE)
+    data["preferences"]["cv"]["photo_file"] = value
+    assert load_from_yaml(_write(tmp_path, data)).preferences.cv.photo_file == value
+
+
+def test_template_rule_country_must_be_uppercase(tmp_path: Path) -> None:
+    def change(d: dict[str, Any]) -> None:
+        d["preferences"]["cv"]["template_rules"][1]["when"]["country"] = ["GB", "ie"]
+
+    issues = _issues(tmp_path, change)
+    issue = issues["preferences.cv.template_rules[1].when.country[1]"]
+    assert "mayúsculas" in issue.reason and "ES, GB" in issue.reason
+    assert issue.received == "ie"
+
+
+def test_template_ids_and_unknown_keys(tmp_path: Path) -> None:
+    def change(d: dict[str, Any]) -> None:
+        d["preferences"]["cv"]["default_template"] = "Clásica Foto"
+        d["preferences"]["cv"]["template_rules"][0]["use"] = "ats/simple"
+        d["preferences"]["cv"]["template_rules"][1]["when"]["pais"] = ["ES"]
+
+    assert set(_issues(tmp_path, change)) == {
+        "preferences.cv.default_template",
+        "preferences.cv.template_rules[0].use",
+        "preferences.cv.template_rules[1].when.pais",
+    }
+
+
 def test_schema_version(tmp_path: Path) -> None:
     issues = _issues(tmp_path, lambda d: d.update(schema_version=2))
     assert issues["schema_version"].reason == "Debe ser uno de: 1."

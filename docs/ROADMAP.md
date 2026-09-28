@@ -12,7 +12,7 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 03 | Alta de ofertas | ✅ | `jh jobs add-url` y `add-text` crean ofertas deduplicadas y con `risk_flags` |
 | 04 | Interfaz para agentes | ✅ | Servidor MCP + CLI con paridad; funciona desde Claude Code y Codex |
 | 05 | Perfil del candidato | ✅ | `data/profile.yaml` validado y versionado; `get_profile` |
-| 05b | Preferencias de CV en el perfil | ⏳ | El perfil admite plantilla por defecto, foto y reglas de plantilla; `demo/profile.example.yaml` vuelve a validar |
+| 05b | Preferencias de CV en el perfil | ✅ | El perfil admite plantilla por defecto, foto y reglas de plantilla; `demo/profile.example.yaml` vuelve a validar |
 | 06 | Frontend base | ⏳ | UI con bandeja de ofertas, ficha y alta por URL |
 | 07 | Matching y triaje | ⏳ | Filtros duros, score, skill `evaluar-encaje`, aprobar o descartar en la UI |
 | 08 | CV a medida con plantillas | ⏳ | `generar-cv` produce CVs verificados; plantilla, foto y color se cambian en la UI sin agente; importar plantillas desde Word |
@@ -168,3 +168,26 @@ decisiones tomadas y deuda técnica pendiente. -->
   - Importar un perfil nuevo aún no recalcula los scores; llega con la fase 07.
   - Una clave YAML `NO` (Noruega) en `photo_policy.by_country` se lee como booleano: hay que
     escribirla entre comillas.
+
+### 05b · Preferencias de CV en el perfil — 2026-09-28 · Claude Code (Opus 5.5)
+- **Resumen:** `CvPreferences` admite `default_template`, `photo_file` y `template_rules`
+  (`TemplateRule` con `when: TemplateRuleWhen` y `use`); `max_pages` y `photo_policy` no cambian.
+  `demo/profile.example.yaml` vuelve a validar y un bloque `cv` antiguo sigue siendo válido.
+  `public_view` ya incluía `preferences` entero; ahora un test cubre `preferences.cv`. 592 tests.
+- **Decisiones:**
+  - `default_template` y `use` se validan con el formato de id (minúsculas, dígitos, `-`, `_`);
+    si la plantilla existe se comprueba en la fase 08.
+  - Una regla necesita al menos una lista no vacía en `when` (`ats`, `country`, `domain`,
+    `language`); `country` en ISO 3166-1 alfa-2 mayúsculas, `language` en minúsculas.
+  - `photo_file` se valida con `PureWindowsPath`: se rechaza cualquier ancla (`/x`, `\x`, `C:x`,
+    `C:\x`, UNC) y cualquier `..`. `\x` sin unidad es relativa para `is_absolute()`, pero en
+    Windows `data / "\x"` acaba en la raíz de la unidad (lo detectó la revisión).
+  - Los errores de código de idioma y país explican el formato esperado, no solo «formato no
+    válido».
+- **Deuda:**
+  - No había `data/profile.yaml` para probar el criterio «sin tocarlo»; se probó con una copia del
+    demo con el bloque `cv` antiguo, por test y con `jh profile validate`.
+  - `docs/CV_TEMPLATES.md` habla de `data/photo.*`, pero el perfil ya dice qué fichero usar
+    (`photo_file`): alinearlo en la fase 08.
+  - `country: [NO]` (Noruega) en `template_rules` se lee como booleano, igual que en
+    `photo_policy.by_country`: hay que escribirlo entre comillas.
