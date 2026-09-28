@@ -64,6 +64,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/jobs/{job_id}/match": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Job Match
+         * @description Filtros duros, score y desglose vigentes (se recalculan si estaban desfasados).
+         */
+        get: operations["get_job_match"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/jobs/url": {
         parameters: {
             query?: never;
@@ -115,9 +135,29 @@ export interface paths {
         put?: never;
         /**
          * Add Job Event
-         * @description Registra un evento del usuario (nota, aprobar, descartar…).
+         * @description Registra un evento del usuario (nota, aprobar, descartar con motivo, reabrir…).
          */
         post: operations["add_job_event"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/triage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Triage
+         * @description Ofertas por revisar con su match (filtros, score y desglose), mayor score primero.
+         */
+        get: operations["get_triage"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -176,6 +216,25 @@ export interface components {
             note?: string | null;
             /** Occurred At */
             occurred_at?: string | null;
+            /**
+             * Reason
+             * @description Motivo al descartar (obligatorio en `discarded`).
+             */
+            reason?: ("seniority" | "skills" | "location" | "salary" | "company" | "other") | null;
+        };
+        /** CoveredSkill */
+        CoveredSkill: {
+            /** Skill */
+            skill: string;
+            /** Profile Skill */
+            profile_skill: string;
+            /**
+             * Level
+             * @enum {string}
+             */
+            level: "F" | "C+" | "C" | "B" | "basic";
+            /** Weight */
+            weight: number;
         };
         /** ErrorDetail */
         ErrorDetail: {
@@ -247,6 +306,40 @@ export interface components {
              */
             created_at: string;
             data: components["schemas"]["JobExtraction"];
+        };
+        /** FilterFailure */
+        FilterFailure: {
+            /**
+             * Filter
+             * @enum {string}
+             */
+            filter: "seniority" | "years" | "remote_mode" | "location" | "language" | "title_keyword";
+            /** Reason */
+            reason: string;
+        };
+        /**
+         * FitAssessment
+         * @description Valoración del encaje que escribe el agente (skill `evaluar-encaje`). Ver POLICIES §2.
+         */
+        FitAssessment: {
+            /**
+             * Verdict
+             * @enum {string}
+             */
+            verdict: "strong" | "possible" | "weak";
+            /** Rationale */
+            rationale: string;
+            /** Risks */
+            risks: string[];
+            /** Questions For User */
+            questions_for_user: string[];
+        };
+        /** HardFilterResult */
+        HardFilterResult: {
+            /** Passed */
+            passed: boolean;
+            /** Failures */
+            failures: components["schemas"]["FilterFailure"][];
         };
         /** InjectionReport */
         InjectionReport: {
@@ -353,6 +446,8 @@ export interface components {
              * Format: date-time
              */
             first_seen_at: string;
+            /** Score */
+            score: number | null;
             /** Remote Mode */
             remote_mode: ("onsite" | "hybrid" | "remote" | "unknown") | null;
         };
@@ -378,6 +473,8 @@ export interface components {
              * Format: date-time
              */
             first_seen_at: string;
+            /** Score */
+            score: number | null;
             /** Posted At */
             posted_at: string | null;
             /** Raw Text */
@@ -394,6 +491,46 @@ export interface components {
             /** Level */
             level?: string | null;
         };
+        /** MatchView */
+        MatchView: {
+            /** Job Id */
+            job_id: number;
+            /** Match Id */
+            match_id: number;
+            /** Profile Version Id */
+            profile_version_id: number;
+            /** Extraction Id */
+            extraction_id: number | null;
+            /** Score */
+            score: number;
+            /** Triage Threshold */
+            triage_threshold: number;
+            /** Below Threshold */
+            below_threshold: boolean;
+            hard_filters: components["schemas"]["HardFilterResult"];
+            breakdown: components["schemas"]["ScoreBreakdown"];
+            assessment: components["schemas"]["FitAssessment"] | null;
+            /** Assessment Stale */
+            assessment_stale: boolean;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** PreferencesFit */
+        PreferencesFit: {
+            /** Value */
+            value: number;
+            /** Role */
+            role: number;
+            /** Role Match */
+            role_match: string | null;
+            /** Remote Mode */
+            remote_mode: number;
+            /** Location */
+            location: number;
+        };
         /** Salary */
         Salary: {
             /** Min */
@@ -404,6 +541,54 @@ export interface components {
             currency?: string | null;
             /** Period */
             period?: ("year" | "month" | "hour") | null;
+        };
+        /** ScoreBreakdown */
+        ScoreBreakdown: {
+            /** Components */
+            components: components["schemas"]["ScoreComponent"][];
+            must_have: components["schemas"]["SkillCoverage"];
+            nice_to_have: components["schemas"]["SkillCoverage"];
+            semantic: components["schemas"]["SemanticResult"] | null;
+            preferences: components["schemas"]["PreferencesFit"];
+            /** Notes */
+            notes: string[];
+        };
+        /** ScoreComponent */
+        ScoreComponent: {
+            /**
+             * Name
+             * @enum {string}
+             */
+            name: "must_have_coverage" | "semantic_similarity" | "preferences_fit" | "nice_to_have_coverage";
+            /** Value */
+            value: number | null;
+            /** Weight */
+            weight: number;
+            /** Effective Weight */
+            effective_weight: number;
+            /** Points */
+            points: number;
+        };
+        /** SemanticResult */
+        SemanticResult: {
+            /** Model */
+            model: string;
+            /** Cosine */
+            cosine: number;
+            /** Value */
+            value: number;
+        };
+        /**
+         * SkillCoverage
+         * @description `ratio` es `None` si la oferta no lista skills de este tipo (el componente no cuenta).
+         */
+        SkillCoverage: {
+            /** Ratio */
+            ratio: number | null;
+            /** Covered */
+            covered: components["schemas"]["CoveredSkill"][];
+            /** Missing */
+            missing: string[];
         };
         /**
          * Stage
@@ -420,6 +605,23 @@ export interface components {
             };
             /** Pending Tasks */
             pending_tasks: number;
+        };
+        /** TriageItem */
+        TriageItem: {
+            job: components["schemas"]["JobRow"];
+            extraction: components["schemas"]["JobExtraction"] | null;
+            match: components["schemas"]["MatchView"] | null;
+        };
+        /** TriageQueue */
+        TriageQueue: {
+            /** Items */
+            items: components["schemas"]["TriageItem"][];
+            /** Total */
+            total: number;
+            /** Triage Threshold */
+            triage_threshold: number;
+            /** Profile Missing */
+            profile_missing: boolean;
         };
     };
     responses: never;
@@ -632,6 +834,73 @@ export interface operations {
             };
         };
     };
+    get_job_match: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MatchView"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     add_job_from_url: {
         parameters: {
             query?: never;
@@ -792,6 +1061,71 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AddEventResult"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_triage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TriageQueue"];
                 };
             };
             /** @description Not Found */

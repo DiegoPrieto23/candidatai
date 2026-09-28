@@ -14,7 +14,7 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 05 | Perfil del candidato | ✅ | `data/profile.yaml` validado y versionado; `get_profile` |
 | 05b | Preferencias de CV en el perfil | ✅ | El perfil admite plantilla por defecto, foto y reglas de plantilla; `demo/profile.example.yaml` vuelve a validar |
 | 06 | Frontend base | ✅ | UI con bandeja de ofertas, ficha y alta por URL o texto; `jh serve` |
-| 07 | Matching y triaje | ⏳ | Filtros duros, score, skill `evaluar-encaje`, aprobar o descartar en la UI |
+| 07 | Matching y triaje | ✅ | Filtros duros, score, skill `evaluar-encaje`, aprobar o descartar en la UI |
 | 08 | CV a medida con plantillas | ⏳ | `generar-cv` produce CVs verificados; plantilla, foto y color se cambian en la UI sin agente; importar plantillas desde Word |
 | 08b | Plantillas html | ⏳ | Importar diseños desde PDF o imagen (Canva…) y plantilla integrada de dos columnas |
 | 09 | Conectores de ATS y scheduler | ⏳ | Ingesta diaria de empresas objetivo sin intervención |
@@ -222,3 +222,55 @@ decisiones tomadas y deuda técnica pendiente. -->
   - `openapi-typescript` 7 declara TypeScript 5 como peer; funciona con el 6.
   - Al parar `pnpm dev` desde un agente en Windows puede quedar Vite huérfano ocupando el 5173;
     la guía explica cómo cerrarlo.
+
+### 07 · Matching y triaje — 2026-09-28 · Claude Code (Opus 5.5)
+- **Resumen:** `services/matching/` con filtros duros (seniority, años, modalidad, ubicaciones,
+  idiomas MCER y palabras de descarte), cobertura de skills ponderada por nivel con
+  `config/skill_aliases.yaml`, similitud semántica con sentence-transformers (extra opcional
+  `matching`), score 0-100 con desglose y evaluación (`jh eval matching`, 20 casos semilla en
+  `evals/matching/`). Cola de tareas y `jh worker`; migraciones `0003` (`matches.extraction_id`)
+  y `0004` (`matches.scoring_key`); `jh match rescore`.
+  Herramientas `get_match` y `save_fit_assessment` con paridad; `list_jobs` ordena por score. API
+  `GET /triage` y `GET /jobs/{id}/match`; UI de triaje con atajos (J/K, A, D + 1-6, O), descarte
+  con motivo obligatorio, deshacer, panel de encaje y «Reabrir» en la ficha, score en la bandeja.
+  Backend 827 tests (`services/` al 98 %), frontend 35. Guía de prueba manual en
+  `docs/pruebas/fase-07-prueba-manual.txt` y ofertas de prueba con `scripts/seed_triage_demo.py`.
+- **Decisiones** (ADR-015):
+  - sentence-transformers es un extra opcional: sin él (o con `JH_EMBEDDINGS=off`) la similitud
+    no cuenta y su peso se reparte; `jh doctor` avisa. Los tests usan un embedder falso.
+  - Los filtros duros se aplican al guardar la extracción (`save_extraction` devuelve
+    `hard_filters`); el score se encola. Un match guarda `extraction_id` y `profile_version_id`, y
+    `get_match` y el triaje lo recalculan si está desfasado: el triaje funciona sin worker.
+  - El match también guarda `scoring_key` (versión del scorer, políticas, alias y modelo de
+    embeddings): instalar el extra `matching` o editar `policies.yaml` lo deja desfasado.
+    `jh match rescore` recalcula las ofertas abiertas sin esperar a que se consulten.
+  - Importar un perfil nuevo encola `rescore_all`, que puede cerrar ofertas en triaje que ya no
+    pasan; nunca las que el usuario reabrió tras un `hard_filter_failed`.
+  - Descartar desde la UI exige `reason` (`skills`, `seniority`, `location`, `salary`, `company`,
+    `other`; `other` con nota) para la analítica de la fase 10. El agente sigue con `note`.
+  - Preferencias del score: puesto según el orden de `roles`, comparando por partes del título
+    (fuera y dentro de paréntesis, separadas por « - », « | » o « / »), sin «(m/f/d)» ni
+    seniority; todas las palabras del rol deben aparecer y el parecido es `token_sort_ratio`;
+    modalidad según el orden de `remote_modes`; zona preferida 1, permitida 0,6, desconocida 0,5.
+  - Seniority: pasan solo los niveles de `seniority_target`, que es la lista de todos los que
+    acepta el candidato, por arriba y por abajo (quien busca mid puede no querer junior; quien
+    empieza, no querer senior). Sin tolerancia global en `policies.yaml`: lo decide cada perfil,
+    y `actualizar-perfil` lo pregunta. «Nativo» cuenta como C2; un nivel de idioma que no se
+    entiende no descarta.
+  - Rol `extractor`: `responsibilities` en el idioma de la oferta y `domain` como sector (deuda
+    de la fase 04).
+  - `jh doctor`: el aviso de `data/cv_template.docx` (diseño de la fase 01, anterior al ADR-014) se
+    sustituye por «Plantillas de CV», que lista las de `templates/` y `data/templates/` con
+    `template.yaml`. `Settings.cv_template_path` pasa a `user_templates_dir`.
+- **Deuda:**
+  - «Sales Engineer (Data Platform)» ya no cuenta como «Data Engineer», pero el puesto solo pesa
+    un tercio del 15 % de preferencias: con todas las skills cubiertas sigue por encima del umbral
+    (caso trampa del set de evaluación). Para descartarlo, `discard_title_keywords`.
+  - El modelo de embeddings no se ha elegido aún con el set de evaluación (ADR-006): hay que
+    instalar el extra y comparar informes. Los umbrales `similarity_floor/ceiling` son iniciales.
+  - `GET /triage` y `get_match` pueden escribir (match y `scored`) al consultar; con embeddings, la
+    primera consulta carga el modelo y tarda.
+  - `save_fit_assessment` sigue pidiendo permiso en Claude Code (no está en
+    `.claude/settings.json`): en `evaluar-encaje` con muchas ofertas, un permiso por oferta.
+  - La BD real del usuario necesita `jh db upgrade` (hasta 0004).
+

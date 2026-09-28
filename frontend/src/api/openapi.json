@@ -291,6 +291,89 @@
         }
       }
     },
+    "/jobs/{job_id}/match": {
+      "get": {
+        "tags": [
+          "jobs"
+        ],
+        "summary": "Get Job Match",
+        "description": "Filtros duros, score y desglose vigentes (se recalculan si estaban desfasados).",
+        "operationId": "get_job_match",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatchView"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
     "/jobs/url": {
       "post": {
         "tags": [
@@ -461,7 +544,7 @@
           "jobs"
         ],
         "summary": "Add Job Event",
-        "description": "Registra un evento del usuario (nota, aprobar, descartar…).",
+        "description": "Registra un evento del usuario (nota, aprobar, descartar con motivo, reabrir…).",
         "operationId": "add_job_event",
         "parameters": [
           {
@@ -544,6 +627,78 @@
               }
             },
             "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/triage": {
+      "get": {
+        "tags": [
+          "triage"
+        ],
+        "summary": "Get Triage",
+        "description": "Ofertas por revisar con su match (filtros, score y desglose), mayor score primero.",
+        "operationId": "get_triage",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TriageQueue"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -705,6 +860,26 @@
               }
             ],
             "title": "Occurred At"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "seniority",
+                  "skills",
+                  "location",
+                  "salary",
+                  "company",
+                  "other"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason",
+            "description": "Motivo al descartar (obligatorio en `discarded`)."
           }
         },
         "additionalProperties": false,
@@ -713,6 +888,41 @@
           "type"
         ],
         "title": "AddUserEventBody"
+      },
+      "CoveredSkill": {
+        "properties": {
+          "skill": {
+            "type": "string",
+            "title": "Skill"
+          },
+          "profile_skill": {
+            "type": "string",
+            "title": "Profile Skill"
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "F",
+              "C+",
+              "C",
+              "B",
+              "basic"
+            ],
+            "title": "Level"
+          },
+          "weight": {
+            "type": "number",
+            "title": "Weight"
+          }
+        },
+        "type": "object",
+        "required": [
+          "skill",
+          "profile_skill",
+          "level",
+          "weight"
+        ],
+        "title": "CoveredSkill"
       },
       "ErrorDetail": {
         "properties": {
@@ -896,6 +1106,102 @@
           "data"
         ],
         "title": "ExtractionView"
+      },
+      "FilterFailure": {
+        "properties": {
+          "filter": {
+            "type": "string",
+            "enum": [
+              "seniority",
+              "years",
+              "remote_mode",
+              "location",
+              "language",
+              "title_keyword"
+            ],
+            "title": "Filter"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "filter",
+          "reason"
+        ],
+        "title": "FilterFailure"
+      },
+      "FitAssessment": {
+        "properties": {
+          "verdict": {
+            "type": "string",
+            "enum": [
+              "strong",
+              "possible",
+              "weak"
+            ],
+            "title": "Verdict"
+          },
+          "rationale": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Rationale"
+          },
+          "risks": {
+            "items": {
+              "type": "string",
+              "maxLength": 300,
+              "minLength": 1
+            },
+            "type": "array",
+            "maxItems": 8,
+            "title": "Risks"
+          },
+          "questions_for_user": {
+            "items": {
+              "type": "string",
+              "maxLength": 300,
+              "minLength": 1
+            },
+            "type": "array",
+            "maxItems": 8,
+            "title": "Questions For User"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "verdict",
+          "rationale",
+          "risks",
+          "questions_for_user"
+        ],
+        "title": "FitAssessment",
+        "description": "Valoración del encaje que escribe el agente (skill `evaluar-encaje`). Ver POLICIES §2."
+      },
+      "HardFilterResult": {
+        "properties": {
+          "passed": {
+            "type": "boolean",
+            "title": "Passed"
+          },
+          "failures": {
+            "items": {
+              "$ref": "#/components/schemas/FilterFailure"
+            },
+            "type": "array",
+            "title": "Failures"
+          }
+        },
+        "type": "object",
+        "required": [
+          "passed",
+          "failures"
+        ],
+        "title": "HardFilterResult"
       },
       "InjectionReport": {
         "properties": {
@@ -1233,6 +1539,17 @@
             "format": "date-time",
             "title": "First Seen At"
           },
+          "score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          },
           "remote_mode": {
             "anyOf": [
               {
@@ -1262,6 +1579,7 @@
           "risk_flags",
           "duplicate_of",
           "first_seen_at",
+          "score",
           "remote_mode"
         ],
         "title": "JobRow"
@@ -1328,6 +1646,17 @@
             "format": "date-time",
             "title": "First Seen At"
           },
+          "score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          },
           "posted_at": {
             "anyOf": [
               {
@@ -1383,6 +1712,7 @@
           "risk_flags",
           "duplicate_of",
           "first_seen_at",
+          "score",
           "posted_at",
           "raw_text",
           "extraction",
@@ -1416,6 +1746,126 @@
           "language"
         ],
         "title": "LanguageRequirement"
+      },
+      "MatchView": {
+        "properties": {
+          "job_id": {
+            "type": "integer",
+            "title": "Job Id"
+          },
+          "match_id": {
+            "type": "integer",
+            "title": "Match Id"
+          },
+          "profile_version_id": {
+            "type": "integer",
+            "title": "Profile Version Id"
+          },
+          "extraction_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Extraction Id"
+          },
+          "score": {
+            "type": "integer",
+            "title": "Score"
+          },
+          "triage_threshold": {
+            "type": "integer",
+            "title": "Triage Threshold"
+          },
+          "below_threshold": {
+            "type": "boolean",
+            "title": "Below Threshold"
+          },
+          "hard_filters": {
+            "$ref": "#/components/schemas/HardFilterResult"
+          },
+          "breakdown": {
+            "$ref": "#/components/schemas/ScoreBreakdown"
+          },
+          "assessment": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FitAssessment"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "assessment_stale": {
+            "type": "boolean",
+            "title": "Assessment Stale"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "match_id",
+          "profile_version_id",
+          "extraction_id",
+          "score",
+          "triage_threshold",
+          "below_threshold",
+          "hard_filters",
+          "breakdown",
+          "assessment",
+          "assessment_stale",
+          "created_at"
+        ],
+        "title": "MatchView"
+      },
+      "PreferencesFit": {
+        "properties": {
+          "value": {
+            "type": "number",
+            "title": "Value"
+          },
+          "role": {
+            "type": "number",
+            "title": "Role"
+          },
+          "role_match": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role Match"
+          },
+          "remote_mode": {
+            "type": "number",
+            "title": "Remote Mode"
+          },
+          "location": {
+            "type": "number",
+            "title": "Location"
+          }
+        },
+        "type": "object",
+        "required": [
+          "value",
+          "role",
+          "role_match",
+          "remote_mode",
+          "location"
+        ],
+        "title": "PreferencesFit"
       },
       "Salary": {
         "properties": {
@@ -1475,6 +1925,159 @@
         "type": "object",
         "title": "Salary"
       },
+      "ScoreBreakdown": {
+        "properties": {
+          "components": {
+            "items": {
+              "$ref": "#/components/schemas/ScoreComponent"
+            },
+            "type": "array",
+            "title": "Components"
+          },
+          "must_have": {
+            "$ref": "#/components/schemas/SkillCoverage"
+          },
+          "nice_to_have": {
+            "$ref": "#/components/schemas/SkillCoverage"
+          },
+          "semantic": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SemanticResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "preferences": {
+            "$ref": "#/components/schemas/PreferencesFit"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "components",
+          "must_have",
+          "nice_to_have",
+          "semantic",
+          "preferences",
+          "notes"
+        ],
+        "title": "ScoreBreakdown"
+      },
+      "ScoreComponent": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "enum": [
+              "must_have_coverage",
+              "semantic_similarity",
+              "preferences_fit",
+              "nice_to_have_coverage"
+            ],
+            "title": "Name"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          },
+          "weight": {
+            "type": "number",
+            "title": "Weight"
+          },
+          "effective_weight": {
+            "type": "number",
+            "title": "Effective Weight"
+          },
+          "points": {
+            "type": "number",
+            "title": "Points"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "value",
+          "weight",
+          "effective_weight",
+          "points"
+        ],
+        "title": "ScoreComponent"
+      },
+      "SemanticResult": {
+        "properties": {
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "cosine": {
+            "type": "number",
+            "title": "Cosine"
+          },
+          "value": {
+            "type": "number",
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "model",
+          "cosine",
+          "value"
+        ],
+        "title": "SemanticResult"
+      },
+      "SkillCoverage": {
+        "properties": {
+          "ratio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ratio"
+          },
+          "covered": {
+            "items": {
+              "$ref": "#/components/schemas/CoveredSkill"
+            },
+            "type": "array",
+            "title": "Covered"
+          },
+          "missing": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missing"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ratio",
+          "covered",
+          "missing"
+        ],
+        "title": "SkillCoverage",
+        "description": "`ratio` es `None` si la oferta no lista skills de este tipo (el componente no cuenta)."
+      },
       "Stage": {
         "type": "string",
         "enum": [
@@ -1516,6 +2119,71 @@
           "pending_tasks"
         ],
         "title": "StatusReport"
+      },
+      "TriageItem": {
+        "properties": {
+          "job": {
+            "$ref": "#/components/schemas/JobRow"
+          },
+          "extraction": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/JobExtraction"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "match": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MatchView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "job",
+          "extraction",
+          "match"
+        ],
+        "title": "TriageItem"
+      },
+      "TriageQueue": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/TriageItem"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "triage_threshold": {
+            "type": "integer",
+            "title": "Triage Threshold"
+          },
+          "profile_missing": {
+            "type": "boolean",
+            "title": "Profile Missing"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "triage_threshold",
+          "profile_missing"
+        ],
+        "title": "TriageQueue"
       }
     }
   }

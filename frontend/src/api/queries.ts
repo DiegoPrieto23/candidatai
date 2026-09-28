@@ -1,5 +1,5 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { api, unwrap, type Schemas, type Stage } from './client'
+import { ApiError, api, unwrap, type Schemas, type Stage } from './client'
 
 export const PAGE_SIZE = 50
 
@@ -8,6 +8,8 @@ export const keys = {
   jobs: (params: JobsParams) => ['jobs', params] as const,
   allJobs: ['jobs'] as const,
   job: (id: number) => ['job', id] as const,
+  match: (id: number) => ['match', id] as const,
+  triage: ['triage'] as const,
 }
 
 export interface JobsParams {
@@ -89,5 +91,47 @@ export function useAddNote(jobId: number) {
         }),
       ),
     onSuccess: () => client.invalidateQueries({ queryKey: keys.job(jobId) }),
+  })
+}
+
+export function useTriage() {
+  return useQuery({
+    queryKey: keys.triage,
+    queryFn: () => unwrap(api.GET('/triage')),
+  })
+}
+
+/** Match vigente de una oferta. `null` si aún no se puede calcular (sin extracción o sin perfil). */
+export function useJobMatch(id: number, enabled = true) {
+  return useQuery({
+    queryKey: keys.match(id),
+    queryFn: async () => {
+      try {
+        return await unwrap(api.GET('/jobs/{job_id}/match', { params: { path: { job_id: id } } }))
+      } catch (error) {
+        if (error instanceof ApiError && error.type === 'not_found') return null
+        throw error
+      }
+    },
+    enabled: enabled && Number.isInteger(id) && id > 0,
+  })
+}
+
+export type UserEventBody = Schemas['AddUserEventBody']
+
+/** Aprobar, descartar (con motivo) o reabrir. Refresca la cola, la ficha y los recuentos. */
+export function useJobEvent() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: ({ jobId, body }: { jobId: number; body: UserEventBody }) =>
+      unwrap(api.POST('/jobs/{job_id}/events', { params: { path: { job_id: jobId } }, body })),
+    onSuccess: (_result, { jobId }) =>
+      Promise.all([
+        client.invalidateQueries({ queryKey: keys.status }),
+        client.invalidateQueries({ queryKey: keys.allJobs }),
+        client.invalidateQueries({ queryKey: keys.triage }),
+        client.invalidateQueries({ queryKey: keys.job(jobId) }),
+        client.invalidateQueries({ queryKey: keys.match(jobId) }),
+      ]),
   })
 }

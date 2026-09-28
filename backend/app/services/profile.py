@@ -21,6 +21,7 @@ from app.core.config import REPO_ROOT, get_settings
 from app.core.validation import describe_error
 from app.models import ProfileVersion
 from app.schemas.profile import CandidateProfile, ProfileConsistencyError
+from app.services import tasks
 
 EXAMPLE_PATH = REPO_ROOT / "demo" / "profile.example.yaml"
 
@@ -176,7 +177,10 @@ def _latest(session: Session, limit: int = 1) -> list[ProfileVersion]:
 
 
 def import_profile(session: Session, path: Path) -> ImportResult:
-    """Valida el fichero y crea una versión nueva, salvo que sea igual a la actual."""
+    """Valida el fichero y crea una versión nueva, salvo que sea igual a la actual.
+
+    Una versión nueva encola `rescore_all`: el worker recalcula los matches de las ofertas abiertas.
+    """
     profile = load_from_yaml(path)
     digest = content_hash(profile)
     latest = _latest(session)
@@ -185,6 +189,7 @@ def import_profile(session: Session, path: Path) -> ImportResult:
     version = ProfileVersion(data=profile.model_dump(mode="json"), content_hash=digest)
     session.add(version)
     session.flush()
+    tasks.enqueue(session, "rescore_all")
     return ImportResult(profile_version_id=version.id, created=True, content_hash=digest)
 
 

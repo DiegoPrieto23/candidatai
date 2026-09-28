@@ -6,7 +6,6 @@ dedup:
   fuzzy_window_days: 60
 
 hard_filters:
-  seniority_tolerance: 1           # cuántos niveles por encima de tu objetivo se aceptan (junior→mid = 1)
   years_tolerance: 1               # años exigidos por encima de preferences.max_years_required
   unknown_remote_mode_passes: true # si la oferta no dice la modalidad, no se descarta por eso
   discard_title_keywords: []       # p. ej. ["sales", "comercial", "prácticas"]
@@ -19,6 +18,12 @@ scoring:
     nice_to_have_coverage: 0.10
   level_weights: {F: 1.0, "C+": 0.8, C: 0.5, B: 0.2}
   triage_threshold: 55             # por debajo, la oferta se muestra atenuada en triaje
+  semantic:                        # embeddings locales (extra `matching`; ADR-006)
+    model: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+    similarity_floor: 0.15         # similitud coseno que cuenta como 0
+    similarity_ceiling: 0.75       # similitud coseno que cuenta como 1
+  preferences:
+    role_min_similarity: 60        # token_sort_ratio con preferences.roles para contar; además, todas las palabras del rol deben estar en el título
 
 followups:
   days_without_reply: 10

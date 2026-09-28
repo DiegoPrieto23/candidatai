@@ -1,7 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
-import { jobView, mockApi, renderApp, status } from '@/test/utils'
+import { jobView, matchView, mockApi, renderApp, status } from '@/test/utils'
 
 describe('Ficha de oferta', () => {
   it('muestra la extracción legible y el historial con el agente', async () => {
@@ -87,5 +87,83 @@ describe('Ficha de oferta', () => {
     mockApi({ 'GET /status': status() })
     renderApp('/jobs/99')
     expect(await screen.findByText('Sin simular: GET /jobs/99')).toBeInTheDocument()
+  })
+
+  it('enseña el encaje con el score y el desglose', async () => {
+    mockApi({ 'GET /status': status(), 'GET /jobs/1': jobView(), 'GET /jobs/1/match': matchView() })
+    renderApp('/jobs/1')
+    const panel = await screen.findByRole('region', { name: 'Encaje' })
+    expect(await within(panel).findByLabelText('Score 78 de 100')).toBeInTheDocument()
+    expect(within(panel).getByText('Kafka')).toBeInTheDocument()
+    expect(within(panel).getByText('Obligatorias')).toBeInTheDocument()
+  })
+
+  it('sin perfil, el encaje explica cómo conseguir el score', async () => {
+    mockApi({ 'GET /status': status(), 'GET /jobs/1': jobView() }) // /match sin simular: 404
+    renderApp('/jobs/1')
+    const panel = await screen.findByRole('region', { name: 'Encaje' })
+    expect(await within(panel).findByText(/Sin score/)).toBeInTheDocument()
+  })
+
+  it('aprueba desde la ficha', async () => {
+    const calls = mockApi({
+      'GET /status': status(),
+      'GET /jobs/1': jobView(),
+      'GET /jobs/1/match': matchView(),
+      'POST /jobs/1/events': { ok: true, event_id: 3, stage: 'approved' },
+    })
+    renderApp('/jobs/1')
+    await userEvent.click(await screen.findByRole('button', { name: /Aprobar/ }))
+    await waitFor(() =>
+      expect(calls.find((c) => c.method === 'POST')?.body).toEqual({ type: 'approved' }),
+    )
+  })
+
+  it('descarta desde la ficha con motivo', async () => {
+    const calls = mockApi({
+      'GET /status': status(),
+      'GET /jobs/1': jobView(),
+      'GET /jobs/1/match': matchView(),
+      'POST /jobs/1/events': { ok: true, event_id: 3, stage: 'closed' },
+    })
+    renderApp('/jobs/1')
+    await userEvent.click(await screen.findByRole('button', { name: /Descartar/ }))
+    const dialog = await screen.findByRole('dialog')
+    await userEvent.click(within(dialog).getByRole('radio', { name: /Salario/ }))
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Descartar' }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    expect(calls.find((c) => c.method === 'POST')?.body).toEqual({ type: 'discarded', reason: 'salary' })
+  })
+
+  it('reabre una oferta cerrada por los filtros y explica por qué se cerró', async () => {
+    const now = new Date().toISOString()
+    const view = jobView({
+      stage: 'closed',
+      events: [
+        ...jobView().events,
+        {
+          id: 3,
+          type: 'hard_filter_failed',
+          actor: 'system',
+          agent_name: null,
+          payload: { failures: [{ filter: 'years', reason: 'Pide 8 años de experiencia.' }] },
+          occurred_at: now,
+          recorded_at: now,
+        },
+      ],
+    })
+    const calls = mockApi({
+      'GET /status': status(),
+      'GET /jobs/1': view,
+      'GET /jobs/1/match': matchView(),
+      'POST /jobs/1/events': { ok: true, event_id: 4, stage: 'pending_triage' },
+    })
+    renderApp('/jobs/1')
+    expect(await screen.findByText('Pide 8 años de experiencia.')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Aprobar/ })).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: /Reabrir/ }))
+    await waitFor(() =>
+      expect(calls.find((c) => c.method === 'POST')?.body).toEqual({ type: 'reopened' }),
+    )
   })
 })

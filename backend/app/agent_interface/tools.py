@@ -10,8 +10,9 @@ from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, field_validato
 from sqlalchemy.orm import Session
 
 from app.agent_interface.registry import CallContext, CliSpec, ToolSpec
-from app.schemas.llm_io import JobExtraction
+from app.schemas.llm_io import FitAssessment, JobExtraction
 from app.services import events, extractions, ingest, jobs, profile, status
+from app.services.matching import service as matching
 from app.services.pipeline import EventType, Stage
 
 
@@ -44,13 +45,18 @@ class ListJobsInput(_Input):
     limit: int = Field(default=jobs.DEFAULT_LIMIT, ge=1, le=jobs.MAX_LIMIT)
     order: jobs.JobOrder = Field(
         default="score_desc",
-        description="`score_desc` (hasta la fase 07, igual que `recent`) o `recent`.",
+        description="`score_desc` (sin score, al final) o `recent`.",
     )
 
 
 class SaveExtractionInput(_Input):
     job_id: int = Field(ge=1, description="Id de la oferta.")
     extraction: JobExtraction
+
+
+class SaveFitAssessmentInput(_Input):
+    job_id: int = Field(ge=1, description="Id de la oferta.")
+    assessment: FitAssessment
 
 
 class AddEventInput(_Input):
@@ -143,6 +149,18 @@ def _add_event(session: Session, args: AddEventInput, ctx: CallContext) -> event
 
 def _get_timeline(session: Session, args: JobIdInput, _ctx: CallContext) -> events.Timeline:
     return events.get_timeline(session, args.job_id)
+
+
+def _get_match(session: Session, args: JobIdInput, _ctx: CallContext) -> matching.MatchView:
+    return matching.get_match(session, args.job_id)
+
+
+def _save_fit_assessment(
+    session: Session, args: SaveFitAssessmentInput, ctx: CallContext
+) -> matching.SaveAssessmentResult:
+    return matching.save_fit_assessment(
+        session, args.job_id, args.assessment, agent_name=ctx.client_name
+    )
 
 
 def _get_profile(
@@ -260,6 +278,34 @@ TOOLS: tuple[ToolSpec, ...] = (
         handler=_get_profile,
         cli=CliSpec(path=("profile", "show")),
         audit_fields=("sections",),
+    ),
+    ToolSpec(
+        name="get_match",
+        description=(
+            "Filtros duros, score 0-100 y desglose (skills cubiertas con su nivel y ausentes, "
+            "similitud, preferencias) de una oferta frente al perfil vigente. Lo calcula el "
+            "código; si el perfil o la extracción cambiaron, se recalcula."
+        ),
+        input_model=JobIdInput,
+        output_model=matching.MatchView,
+        handler=_get_match,
+        cli=CliSpec(path=("match", "show"), arguments=("job_id",)),
+    ),
+    ToolSpec(
+        name="save_fit_assessment",
+        description=(
+            "Guarda tu FitAssessment (veredicto, motivo, riesgos y preguntas) sobre el match "
+            "vigente y registra `fit_assessed`. No aprueba ni descarta: eso lo decide el usuario."
+        ),
+        input_model=SaveFitAssessmentInput,
+        output_model=matching.SaveAssessmentResult,
+        handler=_save_fit_assessment,
+        cli=CliSpec(
+            path=("match", "save-assessment"),
+            arguments=("job_id",),
+            file_field="assessment",
+            file_format="json",
+        ),
     ),
 )
 

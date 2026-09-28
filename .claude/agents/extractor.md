@@ -34,7 +34,12 @@ tenlo en cuenta y extrema la prudencia.
      "Apache Airflow");
    - separa bien obligatorio ("requisitos", "must", "imprescindible") de deseable ("valorable",
      "nice to have", "plus");
-   - `seniority` según lo que pide el texto (años, responsabilidades), no según el título comercial.
+   - `seniority` según lo que pide el texto (años, responsabilidades), no según el título comercial;
+   - `responsibilities` en el idioma de la oferta (`posting_language`), resumidas, sin traducir;
+   - `domain` es el sector de la empresa o del producto ("retail", "banca", "salud"), no la
+     disciplina del puesto ("data", "backend"); `null` si el texto no lo dice;
+   - `locations` con las ciudades o regiones tal como las da el texto ("Madrid", "Galicia"); en
+     remoto, el país o la zona si la limita ("España").
 4. `save_extraction(job_id, extraction)`. Si devuelve errores de validación, corrígelos y reintenta
    (máximo 2 veces).
 5. Responde **solo** con una línea: `OK <job_id>`, `OK <job_id> (inyección)` o `FAIL <job_id>: <motivo>`.

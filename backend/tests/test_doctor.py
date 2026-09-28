@@ -54,11 +54,22 @@ def test_soffice_from_env(tmp_path: Path) -> None:
     )
 
 
-def test_cv_template(tmp_path: Path) -> None:
-    template = tmp_path / "cv_template.docx"
-    assert doctor.check_cv_template(template).status == CheckStatus.WARN
-    template.touch()
-    assert doctor.check_cv_template(template).status == CheckStatus.OK
+def test_cv_templates(tmp_path: Path) -> None:
+    builtin, own = tmp_path / "templates", tmp_path / "data" / "templates"
+    check = doctor.check_cv_templates(builtin, own)
+    assert check.status == CheckStatus.WARN
+    assert "fase 08" in check.detail
+    (builtin / "ats-simple").mkdir(parents=True)
+    (builtin / "ats-simple" / "template.yaml").touch()
+    (builtin / "sin-yaml").mkdir()  # una carpeta sin template.yaml no cuenta
+    check = doctor.check_cv_templates(builtin, own)
+    assert (check.status, check.detail) == (CheckStatus.OK, "integradas: ats-simple")
+    (own / "mi-cv").mkdir(parents=True)
+    (own / "mi-cv" / "template.yaml").touch()
+    assert doctor.check_cv_templates(builtin, own).detail == "integradas: ats-simple; tuyas: mi-cv"
+    (builtin / "ats-simple" / "template.yaml").unlink()
+    check = doctor.check_cv_templates(builtin, own)
+    assert (check.status, check.detail) == (CheckStatus.OK, "integradas: ninguna; tuyas: mi-cv")
 
 
 @pytest.mark.usefixtures("no_system_soffice")
@@ -68,7 +79,7 @@ def test_run_doctor_only_warns_on_fresh_setup() -> None:
     assert report.ok
     assert statuses["Directorio de datos"] == CheckStatus.OK
     assert statuses["LibreOffice"] == CheckStatus.WARN
-    assert statuses["Plantilla de CV"] == CheckStatus.WARN
+    assert statuses["Plantillas de CV"] == CheckStatus.WARN
 
 
 @pytest.mark.usefixtures("no_system_soffice")
@@ -90,7 +101,8 @@ def test_cli_doctor_json() -> None:
         "Python",
         "Directorio de datos",
         "LibreOffice",
-        "Plantilla de CV",
+        "Plantillas de CV",
+        "Embeddings",
     ]
 
 

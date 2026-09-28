@@ -1,0 +1,24 @@
+{
+  "title_normalized": "Data Engineer",
+  "seniority": "mid",
+  "years_experience_min": 2,
+  "employment_type": "full_time",
+  "remote_mode": "hybrid",
+  "locations": ["Santiago de Compostela"],
+  "languages_required": [{"language": "Inglés", "level": "B2"}],
+  "salary": {"min": 36000, "max": 42000, "currency": "EUR", "period": "year"},
+  "must_have_skills": ["Python", "SQL", "Snowflake", "dbt"],
+  "nice_to_have_skills": ["Power BI", "Docker"],
+  "responsibilities": [
+    "Diseñar y mantener pipelines ELT sobre Snowflake con dbt",
+    "Orquestar cargas diarias con Apache Airflow",
+    "Modelar datos de ventas e inventario para negocio",
+    "Revisar código y documentar los modelos"
+  ],
+  "domain": "retail",
+  "posting_language": "es",
+  "application_deadline": "2026-10-31",
+  "red_flags": [],
+  "injection_suspected": false,
+  "injection_excerpt": null
+}

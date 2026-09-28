@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
-from app.models import Application, Company, Job
+from app.models import Application, Company, Job, Match
 from app.schemas.llm_io import JobExtraction
 from app.services import extractions
 from app.services.events import EventOut, JobNotFoundError
@@ -17,7 +17,7 @@ from app.services.untrusted import wrap_untrusted
 DEFAULT_LIMIT = 20
 MAX_LIMIT = 200
 
-# `score_desc` ordena como `recent` hasta que exista el score (fase 07).
+# `score_desc`: por el score del último match; las ofertas sin score, al final y por fecha.
 JobOrder = Literal["score_desc", "recent"]
 
 
@@ -35,6 +35,28 @@ class JobSummary(BaseModel):
     risk_flags: list[str]
     duplicate_of: int | None
     first_seen_at: datetime
+    score: int | None  # del último match; None si aún no se ha puntuado
+
+
+def _last_match():
+    """Subconsulta con el último match de cada oferta."""
+    return (
+        select(Match.job_id.label("job_id"), func.max(Match.id).label("match_id"))
+        .group_by(Match.job_id)
+        .subquery()
+    )
+
+
+def _summary_query():
+    """Oferta, empresa, etapa y score del último match (outer joins: puede no haber)."""
+    last = _last_match()
+    return (
+        select(Job, Company.name, Application.stage, Match.score)
+        .join(Company, Company.id == Job.company_id)
+        .outerjoin(Application, Application.job_id == Job.id)
+        .outerjoin(last, last.c.job_id == Job.id)
+        .outerjoin(Match, Match.id == last.c.match_id)
+    )
 
 
 def parse_stage(value: str) -> Stage:
@@ -51,18 +73,14 @@ def list_jobs(
     limit: int = DEFAULT_LIMIT,
     order: JobOrder = "score_desc",
 ) -> list[JobSummary]:
-    """Ofertas filtradas por etapa. Sin score (fase 07), las más recientes primero."""
+    """Ofertas filtradas por etapa, por score (las sin score al final) o las más recientes."""
     if order not in ("score_desc", "recent"):
         raise InvalidQueryError(f"Orden desconocido: «{order}». Válidos: score_desc, recent.")
     if not 1 <= limit <= MAX_LIMIT:
         raise InvalidQueryError(f"`limit` debe estar entre 1 y {MAX_LIMIT}.")
-    query = (
-        select(Job, Company.name, Application.stage)
-        .join(Company, Company.id == Job.company_id)
-        .outerjoin(Application, Application.job_id == Job.id)
-        .order_by(Job.first_seen_at.desc(), Job.id.desc())
-        .limit(limit)
-    )
+    recent = (Job.first_seen_at.desc(), Job.id.desc())
+    ordering = (Match.score.desc().nulls_last(), *recent) if order == "score_desc" else recent
+    query = _summary_query().order_by(*ordering).limit(limit)
     if stage is not None:
         query = query.where(Application.stage == parse_stage(stage).value)
     return [
@@ -76,8 +94,9 @@ def list_jobs(
             risk_flags=job.risk_flags,
             duplicate_of=job.duplicate_of,
             first_seen_at=job.first_seen_at,
+            score=score,
         )
-        for job, company, job_stage in session.execute(query).all()
+        for job, company, job_stage, score in session.execute(query).all()
     ]
 
 
@@ -88,15 +107,10 @@ class JobDetail(JobSummary):
 
 def get_job(session: Session, job_id: int) -> JobDetail:
     """Metadatos de la oferta y su texto crudo envuelto como no confiable, con sus `risk_flags`."""
-    row = session.execute(
-        select(Job, Company.name, Application.stage)
-        .join(Company, Company.id == Job.company_id)
-        .outerjoin(Application, Application.job_id == Job.id)
-        .where(Job.id == job_id)
-    ).first()
+    row = session.execute(_summary_query().where(Job.id == job_id)).first()
     if row is None:
         raise JobNotFoundError(f"No existe la oferta {job_id}.")
-    job, company, job_stage = row
+    job, company, job_stage, score = row
     return JobDetail(
         id=job.id,
         title=job.title,
@@ -107,6 +121,7 @@ def get_job(session: Session, job_id: int) -> JobDetail:
         risk_flags=job.risk_flags,
         duplicate_of=job.duplicate_of,
         first_seen_at=job.first_seen_at,
+        score=score,
         posted_at=job.posted_at,
         text=wrap_untrusted(job.id, job.raw_text, job.risk_flags),
     )
@@ -156,19 +171,14 @@ def search_jobs(
                 Company.name.ilike(pattern, escape="!"),
             )
         )
-    base = (
-        select(Job, Company.name, Application.stage)
-        .join(Company, Company.id == Job.company_id)
-        .outerjoin(Application, Application.job_id == Job.id)
-        .where(*filters)
-    )
+    base = _summary_query().where(*filters)
     total = session.scalar(select(func.count()).select_from(base.subquery())) or 0
     rows = session.execute(
         base.order_by(Job.first_seen_at.desc(), Job.id.desc()).limit(limit).offset(offset)
     ).all()
-    latest = extractions.latest_rows(session, [job.id for job, _, _ in rows])
+    latest = extractions.latest_rows(session, [job.id for job, *_ in rows])
     items = []
-    for job, company, job_stage in rows:
+    for job, company, job_stage, score in rows:
         extraction = latest.get(job.id)
         items.append(
             JobRow(
@@ -181,6 +191,7 @@ def search_jobs(
                 risk_flags=job.risk_flags,
                 duplicate_of=job.duplicate_of,
                 first_seen_at=job.first_seen_at,
+                score=score,
                 remote_mode=extraction.data.get("remote_mode") if extraction else None,
             )
         )
@@ -217,15 +228,10 @@ class JobView(JobSummary):
 
 def get_job_view(session: Session, job_id: int) -> JobView:
     """Ficha completa de una oferta para la UI."""
-    row = session.execute(
-        select(Job, Company.name, Application.stage)
-        .join(Company, Company.id == Job.company_id)
-        .outerjoin(Application, Application.job_id == Job.id)
-        .where(Job.id == job_id)
-    ).first()
+    row = session.execute(_summary_query().where(Job.id == job_id)).first()
     if row is None:
         raise JobNotFoundError(f"No existe la oferta {job_id}.")
-    job, company, job_stage = row
+    job, company, job_stage, score = row
     extraction_row = extractions.latest_rows(session, [job.id]).get(job.id)
     events = job_events(session, job_id)
     reports = [
@@ -253,6 +259,7 @@ def get_job_view(session: Session, job_id: int) -> JobView:
         risk_flags=job.risk_flags,
         duplicate_of=job.duplicate_of,
         first_seen_at=job.first_seen_at,
+        score=score,
         posted_at=job.posted_at,
         raw_text=job.raw_text,
         extraction=(

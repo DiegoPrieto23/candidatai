@@ -52,7 +52,8 @@ uv run ruff check --fix && uv run ruff format
 uv run alembic upgrade head        # migraciones
 uv run jh --help                   # CLI
 uv run jh serve                    # API en http://127.0.0.1:8000
-uv run jh worker                   # tareas en segundo plano
+uv run jh worker                   # tareas en segundo plano (--once: vacía la cola)
+uv run jh eval matching            # precision/recall del matching (evals/matching/)
 cd frontend && pnpm dev            # UI en http://127.0.0.1:5173
 uv run scripts/sync_agents.py      # regenerar configuración de agentes (desde la raíz)
 uv run scripts/sync_agents.py --check   # CI: falla si lo generado no está al día

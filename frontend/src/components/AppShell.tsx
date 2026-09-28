@@ -102,6 +102,26 @@ function ExtractionReminder() {
   )
 }
 
+function navClass({ isActive }: { isActive: boolean }) {
+  return cn(
+    'flex items-center gap-1.5 rounded-md px-3 py-1.5 transition-colors',
+    isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
+  )
+}
+
+function TriageCount() {
+  const { data } = useStatus()
+  const count = data?.by_stage.pending_triage ?? 0
+  if (!count) return null
+  return (
+    <span className="tabular grid h-[18px] min-w-[18px] place-items-center rounded-full bg-primary px-1 text-[0.7rem] font-semibold text-primary-foreground">
+      <span className="sr-only">, </span>
+      {count}
+      <span className="sr-only"> por revisar</span>
+    </span>
+  )
+}
+
 export function AppShell() {
   return (
     <div className="min-h-[100dvh]">
@@ -114,17 +134,12 @@ export function AppShell() {
             <span className="hidden sm:inline">Job Hunter</span>
           </Link>
           <nav className="flex items-center gap-1 text-sm">
-            <NavLink
-              to="/"
-              end
-              className={({ isActive }) =>
-                cn(
-                  'rounded-md px-3 py-1.5 transition-colors',
-                  isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
-                )
-              }
-            >
+            <NavLink to="/" end className={navClass}>
               Bandeja
+            </NavLink>
+            <NavLink to="/triaje" className={navClass}>
+              Triaje
+              <TriageCount />
             </NavLink>
           </nav>
           <div className="ml-auto flex items-center gap-1.5">

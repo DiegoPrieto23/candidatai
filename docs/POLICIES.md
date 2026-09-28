@@ -28,6 +28,46 @@ Las reglas con valores ajustables tienen su parámetro en `config/policies.yaml`
 - Prestigio de la empresa o salario alto **no** compensan un encaje técnico pobre.
 - Veredicto `strong` exige cubrir la mayoría de `must_have_skills` con nivel `F`/`C+`.
 
+### Filtros duros
+
+Los aplica el código al guardar una extracción. Si alguno falla, la oferta se cierra con
+`hard_filter_failed` y el motivo; se puede reabrir desde la UI. Lo que la oferta no dice
+(`unknown`, `null`, listas vacías) no descarta.
+
+| Filtro | Falla si… |
+|---|---|
+| Seniority | No está en `seniority_target`: la lista de todos los niveles que acepta el candidato, hacia arriba y hacia abajo (`unknown` pasa) |
+| Años | `years_experience_min` > `max_years_required` + `years_tolerance` |
+| Modalidad | No está en `remote_modes` (`unknown` pasa si `unknown_remote_mode_passes`) |
+| Ubicación | No es remota y ninguna ubicación es preferida, ni permitida siendo híbrida (o desconocida con la política anterior), o está descartada. Sin `preferred` ni `allowed`, vale cualquiera no descartada. Se compara por palabras completas, sin tildes |
+| Idiomas | Pide un idioma que no está en `languages` ni en `languages_for_work`, o un nivel MCER superior al del perfil («Nativo» ≥ C2; un nivel que no se entiende no descarta) |
+| Palabras de descarte | El título contiene alguna de `discard_title_keywords` (palabra completa, sin tildes) |
+
+Al importar un perfil nuevo se recalcula todo y se cierran las ofertas en triaje que ya no pasan.
+Nunca se vuelve a cerrar por filtros una oferta que el usuario reabrió después de un
+`hard_filter_failed`: decidió él.
+
+### Score 0-100
+
+Combinación ponderada (`scoring.weights`) de cuatro componentes entre 0 y 1:
+
+- **Obligatorias** y **deseables**: cobertura de las skills de la oferta, cada una con el peso de
+  su nivel en el perfil (`level_weights`: F 1,0 · C+ 0,8 · C 0,5 · B 0,2; `basic_skills` cuenta
+  como B). Los nombres se comparan sin tildes ni mayúsculas y con los sinónimos de
+  `config/skill_aliases.yaml`.
+- **Similitud semántica**: embeddings locales (ADR-006) entre resumen + titular + logros del perfil
+  y título + responsabilidades + skills + sector de la oferta, reescalada entre
+  `similarity_floor` y `similarity_ceiling`.
+- **Preferencias**: media de puesto (parecido con `preferences.roles`, según su orden; todas las
+  palabras del puesto buscado deben estar en el título o en una de sus partes, sin contar la
+  seniority: «Sales Engineer (Data Platform)» no cuenta como «Data Engineer»), modalidad
+  (según el orden de `remote_modes`) y zona (preferida 1, permitida 0,6, desconocida 0,5).
+
+Un componente que no se puede calcular (la oferta no lista skills de ese tipo o no hay modelo de
+embeddings) no cuenta, y su peso se reparte entre los demás. El desglose lo dice. Los filtros
+duros no cambian el score. Por debajo de `triage_threshold`, la oferta se ve atenuada en el
+triaje. Los pesos y el umbral se ajustan con `jh eval matching` (`evals/matching/README.md`).
+
 ## 3. CV
 
 | Regla | Detalle |

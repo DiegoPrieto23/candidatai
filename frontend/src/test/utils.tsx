@@ -2,7 +2,7 @@ import { render } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter } from 'react-router'
 import { vi } from 'vitest'
-import type { JobRow, JobView, Schemas, StatusReport } from '@/api/client'
+import type { JobRow, JobView, MatchView, Schemas, StatusReport, TriageItem, TriageQueue } from '@/api/client'
 import { AppRoutes } from '@/App'
 import { TooltipProvider } from '@/components/ui/tooltip'
 
@@ -86,6 +86,7 @@ export function jobRow(changes: Partial<JobRow> = {}): JobRow {
     duplicate_of: null,
     first_seen_at: new Date().toISOString(),
     remote_mode: 'hybrid',
+    score: null,
     ...changes,
   }
 }
@@ -124,4 +125,55 @@ export function jobView(changes: Partial<JobView> = {}): JobView {
     injection: null,
     ...changes,
   }
+}
+
+export function matchView(changes: Partial<MatchView> = {}): MatchView {
+  const now = new Date().toISOString()
+  return {
+    job_id: 1,
+    match_id: 1,
+    profile_version_id: 1,
+    extraction_id: 1,
+    score: 78,
+    triage_threshold: 55,
+    below_threshold: false,
+    hard_filters: { passed: true, failures: [] },
+    breakdown: {
+      components: [
+        { name: 'must_have_coverage', value: 0.8, weight: 0.45, effective_weight: 0.6429, points: 51.43 },
+        { name: 'semantic_similarity', value: null, weight: 0.3, effective_weight: 0, points: 0 },
+        { name: 'preferences_fit', value: 0.95, weight: 0.15, effective_weight: 0.2143, points: 20.36 },
+        { name: 'nice_to_have_coverage', value: 0.5, weight: 0.1, effective_weight: 0.1429, points: 7.14 },
+      ],
+      must_have: {
+        ratio: 0.8,
+        covered: [
+          { skill: 'Python', profile_skill: 'Python', level: 'F', weight: 1 },
+          { skill: 'dbt', profile_skill: 'dbt', level: 'basic', weight: 0.2 },
+        ],
+        missing: ['Kafka'],
+      },
+      nice_to_have: { ratio: null, covered: [], missing: [] },
+      semantic: null,
+      preferences: { value: 0.95, role: 1, role_match: 'Data Engineer', remote_mode: 0.85, location: 1 },
+      notes: ['Similitud semántica desactivada (JH_EMBEDDINGS=off).'],
+    },
+    assessment: null,
+    assessment_stale: false,
+    created_at: now,
+    ...changes,
+  }
+}
+
+export function triageItem(id: number, score: number, changes: Partial<TriageItem> = {}): TriageItem {
+  return {
+    job: jobRow({ id, title: `Oferta ${id}`, company: `Empresa ${id}`, score }),
+    extraction: EXTRACTION,
+    match: matchView({ job_id: id, match_id: id, score, below_threshold: score < 55 }),
+    ...changes,
+  }
+}
+
+export function triageQueue(items: TriageItem[], changes: Partial<TriageQueue> = {}): TriageQueue {
+  return { items, total: items.length, triage_threshold: 55, profile_missing: false, ...changes }
 }

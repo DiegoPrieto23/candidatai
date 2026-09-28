@@ -45,4 +45,4 @@ def test_get_settings_creates_data_dir(isolated_env: Path) -> None:
     assert not isolated_env.exists()
     settings = get_settings()
     assert settings.data_dir.is_dir()
-    assert settings.cv_template_path == settings.data_dir / "cv_template.docx"
+    assert settings.user_templates_dir == settings.data_dir / "templates"

@@ -70,11 +70,16 @@ Una fila por extracción; la vigente es la más reciente.
 |---|---|---|
 | id | int PK | |
 | job_id / profile_version_id | FK | |
-| hard_filters | JSON | `{passed: bool, failures: [..]}` |
+| extraction_id | FK job_extractions? | Extracción con la que se calculó. Si hay una más reciente o una versión de perfil más reciente, el match está desfasado |
+| scoring_key | str? | Huella de la configuración de puntuación: versión del scorer, `scoring` (sin `triage_threshold`) y `hard_filters` de `policies.yaml`, alias de skills y modelo de embeddings (o ninguno). Si cambia, el match está desfasado |
+| hard_filters | JSON | `{passed: bool, failures: [{filter, reason}]}` |
 | score | int 0-100 | Calculado por código |
-| breakdown | JSON | Componentes del score, skills cubiertas y ausentes |
-| assessment | JSON? | Lo rellena el agente: veredicto, motivo, riesgos |
+| breakdown | JSON | `ScoreBreakdown`: componentes (valor, peso, peso efectivo, puntos), skills cubiertas (con nivel) y ausentes, similitud, preferencias y notas |
+| assessment | JSON? | `FitAssessment` del agente: veredicto, motivo, riesgos y preguntas |
 | created_at | datetime | |
+
+Una fila por cálculo: el vigente es el último de la oferta. Los anteriores se conservan (la
+valoración del agente puede venir de uno anterior: `assessment_stale`).
 
 ### `documents`
 Contenido de un documento (lo que escribe el agente). La presentación va en `document_renders`.
@@ -132,6 +137,14 @@ Proyección del estado de candidatura para consultas rápidas; se recalcula desd
 Cola de trabajo del worker (sin Redis).
 `id, kind, payload JSON, status (queued|running|done|failed), attempts, run_after, last_error`.
 
+| `kind` | Lo encola | Hace |
+|---|---|---|
+| `score_job` `{job_id}` | `save_extraction` (con perfil) | Calcula el match vigente |
+| `rescore_all` `{}` | `jh profile import` con versión nueva | Recalcula los matches desfasados de las ofertas abiertas con extracción y cierra las de triaje que ya no pasan los filtros (lo mismo que `jh match rescore`, sin cola) |
+
+No se encola dos veces la misma tarea (mismo `kind` y `payload`) mientras siga en cola. Si falla,
+vuelve a la cola con espera creciente; tras 3 intentos queda `failed` con `last_error`.
+
 ### `mcp_calls`
 Auditoría de cada llamada a la interfaz para agentes:
 `id, channel (mcp|cli), client_name?, tool, args_summary, job_id?, ok, error?, called_at`.
@@ -144,12 +157,12 @@ Nunca guarda texto crudo de ofertas ni datos del perfil en `args_summary`.
 | `found` | system | `pending_extraction` |
 | `duplicate_detected` | system | `closed` |
 | `extracted` | agent | `pending_triage` (si pasa filtros duros) |
-| `hard_filter_failed` | system | `closed` (reabrible) |
+| `hard_filter_failed` | system | `closed` (reabrible); `payload.failures` |
 | `extraction_failed` | agent | se queda en `pending_extraction` |
 | `injection_suspected` | system / agent | sin cambio; aviso visible en la UI |
-| `scored` / `fit_assessed` | system / agent | sin cambio |
+| `scored` / `fit_assessed` | system / agent | sin cambio; `payload`: `match_id` y `score`/`passed` o `verdict` |
 | `approved` | user | `approved` |
-| `discarded` | user | `closed` (con motivo) |
+| `discarded` | user | `closed`; desde la UI, `payload.reason` (`skills`, `seniority`, `location`, `salary`, `company`, `other`) y `note` opcional (obligatoria con `other`) |
 | `cv_generated` | agent | sin cambio |
 | `cv_rendered` | system / user / agent | sin cambio |
 | `cv_verified` | agent | `cv_ready` si `passed` y hay un render sin `too_long` |

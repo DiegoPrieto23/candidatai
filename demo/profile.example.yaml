@@ -120,7 +120,7 @@ stories:                     # historias STAR para entrevistas; cita logros como
 
 preferences:
   roles: [Data Engineer, Analytics Engineer, Data Analyst]   # por prioridad
-  seniority_target: [junior, mid]
+  seniority_target: [junior, mid]   # todos los niveles que aceptas; los demás se descartan
   max_years_required: 4
   remote_modes: [remote, hybrid]
   locations:

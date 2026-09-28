@@ -9,6 +9,10 @@ export type EventOut = Schemas['EventOut']
 export type StatusReport = Schemas['StatusReport']
 export type AddJobResult = Schemas['AddJobResult']
 export type ErrorDetail = Schemas['ErrorDetail']
+export type MatchView = Schemas['MatchView']
+export type TriageItem = Schemas['TriageItem']
+export type TriageQueue = Schemas['TriageQueue']
+export type DiscardReason = NonNullable<Schemas['AddUserEventBody']['reason']>
 
 export const API_URL: string = import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:8000'
 

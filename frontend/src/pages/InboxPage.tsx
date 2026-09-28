@@ -11,6 +11,7 @@ import {
 } from '@phosphor-icons/react'
 import type { JobRow, Stage } from '@/api/client'
 import { PAGE_SIZE, useJobs } from '@/api/queries'
+import { ScoreBadge } from '@/components/MatchDetails'
 import { StageBadge } from '@/components/StageBadge'
 import { EmptyState, ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
@@ -63,6 +64,7 @@ function JobTable({ jobs }: { jobs: JobRow[] }) {
           <tr className="text-left text-xs text-muted-foreground">
             <th className="pb-3 pl-4 font-medium">Oferta</th>
             <th className="pb-3 font-medium">Modalidad</th>
+            <th className="pb-3 pr-6 text-right font-medium">Encaje</th>
             <th className="pb-3 font-medium">Etapa</th>
             <th className="pb-3 pr-4 text-right font-medium">Alta</th>
           </tr>
@@ -92,6 +94,9 @@ function JobTable({ jobs }: { jobs: JobRow[] }) {
               </td>
               <td className="py-3.5 pr-6 whitespace-nowrap">
                 <RemoteMode mode={job.remote_mode} />
+              </td>
+              <td className="py-3.5 pr-6 text-right">
+                <ScoreBadge score={job.score} />
               </td>
               <td className="py-3.5 pr-6">
                 <StageBadge stage={job.stage} />
@@ -124,6 +129,7 @@ function JobTable({ jobs }: { jobs: JobRow[] }) {
                 <StageBadge stage={job.stage} />
               </div>
               <p className="mt-2 flex gap-3 text-xs text-muted-foreground">
+                {job.score != null && <span className="tabular font-medium text-foreground">{job.score}/100</span>}
                 <RemoteMode mode={job.remote_mode} />
                 <time dateTime={job.first_seen_at}>{formatRelative(job.first_seen_at)}</time>
               </p>

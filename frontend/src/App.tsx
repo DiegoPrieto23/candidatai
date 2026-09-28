@@ -8,6 +8,7 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import { InboxPage } from '@/pages/InboxPage'
 import { JobPage } from '@/pages/JobPage'
 import { NewJobPage } from '@/pages/NewJobPage'
+import { TriagePage } from '@/pages/TriagePage'
 
 function NotFound() {
   return (
@@ -30,6 +31,7 @@ export function AppRoutes() {
         <Route index element={<InboxPage />} />
         <Route path="jobs/:id" element={<JobPage />} />
         <Route path="nueva" element={<NewJobPage />} />
+        <Route path="triaje" element={<TriagePage />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

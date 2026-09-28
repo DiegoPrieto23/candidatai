@@ -37,6 +37,7 @@ _ABBREVIATIONS = [
     (re.compile(r"\bsr\b\.?", re.IGNORECASE), "senior"),
     (re.compile(r"\bjr\b\.?", re.IGNORECASE), "junior"),
 ]
+_SEGMENT_SEPARATOR = re.compile(r"[()\[\]]|\s[-–—|/]\s|\|")
 _REMOTE_WORDS = re.compile(r"\b(?:remoto|en remoto|teletrabajo|remote)\b")
 
 
@@ -50,6 +51,11 @@ def _clean(value: str, keep: str = "") -> str:
     value = _strip_accents(unicodedata.normalize("NFKC", value)).lower()
     value = "".join(ch if ch.isalnum() or ch in keep else " " for ch in value)
     return " ".join(value.split())
+
+
+def fold(value: str, keep: str = "") -> str:
+    """Forma comparable de un texto: minúsculas, sin tildes ni signos (salvo `keep`)."""
+    return _clean(value, keep)
 
 
 def normalize_company(name: str) -> str:
@@ -70,6 +76,19 @@ def normalize_title(title: str) -> str:
         value = pattern.sub(replacement, value)
     # `+` y `#` distinguen tecnologías (C++, C#).
     return _clean(value, keep="+#")
+
+
+def title_segments(title: str) -> list[str]:
+    """Partes normalizadas de un título: lo de fuera y lo de dentro de cada paréntesis, y lo que
+    separan « - », « | » o « / ».
+
+    «Sales Engineer (Data Platform)» -> «sales engineer» y «data platform»;
+    «Ingeniero/a de datos (Data Engineer)» -> «ingeniero a de datos» y «data engineer».
+    """
+    value = _GENERIC_TAG.sub(" ", unicodedata.normalize("NFKC", title))
+    value = _WORK_MODE_SUFFIX.sub("", value.strip())
+    parts = _SEGMENT_SEPARATOR.split(value)
+    return [seg for part in parts if (seg := normalize_title(part))]
 
 
 def normalize_location(location: str | None) -> str:

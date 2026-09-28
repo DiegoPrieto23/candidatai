@@ -229,6 +229,7 @@ class CvPreferences(_Strict):
 
 class Preferences(_Strict):
     roles: list[str] = Field(min_length=1)
+    # Todos los niveles a los que se presentaría, por arriba y por abajo: los demás se descartan.
     seniority_target: list[Seniority] = Field(min_length=1)
     max_years_required: int | None = Field(default=None, ge=0, le=40)
     remote_modes: list[RemoteMode] = Field(min_length=1)

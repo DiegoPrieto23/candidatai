@@ -5,7 +5,7 @@ perderse en silencio.
 """
 
 from datetime import date
-from typing import Literal, Self
+from typing import Annotated, Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -63,3 +63,19 @@ class JobExtraction(_Strict):
         if self.injection_excerpt and not self.injection_suspected:
             raise ValueError("`injection_excerpt` solo va si `injection_suspected` es true.")
         return self
+
+
+MAX_ASSESSMENT_ITEMS = 8
+MAX_ASSESSMENT_ITEM = 300
+
+
+AssessmentItem = Annotated[str, Field(min_length=1, max_length=MAX_ASSESSMENT_ITEM)]
+
+
+class FitAssessment(_Strict):
+    """Valoración del encaje que escribe el agente (skill `evaluar-encaje`). Ver POLICIES §2."""
+
+    verdict: Literal["strong", "possible", "weak"]
+    rationale: str = Field(min_length=1, max_length=1000)  # 2-3 frases con datos del desglose
+    risks: list[AssessmentItem] = Field(max_length=MAX_ASSESSMENT_ITEMS)
+    questions_for_user: list[AssessmentItem] = Field(max_length=MAX_ASSESSMENT_ITEMS)

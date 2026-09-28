@@ -15,6 +15,9 @@ Los comandos se ejecutan desde la raíz del repo.
 3. Rellena el perfil sección a sección. Pregunta en bloques cortos lo que el CV no dice: niveles
    F/C+/C/B de cada skill, métricas de los logros, NDAs, preferencias de búsqueda, política de
    foto e historias STAR (al menos 4).
+   En `seniority_target`, pregunta **todos** los niveles a los que se presentaría, por arriba y
+   por abajo (p. ej. «¿y puestos junior?, ¿y senior?»): los que no estén se descartan solos. No
+   lo deduzcas de sus años de experiencia.
 
 **Si ya existe:** aplica solo los cambios que se pidan. Para un logro nuevo, pregunta la métrica
 real si no la dan; si no hay métrica, se escribe sin ella.

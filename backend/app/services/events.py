@@ -1,7 +1,7 @@
 """Registro de eventos: la única forma de cambiar el estado de una oferta."""
 
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal, get_args
 
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -206,25 +206,48 @@ class NotUserEventError(ValueError):
     pass
 
 
+# Motivos rápidos de descarte en el triaje (para la analítica del embudo). `other` exige nota.
+DiscardReason = Literal["seniority", "skills", "location", "salary", "company", "other"]
+DISCARD_REASONS: tuple[str, ...] = get_args(DiscardReason)
+
+
 def add_user_event(
     session: Session,
     job_id: int,
     type: str,
     note: str | None = None,
     occurred_at: datetime | None = None,
+    reason: str | None = None,
 ) -> AddEventResult:
-    """Registra un evento del usuario (actor `user`). La nota va en `payload.note`."""
+    """Registra un evento del usuario (actor `user`). La nota va en `payload.note`.
+
+    `discarded` exige un motivo (`reason`, uno de `DISCARD_REASONS`); con `other`, también nota.
+    """
     event_type = parse_event_type(type)
     if event_type not in USER_EVENTS:
         raise NotUserEventError(f"El evento «{event_type}» no lo registra el usuario desde la UI.")
-    if event_type == EventType.NOTE and not (note and note.strip()):
+    note = note.strip() if note and note.strip() else None
+    if event_type == EventType.NOTE and not note:
         raise ValueError("Una nota necesita texto.")
+    if reason is not None and event_type != EventType.DISCARDED:
+        raise ValueError("`reason` solo se usa al descartar.")
+    if event_type == EventType.DISCARDED:
+        if reason not in DISCARD_REASONS:
+            valid = ", ".join(DISCARD_REASONS)
+            raise ValueError(f"Descartar necesita un motivo (`reason`): {valid}.")
+        if reason == "other" and not note:
+            raise ValueError("Con el motivo «other», explica el motivo en la nota.")
+    payload: dict[str, Any] = {}
+    if reason:
+        payload["reason"] = reason
+    if note:
+        payload["note"] = note
     event = record(
         session,
         job_id,
         event_type,
         Actor.USER,
-        payload={"note": note.strip()} if note and note.strip() else None,
+        payload=payload or None,
         occurred_at=occurred_at,
     )
     return AddEventResult(ok=True, event_id=event.id, stage=current_stage(session, job_id))

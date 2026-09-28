@@ -154,7 +154,10 @@ Los datos personales van en `data/` (se crea sola y está en `.gitignore`).
 ```
 cd backend
 uv sync                            # instala dependencias (crea .venv)
+uv sync --extra matching           # opcional: similitud semántica (trae torch, ~1 GB)
 uv run jh doctor                   # comprueba el entorno
+uv run jh worker                   # tareas en segundo plano (scores); --once para vaciar la cola
+uv run jh eval matching            # calidad del matching (evals/matching/README.md)
 uv run pytest                      # tests
 uv run ruff check --fix && uv run ruff format
 ```

@@ -156,7 +156,9 @@ def build() -> tuple[dict[Path, str], list[Path]]:
     roles = [read_doc(p) for p in sorted((AGENTS / "roles").glob("*.md")) if p.name != "README.md"]
     for skill in skills:
         if skill.meta["name"] != skill.source.parent.name:
-            raise SystemExit(f"{rel(skill.source)}: 'name' debe coincidir con el nombre de la carpeta")
+            raise SystemExit(
+                f"{rel(skill.source)}: 'name' debe coincidir con el nombre de la carpeta"
+            )
     expected: dict[Path, str] = {}
     managed_dirs: list[Path] = []
     for target, cfg in manifest["targets"].items():
@@ -193,8 +195,7 @@ def main() -> int:
 
     expected, managed_dirs = build()
     changed = [
-        p for p, c in expected.items()
-        if not p.exists() or p.read_text(encoding="utf-8") != c
+        p for p, c in expected.items() if not p.exists() or p.read_text(encoding="utf-8") != c
     ]
     stale = stale_files(expected, managed_dirs)
 

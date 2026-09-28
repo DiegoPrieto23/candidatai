@@ -15,7 +15,7 @@ REQUISITOS
 - Necesitas DOS terminales de PowerShell abiertas a la vez (una para la API y otra para la UI),
   más la sesión de Claude Code.
 - Los comandos se ejecutan desde la RAÍZ del repo salvo que se diga otra cosa:
-      cd "C:\Users\Diego Prieto\Documents\Claude Code\job-search"
+      cd <carpeta-del-repo>   # p. ej. "C:\Users\<tu-usuario>\...\job-search"
 - Rama de la fase:
       git switch fase/06-frontend-base
 

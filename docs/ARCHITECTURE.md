@@ -28,7 +28,7 @@ La app nunca llama a un modelo y no depende de ningún proveedor.
 | `app/api` | Endpoints REST para la UI | Solo traduce HTTP ↔ servicios |
 | `app/mcp` | Herramientas MCP para agentes | Solo traduce MCP ↔ servicios; valida con Pydantic |
 | `app/cli.py` | CLI `jh`, con modo `--json` equivalente a la MCP | Solo traduce CLI ↔ servicios |
-| `app/worker` | Scheduler y cola de tareas en BD | Ejecuta servicios; nunca un LLM |
+| `app/services/tasks.py`, `worker.py` | Cola de tareas en BD y worker (`jh worker`) | Ejecuta servicios; nunca un LLM |
 | `frontend/` | UI | Solo habla con la API |
 | `.agents/` | Skills, roles y manifiesto, sin nada específico de un proveedor | Fuente única; lo nativo se genera |
 
@@ -41,8 +41,10 @@ La app nunca llama a un modelo y no depende de ningún proveedor.
 | `GET /status` | Recuentos por etapa (cabecera) |
 | `GET /jobs?stage=&q=&limit=&offset=` | Bandeja: filtro por etapa, búsqueda en título y empresa, paginación con `total` |
 | `GET /jobs/{id}` | Ficha: metadatos, texto original, extracción vigente, eventos y aviso de inyección |
+| `GET /jobs/{id}/match` | Match vigente (lo recalcula si está desfasado), igual que `get_match` |
+| `GET /triage` | Ofertas en `pending_triage` con extracción y match, mayor score primero; calcula los que falten |
 | `POST /jobs/url`, `POST /jobs/text` | Alta (mismos servicios que `add_job_from_url` y `add_job_from_text`) |
-| `POST /jobs/{id}/events` | Eventos del usuario (actor `user`): nota, aprobar, descartar… |
+| `POST /jobs/{id}/events` | Eventos del usuario (actor `user`): nota, aprobar, descartar con `reason` obligatorio, reabrir… |
 
 - `jh serve` escucha solo en `127.0.0.1`; CORS solo para `http://127.0.0.1:5173`.
 - Errores con el mismo formato que la interfaz para agentes (`{ok: false, error: {type, message,

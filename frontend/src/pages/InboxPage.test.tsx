@@ -26,6 +26,14 @@ describe('Bandeja', () => {
     expect(within(rows[2]).getByText('Sin extraer')).toBeInTheDocument()
     expect(within(rows[2]).getByLabelText('Posible contenido dirigido a una IA')).toBeInTheDocument()
     expect(within(rows[1]).getByRole('link', { name: 'Data Engineer' })).toHaveAttribute('href', '/jobs/1')
+    expect(within(rows[1]).getByText('Sin score')).toBeInTheDocument()
+  })
+
+  it('enseña el score del último match', async () => {
+    mockApi({ 'GET /status': status(0, 1), 'GET /jobs': page([jobRow({ score: 81 })]) })
+    renderApp('/')
+    const table = await screen.findByRole('table')
+    expect(within(table).getByLabelText('Score 81 de 100')).toBeInTheDocument()
   })
 
   it('filtra por la etapa de la URL y busca con retardo', async () => {

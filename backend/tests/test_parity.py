@@ -54,6 +54,31 @@ def seed_profile() -> None:
         profile.import_profile(session, profile.EXAMPLE_PATH)
 
 
+def _seed_profile_and_extract(**changes: Any) -> None:
+    seed_profile()
+    seed_job()
+    with session_scope() as session:
+        extractions.save_extraction(session, 1, JobExtraction.model_validate(extraction(**changes)))
+
+
+def seed_matched() -> None:
+    """Perfil de demo y oferta 1 extraída en Vigo (pasa los filtros): en `pending_triage`."""
+    _seed_profile_and_extract(locations=["Vigo"])
+
+
+def seed_filtered() -> None:
+    """Perfil de demo y oferta 1 extraída en Bilbao (fuera de zona): cerrada por los filtros."""
+    _seed_profile_and_extract()
+
+
+ASSESSMENT: dict[str, Any] = {
+    "verdict": "possible",
+    "rationale": "Cubre Python y SQL con nivel F; dbt y Airflow solo como básicos.",
+    "risks": ["dbt a nivel básico"],
+    "questions_for_user": ["¿Has usado dbt en producción?"],
+}
+
+
 @dataclass
 class Case:
     id: str
@@ -157,6 +182,24 @@ CASES = [
          ["profile", "show", "--sections", "skills,private"], seed=seed_profile,
          expect_error="validation_error"),
     Case("profile-none", "get_profile", {}, ["profile", "show"], expect_error="not_found"),
+    Case("match", "get_match", {"job_id": 1}, ["match", "show", "1"], seed=seed_matched),
+    Case("match-filtered", "get_match", {"job_id": 1}, ["match", "show", "1"],
+         seed=seed_filtered),
+    Case("match-no-extraction", "get_match", {"job_id": 1}, ["match", "show", "1"],
+         expect_error="not_found"),
+    Case("match-no-profile", "get_match", {"job_id": 1}, ["match", "show", "1"],
+         seed=seed_extracted, expect_error="not_found"),
+    Case("assessment", "save_fit_assessment", {"job_id": 1, "assessment": ASSESSMENT},
+         ["match", "save-assessment", "1", "--file", "{tmp}/a.json"],
+         seed=seed_matched, files={"a.json": ASSESSMENT}),
+    Case("assessment-invalid", "save_fit_assessment",
+         {"job_id": 1, "assessment": {**ASSESSMENT, "verdict": "great", "risks": "x"}},
+         ["match", "save-assessment", "1", "--file", "{tmp}/a.json"],
+         seed=seed_matched, files={"a.json": {**ASSESSMENT, "verdict": "great", "risks": "x"}},
+         expect_error="validation_error"),
+    Case("assessment-closed", "save_fit_assessment", {"job_id": 1, "assessment": ASSESSMENT},
+         ["match", "save-assessment", "1", "--file", "{tmp}/a.json"],
+         seed=seed_filtered, files={"a.json": ASSESSMENT}, expect_error="invalid_transition"),
 ]  # fmt: skip
 
 

@@ -1,4 +1,4 @@
-import type { Schemas, Stage } from '@/api/client'
+import type { DiscardReason, Schemas, Stage } from '@/api/client'
 
 type Extraction = Schemas['JobExtraction']
 
@@ -147,4 +147,41 @@ export function formatRelative(iso: string, now: Date = new Date()): string {
   if (days < 7) return relativeFmt.format(-days, 'day')
   if (days < 30) return relativeFmt.format(-Math.floor(days / 7), 'week')
   return formatDate(iso)
+}
+
+// --- Matching y triaje -------------------------------------------------------------------------
+
+/** Motivos rápidos de descarte, en el orden de sus atajos (1-6). */
+export const DISCARD_REASONS: readonly { value: DiscardReason; label: string }[] = [
+  { value: 'skills', label: 'No encaja el stack' },
+  { value: 'seniority', label: 'Seniority o años' },
+  { value: 'location', label: 'Ubicación o modalidad' },
+  { value: 'salary', label: 'Salario o condiciones' },
+  { value: 'company', label: 'Empresa o sector' },
+  { value: 'other', label: 'Otro motivo' },
+]
+
+export function discardReasonLabel(reason: string): string {
+  return DISCARD_REASONS.find((r) => r.value === reason)?.label ?? reason
+}
+
+export const COMPONENT_LABEL: Record<Schemas['ScoreComponent']['name'], string> = {
+  must_have_coverage: 'Obligatorias',
+  semantic_similarity: 'Similitud',
+  preferences_fit: 'Preferencias',
+  nice_to_have_coverage: 'Deseables',
+}
+
+export const LEVEL_LABEL: Record<Schemas['CoveredSkill']['level'], string> = {
+  F: 'Fuerte',
+  'C+': 'Entre conozco y fuerte',
+  C: 'Conozco',
+  B: 'Básico',
+  basic: 'Conocimientos básicos',
+}
+
+export const VERDICT_LABEL: Record<Schemas['FitAssessment']['verdict'], string> = {
+  strong: 'Encaje fuerte',
+  possible: 'Encaje posible',
+  weak: 'Encaje débil',
 }

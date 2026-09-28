@@ -15,7 +15,7 @@ REQUISITOS
   aparte, data/prueba-05/ (dentro de data/, así que git lo ignora). Lo elige la variable
   JH_DATA_DIR, que solo vive en la ventana de PowerShell donde la pongas.
 - Todos los comandos son de PowerShell y se ejecutan desde la RAÍZ del repo:
-      cd "C:\Users\Diego Prieto\Documents\Claude Code\job-search"
+      cd <carpeta-del-repo>   # p. ej. "C:\Users\<tu-usuario>\...\job-search"
 - Rama de la fase:
       git switch fase/05-perfil
 

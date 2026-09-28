@@ -43,15 +43,15 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | `get_status` | `jh status --json` | 04 | — | `total`, `by_stage`, `pending_tasks` | — |
 | `add_job_from_url` | `jh jobs add-url URL --json` | 04 | `url` | `job_id`, `created`, `duplicate_of?`, `risk_flags` | `found` |
 | `add_job_from_text` | `jh jobs add-text --title T --company C --file F [--url U] [--location L] --json` | 04 | `title, company, text, url?, location?` | `job_id`, `created`, `duplicate_of?`, `risk_flags` | `found` |
-| `list_jobs` | `jh jobs list [--stage S] [--limit N] [--order O] --json` | 04 | `stage?, limit=20, order="score_desc"` | `{jobs: [...]}` resumida (sin texto crudo) | — |
+| `list_jobs` | `jh jobs list [--stage S] [--limit N] [--order O] --json` | 04 | `stage?, limit=20, order="score_desc"` | `{jobs: [...]}` resumida (sin texto crudo), con `score` del último match | — |
 | `get_job` | `jh jobs show ID --json` | 04 | `job_id` | Metadatos + `text` envuelto como no confiable | — |
-| `save_extraction` | `jh jobs save-extraction ID --file F --json` | 04 | `job_id, extraction: JobExtraction` | `ok`, `extraction_id`, `stage`, `injection_suspected` | `extracted` / `injection_suspected` |
+| `save_extraction` | `jh jobs save-extraction ID --file F --json` | 04 | `job_id, extraction: JobExtraction` | `ok`, `extraction_id`, `stage`, `injection_suspected`, `hard_filters` (`null` sin perfil) | `extracted` / `injection_suspected` / `hard_filter_failed` |
 | `get_extraction` | `jh jobs extraction ID --json` | 04 | `job_id` | `JobExtraction` vigente con `extraction_id`, `schema_version`, `created_at` | — |
 | `add_event` | `jh events add ID TYPE [--note N] [--at FECHA] --json` | 04 | `job_id, type, note?, occurred_at?` | `ok`, `event_id`, `stage` resultante | el indicado |
 | `get_timeline` | `jh events list ID --json` | 04 | `job_id` | Etapa actual y eventos (sin texto crudo) | — |
 | `get_profile` | `jh profile show [--sections S1,S2] --json` | 05 | `sections?` | `profile_version_id`, `created_at`, `profile`: `CandidateProfile` sin email, teléfono ni `private` | — |
-| `get_match` | `jh match show ID --json` | 07 | `job_id` | Filtros duros, score, desglose, skills cubiertas y ausentes | — |
-| `save_fit_assessment` | `jh match save-assessment ID --file F` | 07 | `job_id, assessment: FitAssessment` | `ok` | `fit_assessed` |
+| `get_match` | `jh match show ID --json` | 07 | `job_id` | `MatchView`: `score`, `triage_threshold`, `below_threshold`, `hard_filters`, `breakdown` (componentes, skills cubiertas con su nivel y ausentes, similitud, preferencias, notas), `assessment`, `assessment_stale` | `scored` si lo recalcula |
+| `save_fit_assessment` | `jh match save-assessment ID --file F --json` | 07 | `job_id, assessment: FitAssessment` | `ok`, `job_id`, `match_id` | `fit_assessed` |
 | `list_cv_templates` | `jh templates list --json` | 08 | — | Plantillas: `id`, nombre, motor, `ats_friendly`, foto, `capacity`, `sections`, opciones | — |
 | `save_cv_content` | `jh cv save ID --file F --json` | 08 | `job_id, content: CvContent, render_options?: CvRenderOptions` | `document_id` + primer render: plantilla, rutas, páginas, cobertura, avisos | `cv_generated`, `cv_rendered` |
 | `render_cv` | `jh cv render DOC --file F --json` | 08 | `document_id, options: CvRenderOptions` | `render_id`, plantilla, rutas, páginas, avisos | `cv_rendered` |
@@ -94,7 +94,26 @@ raíz del repo.
 `add_event` no acepta los eventos que registra su propia herramienta o el sistema: `found`,
 `duplicate_detected`, `extracted`, `hard_filter_failed`, `scored`, `fit_assessed`,
 `cv_generated`, `cv_verified`, `cv_rejected` y `application_prepared`. `list_jobs` con
-`order="score_desc"` ordena igual que `recent` hasta que exista el score (fase 07).
+`order="score_desc"` ordena por el score del último match; las ofertas sin score van al final,
+las más recientes primero.
+
+### Matching (fase 07)
+
+- `get_match` calcula el match con la extracción vigente y la versión vigente del perfil. Si
+  cualquiera de las dos cambió desde el último cálculo, lo recalcula (y registra `scored` si la
+  oferta está abierta). Sin extracción o sin perfil importado: `not_found`.
+- `save_fit_assessment` guarda la valoración en el match vigente. En una oferta cerrada da
+  `invalid_transition`. Si después cambia el perfil o la extracción, `get_match` sigue
+  devolviendo esa valoración con `assessment_stale: true` hasta que se guarde otra.
+- El score lo calcula el código (`POLICIES.md` §2); el agente no lo corrige, lo explica.
+
+### Comandos de matching y worker (solo CLI)
+
+| Comando | Qué hace |
+|---|---|
+| `jh worker [--once] [--interval S] [--json]` | Ejecuta la cola de tareas (`score_job`, `rescore_all`). `--once` la vacía y termina (código 1 si alguna falla) |
+| `jh match rescore [--json]` | Recalcula ya los matches desfasados de las ofertas abiertas (tras instalar el extra `matching` o editar `config/policies.yaml`) y cierra las de triaje que no pasan los filtros. Devuelve `scored` y `closed` |
+| `jh eval matching [--profile RUTA] [--no-seed] [--no-embeddings] [--json]` | Precision, recall y F1 con el umbral actual y por umbral sobre `evals/matching/*.jsonl` (perfil de demo) y `data/evals/*.jsonl` (tu perfil). Guarda el informe en `data/evals/reports/` |
 
 ## Errores
 
@@ -150,10 +169,11 @@ como mucho 6; `salary.min` no puede superar `salary.max`. Se guarda con `schema_
 ### `FitAssessment`
 ```
 verdict: strong|possible|weak
-rationale: str                         # 2-3 frases, citando datos del desglose y del perfil
-risks: [str]                           # requisitos que no cumples o dudas
-questions_for_user: [str]              # p. ej. "¿Tienes experiencia con Airflow?"
+rationale: str                         # 2-3 frases, citando datos del desglose y del perfil (máx. 1000)
+risks: [str]                           # requisitos que no cumples o dudas (máx. 8, 300 caracteres c/u)
+questions_for_user: [str]              # p. ej. "¿Tienes experiencia con Airflow?" (máx. 8)
 ```
+Las cuatro claves son obligatorias (las listas pueden ir vacías); no se admiten otras.
 
 ### `CvContent`
 ```

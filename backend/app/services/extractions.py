@@ -11,6 +11,7 @@ from app.models import JobExtraction as JobExtractionRow
 from app.schemas.llm_io import JOB_EXTRACTION_SCHEMA_VERSION, JobExtraction
 from app.services import events
 from app.services.events import JobNotFoundError
+from app.services.matching.hard_filters import HardFilterResult
 from app.services.pipeline import Actor, EventType, Stage
 
 
@@ -24,6 +25,8 @@ class SaveExtractionResult(BaseModel):
     extraction_id: int
     stage: Stage
     injection_suspected: bool
+    # Filtros duros con el perfil vigente; `None` si aún no hay perfil importado.
+    hard_filters: HardFilterResult | None
 
 
 class StoredExtraction(BaseModel):
@@ -39,9 +42,12 @@ def save_extraction(
 ) -> SaveExtractionResult:
     """Guarda una extracción y registra `extracted` (y antes `injection_suspected` si procede).
 
-    Los filtros duros (que pueden cerrar la oferta) llegan en la fase 07. Si algún evento no es
-    válido en la etapa actual, se lanza el error y la sesión no debe confirmarse.
+    Después aplica los filtros duros (si no pasa, `hard_filter_failed` cierra la oferta) y encola
+    el cálculo del score. Si algún evento no es válido en la etapa actual, se lanza el error y la
+    sesión no debe confirmarse.
     """
+    from app.services.matching import service as matching  # evita la importación circular
+
     if session.get(Job, job_id) is None:
         raise JobNotFoundError(f"No existe la oferta {job_id}.")
     if extraction.injection_suspected:
@@ -68,12 +74,14 @@ def save_extraction(
         payload={"extraction_id": row.id},
         agent_name=agent_name,
     )
+    filters = matching.after_extraction(session, job_id)
     return SaveExtractionResult(
         ok=True,
         job_id=job_id,
         extraction_id=row.id,
         stage=events.current_stage(session, job_id),
         injection_suspected=extraction.injection_suspected,
+        hard_filters=filters,
     )
 
 

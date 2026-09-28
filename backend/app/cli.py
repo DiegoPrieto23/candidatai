@@ -25,11 +25,15 @@ events_app = typer.Typer(help="Eventos de las ofertas.", no_args_is_help=True)
 jobs_app = typer.Typer(help="Ofertas: alta, consulta y extracción.", no_args_is_help=True)
 agents_app = typer.Typer(help="Configuración de los agentes de IA.", no_args_is_help=True)
 profile_app = typer.Typer(help="Perfil del candidato.", no_args_is_help=True)
+match_app = typer.Typer(help="Encaje de las ofertas con el perfil.", no_args_is_help=True)
+eval_app = typer.Typer(help="Evaluación de la calidad del matching.", no_args_is_help=True)
 app.add_typer(db_app, name="db")
 app.add_typer(events_app, name="events")
 app.add_typer(jobs_app, name="jobs")
 app.add_typer(agents_app, name="agents")
 app.add_typer(profile_app, name="profile")
+app.add_typer(match_app, name="match")
+app.add_typer(eval_app, name="eval")
 
 JSON_OPTION = typer.Option(False, "--json", help="Salida en JSON.")
 SYNC_SCRIPT = REPO_ROOT / "scripts" / "sync_agents.py"
@@ -147,7 +151,9 @@ def _render_jobs(result: Any) -> None:
     for job in result.jobs:
         marks = " [!]" if job.risk_flags else ""
         dup = f" (duplicado de {job.duplicate_of})" if job.duplicate_of else ""
-        typer.echo(f"{job.id:>5}  {job.stage or '-':<18} {job.title} · {job.company}{dup}{marks}")
+        score = f"{job.score:>3}" if job.score is not None else "  -"
+        line = f"{job.id:>5}  {job.stage or '-':<18} {score}  {job.title} · {job.company}"
+        typer.echo(f"{line}{dup}{marks}")
 
 
 def _render_job(job: Any) -> None:
@@ -179,6 +185,40 @@ def _render_event(result: Any) -> None:
     typer.echo(f"Evento {result.event_id} registrado. Etapa: {result.stage}.")
 
 
+def _render_match(view: Any) -> None:
+    mark = " (por debajo del umbral)" if view.below_threshold else ""
+    typer.echo(f"Oferta {view.job_id} · score {view.score}/100{mark}")
+    if view.hard_filters.passed:
+        typer.echo("Filtros duros: pasa.")
+    else:
+        typer.secho("Filtros duros: no pasa.", fg="yellow")
+        for failure in view.hard_filters.failures:
+            typer.echo(f"  - {failure.reason}")
+    typer.echo("")
+    for comp in view.breakdown.components:
+        value = "-" if comp.value is None else f"{comp.value:.2f}"
+        weight = f"{comp.effective_weight:.2f}"
+        typer.echo(f"{comp.name:<24} {value:>5}  x {weight}  = {comp.points:5.1f}")
+    breakdown = view.breakdown
+    for label, cov in (
+        ("Obligatorias", breakdown.must_have),
+        ("Deseables", breakdown.nice_to_have),
+    ):
+        covered = ", ".join(f"{c.skill} ({c.level})" for c in cov.covered) or "-"
+        typer.echo(f"\n{label}: cubiertas {covered}")
+        typer.echo(f"{' ' * len(label)}  ausentes {', '.join(cov.missing) or '-'}")
+    for note in breakdown.notes:
+        typer.secho(f"\nNota: {note}", fg="yellow")
+    if view.assessment:
+        stale = " (de un cálculo anterior)" if view.assessment_stale else ""
+        typer.echo(f"\nValoración del agente{stale}: {view.assessment.verdict}")
+        typer.echo(view.assessment.rationale)
+
+
+def _render_saved_assessment(result: Any) -> None:
+    typer.echo(f"Valoración guardada para la oferta {result.job_id} (match {result.match_id}).")
+
+
 def _render_profile(result: Any) -> None:
     typer.echo(f"# Perfil, versión {result.profile_version_id} (sin email, teléfono ni privados)")
     typer.echo(yaml.safe_dump(result.profile, allow_unicode=True, sort_keys=False, width=100))
@@ -186,7 +226,7 @@ def _render_profile(result: Any) -> None:
 
 register_tools(
     app,
-    {"jobs": jobs_app, "events": events_app, "profile": profile_app},
+    {"jobs": jobs_app, "events": events_app, "profile": profile_app, "match": match_app},
     {
         "get_status": _render_status,
         "add_job_from_url": _render_added,
@@ -197,8 +237,137 @@ register_tools(
         "add_event": _render_event,
         "get_timeline": _render_timeline,
         "get_profile": _render_profile,
+        "get_match": _render_match,
+        "save_fit_assessment": _render_saved_assessment,
     },
 )
+
+
+@match_app.command("rescore")
+def match_rescore(as_json: bool = JSON_OPTION) -> None:
+    """Recalcula ahora los matches desfasados de las ofertas abiertas (p. ej. tras instalar el
+    extra `matching` o editar `config/policies.yaml`) y cierra las que no pasan los filtros."""
+    from app.services.matching import service as matching
+
+    try:
+        with session_scope() as session:
+            result = matching.rescore_open_jobs(session)
+    except profile.ProfileNotFoundError as exc:
+        _profile_fail(exc, as_json)
+    if as_json:
+        typer.echo(dump_json(result.model_dump(mode="json")))
+        return
+    typer.echo(f"Ofertas abiertas revisadas: {result.scored}.")
+    if result.closed:
+        closed = ", ".join(str(job_id) for job_id in result.closed)
+        typer.echo(f"Cerradas por no pasar los filtros duros: {closed}.")
+
+
+# --- Evaluación del matching ------------------------------------------------------------------
+
+
+def _metric(value: float | None) -> str:
+    return "  —  " if value is None else f"{value:5.2f}"
+
+
+EVAL_PROFILE_OPTION = typer.Option(
+    None, "--profile", help="Perfil para los casos de data/evals/. Por defecto, data/profile.yaml."
+)
+
+
+@eval_app.command("matching")
+def eval_matching(
+    profile_path: Path | None = EVAL_PROFILE_OPTION,
+    no_seed: bool = typer.Option(False, "--no-seed", help="Sin los casos de evals/matching/."),
+    no_embeddings: bool = typer.Option(
+        False, "--no-embeddings", help="Sin similitud semántica aunque esté instalada."
+    ),
+    as_json: bool = JSON_OPTION,
+) -> None:
+    """Precision, recall y F1 del matching con el umbral actual y por umbral; guarda el informe."""
+    from app.services.matching import evaluation
+
+    try:
+        report = evaluation.run(
+            include_seed=not no_seed,
+            profile_path=_profile_path(profile_path) if profile_path else None,
+            use_embeddings=not no_embeddings,
+        )
+    except (evaluation.EvalFileError, profile.ProfileValidationError) as exc:
+        _profile_fail(exc, as_json)
+    json_path, md_path = evaluation.save_report(report, get_settings().evals_dir / "reports")
+    if as_json:
+        paths = [str(json_path), str(md_path)]
+        typer.echo(dump_json({**report.model_dump(mode="json"), "report_paths": paths}))
+        return
+    m = report.metrics
+    model = report.embeddings_model or "sin embeddings"
+    typer.echo(f"Matching · {len(report.cases)} casos · umbral {report.threshold} · {model}")
+    typer.echo(
+        f"Precision {_metric(m.precision)}   Recall {_metric(m.recall)}   F1 {_metric(m.f1)}"
+        f"   (VP {m.tp}, FP {m.fp}, FN {m.fn}, VN {m.tn})"
+    )
+    typer.echo("\nUmbral  Precision  Recall     F1")
+    for point in report.curve:
+        pm = point.metrics
+        mark = "  <- actual" if point.threshold == report.threshold else ""
+        typer.echo(
+            f"{point.threshold:>6}  {_metric(pm.precision):>9}  {_metric(pm.recall):>6}  "
+            f"{_metric(pm.f1):>5}{mark}"
+        )
+    wrong = [c for c in report.cases if c.label != c.predicted]
+    if wrong:
+        typer.echo("\nErrores con el umbral actual:")
+        for case in wrong:
+            why = "; ".join(case.failures) if case.failures else f"score {case.score}"
+            typer.echo(f"  {case.id}: etiqueta {case.label}, predice {case.predicted} ({why})")
+    for note in report.notes:
+        typer.secho(f"\nNota: {note}", fg="yellow")
+    typer.echo(f"\nInforme: {md_path}")
+
+
+# --- Worker: tareas en segundo plano -------------------------------------------------------------
+
+
+def _render_worker_run(run: Any) -> None:
+    for outcome in run.outcomes:
+        if outcome.ok:
+            detail = json.dumps(outcome.result, ensure_ascii=False) if outcome.result else ""
+            typer.echo(f"[ok]    tarea {outcome.task_id} {outcome.kind} {detail}")
+        else:
+            failed = f"[error] tarea {outcome.task_id} {outcome.kind}: {outcome.error}"
+            typer.secho(failed, fg="red")
+
+
+@app.command()
+def worker(
+    once: bool = typer.Option(False, "--once", help="Vacía la cola y termina."),
+    interval: float = typer.Option(5.0, help="Segundos entre pasadas (sin --once)."),
+    as_json: bool = JSON_OPTION,
+) -> None:
+    """Ejecuta las tareas en segundo plano (scores, recálculos). Ctrl+C para parar."""
+    from app.services import worker as worker_service
+
+    try:
+        migrations.ensure_current()
+    except migrations.DatabaseNotReadyError as exc:
+        _profile_fail(exc, as_json)
+    if once:
+        run = worker_service.run_pending()
+        if as_json:
+            typer.echo(dump_json(run))
+        elif run.outcomes:
+            _render_worker_run(run)
+        else:
+            typer.echo("No hay tareas pendientes.")
+        if run.failed:
+            raise typer.Exit(code=1)
+        return
+    typer.echo(f"Worker en marcha (cada {interval:g} s). Ctrl+C para parar.")
+    try:
+        worker_service.run_forever(interval, _render_worker_run)
+    except KeyboardInterrupt:
+        typer.echo("Worker parado.")
 
 
 # --- Perfil: validar, importar, comparar e iniciar ----------------------------------------------

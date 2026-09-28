@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
 
 from app.api.errors import ERROR_RESPONSES, install_error_handlers
-from app.api.routes import jobs, status
+from app.api.routes import jobs, status, triage
 
 HOST = "127.0.0.1"
 UI_ORIGIN = "http://127.0.0.1:5173"
@@ -34,6 +34,7 @@ def create_app() -> FastAPI:
     install_error_handlers(app)
     app.include_router(status.router)
     app.include_router(jobs.router)
+    app.include_router(triage.router)
     return app
 
 

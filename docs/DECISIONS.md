@@ -117,3 +117,27 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
     local y saneado.
 - **Consecuencias:** cambiar de estilo o de foto no gasta cuota del agente. Recrear un diseño desde
   PDF o imagen es aproximado y requiere un agente que vea imágenes. Las plantillas html no dan Word.
+
+## ADR-015 · Matching: embeddings opcionales, filtros al extraer y cálculo perezoso
+- **Contexto:** el score debe estar cuando el usuario abre el triaje, aunque `jh worker` no esté en
+  marcha. sentence-transformers trae torch (~1 GB), que no hace falta para los tests ni la CI.
+- **Decisión:**
+  - sentence-transformers es el extra opcional `matching` (`uv sync --extra matching`). Sin él, o
+    con `JH_EMBEDDINGS=off`, la similitud semántica no cuenta y su peso se reparte entre los demás
+    componentes; el desglose y `jh doctor` lo dicen. Los tests usan un embedder falso.
+  - Los filtros duros se aplican en `save_extraction`, en la misma transacción: son baratos y así
+    la etapa que devuelve ya es la definitiva. El score se encola (`score_job`).
+  - Un match se guarda con su `extraction_id` y su `profile_version_id`. `get_match`, la ficha y el
+    triaje lo recalculan si está desfasado; el worker solo lo adelanta. `jh profile import` con
+    versión nueva encola `rescore_all`.
+  - También guarda `scoring_key`, una huella de cómo se puntuó (versión del scorer, políticas de
+    puntuación y filtros salvo `triage_threshold`, alias de skills y modelo de embeddings). Si
+    cambia (p. ej. al instalar el extra `matching`), el match está desfasado. `jh match rescore`
+    lo recalcula todo ya, sin esperar a que se consulte.
+  - Recalcular puede cerrar ofertas en triaje que ya no pasan los filtros, salvo que el usuario
+    las reabriera después de un `hard_filter_failed`.
+  - Descartar desde la UI exige un motivo de una lista cerrada (para la analítica de la fase 10).
+    El agente sigue usando `add_event` con `note`.
+- **Consecuencias:** el triaje funciona sin worker, a costa de que una consulta (`get_match`,
+  `GET /triage`) pueda escribir un match y un evento `scored`. La primera consulta con embeddings
+  carga el modelo (y lo descarga la primera vez).

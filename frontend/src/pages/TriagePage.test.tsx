@@ -1,0 +1,236 @@
+import { screen, waitFor, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { describe, expect, it } from 'vitest'
+import type { TriageItem } from '@/api/client'
+import { jobView, matchView, mockApi, renderApp, status, triageItem, triageQueue, type Call } from '@/test/utils'
+
+/** API simulada con estado: aprobar o descartar saca la oferta de la cola; reabrir la devuelve. */
+function mockTriage(initial: TriageItem[], extra: Record<string, unknown> = {}) {
+  let queue = [...initial]
+  const removed = new Map<number, TriageItem>()
+  const routes: Record<string, unknown> = {
+    'GET /status': () => status(0, queue.length),
+    'GET /triage': () => triageQueue(queue),
+    ...extra,
+  }
+  for (const item of initial) {
+    routes[`POST /jobs/${item.job.id}/events`] = async (request: Request) => {
+      const body = (await request.clone().json()) as { type: string }
+      if (body.type === 'reopened') {
+        const back = removed.get(item.job.id)
+        if (back) queue = [...queue, back].sort((a, b) => (b.match?.score ?? 0) - (a.match?.score ?? 0))
+        return { ok: true, event_id: 99, stage: 'pending_triage' }
+      }
+      removed.set(item.job.id, item)
+      queue = queue.filter((i) => i.job.id !== item.job.id)
+      return { ok: true, event_id: 99, stage: body.type === 'approved' ? 'approved' : 'closed' }
+    }
+  }
+  return mockApi(routes)
+}
+
+function eventCalls(calls: Call[]) {
+  return calls.filter((c) => c.method === 'POST').map((c) => ({ path: c.path, body: c.body }))
+}
+
+function selected() {
+  return screen.getByRole('option', { selected: true })
+}
+
+describe('Triaje', () => {
+  it('ordena por score, atenúa las que no llegan al umbral y enseña el desglose', async () => {
+    mockTriage([triageItem(1, 82), triageItem(2, 40)])
+    renderApp('/triaje')
+
+    const detail = await screen.findByRole('article', { name: 'Oferta seleccionada' })
+    expect(within(detail).getByRole('heading', { name: 'Oferta 1' })).toBeInTheDocument()
+    expect(within(detail).getByLabelText('Score 82 de 100')).toBeInTheDocument()
+    expect(within(detail).getByText('Python')).toBeInTheDocument()
+    expect(within(detail).getByText('Kafka')).toBeInTheDocument()
+    expect(within(detail).getByText(/Sin valorar/)).toBeInTheDocument()
+    const options = screen.getAllByRole('option')
+    expect(options.map((o) => within(o).getByText(/^Oferta/).textContent)).toEqual(['Oferta 1', 'Oferta 2'])
+    expect(within(options[1]).getByLabelText('Score 40 de 100, por debajo del umbral')).toBeInTheDocument()
+    expect(screen.getByText('2 ofertas por revisar, de más a menos encaje')).toBeInTheDocument()
+  })
+
+  it('se mueve con J/K y flechas, y abre la ficha con O', async () => {
+    mockTriage([triageItem(1, 90), triageItem(2, 80), triageItem(3, 70)], {
+      'GET /jobs/2': jobView({ id: 2, title: 'Oferta 2' }),
+    })
+    renderApp('/triaje')
+    await screen.findByRole('article')
+
+    await userEvent.keyboard('j')
+    expect(within(selected()).getByText('Oferta 2')).toBeInTheDocument()
+    await userEvent.keyboard('{ArrowDown}{ArrowDown}') // no pasa del final
+    expect(within(selected()).getByText('Oferta 3')).toBeInTheDocument()
+    await userEvent.keyboard('kk{ArrowUp}')
+    expect(within(selected()).getByText('Oferta 1')).toBeInTheDocument()
+    await userEvent.keyboard('j')
+    await userEvent.keyboard('o')
+    expect(await screen.findByRole('heading', { level: 1, name: 'Oferta 2' })).toBeInTheDocument()
+  })
+
+  it('aprueba con A y pasa a la siguiente', async () => {
+    const calls = mockTriage([triageItem(1, 90), triageItem(2, 80)])
+    renderApp('/triaje')
+    await screen.findByRole('article')
+
+    await userEvent.keyboard('a')
+    expect(within(selected()).getByText('Oferta 2')).toBeInTheDocument()
+    expect(await screen.findByRole('status')).toHaveTextContent('Aprobada Oferta 1')
+    expect(eventCalls(calls)).toEqual([{ path: '/jobs/1/events', body: { type: 'approved' } }])
+  })
+
+  it('descarta con D, motivo con número y confirma con Intro', async () => {
+    const calls = mockTriage([triageItem(1, 90), triageItem(2, 80)])
+    renderApp('/triaje')
+    await screen.findByRole('article')
+
+    await userEvent.keyboard('d')
+    const dialog = await screen.findByRole('dialog', { name: 'Descartar oferta' })
+    const confirm = within(dialog).getByRole('button', { name: 'Descartar' })
+    expect(confirm).toBeDisabled() // motivo obligatorio
+    await userEvent.keyboard('{Enter}')
+    expect(eventCalls(calls)).toEqual([])
+
+    await userEvent.keyboard('2')
+    expect(within(dialog).getByRole('radio', { name: /Seniority o años/ })).toHaveAttribute('aria-checked', 'true')
+    await userEvent.keyboard('{Enter}')
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    expect(within(selected()).getByText('Oferta 2')).toBeInTheDocument()
+    expect(eventCalls(calls)).toEqual([
+      { path: '/jobs/1/events', body: { type: 'discarded', reason: 'seniority' } },
+    ])
+    expect(await screen.findByRole('status')).toHaveTextContent('Descartada Oferta 1 · Seniority o años')
+  })
+
+  it('«Otro motivo» exige nota; las teclas dentro de la nota no disparan atajos', async () => {
+    const calls = mockTriage([triageItem(1, 90)])
+    renderApp('/triaje')
+    await screen.findByRole('article')
+
+    await userEvent.keyboard('d')
+    const dialog = await screen.findByRole('dialog')
+    await userEvent.keyboard('6')
+    const confirm = within(dialog).getByRole('button', { name: 'Descartar' })
+    expect(confirm).toBeDisabled()
+    await userEvent.type(within(dialog).getByLabelText(/Nota/), 'Pide 1 y 3')
+    expect(within(dialog).getByRole('radio', { name: /Otro motivo/ })).toHaveAttribute('aria-checked', 'true')
+    await userEvent.click(confirm)
+    await waitFor(() =>
+      expect(eventCalls(calls)).toEqual([
+        { path: '/jobs/1/events', body: { type: 'discarded', reason: 'other', note: 'Pide 1 y 3' } },
+      ]),
+    )
+    expect(await screen.findByText('Nada por revisar')).toBeInTheDocument()
+  })
+
+  it('Esc cierra el diálogo sin descartar', async () => {
+    const calls = mockTriage([triageItem(1, 90)])
+    renderApp('/triaje')
+    await screen.findByRole('article')
+    await userEvent.keyboard('d')
+    await screen.findByRole('dialog')
+    await userEvent.keyboard('1{Escape}')
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    expect(eventCalls(calls)).toEqual([])
+    expect(within(selected()).getByText('Oferta 1')).toBeInTheDocument()
+  })
+
+  it('tría 10 ofertas solo con el teclado', async () => {
+    const items = Array.from({ length: 10 }, (_, i) => triageItem(i + 1, 95 - i * 5))
+    const calls = mockTriage(items)
+    renderApp('/triaje')
+    await screen.findByRole('article')
+
+    for (let i = 0; i < 10; i++) {
+      if (i % 3 === 2) {
+        await userEvent.keyboard('d')
+        await screen.findByRole('dialog')
+        await userEvent.keyboard('1{Enter}')
+        await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+      } else {
+        await userEvent.keyboard('a')
+      }
+    }
+
+    expect(await screen.findByText('Nada por revisar')).toBeInTheDocument()
+    const posts = eventCalls(calls)
+    expect(posts).toHaveLength(10)
+    expect(posts.map((p) => p.path)).toEqual(items.map((i) => `/jobs/${i.job.id}/events`))
+    expect(posts.filter((p) => (p.body as { type: string }).type === 'discarded')).toHaveLength(3)
+  })
+
+  it('deshace un descarte reabriendo la oferta', async () => {
+    const calls = mockTriage([triageItem(1, 90), triageItem(2, 80)])
+    renderApp('/triaje')
+    await screen.findByRole('article')
+    await userEvent.keyboard('d')
+    await screen.findByRole('dialog')
+    await userEvent.keyboard('3{Enter}')
+    await userEvent.click(await screen.findByRole('button', { name: 'Deshacer' }))
+
+    await waitFor(() => expect(within(selected()).getByText('Oferta 1')).toBeInTheDocument())
+    expect(eventCalls(calls).at(-1)).toEqual({ path: '/jobs/1/events', body: { type: 'reopened' } })
+    expect(screen.getAllByRole('option')).toHaveLength(2)
+  })
+
+  it('si la API falla, la oferta vuelve y se explica', async () => {
+    mockApi({
+      'GET /status': status(0, 1),
+      'GET /triage': triageQueue([triageItem(1, 90)]),
+      'POST /jobs/1/events': {
+        status: 409,
+        body: { ok: false, error: { type: 'invalid_transition', message: 'Ya no está en triaje.', details: [] } },
+      },
+    })
+    renderApp('/triaje')
+    await screen.findByRole('article')
+    await userEvent.keyboard('a')
+    expect(await screen.findByRole('alert')).toHaveTextContent('No se pudo guardar: Ya no está en triaje.')
+    expect(within(selected()).getByText('Oferta 1')).toBeInTheDocument()
+  })
+
+  it('muestra la valoración del agente, sus preguntas y los filtros que no pasa', async () => {
+    const item = triageItem(1, 60, {
+      match: matchView({
+        score: 60,
+        hard_filters: { passed: false, failures: [{ filter: 'years', reason: 'Pide 6 años de experiencia.' }] },
+        assessment: {
+          verdict: 'possible',
+          rationale: 'Cubre Python con nivel F.',
+          risks: ['dbt solo básico'],
+          questions_for_user: ['¿Has usado Kafka?'],
+        },
+        assessment_stale: true,
+      }),
+    })
+    mockTriage([item])
+    renderApp('/triaje')
+    const detail = await screen.findByRole('article')
+    expect(within(detail).getByRole('note', { name: 'No pasa los filtros' })).toHaveTextContent('Pide 6 años de experiencia.')
+    expect(within(detail).getByText('Encaje posible')).toBeInTheDocument()
+    expect(within(detail).getByText(/De un cálculo anterior/)).toBeInTheDocument()
+    expect(within(detail).getByText('¿Has usado Kafka?')).toBeInTheDocument()
+    expect(within(detail).getByText('dbt solo básico')).toBeInTheDocument()
+  })
+
+  it('avisa si no hay perfil y enseña la cola vacía', async () => {
+    mockApi({ 'GET /status': status(), 'GET /triage': triageQueue([], { profile_missing: true }) })
+    renderApp('/triaje')
+    expect(await screen.findByText('Sin perfil importado no hay score.')).toBeInTheDocument()
+    expect(screen.getByText('Nada por revisar')).toBeInTheDocument()
+  })
+
+  it('el enlace de la cabecera lleva al triaje con su recuento', async () => {
+    mockTriage([triageItem(1, 90)], { 'GET /jobs': { items: [], total: 0, limit: 50, offset: 0 } })
+    renderApp('/')
+    const link = await screen.findByRole('link', { name: /Triaje/ })
+    await waitFor(() => expect(link).toHaveTextContent('1'))
+    await userEvent.click(link)
+    expect(await screen.findByRole('heading', { level: 1, name: 'Triaje' })).toBeInTheDocument()
+  })
+})

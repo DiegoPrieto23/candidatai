@@ -1,18 +1,23 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
 import { Link, useLocation, useParams } from 'react-router'
 import {
+  ArrowCounterClockwiseIcon,
   ArrowLeftIcon,
   ArrowSquareOutIcon,
   CaretDownIcon,
   CheckCircleIcon,
+  CheckIcon,
   CopyIcon,
   HourglassMediumIcon,
   InfoIcon,
   NotePencilIcon,
   ShieldWarningIcon,
+  XIcon,
 } from '@phosphor-icons/react'
 import type { AddJobResult, EventOut, JobView, Schemas } from '@/api/client'
-import { useAddNote, useJob } from '@/api/queries'
+import { useAddNote, useJob, useJobEvent, useJobMatch, type UserEventBody } from '@/api/queries'
+import { DiscardDialog } from '@/components/DiscardDialog'
+import { MatchDetails, ScoreBadge } from '@/components/MatchDetails'
 import { StageBadge } from '@/components/StageBadge'
 import { ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
@@ -22,6 +27,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Textarea } from '@/components/ui/textarea'
 import {
   actorLabel,
+  discardReasonLabel,
   EMPLOYMENT_LABEL,
   eventLabel,
   formatDate,
@@ -30,6 +36,7 @@ import {
   REMOTE_LABEL,
   riskLabel,
   SENIORITY_LABEL,
+  VERDICT_LABEL,
 } from '@/lib/labels'
 import { cn } from '@/lib/utils'
 
@@ -265,7 +272,16 @@ function OriginalText({ text }: { text: string }) {
 
 function eventDetail(event: EventOut): string | null {
   const payload = event.payload as Record<string, unknown>
+  if (event.type === 'discarded' && typeof payload.reason === 'string') {
+    const note = typeof payload.note === 'string' ? `. ${payload.note}` : ''
+    return `Motivo: ${discardReasonLabel(payload.reason)}${note}`
+  }
   if (typeof payload.note === 'string') return payload.note
+  if (event.type === 'hard_filter_failed' && Array.isArray(payload.failures))
+    return (payload.failures as { reason?: string }[]).map((f) => f.reason).join('\n')
+  if (event.type === 'scored' && typeof payload.score === 'number') return `Score ${payload.score}/100`
+  if (event.type === 'fit_assessed' && typeof payload.verdict === 'string')
+    return VERDICT_LABEL[payload.verdict as keyof typeof VERDICT_LABEL] ?? payload.verdict
   if (event.type === 'duplicate_detected' && payload.duplicate_of)
     return `Duplicado de la oferta ${String(payload.duplicate_of)}.`
   if (event.type === 'extraction_failed' && typeof payload.reason === 'string') return payload.reason
@@ -350,6 +366,74 @@ function NoteForm({ jobId }: { jobId: number }) {
   )
 }
 
+function MatchPanel({ job }: { job: JobView }) {
+  const { data: match, isPending, isError, error, refetch } = useJobMatch(job.id, job.extraction !== null)
+  if (!job.extraction) return null
+  return (
+    <section className="rounded-xl border bg-card p-5 sm:p-6" aria-label="Encaje">
+      <div className="mb-5 flex items-start justify-between gap-4">
+        <h2 className="text-base font-semibold tracking-tight">Encaje</h2>
+        {match && <ScoreBadge score={match.score} threshold={match.triage_threshold} size="lg" />}
+      </div>
+      {isPending ? (
+        <Skeleton className="h-40" />
+      ) : isError ? (
+        <ErrorState error={error} onRetry={() => refetch()} className="border-0 p-0" />
+      ) : match ? (
+        <MatchDetails match={match} />
+      ) : (
+        <p className="text-sm text-muted-foreground">
+          Sin score: importa tu perfil con{' '}
+          <code className="rounded bg-muted px-1 py-0.5 font-mono text-[0.85em] text-foreground">jh profile import</code>.
+        </p>
+      )}
+    </section>
+  )
+}
+
+/** Aprobar o descartar (en triaje) y reabrir (si está cerrada). */
+function Decision({ job }: { job: JobView }) {
+  const event = useJobEvent()
+  const [discarding, setDiscarding] = useState(false)
+  const send = (body: UserEventBody) =>
+    event.mutate({ jobId: job.id, body }, { onSuccess: () => setDiscarding(false) })
+  if (job.stage === 'closed') {
+    return (
+      <div className="flex flex-col items-end gap-1">
+        <Button variant="outline" size="sm" onClick={() => send({ type: 'reopened' })} disabled={event.isPending}>
+          <ArrowCounterClockwiseIcon />
+          Reabrir
+        </Button>
+        {event.isError && <p role="alert" className="text-xs text-destructive">{event.error.message}</p>}
+      </div>
+    )
+  }
+  if (job.stage !== 'pending_triage') return null
+  return (
+    <div className="flex flex-col items-end gap-1">
+      <div className="flex gap-2">
+        <Button size="sm" onClick={() => send({ type: 'approved' })} disabled={event.isPending}>
+          <CheckIcon weight="bold" />
+          Aprobar
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => setDiscarding(true)} disabled={event.isPending}>
+          <XIcon weight="bold" />
+          Descartar
+        </Button>
+      </div>
+      {event.isError && !discarding && <p role="alert" className="text-xs text-destructive">{event.error.message}</p>}
+      <DiscardDialog
+        open={discarding}
+        onOpenChange={setDiscarding}
+        jobTitle={`${job.title} · ${job.company}`}
+        pending={event.isPending}
+        error={event.isError ? event.error.message : null}
+        onConfirm={(choice) => send({ type: 'discarded', reason: choice.reason, note: choice.note })}
+      />
+    </div>
+  )
+}
+
 function JobSkeleton() {
   return (
     <div aria-busy="true" aria-label="Cargando oferta" className="space-y-6">
@@ -401,8 +485,9 @@ export function JobPage() {
                 {job.location && <>, {job.location}</>}
               </p>
             </div>
-            <div className="flex shrink-0 items-center gap-3">
-              <StageBadge stage={job.stage} />
+            <div className="flex shrink-0 flex-wrap items-start gap-3">
+              <StageBadge stage={job.stage} className="mt-1" />
+              <Decision job={job} />
               {job.url && (
                 <Button asChild variant="outline" size="sm">
                   <a href={job.url} target="_blank" rel="noopener noreferrer nofollow">
@@ -439,7 +524,8 @@ export function JobPage() {
               <OriginalText text={job.raw_text} />
             </div>
 
-            <aside className="space-y-6 lg:sticky lg:top-32">
+            <aside className="space-y-6">
+              <MatchPanel job={job} />
               <Panel title="Historial">
                 <Timeline events={job.events} />
               </Panel>

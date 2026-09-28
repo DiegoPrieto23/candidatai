@@ -1,0 +1,194 @@
+PRUEBA MANUAL · FASE 07 · MATCHING Y TRIAJE
+===========================================
+
+Objetivo: comprobar que el triaje con teclado es fluido con 10 ofertas o más, que el score y su
+desglose tienen sentido con TU perfil, y que tu agente valora el encaje con el skill
+evaluar-encaje.
+
+Duración aproximada: 25 minutos (30-40 si instalas los embeddings).
+
+
+REQUISITOS
+----------
+- Las ofertas de esta prueba son FICTICIAS (evals/matching/seed.jsonl). Ninguna es real.
+- Dos terminales de PowerShell (API y UI) y la sesión de Claude Code.
+- Los comandos se ejecutan desde la RAÍZ del repo salvo que se diga otra cosa:
+      cd <carpeta-del-repo>   # p. ej. "C:\Users\<tu-usuario>\...\job-search"
+- Rama de la fase:
+      git switch fase/07-matching-triaje
+
+Las ofertas ficticias se quedarán en tu base de datos (data/jobhunter.db); al final se explica
+cómo limpiarla. Los scores se calculan contra la versión de tu perfil importada en la BD.
+
+
+PARTE 1 · PREPARAR
+------------------
+1. Dependencias (el backend añade el extra opcional `matching`; el frontend no cambia):
+
+      uv sync --directory backend
+      cd frontend; pnpm install; cd ..
+
+2. Migra la base de datos. Tu BD está en la versión 0002 y esta fase añade la 0003:
+
+      uv run --directory backend jh db upgrade
+
+   Esperado: "Base de datos actualizada: 0002 -> 0003."
+
+3. Importa tu perfil (si ya estaba importado y no ha cambiado, no crea versión):
+
+      uv run --directory backend jh profile import
+
+4. Comprueba el entorno:
+
+      uv run --directory backend jh doctor
+
+   Esperado, y termina con "Todo listo.":
+      [ OK  ] Python, Directorio de datos y LibreOffice.
+      [AVISO] Plantillas de CV: "aún no hay ninguna (las integradas llegan con la fase 08…)".
+              Normal en esta fase: no hace falta crear nada.
+      [AVISO] Embeddings: "Similitud semántica no disponible: instala el extra…". Normal: sin el
+              extra, el score se calcula sin similitud semántica (paso 18 si quieres activarla).
+
+   Si LibreOffice sale en AVISO recién instalado: cierra y abre la terminal y repite. Si sigue,
+   comprueba que existe C:\Program Files\LibreOffice\program\soffice.exe; si lo instalaste en
+   otra carpeta, crea (o edita) el fichero .env en la raíz del repo con la línea
+      SOFFICE_PATH=C:\ruta\a\LibreOffice\program\soffice.exe
+   Los AVISOS no impiden seguir con la prueba: solo un ERROR lo haría.
+
+5. (Opcional) Pasa los tests automáticos tú mismo:
+
+      cd backend; uv run pytest -q; cd ..
+      cd frontend; pnpm test; pnpm build; cd ..
+
+   Esperado: "809 passed" en el backend; "35 passed" y "built in …" en el frontend.
+
+
+PARTE 2 · OFERTAS DE PRUEBA
+---------------------------
+6. Da de alta las 20 ofertas ficticias, ya extraídas (sin gastar agente):
+
+      uv run --directory backend python ../scripts/seed_triage_demo.py
+
+   Esperado: 20 líneas y "20 ofertas creadas". Las que no pasan TUS filtros duros (seniority,
+   años, modalidad, zona, idiomas) salen como "closed". Anota cuántas quedan en
+   "pending_triage": deberían ser 10 o más para el paso 11. Si son menos, dímelo con tus
+   preferencias (roles, seniority_target, remote_modes, locations) y lo ajustamos.
+
+   Las 2 ofertas de demo de la fase 06 (Brétema y Lonxa) siguen en tu BD: no molestan, el script
+   usa otras empresas. Si alguna vez una oferta de la semilla choca con otra que ya tengas, sale
+   como "closed (duplicado de la oferta N: sin extracción)" y el script continúa. Puedes
+   ejecutarlo más veces: lo que ya existe no se repite ("ya existían").
+
+7. Mira el desglose de una oferta en la terminal:
+
+      uv run --directory backend jh jobs list --stage pending_triage
+      uv run --directory backend jh match show <id de una de la lista>
+
+   Esperado: "score NN/100", "Filtros duros: pasa.", la tabla de componentes y las skills
+   cubiertas (con tu nivel) y ausentes.
+
+
+PARTE 3 · TRIAJE EN LA UI
+-------------------------
+8. Terminal 1, la API:
+
+      cd backend
+      uv run jh serve
+
+9. Terminal 2, la UI:
+
+      cd frontend
+      pnpm dev
+
+   Abre http://127.0.0.1:5173.
+
+10. En la cabecera hay un enlace nuevo "Triaje" con el número de ofertas por revisar. Entra.
+
+   Esperado: a la izquierda la lista ordenada de más a menos score (las que no llegan a 55,
+   atenuadas); a la derecha la oferta seleccionada con su score grande, los botones Aprobar (A)
+   y Descartar (D), el desglose, las skills y "Valoración del agente: Sin valorar".
+
+11. Tría 10 ofertas SOLO con el teclado, sin tocar el ratón:
+    - J / K (o flechas) para moverte; comprueba que la lista acompaña la selección.
+    - A para aprobar: la oferta desaparece y pasa a la siguiente al instante; arriba sale
+      "Aprobada …".
+    - D para descartar: se abre el diálogo. Pulsa un número (1-6) para el motivo e Intro para
+      confirmar. Prueba también: Intro sin motivo (no hace nada), Esc (cancela), y el motivo 6
+      "Otro motivo", que exige escribir una nota.
+    - Tras un descarte, prueba "Deshacer": la oferta vuelve a la lista.
+    - O abre la ficha de la seleccionada.
+
+   Lo que quiero saber: ¿es fluido? ¿Algún atajo que falte o que moleste? ¿Los scores y el orden
+   te parecen razonables con tu perfil?
+
+12. Abre la ficha de una oferta aprobada y de una descartada (desde la bandeja).
+    Esperado: un panel "Encaje" con el score y el desglose; en el historial, "Puntuada · Score
+    NN/100" y, en la descartada, "Motivo: …". La descartada tiene un botón "Reabrir".
+
+13. En la bandeja, filtra por "Cerrada" y abre una de las cerradas por los filtros (paso 6).
+    Esperado: en el historial, "No pasa los filtros" con el motivo en español. Pulsa "Reabrir":
+    vuelve a "Por revisar" y en el triaje aparece con el aviso "No pasa los filtros duros".
+
+
+PARTE 4 · VALORACIÓN DEL AGENTE
+-------------------------------
+14. En Claude Code, comprueba que el servidor MCP está conectado (/mcp → jobhunter). Si
+    arrancaste la sesión antes de este cambio, reinicia Claude Code para que cargue las
+    herramientas nuevas (get_match y save_fit_assessment).
+
+15. Pide que valore unas pocas ofertas (para no gastar cuota):
+
+      /evaluar-encaje <id1> <id2> <id3>
+
+    Esperado: llama a get_profile, get_match y get_extraction (no a get_job) y te pide permiso
+    para save_fit_assessment (es la única escritura). Termina con un resumen por veredicto y,
+    al final, las preguntas para ti. NO aprueba ni descarta nada.
+
+16. Vuelve al triaje en la UI (recarga). Esperado: en esas ofertas, "Valoración del agente" con
+    el veredicto, el motivo, los riesgos y, si las hay, "Preguntas para ti".
+
+
+PARTE 5 · EVALUACIÓN (criterio de aceptación)
+---------------------------------------------
+17. Ejecuta el set de evaluación:
+
+      uv run --directory backend jh eval matching
+
+    Esperado: "Matching · 20 casos · umbral 55 · sin embeddings", precision 0.91, recall 1.00 y
+    F1 0.95 (el único error es "sales-engineer-data", un caso trampa a propósito), la curva por
+    umbral y "Informe: …\data\evals\reports\matching-….md". Abre ese .md.
+
+18. (Opcional, ~1 GB de descarga) Instala los embeddings y repite:
+
+      uv sync --directory backend --extra matching
+      uv run --directory backend jh doctor
+      uv run --directory backend jh eval matching
+
+    Esperado: doctor pone "Embeddings" en OK con el modelo; la primera evaluación descarga el
+    modelo a data/models/ (tarda) y el informe dice el modelo usado. Compara las métricas con
+    las del paso 17. Tras instalarlo, el score de la UI incluye la similitud (recalcula al
+    abrir el triaje; reinicia `jh serve`).
+
+
+LIMPIAR AL TERMINAR (OPCIONAL)
+------------------------------
+No hay (todavía) un comando para borrar ofertas. Para dejar la BD sin estas ofertas de prueba,
+borra el fichero y vuelve a crearlo (se pierden también las versiones de tu perfil guardadas,
+por eso se reimporta):
+
+      Remove-Item data/jobhunter.db*
+      uv run --directory backend jh db upgrade
+      uv run --directory backend jh profile import
+
+Si instalaste los embeddings y quieres liberar espacio: borra data/models/ y ejecuta
+`uv sync --directory backend` (sin --extra) para quitar torch.
+
+Para cerrar la API y la UI, Ctrl+C en cada terminal.
+
+
+QUÉ ME CUENTAS AL TERMINAR
+--------------------------
+- Si el triaje de 10 ofertas con teclado fue fluido y qué cambiarías.
+- Cuántas ofertas quedaron en triaje con tu perfil (paso 6) y si el orden te cuadra.
+- La salida de evaluar-encaje (el resumen final basta).
+- Si hiciste el paso 18: las métricas con y sin embeddings.

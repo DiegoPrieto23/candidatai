@@ -2,6 +2,7 @@
 
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 
 from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -22,6 +23,8 @@ class Settings(BaseSettings):
     soffice_path: Path | None = Field(default=None, validation_alias="SOFFICE_PATH")
     # Qué agente usa la CLI (`claude-code`, `codex`…), para auditar. Por MCP lo dice el cliente.
     client_name: str | None = Field(default=None, validation_alias="JH_CLIENT_NAME")
+    # `off` desactiva la similitud semántica aunque esté instalado el extra `matching` (tests, CI).
+    embeddings: Literal["auto", "off"] = Field(default="auto", validation_alias="JH_EMBEDDINGS")
 
     @model_validator(mode="after")
     def _resolve_paths(self) -> "Settings":
@@ -40,12 +43,23 @@ class Settings(BaseSettings):
         return self.data_dir / "tmp"
 
     @property
+    def models_dir(self) -> Path:
+        """Caché de los modelos de embeddings (se descargan la primera vez)."""
+        return self.data_dir / "models"
+
+    @property
+    def evals_dir(self) -> Path:
+        """Casos de evaluación propios (`*.jsonl`) e informes (`reports/`)."""
+        return self.data_dir / "evals"
+
+    @property
     def logs_dir(self) -> Path:
         return self.data_dir / "logs"
 
     @property
-    def cv_template_path(self) -> Path:
-        return self.data_dir / "cv_template.docx"
+    def user_templates_dir(self) -> Path:
+        """Plantillas de CV del usuario (`data/templates/<id>/`, ver docs/CV_TEMPLATES.md)."""
+        return self.data_dir / "templates"
 
 
 @lru_cache

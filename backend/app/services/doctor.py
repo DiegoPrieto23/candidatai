@@ -8,9 +8,10 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
-from app.core.config import Settings
+from app.core.config import REPO_ROOT, Settings
 
 MIN_PYTHON = (3, 12)
+BUILTIN_TEMPLATES_DIR = REPO_ROOT / "templates"
 
 WINDOWS_SOFFICE_PATHS = (
     Path(r"C:\Program Files\LibreOffice\program\soffice.exe"),
@@ -85,14 +86,40 @@ def check_soffice(configured: Path | None) -> CheckResult:
     return CheckResult(name=name, status=CheckStatus.WARN, detail=detail)
 
 
-def check_cv_template(template: Path) -> CheckResult:
-    name = "Plantilla de CV"
-    if template.is_file():
-        return CheckResult(name=name, status=CheckStatus.OK, detail=str(template))
+def _template_ids(root: Path) -> list[str]:
+    """Carpetas de `root` con un `template.yaml` (una plantilla cada una)."""
+    if not root.is_dir():
+        return []
+    return sorted(d.name for d in root.iterdir() if (d / "template.yaml").is_file())
+
+
+def check_cv_templates(builtin_dir: Path, user_dir: Path) -> CheckResult:
+    """Plantillas de CV integradas (`templates/`) y del usuario (`data/templates/`). ADR-014."""
+    name = "Plantillas de CV"
+    builtin, own = _template_ids(builtin_dir), _template_ids(user_dir)
+    if not builtin and not own:
+        detail = (
+            "aún no hay ninguna (las integradas llegan con la fase 08; necesarias para los CVs)"
+        )
+        return CheckResult(name=name, status=CheckStatus.WARN, detail=detail)
+    parts = [f"integradas: {', '.join(builtin) or 'ninguna'}"]
+    if own:
+        parts.append(f"tuyas: {', '.join(own)}")
+    return CheckResult(name=name, status=CheckStatus.OK, detail="; ".join(parts))
+
+
+def check_embeddings(settings: Settings) -> CheckResult:
+    from app.core.policies import get_policies
+    from app.services.matching import embeddings
+
+    name = "Embeddings"
+    reason = embeddings.unavailable_reason()
+    if reason is not None:
+        detail = f"{reason} El score se calcula sin similitud semántica."
+        return CheckResult(name=name, status=CheckStatus.WARN, detail=detail)
+    model = get_policies().scoring.semantic.model
     return CheckResult(
-        name=name,
-        status=CheckStatus.WARN,
-        detail=f"no hay {template.name} en {template.parent} (necesaria para generar CVs)",
+        name=name, status=CheckStatus.OK, detail=f"{model} (caché en {settings.models_dir})"
     )
 
 
@@ -102,6 +129,7 @@ def run_doctor(settings: Settings) -> DoctorReport:
             check_python(),
             check_data_dir(settings.data_dir),
             check_soffice(settings.soffice_path),
-            check_cv_template(settings.cv_template_path),
+            check_cv_templates(BUILTIN_TEMPLATES_DIR, settings.user_templates_dir),
+            check_embeddings(settings),
         ]
     )

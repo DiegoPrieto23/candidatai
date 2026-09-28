@@ -15,7 +15,7 @@ REQUISITOS
 - Software: uv y Claude Code (ya los tienes). Para la parte de Codex, Codex instalado y con la
   sesión iniciada con tu cuenta de ChatGPT (ahora mismo no está en el PATH: esa parte es opcional).
 - Todos los comandos son de PowerShell y se ejecutan desde la RAÍZ del repo:
-      cd "C:\Users\Diego Prieto\Documents\Claude Code\job-search"
+      cd <carpeta-del-repo>   # p. ej. "C:\Users\<tu-usuario>\...\job-search"
 - Rama de la fase:
       git switch fase/04-interfaz-agentes
 

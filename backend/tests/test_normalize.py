@@ -7,6 +7,7 @@ from app.services.normalize import (
     normalize_company,
     normalize_location,
     normalize_title,
+    title_segments,
 )
 
 
@@ -53,6 +54,22 @@ def test_normalize_company(raw: str, expected: str) -> None:
 )
 def test_normalize_title(raw: str, expected: str) -> None:
     assert normalize_title(raw) == expected
+
+
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        ("Data Engineer (m/f/d)", ["data engineer"]),
+        ("Sales Engineer (Data Platform)", ["sales engineer", "data platform"]),
+        ("Ingeniero/a de Datos (Data Engineer)", ["ingeniero a de datos", "data engineer"]),
+        ("Data Engineer | Snowflake - 100% remoto", ["data engineer", "snowflake"]),
+        ("Analytics Engineer / BI Developer", ["analytics engineer", "bi developer"]),
+        ("Data Engineer [Senior]", ["data engineer"]),
+        ("Big-Data Engineer", ["big data engineer"]),  # guion sin espacios: no separa
+    ],
+)
+def test_title_segments(raw: str, expected: list[str]) -> None:
+    assert title_segments(raw) == expected
 
 
 @pytest.mark.parametrize(
