@@ -20,6 +20,7 @@ solo apuntan aquí.
 | Tablas, eventos, estados | `docs/DATA_MODEL.md` |
 | Herramientas MCP, comandos CLI y esquemas | `docs/AGENT_INTERFACE.md` |
 | Reglas de negocio (CV, privacidad, aplicar) | `docs/POLICIES.md` |
+| Plantillas de CV, motores y opciones de render | `docs/CV_TEMPLATES.md` |
 | Qué agentes están soportados y con qué garantías | `docs/AGENTS_COMPAT.md` |
 | Qué fase toca y su estado | `docs/ROADMAP.md` |
 | Por qué se decidió algo | `docs/DECISIONS.md` |
@@ -36,9 +37,10 @@ backend/          pyproject.toml, app/, alembic/, tests/
 frontend/         Vite + React + TypeScript
 .agents/          FUENTE ÚNICA de skills, roles (subagentes) y manifiesto para agentes
 .claude/ .codex/ .mcp.json   GENERADOS desde .agents/ con scripts/sync_agents.py
+templates/        plantillas de CV integradas (sin datos personales)
 config/           policies.yaml y listas genéricas (sin datos personales)
 demo/             candidato y ofertas ficticios
-data/             GITIGNORED: jobhunter.db, profile.yaml, CVs, perfil del navegador, tmp/
+data/             GITIGNORED: jobhunter.db, profile.yaml, photo, templates/, uploads/, CVs, tmp/…
 ```
 
 ## Comandos

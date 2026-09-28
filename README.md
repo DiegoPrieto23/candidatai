@@ -24,17 +24,19 @@ docs/
   DATA_MODEL.md            tablas, catálogo de eventos, proyección de etapas
   AGENT_INTERFACE.md       herramientas MCP ↔ comandos CLI, y esquemas que rellena el agente
   POLICIES.md              reglas de negocio: veracidad, CV, privacidad, candidaturas
+  CV_TEMPLATES.md          plantillas de CV, motores docx/html, foto y opciones por oferta
   AGENTS_COMPAT.md         matriz de agentes soportados y cómo añadir uno
   ROADMAP.md               12 fases con su estado
   DECISIONS.md             ADRs (sin API, SQLite, docxtpl, neutralidad de agente…)
 prompts/01…12-*.md         el encargo de cada fase
 .agents/                   FUENTE ÚNICA para agentes
-  skills/                  8 skills en el estándar Agent Skills (Codex los lee directamente)
+  skills/                  10 skills en el estándar Agent Skills (Codex los lee directamente)
   roles/                   subagentes neutrales: extractor, redactor, verificador, revisor
   manifest.yaml            lo específico de cada agente (rutas, modelos, MCP, extras)
 scripts/sync_agents.py     genera la configuración nativa desde .agents/
 .claude/  .codex/  .mcp.json   GENERADOS (no editar a mano; se commitean)
 .claude/settings.json      permisos de Claude Code (este sí, a mano)
+templates/                 plantillas de CV integradas (se crean en las fases 08 y 08b)
 config/                    políticas genéricas, sinónimos de skills, patrones de inyección
 demo/profile.example.yaml  esquema del perfil con una candidata ficticia
 ```
@@ -70,6 +72,26 @@ Con la fase 08 terminada ya tienes un MVP usable: alta de ofertas, triaje y CVs 
 "capaz" para construir y "rápido" para los roles mecánicos (se configura en el manifiesto), y
 commits pequeños para deshacer con git en vez de con el agente.
 
+## Cuándo entra tu CV real
+
+Mientras se construye la app, el código se prueba siempre con datos ficticios de `demo/`: tus
+datos nunca van al repositorio. Tu CV real entra dos veces, para cosas distintas, y siempre en
+`data/` (fuera de git):
+
+| Momento | Qué se usa de tu CV | Resultado |
+|---|---|---|
+| Al terminar la fase 05 | Su **contenido**: el agente lo lee con el skill `actualizar-perfil` y te pregunta lo que falte | `data/profile.yaml`, la fuente de verdad de todo lo que se escriba sobre ti |
+| Desde la fase 08 | Su **diseño**: el skill `importar-plantilla-cv` convierte en plantilla cualquier CV tuyo o modelo que te guste (Word desde la 08; PDF, imagen o HTML desde la 08b). Puedes tener varias | `data/templates/<id>/`, junto a las integradas (`ats-simple`, `clasica-foto`, `moderna-2col`) |
+| Cuando quieras | Tu **foto** | `data/photo.jpg` (o png); cada plantilla la recorta a su forma |
+
+### Elegir estilo y foto en cada oferta
+
+El agente redacta el contenido del CV una sola vez; la presentación la pone la app. En la ficha de
+cada oferta eliges plantilla, foto (automática, con o sin), color de acento y secciones visibles, y
+pulsas «Renderizar»: tarda segundos y **no gasta cuota del agente**. Puedes comparar renders lado
+a lado y marcar cuál envías. Si no eliges nada, se aplican tus reglas (por ejemplo, `ats-simple`
+sin foto para ofertas en Workday o en el Reino Unido). Detalle: `docs/CV_TEMPLATES.md`.
+
 ## Si cambias skills, roles o el manifiesto
 
 Edita solo `.agents/` y regenera desde la raíz:
@@ -92,6 +114,8 @@ Arranca `jh serve`, `jh worker` y `pnpm dev`. Después, en tu agente:
 | `preparar-candidatura 42` | Respuestas de screening y carta, si hace falta |
 | `preparar-entrevista 42 tecnica` | Dosier de entrevista y simulacro |
 | `resumen-diario` | Qué tienes hoy, seguimientos vencidos, qué procesar |
+| `importar-plantilla-cv data/uploads/mi-cv.pdf` | Convierte un CV con cualquier diseño en plantilla reutilizable |
+| `revisar-linkedin` | Informe de mejoras para tu perfil de LinkedIn, listo para copiar (tú lo aplicas) |
 
 Si tu agente ofrece tareas programadas, `procesar-ofertas` y `resumen-diario` pueden ejecutarse
 solos cada mañana (se documenta al terminar la fase 09).

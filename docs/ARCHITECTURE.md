@@ -61,7 +61,9 @@ found ─► pending_extraction ─► pending_triage ─► approved ─► cv_
 | Redactar el contenido del CV | Agente, rol `redactor` | Redacción |
 | Verificar que no hay nada inventado | Agente, rol `verificador` (distinto del redactor) | Segunda opinión independiente |
 | Comprobar evidencias, skills y páginas | Código | Determinista; no se fía del agente |
-| Renderizar DOCX/PDF | Código | Determinista |
+| Elegir plantilla y foto para una oferta | Código, por reglas; tú puedes cambiarlo en la UI | Configurable y sin coste |
+| Renderizar DOCX/PDF, también en otra plantilla o sin foto | Código | Determinista; no hace falta volver al agente |
+| Convertir tu CV en plantilla | Agente (mapeo o recreación) + código (construye, sanea, valida y previsualiza) | El agente interpreta el diseño; el código garantiza que funciona |
 | Rellenar formularios de candidatura | Código (Playwright) | Determinista, con pausa antes de enviar |
 | Enviar | Tú (confirmación en la UI) | Irreversible |
 

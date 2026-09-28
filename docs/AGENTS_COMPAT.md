@@ -80,6 +80,11 @@ ofertas marcadas con riesgo antes de aprobarlas.
 - `jh-mcp` arranca por stdio, lista las 9 herramientas y responde (test con el proceso real).
   stdout queda reservado al protocolo; los logs van a stderr y a `data/logs/mcp.log`.
 
+### Skills que necesitan ver imágenes
+`importar-plantilla-cv` con un PDF o una imagen recrea el diseño mirando la página renderizada:
+hace falta un agente que pueda ver imágenes. Con un `.docx` no hace falta. `actualizar-perfil`
+también funciona mejor si el agente puede leer PDFs; si no, basta con pegar el texto del CV.
+
 ### Añadir otro agente
 1. Añade su bloque a `targets` en `.agents/manifest.yaml` (rutas, modelos, formato MCP).
 2. Si su formato no es JSON ni TOML de los ya soportados, añade un emisor en `scripts/sync_agents.py`.

@@ -52,13 +52,19 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | `get_profile` | `jh profile show [--sections S1,S2] --json` | 05 | `sections?` | `profile_version_id`, `created_at`, `profile`: `CandidateProfile` sin email, teléfono ni `private` | — |
 | `get_match` | `jh match show ID --json` | 07 | `job_id` | Filtros duros, score, desglose, skills cubiertas y ausentes | — |
 | `save_fit_assessment` | `jh match save-assessment ID --file F` | 07 | `job_id, assessment: FitAssessment` | `ok` | `fit_assessed` |
-| `save_cv_content` | `jh cv save ID --file F --json` | 08 | `job_id, content: CvContent` | `document_id`, rutas, páginas, cobertura, avisos | `cv_generated` |
-| `get_cv_content` | `jh cv show (ID \| --document DOC) --json` | 08 | `job_id` o `document_id` | `CvContent` + evidencias resueltas | — |
+| `list_cv_templates` | `jh templates list --json` | 08 | — | Plantillas: `id`, nombre, motor, `ats_friendly`, foto, `capacity`, `sections`, opciones | — |
+| `save_cv_content` | `jh cv save ID --file F --json` | 08 | `job_id, content: CvContent, render_options?: CvRenderOptions` | `document_id` + primer render: plantilla, rutas, páginas, cobertura, avisos | `cv_generated`, `cv_rendered` |
+| `render_cv` | `jh cv render DOC --file F --json` | 08 | `document_id, options: CvRenderOptions` | `render_id`, plantilla, rutas, páginas, avisos | `cv_rendered` |
+| `get_cv_content` | `jh cv show (ID \| --document DOC) --json` | 08 | `job_id` o `document_id` | `CvContent` + evidencias resueltas + renders | — |
 | `save_cv_verification` | `jh cv save-verification DOC --file F` | 08 | `document_id, verification: CvVerification` | `ok` | `cv_verified` / `cv_rejected` |
 | `save_application_answers` | `jh applications save-answers ID --file F` | 10 | `job_id, answers: ApplicationAnswers` | `document_id` | `application_prepared` |
 | `list_followups_due` | `jh followups --days N --json` | 10 | `days_without_reply=10` | Candidaturas sin respuesta | — |
 | `list_upcoming` | `jh upcoming --days N --json` | 10 | `days=7` | Entrevistas, pruebas y plazos próximos | — |
 | `get_funnel_stats` | `jh stats funnel [--since] --json` | 10 | `since?` | Conversión por etapa, fuente y tipo de puesto | — |
+
+Las utilidades de autoría de plantillas (`jh templates inspect | build-docx | scaffold-html |
+validate | preview | compare`) son solo CLI: trabajan con ficheros dentro de `data/` y las usa el
+skill `importar-plantilla-cv`. Detalle en `docs/CV_TEMPLATES.md`.
 
 Aprobar o descartar **no tiene herramienta propia a propósito**: esa decisión se toma en la UI. Si
 el usuario la dicta a su agente, este puede usar `add_event` con `approved` o `discarded` y el
@@ -163,12 +169,23 @@ skills: [{group: str, items: [str]}]   # solo skills del perfil
 education_ids: [str]
 certification_ids: [str]
 languages: [{language: str, level: str}]
-include_photo: bool
 include_regional_language: bool
 keywords_targeted: [str]               # keywords de la oferta que el CV cubre de verdad
 ```
 `save_cv_content` rechaza el contenido si alguna evidencia no existe en el perfil, si aparece una
 skill que no está en el perfil o si una skill de `basic_skills` no la pide la oferta.
+
+### `CvRenderOptions`
+Opciones de presentación, independientes del contenido. `null`/`auto` = lo decide la app con las
+reglas de `docs/CV_TEMPLATES.md` §Opciones.
+```
+template_id: str | null
+photo: auto|include|exclude
+accent_color: str | null               # uno de los que admite la plantilla
+max_pages: int | null
+hidden_sections: [str]                 # summary|experience|projects|education|certifications|skills|languages
+page_size: A4|Letter|null
+```
 
 ### `CvVerification`
 ```

@@ -129,8 +129,14 @@ preferences:
     excluded: []
   languages_for_work: [es, en]
   cv:
-    max_pages: 1
+    default_template: clasica-foto   # integrada o tuya (data/templates/<id>); ver docs/CV_TEMPLATES.md
+    photo_file: photo.jpg            # dentro de data/; cualquier formato de imagen
     photo_policy: {default: true, by_country: {GB: false, IE: false, US: false, NL: false}}
+    template_rules:                  # la primera que encaje gana; si ninguna, default_template
+      - when: {ats: [workday, taleo, successfactors, icims]}
+        use: ats-simple
+      - when: {country: [GB, IE, US, NL]}
+        use: ats-simple
 
 private:                     # nunca sale por la MCP ni en ningún documento
   salary_floor_eur: null

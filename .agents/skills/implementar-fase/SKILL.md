@@ -5,7 +5,8 @@ description: Implementa una fase del roadmap de Job Hunter a partir de su encarg
 
 Vas a implementar la fase de Job Hunter indicada en los argumentos (p. ej. `03`).
 
-1. Localiza `prompts/<NN>-*.md`. Si no existe, lista los encargos disponibles y para.
+1. Localiza el encargo: `prompts/<fase>-*.md`, donde la fase puede llevar letra (`05b`, `08b`). Si
+   no existe, lista los encargos disponibles y para.
 2. Lee el encargo y los documentos que cita en «Contexto». Consulta `docs/ROADMAP.md`: si alguna
    fase anterior no está ✅, avisa y pregunta si seguimos.
 3. **Antes de editar nada**, presenta un plan breve: ficheros que crearás o cambiarás, migraciones,

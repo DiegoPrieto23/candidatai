@@ -77,6 +77,7 @@ Una fila por extracción; la vigente es la más reciente.
 | created_at | datetime | |
 
 ### `documents`
+Contenido de un documento (lo que escribe el agente). La presentación va en `document_renders`.
 | Columna | Tipo | Notas |
 |---|---|---|
 | id | int PK | |
@@ -84,9 +85,24 @@ Una fila por extracción; la vigente es la más reciente.
 | kind | str | `cv`, `cover_letter`, `answers` |
 | language | str | `es`, `en` |
 | content | JSON | `CvContent` u otro esquema, con referencias a evidencias |
-| docx_path / pdf_path | str? | Relativos a `data/` |
-| pages | int? | |
 | verification | JSON? | `{passed, issues[]}` del verificador |
+| created_at | datetime | |
+
+### `document_renders`
+Cada combinación de contenido + plantilla + opciones que se ha generado. Crear uno nuevo no
+cambia `documents` ni necesita al agente.
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | int PK | |
+| document_id | FK documents | |
+| template_id | str | Id de la plantilla (integrada o del usuario) |
+| template_hash | str | Hash de los ficheros de la plantilla al renderizar, para saber si cambió después |
+| options | JSON | `CvRenderOptions` ya resueltas (plantilla, foto sí/no, color…) |
+| docx_path / pdf_path | str? | Relativos a `data/`; `docx_path` vacío en el motor html |
+| pages | int | |
+| keyword_coverage | JSON | Keywords de la oferta presentes y ausentes en el PDF |
+| warnings | JSON | `too_long`, `not_ats_friendly`, `font_substituted`… |
+| selected | bool | El que se usará al enviar; como mucho uno por documento |
 | created_at | datetime | |
 
 ### `applications`
@@ -96,7 +112,7 @@ Proyección del estado de candidatura para consultas rápidas; se recalcula desd
 | job_id | PK/FK | |
 | stage | str | Ver etapas |
 | channel | str? | `ats_form`, `email`, `linkedin_manual`, `portal_manual` |
-| document_id | FK documents? | CV enviado |
+| render_id | FK document_renders? | Render del CV enviado |
 | applied_at | datetime? | |
 | last_event_at | datetime | |
 
@@ -135,7 +151,8 @@ Nunca guarda texto crudo de ofertas ni datos del perfil en `args_summary`.
 | `approved` | user | `approved` |
 | `discarded` | user | `closed` (con motivo) |
 | `cv_generated` | agent | sin cambio |
-| `cv_verified` | agent | `cv_ready` si `passed` |
+| `cv_rendered` | system / user / agent | sin cambio |
+| `cv_verified` | agent | `cv_ready` si `passed` y hay un render sin `too_long` |
 | `cv_rejected` | agent | sin cambio |
 | `application_prepared` | system | sin cambio |
 | `applied` / `applied_manually` | user | `applied` |

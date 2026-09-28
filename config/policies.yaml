@@ -25,3 +25,20 @@ followups:
 
 applier:
   step_timeout_seconds: 30
+
+cv:
+  fallback_template: ats-simple
+  # ATS reconocidos por la URL de la oferta. Se usan en template_rules y para el aviso
+  # not_ats_friendly. Amplía la lista cuando veas otros.
+  ats_platforms:
+    workday: [myworkdayjobs.com, workday.com]
+    taleo: [taleo.net]
+    successfactors: [successfactors.com, successfactors.eu, jobs.sap.com]
+    icims: [icims.com]
+    greenhouse: [greenhouse.io]
+    lever: [lever.co]
+    ashby: [ashbyhq.com]
+    smartrecruiters: [smartrecruiters.com]
+    teamtailor: [teamtailor.com]
+    personio: [jobs.personio.de, jobs.personio.com]
+  pdf_timeout_seconds: 60

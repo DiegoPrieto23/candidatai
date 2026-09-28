@@ -29,5 +29,7 @@ Editor de perfil en la UI (más adelante, si compensa).
 - Importar el mismo fichero dos veces no crea una segunda versión.
 
 ## Al terminar
-Actualiza `docs/ROADMAP.md`. Sugiere al usuario ejecutar el skill `actualizar-perfil` con su agente para crear su
-`data/profile.yaml` real a partir de su CV (no lo hagas tú dentro de esta fase).
+Actualiza `docs/ROADMAP.md`. Durante la fase usa solo `demo/profile.example.yaml`; el CV real del
+usuario no se toca aquí. Al cerrar, sugiere al usuario ejecutar el skill `actualizar-perfil` con
+su agente para crear su `data/profile.yaml` real a partir de su CV (no lo hagas tú dentro de esta
+fase).

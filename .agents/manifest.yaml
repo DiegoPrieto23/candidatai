@@ -24,6 +24,7 @@ targets:
       git_read: ["Bash(git diff *)", "Bash(git status *)", "Bash(git log *)"]
       web: [WebSearch, WebFetch]
       jh_profile_cli: ["Bash(uv run --directory backend jh profile *)"]
+      jh_templates_cli: ["Bash(uv run --directory backend jh templates *)"]
     skill_extras:                 # campos de frontmatter que solo entiende Claude Code
       implementar-fase:
         disable-model-invocation: true
@@ -33,8 +34,8 @@ targets:
       evaluar-encaje:
         allowed-tools: ["mcp:list_jobs", "mcp:get_match", "mcp:get_extraction", "mcp:get_profile"]
       generar-cv:
-        argument-hint: "[job_id o 'pendientes']"
-        allowed-tools: ["mcp:list_jobs", "mcp:get_match", "mcp:get_extraction"]
+        argument-hint: "[job_id o 'pendientes'] [opciones: con foto, sin foto, plantilla…]"
+        allowed-tools: ["mcp:list_jobs", "mcp:get_match", "mcp:get_extraction", "mcp:list_cv_templates", "mcp:render_cv"]
       preparar-candidatura:
         argument-hint: "[job_id] [preguntas pegadas o 'carta']"
         allowed-tools: ["mcp:get_extraction", "mcp:get_profile", "mcp:get_cv_content"]
@@ -44,6 +45,12 @@ targets:
         allowed-tools: ["read", "jh_profile_cli"]
       resumen-diario:
         allowed-tools: ["mcp:get_status", "mcp:list_followups_due", "mcp:list_upcoming", "mcp:list_jobs"]
+      importar-plantilla-cv:
+        argument-hint: "[ruta en data/uploads/, p. ej. data/uploads/mi-cv.pdf]"
+        allowed-tools: ["read", "jh_templates_cli"]
+      revisar-linkedin:
+        argument-hint: "[ruta al PDF de LinkedIn o nada para pegar el texto]"
+        allowed-tools: ["read", "mcp:get_profile", "mcp:list_jobs", "mcp:get_extraction"]
 
   codex:                          # Codex (ChatGPT): CLI, extensión IDE o app
     enabled: true

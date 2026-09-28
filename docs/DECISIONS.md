@@ -24,7 +24,7 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
 - **Descartado:** Streamlit (modelo de re-ejecución incompatible con kanban y confirmaciones),
   Next.js (segundo backend en JS), Reflex (ecosistema pequeño).
 
-## ADR-004 · CV con `docxtpl` a partir de datos estructurados
+## ADR-004 · CV con `docxtpl` a partir de datos estructurados (ampliado por ADR-014)
 - **Contexto:** reemplazar texto en `document.xml` falla porque Word parte el texto en varios `<w:r>`.
 - **Decisión:** plantilla `.docx` con marcadores Jinja; el agente produce `CvContent` y el código renderiza.
   PDF con LibreOffice headless; páginas con `pypdf`.
@@ -100,3 +100,20 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   la comprueba herramienta a herramienta. Añadir una herramienta es añadir un `ToolSpec`. A
   cambio, se depende de la API de bajo nivel del SDK, que es más verbosa. El campo `received` de
   los errores va siempre como texto para que coincida en los dos canales.
+
+## ADR-014 · Contenido y presentación separados; plantillas múltiples con dos motores
+- **Contexto:** el usuario quiere subir CVs con cualquier diseño y elegir en cada oferta el estilo,
+  la foto y otros detalles. Una sola plantilla Word no basta, y muchos diseños solo existen en PDF
+  o imagen (Canva y similares).
+- **Decisión:**
+  - el agente redacta `CvContent` sin saber nada del estilo; el código lo combina con una
+    plantilla y unas `CvRenderOptions`, y cada combinación es un `document_render`;
+  - plantillas integradas en `templates/` y del usuario en `data/templates/`, descritas con
+    `template.yaml` y un contrato de variables común;
+  - dos motores: **docx** (docxtpl; conserva exacto un diseño que ya está en Word y genera DOCX y
+    PDF) y **html** (Jinja2 + Chromium; recrea diseños que vienen en PDF o imagen; solo PDF);
+  - la importación la hace el agente con utilidades deterministas (`jh templates …`): en docx
+    decide el mapeo y el código inserta los marcadores sin partirlos; en html escribe HTML/CSS
+    local y saneado.
+- **Consecuencias:** cambiar de estilo o de foto no gasta cuota del agente. Recrear un diseño desde
+  PDF o imagen es aproximado y requiere un agente que vea imágenes. Las plantillas html no dan Word.

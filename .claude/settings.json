@@ -22,6 +22,7 @@
       "mcp__jobhunter__get_profile",
       "mcp__jobhunter__get_match",
       "mcp__jobhunter__get_cv_content",
+      "mcp__jobhunter__list_cv_templates",
       "mcp__jobhunter__list_followups_due",
       "mcp__jobhunter__list_upcoming",
       "mcp__jobhunter__get_funnel_stats"

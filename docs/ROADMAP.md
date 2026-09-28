@@ -12,15 +12,24 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 03 | Alta de ofertas | ✅ | `jh jobs add-url` y `add-text` crean ofertas deduplicadas y con `risk_flags` |
 | 04 | Interfaz para agentes | ✅ | Servidor MCP + CLI con paridad; funciona desde Claude Code y Codex |
 | 05 | Perfil del candidato | ✅ | `data/profile.yaml` validado y versionado; `get_profile` |
+| 05b | Preferencias de CV en el perfil | ⏳ | El perfil admite plantilla por defecto, foto y reglas de plantilla; `demo/profile.example.yaml` vuelve a validar |
 | 06 | Frontend base | ⏳ | UI con bandeja de ofertas, ficha y alta por URL |
 | 07 | Matching y triaje | ⏳ | Filtros duros, score, skill `evaluar-encaje`, aprobar o descartar en la UI |
-| 08 | CV a medida | ⏳ | Skill `generar-cv` produce DOCX + PDF verificados |
+| 08 | CV a medida con plantillas | ⏳ | `generar-cv` produce CVs verificados; plantilla, foto y color se cambian en la UI sin agente; importar plantillas desde Word |
+| 08b | Plantillas html | ⏳ | Importar diseños desde PDF o imagen (Canva…) y plantilla integrada de dos columnas |
 | 09 | Conectores de ATS y scheduler | ⏳ | Ingesta diaria de empresas objetivo sin intervención |
 | 10 | Seguimiento y analítica | ⏳ | Kanban, seguimientos pendientes, dashboard del embudo |
 | 11 | Candidatura asistida | ⏳ | Rellenado con Playwright y envío tras tu confirmación |
 | 12 | Demo, compatibilidad y portfolio | ⏳ | Modo demo, matriz de agentes probada, evals publicados |
 
 **MVP usable:** al terminar la 08 ya puedes pegar ofertas, triarlas y sacar CVs a medida.
+
+**Skills que se desbloquean por fase:** `actualizar-perfil` tras la 05; `procesar-ofertas` tras la
+04 (y con perfil, tras la 05); `evaluar-encaje` tras la 07; `generar-cv` tras la 08; `importar-plantilla-cv` tras la 08 para
+Word y tras la 08b para PDF, imagen o HTML;
+`revisar-linkedin` funciona tras la 05, pero rinde mucho más desde la 07, cuando ya hay ofertas
+aprobadas de las que sacar las keywords; `preparar-candidatura`, `preparar-entrevista` y
+`resumen-diario` tras la 10.
 
 ## Registro de fases
 
