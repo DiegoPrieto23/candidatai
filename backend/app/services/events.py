@@ -176,3 +176,55 @@ def add_event(
         agent_name=agent_name,
     )
     return AddEventResult(ok=True, event_id=event.id, stage=current_stage(session, job_id))
+
+
+# Eventos que registra el usuario desde la UI (actor `user` en el catálogo de DATA_MODEL.md).
+# `cv_rendered` también admite `user`, pero lo registra el servicio de render (fase 08).
+USER_EVENTS = frozenset(
+    {
+        EventType.APPROVED,
+        EventType.DISCARDED,
+        EventType.APPLIED,
+        EventType.APPLIED_MANUALLY,
+        EventType.REPLY_RECEIVED,
+        EventType.INTERVIEW_SCHEDULED,
+        EventType.INTERVIEW_DONE,
+        EventType.TEST_ASSIGNED,
+        EventType.FOLLOWUP_SENT,
+        EventType.OFFER_RECEIVED,
+        EventType.REJECTED,
+        EventType.WITHDRAWN,
+        EventType.EXPIRED,
+        EventType.ACCEPTED,
+        EventType.REOPENED,
+        EventType.NOTE,
+    }
+)
+
+
+class NotUserEventError(ValueError):
+    pass
+
+
+def add_user_event(
+    session: Session,
+    job_id: int,
+    type: str,
+    note: str | None = None,
+    occurred_at: datetime | None = None,
+) -> AddEventResult:
+    """Registra un evento del usuario (actor `user`). La nota va en `payload.note`."""
+    event_type = parse_event_type(type)
+    if event_type not in USER_EVENTS:
+        raise NotUserEventError(f"El evento «{event_type}» no lo registra el usuario desde la UI.")
+    if event_type == EventType.NOTE and not (note and note.strip()):
+        raise ValueError("Una nota necesita texto.")
+    event = record(
+        session,
+        job_id,
+        event_type,
+        Actor.USER,
+        payload={"note": note.strip()} if note and note.strip() else None,
+        occurred_at=occurred_at,
+    )
+    return AddEventResult(ok=True, event_id=event.id, stage=current_stage(session, job_id))

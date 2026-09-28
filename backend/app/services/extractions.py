@@ -77,16 +77,23 @@ def save_extraction(
     )
 
 
+def latest_rows(session: Session, job_ids: list[int]) -> dict[int, JobExtractionRow]:
+    """La extracción vigente (la más reciente) de cada oferta indicada."""
+    if not job_ids:
+        return {}
+    rows = session.scalars(
+        select(JobExtractionRow)
+        .where(JobExtractionRow.job_id.in_(job_ids))
+        .order_by(JobExtractionRow.created_at, JobExtractionRow.id)
+    )
+    return {row.job_id: row for row in rows}  # la última gana
+
+
 def get_extraction(session: Session, job_id: int) -> StoredExtraction:
     """La extracción vigente (la más reciente) de una oferta."""
     if session.get(Job, job_id) is None:
         raise JobNotFoundError(f"No existe la oferta {job_id}.")
-    row = session.scalars(
-        select(JobExtractionRow)
-        .where(JobExtractionRow.job_id == job_id)
-        .order_by(JobExtractionRow.created_at.desc(), JobExtractionRow.id.desc())
-        .limit(1)
-    ).first()
+    row = latest_rows(session, [job_id]).get(job_id)
     if row is None:
         raise ExtractionNotFoundError(f"La oferta {job_id} aún no tiene extracción.")
     return StoredExtraction(

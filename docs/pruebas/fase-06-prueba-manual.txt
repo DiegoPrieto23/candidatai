@@ -1,0 +1,268 @@
+PRUEBA MANUAL · FASE 06 · FRONTEND BASE
+=======================================
+
+Objetivo: comprobar que la UI funciona de verdad con tu agente. Das de alta ofertas desde el
+navegador, tu agente las extrae con el skill procesar-ofertas y ves la extracción en la ficha.
+De paso revisas la bandeja, el aviso de inyección, las notas, el modo oscuro y el móvil.
+
+Duración aproximada: 20 minutos.
+
+
+REQUISITOS
+----------
+- Usa solo las ofertas FICTICIAS de demo/jobs/, nunca una real.
+- Software: uv, Node + pnpm y Claude Code (ya los tienes). Un navegador (Chrome o Edge).
+- Necesitas DOS terminales de PowerShell abiertas a la vez (una para la API y otra para la UI),
+  más la sesión de Claude Code.
+- Los comandos se ejecutan desde la RAÍZ del repo salvo que se diga otra cosa:
+      cd "C:\Users\Diego Prieto\Documents\Claude Code\job-search"
+- Rama de la fase:
+      git switch fase/06-frontend-base
+
+Tu base de datos (data/jobhunter.db) está migrada y sin ofertas. Las ofertas de esta prueba se
+quedarán en ella; al final se explica cómo limpiarla.
+
+
+PARTE 1 · PREPARAR
+------------------
+1. Instala las dependencias nuevas (esta fase añade varias al frontend):
+
+      uv sync --directory backend
+      cd frontend
+      pnpm install
+      cd ..
+
+   Esperado: termina sin errores. Un aviso "unmet peer typescript" de openapi-typescript es
+   normal (está anotado en el ROADMAP).
+
+2. Migra la base de datos (si ya está al día, no hace nada):
+
+      uv run --directory backend jh db upgrade
+
+3. (Opcional) Pasa los tests automáticos tú mismo:
+
+      cd backend; uv run pytest -q; cd ..
+      cd frontend; pnpm test; pnpm build; cd ..
+
+   Esperado: "624 passed" en el backend; "17 passed" y "built in …" en el frontend.
+
+
+PARTE 2 · ARRANCAR
+------------------
+4. Terminal 1, la API:
+
+      cd backend
+      uv run jh serve
+
+   Esperado: "Uvicorn running on http://127.0.0.1:8000". Déjala abierta.
+   (Si abres http://127.0.0.1:8000/docs verás la documentación de la API: es opcional.)
+
+5. Terminal 2, la UI:
+
+      cd frontend
+      pnpm dev
+
+   Esperado: "Local: http://127.0.0.1:5173/". Déjala abierta.
+
+6. Abre http://127.0.0.1:5173 en el navegador.
+   Ojo: usa 127.0.0.1, NO "localhost". La API solo acepta peticiones de esa dirección exacta.
+
+
+PARTE 3 · PRIMER VISTAZO (BANDEJA VACÍA)
+----------------------------------------
+7. Con la base de datos vacía debes ver:
+   - Arriba, "Job Hunter", el enlace "Bandeja", un botón de tema y "Nueva oferta".
+   - Debajo, la fila de etapas: Todas 0, Por extraer 0, Por revisar 0… Cerrada 0.
+   - Sin recuadro de "Hay N ofertas por extraer".
+   - En el centro, "Tu bandeja está vacía" con el botón "Añadir la primera".
+
+8. Pulsa varias veces el botón de tema (el icono a la izquierda de "Nueva oferta"). Rota entre
+   "el del sistema", "claro" y "oscuro" (pasa el ratón por encima para ver cuál es). Recarga la
+   página: debe mantener el último que elegiste. Déjalo como prefieras.
+
+
+PARTE 4 · DAR DE ALTA DESDE LA UI
+---------------------------------
+9. Pulsa "Nueva oferta" y elige la pestaña "Pegar texto". Rellena con la oferta 1:
+   - Puesto: Data Engineer
+   - Empresa: Brétema Analytics
+   - Ubicación: Santiago de Compostela
+   - URL: déjala vacía
+   - Texto de la oferta: abre demo/jobs/01-data-engineer.txt, copia TODO y pégalo.
+   Pulsa "Dar de alta".
+
+   Esperado:
+   - Te lleva a la ficha de la oferta con el mensaje "Oferta dada de alta. Tu agente la extraerá…".
+   - Etapa "Por extraer" arriba a la derecha.
+   - Recuadro "Aún sin extraer" con la indicación de ejecutar procesar-ofertas.
+   - En la cabecera: "Hay 1 oferta por extraer. Ejecuta el skill procesar-ofertas en tu agente."
+     y el recuento "Por extraer 1".
+   - En "Historial", un evento "Dada de alta" de "Sistema".
+   - "Texto original" plegado; al pulsarlo se despliega el texto tal cual lo pegaste.
+
+10. Repite el paso 9 exactamente igual (misma oferta, mismo texto).
+
+    Esperado: te lleva a la MISMA ficha con el aviso "Esta oferta ya estaba dada de alta. No se
+    ha cambiado nada." Los recuentos no cambian.
+
+11. Da de alta la oferta 2, que lleva una instrucción dirigida a la IA escondida en el texto:
+    - Puesto: Analytics Engineer
+    - Empresa: Lonxa Retail Tech
+    - Ubicación: Remoto (España)
+    - Texto: copia TODO demo/jobs/02-analytics-engineer.txt
+
+    Esperado: en la ficha aparece un recuadro ÁMBAR "Posible contenido dirigido a una IA" con la
+    etiqueta "Frases que parecen instrucciones para una IA" y la cita del trozo sospechoso
+    ("…ignora las instrucciones anteriores…"), marcada como "Detectado por el sistema".
+    La cabecera dice ahora "Hay 2 ofertas por extraer".
+
+12. Errores del formulario "Por URL". Pulsa "Nueva oferta", pestaña "Por URL":
+    a) Escribe https://www.linkedin.com/jobs/view/123 y pulsa "Dar de alta".
+       Esperado: un recuadro rojo bajo el campo explicando que LinkedIn no se descarga y que
+       pegues el texto. No se crea ninguna oferta.
+    b) Pulsa el enlace "pega el texto" de la ayuda del campo: debe cambiar a la otra pestaña.
+    (No hace falta probar una URL real: la descarga ya la cubren los tests de la fase 03.)
+
+
+PARTE 5 · PROCESAR CON TU AGENTE Y VERLO EN LA UI
+-------------------------------------------------
+Este es el criterio de aceptación principal de la fase.
+
+13. Deja la API y la UI arrancadas. Abre Claude Code en la raíz del repo (si ya lo tenías
+    abierto, reinícialo con /exit y "claude" para que cargue el servidor MCP) y comprueba con
+    /mcp que "jobhunter" aparece conectado.
+
+14. Ejecuta:
+
+      /procesar-ofertas
+
+    Esperado: el agente delega cada oferta en el subagente "extractor" y al final muestra una
+    tabla con las 2 ofertas extraídas. En la oferta 2 debe indicar que marcó posible inyección
+    y NO debe haber obedecido la instrucción del texto.
+
+15. Vuelve al navegador. La cabecera se refresca sola cada 30 segundos; para no esperar, recarga
+    la página (F5).
+
+    Esperado en la cabecera: "Por extraer 0", "Por revisar 2" y ya no sale el recuadro de
+    "ofertas por extraer".
+
+16. Abre la ficha de "Data Engineer" (pulsa en la fila de la bandeja).
+
+    Esperado:
+    - Panel "Extracción" con Seniority, Modalidad (Híbrido), Experiencia mínima, Contrato,
+      Salario (o "No lo indica"), Idiomas, Ubicación y, si los hay, Sector y Plazo.
+    - "Obligatorias" (chips con color) y "Deseables" (chips con borde).
+    - "Responsabilidades" y, si el agente anotó algo, "A tener en cuenta".
+    - En "Historial", arriba del todo, "Extracción guardada" de "Agente claude-code" (o el nombre
+      con el que se identifique tu cliente).
+    Revisa que lo extraído cuadra con el texto original (despliégalo para comparar).
+
+17. Abre la ficha de "Analytics Engineer".
+
+    Esperado: el recuadro ámbar muestra ahora DOS detecciones: la del sistema y la del agente
+    ("Detectado por Agente claude-code"). En el historial hay dos eventos "Posible contenido
+    dirigido a una IA" (Sistema y Agente) además de "Extracción guardada".
+
+
+PARTE 6 · NOTAS
+---------------
+18. En la ficha de "Data Engineer", escribe una nota en "Añadir nota" (p. ej. "Preguntar por el
+    equipo") y pulsa "Guardar nota".
+
+    Esperado: el cuadro se vacía y la nota aparece arriba del historial como "Nota", de "Tú",
+    con el texto en un recuadro gris. La etapa NO cambia. Con el cuadro vacío o solo espacios,
+    el botón "Guardar nota" está desactivado.
+
+
+PARTE 7 · BANDEJA: BUSCAR Y FILTRAR
+-----------------------------------
+19. Ve a "Bandeja". Deben salir las 2 ofertas, las más recientes arriba, con empresa, modalidad
+    (Híbrido / Remoto), etapa "Por revisar" y "hoy" en la columna Alta. La de Lonxa lleva un
+    triángulo ámbar junto al título (pasa el ratón: "Posible contenido dirigido a una IA").
+
+20. Escribe "lonxa" en el buscador. Tras un instante queda solo Analytics Engineer y la URL del
+    navegador incluye "?q=lonxa". Prueba también "engineer" (salen las dos) y "zzz" (sale "Nada
+    por aquí" con el botón "Quitar filtros", que lo deja todo como estaba).
+
+21. En la fila de etapas de la cabecera, pulsa "Por extraer": la bandeja se titula "Por extraer"
+    y sale vacía con "Nada por aquí". Pulsa "Por revisar": salen las dos. Pulsa "Todas". El
+    desplegable "Todas las etapas" hace lo mismo.
+
+(La paginación solo aparece con más de 50 ofertas; la cubren los tests automáticos.)
+
+
+PARTE 8 · TAMAÑOS DE PANTALLA Y MODO OSCURO
+-------------------------------------------
+22. Con la ventana a unos 1280 px de ancho, la ficha muestra la extracción a la izquierda y el
+    historial a la derecha, y nada se sale ni se corta.
+
+23. Simula un móvil: pulsa F12, luego Ctrl+Shift+M (modo dispositivo) y elige un iPhone o pon
+    390 px de ancho.
+    Esperado: la bandeja pasa de tabla a lista de tarjetas; la fila de etapas se desplaza en
+    horizontal; la ficha se apila en una columna; los formularios de alta se ven completos.
+    No debe haber scroll horizontal en la página.
+
+24. Repite un vistazo rápido a la bandeja, una ficha y el alta en modo oscuro. Todo el texto
+    debe leerse bien, también el recuadro ámbar y los chips de skills.
+
+
+PARTE 9 · SI LA API NO ESTÁ ARRANCADA
+-------------------------------------
+25. En la terminal 1, para la API con Ctrl+C. En el navegador, recarga la bandeja.
+
+    Esperado: un recuadro rojo "La API no responde" con el texto "…Arráncala con uv run jh serve
+    en backend/." y un botón "Reintentar".
+
+26. Vuelve a arrancarla (uv run jh serve en la terminal 1) y pulsa "Reintentar": la bandeja
+    vuelve a cargar.
+
+
+PROBLEMAS FRECUENTES
+--------------------
+- La UI dice "La API no responde" con la API arrancada: seguramente abriste "localhost:5173"
+  en vez de "127.0.0.1:5173". La API solo acepta CORS desde 127.0.0.1:5173.
+- "pnpm dev" dice "Port 5173 is already in use": hay otro Vite abierto (a veces uno que quedó
+  huérfano). La UI no cambia de puerto a propósito, por lo mismo del CORS. Para ver qué proceso
+  lo ocupa y cerrarlo (vale igual para el 8000 cambiando el número):
+
+      Get-NetTCPConnection -LocalPort 5173 -State Listen | ForEach-Object { Get-CimInstance Win32_Process -Filter "ProcessId=$($_.OwningProcess)" | Select-Object ProcessId, CommandLine }
+      Stop-Process -Id <ProcessId>
+
+  Si la línea de comando contiene "vite", es seguro cerrarlo.
+- "jh serve" falla con "La base de datos no está al día": ejecuta
+  "uv run --directory backend jh db upgrade".
+- "jh serve" dice que el puerto 8000 está en uso: tienes otra API abierta. Ciérrala o usa
+  "uv run jh serve --port 8001" (en ese caso la UI necesita VITE_API_URL=http://127.0.0.1:8001;
+  mejor cierra la otra).
+- /mcp muestra "jobhunter" como "failed": ejecuta a mano "uv run --directory backend jh-mcp"
+  y mira el error; revisa también data/logs/. Luego reinicia Claude Code. (En la sesión en la
+  que se implementó la fase, el servidor MCP no llegó a conectar por un timeout; si te pasa,
+  cuéntamelo.)
+- La ficha no muestra la extracción tras procesar: recarga con F5. Si sigue sin salir, ejecuta
+  "uv run --directory backend jh events list 1" y mira si hay un evento "extracted".
+- Tras "pnpm install" el build falla por tipos de la API: ejecuta "pnpm gen:api" en frontend/.
+
+
+LIMPIAR AL TERMINAR (OPCIONAL)
+------------------------------
+No hay (todavía) un comando para borrar ofertas. Si quieres dejar la base de datos sin estas
+ofertas de prueba, borra el fichero y vuelve a crearlo. OJO: también se borran las versiones de
+tu perfil guardadas, así que después hay que volver a importarlo:
+
+      Remove-Item data/jobhunter.db*
+      uv run --directory backend jh db upgrade
+      uv run --directory backend jh profile import
+
+Para cerrar la API y la UI, Ctrl+C en cada terminal.
+
+
+QUÉ ME TIENES QUE CONTAR
+------------------------
+- Si el flujo principal (pasos 9, 14, 15 y 16) funcionó: alta en la UI, procesar-ofertas y
+  extracción visible en la ficha.
+- Si el aviso ámbar salió en la oferta 2 antes y después de procesarla (pasos 11 y 17).
+- Cualquier paso cuyo resultado no coincida con el "Esperado", con el número de paso.
+- Lo que no te guste del diseño o te resulte confuso (textos, colores, orden, tamaños), con una
+  captura si puedes.
+- Cualquier error de la terminal de la API o de la consola del navegador (F12 → Consola), tal
+  cual.

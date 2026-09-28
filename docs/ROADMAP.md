@@ -13,7 +13,7 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 04 | Interfaz para agentes | ✅ | Servidor MCP + CLI con paridad; funciona desde Claude Code y Codex |
 | 05 | Perfil del candidato | ✅ | `data/profile.yaml` validado y versionado; `get_profile` |
 | 05b | Preferencias de CV en el perfil | ✅ | El perfil admite plantilla por defecto, foto y reglas de plantilla; `demo/profile.example.yaml` vuelve a validar |
-| 06 | Frontend base | ⏳ | UI con bandeja de ofertas, ficha y alta por URL |
+| 06 | Frontend base | ✅ | UI con bandeja de ofertas, ficha y alta por URL o texto; `jh serve` |
 | 07 | Matching y triaje | ⏳ | Filtros duros, score, skill `evaluar-encaje`, aprobar o descartar en la UI |
 | 08 | CV a medida con plantillas | ⏳ | `generar-cv` produce CVs verificados; plantilla, foto y color se cambian en la UI sin agente; importar plantillas desde Word |
 | 08b | Plantillas html | ⏳ | Importar diseños desde PDF o imagen (Canva…) y plantilla integrada de dos columnas |
@@ -191,3 +191,34 @@ decisiones tomadas y deuda técnica pendiente. -->
     (`photo_file`): alinearlo en la fase 08.
   - `country: [NO]` (Noruega) en `template_rules` se lee como booleano, igual que en
     `photo_policy.by_country`: hay que escribirlo entre comillas.
+
+### 06 · Frontend base — 2026-09-28 · Claude Code (Opus 5.5)
+- **Resumen:** API REST en `app/api/` (`GET /status`, `GET /jobs`, `GET /jobs/{id}`, `POST
+  /jobs/url|text`, `POST /jobs/{id}/events`), `jh serve` (solo 127.0.0.1) y `jh openapi`; servicios
+  `search_jobs`, `get_job_view` y `add_user_event`. UI con Tailwind v4, shadcn/ui, React Router,
+  TanStack Query y cliente `openapi-fetch` generado (`pnpm gen:api`): bandeja, ficha, alta y
+  cabecera con recuentos y recordatorio de `procesar-ofertas`; tema claro/oscuro/sistema; móvil.
+  Backend 624 tests (`services/` al 98 %), frontend 17 tests. Probado a mano por el usuario con
+  Claude Code (`docs/pruebas/fase-06-prueba-manual.txt`): alta en la UI → `procesar-ofertas` →
+  extracción visible en la ficha.
+- **Decisiones:**
+  - La ficha devuelve el texto original sin el envoltorio `<untrusted_job_posting>`: lo lee una
+    persona y React lo pinta como texto (nunca `dangerouslySetInnerHTML`).
+  - Errores de la API con el formato común de la interfaz para agentes; 404/409/422/503/500.
+  - `POST /jobs/{id}/events` acepta solo `USER_EVENTS` (actor `user` del catálogo, sin
+    `cv_rendered`, que llega en la 08). La UI solo usa la nota; aprobar/descartar, en la 07.
+  - La bandeja usa su propio servicio (con `remote_mode`, `q`, `offset` y `total`); `list_jobs`
+    de los agentes no cambia, así que la paridad MCP ↔ CLI sigue igual.
+  - Las llamadas de la UI no se auditan en `mcp_calls`.
+  - `frontend/src/api/openapi.json` y `schema.d.ts` se versionan; un test del backend falla si
+    se desfasan.
+  - Diseño: neutros zinc, un único acento verde azulado, ámbar solo para el aviso de inyección,
+    Geist, iconos Phosphor. Las etapas se distinguen por intensidad del acento.
+  - `strictPort` en Vite: CORS solo admite `http://127.0.0.1:5173` exacto.
+- **Deuda:**
+  - El CLI de shadcn resolvió mal el alias `@/lib/utils` (instaló un paquete `cn` ajeno y usó
+    lucide): se corrigió a mano. Al añadir componentes, revisar sus imports.
+  - Bundle de 540 kB (164 kB gzip): partir por rutas si crece.
+  - `openapi-typescript` 7 declara TypeScript 5 como peer; funciona con el 6.
+  - Al parar `pnpm dev` desde un agente en Windows puede quedar Vite huérfano ocupando el 5173;
+    la guía explica cómo cerrarlo.

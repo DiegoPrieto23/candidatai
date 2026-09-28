@@ -87,6 +87,35 @@ def db_upgrade(as_json: bool = JSON_OPTION) -> None:
         typer.echo(f"Base de datos actualizada: {before or 'vacía'} -> {after}.")
 
 
+@app.command()
+def serve(
+    port: int = typer.Option(8000, help="Puerto (siempre en 127.0.0.1)."),
+    reload: bool = typer.Option(False, "--reload", help="Recarga al cambiar el código."),
+) -> None:
+    """Levanta la API para la UI en http://127.0.0.1:<puerto>."""
+    import uvicorn
+
+    from app.api.main import HOST
+
+    migrations.ensure_current()  # mejor fallar aquí que en cada petición
+    uvicorn.run("app.api.main:app", host=HOST, port=port, reload=reload)
+
+
+OPENAPI_OUT_OPTION = typer.Option(None, "--out", help="Fichero de salida. Por defecto, stdout.")
+
+
+@app.command()
+def openapi(out: Path | None = OPENAPI_OUT_OPTION) -> None:
+    """Esquema OpenAPI de la API (lo usa `pnpm gen:api` en el frontend)."""
+    from app.api.main import create_app, openapi_json
+
+    text = openapi_json(create_app())
+    if out is None:
+        typer.echo(text, nl=False)
+    else:
+        out.write_text(text, encoding="utf-8", newline="\n")
+
+
 # --- Salida legible (sin `--json`) de los comandos del registro ---------------------------------
 
 

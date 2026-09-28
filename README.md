@@ -166,7 +166,15 @@ cd frontend
 pnpm install
 pnpm dev                           # http://127.0.0.1:5173
 pnpm typecheck && pnpm test && pnpm build
+pnpm gen:api                       # regenera el cliente tras cambiar la API
 ```
+
+### Usar la UI
+
+Dos terminales: `cd backend && uv run jh db upgrade && uv run jh serve` (API en
+http://127.0.0.1:8000, solo en local) y `cd frontend && pnpm dev`. Abre http://127.0.0.1:5173.
+La UI da de alta ofertas y las muestra; la extracción la hace tu agente con el skill
+`procesar-ofertas`, y la ficha la enseña en cuanto termina.
 
 ### CI
 

@@ -32,6 +32,27 @@ La app nunca llama a un modelo y no depende de ningún proveedor.
 | `frontend/` | UI | Solo habla con la API |
 | `.agents/` | Skills, roles y manifiesto, sin nada específico de un proveedor | Fuente única; lo nativo se genera |
 
+## API REST para la UI
+
+`app/api/` expone lo que necesita la UI; la lógica sigue en `app/services/`:
+
+| Método y ruta | Para qué |
+|---|---|
+| `GET /status` | Recuentos por etapa (cabecera) |
+| `GET /jobs?stage=&q=&limit=&offset=` | Bandeja: filtro por etapa, búsqueda en título y empresa, paginación con `total` |
+| `GET /jobs/{id}` | Ficha: metadatos, texto original, extracción vigente, eventos y aviso de inyección |
+| `POST /jobs/url`, `POST /jobs/text` | Alta (mismos servicios que `add_job_from_url` y `add_job_from_text`) |
+| `POST /jobs/{id}/events` | Eventos del usuario (actor `user`): nota, aprobar, descartar… |
+
+- `jh serve` escucha solo en `127.0.0.1`; CORS solo para `http://127.0.0.1:5173`.
+- Errores con el mismo formato que la interfaz para agentes (`{ok: false, error: {type, message,
+  details}}`): 404 `not_found`, 409 `invalid_transition`, 422 validación, 503 BD sin migrar.
+- La ficha devuelve el texto original **sin** el envoltorio `<untrusted_job_posting>`: lo lee una
+  persona y React lo pinta como texto. El envoltorio es para los agentes (`get_job`).
+- Las llamadas de la UI no se auditan en `mcp_calls`: esa tabla registra a los agentes.
+- El cliente del frontend se genera desde el OpenAPI (`pnpm gen:api`) y se versiona
+  (`frontend/src/api/`); un test del backend falla si se queda desfasado.
+
 ## Etapas de una oferta
 
 ```

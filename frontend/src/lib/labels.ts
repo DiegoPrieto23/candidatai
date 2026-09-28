@@ -1,0 +1,150 @@
+import type { Schemas, Stage } from '@/api/client'
+
+type Extraction = Schemas['JobExtraction']
+
+/** Etapas en el orden del embudo. */
+export const STAGES: readonly Stage[] = [
+  'pending_extraction',
+  'pending_triage',
+  'approved',
+  'cv_ready',
+  'applied',
+  'in_process',
+  'closed',
+]
+
+export const STAGE_LABEL: Record<Stage, string> = {
+  pending_extraction: 'Por extraer',
+  pending_triage: 'Por revisar',
+  approved: 'Aprobada',
+  cv_ready: 'CV listo',
+  applied: 'Enviada',
+  in_process: 'En proceso',
+  closed: 'Cerrada',
+}
+
+export const EVENT_LABEL: Record<Schemas['EventType'], string> = {
+  found: 'Dada de alta',
+  duplicate_detected: 'Duplicado detectado',
+  extracted: 'Extracción guardada',
+  hard_filter_failed: 'No pasa los filtros',
+  extraction_failed: 'Extracción fallida',
+  injection_suspected: 'Posible contenido dirigido a una IA',
+  scored: 'Puntuada',
+  fit_assessed: 'Encaje valorado',
+  approved: 'Aprobada',
+  discarded: 'Descartada',
+  cv_generated: 'CV redactado',
+  cv_verified: 'CV verificado',
+  cv_rejected: 'CV rechazado',
+  application_prepared: 'Candidatura preparada',
+  applied: 'Candidatura enviada',
+  applied_manually: 'Enviada por tu cuenta',
+  reply_received: 'Respuesta recibida',
+  interview_scheduled: 'Entrevista programada',
+  interview_done: 'Entrevista hecha',
+  test_assigned: 'Prueba técnica',
+  followup_sent: 'Seguimiento enviado',
+  offer_received: 'Oferta recibida',
+  rejected: 'Rechazada',
+  withdrawn: 'Retirada',
+  expired: 'Caducada',
+  accepted: 'Aceptada',
+  reopened: 'Reabierta',
+  note: 'Nota',
+}
+
+export function eventLabel(type: string): string {
+  return EVENT_LABEL[type as Schemas['EventType']] ?? type
+}
+
+export const REMOTE_LABEL: Record<Extraction['remote_mode'], string> = {
+  onsite: 'Presencial',
+  hybrid: 'Híbrido',
+  remote: 'Remoto',
+  unknown: 'Sin especificar',
+}
+
+export const SENIORITY_LABEL: Record<Extraction['seniority'], string> = {
+  intern: 'Prácticas',
+  junior: 'Junior',
+  mid: 'Intermedio',
+  senior: 'Senior',
+  lead: 'Lead',
+  unknown: 'Sin especificar',
+}
+
+export const EMPLOYMENT_LABEL: Record<Extraction['employment_type'], string> = {
+  full_time: 'Jornada completa',
+  part_time: 'Media jornada',
+  contract: 'Contrato temporal',
+  internship: 'Prácticas',
+  unknown: 'Sin especificar',
+}
+
+const RISK_LABEL: Record<string, string> = {
+  injection_phrase: 'Frases que parecen instrucciones para una IA',
+  hidden_text: 'Texto oculto en la página original',
+}
+
+export function riskLabel(flag: string): string {
+  return RISK_LABEL[flag] ?? flag
+}
+
+export function actorLabel(actor: string, agentName?: string | null): string {
+  if (actor === 'user') return 'Tú'
+  if (actor === 'agent') return agentName ? `Agente ${agentName}` : 'Agente'
+  return 'Sistema'
+}
+
+const PERIOD_LABEL = { year: 'año', month: 'mes', hour: 'hora' } as const
+
+export function formatSalary(salary: Extraction['salary']): string | null {
+  if (!salary || (salary.min == null && salary.max == null)) return null
+  const currency = salary.currency ?? ''
+  const fmt = (n: number) => {
+    try {
+      return new Intl.NumberFormat('es-ES', {
+        style: currency ? 'currency' : 'decimal',
+        currency: currency || undefined,
+        maximumFractionDigits: 0,
+      }).format(n)
+    } catch {
+      return `${n.toLocaleString('es-ES')} ${currency}`.trim()
+    }
+  }
+  const range =
+    salary.min != null && salary.max != null && salary.min !== salary.max
+      ? `${fmt(salary.min)} - ${fmt(salary.max)}`
+      : fmt((salary.min ?? salary.max) as number)
+  return salary.period ? `${range} / ${PERIOD_LABEL[salary.period]}` : range
+}
+
+const dateFmt = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })
+const dateTimeFmt = new Intl.DateTimeFormat('es-ES', {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+})
+const relativeFmt = new Intl.RelativeTimeFormat('es', { numeric: 'auto' })
+
+export function formatDate(iso: string): string {
+  return dateFmt.format(new Date(iso))
+}
+
+export function formatDateTime(iso: string): string {
+  return dateTimeFmt.format(new Date(iso))
+}
+
+/** «hoy», «ayer», «hace 3 días»… y la fecha a partir de un mes. */
+export function formatRelative(iso: string, now: Date = new Date()): string {
+  const date = new Date(iso)
+  const startOf = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
+  const days = Math.round((startOf(now) - startOf(date)) / 86_400_000)
+  if (days < 0) return formatDate(iso)
+  if (days < 7) return relativeFmt.format(-days, 'day')
+  if (days < 30) return relativeFmt.format(-Math.floor(days / 7), 'week')
+  return formatDate(iso)
+}
