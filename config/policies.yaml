@@ -47,3 +47,18 @@ cv:
     teamtailor: [teamtailor.com]
     personio: [jobs.personio.de, jobs.personio.com]
   pdf_timeout_seconds: 60
+
+email_alerts:                   # fase 09b
+  poll_minutes: 60
+  summary_expire_days: 21
+  # Remitentes por plataforma: se completan en la fase 09b con alertas reales del usuario.
+  platforms:
+    linkedin: [linkedin.com]
+    infojobs: [infojobs.net]
+    indeed: [indeed.com, indeed.es]
+    tecnoempleo: [tecnoempleo.com]
+
+agent_browse:                   # fase 09b, skill buscar-ofertas
+  max_result_pages: 2
+  delay_seconds: 5
+  default_max_offers: 15

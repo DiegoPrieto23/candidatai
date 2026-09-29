@@ -12,7 +12,8 @@ Comprueba, por orden de gravedad:
 1. **Reglas duras de `AGENTS.md`**: ningún SDK ni llamada a LLM; nada específico de un agente en la
    lógica o en los skills canónicos; ningún dato personal fuera de `data/` (busca emails,
    teléfonos y nombres reales en tests y fixtures); nada que envíe datos a terceros sin
-   confirmación; nada que automatice LinkedIn o esquive captchas.
+   confirmación; nada que automatice candidaturas en LinkedIn, que navegue por LinkedIn sin que el
+   usuario lo haya activado o que esquive captchas.
 2. **Arquitectura**: lógica solo en `app/services/`; API, CLI y MCP como capas finas; paridad
    MCP ↔ CLI; todo cambio de etapa pasa por `events.record()`; cambios de esquema con migración.
 3. **Seguridad**: texto de ofertas siempre tratado como no confiable (envoltorio y `risk_flags`,

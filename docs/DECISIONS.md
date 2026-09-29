@@ -54,6 +54,8 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
 ## ADR-009 · Sin automatización en LinkedIn ni captchas
 - **Decisión:** LinkedIn y cualquier web con anti-bot se tratan en modo "preparar y abrir".
 - **Consecuencias:** algo menos de automatización a cambio de no arriesgar cuentas.
+- **Matizada por la ADR-016:** la búsqueda con el navegador del agente en LinkedIn es posible solo
+  si la activa el usuario. Las candidaturas en LinkedIn siguen sin automatizarse.
 
 ## ADR-010 · Interfaz para agentes neutral: MCP + CLI con paridad
 - **Contexto:** el proyecto debe poder usarse con distintos agentes (Claude Code, Codex, Gemini
@@ -141,3 +143,24 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
 - **Consecuencias:** el triaje funciona sin worker, a costa de que una consulta (`get_match`,
   `GET /triage`) pueda escribir un match y un evento `scored`. La primera consulta con embeddings
   carga el modelo (y lo descarga la primera vez).
+
+## ADR-016 · Portales sin API: alertas por correo, captura manual y navegación opcional del agente
+- **Contexto:** LinkedIn no ofrece API para buscar ni leer ofertas: su única API de empleo sirve
+  para publicar, es solo para socios aprobados y no admite nuevos. Los servicios de terceros que se
+  anuncian como «LinkedIn Jobs API» son scrapers de pago contrarios a sus condiciones, y LinkedIn
+  los demanda (Proxycurl cerró en 2025 tras su demanda). El usuario quiere LinkedIn como fuente
+  principal, y otros portales grandes tampoco tienen API abierta.
+- **Decisión** (detalle en `docs/FUENTES_OFERTAS.md`):
+  - ofertas «resumen» (`detail_level: summary`) en una etapa nueva, `pending_detail`, que se
+    completan más tarde (`detail_captured`) y se identifican por `platform` + `external_id`;
+  - lectura de las alertas de empleo por correo, por IMAP en solo lectura sobre una carpeta o desde
+    una carpeta local de correos exportados;
+  - extensión mínima «Enviar a Job Hunter» que solo actúa cuando el usuario la pulsa, oferta a
+    oferta, y envía a la API local con un token;
+  - skill `buscar-ofertas` con el navegador del usuario, con reglas estrictas (dominios, solo
+    lectura, límites, sin captchas). LinkedIn queda desactivado por defecto y solo el usuario puede
+    activarlo, desde la UI.
+- **Consecuencias:** LinkedIn y otros portales alimentan la app sin scraping por defecto. Los
+  parsers de correo pueden romperse si cambian los formatos (se nota porque un correo deja de
+  producir ofertas, y queda en `source_runs`). La navegación del agente es la superficie más
+  expuesta: se limita por reglas y por ejecutarse en una sesión dedicada.
