@@ -43,6 +43,7 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | `get_status` | `jh status --json` | 04 | — | `total`, `by_stage`, `pending_tasks` | — |
 | `add_job_from_url` | `jh jobs add-url URL --json` | 04 | `url` | `job_id`, `created`, `duplicate_of?`, `risk_flags` | `found` |
 | `add_job_from_text` | `jh jobs add-text --title T --company C --file F [--url U] [--location L] --json` | 04 | `title, company, text, url?, location?` | `job_id`, `created`, `duplicate_of?`, `risk_flags` | `found` |
+| | `… [--source S] [--platform P] [--external-id X]` | 09b | `add_job_from_text` admite además `source_id?, platform?, external_id?` | igual | igual |
 | `list_jobs` | `jh jobs list [--stage S] [--limit N] [--order O] --json` | 04 | `stage?, limit=20, order="score_desc"` | `{jobs: [...]}` resumida (sin texto crudo), con `score` del último match | — |
 | `get_job` | `jh jobs show ID --json` | 04 | `job_id` | Metadatos + `text` envuelto como no confiable | — |
 | `save_extraction` | `jh jobs save-extraction ID --file F --json` | 04 | `job_id, extraction: JobExtraction` | `ok`, `extraction_id`, `stage`, `injection_suspected`, `hard_filters` (`null` sin perfil) | `extracted` / `injection_suspected` / `hard_filter_failed` |
@@ -61,6 +62,12 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | `list_followups_due` | `jh followups --days N --json` | 10 | `days_without_reply=10` | Candidaturas sin respuesta | — |
 | `list_upcoming` | `jh upcoming --days N --json` | 10 | `days=7` | Entrevistas, pruebas y plazos próximos | — |
 | `get_funnel_stats` | `jh stats funnel [--since] --json` | 10 | `since?` | Conversión por etapa, fuente y tipo de puesto | — |
+| `list_sources` | `jh sources list [--kind K] --json` | 09b | `kind?` | Fuentes con su config (sin secretos) y última ejecución | — |
+| `save_source` | `jh sources save --file F --json` | 09b | `AgentBrowseSource` | `source_id`. Solo tipo `agent_browse`; nunca activa `allow_agent_browsing` en LinkedIn | — |
+| `record_source_run` | `jh sources record-run ID --file F` | 09b | `SourceRunSummary` | `ok` | — |
+
+La captura del botón «Enviar a Job Hunter» es un endpoint REST de la app (`POST /api/capture`,
+fase 09b), no parte de esta interfaz: la usa la extensión, no el agente.
 
 Las utilidades de autoría de plantillas (`jh templates inspect | build-docx | scaffold-html |
 validate | preview | compare`) son solo CLI: trabajan con ficheros dentro de `data/` y las usa el

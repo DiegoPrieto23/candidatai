@@ -10,7 +10,7 @@ Origen de ofertas.
 | Columna | Tipo | Notas |
 |---|---|---|
 | id | int PK | |
-| kind | str | `manual_url`, `manual_text`, `greenhouse`, `lever`, `ashby`, `infojobs`, `adzuna` |
+| kind | str | `manual_url`, `manual_text`, `greenhouse`, `lever`, `ashby`, `infojobs`, `adzuna`; desde la fase 09b, también `email_alerts`, `browser_capture` y `agent_browse` |
 | name | str | Etiqueta legible |
 | config | JSON | Parámetros del conector (slug del ATS, consulta, filtros) |
 | active | bool | |
@@ -154,7 +154,8 @@ Nunca guarda texto crudo de ofertas ni datos del perfil en `args_summary`.
 
 | Tipo | Actor típico | Lleva a la etapa |
 |---|---|---|
-| `found` | system | `pending_extraction` |
+| `found` | system | `pending_extraction`, o `pending_detail` si `payload.detail_level = summary` (fase 09b) |
+| `detail_captured` | user / system | `pending_extraction` (fase 09b) |
 | `duplicate_detected` | system | `closed` |
 | `extracted` | agent | `pending_triage` (si pasa filtros duros) |
 | `hard_filter_failed` | system | `closed` (reabrible); `payload.failures` |
@@ -179,3 +180,16 @@ Nunca guarda texto crudo de ofertas ni datos del perfil en `args_summary`.
 La proyección vive en `services/pipeline.py`: `stage_for(events) -> Stage`, con tests que cubren
 cada transición. Una transición no válida (p. ej. `applied` sin `cv_ready` ni `applied_manually`)
 se rechaza con error claro.
+
+## Ampliaciones de la fase 09b
+
+Detalle y motivos en `docs/FUENTES_OFERTAS.md` §Modelo de datos.
+
+- `jobs`: `platform` (str?, p. ej. `linkedin`), `detail_level` (`summary` | `full`) e índice
+  único parcial sobre (`platform`, `external_id`) cuando ambos existen.
+- Etapa nueva `pending_detail`, antes de `pending_extraction`. Desde ella se admiten
+  `detail_captured`, `discarded` y `expired`.
+- Tabla `source_runs`: `id, source_id, actor, started_at, finished_at, found, created,
+  completed, errors (JSON)`. También la usan los conectores de la fase 09.
+- Tabla `email_messages`: `message_id` (único), `source_id`, `received_at`, `jobs_found`,
+  `processed_at`. Nunca guarda el cuerpo del correo.

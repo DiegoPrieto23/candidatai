@@ -59,6 +59,7 @@ La app nunca llama a un modelo y no depende de ningún proveedor.
 
 ```
 found ─► pending_extraction ─► pending_triage ─► approved ─► cv_ready ─► applied ─► in_process ─► closed
+  └─► pending_detail ─┘   (fase 09b: ofertas «resumen» de alertas, hasta completarlas)
                   │                   │              │           │
               [agente]            [Tú en UI,     [agente:     [Tú confirmas
              rol extractor        con ayuda de   redactor +   en la UI]
@@ -74,6 +75,8 @@ found ─► pending_extraction ─► pending_triage ─► approved ─► cv_
 | Tarea | Quién | Por qué |
 |---|---|---|
 | Descargar ofertas (APIs de ATS, URL, texto pegado) | Código | Determinista y repetible |
+| Leer alertas de correo y capturas del botón del navegador | Código | Determinista; nunca entra en los portales |
+| Recorrer portales con el navegador (opcional) | Agente, skill `buscar-ofertas` | Solo donde no hay otra vía; con reglas estrictas (POLICIES §8) |
 | Deduplicar (huella + similitud difusa) | Código | Determinista |
 | Detectar texto oculto y frases de inyección | Código | No depende del agente que se use |
 | Extraer la oferta a JSON | Agente, rol `extractor` (modelo rápido) | Necesita comprensión de texto |

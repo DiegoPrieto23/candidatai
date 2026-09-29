@@ -92,6 +92,19 @@ pulsas «Renderizar»: tarda segundos y **no gasta cuota del agente**. Puedes co
 a lado y marcar cuál envías. Si no eliges nada, se aplican tus reglas (por ejemplo, `ats-simple`
 sin foto para ofertas en Workday o en el Reino Unido). Detalle: `docs/CV_TEMPLATES.md`.
 
+### De dónde salen las ofertas
+
+| Vía | Fase | Automática | Cubre |
+|---|---|---|---|
+| Alta manual por URL o texto | 03 | No | Cualquier oferta |
+| APIs públicas de ATS (Greenhouse, Lever, Ashby) | 09 | Sí, diaria | Tus empresas objetivo |
+| APIs de portales (InfoJobs, Adzuna), si hay claves | 09 | Sí, diaria | Búsquedas por palabras clave |
+| Alertas de empleo por correo | 09b | Sí | LinkedIn, InfoJobs, Indeed, Tecnoempleo… |
+| Botón «Enviar a Job Hunter» | 09b | Un clic | Cualquier página que estés viendo, LinkedIn incluido |
+| Búsqueda con el navegador del agente | 09b | A demanda | Portales que la permitan; LinkedIn solo si lo activas tú |
+
+Detalle: `docs/FUENTES_OFERTAS.md`.
+
 ## Si cambias skills, roles o el manifiesto
 
 Edita solo `.agents/` y regenera desde la raíz:
@@ -116,6 +129,7 @@ Arranca `jh serve`, `jh worker` y `pnpm dev`. Después, en tu agente:
 | `resumen-diario` | Qué tienes hoy, seguimientos vencidos, qué procesar |
 | `importar-plantilla-cv data/uploads/mi-cv.pdf` | Convierte un CV con cualquier diseño en plantilla reutilizable |
 | `revisar-linkedin` | Informe de mejoras para tu perfil de LinkedIn, listo para copiar (tú lo aplicas) |
+| `buscar-ofertas` | Recorre con tu navegador los portales aprobados y da de alta lo que encaje (`buscar-ofertas configurar` para elegirlos) |
 
 Si tu agente ofrece tareas programadas, `procesar-ofertas` y `resumen-diario` pueden ejecutarse
 solos cada mañana (se documenta al terminar la fase 09).
