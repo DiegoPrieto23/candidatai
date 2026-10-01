@@ -85,6 +85,11 @@ ofertas marcadas con riesgo antes de aprobarlas.
 hace falta un agente que pueda ver imágenes. Con un `.docx` no hace falta. `actualizar-perfil`
 también funciona mejor si el agente puede leer PDFs; si no, basta con pegar el texto del CV.
 
+### Skills que necesitan el navegador del usuario
+`buscar-ofertas` recorre portales con tu navegador y tus sesiones: hace falta un agente con acceso
+a él (en Claude Code, Claude in Chrome). En Codex y otros, sin probar. Si tu agente no puede, las
+alertas por correo y el botón «Enviar a Job Hunter» cubren lo mismo sin agente.
+
 ### Añadir otro agente
 1. Añade su bloque a `targets` en `.agents/manifest.yaml` (rutas, modelos, formato MCP).
 2. Si su formato no es JSON ni TOML de los ya soportados, añade un emisor en `scripts/sync_agents.py`.

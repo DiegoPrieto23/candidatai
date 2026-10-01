@@ -100,7 +100,10 @@ triaje. Los pesos y el umbral se ajustan con `jh eval matching` (`evals/matching
 1. **Confirmación por candidatura.** El código rellena y se detiene antes de enviar; el envío lo
    desencadena tu clic en la UI tras revisar campos, adjuntos y captura. Una confirmación vale
    para una sola candidatura.
-2. **LinkedIn**: nunca automatizado. La app prepara el paquete (CV, respuestas) y abre el enlace.
+2. **LinkedIn**: nunca candidaturas automáticas ni scraping. La app prepara el paquete (CV,
+   respuestas) y abre el enlace. Las ofertas de LinkedIn entran por sus alertas por correo, por el
+   botón «Enviar a Job Hunter» (acción tuya, oferta a oferta) y, solo si lo activas tú en la UI,
+   por la búsqueda con el navegador del agente (§8).
    Tampoco se edita tu perfil desde el agente: el skill `revisar-linkedin` propone los textos y
    tú los aplicas a mano. Las mismas reglas de veracidad (§1) y privacidad (§4) que en el CV.
 3. **Captchas o anti-bot**: se para y se te pasa la pestaña. No se esquivan.
@@ -122,6 +125,8 @@ triaje. Los pesos y el umbral se ajustan con `jh eval matching` (`evals/matching
   igualmente en busca de frases de inyección.
 - La descarga por URL no sigue a LinkedIn ni a direcciones locales o de red privada, tampoco tras
   una redirección.
+- Los correos de alertas, las capturas del botón y las páginas que lee el agente al buscar son
+  igual de no confiables que el texto de una oferta y pasan por la misma detección.
 - Las ofertas con `risk_flags` o `injection_suspected` se muestran con aviso en la UI; que haya
   texto oculto para IAs también dice algo de cómo filtra esa empresa.
 
@@ -132,3 +137,15 @@ triaje. Los pesos y el umbral se ajustan con `jh eval matching` (`evals/matching
 - Cartas de presentación: máximo 180 palabras, tres párrafos (por qué esta empresa y este puesto,
   qué aportas con evidencias, cierre simple). Solo si la oferta la pide o tú la quieres.
 - Respuestas de screening: directas, en el idioma de la pregunta, con evidencia del perfil.
+
+## 8. Búsqueda con navegador
+
+Cuando el agente recorre portales con tu navegador (skill `buscar-ofertas`, detalle en
+`docs/FUENTES_OFERTAS.md` §Búsqueda con el navegador del agente):
+
+- **Dominios:** solo los de la plataforma; nunca enlaces externos ni los que sugiera el contenido.
+- **Solo lectura:** nada de «Solicitar», «Guardar», «Seguir», «Contactar» ni formularios.
+- **Captchas, anti-bot o login inesperado:** se para esa plataforma y se anota. El login lo haces
+  tú; los captchas no se resuelven ni se esquivan.
+- **Límites:** páginas de resultados, ofertas por plataforma y pausas de `config/policies.yaml` →
+  `agent_browse`. LinkedIn solo si lo has activado tú en la UI.

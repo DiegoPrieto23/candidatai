@@ -21,6 +21,7 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 08.3 | ↳ Importar plantillas desde Word | ⏳ | `importar-plantilla-cv` convierte un `.docx` en plantilla |
 | 08b | Plantillas html | ⏳ | Importar diseños desde PDF o imagen (Canva…) y plantilla integrada de dos columnas |
 | 09 | Conectores de ATS y scheduler | ⏳ | Ingesta diaria de empresas objetivo sin intervención |
+| 09b | Alertas, captura y búsqueda con navegador | ⏳ | Las alertas de LinkedIn y otros portales llegan solas por correo, cualquier oferta entra con un clic desde el navegador y, opcionalmente, el agente recorre portales |
 | 10 | Seguimiento y analítica | ⏳ | Kanban, seguimientos pendientes, dashboard del embudo |
 | 11 | Candidatura asistida | ⏳ | Rellenado con Playwright y envío tras tu confirmación |
 | 12 | Demo, compatibilidad y portfolio | ⏳ | Modo demo, matriz de agentes probada, evals publicados |
@@ -31,8 +32,8 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 04 (y con perfil, tras la 05); `evaluar-encaje` tras la 07; `generar-cv` tras la 08; `importar-plantilla-cv` tras la 08 para
 Word y tras la 08b para PDF, imagen o HTML;
 `revisar-linkedin` funciona tras la 05, pero rinde mucho más desde la 07, cuando ya hay ofertas
-aprobadas de las que sacar las keywords; `preparar-candidatura`, `preparar-entrevista` y
-`resumen-diario` tras la 10.
+aprobadas de las que sacar las keywords; `buscar-ofertas` tras la 09b; `preparar-candidatura`,
+`preparar-entrevista` y `resumen-diario` tras la 10.
 
 ## Registro de fases
 
