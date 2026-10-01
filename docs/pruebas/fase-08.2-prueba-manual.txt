@@ -1,0 +1,233 @@
+PRUEBA MANUAL · FASE 08.2 · CV: FOTO, RENDERS MÚLTIPLES Y UI
+============================================================
+
+Objetivo: comprobar que, sobre un CV ya redactado y verificado, desde la UI y SIN agente puedes
+cambiar de plantilla, poner o quitar la foto, elegir color y ocultar secciones; que cada cambio
+crea un render nuevo en segundos; que puedes comparar dos renders lado a lado y elegir cuál se
+enviará. También revisas la plantilla nueva clasica-foto, la página Plantillas y el aviso de
+foto de jh doctor.
+
+Duración aproximada: 25 minutos (parte 3) + 20 si haces también la parte 5 con tus datos.
+
+Qué NO entra todavía: subir tu CV de Word como plantilla (fase 08.3) ni plantillas html o desde
+PDF/imagen (fase 08b).
+
+
+REQUISITOS
+----------
+- LibreOffice instalado (C:\Program Files\LibreOffice\program\soffice.exe) o SOFFICE_PATH en .env.
+- Dos terminales de PowerShell (API y UI). Claude Code solo hace falta en la parte 5.
+- Un navegador Chromium (Chrome o Edge): la comparación lado a lado usa su visor de PDF.
+- Los comandos se ejecutan desde la RAÍZ del repo salvo que se diga otra cosa:
+      cd <carpeta-del-repo>   # p. ej. "C:\Users\<tu-usuario>\...\job-search"
+- Rama de la fase:
+      git switch fase/08-cv
+
+Las partes 2 a 4 usan la candidata y la oferta FICTICIAS de demo/ en un directorio de datos
+aparte (data\demo-cv\): no tocan tu base de datos ni tus CVs. La parte 5 sí usa tus datos.
+
+
+PARTE 1 · PREPARAR
+------------------
+1. CIERRA Claude Code antes de este paso: con su servidor MCP abierto, `uv sync` falla con
+   "El proceso no tiene acceso al archivo… jh-mcp.exe" (el fichero está en uso).
+   Esta fase añade pypdfium2 al backend (miniaturas de las plantillas); el frontend no cambia
+   de dependencias:
+
+      uv sync --directory backend
+
+2. Comprueba el entorno (con TU directorio de datos, sin JH_DATA_DIR):
+
+      uv run --directory backend jh doctor
+
+   Esperado, entre otras líneas, y termina con "Todo listo.":
+      [ OK  ] Plantillas de CV     integradas: ats-simple, clasica-foto
+      [ OK  ] Conversión a PDF     LibreOffice (…): «ats-simple» → PDF de 1 pág. en N s
+      [ OK  ] Foto del CV          tus plantillas no piden foto
+   La línea "Foto del CV" es nueva. Sale OK porque tu perfil no usa ninguna plantilla con foto
+   (no tienes default_template). Si pusieras `default_template: clasica-foto` sin tener
+   data\photo.*, saldría en AVISO: "tu perfil usa clasica-foto, con foto, pero no hay…".
+
+3. (Opcional) Pasa los tests automáticos tú mismo:
+
+      cd backend; uv run pytest -q; cd ..
+      cd frontend; pnpm test; cd ..
+
+   Esperado: todo en verde (1002 tests de backend y 47 de frontend), incluidos dos que
+   convierten con tu LibreOffice (uno de ellos, clasica-foto con foto).
+
+
+PARTE 2 · PLANTILLA NUEVA Y PREVIEWS
+------------------------------------
+4. Abre templates\clasica-foto\preview.png (y, si quieres, preview.pdf). Es la candidata
+   FICTICIA de demo/ con su "foto": una silueta gris dibujada por el script, no una persona.
+   Mira: foto circular a la izquierda de la cabecera; nombre grande en azul con tipografía
+   serif (Cambria); subtítulo gris; una línea de contacto; títulos de sección en mayúsculas en
+   azul con una raya azul debajo; puesto y empresa a la izquierda y fechas alineadas a la
+   derecha en gris.
+   Lo que quiero saber: ¿te gusta? ¿Cambiarías el tamaño de la foto, del nombre o los espacios?
+
+5. Abre también templates\ats-simple\preview.png: es la miniatura de la plantilla de la 08.1
+   (no ha cambiado; solo se ha añadido la imagen).
+
+
+PARTE 3 · LA SECCIÓN «CV» DE LA UI (criterio de aceptación)
+-----------------------------------------------------------
+6. Prepara el CV ficticio (una oferta aprobada con su CV ya redactado y verificado), en la
+   terminal que usarás para la API:
+
+      $env:JH_DATA_DIR = "data/demo-cv"
+      uv run --directory backend python ../scripts/seed_cv_demo.py
+
+   Esperado (tarda unos 10-20 s: hace una conversión real):
+      Oferta 1 en «cv_ready» (…\job-search\data\demo-cv)
+      Render 1: clasica-foto, foto sí, 1 pág., N s
+   Si lo ejecutas otra vez dice "Ya preparado: oferta 1 …" y no hace nada.
+   Sin JH_DATA_DIR se niega ("Usa un directorio aparte…"): así nunca escribe en tu data\.
+
+7. En ESA MISMA terminal (que tiene JH_DATA_DIR), arranca la API:
+
+      uv run --directory backend jh serve
+
+   En la otra terminal, la UI:
+
+      cd frontend; pnpm dev
+
+8. Abre http://127.0.0.1:5173/jobs/1. En la ficha, debajo de "Extracción", hay una sección
+   nueva "CV". Comprueba:
+   - "Verificado: nada inventado ni exagerado" con un sello.
+   - "Plantilla": dos tarjetas con miniatura, "ATS sencilla" y "Clásica con foto"; la segunda
+     marcada (es la del render actual).
+   - "Foto": Automática / Con foto / Sin foto, con "Automática" marcada.
+   - "Color de acento": cuatro círculos (azul, verde, granate, grafito); el azul marcado.
+   - "Ocultar secciones": siete casillas (Perfil, Experiencia, Proyectos…), ninguna marcada.
+   - "Renders (1)": una tarjeta "Clásica con foto" con la etiqueta "Para enviar", "Con foto ·
+     Azul · <fecha>", "Páginas 1/1" y "Keywords N de M" (pasa el ratón por encima para ver las
+     que faltan), y los botones "Ver PDF" y "DOCX".
+   Pulsa "Ver PDF": se abre el CV en una pestaña nueva, con la silueta en la cabecera.
+
+9. EL CRITERIO DE ACEPTACIÓN: quitar la foto sin agente.
+   Deja "Clásica con foto", marca "Sin foto" y pulsa "Renderizar". Cronométralo.
+   Esperado:
+   - El botón pasa a "Renderizando…" con el icono girando y el texto "Convirtiendo a PDF: tarda
+     unos segundos.".
+   - En unos 10-15 s aparece arriba de la lista un render nuevo, "Renders (2)", con "Sin foto ·
+     Azul", SIN la etiqueta "Para enviar" (sigue el primero).
+   - "Ver PDF" del nuevo: misma cabecera pero sin foto (nombre, subtítulo y contacto a todo lo
+     ancho, sin hueco).
+   - En "Historial" (columna derecha) aparece un "CV renderizado" nuevo con actor "Tú", no
+     "Agente".
+   Lo que quiero saber: ¿cuántos segundos tardó? ¿Se te hace largo para usarlo a menudo?
+
+10. "Usar este para enviar": en el render nuevo (Sin foto), pulsa "Usar este para enviar".
+    Esperado: la etiqueta "Para enviar" pasa a ese render y el anterior muestra ahora el botón
+    "Usar este para enviar". La etapa de la oferta sigue en "CV listo" y el historial NO
+    cambia (elegir render no es un evento).
+    Recarga la página (F5): la elección se mantiene.
+
+11. Color y secciones: marca el verde, la casilla "Proyectos" y pulsa "Renderizar".
+    Esperado: "Renders (3)", con "Sin foto · Verde · sin proyectos". En su PDF, el nombre, los
+    títulos y sus rayas en verde, y sin la sección PROYECTOS.
+    Repite con granate o grafito si quieres ver los cuatro.
+
+12. Cambiar a ATS sencilla: pulsa la tarjeta "ATS sencilla".
+    Esperado: desaparece "Color de acento" (esa plantilla no tiene) y la "Foto" queda
+    deshabilitada con el texto "Esta plantilla no lleva foto.". Pulsa "Renderizar".
+    Esperado: un render "ATS sencilla" "Sin foto", en negro, de una columna y sin tabla.
+
+13. Comparar lado a lado: marca "Comparar" en dos renders (por ejemplo, el primero con foto y el
+    de ATS sencilla).
+    Esperado: con uno marcado sale "Marca otro render para verlos lado a lado."; con dos aparece
+    "Lado a lado" con los dos PDF embebidos uno junto a otro. Si marcas un tercero, sustituye al
+    más antiguo de la comparación. "Cerrar comparación" la quita.
+    En una ventana estrecha (o en el móvil) se ponen uno debajo del otro.
+
+14. DOCX: en cualquier render pulsa "DOCX". Esperado: se descarga
+    CV-Lucia-Varela-Otero.docx y se abre en Word o LibreOffice con el mismo diseño que el PDF.
+
+15. Página Plantillas: en la barra de arriba, "Plantillas" (nueva, después de "Triaje").
+    Esperado: "Plantillas de CV", un texto que explica que la plantilla solo decide el aspecto y
+    que tu CV de Word se convierte con el skill importar-plantilla-cv, y dos tarjetas grandes
+    con su miniatura, nombre, id, descripción y etiquetas:
+      ATS sencilla:     Apta para ATS · Sin foto · 1 columna · Motor docx · Integrada
+      Clásica con foto: No apta para ATS · Con foto · 1 columna · Motor docx · 4 colores · Integrada
+    Pulsar una miniatura la abre a tamaño completo en otra pestaña.
+    Prueba también el modo oscuro (icono de la barra): las miniaturas siguen en blanco, como un
+    folio, y los textos se leen bien.
+
+16. (Opcional) Una plantilla que ya no está como cuando se renderizó: copia la integrada como
+    plantilla "tuya" con el mismo id dentro del directorio demo y cámbiale un byte:
+
+      New-Item -ItemType Directory -Force data\demo-cv\templates\clasica-foto | Out-Null
+      Copy-Item templates\clasica-foto\* data\demo-cv\templates\clasica-foto\
+      (Get-Content data\demo-cv\templates\clasica-foto\template.yaml -Raw) -replace 'origin: builtin', 'origin: user' |
+          Set-Content -NoNewline -Encoding utf8 data\demo-cv\templates\clasica-foto\template.yaml
+
+    Recarga la ficha. Esperado: los renders de "Clásica con foto" muestran la etiqueta
+    "Plantilla cambiada" y el texto "La plantilla ha cambiado desde este render: vuelve a
+    renderizar para ver la versión actual."; en Plantillas, "Clásica con foto" sale como "Tuya".
+    Deshazlo con:
+      Remove-Item -Recurse data\demo-cv\templates
+
+
+PARTE 4 · CASOS LÍMITE
+----------------------
+17. API caída: para la API (Ctrl+C en su terminal) y pulsa "Renderizar".
+    Esperado: un mensaje en rojo bajo el formulario que dice que la API no responde y cómo
+    arrancarla. Vuelve a arrancarla (paso 7, con JH_DATA_DIR) y sigue.
+
+18. Sin conversor: no hace falta desinstalar nada; si en algún momento ves en rojo
+    "No hay LibreOffice ni Word…", es este caso y el mensaje dice qué instalar.
+
+
+PARTE 5 · CON TUS DATOS (opcional, cierra el flujo completo de la fase 08)
+-------------------------------------------------------------------------
+Necesita haber hecho la prueba de la 08.1 (docs\pruebas\fase-08.1-prueba-manual.txt), o al menos
+sus partes 1 y 3: tu base de datos migrada a la 0005 y una oferta tuya en "CV listo".
+IMPORTANTE: abre terminales NUEVAS o quita la variable antes de seguir:
+      Remove-Item Env:JH_DATA_DIR
+
+19. Tu foto: deja tu foto como data\photo.jpg (también vale .png o .webp). Si la tienes en otro
+    sitio dentro de data\, pon su ruta en tu perfil, preferences.cv.photo_file (p. ej.
+    `photo_file: fotos/yo.jpg`), con el skill actualizar-perfil.
+    Comprueba:
+
+      uv run --directory backend jh doctor
+
+    Esperado: "[ OK  ] Foto del CV  …\data\photo.jpg".
+
+20. Si quieres que tus CVs salgan con foto por defecto donde se estila (España), pide a tu
+    agente con actualizar-perfil `default_template: clasica-foto` y unas reglas como las del
+    perfil demo (ats-simple para Workday y similares y para GB, IE, US y NL). Si no, todo
+    seguirá saliendo con ats-simple y la foto solo cuando la pidas en la UI.
+
+21. Arranca API y UI (paso 7, SIN JH_DATA_DIR) y abre la ficha de tu oferta en "CV listo".
+    Repite los pasos 9 a 13 con tu CV: pasa a "Clásica con foto" con "Con foto" y renderiza.
+    Comprueba en el PDF:
+    - La foto recortada en círculo, centrada en tu cara y bien orientada (si salía tumbada en
+      otros programas, aquí debe salir derecha).
+    - Una sola página. Si sale "Páginas 2/1" con el aviso "El CV ocupa 2 páginas…", la
+      cabecera con foto ocupa más que la de ats-simple: dímelo.
+    - Sin el aviso "font_substituted" (Cambria y Calibri vienen con Windows).
+    Luego elige con "Usar este para enviar" el que prefieras.
+
+
+LIMPIAR AL TERMINAR
+-------------------
+- Para la API y la UI: Ctrl+C en cada terminal.
+- Borra el directorio demo y la variable:
+      Remove-Item -Recurse -Force data\demo-cv
+      Remove-Item Env:JH_DATA_DIR
+- Las fotos recortadas de la parte 5 están en data\cache\photo\; se pueden borrar cuando quieras
+  (se regeneran solas).
+
+
+QUÉ ME CUENTAS AL TERMINAR
+--------------------------
+- Qué te parece clasica-foto (paso 4) y si cambiarías algo del diseño.
+- Cuánto tardó el render del paso 9 y si se te hace largo.
+- Si la sección CV se entiende sin explicaciones: qué buscaste y no encontraste, o qué te
+  sobró.
+- Si la comparación lado a lado (paso 13) te sirve para decidir o preferirías otra cosa.
+- Con tus datos (parte 5): si la foto sale bien recortada y si el CV con foto cabe en una página.
+- Cualquier error o mensaje que no se entienda.
