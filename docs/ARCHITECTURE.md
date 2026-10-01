@@ -45,10 +45,19 @@ La app nunca llama a un modelo y no depende de ningún proveedor.
 | `GET /triage` | Ofertas en `pending_triage` con extracción y match, mayor score primero; calcula los que falten |
 | `POST /jobs/url`, `POST /jobs/text` | Alta (mismos servicios que `add_job_from_url` y `add_job_from_text`) |
 | `POST /jobs/{id}/events` | Eventos del usuario (actor `user`): nota, aprobar, descartar con `reason` obligatorio, reabrir… |
+| `GET /templates`, `GET /templates/{id}/preview.png` | Plantillas de CV (como `list_cv_templates`) y la miniatura de cada una |
+| `GET /jobs/{id}/cv` | CV vigente de la oferta (`cv: null` si no tiene): contenido, verificación y renders con avisos, páginas, cobertura, `selected` y `template_changed` |
+| `POST /documents/{id}/renders` | Otro render del mismo contenido con otras `CvRenderOptions` (actor `user`, sin IA) |
+| `POST /renders/{id}/select` | Marca el render que se enviará (uno por CV; sin evento ni cambio de etapa) |
+| `GET /renders/{id}/pdf`, `GET /renders/{id}/docx` | Ficheros del render |
 
 - `jh serve` escucha solo en `127.0.0.1`; CORS solo para `http://127.0.0.1:5173`.
 - Errores con el mismo formato que la interfaz para agentes (`{ok: false, error: {type, message,
-  details}}`): 404 `not_found`, 409 `invalid_transition`, 422 validación, 503 BD sin migrar.
+  details}}`): 404 `not_found`, 409 `invalid_transition`, 422 validación, 503 BD sin migrar o
+  sin conversor a PDF (`pdf_unavailable`).
+- Los ficheros solo se sirven desde `data/cvs/` (renders; no todo `data/`, que también guarda
+  secretos como el token de captura de la 09b) y desde las carpetas de plantillas (previews): la ruta guardada se resuelve y se comprueba que queda dentro antes de abrirla; si no,
+  404.
 - La ficha devuelve el texto original **sin** el envoltorio `<untrusted_job_posting>`: lo lee una
   persona y React lo pinta como texto. El envoltorio es para los agentes (`get_job`).
 - Las llamadas de la UI no se auditan en `mcp_calls`: esa tabla registra a los agentes.

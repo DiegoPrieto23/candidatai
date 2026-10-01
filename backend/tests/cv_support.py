@@ -113,11 +113,18 @@ def demo_content(**changes: Any) -> CvContent:
 LINES_PER_PAGE = 45
 
 
-def make_pdf(pages: list[list[str]], font: str = "Calibri") -> bytes:
-    """PDF mínimo y válido con una línea de texto por elemento (fuente `font`, WinAnsi)."""
+def make_pdf(
+    pages: list[list[str]], font: str = "Calibri", extra_fonts: tuple[str, ...] = ()
+) -> bytes:
+    """PDF mínimo y válido con una línea de texto por elemento (fuente `font`, WinAnsi).
+
+    `extra_fonts` solo se declaran en los recursos de cada página (como las de los títulos).
+    """
     objects: list[bytes] = []
     n_pages = len(pages)
     page_ids = [4 + 2 * i for i in range(n_pages)]
+    extra_ids = [4 + 2 * n_pages + i for i in range(len(extra_fonts))]
+    font_refs = "".join(f" /F{i + 2} {ref} 0 R" for i, ref in enumerate(extra_ids))
     objects.append(b"<< /Type /Catalog /Pages 2 0 R >>")
     kids = " ".join(f"{pid} 0 R" for pid in page_ids)
     objects.append(f"<< /Type /Pages /Kids [{kids}] /Count {n_pages} >>".encode())
@@ -129,7 +136,7 @@ def make_pdf(pages: list[list[str]], font: str = "Calibri") -> bytes:
         content_id = page_ids[i] + 1
         objects.append(
             f"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents {content_id} 0 R "
-            "/Resources << /Font << /F1 3 0 R >> >> >>".encode()
+            f"/Resources << /Font << /F1 3 0 R{font_refs} >> >> >>".encode()
         )
         ops = [b"BT /F1 10 Tf 40 800 Td 12 TL"]
         for line in lines:
@@ -139,6 +146,11 @@ def make_pdf(pages: list[list[str]], font: str = "Calibri") -> bytes:
         ops.append(b"ET")
         stream = b"\n".join(ops)
         objects.append(b"<< /Length %d >>\nstream\n" % len(stream) + stream + b"\nendstream")
+    for extra in extra_fonts:
+        objects.append(
+            f"<< /Type /Font /Subtype /TrueType /BaseFont /ABCDEF+{extra}-Bold "
+            "/Encoding /WinAnsiEncoding >>".encode()
+        )
 
     out = bytearray(b"%PDF-1.4\n")
     offsets = []
@@ -156,14 +168,22 @@ def make_pdf(pages: list[list[str]], font: str = "Calibri") -> bytes:
     return bytes(out)
 
 
-def fake_converter(font: str = "Calibri", lines_per_page: int = LINES_PER_PAGE):  # noqa: ANN201
-    """Conversor DOCX → PDF sin LibreOffice: una línea por párrafo, `lines_per_page` por página."""
+def fake_converter(  # noqa: ANN201
+    font: str = "Calibri",
+    lines_per_page: int = LINES_PER_PAGE,
+    extra_fonts: tuple[str, ...] = ("Cambria",),
+):
+    """Conversor DOCX → PDF sin LibreOffice: una línea por párrafo, `lines_per_page` por página.
+
+    Declara también Cambria (títulos de `clasica-foto`): así las integradas no dan
+    `font_substituted`. Los párrafos dentro de tablas (la cabecera con foto) no se cuentan.
+    """
     from docx import Document
 
     def convert(docx: Path, pdf: Path, _timeout: int) -> None:
         lines = [p.text for p in Document(str(docx)).paragraphs if p.text.strip()]
         pages = [lines[i : i + lines_per_page] for i in range(0, len(lines), lines_per_page)]
         pdf.parent.mkdir(parents=True, exist_ok=True)
-        pdf.write_bytes(make_pdf(pages or [[]], font=font))
+        pdf.write_bytes(make_pdf(pages or [[]], font=font, extra_fonts=extra_fonts))
 
     return convert

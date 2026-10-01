@@ -6,8 +6,9 @@ Uso (desde la raíz del repo):
 Cada plantilla se crea desde cero: `template.docx` (con los marcadores de docxtpl de una pieza,
 cada uno en su propio fragmento) y `template.yaml`. Dos ejecuciones dan exactamente los mismos
 bytes: el zip se escribe con fecha fija y las propiedades del documento no llevan fechas.
-Después, salvo `--no-preview`, renderiza `preview.pdf` con el perfil y un contenido FICTICIOS de
-`demo/` (necesita LibreOffice o Word).
+También dibuja la foto FICTICIA del perfil demo (`demo/photo.png`, una silueta). Después, salvo
+`--no-preview`, renderiza `preview.pdf` y `preview.png` con el perfil, el contenido y la foto
+FICTICIOS de `demo/` (necesita LibreOffice o Word).
 """
 
 import argparse
@@ -255,7 +256,225 @@ def build_ats_simple(dest: Path) -> None:
     )
 
 
-BUILDERS: dict[str, Callable[[Path], None]] = {"ats-simple": build_ats_simple}
+# --- clasica-foto ---------------------------------------------------------------------------
+
+ACCENT_COLORS = ["#1F4E79", "#2E5E4E", "#7A2E39", "#3F3F46"]  # azul, verde, granate, grafito
+ACCENT = "{{ accent_color[1:] }}"  # Word guarda el color sin «#»: va en el atributo `w:val`
+
+CLASICA_FOTO_META: dict[str, Any] = {
+    "id": "clasica-foto",
+    "name": "Clásica con foto",
+    "engine": "docx",
+    "origin": "builtin",
+    "description": (
+        "Una columna, cabecera con foto circular y color de acento en el nombre y los títulos. "
+        "Sobria, para enviar por email o a empresas sin ATS."
+    ),
+    "tags": ["clasica", "foto", "sobria"],
+    "layout": {"columns": 1, "uses_tables": True},
+    "ats_friendly": False,
+    "photo": {"supported": True, "shape": "circle", "size_mm": 30},
+    "page": {"size": "A4", "max_pages": 1},
+    "capacity": {"summary_chars": 400, "experience_bullets": 8, "skill_groups": 4},
+    "sections": list(ATS_SIMPLE_META["sections"]),
+    "options": {"accent_color": {"default": ACCENT_COLORS[0], "choices": ACCENT_COLORS}},
+    "fonts": ["Cambria", "Calibri"],
+    "languages": ["es", "en"],
+}
+
+TEXT_WIDTH_MM = 210 - 2 * 18
+
+
+def _accent_run(paragraph: Paragraph, text: str, **fmt: Any) -> None:
+    """Fragmento con el color de acento (marcador en el atributo, no en el texto)."""
+    run = paragraph.add_run(text)
+    run.bold = fmt.get("bold")
+    if "size" in fmt:
+        run.font.size = Pt(fmt["size"])
+    if "font" in fmt:
+        run.font.name = fmt["font"]
+        run._r.get_or_add_rPr().get_or_add_rFonts().set(qn("w:hAnsi"), fmt["font"])
+    color = OxmlElement("w:color")
+    color.set(qn("w:val"), ACCENT)
+    run._r.get_or_add_rPr().append(color)
+
+
+def _right_tab(paragraph: Paragraph) -> None:
+    from docx.enum.text import WD_TAB_ALIGNMENT
+
+    paragraph.paragraph_format.tab_stops.add_tab_stop(Mm(TEXT_WIDTH_MM), WD_TAB_ALIGNMENT.RIGHT)
+
+
+def _no_table_borders(table: Any) -> None:
+    tbl_pr = table._tbl.tblPr
+    borders = OxmlElement("w:tblBorders")
+    for edge in ("top", "left", "bottom", "right", "insideH", "insideV"):
+        element = OxmlElement(f"w:{edge}")
+        element.set(qn("w:val"), "nil")
+        borders.append(element)
+    tbl_pr.append(borders)
+
+
+def _header_text(container: Any) -> None:
+    """Nombre, subtítulo y contacto (en el cuerpo o en la celda de la cabecera con foto)."""
+    name = container.add_paragraph()
+    _accent_run(name, "{{ name }}", bold=True, size=22, font="Cambria")
+    _spacing(name, after=1)
+    subtitle = _add(container, ("{{ subtitle }}", {"size": 12, "color": MUTED}))
+    _spacing(subtitle, after=3)
+    _add(container, (CONTACT_LINE, {"size": 9.5}))
+
+
+def _classic_section(doc: Any, name: str, body: Callable[[], None]) -> None:
+    _tag(doc, f"{{%p if show.{name} %}}")
+    heading = doc.add_paragraph()
+    _accent_run(heading, f"{{{{ labels.{name}|upper }}}}", bold=True, size=11, font="Cambria")
+    _spacing(heading, before=9, after=3)
+    _bottom_border(heading, color=ACCENT)
+    body()
+    _tag(doc, "{%p endif %}")
+
+
+def build_clasica_foto(dest: Path) -> None:
+    from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT
+
+    doc = _base_document("Calibri", 10.5)
+
+    # Cabecera: con foto, una tabla sin bordes (foto | texto); sin foto, el texto solo.
+    _tag(doc, "{%p if photo %}")
+    photo_col = Mm(CLASICA_FOTO_META["photo"]["size_mm"] + 6)
+    table = doc.add_table(rows=1, cols=2)
+    table.autofit = False
+    _no_table_borders(table)
+    left, right = table.rows[0].cells
+    # El ancho va en la rejilla (`gridCol`, lo que lee LibreOffice) y en cada celda (Word).
+    for column, cell, width in zip(
+        table.columns, (left, right), (photo_col, Mm(TEXT_WIDTH_MM) - photo_col), strict=True
+    ):
+        column.width = cell.width = width
+    layout = OxmlElement("w:tblLayout")
+    layout.set(qn("w:type"), "fixed")
+    table._tbl.tblPr.append(layout)
+    left.vertical_alignment = right.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
+    left.paragraphs[0].add_run("{{ photo }}")
+    _header_text(right)
+    right.paragraphs[0]._p.getparent().remove(right.paragraphs[0]._p)  # el vacío inicial
+    _tag(doc, "{%p else %}")
+    _header_text(doc)
+    _tag(doc, "{%p endif %}")
+
+    _classic_section(doc, "summary", lambda: _add(doc, "{{ summary }}"))
+
+    def experience() -> None:
+        _tag(doc, "{%p for e in experience %}")
+        role = _add(
+            doc,
+            ("{{ e.role }}", {"bold": True}),
+            " · {{ e.company }}",
+            "{% if e.city %}, {{ e.city }}{% endif %}",
+            "	",
+            ("{{ e.start }} – {{ e.end }}", {"color": MUTED, "size": 9.5}),
+        )
+        _right_tab(role)
+        _spacing(role, before=4, after=1)
+        _tag(doc, "{%p for b in e.bullets %}")
+        _add(doc, "{{ b }}", style="List Bullet")
+        _tag(doc, "{%p endfor %}")
+        _tag(doc, "{%p endfor %}")
+
+    _classic_section(doc, "experience", experience)
+
+    def projects() -> None:
+        _tag(doc, "{%p for p in projects %}")
+        title = _add(
+            doc,
+            ("{{ p.name }}", {"bold": True}),
+            "	",
+            ("{{ p.date }}", {"color": MUTED, "size": 9.5}),
+        )
+        _right_tab(title)
+        _spacing(title, before=3)
+        _tag(doc, "{%p for b in p.bullets %}")
+        _add(doc, "{{ b }}", style="List Bullet")
+        _tag(doc, "{%p endfor %}")
+        _tag(doc, "{%p endfor %}")
+
+    _classic_section(doc, "projects", projects)
+
+    def education() -> None:
+        _tag(doc, "{%p for ed in education %}")
+        line = _add(
+            doc,
+            ("{{ ed.title }}", {"bold": True}),
+            " · {{ ed.center }}",
+            "	",
+            ("{% if ed.start %}{{ ed.start }} – {% endif %}{{ ed.end }}",
+             {"color": MUTED, "size": 9.5}),
+        )  # fmt: skip
+        _right_tab(line)
+        _spacing(line, before=2)
+        _tag(doc, "{%p if ed.detail %}")
+        _add(doc, "{{ ed.detail }}")
+        _tag(doc, "{%p endif %}")
+        _tag(doc, "{%p endfor %}")
+
+    _classic_section(doc, "education", education)
+
+    def certifications() -> None:
+        _tag(doc, "{%p for c in certifications %}")
+        line = _add(
+            doc,
+            ("{{ c.name }}", {"bold": True}),
+            "{% if c.issuer %} · {{ c.issuer }}{% endif %}",
+            "	",
+            ("{{ c.date }}", {"color": MUTED, "size": 9.5}),
+        )
+        _right_tab(line)
+        _tag(doc, "{%p endfor %}")
+
+    _classic_section(doc, "certifications", certifications)
+
+    def skills() -> None:
+        _tag(doc, "{%p for s in skills %}")
+        _add(doc, ("{{ s.group }}: ", {"bold": True}), "{{ s.items|join(', ') }}")
+        _tag(doc, "{%p endfor %}")
+
+    _classic_section(doc, "skills", skills)
+
+    languages_line = "{% for l in languages %}{{ l.language }}: {{ l.level }}{% if not loop.last %}  ·  {% endif %}{% endfor %}"  # noqa: E501
+    _classic_section(doc, "languages", lambda: _add(doc, languages_line))
+
+    dest.mkdir(parents=True, exist_ok=True)
+    _save_reproducible(doc, dest / "template.docx")
+    (dest / "template.yaml").write_text(
+        yaml.safe_dump(CLASICA_FOTO_META, allow_unicode=True, sort_keys=False), encoding="utf-8"
+    )
+
+
+BUILDERS: dict[str, Callable[[Path], None]] = {
+    "ats-simple": build_ats_simple,
+    "clasica-foto": build_clasica_foto,
+}
+
+
+# --- Foto demo ------------------------------------------------------------------------------
+
+DEMO_PHOTO = REPO_ROOT / "demo" / "photo.png"
+
+
+def build_demo_photo(dest: Path = DEMO_PHOTO) -> Path:
+    """Foto FICTICIA del perfil demo: una silueta dibujada, nunca una persona real."""
+    from PIL import Image, ImageDraw
+
+    side = 600
+    image = Image.new("RGB", (side, side), (0xD9, 0xDE, 0xE5))
+    draw = ImageDraw.Draw(image)
+    figure = (0x8A, 0x96, 0xA6)
+    draw.ellipse((190, 115, 410, 355), fill=figure)  # cabeza
+    draw.ellipse((95, 390, 505, 800), fill=figure)  # hombros
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    image.save(dest, format="PNG")
+    return dest
 
 
 def build_all(root: Path = TEMPLATES_DIR) -> list[Path]:
@@ -275,10 +494,11 @@ def build_previews(root: Path = TEMPLATES_DIR) -> None:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--no-preview", action="store_true", help="No generar preview.pdf")
+    parser.add_argument("--no-preview", action="store_true", help="No generar las previews")
     args = parser.parse_args(argv)
     for path in build_all():
         print(f"Plantilla: {path.relative_to(REPO_ROOT).as_posix()}")
+    print(f"Foto demo: {build_demo_photo().relative_to(REPO_ROOT).as_posix()}")
     if not args.no_preview:
         build_previews()
         print("Previews generadas con el perfil demo.")

@@ -1,4 +1,4 @@
-"""Registro de plantillas, plantilla integrada `ats-simple` y contexto de render."""
+"""Registro de plantillas, plantillas integradas, contexto de render y previews."""
 
 import importlib.util
 from pathlib import Path
@@ -107,25 +107,51 @@ def test_template_hash_ignores_previews(tmp_path: Path) -> None:
 # --- Plantilla integrada --------------------------------------------------------------------
 
 
+BUILTIN_IDS = ("ats-simple", "clasica-foto")
+
+
 def test_build_script_is_reproducible_and_committed_copy_is_current(tmp_path: Path) -> None:
     script = load_script()
     first, second = tmp_path / "a", tmp_path / "b"
-    script.build_all(first)
+    assert [p.name for p in script.build_all(first)] == list(BUILTIN_IDS)
     script.build_all(second)
-    for name in ("template.docx", "template.yaml"):
-        built = (first / "ats-simple" / name).read_bytes()
-        assert built == (second / "ats-simple" / name).read_bytes()
-        committed = (REPO_ROOT / "templates" / "ats-simple" / name).read_bytes()
-        assert built == committed, f"Regenera las plantillas: {SCRIPT.name} ({name})"
+    for template_id in BUILTIN_IDS:
+        for name in ("template.docx", "template.yaml"):
+            built = (first / template_id / name).read_bytes()
+            assert built == (second / template_id / name).read_bytes()
+            committed = (REPO_ROOT / "templates" / template_id / name).read_bytes()
+            assert built == committed, f"Regenera las plantillas: {SCRIPT.name} ({template_id})"
+        assert (REPO_ROOT / "templates" / template_id / "preview.png").is_file()
+    photo = script.build_demo_photo(tmp_path / "photo.png")
+    assert photo.read_bytes() == (REPO_ROOT / "demo" / "photo.png").read_bytes()
 
 
-def test_ats_simple_markers_are_in_single_runs() -> None:
+def _all_paragraphs(doc: object) -> list[object]:
+    paragraphs = list(doc.paragraphs)  # type: ignore[attr-defined]
+    for table in doc.tables:  # type: ignore[attr-defined]
+        for row in table.rows:
+            for cell in row.cells:
+                paragraphs.extend(cell.paragraphs)
+    return paragraphs
+
+
+@pytest.mark.parametrize("template_id", BUILTIN_IDS)
+def test_builtin_markers_are_in_single_runs(template_id: str) -> None:
     """Ningún marcador partido entre fragmentos: si no, docxtpl no lo reconoce."""
-    doc = Docx(str(REPO_ROOT / "templates" / "ats-simple" / "template.docx"))
-    for paragraph in doc.paragraphs:
-        for run in paragraph.runs:
+    templates.validate(template_id)
+    doc = Docx(str(REPO_ROOT / "templates" / template_id / "template.docx"))
+    for paragraph in _all_paragraphs(doc):
+        for run in paragraph.runs:  # type: ignore[attr-defined]
             assert run.text.count("{{") == run.text.count("}}"), run.text
             assert run.text.count("{%") == run.text.count("%}"), run.text
+
+
+def test_clasica_foto_meta() -> None:
+    meta = templates.get("clasica-foto").meta
+    assert meta.photo.supported and meta.photo.shape == "circle"
+    assert not meta.ats_friendly and meta.layout.columns == 1
+    assert meta.options.accent_color is not None
+    assert len(meta.options.accent_color.choices) == 4
 
 
 def test_render_ats_simple_with_demo_profile(tmp_path: Path) -> None:
@@ -206,3 +232,16 @@ def preview_content_with(
     return preview.preview_content(
         demo_profile(), templates.Template(meta=meta, path=template.path)
     )
+
+
+def test_pdf_to_png_renders_first_page(tmp_path: Path) -> None:
+    from PIL import Image
+
+    from tests.cv_support import make_pdf
+
+    pdf_file = tmp_path / "p.pdf"
+    pdf_file.write_bytes(make_pdf([["Página uno"], ["Página dos"]]))
+    png = preview.pdf_to_png(pdf_file, tmp_path / "out" / "p.png", width_px=400)
+    with Image.open(png) as image:
+        width, height = image.size
+    assert abs(width - 400) <= 1 and abs(height - 400 * 842 / 595) <= 1  # pdfium redondea

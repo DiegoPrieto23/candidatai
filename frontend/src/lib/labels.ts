@@ -1,4 +1,4 @@
-import type { DiscardReason, Schemas, Stage } from '@/api/client'
+import type { CvRenderOptions, DiscardReason, Schemas, SectionName, Stage } from '@/api/client'
 
 type Extraction = Schemas['JobExtraction']
 
@@ -185,4 +185,34 @@ export const VERDICT_LABEL: Record<Schemas['FitAssessment']['verdict'], string> 
   strong: 'Encaje fuerte',
   possible: 'Encaje posible',
   weak: 'Encaje débil',
+}
+
+// --- CV -----------------------------------------------------------------------------------------
+
+export const SECTION_LABEL: Record<SectionName, string> = {
+  summary: 'Perfil',
+  experience: 'Experiencia',
+  projects: 'Proyectos',
+  education: 'Formación',
+  certifications: 'Certificaciones',
+  skills: 'Habilidades',
+  languages: 'Idiomas',
+}
+
+export const PHOTO_MODE_LABEL: Record<NonNullable<CvRenderOptions['photo']>, string> = {
+  auto: 'Automática',
+  include: 'Con foto',
+  exclude: 'Sin foto',
+}
+
+/** Nombres de los colores de las plantillas integradas; el resto se muestran en hexadecimal. */
+const COLOR_NAMES: Record<string, string> = {
+  '#1F4E79': 'Azul',
+  '#2E5E4E': 'Verde',
+  '#7A2E39': 'Granate',
+  '#3F3F46': 'Grafito',
+}
+
+export function colorLabel(hex: string): string {
+  return COLOR_NAMES[hex.toUpperCase()] ?? hex.toUpperCase()
 }

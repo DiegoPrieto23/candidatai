@@ -222,7 +222,8 @@ class TemplateRule(_Strict):
 class CvPreferences(_Strict):
     default_template: Id | None = None  # id de plantilla; ver docs/CV_TEMPLATES.md
     photo_file: DataRelativePath = "photo.jpg"
-    max_pages: int = Field(default=1, ge=1, le=3)
+    # Máximo de páginas de tus CVs; `null` = el de cada plantilla. Una opción de render manda.
+    max_pages: int | None = Field(default=None, ge=1, le=3)
     photo_policy: PhotoPolicy
     template_rules: list[TemplateRule] = []  # la primera que encaje gana
 

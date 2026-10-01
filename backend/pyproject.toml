@@ -20,6 +20,7 @@ dependencies = [
     "docxtpl>=0.20.2",
     "pypdf>=6.19.0",
     "pillow>=12.3.0",
+    "pypdfium2>=5.13.0",
 ]
 
 [project.optional-dependencies]

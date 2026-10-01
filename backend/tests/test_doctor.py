@@ -108,6 +108,44 @@ def test_pdf_conversion_error(monkeypatch: pytest.MonkeyPatch) -> None:
     )
 
 
+def demo_profile_file(tmp_path: Path, **cv: object) -> Path:
+    import yaml
+
+    from app.services.profile import EXAMPLE_PATH
+
+    data = yaml.safe_load(EXAMPLE_PATH.read_text(encoding="utf-8"))
+    data["preferences"]["cv"].update(cv)
+    path = tmp_path / "profile.yaml"
+    path.write_text(yaml.safe_dump(data, allow_unicode=True), encoding="utf-8")
+    return path
+
+
+def test_photo_check(tmp_path: Path) -> None:
+    from app.core.config import REPO_ROOT
+
+    data = tmp_path / "data"
+    data.mkdir()
+    assert doctor.check_photo(data / "profile.yaml", data).detail == "sin perfil: no se comprueba"
+
+    # El perfil demo usa `clasica-foto` y la política permite foto en España: falta la foto.
+    check = doctor.check_photo(demo_profile_file(data), data)
+    assert check.status == CheckStatus.WARN and "clasica-foto" in check.detail
+
+    (data / "photo.png").write_bytes((REPO_ROOT / "demo" / "photo.png").read_bytes())
+    check = doctor.check_photo(demo_profile_file(data), data)
+    assert (check.status, check.detail) == (CheckStatus.OK, str(data / "photo.png"))
+    (data / "photo.png").unlink()
+
+    # Sin plantillas con foto, o con una política que nunca la permite, no hace falta.
+    no_photo_templates = demo_profile_file(data, default_template="ats-simple")
+    assert doctor.check_photo(no_photo_templates, data).status == CheckStatus.OK
+    never = demo_profile_file(data, photo_policy={"default": False, "by_country": {}})
+    assert doctor.check_photo(never, data).status == CheckStatus.OK
+
+    (data / "profile.yaml").write_text("preferences: [", encoding="utf-8")
+    assert doctor.check_photo(data / "profile.yaml", data).status == CheckStatus.WARN
+
+
 @pytest.mark.usefixtures("no_system_soffice")
 def test_run_doctor_only_warns_on_fresh_setup() -> None:
     report = run_doctor(get_settings())
@@ -140,6 +178,7 @@ def test_cli_doctor_json() -> None:
         "LibreOffice",
         "Plantillas de CV",
         "Conversión a PDF",
+        "Foto del CV",
         "Embeddings",
     ]
 

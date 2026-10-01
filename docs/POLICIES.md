@@ -73,11 +73,11 @@ triaje. Los pesos y el umbral se ajustan con `jh eval matching` (`evals/matching
 | Regla | Detalle |
 |---|---|
 | Plantilla | La elegida para la oferta: opción explícita > reglas de `preferences.cv.template_rules` > `default_template` > `ats-simple` (`docs/CV_TEMPLATES.md`). El contenido no depende de la plantilla y el diseño solo se cambia en la plantilla |
-| Longitud | `max_pages` de la opción o de la plantilla (1 por defecto). Si no cabe, se recorta contenido; nunca márgenes ni fuente |
+| Longitud | `max_pages` de la opción > `preferences.cv.max_pages` > el de la plantilla (1 en las integradas). Si no cabe, se recorta contenido; nunca márgenes ni fuente |
 | Idioma | El de la oferta (`posting_language`). En caso de duda, preguntar |
 | Subtítulo | Identidad profesional estable + 3-4 tecnologías clave separadas por `·`. Puede nombrar la familia de rol si es tu identidad real ("Data Engineer"), pero **nunca** copia el título literal de la oferta con seniority, empresa o equipo |
 | Resumen | Adaptado a la oferta, con sus keywords solo si son verdad |
-| Foto | Opción por oferta: `auto`, `include` o `exclude`. En `auto` va si la plantilla la admite, hay `data/photo.*` y `preferences.cv.photo_policy` la permite en el país de la oferta (por defecto sí en España y no en UK, IE, US y NL) |
+| Foto | Opción por oferta: `auto`, `include` o `exclude`. En `auto` va si la plantilla la admite, hay foto (`preferences.cv.photo_file` o, si no existe, `data/photo.*`) y `preferences.cv.photo_policy` la permite en el país de la oferta (por defecto sí en España y no en UK, IE, US y NL) |
 | ATS | Si la oferta usa un ATS conocido (`config/policies.yaml` → `ats_platforms`) y la plantilla no es `ats_friendly`, se avisa y se sugiere `ats-simple`. Decides tú |
 | Idioma regional | Gallego, catalán, euskera… solo en ofertas de esa comunidad |
 | Dirección | Nunca. Ciudad sí |

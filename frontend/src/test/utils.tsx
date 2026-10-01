@@ -2,7 +2,20 @@ import { render } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter } from 'react-router'
 import { vi } from 'vitest'
-import type { JobRow, JobView, MatchView, Schemas, StatusReport, TriageItem, TriageQueue } from '@/api/client'
+import type {
+  CvView,
+  JobCv,
+  JobRow,
+  JobView,
+  MatchView,
+  RenderResult,
+  Schemas,
+  StatusReport,
+  TemplateInfo,
+  TemplateList,
+  TriageItem,
+  TriageQueue,
+} from '@/api/client'
 import { AppRoutes } from '@/App'
 import { TooltipProvider } from '@/components/ui/tooltip'
 
@@ -176,4 +189,119 @@ export function triageItem(id: number, score: number, changes: Partial<TriageIte
 
 export function triageQueue(items: TriageItem[], changes: Partial<TriageQueue> = {}): TriageQueue {
   return { items, total: items.length, triage_threshold: 55, profile_missing: false, ...changes }
+}
+
+// --- CV ------------------------------------------------------------------------------------------
+
+const SECTIONS: TemplateInfo['sections'] = [
+  'summary',
+  'experience',
+  'projects',
+  'education',
+  'certifications',
+  'skills',
+  'languages',
+]
+
+export function templateInfo(changes: Partial<TemplateInfo> = {}): TemplateInfo {
+  return {
+    id: 'ats-simple',
+    name: 'ATS sencilla',
+    engine: 'docx',
+    origin: 'builtin',
+    description: 'Una columna, sin foto ni tablas.',
+    tags: ['ats'],
+    ats_friendly: true,
+    photo_supported: false,
+    photo_shape: 'circle',
+    columns: 1,
+    page_size: 'A4',
+    max_pages: 1,
+    capacity: { summary_chars: 450, experience_bullets: 9, skill_groups: 4 },
+    sections: SECTIONS,
+    accent_colors: null,
+    fonts: ['Calibri'],
+    languages: ['es', 'en'],
+    has_preview: true,
+    ...changes,
+  }
+}
+
+export const CLASICA_FOTO = templateInfo({
+  id: 'clasica-foto',
+  name: 'Clásica con foto',
+  ats_friendly: false,
+  photo_supported: true,
+  accent_colors: { default: '#1F4E79', choices: ['#1F4E79', '#2E5E4E', '#7A2E39', '#3F3F46'] },
+})
+
+export function templateList(changes: Partial<TemplateList> = {}): TemplateList {
+  return { templates: [templateInfo(), CLASICA_FOTO], invalid: [], fallback_template: 'ats-simple', ...changes }
+}
+
+type RenderChanges = Partial<Omit<RenderResult, 'options'>> & { options?: Partial<RenderResult['options']> }
+
+export function renderResult(id: number, changes: RenderChanges = {}): RenderResult {
+  const { options, ...rest } = changes
+  return {
+    render_id: id,
+    job_id: 1,
+    document_id: 1,
+    template_id: 'clasica-foto',
+    template_hash: 'abc',
+    options: {
+      template_id: 'clasica-foto',
+      template_source: 'default_template',
+      rule_index: null,
+      photo: true,
+      accent_color: '#1F4E79',
+      max_pages: 1,
+      hidden_sections: [],
+      page_size: 'A4',
+      offer: { ats: null, countries: ['ES'], domain: null, language: 'es' },
+      warnings: [],
+      ...options,
+    },
+    docx_path: `cvs/1/1/${id}/CV-Lucia-Varela-Otero.docx`,
+    pdf_path: `cvs/1/1/${id}/CV-Lucia-Varela-Otero.pdf`,
+    pages: 1,
+    max_pages: 1,
+    keyword_coverage: { present: ['Python', 'SQL'], missing: ['dbt'] },
+    warnings: [],
+    selected: false,
+    template_changed: false,
+    created_at: new Date().toISOString(),
+    ...rest,
+  }
+}
+
+export function jobCv(renders: RenderResult[], changes: Partial<CvView> = {}): JobCv {
+  return {
+    job_id: 1,
+    stage: 'cv_ready',
+    can_render: true,
+    cv: {
+      job_id: 1,
+      document_id: 1,
+      profile_version_id: 1,
+      created_at: new Date().toISOString(),
+      content: {
+        language: 'es',
+        subtitle: 'Data Engineer',
+        summary: 'Resumen ficticio.',
+        experience: [{ experience_id: 'exp-1', bullets: [{ text: 'Logro ficticio.', evidence: ['exp-1/a1'] }] }],
+        projects: [],
+        skills: [],
+        education_ids: [],
+        certification_ids: [],
+        languages: [],
+        include_regional_language: false,
+        keywords_targeted: [],
+      },
+      evidence: { 'exp-1/a1': 'Logro ficticio.' },
+      verification: { passed: true, issues: [] },
+      renders,
+      ...changes,
+    },
+  }
 }

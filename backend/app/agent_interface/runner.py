@@ -13,7 +13,11 @@ from app.core.db import session_scope
 from app.services.audit import record_call, summarize_args
 from app.services.documents.checks import CvContentError
 from app.services.documents.pdf import PdfConversionError, PdfConverterUnavailableError
-from app.services.documents.service import DocumentNotFoundError
+from app.services.documents.service import (
+    DocumentNotFoundError,
+    FileNotAvailableError,
+    RenderNotFoundError,
+)
 from app.services.documents.templates import TemplateNotFoundError
 from app.services.events import JobNotFoundError
 from app.services.extractions import ExtractionNotFoundError
@@ -27,6 +31,8 @@ _ERROR_TYPES: tuple[tuple[type[Exception], str], ...] = (
     (ExtractionNotFoundError, "not_found"),
     (ProfileNotFoundError, "not_found"),
     (DocumentNotFoundError, "not_found"),
+    (RenderNotFoundError, "not_found"),
+    (FileNotAvailableError, "not_found"),
     (TemplateNotFoundError, "not_found"),
     (PdfConverterUnavailableError, "pdf_unavailable"),
     (PdfConversionError, "pdf_failed"),

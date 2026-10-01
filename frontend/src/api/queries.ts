@@ -1,5 +1,5 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ApiError, api, unwrap, type Schemas, type Stage } from './client'
+import { ApiError, api, unwrap, type CvRenderOptions, type Schemas, type Stage } from './client'
 
 export const PAGE_SIZE = 50
 
@@ -10,6 +10,8 @@ export const keys = {
   job: (id: number) => ['job', id] as const,
   match: (id: number) => ['match', id] as const,
   triage: ['triage'] as const,
+  cv: (id: number) => ['cv', id] as const,
+  templates: ['templates'] as const,
 }
 
 export interface JobsParams {
@@ -133,5 +135,53 @@ export function useJobEvent() {
         client.invalidateQueries({ queryKey: keys.job(jobId) }),
         client.invalidateQueries({ queryKey: keys.match(jobId) }),
       ]),
+  })
+}
+
+/** CV vigente de la oferta (contenido, verificación y renders); `cv: null` si aún no tiene. */
+export function useJobCv(jobId: number, enabled = true) {
+  return useQuery({
+    queryKey: keys.cv(jobId),
+    queryFn: () => unwrap(api.GET('/jobs/{job_id}/cv', { params: { path: { job_id: jobId } } })),
+    enabled: enabled && Number.isInteger(jobId) && jobId > 0,
+  })
+}
+
+export function useTemplates() {
+  return useQuery({
+    queryKey: keys.templates,
+    queryFn: () => unwrap(api.GET('/templates')),
+    staleTime: 60_000,
+  })
+}
+
+/** Renderiza el CV con otras opciones (sin agente). Puede pasar a «cv_ready»: refresca la ficha. */
+export function useRenderCv(jobId: number) {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: ({ documentId, options }: { documentId: number; options: CvRenderOptions }) =>
+      unwrap(
+        api.POST('/documents/{document_id}/renders', {
+          params: { path: { document_id: documentId } },
+          body: options,
+        }),
+      ),
+    onSuccess: () =>
+      Promise.all([
+        client.invalidateQueries({ queryKey: keys.cv(jobId) }),
+        client.invalidateQueries({ queryKey: keys.job(jobId) }),
+        client.invalidateQueries({ queryKey: keys.status }),
+        client.invalidateQueries({ queryKey: keys.allJobs }),
+      ]),
+  })
+}
+
+/** Marca el render que se enviará. No cambia la etapa. */
+export function useSelectRender(jobId: number) {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (renderId: number) =>
+      unwrap(api.POST('/renders/{render_id}/select', { params: { path: { render_id: renderId } } })),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.cv(jobId) }),
   })
 }

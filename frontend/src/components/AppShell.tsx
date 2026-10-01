@@ -141,6 +141,9 @@ export function AppShell() {
               Triaje
               <TriageCount />
             </NavLink>
+            <NavLink to="/plantillas" className={navClass}>
+              Plantillas
+            </NavLink>
           </nav>
           <div className="ml-auto flex items-center gap-1.5">
             <ThemeToggle />

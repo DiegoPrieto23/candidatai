@@ -1,0 +1,93 @@
+"""CV de una oferta y plantillas (fase 08.2). Capa fina sobre `services/documents/service.py`.
+
+Renderizar desde aquí no usa IA: combina el contenido ya guardado con otra plantilla u opciones.
+Los ficheros solo se sirven desde `data/` (renders) y desde las carpetas de plantillas (previews).
+"""
+
+from typing import Literal
+
+from fastapi import APIRouter, status
+from fastapi.responses import FileResponse
+
+from app.api.deps import SessionDep
+from app.schemas.cv import CvRenderOptions
+from app.services.documents import service
+from app.services.pipeline import Actor
+
+router = APIRouter(tags=["cv"])
+
+_MEDIA_TYPES = {
+    "pdf": "application/pdf",
+    "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+}
+
+
+@router.get("/templates", operation_id="list_templates")
+def list_templates() -> service.TemplateList:
+    """Plantillas de CV disponibles (integradas y tuyas) y las que no son válidas."""
+    return service.list_cv_templates()
+
+
+@router.get(
+    "/templates/{template_id}/preview.png",
+    operation_id="get_template_preview",
+    response_class=FileResponse,
+    responses={200: {"content": {"image/png": {}}}},
+)
+def get_template_preview(template_id: str) -> FileResponse:
+    """Primera página de la preview de una plantilla, generada con el perfil demo."""
+    return FileResponse(service.template_preview(template_id), media_type="image/png")
+
+
+@router.get("/jobs/{job_id}/cv", operation_id="get_job_cv")
+def get_job_cv(session: SessionDep, job_id: int) -> service.JobCv:
+    """CV vigente de la oferta: contenido, verificación y renders con sus avisos."""
+    return service.get_job_cv(session, job_id)
+
+
+@router.post(
+    "/documents/{document_id}/renders",
+    operation_id="render_document",
+    status_code=status.HTTP_201_CREATED,
+)
+def render_document(
+    session: SessionDep, document_id: int, body: CvRenderOptions
+) -> service.RenderResult:
+    """Renderiza el CV con otra plantilla u opciones, sin agente (tarda lo que la conversión)."""
+    return service.render(session, document_id, body, actor=Actor.USER)
+
+
+@router.post("/renders/{render_id}/select", operation_id="select_render")
+def select_render(session: SessionDep, render_id: int) -> service.RenderResult:
+    """Marca este render como el que se enviará (uno por CV)."""
+    return service.select_render(session, render_id)
+
+
+def _render_file(session: SessionDep, render_id: int, kind: Literal["pdf", "docx"]) -> FileResponse:
+    path = service.render_file(session, render_id, kind)
+    return FileResponse(
+        path,
+        media_type=_MEDIA_TYPES[kind],
+        filename=path.name,
+        content_disposition_type="inline" if kind == "pdf" else "attachment",
+    )
+
+
+@router.get(
+    "/renders/{render_id}/pdf",
+    operation_id="get_render_pdf",
+    response_class=FileResponse,
+    responses={200: {"content": {"application/pdf": {}}}},
+)
+def get_render_pdf(session: SessionDep, render_id: int) -> FileResponse:
+    return _render_file(session, render_id, "pdf")
+
+
+@router.get(
+    "/renders/{render_id}/docx",
+    operation_id="get_render_docx",
+    response_class=FileResponse,
+    responses={200: {"content": {_MEDIA_TYPES["docx"]: {}}}},
+)
+def get_render_docx(session: SessionDep, render_id: int) -> FileResponse:
+    return _render_file(session, render_id, "docx")

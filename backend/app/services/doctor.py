@@ -138,6 +138,43 @@ def check_pdf_conversion() -> CheckResult:
     return CheckResult(name=name, status=CheckStatus.OK, detail=detail)
 
 
+def check_photo(profile_path: Path, data_dir: Path) -> CheckResult:
+    """Avisa si el perfil puede pedir foto (plantilla con foto y política que la deja) y no hay."""
+    from app.services import profile as profile_service
+    from app.services.documents import photo, templates
+
+    name = "Foto del CV"
+    if not profile_path.is_file():
+        return CheckResult(name=name, status=CheckStatus.OK, detail="sin perfil: no se comprueba")
+    try:
+        profile = profile_service.load_from_yaml(profile_path)
+    except Exception as exc:  # perfil a medio escribir: lo explica `jh profile validate`
+        detail = f"no se puede leer el perfil ({type(exc).__name__}); usa jh profile validate"
+        return CheckResult(name=name, status=CheckStatus.WARN, detail=detail)
+
+    found = photo.find_photo(profile, data_dir)
+    if found is not None:
+        return CheckResult(name=name, status=CheckStatus.OK, detail=str(found))
+    prefs = profile.preferences.cv
+    policy = prefs.photo_policy
+    wanted = [prefs.default_template] if prefs.default_template else []
+    wanted += [rule.use for rule in prefs.template_rules]
+    with_photo = []
+    for template_id in dict.fromkeys(wanted):
+        try:
+            if templates.get(template_id).meta.photo.supported:
+                with_photo.append(template_id)
+        except templates.TemplateNotFoundError:
+            continue
+    if with_photo and (policy.default or any(policy.by_country.values())):
+        detail = (
+            f"tu perfil usa {', '.join(with_photo)}, con foto, pero no hay "
+            f"data/{prefs.photo_file} ni data/photo.*: esos CVs saldrán sin foto"
+        )
+        return CheckResult(name=name, status=CheckStatus.WARN, detail=detail)
+    return CheckResult(name=name, status=CheckStatus.OK, detail="tus plantillas no piden foto")
+
+
 def check_embeddings(settings: Settings) -> CheckResult:
     from app.core.policies import get_policies
     from app.services.matching import embeddings
@@ -161,6 +198,7 @@ def run_doctor(settings: Settings) -> DoctorReport:
             check_soffice(settings.soffice_path),
             check_cv_templates(BUILTIN_TEMPLATES_DIR, settings.user_templates_dir),
             check_pdf_conversion(),
+            check_photo(settings.data_dir / "profile.yaml", settings.data_dir),
             check_embeddings(settings),
         ]
     )

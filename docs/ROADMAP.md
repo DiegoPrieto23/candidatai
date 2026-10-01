@@ -17,7 +17,7 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 07 | Matching y triaje | ✅ | Filtros duros, score, skill `evaluar-encaje`, aprobar o descartar en la UI |
 | 08 | CV a medida con plantillas | 🚧 | `generar-cv` produce CVs verificados; plantilla, foto y color se cambian en la UI sin agente; importar plantillas desde Word |
 | 08.1 | ↳ Contenido, verificación y motor docx | ✅ | `generar-cv` produce un PDF verificado con `ats-simple` y la oferta pasa a `cv_ready` |
-| 08.2 | ↳ Foto, renders múltiples y UI | ⏳ | Plantilla, foto y color se cambian en la UI sin agente; `clasica-foto` |
+| 08.2 | ↳ Foto, renders múltiples y UI | ✅ | Plantilla, foto y color se cambian en la UI sin agente; `clasica-foto` |
 | 08.3 | ↳ Importar plantillas desde Word | ⏳ | `importar-plantilla-cv` convierte un `.docx` en plantilla |
 | 08b | Plantillas html | ⏳ | Importar diseños desde PDF o imagen (Canva…) y plantilla integrada de dos columnas |
 | 09 | Conectores de ATS y scheduler | ⏳ | Ingesta diaria de empresas objetivo sin intervención |
@@ -287,7 +287,7 @@ decisiones tomadas y deuda técnica pendiente. -->
   `scripts/build_builtin_templates.py` (reproducible, con test que compara con la versionada). Cinco
   herramientas MCP/CLI con paridad y `jh doctor` con una conversión real. 966 tests de backend.
   Flujo probado por CLI con LibreOffice: rechazo con detalle → PDF de 1 página → `cv_ready`.
-- **Decisiones** (ADR-016):
+- **Decisiones** (ADR-017; se numeró 016 y se renumeró al coincidir con la 016 de la 09b):
   - `cv_ready` cuando un mismo documento está verificado con `passed` y tiene un render sin
     `too_long`, en cualquier orden; `cv_rendered` es reservado (solo el servicio de render).
   - País por `countries.yaml` (sin nombres ambiguos); varios países: la regla encaja con alguno y la
@@ -315,3 +315,42 @@ decisiones tomadas y deuda técnica pendiente. -->
     se detecta hasta renderizar).
   - La BD real necesita `jh db upgrade` (hasta 0005).
 
+### 08.2 · CV: foto, renders múltiples y UI — 2026-10-01 · Claude Code (Opus 5.5)
+- **Resumen:** `documents/photo.py` (búsqueda, recorte centrado por forma con EXIF y caché en
+  `data/cache/photo/`), foto real en el render (`auto`/`include`), plantilla integrada
+  `clasica-foto` (cabecera con foto circular en tabla sin bordes, 4 colores de acento) y foto
+  ficticia `demo/photo.png` generadas por `scripts/build_builtin_templates.py`, previews
+  `preview.png` con `pypdfium2`, `select_render` y `template_changed`, rutas de API
+  (`/templates`, `/jobs/{id}/cv`, `/documents/{id}/renders`, `/renders/{id}/select|pdf|docx`) que
+  solo sirven ficheros desde `data/` y las carpetas de plantillas, sección «CV» en la ficha
+  (selector con miniaturas, foto, color, secciones ocultas, renders con avisos, comparación lado
+  a lado y «Usar este para enviar»), página **Plantillas** y aviso de foto en `jh doctor`.
+  1000 tests de backend y 46 de frontend.
+  Prueba manual con datos demo aislados y LibreOffice: oferta en `cv_ready` con `clasica-foto` →
+  render por la API de la UI con `clasica-foto` sin foto, en verde y sin proyectos → PDF correcto
+  en ~12 s → seleccionado para enviar. La UI no se probó en navegador (extensión de Chrome sin
+  conectar): solo con sus tests.
+- **Decisiones:**
+  - Foto: `preferences.cv.photo_file` y, si no existe, el primer `data/photo.*` (jpg, jpeg, png,
+    webp; heic solo si Pillow lo abre). Las que no se pueden abrir se ignoran.
+  - `preferences.cv.max_pages` pasa a opcional (`null` por defecto) y cuenta: opción > perfil >
+    plantilla. Los perfiles guardados con `max_pages: 1` siguen igual.
+  - `select_render` admite también un render `too_long` (decides tú); no registra evento.
+  - `GET /jobs/{id}/cv` devuelve `cv: null` (no 404) si aún no hay CV, con `can_render`.
+  - La API sirve renders solo desde `data/cvs/` (no todo `data/`, donde la 09b guardará
+    `data/capture_token`); ruta fuera o fichero inexistente: 404 `not_found` (sin decir por qué).
+  - La sección «CV» de la ficha sale en una lista explícita de etapas (de `approved` en adelante;
+    en `closed`, solo si hubo CV), para que la etapa `pending_detail` de la 09b no la muestre.
+  - Compatibilidad con la 09b (ya en `main`): la ADR de la 08.1 pasa a ser la ADR-017. Al
+    implementar la 09b: `cv_rendered` entra en los tests evento × etapa con `pending_detail`, el
+    check de IMAP de `jh doctor` se añade a la lista de `test_cli_doctor_json` junto a «Foto del
+    CV», y su migración va después de la `0005`.
+  - `TemplateInfo.has_preview` y `sections` tipado; `pdf_unavailable` → 503 y `pdf_failed` → 500.
+  - El conversor falso de los tests declara Cambria para que las integradas no den
+    `font_substituted`.
+- **Deuda:**
+  - Cada render desde la UI tarda ~10-15 s (LibreOffice arranca en cada conversión). La UI lo
+    indica; un LibreOffice en segundo plano lo bajaría.
+  - La comparación lado a lado usa el visor de PDF del navegador en un `iframe`.
+  - `template_changed` recalcula el hash de cada plantilla en cada consulta del CV.
+  - La BD real sigue necesitando `jh db upgrade` (hasta 0005); la 08.2 no añade migraciones.

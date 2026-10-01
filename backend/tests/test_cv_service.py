@@ -1,9 +1,12 @@
 """Servicio de CVs: guardar contenido, renderizar, verificar y llegar a `cv_ready` (fase 08.1)."""
 
+import shutil
+import zipfile
 from collections.abc import Callable
 from pathlib import Path
 
 import pytest
+import yaml
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -11,8 +14,8 @@ from app.core.config import REPO_ROOT, get_settings
 from app.models import Document, Event, Job
 from app.schemas.cv import CvRenderOptions, CvVerification
 from app.services import events, extractions, profile
-from app.services.documents import checks, options, pdf, service
-from app.services.pipeline import InvalidTransitionError, Stage
+from app.services.documents import checks, options, pdf, service, templates
+from app.services.pipeline import Actor, InvalidTransitionError, Stage
 from tests.cv_support import demo_content, demo_content_data, fake_converter, write_template
 from tests.matching_support import demo_extraction, demo_profile
 
@@ -67,10 +70,11 @@ def test_save_content_stores_document_and_first_render(session: Session, approve
     doc = session.get(Document, result.document_id)
     assert doc is not None and doc.kind == "cv" and doc.language == "es"
     render = result.render
-    # El perfil demo pide `clasica-foto` por defecto, que aún no existe: aviso y `ats-simple`.
-    assert render.template_id == "ats-simple"
-    assert render.options.template_source == "fallback"
-    assert [w.code for w in render.warnings] == ["template_not_found"]
+    # El perfil demo pide `clasica-foto` por defecto; sin `data/photo.*`, va sin foto y sin aviso.
+    assert render.template_id == "clasica-foto"
+    assert render.options.template_source == "default_template"
+    assert render.options.photo is False and render.options.accent_color == "#1F4E79"
+    assert render.warnings == []
     assert render.pages == 1 and render.max_pages == 1
     assert render.selected is True
     assert (
@@ -261,7 +265,7 @@ def test_second_template_does_not_touch_document(
     assert [
         r.template_id for r in service.get_content(session, job_id=approved_job.id).renders
     ] == [
-        "ats-simple",
+        "clasica-foto",
         "no-ats",
     ]
 
@@ -299,7 +303,7 @@ def test_two_pages_is_too_long(
 
     # Otro render que sí cabe (dos páginas permitidas) lo lleva a `cv_ready` y queda seleccionado.
     fits = service.render(session, saved.document_id, CvRenderOptions(max_pages=2))
-    assert fits.warnings and "too_long" not in [w.code for w in fits.warnings]
+    assert "too_long" not in [w.code for w in fits.warnings]
     assert fits.selected is True
     assert stage(session, approved_job) == Stage.CV_READY
 
@@ -349,6 +353,12 @@ def test_hidden_section_is_not_rendered(session: Session, approved_job: Job) -> 
 def test_invalid_accent_color_is_rejected(session: Session, approved_job: Job) -> None:
     saved = service.save_content(session, approved_job.id, demo_content())
     with pytest.raises(options.InvalidRenderOptionsError, match="no admite color"):
+        service.render(
+            session,
+            saved.document_id,
+            CvRenderOptions(template_id="ats-simple", accent_color="#1F4E79"),
+        )
+    with pytest.raises(options.InvalidRenderOptionsError, match="admite estos colores"):
         service.render(session, saved.document_id, CvRenderOptions(accent_color="#000000"))
 
 
@@ -379,6 +389,173 @@ def test_no_converter_explains_what_to_install(monkeypatch: pytest.MonkeyPatch) 
     monkeypatch.setattr(pdf, "word_converter", lambda: None)
     with pytest.raises(pdf.PdfConverterUnavailableError, match="LibreOffice"):
         REAL_GET_CONVERTER()
+
+
+# --- Foto, colores y renders múltiples (08.2) -----------------------------------------------
+
+DEMO_PHOTO = REPO_ROOT / "demo" / "photo.png"
+
+
+def docx_media(relative: str | None) -> list[str]:
+    with zipfile.ZipFile(data_file(relative)) as docx:
+        return [n for n in docx.namelist() if n.startswith("word/media/")]
+
+
+def docx_xml(relative: str | None) -> str:
+    with zipfile.ZipFile(data_file(relative)) as docx:
+        return docx.read("word/document.xml").decode("utf-8")
+
+
+def selected_ids(session: Session, job: Job) -> list[int]:
+    renders = service.get_content(session, job_id=job.id).renders
+    return [r.render_id for r in renders if r.selected]
+
+
+@pytest.fixture
+def with_photo() -> Path:
+    target = get_settings().data_dir / "photo.png"
+    shutil.copyfile(DEMO_PHOTO, target)
+    return target
+
+
+def test_clasica_foto_with_photo_and_four_colors(
+    session: Session, approved_job: Job, with_photo: Path
+) -> None:
+    saved = service.save_content(session, approved_job.id, demo_content())
+    render = saved.render
+    assert render.template_id == "clasica-foto" and render.options.photo is True
+    assert render.warnings == []
+    assert len(docx_media(render.docx_path)) == 1
+    cache = get_settings().data_dir / "cache" / "photo"
+    assert len(list(cache.glob("*-circle-*.png"))) == 1
+
+    accent = templates.get("clasica-foto").meta.options.accent_color
+    assert accent is not None and len(accent.choices) == 4
+    for color in accent.choices:
+        result = service.render(session, saved.document_id, CvRenderOptions(accent_color=color))
+        xml = docx_xml(result.docx_path)
+        assert f'w:val="{color[1:]}"' in xml
+        assert not any(f'w:val="{c[1:]}"' in xml for c in accent.choices if c != color)
+        assert result.options.accent_color == color
+        assert len(docx_media(result.docx_path)) == 1
+    assert len(list(cache.glob("*.png"))) == 1  # la foto recortada se reutiliza
+
+
+def test_clasica_foto_without_photo(session: Session, approved_job: Job, with_photo: Path) -> None:
+    saved = service.save_content(
+        session, approved_job.id, demo_content(), CvRenderOptions(photo="exclude")
+    )
+    assert saved.render.options.photo is False and docx_media(saved.render.docx_path) == []
+    from docx import Document as Docx
+
+    doc = Docx(str(data_file(saved.render.docx_path)))
+    assert doc.tables == []  # sin foto, la cabecera va en el cuerpo, sin tabla
+    assert "Lucía Varela Otero" in "\n".join(p.text for p in doc.paragraphs)
+
+
+def test_photo_requested_but_missing_or_unsupported(session: Session, approved_job: Job) -> None:
+    saved = service.save_content(
+        session, approved_job.id, demo_content(), CvRenderOptions(photo="include")
+    )
+    warning = next(w for w in saved.render.warnings if w.code == "photo_excluded")
+    assert "no hay foto" in warning.message
+    assert docx_media(saved.render.docx_path) == []
+
+    shutil.copyfile(DEMO_PHOTO, get_settings().data_dir / "photo.jpg")
+    ats = service.render(
+        session, saved.document_id, CvRenderOptions(template_id="ats-simple", photo="include")
+    )
+    warning = next(w for w in ats.warnings if w.code == "photo_excluded")
+    assert "no la admite" in warning.message
+
+
+def test_photo_auto_follows_country_policy(
+    session: Session, approved_job: Job, with_photo: Path
+) -> None:
+    approved_job.location_raw = "Dublin, Ireland"  # España (extracción) e Irlanda: sin foto
+    saved = service.save_content(
+        session, approved_job.id, demo_content(), CvRenderOptions(template_id="clasica-foto")
+    )
+    assert "IE" in saved.render.options.offer.countries
+    assert saved.render.options.photo is False and docx_media(saved.render.docx_path) == []
+    forced = service.render(
+        session, saved.document_id, CvRenderOptions(template_id="clasica-foto", photo="include")
+    )
+    assert forced.options.photo is True and len(docx_media(forced.docx_path)) == 1
+
+
+def test_switch_template_and_photo_without_touching_document(
+    session: Session, approved_job: Job, with_photo: Path
+) -> None:
+    saved = service.save_content(session, approved_job.id, demo_content())
+    doc = session.get(Document, saved.document_id)
+    assert doc is not None
+    before = (dict(doc.content), doc.verification, doc.created_at)
+    events_before = event_types(session, approved_job)
+
+    ats = service.render(
+        session, saved.document_id, CvRenderOptions(template_id="ats-simple"), Actor.USER
+    )
+    no_photo = service.render(
+        session, saved.document_id, CvRenderOptions(photo="exclude"), Actor.USER
+    )
+    session.refresh(doc)
+    assert (dict(doc.content), doc.verification, doc.created_at) == before
+    assert session.scalar(select(func.count()).select_from(Document)) == 1
+    assert (ats.template_id, ats.options.photo) == ("ats-simple", False)
+    assert (no_photo.template_id, no_photo.options.photo) == ("clasica-foto", False)
+    assert len({saved.render.render_id, ats.render_id, no_photo.render_id}) == 3
+    assert event_types(session, approved_job) == [*events_before, "cv_rendered", "cv_rendered"]
+    last = session.scalars(select(Event).order_by(Event.id.desc())).first()
+    assert last is not None and last.actor == "user"
+
+
+def test_select_render_keeps_a_single_one(session: Session, approved_job: Job) -> None:
+    saved = service.save_content(session, approved_job.id, demo_content())
+    other = service.render(session, saved.document_id, CvRenderOptions(template_id="ats-simple"))
+    assert (saved.render.selected, other.selected) == (True, False)
+    stage_before, events_before = stage(session, approved_job), event_types(session, approved_job)
+
+    assert service.select_render(session, other.render_id).selected is True
+    assert selected_ids(session, approved_job) == [other.render_id]
+    service.select_render(session, other.render_id)  # el mismo otra vez: nada cambia
+    service.select_render(session, saved.render.render_id)
+    assert selected_ids(session, approved_job) == [saved.render.render_id]
+    # Sin evento ni cambio de etapa.
+    assert stage(session, approved_job) == stage_before
+    assert event_types(session, approved_job) == events_before
+
+    with pytest.raises(service.RenderNotFoundError):
+        service.select_render(session, 999)
+
+
+def test_render_marks_template_changed(
+    session: Session, approved_job: Job, no_ats_template: Path
+) -> None:
+    saved = service.save_content(
+        session, approved_job.id, demo_content(), CvRenderOptions(template_id="no-ats")
+    )
+    assert saved.render.template_changed is False
+    assert service.get_content(session, job_id=approved_job.id).renders[0].template_changed is False
+    docx = no_ats_template / "template.docx"
+    docx.write_bytes(docx.read_bytes() + b"\0")
+    assert service.get_content(session, job_id=approved_job.id).renders[0].template_changed is True
+    shutil.rmtree(no_ats_template)  # si ya no existe, también cuenta como cambiada
+    assert service.get_content(session, job_id=approved_job.id).renders[0].template_changed is True
+
+
+def test_max_pages_from_profile_preference(session: Session, approved_job: Job) -> None:
+    data = profile.current(session).profile.model_dump(mode="json")
+    data["preferences"]["cv"]["max_pages"] = 2
+    path = get_settings().data_dir / "profile-2pag.yaml"
+    path.write_text(yaml.safe_dump(data, allow_unicode=True), encoding="utf-8")
+    profile.import_profile(session, path)
+
+    saved = service.save_content(session, approved_job.id, demo_content())
+    assert saved.render.max_pages == 2
+    # La opción de render manda sobre el perfil.
+    one = service.render(session, saved.document_id, CvRenderOptions(max_pages=1))
+    assert one.max_pages == 1
 
 
 # --- Ver el contenido -----------------------------------------------------------------------
@@ -433,11 +610,25 @@ def test_real_render_of_ats_simple_with_demo_profile(
     session: Session, approved_job: Job, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr(pdf, "get_converter", REAL_GET_CONVERTER)
-    saved = service.save_content(session, approved_job.id, demo_content())
+    saved = service.save_content(
+        session, approved_job.id, demo_content(), CvRenderOptions(template_id="ats-simple")
+    )
     render = saved.render
     assert render.pages == 1
-    assert [w.code for w in render.warnings] == ["template_not_found"]  # sin font_substituted
+    assert render.warnings == []  # sin font_substituted
     assert {"Python", "SQL", "Snowflake"} <= set(render.keyword_coverage.present)
     info = pdf.read_pdf(data_file(render.pdf_path))
     assert "Lucía Varela Otero" in info.text
     assert not list(Path(get_settings().data_dir).glob("**/jh-soffice-*"))
+
+
+@needs_soffice
+def test_real_render_of_clasica_foto_with_photo(
+    session: Session, approved_job: Job, monkeypatch: pytest.MonkeyPatch, with_photo: Path
+) -> None:
+    monkeypatch.setattr(pdf, "get_converter", REAL_GET_CONVERTER)
+    saved = service.save_content(session, approved_job.id, demo_content())
+    render = saved.render
+    assert (render.template_id, render.options.photo, render.pages) == ("clasica-foto", True, 1)
+    assert render.warnings == []  # Cambria y Calibri disponibles
+    assert "Lucía Varela Otero" in pdf.read_pdf(data_file(render.pdf_path)).text

@@ -13,8 +13,23 @@ export type MatchView = Schemas['MatchView']
 export type TriageItem = Schemas['TriageItem']
 export type TriageQueue = Schemas['TriageQueue']
 export type DiscardReason = NonNullable<Schemas['AddUserEventBody']['reason']>
+export type JobCv = Schemas['JobCv']
+export type CvView = Schemas['CvView']
+export type RenderResult = Schemas['RenderResult']
+export type CvRenderOptions = Schemas['CvRenderOptions']
+export type SectionName = NonNullable<CvRenderOptions['hidden_sections']>[number]
+export type TemplateInfo = Schemas['TemplateInfo']
+export type TemplateList = Schemas['TemplateList']
 
 export const API_URL: string = import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:8000'
+
+/** Ficheros que sirve la API (PDF y DOCX de un render, preview de una plantilla). */
+export const fileUrls = {
+  renderPdf: (renderId: number) => `${API_URL}/renders/${renderId}/pdf`,
+  renderDocx: (renderId: number) => `${API_URL}/renders/${renderId}/docx`,
+  templatePreview: (templateId: string) =>
+    `${API_URL}/templates/${encodeURIComponent(templateId)}/preview.png`,
+}
 
 export const api = createClient<paths>({
   baseUrl: API_URL,

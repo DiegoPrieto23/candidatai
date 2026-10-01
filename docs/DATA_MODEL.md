@@ -107,7 +107,7 @@ cambia `documents` ni necesita al agente.
 | pages | int | |
 | keyword_coverage | JSON | Keywords de la oferta presentes y ausentes en el PDF |
 | warnings | JSON | `[{code, message}]`: `too_long`, `not_ats_friendly`, `font_substituted`… |
-| selected | bool | El que se usará al enviar; como mucho uno por documento. El primer render sin `too_long` queda seleccionado |
+| selected | bool | El que se usará al enviar; como mucho uno por documento. El primer render sin `too_long` queda seleccionado; después lo cambias en la UI (`select_render`, sin evento: no cambia la etapa) |
 | created_at | datetime | |
 
 ### `applications`

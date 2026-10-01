@@ -18,7 +18,8 @@ foto para enviar por email), y tú marcas cuál se envía.
 | `templates/<id>/` | Plantillas integradas, genéricas y sin datos personales | Sí |
 | `data/templates/<id>/` | Tus plantillas, creadas a partir de tus CVs o de diseños que tengas | No |
 | `data/uploads/` | Los ficheros originales que subes para convertirlos en plantilla | No |
-| `data/photo.<ext>` | Tu foto original, en cualquier formato de imagen | No |
+| `data/photo.<ext>` | Tu foto original (jpg, png, webp; heic si Pillow lo abre). Otra ruta dentro de `data/` con `preferences.cv.photo_file` | No |
+| `data/cache/photo/` | La foto recortada para cada forma y tamaño (se regenera sola) | No |
 
 Si una plantilla tuya tiene el mismo `id` que una integrada, gana la tuya.
 
@@ -32,7 +33,8 @@ Si una plantilla tuya tiene el mismo `id` que una integrada, gana la tuya.
   style.css            motor html
   fonts/               fuentes locales opcionales (.ttf, .otf, .woff2)
   source.<ext>         original del que se creó (solo en data/, nunca en templates/)
-  preview.pdf|png      generadas con el perfil demo (no se editan a mano)
+  preview.pdf|png      generadas con el perfil y la foto demo (no se editan a mano); el PNG es la
+                       primera página y es la miniatura de la UI
 ```
 
 ### `template.yaml`
@@ -118,7 +120,7 @@ agente no lo ve). `education[].detail` va vacío de momento: el perfil no tiene 
 template_id: null          # null = según reglas
 photo: auto                # auto | include | exclude
 accent_color: null         # null = el de la plantilla
-max_pages: null            # null = el de la plantilla
+max_pages: null            # null = preferences.cv.max_pages o, si tampoco, el de la plantilla
 hidden_sections: []        # p. ej. [projects]
 page_size: null            # null = el de la plantilla
 ```
@@ -128,9 +130,13 @@ Cómo se resuelve lo que queda en `null` o `auto`:
 1. **Plantilla**: la opción explícita, si la hay; si no, la primera regla de
    `preferences.cv.template_rules` que encaje con la oferta; si no, `preferences.cv.default_template`;
    si no, la integrada `ats-simple`.
-2. **Foto** (`auto`): se incluye si la plantilla la admite, existe `data/photo.*` y
-   `preferences.cv.photo_policy` la permite para el país de la oferta.
-3. Lo demás, lo que diga la plantilla.
+2. **Foto** (`auto`): se incluye si la plantilla la admite, hay foto y
+   `preferences.cv.photo_policy` la permite para el país de la oferta. La foto es
+   `preferences.cv.photo_file` (relativa a `data/`) y, si ese fichero no existe, el primer
+   `data/photo.*`. Se recorta centrada a la forma y tamaño de la plantilla (`circle` y `rounded`
+   con fondo transparente), respetando la orientación EXIF.
+3. **Páginas**: la opción > `preferences.cv.max_pages` > `page.max_pages` de la plantilla.
+4. Lo demás, lo que diga la plantilla.
 
 Las reglas pueden mirar el país de la oferta, el ATS detectado por su URL
 (`config/policies.yaml` → `ats_platforms`, el dominio o un subdominio suyo), el `domain` de la
@@ -168,10 +174,19 @@ El render nunca se bloquea en silencio: devuelve avisos que ves en la UI y recib
 | `font_substituted` | Falta una fuente de la plantilla y el PDF usa otra |
 | `pdf_only` | Motor html: no hay DOCX |
 
+## Renders
+
+Cada render guarda sus opciones resueltas, sus ficheros en `data/cvs/<job_id>/<document_id>/<render_id>/`
+y el hash de la plantilla. En la ficha de la oferta, sección «CV», eliges plantilla (con su
+miniatura), foto, color y secciones ocultas y pulsas «Renderizar»: crea un render nuevo con el
+mismo contenido verificado, sin agente. Puedes ver dos renders lado a lado y marcar con «Usar este
+para enviar» el que irá en la candidatura (uno por CV). Si los ficheros de una plantilla cambian
+después de un render, la UI lo marca como «Plantilla cambiada».
+
 ## Plantillas integradas
 
 | id | Motor | Fase | Estilo |
 |---|---|---|---|
 | `ats-simple` | docx | 08 | Una columna, sin foto, tipografía estándar. La opción segura para portales con ATS |
-| `clasica-foto` | docx | 08 | Una columna con cabecera y foto circular, sobria |
+| `clasica-foto` | docx | 08 | Una columna con cabecera y foto circular, sobria; color de acento a elegir entre 4. No apta para ATS (cabecera en tabla) |
 | `moderna-2col` | html | 08b | Dos columnas con barra lateral y color de acento configurable |

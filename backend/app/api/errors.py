@@ -18,6 +18,8 @@ STATUS_BY_TYPE = {
     "validation_error": 422,
     "invalid_request": 422,
     "invalid_transition": 409,
+    "pdf_unavailable": 503,
+    "pdf_failed": 500,
     "database_not_ready": 503,
     "internal_error": 500,
 }

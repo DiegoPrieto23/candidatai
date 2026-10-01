@@ -702,10 +702,597 @@
           }
         }
       }
+    },
+    "/templates": {
+      "get": {
+        "tags": [
+          "cv"
+        ],
+        "summary": "List Templates",
+        "description": "Plantillas de CV disponibles (integradas y tuyas) y las que no son válidas.",
+        "operationId": "list_templates",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TemplateList"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/templates/{template_id}/preview.png": {
+      "get": {
+        "tags": [
+          "cv"
+        ],
+        "summary": "Get Template Preview",
+        "description": "Primera página de la preview de una plantilla, generada con el perfil demo.",
+        "operationId": "get_template_preview",
+        "parameters": [
+          {
+            "name": "template_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Template Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "image/png": {}
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/jobs/{job_id}/cv": {
+      "get": {
+        "tags": [
+          "cv"
+        ],
+        "summary": "Get Job Cv",
+        "description": "CV vigente de la oferta: contenido, verificación y renders con sus avisos.",
+        "operationId": "get_job_cv",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobCv"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/documents/{document_id}/renders": {
+      "post": {
+        "tags": [
+          "cv"
+        ],
+        "summary": "Render Document",
+        "description": "Renderiza el CV con otra plantilla u opciones, sin agente (tarda lo que la conversión).",
+        "operationId": "render_document",
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Document Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CvRenderOptions"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RenderResult"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/renders/{render_id}/select": {
+      "post": {
+        "tags": [
+          "cv"
+        ],
+        "summary": "Select Render",
+        "description": "Marca este render como el que se enviará (uno por CV).",
+        "operationId": "select_render",
+        "parameters": [
+          {
+            "name": "render_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Render Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RenderResult"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/renders/{render_id}/pdf": {
+      "get": {
+        "tags": [
+          "cv"
+        ],
+        "summary": "Get Render Pdf",
+        "operationId": "get_render_pdf",
+        "parameters": [
+          {
+            "name": "render_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Render Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/pdf": {}
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/renders/{render_id}/docx": {
+      "get": {
+        "tags": [
+          "cv"
+        ],
+        "summary": "Get Render Docx",
+        "operationId": "get_render_docx",
+        "parameters": [
+          {
+            "name": "render_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Render Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/vnd.openxmlformats-officedocument.wordprocessingml.document": {}
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "AccentColors": {
+        "properties": {
+          "default": {
+            "type": "string",
+            "title": "Default"
+          },
+          "choices": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Choices"
+          }
+        },
+        "type": "object",
+        "required": [
+          "default",
+          "choices"
+        ],
+        "title": "AccentColors"
+      },
       "AddEventResult": {
         "properties": {
           "ok": {
@@ -923,6 +1510,398 @@
           "weight"
         ],
         "title": "CoveredSkill"
+      },
+      "CvBullet": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "maxLength": 400,
+            "minLength": 1,
+            "title": "Text"
+          },
+          "evidence": {
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Evidence",
+            "description": "Ids de logros o elementos del perfil (`exp-acme/a2`)."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "text",
+          "evidence"
+        ],
+        "title": "CvBullet"
+      },
+      "CvContent": {
+        "properties": {
+          "language": {
+            "type": "string",
+            "enum": [
+              "es",
+              "en"
+            ],
+            "title": "Language"
+          },
+          "subtitle": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Subtitle"
+          },
+          "summary": {
+            "type": "string",
+            "maxLength": 1200,
+            "minLength": 1,
+            "title": "Summary"
+          },
+          "experience": {
+            "items": {
+              "$ref": "#/components/schemas/CvExperience"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Experience"
+          },
+          "projects": {
+            "items": {
+              "$ref": "#/components/schemas/CvProject"
+            },
+            "type": "array",
+            "title": "Projects",
+            "default": []
+          },
+          "skills": {
+            "items": {
+              "$ref": "#/components/schemas/CvSkillGroup"
+            },
+            "type": "array",
+            "title": "Skills",
+            "default": []
+          },
+          "education_ids": {
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "type": "array",
+            "title": "Education Ids",
+            "default": []
+          },
+          "certification_ids": {
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "type": "array",
+            "title": "Certification Ids",
+            "default": []
+          },
+          "languages": {
+            "items": {
+              "$ref": "#/components/schemas/CvLanguageItem"
+            },
+            "type": "array",
+            "title": "Languages",
+            "default": []
+          },
+          "include_regional_language": {
+            "type": "boolean",
+            "title": "Include Regional Language",
+            "default": false
+          },
+          "keywords_targeted": {
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "type": "array",
+            "title": "Keywords Targeted",
+            "default": []
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "language",
+          "subtitle",
+          "summary",
+          "experience"
+        ],
+        "title": "CvContent",
+        "description": "Contenido de un CV, independiente de la plantilla (`docs/AGENT_INTERFACE.md`)."
+      },
+      "CvExperience": {
+        "properties": {
+          "experience_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Experience Id"
+          },
+          "bullets": {
+            "items": {
+              "$ref": "#/components/schemas/CvBullet"
+            },
+            "type": "array",
+            "maxItems": 12,
+            "minItems": 1,
+            "title": "Bullets"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "experience_id",
+          "bullets"
+        ],
+        "title": "CvExperience"
+      },
+      "CvLanguageItem": {
+        "properties": {
+          "language": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Language"
+          },
+          "level": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Level"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "language",
+          "level"
+        ],
+        "title": "CvLanguageItem"
+      },
+      "CvProject": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Project Id"
+          },
+          "bullets": {
+            "items": {
+              "$ref": "#/components/schemas/CvBullet"
+            },
+            "type": "array",
+            "maxItems": 6,
+            "minItems": 1,
+            "title": "Bullets"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "bullets"
+        ],
+        "title": "CvProject"
+      },
+      "CvRenderOptions": {
+        "properties": {
+          "template_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Template Id"
+          },
+          "photo": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "include",
+              "exclude"
+            ],
+            "title": "Photo",
+            "default": "auto"
+          },
+          "accent_color": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accent Color"
+          },
+          "max_pages": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 3.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Pages"
+          },
+          "hidden_sections": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "summary",
+                "experience",
+                "projects",
+                "education",
+                "certifications",
+                "skills",
+                "languages"
+              ]
+            },
+            "type": "array",
+            "title": "Hidden Sections",
+            "default": []
+          },
+          "page_size": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "A4",
+                  "Letter"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page Size"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "CvRenderOptions",
+        "description": "Presentación de un CV. `null`/`auto`: lo decide la app (`docs/CV_TEMPLATES.md` §Opciones)."
+      },
+      "CvSkillGroup": {
+        "properties": {
+          "group": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Group"
+          },
+          "items": {
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "type": "array",
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Items"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "group",
+          "items"
+        ],
+        "title": "CvSkillGroup"
+      },
+      "CvVerification": {
+        "properties": {
+          "passed": {
+            "type": "boolean",
+            "title": "Passed"
+          },
+          "issues": {
+            "items": {
+              "$ref": "#/components/schemas/VerificationIssue"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "title": "Issues",
+            "default": []
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "passed"
+        ],
+        "title": "CvVerification"
+      },
+      "CvView": {
+        "properties": {
+          "job_id": {
+            "type": "integer",
+            "title": "Job Id"
+          },
+          "document_id": {
+            "type": "integer",
+            "title": "Document Id"
+          },
+          "profile_version_id": {
+            "type": "integer",
+            "title": "Profile Version Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "content": {
+            "$ref": "#/components/schemas/CvContent"
+          },
+          "evidence": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Evidence"
+          },
+          "verification": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CvVerification"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "renders": {
+            "items": {
+              "$ref": "#/components/schemas/RenderResult"
+            },
+            "type": "array",
+            "title": "Renders"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "document_id",
+          "profile_version_id",
+          "created_at",
+          "content",
+          "evidence",
+          "verification",
+          "renders"
+        ],
+        "title": "CvView"
       },
       "ErrorDetail": {
         "properties": {
@@ -1271,6 +2250,64 @@
         ],
         "title": "InjectionWarning",
         "description": "Por qué la oferta puede llevar contenido dirigido a una IA."
+      },
+      "InvalidTemplate": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "path",
+          "reason"
+        ],
+        "title": "InvalidTemplate",
+        "description": "Una carpeta con `template.yaml` que no se puede usar, y por qué."
+      },
+      "JobCv": {
+        "properties": {
+          "job_id": {
+            "type": "integer",
+            "title": "Job Id"
+          },
+          "stage": {
+            "$ref": "#/components/schemas/Stage"
+          },
+          "can_render": {
+            "type": "boolean",
+            "title": "Can Render"
+          },
+          "cv": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CvView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "stage",
+          "can_render",
+          "cv"
+        ],
+        "title": "JobCv",
+        "description": "La sección «CV» de la ficha: el CV vigente de la oferta, si lo tiene."
       },
       "JobExtraction": {
         "properties": {
@@ -1722,6 +2759,31 @@
         ],
         "title": "JobView"
       },
+      "KeywordCoverage": {
+        "properties": {
+          "present": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Present"
+          },
+          "missing": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missing"
+          }
+        },
+        "type": "object",
+        "required": [
+          "present",
+          "missing"
+        ],
+        "title": "KeywordCoverage",
+        "description": "Keywords de la oferta (skills obligatorias y deseables) en el texto del PDF."
+      },
       "LanguageRequirement": {
         "properties": {
           "language": {
@@ -1828,6 +2890,56 @@
         ],
         "title": "MatchView"
       },
+      "OfferContext": {
+        "properties": {
+          "ats": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ats"
+          },
+          "countries": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Countries"
+          },
+          "domain": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Domain"
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "es",
+              "en"
+            ],
+            "title": "Language"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ats",
+          "countries",
+          "domain",
+          "language"
+        ],
+        "title": "OfferContext",
+        "description": "Lo que las reglas saben de la oferta."
+      },
       "PreferencesFit": {
         "properties": {
           "value": {
@@ -1867,6 +2979,211 @@
           "location"
         ],
         "title": "PreferencesFit"
+      },
+      "RenderResult": {
+        "properties": {
+          "render_id": {
+            "type": "integer",
+            "title": "Render Id"
+          },
+          "job_id": {
+            "type": "integer",
+            "title": "Job Id"
+          },
+          "document_id": {
+            "type": "integer",
+            "title": "Document Id"
+          },
+          "template_id": {
+            "type": "string",
+            "title": "Template Id"
+          },
+          "template_hash": {
+            "type": "string",
+            "title": "Template Hash"
+          },
+          "options": {
+            "$ref": "#/components/schemas/ResolvedOptions"
+          },
+          "docx_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Docx Path"
+          },
+          "pdf_path": {
+            "type": "string",
+            "title": "Pdf Path"
+          },
+          "pages": {
+            "type": "integer",
+            "title": "Pages"
+          },
+          "max_pages": {
+            "type": "integer",
+            "title": "Max Pages"
+          },
+          "keyword_coverage": {
+            "$ref": "#/components/schemas/KeywordCoverage"
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/RenderWarning"
+            },
+            "type": "array",
+            "title": "Warnings"
+          },
+          "selected": {
+            "type": "boolean",
+            "title": "Selected"
+          },
+          "template_changed": {
+            "type": "boolean",
+            "title": "Template Changed",
+            "default": false
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "render_id",
+          "job_id",
+          "document_id",
+          "template_id",
+          "template_hash",
+          "options",
+          "docx_path",
+          "pdf_path",
+          "pages",
+          "max_pages",
+          "keyword_coverage",
+          "warnings",
+          "selected",
+          "created_at"
+        ],
+        "title": "RenderResult"
+      },
+      "RenderWarning": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "RenderWarning"
+      },
+      "ResolvedOptions": {
+        "properties": {
+          "template_id": {
+            "type": "string",
+            "title": "Template Id"
+          },
+          "template_source": {
+            "type": "string",
+            "enum": [
+              "option",
+              "rule",
+              "default_template",
+              "fallback"
+            ],
+            "title": "Template Source"
+          },
+          "rule_index": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rule Index"
+          },
+          "photo": {
+            "type": "boolean",
+            "title": "Photo"
+          },
+          "accent_color": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accent Color"
+          },
+          "max_pages": {
+            "type": "integer",
+            "title": "Max Pages"
+          },
+          "hidden_sections": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "summary",
+                "experience",
+                "projects",
+                "education",
+                "certifications",
+                "skills",
+                "languages"
+              ]
+            },
+            "type": "array",
+            "title": "Hidden Sections"
+          },
+          "page_size": {
+            "type": "string",
+            "enum": [
+              "A4",
+              "Letter"
+            ],
+            "title": "Page Size"
+          },
+          "offer": {
+            "$ref": "#/components/schemas/OfferContext"
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/RenderWarning"
+            },
+            "type": "array",
+            "title": "Warnings",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "template_id",
+          "template_source",
+          "photo",
+          "accent_color",
+          "max_pages",
+          "hidden_sections",
+          "page_size",
+          "offer"
+        ],
+        "title": "ResolvedOptions"
       },
       "Salary": {
         "properties": {
@@ -2121,6 +3438,164 @@
         ],
         "title": "StatusReport"
       },
+      "TemplateInfo": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "engine": {
+            "type": "string",
+            "title": "Engine"
+          },
+          "origin": {
+            "type": "string",
+            "title": "Origin"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tags"
+          },
+          "ats_friendly": {
+            "type": "boolean",
+            "title": "Ats Friendly"
+          },
+          "photo_supported": {
+            "type": "boolean",
+            "title": "Photo Supported"
+          },
+          "photo_shape": {
+            "type": "string",
+            "title": "Photo Shape"
+          },
+          "columns": {
+            "type": "integer",
+            "title": "Columns"
+          },
+          "page_size": {
+            "type": "string",
+            "title": "Page Size"
+          },
+          "max_pages": {
+            "type": "integer",
+            "title": "Max Pages"
+          },
+          "capacity": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Capacity"
+          },
+          "sections": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "summary",
+                "experience",
+                "projects",
+                "education",
+                "certifications",
+                "skills",
+                "languages"
+              ]
+            },
+            "type": "array",
+            "title": "Sections"
+          },
+          "accent_colors": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AccentColors"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fonts": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Fonts"
+          },
+          "languages": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Languages"
+          },
+          "has_preview": {
+            "type": "boolean",
+            "title": "Has Preview"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "engine",
+          "origin",
+          "description",
+          "tags",
+          "ats_friendly",
+          "photo_supported",
+          "photo_shape",
+          "columns",
+          "page_size",
+          "max_pages",
+          "capacity",
+          "sections",
+          "accent_colors",
+          "fonts",
+          "languages",
+          "has_preview"
+        ],
+        "title": "TemplateInfo",
+        "description": "Lo que el agente y la UI necesitan de una plantilla para elegirla y ajustar la extensión."
+      },
+      "TemplateList": {
+        "properties": {
+          "templates": {
+            "items": {
+              "$ref": "#/components/schemas/TemplateInfo"
+            },
+            "type": "array",
+            "title": "Templates"
+          },
+          "invalid": {
+            "items": {
+              "$ref": "#/components/schemas/InvalidTemplate"
+            },
+            "type": "array",
+            "title": "Invalid"
+          },
+          "fallback_template": {
+            "type": "string",
+            "title": "Fallback Template"
+          }
+        },
+        "type": "object",
+        "required": [
+          "templates",
+          "invalid",
+          "fallback_template"
+        ],
+        "title": "TemplateList"
+      },
       "TriageItem": {
         "properties": {
           "job": {
@@ -2185,6 +3660,44 @@
           "profile_missing"
         ],
         "title": "TriageQueue"
+      },
+      "VerificationIssue": {
+        "properties": {
+          "severity": {
+            "type": "string",
+            "enum": [
+              "blocker",
+              "warning"
+            ],
+            "title": "Severity"
+          },
+          "location": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Location"
+          },
+          "problem": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Problem"
+          },
+          "suggestion": {
+            "type": "string",
+            "maxLength": 1000,
+            "title": "Suggestion",
+            "default": ""
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "severity",
+          "location",
+          "problem"
+        ],
+        "title": "VerificationIssue"
       }
     }
   }

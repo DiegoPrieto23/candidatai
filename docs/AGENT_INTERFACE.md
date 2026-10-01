@@ -52,7 +52,7 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | `get_profile` | `jh profile show [--sections S1,S2] --json` | 05 | `sections?` | `profile_version_id`, `created_at`, `profile`: `CandidateProfile` sin email, teléfono ni `private` | — |
 | `get_match` | `jh match show ID --json` | 07 | `job_id` | `MatchView`: `score`, `triage_threshold`, `below_threshold`, `hard_filters`, `breakdown` (componentes, skills cubiertas con su nivel y ausentes, similitud, preferencias, notas), `assessment`, `assessment_stale` | `scored` si lo recalcula |
 | `save_fit_assessment` | `jh match save-assessment ID --file F --json` | 07 | `job_id, assessment: FitAssessment` | `ok`, `job_id`, `match_id` | `fit_assessed` |
-| `list_cv_templates` | `jh templates list --json` | 08 | — | `templates` (`id`, nombre, motor, origen, `ats_friendly`, foto, columnas, página, `capacity`, `sections`, `accent_colors`, fuentes, idiomas), `invalid` (con el motivo) y `fallback_template` | — |
+| `list_cv_templates` | `jh templates list --json` | 08 | — | `templates` (`id`, nombre, motor, origen, `ats_friendly`, foto, columnas, página, `capacity`, `sections`, `accent_colors`, fuentes, idiomas, `has_preview`), `invalid` (con el motivo) y `fallback_template` | — |
 | `save_cv_content` | `jh cv save ID --file F --json` | 08 | `job_id, content: CvContent, render_options?: CvRenderOptions`; por CLI, `F` = `{"content": …, "render_options": …}` | `document_id` + primer render (`RenderResult`) | `cv_generated`, `cv_rendered` |
 | `render_cv` | `jh cv render DOC [--file F] --json` | 08 | `document_id, options?: CvRenderOptions` (por defecto, todo `auto`); por CLI, `F` = las opciones | `RenderResult` | `cv_rendered` |
 | `get_cv_content` | `jh cv show (ID \| --document DOC) --json` | 08 | `job_id` (su último CV) o `document_id` | `CvContent`, `evidence` (texto de cada evidencia citada), `verification` y `renders` | — |
@@ -123,7 +123,9 @@ las más recientes primero.
   color, páginas, secciones ocultas, tamaño y lo que se sabe de la oferta: ATS, países, sector e
   idioma), `docx_path` y `pdf_path` (relativos a `data/`), `pages`, `max_pages`,
   `keyword_coverage` (`present` y `missing`: skills de la oferta que aparecen o no en el PDF),
-  `warnings` (`[{code, message}]`, ver `CV_TEMPLATES.md` §Avisos) y `selected`.
+  `warnings` (`[{code, message}]`, ver `CV_TEMPLATES.md` §Avisos), `selected` y
+  `template_changed` (la plantilla cambió o desapareció desde el render; solo se calcula al
+  consultar con `get_cv_content`).
 - El primer render sin `too_long` de un CV queda `selected` (el que se enviará). La oferta pasa a
   `cv_ready` cuando un mismo CV está verificado con `passed` y tiene un render sin `too_long`, en
   el orden en que ocurra.

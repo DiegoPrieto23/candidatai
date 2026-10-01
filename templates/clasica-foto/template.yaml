@@ -1,0 +1,47 @@
+id: clasica-foto
+name: Clásica con foto
+engine: docx
+origin: builtin
+description: Una columna, cabecera con foto circular y color de acento en el nombre
+  y los títulos. Sobria, para enviar por email o a empresas sin ATS.
+tags:
+- clasica
+- foto
+- sobria
+layout:
+  columns: 1
+  uses_tables: true
+ats_friendly: false
+photo:
+  supported: true
+  shape: circle
+  size_mm: 30
+page:
+  size: A4
+  max_pages: 1
+capacity:
+  summary_chars: 400
+  experience_bullets: 8
+  skill_groups: 4
+sections:
+- summary
+- experience
+- projects
+- education
+- certifications
+- skills
+- languages
+options:
+  accent_color:
+    default: '#1F4E79'
+    choices:
+    - '#1F4E79'
+    - '#2E5E4E'
+    - '#7A2E39'
+    - '#3F3F46'
+fonts:
+- Cambria
+- Calibri
+languages:
+- es
+- en

@@ -5,7 +5,8 @@ Lo que queda en `null` o `auto` se decide aquí, sin IA:
 1. plantilla: la opción explícita > la primera regla de `preferences.cv.template_rules` que encaje
    con la oferta > `preferences.cv.default_template` > `cv.fallback_template` de las políticas;
 2. foto (`auto`): si la plantilla la admite, hay foto y `photo_policy` la permite en el país;
-3. lo demás, lo que diga la plantilla.
+3. páginas: la opción > `preferences.cv.max_pages` > la plantilla;
+4. lo demás, lo que diga la plantilla.
 
 Las reglas miran el ATS (por el dominio de la URL), el país (por la ubicación, con
 `config/countries.yaml`), el `domain` de la extracción y el idioma del CV. Una oferta puede estar
@@ -241,7 +242,7 @@ def resolve(
         rule_index=rule_index,
         photo=photo,
         accent_color=accent,
-        max_pages=options.max_pages or meta.page.max_pages,
+        max_pages=options.max_pages or profile.preferences.cv.max_pages or meta.page.max_pages,
         hidden_sections=sorted(set(options.hidden_sections), key=options.hidden_sections.index),
         page_size=options.page_size or meta.page.size,
         offer=offer,

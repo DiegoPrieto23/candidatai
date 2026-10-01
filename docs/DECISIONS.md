@@ -142,7 +142,7 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   `GET /triage`) pueda escribir un match y un evento `scored`. La primera consulta con embeddings
   carga el modelo (y lo descarga la primera vez).
 
-## ADR-016 · CV: cuándo está listo, país de la oferta y contacto
+## ADR-017 · CV: cuándo está listo, país de la oferta y contacto
 - **Contexto:** la fase 08 separa contenido y renders (ADR-014), así que «CV verificado» y «PDF que
   cabe» pueden llegar en cualquier orden, con varios documentos por oferta. Las reglas de plantilla
   y la política de foto necesitan el país, y la extracción solo trae ubicaciones en texto libre.

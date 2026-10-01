@@ -16,6 +16,7 @@ import {
 } from '@phosphor-icons/react'
 import type { AddJobResult, EventOut, JobView, Schemas } from '@/api/client'
 import { useAddNote, useJob, useJobEvent, useJobMatch, type UserEventBody } from '@/api/queries'
+import { CvSection } from '@/components/CvSection'
 import { DiscardDialog } from '@/components/DiscardDialog'
 import { MatchDetails, ScoreBadge } from '@/components/MatchDetails'
 import { StageBadge } from '@/components/StageBadge'
@@ -521,6 +522,7 @@ export function JobPage() {
                   </div>
                 </section>
               )}
+              <CvSection job={job} />
               <OriginalText text={job.raw_text} />
             </div>
 

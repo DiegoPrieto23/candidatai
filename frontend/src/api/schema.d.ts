@@ -164,10 +164,151 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Templates
+         * @description Plantillas de CV disponibles (integradas y tuyas) y las que no son válidas.
+         */
+        get: operations["list_templates"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/templates/{template_id}/preview.png": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Template Preview
+         * @description Primera página de la preview de una plantilla, generada con el perfil demo.
+         */
+        get: operations["get_template_preview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/jobs/{job_id}/cv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Job Cv
+         * @description CV vigente de la oferta: contenido, verificación y renders con sus avisos.
+         */
+        get: operations["get_job_cv"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/documents/{document_id}/renders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Render Document
+         * @description Renderiza el CV con otra plantilla u opciones, sin agente (tarda lo que la conversión).
+         */
+        post: operations["render_document"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/renders/{render_id}/select": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Select Render
+         * @description Marca este render como el que se enviará (uno por CV).
+         */
+        post: operations["select_render"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/renders/{render_id}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Render Pdf */
+        get: operations["get_render_pdf"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/renders/{render_id}/docx": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Render Docx */
+        get: operations["get_render_docx"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AccentColors */
+        AccentColors: {
+            /** Default */
+            default: string;
+            /** Choices */
+            choices: string[];
+        };
         /** AddEventResult */
         AddEventResult: {
             /** Ok */
@@ -235,6 +376,153 @@ export interface components {
             level: "F" | "C+" | "C" | "B" | "basic";
             /** Weight */
             weight: number;
+        };
+        /** CvBullet */
+        CvBullet: {
+            /** Text */
+            text: string;
+            /**
+             * Evidence
+             * @description Ids de logros o elementos del perfil (`exp-acme/a2`).
+             */
+            evidence: string[];
+        };
+        /**
+         * CvContent
+         * @description Contenido de un CV, independiente de la plantilla (`docs/AGENT_INTERFACE.md`).
+         */
+        CvContent: {
+            /**
+             * Language
+             * @enum {string}
+             */
+            language: "es" | "en";
+            /** Subtitle */
+            subtitle: string;
+            /** Summary */
+            summary: string;
+            /** Experience */
+            experience: components["schemas"]["CvExperience"][];
+            /**
+             * Projects
+             * @default []
+             */
+            projects: components["schemas"]["CvProject"][];
+            /**
+             * Skills
+             * @default []
+             */
+            skills: components["schemas"]["CvSkillGroup"][];
+            /**
+             * Education Ids
+             * @default []
+             */
+            education_ids: string[];
+            /**
+             * Certification Ids
+             * @default []
+             */
+            certification_ids: string[];
+            /**
+             * Languages
+             * @default []
+             */
+            languages: components["schemas"]["CvLanguageItem"][];
+            /**
+             * Include Regional Language
+             * @default false
+             */
+            include_regional_language: boolean;
+            /**
+             * Keywords Targeted
+             * @default []
+             */
+            keywords_targeted: string[];
+        };
+        /** CvExperience */
+        CvExperience: {
+            /** Experience Id */
+            experience_id: string;
+            /** Bullets */
+            bullets: components["schemas"]["CvBullet"][];
+        };
+        /** CvLanguageItem */
+        CvLanguageItem: {
+            /** Language */
+            language: string;
+            /** Level */
+            level: string;
+        };
+        /** CvProject */
+        CvProject: {
+            /** Project Id */
+            project_id: string;
+            /** Bullets */
+            bullets: components["schemas"]["CvBullet"][];
+        };
+        /**
+         * CvRenderOptions
+         * @description Presentación de un CV. `null`/`auto`: lo decide la app (`docs/CV_TEMPLATES.md` §Opciones).
+         */
+        CvRenderOptions: {
+            /** Template Id */
+            template_id?: string | null;
+            /**
+             * Photo
+             * @default auto
+             * @enum {string}
+             */
+            photo: "auto" | "include" | "exclude";
+            /** Accent Color */
+            accent_color?: string | null;
+            /** Max Pages */
+            max_pages?: number | null;
+            /**
+             * Hidden Sections
+             * @default []
+             */
+            hidden_sections: ("summary" | "experience" | "projects" | "education" | "certifications" | "skills" | "languages")[];
+            /** Page Size */
+            page_size?: ("A4" | "Letter") | null;
+        };
+        /** CvSkillGroup */
+        CvSkillGroup: {
+            /** Group */
+            group: string;
+            /** Items */
+            items: string[];
+        };
+        /** CvVerification */
+        CvVerification: {
+            /** Passed */
+            passed: boolean;
+            /**
+             * Issues
+             * @default []
+             */
+            issues: components["schemas"]["VerificationIssue"][];
+        };
+        /** CvView */
+        CvView: {
+            /** Job Id */
+            job_id: number;
+            /** Document Id */
+            document_id: number;
+            /** Profile Version Id */
+            profile_version_id: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            content: components["schemas"]["CvContent"];
+            /** Evidence */
+            evidence: {
+                [key: string]: string;
+            };
+            verification: components["schemas"]["CvVerification"] | null;
+            /** Renders */
+            renders: components["schemas"]["RenderResult"][];
         };
         /** ErrorDetail */
         ErrorDetail: {
@@ -366,6 +654,30 @@ export interface components {
             reports: components["schemas"]["InjectionReport"][];
         };
         /**
+         * InvalidTemplate
+         * @description Una carpeta con `template.yaml` que no se puede usar, y por qué.
+         */
+        InvalidTemplate: {
+            /** Id */
+            id: string;
+            /** Path */
+            path: string;
+            /** Reason */
+            reason: string;
+        };
+        /**
+         * JobCv
+         * @description La sección «CV» de la ficha: el CV vigente de la oferta, si lo tiene.
+         */
+        JobCv: {
+            /** Job Id */
+            job_id: number;
+            stage: components["schemas"]["Stage"];
+            /** Can Render */
+            can_render: boolean;
+            cv: components["schemas"]["CvView"] | null;
+        };
+        /**
          * JobExtraction
          * @description Datos de una oferta (schema_version 1). Lo que no dice el texto: null o unknown.
          */
@@ -484,6 +796,16 @@ export interface components {
             events: components["schemas"]["EventOut"][];
             injection: components["schemas"]["InjectionWarning"] | null;
         };
+        /**
+         * KeywordCoverage
+         * @description Keywords de la oferta (skills obligatorias y deseables) en el texto del PDF.
+         */
+        KeywordCoverage: {
+            /** Present */
+            present: string[];
+            /** Missing */
+            missing: string[];
+        };
         /** LanguageRequirement */
         LanguageRequirement: {
             /** Language */
@@ -518,6 +840,23 @@ export interface components {
              */
             created_at: string;
         };
+        /**
+         * OfferContext
+         * @description Lo que las reglas saben de la oferta.
+         */
+        OfferContext: {
+            /** Ats */
+            ats: string | null;
+            /** Countries */
+            countries: string[];
+            /** Domain */
+            domain: string | null;
+            /**
+             * Language
+             * @enum {string}
+             */
+            language: "es" | "en";
+        };
         /** PreferencesFit */
         PreferencesFit: {
             /** Value */
@@ -530,6 +869,81 @@ export interface components {
             remote_mode: number;
             /** Location */
             location: number;
+        };
+        /** RenderResult */
+        RenderResult: {
+            /** Render Id */
+            render_id: number;
+            /** Job Id */
+            job_id: number;
+            /** Document Id */
+            document_id: number;
+            /** Template Id */
+            template_id: string;
+            /** Template Hash */
+            template_hash: string;
+            options: components["schemas"]["ResolvedOptions"];
+            /** Docx Path */
+            docx_path: string | null;
+            /** Pdf Path */
+            pdf_path: string;
+            /** Pages */
+            pages: number;
+            /** Max Pages */
+            max_pages: number;
+            keyword_coverage: components["schemas"]["KeywordCoverage"];
+            /** Warnings */
+            warnings: components["schemas"]["RenderWarning"][];
+            /** Selected */
+            selected: boolean;
+            /**
+             * Template Changed
+             * @default false
+             */
+            template_changed: boolean;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** RenderWarning */
+        RenderWarning: {
+            /** Code */
+            code: string;
+            /** Message */
+            message: string;
+        };
+        /** ResolvedOptions */
+        ResolvedOptions: {
+            /** Template Id */
+            template_id: string;
+            /**
+             * Template Source
+             * @enum {string}
+             */
+            template_source: "option" | "rule" | "default_template" | "fallback";
+            /** Rule Index */
+            rule_index?: number | null;
+            /** Photo */
+            photo: boolean;
+            /** Accent Color */
+            accent_color: string | null;
+            /** Max Pages */
+            max_pages: number;
+            /** Hidden Sections */
+            hidden_sections: ("summary" | "experience" | "projects" | "education" | "certifications" | "skills" | "languages")[];
+            /**
+             * Page Size
+             * @enum {string}
+             */
+            page_size: "A4" | "Letter";
+            offer: components["schemas"]["OfferContext"];
+            /**
+             * Warnings
+             * @default []
+             */
+            warnings: components["schemas"]["RenderWarning"][];
         };
         /** Salary */
         Salary: {
@@ -606,6 +1020,58 @@ export interface components {
             /** Pending Tasks */
             pending_tasks: number;
         };
+        /**
+         * TemplateInfo
+         * @description Lo que el agente y la UI necesitan de una plantilla para elegirla y ajustar la extensión.
+         */
+        TemplateInfo: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Engine */
+            engine: string;
+            /** Origin */
+            origin: string;
+            /** Description */
+            description: string;
+            /** Tags */
+            tags: string[];
+            /** Ats Friendly */
+            ats_friendly: boolean;
+            /** Photo Supported */
+            photo_supported: boolean;
+            /** Photo Shape */
+            photo_shape: string;
+            /** Columns */
+            columns: number;
+            /** Page Size */
+            page_size: string;
+            /** Max Pages */
+            max_pages: number;
+            /** Capacity */
+            capacity: {
+                [key: string]: number;
+            };
+            /** Sections */
+            sections: ("summary" | "experience" | "projects" | "education" | "certifications" | "skills" | "languages")[];
+            accent_colors: components["schemas"]["AccentColors"] | null;
+            /** Fonts */
+            fonts: string[];
+            /** Languages */
+            languages: string[];
+            /** Has Preview */
+            has_preview: boolean;
+        };
+        /** TemplateList */
+        TemplateList: {
+            /** Templates */
+            templates: components["schemas"]["TemplateInfo"][];
+            /** Invalid */
+            invalid: components["schemas"]["InvalidTemplate"][];
+            /** Fallback Template */
+            fallback_template: string;
+        };
         /** TriageItem */
         TriageItem: {
             job: components["schemas"]["JobRow"];
@@ -622,6 +1088,23 @@ export interface components {
             triage_threshold: number;
             /** Profile Missing */
             profile_missing: boolean;
+        };
+        /** VerificationIssue */
+        VerificationIssue: {
+            /**
+             * Severity
+             * @enum {string}
+             */
+            severity: "blocker" | "warning";
+            /** Location */
+            location: string;
+            /** Problem */
+            problem: string;
+            /**
+             * Suggestion
+             * @default
+             */
+            suggestion: string;
         };
     };
     responses: never;
@@ -1126,6 +1609,477 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TriageQueue"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_templates: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TemplateList"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_template_preview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                template_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/png": unknown;
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_job_cv: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobCv"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    render_document: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                document_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CvRenderOptions"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RenderResult"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    select_render: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                render_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RenderResult"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_render_pdf: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                render_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": unknown;
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_render_docx: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                render_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": unknown;
                 };
             };
             /** @description Not Found */

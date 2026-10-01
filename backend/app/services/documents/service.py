@@ -15,7 +15,8 @@ import re
 import shutil
 import unicodedata
 from datetime import datetime
-from typing import Any
+from pathlib import Path
+from typing import Any, Literal
 
 from pydantic import BaseModel
 from sqlalchemy import select
@@ -23,20 +24,30 @@ from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.models import Document, DocumentRender, Job
-from app.schemas.cv import CvContent, CvRenderOptions, CvVerification
+from app.schemas.cv import CvContent, CvRenderOptions, CvVerification, SectionName
 from app.schemas.llm_io import JobExtraction
 from app.services import events, extractions
 from app.services import profile as profile_service
-from app.services.documents import checks, context, options, pdf, templates
+from app.services.documents import checks, context, options, pdf, photo, templates
 from app.services.documents.engines.docx import render_docx
 from app.services.documents.options import RenderWarning
 from app.services.pipeline import CV_STAGES, Actor, EventType, InvalidTransitionError, Stage
 
 CV_KIND = "cv"
+CVS_DIR = "cvs"  # data/cvs/<job_id>/<document_id>/<render_id>/
+PREVIEW_PNG = "preview.png"
 
 
 class DocumentNotFoundError(LookupError):
     pass
+
+
+class RenderNotFoundError(LookupError):
+    pass
+
+
+class FileNotAvailableError(LookupError):
+    """El fichero no existe o su ruta queda fuera de las carpetas que se pueden servir."""
 
 
 class EngineNotAvailableError(ValueError):
@@ -60,6 +71,8 @@ class RenderResult(BaseModel):
     keyword_coverage: checks.KeywordCoverage
     warnings: list[RenderWarning]
     selected: bool
+    # La plantilla cambió (o ya no existe) desde este render: volver a renderizar daría otro CV.
+    template_changed: bool = False
     created_at: datetime
 
 
@@ -130,7 +143,24 @@ def _file_stem(name: str) -> str:
     return "-".join(["CV", *words])
 
 
-def _to_result(row: DocumentRender, job_id: int) -> RenderResult:
+class _TemplateHashes:
+    """Hash actual de cada plantilla, calculado una vez por consulta."""
+
+    def __init__(self) -> None:
+        self._hashes: dict[str, str | None] = {}
+
+    def changed(self, template_id: str, rendered_hash: str) -> bool:
+        if template_id not in self._hashes:
+            try:
+                self._hashes[template_id] = templates.get(template_id).file_hash()
+            except templates.TemplateNotFoundError:
+                self._hashes[template_id] = None
+        return self._hashes[template_id] != rendered_hash
+
+
+def _to_result(
+    row: DocumentRender, job_id: int, hashes: _TemplateHashes | None = None
+) -> RenderResult:
     resolved = options.ResolvedOptions.model_validate(row.options)
     return RenderResult(
         render_id=row.id,
@@ -146,6 +176,7 @@ def _to_result(row: DocumentRender, job_id: int) -> RenderResult:
         keyword_coverage=checks.KeywordCoverage.model_validate(row.keyword_coverage),
         warnings=[RenderWarning.model_validate(w) for w in row.warnings],
         selected=row.selected,
+        template_changed=hashes.changed(row.template_id, row.template_hash) if hashes else False,
         created_at=row.created_at,
     )
 
@@ -189,8 +220,10 @@ def render(
     extraction = _extraction(session, job.id)
 
     offer = options.offer_context(job.url, job.location_raw, extraction, content.language)
-    # La foto llega en la fase 08.2: hasta entonces no hay foto disponible.
-    resolved = options.resolve(profile, render_options, offer, photo_available=False)
+    photo_source = photo.find_photo(profile)
+    resolved = options.resolve(
+        profile, render_options, offer, photo_available=photo_source is not None
+    )
     template = templates.get(resolved.template_id)
     if template.meta.engine != "docx":
         raise EngineNotAvailableError(
@@ -212,14 +245,18 @@ def render(
     session.flush()
 
     data_dir = get_settings().data_dir
-    render_dir = data_dir / "cvs" / str(job.id) / str(doc.id) / str(row.id)
+    render_dir = data_dir / CVS_DIR / str(job.id) / str(doc.id) / str(row.id)
     filename = _file_stem(profile.personal.name)
     try:
         ctx = context.build_context(
             content, profile, resolved.hidden_sections, resolved.accent_color
         )
+        photo_file = None
+        if resolved.photo and photo_source is not None:
+            meta_photo = template.meta.photo
+            photo_file = photo.prepared_photo(photo_source, meta_photo.shape, meta_photo.size_mm)
         docx_file = render_docx(
-            template, ctx, render_dir / f"{filename}.docx", resolved.page_size, photo_path=None
+            template, ctx, render_dir / f"{filename}.docx", resolved.page_size, photo_file
         )
         pdf_file = pdf.convert(docx_file, render_dir / f"{filename}.pdf")
         info = pdf.read_pdf(pdf_file)
@@ -238,7 +275,7 @@ def render(
     row.pages = info.pages
     row.keyword_coverage = checks.keyword_coverage(info.text, extraction).model_dump(mode="json")
     row.warnings = [w.model_dump(mode="json") for w in warnings]
-    # El primer render que cabe queda como el que se enviará; cambiarlo es cosa de la UI (08.2).
+    # El primer render que cabe queda como el que se enviará; la UI puede cambiarlo (`select`).
     row.selected = not too_long and not already_selected
     session.flush()
 
@@ -256,6 +293,81 @@ def render(
         agent_name=agent_name,
     )
     return _to_result(row, job.id)
+
+
+def select_render(session: Session, render_id: int) -> RenderResult:
+    """Marca el render que se enviará: como mucho uno `selected` por documento.
+
+    No cambia la etapa de la oferta, así que no registra ningún evento.
+    """
+    row = session.get(DocumentRender, render_id)
+    if row is None:
+        raise RenderNotFoundError(f"No existe el render {render_id}.")
+    doc = _document(session, row.document_id)
+    for other in _renders(session, doc.id):
+        other.selected = other.id == row.id
+    session.flush()
+    return _to_result(row, doc.job_id, _TemplateHashes())
+
+
+def get_render(session: Session, render_id: int) -> RenderResult:
+    row = session.get(DocumentRender, render_id)
+    if row is None:
+        raise RenderNotFoundError(f"No existe el render {render_id}.")
+    return _to_result(row, _document(session, row.document_id).job_id)
+
+
+class JobCv(BaseModel):
+    """La sección «CV» de la ficha: el CV vigente de la oferta, si lo tiene."""
+
+    job_id: int
+    stage: Stage
+    can_render: bool  # solo se renderiza en «approved» y «cv_ready»
+    cv: CvView | None
+
+
+def get_job_cv(session: Session, job_id: int) -> JobCv:
+    _job(session, job_id)
+    stage = events.current_stage(session, job_id)
+    cv = get_content(session, job_id=job_id) if latest_document(session, job_id) else None
+    return JobCv(job_id=job_id, stage=stage, can_render=stage in CV_STAGES, cv=cv)
+
+
+def _inside(root: Path, relative: str) -> Path:
+    """`root/relative` si existe y, ya resuelta, sigue dentro de `root`."""
+    root = root.resolve()
+    path = (root / relative).resolve()
+    if not path.is_relative_to(root) or not path.is_file():
+        raise FileNotAvailableError("El fichero no existe o no se puede servir.")
+    return path
+
+
+def render_file(session: Session, render_id: int, kind: Literal["pdf", "docx"]) -> Path:
+    """Ruta del PDF o del DOCX de un render, siempre dentro de `data/cvs/`.
+
+    Más estrecho que `data/`: ahí también hay secretos (p. ej. el token de captura de la 09b), y una
+    ruta guardada en la BD nunca debe poder servirlos.
+    """
+    row = session.get(DocumentRender, render_id)
+    if row is None:
+        raise RenderNotFoundError(f"No existe el render {render_id}.")
+    relative = row.pdf_path if kind == "pdf" else row.docx_path
+    if not relative:
+        raise FileNotAvailableError(f"El render {render_id} no tiene {kind.upper()}.")
+    data_dir = get_settings().data_dir
+    path = _inside(data_dir, relative)
+    if not path.is_relative_to((data_dir / CVS_DIR).resolve()):
+        raise FileNotAvailableError("El fichero no existe o no se puede servir.")
+    return path
+
+
+def template_preview(template_id: str) -> Path:
+    """`preview.png` de una plantilla, dentro de `templates/` o de `data/templates/`."""
+    template = templates.get(template_id)
+    for root in (templates.BUILTIN_TEMPLATES_DIR, get_settings().user_templates_dir):
+        if template.path.resolve().is_relative_to(root.resolve()):
+            return _inside(root, f"{template.id}/{PREVIEW_PNG}")
+    raise FileNotAvailableError("La plantilla no está en una carpeta de plantillas.")
 
 
 # --- Contenido ------------------------------------------------------------------------------
@@ -324,6 +436,7 @@ def get_content(
     content = CvContent.model_validate(doc.content)
     profile = profile_service.get_version(session, doc.profile_version_id).profile
     refs = profile.evidence_refs()
+    hashes = _TemplateHashes()
     cited = [
         ref
         for item in [*content.experience, *content.projects]
@@ -338,7 +451,7 @@ def get_content(
         content=content,
         evidence={ref: refs.get(ref, "(no existe en el perfil)") for ref in dict.fromkeys(cited)},
         verification=CvVerification.model_validate(doc.verification) if doc.verification else None,
-        renders=[_to_result(r, doc.job_id) for r in _renders(session, doc.id)],
+        renders=[_to_result(r, doc.job_id, hashes) for r in _renders(session, doc.id)],
     )
 
 
@@ -400,10 +513,11 @@ class TemplateInfo(BaseModel):
     page_size: str
     max_pages: int
     capacity: dict[str, int]
-    sections: list[str]
+    sections: list[SectionName]
     accent_colors: AccentColors | None
     fonts: list[str]
     languages: list[str]
+    has_preview: bool  # hay `preview.png` para la galería
 
 
 class TemplateList(BaseModel):
@@ -435,6 +549,7 @@ def template_info(template: templates.Template) -> TemplateInfo:
         else None,
         fonts=meta.fonts,
         languages=list(meta.languages),
+        has_preview=(template.path / PREVIEW_PNG).is_file(),
     )
 
 
