@@ -155,4 +155,6 @@ Cuando el agente recorre portales con tu navegador (skill `buscar-ofertas`, deta
 - **Captchas, anti-bot o login inesperado:** se para esa plataforma y se anota. El login lo haces
   tú; los captchas no se resuelven ni se esquivan.
 - **Límites:** páginas de resultados, ofertas por plataforma y pausas de `config/policies.yaml` →
-  `agent_browse`. LinkedIn solo si lo has activado tú en la UI.
+  `agent_browse`. LinkedIn solo si lo has activado tú en la UI: la interfaz para agentes no puede
+  activarlo. La API local no tiene autenticación, así que un agente con terminal podría
+  llamarla directamente (riesgo residual, `docs/FUENTES_OFERTAS.md`).

@@ -108,8 +108,16 @@ también funciona mejor si el agente puede leer PDFs; si no, basta con pegar el 
 
 ### Skills que necesitan el navegador del usuario
 `buscar-ofertas` recorre portales con tu navegador y tus sesiones: hace falta un agente con acceso
-a él (en Claude Code, Claude in Chrome). En Codex y otros, sin probar. Si tu agente no puede, las
-alertas por correo y el botón «Enviar a Job Hunter» cubren lo mismo sin agente.
+a él (en Claude Code, Claude in Chrome). Estado a la 09b.3: la interfaz (`list_sources`,
+`save_source`, `record_source_run` y `add_job_from_text` con `source_id`) está probada por MCP y
+CLI en los tests. Falta la prueba manual de un recorrido real con Claude Code y Claude in Chrome
+sobre una plataforma de acceso libre (`docs/pruebas/fase-09b.3-prueba-manual.txt`). En Codex y
+otros, sin probar. Si tu agente no puede, las alertas por correo y el botón «Enviar a Job Hunter»
+cubren lo mismo sin agente.
+
+Las reglas que más importan no dependen del agente (ADR-012): ningún agente puede activar la
+navegación en LinkedIn, y la app rechaza las ofertas y los recorridos de una plataforma
+desactivada.
 
 ### Añadir otro agente
 1. Añade su bloque a `targets` en `.agents/manifest.yaml` (rutas, modelos, formato MCP).

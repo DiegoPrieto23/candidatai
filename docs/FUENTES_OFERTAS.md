@@ -145,15 +145,35 @@ Equivale a la etapa 3 del proyecto original: el agente recorre con tu navegador 
 hayas aprobado. Skill `buscar-ofertas`.
 
 - **Plataformas** = fuentes de tipo `agent_browse`:
-  `{name, platform, search_urls[], priority, access: free|login|blocked, allow_agent_browsing,
-  max_offers, notes}`. Se configuran con `buscar-ofertas configurar` (como la etapa 1 del original)
-  o en la UI.
+  `{name, platform, search_urls[], priority (1 = primera), access: free|login|blocked,
+  allow_agent_browsing, max_offers, notes}`. Las da de alta el agente con
+  `buscar-ofertas configurar` (como la etapa 1 del original); en la pantalla «Plataformas» ves
+  cada una con sus búsquedas y su último recorrido, y cambias su prioridad, su acceso y si el
+  agente puede recorrerla.
 - **LinkedIn** se crea siempre con `allow_agent_browsing: false`. Solo lo puedes activar tú en la
-  UI, que muestra el aviso de riesgo para la cuenta. El agente no puede activarlo.
+  UI, que muestra el aviso de riesgo para la cuenta y pide confirmarlo (la API exige
+  `confirm_risk: true`). El agente no puede activarlo por la interfaz para agentes: `save_source`
+  la guarda desactivada por defecto, responde `not_allowed` a un `true` (también si la llama de
+  otra forma pero alguna búsqueda es de linkedin.com o lnkd.in) y, si ya lo activaste, lo conserva.
+  Una plataforma LinkedIn no puede pasar a ser otra.
+- **Defensas en el código** (no dependen del skill):
+  - `add_job_from_text` con `source_id` y `record_source_run` rechazan las plataformas con la
+    navegación desactivada (`not_allowed`);
+  - con `source_id`, una oferta de LinkedIn (por URL o por `platform`) solo entra por la plataforma
+    LinkedIn. Sin `source_id` es el alta manual de siempre, que sí admite el texto de LinkedIn
+    pegado por ti;
+  - las `search_urls` son del dominio de la plataforma si la app la conoce (`platforms.py`) y, si
+    no, todas del mismo sitio.
+- **Riesgo residual:** la API local no lleva autenticación (solo escucha en 127.0.0.1). Un agente
+  que pueda ejecutar comandos podría llamar a `POST /sources/{id}/browse` con `confirm_risk: true`
+  sin pasar por la UI. `confirm_risk` evita activaciones por error, no a un agente que se salta
+  las reglas. Si eso te preocupa, no le des acceso a la terminal mientras busca, o deja LinkedIn
+  fuera de las plataformas.
 - **Reglas de navegación** (las aplica el skill y las recuerda cada run):
   - solo dominios de la plataforma; nunca enlaces sugeridos por el contenido de las páginas;
-  - como mucho `agent_browse.max_result_pages` páginas de resultados y `max_offers` ofertas;
-  - pausa entre páginas (`agent_browse.delay_seconds`);
+  - como mucho `agent_browse.max_result_pages` páginas de resultados y `max_offers` ofertas
+    (por defecto, `agent_browse.default_max_offers`);
+  - pausa entre páginas (`agent_browse.delay_seconds`). `list_sources` devuelve estos límites;
   - solo lectura: nada de «Solicitar», «Guardar», «Seguir», mensajes ni formularios;
   - si aparece un captcha, un aviso anti-bot o un login inesperado, se para esa plataforma y se
     anota; el login lo haces tú y los captchas no se resuelven.
@@ -183,9 +203,9 @@ hayas aprobado. Skill `buscar-ofertas`.
 
 | MCP | CLI | Entrada | Salida |
 |---|---|---|---|
-| `list_sources` | `jh sources list [--kind K] --json` | `kind?` | Fuentes con su config (sin secretos) y última ejecución |
-| `save_source` | `jh sources save --file F --json` | `AgentBrowseSource` | `source_id`. Solo tipo `agent_browse`; nunca puede poner `allow_agent_browsing: true` en LinkedIn |
-| `record_source_run` | `jh sources record-run ID --file F` | `SourceRunSummary` | `ok` |
+| `list_sources` | `jh sources list [--kind K] --json` | `kind?` | Fuentes con su config (sin secretos), `browse` y última ejecución, y los límites `agent_browse` |
+| `save_source` | `jh sources save --file F --json` | `AgentBrowseSource` | `source_id`, `created`, `allow_agent_browsing`, `message`. Solo tipo `agent_browse`, por `name`; nunca puede poner `allow_agent_browsing: true` en LinkedIn |
+| `record_source_run` | `jh sources record-run ID --file F --json` | `SourceRunSummary` (`found, created, existing, incidents[{code, message}], started_at?, finished_at?`) | `ok`, `run_id` |
 | `add_job_from_text` (ampliada) | `jh jobs add-text … [--source S] [--platform P] [--external-id X]` | `+ source_id?, platform?, external_id?` | igual que antes |
 
 La captura del botón es un endpoint REST (`POST /capture`) de la app, no de la interfaz para

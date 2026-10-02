@@ -19,9 +19,11 @@ from app.core.config import get_settings
 from app.core.db import get_engine, session_scope
 from app.schemas.cv import CvContent
 from app.schemas.llm_io import JobExtraction
+from app.schemas.sources import AgentBrowseSource
 from app.services import events, extractions, ingest, profile
 from app.services.documents import pdf
 from app.services.documents import service as cv_service
+from app.services.ingestion import browse
 from tests.agent_support import POSTING_TEXT, cli_call, extraction, mcp_call, write_tmp
 from tests.cv_support import demo_content_data, fake_converter
 
@@ -110,6 +112,84 @@ BAD_VERIFICATION: dict[str, Any] = {
     "issues": [{"severity": "blocker", "location": "summary", "problem": "Cifra inventada."}],
 }
 
+TECNO: dict[str, Any] = {
+    "name": "Tecnoempleo",
+    "platform": "tecnoempleo",
+    "search_urls": ["https://www.tecnoempleo.com/ofertas-trabajo/?te=data+engineer"],
+    "priority": 2,
+    "max_offers": 10,
+}
+LINKEDIN: dict[str, Any] = {
+    "name": "LinkedIn",
+    "platform": "linkedin",
+    "search_urls": ["https://www.linkedin.com/jobs/search/?keywords=data%20engineer"],
+    "allow_agent_browsing": False,
+}
+LINKEDIN_DEFAULT = {k: v for k, v in LINKEDIN.items() if k != "allow_agent_browsing"}
+LINKEDIN_ON = {**LINKEDIN, "allow_agent_browsing": True}
+LINKEDIN_DISGUISED = {**LINKEDIN_ON, "name": "Otra", "platform": "otra"}
+TECNO_UPDATE = {**TECNO, "name": "tecnoempleo ", "priority": 1}
+TECNO_WRONG_DOMAIN = {**TECNO, "search_urls": ["https://evil.example.com/empleos"]}
+TECNO_INVALID = {**TECNO, "search_urls": ["ftp://x"], "access": "maybe"}
+RUN: dict[str, Any] = {
+    "found": 12,
+    "created": 3,
+    "existing": 1,
+    "incidents": [{"code": "captcha", "message": "Captcha en la página 2: se para."}],
+}
+RUN_INVALID = {**RUN, "created": 20}
+TECNO_URL = "https://www.tecnoempleo.com/data-engineer/python-sql/rf-0a1b2c3d4e5f60718293"
+LINKEDIN_JOB = "https://www.linkedin.com/jobs/view/123456789/"
+OTHER_URL = "https://empleo.example.com/oferta?id=77"
+
+
+def seed_platforms() -> None:
+    """Plataformas 1 (Tecnoempleo, navegación activada) y 2 (LinkedIn, desactivada)."""
+    with session_scope() as session:
+        browse.save_source(session, AgentBrowseSource.model_validate(TECNO))
+        browse.save_source(session, AgentBrowseSource.model_validate(LINKEDIN))
+
+
+def seed_linkedin_enabled() -> None:
+    """LinkedIn (plataforma 2) activada por el usuario desde la UI."""
+    seed_platforms()
+    with session_scope() as session:
+        browse.update_settings(session, 2, allow_agent_browsing=True, confirm_risk=True)
+
+
+def seed_platforms_and_job() -> None:
+    seed_platforms()
+    seed_job()
+
+
+def _text_case(id: str, extra: dict[str, Any], argv: list[str], **kwargs: Any) -> "Case":
+    """Alta por texto de «Data Engineer» en Gamma con campos de la búsqueda con navegador."""
+    return Case(
+        id,
+        "add_job_from_text",
+        {"title": "Data Engineer", "company": "Gamma", "text": POSTING_TEXT, **extra},
+        ["jobs", "add-text", "--title", "Data Engineer", "--company", "Gamma",
+         "--file", "{tmp}/oferta.txt", *argv],
+        files={"oferta.txt": POSTING_TEXT},
+        **kwargs,
+    )  # fmt: skip
+
+
+def _file_case(
+    id: str,
+    tool: str,
+    args: dict[str, Any],
+    path: list[str],
+    name: str,
+    data: dict[str, Any],
+    **kwargs: Any,
+) -> "Case":
+    """Caso cuyo CLI lee la entrada entera de `--file`."""
+    return Case(
+        id, tool, args, [*path, "--file", "{tmp}/" + name], files={name: data}, **kwargs
+    )  # fmt: skip
+
+
 ASSESSMENT: dict[str, Any] = {
     "verdict": "possible",
     "rationale": "Cubre Python y SQL con nivel F; dbt y Airflow solo como básicos.",
@@ -158,6 +238,60 @@ CASES = [
          ["jobs", "add-text", "--title", "T", "--company", "C", "--file", "{tmp}/o.txt",
           "--url", "ftp://x"],
          files={"o.txt": POSTING_TEXT}, expect_error="invalid_request"),
+    _text_case("text-browse", {"url": TECNO_URL, "source_id": 1},
+               ["--url", TECNO_URL, "--source", "1"], seed=seed_platforms),
+    _text_case("text-browse-ids",
+               {"url": OTHER_URL, "source_id": 1, "platform": "tecnoempleo", "external_id": "x77"},
+               ["--url", OTHER_URL, "--source", "1", "--platform", "tecnoempleo",
+                "--external-id", "x77"], seed=seed_platforms),
+    _text_case("text-browse-disabled", {"url": LINKEDIN_JOB, "source_id": 2},
+               ["--url", LINKEDIN_JOB, "--source", "2"], seed=seed_platforms,
+               expect_error="not_allowed"),
+    _text_case("text-browse-linkedin-elsewhere", {"url": LINKEDIN_JOB, "source_id": 1},
+               ["--url", LINKEDIN_JOB, "--source", "1"], seed=seed_platforms,
+               expect_error="not_allowed"),
+    _text_case("text-browse-linkedin-platform", {"source_id": 1, "platform": "linkedin",
+               "external_id": "123456789"},
+               ["--source", "1", "--platform", "linkedin", "--external-id", "123456789"],
+               seed=seed_platforms, expect_error="not_allowed"),
+    _text_case("text-browse-not-platform", {"source_id": 1}, ["--source", "1"],
+               expect_error="invalid_request"),
+    _text_case("text-browse-bad-platform", {"platform": "Tecno Empleo"},
+               ["--platform", "Tecno Empleo"], expect_error="validation_error"),
+    Case("sources", "list_sources", {}, ["sources", "list"], seed=seed_platforms_and_job),
+    Case("sources-kind", "list_sources", {"kind": "agent_browse"},
+         ["sources", "list", "--kind", "agent_browse"], seed=seed_platforms_and_job),
+    _file_case("source-save", "save_source", TECNO, ["sources", "save"], "s.json", TECNO,
+               seed=None),
+    _file_case("source-save-update", "save_source", TECNO_UPDATE, ["sources", "save"], "s.json",
+               TECNO_UPDATE, seed=seed_platforms),
+    _file_case("source-save-linkedin", "save_source", LINKEDIN_ON, ["sources", "save"], "s.json",
+               LINKEDIN_ON, seed=None, expect_error="not_allowed"),
+    _file_case("source-save-linkedin-default", "save_source", LINKEDIN_DEFAULT,
+               ["sources", "save"], "s.json", LINKEDIN_DEFAULT, seed=None),
+    _file_case("source-save-wrong-domain", "save_source", TECNO_WRONG_DOMAIN,
+               ["sources", "save"], "s.json", TECNO_WRONG_DOMAIN, seed=None,
+               expect_error="invalid_request"),
+    _file_case("source-save-linkedin-disguised", "save_source", LINKEDIN_DISGUISED,
+               ["sources", "save"], "s.json", LINKEDIN_DISGUISED, seed=None,
+               expect_error="not_allowed"),
+    _file_case("source-save-linkedin-keeps", "save_source", LINKEDIN, ["sources", "save"],
+               "s.json", LINKEDIN, seed=seed_linkedin_enabled),
+    _file_case("source-save-invalid", "save_source", TECNO_INVALID, ["sources", "save"],
+               "s.json", TECNO_INVALID, seed=None, expect_error="validation_error"),
+    _file_case("source-run", "record_source_run", {"source_id": 1, **RUN},
+               ["sources", "record-run", "1"], "r.json", RUN, seed=seed_platforms),
+    _file_case("source-run-disabled", "record_source_run", {"source_id": 2, **RUN},
+               ["sources", "record-run", "2"], "r.json", RUN, seed=seed_platforms,
+               expect_error="not_allowed"),
+    _file_case("source-run-not-platform", "record_source_run", {"source_id": 1, **RUN},
+               ["sources", "record-run", "1"], "r.json", RUN, expect_error="invalid_request"),
+    _file_case("source-run-unknown", "record_source_run", {"source_id": 9, **RUN},
+               ["sources", "record-run", "9"], "r.json", RUN, seed=seed_platforms,
+               expect_error="not_found"),
+    _file_case("source-run-invalid", "record_source_run", {"source_id": 1, **RUN_INVALID},
+               ["sources", "record-run", "1"], "r.json", RUN_INVALID, seed=seed_platforms,
+               expect_error="validation_error"),
     Case("list", "list_jobs", {"stage": "pending_extraction", "limit": 5},
          ["jobs", "list", "--stage", "pending_extraction", "--limit", "5"]),
     Case("list-default", "list_jobs", {}, ["jobs", "list"]),

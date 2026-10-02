@@ -153,6 +153,9 @@ export function AppShell() {
             <NavLink to="/empresas" className={navClass}>
               Empresas
             </NavLink>
+            <NavLink to="/plataformas" className={navClass}>
+              Plataformas
+            </NavLink>
             <NavLink to="/plantillas" className={navClass}>
               Plantillas
             </NavLink>

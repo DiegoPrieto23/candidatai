@@ -25,6 +25,7 @@ from app.services.documents.templates import TemplateNotFoundError
 from app.services.documents.uploads import InvalidUploadError, UploadTooLargeError
 from app.services.events import JobNotFoundError
 from app.services.extractions import ExtractionNotFoundError
+from app.services.ingestion.browse import BrowsingNotAllowedError
 from app.services.ingestion.service import SourceExistsError, SourceNotFoundError
 from app.services.pipeline import InvalidTransitionError
 from app.services.profile import ProfileNotFoundError
@@ -37,6 +38,7 @@ _ERROR_TYPES: tuple[tuple[type[Exception], str], ...] = (
     (ProfileNotFoundError, "not_found"),
     (SourceNotFoundError, "not_found"),
     (SourceExistsError, "exists"),
+    (BrowsingNotAllowedError, "not_allowed"),
     (DocumentNotFoundError, "not_found"),
     (RenderNotFoundError, "not_found"),
     (FileNotAvailableError, "not_found"),

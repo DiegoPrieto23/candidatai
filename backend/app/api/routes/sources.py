@@ -1,14 +1,16 @@
 from fastapi import APIRouter, status
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.api.deps import SessionDep
 from app.schemas.sources import (
+    BrowseAccess,
     SourceInput,
     SourceList,
     SourceRunResult,
     SourceTestResult,
     SourceView,
 )
+from app.services.ingestion import browse
 from app.services.ingestion import service as sources
 
 router = APIRouter(prefix="/sources", tags=["sources"])
@@ -54,3 +56,30 @@ def run_source(session: SessionDep, source_id: int) -> SourceRunResult:
 def set_source_active(session: SessionDep, source_id: int, body: SetActiveBody) -> SourceView:
     """Activa o pausa una fuente en la ingesta diaria."""
     return sources.set_active(session, source_id, body.active)
+
+
+class BrowseSettingsBody(BaseModel):
+    """Cambios del usuario en una plataforma de búsqueda con navegador."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    allow_agent_browsing: bool | None = None
+    priority: int | None = Field(default=None, ge=1, le=10)
+    access: BrowseAccess | None = None
+    confirm_risk: bool = False  # obligatorio para activar LinkedIn
+
+
+@router.post("/{source_id}/browse", operation_id="update_browse_settings")
+def update_browse_settings(
+    session: SessionDep, source_id: int, body: BrowseSettingsBody
+) -> SourceView:
+    """Activa o desactiva la búsqueda con navegador de una plataforma, o cambia su prioridad o su
+    acceso. Activar LinkedIn exige `confirm_risk: true`."""
+    return browse.update_settings(
+        session,
+        source_id,
+        allow_agent_browsing=body.allow_agent_browsing,
+        priority=body.priority,
+        access=body.access,
+        confirm_risk=body.confirm_risk,
+    )

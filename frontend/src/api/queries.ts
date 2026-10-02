@@ -292,6 +292,34 @@ export function useRunSource() {
   })
 }
 
+/** Plataformas de la búsqueda con navegador del agente (fuentes `agent_browse`). */
+export function usePlatforms() {
+  return useQuery({
+    queryKey: [...keys.sources, 'agent_browse'] as const,
+    queryFn: () => unwrap(api.GET('/sources', { params: { query: { kind: 'agent_browse' } } })),
+    // El agente anota sus recorridos por su cuenta: se refresca solo.
+    refetchInterval: 60_000,
+  })
+}
+
+/** Cambios del usuario en una plataforma. Activar LinkedIn exige `confirm_risk`. */
+export function useUpdateBrowseSettings() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      sourceId,
+      ...body
+    }: { sourceId: number } & Partial<Schemas['BrowseSettingsBody']>) =>
+      unwrap(
+        api.POST('/sources/{source_id}/browse', {
+          params: { path: { source_id: sourceId } },
+          body: { confirm_risk: false, ...body },
+        }),
+      ),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.sources }),
+  })
+}
+
 export function useSetSourceActive() {
   const client = useQueryClient()
   return useMutation({

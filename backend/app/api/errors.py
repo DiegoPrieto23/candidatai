@@ -16,6 +16,7 @@ from app.core.validation import describe_error
 STATUS_BY_TYPE = {
     "unauthorized": 401,
     "forbidden": 403,
+    "not_allowed": 403,
     "capture_not_configured": 503,
     "not_found": 404,
     "validation_error": 422,

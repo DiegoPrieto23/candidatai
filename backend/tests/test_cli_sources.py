@@ -40,7 +40,7 @@ def test_add_and_list(db: None) -> None:
     assert [(s["id"], s["kind"], s["config"]["slug"]) for s in listed["sources"]] == [
         (1, "greenhouse", "acmedatos")
     ]
-    assert _json(["sources", "list", "--kind", "lever"]) == {"sources": []}
+    assert _json(["sources", "list", "--kind", "lever"])["sources"] == []
 
 
 def test_add_errors_use_the_common_format(db: None) -> None:

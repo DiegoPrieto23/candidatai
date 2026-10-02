@@ -3163,6 +3163,129 @@
         }
       }
     },
+    "/sources/{source_id}/browse": {
+      "post": {
+        "tags": [
+          "sources"
+        ],
+        "summary": "Update Browse Settings",
+        "description": "Activa o desactiva la búsqueda con navegador de una plataforma, o cambia su prioridad o su\nacceso. Activar LinkedIn exige `confirm_risk: true`.",
+        "operationId": "update_browse_settings",
+        "parameters": [
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Source Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BrowseSettingsBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceView"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
     "/alerts": {
       "get": {
         "tags": [
@@ -3720,6 +3843,124 @@
         ],
         "title": "AddUserEventBody"
       },
+      "AgentBrowseLimits": {
+        "properties": {
+          "max_result_pages": {
+            "type": "integer",
+            "title": "Max Result Pages"
+          },
+          "delay_seconds": {
+            "type": "number",
+            "title": "Delay Seconds"
+          },
+          "default_max_offers": {
+            "type": "integer",
+            "title": "Default Max Offers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "max_result_pages",
+          "delay_seconds",
+          "default_max_offers"
+        ],
+        "title": "AgentBrowseLimits",
+        "description": "Límites de `config/policies.yaml` → `agent_browse`, para el agente que navega."
+      },
+      "AgentBrowseSource": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "description": "Nombre de la plataforma tal como quieres verlo."
+          },
+          "platform": {
+            "type": "string",
+            "title": "Platform",
+            "description": "Id corto: `linkedin`, `infojobs`, `tecnoempleo`…"
+          },
+          "search_urls": {
+            "items": {
+              "type": "string",
+              "maxLength": 2000,
+              "minLength": 1
+            },
+            "type": "array",
+            "maxItems": 10,
+            "minItems": 1,
+            "title": "Search Urls",
+            "description": "Búsquedas ya filtradas por puesto y ubicación (URLs http/https)."
+          },
+          "priority": {
+            "type": "integer",
+            "maximum": 10.0,
+            "minimum": 1.0,
+            "title": "Priority",
+            "description": "1 se recorre primero.",
+            "default": 5
+          },
+          "access": {
+            "type": "string",
+            "enum": [
+              "free",
+              "login",
+              "blocked"
+            ],
+            "title": "Access",
+            "description": "`free`, `login` (inicias sesión tú) o `blocked`.",
+            "default": "free"
+          },
+          "allow_agent_browsing": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Allow Agent Browsing",
+            "description": "Si el agente puede recorrerla. Por defecto, sí; en LinkedIn, no (y solo el usuario puede activarla, en la UI)."
+          },
+          "max_offers": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 100.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Offers",
+            "description": "Ofertas que abrir; por defecto, `agent_browse.default_max_offers`."
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "platform",
+          "search_urls"
+        ],
+        "title": "AgentBrowseSource",
+        "description": "Una plataforma donde el agente busca con el navegador del usuario (`agent_browse`).\n\nSe identifica por `name`: guardar otra con el mismo nombre la actualiza."
+      },
       "AlertJob": {
         "properties": {
           "job_id": {
@@ -3865,6 +4106,59 @@
           "file"
         ],
         "title": "Body_upload_cv"
+      },
+      "BrowseSettingsBody": {
+        "properties": {
+          "allow_agent_browsing": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Allow Agent Browsing"
+          },
+          "priority": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 10.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Priority"
+          },
+          "access": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "free",
+                  "login",
+                  "blocked"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Access"
+          },
+          "confirm_risk": {
+            "type": "boolean",
+            "title": "Confirm Risk",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "BrowseSettingsBody",
+        "description": "Cambios del usuario en una plataforma de búsqueda con navegador."
       },
       "CaptureInput": {
         "properties": {
@@ -6312,11 +6606,15 @@
             },
             "type": "array",
             "title": "Sources"
+          },
+          "agent_browse": {
+            "$ref": "#/components/schemas/AgentBrowseLimits"
           }
         },
         "type": "object",
         "required": [
-          "sources"
+          "sources",
+          "agent_browse"
         ],
         "title": "SourceList"
       },
@@ -6558,6 +6856,16 @@
           "keys_missing": {
             "type": "boolean",
             "title": "Keys Missing"
+          },
+          "browse": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AgentBrowseSource"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "last_run_at": {
             "anyOf": [

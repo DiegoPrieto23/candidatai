@@ -488,6 +488,22 @@ def add_from_url(session: Session, url: str) -> AddJobResult:
     )
 
 
+def _text_identity(
+    url: str, platform: str | None, external_id: str | None, source: Source | None
+) -> tuple[str | None, str | None]:
+    """`platform` y `external_id` de una oferta pegada: los dados o, si faltan, los de la URL."""
+    pid = platforms.detect(url)
+    if external_id is None:
+        if pid is not None and platform in (None, pid.platform):
+            return pid.platform, pid.external_id
+        return platform, None
+    if platform is None:
+        host_platform = platforms.platform_of_host(urlsplit(url).hostname) if url else None
+        source_platform = (source.config or {}).get("platform") if source is not None else None
+        platform = host_platform or source_platform
+    return platform, external_id
+
+
 def add_from_text(
     session: Session,
     title: str,
@@ -495,16 +511,24 @@ def add_from_text(
     text: str,
     url: str | None = None,
     location: str | None = None,
+    *,
+    source: Source | None = None,
+    platform: str | None = None,
+    external_id: str | None = None,
 ) -> AddJobResult:
-    """Da de alta una oferta a partir de su texto pegado (p. ej. de LinkedIn)."""
+    """Da de alta una oferta a partir de su texto pegado (p. ej. de LinkedIn).
+
+    Con `source` (una plataforma `agent_browse`), la oferta queda ligada a ella en vez de al alta
+    manual. Sin `external_id`, se intenta deducir de la URL (`platforms.detect`)."""
     url = (url or "").strip()
     if url:
         parts = urlsplit(url)
         if parts.scheme not in {"http", "https"} or not parts.hostname:
             raise IngestError(f"URL no válida: «{url}». Debe empezar por http:// o https://.")
+    platform, external_id = _text_identity(url, platform, external_id, source)
     return store_job(
         session,
-        source=_get_or_create_source(session, "manual_text"),
+        source=source or _get_or_create_source(session, "manual_text"),
         title=title,
         company=company,
         text=clean_text(text),
@@ -512,4 +536,6 @@ def add_from_text(
         location=location,
         posted_at=None,
         html=None,
+        external_id=external_id,
+        platform=platform,
     )

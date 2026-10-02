@@ -520,6 +520,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/sources/{source_id}/browse": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Update Browse Settings
+         * @description Activa o desactiva la búsqueda con navegador de una plataforma, o cambia su prioridad o su
+         *     acceso. Activar LinkedIn exige `confirm_risk: true`.
+         */
+        post: operations["update_browse_settings"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/alerts": {
         parameters: {
             query?: never;
@@ -646,6 +667,66 @@ export interface components {
              */
             reason?: ("seniority" | "skills" | "location" | "salary" | "company" | "other") | null;
         };
+        /**
+         * AgentBrowseLimits
+         * @description Límites de `config/policies.yaml` → `agent_browse`, para el agente que navega.
+         */
+        AgentBrowseLimits: {
+            /** Max Result Pages */
+            max_result_pages: number;
+            /** Delay Seconds */
+            delay_seconds: number;
+            /** Default Max Offers */
+            default_max_offers: number;
+        };
+        /**
+         * AgentBrowseSource
+         * @description Una plataforma donde el agente busca con el navegador del usuario (`agent_browse`).
+         *
+         *     Se identifica por `name`: guardar otra con el mismo nombre la actualiza.
+         */
+        AgentBrowseSource: {
+            /**
+             * Name
+             * @description Nombre de la plataforma tal como quieres verlo.
+             */
+            name: string;
+            /**
+             * Platform
+             * @description Id corto: `linkedin`, `infojobs`, `tecnoempleo`…
+             */
+            platform: string;
+            /**
+             * Search Urls
+             * @description Búsquedas ya filtradas por puesto y ubicación (URLs http/https).
+             */
+            search_urls: string[];
+            /**
+             * Priority
+             * @description 1 se recorre primero.
+             * @default 5
+             */
+            priority: number;
+            /**
+             * Access
+             * @description `free`, `login` (inicias sesión tú) o `blocked`.
+             * @default free
+             * @enum {string}
+             */
+            access: "free" | "login" | "blocked";
+            /**
+             * Allow Agent Browsing
+             * @description Si el agente puede recorrerla. Por defecto, sí; en LinkedIn, no (y solo el usuario puede activarla, en la UI).
+             */
+            allow_agent_browsing?: boolean | null;
+            /**
+             * Max Offers
+             * @description Ofertas que abrir; por defecto, `agent_browse.default_max_offers`.
+             */
+            max_offers?: number | null;
+            /** Notes */
+            notes?: string | null;
+        };
         /** AlertJob */
         AlertJob: {
             /** Job Id */
@@ -694,6 +775,23 @@ export interface components {
         Body_upload_cv: {
             /** File */
             file: string;
+        };
+        /**
+         * BrowseSettingsBody
+         * @description Cambios del usuario en una plataforma de búsqueda con navegador.
+         */
+        BrowseSettingsBody: {
+            /** Allow Agent Browsing */
+            allow_agent_browsing?: boolean | null;
+            /** Priority */
+            priority?: number | null;
+            /** Access */
+            access?: ("free" | "login" | "blocked") | null;
+            /**
+             * Confirm Risk
+             * @default false
+             */
+            confirm_risk: boolean;
         };
         /**
          * CaptureInput
@@ -1516,6 +1614,7 @@ export interface components {
         SourceList: {
             /** Sources */
             sources: components["schemas"]["SourceView"][];
+            agent_browse: components["schemas"]["AgentBrowseLimits"];
         };
         /** SourceRunResult */
         SourceRunResult: {
@@ -1608,6 +1707,7 @@ export interface components {
             };
             /** Keys Missing */
             keys_missing: boolean;
+            browse?: components["schemas"]["AgentBrowseSource"] | null;
             /** Last Run At */
             last_run_at: string | null;
             last_run: components["schemas"]["SourceRunView"] | null;
@@ -4308,6 +4408,104 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["SetActiveBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    update_browse_settings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BrowseSettingsBody"];
             };
         };
         responses: {

@@ -22,10 +22,10 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 08c | Carta de presentación | ⏳ | `generar-carta` redacta y verifica la carta según tus indicaciones (generales y de cada oferta); TXT para pegar y PDF a juego con el CV |
 | 08b | Plantillas html | 🚧 | Importar diseños desde PDF o imagen (Canva…), también como «Mi CV», y plantilla integrada de dos columnas |
 | 09 | Conectores de ATS y scheduler | ✅ | Ingesta diaria de empresas objetivo sin intervención |
-| 09b | Alertas, captura y búsqueda con navegador | 🚧 | Las alertas de LinkedIn y otros portales llegan solas por correo, cualquier oferta entra con un clic desde el navegador y, opcionalmente, el agente recorre portales |
+| 09b | Alertas, captura y búsqueda con navegador | ✅ | Las alertas de LinkedIn y otros portales llegan solas por correo, cualquier oferta entra con un clic desde el navegador y, opcionalmente, el agente recorre portales |
 | 09b.1 | ↳ Ofertas resumen y alertas por correo | ✅ | Las alertas de correo (IMAP en solo lectura o `data/inbox/`) crean ofertas resumen en «Alertas», ordenadas por prefiltro y que caducan solas |
 | 09b.2 | ↳ Botón «Enviar a Job Hunter» | ✅ | Extensión de Chromium que manda la oferta que estás viendo y completa los resúmenes |
-| 09b.3 | ↳ Plataformas y búsqueda con navegador | ⏳ | `list_sources`, `save_source`, `record_source_run` y pantalla «Plataformas» |
+| 09b.3 | ↳ Plataformas y búsqueda con navegador | ✅ | `list_sources`, `save_source`, `record_source_run` y pantalla «Plataformas»; LinkedIn solo lo activa el usuario |
 | 10 | Seguimiento y analítica | ⏳ | Kanban, seguimientos pendientes, dashboard del embudo |
 | 11 | Candidatura asistida | ⏳ | Rellenado con Playwright y envío tras tu confirmación |
 | 12 | Demo, compatibilidad y portfolio | ⏳ | Modo demo, matriz de agentes probada, evals publicados |
@@ -610,3 +610,46 @@ decisiones tomadas y deuda técnica pendiente. -->
   - `.env.example` sigue sin `JH_IMAP_*` ni `JH_CAPTURE_EXTENSION_ID` (el agente no puede
     editarlo).
 
+### 09b.3 · Plataformas y búsqueda con navegador — 2026-10-02 · Claude Code (Opus 5.5)
+- **Resumen:** cierra la fase 09b. Añade:
+  - esquemas `AgentBrowseSource`, `SourceRunSummary` y `AgentBrowseLimits`, y la política
+    `agent_browse` en `core/policies.py`;
+  - `services/ingestion/browse.py`: `save_source`, `record_run`, `update_settings` y
+    `source_for_job`;
+  - herramientas `list_sources`, `save_source` y `record_source_run`, y `add_job_from_text` con
+    `source_id`, `platform` y `external_id`. `jh sources list` pasa al registro: misma salida, con
+    `browse` y los límites;
+  - error nuevo `not_allowed` (403 en la API) y `POST /sources/{id}/browse`;
+  - pantalla «Plataformas» con el aviso de riesgo de LinkedIn;
+  - skill `buscar-ofertas` al día y guía de prueba manual `docs/pruebas/fase-09b.3-prueba-manual.txt`.
+
+  Sin migraciones: la configuración va en `sources.config`. Tests: 22 casos de paridad nuevos,
+  tests del servicio y de la API, y 4 de frontend.
+- **Decisiones:**
+  - Una plataforma se identifica por su nombre normalizado. `priority` va de 1 a 10 (1, primero).
+    `allow_agent_browsing` está activada por defecto (el usuario ya la aprobó en `configurar`),
+    salvo en LinkedIn.
+  - LinkedIn se reconoce por `platform` o por cualquier búsqueda de linkedin.com o lnkd.in (que
+    pasa a ser LinkedIn en `platforms.py`). Un `true` del agente da `not_allowed`. Si lo activó el
+    usuario, se conserva, y una plataforma LinkedIn no puede pasar a ser otra.
+  - Defensas en el código, más allá del encargo (ADR-012):
+    - `add_job_from_text` con `source_id` y `record_source_run` exigen la navegación activada;
+    - una oferta de LinkedIn, por URL o por `platform`, solo entra por la plataforma LinkedIn;
+    - las `search_urls` son del dominio de la plataforma conocida o, si no, todas del mismo sitio.
+
+    Lo encontró la revisión.
+  - `record_source_run`: `after_filters = created + existing`, actor `agent`, y `last_run_at` no
+    retrocede. Las fechas del futuro (más de 5 minutos) se rechazan.
+  - El alta de plataformas sigue siendo cosa del agente: la UI lista y edita prioridad, acceso y
+    el interruptor.
+- **Deuda:**
+  - **Prueba manual pendiente** (`docs/pruebas/fase-09b.3-prueba-manual.txt`):
+    `buscar-ofertas configurar` y un recorrido real con Claude in Chrome sobre una plataforma de
+    acceso libre. Tienes que reiniciar Claude Code para que su servidor MCP cargue las herramientas
+    nuevas.
+  - Riesgo residual: la API local no tiene autenticación. Un agente con terminal podría activar
+    LinkedIn con `confirm_risk: true` sin pasar por la UI. Está documentado en `FUENTES_OFERTAS.md` y
+    en `POLICIES.md` §8.
+  - `sources.active` no se usa en las plataformas: se apagan con `allow_agent_browsing`.
+  - Siguen pendientes las pruebas manuales de la 09b.1 y la 09b.2, las variables de `.env.example`
+    y `uv sync` con Claude Code cerrado.
