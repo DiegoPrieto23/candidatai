@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils'
 
 // Un solo acento: la intensidad crece a medida que la oferta avanza por el embudo.
 const TONE: Record<Stage, string> = {
+  pending_detail: 'border-dotted border-input text-muted-foreground/80 bg-transparent',
   pending_extraction: 'border-dashed border-input text-muted-foreground bg-transparent',
   pending_triage: 'border-input text-foreground bg-background/60',
   approved: 'border-primary/25 bg-accent text-accent-foreground',

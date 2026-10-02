@@ -28,8 +28,9 @@ La app nunca llama a un modelo y no depende de ningún proveedor.
 | `app/api` | Endpoints REST para la UI | Solo traduce HTTP ↔ servicios |
 | `app/mcp` | Herramientas MCP para agentes | Solo traduce MCP ↔ servicios; valida con Pydantic |
 | `app/cli.py` | CLI `jh`, con modo `--json` equivalente a la MCP | Solo traduce CLI ↔ servicios |
-| `app/services/tasks.py`, `worker.py` | Cola de tareas en BD y worker (`jh worker`, APScheduler): scores, recálculos e ingesta diaria | Ejecuta servicios; nunca un LLM |
-| `app/services/ingestion/` | Conectores de ATS y portales, filtro previo y ejecución de fuentes (fase 09) | Solo endpoints públicos documentados; guardan con el mismo servicio que el alta manual |
+| `app/services/tasks.py`, `worker.py` | Cola de tareas en BD y worker (`jh worker`, APScheduler): scores, recálculos, ingesta diaria, alertas por correo y caducidad de resúmenes | Ejecuta servicios; nunca un LLM |
+| `app/services/ingestion/` | Conectores de ATS y portales, filtro previo y ejecución de fuentes (fase 09); `email/`: alertas por correo (09b) | Solo endpoints públicos documentados; IMAP en solo lectura; guardan con el mismo servicio que el alta manual |
+| `app/services/platforms.py`, `summaries.py` | Identidad de oferta por plataforma (`platform` + `external_id`) y ofertas resumen en `pending_detail`: bandeja «Alertas» y caducidad (09b) | Sin red ni agente |
 | `frontend/` | UI | Solo habla con la API |
 | `.agents/` | Skills, roles y manifiesto, sin nada específico de un proveedor | Fuente única; lo nativo se genera |
 
@@ -56,6 +57,7 @@ La app nunca llama a un modelo y no depende de ningún proveedor.
 | `GET /sources`, `POST /sources` | Pantalla «Empresas»: fuentes con conector (empresas objetivo y portales) con su última ejecución; alta (`exists` 409 si ya está) |
 | `POST /sources/test`, `POST /sources/{id}/test` | Prueba una fuente nueva o guardada sin guardar nada: «12 ofertas encontradas, 3 tras filtros». Un fallo de la fuente es 200 con `errors` |
 | `POST /sources/{id}/run`, `POST /sources/{id}/active` | Ejecuta ya la fuente (lo nuevo, a `pending_extraction`) o la activa/pausa en la ingesta diaria |
+| `GET /alerts`, `POST /alerts/poll` | Pantalla «Alertas»: ofertas resumen (`pending_detail`) con su prefiltro, primero las que pasan; leer ya el correo (como `jh alerts poll`). Descartar va por `POST /jobs/{id}/events` |
 | `GET /templates/default`, `POST /templates/{id}/default` | Plantilla por defecto del perfil vigente; fijarla edita solo esa clave de `data/profile.yaml` (con ruamel.yaml, conserva comentarios) e importa la versión nueva |
 
 - `jh serve` escucha solo en `127.0.0.1`; CORS solo para `http://127.0.0.1:5173`.

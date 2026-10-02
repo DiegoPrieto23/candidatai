@@ -392,7 +392,7 @@ function MatchPanel({ job }: { job: JobView }) {
   )
 }
 
-/** Aprobar o descartar (en triaje) y reabrir (si está cerrada). */
+/** Aprobar o descartar (en triaje), descartar un resumen de una alerta y reabrir (si está cerrada). */
 function Decision({ job }: { job: JobView }) {
   const event = useJobEvent()
   const [discarding, setDiscarding] = useState(false)
@@ -409,14 +409,16 @@ function Decision({ job }: { job: JobView }) {
       </div>
     )
   }
-  if (job.stage !== 'pending_triage') return null
+  if (job.stage !== 'pending_triage' && job.stage !== 'pending_detail') return null
   return (
     <div className="flex flex-col items-end gap-1">
       <div className="flex gap-2">
-        <Button size="sm" onClick={() => send({ type: 'approved' })} disabled={event.isPending}>
-          <CheckIcon weight="bold" />
-          Aprobar
-        </Button>
+        {job.stage === 'pending_triage' && (
+          <Button size="sm" onClick={() => send({ type: 'approved' })} disabled={event.isPending}>
+            <CheckIcon weight="bold" />
+            Aprobar
+          </Button>
+        )}
         <Button variant="outline" size="sm" onClick={() => setDiscarding(true)} disabled={event.isPending}>
           <XIcon weight="bold" />
           Descartar

@@ -11,7 +11,7 @@ import ipaddress
 import json
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
-from typing import Any
+from typing import Any, Literal
 from urllib.parse import urlsplit
 
 import httpx
@@ -26,6 +26,7 @@ from sqlalchemy.orm import Session
 from app.core.policies import get_policies
 from app.models import Company, Job, Source
 from app.models.base import utcnow
+from app.services import platforms
 from app.services.events import record
 from app.services.normalize import fingerprint, normalize_company, normalize_title
 from app.services.pipeline import Actor, EventType
@@ -42,6 +43,8 @@ USER_AGENT = (
 _BLOCKED_HOSTS = ("linkedin.com", "lnkd.in")
 _LOGIN_PATH_WORDS = ("login", "signin", "sign-in", "sign_in", "auth", "sso", "iniciar-sesion")
 _SUGGEST_TEXT = "Copia el texto de la oferta y usa `jh jobs add-text`."
+
+DetailLevel = Literal["summary", "full"]
 
 SOURCE_NAMES = {"manual_url": "Alta manual por URL", "manual_text": "Alta manual por texto"}
 
@@ -311,6 +314,12 @@ def get_or_create_company(session: Session, name: str) -> Company:
     return company
 
 
+def find_by_platform(session: Session, platform: str, external_id: str) -> Job | None:
+    return session.scalars(
+        select(Job).where(Job.platform == platform, Job.external_id == external_id).limit(1)
+    ).first()
+
+
 def _existing(job: Job) -> AddJobResult:
     return AddJobResult(
         job_id=job.id, created=False, duplicate_of=job.duplicate_of, risk_flags=job.risk_flags
@@ -360,9 +369,15 @@ def store_job(
     posted_at: datetime | None,
     html: str | None,
     external_id: str | None = None,
+    platform: str | None = None,
+    detail_level: DetailLevel = "full",
 ) -> AddJobResult:
-    """Guarda una oferta: huella, duplicados, riesgo y eventos. Lo usan el alta manual y los
-    conectores (fase 09). Un duplicado exacto devuelve la existente sin registrar nada."""
+    """Guarda una oferta: huella, duplicados, riesgo y eventos. Lo usan el alta manual, los
+    conectores (fase 09) y las alertas por correo (09b). Un duplicado exacto devuelve la existente
+    sin registrar nada.
+
+    Sin `platform`, se deduce de la URL (`services/platforms.py`) cuando su id coincide con
+    `external_id` o no hay `external_id`. Una oferta `summary` entra en `pending_detail`."""
     title, company = " ".join(title.split()), " ".join(company.split())
     location = " ".join(location.split()) if location else None
     if not title or not company:
@@ -371,6 +386,15 @@ def store_job(
         raise IngestError(f"Nombre de empresa no válido: «{company}».")
     if not text:
         raise IngestError("El texto de la oferta está vacío.")
+
+    if platform is None:
+        pid = platforms.detect(url)
+        if pid is not None and external_id in (None, pid.external_id):
+            platform, external_id = pid.platform, pid.external_id
+    if platform is not None and external_id:
+        same = find_by_platform(session, platform, external_id)
+        if same is not None:
+            return _existing(same)
 
     fp = fingerprint(company, title, location)
     existing = session.scalars(select(Job).where(Job.fingerprint == fp)).first()
@@ -387,6 +411,8 @@ def store_job(
         source_id=source.id,
         company_id=company_row.id,
         external_id=external_id,
+        platform=platform if external_id else None,
+        detail_level=detail_level,
         url=url,
         title=title,
         location_raw=location,
@@ -401,7 +427,11 @@ def store_job(
     session.flush()
 
     manual = source.kind in SOURCE_NAMES
-    found = {"source": source.kind} | ({} if manual else {"source_id": source.id})
+    found: dict[str, object] = {"source": source.kind}
+    if not manual:
+        found["source_id"] = source.id
+    if detail_level == "summary":
+        found["detail_level"] = "summary"
     record(session, job.id, EventType.FOUND, Actor.SYSTEM, found, occurred_at=now)
     if risk.risky:
         record(

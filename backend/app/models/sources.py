@@ -35,3 +35,16 @@ class SourceRun(Base):
     created: Mapped[int] = mapped_column(default=0)
     completed: Mapped[int] = mapped_column(default=0)  # resúmenes completados (fase 09b)
     errors: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
+
+
+class EmailMessage(Base):
+    """Correo de alertas ya procesado. Solo su `Message-ID`, nunca el cuerpo."""
+
+    __tablename__ = "email_messages"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    message_id: Mapped[str] = mapped_column(String(998), unique=True)
+    source_id: Mapped[int] = mapped_column(ForeignKey("sources.id"), index=True)
+    received_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
+    jobs_found: Mapped[int] = mapped_column(default=0)
+    processed_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)

@@ -68,7 +68,7 @@ CONNECTORS: dict[str, Connector] = {
 RETRYABLE_CODES = frozenset({"timeout", "network", "http_error", "rate_limited", "internal_error"})
 # Si el detalle de una oferta falla así, no se pide el de las demás en esta ejecución.
 _STOP_DETAIL_CODES = frozenset({"unauthorized", "rate_limited"})
-MANUAL_LABELS = {**ingest.SOURCE_NAMES}
+MANUAL_LABELS = {**ingest.SOURCE_NAMES, "email_alerts": "Alertas por correo"}
 
 
 class SourceNotFoundError(LookupError):

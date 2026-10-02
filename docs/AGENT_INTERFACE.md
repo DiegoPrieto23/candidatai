@@ -71,7 +71,7 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | `save_source` | `jh sources save --file F --json` | 09b | `AgentBrowseSource` | `source_id`. Solo tipo `agent_browse`; nunca activa `allow_agent_browsing` en LinkedIn | — |
 | `record_source_run` | `jh sources record-run ID --file F` | 09b | `SourceRunSummary` | `ok` | — |
 
-La captura del botón «Enviar a Job Hunter» es un endpoint REST de la app (`POST /api/capture`,
+La captura del botón «Enviar a Job Hunter» es un endpoint REST de la app (`POST /capture`,
 fase 09b), no parte de esta interfaz: la usa la extensión, no el agente.
 
 Las utilidades de autoría de plantillas (`jh templates inspect | build-docx | validate | preview`,
@@ -168,7 +168,7 @@ las más recientes primero.
 
 | Comando | Qué hace |
 |---|---|
-| `jh worker [--once] [--interval S] [--json]` | Ejecuta la cola de tareas (`score_job`, `rescore_all`, `run_source`) y, en primer plano, la ingesta diaria de las fuentes a la hora de `connectors.daily_at` (al arrancar, también las que no corrieron desde la última hora programada). Log legible en consola y en `data/logs/worker.log`. `--once` vacía la cola y termina (código 1 si alguna falla) |
+| `jh worker [--once] [--interval S] [--json]` | Ejecuta la cola de tareas (`score_job`, `rescore_all`, `run_source`, `poll_email`, `expire_summaries`) y, en primer plano, la ingesta diaria de las fuentes a la hora de `connectors.daily_at` (al arrancar, también las que no corrieron desde la última hora programada), la caducidad diaria de los resúmenes y la lectura de alertas cada `email_alerts.poll_minutes` (si hay IMAP o correos en `data/inbox/`). Log legible en consola y en `data/logs/worker.log`. `--once` vacía la cola y termina (código 1 si alguna falla) |
 | `jh match rescore [--json]` | Recalcula ya los matches desfasados de las ofertas abiertas (tras instalar el extra `matching` o editar `config/policies.yaml`) y cierra las de triaje que no pasan los filtros. Devuelve `scored` y `closed` |
 | `jh eval matching [--profile RUTA] [--no-seed] [--no-embeddings] [--json]` | Precision, recall y F1 con el umbral actual y por umbral sobre `evals/matching/*.jsonl` (perfil de demo) y `data/evals/*.jsonl` (tu perfil). Guarda el informe en `data/evals/reports/` |
 
@@ -182,6 +182,9 @@ añade `list_sources` con la misma salida que `jh sources list --json`.
 | `jh sources add --kind K --name N [--slug S] [--region global\|eu] [--query Q] [--where W] [--province P] [--country C] [--keywords a,b] [--json]` | Añade una fuente. ATS (`greenhouse`, `lever`, `ashby`): `--slug` del tablero; la empresa queda como objetivo (`companies.watchlist`). Portales (`infojobs`, `adzuna`): `--query`. Error `exists` si ya está |
 | `jh sources list [--kind K] [--json]` | `{sources: [SourceView]}`: tipo, nombre, `config` (sin secretos), `active`, `keys_missing`, `last_run_at` y `last_run` (encontradas, tras filtros, nuevas, errores) |
 | `jh sources test ID \| --kind K --name N … [--json]` | Descarga y aplica el filtro previo sin guardar nada: `found`, `after_filters`, `message` («12 ofertas encontradas, 3 tras filtros»), ofertas con `passed` y `reason`, y `errors`. Código 1 si la fuente falla |
+| `jh alerts poll [--json]` | Lee ya las alertas nuevas (IMAP en solo lectura y `data/inbox/`, fase 09b) y da de alta sus ofertas: completas si el portal se deja descargar, si no como resumen en `pending_detail`. `EmailPollResult` con `messages`, `found`, `created`, `summaries`, `existing`, `job_ids` y `errors` |
+| `jh alerts list [--json]` | Ofertas resumen (`AlertList`): título, empresa, ubicación, plataforma, URL, `expires_at` y prefiltro (`prefilter_passed`, `prefilter_reason`), primero las que pasan |
+| `jh alerts expire [--json]` | Cierra con `expired` los resúmenes sin completar más antiguos que `email_alerts.summary_expire_days` |
 | `jh sources run [ID] [--json]` | Ejecuta ya una fuente (o todas las activas) y guarda lo nuevo en `pending_extraction`. `{runs: [SourceRunResult]}` con `created`, `existing`, `duplicates`, `job_ids` y `errors` |
 | `jh sources enable ID` / `disable ID` | Activa o pausa una fuente en la ingesta diaria |
 

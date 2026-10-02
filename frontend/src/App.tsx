@@ -5,6 +5,7 @@ import { AppShell } from '@/components/AppShell'
 import { EmptyState } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { AlertsPage } from '@/pages/AlertsPage'
 import { InboxPage } from '@/pages/InboxPage'
 import { JobPage } from '@/pages/JobPage'
 import { NewJobPage } from '@/pages/NewJobPage'
@@ -34,6 +35,7 @@ export function AppRoutes() {
         <Route path="jobs/:id" element={<JobPage />} />
         <Route path="nueva" element={<NewJobPage />} />
         <Route path="triaje" element={<TriagePage />} />
+        <Route path="alertas" element={<AlertsPage />} />
         <Route path="plantillas" element={<TemplatesPage />} />
         <Route path="empresas" element={<SourcesPage />} />
         <Route path="*" element={<NotFound />} />

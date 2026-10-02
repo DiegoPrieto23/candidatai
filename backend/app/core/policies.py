@@ -100,6 +100,15 @@ class ConnectorsPolicy(BaseModel):
         return self
 
 
+class EmailAlertsPolicy(BaseModel):
+    """Alertas de empleo por correo (fase 09b)."""
+
+    poll_minutes: int = Field(gt=0)
+    summary_expire_days: int = Field(gt=0)
+    # Plataforma -> dominios del remitente (se compara el dominio y sus subdominios).
+    platforms: dict[str, list[str]]
+
+
 class Policies(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
@@ -108,6 +117,7 @@ class Policies(BaseModel):
     scoring: ScoringPolicy
     cv: CvPolicy
     connectors: ConnectorsPolicy
+    email_alerts: EmailAlertsPolicy
 
 
 class InjectionPatterns(BaseModel):

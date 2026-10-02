@@ -7,6 +7,9 @@ espera creciente hasta `tasks.MAX_ATTEMPTS` intentos.
 La ingesta diaria (fase 09) encola una tarea `run_source` por fuente activa a la hora de
 `connectors.daily_at`. Al arrancar se encolan también las que no han corrido desde la última hora
 programada (el portátil estaba apagado): así no se pierde ningún día.
+
+Alertas por correo (fase 09b): cada `email_alerts.poll_minutes` se encola `poll_email` si hay IMAP
+configurado o correos en `data/inbox/`, y cada día, con la ingesta, `expire_summaries`.
 """
 
 import logging
@@ -19,11 +22,14 @@ from zoneinfo import ZoneInfo
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
+from app.core.config import get_settings
 from app.core.db import session_scope
 from app.core.policies import ConnectorsPolicy, get_policies
 from app.models.base import utcnow
-from app.services import tasks
+from app.services import summaries, tasks
 from app.services.ingestion import service as sources
+from app.services.ingestion.email import service as email_alerts
+from app.services.ingestion.email.mailboxes import has_local_mail
 from app.services.matching import service as matching
 
 logger = logging.getLogger(__name__)
@@ -51,10 +57,25 @@ def _run_source(session: Session, payload: dict[str, Any]) -> dict[str, Any]:
     return data
 
 
+def _poll_email(session: Session, _payload: dict[str, Any]) -> dict[str, Any]:
+    result = email_alerts.poll_email(session, actor="system")
+    data = result.model_dump(mode="json")
+    # El buzón entero falló por la red: queda en `source_runs` y se reintenta.
+    if any(e.code == "network" and e.item is None for e in result.errors):
+        data[RETRY_KEY] = next(e.message for e in result.errors if e.code == "network")
+    return data
+
+
+def _expire_summaries(session: Session, _payload: dict[str, Any]) -> dict[str, Any]:
+    return summaries.expire_summaries(session).model_dump(mode="json")
+
+
 HANDLERS: dict[str, Handler] = {
     "score_job": _score_job,
     "rescore_all": _rescore_all,
     "run_source": _run_source,
+    "poll_email": _poll_email,
+    "expire_summaries": _expire_summaries,
 }
 
 
@@ -141,10 +162,23 @@ def enqueue_due_sources(session: Session, now: datetime | None = None) -> list[i
     return queued
 
 
+def email_alerts_enabled() -> bool:
+    """Si hay de dónde leer alertas: IMAP configurado o correos en `data/inbox/`."""
+    settings = get_settings()
+    return settings.imap_configured or has_local_mail(settings.inbox_dir)
+
+
+def enqueue_email_poll(session: Session) -> bool:
+    if not email_alerts_enabled():
+        return False
+    tasks.enqueue(session, "poll_email")
+    return True
+
+
 def describe(outcome: TaskOutcome) -> str:
     """Una línea legible para el log del worker."""
     result = outcome.result or {}
-    if outcome.kind == "run_source" and result.get("message"):
+    if outcome.kind in ("run_source", "poll_email", "expire_summaries") and result.get("message"):
         line = str(result["message"])
         if outcome.error:
             line += " Se reintentará más tarde."
@@ -186,6 +220,7 @@ def run_scheduler(
         try:
             with session_scope() as session:
                 queued = enqueue_due_sources(session)
+                tasks.enqueue(session, "expire_summaries")
         except Exception as exc:
             logger.exception("Fallo al encolar la ingesta diaria")
             on_message(f"Error al encolar la ingesta diaria: {type(exc).__name__}: {exc}")
@@ -202,12 +237,30 @@ def run_scheduler(
     scheduler.add_job(daily, CronTrigger(hour=hour, minute=minute), id="daily_sources")
     scheduler.add_job(process, "interval", seconds=interval, id="tasks")
 
+    def poll_email() -> None:
+        try:
+            with session_scope() as session:
+                queued = enqueue_email_poll(session)
+        except Exception as exc:
+            logger.exception("Fallo al encolar la lectura de alertas")
+            on_message(f"Error al encolar la lectura de alertas: {type(exc).__name__}: {exc}")
+            return
+        if queued:
+            process()
+
+    poll_minutes = get_policies().email_alerts.poll_minutes
+    scheduler.add_job(poll_email, "interval", minutes=poll_minutes, id="email_alerts")
+
     with session_scope() as session:
         if stuck := tasks.requeue_running(session):
             on_message(f"Tareas que quedaron a medias, de vuelta a la cola: {stuck}.")
         queued = enqueue_due_sources(session)
+        email = enqueue_email_poll(session)
+        tasks.enqueue(session, "expire_summaries")
     if queued:
         on_message(f"Fuentes pendientes desde la última ingesta: {len(queued)} en cola.")
+    if email:
+        on_message(f"Alertas por correo: se leen al arrancar y cada {poll_minutes} min.")
     process()
     on_message(f"Próxima ingesta diaria: {policy.daily_at} ({policy.timezone}).")
     scheduler.start()

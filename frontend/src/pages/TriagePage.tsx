@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import {
   ArrowSquareOutIcon,
@@ -12,31 +12,14 @@ import {
 import type { TriageItem } from '@/api/client'
 import { useJobEvent, useTriage } from '@/api/queries'
 import { DiscardDialog, type DiscardChoice } from '@/components/DiscardDialog'
+import { Kbd } from '@/components/Kbd'
 import { MatchDetails, ScoreBadge } from '@/components/MatchDetails'
 import { EmptyState, ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { discardReasonLabel, formatSalary, REMOTE_LABEL, SENIORITY_LABEL } from '@/lib/labels'
+import { isActivatable, isTyping } from '@/lib/keyboard'
 import { cn } from '@/lib/utils'
-
-function Kbd({ children }: { children: ReactNode }) {
-  return (
-    <kbd className="inline-grid h-5 min-w-5 place-items-center rounded border bg-background px-1 font-mono text-[0.7rem] text-muted-foreground">
-      {children}
-    </kbd>
-  )
-}
-
-function isTyping(target: EventTarget | null): boolean {
-  const el = target as HTMLElement | null
-  return !!el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable)
-}
-
-/** Intro sobre un botón o un enlace ya hace lo suyo: el atajo no debe sumarse. */
-function isActivatable(target: EventTarget | null): boolean {
-  const el = target as HTMLElement | null
-  return !!el && (el.tagName === 'BUTTON' || el.tagName === 'A')
-}
 
 function QueueRow({
   item,

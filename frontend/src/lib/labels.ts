@@ -4,6 +4,7 @@ type Extraction = Schemas['JobExtraction']
 
 /** Etapas en el orden del embudo. */
 export const STAGES: readonly Stage[] = [
+  'pending_detail',
   'pending_extraction',
   'pending_triage',
   'approved',
@@ -14,6 +15,7 @@ export const STAGES: readonly Stage[] = [
 ]
 
 export const STAGE_LABEL: Record<Stage, string> = {
+  pending_detail: 'Por completar',
   pending_extraction: 'Por extraer',
   pending_triage: 'Por revisar',
   approved: 'Aprobada',
@@ -25,6 +27,7 @@ export const STAGE_LABEL: Record<Stage, string> = {
 
 export const EVENT_LABEL: Record<Schemas['EventType'], string> = {
   found: 'Dada de alta',
+  detail_captured: 'Descripción capturada',
   duplicate_detected: 'Duplicado detectado',
   extracted: 'Extracción guardada',
   hard_filter_failed: 'No pasa los filtros',

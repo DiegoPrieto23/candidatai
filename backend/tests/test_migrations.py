@@ -6,6 +6,7 @@ import pytest
 from alembic.autogenerate import compare_metadata
 from alembic.runtime.migration import MigrationContext
 from sqlalchemy import create_engine, inspect
+from sqlalchemy.exc import IntegrityError
 
 from app.core import migrations
 from app.models import Base
@@ -121,5 +122,40 @@ def test_0005_moves_document_files_to_a_render_and_back(db_url: str) -> None:
                 (2, None, None, None),
             ]
             assert conn.exec_driver_sql("SELECT document_id FROM applications").scalar() == 1
+    finally:
+        engine.dispose()
+
+
+def test_0007_keeps_jobs_full_and_platform_id_is_unique(db_url: str) -> None:
+    migrations.upgrade(db_url, "0006")
+    engine = create_engine(db_url)
+    now = "2026-09-01 09:00:00"
+    insert = (
+        "INSERT INTO jobs (id, source_id, company_id, external_id, url, title, raw_text, "
+        "risk_flags, fingerprint, first_seen_at) VALUES ({id}, 1, 1, '42', '', 'T', 'x', '[]', "
+        "'f{id}', '{now}')"
+    )
+    try:
+        with engine.begin() as conn:
+            conn.exec_driver_sql(
+                "INSERT INTO sources (id, kind, name, config, active) "
+                "VALUES (1, 'greenhouse', 'x', '{}', 1)"
+            )
+            conn.exec_driver_sql(
+                "INSERT INTO companies (id, name, normalized_name, watchlist) "
+                "VALUES (1, 'Acme', 'acme', 0)"
+            )
+            conn.exec_driver_sql(insert.format(id=1, now=now))
+        engine.dispose()
+
+        migrations.upgrade(db_url, "0007")
+        with engine.begin() as conn:
+            row = conn.exec_driver_sql("SELECT platform, detail_level FROM jobs").one()
+            assert tuple(row) == (None, "full")
+            # Sin plataforma, el mismo id externo puede repetirse (fuentes distintas).
+            conn.exec_driver_sql(insert.format(id=2, now=now))
+            conn.exec_driver_sql("UPDATE jobs SET platform = 'linkedin' WHERE id = 1")
+        with pytest.raises(IntegrityError), engine.begin() as conn:
+            conn.exec_driver_sql("UPDATE jobs SET platform = 'linkedin' WHERE id = 2")
     finally:
         engine.dispose()

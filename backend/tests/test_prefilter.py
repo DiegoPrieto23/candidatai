@@ -5,7 +5,7 @@ Santiago de Compostela y Vigo; permitida Madrid."""
 import pytest
 
 from app.core.policies import get_policies
-from app.services.ingestion.prefilter import Prefilter
+from app.services.ingestion.prefilter import Prefilter, title_seniority
 from tests.matching_support import demo_profile
 
 
@@ -77,3 +77,35 @@ def test_without_profile_everything_passes() -> None:
     prefilter = Prefilter(None, [])
     assert not prefilter.active
     assert prefilter.check("Account Executive", "Berlin", None).passed
+
+
+@pytest.mark.parametrize(
+    ("title", "level"),
+    [
+        ("Senior Data Engineer", "senior"),
+        ("Data Engineer Sr.", "senior"),
+        ("Jr. Data Analyst", "junior"),
+        ("Becario/a Data (Prácticas)", "intern"),
+        ("Lead Data Engineer", "lead"),
+        ("Head of Data", "lead"),
+        ("Data Engineer", None),
+        ("Leading data platform engineer", None),
+    ],
+)
+def test_title_seniority(title: str, level: str | None) -> None:
+    assert title_seniority(title) == level
+
+
+def test_summary_check_adds_title_seniority() -> None:
+    # Perfil demo: acepta junior y mid.
+    prefilter = _prefilter()
+    assert prefilter.check_summary("Junior Data Engineer", "Vigo").passed
+    assert prefilter.check_summary("Data Engineer", "Vigo").passed
+    verdict = prefilter.check_summary("Senior Data Engineer", "Vigo")
+    assert not verdict.passed
+    assert "seniority senior" in (verdict.reason or "")
+    assert not prefilter.check_summary("Office Manager", "Vigo").passed
+
+
+def test_summary_check_without_profile_passes() -> None:
+    assert Prefilter(None, []).check_summary("Senior Office Manager", "Marte").passed

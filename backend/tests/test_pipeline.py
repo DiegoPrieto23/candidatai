@@ -16,6 +16,7 @@ from app.services.pipeline import (
 
 T0 = datetime(2026, 9, 1, 9, 0, tzinfo=UTC)
 
+PD = Stage.PENDING_DETAIL
 PE = Stage.PENDING_EXTRACTION
 PT = Stage.PENDING_TRIAGE
 AP = Stage.APPROVED
@@ -23,7 +24,8 @@ CR = Stage.CV_READY
 AD = Stage.APPLIED
 IP = Stage.IN_PROCESS
 CL = Stage.CLOSED
-OPEN = (PE, PT, AP, CR, AD, IP)
+WORK = (PE, PT, AP, CR, AD, IP)  # abiertas, salvo los resúmenes
+OPEN = (PD, *WORK)
 
 
 @dataclass
@@ -44,9 +46,11 @@ def seq(*types: str | Ev) -> list[Ev]:
 RENDERED = Ev("cv_rendered", {"document_id": 1, "render_id": 1, "too_long": False})
 TOO_LONG = Ev("cv_rendered", {"document_id": 1, "render_id": 2, "too_long": True})
 VERIFIED = Ev("cv_verified", {"document_id": 1, "passed": True})
+SUMMARY = Ev("found", {"detail_level": "summary"})
 
 # Una secuencia mínima para llegar a cada etapa. El cierre se hace desde `pending_triage`.
 PATHS: dict[Stage, list[str | Ev]] = {
+    PD: [SUMMARY],
     PE: ["found"],
     PT: ["found", "extracted"],
     AP: ["found", "extracted", "approved"],
@@ -69,20 +73,21 @@ def _to(target: Stage, stages: tuple[Stage, ...]) -> dict[Stage, Stage]:
 # Una etapa ausente significa que el evento es inválido ahí.
 EXPECTED: dict[EventType, dict[Stage, Stage]] = {
     EventType.FOUND: {},
-    EventType.DUPLICATE_DETECTED: _to(CL, (PE, PT)),
+    EventType.DETAIL_CAPTURED: _to(PE, (PD,)),
+    EventType.DUPLICATE_DETECTED: _to(CL, (PD, PE, PT)),
     EventType.EXTRACTED: _to(PT, (PE, PT)),
     EventType.EXTRACTION_FAILED: _same((PE,)),
     EventType.HARD_FILTER_FAILED: _to(CL, (PT,)),
     EventType.INJECTION_SUSPECTED: _same(OPEN),
-    EventType.SCORED: _same(OPEN),
-    EventType.FIT_ASSESSED: _same(OPEN),
+    EventType.SCORED: _same(WORK),
+    EventType.FIT_ASSESSED: _same(WORK),
     EventType.APPROVED: _to(AP, (PT,)),
-    EventType.DISCARDED: _to(CL, (PE, PT, AP, CR)),
+    EventType.DISCARDED: _to(CL, (PD, PE, PT, AP, CR)),
     EventType.CV_GENERATED: _same((AP, CR)),
     EventType.CV_RENDERED: _same((AP, CR)),  # sin payload; con documento verificado, aparte
     EventType.CV_VERIFIED: _same((AP, CR)),  # sin `passed`; con `passed` se prueba aparte
     EventType.CV_REJECTED: _same((AP, CR)),
-    EventType.APPLICATION_PREPARED: _same(OPEN),
+    EventType.APPLICATION_PREPARED: _same(WORK),
     EventType.APPLIED: _to(AD, (CR,)),
     EventType.APPLIED_MANUALLY: _to(AD, (PE, PT, AP, CR)),
     EventType.REPLY_RECEIVED: _to(IP, (AD, IP)),
@@ -91,8 +96,8 @@ EXPECTED: dict[EventType, dict[Stage, Stage]] = {
     EventType.TEST_ASSIGNED: _to(IP, (AD, IP)),
     EventType.OFFER_RECEIVED: _to(IP, (AD, IP)),
     EventType.FOLLOWUP_SENT: _same((AD, IP)),
-    EventType.REJECTED: _to(CL, OPEN),
-    EventType.WITHDRAWN: _to(CL, OPEN),
+    EventType.REJECTED: _to(CL, WORK),
+    EventType.WITHDRAWN: _to(CL, WORK),
     EventType.EXPIRED: _to(CL, OPEN),
     EventType.ACCEPTED: _to(CL, (IP,)),
     EventType.REOPENED: {CL: PT},  # vuelve a la etapa previa al cierre
@@ -221,3 +226,13 @@ def test_ties_keep_input_order() -> None:
     assert stage_for(same) == AP
     with pytest.raises(InvalidTransitionError):
         stage_for([Ev("found"), Ev("approved"), Ev("extracted")])
+
+
+def test_summary_found_goes_to_pending_detail_and_capture_completes_it() -> None:
+    assert stage_for(seq(SUMMARY)) == PD
+    assert stage_for(seq(Ev("found", {"detail_level": "full"}))) == PE
+    assert stage_for(seq(SUMMARY, "detail_captured", "extracted")) == PT
+
+
+def test_expired_summary_reopens_as_summary() -> None:
+    assert stage_for(seq(SUMMARY, "expired", "reopened")) == PD

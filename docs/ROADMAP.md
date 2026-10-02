@@ -22,7 +22,10 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 08c | Carta de presentación | ⏳ | `generar-carta` redacta y verifica la carta según tus indicaciones (generales y de cada oferta); TXT para pegar y PDF a juego con el CV |
 | 08b | Plantillas html | 🚧 | Importar diseños desde PDF o imagen (Canva…), también como «Mi CV», y plantilla integrada de dos columnas |
 | 09 | Conectores de ATS y scheduler | ✅ | Ingesta diaria de empresas objetivo sin intervención |
-| 09b | Alertas, captura y búsqueda con navegador | ⏳ | Las alertas de LinkedIn y otros portales llegan solas por correo, cualquier oferta entra con un clic desde el navegador y, opcionalmente, el agente recorre portales |
+| 09b | Alertas, captura y búsqueda con navegador | 🚧 | Las alertas de LinkedIn y otros portales llegan solas por correo, cualquier oferta entra con un clic desde el navegador y, opcionalmente, el agente recorre portales |
+| 09b.1 | ↳ Ofertas resumen y alertas por correo | ✅ | Las alertas de correo (IMAP en solo lectura o `data/inbox/`) crean ofertas resumen en «Alertas», ordenadas por prefiltro y que caducan solas |
+| 09b.2 | ↳ Botón «Enviar a Job Hunter» | ⏳ | Extensión de Chromium que manda la oferta que estás viendo y completa los resúmenes |
+| 09b.3 | ↳ Plataformas y búsqueda con navegador | ⏳ | `list_sources`, `save_source`, `record_source_run` y pantalla «Plataformas» |
 | 10 | Seguimiento y analítica | ⏳ | Kanban, seguimientos pendientes, dashboard del embudo |
 | 11 | Candidatura asistida | ⏳ | Rellenado con Playwright y envío tras tu confirmación |
 | 12 | Demo, compatibilidad y portfolio | ⏳ | Modo demo, matriz de agentes probada, evals publicados |
@@ -500,3 +503,59 @@ decisiones tomadas y deuda técnica pendiente. -->
     `uv add --no-sync` + `uv pip install`. Ejecuta `uv sync --directory backend` con Claude Code
     cerrado.
   - La BD real necesita `jh db upgrade` (hasta 0006).
+
+### 09b.1 · Ofertas resumen y alertas por correo — 2026-10-02 · Claude Code (Opus 5.5)
+- **Resumen:** la fase 09b se parte en tres encargos (`prompts/09b.1-*`, `09b.2-*` y `09b.3-*`) en
+  la rama `fase/09b-alertas-captura-busqueda`. Esta subfase añade:
+  - migración `0007` (`jobs.platform`, `jobs.detail_level`, índice único parcial
+    (`platform`, `external_id`) y tabla `email_messages`);
+  - etapa `pending_detail` y evento `detail_captured`;
+  - `services/platforms.py` (LinkedIn, InfoJobs, Indeed y Tecnoempleo, con patrones verificados
+    con URLs públicas reales);
+  - prefiltro de resúmenes con la seniority del título;
+  - conector de correo `services/ingestion/email/`: IMAP en solo lectura y `data/inbox/`, un parser
+    de LinkedIn y otro genérico;
+  - tareas `poll_email` y `expire_summaries` en el worker;
+  - `jh alerts poll | list | expire`, `GET /alerts`, `POST /alerts/poll` y pantalla «Alertas»
+    (`J`/`K`, `O` abre en el portal, `D` descarta, con deshacer);
+  - comprobación IMAP en `jh doctor`.
+
+  1304 tests de backend (uno de ellos con un servidor IMAP falso que falla ante cualquier
+  escritura) y 60 de frontend.
+- **Decisiones:**
+  - Desde `pending_detail` solo se admiten `detail_captured`, `discarded`, `expired`,
+    `duplicate_detected`, `injection_suspected` y `note`. `WORKING_STAGES` separa las demás
+    transiciones (y el matching) de `OPEN_STAGES`. `detail_captured` es reservado: lo registrará la
+    captura de la 09b.2.
+  - El prefiltro se calcula al listar y no se guarda. Los resúmenes no se filtran al entrar: el
+    usuario ya eligió sus alertas, y la bandeja los ordena.
+  - `store_job` deduce `platform` de la URL cuando su id coincide con `external_id` (o no hay), y
+    reconoce primero por (`platform`, `external_id`). LinkedIn y Indeed se guardan con su URL
+    canónica; las demás, sin parámetros de seguimiento. Los redirectores de seguimiento se leen sin
+    seguirlos.
+  - La detección de riesgo de un resumen mira el texto de la oferta, no el HTML del correo: los
+    «preheader» ocultos de las alertas marcarían `hidden_text` en todas.
+  - IMAP: `EXAMINE`, `UID SEARCH SINCE` (`summary_expire_days`), primero solo los `Message-ID` y
+    luego `BODY.PEEK[]` de los nuevos. TLS con `ssl.create_default_context()`: en Python 3.12,
+    `IMAP4_SSL` sin contexto no verifica el certificado (lo detectó la revisión). Nombre de
+    carpeta en UTF-7 modificado.
+  - Un correo cuya oferta no se pudo guardar por un error de BD no se anota en `email_messages`,
+    así que se reintenta. Un correo de plataforma conocida sin ofertas sí se anota, con el aviso
+    `no_jobs_found`.
+  - Parser: tarjeta = el bloque más grande que solo enlaza esa oferta, sin llegar a `body`; como
+    mucho 8 líneas, 1000 enlaces y 200 ofertas por correo; sin caracteres de control.
+  - `POST /capture` sin prefijo `/api`, como el resto de la API (docs corregidos).
+  - `jh alerts` es solo CLI (no hay herramienta para agentes): lo usan la persona y el worker.
+- **Deuda:**
+  - **Faltan alertas reales.** El parser de LinkedIn y el genérico (InfoJobs, Indeed, Tecnoempleo)
+    se construyeron con fixtures inventados que imitan la estructura conocida. Hay que afinarlos
+    con correos reales en `data/inbox/samples/` (punto 7 del encargo).
+  - Un correo sin `Message-ID` se descarga entero en cada pasada IMAP (se descarta luego por su
+    hash).
+  - `POST /alerts/poll` hace la red dentro de la petición (hasta 30 s de IMAP más las descargas).
+  - Dar de alta por URL una oferta que ya está como resumen devuelve «ya existe» sin completarla:
+    eso lo hará la captura de la 09b.2.
+  - Una oferta de un correo sin empresa se descarta con el aviso `invalid_item`.
+  - `.env.example` sin las variables `JH_IMAP_*`: el agente no puede leerlo ni editarlo
+    (permisos). Hay que añadirlas a mano.
+  - La BD real necesita `jh db upgrade` (hasta 0007).

@@ -182,6 +182,7 @@ def test_cli_doctor_json() -> None:
         "Foto del CV",
         "Embeddings",
         "Conectores de ofertas",
+        "Alertas por correo",
     ]
 
 

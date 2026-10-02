@@ -1,16 +1,21 @@
 """Comprobaciones del entorno local para `jh doctor`."""
 
+import contextlib
 import shutil
 import sys
 import tempfile
 import time
 from enum import StrEnum
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from pydantic import BaseModel
 
 from app.core.config import REPO_ROOT, Settings
 from app.services.documents import pdf
+
+if TYPE_CHECKING:
+    from app.services.ingestion.email.mailboxes import ImapFactory
 
 MIN_PYTHON = (3, 12)
 BUILTIN_TEMPLATES_DIR = REPO_ROOT / "templates"
@@ -266,6 +271,47 @@ def check_connectors(settings: Settings) -> CheckResult:
     return CheckResult(name=name, status=CheckStatus.OK, detail=detail)
 
 
+def check_email_alerts(
+    settings: Settings, imap_factory: "ImapFactory | None" = None
+) -> CheckResult:
+    """Alertas por correo (fase 09b). Con IMAP configurado, solo login y `EXAMINE` de la carpeta
+    (solo lectura): no se lee ni se toca ningún correo."""
+    from app.core.policies import get_policies
+    from app.services.ingestion.email.mailboxes import MailboxError, connect_imap, has_local_mail
+
+    name = "Alertas por correo"
+    minutes = get_policies().email_alerts.poll_minutes
+    local = has_local_mail(settings.inbox_dir)
+    if not settings.imap_configured:
+        partial = settings.imap_host or settings.imap_user or settings.imap_password
+        if partial:
+            return CheckResult(
+                name=name,
+                status=CheckStatus.WARN,
+                detail="IMAP a medias: faltan JH_IMAP_HOST, JH_IMAP_USER o JH_IMAP_PASSWORD "
+                "en `.env`",
+            )
+        detail = "sin IMAP (opcional); "
+        detail += (
+            "hay correos en data/inbox/" if local else "deja correos .eml o .mbox en data/inbox/"
+        )
+        return CheckResult(name=name, status=CheckStatus.OK, detail=detail)
+    try:
+        kwargs = {"factory": imap_factory} if imap_factory else {}
+        conn = connect_imap(settings, **kwargs)
+    except MailboxError as exc:
+        status = CheckStatus.WARN if exc.code == "network" else CheckStatus.ERROR
+        return CheckResult(name=name, status=status, detail=exc.message)
+    with contextlib.suppress(Exception):
+        conn.logout()
+    return CheckResult(
+        name=name,
+        status=CheckStatus.OK,
+        detail=f"IMAP en solo lectura: {settings.imap_user} en {settings.imap_host}, carpeta "
+        f"«{settings.imap_folder}»; cada {minutes} min con `jh worker`",
+    )
+
+
 def run_doctor(settings: Settings) -> DoctorReport:
     return DoctorReport(
         checks=[
@@ -278,5 +324,6 @@ def run_doctor(settings: Settings) -> DoctorReport:
             check_photo(settings.data_dir / "profile.yaml", settings.data_dir),
             check_embeddings(settings),
             check_connectors(settings),
+            check_email_alerts(settings),
         ]
     )

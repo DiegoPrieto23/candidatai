@@ -4,7 +4,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
-from pydantic import Field, model_validator
+from pydantic import Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # backend/app/core/config.py -> parents[3] es la raíz del repo.
@@ -32,6 +32,13 @@ class Settings(BaseSettings):
     )
     adzuna_app_id: str | None = Field(default=None, validation_alias="JH_ADZUNA_APP_ID")
     adzuna_app_key: str | None = Field(default=None, validation_alias="JH_ADZUNA_APP_KEY")
+    # Alertas por correo (fase 09b): IMAP en solo lectura sobre una carpeta. Sin host, solo se
+    # lee la carpeta local `data/inbox/`.
+    imap_host: str | None = Field(default=None, validation_alias="JH_IMAP_HOST")
+    imap_port: int = Field(default=993, validation_alias="JH_IMAP_PORT")
+    imap_user: str | None = Field(default=None, validation_alias="JH_IMAP_USER")
+    imap_password: SecretStr | None = Field(default=None, validation_alias="JH_IMAP_PASSWORD")
+    imap_folder: str = Field(default="INBOX", validation_alias="JH_IMAP_FOLDER")
 
     @model_validator(mode="after")
     def _resolve_paths(self) -> "Settings":
@@ -58,6 +65,16 @@ class Settings(BaseSettings):
     def evals_dir(self) -> Path:
         """Casos de evaluación propios (`*.jsonl`) e informes (`reports/`)."""
         return self.data_dir / "evals"
+
+    @property
+    def imap_configured(self) -> bool:
+        password = self.imap_password.get_secret_value() if self.imap_password else ""
+        return bool(self.imap_host and self.imap_user and password)
+
+    @property
+    def inbox_dir(self) -> Path:
+        """Correos exportados (`.eml`, `.mbox`) para las alertas sin IMAP. `samples/` no se lee."""
+        return self.data_dir / "inbox"
 
     @property
     def logs_dir(self) -> Path:

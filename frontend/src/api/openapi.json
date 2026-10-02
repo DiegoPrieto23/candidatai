@@ -2602,6 +2602,170 @@
           }
         }
       }
+    },
+    "/alerts": {
+      "get": {
+        "tags": [
+          "alerts"
+        ],
+        "summary": "List Alerts",
+        "description": "Ofertas resumen (`pending_detail`) de las alertas, primero las que pasan el prefiltro.",
+        "operationId": "list_alerts",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertList"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/alerts/poll": {
+      "post": {
+        "tags": [
+          "alerts"
+        ],
+        "summary": "Poll Alerts",
+        "description": "Lee ahora las alertas nuevas (IMAP en solo lectura y `data/inbox/`).",
+        "operationId": "poll_alerts",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailPollResult"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2809,6 +2973,138 @@
           "type"
         ],
         "title": "AddUserEventBody"
+      },
+      "AlertJob": {
+        "properties": {
+          "job_id": {
+            "type": "integer",
+            "title": "Job Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
+          "platform": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Platform"
+          },
+          "platform_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Platform Label"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "first_seen_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "First Seen At"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          },
+          "prefilter_passed": {
+            "type": "boolean",
+            "title": "Prefilter Passed"
+          },
+          "prefilter_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prefilter Reason"
+          },
+          "risk_flags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Risk Flags"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "title",
+          "company",
+          "location",
+          "platform",
+          "platform_label",
+          "url",
+          "first_seen_at",
+          "expires_at",
+          "prefilter_passed",
+          "prefilter_reason",
+          "risk_flags"
+        ],
+        "title": "AlertJob"
+      },
+      "AlertList": {
+        "properties": {
+          "jobs": {
+            "items": {
+              "$ref": "#/components/schemas/AlertJob"
+            },
+            "type": "array",
+            "title": "Jobs"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "passed": {
+            "type": "integer",
+            "title": "Passed"
+          },
+          "filters_applied": {
+            "type": "boolean",
+            "title": "Filters Applied"
+          }
+        },
+        "type": "object",
+        "required": [
+          "jobs",
+          "total",
+          "passed",
+          "filters_applied"
+        ],
+        "title": "AlertList"
       },
       "Body_upload_cv": {
         "properties": {
@@ -3337,6 +3633,70 @@
         ],
         "title": "DefaultTemplateResult"
       },
+      "EmailPollResult": {
+        "properties": {
+          "source_id": {
+            "type": "integer",
+            "title": "Source Id"
+          },
+          "run_id": {
+            "type": "integer",
+            "title": "Run Id"
+          },
+          "messages": {
+            "type": "integer",
+            "title": "Messages"
+          },
+          "found": {
+            "type": "integer",
+            "title": "Found"
+          },
+          "created": {
+            "type": "integer",
+            "title": "Created"
+          },
+          "summaries": {
+            "type": "integer",
+            "title": "Summaries"
+          },
+          "existing": {
+            "type": "integer",
+            "title": "Existing"
+          },
+          "job_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Job Ids"
+          },
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Issue"
+            },
+            "type": "array",
+            "title": "Errors"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_id",
+          "run_id",
+          "messages",
+          "found",
+          "created",
+          "summaries",
+          "existing",
+          "job_ids",
+          "errors",
+          "message"
+        ],
+        "title": "EmailPollResult"
+      },
       "ErrorDetail": {
         "properties": {
           "field": {
@@ -3467,6 +3827,7 @@
         "type": "string",
         "enum": [
           "found",
+          "detail_captured",
           "duplicate_detected",
           "extracted",
           "hard_filter_failed",
@@ -5329,6 +5690,7 @@
       "Stage": {
         "type": "string",
         "enum": [
+          "pending_detail",
           "pending_extraction",
           "pending_triage",
           "approved",
