@@ -36,6 +36,7 @@ CONTRACT_VARIABLES = frozenset(
         "projects",
         "education",
         "certifications",
+        "extra_sections",
         "skills",
         "languages",
         "labels",

@@ -50,11 +50,14 @@ La app nunca llama a un modelo y no depende de ningún proveedor.
 | `POST /documents/{id}/renders` | Otro render del mismo contenido con otras `CvRenderOptions` (actor `user`, sin IA) |
 | `POST /renders/{id}/select` | Marca el render que se enviará (uno por CV; sin evento ni cambio de etapa) |
 | `GET /renders/{id}/pdf`, `GET /renders/{id}/docx` | Ficheros del render |
+| `GET /uploads`, `POST /uploads`, `DELETE /uploads/{name}` | «Mi CV»: CVs subidos a `data/uploads/` (máximo 10 MB, nombre saneado, nunca se sobrescribe) y la plantilla creada desde cada uno, si la hay (por sha256 del `source.*`) |
+| `GET /templates/{id}/source.png`, `GET /templates/{id}/preview-real.png` | Primera página del original importado y la plantilla con el perfil real (en caché por plantilla y versión del perfil) |
+| `GET /templates/default`, `POST /templates/{id}/default` | Plantilla por defecto del perfil vigente; fijarla edita solo esa clave de `data/profile.yaml` (con ruamel.yaml, conserva comentarios) e importa la versión nueva |
 
 - `jh serve` escucha solo en `127.0.0.1`; CORS solo para `http://127.0.0.1:5173`.
 - Errores con el mismo formato que la interfaz para agentes (`{ok: false, error: {type, message,
-  details}}`): 404 `not_found`, 409 `invalid_transition`, 422 validación, 503 BD sin migrar o
-  sin conversor a PDF (`pdf_unavailable`).
+  details}}`): 404 `not_found`, 409 `invalid_transition` o `exists`, 413 `too_large`, 422
+  validación, 503 BD sin migrar o sin conversor a PDF (`pdf_unavailable`).
 - Los ficheros solo se sirven desde `data/cvs/` (renders; no todo `data/`, que también guarda
   secretos como el token de captura de la 09b) y desde las carpetas de plantillas (previews): la ruta guardada se resuelve y se comprueba que queda dentro antes de abrirla; si no,
   404.

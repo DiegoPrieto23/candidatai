@@ -148,6 +148,34 @@ class Certification(_Strict):
     date: YearMonth | None = None
 
 
+class LocalizedTitle(_Strict):
+    es: str | None = None
+    en: str | None = None
+
+    @model_validator(mode="after")
+    def _at_least_one(self) -> Self:
+        if not (self.es or self.en):
+            raise ValueError("Hace falta el título en al menos un idioma (`es` o `en`).")
+        return self
+
+
+class ExtraItem(_Strict):
+    id: Id
+    text: Text
+    date: YearMonth | None = None
+
+
+class ExtraSection(_Strict):
+    """Sección fuera del contrato común (voluntariado, premios, publicaciones…).
+
+    Sus items se citan como evidencia con `<sección>/<item>` y salen en el CV tal cual.
+    """
+
+    id: Id
+    title: LocalizedTitle
+    items: list[ExtraItem] = Field(min_length=1)
+
+
 class Language(_Strict):
     language: Text
     level: Text  # libre: «Nativo», «B2», «C1 (Cambridge)»…
@@ -266,6 +294,7 @@ class CandidateProfile(_Strict):
     projects: list[Project] = []
     education: list[Education] = []
     certifications: list[Certification] = []
+    extra_sections: list[ExtraSection] = []  # voluntariado, premios… (fase 08.3)
     languages: list[Language] = []
     skills: list[Skill] = []
     basic_skills: list[str] = []  # solo si la oferta lo pide, como «conocimientos de X»
@@ -288,6 +317,9 @@ class CandidateProfile(_Strict):
         for cert in self.certifications:
             details = ", ".join(part for part in (cert.issuer, cert.date) if part)
             refs[cert.id] = cert.name + (f" ({details})" if details else "")
+        for section in self.extra_sections:
+            for item in section.items:
+                refs[f"{section.id}/{item.id}"] = item.text
         return refs
 
     @model_validator(mode="after")
@@ -307,6 +339,7 @@ class CandidateProfile(_Strict):
             ("education", self.education),
             ("certifications", self.certifications),
             ("stories", self.stories),
+            ("extra_sections", self.extra_sections),
         )
         for section, items in sections:
             for i, item in enumerate(items):
@@ -324,6 +357,18 @@ class CandidateProfile(_Strict):
                         received=ach.id,
                     )
                 seen_ach.add(ach.id)
+        for i, section in enumerate(self.extra_sections):
+            seen_items: set[str] = set()
+            # `<sección>/<item>` no puede parecerse a `exp-x/a1`: ids distintos a los de primer
+            # nivel ya lo garantiza el bucle anterior (la sección cuenta en `seen`).
+            for j, item in enumerate(section.items):
+                if item.id in seen_items:
+                    yield ConsistencyIssue(
+                        loc=("extra_sections", i, "items", j, "id"),
+                        reason=f"Id de item repetido dentro de `{section.id}`.",
+                        received=item.id,
+                    )
+                seen_items.add(item.id)
         seen_skills: set[str] = set()
         for i, skill in enumerate(self.skills):
             if skill.name.casefold() in seen_skills:
@@ -364,7 +409,7 @@ class CandidateProfile(_Strict):
                 if ref not in refs:
                     yield ConsistencyIssue(
                         loc=("stories", i, "evidence", k),
-                        reason="La evidencia no existe: usa `exp-x/a1` o el id de un proyecto, "
-                        "formación o certificación.",
+                        reason="La evidencia no existe: usa `exp-x/a1`, `<sección>/<item>` de "
+                        "una sección extra o el id de un proyecto, formación o certificación.",
                         received=ref,
                     )

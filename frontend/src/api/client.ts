@@ -20,6 +20,8 @@ export type CvRenderOptions = Schemas['CvRenderOptions']
 export type SectionName = NonNullable<CvRenderOptions['hidden_sections']>[number]
 export type TemplateInfo = Schemas['TemplateInfo']
 export type TemplateList = Schemas['TemplateList']
+export type UploadInfo = Schemas['UploadInfo']
+export type DefaultTemplateResult = Schemas['DefaultTemplateResult']
 
 export const API_URL: string = import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:8000'
 
@@ -29,6 +31,12 @@ export const fileUrls = {
   renderDocx: (renderId: number) => `${API_URL}/renders/${renderId}/docx`,
   templatePreview: (templateId: string) =>
     `${API_URL}/templates/${encodeURIComponent(templateId)}/preview.png`,
+  /** Primera página del CV original del que se creó la plantilla. */
+  templateSource: (templateId: string) =>
+    `${API_URL}/templates/${encodeURIComponent(templateId)}/source.png`,
+  /** La plantilla con tu perfil real; la primera vez tarda lo que la conversión a PDF. */
+  templateRealPreview: (templateId: string, version: string | number = '') =>
+    `${API_URL}/templates/${encodeURIComponent(templateId)}/preview-real.png${version ? `?v=${version}` : ''}`,
 }
 
 export const api = createClient<paths>({

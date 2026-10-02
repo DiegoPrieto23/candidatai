@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { ImageIcon, WarningIcon } from '@phosphor-icons/react'
 import { fileUrls, type TemplateInfo } from '@/api/client'
 import { useTemplates } from '@/api/queries'
+import { MyCv } from '@/components/MyCv'
 import { ErrorState } from '@/components/States'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
@@ -58,7 +59,7 @@ function TemplateCard({ template }: { template: TemplateInfo }) {
           <Tag>{columns}</Tag>
           <Tag>Motor {template.engine}</Tag>
           {template.accent_colors && <Tag>{template.accent_colors.choices.length} colores</Tag>}
-          <Tag>{template.origin === 'builtin' ? 'Integrada' : 'Tuya'}</Tag>
+          <Tag>{template.from_user_cv ? 'Tu CV' : template.origin === 'builtin' ? 'Integrada' : 'Tuya'}</Tag>
         </ul>
       </div>
     </article>
@@ -73,14 +74,13 @@ export function TemplatesPage() {
         <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Plantillas de CV</h1>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
           El contenido de cada CV lo redacta tu agente; la plantilla solo decide cómo se ve. Puedes cambiarla
-          en la ficha de cada oferta sin volver a usar IA. Para convertir tu propio CV de Word en plantilla,
-          pídeselo a tu agente con el skill{' '}
-          <code className="rounded bg-muted px-1 py-0.5 font-mono text-[0.85em] text-foreground">
-            importar-plantilla-cv
-          </code>
-          .
+          en la ficha de cada oferta sin volver a usar IA.
         </p>
       </header>
+
+      <MyCv />
+
+      <h2 className="mb-4 text-lg font-semibold tracking-tight">Todas las plantillas</h2>
 
       {isPending ? (
         <div aria-busy="true" aria-label="Cargando plantillas" className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

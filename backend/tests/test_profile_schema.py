@@ -292,3 +292,44 @@ def test_yaml_must_be_a_mapping(tmp_path: Path, text: str) -> None:
 def test_missing_file(tmp_path: Path) -> None:
     with pytest.raises(ProfileNotFoundError, match="jh profile init"):
         load_from_yaml(tmp_path / "no.yaml")
+
+
+# --- Secciones extra (fase 08.3) ------------------------------------------------------------
+
+
+def test_example_extra_sections_can_be_cited() -> None:
+    profile = load_from_yaml(EXAMPLE_PATH)
+    assert profile.extra_sections[0].id == "voluntariado"
+    assert "voluntariado/v1" in profile.evidence_refs()
+
+
+def test_profile_without_extra_sections_is_valid(tmp_path: Path) -> None:
+    data = copy.deepcopy(EXAMPLE)
+    del data["extra_sections"]
+    assert load_from_yaml(_write(tmp_path, data)).extra_sections == []
+
+
+def test_extra_sections_validation(tmp_path: Path) -> None:
+    def change(d: dict[str, Any]) -> None:
+        section = d["extra_sections"][0]
+        section["items"].append({"id": "v1", "text": "Repetido"})
+        d["extra_sections"].append(
+            {"id": "exp-datagal", "title": {}, "items": [{"id": "x", "text": "Premio"}]}
+        )
+
+    issues = _issues(tmp_path, change)
+    assert "extra_sections[1].title" in issues  # sin título en ningún idioma
+    # Ya validan los campos: se corrige el título y quedan las de consistencia.
+
+    def fixed(d: dict[str, Any]) -> None:
+        change(d)
+        d["extra_sections"][1]["title"] = {"es": "Premios"}
+
+    issues = _issues(tmp_path, fixed)
+    assert set(issues) == {"extra_sections[0].items[1].id", "extra_sections[1].id"}
+
+
+def test_story_can_cite_an_extra_item(tmp_path: Path) -> None:
+    data = copy.deepcopy(EXAMPLE)
+    data["stories"][1]["evidence"] = ["voluntariado/v1"]
+    assert load_from_yaml(_write(tmp_path, data)).stories[1].evidence == ["voluntariado/v1"]

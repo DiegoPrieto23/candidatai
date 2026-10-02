@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from app.schemas.cv import SECTIONS, CvContent, CvLanguage, SectionName
-from app.schemas.profile import PRESENT, CandidateProfile
+from app.schemas.profile import PRESENT, CandidateProfile, ExtraSection
 from app.services.normalize import fold
 
 _MONTHS: dict[CvLanguage, tuple[str, ...]] = {
@@ -78,6 +78,28 @@ def _regional_languages(profile: CandidateProfile) -> set[str]:
     return {fold(lang.language) for lang in profile.languages if lang.regional}
 
 
+@dataclass(frozen=True)
+class ExtraSectionContext:
+    """Una sección extra. Objeto y no dict por lo mismo que `SkillGroup` (`x.items`)."""
+
+    title: str
+    items: list[dict[str, str]]
+
+
+def _extra_section(
+    section: ExtraSection, item_ids: list[str], lang: CvLanguage
+) -> ExtraSectionContext:
+    """Una sección extra con el título en el idioma del CV (o en el otro si solo hay ese)."""
+    items = {i.id: i for i in section.items}
+    title = getattr(section.title, lang) or section.title.es or section.title.en or ""
+    return ExtraSectionContext(
+        title=title,
+        items=[
+            {"text": items[i].text, "date": format_month(items[i].date, lang)} for i in item_ids
+        ],
+    )
+
+
 def build_context(
     content: CvContent,
     profile: CandidateProfile,
@@ -91,6 +113,7 @@ def build_context(
     projects = {p.id: p for p in profile.projects}
     education = {e.id: e for e in profile.education}
     certifications = {c.id: c for c in profile.certifications}
+    extra_sections = {s.id: s for s in profile.extra_sections}
 
     experience = []
     for item in content.experience:
@@ -152,6 +175,10 @@ def build_context(
                 "date": format_month(certifications[i].date, lang),
             }
             for i in content.certification_ids
+        ],
+        "extra_sections": [
+            _extra_section(extra_sections[s.section_id], s.item_ids, lang)
+            for s in content.extra_sections
         ],
         "skills": [SkillGroup(group=g.group, items=list(g.items)) for g in content.skills],
         "languages": languages,

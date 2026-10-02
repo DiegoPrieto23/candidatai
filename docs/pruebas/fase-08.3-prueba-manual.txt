@@ -1,0 +1,160 @@
+PRUEBA MANUAL · FASE 08.3 · CV: IMPORTAR PLANTILLAS DESDE WORD Y «MI CV»
+==========================================================================
+
+Objetivo: comprobar que tu propio CV de Word se convierte UNA vez en plantilla, que conserva su
+diseño y su orden de secciones, que se puede marcar por defecto desde la UI sin perder los
+comentarios de tu perfil, y que a partir de ahí /generar-cv saca los CVs a medida con tu diseño,
+una extensión parecida a la del original y el texto adaptado a la oferta.
+
+Duración aproximada: 15 minutos (partes 1 a 3, datos ficticios) + 30 (parte 4, tu CV).
+
+Qué NO entra todavía: importar desde PDF, imagen o HTML (fase 08b; la UI los acepta al subir y
+avisa) ni la carta de presentación (fase 08c).
+
+
+REQUISITOS
+----------
+- LibreOffice instalado (o SOFFICE_PATH en .env): se usa para contar páginas, para la vista del
+  original y para las previews.
+- Dos terminales de PowerShell (API y UI). Claude Code solo hace falta en la parte 4.
+- Los comandos se ejecutan desde la RAÍZ del repo:
+      cd <carpeta-del-repo>
+      git switch fase/08-cv
+
+Las partes 2 y 3 usan un CV y un perfil FICTICIOS en un directorio de datos aparte
+(data\demo-mi-cv\): no tocan tu base de datos ni tu perfil. La parte 4 sí usa tus datos.
+
+
+PARTE 1 · PREPARAR
+------------------
+1. CIERRA Claude Code antes de este paso (con su servidor MCP abierto, `uv sync` falla porque
+   jh-mcp.exe está en uso). Esta fase añade python-multipart y ruamel.yaml:
+
+      uv sync --directory backend
+
+2. Directorio de datos de prueba, con el perfil demo importado:
+
+      $env:JH_DATA_DIR = "data\demo-mi-cv"
+      uv run --directory backend jh db upgrade
+      New-Item -ItemType Directory -Force data\demo-mi-cv\uploads, data\demo-mi-cv\tmp | Out-Null
+      Copy-Item demo\profile.example.yaml data\demo-mi-cv\profile.yaml
+      uv run --directory backend jh profile import
+
+3. Un CV de Word ficticio (el de los tests: «Ana Ficticia Pérez», con voluntariado) y su mapeo:
+
+      uv run --directory backend python -c "import json; from pathlib import Path; from tests.template_support import make_cv, MAPPING; make_cv(Path('../data/demo-mi-cv/uploads/ana.docx')); Path('../data/demo-mi-cv/tmp/ana-mapping.json').write_text(json.dumps(MAPPING), encoding='utf-8')"
+
+
+PARTE 2 · LOS COMANDOS (sin agente)
+-----------------------------------
+Con $env:JH_DATA_DIR aún puesto:
+
+1. Inspeccionar:
+
+      uv run --directory backend jh templates inspect data\demo-mi-cv\uploads\ana.docx
+
+   Esperado: 1 página; fuente Cambria; "Secciones: PERFIL (summary) · EXPERIENCIA (experience) ·
+   VOLUNTARIADO (extra) · IDIOMAS (languages)"; apto para ATS: sí; y 15 párrafos numerados
+   (0 = "Ana Ficticia Pérez").
+
+2. Una ruta fuera de data\ se rechaza:
+
+      uv run --directory backend jh templates inspect README.md --json
+
+   Esperado: {"ok":false,"error":{"type":"invalid_file",…}}
+
+3. Construir la plantilla:
+
+      uv run --directory backend jh templates build-docx --source data\demo-mi-cv\uploads\ana.docx --mapping data\demo-mi-cv\tmp\ana-mapping.json --id ana --name "CV de Ana"
+
+   Esperado (unos 10-15 s): "Plantilla creada: data/templates/ana", secciones summary,
+   experience, extra_sections, languages. El mapeo de data\demo-mi-cv\tmp\ se ha borrado.
+
+4. Validar y previsualizar:
+
+      uv run --directory backend jh templates validate ana
+      uv run --directory backend jh templates preview ana
+
+   Abre data\demo-mi-cv\templates\ana\source.png (el original) y preview.png (la plantilla con la
+   candidata demo, Lucía). Deben tener el mismo diseño: nombre grande en negrita, títulos en azul,
+   el rol en negrita y la empresa normal, viñetas, y VOLUNTARIADO entre experiencia e idiomas. El
+   perfil sale recortado a la extensión del original (es corto a propósito).
+
+
+PARTE 3 · «MI CV» EN LA UI
+--------------------------
+1. Terminal A (API, con el directorio de prueba):
+
+      $env:JH_DATA_DIR = "data\demo-mi-cv"
+      uv run --directory backend jh serve
+
+   Terminal B (UI):
+
+      cd frontend
+      pnpm dev
+
+   Abre http://127.0.0.1:5173/plantillas.
+
+2. Bloque «Mi CV», arriba: aparece ana.docx como «CV de Ana» con la etiqueta «Tu CV», el
+   original y «Con tu perfil» lado a lado (la segunda imagen tarda unos segundos la primera vez).
+
+3. Pulsa «Subir mi CV» y elige otra vez data\demo-mi-cv\uploads\ana.docx. Esperado: entra como
+   ana-2.docx (nunca se sobrescribe) y, como es el mismo fichero, también sale ya importado.
+   Sube ahora un PDF cualquiera: queda «Pendiente de importar» con el aviso de la fase 08b, y
+   «Quitar» lo borra. Un .docx distinto mostraría la petición para el agente con «Copiar».
+
+4. Pulsa «Usar por defecto» en «CV de Ana». Esperado: pasa a «Plantilla por defecto» y debajo
+   sale la regla que sigue eligiendo otra plantilla ("Las ofertas con ATS workday, taleo… seguirán
+   usando «ats-simple»…").
+
+5. Comprueba que el perfil conserva sus comentarios y solo cambia esa línea:
+
+      git diff --no-index demo\profile.example.yaml data\demo-mi-cv\profile.yaml
+
+   Esperado: una sola línea cambiada, default_template: ana, con su comentario al final.
+
+6. En «Todas las plantillas», «CV de Ana» lleva la etiqueta «Tu CV».
+
+7. Limpieza (para la API con Ctrl+C):
+
+      Remove-Item Env:JH_DATA_DIR
+      Remove-Item -Recurse -Force data\demo-mi-cv
+
+
+PARTE 4 · TU CV (criterio de aceptación de la fase)
+---------------------------------------------------
+Necesitas tu perfil importado, una oferta aprobada y tu CV en Word (.docx). Si lo tienes en
+Google Docs, expórtalo a Word.
+
+1. `jh serve` y `pnpm dev` SIN JH_DATA_DIR. En Plantillas → «Subir mi CV», sube tu CV. Queda
+   «Pendiente de importar» con la petición para el agente: cópiala.
+
+2. Abre Claude Code en la raíz del repo y pega la petición:
+
+      /importar-plantilla-cv data/uploads/<tu-fichero>.docx
+
+   El agente analiza el CV (te cuenta columnas, fuentes, secciones y si es apto para ATS),
+   prepara el mapeo y construye la plantilla. Si el mapeo falla, corrige y reintenta solo (te
+   dirá el párrafo). Al final te enseña la preview con tu perfil y te lista lo que tu CV tiene y
+   tu perfil no; si hay secciones como voluntariado o premios, acepta pasarlas a extra_sections
+   con /actualizar-perfil.
+
+3. Vuelve a Plantillas: tu CV aparece importado, con el original y «Con tu perfil». Compáralos:
+   mismo diseño y mismo orden de secciones. Pulsa «Usar por defecto».
+
+4. Genera el CV de una oferta aprobada:
+
+      /generar-cv <job_id>
+
+   En la ficha de la oferta, sección CV: el render usa tu plantilla (etiqueta «Tu CV» en el
+   selector). Abre el PDF y comprueba:
+   - mismo diseño y orden de secciones que tu original;
+   - extensión parecida (mismas páginas);
+   - texto adaptado a la oferta, sin nada inventado (lo verifica el rol verificador);
+   - si tu CV tenía secciones extra y las pasaste al perfil, salen con su título.
+
+5. Comprueba con `git diff` sobre data\profile.yaml (si lo versionas) o a ojo que «Usar por
+   defecto» solo cambió default_template y no tocó tus comentarios.
+
+Anota cualquier diferencia de diseño (fuentes sustituidas, foto que flotaba y ahora va en línea,
+tablas que se descolocan): es la información para ajustar el importador.

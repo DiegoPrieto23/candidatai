@@ -12,6 +12,9 @@ from app.core import migrations
 from app.core.db import session_scope
 from app.services.audit import record_call, summarize_args
 from app.services.documents.checks import CvContentError
+from app.services.documents.importer import TemplateImportError
+from app.services.documents.importer.build import TemplateExistsError
+from app.services.documents.importer.paths import OutsideDataError
 from app.services.documents.pdf import PdfConversionError, PdfConverterUnavailableError
 from app.services.documents.service import (
     DocumentNotFoundError,
@@ -19,6 +22,7 @@ from app.services.documents.service import (
     RenderNotFoundError,
 )
 from app.services.documents.templates import TemplateNotFoundError
+from app.services.documents.uploads import InvalidUploadError, UploadTooLargeError
 from app.services.events import JobNotFoundError
 from app.services.extractions import ExtractionNotFoundError
 from app.services.pipeline import InvalidTransitionError
@@ -34,6 +38,11 @@ _ERROR_TYPES: tuple[tuple[type[Exception], str], ...] = (
     (RenderNotFoundError, "not_found"),
     (FileNotAvailableError, "not_found"),
     (TemplateNotFoundError, "not_found"),
+    (FileNotFoundError, "not_found"),
+    (OutsideDataError, "invalid_file"),
+    (TemplateExistsError, "exists"),
+    (UploadTooLargeError, "too_large"),
+    (InvalidUploadError, "invalid_file"),
     (PdfConverterUnavailableError, "pdf_unavailable"),
     (PdfConversionError, "pdf_failed"),
     (migrations.DatabaseNotReadyError, "database_not_ready"),
@@ -48,7 +57,7 @@ def to_tool_error(exc: Exception) -> ToolError:
         return exc
     if isinstance(exc, ValidationError):
         return from_validation_error(exc)
-    if isinstance(exc, CvContentError):
+    if isinstance(exc, CvContentError | TemplateImportError):
         details = [ErrorDetail(**issue.model_dump()) for issue in exc.issues]
         return ToolError("validation_error", str(exc), details)
     for exc_type, error_type in _ERROR_TYPES:

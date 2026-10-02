@@ -18,6 +18,9 @@ STATUS_BY_TYPE = {
     "validation_error": 422,
     "invalid_request": 422,
     "invalid_transition": 409,
+    "exists": 409,
+    "invalid_file": 422,
+    "too_large": 413,
     "pdf_unavailable": 503,
     "pdf_failed": 500,
     "database_not_ready": 503,
@@ -58,7 +61,9 @@ def install_error_handlers(app: FastAPI) -> None:
 
     # Errores esperables de los servicios. El resto lo recoge el manejador de `Exception`: responde
     # 500 `internal_error` con el mismo formato y `to_tool_error` registra la traza.
-    for exc_type in (ToolError, ValueError, LookupError, DatabaseNotReadyError):
+    # `OSError` está por `FileNotFoundError` (un fichero que no existe: 404); cualquier otro
+    # `OSError` acaba en `internal_error` 500, con la traza en el log y sin la ruta en la respuesta.
+    for exc_type in (ToolError, ValueError, LookupError, OSError, DatabaseNotReadyError):
         app.add_exception_handler(exc_type, _expected)
 
     @app.exception_handler(Exception)

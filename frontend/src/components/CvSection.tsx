@@ -147,7 +147,10 @@ function TemplatePicker({
                   </span>
                 )}
               </span>
-              <span className="mt-2 block truncate text-sm font-medium">{template.name}</span>
+              <span className="mt-2 flex items-center gap-1.5 text-sm font-medium">
+                <span className="truncate">{template.name}</span>
+                {template.from_user_cv && <Chip>Tu CV</Chip>}
+              </span>
               <span className="block truncate text-xs text-muted-foreground">
                 {template.ats_friendly ? 'Apta para ATS' : 'No apta para ATS'}
                 {template.photo_supported && ' · con foto'}

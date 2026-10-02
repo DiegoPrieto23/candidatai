@@ -632,3 +632,82 @@ def test_real_render_of_clasica_foto_with_photo(
     assert (render.template_id, render.options.photo, render.pages) == ("clasica-foto", True, 1)
     assert render.warnings == []  # Cambria y Calibri disponibles
     assert "Lucía Varela Otero" in pdf.read_pdf(data_file(render.pdf_path)).text
+
+
+# --- Secciones extra (fase 08.3) ------------------------------------------------------------
+
+EXTRA = [{"section_id": "voluntariado", "item_ids": ["v1"]}]
+
+
+def test_rejects_unknown_extra_section_or_item() -> None:
+    content = demo_content(
+        extra_sections=[
+            {"section_id": "premios", "item_ids": ["p1"]},
+            {"section_id": "voluntariado", "item_ids": ["v1", "v9"]},
+        ]
+    )
+    with pytest.raises(checks.CvContentError) as exc:
+        checks.validate_content(content, demo_profile(), demo_extraction())
+    assert _issues(exc) == [
+        ("extra_sections[0].section_id", "premios"),
+        ("extra_sections[1].item_ids[1]", "v9"),
+    ]
+
+
+def test_repeated_extra_items_are_invalid() -> None:
+    with pytest.raises(ValueError, match="repite ids"):
+        demo_content(extra_sections=[{"section_id": "voluntariado", "item_ids": ["v1", "v1"]}])
+
+
+@pytest.mark.parametrize("template_id", ["ats-simple", "clasica-foto"])
+def test_extra_sections_rendered_by_builtins(
+    session: Session, approved_job: Job, template_id: str
+) -> None:
+    from docx import Document as Docx
+
+    saved = service.save_content(
+        session,
+        approved_job.id,
+        demo_content(extra_sections=EXTRA),
+        CvRenderOptions(template_id=template_id),
+    )
+    assert not [w for w in saved.render.warnings if w.code == "section_not_supported"]
+    text = "\n".join(p.text for p in Docx(str(data_file(saved.render.docx_path))).paragraphs)
+    assert "VOLUNTARIADO" in text and "Mentora de análisis de datos" in text
+    assert "oct. 2023" in text
+
+    hidden = service.render(
+        session,
+        saved.document_id,
+        CvRenderOptions(template_id=template_id, hidden_sections=["extra_sections"]),
+    )
+    text = "\n".join(p.text for p in Docx(str(data_file(hidden.docx_path))).paragraphs)
+    assert "VOLUNTARIADO" not in text
+
+
+def test_extra_section_title_in_cv_language(session: Session, approved_job: Job) -> None:
+    from app.services.documents import context
+
+    content = demo_content(language="en", extra_sections=EXTRA)
+    ctx = context.build_context(content, demo_profile(), [])
+    assert ctx["extra_sections"][0].title == "Volunteering"
+    assert ctx["extra_sections"][0].items == [
+        {"text": "Mentora de análisis de datos en un programa de iniciación para estudiantes de FP",
+         "date": "Oct 2023"}
+    ]  # fmt: skip
+    assert ctx["show"]["extra_sections"] is True
+    assert (
+        context.build_context(demo_content(), demo_profile(), [])["show"]["extra_sections"] is False
+    )
+
+
+def test_template_without_extra_sections_warns(session: Session, approved_job: Job) -> None:
+    write_template(get_settings().user_templates_dir, "sin-extra", docx=ATS_SIMPLE_DOCX)
+    saved = service.save_content(
+        session,
+        approved_job.id,
+        demo_content(extra_sections=EXTRA),
+        CvRenderOptions(template_id="sin-extra"),
+    )
+    warning = next(w for w in saved.render.warnings if w.code == "section_not_supported")
+    assert "extra_sections" in warning.message

@@ -109,10 +109,32 @@ def _base_document(font: str, size: float) -> Any:
 
 def _section(doc: Any, name: str, body: Callable[[], None]) -> None:
     _tag(doc, f"{{%p if show.{name} %}}")
-    heading = _add(doc, (f"{{{{ labels.{name}|upper }}}}", {"bold": True, "size": 11}))
+    _heading(doc, f"{{{{ labels.{name}|upper }}}}")
+    body()
+    _tag(doc, "{%p endif %}")
+
+
+def _heading(doc: Any, text: str) -> None:
+    heading = _add(doc, (text, {"bold": True, "size": 11}))
     _spacing(heading, before=8, after=3)
     _bottom_border(heading)
-    body()
+
+
+# Secciones extra del perfil (voluntariado, premios…): cada una con su propio título.
+EXTRA_ITEM = (
+    "{{ i.text }}",
+    ("{% if i.date %} · {{ i.date }}{% endif %}", {"color": MUTED, "size": 9.5}),
+)
+
+
+def _extra_sections(doc: Any, heading: Callable[[Any, str], None]) -> None:
+    _tag(doc, "{%p if show.extra_sections %}")
+    _tag(doc, "{%p for x in extra_sections %}")
+    heading(doc, "{{ x.title|upper }}")
+    _tag(doc, "{%p for i in x.items %}")
+    _add(doc, *EXTRA_ITEM, style="List Bullet")
+    _tag(doc, "{%p endfor %}")
+    _tag(doc, "{%p endfor %}")
     _tag(doc, "{%p endif %}")
 
 
@@ -154,6 +176,7 @@ ATS_SIMPLE_META: dict[str, Any] = {
         "projects",
         "education",
         "certifications",
+        "extra_sections",
         "skills",
         "languages",
     ],
@@ -238,6 +261,7 @@ def build_ats_simple(dest: Path) -> None:
         _tag(doc, "{%p endfor %}")
 
     _section(doc, "certifications", certifications)
+    _extra_sections(doc, _heading)
 
     def skills() -> None:
         _tag(doc, "{%p for s in skills %}")
@@ -327,12 +351,16 @@ def _header_text(container: Any) -> None:
 
 def _classic_section(doc: Any, name: str, body: Callable[[], None]) -> None:
     _tag(doc, f"{{%p if show.{name} %}}")
-    heading = doc.add_paragraph()
-    _accent_run(heading, f"{{{{ labels.{name}|upper }}}}", bold=True, size=11, font="Cambria")
-    _spacing(heading, before=9, after=3)
-    _bottom_border(heading, color=ACCENT)
+    _classic_heading(doc, f"{{{{ labels.{name}|upper }}}}")
     body()
     _tag(doc, "{%p endif %}")
+
+
+def _classic_heading(doc: Any, text: str) -> None:
+    heading = doc.add_paragraph()
+    _accent_run(heading, text, bold=True, size=11, font="Cambria")
+    _spacing(heading, before=9, after=3)
+    _bottom_border(heading, color=ACCENT)
 
 
 def build_clasica_foto(dest: Path) -> None:
@@ -433,6 +461,7 @@ def build_clasica_foto(dest: Path) -> None:
         _tag(doc, "{%p endfor %}")
 
     _classic_section(doc, "certifications", certifications)
+    _extra_sections(doc, _classic_heading)
 
     def skills() -> None:
         _tag(doc, "{%p for s in skills %}")

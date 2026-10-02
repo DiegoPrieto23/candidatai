@@ -31,6 +31,7 @@ antes al perfil con `actualizar-perfil`, a `extra_sections` si no encaja en otra
 | `data/uploads/` | Los ficheros originales que subes para convertirlos en plantilla | No |
 | `data/photo.<ext>` | Tu foto original (jpg, png, webp; heic si Pillow lo abre). Otra ruta dentro de `data/` con `preferences.cv.photo_file` | No |
 | `data/cache/photo/` | La foto recortada para cada forma y tamaño (se regenera sola) | No |
+| `data/cache/previews/` | Previews con tu perfil y de las integradas (se regeneran solas) | No |
 
 Si una plantilla tuya tiene el mismo `id` que una integrada, gana la tuya.
 
@@ -125,6 +126,57 @@ agente no lo ve). `education[].detail` va vacío de momento: el perfil no tiene 
   `jh templates build-docx`: el código fusiona los fragmentos de cada párrafo e inserta cada
   marcador de una pieza.
 - Genera DOCX y PDF (con LibreOffice o Word).
+
+### Importar desde Word (fase 08.3)
+
+Lo hace el skill `importar-plantilla-cv` con tres comandos que solo trabajan dentro de `data/`:
+
+1. **`jh templates inspect <fichero> --json`**: página (tamaño, márgenes, columnas), fuentes que
+   se ven (por caracteres, resolviendo estilos y tema), colores, tablas, cuadros de texto,
+   imágenes (con su tamaño y si parecen una foto), cabecera y pie, las secciones en su orden (las
+   que no están en el contrato salen como `extra`), la `capacity` medida en el original y una
+   estimación de `ats_friendly` con sus motivos. Y los **párrafos numerados** (cuerpo, tablas y
+   cuadros de texto, y después cabeceras y pies) con sus fragmentos ya fusionados cuando comparten
+   formato.
+2. **`jh templates build-docx --source <fichero> --mapping <json> --id <id> [--name N] [--force]`**
+   aplica el mapeo del agente:
+   ```json
+   {"paragraphs": [
+     {"index": 0, "action": "variable", "text": "{{ name }}", "header": true},
+     {"index": 4, "action": "variable", "text": "{{ labels.experience|upper }}",
+      "start": ["if show.experience"]},
+     {"index": 5, "action": "variable", "start": ["for e in experience"],
+      "runs": [{"text": "{{ e.role }}", "like": 0}, {"text": " | {{ e.company }}", "like": 1}]},
+     {"index": 6, "action": "variable", "text": "{{ b }}",
+      "start": ["for b in e.bullets"], "end": ["endfor", "endfor", "endif"]},
+     {"index": 7, "action": "delete"}
+   ]}
+   ```
+   - `action`: `static` (por defecto: se queda como está), `delete`, `variable` (`text`, o `runs`
+     para mezclar formatos: cada parte copia el del fragmento `like`) o `photo` (la imagen del
+     párrafo pasa a ser `{{ photo }}`).
+   - `start` abre bloques antes del párrafo (`for x in y`, `if cond`) y `end` los cierra después
+     (`endfor`, `endif`). Con `scope: row`, el bloque es la fila de tabla entera (`{%tr … %}`).
+   - `header` marca la cabecera (nombre, subtítulo, contacto, foto): queda en
+     `layout.header_paragraphs` para la carta a juego de la fase 08c.
+   - Una fila de tabla cuyos párrafos se borran todos desaparece; las copias de compatibilidad de
+     los cuadros de texto (`mc:Fallback`) se quitan para que no conserven el texto original.
+
+   Antes de tocar el fichero, el mapeo se monta como una plantilla de borrador y se renderiza con
+   todo el perfil demo: bloques sin cerrar, variables fuera del contrato o atributos que no existen
+   (`e.rol`) salen juntos, con el `index` del párrafo. Después, cada párrafo mapeado se reescribe
+   en un solo fragmento (o uno por parte de `runs`) con el formato del original. Escribe
+   `template.docx`, `source.docx`, `source.png` (primera página del original) y un `template.yaml`
+   con las secciones en el orden en que las usa el mapeo, la `capacity` y las páginas del
+   original, la foto, la cabecera y el `ats_friendly` de `inspect`. Si la plantilla resultante no
+   renderiza, no deja nada.
+3. **`jh templates validate <id>`** (yaml, contrato y render con el perfil demo) y
+   **`jh templates preview <id> [--profile demo|real]`**: PDF y PNG; con `demo`, en la carpeta de
+   una plantilla tuya (es su miniatura); con `real` o en una integrada, en `data/cache/previews/`.
+   Avisa si no cabe en `page.max_pages` o si falta una fuente.
+
+Limitaciones: una foto flotante pasa a ir en línea en su párrafo (se avisa), y el color de acento
+no se parametriza en las plantillas importadas (sigue el del original).
 
 ### Motor html (fase 08b)
 - Jinja2 con autoescape; se imprime a PDF con Chromium (Playwright) sin red y sin JavaScript.

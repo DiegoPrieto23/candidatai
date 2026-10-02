@@ -13,7 +13,14 @@ from app.schemas.profile import Id
 
 CvLanguage = Literal["es", "en"]
 SectionName = Literal[
-    "summary", "experience", "projects", "education", "certifications", "skills", "languages"
+    "summary",
+    "experience",
+    "projects",
+    "education",
+    "certifications",
+    "extra_sections",
+    "skills",
+    "languages",
 ]
 SECTIONS: tuple[str, ...] = get_args(SectionName)
 PhotoMode = Literal["auto", "include", "exclude"]
@@ -63,6 +70,13 @@ class CvSkillGroup(_Strict):
     items: list[Text] = Field(min_length=1, max_length=20)
 
 
+class CvExtraSection(_Strict):
+    """Items de una sección extra del perfil; salen tal cual, sin reescribir."""
+
+    section_id: Id
+    item_ids: list[Id] = Field(min_length=1)
+
+
 class CvLanguageItem(_Strict):
     language: Text
     level: Text
@@ -79,6 +93,7 @@ class CvContent(_Strict):
     skills: list[CvSkillGroup] = []
     education_ids: list[Id] = []
     certification_ids: list[Id] = []
+    extra_sections: list[CvExtraSection] = []
     languages: list[CvLanguageItem] = []
     include_regional_language: bool = False
     keywords_targeted: list[Text] = []
@@ -90,6 +105,11 @@ class CvContent(_Strict):
             ("projects", [p.project_id for p in self.projects]),
             ("education_ids", self.education_ids),
             ("certification_ids", self.certification_ids),
+            ("extra_sections", [s.section_id for s in self.extra_sections]),
+            *(
+                (f"extra_sections[{i}].item_ids", s.item_ids)
+                for i, s in enumerate(self.extra_sections)
+            ),
         ):
             repeated = sorted({i for i in ids if ids.count(i) > 1})
             if repeated:
@@ -138,6 +158,9 @@ class CvVerification(_Strict):
 class TemplateLayout(_Strict):
     columns: int = Field(default=1, ge=1, le=3)
     uses_tables: bool = False
+    # Plantillas docx importadas: párrafos (índices de `inspect`) de la cabecera del CV, para
+    # crear la carta a juego (fase 08c).
+    header_paragraphs: list[int] = []
 
 
 class TemplatePhoto(_Strict):

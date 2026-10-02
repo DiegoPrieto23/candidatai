@@ -195,6 +195,7 @@ export const SECTION_LABEL: Record<SectionName, string> = {
   projects: 'Proyectos',
   education: 'Formación',
   certifications: 'Certificaciones',
+  extra_sections: 'Secciones extra',
   skills: 'Habilidades',
   languages: 'Idiomas',
 }

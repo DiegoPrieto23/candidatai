@@ -556,6 +556,142 @@ def profile_init(as_json: bool = JSON_OPTION) -> None:
         )
 
 
+# --- Plantillas: importar un CV de Word (solo CLI; las usa el skill importar-plantilla-cv) -----
+
+
+def _templates_fail(exc: Exception, as_json: bool) -> NoReturn:
+    from app.services.documents.templates import TemplateInvalidError
+
+    if isinstance(exc, TemplateInvalidError):  # aquí es lo que se está validando: con detalle
+        details = [ErrorDetail(field=i.field, received=None, reason=i.reason) for i in exc.issues]
+        error = ToolError("validation_error", str(exc), details)
+    else:
+        error = to_tool_error(exc)
+    if as_json:
+        typer.echo(dump_json(error.payload()))
+    else:
+        typer.secho(f"Error: {error.info.message}", fg=typer.colors.RED, err=True)
+        for detail in error.info.details:
+            received = f" (recibido: {detail.received!r})" if detail.received is not None else ""
+            typer.secho(f"  - {detail.field}: {detail.reason}{received}", err=True)
+    raise typer.Exit(code=1)
+
+
+SOURCE_FILE_ARG = typer.Argument(..., help="CV original, dentro de data/uploads/ o data/tmp/.")
+SOURCE_OPTION = typer.Option(..., "--source", help="CV de Word, en data/uploads/ o data/tmp/.")
+MAPPING_OPTION = typer.Option(..., "--mapping", help="Mapeo JSON, en data/tmp/.")
+TEMPLATE_ID_OPTION = typer.Option(..., "--id", help="Id de la plantilla (minúsculas y guiones).")
+TEMPLATE_NAME_OPTION = typer.Option(None, "--name", help="Nombre visible de la plantilla.")
+FORCE_OPTION = typer.Option(False, "--force", help="Sustituye una plantilla con el mismo id.")
+TEMPLATE_ID_ARG = typer.Argument(..., help="Id de la plantilla.")
+PREVIEW_PROFILE_OPTION = typer.Option("demo", "--profile", help="demo (ficticio) o real (el tuyo).")
+
+
+@templates_app.command("inspect")
+def templates_inspect(file: Path = SOURCE_FILE_ARG, as_json: bool = JSON_OPTION) -> None:
+    """Analiza un CV de Word: diseño, secciones, capacidad, ATS y párrafos numerados."""
+    from app.services.documents import authoring
+
+    try:
+        report = authoring.inspect_file(file)
+    except Exception as exc:
+        _templates_fail(exc, as_json)
+    if as_json:
+        typer.echo(dump_json(report))
+        return
+    page = report.page[0] if report.page else None
+    typer.echo(f"{report.file}: {report.pages or '?'} página(s), {page.size if page else '?'}.")
+    if report.pages_note:
+        typer.echo(f"  {report.pages_note}")
+    fonts, colors = ", ".join(report.fonts) or "-", ", ".join(report.colors) or "-"
+    typer.echo(f"Fuentes: {fonts} · colores: {colors}")
+    typer.echo(
+        f"Tablas: {len(report.tables)} · cuadros de texto: {len(report.text_boxes)} · "
+        f"imágenes: {len(report.images)}"
+    )
+    typer.echo("Secciones: " + " · ".join(f"{s.title} ({s.section})" for s in report.sections))
+    ats = "sí" if report.ats.ats_friendly else "no (" + " ".join(report.ats.reasons) + ")"
+    typer.echo(f"Apto para ATS: {ats}")
+    typer.echo("Párrafos:")
+    for p in report.paragraphs:
+        where = p.location + (f" t{p.table}f{p.row}c{p.cell}" if p.table is not None else "")
+        image = " [imagen]" if p.images else ""
+        typer.echo(f"  {p.index:>3} {where:<14} {p.text[:70]!r}{image}")
+
+
+@templates_app.command("build-docx")
+def templates_build_docx(
+    source: Path = SOURCE_OPTION,
+    mapping: Path = MAPPING_OPTION,
+    template_id: str = TEMPLATE_ID_OPTION,
+    name: str | None = TEMPLATE_NAME_OPTION,
+    force: bool = FORCE_OPTION,
+    as_json: bool = JSON_OPTION,
+) -> None:
+    """Crea data/templates/<id>/ a partir del Word y del mapeo."""
+    from app.services.documents import authoring
+
+    try:
+        result = authoring.build_docx(source, mapping, template_id, name=name, force=force)
+    except Exception as exc:
+        _templates_fail(exc, as_json)
+    if as_json:
+        typer.echo(dump_json(result))
+        return
+    typer.echo(f"Plantilla creada: data/{result.path}")
+    typer.echo(f"Secciones: {', '.join(result.sections)} · máximo {result.max_pages} página(s).")
+    for warning in result.warnings:
+        typer.secho(f"  Aviso: {warning}", fg=typer.colors.YELLOW)
+    typer.echo("Completa template.yaml y ejecuta `jh templates validate` y `preview`.")
+
+
+@templates_app.command("validate")
+def templates_validate(
+    template_id: str = TEMPLATE_ID_ARG,
+    as_json: bool = JSON_OPTION,
+) -> None:
+    """Comprueba template.yaml, las variables del contrato y que renderiza con el perfil demo."""
+    from app.services.documents import authoring
+
+    try:
+        result = authoring.validate(template_id)
+    except Exception as exc:
+        _templates_fail(exc, as_json)
+    if as_json:
+        typer.echo(dump_json(result))
+    else:
+        typer.echo(f"Plantilla válida: {result.template_id} ({result.engine}).")
+
+
+@templates_app.command("preview")
+def templates_preview(
+    template_id: str = TEMPLATE_ID_ARG,
+    which: str = PREVIEW_PROFILE_OPTION,
+    as_json: bool = JSON_OPTION,
+) -> None:
+    """PDF y PNG de la plantilla con el perfil demo o con el tuyo."""
+    from app.services.documents import authoring
+
+    try:
+        if which not in ("demo", "real"):
+            raise ValueError("`--profile` debe ser demo o real.")
+        if which == "real":
+            migrations.ensure_current()
+            with session_scope() as session:
+                result = authoring.preview_template(session, template_id, "real")
+        else:
+            result = authoring.preview_template(None, template_id, "demo")
+    except Exception as exc:
+        _templates_fail(exc, as_json)
+    if as_json:
+        typer.echo(dump_json(result))
+        return
+    typer.echo(f"Preview: {result.pdf_path} · {result.png_path}")
+    typer.echo(f"{result.pages} de {result.max_pages} página(s) como máximo.")
+    for warning in result.warnings:
+        typer.secho(f"  Aviso: {warning}", fg=typer.colors.YELLOW)
+
+
 # --- Configuración de agentes: delega en scripts/sync_agents.py ---------------------------------
 
 

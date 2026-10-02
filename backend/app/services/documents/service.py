@@ -36,6 +36,7 @@ from app.services.pipeline import CV_STAGES, Actor, EventType, InvalidTransition
 CV_KIND = "cv"
 CVS_DIR = "cvs"  # data/cvs/<job_id>/<document_id>/<render_id>/
 PREVIEW_PNG = "preview.png"
+SOURCE_PNG = "source.png"  # primera página del original importado (la crea `build-docx`)
 
 
 class DocumentNotFoundError(LookupError):
@@ -518,6 +519,8 @@ class TemplateInfo(BaseModel):
     fonts: list[str]
     languages: list[str]
     has_preview: bool  # hay `preview.png` para la galería
+    from_user_cv: bool  # creada desde un CV propio (tiene su original): etiqueta «Tu CV»
+    has_source_preview: bool  # hay `source.png` (primera página del original)
 
 
 class TemplateList(BaseModel):
@@ -550,6 +553,10 @@ def template_info(template: templates.Template) -> TemplateInfo:
         fonts=meta.fonts,
         languages=list(meta.languages),
         has_preview=(template.path / PREVIEW_PNG).is_file(),
+        from_user_cv=meta.origin == "user"
+        and meta.source_file is not None
+        and (template.path / meta.source_file).is_file(),
+        has_source_preview=(template.path / SOURCE_PNG).is_file(),
     )
 
 

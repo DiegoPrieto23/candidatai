@@ -10,14 +10,20 @@ el perfil FICTICIO de `demo/` y su foto (una silueta generada, no una persona): 
 import shutil
 import tempfile
 from pathlib import Path
+from typing import Any
 
 from app.core.config import REPO_ROOT
-from app.schemas.cv import CvContent, CvLanguage
+from app.schemas.cv import CvContent, CvLanguage, TemplateCapacity, TemplateMeta
 from app.schemas.profile import CandidateProfile
 from app.services import profile as profile_service
 from app.services.documents import context, pdf, photo
 from app.services.documents.engines.docx import render_docx
-from app.services.documents.templates import Template, load_meta
+from app.services.documents.templates import (
+    Template,
+    TemplateInvalidError,
+    TemplateIssue,
+    load_meta,
+)
 
 
 def _shorten(text: str, limit: int) -> str:
@@ -76,6 +82,10 @@ def preview_content(
             "skills": skills,
             "education_ids": [e.id for e in profile.education],
             "certification_ids": [c.id for c in profile.certifications],
+            "extra_sections": [
+                {"section_id": x.id, "item_ids": [i.id for i in x.items]}
+                for x in profile.extra_sections
+            ],
             "languages": [
                 {"language": lang.language, "level": lang.level}
                 for lang in profile.languages
@@ -150,3 +160,43 @@ def write_builtin_preview(template_dir: Path) -> Path:
         photo_source=DEMO_PHOTO,
         output_png=template_dir / "preview.png",
     )
+
+
+def demo_context() -> dict[str, Any]:
+    """Contexto del contrato con el perfil demo y todo su contenido (sin límite de capacidad)."""
+    demo = profile_service.load_from_yaml(profile_service.EXAMPLE_PATH)
+    meta = TemplateMeta(
+        id="mapeo",
+        name="mapeo",
+        engine="docx",
+        origin="user",
+        ats_friendly=True,
+        sections=["summary"],
+        capacity=TemplateCapacity(summary_chars=5000, experience_bullets=100, skill_groups=50),
+    )
+    content = preview_content(demo, Template(meta=meta, path=Path()))
+    ctx = context.build_context(content, demo, [])
+    ctx["photo"] = "[foto]"
+    ctx["accent_color"] = "#1F4E79"
+    return ctx
+
+
+def check_renders(template: Template) -> None:
+    """Renderiza la plantilla (sin PDF) con todo el perfil demo: si falla, `TemplateInvalidError`.
+
+    Detecta lo que no ve la comprobación de variables: atributos que no existen (`e.rol`),
+    bloques sin cerrar o marcadores que Word partió.
+    """
+    ctx = demo_context()
+    workdir = Path(tempfile.mkdtemp(prefix="jh-check-"))
+    try:
+        photo_file = None
+        if template.meta.photo.supported:
+            meta = template.meta.photo
+            photo_file = photo.prepared_photo(DEMO_PHOTO, meta.shape, meta.size_mm, workdir)
+        render_docx(template, ctx, workdir / "check.docx", template.meta.page.size, photo_file)
+    except Exception as exc:
+        issue = TemplateIssue(field=template.engine_file.name, reason=f"No renderiza: {exc}")
+        raise TemplateInvalidError(template.id, [issue]) from exc
+    finally:
+        shutil.rmtree(workdir, ignore_errors=True)

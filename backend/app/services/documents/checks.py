@@ -137,6 +137,24 @@ def validate_content(
         {c.id for c in profile.certifications},
         "una certificación",
     )
+    extra_sections = {s.id: {i.id for i in s.items} for s in profile.extra_sections}
+    for i, section in enumerate(content.extra_sections):
+        field = f"extra_sections[{i}]"
+        if section.section_id not in extra_sections:
+            issues.append(
+                ContentIssue(
+                    field=f"{field}.section_id",
+                    received=section.section_id,
+                    reason="No existe una sección extra con ese id en el perfil.",
+                )
+            )
+            continue
+        check_ids(
+            f"{field}.item_ids",
+            section.item_ids,
+            extra_sections[section.section_id],
+            f"un item de `{section.section_id}`",
+        )
 
     index = alias_index()
     levels = {canonical(s.name, index): s.level for s in profile.skills}
@@ -243,6 +261,7 @@ def render_warnings(
         "projects": bool(content.projects),
         "education": bool(content.education_ids),
         "certifications": bool(content.certification_ids),
+        "extra_sections": bool(content.extra_sections),
         "skills": bool(content.skills),
         "languages": bool(content.languages),
     }

@@ -27,6 +27,9 @@ usuario o con problemas de una verificación anterior que debes corregir.
 - **Skills**: solo del perfil. Primero las F/C+ que pide la oferta. Las de `basic_skills`, solo si
   la oferta las pide, y como "conocimientos de X".
 - **NDA**: proyectos con `nda: true`, a alto nivel y sin nombrar al cliente.
+- **Secciones extra** (`extra_sections` del perfil: voluntariado, premios…): elige qué items van
+  con `extra_sections: [{section_id, item_ids}]`; salen tal cual, no se reescriben. Incluye los
+  que aporten a esta oferta y caben en la plantilla (`sections` y `capacity`).
 - **Idioma regional**: según la ubicación de la oferta (POLICIES §3). La foto no es cosa tuya: la
   decide el render.
 - `keywords_targeted`: solo las keywords de la oferta que el CV cubre de verdad.

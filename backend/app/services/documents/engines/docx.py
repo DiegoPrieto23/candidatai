@@ -9,6 +9,7 @@ from typing import Any
 
 from docx.shared import Mm
 from docxtpl import DocxTemplate, InlineImage
+from jinja2.sandbox import SandboxedEnvironment
 
 from app.schemas.cv import PageSize
 from app.services.documents.templates import Template
@@ -39,7 +40,9 @@ def render_docx(
         values["photo"] = InlineImage(doc, str(photo_path), width=Mm(template.meta.photo.size_mm))
     else:
         values["photo"] = ""
-    doc.render(values, autoescape=True)
+    # Sandbox: una plantilla del usuario (importada desde un CV que puede no ser suyo) no puede
+    # llegar a atributos internos de Python (`''.__class__…`) desde un marcador.
+    doc.render(values, jinja_env=SandboxedEnvironment(autoescape=True), autoescape=True)
     _set_page_size(doc, page_size)
     output.parent.mkdir(parents=True, exist_ok=True)
     doc.save(output)

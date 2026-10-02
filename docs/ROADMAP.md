@@ -15,10 +15,10 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 05b | Preferencias de CV en el perfil | ✅ | El perfil admite plantilla por defecto, foto y reglas de plantilla; `demo/profile.example.yaml` vuelve a validar |
 | 06 | Frontend base | ✅ | UI con bandeja de ofertas, ficha y alta por URL o texto; `jh serve` |
 | 07 | Matching y triaje | ✅ | Filtros duros, score, skill `evaluar-encaje`, aprobar o descartar en la UI |
-| 08 | CV a medida con plantillas | 🚧 | `generar-cv` produce CVs verificados; plantilla, foto y color se cambian en la UI sin agente; tu CV de Word como base |
+| 08 | CV a medida con plantillas | ✅ | `generar-cv` produce CVs verificados; plantilla, foto y color se cambian en la UI sin agente; tu CV de Word como base |
 | 08.1 | ↳ Contenido, verificación y motor docx | ✅ | `generar-cv` produce un PDF verificado con `ats-simple` y la oferta pasa a `cv_ready` |
 | 08.2 | ↳ Foto, renders múltiples y UI | ✅ | Plantilla, foto y color se cambian en la UI sin agente; `clasica-foto` |
-| 08.3 | ↳ Importar plantillas desde Word y «Mi CV» | ⏳ | Subes tu CV de Word, se convierte en plantilla por defecto y los CVs a medida salen con tu diseño, tu orden de secciones y tus secciones extra |
+| 08.3 | ↳ Importar plantillas desde Word y «Mi CV» | ✅ | Subes tu CV de Word, se convierte en plantilla por defecto y los CVs a medida salen con tu diseño, tu orden de secciones y tus secciones extra |
 | 08c | Carta de presentación | ⏳ | `generar-carta` redacta y verifica la carta según tus indicaciones (generales y de cada oferta); TXT para pegar y PDF a juego con el CV |
 | 08b | Plantillas html | ⏳ | Importar diseños desde PDF o imagen (Canva…), también como «Mi CV», y plantilla integrada de dos columnas |
 | 09 | Conectores de ATS y scheduler | ⏳ | Ingesta diaria de empresas objetivo sin intervención |
@@ -358,3 +358,50 @@ decisiones tomadas y deuda técnica pendiente. -->
   - La comparación lado a lado usa el visor de PDF del navegador en un `iframe`.
   - `template_changed` recalcula el hash de cada plantilla en cada consulta del CV.
   - La BD real sigue necesitando `jh db upgrade` (hasta 0005); la 08.2 no añade migraciones.
+
+### 08.3 · CV: importar plantillas desde Word y «Mi CV» — 2026-10-02 · Claude Code (Opus 5.5)
+- **Resumen:** `services/documents/importer/` (`docx_xml`: párrafos numerados con fragmentos
+  fusionados; `inspect`: página, fuentes que se ven, colores, tablas, cuadros de texto, imágenes,
+  cabecera y pie, secciones en su orden, `capacity` medida y estimación de ATS; `mapping`: esquema
+  y comprobación previa; `build`: aplica el mapeo y escribe `data/templates/<id>/`; `paths`: solo
+  `data/`), `authoring.py`, CLI `jh templates inspect | build-docx | validate | preview`.
+  `extra_sections` en perfil, `CvContent`, contrato, `ats-simple` y `clasica-foto`. «Mi CV» en la
+  página Plantillas: subidas (`uploads.py`), original y preview con tu perfil lado a lado, «Usar
+  por defecto» (`default_template.py`, ruamel.yaml) y etiqueta «Tu CV». 1046 tests de backend y 51
+  de frontend. Prueba de humo con LibreOffice: Word ficticio → plantilla con el mismo diseño,
+  orden de secciones y extensión. Prueba manual completa del usuario
+  (`docs/pruebas/fase-08.3-prueba-manual.txt`, también la parte 4 con su CV de Word): todo bien.
+  Cierra la fase 08.
+- **Decisiones:**
+  - Mapeo por párrafo: `static` (por defecto), `delete`, `variable` (`text` o `runs` con el
+    formato del fragmento `like`, para «**Rol** | Empresa») y `photo`; bloques con `start`/`end`
+    y `scope: row` para filas de tabla; `header` → `layout.header_paragraphs` (carta de la 08c).
+  - Antes de tocar el Word, el mapeo se monta como plantilla Jinja de borrador y se renderiza con
+    todo el perfil demo: bloques sin cerrar, variables fuera del contrato y atributos inexistentes
+    salen con el índice del párrafo. Si la plantilla final no renderiza, no queda nada (staging en
+    `data/tmp/`).
+  - Secciones de `template.yaml` en el orden en que las usa el mapeo; `capacity` y páginas
+    medidas en el original; fuentes efectivas por caracteres (fragmento → estilo y `basedOn` →
+    por defecto → tema), no las de estilos sin usar.
+  - Secciones extra con un único bucle genérico `extra_sections` (título + items); sus ids
+    cuentan como de primer nivel, así `<sección>/<item>` no choca con `exp-x/a1`.
+  - Render con `SandboxedEnvironment` (docxtpl y comprobación del mapeo) y mapeos sin `__` ni
+    `{#`: una plantilla importada de un CV ajeno no puede llegar a atributos internos de Python
+    (lo detectó la revisión).
+  - Una subida está «importada» si una plantilla tuya tiene un `source.*` con el mismo sha256: no
+    se apunta el origen en ningún sitio. Subidas: 10 MB, nombre saneado (también nombres
+    reservados de Windows), firma del contenido y nunca se sobrescribe.
+  - «Usar por defecto» es la única escritura de `profile.yaml` desde la app: solo esa clave, con
+    ruamel.yaml (`null` explícito, LF conservado), validando antes de sustituir; sin copia, la
+    versión anterior queda en `profile_versions`.
+  - Errores nuevos: `exists` (409), `too_large` (413), `invalid_file` también en la API (422).
+  - Dependencias: `python-multipart` y `ruamel.yaml`.
+- **Deuda:**
+  - Una foto flotante pasa a ir en línea; el color de acento no se parametriza en las importadas.
+  - `GET /uploads` calcula el sha256 de subidas y originales en cada consulta (la UI sondea cada
+    15 s); cachear por ruta, fecha y tamaño si hay muchos ficheros.
+  - Un `--id` igual al de una integrada la sustituye en la galería (solo se avisa).
+  - Con el servidor MCP de Claude Code abierto, `uv add`/`uv sync` y `pnpm gen:api` siguen
+    fallando por `jh-mcp.exe` en uso: se instaló con `uv pip install` y se regeneró el cliente con
+    `uv run --no-sync`. Ejecuta `uv sync --directory backend` con Claude Code cerrado.
+

@@ -22,6 +22,12 @@ Los comandos se ejecutan desde la raíz del repo.
 **Si ya existe:** aplica solo los cambios que se pidan. Para un logro nuevo, pregunta la métrica
 real si no la dan; si no hay métrica, se escribe sin ella.
 
+**Secciones que no encajan en las demás** (voluntariado, premios, publicaciones, cursos…): van en
+`extra_sections`, con `id`, `title` en es y en, e `items` (`id`, `text` y `date` opcional). Salen
+en el CV tal cual, así que escribe cada item como debe leerse. Si vienes de `importar-plantilla-cv`
+con una lista de lo que el CV subido tiene y el perfil no, propón dónde va cada cosa y confírmalo
+antes de escribirlo.
+
 **Siempre:**
 - Nada inventado ni "mejorado": si algo es ambiguo, pregunta.
 - Ids estables (`exp-<empresa>`, `a1`, `a2`…). No renumeres los existentes: los CVs antiguos los citan.

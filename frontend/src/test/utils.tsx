@@ -32,6 +32,16 @@ export interface Call {
  * Simula la API: `routes` va de «MÉTODO /ruta» a la respuesta (JSON). Una respuesta
  * `{status, body}` devuelve ese código. Devuelve la lista de llamadas para comprobarlas.
  */
+/** JSON si lo es; si no (una subida con `FormData`), el texto tal cual. */
+function parseBody(text: string): unknown {
+  if (!text) return undefined
+  try {
+    return JSON.parse(text)
+  } catch {
+    return text
+  }
+}
+
 export function mockApi(routes: Record<string, Handler | unknown>): Call[] {
   const calls: Call[] = []
   vi.stubGlobal(
@@ -40,7 +50,7 @@ export function mockApi(routes: Record<string, Handler | unknown>): Call[] {
       const url = new URL(input.url)
       const key = `${input.method} ${url.pathname}`
       const text = await input.clone().text()
-      calls.push({ method: input.method, path: url.pathname, search: url.searchParams, body: text ? JSON.parse(text) : undefined })
+      calls.push({ method: input.method, path: url.pathname, search: url.searchParams, body: parseBody(text) })
       if (!(key in routes)) {
         return Response.json({ ok: false, error: { type: 'not_found', message: `Sin simular: ${key}`, details: [] } }, { status: 404 })
       }
@@ -199,6 +209,7 @@ const SECTIONS: TemplateInfo['sections'] = [
   'projects',
   'education',
   'certifications',
+  'extra_sections',
   'skills',
   'languages',
 ]
@@ -223,6 +234,8 @@ export function templateInfo(changes: Partial<TemplateInfo> = {}): TemplateInfo 
     fonts: ['Calibri'],
     languages: ['es', 'en'],
     has_preview: true,
+    from_user_cv: false,
+    has_source_preview: false,
     ...changes,
   }
 }
@@ -294,6 +307,7 @@ export function jobCv(renders: RenderResult[], changes: Partial<CvView> = {}): J
         skills: [],
         education_ids: [],
         certification_ids: [],
+        extra_sections: [],
         languages: [],
         include_regional_language: false,
         keywords_targeted: [],

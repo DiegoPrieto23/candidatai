@@ -12,6 +12,8 @@ export const keys = {
   triage: ['triage'] as const,
   cv: (id: number) => ['cv', id] as const,
   templates: ['templates'] as const,
+  uploads: ['uploads'] as const,
+  defaultTemplate: ['templates', 'default'] as const,
 }
 
 export interface JobsParams {
@@ -152,6 +154,64 @@ export function useTemplates() {
     queryKey: keys.templates,
     queryFn: () => unwrap(api.GET('/templates')),
     staleTime: 60_000,
+  })
+}
+
+/** CVs subidos para convertirlos en plantilla y si ya se importaron. */
+export function useUploads() {
+  return useQuery({
+    queryKey: keys.uploads,
+    queryFn: () => unwrap(api.GET('/uploads')),
+    // El agente importa el fichero desde fuera: se refresca solo para ver cuándo termina.
+    refetchInterval: 15_000,
+  })
+}
+
+export function useUploadCv() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (file: File) =>
+      unwrap(
+        api.POST('/uploads', {
+          body: { file: file as unknown as string },
+          bodySerializer: () => {
+            const form = new FormData()
+            form.append('file', file)
+            return form
+          },
+        }),
+      ),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.uploads }),
+  })
+}
+
+export function useDeleteUpload() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (name: string) => unwrap(api.DELETE('/uploads/{name}', { params: { path: { name } } }).then(withNoContent)),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.uploads }),
+  })
+}
+
+/** Un 204 no trae cuerpo: `unwrap` necesita algo en `data` para no tomarlo por error. */
+function withNoContent<T extends { response: Response }>(result: T): T & { data: true } {
+  return result.response.ok ? { ...result, data: true, error: undefined } : (result as T & { data: true })
+}
+
+export function useDefaultTemplate() {
+  return useQuery({
+    queryKey: keys.defaultTemplate,
+    queryFn: () => unwrap(api.GET('/templates/default')),
+  })
+}
+
+/** Fija la plantilla por defecto en tu perfil (conserva comentarios) e importa la versión nueva. */
+export function useSetDefaultTemplate() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (templateId: string) =>
+      unwrap(api.POST('/templates/{template_id}/default', { params: { path: { template_id: templateId } } })),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.defaultTemplate }),
   })
 }
 

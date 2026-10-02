@@ -74,9 +74,13 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 La captura del botón «Enviar a Job Hunter» es un endpoint REST de la app (`POST /api/capture`,
 fase 09b), no parte de esta interfaz: la usa la extensión, no el agente.
 
-Las utilidades de autoría de plantillas (`jh templates inspect | build-docx | scaffold-html |
-validate | preview | compare`) son solo CLI: trabajan con ficheros dentro de `data/` y las usa el
-skill `importar-plantilla-cv`. Detalle en `docs/CV_TEMPLATES.md`.
+Las utilidades de autoría de plantillas (`jh templates inspect | build-docx | validate | preview`,
+fase 08.3; `scaffold-html` y `compare`, 08b) son solo CLI: trabajan con ficheros dentro de `data/`
+(el original en `data/uploads/` o `data/tmp/`, el mapeo en `data/tmp/`) y las usa el skill
+`importar-plantilla-cv`. Aceptan `--json` y dan los errores con el formato común: un mapeo que no
+vale es `validation_error` con un detalle por párrafo (`paragraphs[index=N]`), una ruta fuera de
+`data/` es `invalid_file` y un `--id` que ya existe sin `--force`, `exists`. Detalle en
+`docs/CV_TEMPLATES.md` §Importar desde Word.
 
 Aprobar o descartar **no tiene herramienta propia a propósito**: esa decisión se toma en la UI. Si
 el usuario la dicta a su agente, este puede usar `add_event` con `approved` o `discarded` y el

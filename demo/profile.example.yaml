@@ -81,6 +81,16 @@ certifications:
     issuer: Amazon Web Services
     date: 2024-05
 
+# Secciones que no encajan en las anteriores (voluntariado, premios, publicaciones…). Salen en el
+# CV tal cual; se citan como evidencia con `<sección>/<item>`.
+extra_sections:
+  - id: voluntariado
+    title: {es: Voluntariado, en: Volunteering}
+    items:
+      - id: v1
+        text: Mentora de análisis de datos en un programa de iniciación para estudiantes de FP
+        date: 2023-10
+
 languages:
   - {language: Español, level: Nativo}
   - {language: Gallego, level: Nativo, regional: Galicia}

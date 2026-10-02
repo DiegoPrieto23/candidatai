@@ -33,6 +33,7 @@ ProfileSection = Literal[
     "projects",
     "education",
     "certifications",
+    "extra_sections",
     "languages",
     "skills",
     "basic_skills",
