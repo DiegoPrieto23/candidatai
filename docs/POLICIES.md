@@ -9,7 +9,10 @@ Las reglas con valores ajustables tienen su parámetro en `config/policies.yaml`
 ## 1. Veracidad
 
 1. **Nada inventado.** Todo lo que aparece en un CV, una respuesta o una carta tiene respaldo en
-   `data/profile.yaml`. Cada bullet del CV lleva sus `evidence` y el código lo comprueba.
+   `data/profile.yaml`. Cada bullet del CV lleva sus `evidence` y el código lo comprueba. En la
+   carta valen además lo que dice la oferta (su extracción) y lo que tú cuentes en las
+   indicaciones de la carta (motivación, cómo conoces la empresa…), que se guardan con ella como
+   respaldo; nunca datos de la empresa sacados de otro sitio.
 2. **Niveles de habilidad privados** (nunca aparecen en el CV):
    `F` fuerte · `C+` entre conozco y fuerte · `C` conozco · `B` básico.
    - `F` y `C+` pueden presentarse como experiencia.
@@ -134,8 +137,12 @@ triaje. Los pesos y el umbral se ajustan con `jh eval matching` (`evals/matching
 
 - Frases concretas con verbo de acción y resultado. Nada de "apasionado", "proactivo",
   "sinergias" ni superlativos vacíos.
-- Cartas de presentación: máximo 180 palabras, tres párrafos (por qué esta empresa y este puesto,
-  qué aportas con evidencias, cierre simple). Solo si la oferta la pide o tú la quieres.
+- Cartas de presentación: solo si la oferta la pide o tú la quieres. Por defecto, máximo 180
+  palabras (`cover_letter.max_words` en `config/policies.yaml`) y tres párrafos (por qué esta
+  empresa y este puesto, qué aportas con evidencias, cierre simple). **Tus indicaciones mandan
+  sobre estos valores por defecto**: las generales de `preferences.cover_letter` en el perfil
+  (extensión, tono, despedida, qué decir o evitar siempre) y, por encima, las de cada oferta. Lo
+  que nunca cambian son §1 y §4: ni hechos inventados ni salario.
 - Respuestas de screening: directas, en el idioma de la pregunta, con evidencia del perfil.
 
 ## 8. Búsqueda con navegador

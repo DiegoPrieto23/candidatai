@@ -11,6 +11,17 @@ El CV se genera en dos pasos independientes (ADR-014):
 Un mismo contenido puede tener varios renders (por ejemplo, uno sin foto para un ATS y otro con
 foto para enviar por email), y tú marcas cuál se envía.
 
+## Tu CV como base
+
+El camino habitual es usar **tu propio CV** como plantilla (página Plantillas → «Mi CV», fase 08.3;
+desde PDF o imagen, fase 08b): lo subes, tu agente lo convierte **una vez** con el skill
+`importar-plantilla-cv` y lo marcas «Usar por defecto». A partir de ahí, cada CV a medida sale con
+tu diseño, tu orden de secciones y una extensión parecida a la del original (la `capacity` se mide
+en él), con el texto redactado desde tu perfil para cada oferta. La IA no reescribe tu Word en cada
+oferta: así el estilo no se degrada, la verificación es la misma y cambiar de foto o color no gasta
+cuota. Lo que tu CV tenga y el perfil no (incluidas secciones como voluntariado o premios) se pasa
+antes al perfil con `actualizar-perfil`, a `extra_sections` si no encaja en otra sección.
+
 ## Dónde viven
 
 | Carpeta | Qué contiene | En git |
@@ -32,6 +43,7 @@ Si una plantilla tuya tiene el mismo `id` que una integrada, gana la tuya.
   template.html        motor html: Jinja2 + HTML
   style.css            motor html
   fonts/               fuentes locales opcionales (.ttf, .otf, .woff2)
+  letter.docx|html     diseño de carta a juego (opcional, fase 08c)
   source.<ext>         original del que se creó (solo en data/, nunca en templates/)
   preview.pdf|png      generadas con el perfil y la foto demo (no se editan a mano); el PNG es la
                        primera página y es la miniatura de la UI
@@ -50,6 +62,7 @@ tags: [moderno, tech]
 layout:
   columns: 2
   uses_tables: true               # tablas o cuadros de texto para maquetar
+  header_paragraphs: [0, 1, 2]    # solo docx importadas: párrafos de cabecera, para crear la carta
 ats_friendly: false               # true solo si: 1 columna, sin tablas ni cuadros de texto de maquetación,
                                   # sin datos clave en cabecera o pie, y texto seleccionable en orden lógico
 photo:
@@ -59,11 +72,15 @@ photo:
 page:
   size: A4                        # A4 | Letter
   max_pages: 1
-capacity:                         # orientativo, para que el redactor ajuste la extensión
+capacity:                         # orientativo, para que el redactor ajuste la extensión; en las
+                                  # importadas, medido en el original por `inspect`
   summary_chars: 450
   experience_bullets: 9
   skill_groups: 4
-sections: [summary, experience, projects, education, certifications, skills, languages]
+sections: [summary, experience, projects, education, certifications, extra_sections, skills, languages]
+                                  # en el orden en que aparecen; en las importadas, el del original
+letter:                           # opcional (fase 08c): diseño de carta a juego
+  file: letter.docx
 options:
   accent_color:                   # opcional; solo si la plantilla usa {{ accent_color }}
     default: "#1F4E79"
@@ -89,6 +106,7 @@ Lo que recibe cualquier plantilla, en los dos motores:
 | `education[]` | `title`, `center`, `start`, `end`, `detail` |
 | `certifications[]` | `name`, `issuer`, `date` |
 | `skills[]` | `group`, `items[]` (objetos, no diccionarios: `{{ s.items }}` funciona) |
+| `extra_sections[]` | `title` (en el idioma del CV), `items[]` con `text` y `date` (desde la 08.3) |
 | `languages[]` | `language`, `level` |
 | `labels.*` | Títulos de sección en el idioma del CV (`labels.experience` = «Experiencia» / «Experience») |
 | `accent_color` | Color elegido, si la plantilla lo admite |
@@ -121,7 +139,7 @@ template_id: null          # null = según reglas
 photo: auto                # auto | include | exclude
 accent_color: null         # null = el de la plantilla
 max_pages: null            # null = preferences.cv.max_pages o, si tampoco, el de la plantilla
-hidden_sections: []        # p. ej. [projects]
+hidden_sections: []        # p. ej. [projects, extra_sections]
 page_size: null            # null = el de la plantilla
 ```
 
@@ -173,6 +191,7 @@ El render nunca se bloquea en silencio: devuelve avisos que ves en la UI y recib
 | `section_not_supported` | El contenido tiene una sección que la plantilla no muestra |
 | `font_substituted` | Falta una fuente de la plantilla y el PDF usa otra |
 | `pdf_only` | Motor html: no hay DOCX |
+| `letter_fallback` | Carta: la plantilla elegida no tiene diseño de carta y se usa `carta-simple` con su color |
 
 ## Renders
 
@@ -190,3 +209,22 @@ después de un render, la UI lo marca como «Plantilla cambiada».
 | `ats-simple` | docx | 08 | Una columna, sin foto, tipografía estándar. La opción segura para portales con ATS |
 | `clasica-foto` | docx | 08 | Una columna con cabecera y foto circular, sobria; color de acento a elegir entre 4. No apta para ATS (cabecera en tabla) |
 | `moderna-2col` | html | 08b | Dos columnas con barra lateral y color de acento configurable |
+| `carta-simple` | docx | 08c | Solo carta: cabecera sobria sin foto y color de acento libre. Respaldo cuando la plantilla del CV no trae carta |
+
+Desde la 08c, `ats-simple`, `clasica-foto` y `moderna-2col` traen también su `letter.*`.
+
+## Cartas de presentación (fase 08c)
+
+La carta sigue la misma separación que el CV: el agente redacta `CoverLetterContent` (saludo,
+párrafos con evidencias y despedida) según tus indicaciones, y el código la presenta.
+
+- **A juego con el CV**: por defecto se renderiza con la plantilla, la foto y el color del render
+  seleccionado del CV de esa oferta, usando el `letter.*` de la plantilla. Si no tiene, se usa
+  `carta-simple` con el mismo color y se avisa (`letter_fallback`). Las plantillas docx importadas
+  obtienen su `letter.docx` con `jh templates build-letter <id>`, a partir de su cabecera
+  (`layout.header_paragraphs`).
+- **Contrato de la carta**: la cabecera del CV (`name`, `subtitle`, `contact.*`, `photo`,
+  `accent_color`, `labels`) más `date` (formateada en el idioma de la carta), `place` (tu ciudad),
+  `recipient`, `greeting`, `paragraphs[]` y `sign_off`.
+- **Formatos**: PDF (y DOCX en motor docx) por render, una página como máximo (`too_long` si no
+  cabe), y **texto plano** generado al vuelo desde el contenido, para pegarlo en formularios.

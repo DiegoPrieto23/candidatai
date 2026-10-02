@@ -1,6 +1,6 @@
 ---
 name: preparar-candidatura
-description: Prepara respuestas de screening y, si procede, carta de presentación para una oferta de Job Hunter con CV listo. Úsalo cuando se pida preparar una candidatura o responder preguntas de un formulario.
+description: Prepara respuestas de screening y, si procede, carta de presentación (con el skill generar-carta) para una oferta de Job Hunter con CV listo. Úsalo cuando se pida preparar una candidatura o responder preguntas de un formulario.
 argument-hint: '[job_id] [preguntas pegadas o ''carta'']'
 allowed-tools: mcp__jobhunter__get_extraction mcp__jobhunter__get_profile mcp__jobhunter__get_cv_content
 ---
@@ -17,8 +17,9 @@ pegadas del formulario o la palabra `carta`.
      público: `needs_user_input: true`, con la respuesta vacía y una nota de qué hace falta.
    - Preguntas tipo "¿Por qué quieres trabajar aquí?": usa solo la extracción de la oferta y lo
      que cuente el usuario; no inventes datos de la empresa.
-3. Carta de presentación solo si la oferta la pide o si los argumentos incluyen `carta`: máximo
-   180 palabras, sin clichés (§7).
+3. Carta de presentación solo si la oferta la pide o si los argumentos incluyen `carta`: sigue el
+   skill `generar-carta` con este `job_id` (es un documento propio, con sus indicaciones y su
+   verificación). Si ya hay una carta verificada, no la rehagas: dilo y sigue.
 4. Guarda con `save_application_answers`.
 5. Enseña el resultado para revisarlo. **No envíes nada ni abras formularios**: el envío es de la
    fase 11 y siempre desde la UI.

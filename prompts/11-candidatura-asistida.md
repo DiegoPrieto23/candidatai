@@ -14,7 +14,10 @@ Rellenar formularios de ATS sin intervención y enviar solo cuando confirmes en 
    - detector de plataforma a partir de la URL (Greenhouse, Lever, Ashby, formulario genérico,
      LinkedIn y desconocida);
    - rellenadores por plataforma que mapean campos estándar (nombre, email, teléfono, LinkedIn,
-     CV, carta, respuestas del paquete) usando etiquetas accesibles, no posiciones;
+     CV, carta, respuestas del paquete) usando etiquetas accesibles, no posiciones. La carta es la
+     seleccionada en la fase 08c: su PDF si el campo pide un fichero y su texto plano si es un
+     cuadro de texto; si el formulario la pide como obligatoria y no hay, cuenta como obligatorio
+     vacío;
    - **nunca pulsan el botón de envío**: al terminar, capturan la pantalla completa, listan los
      campos rellenados, los vacíos y los obligatorios sin respuesta, y se detienen;
    - si detectan captcha, anti-bot o login inesperado, paran y marcan `needs_user`.

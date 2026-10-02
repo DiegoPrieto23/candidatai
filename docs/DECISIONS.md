@@ -183,3 +183,30 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
 - **Consecuencias:** el agente no puede marcar un CV como listo sin un PDF que quepa. Un país que no
   esté en la lista no aplica sus reglas: hay que ampliar `countries.yaml`. Cada conversión arranca
   LibreOffice (unos 10-20 s en Windows).
+
+## ADR-018 · Tu CV como base y carta de presentación como documento propio
+- **Contexto:** el usuario quiere subir su CV y que la IA mantenga su estilo cambiando solo el
+  texto, y generar cartas de presentación según sus indicaciones, en PDF o texto. Hasta ahora la
+  carta era un campo de texto de las respuestas de screening (fase 10), con extensión fija.
+- **Decisión:**
+  - **CV propio**: no se añade un modo en que la IA reescriba el Word en cada oferta. El CV se
+    importa una vez como plantilla (ADR-014) y se marca por defecto desde la UI; la importación
+    mide en el original la extensión (`capacity`) y el orden de secciones, y las secciones que no
+    están en el contrato pasan al perfil como `extra_sections`, que el redactor elige sin
+    reescribir;
+  - **carta**: documento propio (`documents.kind = cover_letter`) con su esquema, sus
+    herramientas, su verificación por el rol `verificador` y sus renders, en una fase nueva (08c)
+    que reutiliza la infraestructura del CV;
+  - las indicaciones tienen dos niveles: generales en `preferences.cover_letter` del perfil y por
+    oferta en `cover_letter_briefs` (UI o agente); mandan las de la oferta y ambas pueden cambiar
+    la extensión y el estilo por defecto de `POLICIES.md` §7, nunca §1 ni §4;
+  - lo que el usuario cuenta en sus indicaciones es respaldo válido para la carta (evidencia
+    `user`), igual que la extracción de la oferta (`extraction`); el documento guarda las
+    indicaciones usadas para que la verificación sea reproducible;
+  - el PDF va a juego con el CV seleccionado (`letter.*` de la plantilla, `carta-simple` si no
+    hay); el texto plano se genera al vuelo. La edición manual en la UI crea un documento nuevo
+    sin verificación, marcado «Editada por ti».
+- **Consecuencias:** el estilo de un CV propio se conserva exacto en docx y aproximado en html,
+  pero un diseño con elementos que no encajan en el contrato (p. ej. un gráfico de habilidades)
+  se queda fijo o se pierde. La carta ya está disponible antes de la fase 10, que solo la muestra
+  en el paquete de candidatura; `ApplicationAnswers` deja de llevar `cover_letter`.

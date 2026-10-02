@@ -124,10 +124,11 @@ Arranca `jh serve`, `jh worker` y `pnpm dev`. Después, en tu agente:
 | `procesar-ofertas` | Extrae las ofertas nuevas (rol `extractor`, aislado cuando el agente lo permite) |
 | `evaluar-encaje` | Valora y explica el encaje de las ofertas de triaje |
 | `generar-cv 42` | Redacta, renderiza y verifica el CV para la oferta 42 |
+| `generar-carta 42 máximo 150 palabras` | Carta de presentación según tus indicaciones, verificada; TXT y PDF a juego con el CV |
 | `preparar-candidatura 42` | Respuestas de screening y carta, si hace falta |
 | `preparar-entrevista 42 tecnica` | Dosier de entrevista y simulacro |
 | `resumen-diario` | Qué tienes hoy, seguimientos vencidos, qué procesar |
-| `importar-plantilla-cv data/uploads/mi-cv.pdf` | Convierte un CV con cualquier diseño en plantilla reutilizable |
+| `importar-plantilla-cv data/uploads/mi-cv.pdf` | Convierte tu CV (o cualquier diseño) en plantilla: los CVs a medida salen con su estilo |
 | `revisar-linkedin` | Informe de mejoras para tu perfil de LinkedIn, listo para copiar (tú lo aplicas) |
 | `buscar-ofertas` | Recorre con tu navegador los portales aprobados y da de alta lo que encaje (`buscar-ofertas configurar` para elegirlos) |
 

@@ -58,6 +58,11 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | `render_cv` | `jh cv render DOC [--file F] --json` | 08 | `document_id, options?: CvRenderOptions` (por defecto, todo `auto`); por CLI, `F` = las opciones | `RenderResult` | `cv_rendered` |
 | `get_cv_content` | `jh cv show (ID \| --document DOC) --json` | 08 | `job_id` (su último CV) o `document_id` | `CvContent`, `evidence` (texto de cada evidencia citada), `verification` y `renders` | — |
 | `save_cv_verification` | `jh cv save-verification DOC --file F --json` | 08 | `document_id, verification: CvVerification` | `ok`, `passed`, `stage` y `note` (por qué no pasa a `cv_ready`, si no pasa) | `cv_verified` / `cv_rejected` |
+| `save_cover_letter_brief` | `jh letter brief ID --file F --json` | 08c | `job_id, instructions?, max_words?` | `ok`, `max_words` resuelto | — |
+| `get_cover_letter` | `jh letter show (ID \| --document DOC) --json` | 08c | `job_id` (su última carta) o `document_id` | `brief` (de la oferta), `preferences` (`preferences.cover_letter`), `max_words` resuelto, `CoverLetterContent` con `evidence` resueltas, `word_count`, `verification`, `edited_by_user` y `renders` | — |
+| `save_cover_letter` | `jh letter save ID --file F --json` | 08c | `job_id, content: CoverLetterContent, render_options?: CoverLetterRenderOptions`; por CLI, `F` = `{"content": …, "render_options": …}` | `document_id`, `word_count` + primer render (`RenderResult`) | `cover_letter_generated` |
+| `render_cover_letter` | `jh letter render DOC [--file F] --json` | 08c | `document_id, options?: CoverLetterRenderOptions` | `RenderResult` | — |
+| `save_cover_letter_verification` | `jh letter save-verification DOC --file F --json` | 08c | `document_id, verification: CvVerification` | `ok`, `passed` | `cover_letter_verified` |
 | `save_application_answers` | `jh applications save-answers ID --file F` | 10 | `job_id, answers: ApplicationAnswers` | `document_id` | `application_prepared` |
 | `list_followups_due` | `jh followups --days N --json` | 10 | `days_without_reply=10` | Candidaturas sin respuesta | — |
 | `list_upcoming` | `jh upcoming --days N --json` | 10 | `days=7` | Entrevistas, pruebas y plazos próximos | — |
@@ -79,7 +84,7 @@ motivo que él dé en `note`, nunca por iniciativa propia. El evento queda con a
 
 `get_profile` devuelve la última versión importada (no lee `data/profile.yaml`). `sections` admite
 `personal`, `headline`, `summary`, `experience`, `projects`, `education`, `certifications`,
-`languages`, `skills`, `basic_skills`, `stories` y `preferences`; por MCP es una lista y por CLI va
+`extra_sections` (desde la 08.3), `languages`, `skills`, `basic_skills`, `stories` y `preferences`; por MCP es una lista y por CLI va
 separada por comas. `schema_version` sale siempre. De `personal` solo salen los campos de una lista
 blanca (`PUBLIC_PERSONAL_FIELDS`): un campo nuevo no se expone hasta añadirlo ahí. Los niveles
 F/C+/C/B y las marcas `nda` sí salen: el agente los necesita para aplicar `POLICIES.md` §1.
@@ -100,7 +105,8 @@ raíz del repo.
 
 `add_event` no acepta los eventos que registra su propia herramienta o el sistema: `found`,
 `duplicate_detected`, `extracted`, `hard_filter_failed`, `scored`, `fit_assessed`,
-`cv_generated`, `cv_rendered`, `cv_verified`, `cv_rejected` y `application_prepared`. `list_jobs` con
+`cv_generated`, `cv_rendered`, `cv_verified`, `cv_rejected`, `cover_letter_generated`,
+`cover_letter_verified` y `application_prepared`. `list_jobs` con
 `order="score_desc"` ordena por el score del último match; las ofertas sin score van al final,
 las más recientes primero.
 
@@ -136,6 +142,21 @@ las más recientes primero.
 - El primer render sin `too_long` de un CV queda `selected` (el que se enviará). La oferta pasa a
   `cv_ready` cuando un mismo CV está verificado con `passed` y tiene un render sin `too_long`, en
   el orden en que ocurra.
+
+### Carta de presentación (fase 08c)
+
+- Las indicaciones son de dos niveles: `preferences.cover_letter` del perfil y el *brief* de la
+  oferta (`save_cover_letter_brief`, que también se edita en la UI). Manda el de la oferta. El
+  límite de palabras se resuelve así: brief > perfil > `config/policies.yaml` (180).
+- `save_cover_letter` solo admite ofertas en `approved` o `cv_ready`. Rechaza con
+  `validation_error` una evidencia del perfil que no existe, `user` sin indicaciones (ni en el
+  brief ni en el perfil), una skill fuera del perfil, una skill básica que la oferta no pide y
+  más palabras que el límite. Copia en el documento las indicaciones usadas: son el respaldo de
+  lo que cuenta `user`.
+- El render usa por defecto la plantilla, la foto y el color del render seleccionado del CV de la
+  oferta (o las reglas del perfil si no hay CV). Si esa plantilla no tiene diseño de carta, usa
+  `carta-simple` y avisa `letter_fallback`. El texto plano lo sirve la API, no esta interfaz.
+- Ninguna de estas herramientas cambia la etapa de la oferta ni envía nada.
 
 ### Comandos de matching y worker (solo CLI)
 
@@ -220,6 +241,7 @@ projects: [{project_id: str, bullets: [{text, evidence}]}]
 skills: [{group: str, items: [str]}]   # solo skills del perfil
 education_ids: [str]
 certification_ids: [str]
+extra_sections: [{section_id: str, item_ids: [str]}]   # desde la 08.3; items del perfil tal cual
 languages: [{language: str, level: str}]
 include_regional_language: bool
 keywords_targeted: [str]               # keywords de la oferta que el CV cubre de verdad
@@ -237,7 +259,7 @@ template_id: str | null
 photo: auto|include|exclude
 accent_color: str | null               # uno de los que admite la plantilla
 max_pages: int | null
-hidden_sections: [str]                 # summary|experience|projects|education|certifications|skills|languages
+hidden_sections: [str]                 # summary|experience|projects|education|certifications|extra_sections|skills|languages
 page_size: A4|Letter|null
 ```
 
@@ -248,8 +270,29 @@ issues: [{severity: blocker|warning, location: str, problem: str, suggestion: st
 ```
 `passed: true` con algún `blocker` es un `validation_error`. `suggestion` es opcional.
 
+### `CoverLetterContent` (fase 08c)
+```
+language: es|en
+recipient: str | null                  # "Equipo de selección de Acme"; null = genérico
+greeting: str                          # "Estimado equipo de Acme:"
+paragraphs: [{text: str, evidence: [str]}]   # ids del perfil, "extraction" o "user"
+sign_off: str                          # "Un saludo,"; el nombre lo pone el código
+keywords_targeted: [str]
+```
+Al menos un párrafo, y cada uno con al menos una evidencia. El contacto, la fecha y el lugar los
+pone el código. Las indicaciones usadas se guardan con el documento (no las escribe el agente).
+
+### `CoverLetterRenderOptions` (fase 08c)
+```
+template_id: str | null                # null = la del CV seleccionado; si no tiene carta, carta-simple
+photo: auto|include|exclude            # auto = como el CV seleccionado
+accent_color: str | null               # null = el del CV seleccionado
+page_size: A4|Letter|null
+```
+
 ### `ApplicationAnswers`
 ```
 answers: [{question: str, answer: str, evidence: [str], needs_user_input: bool}]
-cover_letter: str | null
 ```
+La carta no va aquí: es un documento propio (fase 08c) y el paquete de candidatura usa la
+seleccionada.

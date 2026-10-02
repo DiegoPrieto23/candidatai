@@ -36,6 +36,9 @@ targets:
       generar-cv:
         argument-hint: "[job_id o 'pendientes'] [opciones: con foto, sin foto, plantilla…]"
         allowed-tools: ["mcp:list_jobs", "mcp:get_match", "mcp:get_extraction", "mcp:list_cv_templates", "mcp:render_cv"]
+      generar-carta:
+        argument-hint: "[job_id] [indicaciones para esta carta]"
+        allowed-tools: ["mcp:get_cover_letter", "mcp:get_extraction", "mcp:get_profile", "mcp:get_cv_content"]
       preparar-candidatura:
         argument-hint: "[job_id] [preguntas pegadas o 'carta']"
         allowed-tools: ["mcp:get_extraction", "mcp:get_profile", "mcp:get_cv_content"]

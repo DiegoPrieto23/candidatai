@@ -48,7 +48,11 @@ cv:
     personio: [jobs.personio.de, jobs.personio.com]
   pdf_timeout_seconds: 60
 
-email_alerts:                   # fase 09b
+cover_letter:                   # fase 08c; manda preferences.cover_letter del perfil y, encima, la oferta
+  max_words: 180
+  fallback_template: carta-simple
+
+email_alerts:                  # fase 09b
   poll_minutes: 60
   summary_expire_days: 21
   # Remitentes por plataforma: se completan en la fase 09b con alertas reales del usuario.

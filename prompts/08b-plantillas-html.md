@@ -12,12 +12,16 @@ lee su registro en `docs/ROADMAP.md`.
   resolución de opciones y el contexto del contrato de variables son comunes a los dos motores.
 - `preview.py` (PDF + PNG con `pypdfium2`) y `jh templates preview`, `validate` e `inspect`
   (solo `.docx`): aquí se amplían, no se reescriben.
-- La galería de Plantillas y la subida de ficheros a `data/uploads/` (que ya acepta PDF e imagen
-  y avisa de que requieren esta fase).
+- La galería de Plantillas y el bloque «Mi CV» con la subida de ficheros a `data/uploads/` (que ya
+  acepta PDF e imagen y avisa de que requieren esta fase) y «Usar por defecto».
+- `inspect` ya da para `.docx` el orden de secciones y la `capacity` medida en el original, y el
+  contrato ya tiene `extra_sections` (08.3).
+- Si la 08c ya está hecha: el contrato de carta, `TemplateMeta.letter` y `carta-simple`.
 
 ## Objetivo
-Poder usar como plantilla un CV que solo existe en PDF o imagen (Canva, diseños descargados,
-exportaciones de otras herramientas), recreando su diseño con fidelidad.
+Poder usar como plantilla («Mi CV» incluido) un CV que solo existe en PDF o imagen (Canva, diseños
+descargados, exportaciones de otras herramientas), recreando su diseño con fidelidad y con el mismo
+orden de secciones y extensión que el original.
 
 ## Alcance
 1. **Motor html** (`engines/html.py`): Jinja2 con autoescape + `style.css` + `fonts/` → PDF con
@@ -28,19 +32,23 @@ exportaciones de otras herramientas), recreando su diseño con fidelidad.
 3. **Fuentes**: se cargan con `@font-face` desde `fonts/` de la plantilla o de `data/fonts/`.
    Aviso `font_substituted` si el PDF acaba con otra fuente.
 4. **Plantilla integrada** `moderna-2col` (html, dos columnas, color de acento configurable, foto
-   circular opcional) con preview demo.
+   circular opcional, con `extra_sections`) con preview demo.
 5. **Importación desde PDF, imagen o HTML** (`jh templates …`):
    - `inspect` amplía su salida para PDF e imágenes: página renderizada a PNG en `data/tmp/`,
-     bloques de texto con posición, tamaño y fuente (PDF), paleta de colores dominante y
-     estimación de columnas y márgenes;
+     bloques de texto con posición, tamaño y fuente (PDF), paleta de colores dominante,
+     estimación de columnas y márgenes y, como en `.docx`, el orden de secciones y la `capacity`
+     medida (en imágenes, aproximada: lo que el agente lea en la imagen);
    - `scaffold-html --id <id>` crea la carpeta con un `template.html` y `style.css` base según esa
      estructura, para que el agente los ajuste;
    - `compare <id> --source <fichero>`: pone lado a lado el original y la preview de la plantilla
      con el perfil demo, en un PNG, y calcula una métrica simple de parecido (SSIM) como orientación.
-6. **UI**: en la galería, para plantillas importadas, vista "Original | Recreación" y aviso
-   "solo PDF" en plantillas html (aviso `pdf_only` en los renders). La subida deja de avisar de que
-   PDF e imagen requieren esta fase.
-7. **`jh doctor`**: comprueba que Playwright tiene Chromium instalado y que renderiza
+6. **UI**: en la galería y en «Mi CV», para plantillas importadas, vista "Original | Recreación" y
+   aviso "solo PDF" en plantillas html (aviso `pdf_only` en los renders). La subida deja de avisar
+   de que PDF e imagen requieren esta fase.
+7. **Carta en html** (solo si la 08c ya está hecha; si no, la 08c lo hará al llegar): el motor html
+   también renderiza `letter.html` con el contrato de la carta; `moderna-2col` trae la suya y el
+   skill `importar-plantilla-cv` crea `letter.html` a partir de la cabecera del diseño recreado.
+8. **`jh doctor`**: comprueba que Playwright tiene Chromium instalado y que renderiza
    `moderna-2col` sin red (si falta, indica `uv run playwright install chromium`). Playwright
    entra aquí como dependencia; la fase 11 la reutiliza.
 
@@ -48,7 +56,8 @@ exportaciones de otras herramientas), recreando su diseño con fidelidad.
 Conversión de html a DOCX (la calidad sería mala: si hace falta Word, se usa una plantilla docx).
 
 ## Criterios de aceptación
-- Tests: render de `moderna-2col` con y sin foto y con los cuatro colores; el saneado elimina un
+- Tests: render de `moderna-2col` con y sin foto, con los cuatro colores y con `extra_sections`
+  (y su carta, si la 08c está hecha); el saneado elimina un
   `<script>` y una URL remota; ningún render hace peticiones de red (test con red bloqueada).
 - `inspect` + `scaffold-html` + `compare` funcionan con un CV de ejemplo en PDF **ficticio**
   guardado en `backend/tests/fixtures/`.

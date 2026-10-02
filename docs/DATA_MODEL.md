@@ -87,9 +87,9 @@ Contenido de un documento (lo que escribe el agente). La presentación va en `do
 |---|---|---|
 | id | int PK | |
 | job_id / profile_version_id | FK | |
-| kind | str | `cv`, `cover_letter`, `answers` |
+| kind | str | `cv`, `cover_letter` (fase 08c), `answers` |
 | language | str | `es`, `en` |
-| content | JSON | `CvContent` u otro esquema, con referencias a evidencias |
+| content | JSON | `CvContent`, `CoverLetterContent` (con las indicaciones usadas) u otro esquema, con referencias a evidencias |
 | verification | JSON? | `{passed, issues[]}` del verificador |
 | created_at | datetime | |
 
@@ -168,6 +168,8 @@ Nunca guarda texto crudo de ofertas ni datos del perfil en `args_summary`.
 | `cv_rendered` | system / user / agent | `cv_ready` si el render no es `too_long` y su documento ya está verificado con `passed`; si no, sin cambio. `payload`: `document_id`, `render_id`, `template_id`, `too_long`. Solo lo registra el servicio de render |
 | `cv_verified` | agent | `cv_ready` si `passed` y ese documento tiene un render sin `too_long`; `payload`: `document_id`, `passed` |
 | `cv_rejected` | agent | sin cambio; `payload`: `document_id`, `blockers` |
+| `cover_letter_generated` | agent / user | sin cambio; `payload`: `document_id`, `edited_by_user` (fase 08c) |
+| `cover_letter_verified` | agent | sin cambio; `payload`: `document_id`, `passed`, `blockers` (fase 08c) |
 | `application_prepared` | system | sin cambio |
 | `applied` / `applied_manually` | user | `applied`; `payload.render_id` (el CV enviado) y `channel` |
 | `reply_received`, `interview_scheduled`, `interview_done`, `test_assigned` | user | `in_process` |
@@ -180,6 +182,15 @@ Nunca guarda texto crudo de ofertas ni datos del perfil en `args_summary`.
 La proyección vive en `services/pipeline.py`: `stage_for(events) -> Stage`, con tests que cubren
 cada transición. Una transición no válida (p. ej. `applied` sin `cv_ready` ni `applied_manually`)
 se rechaza con error claro.
+
+## Ampliaciones de la fase 08c
+
+- `document_renders` guarda también los renders de cartas (`options` = `CoverLetterRenderOptions`
+  resueltas, `keyword_coverage` vacío, ficheros `Carta-<Nombre>.pdf|docx`). `selected` funciona
+  igual: como mucho una carta seleccionada por documento.
+- Tabla `cover_letter_briefs`: `job_id` (PK/FK), `instructions` (texto), `max_words` (int?),
+  `updated_at`. Las indicaciones de la carta para esa oferta; no guarda historial (el documento
+  copia las que usó).
 
 ## Ampliaciones de la fase 09b
 

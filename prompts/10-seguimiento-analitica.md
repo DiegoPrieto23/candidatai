@@ -21,8 +21,9 @@ No perder ningún proceso y saber qué funciona.
    tiempo medio hasta la primera respuesta; motivos de descarte más frecuentes. Consultas SQL en
    `app/services/analytics.py` con tests y gráficas con Recharts.
 6. Interfaz para agentes (MCP y CLI): `save_application_answers`, `list_followups_due`, `list_upcoming` y `get_funnel_stats`.
-7. UI de "Paquete de candidatura": CV elegido, respuestas de screening (editables) y carta si la
-   hay, con botón para copiar cada respuesta.
+7. UI de "Paquete de candidatura": CV elegido, respuestas de screening (editables) y la carta
+   seleccionada si la hay (de la fase 08c: texto para copiar y PDF), con botón para copiar cada
+   respuesta. La carta no se redacta aquí: `ApplicationAnswers` ya no lleva `cover_letter`.
 
 ## Fuera de alcance
 Envío automático.
