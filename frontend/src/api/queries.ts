@@ -14,6 +14,7 @@ export const keys = {
   templates: ['templates'] as const,
   uploads: ['uploads'] as const,
   defaultTemplate: ['templates', 'default'] as const,
+  sources: ['sources'] as const,
 }
 
 export interface JobsParams {
@@ -243,5 +244,62 @@ export function useSelectRender(jobId: number) {
     mutationFn: (renderId: number) =>
       unwrap(api.POST('/renders/{render_id}/select', { params: { path: { render_id: renderId } } })),
     onSuccess: () => client.invalidateQueries({ queryKey: keys.cv(jobId) }),
+  })
+}
+
+// --- Fuentes: empresas objetivo y portales (fase 09) ---------------------------------------------
+
+export function useSources() {
+  return useQuery({
+    queryKey: keys.sources,
+    queryFn: () => unwrap(api.GET('/sources')),
+    // El worker ejecuta las fuentes por su cuenta: se refresca solo.
+    refetchInterval: 60_000,
+  })
+}
+
+export function useAddSource() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (body: Schemas['SourceInput']) => unwrap(api.POST('/sources', { body })),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.sources }),
+  })
+}
+
+/** Prueba una fuente sin guardar nada: la nueva del formulario o una guardada por su id. */
+export function usePreviewSource() {
+  return useMutation({
+    mutationFn: (target: Schemas['SourceInput'] | number) =>
+      typeof target === 'number'
+        ? unwrap(api.POST('/sources/{source_id}/test', { params: { path: { source_id: target } } }))
+        : unwrap(api.POST('/sources/test', { body: target })),
+  })
+}
+
+export function useRunSource() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (sourceId: number) =>
+      unwrap(api.POST('/sources/{source_id}/run', { params: { path: { source_id: sourceId } } })),
+    onSuccess: () =>
+      Promise.all([
+        client.invalidateQueries({ queryKey: keys.sources }),
+        client.invalidateQueries({ queryKey: keys.status }),
+        client.invalidateQueries({ queryKey: keys.allJobs }),
+      ]),
+  })
+}
+
+export function useSetSourceActive() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: ({ sourceId, active }: { sourceId: number; active: boolean }) =>
+      unwrap(
+        api.POST('/sources/{source_id}/active', {
+          params: { path: { source_id: sourceId } },
+          body: { active },
+        }),
+      ),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.sources }),
   })
 }

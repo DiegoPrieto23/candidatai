@@ -6,6 +6,7 @@ Solo se modelan las secciones que usa el código; el resto del YAML se ignora ha
 
 from functools import lru_cache
 from pathlib import Path
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -82,6 +83,23 @@ class CvPolicy(BaseModel):
     pdf_timeout_seconds: int = Field(gt=0)
 
 
+class ConnectorsPolicy(BaseModel):
+    """Conectores de ATS y portales (fase 09)."""
+
+    daily_at: str = Field(pattern=r"^([01]\d|2[0-3]):[0-5]\d$")  # HH:MM, hora local de `timezone`
+    timezone: str = Field(min_length=1)
+    timeout_seconds: float = Field(gt=0)
+    max_jobs_per_source: int = Field(gt=0)
+
+    @model_validator(mode="after")
+    def _known_timezone(self) -> "ConnectorsPolicy":
+        try:
+            ZoneInfo(self.timezone)
+        except (ZoneInfoNotFoundError, ValueError) as exc:
+            raise ValueError(f"Zona horaria desconocida: «{self.timezone}».") from exc
+        return self
+
+
 class Policies(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
@@ -89,6 +107,7 @@ class Policies(BaseModel):
     hard_filters: HardFilterPolicy
     scoring: ScoringPolicy
     cv: CvPolicy
+    connectors: ConnectorsPolicy
 
 
 class InjectionPatterns(BaseModel):

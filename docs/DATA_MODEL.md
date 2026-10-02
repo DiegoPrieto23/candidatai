@@ -12,9 +12,23 @@ Origen de ofertas.
 | id | int PK | |
 | kind | str | `manual_url`, `manual_text`, `greenhouse`, `lever`, `ashby`, `infojobs`, `adzuna`; desde la fase 09b, también `email_alerts`, `browser_capture` y `agent_browse` |
 | name | str | Etiqueta legible |
-| config | JSON | Parámetros del conector (slug del ATS, consulta, filtros) |
-| active | bool | |
-| last_run_at | datetime? | |
+| config | JSON | Parámetros del conector, validados por tipo (`app/schemas/sources.py`): ATS `{slug, region, title_keywords}` (`region: eu` solo en Lever); InfoJobs `{query, province, since, title_keywords}`; Adzuna `{query, where, country, max_days_old, title_keywords}`. Nunca claves: van en `.env` |
+| active | bool | Las activas con conector entran en la ingesta diaria del worker |
+| last_run_at | datetime? | Última ejecución del conector que no falló entera. Si falla, no avanza: el worker la vuelve a encolar al arrancar (el fallo queda en `source_runs`) |
+
+### `source_runs` (fase 09)
+Una fila por ejecución de una fuente; la usan los conectores y, desde la 09b, alertas y navegación.
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | int PK | |
+| source_id | FK sources | |
+| actor | str | `system` (worker), `user` (CLI o UI), `agent` (09b) |
+| started_at / finished_at | datetime | |
+| found | int | Ofertas que devolvió la fuente |
+| after_filters | int | Las que pasaron el filtro previo de título y ubicación |
+| created | int | Ofertas nuevas guardadas (en `pending_extraction`) |
+| completed | int | Resúmenes completados (09b) |
+| errors | JSON | `[{code, message, item?}]`: fallo de la fuente o de una oferta suelta |
 
 ### `companies`
 | Columna | Tipo | Notas |
@@ -31,7 +45,7 @@ Origen de ofertas.
 | id | int PK | |
 | source_id | FK sources | |
 | company_id | FK companies | |
-| external_id | str? | ID en la fuente, si existe |
+| external_id | str? | ID en la fuente, si existe. Índice (`source_id`, `external_id`): un conector reconoce así lo ya visto |
 | url | str | |
 | title | str | Tal cual |
 | location_raw | str? | Tal cual |
@@ -45,7 +59,9 @@ Origen de ofertas.
 **Huella:** `sha256(normalized_company | normalized_title | normalized_location)`, donde
 `normalized_title` quita seniority genérica entre paréntesis, emojis, dobles espacios y pasa a
 minúsculas. Además, un chequeo difuso (rapidfuzz, umbral en `config/policies.yaml`) entre ofertas
-de la misma empresa en los últimos 60 días marca `duplicate_of`.
+de la misma empresa en los últimos 60 días marca `duplicate_of`. Excepción (fase 09): dos ofertas
+de la misma fuente con conector y `external_id` distintos nunca son duplicado difuso entre sí (el
+ATS ya dice que son publicaciones distintas).
 
 ### `job_extractions`
 Una fila por extracción; la vigente es la más reciente.
@@ -140,6 +156,7 @@ Cola de trabajo del worker (sin Redis).
 | `kind` | Lo encola | Hace |
 |---|---|---|
 | `score_job` `{job_id}` | `save_extraction` (con perfil) | Calcula el match vigente |
+| `run_source` `{source_id}` | `jh worker` a la hora de `connectors.daily_at`, y al arrancar para las fuentes que no corrieron desde la última hora programada | Ejecuta el conector (`ingestion/service.run_source`). Un fallo de red, 5xx, 429 o interno queda en `source_runs` y la tarea se reintenta; un 404 o un formato inesperado no. Los portales sin claves no se encolan. Al arrancar, las tareas que quedaron `running` vuelven a la cola |
 | `rescore_all` `{}` | `jh profile import` con versión nueva | Recalcula los matches desfasados de las ofertas abiertas con extracción y cierra las de triaje que ya no pasan los filtros (lo mismo que `jh match rescore`, sin cola) |
 
 No se encola dos veces la misma tarea (mismo `kind` y `payload`) mientras siga en cola. Si falla,
@@ -200,7 +217,6 @@ Detalle y motivos en `docs/FUENTES_OFERTAS.md` §Modelo de datos.
   único parcial sobre (`platform`, `external_id`) cuando ambos existen.
 - Etapa nueva `pending_detail`, antes de `pending_extraction`. Desde ella se admiten
   `detail_captured`, `discarded` y `expired`.
-- Tabla `source_runs`: `id, source_id, actor, started_at, finished_at, found, created,
-  completed, errors (JSON)`. También la usan los conectores de la fase 09.
+- Tabla `source_runs`: ya la crea la fase 09 (migración `0006`); la 09b la reutiliza.
 - Tabla `email_messages`: `message_id` (único), `source_id`, `received_at`, `jobs_found`,
   `processed_at`. Nunca guarda el cuerpo del correo.

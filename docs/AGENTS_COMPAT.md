@@ -80,6 +80,24 @@ ofertas marcadas con riesgo antes de aprobarlas.
 - `jh-mcp` arranca por stdio, lista las 9 herramientas y responde (test con el proceso real).
   stdout queda reservado al protocolo; los logs van a stderr y a `data/logs/mcp.log`.
 
+### Extracción automática cada mañana (fase 09)
+
+`jh worker` trae las ofertas nuevas a la hora de `connectors.daily_at` y las deja en
+`pending_extraction`. La extracción necesita al agente (ADR-001), así que la app no la hace sola.
+Opciones, de más a menos cómoda:
+
+| Agente | Cómo | Notas |
+|---|---|---|
+| Claude Code Desktop | Una **tarea programada local**, diaria y después de la ingesta (p. ej. 08:00), en la carpeta del proyecto, con el prompt `/procesar-ofertas` | Corre en tu equipo, con el MCP `jobhunter` y tus datos. Las herramientas que usa (`get_status`, `list_jobs`, `get_job`, `save_extraction`) ya están permitidas en `.claude/settings.json`, así que no se queda esperando un permiso. El equipo y la app de escritorio tienen que estar encendidos |
+| Claude Code (CLI) | El Programador de tareas de Windows lanzando `claude -p "/procesar-ofertas"` en la raíz del repo | Mismo requisito de permisos que arriba. Las rutinas en la nube (`/schedule`) **no sirven**: corren fuera de tu equipo y no ven `data/` ni el MCP local |
+| Codex | Si tu versión ofrece tareas programadas locales, el prompt `$procesar-ofertas`; si no, el Programador de tareas con `codex exec "$procesar-ofertas"` en una sesión de solo lectura | Sin probar. Revisa el nivel B de la tabla de garantías: ejecútalo con sandbox de solo lectura |
+| Cualquier otro | `resumen-diario` (manual o programado) te recuerda cuántas hay por extraer | Sin programación, basta con lanzar `procesar-ofertas` al empezar el día |
+
+Seguridad: una ejecución desatendida procesa texto no confiable sin que mires. El aislamiento del
+rol `extractor` (solo `get_job` y `save_extraction`) es lo que la hace razonable; no amplíes sus
+herramientas ni lo programes con un agente de nivel C. Las ofertas con `risk_flags` siguen
+apareciendo con aviso en la UI.
+
 ### Skills que necesitan ver imágenes
 `importar-plantilla-cv` con un PDF o una imagen recrea el diseño mirando la página renderizada:
 hace falta un agente que pueda ver imágenes. Con un `.docx` no hace falta. Desde la fase 08b,

@@ -1,0 +1,12 @@
+{
+  "id": "ab12cd34ef56ab12cd34ef56ab12cd",
+  "title": "Data Engineer",
+  "description": "Buscamos Data Engineer para nuestro equipo en A Coruña.\nTrabajarás con pipelines de datos.",
+  "minRequirements": "Python, SQL y Airflow.",
+  "desiredRequirements": "Experiencia con dbt.",
+  "city": "A Coruña",
+  "province": {"id": 15, "value": "A Coruña"},
+  "profile": {"id": "1", "name": "Datos Gallegos Demo"},
+  "link": "https://www.infojobs.net/a-coruna/data-engineer/of-iab12cd34ef56ab12cd34ef56ab12cd",
+  "creationDate": "2026-09-30T08:00:00.000Z"
+}

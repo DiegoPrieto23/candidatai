@@ -21,6 +21,27 @@ eso aquí LinkedIn entra por tres vías que no dependen de eso: sus propias aler
 clic en el botón mientras ves una oferta y, solo si tú lo activas, la búsqueda con el navegador
 del agente (ADR-016).
 
+## APIs de ATS y portales (fase 09)
+
+- **Empresas objetivo:** nombre + ATS + slug del tablero, en la pantalla «Empresas» o con
+  `jh sources add`. Endpoints públicos documentados, sin autenticación ni scraping:
+  Greenhouse `boards-api.greenhouse.io/v1/boards/{slug}/jobs?content=true`, Lever
+  `api.lever.co/v0/postings/{slug}?mode=json` (o `api.eu.lever.co`) y Ashby
+  `api.ashbyhq.com/posting-api/job-board/{slug}`.
+- **Portales con API (opcionales):** InfoJobs (`api.infojobs.net/api/9/offer` y el detalle de
+  cada oferta, con `JH_INFOJOBS_CLIENT_ID` y `JH_INFOJOBS_CLIENT_SECRET`) y Adzuna
+  (`api.adzuna.com/v1/api/jobs/{país}/search/{página}`, con `JH_ADZUNA_APP_ID` y
+  `JH_ADZUNA_APP_KEY`). Sin claves, esas fuentes se omiten con un aviso. Adzuna solo da un
+  extracto de la descripción: la extracción sale más pobre.
+- **Filtro previo** antes de guardar (`ingestion/prefilter.py`): el título debe contener todas las
+  palabras de alguno de tus `preferences.roles` (o una `title_keywords` de la fuente) y ninguna
+  `discard_title_keywords`; la ubicación, encajar con tus zonas o ser remota si aceptas remoto.
+  Ante la duda deja pasar (sin ubicación, sin perfil). La 09b lo reutiliza para los resúmenes.
+- **Idempotente:** lo ya visto (por id en la fuente, URL o huella) no se vuelve a crear ni a
+  descargar. Lo nuevo queda en `pending_extraction` con el evento `found`.
+- **Cada día** a la hora de `connectors.daily_at` (`config/policies.yaml`), `jh worker` encola una
+  tarea por fuente activa. Si una falla, se anota en `source_runs` y las demás siguen.
+
 ## Ofertas «resumen» y «completas»
 
 Una alerta por correo trae título, empresa, ubicación y enlace, pero no la descripción. Esas

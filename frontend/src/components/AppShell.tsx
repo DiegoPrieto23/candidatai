@@ -141,6 +141,9 @@ export function AppShell() {
               Triaje
               <TriageCount />
             </NavLink>
+            <NavLink to="/empresas" className={navClass}>
+              Empresas
+            </NavLink>
             <NavLink to="/plantillas" className={navClass}>
               Plantillas
             </NavLink>

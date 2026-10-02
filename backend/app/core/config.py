@@ -25,6 +25,13 @@ class Settings(BaseSettings):
     client_name: str | None = Field(default=None, validation_alias="JH_CLIENT_NAME")
     # `off` desactiva la similitud semántica aunque esté instalado el extra `matching` (tests, CI).
     embeddings: Literal["auto", "off"] = Field(default="auto", validation_alias="JH_EMBEDDINGS")
+    # Conectores opcionales de portales (fase 09). Sin claves, esas fuentes se omiten con un aviso.
+    infojobs_client_id: str | None = Field(default=None, validation_alias="JH_INFOJOBS_CLIENT_ID")
+    infojobs_client_secret: str | None = Field(
+        default=None, validation_alias="JH_INFOJOBS_CLIENT_SECRET"
+    )
+    adzuna_app_id: str | None = Field(default=None, validation_alias="JH_ADZUNA_APP_ID")
+    adzuna_app_key: str | None = Field(default=None, validation_alias="JH_ADZUNA_APP_KEY")
 
     @model_validator(mode="after")
     def _resolve_paths(self) -> "Settings":

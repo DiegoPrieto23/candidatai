@@ -1,0 +1,46 @@
+[
+  {
+    "id": "5f1c2b9e-0001-4a6b-9c1d-acmedatos0001",
+    "text": "Data Engineer",
+    "categories": {
+      "commitment": "Full-time",
+      "department": "Engineering",
+      "location": "A Coruña",
+      "team": "Data",
+      "allLocations": ["A Coruña"]
+    },
+    "country": "ES",
+    "createdAt": 1759312800000,
+    "description": "<div>Buscamos una persona para el equipo de datos.</div>",
+    "descriptionPlain": "Buscamos una persona para el equipo de datos.",
+    "lists": [
+      {"text": "Requisitos", "content": "<li>Python</li><li>SQL</li><li>Airflow</li>"}
+    ],
+    "additional": "<div>Contrato indefinido.</div>",
+    "additionalPlain": "Contrato indefinido.",
+    "hostedUrl": "https://jobs.lever.co/acmedatos/5f1c2b9e-0001-4a6b-9c1d-acmedatos0001",
+    "applyUrl": "https://jobs.lever.co/acmedatos/5f1c2b9e-0001-4a6b-9c1d-acmedatos0001/apply",
+    "workplaceType": "hybrid"
+  },
+  {
+    "id": "5f1c2b9e-0002-4a6b-9c1d-acmedatos0002",
+    "text": "Analytics Engineer",
+    "categories": {"location": "Lisbon", "allLocations": ["Lisbon"]},
+    "createdAt": 1759312800000,
+    "description": "<div>Modelado con dbt.</div>",
+    "descriptionPlain": "Modelado con dbt.",
+    "lists": [],
+    "hostedUrl": "https://jobs.lever.co/acmedatos/5f1c2b9e-0002-4a6b-9c1d-acmedatos0002",
+    "workplaceType": "remote"
+  },
+  {
+    "id": "5f1c2b9e-0003-4a6b-9c1d-acmedatos0003",
+    "text": "Office Manager",
+    "categories": {"location": "Vigo"},
+    "createdAt": 1759312800000,
+    "descriptionPlain": "Gestión de la oficina.",
+    "hostedUrl": "https://jobs.lever.co/acmedatos/5f1c2b9e-0003-4a6b-9c1d-acmedatos0003",
+    "workplaceType": "on-site"
+  },
+  "esto no es una oferta"
+]

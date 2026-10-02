@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 from app.models import Task
 from app.models.base import utcnow
 
-TaskKind = Literal["score_job", "rescore_all"]
+TaskKind = Literal["score_job", "rescore_all", "run_source"]
 TaskStatus = Literal["queued", "running", "done", "failed"]
 MAX_ATTEMPTS = 3
 RETRY_DELAY = timedelta(minutes=1)  # se multiplica por el número de intentos
@@ -66,3 +66,14 @@ def mark_failed(session: Session, task_id: int, error: str, now: datetime | None
         task.run_after = (now or utcnow()) + RETRY_DELAY * task.attempts
     else:
         task.status = "failed"
+
+
+def requeue_running(session: Session) -> int:
+    """Devuelve a la cola las tareas que quedaron `running` (el worker se cerró a medias). Solo
+    hay un worker, así que al arrancar ninguna puede estar ejecutándose de verdad."""
+    stuck = list(session.scalars(select(Task).where(Task.status == "running")))
+    for task in stuck:
+        task.status = "queued"
+        task.run_after = utcnow()
+    session.flush()
+    return len(stuck)

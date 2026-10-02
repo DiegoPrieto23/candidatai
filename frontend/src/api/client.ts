@@ -22,6 +22,11 @@ export type TemplateInfo = Schemas['TemplateInfo']
 export type TemplateList = Schemas['TemplateList']
 export type UploadInfo = Schemas['UploadInfo']
 export type DefaultTemplateResult = Schemas['DefaultTemplateResult']
+export type SourceView = Schemas['SourceView']
+export type SourceInput = Schemas['SourceInput']
+export type SourceTestResult = Schemas['SourceTestResult']
+export type SourceRunResult = Schemas['SourceRunResult']
+export type ConnectorKind = SourceInput['kind']
 
 export const API_URL: string = import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:8000'
 

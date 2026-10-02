@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import JSON, ForeignKey, String, Text
+from sqlalchemy import JSON, ForeignKey, Index, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base, UTCDateTime, utcnow
@@ -11,6 +11,8 @@ class Job(Base):
     """Oferta de empleo. `raw_text` es contenido no confiable."""
 
     __tablename__ = "jobs"
+    # Los conectores reconocen una oferta ya vista por su id en la fuente.
+    __table_args__ = (Index("ix_jobs_source_external", "source_id", "external_id"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
     source_id: Mapped[int] = mapped_column(ForeignKey("sources.id"), index=True)

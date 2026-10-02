@@ -301,7 +301,7 @@ def _get_or_create_source(session: Session, kind: str) -> Source:
     return source
 
 
-def _get_or_create_company(session: Session, name: str) -> Company:
+def get_or_create_company(session: Session, name: str) -> Company:
     normalized = normalize_company(name)
     company = session.scalars(select(Company).where(Company.normalized_name == normalized)).first()
     if company is None:
@@ -318,9 +318,17 @@ def _existing(job: Job) -> AddJobResult:
 
 
 def _fuzzy_duplicate(
-    session: Session, company_id: int, title: str, now: datetime
+    session: Session,
+    company_id: int,
+    title: str,
+    now: datetime,
+    source_id: int | None = None,
 ) -> tuple[int, float] | None:
-    """Oferta original más parecida de la misma empresa en la ventana, y su puntuación."""
+    """Oferta original más parecida de la misma empresa en la ventana, y su puntuación.
+
+    Con `source_id` (oferta de un conector con id propio), las ofertas de esa misma fuente que
+    también tienen id no cuentan: el ATS ya dice que son publicaciones distintas (p. ej. «Senior
+    Data Engineer» en remoto y «Data Engineer» en Vigo)."""
     policy = get_policies().dedup
     since = now - timedelta(days=policy.fuzzy_window_days)
     candidates = session.scalars(
@@ -331,6 +339,8 @@ def _fuzzy_duplicate(
     target = normalize_title(title)
     best: tuple[int, float] | None = None
     for candidate in candidates:
+        if source_id is not None and candidate.source_id == source_id and candidate.external_id:
+            continue
         score = fuzz.token_set_ratio(target, normalize_title(candidate.title))
         if score >= policy.fuzzy_title_threshold and (best is None or score > best[1]):
             # Siempre se apunta a la original, no a otro duplicado.
@@ -338,10 +348,10 @@ def _fuzzy_duplicate(
     return best
 
 
-def _store(
+def store_job(
     session: Session,
     *,
-    source_kind: str,
+    source: Source,
     title: str,
     company: str,
     text: str,
@@ -349,7 +359,10 @@ def _store(
     location: str | None,
     posted_at: datetime | None,
     html: str | None,
+    external_id: str | None = None,
 ) -> AddJobResult:
+    """Guarda una oferta: huella, duplicados, riesgo y eventos. Lo usan el alta manual y los
+    conectores (fase 09). Un duplicado exacto devuelve la existente sin registrar nada."""
     title, company = " ".join(title.split()), " ".join(company.split())
     location = " ".join(location.split()) if location else None
     if not title or not company:
@@ -365,12 +378,15 @@ def _store(
         return _existing(existing)
 
     now = utcnow()
-    company_row = _get_or_create_company(session, company)
-    duplicate = _fuzzy_duplicate(session, company_row.id, title, now)
+    company_row = get_or_create_company(session, company)
+    duplicate = _fuzzy_duplicate(
+        session, company_row.id, title, now, source.id if external_id else None
+    )
     risk = assess(text, html)
     job = Job(
-        source_id=_get_or_create_source(session, source_kind).id,
+        source_id=source.id,
         company_id=company_row.id,
+        external_id=external_id,
         url=url,
         title=title,
         location_raw=location,
@@ -384,7 +400,9 @@ def _store(
     session.add(job)
     session.flush()
 
-    record(session, job.id, EventType.FOUND, Actor.SYSTEM, {"source": source_kind}, occurred_at=now)
+    manual = source.kind in SOURCE_NAMES
+    found = {"source": source.kind} | ({} if manual else {"source_id": source.id})
+    record(session, job.id, EventType.FOUND, Actor.SYSTEM, found, occurred_at=now)
     if risk.risky:
         record(
             session,
@@ -427,9 +445,9 @@ def add_from_url(session: Session, url: str) -> AddJobResult:
             f"No se encontró {missing} en la página. Usa `jh jobs add-text` indicando "
             "--title y --company."
         )
-    return _store(
+    return store_job(
         session,
-        source_kind="manual_url",
+        source=_get_or_create_source(session, "manual_url"),
         title=page.title,
         company=page.company,
         text=page.text,
@@ -454,9 +472,9 @@ def add_from_text(
         parts = urlsplit(url)
         if parts.scheme not in {"http", "https"} or not parts.hostname:
             raise IngestError(f"URL no válida: «{url}». Debe empezar por http:// o https://.")
-    return _store(
+    return store_job(
         session,
-        source_kind="manual_text",
+        source=_get_or_create_source(session, "manual_text"),
         title=title,
         company=company,
         text=clean_text(text),
