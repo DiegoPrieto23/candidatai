@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Opciones · Enviar a Job Hunter</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="options">
+    <header class="brand">
+      <span class="mark">JH</span>
+      <span>Enviar a Job Hunter · Opciones</span>
+    </header>
+    <form id="form">
+      <label for="token">Token</label>
+      <input id="token" type="password" autocomplete="off" spellcheck="false" placeholder="Pega aquí el token" />
+      <p class="muted small">
+        Genéralo con <code>uv run jh capture token</code> en <code>backend/</code>. Se guarda solo en este
+        navegador. Generar otro invalida el anterior.
+      </p>
+
+      <label for="uiUrl">Dirección de la UI</label>
+      <input id="uiUrl" type="url" spellcheck="false" />
+      <p class="muted small">Para el botón «Abrir ficha». Por defecto, <code>http://127.0.0.1:5173</code>.</p>
+
+      <div class="actions">
+        <button type="submit" class="primary">Guardar</button>
+        <button type="button" id="test">Probar conexión</button>
+      </div>
+      <p id="status" class="message" aria-live="polite"></p>
+    </form>
+    <script src="core.js"></script>
+    <script src="options.js"></script>
+  </body>
+</html>

@@ -111,12 +111,30 @@ found ─► pending_detail ─(detail_captured)─► pending_extraction ─►
   descripción de la oferta con extractores por sitio (LinkedIn, InfoJobs, Indeed, Tecnoempleo;
   JSON-LD `JobPosting` si existe; `main` como último recurso).
 - Envía los datos desde su *service worker* a `http://127.0.0.1:8000/capture` con un token
-  (`jh capture token` lo genera en `data/`; se pega una vez en las opciones de la extensión). La
-  API rechaza peticiones sin token y solo acepta el origen de la extensión configurada.
+  (`jh capture token` lo genera y lo muestra una vez; en `data/capture_token` solo queda su
+  sha256; se pega una vez en las opciones de la extensión). La API rechaza peticiones sin token
+  (401) y solo acepta el origen `chrome-extension://<JH_CAPTURE_EXTENSION_ID>` (403). El id es
+  fijo (`hnaofhehllbkghfehnehamjbkcmdjmle`): lo da la clave pública de `manifest.json`, igual en
+  Chrome, Edge y cualquier equipo, y es el valor por defecto de `JH_CAPTURE_EXTENSION_ID`.
+- Manda `url`, `title`, `company`, `location`, `text`, `selection` (si la hay, la app la
+  prefiere), `html` (solo el bloque de la descripción, para detectar texto oculto) y `site` (el
+  extractor usado). Con menos de 200 caracteres de descripción, o sin empresa en una oferta
+  nueva, responde 422 pidiendo que selecciones el texto y vuelvas a pulsar. En un portal con
+  extractor propio cuyo HTML ha cambiado, la extensión no manda la página entera (`main`); y un
+  resumen nunca se completa con el texto de `main` sin selección (podría ser la lista de
+  resultados). Una oferta que ya estaba se reconoce aunque esta vez no haya descripción.
+- La extensión no necesita CORS (sus `host_permissions` la eximen), así que su origen no se añade
+  a CORS: no podría leer el resto de la API. La defensa real es el token, porque la clave pública
+  del manifiesto está en el repositorio.
+- La oferta se reconoce por `platform` + `external_id` (también desde la vista de búsqueda de
+  LinkedIn, con `currentJobId`), por URL o por huella. Un resumen en `pending_detail` se completa
+  (texto, `detail_level: full`, `risk_flags` y evento `detail_captured`, actor `user`); una
+  oferta ya completa no se toca; lo demás entra con la fuente `browser_capture`.
 - **Permisos mínimos:** sin acceso a cookies, sin scripts permanentes en ningún sitio, sin
   lecturas en segundo plano. `host_permissions` solo para `http://127.0.0.1:8000/*`.
-- **Resultado** en el propio botón: «Nueva», «Completada» (tenía un resumen de una alerta),
-  «Ya estaba» o error, con enlace a la ficha.
+- **Resultado** en el popup del botón: «Nueva», «Completada» (tenía un resumen de una alerta),
+  «Ya estaba» o un error con lo que hay que hacer, y «Abrir ficha». El icono queda marcado en esa
+  pestaña (✓, = o !). Instalación y uso: `extension/README.md`.
 - Honestidad: las condiciones de LinkedIn prohíben extensiones que copien su contenido. Aquí la
   acción es tuya, oferta a oferta, equivalente a copiar y pegar: no recorre páginas ni busca por
   su cuenta. Es la misma práctica que las herramientas de seguimiento de candidaturas conocidas.

@@ -1,0 +1,31 @@
+<!doctype html>
+<!-- Inventado: la página de empleo de una empresa con JSON-LD `JobPosting` dentro de un @graph. -->
+<html lang="es">
+  <head>
+    <title>Empleo · Compañía Demo Tecnológica</title>
+    <meta property="og:title" content="Backend Developer (Python) | Compañía Demo Tecnológica" />
+    <script type="application/ld+json">{ roto </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          { "@type": "Organization", "name": "Compañía Demo Tecnológica" },
+          {
+            "@type": "JobPosting",
+            "title": "Backend Developer (Python)",
+            "hiringOrganization": { "@type": "Organization", "name": "Compañía Demo Tecnológica" },
+            "jobLocation": [
+              { "@type": "Place", "address": { "addressLocality": "A Coruña", "addressRegion": "Galicia", "addressCountry": "ES" } }
+            ],
+            "jobLocationType": "TELECOMMUTE",
+            "description": "<p>Únete a nuestro equipo.</p><ul><li>Python y FastAPI</li><li>PostgreSQL</li></ul><script>alert(1)<\/script>"
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <header><nav>Inicio · Empleo · Contacto</nav></header>
+    <main><h1>Backend Developer (Python)</h1><p>Texto de la página, que no se usa si hay JSON-LD.</p></main>
+  </body>
+</html>
