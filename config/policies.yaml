@@ -52,6 +52,12 @@ cover_letter:                   # fase 08c; manda preferences.cover_letter del p
   max_words: 180
   fallback_template: carta-simple
 
+connectors:                     # fase 09: APIs de ATS (Greenhouse, Lever, Ashby) y portales
+  daily_at: "07:30"               # hora local a la que `jh worker` ejecuta las fuentes activas
+  timezone: Europe/Madrid
+  timeout_seconds: 20
+  max_jobs_per_source: 500        # por ejecución; lo que pase de ahí se ignora con un aviso
+
 email_alerts:                  # fase 09b
   poll_minutes: 60
   summary_expire_days: 21

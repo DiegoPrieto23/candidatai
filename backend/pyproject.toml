@@ -25,6 +25,7 @@ dependencies = [
     "ruamel.yaml>=0.18",
     "playwright>=1.63.0",
     "numpy>=2.5.3",
+    "apscheduler>=3.11,<4",
 ]
 
 [project.optional-dependencies]

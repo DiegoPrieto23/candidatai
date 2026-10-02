@@ -28,7 +28,8 @@ La app nunca llama a un modelo y no depende de ningún proveedor.
 | `app/api` | Endpoints REST para la UI | Solo traduce HTTP ↔ servicios |
 | `app/mcp` | Herramientas MCP para agentes | Solo traduce MCP ↔ servicios; valida con Pydantic |
 | `app/cli.py` | CLI `jh`, con modo `--json` equivalente a la MCP | Solo traduce CLI ↔ servicios |
-| `app/services/tasks.py`, `worker.py` | Cola de tareas en BD y worker (`jh worker`) | Ejecuta servicios; nunca un LLM |
+| `app/services/tasks.py`, `worker.py` | Cola de tareas en BD y worker (`jh worker`, APScheduler): scores, recálculos e ingesta diaria | Ejecuta servicios; nunca un LLM |
+| `app/services/ingestion/` | Conectores de ATS y portales, filtro previo y ejecución de fuentes (fase 09) | Solo endpoints públicos documentados; guardan con el mismo servicio que el alta manual |
 | `frontend/` | UI | Solo habla con la API |
 | `.agents/` | Skills, roles y manifiesto, sin nada específico de un proveedor | Fuente única; lo nativo se genera |
 
@@ -52,6 +53,9 @@ La app nunca llama a un modelo y no depende de ningún proveedor.
 | `GET /renders/{id}/pdf`, `GET /renders/{id}/docx` | Ficheros del render |
 | `GET /uploads`, `POST /uploads`, `DELETE /uploads/{name}` | «Mi CV»: CVs subidos a `data/uploads/` (máximo 10 MB, nombre saneado, nunca se sobrescribe) y la plantilla creada desde cada uno, si la hay (por sha256 del `source.*`) |
 | `GET /templates/{id}/source.png`, `GET /templates/{id}/preview-real.png` | Primera página del original importado y la plantilla con el perfil real (en caché por plantilla y versión del perfil) |
+| `GET /sources`, `POST /sources` | Pantalla «Empresas»: fuentes con conector (empresas objetivo y portales) con su última ejecución; alta (`exists` 409 si ya está) |
+| `POST /sources/test`, `POST /sources/{id}/test` | Prueba una fuente nueva o guardada sin guardar nada: «12 ofertas encontradas, 3 tras filtros». Un fallo de la fuente es 200 con `errors` |
+| `POST /sources/{id}/run`, `POST /sources/{id}/active` | Ejecuta ya la fuente (lo nuevo, a `pending_extraction`) o la activa/pausa en la ingesta diaria |
 | `GET /templates/default`, `POST /templates/{id}/default` | Plantilla por defecto del perfil vigente; fijarla edita solo esa clave de `data/profile.yaml` (con ruamel.yaml, conserva comentarios) e importa la versión nueva |
 
 - `jh serve` escucha solo en `127.0.0.1`; CORS solo para `http://127.0.0.1:5173`.
@@ -129,7 +133,9 @@ Las garantías se reparten en capas para que **no dependan de qué agente use ca
 
 - Todo nativo con `uv` y `pnpm`, sin Docker: Playwright necesita un navegador visible para que
   inicies sesión y revises formularios, y LibreOffice se usa instalado en el sistema.
-- `jh serve` levanta la API, `jh worker` el scheduler y `pnpm dev` la UI.
+- `jh serve` levanta la API, `jh worker` el scheduler y `pnpm dev` la UI. El worker debe estar en
+  marcha para la ingesta diaria; si el equipo estaba apagado a esa hora, al arrancarlo ejecuta
+  las fuentes pendientes.
 - Cada agente arranca el servidor MCP solo, según su configuración generada (`.mcp.json` para
   Claude Code, `.codex/config.toml` para Codex…).
 

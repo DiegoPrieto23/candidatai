@@ -8,6 +8,7 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import { InboxPage } from '@/pages/InboxPage'
 import { JobPage } from '@/pages/JobPage'
 import { NewJobPage } from '@/pages/NewJobPage'
+import { SourcesPage } from '@/pages/SourcesPage'
 import { TemplatesPage } from '@/pages/TemplatesPage'
 import { TriagePage } from '@/pages/TriagePage'
 
@@ -34,6 +35,7 @@ export function AppRoutes() {
         <Route path="nueva" element={<NewJobPage />} />
         <Route path="triaje" element={<TriagePage />} />
         <Route path="plantillas" element={<TemplatesPage />} />
+        <Route path="empresas" element={<SourcesPage />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

@@ -8,7 +8,7 @@ from app.models.jobs import Job, JobExtraction
 from app.models.matches import Match
 from app.models.ops import McpCall, Task
 from app.models.profiles import ProfileVersion
-from app.models.sources import Source
+from app.models.sources import Source, SourceRun
 
 __all__ = [
     "Application",
@@ -23,5 +23,6 @@ __all__ = [
     "McpCall",
     "ProfileVersion",
     "Source",
+    "SourceRun",
     "Task",
 ]

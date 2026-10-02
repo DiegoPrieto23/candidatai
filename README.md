@@ -164,6 +164,10 @@ Abre una terminal nueva tras instalar para que el `PATH` se actualice.
 ### Configuración
 
 Copia `.env.example` como `.env` en la raíz si necesitas cambiar algo; por defecto no hace falta.
+Opcional (fase 09): para buscar también en InfoJobs o Adzuna, añade sus claves a `.env`
+(`JH_INFOJOBS_CLIENT_ID` y `JH_INFOJOBS_CLIENT_SECRET`, de developer.infojobs.net;
+`JH_ADZUNA_APP_ID` y `JH_ADZUNA_APP_KEY`, de developer.adzuna.com). Greenhouse, Lever y Ashby no
+necesitan nada. La hora de la ingesta diaria está en `config/policies.yaml` (`connectors.daily_at`).
 Los datos personales van en `data/` (se crea sola y está en `.gitignore`).
 
 ### Backend
@@ -173,7 +177,8 @@ cd backend
 uv sync                            # instala dependencias (crea .venv)
 uv sync --extra matching           # opcional: similitud semántica (trae torch, ~1 GB)
 uv run jh doctor                   # comprueba el entorno
-uv run jh worker                   # tareas en segundo plano (scores); --once para vaciar la cola
+uv run jh worker                   # tareas (scores) e ingesta diaria de las fuentes; --once vacía la cola
+uv run jh sources --help           # empresas objetivo y portales: add, list, test, run
 uv run jh eval matching            # calidad del matching (evals/matching/README.md)
 uv run pytest                      # tests
 uv run ruff check --fix && uv run ruff format

@@ -1,0 +1,33 @@
+{
+  "currentPage": 1,
+  "pageSize": 50,
+  "totalResults": 2,
+  "currentResults": 2,
+  "totalPages": 1,
+  "sortBy": "RELEVANCE",
+  "sinceDate": "_7_DAYS",
+  "offers": [
+    {
+      "id": "ab12cd34ef56ab12cd34ef56ab12cd",
+      "title": "Data Engineer",
+      "province": {"id": 15, "value": "A Coruña"},
+      "city": "A Coruña",
+      "link": "https://www.infojobs.net/a-coruna/data-engineer/of-iab12cd34ef56ab12cd34ef56ab12cd",
+      "category": {"id": 1, "value": "Informática y telecomunicaciones"},
+      "contractType": {"id": 1, "value": "Indefinido"},
+      "author": {"id": "1", "name": "Datos Gallegos Demo", "uri": "x"},
+      "published": "2026-09-30T08:00:00Z",
+      "requirementMin": "Python y SQL",
+      "teleworking": {"id": 2, "value": "Híbrido"}
+    },
+    {
+      "id": "ff00ff00ff00ff00ff00ff00ff00ff",
+      "title": "Comercial de zona",
+      "province": {"id": 15, "value": "A Coruña"},
+      "city": "Ferrol",
+      "link": "https://www.infojobs.net/ferrol/comercial/of-iff00ff00ff00ff00ff00ff00ff00ff",
+      "author": {"id": "2", "name": "Ventas Demo"},
+      "published": "2026-09-30T08:00:00Z"
+    }
+  ]
+}

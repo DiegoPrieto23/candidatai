@@ -242,6 +242,30 @@ def check_embeddings(settings: Settings) -> CheckResult:
     )
 
 
+def check_connectors(settings: Settings) -> CheckResult:
+    """Conectores de ofertas (fase 09): los ATS no necesitan nada; InfoJobs y Adzuna son
+    opcionales y van con claves en `.env`. Una clave sin su pareja es un aviso."""
+    from app.core.policies import get_policies
+
+    name = "Conectores de ofertas"
+    pairs = {
+        "InfoJobs": (settings.infojobs_client_id, settings.infojobs_client_secret),
+        "Adzuna": (settings.adzuna_app_id, settings.adzuna_app_key),
+    }
+    configured = [label for label, keys in pairs.items() if all(keys)]
+    half = [label for label, keys in pairs.items() if any(keys) and not all(keys)]
+    policy = get_policies().connectors
+    detail = (
+        f"Greenhouse, Lever y Ashby listos; portales con claves: "
+        f"{', '.join(configured) or 'ninguno (opcionales)'}; ingesta diaria a las "
+        f"{policy.daily_at} ({policy.timezone}) con `jh worker`"
+    )
+    if half:
+        detail += f". Falta una de las dos claves de {', '.join(half)} en `.env`"
+        return CheckResult(name=name, status=CheckStatus.WARN, detail=detail)
+    return CheckResult(name=name, status=CheckStatus.OK, detail=detail)
+
+
 def run_doctor(settings: Settings) -> DoctorReport:
     return DoctorReport(
         checks=[
@@ -253,5 +277,6 @@ def run_doctor(settings: Settings) -> DoctorReport:
             check_html_engine(),
             check_photo(settings.data_dir / "profile.yaml", settings.data_dir),
             check_embeddings(settings),
+            check_connectors(settings),
         ]
     )

@@ -168,9 +168,22 @@ las más recientes primero.
 
 | Comando | Qué hace |
 |---|---|
-| `jh worker [--once] [--interval S] [--json]` | Ejecuta la cola de tareas (`score_job`, `rescore_all`). `--once` la vacía y termina (código 1 si alguna falla) |
+| `jh worker [--once] [--interval S] [--json]` | Ejecuta la cola de tareas (`score_job`, `rescore_all`, `run_source`) y, en primer plano, la ingesta diaria de las fuentes a la hora de `connectors.daily_at` (al arrancar, también las que no corrieron desde la última hora programada). Log legible en consola y en `data/logs/worker.log`. `--once` vacía la cola y termina (código 1 si alguna falla) |
 | `jh match rescore [--json]` | Recalcula ya los matches desfasados de las ofertas abiertas (tras instalar el extra `matching` o editar `config/policies.yaml`) y cierra las de triaje que no pasan los filtros. Devuelve `scored` y `closed` |
 | `jh eval matching [--profile RUTA] [--no-seed] [--no-embeddings] [--json]` | Precision, recall y F1 con el umbral actual y por umbral sobre `evals/matching/*.jsonl` (perfil de demo) y `data/evals/*.jsonl` (tu perfil). Guarda el informe en `data/evals/reports/` |
+
+### Fuentes: empresas objetivo y portales (fase 09, solo CLI)
+
+Sin herramienta MCP en esta fase: las usa la persona (CLI o pantalla «Empresas» de la UI). La 09b
+añade `list_sources` con la misma salida que `jh sources list --json`.
+
+| Comando | Qué hace |
+|---|---|
+| `jh sources add --kind K --name N [--slug S] [--region global\|eu] [--query Q] [--where W] [--province P] [--country C] [--keywords a,b] [--json]` | Añade una fuente. ATS (`greenhouse`, `lever`, `ashby`): `--slug` del tablero; la empresa queda como objetivo (`companies.watchlist`). Portales (`infojobs`, `adzuna`): `--query`. Error `exists` si ya está |
+| `jh sources list [--kind K] [--json]` | `{sources: [SourceView]}`: tipo, nombre, `config` (sin secretos), `active`, `keys_missing`, `last_run_at` y `last_run` (encontradas, tras filtros, nuevas, errores) |
+| `jh sources test ID \| --kind K --name N … [--json]` | Descarga y aplica el filtro previo sin guardar nada: `found`, `after_filters`, `message` («12 ofertas encontradas, 3 tras filtros»), ofertas con `passed` y `reason`, y `errors`. Código 1 si la fuente falla |
+| `jh sources run [ID] [--json]` | Ejecuta ya una fuente (o todas las activas) y guarda lo nuevo en `pending_extraction`. `{runs: [SourceRunResult]}` con `created`, `existing`, `duplicates`, `job_ids` y `errors` |
+| `jh sources enable ID` / `disable ID` | Activa o pausa una fuente en la ingesta diaria |
 
 ## Errores
 

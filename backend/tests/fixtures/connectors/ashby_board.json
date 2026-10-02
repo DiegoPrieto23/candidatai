@@ -1,0 +1,41 @@
+{
+  "apiVersion": "1",
+  "jobs": [
+    {
+      "id": "8d1f6a50-aaaa-4c3e-9f00-acmedatos0001",
+      "title": "Data Engineer",
+      "location": "Santiago de Compostela",
+      "secondaryLocations": [],
+      "department": "Data",
+      "team": "Plataforma",
+      "isListed": true,
+      "isRemote": false,
+      "workplaceType": "Hybrid",
+      "descriptionHtml": "<p>Pipelines con Python y SQL.</p><ul><li>Airflow</li></ul>",
+      "descriptionPlain": "Pipelines con Python y SQL.\n- Airflow",
+      "publishedAt": "2026-09-28T08:00:00.000+00:00",
+      "employmentType": "FullTime",
+      "address": {"postalAddress": {"addressLocality": "Santiago de Compostela", "addressCountry": "Spain"}},
+      "jobUrl": "https://jobs.ashbyhq.com/acmedatos/8d1f6a50-aaaa-4c3e-9f00-acmedatos0001",
+      "applyUrl": "https://jobs.ashbyhq.com/acmedatos/8d1f6a50-aaaa-4c3e-9f00-acmedatos0001/application"
+    },
+    {
+      "title": "Data Analyst",
+      "location": "Remote",
+      "isListed": true,
+      "isRemote": true,
+      "workplaceType": "Remote",
+      "descriptionHtml": "<p>Cuadros de mando y SQL.</p>",
+      "publishedAt": "2026-09-28T08:00:00.000+00:00",
+      "jobUrl": "https://jobs.ashbyhq.com/acmedatos/0b7e2c11-bbbb-4c3e-9f00-acmedatos0002"
+    },
+    {
+      "id": "8d1f6a50-cccc-4c3e-9f00-acmedatos0003",
+      "title": "Data Engineer (interna)",
+      "location": "Vigo",
+      "isListed": false,
+      "descriptionPlain": "No publicada.",
+      "jobUrl": "https://jobs.ashbyhq.com/acmedatos/8d1f6a50-cccc-4c3e-9f00-acmedatos0003"
+    }
+  ]
+}

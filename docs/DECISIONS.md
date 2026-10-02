@@ -210,3 +210,33 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   pero un diseño con elementos que no encajan en el contrato (p. ej. un gráfico de habilidades)
   se queda fijo o se pierde. La carta ya está disponible antes de la fase 10, que solo la muestra
   en el paquete de candidatura; `ApplicationAnswers` deja de llevar `cover_letter`.
+
+## ADR-019 · Ingesta diaria: conectores, filtro previo y deduplicación
+- **Contexto:** la fase 09 trae solas las ofertas de las empresas objetivo (Greenhouse, Lever,
+  Ashby) y de búsquedas en portales con API (InfoJobs, Adzuna). Hay que decidir qué se guarda,
+  cuándo se ejecuta y cómo se evita duplicar o perder ofertas.
+- **Decisión:**
+  - **solo endpoints públicos documentados**, verificados contra su documentación al implementar;
+    las claves de los portales en `.env`, nunca en `sources.config`;
+  - **filtro previo barato** antes de guardar (título contra `preferences.roles` con la misma regla
+    de palabras que el score, y ubicación contra las zonas). Ante la duda deja pasar: lo fino lo
+    hacen después los filtros duros y el score con la extracción;
+  - **idempotencia**: una oferta ya vista (por `source_id` + `external_id`, URL o huella) no se
+    vuelve a crear ni a descargar. Dentro de una misma fuente con conector, dos ids distintos nunca
+    son duplicado difuso entre sí (el ATS ya dice que son publicaciones distintas, p. ej. «Senior
+    Data Engineer» en remoto y «Data Engineer» en Vigo); frente a otras fuentes, el difuso de la
+    fase 03 sigue igual;
+  - **programación con APScheduler 3** dentro de `jh worker` (la 4 sigue en alfa), con un solo hilo
+    para no escribir a la vez en SQLite. Cada fuente es una tarea `run_source` de la cola: un fallo
+    no para a las demás, queda en `source_runs` y se reintenta con espera creciente si es de red,
+    5xx o 429. Al arrancar, el worker encola las fuentes que no han corrido desde la última hora
+    programada: en un portátil que estaba apagado no se pierde el día;
+  - la hora está en `config/policies.yaml` (`connectors.daily_at` y `timezone`);
+  - la respuesta de una API es contenido no confiable: las URLs de oferta deben ser http(s), los
+    ids que van en una ruta solo llevan `[A-Za-z0-9_-]`, no se siguen redirecciones (se llevarían
+    las claves que Adzuna pide en la URL) y el log de httpx no baja de WARNING;
+  - primero toda la red (descarga, filtro y detalles) y después la escritura, en un savepoint: un
+    fallo inesperado no deja ofertas a medias y queda en `source_runs` como `internal_error`.
+- **Consecuencias:** la ingesta solo ocurre con el worker en marcha. Un título que no contenga las
+  palabras de ningún rol no entra (se puede ampliar por fuente con `title_keywords`). Adzuna solo
+  da un extracto: sus ofertas llegan con poca descripción hasta que la 09b las trate como resumen.

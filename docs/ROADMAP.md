@@ -21,7 +21,7 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 08.3 | ↳ Importar plantillas desde Word y «Mi CV» | ✅ | Subes tu CV de Word, se convierte en plantilla por defecto y los CVs a medida salen con tu diseño, tu orden de secciones y tus secciones extra |
 | 08c | Carta de presentación | ⏳ | `generar-carta` redacta y verifica la carta según tus indicaciones (generales y de cada oferta); TXT para pegar y PDF a juego con el CV |
 | 08b | Plantillas html | 🚧 | Importar diseños desde PDF o imagen (Canva…), también como «Mi CV», y plantilla integrada de dos columnas |
-| 09 | Conectores de ATS y scheduler | ⏳ | Ingesta diaria de empresas objetivo sin intervención |
+| 09 | Conectores de ATS y scheduler | ✅ | Ingesta diaria de empresas objetivo sin intervención |
 | 09b | Alertas, captura y búsqueda con navegador | ⏳ | Las alertas de LinkedIn y otros portales llegan solas por correo, cualquier oferta entra con un clic desde el navegador y, opcionalmente, el agente recorre portales |
 | 10 | Seguimiento y analítica | ⏳ | Kanban, seguimientos pendientes, dashboard del embudo |
 | 11 | Candidatura asistida | ⏳ | Rellenado con Playwright y envío tras tu confirmación |
@@ -455,3 +455,48 @@ decisiones tomadas y deuda técnica pendiente. -->
   - `jh doctor` imprime `moderna-2col` en cada ejecución (unos 2 s).
   - Al probar la API se cerraron todos los `jh.exe` con `taskkill /IM`: no repetirlo, matar solo
     el PID del servidor de prueba.
+
+### 09 · Conectores de ATS y scheduler — 2026-10-02 · Claude Code (Opus 5.5)
+- **Resumen:** `services/ingestion/` con conectores de Greenhouse, Lever (global y UE) y Ashby, y
+  opcionales InfoJobs y Adzuna con claves en `.env`. Cada endpoint se verificó contra su
+  documentación y, de forma manual, contra tableros públicos reales: lectura sin ningún error por
+  oferta. Además: filtro previo de título y ubicación (`prefilter.py`), `run_source` idempotente
+  con `source_runs` (migración `0006`, adelantada desde la 09b) y `jh worker` con APScheduler
+  (ingesta diaria a `connectors.daily_at`, recuperación al arrancar, reintentos y log legible en
+  consola y `data/logs/worker.log`). También `jh sources add | list | test | run | enable |
+  disable`, API `/sources`, pantalla **Empresas** («12 ofertas encontradas, 3 tras filtros») y
+  aviso en `jh doctor`. 1183 tests de backend y 57 de frontend. Guía de prueba manual en
+  `docs/pruebas/fase-09-prueba-manual.txt`. **Pendiente:** la prueba manual con tus empresas
+  objetivo.
+- **Decisiones** (ADR-019):
+  - Filtro previo indulgente: el título debe contener todas las palabras de algún rol (la regla
+    del score) o una `title_keywords` de la fuente. La ubicación debe encajar con tus zonas o ser
+    remota si aceptas remoto. Sin ubicación o sin perfil, pasa.
+  - Ya visto = mismo `source_id` + `external_id`, misma URL o misma huella: no se crea ni se pide
+    el detalle. Dentro de una fuente con conector, ids distintos no son duplicado difuso entre sí
+    (sin esto, «Senior Data Engineer» en remoto se cerraba como duplicado de «Data Engineer» en
+    Vigo). Frente a otras fuentes, el difuso no cambia.
+  - Una tarea `run_source` por fuente, en un solo hilo. Red, 5xx, 429 o fallo interno: se
+    reintenta. 404 o formato inesperado: no. Si la fuente falla entera, `last_run_at` no avanza y
+    al arrancar se vuelve a encolar. Los portales sin claves no se encolan. Las tareas que quedaron
+    `running` vuelven a la cola al arrancar.
+  - Primero la red y después la escritura, en un savepoint. Un fallo inesperado queda como
+    `internal_error` sin dejar ofertas a medias.
+  - Las respuestas de las APIs son contenido no confiable. URLs solo http(s), ids de ruta con
+    `[A-Za-z0-9_-]`, sin redirecciones (Adzuna lleva las claves en la URL) y log de httpx en
+    WARNING. Lo encontró la revisión.
+  - Hora en `config/policies.yaml` (`connectors.daily_at: "07:30"`, `timezone: Europe/Madrid`).
+  - La API usa `POST /sources/{id}/active` en vez de `PATCH`: CORS sigue con GET y POST.
+  - Dependencia: `apscheduler` 3.x (la 4 sigue en alfa).
+- **Deuda:**
+  - Adzuna solo da un extracto de la descripción: tratar sus ofertas como resumen en la 09b.
+  - El filtro previo deja fuera los títulos en otro idioma que tus roles (p. ej. «Ingeniero de
+    datos» si solo tienes «Data Engineer»): añade el rol en los dos idiomas o usa `title_keywords`.
+  - Sin herramientas MCP de fuentes: `list_sources`, `save_source` y `record_source_run` llegan con
+    la 09b, y `jh sources list --json` ya devuelve la salida prevista.
+  - InfoJobs y Adzuna solo se han probado con respuestas grabadas: no había claves.
+  - `parse_datetime` toma como UTC las fechas sin zona (posible desfase de horas en `posted_at`).
+  - Con el servidor MCP de Claude Code abierto, `uv add` sigue fallando: APScheduler se instaló con
+    `uv add --no-sync` + `uv pip install`. Ejecuta `uv sync --directory backend` con Claude Code
+    cerrado.
+  - La BD real necesita `jh db upgrade` (hasta 0006).

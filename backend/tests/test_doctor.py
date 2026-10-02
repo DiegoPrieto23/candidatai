@@ -181,6 +181,7 @@ def test_cli_doctor_json() -> None:
         "Motor html (Chromium)",
         "Foto del CV",
         "Embeddings",
+        "Conectores de ofertas",
     ]
 
 
@@ -215,3 +216,21 @@ def test_check_html_engine_without_chromium(monkeypatch: pytest.MonkeyPatch) -> 
     result = doctor.check_html_engine()
     assert result.status == CheckStatus.WARN
     assert "playwright install chromium" in result.detail
+
+
+def test_check_connectors(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.core.config import get_settings
+
+    result = doctor.check_connectors(get_settings())
+    assert result.status == doctor.CheckStatus.OK
+    assert "ninguno (opcionales)" in result.detail and "07:30" in result.detail
+
+    monkeypatch.setenv("JH_ADZUNA_APP_ID", "id-secreto-1")
+    monkeypatch.setenv("JH_ADZUNA_APP_KEY", "clave-secreta-2")
+    monkeypatch.setenv("JH_INFOJOBS_CLIENT_ID", "id-secreto-3")
+    get_settings.cache_clear()
+    result = doctor.check_connectors(get_settings())
+    assert result.status == doctor.CheckStatus.WARN
+    assert "portales con claves: Adzuna" in result.detail
+    assert "Falta una de las dos claves de InfoJobs" in result.detail
+    assert "secret" not in result.detail  # nunca muestra las claves

@@ -1,0 +1,136 @@
+PRUEBA MANUAL · FASE 09 · CONECTORES DE ATS Y SCHEDULER
+=======================================================
+
+Objetivo: comprobar con tus empresas objetivo reales que la pantalla «Empresas» las prueba y las
+añade, que una ejecución guarda solo lo que encaja y no duplica nada al repetirla, y que
+`jh worker` las trae solo a la hora configurada con un log legible.
+
+Duración aproximada: 20 minutos.
+
+
+REQUISITOS
+----------
+- Dos o tres empresas que te interesen y que publiquen sus ofertas en Greenhouse, Lever o Ashby.
+  Para saber su slug, abre su página de empleo y mira la URL de una oferta:
+      boards.greenhouse.io/<slug>/jobs/...   o   job-boards.greenhouse.io/<slug>/...
+      jobs.lever.co/<slug>/...               (jobs.eu.lever.co/<slug> → región «Europa»)
+      jobs.ashbyhq.com/<slug>/...
+- Tres terminales de PowerShell (API, UI y worker) y, para la parte 4, tu agente.
+- Los comandos se ejecutan desde la RAÍZ del repo:
+      cd <carpeta-del-repo>
+- Rama de la fase:
+      git switch fase/09-conectores-scheduler
+
+Las ofertas que se den de alta son REALES y se quedan en tu base de datos (data/jobhunter.db).
+Elige empresas que de verdad quieras seguir; al final se explica cómo pausarlas.
+
+
+PARTE 1 · PREPARAR
+------------------
+1. Dependencias (el backend añade APScheduler). Con Claude Code CERRADO (si no, falla al
+   reinstalar jh-mcp.exe):
+
+      uv sync --directory backend
+
+2. Migra la base de datos (esta fase añade la 0006):
+
+      uv run --directory backend jh db upgrade
+
+   Esperado: "Base de datos actualizada: 0005 -> 0006."
+
+3. Comprueba el entorno:
+
+      uv run --directory backend jh doctor
+
+   Esperado: una línea «Conectores de ofertas» en OK con «Greenhouse, Lever y Ashby listos» y la
+   hora de la ingesta diaria (07:30, Europe/Madrid). Puedes cambiarla en config/policies.yaml →
+   connectors.daily_at.
+
+
+PARTE 2 · PANTALLA «EMPRESAS»
+-----------------------------
+1. Terminal 1:   uv run --directory backend jh serve
+   Terminal 2:   cd frontend; pnpm dev
+   Abre http://127.0.0.1:5173 y entra en «Empresas» (menú superior).
+
+2. Con la lista vacía debe aparecer «Aún no sigues ninguna empresa».
+
+3. En «Añadir empresa o búsqueda»: Origen = el ATS de tu empresa, Empresa = su nombre, Slug = el de
+   la URL. Pulsa «Probar».
+   Esperado: «N ofertas encontradas, M tras filtros» y la lista de las que pasan (enlaces a la
+   oferta). «Ver también las X filtradas» muestra el resto con el motivo (título que no encaja con
+   tus puestos, fuera de zona…). Comprueba que el filtro tiene sentido con tu perfil.
+
+4. Prueba un slug que no exista (p. ej. añade «-xyz» al final) y pulsa «Probar».
+   Esperado: aviso rojo «No existe el tablero … Revisa el slug».
+
+5. Vuelve al slug bueno y pulsa «Añadir». Repite con 1-2 empresas más.
+   Esperado: aparecen en «Seguidas», con «Aún no se ha ejecutado».
+
+
+PARTE 3 · EJECUTAR Y REPETIR
+----------------------------
+1. En una de ellas, pulsa «Ejecutar ahora».
+   Esperado: «… N ofertas encontradas, M tras filtros, M nuevas» y el enlace «Verlas», que lleva a
+   la bandeja filtrada por «Por extraer» con esas ofertas.
+
+2. Pulsa otra vez «Ejecutar ahora».
+   Esperado: «0 nuevas, M ya estaban». En la bandeja no aparece ninguna repetida.
+
+3. Lo mismo por CLI (todas las activas):
+
+      uv run --directory backend jh sources run
+      uv run --directory backend jh sources list
+
+   Esperado: «0 nuevas» en las ya ejecutadas; «list» muestra la última ejecución de cada una.
+
+4. Pulsa «Pausar» en una: queda «Pausada» y «Ejecutar ahora» se desactiva. «Reactivar» la
+   devuelve.
+
+
+PARTE 4 · WORKER Y EXTRACCIÓN
+-----------------------------
+1. Para ver la ingesta sin esperar a mañana, pon la hora de dentro de 2-3 minutos en
+   config/policies.yaml → connectors.daily_at (p. ej. "17:42"). Terminal 3:
+
+      uv run --directory backend jh worker
+
+   Esperado al arrancar: «Worker en marcha…», «Próxima ingesta diaria: 17:42 (Europe/Madrid)».
+   (Las fuentes que nunca se han ejecutado se ejecutan ya al arrancar.)
+   A la hora indicada: «Ingesta diaria: N fuentes en cola.» y una línea por empresa con lo
+   encontrado, lo filtrado y lo nuevo («0 nuevas, M ya estaban» si nada cambió).
+   El mismo log queda en data/logs/worker.log. Ctrl+C → «Worker parado.»
+   Vuelve a dejar la hora que quieras (p. ej. "07:30").
+
+2. Prueba de recuperación: con el worker parado, la próxima vez que lo arranques después de la
+   hora programada sin haberlo tenido encendido, debe decir «Fuentes pendientes desde la última
+   ingesta: N en cola.» y ejecutarlas.
+
+3. En tu agente: /procesar-ofertas → las ofertas nuevas pasan a «Por revisar».
+
+4. (Opcional) Extracción automática cada mañana: ver docs/AGENTS_COMPAT.md → «Extracción
+   automática cada mañana». En Claude Code Desktop, una tarea programada local diaria después de
+   la ingesta con el prompt /procesar-ofertas.
+
+
+PARTE 5 · OPCIONAL: INFOJOBS O ADZUNA
+-------------------------------------
+Solo si tienes claves (developer.infojobs.net o developer.adzuna.com). Añádelas a .env:
+      JH_INFOJOBS_CLIENT_ID=...      JH_INFOJOBS_CLIENT_SECRET=...
+      JH_ADZUNA_APP_ID=...           JH_ADZUNA_APP_KEY=...
+Reinicia `jh serve`, añade en «Empresas» un origen InfoJobs o Adzuna con unas palabras de búsqueda
+y pulsa «Probar». Sin claves, la fuente aparece con «Sin claves en .env» y el worker la omite con
+un aviso.
+
+
+QUÉ ANOTAR
+----------
+- Empresas probadas (ATS) y si alguna dio un error o un formato raro.
+- Si el filtro previo dejó fuera algo que te interesaba o entró algo claramente irrelevante.
+- El log del worker: ¿se entiende de un vistazo?
+
+
+LIMPIEZA
+--------
+Las ofertas se quedan (son reales). Para dejar de seguir una empresa: «Pausar» en la UI o
+      uv run --directory backend jh sources disable <id>

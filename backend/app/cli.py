@@ -2,8 +2,10 @@
 
 import io
 import json
+import logging
 import subprocess
 import sys
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Any, NoReturn
 
@@ -29,6 +31,9 @@ match_app = typer.Typer(help="Encaje de las ofertas con el perfil.", no_args_is_
 eval_app = typer.Typer(help="Evaluación de la calidad del matching.", no_args_is_help=True)
 cv_app = typer.Typer(help="CVs a medida: contenido, renders y verificación.", no_args_is_help=True)
 templates_app = typer.Typer(help="Plantillas de CV.", no_args_is_help=True)
+sources_app = typer.Typer(
+    help="Fuentes con conector: empresas objetivo (ATS) y portales con API.", no_args_is_help=True
+)
 app.add_typer(db_app, name="db")
 app.add_typer(events_app, name="events")
 app.add_typer(jobs_app, name="jobs")
@@ -38,6 +43,7 @@ app.add_typer(match_app, name="match")
 app.add_typer(eval_app, name="eval")
 app.add_typer(cv_app, name="cv")
 app.add_typer(templates_app, name="templates")
+app.add_typer(sources_app, name="sources")
 
 JSON_OPTION = typer.Option(False, "--json", help="Salida en JSON.")
 SYNC_SCRIPT = REPO_ROOT / "scripts" / "sync_agents.py"
@@ -401,23 +407,53 @@ def eval_matching(
 # --- Worker: tareas en segundo plano -------------------------------------------------------------
 
 
+def _outcome_line(outcome: Any) -> str:
+    from app.services import worker as worker_service
+
+    mark = "[ok]   " if outcome.ok else "[error]"
+    if outcome.kind == "run_source" or outcome.ok:
+        return f"{mark} tarea {outcome.task_id} {outcome.kind}: {worker_service.describe(outcome)}"
+    return f"{mark} tarea {outcome.task_id} {outcome.kind}: {outcome.error}"
+
+
 def _render_worker_run(run: Any) -> None:
     for outcome in run.outcomes:
-        if outcome.ok:
-            detail = json.dumps(outcome.result, ensure_ascii=False) if outcome.result else ""
-            typer.echo(f"[ok]    tarea {outcome.task_id} {outcome.kind} {detail}")
-        else:
-            failed = f"[error] tarea {outcome.task_id} {outcome.kind}: {outcome.error}"
-            typer.secho(failed, fg="red")
+        typer.secho(_outcome_line(outcome), fg=None if outcome.ok else "red")
+
+
+def _worker_logger() -> logging.Logger:
+    """Log legible en consola y en `data/logs/worker.log` (rotado, 1 MB x 3)."""
+    logger = logging.getLogger("jobhunter.worker")
+    logger.setLevel(logging.INFO)
+    logger.propagate = False
+    for handler in list(logger.handlers):
+        logger.removeHandler(handler)
+        handler.close()
+    console = logging.StreamHandler(sys.stdout)
+    console.setFormatter(logging.Formatter("%(asctime)s  %(message)s", "%H:%M:%S"))
+    logger.addHandler(console)
+    logs_dir = get_settings().logs_dir
+    logs_dir.mkdir(parents=True, exist_ok=True)
+    file_handler = RotatingFileHandler(
+        logs_dir / "worker.log", maxBytes=1_000_000, backupCount=3, encoding="utf-8"
+    )
+    file_handler.setFormatter(
+        logging.Formatter("%(asctime)s %(levelname)s %(message)s", "%Y-%m-%d %H:%M:%S")
+    )
+    logger.addHandler(file_handler)
+    # APScheduler anuncia cada ejecución en INFO: solo interesan sus avisos.
+    logging.getLogger("apscheduler").setLevel(logging.WARNING)
+    return logger
 
 
 @app.command()
 def worker(
     once: bool = typer.Option(False, "--once", help="Vacía la cola y termina."),
-    interval: float = typer.Option(5.0, help="Segundos entre pasadas (sin --once)."),
+    interval: float = typer.Option(5.0, help="Segundos entre pasadas por la cola (sin --once)."),
     as_json: bool = JSON_OPTION,
 ) -> None:
-    """Ejecuta las tareas en segundo plano (scores, recálculos). Ctrl+C para parar."""
+    """Ejecuta las tareas en segundo plano (scores, recálculos) y la ingesta diaria de las fuentes
+    a la hora de `connectors.daily_at`. Ctrl+C para parar."""
     from app.services import worker as worker_service
 
     try:
@@ -435,11 +471,21 @@ def worker(
         if run.failed:
             raise typer.Exit(code=1)
         return
-    typer.echo(f"Worker en marcha (cada {interval:g} s). Ctrl+C para parar.")
+    log = _worker_logger()
+
+    def on_run(run: Any) -> None:
+        for outcome in run.outcomes:
+            (log.info if outcome.ok else log.warning)(_outcome_line(outcome))
+
+    log.info(f"Worker en marcha (cola cada {interval:g} s). Ctrl+C para parar.")
     try:
-        worker_service.run_forever(interval, _render_worker_run)
-    except KeyboardInterrupt:
-        typer.echo("Worker parado.")
+        worker_service.run_scheduler(interval, on_run, log.info)
+    except (KeyboardInterrupt, SystemExit):
+        log.info("Worker parado.")
+    finally:
+        for handler in list(log.handlers):  # en Windows, un fichero abierto no se puede borrar
+            log.removeHandler(handler)
+            handler.close()
 
 
 # --- Perfil: validar, importar, comparar e iniciar ----------------------------------------------
@@ -813,6 +859,249 @@ def templates_preview(
     typer.echo(f"{result.pages} de {result.max_pages} página(s) como máximo.")
     for warning in result.warnings:
         typer.secho(f"  Aviso: {warning}", fg=typer.colors.YELLOW)
+
+
+# --- Fuentes: empresas objetivo y portales -----------------------------------------------------
+
+KIND_OPTION = typer.Option(..., "--kind", help="greenhouse, lever, ashby, infojobs o adzuna.")
+NAME_OPTION = typer.Option(..., "--name", help="Empresa (en un ATS) o etiqueta de la búsqueda.")
+SLUG_OPTION = typer.Option(None, "--slug", help="Slug del tablero del ATS (p. ej. `acme`).")
+REGION_OPTION = typer.Option("global", "--region", help="Lever: `global` o `eu`.")
+QUERY_OPTION = typer.Option(None, "--query", help="Portales: palabras de búsqueda.")
+WHERE_OPTION = typer.Option(None, "--where", help="Adzuna: ubicación.")
+PROVINCE_OPTION = typer.Option(None, "--province", help="InfoJobs: provincia (p. ej. `a-coruna`).")
+COUNTRY_OPTION = typer.Option("es", "--country", help="Adzuna: país (código de 2 letras).")
+KEYWORDS_OPTION = typer.Option(
+    None, "--keywords", help="Palabras extra que dejan pasar un título, separadas por comas."
+)
+SOURCE_ID_ARG = typer.Argument(..., help="Id de la fuente (ver `jh sources list`).")
+
+
+def _source_input(
+    kind: str,
+    name: str,
+    slug: str | None,
+    region: str,
+    query: str | None,
+    where: str | None,
+    province: str | None,
+    country: str,
+    keywords: str | None,
+) -> Any:
+    from app.schemas.sources import SourceInput
+
+    return SourceInput.model_validate(
+        {
+            "kind": kind,
+            "name": name,
+            "slug": slug,
+            "region": region,
+            "query": query,
+            "where": where,
+            "province": province,
+            "country": country,
+            "title_keywords": _csv(keywords) or [],
+        }
+    )
+
+
+def _render_source(source: Any) -> None:
+    state = "activa" if source.active else "pausada"
+    target = source.config.get("slug") or source.config.get("query") or ""
+    typer.echo(f"{source.id:>4}  {source.kind_label:<11} {source.name} [{target}] ({state})")
+    if source.keys_missing:
+        typer.secho("      Sin claves en .env: se omite al ejecutar.", fg="yellow")
+    if source.last_run:
+        run = source.last_run
+        when = run.started_at.astimezone().strftime("%d/%m %H:%M")
+        line = f"      Última: {when}, {run.found} encontradas, {run.after_filters} tras filtros, "
+        line += f"{run.created} nuevas"
+        if run.errors:
+            line += f", {len(run.errors)} avisos: {run.errors[0].message}"
+        typer.echo(line)
+
+
+def _render_preview(result: Any) -> None:
+    typer.echo(f"{result.name}: {result.message.rstrip('.')}.")
+    if result.found == 0 and result.errors:
+        return  # el mensaje ya es el error de la fuente
+    for job in result.jobs:
+        mark = "+" if job.passed else "-"
+        where = f" · {job.location}" if job.location else ""
+        reason = f"  ({job.reason})" if job.reason else ""
+        typer.echo(f"  {mark} {job.title}{where}{reason}")
+    for issue in result.errors:
+        typer.secho(f"  ! {issue.message}", fg="yellow")
+
+
+def _render_source_run(result: Any) -> None:
+    color = "yellow" if result.skipped or result.errors else None
+    typer.secho(result.message, fg=color)
+    for issue in result.errors:
+        typer.secho(f"  ! {issue.message}", fg="yellow")
+    if result.job_ids:
+        ids = ", ".join(map(str, result.job_ids[:10]))
+        if len(result.job_ids) > 10:
+            ids += f" y {len(result.job_ids) - 10} más"
+        typer.echo(
+            f"  Nuevas en pending_extraction: {ids}. "
+            "Ejecuta `procesar-ofertas` en tu agente para extraerlas."
+        )
+
+
+@sources_app.command("add")
+def sources_add(
+    kind: str = KIND_OPTION,
+    name: str = NAME_OPTION,
+    slug: str | None = SLUG_OPTION,
+    region: str = REGION_OPTION,
+    query: str | None = QUERY_OPTION,
+    where: str | None = WHERE_OPTION,
+    province: str | None = PROVINCE_OPTION,
+    country: str = COUNTRY_OPTION,
+    keywords: str | None = KEYWORDS_OPTION,
+    as_json: bool = JSON_OPTION,
+) -> None:
+    """Añade una empresa objetivo (ATS + slug) o una búsqueda en un portal con API."""
+    from app.services.ingestion import service as sources
+
+    try:
+        migrations.ensure_current()
+        data = _source_input(kind, name, slug, region, query, where, province, country, keywords)
+        with session_scope() as session:
+            view = sources.add_source(session, data)
+    except Exception as exc:
+        _profile_fail(exc, as_json)
+    if as_json:
+        typer.echo(dump_json(view))
+        return
+    typer.echo(f"Fuente añadida. Pruébala con `jh sources test {view.id}`.")
+    _render_source(view)
+
+
+@sources_app.command("list")
+def sources_list(
+    kind: str | None = typer.Option(None, "--kind", help="Solo las de este tipo."),
+    as_json: bool = JSON_OPTION,
+) -> None:
+    """Lista las fuentes con su configuración (sin secretos) y su última ejecución."""
+    from app.services.ingestion import service as sources
+
+    try:
+        migrations.ensure_current()
+        with session_scope() as session:
+            result = sources.list_sources(session, kind)
+    except Exception as exc:
+        _profile_fail(exc, as_json)
+    if as_json:
+        typer.echo(dump_json(result))
+        return
+    if not result.sources:
+        typer.echo("No hay fuentes. Añade una con `jh sources add`.")
+    for source in result.sources:
+        _render_source(source)
+
+
+@sources_app.command("test")
+def sources_test(
+    source_id: int | None = typer.Argument(None, help="Id de una fuente guardada."),
+    kind: str | None = typer.Option(None, "--kind", help="Para probar sin guardar: el tipo."),
+    name: str | None = typer.Option(None, "--name", help="Para probar sin guardar: el nombre."),
+    slug: str | None = SLUG_OPTION,
+    region: str = REGION_OPTION,
+    query: str | None = QUERY_OPTION,
+    where: str | None = WHERE_OPTION,
+    province: str | None = PROVINCE_OPTION,
+    country: str = COUNTRY_OPTION,
+    keywords: str | None = KEYWORDS_OPTION,
+    as_json: bool = JSON_OPTION,
+) -> None:
+    """Descarga y filtra una fuente sin guardar nada: «12 ofertas encontradas, 3 tras filtros»."""
+    from app.services.ingestion import service as sources
+
+    try:
+        migrations.ensure_current()
+        if source_id is not None:
+            target: Any = source_id
+        elif kind and name:
+            target = _source_input(
+                kind, name, slug, region, query, where, province, country, keywords
+            )
+        else:
+            raise ValueError(
+                "Indica el id de una fuente o, para probar sin guardar, --kind y --name."
+            )
+        with session_scope() as session:
+            result = sources.preview_source(session, target)
+    except Exception as exc:
+        _profile_fail(exc, as_json)
+    if as_json:
+        typer.echo(dump_json(result))
+    else:
+        _render_preview(result)
+    if result.found == 0 and result.errors:
+        raise typer.Exit(code=1)
+
+
+@sources_app.command("run")
+def sources_run(
+    source_id: int | None = typer.Argument(None, help="Id de la fuente. Sin id, las activas."),
+    as_json: bool = JSON_OPTION,
+) -> None:
+    """Ejecuta ahora una fuente (o todas las activas) y guarda las ofertas nuevas."""
+    from app.schemas.sources import SourceRunBatch
+    from app.services.ingestion import service as sources
+
+    try:
+        migrations.ensure_current()
+        with session_scope() as session:
+            ids = (
+                [source_id]
+                if source_id is not None
+                else [s.id for s in sources.connector_sources(session)]
+            )
+        runs = []
+        for current in ids:  # una transacción por fuente: un fallo no deshace las demás
+            with session_scope() as session:
+                runs.append(sources.run_source(session, current, actor="user"))
+    except Exception as exc:
+        _profile_fail(exc, as_json)
+    if as_json:
+        typer.echo(dump_json(SourceRunBatch(runs=runs)))
+    elif not runs:
+        typer.echo("No hay fuentes activas. Añade una con `jh sources add`.")
+    else:
+        for run in runs:
+            _render_source_run(run)
+    if any(run.errors and not run.found for run in runs):
+        raise typer.Exit(code=1)
+
+
+def _set_active(source_id: int, active: bool, as_json: bool) -> None:
+    from app.services.ingestion import service as sources
+
+    try:
+        migrations.ensure_current()
+        with session_scope() as session:
+            view = sources.set_active(session, source_id, active)
+    except Exception as exc:
+        _profile_fail(exc, as_json)
+    if as_json:
+        typer.echo(dump_json(view))
+    else:
+        _render_source(view)
+
+
+@sources_app.command("enable")
+def sources_enable(source_id: int = SOURCE_ID_ARG, as_json: bool = JSON_OPTION) -> None:
+    """Reactiva una fuente: vuelve a entrar en la ingesta diaria."""
+    _set_active(source_id, True, as_json)
+
+
+@sources_app.command("disable")
+def sources_disable(source_id: int = SOURCE_ID_ARG, as_json: bool = JSON_OPTION) -> None:
+    """Pausa una fuente: deja de entrar en la ingesta diaria (sus ofertas se conservan)."""
+    _set_active(source_id, False, as_json)
 
 
 # --- Configuración de agentes: delega en scripts/sync_agents.py ---------------------------------

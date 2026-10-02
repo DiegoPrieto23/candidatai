@@ -1,0 +1,26 @@
+{
+  "__CLASS__": "Adzuna::API::Response::JobSearchResults",
+  "count": 2,
+  "mean": 40000,
+  "results": [
+    {
+      "__CLASS__": "Adzuna::API::Response::Job",
+      "id": "4400000001",
+      "title": "<strong>Data</strong> <strong>Engineer</strong>",
+      "description": "Equipo de datos en Vigo. Python, SQL y Spark para pipelines…",
+      "redirect_url": "https://www.adzuna.es/details/4400000001",
+      "created": "2026-09-30T07:00:00Z",
+      "company": {"display_name": "Mar de Datos Demo"},
+      "location": {"display_name": "Vigo, Pontevedra", "area": ["España", "Galicia", "Pontevedra", "Vigo"]},
+      "category": {"label": "Empleos de TI", "tag": "it-jobs"}
+    },
+    {
+      "id": "4400000002",
+      "title": "Data Analyst",
+      "description": "Sin empresa.",
+      "redirect_url": "https://www.adzuna.es/details/4400000002",
+      "created": "2026-09-30T07:00:00Z",
+      "location": {"display_name": "Vigo"}
+    }
+  ]
+}
