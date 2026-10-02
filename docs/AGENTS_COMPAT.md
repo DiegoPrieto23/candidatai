@@ -82,7 +82,10 @@ ofertas marcadas con riesgo antes de aprobarlas.
 
 ### Skills que necesitan ver imágenes
 `importar-plantilla-cv` con un PDF o una imagen recrea el diseño mirando la página renderizada:
-hace falta un agente que pueda ver imágenes. Con un `.docx` no hace falta. `actualizar-perfil`
+hace falta un agente que pueda ver imágenes. Con un `.docx` no hace falta. Desde la fase 08b,
+`inspect`, `scaffold-html` y `compare` dan al agente la página en PNG, una base de HTML y CSS
+que ya se parece y una comparación lado a lado. Recreación desde PDF probada con Claude Code:
+pendiente de la prueba manual de la 08b; desde imagen y con Codex, sin probar. `actualizar-perfil`
 también funciona mejor si el agente puede leer PDFs; si no, basta con pegar el texto del CV.
 
 ### Skills que necesitan el navegador del usuario

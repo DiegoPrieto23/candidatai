@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="{{ 'en' if labels.experience == 'Experience' else 'es' }}">
+<head>
+<meta charset="utf-8">
+<title>{{ name }}</title>
+<link rel="stylesheet" href="style.css">
+<style>:root { --accent: {{ accent_color or '#1F4E79' }}; }</style>
+</head>
+<body>
+<div class="page">
+  <aside class="sidebar">
+    {% if photo %}
+    <img class="photo" src="{{ photo }}" alt="">
+    {% endif %}
+
+    <section class="side-block">
+      <h2>{{ labels.contact }}</h2>
+      <ul class="contact">
+        {% if contact.email %}<li><span class="ico">@</span>{{ contact.email }}</li>{% endif %}
+        {% if contact.phone %}<li><span class="ico">&#9742;</span>{{ contact.phone }}</li>{% endif %}
+        {% if contact.city %}<li><span class="ico">&#9673;</span>{{ contact.city }}</li>{% endif %}
+        {% if contact.linkedin %}<li><span class="ico">in</span>{{ contact.linkedin }}</li>{% endif %}
+        {% if contact.github %}<li><span class="ico">&lt;/&gt;</span>{{ contact.github }}</li>{% endif %}
+      </ul>
+    </section>
+
+    {% if show.skills %}
+    <section class="side-block">
+      <h2>{{ labels.skills }}</h2>
+      {% for s in skills %}
+      <div class="skill-group">
+        <h3>{{ s.group }}</h3>
+        <p>{{ s.items | join(' · ') }}</p>
+      </div>
+      {% endfor %}
+    </section>
+    {% endif %}
+
+    {% if show.languages %}
+    <section class="side-block">
+      <h2>{{ labels.languages }}</h2>
+      <ul class="plain">
+        {% for l in languages %}
+        <li><strong>{{ l.language }}</strong>{% if l.level %} · {{ l.level }}{% endif %}</li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+
+    {% if show.certifications %}
+    <section class="side-block">
+      <h2>{{ labels.certifications }}</h2>
+      <ul class="plain">
+        {% for c in certifications %}
+        <li><strong>{{ c.name }}</strong>{% if c.issuer or c.date %}<br><span class="muted">{{ c.issuer }}{% if c.issuer and c.date %} · {% endif %}{{ c.date }}</span>{% endif %}</li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+  </aside>
+
+  <main class="main">
+    <header class="head">
+      <h1>{{ name }}</h1>
+      {% if subtitle %}<p class="subtitle">{{ subtitle }}</p>{% endif %}
+    </header>
+
+    {% if show.summary %}
+    <section>
+      <h2>{{ labels.summary }}</h2>
+      <p class="summary">{{ summary }}</p>
+    </section>
+    {% endif %}
+
+    {% if show.experience %}
+    <section>
+      <h2>{{ labels.experience }}</h2>
+      {% for e in experience %}
+      <article class="item">
+        <div class="item-head">
+          <span class="role">{{ e.role }}</span>
+          <span class="dates">{{ e.start }}{% if e.end %} – {{ e.end }}{% endif %}</span>
+        </div>
+        <div class="org">{{ e.company }}{% if e.city %} · {{ e.city }}{% endif %}</div>
+        {% if e.bullets %}
+        <ul class="bullets">
+          {% for b in e.bullets %}<li>{{ b }}</li>{% endfor %}
+        </ul>
+        {% endif %}
+      </article>
+      {% endfor %}
+    </section>
+    {% endif %}
+
+    {% if show.projects %}
+    <section>
+      <h2>{{ labels.projects }}</h2>
+      {% for p in projects %}
+      <article class="item">
+        <div class="item-head">
+          <span class="role">{{ p.name }}</span>
+          <span class="dates">{{ p.date }}</span>
+        </div>
+        <ul class="bullets">
+          {% for b in p.bullets %}<li>{{ b }}</li>{% endfor %}
+        </ul>
+      </article>
+      {% endfor %}
+    </section>
+    {% endif %}
+
+    {% if show.education %}
+    <section>
+      <h2>{{ labels.education }}</h2>
+      {% for ed in education %}
+      <article class="item">
+        <div class="item-head">
+          <span class="role">{{ ed.title }}</span>
+          <span class="dates">{{ ed.start }}{% if ed.end %} – {{ ed.end }}{% endif %}</span>
+        </div>
+        <div class="org">{{ ed.center }}</div>
+        {% if ed.detail %}<p class="detail">{{ ed.detail }}</p>{% endif %}
+      </article>
+      {% endfor %}
+    </section>
+    {% endif %}
+
+    {% if show.extra_sections %}
+    {% for x in extra_sections %}
+    <section>
+      <h2>{{ x.title }}</h2>
+      <ul class="bullets">
+        {% for i in x.items %}
+        <li>{{ i.text }}{% if i.date %} <span class="muted">({{ i.date }})</span>{% endif %}</li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endfor %}
+    {% endif %}
+  </main>
+</div>
+</body>
+</html>

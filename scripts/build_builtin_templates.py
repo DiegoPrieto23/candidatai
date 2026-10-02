@@ -8,7 +8,10 @@ cada uno en su propio fragmento) y `template.yaml`. Dos ejecuciones dan exactame
 bytes: el zip se escribe con fecha fija y las propiedades del documento no llevan fechas.
 También dibuja la foto FICTICIA del perfil demo (`demo/photo.png`, una silueta). Después, salvo
 `--no-preview`, renderiza `preview.pdf` y `preview.png` con el perfil, el contenido y la foto
-FICTICIOS de `demo/` (necesita LibreOffice o Word).
+FICTICIOS de `demo/` (necesita LibreOffice o Word y, para las html, Chromium de Playwright).
+
+Las plantillas html (`moderna-2col`) se escriben a mano (`template.html`, `style.css`, `fonts/`):
+este script solo regenera su preview.
 """
 
 import argparse
@@ -514,10 +517,14 @@ def build_all(root: Path = TEMPLATES_DIR) -> list[Path]:
     return built
 
 
+# Integradas escritas a mano (motor html): solo se regenera su preview.
+HANDWRITTEN = ("moderna-2col",)
+
+
 def build_previews(root: Path = TEMPLATES_DIR) -> None:
     from app.services.documents import preview
 
-    for template_id in BUILDERS:
+    for template_id in (*BUILDERS, *HANDWRITTEN):
         preview.write_builtin_preview(root / template_id)
 
 

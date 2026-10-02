@@ -1,0 +1,48 @@
+id: moderna-2col
+name: Moderna a dos columnas
+engine: html
+origin: builtin
+description: Dos columnas con barra lateral de color (foto circular, contacto, habilidades,
+  idiomas y certificaciones) y la experiencia en la columna principal. Solo PDF. No apta para
+  ATS (dos columnas).
+tags:
+- moderna
+- dos-columnas
+- foto
+layout:
+  columns: 2
+  uses_tables: false
+ats_friendly: false
+photo:
+  supported: true
+  shape: circle
+  size_mm: 34
+page:
+  size: A4
+  max_pages: 1
+capacity:
+  summary_chars: 380
+  experience_bullets: 8
+  skill_groups: 4
+sections:
+- summary
+- experience
+- projects
+- education
+- certifications
+- extra_sections
+- skills
+- languages
+options:
+  accent_color:
+    default: '#1F4E79'
+    choices:
+    - '#1F4E79'
+    - '#2E5E4E'
+    - '#7A2E39'
+    - '#3F3F46'
+fonts:
+- Lato
+languages:
+- es
+- en

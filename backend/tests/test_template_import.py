@@ -104,10 +104,10 @@ def test_inspect_detects_tables_columns_and_image(uploads: Path) -> None:
     assert len(report.ats.reasons) == 3  # columnas, tablas y contacto en la cabecera
 
 
-def test_inspect_only_docx_for_now(uploads: Path) -> None:
+def test_inspect_docx_sends_other_formats_to_the_html_engine(uploads: Path) -> None:
     pdf_file = uploads / "cv.pdf"
     pdf_file.write_bytes(b"%PDF-1.4")
-    with pytest.raises(TemplateImportError, match="08b"):
+    with pytest.raises(TemplateImportError, match="motor html"):
         inspect.inspect_docx(pdf_file)
 
 

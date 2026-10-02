@@ -1,0 +1,144 @@
+/* moderna-2col: A4, barra lateral de color a la izquierda. Fuente Lato (OFL, en fonts/). */
+
+@font-face {
+  font-family: "Lato"; font-weight: 400; font-style: normal;
+  src: url("fonts/Lato-Regular-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+    U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Lato"; font-weight: 400; font-style: normal;
+  src: url("fonts/Lato-Regular-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1D00-1DBF,
+    U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+@font-face {
+  font-family: "Lato"; font-weight: 700; font-style: normal;
+  src: url("fonts/Lato-Bold-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+    U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Lato"; font-weight: 700; font-style: normal;
+  src: url("fonts/Lato-Bold-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1D00-1DBF,
+    U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+@font-face {
+  font-family: "Lato"; font-weight: 400; font-style: italic;
+  src: url("fonts/Lato-Italic-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+    U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Lato"; font-weight: 400; font-style: italic;
+  src: url("fonts/Lato-Italic-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1D00-1DBF,
+    U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+
+@page { size: A4; margin: 0; }
+
+:root {
+  --sidebar: 68mm;
+  --ink: #23262b;
+  --muted: #6b7079;
+  --side-ink: #ffffff;
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; }
+
+body {
+  font-family: "Lato", sans-serif;
+  font-size: 9.4pt;
+  line-height: 1.38;
+  color: var(--ink);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* La barra lateral es el fondo de la rejilla: sigue hasta el final aunque haya segunda página. */
+.page {
+  display: grid;
+  grid-template-columns: var(--sidebar) 1fr;
+  min-height: 297mm;
+  background: linear-gradient(to right, var(--accent) var(--sidebar), #fff var(--sidebar));
+}
+
+.sidebar {
+  color: var(--side-ink);
+  padding: 14mm 7mm 12mm 8mm;
+}
+
+.photo {
+  display: block;
+  width: 34mm;
+  height: 34mm;
+  margin: 0 auto 7mm;
+  border-radius: 50%;
+  border: 1.2mm solid rgba(255, 255, 255, 0.85);
+  object-fit: cover;
+}
+
+.side-block { margin-bottom: 6mm; break-inside: avoid; }
+
+.sidebar h2 {
+  font-size: 9pt;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin: 0 0 2.5mm;
+  padding-bottom: 1.2mm;
+  border-bottom: 0.3mm solid rgba(255, 255, 255, 0.55);
+}
+
+.sidebar h3 { font-size: 8.6pt; margin: 0 0 0.6mm; }
+.sidebar p { margin: 0 0 2.4mm; font-size: 8.6pt; }
+
+.contact, .plain { list-style: none; margin: 0; padding: 0; }
+.contact li, .plain li { margin-bottom: 1.6mm; font-size: 8.6pt; overflow-wrap: anywhere; }
+.contact .ico { display: inline-block; min-width: 6mm; font-weight: 700; opacity: 0.8; }
+.sidebar .muted { color: rgba(255, 255, 255, 0.78); }
+
+.main { padding: 13mm 12mm 12mm 10mm; }
+
+.head { margin-bottom: 5mm; }
+.head h1 {
+  font-size: 22pt;
+  line-height: 1.1;
+  margin: 0;
+  color: var(--accent);
+  letter-spacing: 0.01em;
+}
+.subtitle { margin: 1.5mm 0 0; font-size: 11pt; color: var(--muted); }
+
+.main h2 {
+  font-size: 10pt;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 5mm 0 2.2mm;
+  padding-bottom: 1mm;
+  border-bottom: 0.4mm solid var(--accent);
+}
+
+.summary { margin: 0; }
+
+.item { margin-bottom: 3.2mm; break-inside: avoid; }
+.item-head { display: flex; justify-content: space-between; gap: 4mm; align-items: baseline; }
+.role { font-weight: 700; }
+.dates { color: var(--muted); font-size: 8.6pt; white-space: nowrap; }
+.org { color: var(--muted); font-style: italic; margin-bottom: 0.8mm; }
+.detail { margin: 0.6mm 0 0; }
+.muted { color: var(--muted); }
+
+.bullets { margin: 0.6mm 0 0; padding-left: 4.2mm; }
+.bullets li { margin-bottom: 0.7mm; }
+.bullets li::marker { color: var(--accent); }

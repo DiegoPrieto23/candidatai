@@ -22,12 +22,48 @@ function Tag({ children, strong }: { children: ReactNode; strong?: boolean }) {
   )
 }
 
+function Thumbnail({ src, alt }: { src: string; alt: string }) {
+  return (
+    <a href={src} target="_blank" rel="noopener noreferrer">
+      <img src={src} alt={alt} loading="lazy" className="size-full object-cover object-top" />
+    </a>
+  )
+}
+
+/** Plantilla creada desde un CV: el original y cómo queda la plantilla, uno al lado del otro. */
+function OriginalAndTemplate({ template }: { template: TemplateInfo }) {
+  const recreated = template.engine === 'html' ? 'Recreación' : 'Plantilla'
+  return (
+    <div className="grid size-full grid-cols-2 gap-px bg-border" aria-label="Original y recreación">
+      {[
+        { label: 'Original', src: fileUrls.templateSource(template.id) },
+        { label: recreated, src: template.has_preview ? fileUrls.templatePreview(template.id) : null },
+      ].map(({ label, src }) => (
+        <figure key={label} className="relative min-w-0 bg-white">
+          {src ? (
+            <Thumbnail src={src} alt={`${label} de ${template.name}`} />
+          ) : (
+            <span className="grid size-full place-items-center text-muted-foreground">
+              <ImageIcon className="size-5" />
+            </span>
+          )}
+          <figcaption className="absolute top-1.5 left-1.5 rounded bg-background/90 px-1.5 py-0.5 text-[0.7rem] font-medium shadow-sm">
+            {label}
+          </figcaption>
+        </figure>
+      ))}
+    </div>
+  )
+}
+
 function TemplateCard({ template }: { template: TemplateInfo }) {
   const columns = template.columns === 1 ? '1 columna' : `${template.columns} columnas`
   return (
     <article aria-label={template.name} className="flex flex-col overflow-hidden rounded-xl border bg-card">
       <div className="aspect-[210/297] border-b bg-white">
-        {template.has_preview ? (
+        {template.has_source_preview ? (
+          <OriginalAndTemplate template={template} />
+        ) : template.has_preview ? (
           <a href={fileUrls.templatePreview(template.id)} target="_blank" rel="noopener noreferrer">
             <img
               src={fileUrls.templatePreview(template.id)}
@@ -58,6 +94,7 @@ function TemplateCard({ template }: { template: TemplateInfo }) {
           <Tag>{template.photo_supported ? 'Con foto' : 'Sin foto'}</Tag>
           <Tag>{columns}</Tag>
           <Tag>Motor {template.engine}</Tag>
+          {template.engine === 'html' && <Tag>Solo PDF</Tag>}
           {template.accent_colors && <Tag>{template.accent_colors.choices.length} colores</Tag>}
           <Tag>{template.from_user_cv ? 'Tu CV' : template.origin === 'builtin' ? 'Integrada' : 'Tuya'}</Tag>
         </ul>

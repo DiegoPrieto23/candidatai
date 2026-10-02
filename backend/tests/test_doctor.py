@@ -9,7 +9,7 @@ from app.core.config import get_settings
 from app.services import doctor
 from app.services.doctor import CheckStatus, run_doctor
 from app.services.documents import pdf
-from tests.cv_support import fake_converter, write_template
+from tests.cv_support import fake_converter, requires_chromium, write_template
 
 runner = CliRunner()
 
@@ -178,6 +178,7 @@ def test_cli_doctor_json() -> None:
         "LibreOffice",
         "Plantillas de CV",
         "Conversión a PDF",
+        "Motor html (Chromium)",
         "Foto del CV",
         "Embeddings",
     ]
@@ -195,3 +196,22 @@ def test_cli_doctor_fails_on_error(monkeypatch: pytest.MonkeyPatch) -> None:
     result = runner.invoke(cli.app, ["doctor"])
     assert result.exit_code == 1
     assert "ERROR" in result.output
+
+
+@requires_chromium
+def test_check_html_engine_renders_without_network() -> None:
+    result = doctor.check_html_engine()
+    assert result.status == CheckStatus.OK, result.detail
+    assert "moderna-2col" in result.detail and "sin red" in result.detail
+
+
+def test_check_html_engine_without_chromium(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.services.documents.engines import html as html_engine
+
+    def missing(*_args: object, **_kwargs: object) -> None:
+        raise html_engine.ChromiumUnavailableError("no hay Chromium")
+
+    monkeypatch.setattr(html_engine, "_print", missing)
+    result = doctor.check_html_engine()
+    assert result.status == CheckStatus.WARN
+    assert "playwright install chromium" in result.detail

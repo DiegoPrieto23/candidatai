@@ -179,10 +179,80 @@ Limitaciones: una foto flotante pasa a ir en línea en su párrafo (se avisa), y
 no se parametriza en las plantillas importadas (sigue el del original).
 
 ### Motor html (fase 08b)
-- Jinja2 con autoescape; se imprime a PDF con Chromium (Playwright) sin red y sin JavaScript.
-- Solo recursos locales: `style.css` y `fonts/`. Al validar se eliminan `<script>`, atributos
-  `on*`, `<iframe>` y cualquier URL remota.
-- Solo genera PDF. Si un portal exige Word, la UI lo avisa y propone una plantilla docx.
+- `template.html` es Jinja2 (sandbox, autoescape y variables estrictas: `e.rol` falla al validar)
+  con las mismas variables que el docx: `{{ name }}`, `{% for e in experience %}`… La foto es
+  una ruta local: `{% if photo %}<img src="{{ photo }}">{% endif %}`. El color de acento llega en
+  `accent_color`; lo habitual es `<style>:root { --accent: {{ accent_color }}; }</style>` y usar
+  `var(--accent)` en `style.css`.
+- Se imprime a PDF con Chromium (Playwright) **sin JavaScript y sin red**: la página se carga
+  desde un origen virtual y solo se sirven ficheros de la carpeta de la plantilla, `fonts/` (de la
+  plantilla o, si no está ahí, de `data/fonts/`) y la foto recortada. Cualquier otra petición se
+  aborta.
+- Tamaño de página y márgenes, con CSS `@page` (`@page { size: A4; margin: 0; }`). El tamaño de
+  las opciones de render (`page_size`) se impone sobre el de la plantilla.
+- **Saneado** en dos capas. `jh templates validate` falla, indicando fichero y línea, si
+  `template.html` o `style.css` tienen `<script>`, atributos `on*`, `<iframe>`, `<object>`,
+  `<embed>`, `<base>`, `javascript:` o URLs remotas en `src`, `href`, `srcset`, `url()`,
+  `image-set()` o `@import`. Al renderizar, además, se quitan del HTML generado y de los CSS
+  servidos, y Chromium arranca sin resolución de nombres. Se admiten rutas relativas, `data:`, `mailto:`
+  y `tel:`.
+- **Fuentes** con `@font-face` desde `fonts/` (woff2, ttf u otf). Si el PDF acaba con otra
+  fuente, aviso `font_substituted`, como en docx. `moderna-2col` trae Lato (OFL) en sus `fonts/`.
+- Solo genera PDF: cada render html lleva el aviso `pdf_only`. Si un portal exige Word, se
+  renderiza ese CV con una plantilla docx (la UI lo indica).
+- Requiere Chromium de Playwright: `uv run --directory backend playwright install chromium`.
+  `jh doctor` comprueba que está y que imprime `moderna-2col` sin red. Cada render tarda unos
+  2 s.
+
+### Importar desde PDF, imagen o HTML (fase 08b)
+
+El diseño no se puede reutilizar como en Word: se **recrea** en HTML. El agente necesita ver
+imágenes. Los comandos, igual que en Word, solo trabajan dentro de `data/`:
+
+1. **`jh templates inspect <fichero> --json`** (`.pdf`, `.png`, `.jpg` o `.html`):
+   - **Páginas en PNG** en `data/tmp/inspect/<fichero>/` (`page_images`; hasta 3), para que el
+     agente las vea.
+   - **Bloques de texto** (PDF y HTML): cada línea con posición y tamaño en mm, cuerpo en pt,
+     fuente, negrita y cursiva. **Imágenes**, con su posición y si parecen una foto
+     (`photo_candidate`). **Fuentes** que usa.
+   - **Paleta dominante** (`colors`, con la fracción de página) y **maquetación** estimada sobre
+     la imagen (`layout`): columnas y dónde se separan, barra lateral a sangre y su color, banda
+     de cabecera, fondo y márgenes.
+   - Como en Word: **secciones en su orden**, con la columna de cada una (`extra` = fuera del
+     contrato), la **`capacity` medida** (logros por experiencia, por viñeta o por sangría) y la
+     estimación de **ATS** (una plantilla html nunca es `ats_friendly`).
+   - Un HTML se imprime antes con el motor html (saneado, sin red ni JavaScript y sin cargar
+     ningún otro fichero: su carpeta es `data/uploads/`, con tus otros CVs). Sus imágenes y
+     fuentes propias no se ven; el agente recrea el diseño mirando la página. Una **imagen** no
+     tiene texto: secciones y `capacity` salen vacías y `capacity_note` pide al agente que las
+     lea en la imagen.
+2. **`jh templates scaffold-html --source <fichero> --id <id> [--name N] [--sections a,b,c]
+   [--side x,y] [--force]`** crea `data/templates/<id>/` con una base que ya se parece al
+   original:
+   - `template.html`: cabecera (con banda de color si la había), columna principal y lateral en
+     su lado (la barra a sangre ocupa toda la página) y foto donde estaba.
+   - `style.css`: márgenes, colores, fuentes del texto y de los títulos, y el acento como
+     `var(--accent)`.
+   - `template.yaml`, `source.<ext>` y `source.png`.
+
+   Las secciones salen de `inspect` (primero la columna principal, después la lateral) o de
+   `--sections`/`--side`, que en una imagen son obligatorias en la práctica. El acento detectado
+   queda como color por defecto, con los cuatro habituales como alternativa. Si la base no
+   renderiza con el perfil demo, no queda nada.
+3. El agente **ajusta** `template.html` y `style.css` mirando `source.png`: tipografía, tamaños,
+   separadores, iconos (CSS o SVG en línea, nada remoto) y la forma de la foto. Las fuentes que
+   no estén instaladas van en `fonts/` (si su licencia lo permite) o se cambian por la libre más
+   parecida.
+4. **`jh templates validate <id>`** (yaml, saneado, contrato y render con el perfil demo) y
+   **`jh templates compare <id> --source <fichero>`**: el original y la preview con el perfil
+   demo lado a lado en `data/tmp/compare/<id>/comparacion.png`, con una **SSIM** (0-1) sobre las
+   páginas desenfocadas y en baja resolución. Es orientativa: sirve para ver si un cambio acerca
+   o aleja la recreación, no como nota (diseños distintos dan 0,4-0,65). Lo que cuenta es mirar la
+   imagen.
+
+Limitaciones: la recreación es aproximada; columnas, márgenes y logros se estiman y pueden
+fallar en diseños muy irregulares. Una plantilla html solo da PDF. La carta a juego en html
+(`letter.html`) llega con la fase 08c.
 
 ## Opciones de render por oferta (`CvRenderOptions`)
 
@@ -260,7 +330,7 @@ después de un render, la UI lo marca como «Plantilla cambiada».
 |---|---|---|---|
 | `ats-simple` | docx | 08 | Una columna, sin foto, tipografía estándar. La opción segura para portales con ATS |
 | `clasica-foto` | docx | 08 | Una columna con cabecera y foto circular, sobria; color de acento a elegir entre 4. No apta para ATS (cabecera en tabla) |
-| `moderna-2col` | html | 08b | Dos columnas con barra lateral y color de acento configurable |
+| `moderna-2col` | html | 08b | Dos columnas con barra lateral de color a sangre (foto circular, contacto, habilidades, idiomas y certificaciones), 4 colores de acento y fuente Lato incluida. Solo PDF; no apta para ATS |
 | `carta-simple` | docx | 08c | Solo carta: cabecera sobria sin foto y color de acento libre. Respaldo cuando la plantilla del CV no trae carta |
 
 Desde la 08c, `ats-simple`, `clasica-foto` y `moderna-2col` traen también su `letter.*`.

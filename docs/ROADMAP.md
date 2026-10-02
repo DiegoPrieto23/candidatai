@@ -20,7 +20,7 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 08.2 | ↳ Foto, renders múltiples y UI | ✅ | Plantilla, foto y color se cambian en la UI sin agente; `clasica-foto` |
 | 08.3 | ↳ Importar plantillas desde Word y «Mi CV» | ✅ | Subes tu CV de Word, se convierte en plantilla por defecto y los CVs a medida salen con tu diseño, tu orden de secciones y tus secciones extra |
 | 08c | Carta de presentación | ⏳ | `generar-carta` redacta y verifica la carta según tus indicaciones (generales y de cada oferta); TXT para pegar y PDF a juego con el CV |
-| 08b | Plantillas html | ⏳ | Importar diseños desde PDF o imagen (Canva…), también como «Mi CV», y plantilla integrada de dos columnas |
+| 08b | Plantillas html | 🚧 | Importar diseños desde PDF o imagen (Canva…), también como «Mi CV», y plantilla integrada de dos columnas |
 | 09 | Conectores de ATS y scheduler | ⏳ | Ingesta diaria de empresas objetivo sin intervención |
 | 09b | Alertas, captura y búsqueda con navegador | ⏳ | Las alertas de LinkedIn y otros portales llegan solas por correo, cualquier oferta entra con un clic desde el navegador y, opcionalmente, el agente recorre portales |
 | 10 | Seguimiento y analítica | ⏳ | Kanban, seguimientos pendientes, dashboard del embudo |
@@ -405,3 +405,53 @@ decisiones tomadas y deuda técnica pendiente. -->
     fallando por `jh-mcp.exe` en uso: se instaló con `uv pip install` y se regeneró el cliente con
     `uv run --no-sync`. Ejecuta `uv sync --directory backend` con Claude Code cerrado.
 
+
+### 08b · Motor html e importación de CVs en cualquier formato — 2026-10-02 · Claude Code (Opus 5.5)
+- **Resumen:** motor html (`engines/html.py`: Jinja2 en sandbox → HTML saneado → PDF con
+  Chromium de Playwright sin JavaScript ni red; solo sirve la carpeta de la plantilla, `fonts/` o
+  `data/fonts/` y la foto), saneado en dos capas (`sanitize.py`: `validate` falla con fichero y
+  línea; al renderizar se limpia el HTML y los CSS servidos), aviso `pdf_only` y renders sin DOCX.
+  Plantilla integrada `moderna-2col` (barra lateral a sangre, foto circular, 4 colores, secciones
+  extra, Lato OFL incluida). Importación desde PDF, imagen o HTML: `inspect` (páginas en PNG,
+  bloques de texto con posición, tamaño y fuente, imágenes, paleta, columnas, barra, banda,
+  márgenes, secciones con su columna, `capacity` y ATS), `scaffold-html` (una base de HTML y CSS
+  que ya se parece al original) y `compare` (lado a lado con SSIM orientativa). `jh doctor`
+  comprueba Chromium e imprime `moderna-2col` sin red. UI: «Solo PDF», «Original | Recreación» en
+  la galería y en «Mi CV», y la subida ya no avisa de la 08b. 1084 tests de backend y 52 de
+  frontend; los de Chromium se saltan si no está instalado (la CI lo instala). Prueba de los
+  comandos y de la API con el CV ficticio de los fixtures: correcta. **Pendiente:** la prueba
+  manual con un CV real (`docs/pruebas/fase-08b-prueba-manual.txt`, parte 4) y, con ella,
+  `docs/AGENTS_COMPAT.md`.
+- **Decisiones:**
+  - Errores del motor html como los del PDF (`ChromiumUnavailableError` → `pdf_unavailable`,
+    `HtmlRenderError` → `pdf_failed`): API, MCP y CLI no cambian. `EngineNotAvailableError` fuera.
+  - La página se carga desde un origen virtual (`http://jh.local/`) con `route` sobre todo; además
+    Chromium arranca sin resolución de nombres. Variables estrictas en Jinja (`StrictUndefined`):
+    `validate` detecta `labels.foo` o `e.rol` en html (en docx sigue la deuda de la 08.1).
+  - `inspect` de PDF con pypdfium2 carácter a carácter: tamaño efectivo con la matriz del carácter
+    (Chromium dibuja a 0,75), negrita y cursiva por nombre y flags (el peso de pdfium no es
+    fiable), espacios por el hueco típico de cada línea (con `letter-spacing` los de pdfium
+    partían palabras). Logros por viñeta de texto o por sangría (las viñetas de lista se dibujan).
+  - Columnas, barra lateral, banda y márgenes se estiman sobre la imagen (numpy), igual para PDF e
+    imagen. Una imagen no se lee (sin OCR): secciones y `capacity` las pasa el agente.
+  - Un HTML importado se imprime sin servir ningún fichero (su carpeta es `data/uploads/`). Los
+    nombres de fuente del PDF se filtran antes de escribirlos en el CSS base.
+  - La SSIM se calcula desenfocada y a 300 px: cuenta la maqueta, no el texto. Diseños distintos
+    dan 0,4-0,65; es para ver si una vuelta acerca o aleja, no una nota.
+  - Fuente de `moderna-2col`: Lato en woff2 (subconjuntos latin y latin-ext, 108 KB, OFL) en vez
+    de los TTF completos (2 MB). Las integradas html se escriben a mano; el script solo hace su
+    preview.
+  - Una subida `.png` se guarda como `source.png` sin sustituirla por la miniatura (su sha256 la
+    marca como importada).
+  - Dependencias: `playwright` y `numpy`. Chromium se instala aparte (`playwright install
+    chromium`; README, `jh doctor` y CI).
+- **Deuda:**
+  - Carta en html (punto 7 del encargo): la hará la 08c (`letter.html` en el motor html y en
+    `moderna-2col`, y `importar-plantilla-cv` creándola desde la cabecera recreada).
+  - `scan` y `clean_css` trabajan con expresiones regulares: escapes CSS (`u\72l(`) pasarían el
+    escaneo. No salen a la red (route y sin DNS), pero `validate` no los avisa.
+  - El orden de las secciones de un PDF es el del contenido: en diseños de Canva, con el texto en
+    orden arbitrario, puede salir desordenado y el agente lo corrige con `--sections`.
+  - `jh doctor` imprime `moderna-2col` en cada ejecución (unos 2 s).
+  - Al probar la API se cerraron todos los `jh.exe` con `taskkill /IM`: no repetirlo, matar solo
+    el PID del servidor de prueba.

@@ -91,23 +91,23 @@ function Page({ src, alt, note }: { src: string | null; alt: string; note?: stri
 }
 
 function PendingUpload({ upload }: { upload: UploadInfo }) {
-  if (!upload.supported) {
-    return (
-      <p className="flex items-start gap-2 text-sm text-warning-foreground">
-        <WarningIcon className="mt-0.5 size-4 shrink-0" weight="duotone" />
-        <span>
-          Los CVs en {upload.format.toUpperCase()} se podrán importar cuando esté la fase 08b. Si puedes, exporta tu CV
-          a Word (.docx) y súbelo: el diseño se conserva exacto.
-        </span>
-      </p>
-    )
-  }
+  const recreated = upload.format !== 'docx'
   return (
     <div className="space-y-2">
       <p className="text-sm text-foreground/80">
         Pídele a tu agente que lo convierta en plantilla (una sola vez; después no gasta cuota):
       </p>
       <CopyCommand command={upload.agent_command} />
+      {recreated && (
+        <p className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+          <WarningIcon className="mt-0.5 size-3.5 shrink-0" weight="duotone" />
+          <span>
+            Desde {upload.format.toUpperCase()} el agente recrea el diseño en HTML: se parecerá mucho, pero no será
+            exacto, y solo dará PDF. Necesita un agente que vea imágenes. Si tienes el Word, súbelo: se conserva
+            tal cual.
+          </span>
+        </p>
+      )}
     </div>
   )
 }
@@ -123,8 +123,16 @@ function ImportedUpload({ template, isDefault }: { template: TemplateInfo; isDef
           alt="Original"
           note="Sin vista del original"
         />
-        <Page src={fileUrls.templateRealPreview(template.id)} alt="Con tu perfil" />
+        <Page
+          src={fileUrls.templateRealPreview(template.id)}
+          alt={template.engine === 'html' ? 'Recreación con tu perfil' : 'Con tu perfil'}
+        />
       </div>
+      {template.engine === 'html' && (
+        <p className="text-xs text-muted-foreground">
+          Plantilla html: solo PDF. Si un portal pide Word, renderiza ese CV con una plantilla docx.
+        </p>
+      )}
       <p className="text-xs text-muted-foreground">
         La vista con tu perfil es orientativa (los primeros logros de cada experiencia); la primera vez tarda unos
         segundos. Cada CV a medida lo redacta tu agente para la oferta.

@@ -1,9 +1,11 @@
 """Utilidades compartidas por los tests del CV: plantillas de prueba y contenido demo."""
 
 import copy
+import functools
 from pathlib import Path
 from typing import Any
 
+import pytest
 import yaml
 
 from app.schemas.cv import CvContent
@@ -187,3 +189,21 @@ def fake_converter(  # noqa: ANN201
         pdf.write_bytes(make_pdf(pages or [[]], font=font, extra_fonts=extra_fonts))
 
     return convert
+
+
+@functools.cache
+def chromium_available() -> bool:
+    """¿Tiene Playwright su Chromium instalado? (`uv run playwright install chromium`)."""
+    try:
+        from playwright.sync_api import sync_playwright
+
+        with sync_playwright() as pw:
+            return Path(pw.chromium.executable_path).is_file()
+    except Exception:
+        return False
+
+
+# Los tests del motor html imprimen con Chromium de verdad: se saltan si no está instalado.
+requires_chromium = pytest.mark.skipif(
+    not chromium_available(), reason="Chromium de Playwright no instalado"
+)

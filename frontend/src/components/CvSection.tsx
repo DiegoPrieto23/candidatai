@@ -154,6 +154,7 @@ function TemplatePicker({
               <span className="block truncate text-xs text-muted-foreground">
                 {template.ats_friendly ? 'Apta para ATS' : 'No apta para ATS'}
                 {template.photo_supported && ' · con foto'}
+                {template.engine === 'html' && ' · solo PDF'}
               </span>
             </label>
           )

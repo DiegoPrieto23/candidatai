@@ -369,9 +369,13 @@ def _title_key(text: str) -> str:
     return fold(text).strip().rstrip(":").strip()
 
 
-def section_of(p: docx_xml.Paragraph) -> str | None:
-    """`summary`, `experience`… si el párrafo es un título de sección; `extra` si lo parece."""
-    text = p.text.strip()
+def classify_title(text: str, looks_heading: bool, is_list: bool = False) -> str | None:
+    """`summary`, `experience`… si `text` es un título de sección; `extra` si lo parece.
+
+    `looks_heading`: el formato dice que es un título (estilo de título, mayúsculas, negrita o
+    más grande que el texto). Lo usan el análisis de Word y el de PDF.
+    """
+    text = text.strip()
     if not text or len(text) > 50 or len(text.split()) > 6 or text.endswith("."):
         return None
     known = SECTION_TITLES.get(_title_key(text))
@@ -380,9 +384,14 @@ def section_of(p: docx_xml.Paragraph) -> str | None:
     letters = [c for c in text if c.isalpha()]
     if len(letters) < 3 or _EMAIL.search(text) or any(c.isdigit() for c in text):
         return None
+    return "extra" if looks_heading and not is_list else None
+
+
+def section_of(p: docx_xml.Paragraph) -> str | None:
+    """`summary`, `experience`… si el párrafo es un título de sección; `extra` si lo parece."""
     style = fold(p.style or "")
-    looks_heading = style.startswith(("heading", "titulo", "title")) or text.isupper()
-    return "extra" if looks_heading and not p.is_list else None
+    looks_heading = style.startswith(("heading", "titulo", "title")) or p.text.strip().isupper()
+    return classify_title(p.text, looks_heading, p.is_list)
 
 
 def _is_bullet(p: docx_xml.Paragraph) -> bool:
@@ -455,9 +464,8 @@ def _ats(
 def open_docx(path: Path) -> DocxDocument:
     if path.suffix.casefold() != ".docx":
         raise TemplateImportError(
-            f"Formato no admitido todavía: {path.suffix or 'sin extensión'}. En esta fase solo "
-            ".docx; PDF, imagen y HTML llegan con la fase 08b (exporta el original a Word si "
-            "puedes)."
+            f"No es un Word: {path.suffix or 'sin extensión'}. Para PDF, imagen o HTML, "
+            "`jh templates inspect` lo analiza con el motor html."
         )
     try:
         return Document(str(path))
