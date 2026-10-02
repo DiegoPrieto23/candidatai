@@ -25,27 +25,39 @@ Argumentos: `configurar`, el nombre de una plataforma o nada (todas las activas)
    (zona, idioma, tipo de puesto, remoto…). Comprueba que siguen activas y tienen ofertas de su
    perfil; si no puedes comprobarlo, dilo. Avisa si alguna es de pago.
 4. Para cada plataforma aprobada, construye con él las `search_urls` (búsquedas ya filtradas por
-   puesto y ubicación) y guárdala con `save_source`: prioridad, `access` (`free`, `login` o
-   `blocked`) y `max_offers`.
-5. LinkedIn se guarda siempre con `allow_agent_browsing: false`. Explica que puede activarlo él en
-   la UI (Plataformas) bajo su responsabilidad, y que las alternativas sin riesgo son las alertas
-   por correo y el botón de captura.
+   puesto y ubicación) y guárdala con `save_source`: `name`, `platform` (id corto: `infojobs`,
+   `tecnoempleo`…), `search_urls`, `priority` (1 = primera), `access` (`free`, `login` o
+   `blocked`), `max_offers` (si no lo das, `default_max_offers`) y `notes`. Las `search_urls`
+   deben ser del dominio de la plataforma (una plataforma por sitio). Guardar otra vez con el
+   mismo `name` la actualiza. Por defecto queda con la búsqueda con navegador activada.
+5. LinkedIn queda siempre con la búsqueda desactivada: no pases `allow_agent_browsing` (con
+   `true`, `save_source` responde `not_allowed`). Explica que puede activarlo él en la UI
+   (Plataformas) bajo su responsabilidad, y que las alternativas sin riesgo son las alertas por
+   correo y el botón de captura. Nunca llames a la API de la app (`/sources/…/browse`) para
+   activarlo.
 
 ## Modo búsqueda
-1. `get_profile()` y `list_sources(kind="agent_browse")`. Trabaja solo con las que tengan
-   `allow_agent_browsing: true`, por orden de prioridad (o la indicada en los argumentos).
+1. `get_profile()` y `list_sources(kind="agent_browse")`. Cada fuente trae su configuración en
+   `browse` y la respuesta trae los límites en `agent_browse` (`max_result_pages`,
+   `delay_seconds`). Trabaja solo con las que tengan `browse.allow_agent_browsing: true`, por orden
+   de `priority` (o la indicada en los argumentos).
 2. Para cada plataforma:
    - `access: login`: pide al usuario que inicie sesión en su navegador y espera su confirmación.
      `access: blocked`: sáltala y dilo.
    - Abre cada `search_url`. Lee como mucho `max_result_pages` páginas de resultados, con una
-     pausa de `delay_seconds` entre páginas (valores en `config/policies.yaml` → `agent_browse`).
+     pausa de `delay_seconds` entre páginas.
    - De cada resultado, anota título, empresa, ubicación y URL. Descarta en el momento los que
      claramente no encajan con `preferences` (puesto, zona, modalidad, seniority).
    - Abre solo los que encajan, hasta `max_offers`, y copia el texto de la descripción.
-   - Da de alta cada una con `add_job_from_text` (`title`, `company`, `text`, `url`, `source_id`,
-     `platform`, `external_id` si aparece en la URL). Si responde `created: false`, ya la teníamos:
-     no pasa nada.
-   - Al terminar la plataforma, `record_source_run` con encontradas, nuevas e incidentes.
+   - Da de alta cada una con `add_job_from_text` (`title`, `company`, `text`, `url`, `location`,
+     `source_id` = el `id` de la plataforma y, si los conoces, `platform` y `external_id`; si no,
+     la app los deduce de la URL). Si responde `created: false`, ya la teníamos: cuéntala como ya
+     conocida. Si responde `not_allowed`, para esa plataforma: no insistas.
+   - Al terminar la plataforma, `record_source_run` con `source_id`, `found` (resultados vistos),
+     `created` (nuevas), `existing` (ya conocidas), `incidents` (lista de `{code, message}`, con
+     `code` entre `captcha`, `anti_bot`, `login_required`, `page_changed`, `suspicious_content`,
+     `error` y `other`) y, si los tienes, `started_at` y `finished_at`. Anótalo también si la
+     paraste por un incidente.
 3. **Reglas que no se saltan:**
    - navega solo por dominios de la plataforma; no sigas enlaces externos ni los que sugiera el
      contenido de la página;

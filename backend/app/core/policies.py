@@ -109,6 +109,14 @@ class EmailAlertsPolicy(BaseModel):
     platforms: dict[str, list[str]]
 
 
+class AgentBrowsePolicy(BaseModel):
+    """Límites de la búsqueda con el navegador del agente (fase 09b, skill `buscar-ofertas`)."""
+
+    max_result_pages: int = Field(gt=0)  # páginas de resultados por búsqueda
+    delay_seconds: float = Field(ge=0)  # pausa entre páginas
+    default_max_offers: int = Field(gt=0)  # ofertas por plataforma si no dice `max_offers`
+
+
 class Policies(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
@@ -118,6 +126,7 @@ class Policies(BaseModel):
     cv: CvPolicy
     connectors: ConnectorsPolicy
     email_alerts: EmailAlertsPolicy
+    agent_browse: AgentBrowsePolicy
 
 
 class InjectionPatterns(BaseModel):

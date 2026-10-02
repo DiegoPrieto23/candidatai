@@ -43,7 +43,7 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | `get_status` | `jh status --json` | 04 | — | `total`, `by_stage`, `pending_tasks` | — |
 | `add_job_from_url` | `jh jobs add-url URL --json` | 04 | `url` | `job_id`, `created`, `duplicate_of?`, `risk_flags` | `found` |
 | `add_job_from_text` | `jh jobs add-text --title T --company C --file F [--url U] [--location L] --json` | 04 | `title, company, text, url?, location?` | `job_id`, `created`, `duplicate_of?`, `risk_flags` | `found` |
-| | `… [--source S] [--platform P] [--external-id X]` | 09b | `add_job_from_text` admite además `source_id?, platform?, external_id?` | igual | igual |
+| | `… [--source S] [--platform P] [--external-id X]` | 09b | Además `source_id?` (una plataforma `agent_browse` con la navegación activada; si no, `not_allowed`), `platform?` y `external_id?` (por defecto, de la URL con `platforms.detect`). Con `source_id`, una oferta de LinkedIn (por URL o `platform`) solo entra por la plataforma LinkedIn | igual | igual (`found` con `source_id`) |
 | `list_jobs` | `jh jobs list [--stage S] [--limit N] [--order O] --json` | 04 | `stage?, limit=20, order="score_desc"` | `{jobs: [...]}` resumida (sin texto crudo), con `score` del último match | — |
 | `get_job` | `jh jobs show ID --json` | 04 | `job_id` | Metadatos + `text` envuelto como no confiable | — |
 | `save_extraction` | `jh jobs save-extraction ID --file F --json` | 04 | `job_id, extraction: JobExtraction` | `ok`, `extraction_id`, `stage`, `injection_suspected`, `hard_filters` (`null` sin perfil) | `extracted` / `injection_suspected` / `hard_filter_failed` |
@@ -67,9 +67,9 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | `list_followups_due` | `jh followups --days N --json` | 10 | `days_without_reply=10` | Candidaturas sin respuesta | — |
 | `list_upcoming` | `jh upcoming --days N --json` | 10 | `days=7` | Entrevistas, pruebas y plazos próximos | — |
 | `get_funnel_stats` | `jh stats funnel [--since] --json` | 10 | `since?` | Conversión por etapa, fuente y tipo de puesto | — |
-| `list_sources` | `jh sources list [--kind K] --json` | 09b | `kind?` | Fuentes con su config (sin secretos) y última ejecución | — |
-| `save_source` | `jh sources save --file F --json` | 09b | `AgentBrowseSource` | `source_id`. Solo tipo `agent_browse`; nunca activa `allow_agent_browsing` en LinkedIn | — |
-| `record_source_run` | `jh sources record-run ID --file F` | 09b | `SourceRunSummary` | `ok` | — |
+| `list_sources` | `jh sources list [--kind K] --json` | 09b | `kind?` | `sources`: `SourceView` con su config (sin secretos), `browse` (en las `agent_browse`) y última ejecución; `agent_browse`: límites (`max_result_pages`, `delay_seconds`, `default_max_offers`) | — |
+| `save_source` | `jh sources save --file F --json` | 09b | `AgentBrowseSource`: `name, platform, search_urls[], priority=5 (1 = primera), access=free\|login\|blocked, allow_agent_browsing? (por defecto true; en LinkedIn false), max_offers?, notes?`; por CLI, `F` = ese objeto | `source_id`, `created`, `allow_agent_browsing` guardado y `message`. Crea o actualiza por `name`. LinkedIn (por `platform` o por cualquier URL de linkedin.com o lnkd.in) con `true`: `not_allowed`; si el usuario ya lo activó, se conserva. Búsquedas de otro dominio: `invalid_request` | — |
+| `record_source_run` | `jh sources record-run ID --file F --json` | 09b | `source_id` + `SourceRunSummary`: `found, created, existing=0, incidents[{code, message}], started_at?, finished_at?`; por CLI, `F` = el resumen | `ok`, `run_id`. Actor `agent`; avanza `last_run_at`. Plataforma desactivada: `not_allowed` | — |
 
 La captura del botón «Enviar a Job Hunter» es un endpoint REST de la app (`POST /capture`,
 fase 09b), no parte de esta interfaz: la usa la extensión, no el agente.
@@ -174,13 +174,14 @@ las más recientes primero.
 
 ### Fuentes: empresas objetivo y portales (fase 09, solo CLI)
 
-Sin herramienta MCP en esta fase: las usa la persona (CLI o pantalla «Empresas» de la UI). La 09b
-añade `list_sources` con la misma salida que `jh sources list --json`.
+Las usa la persona (CLI o pantalla «Empresas» de la UI). `jh sources list` es desde la 09b la
+herramienta `list_sources` (tabla de arriba); las plataformas `agent_browse` se ven y se activan en
+la pantalla «Plataformas».
 
 | Comando | Qué hace |
 |---|---|
 | `jh sources add --kind K --name N [--slug S] [--region global\|eu] [--query Q] [--where W] [--province P] [--country C] [--keywords a,b] [--json]` | Añade una fuente. ATS (`greenhouse`, `lever`, `ashby`): `--slug` del tablero; la empresa queda como objetivo (`companies.watchlist`). Portales (`infojobs`, `adzuna`): `--query`. Error `exists` si ya está |
-| `jh sources list [--kind K] [--json]` | `{sources: [SourceView]}`: tipo, nombre, `config` (sin secretos), `active`, `keys_missing`, `last_run_at` y `last_run` (encontradas, tras filtros, nuevas, errores) |
+| `jh sources list [--kind K] [--json]` | `{sources: [SourceView], agent_browse}`: tipo, nombre, `config` (sin secretos), `active`, `keys_missing`, `browse`, `last_run_at` y `last_run` (encontradas, tras filtros, nuevas, errores), y los límites de la búsqueda con navegador |
 | `jh sources test ID \| --kind K --name N … [--json]` | Descarga y aplica el filtro previo sin guardar nada: `found`, `after_filters`, `message` («12 ofertas encontradas, 3 tras filtros»), ofertas con `passed` y `reason`, y `errors`. Código 1 si la fuente falla |
 | `jh capture token [--json]` | Genera (o rota) el token del botón «Enviar a Job Hunter» y lo muestra una vez; en `data/capture_token` solo queda su sha256. Con `--json`: `{token, extension_id}` |
 | `jh alerts poll [--json]` | Lee ya las alertas nuevas (IMAP en solo lectura y `data/inbox/`, fase 09b) y da de alta sus ofertas: completas si el portal se deja descargar, si no como resumen en `pending_detail`. `EmailPollResult` con `messages`, `found`, `created`, `summaries`, `existing`, `job_ids` y `errors` |
@@ -206,6 +207,7 @@ Mismo JSON por los dos canales (por MCP, con `isError: true`; por CLI, con códi
 | `not_found` | No existe la oferta, aún no tiene extracción, no hay perfil importado, no existe el CV o la plantilla |
 | `invalid_transition` | El evento no es válido en la etapa actual de la oferta |
 | `invalid_request` | El servicio rechaza la petición (URL de LinkedIn, evento reservado…) |
+| `not_allowed` | La búsqueda con navegador no está permitida ahí: activar LinkedIn desde el agente, o anotar ofertas o recorridos de una plataforma desactivada (403 en la API) |
 | `database_not_ready` | Falta `jh db upgrade` |
 | `pdf_unavailable` | No hay LibreOffice ni Word para convertir a PDF (`jh doctor`) |
 | `pdf_failed` | La conversión a PDF falló o superó `cv.pdf_timeout_seconds` |

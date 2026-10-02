@@ -51,7 +51,7 @@ def _host_is_indeed(host: str) -> bool:
 def platform_of_host(host: str | None) -> str | None:
     """Plataforma de un dominio, sin mirar la ruta."""
     host = (host or "").lower().rstrip(".")
-    if _host_is(host, "linkedin.com"):
+    if _host_is(host, "linkedin.com") or _host_is(host, "lnkd.in"):  # lnkd.in: su acortador
         return "linkedin"
     if _host_is(host, "infojobs.net"):
         return "infojobs"

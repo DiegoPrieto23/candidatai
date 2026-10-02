@@ -19,8 +19,11 @@ from sqlalchemy.orm import Session
 from app.agent_interface.registry import CallContext, CliSpec, ToolSpec
 from app.schemas.cv import CvContent, CvRenderOptions, CvVerification
 from app.schemas.llm_io import FitAssessment, JobExtraction
+from app.schemas.sources import AgentBrowseSource, SourceList, SourceRunSummary
 from app.services import events, extractions, ingest, jobs, profile, status
 from app.services.documents import service as cv
+from app.services.ingestion import browse
+from app.services.ingestion import service as sources
 from app.services.matching import service as matching
 from app.services.pipeline import EventType, Stage
 
@@ -47,6 +50,33 @@ class AddJobFromTextInput(_Input):
     text: str = Field(min_length=1, description="Texto completo de la oferta.")
     url: str | None = Field(default=None, description="URL de la oferta, si la tiene.")
     location: str | None = Field(default=None, description="Ubicación, tal cual.")
+    source_id: int | None = Field(
+        default=None,
+        ge=1,
+        description="Plataforma `agent_browse` donde la encontraste (skill `buscar-ofertas`).",
+    )
+    platform: str | None = Field(
+        default=None,
+        pattern=r"^[a-z0-9][a-z0-9_-]{0,39}$",
+        description="Plataforma de la oferta (`linkedin`, `infojobs`…). Por defecto, de la URL.",
+    )
+    external_id: str | None = Field(
+        default=None,
+        pattern=r"^[A-Za-z0-9._:-]{1,100}$",
+        description="Id de la oferta en la plataforma. Por defecto, se deduce de la URL.",
+    )
+
+
+class ListSourcesInput(_Input):
+    kind: str | None = Field(
+        default=None,
+        max_length=32,
+        description="Solo las de este tipo (p. ej. `agent_browse` para las plataformas).",
+    )
+
+
+class RecordSourceRunInput(SourceRunSummary):
+    source_id: int = Field(ge=1, description="Id de la plataforma (`agent_browse`).")
 
 
 class ListJobsInput(_Input):
@@ -145,6 +175,11 @@ def _add_job_from_url(
 def _add_job_from_text(
     session: Session, args: AddJobFromTextInput, _ctx: CallContext
 ) -> ingest.AddJobResult:
+    source = (
+        browse.source_for_job(session, args.source_id, args.url, args.platform)
+        if args.source_id is not None
+        else None
+    )
     return ingest.add_from_text(
         session,
         args.title,
@@ -152,7 +187,27 @@ def _add_job_from_text(
         args.text,
         url=args.url,
         location=args.location,
+        source=source,
+        platform=args.platform,
+        external_id=args.external_id,
     )
+
+
+def _list_sources(session: Session, args: ListSourcesInput, _ctx: CallContext) -> SourceList:
+    return sources.list_sources(session, args.kind)
+
+
+def _save_source(
+    session: Session, args: AgentBrowseSource, _ctx: CallContext
+) -> browse.SaveSourceResult:
+    return browse.save_source(session, args)
+
+
+def _record_source_run(
+    session: Session, args: RecordSourceRunInput, _ctx: CallContext
+) -> browse.RecordRunResult:
+    summary = SourceRunSummary.model_validate(args.model_dump(exclude={"source_id"}))
+    return browse.record_run(session, args.source_id, summary)
 
 
 def _list_jobs(session: Session, args: ListJobsInput, _ctx: CallContext) -> JobList:
@@ -266,8 +321,13 @@ TOOLS: tuple[ToolSpec, ...] = (
         input_model=AddJobFromTextInput,
         output_model=ingest.AddJobResult,
         handler=_add_job_from_text,
-        cli=CliSpec(path=("jobs", "add-text"), file_field="text", file_format="text"),
-        audit_fields=("url",),
+        cli=CliSpec(
+            path=("jobs", "add-text"),
+            file_field="text",
+            file_format="text",
+            option_names={"source_id": "--source"},
+        ),
+        audit_fields=("url", "source_id", "platform", "external_id"),
     ),
     ToolSpec(
         name="list_jobs",
@@ -449,6 +509,48 @@ TOOLS: tuple[ToolSpec, ...] = (
             file_field="verification",
             file_format="json",
         ),
+    ),
+    ToolSpec(
+        name="list_sources",
+        description=(
+            "Fuentes de ofertas con su configuración (sin secretos) y su última ejecución, y los "
+            "límites de la búsqueda con navegador (`agent_browse`). Con `kind=agent_browse`, las "
+            "plataformas que recorre el skill `buscar-ofertas`."
+        ),
+        input_model=ListSourcesInput,
+        output_model=SourceList,
+        handler=_list_sources,
+        cli=CliSpec(path=("sources", "list")),
+        audit_fields=("kind",),
+    ),
+    ToolSpec(
+        name="save_source",
+        description=(
+            "Crea o actualiza (por `name`) una plataforma de búsqueda con navegador "
+            "(`agent_browse`). Nunca puede activar `allow_agent_browsing` en LinkedIn: eso solo lo "
+            "hace el usuario en la UI."
+        ),
+        input_model=AgentBrowseSource,
+        output_model=browse.SaveSourceResult,
+        handler=_save_source,
+        cli=CliSpec(path=("sources", "save"), file_keys=tuple(AgentBrowseSource.model_fields)),
+        audit_fields=("name", "platform", "access"),
+    ),
+    ToolSpec(
+        name="record_source_run",
+        description=(
+            "Anota lo que hiciste en una plataforma al terminar de recorrerla: encontradas, "
+            "nuevas, ya conocidas e incidentes (captcha, login, anti-bot…)."
+        ),
+        input_model=RecordSourceRunInput,
+        output_model=browse.RecordRunResult,
+        handler=_record_source_run,
+        cli=CliSpec(
+            path=("sources", "record-run"),
+            arguments=("source_id",),
+            file_keys=tuple(SourceRunSummary.model_fields),
+        ),
+        audit_fields=("source_id",),
     ),
 )
 

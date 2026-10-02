@@ -23,6 +23,8 @@ from app.schemas.profile import Preferences
 from app.schemas.sources import (
     ATS_KINDS,
     KIND_LABELS,
+    AgentBrowseLimits,
+    AgentBrowseSource,
     Issue,
     PreviewJob,
     SourceConfig,
@@ -68,7 +70,12 @@ CONNECTORS: dict[str, Connector] = {
 RETRYABLE_CODES = frozenset({"timeout", "network", "http_error", "rate_limited", "internal_error"})
 # Si el detalle de una oferta falla así, no se pide el de las demás en esta ejecución.
 _STOP_DETAIL_CODES = frozenset({"unauthorized", "rate_limited"})
-MANUAL_LABELS = {**ingest.SOURCE_NAMES, "email_alerts": "Alertas por correo"}
+MANUAL_LABELS = {
+    **ingest.SOURCE_NAMES,
+    "email_alerts": "Alertas por correo",
+    "browser_capture": "Botón «Enviar a Job Hunter»",
+    "agent_browse": "Búsqueda con navegador",
+}
 
 
 class SourceNotFoundError(LookupError):
@@ -117,6 +124,16 @@ def _last_run(session: Session, source_id: int) -> SourceRun | None:
     ).first()
 
 
+def _browse(source: Source) -> AgentBrowseSource | None:
+    if source.kind != "agent_browse":
+        return None
+    try:
+        return AgentBrowseSource.model_validate({"name": source.name, **(source.config or {})})
+    except ValueError:  # config editada a mano: se lista igual, sin el bloque tipado
+        logger.warning("Configuración no válida en la plataforma %s", source.id)
+        return None
+
+
 def _view(session: Session, source: Source) -> SourceView:
     last = _last_run(session, source.id)
     return SourceView(
@@ -127,6 +144,7 @@ def _view(session: Session, source: Source) -> SourceView:
         active=source.active,
         config=dict(source.config or {}),
         keys_missing=keys_missing(source.kind),
+        browse=_browse(source),
         last_run_at=source.last_run_at,
         last_run=_run_view(last) if last else None,
     )
@@ -147,7 +165,11 @@ def list_sources(session: Session, kind: str | None = None) -> SourceList:
     query = select(Source).order_by(Source.name, Source.id)
     if kind:
         query = query.where(Source.kind == kind)
-    return SourceList(sources=[_view(session, s) for s in session.scalars(query)])
+    limits = get_policies().agent_browse
+    return SourceList(
+        sources=[_view(session, s) for s in session.scalars(query)],
+        agent_browse=AgentBrowseLimits.model_validate(limits.model_dump()),
+    )
 
 
 def connector_sources(session: Session, active_only: bool = True) -> list[Source]:

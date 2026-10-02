@@ -32,7 +32,9 @@ eval_app = typer.Typer(help="Evaluación de la calidad del matching.", no_args_i
 cv_app = typer.Typer(help="CVs a medida: contenido, renders y verificación.", no_args_is_help=True)
 templates_app = typer.Typer(help="Plantillas de CV.", no_args_is_help=True)
 sources_app = typer.Typer(
-    help="Fuentes con conector: empresas objetivo (ATS) y portales con API.", no_args_is_help=True
+    help="Fuentes de ofertas: empresas objetivo (ATS), portales con API y plataformas para la "
+    "búsqueda con navegador.",
+    no_args_is_help=True,
 )
 capture_app = typer.Typer(
     help="Botón «Enviar a Job Hunter» (extensión del navegador).", no_args_is_help=True
@@ -296,37 +298,6 @@ def _render_cv_verification(result: Any) -> None:
     typer.echo(f"CV {result.document_id} {verdict}. Etapa de la oferta: {result.stage}.")
     if result.note:
         typer.secho(result.note, fg="yellow")
-
-
-register_tools(
-    app,
-    {
-        "jobs": jobs_app,
-        "events": events_app,
-        "profile": profile_app,
-        "match": match_app,
-        "cv": cv_app,
-        "templates": templates_app,
-    },
-    {
-        "get_status": _render_status,
-        "add_job_from_url": _render_added,
-        "add_job_from_text": _render_added,
-        "list_jobs": _render_jobs,
-        "get_job": _render_job,
-        "save_extraction": _render_saved_extraction,
-        "add_event": _render_event,
-        "get_timeline": _render_timeline,
-        "get_profile": _render_profile,
-        "get_match": _render_match,
-        "save_fit_assessment": _render_saved_assessment,
-        "list_cv_templates": _render_templates,
-        "save_cv_content": _render_cv_saved,
-        "render_cv": _render_cv_render,
-        "get_cv_content": _render_cv_view,
-        "save_cv_verification": _render_cv_verification,
-    },
-)
 
 
 @match_app.command("rescore")
@@ -916,6 +887,10 @@ def _source_input(
 def _render_source(source: Any) -> None:
     state = "activa" if source.active else "pausada"
     target = source.config.get("slug") or source.config.get("query") or ""
+    if source.browse:
+        browse = source.browse
+        state = "navegación " + ("activada" if browse.allow_agent_browsing else "desactivada")
+        target = f"{browse.platform}, prioridad {browse.priority}, acceso {browse.access}"
     typer.echo(f"{source.id:>4}  {source.kind_label:<11} {source.name} [{target}] ({state})")
     if source.keys_missing:
         typer.secho("      Sin claves en .env: se omite al ejecutar.", fg="yellow")
@@ -987,27 +962,19 @@ def sources_add(
     _render_source(view)
 
 
-@sources_app.command("list")
-def sources_list(
-    kind: str | None = typer.Option(None, "--kind", help="Solo las de este tipo."),
-    as_json: bool = JSON_OPTION,
-) -> None:
-    """Lista las fuentes con su configuración (sin secretos) y su última ejecución."""
-    from app.services.ingestion import service as sources
-
-    try:
-        migrations.ensure_current()
-        with session_scope() as session:
-            result = sources.list_sources(session, kind)
-    except Exception as exc:
-        _profile_fail(exc, as_json)
-    if as_json:
-        typer.echo(dump_json(result))
-        return
+def _render_source_list(result: Any) -> None:
     if not result.sources:
         typer.echo("No hay fuentes. Añade una con `jh sources add`.")
     for source in result.sources:
         _render_source(source)
+
+
+def _render_message(result: Any) -> None:
+    typer.echo(result.message)
+
+
+def _render_recorded_run(result: Any) -> None:
+    typer.echo(f"Recorrido anotado (ejecución {result.run_id}).")
 
 
 @sources_app.command("test")
@@ -1222,3 +1189,39 @@ def agents_sync() -> None:
 def agents_check() -> None:
     """Falla si la configuración generada de los agentes no está al día."""
     _run_sync("--check")
+
+
+# Al final: los renderizadores de arriba ya existen.
+register_tools(
+    app,
+    {
+        "jobs": jobs_app,
+        "events": events_app,
+        "profile": profile_app,
+        "match": match_app,
+        "cv": cv_app,
+        "templates": templates_app,
+        "sources": sources_app,
+    },
+    {
+        "get_status": _render_status,
+        "add_job_from_url": _render_added,
+        "add_job_from_text": _render_added,
+        "list_jobs": _render_jobs,
+        "get_job": _render_job,
+        "save_extraction": _render_saved_extraction,
+        "add_event": _render_event,
+        "get_timeline": _render_timeline,
+        "get_profile": _render_profile,
+        "get_match": _render_match,
+        "save_fit_assessment": _render_saved_assessment,
+        "list_cv_templates": _render_templates,
+        "save_cv_content": _render_cv_saved,
+        "render_cv": _render_cv_render,
+        "get_cv_content": _render_cv_view,
+        "save_cv_verification": _render_cv_verification,
+        "list_sources": _render_source_list,
+        "save_source": _render_message,
+        "record_source_run": _render_recorded_run,
+    },
+)
