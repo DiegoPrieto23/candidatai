@@ -16,7 +16,8 @@ from app.core.config import REPO_ROOT
 from app.schemas.cv import CvContent, CvLanguage, TemplateCapacity, TemplateMeta
 from app.schemas.profile import CandidateProfile
 from app.services import profile as profile_service
-from app.services.documents import context, pdf, photo
+from app.services.documents import context, photo
+from app.services.documents.engines import render_files
 from app.services.documents.engines.docx import render_docx
 from app.services.documents.templates import (
     Template,
@@ -101,13 +102,15 @@ DEMO_PHOTO = REPO_ROOT / "demo" / "photo.png"
 PREVIEW_WIDTH_PX = 800
 
 
-def pdf_to_png(pdf_file: Path, png_file: Path, width_px: int = PREVIEW_WIDTH_PX) -> Path:
-    """Primera página del PDF como PNG de `width_px` de ancho."""
+def pdf_to_png(
+    pdf_file: Path, png_file: Path, width_px: int = PREVIEW_WIDTH_PX, page_index: int = 0
+) -> Path:
+    """Una página del PDF (la primera, por defecto) como PNG de `width_px` de ancho."""
     import pypdfium2
 
     document = pypdfium2.PdfDocument(pdf_file)
     try:
-        page = document[0]
+        page = document[page_index]
         image = page.render(scale=width_px / page.get_width()).to_pil()
         page.close()
     finally:
@@ -136,12 +139,11 @@ def render_preview(
         if photo_source is not None and template.meta.photo.supported:
             meta = template.meta.photo
             photo_file = photo.prepared_photo(photo_source, meta.shape, meta.size_mm, workdir)
-        docx_file = render_docx(
-            template, ctx, workdir / "preview.docx", template.meta.page.size, photo_file
+        _docx, pdf_file = render_files(
+            template, ctx, workdir, "preview", template.meta.page.size, photo_file
         )
-        pdf.convert(docx_file, workdir / "preview.pdf")
         output_pdf.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(workdir / "preview.pdf", output_pdf)
+        shutil.copyfile(pdf_file, output_pdf)
         if output_png is not None:
             pdf_to_png(output_pdf, output_png)
     finally:
@@ -194,7 +196,12 @@ def check_renders(template: Template) -> None:
         if template.meta.photo.supported:
             meta = template.meta.photo
             photo_file = photo.prepared_photo(DEMO_PHOTO, meta.shape, meta.size_mm, workdir)
-        render_docx(template, ctx, workdir / "check.docx", template.meta.page.size, photo_file)
+        if template.meta.engine == "html":
+            from app.services.documents.engines.html import render_string
+
+            render_string(template, ctx, photo_file)
+        else:
+            render_docx(template, ctx, workdir / "check.docx", template.meta.page.size, photo_file)
     except Exception as exc:
         issue = TemplateIssue(field=template.engine_file.name, reason=f"No renderiza: {exc}")
         raise TemplateInvalidError(template.id, [issue]) from exc

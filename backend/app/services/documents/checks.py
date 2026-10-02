@@ -277,6 +277,14 @@ def render_warnings(
                 message=f"La plantilla «{meta.id}» no muestra: {', '.join(unsupported)}.",
             )
         )
+    if meta.engine == "html":
+        warnings.append(
+            RenderWarning(
+                code="pdf_only",
+                message=f"La plantilla «{meta.id}» es html: solo hay PDF. Si el portal pide Word, "
+                "renderiza con una plantilla docx (p. ej. `ats-simple`).",
+            )
+        )
     if substituted_fonts:
         warnings.append(
             RenderWarning(

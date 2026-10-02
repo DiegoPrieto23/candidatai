@@ -579,6 +579,17 @@ def _templates_fail(exc: Exception, as_json: bool) -> NoReturn:
 
 SOURCE_FILE_ARG = typer.Argument(..., help="CV original, dentro de data/uploads/ o data/tmp/.")
 SOURCE_OPTION = typer.Option(..., "--source", help="CV de Word, en data/uploads/ o data/tmp/.")
+VISUAL_SOURCE_OPTION = typer.Option(
+    ..., "--source", help="CV en PDF, imagen o HTML, en data/uploads/ o data/tmp/."
+)
+SECTIONS_OPTION = typer.Option(
+    None,
+    "--sections",
+    help="Secciones en su orden, separadas por comas (si inspect no las leyó: imágenes).",
+)
+SIDE_OPTION = typer.Option(
+    None, "--side", help="Secciones de la columna lateral, separadas por comas."
+)
 MAPPING_OPTION = typer.Option(..., "--mapping", help="Mapeo JSON, en data/tmp/.")
 TEMPLATE_ID_OPTION = typer.Option(..., "--id", help="Id de la plantilla (minúsculas y guiones).")
 TEMPLATE_NAME_OPTION = typer.Option(None, "--name", help="Nombre visible de la plantilla.")
@@ -587,10 +598,53 @@ TEMPLATE_ID_ARG = typer.Argument(..., help="Id de la plantilla.")
 PREVIEW_PROFILE_OPTION = typer.Option("demo", "--profile", help="demo (ficticio) o real (el tuyo).")
 
 
+def _echo_visual_inspection(report: Any) -> None:
+    lay = report.layout
+    typer.echo(
+        f"{report.file} ({report.format}): {report.pages} página(s), {report.page.size} "
+        f"({report.page.width_mm}×{report.page.height_mm} mm)."
+    )
+    typer.echo("Páginas en PNG: " + ", ".join(f"data/{p}" for p in report.page_images))
+    side = f", barra lateral {lay.sidebar} ({lay.sidebar_color})" if lay.sidebar else ""
+    band = f", banda de cabecera {lay.header_band_color}" if lay.header_band_color else ""
+    typer.echo(f"Columnas: {lay.columns}{side}{band} · márgenes (mm): {lay.margins_mm}")
+    typer.echo(
+        "Colores: "
+        + ", ".join(f"{c.color} ({c.share:.0%})" for c in report.colors)
+        + f" · fuentes: {', '.join(report.fonts) or '-'}"
+    )
+    photos = [i for i in report.images if i.photo_candidate]
+    typer.echo(f"Imágenes: {len(report.images)} ({len(photos)} con pinta de foto)")
+    typer.echo(
+        "Secciones: "
+        + (" · ".join(f"{s.title} ({s.section}, col. {s.column})" for s in report.sections) or "-")
+    )
+    cap = report.capacity
+    if report.capacity_note:
+        typer.echo("Capacidad: sin texto que medir (léela en la imagen)")
+    else:
+        typer.echo(
+            f"Capacidad: perfil {cap.summary_chars or '?'} caracteres, logros "
+            f"{cap.bullets_per_experience}, {cap.skill_groups or '?'} grupos de habilidades"
+        )
+    typer.echo(f"Apto para ATS: no ({' '.join(report.ats.reasons)})")
+    for note in report.notes:
+        typer.secho(f"  Nota: {note}", fg=typer.colors.YELLOW)
+    if report.text_blocks:
+        typer.echo("Bloques de texto (x, y en mm · tamaño en pt):")
+        for b in report.text_blocks:
+            style = ("N" if b.bold else "") + ("C" if b.italic else "")
+            typer.echo(
+                f"  {b.index:>3} p{b.page} {b.x_mm:>6.1f},{b.y_mm:>6.1f} {b.size_pt:>4.1f} "
+                f"{style:<2} {b.text[:70]!r}"
+            )
+
+
 @templates_app.command("inspect")
 def templates_inspect(file: Path = SOURCE_FILE_ARG, as_json: bool = JSON_OPTION) -> None:
-    """Analiza un CV de Word: diseño, secciones, capacidad, ATS y párrafos numerados."""
+    """Analiza un CV: diseño, secciones, capacidad y ATS (Word, PDF, imagen o HTML)."""
     from app.services.documents import authoring
+    from app.services.documents.importer.visual import VisualInspection
 
     try:
         report = authoring.inspect_file(file)
@@ -598,6 +652,9 @@ def templates_inspect(file: Path = SOURCE_FILE_ARG, as_json: bool = JSON_OPTION)
         _templates_fail(exc, as_json)
     if as_json:
         typer.echo(dump_json(report))
+        return
+    if isinstance(report, VisualInspection):
+        _echo_visual_inspection(report)
         return
     page = report.page[0] if report.page else None
     typer.echo(f"{report.file}: {report.pages or '?'} página(s), {page.size if page else '?'}.")
@@ -643,6 +700,72 @@ def templates_build_docx(
     for warning in result.warnings:
         typer.secho(f"  Aviso: {warning}", fg=typer.colors.YELLOW)
     typer.echo("Completa template.yaml y ejecuta `jh templates validate` y `preview`.")
+
+
+def _csv(value: str | None) -> list[str] | None:
+    if value is None:
+        return None
+    return [part.strip() for part in value.split(",") if part.strip()]
+
+
+@templates_app.command("scaffold-html")
+def templates_scaffold_html(
+    source: Path = VISUAL_SOURCE_OPTION,
+    template_id: str = TEMPLATE_ID_OPTION,
+    name: str | None = TEMPLATE_NAME_OPTION,
+    sections: str | None = SECTIONS_OPTION,
+    side: str | None = SIDE_OPTION,
+    force: bool = FORCE_OPTION,
+    as_json: bool = JSON_OPTION,
+) -> None:
+    """Crea data/templates/<id>/ (motor html) con un HTML y un CSS base según el original."""
+    from app.services.documents import authoring
+
+    try:
+        result = authoring.scaffold_html(
+            source,
+            template_id,
+            name=name,
+            sections=_csv(sections),
+            side=_csv(side),
+            force=force,
+        )
+    except Exception as exc:
+        _templates_fail(exc, as_json)
+    if as_json:
+        typer.echo(dump_json(result))
+        return
+    typer.echo(f"Plantilla html creada: data/{result.path} ({', '.join(result.files)})")
+    typer.echo(
+        f"Secciones: {', '.join(result.sections)}"
+        + (f" · lateral: {', '.join(result.side_sections)}" if result.side_sections else "")
+    )
+    typer.echo(f"Acento {result.accent_color} · fuentes: {', '.join(result.fonts) or '-'}")
+    for warning in result.warnings:
+        typer.secho(f"  Aviso: {warning}", fg=typer.colors.YELLOW)
+    typer.echo("Siguientes pasos:")
+    for step in result.next_steps:
+        typer.echo(f"  - {step}")
+
+
+@templates_app.command("compare")
+def templates_compare(
+    template_id: str = TEMPLATE_ID_ARG,
+    source: Path = VISUAL_SOURCE_OPTION,
+    as_json: bool = JSON_OPTION,
+) -> None:
+    """Original y recreación (perfil demo) lado a lado en un PNG, con su SSIM orientativa."""
+    from app.services.documents import authoring
+
+    try:
+        result = authoring.compare_template(template_id, source)
+    except Exception as exc:
+        _templates_fail(exc, as_json)
+    if as_json:
+        typer.echo(dump_json(result))
+        return
+    typer.echo(f"Comparación: data/{result.image_path}")
+    typer.echo(f"SSIM: {result.ssim:.3f} (0-1). {result.note}")
 
 
 @templates_app.command("validate")

@@ -1,10 +1,12 @@
-"""Importación de CVs como plantillas (fase 08.3: `.docx`; la 08b añade PDF, imagen y HTML).
+"""Importación de CVs como plantillas (fase 08.3: `.docx`; 08b: PDF, imagen y HTML).
 
 - `paths`: todo se lee y se escribe dentro de `data/`.
 - `docx_xml`: párrafos numerados del Word, con sus fragmentos fusionados. `inspect` y `build`
   numeran igual, así que los índices del mapeo son los de `inspect`.
 - `inspect`: qué tiene el CV (diseño, secciones, capacidad, aptitud para ATS).
 - `mapping` y `build`: el mapeo párrafo → marcador que decide el agente, y la plantilla resultante.
+- `visual`, `scaffold` y `compare` (08b): PDF, imagen y HTML. Qué diseño tiene el original, una
+  plantilla html de partida que se le parece y la comparación de la recreación con él.
 """
 
 from pydantic import BaseModel

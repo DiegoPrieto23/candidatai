@@ -19,7 +19,7 @@ from app.services.documents.importer import paths
 
 MAX_BYTES = 10 * 1024 * 1024
 FORMATS = (".docx", ".pdf", ".png", ".jpg", ".jpeg", ".html")
-SUPPORTED_NOW = (".docx",)  # PDF, imagen y HTML: fase 08b
+SUPPORTED_NOW = FORMATS  # desde la 08b: Word con el motor docx; PDF, imagen y HTML con el html
 # Firma de los primeros bytes: una extensión cambiada se rechaza al subir, no al importar.
 SIGNATURES = {
     ".docx": (b"PK\x03\x04",),
@@ -46,7 +46,7 @@ class UploadInfo(BaseModel):
     path: str  # como se le pasa al agente: `data/uploads/<nombre>`
     size: int
     format: str
-    supported: bool  # se puede importar ya (si no, requiere la fase 08b)
+    supported: bool  # se puede importar (todos los formatos admitidos desde la 08b)
     template_id: str | None  # plantilla creada desde este fichero, si la hay
     agent_command: str
     uploaded_at: datetime

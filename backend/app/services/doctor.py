@@ -175,6 +175,58 @@ def check_photo(profile_path: Path, data_dir: Path) -> CheckResult:
     return CheckResult(name=name, status=CheckStatus.OK, detail="tus plantillas no piden foto")
 
 
+HTML_CHECK_TEMPLATE = "moderna-2col"
+CHROMIUM_INSTALL = "uv run --directory backend playwright install chromium"
+
+
+def check_html_engine() -> CheckResult:
+    """Motor html: Chromium de Playwright imprime `moderna-2col` sin salir a la red."""
+    from app.services.documents import preview, templates
+    from app.services.documents.engines import html as html_engine
+
+    name = "Motor html (Chromium)"
+    try:
+        template = templates.get(HTML_CHECK_TEMPLATE)
+    except templates.TemplateNotFoundError as exc:
+        return CheckResult(name=name, status=CheckStatus.WARN, detail=str(exc))
+    requests: list[tuple[str, bool]] = []
+    workdir = Path(tempfile.mkdtemp(prefix="jh-doctor-"))
+    start = time.monotonic()
+    try:
+        output = html_engine.render_pdf(
+            template,
+            preview.demo_context(),
+            workdir / "doctor.pdf",
+            template.meta.page.size,
+            on_request=lambda url, served: requests.append((url, served)),
+        )
+        info = pdf.read_pdf(output)
+    except html_engine.ChromiumUnavailableError:
+        return CheckResult(
+            name=name,
+            status=CheckStatus.WARN,
+            detail=f"Chromium no instalado: ejecuta `{CHROMIUM_INSTALL}` (plantillas html)",
+        )
+    except Exception as exc:  # cualquier fallo de Chromium se enseña tal cual
+        return CheckResult(name=name, status=CheckStatus.ERROR, detail=str(exc))
+    finally:
+        shutil.rmtree(workdir, ignore_errors=True)
+    outside = [url for url, _served in requests if not url.startswith(html_engine.ORIGIN + "/")]
+    if outside:
+        return CheckResult(
+            name=name,
+            status=CheckStatus.ERROR,
+            detail=f"«{HTML_CHECK_TEMPLATE}» pidió recursos de fuera: {', '.join(outside[:3])}",
+        )
+    seconds = time.monotonic() - start
+    detail = f"«{HTML_CHECK_TEMPLATE}» → PDF de {info.pages} pág. sin red en {seconds:.0f} s"
+    missing = pdf.missing_fonts(template.meta.fonts, info.fonts)
+    if missing:
+        detail += f"; falta la fuente {', '.join(missing)} y el PDF usa otra"
+        return CheckResult(name=name, status=CheckStatus.WARN, detail=detail)
+    return CheckResult(name=name, status=CheckStatus.OK, detail=detail)
+
+
 def check_embeddings(settings: Settings) -> CheckResult:
     from app.core.policies import get_policies
     from app.services.matching import embeddings
@@ -198,6 +250,7 @@ def run_doctor(settings: Settings) -> DoctorReport:
             check_soffice(settings.soffice_path),
             check_cv_templates(BUILTIN_TEMPLATES_DIR, settings.user_templates_dir),
             check_pdf_conversion(),
+            check_html_engine(),
             check_photo(settings.data_dir / "profile.yaml", settings.data_dir),
             check_embeddings(settings),
         ]

@@ -156,6 +156,8 @@ solos cada mañana (se documenta al terminar la fase 09).
   `frontend/package.json` (`packageManager`).
 - **LibreOffice** (para convertir CVs a PDF, a partir de la fase 08). Si no está en
   `C:\Program Files\LibreOffice` ni en el `PATH`, define `SOFFICE_PATH` en `.env`.
+- **Chromium de Playwright** (plantillas html, a partir de la fase 08b), tras `uv sync`:
+  `uv run --directory backend playwright install chromium`. `jh doctor` comprueba que funciona.
 
 Abre una terminal nueva tras instalar para que el `PATH` se actualice.
 

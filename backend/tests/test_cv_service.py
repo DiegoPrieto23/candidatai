@@ -16,7 +16,13 @@ from app.schemas.cv import CvRenderOptions, CvVerification
 from app.services import events, extractions, profile
 from app.services.documents import checks, options, pdf, service, templates
 from app.services.pipeline import Actor, InvalidTransitionError, Stage
-from tests.cv_support import demo_content, demo_content_data, fake_converter, write_template
+from tests.cv_support import (
+    demo_content,
+    demo_content_data,
+    fake_converter,
+    requires_chromium,
+    write_template,
+)
 from tests.matching_support import demo_extraction, demo_profile
 
 REAL_GET_CONVERTER = pdf.get_converter
@@ -362,13 +368,22 @@ def test_invalid_accent_color_is_rejected(session: Session, approved_job: Job) -
         service.render(session, saved.document_id, CvRenderOptions(accent_color="#000000"))
 
 
-def test_html_template_is_not_available_yet(session: Session, approved_job: Job) -> None:
-    folder = write_template(get_settings().user_templates_dir, "web", engine="html")
-    (folder / "template.html").write_text("<p>{{ name }}</p>", encoding="utf-8")
-    (folder / "style.css").write_text("", encoding="utf-8")
+@requires_chromium
+def test_html_template_renders_pdf_only(session: Session, approved_job: Job) -> None:
     saved = service.save_content(session, approved_job.id, demo_content())
-    with pytest.raises(service.EngineNotAvailableError, match="08b"):
-        service.render(session, saved.document_id, CvRenderOptions(template_id="web"))
+    result = service.render(
+        session,
+        saved.document_id,
+        CvRenderOptions(template_id="moderna-2col", accent_color="#7A2E39"),
+    )
+    assert result.docx_path is None
+    assert data_file(result.pdf_path).is_file()
+    assert result.pages == 1
+    codes = [w.code for w in result.warnings]
+    assert "pdf_only" in codes
+    assert "font_substituted" not in codes  # Lato va en fonts/ de la plantilla
+    with pytest.raises(service.FileNotAvailableError):
+        service.render_file(session, result.render_id, "docx")
 
 
 def test_failed_conversion_leaves_no_files(

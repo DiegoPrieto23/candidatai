@@ -1,6 +1,7 @@
-"""Autoría de plantillas (fase 08.3): lo que usan `jh templates …` y la página Plantillas.
+"""Autoría de plantillas (fases 08.3 y 08b): lo que usan `jh templates …` y la página Plantillas.
 
-`inspect` y `build_docx` trabajan con ficheros dentro de `data/` (`importer/paths.py`). Las
+`inspect`, `build_docx`, `scaffold_html` y `compare` trabajan con ficheros dentro de `data/`
+(`importer/paths.py`). Word va al motor docx; PDF, imagen y HTML, al html. Las
 previews con el perfil demo de una plantilla del usuario van a su carpeta (son su miniatura); las
 de las integradas y las del perfil real, a `data/cache/previews/`, para no escribir datos
 personales fuera de `data/` ni tocar `templates/`.
@@ -16,7 +17,7 @@ from sqlalchemy.orm import Session
 from app.core.config import get_settings
 from app.services import profile as profile_service
 from app.services.documents import pdf, photo, preview, templates
-from app.services.documents.importer import build, inspect, paths
+from app.services.documents.importer import build, compare, inspect, paths, scaffold, visual
 
 ProfileChoice = Literal["demo", "real"]
 
@@ -40,8 +41,30 @@ class PreviewResult(BaseModel):
     warnings: list[str]
 
 
-def inspect_file(path: Path) -> inspect.DocxInspection:
-    return inspect.inspect_docx(paths.source_file(path))
+def inspect_file(path: Path) -> inspect.DocxInspection | visual.VisualInspection:
+    source = paths.source_file(path)
+    if visual.is_visual(source):
+        return visual.inspect_visual(source)
+    return inspect.inspect_docx(source)
+
+
+def scaffold_html(
+    source: Path,
+    template_id: str,
+    name: str | None = None,
+    sections: list[str] | None = None,
+    side: list[str] | None = None,
+    force: bool = False,
+) -> scaffold.ScaffoldResult:
+    return scaffold.scaffold_html(
+        paths.source_file(source), template_id, name=name, sections=sections, side=side,
+        force=force,
+    )  # fmt: skip
+
+
+def compare_template(template_id: str, source: Path) -> compare.CompareResult:
+    templates.validate(template_id)
+    return compare.compare(template_id, paths.source_file(source))
 
 
 def build_docx(

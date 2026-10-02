@@ -187,11 +187,33 @@ def get(
 
 def undeclared_variables(template: Template) -> set[str]:
     """Variables de primer nivel que usa la plantilla (sin las que define ella misma)."""
-    if template.meta.engine != "docx":
-        return set()  # motor html: fase 08b
+    if template.meta.engine == "html":
+        from jinja2 import Environment, meta
+
+        source = template.engine_file.read_text(encoding="utf-8")
+        return set(meta.find_undeclared_variables(Environment().parse(source)))
     from docxtpl import DocxTemplate
 
     return set(DocxTemplate(template.engine_file).get_undeclared_template_variables())
+
+
+def unsafe_content(template: Template) -> list[TemplateIssue]:
+    """Motor html: lo que el saneado no admite en `template.html` y `style.css`, con su línea."""
+    if template.meta.engine != "html":
+        return []
+    from app.services.documents import sanitize
+
+    issues = []
+    for name in ENGINE_FILES["html"]:
+        text = (template.path / name).read_text(encoding="utf-8")
+        for finding in sanitize.scan(text, name):
+            issues.append(
+                TemplateIssue(
+                    field=f"{finding.file}:{finding.line}",
+                    reason=f"No se admite {finding.what} (solo recursos locales, sin scripts).",
+                )
+            )
+    return issues
 
 
 def validate(
@@ -200,8 +222,15 @@ def validate(
     """Comprueba `template.yaml`, los ficheros del motor y que solo use variables del contrato."""
     template = get(template_id, builtin_dir, user_dir)
     try:
+        unsafe = unsafe_content(template)
+    except (OSError, UnicodeError) as exc:
+        issue = TemplateIssue(field=template.engine_file.name, reason=f"No se puede leer: {exc}")
+        raise TemplateInvalidError(template_id, [issue]) from exc
+    if unsafe:
+        raise TemplateInvalidError(template_id, unsafe)
+    try:
         unknown = sorted(undeclared_variables(template) - CONTRACT_VARIABLES)
-    except Exception as exc:  # docxtpl/jinja2: marcador mal formado o docx ilegible
+    except Exception as exc:  # docxtpl/jinja2: marcador mal formado o fichero ilegible
         issue = TemplateIssue(field=template.engine_file.name, reason=f"No se puede leer: {exc}")
         raise TemplateInvalidError(template_id, [issue]) from exc
     if unknown:

@@ -77,7 +77,7 @@ def test_upload_rejects_format_size_and_path_tricks(
     monkeypatch.setattr(uploads, "MAX_BYTES", 10 * 1024 * 1024)
     tricky = _upload(client, "..\\..\\fuera.pdf", b"%PDF-1.4")
     assert tricky["status"] == 201 and tricky["name"] == "fuera.pdf"
-    assert not tricky["supported"]  # PDF: requiere la fase 08b
+    assert tricky["supported"]  # PDF: motor html (fase 08b)
     assert client.delete("/uploads/..%5Cprofile.yaml").status_code == 404
 
 

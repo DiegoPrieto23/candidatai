@@ -29,7 +29,7 @@ from app.schemas.llm_io import JobExtraction
 from app.services import events, extractions
 from app.services import profile as profile_service
 from app.services.documents import checks, context, options, pdf, photo, templates
-from app.services.documents.engines.docx import render_docx
+from app.services.documents.engines import render_files
 from app.services.documents.options import RenderWarning
 from app.services.pipeline import CV_STAGES, Actor, EventType, InvalidTransitionError, Stage
 
@@ -49,10 +49,6 @@ class RenderNotFoundError(LookupError):
 
 class FileNotAvailableError(LookupError):
     """El fichero no existe o su ruta queda fuera de las carpetas que se pueden servir."""
-
-
-class EngineNotAvailableError(ValueError):
-    pass
 
 
 # --- Salidas --------------------------------------------------------------------------------
@@ -226,11 +222,6 @@ def render(
         profile, render_options, offer, photo_available=photo_source is not None
     )
     template = templates.get(resolved.template_id)
-    if template.meta.engine != "docx":
-        raise EngineNotAvailableError(
-            f"La plantilla «{template.id}» usa el motor {template.meta.engine}, que llega en la "
-            "fase 08b. Elige una plantilla docx."
-        )
 
     row = DocumentRender(
         document_id=doc.id,
@@ -256,10 +247,9 @@ def render(
         if resolved.photo and photo_source is not None:
             meta_photo = template.meta.photo
             photo_file = photo.prepared_photo(photo_source, meta_photo.shape, meta_photo.size_mm)
-        docx_file = render_docx(
-            template, ctx, render_dir / f"{filename}.docx", resolved.page_size, photo_file
+        docx_file, pdf_file = render_files(
+            template, ctx, render_dir, filename, resolved.page_size, photo_file
         )
-        pdf_file = pdf.convert(docx_file, render_dir / f"{filename}.pdf")
         info = pdf.read_pdf(pdf_file)
     except BaseException:
         shutil.rmtree(render_dir, ignore_errors=True)
@@ -271,7 +261,7 @@ def render(
     too_long = is_too_long(warnings)
     already_selected = any(r.selected for r in _renders(session, doc.id) if r.id != row.id)
 
-    row.docx_path = docx_file.relative_to(data_dir).as_posix()
+    row.docx_path = docx_file.relative_to(data_dir).as_posix() if docx_file else None
     row.pdf_path = pdf_file.relative_to(data_dir).as_posix()
     row.pages = info.pages
     row.keyword_coverage = checks.keyword_coverage(info.text, extraction).model_dump(mode="json")

@@ -79,8 +79,10 @@ fase 08.3; `scaffold-html` y `compare`, 08b) son solo CLI: trabajan con ficheros
 (el original en `data/uploads/` o `data/tmp/`, el mapeo en `data/tmp/`) y las usa el skill
 `importar-plantilla-cv`. Aceptan `--json` y dan los errores con el formato común: un mapeo que no
 vale es `validation_error` con un detalle por párrafo (`paragraphs[index=N]`), una ruta fuera de
-`data/` es `invalid_file` y un `--id` que ya existe sin `--force`, `exists`. Detalle en
-`docs/CV_TEMPLATES.md` §Importar desde Word.
+`data/` es `invalid_file` y un `--id` que ya existe sin `--force`, `exists`. `inspect` da para
+Word el informe de párrafos y para PDF, imagen o HTML el de diseño (bloques de texto, paleta,
+columnas y páginas en PNG). Detalle en `docs/CV_TEMPLATES.md` §Importar desde Word e §Importar
+desde PDF, imagen o HTML.
 
 Aprobar o descartar **no tiene herramienta propia a propósito**: esa decisión se toma en la UI. Si
 el usuario la dicta a su agente, este puede usar `add_event` con `approved` o `discarded` y el
