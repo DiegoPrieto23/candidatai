@@ -312,6 +312,25 @@ def check_email_alerts(
     )
 
 
+def check_capture(settings: Settings) -> CheckResult:
+    """Botón «Enviar a Job Hunter» (fase 09b): token creado e id de la extensión aceptada."""
+    from app.services.capture import token_configured
+
+    name = "Botón de captura"
+    if not token_configured(settings):
+        return CheckResult(
+            name=name,
+            status=CheckStatus.OK,
+            detail="sin configurar (opcional): carga extension/ en el navegador y ejecuta "
+            "`jh capture token`",
+        )
+    return CheckResult(
+        name=name,
+        status=CheckStatus.OK,
+        detail=f"token creado; acepta la extensión {settings.capture_extension_id}",
+    )
+
+
 def run_doctor(settings: Settings) -> DoctorReport:
     return DoctorReport(
         checks=[
@@ -325,5 +344,6 @@ def run_doctor(settings: Settings) -> DoctorReport:
             check_embeddings(settings),
             check_connectors(settings),
             check_email_alerts(settings),
+            check_capture(settings),
         ]
     )

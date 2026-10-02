@@ -24,7 +24,7 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 09 | Conectores de ATS y scheduler | ✅ | Ingesta diaria de empresas objetivo sin intervención |
 | 09b | Alertas, captura y búsqueda con navegador | 🚧 | Las alertas de LinkedIn y otros portales llegan solas por correo, cualquier oferta entra con un clic desde el navegador y, opcionalmente, el agente recorre portales |
 | 09b.1 | ↳ Ofertas resumen y alertas por correo | ✅ | Las alertas de correo (IMAP en solo lectura o `data/inbox/`) crean ofertas resumen en «Alertas», ordenadas por prefiltro y que caducan solas |
-| 09b.2 | ↳ Botón «Enviar a Job Hunter» | ⏳ | Extensión de Chromium que manda la oferta que estás viendo y completa los resúmenes |
+| 09b.2 | ↳ Botón «Enviar a Job Hunter» | ✅ | Extensión de Chromium que manda la oferta que estás viendo y completa los resúmenes |
 | 09b.3 | ↳ Plataformas y búsqueda con navegador | ⏳ | `list_sources`, `save_source`, `record_source_run` y pantalla «Plataformas» |
 | 10 | Seguimiento y analítica | ⏳ | Kanban, seguimientos pendientes, dashboard del embudo |
 | 11 | Candidatura asistida | ⏳ | Rellenado con Playwright y envío tras tu confirmación |
@@ -559,3 +559,54 @@ decisiones tomadas y deuda técnica pendiente. -->
   - `.env.example` sin las variables `JH_IMAP_*`: el agente no puede leerlo ni editarlo
     (permisos). Hay que añadirlas a mano.
   - La BD real necesita `jh db upgrade` (hasta 0007).
+
+### 09b.2 · Botón «Enviar a Job Hunter» — 2026-10-02 · Claude Code (Opus 5.5)
+- **Resumen:**
+  - `services/capture.py`: token con `jh capture token` (solo su sha256 en `data/capture_token`,
+    comparación en tiempo constante) y captura. Completa un resumen (`detail_captured`, actor
+    `user`), reconoce lo ya guardado o da de alta con la fuente `browser_capture`, con detección de
+    riesgo sobre el texto y el HTML del bloque de la descripción.
+  - `POST /capture`: origen y token en una dependencia que va antes que el cuerpo (403/401; 503 si
+    no hay token).
+  - `jh doctor` dice si la captura está lista.
+  - Extensión Manifest V3 en `extension/`: JavaScript plano, popup, opciones, extractores
+    (LinkedIn, Indeed, InfoJobs, Tecnoempleo, JSON-LD y `main`), iconos y README para Chrome y Edge.
+  - Tests: 1330 de backend y 72 de frontend, de los que 12 son de la extensión, con HTML inventado.
+- **Decisiones:**
+  - **Id fijo:** `key` pública en el manifiesto, así que el id es
+    `hnaofhehllbkghfehnehamjbkcmdjmle` en cualquier equipo, en Chrome y en Edge. Es el valor por
+    defecto de `JH_CAPTURE_EXTENSION_ID`. La clave privada no hace falta para cargarla sin
+    empaquetar y no se guardó.
+  - **Popup** con el resultado y «Abrir ficha» (un badge no admite enlaces). El badge queda como
+    señal en la pestaña: ✓, = o !.
+  - **Pestaña:** el popup manda el `tabId`, y el service worker solo atiende mensajes de su propio
+    `popup.html`.
+  - **Sin empresa** en una oferta nueva: 422, que pide seleccionar el texto con la empresa.
+  - **Sin CORS para la extensión**, a diferencia del encargo: sus `host_permissions` la eximen, y
+    añadirla le dejaría leer toda la API sin token. Lo señaló la revisión. CORS sigue solo para
+    la UI.
+  - **Sin `main` en portales conocidos:** si su HTML cambia, la extensión no manda la página
+    entera. Además, un resumen no se completa con texto de `main` sin selección, porque podría ser
+    la lista de resultados de LinkedIn. Lo encontró la revisión.
+  - **Orden de la captura:** primero se busca la oferta y luego se exige la descripción (200
+    caracteres), así una ya guardada se reconoce aunque falle el extractor.
+  - **URLs:** la extensión quita el fragmento y, si la URL es enorme, se queda solo con
+    `currentJobId`. La app guarda la URL canónica en LinkedIn e Indeed, y en el resto la recorta a
+    2000 caracteres quitando la query si hace falta.
+  - **Texto:** se usa `innerText`, que respeta el CSS; en los tests, un recorrido que salta lo
+    oculto en línea, scripts y botones, con un salto de línea por bloque. El HTML del bloque sí
+    viaja, para detectar `hidden_text`.
+  - **Tests de la extensión:** los ejecuta el Vitest del frontend (`server.fs.allow` incluye
+    `../extension`), sin dependencias en `extension/`.
+  - El test de una oferta sola de la 09b.1 ya no depende del fin de línea: `core.autocrlf` deja
+    los `.eml` con CRLF en Windows.
+- **Deuda:**
+  - **Prueba manual pendiente** (`docs/pruebas/fase-09b-prueba-manual.txt`, que cubre también la
+    09b.1): cargar la extensión, enviar una oferta real de LinkedIn (y de otros portales) y
+    generar su CV. Los selectores de los portales se escribieron sin páginas
+    reales delante: hay que ajustarlos con esa prueba.
+  - El token vive sin cifrar en `chrome.storage.local`, como en cualquier extensión.
+  - El puerto de la API (8000) está fijo en el manifiesto y en `core.js`.
+  - `.env.example` sigue sin `JH_IMAP_*` ni `JH_CAPTURE_EXTENSION_ID` (el agente no puede
+    editarlo).
+

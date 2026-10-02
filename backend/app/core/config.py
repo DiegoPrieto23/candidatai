@@ -11,6 +11,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
+# Id de la extensión de `extension/`: lo fija la clave pública (`key`) de su manifiesto.
+DEFAULT_EXTENSION_ID = "hnaofhehllbkghfehnehamjbkcmdjmle"
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=REPO_ROOT / ".env",
@@ -39,6 +43,13 @@ class Settings(BaseSettings):
     imap_user: str | None = Field(default=None, validation_alias="JH_IMAP_USER")
     imap_password: SecretStr | None = Field(default=None, validation_alias="JH_IMAP_PASSWORD")
     imap_folder: str = Field(default="INBOX", validation_alias="JH_IMAP_FOLDER")
+    # Botón «Enviar a Job Hunter» (fase 09b): id de la extensión cuyo origen acepta `POST /capture`.
+    # Por defecto, el que fija la clave pública de `extension/manifest.json`.
+    capture_extension_id: str = Field(
+        default=DEFAULT_EXTENSION_ID,
+        pattern=r"^[a-p]{32}$",
+        validation_alias="JH_CAPTURE_EXTENSION_ID",
+    )
 
     @model_validator(mode="after")
     def _resolve_paths(self) -> "Settings":
@@ -70,6 +81,15 @@ class Settings(BaseSettings):
     def imap_configured(self) -> bool:
         password = self.imap_password.get_secret_value() if self.imap_password else ""
         return bool(self.imap_host and self.imap_user and password)
+
+    @property
+    def capture_token_path(self) -> Path:
+        """Hash del token de la extensión de captura (`jh capture token`)."""
+        return self.data_dir / "capture_token"
+
+    @property
+    def capture_origin(self) -> str:
+        return f"chrome-extension://{self.capture_extension_id}"
 
     @property
     def inbox_dir(self) -> Path:

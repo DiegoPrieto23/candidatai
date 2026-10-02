@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
 
 from app.api.errors import ERROR_RESPONSES, install_error_handlers
-from app.api.routes import alerts, cv, jobs, sources, status, triage
+from app.api.routes import alerts, capture, cv, jobs, sources, status, triage
 
 HOST = "127.0.0.1"
 UI_ORIGIN = "http://127.0.0.1:5173"
@@ -25,6 +25,8 @@ def create_app() -> FastAPI:
         generate_unique_id_function=_operation_id,
         responses=ERROR_RESPONSES,
     )
+    # Solo la UI. La extensión de captura (fase 09b) no necesita CORS: sus `host_permissions` sobre
+    # `http://127.0.0.1:8000/*` la eximen. Añadir su origen le dejaría leer toda la API sin token.
     app.add_middleware(
         CORSMiddleware,
         allow_origins=[UI_ORIGIN],
@@ -38,6 +40,7 @@ def create_app() -> FastAPI:
     app.include_router(cv.router)
     app.include_router(sources.router)
     app.include_router(alerts.router)
+    app.include_router(capture.router)
     return app
 
 

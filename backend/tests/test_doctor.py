@@ -183,6 +183,7 @@ def test_cli_doctor_json() -> None:
         "Embeddings",
         "Conectores de ofertas",
         "Alertas por correo",
+        "Botón de captura",
     ]
 
 

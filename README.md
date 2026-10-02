@@ -103,7 +103,8 @@ sin foto para ofertas en Workday o en el Reino Unido). Detalle: `docs/CV_TEMPLAT
 | Botón «Enviar a Job Hunter» | 09b | Un clic | Cualquier página que estés viendo, LinkedIn incluido |
 | Búsqueda con el navegador del agente | 09b | A demanda | Portales que la permitan; LinkedIn solo si lo activas tú |
 
-Detalle: `docs/FUENTES_OFERTAS.md`.
+Detalle: `docs/FUENTES_OFERTAS.md`. El botón se instala como extensión sin empaquetar:
+`extension/README.md`.
 
 ## Si cambias skills, roles o el manifiesto
 

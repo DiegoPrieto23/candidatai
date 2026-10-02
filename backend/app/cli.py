@@ -34,6 +34,9 @@ templates_app = typer.Typer(help="Plantillas de CV.", no_args_is_help=True)
 sources_app = typer.Typer(
     help="Fuentes con conector: empresas objetivo (ATS) y portales con API.", no_args_is_help=True
 )
+capture_app = typer.Typer(
+    help="Botón «Enviar a Job Hunter» (extensión del navegador).", no_args_is_help=True
+)
 alerts_app = typer.Typer(
     help="Alertas de empleo por correo y ofertas resumen (pending_detail).", no_args_is_help=True
 )
@@ -48,6 +51,7 @@ app.add_typer(cv_app, name="cv")
 app.add_typer(templates_app, name="templates")
 app.add_typer(sources_app, name="sources")
 app.add_typer(alerts_app, name="alerts")
+app.add_typer(capture_app, name="capture")
 
 JSON_OPTION = typer.Option(False, "--json", help="Salida en JSON.")
 SYNC_SCRIPT = REPO_ROOT / "scripts" / "sync_agents.py"
@@ -1173,6 +1177,30 @@ def alerts_expire(as_json: bool = JSON_OPTION) -> None:
     except Exception as exc:
         _profile_fail(exc, as_json)
     typer.echo(dump_json(result) if as_json else result.message)
+
+
+# --- Botón «Enviar a Job Hunter» ---------------------------------------------------------------
+
+
+@capture_app.command("token")
+def capture_token(as_json: bool = JSON_OPTION) -> None:
+    """Genera un token nuevo para la extensión (el anterior deja de valer) y lo muestra una vez."""
+    from app.services.capture import rotate_token
+
+    settings = get_settings()
+    token = rotate_token(settings)
+    if as_json:
+        typer.echo(json.dumps({"token": token, "extension_id": settings.capture_extension_id}))
+        return
+    typer.echo("Token nuevo (solo se muestra ahora; el anterior ya no vale):")
+    typer.echo()
+    typer.secho(f"  {token}", bold=True)
+    typer.echo()
+    typer.echo(
+        "Pégalo en las opciones de la extensión «Enviar a Job Hunter» "
+        "(clic derecho en su icono → Opciones)."
+    )
+    typer.echo(f"Origen aceptado: {settings.capture_origin}")
 
 
 # --- Configuración de agentes: delega en scripts/sync_agents.py ---------------------------------

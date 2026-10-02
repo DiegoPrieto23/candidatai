@@ -337,7 +337,8 @@ def make_detail_captured() -> Callable[[Session, int], None]:
 
 
 def test_single_offer_card_does_not_take_the_page_header() -> None:
-    raw = (FIXTURES / INFOJOBS).read_bytes()
+    # Git en Windows (`core.autocrlf`) puede dejar el fixture con CRLF.
+    raw = (FIXTURES / INFOJOBS).read_bytes().replace(b"\r\n", b"\n")
     start = raw.index(b'<div class="oferta">', raw.index(b'<div class="oferta">') + 1)
     end = raw.index(b"</div>\n</body>")
     single = raw[:start] + raw[end + len(b"</div>\n") :]

@@ -2,7 +2,7 @@
 import { fileURLToPath } from 'node:url'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vite'
+import { defineConfig, searchForWorkspaceRoot } from 'vite'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -14,6 +14,8 @@ export default defineConfig({
     host: '127.0.0.1',
     port: 5173,
     strictPort: true, // la API solo admite CORS desde este origen exacto
+    // Los tests de la extensión (`src/extension/`) leen sus ficheros de `../extension`.
+    fs: { allow: [searchForWorkspaceRoot(process.cwd()), '../extension'] },
   },
   test: {
     environment: 'jsdom',

@@ -14,6 +14,9 @@ from app.core.migrations import DatabaseNotReadyError
 from app.core.validation import describe_error
 
 STATUS_BY_TYPE = {
+    "unauthorized": 401,
+    "forbidden": 403,
+    "capture_not_configured": 503,
     "not_found": 404,
     "validation_error": 422,
     "invalid_request": 422,
