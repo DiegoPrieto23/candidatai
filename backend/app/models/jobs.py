@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import JSON, ForeignKey, Index, String, Text
+from sqlalchemy import JSON, ForeignKey, Index, String, Text, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base, UTCDateTime, utcnow
@@ -11,13 +11,27 @@ class Job(Base):
     """Oferta de empleo. `raw_text` es contenido no confiable."""
 
     __tablename__ = "jobs"
-    # Los conectores reconocen una oferta ya vista por su id en la fuente.
-    __table_args__ = (Index("ix_jobs_source_external", "source_id", "external_id"),)
+    # Los conectores reconocen una oferta ya vista por su id en la fuente; alertas, captura y
+    # búsqueda con navegador, por su id en la plataforma (fase 09b).
+    __table_args__ = (
+        Index("ix_jobs_source_external", "source_id", "external_id"),
+        Index(
+            "uq_jobs_platform_external",
+            "platform",
+            "external_id",
+            unique=True,
+            sqlite_where=text("platform IS NOT NULL AND external_id IS NOT NULL"),
+        ),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     source_id: Mapped[int] = mapped_column(ForeignKey("sources.id"), index=True)
     company_id: Mapped[int] = mapped_column(ForeignKey("companies.id"), index=True)
     external_id: Mapped[str | None] = mapped_column(String(200))
+    # Portal donde se publica (`linkedin`, `infojobs`…), si se reconoce por la URL.
+    platform: Mapped[str | None] = mapped_column(String(32))
+    # `summary`: solo título, empresa, ubicación y enlace (alertas por correo); `full`: con texto.
+    detail_level: Mapped[str] = mapped_column(String(16), default="full", server_default="full")
     url: Mapped[str] = mapped_column(String(2000))
     title: Mapped[str] = mapped_column(String(500))
     location_raw: Mapped[str | None] = mapped_column(String(500))

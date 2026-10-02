@@ -520,6 +520,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/alerts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Alerts
+         * @description Ofertas resumen (`pending_detail`) de las alertas, primero las que pasan el prefiltro.
+         */
+        get: operations["list_alerts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/alerts/poll": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Poll Alerts
+         * @description Lee ahora las alertas nuevas (IMAP en solo lectura y `data/inbox/`).
+         */
+        post: operations["poll_alerts"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -584,6 +624,50 @@ export interface components {
              * @description Motivo al descartar (obligatorio en `discarded`).
              */
             reason?: ("seniority" | "skills" | "location" | "salary" | "company" | "other") | null;
+        };
+        /** AlertJob */
+        AlertJob: {
+            /** Job Id */
+            job_id: number;
+            /** Title */
+            title: string;
+            /** Company */
+            company: string;
+            /** Location */
+            location: string | null;
+            /** Platform */
+            platform: string | null;
+            /** Platform Label */
+            platform_label: string | null;
+            /** Url */
+            url: string;
+            /**
+             * First Seen At
+             * Format: date-time
+             */
+            first_seen_at: string;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            /** Prefilter Passed */
+            prefilter_passed: boolean;
+            /** Prefilter Reason */
+            prefilter_reason: string | null;
+            /** Risk Flags */
+            risk_flags: string[];
+        };
+        /** AlertList */
+        AlertList: {
+            /** Jobs */
+            jobs: components["schemas"]["AlertJob"][];
+            /** Total */
+            total: number;
+            /** Passed */
+            passed: number;
+            /** Filters Applied */
+            filters_applied: boolean;
         };
         /** Body_upload_cv */
         Body_upload_cv: {
@@ -782,6 +866,29 @@ export interface components {
             /** Conflicts */
             conflicts: string[];
         };
+        /** EmailPollResult */
+        EmailPollResult: {
+            /** Source Id */
+            source_id: number;
+            /** Run Id */
+            run_id: number;
+            /** Messages */
+            messages: number;
+            /** Found */
+            found: number;
+            /** Created */
+            created: number;
+            /** Summaries */
+            summaries: number;
+            /** Existing */
+            existing: number;
+            /** Job Ids */
+            job_ids: number[];
+            /** Errors */
+            errors: components["schemas"]["Issue"][];
+            /** Message */
+            message: string;
+        };
         /** ErrorDetail */
         ErrorDetail: {
             /** Field */
@@ -841,7 +948,7 @@ export interface components {
          * EventType
          * @enum {string}
          */
-        EventType: "found" | "duplicate_detected" | "extracted" | "hard_filter_failed" | "extraction_failed" | "injection_suspected" | "scored" | "fit_assessed" | "approved" | "discarded" | "cv_generated" | "cv_rendered" | "cv_verified" | "cv_rejected" | "application_prepared" | "applied" | "applied_manually" | "reply_received" | "interview_scheduled" | "interview_done" | "test_assigned" | "followup_sent" | "offer_received" | "rejected" | "withdrawn" | "expired" | "accepted" | "reopened" | "note";
+        EventType: "found" | "detail_captured" | "duplicate_detected" | "extracted" | "hard_filter_failed" | "extraction_failed" | "injection_suspected" | "scored" | "fit_assessed" | "approved" | "discarded" | "cv_generated" | "cv_rendered" | "cv_verified" | "cv_rejected" | "application_prepared" | "applied" | "applied_manually" | "reply_received" | "interview_scheduled" | "interview_done" | "test_assigned" | "followup_sent" | "offer_received" | "rejected" | "withdrawn" | "expired" | "accepted" | "reopened" | "note";
         /** ExtractionView */
         ExtractionView: {
             /** Extraction Id */
@@ -1437,7 +1544,7 @@ export interface components {
          * Stage
          * @enum {string}
          */
-        Stage: "pending_extraction" | "pending_triage" | "approved" | "cv_ready" | "applied" | "in_process" | "closed";
+        Stage: "pending_detail" | "pending_extraction" | "pending_triage" | "approved" | "cv_ready" | "applied" | "in_process" | "closed";
         /** StatusReport */
         StatusReport: {
             /** Total */
@@ -3653,6 +3760,154 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SourceView"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_alerts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlertList"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    poll_alerts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmailPollResult"];
                 };
             };
             /** @description Not Found */

@@ -69,23 +69,38 @@ found ─► pending_detail ─(detail_captured)─► pending_extraction ─►
   entrar en ninguno.
 - **Conexión IMAP de solo lectura** a una única carpeta o etiqueta (p. ej. una etiqueta de Gmail
   «Alertas empleo» rellenada por un filtro). Abre la carpeta en modo solo lectura: no marca como
-  leído, no mueve, no borra. Credenciales en `.env` (`JH_IMAP_HOST`, `JH_IMAP_USER`,
-  `JH_IMAP_PASSWORD`, `JH_IMAP_FOLDER`).
+  leído, no mueve, no borra. Credenciales en `.env` (`JH_IMAP_HOST`, `JH_IMAP_PORT` (993),
+  `JH_IMAP_USER`, `JH_IMAP_PASSWORD`, `JH_IMAP_FOLDER`).
+  - Solo usa `LOGIN`, `EXAMINE`, `UID SEARCH`, `UID FETCH` con `BODY.PEEK[]` y `LOGOUT`. Busca los
+    correos de los últimos `summary_expire_days` días, pide primero solo sus `Message-ID` y
+    descarga el cuerpo solo de los nuevos. Un test con un servidor IMAP falso que falla ante
+    cualquier escritura lo comprueba.
   - Gmail: IMAP con contraseña de aplicación (requiere verificación en dos pasos).
   - Otros proveedores pueden exigir OAuth para IMAP (p. ej. Outlook.com). La fase lo verifica; si
     no es viable, se usa la alternativa de abajo.
 - **Alternativa sin credenciales:** carpeta `data/inbox/` donde dejas correos exportados (`.eml`
-  o `.mbox`). El worker la procesa igual.
+  o `.mbox`). El worker la procesa igual. Los ficheros no se mueven ni se borran; los ya
+  procesados se reconocen por su `Message-ID`. Las subcarpetas (como `samples/`) no se leen.
 - **Parsers por plataforma** en `app/services/ingestion/email/`, elegidos por el dominio del
   remitente (`config/policies.yaml` → `email_alerts.platforms`). Un parser genérico de respaldo
   reconoce enlaces con patrones de URL de ofertas conocidos.
   - Los formatos de estos correos cambian: los parsers se construyen a partir de correos reales
     que el usuario deja en `data/inbox/samples/` (fuera de git) y se prueban con fixtures
     **inventados** que imitan su estructura.
+- Para cada oferta del correo: si ya está (por `platform` + `external_id`), se cuenta y no se toca;
+  si el portal se deja descargar, alta completa con el servicio de la fase 03; si no (LinkedIn), o
+  si la descarga falla, alta como resumen. Los enlaces de seguimiento (`…?url=https%3A…`) se leen
+  sin seguirlos, y la URL se guarda sin parámetros de seguimiento.
+- Un correo de una plataforma conocida del que no sale ninguna oferta deja el aviso
+  `no_jobs_found` en `source_runs`: suele indicar que ha cambiado el formato.
 - Se guardan los `Message-ID` procesados (tabla `email_messages`), nunca el cuerpo del correo.
 - El contenido del correo es **no confiable**, igual que una oferta: pasa por la detección de
-  riesgo y no se sigue ningún enlace de LinkedIn automáticamente.
-- Frecuencia: la del worker (`email_alerts.poll_minutes`).
+  riesgo y no se sigue ningún enlace de LinkedIn automáticamente. La detección mira el texto de
+  cada oferta, no el HTML del correo: casi todas las alertas llevan texto oculto legítimo (el
+  «preheader») y marcarían `hidden_text` en todas.
+- Frecuencia: la del worker (`email_alerts.poll_minutes`). A mano: `jh alerts poll` o «Revisar
+  correo ahora» en la pantalla «Alertas», que lista los resúmenes con su prefiltro y permite
+  abrirlos en su portal (`O`) o descartarlos (`D`).
 
 ## Botón «Enviar a Job Hunter»
 
@@ -95,7 +110,7 @@ found ─► pending_detail ─(detail_captured)─► pending_extraction ─►
   `scripting`). Lee de esa página: URL, título, el texto seleccionado si lo hay y, si no, la
   descripción de la oferta con extractores por sitio (LinkedIn, InfoJobs, Indeed, Tecnoempleo;
   JSON-LD `JobPosting` si existe; `main` como último recurso).
-- Envía los datos desde su *service worker* a `http://127.0.0.1:8000/api/capture` con un token
+- Envía los datos desde su *service worker* a `http://127.0.0.1:8000/capture` con un token
   (`jh capture token` lo genera en `data/`; se pega una vez en las opciones de la extensión). La
   API rechaza peticiones sin token y solo acepta el origen de la extensión configurada.
 - **Permisos mínimos:** sin acceso a cookies, sin scripts permanentes en ningún sitio, sin
@@ -155,5 +170,5 @@ hayas aprobado. Skill `buscar-ofertas`.
 | `record_source_run` | `jh sources record-run ID --file F` | `SourceRunSummary` | `ok` |
 | `add_job_from_text` (ampliada) | `jh jobs add-text … [--source S] [--platform P] [--external-id X]` | `+ source_id?, platform?, external_id?` | igual que antes |
 
-La captura del botón es un endpoint REST (`POST /api/capture`) de la app, no de la interfaz para
+La captura del botón es un endpoint REST (`POST /capture`) de la app, no de la interfaz para
 agentes: la usa la extensión, no el agente.

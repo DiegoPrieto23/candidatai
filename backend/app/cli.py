@@ -34,6 +34,9 @@ templates_app = typer.Typer(help="Plantillas de CV.", no_args_is_help=True)
 sources_app = typer.Typer(
     help="Fuentes con conector: empresas objetivo (ATS) y portales con API.", no_args_is_help=True
 )
+alerts_app = typer.Typer(
+    help="Alertas de empleo por correo y ofertas resumen (pending_detail).", no_args_is_help=True
+)
 app.add_typer(db_app, name="db")
 app.add_typer(events_app, name="events")
 app.add_typer(jobs_app, name="jobs")
@@ -44,6 +47,7 @@ app.add_typer(eval_app, name="eval")
 app.add_typer(cv_app, name="cv")
 app.add_typer(templates_app, name="templates")
 app.add_typer(sources_app, name="sources")
+app.add_typer(alerts_app, name="alerts")
 
 JSON_OPTION = typer.Option(False, "--json", help="Salida en JSON.")
 SYNC_SCRIPT = REPO_ROOT / "scripts" / "sync_agents.py"
@@ -1102,6 +1106,73 @@ def sources_enable(source_id: int = SOURCE_ID_ARG, as_json: bool = JSON_OPTION) 
 def sources_disable(source_id: int = SOURCE_ID_ARG, as_json: bool = JSON_OPTION) -> None:
     """Pausa una fuente: deja de entrar en la ingesta diaria (sus ofertas se conservan)."""
     _set_active(source_id, False, as_json)
+
+
+# --- Alertas por correo y ofertas resumen ---------------------------------------------------
+
+
+@alerts_app.command("poll")
+def alerts_poll(as_json: bool = JSON_OPTION) -> None:
+    """Lee ahora las alertas nuevas (IMAP en solo lectura y `data/inbox/`) y da de alta sus
+    ofertas."""
+    from app.services.ingestion.email.service import poll_email
+
+    try:
+        migrations.ensure_current()
+        with session_scope() as session:
+            result = poll_email(session, actor="user")
+    except Exception as exc:
+        _profile_fail(exc, as_json)
+    if as_json:
+        typer.echo(dump_json(result))
+    else:
+        typer.secho(result.message, fg="yellow" if result.errors else None)
+        for issue in result.errors:
+            where = f" ({issue.item})" if issue.item else ""
+            typer.secho(f"  ! {issue.message}{where}", fg="yellow")
+        if result.summaries:
+            typer.echo("  Los resúmenes están en «Alertas»: complétalos o descártalos.")
+    if result.errors and not result.messages:
+        raise typer.Exit(code=1)
+
+
+@alerts_app.command("list")
+def alerts_list(as_json: bool = JSON_OPTION) -> None:
+    """Ofertas resumen (pending_detail), primero las que pasan el prefiltro."""
+    from app.services.summaries import list_alerts
+
+    try:
+        migrations.ensure_current()
+        with session_scope() as session:
+            result = list_alerts(session)
+    except Exception as exc:
+        _profile_fail(exc, as_json)
+    if as_json:
+        typer.echo(dump_json(result))
+        return
+    if not result.jobs:
+        typer.echo("No hay ofertas resumen pendientes.")
+        return
+    typer.echo(f"{result.total} ofertas resumen, {result.passed} pasan el prefiltro.")
+    for job in result.jobs:
+        mark = "+" if job.prefilter_passed else "-"
+        where = f" · {job.location}" if job.location else ""
+        reason = f"  ({job.prefilter_reason})" if job.prefilter_reason else ""
+        typer.echo(f"  {mark} {job.job_id:>5}  {job.title} — {job.company}{where}{reason}")
+
+
+@alerts_app.command("expire")
+def alerts_expire(as_json: bool = JSON_OPTION) -> None:
+    """Cierra con `expired` los resúmenes sin completar más antiguos que `summary_expire_days`."""
+    from app.services.summaries import expire_summaries
+
+    try:
+        migrations.ensure_current()
+        with session_scope() as session:
+            result = expire_summaries(session)
+    except Exception as exc:
+        _profile_fail(exc, as_json)
+    typer.echo(dump_json(result) if as_json else result.message)
 
 
 # --- Configuración de agentes: delega en scripts/sync_agents.py ---------------------------------

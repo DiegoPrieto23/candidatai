@@ -41,7 +41,7 @@ oferta que estés viendo entra con un clic y, si quieres, el agente recorre port
    en modo lectura).
 
 ### 09b.2 · Botón «Enviar a Job Hunter»
-1. **API**: `POST /api/capture` con token (`jh capture token` genera y rota el token en
+1. **API**: `POST /capture` con token (`jh capture token` genera y rota el token en
    `data/capture_token`), CORS solo para el origen de la extensión configurado en `.env`
    (`JH_CAPTURE_EXTENSION_ID`). Servicio `services/capture.py`: identifica plataforma, completa
    una oferta resumen existente (`detail_captured`), detecta duplicados o crea una oferta nueva.

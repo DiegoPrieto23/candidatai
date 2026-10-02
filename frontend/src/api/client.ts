@@ -27,6 +27,9 @@ export type SourceInput = Schemas['SourceInput']
 export type SourceTestResult = Schemas['SourceTestResult']
 export type SourceRunResult = Schemas['SourceRunResult']
 export type ConnectorKind = SourceInput['kind']
+export type AlertList = Schemas['AlertList']
+export type AlertJob = Schemas['AlertJob']
+export type EmailPollResult = Schemas['EmailPollResult']
 
 export const API_URL: string = import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:8000'
 

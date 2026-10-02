@@ -18,6 +18,8 @@ def isolated_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Pa
     monkeypatch.delenv("JH_DB_URL", raising=False)
     monkeypatch.delenv("SOFFICE_PATH", raising=False)
     monkeypatch.delenv("JH_CLIENT_NAME", raising=False)
+    # Sin IMAP aunque el `.env` del usuario lo configure (las variables mandan sobre `.env`).
+    monkeypatch.setenv("JH_IMAP_HOST", "")
     # Sin modelo de embeddings en los tests: nada de descargas; los que lo necesitan usan uno falso.
     monkeypatch.setenv("JH_EMBEDDINGS", "off")
     get_settings.cache_clear()

@@ -128,6 +128,7 @@ def current_stage(session: Session, job_id: int) -> Stage:
 RESERVED_EVENTS = frozenset(
     {
         EventType.FOUND,
+        EventType.DETAIL_CAPTURED,  # lo registra la captura del navegador (09b.2), con el texto
         EventType.DUPLICATE_DETECTED,
         EventType.EXTRACTED,
         EventType.HARD_FILTER_FAILED,

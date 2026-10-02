@@ -8,7 +8,7 @@ from app.models.jobs import Job, JobExtraction
 from app.models.matches import Match
 from app.models.ops import McpCall, Task
 from app.models.profiles import ProfileVersion
-from app.models.sources import Source, SourceRun
+from app.models.sources import EmailMessage, Source, SourceRun
 
 __all__ = [
     "Application",
@@ -16,6 +16,7 @@ __all__ = [
     "Company",
     "Document",
     "DocumentRender",
+    "EmailMessage",
     "Event",
     "Job",
     "JobExtraction",

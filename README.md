@@ -168,6 +168,10 @@ Opcional (fase 09): para buscar también en InfoJobs o Adzuna, añade sus claves
 (`JH_INFOJOBS_CLIENT_ID` y `JH_INFOJOBS_CLIENT_SECRET`, de developer.infojobs.net;
 `JH_ADZUNA_APP_ID` y `JH_ADZUNA_APP_KEY`, de developer.adzuna.com). Greenhouse, Lever y Ashby no
 necesitan nada. La hora de la ingesta diaria está en `config/policies.yaml` (`connectors.daily_at`).
+Opcional (fase 09b): para leer tus alertas de empleo por correo, `JH_IMAP_HOST`, `JH_IMAP_USER`,
+`JH_IMAP_PASSWORD` y `JH_IMAP_FOLDER` (en Gmail, `imap.gmail.com`, una contraseña de aplicación y
+la etiqueta a la que tu filtro manda las alertas). Sin IMAP, deja los correos exportados (`.eml` o
+`.mbox`) en `data/inbox/`. La conexión es de solo lectura: no marca, mueve ni borra nada.
 Los datos personales van en `data/` (se crea sola y está en `.gitignore`).
 
 ### Backend
@@ -179,6 +183,7 @@ uv sync --extra matching           # opcional: similitud semántica (trae torch,
 uv run jh doctor                   # comprueba el entorno
 uv run jh worker                   # tareas (scores) e ingesta diaria de las fuentes; --once vacía la cola
 uv run jh sources --help           # empresas objetivo y portales: add, list, test, run
+uv run jh alerts poll              # lee ya las alertas por correo (IMAP o data/inbox/)
 uv run jh eval matching            # calidad del matching (evals/matching/README.md)
 uv run pytest                      # tests
 uv run ruff check --fix && uv run ruff format

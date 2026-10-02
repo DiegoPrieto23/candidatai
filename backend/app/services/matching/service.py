@@ -28,7 +28,7 @@ from app.services.extractions import ExtractionNotFoundError
 from app.services.matching import embeddings, hard_filters, scorer
 from app.services.matching.hard_filters import HardFilterResult
 from app.services.matching.scorer import ScoreBreakdown
-from app.services.pipeline import OPEN_STAGES, Actor, EventType, Stage, job_events
+from app.services.pipeline import WORKING_STAGES, Actor, EventType, Stage, job_events
 
 
 class MatchView(BaseModel):
@@ -167,7 +167,7 @@ def compute_match(session: Session, job_id: int) -> Match:
     )
     session.add(match)
     session.flush()
-    if _stage(session, job_id) in OPEN_STAGES:
+    if _stage(session, job_id) in WORKING_STAGES:
         events.record(
             session,
             job_id,
@@ -283,7 +283,7 @@ def rescore_open_jobs(session: Session) -> RescoreResult:
     profiles.current(session)
     job_ids = session.scalars(
         select(Application.job_id)
-        .where(Application.stage.in_([s.value for s in OPEN_STAGES]))
+        .where(Application.stage.in_([s.value for s in WORKING_STAGES]))
         .order_by(Application.job_id)
     ).all()
     latest = extractions.latest_rows(session, list(job_ids))

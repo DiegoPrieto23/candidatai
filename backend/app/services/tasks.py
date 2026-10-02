@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 from app.models import Task
 from app.models.base import utcnow
 
-TaskKind = Literal["score_job", "rescore_all", "run_source"]
+TaskKind = Literal["score_job", "rescore_all", "run_source", "poll_email", "expire_summaries"]
 TaskStatus = Literal["queued", "running", "done", "failed"]
 MAX_ATTEMPTS = 3
 RETRY_DELAY = timedelta(minutes=1)  # se multiplica por el número de intentos

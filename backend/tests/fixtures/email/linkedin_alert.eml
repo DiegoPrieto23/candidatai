@@ -1,0 +1,87 @@
+Message-ID: <alerta-ficticia-001@demo.invalid>
+Date: Thu, 01 Oct 2026 07:12:00 +0000
+From: LinkedIn Job Alerts <jobalerts-noreply@linkedin.com>
+To: candidata@demo.invalid
+Subject: =?UTF-8?Q?=C2=ABData_Engineer=C2=BB=3A_3_empleos_nuevos_en_Galicia?=
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="LIMITE-FICTICIO"
+
+--LIMITE-FICTICIO
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+
+Tus alertas de empleo
+
+Data Engineer
+Acme Datos Demo
+Vigo, Galicia, España (Híbrido)
+Ver empleo: https://www.linkedin.com/comm/jobs/view/4000000001/?trackingId=AAAA%3D%3D&refId=BBBB
+
+Junior Analytics Engineer
+Ficticia Analytics
+A Coruña, Galicia, España
+Ver empleo: https://www.linkedin.com/comm/jobs/view/4000000002/?trackingId=CCCC%3D%3D
+
+Senior Sales Manager
+Empresa Inventada S.L.
+Madrid, Comunidad de Madrid, España
+Ver empleo: https://www.linkedin.com/comm/jobs/view/4000000003/?trackingId=DDDD%3D%3D
+
+Ver todos los empleos: https://www.linkedin.com/comm/jobs/search/?keywords=Data%20Engineer
+
+--LIMITE-FICTICIO
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="utf-8"><style>.oculto{display:none}</style></head>
+<body>
+<div class="oculto" style="display:none;max-height:0;overflow:hidden">Data Engineer en Acme Datos Demo y 2 empleos más</div>
+<table role="presentation" width="100%">
+  <tr><td><a href="https://www.linkedin.com/comm/feed/?trk=logo"><img src="https://static.demo.invalid/logo.png" alt="LinkedIn"></a></td></tr>
+  <tr><td><h2>Tus alertas de empleo</h2><p>3 empleos nuevos para «Data Engineer» en Galicia</p></td></tr>
+  <tr><td>
+    <table role="presentation" class="tarjeta">
+      <tr>
+        <td><a href="https://www.linkedin.com/comm/jobs/view/4000000001/?trackingId=AAAA%3D%3D&amp;refId=BBBB&amp;midToken=X"><img src="https://media.demo.invalid/acme.png" alt="Acme Datos Demo"></a></td>
+        <td>
+          <a href="https://www.linkedin.com/comm/jobs/view/4000000001/?trackingId=AAAA%3D%3D&amp;refId=BBBB">Data Engineer</a>
+          <p>Acme Datos Demo · Vigo, Galicia, España (Híbrido)</p>
+          <p>Seleccionando candidatos activamente</p>
+          <p>Solicitud sencilla</p>
+        </td>
+      </tr>
+    </table>
+  </td></tr>
+  <tr><td>
+    <table role="presentation" class="tarjeta">
+      <tr>
+        <td><a href="https://www.linkedin.com/comm/jobs/view/4000000002/?trackingId=CCCC%3D%3D"><img src="https://media.demo.invalid/ficticia.png" alt="Ficticia Analytics"></a></td>
+        <td>
+          <a href="https://www.linkedin.com/comm/jobs/view/4000000002/?trackingId=CCCC%3D%3D">Junior Analytics Engineer</a>
+          <p>Ficticia Analytics · A Coruña, Galicia, España</p>
+          <p>2 antiguos alumnos trabajan aquí</p>
+        </td>
+      </tr>
+    </table>
+  </td></tr>
+  <tr><td>
+    <table role="presentation" class="tarjeta">
+      <tr>
+        <td><a href="https://www.linkedin.com/comm/jobs/view/4000000003/?trackingId=DDDD%3D%3D"><img src="https://media.demo.invalid/inventada.png" alt="Empresa Inventada S.L."></a></td>
+        <td>
+          <a href="https://www.linkedin.com/comm/jobs/view/4000000003/?trackingId=DDDD%3D%3D">Senior Sales Manager</a>
+          <p>Empresa Inventada S.L. · Madrid, Comunidad de Madrid, España</p>
+          <p>Promocionado</p>
+        </td>
+      </tr>
+    </table>
+  </td></tr>
+  <tr><td><a href="https://www.linkedin.com/comm/jobs/search/?keywords=Data%20Engineer">Ver todos los empleos</a></td></tr>
+  <tr><td><p>Has recibido este correo porque creaste una alerta. <a href="https://www.linkedin.com/comm/jobs/alerts/unsubscribe?id=1">Darse de baja</a></p></td></tr>
+</table>
+</body>
+</html>
+
+--LIMITE-FICTICIO--

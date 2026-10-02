@@ -18,6 +18,7 @@ from app.models import Application, Event
 
 
 class Stage(StrEnum):
+    PENDING_DETAIL = "pending_detail"  # oferta «resumen» de una alerta (fase 09b)
     PENDING_EXTRACTION = "pending_extraction"
     PENDING_TRIAGE = "pending_triage"
     APPROVED = "approved"
@@ -29,6 +30,7 @@ class Stage(StrEnum):
 
 class EventType(StrEnum):
     FOUND = "found"
+    DETAIL_CAPTURED = "detail_captured"
     DUPLICATE_DETECTED = "duplicate_detected"
     EXTRACTED = "extracted"
     HARD_FILTER_FAILED = "hard_filter_failed"
@@ -66,6 +68,9 @@ class Actor(StrEnum):
 
 
 OPEN_STAGES = frozenset(Stage) - {Stage.CLOSED}
+# Una oferta resumen (`pending_detail`) solo admite completarse, descartarse, caducar, quedar como
+# duplicado, avisos de riesgo y notas: aún no hay descripción que valorar.
+WORKING_STAGES = OPEN_STAGES - {Stage.PENDING_DETAIL}
 BEFORE_APPLIED = frozenset(
     {Stage.PENDING_EXTRACTION, Stage.PENDING_TRIAGE, Stage.APPROVED, Stage.CV_READY}
 )
@@ -85,13 +90,18 @@ class Transition:
 
 _IN_PROCESS = Transition(AFTER_APPLIED, Stage.IN_PROCESS)
 
-# `found` (primer evento), `reopened` (vuelve a la etapa previa al cierre), `cv_verified` y
-# `cv_rendered` (llevan a `cv_ready` cuando un mismo documento está verificado con `passed` y
-# tiene un render sin `too_long`) tienen además un tratamiento especial en `apply_event`.
+# `found` (primer evento; lleva a `pending_detail` si `payload.detail_level` es `summary`),
+# `reopened` (vuelve a la etapa previa al cierre), `cv_verified` y `cv_rendered` (llevan a
+# `cv_ready` cuando un mismo documento está verificado con `passed` y tiene un render sin
+# `too_long`) tienen además un tratamiento especial en `apply_event`.
 TRANSITIONS: dict[EventType, Transition] = {
     EventType.FOUND: Transition(frozenset(), Stage.PENDING_EXTRACTION),
+    EventType.DETAIL_CAPTURED: Transition(
+        frozenset({Stage.PENDING_DETAIL}), Stage.PENDING_EXTRACTION
+    ),
     EventType.DUPLICATE_DETECTED: Transition(
-        frozenset({Stage.PENDING_EXTRACTION, Stage.PENDING_TRIAGE}), Stage.CLOSED
+        frozenset({Stage.PENDING_DETAIL, Stage.PENDING_EXTRACTION, Stage.PENDING_TRIAGE}),
+        Stage.CLOSED,
     ),
     EventType.EXTRACTED: Transition(
         frozenset({Stage.PENDING_EXTRACTION, Stage.PENDING_TRIAGE}), Stage.PENDING_TRIAGE
@@ -99,15 +109,15 @@ TRANSITIONS: dict[EventType, Transition] = {
     EventType.EXTRACTION_FAILED: Transition(frozenset({Stage.PENDING_EXTRACTION}), None),
     EventType.HARD_FILTER_FAILED: Transition(frozenset({Stage.PENDING_TRIAGE}), Stage.CLOSED),
     EventType.INJECTION_SUSPECTED: Transition(OPEN_STAGES, None),
-    EventType.SCORED: Transition(OPEN_STAGES, None),
-    EventType.FIT_ASSESSED: Transition(OPEN_STAGES, None),
+    EventType.SCORED: Transition(WORKING_STAGES, None),
+    EventType.FIT_ASSESSED: Transition(WORKING_STAGES, None),
     EventType.APPROVED: Transition(frozenset({Stage.PENDING_TRIAGE}), Stage.APPROVED),
-    EventType.DISCARDED: Transition(BEFORE_APPLIED, Stage.CLOSED),
+    EventType.DISCARDED: Transition(BEFORE_APPLIED | {Stage.PENDING_DETAIL}, Stage.CLOSED),
     EventType.CV_GENERATED: Transition(CV_STAGES, None),
     EventType.CV_RENDERED: Transition(CV_STAGES, None),
     EventType.CV_VERIFIED: Transition(CV_STAGES, None),
     EventType.CV_REJECTED: Transition(CV_STAGES, None),
-    EventType.APPLICATION_PREPARED: Transition(OPEN_STAGES, None),
+    EventType.APPLICATION_PREPARED: Transition(WORKING_STAGES, None),
     EventType.APPLIED: Transition(
         frozenset({Stage.CV_READY}),
         Stage.APPLIED,
@@ -120,8 +130,8 @@ TRANSITIONS: dict[EventType, Transition] = {
     EventType.TEST_ASSIGNED: _IN_PROCESS,
     EventType.OFFER_RECEIVED: _IN_PROCESS,
     EventType.FOLLOWUP_SENT: Transition(AFTER_APPLIED, None),
-    EventType.REJECTED: Transition(OPEN_STAGES, Stage.CLOSED),
-    EventType.WITHDRAWN: Transition(OPEN_STAGES, Stage.CLOSED),
+    EventType.REJECTED: Transition(WORKING_STAGES, Stage.CLOSED),
+    EventType.WITHDRAWN: Transition(WORKING_STAGES, Stage.CLOSED),
     EventType.EXPIRED: Transition(OPEN_STAGES, Stage.CLOSED),
     EventType.ACCEPTED: Transition(frozenset({Stage.IN_PROCESS}), Stage.CLOSED),
     EventType.REOPENED: Transition(frozenset({Stage.CLOSED}), None),
@@ -198,7 +208,9 @@ def apply_event(state: ProjectionState | None, event: EventLike) -> ProjectionSt
             raise InvalidTransitionError(
                 f"El primer evento de una oferta debe ser «found», no «{event_type}»."
             )
-        return ProjectionState(stage=Stage.PENDING_EXTRACTION, last_event_at=event.occurred_at)
+        summary = payload.get("detail_level") == "summary"
+        stage = Stage.PENDING_DETAIL if summary else Stage.PENDING_EXTRACTION
+        return ProjectionState(stage=stage, last_event_at=event.occurred_at)
 
     if event_type == EventType.FOUND or state.stage not in transition.allowed_from:
         raise InvalidTransitionError(_invalid(event_type, state.stage, transition))

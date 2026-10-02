@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter } from 'react-router'
 import { vi } from 'vitest'
 import type {
+  AlertJob,
   CvView,
   JobCv,
   JobRow,
@@ -81,11 +82,12 @@ export function renderApp(path: string) {
 
 // --- Datos de prueba (ficticios, como los de demo/) ---------------------------------------------
 
-export function status(pendingExtraction = 0, pendingTriage = 0): StatusReport {
+export function status(pendingExtraction = 0, pendingTriage = 0, pendingDetail = 0): StatusReport {
   return {
-    total: pendingExtraction + pendingTriage,
+    total: pendingExtraction + pendingTriage + pendingDetail,
     pending_tasks: 0,
     by_stage: {
+      pending_detail: pendingDetail,
       pending_extraction: pendingExtraction,
       pending_triage: pendingTriage,
       approved: 0,
@@ -317,5 +319,26 @@ export function jobCv(renders: RenderResult[], changes: Partial<CvView> = {}): J
       renders,
       ...changes,
     },
+  }
+}
+
+// --- Alertas por correo ----------------------------------------------------------------------------
+
+export function alertJob(id: number, changes: Partial<AlertJob> = {}): AlertJob {
+  const now = new Date().toISOString()
+  return {
+    job_id: id,
+    title: `Alerta ${id}`,
+    company: `Empresa ${id}`,
+    location: 'Vigo, Galicia, España',
+    platform: 'linkedin',
+    platform_label: 'LinkedIn',
+    url: `https://www.linkedin.com/jobs/view/40000000${id}/`,
+    first_seen_at: now,
+    expires_at: now,
+    prefilter_passed: true,
+    prefilter_reason: null,
+    risk_flags: [],
+    ...changes,
   }
 }

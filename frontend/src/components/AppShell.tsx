@@ -109,15 +109,20 @@ function navClass({ isActive }: { isActive: boolean }) {
   )
 }
 
-function TriageCount() {
+function NavCount({ stage, label, muted = false }: { stage: Stage; label: string; muted?: boolean }) {
   const { data } = useStatus()
-  const count = data?.by_stage.pending_triage ?? 0
+  const count = data?.by_stage[stage] ?? 0
   if (!count) return null
   return (
-    <span className="tabular grid h-[18px] min-w-[18px] place-items-center rounded-full bg-primary px-1 text-[0.7rem] font-semibold text-primary-foreground">
+    <span
+      className={cn(
+        'tabular grid h-[18px] min-w-[18px] place-items-center rounded-full px-1 text-[0.7rem] font-semibold',
+        muted ? 'bg-foreground/10 text-foreground/80' : 'bg-primary text-primary-foreground',
+      )}
+    >
       <span className="sr-only">, </span>
       {count}
-      <span className="sr-only"> por revisar</span>
+      <span className="sr-only"> {label}</span>
     </span>
   )
 }
@@ -139,7 +144,11 @@ export function AppShell() {
             </NavLink>
             <NavLink to="/triaje" className={navClass}>
               Triaje
-              <TriageCount />
+              <NavCount stage="pending_triage" label="por revisar" />
+            </NavLink>
+            <NavLink to="/alertas" className={navClass}>
+              Alertas
+              <NavCount stage="pending_detail" label="por completar" muted />
             </NavLink>
             <NavLink to="/empresas" className={navClass}>
               Empresas

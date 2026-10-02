@@ -157,6 +157,8 @@ Cola de trabajo del worker (sin Redis).
 |---|---|---|
 | `score_job` `{job_id}` | `save_extraction` (con perfil) | Calcula el match vigente |
 | `run_source` `{source_id}` | `jh worker` a la hora de `connectors.daily_at`, y al arrancar para las fuentes que no corrieron desde la última hora programada | Ejecuta el conector (`ingestion/service.run_source`). Un fallo de red, 5xx, 429 o interno queda en `source_runs` y la tarea se reintenta; un 404 o un formato inesperado no. Los portales sin claves no se encolan. Al arrancar, las tareas que quedaron `running` vuelven a la cola |
+| `poll_email` `{}` | `jh worker` cada `email_alerts.poll_minutes`, y al arrancar, si hay IMAP configurado o correos en `data/inbox/` | Lee las alertas nuevas (`ingestion/email/service.poll_email`). Si el buzón falla por la red, queda en `source_runs` y se reintenta |
+| `expire_summaries` `{}` | `jh worker` cada día con la ingesta y al arrancar | Cierra con `expired` los resúmenes más antiguos que `summary_expire_days` |
 | `rescore_all` `{}` | `jh profile import` con versión nueva | Recalcula los matches desfasados de las ofertas abiertas con extracción y cierra las de triaje que ya no pasan los filtros (lo mismo que `jh match rescore`, sin cola) |
 
 No se encola dos veces la misma tarea (mismo `kind` y `payload`) mientras siga en cola. Si falla,
@@ -216,7 +218,12 @@ Detalle y motivos en `docs/FUENTES_OFERTAS.md` §Modelo de datos.
 - `jobs`: `platform` (str?, p. ej. `linkedin`), `detail_level` (`summary` | `full`) e índice
   único parcial sobre (`platform`, `external_id`) cuando ambos existen.
 - Etapa nueva `pending_detail`, antes de `pending_extraction`. Desde ella se admiten
-  `detail_captured`, `discarded` y `expired`.
+  `detail_captured`, `discarded`, `expired`, `duplicate_detected` (un resumen puede ser duplicado
+  difuso de otra oferta), `injection_suspected` y `note`; no `scored`, `fit_assessed`,
+  `application_prepared`, `rejected` ni `withdrawn`. Reabrir un resumen caducado lo devuelve a
+  `pending_detail`. `detail_captured` es un evento reservado: `add_event` no lo acepta.
+- Migración `0007`: `jobs.platform`, `jobs.detail_level` (por defecto `full`) y el índice único
+  parcial; las ofertas anteriores quedan con `platform = null`.
 - Tabla `source_runs`: ya la crea la fase 09 (migración `0006`); la 09b la reutiliza.
 - Tabla `email_messages`: `message_id` (único), `source_id`, `received_at`, `jobs_found`,
   `processed_at`. Nunca guarda el cuerpo del correo.

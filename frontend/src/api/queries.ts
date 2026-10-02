@@ -15,6 +15,7 @@ export const keys = {
   uploads: ['uploads'] as const,
   defaultTemplate: ['templates', 'default'] as const,
   sources: ['sources'] as const,
+  alerts: ['alerts'] as const,
 }
 
 export interface JobsParams {
@@ -135,6 +136,7 @@ export function useJobEvent() {
         client.invalidateQueries({ queryKey: keys.status }),
         client.invalidateQueries({ queryKey: keys.allJobs }),
         client.invalidateQueries({ queryKey: keys.triage }),
+        client.invalidateQueries({ queryKey: keys.alerts }),
         client.invalidateQueries({ queryKey: keys.job(jobId) }),
         client.invalidateQueries({ queryKey: keys.match(jobId) }),
       ]),
@@ -301,5 +303,30 @@ export function useSetSourceActive() {
         }),
       ),
     onSuccess: () => client.invalidateQueries({ queryKey: keys.sources }),
+  })
+}
+
+// --- Alertas por correo: ofertas resumen (fase 09b) --------------------------------------------
+
+export function useAlerts() {
+  return useQuery({
+    queryKey: keys.alerts,
+    queryFn: () => unwrap(api.GET('/alerts')),
+    // El worker lee el correo por su cuenta: se refresca solo.
+    refetchInterval: 60_000,
+  })
+}
+
+/** Lee ahora las alertas nuevas (IMAP en solo lectura y `data/inbox/`). */
+export function usePollAlerts() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: () => unwrap(api.POST('/alerts/poll')),
+    onSuccess: () =>
+      Promise.all([
+        client.invalidateQueries({ queryKey: keys.alerts }),
+        client.invalidateQueries({ queryKey: keys.status }),
+        client.invalidateQueries({ queryKey: keys.allJobs }),
+      ]),
   })
 }
