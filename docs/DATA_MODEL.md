@@ -105,8 +105,9 @@ Contenido de un documento (lo que escribe el agente). La presentación va en `do
 | job_id / profile_version_id | FK | |
 | kind | str | `cv`, `cover_letter` (fase 08c), `answers` |
 | language | str | `es`, `en` |
-| content | JSON | `CvContent`, `CoverLetterContent` (con las indicaciones usadas) u otro esquema, con referencias a evidencias |
+| content | JSON | `CvContent`, `CoverLetterContent` (con las indicaciones usadas) o `ApplicationAnswers` (`kind = answers`, fase 10.3), con referencias a evidencias |
 | verification | JSON? | `{passed, issues[]}` del verificador |
+| edited_by_user | bool | Editado por el usuario en la UI (respuestas; cartas desde la 08c). Cada edición es un documento nuevo: el anterior se conserva y manda el último |
 | created_at | datetime | |
 
 ### `document_renders`
@@ -189,7 +190,7 @@ Nunca guarda texto crudo de ofertas ni datos del perfil en `args_summary`.
 | `cv_rejected` | agent | sin cambio; `payload`: `document_id`, `blockers` |
 | `cover_letter_generated` | agent / user | sin cambio; `payload`: `document_id`, `edited_by_user` (fase 08c) |
 | `cover_letter_verified` | agent | sin cambio; `payload`: `document_id`, `passed`, `blockers` (fase 08c) |
-| `application_prepared` | system | sin cambio |
+| `application_prepared` | agent / user | sin cambio; `payload`: `document_id` (las respuestas, `kind = answers`) y `edited_by_user`. Solo en `approved` o `cv_ready` (fase 10.3) |
 | `applied` / `applied_manually` | user | `applied`; `payload.render_id` (el CV enviado: el render seleccionado del último CV, lo pone el código) y `channel` (`ats_form`, `email`, `linkedin_manual`, `portal_manual`; opcional) |
 | `reply_received`, `interview_scheduled`, `interview_done`, `test_assigned` | user | `in_process`. Desde la fase 10, los registra la ficha de proceso al crear una entrevista o una prueba (`payload.milestone_id`, `title`, `starts_at`) o al marcar una entrevista como hecha |
 | `followup_sent` | user | sin cambio |

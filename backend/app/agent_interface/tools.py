@@ -19,10 +19,11 @@ from sqlalchemy.orm import Session
 
 from app.agent_interface.registry import CallContext, CliSpec, ToolSpec
 from app.schemas.cv import CvContent, CvRenderOptions, CvVerification
-from app.schemas.llm_io import FitAssessment, JobExtraction
+from app.schemas.llm_io import ApplicationAnswers, FitAssessment, JobExtraction
 from app.schemas.sources import AgentBrowseSource, SourceList, SourceRunSummary
 from app.services import (
     analytics,
+    answers,
     events,
     extractions,
     ingest,
@@ -106,6 +107,11 @@ class SaveExtractionInput(_Input):
 class SaveFitAssessmentInput(_Input):
     job_id: int = Field(ge=1, description="Id de la oferta.")
     assessment: FitAssessment
+
+
+class SaveApplicationAnswersInput(_Input):
+    job_id: int = Field(ge=1, description="Id de la oferta (en `approved` o `cv_ready`).")
+    answers: ApplicationAnswers
 
 
 class AddEventInput(_Input):
@@ -340,6 +346,14 @@ def _get_funnel_stats(
     session: Session, args: FunnelStatsInput, _ctx: CallContext
 ) -> analytics.FunnelStats:
     return analytics.get_funnel_stats(session, args.since)
+
+
+def _save_application_answers(
+    session: Session, args: SaveApplicationAnswersInput, ctx: CallContext
+) -> answers.SaveAnswersResult:
+    return answers.save_application_answers(
+        session, args.job_id, args.answers, agent_name=ctx.client_name
+    )
 
 
 TOOLS: tuple[ToolSpec, ...] = (
@@ -599,6 +613,25 @@ TOOLS: tuple[ToolSpec, ...] = (
             file_keys=tuple(SourceRunSummary.model_fields),
         ),
         audit_fields=("source_id",),
+    ),
+    ToolSpec(
+        name="save_application_answers",
+        description=(
+            "Guarda las respuestas de screening de una oferta aprobada (`approved` o `cv_ready`) "
+            "y registra `application_prepared`. Cada respuesta cita evidencias: ids del perfil "
+            "(logros, proyectos, historias…), `extraction` o `user`. Salario, disponibilidad o "
+            "cualquier dato que no esté en el perfil: respuesta vacía y `needs_user_input: true`. "
+            "No envía nada."
+        ),
+        input_model=SaveApplicationAnswersInput,
+        output_model=answers.SaveAnswersResult,
+        handler=_save_application_answers,
+        cli=CliSpec(
+            path=("applications", "save-answers"),
+            arguments=("job_id",),
+            file_field="answers",
+            file_format="json",
+        ),
     ),
     ToolSpec(
         name="list_followups_due",

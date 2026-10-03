@@ -18,14 +18,13 @@ import {
   BellRingingIcon,
   CalendarBlankIcon,
   CalendarPlusIcon,
-  CheckIcon,
-  CopyIcon,
   DownloadSimpleIcon,
   KanbanIcon,
 } from '@phosphor-icons/react'
 import { fileUrls, type BoardCard, type BoardMove, type Stage, type UpcomingItem } from '@/api/client'
 import { useBoard, useUpcoming } from '@/api/queries'
 import { ScoreBadge } from '@/components/MatchDetails'
+import { CopyButton } from '@/components/CopyButton'
 import { MoveDialog } from '@/components/MoveDialog'
 import { EmptyState, ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
@@ -259,26 +258,6 @@ function UpcomingList({ items }: { items: UpcomingItem[] }) {
         </li>
       ))}
     </ul>
-  )
-}
-
-function CopyButton({ text, label }: { text: string; label: string }) {
-  const [copied, setCopied] = useState(false)
-  return (
-    <Button
-      type="button"
-      variant="outline"
-      size="sm"
-      onClick={() =>
-        navigator.clipboard?.writeText(text).then(() => {
-          setCopied(true)
-          setTimeout(() => setCopied(false), 1500)
-        })
-      }
-    >
-      {copied ? <CheckIcon /> : <CopyIcon />}
-      {copied ? 'Copiado' : label}
-    </Button>
   )
 }
 

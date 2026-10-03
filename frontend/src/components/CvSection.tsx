@@ -593,7 +593,7 @@ export function CvSection({ job }: { job: JobView }) {
   if (!relevant) return null
   if (job.stage === 'closed' && cvQuery.data && !cvQuery.data.cv) return null
   return (
-    <section aria-label="CV" className="rounded-xl border bg-card p-5 sm:p-6">
+    <section id="cv" aria-label="CV" className="scroll-mt-6 rounded-xl border bg-card p-5 sm:p-6">
       <h2 className="mb-5 text-base font-semibold tracking-tight">CV</h2>
       {cvQuery.isPending ? (
         <Skeleton className="h-48" />

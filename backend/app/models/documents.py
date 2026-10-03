@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import JSON, ForeignKey, String
+from sqlalchemy import JSON, ForeignKey, String, false
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base, UTCDateTime, utcnow
@@ -22,6 +22,8 @@ class Document(Base):
     language: Mapped[str] = mapped_column(String(8))
     content: Mapped[dict[str, Any]] = mapped_column(JSON)
     verification: Mapped[dict[str, Any] | None] = mapped_column(JSON)
+    # Editado por el usuario en la UI (respuestas, cartas): sin verificación del agente.
+    edited_by_user: Mapped[bool] = mapped_column(default=False, server_default=false())
     created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
 
 

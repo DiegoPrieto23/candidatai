@@ -10,6 +10,7 @@ from app.agent_interface.errors import ErrorDetail, ToolError, from_validation_e
 from app.agent_interface.registry import CallContext, ToolSpec
 from app.core import migrations
 from app.core.db import session_scope
+from app.services.answers import AnswersContentError
 from app.services.audit import record_call, summarize_args
 from app.services.documents.checks import CvContentError
 from app.services.documents.importer import TemplateImportError
@@ -65,7 +66,7 @@ def to_tool_error(exc: Exception) -> ToolError:
         return exc
     if isinstance(exc, ValidationError):
         return from_validation_error(exc)
-    if isinstance(exc, CvContentError | TemplateImportError):
+    if isinstance(exc, CvContentError | AnswersContentError | TemplateImportError):
         details = [ErrorDetail(**issue.model_dump()) for issue in exc.issues]
         return ToolError("validation_error", str(exc), details)
     for exc_type, error_type in _ERROR_TYPES:

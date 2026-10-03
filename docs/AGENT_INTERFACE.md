@@ -63,7 +63,7 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | `save_cover_letter` | `jh letter save ID --file F --json` | 08c | `job_id, content: CoverLetterContent, render_options?: CoverLetterRenderOptions`; por CLI, `F` = `{"content": …, "render_options": …}` | `document_id`, `word_count` + primer render (`RenderResult`) | `cover_letter_generated` |
 | `render_cover_letter` | `jh letter render DOC [--file F] --json` | 08c | `document_id, options?: CoverLetterRenderOptions` | `RenderResult` | — |
 | `save_cover_letter_verification` | `jh letter save-verification DOC --file F --json` | 08c | `document_id, verification: CvVerification` | `ok`, `passed` | `cover_letter_verified` |
-| `save_application_answers` | `jh applications save-answers ID --file F` | 10 | `job_id, answers: ApplicationAnswers` | `document_id` | `application_prepared` |
+| `save_application_answers` | `jh applications save-answers ID --file F --json` | 10 | `job_id, answers: ApplicationAnswers`; por CLI, `F` = `{"answers": [...]}`. Solo en `approved` o `cv_ready` (si no, `invalid_transition`) | `ok`, `job_id`, `document_id`, `needs_user_input` (cuántas esperan un dato del usuario) | `application_prepared` |
 | `list_followups_due` | `jh followups [--days N] --json` | 10 | `days_without_reply?` (por defecto, `followups.days_without_reply` = 10) | `days_without_reply` usado y `followups`: `job_id`, `title`, `company`, `url`, `channel`, `applied_at`, `last_followup_at`, `days_waiting`; la que más espera, primero | — |
 | `list_upcoming` | `jh upcoming [--days N] --json` | 10 | `days=7` (1-365) | `days` e `items`: `kind` (`interview`, `test`, `deadline`, `other`, `application_deadline`), `job_id`, `job_title`, `company`, `stage`, `milestone_id` (`null` en el plazo de la oferta), `title`, `starts_at`, `ends_at`, `all_day`, `location`; por fecha | — |
 | `get_funnel_stats` | `jh stats funnel [--since AAAA-MM-DD] --json` | 10 | `since?` (fecha; ofertas vistas desde las 00:00 de ese día en Europe/Madrid) | `FunnelStats` (ver §Analítica) | — |
@@ -379,5 +379,20 @@ page_size: A4|Letter|null
 ```
 answers: [{question: str, answer: str, evidence: [str], needs_user_input: bool}]
 ```
+Las cuatro claves son obligatorias; entre 1 y 50 respuestas (pregunta de hasta 1000 caracteres,
+respuesta de hasta 5000, hasta 10 evidencias). `save_application_answers` comprueba, y da un
+`validation_error` con un detalle por problema sin guardar nada:
+- cada evidencia es un id del perfil citable en el CV (`exp-x`, `exp-x/a1`, `prj-x`, `edu-x`,
+  `cert-x`, `seccion/item`), el id de una historia STAR (`stories`), `extraction` (lo dice la
+  oferta) o `user` (lo contó el usuario);
+- una respuesta con texto lleva al menos una evidencia;
+- una respuesta vacía solo vale con `needs_user_input: true` (salario, disponibilidad, permiso de
+  trabajo…: lo decide el usuario en la UI).
+
+Se guarda como `document` de `kind = answers` con la versión vigente del perfil. La edición desde
+la UI (`POST /jobs/{id}/answers`) crea otro documento con `edited_by_user` y actor `user`; ahí no
+se exigen evidencias, pero las que haya deben existir. El paquete de candidatura
+(`GET /jobs/{id}/package`) muestra siempre el último.
+
 La carta no va aquí: es un documento propio (fase 08c) y el paquete de candidatura usa la
 seleccionada.

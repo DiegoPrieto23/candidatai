@@ -1,0 +1,286 @@
+RESUMEN DE PRUEBAS MANUALES · FASES 09, 09b (09b.1-09b.3) Y 10 (10.1-10.3)
+==========================================================================
+
+Una sola lista para probar de una vez todo lo de las fases 09 y 10: qué preparar, en qué orden
+ir y qué comprobar, con los criterios de aceptación marcados [CA].
+El detalle paso a paso de cada parte está en su guía:
+
+    fase-09-prueba-manual.txt      Conectores de ATS y scheduler
+    fase-09b-prueba-manual.txt     Alertas por correo (09b.1) y botón «Enviar a Job Hunter» (09b.2)
+    fase-09b.3-prueba-manual.txt   Plataformas y búsqueda con navegador
+    fase-10.1-prueba-manual.txt    Kanban, ficha de proceso, seguimientos y calendario
+    fase-10.2-prueba-manual.txt    Dashboard del embudo
+    fase-10.3-prueba-manual.txt    Paquete de candidatura
+
+Duración total aproximada: entre 3 y 3,5 horas. Se puede hacer por bloques: cada bloque solo
+necesita la preparación común.
+
+Marca cada casilla [ ] → [x] según avances, y anota en «Incidencias» lo que no salga como se
+espera.
+
+
+0 · PREPARACIÓN COMÚN (UNA VEZ)
+-------------------------------
+Los comandos se ejecutan desde la RAÍZ del repo, en PowerShell, y en la rama main.
+
+[ ] 1. Cierra Claude Code: su servidor MCP bloquea el entorno de Python. Después:
+           git switch main
+           uv sync --directory backend
+           uv run --directory backend jh db upgrade
+       Esperado: la BD queda en 0009, «… -> 0009» (o «ya está al día»).
+[ ] 2. Dependencias del frontend (@dnd-kit/core de la 10.1 y Recharts de la 10.2):
+           cd frontend; pnpm install; cd ..
+[ ] 3. Comprueba el entorno:
+           uv run --directory backend jh doctor
+       Esperado: «Conectores de ofertas» OK, a las 07:30 (Europe/Madrid). «Alertas por correo»
+       OK (sin IMAP o con IMAP). «Botón de captura» OK o «sin configurar».
+[ ] 4. Arranca la app, cada cosa en su terminal:
+           Terminal 1:  uv run --directory backend jh serve
+           Terminal 2:  cd frontend; pnpm dev
+       Abre http://127.0.0.1:5173. En el menú deben aparecer «Empresas», «Alertas»,
+       «Plataformas», «Procesos» y «Embudo».
+[ ] 5. Vuelve a abrir Claude Code para que cargue las herramientas MCP nuevas
+       (`list_sources`, `save_source`, `record_source_run`, `list_followups_due`,
+       `list_upcoming`, `get_funnel_stats`, `save_application_answers`).
+       Hazlo en una sesión NUEVA y dedicada a las pruebas, sin mezclar con desarrollo.
+[ ] 6. Perfil importado y con `preferences` (puestos, zonas, modalidad): lo usan los filtros, el
+       prefiltro de alertas y la búsqueda con navegador.
+
+Ofertas reales: lo que des de alta se queda en data/jobhunter.db. Para la 10.1 y la 10.2 puedes
+usar una BD aparte con $env:JH_DATA_DIR (lo indica cada guía). Recuerda quitarla después:
+Remove-Item Env:JH_DATA_DIR.
+
+
+ORDEN RECOMENDADO
+-----------------
+El orden es el del flujo real: entran ofertas (09, 09b) → se procesan y aprueban → CV →
+paquete de candidatura (10.3) → envío y seguimiento (10.1) → analítica (10.2).
+Así cada bloque deja datos al siguiente.
+
+
+1 · FASE 09 · CONECTORES DE ATS Y SCHEDULER (≈20 min)
+-----------------------------------------------------
+Necesitas 2 o 3 empresas objetivo en Greenhouse, Lever o Ashby. El slug sale de la URL de una de
+sus ofertas.
+[ ] «Empresas» vacía: «Aún no sigues ninguna empresa».
+[ ] «Probar» con un slug bueno: «N ofertas encontradas, M tras filtros», con la lista. «Ver
+    también las X filtradas» explica el motivo de cada una.
+[ ] «Probar» con un slug inventado: aviso rojo «No existe el tablero…».
+[ ] «Añadir» 2 o 3 empresas: aparecen en «Seguidas», con «Aún no se ha ejecutado».
+[ ] «Ejecutar ahora»: «M nuevas» y «Verlas» lleva a la bandeja «Por extraer».
+[ ] Repetir «Ejecutar ahora»: «0 nuevas, M ya estaban» y nada duplicado en la bandeja.
+[ ] CLI: `jh sources run` y `jh sources list` dan lo mismo que la UI.
+[ ] «Pausar» y «Reactivar» funcionan; pausada, «Ejecutar ahora» queda desactivado.
+[ ] Worker: pon connectors.daily_at dentro de 2-3 minutos en config/policies.yaml y arranca
+    `jh worker` en la terminal 3. A esa hora, «Ingesta diaria: N fuentes en cola.» y una línea
+    por empresa. El log queda en data/logs/worker.log. Después, devuelve la hora a la que tenías.
+[ ] Recuperación: arranca el worker después de una hora programada que se perdió. Esperado:
+    «Fuentes pendientes desde la última ingesta: N en cola.»
+[ ] (Opcional) InfoJobs o Adzuna, con claves en .env. Sin claves, aparece «Sin claves en .env».
+
+
+2 · FASE 09b.1 · ALERTAS POR CORREO (≈15 min, +10 con IMAP)
+-----------------------------------------------------------
+[ ] Copia en data\inbox\ dos o tres .eml de alertas reales (en Gmail: «⋮» → «Descargar
+    mensaje»). Pon también una copia de cada portal en data\inbox\samples\ (no se procesa; sirve
+    para afinar los parsers).
+[ ] «Alertas» → «Revisar correo ahora»: «N correos nuevos, M ofertas, K nuevas…».
+    También por CLI: `jh alerts poll`.
+[ ] LinkedIn entra siempre como resumen (no se descarga nada de LinkedIn).
+[ ] InfoJobs, Indeed y Tecnoempleo entran con la oferta completa si el portal lo permite.
+[ ] Cada fila tiene título, empresa, ubicación y portal correctos. Primero van las que pasan el
+    prefiltro; abajo, «No pasan el prefiltro (N)» con su motivo.
+[ ] Repetir «Revisar correo ahora»: «ningún correo nuevo», y los ficheros siguen ahí.
+[ ] Teclado: J/K para moverte, O para abrir y D para descartar con motivo, con «Deshacer». La
+    cabecera muestra el número de alertas por completar.
+[ ] (Opcional) IMAP de Gmail con una etiqueta, un filtro y una contraseña de aplicación en .env
+    (JH_IMAP_*). `jh doctor` dice «IMAP en solo lectura». Los correos siguen como estaban, sin
+    marcarse como leídos. Una contraseña errónea da ERROR, con «contraseña de aplicación».
+
+
+3 · FASE 09b.2 · BOTÓN «ENVIAR A JOB HUNTER» (≈20 min)
+------------------------------------------------------
+[ ] Instala la extensión: chrome://extensions → «Modo de desarrollador» → «Cargar descomprimida»
+    → carpeta extension\. Debe salir el id hnaofhehllbkghfehnehamjbkcmdjmle. Fíjala.
+[ ] `jh capture token`: pega el token en «Opciones» de la extensión y pulsa «Probar conexión».
+    Esperado: «Todo listo». Con un token falso: «El token no vale…».
+[ ] Una oferta de LinkedIn que ya está en «Alertas» (O → botón): «Completada».
+    - La ficha pasa a «Por extraer», con la descripción completa y el evento «Descripción
+      capturada».
+    - Sale de «Alertas» y NO se duplica.
+[ ] El mismo botón otra vez: «Ya estaba» (icono =).
+[ ] Desde la vista de búsqueda de LinkedIn (?currentJobId=…): también «Completada».
+[ ] Una oferta nueva de cada portal que uses: «Nueva: lista para extraer». Título, empresa,
+    ubicación y descripción limpios, sin menús ni ofertas similares.
+[ ] Si falta la descripción o la empresa: selecciona el texto y vuelve a pulsar. Esperado: «Se
+    envió el texto que tenías seleccionado».
+[ ] Errores: con `jh serve` parado, «La app no responde…»; en chrome://extensions, «No se puede
+    leer esta página».
+[ ] [CA 09b] De la captura al CV:
+    - /procesar-ofertas;
+    - aprueba en «Triaje» la de LinkedIn;
+    - /generar-cv <id>: «CV listo» con su PDF.
+    Deja esta oferta en «CV listo»: la usa el bloque 5 (10.3).
+
+
+4 · FASE 09b.3 · PLATAFORMAS Y BÚSQUEDA CON NAVEGADOR (≈30 min)
+---------------------------------------------------------------
+Requisito: Claude in Chrome conectado, con permiso en el portal que vayas a probar.
+[ ] /buscar-ofertas configurar, en una sesión nueva:
+    - te pregunta dónde buscas;
+    - recomienda de 3 a 6 portales, cada uno con su motivo;
+    - guarda los que apruebes.
+[ ] Pídele que guarde LinkedIn: queda DESACTIVADA y te dice que solo tú puedes activarla.
+[ ] Regla dura: «guarda LinkedIn con allow_agent_browsing true» da `not_allowed` y no cambia
+    nada.
+[ ] (Opcional) Una búsqueda de otro dominio en una plataforma conocida: error «no es de …».
+[ ] En «Plataformas», cada plataforma lleva su prioridad, sus búsquedas, su límite de ofertas y
+    «El agente aún no la ha recorrido». LinkedIn sale «Desactivada», con «Riesgo para tu cuenta».
+[ ] Cambia la prioridad y el acceso de una y recarga: se conservan.
+[ ] El interruptor de una plataforma normal no abre diálogo.
+[ ] El de LinkedIn muestra el aviso de riesgo: «Cancelar» no cambia nada. Si la activas tú y el
+    agente la vuelve a guardar, sigue activada.
+[ ] [CA 09b.3] /buscar-ofertas <plataforma libre, p. ej. Tecnoempleo>.
+    Mientras trabaja, el agente:
+    - no sale del dominio y lee como mucho 2 páginas, con pausa;
+    - abre solo las ofertas que encajan, hasta el máximo;
+    - no pulsa «Inscribirme», «Guardar» ni «Seguir»;
+    - termina con un resumen.
+    Después compruébalo en la app:
+    - el recorrido aparece en «Plataformas»;
+    - las ofertas nuevas están en «Por extraer», con `found` y `source_id` en el historial.
+[ ] Repetir la búsqueda: lo mismo cuenta como «ya conocidas», sin duplicados.
+[ ] Ante un captcha o un login inesperado, para, lo anota como incidente y no lo intenta resolver.
+
+
+5 · FASE 10.3 · PAQUETE DE CANDIDATURA (≈15 min)
+------------------------------------------------
+Usa una oferta en «CV listo» (la del bloque 3, por ejemplo); abajo, <ID> es la suya.
+[ ] En la ficha, entre «Proceso» y «CV», está «Paquete de candidatura»:
+    - «Abrir PDF» del CV elegido, con «Verificado» y «Cambiarlo en la sección CV»;
+    - «Aún no hay respuestas…» con «Añadir pregunta»;
+    - el recuadro de la carta: «Llega con la fase 08c».
+    Ningún botón dice «Enviar».
+[ ] Elige otro render en la sección CV («Usar este para enviar»): el paquete se actualiza solo.
+[ ] /preparar-candidatura <ID> con tres preguntas: años de Python, expectativa salarial y por qué
+    te interesa.
+    - La del salario va vacía y pendiente de ti; nunca propone una cifra.
+    - Al recargar, esa respuesta sale con borde ámbar y «Falta un dato tuyo…», y arriba el aviso
+      «1 respuesta espera…».
+    - Cada respuesta muestra su «Respaldo:» con el texto del perfil.
+    - En el historial aparece «Candidatura preparada».
+[ ] Rechazo por CLI:
+    - crea data/tmp/mal.json con una evidencia "exp-inventada/a9";
+    - ejecuta `jh applications save-answers <ID> --file data/tmp/mal.json --json`.
+    Esperado: `validation_error` con `answers[0].evidence[0]`, y no se guarda nada.
+[ ] [CA 10.3] «Copiar» en una respuesta: pega exactamente su texto. El de la respuesta vacía
+    está desactivado.
+[ ] [CA 10.3] «Editar» la del salario y guarda.
+    - Desaparece el aviso y sale «Editadas por ti».
+    - Su respaldo pasa a «user».
+    - Aparece otra «Candidatura preparada», con tu actor.
+[ ] Borrar el texto de una respuesta y guardar la deja pendiente de un dato tuyo.
+[ ] «Añadir pregunta» la añade al final, con «Respaldo: user».
+    Las respuestas solo se editan antes de enviar: el bloque 6 comprueba que después ya no.
+
+
+6 · FASE 10.1 · KANBAN, FICHA DE PROCESO, SEGUIMIENTOS Y CALENDARIO (≈30 min)
+-----------------------------------------------------------------------------
+Necesitas al menos dos ofertas aprobadas o en «CV listo» (una puede ser la del bloque 5).
+Antes, en Google Calendar, crea un calendario de prueba, «Job Hunter prueba».
+[ ] «Procesos» tiene cinco columnas: Aprobada, CV listo, Enviada, En proceso y Cerrada.
+[ ] Arrastrar a «CV listo»: la tarjeta vuelve, con un aviso de que llega al verificar el CV.
+[ ] Arrastrar a «Enviada»: diálogo con canal «Correo» y fecha de ayer.
+    - La tarjeta se mueve.
+    - El historial lleva la fecha de ayer.
+    - «Proceso» dice «Enviada el … · Correo».
+[ ] Con el TECLADO (Tab, espacio, flechas, espacio) a «En proceso»: «Entrevista programada»
+    dentro de dos días a las 10:30, con su enlace.
+    - La tarjeta lleva «… · 10:30».
+    - La entrevista sale en «Próximos 7 días».
+[ ] «Mover» → «Rechazada» con nota: pasa a «Cerrada». Después, «Reabierta → En proceso» la
+    devuelve.
+[ ] En el móvil o con la ventana estrecha: scroll horizontal y arrastre táctil.
+[ ] Ficha → «Hitos»:
+    - reprogramar deja la nota «Entrevista reprogramada para el …», con la hora de Madrid;
+    - se puede añadir un «Plazo» de todo el día;
+    - marcar la entrevista como hecha registra el evento «Entrevista hecha».
+[ ] «Contactos»: añadir, editar y quitar.
+[ ] En una oferta sin enviar, «Entrevista» deja «Guardar hito» desactivado, con la explicación.
+[ ] Seguimientos:
+    - registra un envío de hace 12 días;
+    - la cabecera avisa «1 candidatura lleva 10 días o más sin respuesta» y la tarjeta lleva
+      «Seguimiento · 12 días»;
+    - «Seguimiento enviado» quita el aviso.
+[ ] CLI: `jh followups` y `jh upcoming --days 14` cuadran con la UI, en hora de Madrid.
+[ ] [CA 10] Google Calendar:
+    - el .ics de un hito se importa con el día, la hora (Madrid), el título, el lugar y el enlace
+      a la ficha correctos;
+    - el .ics completo («Procesos» → «Descargar .ics») no duplica la entrevista ya importada;
+    - si cambias la hora en la app y reimportas, se actualiza sin duplicar;
+    - al terminar, borra el calendario de prueba.
+[ ] (Opcional) Suscripción a http://127.0.0.1:8000/calendar.ics desde Outlook, Apple Calendar o
+    Thunderbird, o `jh calendar export`.
+[ ] (Opcional) /resumen-diario muestra «Hoy y mañana» y «Seguimientos vencidos».
+[ ] Vuelta al paquete (10.3): en la oferta ya enviada se ve y se copia, sin «Editar» ni «Añadir
+    pregunta», y el CV dice «El que enviaste».
+[ ] (Opcional) /preparar-candidatura sobre esa oferta enviada da `invalid_transition`.
+
+
+7 · FASE 10.2 · DASHBOARD DEL EMBUDO (≈15 min)
+----------------------------------------------
+[ ] BD de 1 000 ofertas ficticias (no toca la tuya):
+        uv run --directory backend python ../scripts/seed_funnel_demo.py
+    Esperado: «1000 ofertas ficticias creadas en …\data\funnel-demo.»
+    Reinicia `jh serve` con $env:JH_DATA_DIR = "data/funnel-demo".
+[ ] [CA 10] «Embudo» carga en menos de 1 s. Compruébalo en F12 → Red: la petición `funnel`
+    tarda menos de 1 s. La página muestra:
+    - las cuatro cifras clave;
+    - el embudo de 8 pasos;
+    - «Primera respuesta»;
+    - «Por semana» (26 semanas);
+    - «Por fuente» y «Por tipo de puesto»;
+    - los dos «Motivos».
+[ ] Las gráficas tienen tooltips con la cifra al pasar el ratón.
+[ ] `jh stats funnel` (con el mismo JH_DATA_DIR) da las mismas cifras.
+[ ] Periodo: «30 días», «90 días», «12 meses» y «Desde». Con una fecha futura: «No hay ofertas
+    en este periodo».
+[ ] El modo oscuro se lee bien.
+[ ] A 390 px de ancho las tarjetas se apilan y las tablas se desplazan dentro de su panel. La barra
+    de navegación ya se salía antes: es deuda conocida.
+[ ] Con tus datos (Remove-Item Env:JH_DATA_DIR y reinicia `jh serve`):
+    - «Enviadas» cuadra con lo que enviaste en el bloque 6;
+    - los motivos de descarte son los que elegiste en «Triaje».
+[ ] (Opcional) Pregunta a tu agente «¿Qué tal va mi embudo este mes?»: debe usar
+    `get_funnel_stats` con `since`.
+
+
+QUÉ ANOTAR (INCIDENCIAS)
+------------------------
+Por cada fallo: bloque y paso, qué esperabas, qué viste y, si puedes, una captura.
+Además:
+- Alertas: el portal y el campo que salió mal. Deja ese correo en data\inbox\samples\.
+- Botón: el portal, la URL y el campo que falló o lo que se coló en la descripción.
+- Búsqueda con navegador: el agente y el navegador que usaste, las reglas que se saltó y los
+  incidentes (para docs/AGENTS_COMPAT.md).
+- Filtros y prefiltro: lo que se quedó fuera y te interesaba, o lo que entró sin sentido.
+- Calendario: cliente y versión si algo no se importa bien.
+
+Incidencias:
+-
+-
+-
+
+
+LIMPIEZA
+--------
+- Las ofertas reales se quedan.
+- Para dejar de seguir una empresa: «Pausar» en «Empresas» o `jh sources disable <id>`.
+- Una plataforma se desactiva en «Plataformas». Deja LinkedIn desactivada salvo que asumas el
+  riesgo.
+- Las alertas sin completar caducan solas a los 21 días.
+- IMAP se apaga quitando JH_IMAP_* de .env y vaciando data\inbox\.
+- El token de captura se invalida volviendo a ejecutar `jh capture token`.
+- La BD ficticia se borra eliminando data\funnel-demo (y data\prueba-10 si la creaste).
+- El calendario de prueba se borra en Google Calendar.
+- Comprueba que no queda $env:JH_DATA_DIR en ninguna terminal: Remove-Item Env:JH_DATA_DIR.

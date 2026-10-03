@@ -38,6 +38,7 @@ sources_app = typer.Typer(
 )
 calendar_app = typer.Typer(help="Calendario .ics de los procesos.", no_args_is_help=True)
 stats_app = typer.Typer(help="Analítica de la búsqueda.", no_args_is_help=True)
+applications_app = typer.Typer(help="Paquete de candidatura.", no_args_is_help=True)
 capture_app = typer.Typer(
     help="Botón «Enviar a Job Hunter» (extensión del navegador).", no_args_is_help=True
 )
@@ -58,6 +59,7 @@ app.add_typer(alerts_app, name="alerts")
 app.add_typer(capture_app, name="capture")
 app.add_typer(calendar_app, name="calendar")
 app.add_typer(stats_app, name="stats")
+app.add_typer(applications_app, name="applications")
 
 JSON_OPTION = typer.Option(False, "--json", help="Salida en JSON.")
 SYNC_SCRIPT = REPO_ROOT / "scripts" / "sync_agents.py"
@@ -241,6 +243,14 @@ def _render_match(view: Any) -> None:
 
 def _render_saved_assessment(result: Any) -> None:
     typer.echo(f"Valoración guardada para la oferta {result.job_id} (match {result.match_id}).")
+
+
+def _render_saved_answers(result: Any) -> None:
+    typer.echo(
+        f"Respuestas guardadas para la oferta {result.job_id} (documento {result.document_id})."
+    )
+    if result.needs_user_input:
+        typer.echo(f"{result.needs_user_input} esperan un dato tuyo: complétalas en la ficha.")
 
 
 def _render_profile(result: Any) -> None:
@@ -1289,6 +1299,7 @@ register_tools(
         "templates": templates_app,
         "sources": sources_app,
         "stats": stats_app,
+        "applications": applications_app,
     },
     {
         "get_status": _render_status,
@@ -1313,5 +1324,6 @@ register_tools(
         "list_followups_due": _render_followups,
         "list_upcoming": _render_upcoming,
         "get_funnel_stats": _render_funnel,
+        "save_application_answers": _render_saved_answers,
     },
 )

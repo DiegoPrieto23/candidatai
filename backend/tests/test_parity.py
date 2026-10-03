@@ -240,6 +240,28 @@ ASSESSMENT: dict[str, Any] = {
 }
 
 
+ANSWERS: dict[str, Any] = {
+    "answers": [
+        {
+            "question": "¿Has migrado procesos ETL a Python?",
+            "answer": "Sí: migré las cargas de SSIS a Python sin parar el reporting.",
+            "evidence": ["exp-norteconsulting/a1", "st-migracion"],
+            "needs_user_input": False,
+        },
+        {
+            "question": "Expectativa salarial",
+            "answer": "",
+            "evidence": [],
+            "needs_user_input": True,
+        },
+    ]
+}
+ANSWERS_BAD_EVIDENCE: dict[str, Any] = {
+    "answers": [{**ANSWERS["answers"][0], "evidence": ["exp-inventada/a9"]}]
+}
+ANSWERS_EMPTY: dict[str, Any] = {"answers": [{**ANSWERS["answers"][1], "needs_user_input": False}]}
+
+
 @dataclass
 class Case:
     id: str
@@ -479,6 +501,19 @@ CASES = [
     Case("funnel-empty", "get_funnel_stats", {}, ["stats", "funnel"]),
     Case("funnel-bad", "get_funnel_stats", {"since": "ayer"},
          ["stats", "funnel", "--since", "ayer"], expect_error="validation_error"),
+    _file_case("answers", "save_application_answers", {"job_id": 1, "answers": ANSWERS},
+               ["applications", "save-answers", "1"], "a.json", ANSWERS, seed=seed_approved),
+    _file_case("answers-bad-evidence", "save_application_answers",
+               {"job_id": 1, "answers": ANSWERS_BAD_EVIDENCE},
+               ["applications", "save-answers", "1"], "a.json", ANSWERS_BAD_EVIDENCE,
+               seed=seed_approved, expect_error="validation_error"),
+    _file_case("answers-empty", "save_application_answers",
+               {"job_id": 1, "answers": ANSWERS_EMPTY},
+               ["applications", "save-answers", "1"], "a.json", ANSWERS_EMPTY,
+               seed=seed_approved, expect_error="validation_error"),
+    _file_case("answers-stage", "save_application_answers", {"job_id": 1, "answers": ANSWERS},
+               ["applications", "save-answers", "1"], "a.json", ANSWERS, seed=seed_matched,
+               expect_error="invalid_transition"),
 ]  # fmt: skip
 
 
