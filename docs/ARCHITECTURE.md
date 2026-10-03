@@ -69,6 +69,7 @@ La app nunca llama a un modelo y no depende de ningún proveedor.
 | `POST /jobs/{id}/milestones`, `POST /milestones/{id}`, `POST /milestones/{id}/status` | Crear un hito (entrevista y prueba registran su evento; 409 si no es válido en la etapa), editarlo y marcarlo como hecho o cancelado |
 | `POST /jobs/{id}/contacts`, `POST /contacts/{id}`, `POST /contacts/{id}/delete` | Contactos del proceso (por POST: CORS sigue con GET y POST) |
 | `GET /milestones/{id}/ics`, `GET /calendar.ics[?download=true]` | Un hito como `.ics` para importar y el feed con los hitos futuros (suscripción desde clientes de escritorio; en Google, importando el fichero) |
+| `GET /jobs/{id}/package`, `POST /jobs/{id}/answers` | Paquete de candidatura (fase 10.3): CV elegido (enviado o seleccionado, con enlace al PDF), últimas respuestas de screening y carta seleccionada (`null` hasta la 08c); la edición del usuario crea un documento nuevo «Editadas por ti» (409 fuera de `approved`/`cv_ready`). Nada envía |
 
 - `jh serve` escucha solo en `127.0.0.1`; CORS solo para `http://127.0.0.1:5173`. La extensión de
   captura no lo necesita: sus `host_permissions` la eximen, y `POST /capture` exige su origen y token.

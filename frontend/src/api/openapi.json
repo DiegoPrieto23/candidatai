@@ -5168,6 +5168,242 @@
           }
         }
       }
+    },
+    "/jobs/{job_id}/package": {
+      "get": {
+        "tags": [
+          "applications"
+        ],
+        "summary": "Get Job Package",
+        "description": "CV elegido (con enlace al PDF), últimas respuestas y carta seleccionada (08c) o `null`.",
+        "operationId": "get_job_package",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobPackage"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/jobs/{job_id}/answers": {
+      "post": {
+        "tags": [
+          "applications"
+        ],
+        "summary": "Save User Answers",
+        "description": "Edición del usuario: crea un documento nuevo «Editadas por ti»; el anterior se conserva.",
+        "operationId": "save_user_answers",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApplicationAnswers"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaveAnswersResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -5643,6 +5879,76 @@
           "filters_applied"
         ],
         "title": "AlertList"
+      },
+      "AnswersView": {
+        "properties": {
+          "document_id": {
+            "type": "integer",
+            "title": "Document Id"
+          },
+          "profile_version_id": {
+            "type": "integer",
+            "title": "Profile Version Id"
+          },
+          "language": {
+            "type": "string",
+            "title": "Language"
+          },
+          "edited_by_user": {
+            "type": "boolean",
+            "title": "Edited By User"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "answers": {
+            "items": {
+              "$ref": "#/components/schemas/ScreeningAnswer"
+            },
+            "type": "array",
+            "title": "Answers"
+          },
+          "evidence": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Evidence"
+          }
+        },
+        "type": "object",
+        "required": [
+          "document_id",
+          "profile_version_id",
+          "language",
+          "edited_by_user",
+          "created_at",
+          "answers",
+          "evidence"
+        ],
+        "title": "AnswersView"
+      },
+      "ApplicationAnswers": {
+        "properties": {
+          "answers": {
+            "items": {
+              "$ref": "#/components/schemas/ScreeningAnswer"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "minItems": 1,
+            "title": "Answers"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "answers"
+        ],
+        "title": "ApplicationAnswers",
+        "description": "Respuestas de screening (skill `preparar-candidatura`). Sin carta: es un documento propio.\n\nLas reglas que dependen del perfil (evidencias, respuestas vacías) las comprueba\n`services/answers.py`, para dar todos los problemas juntos."
       },
       "Board": {
         "properties": {
@@ -7699,6 +8005,54 @@
         "title": "JobExtraction",
         "description": "Datos de una oferta (schema_version 1). Lo que no dice el texto: null o unknown."
       },
+      "JobPackage": {
+        "properties": {
+          "job_id": {
+            "type": "integer",
+            "title": "Job Id"
+          },
+          "stage": {
+            "$ref": "#/components/schemas/Stage"
+          },
+          "can_edit": {
+            "type": "boolean",
+            "title": "Can Edit"
+          },
+          "cv": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PackageCv"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "answers": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnswersView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cover_letter": {
+            "type": "null",
+            "title": "Cover Letter"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "stage",
+          "can_edit",
+          "cv",
+          "answers"
+        ],
+        "title": "JobPackage"
+      },
       "JobPage": {
         "properties": {
           "items": {
@@ -8555,6 +8909,49 @@
         "type": "object",
         "title": "OkResult"
       },
+      "PackageCv": {
+        "properties": {
+          "render_id": {
+            "type": "integer",
+            "title": "Render Id"
+          },
+          "document_id": {
+            "type": "integer",
+            "title": "Document Id"
+          },
+          "template_id": {
+            "type": "string",
+            "title": "Template Id"
+          },
+          "pages": {
+            "type": "integer",
+            "title": "Pages"
+          },
+          "pdf_url": {
+            "type": "string",
+            "title": "Pdf Url"
+          },
+          "sent": {
+            "type": "boolean",
+            "title": "Sent"
+          },
+          "verified": {
+            "type": "boolean",
+            "title": "Verified"
+          }
+        },
+        "type": "object",
+        "required": [
+          "render_id",
+          "document_id",
+          "template_id",
+          "pages",
+          "pdf_url",
+          "sent",
+          "verified"
+        ],
+        "title": "PackageCv"
+      },
       "PreferencesFit": {
         "properties": {
           "value": {
@@ -9122,6 +9519,34 @@
         "type": "object",
         "title": "Salary"
       },
+      "SaveAnswersResult": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "job_id": {
+            "type": "integer",
+            "title": "Job Id"
+          },
+          "document_id": {
+            "type": "integer",
+            "title": "Document Id"
+          },
+          "needs_user_input": {
+            "type": "integer",
+            "title": "Needs User Input"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ok",
+          "job_id",
+          "document_id",
+          "needs_user_input"
+        ],
+        "title": "SaveAnswersResult"
+      },
       "ScoreBreakdown": {
         "properties": {
           "components": {
@@ -9214,6 +9639,44 @@
           "points"
         ],
         "title": "ScoreComponent"
+      },
+      "ScreeningAnswer": {
+        "properties": {
+          "question": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Question"
+          },
+          "answer": {
+            "type": "string",
+            "maxLength": 5000,
+            "title": "Answer"
+          },
+          "evidence": {
+            "items": {
+              "type": "string",
+              "maxLength": 200,
+              "minLength": 1
+            },
+            "type": "array",
+            "maxItems": 10,
+            "title": "Evidence"
+          },
+          "needs_user_input": {
+            "type": "boolean",
+            "title": "Needs User Input"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "question",
+          "answer",
+          "evidence",
+          "needs_user_input"
+        ],
+        "title": "ScreeningAnswer"
       },
       "SemanticResult": {
         "properties": {

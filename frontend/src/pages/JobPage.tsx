@@ -19,6 +19,7 @@ import { useAddNote, useJob, useJobEvent, useJobMatch, type UserEventBody } from
 import { CvSection } from '@/components/CvSection'
 import { DiscardDialog } from '@/components/DiscardDialog'
 import { MatchDetails, ScoreBadge } from '@/components/MatchDetails'
+import { PackageSection } from '@/components/PackageSection'
 import { ProcessSection } from '@/components/ProcessSection'
 import { StageBadge } from '@/components/StageBadge'
 import { ErrorState } from '@/components/States'
@@ -526,6 +527,7 @@ export function JobPage() {
                 </section>
               )}
               <ProcessSection job={job} />
+              <PackageSection job={job} />
               <CvSection job={job} />
               <OriginalText text={job.raw_text} />
             </div>

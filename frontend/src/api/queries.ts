@@ -21,6 +21,8 @@ export const keys = {
   upcoming: (days: number) => ['upcoming', days] as const,
   allUpcoming: ['upcoming'] as const,
   process: (id: number) => ['process', id] as const,
+  /** Bajo `cv`: lo que invalida el CV (render, selección) invalida también el paquete. */
+  package: (id: number) => ['cv', id, 'package'] as const,
   funnel: (since: string | null) => ['funnel', since] as const,
 }
 
@@ -380,7 +382,12 @@ function invalidateTracking(client: Client, jobId?: number) {
     client.invalidateQueries({ queryKey: keys.board }),
     client.invalidateQueries({ queryKey: keys.followups }),
     client.invalidateQueries({ queryKey: keys.allUpcoming }),
-    ...(jobId ? [client.invalidateQueries({ queryKey: keys.process(jobId) })] : []),
+    ...(jobId
+      ? [
+          client.invalidateQueries({ queryKey: keys.process(jobId) }),
+          client.invalidateQueries({ queryKey: keys.package(jobId) }),
+        ]
+      : []),
   ]
 }
 
@@ -487,5 +494,35 @@ export function useFunnelStats(since: string | null) {
     queryKey: keys.funnel(since),
     queryFn: () => unwrap(api.GET('/stats/funnel', { params: { query: { since } } })),
     placeholderData: keepPreviousData,
+  })
+}
+
+// --- Paquete de candidatura (fase 10.3) ----------------------------------------------------------
+
+export type ScreeningAnswer = Schemas['ScreeningAnswer']
+
+export function useJobPackage(jobId: number, enabled = true) {
+  return useQuery({
+    queryKey: keys.package(jobId),
+    queryFn: () =>
+      unwrap(api.GET('/jobs/{job_id}/package', { params: { path: { job_id: jobId } } })),
+    enabled: enabled && Number.isInteger(jobId) && jobId > 0,
+  })
+}
+
+/** Guarda la edición del usuario: un documento nuevo «Editadas por ti». No envía nada. */
+export function useSaveAnswers(jobId: number) {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (answers: ScreeningAnswer[]) =>
+      unwrap(
+        api.POST('/jobs/{job_id}/answers', { params: { path: { job_id: jobId } }, body: { answers } }),
+      ),
+    onSuccess: () =>
+      Promise.all([
+        client.invalidateQueries({ queryKey: keys.package(jobId) }),
+        client.invalidateQueries({ queryKey: keys.process(jobId) }),
+        client.invalidateQueries({ queryKey: keys.job(jobId) }),
+      ]),
   })
 }

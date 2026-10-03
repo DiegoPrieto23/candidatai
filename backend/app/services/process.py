@@ -409,6 +409,7 @@ def last_followup_at(session: Session, job_id: int) -> datetime | None:
 def get_process(session: Session, job_id: int, now: datetime | None = None) -> ProcessView:
     """La ficha de proceso de una oferta."""
     # Import diferido: el servicio de documentos importa `events`, que no debe depender de él.
+    from app.services.answers import latest_answers
     from app.services.documents.service import selected_render_id
 
     _job(session, job_id)
@@ -429,6 +430,7 @@ def get_process(session: Session, job_id: int, now: datetime | None = None) -> P
     ]
     contacts = session.scalars(select(Contact).where(Contact.job_id == job_id).order_by(Contact.id))
     sent_render = application.render_id if application else None
+    answers_doc = latest_answers(session, job_id)
     return ProcessView(
         job_id=job_id,
         stage=Stage(application.stage) if application else None,
@@ -446,6 +448,7 @@ def get_process(session: Session, job_id: int, now: datetime | None = None) -> P
         documents=ProcessDocuments(
             cv_render_id=sent_render or selected_render_id(session, job_id),
             cv_sent=sent_render is not None,
+            answers_document_id=answers_doc.id if answers_doc else None,
         ),
     )
 

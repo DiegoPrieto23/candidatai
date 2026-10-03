@@ -79,3 +79,33 @@ class FitAssessment(_Strict):
     rationale: str = Field(min_length=1, max_length=1000)  # 2-3 frases con datos del desglose
     risks: list[AssessmentItem] = Field(max_length=MAX_ASSESSMENT_ITEMS)
     questions_for_user: list[AssessmentItem] = Field(max_length=MAX_ASSESSMENT_ITEMS)
+
+
+MAX_ANSWERS = 50
+MAX_QUESTION = 1000
+MAX_ANSWER = 5000
+MAX_ANSWER_EVIDENCE = 10
+
+# Evidencias de una respuesta que no son ids del perfil: la extracción de la oferta y lo que el
+# usuario haya contado (POLICIES §1).
+EVIDENCE_EXTRACTION = "extraction"
+EVIDENCE_USER = "user"
+
+
+class ScreeningAnswer(_Strict):
+    question: str = Field(min_length=1, max_length=MAX_QUESTION)
+    answer: str = Field(max_length=MAX_ANSWER)  # vacía solo con `needs_user_input`
+    evidence: list[Annotated[str, Field(min_length=1, max_length=200)]] = Field(
+        max_length=MAX_ANSWER_EVIDENCE
+    )
+    needs_user_input: bool
+
+
+class ApplicationAnswers(_Strict):
+    """Respuestas de screening (skill `preparar-candidatura`). Sin carta: es un documento propio.
+
+    Las reglas que dependen del perfil (evidencias, respuestas vacías) las comprueba
+    `services/answers.py`, para dar todos los problemas juntos.
+    """
+
+    answers: list[ScreeningAnswer] = Field(min_length=1, max_length=MAX_ANSWERS)

@@ -20,6 +20,7 @@ import type {
   TemplateList,
   TriageItem,
   TriageQueue,
+  JobPackage,
 } from '@/api/client'
 import { AppRoutes } from '@/App'
 import { TooltipProvider } from '@/components/ui/tooltip'
@@ -430,3 +431,42 @@ export function board(cards: BoardCard[]): Board {
     days_without_reply: 10,
   }
 }
+
+export const SCREENING: JobPackage['answers'] = {
+  document_id: 7,
+  profile_version_id: 1,
+  language: 'es',
+  edited_by_user: false,
+  created_at: '2026-10-03T10:00:00Z',
+  answers: [
+    {
+      question: '¿Has migrado procesos ETL a Python?',
+      answer: 'Sí: migré las cargas de SSIS a Python.',
+      evidence: ['exp-norteconsulting/a1'],
+      needs_user_input: false,
+    },
+    { question: 'Expectativa salarial', answer: '', evidence: [], needs_user_input: true },
+  ],
+  evidence: { 'exp-norteconsulting/a1': 'Migré las cargas nocturnas de SSIS a Python' },
+}
+
+export function jobPackage(changes: Partial<JobPackage> = {}): JobPackage {
+  return {
+    job_id: 1,
+    stage: 'cv_ready',
+    can_edit: true,
+    cv: {
+      render_id: 3,
+      document_id: 2,
+      template_id: 'ats-simple',
+      pages: 1,
+      pdf_url: '/renders/3/pdf',
+      sent: false,
+      verified: true,
+    },
+    answers: SCREENING,
+    cover_letter: null,
+    ...changes,
+  }
+}
+

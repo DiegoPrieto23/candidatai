@@ -26,10 +26,10 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 09b.1 | ↳ Ofertas resumen y alertas por correo | ✅ | Las alertas de correo (IMAP en solo lectura o `data/inbox/`) crean ofertas resumen en «Alertas», ordenadas por prefiltro y que caducan solas |
 | 09b.2 | ↳ Botón «Enviar a Job Hunter» | ✅ | Extensión de Chromium que manda la oferta que estás viendo y completa los resúmenes |
 | 09b.3 | ↳ Plataformas y búsqueda con navegador | ✅ | `list_sources`, `save_source`, `record_source_run` y pantalla «Plataformas»; LinkedIn solo lo activa el usuario |
-| 10 | Seguimiento y analítica | 🚧 | Kanban, seguimientos pendientes, dashboard del embudo |
+| 10 | Seguimiento y analítica | ✅ | Kanban, seguimientos pendientes, dashboard del embudo y paquete de candidatura |
 | 10.1 | ↳ Seguimiento: kanban, ficha de proceso y calendario | ✅ | Kanban que solo mueve con eventos, hitos con hora de Madrid y contactos, aviso de seguimientos, `list_followups_due`, `list_upcoming` y `.ics` por hito y en feed |
 | 10.2 | ↳ Analítica: dashboard del embudo | ✅ | Página «Embudo»: conversión por paso, fuente, puesto y semana; tiempo hasta la primera respuesta; motivos de descarte; `get_funnel_stats` |
-| 10.3 | ↳ Paquete de candidatura | ⏳ | `save_application_answers` y CV, respuestas y carta listos para copiar |
+| 10.3 | ↳ Paquete de candidatura | ✅ | `save_application_answers` y sección «Paquete de candidatura»: CV elegido, respuestas editables con botón de copiar y hueco de la carta (08c) |
 | 11 | Candidatura asistida | ⏳ | Rellenado con Playwright y envío tras tu confirmación |
 | 12 | Demo, compatibilidad y portfolio | ⏳ | Modo demo, matriz de agentes probada, evals publicados |
 
@@ -744,4 +744,55 @@ decisiones tomadas y deuda técnica pendiente. -->
   - El bundle principal sigue por encima de 500 kB (~800 kB, ya antes de la 10.2): habría que
     trocear más rutas.
   - `pnpm install` en el frontend para Recharts.
+
+### 10.3 · Paquete de candidatura — 2026-10-03 · Claude Code (Opus 5.5)
+- **Resumen:** cierra la fase 10.
+  - `ApplicationAnswers` en `schemas/llm_io.py` (las cuatro claves obligatorias; 1-50 respuestas).
+  - Migración `0009`: `documents.edited_by_user`.
+  - `services/answers.py`: `save_application_answers` (agente), `save_user_answers` (UI) y
+    `get_package`. Validación con un detalle por problema y sin guardar nada.
+  - Herramienta `save_application_answers` ↔ `jh applications save-answers ID --file F --json`,
+    con 4 casos de paridad. API `GET /jobs/{id}/package` y `POST /jobs/{id}/answers`.
+  - `ProcessDocuments.answers_document_id` ya se rellena.
+  - UI: sección «Paquete de candidatura» en la ficha, entre «Proceso» y «CV». Muestra:
+    - el CV elegido (abrir PDF, enlace a la sección CV);
+    - las respuestas con «Copiar» y «Editar», aviso ámbar en las de `needs_user_input` y
+      «Añadir pregunta»;
+    - el hueco de la carta.
+  - `CopyButton` compartido con «Procesos».
+  - El skill `preparar-candidatura` aclara las evidencias válidas y que no hay campo de nota.
+  - 13 tests de servicio y API y 5 de la sección. 1 448 tests de backend y 99 de frontend.
+
+  Guía de prueba manual en `docs/pruebas/fase-10.3-prueba-manual.txt`.
+- **Decisiones:**
+  - Evidencias de una respuesta: las del CV (`evidence_refs`), los ids de las historias STAR,
+    `extraction` y `user`. Una respuesta con texto necesita al menos una. Vacía, solo con
+    `needs_user_input`.
+  - Solo en `approved` y `cv_ready`: después del envío el paquete se ve y se copia, pero no se
+    edita.
+  - Edición del usuario: documento nuevo con `edited_by_user` y actor `user`. Manda el último y el
+    anterior se conserva.
+    - No exige evidencias, pero las que haya deben existir en la versión del perfil de las
+      respuestas que edita.
+    - Si cambia el texto, la UI añade `user` al respaldo. Vacía = pendiente de un dato tuyo.
+  - `application_prepared` pasa a actor `agent`/`user` (antes ponía `system` en `DATA_MODEL.md`),
+    con `payload.document_id` y `edited_by_user`.
+  - El idioma del documento sale de la extracción (`es`/`en`; si no, `es`).
+  - La clave de consulta del paquete cuelga de la del CV: renderizar o elegir otro render lo
+    refresca.
+- **Nota para la 08c:**
+  - `JobPackage.cover_letter` es hoy `None`. La 08c lo cambia por la carta seleccionada (texto
+    plano para copiar y `pdf_url` del render), y `ProcessDocuments.cover_letter_document_id` se
+    rellena igual que `answers_document_id`.
+  - En `PackageSection.tsx`, `CoverLetterSlot` pasa del aviso a la carta, con `CopyButton`.
+  - La carta editada reutiliza `documents.edited_by_user`.
+- **Deuda:**
+  - **Prueba manual pendiente:** la guía de la 10.3. También siguen pendientes la de la 10.1
+    (arrastre e importación del `.ics` en Google Calendar) y la de la 10.2.
+  - La BD real necesita `jh db upgrade` (hasta 0009).
+  - Que el salario vaya siempre con `needs_user_input` lo impone el skill. El código comprueba que
+    las evidencias existen, no lo que dice la respuesta.
+  - La suite del frontend es sensible a la carga: con otros procesos pesados en paralelo, algunos
+    tests de páginas no tocadas superan los 5 s o el `findBy` de 1 s. Por separado, o con
+    `--testTimeout=30000` y la máquina libre, pasan.
 
