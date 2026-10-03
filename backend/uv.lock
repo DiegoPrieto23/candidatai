@@ -614,6 +614,7 @@ dependencies = [
     { name = "sqlalchemy" },
     { name = "trafilatura" },
     { name = "typer" },
+    { name = "tzdata" },
     { name = "uvicorn", extra = ["standard"] },
 ]
 
@@ -658,6 +659,7 @@ requires-dist = [
     { name = "sqlalchemy", specifier = ">=2" },
     { name = "trafilatura", specifier = ">=2.2.0" },
     { name = "typer" },
+    { name = "tzdata", specifier = ">=2026.4" },
     { name = "uvicorn", extras = ["standard"] },
 ]
 provides-extras = ["matching", "word"]

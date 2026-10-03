@@ -32,6 +32,7 @@ La app nunca llama a un modelo y no depende de ningún proveedor.
 | `app/services/ingestion/` | Conectores de ATS y portales, filtro previo y ejecución de fuentes (fase 09); `email/`: alertas por correo (09b) | Solo endpoints públicos documentados; IMAP en solo lectura; guardan con el mismo servicio que el alta manual |
 | `app/services/capture.py` | Captura desde la extensión: token (solo su hash en `data/`) y alta o compleción de la oferta (09b) | Todo lo capturado es no confiable: pasa por la detección de riesgo |
 | `app/services/platforms.py`, `summaries.py` | Identidad de oferta por plataforma (`platform` + `external_id`) y ofertas resumen en `pending_detail`: bandeja «Alertas» y caducidad (09b) | Sin red ni agente |
+| `app/services/process.py`, `tracking.py`, `calendar_ics.py` | Ficha de proceso (hitos con su evento, contactos, notas, documentos usados), seguimientos vencidos, próximos hitos, kanban y calendario iCalendar escrito a mano (fase 10) | Nada cambia de etapa sin evento; el calendario no sale de `127.0.0.1` |
 | `frontend/` | UI | Solo habla con la API |
 | `.agents/` | Skills, roles y manifiesto, sin nada específico de un proveedor | Fuente única; lo nativo se genera |
 
@@ -61,6 +62,13 @@ La app nunca llama a un modelo y no depende de ningún proveedor.
 | `GET /alerts`, `POST /alerts/poll` | Pantalla «Alertas»: ofertas resumen (`pending_detail`) con su prefiltro, primero las que pasan; leer ya el correo (como `jh alerts poll`). Descartar va por `POST /jobs/{id}/events` |
 | `POST /capture` | Botón «Enviar a Job Hunter» (la extensión, no la UI): exige el origen de la extensión (403) y su token (401; 503 si no hay); completa un resumen, reconoce una oferta ya guardada o da de alta una nueva (`services/capture.py`) |
 | `GET /templates/default`, `POST /templates/{id}/default` | Plantilla por defecto del perfil vigente; fijarla edita solo esa clave de `data/profile.yaml` (con ruamel.yaml, conserva comentarios) e importa la versión nueva |
+| `GET /board` | Kanban (fase 10): tarjetas de `approved` a `closed` (las cerradas, solo las que llegaron a aprobarse; las 50 más recientes) y los movimientos posibles (eventos del usuario por etapa de origen y destino) |
+| `GET /followups`, `GET /upcoming?days=` | Seguimientos vencidos y próximos hitos (como `list_followups_due` y `list_upcoming`) |
+| `GET /stats/funnel?since=` | Página «Embudo» (fase 10.2): lo mismo que `get_funnel_stats` |
+| `GET /jobs/{id}/process` | Ficha de proceso: envío y canal, seguimiento, hitos, contactos, notas y CV enviado o seleccionado |
+| `POST /jobs/{id}/milestones`, `POST /milestones/{id}`, `POST /milestones/{id}/status` | Crear un hito (entrevista y prueba registran su evento; 409 si no es válido en la etapa), editarlo y marcarlo como hecho o cancelado |
+| `POST /jobs/{id}/contacts`, `POST /contacts/{id}`, `POST /contacts/{id}/delete` | Contactos del proceso (por POST: CORS sigue con GET y POST) |
+| `GET /milestones/{id}/ics`, `GET /calendar.ics[?download=true]` | Un hito como `.ics` para importar y el feed con los hitos futuros (suscripción desde clientes de escritorio; en Google, importando el fichero) |
 
 - `jh serve` escucha solo en `127.0.0.1`; CORS solo para `http://127.0.0.1:5173`. La extensión de
   captura no lo necesita: sus `host_permissions` la eximen, y `POST /capture` exige su origen y token.

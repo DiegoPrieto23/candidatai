@@ -39,6 +39,10 @@
   --border: oklch(0.915 0.004 270);
   --input: oklch(0.88 0.006 270);
   --ring: oklch(0.6 0.09 190);
+
+  /* Gráficas (fase 10.2): azul y naranja validados contra este fondo (CVD y contraste). */
+  --chart-1: #2a78d6;
+  --chart-2: #eb6834;
 }
 
 .dark {
@@ -66,6 +70,9 @@
   --border: oklch(1 0 0 / 0.08);
   --input: oklch(1 0 0 / 0.14);
   --ring: oklch(0.65 0.09 185);
+
+  --chart-1: #3987e5;
+  --chart-2: #d95926;
 }
 
 @theme inline {
@@ -98,6 +105,8 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
 }
 
 @layer base {

@@ -408,6 +408,17 @@ def latest_document(session: Session, job_id: int) -> Document | None:
     return session.scalars(stmt).first()
 
 
+def selected_render_id(session: Session, job_id: int) -> int | None:
+    """Render seleccionado («Usar este para enviar») del último CV de la oferta, si lo hay."""
+    doc = latest_document(session, job_id)
+    if doc is None:
+        return None
+    stmt = select(DocumentRender.id).where(
+        DocumentRender.document_id == doc.id, DocumentRender.selected.is_(True)
+    )
+    return session.scalars(stmt).first()
+
+
 def get_content(
     session: Session, job_id: int | None = None, document_id: int | None = None
 ) -> CvView:

@@ -1,0 +1,246 @@
+import { useState, type FormEvent } from 'react'
+import type { ApplicationChannel, BoardCard, DiscardReason, EventType } from '@/api/client'
+import { useCreateMilestone, useJobEvent } from '@/api/queries'
+import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { CHANNEL_LABEL, DISCARD_REASONS, eventLabel, MOVE_HINT, STAGE_LABEL } from '@/lib/labels'
+import { fromLocalInput, toLocalInput } from '@/lib/time'
+import type { MoveOption } from '@/lib/moves'
+import { cn } from '@/lib/utils'
+
+const MILESTONE_EVENTS: Partial<Record<EventType, 'interview' | 'test'>> = {
+  interview_scheduled: 'interview',
+  test_assigned: 'test',
+}
+
+interface Props {
+  card: BoardCard | null
+  options: MoveOption[]
+  onOpenChange: (open: boolean) => void
+}
+
+/** Confirma un movimiento del kanban registrando su evento. Nada cambia de columna sin él. */
+export function MoveDialog({ card, options, onOpenChange }: Props) {
+  return (
+    <Dialog open={card !== null} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[90dvh] overflow-y-auto">
+        {card && <MoveForm card={card} options={options} onDone={() => onOpenChange(false)} />}
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function MoveForm({ card, options, onDone }: { card: BoardCard; options: MoveOption[]; onDone: () => void }) {
+  const [choice, setChoice] = useState<MoveOption | null>(options.length === 1 ? options[0] : null)
+  const [occurredAt, setOccurredAt] = useState(() => toLocalInput(new Date()))
+  const [note, setNote] = useState('')
+  const [reason, setReason] = useState<DiscardReason | null>(null)
+  const [channel, setChannel] = useState<ApplicationChannel | ''>('')
+  const [startsAt, setStartsAt] = useState('')
+  const [location, setLocation] = useState('')
+  const event = useJobEvent()
+  const milestone = useCreateMilestone()
+  const pending = event.isPending || milestone.isPending
+  const error = event.error ?? milestone.error
+
+  const milestoneKind = choice ? MILESTONE_EVENTS[choice.event] : undefined
+  const occurred = fromLocalInput(occurredAt)
+  const starts = startsAt ? fromLocalInput(startsAt) : null
+  const missing =
+    !choice ||
+    !occurred ||
+    (choice.event === 'discarded' && (!reason || (reason === 'other' && !note.trim()))) ||
+    (milestoneKind !== undefined && !starts)
+
+  const submit = (e: FormEvent) => {
+    e.preventDefault()
+    if (missing || !choice || !occurred) return
+    const trimmed = note.trim() || undefined
+    if (milestoneKind && starts) {
+      milestone.mutate(
+        {
+          jobId: card.job_id,
+          body: {
+            kind: milestoneKind,
+            starts_at: starts,
+            all_day: false,
+            occurred_at: occurred,
+            location: location.trim() || undefined,
+            notes: trimmed,
+          },
+        },
+        { onSuccess: onDone },
+      )
+      return
+    }
+    event.mutate(
+      {
+        jobId: card.job_id,
+        body: {
+          type: choice.event,
+          occurred_at: occurred,
+          note: trimmed,
+          reason: choice.event === 'discarded' ? (reason ?? undefined) : undefined,
+          channel: choice.event.startsWith('applied') && channel ? channel : undefined,
+        },
+      },
+      { onSuccess: onDone },
+    )
+  }
+
+  return (
+    <form onSubmit={submit} className="grid gap-5">
+      <DialogHeader>
+        <DialogTitle>Mover proceso</DialogTitle>
+        <DialogDescription className="truncate">
+          {card.title} · {card.company}
+        </DialogDescription>
+      </DialogHeader>
+
+      <fieldset>
+        <legend className="mb-2 text-sm font-medium">¿Qué ha pasado?</legend>
+        <div role="radiogroup" aria-label="Evento" className="grid gap-1.5">
+          {options.map((option) => {
+            const selected = choice?.event === option.event
+            return (
+              <button
+                key={option.event}
+                type="button"
+                role="radio"
+                aria-checked={selected}
+                onClick={() => setChoice(option)}
+                className={cn(
+                  'rounded-md border px-3 py-2 text-left text-sm transition-colors outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
+                  selected ? 'border-primary/40 bg-accent text-accent-foreground' : 'border-input hover:bg-foreground/[0.03]',
+                )}
+              >
+                <span className="flex items-baseline justify-between gap-3">
+                  <span className="font-medium">{eventLabel(option.event)}</span>
+                  <span className="shrink-0 text-xs text-muted-foreground">→ {STAGE_LABEL[option.to]}</span>
+                </span>
+                {MOVE_HINT[option.event] && (
+                  <span className="mt-0.5 block text-xs text-muted-foreground">{MOVE_HINT[option.event]}</span>
+                )}
+              </button>
+            )
+          })}
+        </div>
+      </fieldset>
+
+      {choice?.event === 'discarded' && (
+        <fieldset>
+          <legend className="mb-2 text-sm font-medium">Motivo</legend>
+          <div role="radiogroup" aria-label="Motivo" className="grid gap-1.5 sm:grid-cols-2">
+            {DISCARD_REASONS.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                role="radio"
+                aria-checked={reason === option.value}
+                onClick={() => setReason(option.value)}
+                className={cn(
+                  'rounded-md border px-3 py-1.5 text-left text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
+                  reason === option.value ? 'border-primary/40 bg-accent' : 'border-input hover:bg-foreground/[0.03]',
+                )}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </fieldset>
+      )}
+
+      {choice?.event.startsWith('applied') && (
+        <div className="space-y-2">
+          <Label htmlFor="move-channel">Canal (opcional)</Label>
+          <select
+            id="move-channel"
+            value={channel}
+            onChange={(e) => setChannel(e.target.value as ApplicationChannel | '')}
+            className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+          >
+            <option value="">Sin indicar</option>
+            {Object.entries(CHANNEL_LABEL).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {milestoneKind && (
+        <div className="grid gap-3 rounded-lg border border-dashed p-3 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="move-starts">
+              {milestoneKind === 'interview' ? 'Fecha y hora de la entrevista' : 'Fecha de entrega'}
+            </Label>
+            <Input
+              id="move-starts"
+              type="datetime-local"
+              required
+              value={startsAt}
+              onChange={(e) => setStartsAt(e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="move-location">Lugar o enlace (opcional)</Label>
+            <Input id="move-location" value={location} onChange={(e) => setLocation(e.target.value)} maxLength={500} />
+          </div>
+        </div>
+      )}
+
+      <div className="grid gap-3 sm:grid-cols-[12rem_1fr]">
+        <div className="space-y-2">
+          <Label htmlFor="move-at">Cuándo pasó</Label>
+          <Input
+            id="move-at"
+            type="datetime-local"
+            required
+            value={occurredAt}
+            onChange={(e) => setOccurredAt(e.target.value)}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="move-note">
+            Nota {choice?.event === 'discarded' && reason === 'other' ? '(obligatoria)' : '(opcional)'}
+          </Label>
+          <Textarea
+            id="move-note"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            maxLength={2000}
+            rows={2}
+            className="resize-y bg-background"
+          />
+        </div>
+      </div>
+      <p className="-mt-3 text-xs text-muted-foreground">Horas de Madrid.</p>
+
+      {error && (
+        <p role="alert" className="text-sm text-destructive">
+          {error.message}
+        </p>
+      )}
+
+      <DialogFooter>
+        <Button type="button" variant="outline" onClick={onDone}>
+          Cancelar
+        </Button>
+        <Button type="submit" disabled={missing || pending}>
+          {pending ? 'Guardando…' : 'Registrar'}
+        </Button>
+      </DialogFooter>
+    </form>
+  )
+}

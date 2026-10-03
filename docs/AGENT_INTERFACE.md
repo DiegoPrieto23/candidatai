@@ -64,9 +64,9 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | `render_cover_letter` | `jh letter render DOC [--file F] --json` | 08c | `document_id, options?: CoverLetterRenderOptions` | `RenderResult` | — |
 | `save_cover_letter_verification` | `jh letter save-verification DOC --file F --json` | 08c | `document_id, verification: CvVerification` | `ok`, `passed` | `cover_letter_verified` |
 | `save_application_answers` | `jh applications save-answers ID --file F` | 10 | `job_id, answers: ApplicationAnswers` | `document_id` | `application_prepared` |
-| `list_followups_due` | `jh followups --days N --json` | 10 | `days_without_reply=10` | Candidaturas sin respuesta | — |
-| `list_upcoming` | `jh upcoming --days N --json` | 10 | `days=7` | Entrevistas, pruebas y plazos próximos | — |
-| `get_funnel_stats` | `jh stats funnel [--since] --json` | 10 | `since?` | Conversión por etapa, fuente y tipo de puesto | — |
+| `list_followups_due` | `jh followups [--days N] --json` | 10 | `days_without_reply?` (por defecto, `followups.days_without_reply` = 10) | `days_without_reply` usado y `followups`: `job_id`, `title`, `company`, `url`, `channel`, `applied_at`, `last_followup_at`, `days_waiting`; la que más espera, primero | — |
+| `list_upcoming` | `jh upcoming [--days N] --json` | 10 | `days=7` (1-365) | `days` e `items`: `kind` (`interview`, `test`, `deadline`, `other`, `application_deadline`), `job_id`, `job_title`, `company`, `stage`, `milestone_id` (`null` en el plazo de la oferta), `title`, `starts_at`, `ends_at`, `all_day`, `location`; por fecha | — |
+| `get_funnel_stats` | `jh stats funnel [--since AAAA-MM-DD] --json` | 10 | `since?` (fecha; ofertas vistas desde las 00:00 de ese día en Europe/Madrid) | `FunnelStats` (ver §Analítica) | — |
 | `list_sources` | `jh sources list [--kind K] --json` | 09b | `kind?` | `sources`: `SourceView` con su config (sin secretos), `browse` (en las `agent_browse`) y última ejecución; `agent_browse`: límites (`max_result_pages`, `delay_seconds`, `default_max_offers`) | — |
 | `save_source` | `jh sources save --file F --json` | 09b | `AgentBrowseSource`: `name, platform, search_urls[], priority=5 (1 = primera), access=free\|login\|blocked, allow_agent_browsing? (por defecto true; en LinkedIn false), max_offers?, notes?`; por CLI, `F` = ese objeto | `source_id`, `created`, `allow_agent_browsing` guardado y `message`. Crea o actualiza por `name`. LinkedIn (por `platform` o por cualquier URL de linkedin.com o lnkd.in) con `true`: `not_allowed`; si el usuario ya lo activó, se conserva. Búsquedas de otro dominio: `invalid_request` | — |
 | `record_source_run` | `jh sources record-run ID --file F --json` | 09b | `source_id` + `SourceRunSummary`: `found, created, existing=0, incidents[{code, message}], started_at?, finished_at?`; por CLI, `F` = el resumen | `ok`, `run_id`. Actor `agent`; avanza `last_run_at`. Plataforma desactivada: `not_allowed` | — |
@@ -163,6 +163,66 @@ las más recientes primero.
   oferta (o las reglas del perfil si no hay CV). Si esa plantilla no tiene diseño de carta, usa
   `carta-simple` y avisa `letter_fallback`. El texto plano lo sirve la API, no esta interfaz.
 - Ninguna de estas herramientas cambia la etapa de la oferta ni envía nada.
+
+### Seguimiento (fase 10)
+
+- `list_followups_due`: ofertas en `applied` (sin respuesta) con N días o más desde el envío o el
+  último `followup_sent`. Lo que pasa a `in_process` deja de contar. Sirve al skill `resumen-diario`
+  para ofrecer el mensaje de seguimiento; registrar que se envió (`followup_sent`) es cosa del
+  usuario.
+- `list_upcoming`: hitos programados de ofertas abiertas desde las 00:00 de hoy (Europe/Madrid)
+  hasta el final del día de dentro de `days` días, más el `application_deadline` de las ofertas
+  aún sin enviar. Las horas van en UTC: muéstralas en Europe/Madrid.
+- Los hitos, los contactos y el kanban son de la UI (`/board`, `/jobs/{id}/process`,
+  `/jobs/{id}/milestones`…): no tienen herramienta. Si el usuario te cuenta una entrevista, pídele
+  que la anote en la ficha de la oferta (crea el hito con fecha y registra `interview_scheduled`).
+  Un `add_event` con `interview_scheduled` cambia la etapa pero no crea el hito: no saldría en
+  `list_upcoming` ni en el calendario.
+- `list_upcoming(days=7)` cubre desde las 00:00 de hoy hasta el final del séptimo día (fin
+  exclusivo a las 00:00 del día siguiente).
+- `jh calendar export [--out RUTA] [--json]` (solo CLI) escribe el `.ics` con los hitos futuros y
+  los plazos (por defecto, `data/calendar/jobhunter.ics`). La API sirve el mismo feed en
+  `GET /calendar.ics` y cada hito en `GET /milestones/{id}/ics`.
+
+### Analítica (fase 10.2)
+
+`get_funnel_stats(since?)` devuelve (la API, lo mismo en `GET /stats/funnel?since=`); las
+definiciones de cada paso están en `DATA_MODEL.md` §Embudo. Tasas entre 0 y 1 con 4 decimales,
+`null` si el denominador es 0:
+
+```jsonc
+{
+  "since": "2026-09-01",            // o null
+  "duplicates_excluded": 1,         // cerradas por duplicate_detected: fuera del embudo
+  "steps": [                        // siempre los 8, en este orden
+    {"step": "found", "label": "Encontradas", "count": 10,
+     "rate_from_previous": null, "rate_from_start": 1.0}
+    // triaged, approved, applied, replied, interview, offer, accepted
+  ],
+  "by_source": [                    // por encontradas, de más a menos
+    {"source_id": 1, "kind": "greenhouse", "name": "…", "found": 5, "approved": 3,
+     "applied": 3, "replied": 2, "interview": 1, "reply_rate": 0.6667}
+  ],
+  "by_title": [                     // los 8 más frecuentes, «Otros» y «Sin extraer»
+    {"title": "data engineer", "group": "title", "found": 3, "…": "…"},
+    {"title": "Otros", "group": "others", "…": "…"},
+    {"title": "Sin extraer", "group": "not_extracted", "…": "…"}
+  ],
+  "by_week": [                      // semanas ISO seguidas (las vacías, a cero)
+    {"week": "2026-W39", "week_start": "2026-09-21", "found": 5, "…": "…"}
+  ],
+  "response_time": {"applied": 5, "replied": 3, "median_days": 2.0, "mean_days": 2.2,
+                    "awaiting_reply": 1, "closed_without_reply": 1},
+  "discard_reasons": [{"reason": "skills", "count": 1}],      // `unspecified` sin motivo
+  "hard_filter_failures": [{"filter": "location", "count": 2}]
+}
+```
+
+`reply_rate` = con respuesta / enviadas. Los motivos y los filtros cuentan ofertas, no eventos:
+cuenta toda oferta del periodo con algún `discarded` (o `hard_filter_failed`), aunque luego se
+reabriera; descartada dos veces por lo mismo cuenta una vez, y por motivos distintos (o con dos
+filtros fallidos) cuenta en cada uno, así que la suma puede pasar del número de ofertas.
+Solo lectura: no registra eventos.
 
 ### Comandos de matching y worker (solo CLI)
 

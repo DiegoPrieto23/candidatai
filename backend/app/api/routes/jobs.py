@@ -34,6 +34,9 @@ class AddUserEventBody(_Body):
     reason: events.DiscardReason | None = Field(
         default=None, description="Motivo al descartar (obligatorio en `discarded`)."
     )
+    channel: events.ApplicationChannel | None = Field(
+        default=None, description="Canal del envío (solo en `applied` y `applied_manually`)."
+    )
 
 
 @router.get("", operation_id="list_jobs")
@@ -88,4 +91,5 @@ def add_job_event(
         note=body.note,
         occurred_at=body.occurred_at,
         reason=body.reason,
+        channel=body.channel,
     )

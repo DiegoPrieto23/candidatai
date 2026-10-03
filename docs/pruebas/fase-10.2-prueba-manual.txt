@@ -1,0 +1,77 @@
+PRUEBA MANUAL · FASE 10.2 · ANALÍTICA: DASHBOARD DEL EMBUDO
+===========================================================
+
+Objetivo: comprobar con el navegador que
+- la página «Embudo» carga en menos de 1 s con 1 000 ofertas ficticias (criterio de aceptación de
+  la fase 10);
+- las cifras cuadran con lo que ves en la bandeja y en la CLI (`jh stats funnel`);
+- el selector de periodo, el modo oscuro, el móvil y los estados vacíos se ven bien;
+- tu agente puede usar `get_funnel_stats`.
+
+Duración aproximada: 15 minutos.
+
+
+REQUISITOS
+----------
+- Dos terminales de PowerShell (API y UI). Los comandos se ejecutan desde la RAÍZ del repo.
+- Rama: fase/10-seguimiento-analitica (o main, si ya está fusionada).
+- Recharts es una dependencia nueva del frontend: `cd frontend; pnpm install`.
+
+
+PARTE 1 · CON 1 000 OFERTAS FICTICIAS (BD APARTE)
+-------------------------------------------------
+1. Genera la BD de prueba (no toca tu data/jobhunter.db):
+       uv run --directory backend python ../scripts/seed_funnel_demo.py
+   Esperado: «1000 ofertas ficticias creadas en …\data\funnel-demo.» (unos 10 s).
+   Si la repites, se niega («ya tiene ofertas»): borra data/funnel-demo para empezar de cero.
+2. Terminal 1, la API sobre esa BD:
+       $env:JH_DATA_DIR = "data/funnel-demo"
+       uv run --directory backend jh serve
+3. Terminal 2, la UI:
+       cd frontend; pnpm install; pnpm dev
+4. Abre http://127.0.0.1:5173/embudo (o «Embudo» en la barra de arriba).
+   Esperado: en menos de 1 s, cuatro cifras (Encontradas, Enviadas, Tasa de respuesta, Primera
+   respuesta), el embudo de 8 pasos con el porcentaje desde el paso anterior, «Primera respuesta»,
+   «Por semana» (26 semanas, barras azules y naranjas con leyenda), «Por fuente» (5 fuentes),
+   «Por tipo de puesto» (8 puestos + «Otros») y «Motivos de descarte» (dos gráficas).
+   Para medirlo: F12 → Red → recarga → la petición `funnel` debe tardar menos de 1 s.
+5. Pasa el ratón por una barra del embudo y de «Por semana»: sale un tooltip con la cifra.
+6. Compara con la CLI (en otra terminal con el mismo JH_DATA_DIR):
+       $env:JH_DATA_DIR = "data/funnel-demo"
+       uv run --directory backend jh stats funnel
+   Esperado: las mismas cifras que la página.
+7. Periodo: pulsa «30 días», «90 días» y «12 meses»: las cifras bajan y «Por semana» se acorta.
+   Elige una fecha en «Desde»: los botones se desmarcan y el embudo cuenta solo desde ese día.
+   Una fecha futura: «No hay ofertas en este periodo».
+8. Cambia a modo oscuro (icono de la pantalla, arriba a la derecha): gráficas legibles, sin
+   blancos.
+9. Móvil: F12 → icono de dispositivo → 390 px de ancho. Las tarjetas se apilan y las tablas se
+   desplazan dentro de su panel. (La barra de navegación de arriba ya se salía de la pantalla en
+   móvil antes de esta fase: no es de la 10.2.)
+
+
+PARTE 2 · CON TUS DATOS
+-----------------------
+10. Para la API (Ctrl+C) y arráncala sin JH_DATA_DIR:
+        Remove-Item Env:JH_DATA_DIR
+        uv run --directory backend jh serve
+11. Abre «Embudo». Comprueba a ojo:
+    - «Encontradas» + duplicadas = ofertas de la bandeja («Todas»), salvo las cerradas como
+      duplicado que reabriste.
+    - «Enviadas» = ofertas que alguna vez enviaste (las de «Enviada», «En proceso» y las cerradas
+      tras enviarlas).
+    - En «Motivos de descarte», los motivos que elegiste al descartar en «Triaje».
+    Si aún no tienes datos: «Aún no hay datos» con un enlace a «Nueva oferta».
+
+
+PARTE 3 · DESDE EL AGENTE (OPCIONAL)
+------------------------------------
+12. En Claude Code (con el MCP `jobhunter` conectado) pide: «¿Qué tal va mi embudo este mes?».
+    Esperado: llama a `get_funnel_stats` con `since` y te resume las cifras. Sin MCP, el
+    equivalente es `uv run --directory backend jh stats funnel --since 2026-09-01 --json`.
+
+
+SI ALGO FALLA
+-------------
+- «La API no responde»: la terminal 1 no está arrancada o falta `jh db upgrade`.
+- Página en blanco al abrir «Embudo»: falta `pnpm install` (Recharts).

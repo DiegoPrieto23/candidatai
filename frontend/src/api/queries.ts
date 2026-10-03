@@ -16,6 +16,12 @@ export const keys = {
   defaultTemplate: ['templates', 'default'] as const,
   sources: ['sources'] as const,
   alerts: ['alerts'] as const,
+  board: ['board'] as const,
+  followups: ['followups'] as const,
+  upcoming: (days: number) => ['upcoming', days] as const,
+  allUpcoming: ['upcoming'] as const,
+  process: (id: number) => ['process', id] as const,
+  funnel: (since: string | null) => ['funnel', since] as const,
 }
 
 export interface JobsParams {
@@ -96,7 +102,11 @@ export function useAddNote(jobId: number) {
           body: { type: 'note', note },
         }),
       ),
-    onSuccess: () => client.invalidateQueries({ queryKey: keys.job(jobId) }),
+    onSuccess: () =>
+      Promise.all([
+        client.invalidateQueries({ queryKey: keys.job(jobId) }),
+        client.invalidateQueries({ queryKey: keys.process(jobId) }),
+      ]),
   })
 }
 
@@ -139,6 +149,7 @@ export function useJobEvent() {
         client.invalidateQueries({ queryKey: keys.alerts }),
         client.invalidateQueries({ queryKey: keys.job(jobId) }),
         client.invalidateQueries({ queryKey: keys.match(jobId) }),
+        ...invalidateTracking(client, jobId),
       ]),
   })
 }
@@ -356,5 +367,125 @@ export function usePollAlerts() {
         client.invalidateQueries({ queryKey: keys.status }),
         client.invalidateQueries({ queryKey: keys.allJobs }),
       ]),
+  })
+}
+
+// --- Seguimiento: kanban, ficha de proceso, hitos y contactos (fase 10) ------------------------
+
+type Client = ReturnType<typeof useQueryClient>
+
+/** Lo que cambia cuando se mueve un proceso: tablero, seguimientos, próximos y su ficha. */
+function invalidateTracking(client: Client, jobId?: number) {
+  return [
+    client.invalidateQueries({ queryKey: keys.board }),
+    client.invalidateQueries({ queryKey: keys.followups }),
+    client.invalidateQueries({ queryKey: keys.allUpcoming }),
+    ...(jobId ? [client.invalidateQueries({ queryKey: keys.process(jobId) })] : []),
+  ]
+}
+
+export function useBoard() {
+  return useQuery({ queryKey: keys.board, queryFn: () => unwrap(api.GET('/board')) })
+}
+
+export function useFollowups() {
+  return useQuery({
+    queryKey: keys.followups,
+    queryFn: () => unwrap(api.GET('/followups')),
+    refetchInterval: 5 * 60_000,
+  })
+}
+
+export function useUpcoming(days = 7) {
+  return useQuery({
+    queryKey: keys.upcoming(days),
+    queryFn: () => unwrap(api.GET('/upcoming', { params: { query: { days } } })),
+  })
+}
+
+export function useJobProcess(jobId: number, enabled = true) {
+  return useQuery({
+    queryKey: keys.process(jobId),
+    queryFn: () =>
+      unwrap(api.GET('/jobs/{job_id}/process', { params: { path: { job_id: jobId } } })),
+    enabled: enabled && Number.isInteger(jobId) && jobId > 0,
+  })
+}
+
+/** Tras un cambio en un proceso: recuentos, ficha de la oferta y seguimiento. */
+function useInvalidateProcess() {
+  const client = useQueryClient()
+  return (jobId: number) =>
+    Promise.all([
+      client.invalidateQueries({ queryKey: keys.status }),
+      client.invalidateQueries({ queryKey: keys.allJobs }),
+      client.invalidateQueries({ queryKey: keys.job(jobId) }),
+      ...invalidateTracking(client, jobId),
+    ])
+}
+
+export type MilestoneCreate = Schemas['MilestoneCreate']
+export type MilestoneFields = Schemas['MilestoneFields']
+export type ContactFields = Schemas['ContactFields']
+
+export function useCreateMilestone() {
+  const invalidate = useInvalidateProcess()
+  return useMutation({
+    mutationFn: ({ jobId, body }: { jobId: number; body: MilestoneCreate }) =>
+      unwrap(api.POST('/jobs/{job_id}/milestones', { params: { path: { job_id: jobId } }, body })),
+    onSuccess: (_r, { jobId }) => invalidate(jobId),
+  })
+}
+
+export function useUpdateMilestone(jobId: number) {
+  const invalidate = useInvalidateProcess()
+  return useMutation({
+    mutationFn: ({ milestoneId, body }: { milestoneId: number; body: MilestoneFields }) =>
+      unwrap(
+        api.POST('/milestones/{milestone_id}', { params: { path: { milestone_id: milestoneId } }, body }),
+      ),
+    onSuccess: () => invalidate(jobId),
+  })
+}
+
+export function useMilestoneStatus(jobId: number) {
+  const invalidate = useInvalidateProcess()
+  return useMutation({
+    mutationFn: ({ milestoneId, body }: { milestoneId: number; body: Schemas['MilestoneStatusChange'] }) =>
+      unwrap(
+        api.POST('/milestones/{milestone_id}/status', {
+          params: { path: { milestone_id: milestoneId } },
+          body,
+        }),
+      ),
+    onSuccess: () => invalidate(jobId),
+  })
+}
+
+export function useSaveContact(jobId: number) {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: ({ contactId, body }: { contactId?: number; body: ContactFields }) =>
+      contactId
+        ? unwrap(api.POST('/contacts/{contact_id}', { params: { path: { contact_id: contactId } }, body }))
+        : unwrap(api.POST('/jobs/{job_id}/contacts', { params: { path: { job_id: jobId } }, body })),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.process(jobId) }),
+  })
+}
+
+export function useDeleteContact(jobId: number) {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (contactId: number) =>
+      unwrap(api.POST('/contacts/{contact_id}/delete', { params: { path: { contact_id: contactId } } })),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.process(jobId) }),
+  })
+}
+
+export function useFunnelStats(since: string | null) {
+  return useQuery({
+    queryKey: keys.funnel(since),
+    queryFn: () => unwrap(api.GET('/stats/funnel', { params: { query: { since } } })),
+    placeholderData: keepPreviousData,
   })
 }

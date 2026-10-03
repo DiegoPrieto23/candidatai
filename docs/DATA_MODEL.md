@@ -190,13 +190,13 @@ Nunca guarda texto crudo de ofertas ni datos del perfil en `args_summary`.
 | `cover_letter_generated` | agent / user | sin cambio; `payload`: `document_id`, `edited_by_user` (fase 08c) |
 | `cover_letter_verified` | agent | sin cambio; `payload`: `document_id`, `passed`, `blockers` (fase 08c) |
 | `application_prepared` | system | sin cambio |
-| `applied` / `applied_manually` | user | `applied`; `payload.render_id` (el CV enviado) y `channel` |
-| `reply_received`, `interview_scheduled`, `interview_done`, `test_assigned` | user | `in_process` |
+| `applied` / `applied_manually` | user | `applied`; `payload.render_id` (el CV enviado: el render seleccionado del último CV, lo pone el código) y `channel` (`ats_form`, `email`, `linkedin_manual`, `portal_manual`; opcional) |
+| `reply_received`, `interview_scheduled`, `interview_done`, `test_assigned` | user | `in_process`. Desde la fase 10, los registra la ficha de proceso al crear una entrevista o una prueba (`payload.milestone_id`, `title`, `starts_at`) o al marcar una entrevista como hecha |
 | `followup_sent` | user | sin cambio |
 | `offer_received` | user | `in_process` |
 | `rejected`, `withdrawn`, `expired`, `accepted` | user/system | `closed` |
 | `reopened` | user | la etapa previa al cierre |
-| `note` | cualquiera | sin cambio |
+| `note` | cualquiera | sin cambio. Reprogramar o cancelar una entrevista o una prueba deja una `note` con `payload.milestone_id` (fase 10) |
 
 La proyección vive en `services/pipeline.py`: `stage_for(events) -> Stage`, con tests que cubren
 cada transición. Una transición no válida (p. ej. `applied` sin `cv_ready` ni `applied_manually`)
@@ -227,3 +227,75 @@ Detalle y motivos en `docs/FUENTES_OFERTAS.md` §Modelo de datos.
 - Tabla `source_runs`: ya la crea la fase 09 (migración `0006`); la 09b la reutiliza.
 - Tabla `email_messages`: `message_id` (único), `source_id`, `received_at`, `jobs_found`,
   `processed_at`. Nunca guarda el cuerpo del correo.
+
+## Ampliaciones de la fase 10
+
+Migración `0008`. Detalle del seguimiento en `prompts/10.1-seguimiento.md`.
+
+### `milestones`
+Hitos con fecha de un proceso. Las entrevistas y las pruebas registran su evento; el resto no
+cambia la etapa.
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | int PK | |
+| job_id | FK jobs | |
+| kind | str | `interview` (registra `interview_scheduled`), `test` (`test_assigned`), `deadline`, `other` (sin evento) |
+| title | str | Por defecto, el tipo («Entrevista», «Prueba técnica»…) |
+| starts_at / ends_at | datetime / datetime? | Sin fin: `calendar.default_duration_minutes` (60) en el calendario |
+| all_day | bool | `starts_at` a las 00:00 de ese día en Europe/Madrid (`calendar.timezone`); con varios días, `ends_at` se guarda como las 00:00 del día siguiente al último (fin exclusivo, como en iCalendar) |
+| location | str? | Lugar o enlace de la videollamada |
+| notes | text? | |
+| status | str | `scheduled`, `done` (entrevista: `interview_done`), `cancelled` (entrevista o prueba: `note`). No vuelve atrás |
+| event_id | FK events? | El evento que registró al crearse |
+| sequence | int | `SEQUENCE` del iCalendar: sube con cada cambio |
+| created_at / updated_at | datetime | |
+
+Si el evento no es válido en la etapa (p. ej. una entrevista antes de enviar), no se guarda el hito.
+Editar la fecha de una entrevista o una prueba deja una `note` («reprogramada para el…»).
+
+### `contacts`
+`id, job_id, name, role?, email?, phone?, linkedin?, notes?, created_at`. Personas del proceso
+(recruiter, hiring manager…). Solo se ven en la UI: ninguna herramienta para agentes las devuelve.
+
+### Seguimientos y calendario
+- **Seguimiento vencido**: oferta en `applied` con `followups.days_without_reply` días o más (10 por
+  defecto, `config/policies.yaml`) desde el último `applied`/`applied_manually` o `followup_sent`.
+- **Próximos**: hitos `scheduled` de ofertas abiertas desde las 00:00 de hoy (Madrid) hasta el
+  final del último día de la ventana, más el
+  `application_deadline` de la extracción vigente de las ofertas en `pending_triage`, `approved` o
+  `cv_ready`.
+- **Calendario**: `.ics` por hito y feed con los próximos sin límite de días (solo hitos
+  programados de ofertas abiertas: lo cancelado o cerrado sale del feed) (RFC 5545, UTC, `UID`
+  `milestone-<id>@jobhunter.local` y `deadline-<job_id>-<fecha>@jobhunter.local`).
+
+### Embudo (fase 10.2)
+
+Lo calcula `services/analytics.py` con consultas agregadas sobre `events` (sin tablas nuevas ni
+índices: con 1 000 ofertas responde en unos 0,2 s). Cada oferta cuenta **una vez** por paso,
+aunque se reabra, y el embudo es **acumulado**: una oferta que llega a un paso cuenta también en
+los anteriores (un `applied_manually` sin aprobar antes cuenta como aprobada y triada), así que la
+conversión nunca pasa del 100 %.
+
+| Paso | La oferta tiene… |
+|---|---|
+| Encontradas (`found`) | cualquier oferta del periodo, salvo las cerradas por `duplicate_detected` sin `reopened` posterior (se cuentan aparte en `duplicates_excluded`) |
+| Triadas (`triaged`) | `extracted` y ningún `hard_filter_failed`, o un `reopened` después del último (después en el orden de la proyección: `occurred_at` y, a igual fecha, `id`; lo mismo con `duplicate_detected`) |
+| Aprobadas (`approved`) | `approved` |
+| Enviadas (`applied`) | `applied` o `applied_manually` |
+| Con respuesta (`replied`) | `reply_received`, `interview_scheduled`, `test_assigned`, `offer_received` o `rejected` con `occurred_at` igual o posterior al primer envío |
+| Entrevista (`interview`) | `interview_scheduled` |
+| Oferta (`offer`) | `offer_received` |
+| Aceptadas (`accepted`) | `accepted` |
+
+- **Periodo** (`since`): `jobs.first_seen_at` desde las 00:00 de ese día en Europe/Madrid.
+- **Por fuente**: `jobs.source_id` (con `sources.kind` y `name`). **Por puesto**: `title_normalized`
+  de la extracción vigente (la de mayor `id`); los 8 más frecuentes, «Otros» y «Sin extraer».
+  **Por semana**: semana ISO de `first_seen_at` en Europe/Madrid (función SQLite `jh_iso_week`,
+  registrada en `app/core/db.py`).
+- **Tiempo hasta la primera respuesta**: días entre el primer envío y la primera respuesta (mediana
+  y media, 1 decimal), sobre las ofertas con `applied`/`applied_manually` (las transiciones impiden
+  responder sin enviar, así que coincide con el paso «Enviadas»). Sin respuesta: `awaiting_reply` (aún en `applied`) y `closed_without_reply`.
+- **Motivos**: ofertas con `discarded` por `payload.reason` (`unspecified` si falta) y con
+  `hard_filter_failed` por cada `payload.failures[].filter` (`json_each`).
+- `jh_iso_week` y `json_each` son de SQLite: pasar a Postgres (ADR-002) exigiría reescribir esas dos
+  expresiones.

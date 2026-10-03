@@ -2,13 +2,30 @@
 
 from collections.abc import Iterator
 from contextlib import contextmanager
+from datetime import UTC, datetime
 from functools import lru_cache
 from typing import Any
+from zoneinfo import ZoneInfo
 
 from sqlalchemy import Engine, create_engine, event
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.core.config import get_settings
+from app.core.policies import get_policies
+
+
+def iso_week(value: str | None) -> str | None:
+    """Semana ISO (`2026-W39`) de una fecha UTC guardada por `UTCDateTime`, en la zona de la UI.
+
+    SQLite no sabe de zonas horarias con cambio de hora: la analítica (fase 10.2) agrupa por
+    semana en la BD con esta función, registrada como `jh_iso_week` en cada conexión.
+    """
+    if value is None:
+        return None
+    moment = datetime.fromisoformat(value).replace(tzinfo=UTC)
+    # `ZoneInfo` guarda en caché cada zona: no se vuelve a leer en cada fila.
+    year, week, _ = moment.astimezone(ZoneInfo(get_policies().calendar.timezone)).isocalendar()
+    return f"{year}-W{week:02d}"
 
 
 def _set_sqlite_pragmas(dbapi_connection: Any, _connection_record: Any) -> None:
@@ -16,6 +33,7 @@ def _set_sqlite_pragmas(dbapi_connection: Any, _connection_record: Any) -> None:
     cursor.execute("PRAGMA journal_mode=WAL")
     cursor.execute("PRAGMA foreign_keys=ON")
     cursor.close()
+    dbapi_connection.create_function("jh_iso_week", 1, iso_week, deterministic=True)
 
 
 def make_engine(url: str) -> Engine:
