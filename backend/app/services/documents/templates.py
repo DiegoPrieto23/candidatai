@@ -7,6 +7,7 @@ una del usuario tiene el mismo `id` que una integrada, gana la del usuario.
 import hashlib
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Literal
 
 import yaml
 from pydantic import BaseModel, ValidationError
@@ -45,6 +46,24 @@ CONTRACT_VARIABLES = frozenset(
     }
 )
 
+# Variables de la carta (fase 08c): la cabecera del CV y lo propio de la carta.
+LETTER_CONTRACT_VARIABLES = frozenset(
+    {
+        "name",
+        "subtitle",
+        "contact",
+        "photo",
+        "accent_color",
+        "labels",
+        "date",
+        "place",
+        "recipient",
+        "greeting",
+        "paragraphs",
+        "sign_off",
+    }
+)
+
 # No cuentan para el hash: se generan a partir de la plantilla o son el original importado.
 _NOT_HASHED_PREFIXES = ("preview.", "source.")
 
@@ -78,6 +97,11 @@ class Template:
     @property
     def engine_file(self) -> Path:
         return self.path / ENGINE_FILES[self.meta.engine][0]
+
+    @property
+    def letter_file(self) -> Path | None:
+        """El diseño de carta (fase 08c), si lo tiene."""
+        return self.path / self.meta.letter.file if self.meta.letter else None
 
     def file_hash(self) -> str:
         """sha256 de los ficheros (sin previews ni original): ¿cambió tras un render?"""
@@ -130,7 +154,12 @@ def load_meta(folder: Path) -> TemplateMeta:
         problems.append(
             TemplateIssue(field="id", reason=f"Debe coincidir con la carpeta («{folder.name}»).")
         )
-    for name in ENGINE_FILES[meta.engine]:
+    required = list(ENGINE_FILES[meta.engine]) if meta.kind == "cv" else []
+    if meta.letter:
+        required.append(meta.letter.file)
+        if meta.engine == "html":
+            required.append("style.css")
+    for name in dict.fromkeys(required):
         if not (folder / name).is_file():
             problems.append(
                 TemplateIssue(field=name, reason=f"Falta el fichero del motor {meta.engine}.")
@@ -163,20 +192,36 @@ def _scan(
     return found, invalid
 
 
+Kind = Literal["cv", "letter"]
+
+
+def _usable(template: Template, kind: Kind) -> bool:
+    """De CV: las de `kind: cv`. De carta: las que tienen diseño de carta (`letter`)."""
+    return template.meta.kind == "cv" if kind == "cv" else template.meta.letter is not None
+
+
 def list_templates(
-    builtin_dir: Path | None = None, user_dir: Path | None = None
+    builtin_dir: Path | None = None, user_dir: Path | None = None, kind: Kind = "cv"
 ) -> tuple[list[Template], list[InvalidTemplate]]:
     """Plantillas utilizables (ordenadas por `id`) y las que tienen algún problema."""
     found, invalid = _scan(builtin_dir, user_dir)
-    return [found[k] for k in sorted(found)], [invalid[k] for k in sorted(invalid)]
+    usable = [found[k] for k in sorted(found) if _usable(found[k], kind)]
+    return usable, [invalid[k] for k in sorted(invalid)]
 
 
 def get(
-    template_id: str, builtin_dir: Path | None = None, user_dir: Path | None = None
+    template_id: str,
+    builtin_dir: Path | None = None,
+    user_dir: Path | None = None,
+    kind: Kind | None = "cv",
 ) -> Template:
+    """Una plantilla de CV (`kind="cv"`), con diseño de carta (`"letter"`) o cualquiera (`None`)."""
     found, invalid = _scan(builtin_dir, user_dir)
-    if template_id in found:
+    if template_id in found and (kind is None or _usable(found[template_id], kind)):
         return found[template_id]
+    if template_id in found:
+        what = "de CV" if kind == "cv" else "con diseño de carta"
+        raise TemplateNotFoundError(f"«{template_id}» no es una plantilla {what}.")
     if template_id in invalid:
         raise TemplateNotFoundError(invalid[template_id].reason)
     available = ", ".join(sorted(found)) or "ninguna"
@@ -185,16 +230,17 @@ def get(
     )
 
 
-def undeclared_variables(template: Template) -> set[str]:
-    """Variables de primer nivel que usa la plantilla (sin las que define ella misma)."""
+def undeclared_variables(template: Template, file: Path | None = None) -> set[str]:
+    """Variables de primer nivel que usa la plantilla (o su `file`, p. ej. la carta)."""
+    file = file or template.engine_file
     if template.meta.engine == "html":
         from jinja2 import Environment, meta
 
-        source = template.engine_file.read_text(encoding="utf-8")
+        source = file.read_text(encoding="utf-8")
         return set(meta.find_undeclared_variables(Environment().parse(source)))
     from docxtpl import DocxTemplate
 
-    return set(DocxTemplate(template.engine_file).get_undeclared_template_variables())
+    return set(DocxTemplate(file).get_undeclared_template_variables())
 
 
 def unsafe_content(template: Template) -> list[TemplateIssue]:
@@ -204,7 +250,10 @@ def unsafe_content(template: Template) -> list[TemplateIssue]:
     from app.services.documents import sanitize
 
     issues = []
-    for name in ENGINE_FILES["html"]:
+    names = list(ENGINE_FILES["html"]) if template.meta.kind == "cv" else ["style.css"]
+    if template.meta.letter:
+        names.append(template.meta.letter.file)
+    for name in names:
         text = (template.path / name).read_text(encoding="utf-8")
         for finding in sanitize.scan(text, name):
             issues.append(
@@ -217,10 +266,14 @@ def unsafe_content(template: Template) -> list[TemplateIssue]:
 
 
 def validate(
-    template_id: str, builtin_dir: Path | None = None, user_dir: Path | None = None
+    template_id: str,
+    builtin_dir: Path | None = None,
+    user_dir: Path | None = None,
+    kind: Kind | None = "cv",
 ) -> Template:
-    """Comprueba `template.yaml`, los ficheros del motor y que solo use variables del contrato."""
-    template = get(template_id, builtin_dir, user_dir)
+    """Comprueba `template.yaml`, los ficheros del motor y que solo use variables del contrato
+    (el de la carta en `letter.*`). `kind=None`: cualquier plantilla (`jh templates validate`)."""
+    template = get(template_id, builtin_dir, user_dir, kind)
     try:
         unsafe = unsafe_content(template)
     except (OSError, UnicodeError) as exc:
@@ -228,15 +281,21 @@ def validate(
         raise TemplateInvalidError(template_id, [issue]) from exc
     if unsafe:
         raise TemplateInvalidError(template_id, unsafe)
-    try:
-        unknown = sorted(undeclared_variables(template) - CONTRACT_VARIABLES)
-    except Exception as exc:  # docxtpl/jinja2: marcador mal formado o fichero ilegible
-        issue = TemplateIssue(field=template.engine_file.name, reason=f"No se puede leer: {exc}")
-        raise TemplateInvalidError(template_id, [issue]) from exc
-    if unknown:
-        issue = TemplateIssue(
-            field=template.engine_file.name,
-            reason=f"Usa variables fuera del contrato: {', '.join(unknown)}.",
-        )
-        raise TemplateInvalidError(template_id, [issue])
+    files: list[tuple[Path, frozenset[str]]] = []
+    if template.meta.kind == "cv":
+        files.append((template.engine_file, CONTRACT_VARIABLES))
+    if template.letter_file is not None:
+        files.append((template.letter_file, LETTER_CONTRACT_VARIABLES))
+    for file, contract in files:
+        try:
+            unknown = sorted(undeclared_variables(template, file) - contract)
+        except Exception as exc:  # docxtpl/jinja2: marcador mal formado o fichero ilegible
+            issue = TemplateIssue(field=file.name, reason=f"No se puede leer: {exc}")
+            raise TemplateInvalidError(template_id, [issue]) from exc
+        if unknown:
+            issue = TemplateIssue(
+                field=file.name,
+                reason=f"Usa variables fuera del contrato: {', '.join(unknown)}.",
+            )
+            raise TemplateInvalidError(template_id, [issue])
     return template

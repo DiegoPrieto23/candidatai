@@ -30,7 +30,7 @@ from app.schemas.llm_io import (
 from app.schemas.profile import CandidateProfile
 from app.services import events, extractions
 from app.services import profile as profile_service
-from app.services.documents.checks import ContentIssue
+from app.services.documents.checks import ContentIssue, citable_refs
 from app.services.documents.service import selected_render_id
 from app.services.pipeline import CV_STAGES, Actor, EventType, InvalidTransitionError, Stage
 
@@ -100,11 +100,7 @@ class JobPackage(BaseModel):
 
 
 def _profile_refs(profile: CandidateProfile) -> dict[str, str]:
-    """Lo que una respuesta puede citar: lo del CV y, además, las historias STAR."""
-    refs = profile.evidence_refs()
-    for story in profile.stories:
-        refs[story.id] = f"Historia «{story.title}»: {story.result}"
-    return refs
+    return citable_refs(profile)
 
 
 def _validate(

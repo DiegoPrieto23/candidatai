@@ -147,6 +147,15 @@ preferences:
         use: ats-simple
       - when: {country: [GB, IE, US, NL]}
         use: ats-simple
+  cover_letter:                      # opcional; las indicaciones de cada oferta mandan sobre estas
+    max_words: 170
+    tone: cercano y directo
+    sign_off: {es: "Un saludo,", en: "Kind regards,"}
+    instructions: >-
+      Cuento que me mudé a Galicia para trabajar en datos y que busco equipos que cuiden la
+      calidad del dato. Prefiero cerrar ofreciendo una llamada breve.
+    avoid: [mencionar el salario, frases hechas sobre pasión]
+    default_format: text
 
 private:                     # nunca sale por la MCP ni en ningún documento
   salary_floor_eur: null

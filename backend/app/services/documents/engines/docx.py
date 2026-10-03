@@ -32,9 +32,10 @@ def render_docx(
     output: Path,
     page_size: PageSize,
     photo_path: Path | None = None,
+    file: Path | None = None,
 ) -> Path:
-    """Renderiza la plantilla con el contexto y escribe el DOCX en `output`."""
-    doc = DocxTemplate(template.engine_file)
+    """Renderiza la plantilla (o `file`, p. ej. su carta) y escribe el DOCX en `output`."""
+    doc = DocxTemplate(file or template.engine_file)
     values = dict(context)
     if photo_path is not None:
         values["photo"] = InlineImage(doc, str(photo_path), width=Mm(template.meta.photo.size_mm))

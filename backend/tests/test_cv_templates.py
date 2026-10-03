@@ -107,7 +107,8 @@ def test_template_hash_ignores_previews(tmp_path: Path) -> None:
 # --- Plantilla integrada --------------------------------------------------------------------
 
 
-BUILTIN_IDS = ("ats-simple", "clasica-foto")
+BUILTIN_IDS = ("ats-simple", "clasica-foto", "carta-simple")
+LETTER_ONLY = {"carta-simple": "letter.docx"}
 
 
 def test_build_script_is_reproducible_and_committed_copy_is_current(tmp_path: Path) -> None:
@@ -116,12 +117,14 @@ def test_build_script_is_reproducible_and_committed_copy_is_current(tmp_path: Pa
     assert [p.name for p in script.build_all(first)] == list(BUILTIN_IDS)
     script.build_all(second)
     for template_id in BUILTIN_IDS:
-        for name in ("template.docx", "template.yaml"):
+        engine_file = LETTER_ONLY.get(template_id, "template.docx")
+        for name in (engine_file, "template.yaml"):
             built = (first / template_id / name).read_bytes()
             assert built == (second / template_id / name).read_bytes()
             committed = (REPO_ROOT / "templates" / template_id / name).read_bytes()
             assert built == committed, f"Regenera las plantillas: {SCRIPT.name} ({template_id})"
-        assert (REPO_ROOT / "templates" / template_id / "preview.png").is_file()
+        if template_id not in LETTER_ONLY:
+            assert (REPO_ROOT / "templates" / template_id / "preview.png").is_file()
     photo = script.build_demo_photo(tmp_path / "photo.png")
     assert photo.read_bytes() == (REPO_ROOT / "demo" / "photo.png").read_bytes()
 
@@ -138,8 +141,9 @@ def _all_paragraphs(doc: object) -> list[object]:
 @pytest.mark.parametrize("template_id", BUILTIN_IDS)
 def test_builtin_markers_are_in_single_runs(template_id: str) -> None:
     """Ningún marcador partido entre fragmentos: si no, docxtpl no lo reconoce."""
-    templates.validate(template_id)
-    doc = Docx(str(REPO_ROOT / "templates" / template_id / "template.docx"))
+    templates.validate(template_id, kind=None)
+    engine_file = LETTER_ONLY.get(template_id, "template.docx")
+    doc = Docx(str(REPO_ROOT / "templates" / template_id / engine_file))
     for paragraph in _all_paragraphs(doc):
         for run in paragraph.runs:  # type: ignore[attr-defined]
             assert run.text.count("{{") == run.text.count("}}"), run.text

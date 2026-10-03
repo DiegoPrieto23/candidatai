@@ -24,7 +24,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.models import Document, DocumentRender, Job
-from app.schemas.cv import CvContent, CvRenderOptions, CvVerification, SectionName
+from app.schemas.cv import CvContent, CvRenderOptions, CvVerification, PageSize, SectionName
 from app.schemas.llm_io import JobExtraction
 from app.services import events, extractions
 from app.services import profile as profile_service
@@ -133,11 +133,67 @@ def _extraction(session: Session, job_id: int) -> JobExtraction | None:
         return None
 
 
-def _file_stem(name: str) -> str:
+def file_stem(name: str, prefix: str = "CV") -> str:
     """«Lucía Varela Otero» -> «CV-Lucia-Varela-Otero»: sin tildes ni signos, con mayúsculas."""
     plain = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode()
     words = re.findall(r"[A-Za-z0-9]+", plain)
-    return "-".join(["CV", *words])
+    return "-".join([prefix, *words])
+
+
+def render_dir(job_id: int, document_id: int, render_id: int) -> Path:
+    """`data/cvs/<job_id>/<document_id>/<render_id>/`: CVs y cartas (lo que la API puede servir)."""
+    return get_settings().data_dir / CVS_DIR / str(job_id) / str(document_id) / str(render_id)
+
+
+def write_files(
+    template: templates.Template,
+    ctx: dict[str, Any],
+    out_dir: Path,
+    stem: str,
+    page_size: PageSize,
+    photo_file: Path | None,
+    file: Path | None = None,
+) -> tuple[Path | None, Path, pdf.PdfInfo]:
+    """Renderiza con el motor de la plantilla y lee el PDF. Si algo falla, borra `out_dir`."""
+    try:
+        docx_file, pdf_file = render_files(
+            template, ctx, out_dir, stem, page_size, photo_file, file=file
+        )
+        return docx_file, pdf_file, pdf.read_pdf(pdf_file)
+    except BaseException:
+        shutil.rmtree(out_dir, ignore_errors=True)
+        raise
+
+
+def store_files(
+    session: Session,
+    row: DocumentRender,
+    docx_file: Path | None,
+    pdf_file: Path,
+    pages: int,
+    warnings: list[RenderWarning],
+) -> bool:
+    """Guarda rutas, páginas y avisos del render; el primero que cabe queda seleccionado.
+
+    Devuelve si es `too_long`.
+    """
+    data_dir = get_settings().data_dir
+    too_long = is_too_long(warnings)
+    already_selected = any(r.selected for r in _renders(session, row.document_id) if r.id != row.id)
+    row.docx_path = docx_file.relative_to(data_dir).as_posix() if docx_file else None
+    row.pdf_path = pdf_file.relative_to(data_dir).as_posix()
+    row.pages = pages
+    row.warnings = [w.model_dump(mode="json") for w in warnings]
+    # El primer render que cabe queda como el que se enviará; la UI puede cambiarlo (`select`).
+    row.selected = not too_long and not already_selected
+    session.flush()
+    return too_long
+
+
+def prepared_photo(template: templates.Template, include: bool, source: Path | None) -> Path | None:
+    if not include or source is None:
+        return None
+    return photo.prepared_photo(source, template.meta.photo.shape, template.meta.photo.size_mm)
 
 
 class _TemplateHashes:
@@ -236,39 +292,22 @@ def render(
     session.add(row)
     session.flush()
 
-    data_dir = get_settings().data_dir
-    render_dir = data_dir / CVS_DIR / str(job.id) / str(doc.id) / str(row.id)
-    filename = _file_stem(profile.personal.name)
-    try:
-        ctx = context.build_context(
-            content, profile, resolved.hidden_sections, resolved.accent_color
-        )
-        photo_file = None
-        if resolved.photo and photo_source is not None:
-            meta_photo = template.meta.photo
-            photo_file = photo.prepared_photo(photo_source, meta_photo.shape, meta_photo.size_mm)
-        docx_file, pdf_file = render_files(
-            template, ctx, render_dir, filename, resolved.page_size, photo_file
-        )
-        info = pdf.read_pdf(pdf_file)
-    except BaseException:
-        shutil.rmtree(render_dir, ignore_errors=True)
-        raise
+    out_dir = render_dir(job.id, doc.id, row.id)
+    ctx = context.build_context(content, profile, resolved.hidden_sections, resolved.accent_color)
+    docx_file, pdf_file, info = write_files(
+        template,
+        ctx,
+        out_dir,
+        file_stem(profile.personal.name),
+        resolved.page_size,
+        prepared_photo(template, resolved.photo, photo_source),
+    )
 
     warnings = checks.render_warnings(
         content, template, resolved, info.pages, pdf.missing_fonts(template.meta.fonts, info.fonts)
     )
-    too_long = is_too_long(warnings)
-    already_selected = any(r.selected for r in _renders(session, doc.id) if r.id != row.id)
-
-    row.docx_path = docx_file.relative_to(data_dir).as_posix() if docx_file else None
-    row.pdf_path = pdf_file.relative_to(data_dir).as_posix()
-    row.pages = info.pages
     row.keyword_coverage = checks.keyword_coverage(info.text, extraction).model_dump(mode="json")
-    row.warnings = [w.model_dump(mode="json") for w in warnings]
-    # El primer render que cabe queda como el que se enviará; la UI puede cambiarlo (`select`).
-    row.selected = not too_long and not already_selected
-    session.flush()
+    too_long = store_files(session, row, docx_file, pdf_file, info.pages, warnings)
 
     events.record(
         session,

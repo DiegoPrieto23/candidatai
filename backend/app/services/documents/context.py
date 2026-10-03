@@ -6,8 +6,10 @@ perfil: el agente nunca lo ve (POLICIES §4).
 """
 
 from dataclasses import dataclass
+from datetime import date
 from typing import Any
 
+from app.schemas.cover_letter import CoverLetterContent
 from app.schemas.cv import SECTIONS, CvContent, CvLanguage, SectionName
 from app.schemas.profile import PRESENT, CandidateProfile, ExtraSection
 from app.services.normalize import fold
@@ -54,6 +56,46 @@ LABELS: dict[CvLanguage, dict[str, str]] = {
         "present": "Present",
     },
 }
+
+
+_LONG_MONTHS: dict[CvLanguage, tuple[str, ...]] = {
+    "es": (
+        "enero",
+        "febrero",
+        "marzo",
+        "abril",
+        "mayo",
+        "junio",
+        "julio",
+        "agosto",
+        "septiembre",
+        "octubre",
+        "noviembre",
+        "diciembre",
+    ),
+    "en": (
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+    ),
+}
+
+
+def format_long_date(value: date, language: CvLanguage) -> str:
+    """Fecha de la carta: «3 de octubre de 2026» / «3 October 2026»."""
+    month = _LONG_MONTHS[language][value.month - 1]
+    if language == "es":
+        return f"{value.day} de {month} de {value.year}"
+    return f"{value.day} {month} {value.year}"
 
 
 @dataclass(frozen=True)
@@ -141,13 +183,7 @@ def build_context(
         "name": personal.name,
         "subtitle": content.subtitle,
         "summary": content.summary,
-        "contact": {
-            "email": personal.email or "",
-            "phone": personal.phone or "",
-            "city": personal.city or "",
-            "linkedin": personal.linkedin or "",
-            "github": personal.github or "",
-        },
+        "contact": _contact(profile),
         "photo": "",
         "experience": experience,
         "projects": [
@@ -190,3 +226,43 @@ def build_context(
         section: section not in hidden_sections and bool(context[section]) for section in SECTIONS
     }
     return context
+
+
+def _contact(profile: CandidateProfile) -> dict[str, str]:
+    personal = profile.personal
+    return {
+        "email": personal.email or "",
+        "phone": personal.phone or "",
+        "city": personal.city or "",
+        "linkedin": personal.linkedin or "",
+        "github": personal.github or "",
+    }
+
+
+def build_letter_context(
+    content: CoverLetterContent,
+    profile: CandidateProfile,
+    subtitle: str,
+    accent_color: str | None,
+    today: date,
+) -> dict[str, Any]:
+    """Variables del contrato de la carta (`CV_TEMPLATES.md` §Cartas), salvo `photo`.
+
+    La cabecera es la del CV: `subtitle` es el del CV de la oferta (o el titular del perfil). La
+    fecha, el lugar (tu ciudad) y el nombre los pone el código, no el agente.
+    """
+    lang = content.language
+    return {
+        "name": profile.personal.name,
+        "subtitle": subtitle,
+        "contact": _contact(profile),
+        "photo": "",
+        "accent_color": accent_color or "",
+        "labels": dict(LABELS[lang]),
+        "date": format_long_date(today, lang),
+        "place": profile.personal.city or "",
+        "recipient": content.recipient or "",
+        "greeting": content.greeting,
+        "paragraphs": [p.text for p in content.paragraphs],
+        "sign_off": content.sign_off,
+    }

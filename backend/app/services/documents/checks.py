@@ -64,8 +64,16 @@ def _strip_basic_prefix(item: str) -> str:
     return item
 
 
-def _skill_key(name: str, index: dict[str, str]) -> str:
+def skill_key(name: str, index: dict[str, str]) -> str:
     return canonical(_strip_basic_prefix(name), index)
+
+
+def citable_refs(profile: CandidateProfile) -> dict[str, str]:
+    """Lo que una carta o una respuesta puede citar: lo del CV y, además, las historias STAR."""
+    refs = profile.evidence_refs()
+    for story in profile.stories:
+        refs[story.id] = f"Historia «{story.title}»: {story.result}"
+    return refs
 
 
 def requested_skills(extraction: JobExtraction | None) -> list[str]:
@@ -166,7 +174,7 @@ def validate_content(
 
     for g, group in enumerate(content.skills):
         for s, item in enumerate(group.items):
-            key = _skill_key(item, index)
+            key = skill_key(item, index)
             field = f"skills[{g}].items[{s}]"
             if key not in levels and key not in basics:
                 issues.append(
@@ -210,6 +218,18 @@ def _names_for(keyword: str, index: dict[str, str]) -> set[str]:
     return {n for n in names if n}
 
 
+def skill_mentioned(folded_text: str, skill: str, index: dict[str, str]) -> bool:
+    """¿Aparece la skill (o uno de sus alias) en el texto ya normalizado con `fold_text`?"""
+    return any(
+        re.search(rf"(?<![\w+#]){re.escape(name)}(?![\w+#])", folded_text)
+        for name in _names_for(skill, index)
+    )
+
+
+def fold_text(text: str) -> str:
+    return fold(text, keep=_KEEP)
+
+
 def keyword_coverage(text: str, extraction: JobExtraction | None) -> KeywordCoverage:
     index = alias_index()
     haystack = fold(text, keep=_KEEP)
@@ -221,10 +241,7 @@ def keyword_coverage(text: str, extraction: JobExtraction | None) -> KeywordCove
         if not key or key in seen:
             continue
         seen.add(key)
-        found = any(
-            re.search(rf"(?<![\w+#]){re.escape(name)}(?![\w+#])", haystack)
-            for name in _names_for(keyword, index)
-        )
+        found = skill_mentioned(haystack, keyword, index)
         (present if found else missing).append(keyword)
     return KeywordCoverage(present=present, missing=missing)
 

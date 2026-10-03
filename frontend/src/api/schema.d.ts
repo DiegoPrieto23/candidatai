@@ -1546,7 +1546,7 @@ export interface components {
          * EventType
          * @enum {string}
          */
-        EventType: "found" | "detail_captured" | "duplicate_detected" | "extracted" | "hard_filter_failed" | "extraction_failed" | "injection_suspected" | "scored" | "fit_assessed" | "approved" | "discarded" | "cv_generated" | "cv_rendered" | "cv_verified" | "cv_rejected" | "application_prepared" | "applied" | "applied_manually" | "reply_received" | "interview_scheduled" | "interview_done" | "test_assigned" | "followup_sent" | "offer_received" | "rejected" | "withdrawn" | "expired" | "accepted" | "reopened" | "note";
+        EventType: "found" | "detail_captured" | "duplicate_detected" | "extracted" | "hard_filter_failed" | "extraction_failed" | "injection_suspected" | "scored" | "fit_assessed" | "approved" | "discarded" | "cv_generated" | "cv_rendered" | "cv_verified" | "cv_rejected" | "cover_letter_generated" | "cover_letter_verified" | "application_prepared" | "applied" | "applied_manually" | "reply_received" | "interview_scheduled" | "interview_done" | "test_assigned" | "followup_sent" | "offer_received" | "rejected" | "withdrawn" | "expired" | "accepted" | "reopened" | "note";
         /** ExtractionView */
         ExtractionView: {
             /** Extraction Id */

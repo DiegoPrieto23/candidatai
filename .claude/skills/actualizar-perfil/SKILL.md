@@ -28,6 +28,19 @@ en el CV tal cual, así que escribe cada item como debe leerse. Si vienes de `im
 con una lista de lo que el CV subido tiene y el perfil no, propón dónde va cada cosa y confírmalo
 antes de escribirlo.
 
+**Indicaciones para las cartas** (`preferences.cover_letter`, opcional): la primera vez que se
+pide una carta (te lo dirá `generar-carta`), pregunta en un solo mensaje:
+- extensión máxima (por defecto 180 palabras);
+- tono;
+- despedida en español y en inglés;
+- qué quiere contar siempre: motivación, cómo llegó a su campo… Va en `instructions`. Es lo único
+  que la carta puede citar como `user`, así que escríbelo con sus palabras;
+- qué evitar siempre (`avoid`);
+- si suele enviarla como texto o en PDF (`default_format`).
+
+No rellenes nada que no diga. Las indicaciones de cada oferta mandan sobre estas y se guardan con
+`save_cover_letter_brief`, no aquí.
+
 **Siempre:**
 - Nada inventado ni "mejorado": si algo es ambiguo, pregunta.
 - Ids estables (`exp-<empresa>`, `a1`, `a2`…). No renumeres los existentes: los CVs antiguos los citan.

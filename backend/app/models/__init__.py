@@ -2,7 +2,7 @@
 
 from app.models.base import Base
 from app.models.companies import Company
-from app.models.documents import Document, DocumentRender
+from app.models.documents import CoverLetterBrief, Document, DocumentRender
 from app.models.events import Application, Event
 from app.models.jobs import Job, JobExtraction
 from app.models.matches import Match
@@ -16,6 +16,7 @@ __all__ = [
     "Base",
     "Company",
     "Contact",
+    "CoverLetterBrief",
     "Document",
     "DocumentRender",
     "EmailMessage",

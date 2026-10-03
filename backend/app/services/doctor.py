@@ -99,6 +99,13 @@ def check_cv_templates(builtin_dir: Path, user_dir: Path) -> CheckResult:
         problems.append(
             f"falta «{fallback}», la de reserva: regenérala con scripts/build_builtin_templates.py"
         )
+    letter_fallback = get_policies().cover_letter.fallback_template
+    letters, _ = templates.list_templates(builtin_dir, user_dir, kind="letter")
+    if letter_fallback not in [t.id for t in letters]:
+        problems.append(
+            f"falta «{letter_fallback}», la carta de reserva: regenérala con "
+            "scripts/build_builtin_templates.py"
+        )
     status = CheckStatus.WARN if problems else CheckStatus.OK
     return CheckResult(name=name, status=status, detail="; ".join(parts + problems))
 

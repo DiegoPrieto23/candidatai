@@ -82,9 +82,13 @@ def build_docx(
 
 
 def validate(template_id: str) -> ValidationResult:
-    """`template.yaml`, variables del contrato y que renderiza con todo el perfil demo."""
-    template = templates.validate(template_id)
-    preview.check_renders(template)
+    """`template.yaml`, variables del contrato y que renderiza con todo el perfil demo.
+
+    Una plantilla solo de carta (`kind: letter`) se valida sin render de CV.
+    """
+    template = templates.validate(template_id, kind=None)
+    if template.meta.kind == "cv":
+        preview.check_renders(template)
     return ValidationResult(
         ok=True,
         template_id=template.id,

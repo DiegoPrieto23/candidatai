@@ -18,8 +18,14 @@ from pydantic import (
 from sqlalchemy.orm import Session
 
 from app.agent_interface.registry import CallContext, CliSpec, ToolSpec
+from app.schemas.cover_letter import (
+    MAX_INSTRUCTIONS,
+    CoverLetterContent,
+    CoverLetterRenderOptions,
+)
 from app.schemas.cv import CvContent, CvRenderOptions, CvVerification
 from app.schemas.llm_io import ApplicationAnswers, FitAssessment, JobExtraction
+from app.schemas.profile import MAX_LETTER_WORDS
 from app.schemas.sources import AgentBrowseSource, SourceList, SourceRunSummary
 from app.services import (
     analytics,
@@ -32,6 +38,7 @@ from app.services import (
     status,
     tracking,
 )
+from app.services.documents import cover_letter as letter
 from app.services.documents import service as cv
 from app.services.ingestion import browse
 from app.services.ingestion import service as sources
@@ -171,6 +178,52 @@ class GetCvContentInput(_Input):
 
 class SaveCvVerificationInput(_Input):
     document_id: int = Field(ge=1, description="Id del CV verificado.")
+    verification: CvVerification
+
+
+class SaveCoverLetterBriefInput(_Input):
+    job_id: int = Field(ge=1, description="Id de la oferta.")
+    instructions: str = Field(
+        default="",
+        max_length=MAX_INSTRUCTIONS,
+        description="Lo que el usuario quiere que diga la carta de esta oferta (sustituye a las "
+        "anteriores: incluye las que sigan valiendo).",
+    )
+    max_words: int | None = Field(
+        default=None, ge=50, le=MAX_LETTER_WORDS, description="Límite de palabras del cuerpo."
+    )
+
+
+class SaveCoverLetterInput(_Input):
+    job_id: int = Field(ge=1, description="Id de la oferta (aprobada).")
+    content: CoverLetterContent
+    render_options: CoverLetterRenderOptions | None = Field(
+        default=None,
+        description="Opciones del primer render; por defecto, a juego con el CV seleccionado.",
+    )
+
+
+class RenderCoverLetterInput(_Input):
+    document_id: int = Field(ge=1, description="Id de la carta (`document_id`).")
+    options: CoverLetterRenderOptions = Field(
+        default_factory=CoverLetterRenderOptions,
+        description="Plantilla, foto, color y tamaño de página; por defecto, como el CV.",
+    )
+
+
+class GetCoverLetterInput(_Input):
+    job_id: int | None = Field(default=None, ge=1, description="Última carta de esta oferta.")
+    document_id: int | None = Field(default=None, ge=1, description="Una carta concreta.")
+
+    @model_validator(mode="after")
+    def _one_of(self) -> Self:
+        if (self.job_id is None) == (self.document_id is None):
+            raise ValueError("Indica `job_id` o `document_id`, uno de los dos.")
+        return self
+
+
+class SaveCoverLetterVerificationInput(_Input):
+    document_id: int = Field(ge=1, description="Id de la carta verificada.")
     verification: CvVerification
 
 
@@ -353,6 +406,41 @@ def _save_application_answers(
 ) -> answers.SaveAnswersResult:
     return answers.save_application_answers(
         session, args.job_id, args.answers, agent_name=ctx.client_name
+    )
+
+
+def _save_cover_letter_brief(
+    session: Session, args: SaveCoverLetterBriefInput, _ctx: CallContext
+) -> letter.SaveBriefResult:
+    brief = letter.CoverLetterBriefInput(instructions=args.instructions, max_words=args.max_words)
+    return letter.save_brief(session, args.job_id, brief)
+
+
+def _get_cover_letter(
+    session: Session, args: GetCoverLetterInput, _ctx: CallContext
+) -> letter.CoverLetterInfo:
+    return letter.get_cover_letter(session, job_id=args.job_id, document_id=args.document_id)
+
+
+def _save_cover_letter(
+    session: Session, args: SaveCoverLetterInput, ctx: CallContext
+) -> letter.SaveLetterResult:
+    return letter.save_cover_letter(
+        session, args.job_id, args.content, args.render_options, agent_name=ctx.client_name
+    )
+
+
+def _render_cover_letter(
+    session: Session, args: RenderCoverLetterInput, _ctx: CallContext
+) -> letter.LetterRenderResult:
+    return letter.render_cover_letter(session, args.document_id, args.options)
+
+
+def _save_cover_letter_verification(
+    session: Session, args: SaveCoverLetterVerificationInput, ctx: CallContext
+) -> letter.SaveLetterVerificationResult:
+    return letter.save_verification(
+        session, args.document_id, args.verification, agent_name=ctx.client_name
     )
 
 
@@ -630,6 +718,84 @@ TOOLS: tuple[ToolSpec, ...] = (
             path=("applications", "save-answers"),
             arguments=("job_id",),
             file_field="answers",
+            file_format="json",
+        ),
+    ),
+    ToolSpec(
+        name="save_cover_letter_brief",
+        description=(
+            "Guarda las indicaciones de la carta de una oferta (lo que el usuario quiere que "
+            "diga y su límite de palabras) para que queden visibles en la UI y respalden la "
+            "evidencia `user`. Sustituye a las anteriores (vacías, las borra). Mandan sobre "
+            "las del perfil."
+        ),
+        input_model=SaveCoverLetterBriefInput,
+        output_model=letter.SaveBriefResult,
+        handler=_save_cover_letter_brief,
+        cli=CliSpec(
+            path=("letter", "brief"), arguments=("job_id",), file_keys=("instructions", "max_words")
+        ),
+    ),
+    ToolSpec(
+        name="get_cover_letter",
+        description=(
+            "Indicaciones de la carta (las de la oferta y `preferences.cover_letter` del perfil), "
+            "el límite de palabras resuelto y la carta (la última de la oferta o una concreta) "
+            "con sus evidencias resueltas, recuento de palabras, verificación y renders."
+        ),
+        input_model=GetCoverLetterInput,
+        output_model=letter.CoverLetterInfo,
+        handler=_get_cover_letter,
+        cli=CliSpec(
+            path=("letter", "show"),
+            arguments=("job_id",),
+            option_names={"document_id": "--document"},
+        ),
+    ),
+    ToolSpec(
+        name="save_cover_letter",
+        description=(
+            "Valida y guarda la CoverLetterContent de una oferta aprobada y hace el primer render "
+            "(a juego con el CV seleccionado). Rechaza evidencias inexistentes, `user` sin "
+            "indicaciones guardadas, skills fuera del perfil, skills básicas que la oferta no pide "
+            "y más palabras que el límite: corrige lo que diga y reintenta. No envía nada."
+        ),
+        input_model=SaveCoverLetterInput,
+        output_model=letter.SaveLetterResult,
+        handler=_save_cover_letter,
+        cli=CliSpec(
+            path=("letter", "save"), arguments=("job_id",), file_keys=("content", "render_options")
+        ),
+    ),
+    ToolSpec(
+        name="render_cover_letter",
+        description=(
+            "Renderiza una carta ya guardada con otro diseño, foto, color o tamaño de página. "
+            "No cambia el texto ni registra eventos."
+        ),
+        input_model=RenderCoverLetterInput,
+        output_model=letter.LetterRenderResult,
+        handler=_render_cover_letter,
+        cli=CliSpec(
+            path=("letter", "render"),
+            arguments=("document_id",),
+            file_field="options",
+            file_format="json",
+        ),
+    ),
+    ToolSpec(
+        name="save_cover_letter_verification",
+        description=(
+            "Guarda la verificación independiente de una carta (`passed` y problemas) y registra "
+            "`cover_letter_verified`. No cambia la etapa de la oferta."
+        ),
+        input_model=SaveCoverLetterVerificationInput,
+        output_model=letter.SaveLetterVerificationResult,
+        handler=_save_cover_letter_verification,
+        cli=CliSpec(
+            path=("letter", "save-verification"),
+            arguments=("document_id",),
+            file_field="verification",
             file_format="json",
         ),
     ),

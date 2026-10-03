@@ -19,7 +19,10 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 08.1 | ↳ Contenido, verificación y motor docx | ✅ | `generar-cv` produce un PDF verificado con `ats-simple` y la oferta pasa a `cv_ready` |
 | 08.2 | ↳ Foto, renders múltiples y UI | ✅ | Plantilla, foto y color se cambian en la UI sin agente; `clasica-foto` |
 | 08.3 | ↳ Importar plantillas desde Word y «Mi CV» | ✅ | Subes tu CV de Word, se convierte en plantilla por defecto y los CVs a medida salen con tu diseño, tu orden de secciones y tus secciones extra |
-| 08c | Carta de presentación | ⏳ | `generar-carta` redacta y verifica la carta según tus indicaciones (generales y de cada oferta); TXT para pegar y PDF a juego con el CV |
+| 08c | Carta de presentación | 🚧 | `generar-carta` redacta y verifica la carta según tus indicaciones (generales y de cada oferta); TXT para pegar y PDF a juego con el CV |
+| 08c.1 | ↳ Indicaciones, contenido, verificación y render básico | ✅ | `generar-carta` guarda y verifica una carta que sigue tus indicaciones; PDF con `carta-simple` y TXT |
+| 08c.2 | ↳ Diseño a juego con el CV | ⏳ | Carta con la cabecera y el estilo de tu plantilla (integradas, html e importadas con `build-letter`) |
+| 08c.3 | ↳ API, UI y paquete de candidatura | ⏳ | Sección «Carta de presentación» en la ficha y la carta en el paquete de candidatura |
 | 08b | Plantillas html | ✅ | Importar diseños desde PDF o imagen (Canva…), también como «Mi CV», y plantilla integrada de dos columnas |
 | 09 | Conectores de ATS y scheduler | ✅ | Ingesta diaria de empresas objetivo sin intervención |
 | 09b | Alertas, captura y búsqueda con navegador | ✅ | Las alertas de LinkedIn y otros portales llegan solas por correo, cualquier oferta entra con un clic desde el navegador y, opcionalmente, el agente recorre portales |
@@ -795,4 +798,62 @@ decisiones tomadas y deuda técnica pendiente. -->
   - La suite del frontend es sensible a la carga: con otros procesos pesados en paralelo, algunos
     tests de páginas no tocadas superan los 5 s o el `findBy` de 1 s. Por separado, o con
     `--testTimeout=30000` y la máquina libre, pasan.
+
+### 08c.1 · Carta: indicaciones, contenido, verificación y render básico — 2026-10-03 · Claude Code (Opus 5.5)
+- **Resumen:** la fase 08c se parte en tres encargos (`prompts/08c.1-*`, `08c.2-*` y `08c.3-*`)
+  en la rama `fase/08c-carta-presentacion`. Esta subfase añade:
+  - `preferences.cover_letter` en el perfil (opcional; también en `demo/profile.example.yaml`) y
+    la política `cover_letter` validada;
+  - migración `0010` (`cover_letter_briefs`);
+  - `schemas/cover_letter.py`;
+  - `services/documents/cover_letter.py`: brief, guardar con copia de las indicaciones usadas,
+    validación, resolución de opciones a juego con el CV, render, selección, verificación, texto
+    plano y edición del usuario (lista para la UI de la 08c.3);
+  - eventos `cover_letter_generated` y `cover_letter_verified` (reservados, sin cambio de etapa);
+  - plantilla integrada `carta-simple` (`kind: letter`, solo carta, acento libre);
+  - las cinco herramientas con paridad (`jh letter brief|show|save|render|save-verification`);
+  - el rol `verificador` también para cartas, y `generar-carta` y `actualizar-perfil` al día.
+
+  17 tests del servicio y 13 casos de paridad. 1 495 tests de backend y 99 de frontend.
+- **Decisiones:**
+  - `TemplateMeta` gana `kind` (`cv` | `letter`) y `letter: {file}`.
+    - Una plantilla `kind: letter` no necesita `template.*` ni secciones, y no aparece como
+      plantilla de CV: `templates.get` y `list_templates` filtran por `kind`.
+    - El contrato de la carta se valida aparte (`LETTER_CONTRACT_VARIABLES`).
+  - `AccentColorOption.free`: admite cualquier `#RRGGBB` (lo usa `carta-simple` para heredar el
+    color del CV).
+  - El render del CV se parte en `write_files`, `store_files` y `prepared_photo`, que reutiliza
+    la carta. Los motores aceptan `file` para renderizar `letter.*`.
+  - Palabras: solo los párrafos, `\w+` Unicode.
+  - Skills en texto libre:
+    - se comprueban las de `keywords_targeted` y las de la oferta y las básicas nombradas en los
+      párrafos, con los alias del matching;
+    - una skill de la oferta que no está en el perfil solo puede nombrarse en un párrafo que cite
+      `extraction` y nada del perfil: si cita también un logro, se la estaría atribuyendo (lo vio
+      la revisión);
+    - las claves se normalizan con `checks.skill_key`, como en el CV (quita «nociones de…»).
+  - Evidencias citables: las del CV y las historias STAR (`checks.citable_refs`, compartido con
+    las respuestas de la 10.3). `extraction` exige que haya extracción.
+  - Contenido del documento: `{letter, instructions: {brief, preferences, max_words}}`. Las
+    preferencias se copian como dict: si su esquema cambia, las cartas antiguas se siguen abriendo.
+  - Opciones de la carta:
+    - foto, color y página salen del render seleccionado del CV, también si se elige otra
+      plantilla de carta a mano;
+    - una plantilla elegida a mano sin carta da `not_found` (sin respaldo);
+    - sin CV, se aplican las reglas del perfil.
+  - El subtítulo de la carta es el del CV de la oferta o el `headline`. La fecha es la del día del
+    render, en Europe/Madrid. El texto plano no lleva destinatario, fecha ni contacto.
+  - `jh templates validate` acepta las plantillas solo de carta. `jh doctor` avisa si falta la
+    carta de reserva (`cover_letter.fallback_template`).
+  - La edición del usuario (`save_user_letter`) reutiliza las opciones del render seleccionado de
+    la carta anterior.
+- **Deuda y notas para la 08c.2 y la 08c.3:**
+  - De momento, toda carta sale con `carta-simple` y aviso `letter_fallback`. La 08c.2 añade
+    `letter.*` a las integradas, el motor html y `build-letter`.
+  - `generar-carta` ya no menciona la UI de la ficha: la 08c.3 debe volver a recordarla.
+  - `service.select_render` y la API `/renders/{id}/select` solo aceptan CVs; la selección de la
+    carta está en `cover_letter.select_render`. Unificarlo en la 08c.3. `/renders/{id}/pdf` ya
+    sirve las cartas, porque no mira el tipo de documento.
+  - El texto plano solo existe en el servicio: la API lo sirve en la 08c.3.
+  - La BD real necesita `jh db upgrade` (hasta 0010).
 

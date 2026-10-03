@@ -138,6 +138,8 @@ RESERVED_EVENTS = frozenset(
         EventType.CV_RENDERED,
         EventType.CV_VERIFIED,
         EventType.CV_REJECTED,
+        EventType.COVER_LETTER_GENERATED,
+        EventType.COVER_LETTER_VERIFIED,
         EventType.APPLICATION_PREPARED,
     }
 )

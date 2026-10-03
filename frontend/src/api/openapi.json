@@ -7261,6 +7261,8 @@
           "cv_rendered",
           "cv_verified",
           "cv_rejected",
+          "cover_letter_generated",
+          "cover_letter_verified",
           "application_prepared",
           "applied",
           "applied_manually",

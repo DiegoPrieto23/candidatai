@@ -44,6 +44,8 @@ class EventType(StrEnum):
     CV_RENDERED = "cv_rendered"
     CV_VERIFIED = "cv_verified"
     CV_REJECTED = "cv_rejected"
+    COVER_LETTER_GENERATED = "cover_letter_generated"
+    COVER_LETTER_VERIFIED = "cover_letter_verified"
     APPLICATION_PREPARED = "application_prepared"
     APPLIED = "applied"
     APPLIED_MANUALLY = "applied_manually"
@@ -117,6 +119,8 @@ TRANSITIONS: dict[EventType, Transition] = {
     EventType.CV_RENDERED: Transition(CV_STAGES, None),
     EventType.CV_VERIFIED: Transition(CV_STAGES, None),
     EventType.CV_REJECTED: Transition(CV_STAGES, None),
+    EventType.COVER_LETTER_GENERATED: Transition(CV_STAGES, None),
+    EventType.COVER_LETTER_VERIFIED: Transition(CV_STAGES, None),
     EventType.APPLICATION_PREPARED: Transition(WORKING_STAGES, None),
     EventType.APPLIED: Transition(
         frozenset({Stage.CV_READY}),

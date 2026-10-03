@@ -110,6 +110,29 @@ def demo_content(**changes: Any) -> CvContent:
     return CvContent.model_validate(demo_content_data(**changes))
 
 
+# Carta del perfil demo para la oferta demo (fase 08c).
+LETTER: dict[str, Any] = {
+    "language": "es",
+    "recipient": "Equipo de datos de Acme",
+    "greeting": "Hola, equipo de Acme:",
+    "paragraphs": [
+        {
+            "text": "Os escribo por el puesto de Data Engineer: buscáis a alguien con Python y "
+            "SQL para mantener vuestras cargas en Snowflake.",
+            "evidence": ["extraction"],
+        },
+        {
+            "text": "En Norteconsulting migré las cargas nocturnas de SSIS a Python y reduje el "
+            "tiempo de carga un 35 %, sin incidencias en el cambio.",
+            "evidence": ["exp-norteconsulting/a1", "st-migracion"],
+        },
+        {"text": "¿Hablamos en una llamada breve esta semana?", "evidence": ["user"]},
+    ],
+    "sign_off": "Un saludo,",
+    "keywords_targeted": ["Python", "SQL", "Snowflake"],
+}
+
+
 # --- PDF sin LibreOffice --------------------------------------------------------------------
 
 LINES_PER_PAGE = 45

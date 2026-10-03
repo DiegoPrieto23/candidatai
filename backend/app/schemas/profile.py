@@ -256,6 +256,27 @@ class CvPreferences(_Strict):
     template_rules: list[TemplateRule] = []  # la primera que encaje gana
 
 
+MAX_LETTER_WORDS = 600
+
+
+class SignOff(_Strict):
+    """Despedida de la carta por idioma («Un saludo,», «Kind regards,»)."""
+
+    es: str | None = None
+    en: str | None = None
+
+
+class CoverLetterPreferences(_Strict):
+    """Indicaciones generales para las cartas (fase 08c). Las de cada oferta mandan sobre estas."""
+
+    max_words: int | None = Field(default=None, ge=50, le=MAX_LETTER_WORDS)
+    tone: str | None = None  # «cercano», «formal»…
+    sign_off: SignOff = SignOff()
+    instructions: str | None = None  # lo que quieres decir siempre (respaldo `user`)
+    avoid: list[Text] = []  # lo que no quieres que diga nunca
+    default_format: Literal["text", "pdf"] | None = None  # cómo sueles enviarla
+
+
 class Preferences(_Strict):
     roles: list[str] = Field(min_length=1)
     # Todos los niveles a los que se presentaría, por arriba y por abajo: los demás se descartan.
@@ -265,6 +286,7 @@ class Preferences(_Strict):
     locations: Locations = Locations()
     languages_for_work: list[LanguageCode] = Field(min_length=1)
     cv: CvPreferences
+    cover_letter: CoverLetterPreferences | None = None  # fase 08c; opcional
 
 
 class ConsistencyIssue(BaseModel):

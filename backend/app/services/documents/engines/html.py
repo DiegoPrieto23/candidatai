@@ -217,8 +217,9 @@ def render_pdf(
     page_size: PageSize,
     photo_path: Path | None = None,
     on_request: RequestLog | None = None,
+    file: Path | None = None,
 ) -> Path:
-    """Renderiza la plantilla html con el contexto y escribe el PDF en `output`."""
-    html = render_string(template, context, photo_path)
+    """Renderiza la plantilla html (o `file`, p. ej. su carta) y escribe el PDF en `output`."""
+    html = render_string(template, context, photo_path, file.name if file else None)
     resolve = resource_resolver(template.path, photo_path)
     return html_to_pdf(html, resolve, output, page_size, on_request)
