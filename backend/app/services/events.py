@@ -213,6 +213,10 @@ class NotUserEventError(ValueError):
 DiscardReason = Literal["seniority", "skills", "location", "salary", "company", "other"]
 DISCARD_REASONS: tuple[str, ...] = get_args(DiscardReason)
 
+# Por dónde se envió la candidatura (`applications.channel`).
+ApplicationChannel = Literal["ats_form", "email", "linkedin_manual", "portal_manual"]
+APPLICATION_CHANNELS: tuple[str, ...] = get_args(ApplicationChannel)
+
 
 def add_user_event(
     session: Session,
@@ -221,10 +225,13 @@ def add_user_event(
     note: str | None = None,
     occurred_at: datetime | None = None,
     reason: str | None = None,
+    channel: str | None = None,
 ) -> AddEventResult:
     """Registra un evento del usuario (actor `user`). La nota va en `payload.note`.
 
     `discarded` exige un motivo (`reason`, uno de `DISCARD_REASONS`); con `other`, también nota.
+    `applied` y `applied_manually` admiten el canal (`channel`) y apuntan en `payload.render_id`
+    el render seleccionado del último CV de la oferta, si lo hay (el CV enviado).
     """
     event_type = parse_event_type(type)
     if event_type not in USER_EVENTS:
@@ -240,11 +247,26 @@ def add_user_event(
             raise ValueError(f"Descartar necesita un motivo (`reason`): {valid}.")
         if reason == "other" and not note:
             raise ValueError("Con el motivo «other», explica el motivo en la nota.")
+    applied = event_type in (EventType.APPLIED, EventType.APPLIED_MANUALLY)
+    if channel is not None and channel not in APPLICATION_CHANNELS:
+        valid = ", ".join(APPLICATION_CHANNELS)
+        raise ValueError(f"Canal desconocido: «{channel}». Válidos: {valid}.")
+    if channel is not None and not applied:
+        raise ValueError("`channel` solo se usa al registrar el envío de la candidatura.")
     payload: dict[str, Any] = {}
     if reason:
         payload["reason"] = reason
     if note:
         payload["note"] = note
+    if applied:
+        # Import diferido: el servicio de documentos ya importa este módulo.
+        from app.services.documents.service import selected_render_id
+
+        if channel:
+            payload["channel"] = channel
+        render_id = selected_render_id(session, job_id)
+        if render_id is not None:
+            payload["render_id"] = render_id
     event = record(
         session,
         job_id,

@@ -7,6 +7,11 @@ y los skills `preparar-candidatura`, `preparar-entrevista` y `resumen-diario`.
 ## Objetivo
 No perder ningún proceso y saber qué funciona.
 
+Se hace en tres subfases, en la rama `fase/10-seguimiento-analitica` y con un commit por subfase:
+**10.1** seguimiento (kanban, ficha de proceso, hitos, seguimientos y calendario;
+`prompts/10.1-seguimiento.md`), **10.2** analítica (dashboard del embudo;
+`prompts/10.2-analitica.md`) y **10.3** paquete de candidatura (`prompts/10.3-paquete-candidatura.md`).
+
 ## Alcance
 1. **Kanban** en la UI, con columnas por etapa desde `approved` hasta `closed`. Arrastrar una
    tarjeta abre un diálogo que registra el evento correspondiente (fecha editable, nota).

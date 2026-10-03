@@ -6,21 +6,25 @@ proceso) y otra por `jh … --json`. Las marcas de tiempo se normalizan antes de
 
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from datetime import timedelta
 from pathlib import Path
 from typing import Any
 
 import httpx
 import pytest
 import respx
+from sqlalchemy import select
 
 from app.agent_interface.tools import TOOLS_BY_NAME
 from app.core import migrations
 from app.core.config import get_settings
 from app.core.db import get_engine, session_scope
+from app.models import Event
+from app.models.base import utcnow
 from app.schemas.cv import CvContent
 from app.schemas.llm_io import JobExtraction
 from app.schemas.sources import AgentBrowseSource
-from app.services import events, extractions, ingest, profile
+from app.services import events, extractions, ingest, process, profile
 from app.services.documents import pdf
 from app.services.documents import service as cv_service
 from app.services.ingestion import browse
@@ -89,6 +93,44 @@ def seed_cv() -> None:
     seed_approved()
     with session_scope() as session:
         cv_service.save_content(session, 1, CvContent.model_validate(CV_CONTENT))
+
+
+def seed_applied_long_ago() -> None:
+    """Oferta 1 enviada (por correo) hace 15 días, sin respuesta."""
+    seed_job()
+    with session_scope() as session:
+        start = utcnow() - timedelta(days=30)
+        for event in session.scalars(select(Event).where(Event.job_id == 1)):
+            event.occurred_at = start  # `found` e `injection_suspected` del alta
+        for i, step in enumerate(("extracted", "approved")):
+            events.record(session, 1, step, "user", occurred_at=start + timedelta(days=i + 1))
+        events.record(
+            session,
+            1,
+            "applied_manually",
+            "user",
+            payload={"channel": "email"},
+            occurred_at=utcnow() - timedelta(days=15),
+        )
+
+
+def seed_upcoming() -> None:
+    """La oferta 1, enviada, con una entrevista dentro de dos días y un plazo dentro de diez."""
+    seed_applied_long_ago()
+    soon = utcnow() + timedelta(days=2)
+    with session_scope() as session:
+        process.create_milestone(
+            session,
+            1,
+            process.MilestoneCreate(kind="interview", starts_at=soon, location="Meet"),
+        )
+        process.create_milestone(
+            session,
+            1,
+            process.MilestoneCreate(
+                kind="deadline", starts_at=soon + timedelta(days=8), all_day=True
+            ),
+        )
 
 
 CV_CONTENT = demo_content_data()
@@ -421,6 +463,16 @@ CASES = [
          {"document_id": 1, "verification": BAD_VERIFICATION},
          ["cv", "save-verification", "1", "--file", "{tmp}/v.json"],
          seed=seed_cv, files={"v.json": BAD_VERIFICATION}, expect_error="validation_error"),
+    Case("followups", "list_followups_due", {}, ["followups"], seed=seed_applied_long_ago),
+    Case("followups-days", "list_followups_due", {"days_without_reply": 20},
+         ["followups", "--days", "20"], seed=seed_applied_long_ago),
+    Case("followups-bad", "list_followups_due", {"days_without_reply": 0},
+         ["followups", "--days", "0"], expect_error="validation_error"),
+    Case("upcoming", "list_upcoming", {"days": 14}, ["upcoming", "--days", "14"],
+         seed=seed_upcoming),
+    Case("upcoming-default", "list_upcoming", {}, ["upcoming"], seed=seed_upcoming),
+    Case("upcoming-bad", "list_upcoming", {"days": "una"}, ["upcoming", "--days", "una"],
+         expect_error="validation_error"),
 ]  # fmt: skip
 
 

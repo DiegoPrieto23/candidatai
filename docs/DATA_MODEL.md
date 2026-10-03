@@ -190,13 +190,13 @@ Nunca guarda texto crudo de ofertas ni datos del perfil en `args_summary`.
 | `cover_letter_generated` | agent / user | sin cambio; `payload`: `document_id`, `edited_by_user` (fase 08c) |
 | `cover_letter_verified` | agent | sin cambio; `payload`: `document_id`, `passed`, `blockers` (fase 08c) |
 | `application_prepared` | system | sin cambio |
-| `applied` / `applied_manually` | user | `applied`; `payload.render_id` (el CV enviado) y `channel` |
-| `reply_received`, `interview_scheduled`, `interview_done`, `test_assigned` | user | `in_process` |
+| `applied` / `applied_manually` | user | `applied`; `payload.render_id` (el CV enviado: el render seleccionado del último CV, lo pone el código) y `channel` (`ats_form`, `email`, `linkedin_manual`, `portal_manual`; opcional) |
+| `reply_received`, `interview_scheduled`, `interview_done`, `test_assigned` | user | `in_process`. Desde la fase 10, los registra la ficha de proceso al crear una entrevista o una prueba (`payload.milestone_id`, `title`, `starts_at`) o al marcar una entrevista como hecha |
 | `followup_sent` | user | sin cambio |
 | `offer_received` | user | `in_process` |
 | `rejected`, `withdrawn`, `expired`, `accepted` | user/system | `closed` |
 | `reopened` | user | la etapa previa al cierre |
-| `note` | cualquiera | sin cambio |
+| `note` | cualquiera | sin cambio. Reprogramar o cancelar una entrevista o una prueba deja una `note` con `payload.milestone_id` (fase 10) |
 
 La proyección vive en `services/pipeline.py`: `stage_for(events) -> Stage`, con tests que cubren
 cada transición. Una transición no válida (p. ej. `applied` sin `cv_ready` ni `applied_manually`)
@@ -227,3 +227,43 @@ Detalle y motivos en `docs/FUENTES_OFERTAS.md` §Modelo de datos.
 - Tabla `source_runs`: ya la crea la fase 09 (migración `0006`); la 09b la reutiliza.
 - Tabla `email_messages`: `message_id` (único), `source_id`, `received_at`, `jobs_found`,
   `processed_at`. Nunca guarda el cuerpo del correo.
+
+## Ampliaciones de la fase 10
+
+Migración `0008`. Detalle del seguimiento en `prompts/10.1-seguimiento.md`.
+
+### `milestones`
+Hitos con fecha de un proceso. Las entrevistas y las pruebas registran su evento; el resto no
+cambia la etapa.
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | int PK | |
+| job_id | FK jobs | |
+| kind | str | `interview` (registra `interview_scheduled`), `test` (`test_assigned`), `deadline`, `other` (sin evento) |
+| title | str | Por defecto, el tipo («Entrevista», «Prueba técnica»…) |
+| starts_at / ends_at | datetime / datetime? | Sin fin: `calendar.default_duration_minutes` (60) en el calendario |
+| all_day | bool | `starts_at` a las 00:00 de ese día en Europe/Madrid (`calendar.timezone`); con varios días, `ends_at` se guarda como las 00:00 del día siguiente al último (fin exclusivo, como en iCalendar) |
+| location | str? | Lugar o enlace de la videollamada |
+| notes | text? | |
+| status | str | `scheduled`, `done` (entrevista: `interview_done`), `cancelled` (entrevista o prueba: `note`). No vuelve atrás |
+| event_id | FK events? | El evento que registró al crearse |
+| sequence | int | `SEQUENCE` del iCalendar: sube con cada cambio |
+| created_at / updated_at | datetime | |
+
+Si el evento no es válido en la etapa (p. ej. una entrevista antes de enviar), no se guarda el hito.
+Editar la fecha de una entrevista o una prueba deja una `note` («reprogramada para el…»).
+
+### `contacts`
+`id, job_id, name, role?, email?, phone?, linkedin?, notes?, created_at`. Personas del proceso
+(recruiter, hiring manager…). Solo se ven en la UI: ninguna herramienta para agentes las devuelve.
+
+### Seguimientos y calendario
+- **Seguimiento vencido**: oferta en `applied` con `followups.days_without_reply` días o más (10 por
+  defecto, `config/policies.yaml`) desde el último `applied`/`applied_manually` o `followup_sent`.
+- **Próximos**: hitos `scheduled` de ofertas abiertas desde las 00:00 de hoy (Madrid) hasta el
+  final del último día de la ventana, más el
+  `application_deadline` de la extracción vigente de las ofertas en `pending_triage`, `approved` o
+  `cv_ready`.
+- **Calendario**: `.ics` por hito y feed con los próximos sin límite de días (solo hitos
+  programados de ofertas abiertas: lo cancelado o cerrado sale del feed) (RFC 5545, UTC, `UID`
+  `milestone-<id>@jobhunter.local` y `deadline-<job_id>-<fecha>@jobhunter.local`).

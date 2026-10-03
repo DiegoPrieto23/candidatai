@@ -25,8 +25,12 @@ scoring:
   preferences:
     role_min_similarity: 60        # token_sort_ratio con preferences.roles para contar; además, todas las palabras del rol deben estar en el título
 
-followups:
-  days_without_reply: 10
+followups:                      # fase 10: aviso de seguimiento y `list_followups_due`
+  days_without_reply: 10          # días sin respuesta tras enviar (o tras el último seguimiento)
+
+calendar:                       # fase 10: hitos de los procesos y feed .ics
+  timezone: Europe/Madrid
+  default_duration_minutes: 60    # duración de un hito sin hora de fin
 
 applier:
   step_timeout_seconds: 30

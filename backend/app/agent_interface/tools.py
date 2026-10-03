@@ -20,7 +20,7 @@ from app.agent_interface.registry import CallContext, CliSpec, ToolSpec
 from app.schemas.cv import CvContent, CvRenderOptions, CvVerification
 from app.schemas.llm_io import FitAssessment, JobExtraction
 from app.schemas.sources import AgentBrowseSource, SourceList, SourceRunSummary
-from app.services import events, extractions, ingest, jobs, profile, status
+from app.services import events, extractions, ingest, jobs, profile, status, tracking
 from app.services.documents import service as cv
 from app.services.ingestion import browse
 from app.services.ingestion import service as sources
@@ -158,6 +158,19 @@ class SaveCvVerificationInput(_Input):
     verification: CvVerification
 
 
+class ListFollowupsInput(_Input):
+    days_without_reply: int | None = Field(
+        default=None,
+        ge=1,
+        le=tracking.MAX_DAYS,
+        description="Días sin respuesta. Por defecto, `followups.days_without_reply` (10).",
+    )
+
+
+class ListUpcomingInput(_Input):
+    days: int = Field(default=7, ge=1, le=tracking.MAX_DAYS, description="Días desde hoy.")
+
+
 class JobList(BaseModel):
     jobs: list[jobs.JobSummary]
 
@@ -292,6 +305,18 @@ def _save_cv_verification(
     return cv.save_verification(
         session, args.document_id, args.verification, agent_name=ctx.client_name
     )
+
+
+def _list_followups_due(
+    session: Session, args: ListFollowupsInput, _ctx: CallContext
+) -> tracking.FollowupList:
+    return tracking.list_followups_due(session, args.days_without_reply)
+
+
+def _list_upcoming(
+    session: Session, args: ListUpcomingInput, _ctx: CallContext
+) -> tracking.UpcomingList:
+    return tracking.list_upcoming(session, args.days)
 
 
 TOOLS: tuple[ToolSpec, ...] = (
@@ -551,6 +576,28 @@ TOOLS: tuple[ToolSpec, ...] = (
             file_keys=tuple(SourceRunSummary.model_fields),
         ),
         audit_fields=("source_id",),
+    ),
+    ToolSpec(
+        name="list_followups_due",
+        description=(
+            "Candidaturas enviadas (etapa `applied`) sin respuesta desde hace N días o más, "
+            "contando desde el envío o el último `followup_sent`. La que más espera, primero."
+        ),
+        input_model=ListFollowupsInput,
+        output_model=tracking.FollowupList,
+        handler=_list_followups_due,
+        cli=CliSpec(path=("followups",), option_names={"days_without_reply": "--days"}),
+    ),
+    ToolSpec(
+        name="list_upcoming",
+        description=(
+            "Entrevistas, pruebas y plazos (de los procesos y de las ofertas sin enviar) desde hoy "
+            "hasta dentro de `days` días, por fecha. Horas en UTC: muéstralas en Europe/Madrid."
+        ),
+        input_model=ListUpcomingInput,
+        output_model=tracking.UpcomingList,
+        handler=_list_upcoming,
+        cli=CliSpec(path=("upcoming",)),
     ),
 )
 

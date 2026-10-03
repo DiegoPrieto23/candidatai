@@ -117,6 +117,27 @@ class AgentBrowsePolicy(BaseModel):
     default_max_offers: int = Field(gt=0)  # ofertas por plataforma si no dice `max_offers`
 
 
+class FollowupsPolicy(BaseModel):
+    """Seguimientos (fase 10): días sin respuesta tras enviar la candidatura."""
+
+    days_without_reply: int = Field(gt=0)
+
+
+class CalendarPolicy(BaseModel):
+    """Hitos y calendario `.ics` (fase 10)."""
+
+    timezone: str = Field(min_length=1)  # la de la UI y del calendario
+    default_duration_minutes: int = Field(gt=0)  # hitos sin hora de fin
+
+    @model_validator(mode="after")
+    def _known_timezone(self) -> "CalendarPolicy":
+        try:
+            ZoneInfo(self.timezone)
+        except (ZoneInfoNotFoundError, ValueError) as exc:
+            raise ValueError(f"Zona horaria desconocida: «{self.timezone}».") from exc
+        return self
+
+
 class Policies(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
@@ -127,6 +148,8 @@ class Policies(BaseModel):
     connectors: ConnectorsPolicy
     email_alerts: EmailAlertsPolicy
     agent_browse: AgentBrowsePolicy
+    followups: FollowupsPolicy
+    calendar: CalendarPolicy
 
 
 class InjectionPatterns(BaseModel):

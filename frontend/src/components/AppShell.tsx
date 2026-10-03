@@ -1,7 +1,7 @@
 import { Link, NavLink, Outlet, useLocation, useSearchParams } from 'react-router'
-import { DesktopIcon, MoonIcon, PlusIcon, SunIcon, TerminalWindowIcon } from '@phosphor-icons/react'
+import { BellRingingIcon, DesktopIcon, MoonIcon, PlusIcon, SunIcon, TerminalWindowIcon } from '@phosphor-icons/react'
 import type { Stage } from '@/api/client'
-import { useStatus } from '@/api/queries'
+import { useFollowups, useStatus } from '@/api/queries'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -102,6 +102,32 @@ function ExtractionReminder() {
   )
 }
 
+function FollowupReminder() {
+  const { data } = useFollowups()
+  const { pathname } = useLocation()
+  const due = data?.followups.length ?? 0
+  if (!due || pathname === '/procesos') return null
+  return (
+    <div
+      role="status"
+      className="flex items-start gap-3 rounded-xl border border-primary/20 bg-accent/60 px-4 py-3 text-sm text-accent-foreground animate-in fade-in slide-in-from-top-1"
+    >
+      <BellRingingIcon className="mt-0.5 size-[18px] shrink-0" weight="duotone" />
+      <p>
+        <span className="font-medium">
+          {due === 1
+            ? `1 candidatura lleva ${data?.days_without_reply} días o más sin respuesta.`
+            : `${due} candidaturas llevan ${data?.days_without_reply} días o más sin respuesta.`}
+        </span>{' '}
+        <Link to="/procesos" className="underline underline-offset-4">
+          Revisa los seguimientos en Procesos
+        </Link>
+        .
+      </p>
+    </div>
+  )
+}
+
 function navClass({ isActive }: { isActive: boolean }) {
   return cn(
     'flex items-center gap-1.5 rounded-md px-3 py-1.5 transition-colors',
@@ -146,6 +172,9 @@ export function AppShell() {
               Triaje
               <NavCount stage="pending_triage" label="por revisar" />
             </NavLink>
+            <NavLink to="/procesos" className={navClass}>
+              Procesos
+            </NavLink>
             <NavLink to="/alertas" className={navClass}>
               Alertas
               <NavCount stage="pending_detail" label="por completar" muted />
@@ -175,8 +204,9 @@ export function AppShell() {
         </div>
       </header>
       <main className="mx-auto max-w-6xl px-4 pb-24 pt-6 sm:px-6 sm:pt-8">
-        <div className="mb-6 empty:hidden">
+        <div className="mb-6 space-y-3 empty:hidden">
           <ExtractionReminder />
+          <FollowupReminder />
         </div>
         <Outlet />
       </main>

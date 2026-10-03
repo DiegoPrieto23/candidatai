@@ -33,6 +33,17 @@ export type AgentBrowseLimits = Schemas['AgentBrowseLimits']
 export type AlertList = Schemas['AlertList']
 export type AlertJob = Schemas['AlertJob']
 export type EmailPollResult = Schemas['EmailPollResult']
+export type Board = Schemas['Board']
+export type BoardCard = Schemas['BoardCard']
+export type BoardMove = Schemas['BoardMove']
+export type EventType = Schemas['EventType']
+export type ProcessView = Schemas['ProcessView']
+export type MilestoneOut = Schemas['MilestoneOut']
+export type MilestoneKind = Schemas['MilestoneCreate']['kind']
+export type ContactOut = Schemas['ContactOut']
+export type UpcomingItem = Schemas['UpcomingItem']
+export type FollowupList = Schemas['FollowupList']
+export type ApplicationChannel = NonNullable<Schemas['AddUserEventBody']['channel']>
 
 export const API_URL: string = import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:8000'
 
@@ -48,6 +59,11 @@ export const fileUrls = {
   /** La plantilla con tu perfil real; la primera vez tarda lo que la conversión a PDF. */
   templateRealPreview: (templateId: string, version: string | number = '') =>
     `${API_URL}/templates/${encodeURIComponent(templateId)}/preview-real.png${version ? `?v=${version}` : ''}`,
+  /** Un hito como `.ics` para importarlo en el calendario. */
+  milestoneIcs: (milestoneId: number) => `${API_URL}/milestones/${milestoneId}/ics`,
+  /** Feed con todos los hitos futuros (para suscribirse) y su versión para descargar. */
+  calendarFeed: `${API_URL}/calendar.ics`,
+  calendarDownload: `${API_URL}/calendar.ics?download=true`,
 }
 
 export const api = createClient<paths>({

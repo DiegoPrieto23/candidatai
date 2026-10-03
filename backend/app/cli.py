@@ -36,6 +36,7 @@ sources_app = typer.Typer(
     "búsqueda con navegador.",
     no_args_is_help=True,
 )
+calendar_app = typer.Typer(help="Calendario .ics de los procesos.", no_args_is_help=True)
 capture_app = typer.Typer(
     help="Botón «Enviar a Job Hunter» (extensión del navegador).", no_args_is_help=True
 )
@@ -54,6 +55,7 @@ app.add_typer(templates_app, name="templates")
 app.add_typer(sources_app, name="sources")
 app.add_typer(alerts_app, name="alerts")
 app.add_typer(capture_app, name="capture")
+app.add_typer(calendar_app, name="calendar")
 
 JSON_OPTION = typer.Option(False, "--json", help="Salida en JSON.")
 SYNC_SCRIPT = REPO_ROOT / "scripts" / "sync_agents.py"
@@ -1170,6 +1172,58 @@ def capture_token(as_json: bool = JSON_OPTION) -> None:
     typer.echo(f"Origen aceptado: {settings.capture_origin}")
 
 
+# --- Seguimiento (fase 10) -------------------------------------------------------------------
+
+
+def _local(value: Any, all_day: bool = False) -> str:
+    from app.services.process import local_zone
+
+    local = value.astimezone(local_zone())
+    return local.strftime("%d/%m/%Y") if all_day else local.strftime("%d/%m/%Y %H:%M")
+
+
+def _render_followups(result: Any) -> None:
+    if not result.followups:
+        days = result.days_without_reply
+        typer.echo(f"Ningún seguimiento pendiente ({days} días sin respuesta).")
+        return
+    typer.echo(f"Sin respuesta desde hace {result.days_without_reply} días o más:")
+    for item in result.followups:
+        typer.echo(f"{item.job_id:>5}  {item.days_waiting:>3} días  {item.title} · {item.company}")
+
+
+def _render_upcoming(result: Any) -> None:
+    if not result.items:
+        typer.echo(f"Nada en los próximos {result.days} días.")
+        return
+    for item in result.items:
+        when = _local(item.starts_at, item.all_day)
+        typer.echo(f"{when:<16}  {item.title} · {item.job_title} ({item.company}) [{item.job_id}]")
+
+
+CALENDAR_OUT_OPTION = typer.Option(
+    None, "--out", help="Fichero de salida. Por defecto, data/calendar/jobhunter.ics."
+)
+
+
+@calendar_app.command("export")
+def calendar_export(out: Path | None = CALENDAR_OUT_OPTION, as_json: bool = JSON_OPTION) -> None:
+    """Escribe el .ics con los hitos futuros y los plazos, para importarlo en tu calendario."""
+    from app.services import calendar_ics
+
+    try:
+        migrations.ensure_current()
+        with session_scope() as session:
+            path = calendar_ics.export_feed(session, out.resolve() if out else None)
+    except Exception as exc:
+        _profile_fail(exc, as_json)
+    if as_json:
+        typer.echo(json.dumps({"path": str(path)}, ensure_ascii=False))
+        return
+    typer.echo(f"Calendario escrito en {path}.")
+    typer.echo("Impórtalo en Google Calendar (Configuración → Importar) o en tu cliente de correo.")
+
+
 # --- Configuración de agentes: delega en scripts/sync_agents.py ---------------------------------
 
 
@@ -1223,5 +1277,7 @@ register_tools(
         "list_sources": _render_source_list,
         "save_source": _render_message,
         "record_source_run": _render_recorded_run,
+        "list_followups_due": _render_followups,
+        "list_upcoming": _render_upcoming,
     },
 )

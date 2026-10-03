@@ -64,8 +64,8 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | `render_cover_letter` | `jh letter render DOC [--file F] --json` | 08c | `document_id, options?: CoverLetterRenderOptions` | `RenderResult` | — |
 | `save_cover_letter_verification` | `jh letter save-verification DOC --file F --json` | 08c | `document_id, verification: CvVerification` | `ok`, `passed` | `cover_letter_verified` |
 | `save_application_answers` | `jh applications save-answers ID --file F` | 10 | `job_id, answers: ApplicationAnswers` | `document_id` | `application_prepared` |
-| `list_followups_due` | `jh followups --days N --json` | 10 | `days_without_reply=10` | Candidaturas sin respuesta | — |
-| `list_upcoming` | `jh upcoming --days N --json` | 10 | `days=7` | Entrevistas, pruebas y plazos próximos | — |
+| `list_followups_due` | `jh followups [--days N] --json` | 10 | `days_without_reply?` (por defecto, `followups.days_without_reply` = 10) | `days_without_reply` usado y `followups`: `job_id`, `title`, `company`, `url`, `channel`, `applied_at`, `last_followup_at`, `days_waiting`; la que más espera, primero | — |
+| `list_upcoming` | `jh upcoming [--days N] --json` | 10 | `days=7` (1-365) | `days` e `items`: `kind` (`interview`, `test`, `deadline`, `other`, `application_deadline`), `job_id`, `job_title`, `company`, `stage`, `milestone_id` (`null` en el plazo de la oferta), `title`, `starts_at`, `ends_at`, `all_day`, `location`; por fecha | — |
 | `get_funnel_stats` | `jh stats funnel [--since] --json` | 10 | `since?` | Conversión por etapa, fuente y tipo de puesto | — |
 | `list_sources` | `jh sources list [--kind K] --json` | 09b | `kind?` | `sources`: `SourceView` con su config (sin secretos), `browse` (en las `agent_browse`) y última ejecución; `agent_browse`: límites (`max_result_pages`, `delay_seconds`, `default_max_offers`) | — |
 | `save_source` | `jh sources save --file F --json` | 09b | `AgentBrowseSource`: `name, platform, search_urls[], priority=5 (1 = primera), access=free\|login\|blocked, allow_agent_browsing? (por defecto true; en LinkedIn false), max_offers?, notes?`; por CLI, `F` = ese objeto | `source_id`, `created`, `allow_agent_browsing` guardado y `message`. Crea o actualiza por `name`. LinkedIn (por `platform` o por cualquier URL de linkedin.com o lnkd.in) con `true`: `not_allowed`; si el usuario ya lo activó, se conserva. Búsquedas de otro dominio: `invalid_request` | — |
@@ -163,6 +163,26 @@ las más recientes primero.
   oferta (o las reglas del perfil si no hay CV). Si esa plantilla no tiene diseño de carta, usa
   `carta-simple` y avisa `letter_fallback`. El texto plano lo sirve la API, no esta interfaz.
 - Ninguna de estas herramientas cambia la etapa de la oferta ni envía nada.
+
+### Seguimiento (fase 10)
+
+- `list_followups_due`: ofertas en `applied` (sin respuesta) con N días o más desde el envío o el
+  último `followup_sent`. Lo que pasa a `in_process` deja de contar. Sirve al skill `resumen-diario`
+  para ofrecer el mensaje de seguimiento; registrar que se envió (`followup_sent`) es cosa del
+  usuario.
+- `list_upcoming`: hitos programados de ofertas abiertas desde las 00:00 de hoy (Europe/Madrid)
+  hasta el final del día de dentro de `days` días, más el `application_deadline` de las ofertas
+  aún sin enviar. Las horas van en UTC: muéstralas en Europe/Madrid.
+- Los hitos, los contactos y el kanban son de la UI (`/board`, `/jobs/{id}/process`,
+  `/jobs/{id}/milestones`…): no tienen herramienta. Si el usuario te cuenta una entrevista, pídele
+  que la anote en la ficha de la oferta (crea el hito con fecha y registra `interview_scheduled`).
+  Un `add_event` con `interview_scheduled` cambia la etapa pero no crea el hito: no saldría en
+  `list_upcoming` ni en el calendario.
+- `list_upcoming(days=7)` cubre desde las 00:00 de hoy hasta el final del séptimo día (fin
+  exclusivo a las 00:00 del día siguiente).
+- `jh calendar export [--out RUTA] [--json]` (solo CLI) escribe el `.ics` con los hitos futuros y
+  los plazos (por defecto, `data/calendar/jobhunter.ics`). La API sirve el mismo feed en
+  `GET /calendar.ics` y cada hito en `GET /milestones/{id}/ics`.
 
 ### Comandos de matching y worker (solo CLI)
 

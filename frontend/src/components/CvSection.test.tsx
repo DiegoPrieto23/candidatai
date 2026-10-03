@@ -5,6 +5,7 @@ import {
   jobCv,
   jobView,
   mockApi,
+  processView,
   renderApp,
   renderResult,
   status,
@@ -136,6 +137,7 @@ describe('Sección CV de la ficha', () => {
       'GET /status': status(),
       'GET /jobs/1': cvReady,
       'GET /jobs/1/cv': jobCv([renderResult(1, { selected: true })]),
+      'GET /jobs/1/process': processView({ stage: 'cv_ready' }),
       'GET /templates': templateList(),
       'POST /documents/1/renders': {
         status: 503,

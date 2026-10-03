@@ -28,6 +28,7 @@ from app.services.extractions import ExtractionNotFoundError
 from app.services.ingestion.browse import BrowsingNotAllowedError
 from app.services.ingestion.service import SourceExistsError, SourceNotFoundError
 from app.services.pipeline import InvalidTransitionError
+from app.services.process import ContactNotFoundError, MilestoneNotFoundError
 from app.services.profile import ProfileNotFoundError
 
 logger = logging.getLogger(__name__)
@@ -39,6 +40,8 @@ _ERROR_TYPES: tuple[tuple[type[Exception], str], ...] = (
     (SourceNotFoundError, "not_found"),
     (SourceExistsError, "exists"),
     (BrowsingNotAllowedError, "not_allowed"),
+    (MilestoneNotFoundError, "not_found"),
+    (ContactNotFoundError, "not_found"),
     (DocumentNotFoundError, "not_found"),
     (RenderNotFoundError, "not_found"),
     (FileNotAvailableError, "not_found"),

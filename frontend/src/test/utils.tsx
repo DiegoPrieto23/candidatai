@@ -4,11 +4,15 @@ import { MemoryRouter } from 'react-router'
 import { vi } from 'vitest'
 import type {
   AlertJob,
+  Board,
+  BoardCard,
   CvView,
   JobCv,
   JobRow,
   JobView,
   MatchView,
+  MilestoneOut,
+  ProcessView,
   RenderResult,
   Schemas,
   StatusReport,
@@ -340,5 +344,89 @@ export function alertJob(id: number, changes: Partial<AlertJob> = {}): AlertJob 
     prefilter_reason: null,
     risk_flags: [],
     ...changes,
+  }
+}
+
+// --- Seguimiento (fase 10) -----------------------------------------------------------------------
+
+export function processView(changes: Partial<ProcessView> = {}): ProcessView {
+  return {
+    job_id: 1,
+    stage: 'applied',
+    applied_at: null,
+    channel: null,
+    followup: null,
+    milestones: [],
+    contacts: [],
+    notes: [],
+    documents: { cv_render_id: null, cv_sent: false, answers_document_id: null, cover_letter_document_id: null },
+    ...changes,
+  }
+}
+
+export function milestone(id: number, changes: Partial<MilestoneOut> = {}): MilestoneOut {
+  const now = new Date().toISOString()
+  return {
+    id,
+    job_id: 1,
+    kind: 'interview',
+    title: 'Entrevista',
+    starts_at: '2026-10-07T08:30:00Z',
+    ends_at: null,
+    all_day: false,
+    location: null,
+    notes: null,
+    status: 'scheduled',
+    event_id: 10,
+    created_at: now,
+    updated_at: now,
+    ...changes,
+  }
+}
+
+export function boardCard(id: number, stage: BoardCard['stage'], changes: Partial<BoardCard> = {}): BoardCard {
+  return {
+    job_id: id,
+    title: `Oferta ${id}`,
+    company: `Empresa ${id}`,
+    stage,
+    score: 70,
+    applied_at: null,
+    last_event_at: new Date().toISOString(),
+    next_milestone: null,
+    followup_due: false,
+    days_waiting: null,
+    closed_by: null,
+    reopen_to: null,
+    ...changes,
+  }
+}
+
+/** Los movimientos que devuelve la API (derivados de las transiciones del backend). */
+export const BOARD_MOVES: Board['moves'] = [
+  { event: 'discarded', from_stages: ['approved', 'cv_ready'], to: 'closed' },
+  { event: 'applied', from_stages: ['cv_ready'], to: 'applied' },
+  { event: 'applied_manually', from_stages: ['approved', 'cv_ready'], to: 'applied' },
+  { event: 'reply_received', from_stages: ['applied'], to: 'in_process' },
+  { event: 'interview_scheduled', from_stages: ['applied'], to: 'in_process' },
+  { event: 'interview_done', from_stages: ['applied'], to: 'in_process' },
+  { event: 'test_assigned', from_stages: ['applied'], to: 'in_process' },
+  { event: 'offer_received', from_stages: ['applied'], to: 'in_process' },
+  { event: 'rejected', from_stages: ['approved', 'cv_ready', 'applied', 'in_process'], to: 'closed' },
+  { event: 'withdrawn', from_stages: ['approved', 'cv_ready', 'applied', 'in_process'], to: 'closed' },
+  { event: 'expired', from_stages: ['approved', 'cv_ready', 'applied', 'in_process'], to: 'closed' },
+  { event: 'accepted', from_stages: ['in_process'], to: 'closed' },
+  { event: 'reopened', from_stages: ['closed'], to: null },
+]
+
+export function board(cards: BoardCard[]): Board {
+  const stages: BoardCard['stage'][] = ['approved', 'cv_ready', 'applied', 'in_process', 'closed']
+  return {
+    columns: stages.map((stage) => {
+      const inColumn = cards.filter((c) => c.stage === stage)
+      return { stage, cards: inColumn, total: inColumn.length }
+    }),
+    moves: BOARD_MOVES,
+    days_without_reply: 10,
   }
 }

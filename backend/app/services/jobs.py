@@ -38,7 +38,7 @@ class JobSummary(BaseModel):
     score: int | None  # del último match; None si aún no se ha puntuado
 
 
-def _last_match():
+def last_match_subquery():
     """Subconsulta con el último match de cada oferta."""
     return (
         select(Match.job_id.label("job_id"), func.max(Match.id).label("match_id"))
@@ -49,7 +49,7 @@ def _last_match():
 
 def _summary_query():
     """Oferta, empresa, etapa y score del último match (outer joins: puede no haber)."""
-    last = _last_match()
+    last = last_match_subquery()
     return (
         select(Job, Company.name, Application.stage, Match.score)
         .join(Company, Company.id == Job.company_id)

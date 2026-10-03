@@ -159,3 +159,21 @@ def test_render_files_never_leave_data(
     response = client.get(f"/renders/{job_with_cv['render_id']}/pdf")
     assert response.status_code == 404
     assert b"fuera de data" not in response.content
+
+
+def test_applied_from_ui_keeps_selected_render_and_channel(
+    client: TestClient, job_with_cv: dict[str, Any]
+) -> None:
+    job_id = job_with_cv["job_id"]
+    response = client.post(
+        f"/jobs/{job_id}/events", json={"type": "applied_manually", "channel": "ats_form"}
+    )
+    assert response.status_code == 201, response.text
+    process = client.get(f"/jobs/{job_id}/process").json()
+    assert process["channel"] == "ats_form"
+    assert process["documents"] == {
+        "cv_render_id": job_with_cv["render_id"],
+        "cv_sent": True,
+        "answers_document_id": None,
+        "cover_letter_document_id": None,
+    }

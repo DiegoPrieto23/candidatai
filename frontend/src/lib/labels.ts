@@ -1,4 +1,13 @@
-import type { CvRenderOptions, DiscardReason, Schemas, SectionName, Stage } from '@/api/client'
+import type {
+  ApplicationChannel,
+  CvRenderOptions,
+  DiscardReason,
+  EventType,
+  MilestoneKind,
+  Schemas,
+  SectionName,
+  Stage,
+} from '@/api/client'
 
 type Extraction = Schemas['JobExtraction']
 
@@ -219,4 +228,52 @@ const COLOR_NAMES: Record<string, string> = {
 
 export function colorLabel(hex: string): string {
   return COLOR_NAMES[hex.toUpperCase()] ?? hex.toUpperCase()
+}
+
+// --- Seguimiento (fase 10) ------------------------------------------------------------------------
+
+export const MILESTONE_KIND_LABEL: Record<MilestoneKind, string> = {
+  interview: 'Entrevista',
+  test: 'Prueba técnica',
+  deadline: 'Plazo',
+  other: 'Otro hito',
+}
+
+export const UPCOMING_KIND_LABEL: Record<Schemas['UpcomingItem']['kind'], string> = {
+  ...MILESTONE_KIND_LABEL,
+  application_deadline: 'Plazo de la oferta',
+}
+
+export const MILESTONE_STATUS_LABEL: Record<Schemas['MilestoneOut']['status'], string> = {
+  scheduled: 'Programado',
+  done: 'Hecho',
+  cancelled: 'Cancelado',
+}
+
+export const CHANNEL_LABEL: Record<ApplicationChannel, string> = {
+  ats_form: 'Formulario de la empresa',
+  email: 'Correo',
+  linkedin_manual: 'LinkedIn (a mano)',
+  portal_manual: 'Portal de empleo (a mano)',
+}
+
+export function channelLabel(channel: string | null | undefined): string | null {
+  return channel ? (CHANNEL_LABEL[channel as ApplicationChannel] ?? channel) : null
+}
+
+/** Qué significa cada movimiento del kanban, en el diálogo que lo confirma. */
+export const MOVE_HINT: Partial<Record<EventType, string>> = {
+  applied: 'La enviaste con el CV seleccionado en la app.',
+  applied_manually: 'La enviaste por tu cuenta (con o sin el CV de la app).',
+  reply_received: 'Te han contestado.',
+  interview_scheduled: 'Tienes una entrevista: se crea su hito con fecha y hora.',
+  interview_done: 'Ya hiciste una entrevista que no tenías anotada.',
+  test_assigned: 'Te han mandado una prueba: se crea su hito con la fecha de entrega.',
+  offer_received: 'Te han hecho una oferta.',
+  discarded: 'La dejas antes de enviarla.',
+  rejected: 'La empresa te ha descartado.',
+  withdrawn: 'Te retiras del proceso.',
+  expired: 'La oferta ha caducado o no hubo respuesta.',
+  accepted: 'Has aceptado la oferta.',
+  reopened: 'Vuelve a la etapa en la que estaba al cerrarse.',
 }

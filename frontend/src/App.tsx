@@ -10,6 +10,7 @@ import { InboxPage } from '@/pages/InboxPage'
 import { JobPage } from '@/pages/JobPage'
 import { NewJobPage } from '@/pages/NewJobPage'
 import { PlatformsPage } from '@/pages/PlatformsPage'
+import { ProcessesPage } from '@/pages/ProcessesPage'
 import { SourcesPage } from '@/pages/SourcesPage'
 import { TemplatesPage } from '@/pages/TemplatesPage'
 import { TriagePage } from '@/pages/TriagePage'
@@ -36,6 +37,7 @@ export function AppRoutes() {
         <Route path="jobs/:id" element={<JobPage />} />
         <Route path="nueva" element={<NewJobPage />} />
         <Route path="triaje" element={<TriagePage />} />
+        <Route path="procesos" element={<ProcessesPage />} />
         <Route path="alertas" element={<AlertsPage />} />
         <Route path="plantillas" element={<TemplatesPage />} />
         <Route path="empresas" element={<SourcesPage />} />
