@@ -13,7 +13,7 @@ from pydantic import BaseModel
 from app.api.deps import SessionDep
 from app.schemas.cv import CvRenderOptions
 from app.services import profile as profile_service
-from app.services.documents import authoring, default_template, service, uploads
+from app.services.documents import authoring, cover_letter, default_template, service, uploads
 from app.services.documents.service import FileNotAvailableError
 from app.services.pipeline import Actor
 
@@ -128,8 +128,12 @@ def render_document(
 
 
 @router.post("/renders/{render_id}/select", operation_id="select_render")
-def select_render(session: SessionDep, render_id: int) -> service.RenderResult:
-    """Marca este render como el que se enviará (uno por CV)."""
+def select_render(
+    session: SessionDep, render_id: int
+) -> service.RenderResult | cover_letter.LetterRenderResult:
+    """Marca este render como el que se enviará (uno por CV o por carta)."""
+    if service.render_kind(session, render_id) == cover_letter.LETTER_KIND:
+        return cover_letter.select_render(session, render_id)
     return service.select_render(session, render_id)
 
 

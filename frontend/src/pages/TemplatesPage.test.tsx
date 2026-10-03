@@ -15,7 +15,7 @@ describe('Galería de plantillas', () => {
             name: 'Clásica con foto',
             ats_friendly: false,
             photo_supported: true,
-            accent_colors: { default: '#1F4E79', choices: ['#1F4E79', '#2E5E4E', '#7A2E39', '#3F3F46'] },
+            accent_colors: { default: '#1F4E79', choices: ['#1F4E79', '#2E5E4E', '#7A2E39', '#3F3F46'], free: false },
           }),
           templateInfo({ id: 'mi-cv', name: 'Mi CV', origin: 'user', columns: 2, has_preview: false }),
         ],

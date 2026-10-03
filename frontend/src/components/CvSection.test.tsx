@@ -1,7 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
-import { jobCv, jobPackage, jobView, mockApi, processView, renderApp, renderResult, status, templateList } from '@/test/utils'
+import { jobCoverLetter, jobCv, jobPackage, jobView, mockApi, processView, renderApp, renderResult, status, templateList } from '@/test/utils'
 
 const approved = jobView({ stage: 'approved' })
 const cvReady = jobView({ stage: 'cv_ready' })
@@ -130,6 +130,7 @@ describe('Sección CV de la ficha', () => {
       'GET /jobs/1/cv': jobCv([renderResult(1, { selected: true })]),
       'GET /jobs/1/process': processView({ stage: 'cv_ready' }),
       'GET /jobs/1/package': jobPackage(),
+      'GET /jobs/1/cover-letter': jobCoverLetter(),
       'GET /templates': templateList(),
       'POST /documents/1/renders': {
         status: 503,

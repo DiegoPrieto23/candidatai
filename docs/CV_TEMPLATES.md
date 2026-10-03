@@ -256,8 +256,8 @@ imágenes. Los comandos, igual que en Word, solo trabajan dentro de `data/`:
    imagen.
 
 Limitaciones: la recreación es aproximada; columnas, márgenes y logros se estiman y pueden
-fallar en diseños muy irregulares. Una plantilla html solo da PDF. La carta a juego en html
-(`letter.html`) llega con la fase 08c.
+fallar en diseños muy irregulares. Una plantilla html solo da PDF. Su carta a juego (`letter.html`)
+la escribe el skill `importar-plantilla-cv` desde la cabecera recreada (§Cartas de presentación).
 
 ## Opciones de render por oferta (`CvRenderOptions`)
 

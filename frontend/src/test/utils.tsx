@@ -21,6 +21,8 @@ import type {
   TriageItem,
   TriageQueue,
   JobPackage,
+  JobCoverLetter,
+  LetterRenderResult,
 } from '@/api/client'
 import { AppRoutes } from '@/App'
 import { TooltipProvider } from '@/components/ui/tooltip'
@@ -252,7 +254,7 @@ export const CLASICA_FOTO = templateInfo({
   name: 'Clásica con foto',
   ats_friendly: false,
   photo_supported: true,
-  accent_colors: { default: '#1F4E79', choices: ['#1F4E79', '#2E5E4E', '#7A2E39', '#3F3F46'] },
+  accent_colors: { default: '#1F4E79', choices: ['#1F4E79', '#2E5E4E', '#7A2E39', '#3F3F46'], free: false },
 })
 
 export function templateList(changes: Partial<TemplateList> = {}): TemplateList {
@@ -466,6 +468,96 @@ export function jobPackage(changes: Partial<JobPackage> = {}): JobPackage {
     },
     answers: SCREENING,
     cover_letter: null,
+    ...changes,
+  }
+}
+
+// --- Carta de presentación (fase 08c) ------------------------------------------------------------
+
+export function letterRender(id: number, changes: Partial<LetterRenderResult> = {}): LetterRenderResult {
+  return {
+    render_id: id,
+    job_id: 1,
+    document_id: 9,
+    template_id: 'clasica-foto',
+    template_hash: 'h',
+    options: {
+      template_id: 'clasica-foto',
+      template_source: 'cv',
+      base_template_id: 'clasica-foto',
+      cv_render_id: 3,
+      letter_fallback: false,
+      photo: true,
+      accent_color: '#1F4E79',
+      page_size: 'A4',
+      max_pages: 1,
+      offer: { ats: null, countries: ['ES'], domain: null, language: 'es' },
+      warnings: [],
+    },
+    docx_path: `cvs/1/9/${id}/Carta-Lucia-Varela-Otero.docx`,
+    pdf_path: `cvs/1/9/${id}/Carta-Lucia-Varela-Otero.pdf`,
+    pages: 1,
+    warnings: [],
+    selected: id === 1,
+    created_at: '2026-10-03T10:00:00Z',
+    ...changes,
+  }
+}
+
+export const LETTER_CONTENT = {
+  language: 'es' as const,
+  recipient: 'Equipo de datos de Acme',
+  greeting: 'Hola, equipo de Acme:',
+  paragraphs: [
+    { text: 'Os escribo por el puesto de Data Engineer.', evidence: ['extraction'] },
+    { text: 'Migré las cargas de SSIS a Python (-35 %).', evidence: ['exp-norteconsulting/a1'] },
+  ],
+  sign_off: 'Un saludo,',
+  keywords_targeted: ['Python'],
+}
+
+export function jobCoverLetter(
+  changes: Partial<JobCoverLetter> = {},
+  letter: Partial<NonNullable<JobCoverLetter['info']['letter']>> | null = {},
+): JobCoverLetter {
+  return {
+    info: {
+      job_id: 1,
+      stage: 'cv_ready',
+      brief: { instructions: 'Menciona que uso su producto desde 2023.', max_words: 150, updated_at: '2026-10-03T09:00:00Z' },
+      preferences: {
+        max_words: 170,
+        tone: 'cercano y directo',
+        sign_off: { es: 'Un saludo,', en: 'Kind regards,' },
+        instructions: 'Busco equipos que cuiden la calidad del dato.',
+        avoid: ['mencionar el salario'],
+        default_format: 'text',
+      },
+      max_words: 150,
+      letter:
+        letter === null
+          ? null
+          : {
+              document_id: 9,
+              profile_version_id: 1,
+              created_at: '2026-10-03T10:00:00Z',
+              edited_by_user: false,
+              content: LETTER_CONTENT,
+              evidence: { extraction: 'La oferta (su extracción)' },
+              word_count: 15,
+              instructions_used: { brief: null, preferences: null, max_words: 150 },
+              verification: { passed: true, issues: [] },
+              renders: [letterRender(1)],
+              ...letter,
+            },
+    },
+    can_edit: true,
+    plain_text: 'Hola, equipo de Acme:\r\n\r\nOs escribo por el puesto de Data Engineer.\r\n',
+    cv_template_id: 'clasica-foto',
+    templates: [
+      { id: 'carta-simple', name: 'Carta sencilla', engine: 'docx', origin: 'builtin', letter_only: true, photo_supported: false, accent_colors: { default: '#1F4E79', choices: ['#1F4E79', '#2E5E4E'], free: true } },
+      { id: 'clasica-foto', name: 'Clásica con foto', engine: 'docx', origin: 'builtin', letter_only: false, photo_supported: true, accent_colors: { default: '#1F4E79', choices: ['#1F4E79', '#2E5E4E', '#7A2E39', '#3F3F46'], free: false } },
+    ],
     ...changes,
   }
 }

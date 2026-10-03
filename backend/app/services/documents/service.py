@@ -340,6 +340,15 @@ def select_render(session: Session, render_id: int) -> RenderResult:
     return _to_result(row, doc.job_id, _TemplateHashes())
 
 
+def render_kind(session: Session, render_id: int) -> str:
+    """`cv` o `cover_letter`: de qué documento es un render (la API selecciona con uno u otro)."""
+    row = session.get(DocumentRender, render_id)
+    doc = session.get(Document, row.document_id) if row is not None else None
+    if row is None or doc is None:
+        raise RenderNotFoundError(f"No existe el render {render_id}.")
+    return doc.kind
+
+
 def get_render(session: Session, render_id: int) -> RenderResult:
     row = session.get(DocumentRender, render_id)
     if row is None:
@@ -536,6 +545,7 @@ def save_verification(
 class AccentColors(BaseModel):
     default: str
     choices: list[str]
+    free: bool = False  # admite cualquier #RRGGBB (`carta-simple`)
 
 
 class TemplateInfo(BaseModel):
@@ -587,7 +597,7 @@ def template_info(template: templates.Template) -> TemplateInfo:
         max_pages=meta.page.max_pages,
         capacity=meta.capacity.model_dump(),
         sections=list(meta.sections),
-        accent_colors=AccentColors(default=accent.default, choices=accent.choices)
+        accent_colors=AccentColors(default=accent.default, choices=accent.choices, free=accent.free)
         if accent
         else None,
         fonts=meta.fonts,

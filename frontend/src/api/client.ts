@@ -39,6 +39,10 @@ export type BoardMove = Schemas['BoardMove']
 export type EventType = Schemas['EventType']
 export type ProcessView = Schemas['ProcessView']
 export type JobPackage = Schemas['JobPackage']
+export type JobCoverLetter = Schemas['JobCoverLetter']
+export type CoverLetterView = Schemas['CoverLetterView']
+export type LetterRenderResult = Schemas['LetterRenderResult']
+export type LetterTemplateInfo = Schemas['LetterTemplateInfo']
 export type MilestoneOut = Schemas['MilestoneOut']
 export type MilestoneKind = Schemas['MilestoneCreate']['kind']
 export type ContactOut = Schemas['ContactOut']
@@ -53,6 +57,8 @@ export const API_URL: string = import.meta.env.VITE_API_URL ?? 'http://127.0.0.1
 export const fileUrls = {
   renderPdf: (renderId: number) => `${API_URL}/renders/${renderId}/pdf`,
   renderDocx: (renderId: number) => `${API_URL}/renders/${renderId}/docx`,
+  /** La carta en TXT (UTF-8, saltos de Windows) para descargar. */
+  letterText: (documentId: number) => `${API_URL}/cover-letters/${documentId}/text`,
   templatePreview: (templateId: string) =>
     `${API_URL}/templates/${encodeURIComponent(templateId)}/preview.png`,
   /** Primera página del CV original del que se creó la plantilla. */

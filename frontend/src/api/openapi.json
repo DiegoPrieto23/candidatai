@@ -2149,7 +2149,7 @@
           "cv"
         ],
         "summary": "Select Render",
-        "description": "Marca este render como el que se enviará (uno por CV).",
+        "description": "Marca este render como el que se enviará (uno por CV o por carta).",
         "operationId": "select_render",
         "parameters": [
           {
@@ -2168,7 +2168,15 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/RenderResult"
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/RenderResult"
+                    },
+                    {
+                      "$ref": "#/components/schemas/LetterRenderResult"
+                    }
+                  ],
+                  "title": "Response Select Render"
                 }
               }
             }
@@ -5404,6 +5412,595 @@
           }
         }
       }
+    },
+    "/jobs/{job_id}/cover-letter": {
+      "get": {
+        "tags": [
+          "cover_letter"
+        ],
+        "summary": "Get Job Cover Letter",
+        "description": "Indicaciones, carta vigente (con su texto plano) y plantillas con diseño de carta.",
+        "operationId": "get_job_cover_letter",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobCoverLetter"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "cover_letter"
+        ],
+        "summary": "Save User Cover Letter",
+        "description": "Edición a mano: documento nuevo «Editada por ti», sin verificación, y su render.",
+        "operationId": "save_user_cover_letter",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CoverLetterContent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaveLetterResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/jobs/{job_id}/cover-letter/brief": {
+      "post": {
+        "tags": [
+          "cover_letter"
+        ],
+        "summary": "Save Cover Letter Brief",
+        "description": "Indicaciones de la carta de esta oferta; sustituyen a las anteriores (vacías: borrar).",
+        "operationId": "save_cover_letter_brief",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CoverLetterBriefInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaveBriefResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/cover-letters/{document_id}/renders": {
+      "post": {
+        "tags": [
+          "cover_letter"
+        ],
+        "summary": "Render Cover Letter",
+        "description": "Renderiza la carta con otro diseño, foto o color, sin agente.",
+        "operationId": "render_cover_letter",
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Document Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CoverLetterRenderOptions"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LetterRenderResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/cover-letters/{document_id}/text": {
+      "get": {
+        "tags": [
+          "cover_letter"
+        ],
+        "summary": "Get Cover Letter Text",
+        "description": "La carta en TXT (UTF-8, saltos de Windows) para descargarla.",
+        "operationId": "get_cover_letter_text",
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Document Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/plain": {}
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -5420,6 +6017,11 @@
             },
             "type": "array",
             "title": "Choices"
+          },
+          "free": {
+            "type": "boolean",
+            "title": "Free",
+            "default": false
           }
         },
         "type": "object",
@@ -6159,6 +6761,37 @@
         ],
         "title": "Body_upload_cv"
       },
+      "BriefView": {
+        "properties": {
+          "instructions": {
+            "type": "string",
+            "title": "Instructions"
+          },
+          "max_words": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Words"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "instructions",
+          "max_words",
+          "updated_at"
+        ],
+        "title": "BriefView"
+      },
       "BrowseSettingsBody": {
         "properties": {
           "allow_agent_browsing": {
@@ -6539,6 +7172,351 @@
           "created_at"
         ],
         "title": "ContactOut"
+      },
+      "CoverLetterBriefInput": {
+        "properties": {
+          "instructions": {
+            "type": "string",
+            "maxLength": 4000,
+            "title": "Instructions",
+            "default": ""
+          },
+          "max_words": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 600.0,
+                "minimum": 50.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Words"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "CoverLetterBriefInput",
+        "description": "Indicaciones de la carta para una oferta (las edita la UI o el agente)."
+      },
+      "CoverLetterContent": {
+        "properties": {
+          "language": {
+            "type": "string",
+            "enum": [
+              "es",
+              "en"
+            ],
+            "title": "Language"
+          },
+          "recipient": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recipient"
+          },
+          "greeting": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Greeting"
+          },
+          "paragraphs": {
+            "items": {
+              "$ref": "#/components/schemas/LetterParagraph"
+            },
+            "type": "array",
+            "maxItems": 6,
+            "minItems": 1,
+            "title": "Paragraphs"
+          },
+          "sign_off": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Sign Off"
+          },
+          "keywords_targeted": {
+            "items": {
+              "type": "string",
+              "maxLength": 100,
+              "minLength": 1
+            },
+            "type": "array",
+            "maxItems": 30,
+            "title": "Keywords Targeted",
+            "default": []
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "language",
+          "greeting",
+          "paragraphs",
+          "sign_off"
+        ],
+        "title": "CoverLetterContent",
+        "description": "Carta que redacta el agente (`docs/AGENT_INTERFACE.md` §CoverLetterContent)."
+      },
+      "CoverLetterInfo": {
+        "properties": {
+          "job_id": {
+            "type": "integer",
+            "title": "Job Id"
+          },
+          "stage": {
+            "$ref": "#/components/schemas/Stage"
+          },
+          "brief": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BriefView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "preferences": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CoverLetterPreferences"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "max_words": {
+            "type": "integer",
+            "title": "Max Words"
+          },
+          "letter": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CoverLetterView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "stage",
+          "brief",
+          "preferences",
+          "max_words",
+          "letter"
+        ],
+        "title": "CoverLetterInfo",
+        "description": "Lo que devuelve `get_cover_letter`: indicaciones vigentes y la carta, si la hay."
+      },
+      "CoverLetterPreferences": {
+        "properties": {
+          "max_words": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 600.0,
+                "minimum": 50.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Words"
+          },
+          "tone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tone"
+          },
+          "sign_off": {
+            "$ref": "#/components/schemas/SignOff",
+            "default": {}
+          },
+          "instructions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instructions"
+          },
+          "avoid": {
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "type": "array",
+            "title": "Avoid",
+            "default": []
+          },
+          "default_format": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "text",
+                  "pdf"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Default Format"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "CoverLetterPreferences",
+        "description": "Indicaciones generales para las cartas (fase 08c). Las de cada oferta mandan sobre estas."
+      },
+      "CoverLetterRenderOptions": {
+        "properties": {
+          "template_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Template Id"
+          },
+          "photo": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "include",
+              "exclude"
+            ],
+            "title": "Photo",
+            "default": "auto"
+          },
+          "accent_color": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accent Color"
+          },
+          "page_size": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "A4",
+                  "Letter"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page Size"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "CoverLetterRenderOptions",
+        "description": "Presentación de la carta. `null`/`auto`: a juego con el render seleccionado del CV."
+      },
+      "CoverLetterView": {
+        "properties": {
+          "document_id": {
+            "type": "integer",
+            "title": "Document Id"
+          },
+          "profile_version_id": {
+            "type": "integer",
+            "title": "Profile Version Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "edited_by_user": {
+            "type": "boolean",
+            "title": "Edited By User"
+          },
+          "content": {
+            "$ref": "#/components/schemas/CoverLetterContent"
+          },
+          "evidence": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Evidence"
+          },
+          "word_count": {
+            "type": "integer",
+            "title": "Word Count"
+          },
+          "instructions_used": {
+            "$ref": "#/components/schemas/InstructionsUsed"
+          },
+          "verification": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CvVerification"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "renders": {
+            "items": {
+              "$ref": "#/components/schemas/LetterRenderResult"
+            },
+            "type": "array",
+            "title": "Renders"
+          }
+        },
+        "type": "object",
+        "required": [
+          "document_id",
+          "profile_version_id",
+          "created_at",
+          "edited_by_user",
+          "content",
+          "evidence",
+          "word_count",
+          "instructions_used",
+          "verification",
+          "renders"
+        ],
+        "title": "CoverLetterView"
       },
       "CoveredSkill": {
         "properties": {
@@ -7744,6 +8722,44 @@
         "title": "InjectionWarning",
         "description": "Por qué la oferta puede llevar contenido dirigido a una IA."
       },
+      "InstructionsUsed": {
+        "properties": {
+          "brief": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BriefView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "preferences": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preferences"
+          },
+          "max_words": {
+            "type": "integer",
+            "title": "Max Words"
+          }
+        },
+        "type": "object",
+        "required": [
+          "brief",
+          "preferences",
+          "max_words"
+        ],
+        "title": "InstructionsUsed",
+        "description": "Copia de las indicaciones vigentes al guardar la carta: respaldo de la evidencia `user`."
+      },
       "InvalidTemplate": {
         "properties": {
           "id": {
@@ -7797,6 +8813,56 @@
         ],
         "title": "Issue",
         "description": "Un problema de una ejecución. `item` identifica la oferta si es de una sola."
+      },
+      "JobCoverLetter": {
+        "properties": {
+          "info": {
+            "$ref": "#/components/schemas/CoverLetterInfo"
+          },
+          "can_edit": {
+            "type": "boolean",
+            "title": "Can Edit"
+          },
+          "plain_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plain Text"
+          },
+          "cv_template_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cv Template Id"
+          },
+          "templates": {
+            "items": {
+              "$ref": "#/components/schemas/LetterTemplateInfo"
+            },
+            "type": "array",
+            "title": "Templates"
+          }
+        },
+        "type": "object",
+        "required": [
+          "info",
+          "can_edit",
+          "plain_text",
+          "cv_template_id",
+          "templates"
+        ],
+        "title": "JobCoverLetter",
+        "description": "La sección «Carta de presentación» de la ficha."
       },
       "JobCv": {
         "properties": {
@@ -8041,8 +9107,14 @@
             ]
           },
           "cover_letter": {
-            "type": "null",
-            "title": "Cover Letter"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PackageCoverLetter"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -8051,7 +9123,8 @@
           "stage",
           "can_edit",
           "cv",
-          "answers"
+          "answers",
+          "cover_letter"
         ],
         "title": "JobPackage"
       },
@@ -8380,6 +9453,253 @@
           "language"
         ],
         "title": "LanguageRequirement"
+      },
+      "LetterParagraph": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Text"
+          },
+          "evidence": {
+            "items": {
+              "type": "string",
+              "maxLength": 200,
+              "minLength": 1
+            },
+            "type": "array",
+            "maxItems": 10,
+            "minItems": 1,
+            "title": "Evidence",
+            "description": "Ids del perfil (`exp-acme/a2`), `extraction` o `user`."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "text",
+          "evidence"
+        ],
+        "title": "LetterParagraph"
+      },
+      "LetterRenderResult": {
+        "properties": {
+          "render_id": {
+            "type": "integer",
+            "title": "Render Id"
+          },
+          "job_id": {
+            "type": "integer",
+            "title": "Job Id"
+          },
+          "document_id": {
+            "type": "integer",
+            "title": "Document Id"
+          },
+          "template_id": {
+            "type": "string",
+            "title": "Template Id"
+          },
+          "template_hash": {
+            "type": "string",
+            "title": "Template Hash"
+          },
+          "options": {
+            "$ref": "#/components/schemas/LetterResolvedOptions"
+          },
+          "docx_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Docx Path"
+          },
+          "pdf_path": {
+            "type": "string",
+            "title": "Pdf Path"
+          },
+          "pages": {
+            "type": "integer",
+            "title": "Pages"
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/RenderWarning"
+            },
+            "type": "array",
+            "title": "Warnings"
+          },
+          "selected": {
+            "type": "boolean",
+            "title": "Selected"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "render_id",
+          "job_id",
+          "document_id",
+          "template_id",
+          "template_hash",
+          "options",
+          "docx_path",
+          "pdf_path",
+          "pages",
+          "warnings",
+          "selected",
+          "created_at"
+        ],
+        "title": "LetterRenderResult"
+      },
+      "LetterResolvedOptions": {
+        "properties": {
+          "template_id": {
+            "type": "string",
+            "title": "Template Id"
+          },
+          "template_source": {
+            "type": "string",
+            "enum": [
+              "option",
+              "cv",
+              "rule",
+              "default_template",
+              "fallback"
+            ],
+            "title": "Template Source"
+          },
+          "base_template_id": {
+            "type": "string",
+            "title": "Base Template Id"
+          },
+          "cv_render_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cv Render Id"
+          },
+          "letter_fallback": {
+            "type": "boolean",
+            "title": "Letter Fallback"
+          },
+          "photo": {
+            "type": "boolean",
+            "title": "Photo"
+          },
+          "accent_color": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accent Color"
+          },
+          "page_size": {
+            "type": "string",
+            "enum": [
+              "A4",
+              "Letter"
+            ],
+            "title": "Page Size"
+          },
+          "max_pages": {
+            "type": "integer",
+            "title": "Max Pages",
+            "default": 1
+          },
+          "offer": {
+            "$ref": "#/components/schemas/OfferContext"
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/RenderWarning"
+            },
+            "type": "array",
+            "title": "Warnings",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "template_id",
+          "template_source",
+          "base_template_id",
+          "cv_render_id",
+          "letter_fallback",
+          "photo",
+          "accent_color",
+          "page_size",
+          "offer"
+        ],
+        "title": "LetterResolvedOptions"
+      },
+      "LetterTemplateInfo": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "engine": {
+            "type": "string",
+            "title": "Engine"
+          },
+          "origin": {
+            "type": "string",
+            "title": "Origin"
+          },
+          "letter_only": {
+            "type": "boolean",
+            "title": "Letter Only"
+          },
+          "photo_supported": {
+            "type": "boolean",
+            "title": "Photo Supported"
+          },
+          "accent_colors": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AccentColors"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "engine",
+          "origin",
+          "letter_only",
+          "photo_supported",
+          "accent_colors"
+        ],
+        "title": "LetterTemplateInfo",
+        "description": "Una plantilla con diseño de carta, para el selector de la ficha."
       },
       "MatchView": {
         "properties": {
@@ -8910,6 +10230,64 @@
         },
         "type": "object",
         "title": "OkResult"
+      },
+      "PackageCoverLetter": {
+        "properties": {
+          "document_id": {
+            "type": "integer",
+            "title": "Document Id"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "word_count": {
+            "type": "integer",
+            "title": "Word Count"
+          },
+          "edited_by_user": {
+            "type": "boolean",
+            "title": "Edited By User"
+          },
+          "verified": {
+            "type": "boolean",
+            "title": "Verified"
+          },
+          "render_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Render Id"
+          },
+          "pdf_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pdf Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "document_id",
+          "text",
+          "word_count",
+          "edited_by_user",
+          "verified",
+          "render_id",
+          "pdf_url"
+        ],
+        "title": "PackageCoverLetter",
+        "description": "La carta vigente para copiarla o adjuntarla (fase 08c)."
       },
       "PackageCv": {
         "properties": {
@@ -9549,6 +10927,65 @@
         ],
         "title": "SaveAnswersResult"
       },
+      "SaveBriefResult": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "job_id": {
+            "type": "integer",
+            "title": "Job Id"
+          },
+          "brief": {
+            "$ref": "#/components/schemas/BriefView"
+          },
+          "max_words": {
+            "type": "integer",
+            "title": "Max Words"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ok",
+          "job_id",
+          "brief",
+          "max_words"
+        ],
+        "title": "SaveBriefResult"
+      },
+      "SaveLetterResult": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "job_id": {
+            "type": "integer",
+            "title": "Job Id"
+          },
+          "document_id": {
+            "type": "integer",
+            "title": "Document Id"
+          },
+          "word_count": {
+            "type": "integer",
+            "title": "Word Count"
+          },
+          "render": {
+            "$ref": "#/components/schemas/LetterRenderResult"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ok",
+          "job_id",
+          "document_id",
+          "word_count",
+          "render"
+        ],
+        "title": "SaveLetterResult"
+      },
       "ScoreBreakdown": {
         "properties": {
           "components": {
@@ -9716,6 +11153,36 @@
           "active"
         ],
         "title": "SetActiveBody"
+      },
+      "SignOff": {
+        "properties": {
+          "es": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Es"
+          },
+          "en": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "En"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "SignOff",
+        "description": "Despedida de la carta por idioma («Un saludo,», «Kind regards,»)."
       },
       "SkillCoverage": {
         "properties": {

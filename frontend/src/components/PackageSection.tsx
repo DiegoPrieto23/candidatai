@@ -300,15 +300,43 @@ function ChosenCv({ pkg }: { pkg: JobPackage }) {
   )
 }
 
-function CoverLetterSlot() {
+function CoverLetterSlot({ pkg }: { pkg: JobPackage }) {
+  const letter = pkg.cover_letter
+  if (!letter) {
+    return (
+      <div className="flex items-start gap-3 rounded-lg border border-dashed p-4">
+        <EnvelopeSimpleIcon className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
+        <div>
+          <h3 className="text-sm font-medium">Carta de presentación</h3>
+          <p className="mt-0.5 text-sm text-muted-foreground">
+            <InlineCode
+              text={`Sin carta. Si la oferta la pide o la quieres, ejecuta \`generar-carta ${pkg.job_id}\` en tu agente.`}
+            />
+          </p>
+        </div>
+      </div>
+    )
+  }
+  const state = letter.edited_by_user ? 'Editada por ti' : letter.verified ? 'Verificada' : 'Sin verificar'
   return (
-    <div className="flex items-start gap-3 rounded-lg border border-dashed p-4">
-      <EnvelopeSimpleIcon className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
-      <div>
-        <h3 className="text-sm font-medium">Carta de presentación</h3>
-        <p className="mt-0.5 text-sm text-muted-foreground">
-          Llega con la fase 08c: aquí tendrás el texto para copiar y el PDF de la carta seleccionada.
-        </p>
+    <div className="space-y-2">
+      <h3 className="text-sm font-medium">Carta de presentación</h3>
+      <p className="text-sm text-muted-foreground">
+        {letter.word_count} palabras · {state}
+      </p>
+      <p className="line-clamp-3 text-sm leading-relaxed whitespace-pre-line">{letter.text}</p>
+      <div className="flex flex-wrap items-center gap-2">
+        <CopyButton text={letter.text} label="Copiar carta" />
+        {letter.pdf_url && (
+          <Button asChild variant="outline" size="sm">
+            <a href={`${API_URL}${letter.pdf_url}`} target="_blank" rel="noopener noreferrer">
+              <FilePdfIcon /> Abrir PDF
+            </a>
+          </Button>
+        )}
+        <a href="#carta" className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground">
+          {pkg.can_edit ? 'Cambiarla en la sección Carta' : 'Verla en la sección Carta'}
+        </a>
       </div>
     </div>
   )
@@ -337,7 +365,7 @@ export function PackageSection({ job }: { job: JobView }) {
         <div className="space-y-7">
           <ChosenCv pkg={data} />
           <Answers pkg={data} />
-          <CoverLetterSlot />
+          <CoverLetterSlot pkg={data} />
         </div>
       )}
     </section>

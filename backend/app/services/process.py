@@ -364,7 +364,7 @@ class ProcessDocuments(BaseModel):
     cv_render_id: int | None
     cv_sent: bool  # el render es el que se anotó al enviar
     answers_document_id: int | None = None  # respuestas de screening (fase 10.3)
-    cover_letter_document_id: int | None = None  # carta seleccionada (fase 08c)
+    cover_letter_document_id: int | None = None  # carta vigente (fase 08c)
 
 
 class ProcessView(BaseModel):
@@ -410,6 +410,7 @@ def get_process(session: Session, job_id: int, now: datetime | None = None) -> P
     """La ficha de proceso de una oferta."""
     # Import diferido: el servicio de documentos importa `events`, que no debe depender de él.
     from app.services.answers import latest_answers
+    from app.services.documents.cover_letter import latest_letter
     from app.services.documents.service import selected_render_id
 
     _job(session, job_id)
@@ -431,6 +432,7 @@ def get_process(session: Session, job_id: int, now: datetime | None = None) -> P
     contacts = session.scalars(select(Contact).where(Contact.job_id == job_id).order_by(Contact.id))
     sent_render = application.render_id if application else None
     answers_doc = latest_answers(session, job_id)
+    letter_doc = latest_letter(session, job_id)
     return ProcessView(
         job_id=job_id,
         stage=Stage(application.stage) if application else None,
@@ -449,6 +451,7 @@ def get_process(session: Session, job_id: int, now: datetime | None = None) -> P
             cv_render_id=sent_render or selected_render_id(session, job_id),
             cv_sent=sent_render is not None,
             answers_document_id=answers_doc.id if answers_doc else None,
+            cover_letter_document_id=letter_doc.id if letter_doc else None,
         ),
     )
 

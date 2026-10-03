@@ -403,5 +403,5 @@ la UI (`POST /jobs/{id}/answers`) crea otro documento con `edited_by_user` y act
 se exigen evidencias, pero las que haya deben existir. El paquete de candidatura
 (`GET /jobs/{id}/package`) muestra siempre el último.
 
-La carta no va aquí: es un documento propio (fase 08c) y el paquete de candidatura usa la
-seleccionada.
+La carta no va aquí: es un documento propio (fase 08c). El paquete de candidatura usa la última
+carta de la oferta con su render seleccionado (`JobPackage.cover_letter`, con su texto plano).

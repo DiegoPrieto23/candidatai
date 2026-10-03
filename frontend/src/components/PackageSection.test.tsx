@@ -42,7 +42,7 @@ describe('Paquete de candidatura en la ficha', () => {
     expect(within(section).getByText('1 respuesta espera un dato tuyo (salario, disponibilidad…).')).toBeInTheDocument()
     expect(within(section).getByText(/Falta un dato tuyo/)).toBeInTheDocument()
     expect(within(section).getByRole('button', { name: 'Copiar la respuesta 2' })).toBeDisabled()
-    expect(within(section).getByText(/Llega con la fase 08c/)).toBeInTheDocument()
+    expect(within(section).getByText('generar-carta 1')).toBeInTheDocument()
     // Ningún botón envía nada.
     expect(within(section).queryByRole('button', { name: /enviar/i })).not.toBeInTheDocument()
   })
@@ -81,6 +81,32 @@ describe('Paquete de candidatura en la ficha', () => {
         { question: 'Expectativa salarial', answer: '45.000 € brutos al año', evidence: ['user'], needs_user_input: false },
       ],
     })
+  })
+
+  it('incluye la carta vigente para copiarla y abrir su PDF', async () => {
+    mockApi({
+      'GET /status': status(),
+      'GET /jobs/1': jobView({ stage: 'cv_ready' }),
+      'GET /jobs/1/package': jobPackage({
+        cover_letter: {
+          document_id: 9,
+          text: 'Hola, equipo de Acme:\r\n\r\nOs escribo por el puesto.\r\n',
+          word_count: 6,
+          edited_by_user: false,
+          verified: true,
+          render_id: 4,
+          pdf_url: '/renders/4/pdf',
+        },
+      }),
+    })
+    renderApp('/jobs/1')
+    const section = await screen.findByRole('region', { name: NAME })
+    expect(await within(section).findByText('6 palabras · Verificada')).toBeInTheDocument()
+    const writeText = withClipboard()
+    await userEvent.click(within(section).getByRole('button', { name: 'Copiar carta' }))
+    expect(writeText).toHaveBeenCalledWith('Hola, equipo de Acme:\r\n\r\nOs escribo por el puesto.\r\n')
+    const pdfLinks = within(section).getAllByRole('link', { name: /Abrir PDF/ })
+    expect(pdfLinks.at(-1)).toHaveAttribute('href', 'http://127.0.0.1:8000/renders/4/pdf')
   })
 
   it('tras enviar se ve y se copia, pero no se edita', async () => {

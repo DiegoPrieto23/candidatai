@@ -54,5 +54,11 @@ Enseña:
 - la ruta del PDF y los avisos del render (p. ej. `letter_fallback`: la plantilla del CV aún no
   tiene diseño de carta y se usa `carta-simple`).
 
-Para otro diseño, foto o color no hace falta redactar de nuevo: `render_cover_letter`.
-**No envíes nada ni abras formularios.**
+Recuerda que en la ficha de la oferta (sección «Carta de presentación») puede, sin agente:
+- copiar el texto o descargar el TXT o el PDF;
+- cambiar el diseño, la foto o el color;
+- retocar el texto a mano, lo que crea una carta nueva «Editada por ti», sin verificar;
+- marcar el render que enviará.
+
+La carta también aparece en el «Paquete de candidatura». Si es él quien te pide otro diseño:
+`render_cover_letter`, sin redactar de nuevo. **No envíes nada ni abras formularios.**

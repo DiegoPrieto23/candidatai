@@ -92,6 +92,16 @@ pulsas «Renderizar»: tarda segundos y **no gasta cuota del agente**. Puedes co
 a lado y marcar cuál envías. Si no eliges nada, se aplican tus reglas (por ejemplo, `ats-simple`
 sin foto para ofertas en Workday o en el Reino Unido). Detalle: `docs/CV_TEMPLATES.md`.
 
+La **carta de presentación** sigue la misma idea:
+- tus indicaciones generales (en el perfil) y las de cada oferta (en su ficha) dicen qué contar;
+- `generar-carta` la redacta y la verifica contra tu perfil;
+- sale a juego con el CV que vas a enviar (misma cabecera, foto y color; `carta-simple` si la
+  plantilla no trae carta).
+
+En la ficha la copias, la descargas en TXT o PDF, la retocas a mano o cambias su diseño, también
+sin agente. Las plantillas que importas de Word obtienen su carta con
+`jh templates build-letter <id>`.
+
 ### De dónde salen las ofertas
 
 | Vía | Fase | Automática | Cubre |

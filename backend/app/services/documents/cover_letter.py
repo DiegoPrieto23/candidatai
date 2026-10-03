@@ -256,11 +256,16 @@ def validate_letter(
     profile: CandidateProfile,
     extraction: JobExtraction | None,
     used: InstructionsUsed,
+    user_is_author: bool = False,
 ) -> list[ContentIssue]:
-    """Lo que el código comprueba sin IA (POLICIES §1 y §7). El resto, el rol `verificador`."""
+    """Lo que el código comprueba sin IA (POLICIES §1 y §7). El resto, el rol `verificador`.
+
+    `user` exige indicaciones guardadas cuando escribe el agente (son su respaldo). Si quien
+    escribe es el usuario (`user_is_author`), su texto es su propio respaldo.
+    """
     issues: list[ContentIssue] = []
     refs = checks.citable_refs(profile)
-    has_user = used.has_user_instructions()
+    has_user = user_is_author or used.has_user_instructions()
 
     for i, paragraph in enumerate(content.paragraphs):
         for k, ref in enumerate(paragraph.evidence):
@@ -652,7 +657,10 @@ def _store(
         preferences=prefs.model_dump(mode="json") if prefs else None,
         max_words=resolve_max_words(brief, prefs),
     )
-    issues = validate_letter(content, stored.profile, service._extraction(session, job_id), used)
+    extraction = service._extraction(session, job_id)
+    issues = validate_letter(
+        content, stored.profile, extraction, used, user_is_author=actor == Actor.USER
+    )
     if issues:
         raise CoverLetterContentError(issues)
 
@@ -696,6 +704,22 @@ def save_cover_letter(
     )
 
 
+def mark_user_paragraphs(
+    content: CoverLetterContent, previous: CoverLetterContent | None
+) -> CoverLetterContent:
+    """Los párrafos que el usuario reescribe (o añade) citan también `user`: ya no son solo lo
+    que se verificó con el perfil."""
+    before = [p.text for p in previous.paragraphs] if previous else []
+    paragraphs = []
+    for i, paragraph in enumerate(content.paragraphs):
+        changed = i >= len(before) or before[i] != paragraph.text
+        evidence = list(paragraph.evidence)
+        if changed and EVIDENCE_USER not in evidence:
+            evidence.append(EVIDENCE_USER)
+        paragraphs.append(paragraph.model_copy(update={"evidence": evidence}))
+    return content.model_copy(update={"paragraphs": paragraphs})
+
+
 def save_user_letter(
     session: Session, job_id: int, content: CoverLetterContent
 ) -> SaveLetterResult:
@@ -706,6 +730,7 @@ def save_user_letter(
     """
     _require_stage(session, job_id)
     previous = latest_letter(session, job_id)
+    content = mark_user_paragraphs(content, _content(previous) if previous else None)
     render_options = CoverLetterRenderOptions()
     if previous is not None:
         chosen = next((r for r in _renders(session, previous.id) if r.selected), None)
@@ -812,3 +837,80 @@ def plain_text(session: Session, document_id: int) -> str:
     blocks.append(f"{content.sign_off}\n{name}")
     text = "\n\n".join(block.strip() for block in blocks) + "\n"
     return text.replace("\r\n", "\n").replace("\n", "\r\n")
+
+
+# --- Ficha de la oferta (UI, fase 08c.3) ----------------------------------------------------
+
+
+class LetterTemplateInfo(BaseModel):
+    """Una plantilla con diseño de carta, para el selector de la ficha."""
+
+    id: str
+    name: str
+    engine: str
+    origin: str
+    letter_only: bool  # `carta-simple`: solo carta
+    photo_supported: bool
+    accent_colors: service.AccentColors | None
+
+
+class JobCoverLetter(BaseModel):
+    """La sección «Carta de presentación» de la ficha."""
+
+    info: CoverLetterInfo
+    can_edit: bool  # solo en «approved» y «cv_ready»
+    plain_text: str | None  # el TXT de la carta vigente, para copiarlo
+    cv_template_id: str | None  # plantilla del render seleccionado del CV («A juego con el CV»)
+    templates: list[LetterTemplateInfo]
+
+
+def _letter_templates() -> list[LetterTemplateInfo]:
+    found, _invalid = templates.list_templates(kind="letter")
+    out = []
+    for template in found:
+        meta = template.meta
+        accent = meta.options.accent_color
+        out.append(
+            LetterTemplateInfo(
+                id=meta.id,
+                name=meta.name,
+                engine=meta.engine,
+                origin=meta.origin,
+                letter_only=meta.kind == "letter",
+                photo_supported=meta.photo.supported,
+                accent_colors=service.AccentColors(
+                    default=accent.default, choices=accent.choices, free=accent.free
+                )
+                if accent
+                else None,
+            )
+        )
+    return out
+
+
+def get_job_cover_letter(session: Session, job_id: int) -> JobCoverLetter:
+    info = get_cover_letter(session, job_id=job_id)
+    cv_render = _selected_cv_render(session, job_id)
+    return JobCoverLetter(
+        info=info,
+        can_edit=info.stage in {Stage.APPROVED, Stage.CV_READY},
+        plain_text=plain_text(session, info.letter.document_id) if info.letter else None,
+        cv_template_id=cv_render.template_id if cv_render else None,
+        templates=_letter_templates(),
+    )
+
+
+def selected_letter(session: Session, job_id: int) -> tuple[Document, DocumentRender | None] | None:
+    """La carta vigente (la última) y su render seleccionado, si los hay."""
+    doc = latest_letter(session, job_id)
+    if doc is None:
+        return None
+    chosen = next((r for r in _renders(session, doc.id) if r.selected), None)
+    return doc, chosen
+
+
+def text_file_name(session: Session, document_id: int) -> str:
+    """`Carta-<Nombre>.txt`, en ASCII (va en una cabecera HTTP)."""
+    doc = _letter_doc(session, document_id)
+    name = profile_service.get_version(session, doc.profile_version_id).profile.personal.name
+    return service.file_stem(name, FILE_PREFIX) + ".txt"

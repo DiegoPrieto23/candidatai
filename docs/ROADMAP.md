@@ -19,10 +19,10 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 08.1 | ↳ Contenido, verificación y motor docx | ✅ | `generar-cv` produce un PDF verificado con `ats-simple` y la oferta pasa a `cv_ready` |
 | 08.2 | ↳ Foto, renders múltiples y UI | ✅ | Plantilla, foto y color se cambian en la UI sin agente; `clasica-foto` |
 | 08.3 | ↳ Importar plantillas desde Word y «Mi CV» | ✅ | Subes tu CV de Word, se convierte en plantilla por defecto y los CVs a medida salen con tu diseño, tu orden de secciones y tus secciones extra |
-| 08c | Carta de presentación | 🚧 | `generar-carta` redacta y verifica la carta según tus indicaciones (generales y de cada oferta); TXT para pegar y PDF a juego con el CV |
+| 08c | Carta de presentación | ✅ | `generar-carta` redacta y verifica la carta según tus indicaciones (generales y de cada oferta); TXT para pegar y PDF a juego con el CV |
 | 08c.1 | ↳ Indicaciones, contenido, verificación y render básico | ✅ | `generar-carta` guarda y verifica una carta que sigue tus indicaciones; PDF con `carta-simple` y TXT |
 | 08c.2 | ↳ Diseño a juego con el CV | ✅ | Carta con la cabecera y el estilo de tu plantilla (integradas, html e importadas con `build-letter`) |
-| 08c.3 | ↳ API, UI y paquete de candidatura | ⏳ | Sección «Carta de presentación» en la ficha y la carta en el paquete de candidatura |
+| 08c.3 | ↳ API, UI y paquete de candidatura | ✅ | Sección «Carta de presentación» en la ficha y la carta en el paquete de candidatura |
 | 08b | Plantillas html | ✅ | Importar diseños desde PDF o imagen (Canva…), también como «Mi CV», y plantilla integrada de dos columnas |
 | 09 | Conectores de ATS y scheduler | ✅ | Ingesta diaria de empresas objetivo sin intervención |
 | 09b | Alertas, captura y búsqueda con navegador | ✅ | Las alertas de LinkedIn y otros portales llegan solas por correo, cualquier oferta entra con un clic desde el navegador y, opcionalmente, el agente recorre portales |
@@ -849,7 +849,7 @@ decisiones tomadas y deuda técnica pendiente. -->
     la carta anterior.
 - **Deuda y notas para la 08c.2 y la 08c.3:**
   - Toda carta salía con `carta-simple` y aviso `letter_fallback`; resuelto en la 08c.2.
-  - `generar-carta` ya no menciona la UI de la ficha: la 08c.3 debe volver a recordarla.
+  - `generar-carta` ya no mencionaba la UI de la ficha; resuelto en la 08c.3.
   - `service.select_render` y la API `/renders/{id}/select` solo aceptan CVs; la selección de la
     carta está en `cover_letter.select_render`. Unificarlo en la 08c.3. `/renders/{id}/pdf` ya
     sirve las cartas, porque no mira el tipo de documento.
@@ -909,4 +909,50 @@ decisiones tomadas y deuda técnica pendiente. -->
   - `build-letter` no sirve para cabeceras en el encabezado de página de Word: se conservan tal
     cual, porque las secciones no se tocan, pero el corte no las detecta como cabecera. Si el
     cuerpo empieza directamente, da error.
+
+### 08c.3 · Carta: API, UI y paquete de candidatura — 2026-10-03 · Claude Code (Opus 5.5)
+- **Resumen:** cierra la fase 08c.
+  - **API** (`routes/letters.py`):
+    - `GET /jobs/{id}/cover-letter`: indicaciones, carta vigente con su TXT, plantilla del CV
+      seleccionado y plantillas con carta;
+    - `POST /jobs/{id}/cover-letter/brief`;
+    - `POST /jobs/{id}/cover-letter`: edición del usuario;
+    - `POST /cover-letters/{doc}/renders`;
+    - `GET /cover-letters/{doc}/text`: TXT en UTF-8, `\r\n`, `Carta-<Nombre>.txt`;
+    - `/renders/{id}/select` sirve para CV y carta (`service.render_kind`).
+  - **UI**: sección «Carta de presentación» en la ficha, después de «CV»:
+    - indicaciones de la oferta, editables, y resumen de las del perfil, con el límite resuelto;
+    - con carta: texto, palabras/límite y verificación, «Copiar texto», «Descargar TXT»,
+      «Editar» (por párrafos, más saludo y despedida, con recuento en vivo);
+    - formulario «Diseño» («A juego con el CV (…)» u otra plantilla con carta), foto y color;
+    - renders con avisos, «Descargar PDF», DOCX y «Usar esta para enviar»;
+    - sin carta, qué pedir al agente. En `closed` sin carta no aparece. Tras enviar, solo se
+      ve y se copia.
+  - **Paquete de candidatura**: `JobPackage.cover_letter` (texto, palabras, estado, `pdf_url` del
+    render seleccionado), con «Copiar carta» y «Abrir PDF».
+    `ProcessDocuments.cover_letter_document_id` ya se rellena.
+  - `generar-carta` vuelve a recordar lo que se hace en la ficha. README, `ARCHITECTURE.md` y
+    guía de prueba manual de toda la fase (`docs/pruebas/fase-08c-prueba-manual.txt`).
+  - 7 tests de API y 9 de frontend (8 de la sección y 1 del paquete con carta). 1 522 tests de
+    backend y 108 de frontend.
+- **Decisiones:**
+  - La carta y el paquete cuelgan de la clave de consulta `cv`: cambiar el render seleccionado
+    del CV refresca «A juego con el CV» y el paquete.
+  - Edición:
+    - cuando escribe el usuario, `user` vale siempre (su texto es su respaldo);
+    - los párrafos que cambian añaden `user` en el servidor (`mark_user_paragraphs`), no en
+      React. Antes lo hacía el frontend y fallaba sin indicaciones guardadas: lo vio la revisión;
+    - «Guardar» se desactiva sin cambios (así no se pierde la verificación por nada) o sin
+      ningún párrafo;
+    - se reutilizan las opciones del render seleccionado de la carta anterior.
+  - El TXT para copiar llega en la propia respuesta (`plain_text`); el de descarga, por su ruta.
+  - «A juego con el CV» manda `template_id: null`; la foto «Como el CV» es `auto`.
+- **Deuda:**
+  - **Prueba manual pendiente:** `docs/pruebas/fase-08c-prueba-manual.txt` (criterio de aceptación
+    de la fase: `/generar-carta` con indicaciones, PDF a juego y TXT sin errores; abrir los DOCX
+    en Word).
+  - La BD real necesita `jh db upgrade` (hasta 0010).
+  - El recuento de palabras de la UI (`\p{L}\p{N}_`) puede diferir del `\w` de Python en casos
+    raros de Unicode; manda el del servidor.
+  - La suite del frontend sigue siendo sensible a la carga de la máquina (ver 10.3).
 
