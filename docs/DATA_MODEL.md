@@ -267,3 +267,35 @@ Editar la fecha de una entrevista o una prueba deja una `note` («reprogramada p
 - **Calendario**: `.ics` por hito y feed con los próximos sin límite de días (solo hitos
   programados de ofertas abiertas: lo cancelado o cerrado sale del feed) (RFC 5545, UTC, `UID`
   `milestone-<id>@jobhunter.local` y `deadline-<job_id>-<fecha>@jobhunter.local`).
+
+### Embudo (fase 10.2)
+
+Lo calcula `services/analytics.py` con consultas agregadas sobre `events` (sin tablas nuevas ni
+índices: con 1 000 ofertas responde en unos 0,2 s). Cada oferta cuenta **una vez** por paso,
+aunque se reabra, y el embudo es **acumulado**: una oferta que llega a un paso cuenta también en
+los anteriores (un `applied_manually` sin aprobar antes cuenta como aprobada y triada), así que la
+conversión nunca pasa del 100 %.
+
+| Paso | La oferta tiene… |
+|---|---|
+| Encontradas (`found`) | cualquier oferta del periodo, salvo las cerradas por `duplicate_detected` sin `reopened` posterior (se cuentan aparte en `duplicates_excluded`) |
+| Triadas (`triaged`) | `extracted` y ningún `hard_filter_failed`, o un `reopened` después del último (después en el orden de la proyección: `occurred_at` y, a igual fecha, `id`; lo mismo con `duplicate_detected`) |
+| Aprobadas (`approved`) | `approved` |
+| Enviadas (`applied`) | `applied` o `applied_manually` |
+| Con respuesta (`replied`) | `reply_received`, `interview_scheduled`, `test_assigned`, `offer_received` o `rejected` con `occurred_at` igual o posterior al primer envío |
+| Entrevista (`interview`) | `interview_scheduled` |
+| Oferta (`offer`) | `offer_received` |
+| Aceptadas (`accepted`) | `accepted` |
+
+- **Periodo** (`since`): `jobs.first_seen_at` desde las 00:00 de ese día en Europe/Madrid.
+- **Por fuente**: `jobs.source_id` (con `sources.kind` y `name`). **Por puesto**: `title_normalized`
+  de la extracción vigente (la de mayor `id`); los 8 más frecuentes, «Otros» y «Sin extraer».
+  **Por semana**: semana ISO de `first_seen_at` en Europe/Madrid (función SQLite `jh_iso_week`,
+  registrada en `app/core/db.py`).
+- **Tiempo hasta la primera respuesta**: días entre el primer envío y la primera respuesta (mediana
+  y media, 1 decimal), sobre las ofertas con `applied`/`applied_manually` (las transiciones impiden
+  responder sin enviar, así que coincide con el paso «Enviadas»). Sin respuesta: `awaiting_reply` (aún en `applied`) y `closed_without_reply`.
+- **Motivos**: ofertas con `discarded` por `payload.reason` (`unspecified` si falta) y con
+  `hard_filter_failed` por cada `payload.failures[].filter` (`json_each`).
+- `jh_iso_week` y `json_each` son de SQLite: pasar a Postgres (ADR-002) exigiría reescribir esas dos
+  expresiones.

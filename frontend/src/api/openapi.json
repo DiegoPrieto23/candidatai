@@ -5047,6 +5047,127 @@
           }
         }
       }
+    },
+    "/stats/funnel": {
+      "get": {
+        "tags": [
+          "stats"
+        ],
+        "summary": "Get Funnel Stats",
+        "description": "Embudo con su conversión, desglose por fuente, puesto y semana, tiempo hasta la primera\nrespuesta y motivos de descarte de las ofertas vistas desde `since`.",
+        "operationId": "get_funnel_stats",
+        "parameters": [
+          {
+            "name": "since",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Since"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FunnelStats"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -6875,6 +6996,24 @@
         ],
         "title": "ExtractionView"
       },
+      "FilterCount": {
+        "properties": {
+          "filter": {
+            "type": "string",
+            "title": "Filter"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "filter",
+          "count"
+        ],
+        "title": "FilterCount"
+      },
       "FilterFailure": {
         "properties": {
           "filter": {
@@ -7072,6 +7211,141 @@
         ],
         "title": "FollowupStatus",
         "description": "Seguimiento de una candidatura enviada (solo en `applied`)."
+      },
+      "FunnelStats": {
+        "properties": {
+          "since": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Since"
+          },
+          "duplicates_excluded": {
+            "type": "integer",
+            "title": "Duplicates Excluded"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/FunnelStep"
+            },
+            "type": "array",
+            "title": "Steps"
+          },
+          "by_source": {
+            "items": {
+              "$ref": "#/components/schemas/SourceFunnel"
+            },
+            "type": "array",
+            "title": "By Source"
+          },
+          "by_title": {
+            "items": {
+              "$ref": "#/components/schemas/TitleFunnel"
+            },
+            "type": "array",
+            "title": "By Title"
+          },
+          "by_week": {
+            "items": {
+              "$ref": "#/components/schemas/WeekFunnel"
+            },
+            "type": "array",
+            "title": "By Week"
+          },
+          "response_time": {
+            "$ref": "#/components/schemas/ResponseTime"
+          },
+          "discard_reasons": {
+            "items": {
+              "$ref": "#/components/schemas/ReasonCount"
+            },
+            "type": "array",
+            "title": "Discard Reasons"
+          },
+          "hard_filter_failures": {
+            "items": {
+              "$ref": "#/components/schemas/FilterCount"
+            },
+            "type": "array",
+            "title": "Hard Filter Failures"
+          }
+        },
+        "type": "object",
+        "required": [
+          "since",
+          "duplicates_excluded",
+          "steps",
+          "by_source",
+          "by_title",
+          "by_week",
+          "response_time",
+          "discard_reasons",
+          "hard_filter_failures"
+        ],
+        "title": "FunnelStats"
+      },
+      "FunnelStep": {
+        "properties": {
+          "step": {
+            "type": "string",
+            "enum": [
+              "found",
+              "triaged",
+              "approved",
+              "applied",
+              "replied",
+              "interview",
+              "offer",
+              "accepted"
+            ],
+            "title": "Step"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "rate_from_previous": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rate From Previous"
+          },
+          "rate_from_start": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rate From Start"
+          }
+        },
+        "type": "object",
+        "required": [
+          "step",
+          "label",
+          "count",
+          "rate_from_previous",
+          "rate_from_start"
+        ],
+        "title": "FunnelStep"
       },
       "HardFilterResult": {
         "properties": {
@@ -8514,6 +8788,24 @@
         ],
         "title": "ProcessView"
       },
+      "ReasonCount": {
+        "properties": {
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reason",
+          "count"
+        ],
+        "title": "ReasonCount"
+      },
       "RenderResult": {
         "properties": {
           "render_id": {
@@ -8719,6 +9011,58 @@
           "offer"
         ],
         "title": "ResolvedOptions"
+      },
+      "ResponseTime": {
+        "properties": {
+          "applied": {
+            "type": "integer",
+            "title": "Applied"
+          },
+          "replied": {
+            "type": "integer",
+            "title": "Replied"
+          },
+          "median_days": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Median Days"
+          },
+          "mean_days": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mean Days"
+          },
+          "awaiting_reply": {
+            "type": "integer",
+            "title": "Awaiting Reply"
+          },
+          "closed_without_reply": {
+            "type": "integer",
+            "title": "Closed Without Reply"
+          }
+        },
+        "type": "object",
+        "required": [
+          "applied",
+          "replied",
+          "median_days",
+          "mean_days",
+          "awaiting_reply",
+          "closed_without_reply"
+        ],
+        "title": "ResponseTime"
       },
       "Salary": {
         "properties": {
@@ -8944,6 +9288,66 @@
         ],
         "title": "SkillCoverage",
         "description": "`ratio` es `None` si la oferta no lista skills de este tipo (el componente no cuenta)."
+      },
+      "SourceFunnel": {
+        "properties": {
+          "found": {
+            "type": "integer",
+            "title": "Found"
+          },
+          "approved": {
+            "type": "integer",
+            "title": "Approved"
+          },
+          "applied": {
+            "type": "integer",
+            "title": "Applied"
+          },
+          "replied": {
+            "type": "integer",
+            "title": "Replied"
+          },
+          "interview": {
+            "type": "integer",
+            "title": "Interview"
+          },
+          "reply_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reply Rate"
+          },
+          "source_id": {
+            "type": "integer",
+            "title": "Source Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "found",
+          "approved",
+          "applied",
+          "replied",
+          "interview",
+          "reply_rate",
+          "source_id",
+          "kind",
+          "name"
+        ],
+        "title": "SourceFunnel"
       },
       "SourceInput": {
         "properties": {
@@ -9565,6 +9969,66 @@
         ],
         "title": "TemplateList"
       },
+      "TitleFunnel": {
+        "properties": {
+          "found": {
+            "type": "integer",
+            "title": "Found"
+          },
+          "approved": {
+            "type": "integer",
+            "title": "Approved"
+          },
+          "applied": {
+            "type": "integer",
+            "title": "Applied"
+          },
+          "replied": {
+            "type": "integer",
+            "title": "Replied"
+          },
+          "interview": {
+            "type": "integer",
+            "title": "Interview"
+          },
+          "reply_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reply Rate"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "group": {
+            "type": "string",
+            "enum": [
+              "title",
+              "others",
+              "not_extracted"
+            ],
+            "title": "Group"
+          }
+        },
+        "type": "object",
+        "required": [
+          "found",
+          "approved",
+          "applied",
+          "replied",
+          "interview",
+          "reply_rate",
+          "title",
+          "group"
+        ],
+        "title": "TitleFunnel"
+      },
       "TriageItem": {
         "properties": {
           "job": {
@@ -9836,6 +10300,62 @@
           "problem"
         ],
         "title": "VerificationIssue"
+      },
+      "WeekFunnel": {
+        "properties": {
+          "found": {
+            "type": "integer",
+            "title": "Found"
+          },
+          "approved": {
+            "type": "integer",
+            "title": "Approved"
+          },
+          "applied": {
+            "type": "integer",
+            "title": "Applied"
+          },
+          "replied": {
+            "type": "integer",
+            "title": "Replied"
+          },
+          "interview": {
+            "type": "integer",
+            "title": "Interview"
+          },
+          "reply_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reply Rate"
+          },
+          "week": {
+            "type": "string",
+            "title": "Week"
+          },
+          "week_start": {
+            "type": "string",
+            "format": "date",
+            "title": "Week Start"
+          }
+        },
+        "type": "object",
+        "required": [
+          "found",
+          "approved",
+          "applied",
+          "replied",
+          "interview",
+          "reply_rate",
+          "week",
+          "week_start"
+        ],
+        "title": "WeekFunnel"
       }
     }
   }

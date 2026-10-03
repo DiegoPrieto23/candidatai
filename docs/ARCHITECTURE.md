@@ -64,6 +64,7 @@ La app nunca llama a un modelo y no depende de ningún proveedor.
 | `GET /templates/default`, `POST /templates/{id}/default` | Plantilla por defecto del perfil vigente; fijarla edita solo esa clave de `data/profile.yaml` (con ruamel.yaml, conserva comentarios) e importa la versión nueva |
 | `GET /board` | Kanban (fase 10): tarjetas de `approved` a `closed` (las cerradas, solo las que llegaron a aprobarse; las 50 más recientes) y los movimientos posibles (eventos del usuario por etapa de origen y destino) |
 | `GET /followups`, `GET /upcoming?days=` | Seguimientos vencidos y próximos hitos (como `list_followups_due` y `list_upcoming`) |
+| `GET /stats/funnel?since=` | Página «Embudo» (fase 10.2): lo mismo que `get_funnel_stats` |
 | `GET /jobs/{id}/process` | Ficha de proceso: envío y canal, seguimiento, hitos, contactos, notas y CV enviado o seleccionado |
 | `POST /jobs/{id}/milestones`, `POST /milestones/{id}`, `POST /milestones/{id}/status` | Crear un hito (entrevista y prueba registran su evento; 409 si no es válido en la etapa), editarlo y marcarlo como hecho o cancelado |
 | `POST /jobs/{id}/contacts`, `POST /contacts/{id}`, `POST /contacts/{id}/delete` | Contactos del proceso (por POST: CORS sigue con GET y POST) |

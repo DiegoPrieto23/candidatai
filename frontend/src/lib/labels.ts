@@ -277,3 +277,29 @@ export const MOVE_HINT: Partial<Record<EventType, string>> = {
   accepted: 'Has aceptado la oferta.',
   reopened: 'Vuelve a la etapa en la que estaba al cerrarse.',
 }
+
+// --- Analítica ---------------------------------------------------------------------------------
+
+/** Filtros duros (`hard_filter_failed.payload.failures[].filter`). */
+export const HARD_FILTER_LABEL: Partial<Record<string, string>> = {
+  seniority: 'Seniority',
+  years: 'Años de experiencia',
+  remote_mode: 'Modalidad',
+  location: 'Ubicación',
+  language: 'Idioma',
+  title_keyword: 'Palabras del título',
+} satisfies Record<Schemas['FilterFailure']['filter'], string>
+
+/** Tipos de fuente (`sources.kind`). */
+export const SOURCE_KIND_LABEL: Partial<Record<string, string>> = {
+  manual_url: 'Enlace',
+  manual_text: 'Texto pegado',
+  greenhouse: 'Greenhouse',
+  lever: 'Lever',
+  ashby: 'Ashby',
+  infojobs: 'InfoJobs',
+  adzuna: 'Adzuna',
+  email_alerts: 'Alertas por correo',
+  browser_capture: 'Botón del navegador',
+  agent_browse: 'Búsqueda con navegador',
+}

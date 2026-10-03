@@ -43,6 +43,7 @@ export type MilestoneKind = Schemas['MilestoneCreate']['kind']
 export type ContactOut = Schemas['ContactOut']
 export type UpcomingItem = Schemas['UpcomingItem']
 export type FollowupList = Schemas['FollowupList']
+export type FunnelStats = Schemas['FunnelStats']
 export type ApplicationChannel = NonNullable<Schemas['AddUserEventBody']['channel']>
 
 export const API_URL: string = import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:8000'

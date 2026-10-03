@@ -28,7 +28,7 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 09b.3 | ↳ Plataformas y búsqueda con navegador | ✅ | `list_sources`, `save_source`, `record_source_run` y pantalla «Plataformas»; LinkedIn solo lo activa el usuario |
 | 10 | Seguimiento y analítica | 🚧 | Kanban, seguimientos pendientes, dashboard del embudo |
 | 10.1 | ↳ Seguimiento: kanban, ficha de proceso y calendario | ✅ | Kanban que solo mueve con eventos, hitos con hora de Madrid y contactos, aviso de seguimientos, `list_followups_due`, `list_upcoming` y `.ics` por hito y en feed |
-| 10.2 | ↳ Analítica: dashboard del embudo | ⏳ | Conversión por etapa, fuente, puesto y semana; tiempo hasta la primera respuesta; motivos de descarte; `get_funnel_stats` |
+| 10.2 | ↳ Analítica: dashboard del embudo | ✅ | Página «Embudo»: conversión por paso, fuente, puesto y semana; tiempo hasta la primera respuesta; motivos de descarte; `get_funnel_stats` |
 | 10.3 | ↳ Paquete de candidatura | ⏳ | `save_application_answers` y CV, respuestas y carta listos para copiar |
 | 11 | Candidatura asistida | ⏳ | Rellenado con Playwright y envío tras tu confirmación |
 | 12 | Demo, compatibilidad y portfolio | ⏳ | Modo demo, matriz de agentes probada, evals publicados |
@@ -702,3 +702,46 @@ decisiones tomadas y deuda técnica pendiente. -->
   - `uv add tzdata` se hizo con `--no-sync`: ejecuta `uv sync --directory backend` con Claude Code
     cerrado.
   - La BD real necesita `jh db upgrade` (hasta 0008).
+
+### 10.2 · Analítica: dashboard del embudo — 2026-10-03 · Claude Code (Opus 5.5)
+- **Resumen:**
+  - `services/analytics.py`: una CTE con una fila por oferta (pasos 0/1, fecha de envío y de
+    primera respuesta) calculada en SQL sobre `events`. De ella salen, con `GROUP BY` en la BD, el
+    embudo de 8 pasos, el resumen por fuente, por puesto (top 8 + «Otros» + «Sin extraer») y por
+    semana ISO (con las vacías a cero), el tiempo hasta la primera respuesta y los motivos de
+    descarte y de filtro duro. `since` filtra por `first_seen_at` desde las 00:00 de Madrid.
+  - Interfaz para agentes: `get_funnel_stats` ↔ `jh stats funnel [--since] --json`, con 4 casos de
+    paridad. API: `GET /stats/funnel?since=`.
+  - UI: página «Embudo» con Recharts (dependencia nueva, cargada en diferido): cifras clave, embudo,
+    primera respuesta, por semana, tablas por fuente y por puesto, motivos; selector de periodo
+    (todo, 30 y 90 días, 12 meses o desde una fecha) y estados vacíos. Cada gráfica lleva una tabla
+    oculta para lectores de pantalla. Colores `--chart-1`/`--chart-2` (azul y naranja) validados
+    contra los fondos claro y oscuro (daltonismo y contraste).
+  - `scripts/seed_funnel_demo.py`: 1 000 ofertas ficticias con su histórico (con `events.record()`)
+    en `data/funnel-demo/`. El test de rendimiento siembra lo mismo y exige `GET /stats/funnel`
+    < 1 s (mejor de 3, tras calentar): ~0,25 s. Sin índices nuevos ni migración (un índice
+    `events(job_id, type, occurred_at)` no mejoraba nada).
+  - 10 tests del servicio con un histórico hecho a mano (cifras exactas), 3 de API/rendimiento y 4
+    de la página. 1 432 tests de backend y 94 de frontend.
+
+  Guía de prueba manual en `docs/pruebas/fase-10.2-prueba-manual.txt`.
+- **Decisiones** (definiciones en `DATA_MODEL.md` §Embudo):
+  - Embudo **acumulado**: una oferta que llega a un paso cuenta en los anteriores (un
+    `applied_manually` sin aprobar cuenta como aprobada), y una sola vez aunque se reabra.
+  - Triada: `extracted` sin `hard_filter_failed`, o reabierta después del último. Con respuesta:
+    respuesta, entrevista, prueba, oferta o rechazo con fecha ≥ primer envío.
+  - Duplicadas (`duplicate_detected` no reabierta) fuera del embudo, contadas en
+    `duplicates_excluded`. «Después» se decide como la proyección: por (`occurred_at`, `id`).
+  - Mediana en Python sobre los días que calcula SQL (SQLite no tiene mediana).
+  - Motivos y filtros cuentan ofertas (`COUNT DISTINCT`), no eventos.
+  - Semana ISO en Europe/Madrid con la función SQLite `jh_iso_week` (registrada en
+    `app/core/db.py` en cada conexión).
+- **Deuda:**
+  - **Prueba manual pendiente:** la guía de la 10.2 (carga < 1 s en el navegador, modo oscuro,
+    móvil). En la revisión automática, la API respondió en ~0,5 s en frío con 1 000 ofertas.
+  - `jh_iso_week` y `json_each` son de SQLite: pasar a Postgres (ADR-002) exige reescribirlas.
+  - La barra de navegación se sale de la pantalla en móvil (en todas las páginas; ya pasaba antes).
+  - El bundle principal sigue por encima de 500 kB (~800 kB, ya antes de la 10.2): habría que
+    trocear más rutas.
+  - `pnpm install` en el frontend para Recharts.
+

@@ -21,6 +21,7 @@ export const keys = {
   upcoming: (days: number) => ['upcoming', days] as const,
   allUpcoming: ['upcoming'] as const,
   process: (id: number) => ['process', id] as const,
+  funnel: (since: string | null) => ['funnel', since] as const,
 }
 
 export interface JobsParams {
@@ -478,5 +479,13 @@ export function useDeleteContact(jobId: number) {
     mutationFn: (contactId: number) =>
       unwrap(api.POST('/contacts/{contact_id}/delete', { params: { path: { contact_id: contactId } } })),
     onSuccess: () => client.invalidateQueries({ queryKey: keys.process(jobId) }),
+  })
+}
+
+export function useFunnelStats(since: string | null) {
+  return useQuery({
+    queryKey: keys.funnel(since),
+    queryFn: () => unwrap(api.GET('/stats/funnel', { params: { query: { since } } })),
+    placeholderData: keepPreviousData,
   })
 }

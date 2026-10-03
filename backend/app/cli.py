@@ -37,6 +37,7 @@ sources_app = typer.Typer(
     no_args_is_help=True,
 )
 calendar_app = typer.Typer(help="Calendario .ics de los procesos.", no_args_is_help=True)
+stats_app = typer.Typer(help="Analítica de la búsqueda.", no_args_is_help=True)
 capture_app = typer.Typer(
     help="Botón «Enviar a Job Hunter» (extensión del navegador).", no_args_is_help=True
 )
@@ -56,6 +57,7 @@ app.add_typer(sources_app, name="sources")
 app.add_typer(alerts_app, name="alerts")
 app.add_typer(capture_app, name="capture")
 app.add_typer(calendar_app, name="calendar")
+app.add_typer(stats_app, name="stats")
 
 JSON_OPTION = typer.Option(False, "--json", help="Salida en JSON.")
 SYNC_SCRIPT = REPO_ROOT / "scripts" / "sync_agents.py"
@@ -1201,6 +1203,36 @@ def _render_upcoming(result: Any) -> None:
         typer.echo(f"{when:<16}  {item.title} · {item.job_title} ({item.company}) [{item.job_id}]")
 
 
+def _pct(value: float | None) -> str:
+    return "—" if value is None else f"{value:.0%}"
+
+
+def _render_funnel(result: Any) -> None:
+    since = f" desde el {result.since:%d/%m/%Y}" if result.since else ""
+    typer.echo(f"Embudo{since} ({result.duplicates_excluded} duplicadas fuera):")
+    for step in result.steps:
+        rate = "" if step.rate_from_previous is None else f"  {_pct(step.rate_from_previous)}"
+        typer.echo(f"  {step.label:<14} {step.count:>5}{rate}")
+    rt = result.response_time
+    if rt.median_days is not None:
+        typer.echo(
+            f"Primera respuesta: mediana {rt.median_days} días, media {rt.mean_days} días "
+            f"({rt.replied} de {rt.applied} enviadas)."
+        )
+    typer.echo(f"Sin respuesta: {rt.awaiting_reply} esperando, {rt.closed_without_reply} cerradas.")
+    for source in result.by_source:
+        typer.echo(
+            f"  {source.name} ({source.kind}): {source.found} encontradas, "
+            f"{source.applied} enviadas, respuesta {_pct(source.reply_rate)}"
+        )
+    if result.discard_reasons:
+        reasons = ", ".join(f"{r.reason} ({r.count})" for r in result.discard_reasons)
+        typer.echo(f"Descartes: {reasons}")
+    if result.hard_filter_failures:
+        filters = ", ".join(f"{f.filter} ({f.count})" for f in result.hard_filter_failures)
+        typer.echo(f"Filtros duros: {filters}")
+
+
 CALENDAR_OUT_OPTION = typer.Option(
     None, "--out", help="Fichero de salida. Por defecto, data/calendar/jobhunter.ics."
 )
@@ -1256,6 +1288,7 @@ register_tools(
         "cv": cv_app,
         "templates": templates_app,
         "sources": sources_app,
+        "stats": stats_app,
     },
     {
         "get_status": _render_status,
@@ -1279,5 +1312,6 @@ register_tools(
         "record_source_run": _render_recorded_run,
         "list_followups_due": _render_followups,
         "list_upcoming": _render_upcoming,
+        "get_funnel_stats": _render_funnel,
     },
 )

@@ -473,6 +473,12 @@ CASES = [
     Case("upcoming-default", "list_upcoming", {}, ["upcoming"], seed=seed_upcoming),
     Case("upcoming-bad", "list_upcoming", {"days": "una"}, ["upcoming", "--days", "una"],
          expect_error="validation_error"),
+    Case("funnel", "get_funnel_stats", {}, ["stats", "funnel"], seed=seed_upcoming),
+    Case("funnel-since", "get_funnel_stats", {"since": "2999-01-01"},
+         ["stats", "funnel", "--since", "2999-01-01"], seed=seed_upcoming),
+    Case("funnel-empty", "get_funnel_stats", {}, ["stats", "funnel"]),
+    Case("funnel-bad", "get_funnel_stats", {"since": "ayer"},
+         ["stats", "funnel", "--since", "ayer"], expect_error="validation_error"),
 ]  # fmt: skip
 
 

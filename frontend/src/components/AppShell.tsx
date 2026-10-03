@@ -175,6 +175,9 @@ export function AppShell() {
             <NavLink to="/procesos" className={navClass}>
               Procesos
             </NavLink>
+            <NavLink to="/embudo" className={navClass}>
+              Embudo
+            </NavLink>
             <NavLink to="/alertas" className={navClass}>
               Alertas
               <NavCount stage="pending_detail" label="por completar" muted />

@@ -4,6 +4,7 @@ Tabla de referencia en `docs/AGENT_INTERFACE.md`. Los handlers solo adaptan la e
 servicio: la lógica vive en `app/services/`.
 """
 
+from datetime import date
 from typing import Any, Self
 
 from pydantic import (
@@ -20,7 +21,16 @@ from app.agent_interface.registry import CallContext, CliSpec, ToolSpec
 from app.schemas.cv import CvContent, CvRenderOptions, CvVerification
 from app.schemas.llm_io import FitAssessment, JobExtraction
 from app.schemas.sources import AgentBrowseSource, SourceList, SourceRunSummary
-from app.services import events, extractions, ingest, jobs, profile, status, tracking
+from app.services import (
+    analytics,
+    events,
+    extractions,
+    ingest,
+    jobs,
+    profile,
+    status,
+    tracking,
+)
 from app.services.documents import service as cv
 from app.services.ingestion import browse
 from app.services.ingestion import service as sources
@@ -171,6 +181,13 @@ class ListUpcomingInput(_Input):
     days: int = Field(default=7, ge=1, le=tracking.MAX_DAYS, description="Días desde hoy.")
 
 
+class FunnelStatsInput(_Input):
+    since: date | None = Field(
+        default=None,
+        description="Solo las ofertas vistas desde ese día (AAAA-MM-DD, Europe/Madrid).",
+    )
+
+
 class JobList(BaseModel):
     jobs: list[jobs.JobSummary]
 
@@ -317,6 +334,12 @@ def _list_upcoming(
     session: Session, args: ListUpcomingInput, _ctx: CallContext
 ) -> tracking.UpcomingList:
     return tracking.list_upcoming(session, args.days)
+
+
+def _get_funnel_stats(
+    session: Session, args: FunnelStatsInput, _ctx: CallContext
+) -> analytics.FunnelStats:
+    return analytics.get_funnel_stats(session, args.since)
 
 
 TOOLS: tuple[ToolSpec, ...] = (
@@ -598,6 +621,19 @@ TOOLS: tuple[ToolSpec, ...] = (
         output_model=tracking.UpcomingList,
         handler=_list_upcoming,
         cli=CliSpec(path=("upcoming",)),
+    ),
+    ToolSpec(
+        name="get_funnel_stats",
+        description=(
+            "Embudo de la búsqueda (encontradas → triadas → aprobadas → enviadas → con respuesta "
+            "→ entrevista → oferta → aceptadas) con su conversión; el mismo embudo resumido por "
+            "fuente, tipo de puesto y semana; tiempo hasta la primera respuesta y motivos de "
+            "descarte. `since` filtra por la fecha en que se vio la oferta."
+        ),
+        input_model=FunnelStatsInput,
+        output_model=analytics.FunnelStats,
+        handler=_get_funnel_stats,
+        cli=CliSpec(path=("stats", "funnel")),
     ),
 )
 

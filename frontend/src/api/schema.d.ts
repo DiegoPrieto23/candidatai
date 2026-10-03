@@ -836,6 +836,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/stats/funnel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Funnel Stats
+         * @description Embudo con su conversión, desglose por fuente, puesto y semana, tiempo hasta la primera
+         *     respuesta y motivos de descarte de las ofertas vistas desde `since`.
+         */
+        get: operations["get_funnel_stats"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1464,6 +1485,13 @@ export interface components {
             created_at: string;
             data: components["schemas"]["JobExtraction"];
         };
+        /** FilterCount */
+        FilterCount: {
+            /** Filter */
+            filter: string;
+            /** Count */
+            count: number;
+        };
         /** FilterFailure */
         FilterFailure: {
             /**
@@ -1528,6 +1556,42 @@ export interface components {
             days_waiting: number | null;
             /** Days Without Reply */
             days_without_reply: number;
+        };
+        /** FunnelStats */
+        FunnelStats: {
+            /** Since */
+            since: string | null;
+            /** Duplicates Excluded */
+            duplicates_excluded: number;
+            /** Steps */
+            steps: components["schemas"]["FunnelStep"][];
+            /** By Source */
+            by_source: components["schemas"]["SourceFunnel"][];
+            /** By Title */
+            by_title: components["schemas"]["TitleFunnel"][];
+            /** By Week */
+            by_week: components["schemas"]["WeekFunnel"][];
+            response_time: components["schemas"]["ResponseTime"];
+            /** Discard Reasons */
+            discard_reasons: components["schemas"]["ReasonCount"][];
+            /** Hard Filter Failures */
+            hard_filter_failures: components["schemas"]["FilterCount"][];
+        };
+        /** FunnelStep */
+        FunnelStep: {
+            /**
+             * Step
+             * @enum {string}
+             */
+            step: "found" | "triaged" | "approved" | "applied" | "replied" | "interview" | "offer" | "accepted";
+            /** Label */
+            label: string;
+            /** Count */
+            count: number;
+            /** Rate From Previous */
+            rate_from_previous: number | null;
+            /** Rate From Start */
+            rate_from_start: number | null;
         };
         /** HardFilterResult */
         HardFilterResult: {
@@ -2000,6 +2064,13 @@ export interface components {
             notes: components["schemas"]["NoteOut"][];
             documents: components["schemas"]["ProcessDocuments"];
         };
+        /** ReasonCount */
+        ReasonCount: {
+            /** Reason */
+            reason: string;
+            /** Count */
+            count: number;
+        };
         /** RenderResult */
         RenderResult: {
             /** Render Id */
@@ -2075,6 +2146,21 @@ export interface components {
              */
             warnings: components["schemas"]["RenderWarning"][];
         };
+        /** ResponseTime */
+        ResponseTime: {
+            /** Applied */
+            applied: number;
+            /** Replied */
+            replied: number;
+            /** Median Days */
+            median_days: number | null;
+            /** Mean Days */
+            mean_days: number | null;
+            /** Awaiting Reply */
+            awaiting_reply: number;
+            /** Closed Without Reply */
+            closed_without_reply: number;
+        };
         /** Salary */
         Salary: {
             /** Min */
@@ -2138,6 +2224,27 @@ export interface components {
             covered: components["schemas"]["CoveredSkill"][];
             /** Missing */
             missing: string[];
+        };
+        /** SourceFunnel */
+        SourceFunnel: {
+            /** Found */
+            found: number;
+            /** Approved */
+            approved: number;
+            /** Applied */
+            applied: number;
+            /** Replied */
+            replied: number;
+            /** Interview */
+            interview: number;
+            /** Reply Rate */
+            reply_rate: number | null;
+            /** Source Id */
+            source_id: number;
+            /** Kind */
+            kind: string;
+            /** Name */
+            name: string;
         };
         /**
          * SourceInput
@@ -2350,6 +2457,28 @@ export interface components {
             /** Fallback Template */
             fallback_template: string;
         };
+        /** TitleFunnel */
+        TitleFunnel: {
+            /** Found */
+            found: number;
+            /** Approved */
+            approved: number;
+            /** Applied */
+            applied: number;
+            /** Replied */
+            replied: number;
+            /** Interview */
+            interview: number;
+            /** Reply Rate */
+            reply_rate: number | null;
+            /** Title */
+            title: string;
+            /**
+             * Group
+             * @enum {string}
+             */
+            group: "title" | "others" | "not_extracted";
+        };
         /** TriageItem */
         TriageItem: {
             job: components["schemas"]["JobRow"];
@@ -2442,6 +2571,28 @@ export interface components {
              * @default
              */
             suggestion: string;
+        };
+        /** WeekFunnel */
+        WeekFunnel: {
+            /** Found */
+            found: number;
+            /** Approved */
+            approved: number;
+            /** Applied */
+            applied: number;
+            /** Replied */
+            replied: number;
+            /** Interview */
+            interview: number;
+            /** Reply Rate */
+            reply_rate: number | null;
+            /** Week */
+            week: string;
+            /**
+             * Week Start
+             * Format: date
+             */
+            week_start: string;
         };
     };
     responses: never;
@@ -6550,6 +6701,100 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OkResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_funnel_stats: {
+        parameters: {
+            query?: {
+                since?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FunnelStats"];
                 };
             };
             /** @description Unauthorized */
