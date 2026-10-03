@@ -1,10 +1,10 @@
-"""Autoría de plantillas (fases 08.3 y 08b): lo que usan `jh templates …` y la página Plantillas.
+"""Autoría de plantillas (fases 08.3, 08b y 08c): lo que usan `jh templates …` y la UI.
 
-`inspect`, `build_docx`, `scaffold_html` y `compare` trabajan con ficheros dentro de `data/`
-(`importer/paths.py`). Word va al motor docx; PDF, imagen y HTML, al html. Las
-previews con el perfil demo de una plantilla del usuario van a su carpeta (son su miniatura); las
-de las integradas y las del perfil real, a `data/cache/previews/`, para no escribir datos
-personales fuera de `data/` ni tocar `templates/`.
+`inspect`, `build_docx`, `build_letter` (08c), `scaffold_html` y `compare` trabajan con
+ficheros dentro de `data/` (`importer/paths.py`). Word va al motor docx; PDF, imagen y HTML,
+al html. Las previews con el perfil demo de una plantilla del usuario van a su carpeta (son su
+miniatura); las de las integradas, las del perfil real y las de la carta, a
+`data/cache/previews/`, para no escribir datos personales fuera de `data/` ni tocar `templates/`.
 """
 
 import json
@@ -17,7 +17,15 @@ from sqlalchemy.orm import Session
 from app.core.config import get_settings
 from app.services import profile as profile_service
 from app.services.documents import pdf, photo, preview, templates
-from app.services.documents.importer import build, compare, inspect, paths, scaffold, visual
+from app.services.documents.importer import (
+    build,
+    compare,
+    inspect,
+    letter,
+    paths,
+    scaffold,
+    visual,
+)
 
 ProfileChoice = Literal["demo", "real"]
 
@@ -81,6 +89,11 @@ def build_docx(
     return result
 
 
+def build_letter(template_id: str, force: bool = False) -> letter.BuildLetterResult:
+    """`letter.docx` a juego de una plantilla docx tuya, desde su cabecera (fase 08c)."""
+    return letter.build_letter(template_id, force=force)
+
+
 def validate(template_id: str) -> ValidationResult:
     """`template.yaml`, variables del contrato y que renderiza con todo el perfil demo.
 
@@ -89,6 +102,7 @@ def validate(template_id: str) -> ValidationResult:
     template = templates.validate(template_id, kind=None)
     if template.meta.kind == "cv":
         preview.check_renders(template)
+    preview.check_letter_renders(template)
     return ValidationResult(
         ok=True,
         template_id=template.id,
@@ -109,19 +123,27 @@ def previews_dir() -> Path:
     return get_settings().data_dir / "cache" / "previews"
 
 
-def _output_paths(template: templates.Template, which: ProfileChoice) -> tuple[Path, Path]:
+def _output_paths(
+    template: templates.Template, which: ProfileChoice, letter: bool = False
+) -> tuple[Path, Path]:
     user_dir = get_settings().user_templates_dir.resolve()
-    if which == "demo" and template.path.resolve().is_relative_to(user_dir):
+    if which == "demo" and not letter and template.path.resolve().is_relative_to(user_dir):
         return template.path / "preview.pdf", template.path / "preview.png"
-    stem = f"{template.id}-{which}-{template.file_hash()[:12]}"
+    if letter:
+        stem = f"{template.id}-letter-{which}-{template.file_hash('letter')[:12]}"
+    else:
+        stem = f"{template.id}-{which}-{template.file_hash()[:12]}"
     return previews_dir() / f"{stem}.pdf", previews_dir() / f"{stem}.png"
 
 
 def preview_template(
-    session: Session | None, template_id: str, which: ProfileChoice = "demo"
+    session: Session | None, template_id: str, which: ProfileChoice = "demo", letter: bool = False
 ) -> PreviewResult:
-    """PDF y PNG de la plantilla con el perfil demo o con el real (la última versión importada)."""
-    template = templates.validate(template_id)
+    """PDF y PNG de la plantilla con el perfil demo o con el real (la última versión importada).
+
+    Con `letter`, su diseño de carta (`letter.*`) con una carta de muestra; va a la caché.
+    """
+    template = templates.validate(template_id, kind="letter" if letter else "cv")
     if which == "real":
         if session is None:
             raise ValueError("La preview con el perfil real necesita la base de datos.")
@@ -130,12 +152,11 @@ def preview_template(
     else:
         candidate = profile_service.load_from_yaml(profile_service.EXAMPLE_PATH)
         photo_source = preview.DEMO_PHOTO
-    pdf_path, png_path = _output_paths(template, which)
-    preview.render_preview(
-        template, candidate, pdf_path, photo_source=photo_source, output_png=png_path
-    )
+    pdf_path, png_path = _output_paths(template, which, letter)
+    render = preview.render_letter_preview if letter else preview.render_preview
+    render(template, candidate, pdf_path, photo_source=photo_source, output_png=png_path)
     info = pdf.read_pdf(pdf_path)
-    max_pages = template.meta.page.max_pages
+    max_pages = 1 if letter else template.meta.page.max_pages
     warnings = []
     if info.pages > max_pages:
         warnings.append(

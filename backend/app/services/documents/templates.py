@@ -46,6 +46,9 @@ CONTRACT_VARIABLES = frozenset(
     }
 )
 
+Kind = Literal["cv", "letter"]
+LETTER_CSS = "letter.css"  # motor html: estilos propios de la carta (no cuentan para el CV)
+
 # Variables de la carta (fase 08c): la cabecera del CV y lo propio de la carta.
 LETTER_CONTRACT_VARIABLES = frozenset(
     {
@@ -85,6 +88,45 @@ class TemplateInvalidError(ValueError):
         super().__init__(f"La plantilla «{template_id}» no es válida: {detail}")
 
 
+def _filler(line: bytes) -> bool:
+    """Línea vacía o comentario en la columna 0."""
+    stripped = line.strip()
+    return not stripped or (stripped.startswith(b"#") and line[:1] == b"#")
+
+
+def _indented(line: bytes) -> bool:
+    return line[:1] in (b" ", b"	")
+
+
+def without_letter_block(meta_yaml: bytes) -> bytes:
+    """`template.yaml` sin el bloque `letter:` de primer nivel: el CV no depende de él.
+
+    El bloque es la línea `letter:` y las que siguen indentadas, también con líneas vacías o de
+    comentario en medio si después sigue el bloque. Un flujo (`letter: {file: …}`) va en una línea.
+    """
+    lines = meta_yaml.splitlines(keepends=True)
+    out: list[bytes] = []
+    i = 0
+    while i < len(lines):
+        if not lines[i].startswith(b"letter:"):
+            out.append(lines[i])
+            i += 1
+            continue
+        i += 1
+        while i < len(lines):
+            if _indented(lines[i]):
+                i += 1
+                continue
+            j = i
+            while j < len(lines) and _filler(lines[j]):
+                j += 1
+            if j > i and j < len(lines) and _indented(lines[j]):
+                i = j  # lo vacío de en medio es parte del bloque
+                continue
+            break
+    return b"".join(out)
+
+
 @dataclass(frozen=True)
 class Template:
     meta: TemplateMeta
@@ -103,16 +145,25 @@ class Template:
         """El diseño de carta (fase 08c), si lo tiene."""
         return self.path / self.meta.letter.file if self.meta.letter else None
 
-    def file_hash(self) -> str:
-        """sha256 de los ficheros (sin previews ni original): ¿cambió tras un render?"""
+    def file_hash(self, kind: Kind = "cv") -> str:
+        """sha256 de los ficheros (sin previews ni original): ¿cambió tras un render?
+
+        El del CV no mira `letter.*` y el de la carta no mira `template.*`: añadir o retocar la
+        carta no marca como cambiados los CVs ya renderizados, ni al revés.
+        """
+        other = ("letter.",) if kind == "cv" else ("template.docx", "template.html")
+        skip = _NOT_HASHED_PREFIXES + other
         digest = hashlib.sha256()
         for file in sorted(p for p in self.path.rglob("*") if p.is_file()):
             relative = file.relative_to(self.path).as_posix()
-            if relative.startswith(_NOT_HASHED_PREFIXES):
+            if relative.startswith(skip):
                 continue
+            data = file.read_bytes()
+            if kind == "cv" and relative == META_FILE:
+                data = without_letter_block(data)
             digest.update(relative.encode())
             digest.update(b"\0")
-            digest.update(file.read_bytes())
+            digest.update(data)
             digest.update(b"\0")
         return digest.hexdigest()
 
@@ -192,9 +243,6 @@ def _scan(
     return found, invalid
 
 
-Kind = Literal["cv", "letter"]
-
-
 def _usable(template: Template, kind: Kind) -> bool:
     """De CV: las de `kind: cv`. De carta: las que tienen diseño de carta (`letter`)."""
     return template.meta.kind == "cv" if kind == "cv" else template.meta.letter is not None
@@ -253,6 +301,8 @@ def unsafe_content(template: Template) -> list[TemplateIssue]:
     names = list(ENGINE_FILES["html"]) if template.meta.kind == "cv" else ["style.css"]
     if template.meta.letter:
         names.append(template.meta.letter.file)
+        if (template.path / LETTER_CSS).is_file():  # estilos propios de la carta, opcionales
+            names.append(LETTER_CSS)
     for name in names:
         text = (template.path / name).read_text(encoding="utf-8")
         for finding in sanitize.scan(text, name):

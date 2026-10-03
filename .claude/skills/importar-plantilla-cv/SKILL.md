@@ -101,7 +101,32 @@ Revisa `template.yaml`: en docx, `build-docx` ya rellena secciones, `capacity`, 
 color detectado: si las secciones o la `capacity` que has leído en la imagen no coinciden,
 corrígelas. En los dos, completa `description` y `tags`. Luego `jh templates validate <id>`.
 
-## 5. Comparar e iterar
+## 5. Carta de presentación a juego
+La carta usa la cabecera del CV (nombre, subtítulo, contacto y foto) y su estilo. Sin ella, las
+cartas de las ofertas que usen esta plantilla salen con `carta-simple` (aviso `letter_fallback`).
+- **docx:** `jh templates build-letter <id> --json`. Crea `letter.docx` con los bloques del
+  principio del CV que solo llevan nombre, subtítulo, contacto o foto, y lo declara en
+  `template.yaml`. Requisito: haber marcado la cabecera con `"header": true` en el mapeo.
+  - Lee sus `warnings`: si falta el contacto o el subtítulo en la cabecera conservada, mira la
+    preview.
+  - `build-docx --force` vuelve a crear la plantilla entera y borra la carta: repite
+    `build-letter` después.
+  - Si dice que no hay cabecera, vuelve al mapeo, márcala y repite `build-docx --force`.
+  - Si la cabecera está mezclada con el cuerpo (p. ej. dentro de una tabla a dos columnas), dilo:
+    la carta saldrá con `carta-simple`.
+- **html:** escribe `data/templates/<id>/letter.html` copiando de `template.html` el `<head>` y
+  la cabecera (y la barra lateral, si la hay, solo con la foto y el contacto). Debajo, el cuerpo
+  de la carta con las variables de `docs/CV_TEMPLATES.md` §Cartas de presentación: `date`,
+  `place`, `recipient`, `greeting`, `paragraphs` (un `<p>` por cada uno) y `sign_off`, y
+  `name` al final.
+  - Los estilos propios de la carta van en `letter.css`, enlazado después de `style.css`. Si
+    tocas `style.css`, los CVs ya renderizados salen como «Plantilla cambiada».
+  - Añade `letter: {file: letter.html}` a `template.yaml`.
+  - Mismas reglas del motor html que el CV.
+- `jh templates validate <id>` comprueba también la carta y `jh templates preview <id> --letter`
+  la renderiza con una carta de muestra: compárala con la cabecera del CV y corrige.
+
+## 6. Comparar e iterar
 1. `jh templates preview <id> --profile demo` y, en html, `jh templates compare <id> --source <fichero>`
    (el original y la recreación lado a lado en `image_path`, con una SSIM orientativa: que suba
    entre vueltas indica que te acercas, pero mira la imagen).
@@ -112,7 +137,7 @@ corrígelas. En los dos, completa `description` y `tags`. Luego `jh templates va
 4. Pide al usuario que lo revise en la UI (Plantillas → Mi CV, original y con su perfil lado a
    lado) y aplica sus correcciones.
 
-## 6. Cerrar
+## 7. Cerrar
 - Pregunta si quiere usarla por defecto o solo en ciertos casos. Por defecto: botón «Usar por
   defecto» en la UI (Plantillas → Mi CV), que solo cambia `preferences.cv.default_template`. Para
   ciertos casos, propón una entrada de `template_rules` (p. ej. «ofertas de startups y diseño» o

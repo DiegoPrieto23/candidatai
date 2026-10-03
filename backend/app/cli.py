@@ -797,6 +797,28 @@ def templates_build_docx(
     typer.echo("Completa template.yaml y ejecuta `jh templates validate` y `preview`.")
 
 
+@templates_app.command("build-letter")
+def templates_build_letter(
+    template_id: str = TEMPLATE_ID_ARG,
+    force: bool = FORCE_OPTION,
+    as_json: bool = JSON_OPTION,
+) -> None:
+    """Crea letter.docx (carta a juego) de una plantilla docx tuya, desde su cabecera."""
+    from app.services.documents import authoring
+
+    try:
+        result = authoring.build_letter(template_id, force=force)
+    except Exception as exc:
+        _templates_fail(exc, as_json)
+    if as_json:
+        typer.echo(dump_json(result))
+        return
+    typer.echo(f"Carta creada: data/{result.path} ({result.header_blocks} bloques de cabecera).")
+    for warning in result.warnings:
+        typer.secho(f"  Aviso: {warning}", fg=typer.colors.YELLOW)
+    typer.echo(f"Mírala con `jh templates preview {result.template_id} --letter`.")
+
+
 def _csv(value: str | None) -> list[str] | None:
     if value is None:
         return None
@@ -885,9 +907,12 @@ def templates_validate(
 def templates_preview(
     template_id: str = TEMPLATE_ID_ARG,
     which: str = PREVIEW_PROFILE_OPTION,
+    letter: bool = typer.Option(
+        False, "--letter", help="Su diseño de carta de presentación, con una carta de muestra."
+    ),
     as_json: bool = JSON_OPTION,
 ) -> None:
-    """PDF y PNG de la plantilla con el perfil demo o con el tuyo."""
+    """PDF y PNG de la plantilla (o de su carta) con el perfil demo o con el tuyo."""
     from app.services.documents import authoring
 
     try:
@@ -896,9 +921,9 @@ def templates_preview(
         if which == "real":
             migrations.ensure_current()
             with session_scope() as session:
-                result = authoring.preview_template(session, template_id, "real")
+                result = authoring.preview_template(session, template_id, "real", letter)
         else:
-            result = authoring.preview_template(None, template_id, "demo")
+            result = authoring.preview_template(None, template_id, "demo", letter)
     except Exception as exc:
         _templates_fail(exc, as_json)
     if as_json:

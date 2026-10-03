@@ -9,10 +9,12 @@ el perfil FICTICIO de `demo/` y su foto (una silueta generada, no una persona): 
 
 import shutil
 import tempfile
+from datetime import date
 from pathlib import Path
 from typing import Any
 
 from app.core.config import REPO_ROOT
+from app.schemas.cover_letter import CoverLetterContent
 from app.schemas.cv import CvContent, CvLanguage, TemplateCapacity, TemplateMeta
 from app.schemas.profile import CandidateProfile
 from app.services import profile as profile_service
@@ -204,6 +206,136 @@ def check_renders(template: Template) -> None:
             render_docx(template, ctx, workdir / "check.docx", template.meta.page.size, photo_file)
     except Exception as exc:
         issue = TemplateIssue(field=template.engine_file.name, reason=f"No renderiza: {exc}")
+        raise TemplateInvalidError(template.id, [issue]) from exc
+    finally:
+        shutil.rmtree(workdir, ignore_errors=True)
+
+
+# --- Carta de presentación (fase 08c) -------------------------------------------------------
+
+_LETTER_TEXT: dict[CvLanguage, dict[str, str]] = {
+    "es": {
+        "greeting": "Estimado equipo de selección:",
+        "close": "Me encantaría contaros con más detalle cómo puedo ayudar a vuestro equipo.",
+        "sign_off": "Un saludo,",
+        "recipient": "Equipo de selección",
+    },
+    "en": {
+        "greeting": "Dear hiring team,",
+        "close": "I would be glad to tell you more about how I can help your team.",
+        "sign_off": "Kind regards,",
+        "recipient": "Hiring team",
+    },
+}
+
+
+def letter_preview_content(
+    profile: CandidateProfile, language: CvLanguage = "es"
+) -> CoverLetterContent:
+    """Carta de muestra con el perfil: solo para ver un diseño, nunca se guarda ni se envía."""
+    text = _LETTER_TEXT[language]
+    summary = getattr(profile.summary, language) or profile.summary.es or profile.summary.en
+    paragraphs = [{"text": _shorten(summary or profile.headline, 420), "evidence": ["preview"]}]
+    for exp in profile.experience[:2]:
+        if exp.achievements:
+            ach = exp.achievements[0]
+            line = f"{exp.role} en {exp.company}: {ach.text.rstrip('.')}."
+            paragraphs.append({"text": line, "evidence": ["preview"]})
+    paragraphs.append({"text": text["close"], "evidence": ["preview"]})
+    prefs = profile.preferences.cover_letter
+    sign_off = getattr(prefs.sign_off, language) if prefs else None
+    return CoverLetterContent.model_validate(
+        {
+            "language": language,
+            "recipient": text["recipient"],
+            "greeting": text["greeting"],
+            "paragraphs": paragraphs,
+            "sign_off": sign_off or text["sign_off"],
+            "keywords_targeted": [],
+        }
+    )
+
+
+def _letter_accent(template: Template) -> str | None:
+    accent = template.meta.options.accent_color
+    return accent.default if accent is not None else None
+
+
+def demo_letter_context() -> dict[str, Any]:
+    demo = profile_service.load_from_yaml(profile_service.EXAMPLE_PATH)
+    ctx = context.build_letter_context(
+        letter_preview_content(demo), demo, demo.headline, "#1F4E79", date(2026, 1, 15)
+    )
+    ctx["photo"] = "[foto]"
+    return ctx
+
+
+def render_letter_preview(
+    template: Template,
+    profile: CandidateProfile,
+    output_pdf: Path,
+    photo_source: Path | None = None,
+    output_png: Path | None = None,
+) -> Path:
+    """La carta de la plantilla (`letter.*`) con una carta de muestra del perfil."""
+    if template.letter_file is None:
+        raise TemplateInvalidError(
+            template.id, [TemplateIssue(field="letter", reason="No tiene diseño de carta.")]
+        )
+    content = letter_preview_content(profile)
+    ctx = context.build_letter_context(
+        content, profile, profile.headline, _letter_accent(template), date.today()
+    )
+    workdir = Path(tempfile.mkdtemp(prefix="jh-letter-preview-"))
+    try:
+        photo_file = None
+        if photo_source is not None and template.meta.photo.supported:
+            meta = template.meta.photo
+            photo_file = photo.prepared_photo(photo_source, meta.shape, meta.size_mm, workdir)
+        _docx, pdf_file = render_files(
+            template,
+            ctx,
+            workdir,
+            "letter-preview",
+            template.meta.page.size,
+            photo_file,
+            file=template.letter_file,
+        )
+        output_pdf.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(pdf_file, output_pdf)
+        if output_png is not None:
+            pdf_to_png(output_pdf, output_png)
+    finally:
+        shutil.rmtree(workdir, ignore_errors=True)
+    return output_pdf
+
+
+def check_letter_renders(template: Template) -> None:
+    """Renderiza la carta (sin PDF) con una carta de muestra: si falla, `TemplateInvalidError`."""
+    if template.letter_file is None:
+        return
+    ctx = demo_letter_context()
+    workdir = Path(tempfile.mkdtemp(prefix="jh-check-letter-"))
+    try:
+        photo_file = None
+        if template.meta.photo.supported:
+            meta = template.meta.photo
+            photo_file = photo.prepared_photo(DEMO_PHOTO, meta.shape, meta.size_mm, workdir)
+        if template.meta.engine == "html":
+            from app.services.documents.engines.html import render_string
+
+            render_string(template, ctx, photo_file, template.letter_file.name)
+        else:
+            render_docx(
+                template,
+                ctx,
+                workdir / "check-letter.docx",
+                template.meta.page.size,
+                photo_file,
+                file=template.letter_file,
+            )
+    except Exception as exc:
+        issue = TemplateIssue(field=template.letter_file.name, reason=f"No renderiza: {exc}")
         raise TemplateInvalidError(template.id, [issue]) from exc
     finally:
         shutil.rmtree(workdir, ignore_errors=True)

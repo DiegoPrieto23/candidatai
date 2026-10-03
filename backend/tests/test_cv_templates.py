@@ -117,8 +117,10 @@ def test_build_script_is_reproducible_and_committed_copy_is_current(tmp_path: Pa
     assert [p.name for p in script.build_all(first)] == list(BUILTIN_IDS)
     script.build_all(second)
     for template_id in BUILTIN_IDS:
-        engine_file = LETTER_ONLY.get(template_id, "template.docx")
-        for name in (engine_file, "template.yaml"):
+        files = ("letter.docx", "template.yaml")  # las tres docx traen carta (08c)
+        if template_id not in LETTER_ONLY:
+            files = ("template.docx", *files)
+        for name in files:
             built = (first / template_id / name).read_bytes()
             assert built == (second / template_id / name).read_bytes()
             committed = (REPO_ROOT / "templates" / template_id / name).read_bytes()

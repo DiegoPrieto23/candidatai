@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="{{ 'en' if labels.experience == 'Experience' else 'es' }}">
+<head>
+<meta charset="utf-8">
+<title>{{ name }}</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="letter.css">
+<style>:root { --accent: {{ accent_color or '#1F4E79' }}; }</style>
+</head>
+<body>
+<div class="page">
+  <aside class="sidebar">
+    {% if photo %}
+    <img class="photo" src="{{ photo }}" alt="">
+    {% endif %}
+
+    <section class="side-block">
+      <h2>{{ labels.contact }}</h2>
+      <ul class="contact">
+        {% if contact.email %}<li><span class="ico">@</span>{{ contact.email }}</li>{% endif %}
+        {% if contact.phone %}<li><span class="ico">&#9742;</span>{{ contact.phone }}</li>{% endif %}
+        {% if contact.city %}<li><span class="ico">&#9673;</span>{{ contact.city }}</li>{% endif %}
+        {% if contact.linkedin %}<li><span class="ico">in</span>{{ contact.linkedin }}</li>{% endif %}
+        {% if contact.github %}<li><span class="ico">&lt;/&gt;</span>{{ contact.github }}</li>{% endif %}
+      </ul>
+    </section>
+  </aside>
+
+  <main class="main letter">
+    <header class="head">
+      <h1>{{ name }}</h1>
+      {% if subtitle %}<p class="subtitle">{{ subtitle }}</p>{% endif %}
+    </header>
+
+    <p class="letter-date">{{ [place, date] | select | join(', ') }}</p>
+    {% if recipient %}<p class="letter-recipient">{{ recipient }}</p>{% endif %}
+    <p class="letter-greeting">{{ greeting }}</p>
+    {% for paragraph in paragraphs %}
+    <p class="letter-paragraph">{{ paragraph }}</p>
+    {% endfor %}
+    <p class="letter-sign-off">{{ sign_off }}</p>
+    <p class="letter-name">{{ name }}</p>
+  </main>
+</div>
+</body>
+</html>

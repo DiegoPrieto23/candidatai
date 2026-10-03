@@ -1,0 +1,10 @@
+/* Carta de presentación de moderna-2col (fase 08c): se carga después de style.css, que da la
+   barra lateral y la cabecera del CV. Aparte para no cambiar el CV (ni su hash). */
+.letter { font-size: 10.4pt; line-height: 1.5; }
+.letter .head { margin-bottom: 9mm; padding-bottom: 4mm; border-bottom: 0.4mm solid var(--accent); }
+.letter-date { margin: 0 0 7mm; text-align: right; color: var(--muted); }
+.letter-recipient { margin: 0 0 4mm; font-weight: 700; }
+.letter-greeting { margin: 0 0 4mm; }
+.letter-paragraph { margin: 0 0 3.6mm; text-align: justify; hyphens: auto; }
+.letter-sign-off { margin: 6mm 0 9mm; }
+.letter-name { margin: 0; font-weight: 700; color: var(--accent); }

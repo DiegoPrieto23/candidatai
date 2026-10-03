@@ -189,16 +189,21 @@ def test_only_in_approved_or_cv_ready(session: Session, approved_job: Job) -> No
 # --- Render ---------------------------------------------------------------------------------
 
 
-def test_without_cv_uses_profile_rules_and_falls_back_to_carta_simple(
-    session: Session, approved_job: Job
-) -> None:
+def sin_carta() -> None:
+    """Plantilla de CV del usuario sin diseño de carta (copia del CV de `ats-simple`)."""
+    write_template(
+        get_settings().user_templates_dir,
+        "sin-carta",
+        templates.BUILTIN_TEMPLATES_DIR / "ats-simple" / "template.docx",
+    )
+
+
+def test_without_cv_uses_profile_rules(session: Session, approved_job: Job) -> None:
     render = letter.save_cover_letter(session, approved_job.id, content()).render
-    # Perfil demo: `clasica-foto` por defecto, que aún no trae carta (08c.2).
-    assert render.template_id == "carta-simple"
-    assert render.options.base_template_id == "clasica-foto"
+    # Perfil demo: `clasica-foto` por defecto, que trae su carta (08c.2).
+    assert render.template_id == "clasica-foto" and not render.options.letter_fallback
     assert render.options.template_source == "default_template"
-    assert render.options.letter_fallback and render.options.cv_render_id is None
-    assert [w.code for w in render.warnings] == ["letter_fallback"]
+    assert render.options.cv_render_id is None and render.warnings == []
     assert render.options.accent_color == "#1F4E79"
     assert render.pages == 1 and render.selected
     assert render.pdf_path.endswith(f"/{render.render_id}/Carta-Lucia-Varela-Otero.pdf")
@@ -206,6 +211,21 @@ def test_without_cv_uses_profile_rules_and_falls_back_to_carta_simple(
     assert (get_settings().data_dir / render.pdf_path).is_file()
     # Los renders no registran eventos.
     assert [e.type for e in letter_events(session, approved_job)] == ["cover_letter_generated"]
+
+
+def test_cv_template_without_letter_falls_back_to_carta_simple(
+    session: Session, approved_job: Job
+) -> None:
+    sin_carta()
+    cv = service.save_content(session, approved_job.id, demo_content())
+    chosen = service.render(session, cv.document_id, CvRenderOptions(template_id="sin-carta"))
+    service.select_render(session, chosen.render_id)
+    render = letter.save_cover_letter(session, approved_job.id, content()).render
+    assert render.template_id == "carta-simple"
+    assert render.options.base_template_id == "sin-carta"
+    assert render.options.template_source == "cv" and render.options.letter_fallback
+    assert [w.code for w in render.warnings] == ["letter_fallback"]
+    assert render.options.accent_color == "#1F4E79"  # `sin-carta` no tiene color: el suyo
 
 
 def test_matches_selected_cv_render_color(session: Session, approved_job: Job) -> None:
@@ -244,8 +264,9 @@ def test_template_with_letter_is_used_and_options_validated(
     render = letter.render_cover_letter(session, doc, Options(template_id="con-carta"))
     assert render.template_id == "con-carta" and not render.options.letter_fallback
     assert render.options.template_source == "option"
+    sin_carta()
     with pytest.raises(templates.TemplateNotFoundError, match="diseño de carta"):
-        letter.render_cover_letter(session, doc, Options(template_id="ats-simple"))
+        letter.render_cover_letter(session, doc, Options(template_id="sin-carta"))
     with pytest.raises(InvalidRenderOptionsError):
         # `con-carta` no declara color de acento: no admite uno.
         letter.render_cover_letter(

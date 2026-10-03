@@ -576,7 +576,7 @@ def render_cover_letter(
     row = DocumentRender(
         document_id=doc.id,
         template_id=template.id,
-        template_hash=template.file_hash(),
+        template_hash=template.file_hash("letter"),
         options=resolved.model_dump(mode="json"),
         pages=0,
         keyword_coverage={},

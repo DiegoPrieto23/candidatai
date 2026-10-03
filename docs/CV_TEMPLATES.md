@@ -45,6 +45,7 @@ Si una plantilla tuya tiene el mismo `id` que una integrada, gana la tuya.
   style.css            motor html
   fonts/               fuentes locales opcionales (.ttf, .otf, .woff2)
   letter.docx|html     diseño de carta a juego (opcional, fase 08c)
+  letter.css           motor html: estilos propios de la carta (opcional; no cuentan para el CV)
   source.<ext>         original del que se creó (solo en data/, nunca en templates/)
   preview.pdf|png      generadas con el perfil y la foto demo (no se editan a mano); el PNG es la
                        primera página y es la miniatura de la UI
@@ -346,9 +347,37 @@ párrafos con evidencias y despedida) según tus indicaciones, y el código la p
 
 - **A juego con el CV**: por defecto se renderiza con la plantilla, la foto y el color del render
   seleccionado del CV de esa oferta, usando el `letter.*` de la plantilla. Si no tiene, se usa
-  `carta-simple` con el mismo color y se avisa (`letter_fallback`). Las plantillas docx importadas
-  obtienen su `letter.docx` con `jh templates build-letter <id>`, a partir de su cabecera
-  (`layout.header_paragraphs`).
+  `carta-simple` con el mismo color y se avisa (`letter_fallback`).
+- **Integradas**:
+  - `ats-simple` y `clasica-foto` traen `letter.docx`, con su misma cabecera (la de
+    `clasica-foto`, con foto en tabla), generado por `scripts/build_builtin_templates.py`;
+  - `moderna-2col` trae `letter.html` y `letter.css`, con la barra lateral (foto y contacto) y la
+    cabecera del CV.
+- **`jh templates build-letter <id> [--force] [--json]`** (plantillas docx del usuario):
+  - parte de su `template.docx`;
+  - conserva los bloques del principio (párrafos y tablas) que solo usan variables de cabecera
+    (`name`, `subtitle`, `contact`, `photo`), con los párrafos de control que los cierran;
+  - quita el resto y añade el cuerpo de la carta con el formato del primer párrafo de contenido
+    del CV (no de los títulos);
+  - lo comprueba con el contrato de la carta y renderizándolo, y declara `letter` en
+    `template.yaml`.
+
+  Errores:
+  - sin cabecera (`layout.header_paragraphs` vacío), o con la cabecera mezclada con el cuerpo
+    (p. ej. en una tabla a dos columnas): error claro, y la carta sigue saliendo con
+    `carta-simple`;
+  - una integrada o una html: error;
+  - si ya tiene carta: `exists` salvo con `--force`.
+
+  En html, el skill `importar-plantilla-cv` escribe `letter.html` desde la cabecera del diseño
+  recreado.
+- **Ver y validar**: `jh templates preview <id> --letter` la renderiza con una carta de muestra
+  (en `data/cache/previews/`). `jh templates validate <id>` también renderiza la carta. Una
+  plantilla cuyo `letter` declarado no existe, o usa variables fuera del contrato de la carta, es
+  inválida.
+- **Hash**: el del CV no mira `letter.*` ni el bloque `letter:` de `template.yaml`, y el de la
+  carta no mira `template.docx|html`. Añadir o retocar la carta no marca los CVs ya renderizados
+  como «Plantilla cambiada», ni al revés.
 - **Contrato de la carta**: la cabecera del CV (`name`, `subtitle`, `contact.*`, `photo`,
   `accent_color`, `labels`) más `date` (hoy en Europe/Madrid, «3 de octubre de 2026» / «3 October
   2026»), `place` (tu ciudad), `recipient` (vacío si es genérica), `greeting`, `paragraphs[]`

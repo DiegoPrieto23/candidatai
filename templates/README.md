@@ -5,7 +5,9 @@ previsualizaciones (`preview.pdf` y `preview.png`) se generan con el perfil fict
 su foto, `demo/photo.png`, una silueta dibujada por el script (nunca una persona real).
 
 Se crean en las fases 08 (`ats-simple`, `clasica-foto`), 08b (`moderna-2col`) y 08c
-(`carta-simple`, solo carta: sin `template.docx` ni preview). Las docx se
+(`carta-simple`, solo carta: sin `template.docx` ni preview). Desde la 08c, las tres de CV traen
+también su carta a juego: `letter.docx` (generada por el script) o `letter.html` y `letter.css`
+(a mano, en `moderna-2col`). Las docx se
 generan por código, de forma reproducible, con `scripts/build_builtin_templates.py` (no se
 editan a mano): `uv run --directory backend python ../scripts/build_builtin_templates.py`. Las
 html (`moderna-2col`) se escriben a mano (`template.html`, `style.css`) y el script solo
