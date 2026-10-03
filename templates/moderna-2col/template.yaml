@@ -46,3 +46,5 @@ fonts:
 languages:
 - es
 - en
+letter:
+  file: letter.html

@@ -13,6 +13,7 @@ from app.api.routes import (
     capture,
     cv,
     jobs,
+    letters,
     process,
     sources,
     stats,
@@ -55,6 +56,7 @@ def create_app() -> FastAPI:
     app.include_router(process.router)
     app.include_router(stats.router)
     app.include_router(applications.router)
+    app.include_router(letters.router)
     return app
 
 

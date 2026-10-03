@@ -5,7 +5,7 @@
 - `save_user_answers`: la edición desde la UI. Crea un documento nuevo con `edited_by_user` y
   registra `application_prepared` con actor `user`; el anterior se conserva.
 - `get_package`: lo que hace falta para enviar a mano: el CV elegido, las últimas respuestas y la
-  carta seleccionada (llega con la fase 08c; hasta entonces, `null`).
+  carta vigente con su render seleccionado (fase 08c).
 
 Solo en ofertas `approved` o `cv_ready`: después del envío el paquete se ve, pero no cambia.
 
@@ -21,6 +21,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models import Application, Document, DocumentRender, Job
+from app.schemas.cover_letter import CoverLetterContent
 from app.schemas.llm_io import (
     EVIDENCE_EXTRACTION,
     EVIDENCE_USER,
@@ -30,7 +31,8 @@ from app.schemas.llm_io import (
 from app.schemas.profile import CandidateProfile
 from app.services import events, extractions
 from app.services import profile as profile_service
-from app.services.documents.checks import ContentIssue
+from app.services.documents import cover_letter
+from app.services.documents.checks import ContentIssue, citable_refs
 from app.services.documents.service import selected_render_id
 from app.services.pipeline import CV_STAGES, Actor, EventType, InvalidTransitionError, Stage
 
@@ -87,24 +89,32 @@ class PackageCv(BaseModel):
     verified: bool  # su documento pasó la verificación
 
 
+class PackageCoverLetter(BaseModel):
+    """La carta vigente para copiarla o adjuntarla (fase 08c)."""
+
+    document_id: int
+    text: str  # texto plano para pegar en el formulario
+    word_count: int
+    edited_by_user: bool
+    verified: bool
+    render_id: int | None  # el render seleccionado
+    pdf_url: str | None  # ruta de la API: `/renders/{id}/pdf`
+
+
 class JobPackage(BaseModel):
     job_id: int
     stage: Stage
     can_edit: bool  # las respuestas solo cambian en «approved» y «cv_ready»
     cv: PackageCv | None
     answers: AnswersView | None
-    cover_letter: None = None  # carta seleccionada: llega con la fase 08c
+    cover_letter: PackageCoverLetter | None  # la carta vigente con su render seleccionado
 
 
 # --- Validación -----------------------------------------------------------------------------
 
 
 def _profile_refs(profile: CandidateProfile) -> dict[str, str]:
-    """Lo que una respuesta puede citar: lo del CV y, además, las historias STAR."""
-    refs = profile.evidence_refs()
-    for story in profile.stories:
-        refs[story.id] = f"Historia «{story.title}»: {story.result}"
-    return refs
+    return citable_refs(profile)
 
 
 def _validate(
@@ -290,6 +300,23 @@ def _package_cv(session: Session, job_id: int) -> PackageCv | None:
     )
 
 
+def _package_letter(session: Session, job_id: int) -> PackageCoverLetter | None:
+    found = cover_letter.selected_letter(session, job_id)
+    if found is None:
+        return None
+    doc, render = found
+    content = CoverLetterContent.model_validate(doc.content["letter"])
+    return PackageCoverLetter(
+        document_id=doc.id,
+        text=cover_letter.plain_text(session, doc.id),
+        word_count=cover_letter.word_count(content),
+        edited_by_user=doc.edited_by_user,
+        verified=bool(doc.verification and doc.verification.get("passed")),
+        render_id=render.id if render else None,
+        pdf_url=f"/renders/{render.id}/pdf" if render else None,
+    )
+
+
 def get_package(session: Session, job_id: int) -> JobPackage:
     if session.get(Job, job_id) is None:
         raise events.JobNotFoundError(f"No existe la oferta {job_id}.")
@@ -301,4 +328,5 @@ def get_package(session: Session, job_id: int) -> JobPackage:
         can_edit=stage in CV_STAGES,
         cv=_package_cv(session, job_id),
         answers=_answers_view(session, doc) if doc else None,
+        cover_letter=_package_letter(session, job_id),
     )

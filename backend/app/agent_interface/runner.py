@@ -13,6 +13,7 @@ from app.core.db import session_scope
 from app.services.answers import AnswersContentError
 from app.services.audit import record_call, summarize_args
 from app.services.documents.checks import CvContentError
+from app.services.documents.cover_letter import CoverLetterContentError, LetterNotFoundError
 from app.services.documents.importer import TemplateImportError
 from app.services.documents.importer.build import TemplateExistsError
 from app.services.documents.importer.paths import OutsideDataError
@@ -44,6 +45,7 @@ _ERROR_TYPES: tuple[tuple[type[Exception], str], ...] = (
     (MilestoneNotFoundError, "not_found"),
     (ContactNotFoundError, "not_found"),
     (DocumentNotFoundError, "not_found"),
+    (LetterNotFoundError, "not_found"),
     (RenderNotFoundError, "not_found"),
     (FileNotAvailableError, "not_found"),
     (TemplateNotFoundError, "not_found"),
@@ -66,7 +68,10 @@ def to_tool_error(exc: Exception) -> ToolError:
         return exc
     if isinstance(exc, ValidationError):
         return from_validation_error(exc)
-    if isinstance(exc, CvContentError | AnswersContentError | TemplateImportError):
+    if isinstance(
+        exc,
+        CvContentError | AnswersContentError | CoverLetterContentError | TemplateImportError,
+    ):
         details = [ErrorDetail(**issue.model_dump()) for issue in exc.issues]
         return ToolError("validation_error", str(exc), details)
     for exc_type, error_type in _ERROR_TYPES:

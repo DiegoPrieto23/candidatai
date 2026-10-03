@@ -87,6 +87,8 @@ EXPECTED: dict[EventType, dict[Stage, Stage]] = {
     EventType.CV_RENDERED: _same((AP, CR)),  # sin payload; con documento verificado, aparte
     EventType.CV_VERIFIED: _same((AP, CR)),  # sin `passed`; con `passed` se prueba aparte
     EventType.CV_REJECTED: _same((AP, CR)),
+    EventType.COVER_LETTER_GENERATED: _same((AP, CR)),
+    EventType.COVER_LETTER_VERIFIED: _same((AP, CR)),
     EventType.APPLICATION_PREPARED: _same(WORK),
     EventType.APPLIED: _to(AD, (CR,)),
     EventType.APPLIED_MANUALLY: _to(AD, (PE, PT, AP, CR)),

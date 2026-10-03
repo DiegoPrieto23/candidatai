@@ -105,7 +105,7 @@ Contenido de un documento (lo que escribe el agente). La presentación va en `do
 | job_id / profile_version_id | FK | |
 | kind | str | `cv`, `cover_letter` (fase 08c), `answers` |
 | language | str | `es`, `en` |
-| content | JSON | `CvContent`, `CoverLetterContent` (con las indicaciones usadas) o `ApplicationAnswers` (`kind = answers`, fase 10.3), con referencias a evidencias |
+| content | JSON | `CvContent`; en las cartas, `{letter: CoverLetterContent, instructions: {brief, preferences, max_words}}` (las indicaciones vigentes al guardar, respaldo de `user`); o `ApplicationAnswers` (`kind = answers`, fase 10.3). Con referencias a evidencias |
 | verification | JSON? | `{passed, issues[]}` del verificador |
 | edited_by_user | bool | Editado por el usuario en la UI (respuestas; cartas desde la 08c). Cada edición es un documento nuevo: el anterior se conserva y manda el último |
 | created_at | datetime | |
@@ -208,7 +208,7 @@ se rechaza con error claro.
 - `document_renders` guarda también los renders de cartas (`options` = `CoverLetterRenderOptions`
   resueltas, `keyword_coverage` vacío, ficheros `Carta-<Nombre>.pdf|docx`). `selected` funciona
   igual: como mucho una carta seleccionada por documento.
-- Tabla `cover_letter_briefs`: `job_id` (PK/FK), `instructions` (texto), `max_words` (int?),
+- Tabla `cover_letter_briefs` (migración 0010): `job_id` (PK/FK), `instructions` (texto), `max_words` (int?),
   `updated_at`. Las indicaciones de la carta para esa oferta; no guarda historial (el documento
   copia las que usó).
 

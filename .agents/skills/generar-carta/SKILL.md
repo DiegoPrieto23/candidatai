@@ -11,9 +11,9 @@ Argumentos: `job_id` y, opcionalmente, indicaciones para esta carta («máximo 1
 1. `get_cover_letter(job_id)`: indicaciones de la oferta (`brief`), las generales del perfil
    (`preferences`), el límite de palabras resuelto y la carta anterior, si la hay.
 2. Si los argumentos o el chat traen indicaciones nuevas, guárdalas con
-   `save_cover_letter_brief` (junto con las que ya hubiera, si siguen valiendo), para que queden
-   visibles en la UI y respalden lo que cuentes. Si contradicen las del perfil, mandan las de la
-   oferta; dilo en una línea.
+   `save_cover_letter_brief`. **Sustituye** a las anteriores: incluye las que ya hubiera, si
+   siguen valiendo. Así quedan visibles en la UI y respaldan lo que cuentes. Si contradicen las
+   del perfil, mandan las de la oferta; dilo en una línea.
 3. Si no hay indicaciones en ningún sitio, pregunta una sola vez, en un mensaje: qué quiere
    destacar, por qué le interesa esta empresa (si no lo sabes, no lo inventes) y tono. Si no
    quiere dar ninguna, sigue con los valores por defecto de §7. Si el perfil no tiene
@@ -24,11 +24,19 @@ Argumentos: `job_id` y, opcionalmente, indicaciones para esta carta («máximo 1
    contradecirlo y reforzar sus mismos logros.
 2. Escribe un `CoverLetterContent` (`docs/AGENT_INTERFACE.md`) en el idioma de la oferta, salvo
    indicación:
-   - cada párrafo con sus `evidence`: ids del perfil para tus logros, `extraction` para lo que dice
-     la oferta y `user` para lo que el usuario contó en sus indicaciones;
+   - cada párrafo con sus `evidence`:
+     - ids del perfil para tus logros (también las historias STAR);
+     - `extraction` para lo que dice la oferta;
+     - `user` para lo que el usuario contó en sus indicaciones. Solo vale si hay indicaciones
+       guardadas, en el brief o en `preferences.cover_letter.instructions`;
+   - el límite de palabras cuenta solo los párrafos, sin el saludo ni la despedida;
+   - una skill de la oferta que no está en el perfil solo puede nombrarse en un párrafo que cite
+     `extraction`, hablando del puesto y nunca como experiencia tuya. Una skill básica (nivel B
+     o `basic_skills`), solo si la oferta la pide;
    - de la empresa, solo lo que dice la oferta o el usuario; nada buscado ni supuesto;
    - sin clichés (§7), sin salario y dentro del límite de palabras;
-   - el contacto, la fecha y el nombre los pone el código.
+   - el contacto, la fecha y el nombre los pone el código: `sign_off` es solo la despedida
+     («Un saludo,»), sin tu nombre.
 3. `save_cover_letter(job_id, content)` sin `render_options` salvo que el usuario pida otro diseño
    (por defecto va a juego con su CV). Si lo rechaza, corrige exactamente lo que dice y reintenta
    (máximo 3 veces).
@@ -39,8 +47,18 @@ distinta de la tuya. Si falla, corrige los `blocker` y vuelve a guardar; máximo
 para y enseña los problemas.
 
 ## 4. Resumen
-Enseña el texto de la carta, el número de palabras, qué indicaciones has seguido (y cuál no, y por
-qué), el resultado de la verificación y los avisos del render (p. ej. `letter_fallback`).
-Recuerda que en la ficha de la oferta puede copiar el texto, descargar TXT o PDF, cambiar el
-diseño, la foto o el color sin agente, retocar el texto a mano y marcar la carta para enviar.
-**No envíes nada ni abras formularios.**
+Enseña:
+- el texto de la carta y el número de palabras;
+- qué indicaciones has seguido (y cuál no, y por qué);
+- el resultado de la verificación;
+- la ruta del PDF y los avisos del render (p. ej. `letter_fallback`: la plantilla del CV aún no
+  tiene diseño de carta y se usa `carta-simple`).
+
+Recuerda que en la ficha de la oferta (sección «Carta de presentación») puede, sin agente:
+- copiar el texto o descargar el TXT o el PDF;
+- cambiar el diseño, la foto o el color;
+- retocar el texto a mano, lo que crea una carta nueva «Editada por ti», sin verificar;
+- marcar el render que enviará.
+
+La carta también aparece en el «Paquete de candidatura». Si es él quien te pide otro diseño:
+`render_cover_letter`, sin redactar de nuevo. **No envíes nada ni abras formularios.**

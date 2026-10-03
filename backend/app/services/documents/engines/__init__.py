@@ -18,16 +18,22 @@ def render_files(
     stem: str,
     page_size: PageSize,
     photo_file: Path | None,
+    file: Path | None = None,
 ) -> tuple[Path | None, Path]:
-    """Renderiza la plantilla en `out_dir/<stem>.docx|pdf` y devuelve `(docx o None, pdf)`."""
+    """Renderiza la plantilla (o otro de sus ficheros, p. ej. `letter.*`) en
+    `out_dir/<stem>.docx|pdf` y devuelve `(docx o None, pdf)`."""
     if template.meta.engine == "html":
         from app.services.documents.engines.html import render_pdf
 
-        pdf_file = render_pdf(template, context, out_dir / f"{stem}.pdf", page_size, photo_file)
+        pdf_file = render_pdf(
+            template, context, out_dir / f"{stem}.pdf", page_size, photo_file, file=file
+        )
         return None, pdf_file
 
     from app.services.documents import pdf
     from app.services.documents.engines.docx import render_docx
 
-    docx_file = render_docx(template, context, out_dir / f"{stem}.docx", page_size, photo_file)
+    docx_file = render_docx(
+        template, context, out_dir / f"{stem}.docx", page_size, photo_file, file=file
+    )
     return docx_file, pdf.convert(docx_file, out_dir / f"{stem}.pdf")

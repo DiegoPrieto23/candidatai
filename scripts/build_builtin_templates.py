@@ -185,6 +185,7 @@ ATS_SIMPLE_META: dict[str, Any] = {
     ],
     "fonts": ["Calibri"],
     "languages": ["es", "en"],
+    "letter": {"file": "letter.docx"},
 }
 
 CONTACT_LINE = (
@@ -193,14 +194,27 @@ CONTACT_LINE = (
 )
 
 
-def build_ats_simple(dest: Path) -> None:
-    doc = _base_document("Calibri", 10.5)
-
+def _ats_header(doc: Any) -> Paragraph:
+    """Nombre, subtítulo y contacto de `ats-simple` (CV y carta). Devuelve la línea de contacto."""
     name = _add(doc, ("{{ name }}", {"bold": True, "size": 20}))
     _spacing(name, after=1)
     subtitle = _add(doc, ("{{ subtitle }}", {"size": 11.5, "color": MUTED}))
     _spacing(subtitle, after=2)
-    _add(doc, (CONTACT_LINE, {"size": 9.5}))
+    return _add(doc, (CONTACT_LINE, {"size": 9.5}))
+
+
+def build_ats_simple_letter(dest: Path) -> None:
+    doc = _base_document("Calibri", 11)
+    contact = _ats_header(doc)
+    _spacing(contact, after=4)
+    _bottom_border(contact)
+    _letter_body(doc)
+    _save_reproducible(doc, dest / "letter.docx")
+
+
+def build_ats_simple(dest: Path) -> None:
+    doc = _base_document("Calibri", 10.5)
+    _ats_header(doc)
 
     _section(doc, "summary", lambda: _add(doc, "{{ summary }}"))
 
@@ -278,6 +292,7 @@ def build_ats_simple(dest: Path) -> None:
 
     dest.mkdir(parents=True, exist_ok=True)
     _save_reproducible(doc, dest / "template.docx")
+    build_ats_simple_letter(dest)
     (dest / "template.yaml").write_text(
         yaml.safe_dump(ATS_SIMPLE_META, allow_unicode=True, sort_keys=False), encoding="utf-8"
     )
@@ -307,6 +322,7 @@ CLASICA_FOTO_META: dict[str, Any] = {
     "options": {"accent_color": {"default": ACCENT_COLORS[0], "choices": ACCENT_COLORS}},
     "fonts": ["Cambria", "Calibri"],
     "languages": ["es", "en"],
+    "letter": {"file": "letter.docx"},
 }
 
 TEXT_WIDTH_MM = 210 - 2 * 18
@@ -366,12 +382,10 @@ def _classic_heading(doc: Any, text: str) -> None:
     _bottom_border(heading, color=ACCENT)
 
 
-def build_clasica_foto(dest: Path) -> None:
+def _clasica_header(doc: Any) -> None:
+    """Cabecera de `clasica-foto` (CV y carta): con foto, una tabla sin bordes (foto | texto)."""
     from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT
 
-    doc = _base_document("Calibri", 10.5)
-
-    # Cabecera: con foto, una tabla sin bordes (foto | texto); sin foto, el texto solo.
     _tag(doc, "{%p if photo %}")
     photo_col = Mm(CLASICA_FOTO_META["photo"]["size_mm"] + 6)
     table = doc.add_table(rows=1, cols=2)
@@ -393,6 +407,21 @@ def build_clasica_foto(dest: Path) -> None:
     _tag(doc, "{%p else %}")
     _header_text(doc)
     _tag(doc, "{%p endif %}")
+
+
+def build_clasica_foto_letter(dest: Path) -> None:
+    doc = _base_document("Calibri", 11)
+    _clasica_header(doc)
+    rule = doc.add_paragraph()
+    _spacing(rule, before=4)
+    _bottom_border(rule, color=ACCENT)
+    _letter_body(doc)
+    _save_reproducible(doc, dest / "letter.docx")
+
+
+def build_clasica_foto(dest: Path) -> None:
+    doc = _base_document("Calibri", 10.5)
+    _clasica_header(doc)
 
     _classic_section(doc, "summary", lambda: _add(doc, "{{ summary }}"))
 
@@ -478,15 +507,82 @@ def build_clasica_foto(dest: Path) -> None:
 
     dest.mkdir(parents=True, exist_ok=True)
     _save_reproducible(doc, dest / "template.docx")
+    build_clasica_foto_letter(dest)
     (dest / "template.yaml").write_text(
         yaml.safe_dump(CLASICA_FOTO_META, allow_unicode=True, sort_keys=False), encoding="utf-8"
+    )
+
+
+# --- carta-simple (solo carta, fase 08c) ----------------------------------------------------
+
+CARTA_SIMPLE_META: dict[str, Any] = {
+    "id": "carta-simple",
+    "name": "Carta sencilla",
+    "engine": "docx",
+    "kind": "letter",
+    "origin": "builtin",
+    "description": (
+        "Carta de presentación de una columna, sin foto, con el color de acento del CV. Se usa "
+        "cuando la plantilla del CV no trae su propio diseño de carta."
+    ),
+    "tags": ["carta", "sobria"],
+    "layout": {"columns": 1, "uses_tables": False},
+    "ats_friendly": True,
+    "photo": {"supported": False, "shape": "circle", "size_mm": 30},
+    "page": {"size": "A4", "max_pages": 1},
+    "options": {
+        "accent_color": {"default": ACCENT_COLORS[0], "choices": ACCENT_COLORS, "free": True}
+    },
+    "fonts": ["Calibri"],
+    "languages": ["es", "en"],
+    "letter": {"file": "letter.docx"},
+}
+
+
+def _letter_body(doc: Any) -> None:
+    """Cuerpo común de las cartas docx: fecha, destinatario, saludo, párrafos y despedida."""
+    date = _add(doc, ("{{ [place, date]|select|join(', ') }}", {"color": MUTED}))
+    date.alignment = 2  # derecha
+    _spacing(date, before=18, after=14)
+    _tag(doc, "{%p if recipient %}")
+    _spacing(_add(doc, ("{{ recipient }}", {"bold": True})), after=10)
+    _tag(doc, "{%p endif %}")
+    _spacing(_add(doc, "{{ greeting }}"), after=10)
+    _tag(doc, "{%p for paragraph in paragraphs %}")
+    body = _add(doc, "{{ paragraph }}")
+    body.paragraph_format.line_spacing = 1.2
+    _spacing(body, after=9)
+    _tag(doc, "{%p endfor %}")
+    _spacing(_add(doc, "{{ sign_off }}"), before=6, after=24)
+    _add(doc, ("{{ name }}", {"bold": True}))
+
+
+def build_carta_simple(dest: Path) -> None:
+    doc = _base_document("Calibri", 11)
+    name = doc.add_paragraph()
+    _accent_run(name, "{{ name }}", bold=True, size=18)
+    _spacing(name, after=1)
+    subtitle = _add(doc, ("{{ subtitle }}", {"size": 11, "color": MUTED}))
+    _spacing(subtitle, after=2)
+    contact = _add(doc, (CONTACT_LINE, {"size": 9.5}))
+    _spacing(contact, after=4)
+    _bottom_border(contact, color=ACCENT)
+    _letter_body(doc)
+
+    dest.mkdir(parents=True, exist_ok=True)
+    _save_reproducible(doc, dest / "letter.docx")
+    (dest / "template.yaml").write_text(
+        yaml.safe_dump(CARTA_SIMPLE_META, allow_unicode=True, sort_keys=False), encoding="utf-8"
     )
 
 
 BUILDERS: dict[str, Callable[[Path], None]] = {
     "ats-simple": build_ats_simple,
     "clasica-foto": build_clasica_foto,
+    "carta-simple": build_carta_simple,
 }
+# Solo carta: sin preview de CV (la carta no tiene preview en la galería de CVs).
+LETTER_ONLY = ("carta-simple",)
 
 
 # --- Foto demo ------------------------------------------------------------------------------
@@ -525,7 +621,8 @@ def build_previews(root: Path = TEMPLATES_DIR) -> None:
     from app.services.documents import preview
 
     for template_id in (*BUILDERS, *HANDWRITTEN):
-        preview.write_builtin_preview(root / template_id)
+        if template_id not in LETTER_ONLY:
+            preview.write_builtin_preview(root / template_id)
 
 
 def main(argv: list[str] | None = None) -> int:

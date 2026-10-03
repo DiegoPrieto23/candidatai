@@ -21,15 +21,16 @@ from app.core.config import get_settings
 from app.core.db import get_engine, session_scope
 from app.models import Event
 from app.models.base import utcnow
+from app.schemas.cover_letter import CoverLetterContent
 from app.schemas.cv import CvContent
 from app.schemas.llm_io import JobExtraction
 from app.schemas.sources import AgentBrowseSource
 from app.services import events, extractions, ingest, process, profile
-from app.services.documents import pdf
+from app.services.documents import cover_letter, pdf
 from app.services.documents import service as cv_service
 from app.services.ingestion import browse
 from tests.agent_support import POSTING_TEXT, cli_call, extraction, mcp_call, write_tmp
-from tests.cv_support import demo_content_data, fake_converter
+from tests.cv_support import LETTER, demo_content_data, fake_converter
 
 FIXTURES = Path(__file__).parent / "fixtures"
 URL = "https://careers.example.com/jobs/1"
@@ -93,6 +94,13 @@ def seed_cv() -> None:
     seed_approved()
     with session_scope() as session:
         cv_service.save_content(session, 1, CvContent.model_validate(CV_CONTENT))
+
+
+def seed_letter() -> None:
+    """Oferta 1 aprobada con la carta 1 guardada y renderizada (render 1)."""
+    seed_approved()
+    with session_scope() as session:
+        cover_letter.save_cover_letter(session, 1, CoverLetterContent.model_validate(LETTER))
 
 
 def seed_applied_long_ago() -> None:
@@ -239,6 +247,14 @@ ASSESSMENT: dict[str, Any] = {
     "questions_for_user": ["¿Has usado dbt en producción?"],
 }
 
+
+LETTER_BAD = {**LETTER, "paragraphs": [{"text": "Lideré todo.", "evidence": ["exp-inventada"]}]}
+BRIEF = {"instructions": "Menciona que uso su producto desde 2023.", "max_words": 150}
+LETTER_PASSED = {"passed": True, "issues": []}
+LETTER_BLOCKER_PASSED = {
+    "passed": True,
+    "issues": [{"severity": "blocker", "location": "p1", "problem": "Inventado"}],
+}
 
 ANSWERS: dict[str, Any] = {
     "answers": [
@@ -501,6 +517,41 @@ CASES = [
     Case("funnel-empty", "get_funnel_stats", {}, ["stats", "funnel"]),
     Case("funnel-bad", "get_funnel_stats", {"since": "ayer"},
          ["stats", "funnel", "--since", "ayer"], expect_error="validation_error"),
+    _file_case("letter-brief", "save_cover_letter_brief", {"job_id": 1, **BRIEF},
+               ["letter", "brief", "1"], "b.json", BRIEF, seed=seed_approved),
+    _file_case("letter-brief-bad", "save_cover_letter_brief", {"job_id": 1, "max_words": 10},
+               ["letter", "brief", "1"], "b.json", {"max_words": 10}, seed=seed_approved,
+               expect_error="validation_error"),
+    Case("letter-show-empty", "get_cover_letter", {"job_id": 1}, ["letter", "show", "1"],
+         seed=seed_approved),
+    Case("letter-show", "get_cover_letter", {"job_id": 1}, ["letter", "show", "1"],
+         seed=seed_letter),
+    Case("letter-show-doc", "get_cover_letter", {"document_id": 1},
+         ["letter", "show", "--document", "1"], seed=seed_letter),
+    Case("letter-show-unknown", "get_cover_letter", {"document_id": 9},
+         ["letter", "show", "--document", "9"], seed=seed_letter, expect_error="not_found"),
+    _file_case("letter-save", "save_cover_letter", {"job_id": 1, "content": LETTER},
+               ["letter", "save", "1"], "l.json", {"content": LETTER}, seed=seed_approved),
+    _file_case("letter-save-bad-evidence", "save_cover_letter",
+               {"job_id": 1, "content": LETTER_BAD},
+               ["letter", "save", "1"], "l.json", {"content": LETTER_BAD}, seed=seed_approved,
+               expect_error="validation_error"),
+    _file_case("letter-save-not-approved", "save_cover_letter", {"job_id": 1, "content": LETTER},
+               ["letter", "save", "1"], "l.json", {"content": LETTER}, seed=seed_matched,
+               expect_error="invalid_transition"),
+    _file_case("letter-render", "render_cover_letter",
+               {"document_id": 1, "options": {"accent_color": "#7A2E39"}},
+               ["letter", "render", "1"], "o.json", {"accent_color": "#7A2E39"},
+               seed=seed_letter),
+    Case("letter-render-unknown", "render_cover_letter", {"document_id": 9},
+         ["letter", "render", "9"], seed=seed_letter, expect_error="not_found"),
+    _file_case("letter-verify", "save_cover_letter_verification",
+               {"document_id": 1, "verification": LETTER_PASSED},
+               ["letter", "save-verification", "1"], "v.json", LETTER_PASSED, seed=seed_letter),
+    _file_case("letter-verify-bad", "save_cover_letter_verification",
+               {"document_id": 1, "verification": LETTER_BLOCKER_PASSED},
+               ["letter", "save-verification", "1"], "v.json", LETTER_BLOCKER_PASSED,
+               seed=seed_letter, expect_error="validation_error"),
     _file_case("answers", "save_application_answers", {"job_id": 1, "answers": ANSWERS},
                ["applications", "save-answers", "1"], "a.json", ANSWERS, seed=seed_approved),
     _file_case("answers-bad-evidence", "save_application_answers",

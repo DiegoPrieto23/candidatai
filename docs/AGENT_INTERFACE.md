@@ -58,10 +58,10 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | `render_cv` | `jh cv render DOC [--file F] --json` | 08 | `document_id, options?: CvRenderOptions` (por defecto, todo `auto`); por CLI, `F` = las opciones | `RenderResult` | `cv_rendered` |
 | `get_cv_content` | `jh cv show (ID \| --document DOC) --json` | 08 | `job_id` (su último CV) o `document_id` | `CvContent`, `evidence` (texto de cada evidencia citada), `verification` y `renders` | — |
 | `save_cv_verification` | `jh cv save-verification DOC --file F --json` | 08 | `document_id, verification: CvVerification` | `ok`, `passed`, `stage` y `note` (por qué no pasa a `cv_ready`, si no pasa) | `cv_verified` / `cv_rejected` |
-| `save_cover_letter_brief` | `jh letter brief ID --file F --json` | 08c | `job_id, instructions?, max_words?` | `ok`, `max_words` resuelto | — |
-| `get_cover_letter` | `jh letter show (ID \| --document DOC) --json` | 08c | `job_id` (su última carta) o `document_id` | `brief` (de la oferta), `preferences` (`preferences.cover_letter`), `max_words` resuelto, `CoverLetterContent` con `evidence` resueltas, `word_count`, `verification`, `edited_by_user` y `renders` | — |
-| `save_cover_letter` | `jh letter save ID --file F --json` | 08c | `job_id, content: CoverLetterContent, render_options?: CoverLetterRenderOptions`; por CLI, `F` = `{"content": …, "render_options": …}` | `document_id`, `word_count` + primer render (`RenderResult`) | `cover_letter_generated` |
-| `render_cover_letter` | `jh letter render DOC [--file F] --json` | 08c | `document_id, options?: CoverLetterRenderOptions` | `RenderResult` | — |
+| `save_cover_letter_brief` | `jh letter brief ID --file F --json` | 08c | `job_id, instructions?, max_words?` (50-600); por CLI, `F` = `{"instructions": …, "max_words": …}`. Sustituye al anterior | `ok`, `job_id`, `brief` y `max_words` resuelto | — |
+| `get_cover_letter` | `jh letter show (ID \| --document DOC) --json` | 08c | `job_id` (su última carta) o `document_id` | `job_id`, `stage`, `brief` (de la oferta), `preferences` (`preferences.cover_letter`), `max_words` resuelto y `letter` (`null` si no hay): `content` (`CoverLetterContent`), `evidence` resueltas, `word_count`, `instructions_used`, `verification`, `edited_by_user` y `renders` | — |
+| `save_cover_letter` | `jh letter save ID --file F --json` | 08c | `job_id, content: CoverLetterContent, render_options?: CoverLetterRenderOptions`; por CLI, `F` = `{"content": …, "render_options": …}` | `document_id`, `word_count` + primer render (`LetterRenderResult`) | `cover_letter_generated` |
+| `render_cover_letter` | `jh letter render DOC [--file F] --json` | 08c | `document_id, options?: CoverLetterRenderOptions` | `LetterRenderResult`: como `RenderResult` sin cobertura de keywords, con `options` de la carta (`base_template_id`, `cv_render_id`, `letter_fallback`…) | — |
 | `save_cover_letter_verification` | `jh letter save-verification DOC --file F --json` | 08c | `document_id, verification: CvVerification` | `ok`, `passed` | `cover_letter_verified` |
 | `save_application_answers` | `jh applications save-answers ID --file F --json` | 10 | `job_id, answers: ApplicationAnswers`; por CLI, `F` = `{"answers": [...]}`. Solo en `approved` o `cv_ready` (si no, `invalid_transition`) | `ok`, `job_id`, `document_id`, `needs_user_input` (cuántas esperan un dato del usuario) | `application_prepared` |
 | `list_followups_due` | `jh followups [--days N] --json` | 10 | `days_without_reply?` (por defecto, `followups.days_without_reply` = 10) | `days_without_reply` usado y `followups`: `job_id`, `title`, `company`, `url`, `channel`, `applied_at`, `last_followup_at`, `days_waiting`; la que más espera, primero | — |
@@ -75,14 +75,14 @@ La captura del botón «Enviar a Job Hunter» es un endpoint REST de la app (`PO
 fase 09b), no parte de esta interfaz: la usa la extensión, no el agente.
 
 Las utilidades de autoría de plantillas (`jh templates inspect | build-docx | validate | preview`,
-fase 08.3; `scaffold-html` y `compare`, 08b) son solo CLI: trabajan con ficheros dentro de `data/`
-(el original en `data/uploads/` o `data/tmp/`, el mapeo en `data/tmp/`) y las usa el skill
-`importar-plantilla-cv`. Aceptan `--json` y dan los errores con el formato común: un mapeo que no
-vale es `validation_error` con un detalle por párrafo (`paragraphs[index=N]`), una ruta fuera de
-`data/` es `invalid_file` y un `--id` que ya existe sin `--force`, `exists`. `inspect` da para
-Word el informe de párrafos y para PDF, imagen o HTML el de diseño (bloques de texto, paleta,
-columnas y páginas en PNG). Detalle en `docs/CV_TEMPLATES.md` §Importar desde Word e §Importar
-desde PDF, imagen o HTML.
+fase 08.3; `scaffold-html` y `compare`, 08b; `build-letter` y `preview --letter`, 08c) son solo CLI:
+trabajan con ficheros dentro de `data/` (el original en `data/uploads/` o `data/tmp/`, el mapeo en
+`data/tmp/`) y las usa el skill `importar-plantilla-cv`. Aceptan `--json` y dan los errores con el
+formato común: un mapeo que no vale es `validation_error` con un detalle por párrafo
+(`paragraphs[index=N]`), una ruta fuera de `data/` es `invalid_file` y un `--id` que ya existe sin
+`--force`, `exists`. `inspect` da para Word el informe de párrafos y para PDF, imagen o HTML el de
+diseño (bloques de texto, paleta, columnas y páginas en PNG). Detalle en `docs/CV_TEMPLATES.md`
+§Importar desde Word e §Importar desde PDF, imagen o HTML.
 
 Aprobar o descartar **no tiene herramienta propia a propósito**: esa decisión se toma en la UI. Si
 el usuario la dicta a su agente, este puede usar `add_event` con `approved` o `discarded` y el
@@ -155,13 +155,22 @@ las más recientes primero.
   oferta (`save_cover_letter_brief`, que también se edita en la UI). Manda el de la oferta. El
   límite de palabras se resuelve así: brief > perfil > `config/policies.yaml` (180).
 - `save_cover_letter` solo admite ofertas en `approved` o `cv_ready`. Rechaza con
-  `validation_error` una evidencia del perfil que no existe, `user` sin indicaciones (ni en el
-  brief ni en el perfil), una skill fuera del perfil, una skill básica que la oferta no pide y
-  más palabras que el límite. Copia en el documento las indicaciones usadas: son el respaldo de
-  lo que cuenta `user`.
+  `validation_error`, con un detalle por problema y sin guardar nada:
+  - una evidencia del perfil que no existe (valen los ids citables en el CV y los de las
+    historias STAR);
+  - `user` sin indicaciones (ni `instructions` en el brief ni en el perfil);
+  - `extraction` en una oferta sin extracción;
+  - más palabras que el límite. Solo cuentan los párrafos, palabras `\w+`;
+  - una skill de `keywords_targeted` fuera del perfil;
+  - una skill de la oferta que no está en el perfil, nombrada en un párrafo que no cita solo
+    `extraction` (o `extraction` y `user`): si cita el perfil, se la estaría atribuyendo;
+  - una skill básica (nivel B o `basic_skills`), declarada o nombrada, que la oferta no pide.
+
+  Copia en el documento las indicaciones usadas: son el respaldo de lo que cuenta `user`.
 - El render usa por defecto la plantilla, la foto y el color del render seleccionado del CV de la
   oferta (o las reglas del perfil si no hay CV). Si esa plantilla no tiene diseño de carta, usa
-  `carta-simple` y avisa `letter_fallback`. El texto plano lo sirve la API, no esta interfaz.
+  `carta-simple` y avisa `letter_fallback`. Más de una página da `too_long`. Los renders no
+  registran eventos. El texto plano lo sirve la API, no esta interfaz.
 - Ninguna de estas herramientas cambia la etapa de la oferta ni envía nada.
 
 ### Seguimiento (fase 10)
@@ -394,5 +403,5 @@ la UI (`POST /jobs/{id}/answers`) crea otro documento con `edited_by_user` y act
 se exigen evidencias, pero las que haya deben existir. El paquete de candidatura
 (`GET /jobs/{id}/package`) muestra siempre el último.
 
-La carta no va aquí: es un documento propio (fase 08c) y el paquete de candidatura usa la
-seleccionada.
+La carta no va aquí: es un documento propio (fase 08c). El paquete de candidatura usa la última
+carta de la oferta con su render seleccionado (`JobPackage.cover_letter`, con su texto plano).

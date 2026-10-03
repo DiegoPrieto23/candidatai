@@ -373,7 +373,7 @@ export interface paths {
         put?: never;
         /**
          * Select Render
-         * @description Marca este render como el que se enviará (uno por CV).
+         * @description Marca este render como el que se enviará (uno por CV o por carta).
          */
         post: operations["select_render"];
         delete?: never;
@@ -897,6 +897,90 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/jobs/{job_id}/cover-letter": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Job Cover Letter
+         * @description Indicaciones, carta vigente (con su texto plano) y plantillas con diseño de carta.
+         */
+        get: operations["get_job_cover_letter"];
+        put?: never;
+        /**
+         * Save User Cover Letter
+         * @description Edición a mano: documento nuevo «Editada por ti», sin verificación, y su render.
+         */
+        post: operations["save_user_cover_letter"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/jobs/{job_id}/cover-letter/brief": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Save Cover Letter Brief
+         * @description Indicaciones de la carta de esta oferta; sustituyen a las anteriores (vacías: borrar).
+         */
+        post: operations["save_cover_letter_brief"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cover-letters/{document_id}/renders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Render Cover Letter
+         * @description Renderiza la carta con otro diseño, foto o color, sin agente.
+         */
+        post: operations["render_cover_letter"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cover-letters/{document_id}/text": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Cover Letter Text
+         * @description La carta en TXT (UTF-8, saltos de Windows) para descargarla.
+         */
+        get: operations["get_cover_letter_text"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -907,6 +991,11 @@ export interface components {
             default: string;
             /** Choices */
             choices: string[];
+            /**
+             * Free
+             * @default false
+             */
+            free: boolean;
         };
         /** AddEventResult */
         AddEventResult: {
@@ -1165,6 +1254,18 @@ export interface components {
             /** File */
             file: string;
         };
+        /** BriefView */
+        BriefView: {
+            /** Instructions */
+            instructions: string;
+            /** Max Words */
+            max_words: number | null;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
         /**
          * BrowseSettingsBody
          * @description Cambios del usuario en una plataforma de búsqueda con navegador.
@@ -1271,6 +1372,121 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+        };
+        /**
+         * CoverLetterBriefInput
+         * @description Indicaciones de la carta para una oferta (las edita la UI o el agente).
+         */
+        CoverLetterBriefInput: {
+            /**
+             * Instructions
+             * @default
+             */
+            instructions: string;
+            /** Max Words */
+            max_words?: number | null;
+        };
+        /**
+         * CoverLetterContent
+         * @description Carta que redacta el agente (`docs/AGENT_INTERFACE.md` §CoverLetterContent).
+         */
+        CoverLetterContent: {
+            /**
+             * Language
+             * @enum {string}
+             */
+            language: "es" | "en";
+            /** Recipient */
+            recipient?: string | null;
+            /** Greeting */
+            greeting: string;
+            /** Paragraphs */
+            paragraphs: components["schemas"]["LetterParagraph"][];
+            /** Sign Off */
+            sign_off: string;
+            /**
+             * Keywords Targeted
+             * @default []
+             */
+            keywords_targeted: string[];
+        };
+        /**
+         * CoverLetterInfo
+         * @description Lo que devuelve `get_cover_letter`: indicaciones vigentes y la carta, si la hay.
+         */
+        CoverLetterInfo: {
+            /** Job Id */
+            job_id: number;
+            stage: components["schemas"]["Stage"];
+            brief: components["schemas"]["BriefView"] | null;
+            preferences: components["schemas"]["CoverLetterPreferences"] | null;
+            /** Max Words */
+            max_words: number;
+            letter: components["schemas"]["CoverLetterView"] | null;
+        };
+        /**
+         * CoverLetterPreferences
+         * @description Indicaciones generales para las cartas (fase 08c). Las de cada oferta mandan sobre estas.
+         */
+        CoverLetterPreferences: {
+            /** Max Words */
+            max_words?: number | null;
+            /** Tone */
+            tone?: string | null;
+            /** @default {} */
+            sign_off: components["schemas"]["SignOff"];
+            /** Instructions */
+            instructions?: string | null;
+            /**
+             * Avoid
+             * @default []
+             */
+            avoid: string[];
+            /** Default Format */
+            default_format?: ("text" | "pdf") | null;
+        };
+        /**
+         * CoverLetterRenderOptions
+         * @description Presentación de la carta. `null`/`auto`: a juego con el render seleccionado del CV.
+         */
+        CoverLetterRenderOptions: {
+            /** Template Id */
+            template_id?: string | null;
+            /**
+             * Photo
+             * @default auto
+             * @enum {string}
+             */
+            photo: "auto" | "include" | "exclude";
+            /** Accent Color */
+            accent_color?: string | null;
+            /** Page Size */
+            page_size?: ("A4" | "Letter") | null;
+        };
+        /** CoverLetterView */
+        CoverLetterView: {
+            /** Document Id */
+            document_id: number;
+            /** Profile Version Id */
+            profile_version_id: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Edited By User */
+            edited_by_user: boolean;
+            content: components["schemas"]["CoverLetterContent"];
+            /** Evidence */
+            evidence: {
+                [key: string]: string;
+            };
+            /** Word Count */
+            word_count: number;
+            instructions_used: components["schemas"]["InstructionsUsed"];
+            verification: components["schemas"]["CvVerification"] | null;
+            /** Renders */
+            renders: components["schemas"]["LetterRenderResult"][];
         };
         /** CoveredSkill */
         CoveredSkill: {
@@ -1546,7 +1762,7 @@ export interface components {
          * EventType
          * @enum {string}
          */
-        EventType: "found" | "detail_captured" | "duplicate_detected" | "extracted" | "hard_filter_failed" | "extraction_failed" | "injection_suspected" | "scored" | "fit_assessed" | "approved" | "discarded" | "cv_generated" | "cv_rendered" | "cv_verified" | "cv_rejected" | "application_prepared" | "applied" | "applied_manually" | "reply_received" | "interview_scheduled" | "interview_done" | "test_assigned" | "followup_sent" | "offer_received" | "rejected" | "withdrawn" | "expired" | "accepted" | "reopened" | "note";
+        EventType: "found" | "detail_captured" | "duplicate_detected" | "extracted" | "hard_filter_failed" | "extraction_failed" | "injection_suspected" | "scored" | "fit_assessed" | "approved" | "discarded" | "cv_generated" | "cv_rendered" | "cv_verified" | "cv_rejected" | "cover_letter_generated" | "cover_letter_verified" | "application_prepared" | "applied" | "applied_manually" | "reply_received" | "interview_scheduled" | "interview_done" | "test_assigned" | "followup_sent" | "offer_received" | "rejected" | "withdrawn" | "expired" | "accepted" | "reopened" | "note";
         /** ExtractionView */
         ExtractionView: {
             /** Extraction Id */
@@ -1698,6 +1914,19 @@ export interface components {
             reports: components["schemas"]["InjectionReport"][];
         };
         /**
+         * InstructionsUsed
+         * @description Copia de las indicaciones vigentes al guardar la carta: respaldo de la evidencia `user`.
+         */
+        InstructionsUsed: {
+            brief: components["schemas"]["BriefView"] | null;
+            /** Preferences */
+            preferences: {
+                [key: string]: unknown;
+            } | null;
+            /** Max Words */
+            max_words: number;
+        };
+        /**
          * InvalidTemplate
          * @description Una carpeta con `template.yaml` que no se puede usar, y por qué.
          */
@@ -1720,6 +1949,21 @@ export interface components {
             message: string;
             /** Item */
             item?: string | null;
+        };
+        /**
+         * JobCoverLetter
+         * @description La sección «Carta de presentación» de la ficha.
+         */
+        JobCoverLetter: {
+            info: components["schemas"]["CoverLetterInfo"];
+            /** Can Edit */
+            can_edit: boolean;
+            /** Plain Text */
+            plain_text: string | null;
+            /** Cv Template Id */
+            cv_template_id: string | null;
+            /** Templates */
+            templates: components["schemas"]["LetterTemplateInfo"][];
         };
         /**
          * JobCv
@@ -1790,8 +2034,7 @@ export interface components {
             can_edit: boolean;
             cv: components["schemas"]["PackageCv"] | null;
             answers: components["schemas"]["AnswersView"] | null;
-            /** Cover Letter */
-            cover_letter?: null;
+            cover_letter: components["schemas"]["PackageCoverLetter"] | null;
         };
         /** JobPage */
         JobPage: {
@@ -1880,6 +2123,100 @@ export interface components {
             language: string;
             /** Level */
             level?: string | null;
+        };
+        /** LetterParagraph */
+        LetterParagraph: {
+            /** Text */
+            text: string;
+            /**
+             * Evidence
+             * @description Ids del perfil (`exp-acme/a2`), `extraction` o `user`.
+             */
+            evidence: string[];
+        };
+        /** LetterRenderResult */
+        LetterRenderResult: {
+            /** Render Id */
+            render_id: number;
+            /** Job Id */
+            job_id: number;
+            /** Document Id */
+            document_id: number;
+            /** Template Id */
+            template_id: string;
+            /** Template Hash */
+            template_hash: string;
+            options: components["schemas"]["LetterResolvedOptions"];
+            /** Docx Path */
+            docx_path: string | null;
+            /** Pdf Path */
+            pdf_path: string;
+            /** Pages */
+            pages: number;
+            /** Warnings */
+            warnings: components["schemas"]["RenderWarning"][];
+            /** Selected */
+            selected: boolean;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** LetterResolvedOptions */
+        LetterResolvedOptions: {
+            /** Template Id */
+            template_id: string;
+            /**
+             * Template Source
+             * @enum {string}
+             */
+            template_source: "option" | "cv" | "rule" | "default_template" | "fallback";
+            /** Base Template Id */
+            base_template_id: string;
+            /** Cv Render Id */
+            cv_render_id: number | null;
+            /** Letter Fallback */
+            letter_fallback: boolean;
+            /** Photo */
+            photo: boolean;
+            /** Accent Color */
+            accent_color: string | null;
+            /**
+             * Page Size
+             * @enum {string}
+             */
+            page_size: "A4" | "Letter";
+            /**
+             * Max Pages
+             * @default 1
+             */
+            max_pages: number;
+            offer: components["schemas"]["OfferContext"];
+            /**
+             * Warnings
+             * @default []
+             */
+            warnings: components["schemas"]["RenderWarning"][];
+        };
+        /**
+         * LetterTemplateInfo
+         * @description Una plantilla con diseño de carta, para el selector de la ficha.
+         */
+        LetterTemplateInfo: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Engine */
+            engine: string;
+            /** Origin */
+            origin: string;
+            /** Letter Only */
+            letter_only: boolean;
+            /** Photo Supported */
+            photo_supported: boolean;
+            accent_colors: components["schemas"]["AccentColors"] | null;
         };
         /** MatchView */
         MatchView: {
@@ -2087,6 +2424,26 @@ export interface components {
              */
             ok: boolean;
         };
+        /**
+         * PackageCoverLetter
+         * @description La carta vigente para copiarla o adjuntarla (fase 08c).
+         */
+        PackageCoverLetter: {
+            /** Document Id */
+            document_id: number;
+            /** Text */
+            text: string;
+            /** Word Count */
+            word_count: number;
+            /** Edited By User */
+            edited_by_user: boolean;
+            /** Verified */
+            verified: boolean;
+            /** Render Id */
+            render_id: number | null;
+            /** Pdf Url */
+            pdf_url: string | null;
+        };
         /** PackageCv */
         PackageCv: {
             /** Render Id */
@@ -2285,6 +2642,28 @@ export interface components {
             /** Needs User Input */
             needs_user_input: number;
         };
+        /** SaveBriefResult */
+        SaveBriefResult: {
+            /** Ok */
+            ok: boolean;
+            /** Job Id */
+            job_id: number;
+            brief: components["schemas"]["BriefView"];
+            /** Max Words */
+            max_words: number;
+        };
+        /** SaveLetterResult */
+        SaveLetterResult: {
+            /** Ok */
+            ok: boolean;
+            /** Job Id */
+            job_id: number;
+            /** Document Id */
+            document_id: number;
+            /** Word Count */
+            word_count: number;
+            render: components["schemas"]["LetterRenderResult"];
+        };
         /** ScoreBreakdown */
         ScoreBreakdown: {
             /** Components */
@@ -2336,6 +2715,16 @@ export interface components {
         SetActiveBody: {
             /** Active */
             active: boolean;
+        };
+        /**
+         * SignOff
+         * @description Despedida de la carta por idioma («Un saludo,», «Kind regards,»).
+         */
+        SignOff: {
+            /** Es */
+            es?: string | null;
+            /** En */
+            en?: string | null;
         };
         /**
          * SkillCoverage
@@ -4535,7 +4924,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["RenderResult"];
+                    "application/json": components["schemas"]["RenderResult"] | components["schemas"]["LetterRenderResult"];
                 };
             };
             /** @description Unauthorized */
@@ -7111,6 +7500,488 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SaveAnswersResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_job_cover_letter: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobCoverLetter"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    save_user_cover_letter: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CoverLetterContent"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SaveLetterResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    save_cover_letter_brief: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CoverLetterBriefInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SaveBriefResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    render_cover_letter: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                document_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CoverLetterRenderOptions"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LetterRenderResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_cover_letter_text: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                document_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": unknown;
                 };
             };
             /** @description Unauthorized */

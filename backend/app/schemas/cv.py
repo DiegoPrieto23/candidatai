@@ -183,6 +183,8 @@ class TemplateCapacity(_Strict):
 class AccentColorOption(_Strict):
     default: HexColor
     choices: list[HexColor] = Field(min_length=1)
+    # Admite cualquier #RRGGBB además de `choices` (p. ej. `carta-simple`, que toma el del CV).
+    free: bool = False
 
     @model_validator(mode="after")
     def _default_in_choices(self) -> Self:
@@ -195,12 +197,29 @@ class TemplateOptions(_Strict):
     accent_color: AccentColorOption | None = None
 
 
+_LETTER_FILE = re.compile(r"^letter\.(docx|html)$")
+
+
+def _letter_file(value: str) -> str:
+    if not _LETTER_FILE.match(value):
+        raise ValueError("El diseño de carta es `letter.docx` (motor docx) o `letter.html` (html).")
+    return value
+
+
+class TemplateLetter(_Strict):
+    """Diseño de carta de presentación a juego con el CV (fase 08c), en la misma carpeta."""
+
+    file: Annotated[str, AfterValidator(_letter_file)]
+
+
 class TemplateMeta(_Strict):
     """`template.yaml` de una plantilla (`docs/CV_TEMPLATES.md` §Estructura)."""
 
     id: Id
     name: Text
     engine: Engine
+    # `letter`: solo diseño de carta (p. ej. `carta-simple`); no se ofrece como plantilla de CV.
+    kind: Literal["cv", "letter"] = "cv"
     origin: Literal["builtin", "user"]
     source_file: str | None = None
     description: str = ""
@@ -210,7 +229,18 @@ class TemplateMeta(_Strict):
     photo: TemplatePhoto = TemplatePhoto()
     page: TemplatePage = TemplatePage()
     capacity: TemplateCapacity = TemplateCapacity()
-    sections: list[SectionName] = Field(min_length=1)
+    sections: list[SectionName] = []  # al menos una en las de CV
     options: TemplateOptions = TemplateOptions()
     fonts: list[str] = []
     languages: list[CvLanguage] = ["es", "en"]
+    letter: TemplateLetter | None = None  # sin él, la carta sale con `carta-simple` (08c)
+
+    @model_validator(mode="after")
+    def _consistent(self) -> Self:
+        if self.letter and not self.letter.file.endswith(f".{self.engine}"):
+            raise ValueError(f"Una plantilla {self.engine} lleva `letter.{self.engine}`.")
+        if self.kind == "cv" and not self.sections:
+            raise ValueError("Una plantilla de CV necesita al menos una sección en `sections`.")
+        if self.kind == "letter" and self.letter is None:
+            raise ValueError("Una plantilla solo de carta (`kind: letter`) necesita `letter`.")
+        return self

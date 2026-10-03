@@ -45,6 +45,7 @@ Si una plantilla tuya tiene el mismo `id` que una integrada, gana la tuya.
   style.css            motor html
   fonts/               fuentes locales opcionales (.ttf, .otf, .woff2)
   letter.docx|html     diseño de carta a juego (opcional, fase 08c)
+  letter.css           motor html: estilos propios de la carta (opcional; no cuentan para el CV)
   source.<ext>         original del que se creó (solo en data/, nunca en templates/)
   preview.pdf|png      generadas con el perfil y la foto demo (no se editan a mano); el PNG es la
                        primera página y es la miniatura de la UI
@@ -56,6 +57,8 @@ Si una plantilla tuya tiene el mismo `id` que una integrada, gana la tuya.
 id: moderno-azul                  # igual que la carpeta; minúsculas, números y guiones
 name: Moderno azul
 engine: docx                      # docx | html
+kind: cv                          # cv (por defecto) | letter: solo diseño de carta (`carta-simple`),
+                                  # sin `template.*`; no se ofrece como plantilla de CV
 origin: user                      # builtin | user
 source_file: source.pdf           # solo en plantillas del usuario
 description: Dos columnas, barra lateral azul con contacto y aptitudes.
@@ -81,17 +84,19 @@ capacity:                         # orientativo, para que el redactor ajuste la 
 sections: [summary, experience, projects, education, certifications, extra_sections, skills, languages]
                                   # en el orden en que aparecen; en las importadas, el del original
 letter:                           # opcional (fase 08c): diseño de carta a juego
-  file: letter.docx
+  file: letter.docx               # letter.docx (docx) o letter.html (html, con su style.css)
 options:
   accent_color:                   # opcional; solo si la plantilla usa {{ accent_color }}
     default: "#1F4E79"
     choices: ["#1F4E79", "#2E7D32", "#6A1B9A", "#37474F"]
+    free: false                   # true: admite cualquier #RRGGBB (p. ej. `carta-simple`)
 fonts: [Lato, Source Sans 3]      # las que usa; se comprueba que estén disponibles al renderizar
 languages: [es, en]
 ```
 
 `jh templates validate <id>` comprueba este fichero contra el modelo Pydantic `TemplateMeta` y
-que el `template.*` solo usa variables del contrato.
+que el `template.*` solo usa variables del contrato (y el `letter.*`, solo las del contrato de la
+carta).
 
 ## Contrato de variables
 
@@ -251,8 +256,8 @@ imágenes. Los comandos, igual que en Word, solo trabajan dentro de `data/`:
    imagen.
 
 Limitaciones: la recreación es aproximada; columnas, márgenes y logros se estiman y pueden
-fallar en diseños muy irregulares. Una plantilla html solo da PDF. La carta a juego en html
-(`letter.html`) llega con la fase 08c.
+fallar en diseños muy irregulares. Una plantilla html solo da PDF. Su carta a juego (`letter.html`)
+la escribe el skill `importar-plantilla-cv` desde la cabecera recreada (§Cartas de presentación).
 
 ## Opciones de render por oferta (`CvRenderOptions`)
 
@@ -342,11 +347,52 @@ párrafos con evidencias y despedida) según tus indicaciones, y el código la p
 
 - **A juego con el CV**: por defecto se renderiza con la plantilla, la foto y el color del render
   seleccionado del CV de esa oferta, usando el `letter.*` de la plantilla. Si no tiene, se usa
-  `carta-simple` con el mismo color y se avisa (`letter_fallback`). Las plantillas docx importadas
-  obtienen su `letter.docx` con `jh templates build-letter <id>`, a partir de su cabecera
-  (`layout.header_paragraphs`).
+  `carta-simple` con el mismo color y se avisa (`letter_fallback`).
+- **Integradas**:
+  - `ats-simple` y `clasica-foto` traen `letter.docx`, con su misma cabecera (la de
+    `clasica-foto`, con foto en tabla), generado por `scripts/build_builtin_templates.py`;
+  - `moderna-2col` trae `letter.html` y `letter.css`, con la barra lateral (foto y contacto) y la
+    cabecera del CV.
+- **`jh templates build-letter <id> [--force] [--json]`** (plantillas docx del usuario):
+  - parte de su `template.docx`;
+  - conserva los bloques del principio (párrafos y tablas) que solo usan variables de cabecera
+    (`name`, `subtitle`, `contact`, `photo`), con los párrafos de control que los cierran;
+  - quita el resto y añade el cuerpo de la carta con el formato del primer párrafo de contenido
+    del CV (no de los títulos);
+  - lo comprueba con el contrato de la carta y renderizándolo, y declara `letter` en
+    `template.yaml`.
+
+  Errores:
+  - sin cabecera (`layout.header_paragraphs` vacío), o con la cabecera mezclada con el cuerpo
+    (p. ej. en una tabla a dos columnas): error claro, y la carta sigue saliendo con
+    `carta-simple`;
+  - una integrada o una html: error;
+  - si ya tiene carta: `exists` salvo con `--force`.
+
+  En html, el skill `importar-plantilla-cv` escribe `letter.html` desde la cabecera del diseño
+  recreado.
+- **Ver y validar**: `jh templates preview <id> --letter` la renderiza con una carta de muestra
+  (en `data/cache/previews/`). `jh templates validate <id>` también renderiza la carta. Una
+  plantilla cuyo `letter` declarado no existe, o usa variables fuera del contrato de la carta, es
+  inválida.
+- **Hash**: el del CV no mira `letter.*` ni el bloque `letter:` de `template.yaml`, y el de la
+  carta no mira `template.docx|html`. Añadir o retocar la carta no marca los CVs ya renderizados
+  como «Plantilla cambiada», ni al revés.
 - **Contrato de la carta**: la cabecera del CV (`name`, `subtitle`, `contact.*`, `photo`,
-  `accent_color`, `labels`) más `date` (formateada en el idioma de la carta), `place` (tu ciudad),
-  `recipient`, `greeting`, `paragraphs[]` y `sign_off`.
+  `accent_color`, `labels`) más `date` (hoy en Europe/Madrid, «3 de octubre de 2026» / «3 October
+  2026»), `place` (tu ciudad), `recipient` (vacío si es genérica), `greeting`, `paragraphs[]`
+  (textos) y `sign_off`. `subtitle` es el del CV de la oferta o, si no lo hay, tu `headline`.
+- **Resolución** (`CoverLetterRenderOptions`, todo `null`/`auto` por defecto):
+  - plantilla base: la de la opción > la del render seleccionado del CV > las reglas del perfil;
+  - si la base no tiene `letter`, se usa `cover_letter.fallback_template` (`carta-simple`) con el
+    aviso `letter_fallback`;
+  - color, foto y tamaño de página, los del render seleccionado del CV (o los de las reglas): el
+    color se mantiene si el diseño de carta lo admite (o es `free`); si no, el suyo por defecto;
+  - una plantilla elegida a mano que no tiene carta da `not_found`.
+- **Renders**: van con los del CV en `data/cvs/<job_id>/<document_id>/<render_id>/` como
+  `Carta-<Nombre>.pdf|docx`. No registran eventos. El primero que cabe queda seleccionado. La
+  fecha es la del día del render: renderizar de nuevo una carta antigua la actualiza.
+- **Texto plano**: saludo, párrafos, despedida y nombre, separados por líneas en blanco, en UTF-8
+  con saltos `\r\n`. Sin destinatario, fecha ni contacto: es para pegar en un formulario.
 - **Formatos**: PDF (y DOCX en motor docx) por render, una página como máximo (`too_long` si no
   cabe), y **texto plano** generado al vuelo desde el contenido, para pegarlo en formularios.

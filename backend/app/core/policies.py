@@ -83,6 +83,13 @@ class CvPolicy(BaseModel):
     pdf_timeout_seconds: int = Field(gt=0)
 
 
+class CoverLetterPolicy(BaseModel):
+    """Cartas de presentación (fase 08c). Las indicaciones del perfil y de la oferta mandan."""
+
+    max_words: int = Field(gt=0)
+    fallback_template: str = Field(min_length=1)  # diseño si la plantilla del CV no tiene carta
+
+
 class ConnectorsPolicy(BaseModel):
     """Conectores de ATS y portales (fase 09)."""
 
@@ -145,6 +152,7 @@ class Policies(BaseModel):
     hard_filters: HardFilterPolicy
     scoring: ScoringPolicy
     cv: CvPolicy
+    cover_letter: CoverLetterPolicy
     connectors: ConnectorsPolicy
     email_alerts: EmailAlertsPolicy
     agent_browse: AgentBrowsePolicy

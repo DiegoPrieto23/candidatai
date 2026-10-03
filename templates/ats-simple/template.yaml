@@ -36,3 +36,5 @@ fonts:
 languages:
 - es
 - en
+letter:
+  file: letter.docx

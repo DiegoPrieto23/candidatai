@@ -23,6 +23,8 @@ export const keys = {
   process: (id: number) => ['process', id] as const,
   /** Bajo `cv`: lo que invalida el CV (render, selección) invalida también el paquete. */
   package: (id: number) => ['cv', id, 'package'] as const,
+  /** También bajo `cv`: la carta va a juego con el render seleccionado del CV. */
+  letter: (id: number) => ['cv', id, 'letter'] as const,
   funnel: (since: string | null) => ['funnel', since] as const,
 }
 
@@ -526,3 +528,65 @@ export function useSaveAnswers(jobId: number) {
       ]),
   })
 }
+
+// --- Carta de presentación (fase 08c) ------------------------------------------------------------
+
+export type CoverLetterContent = Schemas['CoverLetterContent']
+export type CoverLetterRenderOptions = Schemas['CoverLetterRenderOptions']
+export type CoverLetterBriefInput = Schemas['CoverLetterBriefInput']
+
+export function useJobCoverLetter(jobId: number, enabled = true) {
+  return useQuery({
+    queryKey: keys.letter(jobId),
+    queryFn: () =>
+      unwrap(api.GET('/jobs/{job_id}/cover-letter', { params: { path: { job_id: jobId } } })),
+    enabled: enabled && Number.isInteger(jobId) && jobId > 0,
+  })
+}
+
+/** Tras un cambio en la carta: ella, el paquete (ambos bajo `cv`), la ficha de proceso y el historial. */
+function useInvalidateLetter(jobId: number) {
+  const client = useQueryClient()
+  return () =>
+    Promise.all([
+      client.invalidateQueries({ queryKey: keys.cv(jobId) }),
+      client.invalidateQueries({ queryKey: keys.process(jobId) }),
+      client.invalidateQueries({ queryKey: keys.job(jobId) }),
+    ])
+}
+
+export function useSaveLetterBrief(jobId: number) {
+  const invalidate = useInvalidateLetter(jobId)
+  return useMutation({
+    mutationFn: (body: CoverLetterBriefInput) =>
+      unwrap(
+        api.POST('/jobs/{job_id}/cover-letter/brief', { params: { path: { job_id: jobId } }, body }),
+      ),
+    onSuccess: () => invalidate(),
+  })
+}
+
+export function useRenderLetter(jobId: number) {
+  const invalidate = useInvalidateLetter(jobId)
+  return useMutation({
+    mutationFn: ({ documentId, options }: { documentId: number; options: CoverLetterRenderOptions }) =>
+      unwrap(
+        api.POST('/cover-letters/{document_id}/renders', {
+          params: { path: { document_id: documentId } },
+          body: options,
+        }),
+      ),
+    onSuccess: () => invalidate(),
+  })
+}
+
+/** Retoque a mano: una carta nueva «Editada por ti», sin verificación. No envía nada. */
+export function useSaveUserLetter(jobId: number) {
+  const invalidate = useInvalidateLetter(jobId)
+  return useMutation({
+    mutationFn: (body: CoverLetterContent) =>
+      unwrap(api.POST('/jobs/{job_id}/cover-letter', { params: { path: { job_id: jobId } }, body })),
+    onSuccess: () => invalidate(),
+  })
+}
+

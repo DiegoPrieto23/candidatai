@@ -39,6 +39,7 @@ sources_app = typer.Typer(
 calendar_app = typer.Typer(help="Calendario .ics de los procesos.", no_args_is_help=True)
 stats_app = typer.Typer(help="Analítica de la búsqueda.", no_args_is_help=True)
 applications_app = typer.Typer(help="Paquete de candidatura.", no_args_is_help=True)
+letter_app = typer.Typer(help="Cartas de presentación.", no_args_is_help=True)
 capture_app = typer.Typer(
     help="Botón «Enviar a Job Hunter» (extensión del navegador).", no_args_is_help=True
 )
@@ -60,6 +61,7 @@ app.add_typer(capture_app, name="capture")
 app.add_typer(calendar_app, name="calendar")
 app.add_typer(stats_app, name="stats")
 app.add_typer(applications_app, name="applications")
+app.add_typer(letter_app, name="letter")
 
 JSON_OPTION = typer.Option(False, "--json", help="Salida en JSON.")
 SYNC_SCRIPT = REPO_ROOT / "scripts" / "sync_agents.py"
@@ -251,6 +253,60 @@ def _render_saved_answers(result: Any) -> None:
     )
     if result.needs_user_input:
         typer.echo(f"{result.needs_user_input} esperan un dato tuyo: complétalas en la ficha.")
+
+
+def _render_letter_brief(result: Any) -> None:
+    typer.echo(
+        f"Indicaciones de la carta guardadas para la oferta {result.job_id} "
+        f"(máximo {result.max_words} palabras)."
+    )
+
+
+def _letter_render_line(render: Any) -> str:
+    warnings = ", ".join(w.code for w in render.warnings) or "sin avisos"
+    mark = " · para enviar" if render.selected else ""
+    return (
+        f"render {render.render_id}: {render.template_id}, {render.pages} pág., {warnings}{mark}"
+        f"\n  {render.pdf_path}"
+    )
+
+
+def _render_letter(result: Any) -> None:
+    typer.echo(f"Oferta {result.job_id} ({result.stage}) · límite {result.max_words} palabras")
+    if result.brief and result.brief.instructions:
+        typer.echo(f"Indicaciones de la oferta: {result.brief.instructions}")
+    letter = result.letter
+    if letter is None:
+        typer.echo("Aún no hay carta.")
+        return
+    state = "sin verificar"
+    if letter.verification is not None:
+        state = "verificada" if letter.verification.passed else "no pasa la verificación"
+    if letter.edited_by_user:
+        state = "editada por ti"
+    typer.echo(f"Carta {letter.document_id} · {letter.word_count} palabras · {state}\n")
+    content = letter.content
+    for block in (content.greeting, *(p.text for p in content.paragraphs), content.sign_off):
+        typer.echo(block + "\n")
+    for render in letter.renders:
+        typer.echo(_letter_render_line(render))
+
+
+def _render_letter_saved(result: Any) -> None:
+    typer.echo(
+        f"Carta {result.document_id} guardada para la oferta {result.job_id} "
+        f"({result.word_count} palabras)."
+    )
+    typer.echo(_letter_render_line(result.render))
+
+
+def _render_letter_render(result: Any) -> None:
+    typer.echo(_letter_render_line(result))
+
+
+def _render_letter_verification(result: Any) -> None:
+    verdict = "pasa" if result.passed else "NO pasa"
+    typer.echo(f"Verificación de la carta {result.document_id} guardada: {verdict}.")
 
 
 def _render_profile(result: Any) -> None:
@@ -741,6 +797,28 @@ def templates_build_docx(
     typer.echo("Completa template.yaml y ejecuta `jh templates validate` y `preview`.")
 
 
+@templates_app.command("build-letter")
+def templates_build_letter(
+    template_id: str = TEMPLATE_ID_ARG,
+    force: bool = FORCE_OPTION,
+    as_json: bool = JSON_OPTION,
+) -> None:
+    """Crea letter.docx (carta a juego) de una plantilla docx tuya, desde su cabecera."""
+    from app.services.documents import authoring
+
+    try:
+        result = authoring.build_letter(template_id, force=force)
+    except Exception as exc:
+        _templates_fail(exc, as_json)
+    if as_json:
+        typer.echo(dump_json(result))
+        return
+    typer.echo(f"Carta creada: data/{result.path} ({result.header_blocks} bloques de cabecera).")
+    for warning in result.warnings:
+        typer.secho(f"  Aviso: {warning}", fg=typer.colors.YELLOW)
+    typer.echo(f"Mírala con `jh templates preview {result.template_id} --letter`.")
+
+
 def _csv(value: str | None) -> list[str] | None:
     if value is None:
         return None
@@ -829,9 +907,12 @@ def templates_validate(
 def templates_preview(
     template_id: str = TEMPLATE_ID_ARG,
     which: str = PREVIEW_PROFILE_OPTION,
+    letter: bool = typer.Option(
+        False, "--letter", help="Su diseño de carta de presentación, con una carta de muestra."
+    ),
     as_json: bool = JSON_OPTION,
 ) -> None:
-    """PDF y PNG de la plantilla con el perfil demo o con el tuyo."""
+    """PDF y PNG de la plantilla (o de su carta) con el perfil demo o con el tuyo."""
     from app.services.documents import authoring
 
     try:
@@ -840,9 +921,9 @@ def templates_preview(
         if which == "real":
             migrations.ensure_current()
             with session_scope() as session:
-                result = authoring.preview_template(session, template_id, "real")
+                result = authoring.preview_template(session, template_id, "real", letter)
         else:
-            result = authoring.preview_template(None, template_id, "demo")
+            result = authoring.preview_template(None, template_id, "demo", letter)
     except Exception as exc:
         _templates_fail(exc, as_json)
     if as_json:
@@ -1300,6 +1381,7 @@ register_tools(
         "sources": sources_app,
         "stats": stats_app,
         "applications": applications_app,
+        "letter": letter_app,
     },
     {
         "get_status": _render_status,
@@ -1325,5 +1407,10 @@ register_tools(
         "list_upcoming": _render_upcoming,
         "get_funnel_stats": _render_funnel,
         "save_application_answers": _render_saved_answers,
+        "save_cover_letter_brief": _render_letter_brief,
+        "get_cover_letter": _render_letter,
+        "save_cover_letter": _render_letter_saved,
+        "render_cover_letter": _render_letter_render,
+        "save_cover_letter_verification": _render_letter_verification,
     },
 )

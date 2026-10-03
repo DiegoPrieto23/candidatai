@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import JSON, ForeignKey, String, false
+from sqlalchemy import JSON, ForeignKey, String, Text, false
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base, UTCDateTime, utcnow
@@ -44,3 +44,15 @@ class DocumentRender(Base):
     warnings: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
     selected: Mapped[bool] = mapped_column(default=False)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
+
+
+class CoverLetterBrief(Base):
+    """Indicaciones de la carta para una oferta (fase 08c). Sin historial: el documento copia las
+    que usó al guardarse."""
+
+    __tablename__ = "cover_letter_briefs"
+
+    job_id: Mapped[int] = mapped_column(ForeignKey("jobs.id"), primary_key=True)
+    instructions: Mapped[str] = mapped_column(Text, default="")
+    max_words: Mapped[int | None]
+    updated_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)

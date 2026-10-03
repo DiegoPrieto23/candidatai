@@ -62,7 +62,17 @@ def test_cv_templates(tmp_path: Path) -> None:
     check = doctor.check_cv_templates(builtin, own)
     assert check.status == CheckStatus.WARN
     assert "falta «ats-simple»" in check.detail
+    assert "falta «carta-simple», la carta de reserva" in check.detail
     write_template(builtin, "ats-simple", origin="builtin")
+    letter = write_template(
+        builtin,
+        "carta-simple",
+        origin="builtin",
+        kind="letter",
+        sections=[],
+        letter={"file": "letter.docx"},
+    )
+    (letter / "letter.docx").write_bytes(b"")
     (builtin / "sin-yaml").mkdir()  # una carpeta sin template.yaml no cuenta
     check = doctor.check_cv_templates(builtin, own)
     assert (check.status, check.detail) == (CheckStatus.OK, "integradas: ats-simple")

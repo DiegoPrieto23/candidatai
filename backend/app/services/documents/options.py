@@ -205,7 +205,7 @@ def resolve(
             raise InvalidRenderOptionsError(
                 f"La plantilla «{meta.id}» no admite color de acento (`accent_color`)."
             )
-        if options.accent_color not in accent_option.choices:
+        if options.accent_color not in accent_option.choices and not accent_option.free:
             raise InvalidRenderOptionsError(
                 f"La plantilla «{meta.id}» admite estos colores: "
                 f"{', '.join(accent_option.choices)}."

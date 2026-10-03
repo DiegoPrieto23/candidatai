@@ -18,6 +18,22 @@ aquí (punto 4). Rama: `fase/08c-carta-presentacion`.
 - `jh templates build-docx` (08.3) guarda en `template.yaml` → `layout.header_paragraphs` qué
   párrafos forman la cabecera del CV importado. Aquí se usa para crear su diseño de carta.
 
+## Subfases
+La fase se hace en tres subfases, cada una con su encargo, en la misma rama
+`fase/08c-carta-presentacion` y con un commit por subfase. Este fichero es la referencia común
+(objetivo, alcance y criterios de toda la fase); cada subfase dice qué puntos cubre y las
+decisiones tomadas al planificarla.
+
+| Subfase | Encargo | Puntos del alcance |
+|---|---|---|
+| 08c.1 | `prompts/08c.1-contenido-verificacion.md` | 1, 2, 3, 5, 6, 8 y de 4 solo `carta-simple`, la resolución de opciones, `letter_fallback` y `too_long` |
+| 08c.2 | `prompts/08c.2-diseno-a-juego.md` | El resto de 4: `letter.*` en las plantillas, motor html, `build-letter` e importación |
+| 08c.3 | `prompts/08c.3-ui-carta.md` | 7, la carta en el paquete de candidatura (fase 10.3) y el cierre de la fase |
+
+La 08b ya está hecha cuando se planifica esta fase: el motor html y `moderna-2col` llevan su
+carta (08c.2). La 10.3 también: el paquete de candidatura tiene un hueco para la carta que la
+08c.3 rellena (en este encargo figuraba como fuera de alcance porque la 10 aún no existía).
+
 ## Objetivo
 De una oferta aprobada, una carta de presentación que dice lo que el usuario quiere decir (según
 sus indicaciones generales y las de esa oferta), verificada contra el perfil, en texto para pegar
