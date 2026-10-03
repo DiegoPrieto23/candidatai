@@ -24,6 +24,7 @@ solo apuntan aquí.
 | Fuentes de ofertas (alertas, captura, búsqueda con navegador) | `docs/FUENTES_OFERTAS.md` |
 | Qué agentes están soportados y con qué garantías | `docs/AGENTS_COMPAT.md` |
 | Qué fase toca y su estado | `docs/ROADMAP.md` |
+| Qué aporta cada fase hecha, en resumen | `docs/RESUMEN_FASES.md` |
 | Por qué se decidió algo | `docs/DECISIONS.md` |
 | Encargo de una fase | `prompts/NN-*.md` |
 

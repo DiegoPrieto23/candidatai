@@ -1,10 +1,15 @@
-RESUMEN DE PRUEBAS MANUALES · FASES 09, 09b (09b.1-09b.3) Y 10 (10.1-10.3)
-==========================================================================
+RESUMEN DE PRUEBAS MANUALES · FASES 08, 08b, 08c, 09, 09b Y 10 (CON SUS SUBFASES)
+================================================================================
 
-Una sola lista para probar de una vez todo lo de las fases 09 y 10: qué preparar, en qué orden
+Una sola lista para probar de una vez todo lo de las fases 08 a 10: qué preparar, en qué orden
 ir y qué comprobar, con los criterios de aceptación marcados [CA].
 El detalle paso a paso de cada parte está en su guía:
 
+    fase-08.1-prueba-manual.txt    CV: contenido, verificación y motor docx
+    fase-08.2-prueba-manual.txt    CV: foto, renders múltiples, sección «CV» y página Plantillas
+    fase-08.3-prueba-manual.txt    Importar tu CV de Word como plantilla y «Mi CV»
+    fase-08b-prueba-manual.txt     Motor html, moderna-2col e importar CVs en PDF o imagen
+    fase-08c-prueba-manual.txt     Carta de presentación (08c.1, 08c.2 y 08c.3)
     fase-09-prueba-manual.txt      Conectores de ATS y scheduler
     fase-09b-prueba-manual.txt     Alertas por correo (09b.1) y botón «Enviar a Job Hunter» (09b.2)
     fase-09b.3-prueba-manual.txt   Plataformas y búsqueda con navegador
@@ -12,8 +17,8 @@ El detalle paso a paso de cada parte está en su guía:
     fase-10.2-prueba-manual.txt    Dashboard del embudo
     fase-10.3-prueba-manual.txt    Paquete de candidatura
 
-Duración total aproximada: entre 3 y 3,5 horas. Se puede hacer por bloques: cada bloque solo
-necesita la preparación común.
+Duración total aproximada: entre 5,5 y 6 horas. Se puede hacer por bloques: cada bloque solo
+necesita la preparación común (y, desde el 6, una oferta aprobada).
 
 Marca cada casilla [ ] → [x] según avances, y anota en «Incidencias» lo que no salga como se
 espera.
@@ -26,36 +31,53 @@ Los comandos se ejecutan desde la RAÍZ del repo, en PowerShell, y en la rama ma
 [ ] 1. Cierra Claude Code: su servidor MCP bloquea el entorno de Python. Después:
            git switch main
            uv sync --directory backend
+           uv run --directory backend playwright install chromium
            uv run --directory backend jh db upgrade
-       Esperado: la BD queda en 0009, «… -> 0009» (o «ya está al día»).
-[ ] 2. Dependencias del frontend (@dnd-kit/core de la 10.1 y Recharts de la 10.2):
+       Esperado: la BD queda en 0010, «… -> 0010» (o «ya está al día»). Chromium es para el
+       motor html (08b); si ya estaba en la caché de Playwright, no descarga nada.
+[ ] 2. LibreOffice instalado (C:\Program Files\LibreOffice\program\soffice.exe) o SOFFICE_PATH en
+       .env: convierte los CVs y cartas docx a PDF.
+[ ] 3. Dependencias del frontend (@dnd-kit/core de la 10.1 y Recharts de la 10.2):
            cd frontend; pnpm install; cd ..
-[ ] 3. Comprueba el entorno:
+[ ] 4. Comprueba el entorno:
            uv run --directory backend jh doctor
-       Esperado: «Conectores de ofertas» OK, a las 07:30 (Europe/Madrid). «Alertas por correo»
-       OK (sin IMAP o con IMAP). «Botón de captura» OK o «sin configurar».
-[ ] 4. Arranca la app, cada cosa en su terminal:
+       Esperado, entre otras:
+       - «LibreOffice» OK y «Conversión a PDF» OK («ats-simple» → PDF de 1 pág. en N s);
+       - «Plantillas de CV»: integradas ats-simple, clasica-foto y moderna-2col (y las tuyas), sin
+         avisar de que falta «carta-simple»;
+       - «Motor html (Chromium)» OK: «moderna-2col» → PDF sin red;
+       - «Foto del CV» OK (o un aviso si tu plantilla pide foto y no hay data\photo.*);
+       - «Conectores de ofertas» OK a las 07:30 (Europe/Madrid), «Alertas por correo» OK y
+         «Botón de captura» OK o «sin configurar».
+[ ] 5. Arranca la app, cada cosa en su terminal:
            Terminal 1:  uv run --directory backend jh serve
            Terminal 2:  cd frontend; pnpm dev
-       Abre http://127.0.0.1:5173. En el menú deben aparecer «Empresas», «Alertas»,
+       Abre http://127.0.0.1:5173. En el menú deben aparecer «Plantillas», «Empresas», «Alertas»,
        «Plataformas», «Procesos» y «Embudo».
-[ ] 5. Vuelve a abrir Claude Code para que cargue las herramientas MCP nuevas
-       (`list_sources`, `save_source`, `record_source_run`, `list_followups_due`,
-       `list_upcoming`, `get_funnel_stats`, `save_application_answers`).
-       Hazlo en una sesión NUEVA y dedicada a las pruebas, sin mezclar con desarrollo.
-[ ] 6. Perfil importado y con `preferences` (puestos, zonas, modalidad): lo usan los filtros, el
-       prefiltro de alertas y la búsqueda con navegador.
+[ ] 6. Vuelve a abrir Claude Code para que cargue todas las herramientas MCP. Entre ellas, las del
+       CV (`save_cv_content`, `render_cv`…), las de la carta (`get_cover_letter`,
+       `save_cover_letter`…), las de fuentes, seguimiento y analítica, y
+       `save_application_answers`. Hazlo en una sesión NUEVA y dedicada a las pruebas, sin mezclar
+       con desarrollo.
+[ ] 7. Perfil importado y con `preferences` (puestos, zonas, modalidad): lo usan los filtros, el
+       prefiltro de alertas, la búsqueda con navegador, las reglas de plantilla y la carta.
+       Opcional: tu foto como data\photo.jpg (o .png/.webp) para los CVs con foto.
 
-Ofertas reales: lo que des de alta se queda en data/jobhunter.db. Para la 10.1 y la 10.2 puedes
-usar una BD aparte con $env:JH_DATA_DIR (lo indica cada guía). Recuerda quitarla después:
+Ofertas reales: lo que des de alta se queda en data/jobhunter.db. Varias guías ofrecen una BD
+aparte con $env:JH_DATA_DIR (datos ficticios de demo/). Recuerda quitarla después:
 Remove-Item Env:JH_DATA_DIR.
 
 
 ORDEN RECOMENDADO
 -----------------
-El orden es el del flujo real: entran ofertas (09, 09b) → se procesan y aprueban → CV →
-paquete de candidatura (10.3) → envío y seguimiento (10.1) → analítica (10.2).
-Así cada bloque deja datos al siguiente.
+El del flujo real, para que cada bloque deje datos al siguiente:
+1. entran ofertas (09, 09b);
+2. tu CV pasa a ser plantilla (08.3, 08b);
+3. se aprueba una oferta y sale su CV (08.1, 08.2);
+4. la carta (08c);
+5. el paquete de candidatura (10.3);
+6. el envío y el seguimiento (10.1);
+7. la analítica (10.2).
 
 
 1 · FASE 09 · CONECTORES DE ATS Y SCHEDULER (≈20 min)
@@ -116,11 +138,8 @@ sus ofertas.
     envió el texto que tenías seleccionado».
 [ ] Errores: con `jh serve` parado, «La app no responde…»; en chrome://extensions, «No se puede
     leer esta página».
-[ ] [CA 09b] De la captura al CV:
-    - /procesar-ofertas;
-    - aprueba en «Triaje» la de LinkedIn;
-    - /generar-cv <id>: «CV listo» con su PDF.
-    Deja esta oferta en «CV listo»: la usa el bloque 5 (10.3).
+[ ] /procesar-ofertas y aprueba en «Triaje» la de LinkedIn: es la oferta del bloque 6, donde se
+    cierra el criterio de aceptación de la 09b (de la captura al CV).
 
 
 4 · FASE 09b.3 · PLATAFORMAS Y BÚSQUEDA CON NAVEGADOR (≈30 min)
@@ -153,15 +172,112 @@ Requisito: Claude in Chrome conectado, con permiso en el portal que vayas a prob
 [ ] Ante un captcha o un login inesperado, para, lo anota como incidente y no lo intenta resolver.
 
 
-5 · FASE 10.3 · PAQUETE DE CANDIDATURA (≈15 min)
+5 · FASES 08.3 Y 08b · TU CV COMO PLANTILLA (≈45 min)
+-----------------------------------------------------
+Se hace una vez: a partir de aquí tus CVs y cartas salen con tu diseño. Si prefieres probar antes
+con datos ficticios, las partes 2 y 3 de cada guía usan un directorio aparte.
+Word (08.3):
+[ ] «Plantillas» → «Subir mi CV» con tu .docx: queda «Pendiente de importar», con la petición
+    para el agente y «Copiar».
+[ ] /importar-plantilla-cv data/uploads/<tu-fichero>.docx:
+    - te cuenta columnas, fuentes, secciones (en su orden) y si es apto para ATS;
+    - prepara el mapeo, marca la cabecera y construye la plantilla. Si el mapeo falla, reintenta;
+    - crea también la carta a juego (`build-letter`) y te lista lo que tu CV tiene y tu perfil
+      no. Las secciones extra van a `extra_sections` con /actualizar-perfil.
+[ ] En «Plantillas» → «Mi CV»: el original y «Con tu perfil» lado a lado, con el mismo diseño y
+    orden de secciones, y la etiqueta «Tu CV».
+[ ] «Usar por defecto»: pasa a «Plantilla por defecto» y debajo dice qué reglas siguen eligiendo
+    otra (p. ej. ats-simple para Workday). Tu profile.yaml solo cambia la línea
+    `default_template`, y conserva los comentarios.
+[ ] `jh templates preview <id> --letter`: la carta de muestra lleva tu cabecera y la letra de tu
+    CV.
+PDF o imagen (08b), opcional si solo tienes Word:
+[ ] En la galería, «Moderna a dos columnas» con preview (barra lateral de color, foto circular)
+    y las etiquetas «Motor html» y «Solo PDF».
+[ ] Sube un CV en PDF (Canva o similar) y ejecuta /importar-plantilla-cv con él. Necesita un
+    agente que vea imágenes. El agente:
+    - lo analiza y crea la base con `scaffold-html`;
+    - la ajusta mirando el original, con `compare` y hasta 3 vueltas;
+    - escribe también su `letter.html`.
+[ ] «Mi CV»: «Original | Recreación con tu perfil». Anota diferencias (márgenes, colores, foto).
+[ ] Saneado: un `<script>` o una URL remota en template.html o letter.html hace fallar
+    `jh templates validate <id>` con el fichero y la línea.
+
+
+6 · FASES 08.1 Y 08.2 · CV A MEDIDA Y SECCIÓN «CV» (≈40 min)
+------------------------------------------------------------
+Usa la oferta aprobada del bloque 3 (o cualquier otra aprobada); abajo, <ID> es la suya.
+[ ] [CA 08 y 09b] /generar-cv <ID>:
+    - si faltan skills obligatorias que no están en tu perfil, pregunta por todas en un mensaje;
+    - el redactor guarda el contenido (si la app lo rechaza, corrige y reintenta);
+    - el verificador, en otra ejecución, lo verifica;
+    - resumen final: plantilla, foto, ruta del PDF, páginas, keywords cubiertas y ausentes,
+      avisos y verificación.
+[ ] El PDF (data\cvs\<ID>\…\CV-<Tu-Nombre>.pdf):
+    - una página, con tu diseño (bloque 5) o el de tus reglas;
+    - tu contacto, que lo pone la app: el agente nunca lo ve;
+    - fechas en el idioma de la oferta;
+    - nada que no esté en tu perfil;
+    - el subtítulo no es el título literal de la oferta;
+    - las skills básicas solo si la oferta las pide, como «conocimientos de X».
+[ ] La oferta pasa a «CV listo». El historial dice «CV redactado», «CV renderizado» y «CV
+    verificado».
+[ ] La app rechaza lo inventado: un CV con una evidencia "exp-inventada/a9" o una skill que no
+    tienes (`jh cv save <ID> --file …`) da un error con una línea por problema y no se guarda.
+[ ] Sección «CV» de la ficha, sin agente:
+    - verificación, selector de plantilla con miniaturas, foto, color y ocultar secciones;
+    - [CA 08.2] cambia a «Sin foto» (o a otra plantilla o color) y pulsa «Renderizar»: un render
+      nuevo en 10-15 s (docx) o 2-3 s (html), con «CV renderizado» y actor «Tú»;
+    - «Usar este para enviar» cambia el render seleccionado, sin evento;
+    - «Comparar» dos renders los pone lado a lado; «DOCX» descarga el Word (en html no hay:
+      aviso «Solo PDF»).
+[ ] Con foto (si pusiste data\photo.*): «Clásica con foto» y «Con foto». La foto sale recortada
+    en círculo, centrada y derecha, y el CV cabe en una página.
+[ ] `jh templates list` y la página «Plantillas»: cada plantilla con su miniatura, etiquetas (ATS,
+    foto, columnas, motor, colores) y «Tu CV» en las tuyas.
+
+
+7 · FASE 08c · CARTA DE PRESENTACIÓN (≈30 min)
+----------------------------------------------
+Usa la misma oferta <ID>, ya en «CV listo».
+[ ] (Opcional) /actualizar-perfil con indicaciones generales para tus cartas (tono, despedida,
+    qué contar siempre, qué evitar): van a `preferences.cover_letter`.
+[ ] Ficha → «Carta de presentación» → «Añadir indicaciones»: «Menciona que uso su producto desde
+    2023.» y máximo 150 palabras. Ves también el resumen de las generales y «Límite: 150».
+[ ] [CA 08c] /generar-carta <ID>:
+    - usa tus indicaciones guardadas sin volver a preguntarlas;
+    - menciona lo de 2023, y el cuerpo tiene 150 palabras o menos;
+    - no inventa datos de la empresa ni habla de salario;
+    - el verificador la verifica, y termina con el texto, el recuento, la verificación y los
+      avisos.
+[ ] [CA 08c] En la ficha:
+    - «N de 150 palabras» y «Verificada»;
+    - un render «Para enviar» a juego con el CV seleccionado: misma cabecera, foto y color,
+      fecha y ciudad de hoy, una página;
+    - «Copiar texto» y «Descargar TXT» (Carta-<Tu-Nombre>.txt): tildes y párrafos bien, también
+      en el Bloc de notas.
+[ ] Sin agente:
+    - «Diseño» → «Carta sencilla» con otro color → «Renderizar» da un render nuevo, que «Usar
+      esta para enviar» selecciona;
+    - «A juego con el CV» vuelve a seguir el CV seleccionado. Si cambias el CV a otro color o
+      sin foto y renderizas la carta otra vez, la carta lo sigue.
+[ ] «Editar» un párrafo y guardar: «Editada por ti», sin verificar, con un render nuevo. Sin
+    cambios, «Guardar» está desactivado. Si te pasas del límite, no guarda y dice por qué.
+[ ] Plantilla sin carta propia (p. ej. una html importada sin letter.html): la carta sale con
+    «carta-simple» y el aviso de que esa plantilla no tiene diseño de carta.
+[ ] (Opcional) Abre en Microsoft Word un DOCX de la carta: se abre sin avisos de contenido
+    ilegible.
+
+
+8 · FASE 10.3 · PAQUETE DE CANDIDATURA (≈15 min)
 ------------------------------------------------
-Usa una oferta en «CV listo» (la del bloque 3, por ejemplo); abajo, <ID> es la suya.
+Misma oferta <ID>, en «CV listo» y con su carta.
 [ ] En la ficha, entre «Proceso» y «CV», está «Paquete de candidatura»:
     - «Abrir PDF» del CV elegido, con «Verificado» y «Cambiarlo en la sección CV»;
     - «Aún no hay respuestas…» con «Añadir pregunta»;
-    - el recuadro de la carta: «Llega con la fase 08c».
+    - la carta del bloque 7, con su estado, «Copiar carta» y «Abrir PDF».
     Ningún botón dice «Enviar».
-[ ] Elige otro render en la sección CV («Usar este para enviar»): el paquete se actualiza solo.
+[ ] Elige otro render en la sección CV o en la de la carta: el paquete se actualiza solo.
 [ ] /preparar-candidatura <ID> con tres preguntas: años de Python, expectativa salarial y por qué
     te interesa.
     - La del salario va vacía y pendiente de ti; nunca propone una cifra.
@@ -181,12 +297,12 @@ Usa una oferta en «CV listo» (la del bloque 3, por ejemplo); abajo, <ID> es la
     - Aparece otra «Candidatura preparada», con tu actor.
 [ ] Borrar el texto de una respuesta y guardar la deja pendiente de un dato tuyo.
 [ ] «Añadir pregunta» la añade al final, con «Respaldo: user».
-    Las respuestas solo se editan antes de enviar: el bloque 6 comprueba que después ya no.
+    Las respuestas solo se editan antes de enviar: el bloque 9 comprueba que después ya no.
 
 
-6 · FASE 10.1 · KANBAN, FICHA DE PROCESO, SEGUIMIENTOS Y CALENDARIO (≈30 min)
+9 · FASE 10.1 · KANBAN, FICHA DE PROCESO, SEGUIMIENTOS Y CALENDARIO (≈30 min)
 -----------------------------------------------------------------------------
-Necesitas al menos dos ofertas aprobadas o en «CV listo» (una puede ser la del bloque 5).
+Necesitas al menos dos ofertas aprobadas o en «CV listo» (una puede ser <ID>).
 Antes, en Google Calendar, crea un calendario de prueba, «Job Hunter prueba».
 [ ] «Procesos» tiene cinco columnas: Aprobada, CV listo, Enviada, En proceso y Cerrada.
 [ ] Arrastrar a «CV listo»: la tarjeta vuelve, con un aviso de que llega al verificar el CV.
@@ -222,13 +338,15 @@ Antes, en Google Calendar, crea un calendario de prueba, «Job Hunter prueba».
 [ ] (Opcional) Suscripción a http://127.0.0.1:8000/calendar.ics desde Outlook, Apple Calendar o
     Thunderbird, o `jh calendar export`.
 [ ] (Opcional) /resumen-diario muestra «Hoy y mañana» y «Seguimientos vencidos».
-[ ] Vuelta al paquete (10.3): en la oferta ya enviada se ve y se copia, sin «Editar» ni «Añadir
-    pregunta», y el CV dice «El que enviaste».
+[ ] Vuelta al paquete y a la carta en la oferta ya enviada:
+    - se ven y se copian, pero no hay «Editar», «Añadir pregunta», «Añadir indicaciones» ni el
+      formulario de renderizar la carta;
+    - el CV dice «El que enviaste».
 [ ] (Opcional) /preparar-candidatura sobre esa oferta enviada da `invalid_transition`.
 
 
-7 · FASE 10.2 · DASHBOARD DEL EMBUDO (≈15 min)
-----------------------------------------------
+10 · FASE 10.2 · DASHBOARD DEL EMBUDO (≈15 min)
+-----------------------------------------------
 [ ] BD de 1 000 ofertas ficticias (no toca la tuya):
         uv run --directory backend python ../scripts/seed_funnel_demo.py
     Esperado: «1000 ofertas ficticias creadas en …\data\funnel-demo.»
@@ -249,7 +367,7 @@ Antes, en Google Calendar, crea un calendario de prueba, «Job Hunter prueba».
 [ ] A 390 px de ancho las tarjetas se apilan y las tablas se desplazan dentro de su panel. La barra
     de navegación ya se salía antes: es deuda conocida.
 [ ] Con tus datos (Remove-Item Env:JH_DATA_DIR y reinicia `jh serve`):
-    - «Enviadas» cuadra con lo que enviaste en el bloque 6;
+    - «Enviadas» cuadra con lo que enviaste en el bloque 9;
     - los motivos de descarte son los que elegiste en «Triaje».
 [ ] (Opcional) Pregunta a tu agente «¿Qué tal va mi embudo este mes?»: debe usar
     `get_funnel_stats` con `since`.
@@ -264,6 +382,11 @@ Además:
 - Búsqueda con navegador: el agente y el navegador que usaste, las reglas que se saltó y los
   incidentes (para docs/AGENTS_COMPAT.md).
 - Filtros y prefiltro: lo que se quedó fuera y te interesaba, o lo que entró sin sentido.
+- Plantillas importadas: diferencias de diseño (fuentes sustituidas, foto que flotaba y ahora va
+  en línea, tablas que se descolocan, cabecera de la carta). En PDF o imagen, el agente usado y
+  cuántas vueltas necesitó (para docs/AGENTS_COMPAT.md).
+- CV y carta: cualquier cosa inventada o exagerada que el verificador dejara pasar (lo más
+  importante), y cuánto tardan los renders.
 - Calendario: cliente y versión si algo no se importa bien.
 
 Incidencias:
@@ -274,13 +397,15 @@ Incidencias:
 
 LIMPIEZA
 --------
-- Las ofertas reales se quedan.
+- Las ofertas reales se quedan. Los CVs y cartas de prueba viven en data\cvs\ y en la BD.
 - Para dejar de seguir una empresa: «Pausar» en «Empresas» o `jh sources disable <id>`.
 - Una plataforma se desactiva en «Plataformas». Deja LinkedIn desactivada salvo que asumas el
   riesgo.
 - Las alertas sin completar caducan solas a los 21 días.
 - IMAP se apaga quitando JH_IMAP_* de .env y vaciando data\inbox\.
 - El token de captura se invalida volviendo a ejecutar `jh capture token`.
-- La BD ficticia se borra eliminando data\funnel-demo (y data\prueba-10 si la creaste).
+- Las BD ficticias se borran eliminando su carpeta: data\funnel-demo y, si las creaste,
+  data\demo-cv, data\demo-mi-cv, data\demo-08b y data\prueba-10.
+- Las previews y fotos recortadas de data\cache\ se pueden borrar: se regeneran solas.
 - El calendario de prueba se borra en Google Calendar.
 - Comprueba que no queda $env:JH_DATA_DIR en ninguna terminal: Remove-Item Env:JH_DATA_DIR.
