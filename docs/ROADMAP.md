@@ -38,7 +38,7 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 11.2 | ↳ Revisión, envío y UI | ✅ | Pantalla de revisión en la ficha, «Enviar» con el nombre de la empresa, «Lo termino yo» y prueba manual con una oferta real |
 | 12 | Demo, compatibilidad y portfolio | 🚧 | Modo demo, matriz de agentes probada, evals publicados |
 | 12.1 | ↳ Modo demo | ✅ | `jh demo seed` llena `data-demo/` con 60 ofertas, 8 semanas de historial y 2 CVs; banner en la UI |
-| 12.2 | ↳ Evals de matching y de CV | ⏳ | 60-100 casos de matching con `evals/REPORT.md` y `jh eval cv` sobre 10 casos |
+| 12.2 | ↳ Evals de matching y de CV | ✅ | 60-100 casos de matching con `evals/REPORT.md` y `jh eval cv` sobre 10 casos |
 | 12.3 | ↳ Compatibilidad, README y seguridad | ⏳ | Matriz de agentes probada, README de portfolio y repositorio revisado |
 
 **MVP usable:** al terminar la 08 ya puedes pegar ofertas, triarlas y sacar CVs a medida; con la
@@ -1113,3 +1113,39 @@ decisiones tomadas y deuda técnica pendiente. -->
   - `_sources` usa funciones privadas de `ingest` y `capture` para crear sus fuentes.
   - Con embeddings instalados, la app recalcula los scores de la demo al consultarlos (otra
     `scoring_key`).
+
+### 12.2 · Demo y portfolio: evals de matching y de CV — 2026-10-05 · Claude Code (Opus 5.5)
+- **Resumen:**
+  - **Matching:** `evals/matching/seed.jsonl` pasa de 20 a 80 casos inventados (40 y 40), con
+    trampas de título, oficio, ubicación, nivel, años e idioma. `evals/REPORT.md` recoge las
+    métricas, la curva, el umbral elegido y los errores típicos. Sin embeddings: precision 0,88,
+    recall 0,95 y F1 0,92 (38/5/2/35).
+  - **CV:** `evals/cv/cases.jsonl` (10 ofertas inventadas con keywords esperadas y skills
+    prohibidas). `jh demo seed --eval-cv` las da de alta aprobadas y sin CV (en una demo
+    existente, solo las que falten).
+  - **`jh eval cv [--agent] [--min-coverage]`** (`services/evals/cv.py`) comprueba, en la demo:
+    evidencias, skills inventadas o prohibidas, skills básicas no pedidas (en skills, titular y
+    resumen), una página, cobertura, idioma y verificación. Informe JSON y Markdown;
+    `evals/README.md`.
+  - **Prueba:** redactor y verificador de Claude Code en dos ejecuciones distintas, solo con
+    `jh … --json` contra `data-demo`, sobre `cv04` y `cv07`: los dos pasan las 7 comprobaciones.
+  - 16 tests nuevos del eval de CV; los del matching se adaptan a los 80 casos y
+    `scripts/seed_triage_demo.py` sigue usando los 20 primeros. 1 624 tests de backend.
+- **Decisiones:**
+  - Umbral 55 sin cambios: empata con 60 en F1 y prima el recall (el umbral solo atenúa en el
+    triaje).
+  - La configuración por defecto no cambia: los falsos positivos de oficio (preventa, docencia,
+    ventas) se arreglan con `discard_title_keywords`, que es por usuario.
+  - La cobertura del eval de CV cuenta solo las skills pedidas que la candidata tiene, más las
+    keywords del caso: un CV honesto no puede cubrir lo que no está en el perfil.
+  - Identidad estable de cada caso: la URL `https://empleo.example.com/eval-cv/<id>`.
+  - Ayuda de `--file`: «tmp/ de la carpeta de datos», no `data/tmp/` fijo.
+- **Deuda:**
+  - Comparar con embeddings (`uv sync --extra matching`) y elegir modelo (ADR-006).
+  - Hallazgos de la prueba sin MCP, para la 12.3:
+    - los roles solo nombran herramientas MCP, no su comando `jh`;
+    - las skills no se traducen en un CV en inglés («Modelado dimensional»);
+    - las secciones extra solo existen en español;
+    - la ayuda sale mal codificada en Git Bash sin `PYTHONIOENCODING=utf-8`;
+    - el encargo del agente decía `jh match get` (es `jh match show`).
+  - El filtro de ubicación no sabe de cercanía (Ourense, Pontevedra).

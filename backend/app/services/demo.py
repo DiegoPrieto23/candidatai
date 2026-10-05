@@ -40,6 +40,7 @@ from app.services import capture as capture_service
 from app.services import events, extractions, ingest, pipeline, process, profile, tasks
 from app.services.documents import pdf
 from app.services.documents import service as cv_service
+from app.services.evals import cv as cv_eval
 from app.services.ingestion import service as sources_service
 from app.services.ingestion.email import service as email_service
 from app.services.matching import service as matching
@@ -643,9 +644,17 @@ def _populate(session: Session, plans: list[JobPlan], now: datetime) -> list[str
     return warnings
 
 
-def seed(target: Path, force: bool = False, now: datetime | None = None) -> DemoSummary:
-    """Crea la demo en `target` (por defecto `data-demo/`). Ver la cabecera del módulo."""
+def seed(
+    target: Path, force: bool = False, now: datetime | None = None, eval_cv: bool = False
+) -> DemoSummary:
+    """Crea la demo en `target` (por defecto `data-demo/`). Ver la cabecera del módulo.
+
+    Con `eval_cv`, añade además los casos del eval de CV (`evals/cv/`) como ofertas aprobadas y
+    sin CV. Si la demo ya existe, solo añade los casos que falten (sin `--force`).
+    """
     target = (target if target.is_absolute() else REPO_ROOT / target).resolve()
+    if eval_cv and not force and is_demo_dir(target) and (target / "jobhunter.db").is_file():
+        return add_eval_cv_cases(target)
     prepare_dir(target, force)
     shutil.copyfile(DEMO_DIR / "profile.example.yaml", target / "profile.yaml")
     shutil.copyfile(DEMO_DIR / "photo.png", target / "photo.png")
@@ -657,8 +666,20 @@ def seed(target: Path, force: bool = False, now: datetime | None = None) -> Demo
         with session_scope() as session:
             profile.import_profile(session, target / "profile.yaml")
             warnings = _populate(session, plans, now)
+            if eval_cv:
+                cv_eval.add_cases(session)
         with session_scope() as session:
             return _summary(session, target, warnings)
+
+
+def add_eval_cv_cases(target: Path) -> DemoSummary:
+    """Añade a una demo existente los casos del eval de CV que falten."""
+    with use_data_dir(target, embeddings=False):
+        migrations.upgrade()
+        with session_scope() as session:
+            cv_eval.add_cases(session)
+        with session_scope() as session:
+            return _summary(session, target, [])
 
 
 def _summary(session: Session, target: Path, warnings: list[str]) -> DemoSummary:

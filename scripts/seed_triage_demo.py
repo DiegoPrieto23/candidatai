@@ -1,5 +1,6 @@
-"""Da de alta las 20 ofertas FICTICIAS de `evals/matching/seed.jsonl`, ya extraídas, para probar el
-triaje sin gastar agente. Empresas inventadas; ningún dato real.
+"""Da de alta las 20 primeras ofertas FICTICIAS de `evals/matching/seed.jsonl` (las de la fase 07),
+ya extraídas, para probar el triaje sin gastar agente. Empresas inventadas; ningún dato real.
+Para una demo completa, mejor `jh demo seed` (fase 12.1).
 
 Uso (desde la raíz del repo, con la BD migrada):
     uv run --directory backend python ../scripts/seed_triage_demo.py
@@ -47,7 +48,7 @@ def posting_text(title: str, company: str, case: object) -> str:
 
 def main() -> int:
     migrations.ensure_current()
-    cases = load_cases(SEED_DIR / "seed.jsonl")
+    cases = load_cases(SEED_DIR / "seed.jsonl")[: len(COMPANIES)]
     created = skipped = duplicated = 0
     for case, company in zip(cases, COMPANIES, strict=True):
         fixture = case.job_fixture

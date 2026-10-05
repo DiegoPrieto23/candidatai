@@ -415,14 +415,21 @@ DEMO_DIR_OPTION = typer.Option(
 def demo_seed(
     target: Path = DEMO_DIR_OPTION,
     force: bool = typer.Option(False, "--force", help="Recrea una demo que ya existe."),
+    eval_cv: bool = typer.Option(
+        False,
+        "--eval-cv",
+        help="Añade los 10 casos del eval de CV, aprobados y sin CV (en una demo existente, "
+        "solo los que falten).",
+    ),
     as_json: bool = JSON_OPTION,
 ) -> None:
     """Crea una carpeta de datos con 60 ofertas ficticias, 8 semanas de historial y 2 CVs."""
     from app.services import demo
+    from app.services.evals.cv import CvEvalFileError
 
     try:
-        summary = demo.seed(target, force=force)
-    except demo.DemoSeedError as exc:
+        summary = demo.seed(target, force=force, eval_cv=eval_cv)
+    except (demo.DemoSeedError, CvEvalFileError) as exc:
         if as_json:
             typer.echo(dump_json(ToolError("validation_error", str(exc)).payload()))
         else:
@@ -444,6 +451,54 @@ def demo_seed(
     typer.echo(f'  $env:JH_DATA_DIR = "{folder}"; uv run jh serve')
     typer.echo("  y en otra terminal: cd frontend; pnpm dev")
     typer.echo(f"Con un agente, arráncalo con JH_DATA_DIR={folder} para que el MCP use la demo.")
+    if eval_cv:
+        typer.echo(
+            "Eval de CV: lanza `generar-cv` sobre las ofertas de empleo.example.com/eval-cv/ "
+            "(«CV listo» pendiente) y después `jh eval cv`."
+        )
+
+
+@eval_app.command("cv")
+def eval_cv_command(
+    agent: str | None = typer.Option(
+        None, "--agent", help="Solo los CVs que guardó este agente (`claude-code`, `codex`…)."
+    ),
+    min_coverage: float = typer.Option(
+        0.8, "--min-coverage", min=0.0, max=1.0, help="Cobertura mínima de keywords (0-1)."
+    ),
+    as_json: bool = JSON_OPTION,
+) -> None:
+    """Comprueba los CVs que dejó `generar-cv` sobre los casos de evals/cv/ (en la demo)."""
+    from app.services.evals import cv as cv_eval
+
+    try:
+        with session_scope() as session:
+            report = cv_eval.evaluate(session, agent=agent, min_coverage=min_coverage)
+    except (cv_eval.CvEvalFileError, cv_eval.CvEvalNotDemoError) as exc:
+        if as_json:
+            typer.echo(dump_json(ToolError("validation_error", str(exc)).payload()))
+        else:
+            typer.secho(f"Error: {exc}", fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=1) from None
+    json_path, md_path = cv_eval.save_report(report, get_settings().evals_dir / "reports")
+    if as_json:
+        paths = [str(json_path), str(md_path)]
+        typer.echo(dump_json({**report.model_dump(mode="json"), "report_paths": paths}))
+        return
+    who = report.agent or "todos los agentes"
+    typer.echo(
+        f"CV · {len(report.cases)} casos · {who} · evaluados {report.evaluated}, "
+        f"pasan {report.passed}, pendientes {report.pending}"
+    )
+    for case in report.cases:
+        failed = [c for c in case.checks if c.passed is False]
+        line = f"  {case.id}: {cv_eval.STATUS_LABELS[case.status]}"
+        if case.agent_name:
+            line += f" ({case.agent_name})"
+        typer.echo(line)
+        for check in failed:
+            typer.echo(f"    - {cv_eval.CHECKS[check.name]}: {check.detail}")
+    typer.echo(f"\nInforme: {md_path}")
 
 
 @eval_app.command("matching")
