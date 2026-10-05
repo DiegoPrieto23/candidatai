@@ -339,15 +339,15 @@ subtitle: str                          # identidad profesional + tecnologías cl
 summary: str                           # perfil adaptado, 3-4 líneas
 experience: [{
   experience_id: str,                  # id en profile.yaml
-  bullets: [{text: str, evidence: [str]}]   # evidence: ids de logros del perfil, p. ej. "exp-acme/a2"
+  bullets: [{text: str, evidence: [str]}]   # evidence: ids citables del perfil: "exp-acme/a2", "exp-acme", "prj-x", "edu-x", "cert-x"
 }]
 projects: [{project_id: str, bullets: [{text, evidence}]}]
-skills: [{group: str, items: [str]}]   # solo skills del perfil
+skills: [{group: str, items: [str]}]   # solo skills del perfil, con su nombre (o un alias de config/skill_aliases.yaml); básicas como "conocimientos de X" / "basic knowledge of X"
 education_ids: [str]
 certification_ids: [str]
 extra_sections: [{section_id: str, item_ids: [str]}]   # desde la 08.3; items del perfil tal cual
 languages: [{language: str, level: str}]
-include_regional_language: bool
+include_regional_language: bool       # true: el idioma regional del perfil va en `languages`; false: el código lo quita
 keywords_targeted: [str]               # keywords de la oferta que el CV cubre de verdad
 ```
 `experience` necesita al menos una entrada y cada bullet al menos una evidencia; el resto de

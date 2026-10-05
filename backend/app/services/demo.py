@@ -38,6 +38,7 @@ from app.schemas.llm_io import JobExtraction
 from app.schemas.sources import SourceInput
 from app.services import capture as capture_service
 from app.services import events, extractions, ingest, pipeline, process, profile, tasks
+from app.services.demo_text import posting_text
 from app.services.documents import pdf
 from app.services.documents import service as cv_service
 from app.services.evals import cv as cv_eval
@@ -186,35 +187,6 @@ class JobPlan:
     hour: int = 10  # hora de Madrid de la entrevista
 
 
-def _posting_text(
-    title: str, company: str, sector: str, city: str, mode: str, ext: JobExtraction
-) -> str:
-    modes = {"remote": "en remoto", "hybrid": "con modelo híbrido", "onsite": "presencial"}
-    lines = [
-        f"{title} – {company}",
-        "",
-        f"{company} (empresa ficticia) trabaja en el sector {sector}. Buscamos {title} "
-        f"en {city}, {modes[mode]}.",
-        "",
-        "Responsabilidades",
-        *(f"- {r}." for r in ext.responsibilities),
-        "",
-        "Requisitos",
-    ]
-    if ext.years_experience_min:
-        lines.append(f"- Al menos {ext.years_experience_min} años de experiencia.")
-    lines += [f"- Experiencia con {s}." for s in ext.must_have_skills]
-    lines += [f"- {lang.language} {lang.level}." for lang in ext.languages_required]
-    if ext.nice_to_have_skills:
-        lines += ["", "Se valorará", *(f"- {s}." for s in ext.nice_to_have_skills)]
-    if ext.salary:
-        lines += [
-            "",
-            f"Ofrecemos {ext.salary.min:,}-{ext.salary.max:,} € brutos al año.".replace(",", "."),
-        ]
-    return "\n".join(lines) + "\n"
-
-
 class _Planner:
     def __init__(self, catalog: dict[str, Any], rng: random.Random) -> None:
         self.catalog = catalog
@@ -272,9 +244,7 @@ class _Planner:
             red_flags=[],
             injection_suspected=False,
         )
-        text = _posting_text(
-            title, company["name"], company["sector"], place["city"], mode, extraction
-        )
+        text = posting_text(title, company["name"], company["sector"], place["city"], extraction)
         return JobPlan(
             fate=fate,
             title=title,
@@ -645,19 +615,26 @@ def _populate(session: Session, plans: list[JobPlan], now: datetime) -> list[str
 
 
 def seed(
-    target: Path, force: bool = False, now: datetime | None = None, eval_cv: bool = False
+    target: Path,
+    force: bool = False,
+    now: datetime | None = None,
+    eval_cv: bool = False,
+    compat: bool = False,
 ) -> DemoSummary:
     """Crea la demo en `target` (por defecto `data-demo/`). Ver la cabecera del módulo.
 
     Con `eval_cv`, añade además los casos del eval de CV (`evals/cv/`) como ofertas aprobadas y
-    sin CV. Si la demo ya existe, solo añade los casos que falten (sin `--force`).
+    sin CV. Con `compat`, las 5 ofertas de la matriz de compatibilidad (`evals/compat/jobs.txt`)
+    solo con su texto. Si la demo ya existe, solo añade los casos que falten (sin `--force`).
     """
     target = (target if target.is_absolute() else REPO_ROOT / target).resolve()
-    if eval_cv and not force and is_demo_dir(target) and (target / "jobhunter.db").is_file():
-        return add_eval_cv_cases(target)
+    extra = eval_cv or compat
+    if extra and not force and is_demo_dir(target) and (target / "jobhunter.db").is_file():
+        return add_eval_cases(target, eval_cv=eval_cv, compat=compat)
     prepare_dir(target, force)
     shutil.copyfile(DEMO_DIR / "profile.example.yaml", target / "profile.yaml")
     shutil.copyfile(DEMO_DIR / "photo.png", target / "photo.png")
+    (target / "tmp").mkdir()  # entradas `--file` de los agentes sin MCP
     now = now or datetime.now(UTC)
     rng = random.Random(SEED)
     plans = build_plans(rng)
@@ -666,18 +643,25 @@ def seed(
         with session_scope() as session:
             profile.import_profile(session, target / "profile.yaml")
             warnings = _populate(session, plans, now)
-            if eval_cv:
-                cv_eval.add_cases(session)
+            _add_cases(session, eval_cv, compat)
         with session_scope() as session:
             return _summary(session, target, warnings)
 
 
-def add_eval_cv_cases(target: Path) -> DemoSummary:
-    """Añade a una demo existente los casos del eval de CV que falten."""
+def _add_cases(session: Session, eval_cv: bool, compat: bool) -> None:
+    # Primero los de la matriz (solo texto): si van los dos, esos 5 se quedan por extraer.
+    if compat:
+        cv_eval.add_cases(session, cv_eval.load_compat_cases(), extract=False)
+    if eval_cv:
+        cv_eval.add_cases(session)
+
+
+def add_eval_cases(target: Path, eval_cv: bool, compat: bool) -> DemoSummary:
+    """Añade a una demo existente los casos de los evals que falten."""
     with use_data_dir(target, embeddings=False):
         migrations.upgrade()
         with session_scope() as session:
-            cv_eval.add_cases(session)
+            _add_cases(session, eval_cv, compat)
         with session_scope() as session:
             return _summary(session, target, [])
 

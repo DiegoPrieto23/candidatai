@@ -1,81 +1,213 @@
-# Job Hunter · kit de arranque
+# Job Hunter
 
-Especificación, encargos por fase, skills y roles para construir y operar una app local de
-búsqueda de empleo (FastAPI + React + SQLite) **con el agente de IA que prefieras**: Claude Code,
-Codex (ChatGPT), Gemini CLI, Cursor, Copilot… La app no llama a ninguna API de LLM: el
-razonamiento lo pone la suscripción que ya tengas.
+App local para llevar una búsqueda de empleo de principio a fin: entran las ofertas, se triagan
+con un score explicado, sale un CV a medida y verificado para cada una, se prepara la candidatura
+y se sigue el proceso hasta la oferta. **La app no llama a ningún LLM**: lo que necesita criterio
+(extraer ofertas, valorar el encaje, redactar el CV y la carta) lo hace el agente de IA que ya
+uses (Claude Code, Codex, Gemini CLI, Cursor…) a través de una interfaz para agentes con
+herramientas MCP y una CLI equivalente.
 
-Inspirado en [ackyer/job-search-agent-template](https://github.com/ackyer/job-search-agent-template)
-(MIT), reconvertido de plantilla de prompts a aplicación con estado en base de datos.
+![Bandeja de la demo: ofertas con su score, etapa y avisos](docs/img/bandeja.png)
 
-## Qué necesita tu agente
+> Todo lo que se ve en las capturas es la **demo**: una candidata, empresas y ofertas inventadas.
 
-Poder **leer y escribir ficheros** en la carpeta y, además, **hablar MCP o ejecutar comandos**.
-Con MCP es más cómodo; sin MCP, usa la CLI `jh … --json`, que es equivalente.
-Detalle por agente y garantías de seguridad: `docs/AGENTS_COMPAT.md`.
+## El problema
 
-## Qué hay en el kit
+Buscar trabajo bien es mucho trabajo repetitivo con criterio en medio: leer decenas de ofertas,
+descartar las que no encajan, adaptar el CV a cada una sin inventar nada, responder formularios,
+acordarse de hacer seguimiento y saber qué está funcionando. Los asistentes de IA ayudan en cada
+paso suelto, pero sin memoria ni estado: cada conversación empieza de cero, nada impide que
+«mejoren» tu CV con cosas que no has hecho, y una oferta puede llevar instrucciones ocultas para
+la IA que la lee.
 
-```
-AGENTS.md                  instrucciones del proyecto para CUALQUIER agente
-CLAUDE.md, GEMINI.md       solo importan AGENTS.md
-docs/
-  ARCHITECTURE.md          capas, etapas, quién hace qué, seguridad en profundidad
-  DATA_MODEL.md            tablas, catálogo de eventos, proyección de etapas
-  AGENT_INTERFACE.md       herramientas MCP ↔ comandos CLI, y esquemas que rellena el agente
-  POLICIES.md              reglas de negocio: veracidad, CV, privacidad, candidaturas
-  CV_TEMPLATES.md          plantillas de CV, motores docx/html, foto y opciones por oferta
-  AGENTS_COMPAT.md         matriz de agentes soportados y cómo añadir uno
-  ROADMAP.md               12 fases con su estado
-  DECISIONS.md             ADRs (sin API, SQLite, docxtpl, neutralidad de agente…)
-prompts/01…12-*.md         el encargo de cada fase
-.agents/                   FUENTE ÚNICA para agentes
-  skills/                  10 skills en el estándar Agent Skills (Codex los lee directamente)
-  roles/                   subagentes neutrales: extractor, redactor, verificador, revisor
-  manifest.yaml            lo específico de cada agente (rutas, modelos, MCP, extras)
-scripts/sync_agents.py     genera la configuración nativa desde .agents/
-.claude/  .codex/  .mcp.json   GENERADOS (no editar a mano; se commitean)
-.claude/settings.json      permisos de Claude Code (este sí, a mano)
-templates/                 plantillas de CV integradas (se crean en las fases 08 y 08b)
-config/                    políticas genéricas, sinónimos de skills, patrones de inyección
-demo/profile.example.yaml  esquema del perfil con una candidata ficticia
-```
+Job Hunter pone el estado, las reglas y la verificación en una app determinista, y deja al agente
+solo lo que necesita razonar, siempre contra tu perfil y con comprobaciones que no dependen de él.
 
-## Puesta en marcha (Windows 11)
+## Qué hace
 
-1. Instala Git, [uv](https://docs.astral.sh/uv/), Node LTS + pnpm (`corepack enable`),
-   LibreOffice y tu agente.
-2. Copia el kit en una carpeta nueva y haz el primer commit:
-   ```
-   git init
-   git add .
-   git commit -m "Kit inicial"
-   ```
-3. Abre tu agente en esa carpeta y pide la primera fase:
-   - Claude Code: `/implementar-fase 01`
-   - Codex: `$implementar-fase 01`
-   - Otros: "Lee AGENTS.md y usa el skill implementar-fase para la fase 01"
+| | |
+|---|---|
+| **Ofertas de varias fuentes** | Alta por URL o texto, APIs públicas de Greenhouse, Lever y Ashby, InfoJobs y Adzuna con claves, alertas por correo (LinkedIn, InfoJobs…), un botón de extensión para la página que estás viendo y, si lo activas, búsqueda con el navegador del agente. Deduplicadas y con detección de contenido dirigido a una IA |
+| **Triaje con score explicado** | Filtros duros (nivel, años, modalidad, zona, idiomas) y un score 0-100 por cobertura de skills, preferencias y, opcionalmente, similitud semántica local. El agente añade una valoración razonada |
+| **CV y carta a medida** | El agente redacta el contenido citando la evidencia del perfil de cada línea; el código valida, renderiza (Word o HTML → PDF) con tu plantilla, foto y color, y otro rol lo verifica de forma independiente. Cambiar de diseño no gasta agente |
+| **Candidatura asistida** | Rellena formularios de Greenhouse, Lever, Ashby o genéricos, se para ante captchas o logins y **solo envía tras tu confirmación**, escribiendo el nombre de la empresa |
+| **Seguimiento y analítica** | Kanban por etapas que solo se mueve con eventos, hitos con calendario `.ics`, avisos de seguimiento y embudo por fuente, puesto y semana |
 
-## Cómo construir cada fase
+| Triaje | Ficha con el CV |
+|---|---|
+| ![Triaje](docs/img/triaje.png) | ![Ficha con el CV](docs/img/ficha-cv.png) |
 
-```
-implementar-fase NN   →  el agente lee el encargo y propone un plan
-revisas y apruebas    →  implementa con tests
-pruebas manuales      →  las que te indique
-commit                →  cuando estés conforme
-sesión nueva          →  contexto limpio para la siguiente fase
+| Procesos | Embudo |
+|---|---|
+| ![Procesos](docs/img/procesos.png) | ![Embudo](docs/img/embudo.png) |
+
+## Pruébalo en 5 minutos
+
+Requisitos: Windows 11 (o cualquier sistema con Python vía [uv](https://docs.astral.sh/uv/)),
+Node LTS con pnpm y, para los PDF de los CVs, LibreOffice o el Chromium de Playwright.
+
+```powershell
+git clone <url-del-repositorio> job-hunter; cd job-hunter
+cd backend
+uv sync
+uv run playwright install chromium     # si no tienes LibreOffice: PDF de los CVs
+uv run jh demo seed                    # data-demo/: 60 ofertas, 8 semanas de historial, 2 CVs
+$env:JH_DATA_DIR = "data-demo"; uv run jh serve
+# en otra terminal
+cd frontend; pnpm install; pnpm dev    # http://127.0.0.1:5173
 ```
 
-Con la fase 08 terminada ya tienes un MVP usable: alta de ofertas, triaje y CVs verificados.
+La UI muestra un banner «Modo demo» mientras uses la demo. Tus datos reales irían en `data/`
+(fuera de git) y la demo nunca la toca. Para probar los skills con tu agente sobre la demo,
+arráncalo con `JH_DATA_DIR=data-demo`.
 
-**Para no quemar cuota, con cualquier plan:** una fase por sesión, plan antes de código, modelo
-"capaz" para construir y "rápido" para los roles mecánicos (se configura en el manifiesto), y
-commits pequeños para deshacer con git en vez de con el agente.
+## Arquitectura
 
-## Cuándo entra tu CV real
+```mermaid
+flowchart LR
+    user([Tú]) --> ui[UI React]
+    user --> agent([Tu agente de IA])
+    ui -->|REST| api[FastAPI]
+    agent -->|MCP| mcp[Servidor MCP]
+    agent -->|comandos| cli[CLI jh --json]
+    api --> svc
+    mcp --> svc
+    cli --> svc
+    worker[Worker: ingesta diaria, scores, rellenado] --> svc
+    svc[services/: toda la lógica] --> db[(SQLite: eventos y proyección)]
+    svc --> docs[docxtpl + LibreOffice / HTML + Chromium]
+    svc --> pw[Playwright: candidatura asistida]
+```
 
-Mientras se construye la app, el código se prueba siempre con datos ficticios de `demo/`: tus
-datos nunca van al repositorio. Tu CV real entra dos veces, para cosas distintas, y siempre en
+- **Capas finas.** API, MCP y CLI solo traducen; la lógica vive en `app/services/` y se prueba ahí.
+  Cada herramienta MCP tiene su comando `jh … --json` con la misma entrada y salida (un test lo
+  comprueba), así que un agente sin MCP puede hacer lo mismo.
+- **Eventos como fuente de verdad.** Cada cambio de una oferta es un evento validado contra una
+  tabla de transiciones; la etapa actual es una proyección que se puede recalcular.
+- **El agente nunca escribe directamente.** Rellena esquemas Pydantic estrictos (`JobExtraction`,
+  `CvContent`…) que el código valida, con cada afirmación del CV ligada a su evidencia del perfil.
+
+```mermaid
+stateDiagram-v2
+    direction LR
+    [*] --> pending_extraction: found
+    pending_extraction --> pending_triage: extracted (agente)
+    pending_triage --> approved: approved (tú)
+    pending_triage --> closed: discarded / hard_filter_failed
+    approved --> cv_ready: CV verificado y renderizado
+    cv_ready --> applied: applied (tras tu confirmación)
+    approved --> applied: applied_manually
+    applied --> in_process: respuesta, entrevista, prueba u oferta
+    applied --> closed: rejected / withdrawn
+    in_process --> closed: accepted / rejected / withdrawn
+```
+
+```mermaid
+sequenceDiagram
+    participant A as Tu agente (skill generar-cv)
+    participant R as Rol redactor
+    participant V as Rol verificador
+    participant J as Job Hunter
+    A->>R: job_id
+    R->>J: get_profile, get_extraction, get_match
+    R->>J: save_cv_content (CvContent con evidencias)
+    J-->>R: rechazo con detalle, o render PDF + avisos
+    A->>V: document_id (otra ejecución, sin ver la redacción)
+    V->>J: get_cv_content (evidencias resueltas)
+    V->>J: save_cv_verification
+    J-->>A: cv_ready si está verificado y cabe en sus páginas
+```
+
+El diagrama de etapas está simplificado (también se puede descartar una oferta aprobada, caducar o
+reabrir); el catálogo completo de eventos y transiciones está en `docs/DATA_MODEL.md`.
+Más detalle en [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) y
+[`docs/DATA_MODEL.md`](docs/DATA_MODEL.md).
+
+## Decisiones clave
+
+| Decisión | Por qué | ADR |
+|---|---|---|
+| Sin API de LLM: el razonamiento lo pone el agente del usuario | Sin costes ni claves extra, y funciona con la suscripción que ya tengas | [ADR-001](docs/DECISIONS.md) |
+| Interfaz neutral: MCP + CLI con paridad | Cualquier agente que hable MCP o ejecute comandos sirve | [ADR-010](docs/DECISIONS.md) |
+| `.agents/` como fuente única y configuración nativa generada | Un skill se escribe una vez y se genera para Claude Code, Codex… | [ADR-011](docs/DECISIONS.md) |
+| Seguridad que no depende del agente | Detección de inyección, validación y una interfaz que no puede enviar nada, con cualquier agente | [ADR-012](docs/DECISIONS.md) |
+| Eventos como fuente de verdad | Historial completo, analítica fiable y estados que no se corrompen | [ADR-005](docs/DECISIONS.md) |
+| Contenido y presentación del CV separados | Cambiar plantilla, foto o color no vuelve a gastar agente | [ADR-014](docs/DECISIONS.md) |
+| Sin automatización en LinkedIn ni captchas | Respeta los términos de las plataformas; la app prepara y tú terminas | [ADR-009](docs/DECISIONS.md) |
+| SQLite, ejecución nativa en Windows | Una app personal, sin servidores ni Docker | [ADR-002](docs/DECISIONS.md), [ADR-007](docs/DECISIONS.md) |
+| Embeddings locales y opcionales | Mejor matching sin mandar tus datos fuera | [ADR-006](docs/DECISIONS.md), [ADR-015](docs/DECISIONS.md) |
+
+Las 20 decisiones, con contexto y consecuencias: [`docs/DECISIONS.md`](docs/DECISIONS.md).
+
+## Calidad y evals
+
+- **Tests:** 1 627 de backend (pytest, 93 % de cobertura en `services/`) y 125 de frontend (Vitest). CI en Windows (backend), Linux (frontend) y comprobación de la
+  configuración generada de agentes, más una siembra de la demo como prueba de humo.
+- **Eval de matching** (80 casos inventados, sin embeddings): precision **0,88**, recall **0,95**,
+  F1 **0,92** con el umbral de triaje por defecto. Errores típicos y por qué, en
+  [`evals/REPORT.md`](evals/REPORT.md).
+- **Eval de CV** (`jh eval cv`): 7 comprobaciones automáticas sobre los CVs que deja el agente
+  (evidencias que existen, skills inventadas o básicas no pedidas, una página, cobertura de
+  keywords, idioma y verificación independiente). Resultados por agente en
+  [`docs/AGENTS_COMPAT.md`](docs/AGENTS_COMPAT.md).
+
+## Agentes compatibles
+
+| Agente | Estado |
+|---|---|
+| **Claude Code** | Referencia: se desarrolla con él. Con MCP: probado en la fase 04; la matriz de la fase 12, pendiente de la prueba manual. Sin MCP (solo CLI, Opus 5.5): 5/5 ofertas extraídas, valoradas y con CV que pasa el eval |
+| **Codex** | Configuración generada (`.codex/`); sin probar en la matriz de la fase 12 |
+| **Gemini CLI, Cursor, Copilot, OpenCode…** | Sin probar: valen si leen `AGENTS.md` y hablan MCP o ejecutan comandos |
+
+Qué funciona con cada uno, niveles de aislamiento del rol que lee las ofertas y **cómo añadir un
+agente** (un bloque en `.agents/manifest.yaml` y, si hace falta, un emisor en
+`scripts/sync_agents.py`): [`docs/AGENTS_COMPAT.md`](docs/AGENTS_COMPAT.md).
+
+## Límites éticos
+
+Son reglas del código, no promesas del agente ([`docs/POLICIES.md`](docs/POLICIES.md) §4-§6):
+
+- **Nada sale sin tu confirmación.** El código rellena y se para; el envío lo desencadena tu clic,
+  candidatura a candidatura, con un token de un solo uso. Los mensajes a recruiters son borradores.
+- **LinkedIn nunca se automatiza** (ni candidaturas ni scraping) y **los captchas no se esquivan**:
+  se para y te pasa la pestaña.
+- **Veracidad:** el CV solo contiene lo que está en tu perfil. El código rechaza evidencias o
+  skills que no existen y un rol verificador independiente revisa el resto.
+- **Privacidad:** tus datos viven en `data/`, fuera de git. El agente no recibe tu correo,
+  teléfono ni datos salariales; el salario nunca se propone por ti.
+- **Contenido no confiable:** el texto de ofertas, correos y webs es dato, nunca instrucción. Se
+  detecta texto oculto y frases dirigidas a una IA, y se avisa en la UI.
+
+## Usarlo con tus datos
+
+Tus datos van en `data/` (gitignored). Requisitos y configuración completos en «Desarrollo».
+
+### Tu día a día con el agente
+
+Arranca `jh serve`, `jh worker` y `pnpm dev`. Crea tu perfil con el skill `actualizar-perfil`
+(se guarda en `data/profile.yaml`) y, después, en tu agente:
+
+| Skill | Qué hace |
+|---|---|
+| `actualizar-perfil` | Crea o actualiza `data/profile.yaml` desde tu CV y lo versiona |
+| `procesar-ofertas` | Extrae las ofertas nuevas (rol `extractor`, aislado cuando el agente lo permite) |
+| `evaluar-encaje` | Valora y explica el encaje de las ofertas de triaje |
+| `generar-cv 42` | Redacta, renderiza y verifica el CV para la oferta 42 |
+| `generar-carta 42 máximo 150 palabras` | Carta de presentación según tus indicaciones, verificada; TXT y PDF a juego con el CV |
+| `preparar-candidatura 42` | Respuestas de screening y carta, si hace falta |
+| `preparar-entrevista 42 tecnica` | Dosier de entrevista y simulacro |
+| `resumen-diario` | Qué tienes hoy, seguimientos vencidos, qué procesar |
+| `importar-plantilla-cv data/uploads/mi-cv.pdf` | Convierte tu CV (o cualquier diseño) en plantilla: los CVs a medida salen con su estilo |
+| `revisar-linkedin` | Informe de mejoras para tu perfil de LinkedIn, listo para copiar (tú lo aplicas) |
+| `buscar-ofertas` | Recorre con tu navegador los portales aprobados y da de alta lo que encaje (`buscar-ofertas configurar` para elegirlos) |
+
+Si tu agente ofrece tareas programadas, `procesar-ofertas` y `resumen-diario` pueden ejecutarse
+solos cada mañana (`docs/AGENTS_COMPAT.md`).
+
+### Cuándo entra tu CV real
+
+El código se prueba siempre con datos ficticios de `demo/`: tus datos nunca van al repositorio.
+Tu CV real entra dos veces, para cosas distintas, y siempre en
 `data/` (fuera de git):
 
 | Momento | Qué se usa de tu CV | Resultado |
@@ -85,6 +217,8 @@ datos nunca van al repositorio. Tu CV real entra dos veces, para cosas distintas
 | Cuando quieras | Tu **foto** | `data/photo.jpg` (o png); cada plantilla la recorta a su forma |
 
 ### Elegir estilo y foto en cada oferta
+
+![Plantillas de CV de la demo](docs/img/plantillas.png)
 
 El agente redacta el contenido del CV una sola vez; la presentación la pone la app. En la ficha de
 cada oferta eliges plantilla, foto (automática, con o sin), color de acento y secciones visibles, y
@@ -115,44 +249,6 @@ sin agente. Las plantillas que importas de Word obtienen su carta con
 
 Detalle: `docs/FUENTES_OFERTAS.md`. El botón se instala como extensión sin empaquetar:
 `extension/README.md`.
-
-## Si cambias skills, roles o el manifiesto
-
-Edita solo `.agents/` y regenera desde la raíz:
-
-```
-uv run scripts/sync_agents.py           # escribe .claude/, .codex/ y .mcp.json
-uv run scripts/sync_agents.py --check   # lo mismo que comprueba la CI
-```
-
-## Cómo usar la app una vez construida
-
-Arranca `jh serve`, `jh worker` y `pnpm dev`. Después, en tu agente:
-
-| Skill | Qué hace |
-|---|---|
-| `actualizar-perfil` | Crea o actualiza `data/profile.yaml` desde tu CV y lo versiona |
-| `procesar-ofertas` | Extrae las ofertas nuevas (rol `extractor`, aislado cuando el agente lo permite) |
-| `evaluar-encaje` | Valora y explica el encaje de las ofertas de triaje |
-| `generar-cv 42` | Redacta, renderiza y verifica el CV para la oferta 42 |
-| `generar-carta 42 máximo 150 palabras` | Carta de presentación según tus indicaciones, verificada; TXT y PDF a juego con el CV |
-| `preparar-candidatura 42` | Respuestas de screening y carta, si hace falta |
-| `preparar-entrevista 42 tecnica` | Dosier de entrevista y simulacro |
-| `resumen-diario` | Qué tienes hoy, seguimientos vencidos, qué procesar |
-| `importar-plantilla-cv data/uploads/mi-cv.pdf` | Convierte tu CV (o cualquier diseño) en plantilla: los CVs a medida salen con su estilo |
-| `revisar-linkedin` | Informe de mejoras para tu perfil de LinkedIn, listo para copiar (tú lo aplicas) |
-| `buscar-ofertas` | Recorre con tu navegador los portales aprobados y da de alta lo que encaje (`buscar-ofertas configurar` para elegirlos) |
-
-Si tu agente ofrece tareas programadas, `procesar-ofertas` y `resumen-diario` pueden ejecutarse
-solos cada mañana (se documenta al terminar la fase 09).
-
-## Límites deliberados
-
-- Nada se envía sin tu confirmación en la UI, candidatura a candidatura.
-- LinkedIn nunca se automatiza y los captchas no se esquivan: la app prepara y tú terminas.
-- El CV solo contiene lo que está en tu perfil; lo comprueban el código y un rol verificador independiente.
-- Las defensas contra ofertas manipuladas están en el código, así que protegen con cualquier agente.
-- Tus datos viven en `data/`, fuera del repositorio. El repo público usa el modo demo.
 
 ## Desarrollo
 
@@ -242,5 +338,20 @@ sin CVs y lo avisa. Para probar los skills sobre la demo, arranca tu agente con
 
 ### CI
 
-`.github/workflows/ci.yml` ejecuta ruff y pytest (en Windows), typecheck, test y build del
-frontend, y `uv run scripts/sync_agents.py --check`. No necesita secretos.
+`.github/workflows/ci.yml` ejecuta ruff, pytest con cobertura mínima y una siembra de la demo
+como prueba de humo (en Windows), typecheck, test y build del frontend, y
+`uv run scripts/sync_agents.py --check`. No necesita secretos.
+
+## Cómo se construyó
+
+En 12 fases (con subfases), cada una con su encargo en `prompts/`, implementadas con un agente
+(Claude Code) sobre una especificación escrita antes del código: plan, rama por fase, tests,
+revisión por un rol `revisor` y registro de decisiones y deuda. La guía para seguir ampliándolo
+así está en [`docs/DESARROLLO_POR_FASES.md`](docs/DESARROLLO_POR_FASES.md); el registro de cada
+fase, en [`docs/ROADMAP.md`](docs/ROADMAP.md), y su resumen, en
+[`docs/RESUMEN_FASES.md`](docs/RESUMEN_FASES.md).
+
+## Créditos
+
+Inspirado en [ackyer/job-search-agent-template](https://github.com/ackyer/job-search-agent-template)
+(MIT), reconvertido de plantilla de prompts a aplicación con estado en base de datos.

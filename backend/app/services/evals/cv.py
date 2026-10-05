@@ -29,6 +29,7 @@ from app.schemas.llm_io import JobExtraction
 from app.schemas.profile import CandidateProfile
 from app.services import events, extractions, ingest
 from app.services import profile as profile_service
+from app.services.demo_text import posting_text
 from app.services.documents import checks
 from app.services.documents.service import CV_KIND
 from app.services.matching import service as matching
@@ -36,6 +37,8 @@ from app.services.matching.skills import alias_index, canonical
 from app.services.pipeline import EventType
 
 CASES_PATH = REPO_ROOT / "evals" / "cv" / "cases.jsonl"
+# La matriz de compatibilidad (fase 12.3): ids de `cases.jsonl`, uno por línea.
+COMPAT_PATH = REPO_ROOT / "evals" / "compat" / "jobs.txt"
 URL_PREFIX = "https://empleo.example.com/eval-cv/"
 DEFAULT_MIN_COVERAGE = 0.8
 AGENT_NAME = "demo-seed"
@@ -138,6 +141,20 @@ def load_cases(path: Path = CASES_PATH) -> list[CvEvalCase]:
     return cases
 
 
+def load_compat_cases(path: Path = COMPAT_PATH) -> list[CvEvalCase]:
+    """Los casos de `cases.jsonl` que lista `evals/compat/jobs.txt`, en ese orden."""
+    by_id = {c.id: c for c in load_cases()}
+    ids = [
+        line.strip()
+        for line in path.read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.lstrip().startswith("#")
+    ]
+    unknown = [i for i in ids if i not in by_id]
+    if unknown:
+        raise CvEvalFileError(f"{path.name}: no están en cases.jsonl: {', '.join(unknown)}.")
+    return [by_id[i] for i in ids]
+
+
 def case_url(case_id: str) -> str:
     """Identificador estable de cada caso en la demo: la URL de su oferta."""
     return URL_PREFIX + case_id
@@ -147,12 +164,15 @@ def _case_job(session: Session, case_id: str) -> Job | None:
     return session.scalars(select(Job).where(Job.url == case_url(case_id))).first()
 
 
-def add_cases(session: Session, cases: list[CvEvalCase] | None = None) -> list[int]:
+def add_cases(
+    session: Session, cases: list[CvEvalCase] | None = None, extract: bool = True
+) -> list[int]:
     """Da de alta los casos como ofertas aprobadas y sin CV. Las que ya existen no se tocan.
 
     Devuelve los `job_id` de todos los casos, en orden. Usa los servicios de siempre (alta,
     extracción, filtros, score y `approved`); un caso que no pase los filtros es un error del
-    fichero de casos.
+    fichero de casos. Sin `extract`, solo el alta con el texto (quedan en `pending_extraction`):
+    así un agente recorre el flujo entero (matriz de compatibilidad, fase 12.3).
     """
     job_ids: list[int] = []
     for case in cases if cases is not None else load_cases():
@@ -160,12 +180,12 @@ def add_cases(session: Session, cases: list[CvEvalCase] | None = None) -> list[i
         if existing is not None:
             job_ids.append(existing.id)
             continue
-        text = (
-            f"{case.job.title} – {case.job.company} (empresa ficticia)\n\n"
-            + "\n".join(f"- {r}." for r in case.extraction.responsibilities)
-            + "\n\nRequisitos\n"
-            + "\n".join(f"- {s}." for s in case.extraction.must_have_skills)
-            + "\n"
+        text = posting_text(
+            case.job.title,
+            case.job.company,
+            case.extraction.domain or "tecnología",
+            case.job.location,
+            case.extraction,
         )
         result = ingest.add_from_text(
             session,
@@ -180,6 +200,9 @@ def add_cases(session: Session, cases: list[CvEvalCase] | None = None) -> list[i
                 f"El caso «{case.id}» coincide con la oferta {result.job_id} de la demo (misma "
                 "empresa, puesto y ubicación): cambia la empresa del caso."
             )
+        if not extract:
+            job_ids.append(result.job_id)
+            continue
         saved = extractions.save_extraction(
             session, result.job_id, case.extraction, agent_name=AGENT_NAME
         )

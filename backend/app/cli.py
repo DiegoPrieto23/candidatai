@@ -421,6 +421,12 @@ def demo_seed(
         help="Añade los 10 casos del eval de CV, aprobados y sin CV (en una demo existente, "
         "solo los que falten).",
     ),
+    compat: bool = typer.Option(
+        False,
+        "--compat",
+        help="Añade las 5 ofertas de la matriz de compatibilidad (evals/compat/), solo con su "
+        "texto: por extraer.",
+    ),
     as_json: bool = JSON_OPTION,
 ) -> None:
     """Crea una carpeta de datos con 60 ofertas ficticias, 8 semanas de historial y 2 CVs."""
@@ -428,7 +434,7 @@ def demo_seed(
     from app.services.evals.cv import CvEvalFileError
 
     try:
-        summary = demo.seed(target, force=force, eval_cv=eval_cv)
+        summary = demo.seed(target, force=force, eval_cv=eval_cv, compat=compat)
     except (demo.DemoSeedError, CvEvalFileError) as exc:
         if as_json:
             typer.echo(dump_json(ToolError("validation_error", str(exc)).payload()))
@@ -451,6 +457,11 @@ def demo_seed(
     typer.echo(f'  $env:JH_DATA_DIR = "{folder}"; uv run jh serve')
     typer.echo("  y en otra terminal: cd frontend; pnpm dev")
     typer.echo(f"Con un agente, arráncalo con JH_DATA_DIR={folder} para que el MCP use la demo.")
+    if compat:
+        typer.echo(
+            "Matriz de compatibilidad: con tu agente, procesar-ofertas, evaluar-encaje, aprueba "
+            "las de empleo.example.com/eval-cv/ y generar-cv; después `jh eval cv --agent …`."
+        )
     if eval_cv:
         typer.echo(
             "Eval de CV: lanza `generar-cv` sobre las ofertas de empleo.example.com/eval-cv/ "

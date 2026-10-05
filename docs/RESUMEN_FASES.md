@@ -4,11 +4,10 @@ Lo principal que aporta cada fase y subfase de Job Hunter: qué puedes hacer gra
 piezas que la sostienen. El detalle (decisiones, deuda, cifras de tests) está en el registro de
 `docs/ROADMAP.md`. Las pruebas manuales, en `docs/pruebas/`.
 
-**Estado a 2026-10-04:**
-- Hechas: de la 01 a la 10, con la 05b, la 08b y la 08c.
-- Pendientes: la 11 (candidatura asistida) y la 12 (demo y portfolio).
-- 29 herramientas MCP con su comando `jh` equivalente, 12 skills, 4 roles y 10 migraciones.
-- 1 522 tests de backend y 108 de frontend.
+**Estado a 2026-10-05:**
+- Hechas las 12 fases, con la 05b, la 08b y la 08c.
+- 29 herramientas MCP con su comando `jh` equivalente, 12 skills, 4 roles y 11 migraciones.
+- 1 627 tests de backend y 125 de frontend.
 
 **La idea de fondo:** la app no llama a ningún LLM. Ingesta, triaje, CVs, cartas, seguimiento y
 analítica viven en la app (FastAPI + SQLite, UI en React, CLI `jh`). Lo que necesita razonar
@@ -214,9 +213,27 @@ La carta es un documento propio, con sus indicaciones, su verificación y sus re
 - La candidatura queda registrada como enviada con la **captura de confirmación** como prueba.
 - LinkedIn y webs desconocidas: solo «Abrir y preparar».
 
----
+## 12 · Demo, compatibilidad y portfolio
 
-## Pendiente
+### 12.1 · Modo demo
+- **`jh demo seed`** crea `data-demo/` con una búsqueda ficticia: la candidata de `demo/`, 60
+  ofertas inventadas con extracción y score, 8 semanas de historial (descartes, envíos,
+  respuestas, entrevistas, una oferta) y 2 CVs verificados. Determinista y nunca toca `data/`.
+- Con `JH_DATA_DIR=data-demo`, la UI muestra un banner **«Modo demo»** y `get_status` dice
+  `demo_mode`.
 
-### 12 · Demo, compatibilidad y portfolio
-Modo demo con datos ficticios, matriz de agentes probada y evaluaciones publicadas.
+### 12.2 · Evals de matching y de CV
+- **Matching:** 80 casos inventados; precision 0,88, recall 0,95 y F1 0,92 sin embeddings, con
+  los errores típicos explicados en `evals/REPORT.md`.
+- **`jh eval cv`:** 7 comprobaciones automáticas sobre los CVs que deja el agente (evidencias,
+  skills inventadas o básicas no pedidas, una página, cobertura, idioma y verificación), por
+  agente.
+
+### 12.3 · Compatibilidad, README y seguridad
+- **Matriz probada:** las mismas 5 ofertas (`jh demo seed --compat`) por `procesar-ofertas`,
+  `evaluar-encaje` y `generar-cv`. Claude Code sin MCP: 54 de 55 campos extraídos como se
+  esperaba y 5/5 CVs que pasan el eval. Los roles ya traen sus comandos `jh` para agentes sin MCP.
+- **README de portfolio** con arquitectura en Mermaid, decisiones, capturas de la demo, métricas
+  y límites éticos; la guía de desarrollo por fases pasa a `docs/DESARROLLO_POR_FASES.md`.
+- **Seguridad:** `data/` y `.env` nunca se han commiteado y no hay datos del perfil real en el
+  historial. CI con una siembra de la demo como prueba de humo.

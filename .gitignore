@@ -1,6 +1,6 @@
 # Datos personales y estado local: nunca al repositorio
 data/
-data-demo/
+data-demo*/
 .env
 .env.*
 !.env.example

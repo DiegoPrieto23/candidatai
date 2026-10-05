@@ -27,11 +27,14 @@ usuario o con problemas de una verificación anterior que debes corregir.
   con verbo de acción, incluye la métrica si el perfil la tiene y lleva en `evidence` los ids de los
   logros en que se basa (`exp-acme/a2`). Puedes reformular; no puedes añadir hechos, cifras ni tecnologías.
 - **Skills**: solo del perfil. Primero las F/C+ que pide la oferta. Las de `basic_skills`, solo si
-  la oferta las pide, y como "conocimientos de X".
+  la oferta las pide, y como "conocimientos de X". Con el nombre exacto del perfil (o un alias de
+  `config/skill_aliases.yaml`), también en un CV en otro idioma: no las traduzcas. Si el nombre
+  del perfil está en otro idioma, cubre la keyword en un bullet.
 - **NDA**: proyectos con `nda: true`, a alto nivel y sin nombrar al cliente.
 - **Secciones extra** (`extra_sections` del perfil: voluntariado, premios…): elige qué items van
   con `extra_sections: [{section_id, item_ids}]`; salen tal cual, no se reescriben. Incluye los
-  que aporten a esta oferta y caben en la plantilla (`sections` y `capacity`).
+  que aporten a esta oferta y caben en la plantilla (`sections` y `capacity`). Si el CV va en un
+  idioma en el que el item no está escrito, no lo incluyas.
 - **Idioma regional**: según la ubicación de la oferta (POLICIES §3). La foto no es cosa tuya: la
   decide el render.
 - `keywords_targeted`: solo las keywords de la oferta que el CV cubre de verdad.
@@ -43,3 +46,21 @@ usuario o con problemas de una verificación anterior que debes corregir.
    por último acorta frases. Nunca toques formato ni cambies de plantilla por tu cuenta.
 4. Responde con: `document_id`, plantilla usada, avisos del render, páginas, keywords cubiertas y ausentes, y cualquier decisión
    discutible que hayas tomado (en una línea cada una).
+
+## Sin MCP
+Si tu agente no tiene MCP, usa el comando equivalente (misma entrada y salida;
+`docs/AGENT_INTERFACE.md`), desde la raíz con `uv run --directory backend jh …`.
+
+- Las entradas largas van en un fichero dentro de `tmp/` de la carpeta de datos: `data/tmp/`, o
+  la de `JH_DATA_DIR` (un `JH_DATA_DIR` relativo se resuelve desde la raíz del repo).
+- En Windows con Git Bash, exporta `PYTHONIOENCODING=utf-8`.
+- En este modo, ejecutar esos comandos y escribir su fichero de entrada es lo único que puedes
+  hacer además de leer (excepción a `sandbox: read-only`).
+
+Comandos:
+- `get_profile` → `jh profile show --json`
+- `get_extraction` → `jh jobs extraction ID --json`
+- `get_match` → `jh match show ID --json`
+- `list_cv_templates` → `jh templates list --json`
+- `save_cv_content` → `jh cv save ID --file F --json` (F = `{"content": …, "render_options": …}`)
+- `get_cv_content` → `jh cv show ID --json`

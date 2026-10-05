@@ -1,0 +1,80 @@
+PRUEBA MANUAL · FASE 12.3 · MATRIZ DE COMPATIBILIDAD (CLAUDE CODE CON MCP)
+==========================================================================
+
+Objetivo: recorrer con Claude Code y su servidor MCP los tres skills principales sobre las mismas
+5 ofertas que ya se probaron sin MCP, y medir el resultado con `jh eval cv`:
+- procesar-ofertas: extrae las 5 delegando en el subagente `extractor`;
+- evaluar-encaje: valora las 5;
+- generar-cv: redacta (subagente `redactor`) y verifica (subagente `verificador`) el CV de las 5.
+
+Todo ocurre en una demo con datos ficticios (`data-demo-mcp/`). Tus datos de `data/` no se tocan,
+siempre que arranques Claude Code con JH_DATA_DIR como se indica abajo.
+
+Duración aproximada: 30 minutos (la mayor parte, esperando al agente).
+
+
+REQUISITOS
+----------
+- Dos terminales de PowerShell en la RAÍZ del repo, en la rama fase/12-demo-portfolio.
+- LibreOffice o el Chromium de Playwright (para los PDF de los CVs).
+- Cierra cualquier sesión de Claude Code abierta en este repo: el servidor MCP se arranca con las
+  variables de la sesión que lo lanza.
+
+
+PARTE 1 · DEMO PARA ESTA PRUEBA
+-------------------------------
+Terminal 1:
+      uv run --directory backend jh demo seed --dir data-demo-mcp --compat
+
+Debe terminar con «65 ofertas» y «pending_extraction 8» (las 3 de la demo y las 5 de la matriz).
+Las 5 de la matriz tienen la URL https://empleo.example.com/eval-cv/<caso>; anota sus ids:
+      $env:JH_DATA_DIR = "data-demo-mcp"
+      uv run --directory backend jh eval cv
+(salen como «pendiente»; los ids están en el informe JSON, o en la Bandeja buscando por empresa:
+Albariño Data Labs, Mencía Seguros, Treixadura Energía, Caiño Analytics y Sousón Banca.)
+
+
+PARTE 2 · CLAUDE CODE APUNTANDO A LA DEMO
+-----------------------------------------
+Terminal 2 (nueva, en la raíz):
+      $env:JH_DATA_DIR = "data-demo-mcp"
+      claude
+
+En Claude Code:
+1. `/mcp` → `jobhunter` conectado.
+2. Comprueba que el MCP ve la demo: pide «llama a get_status». Debe decir `demo_mode: true` y
+   65 ofertas. Si dice `demo_mode: false`, PARA: el MCP está usando tus datos reales. Cierra y
+   vuelve a abrir Claude Code desde una terminal con la variable puesta.
+
+
+PARTE 3 · LOS TRES SKILLS
+-------------------------
+Anota en cada paso: si funcionó sin tocar nada, permisos que te pidió, tiempo aproximado y
+cualquier error o rareza.
+
+1. `/procesar-ofertas`
+   Procesa las 8 pendientes (no admite elegir ids). Comprueba en la Bandeja que las 5 de la
+   matriz pasan a «Por revisar» y que ninguna tiene avisos de riesgo.
+2. `/evaluar-encaje`
+   Valora las de triaje. Mira en la ficha de las 5 que la valoración razonada aparece.
+3. Aprueba las 5 de la matriz en la UI (Triaje → «Aprobar»). Para la UI, en la terminal 1:
+      uv run --directory backend jh serve        (con JH_DATA_DIR=data-demo-mcp puesto)
+   y en otra terminal: cd frontend; pnpm dev → http://127.0.0.1:5173 (banner «Modo demo»).
+4. `/generar-cv <id1> <id2> <id3> <id4> <id5>` con los ids de las 5.
+   Si pregunta por skills que faltan en el perfil, responde que no las tienes.
+
+
+PARTE 4 · MEDIR
+---------------
+Terminal 1:
+      $env:JH_DATA_DIR = "data-demo-mcp"
+      uv run --directory backend jh eval cv --agent claude-code
+
+Pásame la salida (o el .md de data-demo-mcp/evals/reports/) y tus notas de la parte 3. Con eso se
+completa la columna «Claude Code (MCP)» de docs/AGENTS_COMPAT.md.
+
+
+AL TERMINAR
+-----------
+- Cierra Claude Code y vuelve a abrirlo SIN la variable para seguir con tus datos reales.
+- La carpeta data-demo-mcp/ se puede borrar (está en .gitignore).

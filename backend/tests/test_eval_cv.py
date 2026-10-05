@@ -13,6 +13,7 @@ from app import cli
 from app.core.db import session_scope
 from app.schemas.cv import CvContent, CvRenderOptions, CvVerification
 from app.services import demo, events
+from app.services.demo_text import posting_text
 from app.services.documents import pdf
 from app.services.documents import service as cv_service
 from app.services.evals import cv as cv_eval
@@ -273,3 +274,40 @@ def test_cli_eval_cv(demo_dir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     out = json.loads(as_json.stdout)
     assert out["agent"] == "codex"
     assert len(out["report_paths"]) == 2
+
+
+# --- Matriz de compatibilidad (fase 12.3) ----------------------------------------------------
+
+
+def test_compat_cases_enter_with_text_only(demo_dir: Path) -> None:
+    ids = [c.id for c in cv_eval.load_compat_cases()]
+    assert len(ids) == 5
+    target = demo_dir.parent / "otra-demo"
+    demo.seed(target, now=NOW, compat=True)
+    with demo.use_data_dir(target), session_scope() as session:
+        report = cv_eval.evaluate(session)
+        compat = [c for c in report.cases if c.id in ids]
+        assert {c.status for c in compat} == {"pending"}
+        for case in compat:
+            assert case.job_id is not None
+            assert events.current_stage(session, case.job_id) == Stage.PENDING_EXTRACTION
+        # Los demás casos del eval de CV no se dan de alta sin --eval-cv.
+        assert {c.status for c in report.cases if c.id not in ids} == {"missing"}
+
+
+def test_compat_file_with_unknown_case(tmp_path: Path) -> None:
+    path = tmp_path / "jobs.txt"
+    path.write_text("# comentario\ncv01-de-snowflake\ncv99-no-existe\n", encoding="utf-8")
+    with pytest.raises(cv_eval.CvEvalFileError, match="cv99-no-existe"):
+        cv_eval.load_compat_cases(path)
+
+
+def test_posting_text_follows_the_posting_language() -> None:
+    english = _case("cv07-english")
+    text = posting_text("Data Engineer", "Caiño Analytics", "retail", "Europa", english.extraction)
+    assert "Requirements" in text
+    assert "fully remote" in text
+    assert "- Experience with Snowflake." in text
+    spanish = posting_text("Data Engineer", "X", "retail", "Vigo", _case().extraction)
+    assert "Requisitos" in spanish
+    assert "de nivel intermedio" in spanish
