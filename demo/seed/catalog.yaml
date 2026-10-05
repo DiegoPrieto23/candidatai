@@ -1,0 +1,158 @@
+# Catálogo FICTICIO para `jh demo seed` (fase 12.1). Empresas, personas y ofertas inventadas.
+# El generador (backend/app/services/demo.py) combina estas listas con una semilla fija: misma
+# entrada, misma demo. Las ofertas se evalúan contra demo/profile.example.yaml.
+
+companies:   # nombres inventados; el sector va a `domain` de la extracción
+  - {name: Brisa Atlántica Software, sector: software}
+  - {name: Faro Norte Analytics, sector: consultoría}
+  - {name: Ría Logística Integral, sector: logística}
+  - {name: Castro Seguros Digitales, sector: seguros}
+  - {name: Hórreo Energía Verde, sector: energía}
+  - {name: Lumieira Retail, sector: retail}
+  - {name: Meiga Fintech, sector: banca}
+  - {name: Orballo Salud Data, sector: salud}
+  - {name: Pazo Turismo Online, sector: turismo}
+  - {name: Queimada Games, sector: videojuegos}
+  - {name: Rías Baixas Foods, sector: alimentación}
+  - {name: Saudade Telecom, sector: telecomunicaciones}
+  - {name: Trasno Labs, sector: software}
+  - {name: Ulla Industrial 4.0, sector: industria}
+  - {name: Vieira Marketplace, sector: retail}
+  - {name: Xeito Educación, sector: educación}
+  - {name: Arousa Naval Tech, sector: industria}
+  - {name: Bastión Ciberseguridad, sector: ciberseguridad}
+  - {name: Cíes Movilidad, sector: transporte}
+  - {name: Dorna Agro Data, sector: agricultura}
+  - {name: Estrela Media, sector: medios}
+  - {name: Fragas Inmobiliaria Digital, sector: inmobiliario}
+  - {name: Gándara Farma, sector: farmacia}
+  - {name: Lucerna Banca Privada, sector: banca}
+  - {name: Mámoa Arquitectura Cloud, sector: software}
+  - {name: Néboa Seguros Hogar, sector: seguros}
+  - {name: Outeiro Distribución, sector: logística}
+  - {name: Penedo Energía Solar, sector: energía}
+  - {name: Regato Viajes, sector: turismo}
+  - {name: Silveira Consultores, sector: consultoría}
+
+# Ubicaciones por tipo. `fits`: encajan con el perfil demo (preferidas o Madrid sin presencialidad);
+# `filtered`: la modalidad o el sitio no encajan (presencial fuera de Galicia).
+locations:
+  fits:
+    - {city: A Coruña, modes: [hybrid, remote]}
+    - {city: Santiago de Compostela, modes: [hybrid, remote]}
+    - {city: Vigo, modes: [hybrid, remote]}
+    - {city: Madrid, modes: [hybrid, remote]}
+    - {city: España, modes: [remote]}
+  filtered:
+    - {city: Barcelona, modes: [onsite]}
+    - {city: Bilbao, modes: [onsite]}
+    - {city: Madrid, modes: [onsite]}
+
+# Puestos. `fit`: good (encaja), weak (pasa los filtros pero el encaje técnico es bajo) o
+# filtered (lo descartan los filtros duros: nivel, años o idioma). Las skills se eligen entre
+# `must` (3-4) y `nice` (1-2).
+roles:
+  - title: Data Engineer
+    variants: [Data Engineer, Ingeniero/a de Datos, Data Engineer (Snowflake)]
+    fit: good
+    seniority: [junior, mid]
+    years: [null, 1, 2, 3]
+    must: [Python, SQL, Snowflake, ETL, Apache Airflow]
+    nice: [dbt, Docker, AWS, Power BI]
+    responsibilities:
+      - Diseñar y mantener pipelines de datos en Python
+      - Modelar datos analíticos en Snowflake
+      - Orquestar cargas diarias y vigilar su calidad
+      - Documentar los modelos y revisar código
+  - title: Analytics Engineer
+    variants: [Analytics Engineer, Analytics Engineer (dbt)]
+    fit: good
+    seniority: [junior, mid]
+    years: [null, 2, 3]
+    must: [SQL, dbt, Snowflake, Python]
+    nice: [Power BI, Modelado dimensional, Looker]
+    responsibilities:
+      - Construir el modelo de datos analítico con dbt
+      - Definir métricas de negocio con producto
+      - Automatizar controles de calidad de datos
+  - title: Data Analyst
+    variants: [Data Analyst, Analista de Datos, Analista de Datos (Power BI)]
+    fit: good
+    seniority: [junior, mid]
+    years: [null, 1, 2]
+    must: [SQL, Power BI, DAX, Python]
+    nice: [Snowflake, Excel, Estadística]
+    responsibilities:
+      - Crear cuadros de mando en Power BI para negocio
+      - Analizar ventas y operaciones y presentar conclusiones
+      - Definir KPIs con los equipos de negocio
+  - title: BI Developer
+    variants: [BI Developer, Desarrollador/a BI (Qlik)]
+    fit: weak
+    seniority: [mid]
+    years: [2, 3]
+    must: [Qlik Sense, Tableau, SAP BW, SQL]
+    nice: [Oracle, PL/SQL]
+    responsibilities:
+      - Mantener los informes corporativos en Qlik y Tableau
+      - Integrar datos de SAP en el data warehouse
+  - title: Data Scientist
+    variants: [Data Scientist, Científico/a de Datos]
+    fit: weak
+    seniority: [mid]
+    years: [2, 3, 4]
+    must: [R, PyTorch, Deep Learning, Estadística]
+    nice: [Python, Spark]
+    responsibilities:
+      - Entrenar modelos de visión por computador
+      - Diseñar experimentos y medir su impacto
+  - title: Backend Developer
+    variants: [Backend Developer (Java), Desarrollador/a Backend Java]
+    fit: weak
+    seniority: [junior, mid]
+    years: [2, 3]
+    must: [Java, Spring Boot, Kubernetes, PostgreSQL]
+    nice: [Kafka, AWS]
+    responsibilities:
+      - Desarrollar microservicios en Java con Spring Boot
+      - Mantener la plataforma en Kubernetes
+  - title: Senior Data Engineer
+    variants: [Senior Data Engineer, Lead Data Engineer]
+    fit: filtered
+    seniority: [senior, lead]
+    years: [6, 8]
+    must: [Python, Spark, Databricks, Scala]
+    nice: [Kafka, Terraform]
+    responsibilities:
+      - Liderar la arquitectura de la plataforma de datos
+      - Mentorizar a un equipo de cinco ingenieros
+  - title: Data Engineer (Alemania)
+    variants: [Data Engineer – Remote DACH]
+    fit: filtered
+    seniority: [mid]
+    years: [3]
+    must: [Python, SQL, Azure Data Factory]
+    nice: [Databricks]
+    languages: [{language: Alemán, level: C1}]
+    responsibilities:
+      - Construir pipelines en Azure para clientes de habla alemana
+
+# Fuentes de la demo. `email_alerts` y `browser_capture` son las de la 09b; las de ATS se crean
+# en pausa para que el worker no intente descargar tableros que no existen.
+sources:
+  - {kind: manual_url, weight: 3}
+  - {kind: manual_text, weight: 2}
+  - {kind: email_alerts, weight: 4}
+  - {kind: browser_capture, weight: 2}
+  - {kind: greenhouse, name: Brisa Atlántica Software, slug: brisa-atlantica-demo, weight: 2}
+  - {kind: lever, name: Meiga Fintech, slug: meiga-fintech-demo, weight: 2}
+
+discard_notes:   # para el motivo `other`, que exige nota
+  - Empresa con mala reputación entre conocidos del sector.
+  - El proyecto es de mantenimiento de un sistema heredado.
+
+contacts:   # personas inventadas para los procesos con entrevista
+  - {name: Marta Souto, role: Talent Acquisition}
+  - {name: Iago Rial, role: Head of Data}
+  - {name: Noa Pereira, role: Recruiter}
+  - {name: Brais Lema, role: Engineering Manager}

@@ -220,6 +220,26 @@ http://127.0.0.1:8000, solo en local) y `cd frontend && pnpm dev`. Abre http://1
 La UI da de alta ofertas y las muestra; la extracción la hace tu agente con el skill
 `procesar-ofertas`, y la ficha la enseña en cuanto termina.
 
+### Probar con datos de demo
+
+Sin perfil ni ofertas propias, `jh demo seed` crea `data-demo/` (gitignored) con la candidata
+ficticia de `demo/`, 60 ofertas inventadas con su extracción y su score, 8 semanas de historial
+(descartes, envíos, respuestas, entrevistas, una oferta) y dos CVs verificados. Es determinista y
+nunca toca `data/`.
+
+```powershell
+cd backend
+uv run jh demo seed                         # --force para recrearla
+$env:JH_DATA_DIR = "data-demo"; uv run jh serve
+# en otra terminal
+cd frontend; pnpm dev
+```
+
+La UI muestra un banner «Modo demo» mientras `JH_DATA_DIR` apunte a la demo. Los PDF de los CVs
+salen con LibreOffice (o Word); sin ninguno, con Chromium de Playwright; sin nada, la demo se crea
+sin CVs y lo avisa. Para probar los skills sobre la demo, arranca tu agente con
+`JH_DATA_DIR=data-demo` para que el servidor MCP la use.
+
 ### CI
 
 `.github/workflows/ci.yml` ejecuta ruff y pytest (en Windows), typecheck, test y build del

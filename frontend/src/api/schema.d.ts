@@ -3211,6 +3211,8 @@ export interface components {
             };
             /** Pending Tasks */
             pending_tasks: number;
+            /** Demo Mode */
+            demo_mode: boolean;
         };
         /** SubmitBody */
         SubmitBody: {

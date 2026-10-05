@@ -240,3 +240,23 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
 - **Consecuencias:** la ingesta solo ocurre con el worker en marcha. Un título que no contenga las
   palabras de ningún rol no entra (se puede ampliar por fuente con `title_keywords`). Adzuna solo
   da un extracto: sus ofertas llegan con poca descripción hasta que la 09b las trate como resumen.
+
+## ADR-020 · Modo demo: datos ficticios por los servicios y fechas repartidas después
+- **Contexto:** la fase 12.1 necesita una demo con 8 semanas de historial para que el embudo y los
+  procesos tengan forma. Los pasos del usuario aceptan `occurred_at`, pero la alta, la extracción,
+  los filtros y el score fechan sus eventos «ahora».
+- **Decisión:**
+  - `jh demo seed` (`services/demo.py`) crea la demo **por los mismos servicios** que los datos
+    reales, para que cumpla las mismas reglas (transiciones, filtros, validación del CV);
+  - **única excepción a «nada cambia sin evento»:** justo después de crear cada oferta, el
+    generador lleva las fechas de sus eventos automáticos (y de la oferta, su extracción y su
+    match) al día del alta y recalcula la proyección desde los eventos. No cambia tipos, orden
+    ni contenido, y solo ocurre en una carpeta con la marca `.demo`. No se añade un reloj a los
+    servicios de producción solo para la demo;
+  - la carpeta lleva la marca `.demo`; el seed se niega a escribir en `data/`, dentro de ella, en
+    una carpeta que la contenga o en una carpeta con contenido sin la marca;
+  - determinista (semilla fija, sin embeddings durante el seed); solo cambian las fechas, relativas
+    al día en que se ejecuta.
+- **Consecuencias:** los eventos de los CVs de la demo llevan la hora real del seed (son de la
+  última semana, así que la cronología sigue en orden). `get_status` devuelve `demo_mode` y la UI
+  muestra un banner.

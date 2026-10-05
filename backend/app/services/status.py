@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.core.config import get_settings
 from app.models import Application, Task
 from app.services.pipeline import Stage
 
@@ -12,6 +13,7 @@ class StatusReport(BaseModel):
     total: int
     by_stage: dict[Stage, int]
     pending_tasks: int  # tareas del worker en cola
+    demo_mode: bool  # datos ficticios de `jh demo seed` (fase 12.1)
 
 
 def get_status(session: Session) -> StatusReport:
@@ -26,5 +28,8 @@ def get_status(session: Session) -> StatusReport:
         select(func.count()).select_from(Task).where(Task.status == "queued")
     )
     return StatusReport(
-        total=sum(counts.values()), by_stage=counts, pending_tasks=pending_tasks or 0
+        total=sum(counts.values()),
+        by_stage=counts,
+        pending_tasks=pending_tasks or 0,
+        demo_mode=get_settings().demo_mode,
     )

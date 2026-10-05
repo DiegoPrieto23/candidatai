@@ -194,6 +194,11 @@ API confirm_submission ─► token de un solo uso ─► tarea apply_submit ─
   visible de las candidaturas (`JH_BROWSER_CHANNEL=chrome|msedge` usa el navegador instalado).
 - Cada agente arranca el servidor MCP solo, según su configuración generada (`.mcp.json` para
   Claude Code, `.codex/config.toml` para Codex…).
+- **Modo demo (fase 12.1, ADR-020):** `jh demo seed` (`services/demo.py`) crea `data-demo/` con datos
+  ficticios usando los mismos servicios (alta, extracción, filtros, score, eventos, hitos, CVs);
+  solo reparte después las fechas de lo automático en las 8 semanas anteriores. La carpeta lleva
+  la marca `.demo`: `Settings.demo_mode` la detecta, `get_status` devuelve `demo_mode` y la UI
+  muestra un banner. El seed se niega a escribir en `data/` o en una carpeta sin la marca.
 
 ## Despliegue futuro (fuera del alcance actual)
 

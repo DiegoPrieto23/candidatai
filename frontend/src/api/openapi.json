@@ -13020,13 +13020,18 @@
           "pending_tasks": {
             "type": "integer",
             "title": "Pending Tasks"
+          },
+          "demo_mode": {
+            "type": "boolean",
+            "title": "Demo Mode"
           }
         },
         "type": "object",
         "required": [
           "total",
           "by_stage",
-          "pending_tasks"
+          "pending_tasks",
+          "demo_mode"
         ],
         "title": "StatusReport"
       },

@@ -62,6 +62,10 @@ app.add_typer(calendar_app, name="calendar")
 app.add_typer(stats_app, name="stats")
 app.add_typer(applications_app, name="applications")
 app.add_typer(letter_app, name="letter")
+demo_app = typer.Typer(
+    help="Modo demo: una búsqueda ficticia para probar la app.", no_args_is_help=True
+)
+app.add_typer(demo_app, name="demo")
 
 JSON_OPTION = typer.Option(False, "--json", help="Salida en JSON.")
 SYNC_SCRIPT = REPO_ROOT / "scripts" / "sync_agents.py"
@@ -400,6 +404,46 @@ def _metric(value: float | None) -> str:
 EVAL_PROFILE_OPTION = typer.Option(
     None, "--profile", help="Perfil para los casos de data/evals/. Por defecto, data/profile.yaml."
 )
+
+
+DEMO_DIR_OPTION = typer.Option(
+    Path("data-demo"), "--dir", help="Carpeta de la demo (relativa a la raíz del repo)."
+)
+
+
+@demo_app.command("seed")
+def demo_seed(
+    target: Path = DEMO_DIR_OPTION,
+    force: bool = typer.Option(False, "--force", help="Recrea una demo que ya existe."),
+    as_json: bool = JSON_OPTION,
+) -> None:
+    """Crea una carpeta de datos con 60 ofertas ficticias, 8 semanas de historial y 2 CVs."""
+    from app.services import demo
+
+    try:
+        summary = demo.seed(target, force=force)
+    except demo.DemoSeedError as exc:
+        if as_json:
+            typer.echo(dump_json(ToolError("validation_error", str(exc)).payload()))
+        else:
+            typer.secho(f"Error: {exc}", fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=1) from None
+    if as_json:
+        typer.echo(dump_json(summary.model_dump(mode="json")))
+        return
+    typer.echo(f"Demo creada en {summary.data_dir}")
+    typer.echo(f"  {summary.jobs} ofertas y {summary.events} eventos.")
+    stages = ", ".join(f"{stage} {count}" for stage, count in summary.by_stage.items())
+    typer.echo(f"  Por etapa: {stages}.")
+    engine = f" (PDF con {summary.pdf_engine})" if summary.cvs else ""
+    typer.echo(f"  CVs verificados: {summary.cvs}{engine}.")
+    for warning in summary.warnings:
+        typer.secho(f"Aviso: {warning}", fg=typer.colors.YELLOW, err=True)
+    folder = target.as_posix()
+    typer.echo("\nPara abrirla (PowerShell, desde backend/):")
+    typer.echo(f'  $env:JH_DATA_DIR = "{folder}"; uv run jh serve')
+    typer.echo("  y en otra terminal: cd frontend; pnpm dev")
+    typer.echo(f"Con un agente, arráncalo con JH_DATA_DIR={folder} para que el MCP use la demo.")
 
 
 @eval_app.command("matching")

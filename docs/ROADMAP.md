@@ -36,7 +36,10 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 11 | Candidatura asistida | ✅ | Rellenado con Playwright y envío tras tu confirmación |
 | 11.1 | ↳ Motor de rellenado y envío protegido | ✅ | El worker rellena Greenhouse, Lever, Ashby y formularios genéricos, se para con captcha o login y solo envía con una confirmación de un solo uso |
 | 11.2 | ↳ Revisión, envío y UI | ✅ | Pantalla de revisión en la ficha, «Enviar» con el nombre de la empresa, «Lo termino yo» y prueba manual con una oferta real |
-| 12 | Demo, compatibilidad y portfolio | ⏳ | Modo demo, matriz de agentes probada, evals publicados |
+| 12 | Demo, compatibilidad y portfolio | 🚧 | Modo demo, matriz de agentes probada, evals publicados |
+| 12.1 | ↳ Modo demo | ✅ | `jh demo seed` llena `data-demo/` con 60 ofertas, 8 semanas de historial y 2 CVs; banner en la UI |
+| 12.2 | ↳ Evals de matching y de CV | ⏳ | 60-100 casos de matching con `evals/REPORT.md` y `jh eval cv` sobre 10 casos |
+| 12.3 | ↳ Compatibilidad, README y seguridad | ⏳ | Matriz de agentes probada, README de portfolio y repositorio revisado |
 
 **MVP usable:** al terminar la 08 ya puedes pegar ofertas, triarlas y sacar CVs a medida; con la
 08c, también cartas de presentación. La 08c va antes que la 08b, aunque el orden entre ambas da
@@ -1072,3 +1075,41 @@ decisiones tomadas y deuda técnica pendiente. -->
     habría que exponer acciones permitidas desde el backend, como `can_rescan`.
   - El aviso del worker sale tras 15 s en cola, aunque la causa sea otra tarea larga delante.
   - La BD real necesita `jh db upgrade` (hasta 0011).
+
+### 12.1 · Demo y portfolio: modo demo — 2026-10-05 · Claude Code (Opus 5.5)
+- **Resumen:**
+  - Encargos de las tres subfases (`prompts/12.1-*`, `12.2-*`, `12.3-*`) y su tabla en el de la 12.
+  - `services/demo.py` y `jh demo seed [--dir] [--force] [--json]` crean `data-demo/`
+    (gitignored) con:
+    - el perfil y la foto de `demo/`;
+    - 60 ofertas ficticias con extracción y score, en 6 fuentes (dos de ATS en pausa);
+    - 276 eventos en las 8 semanas anteriores: descartes con motivo, filtros duros, envíos,
+      seguimientos, respuestas, pruebas y entrevistas (algunas futuras, en horario de Madrid y
+      entre semana), rechazos, una caducada y una oferta;
+    - 2 CVs verificados en `cv_ready`;
+    - la oferta con la instrucción oculta de `demo/jobs/02`, con `risk_flags`.
+  - Catálogo en `demo/seed/catalog.yaml` y `cvs.yaml`.
+  - `Settings.demo_mode` (marca `.demo`), `demo_mode` en `get_status` y `GET /status`, y banner
+    «Modo demo: datos ficticios» en todas las páginas.
+  - README («Probar con datos de demo»), `ARCHITECTURE`, `AGENT_INTERFACE` y ADR-020.
+  - 11 tests de backend y 2 de frontend nuevos (1 608 y 125 en total).
+  - Prueba real: `jh demo seed` en unos 30 s con LibreOffice; con `jh serve` y `pnpm dev`, la
+    Bandeja, el Embudo y los Procesos salen llenos y con el banner (capturas con Playwright).
+- **Decisiones:**
+  - Todo pasa por los servicios. La única excepción (ADR-020): las fechas de los eventos
+    automáticos de cada oferta recién creada se llevan al día de su alta y se recalcula la
+    proyección.
+  - PDF de los CVs: `ats-simple` con LibreOffice o Word; si no hay, `moderna-2col` con Chromium
+    de Playwright; sin ninguno, la demo se crea sin CVs y lo avisa.
+  - El seed se niega a escribir en `data/`, dentro de ella, en sus carpetas padre o en una carpeta
+    con contenido sin `.demo`. Para recrear una demo hace falta `--force`.
+  - Sin embeddings durante el seed, para que sea reproducible y no descargue modelos.
+  - Extracciones y CVs con `agent_name: demo-seed`. Las fuentes de Greenhouse y Lever, en pausa
+    (sus tableros no existen).
+- **Deuda:**
+  - Si el seed falla a medias, la carpeta queda con la marca y hay que repetir con `--force`.
+  - Algunos nombres de empresa del catálogo son inventados, pero podrían coincidir con empresas
+    reales. Cada oferta dice «(empresa ficticia)» y la UI lleva el banner.
+  - `_sources` usa funciones privadas de `ingest` y `capture` para crear sus fuentes.
+  - Con embeddings instalados, la app recalcula los scores de la demo al consultarlos (otra
+    `scoring_key`).
