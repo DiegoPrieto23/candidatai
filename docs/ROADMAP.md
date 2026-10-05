@@ -33,9 +33,9 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 10.1 | ↳ Seguimiento: kanban, ficha de proceso y calendario | ✅ | Kanban que solo mueve con eventos, hitos con hora de Madrid y contactos, aviso de seguimientos, `list_followups_due`, `list_upcoming` y `.ics` por hito y en feed |
 | 10.2 | ↳ Analítica: dashboard del embudo | ✅ | Página «Embudo»: conversión por paso, fuente, puesto y semana; tiempo hasta la primera respuesta; motivos de descarte; `get_funnel_stats` |
 | 10.3 | ↳ Paquete de candidatura | ✅ | `save_application_answers` y sección «Paquete de candidatura»: CV elegido, respuestas editables con botón de copiar y hueco de la carta (08c) |
-| 11 | Candidatura asistida | 🚧 | Rellenado con Playwright y envío tras tu confirmación |
+| 11 | Candidatura asistida | ✅ | Rellenado con Playwright y envío tras tu confirmación |
 | 11.1 | ↳ Motor de rellenado y envío protegido | ✅ | El worker rellena Greenhouse, Lever, Ashby y formularios genéricos, se para con captcha o login y solo envía con una confirmación de un solo uso |
-| 11.2 | ↳ Revisión, envío y UI | ⏳ | Pantalla de revisión en la ficha, «Enviar» con el nombre de la empresa, «Lo termino yo» y prueba manual con una oferta real |
+| 11.2 | ↳ Revisión, envío y UI | ✅ | Pantalla de revisión en la ficha, «Enviar» con el nombre de la empresa, «Lo termino yo» y prueba manual con una oferta real |
 | 12 | Demo, compatibilidad y portfolio | ⏳ | Modo demo, matriz de agentes probada, evals publicados |
 
 **MVP usable:** al terminar la 08 ya puedes pegar ofertas, triarlas y sacar CVs a medida; con la
@@ -47,7 +47,8 @@ igual (la que llegue después añade la carta a las plantillas html).
 Word y tras la 08b para PDF, imagen o HTML; `generar-carta` tras la 08c;
 `revisar-linkedin` funciona tras la 05, pero rinde mucho más desde la 07, cuando ya hay ofertas
 aprobadas de las que sacar las keywords; `buscar-ofertas` tras la 09b; `preparar-candidatura`,
-`preparar-entrevista` y `resumen-diario` tras la 10.
+`preparar-entrevista` y `resumen-diario` tras la 10; la candidatura asistida (sin skill: se
+usa desde la ficha) tras la 11.
 
 ## Registro de fases
 
@@ -1025,4 +1026,49 @@ decisiones tomadas y deuda técnica pendiente. -->
     cierra el navegador al acabar, así que la pestaña preparada se pierde.
   - Los comboboxes de Greenhouse (React-select) solo se han probado con su marcado accesible
     estándar. La prueba manual con una oferta real lo dirá.
+  - La BD real necesita `jh db upgrade` (hasta 0011).
+
+### 11.2 · Candidatura asistida: revisión, envío y UI — 2026-10-05 · Claude Code (Opus 5.5)
+- **Resumen:** cierra la fase 11.
+  - **API** (`routes/apply.py`, capa fina):
+    - `GET /jobs/{id}/apply`: último intento y qué haría «Preparar» (`get_state`);
+    - `POST /jobs/{id}/apply/prepare`, `/apply/{id}/rescan`, `/apply/{id}/focus` y
+      `/jobs/{id}/apply/manual-done`;
+    - `POST /apply/{id}/submit` con `{company_confirmation, reviewed_at}` (obligatorio): la única
+      puerta al envío;
+    - `GET /apply/{id}/screenshot/{review|confirmation}` (solo desde `data/applications/`) y
+      `POST /browser/open`.
+
+    `ApplierError` va al formato común con el código del servicio en `details`.
+  - `AttemptView` gana `domain`, `can_rescan`, `submit_button` (aviso con `detail`) y
+    `pending_task` (para avisar si el worker no está en marcha). `can_submit` exige «CV listo».
+  - **UI**: sección «Candidatura asistida» en la ficha, después del paquete:
+    - preparar, o «Abrir y preparar» en LinkedIn;
+    - pantalla de revisión: captura, tabla de campos con estado, valor y origen, obligatorios
+      sin respuesta en ámbar, avisos;
+    - diálogo «Enviar»: dominio, botón que se pulsará, consentimientos y el nombre de la empresa;
+    - «Volver a revisar», «Lo termino yo», «Marcar como enviada», «Preparar de nuevo» y
+      «Preparar navegador»;
+    - se refresca cada 2 s mientras trabaja el worker y refresca la ficha al quedar enviada.
+  - El skill `preparar-candidatura` pide las preguntas literales del formulario (el rellenado las
+    busca por parecido) y remite a la sección.
+  - `ARCHITECTURE`, `RESUMEN_FASES` y guía de prueba manual (`docs/pruebas/fase-11-prueba-manual.txt`).
+  - 13 tests de API y 15 de la sección. 1 597 tests de backend y 123 de frontend.
+- **Decisiones:**
+  - «Preparar navegador» va en la propia sección: no hay página «Estado» en la UI.
+  - El diálogo de envío confirma una **foto del intento** tomada al pulsar «Enviar»: aunque
+    llegue una versión nueva, se manda la `reviewed_at` que viste y el servidor da `stale`. Se monta
+    solo mientras está abierto (siempre empieza vacío) y no es un formulario: Intro no envía. Lo
+    vio la revisión.
+  - Enviada pero sin registrar `applied` (fallo del evento): la sección lo dice y ofrece «Marcar
+    como enviada».
+  - «Marcar como enviada» se rechaza (`busy`) mientras el worker trabaja en el intento.
+  - Tras cualquier error de una acción, se vuelve a pedir el estado (`onSettled`).
+- **Deuda:**
+  - **Prueba manual pendiente:** `docs/pruebas/fase-11-prueba-manual.txt`, que es el criterio de
+    aceptación de la fase: una oferta real de Greenhouse o Lever hasta la pantalla de revisión,
+    sin enviar. Sobre todo, los desplegables con buscador de Greenhouse.
+  - La UI repite la lista de estados del servicio (`REVIEW`, `RETRY`, `MANUAL`). Si cambian,
+    habría que exponer acciones permitidas desde el backend, como `can_rescan`.
+  - El aviso del worker sale tras 15 s en cola, aunque la causa sea otra tarea larga delante.
   - La BD real necesita `jh db upgrade` (hasta 0011).

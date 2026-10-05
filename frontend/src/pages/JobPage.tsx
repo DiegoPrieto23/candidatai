@@ -16,6 +16,7 @@ import {
 } from '@phosphor-icons/react'
 import type { AddJobResult, EventOut, JobView, Schemas } from '@/api/client'
 import { useAddNote, useJob, useJobEvent, useJobMatch, type UserEventBody } from '@/api/queries'
+import { ApplySection } from '@/components/ApplySection'
 import { CoverLetterSection } from '@/components/CoverLetterSection'
 import { CvSection } from '@/components/CvSection'
 import { DiscardDialog } from '@/components/DiscardDialog'
@@ -529,6 +530,7 @@ export function JobPage() {
               )}
               <ProcessSection job={job} />
               <PackageSection job={job} />
+              <ApplySection job={job} />
               <CvSection job={job} />
               <CoverLetterSection job={job} />
               <OriginalText text={job.raw_text} />

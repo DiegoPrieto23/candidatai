@@ -10,6 +10,7 @@ from app.api.errors import ERROR_RESPONSES, install_error_handlers
 from app.api.routes import (
     alerts,
     applications,
+    apply,
     capture,
     cv,
     jobs,
@@ -57,6 +58,7 @@ def create_app() -> FastAPI:
     app.include_router(stats.router)
     app.include_router(applications.router)
     app.include_router(letters.router)
+    app.include_router(apply.router)
     return app
 
 

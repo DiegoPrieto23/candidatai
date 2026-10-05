@@ -23,6 +23,8 @@ import type {
   JobPackage,
   JobCoverLetter,
   LetterRenderResult,
+  AssistedApplication,
+  AttemptView,
 } from '@/api/client'
 import { AppRoutes } from '@/App'
 import { TooltipProvider } from '@/components/ui/tooltip'
@@ -562,3 +564,92 @@ export function jobCoverLetter(
   }
 }
 
+// --- Candidatura asistida (fase 11) --------------------------------------------------------------
+
+export function attemptView(changes: Partial<AttemptView> = {}): AttemptView {
+  return {
+    id: 5,
+    job_id: 1,
+    company: 'Acme Analytics',
+    platform: 'greenhouse',
+    mode: 'fill',
+    url: 'https://boards.greenhouse.io/acme/jobs/1',
+    domain: 'boards.greenhouse.io',
+    status: 'ready',
+    fields: [
+      {
+        marker: '0',
+        label: 'Email',
+        control: 'text',
+        kind: 'email',
+        required: true,
+        status: 'filled',
+        source: 'Perfil: correo',
+        value: 'lucia.varela@example.com',
+        note: null,
+      },
+      {
+        marker: '1',
+        label: 'Gender',
+        control: 'select',
+        kind: 'sensitive',
+        required: false,
+        status: 'sensitive',
+        source: null,
+        value: null,
+        note: 'Dato sensible: nunca se rellena solo. Decides tú.',
+      },
+      {
+        marker: '2',
+        label: 'Acepto la política de privacidad',
+        control: 'checkbox',
+        kind: 'consent',
+        required: true,
+        status: 'consent',
+        source: null,
+        value: null,
+        note: 'Se marcará al confirmar el envío.',
+      },
+    ],
+    warnings: [
+      { code: 'submit_button', message: 'Al confirmar se pulsará «Submit application».', detail: 'Submit application' },
+    ],
+    missing_required: 0,
+    consents: [
+      {
+        marker: '2',
+        label: 'Acepto la política de privacidad',
+        control: 'checkbox',
+        kind: 'consent',
+        required: true,
+        status: 'consent',
+        source: null,
+        value: null,
+        note: null,
+      },
+    ],
+    can_submit: true,
+    can_rescan: true,
+    submit_button: 'Submit application',
+    pending_task: null,
+    has_screenshot: true,
+    has_confirmation: false,
+    error: null,
+    created_at: '2026-10-05T10:00:00Z',
+    updated_at: '2026-10-05T10:01:00.123456Z',
+    ...changes,
+  }
+}
+
+export function assistedApplication(changes: Partial<AssistedApplication> = {}): AssistedApplication {
+  return {
+    job_id: 1,
+    company: 'Acme Analytics',
+    attempt: null,
+    mode: 'fill',
+    domain: 'boards.greenhouse.io',
+    can_prepare: true,
+    reason: null,
+    ...changes,
+  }
+}

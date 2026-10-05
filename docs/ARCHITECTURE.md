@@ -72,13 +72,20 @@ La app nunca llama a un modelo y no depende de ningún proveedor.
 | `GET /jobs/{id}/cover-letter`, `POST /jobs/{id}/cover-letter/brief` | Sección «Carta de presentación» (fase 08c): indicaciones de la oferta y del perfil, límite resuelto, carta vigente con su TXT, renders y plantillas con diseño de carta; guardar las indicaciones de la oferta |
 | `POST /jobs/{id}/cover-letter`, `POST /cover-letters/{doc}/renders`, `GET /cover-letters/{doc}/text` | Retocar la carta a mano (documento nuevo «Editada por ti», sin verificar), renderizarla con otro diseño, foto o color, y descargarla en TXT (UTF-8, `\r\n`, nombre ASCII). La selección y los PDF y DOCX van por `/renders/{id}/…` como en el CV |
 | `GET /jobs/{id}/package`, `POST /jobs/{id}/answers` | Paquete de candidatura (fase 10.3): CV elegido (enviado o seleccionado, con enlace al PDF), últimas respuestas de screening y carta vigente con su render seleccionado y su texto plano (`PackageCoverLetter`); la edición del usuario crea un documento nuevo «Editadas por ti» (409 fuera de `approved`/`cv_ready`). Nada envía |
+| `GET /jobs/{id}/apply`, `POST /jobs/{id}/apply/prepare` | Candidatura asistida (fase 11): el último intento (campos, avisos, botón que se pulsará, tarea pendiente del worker) y qué haría «Preparar» (rellenar u, en LinkedIn, solo abrir); preparar encola el rellenado (202). Nada envía |
+| `POST /apply/{id}/rescan`, `POST /apply/{id}/focus`, `POST /jobs/{id}/apply/manual-done` | «Volver a revisar» (nunca tras un clic de envío), «Lo termino yo» y «Marcar como enviada» (`applied_manually`) |
+| `POST /apply/{id}/submit` | **La única puerta al envío**: `{company_confirmation, reviewed_at}`; comprueba el nombre de la empresa, la versión revisada y que no falta nada, emite la confirmación de un solo uso y encola el envío (202). El token nunca sale por la API |
+| `GET /apply/{id}/screenshot/{review\|confirmation}`, `POST /browser/open` | Capturas del intento (desde `data/applications/`) y «Preparar navegador» |
 
 - `jh serve` escucha solo en `127.0.0.1`; CORS solo para `http://127.0.0.1:5173`. La extensión de
   captura no lo necesita: sus `host_permissions` la eximen, y `POST /capture` exige su origen y token.
 - Errores con el mismo formato que la interfaz para agentes (`{ok: false, error: {type, message,
   details}}`): 404 `not_found`, 409 `invalid_transition` o `exists`, 413 `too_large`, 422
-  validación, 503 BD sin migrar o sin conversor a PDF (`pdf_unavailable`).
-- Los ficheros solo se sirven desde `data/cvs/` (renders; no todo `data/`, que también guarda
+  validación, 503 BD sin migrar o sin conversor a PDF (`pdf_unavailable`). Las rutas de la
+  candidatura asistida añaden el código del servicio en `details` (`field: "code"`: `busy`,
+  `stale`, `company_mismatch`, `invalid_url`…).
+- Los ficheros solo se sirven desde `data/cvs/` (renders), `data/applications/` (capturas de la
+  candidatura asistida; no todo `data/`, que también guarda
   secretos como el token de captura de la 09b) y desde las carpetas de plantillas (previews): la ruta guardada se resuelve y se comprueba que queda dentro antes de abrirla; si no,
   404.
 - La ficha devuelve el texto original **sin** el envoltorio `<untrusted_job_posting>`: lo lee una

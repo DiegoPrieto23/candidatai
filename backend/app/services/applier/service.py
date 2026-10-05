@@ -22,6 +22,7 @@ import contextlib
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Literal
+from urllib.parse import urlsplit
 
 from pydantic import BaseModel
 from sqlalchemy import select
@@ -69,6 +70,15 @@ class ApplierError(ValueError):
 class AttemptWarning(BaseModel):
     code: str
     message: str
+    detail: str | None = None  # dato suelto del aviso (p. ej. el texto del botón de envío)
+
+
+class PendingTask(BaseModel):
+    """Tarea del worker para este intento que aún no ha terminado."""
+
+    kind: str
+    status: str  # queued | running
+    waiting_seconds: int  # desde que se encoló (o desde que puede ejecutarse)
 
 
 class AttemptView(BaseModel):
@@ -78,12 +88,16 @@ class AttemptView(BaseModel):
     platform: str
     mode: str
     url: str
+    domain: str  # a dónde se envía: se enseña al confirmar
     status: str
     fields: list[FieldReport]
     warnings: list[AttemptWarning]
     missing_required: int
     consents: list[FieldReport]  # consentimientos obligatorios que aceptarás al confirmar
     can_submit: bool
+    can_rescan: bool  # nunca tras un clic de envío
+    submit_button: str | None  # el texto del botón que se pulsará, si se encontró
+    pending_task: PendingTask | None
     has_screenshot: bool
     has_confirmation: bool
     error: str | None
@@ -104,6 +118,26 @@ def _company_name(session: Session, job_id: int) -> str:
     return company.name if company else ""
 
 
+def _pending_task(session: Session, attempt_id: int) -> PendingTask | None:
+    stmt = (
+        select(Task)
+        .where(Task.kind.in_(tasks.NO_RETRY_KINDS), Task.status.in_(("queued", "running")))
+        .order_by(Task.id)
+    )
+    for task in session.scalars(stmt):
+        if task.payload.get("attempt_id") == attempt_id:
+            waiting = max(0, int((utcnow() - task.run_after).total_seconds()))
+            return PendingTask(kind=task.kind, status=task.status, waiting_seconds=waiting)
+    return None
+
+
+def _submit_button(attempt: ApplicationAttempt) -> str | None:
+    for warning in attempt.warnings or []:
+        if warning.get("code") == "submit_button":
+            return warning.get("detail")
+    return None
+
+
 def view(session: Session, attempt: ApplicationAttempt) -> AttemptView:
     reports = _reports(attempt)
     missing = sum(1 for r in reports if r.missing)
@@ -114,12 +148,21 @@ def view(session: Session, attempt: ApplicationAttempt) -> AttemptView:
         platform=attempt.platform,
         mode=attempt.mode,
         url=attempt.url,
+        domain=urlsplit(attempt.url).hostname or "",
         status=attempt.status,
         fields=reports,
         warnings=[AttemptWarning.model_validate(w) for w in attempt.warnings or []],
         missing_required=missing,
         consents=[r for r in reports if r.kind == "consent" and r.required],
-        can_submit=attempt.status == "ready" and missing == 0,
+        can_submit=attempt.status == "ready"
+        and attempt.mode == "fill"
+        and missing == 0
+        and events.current_stage(session, attempt.job_id) == Stage.CV_READY,
+        can_rescan=attempt.mode == "fill"
+        and attempt.status in RESCANNABLE
+        and not _clicked(attempt),
+        submit_button=_submit_button(attempt),
+        pending_task=_pending_task(session, attempt.id),
         has_screenshot=attempt.screenshot_path is not None,
         has_confirmation=attempt.confirmation_path is not None,
         error=attempt.error,
@@ -150,6 +193,49 @@ def view_by_id(attempt_id: int) -> AttemptView:
         return view(session, _get(session, attempt_id))
 
 
+class AssistedApplication(BaseModel):
+    """Lo que necesita la sección «Candidatura asistida» de la ficha."""
+
+    job_id: int
+    company: str
+    attempt: AttemptView | None  # el último intento
+    # Lo que haría «Preparar»: `fill` (rellenar y revisar) u `open` (LinkedIn: solo abrir).
+    mode: Literal["fill", "open"]
+    domain: str
+    can_prepare: bool
+    reason: str | None  # por qué no se puede preparar ahora
+
+
+def get_state(session: Session, job_id: int) -> AssistedApplication:
+    job = session.get(Job, job_id)
+    if job is None:
+        raise events.JobNotFoundError(f"No existe la oferta {job_id}.")
+    stage = events.current_stage(session, job_id)
+    platform = platforms.detect(job.url)
+    mode: Literal["fill", "open"] = "open" if platform == "linkedin" else "fill"
+    attempt = latest(session, job_id)
+    reason: str | None = None
+    if (problem := platforms.url_problem(job.url)) is not None:
+        reason = problem
+    elif mode == "fill" and stage != Stage.CV_READY:
+        reason = "Hace falta un CV listo (verificado y elegido) para rellenar el formulario."
+    elif mode == "open" and stage not in CV_STAGES:
+        reason = "La oferta ya no está pendiente de enviar."
+    elif attempt is not None and attempt.status in ACTIVE:
+        reason = "Hay un intento en marcha."
+    elif mode == "fill" and selected_render_id(session, job_id) is None:
+        reason = "No hay un CV elegido para enviar."
+    return AssistedApplication(
+        job_id=job_id,
+        company=_company_name(session, job_id),
+        attempt=view(session, attempt) if attempt else None,
+        mode=mode,
+        domain=urlsplit(job.url).hostname or "",
+        can_prepare=reason is None,
+        reason=reason,
+    )
+
+
 def get_latest(session: Session, job_id: int) -> AttemptView | None:
     if session.get(Job, job_id) is None:
         raise events.JobNotFoundError(f"No existe la oferta {job_id}.")
@@ -165,8 +251,10 @@ def screenshot_file(
     relative = attempt.screenshot_path if kind == "review" else attempt.confirmation_path
     if relative is None:
         raise ApplierError("not_found", "Ese intento no tiene esa captura.")
-    path = get_settings().data_dir / relative
-    if not path.is_file():
+    root = get_settings().applications_dir.resolve()
+    path = (get_settings().data_dir / relative).resolve()
+    # Solo se sirve lo que hay dentro de `data/applications/` (como los renders en `data/cvs/`).
+    if not path.is_relative_to(root) or not path.is_file():
         raise ApplierError("not_found", "La captura ya no está en disco.")
     return path
 
@@ -385,7 +473,9 @@ def _button_warning(page: Any) -> AttemptWarning:
             code="no_submit_button",
             message="No se encuentra el botón de envío: tendrás que terminar tú.",
         )
-    return AttemptWarning(code="submit_button", message=f"Al confirmar se pulsará «{label}».")
+    return AttemptWarning(
+        code="submit_button", message=f"Al confirmar se pulsará «{label}».", detail=label
+    )
 
 
 def _blocked(
@@ -896,6 +986,10 @@ _MANUAL_CHANNEL = {"linkedin": "linkedin_manual", "unknown": "portal_manual"}
 def mark_manual_done(session: Session, job_id: int) -> events.AddEventResult:
     """«Marcar como enviada» tras terminar tú: `applied_manually` con el canal de la web."""
     attempt = latest(session, job_id)
+    if attempt is not None and attempt.status in ACTIVE:
+        raise ApplierError(
+            "busy", "El navegador está trabajando en esta candidatura: espera a que termine."
+        )
     channel = _MANUAL_CHANNEL.get(attempt.platform, "ats_form") if attempt else "portal_manual"
     result = events.add_user_event(session, job_id, "applied_manually", channel=channel)
     if attempt is not None and attempt.status != "submitted":
