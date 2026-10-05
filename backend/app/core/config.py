@@ -14,6 +14,9 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 # Id de la extensión de `extension/`: lo fija la clave pública (`key`) de su manifiesto.
 DEFAULT_EXTENSION_ID = "hnaofhehllbkghfehnehamjbkcmdjmle"
 
+# Fichero marca de una carpeta de datos creada por `jh demo seed` (fase 12.1).
+DEMO_MARKER = ".demo"
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -69,6 +72,11 @@ class Settings(BaseSettings):
         if self.db_url is None:
             self.db_url = f"sqlite:///{(self.data_dir / 'jobhunter.db').as_posix()}"
         return self
+
+    @property
+    def demo_mode(self) -> bool:
+        """La carpeta de datos es una demo (`jh demo seed`): la UI muestra un banner."""
+        return (self.data_dir / DEMO_MARKER).is_file()
 
     @property
     def tmp_dir(self) -> Path:

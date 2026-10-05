@@ -118,7 +118,8 @@ def _parameters(spec: ToolSpec) -> list[inspect.Parameter]:
             what = "JSON con " + ", ".join(f"`{k}`" for k in spec.cli.file_keys)
         else:
             what = "texto de la oferta" if spec.cli.file_format == "text" else "JSON"
-        option = typer.Option(None, "--file", help=f"Fichero con el {what}, dentro de data/tmp/.")
+        where = "tmp/ de la carpeta de datos (data/tmp/, o la de JH_DATA_DIR)"
+        option = typer.Option(None, "--file", help=f"Fichero con el {what}, dentro de {where}.")
         params.append(inspect.Parameter("file", kind, default=option, annotation=Path | None))
     params.append(
         inspect.Parameter(

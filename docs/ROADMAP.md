@@ -36,7 +36,10 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 11 | Candidatura asistida | ✅ | Rellenado con Playwright y envío tras tu confirmación |
 | 11.1 | ↳ Motor de rellenado y envío protegido | ✅ | El worker rellena Greenhouse, Lever, Ashby y formularios genéricos, se para con captcha o login y solo envía con una confirmación de un solo uso |
 | 11.2 | ↳ Revisión, envío y UI | ✅ | Pantalla de revisión en la ficha, «Enviar» con el nombre de la empresa, «Lo termino yo» y prueba manual con una oferta real |
-| 12 | Demo, compatibilidad y portfolio | ⏳ | Modo demo, matriz de agentes probada, evals publicados |
+| 12 | Demo, compatibilidad y portfolio | ✅ | Modo demo, matriz de agentes probada, evals publicados |
+| 12.1 | ↳ Modo demo | ✅ | `jh demo seed` llena `data-demo/` con 60 ofertas, 8 semanas de historial y 2 CVs; banner en la UI |
+| 12.2 | ↳ Evals de matching y de CV | ✅ | 80 casos de matching con `evals/REPORT.md` y `jh eval cv` sobre 10 casos |
+| 12.3 | ↳ Compatibilidad, README y seguridad | ✅ | Matriz de agentes probada, README de portfolio y repositorio revisado |
 
 **MVP usable:** al terminar la 08 ya puedes pegar ofertas, triarlas y sacar CVs a medida; con la
 08c, también cartas de presentación. La 08c va antes que la 08b, aunque el orden entre ambas da
@@ -1072,3 +1075,133 @@ decisiones tomadas y deuda técnica pendiente. -->
     habría que exponer acciones permitidas desde el backend, como `can_rescan`.
   - El aviso del worker sale tras 15 s en cola, aunque la causa sea otra tarea larga delante.
   - La BD real necesita `jh db upgrade` (hasta 0011).
+
+### 12.1 · Demo y portfolio: modo demo — 2026-10-05 · Claude Code (Opus 5.5)
+- **Resumen:**
+  - Encargos de las tres subfases (`prompts/12.1-*`, `12.2-*`, `12.3-*`) y su tabla en el de la 12.
+  - `services/demo.py` y `jh demo seed [--dir] [--force] [--json]` crean `data-demo/`
+    (gitignored) con:
+    - el perfil y la foto de `demo/`;
+    - 60 ofertas ficticias con extracción y score, en 6 fuentes (dos de ATS en pausa);
+    - 276 eventos en las 8 semanas anteriores: descartes con motivo, filtros duros, envíos,
+      seguimientos, respuestas, pruebas y entrevistas (algunas futuras, en horario de Madrid y
+      entre semana), rechazos, una caducada y una oferta;
+    - 2 CVs verificados en `cv_ready`;
+    - la oferta con la instrucción oculta de `demo/jobs/02`, con `risk_flags`.
+  - Catálogo en `demo/seed/catalog.yaml` y `cvs.yaml`.
+  - `Settings.demo_mode` (marca `.demo`), `demo_mode` en `get_status` y `GET /status`, y banner
+    «Modo demo: datos ficticios» en todas las páginas.
+  - README («Probar con datos de demo»), `ARCHITECTURE`, `AGENT_INTERFACE` y ADR-020.
+  - 11 tests de backend y 2 de frontend nuevos (1 608 y 125 en total).
+  - Prueba real: `jh demo seed` en unos 30 s con LibreOffice; con `jh serve` y `pnpm dev`, la
+    Bandeja, el Embudo y los Procesos salen llenos y con el banner (capturas con Playwright).
+- **Decisiones:**
+  - Todo pasa por los servicios. La única excepción (ADR-020): las fechas de los eventos
+    automáticos de cada oferta recién creada se llevan al día de su alta y se recalcula la
+    proyección.
+  - PDF de los CVs: `ats-simple` con LibreOffice o Word; si no hay, `moderna-2col` con Chromium
+    de Playwright; sin ninguno, la demo se crea sin CVs y lo avisa.
+  - El seed se niega a escribir en `data/`, dentro de ella, en sus carpetas padre o en una carpeta
+    con contenido sin `.demo`. Para recrear una demo hace falta `--force`.
+  - Sin embeddings durante el seed, para que sea reproducible y no descargue modelos.
+  - Extracciones y CVs con `agent_name: demo-seed`. Las fuentes de Greenhouse y Lever, en pausa
+    (sus tableros no existen).
+- **Deuda:**
+  - Si el seed falla a medias, la carpeta queda con la marca y hay que repetir con `--force`.
+  - Algunos nombres de empresa del catálogo son inventados, pero podrían coincidir con empresas
+    reales. Cada oferta dice «(empresa ficticia)» y la UI lleva el banner.
+  - `_sources` usa funciones privadas de `ingest` y `capture` para crear sus fuentes.
+  - Con embeddings instalados, la app recalcula los scores de la demo al consultarlos (otra
+    `scoring_key`).
+
+### 12.2 · Demo y portfolio: evals de matching y de CV — 2026-10-05 · Claude Code (Opus 5.5)
+- **Resumen:**
+  - **Matching:** `evals/matching/seed.jsonl` pasa de 20 a 80 casos inventados (40 y 40), con
+    trampas de título, oficio, ubicación, nivel, años e idioma. `evals/REPORT.md` recoge las
+    métricas, la curva, el umbral elegido y los errores típicos. Sin embeddings: precision 0,88,
+    recall 0,95 y F1 0,92 (38/5/2/35).
+  - **CV:** `evals/cv/cases.jsonl` (10 ofertas inventadas con keywords esperadas y skills
+    prohibidas). `jh demo seed --eval-cv` las da de alta aprobadas y sin CV (en una demo
+    existente, solo las que falten).
+  - **`jh eval cv [--agent] [--min-coverage]`** (`services/evals/cv.py`) comprueba, en la demo:
+    evidencias, skills inventadas o prohibidas, skills básicas no pedidas (en skills, titular y
+    resumen), una página, cobertura, idioma y verificación. Informe JSON y Markdown;
+    `evals/README.md`.
+  - **Prueba:** redactor y verificador de Claude Code en dos ejecuciones distintas, solo con
+    `jh … --json` contra `data-demo`, sobre `cv04` y `cv07`: los dos pasan las 7 comprobaciones.
+  - 16 tests nuevos del eval de CV; los del matching se adaptan a los 80 casos y
+    `scripts/seed_triage_demo.py` sigue usando los 20 primeros. 1 624 tests de backend.
+- **Decisiones:**
+  - Umbral 55 sin cambios: empata con 60 en F1 y prima el recall (el umbral solo atenúa en el
+    triaje).
+  - La configuración por defecto no cambia: los falsos positivos de oficio (preventa, docencia,
+    ventas) se arreglan con `discard_title_keywords`, que es por usuario.
+  - La cobertura del eval de CV cuenta solo las skills pedidas que la candidata tiene, más las
+    keywords del caso: un CV honesto no puede cubrir lo que no está en el perfil.
+  - Identidad estable de cada caso: la URL `https://empleo.example.com/eval-cv/<id>`.
+  - Ayuda de `--file`: «tmp/ de la carpeta de datos», no `data/tmp/` fijo.
+- **Deuda:**
+  - Comparar con embeddings (`uv sync --extra matching`) y elegir modelo (ADR-006).
+  - Hallazgos de la prueba sin MCP, para la 12.3:
+    - los roles solo nombran herramientas MCP, no su comando `jh`;
+    - las skills no se traducen en un CV en inglés («Modelado dimensional»);
+    - las secciones extra solo existen en español;
+    - la ayuda sale mal codificada en Git Bash sin `PYTHONIOENCODING=utf-8`;
+    - el encargo del agente decía `jh match get` (es `jh match show`).
+  - El filtro de ubicación no sabe de cercanía (Ourense, Pontevedra).
+
+### 12.3 · Demo y portfolio: compatibilidad, README y seguridad — 2026-10-05 · Claude Code (Opus 5.5)
+- **Resumen:** cierra la fase 12.
+  - **Matriz de compatibilidad.** `jh demo seed --compat` da de alta las 5 ofertas de
+    `evals/compat/jobs.txt` solo con su texto, completo y en su idioma (`services/demo_text.py`).
+    Claude Code sin MCP, con una ejecución por rol:
+    - 54/55 campos extraídos como se esperaba;
+    - 5/5 valoraciones;
+    - 5/5 CVs al primer intento, verificados y que pasan `jh eval cv`
+      (`docs/pruebas/fase-12.3-matriz-sin-mcp.md`, `docs/AGENTS_COMPAT.md`).
+  - **Roles** `extractor`, `redactor` y `verificador`: sección «Sin MCP» con sus comandos `jh`.
+    El redactor ya no traduce skills ni incluye secciones extra en otro idioma.
+    `AGENT_INTERFACE` explica las skills básicas, las evidencias citables e
+    `include_regional_language`.
+  - **README de portfolio:**
+    - problema y qué hace;
+    - demo en 5 minutos;
+    - 3 diagramas Mermaid;
+    - decisiones con su ADR;
+    - tests y evals;
+    - agentes;
+    - límites éticos;
+    - 6 capturas de la demo en `docs/img/`.
+
+    El kit y la guía por fases pasan a `docs/DESARROLLO_POR_FASES.md`.
+  - **CI:** paso «Demo de humo» (`jh demo seed --compat --eval-cv` en una carpeta temporal).
+  - **Seguridad:**
+    - `data/`, `.env`, bases de datos, perfiles y fotos reales nunca han entrado en el historial
+      (solo la foto ficticia de `demo/`);
+    - ningún dato del perfil real (correo, teléfono, enlaces, empresas, centros, proyectos) aparece
+      en parches, mensajes ni ficheros;
+    - lo único que aparece es el nombre del usuario: en rutas de su carpeta de Windows dentro de
+      versiones antiguas de `docs/pruebas/` y en un mensaje de merge (su usuario de GitHub). Ya
+      figura como autor de los commits; no se reescribe el historial.
+  - **Clon limpio** (con cachés de uv y pnpm y Chromium instalados): sembrado y frontend instalado
+    en 81 s; API y UI respondiendo en 92 s.
+  - 1 627 tests de backend y 125 de frontend.
+- **Decisiones:**
+  - Codex queda fuera de la matriz por decisión del usuario; en la tabla figura como «sin probar».
+  - La pasada con MCP la hace el usuario en una demo aparte (`data-demo-mcp/`, guía en
+    `docs/pruebas/fase-12-compatibilidad.txt`); `.gitignore` cubre `data-demo*/`.
+  - La matriz reutiliza casos del eval de CV, así que la misma URL sirve para medir la extracción
+    y el CV.
+- **Deuda:**
+  - **Prueba manual pendiente:** Claude Code con MCP sobre la matriz
+    (`docs/pruebas/fase-12-compatibilidad.txt`).
+  - **CI pendiente de comprobar en GitHub:** el paso nuevo solo se ha probado en local, y con
+    LibreOffice; en CI irá con Chromium.
+  - Sin MCP:
+    - el esquema de las entradas no llega con la herramienta (`jh schema …` lo resolvería);
+    - `procesar-ofertas` no admite elegir ofertas;
+    - `generar-cv` no pregunta por las skills básicas que la valoración planteó.
+  - El verificador no ve el título crudo de la oferta (no tiene `get_job`).
+  - Una oferta remota sin país lleva foto por la política por defecto.
+  - El README mezcla portfolio y manual de uso (355 líneas); se podría mover «Usarlo con tus
+    datos» a `docs/`.

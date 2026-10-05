@@ -1,0 +1,116 @@
+# Las dos ofertas de la demo que llegan con CV generado y verificado (fase 12.1). Todo FICTICIO.
+# El contenido cita solo ids de demo/profile.example.yaml, como haría el rol `redactor`.
+
+- job:
+    title: Data Engineer
+    company: Brétema Analytics
+    location: Santiago de Compostela
+    text_file: demo/jobs/01-data-engineer.txt
+    extraction_file: demo/jobs/01-data-engineer.extraction.json
+  content:
+    language: es
+    subtitle: Data Engineer · Python · SQL · Snowflake
+    summary: >-
+      Data Engineer con tres años construyendo pipelines ETL y modelos analíticos sobre Snowflake
+      para clientes de retail y banca, entre la ingeniería y el negocio.
+    experience:
+      - experience_id: exp-norteconsulting
+        bullets:
+          - text: Migré 40 procesos ETL de SSIS a Python sobre Snowflake (-35 % en tiempo de carga nocturna).
+            evidence: [exp-norteconsulting/a1]
+          - text: Diseñé el modelo dimensional de ventas y stock usado por 3 equipos de negocio.
+            evidence: [exp-norteconsulting/a2]
+      - experience_id: exp-datagal
+        bullets:
+          - text: Automaticé informes semanales en Power BI (6 h/semana ahorradas a operaciones).
+            evidence: [exp-datagal/a1]
+          - text: Participé en la creación de pipelines de ingesta de datos de sensores en Python.
+            evidence: [exp-datagal/a2]
+    projects:
+      - project_id: prj-tfg
+        bullets:
+          - text: Detección de anomalías en series temporales de consumo de 500 hogares.
+            evidence: [prj-tfg]
+    skills:
+      - {group: Lenguajes, items: [Python, SQL]}
+      - {group: Datos, items: [Snowflake, ETL, Modelado dimensional, dbt]}
+      - {group: BI y herramientas, items: [Power BI, Docker]}
+    education_ids: [edu-grado]
+    certification_ids: [cert-aws-ccp]
+    languages:
+      - {language: Español, level: Nativo}
+      - {language: Inglés, level: B2}
+    keywords_targeted: [Python, SQL, Snowflake, dbt, Power BI]
+
+- job:
+    title: Analytics Engineer
+    company: Lumieira Retail
+    location: A Coruña
+    text: |
+      Analytics Engineer – Lumieira Retail
+
+      Lumieira Retail (empresa ficticia) gestiona 120 tiendas de moda en el noroeste. Buscamos
+      Analytics Engineer en A Coruña, con modelo híbrido (dos días en oficina).
+
+      Responsabilidades
+      - Modelar los datos de ventas y stock en Snowflake.
+      - Construir y mantener las transformaciones en SQL y Python.
+      - Publicar cuadros de mando en Power BI para tiendas y compras.
+
+      Requisitos
+      - Dos años de experiencia con SQL y Python.
+      - Experiencia con Snowflake u otro data warehouse en la nube.
+      - Inglés B2.
+
+      Se valorará
+      - Modelado dimensional.
+      - Power BI.
+
+      Ofrecemos contrato indefinido, 34.000-40.000 € brutos al año y horario flexible.
+    extraction:
+      title_normalized: Analytics Engineer
+      seniority: mid
+      years_experience_min: 2
+      employment_type: full_time
+      remote_mode: hybrid
+      locations: [A Coruña]
+      languages_required: [{language: Inglés, level: B2}]
+      salary: {min: 34000, max: 40000, currency: EUR, period: year}
+      must_have_skills: [SQL, Python, Snowflake]
+      nice_to_have_skills: [Modelado dimensional, Power BI]
+      responsibilities:
+        - Modelar los datos de ventas y stock en Snowflake
+        - Construir y mantener las transformaciones en SQL y Python
+        - Publicar cuadros de mando en Power BI
+      domain: retail
+      posting_language: es
+      application_deadline: null
+      red_flags: []
+      injection_suspected: false
+      injection_excerpt: null
+  content:
+    language: es
+    subtitle: Analytics Engineer · SQL · Snowflake · Power BI
+    summary: >-
+      Data Engineer con tres años modelando datos de retail en Snowflake y publicando cuadros de
+      mando en Power BI, cómodo entre la ingeniería y el negocio.
+    experience:
+      - experience_id: exp-norteconsulting
+        bullets:
+          - text: Diseñé el modelo dimensional de ventas y stock usado por 3 equipos de negocio.
+            evidence: [exp-norteconsulting/a2]
+          - text: Migré 40 procesos ETL de SSIS a Python sobre Snowflake (-35 % en tiempo de carga nocturna).
+            evidence: [exp-norteconsulting/a1]
+      - experience_id: exp-datagal
+        bullets:
+          - text: Automaticé informes semanales en Power BI (6 h/semana ahorradas a operaciones).
+            evidence: [exp-datagal/a1]
+    skills:
+      - {group: Lenguajes, items: [SQL, Python]}
+      - {group: Datos, items: [Snowflake, Modelado dimensional, ETL]}
+      - {group: BI, items: [Power BI, DAX]}
+    education_ids: [edu-grado]
+    languages:
+      - {language: Español, level: Nativo}
+      - {language: Inglés, level: B2}
+    keywords_targeted: [SQL, Python, Snowflake, Power BI, Modelado dimensional]

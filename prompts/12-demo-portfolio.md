@@ -3,6 +3,17 @@
 ## Contexto
 Lee `docs/ROADMAP.md` (registro de fases) y `docs/DECISIONS.md`.
 
+## Subfases
+La fase se hace en tres subfases, cada una con su encargo, en la misma rama
+`fase/12-demo-portfolio` y con un commit por subfase. Este fichero es la referencia común; cada
+subfase dice qué puntos cubre y las decisiones tomadas al planificarla.
+
+| Subfase | Encargo | Puntos del alcance |
+|---|---|---|
+| 12.1 | `prompts/12.1-modo-demo.md` | 1 (modo demo y banner) |
+| 12.2 | `prompts/12.2-evals.md` | 2 y 3 (eval de matching con informe y `jh eval cv`) |
+| 12.3 | `prompts/12.3-compatibilidad-portfolio.md` | 4, 5 y 6, CI y el cierre de la fase |
+
 ## Objetivo
 Que cualquiera pueda clonar, arrancar y entender el proyecto sin tus datos, y que el repo cuente
 bien lo que has construido.

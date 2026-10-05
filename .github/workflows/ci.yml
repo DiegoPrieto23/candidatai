@@ -26,6 +26,15 @@ jobs:
       - run: uv run ruff format --check
       # La lógica vive en services/: ahí se exige cobertura mínima (criterio de la fase 02).
       - run: uv run pytest --cov=app/services --cov-report=term-missing --cov-fail-under=85
+      # Modo demo (fase 12.1): un clon limpio debe poder sembrar la demo. Sin LibreOffice, los PDF
+      # de los CVs salen con el Chromium de Playwright instalado arriba.
+      - name: Demo de humo
+        shell: pwsh
+        run: |
+          $out = uv run jh demo seed --dir "$env:RUNNER_TEMP/data-demo" --compat --eval-cv --json
+          if ($LASTEXITCODE -ne 0) { throw "jh demo seed falló: $out" }
+          $summary = ($out -join "`n") | ConvertFrom-Json
+          if ($summary.jobs -ne 70 -or $summary.cvs -ne 2) { throw "Demo incompleta: $out" }
 
   frontend:
     runs-on: ubuntu-latest

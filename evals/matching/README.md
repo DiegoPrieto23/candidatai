@@ -1,10 +1,11 @@
 # Set de evaluación del matching
 
-`seed.jsonl` son 20 casos **inventados** que se evalúan contra el perfil de `demo/`. Sirven para
-comprobar que el score y los filtros hacen lo esperado y para ajustar `config/policies.yaml`
-(`scoring.weights`, `triage_threshold`, `semantic`…) sin datos personales. Algunos fallan a
-propósito con la configuración por defecto (p. ej. `sales-engineer-data`, que solo se descarta si
-añades `sales` a `hard_filters.discard_title_keywords`).
+`seed.jsonl` son 80 casos **inventados** (40 `encaja` y 40 `no_encaja`) que se evalúan contra el
+perfil de `demo/`. Sirven para comprobar que el score y los filtros hacen lo esperado y para
+ajustar `config/policies.yaml` (`scoring.weights`, `triage_threshold`, `semantic`…) sin datos
+personales. Siete fallan con la configuración por defecto, y están explicados en
+`evals/REPORT.md` (p. ej. `sales-engineer-data`, que solo se descarta si añades `sales` a
+`hard_filters.discard_title_keywords`).
 
 Tus casos reales van en `data/evals/*.jsonl` (no se versionan) y se evalúan contra
 `data/profile.yaml`. Mismo formato, un caso por línea (las líneas que empiezan por `#` se ignoran):

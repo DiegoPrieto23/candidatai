@@ -1,5 +1,13 @@
 import { Link, NavLink, Outlet, useLocation, useSearchParams } from 'react-router'
-import { BellRingingIcon, DesktopIcon, MoonIcon, PlusIcon, SunIcon, TerminalWindowIcon } from '@phosphor-icons/react'
+import {
+  BellRingingIcon,
+  DesktopIcon,
+  FlaskIcon,
+  MoonIcon,
+  PlusIcon,
+  SunIcon,
+  TerminalWindowIcon,
+} from '@phosphor-icons/react'
 import type { Stage } from '@/api/client'
 import { useFollowups, useStatus } from '@/api/queries'
 import { Button } from '@/components/ui/button'
@@ -128,6 +136,27 @@ function FollowupReminder() {
   )
 }
 
+// Modo demo (fase 12.1): la carpeta de datos la creó `jh demo seed`. Fijo en todas las páginas.
+function DemoBanner() {
+  const { data } = useStatus()
+  if (!data?.demo_mode) return null
+  return (
+    <div
+      role="note"
+      aria-label="Modo demo"
+      className="border-b border-warning-border bg-warning text-warning-foreground"
+    >
+      <p className="mx-auto flex max-w-6xl items-center gap-2 px-4 py-1.5 text-xs sm:px-6">
+        <FlaskIcon className="size-4 shrink-0" weight="duotone" />
+        <span>
+          <span className="font-semibold">Modo demo: datos ficticios.</span> Personas, empresas y ofertas son
+          inventadas; tus datos reales no se tocan.
+        </span>
+      </p>
+    </div>
+  )
+}
+
 function navClass({ isActive }: { isActive: boolean }) {
   return cn(
     'flex items-center gap-1.5 rounded-md px-3 py-1.5 transition-colors',
@@ -157,6 +186,7 @@ export function AppShell() {
   return (
     <div className="min-h-[100dvh]">
       <header className="sticky top-0 z-20 border-b bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/65">
+        <DemoBanner />
         <div className="mx-auto flex h-14 max-w-6xl items-center gap-6 px-4 sm:px-6">
           <Link to="/" className="flex items-center gap-2.5 font-semibold tracking-tight">
             <span className="grid size-7 place-items-center rounded-md bg-foreground font-mono text-[11px] font-bold text-background">
