@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Data Engineer at Acme (ficticia)</title></head>
+<body>
+<h1>Data Engineer</h1>
+<p>Thank you for your interest in Acme. Apply below.</p>
+<form id="application-form" action="/greenhouse/submit" method="post" enctype="multipart/form-data">
+  <label for="first_name">First Name*</label>
+  <input id="first_name" name="job_application[first_name]" required>
+  <label for="last_name">Last Name*</label>
+  <input id="last_name" name="job_application[last_name]" required>
+  <label for="email">Email*</label>
+  <input id="email" name="job_application[email]" type="text" required>
+  <label for="phone">Phone</label>
+  <input id="phone" name="job_application[phone]" type="tel">
+  <div class="file-upload">
+    <div class="label" id="resume-label">Resume/CV*</div>
+    <input type="file" id="resume" name="resume" aria-labelledby="resume-label" required>
+  </div>
+  <div class="file-upload">
+    <div class="label" id="cover-label">Cover Letter</div>
+    <input type="file" id="cover_letter" name="cover_letter" aria-labelledby="cover-label">
+  </div>
+  <label for="q_linkedin">LinkedIn Profile</label>
+  <input id="q_linkedin" name="q_linkedin">
+  <label for="q_auth">Are you legally authorized to work in Spain?*</label>
+  <select id="q_auth" name="q_auth" required>
+    <option value="">Select...</option><option value="1">Yes</option><option value="0">No</option>
+  </select>
+  <label for="q_why">Why do you want to work at Acme?</label>
+  <textarea id="q_why" name="q_why"></textarea>
+  <label for="q_salary">What are your salary expectations?*</label>
+  <input id="q_salary" name="q_salary" required>
+  <label for="gender">Gender</label>
+  <select id="gender" name="gender">
+    <option value="">Select...</option><option>Female</option><option>Male</option>
+    <option>Decline to self identify</option>
+  </select>
+  <input type="checkbox" id="consent" name="consent" required>
+  <label for="consent">I agree to the privacy policy*</label>
+  <div class="grecaptcha-badge" style="width:256px;height:60px"></div>
+  <button type="submit">Submit application</button>
+</form>
+</body></html>

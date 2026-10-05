@@ -139,11 +139,43 @@ Las garantías se reparten en capas para que **no dependan de qué agente use ca
      inexistentes, skills fuera del perfil o skills básicas no pedidas.
    - La interfaz para agentes no tiene nada que envíe datos al exterior. Enviar solo ocurre desde
      la UI, con tu clic.
+   - Candidatura asistida (fase 11): solo `services/applier/submit.py` pulsa el envío, y solo
+     con una confirmación de un solo uso que emite la UI tras escribir tú el nombre de la empresa.
+     Mientras se rellena, la página tiene bloqueado el envío. Un test estático lo vigila.
 2. **En el agente, cuando lo permite:** el texto crudo solo lo ve el rol `extractor`, configurado
    con las herramientas mínimas (en Claude Code, solo las dos herramientas MCP que necesita; en
    Codex, sandbox de solo lectura). El resto de roles trabaja con datos ya estructurados.
 3. **Auditoría:** cada llamada a la interfaz queda en la tabla `mcp_calls`.
 4. **Datos personales** en `data/`, fuera del repositorio.
+
+## Candidatura asistida (fase 11)
+
+`services/applier/` rellena formularios de Greenhouse, Lever, Ashby y webs con un formulario
+genérico, y se para antes de enviar (POLICIES §5):
+
+```
+UI «Preparar candidatura» ─► API prepare ─► tarea apply_fill ─► worker
+                                                         │ navegador persistente (data/browser-profile/)
+                                                         │ detectar plataforma · guardia (captcha/anti-bot/login)
+                                                         │ campos por etiqueta accesible · rellenar · capturar
+                                                         ▼
+UI revisión (captura, campos, avisos) ◄── application_attempts (ready | needs_user)
+   │ «Enviar» + nombre de la empresa
+   ▼
+API confirm_submission ─► token de un solo uso ─► tarea apply_submit ─► worker
+                                                         │ tokens.consume ─► submit.click_submit
+                                                         ▼
+                                     captura de confirmación + evento applied (evidencia)
+```
+
+- El **worker es el único dueño del navegador**: el perfil persistente solo admite un proceso y la
+  pestaña rellenada tiene que seguir viva hasta el envío. Todas las llamadas a Playwright pasan por
+  un hilo propio (`applier/browser.py`).
+- Sin reintentos: las tareas del navegador fallan una vez y quedan registradas; si el worker se
+  cierra a medias, no se repiten.
+- LinkedIn y webs sin formulario reconocible: solo se abren (ADR-009) y el paquete se copia desde
+  la ficha.
+- No hay herramienta MCP ni comando `--json` para esto, a propósito.
 
 ## Ejecución en local (Windows 11)
 
@@ -151,7 +183,8 @@ Las garantías se reparten en capas para que **no dependan de qué agente use ca
   inicies sesión y revises formularios, y LibreOffice se usa instalado en el sistema.
 - `jh serve` levanta la API, `jh worker` el scheduler y `pnpm dev` la UI. El worker debe estar en
   marcha para la ingesta diaria; si el equipo estaba apagado a esa hora, al arrancarlo ejecuta
-  las fuentes pendientes.
+  las fuentes pendientes. También para la candidatura asistida: abre el navegador
+  visible de las candidaturas (`JH_BROWSER_CHANNEL=chrome|msedge` usa el navegador instalado).
 - Cada agente arranca el servidor MCP solo, según su configuración generada (`.mcp.json` para
   Claude Code, `.codex/config.toml` para Codex…).
 

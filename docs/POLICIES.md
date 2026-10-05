@@ -102,7 +102,10 @@ triaje. Los pesos y el umbral se ajustan con `jh eval matching` (`evals/matching
 
 1. **Confirmación por candidatura.** El código rellena y se detiene antes de enviar; el envío lo
    desencadena tu clic en la UI tras revisar campos, adjuntos y captura. Una confirmación vale
-   para una sola candidatura.
+   para una sola candidatura. En la práctica (fase 11): escribes el nombre de la empresa, la app
+   emite un token de un solo uso que caduca a los pocos minutos y solo `applier/submit.py`, con
+   ese token, pulsa el envío. Los datos sensibles (género, origen, discapacidad…) nunca se
+   rellenan solos y los consentimientos obligatorios los aceptas al confirmar.
 2. **LinkedIn**: nunca candidaturas automáticas ni scraping. La app prepara el paquete (CV,
    respuestas) y abre el enlace. Las ofertas de LinkedIn entran por sus alertas por correo, por el
    botón «Enviar a Job Hunter» (acción tuya, oferta a oferta) y, solo si lo activas tú en la UI,

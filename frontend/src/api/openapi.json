@@ -8242,6 +8242,7 @@
           "cover_letter_generated",
           "cover_letter_verified",
           "application_prepared",
+          "application_filled",
           "applied",
           "applied_manually",
           "reply_received",

@@ -104,6 +104,7 @@ SCRIPTS: list[list[tuple[str, dict[str, object] | None]]] = [
         ("cv_rejected", {"document_id": 1}),
         ("cv_verified", {"document_id": 1, "passed": True}),
         ("application_prepared", None),
+        ("application_filled", {"attempt_id": 1, "status": "ready"}),
         ("applied", {"channel": "ats_form"}),
         ("followup_sent", None),
         ("interview_scheduled", None),

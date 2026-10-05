@@ -50,6 +50,14 @@ class Settings(BaseSettings):
         pattern=r"^[a-p]{32}$",
         validation_alias="JH_CAPTURE_EXTENSION_ID",
     )
+    # Candidatura asistida (fase 11): navegador visible salvo en tests; `chrome` o `msedge` usan
+    # el navegador instalado en vez del Chromium de Playwright.
+    browser_headless: bool = Field(default=False, validation_alias="JH_BROWSER_HEADLESS")
+    browser_channel: str | None = Field(default=None, validation_alias="JH_BROWSER_CHANNEL")
+    # Solo tests: permite abrir formularios servidos en 127.0.0.1 (nunca la API de la app).
+    applier_allow_loopback: bool = Field(
+        default=False, validation_alias="JH_APPLIER_ALLOW_LOOPBACK"
+    )
 
     @model_validator(mode="after")
     def _resolve_paths(self) -> "Settings":
@@ -99,6 +107,16 @@ class Settings(BaseSettings):
     @property
     def logs_dir(self) -> Path:
         return self.data_dir / "logs"
+
+    @property
+    def browser_profile_dir(self) -> Path:
+        """Perfil persistente del navegador de las candidaturas. Solo lo abre el worker."""
+        return self.data_dir / "browser-profile"
+
+    @property
+    def applications_dir(self) -> Path:
+        """Capturas de las candidaturas asistidas (`<job_id>/<intento>/`)."""
+        return self.data_dir / "applications"
 
     @property
     def user_templates_dir(self) -> Path:

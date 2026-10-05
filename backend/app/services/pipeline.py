@@ -47,6 +47,7 @@ class EventType(StrEnum):
     COVER_LETTER_GENERATED = "cover_letter_generated"
     COVER_LETTER_VERIFIED = "cover_letter_verified"
     APPLICATION_PREPARED = "application_prepared"
+    APPLICATION_FILLED = "application_filled"  # candidatura asistida (fase 11)
     APPLIED = "applied"
     APPLIED_MANUALLY = "applied_manually"
     REPLY_RECEIVED = "reply_received"
@@ -122,6 +123,7 @@ TRANSITIONS: dict[EventType, Transition] = {
     EventType.COVER_LETTER_GENERATED: Transition(CV_STAGES, None),
     EventType.COVER_LETTER_VERIFIED: Transition(CV_STAGES, None),
     EventType.APPLICATION_PREPARED: Transition(WORKING_STAGES, None),
+    EventType.APPLICATION_FILLED: Transition(frozenset({Stage.CV_READY}), None),
     EventType.APPLIED: Transition(
         frozenset({Stage.CV_READY}),
         Stage.APPLIED,

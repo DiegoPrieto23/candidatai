@@ -259,6 +259,14 @@ la pantalla «Plataformas».
 | `jh sources run [ID] [--json]` | Ejecuta ya una fuente (o todas las activas) y guarda lo nuevo en `pending_extraction`. `{runs: [SourceRunResult]}` con `created`, `existing`, `duplicates`, `job_ids` y `errors` |
 | `jh sources enable ID` / `disable ID` | Activa o pausa una fuente en la ingesta diaria |
 
+### Candidatura asistida (fase 11): sin herramientas, a propósito
+
+Rellenar y enviar formularios de candidatura no está en la interfaz para agentes: no hay
+herramienta MCP ni comando `jh … --json`. Se desencadena solo desde la UI (POLICIES §5) y un test
+comprueba que la CLI, el servidor MCP y `agent_interface` no importan el servicio, el token ni el
+envío. El agente prepara el paquete (`save_application_answers`, la carta) y el usuario hace el
+resto en la ficha.
+
 ## Errores
 
 Mismo JSON por los dos canales (por MCP, con `isError: true`; por CLI, con código de salida 1):

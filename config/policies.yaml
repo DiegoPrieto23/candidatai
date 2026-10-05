@@ -32,8 +32,11 @@ calendar:                       # fase 10: hitos de los procesos y feed .ics
   timezone: Europe/Madrid
   default_duration_minutes: 60    # duración de un hito sin hora de fin
 
-applier:
-  step_timeout_seconds: 30
+applier:                        # fase 11: candidatura asistida (rellena y espera tu confirmación)
+  step_timeout_seconds: 30        # cada paso del navegador (cargar, rellenar un campo, capturar)
+  confirm_wait_seconds: 30        # tras pulsar «Enviar», cuánto se espera la página de confirmación
+  token_ttl_seconds: 300          # validez de la confirmación de envío (un solo uso)
+  answer_min_similarity: 85       # token_set_ratio entre la pregunta del formulario y la del paquete
 
 cv:
   fallback_template: ats-simple

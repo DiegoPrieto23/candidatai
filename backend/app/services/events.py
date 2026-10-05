@@ -141,6 +141,7 @@ RESERVED_EVENTS = frozenset(
         EventType.COVER_LETTER_GENERATED,
         EventType.COVER_LETTER_VERIFIED,
         EventType.APPLICATION_PREPARED,
+        EventType.APPLICATION_FILLED,  # lo registra el worker al rellenar (fase 11)
     }
 )
 

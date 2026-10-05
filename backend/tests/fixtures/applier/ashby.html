@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Acme Careers (ficticia)</title>
+<style>._active_x1 { background: #333; color: #fff; }</style></head>
+<body>
+<div class="ashby-application-form-container">
+  <div class="field"><label for="_systemfield_name">Name *</label>
+    <input id="_systemfield_name" required></div>
+  <div class="field"><label for="_systemfield_email">Email *</label>
+    <input id="_systemfield_email" type="email" required></div>
+  <div class="field"><label class="heading">Resume *</label>
+    <input type="file" id="_systemfield_resume" style="display:none">
+    <span class="upload">Upload File</span></div>
+  <div class="field"><label class="heading">Are you willing to work from our Vigo office? *</label>
+    <div class="yesno">
+      <button type="button" class="_option_y1">Yes</button>
+      <button type="button" class="_option_y1">No</button>
+    </div></div>
+  <button type="button" id="send" class="_submit_s1">Submit Application</button>
+</div>
+<script>
+  for (const box of document.querySelectorAll('.yesno')) {
+    for (const b of box.children) {
+      b.addEventListener('click', () => {
+        for (const o of box.children) o.classList.remove('_active_x1');
+        b.classList.add('_active_x1');
+      });
+    }
+  }
+  document.getElementById('send').addEventListener('click', async () => {
+    await fetch('/ashby/submit', {method: 'POST', body: 'x'});
+    document.body.innerHTML = '<h2>Thank you for applying! Your application was submitted.</h2>';
+  });
+</script>
+</body></html>
