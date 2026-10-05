@@ -183,6 +183,9 @@ Opcional (fase 09b): para leer tus alertas de empleo por correo, `JH_IMAP_HOST`,
 `JH_IMAP_PASSWORD` y `JH_IMAP_FOLDER` (en Gmail, `imap.gmail.com`, una contraseña de aplicación y
 la etiqueta a la que tu filtro manda las alertas). Sin IMAP, deja los correos exportados (`.eml` o
 `.mbox`) en `data/inbox/`. La conexión es de solo lectura: no marca, mueve ni borra nada.
+Opcional (fase 11): la candidatura asistida abre un navegador visible con su propio perfil en
+`data/browser-profile/`; `JH_BROWSER_CHANNEL=chrome` (o `msedge`) usa el navegador instalado en vez
+del Chromium de Playwright. El worker (`jh worker`) tiene que estar en marcha.
 Los datos personales van en `data/` (se crea sola y está en `.gitignore`).
 
 ### Backend

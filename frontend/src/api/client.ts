@@ -50,6 +50,9 @@ export type UpcomingItem = Schemas['UpcomingItem']
 export type FollowupList = Schemas['FollowupList']
 export type FunnelStats = Schemas['FunnelStats']
 export type ApplicationChannel = NonNullable<Schemas['AddUserEventBody']['channel']>
+export type AssistedApplication = Schemas['AssistedApplication']
+export type AttemptView = Schemas['AttemptView']
+export type FieldReport = Schemas['FieldReport']
 
 export const API_URL: string = import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:8000'
 
@@ -72,6 +75,9 @@ export const fileUrls = {
   /** Feed con todos los hitos futuros (para suscribirse) y su versión para descargar. */
   calendarFeed: `${API_URL}/calendar.ics`,
   calendarDownload: `${API_URL}/calendar.ics?download=true`,
+  /** Captura de un intento de candidatura asistida; `version` evita la caché al cambiar. */
+  applicationScreenshot: (attemptId: number, kind: 'review' | 'confirmation', version: string) =>
+    `${API_URL}/apply/${attemptId}/screenshot/${kind}?v=${encodeURIComponent(version)}`,
 }
 
 export const api = createClient<paths>({

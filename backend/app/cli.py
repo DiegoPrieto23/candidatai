@@ -532,6 +532,9 @@ def worker(
     except (KeyboardInterrupt, SystemExit):
         log.info("Worker parado.")
     finally:
+        from app.services.applier.browser import shutdown_host
+
+        shutdown_host()  # el navegador de las candidaturas (fase 11), si se abrió
         for handler in list(log.handlers):  # en Windows, un fichero abierto no se puede borrar
             log.removeHandler(handler)
             handler.close()

@@ -13,7 +13,24 @@ from sqlalchemy.orm import Session
 from app.models import Task
 from app.models.base import utcnow
 
-TaskKind = Literal["score_job", "rescore_all", "run_source", "poll_email", "expire_summaries"]
+TaskKind = Literal[
+    "score_job",
+    "rescore_all",
+    "run_source",
+    "poll_email",
+    "expire_summaries",
+    "browser_open",
+    "apply_open",
+    "apply_fill",
+    "apply_rescan",
+    "apply_submit",
+    "apply_focus",
+]
+# Candidatura asistida (fase 11): sin reintentos (POLICIES §5.4). Si fallan o el worker se cierra
+# a medias, quedan `failed` y decides tú; un envío nunca se repite solo.
+NO_RETRY_KINDS = frozenset(
+    {"browser_open", "apply_open", "apply_fill", "apply_rescan", "apply_submit", "apply_focus"}
+)
 TaskStatus = Literal["queued", "running", "done", "failed"]
 MAX_ATTEMPTS = 3
 RETRY_DELAY = timedelta(minutes=1)  # se multiplica por el número de intentos
@@ -61,17 +78,35 @@ def mark_failed(session: Session, task_id: int, error: str, now: datetime | None
     if task is None:
         return
     task.last_error = error[:2000]
-    if task.attempts < MAX_ATTEMPTS:
+    if task.attempts < MAX_ATTEMPTS and task.kind not in NO_RETRY_KINDS:
         task.status = "queued"
         task.run_after = (now or utcnow()) + RETRY_DELAY * task.attempts
     else:
         task.status = "failed"
 
 
+def fail_interrupted(session: Session) -> list[Task]:
+    """Las tareas sin reintentos que quedaron `running` (el worker se cerró a medias) quedan
+    `failed`: nunca vuelven a la cola. Devuelve esas tareas."""
+    stuck = list(
+        session.scalars(select(Task).where(Task.status == "running", Task.kind.in_(NO_RETRY_KINDS)))
+    )
+    for task in stuck:
+        task.status = "failed"
+        task.last_error = "El worker se cerró mientras se ejecutaba. No se repite."
+    session.flush()
+    return stuck
+
+
 def requeue_running(session: Session) -> int:
     """Devuelve a la cola las tareas que quedaron `running` (el worker se cerró a medias). Solo
-    hay un worker, así que al arrancar ninguna puede estar ejecutándose de verdad."""
-    stuck = list(session.scalars(select(Task).where(Task.status == "running")))
+    hay un worker, así que al arrancar ninguna puede estar ejecutándose de verdad. Las que no se
+    reintentan las cierra antes `fail_interrupted`."""
+    stuck = list(
+        session.scalars(
+            select(Task).where(Task.status == "running", Task.kind.not_in(NO_RETRY_KINDS))
+        )
+    )
     for task in stuck:
         task.status = "queued"
         task.run_after = utcnow()

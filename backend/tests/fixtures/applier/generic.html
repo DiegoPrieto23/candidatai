@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>Trabaja con nosotros (ficticia)</title></head>
+<body>
+<form action="/generic/submit" method="post" enctype="multipart/form-data">
+  <label for="n">Nombre *</label><input id="n" name="nombre" required>
+  <label for="a">Apellidos *</label><input id="a" name="apellidos" required>
+  <label for="e">Correo electrónico *</label><input id="e" name="correo" type="email" required>
+  <label for="t">Teléfono móvil</label><input id="t" name="telefono">
+  <label for="c">Ciudad de residencia</label><input id="c" name="ciudad">
+  <label for="cv">Adjunta tu CV *</label><input type="file" id="cv" name="cv" required>
+  <label for="carta">Carta de presentación</label><textarea id="carta" name="carta"></textarea>
+  <label for="disp">¿Cuándo podrías incorporarte? *</label><input id="disp" name="disp" required>
+  <input type="checkbox" id="news" name="news"><label for="news">Quiero recibir novedades</label>
+  <button type="submit">Enviar candidatura</button>
+</form>
+</body></html>

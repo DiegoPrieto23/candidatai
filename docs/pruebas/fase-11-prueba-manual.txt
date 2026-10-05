@@ -1,0 +1,149 @@
+PRUEBA MANUAL · FASE 11 · CANDIDATURA ASISTIDA
+==============================================
+
+Objetivo: comprobar con una oferta REAL de Greenhouse o Lever que
+- la app abre su propio navegador, rellena el formulario y SE PARA antes de enviar;
+- la ficha enseña la pantalla de revisión: captura, tabla de campos (qué se rellenó y de dónde
+  sale, qué falta) y avisos;
+- «Enviar» exige escribir el nombre de la empresa y dice qué botón pulsará, en qué web y qué
+  consentimientos aceptas;
+- «Volver a revisar», «Lo termino yo» y «Marcar como enviada» funcionan;
+- LinkedIn solo se abre.
+
+IMPORTANTE: en esta prueba NO se envía ninguna candidatura real. En el diálogo de «Enviar», pulsa
+siempre «Cancelar» (salvo en la parte 5, opcional, que usa un formulario local de prueba).
+
+Duración aproximada: 25 minutos.
+
+
+REQUISITOS
+----------
+- Tres terminales de PowerShell (API, worker y UI); una cuarta en la parte 5, opcional. Los
+  comandos se ejecutan desde la RAÍZ del repo.
+- Rama: fase/11-candidatura-asistida (o main, si ya está fusionada).
+- Migración nueva (0011, tabla `application_attempts`):
+      uv run --directory backend jh db upgrade
+- Chromium de Playwright (ya lo usa el motor html):
+      uv run --directory backend playwright install chromium
+  Opcional: para usar tu Chrome o Edge instalado en vez de Chromium, añade a `.env`
+      JH_BROWSER_CHANNEL=chrome        (o msedge)
+  y reinicia la API y el worker para que lo lean.
+- Una oferta real de Greenhouse (boards.greenhouse.io o job-boards.greenhouse.io) o de Lever
+  (jobs.lever.co) en «CV listo», con su CV generado y elegido para enviar. Si no tienes ninguna:
+  dala de alta por URL en «Nueva», procésala y apruébala, y ejecuta `/generar-cv <id>` en tu
+  agente. Abajo, <ID> es el id de esa oferta.
+- Recomendado: respuestas en el paquete con las preguntas literales del formulario. Abre la
+  oferta en tu navegador, copia sus preguntas y ejecuta `/preparar-candidatura <ID>` pegándolas.
+
+
+PARTE 1 · ARRANCAR Y PREPARAR EL NAVEGADOR
+------------------------------------------
+1. Terminal 1:  uv run --directory backend jh serve
+   Terminal 2:  uv run --directory backend jh worker
+   Terminal 3:  cd frontend; pnpm dev
+2. Abre http://127.0.0.1:5173/jobs/<ID>.
+   Esperado: después de «Paquete de candidatura», la sección «Candidatura asistida» con «Se abrirá
+   <dominio> en el navegador de Job Hunter y se rellenará el formulario. No se envía nada…», el
+   botón «Preparar candidatura» y, arriba a la derecha, «Preparar navegador».
+3. Pulsa «Preparar navegador».
+   Esperado: «El navegador se abrirá en unos segundos…» y, en unos segundos, se abre una ventana
+   de navegador nueva (el perfil de Job Hunter, distinto del tuyo). Puedes iniciar en ella las
+   sesiones que quieras; se recuerdan entre ejecuciones (data/browser-profile/).
+4. (Comprobación del aviso del worker) Para el worker (Ctrl+C en la terminal 2) y pulsa «Preparar
+   candidatura».
+   Esperado: «En cola para el worker…» y, a los ~15 s, el aviso ámbar «El worker aún no lo ha
+   recogido. ¿Está en marcha? Arráncalo con `uv run jh worker`…». Vuelve a arrancar el worker
+   (terminal 2) y sigue: el intento se recoge solo.
+
+
+PARTE 2 · RELLENAR Y REVISAR (SIN ENVIAR)
+-----------------------------------------
+5. Con el worker en marcha, si no lo hiciste en el paso 4, pulsa «Preparar candidatura».
+   Esperado:
+   - en el navegador de Job Hunter se abre una pestaña con el formulario y se rellena solo (en
+     Lever, la URL termina en /apply);
+   - en la ficha, «Rellenando el formulario de <dominio>…» y después la pantalla de revisión.
+   En la terminal del worker: «Candidatura asistida, intento N: ready» (o needs_user).
+6. Revisa la pantalla de revisión:
+   - estado «Listo para revisar · <dominio>»;
+   - la captura (clic: se abre completa en otra pestaña);
+   - la tabla «Campos del formulario»: nombre, apellidos, correo, teléfono, LinkedIn con
+     «Perfil: …»; el CV con el nombre del PDF; la carta, si hay; las preguntas con «Respuesta del
+     paquete: «…»»;
+   - los datos sensibles (género, origen, discapacidad, veterano…) en «Dato sensible: decides tú»
+     y VACÍOS en el navegador;
+   - las casillas legales (privacidad…) en «Se acepta al enviar», SIN marcar en el navegador;
+   - los avisos: p. ej. «La web usa un captcha invisible…» o «N respuestas del paquete no
+     encajan…».
+   Compara la tabla con lo que ves en la pestaña del navegador. Anota cualquier campo mal
+   rellenado o sin detectar (sobre todo desplegables con buscador de Greenhouse).
+7. Comprueba que NO se ha enviado nada: en la pestaña del navegador sigue el formulario relleno,
+   sin página de «Thank you».
+8. Si hay obligatorios sin respuesta:
+   Esperado: filas en ámbar con «Obligatorio sin respuesta», «Falta(n) N campo(s) obligatorio(s)…»
+   y «Enviar» desactivado. Rellena uno de ellos a mano EN EL NAVEGADOR DE JOB HUNTER y pulsa
+   «Volver a revisar».
+   Esperado: «Trabajando en el navegador…» y la tabla se actualiza: ese campo pasa a «Rellenado ·
+   En el navegador». Repite hasta que no falte ninguno (o salta al paso 10).
+9. Con todo completo, pulsa «Enviar».
+   Esperado: el diálogo «Enviar la candidatura a <Empresa>» dice «Se pulsará «Submit
+   application» en <dominio>…», lista lo que aceptas («Al enviar aceptas: …») y el botón «Enviar
+   candidatura» está desactivado. Escribe otro nombre: sigue desactivado. Escribe el nombre de la
+   empresa en minúsculas: se activa.
+   >>> Pulsa «Cancelar». NO pulses «Enviar candidatura». <<<
+10. Pulsa «Lo termino yo».
+    Esperado: la pestaña del formulario pasa al frente; el estado cambia a «Lo terminas tú» y
+    aparece «Marcar como enviada». (No envíes; si quisieras enviarla de verdad, lo harías tú en esa
+    pestaña y después pulsarías «Marcar como enviada».)
+11. En el historial de la ficha aparece «Formulario rellenado (sin enviar)».
+
+
+PARTE 3 · CAPTCHA, LOGIN Y PÁGINAS SIN FORMULARIO
+-------------------------------------------------
+12. (Si encuentras una) Prepara una oferta cuya web pida iniciar sesión o muestre un captcha.
+    Esperado: «Necesita tu intervención» con el motivo («La web pide iniciar sesión…» o «La página
+    muestra un captcha…»), la captura y la pestaña abierta para ti. Nada rellenado.
+
+
+PARTE 4 · LINKEDIN
+------------------
+13. Abre una oferta de LinkedIn en «Aprobada» o «CV listo».
+    Esperado: «LinkedIn no se automatiza: se abrirá la oferta…» y el botón «Abrir y preparar».
+    Púlsalo: el navegador de Job Hunter abre la oferta y nada más. La sección ofrece «Volver a
+    abrir» y «Marcar como enviada»; el paquete de candidatura sigue arriba para copiar.
+
+
+PARTE 5 (OPCIONAL) · ENVÍO DE VERDAD CONTRA UN FORMULARIO LOCAL
+---------------------------------------------------------------
+Comprueba el envío sin tocar ninguna web real, con los formularios ficticios de los tests.
+14. Para la API y el worker (Ctrl+C). En esas dos terminales, antes de volver a arrancarlos:
+        $env:JH_APPLIER_ALLOW_LOOPBACK = "1"
+    y arráncalos de nuevo (jh serve / jh worker). Terminal 4, el formulario local:
+        uv run --directory backend python -m http.server 8765 --directory tests/fixtures/applier
+15. Da de alta la oferta ficticia en la UI: «Nueva» → pestaña de texto, con
+        Puesto:   Data Engineer (prueba)
+        Empresa:  Formulario Local
+        URL:      http://127.0.0.1:8765/simple.html
+        Texto:    cualquier texto de oferta (p. ej. el de demo/)
+    Procésala, apruébala y genera su CV (`/procesar-ofertas`, aprobar en «Triaje»,
+    `/generar-cv <id>`). Abre su ficha y pulsa «Preparar candidatura».
+    Esperado, al llegar a la pantalla de revisión: «Nombre y apellidos», «Email» y «CV»
+    rellenados; «Acepto la política de privacidad» en «Se acepta al enviar».
+16. Pulsa «Enviar», escribe  Formulario Local  y pulsa «Enviar candidatura».
+    Esperado: http.server no acepta envíos (responde 501), así que la app NO reconoce la
+    confirmación: «Envío sin confirmar», «No se ha reconocido la página de confirmación…» y la
+    oferta sigue en «CV listo» (no se registra como enviada). «Volver a revisar» y «Enviar» ya no
+    aparecen: tras pulsar «Enviar», ese intento no se puede volver a enviar. Aparece «Antes de
+    marcarla como enviada, comprueba en la web o en tu correo que llegó».
+17. Pulsa «Preparar de nuevo» y espera a la pantalla de revisión.
+    Esperado: el aviso rojo «En un intento anterior ya se pulsó «Enviar»: comprueba…».
+18. Al terminar, cierra el servidor (Ctrl+C) y, en las terminales de API y worker:
+        Remove-Item Env:JH_APPLIER_ALLOW_LOOPBACK
+    y vuelve a arrancarlos.
+
+
+RESULTADO
+---------
+Apunta, por cada parte, OK o lo que no cuadre (con la captura si puedes). Sobre todo:
+- campos mal rellenados o no detectados en Greenhouse/Lever (paso 6);
+- cualquier cosa que pareciera enviarse sin tu confirmación (no debería pasar nunca).

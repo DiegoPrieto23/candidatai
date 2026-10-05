@@ -145,6 +145,15 @@ class CalendarPolicy(BaseModel):
         return self
 
 
+class ApplierPolicy(BaseModel):
+    """Candidatura asistida (fase 11): rellenar con Playwright y enviar solo tras confirmación."""
+
+    step_timeout_seconds: float = Field(gt=0)
+    confirm_wait_seconds: float = Field(gt=0)
+    token_ttl_seconds: int = Field(gt=0)
+    answer_min_similarity: int = Field(ge=50, le=100)
+
+
 class Policies(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
@@ -158,6 +167,7 @@ class Policies(BaseModel):
     agent_browse: AgentBrowsePolicy
     followups: FollowupsPolicy
     calendar: CalendarPolicy
+    applier: ApplierPolicy
 
 
 class InjectionPatterns(BaseModel):

@@ -10,6 +10,10 @@ programada (el portátil estaba apagado): así no se pierde ningún día.
 
 Alertas por correo (fase 09b): cada `email_alerts.poll_minutes` se encola `poll_email` si hay IMAP
 configurado o correos en `data/inbox/`, y cada día, con la ingesta, `expire_summaries`.
+
+Candidatura asistida (fase 11): el worker es el único dueño del navegador persistente
+(`services/applier/browser.py`). Sus tareas no se reintentan y, si el worker se cierra a medias,
+quedan `failed` al arrancar, nunca vuelven a la cola.
 """
 
 import logging
@@ -70,12 +74,57 @@ def _expire_summaries(session: Session, _payload: dict[str, Any]) -> dict[str, A
     return summaries.expire_summaries(session).model_dump(mode="json")
 
 
+# Candidatura asistida (fase 11). Abren sus propias sesiones cortas: el navegador puede tardar.
+def _browser_open(_session: Session, _payload: dict[str, Any]) -> dict[str, Any]:
+    from app.services.applier import service as applier
+
+    return applier.run_browser_open()
+
+
+def _apply_open(_session: Session, payload: dict[str, Any]) -> dict[str, Any]:
+    from app.services.applier import service as applier
+
+    return applier.run_open(int(payload["attempt_id"]))
+
+
+def _apply_fill(_session: Session, payload: dict[str, Any]) -> dict[str, Any]:
+    from app.services.applier import service as applier
+
+    return applier.run_fill(int(payload["attempt_id"]))
+
+
+def _apply_rescan(_session: Session, payload: dict[str, Any]) -> dict[str, Any]:
+    from app.services.applier import service as applier
+
+    return applier.run_rescan(int(payload["attempt_id"]))
+
+
+def _apply_submit(_session: Session, payload: dict[str, Any]) -> dict[str, Any]:
+    from app.services.applier import service as applier
+
+    return applier.run_submit(
+        int(payload["attempt_id"]), str(payload["token"]), list(payload.get("consents") or [])
+    )
+
+
+def _apply_focus(_session: Session, payload: dict[str, Any]) -> dict[str, Any]:
+    from app.services.applier import service as applier
+
+    return applier.run_focus(int(payload["attempt_id"]))
+
+
 HANDLERS: dict[str, Handler] = {
     "score_job": _score_job,
     "rescore_all": _rescore_all,
     "run_source": _run_source,
     "poll_email": _poll_email,
     "expire_summaries": _expire_summaries,
+    "browser_open": _browser_open,
+    "apply_open": _apply_open,
+    "apply_fill": _apply_fill,
+    "apply_rescan": _apply_rescan,
+    "apply_submit": _apply_submit,
+    "apply_focus": _apply_focus,
 }
 
 
@@ -187,6 +236,9 @@ def describe(outcome: TaskOutcome) -> str:
         return f"Tarea {outcome.task_id} ({outcome.kind}) fallida: {outcome.error}"
     if outcome.kind == "score_job":
         return f"Oferta {result.get('job_id')}: score {result.get('score')}"
+    if outcome.kind.startswith("apply_") and result.get("attempt_id") is not None:
+        state = result.get("status") or result.get("result") or result.get("skipped") or "hecho"
+        return f"Candidatura asistida, intento {result['attempt_id']}: {state}"
     if outcome.kind == "rescore_all":
         scored, closed = result.get("scored", 0), len(result.get("closed") or [])
         return f"Recálculo de matches: {scored} ofertas, {closed} cerradas por filtros"
@@ -252,6 +304,14 @@ def run_scheduler(
     scheduler.add_job(poll_email, "interval", minutes=poll_minutes, id="email_alerts")
 
     with session_scope() as session:
+        if interrupted := tasks.fail_interrupted(session):
+            from app.services.applier import service as applier
+
+            ids = [int(t.payload["attempt_id"]) for t in interrupted if "attempt_id" in t.payload]
+            applier.recover_interrupted(session, ids)
+            on_message(
+                f"Tareas del navegador que quedaron a medias (no se repiten): {len(interrupted)}."
+            )
         if stuck := tasks.requeue_running(session):
             on_message(f"Tareas que quedaron a medias, de vuelta a la cola: {stuck}.")
         queued = enqueue_due_sources(session)

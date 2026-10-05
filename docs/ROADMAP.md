@@ -33,7 +33,9 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 10.1 | ↳ Seguimiento: kanban, ficha de proceso y calendario | ✅ | Kanban que solo mueve con eventos, hitos con hora de Madrid y contactos, aviso de seguimientos, `list_followups_due`, `list_upcoming` y `.ics` por hito y en feed |
 | 10.2 | ↳ Analítica: dashboard del embudo | ✅ | Página «Embudo»: conversión por paso, fuente, puesto y semana; tiempo hasta la primera respuesta; motivos de descarte; `get_funnel_stats` |
 | 10.3 | ↳ Paquete de candidatura | ✅ | `save_application_answers` y sección «Paquete de candidatura»: CV elegido, respuestas editables con botón de copiar y hueco de la carta (08c) |
-| 11 | Candidatura asistida | ⏳ | Rellenado con Playwright y envío tras tu confirmación |
+| 11 | Candidatura asistida | ✅ | Rellenado con Playwright y envío tras tu confirmación |
+| 11.1 | ↳ Motor de rellenado y envío protegido | ✅ | El worker rellena Greenhouse, Lever, Ashby y formularios genéricos, se para con captcha o login y solo envía con una confirmación de un solo uso |
+| 11.2 | ↳ Revisión, envío y UI | ✅ | Pantalla de revisión en la ficha, «Enviar» con el nombre de la empresa, «Lo termino yo» y prueba manual con una oferta real |
 | 12 | Demo, compatibilidad y portfolio | ⏳ | Modo demo, matriz de agentes probada, evals publicados |
 
 **MVP usable:** al terminar la 08 ya puedes pegar ofertas, triarlas y sacar CVs a medida; con la
@@ -45,7 +47,8 @@ igual (la que llegue después añade la carta a las plantillas html).
 Word y tras la 08b para PDF, imagen o HTML; `generar-carta` tras la 08c;
 `revisar-linkedin` funciona tras la 05, pero rinde mucho más desde la 07, cuando ya hay ofertas
 aprobadas de las que sacar las keywords; `buscar-ofertas` tras la 09b; `preparar-candidatura`,
-`preparar-entrevista` y `resumen-diario` tras la 10.
+`preparar-entrevista` y `resumen-diario` tras la 10; la candidatura asistida (sin skill: se
+usa desde la ficha) tras la 11.
 
 ## Registro de fases
 
@@ -956,3 +959,116 @@ decisiones tomadas y deuda técnica pendiente. -->
     raros de Unicode; manda el del servidor.
   - La suite del frontend sigue siendo sensible a la carga de la máquina (ver 10.3).
 
+### 11.1 · Candidatura asistida: motor de rellenado y envío protegido — 2026-10-05 · Claude Code (Opus 5.5)
+- **Resumen:** la fase 11 se parte en dos encargos (`prompts/11.1-motor-rellenado.md` y
+  `11.2-revision-envio-ui.md`) en la rama `fase/11-candidatura-asistida`. Esta subfase añade:
+  - `services/applier/`:
+    - `browser.py`: contexto persistente en `data/browser-profile/`, visible, en un hilo propio;
+      el worker es su único dueño;
+    - `platforms.py`: Greenhouse, Lever, Ashby y LinkedIn por la URL, y si no, mirando la página
+      (iframe de un ATS conocido, `generic` o `unknown`); también valida la URL;
+    - `guard.py`: captcha visible, anti-bot y login (`needs_user`), y el bloqueo del envío mientras
+      se rellena;
+    - `fields.py`: campos por etiqueta accesible, clasificación, plan y rellenado;
+    - `tokens.py`, `submit.py` y `service.py`;
+  - migración `0011` (`application_attempts`) y evento `application_filled` (system, reservado);
+  - tareas del worker `browser_open`, `apply_open`, `apply_fill`, `apply_rescan`, `apply_submit` y
+    `apply_focus`, sin reintentos (`tasks.NO_RETRY_KINDS`, `fail_interrupted`);
+  - política `applier` (timeouts, TTL del token, similitud de preguntas) y `JH_BROWSER_HEADLESS`,
+    `JH_BROWSER_CHANNEL`;
+  - `ARCHITECTURE`, `DATA_MODEL`, `POLICIES` §5.1, `AGENT_INTERFACE` y README al día.
+
+  Tests:
+  - 9 con Chromium contra formularios locales (Greenhouse, Lever, Ashby, genérico en español,
+    captcha, login, sin formulario, una web que intenta enviarse sola y `safe_click`);
+  - 14 del servicio: el flujo completo con 0 envíos al rellenar y exactamente 1 con el token;
+    token inventado, usado o caducado; confirmación pendiente; sin reintentos; URL local;
+  - 25 de clasificación y plan, y 6 estáticos: fuera de `submit.py` nada pulsa el envío; la CLI y
+    el MCP no importan el servicio.
+
+  En total, 1 584 tests de backend y 108 de frontend.
+- **Decisiones:**
+  - Un **motor común** con particularidades por plataforma, en vez de un rellenador por ATS:
+    - la URL del formulario (Lever `/apply`, Ashby `/application`);
+    - los marcadores de obligatorio (`*`, `✱`) y los sí/no con botones de Ashby.
+
+    Los tres ATS comparten etiquetas accesibles y el motor sirve también para los genéricos.
+  - **Token:**
+    - lo emite `confirm_submission` tras comprobar el nombre de la empresa y que `reviewed_at`
+      coincide con la versión revisada;
+    - la BD guarda solo su hash;
+    - viaja una vez en el `payload` de `apply_submit` y se borra al consumirlo o rechazarlo;
+    - una segunda confirmación con otra pendiente da `busy`.
+  - **Tras un clic no se vuelve a `ready`** (`token_used_at`):
+    - un fallo posterior al clic queda `submit_unconfirmed`;
+    - «Volver a revisar» se rechaza;
+    - un intento nuevo lleva el aviso `possible_duplicate`. Lo vio la revisión.
+  - **Sin confirmación reconocida, no hay `applied`.** Con ella, el worker lo registra en su propia
+    transacción con actor `user`, `channel: ats_form`, `attempt_id` y la captura en `evidence`.
+  - **Campos:**
+    - nunca se rellenan datos sensibles: género, origen, discapacidad, nacionalidad, estado civil,
+      salud, antecedentes…;
+    - los consentimientos obligatorios (aviso legal) se marcan justo antes de pulsar, tras tu
+      confirmación;
+    - una casilla obligatoria que no es legal la decides tú;
+    - nombre de pila = primer término; apellidos = el resto.
+  - **Captcha:** el reCAPTCHA invisible solo deja un aviso; para un desafío visible.
+  - **Navegador:** sin trucos anti-detección. Nunca reutiliza una pestaña tuya. Si cierras la
+    ventana, se vuelve a abrir. Si su hilo muere, la orden falla en vez de colgar el worker.
+  - **URL:** solo `http`/`https` y nunca la propia máquina (`JH_APPLIER_ALLOW_LOOPBACK`, solo
+    para los tests).
+  - **Bloqueo del envío:** se rearma antes de cada campo. Protege de accidentes, no de una web
+    hostil, y así consta en `guard.py`.
+- **Deuda y notas para la 11.2:**
+  - La API debe exigir `reviewed_at` y mostrar el dominio de destino, el botón que se pulsará
+    (aviso `submit_button`) y los consentimientos que se aceptan (`AttemptView.consents`).
+  - Avisar si el worker no está en marcha: las tareas se quedan en cola. `jh worker --once`
+    cierra el navegador al acabar, así que la pestaña preparada se pierde.
+  - Los comboboxes de Greenhouse (React-select) solo se han probado con su marcado accesible
+    estándar. La prueba manual con una oferta real lo dirá.
+  - La BD real necesita `jh db upgrade` (hasta 0011).
+
+### 11.2 · Candidatura asistida: revisión, envío y UI — 2026-10-05 · Claude Code (Opus 5.5)
+- **Resumen:** cierra la fase 11.
+  - **API** (`routes/apply.py`, capa fina):
+    - `GET /jobs/{id}/apply`: último intento y qué haría «Preparar» (`get_state`);
+    - `POST /jobs/{id}/apply/prepare`, `/apply/{id}/rescan`, `/apply/{id}/focus` y
+      `/jobs/{id}/apply/manual-done`;
+    - `POST /apply/{id}/submit` con `{company_confirmation, reviewed_at}` (obligatorio): la única
+      puerta al envío;
+    - `GET /apply/{id}/screenshot/{review|confirmation}` (solo desde `data/applications/`) y
+      `POST /browser/open`.
+
+    `ApplierError` va al formato común con el código del servicio en `details`.
+  - `AttemptView` gana `domain`, `can_rescan`, `submit_button` (aviso con `detail`) y
+    `pending_task` (para avisar si el worker no está en marcha). `can_submit` exige «CV listo».
+  - **UI**: sección «Candidatura asistida» en la ficha, después del paquete:
+    - preparar, o «Abrir y preparar» en LinkedIn;
+    - pantalla de revisión: captura, tabla de campos con estado, valor y origen, obligatorios
+      sin respuesta en ámbar, avisos;
+    - diálogo «Enviar»: dominio, botón que se pulsará, consentimientos y el nombre de la empresa;
+    - «Volver a revisar», «Lo termino yo», «Marcar como enviada», «Preparar de nuevo» y
+      «Preparar navegador»;
+    - se refresca cada 2 s mientras trabaja el worker y refresca la ficha al quedar enviada.
+  - El skill `preparar-candidatura` pide las preguntas literales del formulario (el rellenado las
+    busca por parecido) y remite a la sección.
+  - `ARCHITECTURE`, `RESUMEN_FASES` y guía de prueba manual (`docs/pruebas/fase-11-prueba-manual.txt`).
+  - 13 tests de API y 15 de la sección. 1 597 tests de backend y 123 de frontend.
+- **Decisiones:**
+  - «Preparar navegador» va en la propia sección: no hay página «Estado» en la UI.
+  - El diálogo de envío confirma una **foto del intento** tomada al pulsar «Enviar»: aunque
+    llegue una versión nueva, se manda la `reviewed_at` que viste y el servidor da `stale`. Se monta
+    solo mientras está abierto (siempre empieza vacío) y no es un formulario: Intro no envía. Lo
+    vio la revisión.
+  - Enviada pero sin registrar `applied` (fallo del evento): la sección lo dice y ofrece «Marcar
+    como enviada».
+  - «Marcar como enviada» se rechaza (`busy`) mientras el worker trabaja en el intento.
+  - Tras cualquier error de una acción, se vuelve a pedir el estado (`onSettled`).
+- **Deuda:**
+  - **Prueba manual pendiente:** `docs/pruebas/fase-11-prueba-manual.txt`, que es el criterio de
+    aceptación de la fase: una oferta real de Greenhouse o Lever hasta la pantalla de revisión,
+    sin enviar. Sobre todo, los desplegables con buscador de Greenhouse.
+  - La UI repite la lista de estados del servicio (`REVIEW`, `RETRY`, `MANUAL`). Si cambian,
+    habría que exponer acciones permitidas desde el backend, como `can_rescan`.
+  - El aviso del worker sale tras 15 s en cola, aunque la causa sea otra tarea larga delante.
+  - La BD real necesita `jh db upgrade` (hasta 0011).

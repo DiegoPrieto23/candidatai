@@ -192,13 +192,31 @@ La carta es un documento propio, con sus indicaciones, su verificación y sus re
   - las respuestas se editan sin agente.
 - Ningún botón envía nada: el envío es de la fase 11.
 
+## 11 · Candidatura asistida
+
+### 11.1 · Motor de rellenado y envío protegido
+- El worker abre su propio navegador (visible, con tus sesiones en `data/browser-profile/`) y
+  **rellena** formularios de Greenhouse, Lever, Ashby y webs con formulario: datos del perfil, CV
+  elegido, carta y respuestas del paquete, localizando cada campo por su etiqueta.
+- **Se para antes de enviar** y hace una captura. Con captcha, anti-bot o login, te pasa la
+  pestaña.
+- Nunca rellena datos sensibles (género, origen, salud…).
+- Solo envía con una **confirmación de un solo uso**, sin reintentos. Un test comprueba que nada
+  más pulsa el envío.
+
+### 11.2 · Revisión, envío y UI
+- Sección **«Candidatura asistida»** en la ficha:
+  - «Preparar candidatura» y la **pantalla de revisión**: captura, tabla de campos (qué se
+    rellenó y de dónde sale, qué falta) y avisos;
+  - **«Enviar»**: escribes el nombre de la empresa; te dice qué botón pulsará, en qué web y qué
+    consentimientos aceptas;
+  - «Volver a revisar» tras completar algo a mano, «Lo termino yo» y «Marcar como enviada».
+- La candidatura queda registrada como enviada con la **captura de confirmación** como prueba.
+- LinkedIn y webs desconocidas: solo «Abrir y preparar».
+
 ---
 
 ## Pendiente
-
-### 11 · Candidatura asistida
-Rellenado del formulario con Playwright y envío **solo tras tu confirmación**, candidatura a
-candidatura. Nunca en LinkedIn y nunca esquivando captchas.
 
 ### 12 · Demo, compatibilidad y portfolio
 Modo demo con datos ficticios, matriz de agentes probada y evaluaciones publicadas.

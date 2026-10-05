@@ -53,6 +53,7 @@ export const EVENT_LABEL: Record<Schemas['EventType'], string> = {
   cover_letter_generated: 'Carta de presentación guardada',
   cover_letter_verified: 'Carta de presentación verificada',
   application_prepared: 'Candidatura preparada',
+  application_filled: 'Formulario rellenado (sin enviar)',
   applied: 'Candidatura enviada',
   applied_manually: 'Enviada por tu cuenta',
   reply_received: 'Respuesta recibida',

@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>Candidatura (ficticia)</title></head>
+<body>
+<form id="f" action="/simple/submit" method="post" enctype="multipart/form-data">
+  <label for="name">Nombre y apellidos *</label><input id="name" name="name" required>
+  <label for="email">Email *</label><input id="email" name="email" type="email" required>
+  <label for="cv">CV *</label><input type="file" id="cv" name="cv" required>
+  <input type="checkbox" id="rgpd" name="rgpd" required>
+  <label for="rgpd">Acepto la política de privacidad *</label>
+  <button type="submit">Enviar</button>
+</form>
+</body></html>

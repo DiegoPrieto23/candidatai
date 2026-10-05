@@ -161,9 +161,18 @@ Cola de trabajo del worker (sin Redis).
 | `poll_email` `{}` | `jh worker` cada `email_alerts.poll_minutes`, y al arrancar, si hay IMAP configurado o correos en `data/inbox/` | Lee las alertas nuevas (`ingestion/email/service.poll_email`). Si el buzón falla por la red, queda en `source_runs` y se reintenta |
 | `expire_summaries` `{}` | `jh worker` cada día con la ingesta y al arrancar | Cierra con `expired` los resúmenes más antiguos que `summary_expire_days` |
 | `rescore_all` `{}` | `jh profile import` con versión nueva | Recalcula los matches desfasados de las ofertas abiertas con extracción y cierra las de triaje que ya no pasan los filtros (lo mismo que `jh match rescore`, sin cola) |
+| `browser_open` `{}` | «Preparar navegador» (fase 11) | Abre el navegador persistente (`data/browser-profile/`) para que inicies tus sesiones |
+| `apply_fill` `{attempt_id}` | `prepare` (fase 11) | Rellena el formulario y para antes de enviar (`services/applier/service.run_fill`) |
+| `apply_open` `{attempt_id}` | `prepare` en LinkedIn | Solo abre la URL |
+| `apply_rescan` `{attempt_id}` | «Volver a revisar» | Vuelve a leer los campos y a capturar, sin rellenar nada |
+| `apply_submit` `{attempt_id, token, consents}` | `confirm_submission` (solo la UI) | Consume el token, pulsa el envío, captura la confirmación y registra `applied` |
+| `apply_focus` `{attempt_id}` | «Lo termino yo» | Trae la pestaña al frente y retira el bloqueo del envío |
 
 No se encola dos veces la misma tarea (mismo `kind` y `payload`) mientras siga en cola. Si falla,
 vuelve a la cola con espera creciente; tras 3 intentos queda `failed` con `last_error`.
+Las tareas del navegador (`browser_open` y `apply_*`) **no se reintentan** (POLICIES §5.4): si
+fallan, quedan `failed`; si el worker se cierra mientras corren, al arrancar quedan `failed` y nunca
+vuelven a la cola.
 
 ### `mcp_calls`
 Auditoría de cada llamada a la interfaz para agentes:
@@ -191,7 +200,8 @@ Nunca guarda texto crudo de ofertas ni datos del perfil en `args_summary`.
 | `cover_letter_generated` | agent / user | sin cambio; `payload`: `document_id`, `edited_by_user` (fase 08c) |
 | `cover_letter_verified` | agent | sin cambio; `payload`: `document_id`, `passed`, `blockers` (fase 08c) |
 | `application_prepared` | agent / user | sin cambio; `payload`: `document_id` (las respuestas, `kind = answers`) y `edited_by_user`. Solo en `approved` o `cv_ready` (fase 10.3) |
-| `applied` / `applied_manually` | user | `applied`; `payload.render_id` (el CV enviado: el render seleccionado del último CV, lo pone el código) y `channel` (`ats_form`, `email`, `linkedin_manual`, `portal_manual`; opcional) |
+| `application_filled` | system | sin cambio; solo en `cv_ready`. Lo registra el worker al rellenar un formulario (fase 11); `payload`: `attempt_id`, `platform`, `status` (`ready` o `needs_user`), `filled` y `missing_required` |
+| `applied` / `applied_manually` | user | `applied`; `payload.render_id` (el CV enviado: el render seleccionado del último CV, lo pone el código) y `channel` (`ats_form`, `email`, `linkedin_manual`, `portal_manual`; opcional). Desde la fase 11, el envío asistido lo registra el worker tras tu confirmación, con `channel: ats_form`, `attempt_id` y `evidence` (la captura de la página de confirmación, relativa a `data/`) |
 | `reply_received`, `interview_scheduled`, `interview_done`, `test_assigned` | user | `in_process`. Desde la fase 10, los registra la ficha de proceso al crear una entrevista o una prueba (`payload.milestone_id`, `title`, `starts_at`) o al marcar una entrevista como hecha |
 | `followup_sent` | user | sin cambio |
 | `offer_received` | user | `in_process` |
@@ -300,3 +310,35 @@ conversión nunca pasa del 100 %.
   `hard_filter_failed` por cada `payload.failures[].filter` (`json_each`).
 - `jh_iso_week` y `json_each` son de SQLite: pasar a Postgres (ADR-002) exigiría reescribir esas dos
   expresiones.
+
+## Ampliaciones de la fase 11
+
+### `application_attempts`
+Un intento de candidatura asistida (migración 0011). El estado de la oferta sigue saliendo de los
+eventos; esta tabla guarda lo que necesita la pantalla de revisión.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | int PK | |
+| job_id | FK jobs | |
+| platform | str | `greenhouse`, `lever`, `ashby`, `generic`, `linkedin`, `unknown` (por la URL y, si no, mirando la página) |
+| mode | str | `fill` (rellenar y revisar) u `open` (LinkedIn: solo abrir) |
+| url | str | La del formulario (Lever `…/apply`, Ashby `…/application`) |
+| status | str | `queued` → `filling` → `ready` / `needs_user` / `failed`; `submitting` → `submitted` / `submit_unconfirmed` / `submit_failed` / `needs_user`; `manual` («Lo termino yo» o `open`), `manual_done` y `cancelled` (otro intento lo sustituye) |
+| fields | JSON | `[FieldReport]`: `marker`, `label`, `control`, `kind`, `required`, `status` (`filled`, `empty`, `needs_user_input`, `sensitive`, `consent`, `skipped`, `error`), `source`, `value` (recortado) y `note` |
+| warnings | JSON | `[{code, message}]`: `invisible_captcha`, `submit_blocked`, `no_resume_field`, `unused_answers`, `no_answers`, `missing_required`, `submit_button` (qué botón se pulsará), `no_submit_button`, `possible_duplicate` (un intento anterior ya pulsó «Enviar»), `captcha`, `antibot`, `login`, `no_form`, `form_error`, `no_evidence` |
+| screenshot_path / confirmation_path | str? | Relativos a `data/` (`applications/<job_id>/<intento>/review.png`, `confirmation.png` o `after-submit.png`) |
+| token_hash | str? | SHA-256 del token de envío; el valor nunca se guarda aquí |
+| token_expires_at / token_used_at | datetime? | Un solo uso; caduca a los `applier.token_ttl_seconds` |
+| error | str? | Por qué se paró o falló |
+| created_at / updated_at | datetime | `updated_at` es la versión revisada: si cambia, la confirmación pide revisar otra vez |
+
+Un campo obligatorio cuenta como **pendiente** si no tiene valor y no es un consentimiento: los
+consentimientos obligatorios los aceptas tú al confirmar el envío y se marcan justo antes de pulsar.
+
+Tras usar la confirmación (`token_used_at`), el clic pudo darse: el intento ya no vuelve a `ready`
+(«Volver a revisar» se rechaza) y cualquier fallo posterior al clic queda `submit_unconfirmed`. Para
+enviar otra vez hay que preparar un intento nuevo, que lleva el aviso `possible_duplicate`. El token
+viaja una vez en el `payload` de `apply_submit` y se borra de ahí al consumirlo o rechazarlo.
+
+Registro por paso en `data/logs/applier/<intento>.jsonl` (sin valores personales).

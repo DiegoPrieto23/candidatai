@@ -72,13 +72,20 @@ La app nunca llama a un modelo y no depende de ningún proveedor.
 | `GET /jobs/{id}/cover-letter`, `POST /jobs/{id}/cover-letter/brief` | Sección «Carta de presentación» (fase 08c): indicaciones de la oferta y del perfil, límite resuelto, carta vigente con su TXT, renders y plantillas con diseño de carta; guardar las indicaciones de la oferta |
 | `POST /jobs/{id}/cover-letter`, `POST /cover-letters/{doc}/renders`, `GET /cover-letters/{doc}/text` | Retocar la carta a mano (documento nuevo «Editada por ti», sin verificar), renderizarla con otro diseño, foto o color, y descargarla en TXT (UTF-8, `\r\n`, nombre ASCII). La selección y los PDF y DOCX van por `/renders/{id}/…` como en el CV |
 | `GET /jobs/{id}/package`, `POST /jobs/{id}/answers` | Paquete de candidatura (fase 10.3): CV elegido (enviado o seleccionado, con enlace al PDF), últimas respuestas de screening y carta vigente con su render seleccionado y su texto plano (`PackageCoverLetter`); la edición del usuario crea un documento nuevo «Editadas por ti» (409 fuera de `approved`/`cv_ready`). Nada envía |
+| `GET /jobs/{id}/apply`, `POST /jobs/{id}/apply/prepare` | Candidatura asistida (fase 11): el último intento (campos, avisos, botón que se pulsará, tarea pendiente del worker) y qué haría «Preparar» (rellenar u, en LinkedIn, solo abrir); preparar encola el rellenado (202). Nada envía |
+| `POST /apply/{id}/rescan`, `POST /apply/{id}/focus`, `POST /jobs/{id}/apply/manual-done` | «Volver a revisar» (nunca tras un clic de envío), «Lo termino yo» y «Marcar como enviada» (`applied_manually`) |
+| `POST /apply/{id}/submit` | **La única puerta al envío**: `{company_confirmation, reviewed_at}`; comprueba el nombre de la empresa, la versión revisada y que no falta nada, emite la confirmación de un solo uso y encola el envío (202). El token nunca sale por la API |
+| `GET /apply/{id}/screenshot/{review\|confirmation}`, `POST /browser/open` | Capturas del intento (desde `data/applications/`) y «Preparar navegador» |
 
 - `jh serve` escucha solo en `127.0.0.1`; CORS solo para `http://127.0.0.1:5173`. La extensión de
   captura no lo necesita: sus `host_permissions` la eximen, y `POST /capture` exige su origen y token.
 - Errores con el mismo formato que la interfaz para agentes (`{ok: false, error: {type, message,
   details}}`): 404 `not_found`, 409 `invalid_transition` o `exists`, 413 `too_large`, 422
-  validación, 503 BD sin migrar o sin conversor a PDF (`pdf_unavailable`).
-- Los ficheros solo se sirven desde `data/cvs/` (renders; no todo `data/`, que también guarda
+  validación, 503 BD sin migrar o sin conversor a PDF (`pdf_unavailable`). Las rutas de la
+  candidatura asistida añaden el código del servicio en `details` (`field: "code"`: `busy`,
+  `stale`, `company_mismatch`, `invalid_url`…).
+- Los ficheros solo se sirven desde `data/cvs/` (renders), `data/applications/` (capturas de la
+  candidatura asistida; no todo `data/`, que también guarda
   secretos como el token de captura de la 09b) y desde las carpetas de plantillas (previews): la ruta guardada se resuelve y se comprueba que queda dentro antes de abrirla; si no,
   404.
 - La ficha devuelve el texto original **sin** el envoltorio `<untrusted_job_posting>`: lo lee una
@@ -139,11 +146,43 @@ Las garantías se reparten en capas para que **no dependan de qué agente use ca
      inexistentes, skills fuera del perfil o skills básicas no pedidas.
    - La interfaz para agentes no tiene nada que envíe datos al exterior. Enviar solo ocurre desde
      la UI, con tu clic.
+   - Candidatura asistida (fase 11): solo `services/applier/submit.py` pulsa el envío, y solo
+     con una confirmación de un solo uso que emite la UI tras escribir tú el nombre de la empresa.
+     Mientras se rellena, la página tiene bloqueado el envío. Un test estático lo vigila.
 2. **En el agente, cuando lo permite:** el texto crudo solo lo ve el rol `extractor`, configurado
    con las herramientas mínimas (en Claude Code, solo las dos herramientas MCP que necesita; en
    Codex, sandbox de solo lectura). El resto de roles trabaja con datos ya estructurados.
 3. **Auditoría:** cada llamada a la interfaz queda en la tabla `mcp_calls`.
 4. **Datos personales** en `data/`, fuera del repositorio.
+
+## Candidatura asistida (fase 11)
+
+`services/applier/` rellena formularios de Greenhouse, Lever, Ashby y webs con un formulario
+genérico, y se para antes de enviar (POLICIES §5):
+
+```
+UI «Preparar candidatura» ─► API prepare ─► tarea apply_fill ─► worker
+                                                         │ navegador persistente (data/browser-profile/)
+                                                         │ detectar plataforma · guardia (captcha/anti-bot/login)
+                                                         │ campos por etiqueta accesible · rellenar · capturar
+                                                         ▼
+UI revisión (captura, campos, avisos) ◄── application_attempts (ready | needs_user)
+   │ «Enviar» + nombre de la empresa
+   ▼
+API confirm_submission ─► token de un solo uso ─► tarea apply_submit ─► worker
+                                                         │ tokens.consume ─► submit.click_submit
+                                                         ▼
+                                     captura de confirmación + evento applied (evidencia)
+```
+
+- El **worker es el único dueño del navegador**: el perfil persistente solo admite un proceso y la
+  pestaña rellenada tiene que seguir viva hasta el envío. Todas las llamadas a Playwright pasan por
+  un hilo propio (`applier/browser.py`).
+- Sin reintentos: las tareas del navegador fallan una vez y quedan registradas; si el worker se
+  cierra a medias, no se repiten.
+- LinkedIn y webs sin formulario reconocible: solo se abren (ADR-009) y el paquete se copia desde
+  la ficha.
+- No hay herramienta MCP ni comando `--json` para esto, a propósito.
 
 ## Ejecución en local (Windows 11)
 
@@ -151,7 +190,8 @@ Las garantías se reparten en capas para que **no dependan de qué agente use ca
   inicies sesión y revises formularios, y LibreOffice se usa instalado en el sistema.
 - `jh serve` levanta la API, `jh worker` el scheduler y `pnpm dev` la UI. El worker debe estar en
   marcha para la ingesta diaria; si el equipo estaba apagado a esa hora, al arrancarlo ejecuta
-  las fuentes pendientes.
+  las fuentes pendientes. También para la candidatura asistida: abre el navegador
+  visible de las candidaturas (`JH_BROWSER_CHANNEL=chrome|msedge` usa el navegador instalado).
 - Cada agente arranca el servidor MCP solo, según su configuración generada (`.mcp.json` para
   Claude Code, `.codex/config.toml` para Codex…).
 

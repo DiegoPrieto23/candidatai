@@ -26,6 +26,7 @@ export const keys = {
   /** También bajo `cv`: la carta va a juego con el render seleccionado del CV. */
   letter: (id: number) => ['cv', id, 'letter'] as const,
   funnel: (since: string | null) => ['funnel', since] as const,
+  apply: (id: number) => ['apply', id] as const,
 }
 
 export interface JobsParams {
@@ -590,3 +591,91 @@ export function useSaveUserLetter(jobId: number) {
   })
 }
 
+// --- Candidatura asistida (fase 11) --------------------------------------------------------------
+
+/** Mientras el worker trabaja en el intento, se vuelve a preguntar cada 2 s. */
+const APPLY_BUSY = new Set(['queued', 'filling', 'submitting'])
+
+export function useAssistedApplication(jobId: number, enabled = true) {
+  return useQuery({
+    queryKey: keys.apply(jobId),
+    queryFn: () =>
+      unwrap(api.GET('/jobs/{job_id}/apply', { params: { path: { job_id: jobId } } })),
+    enabled: enabled && Number.isInteger(jobId) && jobId > 0,
+    refetchInterval: (query) => {
+      const attempt = query.state.data?.attempt
+      return attempt && (APPLY_BUSY.has(attempt.status) || attempt.pending_task) ? 2000 : false
+    },
+  })
+}
+
+/** Tras cambiar la etapa (enviada), se refresca todo lo que la muestra. */
+export function useRefreshAfterApply(jobId: number) {
+  const client = useQueryClient()
+  return () =>
+    Promise.all([
+      client.invalidateQueries({ queryKey: keys.job(jobId) }),
+      client.invalidateQueries({ queryKey: keys.package(jobId) }),
+      client.invalidateQueries({ queryKey: keys.process(jobId) }),
+      client.invalidateQueries({ queryKey: keys.status }),
+      client.invalidateQueries({ queryKey: keys.allJobs }),
+      client.invalidateQueries({ queryKey: keys.board }),
+    ])
+}
+
+function useApplyMutation<T>(jobId: number, call: (arg: T) => Promise<unknown>) {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: call,
+    // También tras un error (409 `stale`, `busy`…): el intento cambió y hay que verlo al día.
+    onSettled: () => client.invalidateQueries({ queryKey: keys.apply(jobId) }),
+  })
+}
+
+export function useOpenBrowser() {
+  return useMutation({ mutationFn: () => unwrap(api.POST('/browser/open')) })
+}
+
+/** Encola rellenar el formulario (o, en LinkedIn, solo abrirlo). No envía nada. */
+export function usePrepareApplication(jobId: number) {
+  return useApplyMutation(jobId, () =>
+    unwrap(api.POST('/jobs/{job_id}/apply/prepare', { params: { path: { job_id: jobId } } })),
+  )
+}
+
+export function useRescanApplication(jobId: number) {
+  return useApplyMutation(jobId, (attemptId: number) =>
+    unwrap(api.POST('/apply/{attempt_id}/rescan', { params: { path: { attempt_id: attemptId } } })),
+  )
+}
+
+export function useFocusApplication(jobId: number) {
+  return useApplyMutation(jobId, (attemptId: number) =>
+    unwrap(api.POST('/apply/{attempt_id}/focus', { params: { path: { attempt_id: attemptId } } })),
+  )
+}
+
+/** Tu confirmación de envío: el nombre de la empresa y la versión del intento que revisaste. */
+export function useSubmitApplication(jobId: number) {
+  return useApplyMutation(
+    jobId,
+    ({ attemptId, company, reviewedAt }: { attemptId: number; company: string; reviewedAt: string }) =>
+      unwrap(
+        api.POST('/apply/{attempt_id}/submit', {
+          params: { path: { attempt_id: attemptId } },
+          body: { company_confirmation: company, reviewed_at: reviewedAt },
+        }),
+      ),
+  )
+}
+
+export function useMarkApplicationSent(jobId: number) {
+  const client = useQueryClient()
+  const refresh = useRefreshAfterApply(jobId)
+  return useMutation({
+    mutationFn: () =>
+      unwrap(api.POST('/jobs/{job_id}/apply/manual-done', { params: { path: { job_id: jobId } } })),
+    onSuccess: () =>
+      Promise.all([client.invalidateQueries({ queryKey: keys.apply(jobId) }), refresh()]),
+  })
+}

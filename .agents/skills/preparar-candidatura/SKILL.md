@@ -9,6 +9,8 @@ pegadas del formulario o la palabra `carta`.
 1. Carga `get_extraction`, `get_profile` y `get_cv_content` del `job_id`.
 2. Si hay preguntas del formulario, respóndelas una a una: en el idioma de la pregunta, directas
    y con `evidence`: ids del perfil (logros, proyectos, historias STAR…), `extraction` o `user`.
+   Copia cada `question` **tal cual aparece en el formulario** (mismo idioma y texto): la
+   candidatura asistida de la ficha busca la respuesta de cada campo por parecido con su pregunta.
    - Salario, disponibilidad exacta, permiso de trabajo o cualquier dato que no esté en el perfil
      público: `needs_user_input: true` y la respuesta vacía (no hay campo de nota: di qué hace
      falta al enseñar el resultado; la UI la marca como pendiente).
@@ -19,5 +21,7 @@ pegadas del formulario o la palabra `carta`.
    verificación). Si ya hay una carta verificada, no la rehagas: dilo y sigue.
 4. Guarda con `save_application_answers`.
 5. Enseña el resultado para revisarlo: el usuario lo ve, lo edita y lo copia en la sección
-   «Paquete de candidatura» de la ficha. **No envíes nada ni abras formularios**: el envío es de la
-   fase 11 y siempre desde la UI.
+   «Paquete de candidatura» de la ficha, o pulsa «Preparar candidatura» en la sección
+   «Candidatura asistida» para que la app rellene el formulario y lo revise antes de enviar.
+   **No envíes nada ni abras formularios**: el envío solo se desencadena desde la UI, con su
+   confirmación (POLICIES §5); no hay herramienta para ello.

@@ -90,6 +90,7 @@ EXPECTED: dict[EventType, dict[Stage, Stage]] = {
     EventType.COVER_LETTER_GENERATED: _same((AP, CR)),
     EventType.COVER_LETTER_VERIFIED: _same((AP, CR)),
     EventType.APPLICATION_PREPARED: _same(WORK),
+    EventType.APPLICATION_FILLED: _same((CR,)),
     EventType.APPLIED: _to(AD, (CR,)),
     EventType.APPLIED_MANUALLY: _to(AD, (PE, PT, AP, CR)),
     EventType.REPLY_RECEIVED: _to(IP, (AD, IP)),

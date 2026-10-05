@@ -3,6 +3,16 @@
 ## Contexto
 Lee `docs/POLICIES.md` §5 entero (es la especificación de esta fase) y `docs/DECISIONS.md` ADR-009.
 
+## Subfases
+La fase se hace en dos subfases, cada una con su encargo, en la misma rama
+`fase/11-candidatura-asistida` y con un commit por subfase. Este fichero es la referencia común;
+cada subfase dice qué puntos cubre y las decisiones tomadas al planificarla.
+
+| Subfase | Encargo | Puntos del alcance |
+|---|---|---|
+| 11.1 | `prompts/11.1-motor-rellenado.md` | 1, 2, 5 y 6, y el envío protegido por el token (servicio y worker) |
+| 11.2 | `prompts/11.2-revision-envio-ui.md` | 3 y 4 (API y UI), la prueba manual y el cierre de la fase |
+
 ## Objetivo
 Rellenar formularios de ATS sin intervención y enviar solo cuando confirmes en la UI.
 
