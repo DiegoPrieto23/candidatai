@@ -16,8 +16,8 @@ import mcp_types as types
 from mcp.server import Server, ServerRequestContext
 from mcp.server.stdio import stdio_server
 
-from app.agent_interface.cli import dump_json
 from app.agent_interface.errors import ToolError
+from app.agent_interface.output import dump_json
 from app.agent_interface.registry import CallContext, ToolSpec
 from app.agent_interface.runner import call_tool
 from app.agent_interface.tools import TOOLS, TOOLS_BY_NAME

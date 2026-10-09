@@ -1205,3 +1205,17 @@ decisiones tomadas y deuda técnica pendiente. -->
   - Una oferta remota sin país lleva foto por la política por defecto.
   - El README mezcla portfolio y manual de uso (355 líneas); se podría mover «Usarlo con tus
     datos» a `docs/`.
+
+### Mejora · Arranque del servidor MCP — 2026-10-09 · Claude Code (Opus 5.5)
+- **Problema:** `jh-mcp` tardaba ~5 s en caliente y ~17 s en frío (Windows Defender revisa cada
+  fichero de `.venv`), y Claude Code lo daba por caído a los 30 s.
+- **Cambios:**
+  - `trafilatura`, `alembic` y `pypdf` se importan solo dentro de las funciones que los usan;
+  - `dump_json` pasa a `app/agent_interface/output.py`, así el servidor ya no importa la CLI
+    (Typer);
+  - `migrations.head_revision()` se cachea: antes releía las migraciones en cada llamada;
+  - test `test_server_startup_skips_heavy_imports`;
+  - `.claude/settings.json`: `MCP_TIMEOUT=60000`.
+- **Resultado:** ~3,5 s en caliente. Lo que queda es sobre todo el SDK de MCP (~1,5 s) y
+  SQLAlchemy (~0,5 s).
+- **Recomendado en local:** excluir `backend/.venv` de Windows Defender.
