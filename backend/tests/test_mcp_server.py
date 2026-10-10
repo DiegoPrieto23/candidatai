@@ -160,3 +160,14 @@ def test_agents_check_delegates_to_sync_script(monkeypatch: pytest.MonkeyPatch) 
 def test_agents_check_real() -> None:
     # El repo tiene lo generado al día (CI lo exige): `jh agents check` debe pasar de verdad.
     assert runner.invoke(cli.app, ["agents", "check"]).exit_code == 0
+
+
+def test_server_startup_skips_heavy_imports() -> None:
+    """Claude Code da el servidor por caído si tarda en arrancar (30 s por defecto, en frío con
+    Windows Defender). Estas dependencias solo hacen falta al llamar a ciertas herramientas."""
+    heavy = ("trafilatura", "alembic", "pypdf", "typer", "playwright", "fastapi")
+    code = f"import sys, app.mcp.server; print(','.join(m for m in {heavy!r} if m in sys.modules))"
+    result = subprocess.run(
+        [sys.executable, "-c", code], capture_output=True, text=True, check=True
+    )
+    assert result.stdout.strip() == ""

@@ -12,19 +12,13 @@ from pathlib import Path
 from typing import Any, NoReturn
 
 import typer
-from pydantic import BaseModel
 
 from app.agent_interface.errors import ToolError
+from app.agent_interface.output import dump_json
 from app.agent_interface.registry import CallContext, ToolSpec
 from app.agent_interface.runner import call_tool
 from app.agent_interface.tools import TOOLS
 from app.core.config import REPO_ROOT, get_settings
-
-
-def dump_json(payload: BaseModel | dict[str, Any]) -> str:
-    """JSON compacto, igual en los dos canales."""
-    data = payload.model_dump(mode="json") if isinstance(payload, BaseModel) else payload
-    return json.dumps(data, ensure_ascii=False, separators=(",", ":"))
 
 
 def _fail(error: ToolError, as_json: bool) -> NoReturn:

@@ -114,7 +114,7 @@
           "jobs"
         ],
         "summary": "List Jobs",
-        "description": "Bandeja: ofertas más recientes primero, filtradas por etapa y texto (título o empresa).",
+        "description": "Bandeja: filtrada por etapa y texto (título o empresa), ordenada por fecha de alta, score\no salario anualizado (por defecto, las más recientes primero; sin el dato, al final).",
         "operationId": "list_jobs",
         "parameters": [
           {
@@ -171,6 +171,35 @@
               "minimum": 0,
               "default": 0,
               "title": "Offset"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "date",
+                "score",
+                "salary"
+              ],
+              "type": "string",
+              "default": "date",
+              "title": "Sort"
+            }
+          },
+          {
+            "name": "dir",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string",
+              "default": "desc",
+              "title": "Dir"
             }
           }
         ],
@@ -10504,6 +10533,16 @@
               }
             ],
             "title": "Remote Mode"
+          },
+          "salary": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Salary"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -10518,7 +10557,8 @@
           "duplicate_of",
           "first_seen_at",
           "score",
-          "remote_mode"
+          "remote_mode",
+          "salary"
         ],
         "title": "JobRow"
       },

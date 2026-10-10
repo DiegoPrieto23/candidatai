@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import {
+  ArrowDownIcon,
   ArrowLeftIcon,
   ArrowRightIcon,
+  ArrowsDownUpIcon,
+  ArrowUpIcon,
   MagnifyingGlassIcon,
   PlusIcon,
   TrayIcon,
@@ -10,7 +13,7 @@ import {
   XIcon,
 } from '@phosphor-icons/react'
 import type { JobRow, Stage } from '@/api/client'
-import { PAGE_SIZE, useJobs } from '@/api/queries'
+import { type JobSort, PAGE_SIZE, type SortDirection, useJobs } from '@/api/queries'
 import { ScoreBadge } from '@/components/MatchDetails'
 import { StageBadge } from '@/components/StageBadge'
 import { EmptyState, ErrorState } from '@/components/States'
@@ -19,12 +22,36 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { formatDate, formatRelative, REMOTE_LABEL, STAGE_LABEL, STAGES } from '@/lib/labels'
+import { formatDate, formatRelative, formatSalary, REMOTE_LABEL, STAGE_LABEL, STAGES } from '@/lib/labels'
 import { cn } from '@/lib/utils'
 
 function isStage(value: string | null): value is Stage {
   return value !== null && (STAGES as readonly string[]).includes(value)
 }
+
+interface Sort {
+  sort: JobSort
+  dir: SortDirection
+}
+
+const SORTS: readonly JobSort[] = ['date', 'score', 'salary']
+const DEFAULT_SORT: Sort = { sort: 'date', dir: 'desc' }
+
+function parseSort(params: URLSearchParams): Sort {
+  const sort = params.get('sort')
+  if (!sort || !(SORTS as readonly string[]).includes(sort)) return DEFAULT_SORT
+  return { sort: sort as JobSort, dir: params.get('dir') === 'asc' ? 'asc' : 'desc' }
+}
+
+/** Para el selector del móvil, donde no hay cabeceras. */
+const SORT_OPTIONS: { value: string; label: string }[] = [
+  { value: 'date:desc', label: 'Más recientes' },
+  { value: 'date:asc', label: 'Más antiguas' },
+  { value: 'score:desc', label: 'Más encaje' },
+  { value: 'score:asc', label: 'Menos encaje' },
+  { value: 'salary:desc', label: 'Más salario' },
+  { value: 'salary:asc', label: 'Menos salario' },
+]
 
 /** Búsqueda con retardo: no se lanza una consulta por cada tecla. */
 function useDebounced<T>(value: T, ms = 250): T {
@@ -54,7 +81,49 @@ function RemoteMode({ mode }: { mode: JobRow['remote_mode'] }) {
   return <span className={cn(mode === 'unknown' && 'text-muted-foreground')}>{REMOTE_LABEL[mode]}</span>
 }
 
-function JobTable({ jobs }: { jobs: JobRow[] }) {
+function Salary({ salary }: { salary: JobRow['salary'] }) {
+  const text = formatSalary(salary)
+  if (!text) return <span className="text-muted-foreground/60">No lo indica</span>
+  return <span className="tabular">{text}</span>
+}
+
+/** Cabecera que ordena: la primera pulsación, de mayor a menor; la siguiente, al revés. */
+function SortHeader({
+  field,
+  current,
+  onSort,
+  className,
+  children,
+}: {
+  field: JobSort
+  current: Sort
+  onSort: (sort: Sort) => void
+  className?: string
+  children: React.ReactNode
+}) {
+  const active = current.sort === field
+  const Icon = !active ? ArrowsDownUpIcon : current.dir === 'desc' ? ArrowDownIcon : ArrowUpIcon
+  return (
+    <th
+      aria-sort={active ? (current.dir === 'desc' ? 'descending' : 'ascending') : 'none'}
+      className={cn('pb-3 font-medium', className)}
+    >
+      <button
+        type="button"
+        onClick={() => onSort({ sort: field, dir: active && current.dir === 'desc' ? 'asc' : 'desc' })}
+        className={cn(
+          'inline-flex items-center gap-1 rounded-sm outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring',
+          active && 'text-foreground',
+        )}
+      >
+        {children}
+        <Icon className={cn('size-3.5', !active && 'opacity-50')} aria-hidden />
+      </button>
+    </th>
+  )
+}
+
+function JobTable({ jobs, sort, onSort }: { jobs: JobRow[]; sort: Sort; onSort: (sort: Sort) => void }) {
   const navigate = useNavigate()
   return (
     <>
@@ -64,9 +133,16 @@ function JobTable({ jobs }: { jobs: JobRow[] }) {
           <tr className="text-left text-xs text-muted-foreground">
             <th className="pb-3 pl-4 font-medium">Oferta</th>
             <th className="pb-3 font-medium">Modalidad</th>
-            <th className="pb-3 pr-6 text-right font-medium">Encaje</th>
+            <SortHeader field="salary" current={sort} onSort={onSort}>
+              Salario
+            </SortHeader>
+            <SortHeader field="score" current={sort} onSort={onSort} className="pr-6 text-right">
+              Encaje
+            </SortHeader>
             <th className="pb-3 font-medium">Etapa</th>
-            <th className="pb-3 pr-4 text-right font-medium">Alta</th>
+            <SortHeader field="date" current={sort} onSort={onSort} className="pr-4 text-right">
+              Alta
+            </SortHeader>
           </tr>
         </thead>
         <tbody className="divide-y">
@@ -94,6 +170,9 @@ function JobTable({ jobs }: { jobs: JobRow[] }) {
               </td>
               <td className="py-3.5 pr-6 whitespace-nowrap">
                 <RemoteMode mode={job.remote_mode} />
+              </td>
+              <td className="py-3.5 pr-6 whitespace-nowrap">
+                <Salary salary={job.salary} />
               </td>
               <td className="py-3.5 pr-6 text-right">
                 <ScoreBadge score={job.score} />
@@ -131,6 +210,7 @@ function JobTable({ jobs }: { jobs: JobRow[] }) {
               <p className="mt-2 flex gap-3 text-xs text-muted-foreground">
                 {job.score != null && <span className="tabular font-medium text-foreground">{job.score}/100</span>}
                 <RemoteMode mode={job.remote_mode} />
+                {job.salary && <Salary salary={job.salary} />}
                 <time dateTime={job.first_seen_at}>{formatRelative(job.first_seen_at)}</time>
               </p>
             </Link>
@@ -164,6 +244,7 @@ export function InboxPage() {
   const stageParam = params.get('stage')
   const stage = isStage(stageParam) ? stageParam : undefined
   const page = Math.max(1, Number(params.get('page')) || 1)
+  const sort = parseSort(params)
   const [search, setSearch] = useState(params.get('q') ?? '')
   const q = useDebounced(search.trim())
 
@@ -182,7 +263,7 @@ export function InboxPage() {
     )
   }, [q, setParams])
 
-  const { data, isPending, isError, error, refetch, isPlaceholderData } = useJobs({ stage, q, page })
+  const { data, isPending, isError, error, refetch, isPlaceholderData } = useJobs({ stage, q, page, ...sort })
 
   const update = (changes: Record<string, string | null>) => {
     const next = new URLSearchParams(params)
@@ -191,6 +272,12 @@ export function InboxPage() {
       else next.delete(key)
     }
     setParams(next)
+  }
+
+  // El orden vive en la URL, como el filtro; el de por defecto no se escribe.
+  const setSort = (next: Sort) => {
+    const isDefault = next.sort === DEFAULT_SORT.sort && next.dir === DEFAULT_SORT.dir
+    update({ sort: isDefault ? null : next.sort, dir: isDefault ? null : next.dir, page: null })
   }
 
   const total = data?.total ?? 0
@@ -234,6 +321,24 @@ export function InboxPage() {
             {STAGES.map((s) => (
               <SelectItem key={s} value={s}>
                 {STAGE_LABEL[s]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select
+          value={`${sort.sort}:${sort.dir}`}
+          onValueChange={(value) => {
+            const [field, dir] = value.split(':')
+            setSort({ sort: field as JobSort, dir: dir as SortDirection })
+          }}
+        >
+          <SelectTrigger aria-label="Ordenar" className="h-10 w-full bg-card data-[size=default]:h-10 md:hidden">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {SORT_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
               </SelectItem>
             ))}
           </SelectContent>
@@ -289,7 +394,7 @@ export function InboxPage() {
           )
         ) : (
           <div className="pt-3 md:pt-4">
-            <JobTable jobs={data.items} />
+            <JobTable jobs={data.items} sort={sort} onSort={setSort} />
           </div>
         )}
       </section>

@@ -9,6 +9,7 @@ import extractorsSource from '../../../extension/extractors.js?raw'
 import indeedHtml from '../../../extension/tests/fixtures/indeed.html?raw'
 import jsonldHtml from '../../../extension/tests/fixtures/jsonld.html?raw'
 import linkedinHtml from '../../../extension/tests/fixtures/linkedin.html?raw'
+import linkedinViewHtml from '../../../extension/tests/fixtures/linkedin-view.html?raw'
 import plainHtml from '../../../extension/tests/fixtures/plain.html?raw'
 
 interface Extracted {
@@ -63,6 +64,28 @@ describe('extractores', () => {
     expect(data.text).not.toContain('Empleos similares')
     // El HTML del bloque sí lleva lo oculto: la app lo usa para detectar `hidden_text`.
     expect(data.html).toContain('display: none')
+  })
+
+  it('LinkedIn rediseñado (/jobs/view/): cabecera sin clases y descripción plegada', () => {
+    const url = 'https://www.linkedin.com/jobs/view/4000000003/'
+    const data = extractor.run(page(linkedinViewHtml), url, '')
+    expect(data).toMatchObject({
+      site: 'linkedin',
+      title: 'Analytics Engineer',
+      company: 'Acme Datos Demo',
+      location: 'Vigo, Galicia, España',
+    })
+    expect(data.text).toBe(
+      'En Acme Datos Demo buscamos a alguien para modelar datos.\n• Modelos en dbt sobre BigQuery.\n• Pruebas de calidad de datos.',
+    )
+    expect(data.html).toContain('display: none')
+  })
+
+  it('LinkedIn rediseñado: el puesto sale del título de la pestaña si falta en la cabecera', () => {
+    const html = linkedinViewHtml.replace('<p class="x7g8h">Analytics Engineer <svg></svg></p>', '')
+    const data = extractor.run(page(html), 'https://www.linkedin.com/jobs/view/4000000003/', '')
+    expect(data.title).toBe('Analytics Engineer')
+    expect(data.location).toBe('Vigo, Galicia, España')
   })
 
   it('Indeed', () => {

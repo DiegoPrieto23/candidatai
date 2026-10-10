@@ -43,7 +43,7 @@ La app nunca llama a un modelo y no depende de ningún proveedor.
 | Método y ruta | Para qué |
 |---|---|
 | `GET /status` | Recuentos por etapa (cabecera) |
-| `GET /jobs?stage=&q=&limit=&offset=` | Bandeja: filtro por etapa, búsqueda en título y empresa, paginación con `total` |
+| `GET /jobs?stage=&q=&sort=&dir=&limit=&offset=` | Bandeja: filtro por etapa, búsqueda en título y empresa, orden por fecha de alta, score o salario anualizado (`sort`: `date`, `score` o `salary`; `dir`: `asc` o `desc`; sin el dato, al final), paginación con `total`; cada fila lleva `salary` |
 | `GET /jobs/{id}` | Ficha: metadatos, texto original, extracción vigente, eventos y aviso de inyección |
 | `GET /jobs/{id}/match` | Match vigente (lo recalcula si está desfasado), igual que `get_match` |
 | `GET /triage` | Ofertas en `pending_triage` con extracción y match, mayor score primero; calcula los que falten |

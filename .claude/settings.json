@@ -1,4 +1,7 @@
 {
+  "env": {
+    "MCP_TIMEOUT": "60000"
+  },
   "permissions": {
     "allow": [
       "Bash(uv run pytest *)",

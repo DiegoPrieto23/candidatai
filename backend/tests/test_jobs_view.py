@@ -7,7 +7,7 @@ from typing import Any
 import pytest
 from sqlalchemy.orm import Session
 
-from app.models import Job
+from app.models import Job, JobExtraction, Match, ProfileVersion
 from app.services import events, jobs
 from app.services.pipeline import Actor, EventType
 from tests.agent_support import runner
@@ -39,6 +39,54 @@ def test_search_jobs_without_events_has_no_stage(
     make_job()
     page = jobs.search_jobs(session)
     assert page.items[0].stage is None and page.items[0].remote_mode is None
+
+
+def _extract(session: Session, job: Job, salary: dict[str, Any] | None) -> None:
+    data = {"remote_mode": "hybrid", "salary": salary}
+    session.add(JobExtraction(job_id=job.id, schema_version=1, data=data))
+    session.flush()
+
+
+def _score(session: Session, job: Job, score: int) -> None:
+    profile = ProfileVersion(data={}, content_hash=f"h{job.id}")
+    session.add(profile)
+    session.flush()
+    session.add(
+        Match(
+            job_id=job.id, profile_version_id=profile.id, hard_filters={}, score=score, breakdown={}
+        )
+    )
+    session.flush()
+
+
+def test_search_jobs_sorts_by_score_salary_and_date(
+    session: Session, make_job: Callable[..., Job]
+) -> None:
+    yearly, monthly, hourly, unknown = (make_job(f"Oferta {i}") for i in range(4))
+    _extract(session, yearly, {"min": 40000, "max": 50000, "currency": "EUR", "period": "year"})
+    _extract(session, monthly, {"min": 4200, "max": None, "currency": "EUR", "period": "month"})
+    _extract(session, hourly, {"min": 20, "max": 20, "currency": "EUR", "period": "hour"})
+    _extract(session, unknown, {"min": 99999, "max": None, "currency": "EUR", "period": "year"})
+    _extract(session, unknown, None)  # la extracción vigente es la última: sin salario
+    _score(session, monthly, 80)
+    _score(session, yearly, 60)
+
+    def order(**kw: str) -> list[int]:
+        return [row.id for row in jobs.search_jobs(session, **kw).items]
+
+    # Anualizado: 4200 × 12 = 50 400; 45 000 (punto medio); 20 × 1760 = 35 200; sin dato, al final.
+    assert order(sort="salary") == [monthly.id, yearly.id, hourly.id, unknown.id]
+    assert order(sort="salary", direction="asc") == [hourly.id, yearly.id, monthly.id, unknown.id]
+    assert order(sort="score") == [monthly.id, yearly.id, unknown.id, hourly.id]
+    assert order(sort="score", direction="asc")[:2] == [yearly.id, monthly.id]
+    assert order(sort="date", direction="asc") == [yearly.id, monthly.id, hourly.id, unknown.id]
+    page = jobs.search_jobs(session, sort="salary")
+    assert page.items[2].salary is not None and page.items[2].salary.period == "hour"
+    assert page.items[3].salary is None
+    with pytest.raises(jobs.InvalidQueryError):
+        jobs.search_jobs(session, sort="title")  # type: ignore[arg-type]
+    with pytest.raises(jobs.InvalidQueryError):
+        jobs.search_jobs(session, direction="up")  # type: ignore[arg-type]
 
 
 def test_get_job_view_not_found(session: Session) -> None:

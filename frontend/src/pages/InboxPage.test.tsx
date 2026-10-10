@@ -52,6 +52,38 @@ describe('Bandeja', () => {
     expect(calls.filter((c) => c.path === '/jobs' && c.search.get('q')?.startsWith('b')).length).toBeLessThan(3)
   })
 
+  it('enseña el salario y ordena por salario, encaje y fecha desde la cabecera', async () => {
+    const calls = mockApi({
+      'GET /status': status(0, 1),
+      'GET /jobs': page([
+        jobRow({ salary: { min: 40000, max: 50000, currency: 'EUR', period: 'year' } }),
+        jobRow({ id: 2, title: 'BI Developer' }),
+      ]),
+    })
+    renderApp('/?stage=approved')
+
+    const table = await screen.findByRole('table')
+    const rows = within(table).getAllByRole('row')
+    expect(within(rows[1]).getByText(/40\.000\s€ - 50\.000\s€ \/ año/)).toBeInTheDocument()
+    expect(within(rows[2]).getByText('No lo indica')).toBeInTheDocument()
+    const lastJobsCall = () => calls.filter((c) => c.path === '/jobs').at(-1)!
+    expect(lastJobsCall().search.get('sort')).toBe('date') // por defecto: las más recientes
+    expect(lastJobsCall().search.get('dir')).toBe('desc')
+
+    await userEvent.click(within(table).getByRole('button', { name: 'Salario' }))
+    await waitFor(() => expect(lastJobsCall().search.get('sort')).toBe('salary'))
+    expect(lastJobsCall().search.get('dir')).toBe('desc')
+    expect(lastJobsCall().search.get('stage')).toBe('approved')
+    expect(within(table).getByRole('columnheader', { name: 'Salario' })).toHaveAttribute('aria-sort', 'descending')
+
+    await userEvent.click(within(table).getByRole('button', { name: 'Salario' }))
+    await waitFor(() => expect(lastJobsCall().search.get('dir')).toBe('asc'))
+
+    await userEvent.click(within(table).getByRole('button', { name: 'Encaje' }))
+    await waitFor(() => expect(lastJobsCall().search.get('sort')).toBe('score'))
+    expect(lastJobsCall().search.get('dir')).toBe('desc')
+  })
+
   it('muestra un estado vacío que invita a dar de alta', async () => {
     mockApi({ 'GET /status': status(), 'GET /jobs': page([]) })
     renderApp('/')

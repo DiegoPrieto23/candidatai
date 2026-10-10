@@ -16,7 +16,6 @@ from urllib.parse import urlsplit
 
 import httpx
 import lxml.html
-import trafilatura
 from lxml.etree import ParserError
 from pydantic import BaseModel
 from rapidfuzz import fuzz
@@ -83,6 +82,8 @@ def clean_text(text: str) -> str:
 
 
 def _main_text(html: str) -> str:
+    import trafilatura  # pesado (~1 s): solo al descargar una URL, no al arrancar
+
     text = trafilatura.extract(
         html,
         output_format="txt",

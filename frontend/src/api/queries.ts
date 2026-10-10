@@ -1,5 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ApiError, api, unwrap, type CvRenderOptions, type Schemas, type Stage } from './client'
+import type { operations } from './schema'
 
 export const PAGE_SIZE = 50
 
@@ -29,10 +30,16 @@ export const keys = {
   apply: (id: number) => ['apply', id] as const,
 }
 
+type JobsQuery = NonNullable<operations['list_jobs']['parameters']['query']>
+export type JobSort = NonNullable<JobsQuery['sort']>
+export type SortDirection = NonNullable<JobsQuery['dir']>
+
 export interface JobsParams {
   stage?: Stage
   q?: string
   page: number
+  sort?: JobSort
+  dir?: SortDirection
 }
 
 export function useStatus() {
@@ -56,6 +63,8 @@ export function useJobs(params: JobsParams) {
               q: params.q || undefined,
               limit: PAGE_SIZE,
               offset: (params.page - 1) * PAGE_SIZE,
+              sort: params.sort,
+              dir: params.dir,
             },
           },
         }),

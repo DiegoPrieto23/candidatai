@@ -16,8 +16,6 @@ import tempfile
 from collections.abc import Callable
 from pathlib import Path
 
-from pypdf import PdfReader
-
 from app.core.config import get_settings
 from app.core.policies import get_policies
 from app.services.normalize import fold
@@ -172,6 +170,8 @@ class PdfInfo:
 
 
 def read_pdf(path: Path) -> PdfInfo:
+    from pypdf import PdfReader  # solo al leer un PDF, no al arrancar
+
     reader = PdfReader(path)
     fonts: set[str] = set()
     texts = []
