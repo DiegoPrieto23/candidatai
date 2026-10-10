@@ -165,7 +165,7 @@ export function formatRelative(iso: string, now: Date = new Date()): string {
   return formatDate(iso)
 }
 
-// --- Matching y triaje -------------------------------------------------------------------------
+// --- Matching y «Por revisar» -------------------------------------------------------------------------
 
 /** Motivos rápidos de descarte, en el orden de sus atajos (1-6). */
 export const DISCARD_REASONS: readonly { value: DiscardReason; label: string }[] = [

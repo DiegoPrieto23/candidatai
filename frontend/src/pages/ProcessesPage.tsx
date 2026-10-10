@@ -85,11 +85,11 @@ function CardBody({ card, onMove }: { card: BoardCard; onMove?: () => void }) {
           type="button"
           onClick={onMove}
           onPointerDown={(e) => e.stopPropagation()}
-          className="mt-2 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
-          aria-label={`Mover «${card.title}»`}
+          className="mt-2.5 inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-2.5 py-1 text-xs font-medium hover:bg-accent hover:text-accent-foreground"
+          aria-label={`Actualizar estado de «${card.title}»`}
         >
           <ArrowsLeftRightIcon className="size-3.5" />
-          Mover
+          Actualizar estado
         </button>
       )}
     </>
@@ -315,8 +315,9 @@ export function ProcessesPage() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Procesos</h1>
           <p className="mt-1.5 max-w-[65ch] text-sm leading-relaxed text-muted-foreground">
-            Arrastra una tarjeta (o usa «Mover») para registrar lo que ha pasado: nada cambia de columna sin su
-            evento. Las entrevistas y pruebas crean su hito con fecha.
+            Pulsa «Actualizar estado» en una tarjeta (o arrástrala de columna) para registrar lo que ha
+            pasado: una respuesta, una entrevista, un rechazo… Nada cambia de columna sin su evento. Las
+            entrevistas y pruebas crean su hito con fecha.
           </p>
         </div>
         {followups > 0 && (
@@ -333,7 +334,7 @@ export function ProcessesPage() {
         <ErrorState error={board.error} onRetry={() => board.refetch()} />
       ) : empty ? (
         <EmptyState icon={<KanbanIcon className="size-7" weight="duotone" />} title="Aún no hay procesos">
-          Aparecen aquí las ofertas que apruebas en <Link to="/triaje" className="underline underline-offset-4">Triaje</Link>.
+          Aparecen aquí las ofertas que apruebas en <Link to="/por-revisar" className="underline underline-offset-4">Por revisar</Link>.
         </EmptyState>
       ) : (
         <Board columns={board.data.columns} moves={board.data.moves} />

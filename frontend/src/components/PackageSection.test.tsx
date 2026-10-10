@@ -121,6 +121,8 @@ describe('Paquete de candidatura en la ficha', () => {
       }),
     })
     renderApp('/jobs/1')
+    // Ya enviada: lo de antes de enviar está plegado.
+    await userEvent.click(await screen.findByRole('button', { name: /Antes de enviar/ }))
     const section = await screen.findByRole('region', { name: NAME })
     expect(await within(section).findByText('Editadas por ti')).toBeInTheDocument()
     expect(within(section).getByText(/El que enviaste/)).toBeInTheDocument()

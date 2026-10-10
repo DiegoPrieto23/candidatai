@@ -17,7 +17,7 @@ from app.core.db import session_scope
 from app.core.policies import get_policies
 from app.models import ApplicationAttempt, Event, Job, Task
 from app.models.base import utcnow
-from app.services import events, tasks
+from app.services import events, prompts, tasks
 from app.services.applier import browser, service, tokens
 from app.services.applier.service import ApplierError
 from tests.applier_support import FormServer, cv_ready_job
@@ -167,6 +167,10 @@ def test_captcha_leaves_attempt_for_the_user(db: None, server: FormServer) -> No
     assert result["status"] == "needs_user"
     row = attempt(attempt_id)
     assert row.status == "needs_user" and row.error is not None and "captcha" in row.error
+    # Pop-up en la UI para que lo resuelvas tú (nunca se resuelve solo).
+    with session_scope() as session:
+        (prompt,) = prompts.list_pending(session).prompts
+        assert (prompt.kind, prompt.attempt_id) == ("captcha", attempt_id)
     with session_scope() as session, pytest.raises(ApplierError):
         confirm(session, attempt_id, "Acme Analytics")
     assert server.posts == []

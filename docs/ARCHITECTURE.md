@@ -57,6 +57,8 @@ La app nunca llama a un modelo y no depende de ningún proveedor.
 | `GET /uploads`, `POST /uploads`, `DELETE /uploads/{name}` | «Mi CV»: CVs subidos a `data/uploads/` (máximo 10 MB, nombre saneado, nunca se sobrescribe) y la plantilla creada desde cada uno, si la hay (por sha256 del `source.*`) |
 | `GET /templates/{id}/source.png`, `GET /templates/{id}/preview-real.png` | Primera página del original importado y la plantilla con el perfil real (en caché por plantilla y versión del perfil) |
 | `GET /sources`, `POST /sources` | Pantalla «Empresas»: fuentes con conector (empresas objetivo y portales) con su última ejecución; alta (`exists` 409 si ya está) |
+| `POST /sources/platforms` | «Añadir plataforma» (búsqueda con navegador): `AgentBrowseSource`; `exists` 409 si ya hay una con ese nombre. LinkedIn se crea siempre desactivada |
+| `GET /prompts/pending`, `POST /prompts/{id}/answer` | Avisos al usuario (captcha, login…) para el pop-up global; contestar `{outcome: done\|skipped}` |
 | `POST /sources/test`, `POST /sources/{id}/test` | Prueba una fuente nueva o guardada sin guardar nada: «12 ofertas encontradas, 3 tras filtros». Un fallo de la fuente es 200 con `errors` |
 | `POST /sources/{id}/run`, `POST /sources/{id}/active` | Ejecuta ya la fuente (lo nuevo, a `pending_extraction`) o la activa/pausa en la ingesta diaria |
 | `GET /alerts`, `POST /alerts/poll` | Pantalla «Alertas»: ofertas resumen (`pending_detail`) con su prefiltro, primero las que pasan; leer ya el correo (como `jh alerts poll`). Descartar va por `POST /jobs/{id}/events` |

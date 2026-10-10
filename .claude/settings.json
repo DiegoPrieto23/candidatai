@@ -29,7 +29,8 @@
       "mcp__jobhunter__list_sources",
       "mcp__jobhunter__list_followups_due",
       "mcp__jobhunter__list_upcoming",
-      "mcp__jobhunter__get_funnel_stats"
+      "mcp__jobhunter__get_funnel_stats",
+      "mcp__jobhunter__wait_user_action"
     ],
     "ask": [
       "Bash(git commit *)",

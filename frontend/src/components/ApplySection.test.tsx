@@ -194,6 +194,8 @@ describe('Candidatura asistida en la ficha', () => {
       'GET /jobs/1/apply': assistedApplication({ attempt: sent, can_prepare: false }),
     })
     renderApp('/jobs/1')
+    // Ya enviada: lo de antes de enviar está plegado.
+    await userEvent.click(await screen.findByRole('button', { name: /Antes de enviar/ }))
     const region = await section()
     expect(await within(region).findByText(/la web confirmó el envío/)).toBeInTheDocument()
     expect(within(region).getByRole('img', { name: 'Captura después de enviar' })).toBeInTheDocument()

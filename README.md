@@ -28,14 +28,14 @@ solo lo que necesita razonar, siempre contra tu perfil y con comprobaciones que 
 | | |
 |---|---|
 | **Ofertas de varias fuentes** | Alta por URL o texto, APIs públicas de Greenhouse, Lever y Ashby, InfoJobs y Adzuna con claves, alertas por correo (LinkedIn, InfoJobs…), un botón de extensión para la página que estás viendo y, si lo activas, búsqueda con el navegador del agente. Deduplicadas y con detección de contenido dirigido a una IA |
-| **Triaje con score explicado** | Filtros duros (nivel, años, modalidad, zona, idiomas) y un score 0-100 por cobertura de skills, preferencias y, opcionalmente, similitud semántica local. El agente añade una valoración razonada |
+| **Ofertas por revisar con score explicado** | Filtros duros (nivel, años, modalidad, zona, idiomas) y un score 0-100 por cobertura de skills, preferencias y, opcionalmente, similitud semántica local. El agente añade una valoración razonada |
 | **CV y carta a medida** | El agente redacta el contenido citando la evidencia del perfil de cada línea; el código valida, renderiza (Word o HTML → PDF) con tu plantilla, foto y color, y otro rol lo verifica de forma independiente. Cambiar de diseño no gasta agente |
 | **Candidatura asistida** | Rellena formularios de Greenhouse, Lever, Ashby o genéricos, se para ante captchas o logins y **solo envía tras tu confirmación**, escribiendo el nombre de la empresa |
 | **Seguimiento y analítica** | Kanban por etapas que solo se mueve con eventos, hitos con calendario `.ics`, avisos de seguimiento y embudo por fuente, puesto y semana |
 
-| Triaje | Ficha con el CV |
+| Por revisar | Ficha con el CV |
 |---|---|
-| ![Triaje](docs/img/triaje.png) | ![Ficha con el CV](docs/img/ficha-cv.png) |
+| ![Por revisar](docs/img/triaje.png) | ![Ficha con el CV](docs/img/ficha-cv.png) |
 
 | Procesos | Embudo |
 |---|---|
@@ -191,7 +191,7 @@ Arranca `jh serve`, `jh worker` y `pnpm dev`. Crea tu perfil con el skill `actua
 |---|---|
 | `actualizar-perfil` | Crea o actualiza `data/profile.yaml` desde tu CV y lo versiona |
 | `procesar-ofertas` | Extrae las ofertas nuevas (rol `extractor`, aislado cuando el agente lo permite) |
-| `evaluar-encaje` | Valora y explica el encaje de las ofertas de triaje |
+| `evaluar-encaje` | Valora y explica el encaje de las ofertas por revisar |
 | `generar-cv 42` | Redacta, renderiza y verifica el CV para la oferta 42 |
 | `generar-carta 42 máximo 150 palabras` | Carta de presentación según tus indicaciones, verificada; TXT y PDF a juego con el CV |
 | `preparar-candidatura 42` | Respuestas de screening y carta, si hace falta |
@@ -279,6 +279,8 @@ Opcional (fase 09b): para leer tus alertas de empleo por correo, `JH_IMAP_HOST`,
 `JH_IMAP_PASSWORD` y `JH_IMAP_FOLDER` (en Gmail, `imap.gmail.com`, una contraseña de aplicación y
 la etiqueta a la que tu filtro manda las alertas). Sin IMAP, deja los correos exportados (`.eml` o
 `.mbox`) en `data/inbox/`. La conexión es de solo lectura: no marca, mueve ni borra nada.
+Paso a paso (contraseña de aplicación, etiqueta y filtro de Gmail, comprobación):
+[`docs/CONFIGURAR_CORREO.md`](docs/CONFIGURAR_CORREO.md).
 Opcional (fase 11): la candidatura asistida abre un navegador visible con su propio perfil en
 `data/browser-profile/`; `JH_BROWSER_CHANNEL=chrome` (o `msedge`) usa el navegador instalado en vez
 del Chromium de Playwright. El worker (`jh worker`) tiene que estar en marcha.

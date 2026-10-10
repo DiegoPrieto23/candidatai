@@ -40,6 +40,10 @@ calendar_app = typer.Typer(help="Calendario .ics de los procesos.", no_args_is_h
 stats_app = typer.Typer(help="Analítica de la búsqueda.", no_args_is_help=True)
 applications_app = typer.Typer(help="Paquete de candidatura.", no_args_is_help=True)
 letter_app = typer.Typer(help="Cartas de presentación.", no_args_is_help=True)
+prompts_app = typer.Typer(
+    help="Avisos al usuario (captcha, login…) mientras el agente busca ofertas.",
+    no_args_is_help=True,
+)
 capture_app = typer.Typer(
     help="Botón «Enviar a Job Hunter» (extensión del navegador).", no_args_is_help=True
 )
@@ -62,6 +66,7 @@ app.add_typer(calendar_app, name="calendar")
 app.add_typer(stats_app, name="stats")
 app.add_typer(applications_app, name="applications")
 app.add_typer(letter_app, name="letter")
+app.add_typer(prompts_app, name="prompts")
 demo_app = typer.Typer(
     help="Modo demo: una búsqueda ficticia para probar la app.", no_args_is_help=True
 )
@@ -1181,6 +1186,11 @@ def _render_message(result: Any) -> None:
     typer.echo(result.message)
 
 
+def _render_prompt(result: Any) -> None:
+    left = f", quedan {result.seconds_left} s" if result.status == "pending" else ""
+    typer.echo(f"Aviso {result.id} ({result.kind}): {result.status}{left}.")
+
+
 def _render_recorded_run(result: Any) -> None:
     typer.echo(f"Recorrido anotado (ejecución {result.run_id}).")
 
@@ -1495,6 +1505,7 @@ register_tools(
         "stats": stats_app,
         "applications": applications_app,
         "letter": letter_app,
+        "prompts": prompts_app,
     },
     {
         "get_status": _render_status,
@@ -1516,6 +1527,8 @@ register_tools(
         "list_sources": _render_source_list,
         "save_source": _render_message,
         "record_source_run": _render_recorded_run,
+        "request_user_action": _render_prompt,
+        "wait_user_action": _render_prompt,
         "list_followups_due": _render_followups,
         "list_upcoming": _render_upcoming,
         "get_funnel_stats": _render_funnel,

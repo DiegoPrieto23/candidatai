@@ -1,7 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
-import { jobView, matchView, mockApi, renderApp, status } from '@/test/utils'
+import { board, jobView, matchView, mockApi, processView, renderApp, status } from '@/test/utils'
 
 describe('Ficha de oferta', () => {
   it('muestra la extracción legible y el historial con el agente', async () => {
@@ -165,5 +165,45 @@ describe('Ficha de oferta', () => {
     await waitFor(() =>
       expect(calls.find((c) => c.method === 'POST')?.body).toEqual({ type: 'reopened' }),
     )
+  })
+})
+
+describe('Ficha de una oferta ya enviada', () => {
+  it('«¿Qué ha pasado?» va lo primero y lo de antes de enviar queda plegado', async () => {
+    const calls = mockApi({
+      'GET /status': status(),
+      'GET /jobs/1': jobView({ stage: 'applied' }),
+      'GET /jobs/1/process': processView({ stage: 'applied' }),
+      'GET /board': board([]),
+    })
+    renderApp('/jobs/1')
+    const update = await screen.findByRole('region', { name: '¿Qué ha pasado?' })
+    const earlier = screen.getByRole('region', { name: 'Antes de enviar' })
+    // Antes que el resto en el documento.
+    expect(update.compareDocumentPosition(earlier) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    // Extracción y encaje siguen a la vista; el resto, plegado y sin cargar.
+    expect(screen.getByRole('heading', { name: 'Extracción' })).toBeInTheDocument()
+    expect(calls.some((c) => c.path === '/jobs/1/package')).toBe(false)
+    await userEvent.click(within(earlier).getByRole('button', { name: /Antes de enviar/ }))
+    await waitFor(() => expect(calls.some((c) => c.path === '/jobs/1/package')).toBe(true))
+  })
+})
+
+describe('Historial compacto', () => {
+  it('con muchos eventos enseña el alta y los últimos, y despliega el resto', async () => {
+    const now = new Date().toISOString()
+    const types = ['found', 'extracted', 'scored', 'fit_assessed', 'approved', 'cv_generated', 'cv_verified', 'applied']
+    const events = types.map((type, i) => ({
+      id: i + 1, type, actor: 'system', agent_name: null, payload: {}, occurred_at: now, recorded_at: now,
+    }))
+    mockApi({ 'GET /status': status(), 'GET /jobs/1': jobView({ stage: 'cv_ready', events }) })
+    renderApp('/jobs/1')
+    const more = await screen.findByRole('button', { name: 'Ver 3 eventos más' })
+    const history = more.closest('ol')!
+    expect(within(history).getAllByRole('listitem')).toHaveLength(6) // 4 últimos + botón + alta
+    await userEvent.click(more)
+    expect(within(history).getAllByRole('listitem')).toHaveLength(9) // 8 + «Ver menos»
+    await userEvent.click(within(history).getByRole('button', { name: 'Ver menos' }))
+    expect(within(history).getByRole('button', { name: 'Ver 3 eventos más' })).toBeInTheDocument()
   })
 })

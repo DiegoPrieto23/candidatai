@@ -292,7 +292,7 @@ export function TriagePage() {
     <div className="animate-in fade-in duration-300">
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Triaje</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Por revisar</h1>
           <p className="text-sm text-muted-foreground">
             {isPending ? 'Cargando…' : remaining === 1 ? '1 oferta por revisar' : `${remaining} ofertas por revisar`}
             {remaining > 0 && ', de más a menos encaje'}

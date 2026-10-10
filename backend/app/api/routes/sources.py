@@ -3,6 +3,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.api.deps import SessionDep
 from app.schemas.sources import (
+    AgentBrowseSource,
     BrowseAccess,
     SourceInput,
     SourceList,
@@ -32,6 +33,13 @@ def list_sources(session: SessionDep, kind: str | None = None) -> SourceList:
 def add_source(session: SessionDep, body: SourceInput) -> SourceView:
     """Añade una empresa objetivo (ATS + slug) o una búsqueda en un portal con API."""
     return sources.add_source(session, body)
+
+
+@router.post("/platforms", operation_id="add_platform", status_code=status.HTTP_201_CREATED)
+def add_platform(session: SessionDep, body: AgentBrowseSource) -> browse.SaveSourceResult:
+    """«Añadir plataforma»: una web donde el agente busca ofertas con tu navegador. LinkedIn se
+    crea siempre con la búsqueda desactivada (se activa después, aceptando el riesgo)."""
+    return browse.add_platform(session, body)
 
 
 @router.post("/test", operation_id="preview_new_source")

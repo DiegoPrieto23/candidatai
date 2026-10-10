@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { ClockIcon, CompassIcon, WarningIcon } from '@phosphor-icons/react'
 import type { AgentBrowseLimits, BrowseAccess, SourceView } from '@/api/client'
 import { usePlatforms, useUpdateBrowseSettings } from '@/api/queries'
+import { AddPlatformButton } from '@/components/AddPlatformDialog'
 import { EmptyState, ErrorState, InlineCode } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import {
@@ -337,8 +338,8 @@ export function PlatformsPage() {
   } else if (platforms.data.sources.length === 0) {
     body = (
       <EmptyState icon={<CompassIcon className="size-6" weight="duotone" />} title="Aún no hay plataformas">
-        Pide a tu agente <InlineCode text="`buscar-ofertas configurar`" />: te preguntará dónde buscas, te
-        recomendará portales y guardará aquí las búsquedas.
+        Añádelas con «Añadir plataforma» o pide a tu agente <InlineCode text="`buscar-ofertas configurar`" />:
+        te preguntará dónde buscas, te recomendará portales y guardará aquí las búsquedas.
       </EmptyState>
     )
   } else {
@@ -354,7 +355,10 @@ export function PlatformsPage() {
   return (
     <div className="mx-auto max-w-3xl animate-in fade-in duration-300">
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold tracking-tight">Plataformas</h1>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="text-2xl font-semibold tracking-tight">Plataformas</h1>
+          <AddPlatformButton />
+        </div>
         <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
           Portales que tu agente recorre con tu navegador cuando le pides{' '}
           <InlineCode text="`buscar-ofertas`" />, por orden de prioridad. Solo lee: no se postula, no guarda

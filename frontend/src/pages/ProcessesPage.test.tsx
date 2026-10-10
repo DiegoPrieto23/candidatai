@@ -60,7 +60,7 @@ describe('Procesos (kanban)', () => {
   it('registra el envío con canal y fecha desde «Mover»', async () => {
     const calls = mockApi(routes({ 'POST /jobs/1/events': { ok: true, event_id: 9, stage: 'applied' } }))
     renderApp('/procesos')
-    await userEvent.click(await screen.findByRole('button', { name: 'Mover «Oferta 1»' }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Actualizar estado de «Oferta 1»' }))
     const dialog = await screen.findByRole('dialog')
     const register = within(dialog).getByRole('button', { name: 'Registrar' })
     expect(register).toBeDisabled()
@@ -78,7 +78,7 @@ describe('Procesos (kanban)', () => {
   it('descartar exige motivo', async () => {
     mockApi(routes())
     renderApp('/procesos')
-    await userEvent.click(await screen.findByRole('button', { name: 'Mover «Oferta 1»' }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Actualizar estado de «Oferta 1»' }))
     const dialog = await screen.findByRole('dialog')
     await userEvent.click(within(dialog).getByRole('radio', { name: /Descartada/ }))
     expect(within(dialog).getByRole('button', { name: 'Registrar' })).toBeDisabled()
@@ -89,7 +89,7 @@ describe('Procesos (kanban)', () => {
   it('programar una entrevista crea su hito (que registra el evento)', async () => {
     const calls = mockApi(routes({ 'POST /jobs/2/milestones': { id: 8 } }))
     renderApp('/procesos')
-    await userEvent.click(await screen.findByRole('button', { name: 'Mover «Oferta 2»' }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Actualizar estado de «Oferta 2»' }))
     const dialog = await screen.findByRole('dialog')
     await userEvent.click(within(dialog).getByRole('radio', { name: /Entrevista programada/ }))
     const register = within(dialog).getByRole('button', { name: 'Registrar' })
@@ -112,7 +112,7 @@ describe('Procesos (kanban)', () => {
   it('una oferta cerrada solo ofrece reabrirla', async () => {
     mockApi(routes())
     renderApp('/procesos')
-    await userEvent.click(await screen.findByRole('button', { name: 'Mover «Oferta 4»' }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Actualizar estado de «Oferta 4»' }))
     const dialog = await screen.findByRole('dialog')
     const options = within(dialog).getAllByRole('radio')
     expect(options).toHaveLength(1)
