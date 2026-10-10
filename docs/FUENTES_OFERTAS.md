@@ -75,7 +75,8 @@ found ─► pending_detail ─(detail_captured)─► pending_extraction ─►
     correos de los últimos `summary_expire_days` días, pide primero solo sus `Message-ID` y
     descarga el cuerpo solo de los nuevos. Un test con un servidor IMAP falso que falla ante
     cualquier escritura lo comprueba.
-  - Gmail: IMAP con contraseña de aplicación (requiere verificación en dos pasos).
+  - Gmail: IMAP con contraseña de aplicación (requiere verificación en dos pasos). Guía para el
+    usuario: `CONFIGURAR_CORREO.md`.
   - Otros proveedores pueden exigir OAuth para IMAP (p. ej. Outlook.com). La fase lo verifica; si
     no es viable, se usa la alternativa de abajo.
 - **Alternativa sin credenciales:** carpeta `data/inbox/` donde dejas correos exportados (`.eml`
@@ -175,8 +176,10 @@ hayas aprobado. Skill `buscar-ofertas`.
     (por defecto, `agent_browse.default_max_offers`);
   - pausa entre páginas (`agent_browse.delay_seconds`). `list_sources` devuelve estos límites;
   - solo lectura: nada de «Solicitar», «Guardar», «Seguir», mensajes ni formularios;
-  - si aparece un captcha, un aviso anti-bot o un login inesperado, se para esa plataforma y se
-    anota; el login lo haces tú y los captchas no se resuelven.
+  - si aparece un captcha, un aviso anti-bot o un login inesperado, el agente te avisa
+    (`request_user_action`: pop-up en la UI y notificación del sistema) y espera hasta 5 minutos
+    (`wait_user_action`). Si lo resuelves («Ya está»), sigue con esa plataforma; si no («Saltar» o
+    caduca), lo anota y pasa a la siguiente. Los captchas los resuelves tú: nunca el agente.
 - Cada oferta encontrada entra por `add_job_from_text` con `source_id`, `platform`,
   `external_id` y `url`. La deduplicación hace que lo ya visto o descartado no vuelva como nuevo.
   El agente que navega no extrae ni valora: eso lo hacen luego `procesar-ofertas` y `evaluar-encaje`.

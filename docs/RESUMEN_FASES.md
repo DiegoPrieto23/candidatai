@@ -6,7 +6,7 @@ piezas que la sostienen. El detalle (decisiones, deuda, cifras de tests) está e
 
 **Estado a 2026-10-05:**
 - Hechas las 12 fases, con la 05b, la 08b y la 08c.
-- 29 herramientas MCP con su comando `jh` equivalente, 12 skills, 4 roles y 11 migraciones.
+- 31 herramientas MCP con su comando `jh` equivalente, 12 skills, 4 roles y 12 migraciones.
 - 1 627 tests de backend y 125 de frontend.
 
 **La idea de fondo:** la app no llama a ningún LLM. Ingesta, triaje, CVs, cartas, seguimiento y

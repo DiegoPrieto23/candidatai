@@ -142,3 +142,40 @@ def test_browse_settings_validation(client: TestClient) -> None:
     assert client.post(f"/sources/{source_id}/browse", json={"priority": 0}).status_code == 422
     assert client.post(f"/sources/{source_id}/browse", json={"x": 1}).status_code == 422
     assert client.post("/sources/99/browse", json={"priority": 1}).status_code == 404
+
+
+PLATFORM = {
+    "name": "Mi portal",
+    "platform": "miportal",
+    "search_urls": ["https://www.miportal.example/empleo?q=data"],
+    "access": "login",
+    "priority": 2,
+}
+
+
+def test_add_platform_from_the_ui(client: TestClient) -> None:
+    created = client.post("/sources/platforms", json=PLATFORM)
+    assert created.status_code == 201
+    body = created.json()
+    assert body["created"] is True and body["allow_agent_browsing"] is True
+    listed = client.get("/sources", params={"kind": "agent_browse"}).json()["sources"]
+    assert [(s["name"], s["browse"]["access"], s["browse"]["priority"]) for s in listed] == [
+        ("Mi portal", "login", 2)
+    ]
+    again = client.post("/sources/platforms", json={**PLATFORM, "name": " mi  portal "})
+    assert again.status_code == 409 and again.json()["error"]["type"] == "exists"
+    other = client.post(
+        "/sources/platforms", json={**PLATFORM, "name": "Otro", "search_urls": ["ftp://x"]}
+    )
+    assert other.status_code == 422
+
+
+def test_add_linkedin_platform_is_always_created_disabled(client: TestClient) -> None:
+    body = {
+        "name": "LinkedIn",
+        "platform": "linkedin",
+        "search_urls": ["https://www.linkedin.com/jobs/search/?keywords=data"],
+        "allow_agent_browsing": True,
+    }
+    created = client.post("/sources/platforms", json=body)
+    assert created.status_code == 201 and created.json()["allow_agent_browsing"] is False

@@ -39,7 +39,7 @@ from app.models import ApplicationAttempt, Company, DocumentRender, Job, Task
 from app.models.base import utcnow
 from app.schemas.llm_io import ApplicationAnswers
 from app.services import answers as answers_service
-from app.services import events, normalize, tasks
+from app.services import events, normalize, prompts, tasks
 from app.services import profile as profile_service
 from app.services.applier import fields, guard, platforms, submit, tokens
 from app.services.applier.browser import BrowserState, PreparedPage, get_host
@@ -58,6 +58,12 @@ REVIEWABLE = frozenset({"ready", "needs_user", "submit_failed", "submit_unconfir
 RESCANNABLE = frozenset({"ready", "needs_user", "manual"})
 # Desde aquí se puede rellenar la pestaña que tienes delante («Rellenar esta página»).
 PAGE_FILLABLE = frozenset({"manual", "needs_user"})
+# Bloqueos que piden tu intervención con un aviso (pop-up) en la UI.
+_PROMPT_KINDS: dict[str, prompts.PromptKind] = {
+    "captcha": "captcha",
+    "antibot": "anti_bot",
+    "login": "login_required",
+}
 # Avisos que pone `prepare` y que se conservan al rellenar o volver a revisar.
 _STICKY_WARNINGS = frozenset({"possible_duplicate"})
 
@@ -739,6 +745,16 @@ def _store_outcome(
         attempt.error = outcome.blocker.message if outcome.blocker else None
         attempt.token_hash = None
         _touch(attempt, outcome.status)
+        if outcome.blocker is not None and outcome.blocker.kind in _PROMPT_KINDS:
+            # Pop-up en la UI: lo resuelves tú y, con «Ya está», se vuelve a rellenar la página.
+            prompts.request(
+                session,
+                _PROMPT_KINDS[outcome.blocker.kind],
+                f"{outcome.blocker.message} Resuélvelo en el navegador de Job Hunter y pulsa "
+                "«Ya está»: se rellenará el formulario.",
+                url=attempt.url,
+                attempt_id=attempt.id,
+            )
         missing = sum(1 for r in outcome.fields if r.missing)
         filled = sum(1 for r in outcome.fields if r.status == "filled")
         if event and events.current_stage(session, attempt.job_id) == Stage.CV_READY:

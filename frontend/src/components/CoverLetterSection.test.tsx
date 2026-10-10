@@ -163,6 +163,8 @@ describe('Sección Carta de presentación', () => {
       'GET /jobs/1/cover-letter': jobCoverLetter({ can_edit: false }, { edited_by_user: true, verification: null }),
     })
     renderApp('/jobs/1')
+    // Ya enviada: lo de antes de enviar está plegado.
+    await userEvent.click(await screen.findByRole('button', { name: /Antes de enviar/ }))
     const section = await screen.findByRole('region', { name: NAME })
     expect(await within(section).findByText('Editada por ti')).toBeInTheDocument()
     expect(within(section).getByRole('button', { name: 'Copiar texto' })).toBeEnabled()

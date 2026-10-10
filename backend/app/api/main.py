@@ -16,6 +16,7 @@ from app.api.routes import (
     jobs,
     letters,
     process,
+    prompts,
     sources,
     stats,
     status,
@@ -59,6 +60,7 @@ def create_app() -> FastAPI:
     app.include_router(applications.router)
     app.include_router(letters.router)
     app.include_router(apply.router)
+    app.include_router(prompts.router)
     return app
 
 

@@ -1243,3 +1243,25 @@ decisiones tomadas y deuda técnica pendiente. -->
   «Rellenar esta página» con el formulario en una pestaña nueva y negativa en una página del
   portal, `form_url`, página de inicio del navegador y la UI.
 - **Pendiente:** probarlo con ofertas reales de cada portal (`docs/pruebas/fase-11-prueba-manual.txt`).
+
+### Mejora · Seguimiento, avisos y plataformas — 2026-10-10 · Claude Code (Opus 5.5)
+- **«¿Qué ha pasado con esta candidatura?»** en la ficha de las ofertas enviadas o en proceso:
+  botones directos (Me han respondido, Tengo entrevista, Entrevista hecha, Prueba técnica, Oferta
+  recibida, Acepto, Me han rechazado, Me retiro, Sin respuesta). Reutiliza el diálogo del tablero:
+  registra el evento con fecha y nota (y el hito, en entrevistas y pruebas). En Procesos, el
+  enlace «Mover» pasa a ser un botón «Actualizar estado».
+- **Ficha de una oferta ya enviada:** «¿Qué ha pasado?» va lo primero, a todo el ancho; después el
+  proceso (hitos y contactos), la extracción y el encaje. Lo de antes de enviar (candidatura
+  asistida, paquete, CV, carta y texto) queda plegado en «Antes de enviar» y solo se carga al
+  abrirlo.
+- **Historial compacto:** con 7 eventos o más se ven los 4 últimos y el alta; el resto, con «Ver N
+  eventos más» (los avisos de posible inyección, siempre).
+- **«Triaje» → «Por revisar»** en la UI (`/por-revisar`; `/triaje` redirige).
+- **Avisos al usuario** (ADR-022): `request_user_action` / `wait_user_action`, tabla
+  `user_prompts` (migración 0012), pop-up global con cuenta atrás y notificación del sistema;
+  espera de 5 minutos y, si no, el agente sigue. El skill `buscar-ofertas` los usa ante un
+  captcha, un anti-bot o un login; la candidatura asistida también.
+- **«Añadir plataforma»** en Plataformas (`POST /sources/platforms`): portales conocidos o uno
+  propio; LinkedIn se crea siempre desactivada, con el aviso de por qué conviene dejarla así.
+- **Tests:** servicio y API de avisos (incl. espera que vuelve al contestar), paridad MCP ↔ CLI de
+  las dos herramientas nuevas, alta de plataformas, y UI (pop-up, plataformas, «¿Qué ha pasado?»).

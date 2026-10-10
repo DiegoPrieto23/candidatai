@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type ReactNode } from 'react'
+import { Fragment, useState, type FormEvent, type ReactNode } from 'react'
 import { Link, useLocation, useParams } from 'react-router'
 import {
   ArrowCounterClockwiseIcon,
@@ -23,6 +23,7 @@ import { DiscardDialog } from '@/components/DiscardDialog'
 import { MatchDetails, ScoreBadge } from '@/components/MatchDetails'
 import { PackageSection } from '@/components/PackageSection'
 import { ProcessSection } from '@/components/ProcessSection'
+import { StatusUpdate } from '@/components/StatusUpdate'
 import { StageBadge } from '@/components/StageBadge'
 import { ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
@@ -293,45 +294,84 @@ function eventDetail(event: EventOut): string | null {
   return null
 }
 
+/** Con más eventos que esto, el historial se compacta: los últimos y el alta, el resto plegado. */
+const TIMELINE_COMPACT_FROM = 7
+const TIMELINE_RECENT = 4
+
+function TimelineItem({ event, first, line }: { event: EventOut; first: boolean; line: boolean }) {
+  const detail = eventDetail(event)
+  const warning = event.type === 'injection_suspected'
+  return (
+    <li className="relative flex gap-3.5 pb-5 last:pb-0">
+      {line && <span aria-hidden className="absolute top-5 bottom-0 left-[5px] w-px bg-border" />}
+      <span
+        aria-hidden
+        className={cn(
+          'relative mt-1.5 size-[11px] shrink-0 rounded-full border-2 bg-card',
+          warning ? 'border-warning-border bg-warning' : first ? 'border-primary bg-primary' : 'border-input',
+        )}
+      />
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium">{eventLabel(event.type)}</p>
+        <p className="mt-0.5 text-xs text-muted-foreground">
+          {actorLabel(event.actor, event.agent_name)}
+          <span aria-hidden> · </span>
+          <time dateTime={event.occurred_at}>{formatDateTime(event.occurred_at)}</time>
+        </p>
+        {detail && (
+          <p className="mt-2 rounded-md bg-muted/70 px-3 py-2 text-sm leading-relaxed whitespace-pre-wrap break-words">
+            {detail}
+          </p>
+        )}
+      </div>
+    </li>
+  )
+}
+
+/**
+ * Historial, lo último arriba. Si es largo, se ven las últimas interacciones y el alta; lo de en
+ * medio se despliega con un botón (los avisos de posible inyección se ven siempre).
+ */
 function Timeline({ events }: { events: EventOut[] }) {
+  const [expanded, setExpanded] = useState(false)
   const ordered = [...events].reverse() // lo último, arriba
+  const compact = !expanded && ordered.length >= TIMELINE_COMPACT_FROM
+  const last = ordered.length - 1
+  const visible = compact
+    ? ordered.filter((e, i) => i < TIMELINE_RECENT || i === last || e.type === 'injection_suspected')
+    : ordered
+  const hidden = ordered.length - visible.length
+  const firstHidden = compact ? visible.findIndex((e) => ordered.indexOf(e) >= TIMELINE_RECENT) : -1
   return (
     <ol className="relative">
-      {ordered.map((event, i) => {
-        const detail = eventDetail(event)
-        const warning = event.type === 'injection_suspected'
-        return (
-          <li key={event.id} className="relative flex gap-3.5 pb-5 last:pb-0">
-            {i < ordered.length - 1 && (
-              <span aria-hidden className="absolute top-5 bottom-0 left-[5px] w-px bg-border" />
-            )}
-            <span
-              aria-hidden
-              className={cn(
-                'relative mt-1.5 size-[11px] shrink-0 rounded-full border-2 bg-card',
-                warning
-                  ? 'border-warning-border bg-warning'
-                  : i === 0
-                    ? 'border-primary bg-primary'
-                    : 'border-input',
-              )}
-            />
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium">{eventLabel(event.type)}</p>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                {actorLabel(event.actor, event.agent_name)}
-                <span aria-hidden> · </span>
-                <time dateTime={event.occurred_at}>{formatDateTime(event.occurred_at)}</time>
-              </p>
-              {detail && (
-                <p className="mt-2 rounded-md bg-muted/70 px-3 py-2 text-sm leading-relaxed whitespace-pre-wrap break-words">
-                  {detail}
-                </p>
-              )}
-            </div>
-          </li>
-        )
-      })}
+      {visible.map((event, i) => (
+        <Fragment key={event.id}>
+          {compact && i === firstHidden && hidden > 0 && (
+            <li className="relative flex gap-3.5 pb-5">
+              <span aria-hidden className="absolute top-0 bottom-0 left-[5px] w-px border-l border-dashed" />
+              <button
+                type="button"
+                onClick={() => setExpanded(true)}
+                className="ml-[25px] text-xs font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+              >
+                {hidden === 1 ? 'Ver 1 evento más' : `Ver ${hidden} eventos más`}
+              </button>
+            </li>
+          )}
+          <TimelineItem event={event} first={i === 0} line={i < visible.length - 1} />
+        </Fragment>
+      ))}
+      {expanded && ordered.length >= TIMELINE_COMPACT_FROM && (
+        <li className="pt-3">
+          <button
+            type="button"
+            onClick={() => setExpanded(false)}
+            className="text-xs font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+          >
+            Ver menos
+          </button>
+        </li>
+      )}
     </ol>
   )
 }
@@ -396,7 +436,7 @@ function MatchPanel({ job }: { job: JobView }) {
   )
 }
 
-/** Aprobar o descartar (en triaje), descartar un resumen de una alerta y reabrir (si está cerrada). */
+/** Aprobar o descartar (por revisar), descartar un resumen de una alerta y reabrir (si está cerrada). */
 function Decision({ job }: { job: JobView }) {
   const event = useJobEvent()
   const [discarding, setDiscarding] = useState(false)
@@ -441,6 +481,57 @@ function Decision({ job }: { job: JobView }) {
   )
 }
 
+/** Ya enviada: lo que importa es qué pasa ahora; lo de etapas anteriores queda plegado. */
+function wasSent(job: JobView): boolean {
+  if (job.stage === 'applied' || job.stage === 'in_process') return true
+  return job.stage === 'closed' && job.events.some((e) => e.type === 'applied' || e.type === 'applied_manually')
+}
+
+function ExtractionBlock({ job }: { job: JobView }) {
+  if (job.extraction) {
+    return (
+      <Panel title="Extracción">
+        <ExtractionPanel extraction={job.extraction} />
+      </Panel>
+    )
+  }
+  return (
+    <section className="flex items-start gap-4 rounded-xl border border-dashed p-6">
+      <HourglassMediumIcon className="mt-0.5 size-6 shrink-0 text-primary" weight="duotone" />
+      <div>
+        <h2 className="font-semibold">Aún sin extraer</h2>
+        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+          Ejecuta el skill{' '}
+          <code className="rounded bg-muted px-1 py-0.5 font-mono text-[0.85em] text-foreground">procesar-ofertas</code>{' '}
+          en tu agente. Cuando termine, aquí verás seniority, modalidad, skills y salario.
+        </p>
+      </div>
+    </section>
+  )
+}
+
+/** Lo de antes de enviar (candidatura asistida, paquete, CV, carta y texto), plegado. Se carga al abrirlo. */
+function EarlierStages({ children }: { children: ReactNode }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <section aria-label="Antes de enviar" className="rounded-xl border border-dashed">
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen(!open)}
+        className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left text-sm sm:px-6"
+      >
+        <span>
+          <span className="font-medium">Antes de enviar</span>
+          <span className="text-muted-foreground"> · candidatura asistida, paquete, CV, carta y texto de la oferta</span>
+        </span>
+        <CaretDownIcon className={cn('size-4 shrink-0 transition-transform', open && 'rotate-180')} />
+      </button>
+      {open && <div className="space-y-6 border-t p-4 sm:p-5">{children}</div>}
+    </section>
+  )
+}
+
 function JobSkeleton() {
   return (
     <div aria-busy="true" aria-label="Cargando oferta" className="space-y-6">
@@ -461,6 +552,7 @@ export function JobPage() {
   const location = useLocation()
   const added = (location.state as AddedState | null)?.added
   const { data: job, isPending, isError, error, refetch } = useJob(id)
+  const sent = job ? wasSent(job) : false
 
   return (
     <div className="animate-in fade-in duration-300">
@@ -506,34 +598,38 @@ export function JobPage() {
             </div>
           </header>
 
+          {sent && (
+            <div className="mb-6">
+              <StatusUpdate job={job} />
+            </div>
+          )}
+
           <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
             <div className="space-y-6">
               {job.injection && <InjectionAlert injection={job.injection} />}
-              {job.extraction ? (
-                <Panel title="Extracción">
-                  <ExtractionPanel extraction={job.extraction} />
-                </Panel>
+              {sent ? (
+                <>
+                  <ProcessSection job={job} />
+                  <ExtractionBlock job={job} />
+                  <EarlierStages>
+                    <ApplySection job={job} />
+                    <PackageSection job={job} />
+                    <CvSection job={job} />
+                    <CoverLetterSection job={job} />
+                    <OriginalText text={job.raw_text} />
+                  </EarlierStages>
+                </>
               ) : (
-                <section className="flex items-start gap-4 rounded-xl border border-dashed p-6">
-                  <HourglassMediumIcon className="mt-0.5 size-6 shrink-0 text-primary" weight="duotone" />
-                  <div>
-                    <h2 className="font-semibold">Aún sin extraer</h2>
-                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                      Ejecuta el skill{' '}
-                      <code className="rounded bg-muted px-1 py-0.5 font-mono text-[0.85em] text-foreground">
-                        procesar-ofertas
-                      </code>{' '}
-                      en tu agente. Cuando termine, aquí verás seniority, modalidad, skills y salario.
-                    </p>
-                  </div>
-                </section>
+                <>
+                  <ExtractionBlock job={job} />
+                  <ProcessSection job={job} />
+                  <PackageSection job={job} />
+                  <ApplySection job={job} />
+                  <CvSection job={job} />
+                  <CoverLetterSection job={job} />
+                  <OriginalText text={job.raw_text} />
+                </>
               )}
-              <ProcessSection job={job} />
-              <PackageSection job={job} />
-              <ApplySection job={job} />
-              <CvSection job={job} />
-              <CoverLetterSection job={job} />
-              <OriginalText text={job.raw_text} />
             </div>
 
             <aside className="space-y-6">

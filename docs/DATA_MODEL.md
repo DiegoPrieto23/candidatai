@@ -343,3 +343,21 @@ enviar otra vez hay que preparar un intento nuevo, que lleva el aviso `possible_
 viaja una vez en el `payload` de `apply_submit` y se borra de ahí al consumirlo o rechazarlo.
 
 Registro por paso en `data/logs/applier/<intento>.jsonl` (sin valores personales).
+
+## Ampliaciones de la mejora «seguimiento y plataformas»
+
+### `user_prompts`
+Avisos para que el usuario haga algo en el navegador (migración 0012): un captcha, una
+comprobación anti-bot o un login. Los crea el agente (`request_user_action`) al buscar ofertas o
+el worker cuando una candidatura asistida se para. La UI los enseña en un pop-up.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | int PK | |
+| kind | str | `captcha`, `anti_bot`, `login_required` |
+| message | text | Qué hacer y dónde |
+| url | str? | La página afectada |
+| source_id | FK sources? | La plataforma (búsqueda con navegador) |
+| attempt_id | FK application_attempts? | El intento (candidatura asistida): con «Ya está» se encola `apply_fill_page` |
+| status | str | `pending` → `done` («Ya está») / `skipped` («Saltar») / `expired` (pasó `expires_at` o lo sustituyó otro aviso de lo mismo) |
+| created_at / expires_at / answered_at | datetime | Por defecto caduca a los 5 minutos |

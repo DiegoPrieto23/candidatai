@@ -207,6 +207,16 @@ def seed_linkedin_enabled() -> None:
         browse.update_settings(session, 2, allow_agent_browsing=True, confirm_risk=True)
 
 
+def seed_prompt_answered() -> None:
+    """Aviso 1 (captcha en la plataforma 1), ya contestado «Ya está» desde la UI."""
+    from app.services import prompts
+
+    seed_platforms()
+    with session_scope() as session:
+        prompts.request(session, "captcha", "Completa el captcha en Tecnoempleo.", source_id=1)
+        prompts.answer(session, 1, "done")
+
+
 def seed_platforms_and_job() -> None:
     seed_platforms()
     seed_job()
@@ -372,6 +382,22 @@ CASES = [
     _file_case("source-run-invalid", "record_source_run", {"source_id": 1, **RUN_INVALID},
                ["sources", "record-run", "1"], "r.json", RUN_INVALID, seed=seed_platforms,
                expect_error="validation_error"),
+    Case("prompt-request", "request_user_action",
+         {"kind": "captcha", "message": "Completa el captcha en Tecnoempleo.", "source_id": 1},
+         ["prompts", "request", "--kind", "captcha", "--message",
+          "Completa el captcha en Tecnoempleo.", "--source-id", "1"], seed=seed_platforms),
+    Case("prompt-request-unknown", "request_user_action",
+         {"kind": "captcha", "message": "Captcha.", "source_id": 9},
+         ["prompts", "request", "--kind", "captcha", "--message", "Captcha.", "--source-id", "9"],
+         seed=seed_platforms, expect_error="not_found"),
+    Case("prompt-request-bad", "request_user_action", {"kind": "resolver", "message": ""},
+         ["prompts", "request", "--kind", "resolver", "--message", ""],
+         seed=seed_platforms, expect_error="validation_error"),
+    Case("prompt-wait", "wait_user_action", {"prompt_id": 1, "max_wait_seconds": 0},
+         ["prompts", "wait", "1", "--max-wait-seconds", "0"], seed=seed_prompt_answered),
+    Case("prompt-wait-unknown", "wait_user_action", {"prompt_id": 7, "max_wait_seconds": 0},
+         ["prompts", "wait", "7", "--max-wait-seconds", "0"], seed=seed_platforms,
+         expect_error="not_found"),
     Case("list", "list_jobs", {"stage": "pending_extraction", "limit": 5},
          ["jobs", "list", "--stage", "pending_extraction", "--limit", "5"]),
     Case("list-default", "list_jobs", {}, ["jobs", "list"]),

@@ -119,3 +119,49 @@ describe('Plataformas', () => {
     expect(screen.getByText(/buscar-ofertas configurar/)).toBeInTheDocument()
   })
 })
+
+describe('Añadir plataforma', () => {
+  function routes() {
+    return {
+      'GET /status': status(),
+      'GET /sources': { sources: [tecno], agent_browse: LIMITS },
+      'POST /sources/platforms': {
+        status: 201,
+        body: { source_id: 3, created: true, allow_agent_browsing: false, message: 'ok' },
+      },
+    }
+  }
+
+  it('LinkedIn: avisa de por qué conviene dejarla desactivada y la crea desactivada', async () => {
+    const calls = mockApi(routes())
+    renderApp('/plataformas')
+    await userEvent.click(await screen.findByRole('button', { name: 'Añadir plataforma' }))
+    const dialog = await screen.findByRole('dialog')
+    await userEvent.selectOptions(within(dialog).getByLabelText('Portal'), 'linkedin')
+    expect(within(dialog).getByRole('note')).toHaveTextContent('puede restringir o cerrar tu cuenta')
+    const add = within(dialog).getByRole('button', { name: 'Añadir' })
+    expect(add).toBeDisabled()
+    await userEvent.type(
+      within(dialog).getByLabelText('Búsquedas (una URL por línea)'),
+      'https://www.linkedin.com/jobs/search/?keywords=data',
+    )
+    await userEvent.click(add)
+    const call = calls.find((c) => c.method === 'POST' && c.path === '/sources/platforms')
+    expect(call?.body).toMatchObject({ name: 'LinkedIn', platform: 'linkedin', allow_agent_browsing: false })
+  })
+
+  it('otro portal: hay que escribir su id', async () => {
+    const calls = mockApi(routes())
+    renderApp('/plataformas')
+    await userEvent.click(await screen.findByRole('button', { name: 'Añadir plataforma' }))
+    const dialog = await screen.findByRole('dialog')
+    await userEvent.selectOptions(within(dialog).getByLabelText('Portal'), 'otra')
+    await userEvent.type(within(dialog).getByLabelText('Nombre'), 'Mi portal')
+    await userEvent.type(within(dialog).getByLabelText('Id corto'), 'miportal')
+    await userEvent.type(within(dialog).getByLabelText('Búsquedas (una URL por línea)'), 'https://miportal.example/q')
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Añadir' }))
+    const call = calls.find((c) => c.method === 'POST' && c.path === '/sources/platforms')
+    expect(call?.body).toMatchObject({ name: 'Mi portal', platform: 'miportal', search_urls: ['https://miportal.example/q'] })
+    expect(call ? (call.body as Record<string, unknown>).allow_agent_browsing : 'sin llamada').toBeUndefined()
+  })
+})

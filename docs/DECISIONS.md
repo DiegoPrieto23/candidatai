@@ -294,3 +294,21 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
 - **Consecuencias:** en un portal hay dos pasos manuales (pulsar «Solicitar» y copiar el enlace del
   formulario) a cambio de no automatizar cuentas de terceros ni esquivar sus defensas. Las candidaturas que se completan dentro del portal (p. ej. la inscripción de
   InfoJobs) las terminas tú con el paquete de candidatura y «Marcar como enviada».
+
+## ADR-022 · Avisos al usuario con espera limitada (captcha, login)
+- **Contexto:** al buscar ofertas, un captcha paraba la plataforma entera aunque el usuario
+  estuviera delante y pudiera resolverlo en segundos. En la candidatura asistida, el intento se
+  quedaba en «Necesita tu intervención» sin que nadie se enterase.
+- **Decisión:**
+  - tabla `user_prompts` y servicio `prompts`. El agente crea el aviso con `request_user_action`
+    y espera con `wait_user_action` (≤ 55 s por llamada, para no pasarse del timeout de una
+    herramienta MCP) hasta que deje de estar `pending`. El worker crea uno cuando una
+    candidatura se para por captcha, anti-bot o login;
+  - la UI pregunta cada 4 s por los pendientes y enseña un pop-up global con cuenta atrás, «Ya
+    está» y «Saltar», y una notificación del sistema (Notification API del navegador; en Windows,
+    la del centro de actividades) si el usuario la activa;
+  - por defecto caduca a los 5 minutos: el agente anota el incidente y sigue con la siguiente
+    plataforma. En una candidatura asistida, «Ya está» vuelve a rellenar la página;
+  - nada resuelve ni esquiva el captcha: solo se avisa (POLICIES §5.3, regla dura 6).
+- **Consecuencias:** una consulta ligera cada 4 s desde la UI. Si la pestaña de Job Hunter no
+  está abierta ni las notificaciones activadas, el aviso pasa desapercibido y caduca, como antes.

@@ -6,6 +6,7 @@ export const PAGE_SIZE = 50
 
 export const keys = {
   status: ['status'] as const,
+  prompts: ['prompts'] as const,
   jobs: (params: JobsParams) => ['jobs', params] as const,
   allJobs: ['jobs'] as const,
   job: (id: number) => ['job', id] as const,
@@ -342,6 +343,41 @@ export function useUpdateBrowseSettings() {
         }),
       ),
     onSuccess: () => client.invalidateQueries({ queryKey: keys.sources }),
+  })
+}
+
+/** «Añadir plataforma»: una web donde el agente busca con tu navegador (LinkedIn, desactivada). */
+export function useAddPlatform() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (body: Schemas['AgentBrowseSource']) => unwrap(api.POST('/sources/platforms', { body })),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.sources }),
+  })
+}
+
+// --- Avisos al usuario (captcha, login…) ---------------------------------------------------------
+
+/** Avisos que esperan tu respuesta. Se pregunta cada pocos segundos: el agente espera 5 minutos. */
+export function usePendingPrompts() {
+  return useQuery({
+    queryKey: keys.prompts,
+    queryFn: () => unwrap(api.GET('/prompts/pending')),
+    refetchInterval: 4000,
+    refetchIntervalInBackground: true,
+  })
+}
+
+/** «Ya está» o «Saltar». */
+export function useAnswerPrompt() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: ({ promptId, outcome }: { promptId: number; outcome: 'done' | 'skipped' }) =>
+      unwrap(api.POST('/prompts/{prompt_id}/answer', { params: { path: { prompt_id: promptId } }, body: { outcome } })),
+    onSettled: () =>
+      Promise.all([
+        client.invalidateQueries({ queryKey: keys.prompts }),
+        client.invalidateQueries({ queryKey: ['apply'] }),
+      ]),
   })
 }
 

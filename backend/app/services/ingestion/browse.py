@@ -150,6 +150,21 @@ def _check_domains(data: AgentBrowseSource) -> None:
         )
 
 
+def add_platform(session: Session, data: AgentBrowseSource) -> SaveSourceResult:
+    """Alta desde la UI («Añadir plataforma»). A diferencia de `save_source`, no actualiza una
+    existente con el mismo nombre. LinkedIn queda siempre desactivada: se activa después en la
+    misma pantalla, aceptando el riesgo para la cuenta (ADR-016)."""
+    from app.services.ingestion.service import SourceExistsError
+
+    if (existing := _find_by_name(session, data.name)) is not None:
+        raise SourceExistsError(
+            f"Ya hay una plataforma «{existing.name}»: cambia el nombre o edita la existente."
+        )
+    if is_linkedin(data):
+        data = data.model_copy(update={"allow_agent_browsing": False})
+    return save_source(session, data)
+
+
 def save_source(session: Session, data: AgentBrowseSource) -> SaveSourceResult:
     """Crea o actualiza (por `name`) una plataforma. Nunca activa la navegación en LinkedIn; si el
     usuario ya la activó, se conserva."""

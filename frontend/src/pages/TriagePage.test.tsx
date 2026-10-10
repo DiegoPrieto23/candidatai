@@ -37,10 +37,10 @@ function selected() {
   return screen.getByRole('option', { selected: true })
 }
 
-describe('Triaje', () => {
+describe('Por revisar', () => {
   it('ordena por score, atenúa las que no llegan al umbral y enseña el desglose', async () => {
     mockTriage([triageItem(1, 82), triageItem(2, 40)])
-    renderApp('/triaje')
+    renderApp('/por-revisar')
 
     const detail = await screen.findByRole('article', { name: 'Oferta seleccionada' })
     expect(within(detail).getByRole('heading', { name: 'Oferta 1' })).toBeInTheDocument()
@@ -58,7 +58,7 @@ describe('Triaje', () => {
     mockTriage([triageItem(1, 90), triageItem(2, 80), triageItem(3, 70)], {
       'GET /jobs/2': jobView({ id: 2, title: 'Oferta 2' }),
     })
-    renderApp('/triaje')
+    renderApp('/por-revisar')
     await screen.findByRole('article')
 
     await userEvent.keyboard('j')
@@ -74,7 +74,7 @@ describe('Triaje', () => {
 
   it('aprueba con A y pasa a la siguiente', async () => {
     const calls = mockTriage([triageItem(1, 90), triageItem(2, 80)])
-    renderApp('/triaje')
+    renderApp('/por-revisar')
     await screen.findByRole('article')
 
     await userEvent.keyboard('a')
@@ -85,7 +85,7 @@ describe('Triaje', () => {
 
   it('descarta con D, motivo con número y confirma con Intro', async () => {
     const calls = mockTriage([triageItem(1, 90), triageItem(2, 80)])
-    renderApp('/triaje')
+    renderApp('/por-revisar')
     await screen.findByRole('article')
 
     await userEvent.keyboard('d')
@@ -109,7 +109,7 @@ describe('Triaje', () => {
 
   it('«Otro motivo» exige nota; las teclas dentro de la nota no disparan atajos', async () => {
     const calls = mockTriage([triageItem(1, 90)])
-    renderApp('/triaje')
+    renderApp('/por-revisar')
     await screen.findByRole('article')
 
     await userEvent.keyboard('d')
@@ -130,7 +130,7 @@ describe('Triaje', () => {
 
   it('Esc cierra el diálogo sin descartar', async () => {
     const calls = mockTriage([triageItem(1, 90)])
-    renderApp('/triaje')
+    renderApp('/por-revisar')
     await screen.findByRole('article')
     await userEvent.keyboard('d')
     await screen.findByRole('dialog')
@@ -143,7 +143,7 @@ describe('Triaje', () => {
   it('tría 10 ofertas solo con el teclado', async () => {
     const items = Array.from({ length: 10 }, (_, i) => triageItem(i + 1, 95 - i * 5))
     const calls = mockTriage(items)
-    renderApp('/triaje')
+    renderApp('/por-revisar')
     await screen.findByRole('article')
 
     for (let i = 0; i < 10; i++) {
@@ -166,7 +166,7 @@ describe('Triaje', () => {
 
   it('deshace un descarte reabriendo la oferta', async () => {
     const calls = mockTriage([triageItem(1, 90), triageItem(2, 80)])
-    renderApp('/triaje')
+    renderApp('/por-revisar')
     await screen.findByRole('article')
     await userEvent.keyboard('d')
     await screen.findByRole('dialog')
@@ -187,7 +187,7 @@ describe('Triaje', () => {
         body: { ok: false, error: { type: 'invalid_transition', message: 'Ya no está en triaje.', details: [] } },
       },
     })
-    renderApp('/triaje')
+    renderApp('/por-revisar')
     await screen.findByRole('article')
     await userEvent.keyboard('a')
     expect(await screen.findByRole('alert')).toHaveTextContent('No se pudo guardar: Ya no está en triaje.')
@@ -209,7 +209,7 @@ describe('Triaje', () => {
       }),
     })
     mockTriage([item])
-    renderApp('/triaje')
+    renderApp('/por-revisar')
     const detail = await screen.findByRole('article')
     expect(within(detail).getByRole('note', { name: 'No pasa los filtros' })).toHaveTextContent('Pide 6 años de experiencia.')
     expect(within(detail).getByText('Encaje posible')).toBeInTheDocument()
@@ -220,17 +220,18 @@ describe('Triaje', () => {
 
   it('avisa si no hay perfil y enseña la cola vacía', async () => {
     mockApi({ 'GET /status': status(), 'GET /triage': triageQueue([], { profile_missing: true }) })
-    renderApp('/triaje')
+    renderApp('/por-revisar')
     expect(await screen.findByText('Sin perfil importado no hay score.')).toBeInTheDocument()
     expect(screen.getByText('Nada por revisar')).toBeInTheDocument()
   })
 
-  it('el enlace de la cabecera lleva al triaje con su recuento', async () => {
+  it('el enlace de la cabecera lleva a «Por revisar» con su recuento', async () => {
     mockTriage([triageItem(1, 90)], { 'GET /jobs': { items: [], total: 0, limit: 50, offset: 0 } })
     renderApp('/')
-    const link = await screen.findByRole('link', { name: /Triaje/ })
+    const nav = (await screen.findAllByRole('navigation'))[0]
+    const link = await within(nav).findByRole('link', { name: /Por revisar/ })
     await waitFor(() => expect(link).toHaveTextContent('1'))
     await userEvent.click(link)
-    expect(await screen.findByRole('heading', { level: 1, name: 'Triaje' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Por revisar' })).toBeInTheDocument()
   })
 })

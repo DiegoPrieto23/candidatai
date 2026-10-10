@@ -112,7 +112,9 @@ triaje. Los pesos y el umbral se ajustan con `jh eval matching` (`evals/matching
    por la búsqueda con el navegador del agente (§8).
    Tampoco se edita tu perfil desde el agente: el skill `revisar-linkedin` propone los textos y
    tú los aplicas a mano. Las mismas reglas de veracidad (§1) y privacidad (§4) que en el CV.
-3. **Captchas o anti-bot**: se para y se te pasa la pestaña. No se esquivan.
+3. **Captchas o anti-bot**: se para y se te pasa la pestaña. No se esquivan. Te avisa un pop-up
+   (y una notificación del sistema, si la activas) y se espera hasta 5 minutos a que lo
+   resuelvas tú; si no, se sigue sin ello (ADR-022).
    **Portales de empleo** (InfoJobs, Tecnoempleo, Indeed, Glassdoor, Manfred): la app nunca rellena
    una página del portal. La oferta se abre en tu navegador, con tu sesión; pulsas tú «Solicitar»
    y, si te lleva al formulario de la empresa, pegas su enlace y la app lo rellena (ADR-021).

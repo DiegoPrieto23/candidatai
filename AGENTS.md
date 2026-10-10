@@ -22,6 +22,7 @@ solo apuntan aquí.
 | Reglas de negocio (CV, privacidad, aplicar) | `docs/POLICIES.md` |
 | Plantillas de CV, motores y opciones de render | `docs/CV_TEMPLATES.md` |
 | Fuentes de ofertas (alertas, captura, búsqueda con navegador) | `docs/FUENTES_OFERTAS.md` |
+| Guía para configurar las alertas por correo (Gmail, IMAP) | `docs/CONFIGURAR_CORREO.md` |
 | Qué agentes están soportados y con qué garantías | `docs/AGENTS_COMPAT.md` |
 | Qué fase toca y su estado | `docs/ROADMAP.md` |
 | Qué aporta cada fase hecha, en resumen | `docs/RESUMEN_FASES.md` |

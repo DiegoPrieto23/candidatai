@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react'
 import { type QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { Link, Route, Routes } from 'react-router'
+import { Link, Navigate, Route, Routes } from 'react-router'
 import { CompassIcon } from '@phosphor-icons/react'
 import { AppShell } from '@/components/AppShell'
 import { EmptyState } from '@/components/States'
@@ -41,7 +41,9 @@ export function AppRoutes() {
         <Route index element={<InboxPage />} />
         <Route path="jobs/:id" element={<JobPage />} />
         <Route path="nueva" element={<NewJobPage />} />
-        <Route path="triaje" element={<TriagePage />} />
+        <Route path="por-revisar" element={<TriagePage />} />
+        {/* Antes «Triaje»: los enlaces guardados siguen funcionando. */}
+        <Route path="triaje" element={<Navigate to="/por-revisar" replace />} />
         <Route path="procesos" element={<ProcessesPage />} />
         <Route
           path="embudo"

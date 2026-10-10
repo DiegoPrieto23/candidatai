@@ -16,6 +16,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { STAGE_LABEL, STAGES } from '@/lib/labels'
 import { useTheme, type ThemeChoice } from '@/lib/theme'
 import { cn } from '@/lib/utils'
+import { UserPrompts } from '@/components/UserPrompts'
 
 const THEME_META: Record<ThemeChoice, { icon: typeof SunIcon; label: string }> = {
   system: { icon: DesktopIcon, label: 'Tema: el del sistema' },
@@ -198,8 +199,8 @@ export function AppShell() {
             <NavLink to="/" end className={navClass}>
               Bandeja
             </NavLink>
-            <NavLink to="/triaje" className={navClass}>
-              Triaje
+            <NavLink to="/por-revisar" className={navClass}>
+              Por revisar
               <NavCount stage="pending_triage" label="por revisar" />
             </NavLink>
             <NavLink to="/procesos" className={navClass}>
@@ -243,6 +244,7 @@ export function AppShell() {
         </div>
         <Outlet />
       </main>
+      <UserPrompts />
     </div>
   )
 }

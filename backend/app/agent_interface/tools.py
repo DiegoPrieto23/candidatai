@@ -35,6 +35,7 @@ from app.services import (
     ingest,
     jobs,
     profile,
+    prompts,
     status,
     tracking,
 )
@@ -95,6 +96,37 @@ class ListSourcesInput(_Input):
 
 class RecordSourceRunInput(SourceRunSummary):
     source_id: int = Field(ge=1, description="Id de la plataforma (`agent_browse`).")
+
+
+class RequestUserActionInput(_Input):
+    kind: prompts.PromptKind = Field(
+        description="`captcha`, `anti_bot` (comprobación de que eres una persona) o "
+        "`login_required`."
+    )
+    message: str = Field(
+        min_length=1,
+        max_length=500,
+        description="Qué tiene que hacer el usuario y dónde, en una o dos frases.",
+    )
+    url: str | None = Field(default=None, max_length=2000, description="La página afectada.")
+    source_id: int | None = Field(default=None, ge=1, description="La plataforma, si es una.")
+    timeout_seconds: int = Field(
+        default=prompts.DEFAULT_TIMEOUT_SECONDS,
+        ge=60,
+        le=900,
+        description="Cuánto esperar su respuesta antes de seguir sin ella (por defecto, 5 min).",
+    )
+
+
+class WaitUserActionInput(_Input):
+    prompt_id: int = Field(ge=1, description="El `id` que devolvió `request_user_action`.")
+    max_wait_seconds: int = Field(
+        default=50,
+        ge=0,
+        le=prompts.MAX_WAIT_SECONDS,
+        description="Cuánto esperar en esta llamada (máx. 55 s). Si sigue `pending`, vuelve a "
+        "llamar hasta que deje de estarlo.",
+    )
 
 
 class ListJobsInput(_Input):
@@ -297,6 +329,25 @@ def _record_source_run(
 ) -> browse.RecordRunResult:
     summary = SourceRunSummary.model_validate(args.model_dump(exclude={"source_id"}))
     return browse.record_run(session, args.source_id, summary)
+
+
+def _request_user_action(
+    session: Session, args: RequestUserActionInput, _ctx: CallContext
+) -> prompts.PromptView:
+    return prompts.request(
+        session,
+        args.kind,
+        args.message,
+        url=args.url,
+        source_id=args.source_id,
+        timeout_seconds=args.timeout_seconds,
+    )
+
+
+def _wait_user_action(
+    _session: Session, args: WaitUserActionInput, _ctx: CallContext
+) -> prompts.PromptView:
+    return prompts.wait(args.prompt_id, args.max_wait_seconds)
 
 
 def _list_jobs(session: Session, args: ListJobsInput, _ctx: CallContext) -> JobList:
@@ -701,6 +752,34 @@ TOOLS: tuple[ToolSpec, ...] = (
             file_keys=tuple(SourceRunSummary.model_fields),
         ),
         audit_fields=("source_id",),
+    ),
+    ToolSpec(
+        name="request_user_action",
+        description=(
+            "Pide al usuario que haga algo en su navegador (resolver un captcha, iniciar "
+            "sesión…): la app le enseña un pop-up y una notificación. Nunca resuelvas ni "
+            "esquives un captcha tú. Después llama a `wait_user_action` hasta que deje de estar "
+            "`pending`: `done` (sigue en esa página), `skipped` o `expired` (anota el incidente "
+            "y sigue con lo siguiente)."
+        ),
+        input_model=RequestUserActionInput,
+        output_model=prompts.PromptView,
+        handler=_request_user_action,
+        cli=CliSpec(path=("prompts", "request")),
+        audit_fields=("kind", "source_id"),
+    ),
+    ToolSpec(
+        name="wait_user_action",
+        description=(
+            "Espera (hasta 55 s por llamada) a que el usuario conteste un aviso de "
+            "`request_user_action`. Devuelve su estado: `pending` (vuelve a llamar), `done`, "
+            "`skipped` o `expired`, y `seconds_left`."
+        ),
+        input_model=WaitUserActionInput,
+        output_model=prompts.PromptView,
+        handler=_wait_user_action,
+        cli=CliSpec(path=("prompts", "wait"), arguments=("prompt_id",)),
+        audit_fields=("prompt_id",),
     ),
     ToolSpec(
         name="save_application_answers",
