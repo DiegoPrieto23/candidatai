@@ -29,7 +29,15 @@ TaskKind = Literal[
 # Candidatura asistida (fase 11): sin reintentos (POLICIES §5.4). Si fallan o el worker se cierra
 # a medias, quedan `failed` y decides tú; un envío nunca se repite solo.
 NO_RETRY_KINDS = frozenset(
-    {"browser_open", "apply_open", "apply_fill", "apply_rescan", "apply_submit", "apply_focus"}
+    {
+        "browser_open",
+        "apply_open",
+        "apply_fill",
+        "apply_fill_page",
+        "apply_rescan",
+        "apply_submit",
+        "apply_focus",
+    }  # fmt: skip
 )
 TaskStatus = Literal["queued", "running", "done", "failed"]
 MAX_ATTEMPTS = 3

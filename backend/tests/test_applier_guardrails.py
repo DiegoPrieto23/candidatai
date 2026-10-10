@@ -72,7 +72,12 @@ def test_fillers_only_click_through_the_safe_helpers() -> None:
         if path.endswith("submit.py"):
             continue
         for owner, method in calls_in(source, risky):
-            assert method == "click" and owner in ("safe_click", "check_box"), (path, owner)
+            # `open_form_click`: solo el botón que abre el formulario, fuera de cualquier
+            # formulario y nunca un control de envío (ADR-021).
+            assert method == "click" and owner in ("safe_click", "check_box", "open_form_click"), (
+                path,
+                owner,
+            )
         assert "keyboard" not in source, path
         assert "get_by_role" not in source, path
     # Nada fuera del paquete del navegador maneja páginas con clics.
@@ -80,6 +85,14 @@ def test_fillers_only_click_through_the_safe_helpers() -> None:
         if path.startswith("services/applier/"):
             continue
         assert not calls_in(source, {"click", "tap", "press", "set_input_files"}), path
+
+
+def test_open_form_click_refuses_controls_inside_forms() -> None:
+    from app.services.applier import fields
+
+    check = fields._OPEN_FORM_CHECK_JS
+    assert "closest('form') === null" in check
+    assert "'submit'" in check
 
 
 def test_page_scripts_never_submit_forms() -> None:

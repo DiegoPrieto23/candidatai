@@ -6037,7 +6037,7 @@
           "apply"
         ],
         "summary": "Open Browser",
-        "description": "«Preparar navegador»: el worker abre el navegador de las candidaturas para que inicies tus\nsesiones (se queda abierto).",
+        "description": "«Abrir navegador»: el worker abre el navegador de las candidaturas, con una página de inicio\npara que inicies sesión en tus portales (se queda abierto).",
         "operationId": "open_browser",
         "responses": {
           "202": {
@@ -6252,7 +6252,7 @@
           "apply"
         ],
         "summary": "Prepare Application",
-        "description": "Encola rellenar el formulario (o, en LinkedIn, solo abrirlo). No envía nada.",
+        "description": "Encola rellenar el formulario (o, en LinkedIn y en los portales de empleo, solo abrir la\noferta). Con `form_url`, rellena esa URL (el formulario de la empresa). No envía nada.",
         "operationId": "prepare_application",
         "parameters": [
           {
@@ -6262,6 +6262,136 @@
             "schema": {
               "type": "integer",
               "title": "Job Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/PrepareBody"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttemptView"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/apply/{attempt_id}/fill-page": {
+      "post": {
+        "tags": [
+          "apply"
+        ],
+        "summary": "Fill Application Page",
+        "description": "«Rellenar esta página»: rellena la pestaña que tienes delante en el navegador de Job\nHunter (el formulario de la empresa al que llegaste desde el portal). No envía nada.",
+        "operationId": "fill_application_page",
+        "parameters": [
+          {
+            "name": "attempt_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Attempt Id"
             }
           }
         ],
@@ -7525,6 +7655,21 @@
             "type": "string",
             "title": "Domain"
           },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "portal": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Portal"
+          },
           "can_prepare": {
             "type": "boolean",
             "title": "Can Prepare"
@@ -7548,6 +7693,8 @@
           "attempt",
           "mode",
           "domain",
+          "url",
+          "portal",
           "can_prepare",
           "reason"
         ],
@@ -7621,6 +7768,10 @@
             "type": "boolean",
             "title": "Can Rescan"
           },
+          "can_fill_page": {
+            "type": "boolean",
+            "title": "Can Fill Page"
+          },
           "submit_button": {
             "anyOf": [
               {
@@ -7688,6 +7839,7 @@
           "consents",
           "can_submit",
           "can_rescan",
+          "can_fill_page",
           "submit_button",
           "pending_task",
           "has_screenshot",
@@ -11691,6 +11843,24 @@
           "location"
         ],
         "title": "PreferencesFit"
+      },
+      "PrepareBody": {
+        "properties": {
+          "form_url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Form Url"
+          }
+        },
+        "type": "object",
+        "title": "PrepareBody"
       },
       "PreviewJob": {
         "properties": {

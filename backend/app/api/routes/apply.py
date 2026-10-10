@@ -45,6 +45,11 @@ class QueuedResult(BaseModel):
     message: str
 
 
+class PrepareBody(BaseModel):
+    # El formulario de la empresa, si no es la URL de la oferta (p. ej. al que lleva el portal).
+    form_url: str | None = Field(default=None, max_length=2000)
+
+
 class SubmitBody(BaseModel):
     company_confirmation: str = Field(min_length=1, max_length=300)
     # El `updated_at` del intento que revisaste: si cambió después, hay que revisar otra vez.
@@ -57,8 +62,8 @@ class SubmitBody(BaseModel):
     status_code=status.HTTP_202_ACCEPTED,
 )
 def open_browser(session: SessionDep) -> QueuedResult:
-    """«Preparar navegador»: el worker abre el navegador de las candidaturas para que inicies tus
-    sesiones (se queda abierto)."""
+    """«Abrir navegador»: el worker abre el navegador de las candidaturas, con una página de inicio
+    para que inicies sesión en tus portales (se queda abierto)."""
     service.open_browser(session)
     return QueuedResult(
         message="El navegador se abrirá en unos segundos si el worker está en marcha."
@@ -76,9 +81,24 @@ def get_assisted_application(session: SessionDep, job_id: int) -> AssistedApplic
     operation_id="prepare_application",
     status_code=status.HTTP_202_ACCEPTED,
 )
-def prepare_application(session: SessionDep, job_id: int) -> AttemptView:
-    """Encola rellenar el formulario (o, en LinkedIn, solo abrirlo). No envía nada."""
-    return _run(lambda: service.prepare(session, job_id))
+def prepare_application(
+    session: SessionDep, job_id: int, body: PrepareBody | None = None
+) -> AttemptView:
+    """Encola rellenar el formulario (o, en LinkedIn y en los portales de empleo, solo abrir la
+    oferta). Con `form_url`, rellena esa URL (el formulario de la empresa). No envía nada."""
+    form_url = body.form_url if body else None
+    return _run(lambda: service.prepare(session, job_id, form_url))
+
+
+@router.post(
+    "/apply/{attempt_id}/fill-page",
+    operation_id="fill_application_page",
+    status_code=status.HTTP_202_ACCEPTED,
+)
+def fill_application_page(session: SessionDep, attempt_id: int) -> AttemptView:
+    """«Rellenar esta página»: rellena la pestaña que tienes delante en el navegador de Job
+    Hunter (el formulario de la empresa al que llegaste desde el portal). No envía nada."""
+    return _run(lambda: service.fill_page(session, attempt_id))
 
 
 @router.post(

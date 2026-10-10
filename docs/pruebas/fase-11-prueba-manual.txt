@@ -44,11 +44,21 @@ PARTE 1 · ARRANCAR Y PREPARAR EL NAVEGADOR
 2. Abre http://127.0.0.1:5173/jobs/<ID>.
    Esperado: después de «Paquete de candidatura», la sección «Candidatura asistida» con «Se abrirá
    <dominio> en el navegador de Job Hunter y se rellenará el formulario. No se envía nada…», el
-   botón «Preparar candidatura» y, arriba a la derecha, «Preparar navegador».
-3. Pulsa «Preparar navegador».
+   botón «Preparar candidatura» y, arriba a la derecha, «Abrir navegador».
+   En una oferta de un portal (InfoJobs, Tecnoempleo, Indeed, Glassdoor, Manfred), el texto dice
+   «<Portal> es un portal de empleo y bloquea los navegadores automatizados…», con tres pasos, el
+   enlace «Abrir la oferta en <Portal>», «Marcar como enviada» y el campo «URL del formulario».
+3. Pulsa «Abrir navegador».
    Esperado: «El navegador se abrirá en unos segundos…» y, en unos segundos, se abre una ventana
-   de navegador nueva (el perfil de Job Hunter, distinto del tuyo). Puedes iniciar en ella las
-   sesiones que quieras; se recuerdan entre ejecuciones (data/browser-profile/).
+   de navegador nueva (el perfil de Job Hunter, distinto del tuyo) con la página «Navegador de Job
+   Hunter» y enlaces a los portales. Inicia en ella las sesiones que quieras; se recuerdan entre
+   ejecuciones (data/browser-profile/). Cierra la ventana y vuelve a pulsar: se abre de nuevo.
+3b. (Portal) En una oferta de un portal, pulsa «Abrir la oferta en <Portal>».
+   Esperado: se abre la ficha en una pestaña nueva de TU navegador, con tu sesión. Pulsa
+   «Solicitar»; si te lleva al formulario de la empresa, copia su dirección, pégala en «URL del
+   formulario» y pulsa «Rellenar ese formulario»: se abre en el navegador de Job Hunter, se
+   rellena y aparece la revisión (PARTE 2). Si pegas una URL del portal, aviso «…no del formulario
+   de la empresa» y no se abre nada.
 4. (Comprobación del aviso del worker) Para el worker (Ctrl+C en la terminal 2) y pulsa «Preparar
    candidatura».
    Esperado: «En cola para el worker…» y, a los ~15 s, el aviso ámbar «El worker aún no lo ha

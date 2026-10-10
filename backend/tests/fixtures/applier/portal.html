@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>Data Engineer - Portal de empleo (ficticio)</title></head>
+<body>
+<!-- Ficha de oferta de un portal: buscador «Qué / Dónde» y suscripción a alertas por correo.
+     Ninguno es un formulario de candidatura: no se rellena. -->
+<form action="/portal/search" method="get" role="search">
+  <label for="q">Qué</label><input id="q" name="q" type="text">
+  <label for="l">Dónde</label><input id="l" name="l" type="text">
+  <button type="submit">Buscar empleos</button>
+</form>
+<h1>Data Engineer</h1>
+<p>Empresa ficticia · Madrid · Híbrido</p>
+<a href="/generic">Ver más ofertas de la empresa</a>
+<form action="/portal/alerts" method="post">
+  <label for="m">Recibe ofertas como esta por correo</label>
+  <input id="m" name="email" type="email">
+  <button type="submit">Crear alerta</button>
+</form>
+</body></html>

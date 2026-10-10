@@ -55,10 +55,12 @@ class BrowserState:
 
     def ensure_context(self) -> BrowserContext:
         if self.context is not None:
-            try:  # si cerraste la ventana, el aviso de cierre puede no haber llegado aún
-                _ = self.context.pages
-                self.context.browser  # noqa: B018
+            try:  # si cerraste la ventana, el aviso de cierre puede no haber llegado aún: una
+                # llamada que va hasta el navegador falla si ya no está
+                self.context.cookies("about:blank")
             except Exception:
+                with contextlib.suppress(Exception):
+                    self.context.close()
                 self._closed()
         if self.context is None:
             self.profile_dir.mkdir(parents=True, exist_ok=True)

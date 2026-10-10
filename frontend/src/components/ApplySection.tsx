@@ -3,6 +3,7 @@ import {
   ArrowClockwiseIcon,
   ArrowSquareOutIcon,
   BrowserIcon,
+  CursorClickIcon,
   CheckCircleIcon,
   CircleNotchIcon,
   PaperPlaneTiltIcon,
@@ -18,6 +19,7 @@ import {
 } from '@/api/client'
 import {
   useAssistedApplication,
+  useFillApplicationPage,
   useFocusApplication,
   useMarkApplicationSent,
   useOpenBrowser,
@@ -67,7 +69,7 @@ const ATTEMPT_STATUS: Record<string, string> = {
   needs_user: 'Necesita tu intervención',
   submit_failed: 'No se pudo enviar',
   submit_unconfirmed: 'Envío sin confirmar',
-  manual: 'Lo terminas tú',
+  manual: 'Abierta en el navegador de Job Hunter',
 }
 
 /** Igual que el servidor, a grandes rasgos: sin mayúsculas, acentos ni espacios de más. */
@@ -271,6 +273,33 @@ function SubmitConfirm({ attempt, onClose }: { attempt: AttemptView; onClose: ()
   )
 }
 
+/**
+ * «Rellenar esta página»: cuando el portal te ha llevado al formulario de la empresa, la app rellena
+ * la pestaña que tienes delante en su navegador. Nunca una página del portal ni de LinkedIn.
+ */
+function FillPage({ attempt }: { attempt: AttemptView }) {
+  const fillPage = useFillApplicationPage(attempt.job_id)
+  if (!attempt.can_fill_page) return null
+  return (
+    <>
+      <Button
+        type="button"
+        size="sm"
+        disabled={fillPage.isPending || attempt.pending_task != null}
+        onClick={() => fillPage.mutate(attempt.id)}
+      >
+        <CursorClickIcon />
+        Rellenar esta página
+      </Button>
+      {fillPage.error && (
+        <p role="alert" className="basis-full text-sm text-destructive">
+          {fillPage.error.message}
+        </p>
+      )}
+    </>
+  )
+}
+
 function ManualDone({ jobId }: { jobId: number }) {
   const done = useMarkApplicationSent(jobId)
   return (
@@ -288,7 +317,7 @@ function ManualDone({ jobId }: { jobId: number }) {
   )
 }
 
-function Review({ state, attempt }: { state: AssistedApplication; attempt: AttemptView }) {
+function Review({ state, attempt, stage }: { state: AssistedApplication; attempt: AttemptView; stage: Stage | null }) {
   const rescan = useRescanApplication(attempt.job_id)
   const focus = useFocusApplication(attempt.job_id)
   const [confirming, setConfirming] = useState<AttemptView | null>(null)
@@ -322,6 +351,7 @@ function Review({ state, attempt }: { state: AssistedApplication; attempt: Attem
       )}
       <WorkerHint attempt={attempt} />
       <div className="flex flex-wrap items-center gap-2">
+        <FillPage attempt={attempt} />
         {attempt.status === 'ready' && attempt.mode === 'fill' && (
           <Button type="button" size="sm" disabled={!attempt.can_submit || working} onClick={() => setConfirming(attempt)}>
             <PaperPlaneTiltIcon />
@@ -348,7 +378,7 @@ function Review({ state, attempt }: { state: AssistedApplication; attempt: Attem
           onClick={() => focus.mutate(attempt.id)}
         >
           <BrowserIcon />
-          {attempt.mode === 'open' ? 'Volver a abrir' : 'Lo termino yo'}
+          {attempt.mode === 'open' ? 'Volver a abrir la oferta' : 'Lo termino yo'}
         </Button>
         {MANUAL.has(attempt.status) && <ManualDone jobId={attempt.job_id} />}
         {attempt.status === 'submit_unconfirmed' && (
@@ -367,27 +397,122 @@ function Review({ state, attempt }: { state: AssistedApplication; attempt: Attem
           {actionError.message}
         </p>
       )}
-      {RETRY.has(attempt.status) && <Prepare state={state} again />}
+      {RETRY.has(attempt.status) && <Prepare state={state} stage={stage} again />}
       <SubmitDialog attempt={confirming} onClose={() => setConfirming(null)} />
     </div>
   )
 }
 
-function Prepare({ state, again = false }: { state: AssistedApplication; again?: boolean }) {
+function prepareText(state: AssistedApplication): string {
+  if (state.mode === 'open') {
+    return 'LinkedIn no se automatiza: se abrirá la oferta en el navegador de Job Hunter y copias el paquete desde arriba.'
+  }
+  return `Se abrirá ${state.domain} en el navegador de Job Hunter y se rellenará el formulario. No se envía nada hasta que lo confirmes.`
+}
+
+/**
+ * Si ya tienes el enlace al formulario de la empresa (el que abre «Solicitar» en el portal), se
+ * rellena directamente. Solo cuando la oferta está en «CV listo».
+ */
+function FormUrl({ state }: { state: AssistedApplication }) {
+  const prepare = usePrepareApplication(state.job_id)
+  const [url, setUrl] = useState('')
+  const valid = /^https?:\/\/\S+$/.test(url.trim())
+  return (
+    <div className="text-sm">
+      <form
+        className="flex flex-wrap items-end gap-2"
+        onSubmit={(e) => {
+          e.preventDefault()
+          if (valid) prepare.mutate(url.trim())
+        }}
+      >
+        <div className="grid min-w-64 flex-1 gap-1.5">
+          <Label htmlFor={`form-url-${state.job_id}`}>URL del formulario</Label>
+          <Input
+            id={`form-url-${state.job_id}`}
+            type="url"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="https://empresa.com/empleo/…"
+            autoComplete="off"
+          />
+        </div>
+        <Button type="submit" size="sm" variant="outline" disabled={!valid || prepare.isPending}>
+          Rellenar ese formulario
+        </Button>
+      </form>
+      {prepare.error && (
+        <p role="alert" className="mt-1 text-sm text-destructive">
+          {prepare.error.message}
+        </p>
+      )}
+    </div>
+  )
+}
+
+/**
+ * Oferta de un portal de empleo (ADR-021). Los portales bloquean los navegadores automatizados
+ * (Cloudflare…) y eso no se esquiva: la oferta se abre en tu navegador, con tu sesión. Desde ahí
+ * pegas el enlace al formulario de la empresa y Job Hunter lo rellena en el suyo.
+ */
+function PortalApply({ state, stage, again }: { state: AssistedApplication; stage: Stage | null; again: boolean }) {
+  const portal = state.portal ?? state.domain
+  const canFill = stage === 'cv_ready'
+  return (
+    <div className="space-y-4">
+      {!again && (
+        <>
+          <p className="text-sm text-muted-foreground">
+            {portal} es un portal de empleo y bloquea los navegadores automatizados, así que la oferta se abre en tu
+            navegador, con tu sesión.
+          </p>
+          <ol className="list-decimal space-y-1 pl-5 text-sm text-muted-foreground">
+            <li>Abre la oferta y pulsa «Solicitar» o «Inscribirme».</li>
+            <li>
+              Si te lleva al formulario de la empresa, copia la dirección de esa página y pégala abajo: Job Hunter lo
+              rellena en su navegador y se para antes de enviar.
+            </li>
+            <li>
+              Si la candidatura se completa dentro de {portal}, termínala allí (el CV está en «Paquete de
+              candidatura») y pulsa «Marcar como enviada».
+            </li>
+          </ol>
+        </>
+      )}
+      <div className="flex flex-wrap items-center gap-2">
+        <Button asChild size="sm" variant={again ? 'outline' : 'default'}>
+          <a href={state.url} target="_blank" rel="noopener noreferrer">
+            <ArrowSquareOutIcon />
+            Abrir la oferta en {portal}
+          </a>
+        </Button>
+        {!again && (stage === 'cv_ready' || stage === 'approved') && <ManualDone jobId={state.job_id} />}
+      </div>
+      {canFill && <FormUrl state={state} />}
+    </div>
+  )
+}
+
+function Prepare({
+  state,
+  stage,
+  again = false,
+}: {
+  state: AssistedApplication
+  stage: Stage | null
+  again?: boolean
+}) {
   const prepare = usePrepareApplication(state.job_id)
   if (!state.can_prepare) {
     return again ? null : <Notice tone="muted">{state.reason}</Notice>
   }
+  if (state.portal) return <PortalApply state={state} stage={stage} again={again} />
   const open = state.mode === 'open'
+  const label = open ? 'Abrir y preparar' : again ? 'Preparar de nuevo' : 'Preparar candidatura'
   return (
-    <div className="space-y-2">
-      {!again && (
-        <p className="text-sm text-muted-foreground">
-          {open
-            ? `LinkedIn no se automatiza: se abrirá la oferta en el navegador de Job Hunter y copias el paquete desde arriba.`
-            : `Se abrirá ${state.domain} en el navegador de Job Hunter y se rellenará el formulario. No se envía nada hasta que lo confirmes.`}
-        </p>
-      )}
+    <div className="space-y-3">
+      {!again && <p className="text-sm text-muted-foreground">{prepareText(state)}</p>}
       <Button
         type="button"
         size="sm"
@@ -395,7 +520,7 @@ function Prepare({ state, again = false }: { state: AssistedApplication; again?:
         disabled={prepare.isPending}
         onClick={() => prepare.mutate(undefined)}
       >
-        {open ? 'Abrir y preparar' : again ? 'Preparar de nuevo' : 'Preparar candidatura'}
+        {label}
       </Button>
       {prepare.error && (
         <p role="alert" className="text-sm text-destructive">
@@ -432,7 +557,7 @@ function Done({ attempt, stage }: { attempt: AttemptView; stage: Stage | null })
 
 function Body({ state, stage }: { state: AssistedApplication; stage: Stage | null }) {
   const attempt = state.attempt
-  if (!attempt || attempt.status === 'cancelled') return <Prepare state={state} />
+  if (!attempt || attempt.status === 'cancelled') return <Prepare state={state} stage={stage} />
   if (attempt.status === 'queued' || attempt.status === 'filling' || attempt.status === 'submitting') {
     return <Busy attempt={attempt} />
   }
@@ -443,21 +568,29 @@ function Body({ state, stage }: { state: AssistedApplication; stage: Stage | nul
     return (
       <div className="space-y-3">
         <Notice tone="red">{attempt.error ?? 'No se pudo rellenar el formulario.'}</Notice>
-        <Prepare state={state} again />
+        <Prepare state={state} stage={stage} again />
       </div>
     )
   }
-  if (REVIEW.has(attempt.status)) return <Review state={state} attempt={attempt} />
+  if (REVIEW.has(attempt.status)) return <Review state={state} attempt={attempt} stage={stage} />
   return null
 }
 
+/** Abre el navegador de Job Hunter con su página de inicio, para iniciar sesión en los portales. */
 function OpenBrowser() {
   const open = useOpenBrowser()
   return (
     <div className="flex flex-col items-end gap-1">
-      <Button type="button" variant="outline" size="sm" onClick={() => open.mutate()} disabled={open.isPending}>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => open.mutate()}
+        disabled={open.isPending}
+        title="Abre el navegador de Job Hunter para iniciar sesión en tus portales. Tiene su propio perfil, separado de tu Chrome."
+      >
         <BrowserIcon />
-        Preparar navegador
+        Abrir navegador
       </Button>
       {open.isSuccess && <span className="text-xs text-muted-foreground">{open.data.message}</span>}
       {open.error && (
@@ -500,8 +633,8 @@ export function ApplySection({ job }: { job: JobView }) {
         <div>
           <h2 className="text-base font-semibold tracking-tight">Candidatura asistida</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Job Hunter rellena el formulario en su navegador y se para antes de enviar. Nada se envía sin tu
-            confirmación.
+            Job Hunter abre la oferta en su propio navegador, rellena el formulario de candidatura y se para antes
+            de enviar. Nada se envía sin tu confirmación. Inicia sesión en tus portales con «Abrir navegador».
           </p>
         </div>
         <OpenBrowser />

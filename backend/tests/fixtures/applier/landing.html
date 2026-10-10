@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>Analytics Engineer - Empleo en Empresa ficticia</title></head>
+<body>
+<!-- Web de empleo que carga el formulario al pulsar «Enviar solicitud» (como Teamtailor). La
+     suscripción por correo de abajo no es un formulario de candidatura. -->
+<h1>Analytics Engineer</h1>
+<a href="#" id="go">Enviar solicitud</a>
+<p>Buscamos un perfil analítico para nuestro equipo de datos.</p>
+<div id="slot"><p>Cargando formulario de solicitud</p></div>
+<form action="/landing/subscribe" method="post">
+  <input type="email" name="email" placeholder="nombre@empresa.com">
+  <button type="submit">Suscribirse</button>
+</form>
+<script>
+document.getElementById('go').addEventListener('click', (e) => {
+  e.preventDefault();
+  setTimeout(() => {
+    fetch('/generic').then((r) => r.text()).then((html) => {
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      document.getElementById('slot').innerHTML = doc.body.innerHTML;
+    });
+  }, 300);
+});
+</script>
+</body></html>
