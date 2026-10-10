@@ -159,3 +159,23 @@ def test_url_problem() -> None:
     assert platforms.url_problem("ftp://example.com/x") is not None
     assert platforms.url_problem("http://localhost:8000/jobs") is not None
     assert platforms.url_problem("http://[::1]/x") is not None
+
+
+def test_job_boards_are_only_opened_never_filled() -> None:
+    boards = {
+        "https://www.glassdoor.es/job-listing/data-engineer-JV_IC2664239.htm?jl=1": "glassdoor",
+        "https://es.indeed.com/viewjob?jk=a487fbde6e7b4f8d": "indeed",
+        "https://www.infojobs.net/madrid/data/of-i49aa054aa348ea9413ce50f20ba533": "infojobs",
+        "https://www.tecnoempleo.com/data-engineer/sql/rf-7f5912ddb2e0230cc346": "tecnoempleo",
+        "https://www.getmanfred.com/ofertas-empleo/123/data-engineer": "manfred",
+    }
+    for url, board in boards.items():
+        assert platforms.job_board(url) == board
+        assert platforms.detect(url) == "board"
+        problem = platforms.fill_problem(url)
+        assert problem is not None and platforms.BOARD_LABELS[board] in problem
+    assert platforms.job_board("https://glassdoor.example.com/empleo") is None
+    assert platforms.detect("https://empresa.example.com/empleo") is None
+    assert "LinkedIn" in (platforms.fill_problem("https://www.linkedin.com/jobs/view/1") or "")
+    assert platforms.fill_problem("https://jobs.lever.co/acme/x/apply") is None
+    assert platforms.fill_problem("file:///C:/cv.pdf") is not None

@@ -482,6 +482,21 @@ def safe_click(locator: Locator) -> None:
     locator.click()
 
 
+# El botón que abre el formulario («Enviar solicitud», «Apply now»…) suele tener texto de envío,
+# así que `safe_click` no lo pulsa. Este clic solo vale fuera de cualquier formulario y nunca en
+# un control de envío; se usa cuando la página aún no tiene formulario (no hay datos que enviar).
+_OPEN_FORM_CHECK_JS = r"""el => el.closest('form') === null &&
+  !(el.tagName === 'INPUT' && ['submit', 'image'].includes(el.type)) &&
+  !(el.tagName === 'BUTTON' && el.type === 'submit' && !!el.form)"""
+
+
+def open_form_click(locator: Locator) -> None:
+    """Pulsa el botón que abre el formulario de candidatura (ver `_OPEN_FORM_CHECK_JS`)."""
+    if not locator.evaluate(_OPEN_FORM_CHECK_JS):
+        raise SubmitControlError("Se ha evitado pulsar un control de envío al abrir el formulario.")
+    locator.click()
+
+
 def check_box(locator: Locator) -> None:
     """Marca una casilla o una opción; si está oculta tras un diseño propio, con un clic de JS."""
     if locator.evaluate(_SUBMIT_CHECK_JS):

@@ -199,7 +199,68 @@ describe('Candidatura asistida en la ficha', () => {
     expect(within(region).getByRole('img', { name: 'Captura después de enviar' })).toBeInTheDocument()
   })
 
-  it('«Preparar navegador» encola abrirlo', async () => {
+  it('en un portal de empleo la oferta se abre en tu navegador, no en el de Job Hunter', async () => {
+    const url = 'https://www.glassdoor.es/job-listing/1'
+    const calls = mockApi({
+      ...base(),
+      'GET /jobs/1/apply': assistedApplication({ mode: 'open', domain: 'www.glassdoor.es', url, portal: 'Glassdoor' }),
+    })
+    renderApp('/jobs/1')
+    const region = await section()
+    expect(await within(region).findByText(/bloquea los navegadores automatizados/)).toBeInTheDocument()
+    const link = within(region).getByRole('link', { name: 'Abrir la oferta en Glassdoor' })
+    expect(link).toHaveAttribute('href', url)
+    expect(link).toHaveAttribute('target', '_blank')
+    expect(within(region).getByRole('button', { name: 'Marcar como enviada' })).toBeInTheDocument()
+    expect(calls.some((c) => c.path === '/jobs/1/apply/prepare')).toBe(false)
+  })
+
+  it('con el enlace al formulario de la empresa, rellena esa URL', async () => {
+    const calls = mockApi({
+      ...base(),
+      'GET /jobs/1/apply': assistedApplication({ mode: 'open', domain: 'www.glassdoor.es', portal: 'Glassdoor' }),
+      'POST /jobs/1/apply/prepare': { status: 202, body: attemptView({ status: 'queued' }) },
+    })
+    renderApp('/jobs/1')
+    const region = await section()
+    const button = await within(region).findByRole('button', { name: 'Rellenar ese formulario' })
+    expect(button).toBeDisabled()
+    await userEvent.type(within(region).getByLabelText('URL del formulario'), 'https://jobs.lever.co/acme/1')
+    await userEvent.click(button)
+    await waitFor(() => {
+      const call = calls.find((c) => c.path === '/jobs/1/apply/prepare')
+      expect(call?.body).toEqual({ form_url: 'https://jobs.lever.co/acme/1' })
+    })
+  })
+
+  it('abierta en el portal: «Rellenar esta página» rellena la pestaña que tienes delante', async () => {
+    const opened = attemptView({
+      platform: 'board',
+      mode: 'open',
+      status: 'manual',
+      url: 'https://www.glassdoor.es/job-listing/1',
+      domain: 'www.glassdoor.es',
+      fields: [],
+      warnings: [],
+      consents: [],
+      can_submit: false,
+      can_rescan: false,
+      can_fill_page: true,
+      has_screenshot: false,
+      submit_button: null,
+    })
+    const calls = mockApi({
+      ...base(),
+      'GET /jobs/1/apply': assistedApplication({ attempt: opened, mode: 'open', portal: 'Glassdoor' }),
+      'POST /apply/5/fill-page': { status: 202, body: { ...opened, status: 'queued' } },
+    })
+    renderApp('/jobs/1')
+    const region = await section()
+    await userEvent.click(await within(region).findByRole('button', { name: 'Rellenar esta página' }))
+    await waitFor(() => expect(calls.some((c) => c.path === '/apply/5/fill-page')).toBe(true))
+  })
+
+  it('«Abrir navegador» encola abrirlo', async () => {
     const calls = mockApi({
       ...base(),
       'GET /jobs/1/apply': assistedApplication(),
@@ -208,7 +269,7 @@ describe('Candidatura asistida en la ficha', () => {
     renderApp('/jobs/1')
     const region = await section()
     await within(region).findByRole('button', { name: 'Preparar candidatura' })
-    await userEvent.click(within(region).getByRole('button', { name: 'Preparar navegador' }))
+    await userEvent.click(within(region).getByRole('button', { name: 'Abrir navegador' }))
     expect(await within(region).findByText('El navegador se abrirá en unos segundos.')).toBeInTheDocument()
     expect(calls.some((c) => c.path === '/browser/open')).toBe(true)
   })

@@ -993,8 +993,8 @@ export interface paths {
         put?: never;
         /**
          * Open Browser
-         * @description «Preparar navegador»: el worker abre el navegador de las candidaturas para que inicies tus
-         *     sesiones (se queda abierto).
+         * @description «Abrir navegador»: el worker abre el navegador de las candidaturas, con una página de inicio
+         *     para que inicies sesión en tus portales (se queda abierto).
          */
         post: operations["open_browser"];
         delete?: never;
@@ -1034,9 +1034,31 @@ export interface paths {
         put?: never;
         /**
          * Prepare Application
-         * @description Encola rellenar el formulario (o, en LinkedIn, solo abrirlo). No envía nada.
+         * @description Encola rellenar el formulario (o, en LinkedIn y en los portales de empleo, solo abrir la
+         *     oferta). Con `form_url`, rellena esa URL (el formulario de la empresa). No envía nada.
          */
         post: operations["prepare_application"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/apply/{attempt_id}/fill-page": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Fill Application Page
+         * @description «Rellenar esta página»: rellena la pestaña que tienes delante en el navegador de Job
+         *     Hunter (el formulario de la empresa al que llegaste desde el portal). No envía nada.
+         */
+        post: operations["fill_application_page"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1373,6 +1395,10 @@ export interface components {
             mode: "fill" | "open";
             /** Domain */
             domain: string;
+            /** Url */
+            url: string;
+            /** Portal */
+            portal: string | null;
             /** Can Prepare */
             can_prepare: boolean;
             /** Reason */
@@ -1408,6 +1434,8 @@ export interface components {
             can_submit: boolean;
             /** Can Rescan */
             can_rescan: boolean;
+            /** Can Fill Page */
+            can_fill_page: boolean;
             /** Submit Button */
             submit_button: string | null;
             pending_task: components["schemas"]["PendingTask"] | null;
@@ -2763,6 +2791,11 @@ export interface components {
             remote_mode: number;
             /** Location */
             location: number;
+        };
+        /** PrepareBody */
+        PrepareBody: {
+            /** Form Url */
+            form_url?: string | null;
         };
         /** PreviewJob */
         PreviewJob: {
@@ -8564,6 +8597,104 @@ export interface operations {
             header?: never;
             path: {
                 job_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PrepareBody"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttemptView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    fill_application_page: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                attempt_id: number;
             };
             cookie?: never;
         };

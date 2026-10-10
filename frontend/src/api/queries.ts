@@ -645,10 +645,25 @@ export function useOpenBrowser() {
   return useMutation({ mutationFn: () => unwrap(api.POST('/browser/open')) })
 }
 
-/** Encola rellenar el formulario (o, en LinkedIn, solo abrirlo). No envía nada. */
+/**
+ * Encola rellenar el formulario (o, en LinkedIn y en los portales de empleo, solo abrir la oferta).
+ * Con `formUrl`, rellena esa URL: el formulario de la empresa. No envía nada.
+ */
 export function usePrepareApplication(jobId: number) {
-  return useApplyMutation(jobId, () =>
-    unwrap(api.POST('/jobs/{job_id}/apply/prepare', { params: { path: { job_id: jobId } } })),
+  return useApplyMutation(jobId, (formUrl?: string) =>
+    unwrap(
+      api.POST('/jobs/{job_id}/apply/prepare', {
+        params: { path: { job_id: jobId } },
+        body: formUrl ? { form_url: formUrl } : undefined,
+      }),
+    ),
+  )
+}
+
+/** «Rellenar esta página»: la pestaña que tienes delante en el navegador de Job Hunter. */
+export function useFillApplicationPage(jobId: number) {
+  return useApplyMutation(jobId, (attemptId: number) =>
+    unwrap(api.POST('/apply/{attempt_id}/fill-page', { params: { path: { attempt_id: attemptId } } })),
   )
 }
 

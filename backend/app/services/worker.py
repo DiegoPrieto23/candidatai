@@ -93,6 +93,14 @@ def _apply_fill(_session: Session, payload: dict[str, Any]) -> dict[str, Any]:
     return applier.run_fill(int(payload["attempt_id"]))
 
 
+def _apply_fill_page(_session: Session, payload: dict[str, Any]) -> dict[str, Any]:
+    from app.services.applier import service as applier
+
+    return applier.run_fill_page(
+        int(payload["attempt_id"]), str(payload.get("previous") or "manual")
+    )
+
+
 def _apply_rescan(_session: Session, payload: dict[str, Any]) -> dict[str, Any]:
     from app.services.applier import service as applier
 
@@ -122,6 +130,7 @@ HANDLERS: dict[str, Handler] = {
     "browser_open": _browser_open,
     "apply_open": _apply_open,
     "apply_fill": _apply_fill,
+    "apply_fill_page": _apply_fill_page,
     "apply_rescan": _apply_rescan,
     "apply_submit": _apply_submit,
     "apply_focus": _apply_focus,

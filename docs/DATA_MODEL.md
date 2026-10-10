@@ -161,9 +161,10 @@ Cola de trabajo del worker (sin Redis).
 | `poll_email` `{}` | `jh worker` cada `email_alerts.poll_minutes`, y al arrancar, si hay IMAP configurado o correos en `data/inbox/` | Lee las alertas nuevas (`ingestion/email/service.poll_email`). Si el buzón falla por la red, queda en `source_runs` y se reintenta |
 | `expire_summaries` `{}` | `jh worker` cada día con la ingesta y al arrancar | Cierra con `expired` los resúmenes más antiguos que `summary_expire_days` |
 | `rescore_all` `{}` | `jh profile import` con versión nueva | Recalcula los matches desfasados de las ofertas abiertas con extracción y cierra las de triaje que ya no pasan los filtros (lo mismo que `jh match rescore`, sin cola) |
-| `browser_open` `{}` | «Preparar navegador» (fase 11) | Abre el navegador persistente (`data/browser-profile/`) para que inicies tus sesiones |
+| `browser_open` `{}` | «Abrir navegador» (fase 11) | Abre el navegador persistente (`data/browser-profile/`), con una página de inicio para que inicies sesión en tus portales |
 | `apply_fill` `{attempt_id}` | `prepare` (fase 11) | Rellena el formulario y para antes de enviar (`services/applier/service.run_fill`) |
-| `apply_open` `{attempt_id}` | `prepare` en LinkedIn | Solo abre la URL |
+| `apply_open` `{attempt_id}` | `prepare` en LinkedIn o en un portal de empleo | Solo abre la URL |
+| `apply_fill_page` `{attempt_id, previous}` | «Rellenar esta página» (ADR-021) | Rellena la pestaña que tienes delante (el formulario de la empresa al que te llevó el portal) y para antes de enviar. Si es una página del portal o de LinkedIn, no toca nada y el intento vuelve a `previous` con el motivo |
 | `apply_rescan` `{attempt_id}` | «Volver a revisar» | Vuelve a leer los campos y a capturar, sin rellenar nada |
 | `apply_submit` `{attempt_id, token, consents}` | `confirm_submission` (solo la UI) | Consume el token, pulsa el envío, captura la confirmación y registra `applied` |
 | `apply_focus` `{attempt_id}` | «Lo termino yo» | Trae la pestaña al frente y retira el bloqueo del envío |
@@ -321,12 +322,12 @@ eventos; esta tabla guarda lo que necesita la pantalla de revisión.
 |---|---|---|
 | id | int PK | |
 | job_id | FK jobs | |
-| platform | str | `greenhouse`, `lever`, `ashby`, `generic`, `linkedin`, `unknown` (por la URL y, si no, mirando la página) |
-| mode | str | `fill` (rellenar y revisar) u `open` (LinkedIn: solo abrir) |
+| platform | str | `greenhouse`, `lever`, `ashby`, `generic`, `linkedin`, `board` (portal de empleo), `unknown` (por la URL y, si no, mirando la página) |
+| mode | str | `fill` (rellenar y revisar) u `open` (LinkedIn o un portal: solo abrir; con «Rellenar esta página» pasa a `fill`) |
 | url | str | La del formulario (Lever `…/apply`, Ashby `…/application`) |
 | status | str | `queued` → `filling` → `ready` / `needs_user` / `failed`; `submitting` → `submitted` / `submit_unconfirmed` / `submit_failed` / `needs_user`; `manual` («Lo termino yo» o `open`), `manual_done` y `cancelled` (otro intento lo sustituye) |
 | fields | JSON | `[FieldReport]`: `marker`, `label`, `control`, `kind`, `required`, `status` (`filled`, `empty`, `needs_user_input`, `sensitive`, `consent`, `skipped`, `error`), `source`, `value` (recortado) y `note` |
-| warnings | JSON | `[{code, message}]`: `invisible_captcha`, `submit_blocked`, `no_resume_field`, `unused_answers`, `no_answers`, `missing_required`, `submit_button` (qué botón se pulsará), `no_submit_button`, `possible_duplicate` (un intento anterior ya pulsó «Enviar»), `captcha`, `antibot`, `login`, `no_form`, `form_error`, `no_evidence` |
+| warnings | JSON | `[{code, message}]`: `invisible_captcha`, `submit_blocked`, `no_resume_field`, `unused_answers`, `no_answers`, `missing_required`, `submit_button` (qué botón se pulsará), `no_submit_button`, `form_opened` (se pulsó el botón que abre el formulario), `possible_duplicate` (un intento anterior ya pulsó «Enviar»), `captcha`, `antibot`, `login`, `no_form`, `form_error`, `no_evidence` |
 | screenshot_path / confirmation_path | str? | Relativos a `data/` (`applications/<job_id>/<intento>/review.png`, `confirmation.png` o `after-submit.png`) |
 | token_hash | str? | SHA-256 del token de envío; el valor nunca se guarda aquí |
 | token_expires_at / token_used_at | datetime? | Un solo uso; caduca a los `applier.token_ttl_seconds` |

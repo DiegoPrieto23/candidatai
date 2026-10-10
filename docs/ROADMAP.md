@@ -1219,3 +1219,27 @@ decisiones tomadas y deuda técnica pendiente. -->
 - **Resultado:** ~3,5 s en caliente. Lo que queda es sobre todo el SDK de MCP (~1,5 s) y
   SQLAlchemy (~0,5 s).
 - **Recomendado en local:** excluir `backend/.venv` de Windows Defender.
+
+### Mejora · Candidaturas desde portales de empleo — 2026-10-10 · Claude Code (Opus 5.5)
+- **Problema:** las ofertas de InfoJobs, Tecnoempleo, Indeed y Glassdoor apuntan a la ficha de la
+  oferta, no al formulario. «Preparar candidatura» intentaba rellenarla: en Indeed rellenó el
+  buscador («Qué / Dónde»). «Preparar navegador» abría una pestaña en blanco sin explicación y
+  fallaba si habías cerrado la ventana.
+- **Cambios** (ADR-021):
+  - los portales se reconocen por la URL y solo se abren; nunca se rellena una página suya ni de
+    LinkedIn;
+  - «Rellenar esta página» (`POST /apply/{id}/fill-page`, tarea `apply_fill_page`) rellena el
+    formulario de la empresa al que te llevó el portal;
+  - la oferta de un portal se abre en tu navegador (Glassdoor bloquea el navegador automatizado
+    con Cloudflare y eso no se esquiva); `prepare` admite `form_url` para rellenar el formulario
+    de la empresa al que te llevó «Solicitar»;
+  - detector genérico más estricto: adjunto, o correo y nombre, fuera de buscadores y logins;
+  - en una web de empresa sin formulario visible, se pulsa «Enviar solicitud» (o equivalente) para
+    cargarlo, como en Teamtailor (`careers.idealista.com`, comprobado sin rellenar ni enviar);
+  - «Abrir navegador» con página de inicio y enlaces a los portales; si la ventana se cerró, se
+    vuelve a abrir;
+  - la UI explica los pasos en un portal y ofrece «Marcar como enviada» desde el principio.
+- **Tests:** detección de portales, ficha de portal ficticia (`portal.html`) que no se rellena,
+  «Rellenar esta página» con el formulario en una pestaña nueva y negativa en una página del
+  portal, `form_url`, página de inicio del navegador y la UI.
+- **Pendiente:** probarlo con ofertas reales de cada portal (`docs/pruebas/fase-11-prueba-manual.txt`).

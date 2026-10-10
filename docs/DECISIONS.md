@@ -260,3 +260,37 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
 - **Consecuencias:** los eventos de los CVs de la demo llevan la hora real del seed (son de la
   última semana, así que la cronología sigue en orden). `get_status` devuelve `demo_mode` y la UI
   muestra un banner.
+
+## ADR-021 · Candidaturas desde portales de empleo: abrir la oferta y rellenar la página del formulario
+- **Contexto:** la candidatura asistida (fase 11) solo sabía rellenar formularios de ATS (Greenhouse,
+  Lever, Ashby) o webs con formulario. Casi todas las ofertas reales llegan de portales (InfoJobs,
+  Tecnoempleo, Indeed, Glassdoor, Manfred), cuya URL es la ficha de la oferta: candidatar es iniciar
+  sesión y pulsar «Solicitar», que a menudo lleva a la web de la empresa. El detector genérico
+  tomaba cualquier campo de correo por un formulario y llegó a rellenar el buscador de Indeed.
+- **Decisión:**
+  - los portales se reconocen por la URL (`applier/platforms.job_board`). **Nunca se rellena una
+    página de un portal ni de LinkedIn** (`fill_problem`), aunque tengas la sesión iniciada: tienen
+    anti-bot y es tu cuenta;
+  - la UI abre la oferta de un portal **en tu navegador**, con tu sesión, como un enlace normal.
+    Glassdoor (Cloudflare) bloquea el navegador automatizado de Job Hunter («Solo personas
+    reales») y eso no se esquiva (ADR-009): nada de perfiles «stealth» ni de quitar las marcas de
+    automatización. `prepare` sin `form_url` sigue abriéndola en el navegador de Job Hunter
+    (`mode: open`, `platform: board`) para los portales que lo admitan, pero la UI no lo ofrece;
+  - «Rellenar esta página» (`fill_page`, tarea `apply_fill_page`): cuando el portal te ha llevado al
+    formulario de la empresa, se rellena la pestaña que tienes delante en el navegador de Job
+    Hunter (la última visible) y el intento pasa a `fill` con esa URL. De ahí en adelante, todo
+    igual que en la fase 11: revisión, confirmación con el nombre de la empresa y token de un solo
+    uso;
+  - el paso principal desde un portal: pegas el enlace al formulario de la empresa (al que te llevó
+    «Solicitar») y `prepare` con `form_url` lo rellena en el navegador de Job Hunter;
+  - un formulario genérico tiene que tener adjunto, o correo y un campo de nombre (sin contraseña y
+    fuera de un buscador). Un buscador, un login o una alerta por correo no lo son;
+  - si la página de la empresa no tiene formulario, se pulsa su botón de abrirlo («Enviar
+    solicitud», «Solicitar», «Apply now»…: `platforms.APPLY_BUTTON`), solo si está fuera de
+    cualquier formulario, y se espera a que cargue (webs como Teamtailor). Sin campos rellenos ese
+    clic no envía nada; queda el aviso `form_opened` con el texto del botón;
+  - «Preparar navegador» pasa a «Abrir navegador» y abre una página de inicio local con enlaces a
+    los portales para iniciar sesión.
+- **Consecuencias:** en un portal hay dos pasos manuales (pulsar «Solicitar» y copiar el enlace del
+  formulario) a cambio de no automatizar cuentas de terceros ni esquivar sus defensas. Las candidaturas que se completan dentro del portal (p. ej. la inscripción de
+  InfoJobs) las terminas tú con el paquete de candidatura y «Marcar como enviada».

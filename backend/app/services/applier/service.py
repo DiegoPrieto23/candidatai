@@ -1,7 +1,11 @@
 """Intentos de candidatura asistida: preparar, rellenar, revisar y enviar tras tu confirmación.
 
 Flujo (POLICIES §5):
-1. `prepare` (API): crea el intento y encola `apply_fill` (o `apply_open` en LinkedIn).
+1. `prepare` (API): crea el intento y encola `apply_fill` (o `apply_open` en LinkedIn y en los
+   portales de empleo, donde la ficha de la oferta no es el formulario). Con `form_url` se rellena
+   esa URL (el formulario de la empresa) en vez de la de la oferta.
+   «Rellenar esta página» (`fill_page`, tarea `apply_fill_page`): tras llegar tú al formulario de
+   la empresa desde el portal, rellena la pestaña que tienes delante. Nunca una del portal.
 2. `run_fill` (worker): abre la URL en el navegador persistente, rellena, captura y para. El
    intento queda `ready` (o `needs_user` si hay captcha, anti-bot, login o no hay formulario) y se
    registra `application_filled`.
@@ -38,7 +42,7 @@ from app.services import answers as answers_service
 from app.services import events, normalize, tasks
 from app.services import profile as profile_service
 from app.services.applier import fields, guard, platforms, submit, tokens
-from app.services.applier.browser import BrowserState, get_host
+from app.services.applier.browser import BrowserState, PreparedPage, get_host
 from app.services.applier.fields import FieldReport, FillData
 from app.services.applier.guard import Blocker
 from app.services.applier.log import AttemptLog
@@ -52,12 +56,14 @@ ACTIVE = frozenset({"queued", "filling", "submitting"})
 REVIEWABLE = frozenset({"ready", "needs_user", "submit_failed", "submit_unconfirmed", "manual"})
 # Se puede volver a leer y, de ahí, a confirmar: nunca tras un clic de envío (ver `_clicked`).
 RESCANNABLE = frozenset({"ready", "needs_user", "manual"})
+# Desde aquí se puede rellenar la pestaña que tienes delante («Rellenar esta página»).
+PAGE_FILLABLE = frozenset({"manual", "needs_user"})
 # Avisos que pone `prepare` y que se conservan al rellenar o volver a revisar.
 _STICKY_WARNINGS = frozenset({"possible_duplicate"})
 
 ErrorCode = Literal[
     "not_found", "invalid_stage", "invalid_state", "busy", "no_cv", "company_mismatch", "stale",
-    "missing_required", "invalid_url",
+    "missing_required", "invalid_url", "wrong_page",
 ]  # fmt: skip
 
 
@@ -96,6 +102,7 @@ class AttemptView(BaseModel):
     consents: list[FieldReport]  # consentimientos obligatorios que aceptarás al confirmar
     can_submit: bool
     can_rescan: bool  # nunca tras un clic de envío
+    can_fill_page: bool  # «Rellenar esta página»: rellenar la pestaña que tienes delante
     submit_button: str | None  # el texto del botón que se pulsará, si se encontró
     pending_task: PendingTask | None
     has_screenshot: bool
@@ -161,6 +168,7 @@ def view(session: Session, attempt: ApplicationAttempt) -> AttemptView:
         can_rescan=attempt.mode == "fill"
         and attempt.status in RESCANNABLE
         and not _clicked(attempt),
+        can_fill_page=_fill_page_problem(session, attempt) is None,
         submit_button=_submit_button(attempt),
         pending_task=_pending_task(session, attempt.id),
         has_screenshot=attempt.screenshot_path is not None,
@@ -199,9 +207,12 @@ class AssistedApplication(BaseModel):
     job_id: int
     company: str
     attempt: AttemptView | None  # el último intento
-    # Lo que haría «Preparar»: `fill` (rellenar y revisar) u `open` (LinkedIn: solo abrir).
+    # Lo que haría «Preparar»: `fill` (rellenar y revisar) u `open` (LinkedIn o un portal de
+    # empleo: abrir la oferta; desde ahí llegas tú al formulario de la empresa).
     mode: Literal["fill", "open"]
     domain: str
+    url: str  # la de la oferta: en un portal se abre en tu navegador, con tu sesión
+    portal: str | None  # «Glassdoor», «InfoJobs»… si la oferta es de un portal de empleo
     can_prepare: bool
     reason: str | None  # por qué no se puede preparar ahora
 
@@ -211,8 +222,7 @@ def get_state(session: Session, job_id: int) -> AssistedApplication:
     if job is None:
         raise events.JobNotFoundError(f"No existe la oferta {job_id}.")
     stage = events.current_stage(session, job_id)
-    platform = platforms.detect(job.url)
-    mode: Literal["fill", "open"] = "open" if platform == "linkedin" else "fill"
+    mode = _mode(platforms.detect(job.url))
     attempt = latest(session, job_id)
     reason: str | None = None
     if (problem := platforms.url_problem(job.url)) is not None:
@@ -231,6 +241,8 @@ def get_state(session: Session, job_id: int) -> AssistedApplication:
         attempt=view(session, attempt) if attempt else None,
         mode=mode,
         domain=urlsplit(job.url).hostname or "",
+        url=job.url,
+        portal=_portal(job.url),
         can_prepare=reason is None,
         reason=reason,
     )
@@ -273,15 +285,32 @@ def _touch(attempt: ApplicationAttempt, status: str | None = None) -> None:
 # --- Preparar -------------------------------------------------------------------------------
 
 
-def prepare(session: Session, job_id: int) -> AttemptView:
+def _mode(platform: str | None) -> Literal["fill", "open"]:
+    """En LinkedIn y en los portales de empleo solo se abre la oferta (ADR-009, ADR-021)."""
+    return "open" if platform in ("linkedin", "board") else "fill"
+
+
+def _portal(url: str) -> str | None:
+    board = platforms.job_board(url)
+    return platforms.BOARD_LABELS[board] if board else None
+
+
+def prepare(session: Session, job_id: int, form_url: str | None = None) -> AttemptView:
     """Crea un intento y lo encola: rellenar (ATS conocido o web con formulario) o solo abrir
-    (LinkedIn). Los intentos anteriores que esperaban revisión se anulan."""
+    (LinkedIn o un portal de empleo). Con `form_url` (el formulario de la empresa, p. ej. al que
+    lleva el portal) se rellena esa URL. Los intentos anteriores que esperaban revisión se
+    anulan."""
     job = session.get(Job, job_id)
     if job is None:
         raise events.JobNotFoundError(f"No existe la oferta {job_id}.")
     stage = events.current_stage(session, job_id)
-    platform = platforms.detect(job.url)
-    mode = "open" if platform == "linkedin" else "fill"
+    url = job.url
+    if form_url is not None:
+        url = form_url.strip()
+        if (problem := platforms.fill_problem(url)) is not None:
+            raise ApplierError("invalid_url", problem)
+    platform = platforms.detect(url)
+    mode = _mode(platform)
     if mode == "fill" and stage != Stage.CV_READY:
         raise ApplierError(
             "invalid_stage",
@@ -290,7 +319,7 @@ def prepare(session: Session, job_id: int) -> AttemptView:
         )
     if mode == "open" and stage not in CV_STAGES:
         raise ApplierError("invalid_stage", f"La oferta está en «{stage}»: ya no se prepara.")
-    if (problem := platforms.url_problem(job.url)) is not None:
+    if (problem := platforms.url_problem(url)) is not None:
         raise ApplierError("invalid_url", problem)
     previous = latest(session, job_id)
     if previous is not None and previous.status in ACTIVE:
@@ -324,7 +353,7 @@ def prepare(session: Session, job_id: int) -> AttemptView:
         job_id=job_id,
         platform=platform or "generic",  # sin reconocer por la URL: se mira la página
         mode=mode,
-        url=platforms.application_url(platform or "generic", job.url),
+        url=platforms.application_url(platform or "generic", url),
         status="queued",
         fields=[],
         warnings=warnings,
@@ -387,6 +416,7 @@ def _fill_data(session: Session, job_id: int) -> FillData:
 class _BrowserOutcome(BaseModel):
     platform: str
     status: Literal["ready", "needs_user"]
+    url: str | None = None  # la página rellenada, si no es la del intento («Rellenar esta página»)
     fields: list[FieldReport] = []
     warnings: list[AttemptWarning] = []
     screenshot: str | None = None
@@ -504,13 +534,41 @@ def _fill_in_browser(
     with log.step("goto", platform=platform):
         response = page.goto(url, wait_until="domcontentloaded")
     _settle(page)
+    return _fill_page_in_browser(
+        page, attempt_id, job_id, url, platform, data, log, min_similarity, response
+    )
+
+
+def _fill_page_in_browser(
+    page: Any,
+    attempt_id: int,
+    job_id: int,
+    url: str,
+    platform: str,
+    data: FillData,
+    log: AttemptLog,
+    min_similarity: int,
+    response: Any = None,
+) -> _BrowserOutcome:
+    """Rellena la página ya abierta (la del intento o la que tienes delante) y se para."""
     with log.step("guard"):
         found = guard.check(page, response)
     if found.blocker is not None:
         return _blocked(page, job_id, attempt_id, platform, found.blocker)
+    opened: str | None = None  # el botón que se pulsó para abrir el formulario, si hizo falta
     if platforms.detect(url) is None:
         detected, frame_url = platforms.inspect(page)
         log.write("inspect", platform=detected, frame=frame_url is not None)
+        if detected == "unknown" and frame_url is None:
+            opened = _open_application_form(page, log)
+            if opened is not None:
+                if (problem := platforms.portal_problem(page.url)) is not None:
+                    raise ApplierError("wrong_page", problem)
+                found = guard.check(page)
+                if found.blocker is not None:
+                    return _blocked(page, job_id, attempt_id, detected, found.blocker)
+                detected, frame_url = platforms.inspect(page)
+                log.write("inspect", platform=detected, frame=frame_url is not None)
         if frame_url is not None:
             if (problem := platforms.url_problem(frame_url)) is not None:
                 raise ApplierError("invalid_url", problem)
@@ -527,10 +585,7 @@ def _fill_in_browser(
             job_id,
             attempt_id,
             platform,
-            Blocker(
-                kind="no_form",
-                message="No se reconoce ningún formulario de candidatura: termina tú en la web.",
-            ),
+            Blocker(kind="no_form", message=_NO_FORM),
         )
     guard.arm_submit_block(page)
     with log.step("discover"):
@@ -555,6 +610,15 @@ def _fill_in_browser(
         plans, reports, data, found.invisible_captcha or after.invisible_captcha,
         guard.blocked_submits(page),
     )  # fmt: skip
+    if opened is not None:
+        warnings.insert(
+            0,
+            AttemptWarning(
+                code="form_opened",
+                message=f"Para ver el formulario se pulsó «{opened}» (no envía nada).",
+                detail=opened,
+            ),
+        )
     if after.blocker is not None:
         warnings.insert(0, AttemptWarning(code=after.blocker.kind, message=after.blocker.message))
     warnings.append(_button_warning(page))
@@ -568,6 +632,41 @@ def _fill_in_browser(
         screenshot=shot,
         blocker=after.blocker,
     )
+
+
+_NO_FORM = (
+    "No se reconoce ningún formulario de candidatura. Si en la web hay que pulsar un botón para "
+    "verlo, púlsalo en el navegador de Job Hunter y luego «Rellenar esta página»; si no, termina "
+    "tú en la web."
+)
+
+
+def _open_application_form(page: Any, log: AttemptLog) -> str | None:
+    """En una página sin formulario, pulsa el botón que lo abre («Enviar solicitud», «Apply
+    now»…) y espera a que aparezca. Sin campos rellenos no se envía nada: solo se llega al
+    formulario. Devuelve el texto del botón, o `None` si no lo hay."""
+    found = platforms.find_apply_button(page)
+    if not found:
+        return None
+    label = str(found["label"])[:80]
+    with log.step("open_form", label=label):
+        if found.get("blank") and found.get("href"):
+            href = str(found["href"])
+            if platforms.portal_problem(href) or platforms.url_problem(href):
+                return None
+            page.goto(href, wait_until="domcontentloaded")
+        else:
+            try:  # nunca un control de envío: solo el que abre el formulario
+                fields.open_form_click(page.locator("[data-jh-apply='1']").first)
+            except fields.SubmitControlError:
+                return None
+        _settle(page)
+        for _ in range(20):  # el formulario puede cargarse un poco después
+            detected, frame_url = platforms.inspect(page)
+            if detected != "unknown" or frame_url is not None:
+                break
+            page.wait_for_timeout(500)
+    return label
 
 
 def _rescan_in_browser(
@@ -621,6 +720,8 @@ def _fail(attempt_id: int, message: str, status: str = "failed") -> None:
 def _store_outcome(
     attempt_id: int, outcome: _BrowserOutcome, event: bool, expected: frozenset[str]
 ) -> dict[str, Any]:
+    """Guarda lo que vio el navegador. Con `outcome.url` («Rellenar esta página»), el intento pasa
+    a ser de rellenar y su URL es la de la página rellenada."""
     with session_scope() as session:
         attempt = _get(session, attempt_id)
         if attempt.status not in expected or _clicked(attempt):
@@ -628,6 +729,9 @@ def _store_outcome(
             return {"attempt_id": attempt_id, "skipped": attempt.status}
         sticky = [w for w in attempt.warnings or [] if w.get("code") in _STICKY_WARNINGS]
         attempt.platform = outcome.platform
+        if outcome.url is not None:
+            attempt.url = outcome.url
+            attempt.mode = "fill"
         attempt.fields = [r.model_dump() for r in outcome.fields]
         attempt.warnings = [*sticky, *(w.model_dump() for w in outcome.warnings)]
         if outcome.screenshot:
@@ -718,6 +822,114 @@ def run_rescan(attempt_id: int) -> dict[str, Any]:
     )
     log.write("rescan", status=outcome.status)
     return _store_outcome(attempt_id, outcome, event=False, expected=RESCANNABLE)
+
+
+def _fill_page_problem(session: Session, attempt: ApplicationAttempt) -> str | None:
+    """Por qué no se puede usar «Rellenar esta página» en este intento, o `None`."""
+    if _clicked(attempt):
+        return "En este intento ya se pulsó «Enviar»: termina tú en la web o prepara uno nuevo."
+    if attempt.status not in PAGE_FILLABLE:
+        return f"No se puede rellenar una página con el intento en «{attempt.status}»."
+    if events.current_stage(session, attempt.job_id) != Stage.CV_READY:
+        return "Para rellenar un formulario la oferta tiene que estar en «CV listo»."
+    if selected_render_id(session, attempt.job_id) is None:
+        return "No hay un CV elegido para enviar en esta oferta."
+    return None
+
+
+def fill_page(session: Session, attempt_id: int) -> AttemptView:
+    """«Rellenar esta página»: encola rellenar la pestaña que tienes delante en el navegador de
+    Job Hunter (el formulario de la empresa al que te llevó el portal). No envía nada."""
+    attempt = _get(session, attempt_id)
+    if (problem := _fill_page_problem(session, attempt)) is not None:
+        raise ApplierError("invalid_state", problem)
+    previous = attempt.status
+    attempt.error = None
+    _touch(attempt, "queued")
+    tasks.enqueue(session, "apply_fill_page", {"attempt_id": attempt_id, "previous": previous})
+    return view(session, attempt)
+
+
+def _visible(page: Any) -> bool:
+    try:
+        return bool(page.evaluate("document.visibilityState === 'visible'"))
+    except Exception:
+        return False
+
+
+def _current_page(state: BrowserState, attempt_id: int, job_id: int) -> Any:
+    """La pestaña que tienes delante: la última visible (la activa de su ventana) o, si no hay
+    ninguna, la del intento o la última abierta. Queda como pestaña del intento."""
+    context = state.ensure_context()
+    pages = [p for p in context.pages if not p.is_closed()]
+    visible = [p for p in pages if _visible(p)]
+    page = visible[-1] if visible else state.page_for(attempt_id) or (pages[-1] if pages else None)
+    if page is None:
+        raise ApplierError(
+            "wrong_page", "No hay ninguna pestaña abierta en el navegador de Job Hunter."
+        )
+    state.pages[attempt_id] = PreparedPage(job_id=job_id, page=page)
+    return page
+
+
+def _fill_current_in_browser(
+    state: BrowserState,
+    attempt_id: int,
+    job_id: int,
+    data: FillData,
+    log: AttemptLog,
+    min_similarity: int,
+) -> _BrowserOutcome:
+    page = _current_page(state, attempt_id, job_id)
+    url = page.url
+    if (problem := platforms.fill_problem(url)) is not None:
+        raise ApplierError("wrong_page", problem)
+    log.write("fill_page", host=urlsplit(url).hostname or "")
+    page.bring_to_front()
+    _settle(page)
+    platform = platforms.detect(url) or "generic"
+    outcome = _fill_page_in_browser(
+        page, attempt_id, job_id, url, platform, data, log, min_similarity
+    )
+    outcome.url = url
+    return outcome
+
+
+def run_fill_page(attempt_id: int, previous: str = "manual") -> dict[str, Any]:
+    """Tarea `apply_fill_page`. Si la pestaña no es un formulario que se pueda rellenar (es del
+    portal, de LinkedIn…), el intento vuelve a como estaba, con el motivo."""
+    log = AttemptLog(attempt_id)
+    with session_scope() as session:
+        attempt = _get(session, attempt_id)
+        if attempt.status != "queued":
+            return {"attempt_id": attempt_id, "skipped": attempt.status}
+        _touch(attempt, "filling")
+        job_id = attempt.job_id
+    try:
+        with session_scope() as session:
+            data = _fill_data(session, job_id)
+        min_similarity = get_policies().applier.answer_min_similarity
+        outcome = get_host().call(
+            lambda state: _fill_current_in_browser(
+                state, attempt_id, job_id, data, log, min_similarity
+            )
+        )
+    except ApplierError as exc:
+        if exc.code != "wrong_page":
+            log.write("fill_page_failed", ok=False, error=str(exc)[:500])
+            _fail(attempt_id, str(exc))
+            raise
+        log.write("wrong_page", ok=False)
+        back = previous if previous in PAGE_FILLABLE else "manual"
+        _fail(attempt_id, str(exc), back)
+        return {"attempt_id": attempt_id, "status": back, "wrong_page": True}
+    except Exception as exc:
+        message = f"{type(exc).__name__}: {exc}"
+        log.write("fill_page_failed", ok=False, error=message[:500])
+        _fail(attempt_id, message)
+        raise
+    log.write("done", status=outcome.status)
+    return _store_outcome(attempt_id, outcome, event=True, expected=frozenset({"filling"}))
 
 
 # --- Envío ----------------------------------------------------------------------------------
@@ -918,7 +1130,8 @@ def _record_applied(session: Session, attempt: ApplicationAttempt) -> bool:
 
 
 def run_open(attempt_id: int) -> dict[str, Any]:
-    """Tarea `apply_open` (LinkedIn): solo abre la URL. El paquete se copia desde la ficha."""
+    """Tarea `apply_open` (LinkedIn o un portal): solo abre la URL. El paquete se copia desde la
+    ficha; en un portal, desde el formulario de la empresa se usa «Rellenar esta página»."""
     with session_scope() as session:
         attempt = _get(session, attempt_id)
         if attempt.status != "queued":
@@ -980,7 +1193,11 @@ def run_focus(attempt_id: int) -> dict[str, Any]:
     return {"attempt_id": attempt_id, "reopened": reopened}
 
 
-_MANUAL_CHANNEL = {"linkedin": "linkedin_manual", "unknown": "portal_manual"}
+_MANUAL_CHANNEL = {
+    "linkedin": "linkedin_manual",
+    "board": "portal_manual",
+    "unknown": "portal_manual",
+}
 
 
 def mark_manual_done(session: Session, job_id: int) -> events.AddEventResult:
@@ -1003,12 +1220,37 @@ def open_browser(session: Session) -> None:
     tasks.enqueue(session, "browser_open", {})
 
 
+def _start_page() -> str:
+    """La página de inicio del navegador de Job Hunter: para qué sirve y enlaces a los portales
+    para iniciar sesión. HTML local, sin datos tuyos."""
+    links = "".join(f'<li><a href="{url}">{label}</a></li>' for label, url in platforms.LOGIN_LINKS)
+    return (
+        '<!doctype html><html lang="es"><head><meta charset="utf-8">'
+        "<title>Navegador de Job Hunter</title><style>"
+        "body{font:16px/1.5 system-ui,sans-serif;max-width:40rem;margin:3rem auto;padding:0 1rem;"
+        "color:#1f2933}h1{font-size:1.4rem}li{margin:.3rem 0}"
+        "p.note{color:#52606d;font-size:.9rem}</style></head><body>"
+        "<h1>Navegador de Job Hunter</h1>"
+        "<p>Aquí abre Job Hunter las ofertas y rellena los formularios. Tiene su propio perfil, "
+        "separado de tu Chrome: inicia sesión en los portales que uses y las sesiones se quedan "
+        "guardadas para las próximas candidaturas.</p>"
+        f"<ul>{links}</ul>"
+        "<p>Después, en la ficha de la oferta, pulsa «Preparar candidatura».</p>"
+        '<p class="note">Las cuentas y las contraseñas las introduces tú: Job Hunter no las lee. '
+        "Puedes dejar esta ventana abierta.</p></body></html>"
+    )
+
+
 def run_browser_open() -> dict[str, Any]:
-    """Tarea `browser_open`."""
+    """Tarea `browser_open`: abre el navegador (o lo trae al frente), con la página de inicio si
+    no hay nada abierto."""
 
     def _open(state: BrowserState) -> None:
         context = state.ensure_context()
-        page = context.pages[0] if context.pages else context.new_page()
+        pages = [p for p in context.pages if not p.is_closed()]
+        page = pages[0] if pages else context.new_page()
+        if page.url == "about:blank":
+            page.set_content(_start_page())
         page.bring_to_front()
 
     get_host().call(_open)

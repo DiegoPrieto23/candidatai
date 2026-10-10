@@ -380,3 +380,128 @@ def test_prepare_refuses_non_web_and_local_urls(db: None, monkeypatch: pytest.Mo
             with pytest.raises(ApplierError) as info:
                 service.prepare(session, job_id)
         assert info.value.code == "invalid_url"
+
+
+# --- Portales de empleo y «Rellenar esta página» --------------------------------------------
+
+GLASSDOOR = "https://www.glassdoor.es/job-listing/data-engineer-acme-JV_IC2664239.htm?jl=1"
+
+
+def test_job_board_offer_is_opened_not_filled(db: None) -> None:
+    with session_scope() as session:
+        job_id = cv_ready_job(session, GLASSDOOR)
+        state = service.get_state(session, job_id)
+        assert (state.mode, state.portal, state.can_prepare) == ("open", "Glassdoor", True)
+        assert state.url == GLASSDOOR
+        view = service.prepare(session, job_id)
+        assert (view.platform, view.mode, view.url) == ("board", "open", GLASSDOOR)
+    assert [t.payload["attempt_id"] for t in queued("apply_open")] == [view.id]
+    assert queued("apply_fill") == []
+
+
+def test_prepare_with_the_company_form_url(db: None) -> None:
+    with session_scope() as session:
+        job_id = cv_ready_job(session, GLASSDOOR)
+        with pytest.raises(ApplierError) as board:
+            service.prepare(session, job_id, form_url="https://es.indeed.com/viewjob?jk=1")
+        assert board.value.code == "invalid_url" and "Indeed" in str(board.value)
+        view = service.prepare(
+            session, job_id, form_url=" https://boards.greenhouse.io/acme/jobs/7 "
+        )
+        assert (view.platform, view.mode) == ("greenhouse", "fill")
+        assert view.url == "https://boards.greenhouse.io/acme/jobs/7"
+    assert [t.payload["attempt_id"] for t in queued("apply_fill")] == [view.id]
+
+
+def open_tabs(attempt_id: int, job_id: int, *urls: str) -> None:
+    """La pestaña del intento con la primera URL y, como haría el portal, otras nuevas."""
+
+    def _open(state: browser.BrowserState) -> None:
+        page = state.new_page(attempt_id, job_id)
+        page.goto(urls[0])
+        for url in urls[1:]:
+            state.ensure_context().new_page().goto(url)
+
+    browser.get_host().call(_open)
+
+
+def test_fill_page_rules(db: None) -> None:
+    with session_scope() as session:
+        job_id = cv_ready_job(session, GLASSDOOR)
+    opened = ready_attempt(job_id, platform="board", mode="open", status="manual", url=GLASSDOOR)
+    clicked = ready_attempt(
+        job_id, platform="board", mode="open", status="manual", token_used_at=utcnow()
+    )
+    busy = ready_attempt(job_id, platform="board", mode="open", status="filling")
+    with session_scope() as session:
+        assert service.view(session, attempt(opened)).can_fill_page
+        for attempt_id in (clicked, busy):
+            assert not service.view(session, attempt(attempt_id)).can_fill_page
+            with pytest.raises(ApplierError) as refused:
+                service.fill_page(session, attempt_id)
+            assert refused.value.code == "invalid_state"
+        view = service.fill_page(session, opened)
+        assert view.status == "queued"
+    (task,) = queued("apply_fill_page")
+    assert task.payload == {"attempt_id": opened, "previous": "manual"}
+
+
+@requires_chromium
+def test_fill_page_fills_the_company_form_reached_from_the_board(
+    db: None, server: FormServer
+) -> None:
+    with session_scope() as session:
+        job_id = cv_ready_job(session, GLASSDOOR)
+    attempt_id = ready_attempt(
+        job_id, platform="board", mode="open", status="manual", url=server.url("portal")
+    )
+    # El portal abre el formulario de la empresa en una pestaña nueva.
+    open_tabs(attempt_id, job_id, server.url("portal"), server.url("generic"))
+    with session_scope() as session:
+        service.fill_page(session, attempt_id)
+    result = service.run_fill_page(attempt_id, "manual")
+    assert result["filled"] > 0
+    assert server.posts == []  # rellenar no envía
+    row = attempt(attempt_id)
+    assert (row.mode, row.platform, row.url) == ("fill", "generic", server.url("generic"))
+    assert row.status == "ready"
+    assert "application_filled" in event_types(job_id)
+
+
+@requires_chromium
+def test_fill_page_never_fills_a_board_page(
+    db: None, server: FormServer, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from app.services.applier import platforms
+
+    def board_page(url: str) -> str | None:
+        return "Es la ficha del portal." if "portal" in url else None
+
+    monkeypatch.setattr(platforms, "fill_problem", board_page)
+    with session_scope() as session:
+        job_id = cv_ready_job(session, GLASSDOOR)
+    attempt_id = ready_attempt(
+        job_id, platform="board", mode="open", status="manual", url=server.url("portal")
+    )
+    open_tabs(attempt_id, job_id, server.url("portal"))
+    with session_scope() as session:
+        service.fill_page(session, attempt_id)
+    result = service.run_fill_page(attempt_id, "manual")
+    assert result["wrong_page"] is True
+    row = attempt(attempt_id)
+    assert (row.status, row.mode, row.error) == ("manual", "open", "Es la ficha del portal.")
+    assert row.fields == [] and "application_filled" not in event_types(job_id)
+
+
+@requires_chromium
+def test_open_browser_shows_the_start_page(db: None) -> None:
+    assert service.run_browser_open() == {"opened": True}
+
+    def _title(state: browser.BrowserState) -> str:
+        return state.ensure_context().pages[0].title()
+
+    assert browser.get_host().call(_title) == "Navegador de Job Hunter"
+    # Si cierras la pestaña (o la ventana), volver a pulsar la abre de nuevo.
+    browser.get_host().call(lambda state: state.ensure_context().pages[0].close())
+    assert service.run_browser_open() == {"opened": True}
+    assert browser.get_host().call(_title) == "Navegador de Job Hunter"

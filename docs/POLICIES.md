@@ -113,6 +113,9 @@ triaje. Los pesos y el umbral se ajustan con `jh eval matching` (`evals/matching
    Tampoco se edita tu perfil desde el agente: el skill `revisar-linkedin` propone los textos y
    tú los aplicas a mano. Las mismas reglas de veracidad (§1) y privacidad (§4) que en el CV.
 3. **Captchas o anti-bot**: se para y se te pasa la pestaña. No se esquivan.
+   **Portales de empleo** (InfoJobs, Tecnoempleo, Indeed, Glassdoor, Manfred): la app nunca rellena
+   una página del portal. La oferta se abre en tu navegador, con tu sesión; pulsas tú «Solicitar»
+   y, si te lleva al formulario de la empresa, pegas su enlace y la app lo rellena (ADR-021).
 4. **Sin reintentos** automáticos de un envío fallido: se registra y decides tú.
 5. **Mensajes a recruiters**: el agente solo redacta borradores. Los envías tú.
 6. **Cuentas y credenciales**: las creas e introduces tú. El perfil de navegador persistente

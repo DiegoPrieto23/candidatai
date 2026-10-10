@@ -162,6 +162,32 @@ def test_page_without_form_is_unknown(
     assert outcome.blocker is not None and outcome.blocker.kind == "no_form"
 
 
+def test_job_board_page_is_not_an_application_form(
+    host: BrowserHost, server: FormServer, tmp_path: Path
+) -> None:
+    """Ficha de un portal: ni el buscador («Qué / Dónde») ni la alerta por correo se rellenan."""
+    posts = len(server.posts)
+    attempt_id, outcome = fill(host, server, "portal", fill_data(tmp_path))
+    assert outcome.status == "needs_user" and outcome.platform == "unknown"
+    assert outcome.blocker is not None and outcome.blocker.kind == "no_form"
+    assert value(host, attempt_id, "#l") == "" and value(host, attempt_id, "#m") == ""
+    assert len(server.posts) == posts
+
+
+def test_form_loaded_by_its_apply_button_is_opened_and_filled(
+    host: BrowserHost, server: FormServer, tmp_path: Path
+) -> None:
+    """Web de empleo sin formulario hasta pulsar «Enviar solicitud»: se pulsa, se espera a que
+    cargue y se rellena. Ni ese clic ni el rellenado envían nada."""
+    posts = len(server.posts)
+    attempt_id, outcome = fill(host, server, "landing", fill_data(tmp_path))
+    assert outcome.platform == "generic"
+    assert outcome.warnings[0].code == "form_opened"
+    assert outcome.warnings[0].detail == "Enviar solicitud"
+    assert value(host, attempt_id, "#e") == "lucia.varela@example.com"
+    assert len(server.posts) == posts
+
+
 def test_page_cannot_submit_itself_while_filling(
     host: BrowserHost, server: FormServer, tmp_path: Path
 ) -> None:
