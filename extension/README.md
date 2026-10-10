@@ -68,7 +68,7 @@ intente desde tu navegador. No compartas el token; si se filtra, genera otro.
 | «Falta el token» o «El token no vale» | `uv run jh capture token` y pégalo en las opciones. |
 | «La app no acepta esta extensión» | El id cargado no es el de `JH_CAPTURE_EXTENSION_ID`: revisa `.env` o que `manifest.json` conserve su `key`. |
 | «No se puede leer esta página» | Las páginas del navegador y de las tiendas de extensiones no se dejan leer. |
-| «No se encontró la descripción» o «la empresa» | Selecciona el texto de la oferta, con la empresa, y vuelve a pulsar. |
+| «No se encontró la descripción» o «la empresa» | Selecciona el texto de la oferta, con la empresa, y vuelve a pulsar. En LinkedIn, la sección «Acerca del empleo» se carga al llegar a ella: baja hasta verla (no hace falta pulsar «… más») y vuelve a pulsar. |
 
 ## Sobre LinkedIn
 

@@ -4,11 +4,12 @@ from datetime import datetime
 from typing import Literal
 
 from pydantic import BaseModel
-from sqlalchemy import func, or_, select
-from sqlalchemy.orm import Session
+from sqlalchemy import case, func, or_, select
+from sqlalchemy.orm import Session, aliased
 
 from app.models import Application, Company, Job, Match
-from app.schemas.llm_io import JobExtraction
+from app.models import JobExtraction as JobExtractionRow
+from app.schemas.llm_io import JobExtraction, Salary
 from app.services import extractions
 from app.services.events import EventOut, JobNotFoundError
 from app.services.pipeline import EventType, Stage, job_events
@@ -135,6 +136,15 @@ RemoteMode = Literal["onsite", "hybrid", "remote", "unknown"]
 
 class JobRow(JobSummary):
     remote_mode: RemoteMode | None  # de la extracción vigente; None si aún no hay
+    salary: Salary | None  # de la extracción vigente; None si no lo indica o aún no hay
+
+
+# Orden de la bandeja. Las ofertas sin el dato (sin score o sin salario) van siempre al final.
+JobSort = Literal["date", "score", "salary"]
+SortDirection = Literal["asc", "desc"]
+
+# Para comparar salarios de distinto periodo, todo se pasa a anual (≈ 1760 horas al año).
+_SALARY_PER_YEAR = {"month": 12, "hour": 1760}
 
 
 class JobPage(BaseModel):
@@ -144,8 +154,39 @@ class JobPage(BaseModel):
     offset: int
 
 
+def _row_salary(data: dict | None) -> Salary | None:
+    salary = (data or {}).get("salary")
+    if not salary or (salary.get("min") is None and salary.get("max") is None):
+        return None
+    return Salary.model_validate(salary)
+
+
 def _escape_like(value: str) -> str:
     return value.replace("!", "!!").replace("%", "!%").replace("_", "!_")
+
+
+def _annual_salary(extraction: type[JobExtractionRow]):
+    """Punto medio del rango salarial de la extracción, anualizado; NULL si no lo indica."""
+    salary = extraction.data["salary"]
+    low, high = salary["min"].as_float(), salary["max"].as_float()
+    period = salary["period"].as_string()
+    per_year = case(
+        *((period == name, factor) for name, factor in _SALARY_PER_YEAR.items()), else_=1
+    )
+    return (func.coalesce(low, high) + func.coalesce(high, low)) / 2 * per_year
+
+
+def _ordering(sort: str, direction: str, salary):
+    if sort not in ("date", "score", "salary"):
+        raise InvalidQueryError(f"Orden desconocido: «{sort}». Válidos: date, score, salary.")
+    if direction not in ("asc", "desc"):
+        raise InvalidQueryError(f"Sentido desconocido: «{direction}». Válidos: asc, desc.")
+    desc = direction == "desc"
+    recent = (Job.first_seen_at.desc(), Job.id.desc())
+    if sort == "date":
+        return recent if desc else (Job.first_seen_at.asc(), Job.id.asc())
+    column = Match.score if sort == "score" else salary
+    return ((column.desc() if desc else column.asc()).nulls_last(), *recent)
 
 
 def search_jobs(
@@ -154,12 +195,22 @@ def search_jobs(
     q: str | None = None,
     limit: int = DEFAULT_LIMIT,
     offset: int = 0,
+    sort: JobSort = "date",
+    direction: SortDirection = "desc",
 ) -> JobPage:
-    """Página de ofertas para la bandeja: filtro por etapa, búsqueda en título y empresa."""
+    """Página de ofertas para la bandeja: filtro por etapa, búsqueda en título y empresa, y orden
+    por fecha de alta, score o salario."""
     if not 1 <= limit <= MAX_LIMIT:
         raise InvalidQueryError(f"`limit` debe estar entre 1 y {MAX_LIMIT}.")
     if offset < 0:
         raise InvalidQueryError("`offset` no puede ser negativo.")
+    last_extraction = (
+        select(JobExtractionRow.job_id, func.max(JobExtractionRow.id).label("id"))
+        .group_by(JobExtractionRow.job_id)
+        .subquery()
+    )
+    current = aliased(JobExtractionRow)
+    ordering = _ordering(sort, direction, _annual_salary(current))
     filters = []
     if stage is not None:
         filters.append(Application.stage == parse_stage(stage).value)
@@ -174,7 +225,11 @@ def search_jobs(
     base = _summary_query().where(*filters)
     total = session.scalar(select(func.count()).select_from(base.subquery())) or 0
     rows = session.execute(
-        base.order_by(Job.first_seen_at.desc(), Job.id.desc()).limit(limit).offset(offset)
+        base.outerjoin(last_extraction, last_extraction.c.job_id == Job.id)
+        .outerjoin(current, current.id == last_extraction.c.id)
+        .order_by(*ordering)
+        .limit(limit)
+        .offset(offset)
     ).all()
     latest = extractions.latest_rows(session, [job.id for job, *_ in rows])
     items = []
@@ -193,6 +248,7 @@ def search_jobs(
                 first_seen_at=job.first_seen_at,
                 score=score,
                 remote_mode=extraction.data.get("remote_mode") if extraction else None,
+                salary=_row_salary(extraction.data if extraction else None),
             )
         )
     return JobPage(items=items, total=total, limit=limit, offset=offset)

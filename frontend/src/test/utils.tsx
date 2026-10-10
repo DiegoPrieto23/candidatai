@@ -121,6 +121,7 @@ export function jobRow(changes: Partial<JobRow> = {}): JobRow {
     duplicate_of: null,
     first_seen_at: new Date().toISOString(),
     remote_mode: 'hybrid',
+    salary: null,
     score: null,
     ...changes,
   }

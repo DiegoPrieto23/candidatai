@@ -51,7 +51,12 @@ var jhExtract = (function () {
         '.jobs-unified-top-card__bullet',
         '.topcard__flavor--bullet',
       ],
+      // Rediseño de /jobs/view/ (2026): clases ofuscadas; solo `componentkey` y `data-testid` son
+      // estables. El texto completo está en el DOM aunque se vea plegado tras «… más».
+      card: linkedinTopCard,
       description: [
+        '[componentkey^="JobDetails_AboutTheJob_"] [data-testid="expandable-text-box"]',
+        '[componentkey^="JobDetails_AboutTheJob_"]',
         '.jobs-description__content .jobs-box__html-content',
         '.jobs-description-content__text',
         '#job-details',
@@ -176,6 +181,58 @@ var jhExtract = (function () {
     return null
   }
 
+  /** El texto de `el` sin el de sus botones («… más»), que `innerText` sí incluye. */
+  function textWithoutButtons(el) {
+    var text = textOf(el)
+    var buttons = el.querySelectorAll('button, [role="button"]')
+    for (var i = buttons.length - 1; i >= 0; i--) {
+      var label = clean(buttons[i].innerText || buttons[i].textContent || '')
+      if (label && text.slice(-label.length) === label) text = clean(text.slice(0, -label.length))
+    }
+    return text
+  }
+
+  /**
+   * Cabecera del LinkedIn rediseñado, sin clases fiables: el bloque que rodea al enlace de la
+   * empresa y tiene la línea «Ciudad · hace 2 días · …». Sus párrafos son empresa, puesto y esa
+   * línea, en ese orden.
+   */
+  function linkedinTopCard(doc) {
+    var links = doc.querySelectorAll('main a[href*="/company/"]')
+    for (var i = 0; i < links.length; i++) {
+      var company = oneLine(textOf(links[i]))
+      if (!company) continue
+      var card = links[i].parentElement
+      for (var depth = 0; card && depth < 10; depth++, card = card.parentElement) {
+        var paragraphs = card.querySelectorAll('p')
+        var texts = []
+        for (var j = 0; j < paragraphs.length; j++) texts.push(oneLine(textOf(paragraphs[j])))
+        var at = texts.indexOf(company)
+        var meta = -1
+        for (j = at + 1; at >= 0 && j < texts.length; j++) {
+          if (texts[j].indexOf(' · ') >= 0) {
+            meta = j
+            break
+          }
+        }
+        if (meta < 0) continue
+        var title = ''
+        for (j = at + 1; j < meta && !title; j++) title = texts[j]
+        title = title || linkedinTitleFromDocument(doc, company)
+        return { company: company, title: title, location: texts[meta] }
+      }
+    }
+    return null
+  }
+
+  /** «(3) Data Engineer | Empresa | LinkedIn» → «Data Engineer», si la empresa coincide. */
+  function linkedinTitleFromDocument(doc, company) {
+    var title = oneLine(doc.title).replace(/^\(\d+\+?\)\s*/, '').replace(/\s*\|\s*LinkedIn$/i, '')
+    var suffix = ' | ' + company
+    if (!company || title.slice(-suffix.length) !== suffix) return ''
+    return title.slice(0, -suffix.length).trim()
+  }
+
   // --- JSON-LD ---------------------------------------------------------------------------------
 
   function isPosting(node) {
@@ -297,9 +354,16 @@ var jhExtract = (function () {
       result.title = oneLine(textOf(first(doc, site.title)))
       result.company = oneLine(textOf(first(doc, site.company)))
       // LinkedIn: «Vigo, Galicia, España · hace 2 días · 30 solicitudes».
-      result.location = oneLine(textOf(first(doc, site.location))).split(' · ')[0].trim()
+      result.location = oneLine(textOf(first(doc, site.location)))
+      var card = site.card && !(result.title && result.company) ? site.card(doc) : null
+      if (card) {
+        result.title = result.title || card.title
+        result.company = result.company || card.company
+        result.location = result.location || card.location
+      }
+      result.location = result.location.split(' · ')[0].trim()
       if (description) {
-        result.text = textOf(description)
+        result.text = textWithoutButtons(description)
         result.html = description.outerHTML.slice(0, MAX_HTML)
       }
     }

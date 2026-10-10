@@ -33,7 +33,8 @@ export interface paths {
         };
         /**
          * List Jobs
-         * @description Bandeja: ofertas más recientes primero, filtradas por etapa y texto (título o empresa).
+         * @description Bandeja: filtrada por etapa y texto (título o empresa), ordenada por fecha de alta, score
+         *     o salario anualizado (por defecto, las más recientes primero; sin el dato, al final).
          */
         get: operations["list_jobs"];
         put?: never;
@@ -2349,6 +2350,7 @@ export interface components {
             score: number | null;
             /** Remote Mode */
             remote_mode: ("onsite" | "hybrid" | "remote" | "unknown") | null;
+            salary: components["schemas"]["Salary"] | null;
         };
         /** JobView */
         JobView: {
@@ -3525,6 +3527,8 @@ export interface operations {
                 q?: string | null;
                 limit?: number;
                 offset?: number;
+                sort?: "date" | "score" | "salary";
+                dir?: "asc" | "desc";
             };
             header?: never;
             path?: never;

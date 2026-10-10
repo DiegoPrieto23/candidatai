@@ -46,10 +46,19 @@ def list_jobs(
     q: Annotated[str | None, Query(max_length=200)] = None,
     limit: Annotated[int, Query(ge=1, le=jobs.MAX_LIMIT)] = 50,
     offset: Annotated[int, Query(ge=0)] = 0,
+    sort: jobs.JobSort = "date",
+    dir: jobs.SortDirection = "desc",
 ) -> jobs.JobPage:
-    """Bandeja: ofertas más recientes primero, filtradas por etapa y texto (título o empresa)."""
+    """Bandeja: filtrada por etapa y texto (título o empresa), ordenada por fecha de alta, score
+    o salario anualizado (por defecto, las más recientes primero; sin el dato, al final)."""
     return jobs.search_jobs(
-        session, stage=stage.value if stage else None, q=q, limit=limit, offset=offset
+        session,
+        stage=stage.value if stage else None,
+        q=q,
+        limit=limit,
+        offset=offset,
+        sort=sort,
+        direction=dir,
     )
 
 
