@@ -193,6 +193,7 @@ def test_cli_doctor_json() -> None:
         "Embeddings",
         "Conectores de ofertas",
         "Alertas por correo",
+        "Respuestas por correo",
         "Botón de captura",
     ]
 
@@ -246,3 +247,30 @@ def test_check_connectors(monkeypatch: pytest.MonkeyPatch) -> None:
     assert "portales con claves: Adzuna" in result.detail
     assert "Falta una de las dos claves de InfoJobs" in result.detail
     assert "secret" not in result.detail  # nunca muestra las claves
+
+
+def test_replies_check_opens_its_folder_read_only(monkeypatch: pytest.MonkeyPatch) -> None:
+    import imaplib
+
+    from app.services.doctor import check_email_replies
+    from tests.imap_support import PASSWORD, USER, fake_imap
+
+    def plain(host: str, port: int, timeout: float) -> imaplib.IMAP4:
+        return imaplib.IMAP4(host, port, timeout=timeout)
+
+    with fake_imap({}) as server:
+        for key, value in {
+            "JH_IMAP_HOST": "127.0.0.1",
+            "JH_IMAP_PORT": str(server.port),
+            "JH_IMAP_USER": USER,
+            "JH_IMAP_PASSWORD": PASSWORD,
+        }.items():
+            monkeypatch.setenv(key, value)
+        get_settings.cache_clear()
+        ok = check_email_replies(get_settings(), plain)
+        monkeypatch.setenv("JH_IMAP_REPLIES_FOLDER", "Otra")
+        get_settings.cache_clear()
+        bad = check_email_replies(get_settings(), plain)
+    assert ok.status == CheckStatus.OK and "«INBOX»" in ok.detail
+    assert bad.status == CheckStatus.ERROR
+    assert server.violations == []

@@ -27,6 +27,42 @@ scoring:
 
 followups:                      # fase 10: aviso de seguimiento y `list_followups_due`
   days_without_reply: 10          # días sin respuesta tras enviar (o tras el último seguimiento)
+  max_followups: 2                # fase 15: tras 2 seguimientos enviados, deja de proponer más
+  thank_you_days: 3               # fase 15: agradecer una entrevista hecha en los últimos N días
+
+replies:                        # fase 15: respuestas de las empresas (IMAP en solo lectura o data/inbox/respuestas/)
+  max_days: 120                   # como mucho, se buscan correos de los últimos N días (y nunca antes del envío)
+  max_body_chars: 20000           # lo que se guarda del cuerpo de cada correo
+  # Correos de ATS en nombre de la empresa: casan si su nombre sale en el remitente o el asunto.
+  ats_sender_domains:
+    - greenhouse.io
+    - greenhouse-mail.io
+    - lever.co
+    - ashbyhq.com
+    - myworkday.com
+    - myworkdayjobs.com
+    - smartrecruiters.com
+    - teamtailor.com
+    - teamtailor-mail.com
+    - personio.de
+    - personio.com
+    - recruitee.com
+    - workablemail.com
+    - workable.com
+    - jobvite.com
+    - icims.com
+    - successfactors.com
+    - successfactors.eu
+    - taleo.net
+    - bamboohr.com
+    - breezy.hr
+    - join.com
+    - factorialhr.com
+  # Avisos de portales («tu candidatura ha sido vista/descartada»). Vacío: no se leen. Si añades
+  # p. ej. infojobs.net, casan igual que los ATS (empresa en el remitente o el asunto).
+  portal_sender_domains: []
+  # Correo personal: con estos dominios solo casa la dirección exacta de un contacto de la ficha.
+  personal_mail_domains: [gmail.com, googlemail.com, outlook.com, hotmail.com, hotmail.es, live.com, yahoo.com, yahoo.es, icloud.com, me.com, proton.me, protonmail.com, gmx.com, gmx.es]
 
 calendar:                       # fase 10: hitos de los procesos y feed .ics
   timezone: Europe/Madrid

@@ -197,6 +197,8 @@ Arranca `jh serve`, `jh worker` y `pnpm dev`. Crea tu perfil con el skill `actua
 | `preparar-candidatura 42` | Respuestas de screening y carta, si hace falta |
 | `preparar-entrevista 42 tecnica` | Dosier de entrevista y simulacro |
 | `resumen-diario` | Qué tienes hoy, seguimientos vencidos, qué procesar |
+| `revisar-respuestas` | Clasifica los correos de las empresas (entrevista con su fecha, prueba, oferta, rechazo); tú aceptas cada propuesta en «Respuestas» |
+| `redactar-seguimiento` | Borradores de seguimiento (máximo 2 por candidatura) y de agradecimiento tras una entrevista; los copias y los envías tú |
 | `importar-plantilla-cv data/uploads/mi-cv.pdf` | Convierte tu CV (o cualquier diseño) en plantilla: los CVs a medida salen con su estilo |
 | `revisar-linkedin` | Informe de mejoras para tu perfil de LinkedIn, listo para copiar (tú lo aplicas) |
 | `plan-formacion` | Plan de formación con tus huecos reales de skills: recursos con su URL, horas y orden (o valora un curso o proyecto que propongas) |

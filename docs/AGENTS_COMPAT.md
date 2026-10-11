@@ -80,6 +80,11 @@ enviar nada. Encima, cada agente añade lo que permite:
 Recomendación para todos: ejecuta `procesar-ofertas` en su propia sesión y revisa en la UI las
 ofertas marcadas con riesgo antes de aprobarlas.
 
+El rol `clasificador` (fase 15, skill `revisar-respuestas`) lee correos de empresas, igual de no
+confiables, y tiene el mismo aislamiento por nivel: en Claude Code solo `get_reply` y
+`save_reply_proposal`. Además, lo que guarda es una propuesta: no cambia nada hasta que la
+aceptas en la UI, y aceptar no tiene herramienta ni comando.
+
 ## Notas por agente
 
 ### Claude Code
@@ -170,8 +175,10 @@ memoria: puede priorizar los huecos, pero cada recurso necesita una URL abierta.
 Claude Code: pendiente de la prueba manual de la fase 14; Codex y otros, sin probar.
 
 ### Botones «en tu agente» de la UI (ADR-024)
-«Buscar ofertas», «Procesar ofertas», «Evaluar encaje», «Generar CV» y, en la página Skills
-(fase 14), «Añadir al perfil las que tengo» (`actualizar-perfil`) y «Plan de formación» abren tu
+«Buscar ofertas», «Procesar ofertas», «Evaluar encaje», «Generar CV», en la página Skills
+(fase 14) «Añadir al perfil las que tengo» (`actualizar-perfil`) y «Plan de formación», y desde
+la fase 15 «Revisar respuestas» (Inicio y «Respuestas»), «Redactar borradores» (Procesos) y
+«Redactar seguimiento» (ficha de una candidatura enviada) abren tu
 agente en una terminal (Windows Terminal o PowerShell) con la orden del skill ya escrita; tú
 ves, contestas y apruebas lo que haga. Qué programa se abre lo dice `launch` de cada agente en el
 manifiesto: `command` (con `{prompt}` donde va la orden) y `unset_env` (variables que se quitan

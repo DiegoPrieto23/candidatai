@@ -14,8 +14,9 @@ from contextlib import contextmanager
 from dataclasses import dataclass, field
 
 USER, PASSWORD, FOLDER = "candidata@demo.invalid", "secreto-demo", "Alertas empleo"
+FOLDERS = (FOLDER, "INBOX")  # alertas (09b) y respuestas (fase 15)
 _ALLOWED = {"CAPABILITY", "LOGIN", "EXAMINE", "NOOP", "LOGOUT"}
-_PEEK = re.compile(r"\(BODY\.PEEK\[(HEADER\.FIELDS \(MESSAGE-ID\))?\]\)", re.IGNORECASE)
+_PEEK = re.compile(r"\(BODY\.PEEK\[(HEADER\.FIELDS \(([A-Z\- ]+)\))?\]\)", re.IGNORECASE)
 
 
 @dataclass
@@ -23,14 +24,16 @@ class FakeImap:
     messages: dict[int, bytes]  # UID -> correo completo
     violations: list[str] = field(default_factory=list)
     commands: list[str] = field(default_factory=list)
+    bodies_sent: list[int] = field(default_factory=list)  # UIDs cuyo cuerpo se ha enviado
     port: int = 0
 
 
-def _header_id(raw: bytes) -> bytes:
-    for line in raw.split(b"\n"):
-        if line.lower().startswith(b"message-id:"):
-            return line.rstrip(b"\r") + b"\r\n\r\n"
-    return b"\r\n"
+def _header_fields(raw: bytes, fields: list[str]) -> bytes:
+    """Las cabeceras pedidas del correo (sin líneas de continuación: los fixtures no las usan)."""
+    head = raw.replace(b"\r\n", b"\n").split(b"\n\n", 1)[0]
+    wanted = tuple(f.lower().encode() + b":" for f in fields)
+    lines = [line for line in head.split(b"\n") if line.lower().startswith(wanted)]
+    return b"".join(line + b"\r\n" for line in lines) + b"\r\n"
 
 
 class _Handler(socketserver.StreamRequestHandler):
@@ -63,7 +66,7 @@ class _Handler(socketserver.StreamRequestHandler):
                 ok = [part.strip('"') for part in args.split(" ", 1)] == [USER, PASSWORD]
                 self._send(f"{tag} {'OK' if ok else 'NO'} login\r\n".encode())
             elif command == "EXAMINE":
-                if args.strip('"') != FOLDER:
+                if args.strip('"') not in FOLDERS:
                     self._send(f"{tag} NO carpeta inexistente\r\n".encode())
                     continue
                 self._send(
@@ -93,12 +96,15 @@ class _Handler(socketserver.StreamRequestHandler):
             self._send(f"{tag} BAD solo BODY.PEEK\r\n".encode())
             return
         header_only = match.group(1) is not None
+        fields = match.group(2).split() if header_only else []
         for seq, uid in enumerate(int(u) for u in uid_set.split(",")):
             raw = state.messages.get(uid)
             if raw is None:
                 continue
-            data = _header_id(raw) if header_only else raw
-            section = "BODY[HEADER.FIELDS (MESSAGE-ID)]" if header_only else "BODY[]"
+            data = _header_fields(raw, fields) if header_only else raw
+            if not header_only:
+                state.bodies_sent.append(uid)
+            section = f"BODY[HEADER.FIELDS ({' '.join(fields)})]" if header_only else "BODY[]"
             self._send(f"* {seq + 1} FETCH (UID {uid} {section} {{{len(data)}}}\r\n".encode())
             self._send(data + b")\r\n")
         self._send(f"{tag} OK hecho\r\n".encode())

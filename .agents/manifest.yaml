@@ -63,6 +63,12 @@ targets:
       revisar-linkedin:
         argument-hint: "[ruta al PDF de LinkedIn o nada para pegar el texto]"
         allowed-tools: ["read", "mcp:get_profile", "mcp:list_jobs", "mcp:get_extraction"]
+      revisar-respuestas:
+        argument-hint: "[nada para todas, o un reply_id]"
+        allowed-tools: ["mcp:list_replies"]
+      redactar-seguimiento:
+        argument-hint: "[nada para todo lo pendiente, o un job_id]"
+        allowed-tools: ["mcp:list_followups_due", "mcp:get_profile", "mcp:get_context", "mcp:get_extraction", "mcp:get_timeline", "mcp:save_message_draft"]
       plan-formacion:
         argument-hint: "[nada para el plan, o URL o descripción de un curso o proyecto a valorar]"
         allowed-tools: ["read", "web", "mcp:get_skill_gaps", "mcp:get_profile", "mcp:get_context"]

@@ -33,6 +33,10 @@ export const keys = {
   agent: ['agent'] as const,
   skillGaps: (days: number) => ['skill-gaps', days] as const,
   allSkillGaps: ['skill-gaps'] as const,
+  replies: (params: RepliesParams) => ['replies', params] as const,
+  allReplies: ['replies'] as const,
+  reply: (id: number) => ['reply', id] as const,
+  drafts: (jobId: number) => ['drafts', jobId] as const,
 }
 
 type JobsQuery = NonNullable<operations['list_jobs']['parameters']['query']>
@@ -816,5 +820,107 @@ export function useSetSkillMark() {
     mutationFn: (body: { skill: string; status: SkillMark | null }) =>
       unwrap(api.POST('/skills/marks', { body })),
     onSuccess: () => client.invalidateQueries({ queryKey: keys.allSkillGaps }),
+  })
+}
+
+// --- Respuestas de las empresas (fase 15) ----------------------------------------------------
+
+export type ReplyStatus = Schemas['ReplyInboxItem']['status']
+export type ReplyDecision = Schemas['ReplyDecision']
+
+export interface RepliesParams {
+  status?: ReplyStatus
+  jobId?: number
+}
+
+/** Bandeja «Respuestas» (o las de una oferta con `jobId`) y los recuentos por estado. */
+export function useReplies(params: RepliesParams = {}) {
+  return useQuery({
+    queryKey: keys.replies(params),
+    queryFn: () =>
+      unwrap(api.GET('/replies', { params: { query: { status: params.status, job_id: params.jobId } } })),
+    // El worker lee el correo y el agente guarda propuestas por su cuenta: se refresca solo.
+    refetchInterval: 60_000,
+  })
+}
+
+/** Una respuesta con el texto visible del correo. */
+export function useReply(id: number | null) {
+  return useQuery({
+    queryKey: keys.reply(id ?? 0),
+    queryFn: () => unwrap(api.GET('/replies/{reply_id}', { params: { path: { reply_id: id ?? 0 } } })),
+    enabled: id !== null && id > 0,
+  })
+}
+
+/** Lee ahora el correo (IMAP en solo lectura y `data/inbox/respuestas/`). */
+export function usePollReplies() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: () => unwrap(api.POST('/replies/poll', { body: {} })),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.allReplies }),
+  })
+}
+
+/** Acepta la propuesta (tal cual o cambiada): registra su evento y, si lo hay, su hito. */
+export function useAcceptReply() {
+  const client = useQueryClient()
+  const invalidate = useInvalidateProcess()
+  return useMutation({
+    mutationFn: ({ replyId, body }: { replyId: number; body: ReplyDecision }) =>
+      unwrap(api.POST('/replies/{reply_id}/accept', { params: { path: { reply_id: replyId } }, body })),
+    onSuccess: (_r, { replyId, body }) =>
+      Promise.all([
+        client.invalidateQueries({ queryKey: keys.allReplies }),
+        client.invalidateQueries({ queryKey: keys.reply(replyId) }),
+        invalidate(body.job_id),
+      ]),
+  })
+}
+
+/** Ignora la respuesta: no registra nada. */
+export function useIgnoreReply() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (replyId: number) =>
+      unwrap(api.POST('/replies/{reply_id}/ignore', { params: { path: { reply_id: replyId } }, body: {} })),
+    onSuccess: (_r, replyId) =>
+      Promise.all([
+        client.invalidateQueries({ queryKey: keys.allReplies }),
+        client.invalidateQueries({ queryKey: keys.reply(replyId) }),
+      ]),
+  })
+}
+
+// --- Borradores de seguimiento y agradecimiento (fase 15) --------------------------------------
+
+/** Borradores vigentes de la oferta y cuántos seguimientos llevas enviados. */
+export function useJobDrafts(jobId: number, enabled = true) {
+  return useQuery({
+    queryKey: keys.drafts(jobId),
+    queryFn: () => unwrap(api.GET('/jobs/{job_id}/drafts', { params: { path: { job_id: jobId } } })),
+    enabled: enabled && Number.isInteger(jobId) && jobId > 0,
+    // El agente los guarda desde fuera: se refresca solo.
+    refetchInterval: 60_000,
+  })
+}
+
+/** «Ya lo he enviado»: lo mandaste desde tu correo. Un seguimiento registra `followup_sent`. */
+export function useMarkDraftSent(jobId: number) {
+  const client = useQueryClient()
+  const invalidate = useInvalidateProcess()
+  return useMutation({
+    mutationFn: (draftId: number) =>
+      unwrap(api.POST('/drafts/{draft_id}/sent', { params: { path: { draft_id: draftId } }, body: {} })),
+    onSuccess: () => Promise.all([client.invalidateQueries({ queryKey: keys.drafts(jobId) }), invalidate(jobId)]),
+  })
+}
+
+export function useDiscardDraft(jobId: number) {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (draftId: number) =>
+      unwrap(api.POST('/drafts/{draft_id}/discard', { params: { path: { draft_id: draftId } }, body: {} })),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.drafts(jobId) }),
   })
 }

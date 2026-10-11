@@ -67,4 +67,23 @@ describe('Inicio', () => {
     expect(search?.get('sort')).toBe('score')
     expect(search?.get('dir')).toBe('desc')
   })
+
+  it('lleva a las respuestas por revisar y ofrece clasificar las nuevas con tu agente', async () => {
+    mockApi({
+      'GET /status': status(),
+      'GET /followups': noFollowups,
+      'GET /upcoming': noUpcoming,
+      'GET /jobs': page([]),
+      'GET /agent': { available: true, agent: 'claude', reason: null, actions: [] },
+      'GET /replies': { replies: [], counts: { new: 3, proposed: 2, accepted: 0, ignored: 0 } },
+    })
+    renderApp('/')
+    const heading = await screen.findByRole('heading', {
+      level: 1,
+      name: 'Tienes 2 respuestas de empresas por revisar.',
+    })
+    expect(within(heading).getByRole('link')).toHaveAttribute('href', '/respuestas')
+    expect(screen.getByText(/Para tu agente: 3 correos sin clasificar/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Revisar respuestas/ })).toBeInTheDocument()
+  })
 })

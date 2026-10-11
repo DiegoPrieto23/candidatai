@@ -18,6 +18,7 @@ TaskKind = Literal[
     "rescore_all",
     "run_source",
     "poll_email",
+    "poll_replies",
     "expire_summaries",
     "browser_open",
     "apply_open",

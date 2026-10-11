@@ -147,4 +147,33 @@ describe('Procesos (kanban)', () => {
       '/procesos',
     )
   })
+
+  it('ofrece redactar los borradores con tu agente si hay seguimientos o agradecimientos', async () => {
+    mockApi({
+      ...routes(),
+      'GET /agent': { available: true, agent: 'claude', reason: null, actions: [] },
+      'GET /followups': {
+        days_without_reply: 10,
+        max_followups: 2,
+        followups: [],
+        thank_you_days: 3,
+        thanks_due: [
+          {
+            job_id: 3,
+            title: 'Oferta 3',
+            company: 'Empresa 3',
+            milestone_id: 7,
+            interview_title: 'Entrevista',
+            interview_at: '2026-10-07T08:30:00Z',
+            contacts: [],
+            draft_id: null,
+          },
+        ],
+      },
+    })
+    renderApp('/procesos')
+    expect(await screen.findByText(/1 seguimiento pendiente · 1 entrevista por agradecer/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Redactar borradores/ })).toBeInTheDocument()
+  })
 })
+

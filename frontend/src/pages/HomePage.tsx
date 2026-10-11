@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { ArrowRightIcon } from '@phosphor-icons/react'
 import type { JobRow, Stage, UpcomingItem } from '@/api/client'
-import { useFollowups, useJobs, useStatus, useUpcoming } from '@/api/queries'
+import { useFollowups, useJobs, useReplies, useStatus, useUpcoming } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
 import { ScoreBadge } from '@/components/MatchDetails'
 import { ErrorState } from '@/components/States'
@@ -46,8 +46,11 @@ function Pending({ to, children }: { to: string; children: ReactNode }) {
 function Today() {
   const status = useStatus()
   const followups = useFollowups()
+  const replies = useReplies()
   const s = status.data?.by_stage
   const due = followups.data?.followups.length ?? 0
+  const proposed = replies.data?.counts.proposed ?? 0
+  const unclassified = replies.data?.counts.new ?? 0
 
   const yours: ReactNode[] = []
   if (s?.pending_triage)
@@ -62,6 +65,12 @@ function Today() {
         {s.cv_ready} {plural(s.cv_ready, 'CV listo para enviar', 'CVs listos para enviar')}
       </Pending>,
     )
+  if (proposed)
+    yours.push(
+      <Pending key="replies" to="/respuestas">
+        {proposed} {plural(proposed, 'respuesta de empresa por revisar', 'respuestas de empresas por revisar')}
+      </Pending>,
+    )
   if (due)
     yours.push(
       <Pending key="followups" to="/procesos">
@@ -72,6 +81,7 @@ function Today() {
   const agent: string[] = []
   if (s?.pending_extraction) agent.push(`${s.pending_extraction} por extraer`)
   if (s?.approved) agent.push(`${s.approved} ${plural(s.approved, 'aprobada', 'aprobadas')} sin CV`)
+  if (unclassified) agent.push(`${unclassified} ${plural(unclassified, 'correo sin clasificar', 'correos sin clasificar')}`)
 
   return (
     <section aria-labelledby="hoy" className="max-w-3xl">
@@ -101,6 +111,11 @@ function Today() {
         {!!s?.pending_triage && (
           <AgentButton action="evaluar-encaje" size="default">
             Evaluar encaje
+          </AgentButton>
+        )}
+        {unclassified > 0 && (
+          <AgentButton action="revisar-respuestas" size="default">
+            Revisar respuestas
           </AgentButton>
         )}
       </div>

@@ -9,27 +9,17 @@ venga de la UI: `Origin` de la UI (si lo trae) y cuerpo JSON, que desde otra web
 comprobación previa CORS que esta API no concede.
 """
 
-from fastapi import APIRouter, Depends, Request, status
+from fastapi import APIRouter, Depends, status
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.agent_interface.errors import ErrorDetail, ToolError
-from app.api.deps import UI_ORIGIN, SessionDep
+from app.api.deps import SessionDep, require_ui
 from app.services import agent_launch
 from app.services.agent_launch import ActionId, LaunchError
 
 router = APIRouter(prefix="/agent", tags=["agent"])
 
 _ERROR_TYPES = {"not_found": "not_found", "invalid_request": "invalid_request"}
-
-
-def require_ui(request: Request) -> None:
-    """Solo la UI: mismo origen que permite CORS y cuerpo JSON."""
-    origin = request.headers.get("origin")
-    if origin is not None and origin != UI_ORIGIN:
-        raise ToolError("forbidden", "Solo la UI de Job Hunter puede hacer esto.")
-    content_type = request.headers.get("content-type", "")
-    if not content_type.startswith("application/json"):
-        raise ToolError("forbidden", "La petición tiene que ser JSON y venir de la UI.")
 
 
 class Action(BaseModel):

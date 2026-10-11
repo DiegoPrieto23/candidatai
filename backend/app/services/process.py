@@ -182,8 +182,15 @@ def _when(value: datetime, all_day: bool) -> str:
     return local.strftime("%d/%m/%Y") if all_day else local.strftime("%d/%m/%Y %H:%M")
 
 
-def create_milestone(session: Session, job_id: int, data: MilestoneCreate) -> MilestoneOut:
+def create_milestone(
+    session: Session,
+    job_id: int,
+    data: MilestoneCreate,
+    payload_extra: dict[str, Any] | None = None,
+) -> MilestoneOut:
     """Crea un hito y, si es una entrevista o una prueba, registra su evento (actor `user`).
+
+    `payload_extra` se añade al `payload` del evento (p. ej. `reply_id` al aceptar un correo).
 
     Si el evento no es válido en la etapa de la oferta (p. ej. una entrevista antes de enviar la
     candidatura), no se guarda nada y se lanza `InvalidTransitionError`.
@@ -214,6 +221,7 @@ def create_milestone(session: Session, job_id: int, data: MilestoneCreate) -> Mi
                 "milestone_id": row.id,
                 "title": row.title,
                 "starts_at": starts_at.isoformat(),
+                **(payload_extra or {}),
             }
             event = events.record(
                 session, job_id, event_type, Actor.USER, payload, occurred_at=data.occurred_at
@@ -384,15 +392,20 @@ def followup_status(
     last_followup_at: datetime | None,
     days_without_reply: int,
     now: datetime,
+    followups_sent: int = 0,
 ) -> FollowupStatus | None:
+    """Con `followups.max_followups` seguimientos enviados (fase 15) ya no toca otro."""
     if application is None or application.stage != Stage.APPLIED:
         return None
     anchors = [d for d in (application.applied_at, last_followup_at) if d is not None]
     if not anchors:
         anchors = [application.last_event_at]
     days = (now - max(anchors)).days
+    capped = followups_sent >= get_policies().followups.max_followups
     return FollowupStatus(
-        due=days >= days_without_reply, days_waiting=days, days_without_reply=days_without_reply
+        due=days >= days_without_reply and not capped,
+        days_waiting=days,
+        days_without_reply=days_without_reply,
     )
 
 
@@ -412,6 +425,7 @@ def get_process(session: Session, job_id: int, now: datetime | None = None) -> P
     from app.services.answers import latest_answers
     from app.services.documents.cover_letter import latest_letter
     from app.services.documents.service import selected_render_id
+    from app.services.drafts import followups_sent
 
     _job(session, job_id)
     application = session.get(Application, job_id)
@@ -443,6 +457,7 @@ def get_process(session: Session, job_id: int, now: datetime | None = None) -> P
             last_followup_at(session, job_id),
             get_policies().followups.days_without_reply,
             now or utcnow(),
+            followups_sent(session, [job_id]).get(job_id, 0),
         ),
         milestones=job_milestones(session, job_id),
         contacts=[_contact_out(c) for c in contacts],

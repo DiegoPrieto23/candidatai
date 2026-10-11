@@ -319,6 +319,38 @@ def check_email_alerts(
     )
 
 
+def check_email_replies(
+    settings: Settings, imap_factory: "ImapFactory | None" = None
+) -> CheckResult:
+    """Respuestas de las empresas (fase 15): como las alertas, solo login y `EXAMINE` de su
+    carpeta; no se lee ningún correo."""
+    from app.services.ingestion.email.mailboxes import MailboxError, connect_imap
+
+    name = "Respuestas por correo"
+    if not settings.imap_configured:
+        return CheckResult(
+            name=name,
+            status=CheckStatus.OK,
+            detail="sin IMAP (opcional); deja las respuestas .eml o .mbox en "
+            "data/inbox/respuestas/",
+        )
+    folder = settings.imap_replies_folder
+    try:
+        kwargs = {"factory": imap_factory} if imap_factory else {}
+        conn = connect_imap(settings, folder=folder, **kwargs)
+    except MailboxError as exc:
+        status = CheckStatus.WARN if exc.code == "network" else CheckStatus.ERROR
+        return CheckResult(name=name, status=status, detail=exc.message)
+    with contextlib.suppress(Exception):
+        conn.logout()
+    return CheckResult(
+        name=name,
+        status=CheckStatus.OK,
+        detail=f"carpeta «{folder}» en solo lectura; solo se descargan los correos de las "
+        "empresas de tus candidaturas enviadas",
+    )
+
+
 def check_capture(settings: Settings) -> CheckResult:
     """Botón «Enviar a Job Hunter» (fase 09b): token creado e id de la extensión aceptada."""
     from app.services.capture import token_configured
@@ -351,6 +383,7 @@ def run_doctor(settings: Settings) -> DoctorReport:
             check_embeddings(settings),
             check_connectors(settings),
             check_email_alerts(settings),
+            check_email_replies(settings),
             check_capture(settings),
         ]
     )

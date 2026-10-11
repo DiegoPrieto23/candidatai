@@ -8,7 +8,7 @@ puede pedir la UI y solo para una lista cerrada de carpetas.
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.api.routes.agent import require_ui
+from app.api.deps import require_ui
 from app.services import context, folders
 
 router = APIRouter(tags=["context"])

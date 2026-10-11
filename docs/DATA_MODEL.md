@@ -407,3 +407,46 @@ cubre (migración 0013). No es estado de una oferta: no lleva evento.
 - Ficheros: «Es lo mismo que…» escribe `config/skill_aliases.yaml`, fuera de `data/` (ADR-026).
   El skill `plan-formacion` escribe `data/documentos/plan-formacion.md` (y guarda la versión
   anterior como `plan-formacion-<AAAA-MM-DD>.md` al sustituirlo).
+
+## Ampliaciones de la fase 15
+
+### `replies`
+Correos de las empresas de tus procesos (migración 0014). Solo se guardan los que casan con una
+candidatura enviada; de los demás no queda nada. Contenido no confiable.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | int PK | |
+| message_id | str único | `Message-ID` o, si falta, `<sha256:…>` del correo |
+| origin | str | `imap` o `local` (`data/inbox/respuestas/`) |
+| sender, sender_name, subject | str | Remitente en minúsculas; nombre y asunto en una línea |
+| received_at | datetime? | Cabecera `Date` |
+| body_text | text | Texto visible (sin lo oculto del HTML), hasta `replies.max_body_chars` |
+| risk_flags, risk_excerpt | JSON, str? | `injection_phrase` (visible u oculta) y `hidden_text` si la frase estaba oculta |
+| candidates | JSON | `[{job_id, reason}]`, de la coincidencia más fiable a la menos: `contact`, `domain`, `ats`, `company_name` |
+| status | str | `new` → `proposed` (agente) → `accepted` / `ignored` (usuario) |
+| proposal | JSON? | `ReplyProposal` (`AGENT_INTERFACE.md` §Respuestas) |
+| proposed_at, proposed_by | datetime?, str? | Cliente del agente |
+| job_id | FK? | La oferta de la propuesta (o la que eligió el usuario al aceptar) |
+| event_id | FK? | Evento registrado al aceptar |
+| resolved_at | datetime? | Al aceptar o ignorar |
+| created_at | datetime | |
+
+### `message_drafts`
+Borradores de seguimiento y agradecimiento (fase 15.3). La app nunca los envía. Como mucho uno
+vigente (`draft`) por oferta y tipo (y entrevista, en un agradecimiento): guardar otro lo
+sustituye. Un seguimiento no se guarda si la oferta ya tiene `followups.max_followups` (2)
+eventos `followup_sent`.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | int PK | |
+| job_id | FK | |
+| kind | str | `followup` o `thank_you` |
+| milestone_id | FK? | La entrevista que se agradece |
+| subject, body | str, text | |
+| status | str | `draft`, `sent` (el usuario marcó que lo envió) o `discarded` |
+| event_id | FK? | `followup_sent` al marcarlo enviado |
+| agent_name | str? | |
+| created_at / updated_at | datetime | |
+

@@ -32,6 +32,10 @@
       "mcp__jobhunter__list_upcoming",
       "mcp__jobhunter__get_funnel_stats",
       "mcp__jobhunter__get_skill_gaps",
+      "mcp__jobhunter__list_replies",
+      "mcp__jobhunter__get_reply",
+      "mcp__jobhunter__save_reply_proposal",
+      "mcp__jobhunter__save_message_draft",
       "mcp__jobhunter__wait_user_action"
     ],
     "ask": [

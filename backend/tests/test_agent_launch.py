@@ -54,6 +54,22 @@ def test_skills_page_prompts_carry_no_skill_names() -> None:
         assert agent_launch.ACTIONS[action].needs_job is False
 
 
+def test_replies_prompt_carries_no_mail_text() -> None:
+    """Fase 15: el agente lee los correos con `list_replies`; la orden no lleva nada de ellos."""
+    prompt = agent_launch.prompt_for("revisar-respuestas")
+    assert prompt.startswith("Usa el skill revisar-respuestas")
+    assert agent_launch.ACTIONS["revisar-respuestas"].needs_job is False
+
+
+def test_followup_prompts() -> None:
+    """Fase 15: con oferta, solo para una candidatura enviada y abierta."""
+    assert agent_launch.prompt_for("redactar-seguimiento", 7) == (
+        "Usa el skill redactar-seguimiento de Job Hunter para la oferta 7."
+    )
+    assert agent_launch.ACTIONS["redactar-seguimiento"].stages == agent_launch.SENT_STAGES
+    assert "redactar-seguimiento" in agent_launch.prompt_for("redactar-seguimientos")
+
+
 def test_launchers_come_from_the_manifest() -> None:
     launchers = {launcher.agent: launcher for launcher in agent_launch._launchers()}
     assert launchers["claude"].command == ["claude", "{prompt}"]
@@ -106,6 +122,9 @@ def test_get_lists_agent_and_actions(client: TestClient, opened: list[tuple[str,
         "generar-cv",
         "anadir-skills",
         "plan-formacion",
+        "revisar-respuestas",
+        "redactar-seguimientos",
+        "redactar-seguimiento",
     }
     assert actions["generar-cv"]["needs_job"] is True and actions["generar-cv"]["prompt"] is None
     assert "buscar-ofertas" in actions["buscar-ofertas"]["prompt"]

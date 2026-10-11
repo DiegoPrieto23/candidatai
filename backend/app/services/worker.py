@@ -11,6 +11,9 @@ programada (el portátil estaba apagado): así no se pierde ningún día.
 Alertas por correo (fase 09b): cada `email_alerts.poll_minutes` se encola `poll_email` si hay IMAP
 configurado o correos en `data/inbox/`, y cada día, con la ingesta, `expire_summaries`.
 
+Respuestas de las empresas (fase 15): con la misma frecuencia se encola `poll_replies` si hay de
+dónde leer y alguna candidatura enviada abierta.
+
 Candidatura asistida (fase 11): el worker es el único dueño del navegador persistente
 (`services/applier/browser.py`). Sus tareas no se reintentan y, si el worker se cierra a medias,
 quedan `failed` al arrancar, nunca vuelven a la cola.
@@ -30,7 +33,7 @@ from app.core.config import get_settings
 from app.core.db import session_scope
 from app.core.policies import ConnectorsPolicy, get_policies
 from app.models.base import utcnow
-from app.services import application_archive, summaries, tasks
+from app.services import application_archive, replies, summaries, tasks
 from app.services.ingestion import service as sources
 from app.services.ingestion.email import service as email_alerts
 from app.services.ingestion.email.mailboxes import has_local_mail
@@ -66,6 +69,14 @@ def _poll_email(session: Session, _payload: dict[str, Any]) -> dict[str, Any]:
     data = result.model_dump(mode="json")
     # El buzón entero falló por la red: queda en `source_runs` y se reintenta.
     if any(e.code == "network" and e.item is None for e in result.errors):
+        data[RETRY_KEY] = next(e.message for e in result.errors if e.code == "network")
+    return data
+
+
+def _poll_replies(session: Session, _payload: dict[str, Any]) -> dict[str, Any]:
+    result = replies.poll_replies(session)
+    data = result.model_dump(mode="json")
+    if any(e.code == "network" for e in result.errors):
         data[RETRY_KEY] = next(e.message for e in result.errors if e.code == "network")
     return data
 
@@ -130,6 +141,7 @@ HANDLERS: dict[str, Handler] = {
     "rescore_all": _rescore_all,
     "run_source": _run_source,
     "poll_email": _poll_email,
+    "poll_replies": _poll_replies,
     "expire_summaries": _expire_summaries,
     "browser_open": _browser_open,
     "apply_open": _apply_open,
@@ -238,10 +250,18 @@ def enqueue_email_poll(session: Session) -> bool:
     return True
 
 
+def enqueue_replies_poll(session: Session) -> bool:
+    if not replies.replies_enabled() or not replies.has_open_processes(session):
+        return False
+    tasks.enqueue(session, "poll_replies")
+    return True
+
+
 def describe(outcome: TaskOutcome) -> str:
     """Una línea legible para el log del worker."""
     result = outcome.result or {}
-    if outcome.kind in ("run_source", "poll_email", "expire_summaries") and result.get("message"):
+    kinds = ("run_source", "poll_email", "poll_replies", "expire_summaries")
+    if outcome.kind in kinds and result.get("message"):
         line = str(result["message"])
         if outcome.error:
             line += " Se reintentará más tarde."
@@ -310,6 +330,7 @@ def run_scheduler(
         try:
             with session_scope() as session:
                 queued = enqueue_email_poll(session)
+                queued = enqueue_replies_poll(session) or queued
         except Exception as exc:
             logger.exception("Fallo al encolar la lectura de alertas")
             on_message(f"Error al encolar la lectura de alertas: {type(exc).__name__}: {exc}")
@@ -333,11 +354,12 @@ def run_scheduler(
             on_message(f"Tareas que quedaron a medias, de vuelta a la cola: {stuck}.")
         queued = enqueue_due_sources(session)
         email = enqueue_email_poll(session)
+        email = enqueue_replies_poll(session) or email
         tasks.enqueue(session, "expire_summaries")
     if queued:
         on_message(f"Fuentes pendientes desde la última ingesta: {len(queued)} en cola.")
     if email:
-        on_message(f"Alertas por correo: se leen al arrancar y cada {poll_minutes} min.")
+        on_message(f"Correo (alertas y respuestas): se lee al arrancar y cada {poll_minutes} min.")
     process()
     on_message(f"Próxima ingesta diaria: {policy.daily_at} ({policy.timezone}).")
     scheduler.start()
