@@ -24,6 +24,7 @@ import {
   type TemplateInfo,
 } from '@/api/client'
 import { useJobCv, useRenderCv, useSelectRender, useTemplates } from '@/api/queries'
+import { AgentButton } from '@/components/AgentButton'
 import { ErrorState, InlineCode } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -557,10 +558,15 @@ function CvBody({
         <div className="text-sm leading-relaxed">
           <p className="font-semibold">Aún sin CV</p>
           {data.can_render ? (
-            <p className="mt-1 text-muted-foreground">
-              Ejecuta <Code>generar-cv {jobId}</Code> en tu agente: redacta el contenido desde tu perfil, lo
-              verifica y lo renderiza. Después podrás cambiar plantilla, foto y color aquí, sin IA.
-            </p>
+            <>
+              <p className="mt-1 text-muted-foreground">
+                Tu agente redacta el contenido desde tu perfil, lo verifica y lo renderiza (skill{' '}
+                <Code>generar-cv {jobId}</Code>). Después podrás cambiar plantilla, foto y color aquí, sin IA.
+              </p>
+              <AgentButton action="generar-cv" jobId={jobId} variant="default" className="mt-3">
+                Generar CV
+              </AgentButton>
+            </>
           ) : (
             <p className="mt-1 text-muted-foreground">Esta oferta no llegó a tener CV.</p>
           )}
@@ -573,6 +579,11 @@ function CvBody({
   return (
     <div className="space-y-8">
       <Verification cv={data.cv} />
+      {data.can_render && (
+        <AgentButton action="generar-cv" jobId={jobId}>
+          Volver a redactar
+        </AgentButton>
+      )}
       {data.can_render &&
         (templatesQuery.isPending ? (
           <Skeleton className="h-40" />

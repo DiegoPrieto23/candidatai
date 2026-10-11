@@ -50,6 +50,7 @@ describe('Sección CV de la ficha', () => {
     const section = await screen.findByRole('region', { name: 'CV' })
     expect(await within(section).findByText('Aún sin CV')).toBeInTheDocument()
     expect(within(section).getByText('generar-cv 1')).toBeInTheDocument()
+    expect(within(section).getByRole('button', { name: 'Generar CV' })).toBeInTheDocument()
     expect(within(section).queryByRole('button', { name: 'Renderizar' })).not.toBeInTheDocument()
   })
 

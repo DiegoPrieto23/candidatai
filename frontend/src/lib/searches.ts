@@ -77,3 +77,29 @@ export function searchLabel(raw: string): string {
   const parts = [query, place].filter(Boolean)
   return parts.length ? parts.join(' · ') : 'Todas las ofertas'
 }
+
+/** Página base de una plataforma, sacada de sus búsquedas: `https://www.infojobs.net` e `infojobs.net`. */
+export function platformHome(urls: string[]): { origin: string; host: string } | null {
+  for (const raw of urls) {
+    try {
+      const url = new URL(raw)
+      if (url.protocol === 'https:' || url.protocol === 'http:') return { origin: url.origin, host: host(url) }
+    } catch {
+      // URL mal formada: probamos con la siguiente.
+    }
+  }
+  return null
+}
+
+// Portales que no sirven su icono en `/favicon.ico` (o no dejan cargarlo desde otra web).
+const KNOWN_ICONS: Record<string, string> = {
+  'tecnoempleo.com': 'https://www.tecnoempleo.com/graficos/logo_te_192.png',
+  'glassdoor.es': 'https://www.glassdoor.com/favicon.ico',
+  'glassdoor.com': 'https://www.glassdoor.com/favicon.ico',
+}
+
+/** Dónde probar el icono de un portal, en orden: el conocido, `/favicon.ico` y el de iOS. */
+export function iconCandidates(home: { origin: string; host: string }): string[] {
+  const known = KNOWN_ICONS[home.host]
+  return [...(known ? [known] : []), `${home.origin}/favicon.ico`, `${home.origin}/apple-touch-icon.png`]
+}

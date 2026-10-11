@@ -30,6 +30,9 @@ class Settings(BaseSettings):
     soffice_path: Path | None = Field(default=None, validation_alias="SOFFICE_PATH")
     # Qué agente usa la CLI (`claude-code`, `codex`…), para auditar. Por MCP lo dice el cliente.
     client_name: str | None = Field(default=None, validation_alias="JH_CLIENT_NAME")
+    # Qué agente abren los botones de la UI (ADR-024), por su nombre en `.agents/manifest.yaml`.
+    # Sin valor, el primero con `launch` que esté instalado.
+    agent: str | None = Field(default=None, validation_alias="JH_AGENT")
     # `off` desactiva la similitud semántica aunque esté instalado el extra `matching` (tests, CI).
     embeddings: Literal["auto", "off"] = Field(default="auto", validation_alias="JH_EMBEDDINGS")
     # Conectores opcionales de portales (fase 09). Sin claves, esas fuentes se omiten con un aviso.

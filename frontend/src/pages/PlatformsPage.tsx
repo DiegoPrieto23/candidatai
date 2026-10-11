@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import { searchLabel } from '@/lib/searches'
+import { iconCandidates, platformHome, searchLabel } from '@/lib/searches'
 import { cn } from '@/lib/utils'
 
 const ACCESS: { value: BrowseAccess; label: string; hint: string }[] = [
@@ -81,6 +81,38 @@ function Searches({ urls, name }: { urls: string[]; name: string }) {
         </ul>
       )}
     </div>
+  )
+}
+
+/**
+ * Icono del portal, que tu navegador carga del propio portal (sin referer): prueba las rutas de
+ * `iconCandidates` en orden y, si ninguna carga, pone la inicial del nombre.
+ */
+function PlatformIcon({ name, home }: { name: string; home: { origin: string; host: string } | null }) {
+  const [attempt, setAttempt] = useState(0)
+  const candidates = home ? iconCandidates(home) : []
+  const box = 'grid size-9 shrink-0 place-items-center rounded-lg border bg-white dark:bg-white/95'
+  if (attempt >= candidates.length) {
+    return (
+      <span className={cn(box, 'bg-muted font-semibold text-muted-foreground dark:bg-muted')} aria-hidden>
+        {name.trim().charAt(0).toUpperCase()}
+      </span>
+    )
+  }
+  return (
+    <span className={box} aria-hidden>
+      <img
+        key={candidates[attempt]}
+        src={candidates[attempt]}
+        alt=""
+        width={20}
+        height={20}
+        loading="lazy"
+        referrerPolicy="no-referrer"
+        onError={() => setAttempt((n) => n + 1)}
+        className="size-5 object-contain"
+      />
+    </span>
   )
 }
 
@@ -231,6 +263,7 @@ function PlatformRow({ source }: { source: SourceView }) {
   }
 
   const linkedin = browse.platform === 'linkedin'
+  const home = platformHome(browse.search_urls)
   const enabled = browse.allow_agent_browsing === true
   const change = (body: { allow_agent_browsing?: boolean; priority?: number; access?: BrowseAccess }) =>
     update.mutate({ sourceId: source.id, ...body })
@@ -243,6 +276,7 @@ function PlatformRow({ source }: { source: SourceView }) {
   return (
     <li className={cn('grid gap-3 px-4 py-4 sm:px-5', !enabled && 'bg-muted/30')}>
       <div className="flex flex-wrap items-start gap-x-4 gap-y-2">
+        <PlatformIcon name={source.name} home={home} />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="font-medium">{source.name}</h3>
@@ -255,7 +289,21 @@ function PlatformRow({ source }: { source: SourceView }) {
               </span>
             )}
           </div>
-          <p className="mt-1 text-xs text-muted-foreground">
+          <p className="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
+            {home && (
+              <>
+                <a
+                  href={home.origin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-foreground/80 underline-offset-2 hover:text-foreground hover:underline"
+                >
+                  {home.host}
+                  <ArrowSquareOutIcon className="size-3" aria-hidden />
+                </a>
+                <span aria-hidden>·</span>
+              </>
+            )}
             Hasta {plural(browse.max_offers ?? 0, 'oferta', 'ofertas')} por recorrido
           </p>
         </div>

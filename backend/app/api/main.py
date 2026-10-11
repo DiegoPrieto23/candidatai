@@ -6,8 +6,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
 
+from app.api.deps import UI_ORIGIN
 from app.api.errors import ERROR_RESPONSES, install_error_handlers
 from app.api.routes import (
+    agent,
     alerts,
     applications,
     apply,
@@ -24,7 +26,7 @@ from app.api.routes import (
 )
 
 HOST = "127.0.0.1"
-UI_ORIGIN = "http://127.0.0.1:5173"
+__all__ = ["HOST", "UI_ORIGIN", "create_app", "openapi_json"]
 
 
 def _operation_id(route: APIRoute) -> str:
@@ -61,6 +63,7 @@ def create_app() -> FastAPI:
     app.include_router(letters.router)
     app.include_router(apply.router)
     app.include_router(prompts.router)
+    app.include_router(agent.router)
     return app
 
 

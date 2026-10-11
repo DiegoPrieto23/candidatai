@@ -3,6 +3,7 @@ import { Link } from 'react-router'
 import { ArrowRightIcon } from '@phosphor-icons/react'
 import type { JobRow, Stage, UpcomingItem } from '@/api/client'
 import { useFollowups, useJobs, useStatus, useUpcoming } from '@/api/queries'
+import { AgentButton } from '@/components/AgentButton'
 import { ScoreBadge } from '@/components/MatchDetails'
 import { ErrorState } from '@/components/States'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -85,14 +86,24 @@ function Today() {
         )}
       </h1>
       {agent.length > 0 && (
-        <p className="mt-4 text-base text-muted-foreground">
-          Para tu agente: {agent.join(' y ')}. Pídeselo con{' '}
-          <code className="rounded bg-foreground/[0.06] px-1.5 py-0.5 font-mono text-[0.85em]">
-            {s?.pending_extraction ? 'procesar-ofertas' : 'generar-cv'}
-          </code>
-          .
-        </p>
+        <p className="mt-4 text-base text-muted-foreground">Para tu agente: {agent.join(' y ')}.</p>
       )}
+      {/* Abren tu agente en una terminal con la orden escrita (ADR-024): lo que haga lo ves y lo apruebas tú. */}
+      <div className="mt-6 flex flex-wrap items-start gap-2">
+        <AgentButton action="buscar-ofertas" variant="default" size="default">
+          Buscar ofertas
+        </AgentButton>
+        {!!s?.pending_extraction && (
+          <AgentButton action="procesar-ofertas" size="default">
+            Procesar ofertas
+          </AgentButton>
+        )}
+        {!!s?.pending_triage && (
+          <AgentButton action="evaluar-encaje" size="default">
+            Evaluar encaje
+          </AgentButton>
+        )}
+      </div>
     </section>
   )
 }

@@ -162,8 +162,18 @@ Las reglas que más importan no dependen del agente (ADR-012): ningún agente pu
 navegación en LinkedIn, y la app rechaza las ofertas y los recorridos de una plataforma
 desactivada.
 
+### Botones «en tu agente» de la UI (ADR-024)
+«Buscar ofertas», «Procesar ofertas», «Evaluar encaje» y «Generar CV» abren tu agente en una
+terminal (Windows Terminal o PowerShell) con la orden del skill ya escrita; tú ves, contestas y
+apruebas lo que haga. Qué programa se abre lo dice `launch` de cada agente en el manifiesto:
+`command` (con `{prompt}` donde va la orden) y `unset_env` (variables que se quitan antes, como la
+clave de la API, para que use tu suscripción). Con varios agentes, elige `JH_AGENT` (`claude`,
+`codex`…). Solo Windows de momento; en otro sistema, o sin el agente en el `PATH`, el botón copia
+la orden para que la pegues tú. Probado con Claude Code; Codex, sin probar.
+
 ### Añadir otro agente
-1. Añade su bloque a `targets` en `.agents/manifest.yaml` (rutas, modelos, formato MCP).
+1. Añade su bloque a `targets` en `.agents/manifest.yaml` (rutas, modelos, formato MCP y, si
+   quieres los botones de la UI, `launch`).
 2. Si su formato no es JSON ni TOML de los ya soportados, añade un emisor en `scripts/sync_agents.py`.
 3. Regenera y pasa la matriz: `jh demo seed --dir data-demo-<agente> --compat`, arranca el
    agente con `JH_DATA_DIR` apuntando ahí, recorre `procesar-ofertas`, `evaluar-encaje` y

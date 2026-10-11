@@ -108,9 +108,10 @@ describe('Cabecera', () => {
     const nav = await screen.findByRole('navigation', { name: 'Ofertas por etapa' })
     await waitFor(() => expect(within(nav).getByRole('link', { name: /Por extraer\s*3/ })).toBeInTheDocument())
     expect(within(nav).getByRole('link', { name: /Todas\s*5/ })).toHaveAttribute('aria-current', 'page')
-    expect(screen.getByRole('status')).toHaveTextContent(
-      'Hay 3 ofertas por extraer. Ejecuta el skill procesar-ofertas en tu agente.',
+    expect(screen.getAllByRole('status')[0]).toHaveTextContent(
+      'Hay 3 ofertas por extraer. Las extrae tu agente con el skill procesar-ofertas.',
     )
+    expect(screen.getByRole('button', { name: 'Procesar ahora' })).toBeInTheDocument()
   })
 
   it('no muestra el recordatorio si no hay nada por extraer', async () => {

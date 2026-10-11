@@ -1297,3 +1297,18 @@ decisiones tomadas y deuda técnica pendiente. -->
 - **Tests:** ejemplo del perfil demo, valores por defecto, items vacíos en `avoid`,
   `public_view`, `url` del proyecto, enlaces en docx (integradas) y en html (incluido el PDF de
   `moderna-2col`) y que una plantilla no puede añadir los suyos.
+
+### Mejora · Botones que abren tu agente (ADR-024) — 2026-10-11 · Claude Code (Opus 5.5)
+- **«Buscar ofertas»** (y «Procesar ofertas» / «Evaluar encaje» si hay pendientes) en Inicio,
+  **«Procesar ahora»** en el aviso de ofertas por extraer y **«Generar CV»** / «Volver a redactar»
+  en la ficha de una oferta aprobada. Abren tu agente en una terminal con la orden del skill escrita.
+- `services/agent_launch.py` (órdenes cerradas, programa desde `launch` del manifiesto, `JH_AGENT`,
+  `unset_env`), `GET /agent` y `POST /agent/launch` (solo desde la UI: `Origin` y JSON). Sin agente
+  disponible, la UI copia la orden.
+- La orden va a PowerShell codificada (`-EncodedCommand`): `wt` parte su línea por cada `;`.
+- **Plataformas:** icono de cada portal (lo carga tu navegador del propio portal, sin referer; si no
+  carga, la inicial) y enlace a su página base, sacada de sus búsquedas.
+- **Tests:** órdenes, comando de PowerShell (comillas y variables quitadas), elección de agente,
+  API (lanza, oferta no aprobada o inexistente, otra web o cuerpo no JSON rechazados, orden para
+  copiar si no hay agente) y UI (lanzar y copiar).
+

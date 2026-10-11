@@ -17,6 +17,7 @@ import { STAGE_LABEL, STAGES } from '@/lib/labels'
 import { useTheme, type ThemeChoice } from '@/lib/theme'
 import { cn } from '@/lib/utils'
 import { UserPrompts } from '@/components/UserPrompts'
+import { AgentButton } from '@/components/AgentButton'
 
 const THEME_META: Record<ThemeChoice, { icon: typeof SunIcon; label: string }> = {
   system: { icon: DesktopIcon, label: 'Tema: el del sistema' },
@@ -99,14 +100,16 @@ function ExtractionReminder() {
       className="flex items-start gap-3 rounded-xl border border-primary/20 bg-accent/60 px-4 py-3 text-sm text-accent-foreground animate-in fade-in slide-in-from-top-1"
     >
       <TerminalWindowIcon className="mt-0.5 size-[18px] shrink-0" weight="duotone" />
-      <p>
-        <span className="font-medium">
-          {pending === 1 ? 'Hay 1 oferta por extraer.' : `Hay ${pending} ofertas por extraer.`}
-        </span>{' '}
-        Ejecuta el skill{' '}
-        <code className="rounded bg-background/70 px-1.5 py-0.5 font-mono text-[0.85em]">procesar-ofertas</code>{' '}
-        en tu agente.
-      </p>
+      <div className="flex flex-1 flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        <p>
+          <span className="font-medium">
+            {pending === 1 ? 'Hay 1 oferta por extraer.' : `Hay ${pending} ofertas por extraer.`}
+          </span>{' '}
+          Las extrae tu agente con el skill{' '}
+          <code className="rounded bg-background/70 px-1.5 py-0.5 font-mono text-[0.85em]">procesar-ofertas</code>.
+        </p>
+        <AgentButton action="procesar-ofertas">Procesar ahora</AgentButton>
+      </div>
     </div>
   )
 }

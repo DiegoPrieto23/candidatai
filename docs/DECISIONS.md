@@ -328,3 +328,30 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
 - **Consecuencias:** los enlaces se ven como el texto que diseñó la plantilla (sin azul ni
   subrayado; en html, si su CSS no dice otra cosa). En docx solo se enlaza un texto que esté
   entero en una run de texto simple, que es como salen las variables del contrato.
+
+## ADR-024 · Botones que abren tu agente en una terminal, sin API
+- **Contexto:** se quería lanzar skills desde la UI («Buscar ofertas», «Generar CV») como si fuera
+  una API, pero sin coste de API (ADR-001) y sin atar la app a un agente (regla dura 2). Se
+  valoraron: abrir el agente en una terminal visible; lanzarlo sin ventana (`claude -p`) desde el
+  worker; una cola de encargos que recoge una sesión abierta; copiar la orden; y el SDK o la API
+  (descartado: de pago y prohibido).
+- **Decisión:**
+  - `POST /agent/launch` abre una terminal (Windows Terminal o, si no está, PowerShell) con tu
+    agente en modo interactivo y la orden del skill ya escrita. Lo que haga lo ves, lo contestas y
+    lo apruebas tú: sirve también para los skills que preguntan (`generar-cv`) o usan tu navegador
+    (`buscar-ofertas`);
+  - las órdenes son una lista cerrada en `services/agent_launch.py`; lo único variable es el
+    `job_id` (entero). Ningún texto de una oferta ni de una web llega al comando;
+  - el programa sale de `launch` en `.agents/manifest.yaml` (`command` con `{prompt}` y
+    `unset_env`); `JH_AGENT` elige entre varios. Antes de abrirlo se quitan las variables de
+    `unset_env` (p. ej. `ANTHROPIC_API_KEY`), para que use tu suscripción y no la API;
+  - solo la UI puede lanzar: el endpoint exige el `Origin` de la UI (si viene) y cuerpo JSON, que
+    desde otra web obliga a una comprobación CORS que la API no concede. No hay herramienta MCP ni
+    comando `--json`: un agente no se lanza a sí mismo;
+  - si no se puede abrir (otro sistema, agente no instalado), la API devuelve la orden y la UI la
+    copia al portapapeles.
+- **Consecuencias:** sin coste extra, pero gasta los límites de uso de tu plan. Hace falta que la
+  API corra en tu sesión de Windows (como `jh serve` en tu ventana). Queda abierto, como fase 2
+  opcional, un modo «en segundo plano» (`claude -p` con solo las herramientas del MCP) para skills
+  que no preguntan.
+
