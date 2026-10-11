@@ -68,6 +68,7 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | `list_followups_due` | `jh followups [--days N] --json` | 10 | `days_without_reply?` (por defecto, `followups.days_without_reply` = 10) | `days_without_reply` usado y `followups`: `job_id`, `title`, `company`, `url`, `channel`, `applied_at`, `last_followup_at`, `days_waiting`; la que más espera, primero | — |
 | `list_upcoming` | `jh upcoming [--days N] --json` | 10 | `days=7` (1-365) | `days` e `items`: `kind` (`interview`, `test`, `deadline`, `other`, `application_deadline`), `job_id`, `job_title`, `company`, `stage`, `milestone_id` (`null` en el plazo de la oferta), `title`, `starts_at`, `ends_at`, `all_day`, `location`; por fecha | — |
 | `get_funnel_stats` | `jh stats funnel [--since AAAA-MM-DD] --json` | 10 | `since?` (fecha; ofertas vistas desde las 00:00 de ese día en Europe/Madrid) | `FunnelStats` (ver §Analítica) | — |
+| `get_skill_gaps` | `jh skills gaps [--days N] [--status gap\|have\|unmarked] --json` | 14 | `days=60` (1-365), `status?` | `days`, `jobs_considered`, `gaps` y `profile_skills` (ver §Huecos de skills) | — |
 | `list_sources` | `jh sources list [--kind K] --json` | 09b | `kind?` | `sources`: `SourceView` con su config (sin secretos), `browse` (en las `agent_browse`) y última ejecución; `agent_browse`: límites (`max_result_pages`, `delay_seconds`, `default_max_offers`) | — |
 | `save_source` | `jh sources save --file F --json` | 09b | `AgentBrowseSource`: `name, platform, search_urls[], priority=5 (1 = primera), access=free\|login\|blocked, allow_agent_browsing? (por defecto true; en LinkedIn false), max_offers?, notes?`; por CLI, `F` = ese objeto | `source_id`, `created`, `allow_agent_browsing` guardado y `message`. Crea o actualiza por `name`. LinkedIn (por `platform` o por cualquier URL de linkedin.com o lnkd.in) con `true`: `not_allowed`; si el usuario ya lo activó, se conserva. Búsquedas de otro dominio: `invalid_request` | — |
 | `record_source_run` | `jh sources record-run ID --file F --json` | 09b | `source_id` + `SourceRunSummary`: `found, created, existing=0, incidents[{code, message}], started_at?, finished_at?`; por CLI, `F` = el resumen | `ok`, `run_id`. Actor `agent`; avanza `last_run_at`. Plataforma desactivada: `not_allowed` | — |
@@ -243,6 +244,39 @@ cuenta toda oferta del periodo con algún `discarded` (o `hard_filter_failed`), 
 reabriera; descartada dos veces por lo mismo cuenta una vez, y por motivos distintos (o con dos
 filtros fallidos) cuenta en cada uno, así que la suma puede pasar del número de ofertas.
 Solo lectura: no registra eventos.
+
+### Huecos de skills (fase 14)
+
+`get_skill_gaps(days=60, status?)` mira las ofertas abiertas con extracción y las aprobadas o
+enviadas (`approved`, `applied`, `applied_manually`) en los últimos `days` días aunque ya estén
+cerradas, y recalcula la cobertura con el perfil y los alias vigentes (sin embeddings: un alias
+nuevo se nota al momento). La API sirve lo mismo en `GET /skills/gaps?days=`.
+
+```jsonc
+{
+  "days": 60,
+  "jobs_considered": 14,
+  "gaps": [                          // de más a menos ofertas; a igualdad, por peso
+    {"skill": "Kafka",               // la forma más frecuente en las ofertas
+     "key": "kafka",                 // forma canónica plegada: identifica la marca
+     "must_have_count": 3, "nice_to_have_count": 1, "jobs_count": 4,
+     "weight": 2.1,                  // Σ por oferta: 1,0 obligatoria / 0,5 deseable × score / 100
+     "mark": "gap",                  // "gap" (no la tiene), "have" (la tiene) o null
+     "examples": [{"job_id": 7, "title": "…", "company": "…", "score": 74, "kind": "must_have"}]}
+  ],
+  "profile_skills": [{"name": "Snowflake", "level": "F"}, {"name": "dbt", "level": "basic"}]
+}
+```
+
+- Una skill que sale como obligatoria y deseable en la misma oferta cuenta como obligatoria. Una
+  oferta sin match todavía cuenta como score 50.
+- `status`: `gap`, `have` o `unmarked` filtran por la marca. Las marcadas salen aunque ninguna
+  oferta del periodo las pida (con `jobs_count: 0`), mientras el perfil no las cubra.
+- Los nombres de skill y los títulos de los ejemplos salen de ofertas: datos no confiables. Un
+  nombre de más de 80 caracteres no se cuenta.
+- Sin perfil importado: `not_found`. Solo lectura: no registra eventos.
+- Marcar y añadir alias es solo de la UI (`POST /skills/marks`, `POST /skills/aliases`): el
+  agente no decide qué skills tiene el usuario ni qué nombres son lo mismo (ADR-026).
 
 ### Comandos de matching y worker (solo CLI)
 

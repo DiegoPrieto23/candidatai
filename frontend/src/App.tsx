@@ -15,6 +15,7 @@ import { NewJobPage } from '@/pages/NewJobPage'
 import { PlatformsPage } from '@/pages/PlatformsPage'
 import { ProfilePage } from '@/pages/ProfilePage'
 import { ProcessesPage } from '@/pages/ProcessesPage'
+import { SkillsPage } from '@/pages/SkillsPage'
 import { SourcesPage } from '@/pages/SourcesPage'
 import { TemplatesPage } from '@/pages/TemplatesPage'
 import { TriagePage } from '@/pages/TriagePage'
@@ -56,6 +57,7 @@ export function AppRoutes() {
             </Suspense>
           }
         />
+        <Route path="skills" element={<SkillsPage />} />
         <Route path="alertas" element={<AlertsPage />} />
         <Route path="plantillas" element={<TemplatesPage />} />
         <Route path="perfil" element={<ProfilePage />} />

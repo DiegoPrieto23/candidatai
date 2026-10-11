@@ -41,7 +41,7 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 12.2 | ↳ Evals de matching y de CV | ✅ | 80 casos de matching con `evals/REPORT.md` y `jh eval cv` sobre 10 casos |
 | 12.3 | ↳ Compatibilidad, README y seguridad | ✅ | Matriz de agentes probada, README de portfolio y repositorio revisado |
 | 13 | Contexto y documentos | ✅ | `data/contexto/*.md` (estilo, perfil conductual, criterios, narrativa) que orientan sin respaldar hechos; `data/documentos/` y archivo de cada candidatura enviada |
-| 14 | Huecos de skills y vocabulario | ⏳ | Página «Skills»: ausentes agregadas; «es lo mismo que…» añade el alias y recalcula; huecos reales → skill `plan-formacion` |
+| 14 | Huecos de skills y vocabulario | ✅ | Página «Skills»: ausentes agregadas; «es lo mismo que…» añade el alias y recalcula; huecos reales → skill `plan-formacion` |
 | 15 | Respuestas por correo y seguimientos | ⏳ | Los correos de las empresas proponen el evento (entrevista, rechazo…) en la ficha y tú lo aceptas; borradores de seguimiento y agradecimiento |
 | 16 | Ofertas vivas, republicadas y búsqueda ampliada | ⏳ | Aviso de oferta cerrada o republicada; títulos parecidos; descubrir tableros de Greenhouse/Lever/Ashby de tus empresas |
 | 17 | Entrevistas: simulacro y repaso | ⏳ | Plan de preparación, simulacro con feedback, repaso posterior con notas y historias STAR nuevas |
@@ -69,7 +69,7 @@ Word y tras la 08b para PDF, imagen o HTML; `generar-carta` tras la 08c;
 `revisar-linkedin` funciona tras la 05, pero rinde mucho más desde la 07, cuando ya hay ofertas
 aprobadas de las que sacar las keywords; `buscar-ofertas` tras la 09b; `preparar-candidatura`,
 `preparar-entrevista` y `resumen-diario` tras la 10; la candidatura asistida (sin skill: se
-usa desde la ficha) tras la 11.
+usa desde la ficha) tras la 11; `plan-formacion` tras la 14.
 
 ## Registro de fases
 
@@ -1375,3 +1375,50 @@ decisiones tomadas y deuda técnica pendiente. -->
     pasan solos: parecen intermitentes, ajenos a la fase.
   - La UI no se probó en el navegador, solo con sus tests.
 
+### 14 · Huecos de skills y vocabulario — 2026-10-11 · Claude Code (Opus 5.5)
+- **Resumen:**
+  - `services/skill_gaps.py`: skills ausentes de las ofertas abiertas y de las aprobadas o
+    enviadas en los últimos N días (60 por defecto), con obligatorias y deseables por separado,
+    peso (1,0 / 0,5 × score / 100), ejemplos y marca. Recalcula la cobertura con los alias de
+    ahora, sin escribir.
+  - `services/skill_aliases.py`: «Es lo mismo que…» escribe `config/skill_aliases.yaml` con
+    ruamel.yaml (comentarios, orden, comillas y CRLF intactos; temporal y `os.replace`, con
+    candado) y encola `rescore_all`. Rechaza sinónimos que ya apuntan a otra skill o que el perfil
+    ya cubre.
+  - Caché de alias de skills y de puestos por contenido o fecha del fichero: el worker ve los
+    cambios sin reiniciarse.
+  - Tabla `skill_gap_marks` (migración 0013): «La tengo» / «No la tengo».
+  - Herramienta `get_skill_gaps` ↔ `jh skills gaps --json`. API `GET /skills/gaps`,
+    `POST /skills/aliases` y `POST /skills/marks` (estas dos, solo desde la UI).
+  - Página «Skills»: filtros de periodo, tipo y marca, orden por ofertas o peso, diálogo «Es lo
+    mismo que…» y botones del agente «Añadir al perfil las que tengo» y «Plan de formación»
+    (acciones `anadir-skills` y `plan-formacion` en `agent_launch.ACTIONS`).
+  - Skill nuevo `plan-formacion` y sección nueva en `actualizar-perfil`.
+  - Docs: POLICIES §2, `AGENT_INTERFACE.md`, `DATA_MODEL.md`, `ARCHITECTURE.md`,
+    `AGENTS_COMPAT.md`, README, `config/README.md` y ADR-026.
+  - Tests: 1759 de backend y 175 de frontend.
+- **Pruebas reales** (carpeta de datos aislada, sin tocar `data/`): `jh demo seed` y
+  `jh skills gaps` sobre la demo listan 11 skills ausentes en 35 ofertas (Estadística, Looker,
+  Excel…).
+- **Decisiones:**
+  - «La tengo» solo guarda la marca; el botón lanza `actualizar-perfil` con una orden fija y el
+    agente lee las marcas con `get_skill_gaps`. Ningún nombre de skill de una oferta llega a la
+    orden (ADR-024).
+  - Los alias van a `config/` y no a `data/`: son genéricos (ADR-026). Aparecen como cambio en
+    git.
+  - Marcas y alias solo desde la UI: no hay herramienta ni comando para escribirlos.
+  - Las marcas se guardan por la forma canónica y siguen visibles aunque sus ofertas salgan del
+    periodo.
+  - `POST /skills/marks` en vez de `PUT`: CORS solo admite GET y POST.
+  - Los huecos se calculan al pedirlos, no se guardan. Una oferta sin match cuenta como score 50.
+  - Revisión del rol `revisor` aplicada: marcas `have` fuera del periodo, avisos de dato no
+    confiable, caché de puestos coherente con `normalize`, candado y temporal único al escribir el
+    YAML, nombres de más de 80 caracteres ignorados.
+- **Deuda:**
+  - La UI no borra alias: un error se corrige editando el fichero.
+  - Marcas huérfanas si alguien cambia a mano el canónico de una skill.
+  - El candado es por proceso: dos procesos escribiendo a la vez el fichero (API y algo más) no se
+    excluyen. Hoy solo escribe la API.
+  - Pendiente de prueba manual: la página «Skills» con datos reales (alias, marcas y recálculo del
+    worker), «Añadir al perfil las que tengo» y `plan-formacion` con Claude Code (web y escritura
+    de `data/documentos/plan-formacion.md`).

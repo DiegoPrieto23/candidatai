@@ -35,7 +35,8 @@ class SkillCoverage(BaseModel):
     missing: list[str]
 
 
-def _key(name: str) -> str:
+def skill_key(name: str) -> str:
+    """Forma plegada de un nombre de skill, sin pasar por los sinónimos."""
     return fold(name, keep=_KEEP)
 
 
@@ -44,7 +45,7 @@ def _alias_index(frozen: tuple[tuple[str, tuple[str, ...]], ...]) -> dict[str, s
     index: dict[str, str] = {}
     for canonical, aliases in frozen:
         for name in (canonical, *aliases):
-            index[_key(name)] = _key(canonical)
+            index[skill_key(name)] = skill_key(canonical)
     return index
 
 
@@ -55,13 +56,14 @@ def alias_index(aliases: Mapping[str, Iterable[str]] | None = None) -> dict[str,
 
 
 def canonical(name: str, index: Mapping[str, str]) -> str:
-    key = _key(name)
+    key = skill_key(name)
     return index.get(key, key)
 
 
-def _profile_levels(
+def profile_levels(
     profile: CandidateProfile, index: Mapping[str, str]
 ) -> dict[str, tuple[str, CoveredLevel]]:
+    """Forma canónica -> (nombre en el perfil, nivel) de cada skill y básico del perfil."""
     levels: dict[str, tuple[str, CoveredLevel]] = {}
     for name in profile.basic_skills:
         levels[canonical(name, index)] = (name, "basic")
@@ -79,7 +81,7 @@ def coverage(
 ) -> SkillCoverage:
     """Qué skills de la oferta cubre el perfil y con qué peso. Los repetidos cuentan una vez."""
     index = alias_index(aliases)
-    levels = _profile_levels(profile, index)
+    levels = profile_levels(profile, index)
     seen: set[str] = set()
     covered: list[CoveredSkill] = []
     missing: list[str] = []

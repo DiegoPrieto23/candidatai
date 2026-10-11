@@ -92,13 +92,20 @@ def title_segments(title: str) -> list[str]:
     return [seg for part in parts if (seg := normalize_title(part))]
 
 
-@lru_cache
 def _title_aliases() -> tuple[tuple[re.Pattern[str], str], ...]:
     from app.core.policies import get_title_aliases  # config/: solo al usarse
 
+    # Caché por contenido: si alguien edita el fichero, el worker lo ve igual que `scoring_key`.
+    return _compile_title_aliases(tuple((k, tuple(v)) for k, v in get_title_aliases().items()))
+
+
+@lru_cache(maxsize=4)
+def _compile_title_aliases(
+    frozen: tuple[tuple[str, tuple[str, ...]], ...],
+) -> tuple[tuple[re.Pattern[str], str], ...]:
     pairs = [
         (fold(alias), fold(name))
-        for name, aliases in get_title_aliases().items()
+        for name, aliases in frozen
         for alias in aliases
         if fold(alias) and fold(name)
     ]

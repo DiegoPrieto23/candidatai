@@ -29,6 +29,7 @@ targets:
       jh_profile_cli: ["Bash(uv run --directory backend jh profile *)"]
       jh_templates_cli: ["Bash(uv run --directory backend jh templates *)"]
       jh_context_cli: ["Bash(uv run --directory backend jh context *)"]
+      jh_skills_cli: ["Bash(uv run --directory backend jh skills *)"]
     skill_extras:                 # campos de frontmatter que solo entiende Claude Code
       implementar-fase:
         disable-model-invocation: true
@@ -50,7 +51,7 @@ targets:
         argument-hint: "[job_id] [rrhh|tecnica|caso|final]"
         allowed-tools: ["mcp:get_extraction", "mcp:get_profile", "mcp:get_context", "mcp:get_timeline"]
       actualizar-perfil:
-        allowed-tools: ["read", "jh_profile_cli", "jh_context_cli"]
+        allowed-tools: ["read", "jh_profile_cli", "jh_context_cli", "jh_skills_cli"]
       resumen-diario:
         allowed-tools: ["mcp:get_status", "mcp:list_followups_due", "mcp:list_upcoming", "mcp:list_jobs"]
       importar-plantilla-cv:
@@ -62,6 +63,9 @@ targets:
       revisar-linkedin:
         argument-hint: "[ruta al PDF de LinkedIn o nada para pegar el texto]"
         allowed-tools: ["read", "mcp:get_profile", "mcp:list_jobs", "mcp:get_extraction"]
+      plan-formacion:
+        argument-hint: "[nada para el plan, o URL o descripción de un curso o proyecto a valorar]"
+        allowed-tools: ["read", "web", "mcp:get_skill_gaps", "mcp:get_profile", "mcp:get_context"]
 
   codex:                          # Codex (ChatGPT): CLI, extensión IDE o app
     enabled: true

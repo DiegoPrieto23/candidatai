@@ -11,6 +11,7 @@ from app.models.ops import McpCall, Task
 from app.models.process import Contact, Milestone
 from app.models.profiles import ProfileVersion
 from app.models.prompts import UserPrompt
+from app.models.skills import SkillGapMark
 from app.models.sources import EmailMessage, Source, SourceRun
 
 __all__ = [
@@ -30,6 +31,7 @@ __all__ = [
     "McpCall",
     "Milestone",
     "ProfileVersion",
+    "SkillGapMark",
     "Source",
     "SourceRun",
     "Task",

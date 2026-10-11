@@ -190,22 +190,36 @@ def get_injection_patterns() -> InjectionPatterns:
     return InjectionPatterns.model_validate(_read_yaml(CONFIG_DIR / "injection_patterns.yaml"))
 
 
-@lru_cache
-def get_skill_aliases() -> dict[str, list[str]]:
-    """Nombre canónico -> sinónimos. Un canónico sin sinónimos puede venir como `[]` o `null`."""
-    data = _read_yaml(CONFIG_DIR / "skill_aliases.yaml") or {}
+SKILL_ALIASES_PATH = CONFIG_DIR / "skill_aliases.yaml"
+TITLE_ALIASES_PATH = CONFIG_DIR / "title_aliases.yaml"
+
+
+def _stamp(path: Path) -> tuple[str, int, int]:
+    """Ruta, fecha de modificación y tamaño: cambian si alguien edita el fichero."""
+    stat = path.stat()
+    return str(path), stat.st_mtime_ns, stat.st_size
+
+
+@lru_cache(maxsize=8)
+def _read_aliases(stamp: tuple[str, int, int], what: str) -> dict[str, list[str]]:
+    path = Path(stamp[0])
+    data = _read_yaml(path) or {}
     if not isinstance(data, dict):
-        raise ValueError("config/skill_aliases.yaml debe ser un diccionario nombre -> sinónimos.")
+        raise ValueError(f"config/{path.name} debe ser un diccionario {what} -> sinónimos.")
     return {str(name): [str(alias) for alias in (aliases or [])] for name, aliases in data.items()}
 
 
-@lru_cache
+def get_skill_aliases() -> dict[str, list[str]]:
+    """Nombre canónico -> sinónimos. Un canónico sin sinónimos puede venir como `[]` o `null`.
+
+    La caché depende de la fecha de modificación del fichero, no del proceso: un alias añadido
+    desde la UI (fase 14) o a mano lo ven también el worker y la API sin reiniciarlos."""
+    return _read_aliases(_stamp(SKILL_ALIASES_PATH), "nombre")
+
+
 def get_title_aliases() -> dict[str, list[str]]:
     """Puesto en inglés -> otras formas de escribirlo («ingeniero de datos» -> «data engineer»)."""
-    data = _read_yaml(CONFIG_DIR / "title_aliases.yaml") or {}
-    if not isinstance(data, dict):
-        raise ValueError("config/title_aliases.yaml debe ser un diccionario puesto -> variantes.")
-    return {str(name): [str(alias) for alias in (aliases or [])] for name, aliases in data.items()}
+    return _read_aliases(_stamp(TITLE_ALIASES_PATH), "puesto")
 
 
 @lru_cache

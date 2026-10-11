@@ -397,3 +397,32 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   del código: el código solo comprueba que las evidencias existen en el perfil. El documento no
   guarda qué versión del contexto se usó al redactarlo. El archivo de una candidatura enviada
   antes de que corra el worker usa lo seleccionado al registrar el envío, no al archivar.
+
+
+## ADR-026 · Alias de skills desde la UI y huecos marcados por el usuario
+- **Contexto:** con datos reales, la mayoría de las skills «ausentes» del desglose de matching
+  eran otra forma de llamar a algo que el perfil ya tenía («data warehousing», «cloud»,
+  «modelado semántico»), y bajaban el score sin que faltara experiencia. Los sinónimos ya vivían
+  en `config/skill_aliases.yaml`, pero solo se podían añadir a mano. También faltaba separar el
+  vocabulario de los huecos de verdad para poder formarse en ellos (fase 14).
+- **Decisión:**
+  - la página «Skills» agrega las ausentes (`services/skill_gaps.py`, sin guardar nada) y el
+    usuario decide cada una: «Es lo mismo que…», «La tengo» o «No la tengo»;
+  - «Es lo mismo que…» escribe en `config/skill_aliases.yaml` (no en `data/`): los sinónimos son
+    genéricos, no datos personales, y así sirven a cualquiera que use el repositorio. Se edita con
+    ruamel.yaml (conserva comentarios, orden, comillas y fin de línea) y se sustituye de una vez.
+    Rechaza un sinónimo que ya apunta a otra skill o que el perfil ya cubre. Lo que se añada
+    aparece como cambio en git: se puede confirmar o descartar como cualquier otro;
+  - la caché de los alias depende de la fecha de modificación del fichero, no del proceso: la API
+    y el worker ven el cambio sin reiniciarse. Cambiar los alias cambia el `scoring_key` y se
+    encola `rescore_all`;
+  - «La tengo» y «No la tengo» se guardan en `skill_gap_marks` por la forma canónica de la skill.
+    Los botones del agente de esa página («Añadir al perfil las que tengo», «Plan de formación»)
+    llevan una orden fija sin nombres de skills, porque salen de las ofertas (ADR-024): el agente
+    los lee con `get_skill_gaps`;
+  - solo el usuario decide un alias o una marca, y solo desde la UI (`require_ui`). No hay
+    herramienta MCP ni comando para escribirlos, y nada propone alias automáticamente.
+- **Consecuencias:** el score deja de castigar el vocabulario sin tocar sus pesos. Un alias mal
+  elegido sube el score de las ofertas que lo piden; se corrige editando el fichero a mano (la UI
+  no borra alias). Si el usuario no confirma los cambios en git, un `git checkout` del fichero los
+  pierde. Las marcas `have` no se borran al añadir la skill al perfil: simplemente dejan de verse.

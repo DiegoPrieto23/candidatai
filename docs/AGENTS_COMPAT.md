@@ -162,12 +162,20 @@ Las reglas que más importan no dependen del agente (ADR-012): ningún agente pu
 navegación en LinkedIn, y la app rechaza las ofertas y los recorridos de una plataforma
 desactivada.
 
+### Skills que necesitan buscar en la web
+`plan-formacion` (fase 14) busca cursos, certificaciones y documentación oficial, y abre cada
+página para comprobarla: hace falta un agente con búsqueda y lectura web (en Claude Code,
+`WebSearch` y `WebFetch`). Sin web, el skill no puede verificar recursos y no debe proponerlos de
+memoria: puede priorizar los huecos, pero cada recurso necesita una URL abierta. Probado con
+Claude Code: pendiente de la prueba manual de la fase 14; Codex y otros, sin probar.
+
 ### Botones «en tu agente» de la UI (ADR-024)
-«Buscar ofertas», «Procesar ofertas», «Evaluar encaje» y «Generar CV» abren tu agente en una
-terminal (Windows Terminal o PowerShell) con la orden del skill ya escrita; tú ves, contestas y
-apruebas lo que haga. Qué programa se abre lo dice `launch` de cada agente en el manifiesto:
-`command` (con `{prompt}` donde va la orden) y `unset_env` (variables que se quitan antes, como la
-clave de la API, para que use tu suscripción). Con varios agentes, elige `JH_AGENT` (`claude`,
+«Buscar ofertas», «Procesar ofertas», «Evaluar encaje», «Generar CV» y, en la página Skills
+(fase 14), «Añadir al perfil las que tengo» (`actualizar-perfil`) y «Plan de formación» abren tu
+agente en una terminal (Windows Terminal o PowerShell) con la orden del skill ya escrita; tú
+ves, contestas y apruebas lo que haga. Qué programa se abre lo dice `launch` de cada agente en el
+manifiesto: `command` (con `{prompt}` donde va la orden) y `unset_env` (variables que se quitan
+antes, como la clave de la API, para que use tu suscripción). Con varios agentes, elige `JH_AGENT` (`claude`,
 `codex`…). Solo Windows de momento; en otro sistema, o sin el agente en el `PATH`, el botón copia
 la orden para que la pegues tú. Probado con Claude Code; Codex, sin probar.
 

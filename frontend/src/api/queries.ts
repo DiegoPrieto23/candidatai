@@ -31,6 +31,8 @@ export const keys = {
   context: ['context'] as const,
   apply: (id: number) => ['apply', id] as const,
   agent: ['agent'] as const,
+  skillGaps: (days: number) => ['skill-gaps', days] as const,
+  allSkillGaps: ['skill-gaps'] as const,
 }
 
 type JobsQuery = NonNullable<operations['list_jobs']['parameters']['query']>
@@ -775,5 +777,44 @@ export function useOpenFolder() {
       unwrap(api.POST('/folders/open', { body })),
     // Abrir el contexto o los documentos crea lo que falte.
     onSuccess: () => client.invalidateQueries({ queryKey: keys.context }),
+  })
+}
+
+// --- Huecos de skills (fase 14) ---------------------------------------------------------------
+
+export type SkillGap = Schemas['SkillGap']
+export type SkillMark = NonNullable<Schemas['MarkBody']['status']>
+
+export function useSkillGaps(days: number) {
+  return useQuery({
+    queryKey: keys.skillGaps(days),
+    queryFn: () => unwrap(api.GET('/skills/gaps', { params: { query: { days } } })),
+    placeholderData: keepPreviousData,
+  })
+}
+
+/** «Es lo mismo que…»: el alias cambia el score de las ofertas afectadas (lo recalcula el worker). */
+export function useAddSkillAlias() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (body: { skill: string; profile_skill: string }) =>
+      unwrap(api.POST('/skills/aliases', { body })),
+    onSuccess: () =>
+      Promise.all([
+        client.invalidateQueries({ queryKey: keys.allSkillGaps }),
+        client.invalidateQueries({ queryKey: keys.triage }),
+        client.invalidateQueries({ queryKey: ['match'] }),
+        client.invalidateQueries({ queryKey: keys.allJobs }),
+      ]),
+  })
+}
+
+/** «No la tengo», «La tengo» o quitar la marca (`null`). */
+export function useSetSkillMark() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (body: { skill: string; status: SkillMark | null }) =>
+      unwrap(api.POST('/skills/marks', { body })),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.allSkillGaps }),
   })
 }

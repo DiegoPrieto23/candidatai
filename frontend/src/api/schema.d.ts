@@ -1308,6 +1308,68 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/skills/gaps": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Skill Gaps
+         * @description Skills que piden las ofertas abiertas y las aprobadas o enviadas en los últimos `days` días
+         *     y el perfil no cubre, de más a menos ofertas, con su marca y las skills del perfil.
+         */
+        get: operations["get_skill_gaps"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/skills/aliases": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Add Skill Alias
+         * @description «Es lo mismo que…»: la skill pasa a ser sinónimo de una del perfil y se recalculan los
+         *     scores en el worker.
+         */
+        post: operations["add_skill_alias"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/skills/marks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Set Skill Mark
+         * @description «No la tengo» (`gap`), «La tengo» (`have`) o quitar la marca (`null`).
+         */
+        post: operations["set_skill_mark"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1330,7 +1392,7 @@ export interface components {
              * Id
              * @enum {string}
              */
-            id: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv";
+            id: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion";
             /** Label */
             label: string;
             /** Needs Job */
@@ -1511,6 +1573,31 @@ export interface components {
             passed: number;
             /** Filters Applied */
             filters_applied: boolean;
+        };
+        /** AliasBody */
+        AliasBody: {
+            /** Skill */
+            skill: string;
+            /** Profile Skill */
+            profile_skill: string;
+        };
+        /** AliasResult */
+        AliasResult: {
+            /**
+             * Ok
+             * @default true
+             */
+            ok: boolean;
+            /** Skill */
+            skill: string;
+            /** Canonical */
+            canonical: string;
+            /** Profile Skill */
+            profile_skill: string;
+            /** Added */
+            added: boolean;
+            /** Rescore Queued */
+            rescore_queued: boolean;
         };
         /** AnswerBody */
         AnswerBody: {
@@ -2410,6 +2497,22 @@ export interface components {
             /** Rate From Start */
             rate_from_start: number | null;
         };
+        /** GapExample */
+        GapExample: {
+            /** Job Id */
+            job_id: number;
+            /** Title */
+            title: string;
+            /** Company */
+            company: string;
+            /** Score */
+            score: number | null;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "must_have" | "nice_to_have";
+        };
         /** HardFilterResult */
         HardFilterResult: {
             /** Passed */
@@ -2661,7 +2764,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv";
+            action: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion";
             /** Job Id */
             job_id?: number | null;
         };
@@ -2772,6 +2875,27 @@ export interface components {
             /** Photo Supported */
             photo_supported: boolean;
             accent_colors: components["schemas"]["AccentColors"] | null;
+        };
+        /** MarkBody */
+        MarkBody: {
+            /** Skill */
+            skill: string;
+            /** Status */
+            status: ("gap" | "have") | null;
+        };
+        /** MarkResult */
+        MarkResult: {
+            /**
+             * Ok
+             * @default true
+             */
+            ok: boolean;
+            /** Key */
+            key: string;
+            /** Skill */
+            skill: string;
+            /** Mark */
+            mark: ("gap" | "have") | null;
         };
         /** MatchView */
         MatchView: {
@@ -3117,6 +3241,16 @@ export interface components {
             notes: components["schemas"]["NoteOut"][];
             documents: components["schemas"]["ProcessDocuments"];
         };
+        /** ProfileSkillOption */
+        ProfileSkillOption: {
+            /** Name */
+            name: string;
+            /**
+             * Level
+             * @enum {string}
+             */
+            level: "F" | "C+" | "C" | "B" | "basic";
+        };
         /** PromptView */
         PromptView: {
             /** Id */
@@ -3393,6 +3527,36 @@ export interface components {
             covered: components["schemas"]["CoveredSkill"][];
             /** Missing */
             missing: string[];
+        };
+        /** SkillGap */
+        SkillGap: {
+            /** Skill */
+            skill: string;
+            /** Key */
+            key: string;
+            /** Must Have Count */
+            must_have_count: number;
+            /** Nice To Have Count */
+            nice_to_have_count: number;
+            /** Jobs Count */
+            jobs_count: number;
+            /** Weight */
+            weight: number;
+            /** Mark */
+            mark: ("gap" | "have") | null;
+            /** Examples */
+            examples: components["schemas"]["GapExample"][];
+        };
+        /** SkillGapsView */
+        SkillGapsView: {
+            /** Days */
+            days: number;
+            /** Jobs Considered */
+            jobs_considered: number;
+            /** Gaps */
+            gaps: components["schemas"]["SkillGap"][];
+            /** Profile Skills */
+            profile_skills: components["schemas"]["ProfileSkillOption"][];
         };
         /** SourceFunnel */
         SourceFunnel: {
@@ -10167,6 +10331,292 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OpenFolderResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_skill_gaps: {
+        parameters: {
+            query?: {
+                days?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SkillGapsView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    add_skill_alias: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AliasBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AliasResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    set_skill_mark: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MarkBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MarkResult"];
                 };
             };
             /** @description Unauthorized */

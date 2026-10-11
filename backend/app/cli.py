@@ -43,6 +43,9 @@ letter_app = typer.Typer(help="Cartas de presentación.", no_args_is_help=True)
 context_app = typer.Typer(
     help="Contexto del candidato (data/contexto/) y carpetas de documentos.", no_args_is_help=True
 )
+skills_app = typer.Typer(
+    help="Huecos de skills: lo que piden las ofertas y tu perfil no cubre.", no_args_is_help=True
+)
 prompts_app = typer.Typer(
     help="Avisos al usuario (captcha, login…) mientras el agente busca ofertas.",
     no_args_is_help=True,
@@ -71,6 +74,7 @@ app.add_typer(applications_app, name="applications")
 app.add_typer(letter_app, name="letter")
 app.add_typer(context_app, name="context")
 app.add_typer(prompts_app, name="prompts")
+app.add_typer(skills_app, name="skills")
 demo_app = typer.Typer(
     help="Modo demo: una búsqueda ficticia para probar la app.", no_args_is_help=True
 )
@@ -1506,6 +1510,21 @@ def _pct(value: float | None) -> str:
     return "—" if value is None else f"{value:.0%}"
 
 
+def _render_skill_gaps(view: Any) -> None:
+    marks = {"gap": "no la tengo", "have": "la tengo"}
+    typer.echo(
+        f"{len(view.gaps)} skills ausentes en {view.jobs_considered} ofertas "
+        f"(abiertas y aprobadas o enviadas en {view.days} días):"
+    )
+    for gap in view.gaps:
+        mark = f"  [{marks[gap.mark]}]" if gap.mark else ""
+        jobs = "oferta " if gap.jobs_count == 1 else "ofertas"
+        typer.echo(
+            f"  {gap.skill:<32} {gap.jobs_count:>3} {jobs} ({gap.must_have_count} oblig., "
+            f"{gap.nice_to_have_count} des.)  peso {gap.weight}{mark}"
+        )
+
+
 def _render_funnel(result: Any) -> None:
     since = f" desde el {result.since:%d/%m/%Y}" if result.since else ""
     typer.echo(f"Embudo{since} ({result.duplicates_excluded} duplicadas fuera):")
@@ -1592,6 +1611,7 @@ register_tools(
         "letter": letter_app,
         "prompts": prompts_app,
         "context": context_app,
+        "skills": skills_app,
     },
     {
         "get_status": _render_status,
@@ -1619,6 +1639,7 @@ register_tools(
         "list_followups_due": _render_followups,
         "list_upcoming": _render_upcoming,
         "get_funnel_stats": _render_funnel,
+        "get_skill_gaps": _render_skill_gaps,
         "save_application_answers": _render_saved_answers,
         "save_cover_letter_brief": _render_letter_brief,
         "get_cover_letter": _render_letter,

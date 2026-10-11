@@ -20,6 +20,7 @@ from app.api.routes import (
     letters,
     process,
     prompts,
+    skills,
     sources,
     stats,
     status,
@@ -66,6 +67,7 @@ def create_app() -> FastAPI:
     app.include_router(prompts.router)
     app.include_router(agent.router)
     app.include_router(context.router)
+    app.include_router(skills.router)
     return app
 
 

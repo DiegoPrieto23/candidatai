@@ -382,3 +382,28 @@ Ficheros en `data/` (gitignored), fuera de la BD:
   sufijo `_<job_id>`. Se escribe en `.tmp-<job_id>-…` y se renombra al final, así que nunca queda a
   medias. Si la carpeta ya existe no se toca: rehacer el CV o la carta después no cambia lo archivado.
   `JobView.archive_folder` (ficha de la UI) la da relativa a `data/`.
+
+## Ampliaciones de la fase 14
+
+### `skill_gap_marks`
+Lo que el usuario dijo, en la página «Skills», de una skill que piden las ofertas y su perfil no
+cubre (migración 0013). No es estado de una oferta: no lleva evento.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | int PK | |
+| skill_key | str único | Forma canónica plegada (sin tildes ni mayúsculas, tras `config/skill_aliases.yaml`): la misma con que compara el matching. «spark» y «PySpark» son la misma marca |
+| skill_name | str | Como la escriben las ofertas (la última vez que se marcó) |
+| status | str | `gap` («No la tengo»: hueco real, para `plan-formacion`) o `have` («La tengo»: pendiente de añadir al perfil con `actualizar-perfil`) |
+| created_at / updated_at | datetime | |
+
+- Quitar la marca borra la fila. Una skill marcada sigue en la lista aunque ninguna oferta del
+  periodo la pida (con `jobs_count: 0`) y deja de verse sola cuando entra en el perfil. Si
+  alguien cambia a mano el canónico en `skill_aliases.yaml`, las marcas con la clave antigua se
+  quedan huérfanas (se ven como filas sin ofertas; se quitan desde la página).
+- Los huecos no se guardan: `services/skill_gaps.py` los calcula al pedirlos con las extracciones
+  vigentes, el perfil vigente y los alias de ahora (ver `get_skill_gaps` en
+  `AGENT_INTERFACE.md`).
+- Ficheros: «Es lo mismo que…» escribe `config/skill_aliases.yaml`, fuera de `data/` (ADR-026).
+  El skill `plan-formacion` escribe `data/documentos/plan-formacion.md` (y guarda la versión
+  anterior como `plan-formacion-<AAAA-MM-DD>.md` al sustituirlo).
