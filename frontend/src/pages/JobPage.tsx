@@ -17,6 +17,7 @@ import {
 import type { AddJobResult, EventOut, JobView, Schemas } from '@/api/client'
 import { useAddNote, useJob, useJobEvent, useJobMatch, type UserEventBody } from '@/api/queries'
 import { ApplySection } from '@/components/ApplySection'
+import { ArchivedApplication } from '@/components/ArchivedApplication'
 import { CoverLetterSection } from '@/components/CoverLetterSection'
 import { CvSection } from '@/components/CvSection'
 import { DiscardDialog } from '@/components/DiscardDialog'
@@ -610,6 +611,7 @@ export function JobPage() {
               {sent ? (
                 <>
                   <ProcessSection job={job} />
+                  <ArchivedApplication job={job} />
                   <ExtractionBlock job={job} />
                   <EarlierStages>
                     <ApplySection job={job} />

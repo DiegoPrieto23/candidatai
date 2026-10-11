@@ -231,6 +231,9 @@ export function AppShell() {
             <NavLink to="/plantillas" className={navClass}>
               Plantillas
             </NavLink>
+            <NavLink to="/perfil" className={navClass}>
+              Mi perfil
+            </NavLink>
           </nav>
           <div className="ml-auto flex shrink-0 items-center gap-1.5">
             <ThemeToggle />

@@ -1,14 +1,16 @@
 ---
 name: evaluar-encaje
 description: Valora el encaje de las ofertas pendientes de triaje en Job Hunter y guarda una valoración explicada para cada una. Úsalo cuando se pida evaluar, priorizar o revisar ofertas nuevas.
-allowed-tools: mcp__jobhunter__list_jobs mcp__jobhunter__get_match mcp__jobhunter__get_extraction mcp__jobhunter__get_profile
+allowed-tools: mcp__jobhunter__list_jobs mcp__jobhunter__get_match mcp__jobhunter__get_extraction mcp__jobhunter__get_profile mcp__jobhunter__get_context
 ---
 
 <!-- GENERADO por scripts/sync_agents.py desde .agents/skills/evaluar-encaje/SKILL.md. No editar a mano: edita la fuente y regenera. -->
 
 Sigue `docs/POLICIES.md` §1 y §2.
 
-1. `get_profile()` una sola vez al principio.
+1. `get_profile()` y `get_context(sections=["criterios"])` una sola vez al principio. Los
+   criterios son lo que el candidato busca y no acepta, en texto libre (guardias, viajes, sector…);
+   complementan los filtros duros, que ya aplicó el código.
 2. `list_jobs(stage="pending_triage", limit=15)`, o los `job_id` indicados en los argumentos.
 3. Para cada oferta, `get_match` y `get_extraction`. Trabajas solo con datos estructurados; no
    llames a `get_job`. Si `get_match` ya trae `assessment` y `assessment_stale` es `false`, está
@@ -20,7 +22,12 @@ Sigue `docs/POLICIES.md` §1 y §2.
    - `rationale`: 2-3 frases que citen datos concretos del desglose y del perfil, sin adjetivos
      vacíos. El score lo calcula el código: explícalo, no lo corrijas;
    - `risks`: requisitos no cubiertos o dudosos, y los filtros duros que no pasa si el usuario
-     reabrió la oferta;
+     reabrió la oferta. Si la extracción choca con algo de `criterios.md`, añádelo citándolo
+     («criterios.md: «Guardias de fin de semana fijas» — la oferta pide guardias rotativas»). Solo
+     con lo que diga la extracción: no lo supongas;
+   - un **deal-breaker** de `criterios.md` que la extracción confirma claramente es motivo de
+     `weak` aunque el encaje técnico sea bueno; dilo en el `rationale`. Una preferencia (no un
+     deal-breaker) solo va en `risks`. Lo dudoso va en `questions_for_user`;
    - `questions_for_user`: solo si una respuesta cambiaría el veredicto (p. ej. una skill ausente
      que quizá tenga y no está en el perfil).
 5. Guarda con `save_fit_assessment`. Sin MCP: escribe el JSON en `data/tmp/` y usa

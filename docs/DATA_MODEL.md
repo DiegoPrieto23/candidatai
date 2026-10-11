@@ -168,6 +168,7 @@ Cola de trabajo del worker (sin Redis).
 | `apply_rescan` `{attempt_id}` | «Volver a revisar» | Vuelve a leer los campos y a capturar, sin rellenar nada |
 | `apply_submit` `{attempt_id, token, consents}` | `confirm_submission` (solo la UI) | Consume el token, pulsa el envío, captura la confirmación y registra `applied` |
 | `apply_focus` `{attempt_id}` | «Lo termino yo» | Trae la pestaña al frente y retira el bloqueo del envío |
+| `archive_application` `{job_id, event_id, cv_render_id, letter_document_id, letter_render_id, answers_document_id}` | `applied` o `applied_manually` (fase 13) | Copia lo enviado a `data/documentos/candidaturas/` (ver §Fase 13). Los ids se fijan al registrar el envío. Idempotente |
 
 No se encola dos veces la misma tarea (mismo `kind` y `payload`) mientras siga en cola. Si falla,
 vuelve a la cola con espera creciente; tras 3 intentos queda `failed` con `last_error`.
@@ -361,3 +362,23 @@ el worker cuando una candidatura asistida se para. La UI los enseña en un pop-u
 | attempt_id | FK application_attempts? | El intento (candidatura asistida): con «Ya está» se encola `apply_fill_page` |
 | status | str | `pending` → `done` («Ya está») / `skipped` («Saltar») / `expired` (pasó `expires_at` o lo sustituyó otro aviso de lo mismo) |
 | created_at / expires_at / answered_at | datetime | Por defecto caduca a los 5 minutos |
+
+## Ampliaciones de la fase 13 (sin tablas nuevas)
+
+Ficheros en `data/` (gitignored), fuera de la BD:
+
+| Ruta | Qué es |
+|---|---|
+| `contexto/estilo-redaccion.md` | Cómo escribe el candidato (tono, palabras que usa y evita, ejemplos) |
+| `contexto/perfil-conductual.md` | Cómo trabaja, fortalezas, puntos a mejorar, tests de personalidad |
+| `contexto/criterios.md` | Deal-breakers y preferencias en texto libre; complementan los filtros duros |
+| `contexto/narrativa.md` | Historia profesional, motivación, hacia dónde va, cómo explica los cambios |
+| `documentos/cv/`, `linkedin/`, `titulos/`, `referencias/` | Documentos fuente que `actualizar-perfil` puede leer (confirmando antes de escribir) |
+| `documentos/candidaturas/<empresa>_<puesto>_<job_id>/` | Lo enviado en cada candidatura: PDF del CV, carta en TXT y PDF, `respuestas.json` y `README.md` (fecha en Europe/Madrid, canal, URL, versión del perfil) |
+
+- Contexto: todos opcionales, sin versiones ni copia en la BD; `get_context` los lee con su hash.
+  Plantillas en `demo/contexto/` (la candidata demo). No respaldan hechos (`POLICIES.md` §1.5).
+- Archivo: nombre en ASCII y sin signos, de 40 caracteres como mucho por parte; se reconoce por el
+  sufijo `_<job_id>`. Se escribe en `.tmp-<job_id>-…` y se renombra al final, así que nunca queda a
+  medias. Si la carpeta ya existe no se toca: rehacer el CV o la carta después no cambia lo archivado.
+  `JobView.archive_folder` (ficha de la UI) la da relativa a `data/`.

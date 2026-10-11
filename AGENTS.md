@@ -44,7 +44,8 @@ templates/        plantillas de CV integradas (sin datos personales)
 extension/        extensión «Enviar a Job Hunter» (fase 09b)
 config/           policies.yaml y listas genéricas (sin datos personales)
 demo/             candidato y ofertas ficticios
-data/             GITIGNORED: jobhunter.db, profile.yaml, photo, templates/, uploads/, CVs, tmp/…
+data/             GITIGNORED: jobhunter.db, profile.yaml, contexto/, documentos/, photo, templates/,
+                  uploads/, CVs, tmp/…
 ```
 
 ## Comandos

@@ -237,3 +237,23 @@ La carta es un documento propio, con sus indicaciones, su verificación y sus re
   y límites éticos; la guía de desarrollo por fases pasa a `docs/DESARROLLO_POR_FASES.md`.
 - **Seguridad:** `data/` y `.env` nunca se han commiteado y no hay datos del perfil real en el
   historial. CI con una siembra de la demo como prueba de humo.
+
+## 13 · Contexto y documentos — 2026-10-11 · Claude Code (Opus 5.5)
+- **Contexto del candidato** en `data/contexto/`: `estilo-redaccion.md`, `perfil-conductual.md`,
+  `criterios.md` y `narrativa.md`, que editas en tu editor (`jh context init` los crea vacíos).
+  Orientan a tu agente y **nunca respaldan un hecho** (POLICIES §1.5, ADR-025):
+  - los CVs y las cartas salen con tu tono;
+  - `evaluar-encaje` cita tus deal-breakers como riesgo o motivo de `weak`;
+  - `preparar-entrevista` usa tu perfil conductual y tu narrativa;
+  - el verificador rechaza un hecho que solo esté ahí.
+- **`get_context`** (MCP) y `jh context show --json`, con paridad: el texto de cada fichero con su
+  hash, sin los comentarios-guía y con un aviso si pasa de 20 KB.
+- **`data/documentos/`** (`cv/`, `linkedin/`, `titulos/`, `referencias/`): `actualizar-perfil` puede
+  leer de ahí para crear o ampliar tu perfil, siempre preguntando antes de escribir.
+- **Archivo de candidaturas:** al marcar una oferta como enviada, el worker copia a
+  `data/documentos/candidaturas/<empresa>_<puesto>_<id>/` el CV, la carta (TXT y PDF), las
+  respuestas y un README con fecha, canal, URL y versión del perfil. Si rehaces el CV después, lo
+  archivado no cambia. Las anteriores, con `jh applications archive --all`.
+- **UI:** página **«Mi perfil»** con el estado de cada fichero de contexto y de cada carpeta, y
+  botones «Abrir carpeta». En la ficha de una oferta enviada, «Copia de lo que enviaste» con su
+  carpeta.

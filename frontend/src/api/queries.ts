@@ -28,6 +28,7 @@ export const keys = {
   /** También bajo `cv`: la carta va a juego con el render seleccionado del CV. */
   letter: (id: number) => ['cv', id, 'letter'] as const,
   funnel: (since: string | null) => ['funnel', since] as const,
+  context: ['context'] as const,
   apply: (id: number) => ['apply', id] as const,
   agent: ['agent'] as const,
 }
@@ -754,5 +755,25 @@ export function useAgentLauncher() {
 export function useLaunchAgent() {
   return useMutation({
     mutationFn: (body: { action: AgentAction; job_id?: number }) => unwrap(api.POST('/agent/launch', { body })),
+  })
+}
+
+// --- Mi perfil: contexto y documentos (fase 13) ---------------------------------------------
+
+export type FolderKind = Schemas['OpenFolderBody']['folder']
+
+/** Estado de `data/contexto/` y `data/documentos/`. Se refresca al volver a la ventana. */
+export function useContextStatus() {
+  return useQuery({ queryKey: keys.context, queryFn: () => unwrap(api.GET('/context')) })
+}
+
+/** Abre la carpeta en el explorador; si no se puede, la respuesta trae la ruta para copiarla. */
+export function useOpenFolder() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (body: { folder: FolderKind; job_id?: number }) =>
+      unwrap(api.POST('/folders/open', { body })),
+    // Abrir el contexto o los documentos crea lo que falte.
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.context }),
   })
 }

@@ -54,6 +54,9 @@ export type ApplicationChannel = NonNullable<Schemas['AddUserEventBody']['channe
 export type AssistedApplication = Schemas['AssistedApplication']
 export type AttemptView = Schemas['AttemptView']
 export type FieldReport = Schemas['FieldReport']
+export type ContextStatus = Schemas['ContextStatus']
+export type ContextFileInfo = Schemas['ContextFileInfo']
+export type OpenFolderResult = Schemas['OpenFolderResult']
 
 export const API_URL: string = import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:8000'
 

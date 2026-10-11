@@ -39,7 +39,7 @@ from app.models import ApplicationAttempt, Company, DocumentRender, Job, Task
 from app.models.base import utcnow
 from app.schemas.llm_io import ApplicationAnswers
 from app.services import answers as answers_service
-from app.services import events, normalize, prompts, tasks
+from app.services import application_archive, events, normalize, prompts, tasks
 from app.services import profile as profile_service
 from app.services.applier import fields, guard, platforms, submit, tokens
 from app.services.applier.browser import BrowserState, PreparedPage, get_host
@@ -1138,7 +1138,8 @@ def _record_applied(session: Session, attempt: ApplicationAttempt) -> bool:
         payload["render_id"] = render_id
     if attempt.confirmation_path:
         payload["evidence"] = attempt.confirmation_path
-    events.record(session, attempt.job_id, EventType.APPLIED, Actor.USER, payload=payload)
+    event = events.record(session, attempt.job_id, EventType.APPLIED, Actor.USER, payload=payload)
+    application_archive.enqueue(session, attempt.job_id, event.id)
     return True
 
 

@@ -25,7 +25,7 @@ from app.schemas.cover_letter import CoverLetterContent
 from app.schemas.cv import CvContent
 from app.schemas.llm_io import JobExtraction
 from app.schemas.sources import AgentBrowseSource
-from app.services import events, extractions, ingest, process, profile
+from app.services import context, events, extractions, ingest, process, profile
 from app.services.documents import cover_letter, pdf
 from app.services.documents import service as cv_service
 from app.services.ingestion import browse
@@ -63,6 +63,14 @@ def seed_closed() -> None:
 def seed_profile() -> None:
     with session_scope() as session:
         profile.import_profile(session, profile.EXAMPLE_PATH)
+
+
+def seed_context() -> None:
+    """Los ficheros de contexto de la candidata demo en `data/contexto/`."""
+    target = context.context_dir()
+    target.mkdir(parents=True, exist_ok=True)
+    for path in context.TEMPLATES_DIR.glob("*.md"):
+        (target / path.name).write_bytes(path.read_bytes())
 
 
 def _seed_profile_and_extract(**changes: Any) -> None:
@@ -461,6 +469,12 @@ CASES = [
          ["profile", "show", "--sections", "skills,private"], seed=seed_profile,
          expect_error="validation_error"),
     Case("profile-none", "get_profile", {}, ["profile", "show"], expect_error="not_found"),
+    Case("context", "get_context", {}, ["context", "show"], seed=seed_context),
+    Case("context-sections", "get_context", {"sections": ["criterios", "narrativa"]},
+         ["context", "show", "--sections", "criterios, narrativa"], seed=seed_context),
+    Case("context-missing", "get_context", {}, ["context", "show"], seed=None),
+    Case("context-bad-section", "get_context", {"sections": ["salario"]},
+         ["context", "show", "--sections", "salario"], expect_error="validation_error"),
     Case("match", "get_match", {"job_id": 1}, ["match", "show", "1"], seed=seed_matched),
     Case("match-filtered", "get_match", {"job_id": 1}, ["match", "show", "1"],
          seed=seed_filtered),

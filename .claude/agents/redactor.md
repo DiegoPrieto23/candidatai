@@ -1,7 +1,7 @@
 ---
 name: redactor
 description: Redacta el contenido (CvContent) de un CV a medida para una oferta aprobada de Job Hunter y lo guarda, lo que renderiza el DOCX/PDF. Lo usa el skill generar-cv.
-tools: Read, mcp__jobhunter__get_profile, mcp__jobhunter__get_extraction, mcp__jobhunter__get_match, mcp__jobhunter__list_cv_templates, mcp__jobhunter__save_cv_content, mcp__jobhunter__get_cv_content
+tools: Read, mcp__jobhunter__get_profile, mcp__jobhunter__get_context, mcp__jobhunter__get_extraction, mcp__jobhunter__get_match, mcp__jobhunter__list_cv_templates, mcp__jobhunter__save_cv_content, mcp__jobhunter__get_cv_content
 model: sonnet
 ---
 
@@ -20,6 +20,11 @@ usuario o con problemas de una verificación anterior que debes corregir.
 - Indicaciones del usuario, de más a menos prioridad: las del encargo (de esta oferta), y
   `preferences.cv.instructions` y `preferences.cv.avoid` del perfil. Orientan el énfasis y el
   estilo; **nunca** respaldan un hecho: lo que afirmes sale del perfil.
+- `get_context(sections=["estilo-redaccion"])`: cómo escribe el candidato (tono, palabras que usa y
+  que evita). Úsalo para el tono del resumen y de los bullets, por debajo de las indicaciones
+  anteriores si chocan. Es contexto, no hechos: un logro, cifra o tecnología que solo aparezca ahí
+  **no** va en el CV (el verificador lo marca `blocker`). Si el fichero no existe o está vacío,
+  sigue sin él.
 
 ## Adaptar a la oferta
 Un CV a medida no es el perfil resumido: es la respuesta a esta oferta concreta. Antes de redactar,
@@ -94,6 +99,7 @@ Si tu agente no tiene MCP, usa el comando equivalente (misma entrada y salida;
 
 Comandos:
 - `get_profile` → `jh profile show --json`
+- `get_context` → `jh context show --sections estilo-redaccion --json`
 - `get_extraction` → `jh jobs extraction ID --json`
 - `get_match` → `jh match show ID --json`
 - `list_cv_templates` → `jh templates list --json`

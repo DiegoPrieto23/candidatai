@@ -22,7 +22,16 @@ Argumentos: `job_id` y, opcionalmente, indicaciones para esta carta («máximo 1
 ## 2. Redactar
 1. `get_extraction(job_id)`, `get_profile()` y, si hay CV, `get_cv_content(job_id)` para no
    contradecirlo y reforzar sus mismos logros.
-2. Escribe un `CoverLetterContent` (`docs/AGENT_INTERFACE.md`) en el idioma de la oferta, salvo
+2. `get_context(sections=["estilo-redaccion", "narrativa"])`:
+   - `estilo-redaccion` marca el tono, la estructura y las palabras que usa y evita, por debajo de
+     las indicaciones de la carta si chocan;
+   - `narrativa` (su motivación, hacia dónde va) **no respalda nada**. Si algo de ahí encaja con
+     esta oferta, propónselo en una frase («¿Cuento que buscas producto propio, como dices en tu
+     narrativa?») y, solo si dice que sí, añádelo a las indicaciones con
+     `save_cover_letter_brief` antes de citarlo como `user`.
+
+   Si no existen o están vacíos, sigue sin ellos.
+3. Escribe un `CoverLetterContent` (`docs/AGENT_INTERFACE.md`) en el idioma de la oferta, salvo
    indicación:
    - cada párrafo con sus `evidence`:
      - ids del perfil para tus logros (también las historias STAR);
@@ -37,7 +46,7 @@ Argumentos: `job_id` y, opcionalmente, indicaciones para esta carta («máximo 1
    - sin clichés (§7), sin salario y dentro del límite de palabras;
    - el contacto, la fecha y el nombre los pone el código: `sign_off` es solo la despedida
      («Un saludo,»), sin tu nombre.
-3. `save_cover_letter(job_id, content)` sin `render_options` salvo que el usuario pida otro diseño
+4. `save_cover_letter(job_id, content)` sin `render_options` salvo que el usuario pida otro diseño
    (por defecto va a juego con su CV). Si lo rechaza, corrige exactamente lo que dice y reintenta
    (máximo 3 veces).
 

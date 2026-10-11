@@ -1267,6 +1267,47 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/context": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Context Status
+         * @description Ficheros de `data/contexto/` (vacío o con contenido, tamaño, fecha) y carpetas de
+         *     `data/documentos/` con cuántos ficheros tienen. Sin el texto.
+         */
+        get: operations["get_context_status"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/folders/open": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Open Folder
+         * @description Abre la carpeta en el explorador; si no se puede, devuelve la ruta para copiarla.
+         */
+        post: operations["open_folder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1779,6 +1820,42 @@ export interface components {
              */
             created_at: string;
         };
+        /** ContextFileInfo */
+        ContextFileInfo: {
+            /**
+             * Section
+             * @enum {string}
+             */
+            section: "estilo-redaccion" | "perfil-conductual" | "criterios" | "narrativa";
+            /** Path */
+            path: string;
+            /** Exists */
+            exists: boolean;
+            /** Empty */
+            empty: boolean;
+            /** Size Bytes */
+            size_bytes: number;
+            /** Modified At */
+            modified_at: string | null;
+            /** Hash */
+            hash: string | null;
+            /** Warnings */
+            warnings: string[];
+        };
+        /**
+         * ContextStatus
+         * @description Estado para la UI («Mi perfil»): sin el texto de los ficheros.
+         */
+        ContextStatus: {
+            /** Context Dir */
+            context_dir: string;
+            /** Documents Dir */
+            documents_dir: string;
+            /** Files */
+            files: components["schemas"]["ContextFileInfo"][];
+            /** Folders */
+            folders: components["schemas"]["DocumentFolderInfo"][];
+        };
         /**
          * CoverLetterBriefInput
          * @description Indicaciones de la carta para una oferta (las edita la UI o el agente).
@@ -2085,6 +2162,18 @@ export interface components {
             created: boolean;
             /** Conflicts */
             conflicts: string[];
+        };
+        /** DocumentFolderInfo */
+        DocumentFolderInfo: {
+            /**
+             * Name
+             * @enum {string}
+             */
+            name: "cv" | "linkedin" | "titulos" | "referencias" | "candidaturas";
+            /** Exists */
+            exists: boolean;
+            /** Files */
+            files: number;
         };
         /** EmailPollResult */
         EmailPollResult: {
@@ -2546,6 +2635,8 @@ export interface components {
             /** Events */
             events: components["schemas"]["EventOut"][];
             injection: components["schemas"]["InjectionWarning"] | null;
+            /** Archive Folder */
+            archive_folder?: string | null;
         };
         /**
          * KeywordCoverage
@@ -2887,6 +2978,23 @@ export interface components {
              * @default true
              */
             ok: boolean;
+        };
+        /** OpenFolderBody */
+        OpenFolderBody: {
+            /**
+             * Folder
+             * @enum {string}
+             */
+            folder: "contexto" | "documentos" | "candidatura";
+            /** Job Id */
+            job_id?: number | null;
+        };
+        /** OpenFolderResult */
+        OpenFolderResult: {
+            /** Path */
+            path: string;
+            /** Opened */
+            opened: boolean;
         };
         /**
          * PackageCoverLetter
@@ -9871,6 +9979,194 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LaunchResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_context_status: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContextStatus"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    open_folder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OpenFolderBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpenFolderResult"];
                 };
             };
             /** @description Unauthorized */

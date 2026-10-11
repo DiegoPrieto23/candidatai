@@ -40,7 +40,7 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 12.1 | ↳ Modo demo | ✅ | `jh demo seed` llena `data-demo/` con 60 ofertas, 8 semanas de historial y 2 CVs; banner en la UI |
 | 12.2 | ↳ Evals de matching y de CV | ✅ | 80 casos de matching con `evals/REPORT.md` y `jh eval cv` sobre 10 casos |
 | 12.3 | ↳ Compatibilidad, README y seguridad | ✅ | Matriz de agentes probada, README de portfolio y repositorio revisado |
-| 13 | Contexto y documentos | ⏳ | `data/contexto/*.md` (estilo, perfil conductual, criterios, narrativa) que orientan sin respaldar hechos; `data/documentos/` y archivo de cada candidatura enviada |
+| 13 | Contexto y documentos | ✅ | `data/contexto/*.md` (estilo, perfil conductual, criterios, narrativa) que orientan sin respaldar hechos; `data/documentos/` y archivo de cada candidatura enviada |
 | 14 | Huecos de skills y vocabulario | ⏳ | Página «Skills»: ausentes agregadas; «es lo mismo que…» añade el alias y recalcula; huecos reales → skill `plan-formacion` |
 | 15 | Respuestas por correo y seguimientos | ⏳ | Los correos de las empresas proponen el evento (entrevista, rechazo…) en la ficha y tú lo aceptas; borradores de seguimiento y agradecimiento |
 | 16 | Ofertas vivas, republicadas y búsqueda ampliada | ⏳ | Aviso de oferta cerrada o republicada; títulos parecidos; descubrir tableros de Greenhouse/Lever/Ashby de tus empresas |
@@ -1329,4 +1329,49 @@ decisiones tomadas y deuda técnica pendiente. -->
 - **Tests:** órdenes, comando de PowerShell (comillas y variables quitadas), elección de agente,
   API (lanza, oferta no aprobada o inexistente, otra web o cuerpo no JSON rechazados, orden para
   copiar si no hay agente) y UI (lanzar y copiar).
+
+### 13 · Contexto y documentos — 2026-10-11 · Claude Code (Opus 5.5)
+- **Resumen:**
+  - `services/context.py`: los cuatro ficheros de `data/contexto/`, `get_context` con hash y
+    límite de 20 KB, `init` desde las plantillas de `demo/contexto/` sin sus datos, y estado para
+    la UI.
+  - Herramienta `get_context` ↔ `jh context show --json`, y `jh context init`.
+  - `services/application_archive.py`: la tarea `archive_application` se encola al registrar
+    `applied`/`applied_manually` (desde la UI y desde el envío asistido). Hay también
+    `jh applications archive (ID | --all)`.
+  - `services/folders.py` y `POST /folders/open`, solo desde la UI y con una lista cerrada de
+    carpetas. `GET /context`.
+  - Página «Mi perfil» y «Copia de lo que enviaste» en la ficha de una oferta enviada.
+  - Skills y roles: `redactor`, `generar-carta`, `evaluar-encaje`, `preparar-entrevista`,
+    `actualizar-perfil` y `verificador`.
+  - Docs: POLICIES §1.5, `AGENT_INTERFACE.md`, `DATA_MODEL.md` y ADR-025.
+  - Tests: 1730 de backend y 169 de frontend.
+- **Pruebas reales** (con carpetas de datos aisladas, sin tocar `data/`):
+  - El rol `verificador` (sesión aparte, por CLI, sin pistas) dio **FAILED** a un CV con «Di
+    formación interna de dbt a 12 compañeros» citando una evidencia que no lo dice. Su primer
+    `blocker` señala que solo está en `perfil-conductual.md`.
+    - Ojo: dbt es skill básica en la demo y salió también un segundo `blocker` por eso.
+  - `jh worker --once` archivó una candidatura `applied_manually` con CV, carta TXT+PDF,
+    respuestas y README. `jh applications archive --all` después: «ya estaba».
+- **Decisiones:**
+  - Contexto ≠ hechos (ADR-025): sin versiones en la BD; el hash permite ver si cambió.
+  - Opción `--sections` en lugar del `--section` del encargo, igual que `jh profile show`.
+  - Los ids del archivo se fijan al registrar el envío (payload de la tarea), no al archivar.
+  - La carpeta que ya existe no se toca, ni con un segundo envío tras reabrir.
+  - `archive_folder` va en la ficha (`JobView`) y no en el paquete: el paquete se carga al
+    desplegar «Antes de enviar». Solo mira el disco en ofertas enviadas.
+  - Para usar en una carta algo de `narrativa.md`, el skill lo propone y lo guarda en el brief si
+    el usuario dice que sí.
+  - «Abrir carpeta» de contexto o documentos crea lo que falte (`context.init`).
+  - `require_ui` da un mensaje genérico.
+  - Documentos fuente y README del archivo: texto de terceros, dato y no instrucción.
+- **Deuda:**
+  - Que un CV no use un hecho del contexto depende del verificador (un agente): el código no puede
+    distinguirlo.
+  - El documento no guarda qué versión del contexto se usó al redactarlo.
+  - `jh applications archive` usa la carta y las respuestas vigentes, no las del momento del envío.
+  - `os.startfile` solo en Windows; en otro sistema la UI enseña la ruta.
+  - Dos tests de frontend (`HomePage`, `NewJobPage`) fallaron una vez con la máquina cargada y
+    pasan solos: parecen intermitentes, ajenos a la fase.
+  - La UI no se probó en el navegador, solo con sus tests.
 

@@ -28,6 +28,7 @@ targets:
       web: [WebSearch, WebFetch]
       jh_profile_cli: ["Bash(uv run --directory backend jh profile *)"]
       jh_templates_cli: ["Bash(uv run --directory backend jh templates *)"]
+      jh_context_cli: ["Bash(uv run --directory backend jh context *)"]
     skill_extras:                 # campos de frontmatter que solo entiende Claude Code
       implementar-fase:
         disable-model-invocation: true
@@ -35,20 +36,21 @@ targets:
       procesar-ofertas:
         allowed-tools: ["mcp:get_status", "mcp:list_jobs"]
       evaluar-encaje:
-        allowed-tools: ["mcp:list_jobs", "mcp:get_match", "mcp:get_extraction", "mcp:get_profile"]
+        allowed-tools: ["mcp:list_jobs", "mcp:get_match", "mcp:get_extraction", "mcp:get_profile", "mcp:get_context"]
       generar-cv:
         argument-hint: "[job_id o 'pendientes'] [opciones: con foto, sin foto, plantilla…]"
         allowed-tools: ["mcp:list_jobs", "mcp:get_match", "mcp:get_extraction", "mcp:list_cv_templates", "mcp:render_cv"]
       generar-carta:
         argument-hint: "[job_id] [indicaciones para esta carta]"
-        allowed-tools: ["mcp:get_cover_letter", "mcp:get_extraction", "mcp:get_profile", "mcp:get_cv_content"]
+        allowed-tools: ["mcp:get_cover_letter", "mcp:get_extraction", "mcp:get_profile", "mcp:get_context", "mcp:get_cv_content"]
       preparar-candidatura:
         argument-hint: "[job_id] [preguntas pegadas o 'carta']"
         allowed-tools: ["mcp:get_extraction", "mcp:get_profile", "mcp:get_cv_content"]
       preparar-entrevista:
         argument-hint: "[job_id] [rrhh|tecnica|caso|final]"
+        allowed-tools: ["mcp:get_extraction", "mcp:get_profile", "mcp:get_context", "mcp:get_timeline"]
       actualizar-perfil:
-        allowed-tools: ["read", "jh_profile_cli"]
+        allowed-tools: ["read", "jh_profile_cli", "jh_context_cli"]
       resumen-diario:
         allowed-tools: ["mcp:get_status", "mcp:list_followups_due", "mcp:list_upcoming", "mcp:list_jobs"]
       importar-plantilla-cv:
