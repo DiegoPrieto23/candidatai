@@ -45,6 +45,15 @@ def test_prompts_are_fixed_and_only_take_a_job_id() -> None:
         agent_launch.prompt_for("generar-cv")
 
 
+def test_skills_page_prompts_carry_no_skill_names() -> None:
+    """Fase 14: los nombres de las skills vienen de las ofertas; el agente los lee de las marcas."""
+    assert agent_launch.prompt_for("anadir-skills").startswith("Usa el skill actualizar-perfil")
+    assert "get_skill_gaps" in agent_launch.prompt_for("anadir-skills")
+    assert agent_launch.prompt_for("plan-formacion").startswith("Usa el skill plan-formacion")
+    for action in ("anadir-skills", "plan-formacion"):
+        assert agent_launch.ACTIONS[action].needs_job is False
+
+
 def test_launchers_come_from_the_manifest() -> None:
     launchers = {launcher.agent: launcher for launcher in agent_launch._launchers()}
     assert launchers["claude"].command == ["claude", "{prompt}"]
@@ -90,7 +99,14 @@ def test_get_lists_agent_and_actions(client: TestClient, opened: list[tuple[str,
     body = client.get("/agent").json()
     assert body["available"] is True and body["agent"] == "claude"
     actions = {a["id"]: a for a in body["actions"]}
-    assert set(actions) == {"buscar-ofertas", "procesar-ofertas", "evaluar-encaje", "generar-cv"}
+    assert set(actions) == {
+        "buscar-ofertas",
+        "procesar-ofertas",
+        "evaluar-encaje",
+        "generar-cv",
+        "anadir-skills",
+        "plan-formacion",
+    }
     assert actions["generar-cv"]["needs_job"] is True and actions["generar-cv"]["prompt"] is None
     assert "buscar-ofertas" in actions["buscar-ofertas"]["prompt"]
 

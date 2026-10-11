@@ -257,3 +257,19 @@ La carta es un documento propio, con sus indicaciones, su verificación y sus re
 - **UI:** página **«Mi perfil»** con el estado de cada fichero de contexto y de cada carpeta, y
   botones «Abrir carpeta». En la ficha de una oferta enviada, «Copia de lo que enviaste» con su
   carpeta.
+
+## 14 · Huecos de skills y vocabulario — 2026-10-11 · Claude Code (Opus 5.5)
+- **Página «Skills»:** las skills que piden tus ofertas (abiertas y aprobadas o enviadas en los
+  últimos 60 días) y tu perfil no cubre. Muestra cuántas ofertas las piden como obligatorias y como
+  deseables, su peso y ofertas de ejemplo.
+- **«Es lo mismo que…»:** si es otra forma de llamar a una skill tuya, la eliges y se añade como
+  sinónimo en `config/skill_aliases.yaml` sin tocar comentarios ni formato. El score de tus
+  ofertas se recalcula solo. El score mide experiencia, no vocabulario (ADR-026).
+- **«La tengo» y «No la tengo»:** las que tienes las añade tu agente al perfil con
+  `actualizar-perfil` (botón «Añadir al perfil las que tengo»), preguntando nivel y dónde la
+  usaste. Las que no, son huecos reales.
+- **Skill `plan-formacion`** (botón «Plan de formación»): convierte los huecos en un plan con
+  recursos verificados, cada uno con su URL, horas y orden, en `data/documentos/plan-formacion.md`.
+  También valora un curso o proyecto que propongas.
+- **`get_skill_gaps`** (MCP) y `jh skills gaps --json`, con paridad.
+

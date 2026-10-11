@@ -7837,6 +7837,346 @@
           }
         }
       }
+    },
+    "/skills/gaps": {
+      "get": {
+        "tags": [
+          "skills"
+        ],
+        "summary": "Get Skill Gaps",
+        "description": "Skills que piden las ofertas abiertas y las aprobadas o enviadas en los últimos `days` días\ny el perfil no cubre, de más a menos ofertas, con su marca y las skills del perfil.",
+        "operationId": "get_skill_gaps",
+        "parameters": [
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 365,
+              "minimum": 1,
+              "default": 60,
+              "title": "Days"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SkillGapsView"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/skills/aliases": {
+      "post": {
+        "tags": [
+          "skills"
+        ],
+        "summary": "Add Skill Alias",
+        "description": "«Es lo mismo que…»: la skill pasa a ser sinónimo de una del perfil y se recalculan los\nscores en el worker.",
+        "operationId": "add_skill_alias",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AliasBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AliasResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/skills/marks": {
+      "post": {
+        "tags": [
+          "skills"
+        ],
+        "summary": "Set Skill Mark",
+        "description": "«No la tengo» (`gap`), «La tengo» (`have`) o quitar la marca (`null`).",
+        "operationId": "set_skill_mark",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarkBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarkResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -7875,7 +8215,9 @@
               "buscar-ofertas",
               "procesar-ofertas",
               "evaluar-encaje",
-              "generar-cv"
+              "generar-cv",
+              "anadir-skills",
+              "plan-formacion"
             ],
             "title": "Id"
           },
@@ -8401,6 +8743,67 @@
           "filters_applied"
         ],
         "title": "AlertList"
+      },
+      "AliasBody": {
+        "properties": {
+          "skill": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Skill"
+          },
+          "profile_skill": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Profile Skill"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "skill",
+          "profile_skill"
+        ],
+        "title": "AliasBody"
+      },
+      "AliasResult": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok",
+            "default": true
+          },
+          "skill": {
+            "type": "string",
+            "title": "Skill"
+          },
+          "canonical": {
+            "type": "string",
+            "title": "Canonical"
+          },
+          "profile_skill": {
+            "type": "string",
+            "title": "Profile Skill"
+          },
+          "added": {
+            "type": "boolean",
+            "title": "Added"
+          },
+          "rescore_queued": {
+            "type": "boolean",
+            "title": "Rescore Queued"
+          }
+        },
+        "type": "object",
+        "required": [
+          "skill",
+          "canonical",
+          "profile_skill",
+          "added",
+          "rescore_queued"
+        ],
+        "title": "AliasResult"
       },
       "AnswerBody": {
         "properties": {
@@ -11074,6 +11477,50 @@
         ],
         "title": "FunnelStep"
       },
+      "GapExample": {
+        "properties": {
+          "job_id": {
+            "type": "integer",
+            "title": "Job Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "must_have",
+              "nice_to_have"
+            ],
+            "title": "Kind"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "title",
+          "company",
+          "score",
+          "kind"
+        ],
+        "title": "GapExample"
+      },
       "HardFilterResult": {
         "properties": {
           "passed": {
@@ -11925,7 +12372,9 @@
               "buscar-ofertas",
               "procesar-ofertas",
               "evaluar-encaje",
-              "generar-cv"
+              "generar-cv",
+              "anadir-skills",
+              "plan-formacion"
             ],
             "title": "Action"
           },
@@ -12223,6 +12672,77 @@
         ],
         "title": "LetterTemplateInfo",
         "description": "Una plantilla con diseño de carta, para el selector de la ficha."
+      },
+      "MarkBody": {
+        "properties": {
+          "skill": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Skill"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "gap",
+                  "have"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "skill",
+          "status"
+        ],
+        "title": "MarkBody"
+      },
+      "MarkResult": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok",
+            "default": true
+          },
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "skill": {
+            "type": "string",
+            "title": "Skill"
+          },
+          "mark": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "gap",
+                  "have"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mark"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "skill",
+          "mark"
+        ],
+        "title": "MarkResult"
       },
       "MatchView": {
         "properties": {
@@ -13195,6 +13715,31 @@
         ],
         "title": "ProcessView"
       },
+      "ProfileSkillOption": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "F",
+              "C+",
+              "C",
+              "B",
+              "basic"
+            ],
+            "title": "Level"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "level"
+        ],
+        "title": "ProfileSkillOption"
+      },
       "PromptView": {
         "properties": {
           "id": {
@@ -14018,6 +14563,102 @@
         ],
         "title": "SkillCoverage",
         "description": "`ratio` es `None` si la oferta no lista skills de este tipo (el componente no cuenta)."
+      },
+      "SkillGap": {
+        "properties": {
+          "skill": {
+            "type": "string",
+            "title": "Skill"
+          },
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "must_have_count": {
+            "type": "integer",
+            "title": "Must Have Count"
+          },
+          "nice_to_have_count": {
+            "type": "integer",
+            "title": "Nice To Have Count"
+          },
+          "jobs_count": {
+            "type": "integer",
+            "title": "Jobs Count"
+          },
+          "weight": {
+            "type": "number",
+            "title": "Weight"
+          },
+          "mark": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "gap",
+                  "have"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mark"
+          },
+          "examples": {
+            "items": {
+              "$ref": "#/components/schemas/GapExample"
+            },
+            "type": "array",
+            "title": "Examples"
+          }
+        },
+        "type": "object",
+        "required": [
+          "skill",
+          "key",
+          "must_have_count",
+          "nice_to_have_count",
+          "jobs_count",
+          "weight",
+          "mark",
+          "examples"
+        ],
+        "title": "SkillGap"
+      },
+      "SkillGapsView": {
+        "properties": {
+          "days": {
+            "type": "integer",
+            "title": "Days"
+          },
+          "jobs_considered": {
+            "type": "integer",
+            "title": "Jobs Considered"
+          },
+          "gaps": {
+            "items": {
+              "$ref": "#/components/schemas/SkillGap"
+            },
+            "type": "array",
+            "title": "Gaps"
+          },
+          "profile_skills": {
+            "items": {
+              "$ref": "#/components/schemas/ProfileSkillOption"
+            },
+            "type": "array",
+            "title": "Profile Skills"
+          }
+        },
+        "type": "object",
+        "required": [
+          "days",
+          "jobs_considered",
+          "gaps",
+          "profile_skills"
+        ],
+        "title": "SkillGapsView"
       },
       "SourceFunnel": {
         "properties": {

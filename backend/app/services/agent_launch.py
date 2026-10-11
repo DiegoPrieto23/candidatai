@@ -30,7 +30,14 @@ from app.services.pipeline import Stage
 MANIFEST = REPO_ROOT / ".agents" / "manifest.yaml"
 PROMPT_PLACEHOLDER = "{prompt}"
 
-ActionId = Literal["buscar-ofertas", "procesar-ofertas", "evaluar-encaje", "generar-cv"]
+ActionId = Literal[
+    "buscar-ofertas",
+    "procesar-ofertas",
+    "evaluar-encaje",
+    "generar-cv",
+    "anadir-skills",
+    "plan-formacion",
+]
 
 
 @dataclass(frozen=True)
@@ -57,6 +64,18 @@ ACTIONS: dict[ActionId, Action] = {
         "Generar CV",
         "Usa el skill generar-cv de Job Hunter para la oferta {job_id}.",
         needs_job=True,
+    ),
+    # Página «Skills» (fase 14). Los nombres de las skills salen de las ofertas, así que no van en
+    # la orden: el agente los lee de las marcas con `get_skill_gaps`.
+    "anadir-skills": Action(
+        "Añadir al perfil las que tengo",
+        "Usa el skill actualizar-perfil de Job Hunter para añadir a mi perfil las skills que he "
+        "marcado como «La tengo» en la página Skills (get_skill_gaps con status have).",
+    ),
+    "plan-formacion": Action(
+        "Plan de formación",
+        "Usa el skill plan-formacion de Job Hunter con los huecos de skills que he marcado como "
+        "«No la tengo».",
     ),
 }
 # Etapas en las que tiene sentido redactar el CV de una oferta (también para rehacerlo).

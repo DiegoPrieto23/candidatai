@@ -199,6 +199,7 @@ Arranca `jh serve`, `jh worker` y `pnpm dev`. Crea tu perfil con el skill `actua
 | `resumen-diario` | Qué tienes hoy, seguimientos vencidos, qué procesar |
 | `importar-plantilla-cv data/uploads/mi-cv.pdf` | Convierte tu CV (o cualquier diseño) en plantilla: los CVs a medida salen con su estilo |
 | `revisar-linkedin` | Informe de mejoras para tu perfil de LinkedIn, listo para copiar (tú lo aplicas) |
+| `plan-formacion` | Plan de formación con tus huecos reales de skills: recursos con su URL, horas y orden (o valora un curso o proyecto que propongas) |
 | `buscar-ofertas` | Recorre con tu navegador los portales aprobados y da de alta lo que encaje (`buscar-ofertas configurar` para elegirlos) |
 
 Si tu agente ofrece tareas programadas, `procesar-ofertas` y `resumen-diario` pueden ejecutarse

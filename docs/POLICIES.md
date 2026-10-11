@@ -79,6 +79,25 @@ embeddings) no cuenta, y su peso se reparte entre los demás. El desglose lo dic
 duros no cambian el score. Por debajo de `triage_threshold`, la oferta se ve atenuada en el
 triaje. Los pesos y el umbral se ajustan con `jh eval matching` (`evals/matching/README.md`).
 
+### Sinónimos y huecos de skills (fase 14)
+
+El score mide experiencia, no vocabulario. La página «Skills» agrega las skills que piden las
+ofertas (abiertas y aprobadas o enviadas en los últimos 60 días, ajustable) y el perfil no cubre,
+y para cada una el usuario decide:
+
+- **«Es lo mismo que…»**: elige una skill o un básico de su perfil y el nombre de la oferta se
+  añade como sinónimo en `config/skill_aliases.yaml` (en la entrada de esa skill o en una nueva).
+  Cambia el `scoring_key` y el worker recalcula las ofertas abiertas. Se rechaza si el nombre ya
+  es sinónimo de otra skill o si el perfil ya lo cubre: eso se cambia a mano en el fichero. Solo
+  lo decide el usuario: ni la app ni el agente proponen o añaden alias por su cuenta (ADR-026).
+- **«La tengo»**: queda marcada y «Añadir al perfil las que tengo» abre `actualizar-perfil`, que
+  pregunta nivel y dónde la usó (§1.4). Hasta que esté en el perfil no cuenta.
+- **«No la tengo»**: hueco real. El skill `plan-formacion` los convierte en un plan con recursos
+  verificados (cada uno con su URL) en `data/documentos/plan-formacion.md`. El plan no toca el
+  perfil.
+
+Los pesos del score no cambian con esto; solo qué nombres casan.
+
 ## 3. CV
 
 | Regla | Detalle |
