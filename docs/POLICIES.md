@@ -63,7 +63,9 @@ Combinación ponderada (`scoring.weights`) de cuatro componentes entre 0 y 1:
   `similarity_floor` y `similarity_ceiling`.
 - **Preferencias**: media de puesto (parecido con `preferences.roles`, según su orden; todas las
   palabras del puesto buscado deben estar en el título o en una de sus partes, sin contar la
-  seniority: «Sales Engineer (Data Platform)» no cuenta como «Data Engineer»), modalidad
+  seniority: «Sales Engineer (Data Platform)» no cuenta como «Data Engineer»; los puestos en
+  español se leen en inglés con `config/title_aliases.yaml`: «Ingeniero de datos» cuenta como
+  «Data Engineer»), modalidad
   (según el orden de `remote_modes`) y zona (preferida 1, permitida 0,6, desconocida 0,5).
 
 Un componente que no se puede calcular (la oferta no lista skills de ese tipo o no hay modelo de
@@ -80,6 +82,8 @@ triaje. Los pesos y el umbral se ajustan con `jh eval matching` (`evals/matching
 | Idioma | El de la oferta (`posting_language`). En caso de duda, preguntar |
 | Subtítulo | Identidad profesional estable + 3-4 tecnologías clave separadas por `·`. Puede nombrar la familia de rol si es tu identidad real ("Data Engineer"), pero **nunca** copia el título literal de la oferta con seniority, empresa o equipo |
 | Resumen | Adaptado a la oferta, con sus keywords solo si son verdad |
+| A medida | Cada CV responde a las necesidades centrales de su oferta: subtítulo, resumen, orden y enfoque de los logros, proyectos y skills cambian con ella. Un resumen que valdría tal cual para otra oferta del mismo rol es un aviso de la verificación |
+| Indicaciones | Las del encargo (de esa oferta) mandan sobre las generales de `preferences.cv.instructions` y `preferences.cv.avoid`. Orientan el énfasis y el estilo; nunca respaldan un hecho |
 | Foto | Opción por oferta: `auto`, `include` o `exclude`. En `auto` va si la plantilla la admite, hay foto (`preferences.cv.photo_file` o, si no existe, `data/photo.*`) y `preferences.cv.photo_policy` la permite en el país de la oferta (por defecto sí en España y no en UK, IE, US y NL) |
 | ATS | Si la oferta usa un ATS conocido (`config/policies.yaml` → `ats_platforms`) y la plantilla no es `ats_friendly`, se avisa y se sugiere `ats-simple`. Decides tú |
 | Idioma regional | Gallego, catalán, euskera… solo en ofertas de esa comunidad |

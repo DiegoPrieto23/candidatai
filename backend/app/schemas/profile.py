@@ -123,6 +123,8 @@ class Project(_Strict):
     name: Text
     date: YearMonth | None = None
     text: Text
+    # Enlace público (repo, demo): sale en el CV como enlace, no en `text`.
+    url: Annotated[str, Field(pattern=r"^\S+$")] | None = None
     skills: list[str] = []
     nda: bool = False
 
@@ -254,6 +256,9 @@ class CvPreferences(_Strict):
     max_pages: int | None = Field(default=None, ge=1, le=3)
     photo_policy: PhotoPolicy
     template_rules: list[TemplateRule] = []  # la primera que encaje gana
+    # Indicaciones generales de redacción (énfasis, estilo). Orientan; nunca respaldan hechos.
+    instructions: str | None = None
+    avoid: list[Text] = []  # lo que no quieres que diga ningún CV
 
 
 MAX_LETTER_WORDS = 600

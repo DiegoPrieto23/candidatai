@@ -29,6 +29,7 @@ export const keys = {
   letter: (id: number) => ['cv', id, 'letter'] as const,
   funnel: (since: string | null) => ['funnel', since] as const,
   apply: (id: number) => ['apply', id] as const,
+  agent: ['agent'] as const,
 }
 
 type JobsQuery = NonNullable<operations['list_jobs']['parameters']['query']>
@@ -737,5 +738,21 @@ export function useMarkApplicationSent(jobId: number) {
       unwrap(api.POST('/jobs/{job_id}/apply/manual-done', { params: { path: { job_id: jobId } } })),
     onSuccess: () =>
       Promise.all([client.invalidateQueries({ queryKey: keys.apply(jobId) }), refresh()]),
+  })
+}
+
+// --- Botones «en tu agente» (ADR-024) -----------------------------------------------------------
+
+export type AgentAction = Schemas['LaunchBody']['action']
+
+/** Qué agente abren los botones (o por qué no) y las órdenes que hay. Cambia poco: sin refresco. */
+export function useAgentLauncher() {
+  return useQuery({ queryKey: keys.agent, queryFn: () => unwrap(api.GET('/agent')), staleTime: Infinity })
+}
+
+/** Abre tu agente en una terminal con la orden escrita. No espera a que termine. */
+export function useLaunchAgent() {
+  return useMutation({
+    mutationFn: (body: { action: AgentAction; job_id?: number }) => unwrap(api.POST('/agent/launch', { body })),
   })
 }

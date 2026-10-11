@@ -1265,3 +1265,50 @@ decisiones tomadas y deuda técnica pendiente. -->
   propio; LinkedIn se crea siempre desactivada, con el aviso de por qué conviene dejarla así.
 - **Tests:** servicio y API de avisos (incl. espera que vuelve al contestar), paridad MCP ↔ CLI de
   las dos herramientas nuevas, alta de plataformas, y UI (pop-up, plataformas, «¿Qué ha pasado?»).
+
+### Mejora · CV a medida de cada oferta — 2026-10-11 · Claude Code (Opus 5.5)
+- **Rol `redactor`:** nueva sección «Adaptar a la oferta». Antes de redactar, el redactor identifica
+  las 2-3 necesidades centrales de la oferta, los logros que mejor las prueban y su vocabulario
+  literal. Subtítulo, resumen, orden y enfoque de los logros, proyectos y skills cambian con cada
+  oferta. Puede cambiar el énfasis de un logro, nunca su alcance.
+- **Rol `verificador`:** avisa (`warning`) si el CV es genérico (un resumen que valdría para otra
+  oferta del mismo rol) o si contradice las indicaciones del usuario. Un hecho respaldado solo por
+  las indicaciones es `blocker`.
+- **Indicaciones generales para los CVs:** `preferences.cv.instructions` y `preferences.cv.avoid`
+  en el perfil, opcionales. Orientan la redacción y nunca respaldan hechos; las indicaciones de
+  cada oferta mandan sobre ellas. Llegan al agente con `get_profile`. POLICIES §3 y el skill
+  `actualizar-perfil` lo recogen.
+- **Enlaces en el CV** (ADR-023): `url` opcional en los proyectos del perfil (`projects[].url` en
+  el contrato). LinkedIn, GitHub y el enlace de cada proyecto se pueden pulsar en el PDF de los
+  dos motores: el código los enlaza al renderizar y la plantilla sigue sin poder poner `href`
+  externos. Las integradas y el HTML base del importador muestran el enlace del proyecto.
+- **Inicio** (`/`): resumen de lo que te toca hoy (frase con enlaces a cada lista), recorrido de
+  las ofertas por etapa con quién actúa en cada una (tú, el agente o la empresa), mejor encaje por
+  revisar, listas para enviar, próximos 7 días y candidaturas sin respuesta. La bandeja pasa a
+  `/bandeja`. La cabecera ya no se parte en escritorio ni ensancha la página en móvil.
+- **Plataformas:** las búsquedas salen como etiquetas legibles («data engineer · Madrid»,
+  «analytics engineer · Remoto») que abren la búsqueda en el portal; las URLs completas, al
+  desplegar. `lib/searches.ts` lee los parámetros habituales (Indeed, InfoJobs, Tecnoempleo,
+  Glassdoor, LinkedIn); lo que no entiende sale como «Todas las ofertas».
+- **Puestos en español:** `config/title_aliases.yaml` (genérico) traduce «Ingeniero/a de datos»,
+  «Analista de datos», «Ingeniero de Big Data»… a su nombre en inglés para compararlos con
+  `preferences.roles`, en el prefiltro de alertas y conectores y en el score. Antes una alerta
+  «Ingeniero de Datos Snowflake» salía como que no encajaba con tus puestos.
+- **Tests:** ejemplo del perfil demo, valores por defecto, items vacíos en `avoid`,
+  `public_view`, `url` del proyecto, enlaces en docx (integradas) y en html (incluido el PDF de
+  `moderna-2col`) y que una plantilla no puede añadir los suyos.
+
+### Mejora · Botones que abren tu agente (ADR-024) — 2026-10-11 · Claude Code (Opus 5.5)
+- **«Buscar ofertas»** (y «Procesar ofertas» / «Evaluar encaje» si hay pendientes) en Inicio,
+  **«Procesar ahora»** en el aviso de ofertas por extraer y **«Generar CV»** / «Volver a redactar»
+  en la ficha de una oferta aprobada. Abren tu agente en una terminal con la orden del skill escrita.
+- `services/agent_launch.py` (órdenes cerradas, programa desde `launch` del manifiesto, `JH_AGENT`,
+  `unset_env`), `GET /agent` y `POST /agent/launch` (solo desde la UI: `Origin` y JSON). Sin agente
+  disponible, la UI copia la orden.
+- La orden va a PowerShell codificada (`-EncodedCommand`): `wt` parte su línea por cada `;`.
+- **Plataformas:** icono de cada portal (lo carga tu navegador del propio portal, sin referer; si no
+  carga, la inicial) y enlace a su página base, sacada de sus búsquedas.
+- **Tests:** órdenes, comando de PowerShell (comillas y variables quitadas), elección de agente,
+  API (lanza, oferta no aprobada o inexistente, otra web o cuerpo no JSON rechazados, orden para
+  copiar si no hay agente) y UI (lanzar y copiar).
+

@@ -182,7 +182,63 @@ def test_render_escapes_xml_special_characters(tmp_path: Path) -> None:
     assert "Pipelines <ETL> & modelos «R&D»" in "\n".join(p.text for p in Docx(str(out)).paragraphs)
 
 
+DEMO_LINKS = {
+    "https://linkedin.com/in/lucia-varela-demo",
+    "https://github.com/lucia-varela-demo",
+    "https://github.com/lucia-varela-demo/tfg-anomalias",
+}
+
+
+@pytest.mark.parametrize("template_id", ["ats-simple", "clasica-foto"])
+def test_render_docx_turns_profile_links_into_hyperlinks(tmp_path: Path, template_id: str) -> None:
+    ctx = context.build_context(demo_content(), demo_profile(), [])
+    out = render_docx(templates.get(template_id), ctx, tmp_path / "cv.docx", "A4")
+    doc = Docx(str(out))
+    targets = {
+        rel.target_ref for rel in doc.part.rels.values() if rel.reltype.endswith("/hyperlink")
+    }
+    assert targets == DEMO_LINKS
+    # El texto se ve igual que sin enlace: lo que cambia es que se puede pulsar.
+    text = " ".join(p.text for p in _all_paragraphs(doc))  # type: ignore[attr-defined]
+    assert "github.com/lucia-varela-demo/tfg-anomalias" in text
+    assert "https://" not in text
+
+
 # --- Contexto -------------------------------------------------------------------------------
+
+
+def test_context_project_url_and_links() -> None:
+    ctx = context.build_context(demo_content(), demo_profile(), [])
+    assert ctx["projects"][0]["url"] == "github.com/lucia-varela-demo/tfg-anomalias"
+    assert set(context.links(ctx).values()) == DEMO_LINKS
+    assert context.links({"contact": {"linkedin": "", "github": ""}, "projects": []}) == {}
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        ("github.com/x", "https://github.com/x"),
+        ("https://x.dev/a", "https://x.dev/a"),
+        ("HTTP://x.dev", "HTTP://x.dev"),
+    ],
+)
+def test_href_adds_scheme_only_when_missing(text: str, expected: str) -> None:
+    assert context.href(text) == expected
+
+
+def test_split_links_prefers_the_longest_match() -> None:
+    targets = {
+        "github.com/a": "https://github.com/a",
+        "github.com/a/repo": "https://github.com/a/repo",
+    }
+    assert context.split_links("Ver github.com/a/repo y github.com/a.", targets) == [
+        ("Ver ", None),
+        ("github.com/a/repo", "https://github.com/a/repo"),
+        (" y ", None),
+        ("github.com/a", "https://github.com/a"),
+        (".", None),
+    ]
+    assert context.split_links("nada", targets) == [("nada", None)]
 
 
 @pytest.mark.parametrize(

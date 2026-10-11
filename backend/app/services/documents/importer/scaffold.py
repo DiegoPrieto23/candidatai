@@ -170,6 +170,7 @@ _SNIPPETS: dict[str, str] = {
       <span class="item-title">{{ p.name }}</span>
       <span class="item-dates">{{ p.date }}</span>
     </div>
+    {% if p.url %}<div class="item-sub">{{ p.url }}</div>{% endif %}
     <ul class="bullets">{% for b in p.bullets %}<li>{{ b }}</li>{% endfor %}</ul>
   </article>
   {% endfor %}
@@ -468,6 +469,7 @@ def build_css(report: visual.VisualInspection, side: bool, photo_size_mm: float)
         ".item-dates, .muted { color: var(--muted); }",
         ".side .muted, .side .item-dates { color: inherit; opacity: 0.8; }",
         ".item-sub { font-style: italic; color: var(--muted); }",
+        "a { color: inherit; text-decoration: none; }",
         ".summary, .detail, .skill { margin: 0 0 1.5mm; }",
         ".bullets { margin: 1mm 0 0; padding-left: 4.5mm; }",
         ".bullets li { margin-bottom: 0.8mm; }",

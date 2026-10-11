@@ -26,6 +26,7 @@ STATUS_BY_TYPE = {
     "invalid_file": 422,
     "too_large": 413,
     "pdf_unavailable": 503,
+    "agent_unavailable": 503,
     "pdf_failed": 500,
     "database_not_ready": 503,
     "internal_error": 500,

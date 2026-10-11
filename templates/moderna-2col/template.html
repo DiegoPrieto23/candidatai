@@ -101,6 +101,7 @@
           <span class="role">{{ p.name }}</span>
           <span class="dates">{{ p.date }}</span>
         </div>
+        {% if p.url %}<div class="org">{{ p.url }}</div>{% endif %}
         <ul class="bullets">
           {% for b in p.bullets %}<li>{{ b }}</li>{% endfor %}
         </ul>

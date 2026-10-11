@@ -145,7 +145,7 @@ describe('Empresas objetivo', () => {
     renderApp('/empresas')
     await userEvent.click(await screen.findByRole('button', { name: /Ejecutar ahora/ }))
     expect(await screen.findByText(/2 nuevas, 1 ya estaba/)).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Verlas' })).toHaveAttribute('href', '/?stage=pending_extraction')
+    expect(screen.getByRole('link', { name: 'Verlas' })).toHaveAttribute('href', '/bandeja?stage=pending_extraction')
 
     await userEvent.click(screen.getByRole('button', { name: 'Pausar' }))
     expect(calls.find((c) => c.path === '/sources/1/active')?.body).toEqual({ active: false })

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ClockIcon, CompassIcon, WarningIcon } from '@phosphor-icons/react'
+import { ArrowSquareOutIcon, ClockIcon, CompassIcon, WarningIcon } from '@phosphor-icons/react'
 import type { AgentBrowseLimits, BrowseAccess, SourceView } from '@/api/client'
 import { usePlatforms, useUpdateBrowseSettings } from '@/api/queries'
 import { AddPlatformButton } from '@/components/AddPlatformDialog'
@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
+import { iconCandidates, platformHome, searchLabel } from '@/lib/searches'
 import { cn } from '@/lib/utils'
 
 const ACCESS: { value: BrowseAccess; label: string; hint: string }[] = [
@@ -35,6 +36,84 @@ function formatWhen(iso: string): string {
     hour: '2-digit',
     minute: '2-digit',
   })
+}
+
+/** Lo que busca el agente en esta plataforma, legible; las URLs completas, al desplegar. */
+function Searches({ urls, name }: { urls: string[]; name: string }) {
+  const [showUrls, setShowUrls] = useState(false)
+  if (!urls.length) return null
+  return (
+    <div className="grid gap-1.5">
+      <span className="text-xs text-muted-foreground">
+        Qué busca el agente <span className="sr-only">en {name}</span>
+      </span>
+      <ul className="flex flex-wrap gap-1.5">
+        {urls.map((url) => (
+          <li key={url}>
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={`Abrir esta búsqueda en ${name}`}
+              className="inline-flex items-center gap-1 rounded-md border bg-background px-2 py-1 text-xs transition-colors hover:border-foreground/25 hover:bg-foreground/[0.03]"
+            >
+              {searchLabel(url)}
+              <ArrowSquareOutIcon className="size-3 text-muted-foreground" aria-hidden />
+            </a>
+          </li>
+        ))}
+      </ul>
+      <button
+        type="button"
+        onClick={() => setShowUrls((v) => !v)}
+        aria-expanded={showUrls}
+        className="justify-self-start text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+      >
+        {showUrls ? 'Ocultar las URLs' : 'Ver las URLs'}
+      </button>
+      {showUrls && (
+        <ul className="grid gap-0.5">
+          {urls.map((url) => (
+            <li key={url} className="truncate font-mono text-xs text-muted-foreground">
+              {url}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+
+/**
+ * Icono del portal, que tu navegador carga del propio portal (sin referer): prueba las rutas de
+ * `iconCandidates` en orden y, si ninguna carga, pone la inicial del nombre.
+ */
+function PlatformIcon({ name, home }: { name: string; home: { origin: string; host: string } | null }) {
+  const [attempt, setAttempt] = useState(0)
+  const candidates = home ? iconCandidates(home) : []
+  const box = 'grid size-9 shrink-0 place-items-center rounded-lg border bg-white dark:bg-white/95'
+  if (attempt >= candidates.length) {
+    return (
+      <span className={cn(box, 'bg-muted font-semibold text-muted-foreground dark:bg-muted')} aria-hidden>
+        {name.trim().charAt(0).toUpperCase()}
+      </span>
+    )
+  }
+  return (
+    <span className={box} aria-hidden>
+      <img
+        key={candidates[attempt]}
+        src={candidates[attempt]}
+        alt=""
+        width={20}
+        height={20}
+        loading="lazy"
+        referrerPolicy="no-referrer"
+        onError={() => setAttempt((n) => n + 1)}
+        className="size-5 object-contain"
+      />
+    </span>
+  )
 }
 
 function plural(n: number, one: string, many: string): string {
@@ -184,6 +263,7 @@ function PlatformRow({ source }: { source: SourceView }) {
   }
 
   const linkedin = browse.platform === 'linkedin'
+  const home = platformHome(browse.search_urls)
   const enabled = browse.allow_agent_browsing === true
   const change = (body: { allow_agent_browsing?: boolean; priority?: number; access?: BrowseAccess }) =>
     update.mutate({ sourceId: source.id, ...body })
@@ -196,6 +276,7 @@ function PlatformRow({ source }: { source: SourceView }) {
   return (
     <li className={cn('grid gap-3 px-4 py-4 sm:px-5', !enabled && 'bg-muted/30')}>
       <div className="flex flex-wrap items-start gap-x-4 gap-y-2">
+        <PlatformIcon name={source.name} home={home} />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="font-medium">{source.name}</h3>
@@ -208,7 +289,21 @@ function PlatformRow({ source }: { source: SourceView }) {
               </span>
             )}
           </div>
-          <p className="mt-1 text-xs text-muted-foreground">
+          <p className="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
+            {home && (
+              <>
+                <a
+                  href={home.origin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-foreground/80 underline-offset-2 hover:text-foreground hover:underline"
+                >
+                  {home.host}
+                  <ArrowSquareOutIcon className="size-3" aria-hidden />
+                </a>
+                <span aria-hidden>·</span>
+              </>
+            )}
             Hasta {plural(browse.max_offers ?? 0, 'oferta', 'ofertas')} por recorrido
           </p>
         </div>
@@ -267,18 +362,7 @@ function PlatformRow({ source }: { source: SourceView }) {
         </div>
       </div>
 
-      <div className="grid gap-1">
-        <span className="text-xs text-muted-foreground">Búsquedas</span>
-        <ul className="grid gap-0.5">
-          {browse.search_urls.map((url) => (
-            <li key={url} className="truncate font-mono text-xs">
-              <a href={url} target="_blank" rel="noopener noreferrer" className="underline-offset-2 hover:underline">
-                {url}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </div>
+      <Searches urls={browse.search_urls} name={source.name} />
       {browse.notes && <p className="text-sm text-muted-foreground">{browse.notes}</p>}
       <LastRun source={source} />
       {update.error && (

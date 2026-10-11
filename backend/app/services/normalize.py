@@ -7,6 +7,7 @@ S.A.» / «Acme S.L.», «(m/f/d)», «– Remote»…) debe dar la misma huella
 import hashlib
 import re
 import unicodedata
+from functools import lru_cache
 
 # Formas jurídicas, ya sin puntos y en minúsculas. Solo se quitan al final del nombre.
 LEGAL_FORMS = frozenset(
@@ -89,6 +90,29 @@ def title_segments(title: str) -> list[str]:
     value = _WORK_MODE_SUFFIX.sub("", value.strip())
     parts = _SEGMENT_SEPARATOR.split(value)
     return [seg for part in parts if (seg := normalize_title(part))]
+
+
+@lru_cache
+def _title_aliases() -> tuple[tuple[re.Pattern[str], str], ...]:
+    from app.core.policies import get_title_aliases  # config/: solo al usarse
+
+    pairs = [
+        (fold(alias), fold(name))
+        for name, aliases in get_title_aliases().items()
+        for alias in aliases
+        if fold(alias) and fold(name)
+    ]
+    # Las variantes largas primero: «ingeniero de big data» antes que «ingeniero de datos».
+    pairs.sort(key=lambda pair: len(pair[0]), reverse=True)
+    return tuple((re.compile(rf"\b{re.escape(alias)}\b"), name) for alias, name in pairs)
+
+
+def translate_title(segment: str) -> str:
+    """Un segmento normalizado con los puestos de `config/title_aliases.yaml` en inglés:
+    «ingeniero de datos snowflake» -> «data engineer snowflake». Sin cambios si no hay ninguno."""
+    for pattern, name in _title_aliases():
+        segment = pattern.sub(name, segment)
+    return segment
 
 
 def normalize_location(location: str | None) -> str:

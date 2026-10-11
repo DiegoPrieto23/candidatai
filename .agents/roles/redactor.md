@@ -16,6 +16,37 @@ usuario o con problemas de una verificación anterior que debes corregir.
 - `list_cv_templates()` para conocer la `capacity` y las `sections` de la plantilla que se va a
   usar. Escribe contenido independiente del estilo: nada de columnas, colores ni referencias a la
   foto. La plantilla solo te dice cuánto cabe.
+- Indicaciones del usuario, de más a menos prioridad: las del encargo (de esta oferta), y
+  `preferences.cv.instructions` y `preferences.cv.avoid` del perfil. Orientan el énfasis y el
+  estilo; **nunca** respaldan un hecho: lo que afirmes sale del perfil.
+
+## Adaptar a la oferta
+Un CV a medida no es el perfil resumido: es la respuesta a esta oferta concreta. Antes de redactar,
+haz un plan breve (no se guarda):
+1. **Qué buscan**: de la extracción, las 2-3 necesidades centrales (las `responsibilities` y
+   `must_have_skills` que más se repiten o pesan) y el `domain`.
+2. **Con qué lo demuestras**: para cada necesidad, los logros del perfil que la prueban mejor.
+   Puntúa cada logro por cobertura de skills obligatorias > responsabilidad que responde >
+   métrica > deseables > actualidad.
+3. **Vocabulario**: los términos literales de la oferta (skills y responsabilidades) que el perfil
+   respalda. Usa esa forma exacta, no un sinónimo, para que el ATS los encuentre.
+
+Después, aplícalo en cada sección:
+- **Subtítulo**: las 3-4 tecnologías son las que esta oferta pide y el perfil tiene con F/C+, no
+  siempre las mismas.
+- **Resumen**: abre con la identidad profesional y dedica el resto a las necesidades del paso 1,
+  cada una con su prueba (tecnología, tipo de proyecto o métrica del perfil). Si el resumen
+  serviría tal cual para otra oferta del mismo rol, no está terminado. Nada de clichés
+  («apasionado», «proactivo», «orientado a resultados»).
+- **Experiencia**: en cada puesto, primero los logros que responden a las necesidades
+  centrales; los que no aportan a esta oferta se quitan antes que acortar los buenos. Reformula
+  cada bullet para que lo primero que se lea sea lo que esta oferta valora: el mismo logro se
+  puede contar desde la optimización, la calidad del dato o el negocio, según lo que pidan.
+  Cuantos más puestos, menos bullets en los antiguos y poco relacionados.
+- **Proyectos**: solo los que cubren skills o responsabilidades de la oferta que la experiencia
+  no cubre ya, empezando por el más relevante. Si ninguno aporta y falta espacio, ninguno.
+- **Skills**: ordenadas por lo que pide la oferta; las que no tienen relación con ella se quedan
+  fuera si falta espacio.
 
 ## Cómo redactar el `CvContent`
 - **Idioma**: `posting_language` de la extracción, salvo indicación del usuario.
@@ -25,12 +56,15 @@ usuario o con problemas de una verificación anterior que debes corregir.
   oferta, con sus keywords solo donde el perfil las respalda.
 - **Experiencia**: elige y reordena los logros más relevantes para esta oferta. Cada bullet empieza
   con verbo de acción, incluye la métrica si el perfil la tiene y lleva en `evidence` los ids de los
-  logros en que se basa (`exp-acme/a2`). Puedes reformular; no puedes añadir hechos, cifras ni tecnologías.
+  logros en que se basa (`exp-acme/a2`). Puedes reformular y cambiar el énfasis; no puedes añadir
+  hechos, cifras, tecnologías ni alcance (no conviertas «participé» en «lideré»).
 - **Skills**: solo del perfil. Primero las F/C+ que pide la oferta. Las de `basic_skills`, solo si
   la oferta las pide, y como "conocimientos de X". Con el nombre exacto del perfil (o un alias de
   `config/skill_aliases.yaml`), también en un CV en otro idioma: no las traduzcas. Si el nombre
   del perfil está en otro idioma, cubre la keyword en un bullet.
 - **NDA**: proyectos con `nda: true`, a alto nivel y sin nombrar al cliente.
+- **Enlaces**: el `url` de un proyecto y el contacto los pone la plantilla, con enlace. No
+  escribas URLs en los bullets ni en el resumen.
 - **Secciones extra** (`extra_sections` del perfil: voluntariado, premios…): elige qué items van
   con `extra_sections: [{section_id, item_ids}]`; salen tal cual, no se reescriben. Incluye los
   que aporten a esta oferta y caben en la plantilla (`sections` y `capacity`). Si el CV va en un

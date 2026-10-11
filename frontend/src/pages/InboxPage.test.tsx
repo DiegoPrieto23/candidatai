@@ -14,7 +14,7 @@ describe('Bandeja', () => {
         jobRow({ id: 2, title: 'BI Developer', company: 'Faro Logística', stage: 'pending_extraction', remote_mode: null, risk_flags: ['injection_phrase'] }),
       ]),
     })
-    renderApp('/')
+    renderApp('/bandeja')
 
     const table = await screen.findByRole('table')
     const rows = within(table).getAllByRole('row')
@@ -31,14 +31,14 @@ describe('Bandeja', () => {
 
   it('enseña el score del último match', async () => {
     mockApi({ 'GET /status': status(0, 1), 'GET /jobs': page([jobRow({ score: 81 })]) })
-    renderApp('/')
+    renderApp('/bandeja')
     const table = await screen.findByRole('table')
     expect(within(table).getByLabelText('Score 81 de 100')).toBeInTheDocument()
   })
 
   it('filtra por la etapa de la URL y busca con retardo', async () => {
     const calls = mockApi({ 'GET /status': status(0, 1), 'GET /jobs': page() })
-    renderApp('/?stage=pending_triage')
+    renderApp('/bandeja?stage=pending_triage')
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Por revisar' })).toBeInTheDocument()
     const first = calls.find((c) => c.path === '/jobs')!
@@ -60,7 +60,7 @@ describe('Bandeja', () => {
         jobRow({ id: 2, title: 'BI Developer' }),
       ]),
     })
-    renderApp('/?stage=approved')
+    renderApp('/bandeja?stage=approved')
 
     const table = await screen.findByRole('table')
     const rows = within(table).getAllByRole('row')
@@ -86,7 +86,7 @@ describe('Bandeja', () => {
 
   it('muestra un estado vacío que invita a dar de alta', async () => {
     mockApi({ 'GET /status': status(), 'GET /jobs': page([]) })
-    renderApp('/')
+    renderApp('/bandeja')
     expect(await screen.findByText('Tu bandeja está vacía')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /Añadir la primera/ })).toHaveAttribute('href', '/nueva')
   })
@@ -94,7 +94,7 @@ describe('Bandeja', () => {
   it('explica cómo arrancar la API si no responde', async () => {
     mockApi({})
     globalThis.fetch = () => Promise.reject(new TypeError('Failed to fetch'))
-    renderApp('/')
+    renderApp('/bandeja')
     expect(await screen.findByText('La API no responde')).toBeInTheDocument()
     expect(screen.getByText('uv run jh serve')).toBeInTheDocument()
   })
@@ -103,26 +103,27 @@ describe('Bandeja', () => {
 describe('Cabecera', () => {
   it('muestra los recuentos por etapa y el recordatorio de extracción', async () => {
     mockApi({ 'GET /status': status(3, 2), 'GET /jobs': page() })
-    renderApp('/')
+    renderApp('/bandeja')
 
     const nav = await screen.findByRole('navigation', { name: 'Ofertas por etapa' })
     await waitFor(() => expect(within(nav).getByRole('link', { name: /Por extraer\s*3/ })).toBeInTheDocument())
     expect(within(nav).getByRole('link', { name: /Todas\s*5/ })).toHaveAttribute('aria-current', 'page')
-    expect(screen.getByRole('status')).toHaveTextContent(
-      'Hay 3 ofertas por extraer. Ejecuta el skill procesar-ofertas en tu agente.',
+    expect(screen.getAllByRole('status')[0]).toHaveTextContent(
+      'Hay 3 ofertas por extraer. Las extrae tu agente con el skill procesar-ofertas.',
     )
+    expect(screen.getByRole('button', { name: 'Procesar ahora' })).toBeInTheDocument()
   })
 
   it('no muestra el recordatorio si no hay nada por extraer', async () => {
     mockApi({ 'GET /status': status(0, 2), 'GET /jobs': page() })
-    renderApp('/')
+    renderApp('/bandeja')
     await screen.findByRole('link', { name: /Por revisar\s*2/ })
     expect(screen.queryByText(/por extraer\./)).not.toBeInTheDocument()
   })
 
   it('cambia entre tema del sistema, claro y oscuro', async () => {
     mockApi({ 'GET /status': status(), 'GET /jobs': page() })
-    renderApp('/')
+    renderApp('/bandeja')
     const toggle = screen.getByRole('button', { name: 'Tema: el del sistema' })
     await userEvent.click(toggle)
     expect(screen.getByRole('button', { name: 'Tema: claro' })).toBeInTheDocument()

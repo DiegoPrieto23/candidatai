@@ -199,6 +199,8 @@ def test_example_cv_preferences() -> None:
     assert cv.photo_file == "photo.jpg"
     assert [rule.use for rule in cv.template_rules] == ["ats-simple", "ats-simple"]
     assert cv.template_rules[1].when.country == ["GB", "IE", "US", "NL"]
+    assert cv.instructions and "optimización" in cv.instructions
+    assert len(cv.avoid) == 1
 
 
 def test_old_cv_block_still_valid(tmp_path: Path) -> None:
@@ -208,6 +210,17 @@ def test_old_cv_block_still_valid(tmp_path: Path) -> None:
     cv = load_from_yaml(_write(tmp_path, data)).preferences.cv
     assert (cv.max_pages, cv.default_template, cv.photo_file) == (2, None, "photo.jpg")
     assert cv.template_rules == []
+    assert (cv.instructions, cv.avoid) == (None, [])
+
+
+def test_project_url_has_no_spaces(tmp_path: Path) -> None:
+    issues = _issues(tmp_path, lambda d: d["projects"][0].update(url="github.com/a b"))
+    assert set(issues) == {"projects[0].url"}
+
+
+def test_cv_avoid_items_cannot_be_empty(tmp_path: Path) -> None:
+    issues = _issues(tmp_path, lambda d: d["preferences"]["cv"].update(avoid=["ok", ""]))
+    assert set(issues) == {"preferences.cv.avoid[1]"}
 
 
 @pytest.mark.parametrize("when", [{}, {"ats": [], "country": []}])

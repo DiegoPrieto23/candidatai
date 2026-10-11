@@ -1,5 +1,5 @@
-"""Reglas genéricas de `config/`: `policies.yaml`, `injection_patterns.yaml`, `skill_aliases.yaml`
-y `countries.yaml`.
+"""Reglas genéricas de `config/`: `policies.yaml`, `injection_patterns.yaml`, `skill_aliases.yaml`,
+`title_aliases.yaml` y `countries.yaml`.
 
 Solo se modelan las secciones que usa el código; el resto del YAML se ignora hasta que haga falta.
 """
@@ -196,6 +196,15 @@ def get_skill_aliases() -> dict[str, list[str]]:
     data = _read_yaml(CONFIG_DIR / "skill_aliases.yaml") or {}
     if not isinstance(data, dict):
         raise ValueError("config/skill_aliases.yaml debe ser un diccionario nombre -> sinónimos.")
+    return {str(name): [str(alias) for alias in (aliases or [])] for name, aliases in data.items()}
+
+
+@lru_cache
+def get_title_aliases() -> dict[str, list[str]]:
+    """Puesto en inglés -> otras formas de escribirlo («ingeniero de datos» -> «data engineer»)."""
+    data = _read_yaml(CONFIG_DIR / "title_aliases.yaml") or {}
+    if not isinstance(data, dict):
+        raise ValueError("config/title_aliases.yaml debe ser un diccionario puesto -> variantes.")
     return {str(name): [str(alias) for alias in (aliases or [])] for name, aliases in data.items()}
 
 

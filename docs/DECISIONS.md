@@ -312,3 +312,46 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   - nada resuelve ni esquiva el captcha: solo se avisa (POLICIES §5.3, regla dura 6).
 - **Consecuencias:** una consulta ligera cada 4 s desde la UI. Si la pestaña de Job Hunter no
   está abierta ni las notificaciones activadas, el aviso pasa desapercibido y caduca, como antes.
+
+## ADR-023 · Los enlaces del CV los pone el código, no la plantilla
+- **Contexto:** se pidieron enlaces que se puedan pulsar en el PDF (LinkedIn, GitHub y el
+  repositorio de cada proyecto). Las plantillas html no admiten `href` externos (fase 08b): una
+  plantilla puede venir de un CV ajeno y colar un enlace de phishing en un CV que se envía.
+- **Decisión:**
+  - los proyectos del perfil tienen un `url` opcional; la plantilla lo muestra como texto
+    (`projects[].url`), igual que `contact.linkedin` y `contact.github`;
+  - al renderizar, el código convierte en enlace solo los textos que coinciden exactamente con
+    esas URLs del perfil (`context.links`; sin esquema se les añade `https://`). En docx, parte la
+    run y envuelve el trozo en un `w:hyperlink` con el formato de la run; en html, añade
+    `<a href>` después del último saneado;
+  - el saneado no cambia: una plantilla sigue sin poder poner `href` externos.
+- **Consecuencias:** los enlaces se ven como el texto que diseñó la plantilla (sin azul ni
+  subrayado; en html, si su CSS no dice otra cosa). En docx solo se enlaza un texto que esté
+  entero en una run de texto simple, que es como salen las variables del contrato.
+
+## ADR-024 · Botones que abren tu agente en una terminal, sin API
+- **Contexto:** se quería lanzar skills desde la UI («Buscar ofertas», «Generar CV») como si fuera
+  una API, pero sin coste de API (ADR-001) y sin atar la app a un agente (regla dura 2). Se
+  valoraron: abrir el agente en una terminal visible; lanzarlo sin ventana (`claude -p`) desde el
+  worker; una cola de encargos que recoge una sesión abierta; copiar la orden; y el SDK o la API
+  (descartado: de pago y prohibido).
+- **Decisión:**
+  - `POST /agent/launch` abre una terminal (Windows Terminal o, si no está, PowerShell) con tu
+    agente en modo interactivo y la orden del skill ya escrita. Lo que haga lo ves, lo contestas y
+    lo apruebas tú: sirve también para los skills que preguntan (`generar-cv`) o usan tu navegador
+    (`buscar-ofertas`);
+  - las órdenes son una lista cerrada en `services/agent_launch.py`; lo único variable es el
+    `job_id` (entero). Ningún texto de una oferta ni de una web llega al comando;
+  - el programa sale de `launch` en `.agents/manifest.yaml` (`command` con `{prompt}` y
+    `unset_env`); `JH_AGENT` elige entre varios. Antes de abrirlo se quitan las variables de
+    `unset_env` (p. ej. `ANTHROPIC_API_KEY`), para que use tu suscripción y no la API;
+  - solo la UI puede lanzar: el endpoint exige el `Origin` de la UI (si viene) y cuerpo JSON, que
+    desde otra web obliga a una comprobación CORS que la API no concede. No hay herramienta MCP ni
+    comando `--json`: un agente no se lanza a sí mismo;
+  - si no se puede abrir (otro sistema, agente no instalado), la API devuelve la orden y la UI la
+    copia al portapapeles.
+- **Consecuencias:** sin coste extra, pero gasta los límites de uso de tu plan. Hace falta que la
+  API corra en tu sesión de Windows (como `jh serve` en tu ventana). Queda abierto, como fase 2
+  opcional, un modo «en segundo plano» (`claude -p` con solo las herramientas del MCP) para skills
+  que no preguntan.
+

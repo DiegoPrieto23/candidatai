@@ -67,7 +67,16 @@ describe('Plataformas', () => {
     expect(headings.map((h) => h.textContent)).toEqual(['LinkedIn', 'Tecnoempleo'])
     expect(calls.find((c) => c.path === '/sources')?.search.get('kind')).toBe('agent_browse')
     expect(screen.getByText(/2 páginas de resultados por búsqueda, 5 s/)).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: tecno.browse!.search_urls[0] })).toHaveAttribute('rel', 'noopener noreferrer')
+    const search = screen
+      .getAllByRole('link', { name: 'data' })
+      .find((link) => link.getAttribute('href') === tecno.browse!.search_urls[0])
+    expect(search).toBeDefined()
+    expect(search).toHaveAttribute('rel', 'noopener noreferrer')
+    expect(screen.getByRole('link', { name: 'tecnoempleo.com' })).toHaveAttribute('href', 'https://www.tecnoempleo.com')
+    // La URL completa, solo al desplegar.
+    expect(screen.queryByText(tecno.browse!.search_urls[0])).not.toBeInTheDocument()
+    for (const button of screen.getAllByRole('button', { name: 'Ver las URLs' })) await userEvent.click(button)
+    expect(screen.getByText(tecno.browse!.search_urls[0])).toBeInTheDocument()
     expect(screen.getByText(/12 encontradas,\s+3 nuevas, 1 ya conocida/)).toBeInTheDocument()
     expect(screen.getByText('Captcha en la página 2: se para.')).toBeInTheDocument()
     expect(screen.getByText('El agente aún no la ha recorrido')).toBeInTheDocument()

@@ -242,6 +242,7 @@ def build_ats_simple(dest: Path) -> None:
             doc,
             ("{{ p.name }}", {"bold": True}),
             ("{% if p.date %} · {{ p.date }}{% endif %}", {"color": MUTED, "size": 9.5}),
+            ("{% if p.url %} · {{ p.url }}{% endif %}", {"color": MUTED, "size": 9.5}),
         )
         _spacing(title, before=3)
         _tag(doc, "{%p for b in p.bullets %}")
@@ -449,6 +450,7 @@ def build_clasica_foto(dest: Path) -> None:
         title = _add(
             doc,
             ("{{ p.name }}", {"bold": True}),
+            ("{% if p.url %} · {{ p.url }}{% endif %}", {"color": MUTED, "size": 9.5}),
             "	",
             ("{{ p.date }}", {"color": MUTED, "size": 9.5}),
         )

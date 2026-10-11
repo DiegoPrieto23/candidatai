@@ -9,6 +9,9 @@ from sqlalchemy.orm import Session
 from app.core import migrations
 from app.core.db import session_scope
 
+# Origen de la UI local: el único que admite CORS y el único que puede abrir tu agente (ADR-024).
+UI_ORIGIN = "http://127.0.0.1:5173"
+
 
 def get_session() -> Iterator[Session]:
     """Sesión por petición: commit si la ruta termina bien, rollback si lanza."""

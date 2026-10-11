@@ -17,6 +17,9 @@ targets:
     agents_dir: .claude/agents
     mcp_file: .mcp.json
     models: {fast: haiku, capable: sonnet}
+    launch:                       # botones «en tu agente» de la UI (ADR-024): sesión interactiva
+      command: [claude, "{prompt}"]   # {prompt} = la orden del skill
+      unset_env: [ANTHROPIC_API_KEY]  # sin clave de API, Claude Code usa tu suscripción
     tools:                        # herramientas lógicas → nombres nativos
       mcp_prefix: "mcp__jobhunter__"
       read: [Read]
@@ -64,5 +67,8 @@ targets:
     agents_dir: .codex/agents
     config_file: .codex/config.toml
     models: {fast: null, capable: null}   # null = hereda el modelo de la sesión; pon aquí los de tu plan
+    launch:                       # botones «en tu agente» de la UI (ADR-024): sesión interactiva
+      command: [codex, "{prompt}"]
+      unset_env: [OPENAI_API_KEY]     # sin clave de API, Codex usa tu sesión de ChatGPT
     # Codex no permite limitar herramientas por subagente: se aplica sandbox_mode del rol.
     # Los subagentes heredan la política de la sesión padre (ver docs/AGENTS_COMPAT.md, nivel B).

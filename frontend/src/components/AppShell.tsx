@@ -17,6 +17,7 @@ import { STAGE_LABEL, STAGES } from '@/lib/labels'
 import { useTheme, type ThemeChoice } from '@/lib/theme'
 import { cn } from '@/lib/utils'
 import { UserPrompts } from '@/components/UserPrompts'
+import { AgentButton } from '@/components/AgentButton'
 
 const THEME_META: Record<ThemeChoice, { icon: typeof SunIcon; label: string }> = {
   system: { icon: DesktopIcon, label: 'Tema: el del sistema' },
@@ -43,7 +44,7 @@ function StageCounts() {
   const { data, isPending, isError } = useStatus()
   const [params] = useSearchParams()
   const { pathname } = useLocation()
-  const active = pathname === '/' ? (params.get('stage') ?? 'all') : null
+  const active = pathname === '/bandeja' ? (params.get('stage') ?? 'all') : null
 
   if (isError) return null
   const items: { key: Stage | 'all'; label: string; count?: number }[] = [
@@ -58,7 +59,7 @@ function StageCounts() {
           return (
             <li key={key}>
               <Link
-                to={key === 'all' ? '/' : `/?stage=${key}`}
+                to={key === 'all' ? '/bandeja' : `/bandeja?stage=${key}`}
                 aria-current={selected ? 'page' : undefined}
                 className={cn(
                   'group flex items-baseline gap-2 rounded-md px-3 py-2 text-sm transition-colors',
@@ -99,14 +100,16 @@ function ExtractionReminder() {
       className="flex items-start gap-3 rounded-xl border border-primary/20 bg-accent/60 px-4 py-3 text-sm text-accent-foreground animate-in fade-in slide-in-from-top-1"
     >
       <TerminalWindowIcon className="mt-0.5 size-[18px] shrink-0" weight="duotone" />
-      <p>
-        <span className="font-medium">
-          {pending === 1 ? 'Hay 1 oferta por extraer.' : `Hay ${pending} ofertas por extraer.`}
-        </span>{' '}
-        Ejecuta el skill{' '}
-        <code className="rounded bg-background/70 px-1.5 py-0.5 font-mono text-[0.85em]">procesar-ofertas</code>{' '}
-        en tu agente.
-      </p>
+      <div className="flex flex-1 flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        <p>
+          <span className="font-medium">
+            {pending === 1 ? 'Hay 1 oferta por extraer.' : `Hay ${pending} ofertas por extraer.`}
+          </span>{' '}
+          Las extrae tu agente con el skill{' '}
+          <code className="rounded bg-background/70 px-1.5 py-0.5 font-mono text-[0.85em]">procesar-ofertas</code>.
+        </p>
+        <AgentButton action="procesar-ofertas">Procesar ahora</AgentButton>
+      </div>
     </div>
   )
 }
@@ -160,7 +163,7 @@ function DemoBanner() {
 
 function navClass({ isActive }: { isActive: boolean }) {
   return cn(
-    'flex items-center gap-1.5 rounded-md px-3 py-1.5 transition-colors',
+    'flex shrink-0 items-center gap-1.5 rounded-md px-2.5 py-1.5 whitespace-nowrap transition-colors',
     isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
   )
 }
@@ -184,19 +187,25 @@ function NavCount({ stage, label, muted = false }: { stage: Stage; label: string
 }
 
 export function AppShell() {
+  // En Inicio el recorrido ya enseña las etapas: sin la fila de recuentos.
+  const { pathname } = useLocation()
   return (
     <div className="min-h-[100dvh]">
       <header className="sticky top-0 z-20 border-b bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/65">
         <DemoBanner />
-        <div className="mx-auto flex h-14 max-w-6xl items-center gap-6 px-4 sm:px-6">
-          <Link to="/" className="flex items-center gap-2.5 font-semibold tracking-tight">
+        <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4 sm:px-6 lg:gap-6">
+          <Link to="/" className="flex shrink-0 items-center gap-2.5 font-semibold tracking-tight whitespace-nowrap">
             <span className="grid size-7 place-items-center rounded-md bg-foreground font-mono text-[11px] font-bold text-background">
               JH
             </span>
             <span className="hidden sm:inline">Job Hunter</span>
           </Link>
-          <nav className="flex items-center gap-1 text-sm">
+          {/* En pantallas estrechas el menú se desplaza en horizontal en vez de ensanchar la página. */}
+          <nav className="relative -my-2 flex min-w-0 items-center gap-0.5 overflow-x-auto py-2 text-sm [scrollbar-width:none]">
             <NavLink to="/" end className={navClass}>
+              Inicio
+            </NavLink>
+            <NavLink to="/bandeja" className={navClass}>
               Bandeja
             </NavLink>
             <NavLink to="/por-revisar" className={navClass}>
@@ -223,19 +232,21 @@ export function AppShell() {
               Plantillas
             </NavLink>
           </nav>
-          <div className="ml-auto flex items-center gap-1.5">
+          <div className="ml-auto flex shrink-0 items-center gap-1.5">
             <ThemeToggle />
             <Button asChild size="sm" className="active:translate-y-px">
               <Link to="/nueva">
                 <PlusIcon weight="bold" />
-                Nueva oferta
+                <span className="sr-only sm:not-sr-only">Nueva oferta</span>
               </Link>
             </Button>
           </div>
         </div>
-        <div className="mx-auto max-w-6xl px-4 pb-2 sm:px-6">
-          <StageCounts />
-        </div>
+        {pathname !== '/' && (
+          <div className="mx-auto max-w-6xl px-4 pb-2 sm:px-6">
+            <StageCounts />
+          </div>
+        )}
       </header>
       <main className="mx-auto max-w-6xl px-4 pb-24 pt-6 sm:px-6 sm:pt-8">
         <div className="mb-6 space-y-3 empty:hidden">

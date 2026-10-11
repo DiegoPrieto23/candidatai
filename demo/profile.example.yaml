@@ -66,6 +66,7 @@ projects:
     name: Detección de anomalías en consumo eléctrico (TFG)
     date: 2022-06
     text: Modelo de detección de anomalías sobre series temporales de consumo de 500 hogares.
+    url: github.com/lucia-varela-demo/tfg-anomalias   # opcional; sale en el CV como enlace
     skills: [Python, scikit-learn, Series temporales]
 
 education:
@@ -147,6 +148,10 @@ preferences:
         use: ats-simple
       - when: {country: [GB, IE, US, NL]}
         use: ats-simple
+    instructions: >-                 # opcional; orienta el énfasis, nunca añade hechos
+      Da más peso a la optimización de pipelines y al impacto en negocio que a las tareas de
+      mantenimiento.
+    avoid: [Clichés como «apasionada» u «orientada a resultados»]
   cover_letter:                      # opcional; las indicaciones de cada oferta mandan sobre estas
     max_words: 170
     tone: cercano y directo
