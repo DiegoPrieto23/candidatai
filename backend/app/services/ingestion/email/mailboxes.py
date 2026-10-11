@@ -112,8 +112,12 @@ def _bodies(data: list[object]) -> Iterator[tuple[str, bytes]]:
             yield match.group(1).decode(), body
 
 
-def connect_imap(settings: Settings, factory: ImapFactory = _ssl_factory) -> imaplib.IMAP4:
-    """Login y `EXAMINE` de la carpeta configurada. Lanza `MailboxError` con un mensaje claro."""
+def connect_imap(
+    settings: Settings, factory: ImapFactory = _ssl_factory, folder: str | None = None
+) -> imaplib.IMAP4:
+    """Login y `EXAMINE` de la carpeta (por defecto, la de las alertas). Lanza `MailboxError` con
+    un mensaje claro."""
+    folder = folder or settings.imap_folder
     if not settings.imap_configured:
         raise MailboxError("imap_error", "IMAP no está configurado.")
     assert settings.imap_host and settings.imap_user and settings.imap_password
@@ -135,10 +139,10 @@ def connect_imap(settings: Settings, factory: ImapFactory = _ssl_factory) -> ima
                 "contraseña de aplicación (con la verificación en dos pasos activada).",
             ) from None
         try:
-            typ, _ = conn.select(imap_utf7(settings.imap_folder), readonly=True)
+            typ, _ = conn.select(imap_utf7(folder), readonly=True)
         except imaplib.IMAP4.error:
             typ = "NO"
-        _ok(typ, f"abrir la carpeta «{settings.imap_folder}»", "imap_folder")
+        _ok(typ, f"abrir la carpeta «{folder}»", "imap_folder")
     except BaseException:
         _logout(conn)
         raise
@@ -173,6 +177,53 @@ def read_imap(
             if not new:
                 continue
             typ, data = conn.uid("FETCH", ",".join(new), "(BODY.PEEK[])")
+            _ok(typ, "la lectura de correos")
+            for uid, body in _bodies(list(data or [])):
+                if len(body) <= MAX_MESSAGE_BYTES:
+                    yield RawMail(body, f"IMAP UID {uid}")
+    except (TimeoutError, OSError) as exc:
+        name = type(exc).__name__
+        raise MailboxError("network", f"Se cortó la conexión IMAP ({name}).") from None
+    except imaplib.IMAP4.error as exc:
+        raise MailboxError("imap_error", f"Error del servidor IMAP: {exc}") from None
+    finally:
+        _logout(conn)
+
+
+# Cabeceras con las que se decide si un correo es de uno de tus procesos (fase 15).
+REPLY_HEADERS = "FROM DATE MESSAGE-ID SUBJECT"
+
+
+def _headers(data: list[object]) -> dict[str, bytes]:
+    """UID -> cabeceras pedidas con `BODY.PEEK[HEADER.FIELDS (…)]`."""
+    return dict(_bodies(data))
+
+
+def read_imap_matching(
+    settings: Settings,
+    folder: str,
+    since: date,
+    wanted: Callable[[bytes], bool],
+    factory: ImapFactory = _ssl_factory,
+) -> Iterator[RawMail]:
+    """Correos de `folder` desde `since` cuyas cabeceras (`REPLY_HEADERS`) acepta `wanted`.
+
+    Primero se piden solo esas cabeceras y luego el cuerpo de los aceptados, siempre con
+    `BODY.PEEK`. De los demás no sale nada de aquí.
+    """
+    conn = connect_imap(settings, factory, folder)
+    try:
+        typ, data = conn.uid("SEARCH", "SINCE", _imap_date(since))
+        _ok(typ, "la búsqueda de correos")
+        uids = (data[0] or b"").split() if data else []
+        for start in range(0, len(uids), FETCH_CHUNK):
+            chunk = b",".join(uids[start : start + FETCH_CHUNK]).decode()
+            typ, data = conn.uid("FETCH", chunk, f"(BODY.PEEK[HEADER.FIELDS ({REPLY_HEADERS})])")
+            _ok(typ, "la lectura de cabeceras")
+            accepted = [uid for uid, header in _headers(list(data or [])).items() if wanted(header)]
+            if not accepted:
+                continue
+            typ, data = conn.uid("FETCH", ",".join(accepted), "(BODY.PEEK[])")
             _ok(typ, "la lectura de correos")
             for uid, body in _bodies(list(data or [])):
                 if len(body) <= MAX_MESSAGE_BYTES:

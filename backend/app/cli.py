@@ -46,6 +46,10 @@ context_app = typer.Typer(
 skills_app = typer.Typer(
     help="Huecos de skills: lo que piden las ofertas y tu perfil no cubre.", no_args_is_help=True
 )
+replies_app = typer.Typer(
+    help="Respuestas de las empresas por correo: ingesta y propuestas del agente.",
+    no_args_is_help=True,
+)
 prompts_app = typer.Typer(
     help="Avisos al usuario (captcha, login…) mientras el agente busca ofertas.",
     no_args_is_help=True,
@@ -75,6 +79,7 @@ app.add_typer(letter_app, name="letter")
 app.add_typer(context_app, name="context")
 app.add_typer(prompts_app, name="prompts")
 app.add_typer(skills_app, name="skills")
+app.add_typer(replies_app, name="replies")
 demo_app = typer.Typer(
     help="Modo demo: una búsqueda ficticia para probar la app.", no_args_is_help=True
 )
@@ -1595,6 +1600,55 @@ def agents_check() -> None:
     _run_sync("--check")
 
 
+# --- Respuestas de las empresas (fase 15) ---------------------------------------------------
+
+
+@replies_app.command("poll")
+def replies_poll(as_json: bool = JSON_OPTION) -> None:
+    """Lee ahora los correos de las empresas de tus procesos (IMAP en solo lectura y
+    `data/inbox/respuestas/`). Solo guarda los que casan con una candidatura enviada."""
+    from app.services.replies import poll_replies
+
+    try:
+        migrations.ensure_current()
+        with session_scope() as session:
+            result = poll_replies(session)
+    except Exception as exc:
+        _profile_fail(exc, as_json)
+    if as_json:
+        typer.echo(dump_json(result))
+    else:
+        typer.secho(result.message, fg="yellow" if result.errors else None)
+        for issue in result.errors:
+            where = f" ({issue.item})" if issue.item else ""
+            typer.secho(f"  ! {issue.message}{where}", fg="yellow")
+        if result.created:
+            typer.echo("  Clasifícalos con revisar-respuestas y revísalos en «Respuestas».")
+    if result.errors and not result.created:
+        raise typer.Exit(code=1)
+
+
+def _render_replies(result: Any) -> None:
+    from app.services.process import local_zone
+
+    if not result.replies:
+        typer.echo("No hay respuestas.")
+        return
+    for item in result.replies:
+        when = (
+            item.received_at.astimezone(local_zone()).strftime("%d/%m/%Y %H:%M")
+            if item.received_at
+            else "?"
+        )
+        jobs = ", ".join(str(j) for j in item.candidate_job_ids)
+        proposal = f" → {item.proposal_event} ({item.confidence})" if item.proposal_event else ""
+        flags = " [riesgo]" if item.risk_flags else ""
+        typer.echo(
+            f"  {item.reply_id:>5}  {item.status:<9} {when}  {item.sender}  ofertas {jobs}"
+            f"{proposal}{flags}"
+        )
+
+
 # Al final: los renderizadores de arriba ya existen.
 register_tools(
     app,
@@ -1612,6 +1666,7 @@ register_tools(
         "prompts": prompts_app,
         "context": context_app,
         "skills": skills_app,
+        "replies": replies_app,
     },
     {
         "get_status": _render_status,
@@ -1637,6 +1692,8 @@ register_tools(
         "request_user_action": _render_prompt,
         "wait_user_action": _render_prompt,
         "list_followups_due": _render_followups,
+        "list_replies": _render_replies,
+        "save_reply_proposal": _render_message,
         "list_upcoming": _render_upcoming,
         "get_funnel_stats": _render_funnel,
         "get_skill_gaps": _render_skill_gaps,

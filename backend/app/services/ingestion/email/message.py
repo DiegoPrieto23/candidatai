@@ -20,6 +20,7 @@ class AlertMessage:
     received_at: datetime | None
     html: str | None
     text: str | None
+    sender_name: str = ""  # nombre visible del remitente, sin caracteres de control
 
     @property
     def sender_domain(self) -> str:
@@ -38,7 +39,7 @@ def _part(msg: EmailMessage, subtype: str) -> str | None:
     return content[:MAX_PART_CHARS] if isinstance(content, str) else None
 
 
-def _date(value: str | None) -> datetime | None:
+def parse_date(value: str | None) -> datetime | None:
     if not value:
         return None
     try:
@@ -46,6 +47,11 @@ def _date(value: str | None) -> datetime | None:
     except (TypeError, ValueError, IndexError):
         return None
     return parsed.astimezone(UTC) if parsed.tzinfo else parsed.replace(tzinfo=UTC)
+
+
+def clean_header(value: str, limit: int) -> str:
+    """Una cabecera en una línea: sin caracteres de control ni espacios repetidos."""
+    return " ".join(_CONTROL.sub(" ", value).split())[:limit]
 
 
 def message_id_of(raw: bytes, header: str | None) -> str:
@@ -59,12 +65,14 @@ def message_id_of(raw: bytes, header: str | None) -> str:
 def parse_message(raw: bytes) -> AlertMessage:
     msg = message_from_bytes(raw, policy=policy.default)
     assert isinstance(msg, EmailMessage)
-    sender = parseaddr(str(msg.get("From", "")))[1].strip().lower()
+    name, address = parseaddr(str(msg.get("From", "")))
+    sender = address.strip().lower()
     return AlertMessage(
+        sender_name=clean_header(name, 200),
         message_id=message_id_of(raw, msg.get("Message-ID")),
         sender=sender,
-        subject=" ".join(_CONTROL.sub(" ", str(msg.get("Subject", ""))).split())[:300],
-        received_at=_date(msg.get("Date")),
+        subject=clean_header(str(msg.get("Subject", "")), 300),
+        received_at=parse_date(msg.get("Date")),
         html=_part(msg, "html"),
         text=_part(msg, "plain"),
     )

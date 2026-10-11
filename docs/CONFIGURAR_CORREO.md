@@ -7,9 +7,11 @@ correo.
 
 ## Qué hace y qué no
 
-- Se conecta por **IMAP en solo lectura** a **una sola carpeta o etiqueta** de tu correo.
+- Se conecta por **IMAP en solo lectura** a **una sola carpeta o etiqueta** de tu correo para
+  las alertas y, desde la fase 15, a la carpeta de **respuestas** de las empresas (por defecto, la
+  bandeja de entrada; ver §Respuestas de las empresas).
 - **No** marca nada como leído, **no** mueve ni borra correos y **no** envía nada.
-- De cada correo guarda solo su `Message-ID` (para no procesarlo dos veces), nunca el cuerpo.
+- De cada alerta guarda solo su `Message-ID` (para no procesarla dos veces), nunca el cuerpo.
 - No entra en LinkedIn: sus ofertas llegan como **resumen** (título, empresa, ubicación). La
   descripción completa la traes tú con el botón «Enviar a Job Hunter» de la extensión.
 - La contraseña vive solo en el fichero `.env` de tu equipo, que no se sube a git.
@@ -124,6 +126,41 @@ lectura. Si falla:
 - Si una alerta de un portal conocido no produce ninguna oferta, verás el aviso `no_jobs_found`:
   suele significar que el portal ha cambiado el formato del correo. Deja un correo de ejemplo
   exportado (`.eml`) en `data/inbox/samples/` para ajustar el lector.
+
+## Respuestas de las empresas (fase 15)
+
+Con la misma cuenta, la app lee también las **respuestas de las empresas** a tus candidaturas
+(entrevista, prueba, oferta, rechazo) y las deja como propuesta en la ficha de la oferta. Tú
+decides: nada cambia de etapa hasta que pulsas «Aceptar».
+
+- **Carpeta:** `JH_IMAP_REPLIES_FOLDER` en `.env`, por defecto la bandeja de entrada (`INBOX`). Si
+  prefieres limitarla, crea una etiqueta (p. ej. «Procesos») con un filtro de Gmail y pon su
+  nombre: `JH_IMAP_REPLIES_FOLDER="Procesos"`.
+- **Qué lee:** solo si tienes alguna candidatura enviada abierta (`applied` o `in_process`); si no,
+  ni se conecta. De cada correo desde el envío más antiguo (como mucho `replies.max_days` días,
+  120) pide primero **solo las cabeceras** (remitente, fecha, asunto y `Message-ID`).
+- **Qué guarda:** solo los correos posteriores al envío cuyo remitente casa con una de esas
+  candidaturas:
+  - un contacto de la ficha (su dirección exacta, aunque sea de Gmail);
+  - el dominio de la empresa (el de sus contactos o el de la URL de la oferta, si no es un ATS ni
+    un portal);
+  - un dominio cuyo nombre es el de la empresa (`acme.com` ↔ «Acme S.L.»);
+  - un ATS (Greenhouse, Lever, Workday, Teamtailor… lista en `config/policies.yaml` →
+    `replies.ats_sender_domains`) cuyo remitente o asunto nombra a la empresa.
+
+  De esos descarga el cuerpo y guarda el texto visible. **De los demás no guarda nada**: tu correo
+  personal, boletines o alertas no salen de tu buzón.
+- **Avisos de portales** («InfoJobs: tu candidatura ha sido vista»): no se leen por defecto. Si los
+  quieres, añade el dominio a `replies.portal_sender_domains` en `config/policies.yaml`.
+- **Alternativa sin credenciales:** deja los correos exportados (`.eml`) en
+  `data/inbox/respuestas/`. Se aplica el mismo filtro.
+- **Cuándo:** con `jh worker`, cada `email_alerts.poll_minutes`, y a mano con
+  `uv run --directory backend jh replies poll` o «Revisar correo ahora» en la pantalla
+  «Respuestas».
+- **Clasificarlos:** el skill `revisar-respuestas` de tu agente propone para cada correo el evento
+  (entrevista con su fecha, prueba, oferta, rechazo, respuesta o nada) y tú lo aceptas, cambias o
+  ignoras. El texto de los correos es contenido no confiable: si trae instrucciones para una IA, se
+  marca y no se obedece.
 
 ## Alternativa sin credenciales
 

@@ -33,6 +33,7 @@ from app.services.pipeline import InvalidTransitionError
 from app.services.process import ContactNotFoundError, MilestoneNotFoundError
 from app.services.profile import ProfileNotFoundError
 from app.services.prompts import PromptNotFoundError
+from app.services.replies import ReplyNotFoundError, ReplyResolvedError
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +44,8 @@ _ERROR_TYPES: tuple[tuple[type[Exception], str], ...] = (
     (SourceNotFoundError, "not_found"),
     (SourceExistsError, "exists"),
     (PromptNotFoundError, "not_found"),
+    (ReplyNotFoundError, "not_found"),
+    (ReplyResolvedError, "not_allowed"),
     (BrowsingNotAllowedError, "not_allowed"),
     (MilestoneNotFoundError, "not_found"),
     (ContactNotFoundError, "not_found"),

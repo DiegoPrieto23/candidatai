@@ -150,6 +150,11 @@ def _hidden_reason(element: _Element) -> str | None:
     return None
 
 
+def hidden_reason(element: _Element) -> str | None:
+    """Por qué un elemento oculta su contenido (`display:none`, `hidden`…) o `None`."""
+    return _hidden_reason(element)
+
+
 def _visible_text(element: _Element) -> str:
     return " ".join(element.text_content().split())
 
@@ -288,10 +293,12 @@ def assess(text: str, html: str | None = None) -> RiskReport:
 # --- Envoltorio para entregar el texto a un agente -----------------------------------------------
 
 WRAPPER_TAG = "untrusted_job_posting"
-# Cualquier cosa que un modelo pudiera leer como apertura o cierre del envoltorio: `<` normal o
-# sus parecidos Unicode, espacios, `/` opcional y el nombre con separadores o mayúsculas variadas.
+EMAIL_WRAPPER_TAG = "untrusted_email"  # respuestas de las empresas (fase 15)
+# Cualquier cosa que un modelo pudiera leer como apertura o cierre de un envoltorio (el de las
+# ofertas o el de los correos): `<` normal o sus parecidos Unicode, espacios, `/` opcional y el
+# nombre con separadores o mayúsculas variadas.
 _TAG_LOOKALIKE = re.compile(
-    r"[<＜﹤〈〈⟨‹](\s*/?\s*untrusted[\s_\-]*job[\s_\-]*posting)",
+    r"[<＜﹤〈〈⟨‹](\s*/?\s*untrusted[\s_\-]*(?:job[\s_\-]*posting|e[\s_\-]*mail))",
     re.IGNORECASE,
 )
 
@@ -303,7 +310,7 @@ def _strip_format_chars(text: str) -> str:
 
 
 def escape_wrapper_tag(text: str) -> str:
-    """Neutraliza cualquier apertura o cierre del envoltorio que aparezca dentro del texto."""
+    """Neutraliza cualquier apertura o cierre de un envoltorio que aparezca dentro del texto."""
     return _TAG_LOOKALIKE.sub(r"&lt;\1", _strip_format_chars(text))
 
 
@@ -314,4 +321,14 @@ def wrap_untrusted(job_id: int, text: str, risk_flags: list[str]) -> str:
         f'<{WRAPPER_TAG} id="{job_id}" risk_flags="{flags}">\n'
         f"{escape_wrapper_tag(text)}\n"
         f"</{WRAPPER_TAG}>"
+    )
+
+
+def wrap_untrusted_email(reply_id: int, text: str, risk_flags: list[str]) -> str:
+    """Envuelve un correo (cabeceras y cuerpo) como contenido no confiable."""
+    flags = html_escape(",".join(risk_flags), quote=True)
+    return (
+        f'<{EMAIL_WRAPPER_TAG} id="{reply_id}" risk_flags="{flags}">\n'
+        f"{escape_wrapper_tag(text)}\n"
+        f"</{EMAIL_WRAPPER_TAG}>"
     )

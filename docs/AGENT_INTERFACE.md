@@ -69,6 +69,9 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | `list_upcoming` | `jh upcoming [--days N] --json` | 10 | `days=7` (1-365) | `days` e `items`: `kind` (`interview`, `test`, `deadline`, `other`, `application_deadline`), `job_id`, `job_title`, `company`, `stage`, `milestone_id` (`null` en el plazo de la oferta), `title`, `starts_at`, `ends_at`, `all_day`, `location`; por fecha | — |
 | `get_funnel_stats` | `jh stats funnel [--since AAAA-MM-DD] --json` | 10 | `since?` (fecha; ofertas vistas desde las 00:00 de ese día en Europe/Madrid) | `FunnelStats` (ver §Analítica) | — |
 | `get_skill_gaps` | `jh skills gaps [--days N] [--status gap\|have\|unmarked] --json` | 14 | `days=60` (1-365), `status?` | `days`, `jobs_considered`, `gaps` y `profile_skills` (ver §Huecos de skills) | — |
+| `list_replies` | `jh replies list [--status S] [--limit N] --json` | 15 | `status?` (`new`, `proposed`, `accepted`, `ignored`), `limit=50` | `replies` (sin texto: remitente, candidatas, propuesta) y `counts` por estado | — |
+| `get_reply` | `jh replies show ID --json` | 15 | `reply_id` | El correo en `<untrusted_email>`, `candidates` (oferta, etapa, envío, próximos hitos), `timezone` y `proposal` | — |
+| `save_reply_proposal` | `jh replies propose ID --file F --json` | 15 | `reply_id`, `proposal` (ver §Respuestas) | `status: proposed`, `stage`, `valid_now`, `message` | — (la acepta el usuario en la UI) |
 | `list_sources` | `jh sources list [--kind K] --json` | 09b | `kind?` | `sources`: `SourceView` con su config (sin secretos), `browse` (en las `agent_browse`) y última ejecución; `agent_browse`: límites (`max_result_pages`, `delay_seconds`, `default_max_offers`) | — |
 | `save_source` | `jh sources save --file F --json` | 09b | `AgentBrowseSource`: `name, platform, search_urls[], priority=5 (1 = primera), access=free\|login\|blocked, allow_agent_browsing? (por defecto true; en LinkedIn false), max_offers?, notes?`; por CLI, `F` = ese objeto | `source_id`, `created`, `allow_agent_browsing` guardado y `message`. Crea o actualiza por `name`. LinkedIn (por `platform` o por cualquier URL de linkedin.com o lnkd.in) con `true`: `not_allowed`; si el usuario ya lo activó, se conserva. Búsquedas de otro dominio: `invalid_request` | — |
 | `record_source_run` | `jh sources record-run ID --file F --json` | 09b | `source_id` + `SourceRunSummary`: `found, created, existing=0, incidents[{code, message}], started_at?, finished_at?`; por CLI, `F` = el resumen | `ok`, `run_id`. Actor `agent`; avanza `last_run_at`. Plataforma desactivada: `not_allowed` | — |
@@ -277,6 +280,51 @@ nuevo se nota al momento). La API sirve lo mismo en `GET /skills/gaps?days=`.
 - Sin perfil importado: `not_found`. Solo lectura: no registra eventos.
 - Marcar y añadir alias es solo de la UI (`POST /skills/marks`, `POST /skills/aliases`): el
   agente no decide qué skills tiene el usuario ni qué nombres son lo mismo (ADR-026).
+
+### Respuestas de las empresas (fase 15)
+
+La app lee los correos de las empresas de tus candidaturas enviadas (`applied`, `in_process`) y
+los guarda en `replies` (ver `CONFIGURAR_CORREO.md` §Respuestas). El agente los clasifica con el
+skill `revisar-respuestas` (rol `clasificador`, una sesión aislada por correo) y deja una
+propuesta. **Nada cambia de etapa hasta que el usuario la acepta en la UI.**
+
+`get_reply` entrega el correo así (lo de dentro es contenido no confiable):
+
+```
+<untrusted_email id="7" risk_flags="">
+De: Laura Pazos <laura.pazos@bretema.example>
+Asunto: Entrevista para el puesto de Data Engineer
+Fecha: 2026-10-05T09:12:00+02:00
+
+Hola: …
+</untrusted_email>
+```
+
+`proposal` de `save_reply_proposal`:
+
+```jsonc
+{
+  "job_id": 12,                       // una de las `candidates` del correo
+  "event_type": "interview_scheduled",// reply_received | interview_scheduled | test_assigned |
+                                      // offer_received | rejected | none (nada que registrar)
+  "occurred_at": null,                // por defecto, la fecha del correo
+  "milestone": {                      // solo con interview_scheduled o test_assigned
+    "title": "Entrevista con Talento", "starts_at": "2026-10-08T10:00:00+02:00",
+    "ends_at": null, "all_day": false, "location": "Google Meet"
+  },
+  "summary": "Primera entrevista por videollamada el jueves 8 a las 10:00.",
+  "confidence": "high",               // high | medium | low (con low, sin `milestone`)
+  "injection_suspected": false
+}
+```
+
+- El `job_id` debe estar entre las candidatas (`invalid_request` si no). Una respuesta ya aceptada
+  o ignorada por el usuario no admite propuesta (`not_allowed`). Guardar otra propuesta sustituye
+  la anterior.
+- `valid_now: false` avisa de que el evento no es válido en la etapa actual (p. ej. la oferta ya
+  está cerrada): se guarda igual y decide el usuario.
+- Sin herramienta para leer el buzón: `jh replies poll` (CLI), la tarea `poll_replies` del worker
+  y «Revisar correo ahora» en la UI.
 
 ### Comandos de matching y worker (solo CLI)
 
