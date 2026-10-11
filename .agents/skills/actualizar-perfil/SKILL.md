@@ -25,6 +25,11 @@ en el CV tal cual, así que escribe cada item como debe leerse. Si vienes de `im
 con una lista de lo que el CV subido tiene y el perfil no, propón dónde va cada cosa y confírmalo
 antes de escribirlo.
 
+**Indicaciones para los CVs** (`preferences.cv.instructions` y `preferences.cv.avoid`, opcionales):
+qué énfasis o estilo quiere en todos sus CVs y qué no deben decir nunca. Escríbelo con sus palabras.
+Solo orientan la redacción: nunca son respaldo de un hecho, así que un dato nuevo va a su sección
+del perfil, no aquí. Lo que pida para una oferta concreta se da al generar ese CV, no aquí.
+
 **Indicaciones para las cartas** (`preferences.cover_letter`, opcional): la primera vez que se
 pide una carta (te lo dirá `generar-carta`), pregunta en un solo mensaje:
 - extensión máxima (por defecto 180 palabras);

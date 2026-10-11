@@ -19,7 +19,7 @@ from app.schemas.profile import CandidateProfile
 from app.services.matching import embeddings, skills
 from app.services.matching.embeddings import Embedder, SemanticResult
 from app.services.matching.hard_filters import location_matches
-from app.services.normalize import normalize_title, title_segments
+from app.services.normalize import normalize_title, title_segments, translate_title
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +34,7 @@ ALLOWED_LOCATION_FIT = 0.6  # zona permitida (solo en híbrido o remoto), por de
 WORD_MIN_SIMILARITY = 80  # fuzz.ratio para dar por presente una palabra del puesto buscado
 SENIORITY_WORDS = frozenset({"intern", "trainee", "junior", "mid", "senior", "lead", "principal"})
 # Súbela cuando cambie cómo se calcula el score: los matches con otra versión quedan desfasados.
-SCORER_VERSION = 2
+SCORER_VERSION = 3  # 3: puestos en español (title_aliases.yaml)
 
 
 class ScoreComponent(BaseModel):
@@ -96,7 +96,8 @@ def preferences_fit(
     # Por segmentos (fuera y dentro de paréntesis…) y sin seniority, que ya miran los filtros duros.
     # `title_segments` quita «(m/f/d)» y similares: sus letras sueltas casarían con cualquier cosa.
     raw = [*title_segments(title), *title_segments(ext.title_normalized)]
-    segments = {_without_seniority(s) for s in raw} - {""}
+    # También en inglés: «Ingeniero de Datos» cuenta como «Data Engineer» (title_aliases.yaml).
+    segments = {_without_seniority(v) for s in raw for v in (s, translate_title(s))} - {""}
     role, role_match = 0.0, None
     for i, wanted in enumerate(prefs.roles):
         target = normalize_title(wanted)

@@ -108,7 +108,7 @@ Lo que recibe cualquier plantilla, en los dos motores:
 | `contact.email`, `contact.phone`, `contact.city`, `contact.linkedin`, `contact.github` | Texto; vacíos si no aplican |
 | `photo` | Imagen ya recortada con la forma de `photo.shape`, o vacío si esta vez no lleva foto |
 | `experience[]` | `role`, `company`, `city`, `start`, `end`, `bullets[]` |
-| `projects[]` | `name`, `date`, `bullets[]` |
+| `projects[]` | `name`, `date`, `url` (enlace del proyecto, vacío si no tiene), `bullets[]` |
 | `education[]` | `title`, `center`, `start`, `end`, `detail` |
 | `certifications[]` | `name`, `issuer`, `date` |
 | `skills[]` | `group`, `items[]` (objetos, no diccionarios: `{{ s.items }}` funciona) |
@@ -121,6 +121,12 @@ Lo que recibe cualquier plantilla, en los dos motores:
 Las fechas llegan ya formateadas en el idioma del CV: `start` = «mar. 2024» / «Mar 2024» y
 `end` = «actualidad» / «Present» si sigue. El contacto lo pone el código desde el perfil (el
 agente no lo ve). `education[].detail` va vacío de momento: el perfil no tiene ese campo.
+
+**Enlaces (ADR-023):** `contact.linkedin`, `contact.github` y `projects[].url` se pintan como
+texto; al renderizar, el código los convierte en enlaces que se pueden pulsar en el PDF, con el
+formato que les dé la plantilla. La plantilla no pone `href` externos (en html los quita el
+saneado); en html conviene `a { color: inherit; text-decoration: none; }` para que no cambie
+el diseño.
 
 ### Motor docx (docxtpl)
 - Variables `{{ subtitle }}`; bucles de párrafo `{%p for e in experience %}` … `{%p endfor %}`;

@@ -1,0 +1,45 @@
+# Puestos escritos de otra forma (sobre todo en español) → su nombre en inglés, para comparar los
+# títulos de las ofertas con `preferences.roles` del perfil (prefiltro y score). Se compara sin
+# tildes, mayúsculas ni signos y por palabras completas: «Ingeniero/a de Datos» se lee como
+# «ingeniero a de datos». Amplíalo si ves títulos que no casan con tus puestos.
+data engineer:
+  - ingeniero de datos
+  - ingeniera de datos
+  - ingeniero a de datos
+  - ingenieros de datos
+  - ingeniero del dato
+  - ingeniera del dato
+  - ingeniero a del dato
+big data engineer:
+  - ingeniero big data
+  - ingeniera big data
+  - ingeniero de big data
+  - ingeniera de big data
+analytics engineer:
+  - ingeniero de analitica
+  - ingeniera de analitica
+  - ingeniero a de analitica
+data analyst:
+  - analista de datos
+  - analista del dato
+bi analyst:
+  - analista bi
+  - analista de business intelligence
+bi developer:
+  - desarrollador bi
+  - desarrolladora bi
+  - desarrollador a bi
+data scientist:
+  - cientifico de datos
+  - cientifica de datos
+  - cientifico a de datos
+data architect:
+  - arquitecto de datos
+  - arquitecta de datos
+  - arquitecto a de datos
+machine learning engineer:
+  - ingeniero de machine learning
+  - ingeniera de machine learning
+software engineer:
+  - ingeniero de software
+  - ingeniera de software

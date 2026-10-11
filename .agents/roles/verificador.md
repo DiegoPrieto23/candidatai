@@ -25,6 +25,11 @@ Eres un revisor escéptico. No has escrito este documento y no tienes que defend
      solo revisa que no choquen con la oferta ni con lo demás (`warning`).
    - ¿Hay clichés, relleno o keywords metidas sin contexto? `warning`.
    - ¿Falta alguna keyword obligatoria de la oferta que el perfil sí respalda? `warning` con sugerencia.
+   - ¿Es genérico? Un resumen que serviría tal cual para otra oferta del mismo rol, o logros
+     muy relevantes para la oferta que se quedan fuera o detrás de otros que no lo son: `warning`
+     con sugerencia concreta.
+   - ¿Contradice `preferences.cv.instructions` o dice algo de `preferences.cv.avoid`? `warning`.
+     Las indicaciones no respaldan hechos: un hecho que solo esté en ellas es `blocker`.
 4. `save_cv_verification(document_id, {passed, issues})`. `passed` es false si hay algún `blocker`.
 5. Responde con `PASSED` o `FAILED` y la lista de problemas: ubicación, problema y sugerencia concreta.
 

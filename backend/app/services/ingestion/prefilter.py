@@ -13,7 +13,13 @@ from app.core.policies import get_policies
 from app.schemas.profile import Preferences
 from app.services.matching.hard_filters import SENIORITY_LABEL, SENIORITY_ORDER, location_matches
 from app.services.matching.scorer import role_similarity
-from app.services.normalize import fold, normalize_location, normalize_title, title_segments
+from app.services.normalize import (
+    fold,
+    normalize_location,
+    normalize_title,
+    title_segments,
+    translate_title,
+)
 
 _SENIORITY_WORDS = frozenset({"intern", "trainee", "junior", "mid", "senior", "lead", "principal"})
 # Seniority que se lee en un título sin descripción (sobre el título plegado: sin tildes y en
@@ -80,9 +86,11 @@ class Prefilter:
             return Verdict(False, f"El título contiene palabras de descarte: {', '.join(hits)}.")
         if any(_has_words(title, k) for k in self.extra):
             return PASS
+        # También en inglés: «Ingeniero de Datos» cuenta como «Data Engineer» (title_aliases.yaml).
         segments = {
-            " ".join(w for w in s.split() if w not in _SENIORITY_WORDS)
+            " ".join(w for w in variant.split() if w not in _SENIORITY_WORDS)
             for s in title_segments(title)
+            for variant in (s, translate_title(s))
         } - {""}
         # Todas las palabras de algún puesto buscado deben estar en el título (con margen para
         # variantes como «engineering»); el parecido fino lo calcula el score.

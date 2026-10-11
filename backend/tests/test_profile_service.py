@@ -126,9 +126,10 @@ def test_public_view_never_contains_contact_or_private_data() -> None:
     assert view["skills"][0] == {"name": "Python", "level": "F", "category": "Lenguajes"}
     assert view["experience"][0]["achievements"][2]["nda"] is True
     assert len(view["stories"]) == 2
-    # Las preferencias de CV también: el agente elige plantilla con ellas.
+    # Las preferencias de CV también: el agente elige plantilla y orienta la redacción con ellas.
     cv = view["preferences"]["cv"]
     assert cv["default_template"] == "clasica-foto"
+    assert cv["instructions"] and cv["avoid"]
     assert cv["template_rules"][0] == {
         "when": {
             "ats": ["workday", "taleo", "successfactors", "icims"],

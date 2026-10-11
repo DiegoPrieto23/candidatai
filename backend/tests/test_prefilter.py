@@ -21,13 +21,19 @@ def _prefilter(extra: list[str] | None = None, **preferences: object) -> Prefilt
         "Data Engineering Lead",
         "Ingeniero/a de datos (Data Engineer)",
         "Analytics Engineer - Growth",
+        # Puestos en español: config/title_aliases.yaml.
+        "Ingeniero de Datos Snowflake",
+        "Ingeniera del dato",
+        "Analista de Datos Senior",
     ],
 )
 def test_titles_that_pass(title: str) -> None:
     assert _prefilter().check(title, "Vigo", None).passed
 
 
-@pytest.mark.parametrize("title", ["Account Executive", "Sales Engineer", "Office Manager"])
+@pytest.mark.parametrize(
+    "title", ["Account Executive", "Sales Engineer", "Office Manager", "Ingeniero de software"]
+)
 def test_titles_that_fail(title: str) -> None:
     verdict = _prefilter().check(title, "Vigo", None)
     assert not verdict.passed
@@ -109,3 +115,11 @@ def test_summary_check_adds_title_seniority() -> None:
 
 def test_summary_check_without_profile_passes() -> None:
     assert Prefilter(None, []).check_summary("Senior Office Manager", "Marte").passed
+
+
+def test_translate_title_uses_whole_words() -> None:
+    from app.services.normalize import translate_title
+
+    assert translate_title("ingeniero de datos snowflake") == "data engineer snowflake"
+    assert translate_title("ingeniero de big data") == "big data engineer"
+    assert translate_title("ingeniero de datosx") == "ingeniero de datosx"

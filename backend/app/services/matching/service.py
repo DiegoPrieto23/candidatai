@@ -17,7 +17,7 @@ from pydantic import BaseModel
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.core.policies import get_policies, get_skill_aliases
+from app.core.policies import get_policies, get_skill_aliases, get_title_aliases
 from app.models import Application, Job, Match
 from app.models import JobExtraction as JobExtractionRow
 from app.schemas.llm_io import FitAssessment, JobExtraction
@@ -129,8 +129,9 @@ def after_extraction(session: Session, job_id: int) -> HardFilterResult | None:
 
 def scoring_key() -> str:
     """Huella de la configuración con que se puntúa: versión del scorer, políticas de puntuación y
-    filtros (salvo el umbral de triaje, que no cambia el score), alias de skills y modelo de
-    embeddings (o ninguno). Instalar el extra `matching` o editar `policies.yaml` la cambia."""
+    filtros (salvo el umbral de triaje, que no cambia el score), alias de skills y de puestos y
+    modelo de embeddings (o ninguno). Instalar el extra `matching` o editar `policies.yaml` la
+    cambia."""
     policies = get_policies()
     embedder = embeddings.get_embedder()
     config = {
@@ -138,6 +139,7 @@ def scoring_key() -> str:
         "scoring": policies.scoring.model_dump(mode="json", exclude={"triage_threshold"}),
         "hard_filters": policies.hard_filters.model_dump(mode="json"),
         "aliases": {k: sorted(v) for k, v in get_skill_aliases().items()},
+        "title_aliases": {k: sorted(v) for k, v in get_title_aliases().items()},
         "embeddings": embedder.model_name if embedder else None,
     }
     raw = json.dumps(config, sort_keys=True, ensure_ascii=False)

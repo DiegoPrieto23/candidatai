@@ -14,7 +14,7 @@ describe('Banner del modo demo', () => {
 
   it('no sale con tus datos', async () => {
     mockApi({ 'GET /status': status(), 'GET /jobs': emptyPage })
-    renderApp('/')
+    renderApp('/bandeja')
     expect(await screen.findByText('Tu bandeja está vacía')).toBeInTheDocument()
     expect(screen.queryByRole('note', { name: 'Modo demo' })).not.toBeInTheDocument()
   })

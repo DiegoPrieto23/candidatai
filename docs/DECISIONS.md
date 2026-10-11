@@ -312,3 +312,19 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   - nada resuelve ni esquiva el captcha: solo se avisa (POLICIES §5.3, regla dura 6).
 - **Consecuencias:** una consulta ligera cada 4 s desde la UI. Si la pestaña de Job Hunter no
   está abierta ni las notificaciones activadas, el aviso pasa desapercibido y caduca, como antes.
+
+## ADR-023 · Los enlaces del CV los pone el código, no la plantilla
+- **Contexto:** se pidieron enlaces que se puedan pulsar en el PDF (LinkedIn, GitHub y el
+  repositorio de cada proyecto). Las plantillas html no admiten `href` externos (fase 08b): una
+  plantilla puede venir de un CV ajeno y colar un enlace de phishing en un CV que se envía.
+- **Decisión:**
+  - los proyectos del perfil tienen un `url` opcional; la plantilla lo muestra como texto
+    (`projects[].url`), igual que `contact.linkedin` y `contact.github`;
+  - al renderizar, el código convierte en enlace solo los textos que coinciden exactamente con
+    esas URLs del perfil (`context.links`; sin esquema se les añade `https://`). En docx, parte la
+    run y envuelve el trozo en un `w:hyperlink` con el formato de la run; en html, añade
+    `<a href>` después del último saneado;
+  - el saneado no cambia: una plantilla sigue sin poder poner `href` externos.
+- **Consecuencias:** los enlaces se ven como el texto que diseñó la plantilla (sin azul ni
+  subrayado; en html, si su CSS no dice otra cosa). En docx solo se enlaza un texto que esté
+  entero en una run de texto simple, que es como salen las variables del contrato.

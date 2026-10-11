@@ -557,7 +557,7 @@ export function JobPage() {
   return (
     <div className="animate-in fade-in duration-300">
       <Link
-        to="/"
+        to="/bandeja"
         className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
         <ArrowLeftIcon className="size-4" />

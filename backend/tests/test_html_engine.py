@@ -158,7 +158,48 @@ def test_resolver_serves_only_local_files(tmp_path: Path) -> None:
     assert resolve("no-existe.png") is None
 
 
+def test_add_links_only_wraps_profile_links_in_the_body() -> None:
+    html = (
+        "<html><head><title>github.com/x</title></head><body>"
+        "<p>Repo: github.com/x/repo · <b>github.com/x</b></p>"
+        '<a href="#top">github.com/x</a></body></html>'
+    )
+    targets = {t: f"https://{t}" for t in ("github.com/x", "github.com/x/repo")}
+    out = html_engine.add_links(html, targets)
+    assert "<title>github.com/x</title>" in out
+    assert 'Repo: <a href="https://github.com/x/repo">github.com/x/repo</a> · ' in out
+    assert '<b><a href="https://github.com/x">github.com/x</a></b>' in out
+    assert '<a href="#top">github.com/x</a>' in out  # sin enlaces anidados
+    assert html_engine.add_links(html, {}) == html
+
+
+def test_template_still_cannot_add_external_links() -> None:
+    html = '<html><body><a href="https://phishing.example">github.com/x</a></body></html>'
+    cleaned = sanitize.clean_html(html)
+    assert "phishing" not in cleaned
+    # El `<a>` de la plantilla queda sin destino y su texto no se enlaza (nada de enlaces anidados).
+    assert "href" not in html_engine.add_links(cleaned, {"github.com/x": "https://github.com/x"})
+
+
 # --- Render con Chromium --------------------------------------------------------------------
+
+
+@requires_chromium
+def test_moderna_2col_pdf_has_profile_links(tmp_path: Path) -> None:
+    from pypdf import PdfReader
+
+    template = templates.get("moderna-2col")
+    out = html_engine.render_pdf(template, _context(), tmp_path / "cv.pdf", "A4")
+    uris = {
+        annot.get_object()["/A"]["/URI"]
+        for page in PdfReader(out).pages
+        for annot in page.get("/Annots") or []
+    }
+    assert uris == {
+        "https://linkedin.com/in/lucia-varela-demo",
+        "https://github.com/lucia-varela-demo",
+        "https://github.com/lucia-varela-demo/tfg-anomalias",
+    }
 
 
 @requires_chromium

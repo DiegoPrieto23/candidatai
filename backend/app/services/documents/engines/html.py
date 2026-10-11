@@ -3,7 +3,9 @@
 - Jinja2 en un `SandboxedEnvironment` con autoescape: el texto del perfil y del agente no puede
   inyectar etiquetas, y la plantilla (que puede venir de un CV ajeno) no llega a atributos
   internos de Python.
-- El HTML generado pasa por `sanitize.clean_html` antes de imprimirse.
+- El HTML generado pasa por `sanitize.clean_html` antes de imprimirse. Después, y solo entonces,
+  los enlaces del perfil (`context.links`) pasan a ser `<a href>` (ADR-023): la plantilla no puede
+  poner enlaces externos, el código sí.
 - Chromium (Playwright) imprime sin JavaScript y sin red: la página se carga desde un origen
   virtual (`http://jh.local/`) y cada petición se sirve solo desde la carpeta de la plantilla, sus
   `fonts/` (o `data/fonts/`) y la foto ya recortada. Cualquier otra se aborta.
@@ -19,12 +21,14 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import unquote, urlsplit
 
+import lxml.html
 from jinja2 import FileSystemLoader, StrictUndefined, select_autoescape
 from jinja2.sandbox import SandboxedEnvironment
 
 from app.core.config import get_settings
 from app.schemas.cv import PageSize
 from app.services.documents import sanitize
+from app.services.documents.context import links, split_links
 from app.services.documents.pdf import PdfConversionError, PdfConverterUnavailableError
 from app.services.documents.templates import Template
 
@@ -77,6 +81,61 @@ def render_string(
     name = file or template.engine_file.name
     html = environment(template.path).get_template(name).render(values)
     return sanitize.clean_html(html)
+
+
+# Donde un texto nunca se convierte en enlace.
+_NO_LINK_TAGS = frozenset({"a", "head", "title", "style", "script", "textarea"})
+
+
+def add_links(html: str, targets: dict[str, str]) -> str:
+    """Envuelve en `<a href>` los textos de `targets` que aparecen en el documento ya saneado."""
+    if not targets or not any(text in html for text in targets):
+        return html
+
+    def pieces(text: str | None) -> list[tuple[str, str | None]] | None:
+        """Los trozos de `text`, o `None` si no tiene ningún enlace."""
+        parts = split_links(text or "", targets)
+        return parts if any(url for _, url in parts) else None
+
+    def anchor(text: str, url: str) -> lxml.html.HtmlElement:
+        element = lxml.html.Element("a", href=url)
+        element.text = text
+        return element
+
+    root = lxml.html.document_fromstring(html)
+    for element in list(root.iter()):
+        if not isinstance(element.tag, str) or any(
+            str(e.tag).lower() in _NO_LINK_TAGS for e in (element, *element.iterancestors())
+        ):
+            continue
+        children = list(element)
+        parts = pieces(element.text)
+        if parts:
+            element.text = None
+            previous: lxml.html.HtmlElement | None = None
+            index = 0
+            for text, url in parts:
+                if url is not None:
+                    previous = anchor(text, url)
+                    element.insert(index, previous)
+                    index += 1
+                elif previous is None:
+                    element.text = (element.text or "") + text
+                else:
+                    previous.tail = (previous.tail or "") + text
+        for child in children:
+            parts = pieces(child.tail)
+            if parts:
+                child.tail = None
+                previous = child
+                for text, url in parts:
+                    if url is None:
+                        previous.tail = (previous.tail or "") + text
+                    else:
+                        link = anchor(text, url)
+                        previous.addnext(link)
+                        previous = link
+    return lxml.html.tostring(root, doctype="<!DOCTYPE html>", encoding="unicode")
 
 
 def _inside(root: Path, relative: str) -> Path | None:
@@ -196,9 +255,13 @@ def html_to_pdf(
     output: Path,
     page_size: PageSize | None = None,
     on_request: RequestLog | None = None,
+    targets: dict[str, str] | None = None,
 ) -> Path:
-    """Imprime `html` a PDF sin red ni JavaScript. `resolve` decide qué ficheros se sirven."""
-    document = _with_page_size(sanitize.clean_html(html), page_size)
+    """Imprime `html` a PDF sin red ni JavaScript. `resolve` decide qué ficheros se sirven.
+
+    `targets`: textos que pasan a ser enlaces (`context.links`), después del último saneado.
+    """
+    document = _with_page_size(add_links(sanitize.clean_html(html), targets or {}), page_size)
     try:
         asyncio.get_running_loop()
     except RuntimeError:
@@ -222,4 +285,4 @@ def render_pdf(
     """Renderiza la plantilla html (o `file`, p. ej. su carta) y escribe el PDF en `output`."""
     html = render_string(template, context, photo_path, file.name if file else None)
     resolve = resource_resolver(template.path, photo_path)
-    return html_to_pdf(html, resolve, output, page_size, on_request)
+    return html_to_pdf(html, resolve, output, page_size, on_request, links(context))

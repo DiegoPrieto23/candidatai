@@ -168,7 +168,7 @@ function RunResult({ result }: { result: SourceRunResult }) {
       {result.job_ids.length > 0 && (
         <p className="mt-1 text-xs text-muted-foreground">
           Quedan en «Por extraer»: ejecuta <InlineCode text="`procesar-ofertas`" /> en tu agente.{' '}
-          <Link to="/?stage=pending_extraction" className="font-medium text-primary hover:underline">
+          <Link to="/bandeja?stage=pending_extraction" className="font-medium text-primary hover:underline">
             Verlas
           </Link>
         </p>

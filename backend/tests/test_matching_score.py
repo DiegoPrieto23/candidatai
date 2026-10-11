@@ -277,6 +277,10 @@ def test_role_priority_floor() -> None:
         ("Data Engineering Lead", "Data Engineering Lead", "Data Engineer", pytest.approx(0.8966)),
         ("Analytics Engineer", "Analytics Engineer", "Analytics Engineer", pytest.approx(0.85)),
         ("Senior Data Scientist", "Senior Data Scientist", None, 0.0),
+        # En español (config/title_aliases.yaml), aunque la extracción no lo traduzca.
+        ("Ingeniero de Datos Snowflake", "Ingeniero de Datos Snowflake", "Data Engineer", 0.7222),
+        ("Analista de datos", "Analista de datos", "Data Analyst", 0.7),
+        ("Ingeniero de software", "Ingeniero de software", None, 0.0),
     ],
 )
 def test_role_needs_every_word_of_the_wanted_role(

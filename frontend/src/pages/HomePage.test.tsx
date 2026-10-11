@@ -1,0 +1,70 @@
+import { screen, within } from '@testing-library/react'
+import { describe, expect, it } from 'vitest'
+import { jobRow, mockApi, renderApp, status } from '@/test/utils'
+
+const page = (items: unknown[]) => ({ items, total: items.length, limit: 50, offset: 0 })
+const noFollowups = { days_without_reply: 7, followups: [] }
+const noUpcoming = { days: 7, items: [] }
+
+function withStages(stages: Partial<ReturnType<typeof status>['by_stage']>) {
+  const base = status()
+  return { ...base, by_stage: { ...base.by_stage, ...stages } }
+}
+
+describe('Inicio', () => {
+  it('resume lo que te toca hoy con enlaces a cada lista', async () => {
+    mockApi({
+      'GET /status': withStages({ pending_triage: 28, cv_ready: 1, pending_extraction: 3 }),
+      'GET /followups': { days_without_reply: 7, followups: [{ job_id: 9, title: 'BI', company: 'Acme', url: null, channel: null, applied_at: '2026-10-01T10:00:00Z', last_followup_at: null, days_waiting: 10 }] },
+      'GET /upcoming': noUpcoming,
+      'GET /jobs': page([]),
+    })
+    renderApp('/')
+    const heading = await screen.findByRole('heading', {
+      level: 1,
+      name: 'Tienes 28 ofertas por revisar, 1 CV listo para enviar y 1 seguimiento pendiente.',
+    })
+    expect(within(heading).getByRole('link', { name: '28 ofertas por revisar' })).toHaveAttribute('href', '/por-revisar')
+    expect(within(heading).getByRole('link', { name: '1 CV listo para enviar' })).toHaveAttribute(
+      'href',
+      '/bandeja?stage=cv_ready',
+    )
+    expect(screen.getByText(/Para tu agente: 3 por extraer/)).toBeInTheDocument()
+  })
+
+  it('sin nada pendiente lo dice', async () => {
+    mockApi({ 'GET /status': status(), 'GET /followups': noFollowups, 'GET /upcoming': noUpcoming, 'GET /jobs': page([]) })
+    renderApp('/')
+    expect(await screen.findByRole('heading', { level: 1, name: 'Nada pendiente por tu parte.' })).toBeInTheDocument()
+    expect(await screen.findByText(/No hay ofertas por revisar/)).toBeInTheDocument()
+  })
+
+  it('el recorrido enlaza cada etapa y marca las que te tocan', async () => {
+    mockApi({
+      'GET /status': withStages({ pending_triage: 4, applied: 2 }),
+      'GET /followups': noFollowups,
+      'GET /upcoming': noUpcoming,
+      'GET /jobs': page([]),
+    })
+    renderApp('/')
+    const triage = await screen.findByRole('link', { name: /Te toca\s*4\s*Por revisar/ })
+    expect(triage).toHaveAttribute('href', '/por-revisar')
+    expect(screen.getByRole('link', { name: /Empresa\s*2\s*Enviada/ })).toHaveAttribute('href', '/procesos')
+    // En Inicio no sale la fila de recuentos de la cabecera.
+    expect(screen.queryByRole('navigation', { name: 'Ofertas por etapa' })).not.toBeInTheDocument()
+  })
+
+  it('lista las ofertas por revisar con más encaje primero', async () => {
+    const calls = mockApi({
+      'GET /status': withStages({ pending_triage: 1 }),
+      'GET /followups': noFollowups,
+      'GET /upcoming': noUpcoming,
+      'GET /jobs': page([jobRow({ id: 7, title: 'Data Engineer', company: 'Acme', score: 81 })]),
+    })
+    renderApp('/')
+    expect(await screen.findAllByRole('link', { name: /Data Engineer/ })).not.toHaveLength(0)
+    const search = calls.find((c) => c.path === '/jobs' && c.search.get('stage') === 'pending_triage')?.search
+    expect(search?.get('sort')).toBe('score')
+    expect(search?.get('dir')).toBe('desc')
+  })
+})

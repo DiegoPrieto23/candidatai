@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ClockIcon, CompassIcon, WarningIcon } from '@phosphor-icons/react'
+import { ArrowSquareOutIcon, ClockIcon, CompassIcon, WarningIcon } from '@phosphor-icons/react'
 import type { AgentBrowseLimits, BrowseAccess, SourceView } from '@/api/client'
 import { usePlatforms, useUpdateBrowseSettings } from '@/api/queries'
 import { AddPlatformButton } from '@/components/AddPlatformDialog'
@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
+import { searchLabel } from '@/lib/searches'
 import { cn } from '@/lib/utils'
 
 const ACCESS: { value: BrowseAccess; label: string; hint: string }[] = [
@@ -35,6 +36,52 @@ function formatWhen(iso: string): string {
     hour: '2-digit',
     minute: '2-digit',
   })
+}
+
+/** Lo que busca el agente en esta plataforma, legible; las URLs completas, al desplegar. */
+function Searches({ urls, name }: { urls: string[]; name: string }) {
+  const [showUrls, setShowUrls] = useState(false)
+  if (!urls.length) return null
+  return (
+    <div className="grid gap-1.5">
+      <span className="text-xs text-muted-foreground">
+        Qué busca el agente <span className="sr-only">en {name}</span>
+      </span>
+      <ul className="flex flex-wrap gap-1.5">
+        {urls.map((url) => (
+          <li key={url}>
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={`Abrir esta búsqueda en ${name}`}
+              className="inline-flex items-center gap-1 rounded-md border bg-background px-2 py-1 text-xs transition-colors hover:border-foreground/25 hover:bg-foreground/[0.03]"
+            >
+              {searchLabel(url)}
+              <ArrowSquareOutIcon className="size-3 text-muted-foreground" aria-hidden />
+            </a>
+          </li>
+        ))}
+      </ul>
+      <button
+        type="button"
+        onClick={() => setShowUrls((v) => !v)}
+        aria-expanded={showUrls}
+        className="justify-self-start text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+      >
+        {showUrls ? 'Ocultar las URLs' : 'Ver las URLs'}
+      </button>
+      {showUrls && (
+        <ul className="grid gap-0.5">
+          {urls.map((url) => (
+            <li key={url} className="truncate font-mono text-xs text-muted-foreground">
+              {url}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
 }
 
 function plural(n: number, one: string, many: string): string {
@@ -267,18 +314,7 @@ function PlatformRow({ source }: { source: SourceView }) {
         </div>
       </div>
 
-      <div className="grid gap-1">
-        <span className="text-xs text-muted-foreground">Búsquedas</span>
-        <ul className="grid gap-0.5">
-          {browse.search_urls.map((url) => (
-            <li key={url} className="truncate font-mono text-xs">
-              <a href={url} target="_blank" rel="noopener noreferrer" className="underline-offset-2 hover:underline">
-                {url}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </div>
+      <Searches urls={browse.search_urls} name={source.name} />
       {browse.notes && <p className="text-sm text-muted-foreground">{browse.notes}</p>}
       <LastRun source={source} />
       {update.error && (

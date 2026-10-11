@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { AlertsPage } from '@/pages/AlertsPage'
+import { HomePage } from '@/pages/HomePage'
 import { InboxPage } from '@/pages/InboxPage'
 import { JobPage } from '@/pages/JobPage'
 import { NewJobPage } from '@/pages/NewJobPage'
@@ -27,7 +28,7 @@ function NotFound() {
       title="Esta página no existe"
       action={
         <Button asChild variant="outline">
-          <Link to="/">Ir a la bandeja</Link>
+          <Link to="/">Ir al inicio</Link>
         </Button>
       }
     />
@@ -38,7 +39,8 @@ export function AppRoutes() {
   return (
     <Routes>
       <Route element={<AppShell />}>
-        <Route index element={<InboxPage />} />
+        <Route index element={<HomePage />} />
+        <Route path="bandeja" element={<InboxPage />} />
         <Route path="jobs/:id" element={<JobPage />} />
         <Route path="nueva" element={<NewJobPage />} />
         <Route path="por-revisar" element={<TriagePage />} />

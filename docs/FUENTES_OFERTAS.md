@@ -34,7 +34,8 @@ del agente (ADR-016).
   `JH_ADZUNA_APP_KEY`). Sin claves, esas fuentes se omiten con un aviso. Adzuna solo da un
   extracto de la descripción: la extracción sale más pobre.
 - **Filtro previo** antes de guardar (`ingestion/prefilter.py`): el título debe contener todas las
-  palabras de alguno de tus `preferences.roles` (o una `title_keywords` de la fuente) y ninguna
+  palabras de alguno de tus `preferences.roles` (también en español, con
+  `config/title_aliases.yaml`; o una `title_keywords` de la fuente) y ninguna
   `discard_title_keywords`; la ubicación, encajar con tus zonas o ser remota si aceptas remoto.
   Ante la duda deja pasar (sin ubicación, sin perfil). La 09b lo reutiliza para los resúmenes.
 - **Idempotente:** lo ya visto (por id en la fuente, URL o huella) no se vuelve a crear ni a

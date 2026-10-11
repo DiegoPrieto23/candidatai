@@ -5,6 +5,7 @@ idioma del CV. El contacto (email, teléfono, ciudad, LinkedIn, GitHub) lo pone 
 perfil: el agente nunca lo ve (POLICIES §4).
 """
 
+import re
 from dataclasses import dataclass
 from datetime import date
 from typing import Any
@@ -190,6 +191,7 @@ def build_context(
             {
                 "name": projects[p.project_id].name,
                 "date": format_month(projects[p.project_id].date, lang),
+                "url": projects[p.project_id].url or "",
                 "bullets": [b.text for b in p.bullets],
             }
             for p in content.projects
@@ -237,6 +239,37 @@ def _contact(profile: CandidateProfile) -> dict[str, str]:
         "linkedin": personal.linkedin or "",
         "github": personal.github or "",
     }
+
+
+def href(text: str) -> str:
+    """URL de un enlace escrito sin esquema en el perfil (`github.com/x` → `https://github.com/x`)."""
+    return text if text.lower().startswith(("http://", "https://")) else f"https://{text}"
+
+
+def links(context: dict[str, Any]) -> dict[str, str]:
+    """Textos del documento que se convierten en enlace → su URL (ADR-023).
+
+    Solo los enlaces del perfil (LinkedIn, GitHub y el de cada proyecto): los pone el código al
+    renderizar, nunca la plantilla, que puede venir de un CV ajeno.
+    """
+    contact = context.get("contact", {})
+    texts = [contact.get("linkedin", ""), contact.get("github", "")]
+    texts += [p.get("url", "") for p in context.get("projects", [])]
+    return {text: href(text) for text in texts if text}
+
+
+def split_links(text: str, targets: dict[str, str]) -> list[tuple[str, str | None]]:
+    """`text` en trozos `(texto, url)`; `url` es `None` fuera de un enlace. Sin trozos vacíos."""
+    if not targets:
+        return [(text, None)]
+    pattern = re.compile("|".join(re.escape(t) for t in sorted(targets, key=len, reverse=True)))
+    pieces: list[tuple[str, str | None]] = []
+    position = 0
+    for match in pattern.finditer(text):
+        pieces += [(text[position : match.start()], None), (match.group(), targets[match.group()])]
+        position = match.end()
+    pieces.append((text[position:], None))
+    return [(piece, url) for piece, url in pieces if piece]
 
 
 def build_letter_context(
