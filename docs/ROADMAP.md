@@ -40,10 +40,28 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 12.1 | ↳ Modo demo | ✅ | `jh demo seed` llena `data-demo/` con 60 ofertas, 8 semanas de historial y 2 CVs; banner en la UI |
 | 12.2 | ↳ Evals de matching y de CV | ✅ | 80 casos de matching con `evals/REPORT.md` y `jh eval cv` sobre 10 casos |
 | 12.3 | ↳ Compatibilidad, README y seguridad | ✅ | Matriz de agentes probada, README de portfolio y repositorio revisado |
+| 13 | Contexto y documentos | ⏳ | `data/contexto/*.md` (estilo, perfil conductual, criterios, narrativa) que orientan sin respaldar hechos; `data/documentos/` y archivo de cada candidatura enviada |
+| 14 | Huecos de skills y vocabulario | ⏳ | Página «Skills»: ausentes agregadas; «es lo mismo que…» añade el alias y recalcula; huecos reales → skill `plan-formacion` |
+| 15 | Respuestas por correo y seguimientos | ⏳ | Los correos de las empresas proponen el evento (entrevista, rechazo…) en la ficha y tú lo aceptas; borradores de seguimiento y agradecimiento |
+| 16 | Ofertas vivas, republicadas y búsqueda ampliada | ⏳ | Aviso de oferta cerrada o republicada; títulos parecidos; descubrir tableros de Greenhouse/Lever/Ashby de tus empresas |
+| 17 | Entrevistas: simulacro y repaso | ⏳ | Plan de preparación, simulacro con feedback, repaso posterior con notas y historias STAR nuevas |
+| 18 | Contactos, mensajes e investigación de empresas | ⏳ | Tus contactos de LinkedIn (CSV) cruzados con tus ofertas, borradores de mensaje y dosier de empresa con fuentes |
+| 19 | Lote en segundo plano | ⏳ | «En segundo plano» además de «En terminal» para los skills que no preguntan (fase 2 de la ADR-024) |
+| 20 | Calibración y patrones | ⏳ | «¿Acierta el score?»: respuesta por tramo de score, veredicto, fuente, plantilla y carta; retrospectiva semanal |
+| 21 | Ofertas recibidas y salario | ⏳ | Comparar ofertas recibidas y la distancia a tu mínimo sin exponerlo al agente; preparar la negociación |
+| 22 | LinkedIn por sus endpoints públicos (opcional) | ⏳ | Búsqueda pública sin sesión, apagada por defecto y con límites estrictos; ADR que matiza la 016 |
 
 **MVP usable:** al terminar la 08 ya puedes pegar ofertas, triarlas y sacar CVs a medida; con la
 08c, también cartas de presentación. La 08c va antes que la 08b, aunque el orden entre ambas da
 igual (la que llegue después añade la carta a las plantillas html).
+
+**Plan 13-22 (2026-10-11):** funciones de [AI Job Search](https://github.com/MadsLorentzen/ai-job-search)
+y [career-ops](https://github.com/santifer/career-ops) que encajan con lo que ya hay y con las
+reglas duras. Orden recomendado: 13 (base de las demás) → 14 → 15 → 16 → 17 → 18 → 19; la 20
+cuando haya unas 20-30 candidaturas enviadas; la 21 cuando llegue la primera oferta; la 22 solo si
+la quieres. Descartado: candidaturas automáticas (reglas 5 y 6), sincronización con Notion,
+plantillas LaTeX (ya hay docx y html), portales daneses, descubrimiento de empresas financiadas
+desde feeds externos y modelos llamados desde la app (ADR-001).
 
 **Skills que se desbloquean por fase:** `actualizar-perfil` tras la 05; `procesar-ofertas` tras la
 04 (y con perfil, tras la 05); `evaluar-encaje` tras la 07; `generar-cv` tras la 08; `importar-plantilla-cv` tras la 08 para
