@@ -121,7 +121,13 @@ def test_process_sheet_contacts_and_milestone_lifecycle(client: TestClient) -> N
 def test_followups_and_upcoming(client: TestClient) -> None:
     job_id = _job(client)
     _event(client, job_id, type="applied_manually")
-    assert client.get("/followups").json() == {"days_without_reply": 10, "followups": []}
+    assert client.get("/followups").json() == {
+        "days_without_reply": 10,
+        "max_followups": 2,
+        "followups": [],
+        "thank_you_days": 3,
+        "thanks_due": [],
+    }
     client.post(
         f"/jobs/{job_id}/milestones",
         json={"kind": "deadline", "starts_at": _soon(1), "all_day": True},

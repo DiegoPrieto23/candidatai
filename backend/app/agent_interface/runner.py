@@ -25,6 +25,7 @@ from app.services.documents.service import (
 )
 from app.services.documents.templates import TemplateNotFoundError
 from app.services.documents.uploads import InvalidUploadError, UploadTooLargeError
+from app.services.drafts import DraftNotAllowedError, DraftNotFoundError
 from app.services.events import JobNotFoundError
 from app.services.extractions import ExtractionNotFoundError
 from app.services.ingestion.browse import BrowsingNotAllowedError
@@ -46,6 +47,8 @@ _ERROR_TYPES: tuple[tuple[type[Exception], str], ...] = (
     (PromptNotFoundError, "not_found"),
     (ReplyNotFoundError, "not_found"),
     (ReplyResolvedError, "not_allowed"),
+    (DraftNotFoundError, "not_found"),
+    (DraftNotAllowedError, "not_allowed"),
     (BrowsingNotAllowedError, "not_allowed"),
     (MilestoneNotFoundError, "not_found"),
     (ContactNotFoundError, "not_found"),

@@ -31,6 +31,7 @@ from app.services import (
     analytics,
     answers,
     context,
+    drafts,
     events,
     extractions,
     ingest,
@@ -335,6 +336,11 @@ class SaveReplyProposalInput(_Input):
     proposal: replies.ReplyProposal
 
 
+class SaveMessageDraftInput(_Input):
+    job_id: int = Field(ge=1, description="Id de la oferta (candidatura enviada).")
+    draft: drafts.MessageDraftInput
+
+
 class JobList(BaseModel):
     jobs: list[jobs.JobSummary]
 
@@ -534,6 +540,12 @@ def _save_reply_proposal(
     return replies.save_reply_proposal(
         session, args.reply_id, args.proposal, agent_name=ctx.client_name
     )
+
+
+def _save_message_draft(
+    session: Session, args: SaveMessageDraftInput, ctx: CallContext
+) -> drafts.SaveDraftResult:
+    return drafts.save_message_draft(session, args.job_id, args.draft, agent_name=ctx.client_name)
 
 
 def _save_application_answers(
@@ -979,7 +991,9 @@ TOOLS: tuple[ToolSpec, ...] = (
         name="list_followups_due",
         description=(
             "Candidaturas enviadas (etapa `applied`) sin respuesta desde hace N días o más, "
-            "contando desde el envío o el último `followup_sent`. La que más espera, primero."
+            "contando desde el envío o el último `followup_sent`, la que más espera primero, sin "
+            "las que ya tienen 2 seguimientos; y `thanks_due`: entrevistas hechas en los últimos "
+            "días sin agradecimiento. Con los nombres de los contactos y el borrador vigente."
         ),
         input_model=ListFollowupsInput,
         output_model=tracking.FollowupList,
@@ -1064,6 +1078,24 @@ TOOLS: tuple[ToolSpec, ...] = (
             path=("replies", "propose"),
             arguments=("reply_id",),
             file_field="proposal",
+            file_format="json",
+        ),
+    ),
+    ToolSpec(
+        name="save_message_draft",
+        description=(
+            "Guarda el borrador de un correo para el usuario: `followup` (seguimiento de una "
+            "candidatura sin respuesta, como mucho 2 por candidatura) o `thank_you` "
+            "(agradecimiento tras una entrevista hecha). Sustituye el borrador vigente del mismo "
+            "tipo. NO envía nada: el usuario lo copia y lo manda él."
+        ),
+        input_model=SaveMessageDraftInput,
+        output_model=drafts.SaveDraftResult,
+        handler=_save_message_draft,
+        cli=CliSpec(
+            path=("drafts", "save"),
+            arguments=("job_id",),
+            file_field="draft",
             file_format="json",
         ),
     ),

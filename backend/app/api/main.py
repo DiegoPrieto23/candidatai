@@ -16,6 +16,7 @@ from app.api.routes import (
     capture,
     context,
     cv,
+    drafts,
     jobs,
     letters,
     process,
@@ -70,6 +71,7 @@ def create_app() -> FastAPI:
     app.include_router(context.router)
     app.include_router(skills.router)
     app.include_router(replies.router)
+    app.include_router(drafts.router)
     return app
 
 

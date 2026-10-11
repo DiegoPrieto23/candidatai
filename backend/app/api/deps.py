@@ -4,6 +4,7 @@ from collections.abc import Iterator
 from typing import Annotated
 
 from fastapi import Depends, Request
+from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
 from app.agent_interface.errors import ToolError
@@ -37,3 +38,9 @@ def require_ui(request: Request) -> None:
     content_type = request.headers.get("content-type", "")
     if not content_type.startswith("application/json"):
         raise ToolError("forbidden", "La petición tiene que ser JSON y venir de la UI.")
+
+
+class EmptyBody(BaseModel):
+    """Cuerpo `{}` de las acciones de la UI sin datos: JSON, para que `require_ui` lo compruebe."""
+
+    model_config = ConfigDict(extra="forbid")

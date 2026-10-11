@@ -433,7 +433,10 @@ candidatura enviada; de los demás no queda nada. Contenido no confiable.
 | created_at | datetime | |
 
 ### `message_drafts`
-Borradores de seguimiento y agradecimiento (fase 15.3). La app nunca los envía.
+Borradores de seguimiento y agradecimiento (fase 15.3). La app nunca los envía. Como mucho uno
+vigente (`draft`) por oferta y tipo (y entrevista, en un agradecimiento): guardar otro lo
+sustituye. Un seguimiento no se guarda si la oferta ya tiene `followups.max_followups` (2)
+eventos `followup_sent`.
 
 | Columna | Tipo | Notas |
 |---|---|---|

@@ -10,10 +10,10 @@ from sqlalchemy import exists, func, select
 from sqlalchemy.orm import Session
 
 from app.core.policies import get_policies
-from app.models import Application, Company, Event, Job, Match, Milestone
+from app.models import Application, Company, Contact, Event, Job, Match, Milestone
 from app.models.base import utcnow
 from app.schemas.llm_io import JobExtraction
-from app.services import extractions
+from app.services import drafts, extractions
 from app.services.events import USER_EVENTS
 from app.services.jobs import last_match_subquery
 from app.services.pipeline import (
@@ -38,11 +38,30 @@ class FollowupItem(BaseModel):
     applied_at: datetime | None
     last_followup_at: datetime | None
     days_waiting: int  # días desde el envío o el último seguimiento
+    followups_sent: int  # como mucho `followups.max_followups` - 1: con el tope, no sale
+    contacts: list[str]  # nombres (y cargo) de los contactos de la ficha, sin datos de contacto
+    draft_id: int | None  # borrador de seguimiento vigente, si ya lo hay
+
+
+class ThanksItem(BaseModel):
+    """Entrevista hecha hace poco sin agradecimiento enviado (fase 15)."""
+
+    job_id: int
+    title: str
+    company: str
+    milestone_id: int
+    interview_title: str
+    interview_at: datetime
+    contacts: list[str]
+    draft_id: int | None  # borrador de agradecimiento vigente, si ya lo hay
 
 
 class FollowupList(BaseModel):
     days_without_reply: int
+    max_followups: int
     followups: list[FollowupItem]
+    thank_you_days: int
+    thanks_due: list[ThanksItem]
 
 
 def _last_followups(session: Session, job_ids: Iterable[int]) -> dict[int, datetime]:
@@ -54,12 +73,69 @@ def _last_followups(session: Session, job_ids: Iterable[int]) -> dict[int, datet
     return {job_id: value for job_id, value in rows if value is not None}
 
 
+def _contact_names(session: Session, job_ids: list[int]) -> dict[int, list[str]]:
+    """«Nombre (cargo)» de los contactos: lo justo para el saludo, sin emails ni teléfonos."""
+    names: dict[int, list[str]] = defaultdict(list)
+    for contact in session.scalars(
+        select(Contact).where(Contact.job_id.in_(job_ids)).order_by(Contact.id)
+    ):
+        names[contact.job_id].append(
+            f"{contact.name} ({contact.role})" if contact.role else contact.name
+        )
+    return names
+
+
+def _draft_ids(session: Session, job_ids: list[int]) -> dict[tuple[int, str, int | None], int]:
+    return {
+        (row.job_id, row.kind, row.milestone_id): row.id
+        for row in reversed(drafts.active_drafts(session, job_ids))
+    }
+
+
+def _thanks_due(session: Session, now: datetime, days: int) -> list[ThanksItem]:
+    rows = session.execute(
+        select(Milestone, Job.title, Company.name)
+        .join(Job, Job.id == Milestone.job_id)
+        .join(Company, Company.id == Job.company_id)
+        .join(Application, Application.job_id == Job.id)
+        .where(
+            Milestone.kind == "interview",
+            Milestone.status == "done",
+            Milestone.starts_at >= now - timedelta(days=days),
+            Milestone.starts_at <= now,
+            Application.stage.in_(drafts.DRAFT_STAGES),
+        )
+        .order_by(Milestone.starts_at.desc())
+    ).all()
+    thanked = drafts.thanked_milestones(session, [m.id for m, _, _ in rows])
+    rows = [row for row in rows if row[0].id not in thanked]
+    job_ids = [m.job_id for m, _, _ in rows]
+    contacts = _contact_names(session, job_ids)
+    draft_ids = _draft_ids(session, job_ids)
+    return [
+        ThanksItem(
+            job_id=milestone.job_id,
+            title=title,
+            company=company,
+            milestone_id=milestone.id,
+            interview_title=milestone.title,
+            interview_at=milestone.starts_at,
+            contacts=contacts.get(milestone.job_id, []),
+            draft_id=draft_ids.get((milestone.job_id, "thank_you", milestone.id)),
+        )
+        for milestone, title, company in rows
+    ]
+
+
 def list_followups_due(
     session: Session, days_without_reply: int | None = None, now: datetime | None = None
 ) -> FollowupList:
     """Candidaturas en `applied` sin respuesta desde hace `days_without_reply` días o más,
-    contando desde el envío o el último `followup_sent`. La que más espera, primero."""
-    threshold = days_without_reply or get_policies().followups.days_without_reply
+    contando desde el envío o el último `followup_sent`. La que más espera, primero. Sin las que
+    ya llevan `followups.max_followups` seguimientos. Con `thanks_due`: entrevistas hechas en los
+    últimos `followups.thank_you_days` días sin agradecimiento enviado."""
+    policy = get_policies().followups
+    threshold = days_without_reply or policy.days_without_reply
     now = now or utcnow()
     rows = session.execute(
         select(Application, Job, Company.name)
@@ -67,26 +143,44 @@ def list_followups_due(
         .join(Company, Company.id == Job.company_id)
         .where(Application.stage == Stage.APPLIED)
     ).all()
-    last = _last_followups(session, (app.job_id for app, _, _ in rows))
-    items: list[FollowupItem] = []
+    job_ids = [app.job_id for app, _, _ in rows]
+    last = _last_followups(session, job_ids)
+    sent = drafts.followups_sent(session, job_ids)
+    due: list[tuple[Application, Job, str, int]] = []
     for application, job, company in rows:
+        if sent.get(job.id, 0) >= policy.max_followups:
+            continue
         status = followup_status(application, last.get(job.id), threshold, now)
         if status is None or not status.due or status.days_waiting is None:
             continue
-        items.append(
-            FollowupItem(
-                job_id=job.id,
-                title=job.title,
-                company=company,
-                url=job.url,
-                channel=application.channel,
-                applied_at=application.applied_at,
-                last_followup_at=last.get(job.id),
-                days_waiting=status.days_waiting,
-            )
+        due.append((application, job, company, status.days_waiting))
+    due_ids = [job.id for _, job, _, _ in due]
+    contacts = _contact_names(session, due_ids)
+    draft_ids = _draft_ids(session, due_ids)
+    items = [
+        FollowupItem(
+            job_id=job.id,
+            title=job.title,
+            company=company,
+            url=job.url,
+            channel=application.channel,
+            applied_at=application.applied_at,
+            last_followup_at=last.get(job.id),
+            days_waiting=days_waiting,
+            followups_sent=sent.get(job.id, 0),
+            contacts=contacts.get(job.id, []),
+            draft_id=draft_ids.get((job.id, "followup", None)),
         )
+        for application, job, company, days_waiting in due
+    ]
     items.sort(key=lambda i: (-i.days_waiting, i.job_id))
-    return FollowupList(days_without_reply=threshold, followups=items)
+    return FollowupList(
+        days_without_reply=threshold,
+        max_followups=policy.max_followups,
+        followups=items,
+        thank_you_days=policy.thank_you_days,
+        thanks_due=_thanks_due(session, now, policy.thank_you_days),
+    )
 
 
 # --- Próximos hitos -------------------------------------------------------------------------
@@ -306,13 +400,20 @@ def get_board(
     rows = [*open_rows, *closed_rows]
     job_ids = [app.job_id for app, *_ in rows]
     followups = _last_followups(session, job_ids)
+    sent = drafts.followups_sent(session, job_ids)
     next_milestones = _next_milestones(session, job_ids, start_of_local_day(now))
     closings = _closings(session, [app.job_id for app, *_ in closed_rows])
 
     cards: dict[Stage, list[BoardCard]] = {s: [] for s in BOARD_STAGES}
     for application, title, company, score in rows:
         stage = Stage(application.stage)
-        status = followup_status(application, followups.get(application.job_id), threshold, now)
+        status = followup_status(
+            application,
+            followups.get(application.job_id),
+            threshold,
+            now,
+            sent.get(application.job_id, 0),
+        )
         closed_by = reopen_to = None
         if stage == Stage.CLOSED:
             closed_by, reopen_to = closings.get(application.job_id, (None, None))

@@ -149,6 +149,13 @@ Los pesos del score no cambian con esto; solo qué nombres casan.
    y, si te lleva al formulario de la empresa, pegas su enlace y la app lo rellena (ADR-021).
 4. **Sin reintentos** automáticos de un envío fallido: se registra y decides tú.
 5. **Mensajes a recruiters**: el agente solo redacta borradores. Los envías tú.
+   Seguimientos y agradecimientos (fase 15, skill `redactar-seguimiento`): la app los guarda
+   como borrador en la ficha y nunca los envía; los copias, los mandas desde tu correo y pulsas
+   «Ya lo he enviado». Como mucho **2 seguimientos** por candidatura
+   (`followups.max_followups`): después no se propone otro. Un agradecimiento, solo tras una
+   entrevista hecha. Nada que no esté en tu perfil o en el historial de la oferta (§1).
+   Las **respuestas de las empresas** que lee la app (fase 15) son contenido no confiable (§6):
+   el agente propone qué significan y nada cambia de etapa hasta que lo aceptas en la UI.
 6. **Cuentas y credenciales**: las creas e introduces tú. El perfil de navegador persistente
    vive en `data/browser-profile/` y nadie más lo lee.
 

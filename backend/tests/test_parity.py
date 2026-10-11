@@ -151,6 +151,37 @@ def seed_reply() -> None:
         )
 
 
+def seed_two_followups() -> None:
+    """La oferta 1 enviada y con los 2 seguimientos del tope ya enviados."""
+    seed_applied_long_ago()
+    with session_scope() as session:
+        for days in (8, 2):
+            events.record(
+                session, 1, "followup_sent", "user", occurred_at=utcnow() - timedelta(days=days)
+            )
+
+
+def seed_interview_done() -> None:
+    """La oferta 1 enviada, con un contacto y una entrevista hecha ayer."""
+    seed_applied_long_ago()
+    with session_scope() as session:
+        process.add_contact(
+            session, 1, process.ContactFields(name="Uxía Rey", role="Talento", email="u@x.example")
+        )
+        interview = process.create_milestone(
+            session,
+            1,
+            process.MilestoneCreate(
+                kind="interview",
+                starts_at=utcnow() - timedelta(days=1),
+                occurred_at=utcnow() - timedelta(days=3),
+            ),
+        )
+        process.set_milestone_status(
+            session, interview.id, process.MilestoneStatusChange(status="done")
+        )
+
+
 def seed_upcoming() -> None:
     """La oferta 1, enviada, con una entrevista dentro de dos días y un plazo dentro de diez."""
     seed_applied_long_ago()
@@ -300,6 +331,17 @@ LETTER_PASSED = {"passed": True, "issues": []}
 LETTER_BLOCKER_PASSED = {
     "passed": True,
     "issues": [{"severity": "blocker", "location": "p1", "problem": "Inventado"}],
+}
+
+FOLLOWUP = {
+    "kind": "followup",
+    "subject": "Candidatura a Data Engineer",
+    "body": "Hola:\n\nTe escribo para saber si hay novedades sobre mi candidatura.\n\nGracias.",
+}
+THANKS = {
+    "kind": "thank_you",
+    "subject": "Gracias por la entrevista",
+    "body": "Hola, Uxía:\n\nGracias por la conversación de ayer.",
 }
 
 ANSWERS: dict[str, Any] = {
@@ -599,6 +641,21 @@ CASES = [
                {"reply_id": 1, "proposal": {**PROPOSAL, "job_id": 2}},
                ["replies", "propose", "1"], "p.json", {**PROPOSAL, "job_id": 2},
                seed=seed_reply, expect_error="invalid_request"),
+    Case("followups-thanks", "list_followups_due", {}, ["followups"], seed=seed_interview_done),
+    _file_case("draft-followup", "save_message_draft", {"job_id": 1, "draft": FOLLOWUP},
+               ["drafts", "save", "1"], "d.json", FOLLOWUP, seed=seed_applied_long_ago),
+    _file_case("draft-followup-third", "save_message_draft", {"job_id": 1, "draft": FOLLOWUP},
+               ["drafts", "save", "1"], "d.json", FOLLOWUP, seed=seed_two_followups,
+               expect_error="not_allowed"),
+    _file_case("draft-thanks", "save_message_draft", {"job_id": 1, "draft": THANKS},
+               ["drafts", "save", "1"], "d.json", THANKS, seed=seed_interview_done),
+    _file_case("draft-thanks-no-interview", "save_message_draft", {"job_id": 1, "draft": THANKS},
+               ["drafts", "save", "1"], "d.json", THANKS, seed=seed_applied_long_ago,
+               expect_error="not_allowed"),
+    _file_case("draft-bad", "save_message_draft",
+               {"job_id": 1, "draft": {**FOLLOWUP, "subject": ""}},
+               ["drafts", "save", "1"], "d.json", {**FOLLOWUP, "subject": ""},
+               seed=seed_applied_long_ago, expect_error="validation_error"),
     _file_case("reply-propose-low", "save_reply_proposal",
                {"reply_id": 1, "proposal": {**PROPOSAL, "confidence": "low"}},
                ["replies", "propose", "1"], "p.json", {**PROPOSAL, "confidence": "low"},

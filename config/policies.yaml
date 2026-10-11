@@ -27,6 +27,8 @@ scoring:
 
 followups:                      # fase 10: aviso de seguimiento y `list_followups_due`
   days_without_reply: 10          # días sin respuesta tras enviar (o tras el último seguimiento)
+  max_followups: 2                # fase 15: tras 2 seguimientos enviados, deja de proponer más
+  thank_you_days: 3               # fase 15: agradecer una entrevista hecha en los últimos N días
 
 replies:                        # fase 15: respuestas de las empresas (IMAP en solo lectura o data/inbox/respuestas/)
   max_days: 120                   # como mucho, se buscan correos de los últimos N días (y nunca antes del envío)

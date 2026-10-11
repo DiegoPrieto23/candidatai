@@ -7,16 +7,11 @@ partir de un correo no confiable, y solo el usuario, en la UI, la convierte en u
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query
-from pydantic import BaseModel, ConfigDict
 
-from app.api.deps import SessionDep, require_ui
+from app.api.deps import EmptyBody, SessionDep, require_ui
 from app.services import replies
 
 router = APIRouter(prefix="/replies", tags=["replies"])
-
-
-class EmptyBody(BaseModel):
-    model_config = ConfigDict(extra="forbid")
 
 
 @router.get("", operation_id="get_reply_inbox")
@@ -30,8 +25,8 @@ def get_reply_inbox(
     return replies.inbox(session, status=status, job_id=job_id, limit=limit)
 
 
-@router.post("/poll", operation_id="poll_replies")
-def poll_replies(session: SessionDep) -> replies.RepliesPollResult:
+@router.post("/poll", operation_id="poll_replies", dependencies=[Depends(require_ui)])
+def poll_replies(session: SessionDep, body: EmptyBody) -> replies.RepliesPollResult:
     """Lee ahora el correo (IMAP en solo lectura y `data/inbox/respuestas/`)."""
     return replies.poll_replies(session)
 

@@ -22,7 +22,8 @@ import {
   KanbanIcon,
 } from '@phosphor-icons/react'
 import { fileUrls, type BoardCard, type BoardMove, type Stage, type UpcomingItem } from '@/api/client'
-import { useBoard, useUpcoming } from '@/api/queries'
+import { useBoard, useFollowups, useUpcoming } from '@/api/queries'
+import { AgentButton } from '@/components/AgentButton'
 import { ScoreBadge } from '@/components/MatchDetails'
 import { CopyButton } from '@/components/CopyButton'
 import { MoveDialog } from '@/components/MoveDialog'
@@ -308,6 +309,7 @@ export function ProcessesPage() {
   const upcoming = useUpcoming(7)
   const followups = board.data?.columns.flatMap((c) => c.cards).filter((c) => c.followup_due).length ?? 0
   const empty = board.data?.columns.every((c) => c.cards.length === 0)
+  const thanks = useFollowups().data?.thanks_due?.length ?? 0
 
   return (
     <div className="animate-in fade-in duration-300">
@@ -320,11 +322,20 @@ export function ProcessesPage() {
             entrevistas y pruebas crean su hito con fecha.
           </p>
         </div>
-        {followups > 0 && (
-          <p className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary">
-            <BellRingingIcon className="size-4" weight="duotone" />
-            {followups === 1 ? '1 seguimiento pendiente' : `${followups} seguimientos pendientes`}
-          </p>
+        {(followups > 0 || thanks > 0) && (
+          <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
+            <p className="inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary">
+              <BellRingingIcon className="size-4" weight="duotone" />
+              {[
+                followups === 1 ? '1 seguimiento pendiente' : followups ? `${followups} seguimientos pendientes` : null,
+                thanks === 1 ? '1 entrevista por agradecer' : thanks ? `${thanks} entrevistas por agradecer` : null,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
+            </p>
+            {/* El agente redacta los borradores en la ficha de cada oferta; la app no envía nada. */}
+            <AgentButton action="redactar-seguimientos">Redactar borradores</AgentButton>
+          </div>
         )}
       </div>
 

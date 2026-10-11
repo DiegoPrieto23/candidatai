@@ -273,3 +273,19 @@ La carta es un documento propio, con sus indicaciones, su verificación y sus re
   También valora un curso o proyecto que propongas.
 - **`get_skill_gaps`** (MCP) y `jh skills gaps --json`, con paridad.
 
+## 15 · Respuestas por correo y seguimientos — 2026-10-11 · Claude Code (Opus 5.5)
+- **Respuestas de las empresas:** la app lee tu correo en solo lectura (por defecto, la bandeja
+  de entrada) y guarda solo los correos de las empresas a las que has enviado candidatura,
+  posteriores al envío. Del resto solo mira remitente, fecha y asunto, y no guarda nada.
+- **Skill `revisar-respuestas`** (botón «Revisar respuestas» en Inicio): tu agente propone qué es
+  cada correo (entrevista con su fecha, prueba, oferta, rechazo, respuesta o nada) con un
+  subagente aislado. Si el correo trae instrucciones para una IA, se marca y no se obedece.
+- **Pantalla «Respuestas»** y aviso en la ficha («Parece una invitación a entrevista el jueves 8
+  de octubre a las 10:00»): Aceptar, Cambiar o Ignorar. Nada cambia de etapa hasta que aceptas;
+  aceptar una entrevista crea su hito en el calendario.
+- **Skill `redactar-seguimiento`:** borradores de seguimiento (como mucho 2 por candidatura) y de
+  agradecimiento tras una entrevista, en la sección «Borradores» de la ficha. La app nunca envía
+  nada: los copias, los mandas tú y pulsas «Ya lo he enviado».
+- **Herramientas** `list_replies`, `get_reply`, `save_reply_proposal` y `save_message_draft` (MCP)
+  con sus comandos `jh`, con paridad.
+

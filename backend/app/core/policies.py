@@ -125,9 +125,12 @@ class AgentBrowsePolicy(BaseModel):
 
 
 class FollowupsPolicy(BaseModel):
-    """Seguimientos (fase 10): días sin respuesta tras enviar la candidatura."""
+    """Seguimientos (fase 10): días sin respuesta tras enviar la candidatura. Fase 15: tope de
+    seguimientos por candidatura y días para agradecer una entrevista."""
 
     days_without_reply: int = Field(gt=0)
+    max_followups: int = Field(default=2, ge=1)
+    thank_you_days: int = Field(default=3, ge=1)
 
 
 class RepliesPolicy(BaseModel):

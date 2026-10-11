@@ -8341,6 +8341,16 @@
         "summary": "Poll Replies",
         "description": "Lee ahora el correo (IMAP en solo lectura y `data/inbox/respuestas/`).",
         "operationId": "poll_replies",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmptyBody"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -8793,6 +8803,365 @@
           }
         }
       }
+    },
+    "/jobs/{job_id}/drafts": {
+      "get": {
+        "tags": [
+          "drafts"
+        ],
+        "summary": "List Job Drafts",
+        "description": "Borradores vigentes de la oferta y cuántos seguimientos llevas enviados.",
+        "operationId": "list_job_drafts",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DraftList"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/drafts/{draft_id}/sent": {
+      "post": {
+        "tags": [
+          "drafts"
+        ],
+        "summary": "Mark Draft Sent",
+        "description": "«Ya lo he enviado»: un seguimiento registra `followup_sent`.",
+        "operationId": "mark_draft_sent",
+        "parameters": [
+          {
+            "name": "draft_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Draft Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DraftSentBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DraftActionResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/drafts/{draft_id}/discard": {
+      "post": {
+        "tags": [
+          "drafts"
+        ],
+        "summary": "Discard Draft",
+        "description": "Descarta el borrador sin registrar nada.",
+        "operationId": "discard_draft",
+        "parameters": [
+          {
+            "name": "draft_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Draft Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmptyBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DraftActionResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -8834,7 +9203,9 @@
               "generar-cv",
               "anadir-skills",
               "plan-formacion",
-              "revisar-respuestas"
+              "revisar-respuestas",
+              "redactar-seguimientos",
+              "redactar-seguimiento"
             ],
             "title": "Id"
           },
@@ -11382,6 +11753,106 @@
         ],
         "title": "DocumentFolderInfo"
       },
+      "DraftActionResult": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok",
+            "default": true
+          },
+          "draft_id": {
+            "type": "integer",
+            "title": "Draft Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "sent",
+              "discarded"
+            ],
+            "title": "Status"
+          },
+          "event_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Id"
+          },
+          "stage": {
+            "$ref": "#/components/schemas/Stage"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "draft_id",
+          "status",
+          "event_id",
+          "stage",
+          "message"
+        ],
+        "title": "DraftActionResult"
+      },
+      "DraftList": {
+        "properties": {
+          "job_id": {
+            "type": "integer",
+            "title": "Job Id"
+          },
+          "followups_sent": {
+            "type": "integer",
+            "title": "Followups Sent"
+          },
+          "max_followups": {
+            "type": "integer",
+            "title": "Max Followups"
+          },
+          "drafts": {
+            "items": {
+              "$ref": "#/components/schemas/MessageDraftOut"
+            },
+            "type": "array",
+            "title": "Drafts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "followups_sent",
+          "max_followups",
+          "drafts"
+        ],
+        "title": "DraftList"
+      },
+      "DraftSentBody": {
+        "properties": {
+          "occurred_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Occurred At",
+            "description": "Cuándo lo enviaste (por defecto, ahora)."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "DraftSentBody"
+      },
       "EmailPollResult": {
         "properties": {
           "source_id": {
@@ -11450,7 +11921,8 @@
         "properties": {},
         "additionalProperties": false,
         "type": "object",
-        "title": "EmptyBody"
+        "title": "EmptyBody",
+        "description": "Cuerpo `{}` de las acciones de la UI sin datos: JSON, para que `require_ui` lo compruebe."
       },
       "ErrorDetail": {
         "properties": {
@@ -11898,6 +12370,28 @@
           "days_waiting": {
             "type": "integer",
             "title": "Days Waiting"
+          },
+          "followups_sent": {
+            "type": "integer",
+            "title": "Followups Sent"
+          },
+          "contacts": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Contacts"
+          },
+          "draft_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Draft Id"
           }
         },
         "type": "object",
@@ -11909,7 +12403,10 @@
           "channel",
           "applied_at",
           "last_followup_at",
-          "days_waiting"
+          "days_waiting",
+          "followups_sent",
+          "contacts",
+          "draft_id"
         ],
         "title": "FollowupItem"
       },
@@ -11919,18 +12416,36 @@
             "type": "integer",
             "title": "Days Without Reply"
           },
+          "max_followups": {
+            "type": "integer",
+            "title": "Max Followups"
+          },
           "followups": {
             "items": {
               "$ref": "#/components/schemas/FollowupItem"
             },
             "type": "array",
             "title": "Followups"
+          },
+          "thank_you_days": {
+            "type": "integer",
+            "title": "Thank You Days"
+          },
+          "thanks_due": {
+            "items": {
+              "$ref": "#/components/schemas/ThanksItem"
+            },
+            "type": "array",
+            "title": "Thanks Due"
           }
         },
         "type": "object",
         "required": [
           "days_without_reply",
-          "followups"
+          "max_followups",
+          "followups",
+          "thank_you_days",
+          "thanks_due"
         ],
         "title": "FollowupList"
       },
@@ -12998,7 +13513,9 @@
               "generar-cv",
               "anadir-skills",
               "plan-formacion",
-              "revisar-respuestas"
+              "revisar-respuestas",
+              "redactar-seguimientos",
+              "redactar-seguimiento"
             ],
             "title": "Action"
           },
@@ -13447,6 +13964,101 @@
           "created_at"
         ],
         "title": "MatchView"
+      },
+      "MessageDraftOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "job_id": {
+            "type": "integer",
+            "title": "Job Id"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "followup",
+              "thank_you"
+            ],
+            "title": "Kind"
+          },
+          "milestone_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Milestone Id"
+          },
+          "subject": {
+            "type": "string",
+            "title": "Subject"
+          },
+          "body": {
+            "type": "string",
+            "title": "Body"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "sent",
+              "discarded"
+            ],
+            "title": "Status"
+          },
+          "event_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Id"
+          },
+          "agent_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent Name"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "job_id",
+          "kind",
+          "milestone_id",
+          "subject",
+          "body",
+          "status",
+          "event_id",
+          "agent_name",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "MessageDraftOut"
       },
       "MilestoneCreate": {
         "properties": {
@@ -16666,6 +17278,66 @@
           "fallback_template"
         ],
         "title": "TemplateList"
+      },
+      "ThanksItem": {
+        "properties": {
+          "job_id": {
+            "type": "integer",
+            "title": "Job Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "milestone_id": {
+            "type": "integer",
+            "title": "Milestone Id"
+          },
+          "interview_title": {
+            "type": "string",
+            "title": "Interview Title"
+          },
+          "interview_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Interview At"
+          },
+          "contacts": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Contacts"
+          },
+          "draft_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Draft Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "title",
+          "company",
+          "milestone_id",
+          "interview_title",
+          "interview_at",
+          "contacts",
+          "draft_id"
+        ],
+        "title": "ThanksItem",
+        "description": "Entrevista hecha hace poco sin agradecimiento enviado (fase 15)."
       },
       "TitleFunnel": {
         "properties": {

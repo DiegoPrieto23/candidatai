@@ -138,7 +138,9 @@ decides: nada cambia de etapa hasta que pulsas «Aceptar».
   nombre: `JH_IMAP_REPLIES_FOLDER="Procesos"`.
 - **Qué lee:** solo si tienes alguna candidatura enviada abierta (`applied` o `in_process`); si no,
   ni se conecta. De cada correo desde el envío más antiguo (como mucho `replies.max_days` días,
-  120) pide primero **solo las cabeceras** (remitente, fecha, asunto y `Message-ID`).
+  120) pide primero **solo las cabeceras** (remitente, fecha, asunto y `Message-ID`): de todos
+  los correos de ese periodo, esas cuatro cabeceras pasan por la memoria de la app al leer,
+  aunque no se guarden.
 - **Qué guarda:** solo los correos posteriores al envío cuyo remitente casa con una de esas
   candidaturas:
   - un contacto de la ficha (su dirección exacta, aunque sea de Gmail);
@@ -148,7 +150,9 @@ decides: nada cambia de etapa hasta que pulsas «Aceptar».
   - un ATS (Greenhouse, Lever, Workday, Teamtailor… lista en `config/policies.yaml` →
     `replies.ats_sender_domains`) cuyo remitente o asunto nombra a la empresa.
 
-  De esos descarga el cuerpo y guarda el texto visible. **De los demás no guarda nada**: tu correo
+  Un dominio que solo empieza como la empresa no cuenta (`metaphor.com` no es «Meta»), y un correo
+  sin fecha tampoco. De esos descarga el cuerpo y guarda el texto visible. **De los demás no
+  guarda nada**: tu correo
   personal, boletines o alertas no salen de tu buzón.
 - **Avisos de portales** («InfoJobs: tu candidatura ha sido vista»): no se leen por defecto. Si los
   quieres, añade el dominio a `replies.portal_sender_domains` en `config/policies.yaml`.
@@ -163,6 +167,10 @@ decides: nada cambia de etapa hasta que pulsas «Aceptar».
   clasificar, Inicio y «Respuestas» muestran el botón «Revisar respuestas», que abre tu agente con
   la orden. El texto de los correos es contenido no confiable: si trae instrucciones para una IA, se
   marca y no se obedece.
+- **Contestar:** la app no envía correo. Los seguimientos (como mucho 2 por candidatura) y los
+  agradecimientos tras una entrevista los redacta tu agente con `redactar-seguimiento` como
+  borradores en la ficha de la oferta; los copias, los mandas desde tu correo y pulsas «Ya lo he
+  enviado».
 
 ## Alternativa sin credenciales
 

@@ -259,6 +259,22 @@ def test_event_not_valid_now_changes_nothing(
 
 
 def test_poll_from_the_ui(client: TestClient, mail: dict[str, tuple[int, int]]) -> None:
-    response = client.post("/replies/poll")
+    assert client.post("/replies/poll").status_code == 403  # solo desde la UI
+    response = client.post("/replies/poll", json={}, headers=JSON)
     assert response.status_code == 200, response.text
     assert response.json()["processes"] == 5 and response.json()["errors"] == []
+
+
+def test_reply_before_the_recorded_send_time_counts_from_the_send(
+    client: TestClient, mail: dict[str, tuple[int, int]]
+) -> None:
+    """Un correo del día del envío pero anterior a la hora anotada: se registra desde el envío."""
+    reply_id, job_id = mail["datos@neboa.example"]
+    with session_scope() as session:
+        reply = session.get(Reply, reply_id)
+        assert reply is not None and reply.received_at is not None
+        reply.received_at = APPLIED - timedelta(hours=2)
+    body = {"job_id": job_id, "event_type": "reply_received"}
+    response = client.post(f"/replies/{reply_id}/accept", json=body, headers=JSON)
+    assert response.status_code == 200, response.text
+    assert _events(job_id)[-1].occurred_at == APPLIED

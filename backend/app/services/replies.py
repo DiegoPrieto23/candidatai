@@ -319,6 +319,11 @@ def _names_company(company_key: str, text: str) -> bool:
     return len(company_key) >= 2 and f" {company_key} " in f" {fold(text)} "
 
 
+_COMPANY_SUFFIXES = frozenset(
+    {"group", "grupo", "jobs", "careers", "empleo", "talent", "hr", "rrhh", "corp", "inc", "spain"}
+)
+
+
 def _match(
     process: _Process, domains: _Domains, sender: str, sender_name: str, subject: str
 ) -> MatchReason | None:
@@ -338,10 +343,13 @@ def _match(
     compact = process.compact
     if not label or not compact:
         return None
+    # Igualdad, la primera palabra del nombre («bretema» ↔ «Brétema Analytics») o el nombre con un
+    # sufijo corporativo («acmegroup»). Un simple prefijo no basta: «meta» ≠ «metaphor».
+    first = process.company_key.split(" ")[0]
     if (
         label == compact
-        or (len(compact) >= 4 and label.startswith(compact))
-        or (len(label) >= 4 and compact.startswith(label))
+        or (len(label) >= 5 and label == first)
+        or (label.startswith(compact) and label[len(compact) :] in _COMPANY_SUFFIXES)
     ):
         return "company_name"
     return None
@@ -357,8 +365,8 @@ def _candidates(
 ) -> list[dict[str, Any]]:
     found: list[tuple[int, int, str]] = []
     for process in processes:
-        if received_at is not None and received_at < process.since:
-            continue  # anterior al envío
+        if received_at is None or received_at < process.since:
+            continue  # sin fecha o anterior al envío: no se puede saber si es una respuesta
         reason = _match(process, domains, sender, sender_name, subject)
         if reason is not None:
             found.append((_STRENGTH[reason], -process.job_id, reason))
@@ -559,6 +567,12 @@ def _describe(result: RepliesPollResult) -> str:
         )
     else:
         text = "Respuestas: ningún correo nuevo de tus procesos"
+    if result.checked:
+        plural = "s" if result.processes != 1 else ""
+        text += (
+            f" ({result.checked} correos mirados; {result.processes} candidatura{plural} "
+            f"abierta{plural})"
+        )
     if result.errors:
         text += f"; {len(result.errors)} avisos"
     return text + "."
@@ -895,6 +909,12 @@ def accept_reply(session: Session, reply_id: int, decision: ReplyDecision) -> Re
     if decision.job_id not in _candidate_ids(row):
         raise ValueError(f"La oferta {decision.job_id} no es candidata de este correo.")
     occurred_at = decision.occurred_at or row.received_at
+    application = session.get(Application, decision.job_id)
+    applied_at = application.applied_at if application else None
+    if occurred_at is not None and applied_at is not None and occurred_at < applied_at:
+        # Un correo del mismo día del envío, pero de antes de la hora anotada al registrarlo: el
+        # historial no admite una respuesta antes del envío, así que cuenta desde el envío.
+        occurred_at = applied_at
     extra: dict[str, Any] = {"reply_id": row.id}
     event_id: int | None = None
     milestone_id: int | None = None

@@ -22,6 +22,7 @@ import { CoverLetterSection } from '@/components/CoverLetterSection'
 import { CvSection } from '@/components/CvSection'
 import { JobReplyNotice } from '@/components/JobReplyNotice'
 import { DiscardDialog } from '@/components/DiscardDialog'
+import { DraftsSection } from '@/components/DraftsSection'
 import { MatchDetails, ScoreBadge } from '@/components/MatchDetails'
 import { PackageSection } from '@/components/PackageSection'
 import { ProcessSection } from '@/components/ProcessSection'
@@ -613,6 +614,7 @@ export function JobPage() {
               {sent ? (
                 <>
                   <ProcessSection job={job} />
+                  <DraftsSection job={job} />
                   <ArchivedApplication job={job} />
                   <ExtractionBlock job={job} />
                   <EarlierStages>

@@ -46,6 +46,10 @@ context_app = typer.Typer(
 skills_app = typer.Typer(
     help="Huecos de skills: lo que piden las ofertas y tu perfil no cubre.", no_args_is_help=True
 )
+drafts_app = typer.Typer(
+    help="Borradores de seguimiento y agradecimiento (la app no envía nada).",
+    no_args_is_help=True,
+)
 replies_app = typer.Typer(
     help="Respuestas de las empresas por correo: ingesta y propuestas del agente.",
     no_args_is_help=True,
@@ -80,6 +84,7 @@ app.add_typer(context_app, name="context")
 app.add_typer(prompts_app, name="prompts")
 app.add_typer(skills_app, name="skills")
 app.add_typer(replies_app, name="replies")
+app.add_typer(drafts_app, name="drafts")
 demo_app = typer.Typer(
     help="Modo demo: una búsqueda ficticia para probar la app.", no_args_is_help=True
 )
@@ -1496,10 +1501,21 @@ def _render_followups(result: Any) -> None:
     if not result.followups:
         days = result.days_without_reply
         typer.echo(f"Ningún seguimiento pendiente ({days} días sin respuesta).")
-        return
-    typer.echo(f"Sin respuesta desde hace {result.days_without_reply} días o más:")
+    else:
+        typer.echo(f"Sin respuesta desde hace {result.days_without_reply} días o más:")
     for item in result.followups:
-        typer.echo(f"{item.job_id:>5}  {item.days_waiting:>3} días  {item.title} · {item.company}")
+        sent = f"  ({item.followups_sent}/{result.max_followups} enviados)"
+        draft = "  [borrador]" if item.draft_id else ""
+        typer.echo(
+            f"{item.job_id:>5}  {item.days_waiting:>3} días  {item.title} · {item.company}"
+            f"{sent if item.followups_sent else ''}{draft}"
+        )
+    if result.thanks_due:
+        typer.echo("Entrevistas por agradecer:")
+    for thanks in result.thanks_due:
+        when = _local(thanks.interview_at, False)
+        draft = "  [borrador]" if thanks.draft_id else ""
+        typer.echo(f"{thanks.job_id:>5}  {when}  {thanks.title} · {thanks.company}{draft}")
 
 
 def _render_upcoming(result: Any) -> None:
@@ -1667,6 +1683,7 @@ register_tools(
         "context": context_app,
         "skills": skills_app,
         "replies": replies_app,
+        "drafts": drafts_app,
     },
     {
         "get_status": _render_status,
@@ -1694,6 +1711,7 @@ register_tools(
         "list_followups_due": _render_followups,
         "list_replies": _render_replies,
         "save_reply_proposal": _render_message,
+        "save_message_draft": _render_message,
         "list_upcoming": _render_upcoming,
         "get_funnel_stats": _render_funnel,
         "get_skill_gaps": _render_skill_gaps,

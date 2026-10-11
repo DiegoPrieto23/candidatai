@@ -42,7 +42,10 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 12.3 | ↳ Compatibilidad, README y seguridad | ✅ | Matriz de agentes probada, README de portfolio y repositorio revisado |
 | 13 | Contexto y documentos | ✅ | `data/contexto/*.md` (estilo, perfil conductual, criterios, narrativa) que orientan sin respaldar hechos; `data/documentos/` y archivo de cada candidatura enviada |
 | 14 | Huecos de skills y vocabulario | ✅ | Página «Skills»: ausentes agregadas; «es lo mismo que…» añade el alias y recalcula; huecos reales → skill `plan-formacion` |
-| 15 | Respuestas por correo y seguimientos | ⏳ | Los correos de las empresas proponen el evento (entrevista, rechazo…) en la ficha y tú lo aceptas; borradores de seguimiento y agradecimiento |
+| 15 | Respuestas por correo y seguimientos | ✅ | Los correos de las empresas proponen el evento (entrevista, rechazo…) en la ficha y tú lo aceptas; borradores de seguimiento y agradecimiento |
+| 15.1 | ↳ Ingesta y clasificador | ✅ | IMAP en solo lectura (solo cabeceras salvo lo que casa con una candidatura), `<untrusted_email>`, rol `clasificador` y skill `revisar-respuestas` |
+| 15.2 | ↳ Bandeja «Respuestas» | ✅ | Aceptar (tal cual o cambiada) o ignorar, solo desde la UI; aviso en la ficha y «Revisar respuestas» en Inicio |
+| 15.3 | ↳ Borradores de seguimiento | ✅ | `save_message_draft`, tope de 2 seguimientos, `thanks_due`, skill `redactar-seguimiento` y sección «Borradores» |
 | 16 | Ofertas vivas, republicadas y búsqueda ampliada | ⏳ | Aviso de oferta cerrada o republicada; títulos parecidos; descubrir tableros de Greenhouse/Lever/Ashby de tus empresas |
 | 17 | Entrevistas: simulacro y repaso | ⏳ | Plan de preparación, simulacro con feedback, repaso posterior con notas y historias STAR nuevas |
 | 18 | Contactos, mensajes e investigación de empresas | ⏳ | Tus contactos de LinkedIn (CSV) cruzados con tus ofertas, borradores de mensaje y dosier de empresa con fuentes |
@@ -1422,3 +1425,68 @@ decisiones tomadas y deuda técnica pendiente. -->
   - Pendiente de prueba manual: la página «Skills» con datos reales (alias, marcas y recálculo del
     worker), «Añadir al perfil las que tengo» y `plan-formacion` con Claude Code (web y escritura
     de `data/documentos/plan-formacion.md`).
+
+### 15 · Respuestas por correo y seguimientos — 2026-10-11 · Claude Code (Opus 5.5)
+- **Resumen** (tres subfases en la misma rama, un commit por subfase):
+  - **15.1** · Migración 0014 (`replies`, `message_drafts`). `services/replies.py`:
+    - lee por IMAP en solo lectura `JH_IMAP_REPLIES_FOLDER` (por defecto `INBOX`) o
+      `data/inbox/respuestas/`, solo si hay candidaturas en `applied`/`in_process`;
+    - pide primero las cabeceras y el cuerpo solo de lo que casa con una candidatura (contacto,
+      dominio de la empresa, ATS que la nombra o nombre de la empresa en el dominio);
+    - guarda el texto visible, con detección de inyección también en lo oculto, y lo entrega
+      envuelto en `<untrusted_email>`.
+    - Herramientas `list_replies`, `get_reply` y `save_reply_proposal` (`jh replies
+      list|show|propose`), `jh replies poll`, tarea `poll_replies`, comprobación en `jh doctor`.
+    - Rol `clasificador` y skill `revisar-respuestas`. Correos ficticios en
+      `demo/emails/respuestas/`.
+  - **15.2** · API `/replies` (bandeja, correo, leer ahora, aceptar e ignorar con `require_ui`,
+    que pasa a `api/deps.py`). Aceptar registra el evento como `user` con `payload.reply_id` y,
+    con fecha, crea el hito; `none` archiva sin evento. Página «Respuestas», aviso en la ficha,
+    recuento en el menú, Inicio con «Revisar respuestas» (acción `revisar-respuestas`).
+  - **15.3** · `services/drafts.py`: `save_message_draft` ↔ `jh drafts save` (seguimiento o
+    agradecimiento; sustituye el vigente), «Ya lo he enviado» (registra `followup_sent`) y
+    «Descartar», solo desde la UI. Tope `followups.max_followups` (2) también en el aviso del
+    tablero y de la ficha. `list_followups_due` con `followups_sent`, nombres de contactos,
+    `draft_id` y `thanks_due` (`followups.thank_you_days`). Skill `redactar-seguimiento`, sección
+    «Borradores» en la ficha y «Redactar borradores» en Procesos (acciones
+    `redactar-seguimiento` y `redactar-seguimientos`). La comprobación de etapa de `agent_launch` es
+    por acción.
+  - Docs: `CONFIGURAR_CORREO.md`, `AGENT_INTERFACE.md`, POLICIES §5, `DATA_MODEL.md`,
+    `AGENTS_COMPAT.md`, README, ADR-027 y `docs/pruebas/fase-15-prueba-manual.txt`.
+  - Tests: 1831 de backend y 188 de frontend.
+- **Pruebas reales** (carpeta de datos aislada, sin tocar `data/`): el rol `clasificador` (Claude
+  Code, modelo rápido, modo sin MCP) clasificó los 5 correos de la demo. Salieron entrevista con
+  su hito (jueves 8, 10:00 +02:00), rechazo vía Greenhouse, prueba con plazo de todo el día y
+  oferta, todos con confianza `high`. El correo con inyección oculta salió `none` con confianza
+  `low` y marcado. Ninguna oferta cambió de etapa.
+- **Decisiones:**
+  - Bandeja de entrada por defecto, con privacidad por diseño: cabeceras primero, nada guardado
+    de lo que no casa, sin conexión sin candidaturas abiertas (ADR-027).
+  - Avisos de portales fuera por defecto (`replies.portal_sender_domains` vacío). `none` permitido
+    para acuses de recibo.
+  - La propuesta no registra nada; aceptar solo desde la UI, sin herramienta ni comando. El
+    orquestador `revisar-respuestas` no lee correos.
+  - Con una sola candidata, un puesto que no coincide del todo baja la confianza a `medium`, no a
+    `low`, para no perder el hito.
+  - Un correo anterior a la hora anotada del envío se registra desde el envío.
+  - Revisión del rol `revisor` aplicada:
+    - tope de seguimientos en tablero, ficha y «Ya lo he enviado»;
+    - coincidencia por nombre más estricta (igualdad, primera palabra de 5+ letras o sufijo
+      corporativo; `metaphor.com` ya no es «Meta»);
+    - correos sin fecha descartados;
+    - `POST /replies/poll` solo desde la UI;
+    - no se repite el agradecimiento de una entrevista ya agradecida;
+    - límite de `require_ui` frente a un agente con terminal, documentado en ADR-027.
+- **Deuda:**
+  - `.env.example` no lleva `JH_IMAP_REPLIES_FOLDER`: el agente no tiene permiso sobre ese
+    fichero. Añádela a mano (opcional, por defecto `INBOX`).
+  - No hay hito de «plazo» para responder a una oferta: va en el resumen. Encaja en la fase 21.
+  - Un agradecimiento descartado vuelve a salir en `thanks_due` mientras dure `thank_you_days`.
+    Un agradecimiento enviado solo queda en `message_drafts` (no hay evento).
+  - Un borrador de seguimiento sigue vigente aunque la empresa conteste; se descarta a mano.
+  - El botón «Seguimiento enviado» del proceso registra `followup_sent` sin cerrar el borrador
+    abierto (marcar ese borrador después lo rechaza el tope si ya son 2).
+  - Pendiente de prueba manual: IMAP real sobre `INBOX`, la UI de «Respuestas» y «Borradores» en
+    el navegador y `redactar-seguimiento` con datos reales
+    (`docs/pruebas/fase-15-prueba-manual.txt`).
+

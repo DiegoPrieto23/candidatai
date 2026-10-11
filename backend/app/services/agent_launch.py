@@ -38,7 +38,15 @@ ActionId = Literal[
     "anadir-skills",
     "plan-formacion",
     "revisar-respuestas",
+    "redactar-seguimientos",
+    "redactar-seguimiento",
 ]
+
+
+# Etapas en las que tiene sentido redactar el CV de una oferta (también para rehacerlo).
+CV_STAGES = frozenset({Stage.APPROVED, Stage.CV_READY})
+# Candidaturas enviadas y abiertas: a las que se escribe un seguimiento o un agradecimiento.
+SENT_STAGES = frozenset({Stage.APPLIED, Stage.IN_PROCESS})
 
 
 @dataclass(frozen=True)
@@ -46,6 +54,8 @@ class Action:
     label: str
     prompt: str  # `{job_id}` si la acción es de una oferta
     needs_job: bool = False
+    stages: frozenset[Stage] = frozenset()  # con oferta: etapas en las que se puede lanzar
+    wrong_stage: str = ""  # el motivo si la oferta no está en ellas
 
 
 ACTIONS: dict[ActionId, Action] = {
@@ -65,6 +75,8 @@ ACTIONS: dict[ActionId, Action] = {
         "Generar CV",
         "Usa el skill generar-cv de Job Hunter para la oferta {job_id}.",
         needs_job=True,
+        stages=CV_STAGES,
+        wrong_stage="Solo se genera el CV de una oferta aprobada.",
     ),
     # Página «Skills» (fase 14). Los nombres de las skills salen de las ofertas, así que no van en
     # la orden: el agente los lee de las marcas con `get_skill_gaps`.
@@ -83,9 +95,20 @@ ACTIONS: dict[ActionId, Action] = {
         "Revisar respuestas",
         "Usa el skill revisar-respuestas de Job Hunter con los correos de empresas sin clasificar.",
     ),
+    # Procesos y ficha (fase 15): el agente redacta; el usuario copia y envía desde su correo.
+    "redactar-seguimientos": Action(
+        "Redactar seguimientos",
+        "Usa el skill redactar-seguimiento de Job Hunter con los seguimientos y agradecimientos "
+        "pendientes.",
+    ),
+    "redactar-seguimiento": Action(
+        "Redactar seguimiento",
+        "Usa el skill redactar-seguimiento de Job Hunter para la oferta {job_id}.",
+        needs_job=True,
+        stages=SENT_STAGES,
+        wrong_stage="Solo se escribe a la empresa de una candidatura enviada y abierta.",
+    ),
 }
-# Etapas en las que tiene sentido redactar el CV de una oferta (también para rehacerlo).
-CV_STAGES = frozenset({Stage.APPROVED, Stage.CV_READY})
 
 
 class LaunchError(Exception):
@@ -205,8 +228,8 @@ def launch(session: Session, action: ActionId, job_id: int | None = None) -> Lau
             stage = events.current_stage(session, job_id)
         except events.JobNotFoundError as exc:
             raise LaunchError("not_found", f"No existe la oferta {job_id}.") from exc
-        if stage not in CV_STAGES:
-            raise LaunchError("invalid_request", "Solo se genera el CV de una oferta aprobada.")
+        if stage not in spec.stages:
+            raise LaunchError("invalid_request", spec.wrong_stage)
     prompt = prompt_for(action, job_id if spec.needs_job else None)
     picked = _pick()
     if isinstance(picked, str):

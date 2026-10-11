@@ -1470,6 +1470,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/jobs/{job_id}/drafts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Job Drafts
+         * @description Borradores vigentes de la oferta y cuántos seguimientos llevas enviados.
+         */
+        get: operations["list_job_drafts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/drafts/{draft_id}/sent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark Draft Sent
+         * @description «Ya lo he enviado»: un seguimiento registra `followup_sent`.
+         */
+        post: operations["mark_draft_sent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/drafts/{draft_id}/discard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Discard Draft
+         * @description Descarta el borrador sin registrar nada.
+         */
+        post: operations["discard_draft"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1492,7 +1552,7 @@ export interface components {
              * Id
              * @enum {string}
              */
-            id: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion" | "revisar-respuestas";
+            id: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion" | "revisar-respuestas" | "redactar-seguimientos" | "redactar-seguimiento";
             /** Label */
             label: string;
             /** Needs Job */
@@ -2362,6 +2422,45 @@ export interface components {
             /** Files */
             files: number;
         };
+        /** DraftActionResult */
+        DraftActionResult: {
+            /**
+             * Ok
+             * @default true
+             */
+            ok: boolean;
+            /** Draft Id */
+            draft_id: number;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "draft" | "sent" | "discarded";
+            /** Event Id */
+            event_id: number | null;
+            stage: components["schemas"]["Stage"];
+            /** Message */
+            message: string;
+        };
+        /** DraftList */
+        DraftList: {
+            /** Job Id */
+            job_id: number;
+            /** Followups Sent */
+            followups_sent: number;
+            /** Max Followups */
+            max_followups: number;
+            /** Drafts */
+            drafts: components["schemas"]["MessageDraftOut"][];
+        };
+        /** DraftSentBody */
+        DraftSentBody: {
+            /**
+             * Occurred At
+             * @description Cuándo lo enviaste (por defecto, ahora).
+             */
+            occurred_at?: string | null;
+        };
         /** EmailPollResult */
         EmailPollResult: {
             /** Source Id */
@@ -2385,7 +2484,10 @@ export interface components {
             /** Message */
             message: string;
         };
-        /** EmptyBody */
+        /**
+         * EmptyBody
+         * @description Cuerpo `{}` de las acciones de la UI sin datos: JSON, para que `require_ui` lo compruebe.
+         */
         EmptyBody: Record<string, never>;
         /** ErrorDetail */
         ErrorDetail: {
@@ -2543,13 +2645,25 @@ export interface components {
             last_followup_at: string | null;
             /** Days Waiting */
             days_waiting: number;
+            /** Followups Sent */
+            followups_sent: number;
+            /** Contacts */
+            contacts: string[];
+            /** Draft Id */
+            draft_id: number | null;
         };
         /** FollowupList */
         FollowupList: {
             /** Days Without Reply */
             days_without_reply: number;
+            /** Max Followups */
+            max_followups: number;
             /** Followups */
             followups: components["schemas"]["FollowupItem"][];
+            /** Thank You Days */
+            thank_you_days: number;
+            /** Thanks Due */
+            thanks_due: components["schemas"]["ThanksItem"][];
         };
         /**
          * FollowupStatus
@@ -2866,7 +2980,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion" | "revisar-respuestas";
+            action: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion" | "revisar-respuestas" | "redactar-seguimientos" | "redactar-seguimiento";
             /** Job Id */
             job_id?: number | null;
         };
@@ -3025,6 +3139,43 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+        };
+        /** MessageDraftOut */
+        MessageDraftOut: {
+            /** Id */
+            id: number;
+            /** Job Id */
+            job_id: number;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "followup" | "thank_you";
+            /** Milestone Id */
+            milestone_id: number | null;
+            /** Subject */
+            subject: string;
+            /** Body */
+            body: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "draft" | "sent" | "discarded";
+            /** Event Id */
+            event_id: number | null;
+            /** Agent Name */
+            agent_name: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
         };
         /** MilestoneCreate */
         MilestoneCreate: {
@@ -4128,6 +4279,31 @@ export interface components {
             invalid: components["schemas"]["InvalidTemplate"][];
             /** Fallback Template */
             fallback_template: string;
+        };
+        /**
+         * ThanksItem
+         * @description Entrevista hecha hace poco sin agradecimiento enviado (fase 15).
+         */
+        ThanksItem: {
+            /** Job Id */
+            job_id: number;
+            /** Title */
+            title: string;
+            /** Company */
+            company: string;
+            /** Milestone Id */
+            milestone_id: number;
+            /** Interview Title */
+            interview_title: string;
+            /**
+             * Interview At
+             * Format: date-time
+             */
+            interview_at: string;
+            /** Contacts */
+            contacts: string[];
+            /** Draft Id */
+            draft_id: number | null;
         };
         /** TitleFunnel */
         TitleFunnel: {
@@ -11123,7 +11299,11 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmptyBody"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
@@ -11422,6 +11602,296 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ReplyDecisionResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_job_drafts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DraftList"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    mark_draft_sent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                draft_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DraftSentBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DraftActionResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    discard_draft: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                draft_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmptyBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DraftActionResult"];
                 };
             };
             /** @description Unauthorized */

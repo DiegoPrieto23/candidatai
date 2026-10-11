@@ -122,11 +122,18 @@ def test_unrelated_or_earlier_mail_leaves_no_trace(session: Session, applied_job
     applied_job("Néboa Data", "https://neboa.example/empleo/ae", applied_at=APPLIED)
     folder = _local([])
     samples = {
-        "boletin.eml": _mail("news@otraempresa.example", "Novedades", "Mon, 05 Oct 2026", "a@o"),
+        "boletin.eml": _mail(
+            "news@otraempresa.example", "Novedades", "Mon, 05 Oct 2026 10:00:00 +0200", "a@o"
+        ),
         "antes.eml": _mail("rrhh@neboa.example", "Hola", "Mon, 28 Sep 2026 10:00:00", "b@n"),
-        "personal.eml": _mail("amiga@gmail.com", "Néboa Data", "Mon, 05 Oct 2026", "c@g"),
+        "personal.eml": _mail(
+            "amiga@gmail.com", "Néboa Data", "Mon, 05 Oct 2026 10:00:00 +0200", "c@g"
+        ),
         "alerta.eml": _mail(
-            "jobalerts-noreply@linkedin.com", "Néboa Data busca", "Mon, 05 Oct 2026", "d@l"
+            "jobalerts-noreply@linkedin.com",
+            "Néboa Data busca",
+            "Mon, 05 Oct 2026 10:00:00 +0200",
+            "d@l",
         ),
     }
     for name, raw in samples.items():
@@ -161,11 +168,13 @@ def test_contact_address_matches_even_from_personal_mail(session: Session, appli
     session.flush()
     folder = _local([])
     (folder / "a.eml").write_bytes(
-        _mail("ana.recruiter@gmail.com", "Hola", "Mon, 05 Oct 2026", "a@g")
+        _mail("ana.recruiter@gmail.com", "Hola", "Mon, 05 Oct 2026 10:00:00 +0200", "a@g")
     )
-    (folder / "b.eml").write_bytes(_mail("otra@gmail.com", "Néboa", "Mon, 05 Oct 2026", "b@g"))
+    (folder / "b.eml").write_bytes(
+        _mail("otra@gmail.com", "Néboa", "Mon, 05 Oct 2026 10:00:00 +0200", "b@g")
+    )
     (folder / "c.eml").write_bytes(
-        _mail("rrhh@castrolabs-talent.example", "Hola", "Mon, 05 Oct 2026", "c@c")
+        _mail("rrhh@castrolabs-talent.example", "Hola", "Mon, 05 Oct 2026 10:00:00 +0200", "c@c")
     )
 
     replies.poll_replies(session, now=NOW)
@@ -182,8 +191,44 @@ def test_ats_mail_needs_the_company_name(session: Session, applied_job) -> None:
     applied_job("Lonxa Retail Tech")
     folder = _local([])
     (folder / "a.eml").write_bytes(
-        _mail("no-reply@greenhouse-mail.io", "Tu candidatura en Otra", "Mon, 05 Oct 2026", "a@g")
+        _mail(
+            "no-reply@greenhouse-mail.io",
+            "Tu candidatura en Otra",
+            "Mon, 05 Oct 2026 10:00:00 +0200",
+            "a@g",
+        )
     )
+    replies.poll_replies(session, now=NOW)
+    assert session.scalars(select(Reply)).all() == []
+
+
+@pytest.mark.parametrize(
+    ("company", "sender", "stored"),
+    [
+        ("Meta", "hola@metaphor.example", False),
+        ("Orange", "info@orangeinvestments.example", False),
+        ("Datadog", "news@data.example", False),
+        ("Data Solutions", "news@data.example", False),  # una palabra corta y genérica
+        ("Acme", "talento@acmegroup.example", True),  # nombre + sufijo corporativo
+        ("Brétema Analytics", "laura@bretema.example", True),  # primera palabra
+    ],
+)
+def test_company_name_in_the_domain_must_really_be_the_company(
+    session: Session, applied_job, company: str, sender: str, stored: bool
+) -> None:
+    """Privacidad: un dominio que solo empieza como la empresa no es la empresa."""
+    applied_job(company)
+    folder = _local([])
+    (folder / "a.eml").write_bytes(_mail(sender, "Hola", "Mon, 05 Oct 2026 10:00:00 +0200", "a@x"))
+    replies.poll_replies(session, now=NOW)
+    assert (len(session.scalars(select(Reply)).all()) == 1) is stored
+
+
+def test_mail_without_date_is_not_stored(session: Session, applied_job) -> None:
+    applied_job("Néboa Data", "https://neboa.example/empleo/ae")
+    folder = _local([])
+    raw = _mail("datos@neboa.example", "Hola", "x", "nd@x").replace(b"Date: x\n", b"")
+    (folder / "a.eml").write_bytes(raw)
     replies.poll_replies(session, now=NOW)
     assert session.scalars(select(Reply)).all() == []
 
@@ -194,7 +239,10 @@ def test_portal_notices_only_when_approved(
     applied_job("Lonxa Retail Tech")
     folder = _local([])
     notice = _mail(
-        "noreply@infojobs.net", "Lonxa Retail Tech ha visto tu CV", "Mon, 05 Oct 2026", "n@i"
+        "noreply@infojobs.net",
+        "Lonxa Retail Tech ha visto tu CV",
+        "Mon, 05 Oct 2026 10:00:00 +0200",
+        "n@i",
     )
     (folder / "n.eml").write_bytes(notice)
     assert replies.poll_replies(session, now=NOW).created == 0
@@ -212,7 +260,9 @@ def test_one_mail_can_match_several_processes(session: Session, applied_job) -> 
     first = applied_job("Néboa Data", "https://neboa.example/a")
     second = applied_job("Néboa Data Labs", "https://neboa.example/b")
     folder = _local([])
-    (folder / "a.eml").write_bytes(_mail("rrhh@neboa.example", "Hola", "Mon, 05 Oct 2026", "a@n"))
+    (folder / "a.eml").write_bytes(
+        _mail("rrhh@neboa.example", "Hola", "Mon, 05 Oct 2026 10:00:00 +0200", "a@n")
+    )
     replies.poll_replies(session, now=NOW)
     (reply,) = session.scalars(select(Reply)).all()
     assert [c["job_id"] for c in reply.candidates] == [second.id, first.id]
@@ -250,9 +300,9 @@ def test_imap_downloads_only_matching_bodies(
     _demo_jobs(applied_job)
     messages = {
         1: (DEMO / "01-entrevista.eml").read_bytes(),
-        2: _mail("news@otraempresa.example", "Boletín", "Mon, 05 Oct 2026", "n@o"),
+        2: _mail("news@otraempresa.example", "Boletín", "Mon, 05 Oct 2026 10:00:00 +0200", "n@o"),
         3: (DEMO / "04-oferta.eml").read_bytes(),
-        4: _mail(f"Yo <{USER}>", "Néboa Data", "Mon, 05 Oct 2026", "y@d"),  # tuyo
+        4: _mail(f"Yo <{USER}>", "Néboa Data", "Mon, 05 Oct 2026 10:00:00 +0200", "y@d"),  # tuyo
     }
     server: FakeImap
     with fake_imap(messages) as server:
