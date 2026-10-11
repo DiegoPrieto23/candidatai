@@ -1370,6 +1370,106 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/replies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Reply Inbox
+         * @description Respuestas guardadas, la más reciente primero, con sus ofertas y la propuesta.
+         */
+        get: operations["get_reply_inbox"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/replies/poll": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Poll Replies
+         * @description Lee ahora el correo (IMAP en solo lectura y `data/inbox/respuestas/`).
+         */
+        post: operations["poll_replies"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/replies/{reply_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Reply View
+         * @description Una respuesta con el texto visible del correo (para mostrarlo como texto).
+         */
+        get: operations["get_reply_view"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/replies/{reply_id}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Accept Reply
+         * @description Registra el evento (y el hito) de la propuesta, tal cual o cambiada por el usuario.
+         */
+        post: operations["accept_reply"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/replies/{reply_id}/ignore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ignore Reply
+         * @description Deja la respuesta sin registrar nada. Cuerpo `{}` (JSON: solo puede pedirlo la UI).
+         */
+        post: operations["ignore_reply"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1392,7 +1492,7 @@ export interface components {
              * Id
              * @enum {string}
              */
-            id: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion";
+            id: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion" | "revisar-respuestas";
             /** Label */
             label: string;
             /** Needs Job */
@@ -2285,6 +2385,8 @@ export interface components {
             /** Message */
             message: string;
         };
+        /** EmptyBody */
+        EmptyBody: Record<string, never>;
         /** ErrorDetail */
         ErrorDetail: {
             /** Field */
@@ -2764,7 +2866,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion";
+            action: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion" | "revisar-respuestas";
             /** Job Id */
             job_id?: number | null;
         };
@@ -3352,6 +3454,231 @@ export interface components {
             code: string;
             /** Message */
             message: string;
+        };
+        /** RepliesPollResult */
+        RepliesPollResult: {
+            /** Processes */
+            processes: number;
+            /** Checked */
+            checked: number;
+            /** Created */
+            created: number;
+            /** Reply Ids */
+            reply_ids: number[];
+            /** Errors */
+            errors: components["schemas"]["Issue"][];
+            /** Message */
+            message: string;
+        };
+        /**
+         * ReplyDecision
+         * @description Lo que acepta el usuario: la propuesta del agente tal cual o cambiada, o la suya.
+         */
+        ReplyDecision: {
+            /**
+             * Job Id
+             * @description Oferta del correo: una de sus candidatas.
+             */
+            job_id: number;
+            /**
+             * Event Type
+             * @enum {string}
+             */
+            event_type: "reply_received" | "interview_scheduled" | "test_assigned" | "offer_received" | "rejected" | "none";
+            /**
+             * Occurred At
+             * @description Cuándo pasó (por defecto, la fecha del correo).
+             */
+            occurred_at?: string | null;
+            milestone?: components["schemas"]["ReplyMilestone"] | null;
+            /** Note */
+            note?: string | null;
+        };
+        /** ReplyDecisionResult */
+        ReplyDecisionResult: {
+            /**
+             * Ok
+             * @default true
+             */
+            ok: boolean;
+            /** Reply Id */
+            reply_id: number;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "new" | "proposed" | "accepted" | "ignored";
+            /** Job Id */
+            job_id: number | null;
+            /** Event Id */
+            event_id: number | null;
+            /** Milestone Id */
+            milestone_id: number | null;
+            stage: components["schemas"]["Stage"] | null;
+            /** Message */
+            message: string;
+        };
+        /** ReplyInbox */
+        ReplyInbox: {
+            /** Replies */
+            replies: components["schemas"]["ReplyInboxItem"][];
+            /** Counts */
+            counts: {
+                [key: string]: number;
+            };
+        };
+        /**
+         * ReplyInboxItem
+         * @description Una respuesta en la UI: cabeceras, ofertas candidatas y propuesta (sin el cuerpo).
+         */
+        ReplyInboxItem: {
+            /** Reply Id */
+            reply_id: number;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "new" | "proposed" | "accepted" | "ignored";
+            /** Received At */
+            received_at: string | null;
+            /** Sender */
+            sender: string;
+            /** Sender Name */
+            sender_name: string;
+            /** Subject */
+            subject: string;
+            /** Risk Flags */
+            risk_flags: string[];
+            /** Candidates */
+            candidates: components["schemas"]["ReplyJob"][];
+            /** Job Id */
+            job_id: number | null;
+            proposal: components["schemas"]["ReplyProposal"] | null;
+            /** Proposed By */
+            proposed_by: string | null;
+            /** Valid Now */
+            valid_now: boolean | null;
+            /** Event Id */
+            event_id: number | null;
+            /** Resolved At */
+            resolved_at: string | null;
+        };
+        /** ReplyJob */
+        ReplyJob: {
+            /** Job Id */
+            job_id: number;
+            /** Title */
+            title: string;
+            /** Company */
+            company: string;
+            stage: components["schemas"]["Stage"];
+            /**
+             * Reason
+             * @enum {string}
+             */
+            reason: "contact" | "domain" | "ats" | "company_name";
+        };
+        /**
+         * ReplyMilestone
+         * @description Hito que propone el correo: entrevista (`interview_scheduled`) o prueba (`test_assigned`).
+         */
+        ReplyMilestone: {
+            /**
+             * Title
+             * @description Por defecto, el tipo.
+             */
+            title?: string | null;
+            /**
+             * Starts At
+             * Format: date-time
+             * @description Inicio (ISO 8601 con zona, p. ej. +02:00).
+             */
+            starts_at: string;
+            /** Ends At */
+            ends_at?: string | null;
+            /**
+             * All Day
+             * @description Todo el día (p. ej. el plazo de una prueba).
+             * @default false
+             */
+            all_day: boolean;
+            /**
+             * Location
+             * @description Lugar o enlace.
+             */
+            location?: string | null;
+        };
+        /** ReplyProposal */
+        ReplyProposal: {
+            /**
+             * Job Id
+             * @description Oferta del correo: una de sus `candidates`.
+             */
+            job_id: number;
+            /**
+             * Event Type
+             * @description Evento a registrar si el usuario acepta; `none` si no hay nada que registrar.
+             * @enum {string}
+             */
+            event_type: "reply_received" | "interview_scheduled" | "test_assigned" | "offer_received" | "rejected" | "none";
+            /**
+             * Occurred At
+             * @description Cuándo pasó (por defecto, la fecha del correo).
+             */
+            occurred_at?: string | null;
+            /** @description Solo con `interview_scheduled` o `test_assigned` y una fecha clara. */
+            milestone?: components["schemas"]["ReplyMilestone"] | null;
+            /**
+             * Summary
+             * @description Qué dice el correo, en una o dos frases.
+             */
+            summary: string;
+            /**
+             * Confidence
+             * @enum {string}
+             */
+            confidence: "high" | "medium" | "low";
+            /**
+             * Injection Suspected
+             * @description El correo trae instrucciones dirigidas a una IA.
+             * @default false
+             */
+            injection_suspected: boolean;
+        };
+        /** ReplyView */
+        ReplyView: {
+            /** Reply Id */
+            reply_id: number;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "new" | "proposed" | "accepted" | "ignored";
+            /** Received At */
+            received_at: string | null;
+            /** Sender */
+            sender: string;
+            /** Sender Name */
+            sender_name: string;
+            /** Subject */
+            subject: string;
+            /** Risk Flags */
+            risk_flags: string[];
+            /** Candidates */
+            candidates: components["schemas"]["ReplyJob"][];
+            /** Job Id */
+            job_id: number | null;
+            proposal: components["schemas"]["ReplyProposal"] | null;
+            /** Proposed By */
+            proposed_by: string | null;
+            /** Valid Now */
+            valid_now: boolean | null;
+            /** Event Id */
+            event_id: number | null;
+            /** Resolved At */
+            resolved_at: string | null;
+            /** Body Text */
+            body_text: string;
         };
         /** ResolvedOptions */
         ResolvedOptions: {
@@ -10617,6 +10944,484 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MarkResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_reply_inbox: {
+        parameters: {
+            query?: {
+                status?: ("new" | "proposed" | "accepted" | "ignored") | null;
+                job_id?: number | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReplyInbox"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    poll_replies: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RepliesPollResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_reply_view: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                reply_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReplyView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    accept_reply: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                reply_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReplyDecision"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReplyDecisionResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    ignore_reply: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                reply_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmptyBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReplyDecisionResult"];
                 };
             };
             /** @description Unauthorized */

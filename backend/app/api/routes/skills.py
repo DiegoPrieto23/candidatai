@@ -7,8 +7,7 @@ Añadir un alias escribe `config/skill_aliases.yaml`, así que, como `POST /agen
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.api.deps import SessionDep
-from app.api.routes.agent import require_ui
+from app.api.deps import SessionDep, require_ui
 from app.services import skill_aliases, skill_gaps
 
 router = APIRouter(prefix="/skills", tags=["skills"])

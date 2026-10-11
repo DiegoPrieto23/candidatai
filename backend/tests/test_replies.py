@@ -5,9 +5,8 @@ un servidor IMAP falso que falla ante cualquier escritura (`tests/imap_support.p
 """
 
 import imaplib
-import shutil
 from collections.abc import Callable
-from datetime import UTC, datetime
+from datetime import datetime
 from pathlib import Path
 
 import pytest
@@ -15,56 +14,27 @@ from pydantic import ValidationError
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.core.config import REPO_ROOT, get_settings
-from app.models import Company, Contact, Event, Job, Reply, Source
+from app.core.config import get_settings
+from app.models import Contact, Event, Job, Reply
 from app.services import events, replies
-from app.services.normalize import normalize_company
 from app.services.pipeline import Stage
 from tests.imap_support import PASSWORD, USER, FakeImap, fake_imap
-
-DEMO = REPO_ROOT / "demo" / "emails" / "respuestas"
-NOW = datetime(2026, 10, 11, 9, 0, tzinfo=UTC)
-APPLIED = datetime(2026, 10, 1, 9, 0, tzinfo=UTC)
-
-# Empresa -> URL de la oferta. Brétema y Lonxa publican en un ATS (su dominio no cuenta).
-DEMO_COMPANIES = {
-    "Brétema Analytics": "https://boards.greenhouse.io/bretema/jobs/1",
-    "Lonxa Retail Tech": "https://jobs.lever.co/lonxa/2",
-    "Néboa Data": "https://neboa.example/empleo/ae",
-    "Rías Software S.L.": "https://careers.riassoftware.example/data-engineer",
-    "Castro Labs": "https://castrolabs.example/jobs/de",
-}
+from tests.replies_support import (
+    APPLIED,
+    DEMO,
+    DEMO_COMPANIES,
+    NOW,
+    add_applied_job,
+    copy_to_inbox,
+)
 
 
 @pytest.fixture
 def applied_job(session: Session) -> Callable[..., Job]:
     """Oferta enviada (`applied`) el `applied_at` dado."""
-    source = Source(kind="manual_text", name="Manual")
-    session.add(source)
-    session.flush()
-    counter = iter(range(1, 1000))
 
     def _make(company: str, url: str = "", applied_at: datetime = APPLIED) -> Job:
-        n = next(counter)
-        row = Company(name=company, normalized_name=normalize_company(company))
-        session.add(row)
-        session.flush()
-        job = Job(
-            source_id=source.id,
-            company_id=row.id,
-            url=url,
-            title="Data Engineer",
-            raw_text="Texto.",
-            fingerprint=f"fp-{n}",
-        )
-        session.add(job)
-        session.flush()
-        start = datetime(2026, 9, 1, tzinfo=UTC)
-        for step in ("found", "extracted", "approved"):
-            events.record(session, job.id, step, "user", occurred_at=start)
-        events.record(session, job.id, "applied_manually", "user", occurred_at=applied_at)
-        session.flush()
-        return job
+        return add_applied_job(session, company, url, applied_at)
 
     return _make
 
@@ -74,11 +44,7 @@ def _demo_jobs(applied_job: Callable[..., Job]) -> dict[str, Job]:
 
 
 def _local(files: list[Path]) -> Path:
-    folder = get_settings().replies_inbox_dir
-    folder.mkdir(parents=True, exist_ok=True)
-    for path in files:
-        shutil.copy(path, folder / path.name)
-    return folder
+    return copy_to_inbox(files)
 
 
 def _mail(sender: str, subject: str, date: str, message_id: str, body: str = "Hola.") -> bytes:

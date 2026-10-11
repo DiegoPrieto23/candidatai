@@ -159,7 +159,9 @@ decides: nada cambia de etapa hasta que pulsas «Aceptar».
   «Respuestas».
 - **Clasificarlos:** el skill `revisar-respuestas` de tu agente propone para cada correo el evento
   (entrevista con su fecha, prueba, oferta, rechazo, respuesta o nada) y tú lo aceptas, cambias o
-  ignoras. El texto de los correos es contenido no confiable: si trae instrucciones para una IA, se
+  ignoras en la pantalla «Respuestas» o en el aviso de la ficha de la oferta. Si hay correos sin
+  clasificar, Inicio y «Respuestas» muestran el botón «Revisar respuestas», que abre tu agente con
+  la orden. El texto de los correos es contenido no confiable: si trae instrucciones para una IA, se
   marca y no se obedece.
 
 ## Alternativa sin credenciales

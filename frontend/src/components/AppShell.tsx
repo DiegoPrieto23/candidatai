@@ -9,7 +9,7 @@ import {
   TerminalWindowIcon,
 } from '@phosphor-icons/react'
 import type { Stage } from '@/api/client'
-import { useFollowups, useStatus } from '@/api/queries'
+import { useFollowups, useReplies, useStatus } from '@/api/queries'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -186,6 +186,20 @@ function NavCount({ stage, label, muted = false }: { stage: Stage; label: string
   )
 }
 
+/** Respuestas de las empresas que esperan tu decisión (fase 15). */
+function RepliesNavCount() {
+  const { data } = useReplies()
+  const count = data?.counts.proposed ?? 0
+  if (!count) return null
+  return (
+    <span className="tabular grid h-[18px] min-w-[18px] place-items-center rounded-full bg-primary px-1 text-[0.7rem] font-semibold text-primary-foreground">
+      <span className="sr-only">, </span>
+      {count}
+      <span className="sr-only"> por revisar</span>
+    </span>
+  )
+}
+
 export function AppShell() {
   // En Inicio el recorrido ya enseña las etapas: sin la fila de recuentos.
   const { pathname } = useLocation()
@@ -214,6 +228,10 @@ export function AppShell() {
             </NavLink>
             <NavLink to="/procesos" className={navClass}>
               Procesos
+            </NavLink>
+            <NavLink to="/respuestas" className={navClass}>
+              Respuestas
+              <RepliesNavCount />
             </NavLink>
             <NavLink to="/embudo" className={navClass}>
               Embudo

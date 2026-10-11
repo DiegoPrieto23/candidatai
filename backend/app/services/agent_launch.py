@@ -37,6 +37,7 @@ ActionId = Literal[
     "generar-cv",
     "anadir-skills",
     "plan-formacion",
+    "revisar-respuestas",
 ]
 
 
@@ -76,6 +77,11 @@ ACTIONS: dict[ActionId, Action] = {
         "Plan de formación",
         "Usa el skill plan-formacion de Job Hunter con los huecos de skills que he marcado como "
         "«No la tengo».",
+    ),
+    # Inicio y «Respuestas» (fase 15): el agente propone; el usuario acepta en la UI.
+    "revisar-respuestas": Action(
+        "Revisar respuestas",
+        "Usa el skill revisar-respuestas de Job Hunter con los correos de empresas sin clasificar.",
     ),
 }
 # Etapas en las que tiene sentido redactar el CV de una oferta (también para rehacerlo).

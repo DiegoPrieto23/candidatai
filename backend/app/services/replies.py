@@ -11,7 +11,7 @@
 3. **Contenido no confiable**: se guarda como texto visible (sin lo oculto), con la detección de
    frases de inyección (también en el texto oculto) y se entrega envuelto en `<untrusted_email>`.
 4. **Propuestas**: el agente guarda una propuesta (`save_reply_proposal`) que no registra eventos.
-   Solo la UI, con la acción del usuario, la acepta (fase 15.2).
+   Solo la UI, con la acción del usuario, la acepta (`accept_reply`) o la ignora (fase 15.2).
 """
 
 import logging
@@ -34,7 +34,7 @@ from app.core.policies import get_policies
 from app.models import Application, Company, Contact, Job, Milestone, Reply
 from app.models.base import utcnow
 from app.schemas.sources import Issue
-from app.services import platforms
+from app.services import events, platforms
 from app.services.ingestion.email.mailboxes import (
     ImapFactory,
     MailboxError,
@@ -50,8 +50,13 @@ from app.services.ingestion.email.message import (
     parse_message,
 )
 from app.services.normalize import fold, normalize_company
-from app.services.pipeline import TRANSITIONS, EventType, Stage
-from app.services.process import local_zone, start_of_local_day
+from app.services.pipeline import TRANSITIONS, Actor, EventType, Stage
+from app.services.process import (
+    MilestoneCreate,
+    create_milestone,
+    local_zone,
+    start_of_local_day,
+)
 from app.services.untrusted import (
     EXCERPT_MAX_CHARS,
     RiskFlag,
@@ -721,4 +726,241 @@ def save_reply_proposal(
         stage=stage,
         valid_now=valid,
         message=message,
+    )
+
+
+# --- Decisión del usuario (UI) --------------------------------------------------------------
+
+
+class ReplyDecision(_Input):
+    """Lo que acepta el usuario: la propuesta del agente tal cual o cambiada, o la suya."""
+
+    job_id: int = Field(ge=1, description="Oferta del correo: una de sus candidatas.")
+    event_type: ProposalEvent
+    occurred_at: AwareDatetime | None = Field(
+        default=None, description="Cuándo pasó (por defecto, la fecha del correo)."
+    )
+    milestone: ReplyMilestone | None = None
+    note: str | None = Field(default=None, max_length=2000)
+
+    @model_validator(mode="after")
+    def _milestone_kind(self) -> Self:
+        if self.milestone is not None and self.event_type not in MILESTONE_KINDS:
+            raise ValueError("`milestone` solo va con `interview_scheduled` o `test_assigned`.")
+        return self
+
+
+class ReplyDecisionResult(BaseModel):
+    ok: bool = True
+    reply_id: int
+    status: ReplyStatus
+    job_id: int | None
+    event_id: int | None
+    milestone_id: int | None
+    stage: Stage | None
+    message: str
+
+
+class ReplyJob(BaseModel):
+    job_id: int
+    title: str
+    company: str
+    stage: Stage
+    reason: MatchReason
+
+
+class ReplyInboxItem(BaseModel):
+    """Una respuesta en la UI: cabeceras, ofertas candidatas y propuesta (sin el cuerpo)."""
+
+    reply_id: int
+    status: ReplyStatus
+    received_at: datetime | None
+    sender: str
+    sender_name: str
+    subject: str
+    risk_flags: list[str]
+    candidates: list[ReplyJob]
+    job_id: int | None
+    proposal: ReplyProposal | None
+    proposed_by: str | None
+    valid_now: bool | None  # el evento propuesto es válido en la etapa actual de su oferta
+    event_id: int | None
+    resolved_at: datetime | None
+
+
+class ReplyInbox(BaseModel):
+    replies: list[ReplyInboxItem]
+    counts: dict[str, int]  # por estado, de todas
+
+
+class ReplyView(ReplyInboxItem):
+    body_text: str  # texto visible del correo: la UI lo muestra como texto, nunca como HTML
+
+
+_JobRefs = dict[int, tuple[str, str, Stage]]
+
+
+def _job_refs(session: Session, ids: set[int]) -> _JobRefs:
+    if not ids:
+        return {}
+    rows = session.execute(
+        select(Job.id, Job.title, Company.name, Application.stage)
+        .join(Company, Company.id == Job.company_id)
+        .join(Application, Application.job_id == Job.id)
+        .where(Job.id.in_(ids))
+    ).all()
+    return {job_id: (title, company, Stage(stage)) for job_id, title, company, stage in rows}
+
+
+def _inbox_fields(row: Reply, refs: _JobRefs) -> dict[str, Any]:
+    candidates = []
+    for candidate in row.candidates:
+        job_id = int(candidate["job_id"])
+        if job_id in refs:
+            title, company, stage = refs[job_id]
+            candidates.append(
+                ReplyJob(
+                    job_id=job_id,
+                    title=title,
+                    company=company,
+                    stage=stage,
+                    reason=candidate["reason"],
+                )
+            )
+    proposal = _proposal(row)
+    valid_now = None
+    if proposal is not None and row.status == "proposed" and proposal.job_id in refs:
+        valid_now = event_valid_in(proposal.event_type, refs[proposal.job_id][2])
+    return {
+        "reply_id": row.id,
+        "status": row.status,
+        "received_at": row.received_at,
+        "sender": row.sender,
+        "sender_name": row.sender_name,
+        "subject": row.subject,
+        "risk_flags": list(row.risk_flags),
+        "candidates": candidates,
+        "job_id": row.job_id,
+        "proposal": proposal,
+        "proposed_by": row.proposed_by,
+        "valid_now": valid_now,
+        "event_id": row.event_id,
+        "resolved_at": row.resolved_at,
+    }
+
+
+def inbox(
+    session: Session,
+    status: ReplyStatus | None = None,
+    job_id: int | None = None,
+    limit: int = 100,
+) -> ReplyInbox:
+    """Bandeja «Respuestas» de la UI, la más reciente primero. Con `job_id`, las asignadas a esa
+    oferta (propuestas o aceptadas para ella)."""
+    query = select(Reply)
+    if status is not None:
+        query = query.where(Reply.status == status)
+    if job_id is not None:
+        query = query.where(Reply.job_id == job_id)
+    query = query.order_by(Reply.received_at.desc().nulls_last(), Reply.id.desc()).limit(limit)
+    rows = list(session.scalars(query))
+    refs = _job_refs(session, {i for row in rows for i in _candidate_ids(row)})
+    return ReplyInbox(
+        replies=[ReplyInboxItem(**_inbox_fields(row, refs)) for row in rows],
+        counts=status_counts(session),
+    )
+
+
+def reply_view(session: Session, reply_id: int) -> ReplyView:
+    row = _reply(session, reply_id)
+    refs = _job_refs(session, set(_candidate_ids(row)))
+    return ReplyView(**_inbox_fields(row, refs), body_text=row.body_text)
+
+
+def _ensure_open(row: Reply) -> None:
+    if row.status in ("accepted", "ignored"):
+        verb = "aceptaste" if row.status == "accepted" else "ignoraste"
+        raise ReplyResolvedError(f"Esta respuesta ya la {verb}.")
+
+
+def accept_reply(session: Session, reply_id: int, decision: ReplyDecision) -> ReplyDecisionResult:
+    """Acepta la propuesta (o la cambiada por el usuario). Solo se llama desde la UI.
+
+    Registra el evento como `user` con `payload.reply_id`; con hito, lo crea
+    `process.create_milestone` (que registra `interview_scheduled` o `test_assigned`). Con `none`
+    se archiva sin evento. Si el evento no es válido en la etapa de la oferta, no cambia nada.
+    """
+    row = _reply(session, reply_id)
+    _ensure_open(row)
+    if decision.job_id not in _candidate_ids(row):
+        raise ValueError(f"La oferta {decision.job_id} no es candidata de este correo.")
+    occurred_at = decision.occurred_at or row.received_at
+    extra: dict[str, Any] = {"reply_id": row.id}
+    event_id: int | None = None
+    milestone_id: int | None = None
+    if decision.event_type == "none":
+        message = "Archivada sin registrar nada."
+    elif decision.milestone is not None:
+        milestone = decision.milestone
+        created = create_milestone(
+            session,
+            decision.job_id,
+            MilestoneCreate(
+                kind=MILESTONE_KINDS[decision.event_type],
+                title=milestone.title,
+                starts_at=milestone.starts_at,
+                ends_at=milestone.ends_at,
+                all_day=milestone.all_day,
+                location=milestone.location,
+                notes=decision.note,
+                occurred_at=occurred_at,
+            ),
+            payload_extra=extra,
+        )
+        event_id, milestone_id = created.event_id, created.id
+        message = "Registrado, con su hito en el calendario."
+    else:
+        if decision.note:
+            extra["note"] = decision.note
+        event = events.record(
+            session,
+            decision.job_id,
+            decision.event_type,
+            Actor.USER,
+            payload=extra,
+            occurred_at=occurred_at,
+        )
+        event_id = event.id
+        message = "Registrado en la oferta."
+    row.status = "accepted"
+    row.job_id = decision.job_id
+    row.event_id = event_id
+    row.resolved_at = utcnow()
+    session.flush()
+    return ReplyDecisionResult(
+        reply_id=row.id,
+        status="accepted",
+        job_id=decision.job_id,
+        event_id=event_id,
+        milestone_id=milestone_id,
+        stage=events.current_stage(session, decision.job_id),
+        message=message,
+    )
+
+
+def ignore_reply(session: Session, reply_id: int) -> ReplyDecisionResult:
+    """Ignora la respuesta: no registra nada y deja de estar pendiente."""
+    row = _reply(session, reply_id)
+    _ensure_open(row)
+    row.status = "ignored"
+    row.resolved_at = utcnow()
+    session.flush()
+    return ReplyDecisionResult(
+        reply_id=row.id,
+        status="ignored",
+        job_id=row.job_id,
+        event_id=None,
+        milestone_id=None,
+        stage=None,
+        message="Ignorada: no se registra nada.",
     )

@@ -182,8 +182,15 @@ def _when(value: datetime, all_day: bool) -> str:
     return local.strftime("%d/%m/%Y") if all_day else local.strftime("%d/%m/%Y %H:%M")
 
 
-def create_milestone(session: Session, job_id: int, data: MilestoneCreate) -> MilestoneOut:
+def create_milestone(
+    session: Session,
+    job_id: int,
+    data: MilestoneCreate,
+    payload_extra: dict[str, Any] | None = None,
+) -> MilestoneOut:
     """Crea un hito y, si es una entrevista o una prueba, registra su evento (actor `user`).
+
+    `payload_extra` se añade al `payload` del evento (p. ej. `reply_id` al aceptar un correo).
 
     Si el evento no es válido en la etapa de la oferta (p. ej. una entrevista antes de enviar la
     candidatura), no se guarda nada y se lanza `InvalidTransitionError`.
@@ -214,6 +221,7 @@ def create_milestone(session: Session, job_id: int, data: MilestoneCreate) -> Mi
                 "milestone_id": row.id,
                 "title": row.title,
                 "starts_at": starts_at.isoformat(),
+                **(payload_extra or {}),
             }
             event = events.record(
                 session, job_id, event_type, Actor.USER, payload, occurred_at=data.occurred_at

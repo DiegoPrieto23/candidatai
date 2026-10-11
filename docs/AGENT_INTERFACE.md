@@ -325,6 +325,11 @@ Hola: …
   está cerrada): se guarda igual y decide el usuario.
 - Sin herramienta para leer el buzón: `jh replies poll` (CLI), la tarea `poll_replies` del worker
   y «Revisar correo ahora» en la UI.
+- **Aceptar o ignorar no tiene herramienta ni comando, a propósito**: solo la UI (pantalla
+  «Respuestas» y aviso en la ficha de la oferta) llama a `POST /replies/{id}/accept` o `…/ignore`,
+  que exigen el origen de la UI y cuerpo JSON (`require_ui`). Aceptar registra el evento como
+  `user` con `payload.reply_id` y, si hay hito, lo crea; con `none` archiva sin evento. El usuario
+  puede aceptar la propuesta tal cual o cambiar la oferta, el tipo, la fecha o añadir una nota.
 
 ### Comandos de matching y worker (solo CLI)
 

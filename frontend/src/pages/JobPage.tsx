@@ -20,6 +20,7 @@ import { ApplySection } from '@/components/ApplySection'
 import { ArchivedApplication } from '@/components/ArchivedApplication'
 import { CoverLetterSection } from '@/components/CoverLetterSection'
 import { CvSection } from '@/components/CvSection'
+import { JobReplyNotice } from '@/components/JobReplyNotice'
 import { DiscardDialog } from '@/components/DiscardDialog'
 import { MatchDetails, ScoreBadge } from '@/components/MatchDetails'
 import { PackageSection } from '@/components/PackageSection'
@@ -600,7 +601,8 @@ export function JobPage() {
           </header>
 
           {sent && (
-            <div className="mb-6">
+            <div className="mb-6 space-y-6">
+              <JobReplyNotice jobId={job.id} />
               <StatusUpdate job={job} />
             </div>
           )}

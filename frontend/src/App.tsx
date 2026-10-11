@@ -15,6 +15,7 @@ import { NewJobPage } from '@/pages/NewJobPage'
 import { PlatformsPage } from '@/pages/PlatformsPage'
 import { ProfilePage } from '@/pages/ProfilePage'
 import { ProcessesPage } from '@/pages/ProcessesPage'
+import { RepliesPage } from '@/pages/RepliesPage'
 import { SkillsPage } from '@/pages/SkillsPage'
 import { SourcesPage } from '@/pages/SourcesPage'
 import { TemplatesPage } from '@/pages/TemplatesPage'
@@ -49,6 +50,7 @@ export function AppRoutes() {
         {/* Antes «Triaje»: los enlaces guardados siguen funcionando. */}
         <Route path="triaje" element={<Navigate to="/por-revisar" replace />} />
         <Route path="procesos" element={<ProcessesPage />} />
+        <Route path="respuestas" element={<RepliesPage />} />
         <Route
           path="embudo"
           element={
