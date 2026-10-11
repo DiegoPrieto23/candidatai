@@ -40,6 +40,9 @@ calendar_app = typer.Typer(help="Calendario .ics de los procesos.", no_args_is_h
 stats_app = typer.Typer(help="Analítica de la búsqueda.", no_args_is_help=True)
 applications_app = typer.Typer(help="Paquete de candidatura.", no_args_is_help=True)
 letter_app = typer.Typer(help="Cartas de presentación.", no_args_is_help=True)
+context_app = typer.Typer(
+    help="Contexto del candidato (data/contexto/) y carpetas de documentos.", no_args_is_help=True
+)
 prompts_app = typer.Typer(
     help="Avisos al usuario (captcha, login…) mientras el agente busca ofertas.",
     no_args_is_help=True,
@@ -66,6 +69,7 @@ app.add_typer(calendar_app, name="calendar")
 app.add_typer(stats_app, name="stats")
 app.add_typer(applications_app, name="applications")
 app.add_typer(letter_app, name="letter")
+app.add_typer(context_app, name="context")
 app.add_typer(prompts_app, name="prompts")
 demo_app = typer.Typer(
     help="Modo demo: una búsqueda ficticia para probar la app.", no_args_is_help=True
@@ -767,6 +771,87 @@ def profile_init(as_json: bool = JSON_OPTION) -> None:
             f"Creado {dest} a partir del ejemplo (candidata ficticia). Rellénalo con tus datos "
             "(skill `actualizar-perfil`) y luego ejecuta `jh profile validate` e `import`."
         )
+
+
+# --- Contexto del candidato (fase 13) ---------------------------------------------------------
+
+
+@context_app.command("init")
+def context_init(as_json: bool = JSON_OPTION) -> None:
+    """Crea los ficheros de contexto que falten (vacíos) y las carpetas de data/documentos/."""
+    from app.services import context
+
+    result = context.init()
+    if as_json:
+        typer.echo(dump_json(result))
+        return
+    for path in result.created:
+        typer.echo(f"Creado data/{path}")
+    for path in result.existing:
+        typer.echo(f"Ya existía data/{path} (no se toca)")
+    typer.echo(
+        "Rellénalos con tu editor (o con el skill `actualizar-perfil`). Orientan a los skills, "
+        "pero nunca respaldan un hecho: eso va en data/profile.yaml."
+    )
+
+
+def _render_context(view: Any) -> None:
+    for item in view.files:
+        if not item.exists:
+            typer.echo(f"## {item.section}: no existe (crea los ficheros con `jh context init`)")
+            continue
+        state = "vacío" if item.empty else f"{item.size_bytes} bytes"
+        typer.echo(f"## {item.section} ({state})")
+        for warning in item.warnings:
+            typer.secho(f"Aviso: {warning}", fg=typer.colors.YELLOW)
+        if not item.empty:
+            typer.echo(item.text)
+        typer.echo("")
+
+
+@applications_app.command("archive")
+def applications_archive(
+    job_id: int | None = typer.Argument(None, help="Id de la oferta enviada."),
+    all_jobs: bool = typer.Option(False, "--all", help="Todas las enviadas sin carpeta aún."),
+    as_json: bool = JSON_OPTION,
+) -> None:
+    """Archiva en data/documentos/candidaturas/ lo enviado (CV, carta y respuestas).
+
+    Las candidaturas nuevas se archivan solas al marcarlas como enviadas; esto es para las de antes.
+    Las que ya tienen carpeta no se tocan.
+    """
+    from app.services import application_archive
+
+    if (job_id is None) == (not all_jobs):
+        _fail_plain("Indica el id de una oferta o `--all`, uno de los dos.", as_json)
+    try:
+        migrations.ensure_current()
+        with session_scope() as session:
+            results = application_archive.archive_existing(session, job_id)
+    except Exception as exc:
+        error = to_tool_error(exc)
+        if as_json:
+            typer.echo(dump_json(error.payload()))
+        else:
+            typer.secho(f"Error: {error.info.message}", fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=1) from exc
+    if as_json:
+        typer.echo(json.dumps([r.model_dump() for r in results], ensure_ascii=False))
+        return
+    if not results:
+        typer.echo("No hay candidaturas enviadas.")
+    for result in results:
+        state = "archivada en" if result.created else "ya estaba en"
+        typer.echo(f"Oferta {result.job_id}: {state} data/{result.folder}")
+
+
+def _fail_plain(message: str, as_json: bool) -> NoReturn:
+    error = ToolError("invalid_request", message)
+    if as_json:
+        typer.echo(dump_json(error.payload()))
+    else:
+        typer.secho(f"Error: {message}", fg=typer.colors.RED, err=True)
+    raise typer.Exit(code=1)
 
 
 # --- Plantillas: importar un CV de Word (solo CLI; las usa el skill importar-plantilla-cv) -----
@@ -1506,6 +1591,7 @@ register_tools(
         "applications": applications_app,
         "letter": letter_app,
         "prompts": prompts_app,
+        "context": context_app,
     },
     {
         "get_status": _render_status,
@@ -1517,6 +1603,7 @@ register_tools(
         "add_event": _render_event,
         "get_timeline": _render_timeline,
         "get_profile": _render_profile,
+        "get_context": _render_context,
         "get_match": _render_match,
         "save_fit_assessment": _render_saved_assessment,
         "list_cv_templates": _render_templates,

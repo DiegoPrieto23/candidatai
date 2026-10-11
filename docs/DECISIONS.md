@@ -355,3 +355,45 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   opcional, un modo «en segundo plano» (`claude -p` con solo las herramientas del MCP) para skills
   que no preguntan.
 
+
+## ADR-025 · Contexto del candidato separado de los hechos, y archivo de candidaturas
+- **Contexto:** como en AI Job Search, se quería dar al agente más información del candidato que
+  la de un CV: cómo escribe, cómo trabaja, qué busca y por qué, qué no acepta. Meterla en
+  `data/profile.yaml` mezclaría hechos verificables con opiniones y estilo, y rompería la regla
+  de que todo lo que dice un CV tiene respaldo en el perfil. También faltaba guardar qué se envió
+  exactamente en cada candidatura, porque el CV y la carta se pueden rehacer después.
+- **Decisión:**
+  - `data/profile.yaml` sigue siendo la única fuente de **hechos**. Lo nuevo es **contexto**:
+    cuatro ficheros Markdown con nombre fijo en `data/contexto/` (`estilo-redaccion`,
+    `perfil-conductual`, `criterios`, `narrativa`), todos opcionales. Se editan en el editor del
+    usuario, no en la UI, y no se versionan en la BD: `get_context` los lee con su sha256.
+  - El contexto orienta y nunca respalda (POLICIES §1.5): el estilo, en `redactor` y
+    `generar-carta`; los criterios, en `evaluar-encaje` (como riesgo o motivo de `weak`, siempre
+    citados); el perfil conductual y la narrativa, en `preparar-entrevista`. El `verificador` lo
+    lee y marca `blocker` un hecho que solo esté ahí. Para usar en una carta algo de la narrativa,
+    el skill lo propone y, si el usuario dice que sí, lo guarda en las indicaciones de la carta,
+    que sí respaldan `user`.
+  - Lo escribe el usuario, así que no se envuelve como contenido no confiable; aun así tiene un
+    límite de 20 KB por fichero (`too_large`) para no inflar el contexto del agente.
+  - Plantillas: las de la candidata demo (`demo/contexto/`). `jh context init` copia solo sus
+    encabezados y comentarios-guía, así que una sola plantilla sirve de ejemplo y de esqueleto
+    vacío.
+  - `data/documentos/` guarda los documentos fuente (`cv/`, `linkedin/`, `titulos/`,
+    `referencias/`), que `actualizar-perfil` puede leer, siempre confirmando antes de escribir.
+    Su texto es de terceros (exportaciones, referencias, el título y la URL de la oferta en el
+    README de una candidatura): se trata como dato, nunca como instrucción (regla dura 4).
+  - Archivo de candidaturas: al registrar `applied` o `applied_manually` se encola
+    `archive_application` con los ids de lo que está seleccionado en ese momento. El worker copia
+    el PDF del CV, la carta (TXT y PDF) y las respuestas (JSON) a
+    `documentos/candidaturas/<empresa>_<puesto>_<job_id>/`, con un `README.md`. Escribe en una
+    carpeta temporal y la renombra al final. Es idempotente y no toca una carpeta que ya existe,
+    así que si se reabre y se vuelve a enviar, se queda lo del primer envío.
+    `jh applications archive` archiva las anteriores a esta fase.
+  - «Abrir carpeta» en la UI (`POST /folders/open`): lista cerrada (contexto, documentos y la
+    carpeta de una candidatura) y solo desde la UI, como `POST /agent/launch` (ADR-024). Abre el
+    explorador con `os.startfile`; en otro sistema devuelve la ruta para copiarla.
+- **Consecuencias:** el agente escribe con la voz del usuario y valora con sus criterios sin que
+  eso pueda colarse como un hecho en un CV. Esa garantía depende del verificador (un agente), no
+  del código: el código solo comprueba que las evidencias existen en el perfil. El documento no
+  guarda qué versión del contexto se usó al redactarlo. El archivo de una candidatura enviada
+  antes de que corra el worker usa lo seleccionado al registrar el envío, no al archivar.

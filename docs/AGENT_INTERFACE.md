@@ -51,6 +51,7 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | `add_event` | `jh events add ID TYPE [--note N] [--at FECHA] --json` | 04 | `job_id, type, note?, occurred_at?` | `ok`, `event_id`, `stage` resultante | el indicado |
 | `get_timeline` | `jh events list ID --json` | 04 | `job_id` | Etapa actual y eventos (sin texto crudo) | — |
 | `get_profile` | `jh profile show [--sections S1,S2] --json` | 05 | `sections?` | `profile_version_id`, `created_at`, `profile`: `CandidateProfile` sin email, teléfono ni `private` | — |
+| `get_context` | `jh context show [--sections S1,S2] --json` | 13 | `sections?` (`estilo-redaccion`, `perfil-conductual`, `criterios`, `narrativa`) | `note` y `files`: por fichero, `section`, `path`, `exists`, `empty`, `size_bytes`, `modified_at`, `hash` (sha256), `text` (sin los comentarios-guía; vacío si no hay contenido), `truncated` y `warnings` (`too_large`, `invalid_encoding`) | — |
 | `get_match` | `jh match show ID --json` | 07 | `job_id` | `MatchView`: `score`, `triage_threshold`, `below_threshold`, `hard_filters`, `breakdown` (componentes, skills cubiertas con su nivel y ausentes, similitud, preferencias, notas), `assessment`, `assessment_stale` | `scored` si lo recalcula |
 | `save_fit_assessment` | `jh match save-assessment ID --file F --json` | 07 | `job_id, assessment: FitAssessment` | `ok`, `job_id`, `match_id` | `fit_assessed` |
 | `list_cv_templates` | `jh templates list --json` | 08 | — | `templates` (`id`, nombre, motor, origen, `ats_friendly`, foto, columnas, página, `capacity`, `sections`, `accent_colors`, fuentes, idiomas, `has_preview`), `invalid` (con el motivo) y `fallback_template` | — |
@@ -97,6 +98,12 @@ separada por comas. `schema_version` sale siempre. De `personal` solo salen los 
 blanca (`PUBLIC_PERSONAL_FIELDS`): un campo nuevo no se expone hasta añadirlo ahí. Los niveles
 F/C+/C/B y las marcas `nda` sí salen: el agente los necesita para aplicar `POLICIES.md` §1.
 
+`get_context` lee `data/contexto/*.md` en cada llamada (no hay versiones: el `hash` dice si cambió).
+Son indicaciones del usuario, no contenido no confiable, pero **nunca respaldan un hecho**
+(`POLICIES.md` §1.5): el tono de un CV o una carta, los riesgos de una oferta y la preparación de
+entrevistas. Un fichero que no existe sale con `exists: false`, no es un error. Si pasa de 20 KB,
+se recorta y avisa con `too_large`.
+
 ### Comandos del perfil (solo CLI)
 
 Mantenimiento de `data/profile.yaml`; los usa el skill `actualizar-perfil`. Todos aceptan `--json`
@@ -110,6 +117,8 @@ raíz del repo.
 | `jh profile validate [RUTA]` | Valida sin importar. Por defecto, `data/profile.yaml` |
 | `jh profile import [RUTA]` | Valida y crea una versión nueva si el contenido cambia respecto a la vigente (`created: false` si no) |
 | `jh profile diff` | Diff unificado entre las dos últimas versiones; `private` sale como `<oculto>` |
+| `jh context init` | Crea los ficheros de `data/contexto/` que falten (solo encabezados y comentarios-guía de las plantillas de `demo/contexto/`, sin sus datos) y las carpetas de `data/documentos/`. Nunca sobrescribe (fase 13) |
+| `jh applications archive (ID \| --all)` | Archiva ya, sin worker, las candidaturas enviadas que aún no tienen carpeta en `data/documentos/candidaturas/` (para las de antes de la fase 13). Usa la carta y las respuestas vigentes. Las que ya la tienen no se tocan |
 
 `add_event` no acepta los eventos que registra su propia herramienta o el sistema: `found`,
 `duplicate_detected`, `extracted`, `hard_filter_failed`, `scored`, `fit_assessed`,

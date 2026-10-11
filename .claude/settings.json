@@ -23,6 +23,7 @@
       "mcp__jobhunter__get_extraction",
       "mcp__jobhunter__get_timeline",
       "mcp__jobhunter__get_profile",
+      "mcp__jobhunter__get_context",
       "mcp__jobhunter__get_match",
       "mcp__jobhunter__get_cv_content",
       "mcp__jobhunter__list_cv_templates",

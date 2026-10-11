@@ -234,7 +234,8 @@ def add_user_event(
 
     `discarded` exige un motivo (`reason`, uno de `DISCARD_REASONS`); con `other`, también nota.
     `applied` y `applied_manually` admiten el canal (`channel`) y apuntan en `payload.render_id`
-    el render seleccionado del último CV de la oferta, si lo hay (el CV enviado).
+    el render seleccionado del último CV de la oferta, si lo hay (el CV enviado), y encolan el
+    archivo de la candidatura en `data/documentos/candidaturas/` (`archive_application`).
     """
     event_type = parse_event_type(type)
     if event_type not in USER_EVENTS:
@@ -278,4 +279,9 @@ def add_user_event(
         payload=payload or None,
         occurred_at=occurred_at,
     )
+    if applied:
+        # Import diferido: el archivo usa los servicios de documentos, que importan este módulo.
+        from app.services import application_archive
+
+        application_archive.enqueue(session, job_id, event.id)
     return AddEventResult(ok=True, event_id=event.id, stage=current_stage(session, job_id))

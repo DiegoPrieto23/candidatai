@@ -30,6 +30,7 @@ from app.schemas.sources import AgentBrowseSource, SourceList, SourceRunSummary
 from app.services import (
     analytics,
     answers,
+    context,
     events,
     extractions,
     ingest,
@@ -175,6 +176,23 @@ class GetProfileInput(_Input):
     @classmethod
     def _split_text(cls, value: Any) -> Any:
         # Por CLI llega «experience,skills»; por MCP, normalmente como lista.
+        if isinstance(value, str):
+            return [part.strip() for part in value.split(",") if part.strip()]
+        return value
+
+
+class GetContextInput(_Input):
+    sections: list[context.ContextSection] | None = Field(
+        default=None,
+        description=(
+            "Ficheros de contexto que devolver (por CLI, separados por comas): "
+            "`estilo-redaccion`, `perfil-conductual`, `criterios`, `narrativa`. Por defecto, todos."
+        ),
+    )
+
+    @field_validator("sections", mode="before")
+    @classmethod
+    def _split_text(cls, value: Any) -> Any:
         if isinstance(value, str):
             return [part.strip() for part in value.split(",") if part.strip()]
         return value
@@ -406,6 +424,12 @@ def _get_profile(
     return profile.get_public_profile(session, args.sections)
 
 
+def _get_context(
+    _session: Session, args: GetContextInput, _ctx: CallContext
+) -> context.ContextView:
+    return context.get_context(args.sections)
+
+
 def _list_cv_templates(_session: Session, _args: NoInput, _ctx: CallContext) -> cv.TemplateList:
     return cv.list_cv_templates()
 
@@ -608,6 +632,19 @@ TOOLS: tuple[ToolSpec, ...] = (
         output_model=profile.PublicProfile,
         handler=_get_profile,
         cli=CliSpec(path=("profile", "show")),
+        audit_fields=("sections",),
+    ),
+    ToolSpec(
+        name="get_context",
+        description=(
+            "Contexto del candidato (data/contexto/): estilo de redacción, perfil conductual, "
+            "criterios y narrativa, con su hash. Lo escribe el usuario y orienta el tono, los "
+            "riesgos y las entrevistas, pero nunca respalda un hecho: eso solo lo hace el perfil."
+        ),
+        input_model=GetContextInput,
+        output_model=context.ContextView,
+        handler=_get_context,
+        cli=CliSpec(path=("context", "show")),
         audit_fields=("sections",),
     ),
     ToolSpec(

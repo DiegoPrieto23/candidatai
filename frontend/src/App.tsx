@@ -13,6 +13,7 @@ import { InboxPage } from '@/pages/InboxPage'
 import { JobPage } from '@/pages/JobPage'
 import { NewJobPage } from '@/pages/NewJobPage'
 import { PlatformsPage } from '@/pages/PlatformsPage'
+import { ProfilePage } from '@/pages/ProfilePage'
 import { ProcessesPage } from '@/pages/ProcessesPage'
 import { SourcesPage } from '@/pages/SourcesPage'
 import { TemplatesPage } from '@/pages/TemplatesPage'
@@ -57,6 +58,7 @@ export function AppRoutes() {
         />
         <Route path="alertas" element={<AlertsPage />} />
         <Route path="plantillas" element={<TemplatesPage />} />
+        <Route path="perfil" element={<ProfilePage />} />
         <Route path="empresas" element={<SourcesPage />} />
         <Route path="plataformas" element={<PlatformsPage />} />
         <Route path="*" element={<NotFound />} />

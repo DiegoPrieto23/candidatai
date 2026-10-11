@@ -30,7 +30,7 @@ from app.core.config import get_settings
 from app.core.db import session_scope
 from app.core.policies import ConnectorsPolicy, get_policies
 from app.models.base import utcnow
-from app.services import summaries, tasks
+from app.services import application_archive, summaries, tasks
 from app.services.ingestion import service as sources
 from app.services.ingestion.email import service as email_alerts
 from app.services.ingestion.email.mailboxes import has_local_mail
@@ -121,6 +121,10 @@ def _apply_focus(_session: Session, payload: dict[str, Any]) -> dict[str, Any]:
     return applier.run_focus(int(payload["attempt_id"]))
 
 
+def _archive_application(session: Session, payload: dict[str, Any]) -> dict[str, Any]:
+    return application_archive.archive(session, payload).model_dump()
+
+
 HANDLERS: dict[str, Handler] = {
     "score_job": _score_job,
     "rescore_all": _rescore_all,
@@ -134,6 +138,7 @@ HANDLERS: dict[str, Handler] = {
     "apply_rescan": _apply_rescan,
     "apply_submit": _apply_submit,
     "apply_focus": _apply_focus,
+    "archive_application": _archive_application,
 }
 
 
@@ -248,6 +253,9 @@ def describe(outcome: TaskOutcome) -> str:
     if outcome.kind.startswith("apply_") and result.get("attempt_id") is not None:
         state = result.get("status") or result.get("result") or result.get("skipped") or "hecho"
         return f"Candidatura asistida, intento {result['attempt_id']}: {state}"
+    if outcome.kind == "archive_application" and result.get("folder"):
+        verb = "archivada en" if result.get("created") else "ya estaba archivada en"
+        return f"Candidatura de la oferta {result.get('job_id')} {verb} data/{result['folder']}"
     if outcome.kind == "rescore_all":
         scored, closed = result.get("scored", 0), len(result.get("closed") or [])
         return f"Recálculo de matches: {scored} ofertas, {closed} cerradas por filtros"

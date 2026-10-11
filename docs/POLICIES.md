@@ -22,6 +22,12 @@ Las reglas con valores ajustables tienen su parámetro en `config/policies.yaml`
 3. **Métricas**: solo las que están en el perfil. No redondear al alza ni combinar.
 4. **Si falta algo** que la oferta pide y quizá tengas, se pregunta. Si la respuesta es sí, se
    añade primero al perfil (skill `actualizar-perfil`) y después se usa.
+5. **Contexto ≠ hechos.** Los ficheros de `data/contexto/` (estilo de redacción, perfil
+   conductual, criterios y narrativa) los escribe el usuario y orientan el tono, los riesgos de
+   una oferta y la preparación de entrevistas, igual que `preferences.cv.instructions`. Nunca
+   respaldan un hecho: un logro, una cifra, una formación o un rasgo que solo esté ahí no va en un
+   CV, una carta ni una respuesta (el verificador lo marca `blocker`). Si el usuario lo quiere
+   usar, se añade antes al perfil o, en una carta, a sus indicaciones.
 
 ## 2. Encaje y filtros
 

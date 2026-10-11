@@ -7623,6 +7623,220 @@
           }
         }
       }
+    },
+    "/context": {
+      "get": {
+        "tags": [
+          "context"
+        ],
+        "summary": "Get Context Status",
+        "description": "Ficheros de `data/contexto/` (vacío o con contenido, tamaño, fecha) y carpetas de\n`data/documentos/` con cuántos ficheros tienen. Sin el texto.",
+        "operationId": "get_context_status",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextStatus"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/folders/open": {
+      "post": {
+        "tags": [
+          "context"
+        ],
+        "summary": "Open Folder",
+        "description": "Abre la carpeta en el explorador; si no se puede, devuelve la ruta para copiarla.",
+        "operationId": "open_folder",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OpenFolderBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpenFolderResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -9153,6 +9367,113 @@
         ],
         "title": "ContactOut"
       },
+      "ContextFileInfo": {
+        "properties": {
+          "section": {
+            "type": "string",
+            "enum": [
+              "estilo-redaccion",
+              "perfil-conductual",
+              "criterios",
+              "narrativa"
+            ],
+            "title": "Section"
+          },
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "exists": {
+            "type": "boolean",
+            "title": "Exists"
+          },
+          "empty": {
+            "type": "boolean",
+            "title": "Empty"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "title": "Size Bytes"
+          },
+          "modified_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Modified At"
+          },
+          "hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hash"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "section",
+          "path",
+          "exists",
+          "empty",
+          "size_bytes",
+          "modified_at",
+          "hash",
+          "warnings"
+        ],
+        "title": "ContextFileInfo"
+      },
+      "ContextStatus": {
+        "properties": {
+          "context_dir": {
+            "type": "string",
+            "title": "Context Dir"
+          },
+          "documents_dir": {
+            "type": "string",
+            "title": "Documents Dir"
+          },
+          "files": {
+            "items": {
+              "$ref": "#/components/schemas/ContextFileInfo"
+            },
+            "type": "array",
+            "title": "Files"
+          },
+          "folders": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentFolderInfo"
+            },
+            "type": "array",
+            "title": "Folders"
+          }
+        },
+        "type": "object",
+        "required": [
+          "context_dir",
+          "documents_dir",
+          "files",
+          "folders"
+        ],
+        "title": "ContextStatus",
+        "description": "Estado para la UI («Mi perfil»): sin el texto de los ficheros."
+      },
       "CoverLetterBriefInput": {
         "properties": {
           "instructions": {
@@ -10010,6 +10331,36 @@
           "conflicts"
         ],
         "title": "DefaultTemplateResult"
+      },
+      "DocumentFolderInfo": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "enum": [
+              "cv",
+              "linkedin",
+              "titulos",
+              "referencias",
+              "candidaturas"
+            ],
+            "title": "Name"
+          },
+          "exists": {
+            "type": "boolean",
+            "title": "Exists"
+          },
+          "files": {
+            "type": "integer",
+            "title": "Files"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "exists",
+          "files"
+        ],
+        "title": "DocumentFolderInfo"
       },
       "EmailPollResult": {
         "properties": {
@@ -11482,6 +11833,17 @@
                 "type": "null"
               }
             ]
+          },
+          "archive_folder": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Archive Folder"
           }
         },
         "type": "object",
@@ -12391,6 +12753,55 @@
         },
         "type": "object",
         "title": "OkResult"
+      },
+      "OpenFolderBody": {
+        "properties": {
+          "folder": {
+            "type": "string",
+            "enum": [
+              "contexto",
+              "documentos",
+              "candidatura"
+            ],
+            "title": "Folder"
+          },
+          "job_id": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Job Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "folder"
+        ],
+        "title": "OpenFolderBody"
+      },
+      "OpenFolderResult": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "opened": {
+            "type": "boolean",
+            "title": "Opened"
+          }
+        },
+        "type": "object",
+        "required": [
+          "path",
+          "opened"
+        ],
+        "title": "OpenFolderResult"
       },
       "PackageCoverLetter": {
         "properties": {

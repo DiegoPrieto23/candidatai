@@ -123,6 +123,9 @@ def test_fill_then_submit_only_with_the_ui_token(db: None, server: FormServer) -
         assert applied.payload["evidence"] == row.confirmation_path
         assert "render_id" in applied.payload
         assert events.current_stage(session, job_id) == "applied"
+        archive = session.scalars(select(Task).where(Task.kind == "archive_application")).one()
+        assert archive.payload["event_id"] == applied.id
+        assert archive.payload["cv_render_id"] == applied.payload["render_id"]
 
     # La misma confirmación no vale dos veces.
     with pytest.raises(tokens.TokenError):

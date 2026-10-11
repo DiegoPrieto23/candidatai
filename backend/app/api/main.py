@@ -14,6 +14,7 @@ from app.api.routes import (
     applications,
     apply,
     capture,
+    context,
     cv,
     jobs,
     letters,
@@ -64,6 +65,7 @@ def create_app() -> FastAPI:
     app.include_router(apply.router)
     app.include_router(prompts.router)
     app.include_router(agent.router)
+    app.include_router(context.router)
     return app
 
 

@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session, aliased
 from app.models import Application, Company, Job, Match
 from app.models import JobExtraction as JobExtractionRow
 from app.schemas.llm_io import JobExtraction, Salary
-from app.services import extractions
+from app.services import application_archive, extractions
 from app.services.events import EventOut, JobNotFoundError
 from app.services.pipeline import EventType, Stage, job_events
 from app.services.untrusted import wrap_untrusted
@@ -280,6 +280,11 @@ class JobView(JobSummary):
     extraction: ExtractionView | None
     events: list[EventOut]
     injection: InjectionWarning | None  # None si no hay nada sospechoso
+    # Carpeta con la copia de lo enviado (relativa a la carpeta de datos), si ya se archivó.
+    archive_folder: str | None = None
+
+
+SENT_STAGES = frozenset({Stage.APPLIED, Stage.IN_PROCESS, Stage.CLOSED})
 
 
 def get_job_view(session: Session, job_id: int) -> JobView:
@@ -318,6 +323,10 @@ def get_job_view(session: Session, job_id: int) -> JobView:
         score=score,
         posted_at=job.posted_at,
         raw_text=job.raw_text,
+        # Solo mira el disco si se envió (etapa posterior a `applied` o cerrada después).
+        archive_folder=(
+            application_archive.relative_folder(job.id) if job_stage in SENT_STAGES else None
+        ),
         extraction=(
             ExtractionView(
                 extraction_id=extraction_row.id,
