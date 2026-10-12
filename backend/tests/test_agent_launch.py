@@ -149,6 +149,7 @@ def test_get_lists_agent_and_actions(client: TestClient, opened: list[tuple[str,
         "simular-entrevista",
         "repasar-entrevista",
         "dudas-oferta",
+        "preparar-negociacion",
         "redactar-mensaje",
         "investigar-empresa",
         "atender-encargos",
@@ -307,6 +308,20 @@ def test_offer_doubts_need_an_offer(client: TestClient, opened: list[tuple[str, 
         events.record(session, job_id, "offer_received", "user")
     assert client.post("/agent/launch", json=body, headers=JSON).status_code == 202
     assert opened[-1][1].endswith(f"antes de aceptar la oferta {job_id}.'")
+
+
+def test_negotiation_needs_an_offer_and_opens_a_terminal(
+    client: TestClient, opened: list[tuple[str, str]]
+) -> None:
+    job_id, _ = _interview(-48)
+    body = {"action": "preparar-negociacion", "job_id": job_id}
+    assert client.post("/agent/launch", json=body, headers=JSON).status_code == 422
+
+    with session_scope() as session:
+        events.record(session, job_id, "offer_received", "user")
+    assert client.post("/agent/launch", json=body, headers=JSON).status_code == 202
+    assert f"preparar-negociacion de Job Hunter para la oferta {job_id}" in opened[-1][1]
+    assert agent_launch.ACTIONS["preparar-negociacion"].background == ()
 
 
 def test_unavailable_interview_action_returns_the_prompt_with_its_job(

@@ -135,6 +135,21 @@ Los pesos del score no cambian con esto; solo qué nombres casan.
   públicos, mensajes a recruiters ni borradores públicos.
 - **Salario**: nunca se propone ni se deduce. Si un formulario lo exige, se marca
   `needs_user_input` y decides tú la cifra.
+- **Ofertas recibidas** (fase 21): las anotas tú en la ficha. Con «importes privados» (por
+  defecto) el fijo y el variable no salen nunca hacia el agente (`get_received_offer`). La
+  comparación con tu mínimo (`private.salary_floor_eur`) y con el rango publicado la calcula la
+  API y solo la ves tú en Procesos; el agente nunca recibe el mínimo ni esas diferencias. Son
+  cuentas, no una recomendación: nadie propone la cifra que pedir. Límite conocido: los
+  beneficios y las notas de la oferta son texto libre y el agente los ve siempre; la UI avisa de
+  no escribir ahí tus cifras.
+- **Negociación** (skill `preparar-negociacion`): argumentos solo del perfil (§1), preguntas y un
+  guion con el hueco de la cifra para que lo rellenes tú. Si escribes tus cifras en el chat, el
+  agente las usa solo en esa conversación y no las guarda; las notas que guarde en el historial
+  van sin cifras. Revisar un contrato que pegas **no es asesoramiento legal**.
+- **Datos de mercado**: `data/documentos/salarios.csv` es opcional y lo llenas tú con fuentes que
+  recojas (formato en `demo/salarios.example.csv`: puesto, empresa, ubicación, nivel, mínimo,
+  máximo, moneda, periodo, fuente, URL y fecha). El agente solo cita filas que encajen, con su
+  fuente; nunca inventa ni completa rangos, y el código no busca salarios en webs.
 - **NDA**: los proyectos marcados `nda: true` se describen a alto nivel, sin cliente ni detalles
   internos.
 - `get_profile` no devuelve email, teléfono ni la sección `private` (datos salariales incluidos): el

@@ -6,7 +6,7 @@ cada fase y lo quita cuando el usuario confirma que está hecho.
 
 Marca `[x]` lo que hagas y, si algo falla, apúntalo debajo de la línea con `→`.
 
-Última actualización: 2026-10-12 (fase 20).
+Última actualización: 2026-10-12 (fase 21).
 
 ## 1. Poner la app al día (antes de probar nada)
 
@@ -16,10 +16,10 @@ bloquea el entorno de Python):
 - [ ] Copia de seguridad de la BD: `copy data\jobhunter.db data\jobhunter.db.bak-0012`
 - [ ] `uv sync --directory backend` (dependencias añadidas con `--no-sync`, p. ej. `tzdata`)
 - [ ] `uv run --directory backend jh db upgrade`: tu BD está en **0012** y el código espera la
-      **0019** (`skill_gap_marks` de la fase 14; `replies` y `message_drafts` de la 15;
+      **0020** (`skill_gap_marks` de la fase 14; `replies` y `message_drafts` de la 15;
       `jobs.signals` y `job_sightings` de la 16; plan y repaso de entrevistas en `milestones`
       de la 17; `network_contacts`, referencias, mensajes y `company_research` de la 18;
-      `agent_runs` y `agent_requests` de la 19)
+      `agent_runs` y `agent_requests` de la 19; `received_offers` de la 21)
 - [ ] `cd frontend; pnpm install`
 - [ ] Abrir Claude Code de nuevo para que el servidor MCP cargue las herramientas nuevas
       (`list_replies`, `get_reply`, `save_reply_proposal`, `save_message_draft`, `get_skill_gaps`,
@@ -47,6 +47,13 @@ bloquea el entorno de Python):
 Cada guía está en `docs/pruebas/`. No consta en el ROADMAP que estén hechas; si alguna ya la
 hiciste, márcala.
 
+- [ ] **Fase 21 · Ofertas recibidas y salario** (`fase-21-prueba-manual.txt`), con la demo o
+      cuando llegue la primera oferta:
+  - poner `private.salary_floor_eur` en tu perfil (si no, la comparación sale sin mínimo);
+  - anotar una oferta en la ficha y verla en «Procesos → Ofertas recibidas»;
+  - `/preparar-negociacion`: que no proponga cifras y que no sepa tu mínimo aunque se lo pidas;
+  - opcional: crear `data/documentos/salarios.csv` con tus fuentes (formato en
+    `demo/salarios.example.csv`).
 - [ ] **Fase 20 · ¿Acierta el score?** (`fase-20-prueba-manual.txt`), mejor con 20-30
       candidaturas enviadas (antes, con la demo):
   - comprobar en el Embudo que dos o tres candidaturas que conoces caen en su grupo (score,

@@ -23,6 +23,7 @@ from app.api.routes import (
     network,
     process,
     prompts,
+    received_offers,
     replies,
     skills,
     sources,
@@ -76,6 +77,7 @@ def create_app() -> FastAPI:
     app.include_router(drafts.router)
     app.include_router(network.router)
     app.include_router(companies.router)
+    app.include_router(received_offers.router)
     return app
 
 

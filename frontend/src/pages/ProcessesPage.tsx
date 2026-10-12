@@ -27,6 +27,7 @@ import { AgentButton } from '@/components/AgentButton'
 import { ScoreBadge } from '@/components/MatchDetails'
 import { CopyButton } from '@/components/CopyButton'
 import { MoveDialog } from '@/components/MoveDialog'
+import { ReceivedOffersComparison } from '@/components/ReceivedOffersComparison'
 import { EmptyState, ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
@@ -350,6 +351,8 @@ export function ProcessesPage() {
       ) : (
         <Board columns={board.data.columns} moves={board.data.moves} />
       )}
+
+      <ReceivedOffersComparison />
 
       <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <section className="rounded-xl border bg-card p-5 sm:p-6" aria-label="Próximos 7 días">

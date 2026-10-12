@@ -64,6 +64,10 @@ contacts_app = typer.Typer(
 interviews_app = typer.Typer(
     help="Entrevistas: plan de preparación y repaso posterior en el hito.", no_args_is_help=True
 )
+received_offers_app = typer.Typer(
+    help="La oferta que te ha hecho la empresa (lo que ve el agente; los datos, en la ficha).",
+    no_args_is_help=True,
+)
 replies_app = typer.Typer(
     help="Respuestas de las empresas por correo: ingesta y propuestas del agente.",
     no_args_is_help=True,
@@ -102,6 +106,7 @@ app.add_typer(drafts_app, name="drafts")
 app.add_typer(interviews_app, name="interviews")
 app.add_typer(contacts_app, name="contacts")
 app.add_typer(companies_app, name="companies")
+app.add_typer(received_offers_app, name="received-offers")
 app.add_typer(requests_app, name="requests")
 demo_app = typer.Typer(
     help="Modo demo: una búsqueda ficticia para probar la app.", no_args_is_help=True
@@ -1936,6 +1941,31 @@ def _render_company_research(view: Any) -> None:
         typer.echo(f"  [{n}] {source.title} · {source.url}")
 
 
+_WORK_MODE_LABEL = {"remote": "remoto", "hybrid": "híbrido", "onsite": "presencial"}
+
+
+def _render_received_offer(view: Any) -> None:
+    typer.echo(f"Oferta recibida · oferta {view.job_id}")
+    if view.amounts_private:
+        typer.echo("  Importes: privados")
+    else:
+        period = "año" if view.period == "year" else "mes"
+        has_base = view.base_salary is not None
+        fixed = f"{view.base_salary} {view.currency}/{period}" if has_base else "—"
+        variable = f" + variable {view.variable}/año" if view.variable is not None else ""
+        typer.echo(f"  Fijo: {fixed}{variable}")
+    for label, value in (
+        ("Modalidad", _WORK_MODE_LABEL.get(view.work_mode or "")),
+        ("Ubicación", view.location),
+        ("Incorporación", view.start_date),
+        ("Responder antes de", view.respond_by),
+        ("Beneficios", view.benefits),
+        ("Notas", view.notes),
+    ):
+        if value:
+            typer.echo(f"  {label}: {value}")
+
+
 # Al final: los renderizadores de arriba ya existen.
 register_tools(
     app,
@@ -1958,6 +1988,7 @@ register_tools(
         "interviews": interviews_app,
         "contacts": contacts_app,
         "companies": companies_app,
+        "received-offers": received_offers_app,
         "requests": requests_app,
     },
     {
@@ -1966,6 +1997,7 @@ register_tools(
         "get_status": _render_status,
         "get_job_contacts": _render_job_contacts,
         "get_company_research": _render_company_research,
+        "get_received_offer": _render_received_offer,
         "save_company_research": _render_message,
         "add_job_from_url": _render_added,
         "add_job_from_text": _render_added,

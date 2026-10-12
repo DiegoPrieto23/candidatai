@@ -364,3 +364,18 @@ La carta es un documento propio, con sus indicaciones, su verificación y sus re
   funciona y qué cambiar, con sus cifras. Solo propone: los pesos y filtros de
   `config/policies.yaml` los cambias tú, con `jh eval matching` antes y después.
 - Para agentes y terminal: `get_calibration` ↔ `jh stats calibration`.
+
+## 21 · Ofertas recibidas y salario — 2026-10-12 · Claude Code (Opus 5.5)
+- **«Oferta recibida» en la ficha:** anotas lo que te ofrecen (fijo, variable, beneficios,
+  modalidad, incorporación y fecha límite para responder). Si faltaba, registra «oferta recibida».
+- **«Ofertas recibidas» en Procesos:** tus ofertas lado a lado, con la diferencia con tu mínimo
+  (`private.salary_floor_eur`) y con el rango que publicaba la oferta. Solo lo ves tú: tu agente
+  nunca recibe tu mínimo ni esas diferencias, y los importes tampoco si los dejas como privados
+  (por defecto). Son cuentas, no una recomendación.
+- **Skill `preparar-negociacion`** (botón «Preparar negociación»): argumentos sacados de tu
+  perfil, qué negociar además del fijo, preguntas y un guion con el hueco de la cifra para que lo
+  rellenes tú; revisa el contrato si lo pegas (no es asesoramiento legal).
+- **Datos de mercado propios:** `data/documentos/salarios.csv`, opcional, con las fuentes que tú
+  recojas; el agente solo cita filas que encajen y nunca inventa rangos.
+- Para agentes y terminal: `get_received_offer` ↔ `jh received-offers show`.
+

@@ -29,6 +29,7 @@ import { MatchDetails, ScoreBadge } from '@/components/MatchDetails'
 import { NetworkPanel } from '@/components/NetworkPanel'
 import { PackageSection } from '@/components/PackageSection'
 import { ProcessSection } from '@/components/ProcessSection'
+import { ReceivedOfferSection } from '@/components/ReceivedOfferSection'
 import { StatusUpdate } from '@/components/StatusUpdate'
 import { StageBadge } from '@/components/StageBadge'
 import { ErrorState } from '@/components/States'
@@ -621,6 +622,7 @@ export function JobPage() {
               {sent ? (
                 <>
                   <ProcessSection job={job} />
+                  <ReceivedOfferSection job={job} />
                   <DraftsSection job={job} />
                   <CompanyResearchSection job={job} />
                   <ArchivedApplication job={job} />

@@ -58,6 +58,7 @@ ActionId = Literal[
     "simular-entrevista",
     "repasar-entrevista",
     "dudas-oferta",
+    "preparar-negociacion",
     "redactar-mensaje",
     "investigar-empresa",
     "atender-encargos",
@@ -229,6 +230,15 @@ ACTIONS: dict[ActionId, Action] = {
         "Dudas antes de aceptar",
         "Usa el skill repasar-entrevista de Job Hunter para revisar las dudas antes de aceptar la "
         "oferta {job_id}.",
+        needs_job=True,
+        stages=frozenset({Stage.IN_PROCESS}),
+        wrong_stage="Solo con un proceso abierto.",
+        needs_offer=True,
+    ),
+    # Fase 21: pregunta y admite pegar el contrato, así que solo en terminal.
+    "preparar-negociacion": Action(
+        "Preparar negociación",
+        "Usa el skill preparar-negociacion de Job Hunter para la oferta {job_id}.",
         needs_job=True,
         stages=frozenset({Stage.IN_PROCESS}),
         wrong_stage="Solo con un proceso abierto.",

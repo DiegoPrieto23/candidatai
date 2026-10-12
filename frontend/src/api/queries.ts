@@ -44,6 +44,9 @@ export const keys = {
   network: ['network'] as const,
   jobNetwork: (jobId: number) => ['network', 'job', jobId] as const,
   research: (jobId: number) => ['research', jobId] as const,
+  // Bajo 'received-offers': guardar una invalida también la comparación.
+  receivedOffers: ['received-offers'] as const,
+  receivedOffer: (jobId: number) => ['received-offers', jobId] as const,
 }
 
 type JobsQuery = NonNullable<operations['list_jobs']['parameters']['query']>
@@ -1122,5 +1125,51 @@ export function useCompanyResearch(jobId: number, enabled = true) {
     enabled: enabled && Number.isInteger(jobId) && jobId > 0,
     // Lo guarda el agente desde fuera: se refresca solo.
     refetchInterval: 60_000,
+  })
+}
+
+/** Ficha (fase 21): la oferta recibida anotada por ti, o `null` si aún no hay. */
+export function useReceivedOffer(jobId: number, enabled = true) {
+  return useQuery({
+    queryKey: keys.receivedOffer(jobId),
+    queryFn: () =>
+      unwrap(api.GET('/jobs/{job_id}/received-offer', { params: { path: { job_id: jobId } } })),
+    enabled: enabled && Number.isInteger(jobId) && jobId > 0,
+  })
+}
+
+function invalidateOffer(client: ReturnType<typeof useQueryClient>, jobId: number) {
+  return Promise.all([
+    client.invalidateQueries({ queryKey: keys.receivedOffers }),
+    client.invalidateQueries({ queryKey: keys.job(jobId) }),
+    client.invalidateQueries({ queryKey: keys.process(jobId) }),
+    client.invalidateQueries({ queryKey: keys.board }),
+  ])
+}
+
+/** Guarda la oferta recibida; si aún no había `offer_received`, la API lo registra. */
+export function useSaveReceivedOffer(jobId: number) {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (body: Schemas['ReceivedOfferFields']) =>
+      unwrap(api.POST('/jobs/{job_id}/received-offer', { params: { path: { job_id: jobId } }, body })),
+    onSuccess: () => invalidateOffer(client, jobId),
+  })
+}
+
+export function useDeleteReceivedOffer(jobId: number) {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: () =>
+      unwrap(api.POST('/jobs/{job_id}/received-offer/delete', { params: { path: { job_id: jobId } } })),
+    onSuccess: () => invalidateOffer(client, jobId),
+  })
+}
+
+/** «Ofertas recibidas» en Procesos: lado a lado, con la diferencia con tu mínimo (solo la UI). */
+export function useReceivedOffers() {
+  return useQuery({
+    queryKey: keys.receivedOffers,
+    queryFn: () => unwrap(api.GET('/received-offers')),
   })
 }
