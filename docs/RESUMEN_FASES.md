@@ -353,3 +353,14 @@ La carta es un documento propio, con sus indicaciones, su verificación y sus re
 - **«Dejar para mi próxima sesión»:** cualquier botón guarda la orden para tu agente. La ve al
   empezar (`get_status`, `resumen-diario`) y la hace con el skill `atender-encargos`, que la cierra
   con un resumen.
+
+## 20 · Calibración y patrones — 2026-10-12 · Claude Code (Opus 5.5)
+- **«¿Acierta el score?»** (al final del Embudo): de tus candidaturas enviadas, cuántas tuvieron
+  respuesta y entrevista según el score y el veredicto que tenían **al enviarlas**, la fuente, el
+  portal, la plantilla del CV, si llevaban carta o referencia y cuánto tardaste en enviarlas.
+- **Honesta con pocos datos:** cada tasa lleva su intervalo al 95 % y los grupos con menos de 10
+  enviadas se marcan «pocos datos». Si dos intervalos se solapan, no hay diferencia clara.
+- **Retrospectiva semanal** con el skill `revisar-busqueda` (botón «Revisar mi búsqueda»): qué
+  funciona y qué cambiar, con sus cifras. Solo propone: los pesos y filtros de
+  `config/policies.yaml` los cambias tú, con `jh eval matching` antes y después.
+- Para agentes y terminal: `get_calibration` ↔ `jh stats calibration`.

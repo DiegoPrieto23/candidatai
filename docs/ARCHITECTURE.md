@@ -70,6 +70,7 @@ La app nunca llama a un modelo y no depende de ningún proveedor.
 | `GET /board` | Kanban (fase 10): tarjetas de `approved` a `closed` (las cerradas, solo las que llegaron a aprobarse; las 50 más recientes) y los movimientos posibles (eventos del usuario por etapa de origen y destino) |
 | `GET /followups`, `GET /upcoming?days=` | Seguimientos vencidos y próximos hitos (como `list_followups_due` y `list_upcoming`) |
 | `GET /stats/funnel?since=` | Página «Embudo» (fase 10.2): lo mismo que `get_funnel_stats` |
+| `GET /stats/calibration?since=&min_cases=` | Sección «¿Acierta el score?» del Embudo (fase 20): lo mismo que `get_calibration` |
 | `POST /jobs/{id}/check-open`, `POST /jobs/{id}/still-open` | ¿Sigue abierta? (fase 16): comprueba ahora (`{force}`; si la última es reciente, la devuelve) y «Sigue abierta» (quita el aviso). Solo desde la UI (`require_ui`); descartar va por `POST /jobs/{id}/events` con el motivo `closed` |
 | `GET /skills/gaps?days=` | Página «Skills» (fase 14): lo mismo que `get_skill_gaps`, más las skills del perfil para «Es lo mismo que…» |
 | `POST /skills/aliases`, `POST /skills/marks` | «Es lo mismo que…» (`{skill, profile_skill}`: añade el sinónimo a `config/skill_aliases.yaml` y encola `rescore_all`; 422 si ya apunta a otra skill o el perfil ya la cubre) y «La tengo» / «No la tengo» (`{skill, status: have\|gap\|null}`). Solo desde la UI, como `POST /agent/launch` |

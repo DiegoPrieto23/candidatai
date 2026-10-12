@@ -56,7 +56,7 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 19 | Lote en segundo plano | ✅ | «En segundo plano» además de «En terminal» para los skills que no preguntan (fase 2 de la ADR-024) |
 | 19.1 | ↳ Ejecución en segundo plano | ✅ | `launch.headless`, `agent_runs` en un hilo del worker con solo las herramientas MCP de la acción (las demás denegadas), progreso, preguntas, tiempo máximo y cancelación |
 | 19.2 | ↳ Cola de encargos y UI | ✅ | «Dejar para mi próxima sesión», `list_agent_requests` / `complete_agent_request`, skill `atender-encargos` y página «Agente» |
-| 20 | Calibración y patrones | ⏳ | «¿Acierta el score?»: respuesta por tramo de score, veredicto, fuente, plantilla y carta; retrospectiva semanal |
+| 20 | Calibración y patrones | ✅ | «¿Acierta el score?»: respuesta por tramo de score, veredicto, fuente, plantilla y carta; retrospectiva semanal |
 | 21 | Ofertas recibidas y salario | ⏳ | Comparar ofertas recibidas y la distancia a tu mínimo sin exponerlo al agente; preparar la negociación |
 | 22 | LinkedIn por sus endpoints públicos (opcional) | ⏳ | Búsqueda pública sin sesión, apagada por defecto y con límites estrictos; ADR que matiza la 016 |
 
@@ -1750,3 +1750,60 @@ decisiones tomadas y deuda técnica pendiente. -->
     argumentos pasan por `cmd.exe` (las órdenes son de la app).
   - Pendiente de prueba manual: el recorrido completo con el `claude` real
     (`docs/pruebas/fase-19-prueba-manual.txt`).
+
+### 20 · Calibración y patrones — 2026-10-12 · Claude Code (Opus 5.5)
+- **Resumen:**
+  - Antes de empezar, `fase/19-lote-segundo-plano` se fusionó en `main` (sin push), a petición del
+    usuario; la rama de la 20 sale de ahí.
+  - `services/analytics.py` → `get_calibration(since, min_cases=10)`. Reutiliza el CTE `_per_job`
+    del embudo («con respuesta» y «entrevista» son los mismos pasos). Sobre las enviadas, da la
+    tasa de respuesta y de entrevista con intervalo de Wilson al 95 %, `awaiting` y `low_data` por:
+    - tramo de score (< 60, 60-74, 75-84, ≥ 85, sin score);
+    - veredicto;
+    - fuente;
+    - portal;
+    - plantilla del CV enviado;
+    - carta;
+    - referencia;
+    - días entre alta y envío.
+
+    Todo medido en el primer envío (detalle en `DATA_MODEL.md` §Calibración).
+  - `get_calibration` ↔ `jh stats calibration [--since] [--min-cases]` (4 casos de paridad), con
+    salida de texto, y `GET /stats/calibration`. Va en el allow de `.claude/settings.json` porque
+    es solo lectura.
+  - Skill `revisar-busqueda` (retrospectiva: qué funciona, qué cambiar). Solo tiene `read`,
+    `get_calibration` y `get_funnel_stats`, y nunca cambia pesos ni filtros. Acción «Revisar mi
+    búsqueda» (solo en terminal).
+  - UI: sección «¿Acierta el score?» en Embudo, con aviso de que es orientativa, pestañas por
+    desglose, tasa con intervalo (texto y barra), «pocos datos» y el botón del agente. También
+    sale con un periodo sin ofertas nuevas pero con envíos.
+  - Docs: AGENT_INTERFACE (§Calibración), DATA_MODEL, ARCHITECTURE, `evals/matching/README.md`
+    (§Calibración: el cambio lo hace el usuario, con `jh eval matching` antes y después), README,
+    RESUMEN_FASES, PENDIENTES y `docs/pruebas/fase-20-prueba-manual.txt`.
+  - Tests:
+    - `tests/test_calibration.py` (14), con un histórico sintético y cifras exactas: score
+      anterior y posterior al envío, veredicto posterior ignorado, carta posterior, días en el
+      límite, `since` en Madrid, Wilson y vacío;
+    - paridad;
+    - rendimiento: 1 000 ofertas con matches, veredicto, carta y CV en ≈ 0,15 s (límite 1 s);
+    - 4 de frontend.
+- **Decisiones** (aprobadas en el plan):
+  - `since` por fecha del primer envío, no de alta.
+  - Mínimo de 10 casos para quitar «pocos datos».
+  - Score: el último antes del envío o, si no hay, el primero después (lo calcula código).
+    Veredicto: solo uno anterior al envío.
+  - Sin migraciones: todo sale de `events`, `matches`, `documents` y `document_renders`.
+  - Revisión del rol `revisor` aplicada:
+    - prueba de rendimiento con datos que ejercitan todas las subconsultas;
+    - `awaiting` igual al paso «Con respuesta» del embudo;
+    - `LETTER_KIND` en vez del literal;
+    - calibración visible con el embudo vacío;
+    - umbral de 20 como constante;
+    - notas en `DATA_MODEL` (días negativos, cifra de rendimiento).
+- **Deuda:**
+  - La demo no tiene veredictos, cartas, plantillas en los envíos ni portales: en la demo esas
+    pestañas salen con un solo grupo.
+  - Los portales se muestran con su clave (`linkedin`), sin nombre bonito.
+  - Una plantilla del usuario con id `none` se sumaría a «Sin CV de la app».
+  - Pendiente de prueba manual: la retrospectiva con un agente real y datos reales
+    (`docs/pruebas/fase-20-prueba-manual.txt`).

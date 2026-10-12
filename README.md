@@ -209,6 +209,7 @@ Arranca `jh serve`, `jh worker` y `pnpm dev`. Crea tu perfil con el skill `actua
 | `plan-formacion` | Plan de formación con tus huecos reales de skills: recursos con su URL, horas y orden (o valora un curso o proyecto que propongas) |
 | `buscar-ofertas` | Recorre con tu navegador los portales aprobados y da de alta lo que encaje (`buscar-ofertas configurar` para elegirlos) |
 | `ampliar-busqueda` | Propone títulos cercanos a los que apruebas (p. ej. «Analytics Engineer») y, con tu OK, los añade a tus puestos buscados o a las búsquedas de tus plataformas |
+| `revisar-busqueda` | Retrospectiva semanal: con «¿Acierta el score?» del Embudo, qué funciona (tramos de score, veredicto, fuentes, plantilla, carta, referencias) y qué cambiar. Solo propone: los pesos y filtros los cambias tú, con `jh eval matching` |
 
 Si tu agente ofrece tareas programadas, `procesar-ofertas` y `resumen-diario` pueden ejecutarse
 solos cada mañana (`docs/AGENTS_COMPAT.md`). Con Claude Code, `procesar-ofertas`, `evaluar-encaje`

@@ -1721,6 +1721,37 @@ def _render_funnel(result: Any) -> None:
         typer.echo(f"Filtros duros: {filters}")
 
 
+def _render_calibration(result: Any) -> None:
+    since = f" desde el {result.since:%d/%m/%Y}" if result.since else ""
+    typer.echo(
+        f"¿Acierta el score? Candidaturas enviadas{since}: {result.total.applied}. Orientativo: "
+        f"intervalo al {result.confidence:.0%}; «pocos datos» con menos de {result.min_cases}."
+    )
+    sections = (
+        ("Score al enviar", result.by_score),
+        ("Veredicto del agente", result.by_verdict),
+        ("Fuente", result.by_source),
+        ("Portal", result.by_platform),
+        ("Plantilla del CV", result.by_template),
+        ("Carta", result.by_cover_letter),
+        ("Referencia", result.by_referral),
+        ("Días hasta el envío", result.by_days_to_apply),
+    )
+    for title, groups in sections:
+        typer.echo(f"{title}:")
+        for g in groups:
+            if not g.applied:
+                continue
+            reply, interview = g.reply_rate, g.interview_rate
+            low = "  (pocos datos)" if g.low_data else ""
+            sent = "enviada " if g.applied == 1 else "enviadas"
+            typer.echo(
+                f"  {g.label:<22} {g.applied:>4} {sent} · respuesta {_pct(reply.rate)} "
+                f"[{_pct(reply.low)}-{_pct(reply.high)}] · entrevista {_pct(interview.rate)}"
+                f"{low}"
+            )
+
+
 CALENDAR_OUT_OPTION = typer.Option(
     None, "--out", help="Fichero de salida. Por defecto, data/calendar/jobhunter.ics."
 )
@@ -1968,6 +1999,7 @@ register_tools(
         "save_interview_notes": _render_message,
         "list_upcoming": _render_upcoming,
         "get_funnel_stats": _render_funnel,
+        "get_calibration": _render_calibration,
         "get_skill_gaps": _render_skill_gaps,
         "save_application_answers": _render_saved_answers,
         "save_cover_letter_brief": _render_letter_brief,

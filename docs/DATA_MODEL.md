@@ -335,6 +335,34 @@ conversión nunca pasa del 100 %.
 - `jh_iso_week` y `json_each` son de SQLite: pasar a Postgres (ADR-002) exigiría reescribir esas dos
   expresiones.
 
+### Calibración (fase 20)
+
+«¿Acierta el score?»: `services/analytics.py` (`get_calibration`), sin tablas nuevas. Cuenta las
+ofertas con `applied` o `applied_manually` (sin las cerradas por `duplicate_detected`) y, para
+cada grupo, cuántas tuvieron respuesta y entrevista (los pasos del embudo), cuántas esperan
+(`awaiting`: sin el paso «Con respuesta» y aún en `applied`), las dos tasas con su **intervalo de Wilson al 95 %**
+y `low_data` si hay menos de `min_cases` enviadas (10 por defecto). Todo se mide en el **primer
+envío** (`applied_at`, el primer `applied`/`applied_manually`):
+
+| Desglose | Grupo de cada oferta |
+|---|---|
+| Score (`by_score`) | `matches.score` del último match con `created_at` ≤ envío; si no hay, del primero después (el score es código: no sabe del resultado). Tramos `< 60`, `60-74`, `75-84`, `≥ 85` y «Sin score» |
+| Veredicto (`by_verdict`) | `payload.verdict` del último `fit_assessed` con `occurred_at` ≤ envío; uno posterior no cuenta (pudo escribirse sabiendo cómo fue). «Sin valorar» si no hay |
+| Fuente (`by_source`) | `jobs.source_id` |
+| Portal (`by_platform`) | `jobs.platform`; «Sin portal» si es `null` |
+| Plantilla (`by_template`) | `document_renders.template_id` del render de `payload.render_id` del primer envío (el CV enviado); «Sin CV de la app» si no lo lleva |
+| Carta (`by_cover_letter`) | Con carta si hay algún documento `cover_letter` con `created_at` ≤ envío |
+| Referencia (`by_referral`) | Como en el embudo: `given`, `requested` o `none`, sin fecha de corte |
+| Días hasta el envío (`by_days_to_apply`) | `applied_at - first_seen_at` en días: `0-1` (< 2, también negativos: un envío con fecha anterior al alta), `2-3` (< 4), `4-7` (< 8) y `8 o más` |
+
+- **Periodo** (`since`): primer envío desde las 00:00 de ese día en Europe/Madrid (no
+  `first_seen_at`, como el resto del embudo: en una retrospectiva importa cuándo enviaste).
+- Score, veredicto, carta, días y referencia no son independientes (las de más score suelen
+  llevar carta o referencia): la calibración muestra correlaciones, no causas. Por eso es
+  orientativa y nunca cambia pesos ni filtros (`evals/matching/README.md` §Calibración).
+- Con 1 000 ofertas, cada una con matches, veredicto, carta y CV, responde en unos 0,15 s (el
+  test, `tests/test_funnel_performance.py`, exige menos de 1 s).
+
 ## Ampliaciones de la fase 11
 
 ### `application_attempts`

@@ -1,7 +1,7 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeAll, describe, expect, it } from 'vitest'
-import type { FunnelStats } from '@/api/client'
+import type { Calibration, CalibrationGroup, FunnelStats } from '@/api/client'
 import { mockApi, renderApp, status } from '@/test/utils'
 
 const summary = (found: number, approved: number, applied: number, replied: number, interview: number) => ({
@@ -168,5 +168,136 @@ describe('Embudo', () => {
     })
     renderApp('/embudo')
     expect(await screen.findByRole('alert')).toHaveTextContent('No se ha podido cargar')
+  })
+})
+
+// --- ¿Acierta el score? (fase 20) -------------------------------------------------------------
+
+const AGENT = { available: true, agent: 'claude', reason: null, actions: [] }
+
+const interval = (rate: number | null, low: number | null, high: number | null) => ({ rate, low, high })
+
+function group(key: string, label: string, applied: number, replied: number, interview: number, awaiting = 0): CalibrationGroup {
+  return {
+    key,
+    label,
+    applied,
+    replied,
+    interview,
+    awaiting,
+    reply_rate: applied ? interval(replied / applied, 0.1, 0.9) : interval(null, null, null),
+    interview_rate: applied ? interval(interview / applied, 0.05, 0.6) : interval(null, null, null),
+    low_data: applied < 10,
+  }
+}
+
+function calibration(overrides: Partial<Calibration> = {}): Calibration {
+  return {
+    since: null,
+    min_cases: 10,
+    confidence: 0.95,
+    total: { ...group('total', 'Total', 24, 9, 4, 3), reply_rate: interval(0.375, 0.2116, 0.5729) },
+    by_score: [
+      group('lt60', '< 60', 4, 0, 0),
+      group('60_74', '60-74', 0, 0, 0),
+      group('75_84', '75-84', 8, 3, 1, 2),
+      { ...group('gte85', '≥ 85', 12, 6, 3, 1), reply_rate: interval(0.5, 0.2538, 0.7462) },
+      group('none', 'Sin score', 0, 0, 0),
+    ],
+    by_verdict: [group('strong', 'Fuerte', 12, 6, 3)],
+    by_source: [group('1', 'Greenhouse Acme', 14, 7, 3), group('2', 'Alertas por correo', 10, 2, 1)],
+    by_platform: [group('none', 'Sin portal', 24, 9, 4)],
+    by_template: [group('clasica', 'clasica', 24, 9, 4)],
+    by_cover_letter: [group('with', 'Con carta', 6, 3, 2), group('without', 'Sin carta', 18, 6, 2)],
+    by_referral: [group('given', 'Con referencia', 2, 2, 1), group('none', 'Sin referencia', 22, 7, 3)],
+    by_days_to_apply: [group('0_1', '0-1 días', 24, 9, 4)],
+    ...overrides,
+  }
+}
+
+describe('¿Acierta el score?', () => {
+  beforeAll(async () => {
+    await import('@/pages/FunnelPage')
+  }, 30_000)
+
+  // Intl separa la cifra del «%» con un espacio duro.
+  const text = (el: HTMLElement) => el.textContent?.replace(/ /g, ' ')
+
+  it('muestra la respuesta por tramo de score con su intervalo y el aviso', async () => {
+    mockApi({
+      'GET /status': status(),
+      'GET /stats/funnel': stats(),
+      'GET /stats/calibration': calibration(),
+      'GET /agent': AGENT,
+    })
+    renderApp('/embudo')
+
+    const panel = await screen.findByRole('region', { name: '¿Acierta el score?' })
+    expect(within(panel).getByText(/Orientativo/)).toBeInTheDocument()
+    expect(within(panel).getByText('jh eval matching')).toBeInTheDocument()
+    expect(within(panel).getByRole('button', { name: 'Revisar mi búsqueda' })).toBeInTheDocument()
+    const table = await within(panel).findByRole('table', { name: 'Calibración por score' })
+    const summary = within(panel).getByText((_, el) => el?.tagName === 'P' && /enviadas · respuesta/.test(el.textContent ?? ''))
+    expect(text(summary)).toBe('24 enviadas · respuesta 38 % · entrevista 17 %')
+    const top = within(table).getByRole('row', { name: /≥ 85/ })
+    expect(within(top).getAllByRole('cell').map(text)).toEqual(['12', '50 % (25 %–75 %)', '25 % (5 %–60 %)', '1'])
+    expect(within(top).queryByText('pocos datos')).not.toBeInTheDocument()
+    expect(within(within(table).getByRole('row', { name: /75-84/ })).getByText('pocos datos')).toBeInTheDocument()
+    const empty = within(table).getByRole('row', { name: /60-74/ })
+    expect(within(empty).getAllByRole('cell').map(text)).toEqual(['0', '—', '—', '—'])
+    expect(within(empty).queryByText('pocos datos')).not.toBeInTheDocument()
+
+    await userEvent.click(within(panel).getByRole('tab', { name: 'Fuente' }))
+    const sources = await within(panel).findByRole('table', { name: 'Calibración por fuente' })
+    const greenhouse = within(sources).getByRole('row', { name: /Greenhouse Acme/ })
+    expect(within(greenhouse).queryByText('pocos datos')).not.toBeInTheDocument()
+    expect(within(sources).getByRole('row', { name: /Alertas por correo/ })).toBeInTheDocument()
+  })
+
+  it('pide la calibración con el mismo periodo', async () => {
+    const calls = mockApi({
+      'GET /status': status(),
+      'GET /stats/funnel': stats(),
+      'GET /stats/calibration': calibration(),
+      'GET /agent': AGENT,
+    })
+    renderApp('/embudo')
+    await screen.findByRole('table', { name: 'Calibración por score' })
+    const calibrationCalls = () => calls.filter((c) => c.path === '/stats/calibration')
+    expect(calibrationCalls()[0].search.get('since')).toBeNull()
+
+    fireEvent.change(screen.getByLabelText('Desde'), { target: { value: '2026-09-01' } })
+    await waitFor(() => expect(calibrationCalls().at(-1)?.search.get('since')).toBe('2026-09-01'))
+  })
+
+  it('con un periodo sin ofertas nuevas, sigue enseñando lo enviado en él', async () => {
+    mockApi({
+      'GET /status': status(),
+      'GET /stats/funnel': EMPTY,
+      'GET /stats/calibration': calibration(),
+      'GET /agent': AGENT,
+    })
+    renderApp('/embudo')
+    expect(await screen.findByText('Aún no hay datos')).toBeInTheDocument()
+    expect(screen.queryByRole('region', { name: '¿Acierta el score?' })).not.toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: '30 días' }))
+    expect(await screen.findByText('No hay ofertas en este periodo')).toBeInTheDocument()
+    const panel = await screen.findByRole('region', { name: '¿Acierta el score?' })
+    expect(await within(panel).findByRole('table', { name: 'Calibración por score' })).toBeInTheDocument()
+  })
+
+  it('sin candidaturas enviadas lo dice', async () => {
+    const none = group('total', 'Total', 0, 0, 0)
+    mockApi({
+      'GET /status': status(),
+      'GET /stats/funnel': stats(),
+      'GET /stats/calibration': calibration({ total: none }),
+      'GET /agent': AGENT,
+    })
+    renderApp('/embudo')
+    const panel = await screen.findByRole('region', { name: '¿Acierta el score?' })
+    expect(await within(panel).findByText(/Aún no has enviado ninguna candidatura/)).toBeInTheDocument()
+    expect(within(panel).queryByRole('table')).not.toBeInTheDocument()
   })
 })

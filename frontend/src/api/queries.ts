@@ -28,6 +28,8 @@ export const keys = {
   /** También bajo `cv`: la carta va a juego con el render seleccionado del CV. */
   letter: (id: number) => ['cv', id, 'letter'] as const,
   funnel: (since: string | null) => ['funnel', since] as const,
+  // Bajo 'funnel': lo que invalida el embudo (referencias…) invalida también la calibración.
+  calibration: (since: string | null) => ['funnel', 'calibration', since] as const,
   context: ['context'] as const,
   apply: (id: number) => ['apply', id] as const,
   agent: ['agent'] as const,
@@ -585,6 +587,15 @@ export function useFunnelStats(since: string | null) {
   return useQuery({
     queryKey: keys.funnel(since),
     queryFn: () => unwrap(api.GET('/stats/funnel', { params: { query: { since } } })),
+    placeholderData: keepPreviousData,
+  })
+}
+
+/** «¿Acierta el score?» (fase 20): `since` es la fecha del primer envío. */
+export function useCalibration(since: string | null) {
+  return useQuery({
+    queryKey: keys.calibration(since),
+    queryFn: () => unwrap(api.GET('/stats/calibration', { params: { query: { since } } })),
     placeholderData: keepPreviousData,
   })
 }

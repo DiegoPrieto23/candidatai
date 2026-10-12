@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
-import { ChartBarHorizontalIcon } from '@phosphor-icons/react'
+import { ChartBarHorizontalIcon, InfoIcon } from '@phosphor-icons/react'
 import {
   Bar,
   BarChart,
@@ -12,13 +12,15 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import type { FunnelStats, Schemas } from '@/api/client'
-import { useFunnelStats } from '@/api/queries'
+import type { Calibration, CalibrationGroup, FunnelStats, Schemas } from '@/api/client'
+import { useCalibration, useFunnelStats } from '@/api/queries'
+import { AgentButton } from '@/components/AgentButton'
 import { EmptyState, ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { discardReasonLabel, HARD_FILTER_LABEL, SOURCE_KIND_LABEL } from '@/lib/labels'
 import { toLocalDateInput } from '@/lib/time'
 import { cn } from '@/lib/utils'
@@ -376,7 +378,7 @@ function ReasonsPanel({ stats }: { stats: FunnelStats }) {
   )
 }
 
-function Dashboard({ stats }: { stats: FunnelStats }) {
+function Dashboard({ stats, since }: { stats: FunnelStats; since: string | null }) {
   const step = (name: string) => stats.steps.find((s) => s.step === name)
   const found = step('found')?.count ?? 0
   const applied = step('applied')
@@ -457,8 +459,177 @@ function Dashboard({ stats }: { stats: FunnelStats }) {
         </Panel>
       )}
 
+      <CalibrationPanel since={since} />
+
       <ReasonsPanel stats={stats} />
     </div>
+  )
+}
+
+// --- ¿Acierta el score? (fase 20) -------------------------------------------------------------
+
+/** Por debajo de tantas enviadas, la calibración es poco más que anecdótica (el skill dice lo mismo). */
+const CALIBRATION_MIN_SENT = 20
+
+const CALIBRATION_TABS: readonly {
+  id: string
+  label: string
+  hint: string
+  pick: (c: Calibration) => CalibrationGroup[]
+}[] = [
+  { id: 'score', label: 'Score', hint: 'Score de la oferta al enviarla.', pick: (c) => c.by_score },
+  { id: 'verdict', label: 'Veredicto', hint: 'Valoración del agente antes de enviarla.', pick: (c) => c.by_verdict },
+  { id: 'source', label: 'Fuente', hint: 'Por dónde llegó la oferta.', pick: (c) => c.by_source },
+  { id: 'platform', label: 'Portal', hint: 'Portal de empleo de la oferta, si se sabe.', pick: (c) => c.by_platform },
+  { id: 'template', label: 'Plantilla', hint: 'Plantilla del CV enviado.', pick: (c) => c.by_template },
+  { id: 'letter', label: 'Carta', hint: 'Si había carta de presentación al enviar.', pick: (c) => c.by_cover_letter },
+  {
+    id: 'referral',
+    label: 'Referencia',
+    hint: 'Si algún contacto del proceso te dio una referencia o se la pediste.',
+    pick: (c) => c.by_referral,
+  },
+  { id: 'days', label: 'Rapidez', hint: 'Días entre que entró la oferta y la enviaste.', pick: (c) => c.by_days_to_apply },
+]
+
+/** Tasa con su intervalo: la banda clara es el intervalo; la marca, la tasa. */
+function IntervalBar({ interval }: { interval: CalibrationGroup['reply_rate'] }) {
+  const { rate, low, high } = interval
+  return (
+    <span className="inline-flex items-center justify-end gap-2">
+      <span className="tabular whitespace-nowrap text-right">
+        {pct(rate)}
+        {rate != null && (
+          <>
+            {' '}
+            <span className="text-xs text-muted-foreground">
+              ({pct(low)}–{pct(high)})
+            </span>
+          </>
+        )}
+      </span>
+      <span className="relative hidden h-1.5 w-20 rounded-full bg-muted sm:block" aria-hidden="true">
+        {rate != null && low != null && high != null && (
+          <>
+            <span
+              className="absolute inset-y-0 rounded-full bg-chart-1/35"
+              style={{ left: `${low * 100}%`, width: `${(high - low) * 100}%` }}
+            />
+            <span
+              className="absolute -top-0.5 h-2.5 w-0.5 -translate-x-1/2 rounded-full bg-chart-1"
+              style={{ left: `${rate * 100}%` }}
+            />
+          </>
+        )}
+      </span>
+    </span>
+  )
+}
+
+function CalibrationTable({ caption, groups }: { caption: string; groups: CalibrationGroup[] }) {
+  return (
+    <div className="-mx-1 overflow-x-auto">
+      <table className="w-full min-w-[36rem] text-sm">
+        <caption className="sr-only">{caption}</caption>
+        <thead>
+          <tr className="border-b text-left text-xs text-muted-foreground">
+            <th scope="col" className="px-1 pb-2 font-medium">
+              Grupo
+            </th>
+            {['Enviadas', 'Respuesta', 'Entrevista', 'Esperando'].map((h) => (
+              <th key={h} scope="col" className="px-1 pb-2 text-right font-medium">
+                {h}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {groups.map((g) => (
+            <tr key={g.key} className={cn('border-b last:border-0', g.applied === 0 && 'text-muted-foreground')}>
+              <th scope="row" className="max-w-56 px-1 py-2 text-left font-normal">
+                {g.label}
+                {g.applied > 0 && g.low_data && (
+                  <span className="ml-2 rounded-full border px-1.5 py-px text-[11px] whitespace-nowrap text-muted-foreground">
+                    pocos datos
+                  </span>
+                )}
+              </th>
+              <td className="tabular px-1 py-2 text-right">{intFmt.format(g.applied)}</td>
+              <td className="px-1 py-2 text-right">
+                <IntervalBar interval={g.reply_rate} />
+              </td>
+              <td className="px-1 py-2 text-right">
+                <IntervalBar interval={g.interview_rate} />
+              </td>
+              <td className="tabular px-1 py-2 text-right">{g.applied ? intFmt.format(g.awaiting) : '—'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+function CalibrationPanel({ since }: { since: string | null }) {
+  const calibration = useCalibration(since)
+  const [tab, setTab] = useState('score')
+  const data = calibration.data
+  return (
+    <Panel
+      title="¿Acierta el score?"
+      hint="Respuesta y entrevista de tus candidaturas enviadas (en el periodo elegido, por fecha de envío) según lo que sabías al enviarlas."
+    >
+      <div className="mb-4 flex flex-col gap-3 rounded-lg border border-dashed bg-muted/40 p-3 text-sm sm:flex-row sm:items-start sm:justify-between">
+        <p className="flex gap-2 text-muted-foreground">
+          <InfoIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          <span>
+            Orientativo. Entre paréntesis, el intervalo al 95 %: si los de dos grupos se solapan, no hay una diferencia
+            clara. Los pesos y filtros no cambian solos: tu agente propone y tú decides, comprobándolo con{' '}
+            <code className="text-xs">jh eval matching</code>.
+          </span>
+        </p>
+        <AgentButton action="revisar-busqueda" className="shrink-0">
+          Revisar mi búsqueda
+        </AgentButton>
+      </div>
+      {calibration.isPending ? (
+        <Skeleton className="h-48 rounded-lg" />
+      ) : calibration.isError ? (
+        <ErrorState error={calibration.error} onRetry={() => calibration.refetch()} />
+      ) : !data || data.total.applied === 0 ? (
+        <p className="text-sm text-muted-foreground">
+          Aún no has enviado ninguna candidatura en este periodo. Tiene sentido a partir de unas {CALIBRATION_MIN_SENT}-30 enviadas.
+        </p>
+      ) : (
+        <>
+          <p className="mb-3 text-sm">
+            <span className="tabular font-medium">{intFmt.format(data.total.applied)}</span> enviadas · respuesta{' '}
+            <span className="tabular font-medium">{pct(data.total.reply_rate.rate)}</span> · entrevista{' '}
+            <span className="tabular font-medium">{pct(data.total.interview_rate.rate)}</span>
+            {data.total.applied < CALIBRATION_MIN_SENT && (
+              <span className="text-muted-foreground"> · con menos de {CALIBRATION_MIN_SENT}, tómalo con mucha cautela</span>
+            )}
+          </p>
+          <Tabs value={tab} onValueChange={setTab} className="gap-3">
+            <TabsList className="h-auto flex-wrap justify-start">
+              {CALIBRATION_TABS.map((t) => (
+                <TabsTrigger key={t.id} value={t.id} className="px-2.5">
+                  {t.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+            {CALIBRATION_TABS.map((t) => (
+              <TabsContent key={t.id} value={t.id}>
+                <p className="mb-2 text-xs text-muted-foreground">
+                  {t.hint} «Pocos datos»: menos de {data.min_cases} enviadas.
+                </p>
+                <CalibrationTable caption={`Calibración por ${t.label.toLowerCase()}`} groups={t.pick(data)} />
+              </TabsContent>
+            ))}
+          </Tabs>
+        </>
+      )}
+    </Panel>
   )
 }
 
@@ -518,24 +689,32 @@ export function FunnelPage() {
       ) : stats.isError ? (
         <ErrorState error={stats.error} onRetry={() => stats.refetch()} />
       ) : empty ? (
-        <EmptyState
-          icon={<ChartBarHorizontalIcon className="size-7" weight="duotone" />}
-          title={since ? 'No hay ofertas en este periodo' : 'Aún no hay datos'}
-        >
-          {since ? (
-            'Prueba con un periodo más largo.'
-          ) : (
-            <>
-              El embudo se llena a medida que das de alta ofertas (
-              <Link to="/nueva" className="underline underline-offset-4">
-                Nueva oferta
-              </Link>
-              ), las revisas y registras lo que pasa con cada candidatura.
-            </>
+        <>
+          <EmptyState
+            icon={<ChartBarHorizontalIcon className="size-7" weight="duotone" />}
+            title={since ? 'No hay ofertas en este periodo' : 'Aún no hay datos'}
+          >
+            {since ? (
+              'Prueba con un periodo más largo.'
+            ) : (
+              <>
+                El embudo se llena a medida que das de alta ofertas (
+                <Link to="/nueva" className="underline underline-offset-4">
+                  Nueva oferta
+                </Link>
+                ), las revisas y registras lo que pasa con cada candidatura.
+              </>
+            )}
+          </EmptyState>
+          {/* La calibración va por fecha de envío: puede haber envíos de ofertas vistas antes. */}
+          {since && (
+            <div className="mt-6">
+              <CalibrationPanel since={since} />
+            </div>
           )}
-        </EmptyState>
+        </>
       ) : (
-        <Dashboard stats={stats.data} />
+        <Dashboard stats={stats.data} since={since} />
       )}
     </div>
   )

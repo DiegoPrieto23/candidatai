@@ -6,7 +6,7 @@ cada fase y lo quita cuando el usuario confirma que está hecho.
 
 Marca `[x]` lo que hagas y, si algo falla, apúntalo debajo de la línea con `→`.
 
-Última actualización: 2026-10-12 (fase 19).
+Última actualización: 2026-10-12 (fase 20).
 
 ## 1. Poner la app al día (antes de probar nada)
 
@@ -25,7 +25,8 @@ bloquea el entorno de Python):
       (`list_replies`, `get_reply`, `save_reply_proposal`, `save_message_draft`, `get_skill_gaps`,
       `check_job_open`, `get_search_titles`, `get_interviews`, `save_interview_plan`,
       `save_interview_notes`, `get_job_contacts`, `get_company_research`,
-      `save_company_research`, `list_agent_requests`, `complete_agent_request`…).
+      `save_company_research`, `list_agent_requests`, `complete_agent_request`,
+      `get_calibration`…).
       Comprobar con `/mcp`.
 
 ## 2. `.env.example` (el agente no puede leerlo ni editarlo)
@@ -46,6 +47,12 @@ bloquea el entorno de Python):
 Cada guía está en `docs/pruebas/`. No consta en el ROADMAP que estén hechas; si alguna ya la
 hiciste, márcala.
 
+- [ ] **Fase 20 · ¿Acierta el score?** (`fase-20-prueba-manual.txt`), mejor con 20-30
+      candidaturas enviadas (antes, con la demo):
+  - comprobar en el Embudo que dos o tres candidaturas que conoces caen en su grupo (score,
+    veredicto, carta, referencia…);
+  - `/revisar-busqueda`: que no saque conclusiones con «pocos datos» y que no toque
+    `config/policies.yaml` aunque se lo pidas.
 - [ ] **Fase 19 · Segundo plano y cola de encargos** (`fase-19-prueba-manual.txt`):
   - el comando `claude -p` real a mano (las flags no las prueban los tests: usan un agente falso);
   - «Procesar ofertas», «Evaluar encaje» y «Generar CV» en segundo plano, con el progreso en

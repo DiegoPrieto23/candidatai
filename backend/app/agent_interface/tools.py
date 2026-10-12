@@ -324,6 +324,19 @@ class FunnelStatsInput(_Input):
     )
 
 
+class CalibrationInput(_Input):
+    since: date | None = Field(
+        default=None,
+        description="Solo las candidaturas enviadas desde ese día (AAAA-MM-DD, Europe/Madrid).",
+    )
+    min_cases: int = Field(
+        default=analytics.MIN_CASES,
+        ge=1,
+        le=1000,
+        description="Por debajo de este número de enviadas, el grupo se marca `low_data`.",
+    )
+
+
 class SkillGapsInput(_Input):
     days: int = Field(
         default=skill_gaps.DEFAULT_DAYS,
@@ -588,6 +601,12 @@ def _get_funnel_stats(
     session: Session, args: FunnelStatsInput, _ctx: CallContext
 ) -> analytics.FunnelStats:
     return analytics.get_funnel_stats(session, args.since)
+
+
+def _get_calibration(
+    session: Session, args: CalibrationInput, _ctx: CallContext
+) -> analytics.Calibration:
+    return analytics.get_calibration(session, args.since, args.min_cases)
 
 
 def _get_skill_gaps(
@@ -1172,6 +1191,21 @@ TOOLS: tuple[ToolSpec, ...] = (
         output_model=analytics.FunnelStats,
         handler=_get_funnel_stats,
         cli=CliSpec(path=("stats", "funnel")),
+    ),
+    ToolSpec(
+        name="get_calibration",
+        description=(
+            "¿Acierta el score? Tasa de respuesta y de entrevista de las candidaturas enviadas "
+            "(con intervalo de Wilson al 95 %) por tramo de score, veredicto del agente, fuente, "
+            "portal, plantilla de CV, con o sin carta, con o sin referencia y días entre el alta "
+            "y el envío. Score y veredicto son los que había al enviar. `low_data` marca los "
+            "grupos con menos de `min_cases` enviadas: no saques conclusiones de ellos. "
+            "Orientativo: nunca cambies pesos ni filtros con esto, solo propónselo al usuario."
+        ),
+        input_model=CalibrationInput,
+        output_model=analytics.Calibration,
+        handler=_get_calibration,
+        cli=CliSpec(path=("stats", "calibration")),
     ),
     ToolSpec(
         name="get_skill_gaps",
