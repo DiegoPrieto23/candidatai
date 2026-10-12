@@ -9408,6 +9408,692 @@
           }
         }
       }
+    },
+    "/network": {
+      "get": {
+        "tags": [
+          "network"
+        ],
+        "summary": "Get Network Status",
+        "description": "Cuántas personas hay importadas, cuándo y si está el `Connections.csv` en su carpeta.",
+        "operationId": "get_network_status",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NetworkStatus"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/network/import": {
+      "post": {
+        "tags": [
+          "network"
+        ],
+        "summary": "Import Network",
+        "description": "Importa `data/documentos/linkedin/Connections.csv` (sincroniza: añade, actualiza, quita).",
+        "operationId": "import_network",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmptyBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{job_id}/network": {
+      "get": {
+        "tags": [
+          "network"
+        ],
+        "summary": "Get Job Network",
+        "description": "Las personas de tu red que trabajan en la empresa de la oferta.",
+        "operationId": "get_job_network",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobNetwork"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/jobs/{job_id}/contacts/from-network": {
+      "post": {
+        "tags": [
+          "network"
+        ],
+        "summary": "Add Contact From Network",
+        "description": "«Añadir como contacto del proceso», con su papel (referencia, recruiter, responsable).",
+        "operationId": "add_contact_from_network",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddFromNetwork"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/contacts/{contact_id}/referral": {
+      "post": {
+        "tags": [
+          "network"
+        ],
+        "summary": "Set Contact Referral",
+        "description": "Marca «referencia pedida» o «dada» (o la quita). No es un evento: no cambia la etapa.",
+        "operationId": "set_contact_referral",
+        "parameters": [
+          {
+            "name": "contact_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Contact Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReferralChange"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/jobs/{job_id}/company-research": {
+      "get": {
+        "tags": [
+          "companies"
+        ],
+        "summary": "Get Company Research",
+        "description": "El dosier de la empresa de la oferta (con fuentes), si ya se investigó.",
+        "operationId": "get_company_research",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyResearchResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -9456,7 +10142,9 @@
               "preparar-entrevista",
               "simular-entrevista",
               "repasar-entrevista",
-              "dudas-oferta"
+              "dudas-oferta",
+              "redactar-mensaje",
+              "investigar-empresa"
             ],
             "title": "Id"
           },
@@ -9515,6 +10203,31 @@
           "stage"
         ],
         "title": "AddEventResult"
+      },
+      "AddFromNetwork": {
+        "properties": {
+          "network_contact_id": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Network Contact Id"
+          },
+          "relation": {
+            "type": "string",
+            "enum": [
+              "referral",
+              "recruiter",
+              "hiring_manager"
+            ],
+            "title": "Relation",
+            "description": "Papel en el proceso: referencia, recruiter o responsable."
+          }
+        },
+        "type": "object",
+        "required": [
+          "network_contact_id",
+          "relation"
+        ],
+        "title": "AddFromNetwork"
       },
       "AddFromTextBody": {
         "properties": {
@@ -10912,6 +11625,125 @@
         ],
         "title": "ClosedSignal"
       },
+      "CompanyResearchContent": {
+        "properties": {
+          "summary": {
+            "type": "string",
+            "maxLength": 1500,
+            "minLength": 1,
+            "title": "Summary",
+            "description": "Qué hace la empresa, en 3-5 líneas, con [n]."
+          },
+          "product": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 3000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product",
+            "description": "Producto y clientes, con [n]."
+          },
+          "news": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 3000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "News",
+            "description": "Noticias recientes relevantes (financiación, lanzamientos, despidos…), con su fecha y [n]."
+          },
+          "engineering_culture": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 3000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Engineering Culture",
+            "description": "Cultura de ingeniería: equipos, forma de trabajar, blog técnico, con [n]."
+          },
+          "stack": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 40,
+            "title": "Stack",
+            "description": "Tecnologías que usa según fuentes públicas (nombres cortos)."
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes",
+            "description": "Para el candidato: qué conviene preguntar o comprobar, con [n] si sale de una fuente. Sin opiniones sin respaldo."
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/ResearchSource"
+            },
+            "type": "array",
+            "maxItems": 30,
+            "minItems": 1,
+            "title": "Sources",
+            "description": "Fuentes, en el orden de las citas [1], [2]…"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "summary",
+          "sources"
+        ],
+        "title": "CompanyResearchContent",
+        "description": "El dosier. Cada apartado con texto cita sus fuentes con `[n]` (1 = la primera)."
+      },
+      "CompanyResearchResult": {
+        "properties": {
+          "job_id": {
+            "type": "integer",
+            "title": "Job Id"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "research": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResearchView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "company",
+          "research"
+        ],
+        "title": "CompanyResearchResult"
+      },
       "ContactFields": {
         "properties": {
           "name": {
@@ -10979,6 +11811,23 @@
               }
             ],
             "title": "Notes"
+          },
+          "relation": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "referral",
+                  "recruiter",
+                  "hiring_manager"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Relation",
+            "description": "Papel en el proceso: referencia, recruiter o responsable."
           }
         },
         "additionalProperties": false,
@@ -11061,6 +11910,60 @@
             "type": "string",
             "format": "date-time",
             "title": "Created At"
+          },
+          "relation": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "referral",
+                  "recruiter",
+                  "hiring_manager"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Relation"
+          },
+          "referral": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "requested",
+                  "given"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Referral"
+          },
+          "referral_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Referral At"
+          },
+          "network_contact_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Network Contact Id"
           }
         },
         "type": "object",
@@ -12846,6 +13749,13 @@
             "type": "array",
             "title": "By Week"
           },
+          "by_referral": {
+            "items": {
+              "$ref": "#/components/schemas/ReferralFunnel"
+            },
+            "type": "array",
+            "title": "By Referral"
+          },
           "response_time": {
             "$ref": "#/components/schemas/ResponseTime"
           },
@@ -12872,6 +13782,7 @@
           "by_source",
           "by_title",
           "by_week",
+          "by_referral",
           "response_time",
           "discard_reasons",
           "hard_filter_failures"
@@ -12999,6 +13910,59 @@
           "failures"
         ],
         "title": "HardFilterResult"
+      },
+      "ImportResult": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok",
+            "default": true
+          },
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "added": {
+            "type": "integer",
+            "title": "Added"
+          },
+          "updated": {
+            "type": "integer",
+            "title": "Updated"
+          },
+          "removed": {
+            "type": "integer",
+            "title": "Removed"
+          },
+          "skipped": {
+            "type": "integer",
+            "title": "Skipped"
+          },
+          "without_company": {
+            "type": "integer",
+            "title": "Without Company"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "path",
+          "total",
+          "added",
+          "updated",
+          "removed",
+          "skipped",
+          "without_company",
+          "message"
+        ],
+        "title": "ImportResult"
       },
       "InjectionReport": {
         "properties": {
@@ -13469,6 +14433,50 @@
         "title": "JobExtraction",
         "description": "Datos de una oferta (schema_version 1). Lo que no dice el texto: null o unknown."
       },
+      "JobNetwork": {
+        "properties": {
+          "job_id": {
+            "type": "integer",
+            "title": "Job Id"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "network_size": {
+            "type": "integer",
+            "title": "Network Size"
+          },
+          "imported_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Imported At"
+          },
+          "people": {
+            "items": {
+              "$ref": "#/components/schemas/NetworkPerson"
+            },
+            "type": "array",
+            "title": "People"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "company",
+          "network_size",
+          "imported_at",
+          "people"
+        ],
+        "title": "JobNetwork"
+      },
       "JobPackage": {
         "properties": {
           "job_id": {
@@ -13658,6 +14666,11 @@
                 "type": "null"
               }
             ]
+          },
+          "known_contacts": {
+            "type": "integer",
+            "title": "Known Contacts",
+            "default": 0
           }
         },
         "type": "object",
@@ -13944,7 +14957,9 @@
               "preparar-entrevista",
               "simular-entrevista",
               "repasar-entrevista",
-              "dudas-oferta"
+              "dudas-oferta",
+              "redactar-mensaje",
+              "investigar-empresa"
             ],
             "title": "Action"
           },
@@ -14552,7 +15567,9 @@
             "type": "string",
             "enum": [
               "followup",
-              "thank_you"
+              "thank_you",
+              "linkedin",
+              "email"
             ],
             "title": "Kind"
           },
@@ -14568,7 +15585,14 @@
             "title": "Milestone Id"
           },
           "subject": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Subject"
           },
           "body": {
@@ -14615,6 +15639,69 @@
             "type": "string",
             "format": "date-time",
             "title": "Updated At"
+          },
+          "recipient_role": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "recruiter",
+                  "hiring_manager",
+                  "peer"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recipient Role"
+          },
+          "contact_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contact Id"
+          },
+          "network_contact_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Network Contact Id"
+          },
+          "recipient_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recipient Name"
+          },
+          "attachments": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attachments"
           }
         },
         "type": "object",
@@ -15003,6 +16090,136 @@
         ],
         "title": "MilestoneStatusChange"
       },
+      "NetworkPerson": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "position": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Position"
+          },
+          "company": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company"
+          },
+          "linkedin_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Linkedin Url"
+          },
+          "connected_on": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Connected On"
+          },
+          "match": {
+            "type": "string",
+            "enum": [
+              "exact",
+              "probable"
+            ],
+            "title": "Match"
+          },
+          "contact_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contact Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "position",
+          "company",
+          "linkedin_url",
+          "connected_on",
+          "match",
+          "contact_id"
+        ],
+        "title": "NetworkPerson",
+        "description": "Una persona de tu red en la empresa de la oferta (vista de la UI)."
+      },
+      "NetworkStatus": {
+        "properties": {
+          "size": {
+            "type": "integer",
+            "title": "Size"
+          },
+          "without_company": {
+            "type": "integer",
+            "title": "Without Company"
+          },
+          "imported_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Imported At"
+          },
+          "default_file": {
+            "type": "string",
+            "title": "Default File"
+          },
+          "default_file_exists": {
+            "type": "boolean",
+            "title": "Default File Exists"
+          }
+        },
+        "type": "object",
+        "required": [
+          "size",
+          "without_company",
+          "imported_at",
+          "default_file",
+          "default_file_exists"
+        ],
+        "title": "NetworkStatus"
+      },
       "NextMilestone": {
         "properties": {
           "milestone_id": {
@@ -15160,6 +16377,7 @@
               "contexto",
               "documentos",
               "entrevistas",
+              "empresas",
               "candidatura"
             ],
             "title": "Folder"
@@ -15826,6 +17044,87 @@
           "count"
         ],
         "title": "ReasonCount"
+      },
+      "ReferralChange": {
+        "properties": {
+          "referral": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "requested",
+                  "given"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Referral",
+            "description": "`requested` (pedida), `given` (dada) o `null` para quitar la marca."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "referral"
+        ],
+        "title": "ReferralChange"
+      },
+      "ReferralFunnel": {
+        "properties": {
+          "found": {
+            "type": "integer",
+            "title": "Found"
+          },
+          "approved": {
+            "type": "integer",
+            "title": "Approved"
+          },
+          "applied": {
+            "type": "integer",
+            "title": "Applied"
+          },
+          "replied": {
+            "type": "integer",
+            "title": "Replied"
+          },
+          "interview": {
+            "type": "integer",
+            "title": "Interview"
+          },
+          "reply_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reply Rate"
+          },
+          "group": {
+            "type": "string",
+            "enum": [
+              "given",
+              "requested",
+              "none"
+            ],
+            "title": "Group"
+          }
+        },
+        "type": "object",
+        "required": [
+          "found",
+          "approved",
+          "applied",
+          "replied",
+          "interview",
+          "reply_rate",
+          "group"
+        ],
+        "title": "ReferralFunnel"
       },
       "RenderResult": {
         "properties": {
@@ -16645,6 +17944,110 @@
           "window_days"
         ],
         "title": "RepostSignal"
+      },
+      "ResearchSource": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title",
+            "description": "Título de la página."
+          },
+          "url": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 8,
+            "title": "Url",
+            "description": "URL `http(s)` de la página."
+          },
+          "accessed_on": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accessed On",
+            "description": "Cuándo la consultaste."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "title",
+          "url"
+        ],
+        "title": "ResearchSource"
+      },
+      "ResearchView": {
+        "properties": {
+          "content": {
+            "$ref": "#/components/schemas/CompanyResearchContent"
+          },
+          "risk_flags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Risk Flags"
+          },
+          "file": {
+            "type": "string",
+            "title": "File"
+          },
+          "agent_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent Name"
+          },
+          "job_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Job Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "age_days": {
+            "type": "integer",
+            "title": "Age Days"
+          }
+        },
+        "type": "object",
+        "required": [
+          "content",
+          "risk_flags",
+          "file",
+          "agent_name",
+          "job_id",
+          "created_at",
+          "updated_at",
+          "age_days"
+        ],
+        "title": "ResearchView"
       },
       "ResolvedOptions": {
         "properties": {

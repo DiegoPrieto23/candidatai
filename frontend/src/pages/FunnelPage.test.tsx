@@ -48,6 +48,11 @@ function stats(overrides: Partial<FunnelStats> = {}): FunnelStats {
       { week: '2026-W38', week_start: '2026-09-14', ...summary(2, 2, 2, 2, 1) },
       { week: '2026-W39', week_start: '2026-09-21', ...summary(5, 3, 2, 0, 0) },
     ],
+    by_referral: [
+      { group: 'given', ...summary(2, 2, 2, 2, 1) },
+      { group: 'requested', ...summary(1, 1, 1, 0, 0) },
+      { group: 'none', ...summary(7, 3, 2, 1, 0) },
+    ],
     response_time: {
       applied: 5,
       replied: 3,
@@ -118,6 +123,11 @@ describe('Embudo', () => {
     expect(within(titles).getByRole('rowheader', { name: 'Sin extraer' })).toBeInTheDocument()
 
     expect(screen.getByRole('table', { name: 'Ofertas por semana' })).toHaveTextContent('14 sept (2026-W38)')
+
+    const referrals = screen.getByRole('table', { name: 'Embudo por referencia' })
+    const given = within(referrals).getByRole('row', { name: /Con referencia/ })
+    expect(within(given).getAllByRole('cell').map(text)).toEqual(['2', '2', '2', '2', '1', '100 %'])
+    expect(within(referrals).getByRole('rowheader', { name: 'Sin referencia' })).toBeInTheDocument()
 
     const discards = screen.getByRole('table', { name: 'Descartes por motivo' })
     expect(within(discards).getByRole('rowheader', { name: 'No encaja el stack' })).toBeInTheDocument()

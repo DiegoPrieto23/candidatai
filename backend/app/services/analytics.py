@@ -11,6 +11,9 @@ Todo sale de `events` con consultas agregadas en la BD. Definiciones (también e
   `rejected` con fecha igual o posterior al primer envío.
 - Las ofertas cerradas por `duplicate_detected` (y no reabiertas) no cuentan: son otra oferta.
 - `since` filtra por `first_seen_at`, desde las 00:00 de ese día en Europe/Madrid.
+- **Por referencia** (fase 18): `given` si algún contacto del proceso tiene la referencia dada;
+  si no, `requested` si se pidió; si no, `none`. La marca no lleva fecha de corte: cuenta aunque
+  se diera después del envío.
 
 Solo SQLite: la semana usa `jh_iso_week` (registrada en `app/core/db.py`) y los filtros duros,
 `json_each`.
@@ -36,7 +39,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import Session, aliased
 from sqlalchemy.sql.expression import CTE
 
-from app.models import Application, Event, Job, JobExtraction, Source
+from app.models import Application, Contact, Event, Job, JobExtraction, Source
 from app.services.pipeline import EventType, Stage
 from app.services.process import start_of_local_day
 
@@ -102,6 +105,14 @@ class WeekFunnel(FunnelSummary):
     week_start: date  # lunes
 
 
+ReferralGroup = Literal["given", "requested", "none"]
+REFERRAL_GROUPS: tuple[ReferralGroup, ...] = ("given", "requested", "none")
+
+
+class ReferralFunnel(FunnelSummary):
+    group: ReferralGroup  # referencia dada, solo pedida o sin referencia
+
+
 class ResponseTime(BaseModel):
     applied: int  # ofertas enviadas (con `applied` o `applied_manually`)
     replied: int
@@ -128,6 +139,7 @@ class FunnelStats(BaseModel):
     by_source: list[SourceFunnel]
     by_title: list[TitleFunnel]
     by_week: list[WeekFunnel]
+    by_referral: list[ReferralFunnel]  # siempre los tres grupos, en ese orden
     response_time: ResponseTime
     discard_reasons: list[ReasonCount]
     hard_filter_failures: list[FilterCount]
@@ -340,6 +352,28 @@ def _by_week(session: Session, per_job: CTE) -> list[WeekFunnel]:
     return out
 
 
+def _by_referral(session: Session, per_job: CTE) -> list[ReferralFunnel]:
+    def marked(status: str) -> ColumnElement[bool]:
+        return (
+            exists()
+            .where(Contact.job_id == per_job.c.job_id, Contact.referral == status)
+            .correlate(per_job)
+        )
+
+    group = case((marked("given"), "given"), (marked("requested"), "requested"), else_="none")
+    rows = {
+        r.group: r
+        for r in session.execute(
+            select(group.label("group"), *_sums(per_job, SUMMARY_STEPS)).group_by(group)
+        ).all()
+    }
+    empty = dict.fromkeys(SUMMARY_STEPS, 0) | {"reply_rate": None}
+    return [
+        ReferralFunnel(group=g, **(_summary(rows[g]) if g in rows else empty))
+        for g in REFERRAL_GROUPS
+    ]
+
+
 def _response_time(session: Session, per_job: CTE) -> ResponseTime:
     sent = per_job.c.applied_at.is_not(None)
     no_reply = and_(sent, per_job.c.reply_at.is_(None))
@@ -411,6 +445,7 @@ def get_funnel_stats(
         by_source=_by_source(session, per_job),
         by_title=_by_title(session, per_job, top_titles),
         by_week=_by_week(session, per_job),
+        by_referral=_by_referral(session, per_job),
         response_time=_response_time(session, per_job),
         discard_reasons=_discard_reasons(session, per_job),
         hard_filter_failures=_hard_filter_failures(session, per_job),

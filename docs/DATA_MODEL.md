@@ -276,8 +276,18 @@ Editar la fecha de una entrevista o una prueba deja una `note` («reprogramada p
 
 ### `contacts`
 `id, job_id, name, role?, email?, phone?, linkedin?, notes?, created_at`. Personas del proceso
-(recruiter, hiring manager…). Las herramientas para agentes solo devuelven el nombre
-(`list_followups_due`) y el cargo (`get_interviews`); el email, el teléfono y las notas, solo la UI.
+(recruiter, hiring manager…). `role` es el cargo. Las herramientas para agentes solo devuelven el
+nombre (`list_followups_due`), el cargo (`get_interviews`) y, desde la fase 18, el papel y la
+referencia (`get_job_contacts`); el email, el teléfono, el LinkedIn y las notas, solo la UI.
+
+Fase 18 (migración 0017):
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| relation | str? | Papel en el proceso: `referral` (referencia), `recruiter` o `hiring_manager` (responsable) |
+| referral | str? | `requested` (referencia pedida) o `given` (dada). Marca, no evento: no cambia la etapa |
+| referral_at | datetime? | Cuándo se puso la marca (se borra al quitarla) |
+| network_contact_id | FK network_contacts? | La persona de tu red de la que sale («Añadir como contacto del proceso»). Si desaparece al reimportar, queda en `null` y el contacto sigue |
 
 ### Seguimientos y calendario
 - **Seguimiento vencido**: oferta en `applied` con `followups.days_without_reply` días o más (10 por
@@ -317,6 +327,9 @@ conversión nunca pasa del 100 %.
 - **Tiempo hasta la primera respuesta**: días entre el primer envío y la primera respuesta (mediana
   y media, 1 decimal), sobre las ofertas con `applied`/`applied_manually` (las transiciones impiden
   responder sin enviar, así que coincide con el paso «Enviadas»). Sin respuesta: `awaiting_reply` (aún en `applied`) y `closed_without_reply`.
+- **Por referencia** (fase 18): `given` si algún contacto del proceso tiene `referral = given`; si
+  no, `requested` si alguno la tiene pedida; si no, `none`. Siempre los tres grupos. La marca no
+  tiene fecha de corte: cuenta aunque se pusiera después del envío.
 - **Motivos**: ofertas con `discarded` por `payload.reason` (`unspecified` si falta) y con
   `hard_filter_failed` por cada `payload.failures[].filter` (`json_each`).
 - `jh_iso_week` y `json_each` son de SQLite: pasar a Postgres (ADR-002) exigiría reescribir esas dos
@@ -451,9 +464,9 @@ eventos `followup_sent`.
 |---|---|---|
 | id | int PK | |
 | job_id | FK | |
-| kind | str | `followup` o `thank_you` |
+| kind | str | `followup` o `thank_you`; desde la fase 18, también `linkedin` y `email` |
 | milestone_id | FK? | La entrevista que se agradece |
-| subject, body | str, text | |
+| subject, body | str?, text | Sin asunto solo en `linkedin` (migración 0018) |
 | status | str | `draft`, `sent` (el usuario marcó que lo envió) o `discarded` |
 | event_id | FK? | `followup_sent` al marcarlo enviado |
 | agent_name | str? | |
@@ -490,3 +503,64 @@ id o URL: por huella en `ingest.store_job` y, en los conectores, lo que ya estab
 publicaciones distintas de la misma empresa con el mismo título normalizado (traducido con
 `config/title_aliases.yaml`) y la misma ubicación en al menos `reposts.min_count` (2) días distintos. Varias el mismo día
 (varias ubicaciones) o en canales distintos (la misma oferta en InfoJobs e Indeed) no cuentan.
+
+## Ampliaciones de la fase 18
+
+### `network_contacts`
+Tu red de LinkedIn, de la exportación oficial `Connections.csv` (migración 0017). Separada de los
+contactos de cada proceso. La escribe solo `jh contacts import-linkedin` (o «Importar» en la ficha),
+nunca el agente.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | int PK | |
+| first_name / last_name | str / str | `last_name` puede ir vacío |
+| linkedin_url | str? único | Solo si es de `linkedin.com`; sin `/` final |
+| company | str? | Como viene en la exportación |
+| company_key | str? índice | `normalize_company(company)`: la misma normalización que `companies.normalized_name` |
+| position | str? | Cargo |
+| connected_on | date? | `Connected On` (`12 Oct 2024`, también ISO o con meses en español) |
+| imported_at | datetime | Última importación que la vio |
+
+- **Sin email**: aunque la exportación lo traiga, no se guarda.
+- **Importar sincroniza**: se reconoce a cada persona por su URL (sin URL, por nombre y empresa);
+  añade, actualiza y borra lo que ya no está. Un fichero sin filas no borra la red; si quita más de
+  la mitad, el mensaje lo avisa. Los contactos del proceso y los borradores que apuntaban a una
+  persona borrada siguen, sin el enlace.
+- **Cruce con una oferta** (`services/network.py`): `exact` si las claves de empresa son iguales (o
+  iguales sin espacios); `probable` si una es el principio de la otra palabra a palabra
+  («bretema» ↔ «bretema analytics»), salvo que la corta sea una sola palabra de menos de 5 letras
+  o genérica («banco», «grupo», «data»…). `JobRow.known_contacts` lleva el recuento a la bandeja y
+  al triaje.
+
+### `message_drafts` (fase 18, migración 0018)
+Mensajes a personas de la empresa: `linkedin` (≤ 300 caracteres, sin asunto ni adjuntos) y `email`
+(con asunto). Se guardan desde `approved` hasta `in_process` (los seguimientos y agradecimientos,
+solo en `applied`/`in_process`). «Ya lo he enviado» no registra evento. Como mucho uno vigente por
+oferta, tipo y destinatario.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| recipient_role | str? | `recruiter`, `hiring_manager` (responsable del puesto) o `peer` (compañero). Obligatorio en `linkedin` y `email` |
+| contact_id | FK contacts? | El contacto del proceso al que va (de esa oferta) |
+| network_contact_id | FK network_contacts? | O la persona de tu red, de la empresa de la oferta. No los dos. Queda en `null` si sale de la red al reimportar |
+| recipient_name | str? | El nombre del destinatario al guardar (sigue aunque la persona salga de la red) |
+| attachments | JSON? | Solo en `email`: nombres de los adjuntos que menciona (la app no adjunta nada) |
+
+### `company_research`
+Dosier de una empresa (skill `investigar-empresa`, migración 0018). Uno por empresa: lo comparten
+todas sus ofertas y guardar otro lo sustituye. No lleva evento: no es estado de una oferta.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | int PK | |
+| company_id | FK companies, único | |
+| job_id | FK jobs? | La oferta desde la que se investigó |
+| content | JSON | `CompanyResearchContent`: `summary`, `product?`, `news?`, `engineering_culture?`, `stack[]`, `notes?` y `sources[]` (`title`, `url` http(s) y no de LinkedIn, `accessed_on?`). Cada apartado con texto, salvo `notes`, cita `[n]` de `sources` |
+| risk_flags | JSON | `injection_phrase` si el texto guardado contiene frases dirigidas a una IA (sale de webs) |
+| file_name | str | `<Empresa>_<company_id>.md` en `data/documentos/empresas/`, que escribe el código (se reescribe al sustituirlo) |
+| agent_name | str? | |
+| created_at / updated_at | datetime | |
+
+Al archivar una candidatura (fase 13) se copia ese `.md` a su carpeta como `empresa.md`: el
+dosier vigente al archivar, que no forma parte de lo enviado (el README lo dice).

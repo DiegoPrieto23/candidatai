@@ -37,7 +37,7 @@ from app.schemas.cv import CvContent, CvRenderOptions, CvVerification
 from app.schemas.llm_io import JobExtraction
 from app.schemas.sources import SourceInput
 from app.services import capture as capture_service
-from app.services import events, extractions, ingest, pipeline, process, profile, tasks
+from app.services import events, extractions, ingest, network, pipeline, process, profile, tasks
 from app.services.demo_text import posting_text
 from app.services.documents import pdf
 from app.services.documents import service as cv_service
@@ -634,6 +634,10 @@ def seed(
     prepare_dir(target, force)
     shutil.copyfile(DEMO_DIR / "profile.example.yaml", target / "profile.yaml")
     shutil.copyfile(DEMO_DIR / "photo.png", target / "photo.png")
+    # Red de LinkedIn ficticia (fase 18), donde la buscaría `jh contacts import-linkedin`.
+    linkedin = target / "documentos" / "linkedin"
+    linkedin.mkdir(parents=True)
+    shutil.copyfile(DEMO_DIR / "linkedin" / "Connections.csv", linkedin / "Connections.csv")
     (target / "tmp").mkdir()  # entradas `--file` de los agentes sin MCP
     now = now or datetime.now(UTC)
     rng = random.Random(SEED)
@@ -643,6 +647,7 @@ def seed(
         with session_scope() as session:
             profile.import_profile(session, target / "profile.yaml")
             warnings = _populate(session, plans, now)
+            network.import_connections(session, linkedin / "Connections.csv")
             _add_cases(session, eval_cv, compat)
         with session_scope() as session:
             return _summary(session, target, warnings)

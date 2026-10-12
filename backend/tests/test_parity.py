@@ -26,7 +26,16 @@ from app.schemas.cover_letter import CoverLetterContent
 from app.schemas.cv import CvContent
 from app.schemas.llm_io import JobExtraction
 from app.schemas.sources import AgentBrowseSource
-from app.services import context, events, extractions, ingest, process, profile
+from app.services import (
+    company_research,
+    context,
+    events,
+    extractions,
+    ingest,
+    network,
+    process,
+    profile,
+)
 from app.services.documents import cover_letter, pdf
 from app.services.documents import service as cv_service
 from app.services.ingestion import browse
@@ -166,6 +175,40 @@ def seed_two_followups() -> None:
             events.record(
                 session, 1, "followup_sent", "user", occurred_at=utcnow() - timedelta(days=days)
             )
+
+
+def seed_network() -> None:
+    """Oferta 1 (Acme Analytics) con un contacto del proceso y dos personas de la red."""
+    seed_job()
+    path = get_settings().data_dir / "Connections.csv"
+    path.write_text(
+        "First Name,Last Name,URL,Email Address,Company,Position,Connected On\n"
+        "Ana,Ríos,https://www.linkedin.com/in/ana,ana@example.com,Acme Analytics S.L.,CTO,"
+        "1 Feb 2024\n"
+        "Luis,Mar,https://www.linkedin.com/in/luis,,Otra,Dev,1 Feb 2024\n",
+        encoding="utf-8",
+    )
+    with session_scope() as session:
+        network.import_connections(session, path)
+        process.add_contact(
+            session, 1, process.ContactFields(name="Marta", role="Recruiter", relation="recruiter")
+        )
+
+
+def seed_network_approved() -> None:
+    """Como `seed_network`, con la oferta 1 aprobada."""
+    seed_network()
+    with session_scope() as session:
+        events.record(session, 1, "extracted", "user")
+        events.record(session, 1, "approved", "user")
+
+
+def seed_research() -> None:
+    seed_job()
+    with session_scope() as session:
+        company_research.save_company_research(
+            session, 1, company_research.CompanyResearchContent.model_validate(RESEARCH), "test"
+        )
 
 
 def seed_interview_done() -> None:
@@ -362,6 +405,23 @@ FOLLOWUP = {
     "subject": "Candidatura a Data Engineer",
     "body": "Hola:\n\nTe escribo para saber si hay novedades sobre mi candidatura.\n\nGracias.",
 }
+LINKEDIN_MSG = {
+    "kind": "linkedin",
+    "body": "Hola, Ana: he visto la oferta de Data Engineer en Acme y me encantaría hablar.",
+    "recipient_role": "hiring_manager",
+    "network_contact_id": 1,
+}
+LINKEDIN_MSG_LONG = {**LINKEDIN_MSG, "body": "x" * 301}
+RESEARCH = {
+    "summary": "Acme Analytics hace analítica para retail [1].",
+    "news": "Ronda de financiación en 2026 [2].",
+    "stack": ["Python", "Snowflake"],
+    "sources": [
+        {"title": "Acme", "url": "https://acme.example.com/about"},
+        {"title": "Prensa", "url": "https://news.example.com/acme", "accessed_on": "2026-10-01"},
+    ],
+}
+RESEARCH_BAD = {**RESEARCH, "news": "Ronda de financiación [3]."}
 THANKS = {
     "kind": "thank_you",
     "subject": "Gracias por la entrevista",
@@ -692,6 +752,29 @@ CASES = [
                {"job_id": 1, "draft": {**FOLLOWUP, "subject": ""}},
                ["drafts", "save", "1"], "d.json", {**FOLLOWUP, "subject": ""},
                seed=seed_applied_long_ago, expect_error="validation_error"),
+    _file_case("draft-linkedin", "save_message_draft", {"job_id": 1, "draft": LINKEDIN_MSG},
+               ["drafts", "save", "1"], "d.json", LINKEDIN_MSG, seed=seed_network_approved),
+    _file_case("draft-linkedin-long", "save_message_draft",
+               {"job_id": 1, "draft": LINKEDIN_MSG_LONG},
+               ["drafts", "save", "1"], "d.json", LINKEDIN_MSG_LONG, seed=seed_network_approved,
+               expect_error="validation_error"),
+    _file_case("draft-linkedin-triage", "save_message_draft", {"job_id": 1, "draft": LINKEDIN_MSG},
+               ["drafts", "save", "1"], "d.json", LINKEDIN_MSG, seed=seed_network,
+               expect_error="not_allowed"),
+    _file_case("research-save", "save_company_research", {"job_id": 1, "research": RESEARCH},
+               ["companies", "save-research", "1"], "r.json", RESEARCH),
+    _file_case("research-bad", "save_company_research", {"job_id": 1, "research": RESEARCH_BAD},
+               ["companies", "save-research", "1"], "r.json", RESEARCH_BAD,
+               expect_error="validation_error"),
+    Case("research", "get_company_research", {"job_id": 1}, ["companies", "research", "1"],
+         seed=seed_research),
+    Case("research-none", "get_company_research", {"job_id": 1}, ["companies", "research", "1"]),
+    Case("research-unknown", "get_company_research", {"job_id": 9},
+         ["companies", "research", "9"], expect_error="not_found"),
+    Case("contacts", "get_job_contacts", {"job_id": 1}, ["contacts", "list", "1"],
+         seed=seed_network),
+    Case("contacts-unknown", "get_job_contacts", {"job_id": 9}, ["contacts", "list", "9"],
+         expect_error="not_found"),
     Case("interviews", "get_interviews", {"job_id": 1}, ["interviews", "list", "1"],
          seed=seed_upcoming),
     Case("interviews-offer", "get_interviews", {"job_id": 1}, ["interviews", "list", "1"],

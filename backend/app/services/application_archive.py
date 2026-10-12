@@ -29,6 +29,7 @@ from app.services.pipeline import EventType
 APPLIED_EVENTS = (EventType.APPLIED.value, EventType.APPLIED_MANUALLY.value)
 README = "README.md"
 ANSWERS_FILE = "respuestas.json"
+RESEARCH_FILE = "empresa.md"
 _TMP_PREFIX = ".tmp-"
 _MAX_PART = 40
 
@@ -48,7 +49,8 @@ def archive_root() -> Path:
     return context.documents_dir() / "candidaturas"
 
 
-def _slug(text: str) -> str:
+def slug(text: str) -> str:
+    """Parte de un nombre de fichero: ASCII, sin signos, palabras unidas por `-`."""
     plain = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode()
     words = re.findall(r"[A-Za-z0-9]+", plain)
     return "-".join(words)[:_MAX_PART].strip("-") or "sin-nombre"
@@ -56,7 +58,7 @@ def _slug(text: str) -> str:
 
 def folder_name(company: str, title: str, job_id: int) -> str:
     """`Acme-Analytics_Data-Engineer_12`: ASCII, sin signos y apto para Windows."""
-    return f"{_slug(company)}_{_slug(title)}_{job_id}"
+    return f"{slug(company)}_{slug(title)}_{job_id}"
 
 
 def find_folder(job_id: int) -> Path | None:
@@ -150,6 +152,14 @@ def _readme(
         *([] if files else ["- (ninguno: no había CV, carta ni respuestas guardados)"]),
         "",
         "Copia de lo que se envió. Si rehaces el CV o la carta después, esta carpeta no cambia.",
+        *(
+            [
+                "",
+                f"`{RESEARCH_FILE}` no se envió: es el dosier de la empresa vigente al archivar.",
+            ]
+            if RESEARCH_FILE in files
+            else []
+        ),
         "",
     ]
     return "\n".join(lines)
@@ -157,6 +167,7 @@ def _readme(
 
 def archive(session: Session, payload: dict[str, Any]) -> ArchiveResult:
     """Escribe la carpeta de la candidatura a partir del `snapshot`. Idempotente."""
+    from app.services import company_research
     from app.services.documents import cover_letter
 
     job_id = int(payload["job_id"])
@@ -200,6 +211,11 @@ def archive(session: Session, payload: dict[str, Any]) -> ArchiveResult:
             dump = json.dumps(answers_doc.content, ensure_ascii=False, indent=2) + "\n"
             (tmp / ANSWERS_FILE).write_text(dump, encoding="utf-8")
             files.append(ANSWERS_FILE)
+        # Dosier de la empresa (fase 18): el vigente al archivar, no forma parte del envío.
+        research = company_research.research_file(session, job.company_id)
+        if research is not None:
+            shutil.copyfile(research, tmp / RESEARCH_FILE)
+            files.append(RESEARCH_FILE)
         if profile_version_id is None:
             try:
                 profile_version_id = profile_service.current(session).profile_version_id

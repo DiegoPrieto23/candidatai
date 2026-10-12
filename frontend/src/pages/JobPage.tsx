@@ -19,12 +19,14 @@ import { useAddNote, useJob, useJobEvent, useJobMatch, type UserEventBody } from
 import { ApplySection } from '@/components/ApplySection'
 import { ArchivedApplication } from '@/components/ArchivedApplication'
 import { CoverLetterSection } from '@/components/CoverLetterSection'
+import { CompanyResearchSection } from '@/components/CompanyResearchSection'
 import { CvSection } from '@/components/CvSection'
 import { JobReplyNotice } from '@/components/JobReplyNotice'
 import { ClosedNotice, RepostNote } from '@/components/JobSignals'
 import { DiscardDialog } from '@/components/DiscardDialog'
 import { DraftsSection } from '@/components/DraftsSection'
 import { MatchDetails, ScoreBadge } from '@/components/MatchDetails'
+import { NetworkPanel } from '@/components/NetworkPanel'
 import { PackageSection } from '@/components/PackageSection'
 import { ProcessSection } from '@/components/ProcessSection'
 import { StatusUpdate } from '@/components/StatusUpdate'
@@ -620,6 +622,7 @@ export function JobPage() {
                 <>
                   <ProcessSection job={job} />
                   <DraftsSection job={job} />
+                  <CompanyResearchSection job={job} />
                   <ArchivedApplication job={job} />
                   <ExtractionBlock job={job} />
                   <EarlierStages>
@@ -634,6 +637,8 @@ export function JobPage() {
                 <>
                   <ExtractionBlock job={job} />
                   <ProcessSection job={job} />
+                  <DraftsSection job={job} />
+                  <CompanyResearchSection job={job} />
                   <PackageSection job={job} />
                   <ApplySection job={job} />
                   <CvSection job={job} />
@@ -645,6 +650,7 @@ export function JobPage() {
 
             <aside className="space-y-6">
               <MatchPanel job={job} />
+              {job.stage !== 'pending_detail' && <NetworkPanel job={job} />}
               <Panel title="Historial">
                 <Timeline events={job.events} />
               </Panel>

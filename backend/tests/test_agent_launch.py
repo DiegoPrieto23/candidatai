@@ -14,6 +14,7 @@ from app.core.db import session_scope
 from app.models.base import utcnow
 from app.services import agent_launch, events, process
 from app.services.agent_launch import LaunchError
+from app.services.pipeline import Stage
 from tests.replies_support import add_applied_job
 from tests.test_api_triage import add_extracted, import_profile
 
@@ -72,6 +73,20 @@ def test_followup_prompts() -> None:
     )
     assert agent_launch.ACTIONS["redactar-seguimiento"].stages == agent_launch.SENT_STAGES
     assert "redactar-seguimiento" in agent_launch.prompt_for("redactar-seguimientos")
+
+
+def test_outreach_and_research_prompts() -> None:
+    """Fase 18: mensaje desde que la oferta está aprobada; dosier también para triarla."""
+    assert agent_launch.prompt_for("redactar-mensaje", 7) == (
+        "Usa el skill redactar-mensaje de Job Hunter para la oferta 7."
+    )
+    assert agent_launch.prompt_for("investigar-empresa", 7) == (
+        "Usa el skill investigar-empresa de Job Hunter para la empresa de la oferta 7."
+    )
+    outreach = agent_launch.ACTIONS["redactar-mensaje"].stages
+    research = agent_launch.ACTIONS["investigar-empresa"].stages
+    assert Stage.APPROVED in outreach and Stage.PENDING_TRIAGE not in outreach
+    assert Stage.PENDING_TRIAGE in research and Stage.CLOSED not in research
 
 
 def test_launchers_come_from_the_manifest() -> None:
@@ -134,6 +149,8 @@ def test_get_lists_agent_and_actions(client: TestClient, opened: list[tuple[str,
         "simular-entrevista",
         "repasar-entrevista",
         "dudas-oferta",
+        "redactar-mensaje",
+        "investigar-empresa",
     }
     assert actions["generar-cv"]["needs_job"] is True and actions["generar-cv"]["prompt"] is None
     assert actions["repasar-entrevista"]["needs_milestone"] is True

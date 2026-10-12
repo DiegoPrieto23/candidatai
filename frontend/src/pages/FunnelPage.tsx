@@ -439,9 +439,33 @@ function Dashboard({ stats }: { stats: FunnelStats }) {
         />
       </Panel>
 
+      {stats.by_referral.some((r) => r.group !== 'none' && r.found > 0) && (
+        <Panel
+          title="Por referencia"
+          hint="Si algún contacto del proceso te dio una referencia, o solo se la pediste. Lo marcas en la ficha."
+        >
+          <BreakdownTable
+            caption="Embudo por referencia"
+            firstHead="Referencia"
+            rows={stats.by_referral.map((r) => ({
+              key: r.group,
+              name: REFERRAL_GROUP_LABEL[r.group],
+              summary: r,
+              muted: r.group === 'none',
+            }))}
+          />
+        </Panel>
+      )}
+
       <ReasonsPanel stats={stats} />
     </div>
   )
+}
+
+const REFERRAL_GROUP_LABEL: Record<Schemas['ReferralFunnel']['group'], string> = {
+  given: 'Con referencia',
+  requested: 'Referencia pedida',
+  none: 'Sin referencia',
 }
 
 function DashboardSkeleton() {

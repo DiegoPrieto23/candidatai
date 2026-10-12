@@ -13,7 +13,7 @@ from app import cli
 from app.core.config import DEMO_MARKER, get_settings
 from app.core.db import session_scope
 from app.models import Event, Job, Match, Source, Task
-from app.services import analytics, demo, events, status
+from app.services import analytics, demo, events, network, status
 from app.services.documents import pdf
 from app.services.documents import service as cv_service
 from app.services.pipeline import Stage
@@ -86,6 +86,10 @@ def test_seed_fills_a_demo_folder(tmp_path: Path, isolated_env: Path) -> None:
         assert len([w for w in stats.by_week if w.found]) >= demo.WEEKS
         assert {r.reason for r in stats.discard_reasons} >= {"skills", "other"}
         assert stats.hard_filter_failures
+
+        # Red de LinkedIn ficticia (fase 18): importada y cruzada con alguna oferta de la demo.
+        all_jobs = session.scalars(select(Job.id)).all()
+        assert sum(network.known_counts(session, list(all_jobs)).values()) > 0
 
         # Las fuentes de ATS quedan en pausa (el worker no descarga tableros inventados) y la cola
         # de score, vacía (ya está calculado).

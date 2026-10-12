@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session, aliased
 from app.models import Application, Company, Job, Match
 from app.models import JobExtraction as JobExtractionRow
 from app.schemas.llm_io import JobExtraction, Salary
-from app.services import application_archive, extractions
+from app.services import application_archive, extractions, network
 from app.services.events import EventOut, JobNotFoundError
 from app.services.pipeline import EventType, Stage, job_events
 from app.services.signals import JobSignals
@@ -143,6 +143,7 @@ RemoteMode = Literal["onsite", "hybrid", "remote", "unknown"]
 class JobRow(JobSummary):
     remote_mode: RemoteMode | None  # de la extracción vigente; None si aún no hay
     salary: Salary | None  # de la extracción vigente; None si no lo indica o aún no hay
+    known_contacts: int = 0  # personas de tu red de LinkedIn en la empresa (fase 18)
 
 
 # Orden de la bandeja. Las ofertas sin el dato (sin score o sin salario) van siempre al final.
@@ -238,6 +239,7 @@ def search_jobs(
         .offset(offset)
     ).all()
     latest = extractions.latest_rows(session, [job.id for job, *_ in rows])
+    known = network.known_counts(session, [job.id for job, *_ in rows])
     items = []
     for job, company, job_stage, score in rows:
         extraction = latest.get(job.id)
@@ -256,6 +258,7 @@ def search_jobs(
                 score=score,
                 remote_mode=extraction.data.get("remote_mode") if extraction else None,
                 salary=_row_salary(extraction.data if extraction else None),
+                known_contacts=known.get(job.id, 0),
             )
         )
     return JobPage(items=items, total=total, limit=limit, offset=offset)

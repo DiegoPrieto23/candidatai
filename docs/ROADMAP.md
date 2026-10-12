@@ -50,7 +50,9 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 16.1 | ↳ ¿Sigue abierta? y republicadas | ✅ | `jobs.signals` (ADR-028), `check_job_open`, tarea diaria `check_open`, aviso en la ficha que propone descartar, «Republicada ×N» en bandeja y triaje |
 | 16.2 | ↳ Búsqueda ampliada | ✅ | `get_search_titles` y skill `ampliar-busqueda`; `jh sources discover` sobre Greenhouse, Lever y Ashby |
 | 17 | Entrevistas: simulacro y repaso | ✅ | Plan de preparación, simulacro con feedback, repaso posterior con notas y historias STAR nuevas |
-| 18 | Contactos, mensajes e investigación de empresas | ⏳ | Tus contactos de LinkedIn (CSV) cruzados con tus ofertas, borradores de mensaje y dosier de empresa con fuentes |
+| 18 | Contactos, mensajes e investigación de empresas | ✅ | Tus contactos de LinkedIn (CSV) cruzados con tus ofertas, borradores de mensaje y dosier de empresa con fuentes |
+| 18.1 | ↳ Red de LinkedIn y referencias | ✅ | `jh contacts import-linkedin` (sin emails), «Conoces a N» en bandeja, triaje y ficha, «Añadir al proceso» con su papel, `get_job_contacts` y embudo «Por referencia» |
+| 18.2 | ↳ Mensajes e investigación de empresa | ✅ | Skills `redactar-mensaje` (LinkedIn ≤ 300 caracteres o correo con adjuntos) e `investigar-empresa` (dosier con fuentes en la ficha y en `data/documentos/empresas/`) |
 | 19 | Lote en segundo plano | ⏳ | «En segundo plano» además de «En terminal» para los skills que no preguntan (fase 2 de la ADR-024) |
 | 20 | Calibración y patrones | ⏳ | «¿Acierta el score?»: respuesta por tramo de score, veredicto, fuente, plantilla y carta; retrospectiva semanal |
 | 21 | Ofertas recibidas y salario | ⏳ | Comparar ofertas recibidas y la distancia a tu mínimo sin exponerlo al agente; preparar la negociación |
@@ -75,7 +77,8 @@ Word y tras la 08b para PDF, imagen o HTML; `generar-carta` tras la 08c;
 aprobadas de las que sacar las keywords; `buscar-ofertas` tras la 09b; `preparar-candidatura`,
 `preparar-entrevista` y `resumen-diario` tras la 10; la candidatura asistida (sin skill: se
 usa desde la ficha) tras la 11; `plan-formacion` tras la 14; `ampliar-busqueda` tras la 16;
-`simular-entrevista` y `repasar-entrevista` tras la 17.
+`simular-entrevista` y `repasar-entrevista` tras la 17; `redactar-mensaje` e `investigar-empresa`
+tras la 18.
 
 ## Registro de fases
 
@@ -1620,3 +1623,63 @@ decisiones tomadas y deuda técnica pendiente. -->
     medianoche de Madrid.
   - Pendiente de prueba manual: los tres botones con una entrevista real o de prueba y «Dudas
     antes de aceptar» (`docs/pruebas/fase-17-prueba-manual.txt`).
+
+### 18 · Contactos, mensajes e investigación de empresas — 2026-10-12 · Claude Code (Opus 5.5)
+- **Resumen** (dos subfases en la misma rama, un commit por subfase):
+  - **18.1** · Migración 0017: `network_contacts` (sin emails) y, en `contacts`, `relation`,
+    `referral`, `referral_at` y `network_contact_id`. `services/network.py`:
+    - importa el `Connections.csv` real (preámbulo «Notes:», cabeceras en inglés o español,
+      fechas `12 Oct 2024`) y sincroniza la red;
+    - cruce por empresa normalizada, `exact` o `probable`, con `JobRow.known_contacts`;
+    - `jh contacts import-linkedin` (solo CLI) y `get_job_contacts` ↔ `jh contacts list` (solo
+      nombre, cargo, papel y referencia).
+  - **18.1** · API `/network`, `/network/import` (`require_ui`, solo la ruta de siempre),
+    `/jobs/{id}/network`, `/jobs/{id}/contacts/from-network` y `/contacts/{id}/referral`. UI:
+    panel «Tu red» en la ficha, «Conoces a N» en bandeja y triaje, papel y referencia en los
+    contactos del proceso, bloque «Por referencia» en el embudo. CSV ficticio en `demo/linkedin/`,
+    que importa `jh demo seed`.
+  - **18.2** · Migración 0018: `message_drafts` admite `linkedin` y `email` (`recipient_role`,
+    `contact_id`, `network_contact_id`, `recipient_name`, `attachments`; `subject` opcional) y la
+    tabla `company_research`. `services/company_research.py`: dosier por empresa con citas `[n]`
+    validadas, `.md` en `data/documentos/empresas/`, copia `empresa.md` al archivar la
+    candidatura y detección de frases de inyección. `get_company_research` ↔ `jh companies
+    research` y `save_company_research` ↔ `jh companies save-research`.
+  - **18.2** · Skills `redactar-mensaje` e `investigar-empresa`; `preparar-entrevista` usa el
+    dosier y `generar-carta` deja explícito que no. Botones «Redactar mensaje» e «Investigar
+    empresa»; «Borradores» desde `approved`; sección «Empresa»; carpeta `empresas` en
+    «Abrir carpeta».
+  - Docs: DATA_MODEL, AGENT_INTERFACE, POLICIES §4, §5, §6 y §7, AGENTS_COMPAT, README,
+    RESUMEN_FASES, ADR-030, ADR-031 y `docs/pruebas/fase-18-prueba-manual.txt`.
+  - Tests: pasada completa final con 2059 de backend y 212 de frontend en verde; ruff limpio y
+    `sync_agents.py --check` en verde.
+- **Pruebas reales** (carpeta de datos aislada con `jh demo seed`, sin tocar `data/`):
+  - la red demo cruza con 9 ofertas; Brétema Analytics sale con 3 personas, una `probable`;
+  - `jh companies save-research`, `research` y `drafts save` con un mensaje de LinkedIn, sin MCP:
+    dosier en `documentos/empresas/Bretema-Analytics_3.md` y borrador guardado; `--file` borrado.
+- **Decisiones:**
+  - Dosier en `data/documentos/empresas/` y no en la carpeta de la candidatura, desviación del
+    encargo aprobada antes de empezar (ADR-031).
+  - No se guardan los emails de la exportación (aprobado antes de empezar). Un CSV vacío no borra
+    la red.
+  - La referencia es una marca del contacto, no un evento. Los mensajes amplían `message_drafts`
+    y marcarlos enviados no registra evento.
+  - Arreglado fuera de la fase: 7 tests de `test_liveness.py` usaban una fecha fija de hoy a las
+    08:00 UTC y fallaban en cuanto el reloj la pasaba; ahora son relativas.
+  - Revisión del rol `revisor` aplicada:
+    - reimportar la red ya no falla si un borrador apunta a alguien que sale del CSV (el borrador
+      guarda el nombre del destinatario);
+    - la persona de la red de un mensaje tiene que trabajar en la empresa de la oferta;
+    - el dosier rechaza fuentes de LinkedIn, escapa títulos y URLs en el `.md`, se enseña antes de
+      guardarlo y, con `risk_flags`, los skills no lo usan;
+    - «Investigar empresa» solo con la oferta extraída; recuento de caracteres de LinkedIn igual
+      que el backend; el README del archivo dice que `empresa.md` no se envió;
+    - aviso si una importación quita más de la mitad de la red;
+    - ADR-031 separado del 030 y viñeta de `save_message_draft` aclarada.
+- **Deuda:**
+  - El cruce no conoce filiales ni nombres comerciales («Inditex» / «Zara»).
+  - El dosier no caduca solo (aviso a los 30 días) y su `.md` se escribe antes del commit.
+  - Un mensaje marcado como enviado no deja rastro en el historial de la oferta.
+  - La red solo se pone al día al reimportar; sin URL, quien cambia de empresa se recrea con otro
+    id.
+  - Pendiente de prueba manual: tu exportación real de LinkedIn, «Investigar empresa» con una
+    empresa real y «Redactar mensaje» (`docs/pruebas/fase-18-prueba-manual.txt`).

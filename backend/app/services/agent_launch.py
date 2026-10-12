@@ -48,6 +48,8 @@ ActionId = Literal[
     "simular-entrevista",
     "repasar-entrevista",
     "dudas-oferta",
+    "redactar-mensaje",
+    "investigar-empresa",
 ]
 
 # Hitos de entrevista (fase 17): `upcoming`, programada y por empezar; `past`, ya empezada y no
@@ -59,6 +61,10 @@ MilestoneRule = Literal["upcoming", "past"]
 CV_STAGES = frozenset({Stage.APPROVED, Stage.CV_READY})
 # Candidaturas enviadas y abiertas: a las que se escribe un seguimiento o un agradecimiento.
 SENT_STAGES = frozenset({Stage.APPLIED, Stage.IN_PROCESS})
+# Mensajes a personas de la empresa (fase 18): desde que apruebas la oferta.
+OUTREACH_STAGES = frozenset({Stage.APPROVED, Stage.CV_READY, Stage.APPLIED, Stage.IN_PROCESS})
+# Investigar la empresa: cualquier oferta abierta ya extraída (también para triarla).
+RESEARCH_STAGES = OUTREACH_STAGES | {Stage.PENDING_TRIAGE}
 
 
 @dataclass(frozen=True)
@@ -150,6 +156,22 @@ ACTIONS: dict[ActionId, Action] = {
         "de la oferta {job_id}.",
         needs_job=True,
         milestone="past",
+    ),
+    # Ficha (fase 18): mensaje a una persona de la empresa y dosier de la empresa. El agente
+    # redacta o investiga; la app no envía nada.
+    "redactar-mensaje": Action(
+        "Redactar mensaje",
+        "Usa el skill redactar-mensaje de Job Hunter para la oferta {job_id}.",
+        needs_job=True,
+        stages=OUTREACH_STAGES,
+        wrong_stage="Solo se escribe a la empresa de una oferta aprobada y abierta.",
+    ),
+    "investigar-empresa": Action(
+        "Investigar empresa",
+        "Usa el skill investigar-empresa de Job Hunter para la empresa de la oferta {job_id}.",
+        needs_job=True,
+        stages=RESEARCH_STAGES,
+        wrong_stage="Solo para una oferta ya extraída y sin cerrar.",
     ),
     "dudas-oferta": Action(
         "Dudas antes de aceptar",

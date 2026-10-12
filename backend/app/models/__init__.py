@@ -2,13 +2,13 @@
 
 from app.models.applier import ApplicationAttempt
 from app.models.base import Base
-from app.models.companies import Company
+from app.models.companies import Company, CompanyResearch
 from app.models.documents import CoverLetterBrief, Document, DocumentRender
 from app.models.events import Application, Event
 from app.models.jobs import Job, JobExtraction, JobSighting
 from app.models.matches import Match
 from app.models.ops import McpCall, Task
-from app.models.process import Contact, Milestone
+from app.models.process import Contact, Milestone, NetworkContact
 from app.models.profiles import ProfileVersion
 from app.models.prompts import UserPrompt
 from app.models.replies import MessageDraft, Reply
@@ -20,6 +20,7 @@ __all__ = [
     "ApplicationAttempt",
     "Base",
     "Company",
+    "CompanyResearch",
     "Contact",
     "CoverLetterBrief",
     "Document",
@@ -33,6 +34,7 @@ __all__ = [
     "McpCall",
     "MessageDraft",
     "Milestone",
+    "NetworkContact",
     "ProfileVersion",
     "Reply",
     "SkillGapMark",

@@ -1,5 +1,5 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ApiError, api, unwrap, type CvRenderOptions, type Schemas, type Stage } from './client'
+import { ApiError, api, unwrap, type CvRenderOptions, type ReferralStatus, type Schemas, type Stage } from './client'
 import type { operations } from './schema'
 
 export const PAGE_SIZE = 50
@@ -37,6 +37,9 @@ export const keys = {
   allReplies: ['replies'] as const,
   reply: (id: number) => ['reply', id] as const,
   drafts: (jobId: number) => ['drafts', jobId] as const,
+  network: ['network'] as const,
+  jobNetwork: (jobId: number) => ['network', 'job', jobId] as const,
+  research: (jobId: number) => ['research', jobId] as const,
 }
 
 type JobsQuery = NonNullable<operations['list_jobs']['parameters']['query']>
@@ -954,5 +957,79 @@ export function useDiscardDraft(jobId: number) {
     mutationFn: (draftId: number) =>
       unwrap(api.POST('/drafts/{draft_id}/discard', { params: { path: { draft_id: draftId } }, body: {} })),
     onSuccess: () => client.invalidateQueries({ queryKey: keys.drafts(jobId) }),
+  })
+}
+
+// --- Red de LinkedIn (fase 18) ------------------------------------------------------------------
+
+export function useNetworkStatus() {
+  return useQuery({ queryKey: keys.network, queryFn: () => unwrap(api.GET('/network')) })
+}
+
+/** Importa `data/documentos/linkedin/Connections.csv` (sincroniza la red). */
+export function useImportNetwork() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: () => unwrap(api.POST('/network/import', { body: {} })),
+    onSuccess: () =>
+      Promise.all([
+        client.invalidateQueries({ queryKey: keys.network }),
+        client.invalidateQueries({ queryKey: keys.allJobs }),
+        client.invalidateQueries({ queryKey: keys.triage }),
+      ]),
+  })
+}
+
+export function useJobNetwork(jobId: number, enabled = true) {
+  return useQuery({
+    queryKey: keys.jobNetwork(jobId),
+    queryFn: () => unwrap(api.GET('/jobs/{job_id}/network', { params: { path: { job_id: jobId } } })),
+    enabled: enabled && Number.isInteger(jobId) && jobId > 0,
+  })
+}
+
+/** «Añadir como contacto del proceso» con su papel. */
+export function useAddContactFromNetwork(jobId: number) {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (body: Schemas['AddFromNetwork']) =>
+      unwrap(api.POST('/jobs/{job_id}/contacts/from-network', { params: { path: { job_id: jobId } }, body })),
+    onSuccess: () =>
+      Promise.all([
+        client.invalidateQueries({ queryKey: keys.process(jobId) }),
+        client.invalidateQueries({ queryKey: keys.jobNetwork(jobId) }),
+      ]),
+  })
+}
+
+/** «Referencia pedida / dada» en un contacto del proceso (o quitar la marca con `null`). */
+export function useSetReferral(jobId: number) {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: ({ contactId, referral }: { contactId: number; referral: ReferralStatus | null }) =>
+      unwrap(
+        api.POST('/contacts/{contact_id}/referral', {
+          params: { path: { contact_id: contactId } },
+          body: { referral },
+        }),
+      ),
+    onSuccess: () =>
+      Promise.all([
+        client.invalidateQueries({ queryKey: keys.process(jobId) }),
+        client.invalidateQueries({ queryKey: ['funnel'] }),
+      ]),
+  })
+}
+
+// --- Dosier de empresa (fase 18) ----------------------------------------------------------------
+
+export function useCompanyResearch(jobId: number, enabled = true) {
+  return useQuery({
+    queryKey: keys.research(jobId),
+    queryFn: () =>
+      unwrap(api.GET('/jobs/{job_id}/company-research', { params: { path: { job_id: jobId } } })),
+    enabled: enabled && Number.isInteger(jobId) && jobId > 0,
+    // Lo guarda el agente desde fuera: se refresca solo.
+    refetchInterval: 60_000,
   })
 }

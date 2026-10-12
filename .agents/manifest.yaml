@@ -51,7 +51,7 @@ targets:
       # el OK del usuario antes (como save_message_draft). add_event (notas) no va: pide permiso.
       preparar-entrevista:
         argument-hint: "[job_id] [milestone_id] [rrhh|tecnica|caso|final]"
-        allowed-tools: ["mcp:get_interviews", "mcp:get_extraction", "mcp:get_profile", "mcp:get_context", "mcp:get_timeline", "mcp:save_interview_plan"]
+        allowed-tools: ["mcp:get_interviews", "mcp:get_extraction", "mcp:get_profile", "mcp:get_context", "mcp:get_timeline", "mcp:get_company_research", "mcp:save_interview_plan"]
       simular-entrevista:
         argument-hint: "[job_id] [milestone_id] [rrhh|tecnica|caso|final]"
         allowed-tools: ["read", "mcp:get_interviews", "mcp:get_extraction", "mcp:get_profile", "mcp:get_context"]
@@ -77,6 +77,14 @@ targets:
       redactar-seguimiento:
         argument-hint: "[nada para todo lo pendiente, o un job_id]"
         allowed-tools: ["mcp:list_followups_due", "mcp:get_profile", "mcp:get_context", "mcp:get_extraction", "mcp:get_timeline", "mcp:save_message_draft"]
+      # Fase 18: el agente redacta o investiga; nada se envía. El borrador y el dosier se guardan
+      # sin preguntar porque el skill ya enseña el texto antes (como save_message_draft).
+      redactar-mensaje:
+        argument-hint: "[job_id] [a quién: nombre, recruiter, responsable o compañero] [linkedin|correo]"
+        allowed-tools: ["mcp:get_job_contacts", "mcp:get_extraction", "mcp:get_profile", "mcp:get_context", "mcp:get_company_research", "mcp:get_cv_content", "mcp:get_cover_letter", "mcp:save_message_draft"]
+      investigar-empresa:
+        argument-hint: "[job_id] [en qué fijarte]"
+        allowed-tools: ["web", "mcp:get_company_research", "mcp:get_extraction", "mcp:save_company_research"]
       plan-formacion:
         argument-hint: "[nada para el plan, o URL o descripción de un curso o proyecto a valorar]"
         allowed-tools: ["read", "web", "mcp:get_skill_gaps", "mcp:get_profile", "mcp:get_context"]

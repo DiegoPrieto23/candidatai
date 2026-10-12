@@ -517,3 +517,55 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
 - **Consecuencias:** sin tablas nuevas y con la ficha como único sitio donde mirar. Un repaso
   guardado sobre una entrevista aún «programada» no cuenta en el embudo hasta que el usuario la
   marca; es el precio de que los cambios de estado sigan siendo suyos.
+
+## ADR-030 · Red de LinkedIn importada, cruce por empresa y referencias como marca
+- **Contexto:** la fase 18 cruza tu red de LinkedIn con tus ofertas sin automatizar nada en
+  LinkedIn (regla dura 6, POLICIES §5.2). La red son datos de terceros, y el encargo pedía medir
+  si las referencias convierten más.
+- **Decisión:**
+  - la red entra solo con la exportación oficial `Connections.csv`, que descarga el usuario, en una
+    tabla propia (`network_contacts`), separada de los contactos de cada proceso. Importar
+    sincroniza (añade, actualiza, borra) y **no guarda los emails** aunque vengan (minimización).
+    Un fichero sin filas no borra la red, y si una importación quita más de la mitad, lo avisa.
+    Lo que apuntaba a una persona que desaparece (contactos del proceso, borradores) se queda,
+    solo sin el enlace;
+  - el cruce es por la empresa normalizada (`normalize_company`), sin red ni modelos: `exact` o
+    `probable` (una es el principio de la otra palabra a palabra, salvo una sola palabra corta o
+    genérica). La UI enseña la coincidencia probable con el nombre de LinkedIn para que la
+    compruebe el usuario;
+  - el agente ve la red solo a través de `get_job_contacts`: nombre y cargo de las personas de la
+    empresa de **una** oferta, sin URLs ni emails. Importar es solo CLI (`jh contacts
+    import-linkedin`) o un botón de la UI que lee solo la ruta de siempre;
+  - «Añadir como contacto del proceso» copia nombre, cargo y URL a `contacts` con su papel
+    (`relation`: referencia, recruiter, responsable) y el enlace a la persona de la red;
+  - la referencia pedida o dada es una **marca** del contacto (`referral`, `referral_at`) y no un
+    evento: no cambia la etapa. El embudo la lee para el desglose «Por referencia».
+- **Consecuencias:** la red se queda al día solo cuando el usuario reimporta. El cruce no conoce
+  filiales ni nombres comerciales distintos («Inditex» frente a «Zara»); la coincidencia probable
+  puede dar algún falso positivo, que la UI marca. Las referencias no aparecen en el historial de
+  la oferta.
+
+## ADR-031 · Mensajes a personas en `message_drafts` y dosier de empresa fuera de la candidatura
+- **Contexto:** la fase 18.2 añade mensajes a recruiters, responsables y compañeros, y un dosier de
+  la empresa con fuentes web. El encargo pedía guardar el dosier en `data/documentos/candidaturas/…`
+  y que la carta siguiera sin usar datos de empresa que no estén en la extracción (§7).
+- **Decisión:**
+  - **mensajes:** `message_drafts` admite `linkedin` (≤ 300 caracteres, sin asunto) y `email` (con
+    adjuntos, que son solo nombres: la app no adjunta nada), con `recipient_role` y, opcional, el
+    contacto del proceso o la persona de la red, que tiene que trabajar en la empresa de la oferta.
+    El borrador guarda el nombre del destinatario. Desde `approved`, no solo tras enviar. Marcarlos
+    enviados no registra evento (como el agradecimiento). Una tabla aparte duplicaría la UI y las
+    reglas de «nunca se envía»;
+  - **dosier:** una fila por empresa (`company_research`), que comparten todas sus ofertas, con el
+    contenido estructurado y validado: cada apartado cita `[n]` de `sources`, solo `http(s)` y sin
+    LinkedIn. El skill lo enseña y lo guarda con el OK del usuario. Al guardarlo se buscan frases
+    de inyección y, si las hay, los skills que lo leen no lo usan;
+  - **desviación del encargo:** el `.md` lo escribe el código en `data/documentos/empresas/` y no
+    en la carpeta de la candidatura: esa carpeta es el archivo inmutable que se crea al enviar
+    (ADR-025), y crearla antes haría creer al archivo que ya estaba hecho. Al archivar se copia
+    dentro como `empresa.md`: es el dosier vigente al archivar (no va en el `snapshot` del envío)
+    y el README lo dice;
+  - la carta no lee el dosier (`get_cover_letter` no lo devuelve): §7 sigue igual.
+- **Consecuencias:** el dosier no caduca solo: la ficha avisa a los 30 días y `preparar-entrevista`
+  lo rehace si puede buscar en la web. El `.md` se escribe antes del commit: un fallo de la
+  transacción dejaría un fichero sin fila, que el siguiente guardado sobrescribe.
