@@ -139,6 +139,12 @@ Los pesos del score no cambian con esto; solo qué nombres casan.
   internos.
 - `get_profile` no devuelve email, teléfono ni la sección `private` (datos salariales incluidos): el
   agente no los necesita para redactar. El teléfono lo añade el código al generar el CV entregado.
+- **Tu red de LinkedIn** (fase 18): son datos de terceros. Solo entran con la exportación oficial
+  `Connections.csv` que descargas tú (`jh contacts import-linkedin` o «Importar» en la ficha); la
+  app no navega LinkedIn ni busca perfiles, y no guarda los emails que traiga la exportación. Las
+  herramientas para agentes solo dan nombre y cargo de las personas de la empresa de **una**
+  oferta (`get_job_contacts`), nunca la red entera ni sus URLs. Añadirlas al proceso y marcar
+  referencias lo haces tú en la UI.
 
 ## 5. Candidaturas
 

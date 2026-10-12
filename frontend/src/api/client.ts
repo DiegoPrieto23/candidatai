@@ -64,6 +64,11 @@ export type ReplyView = Schemas['ReplyView']
 export type ReplyProposal = Schemas['ReplyProposal']
 export type RepliesPollResult = Schemas['RepliesPollResult']
 export type MessageDraftOut = Schemas['MessageDraftOut']
+export type JobNetwork = Schemas['JobNetwork']
+export type NetworkPerson = Schemas['NetworkPerson']
+export type NetworkStatus = Schemas['NetworkStatus']
+export type ContactRelation = NonNullable<Schemas['ContactOut']['relation']>
+export type ReferralStatus = NonNullable<Schemas['ContactOut']['referral']>
 
 export const API_URL: string = import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:8000'
 

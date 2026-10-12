@@ -50,6 +50,10 @@ drafts_app = typer.Typer(
     help="Borradores de seguimiento y agradecimiento (la app no envía nada).",
     no_args_is_help=True,
 )
+contacts_app = typer.Typer(
+    help="Tu red de LinkedIn (Connections.csv) y los contactos de cada proceso.",
+    no_args_is_help=True,
+)
 interviews_app = typer.Typer(
     help="Entrevistas: plan de preparación y repaso posterior en el hito.", no_args_is_help=True
 )
@@ -89,6 +93,7 @@ app.add_typer(skills_app, name="skills")
 app.add_typer(replies_app, name="replies")
 app.add_typer(drafts_app, name="drafts")
 app.add_typer(interviews_app, name="interviews")
+app.add_typer(contacts_app, name="contacts")
 demo_app = typer.Typer(
     help="Modo demo: una búsqueda ficticia para probar la app.", no_args_is_help=True
 )
@@ -1670,6 +1675,13 @@ def _render_funnel(result: Any) -> None:
             f"  {source.name} ({source.kind}): {source.found} encontradas, "
             f"{source.applied} enviadas, respuesta {_pct(source.reply_rate)}"
         )
+    labels = {"given": "Con referencia", "requested": "Referencia pedida", "none": "Sin referencia"}
+    for group in result.by_referral:
+        if group.applied:
+            typer.echo(
+                f"  {labels[group.group]}: {group.applied} enviadas, "
+                f"respuesta {_pct(group.reply_rate)}"
+            )
     if result.discard_reasons:
         reasons = ", ".join(f"{r.reason} ({r.count})" for r in result.discard_reasons)
         typer.echo(f"Descartes: {reasons}")
@@ -1771,6 +1783,81 @@ def _render_replies(result: Any) -> None:
         )
 
 
+# --- Red de LinkedIn (fase 18) --------------------------------------------------------------
+
+CONNECTIONS_ARG = typer.Argument(
+    None,
+    help="El Connections.csv de la exportación de LinkedIn. Por defecto, "
+    "data/documentos/linkedin/Connections.csv.",
+)
+
+
+@contacts_app.command("import-linkedin")
+def contacts_import_linkedin(
+    path: Path | None = CONNECTIONS_ARG, as_json: bool = JSON_OPTION
+) -> None:
+    """Importa tus contactos de LinkedIn (la exportación oficial) y los cruza con tus ofertas.
+
+    Sincroniza: añade los nuevos, actualiza los cambiados y quita los que ya no están. No guarda
+    emails ni navega LinkedIn."""
+    from app.services import network
+
+    # Con `uv run --directory backend` el proceso corre en `backend/`: una ruta relativa vale
+    # también desde la raíz del repo.
+    relative = path is not None and not path.is_absolute() and not path.exists()
+    if relative and path is not None and (REPO_ROOT / path).exists():
+        path = REPO_ROOT / path
+    try:
+        migrations.ensure_current()
+        with session_scope() as session:
+            result = network.import_connections(session, path)
+    except Exception as exc:
+        _profile_fail(exc, as_json)
+    if as_json:
+        typer.echo(dump_json(result))
+        return
+    typer.echo(result.message)
+    if result.skipped:
+        typer.echo(f"  {result.skipped} filas saltadas (sin nombre o repetidas).")
+    if result.without_company:
+        typer.echo(f"  {result.without_company} personas sin empresa: no se cruzan con ofertas.")
+
+
+_RELATION_LABEL = {
+    "referral": "referencia",
+    "recruiter": "recruiter",
+    "hiring_manager": "responsable",
+}
+_REFERRAL_LABEL = {"requested": "referencia pedida", "given": "referencia dada"}
+
+
+def _render_job_contacts(view: Any) -> None:
+    typer.echo(f"Oferta {view.job_id} · {view.company}")
+    typer.echo("Contactos del proceso:" if view.contacts else "Sin contactos en el proceso.")
+    for c in view.contacts:
+        extra = [
+            x
+            for x in (_RELATION_LABEL.get(c.relation or ""), _REFERRAL_LABEL.get(c.referral or ""))
+            if x
+        ]
+        role = f" · {c.role}" if c.role else ""
+        tags = f"  [{', '.join(extra)}]" if extra else ""
+        typer.echo(f"  #{c.id} {c.name}{role}{tags}")
+    if not view.network_imported:
+        typer.echo("Red de LinkedIn sin importar: jh contacts import-linkedin")
+        return
+    typer.echo(
+        f"Conoces a {len(view.network)} en {view.company}:"
+        if view.network
+        else "Nadie de tu red trabaja ahí."
+    )
+    for person in view.network:
+        position = f" · {person.position}" if person.position else ""
+        probable = " (empresa probable)" if person.match == "probable" else ""
+        added = "  [en el proceso]" if person.in_process else ""
+        typer.echo(f"  {person.name}{position}{probable}{added}")
+
+
 # Al final: los renderizadores de arriba ya existen.
 register_tools(
     app,
@@ -1791,9 +1878,11 @@ register_tools(
         "replies": replies_app,
         "drafts": drafts_app,
         "interviews": interviews_app,
+        "contacts": contacts_app,
     },
     {
         "get_status": _render_status,
+        "get_job_contacts": _render_job_contacts,
         "add_job_from_url": _render_added,
         "add_job_from_text": _render_added,
         "list_jobs": _render_jobs,

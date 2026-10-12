@@ -39,6 +39,7 @@ from app.services import (
     interviews,
     jobs,
     liveness,
+    network,
     profile,
     prompts,
     replies,
@@ -591,6 +592,10 @@ def _save_message_draft(
     session: Session, args: SaveMessageDraftInput, ctx: CallContext
 ) -> drafts.SaveDraftResult:
     return drafts.save_message_draft(session, args.job_id, args.draft, agent_name=ctx.client_name)
+
+
+def _get_job_contacts(session: Session, args: JobIdInput, _ctx: CallContext) -> network.JobContacts:
+    return network.job_contacts(session, args.job_id)
 
 
 def _get_interviews(
@@ -1192,6 +1197,19 @@ TOOLS: tuple[ToolSpec, ...] = (
             file_field="draft",
             file_format="json",
         ),
+    ),
+    ToolSpec(
+        name="get_job_contacts",
+        description=(
+            "Contactos del proceso de una oferta (nombre, cargo, papel y si dieron o se les pidió "
+            "una referencia) y las personas de la red de LinkedIn del usuario que trabajan en esa "
+            "empresa (nombre, cargo y si la coincidencia de empresa es exacta o probable). Sin "
+            "emails, teléfonos ni URLs. Úsalo para elegir a quién escribir y cómo dirigirte."
+        ),
+        input_model=JobIdInput,
+        output_model=network.JobContacts,
+        handler=_get_job_contacts,
+        cli=CliSpec(path=("contacts", "list"), arguments=("job_id",)),
     ),
     ToolSpec(
         name="get_interviews",

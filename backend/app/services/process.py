@@ -24,6 +24,9 @@ from app.services.events import JobNotFoundError
 from app.services.pipeline import Actor, EventType, Stage
 
 MilestoneKind = Literal["interview", "test", "deadline", "other"]
+# Papel de un contacto en el proceso (fase 18) y referencia pedida o dada.
+ContactRelation = Literal["referral", "recruiter", "hiring_manager"]
+ReferralStatus = Literal["requested", "given"]
 MilestoneStatus = Literal["scheduled", "done", "cancelled"]
 
 DEFAULT_TITLES: dict[str, str] = {
@@ -100,6 +103,15 @@ class ContactFields(_Input):
     phone: str | None = Field(default=None, max_length=50)
     linkedin: str | None = Field(default=None, max_length=500)
     notes: str | None = Field(default=None, max_length=4000)
+    relation: ContactRelation | None = Field(
+        default=None, description="Papel en el proceso: referencia, recruiter o responsable."
+    )
+
+
+class ReferralChange(_Input):
+    referral: ReferralStatus | None = Field(
+        description="`requested` (pedida), `given` (dada) o `null` para quitar la marca."
+    )
 
 
 # --- Salidas --------------------------------------------------------------------------------
@@ -136,6 +148,10 @@ class ContactOut(BaseModel):
     linkedin: str | None
     notes: str | None
     created_at: datetime
+    relation: ContactRelation | None = None
+    referral: ReferralStatus | None = None
+    referral_at: datetime | None = None
+    network_contact_id: int | None = None  # sale de tu red de LinkedIn (fase 18)
 
 
 class NoteOut(BaseModel):
@@ -149,7 +165,7 @@ def milestone_out(row: Milestone) -> MilestoneOut:
     return MilestoneOut.model_validate(row, from_attributes=True)
 
 
-def _contact_out(row: Contact) -> ContactOut:
+def contact_out(row: Contact) -> ContactOut:
     return ContactOut.model_validate(row, from_attributes=True)
 
 
@@ -324,7 +340,7 @@ def job_milestones(session: Session, job_id: int) -> list[MilestoneOut]:
 # --- Contactos ------------------------------------------------------------------------------
 
 
-def _contact(session: Session, contact_id: int) -> Contact:
+def contact_row(session: Session, contact_id: int) -> Contact:
     row = session.get(Contact, contact_id)
     if row is None:
         raise ContactNotFoundError(f"No existe el contacto {contact_id}.")
@@ -338,6 +354,7 @@ def _apply_contact(row: Contact, data: ContactFields) -> None:
     row.phone = data.phone or None
     row.linkedin = data.linkedin or None
     row.notes = data.notes or None
+    row.relation = data.relation
 
 
 def add_contact(session: Session, job_id: int, data: ContactFields) -> ContactOut:
@@ -346,18 +363,31 @@ def add_contact(session: Session, job_id: int, data: ContactFields) -> ContactOu
     _apply_contact(row, data)
     session.add(row)
     session.flush()
-    return _contact_out(row)
+    return contact_out(row)
 
 
 def update_contact(session: Session, contact_id: int, data: ContactFields) -> ContactOut:
-    row = _contact(session, contact_id)
+    row = contact_row(session, contact_id)
     _apply_contact(row, data)
     session.flush()
-    return _contact_out(row)
+    return contact_out(row)
+
+
+def set_referral(session: Session, contact_id: int, data: ReferralChange) -> ContactOut:
+    """Marca (o quita) «referencia pedida / dada» en un contacto del proceso (fase 18).
+
+    No es un evento: no cambia la etapa. La lee el embudo para medir si las referencias convierten.
+    """
+    row = contact_row(session, contact_id)
+    if row.referral != data.referral:
+        row.referral = data.referral
+        row.referral_at = utcnow() if data.referral is not None else None
+        session.flush()
+    return contact_out(row)
 
 
 def delete_contact(session: Session, contact_id: int) -> None:
-    session.delete(_contact(session, contact_id))
+    session.delete(contact_row(session, contact_id))
     session.flush()
 
 
@@ -473,7 +503,7 @@ def get_process(session: Session, job_id: int, now: datetime | None = None) -> P
             followups_sent(session, [job_id]).get(job_id, 0),
         ),
         milestones=job_milestones(session, job_id),
-        contacts=[_contact_out(c) for c in contacts],
+        contacts=[contact_out(c) for c in contacts],
         notes=notes,
         documents=ProcessDocuments(
             cv_render_id=sent_render or selected_render_id(session, job_id),

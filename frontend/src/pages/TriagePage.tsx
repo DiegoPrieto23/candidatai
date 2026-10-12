@@ -13,6 +13,7 @@ import type { TriageItem } from '@/api/client'
 import { useJobEvent, useTriage } from '@/api/queries'
 import { DiscardDialog, type DiscardChoice } from '@/components/DiscardDialog'
 import { SignalBadges } from '@/components/JobSignals'
+import { KnownBadge, KnownPeople } from '@/components/NetworkPanel'
 import { Kbd } from '@/components/Kbd'
 import { MatchDetails, ScoreBadge } from '@/components/MatchDetails'
 import { EmptyState, ErrorState } from '@/components/States'
@@ -59,6 +60,7 @@ function QueueRow({
           )}
           {failed && <ProhibitIcon className="size-3.5 shrink-0 text-muted-foreground" aria-label="No pasa los filtros" />}
           <SignalBadges signals={item.job.signals} />
+          <KnownBadge count={item.job.known_contacts} />
         </p>
         <p className="truncate text-xs text-muted-foreground">{item.job.company}</p>
       </div>
@@ -115,6 +117,7 @@ function Detail({
             {item.job.location && <>, {item.job.location}</>}
           </p>
           <Facts item={item} />
+          <KnownPeople jobId={item.job.id} count={item.job.known_contacts} />
         </div>
         <ScoreBadge score={item.match?.score} threshold={threshold} size="lg" className="shrink-0" />
       </header>

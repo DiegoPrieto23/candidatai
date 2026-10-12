@@ -1,9 +1,11 @@
 import type {
   ApplicationChannel,
+  ContactRelation,
   CvRenderOptions,
   DiscardReason,
   EventType,
   MilestoneKind,
+  ReferralStatus,
   Schemas,
   SectionName,
   Stage,
@@ -247,6 +249,19 @@ export const MILESTONE_KIND_LABEL: Record<MilestoneKind, string> = {
 export const UPCOMING_KIND_LABEL: Record<Schemas['UpcomingItem']['kind'], string> = {
   ...MILESTONE_KIND_LABEL,
   application_deadline: 'Plazo de la oferta',
+}
+
+// --- Contactos y red (fase 18) -------------------------------------------------------------------
+
+export const CONTACT_RELATION_LABEL: Record<ContactRelation, string> = {
+  referral: 'Referencia',
+  recruiter: 'Recruiter',
+  hiring_manager: 'Responsable',
+}
+
+export const REFERRAL_LABEL: Record<ReferralStatus, string> = {
+  requested: 'Referencia pedida',
+  given: 'Referencia dada',
 }
 
 export const MILESTONE_STATUS_LABEL: Record<Schemas['MilestoneOut']['status'], string> = {

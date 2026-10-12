@@ -8,7 +8,7 @@ from app.models.events import Application, Event
 from app.models.jobs import Job, JobExtraction, JobSighting
 from app.models.matches import Match
 from app.models.ops import McpCall, Task
-from app.models.process import Contact, Milestone
+from app.models.process import Contact, Milestone, NetworkContact
 from app.models.profiles import ProfileVersion
 from app.models.prompts import UserPrompt
 from app.models.replies import MessageDraft, Reply
@@ -33,6 +33,7 @@ __all__ = [
     "McpCall",
     "MessageDraft",
     "Milestone",
+    "NetworkContact",
     "ProfileVersion",
     "Reply",
     "SkillGapMark",

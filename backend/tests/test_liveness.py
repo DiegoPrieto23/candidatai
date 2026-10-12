@@ -16,7 +16,11 @@ from app.models import Application, Event, Job, Source, Task
 from app.services import events, ingest, liveness, worker
 from app.services.signals import read
 
-NOW = datetime(2026, 10, 12, 8, 0, tzinfo=UTC)
+# Después del alta de las ofertas de los tests (que se fechan con la hora real): con una fecha fija,
+# `closure_suspected` quedaba antes de `found` en cuanto el reloj pasaba de ella.
+NOW = datetime.now(UTC).replace(microsecond=0) + timedelta(hours=1)
+FUTURE = (NOW + timedelta(days=90)).date()
+PAST = (NOW - timedelta(days=12)).date()
 TEXT = "Buscamos Data Engineer con Python y SQL para el equipo de datos. " * 10
 
 INFOJOBS = "https://www.infojobs.net/madrid/data-engineer/of-i0123456789abcdef0123456789abcd"
@@ -33,7 +37,7 @@ def _page(body: str, json_ld: dict[str, object] | None = None) -> str:
 OPEN_PAGE = _page(
     "<h1>Data Engineer</h1><p>Requisitos: Python, SQL.</p><p>Esta oferta ya no admite... "
     "</p><script>var t = 'esta oferta ha caducado';</script>",
-    {"@type": "JobPosting", "title": "Data Engineer", "validThrough": "2026-12-31"},
+    {"@type": "JobPosting", "title": "Data Engineer", "validThrough": FUTURE.isoformat()},
 )
 
 
@@ -133,11 +137,13 @@ def test_network_error_is_unknown() -> None:
 
 @respx.mock
 def test_expired_valid_through() -> None:
-    page = _page("<h1>Data Engineer</h1>", {"@type": "JobPosting", "validThrough": "2026-09-30"})
+    page = _page(
+        "<h1>Data Engineer</h1>", {"@type": "JobPosting", "validThrough": PAST.isoformat()}
+    )
     respx.get(GENERIC).mock(return_value=httpx.Response(200, text=page))
     result = liveness.check_page(GENERIC, NOW)
     assert (result.status, result.reason) == ("possibly_closed", "expired_date")
-    assert "30/09/2026" in result.detail
+    assert f"{PAST:%d/%m/%Y}" in result.detail
 
 
 @respx.mock

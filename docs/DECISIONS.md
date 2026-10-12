@@ -517,3 +517,28 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
 - **Consecuencias:** sin tablas nuevas y con la ficha como único sitio donde mirar. Un repaso
   guardado sobre una entrevista aún «programada» no cuenta en el embudo hasta que el usuario la
   marca; es el precio de que los cambios de estado sigan siendo suyos.
+
+## ADR-030 · Red de LinkedIn importada, cruce por empresa y referencias como marca
+- **Contexto:** la fase 18 cruza tu red de LinkedIn con tus ofertas sin automatizar nada en
+  LinkedIn (regla dura 6, POLICIES §5.2). La red son datos de terceros, y el encargo pedía medir
+  si las referencias convierten más.
+- **Decisión:**
+  - la red entra solo con la exportación oficial `Connections.csv`, que descarga el usuario, en una
+    tabla propia (`network_contacts`), separada de los contactos de cada proceso. Importar
+    sincroniza (añade, actualiza, borra) y **no guarda los emails** aunque vengan (minimización).
+    Un fichero sin filas no borra la red;
+  - el cruce es por la empresa normalizada (`normalize_company`), sin red ni modelos: `exact` o
+    `probable` (una es el principio de la otra palabra a palabra, salvo una sola palabra corta o
+    genérica). La UI enseña la coincidencia probable con el nombre de LinkedIn para que la
+    compruebe el usuario;
+  - el agente ve la red solo a través de `get_job_contacts`: nombre y cargo de las personas de la
+    empresa de **una** oferta, sin URLs ni emails. Importar es solo CLI (`jh contacts
+    import-linkedin`) o un botón de la UI que lee solo la ruta de siempre;
+  - «Añadir como contacto del proceso» copia nombre, cargo y URL a `contacts` con su papel
+    (`relation`: referencia, recruiter, responsable) y el enlace a la persona de la red;
+  - la referencia pedida o dada es una **marca** del contacto (`referral`, `referral_at`) y no un
+    evento: no cambia la etapa. El embudo la lee para el desglose «Por referencia».
+- **Consecuencias:** la red se queda al día solo cuando el usuario reimporta. El cruce no conoce
+  filiales ni nombres comerciales distintos («Inditex» frente a «Zara»); la coincidencia probable
+  puede dar algún falso positivo, que la UI marca. Las referencias no aparecen en el historial de
+  la oferta.

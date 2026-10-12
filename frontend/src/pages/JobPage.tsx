@@ -25,6 +25,7 @@ import { ClosedNotice, RepostNote } from '@/components/JobSignals'
 import { DiscardDialog } from '@/components/DiscardDialog'
 import { DraftsSection } from '@/components/DraftsSection'
 import { MatchDetails, ScoreBadge } from '@/components/MatchDetails'
+import { NetworkPanel } from '@/components/NetworkPanel'
 import { PackageSection } from '@/components/PackageSection'
 import { ProcessSection } from '@/components/ProcessSection'
 import { StatusUpdate } from '@/components/StatusUpdate'
@@ -645,6 +646,7 @@ export function JobPage() {
 
             <aside className="space-y-6">
               <MatchPanel job={job} />
+              {job.stage !== 'pending_detail' && <NetworkPanel job={job} />}
               <Panel title="Historial">
                 <Timeline events={job.events} />
               </Panel>

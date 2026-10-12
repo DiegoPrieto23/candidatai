@@ -132,6 +132,7 @@ export function jobRow(changes: Partial<JobRow> = {}): JobRow {
     remote_mode: 'hybrid',
     salary: null,
     score: null,
+    known_contacts: 0,
     ...changes,
   }
 }

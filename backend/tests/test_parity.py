@@ -26,7 +26,7 @@ from app.schemas.cover_letter import CoverLetterContent
 from app.schemas.cv import CvContent
 from app.schemas.llm_io import JobExtraction
 from app.schemas.sources import AgentBrowseSource
-from app.services import context, events, extractions, ingest, process, profile
+from app.services import context, events, extractions, ingest, network, process, profile
 from app.services.documents import cover_letter, pdf
 from app.services.documents import service as cv_service
 from app.services.ingestion import browse
@@ -166,6 +166,24 @@ def seed_two_followups() -> None:
             events.record(
                 session, 1, "followup_sent", "user", occurred_at=utcnow() - timedelta(days=days)
             )
+
+
+def seed_network() -> None:
+    """Oferta 1 (Acme Analytics) con un contacto del proceso y dos personas de la red."""
+    seed_job()
+    path = get_settings().data_dir / "Connections.csv"
+    path.write_text(
+        "First Name,Last Name,URL,Email Address,Company,Position,Connected On\n"
+        "Ana,Ríos,https://www.linkedin.com/in/ana,ana@example.com,Acme Analytics S.L.,CTO,"
+        "1 Feb 2024\n"
+        "Luis,Mar,https://www.linkedin.com/in/luis,,Otra,Dev,1 Feb 2024\n",
+        encoding="utf-8",
+    )
+    with session_scope() as session:
+        network.import_connections(session, path)
+        process.add_contact(
+            session, 1, process.ContactFields(name="Marta", role="Recruiter", relation="recruiter")
+        )
 
 
 def seed_interview_done() -> None:
@@ -692,6 +710,10 @@ CASES = [
                {"job_id": 1, "draft": {**FOLLOWUP, "subject": ""}},
                ["drafts", "save", "1"], "d.json", {**FOLLOWUP, "subject": ""},
                seed=seed_applied_long_ago, expect_error="validation_error"),
+    Case("contacts", "get_job_contacts", {"job_id": 1}, ["contacts", "list", "1"],
+         seed=seed_network),
+    Case("contacts-unknown", "get_job_contacts", {"job_id": 9}, ["contacts", "list", "9"],
+         expect_error="not_found"),
     Case("interviews", "get_interviews", {"job_id": 1}, ["interviews", "list", "1"],
          seed=seed_upcoming),
     Case("interviews-offer", "get_interviews", {"job_id": 1}, ["interviews", "list", "1"],

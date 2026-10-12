@@ -50,7 +50,9 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 16.1 | ↳ ¿Sigue abierta? y republicadas | ✅ | `jobs.signals` (ADR-028), `check_job_open`, tarea diaria `check_open`, aviso en la ficha que propone descartar, «Republicada ×N» en bandeja y triaje |
 | 16.2 | ↳ Búsqueda ampliada | ✅ | `get_search_titles` y skill `ampliar-busqueda`; `jh sources discover` sobre Greenhouse, Lever y Ashby |
 | 17 | Entrevistas: simulacro y repaso | ✅ | Plan de preparación, simulacro con feedback, repaso posterior con notas y historias STAR nuevas |
-| 18 | Contactos, mensajes e investigación de empresas | ⏳ | Tus contactos de LinkedIn (CSV) cruzados con tus ofertas, borradores de mensaje y dosier de empresa con fuentes |
+| 18 | Contactos, mensajes e investigación de empresas | 🚧 | Tus contactos de LinkedIn (CSV) cruzados con tus ofertas, borradores de mensaje y dosier de empresa con fuentes |
+| 18.1 | ↳ Red de LinkedIn y referencias | ✅ | `jh contacts import-linkedin` (sin emails), «Conoces a N» en bandeja, triaje y ficha, «Añadir al proceso» con su papel, `get_job_contacts` y embudo «Por referencia» |
+| 18.2 | ↳ Mensajes e investigación de empresa | ⏳ | Skills `redactar-mensaje` (LinkedIn ≤ 300 caracteres o correo con adjuntos) e `investigar-empresa` (dosier con fuentes en la ficha y en `data/documentos/empresas/`) |
 | 19 | Lote en segundo plano | ⏳ | «En segundo plano» además de «En terminal» para los skills que no preguntan (fase 2 de la ADR-024) |
 | 20 | Calibración y patrones | ⏳ | «¿Acierta el score?»: respuesta por tramo de score, veredicto, fuente, plantilla y carta; retrospectiva semanal |
 | 21 | Ofertas recibidas y salario | ⏳ | Comparar ofertas recibidas y la distancia a tu mínimo sin exponerlo al agente; preparar la negociación |

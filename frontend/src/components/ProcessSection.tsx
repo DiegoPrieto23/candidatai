@@ -13,10 +13,12 @@ import {
 import {
   fileUrls,
   type ContactOut,
+  type ContactRelation,
   type JobView,
   type MilestoneKind,
   type MilestoneOut,
   type ProcessView,
+  type ReferralStatus,
   type Stage,
 } from '@/api/client'
 import {
@@ -26,6 +28,7 @@ import {
   useJobProcess,
   useMilestoneStatus,
   useSaveContact,
+  useSetReferral,
   useUpdateMilestone,
   type ContactFields,
 } from '@/api/queries'
@@ -39,9 +42,11 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Textarea } from '@/components/ui/textarea'
 import {
   channelLabel,
+  CONTACT_RELATION_LABEL,
   formatDate,
   MILESTONE_KIND_LABEL,
   MILESTONE_STATUS_LABEL,
+  REFERRAL_LABEL,
 } from '@/lib/labels'
 import { formatWhen, fromLocalInput, toLocalDateInput, toLocalInput } from '@/lib/time'
 import { cn } from '@/lib/utils'
@@ -376,7 +381,17 @@ function Milestones({ process }: { process: ProcessView }) {
 
 // --- Contactos ------------------------------------------------------------------------------
 
-const EMPTY_CONTACT: ContactFields = { name: '', role: '', email: '', phone: '', linkedin: '', notes: '' }
+const EMPTY_CONTACT: ContactFields = {
+  name: '',
+  role: '',
+  email: '',
+  phone: '',
+  linkedin: '',
+  notes: '',
+  relation: null,
+}
+const RELATIONS: ContactRelation[] = ['referral', 'recruiter', 'hiring_manager']
+const REFERRALS: ReferralStatus[] = ['requested', 'given']
 
 function ContactForm({
   jobId,
@@ -396,11 +411,12 @@ function ContactForm({
           phone: initial.phone ?? '',
           linkedin: initial.linkedin ?? '',
           notes: initial.notes ?? '',
+          relation: initial.relation ?? null,
         }
       : EMPTY_CONTACT,
   )
   const save = useSaveContact(jobId)
-  const field = (key: keyof ContactFields, label: string, type = 'text') => (
+  const field = (key: Exclude<keyof ContactFields, 'relation'>, label: string, type = 'text') => (
     <div className="space-y-1.5">
       <Label htmlFor={`contact-${key}`}>{label}</Label>
       <Input
@@ -421,11 +437,27 @@ function ContactForm({
     <form onSubmit={submit} className="grid gap-3 rounded-lg border bg-background p-3">
       <div className="grid gap-3 sm:grid-cols-2">
         {field('name', 'Nombre')}
-        {field('role', 'Rol')}
+        {field('role', 'Cargo')}
         {field('email', 'Correo', 'email')}
         {field('phone', 'Teléfono', 'tel')}
         {field('linkedin', 'LinkedIn')}
         {field('notes', 'Notas')}
+        <div className="space-y-1.5">
+          <Label htmlFor="contact-relation">Papel en el proceso</Label>
+          <select
+            id="contact-relation"
+            value={fields.relation ?? ''}
+            onChange={(e) => setFields((f) => ({ ...f, relation: (e.target.value || null) as ContactRelation | null }))}
+            className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+          >
+            <option value="">Sin indicar</option>
+            {RELATIONS.map((r) => (
+              <option key={r} value={r}>
+                {CONTACT_RELATION_LABEL[r]}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
       {save.error && (
         <p role="alert" className="text-sm text-destructive">
@@ -441,6 +473,37 @@ function ContactForm({
         </Button>
       </div>
     </form>
+  )
+}
+
+function ReferralSelect({ contact }: { contact: ContactOut }) {
+  const set = useSetReferral(contact.job_id)
+  const id = `referral-${contact.id}`
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <label htmlFor={id} className="sr-only">
+        Referencia de {contact.name}
+      </label>
+      <select
+        id={id}
+        value={contact.referral ?? ''}
+        disabled={set.isPending}
+        onChange={(e) => set.mutate({ contactId: contact.id, referral: (e.target.value || null) as ReferralStatus | null })}
+        className="h-7 rounded-md border border-input bg-background px-1.5 text-xs"
+      >
+        <option value="">Sin referencia</option>
+        {REFERRALS.map((r) => (
+          <option key={r} value={r}>
+            {REFERRAL_LABEL[r]}
+          </option>
+        ))}
+      </select>
+      {set.error && (
+        <span role="alert" className="text-xs text-destructive">
+          {set.error.message}
+        </span>
+      )}
+    </span>
   )
 }
 
@@ -465,6 +528,11 @@ function ContactRow({ contact }: { contact: ContactOut }) {
         <p>
           <span className="font-medium">{contact.name}</span>
           {contact.role && <span className="text-muted-foreground"> · {contact.role}</span>}
+          {contact.relation && (
+            <span className="ml-2 rounded-full border px-1.5 py-px text-[0.7rem] font-medium text-muted-foreground">
+              {CONTACT_RELATION_LABEL[contact.relation]}
+            </span>
+          )}
         </p>
         {links.length > 0 && (
           <p className="flex flex-wrap gap-x-3 text-xs">
@@ -476,6 +544,9 @@ function ContactRow({ contact }: { contact: ContactOut }) {
           </p>
         )}
         {contact.notes && <p className="text-xs text-muted-foreground">{contact.notes}</p>}
+        <div className="mt-1.5">
+          <ReferralSelect contact={contact} />
+        </div>
       </div>
       <Button variant="ghost" size="icon" className="size-8" aria-label={`Editar a ${contact.name}`} onClick={() => setEditing(true)}>
         <PencilSimpleIcon />

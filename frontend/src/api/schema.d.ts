@@ -1570,6 +1570,106 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/network": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Network Status
+         * @description Cuántas personas hay importadas, cuándo y si está el `Connections.csv` en su carpeta.
+         */
+        get: operations["get_network_status"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/network/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Import Network
+         * @description Importa `data/documentos/linkedin/Connections.csv` (sincroniza: añade, actualiza, quita).
+         */
+        post: operations["import_network"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/jobs/{job_id}/network": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Job Network
+         * @description Las personas de tu red que trabajan en la empresa de la oferta.
+         */
+        get: operations["get_job_network"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/jobs/{job_id}/contacts/from-network": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Add Contact From Network
+         * @description «Añadir como contacto del proceso», con su papel (referencia, recruiter, responsable).
+         */
+        post: operations["add_contact_from_network"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/contacts/{contact_id}/referral": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Set Contact Referral
+         * @description Marca «referencia pedida» o «dada» (o la quita). No es un evento: no cambia la etapa.
+         */
+        post: operations["set_contact_referral"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1609,6 +1709,17 @@ export interface components {
             /** Event Id */
             event_id: number;
             stage: components["schemas"]["Stage"];
+        };
+        /** AddFromNetwork */
+        AddFromNetwork: {
+            /** Network Contact Id */
+            network_contact_id: number;
+            /**
+             * Relation
+             * @description Papel en el proceso: referencia, recruiter o responsable.
+             * @enum {string}
+             */
+            relation: "referral" | "recruiter" | "hiring_manager";
         };
         /** AddFromTextBody */
         AddFromTextBody: {
@@ -2115,6 +2226,11 @@ export interface components {
             linkedin?: string | null;
             /** Notes */
             notes?: string | null;
+            /**
+             * Relation
+             * @description Papel en el proceso: referencia, recruiter o responsable.
+             */
+            relation?: ("referral" | "recruiter" | "hiring_manager") | null;
         };
         /** ContactOut */
         ContactOut: {
@@ -2139,6 +2255,14 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+            /** Relation */
+            relation?: ("referral" | "recruiter" | "hiring_manager") | null;
+            /** Referral */
+            referral?: ("requested" | "given") | null;
+            /** Referral At */
+            referral_at?: string | null;
+            /** Network Contact Id */
+            network_contact_id?: number | null;
         };
         /** ContextFileInfo */
         ContextFileInfo: {
@@ -2764,6 +2888,8 @@ export interface components {
             by_title: components["schemas"]["TitleFunnel"][];
             /** By Week */
             by_week: components["schemas"]["WeekFunnel"][];
+            /** By Referral */
+            by_referral: components["schemas"]["ReferralFunnel"][];
             response_time: components["schemas"]["ResponseTime"];
             /** Discard Reasons */
             discard_reasons: components["schemas"]["ReasonCount"][];
@@ -2808,6 +2934,30 @@ export interface components {
             passed: boolean;
             /** Failures */
             failures: components["schemas"]["FilterFailure"][];
+        };
+        /** ImportResult */
+        ImportResult: {
+            /**
+             * Ok
+             * @default true
+             */
+            ok: boolean;
+            /** Path */
+            path: string;
+            /** Total */
+            total: number;
+            /** Added */
+            added: number;
+            /** Updated */
+            updated: number;
+            /** Removed */
+            removed: number;
+            /** Skipped */
+            skipped: number;
+            /** Without Company */
+            without_company: number;
+            /** Message */
+            message: string;
         };
         /** InjectionReport */
         InjectionReport: {
@@ -2968,6 +3118,19 @@ export interface components {
             /** Injection Excerpt */
             injection_excerpt?: string | null;
         };
+        /** JobNetwork */
+        JobNetwork: {
+            /** Job Id */
+            job_id: number;
+            /** Company */
+            company: string;
+            /** Network Size */
+            network_size: number;
+            /** Imported At */
+            imported_at: string | null;
+            /** People */
+            people: components["schemas"]["NetworkPerson"][];
+        };
         /** JobPackage */
         JobPackage: {
             /** Job Id */
@@ -3019,6 +3182,11 @@ export interface components {
             /** Remote Mode */
             remote_mode: ("onsite" | "hybrid" | "remote" | "unknown") | null;
             salary: components["schemas"]["Salary"] | null;
+            /**
+             * Known Contacts
+             * @default 0
+             */
+            known_contacts: number;
         };
         /** JobSignals */
         JobSignals: {
@@ -3462,6 +3630,44 @@ export interface components {
             /** Note */
             note?: string | null;
         };
+        /**
+         * NetworkPerson
+         * @description Una persona de tu red en la empresa de la oferta (vista de la UI).
+         */
+        NetworkPerson: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /** Position */
+            position: string | null;
+            /** Company */
+            company: string | null;
+            /** Linkedin Url */
+            linkedin_url: string | null;
+            /** Connected On */
+            connected_on: string | null;
+            /**
+             * Match
+             * @enum {string}
+             */
+            match: "exact" | "probable";
+            /** Contact Id */
+            contact_id: number | null;
+        };
+        /** NetworkStatus */
+        NetworkStatus: {
+            /** Size */
+            size: number;
+            /** Without Company */
+            without_company: number;
+            /** Imported At */
+            imported_at: string | null;
+            /** Default File */
+            default_file: string;
+            /** Default File Exists */
+            default_file_exists: boolean;
+        };
         /** NextMilestone */
         NextMilestone: {
             /** Milestone Id */
@@ -3761,6 +3967,34 @@ export interface components {
             reason: string;
             /** Count */
             count: number;
+        };
+        /** ReferralChange */
+        ReferralChange: {
+            /**
+             * Referral
+             * @description `requested` (pedida), `given` (dada) o `null` para quitar la marca.
+             */
+            referral: ("requested" | "given") | null;
+        };
+        /** ReferralFunnel */
+        ReferralFunnel: {
+            /** Found */
+            found: number;
+            /** Approved */
+            approved: number;
+            /** Applied */
+            applied: number;
+            /** Replied */
+            replied: number;
+            /** Interview */
+            interview: number;
+            /** Reply Rate */
+            reply_rate: number | null;
+            /**
+             * Group
+             * @enum {string}
+             */
+            group: "given" | "requested" | "none";
         };
         /** RenderResult */
         RenderResult: {
@@ -12299,6 +12533,484 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DraftActionResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_network_status: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NetworkStatus"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    import_network: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmptyBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_job_network: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobNetwork"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    add_contact_from_network: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddFromNetwork"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContactOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    set_contact_referral: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                contact_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReferralChange"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContactOut"];
                 };
             };
             /** @description Unauthorized */
