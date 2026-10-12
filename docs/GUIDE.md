@@ -80,11 +80,11 @@ photo, documents and emails. Keys go in `.env`, also outside git.
 
 | What | Where | How |
 |---|---|---|
-| **Profile** (the source of truth for anything written about you) | `data/profile.yaml` | The `actualizar-perfil` skill reads your CV, asks for what's missing and validates it. Every change creates a version |
-| **Your CV as a design** | `data/templates/<id>/` | Upload your CV in «Plantillas → Mi CV» (Templates → My CV) and use the `importar-plantilla-cv` skill. Word, PDF, image or HTML (Canva, Google Docs…) |
+| **Profile** (the source of truth for anything written about you) | `data/profile.yaml` | The `update-profile` skill reads your CV, asks for what's missing and validates it. Every change creates a version |
+| **Your CV as a design** | `data/templates/<id>/` | Upload your CV in «Plantillas → Mi CV» (Templates → My CV) and use the `import-cv-template` skill. Word, PDF, image or HTML (Canva, Google Docs…) |
 | **Photo** | `data/photo.jpg` (or png) | Each template crops it to its shape; it's included or not depending on the job's country |
 | **Context** (style, narrative, criteria) | `data/contexto/*.md` | Guides the agent, but never backs a CV claim |
-| **Source documents** (old CVs, degrees, references) | `data/documentos/` | `actualizar-perfil` can read them, confirming before writing |
+| **Source documents** (old CVs, degrees, references) | `data/documentos/` | `update-profile` can read them, confirming before writing |
 
 Your salary minimum goes in the profile's `private.salary_floor_eur`: the app uses it to compare
 offers, but the agent never receives it.
@@ -95,8 +95,8 @@ Open your agent **at the repository root**: that's where it finds the instructio
 (`AGENTS.md`), the skills and the MCP server, already configured.
 
 - **Claude Code:** `claude` at the root. Check with `/mcp` that the `candidatai` server is
-  connected. Skills are invoked as `/generar-cv 42`.
-- **Codex:** uses `.codex/` (generated). Skills are invoked as `$generar-cv 42`.
+  connected. Skills are invoked as `/generate-cv 42`.
+- **Codex:** uses `.codex/` (generated). Skills are invoked as `$generate-cv 42`.
 - **Other agents:** if they read `AGENTS.md` and speak MCP, register the `candidatai` server with the
   command in `.mcp.json`. If they don't speak MCP, every tool has its
   `uv run --directory backend cai … --json` command (table in
@@ -118,10 +118,10 @@ cd frontend; pnpm dev             # UI at http://127.0.0.1:5173
 A typical day:
 
 1. Open «Inicio» (Home): it tells you what's waiting (jobs to triage, CVs ready, overdue follow-ups).
-2. Ask your agent for `procesar-ofertas` and `evaluar-encaje`, or press their buttons in the UI.
+2. Ask your agent for `process-jobs` and `assess-fit`, or press their buttons in the UI.
 3. Triage in «Por revisar» (Triage).
-4. `generar-cv` for the approved ones and, when you're ready, apply from the job page.
-5. `resumen-diario` sums all of that up in one answer.
+4. `generate-cv` for the approved ones and, when you're ready, apply from the job page.
+5. `daily-summary` sums all of that up in one answer.
 
 ## 7. Set up job sources
 
@@ -132,7 +132,7 @@ A typical day:
 | **InfoJobs and Adzuna** | Their keys in `.env` (`CAI_INFOJOBS_CLIENT_ID`/`_SECRET`, `CAI_ADZUNA_APP_ID`/`_KEY`) and a search with `cai sources add` |
 | **Email alerts** | Create job alerts on LinkedIn, InfoJobs, Indeed… and have them land in a label of your mailbox. Set up read-only IMAP in `.env`: step by step in [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md) (Spanish). Without IMAP, drop `.eml` files in `data/inbox/`. What comes in shows up in «Alertas» (Alerts) |
 | **"Send to CandidatAI" button** | Load `extension/` as an unpacked extension in Chrome or Edge and paste the token from `cai capture token` into its options. Instructions: [`extension/README.md`](../extension/README.md) (Spanish) |
-| **Your agent with your browser** | `buscar-ofertas configurar` picks portals and searches («Plataformas», Platforms page); `buscar-ofertas` browses them. LinkedIn stays off until you turn it on |
+| **Your agent with your browser** | `search-jobs configurar` picks portals and searches («Plataformas», Platforms page); `search-jobs` browses them. LinkedIn stays off until you turn it on |
 | **LinkedIn's public search** | The «Búsqueda pública sin sesión» (public search without login) switch on the LinkedIn card in «Plataformas». Off by default: it goes against LinkedIn's terms and may get your IP blocked for a while |
 
 The worker runs the automatic sources every day at `connectors.daily_at`
@@ -141,18 +141,18 @@ The worker runs the automatic sources every day at `connectors.daily_at`
 
 ## 8. From job to application
 
-1. **Extract:** `procesar-ofertas` turns each posting's text into structured data. Posting text is
+1. **Extract:** `process-jobs` turns each posting's text into structured data. Posting text is
    untrusted content: if it carries hidden text or phrases aimed at an AI, the job page warns you.
-2. **Assess:** the app computes the score and applies your hard filters; `evaluar-encaje` adds a
+2. **Assess:** the app computes the score and applies your hard filters; `assess-fit` adds a
    reasoned verdict.
 3. **Triage:** in «Por revisar», `J`/`K` to move, `A` to approve, `D` to discard (with a reason)
    and `O` to open the job page. It can be undone.
-4. **CV:** `generar-cv 42` writes the content, the code validates and renders it, and the
-   `verificador` role reviews it. On the job page you change template, photo, colour and sections
+4. **CV:** `generate-cv 42` writes the content, the code validates and renders it, and the
+   `verifier` role reviews it. On the job page you change template, photo, colour and sections
    without spending agent time, compare renders and mark the one to send.
-5. **Cover letter:** `generar-carta 42`, with your general instructions (profile) and the job's
+5. **Cover letter:** `generate-cover-letter 42`, with your general instructions (profile) and the job's
    (job page). It matches the CV.
-6. **Application:** `preparar-candidatura 42` prepares the screening answers. On the job page,
+6. **Application:** `prepare-application 42` prepares the screening answers. On the job page,
    «Preparar candidatura» (Prepare application) opens a dedicated browser (profile in
    `data/browser-profile/`), fills in the form and stops. You review it, and it only submits if you
    type the company name. At a captcha or a login it stops and hands you the tab. If you apply
@@ -163,25 +163,25 @@ The worker runs the automatic sources every day at `connectors.daily_at`
 - **«Procesos» (Processes):** a kanban by stage. A card only changes column by recording what
   happened (reply, interview, test, offer, rejection). Interviews and tests create a dated
   milestone you can export to your calendar (`.ics`).
-- **Follow-ups:** it reminds you of applications without a reply; `redactar-seguimiento` leaves
+- **Follow-ups:** it reminds you of applications without a reply; `draft-follow-up` leaves
   the drafts (max. 2 per application) and the thank-you note after an interview. You send them.
 - **«Respuestas» (Replies):** with IMAP set up, the app reads emails from the companies in your
-  processes; `revisar-respuestas` proposes what happened and you accept it in «Respuestas».
+  processes; `review-replies` proposes what happened and you accept it in «Respuestas».
 - **«Embudo» (Funnel):** conversion by step, source, role, week, template, cover letter and
-  referral, plus "Does the score work?". `revisar-busqueda` runs the weekly retrospective.
+  referral, plus "Does the score work?". `review-search` runs the weekly retrospective.
 - **Network:** import your LinkedIn connections (CSV export) with `cai contacts import-linkedin` and
-  you'll see «Conoces a N» (You know N) on jobs at their companies; `redactar-mensaje` drafts the
+  you'll see «Conoces a N» (You know N) on jobs at their companies; `draft-message` drafts the
   message.
 
 ## 10. Interviews and received offers
 
-- `preparar-entrevista 42`: dossier and day-by-day plan up to the date, saved on the job page.
-- `simular-entrevista 42`: one question at a time, with feedback and a better version based on
+- `prepare-interview 42`: dossier and day-by-day plan up to the date, saved on the job page.
+- `mock-interview 42`: one question at a time, with feedback and a better version based on
   your profile.
-- `repasar-entrevista 42`: you tell it how it went; it saves notes and next steps and proposes new
+- `debrief-interview 42`: you tell it how it went; it saves notes and next steps and proposes new
   STAR stories for your profile (with your OK).
 - **Received offers:** you record them on the job page and compare them in «Procesos → Ofertas
-  recibidas» against your minimum and the advertised range. `preparar-negociacion 42` prepares
+  recibidas» against your minimum and the advertised range. `prepare-negotiation 42` prepares
   arguments and a script without proposing figures.
 
 ## 11. The agent from the UI
@@ -189,11 +189,11 @@ The worker runs the automatic sources every day at `connectors.daily_at`
 Many pages have buttons that open your agent with the instruction already written:
 
 - **In a terminal:** opens a window with your agent; you see and approve what it does.
-- **In the background** (Claude Code): for skills that don't ask questions (`procesar-ofertas`,
-  `evaluar-encaje`, `generar-cv`). It runs without a window, only with the app tools it needs, and
+- **In the background** (Claude Code): for skills that don't ask questions (`process-jobs`,
+  `assess-fit`, `generate-cv`). It runs without a window, only with the app tools it needs, and
   you follow its progress on the «Agente» (Agent) page. Requires `cai worker`.
 - **«Dejar para mi próxima sesión»** (Leave for my next session): stores the request;
-  `atender-encargos` does it when you open your agent.
+  `handle-requests` does it when you open your agent.
 
 ## 12. Configuration
 

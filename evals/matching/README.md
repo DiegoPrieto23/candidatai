@@ -40,7 +40,7 @@ score, veredicto del agente, fuente, portal, plantilla, carta, referencia y rapi
 Está en la página «Embudo» (sección «¿Acierta el score?») y en `cai stats calibration`
 (`get_calibration` para los agentes). Tiene sentido a partir de unas 20-30 candidaturas enviadas.
 
-Para la retrospectiva semanal, pide a tu agente el skill `revisar-busqueda`. **Solo propone:**
+Para la retrospectiva semanal, pide a tu agente el skill `review-search`. **Solo propone:**
 nunca cambia `config/policies.yaml`. Si una propuesta te convence, el cambio lo haces tú, con los
 evals como red de seguridad:
 

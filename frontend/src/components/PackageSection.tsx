@@ -219,7 +219,7 @@ function Answers({ pkg }: { pkg: JobPackage }) {
       )}
       {items.length === 0 && editing !== 'new' && (
         <p className="text-sm leading-relaxed text-muted-foreground">
-          <InlineCode text="Aún no hay respuestas. Pega las preguntas del formulario a tu agente con el skill `preparar-candidatura`, o añádelas tú." />
+          <InlineCode text="Aún no hay respuestas. Pega las preguntas del formulario a tu agente con el skill `prepare-application`, o añádelas tú." />
         </p>
       )}
       {items.length > 0 && (
@@ -310,7 +310,7 @@ function CoverLetterSlot({ pkg }: { pkg: JobPackage }) {
           <h3 className="text-sm font-medium">Carta de presentación</h3>
           <p className="mt-0.5 text-sm text-muted-foreground">
             <InlineCode
-              text={`Sin carta. Si la oferta la pide o la quieres, ejecuta \`generar-carta ${pkg.job_id}\` en tu agente.`}
+              text={`Sin carta. Si la oferta la pide o la quieres, ejecuta \`generate-cover-letter ${pkg.job_id}\` en tu agente.`}
             />
           </p>
         </div>

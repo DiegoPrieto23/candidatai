@@ -3,9 +3,9 @@ PRUEBA MANUAL · FASE 12.3 · MATRIZ DE COMPATIBILIDAD (CLAUDE CODE CON MCP)
 
 Objetivo: recorrer con Claude Code y su servidor MCP los tres skills principales sobre las mismas
 5 ofertas que ya se probaron sin MCP, y medir el resultado con `cai eval cv`:
-- procesar-ofertas: extrae las 5 delegando en el subagente `extractor`;
-- evaluar-encaje: valora las 5;
-- generar-cv: redacta (subagente `redactor`) y verifica (subagente `verificador`) el CV de las 5.
+- process-jobs: extrae las 5 delegando en el subagente `extractor`;
+- assess-fit: valora las 5;
+- generate-cv: redacta (subagente `writer`) y verifica (subagente `verifier`) el CV de las 5.
 
 Todo ocurre en una demo con datos ficticios (`data-demo-mcp/`). Tus datos de `data/` no se tocan,
 siempre que arranques Claude Code con CAI_DATA_DIR como se indica abajo.
@@ -52,15 +52,15 @@ PARTE 3 · LOS TRES SKILLS
 Anota en cada paso: si funcionó sin tocar nada, permisos que te pidió, tiempo aproximado y
 cualquier error o rareza.
 
-1. `/procesar-ofertas`
+1. `/process-jobs`
    Procesa las 8 pendientes (no admite elegir ids). Comprueba en la Bandeja que las 5 de la
    matriz pasan a «Por revisar» y que ninguna tiene avisos de riesgo.
-2. `/evaluar-encaje`
+2. `/assess-fit`
    Valora las de triaje. Mira en la ficha de las 5 que la valoración razonada aparece.
 3. Aprueba las 5 de la matriz en la UI (Triaje → «Aprobar»). Para la UI, en la terminal 1:
       uv run --directory backend cai serve        (con CAI_DATA_DIR=data-demo-mcp puesto)
    y en otra terminal: cd frontend; pnpm dev → http://127.0.0.1:5173 (banner «Modo demo»).
-4. `/generar-cv <id1> <id2> <id3> <id4> <id5>` con los ids de las 5.
+4. `/generate-cv <id1> <id2> <id3> <id4> <id5>` con los ids de las 5.
    Si pregunta por skills que faltan en el perfil, responde que no las tienes.
 
 

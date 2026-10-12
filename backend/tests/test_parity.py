@@ -153,8 +153,8 @@ def seed_agent_request() -> None:
     from app.services import agent_requests
 
     with session_scope() as session:
-        agent_requests.create(session, "generar-cv", 1)
-        cancelled = agent_requests.create(session, "procesar-ofertas")
+        agent_requests.create(session, "generate-cv", 1)
+        cancelled = agent_requests.create(session, "process-jobs")
         agent_requests.cancel(session, cancelled.id)
 
 

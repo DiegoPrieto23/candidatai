@@ -20,7 +20,7 @@ REQUISITOS
 - API, worker y UI arrancados en sus ventanas (cai serve, cai worker, pnpm dev), fuera de tu agente.
 - Una plataforma LinkedIn en «Plataformas» con al menos una búsqueda del tipo
       https://www.linkedin.com/jobs/search/?keywords=Data%20Engineer&location=Galicia
-  (si no la tienes: «Añadir plataforma» → LinkedIn, o `buscar-ofertas configurar`).
+  (si no la tienes: «Añadir plataforma» → LinkedIn, o `search-jobs configurar`).
 
 
 PARTE 1 · Apagada por defecto (3 min)

@@ -49,14 +49,14 @@ demo/profile.example.yaml  esquema del perfil con una candidata ficticia
    git commit -m "Kit inicial"
    ```
 3. Abre tu agente en esa carpeta y pide la primera fase:
-   - Claude Code: `/implementar-fase 01`
-   - Codex: `$implementar-fase 01`
-   - Otros: "Lee AGENTS.md y usa el skill implementar-fase para la fase 01"
+   - Claude Code: `/implement-phase 01`
+   - Codex: `$implement-phase 01`
+   - Otros: "Lee AGENTS.md y usa el skill implement-phase para la fase 01"
 
 ## Cómo construir cada fase
 
 ```
-implementar-fase NN   →  el agente lee el encargo y propone un plan
+implement-phase NN   →  el agente lee el encargo y propone un plan
 revisas y apruebas    →  implementa con tests
 pruebas manuales      →  las que te indique
 commit                →  cuando estés conforme

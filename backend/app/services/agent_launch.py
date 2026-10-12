@@ -44,25 +44,25 @@ SESSION_PLACEHOLDER = "{session_id}"
 HEADLESS_OUTPUTS = frozenset({"claude-stream-json"})
 
 ActionId = Literal[
-    "buscar-ofertas",
-    "procesar-ofertas",
-    "evaluar-encaje",
-    "generar-cv",
-    "anadir-skills",
-    "plan-formacion",
-    "revisar-respuestas",
-    "redactar-seguimientos",
-    "redactar-seguimiento",
-    "ampliar-busqueda",
-    "preparar-entrevista",
-    "simular-entrevista",
-    "repasar-entrevista",
-    "dudas-oferta",
-    "preparar-negociacion",
-    "redactar-mensaje",
-    "investigar-empresa",
-    "atender-encargos",
-    "revisar-busqueda",
+    "search-jobs",
+    "process-jobs",
+    "assess-fit",
+    "generate-cv",
+    "add-skills",
+    "training-plan",
+    "review-replies",
+    "draft-follow-ups",
+    "draft-follow-up",
+    "broaden-search",
+    "prepare-interview",
+    "mock-interview",
+    "debrief-interview",
+    "offer-questions",
+    "prepare-negotiation",
+    "draft-message",
+    "research-company",
+    "handle-requests",
+    "review-search",
 ]
 
 # Hitos de entrevista (fase 17): `upcoming`, programada y por empezar; `past`, ya empezada y no
@@ -96,21 +96,21 @@ class Action:
 
 
 ACTIONS: dict[ActionId, Action] = {
-    "buscar-ofertas": Action(
+    "search-jobs": Action(
         "Buscar ofertas",
-        "Usa el skill buscar-ofertas de CandidatAI para buscar ofertas en las plataformas activas.",
+        "Usa el skill search-jobs de CandidatAI para buscar ofertas en las plataformas activas.",
     ),
     # Las tres que admiten segundo plano (fase 19). Cada lista es lo mínimo que usan el skill y
     # sus roles: con un comodín, una oferta con una inyección podría llamar a herramientas que
     # escriben (`add_event`, `save_source`…).
-    "procesar-ofertas": Action(
+    "process-jobs": Action(
         "Procesar ofertas",
-        "Usa el skill procesar-ofertas de CandidatAI con las ofertas pendientes de extraer.",
+        "Usa el skill process-jobs de CandidatAI con las ofertas pendientes de extraer.",
         background=("get_status", "list_jobs", "get_job", "save_extraction"),
     ),
-    "evaluar-encaje": Action(
+    "assess-fit": Action(
         "Evaluar encaje",
-        "Usa el skill evaluar-encaje de CandidatAI con las ofertas pendientes de revisar.",
+        "Usa el skill assess-fit de CandidatAI con las ofertas pendientes de revisar.",
         background=(
             "list_jobs",
             "get_profile",
@@ -120,9 +120,9 @@ ACTIONS: dict[ActionId, Action] = {
             "save_fit_assessment",
         ),
     ),
-    "generar-cv": Action(
+    "generate-cv": Action(
         "Generar CV",
-        "Usa el skill generar-cv de CandidatAI para la oferta {job_id}.",
+        "Usa el skill generate-cv de CandidatAI para la oferta {job_id}.",
         needs_job=True,
         stages=CV_STAGES,
         wrong_stage="Solo se genera el CV de una oferta aprobada.",
@@ -142,93 +142,93 @@ ACTIONS: dict[ActionId, Action] = {
     ),
     # Página «Skills» (fase 14). Los nombres de las skills salen de las ofertas, así que no van en
     # la orden: el agente los lee de las marcas con `get_skill_gaps`.
-    "anadir-skills": Action(
+    "add-skills": Action(
         "Añadir al perfil las que tengo",
-        "Usa el skill actualizar-perfil de CandidatAI para añadir a mi perfil las skills que he "
+        "Usa el skill update-profile de CandidatAI para añadir a mi perfil las skills que he "
         "marcado como «La tengo» en la página Skills (get_skill_gaps con status have).",
     ),
-    "plan-formacion": Action(
+    "training-plan": Action(
         "Plan de formación",
-        "Usa el skill plan-formacion de CandidatAI con los huecos de skills que he marcado como "
+        "Usa el skill training-plan de CandidatAI con los huecos de skills que he marcado como "
         "«No la tengo».",
     ),
     # Inicio y «Respuestas» (fase 15): el agente propone; el usuario acepta en la UI.
-    "revisar-respuestas": Action(
+    "review-replies": Action(
         "Revisar respuestas",
-        "Usa el skill revisar-respuestas de CandidatAI con los correos de empresas sin clasificar.",
+        "Usa el skill review-replies de CandidatAI con los correos de empresas sin clasificar.",
     ),
     # Procesos y ficha (fase 15): el agente redacta; el usuario copia y envía desde su correo.
-    "redactar-seguimientos": Action(
+    "draft-follow-ups": Action(
         "Redactar seguimientos",
-        "Usa el skill redactar-seguimiento de CandidatAI con los seguimientos y agradecimientos "
+        "Usa el skill draft-follow-up de CandidatAI con los seguimientos y agradecimientos "
         "pendientes.",
     ),
     # Plataformas (fase 16): títulos cercanos a los que apruebas. El agente propone; tú decides.
-    "ampliar-busqueda": Action(
+    "broaden-search": Action(
         "Ampliar búsqueda",
-        "Usa el skill ampliar-busqueda de CandidatAI para proponerme títulos de puesto cercanos a "
+        "Usa el skill broaden-search de CandidatAI para proponerme títulos de puesto cercanos a "
         "los que apruebo.",
     ),
     # Embudo (fase 20): retrospectiva. Solo propone: los pesos y filtros los cambia el usuario.
-    "revisar-busqueda": Action(
+    "review-search": Action(
         "Revisar mi búsqueda",
-        "Usa el skill revisar-busqueda de CandidatAI para hacer la retrospectiva de mi búsqueda: "
+        "Usa el skill review-search de CandidatAI para hacer la retrospectiva de mi búsqueda: "
         "qué funciona y qué cambiar.",
     ),
-    "redactar-seguimiento": Action(
+    "draft-follow-up": Action(
         "Redactar seguimiento",
-        "Usa el skill redactar-seguimiento de CandidatAI para la oferta {job_id}.",
+        "Usa el skill draft-follow-up de CandidatAI para la oferta {job_id}.",
         needs_job=True,
         stages=SENT_STAGES,
         wrong_stage="Solo se escribe a la empresa de una candidatura enviada y abierta.",
     ),
     # Ficha, hitos de entrevista (fase 17). El agente prepara, simula o repasa; lo que proponga
-    # para el perfil pasa por `actualizar-perfil` y la confirmación del usuario.
-    "preparar-entrevista": Action(
+    # para el perfil pasa por `update-profile` y la confirmación del usuario.
+    "prepare-interview": Action(
         "Preparar",
-        "Usa el skill preparar-entrevista de CandidatAI para la entrevista {milestone_id} de la "
+        "Usa el skill prepare-interview de CandidatAI para la entrevista {milestone_id} de la "
         "oferta {job_id}.",
         needs_job=True,
         milestone="upcoming",
     ),
-    "simular-entrevista": Action(
+    "mock-interview": Action(
         "Simulacro",
-        "Usa el skill simular-entrevista de CandidatAI para la entrevista {milestone_id} de la "
+        "Usa el skill mock-interview de CandidatAI para la entrevista {milestone_id} de la "
         "oferta {job_id}.",
         needs_job=True,
         milestone="upcoming",
     ),
-    "repasar-entrevista": Action(
+    "debrief-interview": Action(
         "Repasar",
-        "Usa el skill repasar-entrevista de CandidatAI para repasar la entrevista {milestone_id} "
+        "Usa el skill debrief-interview de CandidatAI para repasar la entrevista {milestone_id} "
         "de la oferta {job_id}.",
         needs_job=True,
         milestone="past",
     ),
     # Ficha (fase 18): mensaje a una persona de la empresa y dosier de la empresa. El agente
     # redacta o investiga; la app no envía nada.
-    "redactar-mensaje": Action(
+    "draft-message": Action(
         "Redactar mensaje",
-        "Usa el skill redactar-mensaje de CandidatAI para la oferta {job_id}.",
+        "Usa el skill draft-message de CandidatAI para la oferta {job_id}.",
         needs_job=True,
         stages=OUTREACH_STAGES,
         wrong_stage="Solo se escribe a la empresa de una oferta aprobada y abierta.",
     ),
-    "investigar-empresa": Action(
+    "research-company": Action(
         "Investigar empresa",
-        "Usa el skill investigar-empresa de CandidatAI para la empresa de la oferta {job_id}.",
+        "Usa el skill research-company de CandidatAI para la empresa de la oferta {job_id}.",
         needs_job=True,
         stages=RESEARCH_STAGES,
         wrong_stage="Solo para una oferta ya extraída y sin cerrar.",
     ),
     # Panel «Agente» (fase 19): la cola de encargos que dejaste para tu próxima sesión.
-    "atender-encargos": Action(
+    "handle-requests": Action(
         "Atender encargos",
-        "Usa el skill atender-encargos de CandidatAI con los encargos pendientes.",
+        "Usa el skill handle-requests de CandidatAI con los encargos pendientes.",
     ),
-    "dudas-oferta": Action(
+    "offer-questions": Action(
         "Dudas antes de aceptar",
-        "Usa el skill repasar-entrevista de CandidatAI para revisar las dudas antes de aceptar la "
+        "Usa el skill debrief-interview de CandidatAI para revisar las dudas antes de aceptar la "
         "oferta {job_id}.",
         needs_job=True,
         stages=frozenset({Stage.IN_PROCESS}),
@@ -236,9 +236,9 @@ ACTIONS: dict[ActionId, Action] = {
         needs_offer=True,
     ),
     # Fase 21: pregunta y admite pegar el contrato, así que solo en terminal.
-    "preparar-negociacion": Action(
+    "prepare-negotiation": Action(
         "Preparar negociación",
-        "Usa el skill preparar-negociacion de CandidatAI para la oferta {job_id}.",
+        "Usa el skill prepare-negotiation de CandidatAI para la oferta {job_id}.",
         needs_job=True,
         stages=frozenset({Stage.IN_PROCESS}),
         wrong_stage="Solo con un proceso abierto.",
@@ -518,7 +518,7 @@ BACKGROUND_NOTE = (
     "necesitas algo del usuario para seguir, para ahí y termina tu respuesta con una línea por "
     "pregunta que empiece por «PREGUNTA:»."
 )
-# Fase 14: con todas las obligatorias ausentes marcadas como «No la tengo», `generar-cv` no tiene
+# Fase 14: con todas las obligatorias ausentes marcadas como «No la tengo», `generate-cv` no tiene
 # nada que preguntar. Los nombres de las skills salen de las ofertas: no van en la orden.
 GAPS_MARKED_NOTE = (
     " Las skills obligatorias ausentes de esa oferta ya las he marcado como «No la tengo» en la "

@@ -30,10 +30,10 @@ REQUISITOS
   y reinicia la API y el worker para que lo lean.
 - Una oferta real de Greenhouse (boards.greenhouse.io o job-boards.greenhouse.io) o de Lever
   (jobs.lever.co) en «CV listo», con su CV generado y elegido para enviar. Si no tienes ninguna:
-  dala de alta por URL en «Nueva», procésala y apruébala, y ejecuta `/generar-cv <id>` en tu
+  dala de alta por URL en «Nueva», procésala y apruébala, y ejecuta `/generate-cv <id>` en tu
   agente. Abajo, <ID> es el id de esa oferta.
 - Recomendado: respuestas en el paquete con las preguntas literales del formulario. Abre la
-  oferta en tu navegador, copia sus preguntas y ejecuta `/preparar-candidatura <ID>` pegándolas.
+  oferta en tu navegador, copia sus preguntas y ejecuta `/prepare-application <ID>` pegándolas.
 
 
 PARTE 1 · ARRANCAR Y PREPARAR EL NAVEGADOR
@@ -135,8 +135,8 @@ Comprueba el envío sin tocar ninguna web real, con los formularios ficticios de
         Empresa:  Formulario Local
         URL:      http://127.0.0.1:8765/simple.html
         Texto:    cualquier texto de oferta (p. ej. el de demo/)
-    Procésala, apruébala y genera su CV (`/procesar-ofertas`, aprobar en «Triaje»,
-    `/generar-cv <id>`). Abre su ficha y pulsa «Preparar candidatura».
+    Procésala, apruébala y genera su CV (`/process-jobs`, aprobar en «Triaje»,
+    `/generate-cv <id>`). Abre su ficha y pulsa «Preparar candidatura».
     Esperado, al llegar a la pantalla de revisión: «Nombre y apellidos», «Email» y «CV»
     rellenados; «Acepto la política de privacidad» en «Se acepta al enviar».
 16. Pulsa «Enviar», escribe  Formulario Local  y pulsa «Enviar candidatura».

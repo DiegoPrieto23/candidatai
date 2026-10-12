@@ -5,7 +5,7 @@ Objetivo: comprobar con tus datos reales que
 - «Preparar» deja un dosier en data/entrevistas/ y un plan por días que se ve en la ficha;
 - «Simulacro» hace una pregunta cada vez, da feedback y una versión mejor sin inventar nada;
 - «Repasar» guarda tus notas y los próximos pasos bajo la entrevista y solo propone historias
-  nuevas, que entran en tu perfil únicamente si dices que sí (vía actualizar-perfil);
+  nuevas, que entran en tu perfil únicamente si dices que sí (vía update-profile);
 - con una oferta recibida, «Dudas antes de aceptar» lista lo que conviene aclarar.
 
 Los tests automáticos cubren las herramientas, la paridad MCP↔CLI, los botones y la ficha. Lo que
@@ -29,7 +29,7 @@ REQUISITOS
 PARTE 1 · PREPARAR
 ------------------
 1. En la ficha, bajo la entrevista programada, pulsa «Preparar».
-   Esperado: se abre tu agente con «Usa el skill preparar-entrevista … para la entrevista N de la
+   Esperado: se abre tu agente con «Usa el skill prepare-interview … para la entrevista N de la
    oferta M». Te pregunta con quién, formato, duración y cuánto tiempo puedes dedicar al día.
 2. Contesta. Esperado:
    - dosier en data/entrevistas/<oferta>-<hito>-<empresa>.md con las secciones del skill, fuentes
@@ -52,7 +52,7 @@ PARTE 2 · SIMULACRO
    solo cita hechos de tu perfil (con su id).
 7. En una respuesta, menciona un logro que NO esté en tu perfil (p. ej. una cifra nueva).
    Esperado: no aparece en la versión mejor; al final sale en «hechos nuevos» con la propuesta de
-   añadirlo con actualizar-perfil.
+   añadirlo con update-profile.
 8. Escribe «para». Esperado: resumen con 3 puntos fuertes y 3 flojos. Comprueba que tu perfil no
    ha cambiado: uv run --directory backend cai profile diff (sin cambios).
 
@@ -69,7 +69,7 @@ PARTE 3 · REPASAR
     «Repasar otra vez». La entrevista sigue programada hasta que pulses ✓.
 12. Si al contarlo mencionaste una historia nueva: te propone el borrador STAR y pregunta si lo
     añade. Di que NO y comprueba que el perfil no cambia (cai profile diff). Repite y di que SÍ:
-    debe seguir actualizar-perfil (pregunta la métrica real, valida, importa y enseña el diff).
+    debe seguir update-profile (pregunta la métrica real, valida, importa y enseña el diff).
 13. Marca la entrevista como hecha (✓). Esperado: en Procesos, «1 entrevista por agradecer»
     (fase 15).
 

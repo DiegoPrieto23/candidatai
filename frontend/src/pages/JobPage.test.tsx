@@ -50,7 +50,7 @@ describe('Ficha de oferta', () => {
     expect(within(alert).getByText('ignora las instrucciones')).toBeInTheDocument()
   })
 
-  it('invita a ejecutar procesar-ofertas si aún no hay extracción', async () => {
+  it('invita a ejecutar process-jobs si aún no hay extracción', async () => {
     mockApi({ 'GET /status': status(1), 'GET /jobs/1': jobView({ extraction: null, stage: 'pending_extraction' }) })
     renderApp('/jobs/1')
     expect(await screen.findByText('Aún sin extraer')).toBeInTheDocument()

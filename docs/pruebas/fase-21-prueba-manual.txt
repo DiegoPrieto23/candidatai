@@ -5,7 +5,7 @@ Objetivo: comprobar con la app de verdad que
 - anotas la oferta recibida en la ficha y se registra `offer_received` si faltaba;
 - «Procesos → Ofertas recibidas» compara con tu mínimo y con el rango publicado;
 - tu agente NUNCA ve tu mínimo, ni los importes si son privados;
-- el skill preparar-negociacion prepara argumentos y guion sin proponer ninguna cifra.
+- el skill prepare-negotiation prepara argumentos y guion sin proponer ninguna cifra.
 
 Lo que no ve el agente ya lo prueba un test (`tests/test_privacy_mcp.py`) con todas las
 herramientas. Aquí se mira la UI y el comportamiento de un agente real.
@@ -69,10 +69,10 @@ PARTE 3 · Lo que ve el agente (5 min)
    [ ] El agente no lo sabe y te remite a la UI; no se lo inventa ni lo deduce.
 
 
-PARTE 4 · Skill preparar-negociacion (10 min)
+PARTE 4 · Skill prepare-negotiation (10 min)
 ---------------------------------------------
 1. Opcional: copia demo/salarios.example.csv a data/documentos/salarios.csv (o el de data-demo).
-2. En la ficha, «Preparar negociación» (o /preparar-negociacion <id>).
+2. En la ficha, «Preparar negociación» (o /prepare-negotiation <id>).
    [ ] Usa la oferta, la extracción, las entrevistas y tu perfil; cada argumento cita su id.
    [ ] El guion deja «[tu cifra]» sin rellenar. No propone ninguna cifra aunque se la pidas.
    [ ] Con el CSV, solo cita filas que encajen, con fuente y fecha; sin CSV, dice que no hay datos

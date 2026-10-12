@@ -424,7 +424,7 @@ Ficheros en `data/` (gitignored), fuera de la BD:
 | `contexto/perfil-conductual.md` | Cómo trabaja, fortalezas, puntos a mejorar, tests de personalidad |
 | `contexto/criterios.md` | Deal-breakers y preferencias en texto libre; complementan los filtros duros |
 | `contexto/narrativa.md` | Historia profesional, motivación, hacia dónde va, cómo explica los cambios |
-| `documentos/cv/`, `linkedin/`, `titulos/`, `referencias/` | Documentos fuente que `actualizar-perfil` puede leer (confirmando antes de escribir) |
+| `documentos/cv/`, `linkedin/`, `titulos/`, `referencias/` | Documentos fuente que `update-profile` puede leer (confirmando antes de escribir) |
 | `documentos/candidaturas/<empresa>_<puesto>_<job_id>/` | Lo enviado en cada candidatura: PDF del CV, carta en TXT y PDF, `respuestas.json` y `README.md` (fecha en Europe/Madrid, canal, URL, versión del perfil) |
 
 - Contexto: todos opcionales, sin versiones ni copia en la BD; `get_context` los lee con su hash.
@@ -445,7 +445,7 @@ cubre (migración 0013). No es estado de una oferta: no lleva evento.
 | id | int PK | |
 | skill_key | str único | Forma canónica plegada (sin tildes ni mayúsculas, tras `config/skill_aliases.yaml`): la misma con que compara el matching. «spark» y «PySpark» son la misma marca |
 | skill_name | str | Como la escriben las ofertas (la última vez que se marcó) |
-| status | str | `gap` («No la tengo»: hueco real, para `plan-formacion`) o `have` («La tengo»: pendiente de añadir al perfil con `actualizar-perfil`) |
+| status | str | `gap` («No la tengo»: hueco real, para `training-plan`) o `have` («La tengo»: pendiente de añadir al perfil con `update-profile`) |
 | created_at / updated_at | datetime | |
 
 - Quitar la marca borra la fila. Una skill marcada sigue en la lista aunque ninguna oferta del
@@ -456,7 +456,7 @@ cubre (migración 0013). No es estado de una oferta: no lleva evento.
   vigentes, el perfil vigente y los alias de ahora (ver `get_skill_gaps` en
   `AGENT_INTERFACE.md`).
 - Ficheros: «Es lo mismo que…» escribe `config/skill_aliases.yaml`, fuera de `data/` (ADR-026).
-  El skill `plan-formacion` escribe `data/documentos/plan-formacion.md` (y guarda la versión
+  El skill `training-plan` escribe `data/documentos/training-plan.md` (y guarda la versión
   anterior como `plan-formacion-<AAAA-MM-DD>.md` al sustituirlo).
 
 ## Ampliaciones de la fase 15
@@ -577,7 +577,7 @@ oferta, tipo y destinatario.
 | attachments | JSON? | Solo en `email`: nombres de los adjuntos que menciona (la app no adjunta nada) |
 
 ### `company_research`
-Dosier de una empresa (skill `investigar-empresa`, migración 0018). Uno por empresa: lo comparten
+Dosier de una empresa (skill `research-company`, migración 0018). Uno por empresa: lo comparten
 todas sus ofertas y guardar otro lo sustituye. No lleva evento: no es estado de una oferta.
 
 | Columna | Tipo | Notas |
@@ -606,12 +606,12 @@ Ejecuciones del agente en segundo plano (ADR-032). Es su propia cola: la llena l
 | Columna | Tipo | Notas |
 |---|---|---|
 | id | int PK | |
-| action | str | Una de `agent_launch.ACTIONS` con `background` (`procesar-ofertas`, `evaluar-encaje`, `generar-cv`) |
-| job_id | FK jobs? | En `generar-cv` |
+| action | str | Una de `agent_launch.ACTIONS` con `background` (`process-jobs`, `assess-fit`, `generate-cv`) |
+| job_id | FK jobs? | En `generate-cv` |
 | milestone_id | FK milestones? | Reservado (ninguna acción de entrevista va en segundo plano) |
 | agent | str | El agente del manifiesto (`claude`) |
 | status | str | `queued`, `running`, `done`, `needs_user` (terminó con preguntas), `failed`, `cancelled`, `timeout` |
-| prompt | text | La orden, con la nota de segundo plano (y, en `generar-cv`, la de las skills marcadas «No la tengo») |
+| prompt | text | La orden, con la nota de segundo plano (y, en `generate-cv`, la de las skills marcadas «No la tengo») |
 | command | JSON | El comando exacto, con las herramientas permitidas: para auditar qué podía hacer |
 | unset_env | JSON | Variables que se quitan antes de lanzarlo (`ANTHROPIC_API_KEY`) |
 | output_format | str | El `output` de `launch.headless`: qué lector de `agent_output.PARSERS` usa |
@@ -636,7 +636,7 @@ Cola de encargos: lo que la UI deja para la próxima sesión interactiva del age
 | Columna | Tipo | Notas |
 |---|---|---|
 | id | int PK | |
-| action | str | Cualquiera de `agent_launch.ACTIONS` salvo `atender-encargos` |
+| action | str | Cualquiera de `agent_launch.ACTIONS` salvo `handle-requests` |
 | job_id / milestone_id | FK? | Los de la acción |
 | prompt | text | La orden, compuesta por la app (lista cerrada; ningún texto de una oferta) |
 | status | str | `pending`, `done` (lo cerró el agente con `complete_agent_request`) o `cancelled` (desde la UI) |

@@ -2,7 +2,7 @@ PRUEBA MANUAL · FASE 06 · FRONTEND BASE
 =======================================
 
 Objetivo: comprobar que la UI funciona de verdad con tu agente. Das de alta ofertas desde el
-navegador, tu agente las extrae con el skill procesar-ofertas y ves la extracción en la ficha.
+navegador, tu agente las extrae con el skill process-jobs y ves la extracción en la ficha.
 De paso revisas la bandeja, el aviso de inyección, las notas, el modo oscuro y el móvil.
 
 Duración aproximada: 20 minutos.
@@ -94,8 +94,8 @@ PARTE 4 · DAR DE ALTA DESDE LA UI
    Esperado:
    - Te lleva a la ficha de la oferta con el mensaje "Oferta dada de alta. Tu agente la extraerá…".
    - Etapa "Por extraer" arriba a la derecha.
-   - Recuadro "Aún sin extraer" con la indicación de ejecutar procesar-ofertas.
-   - En la cabecera: "Hay 1 oferta por extraer. Ejecuta el skill procesar-ofertas en tu agente."
+   - Recuadro "Aún sin extraer" con la indicación de ejecutar process-jobs.
+   - En la cabecera: "Hay 1 oferta por extraer. Ejecuta el skill process-jobs en tu agente."
      y el recuento "Por extraer 1".
    - En "Historial", un evento "Dada de alta" de "Sistema".
    - "Texto original" plegado; al pulsarlo se despliega el texto tal cual lo pegaste.
@@ -134,7 +134,7 @@ Este es el criterio de aceptación principal de la fase.
 
 14. Ejecuta:
 
-      /procesar-ofertas
+      /process-jobs
 
     Esperado: el agente delega cada oferta en el subagente "extractor" y al final muestra una
     tabla con las 2 ofertas extraídas. En la oferta 2 debe indicar que marcó posible inyección
@@ -258,7 +258,7 @@ Para cerrar la API y la UI, Ctrl+C en cada terminal.
 
 QUÉ ME TIENES QUE CONTAR
 ------------------------
-- Si el flujo principal (pasos 9, 14, 15 y 16) funcionó: alta en la UI, procesar-ofertas y
+- Si el flujo principal (pasos 9, 14, 15 y 16) funcionó: alta en la UI, process-jobs y
   extracción visible en la ficha.
 - Si el aviso ámbar salió en la oferta 2 antes y después de procesarla (pasos 11 y 17).
 - Cualquier paso cuyo resultado no coincida con el "Esperado", con el número de paso.

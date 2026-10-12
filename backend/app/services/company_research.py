@@ -1,4 +1,4 @@
-"""Dosier de empresa con fuentes (fase 18, skill `investigar-empresa`).
+"""Dosier de empresa con fuentes (fase 18, skill `research-company`).
 
 El agente investiga la empresa en la web pública (producto, noticias recientes, cultura de
 ingeniería, stack) y lo guarda con `save_company_research`; aquí solo se valida y se guarda. Hay

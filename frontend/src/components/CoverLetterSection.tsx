@@ -158,7 +158,7 @@ function Instructions({ data, jobId }: { data: JobCoverLetter; jobId: number }) 
               </>
             ) : (
               <span className="text-muted-foreground">
-                ninguna. Puedes añadirlas con el skill <Code>actualizar-perfil</Code>.
+                ninguna. Puedes añadirlas con el skill <Code>update-profile</Code>.
               </span>
             )}
           </p>
@@ -480,7 +480,7 @@ function Letter({ data, jobId }: { data: JobCoverLetter; jobId: number }) {
           <p className="font-semibold">Aún sin carta</p>
           {data.can_edit ? (
             <p className="mt-1 text-muted-foreground">
-              Ejecuta <Code>generar-carta {jobId}</Code> en tu agente: la redacta con tus indicaciones,
+              Ejecuta <Code>generate-cover-letter {jobId}</Code> en tu agente: la redacta con tus indicaciones,
               la verifica y la deja a juego con tu CV. Después podrás copiarla, retocarla y cambiar el
               diseño aquí, sin IA.
             </p>

@@ -1,7 +1,7 @@
 # Respuestas de empresas de ejemplo (fase 15)
 
 Correos **ficticios** (empresas, personas y dominios inventados; los dominios `.example` no
-existen) para probar la lectura de respuestas y el skill `revisar-respuestas` sin datos reales.
+existen) para probar la lectura de respuestas y el skill `review-replies` sin datos reales.
 
 | Fichero | Empresa | Qué es | Propuesta esperada |
 |---|---|---|---|

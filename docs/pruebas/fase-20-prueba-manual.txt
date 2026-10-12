@@ -4,7 +4,7 @@ PRUEBA MANUAL · FASE 20 · CALIBRACIÓN Y PATRONES («¿ACIERTA EL SCORE?»)
 Objetivo: comprobar con datos de verdad que
 - la sección «¿Acierta el score?» del Embudo cuadra con lo que sabes de tus candidaturas;
 - `cai stats calibration` dice lo mismo que la UI;
-- el skill revisar-busqueda hace una retrospectiva prudente (no saca conclusiones con pocos datos)
+- el skill review-search hace una retrospectiva prudente (no saca conclusiones con pocos datos)
   y NUNCA cambia config/policies.yaml ni tu perfil.
 
 Las cifras exactas ya las prueban los tests con un histórico sintético. Aquí se mira si tienen
@@ -61,7 +61,7 @@ PARTE 3 · La retrospectiva con tu agente (10 min)
 1. Antes, haz una copia para comparar:
        copy config\policies.yaml data\tmp\policies.antes.yaml
 2. En la UI, botón «Revisar mi búsqueda» (se abre en terminal) o, en Claude Code:
-       /revisar-busqueda
+       /review-search
    [ ] Llama a get_calibration y get_funnel_stats (y lee config/policies.yaml).
    [ ] Con menos de 20 enviadas, avisa de que es orientativo y pregunta si sigue.
    [ ] Da cifras con su x/n e intervalo, y llama «pocos datos» a los grupos con low_data sin

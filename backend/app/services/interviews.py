@@ -1,10 +1,10 @@
 """Entrevistas (fase 17): plan de preparación y repaso posterior, guardados en el hito.
 
-Lo redacta el agente con los skills `preparar-entrevista`, `simular-entrevista` y
-`repasar-entrevista`; aquí solo se lee y se guarda. Nada de esto registra eventos ni cambia el
+Lo redacta el agente con los skills `prepare-interview`, `mock-interview` y
+`debrief-interview`; aquí solo se lee y se guarda. Nada de esto registra eventos ni cambia el
 estado del hito: marcar una entrevista como hecha (`interview_done`) lo sigue haciendo el usuario
 en la ficha (ADR-029). Las historias STAR nuevas que salgan de un repaso no se guardan aquí: entran
-en el perfil solo con `actualizar-perfil` y la confirmación del usuario.
+en el perfil solo con `update-profile` y la confirmación del usuario.
 """
 
 from datetime import date, datetime, timedelta

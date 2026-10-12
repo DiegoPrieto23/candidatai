@@ -109,9 +109,9 @@ function ExtractionReminder() {
             {pending === 1 ? 'Hay 1 oferta por extraer.' : `Hay ${pending} ofertas por extraer.`}
           </span>{' '}
           Las extrae tu agente con el skill{' '}
-          <code className="rounded bg-background/70 px-1.5 py-0.5 font-mono text-[0.85em]">procesar-ofertas</code>.
+          <code className="rounded bg-background/70 px-1.5 py-0.5 font-mono text-[0.85em]">process-jobs</code>.
         </p>
-        <AgentButton action="procesar-ofertas">Procesar ahora</AgentButton>
+        <AgentButton action="process-jobs">Procesar ahora</AgentButton>
       </div>
     </div>
   )

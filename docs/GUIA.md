@@ -77,11 +77,11 @@ documentos y correos. Las claves van en `.env`, también fuera de git.
 
 | Qué | Dónde | Cómo |
 |---|---|---|
-| **Perfil** (la fuente de verdad de todo lo que se escribe sobre ti) | `data/profile.yaml` | Skill `actualizar-perfil`: lee tu CV, te pregunta lo que falte y lo valida. Cada cambio crea una versión |
-| **Tu CV como diseño** | `data/templates/<id>/` | Sube tu CV en «Plantillas → Mi CV» y usa el skill `importar-plantilla-cv`. Vale Word, PDF, imagen o HTML (Canva, Google Docs…) |
+| **Perfil** (la fuente de verdad de todo lo que se escribe sobre ti) | `data/profile.yaml` | Skill `update-profile`: lee tu CV, te pregunta lo que falte y lo valida. Cada cambio crea una versión |
+| **Tu CV como diseño** | `data/templates/<id>/` | Sube tu CV en «Plantillas → Mi CV» y usa el skill `import-cv-template`. Vale Word, PDF, imagen o HTML (Canva, Google Docs…) |
 | **Foto** | `data/photo.jpg` (o png) | Cada plantilla la recorta a su forma; se incluye o no según el país de la oferta |
 | **Contexto** (estilo, narrativa, criterios) | `data/contexto/*.md` | Orienta al agente, pero nunca respalda un hecho del CV |
-| **Documentos fuente** (CVs antiguos, títulos, referencias) | `data/documentos/` | `actualizar-perfil` los puede leer, confirmando antes de escribir |
+| **Documentos fuente** (CVs antiguos, títulos, referencias) | `data/documentos/` | `update-profile` los puede leer, confirmando antes de escribir |
 
 Tu mínimo salarial va en `private.salary_floor_eur` del perfil: la app lo usa para comparar
 ofertas, pero el agente nunca lo recibe.
@@ -92,8 +92,8 @@ Abre tu agente **en la raíz del repositorio**: ahí encuentra las instrucciones
 skills y el servidor MCP ya configurados.
 
 - **Claude Code:** `claude` en la raíz. Comprueba con `/mcp` que el servidor `candidatai` está
-  conectado. Los skills se invocan como `/generar-cv 42`.
-- **Codex:** usa `.codex/` (generado). Los skills se invocan como `$generar-cv 42`.
+  conectado. Los skills se invocan como `/generate-cv 42`.
+- **Codex:** usa `.codex/` (generado). Los skills se invocan como `$generate-cv 42`.
 - **Otros agentes:** si leen `AGENTS.md` y hablan MCP, registra el servidor `candidatai` con el
   comando de `.mcp.json`. Si no hablan MCP, cada herramienta tiene su comando
   `uv run --directory backend cai … --json` (tabla en
@@ -115,10 +115,10 @@ cd frontend; pnpm dev             # UI en http://127.0.0.1:5173
 Un día normal:
 
 1. Abre **Inicio**: te dice qué tienes (ofertas por revisar, CVs listos, seguimientos vencidos).
-2. Pide a tu agente `procesar-ofertas` y `evaluar-encaje`, o pulsa sus botones en la UI.
+2. Pide a tu agente `process-jobs` y `assess-fit`, o pulsa sus botones en la UI.
 3. Triaga en **Por revisar**.
-4. `generar-cv` para las aprobadas y, cuando quieras, envía desde la ficha.
-5. `resumen-diario` resume todo eso en una respuesta.
+4. `generate-cv` para las aprobadas y, cuando quieras, envía desde la ficha.
+5. `daily-summary` resume todo eso en una respuesta.
 
 ## 7. Configurar las fuentes de ofertas
 
@@ -129,7 +129,7 @@ Un día normal:
 | **InfoJobs y Adzuna** | Sus claves en `.env` (`CAI_INFOJOBS_CLIENT_ID`/`_SECRET`, `CAI_ADZUNA_APP_ID`/`_KEY`) y una búsqueda con `cai sources add` |
 | **Alertas por correo** | Crea alertas en LinkedIn, InfoJobs, Indeed… y que lleguen a una etiqueta de tu correo. Configura IMAP de solo lectura en `.env`: paso a paso en [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md). Sin IMAP, deja los `.eml` en `data/inbox/`. Lo que llega aparece en «Alertas» |
 | **Botón «Enviar a CandidatAI»** | Carga `extension/` como extensión sin empaquetar en Chrome o Edge y pega el token de `cai capture token` en sus opciones. Instrucciones: [`extension/README.md`](../extension/README.md) |
-| **Tu agente con tu navegador** | `buscar-ofertas configurar` elige portales y búsquedas (pantalla «Plataformas»); `buscar-ofertas` los recorre. LinkedIn queda desactivado hasta que lo actives tú |
+| **Tu agente con tu navegador** | `search-jobs configurar` elige portales y búsquedas (pantalla «Plataformas»); `search-jobs` los recorre. LinkedIn queda desactivado hasta que lo actives tú |
 | **Búsqueda pública de LinkedIn** | Interruptor «Búsqueda pública sin sesión» en la tarjeta de LinkedIn de «Plataformas». Apagado por defecto: va contra las condiciones de LinkedIn y puede bloquear tu IP un tiempo |
 
 El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.daily_at`
@@ -138,19 +138,19 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
 
 ## 8. De la oferta al envío
 
-1. **Extraer:** `procesar-ofertas` convierte el texto de cada oferta en datos estructurados. El
+1. **Extraer:** `process-jobs` convierte el texto de cada oferta en datos estructurados. El
    texto de las ofertas es contenido no confiable: si trae texto oculto o frases dirigidas a una
    IA, la ficha lo avisa.
-2. **Valorar:** la app calcula el score y aplica tus filtros duros; `evaluar-encaje` añade una
+2. **Valorar:** la app calcula el score y aplica tus filtros duros; `assess-fit` añade una
    valoración razonada.
 3. **Triar:** en «Por revisar», `J`/`K` para moverte, `A` para aprobar, `D` para descartar (con
    motivo) y `O` para abrir la ficha. Se puede deshacer.
-4. **CV:** `generar-cv 42` redacta el contenido, el código lo valida y renderiza y el rol
-   `verificador` lo revisa. En la ficha cambias plantilla, foto, color y secciones sin gastar
+4. **CV:** `generate-cv 42` redacta el contenido, el código lo valida y renderiza y el rol
+   `verifier` lo revisa. En la ficha cambias plantilla, foto, color y secciones sin gastar
    agente, comparas renders y marcas cuál envías.
-5. **Carta:** `generar-carta 42`, con tus indicaciones generales (perfil) y las de la oferta
+5. **Carta:** `generate-cover-letter 42`, con tus indicaciones generales (perfil) y las de la oferta
    (ficha). Sale a juego con el CV.
-6. **Candidatura:** `preparar-candidatura 42` prepara las respuestas de screening. En la ficha,
+6. **Candidatura:** `prepare-application 42` prepara las respuestas de screening. En la ficha,
    «Preparar candidatura» abre un navegador propio (perfil en `data/browser-profile/`), rellena el
    formulario y se para. Revisas, y solo si escribes el nombre de la empresa, envía. Ante un
    captcha o un login, se para y te pasa la pestaña. Si la envías tú por otro lado, márcala como
@@ -161,24 +161,24 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
 - **Procesos:** kanban por etapas. Una tarjeta solo cambia de columna registrando lo que pasó
   (respuesta, entrevista, prueba, oferta, rechazo). Entrevistas y pruebas crean un hito con fecha,
   exportable a tu calendario (`.ics`).
-- **Seguimientos:** te avisa de las candidaturas sin respuesta; `redactar-seguimiento` deja los
+- **Seguimientos:** te avisa de las candidaturas sin respuesta; `draft-follow-up` deja los
   borradores (máximo 2 por candidatura) y el de agradecimiento tras una entrevista. Los envías tú.
 - **Respuestas:** con IMAP configurado, la app lee los correos de las empresas de tus procesos;
-  `revisar-respuestas` propone qué ha pasado y tú lo aceptas en «Respuestas».
+  `review-replies` propone qué ha pasado y tú lo aceptas en «Respuestas».
 - **Embudo:** conversión por paso, fuente, puesto, semana, plantilla, carta y referencia, y
-  «¿Acierta el score?». `revisar-busqueda` hace la retrospectiva semanal.
+  «¿Acierta el score?». `review-search` hace la retrospectiva semanal.
 - **Red:** importa tus contactos de LinkedIn (exportación CSV) con `cai contacts import-linkedin`
-  y verás «Conoces a N» en las ofertas de sus empresas; `redactar-mensaje` prepara el mensaje.
+  y verás «Conoces a N» en las ofertas de sus empresas; `draft-message` prepara el mensaje.
 
 ## 10. Entrevistas y ofertas recibidas
 
-- `preparar-entrevista 42`: dosier y plan por días hasta la fecha, guardados en la ficha.
-- `simular-entrevista 42`: una pregunta cada vez, con feedback y una versión mejor basada en tu
+- `prepare-interview 42`: dosier y plan por días hasta la fecha, guardados en la ficha.
+- `mock-interview 42`: una pregunta cada vez, con feedback y una versión mejor basada en tu
   perfil.
-- `repasar-entrevista 42`: cuentas cómo fue; guarda notas y próximos pasos y propone historias STAR
+- `debrief-interview 42`: cuentas cómo fue; guarda notas y próximos pasos y propone historias STAR
   nuevas para tu perfil (con tu OK).
 - **Ofertas recibidas:** las anotas en la ficha y las comparas en «Procesos → Ofertas recibidas»
-  con tu mínimo y con el rango publicado. `preparar-negociacion 42` prepara argumentos y guion sin
+  con tu mínimo y con el rango publicado. `prepare-negotiation 42` prepara argumentos y guion sin
   proponer cifras.
 
 ## 11. El agente desde la UI
@@ -186,10 +186,10 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
 Muchas pantallas tienen botones que abren tu agente con la orden ya escrita:
 
 - **En terminal:** abre una ventana con tu agente; tú ves y apruebas lo que hace.
-- **En segundo plano** (Claude Code): para los skills que no preguntan (`procesar-ofertas`,
-  `evaluar-encaje`, `generar-cv`). Corre sin ventana, solo con las herramientas de la app que
+- **En segundo plano** (Claude Code): para los skills que no preguntan (`process-jobs`,
+  `assess-fit`, `generate-cv`). Corre sin ventana, solo con las herramientas de la app que
   necesita, y ves el progreso en la página «Agente». Necesita `cai worker` en marcha.
-- **Dejar para mi próxima sesión:** guarda el encargo; `atender-encargos` lo hace cuando abras tu
+- **Dejar para mi próxima sesión:** guarda el encargo; `handle-requests` lo hace cuando abras tu
   agente.
 
 ## 12. Configuración

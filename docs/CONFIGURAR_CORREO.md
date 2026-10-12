@@ -161,14 +161,14 @@ decides: nada cambia de etapa hasta que pulsas «Aceptar».
 - **Cuándo:** con `cai worker`, cada `email_alerts.poll_minutes`, y a mano con
   `uv run --directory backend cai replies poll` o «Revisar correo ahora» en la pantalla
   «Respuestas».
-- **Clasificarlos:** el skill `revisar-respuestas` de tu agente propone para cada correo el evento
+- **Clasificarlos:** el skill `review-replies` de tu agente propone para cada correo el evento
   (entrevista con su fecha, prueba, oferta, rechazo, respuesta o nada) y tú lo aceptas, cambias o
   ignoras en la pantalla «Respuestas» o en el aviso de la ficha de la oferta. Si hay correos sin
   clasificar, Inicio y «Respuestas» muestran el botón «Revisar respuestas», que abre tu agente con
   la orden. El texto de los correos es contenido no confiable: si trae instrucciones para una IA, se
   marca y no se obedece.
 - **Contestar:** la app no envía correo. Los seguimientos (como mucho 2 por candidatura) y los
-  agradecimientos tras una entrevista los redacta tu agente con `redactar-seguimiento` como
+  agradecimientos tras una entrevista los redacta tu agente con `draft-follow-up` como
   borradores en la ficha de la oferta; los copias, los mandas desde tu correo y pulsas «Ya lo he
   enviado».
 

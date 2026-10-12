@@ -19,7 +19,7 @@ class Company(Base):
 
 
 class CompanyResearch(Base):
-    """Dosier de una empresa con fuentes de la web pública (fase 18, skill `investigar-empresa`).
+    """Dosier de una empresa con fuentes de la web pública (fase 18, skill `research-company`).
 
     Uno por empresa (lo comparten todas sus ofertas); guardar otro lo sustituye. Lo redacta el
     agente a partir de páginas web, que son contenido no confiable: `risk_flags` marca si el texto

@@ -132,7 +132,7 @@ export function ProfilePage() {
                 Orienta a tu agente: el tono de tus CVs y cartas, los riesgos de una oferta y la preparación
                 de entrevistas. <strong className="font-medium text-foreground">Nunca respalda un hecho</strong>
                 : lo que diga un CV o una carta tiene que estar en tu perfil. Edítalos con tu editor o pide a
-                tu agente <InlineCode text="`actualizar-perfil`" />.
+                tu agente <InlineCode text="`update-profile`" />.
               </p>
             </div>
             <OpenFolderButton folder="contexto" ariaLabel="Abrir la carpeta del contexto" />
@@ -146,7 +146,7 @@ export function ProfilePage() {
                 Documentos
               </h2>
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                Tus documentos fuente. <InlineCode text="`actualizar-perfil`" /> puede leerlos para crear o
+                Tus documentos fuente. <InlineCode text="`update-profile`" /> puede leerlos para crear o
                 ampliar tu perfil, siempre preguntándote antes de escribir.
               </p>
             </div>

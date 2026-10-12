@@ -278,7 +278,7 @@ function Requests() {
               <RequestRow key={r.id} request={r} />
             ))}
           </ul>
-          <AgentButton action="atender-encargos" variant="default">
+          <AgentButton action="handle-requests" variant="default">
             Atender encargos
           </AgentButton>
         </>

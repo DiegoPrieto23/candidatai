@@ -79,10 +79,10 @@ checks and automates. A typical day:
 
 1. Every morning the worker brings in new jobs (ATS APIs, email alerts, LinkedIn's public search if
    you enabled it).
-2. You ask your agent to `procesar-ofertas` and `evaluar-encaje` (or launch them from the UI, in the
+2. You ask your agent to `process-jobs` and `assess-fit` (or launch them from the UI, in the
    background).
 3. You triage with `J`/`K`, `A` and `D`.
-4. `generar-cv 42` writes and verifies the CV for job 42; you pick the template, photo and colour
+4. `generate-cv 42` writes and verifies the CV for job 42; you pick the template, photo and colour
    in the UI, which costs no agent time.
 5. You review the filled form and press Send. The app records it, archives what was sent and reminds
    you to follow up.
@@ -177,35 +177,35 @@ Step by step, including your own profile, email alerts and the browser extension
 ## Use it with your own data
 
 Your data lives in `data/`, outside git. Start `cai serve`, `cai worker` and `pnpm dev`, create your
-profile with the `actualizar-perfil` skill, and then ask your agent:
+profile with the `update-profile` skill, and then ask your agent:
 
 | Skill | What it does |
 |---|---|
-| `actualizar-perfil` | Creates or updates `data/profile.yaml` (your single source of truth) from your CV, and versions it |
-| `procesar-ofertas` | Extracts new jobs (the `extractor` role, isolated when the agent allows it) |
-| `evaluar-encaje` | Assesses and explains the fit of jobs waiting for triage |
-| `generar-cv 42` | Writes, renders and verifies the CV for job 42 |
-| `generar-carta 42` | Cover letter following your instructions, verified; TXT and PDF matching the CV |
-| `preparar-candidatura 42` | Screening answers and, if needed, the cover letter |
-| `preparar-entrevista 42` | Interview dossier and a day-by-day plan up to the date |
-| `simular-entrevista 42` | Mock interview: one question at a time, feedback and a better answer from your profile |
-| `repasar-entrevista 42` | Debrief: notes, next steps, likely next round and new STAR stories |
-| `preparar-negociacion 42` | Arguments, questions and a script for a received offer; reviews the contract. Never proposes a figure |
-| `investigar-empresa 42` | Company dossier with sources (product, news, engineering culture, stack) |
-| `redactar-mensaje 42` | LinkedIn message (≤ 300 characters) or application email, as a draft |
-| `redactar-seguimiento` | Follow-up (max. 2 per application) and thank-you drafts |
-| `revisar-respuestas` | Classifies company emails (interview with its date, test, offer, rejection) into proposals |
-| `resumen-diario` | What's on today: pending work, overdue follow-ups, upcoming milestones |
-| `atender-encargos` | Does what you left in the UI with "Leave for my next session" |
-| `buscar-ofertas` | Browses the portals you approved with your browser and adds what fits |
-| `ampliar-busqueda` | Suggests adjacent job titles ("Analytics Engineer") from what you approve |
-| `revisar-busqueda` | Weekly retrospective: what works (score bands, sources, template, referrals) and what to change |
-| `plan-formacion` | Training plan from your real skill gaps, with verified resources |
-| `revisar-linkedin` | Improvement report for your LinkedIn profile, ready to copy |
-| `importar-plantilla-cv` | Turns your CV (or any design) into a template for tailored CVs |
+| `update-profile` | Creates or updates `data/profile.yaml` (your single source of truth) from your CV, and versions it |
+| `process-jobs` | Extracts new jobs (the `extractor` role, isolated when the agent allows it) |
+| `assess-fit` | Assesses and explains the fit of jobs waiting for triage |
+| `generate-cv 42` | Writes, renders and verifies the CV for job 42 |
+| `generate-cover-letter 42` | Cover letter following your instructions, verified; TXT and PDF matching the CV |
+| `prepare-application 42` | Screening answers and, if needed, the cover letter |
+| `prepare-interview 42` | Interview dossier and a day-by-day plan up to the date |
+| `mock-interview 42` | Mock interview: one question at a time, feedback and a better answer from your profile |
+| `debrief-interview 42` | Debrief: notes, next steps, likely next round and new STAR stories |
+| `prepare-negotiation 42` | Arguments, questions and a script for a received offer; reviews the contract. Never proposes a figure |
+| `research-company 42` | Company dossier with sources (product, news, engineering culture, stack) |
+| `draft-message 42` | LinkedIn message (≤ 300 characters) or application email, as a draft |
+| `draft-follow-up` | Follow-up (max. 2 per application) and thank-you drafts |
+| `review-replies` | Classifies company emails (interview with its date, test, offer, rejection) into proposals |
+| `daily-summary` | What's on today: pending work, overdue follow-ups, upcoming milestones |
+| `handle-requests` | Does what you left in the UI with "Leave for my next session" |
+| `search-jobs` | Browses the portals you approved with your browser and adds what fits |
+| `broaden-search` | Suggests adjacent job titles ("Analytics Engineer") from what you approve |
+| `review-search` | Weekly retrospective: what works (score bands, sources, template, referrals) and what to change |
+| `training-plan` | Training plan from your real skill gaps, with verified resources |
+| `review-linkedin` | Improvement report for your LinkedIn profile, ready to copy |
+| `import-cv-template` | Turns your CV (or any design) into a template for tailored CVs |
 
-Skill names are in Spanish; invoke them as `/generar-cv 42` in Claude Code, `$generar-cv 42` in
-Codex, or just ask in plain language.
+Invoke them as `/generate-cv 42` in Claude Code, `$generate-cv 42` in Codex, or just ask in plain
+language (in English or Spanish).
 
 ### Where jobs come from
 
@@ -359,7 +359,7 @@ All documents, grouped: [`docs/README.md`](docs/README.md). Technical docs are i
 
 In 22 phases (with sub-phases), each with its brief in `prompts/`, implemented with an AI agent
 (Claude Code) against a specification written before the code: a plan, a branch per phase, tests,
-a review by a `revisor` role, and a log of decisions and debt. The phase log is in
+a review by a `reviewer` role, and a log of decisions and debt. The phase log is in
 [`docs/ROADMAP.md`](docs/ROADMAP.md) and the method in
 [`docs/DESARROLLO_POR_FASES.md`](docs/DESARROLLO_POR_FASES.md).
 

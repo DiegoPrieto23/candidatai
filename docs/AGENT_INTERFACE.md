@@ -97,7 +97,7 @@ fase 09b), no parte de esta interfaz: la usa la extensión, no el agente.
 Las utilidades de autoría de plantillas (`cai templates inspect | build-docx | validate | preview`,
 fase 08.3; `scaffold-html` y `compare`, 08b; `build-letter` y `preview --letter`, 08c) son solo CLI:
 trabajan con ficheros dentro de `data/` (el original en `data/uploads/` o `data/tmp/`, el mapeo en
-`data/tmp/`) y las usa el skill `importar-plantilla-cv`. Aceptan `--json` y dan los errores con el
+`data/tmp/`) y las usa el skill `import-cv-template`. Aceptan `--json` y dan los errores con el
 formato común: un mapeo que no vale es `validation_error` con un detalle por párrafo
 (`paragraphs[index=N]`), una ruta fuera de `data/` es `invalid_file` y un `--id` que ya existe sin
 `--force`, `exists`. `inspect` da para Word el informe de párrafos y para PDF, imagen o HTML el de
@@ -123,7 +123,7 @@ se recorta y avisa con `too_large`.
 
 ### Comandos del perfil (solo CLI)
 
-Mantenimiento de `data/profile.yaml`; los usa el skill `actualizar-perfil`. Todos aceptan `--json`
+Mantenimiento de `data/profile.yaml`; los usa el skill `update-profile`. Todos aceptan `--json`
 (errores con el formato común; en `validation_error`, `field` es la ruta del campo, p. ej.
 `experience[1].achievements[0].id`). Una ruta relativa vale desde el directorio actual o desde la
 raíz del repo.
@@ -207,7 +207,7 @@ las más recientes primero.
   último `followup_sent`. Lo que pasa a `in_process` deja de contar, y también las que ya llevan
   `followups.max_followups` (2) seguimientos. Desde la fase 15 trae `thanks_due` (entrevistas
   hechas en los últimos `followups.thank_you_days` días sin agradecimiento enviado). Lo usan
-  `resumen-diario` y `redactar-seguimiento`; registrar que se envió (`followup_sent`) es cosa del
+  `daily-summary` y `draft-follow-up`; registrar que se envió (`followup_sent`) es cosa del
   usuario.
 - `save_message_draft` (fase 15): guarda un borrador de seguimiento (`followup`) o de
   agradecimiento (`thank_you`). Estos dos, solo en candidaturas `applied` o `in_process`; un
@@ -237,16 +237,16 @@ las más recientes primero.
 ### Entrevistas (fase 17)
 
 - `get_interviews`: las entrevistas de una oferta con su plan y su repaso, los contactos (solo
-  nombre y cargo) y si hay `offer_received`. Lo usan `preparar-entrevista`, `simular-entrevista`
-  y `repasar-entrevista`.
-- `save_interview_plan`: el plan de preparación por días de `preparar-entrevista`, en
+  nombre y cargo) y si hay `offer_received`. Lo usan `prepare-interview`, `mock-interview`
+  y `debrief-interview`.
+- `save_interview_plan`: el plan de preparación por días de `prepare-interview`, en
   `milestones.prep_plan`. `dossier` es solo el nombre del fichero en `data/entrevistas/` (sin
   carpetas). Sustituye al anterior.
-- `save_interview_notes`: el repaso de `repasar-entrevista` (`debrief_notes`, `next_steps`).
+- `save_interview_notes`: el repaso de `debrief-interview` (`debrief_notes`, `next_steps`).
   Sustituye al anterior.
 - Ninguna registra eventos ni cambia el estado del hito: marcar la entrevista como hecha
   (`interview_done`) lo hace el usuario en la ficha. Tampoco tocan el perfil: una historia STAR
-  nueva entra solo con `actualizar-perfil` y la confirmación del usuario (ADR-029).
+  nueva entra solo con `update-profile` y la confirmación del usuario (ADR-029).
 - Botones de la ficha (ADR-024): «Preparar» y «Simulacro» en una entrevista programada por
   empezar, «Repasar» en una que ya ha empezado y «Dudas antes de aceptar» con un `offer_received`.
   `POST /agent/launch` acepta `milestone_id` (entero) para las tres primeras.
@@ -272,8 +272,8 @@ las más recientes primero.
   `contact_id` (de esa oferta) o `network_contact_id` (una persona de `network` de esa oferta),
   no los dos; el borrador guarda su nombre. Desde `approved` hasta
   `in_process` (si no, `not_allowed`). Sustituye el vigente del mismo tipo y destinatario. Lo usa
-  `redactar-mensaje`. «Ya lo he enviado» no registra evento.
-- `save_company_research(job_id, research)`: el dosier de `investigar-empresa`. Uno por empresa
+  `draft-message`. «Ya lo he enviado» no registra evento.
+- `save_company_research(job_id, research)`: el dosier de `research-company`. Uno por empresa
   (lo comparten sus ofertas). `research`:
 
   ```jsonc
@@ -289,7 +289,7 @@ las más recientes primero.
   Una sección con texto sin cita, con un `[n]` mayor que el número de fuentes o una fuente de
   LinkedIn da `validation_error`. Si `risk_flags` no está vacío, los skills no usan el dosier. El código escribe `data/documentos/empresas/<Empresa>_<id>.md` y busca
   frases de inyección (`risk_flags`). `get_company_research` lo devuelve con `age_days`; lo usan
-  `preparar-entrevista` y `redactar-mensaje`, nunca `generar-carta` (POLICIES §7).
+  `prepare-interview` y `draft-message`, nunca `generate-cover-letter` (POLICIES §7).
 
 ### Analítica (fase 10.2)
 
@@ -369,13 +369,13 @@ son los pasos del embudo.
 Cada grupo tiene la misma forma que `total`. Los fijos salen siempre, en ese orden (a cero si no
 tienen envíos, con tasas `null`); los abiertos (fuente, portal, plantilla), de más a menos envíos.
 Es **orientativa**: dos grupos con intervalos solapados no son distintos y uno con `low_data` no
-permite conclusiones. Solo lectura. El skill `revisar-busqueda` la usa para proponer cambios;
+permite conclusiones. Solo lectura. El skill `review-search` la usa para proponer cambios;
 **nunca** cambia pesos ni filtros (`evals/matching/README.md` §Calibración).
 
 ### Ofertas recibidas (fase 21)
 
 `get_received_offer(job_id)` da al agente las condiciones de la oferta que anotó el usuario en la
-ficha, para el skill `preparar-negociacion`. Los importes solo si el usuario desmarcó «importes
+ficha, para el skill `prepare-negotiation`. Los importes solo si el usuario desmarcó «importes
 privados»; **nunca** `private` del perfil ni la comparación con su mínimo, que calcula la API
 (`GET /received-offers`) y solo ve la UI (POLICIES §4). Anotar, cambiar y borrar la oferta es solo
 de la UI: no hay herramienta para escribirla. Un test recorre todas las herramientas con un mínimo
@@ -419,7 +419,7 @@ nuevo se nota al momento). La API sirve lo mismo en `GET /skills/gaps?days=`.
 
 La app lee los correos de las empresas de tus candidaturas enviadas (`applied`, `in_process`) y
 los guarda en `replies` (ver `CONFIGURAR_CORREO.md` §Respuestas). El agente los clasifica con el
-skill `revisar-respuestas` (rol `clasificador`, una sesión aislada por correo) y deja una
+skill `review-replies` (rol `classifier`, una sesión aislada por correo) y deja una
 propuesta. **Nada cambia de etapa hasta que el usuario la acepta en la UI.**
 
 `get_reply` entrega el correo así (lo de dentro es contenido no confiable):
@@ -469,11 +469,11 @@ Hola: …
 
 - `list_jobs`, `get_job` y las vistas de la UI llevan `signals` (`DATA_MODEL.md` §Fase 16):
   `possibly_closed` y `reposted` son observaciones del código, no veredictos.
-- El skill `generar-cv` llama a `check_job_open` antes de redactar: si sale `possibly_closed`,
+- El skill `generate-cv` llama a `check_job_open` antes de redactar: si sale `possibly_closed`,
   avisa y pregunta. **Ningún agente descarta por esto**: descartar (motivo `closed`) o decir «Sigue
   abierta» lo hace el usuario en la UI (`POST /jobs/{id}/still-open`, con `require_ui`).
 - El worker comprueba cada día las ofertas en `approved` y `cv_ready` (tarea `check_open`).
-- `get_search_titles` alimenta el skill `ampliar-busqueda`: el agente propone títulos y solo con el
+- `get_search_titles` alimenta el skill `broaden-search`: el agente propone títulos y solo con el
   OK del usuario los añade a `preferences.roles` (editando el perfil y con `cai profile import`) o a
   las `search_urls` de una plataforma (`save_source`).
 
@@ -483,16 +483,16 @@ Los botones de la UI (ADR-024) tienen un desplegable con **«En segundo plano»*
 próxima sesión»** (ADR-032). Ninguno de los dos tiene herramienta para lanzarlo: un agente no se
 lanza a sí mismo.
 
-- **En segundo plano** (`POST /agent/runs`, solo la UI): `procesar-ofertas`, `evaluar-encaje` y
-  `generar-cv`. El worker lanza `launch.headless` del manifiesto con la orden y **solo las
+- **En segundo plano** (`POST /agent/runs`, solo la UI): `process-jobs`, `assess-fit` y
+  `generate-cv`. El worker lanza `launch.headless` del manifiesto con la orden y **solo las
   herramientas MCP de la acción** (`agent_launch.ACTIONS[...].background`), su skill, los
   subagentes y la lectura de `docs/`; el resto de herramientas de esta tabla se le **deniegan**
   explícitamente. La orden añade: «no preguntes; si necesitas al usuario, termina con líneas
   `PREGUNTA:`»; esas líneas dejan la ejecución en `needs_user` y la UI ofrece «Contestar en
-  terminal» (en las demás, «Abrir en terminal»), que retoma la misma sesión. `generar-cv` solo va en segundo
+  terminal» (en las demás, «Abrir en terminal»), que retoma la misma sesión. `generate-cv` solo va en segundo
   plano si a la oferta no le faltan obligatorias o si todas están marcadas «No la tengo».
 - **Cola de encargos** (`POST /agent/requests`, solo la UI): guarda la orden de cualquier acción.
-  Tu próxima sesión la ve en `get_status` (`agent_requests`) y con el skill `atender-encargos`
+  Tu próxima sesión la ve en `get_status` (`agent_requests`) y con el skill `handle-requests`
   (`list_agent_requests` → sigue el `prompt` → `complete_agent_request`). Un encargo que no se hizo
   no se cierra.
 

@@ -55,7 +55,7 @@ drafts_app = typer.Typer(
     no_args_is_help=True,
 )
 companies_app = typer.Typer(
-    help="Dosier de cada empresa (skill investigar-empresa).", no_args_is_help=True
+    help="Dosier de cada empresa (skill research-company).", no_args_is_help=True
 )
 contacts_app = typer.Typer(
     help="Tu red de LinkedIn (Connections.csv) y los contactos de cada proceso.",
@@ -507,12 +507,12 @@ def demo_seed(
     typer.echo(f"Con un agente, arráncalo con CAI_DATA_DIR={folder} para que el MCP use la demo.")
     if compat:
         typer.echo(
-            "Matriz de compatibilidad: con tu agente, procesar-ofertas, evaluar-encaje, aprueba "
-            "las de empleo.example.com/eval-cv/ y generar-cv; después `cai eval cv --agent …`."
+            "Matriz de compatibilidad: con tu agente, process-jobs, assess-fit, aprueba "
+            "las de empleo.example.com/eval-cv/ y generate-cv; después `cai eval cv --agent …`."
         )
     if eval_cv:
         typer.echo(
-            "Eval de CV: lanza `generar-cv` sobre las ofertas de empleo.example.com/eval-cv/ "
+            "Eval de CV: lanza `generate-cv` sobre las ofertas de empleo.example.com/eval-cv/ "
             "(«CV listo» pendiente) y después `cai eval cv`."
         )
 
@@ -527,7 +527,7 @@ def eval_cv_command(
     ),
     as_json: bool = JSON_OPTION,
 ) -> None:
-    """Comprueba los CVs que dejó `generar-cv` sobre los casos de evals/cv/ (en la demo)."""
+    """Comprueba los CVs que dejó `generate-cv` sobre los casos de evals/cv/ (en la demo)."""
     from app.services.evals import cv as cv_eval
 
     try:
@@ -816,7 +816,7 @@ def profile_init(as_json: bool = JSON_OPTION) -> None:
     else:
         typer.echo(
             f"Creado {dest} a partir del ejemplo (candidata ficticia). Rellénalo con tus datos "
-            "(skill `actualizar-perfil`) y luego ejecuta `cai profile validate` e `import`."
+            "(skill `update-profile`) y luego ejecuta `cai profile validate` e `import`."
         )
 
 
@@ -837,7 +837,7 @@ def context_init(as_json: bool = JSON_OPTION) -> None:
     for path in result.existing:
         typer.echo(f"Ya existía data/{path} (no se toca)")
     typer.echo(
-        "Rellénalos con tu editor (o con el skill `actualizar-perfil`). Orientan a los skills, "
+        "Rellénalos con tu editor (o con el skill `update-profile`). Orientan a los skills, "
         "pero nunca respaldan un hecho: eso va en data/profile.yaml."
     )
 
@@ -901,7 +901,7 @@ def _fail_plain(message: str, as_json: bool) -> NoReturn:
     raise typer.Exit(code=1)
 
 
-# --- Plantillas: importar un CV de Word (solo CLI; las usa el skill importar-plantilla-cv) -----
+# --- Plantillas: importar un CV de Word (solo CLI; las usa el skill import-cv-template) -----
 
 
 def _templates_fail(exc: Exception, as_json: bool) -> NoReturn:
@@ -1273,7 +1273,7 @@ def _render_source_run(result: Any) -> None:
             ids += f" y {len(result.job_ids) - 10} más"
         typer.echo(
             f"  Nuevas en pending_extraction: {ids}. "
-            "Ejecuta `procesar-ofertas` en tu agente para extraerlas."
+            "Ejecuta `process-jobs` en tu agente para extraerlas."
         )
 
 
@@ -1889,7 +1889,7 @@ def replies_poll(as_json: bool = JSON_OPTION) -> None:
             where = f" ({issue.item})" if issue.item else ""
             typer.secho(f"  ! {issue.message}{where}", fg="yellow")
         if result.created:
-            typer.echo("  Clasifícalos con revisar-respuestas y revísalos en «Respuestas».")
+            typer.echo("  Clasifícalos con review-replies y revísalos en «Respuestas».")
     if result.errors and not result.created:
         raise typer.Exit(code=1)
 
@@ -1993,7 +1993,7 @@ def _render_job_contacts(view: Any) -> None:
 def _render_company_research(view: Any) -> None:
     research = view.research
     if research is None:
-        typer.echo(f"{view.company}: sin dosier. Usa el skill investigar-empresa.")
+        typer.echo(f"{view.company}: sin dosier. Usa el skill research-company.")
         return
     content = research.content
     typer.echo(f"{view.company} · dosier de hace {research.age_days} días ({research.file})")

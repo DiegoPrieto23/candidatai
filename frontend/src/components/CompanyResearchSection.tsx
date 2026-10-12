@@ -6,7 +6,7 @@ import { AgentButton } from '@/components/AgentButton'
 import { OpenFolderButton } from '@/components/OpenFolderButton'
 import { formatDate } from '@/lib/labels'
 
-/** Las que admite el botón (`investigar-empresa`): ofertas abiertas ya extraídas. */
+/** Las que admite el botón (`research-company`): ofertas abiertas ya extraídas. */
 const RESEARCH_STAGES: ReadonlySet<Stage> = new Set([
   'pending_triage',
   'approved',
@@ -54,7 +54,7 @@ function Cited({ text, sources }: { text: string; sources: CompanyResearchConten
 }
 
 /**
- * Ficha (fase 18): el dosier de la empresa que guarda tu agente con `investigar-empresa`. Sale de
+ * Ficha (fase 18): el dosier de la empresa que guarda tu agente con `research-company`. Sale de
  * webs públicas: se muestra como texto, con sus fuentes. La carta no lo usa (POLICIES §7).
  */
 export function CompanyResearchSection({ job }: { job: JobView }) {
@@ -78,7 +78,7 @@ export function CompanyResearchSection({ job }: { job: JobView }) {
           </p>
         </div>
         {canResearch && (
-          <AgentButton action="investigar-empresa" jobId={job.id}>
+          <AgentButton action="research-company" jobId={job.id}>
             {research ? 'Actualizar dosier' : 'Investigar empresa'}
           </AgentButton>
         )}

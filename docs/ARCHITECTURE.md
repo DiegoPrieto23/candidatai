@@ -34,7 +34,7 @@ La app nunca llama a un modelo y no depende de ningún proveedor.
 | `app/services/platforms.py`, `summaries.py` | Identidad de oferta por plataforma (`platform` + `external_id`) y ofertas resumen en `pending_detail`: bandeja «Alertas» y caducidad (09b) | Sin red ni agente |
 | `app/services/process.py`, `tracking.py`, `calendar_ics.py` | Ficha de proceso (hitos con su evento, contactos, notas, documentos usados), seguimientos vencidos, próximos hitos, kanban y calendario iCalendar escrito a mano (fase 10) | Nada cambia de etapa sin evento; el calendario no sale de `127.0.0.1` |
 | `app/services/skill_gaps.py`, `skill_aliases.py` | Huecos de skills agregados de las ofertas, marcas del usuario y alias añadidos desde la UI (fase 14) | Recalcula la cobertura sin escribir; el único que escribe `config/skill_aliases.yaml` (ruamel.yaml, conserva comentarios) |
-| `app/services/liveness.py`, `reposts.py`, `signals.py`, `search_titles.py`, `ingestion/discover.py` | ¿Sigue abierta? (URL o API del ATS), republicadas (`job_sightings`), señales en `jobs.signals`, títulos para `ampliar-busqueda` y descubrimiento de tableros de ATS (fase 16) | Nunca cierran una oferta ni añaden fuentes sin el usuario; LinkedIn no se comprueba (ADR-016, ADR-028) |
+| `app/services/liveness.py`, `reposts.py`, `signals.py`, `search_titles.py`, `ingestion/discover.py` | ¿Sigue abierta? (URL o API del ATS), republicadas (`job_sightings`), señales en `jobs.signals`, títulos para `broaden-search` y descubrimiento de tableros de ATS (fase 16) | Nunca cierran una oferta ni añaden fuentes sin el usuario; LinkedIn no se comprueba (ADR-016, ADR-028) |
 | `app/services/agent_launch.py`, `agent_runs.py`, `agent_runner.py`, `agent_requests.py` | Botones «en tu agente» (ADR-024): terminal; en segundo plano desde el worker con solo las herramientas de la acción, de una en una, y cola de encargos (fase 19, ADR-032) | Lanzan el agente que ya usas, nunca un modelo; las órdenes son una lista cerrada; solo la UI lanza |
 | `frontend/` | UI | Solo habla con la API |
 | `.agents/` | Skills, roles y manifiesto, sin nada específico de un proveedor | Fuente única; lo nativo se genera |
@@ -114,7 +114,7 @@ found ─► pending_extraction ─► pending_triage ─► approved ─► cv_
                   │                   │              │           │
               [agente]            [Tú en UI,     [agente:     [Tú confirmas
              rol extractor        con ayuda de   redactor +   en la UI]
-                                  evaluar-encaje] verificador]
+                                  assess-fit] verificador]
 ```
 
 - Las etapas marcadas [agente] se quedan en cola hasta que ejecutas el skill correspondiente en tu
@@ -127,7 +127,7 @@ found ─► pending_extraction ─► pending_triage ─► approved ─► cv_
 |---|---|---|
 | Descargar ofertas (APIs de ATS, URL, texto pegado) | Código | Determinista y repetible |
 | Leer alertas de correo y capturas del botón del navegador | Código | Determinista; nunca entra en los portales |
-| Recorrer portales con el navegador (opcional) | Agente, skill `buscar-ofertas` | Solo donde no hay otra vía; con reglas estrictas (POLICIES §8) |
+| Recorrer portales con el navegador (opcional) | Agente, skill `search-jobs` | Solo donde no hay otra vía; con reglas estrictas (POLICIES §8) |
 | Deduplicar (huella + similitud difusa) | Código | Determinista |
 | Detectar texto oculto y frases de inyección | Código | No depende del agente que se use |
 | Extraer la oferta a JSON | Agente, rol `extractor` (modelo rápido) | Necesita comprensión de texto |
@@ -135,8 +135,8 @@ found ─► pending_extraction ─► pending_triage ─► approved ─► cv_
 | Score de encaje (embeddings + cobertura de skills) | Código | Medible y evaluable |
 | Explicar el encaje y sus riesgos | Agente | Criterio |
 | Aprobar o descartar | Tú | Decisión tuya |
-| Redactar el contenido del CV | Agente, rol `redactor` | Redacción |
-| Verificar que no hay nada inventado | Agente, rol `verificador` (distinto del redactor) | Segunda opinión independiente |
+| Redactar el contenido del CV | Agente, rol `writer` | Redacción |
+| Verificar que no hay nada inventado | Agente, rol `verifier` (distinto del redactor) | Segunda opinión independiente |
 | Comprobar evidencias, skills y páginas | Código | Determinista; no se fía del agente |
 | Elegir plantilla y foto para una oferta | Código, por reglas; tú puedes cambiarlo en la UI | Configurable y sin coste |
 | Renderizar DOCX/PDF, también en otra plantilla o sin foto | Código | Determinista; no hace falta volver al agente |

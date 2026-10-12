@@ -4,7 +4,7 @@ PRUEBA MANUAL · FASE 08b · MOTOR HTML E IMPORTACIÓN DE CVs EN CUALQUIER FORMA
 Objetivo: comprobar que el motor html imprime CVs sin red con Chromium, que la plantilla
 integrada `moderna-2col` se ve bien con foto y color, y que un CV que solo tienes en PDF o en
 imagen (Canva, un diseño descargado…) se recrea UNA vez como plantilla y a partir de ahí
-/generar-cv saca los CVs a medida con ese diseño.
+/generate-cv saca los CVs a medida con ese diseño.
 
 Duración aproximada: 15 minutos (partes 1 a 3, datos ficticios) + 30-40 (parte 4, tu CV).
 
@@ -140,7 +140,7 @@ conserva exacto).
 
 2. Abre Claude Code en la raíz del repo y pega la petición:
 
-      /importar-plantilla-cv data/uploads/<tu-fichero>.pdf
+      /import-cv-template data/uploads/<tu-fichero>.pdf
 
    El agente analiza el PDF (te cuenta columnas, colores, fuentes, secciones y extensión), crea
    la base con scaffold-html, la ajusta mirando el original y compara (hasta 3 vueltas). Si
@@ -152,13 +152,13 @@ conserva exacto).
 
 4. Genera el CV de una oferta aprobada:
 
-      /generar-cv <job_id>
+      /generate-cv <job_id>
 
    En la ficha, sección CV: el render usa tu plantilla y lleva el aviso «solo PDF» (pdf_only); no
    hay botón DOCX. Abre el PDF y comprueba:
    - diseño y orden de secciones como el original;
    - extensión parecida (mismas páginas);
-   - texto adaptado a la oferta, sin nada inventado (lo verifica el rol verificador).
+   - texto adaptado a la oferta, sin nada inventado (lo verifica el rol `verifier`).
 
 5. Prueba también `moderna-2col` en esa misma oferta, desde la ficha y sin agente: con y sin
    foto y con otro color. Cada render tarda unos 2-3 s (los docx, 10-15 s).

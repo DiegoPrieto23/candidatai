@@ -8,7 +8,7 @@ Objetivo: comprobar con tu Claude Code real que
   herramientas que escriben);
 - un skill que necesita algo termina con preguntas y «Contestar en terminal» sigue la misma sesión;
 - «Cancelar» y el tiempo máximo paran el proceso (y su cai-mcp);
-- «Dejar para mi próxima sesión» deja un encargo que tu agente ve y cierra con atender-encargos.
+- «Dejar para mi próxima sesión» deja un encargo que tu agente ve y cierra con handle-requests.
 
 Los tests usan un agente falso que imita `stream-json`: no prueban las flags del `claude` real
 (`--tools`, `--permission-mode dontAsk`, `--strict-mcp-config`, `--allowedTools`), que salen de
@@ -37,7 +37,7 @@ PARTE 1 · Comprobar el comando a mano (5 min, opcional pero recomendable)
 Desde la raíz, en PowerShell, con una orden que no hace nada (una sola línea):
 
     Remove-Item Env:ANTHROPIC_API_KEY -ErrorAction SilentlyContinue
-    claude -p "Llama a get_status de CandidatAI y dime cuántas ofertas hay." --output-format stream-json --verbose --permission-mode dontAsk --strict-mcp-config --mcp-config .mcp.json --tools Skill,Agent,Read --disallowedTools "Read(./.env)" "Read(./data/**)" mcp__candidatai__get_funnel_stats --allowedTools Agent "Read(./docs/**)" "Skill(procesar-ofertas)" mcp__candidatai__get_status
+    claude -p "Llama a get_status de CandidatAI y dime cuántas ofertas hay." --output-format stream-json --verbose --permission-mode dontAsk --strict-mcp-config --mcp-config .mcp.json --tools Skill,Agent,Read --disallowedTools "Read(./.env)" "Read(./data/**)" mcp__candidatai__get_funnel_stats --allowedTools Agent "Read(./docs/**)" "Skill(process-jobs)" mcp__candidatai__get_status
 
     (Las reglas de este comando ya se comprobaron el 2026-10-12 con una BD sin migrar; esta parte
     es para repetirlo con tus datos y tu versión de `claude`.)
@@ -47,7 +47,7 @@ Desde la raíz, en PowerShell, con una orden que no hace nada (una sola línea):
 [ ] La última es `result` con `subtype: success` y el recuento.
 [ ] Cambia la orden a «Llama a get_funnel_stats»: responde que no existe (está denegada, aunque
     `.claude/settings.json` la permita).
-[ ] Cambia la orden a «Usa el skill resumen-diario»: sale en `permission_denials` (solo se
+[ ] Cambia la orden a «Usa el skill daily-summary»: sale en `permission_denials` (solo se
     permite el skill de la acción).
 [ ] Cambia la orden a «Ejecuta dir en la terminal»: no puede (no tiene la herramienta).
 
@@ -68,7 +68,7 @@ PARTE 2 · Procesar ofertas en segundo plano (10 min)
     (`mcp__candidatai__add_event`, `…save_source`…).
 [ ] Al terminar: «Terminada», el resultado (la tabla del skill) y las ofertas ya en «Por revisar»
     sin recargar la página.
-[ ] En el log del worker: «En segundo plano, «procesar-ofertas» (ejecución N): terminada.»
+[ ] En el log del worker: «En segundo plano, «process-jobs» (ejecución N): terminada.»
 [ ] Ninguna ventana se ha abierto.
 
 
@@ -108,9 +108,9 @@ PARTE 5 · Cola de encargos (5 min)
 ---------------------------------
 1. En una ficha, «Investigar empresa» › flecha › «Dejar para mi próxima sesión».
 [ ] «Encargo guardado…». En «Agente», sale en «Para tu próxima sesión» con la orden.
-2. En una sesión nueva de Claude Code: /resumen-diario.
-[ ] Menciona el encargo y sugiere atender-encargos.
-3. /atender-encargos.
+2. En una sesión nueva de Claude Code: /daily-summary.
+[ ] Menciona el encargo y sugiere handle-requests.
+3. /handle-requests.
 [ ] Lo lista, pregunta cuáles hacer, sigue la orden y lo cierra con `complete_agent_request`.
 [ ] En «Agente», pasa a «Cerrados recientemente» con su resumen.
 4. Deja otro y pulsa «Quitar»: [ ] desaparece de los pendientes.

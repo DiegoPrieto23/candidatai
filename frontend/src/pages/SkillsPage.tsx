@@ -299,7 +299,7 @@ export function SkillsPage() {
   if (error instanceof ApiError && error.type === 'not_found') {
     return (
       <EmptyState icon={<UserCircleIcon className="size-6" weight="duotone" />} title="Aún no tienes perfil">
-        <InlineCode text="Los huecos se calculan frente a tu perfil. Créalo con el skill `actualizar-perfil`." />
+        <InlineCode text="Los huecos se calculan frente a tu perfil. Créalo con el skill `update-profile`." />
       </EmptyState>
     )
   }
@@ -316,11 +316,11 @@ export function SkillsPage() {
         </div>
         <div className="flex flex-wrap items-start gap-2">
           {marked('have') > 0 && (
-            <AgentButton action="anadir-skills">
+            <AgentButton action="add-skills">
               Añadir al perfil las que tengo ({marked('have')})
             </AgentButton>
           )}
-          <AgentButton action="plan-formacion" variant={marked('gap') > 0 ? 'default' : 'outline'}>
+          <AgentButton action="training-plan" variant={marked('gap') > 0 ? 'default' : 'outline'}>
             Plan de formación
           </AgentButton>
         </div>

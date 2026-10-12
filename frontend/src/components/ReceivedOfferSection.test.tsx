@@ -73,7 +73,7 @@ describe('Oferta recibida en la ficha (fase 21)', () => {
     expect(within(section).getByText(/45\.000/)).toBeInTheDocument()
     await userEvent.click(within(section).getByRole('button', { name: /Preparar negociación/ }))
     await waitFor(() =>
-      expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ action: 'preparar-negociacion', job_id: 1 }),
+      expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ action: 'prepare-negotiation', job_id: 1 }),
     )
   })
 

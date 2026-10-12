@@ -78,21 +78,21 @@ cobertura de skills los deja por debajo de 55 o los cortan los filtros.
 
 ## CV (fase 12.2)
 
-**Pregunta:** ¿los CVs que deja el agente con `generar-cv` son veraces, caben en una página y
+**Pregunta:** ¿los CVs que deja el agente con `generate-cv` son veraces, caben en una página y
 cubren lo que la oferta pide y la candidata tiene? `cai eval cv` mide lo guardado en la demo sobre
 los 10 casos de `cv/cases.jsonl` (comprobaciones en `evals/README.md`).
 
 ```powershell
 cd backend
 uv run cai demo seed --eval-cv
-# generar-cv con tu agente sobre las 10 ofertas de los casos (CAI_DATA_DIR=data-demo)
+# generate-cv con tu agente sobre las 10 ofertas de los casos (CAI_DATA_DIR=data-demo)
 $env:CAI_DATA_DIR = "data-demo"; uv run cai eval cv --agent claude-code
 ```
 
 ### Primera prueba: Claude Code sin MCP, 2 casos (2026-10-05)
 
 Para probar el circuito se redactaron y verificaron dos casos con trampa. Fueron dos ejecuciones
-distintas de Claude Code (Opus 5.5), siguiendo `.agents/roles/redactor.md` y `verificador.md`,
+distintas de Claude Code (Opus 5.5), siguiendo `.agents/roles/writer.md` y `verifier.md`,
 solo con comandos `cai … --json` contra `data-demo`.
 
 | Caso | Trampa | Resultado | Intentos del redactor |

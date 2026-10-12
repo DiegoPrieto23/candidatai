@@ -44,7 +44,7 @@ describe('Sección Carta de presentación', () => {
     renderApp('/jobs/1')
     const section = await screen.findByRole('region', { name: NAME })
     expect(await within(section).findByText('Aún sin carta')).toBeInTheDocument()
-    expect(within(section).getByText('generar-carta 1')).toBeInTheDocument()
+    expect(within(section).getByText('generate-cover-letter 1')).toBeInTheDocument()
     expect(within(section).getByText('Menciona que uso su producto desde 2023.')).toBeInTheDocument()
     expect(within(section).getByText(/Límite: 150 palabras/)).toBeInTheDocument()
   })

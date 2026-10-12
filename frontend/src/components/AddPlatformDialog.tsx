@@ -93,7 +93,7 @@ function AddPlatformForm({ onDone }: { onDone: () => void }) {
       <DialogHeader>
         <DialogTitle>Añadir plataforma</DialogTitle>
         <DialogDescription>
-          Un portal donde tu agente busca ofertas con tu navegador cuando le pides «buscar-ofertas».
+          Un portal donde tu agente busca ofertas con tu navegador cuando le pides «search-jobs».
         </DialogDescription>
       </DialogHeader>
 

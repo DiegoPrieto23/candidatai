@@ -335,7 +335,7 @@ export function ProcessesPage() {
                 .join(' · ')}
             </p>
             {/* El agente redacta los borradores en la ficha de cada oferta; la app no envía nada. */}
-            <AgentButton action="redactar-seguimientos">Redactar borradores</AgentButton>
+            <AgentButton action="draft-follow-ups">Redactar borradores</AgentButton>
           </div>
         )}
       </div>

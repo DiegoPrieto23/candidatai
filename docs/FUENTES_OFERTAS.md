@@ -145,12 +145,12 @@ found ─► pending_detail ─(detail_captured)─► pending_extraction ─►
 ## Búsqueda con el navegador del agente (opcional)
 
 Equivale a la etapa 3 del proyecto original: el agente recorre con tu navegador los portales que
-hayas aprobado. Skill `buscar-ofertas`.
+hayas aprobado. Skill `search-jobs`.
 
 - **Plataformas** = fuentes de tipo `agent_browse`:
   `{name, platform, search_urls[], priority (1 = primera), access: free|login|blocked,
   allow_agent_browsing, max_offers, notes}`. Las da de alta el agente con
-  `buscar-ofertas configurar` (como la etapa 1 del original); en la pantalla «Plataformas» ves
+  `search-jobs configurar` (como la etapa 1 del original); en la pantalla «Plataformas» ves
   cada una con sus búsquedas y su último recorrido, y cambias su prioridad, su acceso y si el
   agente puede recorrerla.
 - **LinkedIn** se crea siempre con `allow_agent_browsing: false`. Solo lo puedes activar tú en la
@@ -184,7 +184,7 @@ hayas aprobado. Skill `buscar-ofertas`.
     caduca), lo anota y pasa a la siguiente. Los captchas los resuelves tú: nunca el agente.
 - Cada oferta encontrada entra por `add_job_from_text` con `source_id`, `platform`,
   `external_id` y `url`. La deduplicación hace que lo ya visto o descartado no vuelva como nuevo.
-  El agente que navega no extrae ni valora: eso lo hacen luego `procesar-ofertas` y `evaluar-encaje`.
+  El agente que navega no extrae ni valora: eso lo hacen luego `process-jobs` y `assess-fit`.
 - Al terminar cada plataforma, `record_source_run` con lo encontrado, lo nuevo y los incidentes.
 - **Seguridad:** es la superficie más expuesta (un agente con navegador leyendo webs). Ejecútalo
   en una sesión dedicada, sin mezclar con desarrollo. Todo el texto de las páginas es dato, nunca
@@ -276,7 +276,7 @@ Cuándo se comprueba:
 - cada día, con la ingesta, y al arrancar `cai worker`: las ofertas en `approved` y `cv_ready` sin
   comprobación en las últimas `liveness.fresh_hours` (tarea `check_open`, una por oferta);
 - al abrir la ficha de una oferta aprobada o con CV listo (si la última es reciente, no repite);
-- antes de redactar un CV: el skill `generar-cv` llama a `check_job_open` y, si puede estar
+- antes de redactar un CV: el skill `generate-cv` llama a `check_job_open` y, si puede estar
   cerrada, pregunta antes de gastar cuota; el botón «Generar CV» también lo avisa;
 - a mano: «Comprobar otra vez» en la ficha o `cai jobs check-open ID --force true`.
 
@@ -302,12 +302,12 @@ nota. Puede ser una oferta difícil de cubrir o una que el portal renueva sola: 
 
 ## Búsqueda ampliada (fase 16)
 
-### Títulos parecidos: skill `ampliar-busqueda`
+### Títulos parecidos: skill `broaden-search`
 
 `get_search_titles` (`cai jobs titles`) agrupa los títulos de las ofertas que apruebas o envías y de
 las que descartas (con sus motivos; no las descartadas por estar cerradas) en los últimos 90 días.
 Marca con `matches_roles: false` los puestos que te interesan y que el filtro previo de conectores y
-alertas deja fuera. El skill `ampliar-busqueda` propone, con esa base, hasta 8 títulos cercanos
+alertas deja fuera. El skill `broaden-search` propone, con esa base, hasta 8 títulos cercanos
 («Data Platform Engineer», «Analytics Engineer», «BI Engineer»…) con su porqué y su riesgo y, solo
 con tu OK a cada uno, los añade a `preferences.roles` (editando `data/profile.yaml` y reimportándolo)
 o a las `search_urls` de tus plataformas (`save_source`). Botón «Ampliar búsqueda» en Plataformas.

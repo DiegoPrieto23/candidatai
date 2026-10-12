@@ -147,7 +147,7 @@ PARTE 3 · LA SECCIÓN «CV» DE LA UI (criterio de aceptación)
 
 15. Página Plantillas: en la barra de arriba, "Plantillas" (nueva, después de "Triaje").
     Esperado: "Plantillas de CV", un texto que explica que la plantilla solo decide el aspecto y
-    que tu CV de Word se convierte con el skill importar-plantilla-cv, y dos tarjetas grandes
+    que tu CV de Word se convierte con el skill import-cv-template, y dos tarjetas grandes
     con su miniatura, nombre, id, descripción y etiquetas:
       ATS sencilla:     Apta para ATS · Sin foto · 1 columna · Motor docx · Integrada
       Clásica con foto: No apta para ATS · Con foto · 1 columna · Motor docx · 4 colores · Integrada
@@ -189,7 +189,7 @@ IMPORTANTE: abre terminales NUEVAS o quita la variable antes de seguir:
 
 19. Tu foto: deja tu foto como data\photo.jpg (también vale .png o .webp). Si la tienes en otro
     sitio dentro de data\, pon su ruta en tu perfil, preferences.cv.photo_file (p. ej.
-    `photo_file: fotos/yo.jpg`), con el skill actualizar-perfil.
+    `photo_file: fotos/yo.jpg`), con el skill update-profile.
     Comprueba:
 
       uv run --directory backend cai doctor
@@ -197,7 +197,7 @@ IMPORTANTE: abre terminales NUEVAS o quita la variable antes de seguir:
     Esperado: "[ OK  ] Foto del CV  …\data\photo.jpg".
 
 20. Si quieres que tus CVs salgan con foto por defecto donde se estila (España), pide a tu
-    agente con actualizar-perfil `default_template: clasica-foto` y unas reglas como las del
+    agente con update-profile `default_template: clasica-foto` y unas reglas como las del
     perfil demo (ats-simple para Workday y similares y para GB, IE, US y NL). Si no, todo
     seguirá saliendo con ats-simple y la foto solo cuando la pidas en la UI.
 

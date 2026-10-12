@@ -106,11 +106,11 @@ PARTE 4 · WORKER Y EXTRACCIÓN
    hora programada sin haberlo tenido encendido, debe decir «Fuentes pendientes desde la última
    ingesta: N en cola.» y ejecutarlas.
 
-3. En tu agente: /procesar-ofertas → las ofertas nuevas pasan a «Por revisar».
+3. En tu agente: /process-jobs → las ofertas nuevas pasan a «Por revisar».
 
 4. (Opcional) Extracción automática cada mañana: ver docs/AGENTS_COMPAT.md → «Extracción
    automática cada mañana». En Claude Code Desktop, una tarea programada local diaria después de
-   la ingesta con el prompt /procesar-ofertas.
+   la ingesta con el prompt /process-jobs.
 
 
 PARTE 5 · OPCIONAL: INFOJOBS O ADZUNA

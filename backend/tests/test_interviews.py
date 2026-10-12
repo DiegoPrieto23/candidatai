@@ -212,7 +212,7 @@ def test_notes_rejected_for_future_cancelled_or_other_milestones(session: Sessio
 
 
 def test_nothing_here_touches_the_profile(session: Session) -> None:
-    """Las historias nuevas de un repaso solo entran con `actualizar-perfil`."""
+    """Las historias nuevas de un repaso solo entran con `update-profile`."""
     job = add_applied_job(session, "Castro Labs")
     milestone_id = _milestone(session, job, NOW - timedelta(days=1))
     versions = session.scalar(select(func.count()).select_from(ProfileVersion))

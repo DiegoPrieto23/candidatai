@@ -11,7 +11,7 @@ Solo en ofertas `approved` o `cv_ready`: después del envío el paquete se ve, p
 
 Límite conocido: el código comprueba que las evidencias existen, no que la respuesta diga lo
 mismo. Que el salario vaya siempre con `needs_user_input` (POLICIES §4) lo impone el skill
-`preparar-candidatura`; aquí no se adivina qué pregunta es salarial.
+`prepare-application`; aquí no se adivina qué pregunta es salarial.
 """
 
 from datetime import datetime

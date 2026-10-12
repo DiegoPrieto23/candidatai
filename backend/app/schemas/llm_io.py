@@ -73,7 +73,7 @@ AssessmentItem = Annotated[str, Field(min_length=1, max_length=MAX_ASSESSMENT_IT
 
 
 class FitAssessment(_Strict):
-    """Valoración del encaje que escribe el agente (skill `evaluar-encaje`). Ver POLICIES §2."""
+    """Valoración del encaje que escribe el agente (skill `assess-fit`). Ver POLICIES §2."""
 
     verdict: Literal["strong", "possible", "weak"]
     rationale: str = Field(min_length=1, max_length=1000)  # 2-3 frases con datos del desglose
@@ -102,7 +102,7 @@ class ScreeningAnswer(_Strict):
 
 
 class ApplicationAnswers(_Strict):
-    """Respuestas de screening (skill `preparar-candidatura`). Sin carta: es un documento propio.
+    """Respuestas de screening (skill `prepare-application`). Sin carta: es un documento propio.
 
     Las reglas que dependen del perfil (evidencias, respuestas vacías) las comprueba
     `services/answers.py`, para dar todos los problemas juntos.

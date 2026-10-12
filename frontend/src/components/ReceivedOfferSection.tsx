@@ -228,7 +228,7 @@ export function ReceivedOfferSection({ job }: { job: JobView }) {
               {offer ? 'Editar' : 'Anotar oferta'}
             </Button>
             {offer && job.stage === 'in_process' && (
-              <AgentButton action="preparar-negociacion" jobId={job.id}>
+              <AgentButton action="prepare-negotiation" jobId={job.id}>
                 Preparar negociación
               </AgentButton>
             )}

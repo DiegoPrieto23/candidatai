@@ -629,7 +629,7 @@ function Sending({ process }: { process: ProcessView }) {
       {process.offer_received && process.stage === 'in_process' && (
         <div className="space-y-1.5">
           <p className="text-sm">Tienes una propuesta: antes de aceptar, revisa qué conviene aclarar.</p>
-          <AgentButton action="dudas-oferta" jobId={process.job_id}>
+          <AgentButton action="offer-questions" jobId={process.job_id}>
             Dudas antes de aceptar
           </AgentButton>
         </div>

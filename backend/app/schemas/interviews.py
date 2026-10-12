@@ -1,4 +1,4 @@
-"""Plan de preparación de una entrevista (fase 17). Lo redacta el agente con `preparar-entrevista`
+"""Plan de preparación de una entrevista (fase 17). Lo redacta el agente con `prepare-interview`
 y se guarda en el hito (`milestones.prep_plan`). Ver `services/interviews.py`."""
 
 import datetime as dt

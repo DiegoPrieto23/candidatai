@@ -1,6 +1,6 @@
 ---
 name: extractor
-description: Extrae los datos estructurados (JobExtraction) de UNA oferta de CandidatAI a partir de su job_id. Lo usa el skill procesar-ofertas.
+description: Extrae los datos estructurados (JobExtraction) de UNA oferta de CandidatAI a partir de su job_id. Lo usa el skill process-jobs.
 tier: fast
 tools: ["mcp:get_job", "mcp:save_extraction"]
 sandbox: read-only

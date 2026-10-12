@@ -10,7 +10,7 @@ Duración aproximada: 15 minutos.
 REQUISITOS
 ----------
 - Esta prueba usa el perfil FICTICIO demo/profile.example.yaml (Lucía Varela). No uses aún tu CV:
-  tu perfil real se crea después, con el skill actualizar-perfil (ver «Después de la prueba»).
+  tu perfil real se crea después, con el skill update-profile (ver «Después de la prueba»).
 - Para no mezclar nada con tu base de datos real, toda la prueba trabaja en un directorio de datos
   aparte, data/prueba-05/ (dentro de data/, así que git lo ignora). Lo elige la variable
   CAI_DATA_DIR, que solo vive en la ventana de PowerShell donde la pongas.
@@ -204,7 +204,7 @@ DESPUÉS DE LA PRUEBA · TU PERFIL REAL
 Con la prueba bien, crea tu perfil de verdad en una sesión NUEVA de Claude Code arrancada SIN
 CAI_DATA_DIR (ventana de PowerShell nueva):
 
-      /actualizar-perfil
+      /update-profile
 
 Ten a mano tu CV (PDF o texto). El agente ejecuta cai profile init, lo rellena contigo sección a
 sección, te pregunta niveles F/C+/C/B, métricas, NDAs e historias STAR, y al final lo valida, lo

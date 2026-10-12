@@ -56,7 +56,7 @@ def mail(client: TestClient) -> dict[str, tuple[int, int]]:
 
 
 def _propose(reply_id: int, job_id: int, proposal: dict[str, Any]) -> None:
-    """Lo que hace el rol `clasificador` (sin la UI)."""
+    """Lo que hace el rol `classifier` (sin la UI)."""
     with session_scope() as session:
         data = replies.ReplyProposal.model_validate({"job_id": job_id, **proposal})
         replies.save_reply_proposal(session, reply_id, data, agent_name="test")

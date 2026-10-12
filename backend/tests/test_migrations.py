@@ -205,3 +205,56 @@ def test_0015_backfills_one_sighting_per_job_with_identity(db_url: str) -> None:
         migrations.downgrade(db_url, "0014")
     finally:
         engine.dispose()
+
+
+def test_0021_translates_skill_names_in_queued_work_and_back(db_url: str) -> None:
+    """Fase 23.2: un encargo o una ejecución guardados con los nombres en español siguen
+    funcionando con los skills renombrados; el `downgrade` los devuelve."""
+    migrations.upgrade(db_url, "0020")
+    engine = create_engine(db_url)
+    now = "2026-10-12 09:00:00"
+    prompt = (
+        "Usa el skill procesar-ofertas y delega en el rol `redactor`; no toques data-revisor "
+        "ni data/documentos/plan-formacion.md."
+    )
+    command = '["claude", "-p", "x", "--allowedTools", "Skill(generar-cv),Agent(verificador)"]'
+    try:
+        with engine.begin() as conn:
+            conn.exec_driver_sql(
+                "INSERT INTO agent_requests (id, action, prompt, status, created_at) "
+                f"VALUES (1, 'procesar-ofertas', '{prompt}', 'pending', '{now}'), "
+                f"(2, 'dudas-oferta', 'x', 'pending', '{now}')"
+            )
+            conn.exec_driver_sql(
+                "INSERT INTO agent_runs (id, action, agent, status, prompt, command, unset_env, "
+                "output_format, progress, questions, cancel_requested, created_at) VALUES "
+                f"(1, 'generar-cv', 'claude-code', 'queued', '{prompt}', '{command}', '[]', "
+                f"'stream-json', '[]', '[]', 0, '{now}')"
+            )
+        engine.dispose()
+
+        migrations.upgrade(db_url, "0021")
+        with engine.begin() as conn:
+            req, other = conn.exec_driver_sql(
+                "SELECT action, prompt FROM agent_requests ORDER BY id"
+            ).all()
+            run = conn.exec_driver_sql("SELECT action, prompt, command FROM agent_runs").one()
+        assert req[0] == "process-jobs" and run[0] == "generate-cv"
+        assert other[0] == "offer-questions"
+        assert req[1] == (
+            "Usa el skill process-jobs y delega en el rol `writer`; no toques data-revisor "
+            "ni data/documentos/plan-formacion.md."
+        )
+        assert "Skill(generate-cv)" in run[2] and "Agent(verifier)" in run[2]
+        engine.dispose()
+
+        migrations.downgrade(db_url, "0020")
+        with engine.begin() as conn:
+            req, other = conn.exec_driver_sql(
+                "SELECT action, prompt FROM agent_requests ORDER BY id"
+            ).all()
+            run = conn.exec_driver_sql("SELECT command FROM agent_runs").one()
+        assert tuple(req) == ("procesar-ofertas", prompt) and other[0] == "dudas-oferta"
+        assert "Skill(generar-cv)" in run[0] and "Agent(verificador)" in run[0]
+    finally:
+        engine.dispose()

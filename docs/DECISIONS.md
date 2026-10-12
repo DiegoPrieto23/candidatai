@@ -159,7 +159,7 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
     una carpeta local de correos exportados;
   - extensión mínima «Enviar a CandidatAI» que solo actúa cuando el usuario la pulsa, oferta a
     oferta, y envía a la API local con un token;
-  - skill `buscar-ofertas` con el navegador del usuario, con reglas estrictas (dominios, solo
+  - skill `search-jobs` con el navegador del usuario, con reglas estrictas (dominios, solo
     lectura, límites, sin captchas). LinkedIn queda desactivado por defecto y solo el usuario puede
     activarlo, desde la UI.
 - **Consecuencias:** LinkedIn y otros portales alimentan la app sin scraping por defecto. Los
@@ -199,7 +199,7 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
     están en el contrato pasan al perfil como `extra_sections`, que el redactor elige sin
     reescribir;
   - **carta**: documento propio (`documents.kind = cover_letter`) con su esquema, sus
-    herramientas, su verificación por el rol `verificador` y sus renders, en una fase nueva (08c)
+    herramientas, su verificación por el rol `verifier` y sus renders, en una fase nueva (08c)
     que reutiliza la infraestructura del CV;
   - las indicaciones tienen dos niveles: generales en `preferences.cover_letter` del perfil y por
     oferta en `cover_letter_briefs` (UI o agente); mandan las de la oferta y ambas pueden cambiar
@@ -342,8 +342,8 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
 - **Decisión:**
   - `POST /agent/launch` abre una terminal (Windows Terminal o, si no está, PowerShell) con tu
     agente en modo interactivo y la orden del skill ya escrita. Lo que haga lo ves, lo contestas y
-    lo apruebas tú: sirve también para los skills que preguntan (`generar-cv`) o usan tu navegador
-    (`buscar-ofertas`);
+    lo apruebas tú: sirve también para los skills que preguntan (`generate-cv`) o usan tu navegador
+    (`search-jobs`);
   - las órdenes son una lista cerrada en `services/agent_launch.py`; lo único variable es el
     `job_id` (entero). Ningún texto de una oferta ni de una web llega al comando;
   - el programa sale de `launch` en `.agents/manifest.yaml` (`command` con `{prompt}` y
@@ -371,9 +371,9 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
     cuatro ficheros Markdown con nombre fijo en `data/contexto/` (`estilo-redaccion`,
     `perfil-conductual`, `criterios`, `narrativa`), todos opcionales. Se editan en el editor del
     usuario, no en la UI, y no se versionan en la BD: `get_context` los lee con su sha256.
-  - El contexto orienta y nunca respalda (POLICIES §1.5): el estilo, en `redactor` y
-    `generar-carta`; los criterios, en `evaluar-encaje` (como riesgo o motivo de `weak`, siempre
-    citados); el perfil conductual y la narrativa, en `preparar-entrevista`. El `verificador` lo
+  - El contexto orienta y nunca respalda (POLICIES §1.5): el estilo, en `writer` y
+    `generate-cover-letter`; los criterios, en `assess-fit` (como riesgo o motivo de `weak`, siempre
+    citados); el perfil conductual y la narrativa, en `prepare-interview`. El `verifier` lo
     lee y marca `blocker` un hecho que solo esté ahí. Para usar en una carta algo de la narrativa,
     el skill lo propone y, si el usuario dice que sí, lo guarda en las indicaciones de la carta,
     que sí respaldan `user`.
@@ -383,7 +383,7 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
     encabezados y comentarios-guía, así que una sola plantilla sirve de ejemplo y de esqueleto
     vacío.
   - `data/documentos/` guarda los documentos fuente (`cv/`, `linkedin/`, `titulos/`,
-    `referencias/`), que `actualizar-perfil` puede leer, siempre confirmando antes de escribir.
+    `referencias/`), que `update-profile` puede leer, siempre confirmando antes de escribir.
     Su texto es de terceros (exportaciones, referencias, el título y la URL de la oferta en el
     README de una candidatura): se trata como dato, nunca como instrucción (regla dura 4).
   - Archivo de candidaturas: al registrar `applied` o `applied_manually` se encola
@@ -447,13 +447,13 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
     `replies.portal_sender_domains`.
   - **Contenido no confiable:** se guarda el texto visible (sin lo oculto), con detección de
     inyección también en lo oculto, y se entrega envuelto en `<untrusted_email>`. Lo lee solo el
-    rol `clasificador` (aislado como `extractor`); el skill orquestador no lo abre.
+    rol `classifier` (aislado como `extractor`); el skill orquestador no lo abre.
   - **Propuesta, no evento:** `save_reply_proposal` guarda qué cree el agente que significa
     (evento, hito, confianza) y no registra nada. Solo la UI, con `require_ui`, la acepta (tal
     cual o cambiada) o la ignora; aceptar registra el evento como `user` con `payload.reply_id`.
     No hay herramienta ni comando para aceptar: un correo manipulado no puede mover una oferta
     aunque engañe al agente. Límite: `require_ui` solo mira `Origin` y el JSON, así que un agente
-    con terminal libre podría llamar a la API con `curl`; el rol `clasificador` no tiene terminal
+    con terminal libre podría llamar a la API con `curl`; el rol `classifier` no tiene terminal
     en Claude Code (solo sus dos herramientas MCP) y en el resto depende de sus permisos.
   - **Borradores:** `save_message_draft` guarda seguimientos y agradecimientos; la app no tiene
     código que envíe correo. El usuario los copia y marca «Ya lo he enviado», que registra
@@ -509,12 +509,12 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
     la entrevista como hecha (`interview_done`, que activa el agradecimiento y cuenta en el embudo)
     sigue siendo del usuario en la ficha; el skill se lo recuerda;
   - el simulacro no guarda nada. Lo que el usuario cuente se queda en la conversación o en las
-    notas del hito; al perfil solo entra con `actualizar-perfil` y su confirmación (POLICIES §1.6).
+    notas del hito; al perfil solo entra con `update-profile` y su confirmación (POLICIES §1.6).
     Los skills de entrevista no llevan `cai profile` entre sus herramientas permitidas;
   - el dosier sigue siendo un fichero (`data/entrevistas/`); el plan guarda solo su nombre, sin
     carpetas, y la UI abre la carpeta con «Abrir carpeta» (lista cerrada);
   - `get_interviews` devuelve de los contactos solo nombre y cargo;
-  - las «dudas antes de aceptar» son un modo de `repasar-entrevista` y no un skill propio: usan
+  - las «dudas antes de aceptar» son un modo de `debrief-interview` y no un skill propio: usan
     las mismas notas. Comparar ofertas y el salario quedan para la fase 21;
   - matiz a ADR-024: además del `job_id`, una orden puede llevar el `milestone_id` (entero). La
     oferta sale del hito y se comprueba que el hito admite la acción.
@@ -570,7 +570,7 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
     dentro como `empresa.md`: es el dosier vigente al archivar (no va en el `snapshot` del envío)
     y el README lo dice;
   - la carta no lee el dosier (`get_cover_letter` no lo devuelve): §7 sigue igual.
-- **Consecuencias:** el dosier no caduca solo: la ficha avisa a los 30 días y `preparar-entrevista`
+- **Consecuencias:** el dosier no caduca solo: la ficha avisa a los 30 días y `prepare-interview`
   lo rehace si puede buscar en la web. El `.md` se escribe antes del commit: un fallo de la
   transacción dejaría un fichero sin fila, que el siguiente guardado sobrescribe.
 
@@ -615,12 +615,12 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
     en el código (`services/agent_output.py`, `PARSERS`, como los emisores de `sync_agents.py`);
   - **preguntas:** la orden añade «no preguntes; si necesitas al usuario, termina con líneas
     `PREGUNTA:`». Esas líneas dejan la ejecución en `needs_user` y «Abrir en terminal» retoma la
-    misma sesión (`launch.resume`, `claude --resume <id>`). `generar-cv` solo va en segundo plano
+    misma sesión (`launch.resume`, `claude --resume <id>`). `generate-cv` solo va en segundo plano
     si a la oferta no le faltan obligatorias, o si todas están marcadas «No la tengo» (fase 14);
     entonces la orden lo dice sin nombrarlas, porque salen de la oferta;
   - **cola de encargos:** `agent_requests` guarda la orden de cualquier acción de la misma lista
     cerrada (salvo «Atender encargos»). La crea y la cancela solo la UI. El agente la ve en `get_status` y con
-    `list_agent_requests` (skill `atender-encargos`) y la cierra con `complete_agent_request`;
+    `list_agent_requests` (skill `handle-requests`) y la cierra con `complete_agent_request`;
   - **Codex** no tiene `headless`: no permite limitar las herramientas MCP de una ejecución con
     garantías (nivel B). El botón dice que tu agente no lo admite; añadirlo es un bloque del
     manifiesto y un lector de su salida (`agent_output.PARSERS`).

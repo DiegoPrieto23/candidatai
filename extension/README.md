@@ -58,7 +58,7 @@ intente desde tu navegador. No compartas el token; si se filtra, genera otro.
    **Abrir ficha** lleva a la oferta en la UI. El icono queda marcado en esa pestaña: ✓, = o !.
 3. Si no encuentra la descripción o la empresa (los portales cambian su HTML), **selecciona con el
    ratón el texto de la oferta**, empresa incluida, y vuelve a pulsar: se envía lo seleccionado.
-4. Después, en tu agente, `procesar-ofertas` como con cualquier otra oferta.
+4. Después, en tu agente, `process-jobs` como con cualquier otra oferta.
 
 ## Problemas
 

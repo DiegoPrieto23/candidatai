@@ -27,7 +27,7 @@ lo correcto.
 - Cobertura mínima: 80%
 - Evaluados: 5 · pasan: 5 · pendientes: 5
 
-| Caso | Estado | Agente | Evidencias que existen en el perfil | Sin skills inventadas ni prohibidas | Sin skills básicas que la oferta no pide | Una página | Cobertura de keywords | Idioma de la oferta | Verificado por el rol verificador |
+| Caso | Estado | Agente | Evidencias que existen en el perfil | Sin skills inventadas ni prohibidas | Sin skills básicas que la oferta no pide | Una página | Cobertura de keywords | Idioma de la oferta | Verificado por el rol `verifier` |
 |---|---|---|---|---|---|---|---|---|---|
 | `cv01-de-snowflake` | pasa | claude-code | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ |
 | `cv02-ae-dbt` | sin alta |  |  |  |  |  |  |  |  |
@@ -40,11 +40,11 @@ lo correcto.
 | `cv09-etl-migracion` | pasa | claude-code | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ |
 | `cv10-ds-series` | sin alta |  |  |  |  |  |  |  |  |
 
-Pendientes: lanza `generar-cv` sobre esos casos (`sin alta`: antes, `cai demo seed --eval-cv`).
+Pendientes: lanza `generate-cv` sobre esos casos (`sin alta`: antes, `cai demo seed --eval-cv`).
 
 ## Verificador (ejecución independiente)
 
 5/5 `passed`, 0 bloqueantes, 4 avisos de redacción: un plural no respaldado («modelos
 dimensionales»), DAX (nivel C) en el subtítulo, «cuadros de mando» sin respaldo literal en el
 perfil y «heredados» copiado de la oferta. Son los matices que el eval automático no puede ver y
-que justifican el rol verificador.
+que justifican el rol `verifier`.

@@ -98,7 +98,7 @@ def view(row: AgentRun, resumable: frozenset[str] | None = None) -> AgentRunView
 
 
 def _cv_gaps_note(session: Session, job_id: int) -> str:
-    """`generar-cv` pregunta por las obligatorias ausentes del perfil. En segundo plano solo se
+    """`generate-cv` pregunta por las obligatorias ausentes del perfil. En segundo plano solo se
     lanza si no hay ninguna o si todas están marcadas como «No la tengo» (fase 14): entonces la
     orden lo dice, sin nombrarlas (salen de la oferta)."""
     missing = matching.get_match(session, job_id).breakdown.must_have.missing
@@ -148,7 +148,7 @@ def start(
         raise LaunchError("unavailable", picked, prompt)
     if (existing := _active(session, action, job_id)) is not None:
         return view(existing)
-    note = _cv_gaps_note(session, job_id) if action == "generar-cv" and job_id else ""
+    note = _cv_gaps_note(session, job_id) if action == "generate-cv" and job_id else ""
     full_prompt = prompt + note + agent_launch.BACKGROUND_NOTE
     assert picked.headless is not None  # lo garantiza `pick_headless`
     row = AgentRun(

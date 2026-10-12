@@ -3,7 +3,7 @@ PRUEBA MANUAL · FASE 08.3 · CV: IMPORTAR PLANTILLAS DESDE WORD Y «MI CV»
 
 Objetivo: comprobar que tu propio CV de Word se convierte UNA vez en plantilla, que conserva su
 diseño y su orden de secciones, que se puede marcar por defecto desde la UI sin perder los
-comentarios de tu perfil, y que a partir de ahí /generar-cv saca los CVs a medida con tu diseño,
+comentarios de tu perfil, y que a partir de ahí /generate-cv saca los CVs a medida con tu diseño,
 una extensión parecida a la del original y el texto adaptado a la oferta.
 
 Duración aproximada: 15 minutos (partes 1 a 3, datos ficticios) + 30 (parte 4, tu CV).
@@ -131,26 +131,26 @@ Google Docs, expórtalo a Word.
 
 2. Abre Claude Code en la raíz del repo y pega la petición:
 
-      /importar-plantilla-cv data/uploads/<tu-fichero>.docx
+      /import-cv-template data/uploads/<tu-fichero>.docx
 
    El agente analiza el CV (te cuenta columnas, fuentes, secciones y si es apto para ATS),
    prepara el mapeo y construye la plantilla. Si el mapeo falla, corrige y reintenta solo (te
    dirá el párrafo). Al final te enseña la preview con tu perfil y te lista lo que tu CV tiene y
    tu perfil no; si hay secciones como voluntariado o premios, acepta pasarlas a extra_sections
-   con /actualizar-perfil.
+   con /update-profile.
 
 3. Vuelve a Plantillas: tu CV aparece importado, con el original y «Con tu perfil». Compáralos:
    mismo diseño y mismo orden de secciones. Pulsa «Usar por defecto».
 
 4. Genera el CV de una oferta aprobada:
 
-      /generar-cv <job_id>
+      /generate-cv <job_id>
 
    En la ficha de la oferta, sección CV: el render usa tu plantilla (etiqueta «Tu CV» en el
    selector). Abre el PDF y comprueba:
    - mismo diseño y orden de secciones que tu original;
    - extensión parecida (mismas páginas);
-   - texto adaptado a la oferta, sin nada inventado (lo verifica el rol verificador);
+   - texto adaptado a la oferta, sin nada inventado (lo verifica el rol `verifier`);
    - si tu CV tenía secciones extra y las pasaste al perfil, salen con su título.
 
 5. Comprueba con `git diff` sobre data\profile.yaml (si lo versionas) o a ojo que «Usar por

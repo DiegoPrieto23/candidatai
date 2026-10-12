@@ -5,7 +5,7 @@ Objetivo: comprobar con tus datos reales que
 - la app avisa de las ofertas que pueden estar cerradas, sin cerrarlas nunca, y que «Descartar»,
   «Sigue abierta» y «Comprobar otra vez» hacen lo que dicen;
 - «Republicada ×N» sale en bandeja, triaje y ficha cuando una oferta reaparece en el mismo portal;
-- `ampliar-busqueda` propone títulos razonables y solo cambia tus puestos o tus búsquedas con tu OK;
+- `broaden-search` propone títulos razonables y solo cambia tus puestos o tus búsquedas con tu OK;
 - `cai sources discover` encuentra los tableros de tus empresas objetivo.
 
 Los tests automáticos cubren todo con respuestas simuladas. Durante el desarrollo se comprobó ya
@@ -43,7 +43,7 @@ PARTE 1 · ¿SIGUE ABIERTA?
    Confirma y comprueba que queda cerrada con ese motivo (y que sale en «Embudo» › motivos).
 7. Con el aviso activo, en la sección CV de una aprobada sin CV: debajo de «Generar CV» sale
    «Antes de gastar cuota: puede que esta oferta ya no esté publicada».
-8. /generar-cv ID en Claude Code sobre esa oferta.
+8. /generate-cv ID en Claude Code sobre esa oferta.
    Esperado: el agente llama a `check_job_open`, te dice el motivo y pregunta si sigue. No descarta
    la oferta por su cuenta.
 9. Con el worker en marcha, al arrancar sale «¿Siguen abiertas?: N ofertas aprobadas o con CV en
@@ -66,7 +66,7 @@ PARTE 3 · AMPLIAR BÚSQUEDA
 1. uv run --directory backend cai jobs titles
    Esperado: tus puestos buscados, los títulos aprobados y descartados agrupados y, si los hay,
    «[no pasa el filtro previo]» junto a puestos que aprobaste pero la ingesta deja fuera.
-2. «Ampliar búsqueda» en Plataformas (o /ampliar-busqueda en Claude Code).
+2. «Ampliar búsqueda» en Plataformas (o /broaden-search en Claude Code).
    Esperado: como mucho 8 títulos con su porqué, su riesgo y dónde irían. El agente pregunta y no
    cambia nada hasta que contestas.
 3. Acepta uno para tus puestos buscados.

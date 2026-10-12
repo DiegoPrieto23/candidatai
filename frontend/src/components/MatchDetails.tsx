@@ -119,7 +119,7 @@ function Assessment({ match }: { match: MatchView }) {
         <RobotIcon className="mt-0.5 size-4 shrink-0" />
         <span>
           Sin valorar. Ejecuta el skill{' '}
-          <code className="rounded bg-muted px-1 py-0.5 font-mono text-[0.85em] text-foreground">evaluar-encaje</code>{' '}
+          <code className="rounded bg-muted px-1 py-0.5 font-mono text-[0.85em] text-foreground">assess-fit</code>{' '}
           en tu agente.
         </span>
       </p>

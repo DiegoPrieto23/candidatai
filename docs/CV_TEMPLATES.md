@@ -15,12 +15,12 @@ foto para enviar por email), y tú marcas cuál se envía.
 
 El camino habitual es usar **tu propio CV** como plantilla (página Plantillas → «Mi CV», fase 08.3;
 desde PDF o imagen, fase 08b): lo subes, tu agente lo convierte **una vez** con el skill
-`importar-plantilla-cv` y lo marcas «Usar por defecto». A partir de ahí, cada CV a medida sale con
+`import-cv-template` y lo marcas «Usar por defecto». A partir de ahí, cada CV a medida sale con
 tu diseño, tu orden de secciones y una extensión parecida a la del original (la `capacity` se mide
 en él), con el texto redactado desde tu perfil para cada oferta. La IA no reescribe tu Word en cada
 oferta: así el estilo no se degrada, la verificación es la misma y cambiar de foto o color no gasta
 cuota. Lo que tu CV tenga y el perfil no (incluidas secciones como voluntariado o premios) se pasa
-antes al perfil con `actualizar-perfil`, a `extra_sections` si no encaja en otra sección.
+antes al perfil con `update-profile`, a `extra_sections` si no encaja en otra sección.
 
 ## Dónde viven
 
@@ -133,14 +133,14 @@ el diseño.
   filas de tabla `{%tr for … %}`; condicionales `{%p if photo %}`.
 - La foto es un `InlineImage` y se coloca donde esté `{{ photo }}`.
 - **No escribas los marcadores a mano en Word**: Word los parte en fragmentos y dejan de
-  funcionar. Usa el skill `importar-plantilla-cv`, que marca la plantilla con
+  funcionar. Usa el skill `import-cv-template`, que marca la plantilla con
   `cai templates build-docx`: el código fusiona los fragmentos de cada párrafo e inserta cada
   marcador de una pieza.
 - Genera DOCX y PDF (con LibreOffice o Word).
 
 ### Importar desde Word (fase 08.3)
 
-Lo hace el skill `importar-plantilla-cv` con tres comandos que solo trabajan dentro de `data/`:
+Lo hace el skill `import-cv-template` con tres comandos que solo trabajan dentro de `data/`:
 
 1. **`cai templates inspect <fichero> --json`**: página (tamaño, márgenes, columnas), fuentes que
    se ven (por caracteres, resolviendo estilos y tema), colores, tablas, cuadros de texto,
@@ -263,7 +263,7 @@ imágenes. Los comandos, igual que en Word, solo trabajan dentro de `data/`:
 
 Limitaciones: la recreación es aproximada; columnas, márgenes y logros se estiman y pueden
 fallar en diseños muy irregulares. Una plantilla html solo da PDF. Su carta a juego (`letter.html`)
-la escribe el skill `importar-plantilla-cv` desde la cabecera recreada (§Cartas de presentación).
+la escribe el skill `import-cv-template` desde la cabecera recreada (§Cartas de presentación).
 
 ## Opciones de render por oferta (`CvRenderOptions`)
 
@@ -375,7 +375,7 @@ párrafos con evidencias y despedida) según tus indicaciones, y el código la p
   - una integrada o una html: error;
   - si ya tiene carta: `exists` salvo con `--force`.
 
-  En html, el skill `importar-plantilla-cv` escribe `letter.html` desde la cabecera del diseño
+  En html, el skill `import-cv-template` escribe `letter.html` desde la cabecera del diseño
   recreado.
 - **Ver y validar**: `cai templates preview <id> --letter` la renderiza con una carta de muestra
   (en `data/cache/previews/`). `cai templates validate <id>` también renderiza la carta. Una

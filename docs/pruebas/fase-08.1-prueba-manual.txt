@@ -1,7 +1,7 @@
 PRUEBA MANUAL · FASE 08.1 · CV: CONTENIDO, VERIFICACIÓN Y MOTOR DOCX
 =====================================================================
 
-Objetivo: comprobar que tu agente genera con el skill generar-cv un CV a medida de una oferta
+Objetivo: comprobar que tu agente genera con el skill generate-cv un CV a medida de una oferta
 aprobada, que la app lo rechaza si cita algo que no está en tu perfil, que el PDF sale bien con la
 plantilla ats-simple y LibreOffice, y que se puede volver a renderizar con otras opciones sin
 volver a usar el agente.
@@ -96,12 +96,12 @@ PARTE 3 · CV CON TU AGENTE (criterio de aceptación)
 
 9. En Claude Code:
 
-      /generar-cv <id>
+      /generate-cv <id>
 
    Esperado, en este orden:
    a) Si a la oferta le faltan skills obligatorias que no están en tu perfil, te pregunta por
       ellas TODAS en un solo mensaje ("¿Has trabajado con…?"). Si contestas que sí a alguna,
-      debe parar y proponerte el skill actualizar-perfil; si contestas que no, sigue.
+      debe parar y proponerte el skill update-profile; si contestas que no, sigue.
    b) Lanza el subagente "redactor": llama a get_profile, get_extraction, get_match y
       list_cv_templates, y te pide permiso para save_cv_content (es una escritura). Si la app
       rechaza el contenido, el redactor corrige y reintenta solo (máximo 3 veces).
@@ -212,7 +212,7 @@ QUÉ ME CUENTAS AL TERMINAR
 --------------------------
 - La salida de cai doctor (paso 3), sobre todo la línea "Conversión a PDF".
 - Qué te parece el diseño de ats-simple (paso 7).
-- El resumen final de /generar-cv (paso 9) y si el PDF tiene algo inventado, exagerado o raro
+- El resumen final de /generate-cv (paso 9) y si el PDF tiene algo inventado, exagerado o raro
   (paso 10). Si el verificador lo aprobó pero tú ves un problema, es lo más importante.
 - Cuánto tardó el render del paso 13.
 - Cualquier error o mensaje que no se entienda.

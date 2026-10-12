@@ -75,7 +75,7 @@ function AddedNotice({ added }: { added: AddJobResult }) {
         , así que queda cerrada.
       </>
     )
-  else text = 'Oferta dada de alta. Tu agente la extraerá con el skill procesar-ofertas.'
+  else text = 'Oferta dada de alta. Tu agente la extraerá con el skill process-jobs.'
   return (
     <div
       role="status"
@@ -511,7 +511,7 @@ function ExtractionBlock({ job }: { job: JobView }) {
         <h2 className="font-semibold">Aún sin extraer</h2>
         <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
           Ejecuta el skill{' '}
-          <code className="rounded bg-muted px-1 py-0.5 font-mono text-[0.85em] text-foreground">procesar-ofertas</code>{' '}
+          <code className="rounded bg-muted px-1 py-0.5 font-mono text-[0.85em] text-foreground">process-jobs</code>{' '}
           en tu agente. Cuando termine, aquí verás seniority, modalidad, skills y salario.
         </p>
       </div>

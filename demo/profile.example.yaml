@@ -1,5 +1,5 @@
 # Perfil de ejemplo: candidata FICTICIA. Sirve de esquema de referencia y para el modo demo.
-# Tu perfil real va en data/profile.yaml (gitignored); créalo con el skill actualizar-perfil.
+# Tu perfil real va en data/profile.yaml (gitignored); créalo con el skill update-profile.
 schema_version: 1
 
 personal:

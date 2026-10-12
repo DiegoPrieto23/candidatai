@@ -64,75 +64,75 @@ targets:
       cai_context_cli: ["Bash(uv run --directory backend cai context *)"]
       cai_skills_cli: ["Bash(uv run --directory backend cai skills *)"]
     skill_extras:                 # campos de frontmatter que solo entiende Claude Code
-      implementar-fase:
+      implement-phase:
         disable-model-invocation: true
         argument-hint: "[número de fase, p. ej. 03]"
-      procesar-ofertas:
+      process-jobs:
         allowed-tools: ["mcp:get_status", "mcp:list_jobs"]
-      evaluar-encaje:
+      assess-fit:
         allowed-tools: ["mcp:list_jobs", "mcp:get_match", "mcp:get_extraction", "mcp:get_profile", "mcp:get_context"]
-      generar-cv:
+      generate-cv:
         argument-hint: "[job_id o 'pendientes'] [opciones: con foto, sin foto, plantilla…]"
         allowed-tools: ["mcp:list_jobs", "mcp:check_job_open", "mcp:get_match", "mcp:get_extraction", "mcp:list_cv_templates", "mcp:render_cv"]
-      generar-carta:
+      generate-cover-letter:
         argument-hint: "[job_id] [indicaciones para esta carta]"
         allowed-tools: ["mcp:get_cover_letter", "mcp:get_extraction", "mcp:get_profile", "mcp:get_context", "mcp:get_cv_content"]
-      preparar-candidatura:
+      prepare-application:
         argument-hint: "[job_id] [preguntas pegadas o 'carta']"
         allowed-tools: ["mcp:get_extraction", "mcp:get_profile", "mcp:get_cv_content"]
       # Entrevistas (fase 17): el plan y el repaso se guardan sin preguntar porque el skill ya pide
       # el OK del usuario antes (como save_message_draft). add_event (notas) no va: pide permiso.
-      preparar-entrevista:
+      prepare-interview:
         argument-hint: "[job_id] [milestone_id] [rrhh|tecnica|caso|final]"
         allowed-tools: ["mcp:get_interviews", "mcp:get_extraction", "mcp:get_profile", "mcp:get_context", "mcp:get_timeline", "mcp:get_company_research", "mcp:save_interview_plan"]
-      simular-entrevista:
+      mock-interview:
         argument-hint: "[job_id] [milestone_id] [rrhh|tecnica|caso|final]"
         allowed-tools: ["read", "mcp:get_interviews", "mcp:get_extraction", "mcp:get_profile", "mcp:get_context"]
-      repasar-entrevista:
+      debrief-interview:
         argument-hint: "[job_id] [milestone_id], o 'dudas' con una oferta recibida"
         allowed-tools: ["mcp:get_interviews", "mcp:get_extraction", "mcp:get_profile", "mcp:get_context", "mcp:get_timeline", "mcp:save_interview_notes"]
-      actualizar-perfil:
+      update-profile:
         allowed-tools: ["read", "cai_profile_cli", "cai_context_cli", "cai_skills_cli"]
-      resumen-diario:
+      daily-summary:
         allowed-tools: ["mcp:get_status", "mcp:list_followups_due", "mcp:list_upcoming", "mcp:list_jobs"]
-      atender-encargos:                   # fase 19: la cola de encargos que deja la UI
+      handle-requests:                   # fase 19: la cola de encargos que deja la UI
         argument-hint: "[nada para todos, o números de encargo]"
         allowed-tools: ["mcp:list_agent_requests"]
-      importar-plantilla-cv:
+      import-cv-template:
         argument-hint: "[ruta en data/uploads/, p. ej. data/uploads/mi-cv.pdf]"
         allowed-tools: ["read", "cai_templates_cli"]
-      buscar-ofertas:
+      search-jobs:
         argument-hint: "[configurar | plataforma | nada para todas]"
         allowed-tools: ["mcp:get_profile", "mcp:list_sources"]
-      revisar-linkedin:
+      review-linkedin:
         argument-hint: "[ruta al PDF de LinkedIn o nada para pegar el texto]"
         allowed-tools: ["read", "mcp:get_profile", "mcp:list_jobs", "mcp:get_extraction"]
-      revisar-respuestas:
+      review-replies:
         argument-hint: "[nada para todas, o un reply_id]"
         allowed-tools: ["mcp:list_replies"]
-      redactar-seguimiento:
+      draft-follow-up:
         argument-hint: "[nada para todo lo pendiente, o un job_id]"
         allowed-tools: ["mcp:list_followups_due", "mcp:get_profile", "mcp:get_context", "mcp:get_extraction", "mcp:get_timeline", "mcp:save_message_draft"]
       # Fase 18: el agente redacta o investiga; nada se envía. El borrador y el dosier se guardan
       # sin preguntar porque el skill ya enseña el texto antes (como save_message_draft).
-      redactar-mensaje:
+      draft-message:
         argument-hint: "[job_id] [a quién: nombre, recruiter, responsable o compañero] [linkedin|correo]"
         allowed-tools: ["mcp:get_job_contacts", "mcp:get_extraction", "mcp:get_profile", "mcp:get_context", "mcp:get_company_research", "mcp:get_cv_content", "mcp:get_cover_letter", "mcp:save_message_draft"]
-      investigar-empresa:
+      research-company:
         argument-hint: "[job_id] [en qué fijarte]"
         allowed-tools: ["web", "mcp:get_company_research", "mcp:get_extraction", "mcp:save_company_research"]
-      plan-formacion:
+      training-plan:
         argument-hint: "[nada para el plan, o URL o descripción de un curso o proyecto a valorar]"
         allowed-tools: ["read", "web", "mcp:get_skill_gaps", "mcp:get_profile", "mcp:get_context"]
-      ampliar-busqueda:
+      broaden-search:
         argument-hint: "[nada para los últimos 90 días, o un número de días]"
         allowed-tools: ["read", "cai_profile_cli", "mcp:get_search_titles", "mcp:get_profile", "mcp:list_sources"]
       # Fase 20: retrospectiva. Solo lee: los pesos y filtros los cambia el usuario.
-      revisar-busqueda:
+      review-search:
         argument-hint: "[nada para la última semana, o un número de días]"
         allowed-tools: ["read", "mcp:get_calibration", "mcp:get_funnel_stats"]
       # Fase 21: el agente nunca recibe el mínimo ni los importes privados (get_received_offer).
-      preparar-negociacion:
+      prepare-negotiation:
         argument-hint: "[job_id] [en qué centrarse, o 'contrato']"
         allowed-tools: ["read", "mcp:get_received_offer", "mcp:get_extraction", "mcp:get_interviews", "mcp:get_profile", "mcp:get_context"]
 

@@ -319,7 +319,7 @@ export function TriagePage() {
             <UserCircleDashedIcon className="mt-0.5 size-[18px] shrink-0" weight="duotone" />
             <p>
               <span className="font-medium">Sin perfil importado no hay score.</span> Crea tu perfil con el skill{' '}
-              <code className="rounded bg-background/70 px-1.5 py-0.5 font-mono text-[0.85em]">actualizar-perfil</code> o
+              <code className="rounded bg-background/70 px-1.5 py-0.5 font-mono text-[0.85em]">update-profile</code> o
               ejecuta <code className="rounded bg-background/70 px-1.5 py-0.5 font-mono text-[0.85em]">cai profile import</code>.
             </p>
           </div>
@@ -340,7 +340,7 @@ export function TriagePage() {
         <section className="rounded-xl border bg-card">
           <EmptyState icon={<SealCheckIcon className="size-6" weight="duotone" />} title="Nada por revisar">
             Cuando tu agente extraiga ofertas nuevas con{' '}
-            <code className="font-mono text-foreground">procesar-ofertas</code>, aparecerán aquí ordenadas por encaje.
+            <code className="font-mono text-foreground">process-jobs</code>, aparecerán aquí ordenadas por encaje.
           </EmptyState>
         </section>
       ) : (

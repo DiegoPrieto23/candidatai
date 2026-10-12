@@ -72,15 +72,15 @@ Leyenda: ✅ lo tiene · 🟡 en parte · ❌ no lo tiene · 🚫 no lo tendrá 
 | Filtros duros (nivel, años, modalidad, zona, idiomas) | ✅ en código | ✅ deal-breakers + Language Gate | ✅ |
 | Score explicado | ✅ 0-100 por componentes | ✅ 5 dimensiones | ✅ 1-5 con pesos y su origen |
 | Similitud semántica local (embeddings) | ✅ opcional | ❌ | ❌ |
-| Valoración razonada del agente | ✅ `evaluar-encaje` | ✅ | ✅ informe A-H |
+| Valoración razonada del agente | ✅ `assess-fit` | ✅ | ✅ informe A-H |
 | Triaje rápido con teclado | ✅ J/K, A, D, deshacer | ❌ | 🟡 en la TUI |
 | Autorización de trabajo / patrocinio de visado | ❌ | ❌ | ✅ |
 | Estrategia de nivel y arquetipo del puesto | 🟡 | ❌ | ✅ |
 | Eval publicado del matching | ✅ 80 casos, precision 0,88 / recall 0,95 | ❌ | 🟡 `evals/` |
 | ¿Acierta el score? (calibración con resultados) | ✅ | ❌ | ✅ |
 | Huecos de skills agregados y plan de formación | ✅ | ✅ `/upskill` | ✅ |
-| Valorar un curso o un proyecto | ✅ `plan-formacion` | ❌ | ✅ |
-| Títulos cercanos para ampliar la búsqueda | ✅ `ampliar-busqueda` | ❌ | ✅ |
+| Valorar un curso o un proyecto | ✅ `training-plan` | ❌ | ✅ |
+| Títulos cercanos para ampliar la búsqueda | ✅ `broaden-search` | ❌ | ✅ |
 | Evaluación en lote en paralelo | 🟡 en segundo plano, de una en una | ✅ `/rank` | ✅ `batch` con varios workers |
 
 ### CV y carta
@@ -88,15 +88,15 @@ Leyenda: ✅ lo tiene · 🟡 en parte · ❌ no lo tiene · 🚫 no lo tendrá 
 | Función | CandidatAI | AI Job Search | career-ops |
 |---|---|---|---|
 | CV a medida sin inventar | ✅ cada línea cita su evidencia; el código la comprueba | ✅ por instrucciones + revisor | ✅ comprobación de hechos |
-| Verificación independiente | ✅ rol `verificador` en otra ejecución | ✅ revisor con contexto limpio | 🟡 |
+| Verificación independiente | ✅ rol `verifier` en otra ejecución | ✅ revisor con contexto limpio | 🟡 |
 | Formatos | Word + PDF (docx) o PDF (html) | PDF con LaTeX | PDF con HTML, Markdown, LaTeX para Overleaf |
-| **Tu propio diseño como plantilla** (Word, PDF, imagen, Canva) | ✅ `importar-plantilla-cv` | 🟡 LaTeX/Typst con `/add-template` | 🟡 tu `resume.tex` |
+| **Tu propio diseño como plantilla** (Word, PDF, imagen, Canva) | ✅ `import-cv-template` | 🟡 LaTeX/Typst con `/add-template` | 🟡 tu `resume.tex` |
 | Foto, color y secciones por oferta sin gastar agente | ✅ | ❌ | ❌ |
 | Foto según el país | ✅ | ❌ | ❌ |
 | Control de páginas y recorte | ✅ aviso `too_long` | ✅ recorte puntuado | 🟡 |
 | Comprobación ATS del texto del PDF | ✅ cobertura de keywords | ✅ | 🟡 PDF legible por ATS |
 | Carta a medida, a juego con el CV | ✅ | ✅ | ✅ con 4 ángulos |
-| Respuestas de formularios | ✅ `preparar-candidatura` | ❌ | ✅ |
+| Respuestas de formularios | ✅ `prepare-application` | ❌ | ✅ |
 
 ### Candidatura y seguimiento
 
@@ -173,7 +173,7 @@ Ordenado por lo que más aportaría, de mayor a menor.
 | 5 | **Enriquecer el perfil desde enlaces públicos** (GitHub, portfolio, Scholar) | ambos | Proyectos y logros que no están en el CV; con tu confirmación antes de escribir | Bajo (un skill) |
 | 6 | **Autorización de trabajo y visado** como filtro duro | career-ops | Ofertas que excluyen patrocinio, si buscas fuera de la UE | Bajo |
 | 7 | **Evaluación en lote en paralelo** | ambos | Hoy el segundo plano va de una en una | Medio |
-| 8 | **Detector de banderas rojas** de una empresa antes de la entrevista | career-ops | Rotación, despidos, reseñas; encaja en `investigar-empresa` | Bajo |
+| 8 | **Detector de banderas rojas** de una empresa antes de la entrevista | career-ops | Rotación, despidos, reseñas; encaja en `research-company` | Bajo |
 | 9 | **UI en inglés** | — | Para que la use alguien que no lea español | Alto |
 | 10 | **Estrategia de nivel / arquetipo del puesto** en la valoración | career-ops | Ayuda a decidir a qué nivel presentarse | Bajo |
 | 11 | **Herramienta para traer cambios del repositorio original** sin pisar lo tuyo | AI Job Search | Útil si otros lo usan con sus datos | Bajo |

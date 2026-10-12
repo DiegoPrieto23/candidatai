@@ -7,7 +7,7 @@ Objetivo: comprobar con el navegador y con Google Calendar que
 - la ficha de proceso guarda hitos con hora de Madrid, contactos y seguimientos;
 - el .ics de un hito y el del calendario completo se importan bien en Google Calendar (criterio de
   aceptación de la fase 10);
-- `resumen-diario` usa las herramientas nuevas (`list_upcoming`, `list_followups_due`).
+- `daily-summary` usa las herramientas nuevas (`list_upcoming`, `list_followups_due`).
 
 Duración aproximada: 30 minutos.
 
@@ -37,7 +37,7 @@ PARTE 1 · PREPARAR
        cd frontend; pnpm install; pnpm dev
    (`pnpm install` instala @dnd-kit/core, la dependencia nueva.)
 3. Necesitas al menos dos ofertas aprobadas. Si no las tienes, da de alta dos por texto en «Nueva
-   oferta», extráelas con `/procesar-ofertas` y apruébalas en «Triaje».
+   oferta», extráelas con `/process-jobs` y apruébalas en «Triaje».
 
 
 PARTE 2 · KANBAN
@@ -112,7 +112,7 @@ PARTE 5 · GOOGLE CALENDAR (CRITERIO DE ACEPTACIÓN)
 PARTE 6 · AGENTE (OPCIONAL)
 ---------------------------
 Abre Claude Code (carga las herramientas nuevas) y ejecuta:
-       /resumen-diario
+       /daily-summary
 Esperado: «Hoy y mañana» con la entrevista o el plazo (hora de Madrid) y «Seguimientos vencidos»
 con la oferta enviada hace 12 días si no registraste el seguimiento.
 

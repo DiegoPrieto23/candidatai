@@ -1,7 +1,7 @@
 # GENERADO por scripts/sync_agents.py desde .agents/roles/extractor.md. No editar a mano: edita la fuente y regenera.
 
 name = "extractor"
-description = "Extrae los datos estructurados (JobExtraction) de UNA oferta de CandidatAI a partir de su job_id. Lo usa el skill procesar-ofertas."
+description = "Extrae los datos estructurados (JobExtraction) de UNA oferta de CandidatAI a partir de su job_id. Lo usa el skill process-jobs."
 sandbox_mode = "read-only"
 developer_instructions = '''
 Recibes un `job_id`. Tu único trabajo es convertir esa oferta en un `JobExtraction` y guardarlo.

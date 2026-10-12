@@ -76,14 +76,14 @@ PARTE 3 · REFERENCIAS Y EMBUDO
 PARTE 4 · INVESTIGAR LA EMPRESA
 -------------------------------
 10. Ficha de una oferta que te interese, sección «Empresa»: «Investigar empresa».
-    Esperado: se abre tu agente con «Usa el skill investigar-empresa…». Busca en la web pública
+    Esperado: se abre tu agente con «Usa el skill research-company…». Busca en la web pública
     (nada de LinkedIn), comprueba que es la empresa correcta (no una homónima) y guarda el dosier.
 11. Recarga la ficha. Esperado: resumen, producto, noticias con fecha, cultura de ingeniería y
     stack, cada cosa con su cita [n] enlazada; «Fuentes» con las URLs; «Abrir carpeta de
     dosieres» abre data\documentos\empresas\ con <Empresa>_<id>.md.
 12. Abre 2-3 fuentes y comprueba que dicen lo que el dosier les atribuye. Apunta lo que no.
 13. En otra oferta de la misma empresa, el mismo dosier (es uno por empresa).
-14. Pide la carta de esa oferta (`/generar-carta`). Esperado: no usa nada del dosier que no esté
+14. Pide la carta de esa oferta (`/generate-cover-letter`). Esperado: no usa nada del dosier que no esté
     en la oferta o en tus indicaciones.
 
 

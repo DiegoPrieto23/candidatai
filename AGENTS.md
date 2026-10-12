@@ -131,5 +131,5 @@ Los skills de `.agents/skills/` siguen `docs/POLICIES.md` y usan estas convencio
      importante por seguridad: ver `docs/AGENTS_COMPAT.md`.
 - **Argumentos**: cuando un skill habla de "los argumentos", son los que el usuario escribió al
   invocarlo (un `job_id`, un número de fase…).
-- **Invocación**: cada agente tiene su sintaxis (`/generar-cv 42` en Claude Code,
-  `$generar-cv 42` en Codex); también basta con pedirlo en lenguaje natural.
+- **Invocación**: cada agente tiene su sintaxis (`/generate-cv 42` en Claude Code,
+  `$generate-cv 42` en Codex); también basta con pedirlo en lenguaje natural.

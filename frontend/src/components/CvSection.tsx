@@ -71,7 +71,7 @@ function Verification({ cv }: { cv: CvView }) {
     return (
       <p className="flex items-start gap-2 text-sm text-muted-foreground">
         <SealWarningIcon className="mt-0.5 size-4 shrink-0" />
-        Sin verificar todavía: el skill <Code>generar-cv</Code> lo verifica tras redactarlo.
+        Sin verificar todavía: el skill <Code>generate-cv</Code> lo verifica tras redactarlo.
       </p>
     )
   }
@@ -564,9 +564,9 @@ function CvBody({
             <>
               <p className="mt-1 text-muted-foreground">
                 Tu agente redacta el contenido desde tu perfil, lo verifica y lo renderiza (skill{' '}
-                <Code>generar-cv {jobId}</Code>). Después podrás cambiar plantilla, foto y color aquí, sin IA.
+                <Code>generate-cv {jobId}</Code>). Después podrás cambiar plantilla, foto y color aquí, sin IA.
               </p>
-              <AgentButton action="generar-cv" jobId={jobId} variant="default" className="mt-3">
+              <AgentButton action="generate-cv" jobId={jobId} variant="default" className="mt-3">
                 Generar CV
               </AgentButton>
               <ClosedHint signals={signals} />
@@ -584,7 +584,7 @@ function CvBody({
     <div className="space-y-8">
       <Verification cv={data.cv} />
       {data.can_render && (
-        <AgentButton action="generar-cv" jobId={jobId}>
+        <AgentButton action="generate-cv" jobId={jobId}>
           Volver a redactar
         </AgentButton>
       )}

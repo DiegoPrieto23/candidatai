@@ -26,15 +26,15 @@ export function InterviewActions({ milestone, stage }: { milestone: MilestoneOut
     <div className="mt-2 flex flex-wrap items-start gap-2">
       {phase === 'upcoming' ? (
         <>
-          <AgentButton action="preparar-entrevista" milestoneId={milestone.id}>
+          <AgentButton action="prepare-interview" milestoneId={milestone.id}>
             Preparar
           </AgentButton>
-          <AgentButton action="simular-entrevista" milestoneId={milestone.id}>
+          <AgentButton action="mock-interview" milestoneId={milestone.id}>
             Simulacro
           </AgentButton>
         </>
       ) : (
-        <AgentButton action="repasar-entrevista" milestoneId={milestone.id}>
+        <AgentButton action="debrief-interview" milestoneId={milestone.id}>
           {milestone.debrief_notes ? 'Repasar otra vez' : 'Repasar'}
         </AgentButton>
       )}

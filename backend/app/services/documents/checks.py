@@ -2,7 +2,7 @@
 
 - `validate_content`: lo que el código puede comprobar de `POLICIES.md` §1 sin IA (ids y evidencias
   que existen en el perfil, skills del perfil, skills básicas solo si la oferta las pide). Lo demás
-  (que un bullet diga lo mismo que su evidencia) lo revisa el rol `verificador`.
+  (que un bullet diga lo mismo que su evidencia) lo revisa el rol `verifier`.
 - `render_warnings` y `keyword_coverage`: los avisos de `CV_TEMPLATES.md` §Avisos y qué keywords
   de la oferta aparecen de verdad en el PDF.
 """
@@ -182,7 +182,7 @@ def validate_content(
                         field=field,
                         received=item,
                         reason="Esta skill no está en el perfil (`skills` ni `basic_skills`). Si "
-                        "la tienes, añádela primero con el skill `actualizar-perfil`.",
+                        "la tienes, añádela primero con el skill `update-profile`.",
                     )
                 )
             elif is_basic(key) and key not in requested:

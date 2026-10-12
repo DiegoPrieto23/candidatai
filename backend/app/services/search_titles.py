@@ -1,4 +1,4 @@
-"""Títulos de las ofertas que apruebas y descartas (fase 16), para el skill `ampliar-busqueda`.
+"""Títulos de las ofertas que apruebas y descartas (fase 16), para el skill `broaden-search`.
 
 Agrupa por título comparable (`reposts.title_key`: normalizado y traducido con
 `config/title_aliases.yaml`) las ofertas vistas en los últimos `days` días según tu última

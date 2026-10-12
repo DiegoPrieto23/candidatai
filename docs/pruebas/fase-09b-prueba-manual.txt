@@ -154,16 +154,16 @@ alguna empresa):
 
 PARTE 7 · DE LA CAPTURA AL CV (CRITERIO DE ACEPTACIÓN)
 -----------------------------------------------------
-1. En tu agente: /procesar-ofertas → las capturadas pasan a «Por revisar».
+1. En tu agente: /process-jobs → las capturadas pasan a «Por revisar».
 2. En «Triaje», aprueba la oferta de LinkedIn de la parte 5.
-3. En tu agente: /generar-cv <id> → la oferta llega a «CV listo» con su PDF.
+3. En tu agente: /generate-cv <id> → la oferta llega a «CV listo» con su PDF.
 
 
 PARTE 8 · PLATAFORMAS (09b.3)
 -----------------------------
 Requisitos: `cai db upgrade`, `cai serve` y `pnpm dev`. Cierra antes Claude Code una vez y vuelve a
 abrirlo, para que el servidor MCP cargue las herramientas nuevas.
-1. En una sesión NUEVA de Claude Code (solo para esto): /buscar-ofertas configurar
+1. En una sesión NUEVA de Claude Code (solo para esto): /search-jobs configurar
    Esperado: te pregunta dónde buscas, recomienda de 3 a 6 portales con un motivo y guarda los que
    apruebes con `save_source`. Pídele que guarde también LinkedIn.
 2. Abre http://127.0.0.1:5173/plataformas.
@@ -181,7 +181,7 @@ abrirlo, para que el servidor MCP cargue las herramientas nuevas.
 PARTE 9 · BÚSQUEDA CON NAVEGADOR (CRITERIO DE ACEPTACIÓN)
 --------------------------------------------------------
 Con Claude in Chrome conectado, en una sesión nueva de Claude Code:
-1. /buscar-ofertas <una plataforma de acceso libre, p. ej. Tecnoempleo>
+1. /search-jobs <una plataforma de acceso libre, p. ej. Tecnoempleo>
    Esperado: abre tus búsquedas, lee como mucho 2 páginas con pausa entre ellas, abre solo las
    ofertas que encajan (hasta max_offers), las da de alta y termina con un resumen por plataforma.
    No pulsa «Inscribirme», «Guardar» ni similares, ni sale del dominio del portal.

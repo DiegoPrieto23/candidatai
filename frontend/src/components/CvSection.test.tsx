@@ -40,7 +40,7 @@ describe('Sección CV de la ficha', () => {
     await waitFor(() => expect(screen.queryByRole('region', { name: 'CV' })).not.toBeInTheDocument())
   })
 
-  it('recuerda ejecutar generar-cv si la oferta aprobada aún no tiene CV', async () => {
+  it('recuerda ejecutar generate-cv si la oferta aprobada aún no tiene CV', async () => {
     mockApi({
       'GET /status': status(),
       'GET /jobs/1': approved,
@@ -50,7 +50,7 @@ describe('Sección CV de la ficha', () => {
     renderApp('/jobs/1')
     const section = await screen.findByRole('region', { name: 'CV' })
     expect(await within(section).findByText('Aún sin CV')).toBeInTheDocument()
-    expect(within(section).getByText('generar-cv 1')).toBeInTheDocument()
+    expect(within(section).getByText('generate-cv 1')).toBeInTheDocument()
     expect(within(section).getByRole('button', { name: 'Generar CV' })).toBeInTheDocument()
     expect(within(section).queryByRole('button', { name: 'Renderizar' })).not.toBeInTheDocument()
   })

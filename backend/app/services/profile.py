@@ -1,6 +1,6 @@
 """Perfil del candidato: validar `data/profile.yaml`, versionarlo y exponer su vista pública.
 
-`data/profile.yaml` es lo que edita la persona (o su agente con el skill `actualizar-perfil`); lo
+`data/profile.yaml` es lo que edita la persona (o su agente con el skill `update-profile`); lo
 que usa la app es la última versión importada en `profile_versions`. Ver `docs/POLICIES.md` §1 y §4.
 """
 
@@ -76,7 +76,7 @@ class ProfileNotFoundError(LookupError):
 
 
 NO_PROFILE = (
-    "Aún no hay perfil importado: crea data/profile.yaml (skill `actualizar-perfil`) y ejecuta "
+    "Aún no hay perfil importado: crea data/profile.yaml (skill `update-profile`) y ejecuta "
     "`cai profile import`."
 )
 

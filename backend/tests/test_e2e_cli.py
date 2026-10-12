@@ -1,4 +1,4 @@
-"""Extremo a extremo sin MCP: el flujo de `procesar-ofertas` solo con comandos `cai … --json`.
+"""Extremo a extremo sin MCP: el flujo de `process-jobs` solo con comandos `cai … --json`.
 
 Simula a un agente sin MCP que sigue el skill y el rol `extractor` usando la tabla de
 `docs/AGENT_INTERFACE.md`: alta → estado → lista → leer oferta → guardar extracción → estado.

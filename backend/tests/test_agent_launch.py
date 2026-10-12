@@ -42,49 +42,49 @@ def client() -> Iterator[TestClient]:
 
 
 def test_prompts_are_fixed_and_only_take_a_job_id() -> None:
-    assert agent_launch.prompt_for("buscar-ofertas").startswith("Usa el skill buscar-ofertas")
-    assert agent_launch.prompt_for("generar-cv", 42) == (
-        "Usa el skill generar-cv de CandidatAI para la oferta 42."
+    assert agent_launch.prompt_for("search-jobs").startswith("Usa el skill search-jobs")
+    assert agent_launch.prompt_for("generate-cv", 42) == (
+        "Usa el skill generate-cv de CandidatAI para la oferta 42."
     )
     with pytest.raises(LaunchError, match="necesita una oferta"):
-        agent_launch.prompt_for("generar-cv")
+        agent_launch.prompt_for("generate-cv")
 
 
 def test_skills_page_prompts_carry_no_skill_names() -> None:
     """Fase 14: los nombres de las skills vienen de las ofertas; el agente los lee de las marcas."""
-    assert agent_launch.prompt_for("anadir-skills").startswith("Usa el skill actualizar-perfil")
-    assert "get_skill_gaps" in agent_launch.prompt_for("anadir-skills")
-    assert agent_launch.prompt_for("plan-formacion").startswith("Usa el skill plan-formacion")
-    for action in ("anadir-skills", "plan-formacion"):
+    assert agent_launch.prompt_for("add-skills").startswith("Usa el skill update-profile")
+    assert "get_skill_gaps" in agent_launch.prompt_for("add-skills")
+    assert agent_launch.prompt_for("training-plan").startswith("Usa el skill training-plan")
+    for action in ("add-skills", "training-plan"):
         assert agent_launch.ACTIONS[action].needs_job is False
 
 
 def test_replies_prompt_carries_no_mail_text() -> None:
     """Fase 15: el agente lee los correos con `list_replies`; la orden no lleva nada de ellos."""
-    prompt = agent_launch.prompt_for("revisar-respuestas")
-    assert prompt.startswith("Usa el skill revisar-respuestas")
-    assert agent_launch.ACTIONS["revisar-respuestas"].needs_job is False
+    prompt = agent_launch.prompt_for("review-replies")
+    assert prompt.startswith("Usa el skill review-replies")
+    assert agent_launch.ACTIONS["review-replies"].needs_job is False
 
 
 def test_followup_prompts() -> None:
     """Fase 15: con oferta, solo para una candidatura enviada y abierta."""
-    assert agent_launch.prompt_for("redactar-seguimiento", 7) == (
-        "Usa el skill redactar-seguimiento de CandidatAI para la oferta 7."
+    assert agent_launch.prompt_for("draft-follow-up", 7) == (
+        "Usa el skill draft-follow-up de CandidatAI para la oferta 7."
     )
-    assert agent_launch.ACTIONS["redactar-seguimiento"].stages == agent_launch.SENT_STAGES
-    assert "redactar-seguimiento" in agent_launch.prompt_for("redactar-seguimientos")
+    assert agent_launch.ACTIONS["draft-follow-up"].stages == agent_launch.SENT_STAGES
+    assert "draft-follow-up" in agent_launch.prompt_for("draft-follow-ups")
 
 
 def test_outreach_and_research_prompts() -> None:
     """Fase 18: mensaje desde que la oferta está aprobada; dosier también para triarla."""
-    assert agent_launch.prompt_for("redactar-mensaje", 7) == (
-        "Usa el skill redactar-mensaje de CandidatAI para la oferta 7."
+    assert agent_launch.prompt_for("draft-message", 7) == (
+        "Usa el skill draft-message de CandidatAI para la oferta 7."
     )
-    assert agent_launch.prompt_for("investigar-empresa", 7) == (
-        "Usa el skill investigar-empresa de CandidatAI para la empresa de la oferta 7."
+    assert agent_launch.prompt_for("research-company", 7) == (
+        "Usa el skill research-company de CandidatAI para la empresa de la oferta 7."
     )
-    outreach = agent_launch.ACTIONS["redactar-mensaje"].stages
-    research = agent_launch.ACTIONS["investigar-empresa"].stages
+    outreach = agent_launch.ACTIONS["draft-message"].stages
+    research = agent_launch.ACTIONS["research-company"].stages
     assert Stage.APPROVED in outreach and Stage.PENDING_TRIAGE not in outreach
     assert Stage.PENDING_TRIAGE in research and Stage.CLOSED not in research
 
@@ -135,39 +135,39 @@ def test_get_lists_agent_and_actions(client: TestClient, opened: list[tuple[str,
     assert body["available"] is True and body["agent"] == "claude"
     actions = {a["id"]: a for a in body["actions"]}
     assert set(actions) == {
-        "buscar-ofertas",
-        "procesar-ofertas",
-        "evaluar-encaje",
-        "generar-cv",
-        "anadir-skills",
-        "plan-formacion",
-        "revisar-respuestas",
-        "redactar-seguimientos",
-        "redactar-seguimiento",
-        "ampliar-busqueda",
-        "preparar-entrevista",
-        "simular-entrevista",
-        "repasar-entrevista",
-        "dudas-oferta",
-        "preparar-negociacion",
-        "redactar-mensaje",
-        "investigar-empresa",
-        "atender-encargos",
-        "revisar-busqueda",
+        "search-jobs",
+        "process-jobs",
+        "assess-fit",
+        "generate-cv",
+        "add-skills",
+        "training-plan",
+        "review-replies",
+        "draft-follow-ups",
+        "draft-follow-up",
+        "broaden-search",
+        "prepare-interview",
+        "mock-interview",
+        "debrief-interview",
+        "offer-questions",
+        "prepare-negotiation",
+        "draft-message",
+        "research-company",
+        "handle-requests",
+        "review-search",
     }
-    assert actions["generar-cv"]["needs_job"] is True and actions["generar-cv"]["prompt"] is None
-    assert actions["repasar-entrevista"]["needs_milestone"] is True
-    assert actions["dudas-oferta"]["needs_milestone"] is False
-    assert "buscar-ofertas" in actions["buscar-ofertas"]["prompt"]
+    assert actions["generate-cv"]["needs_job"] is True and actions["generate-cv"]["prompt"] is None
+    assert actions["debrief-interview"]["needs_milestone"] is True
+    assert actions["offer-questions"]["needs_milestone"] is False
+    assert "search-jobs" in actions["search-jobs"]["prompt"]
 
 
 def test_launch_opens_a_terminal(client: TestClient, opened: list[tuple[str, str]]) -> None:
-    response = client.post("/agent/launch", json={"action": "buscar-ofertas"}, headers=JSON)
+    response = client.post("/agent/launch", json={"action": "search-jobs"}, headers=JSON)
     assert response.status_code == 202
     assert response.json()["agent"] == "claude"
     [(title, command)] = opened
     assert title == "CandidatAI · Buscar ofertas"
-    assert "& 'claude' 'Usa el skill buscar-ofertas" in command
+    assert "& 'claude' 'Usa el skill search-jobs" in command
 
 
 def test_generate_cv_needs_an_approved_job(
@@ -175,7 +175,7 @@ def test_generate_cv_needs_an_approved_job(
 ) -> None:
     import_profile()
     job_id = add_extracted("Data Engineer", "Acme")
-    body = {"action": "generar-cv", "job_id": job_id}
+    body = {"action": "generate-cv", "job_id": job_id}
     response = client.post("/agent/launch", json=body, headers=JSON)
     assert response.status_code == 422
     assert "aprobada" in response.json()["error"]["message"]
@@ -199,7 +199,7 @@ def test_generate_cv_needs_an_approved_job(
 def test_only_the_ui_can_launch(
     client: TestClient, opened: list[tuple[str, str]], headers: dict[str, str]
 ) -> None:
-    response = client.post("/agent/launch", content='{"action": "buscar-ofertas"}', headers=headers)
+    response = client.post("/agent/launch", content='{"action": "search-jobs"}', headers=headers)
     assert response.status_code == 403
     assert opened == []
 
@@ -208,19 +208,19 @@ def test_unavailable_returns_the_prompt_to_copy(
     client: TestClient, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr(agent_launch.sys, "platform", "linux")
-    response = client.post("/agent/launch", json={"action": "procesar-ofertas"}, headers=JSON)
+    response = client.post("/agent/launch", json={"action": "process-jobs"}, headers=JSON)
     assert response.status_code == 503
     error = response.json()["error"]
     assert error["type"] == "agent_unavailable"
     assert error["details"][0]["field"] == "prompt"
-    assert error["details"][0]["received"].startswith("Usa el skill procesar-ofertas")
+    assert error["details"][0]["received"].startswith("Usa el skill process-jobs")
 
 
 def test_shell_args_carry_no_characters_wt_would_split() -> None:
     import base64
 
     launcher = agent_launch._Launcher("claude", ["claude", "{prompt}"], ["ANTHROPIC_API_KEY"])
-    command = agent_launch.powershell_command(launcher, agent_launch.prompt_for("generar-cv", 7))
+    command = agent_launch.powershell_command(launcher, agent_launch.prompt_for("generate-cv", 7))
     args = agent_launch.shell_args(command)
     # `wt` parte su línea de comandos por cada `;`: ninguno puede llegarle.
     assert not any(";" in arg for arg in args)
@@ -250,14 +250,14 @@ def _interview(hours: int, kind: str = "interview") -> tuple[int, int]:
 
 
 def test_interview_prompts_carry_only_ids() -> None:
-    assert agent_launch.prompt_for("repasar-entrevista", 4, 9) == (
-        "Usa el skill repasar-entrevista de CandidatAI para repasar la entrevista 9 de la oferta 4."
+    assert agent_launch.prompt_for("debrief-interview", 4, 9) == (
+        "Usa el skill debrief-interview de CandidatAI para repasar la entrevista 9 de la oferta 4."
     )
     with pytest.raises(LaunchError, match="necesita una entrevista"):
-        agent_launch.prompt_for("preparar-entrevista", 4)
+        agent_launch.prompt_for("prepare-interview", 4)
 
 
-@pytest.mark.parametrize("action", ["preparar-entrevista", "simular-entrevista"])
+@pytest.mark.parametrize("action", ["prepare-interview", "mock-interview"])
 def test_prepare_and_mock_need_an_upcoming_interview(
     client: TestClient, opened: list[tuple[str, str]], action: str
 ) -> None:
@@ -282,7 +282,7 @@ def test_debrief_needs_a_started_interview_of_that_job(
     job_id, past = _interview(-2)
     other_job, upcoming = _interview(48)
     _, test_id = _interview(-2, kind="test")
-    body = {"action": "repasar-entrevista", "milestone_id": past}
+    body = {"action": "debrief-interview", "milestone_id": past}
 
     assert client.post("/agent/launch", json=body, headers=JSON).status_code == 202
     assert opened[-1][1].endswith(f"repasar la entrevista {past} de la oferta {job_id}.'")
@@ -299,7 +299,7 @@ def test_debrief_needs_a_started_interview_of_that_job(
 
 def test_offer_doubts_need_an_offer(client: TestClient, opened: list[tuple[str, str]]) -> None:
     job_id, _ = _interview(-48)
-    body = {"action": "dudas-oferta", "job_id": job_id}
+    body = {"action": "offer-questions", "job_id": job_id}
     response = client.post("/agent/launch", json=body, headers=JSON)
     assert response.status_code == 422
     assert "propuesta recibida" in response.json()["error"]["message"]
@@ -314,14 +314,14 @@ def test_negotiation_needs_an_offer_and_opens_a_terminal(
     client: TestClient, opened: list[tuple[str, str]]
 ) -> None:
     job_id, _ = _interview(-48)
-    body = {"action": "preparar-negociacion", "job_id": job_id}
+    body = {"action": "prepare-negotiation", "job_id": job_id}
     assert client.post("/agent/launch", json=body, headers=JSON).status_code == 422
 
     with session_scope() as session:
         events.record(session, job_id, "offer_received", "user")
     assert client.post("/agent/launch", json=body, headers=JSON).status_code == 202
-    assert f"preparar-negociacion de CandidatAI para la oferta {job_id}" in opened[-1][1]
-    assert agent_launch.ACTIONS["preparar-negociacion"].background == ()
+    assert f"prepare-negotiation de CandidatAI para la oferta {job_id}" in opened[-1][1]
+    assert agent_launch.ACTIONS["prepare-negotiation"].background == ()
 
 
 def test_unavailable_interview_action_returns_the_prompt_with_its_job(
@@ -330,7 +330,7 @@ def test_unavailable_interview_action_returns_the_prompt_with_its_job(
     job_id, past = _interview(-2)
     monkeypatch.setattr(agent_launch.sys, "platform", "linux")
     response = client.post(
-        "/agent/launch", json={"action": "repasar-entrevista", "milestone_id": past}, headers=JSON
+        "/agent/launch", json={"action": "debrief-interview", "milestone_id": past}, headers=JSON
     )
     assert response.status_code == 503
     prompt = response.json()["error"]["details"][0]["received"]

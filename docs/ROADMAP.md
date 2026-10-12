@@ -61,7 +61,7 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 22 | LinkedIn por sus endpoints públicos (opcional) | ✅ | Búsqueda pública sin sesión, apagada por defecto y con límites estrictos; ADR que matiza la 016 |
 | 23 | CandidatAI | 🚧 | Nombre nuevo en todas partes, identificadores en inglés, barra lateral e instalación con un clic |
 | 23.1 | ↳ Renombrado a CandidatAI | ✅ | Todo dice CandidatAI; `cai` en vez de `jh`; MCP `candidatai`; repositorio renombrado |
-| 23.2 | ↳ Skills y roles en inglés | ⏳ | `/generate-cv 42`, `/prepare-interview 42`…; roles `writer`, `verifier`… |
+| 23.2 | ↳ Skills y roles en inglés | ✅ | `/generate-cv 42`, `/prepare-interview 42`…; roles `writer`, `verifier`… |
 | 23.3 | ↳ Barra lateral | ⏳ | Navegación lateral agrupada, plegable y con cajón en el móvil |
 | 23.4 | ↳ Instalación fácil | ⏳ | `cai start`, `install.ps1`, acceso directo y releases con la UI compilada |
 | 23.5 | ↳ Medios y README | ⏳ | Banner, capturas, GIF y vídeo nuevos; README sin la comparativa |
@@ -1943,3 +1943,22 @@ decisiones tomadas y deuda técnica pendiente. -->
   - `~/.claude/settings.json` del usuario sigue mencionando `jh` y el repositorio `job-search`
     (decidió no tocarlo).
   - Medios del README (banner, capturas, GIF y vídeo) aún con «Job Hunter»: la 23.5.
+
+### 23.2 · Skills y roles en inglés — 2026-10-12 · Claude Code (Opus 5.5)
+- **Resumen:** los 23 skills pasan a inglés (`process-jobs`, `assess-fit`, `generate-cv`,
+  `prepare-interview`, `daily-summary`…) y los roles a `writer`, `verifier`, `classifier`,
+  `reviewer` (`extractor` igual). También las tres acciones de la UI que no son skill:
+  `add-skills`, `draft-follow-ups`, `offer-questions`. Descripciones, UI y docs siguen en
+  español, y cada `description` termina con «Antes se llamaba …» para que el agente los encuentre
+  por su nombre de siempre. Migración `0021` que traduce acción, orden y comando de los encargos y
+  ejecuciones guardados (con `downgrade`). `sync_agents.py` borra también las carpetas vacías de
+  los generados obsoletos.
+- **Decisiones:**
+  - Los roles se renombran solo donde son identificadores (entre comillas invertidas, rutas,
+    «rol X», `Agent(X)`); la prosa y la UI en castellano («el verificador encontró problemas»)
+    se quedan.
+  - La migración no traduce nombres de fichero (`plan-formacion-<fecha>.md` en `data/`) ni el
+    historial de progreso de ejecuciones pasadas (lo encontró la revisión).
+- **Deuda:**
+  - Esta sesión de desarrollo cargó los subagentes con su nombre antiguo; desde una sesión nueva
+    ya aparecen `writer`, `verifier`…

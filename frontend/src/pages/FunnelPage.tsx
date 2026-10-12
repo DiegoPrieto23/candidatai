@@ -588,7 +588,7 @@ function CalibrationPanel({ since }: { since: string | null }) {
             <code className="text-xs">cai eval matching</code>.
           </span>
         </p>
-        <AgentButton action="revisar-busqueda" className="shrink-0">
+        <AgentButton action="review-search" className="shrink-0">
           Revisar mi búsqueda
         </AgentButton>
       </div>

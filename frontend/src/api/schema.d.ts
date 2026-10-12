@@ -1983,7 +1983,7 @@ export interface components {
              * Id
              * @enum {string}
              */
-            id: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion" | "revisar-respuestas" | "redactar-seguimientos" | "redactar-seguimiento" | "ampliar-busqueda" | "preparar-entrevista" | "simular-entrevista" | "repasar-entrevista" | "dudas-oferta" | "preparar-negociacion" | "redactar-mensaje" | "investigar-empresa" | "atender-encargos" | "revisar-busqueda";
+            id: "search-jobs" | "process-jobs" | "assess-fit" | "generate-cv" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search";
             /** Label */
             label: string;
             /** Needs Job */
@@ -2140,7 +2140,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion" | "revisar-respuestas" | "redactar-seguimientos" | "redactar-seguimiento" | "ampliar-busqueda" | "preparar-entrevista" | "simular-entrevista" | "repasar-entrevista" | "dudas-oferta" | "preparar-negociacion" | "redactar-mensaje" | "investigar-empresa" | "atender-encargos" | "revisar-busqueda";
+            action: "search-jobs" | "process-jobs" | "assess-fit" | "generate-cv" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search";
             /** Label */
             label: string;
             /** Job Id */
@@ -2181,7 +2181,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion" | "revisar-respuestas" | "redactar-seguimientos" | "redactar-seguimiento" | "ampliar-busqueda" | "preparar-entrevista" | "simular-entrevista" | "repasar-entrevista" | "dudas-oferta" | "preparar-negociacion" | "redactar-mensaje" | "investigar-empresa" | "atender-encargos" | "revisar-busqueda";
+            action: "search-jobs" | "process-jobs" | "assess-fit" | "generate-cv" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search";
             /** Label */
             label: string;
             /** Job Id */
@@ -2338,7 +2338,7 @@ export interface components {
         };
         /**
          * ApplicationAnswers
-         * @description Respuestas de screening (skill `preparar-candidatura`). Sin carta: es un documento propio.
+         * @description Respuestas de screening (skill `prepare-application`). Sin carta: es un documento propio.
          *
          *     Las reglas que dependen del perfil (evidencias, respuestas vacías) las comprueba
          *     `services/answers.py`, para dar todos los problemas juntos.
@@ -3309,7 +3309,7 @@ export interface components {
         };
         /**
          * FitAssessment
-         * @description Valoración del encaje que escribe el agente (skill `evaluar-encaje`). Ver POLICIES §2.
+         * @description Valoración del encaje que escribe el agente (skill `assess-fit`). Ver POLICIES §2.
          */
         FitAssessment: {
             /**
@@ -3755,7 +3755,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion" | "revisar-respuestas" | "redactar-seguimientos" | "redactar-seguimiento" | "ampliar-busqueda" | "preparar-entrevista" | "simular-entrevista" | "repasar-entrevista" | "dudas-oferta" | "preparar-negociacion" | "redactar-mensaje" | "investigar-empresa" | "atender-encargos" | "revisar-busqueda";
+            action: "search-jobs" | "process-jobs" | "assess-fit" | "generate-cv" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search";
             /** Job Id */
             job_id?: number | null;
             /** Milestone Id */

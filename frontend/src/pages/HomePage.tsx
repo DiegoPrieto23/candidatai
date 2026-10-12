@@ -100,21 +100,21 @@ function Today() {
       )}
       {/* Abren tu agente en una terminal con la orden escrita (ADR-024): lo que haga lo ves y lo apruebas tú. */}
       <div className="mt-6 flex flex-wrap items-start gap-2">
-        <AgentButton action="buscar-ofertas" variant="default" size="default">
+        <AgentButton action="search-jobs" variant="default" size="default">
           Buscar ofertas
         </AgentButton>
         {!!s?.pending_extraction && (
-          <AgentButton action="procesar-ofertas" size="default">
+          <AgentButton action="process-jobs" size="default">
             Procesar ofertas
           </AgentButton>
         )}
         {!!s?.pending_triage && (
-          <AgentButton action="evaluar-encaje" size="default">
+          <AgentButton action="assess-fit" size="default">
             Evaluar encaje
           </AgentButton>
         )}
         {unclassified > 0 && (
-          <AgentButton action="revisar-respuestas" size="default">
+          <AgentButton action="review-replies" size="default">
             Revisar respuestas
           </AgentButton>
         )}

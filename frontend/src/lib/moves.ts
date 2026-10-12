@@ -23,7 +23,7 @@ export function moveOptions(card: BoardCard, moves: BoardMove[], target?: Stage)
 /** Por qué no se puede soltar una tarjeta en una columna. */
 export function noMoveReason(card: BoardCard, target: Stage): string {
   if (target === 'cv_ready')
-    return 'Una oferta llega a «CV listo» cuando su CV está verificado (skill generar-cv), no a mano.'
+    return 'Una oferta llega a «CV listo» cuando su CV está verificado (skill generate-cv), no a mano.'
   if (target === 'approved') return 'Para volver a «Aprobada» hay que reabrirla desde su ficha.'
   if (card.stage === 'closed')
     return card.reopen_to

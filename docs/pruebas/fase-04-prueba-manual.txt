@@ -2,7 +2,7 @@ PRUEBA MANUAL · FASE 04 · INTERFAZ PARA AGENTES (MCP + CLI)
 ============================================================
 
 Objetivo: comprobar que un agente de IA real opera la app por MCP. Das de alta una oferta de
-ejemplo, el agente la extrae con el skill procesar-ofertas y la oferta acaba en "pending_triage".
+ejemplo, el agente la extrae con el skill process-jobs y la oferta acaba en "pending_triage".
 
 Duración aproximada: 10 minutos para Claude Code y otros 10 si pruebas Codex.
 
@@ -70,7 +70,7 @@ PARTE 2 · CLAUDE CODE
 
 7. Escribe:
 
-      /procesar-ofertas
+      /process-jobs
 
    Qué debería pasar:
    - Claude llama a get_status y a list_jobs (sin pedir permiso).
@@ -116,7 +116,7 @@ Si no tienes Codex, sáltate esta parte y dímelo: quedará como pendiente en do
 
 11. Comprueba que el servidor está disponible (en Codex, /mcp) y escribe:
 
-      $procesar-ofertas
+      $process-jobs
 
     Si no delega solo, pídeselo: "lanza el subagente extractor con el job_id 2".
 
@@ -175,6 +175,6 @@ Solo si en la base de datos no hay nada tuyo aparte de estas pruebas (ahora mism
 QUÉ ME TIENES QUE CONTAR
 ------------------------
 - Si /mcp mostró candidatai conectado.
-- La tabla final de /procesar-ofertas y la salida de "cai status".
+- La tabla final de /process-jobs y la salida de "cai status".
 - Si probaste Codex: si cargó el servidor y qué eventos dejó en la oferta 2.
 - Cualquier permiso que te haya pedido, o cualquier error, tal cual.

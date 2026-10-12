@@ -76,10 +76,10 @@ comprueba y automatiza. Un día normal:
 
 1. Cada mañana el worker trae ofertas nuevas (APIs de ATS, alertas por correo y la búsqueda pública
    de LinkedIn si la activaste).
-2. Pides a tu agente `procesar-ofertas` y `evaluar-encaje` (o los lanzas desde la UI, en segundo
+2. Pides a tu agente `process-jobs` y `assess-fit` (o los lanzas desde la UI, en segundo
    plano).
 3. Triagas con `J`/`K`, `A` y `D`.
-4. `generar-cv 42` redacta y verifica el CV de la oferta 42; eliges plantilla, foto y color en la
+4. `generate-cv 42` redacta y verifica el CV de la oferta 42; eliges plantilla, foto y color en la
    UI, sin gastar agente.
 5. Revisas el formulario relleno y pulsas Enviar. La app lo registra, archiva lo enviado y te
    recuerda el seguimiento.
@@ -175,35 +175,36 @@ Paso a paso, con tu propio perfil, las alertas por correo y la extensión del na
 ## Úsalo con tus datos
 
 Tus datos viven en `data/`, fuera de git. Arranca `cai serve`, `cai worker` y `pnpm dev`, crea tu
-perfil con el skill `actualizar-perfil` y, después, pide a tu agente:
+perfil con el skill `update-profile` y, después, pide a tu agente:
 
 | Skill | Qué hace |
 |---|---|
-| `actualizar-perfil` | Crea o actualiza `data/profile.yaml` (tu única fuente de verdad) desde tu CV y lo versiona |
-| `procesar-ofertas` | Extrae las ofertas nuevas (rol `extractor`, aislado cuando el agente lo permite) |
-| `evaluar-encaje` | Valora y explica el encaje de las ofertas por revisar |
-| `generar-cv 42` | Redacta, renderiza y verifica el CV para la oferta 42 |
-| `generar-carta 42` | Carta según tus indicaciones, verificada; TXT y PDF a juego con el CV |
-| `preparar-candidatura 42` | Respuestas de screening y, si hace falta, la carta |
-| `preparar-entrevista 42` | Dosier de entrevista y plan por días hasta la fecha |
-| `simular-entrevista 42` | Simulacro: una pregunta cada vez, feedback y una respuesta mejor con tu perfil |
-| `repasar-entrevista 42` | Repaso: notas, próximos pasos, siguiente ronda probable e historias STAR nuevas |
-| `preparar-negociacion 42` | Argumentos, preguntas y guion para una oferta recibida; revisa el contrato. Nunca propone una cifra |
-| `investigar-empresa 42` | Dosier de la empresa con fuentes (producto, noticias, cultura de ingeniería, stack) |
-| `redactar-mensaje 42` | Mensaje de LinkedIn (≤ 300 caracteres) o correo de candidatura, como borrador |
-| `redactar-seguimiento` | Borradores de seguimiento (máx. 2 por candidatura) y de agradecimiento |
-| `revisar-respuestas` | Clasifica los correos de las empresas (entrevista con fecha, prueba, oferta, rechazo) en propuestas |
-| `resumen-diario` | Qué tienes hoy: pendientes, seguimientos vencidos, próximos hitos |
-| `atender-encargos` | Hace lo que dejaste en la UI con «Dejar para mi próxima sesión» |
-| `buscar-ofertas` | Recorre con tu navegador los portales que apruebas y da de alta lo que encaje |
-| `ampliar-busqueda` | Propone títulos cercanos («Analytics Engineer») a partir de lo que apruebas |
-| `revisar-busqueda` | Retrospectiva semanal: qué funciona (tramos de score, fuentes, plantilla, referencias) y qué cambiar |
-| `plan-formacion` | Plan de formación con tus huecos reales de skills, con recursos verificados |
-| `revisar-linkedin` | Informe de mejoras de tu perfil de LinkedIn, listo para copiar |
-| `importar-plantilla-cv` | Convierte tu CV (o cualquier diseño) en plantilla para los CVs a medida |
+| `update-profile` | Crea o actualiza `data/profile.yaml` (tu única fuente de verdad) desde tu CV y lo versiona |
+| `process-jobs` | Extrae las ofertas nuevas (rol `extractor`, aislado cuando el agente lo permite) |
+| `assess-fit` | Valora y explica el encaje de las ofertas por revisar |
+| `generate-cv 42` | Redacta, renderiza y verifica el CV para la oferta 42 |
+| `generate-cover-letter 42` | Carta según tus indicaciones, verificada; TXT y PDF a juego con el CV |
+| `prepare-application 42` | Respuestas de screening y, si hace falta, la carta |
+| `prepare-interview 42` | Dosier de entrevista y plan por días hasta la fecha |
+| `mock-interview 42` | Simulacro: una pregunta cada vez, feedback y una respuesta mejor con tu perfil |
+| `debrief-interview 42` | Repaso: notas, próximos pasos, siguiente ronda probable e historias STAR nuevas |
+| `prepare-negotiation 42` | Argumentos, preguntas y guion para una oferta recibida; revisa el contrato. Nunca propone una cifra |
+| `research-company 42` | Dosier de la empresa con fuentes (producto, noticias, cultura de ingeniería, stack) |
+| `draft-message 42` | Mensaje de LinkedIn (≤ 300 caracteres) o correo de candidatura, como borrador |
+| `draft-follow-up` | Borradores de seguimiento (máx. 2 por candidatura) y de agradecimiento |
+| `review-replies` | Clasifica los correos de las empresas (entrevista con fecha, prueba, oferta, rechazo) en propuestas |
+| `daily-summary` | Qué tienes hoy: pendientes, seguimientos vencidos, próximos hitos |
+| `handle-requests` | Hace lo que dejaste en la UI con «Dejar para mi próxima sesión» |
+| `search-jobs` | Recorre con tu navegador los portales que apruebas y da de alta lo que encaje |
+| `broaden-search` | Propone títulos cercanos («Analytics Engineer») a partir de lo que apruebas |
+| `review-search` | Retrospectiva semanal: qué funciona (tramos de score, fuentes, plantilla, referencias) y qué cambiar |
+| `training-plan` | Plan de formación con tus huecos reales de skills, con recursos verificados |
+| `review-linkedin` | Informe de mejoras de tu perfil de LinkedIn, listo para copiar |
+| `import-cv-template` | Convierte tu CV (o cualquier diseño) en plantilla para los CVs a medida |
 
-Se invocan como `/generar-cv 42` en Claude Code, `$generar-cv 42` en Codex, o pidiéndolo en
-lenguaje natural.
+Se invocan como `/generate-cv 42` en Claude Code, `$generate-cv 42` en Codex, o pidiéndolo en
+lenguaje natural, en español o en inglés («genérame el CV de la 42»). Hasta la fase 23 tenían nombres
+en español (`generar-cv`…).
 
 ### De dónde salen las ofertas
 
@@ -236,7 +237,7 @@ Son reglas del código, no promesas del agente:
 - **Nada sale sin tu confirmación.** La app rellena y se para; el envío lo desencadena tu clic,
   candidatura a candidatura, con un token de un solo uso. Mensajes y correos son borradores.
 - **Nada inventado.** Cada afirmación del CV apunta a una evidencia de tu perfil que tiene que
-  existir, o el código la rechaza; un rol verificador independiente revisa el resto.
+  existir, o el código la rechaza; un rol `verifier` independiente revisa el resto.
 - **El contenido ajeno es dato.** El texto de ofertas, correos y webs nunca es una instrucción. Se
   detecta texto oculto y frases dirigidas a una IA, y se avisa en la UI.
 - **Tus datos se quedan contigo.** Todo vive en `data/` (fuera de git). El agente nunca recibe tu
@@ -357,7 +358,7 @@ Todos los documentos, agrupados: [`docs/README.md`](docs/README.md).
 
 En 22 fases (con subfases), cada una con su encargo en `prompts/`, implementadas con un agente de
 IA (Claude Code) sobre una especificación escrita antes del código: plan, rama por fase, tests,
-revisión por un rol `revisor` y registro de decisiones y deuda. El registro de cada fase está en
+revisión por un rol `reviewer` y registro de decisiones y deuda. El registro de cada fase está en
 [`docs/ROADMAP.md`](docs/ROADMAP.md), su resumen en [`docs/RESUMEN_FASES.md`](docs/RESUMEN_FASES.md)
 y el método en [`docs/DESARROLLO_POR_FASES.md`](docs/DESARROLLO_POR_FASES.md).
 

@@ -395,7 +395,7 @@ export function InboxPage() {
               }
             >
               Da de alta una oferta desde su URL o pegando el texto. Después, tu agente la extrae con
-              el skill <code className="font-mono text-foreground">procesar-ofertas</code>.
+              el skill <code className="font-mono text-foreground">process-jobs</code>.
             </EmptyState>
           )
         ) : (

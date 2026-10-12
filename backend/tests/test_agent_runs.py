@@ -85,7 +85,7 @@ def fake(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
     return log
 
 
-def start(action: str = "procesar-ofertas", job_id: int | None = None) -> int:
+def start(action: str = "process-jobs", job_id: int | None = None) -> int:
     with session_scope() as session:
         return agent_runs.start(session, action, job_id).id  # type: ignore[arg-type]
 
@@ -109,9 +109,9 @@ def run_now(**kwargs: float) -> agent_runner.AgentRunOutcome:
 
 def test_only_three_actions_run_in_background() -> None:
     assert {a for a, spec in ACTIONS.items() if spec.background} == {
-        "procesar-ofertas",
-        "evaluar-encaje",
-        "generar-cv",
+        "process-jobs",
+        "assess-fit",
+        "generate-cv",
     }
 
 
@@ -120,18 +120,18 @@ def test_background_tools_exist_and_are_minimal() -> None:
         for tool in spec.background:
             assert tool in TOOLS_BY_NAME, f"{action}: {tool} no existe"
         assert not RISKY & set(spec.background), action
-    assert set(ACTIONS["procesar-ofertas"].background) == {
+    assert set(ACTIONS["process-jobs"].background) == {
         "get_status",
         "list_jobs",
         "get_job",
         "save_extraction",
     }
-    # Solo procesar-ofertas (su subagente extractor) lee el texto de las ofertas.
-    assert "get_job" not in ACTIONS["evaluar-encaje"].background
-    assert "get_job" not in ACTIONS["generar-cv"].background
+    # Solo process-jobs (su subagente extractor) lee el texto de las ofertas.
+    assert "get_job" not in ACTIONS["assess-fit"].background
+    assert "get_job" not in ACTIONS["generate-cv"].background
 
 
-@pytest.mark.parametrize("action", ["procesar-ofertas", "evaluar-encaje", "generar-cv"])
+@pytest.mark.parametrize("action", ["process-jobs", "assess-fit", "generate-cv"])
 def test_manifest_command_allows_only_the_action_tools(action: str) -> None:
     """El comando real de Claude Code (manifiesto): sin terminal ni web, solo el skill de la acción
     y todas las demás herramientas MCP denegadas (un deny gana a los allow de `settings.json`)."""
@@ -168,7 +168,7 @@ def test_manifest_command_allows_only_the_action_tools(action: str) -> None:
 
 def test_start_rejects_actions_that_ask(db: None, fake: Path) -> None:
     with session_scope() as session, pytest.raises(LaunchError, match="En terminal"):
-        agent_runs.start(session, "buscar-ofertas")
+        agent_runs.start(session, "search-jobs")
 
 
 def test_start_without_headless_agent(db: None, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -177,7 +177,7 @@ def test_start_without_headless_agent(db: None, monkeypatch: pytest.MonkeyPatch)
     monkeypatch.setattr(agent_launch.shutil, "which", lambda name: f"C:/bin/{name}.exe")
     assert agent_launch.background_info().available is False
     with session_scope() as session, pytest.raises(LaunchError) as exc:
-        agent_runs.start(session, "procesar-ofertas")
+        agent_runs.start(session, "process-jobs")
     assert exc.value.code == "unavailable" and "headless" in str(exc.value)
 
 
@@ -186,9 +186,9 @@ def test_start_queues_once_and_stores_the_command(db: None, fake: Path) -> None:
     assert start() == first  # misma acción en cola: no se duplica
     row = run_row(first)
     assert row.status == "queued" and row.agent == "claude"
-    assert row.prompt.startswith("Usa el skill procesar-ofertas")
+    assert row.prompt.startswith("Usa el skill process-jobs")
     assert "PREGUNTA:" in row.prompt and "segundo plano" in row.prompt
-    assert row.command[-4:] == [f"{PREFIX}{t}" for t in ACTIONS["procesar-ofertas"].background]
+    assert row.command[-4:] == [f"{PREFIX}{t}" for t in ACTIONS["process-jobs"].background]
     assert row.unset_env == ["ANTHROPIC_API_KEY"]
 
 
@@ -202,7 +202,7 @@ def _approved_job(**changes: object) -> int:
 
 def test_generate_cv_in_background_needs_no_questions(db: None, fake: Path) -> None:
     job_id = _approved_job()  # el perfil de ejemplo cubre todas las obligatorias
-    run_id = start("generar-cv", job_id)
+    run_id = start("generate-cv", job_id)
     row = run_row(run_id)
     assert row.job_id == job_id and f"oferta {job_id}" in row.prompt
     assert "No la tengo" not in row.prompt
@@ -211,7 +211,7 @@ def test_generate_cv_in_background_needs_no_questions(db: None, fake: Path) -> N
 def test_generate_cv_with_unmarked_missing_skills_goes_to_terminal(db: None, fake: Path) -> None:
     job_id = _approved_job(must_have_skills=["Python", "Kafka", "Scala"])
     with session_scope() as session, pytest.raises(LaunchError, match="2 skills obligatorias"):
-        agent_runs.start(session, "generar-cv", job_id)
+        agent_runs.start(session, "generate-cv", job_id)
 
     # Marcadas como «No la tengo» en la página Skills: ya no hay nada que preguntar.
     index = skills.alias_index()
@@ -219,7 +219,7 @@ def test_generate_cv_with_unmarked_missing_skills_goes_to_terminal(db: None, fak
         for name in ("Kafka", "Scala"):
             key = skills.canonical(name, index)
             session.add(SkillGapMark(skill_key=key, skill_name=name, status="gap"))
-    row = run_row(start("generar-cv", job_id))
+    row = run_row(start("generate-cv", job_id))
     assert "No la tengo" in row.prompt
     assert "Kafka" not in row.prompt and "Scala" not in row.prompt  # nada de la oferta
 
@@ -228,7 +228,7 @@ def test_generate_cv_needs_an_approved_job(db: None, fake: Path) -> None:
     import_profile()
     job_id = add_extracted("Data Engineer", "Acme")
     with session_scope() as session, pytest.raises(LaunchError, match="aprobada"):
-        agent_runs.start(session, "generar-cv", job_id)
+        agent_runs.start(session, "generate-cv", job_id)
 
 
 # --- Runner con el agente falso ----------------------------------------------------------------
@@ -252,10 +252,10 @@ def test_run_ok_saves_progress_result_and_usage(db: None, fake: Path) -> None:
 
     seen = json.loads(fake.read_text(encoding="utf-8"))
     assert seen["api_key"] is False  # `unset_env` quitada
-    assert seen["argv"][0].startswith("Usa el skill procesar-ofertas")
+    assert seen["argv"][0].startswith("Usa el skill process-jobs")
     argv = seen["argv"]
-    assert argv[argv.index("--allowedTools") + 1 :] == ["Agent", "Skill(procesar-ofertas)"] + [
-        PREFIX + t for t in ACTIONS["procesar-ofertas"].background
+    assert argv[argv.index("--allowedTools") + 1 :] == ["Agent", "Skill(process-jobs)"] + [
+        PREFIX + t for t in ACTIONS["process-jobs"].background
     ]
     assert f"{PREFIX}add_event" in argv[: argv.index("--allowedTools")]  # denegada
 
@@ -344,8 +344,8 @@ def test_cancel_queued_and_finished(db: None, fake: Path) -> None:
 
 
 def test_one_run_at_a_time(db: None, fake: Path) -> None:
-    first = start("procesar-ofertas")
-    second = start("evaluar-encaje")
+    first = start("process-jobs")
+    second = start("assess-fit")
     with session_scope() as session:
         row = session.get(AgentRun, first)
         assert row is not None
@@ -398,14 +398,14 @@ def test_api_start_list_get_and_cancel(client: TestClient, fake: Path) -> None:
     status = client.get("/agent").json()
     assert status["background"] == {"available": True, "agent": "claude", "reason": None}
     actions = {a["id"]: a for a in status["actions"]}
-    assert actions["procesar-ofertas"]["background"] is True
-    assert actions["buscar-ofertas"]["background"] is False
+    assert actions["process-jobs"]["background"] is True
+    assert actions["search-jobs"]["background"] is False
 
-    response = client.post("/agent/runs", json={"action": "procesar-ofertas"}, headers=JSON)
+    response = client.post("/agent/runs", json={"action": "process-jobs"}, headers=JSON)
     assert response.status_code == 202
     run = response.json()
     assert run["status"] == "queued" and run["label"] == "Procesar ofertas"
-    assert run["allowed_tools"] == list(ACTIONS["procesar-ofertas"].background)
+    assert run["allowed_tools"] == list(ACTIONS["process-jobs"].background)
 
     listed = client.get("/agent/runs").json()
     assert listed["active"] == 1 and [r["id"] for r in listed["runs"]] == [run["id"]]
@@ -415,7 +415,7 @@ def test_api_start_list_get_and_cancel(client: TestClient, fake: Path) -> None:
     cancelled = client.post(f"/agent/runs/{run['id']}/cancel", json={}, headers=JSON)
     assert cancelled.status_code == 200 and cancelled.json()["status"] == "cancelled"
 
-    asks = client.post("/agent/runs", json={"action": "buscar-ofertas"}, headers=JSON)
+    asks = client.post("/agent/runs", json={"action": "search-jobs"}, headers=JSON)
     assert asks.status_code == 422
 
 
@@ -423,17 +423,17 @@ def test_api_unavailable_returns_the_prompt(
     client: TestClient, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr(agent_launch, "_launchers", lambda: [])
-    response = client.post("/agent/runs", json={"action": "evaluar-encaje"}, headers=JSON)
+    response = client.post("/agent/runs", json={"action": "assess-fit"}, headers=JSON)
     assert response.status_code == 503
     error = response.json()["error"]
     assert error["type"] == "agent_unavailable"
-    assert error["details"][0]["received"].startswith("Usa el skill evaluar-encaje")
+    assert error["details"][0]["received"].startswith("Usa el skill assess-fit")
 
 
 @pytest.mark.parametrize("path", ["/agent/runs", "/agent/runs/1/cancel", "/agent/runs/1/open"])
 def test_only_the_ui_can_start_or_cancel(client: TestClient, fake: Path, path: str) -> None:
     headers = {"Origin": "https://example.com", "Content-Type": "application/json"}
-    response = client.post(path, content='{"action": "procesar-ofertas"}', headers=headers)
+    response = client.post(path, content='{"action": "process-jobs"}', headers=headers)
     assert response.status_code == 403
     # Sin cuerpo JSON tampoco: un formulario de otra web no necesita comprobación CORS.
     assert client.post(path, headers={"Origin": UI_ORIGIN}).status_code == 403
@@ -453,7 +453,7 @@ def test_worker_once_runs_background_runs(db: None, fake: Path) -> None:
     assert body["agent_runs"] == [
         {
             "run_id": run_id,
-            "action": "procesar-ofertas",
+            "action": "process-jobs",
             "status": "done",
             "error": None,
             "questions": 0,

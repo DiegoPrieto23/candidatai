@@ -26,21 +26,21 @@ def client() -> Iterator[TestClient]:
 
 def test_create_dedupes_and_validates(client: TestClient) -> None:
     with session_scope() as session:
-        first = agent_requests.create(session, "buscar-ofertas")
-        assert agent_requests.create(session, "buscar-ofertas").id == first.id
-        assert first.prompt.startswith("Usa el skill buscar-ofertas")
+        first = agent_requests.create(session, "search-jobs")
+        assert agent_requests.create(session, "search-jobs").id == first.id
+        assert first.prompt.startswith("Usa el skill search-jobs")
         assert "segundo plano" not in first.prompt  # es para una sesión interactiva
         with pytest.raises(LaunchError, match="necesita una oferta"):
-            agent_requests.create(session, "generar-cv")
+            agent_requests.create(session, "generate-cv")
         with pytest.raises(LaunchError, match="no puede ser un encargo"):
-            agent_requests.create(session, "atender-encargos")
+            agent_requests.create(session, "handle-requests")
         assert status.get_status(session).agent_requests == 1
 
 
 def test_complete_and_cancel(client: TestClient) -> None:
     with session_scope() as session:
-        one = agent_requests.create(session, "procesar-ofertas")
-        two = agent_requests.create(session, "evaluar-encaje")
+        one = agent_requests.create(session, "process-jobs")
+        two = agent_requests.create(session, "assess-fit")
         result = agent_requests.complete(session, one.id, "  Procesadas 3. ", "claude-code")
         assert result.message == "Encargo 1 («Procesar ofertas») cerrado."
         agent_requests.cancel(session, two.id)
@@ -57,19 +57,19 @@ def test_complete_and_cancel(client: TestClient) -> None:
 def test_api_create_list_and_cancel(client: TestClient) -> None:
     import_profile()
     job_id = add_extracted("Data Engineer", "Acme")
-    body = {"action": "investigar-empresa", "job_id": job_id}
+    body = {"action": "research-company", "job_id": job_id}
     created = client.post("/agent/requests", json=body, headers=JSON)
     assert created.status_code == 201
     request = created.json()
     assert request["prompt"] == (
-        f"Usa el skill investigar-empresa de CandidatAI para la empresa de la oferta {job_id}."
+        f"Usa el skill research-company de CandidatAI para la empresa de la oferta {job_id}."
     )
     listed = client.get("/agent/requests", params={"status": "pending"}).json()
     assert listed["pending"] == 1 and listed["requests"][0]["id"] == request["id"]
     assert client.get("/status").json()["agent_requests"] == 1
 
     wrong = client.post(
-        "/agent/requests", json={"action": "generar-cv", "job_id": job_id}, headers=JSON
+        "/agent/requests", json={"action": "generate-cv", "job_id": job_id}, headers=JSON
     )
     assert wrong.status_code == 422 and "aprobada" in wrong.json()["error"]["message"]
 
@@ -83,6 +83,6 @@ def test_api_create_list_and_cancel(client: TestClient) -> None:
 @pytest.mark.parametrize("path", ["/agent/requests", "/agent/requests/1/cancel"])
 def test_only_the_ui_creates_or_cancels(client: TestClient, path: str) -> None:
     headers = {"Origin": "https://example.com", "Content-Type": "application/json"}
-    response = client.post(path, content='{"action": "buscar-ofertas"}', headers=headers)
+    response = client.post(path, content='{"action": "search-jobs"}', headers=headers)
     assert response.status_code == 403
     assert client.get("/agent/requests").json()["requests"] == []

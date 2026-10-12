@@ -1,5 +1,5 @@
 # Las dos ofertas de la demo que llegan con CV generado y verificado (fase 12.1). Todo FICTICIO.
-# El contenido cita solo ids de demo/profile.example.yaml, como haría el rol `redactor`.
+# El contenido cita solo ids de demo/profile.example.yaml, como haría el rol `writer`.
 
 - job:
     title: Data Engineer

@@ -194,7 +194,7 @@ def build_letter(template_id: str, force: bool = False) -> BuildLetterResult:
     if template.meta.engine != "docx":
         raise _fail(
             template_id,
-            "es html: escribe su `letter.html` a mano (ver el skill `importar-plantilla-cv`).",
+            "es html: escribe su `letter.html` a mano (ver el skill `import-cv-template`).",
             "engine",
         )
     if not template.meta.layout.header_paragraphs:

@@ -111,7 +111,7 @@ email_alerts:                  # fase 09b
     indeed: [indeed.com, indeed.es]
     tecnoempleo: [tecnoempleo.com]
 
-agent_browse:                   # fase 09b, skill buscar-ofertas
+agent_browse:                   # fase 09b, skill search-jobs
   max_result_pages: 2
   delay_seconds: 5
   default_max_offers: 15

@@ -133,11 +133,11 @@ export function DraftsSection({ job }: { job: JobView }) {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <AgentButton action="redactar-mensaje" jobId={job.id}>
+          <AgentButton action="draft-message" jobId={job.id}>
             Redactar mensaje
           </AgentButton>
           {sentStage && (
-            <AgentButton action="redactar-seguimiento" jobId={job.id}>
+            <AgentButton action="draft-follow-up" jobId={job.id}>
               Redactar seguimiento
             </AgentButton>
           )}

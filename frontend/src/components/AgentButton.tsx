@@ -161,13 +161,13 @@ export function AgentButton({
                 </span>
               </DropdownMenuItem>
             )}
-            {action !== 'atender-encargos' && (
+            {action !== 'handle-requests' && (
               <DropdownMenuItem onSelect={leaveForLater}>
                 <ClockCountdownIcon weight="duotone" />
                 <span>
                   <span className="block font-medium">Dejar para mi próxima sesión</span>
                   <span className="block text-xs text-muted-foreground">
-                    Tu agente lo verá con el skill atender-encargos.
+                    Tu agente lo verá con el skill handle-requests.
                   </span>
                 </span>
               </DropdownMenuItem>

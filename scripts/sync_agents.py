@@ -16,6 +16,7 @@ Se copian ficheros (no enlaces simbólicos) para que funcione en Windows sin per
 from __future__ import annotations
 
 import argparse
+import contextlib
 import json
 import sys
 from dataclasses import dataclass
@@ -217,6 +218,9 @@ def main() -> int:
     for p in stale:
         p.unlink()
         print(f"borrado:  {rel(p)}")
+        # Un skill renombrado deja su carpeta vacía (`.claude/skills/<viejo>/`): se quita también.
+        with contextlib.suppress(OSError):
+            p.parent.rmdir()
     print(f"Listo: {len(changed)} escritos, {len(stale)} borrados, {len(expected)} en total")
     return 0
 

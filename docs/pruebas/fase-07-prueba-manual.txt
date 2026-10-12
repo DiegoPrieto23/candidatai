@@ -3,7 +3,7 @@ PRUEBA MANUAL · FASE 07 · MATCHING Y TRIAJE
 
 Objetivo: comprobar que el triaje con teclado es fluido con 10 ofertas o más, que el score y su
 desglose tienen sentido con TU perfil, y que tu agente valora el encaje con el skill
-evaluar-encaje.
+assess-fit.
 
 Duración aproximada: 25 minutos (30-40 si instalas los embeddings).
 
@@ -138,7 +138,7 @@ PARTE 4 · VALORACIÓN DEL AGENTE
 
 15. Pide que valore unas pocas ofertas (para no gastar cuota):
 
-      /evaluar-encaje <id1> <id2> <id3>
+      /assess-fit <id1> <id2> <id3>
 
     Esperado: llama a get_profile, get_match y get_extraction (no a get_job) y te pide permiso
     para save_fit_assessment (es la única escritura). Termina con un resumen por veredicto y,
@@ -190,5 +190,5 @@ QUÉ ME CUENTAS AL TERMINAR
 --------------------------
 - Si el triaje de 10 ofertas con teclado fue fluido y qué cambiarías.
 - Cuántas ofertas quedaron en triaje con tu perfil (paso 6) y si el orden te cuadra.
-- La salida de evaluar-encaje (el resumen final basta).
+- La salida de assess-fit (el resumen final basta).
 - Si hiciste el paso 18: las métricas con y sin embeddings.

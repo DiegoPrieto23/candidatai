@@ -6,7 +6,7 @@ Objetivo: comprobar con el navegador que
   respuestas de screening y el hueco de la carta;
 - cada respuesta se copia con su botón y se edita sin agente;
 - las respuestas que esperan un dato tuyo (salario…) se ven destacadas;
-- tu agente guarda respuestas con `save_application_answers` (skill `preparar-candidatura`) y la
+- tu agente guarda respuestas con `save_application_answers` (skill `prepare-application`) y la
   app rechaza evidencias inventadas;
 - nada de esta sección envía nada.
 
@@ -20,7 +20,7 @@ REQUISITOS
 - Migración nueva (0009, columna `documents.edited_by_user`):
       uv run --directory backend cai db upgrade
 - Una oferta en «CV listo» (cv_ready) con su CV generado. Si no tienes ninguna, aprueba una y
-  ejecuta `/generar-cv <id>` en tu agente. Abajo, <ID> es el id de esa oferta.
+  ejecuta `/generate-cv <id>` en tu agente. Abajo, <ID> es el id de esa oferta.
 
 
 PARTE 1 · LA SECCIÓN EN LA FICHA
@@ -40,7 +40,7 @@ PARTE 1 · LA SECCIÓN EN LA FICHA
 
 PARTE 2 · RESPUESTAS DESDE EL AGENTE
 ------------------------------------
-4. En tu agente:  /preparar-candidatura <ID>  y pega estas preguntas:
+4. En tu agente:  /prepare-application <ID>  y pega estas preguntas:
        ¿Cuántos años de experiencia tienes con Python?
        ¿Cuál es tu expectativa salarial?
        ¿Por qué te interesa este puesto?
@@ -81,7 +81,7 @@ PARTE 4 · DESPUÉS DE ENVIAR
     (`applied_manually`).
     Esperado: el paquete sigue visible y los «Copiar» funcionan, pero ya no hay «Editar» ni
     «Añadir pregunta»; el CV dice «El que enviaste».
-13. (Opcional) En tu agente, vuelve a pedir `/preparar-candidatura <ID>`.
+13. (Opcional) En tu agente, vuelve a pedir `/prepare-application <ID>`.
     Esperado: `invalid_transition` (las respuestas solo se preparan en «approved» o «cv_ready»).
 
 

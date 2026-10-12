@@ -1,6 +1,6 @@
 # Las 5 ofertas de la matriz de compatibilidad (fase 12.3): ids de evals/cv/cases.jsonl.
 # `cai demo seed --compat` las da de alta solo con su texto (en «Por extraer»), para que cada
-# agente recorra procesar-ofertas, evaluar-encaje y generar-cv sobre las mismas.
+# agente recorra process-jobs, assess-fit y generate-cv sobre las mismas.
 cv01-de-snowflake
 cv03-analyst-powerbi
 cv05-de-orquestacion

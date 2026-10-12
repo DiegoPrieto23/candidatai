@@ -21,7 +21,7 @@ Las reglas con valores ajustables tienen su parámetro en `config/policies.yaml`
      "conocimientos de X", nunca como experiencia.
 3. **Métricas**: solo las que están en el perfil. No redondear al alza ni combinar.
 4. **Si falta algo** que la oferta pide y quizá tengas, se pregunta. Si la respuesta es sí, se
-   añade primero al perfil (skill `actualizar-perfil`) y después se usa.
+   añade primero al perfil (skill `update-profile`) y después se usa.
 5. **Contexto ≠ hechos.** Los ficheros de `data/contexto/` (estilo de redacción, perfil
    conductual, criterios y narrativa) los escribe el usuario y orientan el tono, los riesgos de
    una oferta y la preparación de entrevistas, igual que `preferences.cv.instructions`. Nunca
@@ -31,7 +31,7 @@ Las reglas con valores ajustables tienen su parámetro en `config/policies.yaml`
 6. **Entrevistas** (fase 17). Los esquemas de respuesta del dosier y la «versión mejor» del
    simulacro solo usan hechos del perfil. Lo que el usuario cuente en un simulacro o en un repaso
    (un logro, una cifra, una historia) se queda en las notas del hito hasta que él confirme
-   añadirlo al perfil con `actualizar-perfil`; ningún otro skill escribe en el perfil.
+   añadirlo al perfil con `update-profile`; ningún otro skill escribe en el perfil.
 
 ## 2. Encaje y filtros
 
@@ -94,10 +94,10 @@ y para cada una el usuario decide:
   Cambia el `scoring_key` y el worker recalcula las ofertas abiertas. Se rechaza si el nombre ya
   es sinónimo de otra skill o si el perfil ya lo cubre: eso se cambia a mano en el fichero. Solo
   lo decide el usuario: ni la app ni el agente proponen o añaden alias por su cuenta (ADR-026).
-- **«La tengo»**: queda marcada y «Añadir al perfil las que tengo» abre `actualizar-perfil`, que
+- **«La tengo»**: queda marcada y «Añadir al perfil las que tengo» abre `update-profile`, que
   pregunta nivel y dónde la usó (§1.4). Hasta que esté en el perfil no cuenta.
-- **«No la tengo»**: hueco real. El skill `plan-formacion` los convierte en un plan con recursos
-  verificados (cada uno con su URL) en `data/documentos/plan-formacion.md`. El plan no toca el
+- **«No la tengo»**: hueco real. El skill `training-plan` los convierte en un plan con recursos
+  verificados (cada uno con su URL) en `data/documentos/training-plan.md`. El plan no toca el
   perfil.
 
 Los pesos del score no cambian con esto; solo qué nombres casan.
@@ -106,7 +106,7 @@ Los pesos del score no cambian con esto; solo qué nombres casan.
 
 - **«¿Sigue abierta?» avisa, no decide.** Ni la app ni el agente cierran o descartan una oferta
   porque parezca cerrada: el usuario la descarta (motivo «Ya no está publicada») o dice «Sigue
-  abierta» en la UI. Antes de redactar un CV, `generar-cv` comprueba y, si puede estar cerrada,
+  abierta» en la UI. Antes de redactar un CV, `generate-cv` comprueba y, si puede estar cerrada,
   pregunta. LinkedIn no se comprueba desde la app (§8, ADR-016).
 - **«Republicada ×N» es una observación**, no un motivo de descarte ni un dato para el score: puede
   ser una vacante difícil de cubrir, un portal que renueva la publicación o una oferta fantasma.
@@ -142,7 +142,7 @@ Los pesos del score no cambian con esto; solo qué nombres casan.
   cuentas, no una recomendación: nadie propone la cifra que pedir. Límite conocido: los
   beneficios y las notas de la oferta son texto libre y el agente los ve siempre; la UI avisa de
   no escribir ahí tus cifras.
-- **Negociación** (skill `preparar-negociacion`): argumentos solo del perfil (§1), preguntas y un
+- **Negociación** (skill `prepare-negotiation`): argumentos solo del perfil (§1), preguntas y un
   guion con el hueco de la cifra para que lo rellenes tú. Si escribes tus cifras en el chat, el
   agente las usa solo en esa conversación y no las guarda; las notas que guarde en el historial
   van sin cifras. Revisar un contrato que pegas **no es asesoramiento legal**.
@@ -173,7 +173,7 @@ Los pesos del score no cambian con esto; solo qué nombres casan.
    respuestas) y abre el enlace. Las ofertas de LinkedIn entran por sus alertas por correo, por el
    botón «Enviar a CandidatAI» (acción tuya, oferta a oferta) y, solo si lo activas tú en la UI,
    por la búsqueda con el navegador del agente (§8).
-   Tampoco se edita tu perfil desde el agente: el skill `revisar-linkedin` propone los textos y
+   Tampoco se edita tu perfil desde el agente: el skill `review-linkedin` propone los textos y
    tú los aplicas a mano. Las mismas reglas de veracidad (§1) y privacidad (§4) que en el CV.
 3. **Captchas o anti-bot**: se para y se te pasa la pestaña. No se esquivan. Te avisa un pop-up
    (y una notificación del sistema, si la activas) y se espera hasta 5 minutos a que lo
@@ -183,12 +183,12 @@ Los pesos del score no cambian con esto; solo qué nombres casan.
    y, si te lleva al formulario de la empresa, pegas su enlace y la app lo rellena (ADR-021).
 4. **Sin reintentos** automáticos de un envío fallido: se registra y decides tú.
 5. **Mensajes a recruiters**: el agente solo redacta borradores. Los envías tú.
-   Seguimientos y agradecimientos (fase 15, skill `redactar-seguimiento`): la app los guarda
+   Seguimientos y agradecimientos (fase 15, skill `draft-follow-up`): la app los guarda
    como borrador en la ficha y nunca los envía; los copias, los mandas desde tu correo y pulsas
    «Ya lo he enviado». Como mucho **2 seguimientos** por candidatura
    (`followups.max_followups`): después no se propone otro. Un agradecimiento, solo tras una
    entrevista hecha. Nada que no esté en tu perfil o en el historial de la oferta (§1).
-   **Mensajes a personas** (fase 18, skill `redactar-mensaje`): un mensaje de LinkedIn de
+   **Mensajes a personas** (fase 18, skill `draft-message`): un mensaje de LinkedIn de
    300 caracteres como mucho o un correo de candidatura, para un recruiter, el responsable del
    puesto o un compañero, desde que apruebas la oferta. Igual que los seguimientos: borrador en
    la ficha, lo envías tú (ni invitaciones ni mensajes automáticos en LinkedIn), sin teléfono ni
@@ -236,14 +236,14 @@ Los pesos del score no cambian con esto; solo qué nombres casan.
   (extensión, tono, despedida, qué decir o evitar siempre) y, por encima, las de cada oferta. Lo
   que nunca cambian son §1 y §4: ni hechos inventados ni salario.
 - **De la empresa, la carta solo usa la extracción y tus indicaciones.** El dosier de
-  `investigar-empresa` (fase 18) no entra en la carta salvo lo que tú copies a las indicaciones de
+  `research-company` (fase 18) no entra en la carta salvo lo que tú copies a las indicaciones de
   esa oferta: sale de webs y no lo has revisado frase a frase. Los mensajes y la preparación de
   entrevistas sí pueden usarlo, citando la fuente.
 - Respuestas de screening: directas, en el idioma de la pregunta, con evidencia del perfil.
 
 ## 8. Búsqueda con navegador
 
-Cuando el agente recorre portales con tu navegador (skill `buscar-ofertas`, detalle en
+Cuando el agente recorre portales con tu navegador (skill `search-jobs`, detalle en
 `docs/FUENTES_OFERTAS.md` §Búsqueda con el navegador del agente):
 
 - **Dominios:** solo los de la plataforma; nunca enlaces externos ni los que sugiera el contenido.
