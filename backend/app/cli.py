@@ -26,6 +26,10 @@ db_app = typer.Typer(help="Base de datos.", no_args_is_help=True)
 events_app = typer.Typer(help="Eventos de las ofertas.", no_args_is_help=True)
 jobs_app = typer.Typer(help="Ofertas: alta, consulta y extracción.", no_args_is_help=True)
 agents_app = typer.Typer(help="Configuración de los agentes de IA.", no_args_is_help=True)
+requests_app = typer.Typer(
+    help="Cola de encargos: lo que dejaste en la UI para tu agente (fase 19).",
+    no_args_is_help=True,
+)
 profile_app = typer.Typer(help="Perfil del candidato.", no_args_is_help=True)
 match_app = typer.Typer(help="Encaje de las ofertas con el perfil.", no_args_is_help=True)
 eval_app = typer.Typer(help="Evaluación de la calidad del matching.", no_args_is_help=True)
@@ -98,6 +102,7 @@ app.add_typer(drafts_app, name="drafts")
 app.add_typer(interviews_app, name="interviews")
 app.add_typer(contacts_app, name="contacts")
 app.add_typer(companies_app, name="companies")
+app.add_typer(requests_app, name="requests")
 demo_app = typer.Typer(
     help="Modo demo: una búsqueda ficticia para probar la app.", no_args_is_help=True
 )
@@ -198,6 +203,8 @@ def _render_status(report: Any) -> None:
     typer.echo(f"{'total':<{width}}  {report.total:>4}")
     if report.pending_tasks:
         typer.echo(f"\nTareas pendientes del worker: {report.pending_tasks}")
+    if report.agent_requests:
+        typer.echo(f"Encargos para tu agente: {report.agent_requests} (`jh requests list`)")
 
 
 def _render_added(result: Any) -> None:
@@ -656,14 +663,19 @@ def worker(
     except migrations.DatabaseNotReadyError as exc:
         _profile_fail(exc, as_json)
     if once:
+        from app.services import agent_runner
+
         run = worker_service.run_pending()
+        run.agent_runs = agent_runner.run_pending()  # las de «En segundo plano» (fase 19)
         if as_json:
             typer.echo(dump_json(run))
-        elif run.outcomes:
+        elif run.outcomes or run.agent_runs:
             _render_worker_run(run)
+            for agent_run in run.agent_runs:
+                typer.echo(agent_runner.describe(agent_run))
         else:
             typer.echo("No hay tareas pendientes.")
-        if run.failed:
+        if run.failed or any(r.status in ("failed", "timeout") for r in run.agent_runs):
             raise typer.Exit(code=1)
         return
     log = _worker_logger()
@@ -678,8 +690,11 @@ def worker(
     except (KeyboardInterrupt, SystemExit):
         log.info("Worker parado.")
     finally:
+        from app.services import agent_runner
         from app.services.applier.browser import shutdown_host
 
+        if stopped := agent_runner.stop_active():  # en segundo plano (fase 19): no quedan huérfanos
+            log.info(f"Parada la ejecución en segundo plano en curso ({stopped}).")
         shutdown_host()  # el navegador de las candidaturas (fase 11), si se abrió
         for handler in list(log.handlers):  # en Windows, un fichero abierto no se puede borrar
             log.removeHandler(handler)
@@ -1298,6 +1313,18 @@ def _render_message(result: Any) -> None:
     typer.echo(result.message)
 
 
+def _render_agent_requests(result: Any) -> None:
+    if not result.requests:
+        typer.echo("No hay encargos.")
+        return
+    for request in result.requests:
+        when = request.created_at.strftime("%Y-%m-%d %H:%M")
+        typer.echo(f"#{request.id}  {when}  [{request.status}]  {request.label}")
+        typer.echo(f"    {request.prompt}")
+        if request.summary:
+            typer.echo(f"    Hecho: {request.summary}")
+
+
 def _render_search_titles(result: Any) -> None:
     roles = ", ".join(result.roles) or "ninguno (sin perfil)"
     typer.echo(f"Puestos buscados: {roles}")
@@ -1900,8 +1927,11 @@ register_tools(
         "interviews": interviews_app,
         "contacts": contacts_app,
         "companies": companies_app,
+        "requests": requests_app,
     },
     {
+        "list_agent_requests": _render_agent_requests,
+        "complete_agent_request": _render_message,
         "get_status": _render_status,
         "get_job_contacts": _render_job_contacts,
         "get_company_research": _render_company_research,

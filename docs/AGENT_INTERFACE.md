@@ -40,7 +40,7 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 
 | MCP | CLI | Fase | Entrada | Salida | Evento |
 |---|---|---|---|---|---|
-| `get_status` | `jh status --json` | 04 | — | `total`, `by_stage`, `pending_tasks`, `demo_mode` (12.1) | — |
+| `get_status` | `jh status --json` | 04 | — | `total`, `by_stage`, `pending_tasks`, `agent_requests` (encargos pendientes, 19), `demo_mode` (12.1) | — |
 | `add_job_from_url` | `jh jobs add-url URL --json` | 04 | `url` | `job_id`, `created`, `duplicate_of?`, `risk_flags` | `found` |
 | `add_job_from_text` | `jh jobs add-text --title T --company C --file F [--url U] [--location L] --json` | 04 | `title, company, text, url?, location?` | `job_id`, `created`, `duplicate_of?`, `risk_flags` | `found` |
 | | `… [--source S] [--platform P] [--external-id X]` | 09b | Además `source_id?` (una plataforma `agent_browse` con la navegación activada; si no, `not_allowed`), `platform?` y `external_id?` (por defecto, de la URL con `platforms.detect`). Con `source_id`, una oferta de LinkedIn (por URL o `platform`) solo entra por la plataforma LinkedIn | igual | igual (`found` con `source_id`) |
@@ -84,6 +84,8 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | `list_sources` | `jh sources list [--kind K] --json` | 09b | `kind?` | `sources`: `SourceView` con su config (sin secretos), `browse` (en las `agent_browse`) y última ejecución; `agent_browse`: límites (`max_result_pages`, `delay_seconds`, `default_max_offers`) | — |
 | `save_source` | `jh sources save --file F --json` | 09b | `AgentBrowseSource`: `name, platform, search_urls[], priority=5 (1 = primera), access=free\|login\|blocked, allow_agent_browsing? (por defecto true; en LinkedIn false), max_offers?, notes?`; por CLI, `F` = ese objeto | `source_id`, `created`, `allow_agent_browsing` guardado y `message`. Crea o actualiza por `name`. LinkedIn (por `platform` o por cualquier URL de linkedin.com o lnkd.in) con `true`: `not_allowed`; si el usuario ya lo activó, se conserva. Búsquedas de otro dominio: `invalid_request` | — |
 | `record_source_run` | `jh sources record-run ID --file F --json` | 09b | `source_id` + `SourceRunSummary`: `found, created, existing=0, incidents[{code, message}], started_at?, finished_at?`; por CLI, `F` = el resumen | `ok`, `run_id`. Actor `agent`; avanza `last_run_at`. Plataforma desactivada: `not_allowed` | — |
+| `list_agent_requests` | `jh requests list [--status S] [--limit N] --json` | 19 | `status="pending"` (`pending`, `done`, `cancelled` o `null` para todos), `limit=50` | `requests` (`id`, `action`, `label`, `job_id`, `milestone_id`, `prompt`, `status`, `summary`, `agent_name`, fechas; los pendientes, el más antiguo primero) y `pending` | — |
+| `complete_agent_request` | `jh requests complete ID --summary S --json` | 19 | `request_id`, `summary` (1-2000) | `ok`, `request_id`, `message`. Ya cerrado: `not_allowed` | — |
 | `request_user_action` | `jh prompts request --kind K --message M [--url U] [--source-id ID] [--timeout-seconds S] --json` | mejora | `kind` (`captcha`, `anti_bot`, `login_required`), `message` (≤ 500), `url?`, `source_id?`, `timeout_seconds` (60-900, por defecto 300) | `PromptView`: `id`, `kind`, `title`, `message`, `status` (`pending`), `expires_at`, `seconds_left`… La UI enseña un pop-up y una notificación del sistema. Un aviso anterior de la misma plataforma caduca. Plataforma inexistente: `not_found` | — |
 | `wait_user_action` | `jh prompts wait ID [--max-wait-seconds S] --json` | mejora | `prompt_id`, `max_wait_seconds` (0-55, por defecto 50) | `PromptView` con `status`: `pending` (vuelve a llamar), `done` (lo resolvió el usuario), `skipped` o `expired`. Aviso inexistente: `not_found` | — |
 
@@ -425,11 +427,30 @@ Hola: …
   OK del usuario los añade a `preferences.roles` (editando el perfil y con `jh profile import`) o a
   las `search_urls` de una plataforma (`save_source`).
 
+### Segundo plano y cola de encargos (fase 19)
+
+Los botones de la UI (ADR-024) tienen un desplegable con **«En segundo plano»** y **«Dejar para mi
+próxima sesión»** (ADR-032). Ninguno de los dos tiene herramienta para lanzarlo: un agente no se
+lanza a sí mismo.
+
+- **En segundo plano** (`POST /agent/runs`, solo la UI): `procesar-ofertas`, `evaluar-encaje` y
+  `generar-cv`. El worker lanza `launch.headless` del manifiesto con la orden y **solo las
+  herramientas MCP de la acción** (`agent_launch.ACTIONS[...].background`), su skill, los
+  subagentes y la lectura de `docs/`; el resto de herramientas de esta tabla se le **deniegan**
+  explícitamente. La orden añade: «no preguntes; si necesitas al usuario, termina con líneas
+  `PREGUNTA:`»; esas líneas dejan la ejecución en `needs_user` y la UI ofrece «Contestar en
+  terminal» (en las demás, «Abrir en terminal»), que retoma la misma sesión. `generar-cv` solo va en segundo
+  plano si a la oferta no le faltan obligatorias o si todas están marcadas «No la tengo».
+- **Cola de encargos** (`POST /agent/requests`, solo la UI): guarda la orden de cualquier acción.
+  Tu próxima sesión la ve en `get_status` (`agent_requests`) y con el skill `atender-encargos`
+  (`list_agent_requests` → sigue el `prompt` → `complete_agent_request`). Un encargo que no se hizo
+  no se cierra.
+
 ### Comandos de matching y worker (solo CLI)
 
 | Comando | Qué hace |
 |---|---|
-| `jh worker [--once] [--interval S] [--json]` | Ejecuta la cola de tareas (`score_job`, `rescore_all`, `run_source`, `poll_email`, `expire_summaries`, `check_open`…) y, en primer plano, la ingesta diaria de las fuentes a la hora de `connectors.daily_at` (al arrancar, también las que no corrieron desde la última hora programada), la caducidad diaria de los resúmenes y la lectura de alertas cada `email_alerts.poll_minutes` (si hay IMAP o correos en `data/inbox/`). Log legible en consola y en `data/logs/worker.log`. `--once` vacía la cola y termina (código 1 si alguna falla) |
+| `jh worker [--once] [--interval S] [--json]` | Ejecuta la cola de tareas (`score_job`, `rescore_all`, `run_source`, `poll_email`, `expire_summaries`, `check_open`…) y, en primer plano, la ingesta diaria de las fuentes a la hora de `connectors.daily_at` (al arrancar, también las que no corrieron desde la última hora programada), la caducidad diaria de los resúmenes y la lectura de alertas cada `email_alerts.poll_minutes` (si hay IMAP o correos en `data/inbox/`). Desde la fase 19, en un hilo aparte, las ejecuciones en segundo plano de `agent_runs`, de una en una. Log legible en consola y en `data/logs/worker.log`. `--once` vacía la cola (también las de `agent_runs`, en `agent_runs` del JSON) y termina (código 1 si alguna falla) |
 | `jh match rescore [--json]` | Recalcula ya los matches desfasados de las ofertas abiertas (tras instalar el extra `matching` o editar `config/policies.yaml`) y cierra las de triaje que no pasan los filtros. Devuelve `scored` y `closed` |
 | `jh eval matching [--profile RUTA] [--no-seed] [--no-embeddings] [--json]` | Precision, recall y F1 con el umbral actual y por umbral sobre `evals/matching/*.jsonl` (perfil de demo) y `data/evals/*.jsonl` (tu perfil). Guarda el informe en `data/evals/reports/` |
 | `jh demo seed [--dir data-demo] [--force] [--eval-cv] [--json]` | Crea una carpeta de datos ficticia (fase 12.1, ADR-020): perfil demo, 60 ofertas, 8 semanas de historial y 2 CVs. Nunca escribe en `data/`. `--eval-cv` añade los 10 casos de `evals/cv/` aprobados y sin CV (en una demo existente, solo los que falten). `--json` devuelve `data_dir`, `jobs`, `events`, `by_stage`, `by_source`, `cvs`, `pdf_engine` y `warnings`. Sin herramienta MCP: no es para el agente |

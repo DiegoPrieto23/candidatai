@@ -31,6 +31,8 @@ export const keys = {
   context: ['context'] as const,
   apply: (id: number) => ['apply', id] as const,
   agent: ['agent'] as const,
+  agentRuns: ['agent', 'runs'] as const,
+  agentRequests: ['agent', 'requests'] as const,
   skillGaps: (days: number) => ['skill-gaps', days] as const,
   allSkillGaps: ['skill-gaps'] as const,
   replies: (params: RepliesParams) => ['replies', params] as const,
@@ -796,6 +798,84 @@ export function useLaunchAgent() {
   return useMutation({
     mutationFn: (body: { action: AgentAction; job_id?: number; milestone_id?: number }) =>
       unwrap(api.POST('/agent/launch', { body })),
+  })
+}
+
+// --- En segundo plano y cola de encargos (fase 19) ---------------------------------------------
+
+type LaunchTarget = { action: AgentAction; job_id?: number; milestone_id?: number }
+
+/**
+ * Las últimas ejecuciones en segundo plano. Mientras alguna está en cola o en curso se pregunta
+ * cada 3 s (el worker guarda el progreso cada 2 s); si no, cada 20 s.
+ */
+export function useAgentRuns() {
+  return useQuery({
+    queryKey: keys.agentRuns,
+    queryFn: () => unwrap(api.GET('/agent/runs', { params: { query: { limit: 20 } } })),
+    refetchInterval: (query) => ((query.state.data?.active ?? 0) > 0 ? 3000 : 20000),
+  })
+}
+
+/** «En segundo plano»: deja la ejecución en cola para el worker. */
+export function useStartAgentRun() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (body: LaunchTarget) => unwrap(api.POST('/agent/runs', { body })),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.agentRuns }),
+  })
+}
+
+export function useCancelAgentRun() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (runId: number) =>
+      unwrap(api.POST('/agent/runs/{run_id}/cancel', { params: { path: { run_id: runId } }, body: {} })),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.agentRuns }),
+  })
+}
+
+/** «Abrir en terminal»: sigue la sesión de una ejecución terminada. */
+export function useOpenAgentRun() {
+  return useMutation({
+    mutationFn: (runId: number) =>
+      unwrap(api.POST('/agent/runs/{run_id}/open', { params: { path: { run_id: runId } }, body: {} })),
+  })
+}
+
+/** Los encargos para tu próxima sesión (todos: la página separa pendientes y hechos). */
+export function useAgentRequests() {
+  return useQuery({
+    queryKey: keys.agentRequests,
+    queryFn: () => unwrap(api.GET('/agent/requests', { params: { query: { limit: 50 } } })),
+    // El agente los cierra desde fuera: se refresca solo.
+    refetchInterval: 20000,
+  })
+}
+
+/** «Dejar para mi próxima sesión». */
+export function useCreateAgentRequest() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (body: LaunchTarget) => unwrap(api.POST('/agent/requests', { body })),
+    onSuccess: () =>
+      Promise.all([
+        client.invalidateQueries({ queryKey: keys.agentRequests }),
+        client.invalidateQueries({ queryKey: keys.status }),
+      ]),
+  })
+}
+
+export function useCancelAgentRequest() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (requestId: number) =>
+      unwrap(api.POST('/agent/requests/{request_id}/cancel', { params: { path: { request_id: requestId } }, body: {} })),
+    onSuccess: () =>
+      Promise.all([
+        client.invalidateQueries({ queryKey: keys.agentRequests }),
+        client.invalidateQueries({ queryKey: keys.status }),
+      ]),
   })
 }
 

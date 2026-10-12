@@ -200,9 +200,40 @@ antes, como la clave de la API, para que use tu suscripción). Con varios agente
 `codex`…). Solo Windows de momento; en otro sistema, o sin el agente en el `PATH`, el botón copia
 la orden para que la pegues tú. Probado con Claude Code; Codex, sin probar.
 
+### En segundo plano y cola de encargos (fase 19, ADR-032)
+El desplegable de cada botón ofrece **«En segundo plano»** en `procesar-ofertas`, `evaluar-encaje`
+y `generar-cv`: el worker lanza tu agente sin ventana y la página «Agente» enseña el progreso, el
+resultado y, si el skill necesita algo, sus preguntas, con «Contestar en terminal» para seguir en
+la misma sesión. Sale de `launch.headless` del manifiesto: `command` (con `{prompt}` y
+`{allowed_tools}`), `allow` (las herramientas no MCP) y `output` (formato de la salida), con el
+mismo `unset_env`.
+
+| | Claude Code | Codex | Otros |
+|---|---|---|---|
+| En segundo plano | Sí: `claude -p` con `stream-json`, `--tools Skill,Agent,Read`, `dontAsk`, `--allowedTools` con las herramientas MCP de la acción, `Skill(<su skill>)` y `Read(./docs/**)`, y `--disallowedTools` con todas las demás MCP de la app. Los tests usan un agente falso; las reglas se comprobaron con `claude` 2.1.296 (ver abajo). El recorrido completo, pendiente de la prueba manual (`docs/pruebas/fase-19-prueba-manual.txt`) | No: no permite limitar las herramientas MCP de una ejecución con garantías (nivel B). El botón lo dice | No |
+| Cola de encargos | Sí (`list_agent_requests`, `complete_agent_request`, skill `atender-encargos`) | Sí (mismas herramientas o `jh requests … --json`) | Sí, con MCP o CLI |
+
+Comprobado con `claude` 2.1.296 (2026-10-12, modelo haiku, sin datos):
+- una herramienta MCP permitida en `.claude/settings.json` pero no en `--allowedTools` **se usa**,
+  también desde un subagente: por eso las demás se deniegan con `--disallowedTools`, que las quita
+  de la sesión entera («No such tool available»);
+- `Skill(procesar-ofertas)` permite ese skill y deniega los demás («denied … don't ask mode»);
+- `Agent(extractor)` no acota: `general-purpose` se lanzó igual. Da igual para el techo: un
+  subagente no tiene más herramientas que la sesión;
+- con `--strict-mcp-config` solo carga `jobhunter` (ni Claude in Chrome ni los conectores de
+  claude.ai).
+
+Para dar segundo plano a otro agente: un bloque `headless` cuyo comando limite las herramientas a
+las de `{allowed_tools}`, deniegue las de `{denied_tools}` y no tenga terminal ni web, y un lector
+de su salida en `backend/app/services/agent_output.py` (`PARSERS`). Si el agente no puede
+limitarlas, no lo añadas: la garantía de este modo es justo esa.
+
+**«Dejar para mi próxima sesión»** funciona con cualquier agente: guarda la orden y tu próxima
+sesión la ve en `get_status` (`agent_requests`) o con el skill `atender-encargos`.
+
 ### Añadir otro agente
 1. Añade su bloque a `targets` en `.agents/manifest.yaml` (rutas, modelos, formato MCP y, si
-   quieres los botones de la UI, `launch`).
+   quieres los botones de la UI, `launch`; para el segundo plano, `launch.headless`).
 2. Si su formato no es JSON ni TOML de los ya soportados, añade un emisor en `scripts/sync_agents.py`.
 3. Regenera y pasa la matriz: `jh demo seed --dir data-demo-<agente> --compat`, arranca el
    agente con `JH_DATA_DIR` apuntando ahí, recorre `procesar-ofertas`, `evaluar-encaje` y

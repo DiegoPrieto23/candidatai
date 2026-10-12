@@ -340,3 +340,16 @@ La carta es un documento propio, con sus indicaciones, su verificación y sus re
   y `redactar-mensaje`; la carta no, salvo lo que copies a sus indicaciones.
 - **Herramientas** `get_job_contacts`, `get_company_research` y `save_company_research` (MCP) con
   sus comandos `jh`, con paridad; `save_message_draft` admite `linkedin` y `email`.
+
+## 19 · Lote en segundo plano y cola de encargos — 2026-10-12 · Claude Code (Opus 5.5)
+- **«En segundo plano»:** en «Procesar ofertas», «Evaluar encaje» y «Generar CV», el desplegable
+  del botón lanza tu agente sin ventana desde el worker, con tu suscripción y solo con las
+  herramientas de la app que necesita ese skill (sin terminal ni web). De una en una.
+- **Página «Agente»:** cada ejecución con su estado, el progreso (qué herramientas usa), el
+  resultado, «Cancelar» y, si el skill necesita algo, sus preguntas con «Contestar en terminal»,
+  que sigue en la misma sesión. Un aviso arriba mientras trabaja.
+- **Generar CV en segundo plano** solo si no hay skills obligatorias que preguntarte (o las has
+  marcado «No la tengo» en Skills); si no, te manda a «En terminal».
+- **«Dejar para mi próxima sesión»:** cualquier botón guarda la orden para tu agente. La ve al
+  empezar (`get_status`, `resumen-diario`) y la hace con el skill `atender-encargos`, que la cierra
+  con un resumen.

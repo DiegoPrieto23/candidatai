@@ -29,6 +29,7 @@ from app.schemas.llm_io import ApplicationAnswers, FitAssessment, JobExtraction
 from app.schemas.profile import MAX_LETTER_WORDS
 from app.schemas.sources import AgentBrowseSource, SourceList, SourceRunSummary
 from app.services import (
+    agent_requests,
     analytics,
     answers,
     company_research,
@@ -385,6 +386,19 @@ class SaveInterviewNotesInput(MilestoneIdInput, interviews.InterviewNotesInput):
     pass
 
 
+class ListAgentRequestsInput(_Input):
+    status: agent_requests.RequestStatus | None = Field(
+        default="pending",
+        description="`pending` (por defecto): los que esperan; `done` o `cancelled`: cerrados. "
+        "Sin indicarlo (`null`), todos.",
+    )
+    limit: int = Field(default=50, ge=1, le=200)
+
+
+class CompleteAgentRequestInput(_Input, agent_requests.CompleteRequestInput):
+    request_id: int = Field(ge=1, description="Id del encargo.")
+
+
 class JobList(BaseModel):
     jobs: list[jobs.JobSummary]
 
@@ -641,6 +655,18 @@ def _save_interview_notes(
 ) -> interviews.SaveNotesResult:
     data = interviews.InterviewNotesInput(notes=args.notes, next_steps=args.next_steps)
     return interviews.save_interview_notes(session, args.milestone_id, data)
+
+
+def _list_agent_requests(
+    session: Session, args: ListAgentRequestsInput, _ctx: CallContext
+) -> agent_requests.AgentRequestList:
+    return agent_requests.list_requests(session, args.status, args.limit)
+
+
+def _complete_agent_request(
+    session: Session, args: CompleteAgentRequestInput, ctx: CallContext
+) -> agent_requests.CompleteRequestResult:
+    return agent_requests.complete(session, args.request_id, args.summary, ctx.client_name)
 
 
 def _save_application_answers(
@@ -1313,6 +1339,35 @@ TOOLS: tuple[ToolSpec, ...] = (
             path=("interviews", "notes"),
             arguments=("milestone_id",),
             file_keys=("notes", "next_steps"),
+        ),
+    ),
+    # Cola de encargos (fase 19): lo que el usuario dejó en la UI para tu próxima sesión.
+    ToolSpec(
+        name="list_agent_requests",
+        description=(
+            "Encargos que el usuario dejó en la UI para tu próxima sesión (cola de encargos), el "
+            "más antiguo primero. Cada uno trae `prompt`, la orden de un skill de Job Hunter que "
+            "compone la app (como si la escribiera el usuario), y su oferta o entrevista."
+        ),
+        input_model=ListAgentRequestsInput,
+        output_model=agent_requests.AgentRequestList,
+        handler=_list_agent_requests,
+        cli=CliSpec(path=("requests", "list")),
+        audit_fields=("status",),
+    ),
+    ToolSpec(
+        name="complete_agent_request",
+        description=(
+            "Cierra un encargo pendiente cuando lo has hecho, con un resumen corto que el usuario "
+            "verá en la UI. Si no lo has hecho (el usuario no quiso, faltaba algo), no lo cierres."
+        ),
+        input_model=CompleteAgentRequestInput,
+        output_model=agent_requests.CompleteRequestResult,
+        handler=_complete_agent_request,
+        cli=CliSpec(
+            path=("requests", "complete"),
+            arguments=("request_id",),
+            option_names={"summary": "--summary"},
         ),
     ),
 )

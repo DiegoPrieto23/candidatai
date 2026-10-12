@@ -190,6 +190,13 @@ class RepostsPolicy(BaseModel):
     min_count: int = Field(default=2, ge=2)  # días distintos con publicación nueva para avisar
 
 
+class BackgroundRunsPolicy(BaseModel):
+    """«En segundo plano» (fase 19): el agente sin ventana, desde el worker, de uno en uno."""
+
+    timeout_minutes: float = Field(default=30, gt=0)  # después se para el proceso (`timeout`)
+    max_progress_lines: int = Field(default=200, gt=0)  # las últimas que se guardan
+
+
 class Policies(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
@@ -207,6 +214,7 @@ class Policies(BaseModel):
     applier: ApplierPolicy
     liveness: LivenessPolicy = Field(default_factory=LivenessPolicy)
     reposts: RepostsPolicy = Field(default_factory=RepostsPolicy)
+    background_runs: BackgroundRunsPolicy = Field(default_factory=BackgroundRunsPolicy)
 
 
 class InjectionPatterns(BaseModel):

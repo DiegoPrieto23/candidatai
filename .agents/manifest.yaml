@@ -20,6 +20,39 @@ targets:
     launch:                       # botones «en tu agente» de la UI (ADR-024): sesión interactiva
       command: [claude, "{prompt}"]   # {prompt} = la orden del skill
       unset_env: [ANTHROPIC_API_KEY]  # sin clave de API, Claude Code usa tu suscripción
+      resume: [claude, --resume, "{session_id}"]   # «Abrir en terminal» retoma una ejecución en segundo plano
+      # «En segundo plano» (fase 19, ADR-032): sin ventana, desde el worker, para los skills que no
+      # preguntan. {allowed_tools}: `allow`, el skill de la acción (`skill_rule`) y sus herramientas
+      # MCP; {denied_tools}: TODAS las demás herramientas MCP de la app, porque un deny gana a
+      # cualquier allow de .claude/settings.json y las quita también a los subagentes. Una por
+      # argumento, con tools.mcp_prefix. Sin terminal ni web (--tools); Read solo sobre docs/ (el
+      # redactor y el verificador leen POLICIES.md); dontAsk deniega lo que no esté permitido.
+      headless:
+        command:
+          - claude
+          - -p
+          - "{prompt}"
+          - --output-format
+          - stream-json
+          - --verbose
+          - --permission-mode
+          - dontAsk
+          - --strict-mcp-config
+          - --mcp-config
+          - .mcp.json
+          - --tools
+          - Skill,Agent,Read
+          - --disallowedTools
+          - Read(./.env)
+          - Read(./.env.*)
+          - Read(./data/**)
+          - Read(./data-demo/**)
+          - "{denied_tools}"
+          - --allowedTools
+          - "{allowed_tools}"
+        allow: [Agent, "Read(./docs/**)"]
+        skill_rule: "Skill({skill})"   # solo el skill de la acción, no cualquiera de los instalados
+        output: claude-stream-json     # formato de la salida que lee el worker
     tools:                        # herramientas lógicas → nombres nativos
       mcp_prefix: "mcp__jobhunter__"
       read: [Read]
@@ -62,6 +95,9 @@ targets:
         allowed-tools: ["read", "jh_profile_cli", "jh_context_cli", "jh_skills_cli"]
       resumen-diario:
         allowed-tools: ["mcp:get_status", "mcp:list_followups_due", "mcp:list_upcoming", "mcp:list_jobs"]
+      atender-encargos:                   # fase 19: la cola de encargos que deja la UI
+        argument-hint: "[nada para todos, o números de encargo]"
+        allowed-tools: ["mcp:list_agent_requests"]
       importar-plantilla-cv:
         argument-hint: "[ruta en data/uploads/, p. ej. data/uploads/mi-cv.pdf]"
         allowed-tools: ["read", "jh_templates_cli"]

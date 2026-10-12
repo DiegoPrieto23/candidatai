@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.models import Application, Task
+from app.services import agent_requests
 from app.services.pipeline import Stage
 
 
@@ -13,6 +14,7 @@ class StatusReport(BaseModel):
     total: int
     by_stage: dict[Stage, int]
     pending_tasks: int  # tareas del worker en cola
+    agent_requests: int  # encargos que el usuario te dejó en la UI (fase 19): `list_agent_requests`
     demo_mode: bool  # datos ficticios de `jh demo seed` (fase 12.1)
 
 
@@ -31,5 +33,6 @@ def get_status(session: Session) -> StatusReport:
         total=sum(counts.values()),
         by_stage=counts,
         pending_tasks=pending_tasks or 0,
+        agent_requests=agent_requests.pending_count(session),
         demo_mode=get_settings().demo_mode,
     )

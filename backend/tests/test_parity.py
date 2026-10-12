@@ -146,6 +146,17 @@ def seed_applied_long_ago() -> None:
         )
 
 
+def seed_agent_request() -> None:
+    """Fase 19: un encargo pendiente (generar el CV de la oferta 1) y otro ya cancelado."""
+    seed_approved()
+    from app.services import agent_requests
+
+    with session_scope() as session:
+        agent_requests.create(session, "generar-cv", 1)
+        cancelled = agent_requests.create(session, "procesar-ofertas")
+        agent_requests.cancel(session, cancelled.id)
+
+
 def seed_reply() -> None:
     """La oferta 1 enviada y un correo de su empresa que intenta romper el envoltorio."""
     seed_applied_long_ago()
@@ -723,6 +734,23 @@ CASES = [
     Case("funnel-empty", "get_funnel_stats", {}, ["stats", "funnel"]),
     Case("funnel-bad", "get_funnel_stats", {"since": "ayer"},
          ["stats", "funnel", "--since", "ayer"], expect_error="validation_error"),
+    Case("requests", "list_agent_requests", {}, ["requests", "list"], seed=seed_agent_request),
+    Case("requests-all", "list_agent_requests", {"status": "cancelled", "limit": 5},
+         ["requests", "list", "--status", "cancelled", "--limit", "5"], seed=seed_agent_request),
+    Case("requests-bad", "list_agent_requests", {"status": "hecho"},
+         ["requests", "list", "--status", "hecho"], expect_error="validation_error"),
+    Case("request-complete", "complete_agent_request",
+         {"request_id": 1, "summary": "CV generado y verificado."},
+         ["requests", "complete", "1", "--summary", "CV generado y verificado."],
+         seed=seed_agent_request),
+    Case("request-complete-closed", "complete_agent_request", {"request_id": 2, "summary": "x"},
+         ["requests", "complete", "2", "--summary", "x"], seed=seed_agent_request,
+         expect_error="not_allowed"),
+    Case("request-complete-missing", "complete_agent_request", {"request_id": 9, "summary": "x"},
+         ["requests", "complete", "9", "--summary", "x"], expect_error="not_found"),
+    Case("request-complete-empty", "complete_agent_request", {"request_id": 1, "summary": ""},
+         ["requests", "complete", "1", "--summary", ""], seed=seed_agent_request,
+         expect_error="validation_error"),
     Case("replies", "list_replies", {}, ["replies", "list"], seed=seed_reply),
     Case("replies-new", "list_replies", {"status": "new", "limit": 5},
          ["replies", "list", "--status", "new", "--limit", "5"], seed=seed_reply),
