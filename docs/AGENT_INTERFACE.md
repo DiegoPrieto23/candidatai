@@ -508,9 +508,9 @@ lanza a sí mismo.
 
 ### Fuentes: empresas objetivo y portales (fase 09, solo CLI)
 
-Las usa la persona (CLI o pantalla «Empresas» de la UI). `cai sources list` es desde la 09b la
+Las usa la persona (CLI o página «Fuentes → Empresas objetivo» de la UI). `cai sources list` es desde la 09b la
 herramienta `list_sources` (tabla de arriba); las plataformas `agent_browse` se ven y se activan en
-la pantalla «Plataformas».
+la página «Fuentes → Plataformas».
 
 | Comando | Qué hace |
 |---|---|

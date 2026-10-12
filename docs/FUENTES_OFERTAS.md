@@ -24,7 +24,7 @@ del agente (ADR-016) o la búsqueda pública sin sesión que hace la propia app 
 
 ## APIs de ATS y portales (fase 09)
 
-- **Empresas objetivo:** nombre + ATS + slug del tablero, en la pantalla «Empresas» o con
+- **Empresas objetivo:** nombre + ATS + slug del tablero, en la página «Fuentes → Empresas objetivo» o con
   `cai sources add`. Endpoints públicos documentados, sin autenticación ni scraping:
   Greenhouse `boards-api.greenhouse.io/v1/boards/{slug}/jobs?content=true`, Lever
   `api.lever.co/v0/postings/{slug}?mode=json` (o `api.eu.lever.co`) y Ashby
@@ -150,7 +150,7 @@ hayas aprobado. Skill `search-jobs`.
 - **Plataformas** = fuentes de tipo `agent_browse`:
   `{name, platform, search_urls[], priority (1 = primera), access: free|login|blocked,
   allow_agent_browsing, max_offers, notes}`. Las da de alta el agente con
-  `search-jobs configurar` (como la etapa 1 del original); en la pantalla «Plataformas» ves
+  `search-jobs configurar` (como la etapa 1 del original); en la página «Fuentes → Plataformas» ves
   cada una con sus búsquedas y su último recorrido, y cambias su prioridad, su acceso y si el
   agente puede recorrerla.
 - **LinkedIn** se crea siempre con `allow_agent_browsing: false`. Solo lo puedes activar tú en la
@@ -200,7 +200,7 @@ ofertas de LinkedIn sin depender del correo. Es **contrario a las condiciones de
 (prohíben el acceso automatizado) y puede hacer que bloquee tu IP un tiempo: por eso está
 **apagada por defecto**, es para uso personal y solo la activas tú (ADR-033).
 
-- **Dónde:** tarjeta de LinkedIn en «Plataformas» → «Búsqueda pública sin sesión». Es un interruptor
+- **Dónde:** tarjeta de LinkedIn en «Fuentes → Plataformas» → «Búsqueda pública sin sesión». Es un interruptor
   distinto de «El agente la recorre». Encenderlo abre un aviso de riesgo que hay que aceptar (la API
   exige `confirm_risk: true` y solo la acepta desde la UI). El agente no puede activarla: no hay
   herramienta MCP ni comando para eso, y `save_source` no la toca.

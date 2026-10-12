@@ -81,7 +81,7 @@ hiciste, márcala.
 
 - [ ] **Fase 22 · LinkedIn por sus endpoints públicos** (`fase-22-prueba-manual.txt`), **solo si
       quieres usarla** (va contra las condiciones de LinkedIn y puede bloquear tu IP un tiempo):
-  - comprobar que la tarjeta de LinkedIn de «Plataformas» muestra «Búsqueda pública sin sesión»
+  - comprobar que la tarjeta de LinkedIn de «Fuentes → Plataformas» muestra «Búsqueda pública sin sesión»
     apagada y con las búsquedas que usaría;
   - activarla aceptando el aviso, «Buscar ahora» y ver en «Alertas» los resúmenes nuevos (o el
     aviso de bloqueo, si LinkedIn responde 999 a un user-agent honesto: apúntalo);

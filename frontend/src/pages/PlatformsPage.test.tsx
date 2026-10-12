@@ -223,8 +223,10 @@ describe('Búsqueda pública de LinkedIn', () => {
   })
 
   it('tras un bloqueo lo avisa y no deja buscar', async () => {
-    const blockedAt = new Date(Date.now() - 3_600_000).toISOString()
-    const until = new Date(Date.now() + 3 * 86_400_000 - 3_600_000).toISOString()
+    // Una sola referencia: con dos `Date.now()` podía pasar 1 ms entre medias y el bloqueo no cuadraba.
+    const now = Date.now()
+    const blockedAt = new Date(now - 3_600_000).toISOString()
+    const until = new Date(now + 3 * 86_400_000 - 3_600_000).toISOString()
     mockApi({
       'GET /status': status(),
       'GET /sources': { sources: [linkedin], agent_browse: LIMITS },

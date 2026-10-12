@@ -18,6 +18,7 @@ import { ProfilePage } from '@/pages/ProfilePage'
 import { ProcessesPage } from '@/pages/ProcessesPage'
 import { RepliesPage } from '@/pages/RepliesPage'
 import { SkillsPage } from '@/pages/SkillsPage'
+import { SourcesHubPage } from '@/pages/SourcesHubPage'
 import { SourcesPage } from '@/pages/SourcesPage'
 import { TemplatesPage } from '@/pages/TemplatesPage'
 import { TriagePage } from '@/pages/TriagePage'
@@ -64,8 +65,14 @@ export function AppRoutes() {
         <Route path="alertas" element={<AlertsPage />} />
         <Route path="plantillas" element={<TemplatesPage />} />
         <Route path="perfil" element={<ProfilePage />} />
-        <Route path="empresas" element={<SourcesPage />} />
-        <Route path="plataformas" element={<PlatformsPage />} />
+        <Route path="fuentes" element={<SourcesHubPage />}>
+          <Route index element={<Navigate to="/fuentes/empresas" replace />} />
+          <Route path="empresas" element={<SourcesPage />} />
+          <Route path="plataformas" element={<PlatformsPage />} />
+        </Route>
+        {/* Antes de la fase 23.3 eran páginas sueltas: los enlaces guardados siguen funcionando. */}
+        <Route path="empresas" element={<Navigate to="/fuentes/empresas" replace />} />
+        <Route path="plataformas" element={<Navigate to="/fuentes/plataformas" replace />} />
         <Route path="agente" element={<AgentPage />} />
         <Route path="*" element={<NotFound />} />
       </Route>

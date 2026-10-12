@@ -101,7 +101,7 @@ def require_browsing(source: Source) -> None:
         where = "LinkedIn" if is_linkedin(source.config or {}) else f"«{source.name}»"
         raise BrowsingNotAllowedError(
             f"La búsqueda con navegador no está activada en {where}. Solo el usuario puede "
-            "activarla, en la pantalla Plataformas."
+            "activarla, en «Fuentes → Plataformas»."
         )
 
 

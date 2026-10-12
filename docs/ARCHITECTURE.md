@@ -59,7 +59,7 @@ La app nunca llama a un modelo y no depende de ningún proveedor.
 | `GET /renders/{id}/pdf`, `GET /renders/{id}/docx` | Ficheros del render |
 | `GET /uploads`, `POST /uploads`, `DELETE /uploads/{name}` | «Mi CV»: CVs subidos a `data/uploads/` (máximo 10 MB, nombre saneado, nunca se sobrescribe) y la plantilla creada desde cada uno, si la hay (por sha256 del `source.*`) |
 | `GET /templates/{id}/source.png`, `GET /templates/{id}/preview-real.png` | Primera página del original importado y la plantilla con el perfil real (en caché por plantilla y versión del perfil) |
-| `GET /sources`, `POST /sources` | Pantalla «Empresas»: fuentes con conector (empresas objetivo y portales) con su última ejecución; alta (`exists` 409 si ya está) |
+| `GET /sources`, `POST /sources` | Página «Fuentes → Empresas objetivo»: fuentes con conector (empresas objetivo y portales) con su última ejecución; alta (`exists` 409 si ya está) |
 | `POST /sources/platforms` | «Añadir plataforma» (búsqueda con navegador): `AgentBrowseSource`; `exists` 409 si ya hay una con ese nombre. LinkedIn se crea siempre desactivada |
 | `GET /prompts/pending`, `POST /prompts/{id}/answer` | Avisos al usuario (captcha, login…) para el pop-up global; contestar `{outcome: done\|skipped}` |
 | `POST /sources/test`, `POST /sources/{id}/test` | Prueba una fuente nueva o guardada sin guardar nada: «12 ofertas encontradas, 3 tras filtros». Un fallo de la fuente es 200 con `errors` |

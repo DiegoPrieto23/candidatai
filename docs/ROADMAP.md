@@ -62,7 +62,7 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 23 | CandidatAI | 🚧 | Nombre nuevo en todas partes, identificadores en inglés, barra lateral e instalación con un clic |
 | 23.1 | ↳ Renombrado a CandidatAI | ✅ | Todo dice CandidatAI; `cai` en vez de `jh`; MCP `candidatai`; repositorio renombrado |
 | 23.2 | ↳ Skills y roles en inglés | ✅ | `/generate-cv 42`, `/prepare-interview 42`…; roles `writer`, `verifier`… |
-| 23.3 | ↳ Barra lateral | ⏳ | Navegación lateral agrupada, plegable y con cajón en el móvil |
+| 23.3 | ↳ Barra lateral | ✅ | Navegación lateral agrupada, plegable y con cajón en el móvil |
 | 23.4 | ↳ Instalación fácil | ⏳ | `cai start`, `install.ps1`, acceso directo y releases con la UI compilada |
 | 23.5 | ↳ Medios y README | ⏳ | Banner, capturas, GIF y vídeo nuevos; README sin la comparativa |
 
@@ -1962,3 +1962,25 @@ decisiones tomadas y deuda técnica pendiente. -->
 - **Deuda:**
   - Esta sesión de desarrollo cargó los subagentes con su nombre antiguo; desde una sesión nueva
     ya aparecen `writer`, `verifier`…
+
+### 23.3 · Barra lateral — 2026-10-12 · Claude Code (Opus 5.5)
+- **Resumen:** la fila de 13 enlaces de la cabecera pasa a una barra lateral
+  (`components/Sidebar.tsx`) con grupos (Búsqueda, Procesos, Análisis, Configurar), iconos,
+  recuentos, plegable a solo iconos (con tooltip y recordado en `localStorage`) y, por debajo de
+  1024 px, un cajón que se abre con un botón y se cierra al navegar. «Empresas» y «Plataformas»
+  se unen en **Fuentes**, con pestañas (`/fuentes/empresas`, `/fuentes/plataformas`); las rutas
+  antiguas redirigen. La cabecera se queda con la fila de recuentos por etapa y «Nueva oferta» en
+  una sola línea. Docs y mensajes («Fuentes → Plataformas») al día. 235 tests de frontend.
+- **Decisiones:**
+  - Sin título de sección en la cabecera (el encargo lo pedía): cada página ya tiene su `h1`.
+  - El recuento va en el nombre accesible del enlace («Por revisar (3 por revisar)»); antes se
+    leía pegado («Por revisar,3por revisar»).
+  - Los títulos de grupo son etiquetas de lista, no encabezados, para no competir con el `h1`.
+  - «Bandeja» queda activa también en la ficha de una oferta y en «Nueva oferta».
+  - El cajón se cierra con cualquier navegación (también la marca) y al pasar a escritorio.
+- **Deuda:**
+  - Márgenes de los tests subidos (`testTimeout` 15 s, `asyncUtilTimeout` 4 s): con la suite
+    completa en paralelo en Windows algunas páginas tardaban más de 5 s. Provisional: sin medir la
+    causa (sospecha: el import de barril de los iconos).
+  - Un test de Plataformas fallaba a veces por dos `Date.now()` distintos; corregido.
+  - La UI sigue solo en español (punto 9 de «Lo que nos falta» en `docs/COMPARATIVA.md`).

@@ -1,47 +1,16 @@
 import { useEffect, useRef } from 'react'
-import { Link, NavLink, Outlet, useLocation, useSearchParams } from 'react-router'
+import { Link, Outlet, useLocation, useSearchParams } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
-import {
-  BellRingingIcon,
-  CircleNotchIcon,
-  DesktopIcon,
-  FlaskIcon,
-  MoonIcon,
-  PlusIcon,
-  SunIcon,
-  TerminalWindowIcon,
-} from '@phosphor-icons/react'
+import { BellRingingIcon, CircleNotchIcon, FlaskIcon, PlusIcon, TerminalWindowIcon } from '@phosphor-icons/react'
 import type { Stage } from '@/api/client'
-import { keys, useAgentRuns, useFollowups, useReplies, useStatus } from '@/api/queries'
+import { keys, useAgentRuns, useFollowups, useStatus } from '@/api/queries'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { STAGE_LABEL, STAGES } from '@/lib/labels'
-import { useTheme, type ThemeChoice } from '@/lib/theme'
 import { cn } from '@/lib/utils'
 import { UserPrompts } from '@/components/UserPrompts'
 import { AgentButton } from '@/components/AgentButton'
-
-const THEME_META: Record<ThemeChoice, { icon: typeof SunIcon; label: string }> = {
-  system: { icon: DesktopIcon, label: 'Tema: el del sistema' },
-  light: { icon: SunIcon, label: 'Tema: claro' },
-  dark: { icon: MoonIcon, label: 'Tema: oscuro' },
-}
-
-function ThemeToggle() {
-  const { choice, cycle } = useTheme()
-  const { icon: Icon, label } = THEME_META[choice]
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button variant="ghost" size="icon" onClick={cycle} aria-label={label}>
-          <Icon className="size-[18px]" />
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent>{label}</TooltipContent>
-    </Tooltip>
-  )
-}
+import { Brand, MobileNav, Sidebar } from '@/components/Sidebar'
 
 function StageCounts() {
   const { data, isPending, isError } = useStatus()
@@ -188,29 +157,6 @@ function BackgroundRunReminder() {
   )
 }
 
-/** Ejecuciones en curso (fase 19) y encargos pendientes. */
-function AgentNavCount() {
-  const runs = useAgentRuns()
-  const { data } = useStatus()
-  const active = runs.data?.active ?? 0
-  const waiting = runs.data?.runs.filter((r) => r.status === 'needs_user').length ?? 0
-  const requests = data?.agent_requests ?? 0
-  const count = active + waiting + requests
-  if (!count) return null
-  return (
-    <span
-      className={cn(
-        'tabular grid h-[18px] min-w-[18px] place-items-center rounded-full px-1 text-[0.7rem] font-semibold',
-        active + waiting ? 'bg-primary text-primary-foreground' : 'bg-foreground/10 text-foreground/80',
-      )}
-    >
-      <span className="sr-only">, </span>
-      {count}
-      <span className="sr-only"> en curso o pendientes</span>
-    </span>
-  )
-}
-
 // Modo demo (fase 12.1): la carpeta de datos la creó `cai demo seed`. Fijo en todas las páginas.
 function DemoBanner() {
   const { data } = useStatus()
@@ -232,129 +178,43 @@ function DemoBanner() {
   )
 }
 
-function navClass({ isActive }: { isActive: boolean }) {
-  return cn(
-    'flex shrink-0 items-center gap-1.5 rounded-md px-2.5 py-1.5 whitespace-nowrap transition-colors',
-    isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
-  )
-}
-
-function NavCount({ stage, label, muted = false }: { stage: Stage; label: string; muted?: boolean }) {
-  const { data } = useStatus()
-  const count = data?.by_stage[stage] ?? 0
-  if (!count) return null
-  return (
-    <span
-      className={cn(
-        'tabular grid h-[18px] min-w-[18px] place-items-center rounded-full px-1 text-[0.7rem] font-semibold',
-        muted ? 'bg-foreground/10 text-foreground/80' : 'bg-primary text-primary-foreground',
-      )}
-    >
-      <span className="sr-only">, </span>
-      {count}
-      <span className="sr-only"> {label}</span>
-    </span>
-  )
-}
-
-/** Respuestas de las empresas que esperan tu decisión (fase 15). */
-function RepliesNavCount() {
-  const { data } = useReplies()
-  const count = data?.counts.proposed ?? 0
-  if (!count) return null
-  return (
-    <span className="tabular grid h-[18px] min-w-[18px] place-items-center rounded-full bg-primary px-1 text-[0.7rem] font-semibold text-primary-foreground">
-      <span className="sr-only">, </span>
-      {count}
-      <span className="sr-only"> por revisar</span>
-    </span>
-  )
-}
-
 export function AppShell() {
   // En Inicio el recorrido ya enseña las etapas: sin la fila de recuentos.
   const { pathname } = useLocation()
   return (
-    <div className="min-h-[100dvh]">
-      <header className="sticky top-0 z-20 border-b bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/65">
-        <DemoBanner />
-        <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4 sm:px-6 lg:gap-6">
-          <Link to="/" className="flex shrink-0 items-center gap-2.5 font-semibold tracking-tight whitespace-nowrap">
-            <span className="grid size-7 place-items-center rounded-md bg-foreground font-mono text-[11px] font-bold text-background">
-              CA
-            </span>
-            <span className="hidden sm:inline">CandidatAI</span>
-          </Link>
-          {/* En pantallas estrechas el menú se desplaza en horizontal en vez de ensanchar la página. */}
-          <nav className="relative -my-2 flex min-w-0 items-center gap-0.5 overflow-x-auto py-2 text-sm [scrollbar-width:none]">
-            <NavLink to="/" end className={navClass}>
-              Inicio
-            </NavLink>
-            <NavLink to="/bandeja" className={navClass}>
-              Bandeja
-            </NavLink>
-            <NavLink to="/por-revisar" className={navClass}>
-              Por revisar
-              <NavCount stage="pending_triage" label="por revisar" />
-            </NavLink>
-            <NavLink to="/procesos" className={navClass}>
-              Procesos
-            </NavLink>
-            <NavLink to="/respuestas" className={navClass}>
-              Respuestas
-              <RepliesNavCount />
-            </NavLink>
-            <NavLink to="/embudo" className={navClass}>
-              Embudo
-            </NavLink>
-            <NavLink to="/skills" className={navClass}>
-              Skills
-            </NavLink>
-            <NavLink to="/alertas" className={navClass}>
-              Alertas
-              <NavCount stage="pending_detail" label="por completar" muted />
-            </NavLink>
-            <NavLink to="/empresas" className={navClass}>
-              Empresas
-            </NavLink>
-            <NavLink to="/plataformas" className={navClass}>
-              Plataformas
-            </NavLink>
-            <NavLink to="/plantillas" className={navClass}>
-              Plantillas
-            </NavLink>
-            <NavLink to="/perfil" className={navClass}>
-              Mi perfil
-            </NavLink>
-            <NavLink to="/agente" className={navClass}>
-              Agente
-              <AgentNavCount />
-            </NavLink>
-          </nav>
-          <div className="ml-auto flex shrink-0 items-center gap-1.5">
-            <ThemeToggle />
-            <Button asChild size="sm" className="active:translate-y-px">
+    <div className="flex min-h-[100dvh]">
+      <Sidebar />
+      <div className="min-w-0 flex-1">
+        <header className="sticky top-0 z-20 border-b bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/65">
+          <DemoBanner />
+          {/* Una sola fila en escritorio; en móvil los recuentos bajan a una segunda línea. */}
+          <div className="mx-auto flex max-w-6xl flex-wrap items-center lg:flex-nowrap gap-x-3 gap-y-1 px-4 py-2 sm:px-6">
+            <MobileNav />
+            <div className="lg:hidden">
+              <Brand />
+            </div>
+            {pathname !== '/' && (
+              <div className="order-last min-w-0 basis-full lg:order-none lg:basis-auto lg:flex-1">
+                <StageCounts />
+              </div>
+            )}
+            <Button asChild size="sm" className="ml-auto shrink-0 active:translate-y-px">
               <Link to="/nueva">
                 <PlusIcon weight="bold" />
                 <span className="sr-only sm:not-sr-only">Nueva oferta</span>
               </Link>
             </Button>
           </div>
-        </div>
-        {pathname !== '/' && (
-          <div className="mx-auto max-w-6xl px-4 pb-2 sm:px-6">
-            <StageCounts />
+        </header>
+        <main className="mx-auto max-w-6xl px-4 pb-24 pt-6 sm:px-6 sm:pt-8">
+          <div className="mb-6 space-y-3 empty:hidden">
+            <BackgroundRunReminder />
+            <ExtractionReminder />
+            <FollowupReminder />
           </div>
-        )}
-      </header>
-      <main className="mx-auto max-w-6xl px-4 pb-24 pt-6 sm:px-6 sm:pt-8">
-        <div className="mb-6 space-y-3 empty:hidden">
-          <BackgroundRunReminder />
-          <ExtractionReminder />
-          <FollowupReminder />
-        </div>
-        <Outlet />
-      </main>
+          <Outlet />
+        </main>
+      </div>
       <UserPrompts />
     </div>
   )

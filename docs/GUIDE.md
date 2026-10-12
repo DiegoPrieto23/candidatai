@@ -128,12 +128,12 @@ A typical day:
 | Source | How to set it up |
 |---|---|
 | **Manual** | «Nueva oferta» (New job) in the UI: a URL or pasted text |
-| **Target companies** (Greenhouse, Lever, Ashby) | «Empresas» (Companies) page or `cai sources add --kind greenhouse --name "Acme" --slug acme`. `cai sources discover --file companies.txt` finds the board of each company in a list |
+| **Target companies** (Greenhouse, Lever, Ashby) | «Fuentes → Empresas objetivo» (Sources → Target companies) page or `cai sources add --kind greenhouse --name "Acme" --slug acme`. `cai sources discover --file companies.txt` finds the board of each company in a list |
 | **InfoJobs and Adzuna** | Their keys in `.env` (`CAI_INFOJOBS_CLIENT_ID`/`_SECRET`, `CAI_ADZUNA_APP_ID`/`_KEY`) and a search with `cai sources add` |
 | **Email alerts** | Create job alerts on LinkedIn, InfoJobs, Indeed… and have them land in a label of your mailbox. Set up read-only IMAP in `.env`: step by step in [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md) (Spanish). Without IMAP, drop `.eml` files in `data/inbox/`. What comes in shows up in «Alertas» (Alerts) |
 | **"Send to CandidatAI" button** | Load `extension/` as an unpacked extension in Chrome or Edge and paste the token from `cai capture token` into its options. Instructions: [`extension/README.md`](../extension/README.md) (Spanish) |
-| **Your agent with your browser** | `search-jobs configurar` picks portals and searches («Plataformas», Platforms page); `search-jobs` browses them. LinkedIn stays off until you turn it on |
-| **LinkedIn's public search** | The «Búsqueda pública sin sesión» (public search without login) switch on the LinkedIn card in «Plataformas». Off by default: it goes against LinkedIn's terms and may get your IP blocked for a while |
+| **Your agent with your browser** | `search-jobs configurar` picks portals and searches («Fuentes → Plataformas», Sources → Platforms page); `search-jobs` browses them. LinkedIn stays off until you turn it on |
+| **LinkedIn's public search** | The «Búsqueda pública sin sesión» (public search without login) switch on the LinkedIn card in «Fuentes → Plataformas». Off by default: it goes against LinkedIn's terms and may get your IP blocked for a while |
 
 The worker runs the automatic sources every day at `connectors.daily_at`
 (`config/policies.yaml`), and on start-up if one was missed. Detail of each source:

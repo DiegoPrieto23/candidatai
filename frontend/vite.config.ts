@@ -22,5 +22,8 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
     css: false,
+    // Provisional (fase 23.3): con toda la suite en paralelo en Windows, algunas páginas tardan más
+    // de 5 s (cada una pinta la barra lateral). Por separado pasan en < 2 s.
+    testTimeout: 15_000,
   },
 })
