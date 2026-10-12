@@ -16,6 +16,9 @@ solo apuntan aquí.
 
 | Necesitas… | Lee |
 |---|---|
+| Instalar y usar la app (para personas) | `docs/GUIA.md` (en inglés, `docs/GUIDE.md`) |
+| Comparativa con AI Job Search y career-ops | `docs/COMPARATIVA.md` |
+| Índice de todos los documentos | `docs/README.md` |
 | Visión de conjunto, capas, flujo | `docs/ARCHITECTURE.md` |
 | Tablas, eventos, estados | `docs/DATA_MODEL.md` |
 | Herramientas MCP, comandos CLI y esquemas | `docs/AGENT_INTERFACE.md` |
@@ -75,7 +78,9 @@ uv run scripts/sync_agents.py --check   # CI: falla si lo generado no está al d
   El estado actual es una proyección de los eventos; nunca se actualiza sin evento.
 - Cualquier cambio de esquema lleva migración de Alembic.
 - Tests con pytest sobre SQLite temporal. Sin red en los tests: usa fixtures y `respx`.
-- Código e identificadores en inglés; UI, docs y mensajes al usuario en español.
+- Código e identificadores en inglés; UI, docs y mensajes al usuario en español. Excepción: el
+  README y la guía de uso existen en inglés (`README.md`, `docs/GUIDE.md`) y en español
+  (`README.es.md`, `docs/GUIA.md`); un cambio en uno va también al otro.
 - Windows 11 es el entorno principal: `pathlib` siempre, nada de comandos solo-Unix en código,
   rutas de herramientas externas configurables por variable de entorno (`SOFFICE_PATH`).
 - Frontend: TypeScript estricto, cliente de API generado desde el OpenAPI de FastAPI, TanStack
