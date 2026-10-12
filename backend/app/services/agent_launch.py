@@ -40,6 +40,7 @@ ActionId = Literal[
     "revisar-respuestas",
     "redactar-seguimientos",
     "redactar-seguimiento",
+    "ampliar-busqueda",
 ]
 
 
@@ -100,6 +101,12 @@ ACTIONS: dict[ActionId, Action] = {
         "Redactar seguimientos",
         "Usa el skill redactar-seguimiento de Job Hunter con los seguimientos y agradecimientos "
         "pendientes.",
+    ),
+    # Plataformas (fase 16): títulos cercanos a los que apruebas. El agente propone; tú decides.
+    "ampliar-busqueda": Action(
+        "Ampliar búsqueda",
+        "Usa el skill ampliar-busqueda de Job Hunter para proponerme títulos de puesto cercanos a "
+        "los que apruebo.",
     ),
     "redactar-seguimiento": Action(
         "Redactar seguimiento",

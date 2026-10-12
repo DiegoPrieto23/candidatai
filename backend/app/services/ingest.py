@@ -25,7 +25,7 @@ from sqlalchemy.orm import Session
 from app.core.policies import get_policies
 from app.models import Company, Job, Source
 from app.models.base import utcnow
-from app.services import platforms
+from app.services import platforms, reposts
 from app.services.events import record
 from app.services.normalize import fingerprint, normalize_company, normalize_title
 from app.services.pipeline import Actor, EventType
@@ -123,7 +123,7 @@ def _is_job_posting(node: dict[str, Any]) -> bool:
     return "JobPosting" in kinds
 
 
-def _find_job_posting(doc: Any) -> dict[str, Any] | None:
+def find_job_posting(doc: Any) -> dict[str, Any] | None:
     for script in doc.xpath('//script[@type="application/ld+json"]'):
         try:
             data = json.loads(script.text_content(), strict=False)
@@ -166,7 +166,7 @@ def _location(posting: dict[str, Any]) -> str | None:
     return " / ".join(labels) or None
 
 
-def _parse_date(value: Any) -> datetime | None:
+def parse_date(value: Any) -> datetime | None:
     if not isinstance(value, str):
         return None
     try:
@@ -188,7 +188,7 @@ def parse_page(html: str) -> ParsedPage:
     except (ParserError, ValueError):
         return ParsedPage(None, None, None, None, "")
     text = _main_text(html)
-    posting = _find_job_posting(doc)
+    posting = find_job_posting(doc)
     if posting is not None:
         # Algunas webs pintan la oferta con JavaScript pero la incluyen entera en el JSON-LD.
         description = posting.get("description")
@@ -198,7 +198,7 @@ def parse_page(html: str) -> ParsedPage:
             title=_name(posting.get("title")) or _meta(doc, "og:title"),
             company=_name(posting.get("hiringOrganization")) or _meta(doc, "og:site_name"),
             location=_location(posting),
-            posted_at=_parse_date(posting.get("datePosted")),
+            posted_at=parse_date(posting.get("datePosted")),
             text=text,
         )
     return ParsedPage(
@@ -236,12 +236,12 @@ def _check_url(url: str) -> None:
     _check_host(parts.hostname)
 
 
-def _check_request(request: httpx.Request) -> None:
+def check_request(request: httpx.Request) -> None:
     """Se ejecuta en cada petición, también en las redirecciones."""
     _check_url(str(request.url))
 
 
-def _looks_like_login(final_url: httpx.URL, html: str) -> bool:
+def looks_like_login(final_url: httpx.URL, html: str) -> bool:
     path = final_url.path.lower()
     if any(word in path for word in _LOGIN_PATH_WORDS):
         return True
@@ -264,7 +264,7 @@ def fetch_page(url: str) -> str:
         timeout=FETCH_TIMEOUT,
         headers=headers,
         follow_redirects=True,
-        event_hooks={"request": [_check_request]},
+        event_hooks={"request": [check_request]},
     )
     try:
         with client, client.stream("GET", url) as response:
@@ -288,7 +288,7 @@ def fetch_page(url: str) -> str:
     if status >= 400:
         raise IngestError(f"La página respondió con HTTP {status}. {_SUGGEST_TEXT}")
     html = content.decode(encoding, errors="replace")
-    if _looks_like_login(final_url, html):
+    if looks_like_login(final_url, html):
         raise IngestError(f"La página pide iniciar sesión para ver la oferta. {_SUGGEST_TEXT}")
     return html
 
@@ -375,7 +375,7 @@ def store_job(
 ) -> AddJobResult:
     """Guarda una oferta: huella, duplicados, riesgo y eventos. Lo usan el alta manual, los
     conectores (fase 09) y las alertas por correo (09b). Un duplicado exacto devuelve la existente
-    sin registrar nada.
+    sin registrar eventos (sí la publicación, si trae otro id o URL: `services/reposts.py`).
 
     Sin `platform`, se deduce de la URL (`services/platforms.py`) cuando su id coincide con
     `external_id` o no hay `external_id`. Una oferta `summary` entra en `pending_detail`."""
@@ -400,6 +400,10 @@ def store_job(
     fp = fingerprint(company, title, location)
     existing = session.scalars(select(Job).where(Job.fingerprint == fp)).first()
     if existing is not None:
+        # La misma oferta con otro id o URL: puede ser una republicación (fase 16).
+        reposts.note_sighting(
+            session, existing, url=url, platform=platform, external_id=external_id
+        )
         return _existing(existing)
 
     now = utcnow()
@@ -426,6 +430,9 @@ def store_job(
     )
     session.add(job)
     session.flush()
+    reposts.note_sighting(
+        session, job, url=url, platform=job.platform, external_id=external_id, seen_at=now
+    )
 
     manual = source.kind in SOURCE_NAMES
     found: dict[str, object] = {"source": source.kind}

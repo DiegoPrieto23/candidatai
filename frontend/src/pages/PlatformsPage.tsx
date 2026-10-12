@@ -3,6 +3,7 @@ import { ArrowSquareOutIcon, ClockIcon, CompassIcon, WarningIcon } from '@phosph
 import type { AgentBrowseLimits, BrowseAccess, SourceView } from '@/api/client'
 import { usePlatforms, useUpdateBrowseSettings } from '@/api/queries'
 import { AddPlatformButton } from '@/components/AddPlatformDialog'
+import { AgentButton } from '@/components/AgentButton'
 import { EmptyState, ErrorState, InlineCode } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import {
@@ -441,12 +442,16 @@ export function PlatformsPage() {
       <div className="mb-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-2xl font-semibold tracking-tight">Plataformas</h1>
-          <AddPlatformButton />
+          <div className="flex flex-wrap gap-2">
+            <AgentButton action="ampliar-busqueda">Ampliar búsqueda</AgentButton>
+            <AddPlatformButton />
+          </div>
         </div>
         <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
           Portales que tu agente recorre con tu navegador cuando le pides{' '}
           <InlineCode text="`buscar-ofertas`" />, por orden de prioridad. Solo lee: no se postula, no guarda
           ofertas en el portal ni resuelve captchas. Lo que encuentra queda en «Por extraer».
+          «Ampliar búsqueda» propone puestos cercanos a los que apruebas; tú decides cuáles añadir.
         </p>
         {platforms.data && <Limits limits={platforms.data.agent_browse} />}
       </div>

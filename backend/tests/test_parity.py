@@ -48,6 +48,12 @@ def seed_job() -> None:
         )
 
 
+def seed_from_url() -> None:
+    """Oferta 1 dada de alta desde `URL` (la página simulada sigue publicada)."""
+    with session_scope() as session:
+        ingest.add_from_url(session, URL)
+
+
 def seed_extracted() -> None:
     seed_job()
     with session_scope() as session:
@@ -485,6 +491,18 @@ CASES = [
     Case("list-limit-text", "list_jobs", {"limit": "muchas"}, ["jobs", "list", "--limit", "muchas"],
          expect_error="validation_error"),
     Case("show", "get_job", {"job_id": 1}, ["jobs", "show", "1"]),
+    Case("check-open", "check_job_open", {"job_id": 1}, ["jobs", "check-open", "1"],
+         seed=seed_from_url),
+    Case("check-open-force", "check_job_open", {"job_id": 1, "force": True},
+         ["jobs", "check-open", "1", "--force", "true"], seed=seed_from_url),
+    Case("check-open-no-url", "check_job_open", {"job_id": 1}, ["jobs", "check-open", "1"]),
+    Case("check-open-unknown", "check_job_open", {"job_id": 999},
+         ["jobs", "check-open", "999"], expect_error="not_found"),
+    Case("titles", "get_search_titles", {}, ["jobs", "titles"], seed=seed_approved),
+    Case("titles-days", "get_search_titles", {"days": 30}, ["jobs", "titles", "--days", "30"],
+         seed=seed_closed),
+    Case("titles-bad-days", "get_search_titles", {"days": 3}, ["jobs", "titles", "--days", "3"],
+         expect_error="validation_error"),
     Case("show-unknown", "get_job", {"job_id": 999}, ["jobs", "show", "999"],
          expect_error="not_found"),
     Case("show-bad-id", "get_job", {"job_id": "uno"}, ["jobs", "show", "uno"],

@@ -7,6 +7,9 @@ Sigue `docs/POLICIES.md` §1, §3 y §4.
 
 1. Si los argumentos dicen `pendientes` o no hay argumentos, usa `list_jobs(stage="approved")`; si
    no, trabaja con los `job_id` indicados. Si hay más de 5, pregunta si seguimos con todos.
+   **¿Sigue abierta?** Para cada oferta, llama a `check_job_open`. Si responde `possibly_closed`,
+   dile al usuario el motivo y pregunta si redactas igualmente; no la descartes tú (eso lo decide
+   él en la UI). Con `open`, `unknown` o `skipped`, sigue.
 2. **Preguntas antes de redactar.** Para cada oferta, mira en `get_match` las skills obligatorias
    ausentes del perfil y haz todas esas preguntas juntas en un solo mensaje ("¿Has trabajado con
    Airflow?"). Si alguna respuesta es sí, para: primero hay que añadirla al perfil con el skill

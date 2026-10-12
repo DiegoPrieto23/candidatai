@@ -36,6 +36,7 @@ class EventType(StrEnum):
     HARD_FILTER_FAILED = "hard_filter_failed"
     EXTRACTION_FAILED = "extraction_failed"
     INJECTION_SUSPECTED = "injection_suspected"
+    CLOSURE_SUSPECTED = "closure_suspected"  # fase 16: puede que la oferta ya no esté publicada
     SCORED = "scored"
     FIT_ASSESSED = "fit_assessed"
     APPROVED = "approved"
@@ -112,6 +113,7 @@ TRANSITIONS: dict[EventType, Transition] = {
     EventType.EXTRACTION_FAILED: Transition(frozenset({Stage.PENDING_EXTRACTION}), None),
     EventType.HARD_FILTER_FAILED: Transition(frozenset({Stage.PENDING_TRIAGE}), Stage.CLOSED),
     EventType.INJECTION_SUSPECTED: Transition(OPEN_STAGES, None),
+    EventType.CLOSURE_SUSPECTED: Transition(OPEN_STAGES, None),
     EventType.SCORED: Transition(WORKING_STAGES, None),
     EventType.FIT_ASSESSED: Transition(WORKING_STAGES, None),
     EventType.APPROVED: Transition(frozenset({Stage.PENDING_TRIAGE}), Stage.APPROVED),

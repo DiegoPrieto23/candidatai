@@ -870,6 +870,252 @@
         }
       }
     },
+    "/jobs/{job_id}/check-open": {
+      "post": {
+        "tags": [
+          "jobs"
+        ],
+        "summary": "Check Job Open",
+        "description": "¿Sigue abierta? (fase 16). Solo avisa: nunca cierra la oferta.",
+        "operationId": "check_job_open",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckOpenBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LivenessView"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/jobs/{job_id}/still-open": {
+      "post": {
+        "tags": [
+          "jobs"
+        ],
+        "summary": "Confirm Job Open",
+        "description": "«Sigue abierta»: quita el aviso de posible cierre; ese motivo ya no vuelve a avisar.",
+        "operationId": "confirm_job_open",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmptyBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LivenessView"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
     "/triage": {
       "get": {
         "tags": [
@@ -9205,7 +9451,8 @@
               "plan-formacion",
               "revisar-respuestas",
               "redactar-seguimientos",
-              "redactar-seguimiento"
+              "redactar-seguimiento",
+              "ampliar-busqueda"
             ],
             "title": "Id"
           },
@@ -9403,6 +9650,7 @@
                   "location",
                   "salary",
                   "company",
+                  "closed",
                   "other"
                 ]
               },
@@ -10592,6 +10840,68 @@
           "message"
         ],
         "title": "CaptureResult"
+      },
+      "CheckOpenBody": {
+        "properties": {
+          "force": {
+            "type": "boolean",
+            "title": "Force",
+            "description": "Repetir aunque haya una comprobación reciente.",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "CheckOpenBody"
+      },
+      "ClosedSignal": {
+        "properties": {
+          "since": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Since"
+          },
+          "checked_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Checked At"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "http_404",
+              "http_410",
+              "redirected",
+              "closed_text",
+              "expired_date",
+              "ats_missing"
+            ],
+            "title": "Reason"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          },
+          "http_status": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Http Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "since",
+          "checked_at",
+          "reason",
+          "detail"
+        ],
+        "title": "ClosedSignal"
       },
       "ContactFields": {
         "properties": {
@@ -12060,6 +12370,7 @@
           "hard_filter_failed",
           "extraction_failed",
           "injection_suspected",
+          "closure_suspected",
           "scored",
           "fit_assessed",
           "approved",
@@ -13258,6 +13569,10 @@
             ],
             "title": "Score"
           },
+          "signals": {
+            "$ref": "#/components/schemas/JobSignals",
+            "default": {}
+          },
           "remote_mode": {
             "anyOf": [
               {
@@ -13302,6 +13617,52 @@
           "salary"
         ],
         "title": "JobRow"
+      },
+      "JobSignals": {
+        "properties": {
+          "possibly_closed": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ClosedSignal"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "liveness": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LivenessCheck"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "open_confirmed": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OpenConfirmed"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reposted": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RepostSignal"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "title": "JobSignals"
       },
       "JobView": {
         "properties": {
@@ -13375,6 +13736,10 @@
               }
             ],
             "title": "Score"
+          },
+          "signals": {
+            "$ref": "#/components/schemas/JobSignals",
+            "default": {}
           },
           "posted_at": {
             "anyOf": [
@@ -13515,7 +13880,8 @@
               "plan-formacion",
               "revisar-respuestas",
               "redactar-seguimientos",
-              "redactar-seguimiento"
+              "redactar-seguimiento",
+              "ampliar-busqueda"
             ],
             "title": "Action"
           },
@@ -13813,6 +14179,138 @@
         ],
         "title": "LetterTemplateInfo",
         "description": "Una plantilla con diseño de carta, para el selector de la ficha."
+      },
+      "LivenessCheck": {
+        "properties": {
+          "checked_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Checked At"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "possibly_closed",
+              "unknown",
+              "skipped"
+            ],
+            "title": "Status"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail",
+            "default": ""
+          },
+          "http_status": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Http Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "checked_at",
+          "status"
+        ],
+        "title": "LivenessCheck"
+      },
+      "LivenessView": {
+        "properties": {
+          "job_id": {
+            "type": "integer",
+            "title": "Job Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "possibly_closed",
+              "unknown",
+              "skipped"
+            ],
+            "title": "Status"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          },
+          "checked_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checked At"
+          },
+          "cached": {
+            "type": "boolean",
+            "title": "Cached"
+          },
+          "possibly_closed": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ClosedSignal"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "suppressed": {
+            "type": "boolean",
+            "title": "Suppressed"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "status",
+          "reason",
+          "detail",
+          "checked_at",
+          "cached",
+          "possibly_closed",
+          "suppressed",
+          "message"
+        ],
+        "title": "LivenessView"
       },
       "MarkBody": {
         "properties": {
@@ -14509,6 +15007,31 @@
         },
         "type": "object",
         "title": "OkResult"
+      },
+      "OpenConfirmed": {
+        "properties": {
+          "at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "At"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "at"
+        ],
+        "title": "OpenConfirmed"
       },
       "OpenFolderBody": {
         "properties": {
@@ -15920,6 +16443,38 @@
           "body_text"
         ],
         "title": "ReplyView"
+      },
+      "RepostSignal": {
+        "properties": {
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "dates": {
+            "items": {
+              "type": "string",
+              "format": "date"
+            },
+            "type": "array",
+            "title": "Dates"
+          },
+          "channel": {
+            "type": "string",
+            "title": "Channel"
+          },
+          "window_days": {
+            "type": "integer",
+            "title": "Window Days"
+          }
+        },
+        "type": "object",
+        "required": [
+          "count",
+          "dates",
+          "channel",
+          "window_days"
+        ],
+        "title": "RepostSignal"
       },
       "ResolvedOptions": {
         "properties": {

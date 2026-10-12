@@ -125,6 +125,7 @@ def test_get_lists_agent_and_actions(client: TestClient, opened: list[tuple[str,
         "revisar-respuestas",
         "redactar-seguimientos",
         "redactar-seguimiento",
+        "ampliar-busqueda",
     }
     assert actions["generar-cv"]["needs_job"] is True and actions["generar-cv"]["prompt"] is None
     assert "buscar-ofertas" in actions["buscar-ofertas"]["prompt"]

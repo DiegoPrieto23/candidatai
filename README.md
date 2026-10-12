@@ -203,6 +203,7 @@ Arranca `jh serve`, `jh worker` y `pnpm dev`. Crea tu perfil con el skill `actua
 | `revisar-linkedin` | Informe de mejoras para tu perfil de LinkedIn, listo para copiar (tú lo aplicas) |
 | `plan-formacion` | Plan de formación con tus huecos reales de skills: recursos con su URL, horas y orden (o valora un curso o proyecto que propongas) |
 | `buscar-ofertas` | Recorre con tu navegador los portales aprobados y da de alta lo que encaje (`buscar-ofertas configurar` para elegirlos) |
+| `ampliar-busqueda` | Propone títulos cercanos a los que apruebas (p. ej. «Analytics Engineer») y, con tu OK, los añade a tus puestos buscados o a las búsquedas de tus plataformas |
 
 Si tu agente ofrece tareas programadas, `procesar-ofertas` y `resumen-diario` pueden ejecutarse
 solos cada mañana (`docs/AGENTS_COMPAT.md`).

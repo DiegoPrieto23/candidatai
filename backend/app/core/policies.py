@@ -170,6 +170,26 @@ class ApplierPolicy(BaseModel):
     answer_min_similarity: int = Field(ge=50, le=100)
 
 
+class LivenessPolicy(BaseModel):
+    """¿Sigue abierta? (fase 16). Nunca cierra una oferta: solo avisa y propone descartarla."""
+
+    fresh_hours: int = Field(default=20, gt=0)  # no se repite antes (salvo «Comprobar otra vez»)
+    timeout_seconds: float = Field(default=15, gt=0)
+    max_bytes: int = Field(default=2_000_000, gt=0)  # lo que se lee de la página, como mucho
+    # Frases de «oferta cerrada» por plataforma (`any`: todas). Se comparan sin tildes ni
+    # mayúsculas con el texto visible de la página.
+    closed_phrases: dict[str, list[str]] = Field(default_factory=dict)
+    # Frases de los controles anti-bot que algunos portales sirven con HTTP 200: dan `unknown`.
+    blocked_phrases: list[str] = Field(default_factory=list)
+
+
+class RepostsPolicy(BaseModel):
+    """Republicadas (fase 16): misma empresa y título, otra publicación en el mismo canal."""
+
+    window_days: int = Field(default=90, gt=0)
+    min_count: int = Field(default=2, ge=2)  # días distintos con publicación nueva para avisar
+
+
 class Policies(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
@@ -185,6 +205,8 @@ class Policies(BaseModel):
     replies: RepliesPolicy
     calendar: CalendarPolicy
     applier: ApplierPolicy
+    liveness: LivenessPolicy = Field(default_factory=LivenessPolicy)
+    reposts: RepostsPolicy = Field(default_factory=RepostsPolicy)
 
 
 class InjectionPatterns(BaseModel):

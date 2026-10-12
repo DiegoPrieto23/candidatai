@@ -14,6 +14,7 @@ import {
 } from '@phosphor-icons/react'
 import type { JobRow, Stage } from '@/api/client'
 import { type JobSort, PAGE_SIZE, type SortDirection, useJobs } from '@/api/queries'
+import { SignalBadges } from '@/components/JobSignals'
 import { ScoreBadge } from '@/components/MatchDetails'
 import { StageBadge } from '@/components/StageBadge'
 import { EmptyState, ErrorState } from '@/components/States'
@@ -162,6 +163,7 @@ function JobTable({ jobs, sort, onSort }: { jobs: JobRow[]; sort: Sort; onSort: 
                     {job.title}
                   </Link>
                   {job.risk_flags.length > 0 && <RiskMark />}
+                  <SignalBadges signals={job.signals} />
                 </div>
                 <div className="mt-0.5 text-muted-foreground">
                   {job.company}
@@ -202,6 +204,7 @@ function JobTable({ jobs, sort, onSort }: { jobs: JobRow[]; sort: Sort; onSort: 
                     {job.risk_flags.length > 0 && (
                       <WarningIcon className="size-4 shrink-0 text-warning-foreground" weight="fill" />
                     )}
+                    <SignalBadges signals={job.signals} />
                   </p>
                   <p className="truncate text-sm text-muted-foreground">{job.company}</p>
                 </div>

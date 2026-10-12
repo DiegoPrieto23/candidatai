@@ -42,6 +42,7 @@ export const EVENT_LABEL: Record<Schemas['EventType'], string> = {
   hard_filter_failed: 'No pasa los filtros',
   extraction_failed: 'Extracción fallida',
   injection_suspected: 'Posible contenido dirigido a una IA',
+  closure_suspected: 'Puede que ya no esté publicada',
   scored: 'Puntuada',
   fit_assessed: 'Encaje valorado',
   approved: 'Aprobada',
@@ -167,13 +168,14 @@ export function formatRelative(iso: string, now: Date = new Date()): string {
 
 // --- Matching y «Por revisar» -------------------------------------------------------------------------
 
-/** Motivos rápidos de descarte, en el orden de sus atajos (1-6). */
+/** Motivos rápidos de descarte, en el orden de sus atajos (1-7). */
 export const DISCARD_REASONS: readonly { value: DiscardReason; label: string }[] = [
   { value: 'skills', label: 'No encaja el stack' },
   { value: 'seniority', label: 'Seniority o años' },
   { value: 'location', label: 'Ubicación o modalidad' },
   { value: 'salary', label: 'Salario o condiciones' },
   { value: 'company', label: 'Empresa o sector' },
+  { value: 'closed', label: 'Ya no está publicada' },
   { value: 'other', label: 'Otro motivo' },
 ]
 

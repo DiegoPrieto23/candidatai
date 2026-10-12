@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import JSON, ForeignKey, Index, String, Text, text
+from sqlalchemy import JSON, ForeignKey, Index, String, Text, UniqueConstraint, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base, UTCDateTime, utcnow
@@ -41,6 +41,25 @@ class Job(Base):
     duplicate_of: Mapped[int | None] = mapped_column(ForeignKey("jobs.id"))
     posted_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
     first_seen_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
+    # Observaciones del código que no son riesgo de inyección (fase 16, ADR-028):
+    # `possibly_closed`, `liveness`, `open_confirmed` y `reposted`. Ver `services/liveness.py`.
+    signals: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, server_default=text("'{}'"))
+
+
+class JobSighting(Base):
+    """Cada vez que se ve una publicación de una oferta (fase 16): la primera, al darla de alta, y
+    las siguientes si reaparece con otro id o URL en el mismo canal. Sirve para `reposted`."""
+
+    __tablename__ = "job_sightings"
+    __table_args__ = (UniqueConstraint("job_id", "channel", "ref"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    job_id: Mapped[int] = mapped_column(ForeignKey("jobs.id"), index=True)
+    # Plataforma (`infojobs`…) o dominio de la URL (`boards.greenhouse.io`).
+    channel: Mapped[str] = mapped_column(String(200))
+    # Id en la plataforma o URL sin parámetros: qué publicación concreta se vio.
+    ref: Mapped[str] = mapped_column(String(2000))
+    seen_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
 
 
 class JobExtraction(Base):

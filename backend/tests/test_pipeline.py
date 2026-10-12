@@ -79,6 +79,7 @@ EXPECTED: dict[EventType, dict[Stage, Stage]] = {
     EventType.EXTRACTION_FAILED: _same((PE,)),
     EventType.HARD_FILTER_FAILED: _to(CL, (PT,)),
     EventType.INJECTION_SUSPECTED: _same(OPEN),
+    EventType.CLOSURE_SUSPECTED: _same(OPEN),
     EventType.SCORED: _same(WORK),
     EventType.FIT_ASSESSED: _same(WORK),
     EventType.APPROVED: _to(AP, (PT,)),

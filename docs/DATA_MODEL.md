@@ -50,7 +50,8 @@ Una fila por ejecución de una fuente; la usan los conectores y, desde la 09b, a
 | title | str | Tal cual |
 | location_raw | str? | Tal cual |
 | raw_text | text | Texto limpio de la oferta. **No confiable** |
-| risk_flags | JSON | Señales detectadas por el código: `hidden_text`, `injection_phrase`… |
+| risk_flags | JSON | Riesgo de inyección detectado por el código: `hidden_text`, `injection_phrase`… |
+| signals | JSON | Observaciones que no son riesgo (fase 16, ADR-028): `possibly_closed`, `liveness`, `open_confirmed`, `reposted`. Ver §Fase 16 |
 | fingerprint | str UNIQUE | Ver abajo |
 | duplicate_of | FK jobs? | Si se detecta como duplicado difuso |
 | posted_at | datetime? | |
@@ -168,6 +169,7 @@ Cola de trabajo del worker (sin Redis).
 | `apply_rescan` `{attempt_id}` | «Volver a revisar» | Vuelve a leer los campos y a capturar, sin rellenar nada |
 | `apply_submit` `{attempt_id, token, consents}` | `confirm_submission` (solo la UI) | Consume el token, pulsa el envío, captura la confirmación y registra `applied` |
 | `apply_focus` `{attempt_id}` | «Lo termino yo» | Trae la pestaña al frente y retira el bloqueo del envío |
+| `check_open` `{job_id}` | `jh worker` cada día con la ingesta y al arrancar, para las ofertas en `approved` o `cv_ready` sin comprobación en `liveness.fresh_hours` (fase 16) | ¿Sigue abierta? (`services/liveness.check_job`). Un fallo de red da `unknown`, no se reintenta |
 | `archive_application` `{job_id, event_id, cv_render_id, letter_document_id, letter_render_id, answers_document_id}` | `applied` o `applied_manually` (fase 13) | Copia lo enviado a `data/documentos/candidaturas/` (ver §Fase 13). Los ids se fijan al registrar el envío. Idempotente |
 
 No se encola dos veces la misma tarea (mismo `kind` y `payload`) mientras siga en cola. Si falla,
@@ -192,9 +194,10 @@ Nunca guarda texto crudo de ofertas ni datos del perfil en `args_summary`.
 | `hard_filter_failed` | system | `closed` (reabrible); `payload.failures` |
 | `extraction_failed` | agent | se queda en `pending_extraction` |
 | `injection_suspected` | system / agent | sin cambio; aviso visible en la UI |
+| `closure_suspected` | system | sin cambio; la primera vez que una comprobación dice que la oferta puede estar cerrada (fase 16). `payload`: `reason`, `detail`. Nunca cierra la oferta |
 | `scored` / `fit_assessed` | system / agent | sin cambio; `payload`: `match_id` y `score`/`passed` o `verdict` |
 | `approved` | user | `approved` |
-| `discarded` | user | `closed`; desde la UI, `payload.reason` (`skills`, `seniority`, `location`, `salary`, `company`, `other`) y `note` opcional (obligatoria con `other`) |
+| `discarded` | user | `closed`; desde la UI, `payload.reason` (`skills`, `seniority`, `location`, `salary`, `company`, `closed` (ya no está publicada, fase 16), `other`) y `note` opcional (obligatoria con `other`) |
 | `cv_generated` | agent | sin cambio; `payload.document_id` |
 | `cv_rendered` | system / user / agent | `cv_ready` si el render no es `too_long` y su documento ya está verificado con `passed`; si no, sin cambio. `payload`: `document_id`, `render_id`, `template_id`, `too_long`. Solo lo registra el servicio de render |
 | `cv_verified` | agent | `cv_ready` si `passed` y ese documento tiene un render sin `too_long`; `payload`: `document_id`, `passed` |
@@ -450,3 +453,34 @@ eventos `followup_sent`.
 | agent_name | str? | |
 | created_at / updated_at | datetime | |
 
+## Ampliaciones de la fase 16
+
+### `jobs.signals`
+Observaciones del código sobre la oferta que **no** son riesgo de inyección (migración 0015,
+ADR-028). `risk_flags` sigue significando solo eso. Las escribe el código, nunca el agente.
+
+| Clave | Contenido | Quién |
+|---|---|---|
+| `possibly_closed` | `since`, `checked_at`, `reason` (`http_404`, `http_410`, `redirected`, `closed_text`, `expired_date`, `ats_missing`), `detail`, `http_status?` | La comprobación «¿sigue abierta?» (`services/liveness.py`). Se borra si una comprobación posterior dice `open`; `unknown` la deja como estaba |
+| `liveness` | `checked_at`, `status` (`open`, `possibly_closed`, `unknown`, `skipped`), `reason?`, `detail`, `http_status?` | Última comprobación, sea cual sea |
+| `open_confirmed` | `at`, `reason?` | «Sigue abierta» en la UI: ese mismo motivo ya no vuelve a avisar, hasta que una comprobación dé `open` (entonces se borra) |
+| `reposted` | `count` (días distintos con publicación nueva), `dates[]`, `channel`, `window_days` | `services/reposts.py`, en todas las ofertas del grupo (misma empresa, título normalizado y ubicación). Se recalcula al ver una publicación nueva; no caduca sola |
+
+### `job_sightings`
+Cada publicación vista de una oferta (migración 0015, que rellena una fila por oferta existente).
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | int PK | |
+| job_id | FK jobs | La oferta en la que se anota (la existente si la huella la reconoce) |
+| channel | str | Plataforma (`infojobs`…) o dominio de la URL sin `www.` |
+| ref | str | Id en la plataforma (de la URL), el id que da la fuente (conectores) o la URL sin esquema ni fragmento, con solo los parámetros que identifican la oferta (`gh_jid`, `jk`, `id`…) |
+| seen_at | datetime | |
+
+Único (`job_id`, `channel`, `ref`). Se anota al dar de alta una oferta y cuando reaparece con otro
+id o URL: por huella en `ingest.store_job` y, en los conectores, lo que ya estaba por URL o huella.
+
+**Republicada** = en los últimos `reposts.window_days` (90) días, el mismo canal muestra
+publicaciones distintas de la misma empresa con el mismo título normalizado (traducido con
+`config/title_aliases.yaml`) y la misma ubicación en al menos `reposts.min_count` (2) días distintos. Varias el mismo día
+(varias ubicaciones) o en canales distintos (la misma oferta en InfoJobs e Indeed) no cuentan.

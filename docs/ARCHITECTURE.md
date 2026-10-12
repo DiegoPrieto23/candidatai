@@ -34,6 +34,7 @@ La app nunca llama a un modelo y no depende de ningún proveedor.
 | `app/services/platforms.py`, `summaries.py` | Identidad de oferta por plataforma (`platform` + `external_id`) y ofertas resumen en `pending_detail`: bandeja «Alertas» y caducidad (09b) | Sin red ni agente |
 | `app/services/process.py`, `tracking.py`, `calendar_ics.py` | Ficha de proceso (hitos con su evento, contactos, notas, documentos usados), seguimientos vencidos, próximos hitos, kanban y calendario iCalendar escrito a mano (fase 10) | Nada cambia de etapa sin evento; el calendario no sale de `127.0.0.1` |
 | `app/services/skill_gaps.py`, `skill_aliases.py` | Huecos de skills agregados de las ofertas, marcas del usuario y alias añadidos desde la UI (fase 14) | Recalcula la cobertura sin escribir; el único que escribe `config/skill_aliases.yaml` (ruamel.yaml, conserva comentarios) |
+| `app/services/liveness.py`, `reposts.py`, `signals.py`, `search_titles.py`, `ingestion/discover.py` | ¿Sigue abierta? (URL o API del ATS), republicadas (`job_sightings`), señales en `jobs.signals`, títulos para `ampliar-busqueda` y descubrimiento de tableros de ATS (fase 16) | Nunca cierran una oferta ni añaden fuentes sin el usuario; LinkedIn no se comprueba (ADR-016, ADR-028) |
 | `frontend/` | UI | Solo habla con la API |
 | `.agents/` | Skills, roles y manifiesto, sin nada específico de un proveedor | Fuente única; lo nativo se genera |
 
@@ -68,6 +69,7 @@ La app nunca llama a un modelo y no depende de ningún proveedor.
 | `GET /board` | Kanban (fase 10): tarjetas de `approved` a `closed` (las cerradas, solo las que llegaron a aprobarse; las 50 más recientes) y los movimientos posibles (eventos del usuario por etapa de origen y destino) |
 | `GET /followups`, `GET /upcoming?days=` | Seguimientos vencidos y próximos hitos (como `list_followups_due` y `list_upcoming`) |
 | `GET /stats/funnel?since=` | Página «Embudo» (fase 10.2): lo mismo que `get_funnel_stats` |
+| `POST /jobs/{id}/check-open`, `POST /jobs/{id}/still-open` | ¿Sigue abierta? (fase 16): comprueba ahora (`{force}`; si la última es reciente, la devuelve) y «Sigue abierta» (quita el aviso). Solo desde la UI (`require_ui`); descartar va por `POST /jobs/{id}/events` con el motivo `closed` |
 | `GET /skills/gaps?days=` | Página «Skills» (fase 14): lo mismo que `get_skill_gaps`, más las skills del perfil para «Es lo mismo que…» |
 | `POST /skills/aliases`, `POST /skills/marks` | «Es lo mismo que…» (`{skill, profile_skill}`: añade el sinónimo a `config/skill_aliases.yaml` y encola `rescore_all`; 422 si ya apunta a otra skill o el perfil ya la cubre) y «La tengo» / «No la tengo» (`{skill, status: have\|gap\|null}`). Solo desde la UI, como `POST /agent/launch` |
 | `GET /jobs/{id}/process` | Ficha de proceso: envío y canal, seguimiento, hitos, contactos, notas y CV enviado o seleccionado |

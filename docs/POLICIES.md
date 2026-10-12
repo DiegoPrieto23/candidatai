@@ -98,6 +98,15 @@ y para cada una el usuario decide:
 
 Los pesos del score no cambian con esto; solo qué nombres casan.
 
+### Ofertas cerradas y republicadas (fase 16)
+
+- **«¿Sigue abierta?» avisa, no decide.** Ni la app ni el agente cierran o descartan una oferta
+  porque parezca cerrada: el usuario la descarta (motivo «Ya no está publicada») o dice «Sigue
+  abierta» en la UI. Antes de redactar un CV, `generar-cv` comprueba y, si puede estar cerrada,
+  pregunta. LinkedIn no se comprueba desde la app (§8, ADR-016).
+- **«Republicada ×N» es una observación**, no un motivo de descarte ni un dato para el score: puede
+  ser una vacante difícil de cubrir, un portal que renueva la publicación o una oferta fantasma.
+
 ## 3. CV
 
 | Regla | Detalle |

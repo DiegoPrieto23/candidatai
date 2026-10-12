@@ -174,11 +174,20 @@ página para comprobarla: hace falta un agente con búsqueda y lectura web (en C
 memoria: puede priorizar los huecos, pero cada recurso necesita una URL abierta. Probado con
 Claude Code: pendiente de la prueba manual de la fase 14; Codex y otros, sin probar.
 
+### Skills que editan el perfil
+`ampliar-busqueda` (fase 16) añade los títulos que aceptas a `preferences.roles` editando
+`data/profile.yaml` y ejecutando `jh profile validate` e `import`, como `actualizar-perfil`: hace
+falta un agente que pueda editar ficheros y ejecutar esos comandos. Si no puede, el skill te da el
+texto y los comandos para que lo hagas tú. Las búsquedas de plataformas van por `save_source`
+(MCP o CLI). Probado solo con los tests de su herramienta (`get_search_titles`); pendiente de la
+prueba manual con Claude Code.
+
 ### Botones «en tu agente» de la UI (ADR-024)
 «Buscar ofertas», «Procesar ofertas», «Evaluar encaje», «Generar CV», en la página Skills
 (fase 14) «Añadir al perfil las que tengo» (`actualizar-perfil`) y «Plan de formación», y desde
 la fase 15 «Revisar respuestas» (Inicio y «Respuestas»), «Redactar borradores» (Procesos) y
-«Redactar seguimiento» (ficha de una candidatura enviada) abren tu
+«Redactar seguimiento» (ficha de una candidatura enviada), y desde la fase 16 «Ampliar búsqueda»
+(Plataformas), abren tu
 agente en una terminal (Windows Terminal o PowerShell) con la orden del skill ya escrita; tú
 ves, contestas y apruebas lo que haga. Qué programa se abre lo dice `launch` de cada agente en el
 manifiesto: `command` (con `{prompt}` donde va la orden) y `unset_env` (variables que se quitan

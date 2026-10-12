@@ -145,6 +145,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/jobs/{job_id}/check-open": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Check Job Open
+         * @description ¿Sigue abierta? (fase 16). Solo avisa: nunca cierra la oferta.
+         */
+        post: operations["check_job_open"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/jobs/{job_id}/still-open": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Confirm Job Open
+         * @description «Sigue abierta»: quita el aviso de posible cierre; ese motivo ya no vuelve a avisar.
+         */
+        post: operations["confirm_job_open"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/triage": {
         parameters: {
             query?: never;
@@ -1552,7 +1592,7 @@ export interface components {
              * Id
              * @enum {string}
              */
-            id: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion" | "revisar-respuestas" | "redactar-seguimientos" | "redactar-seguimiento";
+            id: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion" | "revisar-respuestas" | "redactar-seguimientos" | "redactar-seguimiento" | "ampliar-busqueda";
             /** Label */
             label: string;
             /** Needs Job */
@@ -1612,7 +1652,7 @@ export interface components {
              * Reason
              * @description Motivo al descartar (obligatorio en `discarded`).
              */
-            reason?: ("seniority" | "skills" | "location" | "salary" | "company" | "other") | null;
+            reason?: ("seniority" | "skills" | "location" | "salary" | "company" | "closed" | "other") | null;
             /**
              * Channel
              * @description Canal del envío (solo en `applied` y `applied_manually`).
@@ -2027,6 +2067,37 @@ export interface components {
             duplicate_of: number | null;
             /** Message */
             message: string;
+        };
+        /** CheckOpenBody */
+        CheckOpenBody: {
+            /**
+             * Force
+             * @description Repetir aunque haya una comprobación reciente.
+             * @default false
+             */
+            force: boolean;
+        };
+        /** ClosedSignal */
+        ClosedSignal: {
+            /**
+             * Since
+             * Format: date-time
+             */
+            since: string;
+            /**
+             * Checked At
+             * Format: date-time
+             */
+            checked_at: string;
+            /**
+             * Reason
+             * @enum {string}
+             */
+            reason: "http_404" | "http_410" | "redirected" | "closed_text" | "expired_date" | "ats_missing";
+            /** Detail */
+            detail: string;
+            /** Http Status */
+            http_status?: number | null;
         };
         /** ContactFields */
         ContactFields: {
@@ -2548,7 +2619,7 @@ export interface components {
          * EventType
          * @enum {string}
          */
-        EventType: "found" | "detail_captured" | "duplicate_detected" | "extracted" | "hard_filter_failed" | "extraction_failed" | "injection_suspected" | "scored" | "fit_assessed" | "approved" | "discarded" | "cv_generated" | "cv_rendered" | "cv_verified" | "cv_rejected" | "cover_letter_generated" | "cover_letter_verified" | "application_prepared" | "application_filled" | "applied" | "applied_manually" | "reply_received" | "interview_scheduled" | "interview_done" | "test_assigned" | "followup_sent" | "offer_received" | "rejected" | "withdrawn" | "expired" | "accepted" | "reopened" | "note";
+        EventType: "found" | "detail_captured" | "duplicate_detected" | "extracted" | "hard_filter_failed" | "extraction_failed" | "injection_suspected" | "closure_suspected" | "scored" | "fit_assessed" | "approved" | "discarded" | "cv_generated" | "cv_rendered" | "cv_verified" | "cv_rejected" | "cover_letter_generated" | "cover_letter_verified" | "application_prepared" | "application_filled" | "applied" | "applied_manually" | "reply_received" | "interview_scheduled" | "interview_done" | "test_assigned" | "followup_sent" | "offer_received" | "rejected" | "withdrawn" | "expired" | "accepted" | "reopened" | "note";
         /** ExtractionView */
         ExtractionView: {
             /** Extraction Id */
@@ -2918,9 +2989,18 @@ export interface components {
             first_seen_at: string;
             /** Score */
             score: number | null;
+            /** @default {} */
+            signals: components["schemas"]["JobSignals"];
             /** Remote Mode */
             remote_mode: ("onsite" | "hybrid" | "remote" | "unknown") | null;
             salary: components["schemas"]["Salary"] | null;
+        };
+        /** JobSignals */
+        JobSignals: {
+            possibly_closed?: components["schemas"]["ClosedSignal"] | null;
+            liveness?: components["schemas"]["LivenessCheck"] | null;
+            open_confirmed?: components["schemas"]["OpenConfirmed"] | null;
+            reposted?: components["schemas"]["RepostSignal"] | null;
         };
         /** JobView */
         JobView: {
@@ -2946,6 +3026,8 @@ export interface components {
             first_seen_at: string;
             /** Score */
             score: number | null;
+            /** @default {} */
+            signals: components["schemas"]["JobSignals"];
             /** Posted At */
             posted_at: string | null;
             /** Raw Text */
@@ -2980,7 +3062,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion" | "revisar-respuestas" | "redactar-seguimientos" | "redactar-seguimiento";
+            action: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion" | "revisar-respuestas" | "redactar-seguimientos" | "redactar-seguimiento" | "ampliar-busqueda";
             /** Job Id */
             job_id?: number | null;
         };
@@ -3091,6 +3173,51 @@ export interface components {
             /** Photo Supported */
             photo_supported: boolean;
             accent_colors: components["schemas"]["AccentColors"] | null;
+        };
+        /** LivenessCheck */
+        LivenessCheck: {
+            /**
+             * Checked At
+             * Format: date-time
+             */
+            checked_at: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "open" | "possibly_closed" | "unknown" | "skipped";
+            /** Reason */
+            reason?: string | null;
+            /**
+             * Detail
+             * @default
+             */
+            detail: string;
+            /** Http Status */
+            http_status?: number | null;
+        };
+        /** LivenessView */
+        LivenessView: {
+            /** Job Id */
+            job_id: number;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "open" | "possibly_closed" | "unknown" | "skipped";
+            /** Reason */
+            reason: string | null;
+            /** Detail */
+            detail: string;
+            /** Checked At */
+            checked_at: string | null;
+            /** Cached */
+            cached: boolean;
+            possibly_closed: components["schemas"]["ClosedSignal"] | null;
+            /** Suppressed */
+            suppressed: boolean;
+            /** Message */
+            message: string;
         };
         /** MarkBody */
         MarkBody: {
@@ -3355,6 +3482,16 @@ export interface components {
              * @default true
              */
             ok: boolean;
+        };
+        /** OpenConfirmed */
+        OpenConfirmed: {
+            /**
+             * At
+             * Format: date-time
+             */
+            at: string;
+            /** Reason */
+            reason?: string | null;
         };
         /** OpenFolderBody */
         OpenFolderBody: {
@@ -3830,6 +3967,17 @@ export interface components {
             resolved_at: string | null;
             /** Body Text */
             body_text: string;
+        };
+        /** RepostSignal */
+        RepostSignal: {
+            /** Count */
+            count: number;
+            /** Dates */
+            dates: string[];
+            /** Channel */
+            channel: string;
+            /** Window Days */
+            window_days: number;
         };
         /** ResolvedOptions */
         ResolvedOptions: {
@@ -5044,6 +5192,202 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AddEventResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    check_job_open: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CheckOpenBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LivenessView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    confirm_job_open: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmptyBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LivenessView"];
                 };
             };
             /** @description Unauthorized */

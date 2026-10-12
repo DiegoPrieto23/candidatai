@@ -177,6 +177,37 @@ export function useJobEvent() {
   })
 }
 
+/** ¿Sigue abierta? (fase 16): comprueba la URL ahora (o devuelve la comprobación reciente). */
+export function useCheckJobOpen() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: ({ jobId, force = false }: { jobId: number; force?: boolean }) =>
+      unwrap(api.POST('/jobs/{job_id}/check-open', { params: { path: { job_id: jobId } }, body: { force } })),
+    // Una comprobación reciente devuelta tal cual no cambia nada: no hace falta recargar.
+    onSuccess: (result, { jobId }) =>
+      result.cached
+        ? undefined
+        : Promise.all([
+            client.invalidateQueries({ queryKey: keys.job(jobId) }),
+            client.invalidateQueries({ queryKey: keys.allJobs }),
+          ]),
+  })
+}
+
+/** «Sigue abierta»: quita el aviso de posible cierre (ese motivo ya no vuelve a avisar). */
+export function useConfirmJobOpen() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (jobId: number) =>
+      unwrap(api.POST('/jobs/{job_id}/still-open', { params: { path: { job_id: jobId } }, body: {} })),
+    onSuccess: (_result, jobId) =>
+      Promise.all([
+        client.invalidateQueries({ queryKey: keys.job(jobId) }),
+        client.invalidateQueries({ queryKey: keys.allJobs }),
+      ]),
+  })
+}
+
 /** CV vigente de la oferta (contenido, verificación y renders); `cv: null` si aún no tiene. */
 export function useJobCv(jobId: number, enabled = true) {
   return useQuery({

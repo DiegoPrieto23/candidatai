@@ -76,6 +76,14 @@ export function mockApi(routes: Record<string, Handler | unknown>): Call[] {
   return calls
 }
 
+/**
+ * POST que hace el usuario. La ficha de una aprobada comprueba sola si sigue abierta (fase 16):
+ * esa llamada no cuenta.
+ */
+export function isUserPost(call: Call): boolean {
+  return call.method === 'POST' && !call.path.endsWith('/check-open')
+}
+
 export function renderApp(path: string) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })
   return render(
@@ -118,6 +126,7 @@ export function jobRow(changes: Partial<JobRow> = {}): JobRow {
     url: 'https://example.com/jobs/1',
     stage: 'pending_triage',
     risk_flags: [],
+    signals: {},
     duplicate_of: null,
     first_seen_at: new Date().toISOString(),
     remote_mode: 'hybrid',

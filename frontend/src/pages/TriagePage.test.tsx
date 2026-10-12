@@ -114,7 +114,7 @@ describe('Por revisar', () => {
 
     await userEvent.keyboard('d')
     const dialog = await screen.findByRole('dialog')
-    await userEvent.keyboard('6')
+    await userEvent.keyboard('7')
     const confirm = within(dialog).getByRole('button', { name: 'Descartar' })
     expect(confirm).toBeDisabled()
     await userEvent.type(within(dialog).getByLabelText(/Nota/), 'Pide 1 y 3')

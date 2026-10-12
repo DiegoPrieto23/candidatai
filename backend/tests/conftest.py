@@ -31,6 +31,14 @@ def isolated_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Pa
     get_settings.cache_clear()
 
 
+@pytest.fixture(autouse=True)
+def no_dns(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Sin red: «¿sigue abierta?» resuelve los dominios (fase 16); aquí todos son públicos."""
+    from app.services import liveness
+
+    monkeypatch.setattr(liveness, "_resolve", lambda _host: ["93.184.215.14"])
+
+
 @pytest.fixture
 def engine(isolated_env: Path) -> Iterator[Engine]:
     """Engine sobre SQLite temporal con el esquema de los modelos."""

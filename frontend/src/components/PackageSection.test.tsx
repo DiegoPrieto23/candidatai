@@ -1,7 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { jobPackage, jobView, mockApi, renderApp, SCREENING, status } from '@/test/utils'
+import { isUserPost, jobPackage, jobView, mockApi, renderApp, SCREENING, status } from '@/test/utils'
 
 const NAME = 'Paquete de candidatura'
 
@@ -73,8 +73,8 @@ describe('Paquete de candidatura en la ficha', () => {
     await userEvent.click(await within(section).findByRole('button', { name: 'Editar la respuesta 2' }))
     await userEvent.type(within(section).getByLabelText('Respuesta'), '45.000 € brutos al año')
     await userEvent.click(within(section).getByRole('button', { name: 'Guardar' }))
-    await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true))
-    expect(calls.find((c) => c.method === 'POST')?.body).toEqual({
+    await waitFor(() => expect(calls.some(isUserPost)).toBe(true))
+    expect(calls.find(isUserPost)?.body).toEqual({
       answers: [
         SCREENING!.answers[0],
         // Al cambiar el texto, el respaldo incluye al usuario.
