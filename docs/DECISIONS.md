@@ -569,3 +569,61 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
 - **Consecuencias:** el dosier no caduca solo: la ficha avisa a los 30 días y `preparar-entrevista`
   lo rehace si puede buscar en la web. El `.md` se escribe antes del commit: un fallo de la
   transacción dejaría un fichero sin fila, que el siguiente guardado sobrescribe.
+
+## ADR-032 · En segundo plano con solo las herramientas de la acción, y cola de encargos (extiende la 024)
+- **Contexto:** la ADR-024 dejó abierta una fase 2: lanzar sin ventana los skills que no preguntan
+  (procesar ofertas, evaluar encaje, generar el CV), con el progreso en la UI y sin coste de API.
+  También pedía una cola de encargos para la próxima sesión interactiva. Un agente desatendido lee
+  texto no confiable sin que nadie mire.
+- **Decisión:**
+  - **comando:** `launch.headless` del manifiesto por agente (regla dura 2), con el mismo
+    `unset_env`. En Claude Code: `claude -p … --output-format stream-json --verbose
+    --permission-mode dontAsk --strict-mcp-config --mcp-config .mcp.json --tools Skill,Agent,Read`.
+    El encargo proponía permitir `mcp__jobhunter__*`; se descarta porque incluye herramientas que
+    escriben (`add_event`, `save_source`, `add_job_*`…) a las que una inyección podría llamar. Cada
+    acción declara su lista en `agent_launch.ACTIONS[...].background`: lo mínimo que usan el skill
+    y sus roles;
+  - **el techo lo pone el deny:** permitir no basta. Con el `claude` real se comprobó que una
+    herramienta del allow de `.claude/settings.json` (o de la configuración del usuario) se usa
+    aunque no esté en `--allowedTools`, también desde un subagente. Por eso `--disallowedTools`
+    lleva **todas las demás herramientas MCP de la app** (sacadas del registro): un deny gana a
+    cualquier allow y la herramienta desaparece de la sesión entera, subagentes incluidos. Además,
+    `.env` y `data/` denegados para `Read`, que solo se permite en `docs/**` (el redactor y el
+    verificador leen `POLICIES.md`). Un test comprueba que permitidas y denegadas cubren el registro
+    entero sin solaparse;
+  - **skills y subagentes:** `Skill(<skill de la acción>)` (`skill_rule` del manifiesto): se
+    comprobó que deniega cualquier otro skill instalado (hay ~55, de proyecto y de usuario).
+    `Agent(<nombre>)` en cambio no acota (el subagente `general-purpose` se lanzó igual), así que
+    `Agent` queda permitido: cualquier subagente tiene el mismo techo de herramientas que la sesión
+    (sin terminal ni web, solo las MCP de la acción);
+  - **cola:** `agent_runs` es su propia cola, con una fila por ejecución, el comando guardado para
+    auditar, el progreso y el resultado. La lanza la UI (`require_ui`, como `/agent/launch`) y la
+    ejecuta el worker en un hilo aparte, de una en una: un `UPDATE` condicionado a que no haya otra
+    `running`. Ir en la cola de `tasks` habría parado varios minutos la ingesta y la candidatura
+    asistida. Tiempo máximo, cancelación, parada del worker (Ctrl+C) y cualquier excepción paran el
+    árbol de procesos entero (`taskkill /T`), con el `jh-mcp` hijo. Si el worker muere de golpe, al
+    arrancar las que quedaron `running` pasan a `failed` (no se repiten) y, si su `pid` sigue vivo
+    y es el programa del agente, se para. Cancelar y terminar son `UPDATE` condicionados al estado:
+    si el worker la reclama a la vez que la cancelas, queda pedida, no pisada;
+  - **progreso:** se guarda el nombre de cada herramienta (y si es de un subagente) y el texto
+    del agente principal, recortado. Nunca las entradas ni el detalle de un error de herramienta:
+    pueden llevar texto de una oferta. Leer la salida de cada agente es lo único específico de él
+    en el código (`services/agent_output.py`, `PARSERS`, como los emisores de `sync_agents.py`);
+  - **preguntas:** la orden añade «no preguntes; si necesitas al usuario, termina con líneas
+    `PREGUNTA:`». Esas líneas dejan la ejecución en `needs_user` y «Abrir en terminal» retoma la
+    misma sesión (`launch.resume`, `claude --resume <id>`). `generar-cv` solo va en segundo plano
+    si a la oferta no le faltan obligatorias, o si todas están marcadas «No la tengo» (fase 14);
+    entonces la orden lo dice sin nombrarlas, porque salen de la oferta;
+  - **cola de encargos:** `agent_requests` guarda la orden de cualquier acción de la misma lista
+    cerrada (salvo «Atender encargos»). La crea y la cancela solo la UI. El agente la ve en `get_status` y con
+    `list_agent_requests` (skill `atender-encargos`) y la cierra con `complete_agent_request`;
+  - **Codex** no tiene `headless`: no permite limitar las herramientas MCP de una ejecución con
+    garantías (nivel B). El botón dice que tu agente no lo admite; añadirlo es un bloque del
+    manifiesto y un lector de su salida (`agent_output.PARSERS`).
+- **Consecuencias:** sin coste de API, pero gasta los límites de uso de tu plan como una sesión
+  normal. Hace falta `jh worker` arrancado: la UI avisa si algo lleva más de 30 s en cola sin nada
+  en curso. Las flags del comando son las de Claude Code 2.1.x; si cambian, se corrige el
+  manifiesto. Las preguntas dependen de que el agente siga el formato `PREGUNTA:`; si no, la
+  ejecución queda `done` y la duda se ve en el resultado. Sin Job Object de Windows: si el worker
+  muere de golpe, el agente sigue hasta el siguiente arranque del worker, que lo para. Dos
+  `jh worker` a la vez no están soportados (igual que con `tasks`).

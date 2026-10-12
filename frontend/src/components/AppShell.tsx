@@ -1,6 +1,9 @@
+import { useEffect, useRef } from 'react'
 import { Link, NavLink, Outlet, useLocation, useSearchParams } from 'react-router'
+import { useQueryClient } from '@tanstack/react-query'
 import {
   BellRingingIcon,
+  CircleNotchIcon,
   DesktopIcon,
   FlaskIcon,
   MoonIcon,
@@ -9,7 +12,7 @@ import {
   TerminalWindowIcon,
 } from '@phosphor-icons/react'
 import type { Stage } from '@/api/client'
-import { useFollowups, useReplies, useStatus } from '@/api/queries'
+import { keys, useAgentRuns, useFollowups, useReplies, useStatus } from '@/api/queries'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -140,6 +143,74 @@ function FollowupReminder() {
   )
 }
 
+/**
+ * En segundo plano (fase 19): aviso mientras tu agente trabaja sin ventana. Cuando termina una
+ * ejecución, refresca todo: el agente ha podido extraer ofertas, valorarlas o generar un CV.
+ */
+function BackgroundRunReminder() {
+  const { data } = useAgentRuns()
+  const { pathname } = useLocation()
+  const client = useQueryClient()
+  // La última que terminó (no un recuento: la lista solo trae las 20 más recientes).
+  const lastFinished = (data?.runs ?? []).reduce(
+    (last, r) => (r.finished_at && r.finished_at > last ? r.finished_at : last),
+    '',
+  )
+  const previous = useRef<string | null>(null)
+  useEffect(() => {
+    if (previous.current !== null && lastFinished > previous.current) {
+      void client.invalidateQueries({
+        predicate: (q) => q.queryKey[0] !== keys.agent[0],
+      })
+    }
+    previous.current = lastFinished
+  }, [lastFinished, client])
+
+  const current = data?.runs.find((r) => r.status === 'running') ?? data?.runs.find((r) => r.status === 'queued')
+  if (!current || pathname === '/agente') return null
+  return (
+    <div
+      role="status"
+      className="flex items-center gap-3 rounded-xl border px-4 py-2.5 text-sm text-muted-foreground animate-in fade-in"
+    >
+      <CircleNotchIcon
+        className={cn('size-4 shrink-0', current.status === 'running' && 'animate-spin')}
+        weight="bold"
+      />
+      <p>
+        {current.status === 'running' ? 'Tu agente trabaja en segundo plano' : 'En cola en segundo plano'}: «
+        {current.label}».{' '}
+        <Link to="/agente" className="underline underline-offset-4">
+          Ver el progreso
+        </Link>
+      </p>
+    </div>
+  )
+}
+
+/** Ejecuciones en curso (fase 19) y encargos pendientes. */
+function AgentNavCount() {
+  const runs = useAgentRuns()
+  const { data } = useStatus()
+  const active = runs.data?.active ?? 0
+  const waiting = runs.data?.runs.filter((r) => r.status === 'needs_user').length ?? 0
+  const requests = data?.agent_requests ?? 0
+  const count = active + waiting + requests
+  if (!count) return null
+  return (
+    <span
+      className={cn(
+        'tabular grid h-[18px] min-w-[18px] place-items-center rounded-full px-1 text-[0.7rem] font-semibold',
+        active + waiting ? 'bg-primary text-primary-foreground' : 'bg-foreground/10 text-foreground/80',
+      )}
+    >
+      <span className="sr-only">, </span>
+      {count}
+      <span className="sr-only"> en curso o pendientes</span>
+    </span>
+  )
+}
+
 // Modo demo (fase 12.1): la carpeta de datos la creó `jh demo seed`. Fijo en todas las páginas.
 function DemoBanner() {
   const { data } = useStatus()
@@ -255,6 +326,10 @@ export function AppShell() {
             <NavLink to="/perfil" className={navClass}>
               Mi perfil
             </NavLink>
+            <NavLink to="/agente" className={navClass}>
+              Agente
+              <AgentNavCount />
+            </NavLink>
           </nav>
           <div className="ml-auto flex shrink-0 items-center gap-1.5">
             <ThemeToggle />
@@ -274,6 +349,7 @@ export function AppShell() {
       </header>
       <main className="mx-auto max-w-6xl px-4 pb-24 pt-6 sm:px-6 sm:pt-8">
         <div className="mb-6 space-y-3 empty:hidden">
+          <BackgroundRunReminder />
           <ExtractionReminder />
           <FollowupReminder />
         </div>

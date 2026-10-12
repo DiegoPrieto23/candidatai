@@ -21,6 +21,10 @@ transacción, sin bloquear SQLite mientras espera a la red.
 Candidatura asistida (fase 11): el worker es el único dueño del navegador persistente
 (`services/applier/browser.py`). Sus tareas no se reintentan y, si el worker se cierra a medias,
 quedan `failed` al arrancar, nunca vuelven a la cola.
+
+En segundo plano (fase 19): las `agent_runs` que deja la UI se ejecutan en un hilo propio, de una
+en una, para que un agente de varios minutos no pare la cola. Tampoco se repiten si el worker se
+cierra a medias.
 """
 
 import logging
@@ -37,7 +41,14 @@ from app.core.config import get_settings
 from app.core.db import session_scope
 from app.core.policies import ConnectorsPolicy, get_policies
 from app.models.base import utcnow
-from app.services import application_archive, liveness, replies, summaries, tasks
+from app.services import (
+    agent_runner,
+    application_archive,
+    liveness,
+    replies,
+    summaries,
+    tasks,
+)
 from app.services.ingestion import service as sources
 from app.services.ingestion.email import service as email_alerts
 from app.services.ingestion.email.mailboxes import has_local_mail
@@ -175,6 +186,7 @@ class WorkerRun(BaseModel):
     done: int
     failed: int
     outcomes: list[TaskOutcome]
+    agent_runs: list[agent_runner.AgentRunOutcome] = []  # `jh worker --once` (fase 19)
 
 
 def run_one() -> TaskOutcome | None:
@@ -339,9 +351,10 @@ def run_scheduler(
             on_message(f"¿Siguen abiertas?: {checks} ofertas aprobadas o con CV en cola.")
         process()
 
-    # Un solo hilo: la cola y la ingesta nunca escriben a la vez en SQLite.
+    # Un solo hilo: la cola y la ingesta nunca escriben a la vez en SQLite. Las ejecuciones del
+    # agente (fase 19) van en otro: duran minutos y solo escriben su propia fila de vez en cuando.
     scheduler = BlockingScheduler(
-        executors={"default": ThreadPoolExecutor(1)},
+        executors={"default": ThreadPoolExecutor(1), "agents": ThreadPoolExecutor(1)},
         job_defaults={"coalesce": True, "max_instances": 1, "misfire_grace_time": 3600},
         timezone=ZoneInfo(policy.timezone),
     )
@@ -363,6 +376,18 @@ def run_scheduler(
     poll_minutes = get_policies().email_alerts.poll_minutes
     scheduler.add_job(poll_email, "interval", minutes=poll_minutes, id="email_alerts")
 
+    def background() -> None:
+        try:
+            for outcome in agent_runner.run_pending():
+                on_message(agent_runner.describe(outcome))
+        except Exception as exc:
+            logger.exception("Fallo al ejecutar las ejecuciones en segundo plano")
+            on_message(f"Error en segundo plano: {type(exc).__name__}: {exc}")
+
+    scheduler.add_job(background, "interval", seconds=interval, id="agent_runs", executor="agents")
+
+    if broken := agent_runner.recover_interrupted():
+        on_message(f"En segundo plano, quedaron a medias (no se repiten): {broken}.")
     with session_scope() as session:
         if interrupted := tasks.fail_interrupted(session):
             from app.services.applier import service as applier

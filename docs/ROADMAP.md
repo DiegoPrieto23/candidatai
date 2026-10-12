@@ -53,7 +53,9 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 18 | Contactos, mensajes e investigación de empresas | ✅ | Tus contactos de LinkedIn (CSV) cruzados con tus ofertas, borradores de mensaje y dosier de empresa con fuentes |
 | 18.1 | ↳ Red de LinkedIn y referencias | ✅ | `jh contacts import-linkedin` (sin emails), «Conoces a N» en bandeja, triaje y ficha, «Añadir al proceso» con su papel, `get_job_contacts` y embudo «Por referencia» |
 | 18.2 | ↳ Mensajes e investigación de empresa | ✅ | Skills `redactar-mensaje` (LinkedIn ≤ 300 caracteres o correo con adjuntos) e `investigar-empresa` (dosier con fuentes en la ficha y en `data/documentos/empresas/`) |
-| 19 | Lote en segundo plano | ⏳ | «En segundo plano» además de «En terminal» para los skills que no preguntan (fase 2 de la ADR-024) |
+| 19 | Lote en segundo plano | ✅ | «En segundo plano» además de «En terminal» para los skills que no preguntan (fase 2 de la ADR-024) |
+| 19.1 | ↳ Ejecución en segundo plano | ✅ | `launch.headless`, `agent_runs` en un hilo del worker con solo las herramientas MCP de la acción (las demás denegadas), progreso, preguntas, tiempo máximo y cancelación |
+| 19.2 | ↳ Cola de encargos y UI | ✅ | «Dejar para mi próxima sesión», `list_agent_requests` / `complete_agent_request`, skill `atender-encargos` y página «Agente» |
 | 20 | Calibración y patrones | ⏳ | «¿Acierta el score?»: respuesta por tramo de score, veredicto, fuente, plantilla y carta; retrospectiva semanal |
 | 21 | Ofertas recibidas y salario | ⏳ | Comparar ofertas recibidas y la distancia a tu mínimo sin exponerlo al agente; preparar la negociación |
 | 22 | LinkedIn por sus endpoints públicos (opcional) | ⏳ | Búsqueda pública sin sesión, apagada por defecto y con límites estrictos; ADR que matiza la 016 |
@@ -78,7 +80,7 @@ aprobadas de las que sacar las keywords; `buscar-ofertas` tras la 09b; `preparar
 `preparar-entrevista` y `resumen-diario` tras la 10; la candidatura asistida (sin skill: se
 usa desde la ficha) tras la 11; `plan-formacion` tras la 14; `ampliar-busqueda` tras la 16;
 `simular-entrevista` y `repasar-entrevista` tras la 17; `redactar-mensaje` e `investigar-empresa`
-tras la 18.
+tras la 18; `atender-encargos` tras la 19.
 
 ## Registro de fases
 
@@ -1683,3 +1685,68 @@ decisiones tomadas y deuda técnica pendiente. -->
     id.
   - Pendiente de prueba manual: tu exportación real de LinkedIn, «Investigar empresa» con una
     empresa real y «Redactar mensaje» (`docs/pruebas/fase-18-prueba-manual.txt`).
+
+### 19 · Lote en segundo plano y cola de encargos — 2026-10-12 · Claude Code (Opus 5.5)
+- **Resumen** (dos subfases en la misma rama):
+  - **19.1** · En el manifiesto, `launch.headless` de Claude Code (`claude -p` con `stream-json`,
+    `--tools Skill,Agent,Read`, `dontAsk`, `--strict-mcp-config`, `{allowed_tools}` y
+    `{denied_tools}`, `skill_rule`) y `launch.resume`. Migración 0019 (`agent_runs`,
+    `agent_requests`) y política `background_runs` (30 min, 200 líneas).
+    - `agent_launch.ACTIONS[...].background` con las herramientas mínimas de `procesar-ofertas`,
+      `evaluar-encaje` y `generar-cv`; `headless_command` permite esas, el skill de la acción y
+      `Read(./docs/**)`, y deniega todas las demás del registro.
+    - `services/agent_runs.py` (encolar con dedupe, `generar-cv` solo sin obligatorias ausentes o
+      con todas marcadas «No la tengo», cancelar, «Abrir en terminal» que retoma la sesión).
+    - `services/agent_runner.py`: reclamar con `UPDATE` condicionado (una a la vez), lectura en
+      streaming, progreso sin entradas, `PREGUNTA:` → `needs_user`, tiempo máximo, cancelación,
+      parada del worker y excepciones que paran el árbol entero (`taskkill /T`), recuperación al
+      arrancar. `services/agent_output.py`: el lector de `stream-json`.
+    - El worker las ejecuta en su propio hilo; `jh worker --once` también. API `/agent/runs`.
+  - **19.2** · Cola de encargos: `services/agent_requests.py`; `list_agent_requests` ↔
+    `jh requests list` y `complete_agent_request` ↔ `jh requests complete` (7 casos de paridad);
+    `get_status.agent_requests`; skill `atender-encargos` y mención en `resumen-diario`; API
+    `/agent/requests`. Acción «Atender encargos».
+  - **19.2** · UI: `AgentButton` partido (desplegable con «En terminal», «En segundo plano» y «Dejar
+    para mi próxima sesión»), página «Agente» (ejecuciones con estado, progreso, resultado,
+    preguntas, Cancelar, Abrir o Contestar en terminal; encargos pendientes y cerrados), aviso
+    arriba mientras trabaja, contador en el menú y refresco de todo al terminar una.
+  - Docs: ADR-032, AGENTS_COMPAT, AGENT_INTERFACE, DATA_MODEL, POLICIES §6, ARCHITECTURE, README,
+    RESUMEN_FASES y `docs/pruebas/fase-19-prueba-manual.txt`.
+  - Tests: agente falso (`tests/fixtures/fake_agent.py`) que imita `stream-json` con 10 modos; 64
+    tests de agente (comando y herramientas, runner, cola, API, árbol de procesos). Pasada
+    completa final: 2108 de backend y 217 de frontend en verde; ruff limpio, build y lint del
+    frontend limpios y `sync_agents.py --check` en verde.
+- **Pruebas reales** (con `claude` 2.1.296, modelo haiku, BD sin migrar, sin tocar datos): ver
+  «Comprobado con claude» en AGENTS_COMPAT. Lo importante: el allow de `.claude/settings.json` se
+  colaba (también en subagentes) y por eso las demás herramientas se deniegan; `Skill(nombre)`
+  acota y `Agent(nombre)` no.
+- **Decisiones:**
+  - Herramientas por acción en vez de `mcp__jobhunter__*` (aprobado en el plan), y todas las demás
+    denegadas (de la revisión).
+  - Codex sin segundo plano (aprobado en el plan): no puede limitar las herramientas MCP.
+  - `agent_runs` como cola propia en un hilo aparte del worker, no en `tasks`.
+  - La prueba con el `claude` real queda como manual (aprobado en el plan); solo se comprobaron
+    las reglas de permisos.
+  - Revisión del rol `revisor` aplicada:
+    - los POST de cancelar, abrir y quitar exigen cuerpo JSON (`EmptyBody`) y la UI lo manda (si
+      no, `require_ui` daba 403 desde el navegador);
+    - techo de herramientas con `--disallowedTools` y `Skill(<skill>)` (ver arriba);
+    - nunca queda un agente vivo: `try/finally` en `execute`, `stop_active` al parar el worker,
+      `recover_interrupted` para el `pid` huérfano si es el agente, y salida a los 10 s si ya
+      respondió y no sale;
+    - cancelar y terminar condicionados al estado (sin carrera con el worker);
+    - el lector de cada agente en su propio módulo (regla dura 2), sin flags de un agente en
+      POLICIES;
+    - los errores de herramienta solo dicen en cuál fallaron; `can_resume` mira si el agente sabe
+      retomar; «Atender encargos» no puede ser un encargo; refresco tras terminar por la fecha y
+      no por un recuento; zona horaria de `lib/time`.
+- **Deuda:**
+  - Sin Job Object de Windows: si el worker muere de golpe, el agente sigue hasta el próximo
+    arranque del worker, que lo para. Dos `jh worker` a la vez no están soportados.
+  - `Agent` no se puede acotar a los roles de la acción; el techo es el de la sesión.
+  - Las preguntas dependen de que el agente use `PREGUNTA:`.
+  - El entorno del agente es el del worker menos `unset_env` (sin shell no es explotable).
+  - Si `claude` cambia sus flags, se corrige el manifiesto; si se instala como `.cmd` (npm), los
+    argumentos pasan por `cmd.exe` (las órdenes son de la app).
+  - Pendiente de prueba manual: el recorrido completo con el `claude` real
+    (`docs/pruebas/fase-19-prueba-manual.txt`).

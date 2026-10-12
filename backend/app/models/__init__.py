@@ -1,5 +1,6 @@
 """Tablas SQLAlchemy (sin lógica). Importar este paquete registra todas en `Base.metadata`."""
 
+from app.models.agents import AgentRequest, AgentRun
 from app.models.applier import ApplicationAttempt
 from app.models.base import Base
 from app.models.companies import Company, CompanyResearch
@@ -16,6 +17,8 @@ from app.models.skills import SkillGapMark
 from app.models.sources import EmailMessage, Source, SourceRun
 
 __all__ = [
+    "AgentRequest",
+    "AgentRun",
     "Application",
     "ApplicationAttempt",
     "Base",

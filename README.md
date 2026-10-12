@@ -199,6 +199,7 @@ Arranca `jh serve`, `jh worker` y `pnpm dev`. Crea tu perfil con el skill `actua
 | `simular-entrevista 42` | Simulacro: una pregunta cada vez, feedback y una versión mejor con tu perfil; al final, puntos fuertes y flojos |
 | `repasar-entrevista 42` | Cuentas cómo fue: guarda notas y próximos pasos, predice la siguiente ronda y propone historias STAR (con tu OK, vía `actualizar-perfil`). Con una oferta recibida, las dudas a aclarar antes de aceptar |
 | `resumen-diario` | Qué tienes hoy, seguimientos vencidos, qué procesar |
+| `atender-encargos` | Hace lo que dejaste en la UI con «Dejar para mi próxima sesión» y lo cierra con un resumen |
 | `revisar-respuestas` | Clasifica los correos de las empresas (entrevista con su fecha, prueba, oferta, rechazo); tú aceptas cada propuesta en «Respuestas» |
 | `redactar-seguimiento` | Borradores de seguimiento (máximo 2 por candidatura) y de agradecimiento tras una entrevista; los copias y los envías tú |
 | `redactar-mensaje 42` | Mensaje de LinkedIn (≤ 300 caracteres) o correo de candidatura con adjuntos para el recruiter, el responsable o alguien de tu red en esa empresa; lo copias y lo envías tú |
@@ -210,7 +211,9 @@ Arranca `jh serve`, `jh worker` y `pnpm dev`. Crea tu perfil con el skill `actua
 | `ampliar-busqueda` | Propone títulos cercanos a los que apruebas (p. ej. «Analytics Engineer») y, con tu OK, los añade a tus puestos buscados o a las búsquedas de tus plataformas |
 
 Si tu agente ofrece tareas programadas, `procesar-ofertas` y `resumen-diario` pueden ejecutarse
-solos cada mañana (`docs/AGENTS_COMPAT.md`).
+solos cada mañana (`docs/AGENTS_COMPAT.md`). Con Claude Code, `procesar-ofertas`, `evaluar-encaje`
+y `generar-cv` también se lanzan desde la UI **en segundo plano**: sin ventana, solo con las
+herramientas de la app y con el progreso en la página «Agente» (fase 19).
 
 ### Cuándo entra tu CV real
 

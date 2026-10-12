@@ -162,3 +162,7 @@ liveness:                       # fase 16: ¿sigue abierta? Nunca cierra la ofer
 reposts:                        # fase 16: «Republicada ×N» (observación, no veredicto)
   window_days: 90                 # se cuentan las publicaciones de los últimos N días
   min_count: 2                    # días distintos con una publicación nueva (otro id o URL) en el mismo canal
+
+background_runs:                # fase 19: «En segundo plano» (el agente sin ventana desde el worker, de uno en uno)
+  timeout_minutes: 30             # después se para el proceso y la ejecución queda `timeout`
+  max_progress_lines: 200         # líneas de progreso que se guardan (las últimas)

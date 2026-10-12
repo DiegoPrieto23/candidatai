@@ -6,7 +6,7 @@ cada fase y lo quita cuando el usuario confirma que está hecho.
 
 Marca `[x]` lo que hagas y, si algo falla, apúntalo debajo de la línea con `→`.
 
-Última actualización: 2026-10-12 (fase 18).
+Última actualización: 2026-10-12 (fase 19).
 
 ## 1. Poner la app al día (antes de probar nada)
 
@@ -16,15 +16,16 @@ bloquea el entorno de Python):
 - [ ] Copia de seguridad de la BD: `copy data\jobhunter.db data\jobhunter.db.bak-0012`
 - [ ] `uv sync --directory backend` (dependencias añadidas con `--no-sync`, p. ej. `tzdata`)
 - [ ] `uv run --directory backend jh db upgrade`: tu BD está en **0012** y el código espera la
-      **0018** (`skill_gap_marks` de la fase 14; `replies` y `message_drafts` de la 15;
+      **0019** (`skill_gap_marks` de la fase 14; `replies` y `message_drafts` de la 15;
       `jobs.signals` y `job_sightings` de la 16; plan y repaso de entrevistas en `milestones`
-      de la 17; `network_contacts`, referencias, mensajes y `company_research` de la 18)
+      de la 17; `network_contacts`, referencias, mensajes y `company_research` de la 18;
+      `agent_runs` y `agent_requests` de la 19)
 - [ ] `cd frontend; pnpm install`
 - [ ] Abrir Claude Code de nuevo para que el servidor MCP cargue las herramientas nuevas
       (`list_replies`, `get_reply`, `save_reply_proposal`, `save_message_draft`, `get_skill_gaps`,
       `check_job_open`, `get_search_titles`, `get_interviews`, `save_interview_plan`,
       `save_interview_notes`, `get_job_contacts`, `get_company_research`,
-      `save_company_research`…).
+      `save_company_research`, `list_agent_requests`, `complete_agent_request`…).
       Comprobar con `/mcp`.
 
 ## 2. `.env.example` (el agente no puede leerlo ni editarlo)
@@ -45,6 +46,13 @@ bloquea el entorno de Python):
 Cada guía está en `docs/pruebas/`. No consta en el ROADMAP que estén hechas; si alguna ya la
 hiciste, márcala.
 
+- [ ] **Fase 19 · Segundo plano y cola de encargos** (`fase-19-prueba-manual.txt`):
+  - el comando `claude -p` real a mano (las flags no las prueban los tests: usan un agente falso);
+  - «Procesar ofertas», «Evaluar encaje» y «Generar CV» en segundo plano, con el progreso en
+    «Agente» y sin ventanas;
+  - una ejecución con preguntas y «Contestar en terminal» (misma sesión);
+  - «Cancelar» (sin `claude.exe` ni `jh-mcp` huérfanos) y el aviso de worker parado;
+  - «Dejar para mi próxima sesión» y `/atender-encargos`.
 - [ ] **Fase 18 · Contactos, mensajes y empresas** (`fase-18-prueba-manual.txt`):
   - descargar tu exportación de LinkedIn (`Connections.csv`) e importarla;
   - revisar a ojo el cruce con tus ofertas (falsos positivos y empresas que falten);

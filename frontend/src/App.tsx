@@ -7,6 +7,7 @@ import { EmptyState } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { AgentPage } from '@/pages/AgentPage'
 import { AlertsPage } from '@/pages/AlertsPage'
 import { HomePage } from '@/pages/HomePage'
 import { InboxPage } from '@/pages/InboxPage'
@@ -65,6 +66,7 @@ export function AppRoutes() {
         <Route path="perfil" element={<ProfilePage />} />
         <Route path="empresas" element={<SourcesPage />} />
         <Route path="plataformas" element={<PlatformsPage />} />
+        <Route path="agente" element={<AgentPage />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

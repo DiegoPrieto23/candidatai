@@ -190,6 +190,7 @@ def test_run_scheduler_catches_up_and_schedules_daily(
     assert "hour='7'" in str(captured["jobs"]["daily_sources"])
     assert "minute='30'" in str(captured["jobs"]["daily_sources"])
     assert "0:00:30" in str(captured["jobs"]["tasks"])
+    assert "0:00:30" in str(captured["jobs"]["agent_runs"])  # fase 19, en su propio hilo
     assert messages[0] == "Fuentes pendientes desde la última ingesta: 1 en cola."
     assert messages[-1] == "Próxima ingesta diaria: 07:30 (Europe/Madrid)."
     assert runs[0].outcomes[0].result["source_id"] == source_id

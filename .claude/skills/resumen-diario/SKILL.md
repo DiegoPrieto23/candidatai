@@ -13,5 +13,7 @@ allowed-tools: mcp__jobhunter__get_status mcp__jobhunter__list_followups_due mcp
    - **Seguimientos vencidos**: empresa, puesto y días sin respuesta; ofrece redactar el mensaje de seguimiento;
    - **Por procesar**: cuántas en `pending_extraction` (sugiere el skill `procesar-ofertas`) y las
      5 mejores de triaje por score;
+   - **Encargos**: si `get_status` trae `agent_requests` > 0, cuántos te dejó el usuario en la UI
+     (sugiere el skill `atender-encargos`);
    - **Semana**: nada si no hay novedades.
 3. Si nada requiere acción, dilo en una línea.

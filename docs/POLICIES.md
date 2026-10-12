@@ -202,6 +202,13 @@ Los pesos del score no cambian con esto; solo qué nombres casan.
   igual de no confiables que el texto de una oferta y pasan por la misma detección.
 - Las ofertas con `risk_flags` o `injection_suspected` se muestran con aviso en la UI; que haya
   texto oculto para IAs también dice algo de cómo filtra esa empresa.
+- **En segundo plano** (fase 19, ADR-032) nadie mira mientras el agente lee ofertas, así que la
+  ejecución solo puede usar las herramientas MCP de su acción (procesar ofertas: `get_status`,
+  `list_jobs`, `get_job`, `save_extraction`) y su skill: todas las demás de la app se le deniegan
+  explícitamente, aunque tu configuración del agente las permita. Sin terminal ni web y leyendo
+  solo `docs/`. Lo que intente fuera de eso queda en el progreso como «denegada». Solo se lanzan
+  así los skills que no preguntan; si uno necesita al usuario, para y deja la pregunta en la UI.
+  Tiempo máximo: `background_runs.timeout_minutes` de `config/policies.yaml`.
 
 ## 7. Estilo de redacción
 

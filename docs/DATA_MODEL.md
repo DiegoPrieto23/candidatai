@@ -564,3 +564,56 @@ todas sus ofertas y guardar otro lo sustituye. No lleva evento: no es estado de 
 
 Al archivar una candidatura (fase 13) se copia ese `.md` a su carpeta como `empresa.md`: el
 dosier vigente al archivar, que no forma parte de lo enviado (el README lo dice).
+
+## Ampliaciones de la fase 19
+
+Migración 0019. Ninguna de las dos tablas lleva eventos: no son estado de una oferta (lo que haga
+el agente sí los registra, por sus herramientas, como siempre).
+
+### `agent_runs`
+Ejecuciones del agente en segundo plano (ADR-032). Es su propia cola: la llena la UI
+(`POST /agent/runs`) y la vacía el worker en un hilo aparte, de una en una.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | int PK | |
+| action | str | Una de `agent_launch.ACTIONS` con `background` (`procesar-ofertas`, `evaluar-encaje`, `generar-cv`) |
+| job_id | FK jobs? | En `generar-cv` |
+| milestone_id | FK milestones? | Reservado (ninguna acción de entrevista va en segundo plano) |
+| agent | str | El agente del manifiesto (`claude`) |
+| status | str | `queued`, `running`, `done`, `needs_user` (terminó con preguntas), `failed`, `cancelled`, `timeout` |
+| prompt | text | La orden, con la nota de segundo plano (y, en `generar-cv`, la de las skills marcadas «No la tengo») |
+| command | JSON | El comando exacto, con las herramientas permitidas: para auditar qué podía hacer |
+| unset_env | JSON | Variables que se quitan antes de lanzarlo (`ANTHROPIC_API_KEY`) |
+| output_format | str | El `output` de `launch.headless`: qué lector de `agent_output.PARSERS` usa |
+| session_id | str? | La sesión del agente: «Abrir en terminal» la retoma |
+| progress | JSON | Las últimas `background_runs.max_progress_lines` líneas `{at, kind: tool\|text\|info\|error, text}`. De las herramientas, solo el nombre (nunca sus entradas ni el detalle de sus errores); del texto, el del agente principal, recortado |
+| result | text? | La respuesta final (hasta 20 000 caracteres) |
+| questions | JSON | Las líneas «PREGUNTA:» del resultado |
+| error | text? | |
+| usage | JSON? | `num_turns`, `duration_ms`, `total_cost_usd` (el que informa el agente; con suscripción no se factura) y `denied_tools` |
+| cancel_requested | bool | La UI lo pide; el worker para el proceso en ≤ 2 s |
+| pid | int? | |
+| created_at / started_at / finished_at | datetime | |
+
+Reclamar es un `UPDATE` condicionado a que no haya otra `running`: una sola a la vez, también
+entre procesos. Cancelar y terminar también van condicionados al estado. Si el worker se para, la
+que esté en curso queda `failed`; si muere de golpe, al arrancar quedan `failed`, no se repiten y
+se para su agente si sigue vivo.
+
+### `agent_requests`
+Cola de encargos: lo que la UI deja para la próxima sesión interactiva del agente.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | int PK | |
+| action | str | Cualquiera de `agent_launch.ACTIONS` salvo `atender-encargos` |
+| job_id / milestone_id | FK? | Los de la acción |
+| prompt | text | La orden, compuesta por la app (lista cerrada; ningún texto de una oferta) |
+| status | str | `pending`, `done` (lo cerró el agente con `complete_agent_request`) o `cancelled` (desde la UI) |
+| summary | text? | El resumen del agente al cerrarlo |
+| agent_name | str? | |
+| created_at / completed_at | datetime | |
+
+Mismo encargo pendiente (acción, oferta e hito) no se duplica. `get_status` cuenta los pendientes
+en `agent_requests`.
