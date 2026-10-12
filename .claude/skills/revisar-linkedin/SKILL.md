@@ -15,7 +15,7 @@ inicia sesión, ni edita nada allí. Propone; el usuario aplica.
    `actualizar-perfil`.
 2. Pide el perfil actual de LinkedIn de una de estas formas (lo que prefiera el usuario):
    - el PDF que genera LinkedIn desde su propio perfil («Más» → «Guardar en PDF»), guardado en
-     `data/linkedin/`;
+     `data/documentos/linkedin/`;
    - el texto de cada sección pegado en el chat: titular, «Acerca de», experiencia, formación,
      aptitudes, idiomas y certificaciones.
 3. Qué demanda el mercado que le interesa: `list_jobs(stage="approved", limit=30)` y, para cada
@@ -44,7 +44,7 @@ Límites de longitud a tener en cuenta (pueden cambiar; si LinkedIn rechaza un t
 titular unos 220 caracteres y «Acerca de» unos 2.600.
 
 ## 3. Entregar el informe
-Escribe `data/linkedin/informe-<AAAA-MM-DD>.md` con:
+Escribe `data/documentos/linkedin/informe-<AAAA-MM-DD>.md` con:
 1. **Resumen**: los 3 cambios de mayor impacto y por qué, con datos (p. ej. «Snowflake aparece en
    14 de 20 ofertas aprobadas y no está en tus aptitudes»).
 2. **Cambios por sección**, ordenados por impacto. Para cada uno: texto actual, texto propuesto
@@ -61,7 +61,7 @@ titular y del «Acerca de».
 ## 4. Cerrar
 - Presenta el resumen y los cambios **de uno en uno** si el usuario quiere revisarlos en el chat.
   Un «sí» a un cambio no vale para los demás.
-- El informe fechado en `data/linkedin/` es el registro de la revisión (no es un evento de
+- El informe fechado en `data/documentos/linkedin/` es el registro de la revisión (no es un evento de
   ninguna oferta, así que no uses `add_event`).
 - Si el usuario confirma que ya aplicó los cambios, ofrece borrar los informes antiguos de
-  `data/linkedin/` y conservar solo el último.
+  `data/documentos/linkedin/` y conservar solo el último.
