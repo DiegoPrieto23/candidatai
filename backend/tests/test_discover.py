@@ -1,4 +1,4 @@
-"""`jh sources discover` (`ingestion/discover.py`): las tres APIs de ATS simuladas con respx."""
+"""`cai sources discover` (`ingestion/discover.py`): las tres APIs de ATS simuladas con respx."""
 
 import json
 from pathlib import Path
@@ -67,7 +67,7 @@ def test_greenhouse_confirmed_by_board_name(session: Session) -> None:
     assert hit.board_name == "Acme Datos" and hit.jobs_count == 4
     assert hit.sample_titles == ["Data Engineer", "BI Analyst", "SRE"]
     assert (
-        hit.add_command == 'jh sources add --kind greenhouse --name "Acme Datos" --slug acmedatos'
+        hit.add_command == 'cai sources add --kind greenhouse --name "Acme Datos" --slug acmedatos'
     )
     assert item.tried == ["acmedatos", "acme-datos", "acme"]
 

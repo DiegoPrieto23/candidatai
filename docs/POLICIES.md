@@ -81,7 +81,7 @@ Combinación ponderada (`scoring.weights`) de cuatro componentes entre 0 y 1:
 Un componente que no se puede calcular (la oferta no lista skills de ese tipo o no hay modelo de
 embeddings) no cuenta, y su peso se reparte entre los demás. El desglose lo dice. Los filtros
 duros no cambian el score. Por debajo de `triage_threshold`, la oferta se ve atenuada en el
-triaje. Los pesos y el umbral se ajustan con `jh eval matching` (`evals/matching/README.md`).
+triaje. Los pesos y el umbral se ajustan con `cai eval matching` (`evals/matching/README.md`).
 
 ### Sinónimos y huecos de skills (fase 14)
 
@@ -155,7 +155,7 @@ Los pesos del score no cambian con esto; solo qué nombres casan.
 - `get_profile` no devuelve email, teléfono ni la sección `private` (datos salariales incluidos): el
   agente no los necesita para redactar. El teléfono lo añade el código al generar el CV entregado.
 - **Tu red de LinkedIn** (fase 18): son datos de terceros. Solo entran con la exportación oficial
-  `Connections.csv` que descargas tú (`jh contacts import-linkedin` o «Importar» en la ficha); la
+  `Connections.csv` que descargas tú (`cai contacts import-linkedin` o «Importar» en la ficha); la
   app no navega LinkedIn ni busca perfiles, y no guarda los emails que traiga la exportación. Las
   herramientas para agentes solo dan nombre y cargo de las personas de la empresa de **una**
   oferta (`get_job_contacts`), nunca la red entera ni sus URLs. Añadirlas al proceso y marcar
@@ -171,7 +171,7 @@ Los pesos del score no cambian con esto; solo qué nombres casan.
    rellenan solos y los consentimientos obligatorios los aceptas al confirmar.
 2. **LinkedIn**: nunca candidaturas automáticas ni scraping. La app prepara el paquete (CV,
    respuestas) y abre el enlace. Las ofertas de LinkedIn entran por sus alertas por correo, por el
-   botón «Enviar a Job Hunter» (acción tuya, oferta a oferta) y, solo si lo activas tú en la UI,
+   botón «Enviar a CandidatAI» (acción tuya, oferta a oferta) y, solo si lo activas tú en la UI,
    por la búsqueda con el navegador del agente (§8).
    Tampoco se edita tu perfil desde el agente: el skill `revisar-linkedin` propone los textos y
    tú los aplicas a mano. Las mismas reglas de veracidad (§1) y privacidad (§4) que en el CV.

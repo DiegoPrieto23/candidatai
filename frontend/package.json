@@ -1,5 +1,5 @@
 {
-  "name": "job-hunter-frontend",
+  "name": "candidatai-frontend",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -11,7 +11,7 @@
     "typecheck": "tsc -b",
     "test": "vitest run",
     "preview": "vite preview",
-    "gen:api": "uv run --directory ../backend jh openapi --out ../frontend/src/api/openapi.json && openapi-typescript src/api/openapi.json -o src/api/schema.d.ts"
+    "gen:api": "uv run --directory ../backend cai openapi --out ../frontend/src/api/openapi.json && openapi-typescript src/api/openapi.json -o src/api/schema.d.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

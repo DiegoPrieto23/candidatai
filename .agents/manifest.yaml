@@ -5,9 +5,9 @@
 # Las rutas y formatos de cada agente cambian con el tiempo: si algo deja de cargar, se corrige aquí.
 
 mcp_server:
-  name: jobhunter
+  name: candidatai
   command: uv
-  args: [run, --directory, backend, jh-mcp]
+  args: [run, --directory, backend, cai-mcp]
   env: {}
 
 targets:
@@ -54,15 +54,15 @@ targets:
         skill_rule: "Skill({skill})"   # solo el skill de la acción, no cualquiera de los instalados
         output: claude-stream-json     # formato de la salida que lee el worker
     tools:                        # herramientas lógicas → nombres nativos
-      mcp_prefix: "mcp__jobhunter__"
+      mcp_prefix: "mcp__candidatai__"
       read: [Read]
       search: [Grep, Glob]
       git_read: ["Bash(git diff *)", "Bash(git status *)", "Bash(git log *)"]
       web: [WebSearch, WebFetch]
-      jh_profile_cli: ["Bash(uv run --directory backend jh profile *)"]
-      jh_templates_cli: ["Bash(uv run --directory backend jh templates *)"]
-      jh_context_cli: ["Bash(uv run --directory backend jh context *)"]
-      jh_skills_cli: ["Bash(uv run --directory backend jh skills *)"]
+      cai_profile_cli: ["Bash(uv run --directory backend cai profile *)"]
+      cai_templates_cli: ["Bash(uv run --directory backend cai templates *)"]
+      cai_context_cli: ["Bash(uv run --directory backend cai context *)"]
+      cai_skills_cli: ["Bash(uv run --directory backend cai skills *)"]
     skill_extras:                 # campos de frontmatter que solo entiende Claude Code
       implementar-fase:
         disable-model-invocation: true
@@ -92,7 +92,7 @@ targets:
         argument-hint: "[job_id] [milestone_id], o 'dudas' con una oferta recibida"
         allowed-tools: ["mcp:get_interviews", "mcp:get_extraction", "mcp:get_profile", "mcp:get_context", "mcp:get_timeline", "mcp:save_interview_notes"]
       actualizar-perfil:
-        allowed-tools: ["read", "jh_profile_cli", "jh_context_cli", "jh_skills_cli"]
+        allowed-tools: ["read", "cai_profile_cli", "cai_context_cli", "cai_skills_cli"]
       resumen-diario:
         allowed-tools: ["mcp:get_status", "mcp:list_followups_due", "mcp:list_upcoming", "mcp:list_jobs"]
       atender-encargos:                   # fase 19: la cola de encargos que deja la UI
@@ -100,7 +100,7 @@ targets:
         allowed-tools: ["mcp:list_agent_requests"]
       importar-plantilla-cv:
         argument-hint: "[ruta en data/uploads/, p. ej. data/uploads/mi-cv.pdf]"
-        allowed-tools: ["read", "jh_templates_cli"]
+        allowed-tools: ["read", "cai_templates_cli"]
       buscar-ofertas:
         argument-hint: "[configurar | plataforma | nada para todas]"
         allowed-tools: ["mcp:get_profile", "mcp:list_sources"]
@@ -126,7 +126,7 @@ targets:
         allowed-tools: ["read", "web", "mcp:get_skill_gaps", "mcp:get_profile", "mcp:get_context"]
       ampliar-busqueda:
         argument-hint: "[nada para los últimos 90 días, o un número de días]"
-        allowed-tools: ["read", "jh_profile_cli", "mcp:get_search_titles", "mcp:get_profile", "mcp:list_sources"]
+        allowed-tools: ["read", "cai_profile_cli", "mcp:get_search_titles", "mcp:get_profile", "mcp:list_sources"]
       # Fase 20: retrospectiva. Solo lee: los pesos y filtros los cambia el usuario.
       revisar-busqueda:
         argument-hint: "[nada para la última semana, o un número de días]"

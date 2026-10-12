@@ -303,7 +303,7 @@ def test_yaml_must_be_a_mapping(tmp_path: Path, text: str) -> None:
 
 
 def test_missing_file(tmp_path: Path) -> None:
-    with pytest.raises(ProfileNotFoundError, match="jh profile init"):
+    with pytest.raises(ProfileNotFoundError, match="cai profile init"):
         load_from_yaml(tmp_path / "no.yaml")
 
 

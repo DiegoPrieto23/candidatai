@@ -211,7 +211,7 @@ function AgentNavCount() {
   )
 }
 
-// Modo demo (fase 12.1): la carpeta de datos la creó `jh demo seed`. Fijo en todas las páginas.
+// Modo demo (fase 12.1): la carpeta de datos la creó `cai demo seed`. Fijo en todas las páginas.
 function DemoBanner() {
   const { data } = useStatus()
   if (!data?.demo_mode) return null
@@ -281,9 +281,9 @@ export function AppShell() {
         <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4 sm:px-6 lg:gap-6">
           <Link to="/" className="flex shrink-0 items-center gap-2.5 font-semibold tracking-tight whitespace-nowrap">
             <span className="grid size-7 place-items-center rounded-md bg-foreground font-mono text-[11px] font-bold text-background">
-              JH
+              CA
             </span>
-            <span className="hidden sm:inline">Job Hunter</span>
+            <span className="hidden sm:inline">CandidatAI</span>
           </Link>
           {/* En pantallas estrechas el menú se desplaza en horizontal en vez de ensanchar la página. */}
           <nav className="relative -my-2 flex min-w-0 items-center gap-0.5 overflow-x-auto py-2 text-sm [scrollbar-width:none]">

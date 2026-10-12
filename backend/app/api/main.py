@@ -1,4 +1,4 @@
-"""Aplicación FastAPI. Escucha solo en 127.0.0.1 (`jh serve`) y solo admite CORS de la UI local."""
+"""Aplicación FastAPI. Escucha solo en 127.0.0.1 (`cai serve`) y solo admite CORS de la UI local."""
 
 import json
 
@@ -42,9 +42,9 @@ def _operation_id(route: APIRoute) -> str:
 
 def create_app() -> FastAPI:
     app = FastAPI(
-        title="Job Hunter",
+        title="CandidatAI",
         version="0.1.0",
-        description="API local de Job Hunter para la UI.",
+        description="API local de CandidatAI para la UI.",
         generate_unique_id_function=_operation_id,
         responses=ERROR_RESPONSES,
     )

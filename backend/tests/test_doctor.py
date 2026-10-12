@@ -82,7 +82,7 @@ def test_cv_templates(tmp_path: Path) -> None:
     (own / "rota" / "template.yaml").write_text("id: rota\n", encoding="utf-8")
     check = doctor.check_cv_templates(builtin, own)
     assert check.status == CheckStatus.WARN
-    assert check.detail.endswith("no válidas: rota (jh templates list)")
+    assert check.detail.endswith("no válidas: rota (cai templates list)")
 
 
 def test_pdf_conversion_ok(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -171,7 +171,7 @@ def test_run_doctor_only_warns_on_fresh_setup() -> None:
 def test_cli_doctor_text() -> None:
     result = runner.invoke(cli.app, ["doctor"])
     assert result.exit_code == 0, result.output
-    assert "Job Hunter" in result.output
+    assert "CandidatAI" in result.output
     assert "AVISO" in result.output
     assert "Todo listo." in result.output
 
@@ -185,6 +185,7 @@ def test_cli_doctor_json() -> None:
     assert [c["name"] for c in payload["checks"]] == [
         "Python",
         "Directorio de datos",
+        "Nombres de antes de CandidatAI",
         "LibreOffice",
         "Plantillas de CV",
         "Conversión a PDF",
@@ -238,9 +239,9 @@ def test_check_connectors(monkeypatch: pytest.MonkeyPatch) -> None:
     assert result.status == doctor.CheckStatus.OK
     assert "ninguno (opcionales)" in result.detail and "07:30" in result.detail
 
-    monkeypatch.setenv("JH_ADZUNA_APP_ID", "id-secreto-1")
-    monkeypatch.setenv("JH_ADZUNA_APP_KEY", "clave-secreta-2")
-    monkeypatch.setenv("JH_INFOJOBS_CLIENT_ID", "id-secreto-3")
+    monkeypatch.setenv("CAI_ADZUNA_APP_ID", "id-secreto-1")
+    monkeypatch.setenv("CAI_ADZUNA_APP_KEY", "clave-secreta-2")
+    monkeypatch.setenv("CAI_INFOJOBS_CLIENT_ID", "id-secreto-3")
     get_settings.cache_clear()
     result = doctor.check_connectors(get_settings())
     assert result.status == doctor.CheckStatus.WARN
@@ -260,15 +261,15 @@ def test_replies_check_opens_its_folder_read_only(monkeypatch: pytest.MonkeyPatc
 
     with fake_imap({}) as server:
         for key, value in {
-            "JH_IMAP_HOST": "127.0.0.1",
-            "JH_IMAP_PORT": str(server.port),
-            "JH_IMAP_USER": USER,
-            "JH_IMAP_PASSWORD": PASSWORD,
+            "CAI_IMAP_HOST": "127.0.0.1",
+            "CAI_IMAP_PORT": str(server.port),
+            "CAI_IMAP_USER": USER,
+            "CAI_IMAP_PASSWORD": PASSWORD,
         }.items():
             monkeypatch.setenv(key, value)
         get_settings.cache_clear()
         ok = check_email_replies(get_settings(), plain)
-        monkeypatch.setenv("JH_IMAP_REPLIES_FOLDER", "Otra")
+        monkeypatch.setenv("CAI_IMAP_REPLIES_FOLDER", "Otra")
         get_settings.cache_clear()
         bad = check_email_replies(get_settings(), plain)
     assert ok.status == CheckStatus.OK and "«INBOX»" in ok.detail

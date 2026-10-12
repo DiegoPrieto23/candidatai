@@ -1,7 +1,7 @@
 """Paridad MCP ↔ CLI: misma entrada → misma salida y mismos errores, herramienta a herramienta.
 
 Cada caso se ejecuta dos veces sobre una BD recién creada y sembrada igual: una por MCP (cliente en
-proceso) y otra por `jh … --json`. Las marcas de tiempo se normalizan antes de comparar.
+proceso) y otra por `cai … --json`. Las marcas de tiempo se normalizan antes de comparar.
 """
 
 from collections.abc import Callable
@@ -941,7 +941,7 @@ def _normalize(value: Any) -> Any:
 
 
 def _fresh_db(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, name: str) -> None:
-    monkeypatch.setenv("JH_DATA_DIR", str(tmp_path / name))
+    monkeypatch.setenv("CAI_DATA_DIR", str(tmp_path / name))
     get_settings.cache_clear()
     get_engine.cache_clear()
     migrations.upgrade()

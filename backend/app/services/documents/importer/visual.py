@@ -1,4 +1,4 @@
-"""`jh templates inspect` para PDF, imagen y HTML (fase 08b): lo que hace falta para recrear el
+"""`cai templates inspect` para PDF, imagen y HTML (fase 08b): lo que hace falta para recrear el
 diseño con el motor html.
 
 - La página (o páginas) en PNG en `data/tmp/inspect/<fichero>/`, para que el agente la vea.

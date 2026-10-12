@@ -67,7 +67,7 @@ export function EmptyState({
   )
 }
 
-/** Pinta como código lo que va entre acentos graves: «ejecuta `jh serve`». */
+/** Pinta como código lo que va entre acentos graves: «ejecuta `cai serve`». */
 export function InlineCode({ text }: { text: string }) {
   const parts = text.split(/`([^`]+)`/g)
   return (

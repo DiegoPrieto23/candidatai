@@ -1,8 +1,8 @@
 ---
 name: preparar-candidatura
-description: Prepara respuestas de screening y, si procede, carta de presentación (con el skill generar-carta) para una oferta de Job Hunter con CV listo. Úsalo cuando se pida preparar una candidatura o responder preguntas de un formulario.
+description: Prepara respuestas de screening y, si procede, carta de presentación (con el skill generar-carta) para una oferta de CandidatAI con CV listo. Úsalo cuando se pida preparar una candidatura o responder preguntas de un formulario.
 argument-hint: '[job_id] [preguntas pegadas o ''carta'']'
-allowed-tools: mcp__jobhunter__get_extraction mcp__jobhunter__get_profile mcp__jobhunter__get_cv_content
+allowed-tools: mcp__candidatai__get_extraction mcp__candidatai__get_profile mcp__candidatai__get_cv_content
 ---
 
 <!-- GENERADO por scripts/sync_agents.py desde .agents/skills/preparar-candidatura/SKILL.md. No editar a mano: edita la fuente y regenera. -->

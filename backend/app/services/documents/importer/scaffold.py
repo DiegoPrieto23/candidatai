@@ -1,4 +1,4 @@
-"""`jh templates scaffold-html`: punto de partida de una plantilla html recreada desde un PDF, una
+"""`cai templates scaffold-html`: punto de partida de una plantilla html recreada desde un PDF, una
 imagen o un HTML.
 
 Con lo que mide `inspect` (columnas, barra lateral, banda de cabecera, márgenes, colores, fuentes,
@@ -392,7 +392,7 @@ def build_css(report: visual.VisualInspection, side: bool, photo_size_mm: float)
     gap = 8.0
     full_sidebar = lay.sidebar is not None and side
     lines = [
-        f"/* Recreación de {Path(report.file).name}, generada por `jh templates scaffold-html`.",
+        f"/* Recreación de {Path(report.file).name}, generada por `cai templates scaffold-html`.",
         "   Ajústala mirando el original (source.png). Solo recursos locales: fonts/, nada remoto.",
         "*/",
         "",
@@ -581,7 +581,7 @@ def scaffold_html(
     TemplateMeta.model_validate(meta)
 
     settings.tmp_dir.mkdir(parents=True, exist_ok=True)
-    staging = Path(tempfile.mkdtemp(prefix="jh-scaffold-", dir=settings.tmp_dir))
+    staging = Path(tempfile.mkdtemp(prefix="cai-scaffold-", dir=settings.tmp_dir))
     try:
         target = staging / template_id
         (target / "fonts").mkdir(parents=True)
@@ -644,8 +644,8 @@ def scaffold_html(
         source_preview=True,
         next_steps=[
             f"Ajusta data/{relative}/template.html y style.css mirando data/{relative}/source.png.",
-            f"jh templates validate {template_id}",
-            f"jh templates compare {template_id} --source <fichero>",
+            f"cai templates validate {template_id}",
+            f"cai templates compare {template_id} --source <fichero>",
         ],
         warnings=warnings,
     )

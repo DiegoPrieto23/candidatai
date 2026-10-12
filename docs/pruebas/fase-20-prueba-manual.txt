@@ -3,7 +3,7 @@ PRUEBA MANUAL · FASE 20 · CALIBRACIÓN Y PATRONES («¿ACIERTA EL SCORE?»)
 
 Objetivo: comprobar con datos de verdad que
 - la sección «¿Acierta el score?» del Embudo cuadra con lo que sabes de tus candidaturas;
-- `jh stats calibration` dice lo mismo que la UI;
+- `cai stats calibration` dice lo mismo que la UI;
 - el skill revisar-busqueda hace una retrospectiva prudente (no saca conclusiones con pocos datos)
   y NUNCA cambia config/policies.yaml ni tu perfil.
 
@@ -16,17 +16,17 @@ Duración aproximada: 15-20 minutos.
 REQUISITOS
 ----------
 - Rama: fase/20-calibracion-patrones (o main, si ya está fusionada). Sin migraciones nuevas.
-- API y UI arrancadas en sus ventanas (jh serve y pnpm dev), fuera de tu agente.
+- API y UI arrancadas en sus ventanas (cai serve y pnpm dev), fuera de tu agente.
 - Abre Claude Code de nuevo para que el MCP cargue `get_calibration` (/mcp).
 - Opcional, sin tocar tus datos: la demo (21 enviadas, sin veredictos, cartas ni plantillas):
-      uv run --directory backend jh demo seed --dir data-demo
-  y arranca la API con  $env:JH_DATA_DIR = "data-demo".
+      uv run --directory backend cai demo seed --dir data-demo
+  y arranca la API con  $env:CAI_DATA_DIR = "data-demo".
 
 
 PARTE 1 · La sección en el Embudo (5 min)
 -----------------------------------------
 1. Abre «Embudo». Al final, antes de «Motivos de descarte», está «¿Acierta el score?».
-   [ ] Sale el aviso «Orientativo…» con el intervalo al 95 % y `jh eval matching`.
+   [ ] Sale el aviso «Orientativo…» con el intervalo al 95 % y `cai eval matching`.
    [ ] La línea de arriba (N enviadas · respuesta · entrevista) coincide con el embudo: «Enviadas»
        y «Con respuesta» del panel de arriba (con el periodo «Todo»).
 2. Pestaña «Score»: siempre cinco filas (< 60, 60-74, 75-84, ≥ 85, Sin score).
@@ -48,8 +48,8 @@ PARTE 2 · La CLI (2 min)
 ------------------------
 Desde la raíz:
 
-    uv run --directory backend jh stats calibration
-    uv run --directory backend jh stats calibration --since 2026-09-01 --min-cases 5
+    uv run --directory backend cai stats calibration
+    uv run --directory backend cai stats calibration --since 2026-09-01 --min-cases 5
 
    [ ] Las cifras coinciden con la UI (las tasas, redondeadas).
    [ ] Solo lista los grupos con envíos y marca «(pocos datos)».
@@ -68,7 +68,7 @@ PARTE 3 · La retrospectiva con tu agente (10 min)
        sacar conclusiones de ellos.
    [ ] Si dos intervalos se solapan, dice que no se ve diferencia (no «A funciona mejor que B»).
    [ ] Propone como mucho 5 cambios, cada uno con evidencia, confianza y el cambio concreto. Los
-       de configuración, con el valor exacto y los pasos de `jh eval matching` antes y después.
+       de configuración, con el valor exacto y los pasos de `cai eval matching` antes y después.
 3. Pídele que aplique uno de los cambios de configuración que proponga.
    [ ] Se niega a editarlo y te da el cambio y los pasos para que lo hagas tú.
 4. Comprueba que no ha tocado nada:

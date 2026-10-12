@@ -1,8 +1,8 @@
 ---
 name: simular-entrevista
-description: Simulacro de entrevista para un proceso de Job Hunter, con una pregunta cada vez (RR. HH., técnica o caso), feedback concreto tras cada respuesta, una versión mejor basada solo en el perfil y un resumen final de puntos fuertes y flojos. Úsalo cuando se pida practicar, ensayar o simular una entrevista.
+description: Simulacro de entrevista para un proceso de CandidatAI, con una pregunta cada vez (RR. HH., técnica o caso), feedback concreto tras cada respuesta, una versión mejor basada solo en el perfil y un resumen final de puntos fuertes y flojos. Úsalo cuando se pida practicar, ensayar o simular una entrevista.
 argument-hint: '[job_id] [milestone_id] [rrhh|tecnica|caso|final]'
-allowed-tools: Read mcp__jobhunter__get_interviews mcp__jobhunter__get_extraction mcp__jobhunter__get_profile mcp__jobhunter__get_context
+allowed-tools: Read mcp__candidatai__get_interviews mcp__candidatai__get_extraction mcp__candidatai__get_profile mcp__candidatai__get_context
 ---
 
 <!-- GENERADO por scripts/sync_agents.py desde .agents/skills/simular-entrevista/SKILL.md. No editar a mano: edita la fuente y regenera. -->

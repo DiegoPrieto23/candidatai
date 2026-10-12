@@ -717,7 +717,7 @@ export interface paths {
         put?: never;
         /**
          * Capture Job
-         * @description Botón «Enviar a Job Hunter»: completa un resumen, reconoce una oferta ya guardada o da de
+         * @description Botón «Enviar a CandidatAI»: completa un resumen, reconoce una oferta ya guardada o da de
          *     alta una nueva. Solo desde la extensión configurada y con su token.
          */
         post: operations["capture_job"];
@@ -1407,7 +1407,7 @@ export interface paths {
         put?: never;
         /**
          * Start Agent Run
-         * @description Deja en cola una ejecución en segundo plano (la ejecuta `jh worker`, de una en una).
+         * @description Deja en cola una ejecución en segundo plano (la ejecuta `cai worker`, de una en una).
          */
         post: operations["start_agent_run"];
         delete?: never;

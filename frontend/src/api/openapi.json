@@ -1,8 +1,8 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Job Hunter",
-    "description": "API local de Job Hunter para la UI.",
+    "title": "CandidatAI",
+    "description": "API local de CandidatAI para la UI.",
     "version": "0.1.0"
   },
   "paths": {
@@ -4217,7 +4217,7 @@
           "capture"
         ],
         "summary": "Capture Job",
-        "description": "Botón «Enviar a Job Hunter»: completa un resumen, reconoce una oferta ya guardada o da de\nalta una nueva. Solo desde la extensión configurada y con su token.",
+        "description": "Botón «Enviar a CandidatAI»: completa un resumen, reconoce una oferta ya guardada o da de\nalta una nueva. Solo desde la extensión configurada y con su token.",
         "operationId": "capture_job",
         "parameters": [
           {
@@ -8335,7 +8335,7 @@
           "agent"
         ],
         "summary": "Start Agent Run",
-        "description": "Deja en cola una ejecución en segundo plano (la ejecuta `jh worker`, de una en una).",
+        "description": "Deja en cola una ejecución en segundo plano (la ejecuta `cai worker`, de una en una).",
         "operationId": "start_agent_run",
         "requestBody": {
           "required": true,

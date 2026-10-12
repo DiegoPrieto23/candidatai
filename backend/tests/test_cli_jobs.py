@@ -1,4 +1,4 @@
-"""Comandos `jh jobs add-url`, `jh jobs add-text` y `jh jobs list`."""
+"""Comandos `cai jobs add-url`, `cai jobs add-text` y `cai jobs list`."""
 
 import json
 from pathlib import Path
@@ -138,7 +138,7 @@ def test_add_text_file_outside_tmp(tmp_path: Path) -> None:
 def test_add_text_relative_path_from_repo_root(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    # `uv run --directory backend jh …` corre en backend/, pero la ruta se escribe desde la raíz.
+    # `uv run --directory backend cai …` corre en backend/, pero la ruta se escribe desde la raíz.
     from app.agent_interface import cli as agent_cli
 
     monkeypatch.setattr(agent_cli, "REPO_ROOT", tmp_path)  # data/ del test = tmp_path/data

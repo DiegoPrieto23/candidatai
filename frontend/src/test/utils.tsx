@@ -203,7 +203,7 @@ export function matchView(changes: Partial<MatchView> = {}): MatchView {
       nice_to_have: { ratio: null, covered: [], missing: [] },
       semantic: null,
       preferences: { value: 0.95, role: 1, role_match: 'Data Engineer', remote_mode: 0.85, location: 1 },
-      notes: ['Similitud semántica desactivada (JH_EMBEDDINGS=off).'],
+      notes: ['Similitud semántica desactivada (CAI_EMBEDDINGS=off).'],
     },
     assessment: null,
     assessment_stale: false,

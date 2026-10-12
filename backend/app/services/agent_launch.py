@@ -6,7 +6,7 @@ con tu suscripción, y tú ves, contestas y apruebas lo que haga.
   `job_id` y el `milestone_id` (fase 17), enteros: ningún texto de una oferta ni de una web llega
   al comando.
 - Qué programa se lanza no está aquí: es `launch` del agente en `.agents/manifest.yaml` (regla
-  dura 2). Con varios, elige `JH_AGENT`; si no, el primero que lo tenga y esté instalado.
+  dura 2). Con varios, elige `CAI_AGENT`; si no, el primero que lo tenga y esté instalado.
 - Antes de lanzar se quitan del entorno las variables de `launch.unset_env` (p. ej. la clave de la
   API): así el agente usa tu suscripción y no factura por API.
 - Solo Windows de momento (Windows Terminal o, si no está, una ventana de PowerShell). En otro
@@ -98,19 +98,19 @@ class Action:
 ACTIONS: dict[ActionId, Action] = {
     "buscar-ofertas": Action(
         "Buscar ofertas",
-        "Usa el skill buscar-ofertas de Job Hunter para buscar ofertas en las plataformas activas.",
+        "Usa el skill buscar-ofertas de CandidatAI para buscar ofertas en las plataformas activas.",
     ),
     # Las tres que admiten segundo plano (fase 19). Cada lista es lo mínimo que usan el skill y
     # sus roles: con un comodín, una oferta con una inyección podría llamar a herramientas que
     # escriben (`add_event`, `save_source`…).
     "procesar-ofertas": Action(
         "Procesar ofertas",
-        "Usa el skill procesar-ofertas de Job Hunter con las ofertas pendientes de extraer.",
+        "Usa el skill procesar-ofertas de CandidatAI con las ofertas pendientes de extraer.",
         background=("get_status", "list_jobs", "get_job", "save_extraction"),
     ),
     "evaluar-encaje": Action(
         "Evaluar encaje",
-        "Usa el skill evaluar-encaje de Job Hunter con las ofertas pendientes de revisar.",
+        "Usa el skill evaluar-encaje de CandidatAI con las ofertas pendientes de revisar.",
         background=(
             "list_jobs",
             "get_profile",
@@ -122,7 +122,7 @@ ACTIONS: dict[ActionId, Action] = {
     ),
     "generar-cv": Action(
         "Generar CV",
-        "Usa el skill generar-cv de Job Hunter para la oferta {job_id}.",
+        "Usa el skill generar-cv de CandidatAI para la oferta {job_id}.",
         needs_job=True,
         stages=CV_STAGES,
         wrong_stage="Solo se genera el CV de una oferta aprobada.",
@@ -144,40 +144,40 @@ ACTIONS: dict[ActionId, Action] = {
     # la orden: el agente los lee de las marcas con `get_skill_gaps`.
     "anadir-skills": Action(
         "Añadir al perfil las que tengo",
-        "Usa el skill actualizar-perfil de Job Hunter para añadir a mi perfil las skills que he "
+        "Usa el skill actualizar-perfil de CandidatAI para añadir a mi perfil las skills que he "
         "marcado como «La tengo» en la página Skills (get_skill_gaps con status have).",
     ),
     "plan-formacion": Action(
         "Plan de formación",
-        "Usa el skill plan-formacion de Job Hunter con los huecos de skills que he marcado como "
+        "Usa el skill plan-formacion de CandidatAI con los huecos de skills que he marcado como "
         "«No la tengo».",
     ),
     # Inicio y «Respuestas» (fase 15): el agente propone; el usuario acepta en la UI.
     "revisar-respuestas": Action(
         "Revisar respuestas",
-        "Usa el skill revisar-respuestas de Job Hunter con los correos de empresas sin clasificar.",
+        "Usa el skill revisar-respuestas de CandidatAI con los correos de empresas sin clasificar.",
     ),
     # Procesos y ficha (fase 15): el agente redacta; el usuario copia y envía desde su correo.
     "redactar-seguimientos": Action(
         "Redactar seguimientos",
-        "Usa el skill redactar-seguimiento de Job Hunter con los seguimientos y agradecimientos "
+        "Usa el skill redactar-seguimiento de CandidatAI con los seguimientos y agradecimientos "
         "pendientes.",
     ),
     # Plataformas (fase 16): títulos cercanos a los que apruebas. El agente propone; tú decides.
     "ampliar-busqueda": Action(
         "Ampliar búsqueda",
-        "Usa el skill ampliar-busqueda de Job Hunter para proponerme títulos de puesto cercanos a "
+        "Usa el skill ampliar-busqueda de CandidatAI para proponerme títulos de puesto cercanos a "
         "los que apruebo.",
     ),
     # Embudo (fase 20): retrospectiva. Solo propone: los pesos y filtros los cambia el usuario.
     "revisar-busqueda": Action(
         "Revisar mi búsqueda",
-        "Usa el skill revisar-busqueda de Job Hunter para hacer la retrospectiva de mi búsqueda: "
+        "Usa el skill revisar-busqueda de CandidatAI para hacer la retrospectiva de mi búsqueda: "
         "qué funciona y qué cambiar.",
     ),
     "redactar-seguimiento": Action(
         "Redactar seguimiento",
-        "Usa el skill redactar-seguimiento de Job Hunter para la oferta {job_id}.",
+        "Usa el skill redactar-seguimiento de CandidatAI para la oferta {job_id}.",
         needs_job=True,
         stages=SENT_STAGES,
         wrong_stage="Solo se escribe a la empresa de una candidatura enviada y abierta.",
@@ -186,21 +186,21 @@ ACTIONS: dict[ActionId, Action] = {
     # para el perfil pasa por `actualizar-perfil` y la confirmación del usuario.
     "preparar-entrevista": Action(
         "Preparar",
-        "Usa el skill preparar-entrevista de Job Hunter para la entrevista {milestone_id} de la "
+        "Usa el skill preparar-entrevista de CandidatAI para la entrevista {milestone_id} de la "
         "oferta {job_id}.",
         needs_job=True,
         milestone="upcoming",
     ),
     "simular-entrevista": Action(
         "Simulacro",
-        "Usa el skill simular-entrevista de Job Hunter para la entrevista {milestone_id} de la "
+        "Usa el skill simular-entrevista de CandidatAI para la entrevista {milestone_id} de la "
         "oferta {job_id}.",
         needs_job=True,
         milestone="upcoming",
     ),
     "repasar-entrevista": Action(
         "Repasar",
-        "Usa el skill repasar-entrevista de Job Hunter para repasar la entrevista {milestone_id} "
+        "Usa el skill repasar-entrevista de CandidatAI para repasar la entrevista {milestone_id} "
         "de la oferta {job_id}.",
         needs_job=True,
         milestone="past",
@@ -209,14 +209,14 @@ ACTIONS: dict[ActionId, Action] = {
     # redacta o investiga; la app no envía nada.
     "redactar-mensaje": Action(
         "Redactar mensaje",
-        "Usa el skill redactar-mensaje de Job Hunter para la oferta {job_id}.",
+        "Usa el skill redactar-mensaje de CandidatAI para la oferta {job_id}.",
         needs_job=True,
         stages=OUTREACH_STAGES,
         wrong_stage="Solo se escribe a la empresa de una oferta aprobada y abierta.",
     ),
     "investigar-empresa": Action(
         "Investigar empresa",
-        "Usa el skill investigar-empresa de Job Hunter para la empresa de la oferta {job_id}.",
+        "Usa el skill investigar-empresa de CandidatAI para la empresa de la oferta {job_id}.",
         needs_job=True,
         stages=RESEARCH_STAGES,
         wrong_stage="Solo para una oferta ya extraída y sin cerrar.",
@@ -224,11 +224,11 @@ ACTIONS: dict[ActionId, Action] = {
     # Panel «Agente» (fase 19): la cola de encargos que dejaste para tu próxima sesión.
     "atender-encargos": Action(
         "Atender encargos",
-        "Usa el skill atender-encargos de Job Hunter con los encargos pendientes.",
+        "Usa el skill atender-encargos de CandidatAI con los encargos pendientes.",
     ),
     "dudas-oferta": Action(
         "Dudas antes de aceptar",
-        "Usa el skill repasar-entrevista de Job Hunter para revisar las dudas antes de aceptar la "
+        "Usa el skill repasar-entrevista de CandidatAI para revisar las dudas antes de aceptar la "
         "oferta {job_id}.",
         needs_job=True,
         stages=frozenset({Stage.IN_PROCESS}),
@@ -238,7 +238,7 @@ ACTIONS: dict[ActionId, Action] = {
     # Fase 21: pregunta y admite pegar el contrato, así que solo en terminal.
     "preparar-negociacion": Action(
         "Preparar negociación",
-        "Usa el skill preparar-negociacion de Job Hunter para la oferta {job_id}.",
+        "Usa el skill preparar-negociacion de CandidatAI para la oferta {job_id}.",
         needs_job=True,
         stages=frozenset({Stage.IN_PROCESS}),
         wrong_stage="Solo con un proceso abierto.",
@@ -355,7 +355,7 @@ def _pick_any() -> _Launcher | str:
     if wanted:
         launchers = [launcher for launcher in launchers if launcher.agent == wanted]
         if not launchers:
-            return f"JH_AGENT={wanted}, pero ese agente no tiene `launch` en el manifiesto."
+            return f"CAI_AGENT={wanted}, pero ese agente no tiene `launch` en el manifiesto."
     for launcher in launchers:
         if shutil.which(launcher.command[0]):
             return launcher
@@ -474,7 +474,7 @@ def _open(
         raise LaunchError("unavailable", picked, prompt)
     command = command_of(picked)
     try:
-        _open_terminal(f"Job Hunter · {label}", powershell_command(picked, value, command))
+        _open_terminal(f"CandidatAI · {label}", powershell_command(picked, value, command))
     except OSError as exc:
         raise LaunchError("unavailable", f"No se pudo abrir la terminal: {exc}", prompt) from exc
     return LaunchResult(

@@ -1,7 +1,7 @@
 # GENERADO por scripts/sync_agents.py desde .agents/roles/revisor.md. No editar a mano: edita la fuente y regenera.
 
 name = "revisor"
-description = "Revisa los cambios de código de Job Hunter contra AGENTS.md y docs/ al cerrar una fase o antes de un commit. Solo lectura."
+description = "Revisa los cambios de código de CandidatAI contra AGENTS.md y docs/ al cerrar una fase o antes de un commit. Solo lectura."
 sandbox_mode = "read-only"
 developer_instructions = '''
 Revisa los cambios sin commitear (`git diff` y `git status`) o el rango que te indiquen.

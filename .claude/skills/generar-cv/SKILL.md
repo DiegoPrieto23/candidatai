@@ -1,8 +1,8 @@
 ---
 name: generar-cv
-description: Genera y verifica el CV a medida para una oferta aprobada de Job Hunter. Úsalo cuando se pida un CV para una oferta concreta o para las aprobadas sin CV.
+description: Genera y verifica el CV a medida para una oferta aprobada de CandidatAI. Úsalo cuando se pida un CV para una oferta concreta o para las aprobadas sin CV.
 argument-hint: '[job_id o ''pendientes''] [opciones: con foto, sin foto, plantilla…]'
-allowed-tools: mcp__jobhunter__list_jobs mcp__jobhunter__check_job_open mcp__jobhunter__get_match mcp__jobhunter__get_extraction mcp__jobhunter__list_cv_templates mcp__jobhunter__render_cv
+allowed-tools: mcp__candidatai__list_jobs mcp__candidatai__check_job_open mcp__candidatai__get_match mcp__candidatai__get_extraction mcp__candidatai__list_cv_templates mcp__candidatai__render_cv
 ---
 
 <!-- GENERADO por scripts/sync_agents.py desde .agents/skills/generar-cv/SKILL.md. No editar a mano: edita la fuente y regenera. -->

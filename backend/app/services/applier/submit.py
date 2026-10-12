@@ -41,7 +41,7 @@ CONFIRM_URL = re.compile(
 _FIND_SUBMIT_JS = r"""() => {
   const shown = el => el.getClientRects().length > 0 &&
     getComputedStyle(el).visibility !== 'hidden';
-  const marked = document.querySelector('[data-jh-field]');
+  const marked = document.querySelector('[data-cai-field]');
   const form = marked ? (marked.closest('form') || document.body) : document.body;
   const text = el => (el.innerText || el.value || '').replace(/\s+/g, ' ').trim();
   const words = /(submit|send application|enviar|apply|aplicar|solicitar|postular|inscrib)/i;
@@ -50,9 +50,10 @@ _FIND_SUBMIT_JS = r"""() => {
   const named = [...form.querySelectorAll('button, [role=button]')]
     .filter(el => shown(el) && words.test(text(el)));
   const pick = typed.find(el => words.test(text(el))) || typed[0] || named[named.length - 1];
-  document.querySelectorAll('[data-jh-submit]').forEach(el => el.removeAttribute('data-jh-submit'));
+  document.querySelectorAll('[data-cai-submit]')
+    .forEach(el => el.removeAttribute('data-cai-submit'));
   if (!pick) return null;
-  pick.setAttribute('data-jh-submit', '1');
+  pick.setAttribute('data-cai-submit', '1');
   return text(pick) || '(sin texto)';
 }"""
 
@@ -107,7 +108,7 @@ def click_submit(
     try:
         with log.step("click_submit", button=label):
             guard.release_submit_block(page)
-            page.locator('[data-jh-submit="1"]').click()
+            page.locator('[data-cai-submit="1"]').click()
         return _wait_confirmation(page, before_url, already, log, wait_seconds)
     except Exception as exc:
         log.write("after_click_error", ok=False, error=f"{type(exc).__name__}"[:200])

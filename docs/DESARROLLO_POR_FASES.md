@@ -1,6 +1,6 @@
 # Desarrollo por fases con un agente
 
-Job Hunter empezó como un kit de arranque: especificación, encargos por fase, skills y roles para
+CandidatAI empezó como un kit de arranque: especificación, encargos por fase, skills y roles para
 construir la app **con el agente de IA que prefieras**. Esta guía cuenta cómo se construye (o se
 amplía) fase a fase. El estado de cada fase está en `ROADMAP.md`; lo que aporta cada una, en
 `RESUMEN_FASES.md`.
@@ -8,7 +8,7 @@ amplía) fase a fase. El estado de cada fase está en `ROADMAP.md`; lo que aport
 ## Qué necesita tu agente
 
 Poder **leer y escribir ficheros** en la carpeta y, además, **hablar MCP o ejecutar comandos**.
-Con MCP es más cómodo; sin MCP, usa la CLI `jh … --json`, que es equivalente.
+Con MCP es más cómodo; sin MCP, usa la CLI `cai … --json`, que es equivalente.
 Detalle por agente y garantías de seguridad: `docs/AGENTS_COMPAT.md`.
 
 ## Qué hay en el kit

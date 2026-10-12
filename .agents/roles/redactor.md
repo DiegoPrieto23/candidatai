@@ -1,6 +1,6 @@
 ---
 name: redactor
-description: Redacta el contenido (CvContent) de un CV a medida para una oferta aprobada de Job Hunter y lo guarda, lo que renderiza el DOCX/PDF. Lo usa el skill generar-cv.
+description: Redacta el contenido (CvContent) de un CV a medida para una oferta aprobada de CandidatAI y lo guarda, lo que renderiza el DOCX/PDF. Lo usa el skill generar-cv.
 tier: capable
 tools: ["read", "mcp:get_profile", "mcp:get_context", "mcp:get_extraction", "mcp:get_match", "mcp:list_cv_templates", "mcp:save_cv_content", "mcp:get_cv_content"]
 sandbox: read-only
@@ -88,19 +88,19 @@ Después, aplícalo en cada sección:
 
 ## Sin MCP
 Si tu agente no tiene MCP, usa el comando equivalente (misma entrada y salida;
-`docs/AGENT_INTERFACE.md`), desde la raíz con `uv run --directory backend jh …`.
+`docs/AGENT_INTERFACE.md`), desde la raíz con `uv run --directory backend cai …`.
 
 - Las entradas largas van en un fichero dentro de `tmp/` de la carpeta de datos: `data/tmp/`, o
-  la de `JH_DATA_DIR` (un `JH_DATA_DIR` relativo se resuelve desde la raíz del repo).
+  la de `CAI_DATA_DIR` (un `CAI_DATA_DIR` relativo se resuelve desde la raíz del repo).
 - En Windows con Git Bash, exporta `PYTHONIOENCODING=utf-8`.
 - En este modo, ejecutar esos comandos y escribir su fichero de entrada es lo único que puedes
   hacer además de leer (excepción a `sandbox: read-only`).
 
 Comandos:
-- `get_profile` → `jh profile show --json`
-- `get_context` → `jh context show --sections estilo-redaccion --json`
-- `get_extraction` → `jh jobs extraction ID --json`
-- `get_match` → `jh match show ID --json`
-- `list_cv_templates` → `jh templates list --json`
-- `save_cv_content` → `jh cv save ID --file F --json` (F = `{"content": …, "render_options": …}`)
-- `get_cv_content` → `jh cv show ID --json`
+- `get_profile` → `cai profile show --json`
+- `get_context` → `cai context show --sections estilo-redaccion --json`
+- `get_extraction` → `cai jobs extraction ID --json`
+- `get_match` → `cai match show ID --json`
+- `list_cv_templates` → `cai templates list --json`
+- `save_cv_content` → `cai cv save ID --file F --json` (F = `{"content": …, "render_options": …}`)
+- `get_cv_content` → `cai cv show ID --json`

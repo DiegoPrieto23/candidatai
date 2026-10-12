@@ -62,7 +62,7 @@ def test_api_create_list_and_cancel(client: TestClient) -> None:
     assert created.status_code == 201
     request = created.json()
     assert request["prompt"] == (
-        f"Usa el skill investigar-empresa de Job Hunter para la empresa de la oferta {job_id}."
+        f"Usa el skill investigar-empresa de CandidatAI para la empresa de la oferta {job_id}."
     )
     listed = client.get("/agent/requests", params={"status": "pending"}).json()
     assert listed["pending"] == 1 and listed["requests"][0]["id"] == request["id"]

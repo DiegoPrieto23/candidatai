@@ -1,4 +1,4 @@
-"""CLI `jh sources add | list | test | run | enable | disable`."""
+"""CLI `cai sources add | list | test | run | enable | disable`."""
 
 import json
 from pathlib import Path
@@ -33,7 +33,7 @@ def _json(args: list[str]) -> dict:
 def test_add_and_list(db: None) -> None:
     result = runner.invoke(cli.app, ADD)
     assert result.exit_code == 0, result.output
-    assert "Fuente añadida. Pruébala con `jh sources test 1`." in result.stdout
+    assert "Fuente añadida. Pruébala con `cai sources test 1`." in result.stdout
     assert "Greenhouse  Acme Datos [acmedatos] (activa)" in result.stdout
 
     listed = _json(["sources", "list"])

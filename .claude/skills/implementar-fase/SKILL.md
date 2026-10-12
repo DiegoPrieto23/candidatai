@@ -1,13 +1,13 @@
 ---
 name: implementar-fase
-description: Implementa una fase del roadmap de Job Hunter a partir de su encargo en prompts/. Úsalo solo cuando el usuario pida explícitamente implementar una fase.
+description: Implementa una fase del roadmap de CandidatAI a partir de su encargo en prompts/. Úsalo solo cuando el usuario pida explícitamente implementar una fase.
 disable-model-invocation: true
 argument-hint: '[número de fase, p. ej. 03]'
 ---
 
 <!-- GENERADO por scripts/sync_agents.py desde .agents/skills/implementar-fase/SKILL.md. No editar a mano: edita la fuente y regenera. -->
 
-Vas a implementar la fase de Job Hunter indicada en los argumentos (p. ej. `03`).
+Vas a implementar la fase de CandidatAI indicada en los argumentos (p. ej. `03`).
 
 1. Localiza el encargo: `prompts/<fase>-*.md`, donde la fase puede llevar letra (`05b`, `08b`). Si
    no existe, lista los encargos disponibles y para.

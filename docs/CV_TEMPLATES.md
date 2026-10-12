@@ -94,7 +94,7 @@ fonts: [Lato, Source Sans 3]      # las que usa; se comprueba que estén disponi
 languages: [es, en]
 ```
 
-`jh templates validate <id>` comprueba este fichero contra el modelo Pydantic `TemplateMeta` y
+`cai templates validate <id>` comprueba este fichero contra el modelo Pydantic `TemplateMeta` y
 que el `template.*` solo usa variables del contrato (y el `letter.*`, solo las del contrato de la
 carta).
 
@@ -134,7 +134,7 @@ el diseño.
 - La foto es un `InlineImage` y se coloca donde esté `{{ photo }}`.
 - **No escribas los marcadores a mano en Word**: Word los parte en fragmentos y dejan de
   funcionar. Usa el skill `importar-plantilla-cv`, que marca la plantilla con
-  `jh templates build-docx`: el código fusiona los fragmentos de cada párrafo e inserta cada
+  `cai templates build-docx`: el código fusiona los fragmentos de cada párrafo e inserta cada
   marcador de una pieza.
 - Genera DOCX y PDF (con LibreOffice o Word).
 
@@ -142,14 +142,14 @@ el diseño.
 
 Lo hace el skill `importar-plantilla-cv` con tres comandos que solo trabajan dentro de `data/`:
 
-1. **`jh templates inspect <fichero> --json`**: página (tamaño, márgenes, columnas), fuentes que
+1. **`cai templates inspect <fichero> --json`**: página (tamaño, márgenes, columnas), fuentes que
    se ven (por caracteres, resolviendo estilos y tema), colores, tablas, cuadros de texto,
    imágenes (con su tamaño y si parecen una foto), cabecera y pie, las secciones en su orden (las
    que no están en el contrato salen como `extra`), la `capacity` medida en el original y una
    estimación de `ats_friendly` con sus motivos. Y los **párrafos numerados** (cuerpo, tablas y
    cuadros de texto, y después cabeceras y pies) con sus fragmentos ya fusionados cuando comparten
    formato.
-2. **`jh templates build-docx --source <fichero> --mapping <json> --id <id> [--name N] [--force]`**
+2. **`cai templates build-docx --source <fichero> --mapping <json> --id <id> [--name N] [--force]`**
    aplica el mapeo del agente:
    ```json
    {"paragraphs": [
@@ -181,8 +181,8 @@ Lo hace el skill `importar-plantilla-cv` con tres comandos que solo trabajan den
    con las secciones en el orden en que las usa el mapeo, la `capacity` y las páginas del
    original, la foto, la cabecera y el `ats_friendly` de `inspect`. Si la plantilla resultante no
    renderiza, no deja nada.
-3. **`jh templates validate <id>`** (yaml, contrato y render con el perfil demo) y
-   **`jh templates preview <id> [--profile demo|real]`**: PDF y PNG; con `demo`, en la carpeta de
+3. **`cai templates validate <id>`** (yaml, contrato y render con el perfil demo) y
+   **`cai templates preview <id> [--profile demo|real]`**: PDF y PNG; con `demo`, en la carpeta de
    una plantilla tuya (es su miniatura); con `real` o en una integrada, en `data/cache/previews/`.
    Avisa si no cabe en `page.max_pages` o si falta una fuente.
 
@@ -201,7 +201,7 @@ no se parametriza en las plantillas importadas (sigue el del original).
   aborta.
 - Tamaño de página y márgenes, con CSS `@page` (`@page { size: A4; margin: 0; }`). El tamaño de
   las opciones de render (`page_size`) se impone sobre el de la plantilla.
-- **Saneado** en dos capas. `jh templates validate` falla, indicando fichero y línea, si
+- **Saneado** en dos capas. `cai templates validate` falla, indicando fichero y línea, si
   `template.html` o `style.css` tienen `<script>`, atributos `on*`, `<iframe>`, `<object>`,
   `<embed>`, `<base>`, `javascript:` o URLs remotas en `src`, `href`, `srcset`, `url()`,
   `image-set()` o `@import`. Al renderizar, además, se quitan del HTML generado y de los CSS
@@ -212,7 +212,7 @@ no se parametriza en las plantillas importadas (sigue el del original).
 - Solo genera PDF: cada render html lleva el aviso `pdf_only`. Si un portal exige Word, se
   renderiza ese CV con una plantilla docx (la UI lo indica).
 - Requiere Chromium de Playwright: `uv run --directory backend playwright install chromium`.
-  `jh doctor` comprueba que está y que imprime `moderna-2col` sin red. Cada render tarda unos
+  `cai doctor` comprueba que está y que imprime `moderna-2col` sin red. Cada render tarda unos
   2 s.
 
 ### Importar desde PDF, imagen o HTML (fase 08b)
@@ -220,7 +220,7 @@ no se parametriza en las plantillas importadas (sigue el del original).
 El diseño no se puede reutilizar como en Word: se **recrea** en HTML. El agente necesita ver
 imágenes. Los comandos, igual que en Word, solo trabajan dentro de `data/`:
 
-1. **`jh templates inspect <fichero> --json`** (`.pdf`, `.png`, `.jpg` o `.html`):
+1. **`cai templates inspect <fichero> --json`** (`.pdf`, `.png`, `.jpg` o `.html`):
    - **Páginas en PNG** en `data/tmp/inspect/<fichero>/` (`page_images`; hasta 3), para que el
      agente las vea.
    - **Bloques de texto** (PDF y HTML): cada línea con posición y tamaño en mm, cuerpo en pt,
@@ -237,7 +237,7 @@ imágenes. Los comandos, igual que en Word, solo trabajan dentro de `data/`:
      fuentes propias no se ven; el agente recrea el diseño mirando la página. Una **imagen** no
      tiene texto: secciones y `capacity` salen vacías y `capacity_note` pide al agente que las
      lea en la imagen.
-2. **`jh templates scaffold-html --source <fichero> --id <id> [--name N] [--sections a,b,c]
+2. **`cai templates scaffold-html --source <fichero> --id <id> [--name N] [--sections a,b,c]
    [--side x,y] [--force]`** crea `data/templates/<id>/` con una base que ya se parece al
    original:
    - `template.html`: cabecera (con banda de color si la había), columna principal y lateral en
@@ -254,8 +254,8 @@ imágenes. Los comandos, igual que en Word, solo trabajan dentro de `data/`:
    separadores, iconos (CSS o SVG en línea, nada remoto) y la forma de la foto. Las fuentes que
    no estén instaladas van en `fonts/` (si su licencia lo permite) o se cambian por la libre más
    parecida.
-4. **`jh templates validate <id>`** (yaml, saneado, contrato y render con el perfil demo) y
-   **`jh templates compare <id> --source <fichero>`**: el original y la preview con el perfil
+4. **`cai templates validate <id>`** (yaml, saneado, contrato y render con el perfil demo) y
+   **`cai templates compare <id> --source <fichero>`**: el original y la preview con el perfil
    demo lado a lado en `data/tmp/compare/<id>/comparacion.png`, con una **SSIM** (0-1) sobre las
    páginas desenfocadas y en baja resolución. Es orientativa: sirve para ver si un cambio acerca
    o aleja la recreación, no como nota (diseños distintos dan 0,4-0,65). Lo que cuenta es mirar la
@@ -359,7 +359,7 @@ párrafos con evidencias y despedida) según tus indicaciones, y el código la p
     `clasica-foto`, con foto en tabla), generado por `scripts/build_builtin_templates.py`;
   - `moderna-2col` trae `letter.html` y `letter.css`, con la barra lateral (foto y contacto) y la
     cabecera del CV.
-- **`jh templates build-letter <id> [--force] [--json]`** (plantillas docx del usuario):
+- **`cai templates build-letter <id> [--force] [--json]`** (plantillas docx del usuario):
   - parte de su `template.docx`;
   - conserva los bloques del principio (párrafos y tablas) que solo usan variables de cabecera
     (`name`, `subtitle`, `contact`, `photo`), con los párrafos de control que los cierran;
@@ -377,8 +377,8 @@ párrafos con evidencias y despedida) según tus indicaciones, y el código la p
 
   En html, el skill `importar-plantilla-cv` escribe `letter.html` desde la cabecera del diseño
   recreado.
-- **Ver y validar**: `jh templates preview <id> --letter` la renderiza con una carta de muestra
-  (en `data/cache/previews/`). `jh templates validate <id>` también renderiza la carta. Una
+- **Ver y validar**: `cai templates preview <id> --letter` la renderiza con una carta de muestra
+  (en `data/cache/previews/`). `cai templates validate <id>` también renderiza la carta. Una
   plantilla cuyo `letter` declarado no existe, o usa variables fuera del contrato de la carta, es
   inválida.
 - **Hash**: el del CV no mira `letter.*` ni el bloque `letter:` de `template.yaml`, y el de la

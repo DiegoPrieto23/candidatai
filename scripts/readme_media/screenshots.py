@@ -63,7 +63,7 @@ def run() -> None:
 
         ctx.route(f"{API}/**", with_origin)
         page = ctx.new_page()
-        page.add_init_script(f"localStorage.setItem('jh-theme', '{THEME}')")
+        page.add_init_script(f"localStorage.setItem('cai-theme', '{THEME}')")
         for name, path in pages.items():
             if ONLY and name not in ONLY:
                 continue

@@ -1,7 +1,7 @@
 """Similitud semántica entre el perfil y una oferta con embeddings locales (ADR-006).
 
 sentence-transformers es un extra opcional (`uv sync --extra matching`): trae torch. Sin él, o con
-`JH_EMBEDDINGS=off`, el score se calcula sin este componente y su peso se reparte entre los demás.
+`CAI_EMBEDDINGS=off`, el score se calcula sin este componente y su peso se reparte entre los demás.
 El modelo se carga la primera vez que hace falta, en CPU, y se guarda en `data/models/`.
 """
 
@@ -83,9 +83,9 @@ def get_embedder() -> Embedder | None:
 
 
 def unavailable_reason() -> str | None:
-    """Por qué no hay similitud semántica (para el desglose y `jh doctor`), o `None` si la hay."""
+    """Por qué no hay similitud semántica (para el desglose y `cai doctor`), o `None` si la hay."""
     if get_settings().embeddings == "off":
-        return "Similitud semántica desactivada (JH_EMBEDDINGS=off)."
+        return "Similitud semántica desactivada (CAI_EMBEDDINGS=off)."
     if not is_installed():
         return f"Similitud semántica no disponible: {EXTRA_HINT}."
     return None

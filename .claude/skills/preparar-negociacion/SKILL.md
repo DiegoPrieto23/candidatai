@@ -1,8 +1,8 @@
 ---
 name: preparar-negociacion
-description: Prepara la negociación de una oferta recibida en Job Hunter (argumentos sacados del perfil, preguntas que hacer y un guion) y, si el usuario pega el contrato, lo revisa cláusula a cláusula, sin asesoramiento legal. Nunca propone ni deduce una cifra. Úsalo cuando se pida preparar una negociación, responder a una oferta o revisar un contrato.
+description: Prepara la negociación de una oferta recibida en CandidatAI (argumentos sacados del perfil, preguntas que hacer y un guion) y, si el usuario pega el contrato, lo revisa cláusula a cláusula, sin asesoramiento legal. Nunca propone ni deduce una cifra. Úsalo cuando se pida preparar una negociación, responder a una oferta o revisar un contrato.
 argument-hint: '[job_id] [en qué centrarse, o ''contrato'']'
-allowed-tools: Read mcp__jobhunter__get_received_offer mcp__jobhunter__get_extraction mcp__jobhunter__get_interviews mcp__jobhunter__get_profile mcp__jobhunter__get_context
+allowed-tools: Read mcp__candidatai__get_received_offer mcp__candidatai__get_extraction mcp__candidatai__get_interviews mcp__candidatai__get_profile mcp__candidatai__get_context
 ---
 
 <!-- GENERADO por scripts/sync_agents.py desde .agents/skills/preparar-negociacion/SKILL.md. No editar a mano: edita la fuente y regenera. -->

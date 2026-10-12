@@ -1,7 +1,7 @@
 ---
 name: evaluar-encaje
-description: Valora el encaje de las ofertas pendientes de triaje en Job Hunter y guarda una valoración explicada para cada una. Úsalo cuando se pida evaluar, priorizar o revisar ofertas nuevas.
-allowed-tools: mcp__jobhunter__list_jobs mcp__jobhunter__get_match mcp__jobhunter__get_extraction mcp__jobhunter__get_profile mcp__jobhunter__get_context
+description: Valora el encaje de las ofertas pendientes de triaje en CandidatAI y guarda una valoración explicada para cada una. Úsalo cuando se pida evaluar, priorizar o revisar ofertas nuevas.
+allowed-tools: mcp__candidatai__list_jobs mcp__candidatai__get_match mcp__candidatai__get_extraction mcp__candidatai__get_profile mcp__candidatai__get_context
 ---
 
 <!-- GENERADO por scripts/sync_agents.py desde .agents/skills/evaluar-encaje/SKILL.md. No editar a mano: edita la fuente y regenera. -->
@@ -31,6 +31,6 @@ Sigue `docs/POLICIES.md` §1 y §2.
    - `questions_for_user`: solo si una respuesta cambiaría el veredicto (p. ej. una skill ausente
      que quizá tenga y no está en el perfil).
 5. Guarda con `save_fit_assessment`. Sin MCP: escribe el JSON en `data/tmp/` y usa
-   `jh match save-assessment ID --file data/tmp/<fichero>.json --json`.
+   `cai match save-assessment ID --file data/tmp/<fichero>.json --json`.
 6. **No apruebes ni descartes**: eso lo decide el usuario en la UI.
 7. Termina con un resumen ordenado por veredicto y score y, juntas al final, las preguntas para el usuario.

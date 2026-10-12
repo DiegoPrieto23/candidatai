@@ -1,5 +1,5 @@
 [project]
-name = "job-hunter"
+name = "candidatai"
 version = "0.1.0"
 description = "App local para gestionar una búsqueda de empleo."
 requires-python = ">=3.12,<3.13"
@@ -36,8 +36,8 @@ matching = ["sentence-transformers>=3"]
 word = ["docx2pdf>=0.1.8; sys_platform == 'win32'"]
 
 [project.scripts]
-jh = "app.cli:app"
-jh-mcp = "app.mcp.server:main"
+cai = "app.cli:app"
+cai-mcp = "app.mcp.server:main"
 
 [dependency-groups]
 dev = [

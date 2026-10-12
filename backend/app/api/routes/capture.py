@@ -24,8 +24,8 @@ def require_capture_auth(
     if origin != settings.capture_origin:
         raise ToolError(
             "forbidden",
-            "Solo se acepta la extensión «Enviar a Job Hunter» configurada "
-            "(`JH_CAPTURE_EXTENSION_ID`).",
+            "Solo se acepta la extensión «Enviar a CandidatAI» configurada "
+            "(`CAI_CAPTURE_EXTENSION_ID`).",
         )
     scheme, _, token = (authorization or "").partition(" ")
     try:
@@ -35,7 +35,7 @@ def require_capture_auth(
     if not valid:
         raise ToolError(
             "unauthorized",
-            "Token no válido: pega en las opciones de la extensión el que da `jh capture token`.",
+            "Token no válido: pega en las opciones de la extensión el que da `cai capture token`.",
         )
 
 
@@ -43,6 +43,6 @@ def require_capture_auth(
 def capture_job(
     session: SessionDep, body: capture_service.CaptureInput
 ) -> capture_service.CaptureResult:
-    """Botón «Enviar a Job Hunter»: completa un resumen, reconoce una oferta ya guardada o da de
+    """Botón «Enviar a CandidatAI»: completa un resumen, reconoce una oferta ya guardada o da de
     alta una nueva. Solo desde la extensión configurada y con su token."""
     return capture_service.capture(session, body)

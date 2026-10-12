@@ -1,5 +1,5 @@
 /**
- * Extensión «Enviar a Job Hunter» (`extension/`, JavaScript plano sin dependencias): extractores y
+ * Extensión «Enviar a CandidatAI» (`extension/`, JavaScript plano sin dependencias): extractores y
  * presentación del resultado. Se prueban aquí para usar el Vitest y el jsdom del frontend; los HTML
  * de `extension/tests/fixtures/` son inventados.
  */
@@ -36,7 +36,7 @@ interface Outcome {
 const extractor = new Function(`${extractorsSource}\n;return jhExtract`)() as {
   run: (doc: Document, url: string, selection: string) => Extracted
 }
-const JH = new Function(`${coreSource}\n;return JH`)() as {
+const CAI = new Function(`${coreSource}\n;return CAI`)() as {
   describe: (status: number, body: unknown, uiUrl?: string) => Outcome
   failure: (kind: string, message: string) => Outcome
 }
@@ -165,7 +165,7 @@ describe('resultado', () => {
   }
 
   it('completada, con enlace a la ficha y aviso de riesgo', () => {
-    const outcome = JH.describe(200, body, 'http://127.0.0.1:5173/')
+    const outcome = CAI.describe(200, body, 'http://127.0.0.1:5173/')
     expect(outcome).toMatchObject({
       ok: true,
       label: 'Completada',
@@ -176,15 +176,15 @@ describe('resultado', () => {
   })
 
   it('ya estaba', () => {
-    expect(JH.describe(200, { ...body, status: 'existing', risk_flags: [] }).badge.text).toBe('=')
+    expect(CAI.describe(200, { ...body, status: 'existing', risk_flags: [] }).badge.text).toBe('=')
   })
 
   it('errores de la API con qué hacer', () => {
-    const bad = JH.describe(401, { ok: false, error: { type: 'unauthorized', message: 'x' } })
+    const bad = CAI.describe(401, { ok: false, error: { type: 'unauthorized', message: 'x' } })
     expect(bad).toMatchObject({ ok: false, badge: { text: '!' } })
-    expect(bad.message).toContain('jh capture token')
-    const missing = JH.describe(422, { ok: false, error: { type: 'validation_error', message: 'Selecciona su texto' } })
+    expect(bad.message).toContain('cai capture token')
+    const missing = CAI.describe(422, { ok: false, error: { type: 'validation_error', message: 'Selecciona su texto' } })
     expect(missing.message).toBe('Selecciona su texto')
-    expect(JH.describe(500, null).message).toContain('500')
+    expect(CAI.describe(500, null).message).toContain('500')
   })
 })

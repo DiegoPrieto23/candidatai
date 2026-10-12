@@ -236,7 +236,7 @@ def test_database_not_ready() -> None:
     with TestClient(create_app()) as client:
         response = client.get("/status")
     assert response.status_code == 503
-    assert "jh db upgrade" in response.json()["error"]["message"]
+    assert "cai db upgrade" in response.json()["error"]["message"]
 
 
 def test_unexpected_error_is_500_with_common_format(

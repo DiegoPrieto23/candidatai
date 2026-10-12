@@ -135,7 +135,7 @@ def render_preview(
     accent = template.meta.options.accent_color
     if accent is not None:
         ctx["accent_color"] = accent.default
-    workdir = Path(tempfile.mkdtemp(prefix="jh-preview-"))
+    workdir = Path(tempfile.mkdtemp(prefix="cai-preview-"))
     try:
         photo_file = None
         if photo_source is not None and template.meta.photo.supported:
@@ -192,7 +192,7 @@ def check_renders(template: Template) -> None:
     bloques sin cerrar o marcadores que Word partió.
     """
     ctx = demo_context()
-    workdir = Path(tempfile.mkdtemp(prefix="jh-check-"))
+    workdir = Path(tempfile.mkdtemp(prefix="cai-check-"))
     try:
         photo_file = None
         if template.meta.photo.supported:
@@ -286,7 +286,7 @@ def render_letter_preview(
     ctx = context.build_letter_context(
         content, profile, profile.headline, _letter_accent(template), date.today()
     )
-    workdir = Path(tempfile.mkdtemp(prefix="jh-letter-preview-"))
+    workdir = Path(tempfile.mkdtemp(prefix="cai-letter-preview-"))
     try:
         photo_file = None
         if photo_source is not None and template.meta.photo.supported:
@@ -315,7 +315,7 @@ def check_letter_renders(template: Template) -> None:
     if template.letter_file is None:
         return
     ctx = demo_letter_context()
-    workdir = Path(tempfile.mkdtemp(prefix="jh-check-letter-"))
+    workdir = Path(tempfile.mkdtemp(prefix="cai-check-letter-"))
     try:
         photo_file = None
         if template.meta.photo.supported:

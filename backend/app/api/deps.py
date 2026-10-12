@@ -34,7 +34,7 @@ def require_ui(request: Request) -> None:
     """
     origin = request.headers.get("origin")
     if origin is not None and origin != UI_ORIGIN:
-        raise ToolError("forbidden", "Solo la UI de Job Hunter puede hacer esto.")
+        raise ToolError("forbidden", "Solo la UI de CandidatAI puede hacer esto.")
     content_type = request.headers.get("content-type", "")
     if not content_type.startswith("application/json"):
         raise ToolError("forbidden", "La petición tiene que ser JSON y venir de la UI.")

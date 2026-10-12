@@ -20,7 +20,7 @@ def test_sqlite_pragmas(engine: Engine) -> None:
 
 def test_get_engine_uses_settings(isolated_env: Path) -> None:
     engine = get_engine()
-    assert engine.url.database == (isolated_env / "jobhunter.db").as_posix()
+    assert engine.url.database == (isolated_env / "candidatai.db").as_posix()
     assert get_engine() is engine
 
 

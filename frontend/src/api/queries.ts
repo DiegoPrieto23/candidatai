@@ -786,7 +786,7 @@ export function usePrepareApplication(jobId: number) {
   )
 }
 
-/** «Rellenar esta página»: la pestaña que tienes delante en el navegador de Job Hunter. */
+/** «Rellenar esta página»: la pestaña que tienes delante en el navegador de CandidatAI. */
 export function useFillApplicationPage(jobId: number) {
   return useApplyMutation(jobId, (attemptId: number) =>
     unwrap(api.POST('/apply/{attempt_id}/fill-page', { params: { path: { attempt_id: attemptId } } })),

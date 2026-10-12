@@ -15,13 +15,13 @@ y las guías. Todo sale de la **demo** (datos inventados), nunca de `data/`.
 
    ```powershell
    cd backend
-   uv run jh demo seed --dir data-demo-shots --force
+   uv run cai demo seed --dir data-demo-shots --force
    ```
 
 2. API y UI de la demo en **otros puertos**, para no chocar con tu app en 8000/5173:
 
    ```powershell
-   $env:JH_DATA_DIR = "data-demo-shots"; uv run jh serve --port 8010
+   $env:CAI_DATA_DIR = "data-demo-shots"; uv run cai serve --port 8010
    # en otra terminal
    cd frontend; $env:VITE_API_URL = "http://127.0.0.1:8010"; pnpm exec vite --port 5181 --strictPort
    ```

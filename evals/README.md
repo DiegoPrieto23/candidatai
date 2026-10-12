@@ -5,8 +5,8 @@ Dos evaluaciones con datos **inventados** contra el perfil de `demo/`. Resultado
 
 | Eval | Qué mide | Casos | Comando (desde `backend/`) |
 |---|---|---|---|
-| Matching | Si la app separa las ofertas que encajan de las que no (filtros duros + score frente al umbral de triaje) | `matching/seed.jsonl` (80) | `uv run jh eval matching [--no-embeddings]` |
-| CV | Los CVs que deja el agente con `generar-cv` | `cv/cases.jsonl` (10) | `uv run jh eval cv [--agent NOMBRE]` |
+| Matching | Si la app separa las ofertas que encajan de las que no (filtros duros + score frente al umbral de triaje) | `matching/seed.jsonl` (80) | `uv run cai eval matching [--no-embeddings]` |
+| CV | Los CVs que deja el agente con `generar-cv` | `cv/cases.jsonl` (10) | `uv run cai eval cv [--agent NOMBRE]` |
 
 ## Matching
 
@@ -30,13 +30,13 @@ Flujo, con cualquier agente:
 
 ```powershell
 cd backend
-uv run jh demo seed --eval-cv          # en una demo existente, solo añade los casos que falten
-# arranca tu agente con JH_DATA_DIR=data-demo y lanza generar-cv sobre las 10 ofertas
+uv run cai demo seed --eval-cv          # en una demo existente, solo añade los casos que falten
+# arranca tu agente con CAI_DATA_DIR=data-demo y lanza generar-cv sobre las 10 ofertas
 # de empleo.example.com/eval-cv/ (aprobadas y sin CV)
-$env:JH_DATA_DIR = "data-demo"; uv run jh eval cv --agent claude-code
+$env:CAI_DATA_DIR = "data-demo"; uv run cai eval cv --agent claude-code
 ```
 
-`jh eval cv` no genera nada: mide el último CV guardado de cada caso (o el último del agente de
+`cai eval cv` no genera nada: mide el último CV guardado de cada caso (o el último del agente de
 `--agent`, según `agent_name` de su evento `cv_generated`). Un caso sin CV sale como **pendiente**.
 Comprobaciones:
 
@@ -51,4 +51,4 @@ Comprobaciones:
 | Verificado | El rol `verificador` lo dejó en `passed` |
 
 Informe en JSON y Markdown en `data-demo/evals/reports/cv-*`. Solo funciona en la demo
-(`JH_DATA_DIR` con la marca `.demo`): los casos se escriben para el perfil ficticio.
+(`CAI_DATA_DIR` con la marca `.demo`): los casos se escriben para el perfil ficticio.

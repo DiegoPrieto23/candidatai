@@ -192,7 +192,7 @@ function LinkedInRiskDialog({
               </p>
               <p>
                 Las alternativas sin riesgo son sus alertas por correo (pantalla «Alertas») y el botón «Enviar a
-                Job Hunter» mientras ves una oferta.
+                CandidatAI» mientras ves una oferta.
               </p>
               <p>Puedes desactivarlo cuando quieras. Las candidaturas nunca se envían solas.</p>
             </div>
@@ -242,7 +242,7 @@ function PublicRiskDialog({
                   Además de la lista de resultados, la app pedirá la página pública de cada oferta nueva que pase
                   tus filtros (con un tope por ejecución). Son <strong>más peticiones a LinkedIn</strong> y, por
                   tanto, más probabilidad de que bloquee tu IP. Sin esto, las ofertas entran como resumen y las
-                  completas tú con el botón «Enviar a Job Hunter».
+                  completas tú con el botón «Enviar a CandidatAI».
                 </p>
               ) : (
                 <>
@@ -258,7 +258,7 @@ function PublicRiskDialog({
                   </p>
                   <p>
                     Es para uso personal. Las alternativas sin riesgo son las alertas por correo y el botón «Enviar a
-                    Job Hunter». Las candidaturas nunca se envían solas.
+                    CandidatAI». Las candidaturas nunca se envían solas.
                   </p>
                 </>
               )}

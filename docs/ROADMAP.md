@@ -59,6 +59,12 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 20 | Calibración y patrones | ✅ | «¿Acierta el score?»: respuesta por tramo de score, veredicto, fuente, plantilla y carta; retrospectiva semanal |
 | 21 | Ofertas recibidas y salario | ✅ | Comparar ofertas recibidas y la distancia a tu mínimo sin exponerlo al agente; preparar la negociación |
 | 22 | LinkedIn por sus endpoints públicos (opcional) | ✅ | Búsqueda pública sin sesión, apagada por defecto y con límites estrictos; ADR que matiza la 016 |
+| 23 | CandidatAI | 🚧 | Nombre nuevo en todas partes, identificadores en inglés, barra lateral e instalación con un clic |
+| 23.1 | ↳ Renombrado a CandidatAI | ✅ | Todo dice CandidatAI; `cai` en vez de `jh`; MCP `candidatai`; repositorio renombrado |
+| 23.2 | ↳ Skills y roles en inglés | ⏳ | `/generate-cv 42`, `/prepare-interview 42`…; roles `writer`, `verifier`… |
+| 23.3 | ↳ Barra lateral | ⏳ | Navegación lateral agrupada, plegable y con cajón en el móvil |
+| 23.4 | ↳ Instalación fácil | ⏳ | `cai start`, `install.ps1`, acceso directo y releases con la UI compilada |
+| 23.5 | ↳ Medios y README | ⏳ | Banner, capturas, GIF y vídeo nuevos; README sin la comparativa |
 
 **MVP usable:** al terminar la 08 ya puedes pegar ofertas, triarlas y sacar CVs a medida; con la
 08c, también cartas de presentación. La 08c va antes que la 08b, aunque el orden entre ambas da
@@ -84,6 +90,10 @@ tras la 18; `atender-encargos` tras la 19; `revisar-busqueda` tras la 20;
 `preparar-negociacion` tras la 21.
 
 ## Registro de fases
+
+> **Nombre (fase 23, ADR-034):** hasta la fase 22 la herramienta se llamaba «Job Hunter», la CLI
+> `jh`, el servidor MCP `jobhunter` y las variables `JH_*`. Desde la 23 es **CandidatAI**: `cai`,
+> `candidatai` y `CAI_*`. El registro de abajo conserva los nombres de cada momento.
 
 <!-- El agente añade aquí, al cerrar cada fase: fecha, agente usado, resumen de 2-3 líneas,
 decisiones tomadas y deuda técnica pendiente. -->
@@ -1908,3 +1918,28 @@ decisiones tomadas y deuda técnica pendiente. -->
   - `blocked_at` se escribe al final de la ejecución, justo después del corte: si el proceso muere
     en ese instante, el día cuenta igualmente, pero no el periodo de 3 días.
   - Ejecutada por CLI, la ejecución queda con actor `user` aunque la lance un agente.
+
+### 23.1 · Renombrado a CandidatAI — 2026-10-12 · Claude Code (Opus 5.5)
+- **Resumen:** «Job Hunter» pasa a **CandidatAI** en todo lo vivo: UI y logo «CA», extensión
+  («Enviar a CandidatAI», iconos nuevos con `scripts/build_icons.py`), favicon (era el de Vite),
+  docs, README en los dos idiomas, skills y roles. Lo técnico también: CLI `cai` y `cai-mcp`,
+  servidor MCP `candidatai` (`mcp__candidatai__*`), variables `CAI_*`, paquete `candidatai`,
+  `cai.local`, `data-cai-*` y `cai_iso_week`. Repositorio de GitHub renombrado a
+  `DiegoPrieto23/candidatai`. ADR-034. Encargos de toda la fase 23 en `prompts/23*.md`.
+  2355 tests de backend y los de frontend en verde.
+- **Decisiones:**
+  - Sin alias `jh` (decisión del usuario): lo de fuera del repositorio se actualiza a mano.
+  - Compatibilidades: `JH_*` se leen si falta la `CAI_*` (`AliasChoices`) y `data/jobhunter.db`
+    se usa si no hay `candidatai.db`. `cai doctor` («Nombres de antes de CandidatAI») lo avisa con
+    los nombres, nunca con los valores. La clave antigua del tema se lee como respaldo.
+  - El historial (este registro, `RESUMEN_FASES.md`, encargos anteriores) no se reescribe.
+  - Renombrado con reglas ordenadas y revisión de cada coincidencia arriesgada; la revisión del
+    rol `revisor` encontró las plantillas integradas sin regenerar (autor del docx) y restos de
+    `jh` en el frontend y en un test que, con el patrón antiguo, no comprobaba nada.
+- **Deuda:**
+  - `uv sync` pendiente con el agente cerrado: hasta entonces no existen los ejecutables `cai`
+    y `cai-mcp` (en esta sesión se probó todo con `uv run --no-sync` y llamando a la CLI desde
+    Python).
+  - `~/.claude/settings.json` del usuario sigue mencionando `jh` y el repositorio `job-search`
+    (decidió no tocarlo).
+  - Medios del README (banner, capturas, GIF y vídeo) aún con «Job Hunter»: la 23.5.

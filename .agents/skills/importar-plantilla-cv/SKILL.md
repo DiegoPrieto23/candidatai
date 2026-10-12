@@ -1,10 +1,10 @@
 ---
 name: importar-plantilla-cv
-description: Convierte un CV con cualquier diseño (Word, PDF, imagen, HTML, exportado de Canva o Google Docs) en una plantilla de Job Hunter para generar CVs con ese estilo. Úsalo cuando se quiera usar el diseño de un CV propio o de un modelo como plantilla.
+description: Convierte un CV con cualquier diseño (Word, PDF, imagen, HTML, exportado de Canva o Google Docs) en una plantilla de CandidatAI para generar CVs con ese estilo. Úsalo cuando se quiera usar el diseño de un CV propio o de un modelo como plantilla.
 ---
 
 Especificación completa: `docs/CV_TEMPLATES.md`. Los comandos se ejecutan desde la raíz del repo
-(`jh` = `uv run --directory backend jh`) y solo trabajan dentro de `data/`.
+(`cai` = `uv run --directory backend cai`) y solo trabajan dentro de `data/`.
 
 Este skill se ocupa **solo del diseño**. El contenido de tus CVs sale siempre de tu perfil: si
 el CV subido tiene información que no está en `data/profile.yaml`, se anota al final y se propone
@@ -18,7 +18,7 @@ el skill `actualizar-perfil`. Nunca se copia texto del CV subido a la plantilla.
 - Pregunta un nombre corto para la plantilla y genera su `id` (minúsculas y guiones).
 
 ## 2. Analizar
-`jh templates inspect <fichero> --json`. Con el resultado, explica en 3-4 líneas qué has visto:
+`cai templates inspect <fichero> --json`. Con el resultado, explica en 3-4 líneas qué has visto:
 columnas, foto, colores, fuentes, secciones en su orden (`sections`; las `extra` son secciones que
 no están en el contrato, como voluntariado o premios), extensión (`capacity`) y si es apto para ATS
 (`ats`, con sus motivos).
@@ -57,7 +57,7 @@ no están en el contrato, como voluntariado o premios), extensión (`capacity`) 
 2. Un solo ejemplo por bloque repetido: si el CV tiene tres experiencias, la primera se convierte
    en el cuerpo del bucle y las otras dos se borran (`delete`); una fila de tabla cuyos párrafos
    se borran todos desaparece con ellos.
-3. `jh templates build-docx --source <fichero> --mapping data/tmp/<id>-mapping.json --id <id>
+3. `cai templates build-docx --source <fichero> --mapping data/tmp/<id>-mapping.json --id <id>
    --name "<nombre>" --json`. Antes de tocar nada comprueba el mapeo con el perfil demo; si falla,
    el error dice el `index` del párrafo y el motivo: corrige y reintenta (el mapeo se conserva
    hasta que funcione). Crea `template.yaml` con las secciones en el orden del original, la
@@ -71,7 +71,7 @@ no están en el contrato, como voluntariado o premios), extensión (`capacity`) 
 2. En una **imagen** no hay texto: lee en ella las secciones en su orden y cuáles van en la
    columna lateral, y estima la `capacity` (caracteres del perfil, logros por experiencia,
    grupos de habilidades).
-3. `jh templates scaffold-html --source <fichero> --id <id> --name "<nombre>" --json` (en una
+3. `cai templates scaffold-html --source <fichero> --id <id> --name "<nombre>" --json` (en una
    imagen, con `--sections summary,experience,…` y `--side skills,languages,…`). Crea una base
    con la cabecera, las columnas, los márgenes, los colores, las fuentes y la foto que midió
    `inspect`.
@@ -95,12 +95,12 @@ Revisa `template.yaml`: en docx, `build-docx` ya rellena secciones, `capacity`, 
 `ats_friendly` (el de `inspect`) y la cabecera. En html, `scaffold-html` lo rellena igual
 (`ats_friendly: false`: una plantilla html solo da PDF), con `options.accent_color` desde el
 color detectado: si las secciones o la `capacity` que has leído en la imagen no coinciden,
-corrígelas. En los dos, completa `description` y `tags`. Luego `jh templates validate <id>`.
+corrígelas. En los dos, completa `description` y `tags`. Luego `cai templates validate <id>`.
 
 ## 5. Carta de presentación a juego
 La carta usa la cabecera del CV (nombre, subtítulo, contacto y foto) y su estilo. Sin ella, las
 cartas de las ofertas que usen esta plantilla salen con `carta-simple` (aviso `letter_fallback`).
-- **docx:** `jh templates build-letter <id> --json`. Crea `letter.docx` con los bloques del
+- **docx:** `cai templates build-letter <id> --json`. Crea `letter.docx` con los bloques del
   principio del CV que solo llevan nombre, subtítulo, contacto o foto, y lo declara en
   `template.yaml`. Requisito: haber marcado la cabecera con `"header": true` en el mapeo.
   - Lee sus `warnings`: si falta el contacto o el subtítulo en la cabecera conservada, mira la
@@ -119,16 +119,16 @@ cartas de las ofertas que usen esta plantilla salen con `carta-simple` (aviso `l
     tocas `style.css`, los CVs ya renderizados salen como «Plantilla cambiada».
   - Añade `letter: {file: letter.html}` a `template.yaml`.
   - Mismas reglas del motor html que el CV.
-- `jh templates validate <id>` comprueba también la carta y `jh templates preview <id> --letter`
+- `cai templates validate <id>` comprueba también la carta y `cai templates preview <id> --letter`
   la renderiza con una carta de muestra: compárala con la cabecera del CV y corrige.
 
 ## 6. Comparar e iterar
-1. `jh templates preview <id> --profile demo` y, en html, `jh templates compare <id> --source <fichero>`
+1. `cai templates preview <id> --profile demo` y, en html, `cai templates compare <id> --source <fichero>`
    (el original y la recreación lado a lado en `image_path`, con una SSIM orientativa: que suba
    entre vueltas indica que te acercas, pero mira la imagen).
 2. Si puedes ver imágenes, compara la preview (`png_path`) con el original (`source.png` en la
    carpeta de la plantilla) y corrige diferencias visibles (máximo 3 vueltas).
-3. `jh templates preview <id> --profile real`: si el contenido real no cabe en `page.max_pages`,
+3. `cai templates preview <id> --profile real`: si el contenido real no cabe en `page.max_pages`,
    dilo y ajusta `capacity`, o propón `max_pages: 2` si el diseño lo pide.
 4. Pide al usuario que lo revise en la UI (Plantillas → Mi CV, original y con su perfil lado a
    lado) y aplica sus correcciones.

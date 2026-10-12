@@ -1,4 +1,4 @@
-"""Vistas de la UI en los servicios (bandeja, ficha, eventos del usuario) y `jh serve`."""
+"""Vistas de la UI en los servicios (bandeja, ficha, eventos del usuario) y `cai serve`."""
 
 import json
 from collections.abc import Callable

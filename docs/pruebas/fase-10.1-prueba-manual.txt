@@ -19,10 +19,10 @@ REQUISITOS
       cd <carpeta-del-repo>
 - Rama: fase/10-seguimiento-analitica (o main, si ya está fusionada).
 - Una cuenta de Google Calendar. Para no ensuciar tu calendario principal, crea antes uno de
-  prueba: Configuración → Añadir calendario → Crear calendario («Job Hunter prueba»).
+  prueba: Configuración → Añadir calendario → Crear calendario («CandidatAI prueba»).
 
 Puedes probar con tus ofertas reales o con una BD aparte. Para una BD aparte, en cada terminal:
-      $env:JH_DATA_DIR = "data/prueba-10"
+      $env:CAI_DATA_DIR = "data/prueba-10"
 (y copia antes tu `data/profile.yaml` a `data/prueba-10/` si quieres perfil).
 
 
@@ -30,10 +30,10 @@ PARTE 1 · PREPARAR
 ------------------
 1. Cierra Claude Code (su servidor MCP bloquea el entorno) y sincroniza:
        uv sync --directory backend
-       uv run --directory backend jh db upgrade
+       uv run --directory backend cai db upgrade
    Esperado: «… -> 0008».
 2. Arranca la API y la UI, cada una en su terminal:
-       uv run --directory backend jh serve
+       uv run --directory backend cai serve
        cd frontend; pnpm install; pnpm dev
    (`pnpm install` instala @dnd-kit/core, la dependencia nueva.)
 3. Necesitas al menos dos ofertas aprobadas. Si no las tienes, da de alta dos por texto en «Nueva
@@ -85,8 +85,8 @@ PARTE 4 · SEGUIMIENTOS
 2. En su ficha, pulsa «Seguimiento enviado». Esperado: el aviso desaparece (cuenta desde el último
    seguimiento).
 3. Por CLI:
-       uv run --directory backend jh followups
-       uv run --directory backend jh upcoming --days 14
+       uv run --directory backend cai followups
+       uv run --directory backend cai upcoming --days 14
    Esperado: la lista coherente con lo que ves en la UI, horas en Madrid.
 
 
@@ -103,9 +103,9 @@ PARTE 5 · GOOGLE CALENDAR (CRITERIO DE ACEPTACIÓN)
 4. Cambia la hora de un hito en la app, descarga de nuevo el .ics completo e impórtalo. Esperado:
    el evento se actualiza a la hora nueva, sin duplicarse.
 5. (Opcional) Outlook clásico, Apple Calendar o Thunderbird: suscríbete a
-   http://127.0.0.1:8000/calendar.ics (con `jh serve` en marcha) y comprueba que aparecen los hitos.
-6. Alternativa por CLI: `uv run --directory backend jh calendar export` escribe
-   data/calendar/jobhunter.ics.
+   http://127.0.0.1:8000/calendar.ics (con `cai serve` en marcha) y comprueba que aparecen los hitos.
+6. Alternativa por CLI: `uv run --directory backend cai calendar export` escribe
+   data/calendar/candidatai.ics.
 7. Al terminar, borra el calendario de prueba en Google.
 
 

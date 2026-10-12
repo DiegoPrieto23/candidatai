@@ -1,4 +1,4 @@
-"""CLI `jh alerts poll | list | expire`."""
+"""CLI `cai alerts poll | list | expire`."""
 
 import json
 import shutil

@@ -13,7 +13,7 @@ from typing import Any, Protocol
 from app.services.agent_launch import SESSION_ID_RE
 from app.services.agent_runs import ProgressKind
 
-MCP_SERVER = "jobhunter"
+MCP_SERVER = "candidatai"
 TEXT_CHARS = 300  # lo que se guarda de cada mensaje del agente en el progreso
 RESULT_CHARS = 20_000
 # Estados del servidor MCP en el arranque que no tienen arreglo durante la ejecución.
@@ -28,7 +28,7 @@ def short(text: str, limit: int = TEXT_CHARS) -> str:
 @dataclass
 class StreamState:
     session_id: str | None = None
-    mcp_status: str | None = None  # el del servidor `jobhunter` al arrancar
+    mcp_status: str | None = None  # el del servidor `candidatai` al arrancar
     result: str | None = None
     is_error: bool = False
     finished: bool = False  # llegó el resultado final

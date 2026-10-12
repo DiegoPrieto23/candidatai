@@ -1,12 +1,12 @@
 {
   "manifest_version": 3,
-  "name": "Enviar a Job Hunter",
-  "short_name": "Job Hunter",
+  "name": "Enviar a CandidatAI",
+  "short_name": "CandidatAI",
   "version": "0.1.0",
-  "description": "Envía la oferta que estás viendo a tu Job Hunter local, solo cuando pulsas el botón.",
+  "description": "Envía la oferta que estás viendo a tu CandidatAI local, solo cuando pulsas el botón.",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAx6600x140xxfHJpUhCQbhHSkCxvv77SRsdoBrNExJOg8xDscdbxoMd9iY2cNFdus36oyPz0+vfaUHihe6z/n49W2eVEOXxYcDtOo2J5dGZhEpemRsCuCn1lpRor9sRGS0pXk1NVSIaAHk8QmarVwdVGIoyznESdVfebBLs60VM3kJsi0f4Qt7oWBDWELALjCYiAAaWR9Q4/IQOwYMTXAn6qA+pW6TH7OUJhPVivR71lrCdJDsEsHh5GIIuUR7gox2XUkHOVbNJFPh3GoThm4Z9CuGUzi3bN0ir5Xznp8H78D4TqfFhRurfHnxfLrMvJ6X3uoKhWuYOzLyPMivzf8xQIDAQAB",
   "action": {
-    "default_title": "Enviar a Job Hunter",
+    "default_title": "Enviar a CandidatAI",
     "default_popup": "popup.html",
     "default_icon": {
       "16": "icons/icon16.png",

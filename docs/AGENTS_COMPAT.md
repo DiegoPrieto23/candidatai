@@ -1,6 +1,6 @@
 # Compatibilidad con agentes
 
-Job Hunter funciona con cualquier agente de IA que pueda **leer y escribir ficheros** y, además,
+CandidatAI funciona con cualquier agente de IA que pueda **leer y escribir ficheros** y, además,
 **hablar MCP o ejecutar comandos**. La configuración nativa de cada agente se genera desde
 `.agents/` con `uv run scripts/sync_agents.py` (ADR-011).
 
@@ -18,26 +18,26 @@ regenera y actualiza esta página.
 | Skills | `.claude/skills/` (generado) | `.agents/skills/` (lo lee directamente) | `.agents/skills/` si la herramienta sigue el estándar Agent Skills |
 | Invocar un skill | `/generar-cv 42` | `$generar-cv 42` | Lenguaje natural: "usa el skill generar-cv con la oferta 42" |
 | Subagentes (roles) | `.claude/agents/*.md` (generado) | `.codex/agents/*.toml` (generado) | Sesión aparte siguiendo `.agents/roles/<rol>.md` |
-| Servidor MCP | `.mcp.json` (generado) | `.codex/config.toml` (generado) | Registra `jobhunter` con el `command`/`args` del manifiesto, o usa la CLI |
+| Servidor MCP | `.mcp.json` (generado) | `.codex/config.toml` (generado) | Registra `candidatai` con el `command`/`args` del manifiesto, o usa la CLI |
 | Modelo por rol | `fast` → Haiku, `capable` → Sonnet | Hereda el de la sesión salvo que lo fijes en el manifiesto | El de la sesión |
 | Permisos | `.claude/settings.json` (a mano) | Sandbox y aprobaciones de Codex | Los de cada herramienta |
 
 ## Matriz probada (fase 12.3)
 
 Mismas 5 ofertas ficticias para todos (`evals/compat/jobs.txt`, casos de `evals/cv/cases.jsonl`),
-dadas de alta solo con su texto con `jh demo seed --compat`. Cada agente recorre
+dadas de alta solo con su texto con `cai demo seed --compat`. Cada agente recorre
 `procesar-ofertas` → `evaluar-encaje` → (el usuario aprueba) → `generar-cv`, y se mide con
-`jh eval cv --agent …` y comparando la extracción con la esperada.
+`cai eval cv --agent …` y comparando la extracción con la esperada.
 
-| | Claude Code sin MCP (solo `jh … --json`) | Claude Code con MCP | Codex | Otros |
+| | Claude Code sin MCP (solo `cai … --json`) | Claude Code con MCP | Codex | Otros |
 |---|---|---|---|---|
 | Fecha | 2026-10-05 | Pendiente (`docs/pruebas/fase-12-compatibilidad.txt`) | Sin probar | Sin probar |
 | Cómo | Opus 5.5; cada rol en una ejecución distinta siguiendo `.agents/roles/*.md` (nivel C: sin subagentes con herramientas propias) | Skills y subagentes generados | — | — |
 | `procesar-ofertas` | 5/5 al primer intento; **54 de 55 campos** iguales a la extracción esperada (difiere un `title_normalized`, en español) | | | |
 | `evaluar-encaje` | 5/5 valoraciones guardadas (4 `strong`, 1 `possible`) | | | |
 | `generar-cv` | 5/5 CVs al primer intento, 1 página, sin avisos; verificador: 5 `passed`, 0 bloqueantes, 4 avisos | | | |
-| `jh eval cv` | **5/5 pasan las 7 comprobaciones** | | | |
-| Tiempo | ~2 min extraer, ~4,5 min redactar y ~2 min verificar (más lectura); ~3,5 s por comando `jh` | | | |
+| `cai eval cv` | **5/5 pasan las 7 comprobaciones** | | | |
+| Tiempo | ~2 min extraer, ~4,5 min redactar y ~2 min verificar (más lectura); ~3,5 s por comando `cai` | | | |
 | Ajustes | Ver abajo | | | |
 
 Prueba previa (fase 12.2): dos casos con trampa (`cv04`, `cv07`), también 2/2. Informe de esta
@@ -46,18 +46,18 @@ pasada: `docs/pruebas/fase-12.3-matriz-sin-mcp.md`. Sin subagentes, el aislamien
 
 **Lo que hubo que ajustar para trabajar sin MCP** (ya corregido en `.agents/roles/` y los docs):
 - los roles solo nombraban herramientas MCP: ahora tienen una sección «Sin MCP» con su comando
-  `jh`, el formato de `--file` y la excepción a «no ejecutes comandos» y a `sandbox: read-only`;
+  `cai`, el formato de `--file` y la excepción a «no ejecutes comandos» y a `sandbox: read-only`;
 - el redactor traducía nombres de skills en CVs en inglés (la app los rechaza) e incluía secciones
   extra en otro idioma: el rol ya lo indica;
 - `docs/AGENT_INTERFACE.md` no explicaba los prefijos de las skills básicas
   («conocimientos de X»), qué evidencias se pueden citar ni `include_regional_language`;
-- la demo no traía `tmp/` y la ayuda de `--file` decía `data/tmp/` aunque `JH_DATA_DIR` apunte a
+- la demo no traía `tmp/` y la ayuda de `--file` decía `data/tmp/` aunque `CAI_DATA_DIR` apunte a
   otra carpeta;
 - en Git Bash, `PYTHONIOENCODING=utf-8` para que la salida de texto no salga mal codificada.
 
 **Pendiente** (no impide usarlo):
 - sin MCP, el esquema de cada entrada está en `docs/AGENT_INTERFACE.md` y no llega con la
-  herramienta: el agente tiene que buscarlo. Una salida `jh schema <modelo> --json` lo resolvería;
+  herramienta: el agente tiene que buscarlo. Una salida `cai schema <modelo> --json` lo resolvería;
 - `procesar-ofertas` no admite elegir ofertas concretas (procesa todas las pendientes);
 - sin subagentes, quien extrae lee el texto de las ofertas en la misma sesión: hazlo en una
   sesión dedicada (nivel C);
@@ -101,20 +101,20 @@ aceptas en la UI, y aceptar no tiene herramienta ni comando.
 - Inicia sesión en Codex con tu cuenta de ChatGPT y abre la raíz del repo.
 - Si Codex no carga la configuración del proyecto (`.codex/config.toml`), revisa en su
   documentación cómo marcar el proyecto como de confianza, o copia el bloque
-  `[mcp_servers.jobhunter]` a tu `~/.codex/config.toml`.
+  `[mcp_servers.candidatai]` a tu `~/.codex/config.toml`.
 - Para delegar en un rol, pídelo explícitamente: "lanza el subagente `extractor` con el job_id 42".
 - Los modelos por rol están vacíos en el manifiesto a propósito (heredan el de la sesión). Si
   quieres un modelo rápido para `extractor`, pon su nombre en `targets.codex.models.fast` y regenera.
 
 ### Sin MCP (cualquier agente que ejecute comandos)
-- Usa los comandos `jh … --json` de `docs/AGENT_INTERFACE.md`: misma salida y mismos errores.
-- Las entradas largas van en `data/tmp/` con `--file`. Exporta `JH_CLIENT_NAME=<tu-agente>` para
+- Usa los comandos `cai … --json` de `docs/AGENT_INTERFACE.md`: misma salida y mismos errores.
+- Las entradas largas van en `data/tmp/` con `--file`. Exporta `CAI_CLIENT_NAME=<tu-agente>` para
   que la auditoría sepa quién llama.
 - Un test de extremo a extremo (`tests/test_e2e_cli.py`) recorre el flujo de `procesar-ofertas`
   solo con comandos.
 
 ### Observado en la prueba manual con Claude Code (fase 04, 2026-09-24)
-- Tras reiniciar, `/mcp` muestra `jobhunter` conectado con sus 9 herramientas.
+- Tras reiniciar, `/mcp` muestra `candidatai` conectado con sus 9 herramientas.
 - `/procesar-ofertas` con `demo/jobs/01-data-engineer.txt`: la sesión principal solo usó
   `get_status` y `list_jobs` y delegó en el subagente `extractor` (Haiku), que llamó a `get_job` y
   `save_extraction` sin pedir permiso. La oferta acabó en `pending_triage`, con el evento
@@ -125,18 +125,18 @@ aceptas en la UI, y aceptar no tiene herramienta ni comando.
   `.agents/roles/extractor.md` cuando se evalúe el matching (fase 07).
 
 ### Comprobado en código (fase 04)
-- `jh-mcp` arranca por stdio, lista las 9 herramientas y responde (test con el proceso real).
+- `cai-mcp` arranca por stdio, lista las 9 herramientas y responde (test con el proceso real).
   stdout queda reservado al protocolo; los logs van a stderr y a `data/logs/mcp.log`.
 
 ### Extracción automática cada mañana (fase 09)
 
-`jh worker` trae las ofertas nuevas a la hora de `connectors.daily_at` y las deja en
+`cai worker` trae las ofertas nuevas a la hora de `connectors.daily_at` y las deja en
 `pending_extraction`. La extracción necesita al agente (ADR-001), así que la app no la hace sola.
 Opciones, de más a menos cómoda:
 
 | Agente | Cómo | Notas |
 |---|---|---|
-| Claude Code Desktop | Una **tarea programada local**, diaria y después de la ingesta (p. ej. 08:00), en la carpeta del proyecto, con el prompt `/procesar-ofertas` | Corre en tu equipo, con el MCP `jobhunter` y tus datos. Las herramientas que usa (`get_status`, `list_jobs`, `get_job`, `save_extraction`) ya están permitidas en `.claude/settings.json`, así que no se queda esperando un permiso. El equipo y la app de escritorio tienen que estar encendidos |
+| Claude Code Desktop | Una **tarea programada local**, diaria y después de la ingesta (p. ej. 08:00), en la carpeta del proyecto, con el prompt `/procesar-ofertas` | Corre en tu equipo, con el MCP `candidatai` y tus datos. Las herramientas que usa (`get_status`, `list_jobs`, `get_job`, `save_extraction`) ya están permitidas en `.claude/settings.json`, así que no se queda esperando un permiso. El equipo y la app de escritorio tienen que estar encendidos |
 | Claude Code (CLI) | El Programador de tareas de Windows lanzando `claude -p "/procesar-ofertas"` en la raíz del repo | Mismo requisito de permisos que arriba. Las rutinas en la nube (`/schedule`) **no sirven**: corren fuera de tu equipo y no ven `data/` ni el MCP local |
 | Codex | Si tu versión ofrece tareas programadas locales, el prompt `$procesar-ofertas`; si no, el Programador de tareas con `codex exec "$procesar-ofertas"` en una sesión de solo lectura | Sin probar. Revisa el nivel B de la tabla de garantías: ejecútalo con sandbox de solo lectura |
 | Cualquier otro | `resumen-diario` (manual o programado) te recuerda cuántas hay por extraer | Sin programación, basta con lanzar `procesar-ofertas` al empezar el día |
@@ -160,7 +160,7 @@ a él (en Claude Code, Claude in Chrome). Estado a la 09b.3: la interfaz (`list_
 `save_source`, `record_source_run` y `add_job_from_text` con `source_id`) está probada por MCP y
 CLI en los tests. Falta la prueba manual de un recorrido real con Claude Code y Claude in Chrome
 sobre una plataforma de acceso libre (`docs/pruebas/fase-09b.3-prueba-manual.txt`). En Codex y
-otros, sin probar. Si tu agente no puede, las alertas por correo y el botón «Enviar a Job Hunter»
+otros, sin probar. Si tu agente no puede, las alertas por correo y el botón «Enviar a CandidatAI»
 cubren lo mismo sin agente.
 
 Las reglas que más importan no dependen del agente (ADR-012): ningún agente puede activar la
@@ -180,7 +180,7 @@ sus herramientas; pendiente de la prueba manual con Claude Code.
 
 ### Skills que editan el perfil
 `ampliar-busqueda` (fase 16) añade los títulos que aceptas a `preferences.roles` editando
-`data/profile.yaml` y ejecutando `jh profile validate` e `import`, como `actualizar-perfil`: hace
+`data/profile.yaml` y ejecutando `cai profile validate` e `import`, como `actualizar-perfil`: hace
 falta un agente que pueda editar ficheros y ejecutar esos comandos. Si no puede, el skill te da el
 texto y los comandos para que lo hagas tú. Las búsquedas de plataformas van por `save_source`
 (MCP o CLI). Probado solo con los tests de su herramienta (`get_search_titles`); pendiente de la
@@ -196,7 +196,7 @@ empresa» (ficha), abren tu
 agente en una terminal (Windows Terminal o PowerShell) con la orden del skill ya escrita; tú
 ves, contestas y apruebas lo que haga. Qué programa se abre lo dice `launch` de cada agente en el
 manifiesto: `command` (con `{prompt}` donde va la orden) y `unset_env` (variables que se quitan
-antes, como la clave de la API, para que use tu suscripción). Con varios agentes, elige `JH_AGENT` (`claude`,
+antes, como la clave de la API, para que use tu suscripción). Con varios agentes, elige `CAI_AGENT` (`claude`,
 `codex`…). Solo Windows de momento; en otro sistema, o sin el agente en el `PATH`, el botón copia
 la orden para que la pegues tú. Probado con Claude Code; Codex, sin probar.
 
@@ -211,7 +211,7 @@ mismo `unset_env`.
 | | Claude Code | Codex | Otros |
 |---|---|---|---|
 | En segundo plano | Sí: `claude -p` con `stream-json`, `--tools Skill,Agent,Read`, `dontAsk`, `--allowedTools` con las herramientas MCP de la acción, `Skill(<su skill>)` y `Read(./docs/**)`, y `--disallowedTools` con todas las demás MCP de la app. Los tests usan un agente falso; las reglas se comprobaron con `claude` 2.1.296 (ver abajo). El recorrido completo, pendiente de la prueba manual (`docs/pruebas/fase-19-prueba-manual.txt`) | No: no permite limitar las herramientas MCP de una ejecución con garantías (nivel B). El botón lo dice | No |
-| Cola de encargos | Sí (`list_agent_requests`, `complete_agent_request`, skill `atender-encargos`) | Sí (mismas herramientas o `jh requests … --json`) | Sí, con MCP o CLI |
+| Cola de encargos | Sí (`list_agent_requests`, `complete_agent_request`, skill `atender-encargos`) | Sí (mismas herramientas o `cai requests … --json`) | Sí, con MCP o CLI |
 
 Comprobado con `claude` 2.1.296 (2026-10-12, modelo haiku, sin datos):
 - una herramienta MCP permitida en `.claude/settings.json` pero no en `--allowedTools` **se usa**,
@@ -220,7 +220,7 @@ Comprobado con `claude` 2.1.296 (2026-10-12, modelo haiku, sin datos):
 - `Skill(procesar-ofertas)` permite ese skill y deniega los demás («denied … don't ask mode»);
 - `Agent(extractor)` no acota: `general-purpose` se lanzó igual. Da igual para el techo: un
   subagente no tiene más herramientas que la sesión;
-- con `--strict-mcp-config` solo carga `jobhunter` (ni Claude in Chrome ni los conectores de
+- con `--strict-mcp-config` solo carga `candidatai` (ni Claude in Chrome ni los conectores de
   claude.ai).
 
 Para dar segundo plano a otro agente: un bloque `headless` cuyo comando limite las herramientas a
@@ -235,7 +235,7 @@ sesión la ve en `get_status` (`agent_requests`) o con el skill `atender-encargo
 1. Añade su bloque a `targets` en `.agents/manifest.yaml` (rutas, modelos, formato MCP y, si
    quieres los botones de la UI, `launch`; para el segundo plano, `launch.headless`).
 2. Si su formato no es JSON ni TOML de los ya soportados, añade un emisor en `scripts/sync_agents.py`.
-3. Regenera y pasa la matriz: `jh demo seed --dir data-demo-<agente> --compat`, arranca el
-   agente con `JH_DATA_DIR` apuntando ahí, recorre `procesar-ofertas`, `evaluar-encaje` y
+3. Regenera y pasa la matriz: `cai demo seed --dir data-demo-<agente> --compat`, arranca el
+   agente con `CAI_DATA_DIR` apuntando ahí, recorre `procesar-ofertas`, `evaluar-encaje` y
    `generar-cv` sobre las 5 ofertas (guía: `docs/pruebas/fase-12-compatibilidad.txt`), mide con
-   `jh eval cv --agent <nombre>` y añade su columna a «Matriz probada».
+   `cai eval cv --agent <nombre>` y añade su columna a «Matriz probada».

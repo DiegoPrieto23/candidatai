@@ -2,7 +2,7 @@
 
 [English](GUIDE.md) · **Español**
 
-Cómo instalar Job Hunter, probarlo con la demo y usarlo cada día con tus datos y tu agente de IA.
+Cómo instalar CandidatAI, probarlo con la demo y usarlo cada día con tus datos y tu agente de IA.
 Para saber qué es y por qué funciona así, empieza por el [README](../README.es.md).
 
 ## Índice
@@ -25,7 +25,7 @@ Para saber qué es y por qué funciona así, empieza por el [README](../README.e
 
 ## 1. Requisitos
 
-Job Hunter se desarrolla y se prueba en **Windows 11**. En macOS y Linux debería funcionar (todo
+CandidatAI se desarrolla y se prueba en **Windows 11**. En macOS y Linux debería funcionar (todo
 usa `pathlib` y herramientas multiplataforma), pero aún no se ha probado.
 
 | Qué | Para qué | Cómo |
@@ -41,12 +41,12 @@ Abre una terminal nueva después de instalar para que el `PATH` se actualice.
 ## 2. Instalación
 
 ```powershell
-git clone https://github.com/DiegoPrieto23/job-search.git job-hunter
-cd job-hunter\backend
+git clone https://github.com/DiegoPrieto23/candidatai.git candidatai
+cd candidatai\backend
 uv sync                                # dependencias del backend (crea .venv)
 uv run playwright install chromium     # plantillas html y PDF sin LibreOffice
-uv run jh doctor                       # comprueba el entorno y dice qué falta
-uv run jh db upgrade                   # crea la base de datos en data/
+uv run cai doctor                       # comprueba el entorno y dice qué falta
+uv run cai db upgrade                   # crea la base de datos en data/
 cd ..\frontend
 pnpm install
 ```
@@ -61,14 +61,14 @@ La demo es una candidata inventada con 60 ofertas, 8 semanas de historial y 2 CV
 
 ```powershell
 cd backend
-uv run jh demo seed                         # --force para recrearla
-$env:JH_DATA_DIR = "data-demo"; uv run jh serve
+uv run cai demo seed                         # --force para recrearla
+$env:CAI_DATA_DIR = "data-demo"; uv run cai serve
 # en otra terminal
 cd frontend; pnpm dev                       # http://127.0.0.1:5173
 ```
 
 La UI muestra un banner «Modo demo». Para probar los skills sobre la demo, arranca tu agente con
-`JH_DATA_DIR=data-demo` para que su servidor MCP use esa carpeta.
+`CAI_DATA_DIR=data-demo` para que su servidor MCP use esa carpeta.
 
 ## 4. Tus datos y tu perfil
 
@@ -91,12 +91,12 @@ ofertas, pero el agente nunca lo recibe.
 Abre tu agente **en la raíz del repositorio**: ahí encuentra las instrucciones (`AGENTS.md`), los
 skills y el servidor MCP ya configurados.
 
-- **Claude Code:** `claude` en la raíz. Comprueba con `/mcp` que el servidor `jobhunter` está
+- **Claude Code:** `claude` en la raíz. Comprueba con `/mcp` que el servidor `candidatai` está
   conectado. Los skills se invocan como `/generar-cv 42`.
 - **Codex:** usa `.codex/` (generado). Los skills se invocan como `$generar-cv 42`.
-- **Otros agentes:** si leen `AGENTS.md` y hablan MCP, registra el servidor `jobhunter` con el
+- **Otros agentes:** si leen `AGENTS.md` y hablan MCP, registra el servidor `candidatai` con el
   comando de `.mcp.json`. Si no hablan MCP, cada herramienta tiene su comando
-  `uv run --directory backend jh … --json` (tabla en
+  `uv run --directory backend cai … --json` (tabla en
   [`AGENT_INTERFACE.md`](AGENT_INTERFACE.md)).
 
 Más detalle, y cómo añadir un agente: [`AGENTS_COMPAT.md`](AGENTS_COMPAT.md).
@@ -107,8 +107,8 @@ Tres procesos, mejor cada uno en su ventana de terminal y **fuera de tu agente**
 queda sin memoria, puede cerrar lo que haya lanzado él):
 
 ```powershell
-cd backend; uv run jh serve       # API en http://127.0.0.1:8000 (solo en local)
-cd backend; uv run jh worker      # ingesta diaria, scores, correo, candidatura asistida, segundo plano
+cd backend; uv run cai serve       # API en http://127.0.0.1:8000 (solo en local)
+cd backend; uv run cai worker      # ingesta diaria, scores, correo, candidatura asistida, segundo plano
 cd frontend; pnpm dev             # UI en http://127.0.0.1:5173
 ```
 
@@ -125,10 +125,10 @@ Un día normal:
 | Fuente | Cómo se configura |
 |---|---|
 | **Alta manual** | «Nueva oferta» en la UI (URL o texto pegado) |
-| **Empresas objetivo** (Greenhouse, Lever, Ashby) | Pantalla «Empresas» o `jh sources add --kind greenhouse --name "Acme" --slug acme`. `jh sources discover --file empresas.txt` busca el tablero de cada empresa de una lista |
-| **InfoJobs y Adzuna** | Sus claves en `.env` (`JH_INFOJOBS_CLIENT_ID`/`_SECRET`, `JH_ADZUNA_APP_ID`/`_KEY`) y una búsqueda con `jh sources add` |
+| **Empresas objetivo** (Greenhouse, Lever, Ashby) | Pantalla «Empresas» o `cai sources add --kind greenhouse --name "Acme" --slug acme`. `cai sources discover --file empresas.txt` busca el tablero de cada empresa de una lista |
+| **InfoJobs y Adzuna** | Sus claves en `.env` (`CAI_INFOJOBS_CLIENT_ID`/`_SECRET`, `CAI_ADZUNA_APP_ID`/`_KEY`) y una búsqueda con `cai sources add` |
 | **Alertas por correo** | Crea alertas en LinkedIn, InfoJobs, Indeed… y que lleguen a una etiqueta de tu correo. Configura IMAP de solo lectura en `.env`: paso a paso en [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md). Sin IMAP, deja los `.eml` en `data/inbox/`. Lo que llega aparece en «Alertas» |
-| **Botón «Enviar a Job Hunter»** | Carga `extension/` como extensión sin empaquetar en Chrome o Edge y pega el token de `jh capture token` en sus opciones. Instrucciones: [`extension/README.md`](../extension/README.md) |
+| **Botón «Enviar a CandidatAI»** | Carga `extension/` como extensión sin empaquetar en Chrome o Edge y pega el token de `cai capture token` en sus opciones. Instrucciones: [`extension/README.md`](../extension/README.md) |
 | **Tu agente con tu navegador** | `buscar-ofertas configurar` elige portales y búsquedas (pantalla «Plataformas»); `buscar-ofertas` los recorre. LinkedIn queda desactivado hasta que lo actives tú |
 | **Búsqueda pública de LinkedIn** | Interruptor «Búsqueda pública sin sesión» en la tarjeta de LinkedIn de «Plataformas». Apagado por defecto: va contra las condiciones de LinkedIn y puede bloquear tu IP un tiempo |
 
@@ -167,7 +167,7 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
   `revisar-respuestas` propone qué ha pasado y tú lo aceptas en «Respuestas».
 - **Embudo:** conversión por paso, fuente, puesto, semana, plantilla, carta y referencia, y
   «¿Acierta el score?». `revisar-busqueda` hace la retrospectiva semanal.
-- **Red:** importa tus contactos de LinkedIn (exportación CSV) con `jh contacts import-linkedin`
+- **Red:** importa tus contactos de LinkedIn (exportación CSV) con `cai contacts import-linkedin`
   y verás «Conoces a N» en las ofertas de sus empresas; `redactar-mensaje` prepara el mensaje.
 
 ## 10. Entrevistas y ofertas recibidas
@@ -188,20 +188,20 @@ Muchas pantallas tienen botones que abren tu agente con la orden ya escrita:
 - **En terminal:** abre una ventana con tu agente; tú ves y apruebas lo que hace.
 - **En segundo plano** (Claude Code): para los skills que no preguntan (`procesar-ofertas`,
   `evaluar-encaje`, `generar-cv`). Corre sin ventana, solo con las herramientas de la app que
-  necesita, y ves el progreso en la página «Agente». Necesita `jh worker` en marcha.
+  necesita, y ves el progreso en la página «Agente». Necesita `cai worker` en marcha.
 - **Dejar para mi próxima sesión:** guarda el encargo; `atender-encargos` lo hace cuando abras tu
   agente.
 
 ## 12. Configuración
 
-- **`.env`** (en la raíz, fuera de git): `JH_DATA_DIR`, `SOFFICE_PATH`, claves de InfoJobs y
-  Adzuna, IMAP (`JH_IMAP_HOST`, `JH_IMAP_PORT`, `JH_IMAP_USER`, `JH_IMAP_PASSWORD`,
-  `JH_IMAP_FOLDER`, `JH_IMAP_REPLIES_FOLDER`), `JH_BROWSER_CHANNEL` (`chrome` o `msedge` para la
-  candidatura asistida), `JH_EMBEDDINGS=off`. Nada es obligatorio.
+- **`.env`** (en la raíz, fuera de git): `CAI_DATA_DIR`, `SOFFICE_PATH`, claves de InfoJobs y
+  Adzuna, IMAP (`CAI_IMAP_HOST`, `CAI_IMAP_PORT`, `CAI_IMAP_USER`, `CAI_IMAP_PASSWORD`,
+  `CAI_IMAP_FOLDER`, `CAI_IMAP_REPLIES_FOLDER`), `CAI_BROWSER_CHANNEL` (`chrome` o `msedge` para la
+  candidatura asistida), `CAI_EMBEDDINGS=off`. Nada es obligatorio.
 - **`config/policies.yaml`:** umbral de triaje, pesos del score, hora de la ingesta diaria,
   frecuencia del correo, límites de la búsqueda con navegador y de la búsqueda pública de
-  LinkedIn, frases de oferta cerrada… Tras cambiar el score, `jh match rescore` recalcula y
-  `jh eval matching` mide el efecto.
+  LinkedIn, frases de oferta cerrada… Tras cambiar el score, `cai match rescore` recalcula y
+  `cai eval matching` mide el efecto.
 - **Tu perfil:** preferencias (puestos, nivel, modalidad, zonas, idiomas), plantilla por defecto,
   reglas de plantilla y política de foto por país.
 
@@ -210,26 +210,26 @@ Muchas pantallas tienen botones que abren tu agente con la orden ya escrita:
 Con tu agente **cerrado** (su servidor MCP bloquea el entorno de Python):
 
 ```powershell
-copy data\jobhunter.db data\jobhunter.db.bak     # copia de seguridad
+copy data\candidatai.db data\candidatai.db.bak     # copia de seguridad
 git pull
-cd backend; uv sync; uv run jh db upgrade
+cd backend; uv sync; uv run cai db upgrade
 cd ..\frontend; pnpm install
 ```
 
-Reinicia `jh serve`, `jh worker` y tu agente.
+Reinicia `cai serve`, `cai worker` y tu agente.
 
 ## 14. Problemas frecuentes
 
 | Síntoma | Solución |
 |---|---|
-| Algo no funciona y no sabes qué | `uv run jh doctor` comprueba base de datos, PDF, Chromium, plantillas, foto, correo y captura |
-| «Ejecuta `jh db upgrade`» | Hay migraciones nuevas: `uv run jh db upgrade` |
-| `uv sync` falla con «fichero en uso» | Cierra tu agente (su servidor MCP usa `jh-mcp.exe`) y repite |
-| Los PDF no salen | Instala LibreOffice o `uv run playwright install chromium`; `jh doctor` lo comprueba |
-| La UI dice que no conecta con la API | Arranca `jh serve`; la UI espera la API en `127.0.0.1:8000` |
+| Algo no funciona y no sabes qué | `uv run cai doctor` comprueba base de datos, PDF, Chromium, plantillas, foto, correo y captura |
+| «Ejecuta `cai db upgrade`» | Hay migraciones nuevas: `uv run cai db upgrade` |
+| `uv sync` falla con «fichero en uso» | Cierra tu agente (su servidor MCP usa `cai-mcp.exe`) y repite |
+| Los PDF no salen | Instala LibreOffice o `uv run playwright install chromium`; `cai doctor` lo comprueba |
+| La UI dice que no conecta con la API | Arranca `cai serve`; la UI espera la API en `127.0.0.1:8000` |
 | El puerto 5173 está ocupado | Otro `pnpm dev` sigue abierto: ciérralo (la API solo acepta la UI en ese puerto) |
-| Nada entra solo por la mañana | `jh worker` tiene que estar en marcha |
-| Las tildes salen mal en `jh --help` | Problema conocido de la consola de Windows con cp1252; la salida `--json` está bien |
+| Nada entra solo por la mañana | `cai worker` tiene que estar en marcha |
+| Las tildes salen mal en `cai --help` | Problema conocido de la consola de Windows con cp1252; la salida `--json` está bien |
 
 ## 15. Desarrollo
 
@@ -237,7 +237,7 @@ Reinicia `jh serve`, `jh worker` y tu agente.
 cd backend
 uv run pytest                                   # tests
 uv run ruff check --fix; uv run ruff format     # estilo
-uv run jh eval matching                         # calidad del matching
+uv run cai eval matching                         # calidad del matching
 cd ..\frontend
 pnpm typecheck; pnpm test; pnpm build
 pnpm gen:api                                    # regenera el cliente tras cambiar la API

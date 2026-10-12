@@ -1,4 +1,4 @@
-"""`jh templates build-letter`: la carta a juego de una plantilla docx importada (fase 08c).
+"""`cai templates build-letter`: la carta a juego de una plantilla docx importada (fase 08c).
 
 Parte de su `template.docx`: conserva los bloques de arriba (párrafos y tablas) que solo usan
 variables de cabecera (`name`, `subtitle`, `contact`, `photo`), con los párrafos de control que
@@ -247,7 +247,7 @@ def build_letter(template_id: str, force: bool = False) -> BuildLetterResult:
 
     settings = get_settings()
     settings.tmp_dir.mkdir(parents=True, exist_ok=True)
-    staging = Path(tempfile.mkdtemp(prefix="jh-letter-", dir=settings.tmp_dir))
+    staging = Path(tempfile.mkdtemp(prefix="cai-letter-", dir=settings.tmp_dir))
     try:
         target = staging / template_id
         shutil.copytree(template.path, target)

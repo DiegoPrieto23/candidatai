@@ -1,10 +1,10 @@
 ---
 name: revisar-respuestas
-description: Clasifica los correos de las empresas de tus procesos (entrevista, prueba, oferta, rechazo…) que Job Hunter ha leído, delegando cada uno en el rol clasificador, y deja una propuesta que aceptas en la UI. Úsalo cuando se pida revisar respuestas, correos de empresas o novedades de los procesos.
+description: Clasifica los correos de las empresas de tus procesos (entrevista, prueba, oferta, rechazo…) que CandidatAI ha leído, delegando cada uno en el rol clasificador, y deja una propuesta que aceptas en la UI. Úsalo cuando se pida revisar respuestas, correos de empresas o novedades de los procesos.
 ---
 
 1. Llama a `list_replies(status="new")`. Si no hay ninguna, dilo en una línea y recuerda que la app
-   lee el correo cada hora con `jh worker`, o al pulsar «Revisar correo ahora» en «Respuestas».
+   lee el correo cada hora con `cai worker`, o al pulsar «Revisar correo ahora» en «Respuestas».
 2. Para cada respuesta, delega en el rol `clasificador` pasándole solo el `reply_id`. Si tu agente
    admite varios subagentes en paralelo, lanza como mucho 5 a la vez. Si los argumentos dan un
    `reply_id`, solo ese.

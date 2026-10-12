@@ -1,7 +1,7 @@
 ---
 name: resumen-diario
-description: Resumen breve del estado de la búsqueda en Job Hunter (pendientes, seguimientos vencidos, próximos hitos). Úsalo cuando se pida un resumen, "qué tengo hoy" o como tarea programada matinal.
-allowed-tools: mcp__jobhunter__get_status mcp__jobhunter__list_followups_due mcp__jobhunter__list_upcoming mcp__jobhunter__list_jobs
+description: Resumen breve del estado de la búsqueda en CandidatAI (pendientes, seguimientos vencidos, próximos hitos). Úsalo cuando se pida un resumen, "qué tengo hoy" o como tarea programada matinal.
+allowed-tools: mcp__candidatai__get_status mcp__candidatai__list_followups_due mcp__candidatai__list_upcoming mcp__candidatai__list_jobs
 ---
 
 <!-- GENERADO por scripts/sync_agents.py desde .agents/skills/resumen-diario/SKILL.md. No editar a mano: edita la fuente y regenera. -->

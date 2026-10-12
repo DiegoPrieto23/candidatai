@@ -6,7 +6,7 @@ Objetivo: comprobar con tus datos reales que
   «Sigue abierta» y «Comprobar otra vez» hacen lo que dicen;
 - «Republicada ×N» sale en bandeja, triaje y ficha cuando una oferta reaparece en el mismo portal;
 - `ampliar-busqueda` propone títulos razonables y solo cambia tus puestos o tus búsquedas con tu OK;
-- `jh sources discover` encuentra los tableros de tus empresas objetivo.
+- `cai sources discover` encuentra los tableros de tus empresas objetivo.
 
 Los tests automáticos cubren todo con respuestas simuladas. Durante el desarrollo se comprobó ya
 contra las APIs reales: Greenhouse, Lever y Ashby responden 404 a una oferta o tablero que no
@@ -19,7 +19,7 @@ REQUISITOS
 - Tres terminales de PowerShell (API, worker y UI), desde la RAÍZ del repo, fuera de tu agente.
 - Rama: fase/16-ofertas-vivas-busqueda (o main, si ya está fusionada).
 - Migración nueva (0015: `jobs.signals` y `job_sightings`):
-      uv run --directory backend jh db upgrade
+      uv run --directory backend cai db upgrade
 - Cliente del frontend al día: cd frontend; pnpm install
 - Abre Claude Code de nuevo para que el servidor MCP cargue `check_job_open` y
   `get_search_titles` (compruébalo con /mcp).
@@ -29,7 +29,7 @@ PARTE 1 · ¿SIGUE ABIERTA?
 -------------------------
 1. Elige una oferta aprobada o con CV listo que NO sea de LinkedIn y ábrela en la UI.
    Esperado: no ves nada si sigue publicada (la ficha la ha comprobado sola al abrirla).
-2. uv run --directory backend jh jobs check-open ID --force true
+2. uv run --directory backend cai jobs check-open ID --force true
    Esperado: «Sigue abierta: …», «Puede que esté cerrada: …», «No se pudo comprobar: …» (InfoJobs,
    Indeed) o «No se comprueba: …» (LinkedIn, sin URL).
 3. Busca una oferta que sepas cerrada (una antigua de Greenhouse, Lever o Tecnoempleo) o da de alta
@@ -63,7 +63,7 @@ Las republicaciones anteriores a la migración no se recuperan: esto se verá co
 
 PARTE 3 · AMPLIAR BÚSQUEDA
 --------------------------
-1. uv run --directory backend jh jobs titles
+1. uv run --directory backend cai jobs titles
    Esperado: tus puestos buscados, los títulos aprobados y descartados agrupados y, si los hay,
    «[no pasa el filtro previo]» junto a puestos que aprobaste pero la ingesta deja fuera.
 2. «Ampliar búsqueda» en Plataformas (o /ampliar-busqueda en Claude Code).
@@ -71,7 +71,7 @@ PARTE 3 · AMPLIAR BÚSQUEDA
    cambia nada hasta que contestas.
 3. Acepta uno para tus puestos buscados.
    Esperado: lo añade al final de `preferences.roles` en data/profile.yaml sin tocar lo demás,
-   ejecuta `jh profile validate` e `import`, y el worker recalcula los scores.
+   ejecuta `cai profile validate` e `import`, y el worker recalcula los scores.
 4. Acepta uno para una plataforma.
    Esperado: añade una búsqueda con el mismo patrón de URL que las que ya tenías; en Plataformas la
    ves y LinkedIn sigue con la navegación como estaba.
@@ -81,14 +81,14 @@ PARTE 4 · DESCUBRIR EMPRESAS
 ----------------------------
 1. Crea un fichero con algunas empresas que te interesen, una por línea (puede estar fuera de
    data/tmp), p. ej. data\empresas.txt.
-2. uv run --directory backend jh sources discover --file data\empresas.txt
+2. uv run --directory backend cai sources discover --file data\empresas.txt
    Esperado: por empresa, el tablero encontrado (Greenhouse con su nombre, «confirmada»; Lever o
-   Ashby, «probable»), el número de ofertas, 3 títulos y el comando `jh sources add …`; o «sin
+   Ashby, «probable»), el número de ofertas, 3 títulos y el comando `cai sources add …`; o «sin
    tablero». Nada se guarda.
 3. Si alguna sale «dudosa» o con el slug equivocado, corrige con «Nombre | slug» en el fichero.
 4. Repite con --add.
    Esperado: las confirmadas y probables quedan en «Empresas» como fuente activa; las dudosas no.
-   Pruébalas con `jh sources test ID`.
+   Pruébalas con `cai sources test ID`.
 
 
 SI ALGO FALLA

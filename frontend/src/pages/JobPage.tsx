@@ -438,7 +438,7 @@ function MatchPanel({ job }: { job: JobView }) {
       ) : (
         <p className="text-sm text-muted-foreground">
           Sin score: importa tu perfil con{' '}
-          <code className="rounded bg-muted px-1 py-0.5 font-mono text-[0.85em] text-foreground">jh profile import</code>.
+          <code className="rounded bg-muted px-1 py-0.5 font-mono text-[0.85em] text-foreground">cai profile import</code>.
         </p>
       )}
     </section>

@@ -1,8 +1,8 @@
 ---
 name: ampliar-busqueda
-description: Propone títulos de puesto cercanos a los que el usuario aprueba (p. ej. «Data Platform Engineer», «BI Engineer») a partir de sus ofertas aprobadas y descartadas en Job Hunter y, con su OK, los añade a sus puestos buscados o a las búsquedas de sus plataformas. Úsalo cuando se pida ampliar la búsqueda, encontrar puestos parecidos o revisar qué títulos buscar.
+description: Propone títulos de puesto cercanos a los que el usuario aprueba (p. ej. «Data Platform Engineer», «BI Engineer») a partir de sus ofertas aprobadas y descartadas en CandidatAI y, con su OK, los añade a sus puestos buscados o a las búsquedas de sus plataformas. Úsalo cuando se pida ampliar la búsqueda, encontrar puestos parecidos o revisar qué títulos buscar.
 argument-hint: '[nada para los últimos 90 días, o un número de días]'
-allowed-tools: Read Bash(uv run --directory backend jh profile *) mcp__jobhunter__get_search_titles mcp__jobhunter__get_profile mcp__jobhunter__list_sources
+allowed-tools: Read Bash(uv run --directory backend cai profile *) mcp__candidatai__get_search_titles mcp__candidatai__get_profile mcp__candidatai__list_sources
 ---
 
 <!-- GENERADO por scripts/sync_agents.py desde .agents/skills/ampliar-busqueda/SKILL.md. No editar a mano: edita la fuente y regenera. -->
@@ -51,8 +51,8 @@ Pregunta cuáles acepta y dónde. Sin respuesta clara, no hagas nada.
 ## 4. Aplicar lo aceptado
 - **Puestos buscados**: añade los títulos aceptados al final de `preferences.roles` en
   `data/profile.yaml` sin tocar nada más (respeta el formato y los comentarios). Después:
-  `uv run --directory backend jh profile validate` (corrige si falla) y
-  `uv run --directory backend jh profile import`. Recuerda que importar recalcula los scores.
+  `uv run --directory backend cai profile validate` (corrige si falla) y
+  `uv run --directory backend cai profile import`. Recuerda que importar recalcula los scores.
 - **Búsquedas de una plataforma**: para cada plataforma elegida, construye la URL de búsqueda
   siguiendo el patrón de sus `search_urls` actuales (mismo dominio y filtros, solo cambia el
   término del puesto). Guarda con `save_source` reenviando **toda** su configuración (`name`,

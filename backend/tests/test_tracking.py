@@ -289,7 +289,7 @@ def test_milestone_ics_and_feed(session: Session, job_at) -> None:
     assert body.endswith("\r\n") and "\n" not in body.replace("\r\n", "")
     lines = body.split("\r\n")
     assert lines[0] == "BEGIN:VCALENDAR" and "END:VCALENDAR" in lines
-    assert f"UID:milestone-{timed.id}@jobhunter.local" in lines
+    assert f"UID:milestone-{timed.id}@candidatai.local" in lines
     assert "DTSTART:20260923T083000Z" in lines and "DTEND:20260923T093000Z" in lines
     assert "LOCATION:Calle 1\\, Vigo" in lines
     assert "SUMMARY:Entrevista · Data Engineer (Acme 1)" in lines

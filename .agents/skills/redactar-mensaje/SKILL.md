@@ -1,6 +1,6 @@
 ---
 name: redactar-mensaje
-description: Redacta un mensaje de LinkedIn (≤ 300 caracteres) o un correo de candidatura (asunto, cuerpo y adjuntos) para un recruiter, el responsable del puesto o un compañero de una oferta de Job Hunter, usando solo el perfil, la extracción, el contexto y, si existe, el dosier de la empresa. Lo guarda en la ficha para copiarlo; nunca se envía. Úsalo cuando se pida escribir a alguien de una empresa, pedir una referencia o preparar el correo de candidatura.
+description: Redacta un mensaje de LinkedIn (≤ 300 caracteres) o un correo de candidatura (asunto, cuerpo y adjuntos) para un recruiter, el responsable del puesto o un compañero de una oferta de CandidatAI, usando solo el perfil, la extracción, el contexto y, si existe, el dosier de la empresa. Lo guarda en la ficha para copiarlo; nunca se envía. Úsalo cuando se pida escribir a alguien de una empresa, pedir una referencia o preparar el correo de candidatura.
 ---
 
 Sigue `docs/POLICIES.md` §1, §4, §5 y §7. **Solo redactas: ni la app ni tú enviáis nada**, ni
@@ -20,7 +20,7 @@ enviar la candidatura…).
   (las de `match: exact` antes que las `probable`; de una `probable`, di que la empresa de LinkedIn
   no coincide del todo). Pregunta también el formato y el objetivo si faltan.
 - `recipient_role`: `recruiter`, `hiring_manager` (responsable del puesto) o `peer` (compañero).
-- `network_imported: false` y nadie en el proceso: sugiere importar la red (`jh contacts
+- `network_imported: false` y nadie en el proceso: sugiere importar la red (`cai contacts
   import-linkedin` o «Importar» en la ficha) y redacta para un cargo genérico si el usuario quiere.
 
 Si la oferta no está aprobada (`not_allowed` al guardar), explícalo y para.

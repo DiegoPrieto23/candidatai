@@ -62,8 +62,8 @@ def main() -> int:
             "type": "system",
             "subtype": "init",
             "session_id": SESSION,
-            "mcp_servers": [{"name": "jobhunter", "status": status}],
-            "tools": ["Skill", "Agent", "mcp__jobhunter__list_jobs"],
+            "mcp_servers": [{"name": "candidatai", "status": status}],
+            "tools": ["Skill", "Agent", "mcp__candidatai__list_jobs"],
         }
     )
     if mode == "nomcp":
@@ -79,14 +79,14 @@ def main() -> int:
             fh.write(str(child.pid))
     assistant({"type": "text", "text": "Voy a procesar las ofertas pendientes."})
     assistant(
-        {"type": "tool_use", "id": "t1", "name": "mcp__jobhunter__list_jobs", "input": {}},
+        {"type": "tool_use", "id": "t1", "name": "mcp__candidatai__list_jobs", "input": {}},
         {"type": "tool_use", "id": "t2", "name": "Agent", "input": {"subagent_type": "extractor"}},
     )
     assistant(
         {
             "type": "tool_use",
             "id": "t3",
-            "name": "mcp__jobhunter__get_job",
+            "name": "mcp__candidatai__get_job",
             "input": {"job_id": 1, "secreto": "TEXTO DE LA OFERTA"},
         },
         parent="t2",

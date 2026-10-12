@@ -1,6 +1,6 @@
 ---
 name: investigar-empresa
-description: Investiga en la web pública la empresa de una oferta de Job Hunter (qué hace, producto, noticias recientes, cultura de ingeniería, stack) y guarda un dosier con fuentes en la ficha y en data/documentos/empresas/. Lo usan preparar-entrevista y redactar-mensaje. Úsalo cuando se pida investigar una empresa o saber más de ella antes de aplicar o de una entrevista.
+description: Investiga en la web pública la empresa de una oferta de CandidatAI (qué hace, producto, noticias recientes, cultura de ingeniería, stack) y guarda un dosier con fuentes en la ficha y en data/documentos/empresas/. Lo usan preparar-entrevista y redactar-mensaje. Úsalo cuando se pida investigar una empresa o saber más de ella antes de aplicar o de una entrevista.
 ---
 
 Sigue `docs/POLICIES.md` §1 y §6. Necesitas poder buscar y leer páginas web; si tu agente no

@@ -1,6 +1,6 @@
 ---
 name: preparar-negociacion
-description: Prepara la negociación de una oferta recibida en Job Hunter (argumentos sacados del perfil, preguntas que hacer y un guion) y, si el usuario pega el contrato, lo revisa cláusula a cláusula, sin asesoramiento legal. Nunca propone ni deduce una cifra. Úsalo cuando se pida preparar una negociación, responder a una oferta o revisar un contrato.
+description: Prepara la negociación de una oferta recibida en CandidatAI (argumentos sacados del perfil, preguntas que hacer y un guion) y, si el usuario pega el contrato, lo revisa cláusula a cláusula, sin asesoramiento legal. Nunca propone ni deduce una cifra. Úsalo cuando se pida preparar una negociación, responder a una oferta o revisar un contrato.
 ---
 
 Sigue `docs/POLICIES.md` §1, §4 y §6.

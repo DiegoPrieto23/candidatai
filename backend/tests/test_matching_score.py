@@ -115,16 +115,16 @@ def test_cosine() -> None:
 
 
 def test_embedder_off_by_env() -> None:
-    assert embeddings.get_embedder() is None  # los tests fijan JH_EMBEDDINGS=off
+    assert embeddings.get_embedder() is None  # los tests fijan CAI_EMBEDDINGS=off
     assert embeddings.unavailable_reason() == (
-        "Similitud semántica desactivada (JH_EMBEDDINGS=off)."
+        "Similitud semántica desactivada (CAI_EMBEDDINGS=off)."
     )
 
 
 def test_embedder_not_installed(monkeypatch: pytest.MonkeyPatch) -> None:
     from app.core.config import get_settings
 
-    monkeypatch.setenv("JH_EMBEDDINGS", "auto")
+    monkeypatch.setenv("CAI_EMBEDDINGS", "auto")
     get_settings.cache_clear()
     monkeypatch.setattr(embeddings, "is_installed", lambda: False)
     assert embeddings.get_embedder() is None
@@ -164,7 +164,7 @@ def test_demo_job_01_breakdown_without_embeddings() -> None:
     )
     assert b.preferences.role_match == "Data Engineer"
     assert b.semantic is None
-    assert b.notes == ["Similitud semántica desactivada (JH_EMBEDDINGS=off)."]
+    assert b.notes == ["Similitud semántica desactivada (CAI_EMBEDDINGS=off)."]
     semantic = next(c for c in b.components if c.name == "semantic_similarity")
     assert (semantic.value, semantic.effective_weight, semantic.points) == (None, 0.0, 0.0)
     # Sin semántica, sus 0.30 se reparten: los demás pesos se dividen entre 0.70.

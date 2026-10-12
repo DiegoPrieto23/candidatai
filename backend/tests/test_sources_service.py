@@ -203,7 +203,7 @@ def test_not_found_is_not_retried(session: Session) -> None:
 def test_portal_without_keys_is_skipped_without_a_run(session: Session) -> None:
     source = service.add_source(session, SourceInput(kind="infojobs", name="IJ", query="data"))
     result = service.run_source(session, source.id)
-    assert result.skipped and "JH_INFOJOBS_CLIENT_ID" in result.skipped
+    assert result.skipped and "CAI_INFOJOBS_CLIENT_ID" in result.skipped
     assert result.run_id is None and _count(session, SourceRun) == 0
     assert service.retryable_error(result) is None
 
@@ -214,8 +214,8 @@ def test_infojobs_fetches_detail_only_for_new_jobs_that_pass(
 ) -> None:
     from app.core.config import get_settings
 
-    monkeypatch.setenv("JH_INFOJOBS_CLIENT_ID", "id-demo")
-    monkeypatch.setenv("JH_INFOJOBS_CLIENT_SECRET", "secreto-demo")
+    monkeypatch.setenv("CAI_INFOJOBS_CLIENT_ID", "id-demo")
+    monkeypatch.setenv("CAI_INFOJOBS_CLIENT_SECRET", "secreto-demo")
     get_settings.cache_clear()
     respx.get(INFOJOBS_SEARCH_URL).mock(
         return_value=httpx.Response(200, json=load("infojobs_search.json"))
@@ -241,8 +241,8 @@ def test_detail_failure_skips_only_that_job(
 ) -> None:
     from app.core.config import get_settings
 
-    monkeypatch.setenv("JH_INFOJOBS_CLIENT_ID", "id-demo")
-    monkeypatch.setenv("JH_INFOJOBS_CLIENT_SECRET", "secreto-demo")
+    monkeypatch.setenv("CAI_INFOJOBS_CLIENT_ID", "id-demo")
+    monkeypatch.setenv("CAI_INFOJOBS_CLIENT_SECRET", "secreto-demo")
     get_settings.cache_clear()
     respx.get(INFOJOBS_SEARCH_URL).mock(
         return_value=httpx.Response(200, json=load("infojobs_search.json"))
@@ -365,8 +365,8 @@ def test_detail_401_stops_asking_for_more_details(
 ) -> None:
     from app.core.config import get_settings
 
-    monkeypatch.setenv("JH_INFOJOBS_CLIENT_ID", "id-demo")
-    monkeypatch.setenv("JH_INFOJOBS_CLIENT_SECRET", "secreto-demo")
+    monkeypatch.setenv("CAI_INFOJOBS_CLIENT_ID", "id-demo")
+    monkeypatch.setenv("CAI_INFOJOBS_CLIENT_SECRET", "secreto-demo")
     get_settings.cache_clear()
     data = load("infojobs_search.json")
     second = dict(data["offers"][0], id="cd34ef56ab12cd34ef56ab12cd34ef", city="Vigo")
@@ -389,8 +389,8 @@ def test_infojobs_id_with_path_characters_is_rejected(
 ) -> None:
     from app.core.config import get_settings
 
-    monkeypatch.setenv("JH_INFOJOBS_CLIENT_ID", "id-demo")
-    monkeypatch.setenv("JH_INFOJOBS_CLIENT_SECRET", "secreto-demo")
+    monkeypatch.setenv("CAI_INFOJOBS_CLIENT_ID", "id-demo")
+    monkeypatch.setenv("CAI_INFOJOBS_CLIENT_SECRET", "secreto-demo")
     get_settings.cache_clear()
     data = load("infojobs_search.json")
     data["offers"][0]["id"] = "../../candidate"

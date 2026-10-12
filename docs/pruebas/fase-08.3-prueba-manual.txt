@@ -28,17 +28,17 @@ Las partes 2 y 3 usan un CV y un perfil FICTICIOS en un directorio de datos apar
 PARTE 1 · PREPARAR
 ------------------
 1. CIERRA Claude Code antes de este paso (con su servidor MCP abierto, `uv sync` falla porque
-   jh-mcp.exe está en uso). Esta fase añade python-multipart y ruamel.yaml:
+   cai-mcp.exe está en uso). Esta fase añade python-multipart y ruamel.yaml:
 
       uv sync --directory backend
 
 2. Directorio de datos de prueba, con el perfil demo importado:
 
-      $env:JH_DATA_DIR = "data\demo-mi-cv"
-      uv run --directory backend jh db upgrade
+      $env:CAI_DATA_DIR = "data\demo-mi-cv"
+      uv run --directory backend cai db upgrade
       New-Item -ItemType Directory -Force data\demo-mi-cv\uploads, data\demo-mi-cv\tmp | Out-Null
       Copy-Item demo\profile.example.yaml data\demo-mi-cv\profile.yaml
-      uv run --directory backend jh profile import
+      uv run --directory backend cai profile import
 
 3. Un CV de Word ficticio (el de los tests: «Ana Ficticia Pérez», con voluntariado) y su mapeo:
 
@@ -47,11 +47,11 @@ PARTE 1 · PREPARAR
 
 PARTE 2 · LOS COMANDOS (sin agente)
 -----------------------------------
-Con $env:JH_DATA_DIR aún puesto:
+Con $env:CAI_DATA_DIR aún puesto:
 
 1. Inspeccionar:
 
-      uv run --directory backend jh templates inspect data\demo-mi-cv\uploads\ana.docx
+      uv run --directory backend cai templates inspect data\demo-mi-cv\uploads\ana.docx
 
    Esperado: 1 página; fuente Cambria; "Secciones: PERFIL (summary) · EXPERIENCIA (experience) ·
    VOLUNTARIADO (extra) · IDIOMAS (languages)"; apto para ATS: sí; y 15 párrafos numerados
@@ -59,21 +59,21 @@ Con $env:JH_DATA_DIR aún puesto:
 
 2. Una ruta fuera de data\ se rechaza:
 
-      uv run --directory backend jh templates inspect README.md --json
+      uv run --directory backend cai templates inspect README.md --json
 
    Esperado: {"ok":false,"error":{"type":"invalid_file",…}}
 
 3. Construir la plantilla:
 
-      uv run --directory backend jh templates build-docx --source data\demo-mi-cv\uploads\ana.docx --mapping data\demo-mi-cv\tmp\ana-mapping.json --id ana --name "CV de Ana"
+      uv run --directory backend cai templates build-docx --source data\demo-mi-cv\uploads\ana.docx --mapping data\demo-mi-cv\tmp\ana-mapping.json --id ana --name "CV de Ana"
 
    Esperado (unos 10-15 s): "Plantilla creada: data/templates/ana", secciones summary,
    experience, extra_sections, languages. El mapeo de data\demo-mi-cv\tmp\ se ha borrado.
 
 4. Validar y previsualizar:
 
-      uv run --directory backend jh templates validate ana
-      uv run --directory backend jh templates preview ana
+      uv run --directory backend cai templates validate ana
+      uv run --directory backend cai templates preview ana
 
    Abre data\demo-mi-cv\templates\ana\source.png (el original) y preview.png (la plantilla con la
    candidata demo, Lucía). Deben tener el mismo diseño: nombre grande en negrita, títulos en azul,
@@ -85,8 +85,8 @@ PARTE 3 · «MI CV» EN LA UI
 --------------------------
 1. Terminal A (API, con el directorio de prueba):
 
-      $env:JH_DATA_DIR = "data\demo-mi-cv"
-      uv run --directory backend jh serve
+      $env:CAI_DATA_DIR = "data\demo-mi-cv"
+      uv run --directory backend cai serve
 
    Terminal B (UI):
 
@@ -117,7 +117,7 @@ PARTE 3 · «MI CV» EN LA UI
 
 7. Limpieza (para la API con Ctrl+C):
 
-      Remove-Item Env:JH_DATA_DIR
+      Remove-Item Env:CAI_DATA_DIR
       Remove-Item -Recurse -Force data\demo-mi-cv
 
 
@@ -126,7 +126,7 @@ PARTE 4 · TU CV (criterio de aceptación de la fase)
 Necesitas tu perfil importado, una oferta aprobada y tu CV en Word (.docx). Si lo tienes en
 Google Docs, expórtalo a Word.
 
-1. `jh serve` y `pnpm dev` SIN JH_DATA_DIR. En Plantillas → «Subir mi CV», sube tu CV. Queda
+1. `cai serve` y `pnpm dev` SIN CAI_DATA_DIR. En Plantillas → «Subir mi CV», sube tu CV. Queda
    «Pendiente de importar» con la petición para el agente: cópiala.
 
 2. Abre Claude Code en la raíz del repo y pega la petición:

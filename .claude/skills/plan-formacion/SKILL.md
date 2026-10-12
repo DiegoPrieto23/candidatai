@@ -1,8 +1,8 @@
 ---
 name: plan-formacion
-description: Convierte los huecos reales de skills (los marcados «No la tengo» en la página Skills de Job Hunter) en un plan de formación con recursos verificados, tiempo estimado y orden, y valora un curso o proyecto concreto frente a esos huecos. Úsalo cuando se pida un plan de formación, qué estudiar o si merece la pena un curso o un proyecto.
+description: Convierte los huecos reales de skills (los marcados «No la tengo» en la página Skills de CandidatAI) en un plan de formación con recursos verificados, tiempo estimado y orden, y valora un curso o proyecto concreto frente a esos huecos. Úsalo cuando se pida un plan de formación, qué estudiar o si merece la pena un curso o un proyecto.
 argument-hint: '[nada para el plan, o URL o descripción de un curso o proyecto a valorar]'
-allowed-tools: Read WebSearch WebFetch mcp__jobhunter__get_skill_gaps mcp__jobhunter__get_profile mcp__jobhunter__get_context
+allowed-tools: Read WebSearch WebFetch mcp__candidatai__get_skill_gaps mcp__candidatai__get_profile mcp__candidatai__get_context
 ---
 
 <!-- GENERADO por scripts/sync_agents.py desde .agents/skills/plan-formacion/SKILL.md. No editar a mano: edita la fuente y regenera. -->

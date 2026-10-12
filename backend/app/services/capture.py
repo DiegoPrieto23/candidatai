@@ -1,4 +1,4 @@
-"""Botón «Enviar a Job Hunter» (fase 09b, `docs/FUENTES_OFERTAS.md` §Botón).
+"""Botón «Enviar a CandidatAI» (fase 09b, `docs/FUENTES_OFERTAS.md` §Botón).
 
 La extensión manda lo que el usuario está viendo (URL, título, descripción o el texto que haya
 seleccionado) a `POST /capture`. Aquí:
@@ -12,7 +12,7 @@ seleccionado) a `POST /capture`. Aquí:
 Todo lo capturado es contenido no confiable: pasa por la detección de riesgo, también el HTML del
 bloque de la descripción (texto oculto).
 
-El token se genera con `jh capture token` y solo se guarda su sha256 en `data/capture_token`.
+El token se genera con `cai capture token` y solo se guarda su sha256 en `data/capture_token`.
 """
 
 import hashlib
@@ -34,7 +34,7 @@ from app.services.pipeline import Actor, EventType, Stage
 from app.services.untrusted import assess
 
 SOURCE_KIND = "browser_capture"
-SOURCE_NAME = "Botón «Enviar a Job Hunter»"
+SOURCE_NAME = "Botón «Enviar a CandidatAI»"
 MIN_CAPTURE_CHARS = 200  # una selección corta vale, pero no un título suelto
 MAX_TEXT_CHARS = 100_000
 MAX_HTML_CHARS = 1_000_000
@@ -44,7 +44,7 @@ CaptureStatus = Literal["new", "completed", "existing"]
 
 
 class CaptureNotConfiguredError(Exception):
-    """No hay token creado: falta `jh capture token`."""
+    """No hay token creado: falta `cai capture token`."""
 
 
 class CaptureInput(BaseModel):
@@ -108,7 +108,7 @@ def check_token(settings: Settings, token: str | None) -> bool:
     """`True` si el token es el vigente. Lanza `CaptureNotConfiguredError` si no hay ninguno."""
     if not token_configured(settings):
         raise CaptureNotConfiguredError(
-            "La captura no está configurada: ejecuta `jh capture token` y pega el token en las "
+            "La captura no está configurada: ejecuta `cai capture token` y pega el token en las "
             "opciones de la extensión."
         )
     stored = settings.capture_token_path.read_text(encoding="utf-8").strip()
@@ -211,7 +211,7 @@ def _existing(session: Session, job: Job) -> CaptureResult:
     if stage == Stage.CLOSED:
         message = "Ya estaba, pero cerrada (descartada, caducada o duplicada). Puedes reabrirla."
     else:
-        message = "Ya estaba en Job Hunter."
+        message = "Ya estaba en CandidatAI."
     return _result(session, job, "existing", message)
 
 

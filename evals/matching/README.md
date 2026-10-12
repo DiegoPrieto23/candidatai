@@ -16,16 +16,16 @@ Tus casos reales van en `data/evals/*.jsonl` (no se versionan) y se evalúan con
 
 - `title`: el título tal cual (ahí se buscan las palabras de descarte).
 - `extraction`: un `JobExtraction` completo (`docs/AGENT_INTERFACE.md`). El de una oferta ya
-  extraída sale de `jh jobs extraction ID --json` (campo `extraction`).
+  extraída sale de `cai jobs extraction ID --json` (campo `extraction`).
 - `label`: `encaja` o `no_encaja`, según **tu** criterio.
 
 La app predice `encaja` si la oferta pasa los filtros duros y su score llega a `triage_threshold`.
 
 ```powershell
 cd backend
-uv run jh eval matching                   # semilla + data/evals; embeddings si están instalados
-uv run jh eval matching --no-embeddings   # solo cobertura de skills y preferencias
-uv run jh eval matching --no-seed         # solo tus casos
+uv run cai eval matching                   # semilla + data/evals; embeddings si están instalados
+uv run cai eval matching --no-embeddings   # solo cobertura de skills y preferencias
+uv run cai eval matching --no-seed         # solo tus casos
 ```
 
 Imprime precision, recall y F1 con el umbral actual y la curva por umbral, y guarda el informe en
@@ -37,17 +37,17 @@ Imprime precision, recall y F1 con el umbral actual y la curva por umbral, y gua
 Los evals miden si el score separa lo que **tú** etiquetas como `encaja`; la calibración mira si
 predice lo que pasa de verdad con lo que envías: tasa de respuesta y de entrevista por tramo de
 score, veredicto del agente, fuente, portal, plantilla, carta, referencia y rapidez al enviar.
-Está en la página «Embudo» (sección «¿Acierta el score?») y en `jh stats calibration`
+Está en la página «Embudo» (sección «¿Acierta el score?») y en `cai stats calibration`
 (`get_calibration` para los agentes). Tiene sentido a partir de unas 20-30 candidaturas enviadas.
 
 Para la retrospectiva semanal, pide a tu agente el skill `revisar-busqueda`. **Solo propone:**
 nunca cambia `config/policies.yaml`. Si una propuesta te convence, el cambio lo haces tú, con los
 evals como red de seguridad:
 
-1. `uv run jh eval matching` y apunta F1 (y precision y recall) con la configuración actual.
+1. `uv run cai eval matching` y apunta F1 (y precision y recall) con la configuración actual.
 2. Cambia **un** valor en `config/policies.yaml` (`triage_threshold`, un peso de
    `scoring.weights`, una palabra de `hard_filters.discard_title_keywords`…).
-3. Vuelve a pasar `uv run jh eval matching`. Si F1 baja, o se cae algún caso tuyo de
+3. Vuelve a pasar `uv run cai eval matching`. Si F1 baja, o se cae algún caso tuyo de
    `data/evals/` que antes acertaba, deshaz el cambio.
 4. Si lo mantienes, los scores se recalculan solos al consultarlos (cambia la huella de
    `scoring`; `triage_threshold` no la cambia). La calibración usa el score que había al enviar,

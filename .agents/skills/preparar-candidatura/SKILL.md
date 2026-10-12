@@ -1,6 +1,6 @@
 ---
 name: preparar-candidatura
-description: Prepara respuestas de screening y, si procede, carta de presentación (con el skill generar-carta) para una oferta de Job Hunter con CV listo. Úsalo cuando se pida preparar una candidatura o responder preguntas de un formulario.
+description: Prepara respuestas de screening y, si procede, carta de presentación (con el skill generar-carta) para una oferta de CandidatAI con CV listo. Úsalo cuando se pida preparar una candidatura o responder preguntas de un formulario.
 ---
 
 Sigue `docs/POLICIES.md` §1, §4, §5 y §7. Argumentos: `job_id` y, opcionalmente, las preguntas

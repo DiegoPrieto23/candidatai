@@ -1,8 +1,8 @@
 ---
 name: revisar-linkedin
-description: Revisa el perfil de LinkedIn del candidato frente a su perfil de Job Hunter y a las ofertas que aprueba, y genera un informe de cambios propuestos que él aplica a mano. Úsalo cuando se pida revisar, mejorar u optimizar el perfil de LinkedIn.
+description: Revisa el perfil de LinkedIn del candidato frente a su perfil de CandidatAI y a las ofertas que aprueba, y genera un informe de cambios propuestos que él aplica a mano. Úsalo cuando se pida revisar, mejorar u optimizar el perfil de LinkedIn.
 argument-hint: '[ruta al PDF de LinkedIn o nada para pegar el texto]'
-allowed-tools: Read mcp__jobhunter__get_profile mcp__jobhunter__list_jobs mcp__jobhunter__get_extraction
+allowed-tools: Read mcp__candidatai__get_profile mcp__candidatai__list_jobs mcp__candidatai__get_extraction
 ---
 
 <!-- GENERADO por scripts/sync_agents.py desde .agents/skills/revisar-linkedin/SKILL.md. No editar a mano: edita la fuente y regenera. -->

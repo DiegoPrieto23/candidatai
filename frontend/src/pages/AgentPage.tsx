@@ -209,7 +209,7 @@ function Runs() {
           className="rounded-xl border border-warning-border bg-warning px-4 py-3 text-sm text-warning-foreground"
         >
           Hay ejecuciones en cola desde hace rato y ninguna en curso. Las lanza el worker: ¿está{' '}
-          <code className="font-mono">jh worker</code> en marcha?
+          <code className="font-mono">cai worker</code> en marcha?
         </p>
       )}
       {data.runs.length === 0 ? (

@@ -6,16 +6,18 @@ cada fase y lo quita cuando el usuario confirma que está hecho.
 
 Marca `[x]` lo que hagas y, si algo falla, apúntalo debajo de la línea con `→`.
 
-Última actualización: 2026-10-12 (fase 22).
+Última actualización: 2026-10-12 (fase 23.1).
 
 ## 1. Poner la app al día (antes de probar nada)
 
 Desde la raíz del repo, en PowerShell, en `main` y **con Claude Code cerrado** (su servidor MCP
 bloquea el entorno de Python):
 
-- [ ] Copia de seguridad de la BD: `copy data\jobhunter.db data\jobhunter.db.bak-0012`
-- [ ] `uv sync --directory backend` (dependencias añadidas con `--no-sync`, p. ej. `tzdata`)
-- [ ] `uv run --directory backend jh db upgrade`: tu BD está en **0012** y el código espera la
+- [ ] Copia de seguridad de la BD: `copy data\jobhunter.db data\jobhunter.db.bak-0012` (tu BD
+      sigue llamándose así: la app la usa tal cual, ver «Nombre nuevo» abajo)
+- [ ] `uv sync --directory backend` (dependencias añadidas con `--no-sync`, p. ej. `tzdata`; desde
+      la fase 23 instala también los comandos nuevos `cai` y `cai-mcp` en lugar de `jh` y `jh-mcp`)
+- [ ] `uv run --directory backend cai db upgrade`: tu BD está en **0012** y el código espera la
       **0020** (`skill_gap_marks` de la fase 14; `replies` y `message_drafts` de la 15;
       `jobs.signals` y `job_sightings` de la 16; plan y repaso de entrevistas en `milestones`
       de la 17; `network_contacts`, referencias, mensajes y `company_research` de la 18;
@@ -29,18 +31,36 @@ bloquea el entorno de Python):
       `get_calibration`…).
       Comprobar con `/mcp`.
 
+### Nombre nuevo: CandidatAI (fase 23.1)
+
+La herramienta se llama ahora **CandidatAI**: la CLI es `cai` (ya no existe `jh`), el servidor MCP
+es `candidatai` y las variables son `CAI_*`. Lo que tienes sigue funcionando: las `JH_*` de tu
+`.env` se leen como respaldo y tu `data/jobhunter.db` se usa tal cual. `cai doctor` te recuerda
+ambas cosas.
+
+- [ ] Tras `uv sync`, abre Claude Code de nuevo y comprueba con `/mcp` que aparece `candidatai`
+      (y no `jobhunter`).
+- [ ] En `.env`, renombra cuando quieras cada `JH_…` a `CAI_…` (p. ej. `JH_IMAP_HOST` →
+      `CAI_IMAP_HOST`). `uv run --directory backend cai doctor` te dice cuáles quedan.
+- [ ] Opcional, con la app parada: renombra `data\jobhunter.db` a `data\candidatai.db` (y sus
+      ficheros `-wal`/`-shm` si los hay).
+- [ ] Revisa si tienes algo propio que llame a `jh` (accesos directos, scripts, tareas programadas
+      o rutinas de tu agente) y cámbialo a `cai`.
+- [ ] La extensión del navegador se llama ahora «Enviar a CandidatAI»: en `chrome://extensions`,
+      pulsa «Recargar» en ella (el id y el token no cambian).
+
 ## 2. `.env.example` (el agente no puede leerlo ni editarlo)
 
 - [ ] Crear o completar `.env.example`, **sin valores reales**, con todas las variables de
       `backend/app/core/config.py`:
-  - generales: `JH_DATA_DIR`, `JH_DB_URL`, `SOFFICE_PATH`, `JH_CLIENT_NAME`, `JH_AGENT`,
-    `JH_EMBEDDINGS`;
-  - portales: `JH_INFOJOBS_CLIENT_ID`, `JH_INFOJOBS_CLIENT_SECRET`, `JH_ADZUNA_APP_ID`,
-    `JH_ADZUNA_APP_KEY`;
-  - correo: `JH_IMAP_HOST`, `JH_IMAP_PORT`, `JH_IMAP_USER`, `JH_IMAP_PASSWORD`,
-    `JH_IMAP_FOLDER` y, de la fase 15, `JH_IMAP_REPLIES_FOLDER` (por defecto `INBOX`);
-  - navegador: `JH_CAPTURE_EXTENSION_ID`, `JH_BROWSER_HEADLESS`, `JH_BROWSER_CHANNEL`,
-    `JH_APPLIER_ALLOW_LOOPBACK`.
+  - generales: `CAI_DATA_DIR`, `CAI_DB_URL`, `SOFFICE_PATH`, `CAI_CLIENT_NAME`, `CAI_AGENT`,
+    `CAI_EMBEDDINGS`;
+  - portales: `CAI_INFOJOBS_CLIENT_ID`, `CAI_INFOJOBS_CLIENT_SECRET`, `CAI_ADZUNA_APP_ID`,
+    `CAI_ADZUNA_APP_KEY`;
+  - correo: `CAI_IMAP_HOST`, `CAI_IMAP_PORT`, `CAI_IMAP_USER`, `CAI_IMAP_PASSWORD`,
+    `CAI_IMAP_FOLDER` y, de la fase 15, `CAI_IMAP_REPLIES_FOLDER` (por defecto `INBOX`);
+  - navegador: `CAI_CAPTURE_EXTENSION_ID`, `CAI_BROWSER_HEADLESS`, `CAI_BROWSER_CHANNEL`,
+    `CAI_APPLIER_ALLOW_LOOPBACK`.
 
 ## 3. Pruebas manuales pendientes
 
@@ -72,7 +92,7 @@ hiciste, márcala.
   - «Procesar ofertas», «Evaluar encaje» y «Generar CV» en segundo plano, con el progreso en
     «Agente» y sin ventanas;
   - una ejecución con preguntas y «Contestar en terminal» (misma sesión);
-  - «Cancelar» (sin `claude.exe` ni `jh-mcp` huérfanos) y el aviso de worker parado;
+  - «Cancelar» (sin `claude.exe` ni `cai-mcp` huérfanos) y el aviso de worker parado;
   - «Dejar para mi próxima sesión» y `/atender-encargos`.
 - [ ] **Fase 18 · Contactos, mensajes y empresas** (`fase-18-prueba-manual.txt`):
   - descargar tu exportación de LinkedIn (`Connections.csv`) e importarla;
@@ -89,10 +109,10 @@ hiciste, márcala.
   - aviso «Puede que ya no esté publicada» con una oferta cerrada real, «Descartar», «Sigue
     abierta» y «Comprobar otra vez»;
   - `/generar-cv` sobre una oferta con aviso (debe preguntar antes de redactar);
-  - `/ampliar-busqueda` (o el botón en Plataformas) y `jh sources discover` con tus empresas;
+  - `/ampliar-busqueda` (o el botón en Plataformas) y `cai sources discover` con tus empresas;
   - «Republicada ×N» cuando aparezca con el uso.
 - [ ] **Fase 15 · Respuestas y seguimientos** (`fase-15-prueba-manual.txt`):
-  - IMAP real sobre `INBOX`: `jh doctor` en verde y «Revisar correo ahora» en «Respuestas»;
+  - IMAP real sobre `INBOX`: `cai doctor` en verde y «Revisar correo ahora» en «Respuestas»;
   - pantalla «Respuestas» y aviso en la ficha en el navegador (Aceptar, Cambiar, Ignorar);
   - `/revisar-respuestas` y `/redactar-seguimiento` con tus candidaturas;
   - sección «Borradores» (copiar, «Ya lo he enviado», «Descartar»).
@@ -109,7 +129,7 @@ hiciste, márcala.
       bloques). Incluye:
   - CV con un CV real (08b, parte 4) y carta (08c: `/generar-carta`, PDF a juego, DOCX en Word);
   - conectores con tus empresas objetivo (09);
-  - extensión «Enviar a Job Hunter» con LinkedIn y otros portales (09b; los selectores se
+  - extensión «Enviar a CandidatAI» con LinkedIn y otros portales (09b; los selectores se
     escribieron sin páginas reales);
   - `buscar-ofertas configurar` y un recorrido con Claude in Chrome (09b.3);
   - arrastre del kanban e importación del `.ics` en Google Calendar (10.1), dashboard (10.2:

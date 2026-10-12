@@ -18,7 +18,7 @@ REQUISITOS
 - Tres terminales de PowerShell (API, worker y UI), desde la RAÍZ del repo, fuera de tu agente.
 - Rama: fase/17-entrevistas (o main, si ya está fusionada).
 - Migración nueva (0016: plan y repaso en `milestones`):
-      uv run --directory backend jh db upgrade
+      uv run --directory backend cai db upgrade
 - Cliente del frontend al día: cd frontend; pnpm install
 - Abre Claude Code de nuevo para que el servidor MCP cargue `get_interviews`,
   `save_interview_plan` y `save_interview_notes` (compruébalo con /mcp).
@@ -54,7 +54,7 @@ PARTE 2 · SIMULACRO
    Esperado: no aparece en la versión mejor; al final sale en «hechos nuevos» con la propuesta de
    añadirlo con actualizar-perfil.
 8. Escribe «para». Esperado: resumen con 3 puntos fuertes y 3 flojos. Comprueba que tu perfil no
-   ha cambiado: uv run --directory backend jh profile diff (sin cambios).
+   ha cambiado: uv run --directory backend cai profile diff (sin cambios).
 
 
 PARTE 3 · REPASAR
@@ -68,7 +68,7 @@ PARTE 3 · REPASAR
 11. Recarga la ficha. Esperado: bloque «Repaso» con las notas y «Próximos pasos»; el botón pasa a
     «Repasar otra vez». La entrevista sigue programada hasta que pulses ✓.
 12. Si al contarlo mencionaste una historia nueva: te propone el borrador STAR y pregunta si lo
-    añade. Di que NO y comprueba que el perfil no cambia (jh profile diff). Repite y di que SÍ:
+    añade. Di que NO y comprueba que el perfil no cambia (cai profile diff). Repite y di que SÍ:
     debe seguir actualizar-perfil (pregunta la métrica real, valida, importa y enseña el diff).
 13. Marca la entrevista como hecha (✓). Esperado: en Procesos, «1 entrevista por agradecer»
     (fase 15).
@@ -85,7 +85,7 @@ PARTE 4 · DUDAS ANTES DE ACEPTAR
 
 PARTE 5 · SIN MCP (OPCIONAL)
 ----------------------------
-16. uv run --directory backend jh interviews list M --json
+16. uv run --directory backend cai interviews list M --json
     Esperado: tus entrevistas con `prep_plan`, `debrief_notes`, `next_steps`, contactos solo con
     nombre y cargo, y `offer_received`.
 

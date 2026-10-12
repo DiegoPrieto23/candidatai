@@ -16,7 +16,7 @@ Duración aproximada: 30 minutos.
 
 REQUISITOS
 ----------
-- Dos terminales de PowerShell (API y UI) y Claude Code (u otro agente con el MCP `jobhunter`).
+- Dos terminales de PowerShell (API y UI) y Claude Code (u otro agente con el MCP `candidatai`).
 - Los comandos se ejecutan desde la RAÍZ del repo.
 - Rama: fase/08c-carta-presentacion (o main, si ya está fusionada).
 - Una oferta aprobada o en «CV listo», con su CV generado. Abajo, <ID> es su id.
@@ -25,13 +25,13 @@ REQUISITOS
 PARTE 1 · PREPARAR
 ------------------
 1. Cierra Claude Code (su servidor MCP bloquea el entorno) y migra (la 08c añade la 0010):
-       uv run --directory backend jh db upgrade
+       uv run --directory backend cai db upgrade
    Esperado: «… -> 0010».
 2. Comprueba el entorno:
-       uv run --directory backend jh doctor
+       uv run --directory backend cai doctor
    Esperado: «Plantillas de CV» OK, sin avisar de que falta «carta-simple».
 3. Arranca la app:
-       Terminal 1:  uv run --directory backend jh serve
+       Terminal 1:  uv run --directory backend cai serve
        Terminal 2:  cd frontend; pnpm dev
 4. Abre Claude Code de nuevo, para que el MCP cargue las herramientas de la carta.
 
@@ -91,8 +91,8 @@ PARTE 4 · SIN AGENTE
 PARTE 5 · TU PLANTILLA DE WORD
 ------------------------------
 17. Si tienes una plantilla importada desde Word (p. ej. «mi-cv»):
-        uv run --directory backend jh templates build-letter mi-cv
-        uv run --directory backend jh templates preview mi-cv --letter
+        uv run --directory backend cai templates build-letter mi-cv
+        uv run --directory backend cai templates preview mi-cv --letter
     Esperado: «Carta creada: …» y una preview en data/cache/previews/ con la cabecera de tu CV y
     la letra de su cuerpo. Si la cabecera estaba mezclada con el cuerpo (dos columnas), dice que
     no puede y la carta sigue saliendo con «carta-simple».
@@ -110,6 +110,6 @@ PARTE 6 · DESPUÉS DE ENVIAR
 
 SI ALGO FALLA
 -------------
-- «No se ha podido cargar» en la sección: ¿hiciste `jh db upgrade` (0010)?
+- «No se ha podido cargar» en la sección: ¿hiciste `cai db upgrade` (0010)?
 - El agente no ve `get_cover_letter`: cierra y vuelve a abrir Claude Code.
 - El PDF tarda ~15-20 s: es LibreOffice convirtiendo (igual que el CV).

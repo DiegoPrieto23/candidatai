@@ -1,6 +1,6 @@
 # Modelo de datos
 
-SQLite en `data/jobhunter.db`, modo WAL. SQLAlchemy 2.0 + Alembic. Todas las fechas en UTC
+SQLite en `data/candidatai.db`, modo WAL. SQLAlchemy 2.0 + Alembic. Todas las fechas en UTC
 (`datetime` con zona); la UI convierte a Europe/Madrid.
 
 ## Tablas
@@ -158,10 +158,10 @@ Cola de trabajo del worker (sin Redis).
 | `kind` | Lo encola | Hace |
 |---|---|---|
 | `score_job` `{job_id}` | `save_extraction` (con perfil) | Calcula el match vigente |
-| `run_source` `{source_id}` | `jh worker` a la hora de `connectors.daily_at`, y al arrancar para las fuentes que no corrieron desde la última hora programada | Ejecuta el conector (`ingestion/service.run_source`). Un fallo de red, 5xx, 429 o interno queda en `source_runs` y la tarea se reintenta; un 404 o un formato inesperado no. Los portales sin claves no se encolan. Al arrancar, las tareas que quedaron `running` vuelven a la cola |
-| `poll_email` `{}` | `jh worker` cada `email_alerts.poll_minutes`, y al arrancar, si hay IMAP configurado o correos en `data/inbox/` | Lee las alertas nuevas (`ingestion/email/service.poll_email`). Si el buzón falla por la red, queda en `source_runs` y se reintenta |
-| `expire_summaries` `{}` | `jh worker` cada día con la ingesta y al arrancar | Cierra con `expired` los resúmenes más antiguos que `summary_expire_days` |
-| `rescore_all` `{}` | `jh profile import` con versión nueva | Recalcula los matches desfasados de las ofertas abiertas con extracción y cierra las de triaje que ya no pasan los filtros (lo mismo que `jh match rescore`, sin cola) |
+| `run_source` `{source_id}` | `cai worker` a la hora de `connectors.daily_at`, y al arrancar para las fuentes que no corrieron desde la última hora programada | Ejecuta el conector (`ingestion/service.run_source`). Un fallo de red, 5xx, 429 o interno queda en `source_runs` y la tarea se reintenta; un 404 o un formato inesperado no. Los portales sin claves no se encolan. Al arrancar, las tareas que quedaron `running` vuelven a la cola |
+| `poll_email` `{}` | `cai worker` cada `email_alerts.poll_minutes`, y al arrancar, si hay IMAP configurado o correos en `data/inbox/` | Lee las alertas nuevas (`ingestion/email/service.poll_email`). Si el buzón falla por la red, queda en `source_runs` y se reintenta |
+| `expire_summaries` `{}` | `cai worker` cada día con la ingesta y al arrancar | Cierra con `expired` los resúmenes más antiguos que `summary_expire_days` |
+| `rescore_all` `{}` | `cai profile import` con versión nueva | Recalcula los matches desfasados de las ofertas abiertas con extracción y cierra las de triaje que ya no pasan los filtros (lo mismo que `cai match rescore`, sin cola) |
 | `browser_open` `{}` | «Abrir navegador» (fase 11) | Abre el navegador persistente (`data/browser-profile/`), con una página de inicio para que inicies sesión en tus portales |
 | `apply_fill` `{attempt_id}` | `prepare` (fase 11) | Rellena el formulario y para antes de enviar (`services/applier/service.run_fill`) |
 | `apply_open` `{attempt_id}` | `prepare` en LinkedIn o en un portal de empleo | Solo abre la URL |
@@ -169,8 +169,8 @@ Cola de trabajo del worker (sin Redis).
 | `apply_rescan` `{attempt_id}` | «Volver a revisar» | Vuelve a leer los campos y a capturar, sin rellenar nada |
 | `apply_submit` `{attempt_id, token, consents}` | `confirm_submission` (solo la UI) | Consume el token, pulsa el envío, captura la confirmación y registra `applied` |
 | `apply_focus` `{attempt_id}` | «Lo termino yo» | Trae la pestaña al frente y retira el bloqueo del envío |
-| `check_open` `{job_id}` | `jh worker` cada día con la ingesta y al arrancar, para las ofertas en `approved` o `cv_ready` sin comprobación en `liveness.fresh_hours` (fase 16) | ¿Sigue abierta? (`services/liveness.check_job`). Un fallo de red da `unknown`, no se reintenta |
-| `run_linkedin_public` `{}` | `jh worker` cada día con la ingesta y al arrancar, solo si la búsqueda pública de LinkedIn está activada y le toca (fase 22) | `ingestion/linkedin_public.run`. Nunca se reintenta: un bloqueo de LinkedIn deja `blocked_at` y no se vuelve a intentar en `block_cooldown_days` |
+| `check_open` `{job_id}` | `cai worker` cada día con la ingesta y al arrancar, para las ofertas en `approved` o `cv_ready` sin comprobación en `liveness.fresh_hours` (fase 16) | ¿Sigue abierta? (`services/liveness.check_job`). Un fallo de red da `unknown`, no se reintenta |
+| `run_linkedin_public` `{}` | `cai worker` cada día con la ingesta y al arrancar, solo si la búsqueda pública de LinkedIn está activada y le toca (fase 22) | `ingestion/linkedin_public.run`. Nunca se reintenta: un bloqueo de LinkedIn deja `blocked_at` y no se vuelve a intentar en `block_cooldown_days` |
 | `archive_application` `{job_id, event_id, cv_render_id, letter_document_id, letter_render_id, answers_document_id}` | `applied` o `applied_manually` (fase 13) | Copia lo enviado a `data/documentos/candidaturas/` (ver §Fase 13). Los ids se fijan al registrar el envío. Idempotente |
 
 No se encola dos veces la misma tarea (mismo `kind` y `payload`) mientras siga en cola. Si falla,
@@ -299,7 +299,7 @@ Fase 18 (migración 0017):
   `cv_ready`.
 - **Calendario**: `.ics` por hito y feed con los próximos sin límite de días (solo hitos
   programados de ofertas abiertas: lo cancelado o cerrado sale del feed) (RFC 5545, UTC, `UID`
-  `milestone-<id>@jobhunter.local` y `deadline-<job_id>-<fecha>@jobhunter.local`).
+  `milestone-<id>@candidatai.local` y `deadline-<job_id>-<fecha>@candidatai.local`).
 
 ### Embudo (fase 10.2)
 
@@ -323,7 +323,7 @@ conversión nunca pasa del 100 %.
 - **Periodo** (`since`): `jobs.first_seen_at` desde las 00:00 de ese día en Europe/Madrid.
 - **Por fuente**: `jobs.source_id` (con `sources.kind` y `name`). **Por puesto**: `title_normalized`
   de la extracción vigente (la de mayor `id`); los 8 más frecuentes, «Otros» y «Sin extraer».
-  **Por semana**: semana ISO de `first_seen_at` en Europe/Madrid (función SQLite `jh_iso_week`,
+  **Por semana**: semana ISO de `first_seen_at` en Europe/Madrid (función SQLite `cai_iso_week`,
   registrada en `app/core/db.py`).
 - **Tiempo hasta la primera respuesta**: días entre el primer envío y la primera respuesta (mediana
   y media, 1 decimal), sobre las ofertas con `applied`/`applied_manually` (las transiciones impiden
@@ -333,7 +333,7 @@ conversión nunca pasa del 100 %.
   tiene fecha de corte: cuenta aunque se pusiera después del envío.
 - **Motivos**: ofertas con `discarded` por `payload.reason` (`unspecified` si falta) y con
   `hard_filter_failed` por cada `payload.failures[].filter` (`json_each`).
-- `jh_iso_week` y `json_each` son de SQLite: pasar a Postgres (ADR-002) exigiría reescribir esas dos
+- `cai_iso_week` y `json_each` son de SQLite: pasar a Postgres (ADR-002) exigiría reescribir esas dos
   expresiones.
 
 ### Calibración (fase 20)
@@ -537,7 +537,7 @@ publicaciones distintas de la misma empresa con el mismo título normalizado (tr
 
 ### `network_contacts`
 Tu red de LinkedIn, de la exportación oficial `Connections.csv` (migración 0017). Separada de los
-contactos de cada proceso. La escribe solo `jh contacts import-linkedin` (o «Importar» en la ficha),
+contactos de cada proceso. La escribe solo `cai contacts import-linkedin` (o «Importar» en la ficha),
 nunca el agente.
 
 | Columna | Tipo | Notas |

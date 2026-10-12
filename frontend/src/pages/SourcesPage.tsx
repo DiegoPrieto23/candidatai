@@ -431,7 +431,7 @@ export function SourcesPage() {
       <div className="mb-8">
         <h1 className="text-2xl font-semibold tracking-tight">Empresas objetivo</h1>
         <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-          Sus ofertas llegan solas cada día con <InlineCode text="`jh worker`" />, desde las APIs públicas de
+          Sus ofertas llegan solas cada día con <InlineCode text="`cai worker`" />, desde las APIs públicas de
           su ATS. Solo se guardan las que encajan por título y ubicación con tus preferencias, y quedan en
           «Por extraer» para tu agente.
         </p>

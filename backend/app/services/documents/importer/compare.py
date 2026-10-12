@@ -1,4 +1,4 @@
-"""`jh templates compare`: el original y la recreación lado a lado, con una métrica de parecido.
+"""`cai templates compare`: el original y la recreación lado a lado, con una métrica de parecido.
 
 La preview usa el perfil demo y el original tiene el texto de su dueño: la SSIM (similitud
 estructural, 0-1, sobre la página en grises, desenfocada y a baja resolución, donde pesan la

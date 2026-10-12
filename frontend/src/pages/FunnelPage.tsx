@@ -585,7 +585,7 @@ function CalibrationPanel({ since }: { since: string | null }) {
           <span>
             Orientativo. Entre paréntesis, el intervalo al 95 %: si los de dos grupos se solapan, no hay una diferencia
             clara. Los pesos y filtros no cambian solos: tu agente propone y tú decides, comprobándolo con{' '}
-            <code className="text-xs">jh eval matching</code>.
+            <code className="text-xs">cai eval matching</code>.
           </span>
         </p>
         <AgentButton action="revisar-busqueda" className="shrink-0">

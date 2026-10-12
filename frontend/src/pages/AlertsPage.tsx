@@ -262,7 +262,7 @@ export function AlertsPage() {
             {isPending
               ? 'Cargando…'
               : `${total === 1 ? '1 oferta resumen' : `${total} ofertas resumen`} de tus alertas por correo. ` +
-                'Ábrelas en su portal y envíalas con el botón «Enviar a Job Hunter» para completarlas, o descártalas.'}
+                'Ábrelas en su portal y envíalas con el botón «Enviar a CandidatAI» para completarlas, o descártalas.'}
           </p>
         </div>
         <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">

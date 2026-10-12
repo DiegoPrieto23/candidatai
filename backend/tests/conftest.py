@@ -1,3 +1,4 @@
+import os
 from collections.abc import Callable, Iterator
 from pathlib import Path
 
@@ -14,16 +15,19 @@ from app.models import Base, Company, Job, Source
 def isolated_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
     """Cada test usa su propio directorio de datos y sin variables heredadas del usuario."""
     data_dir = tmp_path / "data"
-    monkeypatch.setenv("JH_DATA_DIR", str(data_dir))
-    monkeypatch.delenv("JH_DB_URL", raising=False)
+    # Las `JH_*` de antes de la fase 23 se leen como respaldo: ninguna del usuario en los tests.
+    for name in [n for n in os.environ if n.upper().startswith("JH_")]:
+        monkeypatch.delenv(name)
+    monkeypatch.setenv("CAI_DATA_DIR", str(data_dir))
+    monkeypatch.delenv("CAI_DB_URL", raising=False)
     monkeypatch.delenv("SOFFICE_PATH", raising=False)
-    monkeypatch.delenv("JH_CLIENT_NAME", raising=False)
+    monkeypatch.delenv("CAI_CLIENT_NAME", raising=False)
     # Sin IMAP aunque el `.env` del usuario lo configure (las variables mandan sobre `.env`).
-    for name in ("JH_IMAP_HOST", "JH_IMAP_USER", "JH_IMAP_PASSWORD"):
+    for name in ("CAI_IMAP_HOST", "CAI_IMAP_USER", "CAI_IMAP_PASSWORD"):
         monkeypatch.setenv(name, "")
-    monkeypatch.setenv("JH_IMAP_FOLDER", "INBOX")
+    monkeypatch.setenv("CAI_IMAP_FOLDER", "INBOX")
     # Sin modelo de embeddings en los tests: nada de descargas; los que lo necesitan usan uno falso.
-    monkeypatch.setenv("JH_EMBEDDINGS", "off")
+    monkeypatch.setenv("CAI_EMBEDDINGS", "off")
     get_settings.cache_clear()
     get_engine.cache_clear()
     yield data_dir

@@ -1,7 +1,7 @@
 """Candidatura asistida (fase 11): preparar, revisar y enviar tras tu confirmación.
 
 Capa fina sobre `services/applier/service.py`. Todo lo que toca el navegador lo hace el worker
-(`jh worker`): estas rutas solo encolan y leen el estado. Es la única puerta al envío: no hay
+(`cai worker`): estas rutas solo encolan y leen el estado. Es la única puerta al envío: no hay
 herramienta MCP ni comando `--json` equivalente, a propósito (POLICIES §5).
 """
 

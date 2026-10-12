@@ -1,6 +1,6 @@
 ---
 name: plan-formacion
-description: Convierte los huecos reales de skills (los marcados «No la tengo» en la página Skills de Job Hunter) en un plan de formación con recursos verificados, tiempo estimado y orden, y valora un curso o proyecto concreto frente a esos huecos. Úsalo cuando se pida un plan de formación, qué estudiar o si merece la pena un curso o un proyecto.
+description: Convierte los huecos reales de skills (los marcados «No la tengo» en la página Skills de CandidatAI) en un plan de formación con recursos verificados, tiempo estimado y orden, y valora un curso o proyecto concreto frente a esos huecos. Úsalo cuando se pida un plan de formación, qué estudiar o si merece la pena un curso o un proyecto.
 ---
 
 Sigue `docs/POLICIES.md` §1 y §6. Dos modos, según los argumentos:

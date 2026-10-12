@@ -3,10 +3,10 @@
 Uso (desde la raíz del repo):
     uv run --directory backend python ../scripts/seed_funnel_demo.py [--jobs 1000] [--data-dir DIR]
 
-Escribe en una BD aparte: por defecto `data/funnel-demo/` (nunca en tu `data/jobhunter.db`). Para
-ver el dashboard con esos datos, arranca la API con `JH_DATA_DIR` apuntando a ese directorio
+Escribe en una BD aparte: por defecto `data/funnel-demo/` (nunca en tu `data/candidatai.db`). Para
+ver el dashboard con esos datos, arranca la API con `CAI_DATA_DIR` apuntando a ese directorio
 (relativo a la raíz del repo, como `--data-dir`):
-    $env:JH_DATA_DIR = "data/funnel-demo"; uv run --directory backend jh serve      (PowerShell)
+    $env:CAI_DATA_DIR = "data/funnel-demo"; uv run --directory backend cai serve      (PowerShell)
 
 Se niega a sembrar una BD que ya tiene ofertas. Empresas y puestos inventados; ningún dato real.
 Los eventos se registran con `events.record()`, como en la app: el histórico es siempre válido.
@@ -34,7 +34,7 @@ SOURCES = (
     ("greenhouse", "Greenhouse · Arnela Analytics"),
     ("lever", "Lever · Faro Logística"),
     ("email_alerts", "Alertas por correo"),
-    ("browser_capture", "Botón «Enviar a Job Hunter»"),
+    ("browser_capture", "Botón «Enviar a CandidatAI»"),
     ("agent_browse", "Portal de empleo de prueba"),
 )
 TITLES = (
@@ -138,9 +138,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--data-dir", type=Path, default=DEFAULT_DIR)
     args = parser.parse_args(argv)
 
-    # Como `JH_DATA_DIR`: una ruta relativa es relativa a la raíz del repo.
+    # Como `CAI_DATA_DIR`: una ruta relativa es relativa a la raíz del repo.
     data_dir = args.data_dir if args.data_dir.is_absolute() else REPO_ROOT / args.data_dir
-    os.environ["JH_DATA_DIR"] = str(data_dir.resolve())
+    os.environ["CAI_DATA_DIR"] = str(data_dir.resolve())
     get_settings.cache_clear()
     get_engine.cache_clear()
     migrations.upgrade()

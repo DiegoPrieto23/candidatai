@@ -1,11 +1,11 @@
 """Da de alta las 20 primeras ofertas FICTICIAS de `evals/matching/seed.jsonl` (las de la fase 07),
 ya extraídas, para probar el triaje sin gastar agente. Empresas inventadas; ningún dato real.
-Para una demo completa, mejor `jh demo seed` (fase 12.1).
+Para una demo completa, mejor `cai demo seed` (fase 12.1).
 
 Uso (desde la raíz del repo, con la BD migrada):
     uv run --directory backend python ../scripts/seed_triage_demo.py
 
-Respeta `JH_DATA_DIR`. Es idempotente: una oferta que ya existe no se vuelve a crear ni a extraer.
+Respeta `CAI_DATA_DIR`. Es idempotente: una oferta que ya existe no se vuelve a crear ni a extraer.
 Las que no pasan los filtros duros de tu perfil quedan cerradas (se ven en la bandeja).
 """
 
@@ -30,7 +30,7 @@ COMPANIES = (
 def posting_text(title: str, company: str, case: object) -> str:
     ext = case.job_fixture.extraction  # type: ignore[attr-defined]
     lines = [
-        f"{title} – {company} (empresa ficticia, oferta de prueba de Job Hunter)",
+        f"{title} – {company} (empresa ficticia, oferta de prueba de CandidatAI)",
         "",
         "Qué harás:",
         *(f"- {r}" for r in ext.responsibilities or ["Trabajar con el equipo de datos."]),

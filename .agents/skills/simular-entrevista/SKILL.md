@@ -1,6 +1,6 @@
 ---
 name: simular-entrevista
-description: Simulacro de entrevista para un proceso de Job Hunter, con una pregunta cada vez (RR. HH., técnica o caso), feedback concreto tras cada respuesta, una versión mejor basada solo en el perfil y un resumen final de puntos fuertes y flojos. Úsalo cuando se pida practicar, ensayar o simular una entrevista.
+description: Simulacro de entrevista para un proceso de CandidatAI, con una pregunta cada vez (RR. HH., técnica o caso), feedback concreto tras cada respuesta, una versión mejor basada solo en el perfil y un resumen final de puntos fuertes y flojos. Úsalo cuando se pida practicar, ensayar o simular una entrevista.
 ---
 
 Sigue `docs/POLICIES.md` §1 y §6. **No escribes en el perfil ni en la app**, salvo la nota

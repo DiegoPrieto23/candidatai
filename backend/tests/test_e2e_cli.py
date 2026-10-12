@@ -1,4 +1,4 @@
-"""Extremo a extremo sin MCP: el flujo de `procesar-ofertas` solo con comandos `jh … --json`.
+"""Extremo a extremo sin MCP: el flujo de `procesar-ofertas` solo con comandos `cai … --json`.
 
 Simula a un agente sin MCP que sigue el skill y el rol `extractor` usando la tabla de
 `docs/AGENT_INTERFACE.md`: alta → estado → lista → leer oferta → guardar extracción → estado.
@@ -20,7 +20,7 @@ def migrated_db() -> None:
 
 
 def test_process_offer_with_cli_only(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("JH_CLIENT_NAME", "agente-sin-mcp")
+    monkeypatch.setenv("CAI_CLIENT_NAME", "agente-sin-mcp")
     from app.core.config import get_settings
 
     get_settings.cache_clear()

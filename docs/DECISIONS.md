@@ -63,7 +63,7 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
 - **Contexto:** el proyecto debe poder usarse con distintos agentes (Claude Code, Codex, Gemini
   CLI, Cursor, Copilot…), no solo con uno de pago concreto.
 - **Decisión:** toda la interacción del agente con la app pasa por una interfaz con dos canales
-  equivalentes: servidor MCP y CLI `jh … --json`. Un test garantiza la paridad.
+  equivalentes: servidor MCP y CLI `cai … --json`. Un test garantiza la paridad.
 - **Consecuencias:** cualquier agente que hable MCP o ejecute comandos sirve. El listón queda algo
   por encima del proyecto original (que solo pedía leer y escribir ficheros), a cambio de estado
   fiable y validación.
@@ -116,27 +116,27 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
     `template.yaml` y un contrato de variables común;
   - dos motores: **docx** (docxtpl; conserva exacto un diseño que ya está en Word y genera DOCX y
     PDF) y **html** (Jinja2 + Chromium; recrea diseños que vienen en PDF o imagen; solo PDF);
-  - la importación la hace el agente con utilidades deterministas (`jh templates …`): en docx
+  - la importación la hace el agente con utilidades deterministas (`cai templates …`): en docx
     decide el mapeo y el código inserta los marcadores sin partirlos; en html escribe HTML/CSS
     local y saneado.
 - **Consecuencias:** cambiar de estilo o de foto no gasta cuota del agente. Recrear un diseño desde
   PDF o imagen es aproximado y requiere un agente que vea imágenes. Las plantillas html no dan Word.
 
 ## ADR-015 · Matching: embeddings opcionales, filtros al extraer y cálculo perezoso
-- **Contexto:** el score debe estar cuando el usuario abre el triaje, aunque `jh worker` no esté en
+- **Contexto:** el score debe estar cuando el usuario abre el triaje, aunque `cai worker` no esté en
   marcha. sentence-transformers trae torch (~1 GB), que no hace falta para los tests ni la CI.
 - **Decisión:**
   - sentence-transformers es el extra opcional `matching` (`uv sync --extra matching`). Sin él, o
-    con `JH_EMBEDDINGS=off`, la similitud semántica no cuenta y su peso se reparte entre los demás
-    componentes; el desglose y `jh doctor` lo dicen. Los tests usan un embedder falso.
+    con `CAI_EMBEDDINGS=off`, la similitud semántica no cuenta y su peso se reparte entre los demás
+    componentes; el desglose y `cai doctor` lo dicen. Los tests usan un embedder falso.
   - Los filtros duros se aplican en `save_extraction`, en la misma transacción: son baratos y así
     la etapa que devuelve ya es la definitiva. El score se encola (`score_job`).
   - Un match se guarda con su `extraction_id` y su `profile_version_id`. `get_match`, la ficha y el
-    triaje lo recalculan si está desfasado; el worker solo lo adelanta. `jh profile import` con
+    triaje lo recalculan si está desfasado; el worker solo lo adelanta. `cai profile import` con
     versión nueva encola `rescore_all`.
   - También guarda `scoring_key`, una huella de cómo se puntuó (versión del scorer, políticas de
     puntuación y filtros salvo `triage_threshold`, alias de skills y modelo de embeddings). Si
-    cambia (p. ej. al instalar el extra `matching`), el match está desfasado. `jh match rescore`
+    cambia (p. ej. al instalar el extra `matching`), el match está desfasado. `cai match rescore`
     lo recalcula todo ya, sin esperar a que se consulte.
   - Recalcular puede cerrar ofertas en triaje que ya no pasan los filtros, salvo que el usuario
     las reabriera después de un `hard_filter_failed`.
@@ -157,7 +157,7 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
     completan más tarde (`detail_captured`) y se identifican por `platform` + `external_id`;
   - lectura de las alertas de empleo por correo, por IMAP en solo lectura sobre una carpeta o desde
     una carpeta local de correos exportados;
-  - extensión mínima «Enviar a Job Hunter» que solo actúa cuando el usuario la pulsa, oferta a
+  - extensión mínima «Enviar a CandidatAI» que solo actúa cuando el usuario la pulsa, oferta a
     oferta, y envía a la API local con un token;
   - skill `buscar-ofertas` con el navegador del usuario, con reglas estrictas (dominios, solo
     lectura, límites, sin captchas). LinkedIn queda desactivado por defecto y solo el usuario puede
@@ -230,7 +230,7 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
     son duplicado difuso entre sí (el ATS ya dice que son publicaciones distintas, p. ej. «Senior
     Data Engineer» en remoto y «Data Engineer» en Vigo); frente a otras fuentes, el difuso de la
     fase 03 sigue igual;
-  - **programación con APScheduler 3** dentro de `jh worker` (la 4 sigue en alfa), con un solo hilo
+  - **programación con APScheduler 3** dentro de `cai worker` (la 4 sigue en alfa), con un solo hilo
     para no escribir a la vez en SQLite. Cada fuente es una tarea `run_source` de la cola: un fallo
     no para a las demás, queda en `source_runs` y se reintenta con espera creciente si es de red,
     5xx o 429. Al arrancar, el worker encola las fuentes que no han corrido desde la última hora
@@ -250,7 +250,7 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   procesos tengan forma. Los pasos del usuario aceptan `occurred_at`, pero la alta, la extracción,
   los filtros y el score fechan sus eventos «ahora».
 - **Decisión:**
-  - `jh demo seed` (`services/demo.py`) crea la demo **por los mismos servicios** que los datos
+  - `cai demo seed` (`services/demo.py`) crea la demo **por los mismos servicios** que los datos
     reales, para que cumpla las mismas reglas (transiciones, filtros, validación del CV);
   - **única excepción a «nada cambia sin evento»:** justo después de crear cada oferta, el
     generador lleva las fechas de sus eventos automáticos (y de la oferta, su extracción y su
@@ -276,9 +276,9 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
     página de un portal ni de LinkedIn** (`fill_problem`), aunque tengas la sesión iniciada: tienen
     anti-bot y es tu cuenta;
   - la UI abre la oferta de un portal **en tu navegador**, con tu sesión, como un enlace normal.
-    Glassdoor (Cloudflare) bloquea el navegador automatizado de Job Hunter («Solo personas
+    Glassdoor (Cloudflare) bloquea el navegador automatizado de CandidatAI («Solo personas
     reales») y eso no se esquiva (ADR-009): nada de perfiles «stealth» ni de quitar las marcas de
-    automatización. `prepare` sin `form_url` sigue abriéndola en el navegador de Job Hunter
+    automatización. `prepare` sin `form_url` sigue abriéndola en el navegador de CandidatAI
     (`mode: open`, `platform: board`) para los portales que lo admitan, pero la UI no lo ofrece;
   - «Rellenar esta página» (`fill_page`, tarea `apply_fill_page`): cuando el portal te ha llevado al
     formulario de la empresa, se rellena la pestaña que tienes delante en el navegador de Job
@@ -286,7 +286,7 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
     igual que en la fase 11: revisión, confirmación con el nombre de la empresa y token de un solo
     uso;
   - el paso principal desde un portal: pegas el enlace al formulario de la empresa (al que te llevó
-    «Solicitar») y `prepare` con `form_url` lo rellena en el navegador de Job Hunter;
+    «Solicitar») y `prepare` con `form_url` lo rellena en el navegador de CandidatAI;
   - un formulario genérico tiene que tener adjunto, o correo y un campo de nombre (sin contraseña y
     fuera de un buscador). Un buscador, un login o una alerta por correo no lo son;
   - si la página de la empresa no tiene formulario, se pulsa su botón de abrirlo («Enviar
@@ -314,7 +314,7 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   - por defecto caduca a los 5 minutos: el agente anota el incidente y sigue con la siguiente
     plataforma. En una candidatura asistida, «Ya está» vuelve a rellenar la página;
   - nada resuelve ni esquiva el captcha: solo se avisa (POLICIES §5.3, regla dura 6).
-- **Consecuencias:** una consulta ligera cada 4 s desde la UI. Si la pestaña de Job Hunter no
+- **Consecuencias:** una consulta ligera cada 4 s desde la UI. Si la pestaña de CandidatAI no
   está abierta ni las notificaciones activadas, el aviso pasa desapercibido y caduca, como antes.
 
 ## ADR-023 · Los enlaces del CV los pone el código, no la plantilla
@@ -347,7 +347,7 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   - las órdenes son una lista cerrada en `services/agent_launch.py`; lo único variable es el
     `job_id` (entero). Ningún texto de una oferta ni de una web llega al comando;
   - el programa sale de `launch` en `.agents/manifest.yaml` (`command` con `{prompt}` y
-    `unset_env`); `JH_AGENT` elige entre varios. Antes de abrirlo se quitan las variables de
+    `unset_env`); `CAI_AGENT` elige entre varios. Antes de abrirlo se quitan las variables de
     `unset_env` (p. ej. `ANTHROPIC_API_KEY`), para que use tu suscripción y no la API;
   - solo la UI puede lanzar: el endpoint exige el `Origin` de la UI (si viene) y cuerpo JSON, que
     desde otra web obliga a una comprobación CORS que la API no concede. No hay herramienta MCP ni
@@ -355,7 +355,7 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   - si no se puede abrir (otro sistema, agente no instalado), la API devuelve la orden y la UI la
     copia al portapapeles.
 - **Consecuencias:** sin coste extra, pero gasta los límites de uso de tu plan. Hace falta que la
-  API corra en tu sesión de Windows (como `jh serve` en tu ventana). Queda abierto, como fase 2
+  API corra en tu sesión de Windows (como `cai serve` en tu ventana). Queda abierto, como fase 2
   opcional, un modo «en segundo plano» (`claude -p` con solo las herramientas del MCP) para skills
   que no preguntan.
 
@@ -379,7 +379,7 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
     que sí respaldan `user`.
   - Lo escribe el usuario, así que no se envuelve como contenido no confiable; aun así tiene un
     límite de 20 KB por fichero (`too_large`) para no inflar el contexto del agente.
-  - Plantillas: las de la candidata demo (`demo/contexto/`). `jh context init` copia solo sus
+  - Plantillas: las de la candidata demo (`demo/contexto/`). `cai context init` copia solo sus
     encabezados y comentarios-guía, así que una sola plantilla sirve de ejemplo y de esqueleto
     vacío.
   - `data/documentos/` guarda los documentos fuente (`cv/`, `linkedin/`, `titulos/`,
@@ -392,7 +392,7 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
     `documentos/candidaturas/<empresa>_<puesto>_<job_id>/`, con un `README.md`. Escribe en una
     carpeta temporal y la renombra al final. Es idempotente y no toca una carpeta que ya existe,
     así que si se reabre y se vuelve a enviar, se queda lo del primer envío.
-    `jh applications archive` archiva las anteriores a esta fase.
+    `cai applications archive` archiva las anteriores a esta fase.
   - «Abrir carpeta» en la UI (`POST /folders/open`): lista cerrada (contexto, documentos y la
     carpeta de una candidatura) y solo desde la UI, como `POST /agent/launch` (ADR-024). Abre el
     explorador con `os.startfile`; en otro sistema devuelve la ruta para copiarla.
@@ -439,7 +439,7 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   agradecimientos) es salir hacia terceros (regla dura 5).
 - **Decisión:**
   - **Ingesta con privacidad:** IMAP en solo lectura (`EXAMINE`, `BODY.PEEK`) sobre
-    `JH_IMAP_REPLIES_FOLDER` (por defecto `INBOX`) o `.eml` en `data/inbox/respuestas/`. Sin
+    `CAI_IMAP_REPLIES_FOLDER` (por defecto `INBOX`) o `.eml` en `data/inbox/respuestas/`. Sin
     candidaturas en `applied` o `in_process` no se conecta. Se piden primero solo las cabeceras y
     el cuerpo solo de los correos posteriores al envío cuyo remitente casa con una candidatura
     (contacto de la ficha, dominio de la empresa, ATS que la nombra o nombre de la empresa en el
@@ -510,7 +510,7 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
     sigue siendo del usuario en la ficha; el skill se lo recuerda;
   - el simulacro no guarda nada. Lo que el usuario cuente se queda en la conversación o en las
     notas del hito; al perfil solo entra con `actualizar-perfil` y su confirmación (POLICIES §1.6).
-    Los skills de entrevista no llevan `jh profile` entre sus herramientas permitidas;
+    Los skills de entrevista no llevan `cai profile` entre sus herramientas permitidas;
   - el dosier sigue siendo un fichero (`data/entrevistas/`); el plan guarda solo su nombre, sin
     carpetas, y la UI abre la carpeta con «Abrir carpeta» (lista cerrada);
   - `get_interviews` devuelve de los contactos solo nombre y cargo;
@@ -538,7 +538,7 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
     genérica). La UI enseña la coincidencia probable con el nombre de LinkedIn para que la
     compruebe el usuario;
   - el agente ve la red solo a través de `get_job_contacts`: nombre y cargo de las personas de la
-    empresa de **una** oferta, sin URLs ni emails. Importar es solo CLI (`jh contacts
+    empresa de **una** oferta, sin URLs ni emails. Importar es solo CLI (`cai contacts
     import-linkedin`) o un botón de la UI que lee solo la ruta de siempre;
   - «Añadir como contacto del proceso» copia nombre, cargo y URL a `contacts` con su papel
     (`relation`: referencia, recruiter, responsable) y el enlace a la persona de la red;
@@ -583,7 +583,7 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   - **comando:** `launch.headless` del manifiesto por agente (regla dura 2), con el mismo
     `unset_env`. En Claude Code: `claude -p … --output-format stream-json --verbose
     --permission-mode dontAsk --strict-mcp-config --mcp-config .mcp.json --tools Skill,Agent,Read`.
-    El encargo proponía permitir `mcp__jobhunter__*`; se descarta porque incluye herramientas que
+    El encargo proponía permitir `mcp__candidatai__*`; se descarta porque incluye herramientas que
     escriben (`add_event`, `save_source`, `add_job_*`…) a las que una inyección podría llamar. Cada
     acción declara su lista en `agent_launch.ACTIONS[...].background`: lo mínimo que usan el skill
     y sus roles;
@@ -605,7 +605,7 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
     ejecuta el worker en un hilo aparte, de una en una: un `UPDATE` condicionado a que no haya otra
     `running`. Ir en la cola de `tasks` habría parado varios minutos la ingesta y la candidatura
     asistida. Tiempo máximo, cancelación, parada del worker (Ctrl+C) y cualquier excepción paran el
-    árbol de procesos entero (`taskkill /T`), con el `jh-mcp` hijo. Si el worker muere de golpe, al
+    árbol de procesos entero (`taskkill /T`), con el `cai-mcp` hijo. Si el worker muere de golpe, al
     arrancar las que quedaron `running` pasan a `failed` (no se repiten) y, si su `pid` sigue vivo
     y es el programa del agente, se para. Cancelar y terminar son `UPDATE` condicionados al estado:
     si el worker la reclama a la vez que la cancelas, queda pedida, no pisada;
@@ -625,12 +625,12 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
     garantías (nivel B). El botón dice que tu agente no lo admite; añadirlo es un bloque del
     manifiesto y un lector de su salida (`agent_output.PARSERS`).
 - **Consecuencias:** sin coste de API, pero gasta los límites de uso de tu plan como una sesión
-  normal. Hace falta `jh worker` arrancado: la UI avisa si algo lleva más de 30 s en cola sin nada
+  normal. Hace falta `cai worker` arrancado: la UI avisa si algo lleva más de 30 s en cola sin nada
   en curso. Las flags del comando son las de Claude Code 2.1.x; si cambian, se corrige el
   manifiesto. Las preguntas dependen de que el agente siga el formato `PREGUNTA:`; si no, la
   ejecución queda `done` y la duda se ve en el resultado. Sin Job Object de Windows: si el worker
   muere de golpe, el agente sigue hasta el siguiente arranque del worker, que lo para. Dos
-  `jh worker` a la vez no están soportados (igual que con `tasks`).
+  `cai worker` a la vez no están soportados (igual que con `tasks`).
 
 ## ADR-033 · Búsqueda pública de LinkedIn sin sesión, apagada por defecto (matiza la 016 y la 009)
 - **Contexto:** con la ADR-016, LinkedIn solo entra por sus alertas por correo, por el botón de
@@ -649,7 +649,7 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
     herramienta MCP ni comando que la active; la CLI solo da el estado y «ejecutar ahora». Apagada,
     ni el servicio ni el worker hacen una sola petición (test);
   - **sin sesión:** sin cookies ni cuenta, sin seguir redirecciones, user-agent honesto
-    (`JobHunter/0.1 (…; public job search, no login)`). No se disfraza de navegador: si LinkedIn
+    (`CandidatAI/0.1 (…; public job search, no login)`). No se disfraza de navegador: si LinkedIn
     lo rechaza, la función queda bloqueada, no se esquiva;
   - **límites** en `config/policies.yaml` → `linkedin_public`, con mínimos en el esquema que no se
     bajan editando el YAML: ≤ 2 páginas por búsqueda, ≥ 10 s entre dos peticiones cualesquiera,
@@ -674,3 +674,26 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   la UI. El HTML de LinkedIn puede cambiar: una respuesta sin ofertas reconocibles deja
   `page_changed`. Riesgo residual igual que en la ADR-016: la API local no tiene autenticación y
   `require_ui` no para a un proceso local que falsifique el origen.
+
+## ADR-034 · CandidatAI: nombre nuevo e identificadores renombrados sin alias
+- **Contexto:** la herramienta se llamaba «Job Hunter» (repositorio `job-search`, CLI `jh`, MCP
+  `jobhunter`, variables `JH_*`). Es un nombre genérico, ocupado en muchos sitios, y no decía que
+  usa IA. El usuario quería un nombre híbrido entre español e inglés (fase 23, 2026-10-12).
+- **Decisión:**
+  - nombre **CandidatAI** (*candidato* + *AI*; también *candid*, un CV que no inventa nada).
+    Comprobado libre: ningún producto con ese nombre y libre en PyPI y npm;
+  - renombrado completo, también lo técnico: CLI `cai` y `cai-mcp`, servidor MCP `candidatai`
+    (herramientas `mcp__candidatai__*`), variables `CAI_*`, paquete `candidatai`, logo «CA»,
+    repositorio `candidatai`. Identificadores internos también: `cai.local` (origen virtual del
+    motor html), atributos `data-cai-*` de la candidatura asistida y la función SQL `cai_iso_week`;
+  - **sin alias `jh`**: hay un solo usuario y lo que queda fuera del repositorio (su configuración
+    de agente, sus notas) se actualiza a mano;
+  - compatibilidades que se quedan: las variables `JH_*` se siguen leyendo si falta la `CAI_*`
+    equivalente (`AliasChoices`), y si solo existe `data/jobhunter.db`, se usa sin moverla.
+    `cai doctor` avisa de las dos («Nombres de antes de CandidatAI»). La clave antigua del tema
+    en `localStorage` se lee si no hay la nueva;
+  - el historial (`docs/ROADMAP.md`, `docs/RESUMEN_FASES.md`, los `prompts/` de fases anteriores) no
+    se reescribe.
+- **Consecuencias:** un solo nombre en todas partes. Tras actualizar hay que ejecutar `uv sync` con
+  el agente cerrado (el ejecutable cambia de nombre), reiniciar el agente (el servidor MCP cambia
+  de nombre) y, cuando se quiera, renombrar las `JH_*` del `.env` y la base de datos.

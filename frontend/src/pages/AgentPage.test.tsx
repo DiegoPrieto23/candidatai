@@ -47,7 +47,7 @@ function request(changes: Partial<AgentRequestView> = {}): AgentRequestView {
     label: 'Generar CV',
     job_id: 42,
     milestone_id: null,
-    prompt: 'Usa el skill generar-cv de Job Hunter para la oferta 42.',
+    prompt: 'Usa el skill generar-cv de CandidatAI para la oferta 42.',
     status: 'pending',
     summary: null,
     agent_name: null,
@@ -130,7 +130,7 @@ describe('Página «Agente» (fase 19)', () => {
     })
     renderApp('/agente')
     const pending = await screen.findByRole('list', { name: 'Encargos pendientes' })
-    expect(within(pending).getByText('Usa el skill generar-cv de Job Hunter para la oferta 42.')).toBeInTheDocument()
+    expect(within(pending).getByText('Usa el skill generar-cv de CandidatAI para la oferta 42.')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Atender encargos' })).toBeInTheDocument()
     expect(screen.getByText(/Aún no has lanzado nada en segundo plano/)).toBeInTheDocument()
     await userEvent.click(within(pending).getByRole('button', { name: 'Quitar' }))
@@ -160,7 +160,7 @@ describe('Página «Agente» (fase 19)', () => {
       'GET /agent/requests': { pending: 0, requests: [] },
     })
     renderApp('/agente')
-    expect(await screen.findByText(/ninguna en curso/)).toHaveTextContent('¿está jh worker en marcha?')
+    expect(await screen.findByText(/ninguna en curso/)).toHaveTextContent('¿está cai worker en marcha?')
     expect(await screen.findByText(/no tiene `launch.headless`/)).toBeInTheDocument()
   })
 })

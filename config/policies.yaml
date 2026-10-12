@@ -1,5 +1,5 @@
-# Reglas genéricas de Job Hunter. Sin datos personales: lo tuyo va en data/profile.yaml → preferences.
-# Los valores son puntos de partida; ajústalos con el set de evaluación (jh eval matching).
+# Reglas genéricas de CandidatAI. Sin datos personales: lo tuyo va en data/profile.yaml → preferences.
+# Los valores son puntos de partida; ajústalos con el set de evaluación (cai eval matching).
 
 dedup:
   fuzzy_title_threshold: 90        # rapidfuzz token_set_ratio, misma empresa
@@ -96,7 +96,7 @@ cover_letter:                   # fase 08c; manda preferences.cover_letter del p
   fallback_template: carta-simple
 
 connectors:                     # fase 09: APIs de ATS (Greenhouse, Lever, Ashby) y portales
-  daily_at: "07:30"               # hora local a la que `jh worker` ejecuta las fuentes activas
+  daily_at: "07:30"               # hora local a la que `cai worker` ejecuta las fuentes activas
   timezone: Europe/Madrid
   timeout_seconds: 20
   max_jobs_per_source: 500        # por ejecución; lo que pase de ahí se ignora con un aviso

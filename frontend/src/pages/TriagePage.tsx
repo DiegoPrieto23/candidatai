@@ -147,7 +147,7 @@ function Detail({
         ) : (
           <p className="text-sm text-muted-foreground">
             Sin score: importa tu perfil con{' '}
-            <code className="rounded bg-muted px-1 py-0.5 font-mono text-[0.85em] text-foreground">jh profile import</code>.
+            <code className="rounded bg-muted px-1 py-0.5 font-mono text-[0.85em] text-foreground">cai profile import</code>.
           </p>
         )}
       </div>
@@ -320,7 +320,7 @@ export function TriagePage() {
             <p>
               <span className="font-medium">Sin perfil importado no hay score.</span> Crea tu perfil con el skill{' '}
               <code className="rounded bg-background/70 px-1.5 py-0.5 font-mono text-[0.85em]">actualizar-perfil</code> o
-              ejecuta <code className="rounded bg-background/70 px-1.5 py-0.5 font-mono text-[0.85em]">jh profile import</code>.
+              ejecuta <code className="rounded bg-background/70 px-1.5 py-0.5 font-mono text-[0.85em]">cai profile import</code>.
             </p>
           </div>
         )}

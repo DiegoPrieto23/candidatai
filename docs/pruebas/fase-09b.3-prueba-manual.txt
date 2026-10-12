@@ -15,27 +15,27 @@ REQUISITOS
 ----------
 - Claude Code con Claude in Chrome conectado (extensión instalada y con permiso en el portal que
   vayas a probar). Otros agentes con acceso al navegador también valen; anota cuál usas.
-- Perfil importado (`jh profile import`) con `preferences` (puestos, zonas, modalidad).
+- Perfil importado (`cai profile import`) con `preferences` (puestos, zonas, modalidad).
 - Dos terminales de PowerShell (API y UI).
 - Los comandos se ejecutan desde la RAÍZ del repo:
       cd <carpeta-del-repo>
 - Rama: main (la fase ya está fusionada).
 
-Las ofertas que se den de alta son REALES y se quedan en tu base de datos (data/jobhunter.db).
+Las ofertas que se den de alta son REALES y se quedan en tu base de datos (data/candidatai.db).
 
 
 PARTE 1 · PREPARAR
 ------------------
 1. Cierra Claude Code (su servidor MCP bloquea el entorno) y sincroniza:
        uv sync --directory backend
-       uv run --directory backend jh db upgrade
+       uv run --directory backend cai db upgrade
 2. Arranca la API y la UI, cada una en su terminal:
-       uv run --directory backend jh serve
+       uv run --directory backend cai serve
        cd frontend; pnpm dev
 3. Abre Claude Code de nuevo, así su servidor MCP carga las herramientas nuevas (`list_sources`,
    `save_source`, `record_source_run`).
    Comprobación rápida en otra terminal:
-       uv run --directory backend jh sources list --kind agent_browse
+       uv run --directory backend cai sources list --kind agent_browse
    Esperado: «No hay fuentes…» (o tus plataformas, si ya había).
 
 

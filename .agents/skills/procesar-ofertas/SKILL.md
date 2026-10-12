@@ -1,6 +1,6 @@
 ---
 name: procesar-ofertas
-description: Extrae los datos estructurados de las ofertas pendientes de Job Hunter delegando cada una en el rol extractor. Úsalo cuando se pida procesar, extraer o analizar ofertas nuevas.
+description: Extrae los datos estructurados de las ofertas pendientes de CandidatAI delegando cada una en el rol extractor. Úsalo cuando se pida procesar, extraer o analizar ofertas nuevas.
 ---
 
 1. Llama a `get_status`. Si no hay ofertas en `pending_extraction`, dilo en una línea y termina.

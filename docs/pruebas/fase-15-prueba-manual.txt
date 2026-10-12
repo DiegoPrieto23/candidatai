@@ -19,9 +19,9 @@ REQUISITOS
   de tu agente.
 - Rama: fase/15-respuestas-correo (o main, si ya está fusionada).
 - Migración nueva (0014, tablas `replies` y `message_drafts`):
-      uv run --directory backend jh db upgrade
+      uv run --directory backend cai db upgrade
 - IMAP configurado en `.env` (docs/CONFIGURAR_CORREO.md). Opcional: para leer una etiqueta en vez
-  de la bandeja de entrada, añade `JH_IMAP_REPLIES_FOLDER="Procesos"` y reinicia la API y el
+  de la bandeja de entrada, añade `CAI_IMAP_REPLIES_FOLDER="Procesos"` y reinicia la API y el
   worker.
 - Al menos una candidatura enviada («Enviada» o «En proceso»), idealmente con alguna respuesta de
   la empresa en tu correo.
@@ -29,13 +29,13 @@ REQUISITOS
 
 PARTE 1 · CONEXIÓN Y LECTURA
 ----------------------------
-1. uv run --directory backend jh doctor
+1. uv run --directory backend cai doctor
    Esperado: la línea «Respuestas por correo» en verde (solo hace login y abre la carpeta en
    solo lectura).
-2. uv run --directory backend jh replies poll
+2. uv run --directory backend cai replies poll
    Esperado: «Respuestas: K correos nuevos de tus procesos (M correos mirados; N candidaturas
    abiertas)». De los M solo se han leído las cabeceras.
-3. uv run --directory backend jh replies list
+3. uv run --directory backend cai replies list
    Esperado: solo correos de las empresas de tus candidaturas, posteriores al envío. Ningún
    correo personal, boletín ni alerta. Si falta una respuesta que esperabas, añade el contacto
    (con su correo) en la ficha de la oferta y repite el paso 2.

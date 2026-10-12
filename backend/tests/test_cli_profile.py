@@ -1,4 +1,4 @@
-"""Comandos `jh profile validate | import | diff | init | show`."""
+"""Comandos `cai profile validate | import | diff | init | show`."""
 
 import copy
 import json
@@ -33,7 +33,7 @@ def migrated_db() -> None:
 
 
 def test_validate_example_by_repo_relative_path(monkeypatch: pytest.MonkeyPatch) -> None:
-    # Como la ejecutan los agentes: `uv run --directory backend jh …` corre en `backend/`.
+    # Como la ejecutan los agentes: `uv run --directory backend cai …` corre en `backend/`.
     monkeypatch.chdir(REPO_ROOT / "backend")
     code, out, _ = _jh("profile", "validate", "demo/profile.example.yaml")
     assert code == 0
@@ -77,7 +77,7 @@ def test_validate_default_path_missing() -> None:
     assert code == 1
     error = json.loads(out)["error"]
     assert error["type"] == "not_found"
-    assert "jh profile init" in error["message"]
+    assert "cai profile init" in error["message"]
 
 
 def test_init_then_validate_default(isolated_env: Path) -> None:

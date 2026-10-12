@@ -751,7 +751,7 @@ TOOLS: tuple[ToolSpec, ...] = (
         name="add_job_from_url",
         description=(
             "Descarga una oferta pública desde su URL y la da de alta (deduplicada, con "
-            "`risk_flags`). LinkedIn no: usa `add_job_from_text` (`jh jobs add-text`)."
+            "`risk_flags`). LinkedIn no: usa `add_job_from_text` (`cai jobs add-text`)."
         ),
         input_model=AddJobFromUrlInput,
         output_model=ingest.AddJobResult,
@@ -1401,7 +1401,7 @@ TOOLS: tuple[ToolSpec, ...] = (
         name="list_agent_requests",
         description=(
             "Encargos que el usuario dejó en la UI para tu próxima sesión (cola de encargos), el "
-            "más antiguo primero. Cada uno trae `prompt`, la orden de un skill de Job Hunter que "
+            "más antiguo primero. Cada uno trae `prompt`, la orden de un skill de CandidatAI que "
             "compone la app (como si la escribiera el usuario), y su oferta o entrevista."
         ),
         input_model=ListAgentRequestsInput,

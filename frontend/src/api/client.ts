@@ -131,7 +131,7 @@ export class ApiError extends Error {
 }
 
 const OFFLINE = new ApiError(
-  'No hay conexión con la API. Arráncala con `uv run jh serve` en backend/.',
+  'No hay conexión con la API. Arráncala con `uv run cai serve` en backend/.',
   'offline',
   0,
 )

@@ -14,7 +14,7 @@ TEXT = {
         "sub": "Your AI agent does the thinking. The app keeps the state, the rules and the checks.",
         "steps": ["Find", "Triage", "Tailor CV", "Apply", "Follow up", "Offer"],
         "how_title": "How it works",
-        "lanes": ["You", "Your AI agent", "Job Hunter"],
+        "lanes": ["You", "Your AI agent", "CandidatAI"],
         "cards": [
             # (paso, quién: 0 tú, 1 agente, 2 app, título, detalle)
             ("1", 2, "Jobs come in", "ATS APIs, email alerts,\nbrowser button, portals"),
@@ -32,7 +32,7 @@ TEXT = {
         "sub": "Tu agente de IA pone el criterio. La app guarda el estado, las reglas y las comprobaciones.",
         "steps": ["Buscar", "Triar", "CV a medida", "Postular", "Seguir", "Oferta"],
         "how_title": "Cómo funciona",
-        "lanes": ["Tú", "Tu agente de IA", "Job Hunter"],
+        "lanes": ["Tú", "Tu agente de IA", "CandidatAI"],
         "cards": [
             ("1", 2, "Entran ofertas", "APIs de ATS, alertas por\ncorreo, botón, portales"),
             ("2", 1, "Extrae y valora", "datos estructurados y\nuna valoración razonada"),
@@ -71,7 +71,7 @@ def banner(lang: str) -> str:
                 f'stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'
             )
             x += 34
-    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img" aria-label="Job Hunter — {escape(t['tagline'])}">
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img" aria-label="CandidatAI — {escape(t['tagline'])}">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#0B3D3A"/>
@@ -89,16 +89,16 @@ def banner(lang: str) -> str:
   <g font-family="{FONT}">
     <g transform="translate(96,70)">
       <rect width="76" height="76" rx="18" fill="#ffffff"/>
-      <text x="38" y="50" text-anchor="middle" font-size="32" font-weight="800" fill="{TEAL}">JH</text>
+      <text x="38" y="50" text-anchor="middle" font-size="32" font-weight="800" fill="{TEAL}">CA</text>
     </g>
-    <text x="196" y="122" font-size="64" font-weight="800" fill="#ffffff" letter-spacing="-1">Job Hunter</text>
+    <text x="196" y="122" font-size="64" font-weight="800" fill="#ffffff" letter-spacing="-1">CandidatAI</text>
     <text x="96" y="194" font-size="28" font-weight="600" fill="#ffffff">{escape(t['tagline'])}</text>
     <text x="96" y="230" font-size="19" fill="#D7F2EE">{escape(t['sub'])}</text>
     {''.join(chips)}
   </g>
   <g transform="translate(1010,110)" font-family="{MONO}" font-size="15" fill="#D7F2EE" fill-opacity="0.9">
     <rect x="-24" y="-34" width="230" height="132" rx="12" fill="#06201E" fill-opacity="0.55" stroke="#ffffff" stroke-opacity="0.15"/>
-    <text y="0"><tspan fill="{TEAL_LIGHT}">$</tspan> jh status</text>
+    <text y="0"><tspan fill="{TEAL_LIGHT}">$</tspan> cai status</text>
     <text y="26">pending_triage  <tspan fill="#ffffff">8</tspan></text>
     <text y="50">cv_ready        <tspan fill="#ffffff">2</tspan></text>
     <text y="74">in_process      <tspan fill="#ffffff">6</tspan></text>

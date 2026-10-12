@@ -7,7 +7,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Sistema visual de Job Hunter
+ * Sistema visual de CandidatAI
  * - Neutros zinc fríos y un único acento: verde azulado profundo (teal). Nada de morados.
  * - Ámbar solo con significado: aviso de posible inyección. Rojo solo para errores.
  * - Radios: controles 8px (--radius), paneles 12px (rounded-xl). Nada más.

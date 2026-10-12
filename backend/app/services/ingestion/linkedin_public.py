@@ -62,7 +62,7 @@ NAME = "LinkedIn · búsqueda pública"
 SEARCH_URL = "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search"
 DETAIL_URL = "https://www.linkedin.com/jobs-guest/jobs/api/jobPosting/{id}"
 # Honesto: dice qué es y para qué. Solo ASCII en cabeceras.
-USER_AGENT = "JobHunter/0.1 (local personal job search app; public job search, no login)"
+USER_AGENT = "CandidatAI/0.1 (local personal job search app; public job search, no login)"
 
 # Parámetros de una búsqueda de LinkedIn que se pasan tal cual al endpoint público.
 _TEXT_PARAMS = ("keywords", "location")

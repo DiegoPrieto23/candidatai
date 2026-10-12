@@ -1,8 +1,8 @@
 ---
 name: generar-carta
-description: Redacta y verifica la carta de presentación de una oferta aprobada de Job Hunter siguiendo las indicaciones del usuario (generales y de esa oferta). Úsalo cuando se pida una carta de presentación o cover letter.
+description: Redacta y verifica la carta de presentación de una oferta aprobada de CandidatAI siguiendo las indicaciones del usuario (generales y de esa oferta). Úsalo cuando se pida una carta de presentación o cover letter.
 argument-hint: '[job_id] [indicaciones para esta carta]'
-allowed-tools: mcp__jobhunter__get_cover_letter mcp__jobhunter__get_extraction mcp__jobhunter__get_profile mcp__jobhunter__get_context mcp__jobhunter__get_cv_content
+allowed-tools: mcp__candidatai__get_cover_letter mcp__candidatai__get_extraction mcp__candidatai__get_profile mcp__candidatai__get_context mcp__candidatai__get_cv_content
 ---
 
 <!-- GENERADO por scripts/sync_agents.py desde .agents/skills/generar-carta/SKILL.md. No editar a mano: edita la fuente y regenera. -->

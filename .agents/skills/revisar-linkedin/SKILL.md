@@ -1,6 +1,6 @@
 ---
 name: revisar-linkedin
-description: Revisa el perfil de LinkedIn del candidato frente a su perfil de Job Hunter y a las ofertas que aprueba, y genera un informe de cambios propuestos que él aplica a mano. Úsalo cuando se pida revisar, mejorar u optimizar el perfil de LinkedIn.
+description: Revisa el perfil de LinkedIn del candidato frente a su perfil de CandidatAI y a las ofertas que aprueba, y genera un informe de cambios propuestos que él aplica a mano. Úsalo cuando se pida revisar, mejorar u optimizar el perfil de LinkedIn.
 ---
 
 Sigue `docs/POLICIES.md` §1, §4, §5 y §7. El agente **nunca entra en LinkedIn**: ni navega, ni

@@ -1,6 +1,6 @@
 ---
 name: generar-cv
-description: Genera y verifica el CV a medida para una oferta aprobada de Job Hunter. Úsalo cuando se pida un CV para una oferta concreta o para las aprobadas sin CV.
+description: Genera y verifica el CV a medida para una oferta aprobada de CandidatAI. Úsalo cuando se pida un CV para una oferta concreta o para las aprobadas sin CV.
 ---
 
 Sigue `docs/POLICIES.md` §1, §3 y §4.

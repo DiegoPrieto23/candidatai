@@ -2,7 +2,7 @@
 
 Comprobaciones estáticas sobre el código de la app (complementan los tests con navegador, donde
 el servidor local cuenta 0 envíos al rellenar y exactamente 1 con el token):
-- solo `applier/submit.py` pulsa el botón de envío (`click_submit`, `data-jh-submit`);
+- solo `applier/submit.py` pulsa el botón de envío (`click_submit`, `data-cai-submit`);
 - `click_submit` solo lo llama `service.run_submit`, después de `tokens.consume`;
 - el bloqueo del envío solo lo retiran `submit.py` y «Lo termino yo» (`run_focus`);
 - los clics de los rellenadores solo pasan por `safe_click` y `check_box`, que rechazan los
@@ -51,7 +51,7 @@ def test_only_submit_module_presses_the_submit_button() -> None:
     for path, source in sources().items():
         if path == "services/applier/submit.py":
             continue
-        assert "data-jh-submit" not in source, path
+        assert "data-cai-submit" not in source, path
         for owner, _ in calls_in(source, {"click_submit"}):
             assert (path, owner) == ("services/applier/service.py", "_submit_in_browser"), path
 

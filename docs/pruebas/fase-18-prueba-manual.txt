@@ -23,7 +23,7 @@ REQUISITOS
 - Rama: fase/18-contactos-mensajes (o main, si ya está fusionada).
 - Migraciones nuevas (0017: `network_contacts` y referencias en `contacts`; 0018: mensajes y
   `company_research`):
-      uv run --directory backend jh db upgrade
+      uv run --directory backend cai db upgrade
 - Cliente del frontend al día: cd frontend; pnpm install
 - Abre Claude Code de nuevo para que el servidor MCP cargue `get_job_contacts`,
   `get_company_research` y `save_company_research` (/mcp).
@@ -36,13 +36,13 @@ REQUISITOS
 PARTE 1 · IMPORTAR LA RED
 -------------------------
 1. Opción A, desde la terminal:
-      uv run --directory backend jh contacts import-linkedin
+      uv run --directory backend cai contacts import-linkedin
    Esperado: «Red importada: N personas (N nuevas, 0 actualizadas, 0 quitadas)» y, si hay, cuántas
    filas se saltaron y cuántas personas no tienen empresa.
    Opción B, desde la UI: abre la ficha de cualquier oferta. En el panel «Tu red» (columna
    derecha), «Importar Connections.csv». El botón está apagado si el fichero no está en su sitio.
 2. Comprueba que no se guardaron emails (la BD no tiene esa columna):
-      uv run --directory backend jh contacts list <id de una oferta> --json
+      uv run --directory backend cai contacts list <id de una oferta> --json
    Esperado: nombres y cargos, sin emails, URLs ni teléfonos.
 3. Vuelve a importar el mismo fichero. Esperado: 0 nuevas, 0 quitadas (sincroniza, no duplica).
 
@@ -70,7 +70,7 @@ PARTE 3 · REFERENCIAS Y EMBUDO
    dada». Esperado: se guarda al momento; el historial de la oferta no cambia (no es un evento).
 8. Página «Embudo». Esperado: un bloque «Por referencia» (con referencia / referencia pedida / sin
    referencia) con enviadas y tasa de respuesta. Solo aparece si alguna oferta tiene la marca.
-9. `uv run --directory backend jh stats funnel`: líneas «Con referencia: N enviadas, respuesta X %».
+9. `uv run --directory backend cai stats funnel`: líneas «Con referencia: N enviadas, respuesta X %».
 
 
 PARTE 4 · INVESTIGAR LA EMPRESA

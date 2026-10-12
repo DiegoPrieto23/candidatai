@@ -278,7 +278,7 @@ function CalendarHelp() {
         </p>
         <p>
           <span className="font-medium">Outlook, Apple Calendar o Thunderbird:</span> suscríbete a esta dirección
-          (se actualiza sola mientras <code className="font-mono text-[0.85em]">jh serve</code> esté en marcha):
+          (se actualiza sola mientras <code className="font-mono text-[0.85em]">cai serve</code> esté en marcha):
         </p>
         <code className="block rounded bg-muted px-2 py-1.5 font-mono text-xs break-all">{fileUrls.calendarFeed}</code>
         <div className="flex flex-wrap gap-2">

@@ -1,4 +1,4 @@
-"""Comandos `jh db upgrade`, `jh status` y `jh events list`."""
+"""Comandos `cai db upgrade`, `cai status` y `cai events list`."""
 
 import json
 from datetime import UTC, datetime
@@ -39,11 +39,11 @@ def test_commands_require_migrated_db() -> None:
     assert result.exit_code == 1
     error = json.loads(result.stdout)["error"]
     assert error["type"] == "database_not_ready"
-    assert "jh db upgrade" in error["message"]
+    assert "cai db upgrade" in error["message"]
 
     result = runner.invoke(cli.app, ["status"])
     assert result.exit_code == 1
-    assert "jh db upgrade" in result.stderr
+    assert "cai db upgrade" in result.stderr
 
 
 def test_db_upgrade() -> None:

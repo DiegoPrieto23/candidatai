@@ -1,8 +1,8 @@
 ---
 name: redactar-mensaje
-description: Redacta un mensaje de LinkedIn (≤ 300 caracteres) o un correo de candidatura (asunto, cuerpo y adjuntos) para un recruiter, el responsable del puesto o un compañero de una oferta de Job Hunter, usando solo el perfil, la extracción, el contexto y, si existe, el dosier de la empresa. Lo guarda en la ficha para copiarlo; nunca se envía. Úsalo cuando se pida escribir a alguien de una empresa, pedir una referencia o preparar el correo de candidatura.
+description: Redacta un mensaje de LinkedIn (≤ 300 caracteres) o un correo de candidatura (asunto, cuerpo y adjuntos) para un recruiter, el responsable del puesto o un compañero de una oferta de CandidatAI, usando solo el perfil, la extracción, el contexto y, si existe, el dosier de la empresa. Lo guarda en la ficha para copiarlo; nunca se envía. Úsalo cuando se pida escribir a alguien de una empresa, pedir una referencia o preparar el correo de candidatura.
 argument-hint: '[job_id] [a quién: nombre, recruiter, responsable o compañero] [linkedin|correo]'
-allowed-tools: mcp__jobhunter__get_job_contacts mcp__jobhunter__get_extraction mcp__jobhunter__get_profile mcp__jobhunter__get_context mcp__jobhunter__get_company_research mcp__jobhunter__get_cv_content mcp__jobhunter__get_cover_letter mcp__jobhunter__save_message_draft
+allowed-tools: mcp__candidatai__get_job_contacts mcp__candidatai__get_extraction mcp__candidatai__get_profile mcp__candidatai__get_context mcp__candidatai__get_company_research mcp__candidatai__get_cv_content mcp__candidatai__get_cover_letter mcp__candidatai__save_message_draft
 ---
 
 <!-- GENERADO por scripts/sync_agents.py desde .agents/skills/redactar-mensaje/SKILL.md. No editar a mano: edita la fuente y regenera. -->
@@ -24,7 +24,7 @@ enviar la candidatura…).
   (las de `match: exact` antes que las `probable`; de una `probable`, di que la empresa de LinkedIn
   no coincide del todo). Pregunta también el formato y el objetivo si faltan.
 - `recipient_role`: `recruiter`, `hiring_manager` (responsable del puesto) o `peer` (compañero).
-- `network_imported: false` y nadie en el proceso: sugiere importar la red (`jh contacts
+- `network_imported: false` y nadie en el proceso: sugiere importar la red (`cai contacts
   import-linkedin` o «Importar» en la ficha) y redacta para un cargo genérico si el usuario quiere.
 
 Si la oferta no está aprobada (`not_allowed` al guardar), explícalo y para.

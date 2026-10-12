@@ -1,4 +1,4 @@
-"""Descubrir los tableros de ATS de tus empresas (fase 16): `jh sources discover --file F`.
+"""Descubrir los tableros de ATS de tus empresas (fase 16): `cai sources discover --file F`.
 
 Para cada empresa de la lista prueba unos pocos slugs candidatos en las mismas APIs públicas que
 usan los conectores (sin agente, sin tokens, sin scraping): Greenhouse, Lever (global y UE) y
@@ -236,7 +236,7 @@ def _command(company: str, kind: str, slug: str, region: str) -> str:
     extra = " --region eu" if region == "eu" else ""
     # Se pega en PowerShell: fuera comillas, acentos graves y `$`.
     name = re.sub(r'["`$]', "", company)
-    return f'jh sources add --kind {kind} --name "{name}" --slug {slug}{extra}'
+    return f'cai sources add --kind {kind} --name "{name}" --slug {slug}{extra}'
 
 
 def _discover_one(

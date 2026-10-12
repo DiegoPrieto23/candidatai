@@ -272,7 +272,7 @@ export function RepliesPage() {
         <section className="rounded-xl border bg-card">
           <EmptyState icon={<EnvelopeSimpleIcon className="size-6" weight="duotone" />} title="Sin respuestas aquí">
             Los correos de las empresas a tus candidaturas enviadas aparecen aquí. Se leen por IMAP (
-            <InlineCode text="JH_IMAP_REPLIES_FOLDER" />) o de <InlineCode text="data/inbox/respuestas/" />.
+            <InlineCode text="CAI_IMAP_REPLIES_FOLDER" />) o de <InlineCode text="data/inbox/respuestas/" />.
           </EmptyState>
         </section>
       ) : (

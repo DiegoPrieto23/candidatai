@@ -17,7 +17,7 @@ Duración aproximada: 10-15 minutos.
 REQUISITOS
 ----------
 - Rama: fase/22-linkedin-publico (o main, si ya está fusionada). Sin migraciones nuevas.
-- API, worker y UI arrancados en sus ventanas (jh serve, jh worker, pnpm dev), fuera de tu agente.
+- API, worker y UI arrancados en sus ventanas (cai serve, cai worker, pnpm dev), fuera de tu agente.
 - Una plataforma LinkedIn en «Plataformas» con al menos una búsqueda del tipo
       https://www.linkedin.com/jobs/search/?keywords=Data%20Engineer&location=Galicia
   (si no la tienes: «Añadir plataforma» → LinkedIn, o `buscar-ofertas configurar`).
@@ -29,9 +29,9 @@ PARTE 1 · Apagada por defecto (3 min)
    «Búsqueda pública sin sesión» con el interruptor en «Desactivada».
    → Comprueba que «Qué consultará» enseña tus palabras clave y ubicación. Si alguna búsqueda
      no sirve, sale en ámbar con el motivo.
-2. En una terminal: `uv run --directory backend jh sources linkedin-public status`
+2. En una terminal: `uv run --directory backend cai sources linkedin-public status`
    → dice «desactivada» y lista las mismas búsquedas.
-3. `uv run --directory backend jh sources linkedin-public run`
+3. `uv run --directory backend cai sources linkedin-public run`
    → error «está desactivada… Solo el usuario puede activarla». No ha salido ninguna petición.
 4. En la ventana del worker, al arrancarlo, NO aparece «Búsqueda pública de LinkedIn en cola».
 
@@ -45,12 +45,12 @@ PARTE 2 · Activarla y ejecutarla (5-8 min)
    páginas, unos 10-20 s).
    Resultado posible A (funciona): «N ofertas encontradas, M tras filtros, K nuevas (K como
      resumen)». Ve a «Alertas»: las nuevas están ahí, con su prefiltro, y «O» las abre en LinkedIn.
-     Completa una con el botón «Enviar a Job Hunter» y comprueba que pasa a «Por extraer».
+     Completa una con el botón «Enviar a CandidatAI» y comprueba que pasa a «Por extraer».
    Resultado posible B (bloqueo): aviso ámbar «LinkedIn cortó la última búsqueda… No se vuelve a
      intentar hasta el …», y «Buscar ahora» deshabilitado. Apunta en PENDIENTES.md qué código dio
-     (se ve en `jh sources linkedin-public status --json` → `last_run.errors`).
+     (se ve en `cai sources linkedin-public status --json` → `last_run.errors`).
 3. Pulsa «Buscar ahora» otra vez (si sigue habilitado tras recargar, no debería):
-   → «Una vez al día: la próxima, desde el …». Por CLI, `jh sources linkedin-public run` dice
+   → «Una vez al día: la próxima, desde el …». Por CLI, `cai sources linkedin-public run` dice
      «ya se ejecutó hace menos de un día».
 
 

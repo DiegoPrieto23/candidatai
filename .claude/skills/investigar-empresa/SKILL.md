@@ -1,8 +1,8 @@
 ---
 name: investigar-empresa
-description: Investiga en la web pública la empresa de una oferta de Job Hunter (qué hace, producto, noticias recientes, cultura de ingeniería, stack) y guarda un dosier con fuentes en la ficha y en data/documentos/empresas/. Lo usan preparar-entrevista y redactar-mensaje. Úsalo cuando se pida investigar una empresa o saber más de ella antes de aplicar o de una entrevista.
+description: Investiga en la web pública la empresa de una oferta de CandidatAI (qué hace, producto, noticias recientes, cultura de ingeniería, stack) y guarda un dosier con fuentes en la ficha y en data/documentos/empresas/. Lo usan preparar-entrevista y redactar-mensaje. Úsalo cuando se pida investigar una empresa o saber más de ella antes de aplicar o de una entrevista.
 argument-hint: '[job_id] [en qué fijarte]'
-allowed-tools: WebSearch WebFetch mcp__jobhunter__get_company_research mcp__jobhunter__get_extraction mcp__jobhunter__save_company_research
+allowed-tools: WebSearch WebFetch mcp__candidatai__get_company_research mcp__candidatai__get_extraction mcp__candidatai__save_company_research
 ---
 
 <!-- GENERADO por scripts/sync_agents.py desde .agents/skills/investigar-empresa/SKILL.md. No editar a mano: edita la fuente y regenera. -->

@@ -1,8 +1,8 @@
 ---
 name: redactar-seguimiento
-description: Redacta los borradores de seguimiento (candidaturas sin respuesta) y de agradecimiento (entrevistas hechas) de Job Hunter para que el usuario los revise, los copie y los envíe él. La app nunca envía nada. Úsalo cuando se pida un seguimiento, un recordatorio a una empresa o un correo de agradecimiento tras una entrevista.
+description: Redacta los borradores de seguimiento (candidaturas sin respuesta) y de agradecimiento (entrevistas hechas) de CandidatAI para que el usuario los revise, los copie y los envíe él. La app nunca envía nada. Úsalo cuando se pida un seguimiento, un recordatorio a una empresa o un correo de agradecimiento tras una entrevista.
 argument-hint: '[nada para todo lo pendiente, o un job_id]'
-allowed-tools: mcp__jobhunter__list_followups_due mcp__jobhunter__get_profile mcp__jobhunter__get_context mcp__jobhunter__get_extraction mcp__jobhunter__get_timeline mcp__jobhunter__save_message_draft
+allowed-tools: mcp__candidatai__list_followups_due mcp__candidatai__get_profile mcp__candidatai__get_context mcp__candidatai__get_extraction mcp__candidatai__get_timeline mcp__candidatai__save_message_draft
 ---
 
 <!-- GENERADO por scripts/sync_agents.py desde .agents/skills/redactar-seguimiento/SKILL.md. No editar a mano: edita la fuente y regenera. -->

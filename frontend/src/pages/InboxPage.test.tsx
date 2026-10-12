@@ -96,7 +96,7 @@ describe('Bandeja', () => {
     globalThis.fetch = () => Promise.reject(new TypeError('Failed to fetch'))
     renderApp('/bandeja')
     expect(await screen.findByText('La API no responde')).toBeInTheDocument()
-    expect(screen.getByText('uv run jh serve')).toBeInTheDocument()
+    expect(screen.getByText('uv run cai serve')).toBeInTheDocument()
   })
 })
 

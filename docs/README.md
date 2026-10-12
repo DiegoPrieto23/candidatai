@@ -1,9 +1,9 @@
 # Documentación · Documentation
 
-Todos los documentos de Job Hunter, agrupados por para qué sirven. Los marcados 🌐 están en inglés
+Todos los documentos de CandidatAI, agrupados por para qué sirven. Los marcados 🌐 están en inglés
 y en español; el resto, solo en español.
 
-All Job Hunter documents, grouped by purpose. Those marked 🌐 are available in English and Spanish;
+All CandidatAI documents, grouped by purpose. Those marked 🌐 are available in English and Spanish;
 the rest are in Spanish only.
 
 ## Para usarlo · Using it
@@ -14,8 +14,8 @@ the rest are in Spanish only.
 | [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md) | Alertas de empleo y respuestas por correo (Gmail, IMAP), paso a paso |
 | [`FUENTES_OFERTAS.md`](FUENTES_OFERTAS.md) | De dónde salen las ofertas: APIs, alertas, botón, navegador, LinkedIn |
 | [`CV_TEMPLATES.md`](CV_TEMPLATES.md) | Plantillas de CV, motores (Word y HTML) e importar tu propio diseño |
-| [`../extension/README.md`](../extension/README.md) | Instalar el botón «Enviar a Job Hunter» |
-| [`COMPARATIVA.md`](COMPARATIVA.md) | Job Hunter frente a AI Job Search y career-ops: qué tiene cada uno, qué falta y qué no se hará |
+| [`../extension/README.md`](../extension/README.md) | Instalar el botón «Enviar a CandidatAI» |
+| [`COMPARATIVA.md`](COMPARATIVA.md) | CandidatAI frente a AI Job Search y career-ops: qué tiene cada uno, qué falta y qué no se hará |
 
 ## Reglas y garantías · Rules
 
@@ -30,9 +30,9 @@ the rest are in Spanish only.
 |---|---|
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | Capas, flujo y componentes |
 | [`DATA_MODEL.md`](DATA_MODEL.md) | Tablas, eventos, etapas y tareas del worker |
-| [`AGENT_INTERFACE.md`](AGENT_INTERFACE.md) | Herramientas MCP y comandos `jh` con sus esquemas |
+| [`AGENT_INTERFACE.md`](AGENT_INTERFACE.md) | Herramientas MCP y comandos `cai` con sus esquemas |
 | [`AGENTS_COMPAT.md`](AGENTS_COMPAT.md) | Agentes soportados, con qué garantías y cómo añadir uno |
-| [`DECISIONS.md`](DECISIONS.md) | Las 33 decisiones de arquitectura (ADR), con contexto y consecuencias |
+| [`DECISIONS.md`](DECISIONS.md) | Las 34 decisiones de arquitectura (ADR), con contexto y consecuencias |
 | [`../evals/REPORT.md`](../evals/REPORT.md) | Resultados del eval de matching |
 
 ## Desarrollo · Development

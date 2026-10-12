@@ -57,7 +57,7 @@
     var tab = tabs && tabs[0]
     chrome.runtime.sendMessage({ type: 'capture', tabId: tab && tab.id }, function (outcome) {
       if (chrome.runtime.lastError || !outcome) {
-        render(JH.failure('error', 'No se pudo hablar con la extensión. Vuelve a pulsar el botón.'))
+        render(CAI.failure('error', 'No se pudo hablar con la extensión. Vuelve a pulsar el botón.'))
         return
       }
       render(outcome)

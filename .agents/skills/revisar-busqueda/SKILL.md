@@ -1,6 +1,6 @@
 ---
 name: revisar-busqueda
-description: Retrospectiva de la búsqueda en Job Hunter («¿acierta el score?») que, con la calibración y el embudo, explica qué está funcionando (tramos de score, veredicto, fuentes, plantilla, carta, referencias, rapidez al enviar) y propone qué cambiar, sin tocar nunca pesos ni filtros. Úsalo cuando se pida la retrospectiva semanal, revisar la búsqueda, si el score acierta o dónde rinde más el tiempo.
+description: Retrospectiva de la búsqueda en CandidatAI («¿acierta el score?») que, con la calibración y el embudo, explica qué está funcionando (tramos de score, veredicto, fuentes, plantilla, carta, referencias, rapidez al enviar) y propone qué cambiar, sin tocar nunca pesos ni filtros. Úsalo cuando se pida la retrospectiva semanal, revisar la búsqueda, si el score acierta o dónde rinde más el tiempo.
 ---
 
 Sigue `docs/POLICIES.md` §2. Definiciones de cada cifra: `docs/DATA_MODEL.md` §Embudo y
@@ -12,7 +12,7 @@ para la ventana reciente.
 **Reglas:**
 - **Solo propones.** Nunca cambies `config/policies.yaml`, `data/profile.yaml`, plataformas ni
   nada más. Si el usuario quiere aplicar un cambio de pesos o filtros, le das el cambio exacto y
-  los pasos de `evals/matching/README.md` §Calibración (con `jh eval matching` antes y después);
+  los pasos de `evals/matching/README.md` §Calibración (con `cai eval matching` antes y después);
   lo edita él.
 - **Nada de conclusiones con `low_data`.** Un grupo con menos de `min_cases` enviadas se nombra
   como «pocos datos» y no se compara. Dos grupos cuyos intervalos se solapan **no** son distintos:
@@ -51,7 +51,7 @@ para la ventana reciente.
      (`ampliar-busqueda`);
    - de configuración: el valor exacto en `config/policies.yaml` (`triage_threshold`, un peso de
      `scoring.weights`, una palabra de `hard_filters.discard_title_keywords`) y por qué. Recuerda
-     que los pesos los cambia él y que antes y después tiene que pasar `jh eval matching`: si F1
+     que los pesos los cambia él y que antes y después tiene que pasar `cai eval matching`: si F1
      baja, se deshace.
 3. **Qué vigilar** la próxima semana y cuándo repetir (cuando los grupos de interés pasen de
    `min_cases`).

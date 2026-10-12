@@ -1,6 +1,6 @@
 ---
 name: revisor
-description: Revisa los cambios de código de Job Hunter contra AGENTS.md y docs/ al cerrar una fase o antes de un commit. Solo lectura.
+description: Revisa los cambios de código de CandidatAI contra AGENTS.md y docs/ al cerrar una fase o antes de un commit. Solo lectura.
 tools: Read, Grep, Glob, Bash(git diff *), Bash(git status *), Bash(git log *)
 model: sonnet
 ---

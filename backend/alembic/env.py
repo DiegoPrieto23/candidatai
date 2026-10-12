@@ -13,7 +13,7 @@ from app.models.base import UTCDateTime
 
 config = context.config
 
-# Solo configuramos logging al usarlo desde la línea de comandos; desde `jh db upgrade` o los
+# Solo configuramos logging al usarlo desde la línea de comandos; desde `cai db upgrade` o los
 # tests no queremos pisar la configuración de logging de la app.
 if config.config_file_name is not None and config.attributes.get("configure_logger", True):
     fileConfig(config.config_file_name)

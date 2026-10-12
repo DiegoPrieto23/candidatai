@@ -1,8 +1,8 @@
 """Eval de CV (fase 12.2): mide los CVs que deja el agente con `generar-cv` sobre casos fijos.
 
 Los casos (`evals/cv/cases.jsonl`) son ofertas inventadas contra el perfil de `demo/`.
-`jh demo seed --eval-cv` las da de alta en la demo ya aprobadas; el agente genera el CV de cada
-una; `jh eval cv` comprueba lo que quedó guardado. No genera nada: un caso sin CV sale como
+`cai demo seed --eval-cv` las da de alta en la demo ya aprobadas; el agente genera el CV de cada
+una; `cai eval cv` comprueba lo que quedó guardado. No genera nada: un caso sin CV sale como
 «pendiente», no como fallo.
 
 Comprobaciones por CV (`CHECKS`): evidencias que existen en el perfil, skills que están en el perfil
@@ -86,7 +86,7 @@ class CvEvalFileError(ValueError):
 
 
 class CvEvalNotDemoError(ValueError):
-    """`jh eval cv` mide los casos contra el perfil demo: solo tiene sentido en la demo."""
+    """`cai eval cv` mide los casos contra el perfil demo: solo tiene sentido en la demo."""
 
 
 class CheckResult(BaseModel):
@@ -417,8 +417,8 @@ def evaluate(
     """Mide el último CV de cada caso (o el último de `agent`)."""
     if not get_settings().demo_mode:
         raise CvEvalNotDemoError(
-            "El eval de CV usa los casos del perfil demo: ejecútalo con JH_DATA_DIR apuntando a "
-            "la demo (`jh demo seed --eval-cv`)."
+            "El eval de CV usa los casos del perfil demo: ejecútalo con CAI_DATA_DIR apuntando a "
+            "la demo (`cai demo seed --eval-cv`)."
         )
     results: list[CaseResult] = []
     for case in cases if cases is not None else load_cases():
@@ -517,7 +517,7 @@ def to_markdown(report: CvEvalReport) -> str:
         lines += [
             "",
             "Pendientes: lanza `generar-cv` sobre esos casos (`sin alta`: antes, "
-            "`jh demo seed --eval-cv`).",
+            "`cai demo seed --eval-cv`).",
         ]
     return "\n".join(lines) + "\n"
 

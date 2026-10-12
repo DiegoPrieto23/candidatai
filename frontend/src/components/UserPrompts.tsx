@@ -44,9 +44,9 @@ function notify(prompt: PromptView) {
   if (!notificationsSupported() || Notification.permission !== 'granted') return
   try {
     const where = prompt.source_name ? ` · ${prompt.source_name}` : ''
-    const n = new Notification(`Job Hunter: ${prompt.title}${where}`, {
+    const n = new Notification(`CandidatAI: ${prompt.title}${where}`, {
       body: prompt.message,
-      tag: `jh-prompt-${prompt.id}`,
+      tag: `cai-prompt-${prompt.id}`,
       requireInteraction: true,
     })
     n.onclick = () => {
@@ -110,7 +110,7 @@ export function UserPrompts() {
   const send = (outcome: 'done' | 'skipped') => answer.mutate({ promptId: prompt.id, outcome })
   const open = hidden !== prompt.id
   const where = prompt.attempt_id
-    ? 'en el navegador de Job Hunter'
+    ? 'en el navegador de CandidatAI'
     : prompt.source_name
       ? `en ${prompt.source_name}, en tu navegador`
       : 'en tu navegador'
@@ -124,7 +124,7 @@ export function UserPrompts() {
               <ShieldWarningIcon className="size-5 text-amber-600" weight="duotone" />
               {prompt.title}
             </DialogTitle>
-            <DialogDescription>Hace falta que lo hagas tú, {where}. Job Hunter nunca lo resuelve por ti.</DialogDescription>
+            <DialogDescription>Hace falta que lo hagas tú, {where}. CandidatAI nunca lo resuelve por ti.</DialogDescription>
           </DialogHeader>
           <p className="text-sm">{prompt.message}</p>
           {prompt.url && !prompt.attempt_id && (

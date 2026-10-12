@@ -1,6 +1,6 @@
 ---
 name: resumen-diario
-description: Resumen breve del estado de la búsqueda en Job Hunter (pendientes, seguimientos vencidos, próximos hitos). Úsalo cuando se pida un resumen, "qué tengo hoy" o como tarea programada matinal.
+description: Resumen breve del estado de la búsqueda en CandidatAI (pendientes, seguimientos vencidos, próximos hitos). Úsalo cuando se pida un resumen, "qué tengo hoy" o como tarea programada matinal.
 ---
 
 1. `get_status`, `list_upcoming(days=7)`, `list_followups_due()` y

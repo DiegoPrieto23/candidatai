@@ -15,7 +15,7 @@ Todo sale de `events` con consultas agregadas en la BD. Definiciones (también e
   si no, `requested` si se pidió; si no, `none`. La marca no lleva fecha de corte: cuenta aunque
   se diera después del envío.
 
-Solo SQLite: la semana usa `jh_iso_week` (registrada en `app/core/db.py`) y los filtros duros,
+Solo SQLite: la semana usa `cai_iso_week` (registrada en `app/core/db.py`) y los filtros duros,
 `json_each`.
 
 **Calibración** (fase 20, `get_calibration`): ¿predicen el score y el veredicto las respuestas?
@@ -356,7 +356,7 @@ def _week_start(week: str) -> date:
 
 
 def _by_week(session: Session, per_job: CTE) -> list[WeekFunnel]:
-    week = func.jh_iso_week(per_job.c.first_seen_at)
+    week = func.cai_iso_week(per_job.c.first_seen_at)
     rows = {
         r.week: r
         for r in session.execute(

@@ -301,7 +301,7 @@ def test_carta_simple_is_not_a_cv_template() -> None:
     with pytest.raises(templates.TemplateNotFoundError, match="de CV"):
         templates.get("carta-simple")
     templates.validate("carta-simple", kind="letter")
-    # `jh templates validate` acepta también las de solo carta.
+    # `cai templates validate` acepta también las de solo carta.
     from app.services.documents import authoring
 
     assert authoring.validate("carta-simple").template_id == "carta-simple"

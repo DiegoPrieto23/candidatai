@@ -1,6 +1,6 @@
 ---
 name: repasar-entrevista
-description: Repasa una entrevista ya hecha de Job Hunter (guarda notas y próximos pasos en la ficha, predice la siguiente ronda y propone historias STAR nuevas para el perfil) y, con una oferta recibida, lista las dudas que conviene aclarar antes de aceptar. Úsalo cuando el usuario cuente cómo le fue una entrevista o reciba una oferta.
+description: Repasa una entrevista ya hecha de CandidatAI (guarda notas y próximos pasos en la ficha, predice la siguiente ronda y propone historias STAR nuevas para el perfil) y, con una oferta recibida, lista las dudas que conviene aclarar antes de aceptar. Úsalo cuando el usuario cuente cómo le fue una entrevista o reciba una oferta.
 ---
 
 Sigue `docs/POLICIES.md` §1 y §6.

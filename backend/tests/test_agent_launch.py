@@ -44,7 +44,7 @@ def client() -> Iterator[TestClient]:
 def test_prompts_are_fixed_and_only_take_a_job_id() -> None:
     assert agent_launch.prompt_for("buscar-ofertas").startswith("Usa el skill buscar-ofertas")
     assert agent_launch.prompt_for("generar-cv", 42) == (
-        "Usa el skill generar-cv de Job Hunter para la oferta 42."
+        "Usa el skill generar-cv de CandidatAI para la oferta 42."
     )
     with pytest.raises(LaunchError, match="necesita una oferta"):
         agent_launch.prompt_for("generar-cv")
@@ -69,7 +69,7 @@ def test_replies_prompt_carries_no_mail_text() -> None:
 def test_followup_prompts() -> None:
     """Fase 15: con oferta, solo para una candidatura enviada y abierta."""
     assert agent_launch.prompt_for("redactar-seguimiento", 7) == (
-        "Usa el skill redactar-seguimiento de Job Hunter para la oferta 7."
+        "Usa el skill redactar-seguimiento de CandidatAI para la oferta 7."
     )
     assert agent_launch.ACTIONS["redactar-seguimiento"].stages == agent_launch.SENT_STAGES
     assert "redactar-seguimiento" in agent_launch.prompt_for("redactar-seguimientos")
@@ -78,10 +78,10 @@ def test_followup_prompts() -> None:
 def test_outreach_and_research_prompts() -> None:
     """Fase 18: mensaje desde que la oferta está aprobada; dosier también para triarla."""
     assert agent_launch.prompt_for("redactar-mensaje", 7) == (
-        "Usa el skill redactar-mensaje de Job Hunter para la oferta 7."
+        "Usa el skill redactar-mensaje de CandidatAI para la oferta 7."
     )
     assert agent_launch.prompt_for("investigar-empresa", 7) == (
-        "Usa el skill investigar-empresa de Job Hunter para la empresa de la oferta 7."
+        "Usa el skill investigar-empresa de CandidatAI para la empresa de la oferta 7."
     )
     outreach = agent_launch.ACTIONS["redactar-mensaje"].stages
     research = agent_launch.ACTIONS["investigar-empresa"].stages
@@ -114,17 +114,17 @@ def test_info_without_windows_or_agent(monkeypatch: pytest.MonkeyPatch) -> None:
     assert info.available is False and "PATH" in (info.reason or "")
 
 
-def test_jh_agent_picks_the_agent(
+def test_cai_agent_picks_the_agent(
     opened: list[tuple[str, str]], monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setenv("JH_AGENT", "codex")
+    monkeypatch.setenv("CAI_AGENT", "codex")
     from app.core.config import get_settings
 
     get_settings.cache_clear()
     assert agent_launch.info().agent == "codex"
-    monkeypatch.setenv("JH_AGENT", "otro")
+    monkeypatch.setenv("CAI_AGENT", "otro")
     get_settings.cache_clear()
-    assert "JH_AGENT=otro" in (agent_launch.info().reason or "")
+    assert "CAI_AGENT=otro" in (agent_launch.info().reason or "")
 
 
 # --- API ---------------------------------------------------------------------------------------
@@ -166,7 +166,7 @@ def test_launch_opens_a_terminal(client: TestClient, opened: list[tuple[str, str
     assert response.status_code == 202
     assert response.json()["agent"] == "claude"
     [(title, command)] = opened
-    assert title == "Job Hunter · Buscar ofertas"
+    assert title == "CandidatAI · Buscar ofertas"
     assert "& 'claude' 'Usa el skill buscar-ofertas" in command
 
 
@@ -251,7 +251,7 @@ def _interview(hours: int, kind: str = "interview") -> tuple[int, int]:
 
 def test_interview_prompts_carry_only_ids() -> None:
     assert agent_launch.prompt_for("repasar-entrevista", 4, 9) == (
-        "Usa el skill repasar-entrevista de Job Hunter para repasar la entrevista 9 de la oferta 4."
+        "Usa el skill repasar-entrevista de CandidatAI para repasar la entrevista 9 de la oferta 4."
     )
     with pytest.raises(LaunchError, match="necesita una entrevista"):
         agent_launch.prompt_for("preparar-entrevista", 4)
@@ -320,7 +320,7 @@ def test_negotiation_needs_an_offer_and_opens_a_terminal(
     with session_scope() as session:
         events.record(session, job_id, "offer_received", "user")
     assert client.post("/agent/launch", json=body, headers=JSON).status_code == 202
-    assert f"preparar-negociacion de Job Hunter para la oferta {job_id}" in opened[-1][1]
+    assert f"preparar-negociacion de CandidatAI para la oferta {job_id}" in opened[-1][1]
     assert agent_launch.ACTIONS["preparar-negociacion"].background == ()
 
 

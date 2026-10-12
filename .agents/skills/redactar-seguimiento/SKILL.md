@@ -1,6 +1,6 @@
 ---
 name: redactar-seguimiento
-description: Redacta los borradores de seguimiento (candidaturas sin respuesta) y de agradecimiento (entrevistas hechas) de Job Hunter para que el usuario los revise, los copie y los envíe él. La app nunca envía nada. Úsalo cuando se pida un seguimiento, un recordatorio a una empresa o un correo de agradecimiento tras una entrevista.
+description: Redacta los borradores de seguimiento (candidaturas sin respuesta) y de agradecimiento (entrevistas hechas) de CandidatAI para que el usuario los revise, los copie y los envíe él. La app nunca envía nada. Úsalo cuando se pida un seguimiento, un recordatorio a una empresa o un correo de agradecimiento tras una entrevista.
 ---
 
 Sigue `docs/POLICIES.md` §1, §5 y §7. **Solo redactas: ni la app ni tú enviáis nada.** El usuario

@@ -73,7 +73,7 @@ _STOP_DETAIL_CODES = frozenset({"unauthorized", "rate_limited"})
 MANUAL_LABELS = {
     **ingest.SOURCE_NAMES,
     "email_alerts": "Alertas por correo",
-    "browser_capture": "Botón «Enviar a Job Hunter»",
+    "browser_capture": "Botón «Enviar a CandidatAI»",
     "agent_browse": "Búsqueda con navegador",
     "linkedin_public": "LinkedIn · búsqueda pública",
 }

@@ -5,7 +5,7 @@ y el mismo contenido de CV que los tests. Ningún dato real.
 
 Uso (desde la raíz del repo), SIEMPRE con un directorio de datos aparte para no mezclarlo con el
 tuyo:
-    $env:JH_DATA_DIR = "data/demo-cv"
+    $env:CAI_DATA_DIR = "data/demo-cv"
     uv run --directory backend python ../scripts/seed_cv_demo.py
 
 Necesita LibreOffice o Word (hace un render de verdad). Si el directorio ya tiene la oferta, no
@@ -31,7 +31,7 @@ DEMO_JOB = REPO_ROOT / "demo" / "jobs" / "01-data-engineer.txt"
 def main() -> int:
     data_dir = get_settings().data_dir
     if data_dir == (REPO_ROOT / "data").resolve():
-        print('Usa un directorio aparte: $env:JH_DATA_DIR = "data/demo-cv" (no tu data/).')
+        print('Usa un directorio aparte: $env:CAI_DATA_DIR = "data/demo-cv" (no tu data/).')
         return 1
     migrations.upgrade()
     photo = data_dir / "photo.png"

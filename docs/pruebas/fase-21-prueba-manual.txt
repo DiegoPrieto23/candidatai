@@ -15,16 +15,16 @@ Duración aproximada: 20-25 minutos.
 REQUISITOS
 ----------
 - Rama: fase/21-ofertas-salario (o main, si ya está fusionada).
-- Migración nueva (0020): con Claude Code cerrado, `uv run --directory backend jh db upgrade`.
-- API y UI arrancadas en sus ventanas (jh serve y pnpm dev), fuera de tu agente.
+- Migración nueva (0020): con Claude Code cerrado, `uv run --directory backend cai db upgrade`.
+- API y UI arrancadas en sus ventanas (cai serve y pnpm dev), fuera de tu agente.
 - Abre Claude Code de nuevo para que el MCP cargue `get_received_offer` (/mcp).
 - Mejor sin tocar tus datos: la demo (tiene ofertas en proceso y una con `offer_received`):
-      uv run --directory backend jh demo seed --dir data-demo
-  y arranca la API con  $env:JH_DATA_DIR = "data-demo".
+      uv run --directory backend cai demo seed --dir data-demo
+  y arranca la API con  $env:CAI_DATA_DIR = "data-demo".
 - Pon un mínimo en el perfil que uses: en el YAML del perfil,
       private:
         salary_floor_eur: 40000
-  e impórtalo (jh profile import …).
+  e impórtalo (cai profile import …).
 
 
 PARTE 1 · Anotar la oferta en la ficha (5 min)
@@ -61,7 +61,7 @@ PARTE 2 · Comparación en Procesos (5 min)
 PARTE 3 · Lo que ve el agente (5 min)
 -------------------------------------
 1. Terminal:
-      uv run --directory backend jh received-offers show <id> --json
+      uv run --directory backend cai received-offers show <id> --json
    [ ] `amounts_private: true` y fijo/variable/moneda/periodo a null; nunca `salary_floor_eur`.
 2. Desmarca «Importes privados» en la ficha y repite:
    [ ] ahora salen fijo y variable; el mínimo sigue sin salir.

@@ -1,6 +1,6 @@
 ---
 name: buscar-ofertas
-description: Busca ofertas en los portales de empleo aprobados recorriéndolos con el navegador del usuario y las da de alta en Job Hunter; también configura la lista de plataformas. Úsalo cuando se pida buscar ofertas en portales o elegir dónde buscar.
+description: Busca ofertas en los portales de empleo aprobados recorriéndolos con el navegador del usuario y las da de alta en CandidatAI; también configura la lista de plataformas. Úsalo cuando se pida buscar ofertas en portales o elegir dónde buscar.
 ---
 
 Especificación y reglas: `docs/FUENTES_OFERTAS.md` §Búsqueda con el navegador del agente. Todo el
@@ -11,7 +11,7 @@ Argumentos: `configurar`, el nombre de una plataforma o nada (todas las activas)
 
 ## Requisitos
 - Necesitas acceso al navegador del usuario (en Claude Code, Claude in Chrome). Si no lo tienes,
-  dilo y propón las alternativas: alertas por correo y el botón «Enviar a Job Hunter».
+  dilo y propón las alternativas: alertas por correo y el botón «Enviar a CandidatAI».
 - Ejecuta este skill en una sesión dedicada, no en una de desarrollo.
 
 ## Modo `configurar` (elegir dónde buscar)

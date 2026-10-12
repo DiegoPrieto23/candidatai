@@ -1,4 +1,4 @@
-"""Migraciones de Alembic invocables desde código (`jh db upgrade`, tests).
+"""Migraciones de Alembic invocables desde código (`cai db upgrade`, tests).
 
 Alembic se importa dentro de cada función: cargarlo cuesta ~0,3 s y este módulo lo importan el
 servidor MCP y la CLI al arrancar, aunque la comprobación solo se hace al llamar a una herramienta.
@@ -77,5 +77,5 @@ def ensure_current(url: str | None = None) -> None:
     if current != head:
         raise DatabaseNotReadyError(
             f"La base de datos no está al día (versión {current or 'vacía'}, última {head}). "
-            "Ejecuta `jh db upgrade`."
+            "Ejecuta `cai db upgrade`."
         )

@@ -35,7 +35,7 @@ function LinkedInNotice() {
         <p>
           Las condiciones de LinkedIn prohíben recorrer su web con herramientas automáticas y puede restringir o
           cerrar tu cuenta si lo detecta, aunque el agente use tu navegador y solo lea. Lo seguro es recibir sus
-          ofertas por las alertas por correo (pantalla «Alertas») o con el botón «Enviar a Job Hunter».
+          ofertas por las alertas por correo (pantalla «Alertas») o con el botón «Enviar a CandidatAI».
         </p>
         <p>Si aun así quieres que el agente la recorra, actívala después con su interruptor, bajo tu responsabilidad.</p>
       </div>

@@ -1,8 +1,8 @@
 ---
 name: repasar-entrevista
-description: Repasa una entrevista ya hecha de Job Hunter (guarda notas y próximos pasos en la ficha, predice la siguiente ronda y propone historias STAR nuevas para el perfil) y, con una oferta recibida, lista las dudas que conviene aclarar antes de aceptar. Úsalo cuando el usuario cuente cómo le fue una entrevista o reciba una oferta.
+description: Repasa una entrevista ya hecha de CandidatAI (guarda notas y próximos pasos en la ficha, predice la siguiente ronda y propone historias STAR nuevas para el perfil) y, con una oferta recibida, lista las dudas que conviene aclarar antes de aceptar. Úsalo cuando el usuario cuente cómo le fue una entrevista o reciba una oferta.
 argument-hint: '[job_id] [milestone_id], o ''dudas'' con una oferta recibida'
-allowed-tools: mcp__jobhunter__get_interviews mcp__jobhunter__get_extraction mcp__jobhunter__get_profile mcp__jobhunter__get_context mcp__jobhunter__get_timeline mcp__jobhunter__save_interview_notes
+allowed-tools: mcp__candidatai__get_interviews mcp__candidatai__get_extraction mcp__candidatai__get_profile mcp__candidatai__get_context mcp__candidatai__get_timeline mcp__candidatai__save_interview_notes
 ---
 
 <!-- GENERADO por scripts/sync_agents.py desde .agents/skills/repasar-entrevista/SKILL.md. No editar a mano: edita la fuente y regenera. -->

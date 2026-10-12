@@ -1,7 +1,7 @@
 ---
 name: procesar-ofertas
-description: Extrae los datos estructurados de las ofertas pendientes de Job Hunter delegando cada una en el rol extractor. Úsalo cuando se pida procesar, extraer o analizar ofertas nuevas.
-allowed-tools: mcp__jobhunter__get_status mcp__jobhunter__list_jobs
+description: Extrae los datos estructurados de las ofertas pendientes de CandidatAI delegando cada una en el rol extractor. Úsalo cuando se pida procesar, extraer o analizar ofertas nuevas.
+allowed-tools: mcp__candidatai__get_status mcp__candidatai__list_jobs
 ---
 
 <!-- GENERADO por scripts/sync_agents.py desde .agents/skills/procesar-ofertas/SKILL.md. No editar a mano: edita la fuente y regenera. -->

@@ -1,7 +1,7 @@
 PLAN DE PRUEBAS · USO REAL (después de la fase 12)
 =================================================
 
-Objetivo: usar Job Hunter de verdad, con tu perfil y ofertas reales (no la demo), para encontrar
+Objetivo: usar CandidatAI de verdad, con tu perfil y ofertas reales (no la demo), para encontrar
 fallos, fricciones e ideas que conviertan el uso diario en las próximas fases del ROADMAP.
 
 Cada hallazgo se apunta en docs/pruebas/uso-real-hallazgos.txt con este formato:
@@ -16,16 +16,16 @@ PASO 0 · PONER LA APP AL DÍA (antes de todo)
 Hallazgos que ya han salido al revisar el estado:
 
 0.1 Base de datos atrasada
-    Tu data/jobhunter.db está en la versión 0010 y el código espera la 0011 (tabla
-    `application_attempts`, de la fase 11). Hasta migrar, `jh status` y el resto se niegan a
+    Tu data/candidatai.db está en la versión 0010 y el código espera la 0011 (tabla
+    `application_attempts`, de la fase 11). Hasta migrar, `cai status` y el resto se niegan a
     funcionar.
-    - Copia de seguridad:  copy data\jobhunter.db data\jobhunter.db.bak-0010
-    - Migrar:              uv run --directory backend jh db upgrade
-    - Comprobar:           uv run --directory backend jh status --json
-    Mejora posible: que jh-mcp y jh serve avisen al arrancar si la BD está atrasada.
+    - Copia de seguridad:  copy data\candidatai.db data\candidatai.db.bak-0010
+    - Migrar:              uv run --directory backend cai db upgrade
+    - Comprobar:           uv run --directory backend cai status --json
+    Mejora posible: que cai-mcp y cai serve avisen al arrancar si la BD está atrasada.
 
 0.2 El servidor MCP tarda en arrancar
-    `jh-mcp` tarda unos 17 s en responder, y Claude Code se rinde a los 30 s. Con uv en frío lo
+    `cai-mcp` tarda unos 17 s en responder, y Claude Code se rinde a los 30 s. Con uv en frío lo
     supera, así que la primera sesión del día puede arrancar sin MCP.
     - Medir dónde se va el tiempo (importaciones de render de CV, modelos, comprobación de BD…).
     - Retrasar la carga de lo que no se necesite al arrancar.
@@ -37,7 +37,7 @@ ESCENARIO 1 · INGESTA DE OFERTAS
 Qué hacer:
 - Skill `buscar-ofertas` en tus portales aprobados.
 - Añadir 3 o 4 ofertas más a mano: pegando el texto, con la URL y con la extensión
-  «Enviar a Job Hunter».
+  «Enviar a CandidatAI».
 - Repetir alguna oferta que ya esté dada de alta.
 Qué observar:
 - Duplicados que no se detectan (o falsos duplicados).
@@ -104,7 +104,7 @@ Para tenerla en cuenta al priorizar:
 - Prueba manual pendiente: Claude Code con MCP sobre la matriz de compatibilidad
   (docs/pruebas/fase-12-compatibilidad.txt).
 - CI sin comprobar en GitHub (paso «Demo de humo»).
-- Sin MCP, el esquema de las entradas no llega con la herramienta (un `jh schema …` lo
+- Sin MCP, el esquema de las entradas no llega con la herramienta (un `cai schema …` lo
   resolvería).
 - El verificador no ve el título crudo de la oferta (no tiene `get_job`).
 - Una oferta remota sin país lleva foto por la política por defecto.

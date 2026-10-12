@@ -1,6 +1,6 @@
 ---
 name: generar-carta
-description: Redacta y verifica la carta de presentación de una oferta aprobada de Job Hunter siguiendo las indicaciones del usuario (generales y de esa oferta). Úsalo cuando se pida una carta de presentación o cover letter.
+description: Redacta y verifica la carta de presentación de una oferta aprobada de CandidatAI siguiendo las indicaciones del usuario (generales y de esa oferta). Úsalo cuando se pida una carta de presentación o cover letter.
 ---
 
 Sigue `docs/POLICIES.md` §1, §4 y §7, y `docs/CV_TEMPLATES.md` §Cartas de presentación.

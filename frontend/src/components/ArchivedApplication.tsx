@@ -37,7 +37,7 @@ export function ArchivedApplication({ job }: { job: JobView }) {
       <p className="flex items-start gap-2 px-1 text-sm text-muted-foreground">
         <FolderSimpleIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
         <span>
-          <InlineCode text="Aún sin copia de lo enviado: la guarda el worker al marcarla como enviada. Para las de antes, `jh applications archive --all`." />
+          <InlineCode text="Aún sin copia de lo enviado: la guarda el worker al marcarla como enviada. Para las de antes, `cai applications archive --all`." />
         </span>
       </p>
     )

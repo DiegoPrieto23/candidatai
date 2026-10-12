@@ -13,12 +13,12 @@
 
   chrome.storage.local.get(['token', 'uiUrl'], function (stored) {
     token.value = stored.token || ''
-    uiUrl.value = stored.uiUrl || JH.DEFAULT_UI_URL
+    uiUrl.value = stored.uiUrl || CAI.DEFAULT_UI_URL
   })
 
   document.getElementById('form').addEventListener('submit', function (event) {
     event.preventDefault()
-    var url = uiUrl.value.trim() || JH.DEFAULT_UI_URL
+    var url = uiUrl.value.trim() || CAI.DEFAULT_UI_URL
     if (!/^https?:\/\//.test(url)) {
       say('La dirección de la UI debe empezar por http:// o https://.', false)
       return
@@ -37,7 +37,7 @@
       return
     }
     say('Probando…', true)
-    fetch(JH.API_URL + '/capture', {
+    fetch(CAI.API_URL + '/capture', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + value },
       body: '{}',
@@ -49,7 +49,7 @@
         }
         return response.json().then(
           function (body) {
-            say(JH.describe(response.status, body).message, false)
+            say(CAI.describe(response.status, body).message, false)
           },
           function () {
             say('La app respondió con un error (' + response.status + ').', false)
@@ -57,7 +57,7 @@
         )
       })
       .catch(function () {
-        say('La app no responde en ' + JH.API_URL + '. ¿Está «jh serve» en marcha?', false)
+        say('La app no responde en ' + CAI.API_URL + '. ¿Está «cai serve» en marcha?', false)
       })
   })
 })()

@@ -69,7 +69,7 @@ const ATTEMPT_STATUS: Record<string, string> = {
   needs_user: 'Necesita tu intervención',
   submit_failed: 'No se pudo enviar',
   submit_unconfirmed: 'Envío sin confirmar',
-  manual: 'Abierta en el navegador de Job Hunter',
+  manual: 'Abierta en el navegador de CandidatAI',
 }
 
 /** Igual que el servidor, a grandes rasgos: sin mayúsculas, acentos ni espacios de más. */
@@ -104,7 +104,7 @@ function WorkerHint({ attempt }: { attempt: AttemptView }) {
   if (!task || task.status !== 'queued' || task.waiting_seconds < WORKER_HINT_AFTER) return null
   return (
     <Notice tone="amber">
-      <InlineCode text="El worker aún no lo ha recogido. ¿Está en marcha? Arráncalo con `uv run jh worker` en backend/." />
+      <InlineCode text="El worker aún no lo ha recogido. ¿Está en marcha? Arráncalo con `uv run cai worker` en backend/." />
     </Notice>
   )
 }
@@ -112,7 +112,7 @@ function WorkerHint({ attempt }: { attempt: AttemptView }) {
 function Busy({ attempt }: { attempt: AttemptView }) {
   const text =
     attempt.status === 'submitting'
-      ? 'Enviando… No cierres el navegador de Job Hunter.'
+      ? 'Enviando… No cierres el navegador de CandidatAI.'
       : attempt.status === 'filling'
         ? `Rellenando el formulario de ${attempt.domain} en el navegador…`
         : 'En cola para el worker…'
@@ -405,9 +405,9 @@ function Review({ state, attempt, stage }: { state: AssistedApplication; attempt
 
 function prepareText(state: AssistedApplication): string {
   if (state.mode === 'open') {
-    return 'LinkedIn no se automatiza: se abrirá la oferta en el navegador de Job Hunter y copias el paquete desde arriba.'
+    return 'LinkedIn no se automatiza: se abrirá la oferta en el navegador de CandidatAI y copias el paquete desde arriba.'
   }
-  return `Se abrirá ${state.domain} en el navegador de Job Hunter y se rellenará el formulario. No se envía nada hasta que lo confirmes.`
+  return `Se abrirá ${state.domain} en el navegador de CandidatAI y se rellenará el formulario. No se envía nada hasta que lo confirmes.`
 }
 
 /**
@@ -454,7 +454,7 @@ function FormUrl({ state }: { state: AssistedApplication }) {
 /**
  * Oferta de un portal de empleo (ADR-021). Los portales bloquean los navegadores automatizados
  * (Cloudflare…) y eso no se esquiva: la oferta se abre en tu navegador, con tu sesión. Desde ahí
- * pegas el enlace al formulario de la empresa y Job Hunter lo rellena en el suyo.
+ * pegas el enlace al formulario de la empresa y CandidatAI lo rellena en el suyo.
  */
 function PortalApply({ state, stage, again }: { state: AssistedApplication; stage: Stage | null; again: boolean }) {
   const portal = state.portal ?? state.domain
@@ -470,7 +470,7 @@ function PortalApply({ state, stage, again }: { state: AssistedApplication; stag
           <ol className="list-decimal space-y-1 pl-5 text-sm text-muted-foreground">
             <li>Abre la oferta y pulsa «Solicitar» o «Inscribirme».</li>
             <li>
-              Si te lleva al formulario de la empresa, copia la dirección de esa página y pégala abajo: Job Hunter lo
+              Si te lleva al formulario de la empresa, copia la dirección de esa página y pégala abajo: CandidatAI lo
               rellena en su navegador y se para antes de enviar.
             </li>
             <li>
@@ -576,7 +576,7 @@ function Body({ state, stage }: { state: AssistedApplication; stage: Stage | nul
   return null
 }
 
-/** Abre el navegador de Job Hunter con su página de inicio, para iniciar sesión en los portales. */
+/** Abre el navegador de CandidatAI con su página de inicio, para iniciar sesión en los portales. */
 function OpenBrowser() {
   const open = useOpenBrowser()
   return (
@@ -587,7 +587,7 @@ function OpenBrowser() {
         size="sm"
         onClick={() => open.mutate()}
         disabled={open.isPending}
-        title="Abre el navegador de Job Hunter para iniciar sesión en tus portales. Tiene su propio perfil, separado de tu Chrome."
+        title="Abre el navegador de CandidatAI para iniciar sesión en tus portales. Tiene su propio perfil, separado de tu Chrome."
       >
         <BrowserIcon />
         Abrir navegador
@@ -633,7 +633,7 @@ export function ApplySection({ job }: { job: JobView }) {
         <div>
           <h2 className="text-base font-semibold tracking-tight">Candidatura asistida</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Job Hunter abre la oferta en su propio navegador, rellena el formulario de candidatura y se para antes
+            CandidatAI abre la oferta en su propio navegador, rellena el formulario de candidatura y se para antes
             de enviar. Nada se envía sin tu confirmación. Inicia sesión en tus portales con «Abrir navegador».
           </p>
         </div>

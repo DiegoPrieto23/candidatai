@@ -77,7 +77,7 @@ class ProfileNotFoundError(LookupError):
 
 NO_PROFILE = (
     "Aún no hay perfil importado: crea data/profile.yaml (skill `actualizar-perfil`) y ejecuta "
-    "`jh profile import`."
+    "`cai profile import`."
 )
 
 
@@ -146,7 +146,7 @@ def load_from_yaml(path: Path) -> CandidateProfile:
     try:
         text = path.read_text(encoding="utf-8-sig")
     except FileNotFoundError as exc:
-        raise ProfileNotFoundError(f"No existe {path}. Créalo con `jh profile init`.") from exc
+        raise ProfileNotFoundError(f"No existe {path}. Créalo con `cai profile init`.") from exc
     try:
         data = yaml.safe_load(text)
     except yaml.YAMLError as exc:

@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/img/banner-es.svg" alt="Job Hunter: tu búsqueda de empleo, de principio a fin, en tu equipo" width="100%">
+  <img src="docs/img/banner-es.svg" alt="CandidatAI: tu búsqueda de empleo, de principio a fin, en tu equipo" width="100%">
 </p>
 
 <p align="center">
@@ -16,14 +16,14 @@
   <img alt="Sin llamadas a APIs de LLM" src="https://img.shields.io/badge/llamadas%20a%20LLM-ninguna-555">
 </p>
 
-**Job Hunter** es una app local que lleva tu búsqueda de empleo entera: entran ofertas de
+**CandidatAI** es una app local que lleva tu búsqueda de empleo entera: entran ofertas de
 varias fuentes, las triagas con un score explicado, cada una recibe un **CV y una carta a medida y
 verificados**, la app rellena el formulario de la candidatura y **espera a que tú pulses Enviar**, y
 después sigue el proceso hasta la oferta.
 
 **La app no llama a ningún LLM.** Lo que necesita criterio (leer ofertas, valorar el encaje,
 redactar el CV) lo hace el agente de IA que ya uses (Claude Code, Codex, Gemini CLI, Cursor…) a
-través de una interfaz para agentes: herramientas MCP y una CLI `jh … --json` equivalente. La app
+través de una interfaz para agentes: herramientas MCP y una CLI `cai … --json` equivalente. La app
 guarda el estado, las reglas y las comprobaciones, así que el agente no puede inventarse tu
 experiencia ni enviar nada por su cuenta.
 
@@ -62,7 +62,7 @@ Los asistentes de IA ayudan en cada paso suelto, pero sin memoria ni estado: cad
 empieza de cero, nada impide que «mejoren» tu CV con cosas que no has hecho, y una oferta puede
 llevar instrucciones ocultas para la IA que la lee.
 
-Job Hunter pone el estado, las reglas y la verificación en una app determinista, y deja al agente
+CandidatAI pone el estado, las reglas y la verificación en una app determinista, y deja al agente
 solo lo que necesita razonar, siempre contra tu perfil y con comprobaciones que no dependen de él.
 
 ## Cómo funciona
@@ -156,25 +156,25 @@ Necesitas **Windows 11** (otros sistemas deberían funcionar, pero aún no está
 **LibreOffice** o el Chromium de Playwright.
 
 ```powershell
-git clone https://github.com/DiegoPrieto23/job-search.git job-hunter; cd job-hunter
+git clone https://github.com/DiegoPrieto23/candidatai.git candidatai; cd candidatai
 cd backend
 uv sync
 uv run playwright install chromium     # PDF sin LibreOffice
-uv run jh demo seed                    # data-demo/: 60 ofertas, 8 semanas de historial, 2 CVs
-$env:JH_DATA_DIR = "data-demo"; uv run jh serve
+uv run cai demo seed                    # data-demo/: 60 ofertas, 8 semanas de historial, 2 CVs
+$env:CAI_DATA_DIR = "data-demo"; uv run cai serve
 # en otra terminal
 cd frontend; pnpm install; pnpm dev    # http://127.0.0.1:5173
 ```
 
 La UI muestra un banner «Modo demo». La demo es determinista y nunca toca `data/`, donde irían tus
-datos reales. Para probar los skills sobre la demo, arranca tu agente con `JH_DATA_DIR=data-demo`.
+datos reales. Para probar los skills sobre la demo, arranca tu agente con `CAI_DATA_DIR=data-demo`.
 
 Paso a paso, con tu propio perfil, las alertas por correo y la extensión del navegador:
 **[Guía de uso](docs/GUIA.md)**.
 
 ## Úsalo con tus datos
 
-Tus datos viven en `data/`, fuera de git. Arranca `jh serve`, `jh worker` y `pnpm dev`, crea tu
+Tus datos viven en `data/`, fuera de git. Arranca `cai serve`, `cai worker` y `pnpm dev`, crea tu
 perfil con el skill `actualizar-perfil` y, después, pide a tu agente:
 
 | Skill | Qué hace |
@@ -210,10 +210,10 @@ lenguaje natural.
 | Vía | Automática | Cubre |
 |---|---|---|
 | Alta por URL o texto | No | Cualquier oferta |
-| APIs públicas de ATS (Greenhouse, Lever, Ashby) | Diaria | Tus empresas objetivo (`jh sources discover` encuentra sus tableros) |
+| APIs públicas de ATS (Greenhouse, Lever, Ashby) | Diaria | Tus empresas objetivo (`cai sources discover` encuentra sus tableros) |
 | APIs de portales (InfoJobs, Adzuna), con claves | Diaria | Búsquedas por palabras clave |
 | Alertas de empleo por correo (IMAP de solo lectura o `.eml` exportados) | Sí | LinkedIn, InfoJobs, Indeed, Tecnoempleo… |
-| Botón «Enviar a Job Hunter» del navegador | Un clic | Cualquier página que estés viendo, LinkedIn incluido |
+| Botón «Enviar a CandidatAI» del navegador | Un clic | Cualquier página que estés viendo, LinkedIn incluido |
 | Tu agente con tu navegador | A demanda | Portales que apruebas; LinkedIn solo si lo activas |
 | Búsqueda pública de LinkedIn, sin sesión | Diaria, **apagada por defecto** | Tus búsquedas de LinkedIn, una vez al día como mucho y con límites estrictos |
 
@@ -247,11 +247,11 @@ Son reglas del código, no promesas del agente:
 
 ## Frente a proyectos parecidos
 
-Job Hunter toma las mejores ideas de dos grandes proyectos abiertos,
+CandidatAI toma las mejores ideas de dos grandes proyectos abiertos,
 [AI Job Search](https://github.com/MadsLorentzen/ai-job-search) y
 [career-ops](https://github.com/career-ops-hq/career-ops), y las convierte en una app con estado.
 
-| | Job Hunter | AI Job Search | career-ops |
+| | CandidatAI | AI Job Search | career-ops |
 |---|:---:|:---:|:---:|
 | UI web completa (triaje, kanban, embudo…) | ✅ | ❌ | 🟡 terminal |
 | MCP + CLI con paridad comprobada | ✅ | ❌ | ❌ |
@@ -277,7 +277,7 @@ flowchart LR
     user --> agent([Tu agente de IA])
     ui -->|REST| api[FastAPI]
     agent -->|MCP| mcp[Servidor MCP]
-    agent -->|comandos| cli[CLI jh --json]
+    agent -->|comandos| cli[CLI cai --json]
     api --> svc
     mcp --> svc
     cli --> svc
@@ -288,7 +288,7 @@ flowchart LR
 ```
 
 - **Capas finas.** API, MCP y CLI solo traducen; la lógica vive en `app/services/` y se prueba ahí.
-  Cada herramienta MCP tiene su comando `jh … --json` con la misma entrada y salida (un test lo
+  Cada herramienta MCP tiene su comando `cai … --json` con la misma entrada y salida (un test lo
   comprueba), así que un agente sin MCP puede hacer lo mismo.
 - **Eventos como fuente de verdad.** Cada cambio de una oferta es un evento validado contra una
   tabla de transiciones; la etapa actual es una proyección que se puede recalcular.
@@ -311,7 +311,7 @@ stateDiagram-v2
 ```
 
 <details>
-<summary><b>Decisiones clave</b> (33 ADR en <code>docs/DECISIONS.md</code>)</summary>
+<summary><b>Decisiones clave</b> (34 ADR en <code>docs/DECISIONS.md</code>)</summary>
 
 | Decisión | Por qué |
 |---|---|
@@ -334,7 +334,7 @@ stateDiagram-v2
 - **Eval de matching** (80 casos inventados, sin embeddings): precision **0,88**, recall **0,95**,
   F1 **0,92** con el umbral de triaje por defecto. Errores típicos y por qué:
   [`evals/REPORT.md`](evals/REPORT.md).
-- **Eval de CV** (`jh eval cv`): 7 comprobaciones automáticas sobre los CVs que deja un agente
+- **Eval de CV** (`cai eval cv`): 7 comprobaciones automáticas sobre los CVs que deja un agente
   (evidencias que existen, sin skills inventadas ni no pedidas, una página, cobertura de keywords,
   idioma y verificación independiente).
 

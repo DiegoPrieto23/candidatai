@@ -1,8 +1,8 @@
 ---
 name: preparar-entrevista
-description: Prepara una entrevista de un proceso abierto de Job Hunter, con un dosier (empresa, temas técnicos probables, historias STAR, preguntas que hacer) y un plan por días hasta la fecha que se guarda en la ficha. Úsalo cuando se mencione una entrevista próxima o se pida prepararla.
+description: Prepara una entrevista de un proceso abierto de CandidatAI, con un dosier (empresa, temas técnicos probables, historias STAR, preguntas que hacer) y un plan por días hasta la fecha que se guarda en la ficha. Úsalo cuando se mencione una entrevista próxima o se pida prepararla.
 argument-hint: '[job_id] [milestone_id] [rrhh|tecnica|caso|final]'
-allowed-tools: mcp__jobhunter__get_interviews mcp__jobhunter__get_extraction mcp__jobhunter__get_profile mcp__jobhunter__get_context mcp__jobhunter__get_timeline mcp__jobhunter__get_company_research mcp__jobhunter__save_interview_plan
+allowed-tools: mcp__candidatai__get_interviews mcp__candidatai__get_extraction mcp__candidatai__get_profile mcp__candidatai__get_context mcp__candidatai__get_timeline mcp__candidatai__get_company_research mcp__candidatai__save_interview_plan
 ---
 
 <!-- GENERADO por scripts/sync_agents.py desde .agents/skills/preparar-entrevista/SKILL.md. No editar a mano: edita la fuente y regenera. -->

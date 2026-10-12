@@ -26,7 +26,7 @@ from tests.test_api_triage import add_extracted, import_profile
 
 FAKE_AGENT = Path(__file__).parent / "fixtures" / "fake_agent.py"
 JSON = {"Origin": UI_ORIGIN, "Content-Type": "application/json"}
-PREFIX = "mcp__jobhunter__"
+PREFIX = "mcp__candidatai__"
 # Herramientas que escriben o salen fuera y que ninguna ejecución desatendida debe tener.
 RISKY = {
     "add_event",
@@ -375,7 +375,7 @@ def test_open_in_terminal_resumes_the_session(
         result = agent_runs.open_in_terminal(session, run_id)
     assert "misma sesión" in result.message
     [(title, command)] = opened
-    assert title == "Job Hunter · Procesar ofertas"
+    assert title == "CandidatAI · Procesar ofertas"
     assert command.endswith("& 'claude' '--resume' '0f7c2d1e-aaaa-bbbb-cccc-123456789abc'")
     assert "Remove-Item Env:ANTHROPIC_API_KEY" in command
 
@@ -490,7 +490,7 @@ def test_timeout_kills_the_whole_tree(
         if not _alive(child):
             break
         time.sleep(0.2)
-    assert not _alive(child)  # el hijo (como el jh-mcp) también se para
+    assert not _alive(child)  # el hijo (como el cai-mcp) también se para
 
 
 def test_non_json_output_is_ignored(db: None, fake: Path, monkeypatch: pytest.MonkeyPatch) -> None:

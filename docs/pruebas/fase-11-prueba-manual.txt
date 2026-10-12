@@ -22,11 +22,11 @@ REQUISITOS
   comandos se ejecutan desde la RAÍZ del repo.
 - Rama: fase/11-candidatura-asistida (o main, si ya está fusionada).
 - Migración nueva (0011, tabla `application_attempts`):
-      uv run --directory backend jh db upgrade
+      uv run --directory backend cai db upgrade
 - Chromium de Playwright (ya lo usa el motor html):
       uv run --directory backend playwright install chromium
   Opcional: para usar tu Chrome o Edge instalado en vez de Chromium, añade a `.env`
-      JH_BROWSER_CHANNEL=chrome        (o msedge)
+      CAI_BROWSER_CHANNEL=chrome        (o msedge)
   y reinicia la API y el worker para que lo lean.
 - Una oferta real de Greenhouse (boards.greenhouse.io o job-boards.greenhouse.io) o de Lever
   (jobs.lever.co) en «CV listo», con su CV generado y elegido para enviar. Si no tienes ninguna:
@@ -38,31 +38,31 @@ REQUISITOS
 
 PARTE 1 · ARRANCAR Y PREPARAR EL NAVEGADOR
 ------------------------------------------
-1. Terminal 1:  uv run --directory backend jh serve
-   Terminal 2:  uv run --directory backend jh worker
+1. Terminal 1:  uv run --directory backend cai serve
+   Terminal 2:  uv run --directory backend cai worker
    Terminal 3:  cd frontend; pnpm dev
 2. Abre http://127.0.0.1:5173/jobs/<ID>.
    Esperado: después de «Paquete de candidatura», la sección «Candidatura asistida» con «Se abrirá
-   <dominio> en el navegador de Job Hunter y se rellenará el formulario. No se envía nada…», el
+   <dominio> en el navegador de CandidatAI y se rellenará el formulario. No se envía nada…», el
    botón «Preparar candidatura» y, arriba a la derecha, «Abrir navegador».
    En una oferta de un portal (InfoJobs, Tecnoempleo, Indeed, Glassdoor, Manfred), el texto dice
    «<Portal> es un portal de empleo y bloquea los navegadores automatizados…», con tres pasos, el
    enlace «Abrir la oferta en <Portal>», «Marcar como enviada» y el campo «URL del formulario».
 3. Pulsa «Abrir navegador».
    Esperado: «El navegador se abrirá en unos segundos…» y, en unos segundos, se abre una ventana
-   de navegador nueva (el perfil de Job Hunter, distinto del tuyo) con la página «Navegador de Job
+   de navegador nueva (el perfil de CandidatAI, distinto del tuyo) con la página «Navegador de Job
    Hunter» y enlaces a los portales. Inicia en ella las sesiones que quieras; se recuerdan entre
    ejecuciones (data/browser-profile/). Cierra la ventana y vuelve a pulsar: se abre de nuevo.
 3b. (Portal) En una oferta de un portal, pulsa «Abrir la oferta en <Portal>».
    Esperado: se abre la ficha en una pestaña nueva de TU navegador, con tu sesión. Pulsa
    «Solicitar»; si te lleva al formulario de la empresa, copia su dirección, pégala en «URL del
-   formulario» y pulsa «Rellenar ese formulario»: se abre en el navegador de Job Hunter, se
+   formulario» y pulsa «Rellenar ese formulario»: se abre en el navegador de CandidatAI, se
    rellena y aparece la revisión (PARTE 2). Si pegas una URL del portal, aviso «…no del formulario
    de la empresa» y no se abre nada.
 4. (Comprobación del aviso del worker) Para el worker (Ctrl+C en la terminal 2) y pulsa «Preparar
    candidatura».
    Esperado: «En cola para el worker…» y, a los ~15 s, el aviso ámbar «El worker aún no lo ha
-   recogido. ¿Está en marcha? Arráncalo con `uv run jh worker`…». Vuelve a arrancar el worker
+   recogido. ¿Está en marcha? Arráncalo con `uv run cai worker`…». Vuelve a arrancar el worker
    (terminal 2) y sigue: el intento se recoge solo.
 
 
@@ -70,7 +70,7 @@ PARTE 2 · RELLENAR Y REVISAR (SIN ENVIAR)
 -----------------------------------------
 5. Con el worker en marcha, si no lo hiciste en el paso 4, pulsa «Preparar candidatura».
    Esperado:
-   - en el navegador de Job Hunter se abre una pestaña con el formulario y se rellena solo (en
+   - en el navegador de CandidatAI se abre una pestaña con el formulario y se rellena solo (en
      Lever, la URL termina en /apply);
    - en la ficha, «Rellenando el formulario de <dominio>…» y después la pantalla de revisión.
    En la terminal del worker: «Candidatura asistida, intento N: ready» (o needs_user).
@@ -119,7 +119,7 @@ PARTE 4 · LINKEDIN
 ------------------
 13. Abre una oferta de LinkedIn en «Aprobada» o «CV listo».
     Esperado: «LinkedIn no se automatiza: se abrirá la oferta…» y el botón «Abrir y preparar».
-    Púlsalo: el navegador de Job Hunter abre la oferta y nada más. La sección ofrece «Volver a
+    Púlsalo: el navegador de CandidatAI abre la oferta y nada más. La sección ofrece «Volver a
     abrir» y «Marcar como enviada»; el paquete de candidatura sigue arriba para copiar.
 
 
@@ -127,8 +127,8 @@ PARTE 5 (OPCIONAL) · ENVÍO DE VERDAD CONTRA UN FORMULARIO LOCAL
 ---------------------------------------------------------------
 Comprueba el envío sin tocar ninguna web real, con los formularios ficticios de los tests.
 14. Para la API y el worker (Ctrl+C). En esas dos terminales, antes de volver a arrancarlos:
-        $env:JH_APPLIER_ALLOW_LOOPBACK = "1"
-    y arráncalos de nuevo (jh serve / jh worker). Terminal 4, el formulario local:
+        $env:CAI_APPLIER_ALLOW_LOOPBACK = "1"
+    y arráncalos de nuevo (cai serve / cai worker). Terminal 4, el formulario local:
         uv run --directory backend python -m http.server 8765 --directory tests/fixtures/applier
 15. Da de alta la oferta ficticia en la UI: «Nueva» → pestaña de texto, con
         Puesto:   Data Engineer (prueba)
@@ -148,7 +148,7 @@ Comprueba el envío sin tocar ninguna web real, con los formularios ficticios de
 17. Pulsa «Preparar de nuevo» y espera a la pantalla de revisión.
     Esperado: el aviso rojo «En un intento anterior ya se pulsó «Enviar»: comprueba…».
 18. Al terminar, cierra el servidor (Ctrl+C) y, en las terminales de API y worker:
-        Remove-Item Env:JH_APPLIER_ALLOW_LOOPBACK
+        Remove-Item Env:CAI_APPLIER_ALLOW_LOOPBACK
     y vuelve a arrancarlos.
 
 

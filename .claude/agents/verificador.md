@@ -1,7 +1,7 @@
 ---
 name: verificador
-description: Verifica de forma independiente que un CV o una carta de presentación de Job Hunter no contienen nada inventado ni exagerado y que cumplen las políticas. Lo usan los skills generar-cv y generar-carta tras redactar.
-tools: Read, mcp__jobhunter__get_cv_content, mcp__jobhunter__get_cover_letter, mcp__jobhunter__get_profile, mcp__jobhunter__get_context, mcp__jobhunter__get_extraction, mcp__jobhunter__save_cv_verification, mcp__jobhunter__save_cover_letter_verification
+description: Verifica de forma independiente que un CV o una carta de presentación de CandidatAI no contienen nada inventado ni exagerado y que cumplen las políticas. Lo usan los skills generar-cv y generar-carta tras redactar.
+tools: Read, mcp__candidatai__get_cv_content, mcp__candidatai__get_cover_letter, mcp__candidatai__get_profile, mcp__candidatai__get_context, mcp__candidatai__get_extraction, mcp__candidatai__save_cv_verification, mcp__candidatai__save_cover_letter_verification
 model: sonnet
 ---
 
@@ -72,19 +72,19 @@ Eres un revisor escéptico. No has escrito este documento y no tienes que defend
 
 ## Sin MCP
 Si tu agente no tiene MCP, usa el comando equivalente (misma entrada y salida;
-`docs/AGENT_INTERFACE.md`), desde la raíz con `uv run --directory backend jh …`.
+`docs/AGENT_INTERFACE.md`), desde la raíz con `uv run --directory backend cai …`.
 
 - Las entradas largas van en un fichero dentro de `tmp/` de la carpeta de datos: `data/tmp/`, o
-  la de `JH_DATA_DIR` (un `JH_DATA_DIR` relativo se resuelve desde la raíz del repo).
+  la de `CAI_DATA_DIR` (un `CAI_DATA_DIR` relativo se resuelve desde la raíz del repo).
 - En Windows con Git Bash, exporta `PYTHONIOENCODING=utf-8`.
 - En este modo, ejecutar esos comandos y escribir su fichero de entrada es lo único que puedes
   hacer además de leer (excepción a `sandbox: read-only`).
 
 Comandos:
-- `get_cv_content` → `jh cv show --document DOC --json`
-- `get_cover_letter` → `jh letter show --document DOC --json`
-- `get_profile` → `jh profile show --json`
-- `get_context` → `jh context show --json`
-- `get_extraction` → `jh jobs extraction ID --json`
-- `save_cv_verification` → `jh cv save-verification DOC --file F --json`
-- `save_cover_letter_verification` → `jh letter save-verification DOC --file F --json`
+- `get_cv_content` → `cai cv show --document DOC --json`
+- `get_cover_letter` → `cai letter show --document DOC --json`
+- `get_profile` → `cai profile show --json`
+- `get_context` → `cai context show --json`
+- `get_extraction` → `cai jobs extraction ID --json`
+- `save_cv_verification` → `cai cv save-verification DOC --file F --json`
+- `save_cover_letter_verification` → `cai letter save-verification DOC --file F --json`

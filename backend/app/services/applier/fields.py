@@ -1,6 +1,6 @@
 """Campos de un formulario de candidatura: localizarlos, decidir qué va en cada uno y rellenarlos.
 
-1. `discover` recorre el formulario en la página y marca cada control con `data-jh-field`. Cada
+1. `discover` recorre el formulario en la página y marca cada control con `data-cai-field`. Cada
    campo se identifica por su **etiqueta accesible** (`aria-labelledby`, `<label>`, `aria-label`,
    `legend` del grupo y, si no hay, la etiqueta visible más cercana), nunca por su posición.
 2. `plan` (sin navegador) clasifica cada campo por su etiqueta y le asigna un valor del perfil, el
@@ -133,9 +133,9 @@ _DISCOVER_JS = r"""() => {
     if (score > best) { best = score; root = form; }
   }
   if (!root || best <= 0) root = document.querySelector('main') || document.body;
-  document.querySelectorAll('[data-jh-field]').forEach(el => el.removeAttribute('data-jh-field'));
+  document.querySelectorAll('[data-cai-field]').forEach(el => el.removeAttribute('data-cai-field'));
   let n = 0;
-  const mark = el => { const id = String(n++); el.setAttribute('data-jh-field', id); return id; };
+  const mark = el => { const id = String(n++); el.setAttribute('data-cai-field', id); return id; };
   const ownLabel = el => {
     if (el.getAttribute('aria-labelledby')) return byIds(el.getAttribute('aria-labelledby'));
     if (el.labels && el.labels.length) return clean([...el.labels].map(textOf).join(' '));
@@ -225,7 +225,7 @@ _DISCOVER_JS = r"""() => {
 
 
 def discover(page: Page) -> list[FieldDescriptor]:
-    """Los campos del formulario de la página, marcados con `data-jh-field`."""
+    """Los campos del formulario de la página, marcados con `data-cai-field`."""
     return [FieldDescriptor.model_validate(item) for item in page.evaluate(_DISCOVER_JS)]
 
 
@@ -472,7 +472,7 @@ _SUBMIT_CHECK_JS = r"""el => {
 
 
 def field_locator(page: Page, marker: str) -> Locator:
-    return page.locator(f'[data-jh-field="{marker}"]')
+    return page.locator(f'[data-cai-field="{marker}"]')
 
 
 def safe_click(locator: Locator) -> None:
@@ -586,7 +586,7 @@ def _apply_one(page: Page, p: FieldPlan) -> str | None:
 
 _STATE_JS = r"""(fields) => {
   const clean = s => (s || '').replace(/\s+/g, ' ').trim();
-  const q = m => document.querySelector(`[data-jh-field="${m}"]`);
+  const q = m => document.querySelector(`[data-cai-field="${m}"]`);
   const optionLabel = el => clean(el.labels && el.labels[0] ? el.labels[0].innerText : el.value);
   const pressed = el => el.getAttribute('aria-pressed') === 'true' ||
     el.getAttribute('aria-checked') === 'true' ||

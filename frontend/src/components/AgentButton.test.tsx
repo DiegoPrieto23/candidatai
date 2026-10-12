@@ -49,14 +49,14 @@ describe('Botones «en tu agente»', () => {
           error: {
             type: 'agent_unavailable',
             message: 'No se encuentra el programa del agente (claude) en el PATH.',
-            details: [{ field: 'prompt', received: 'Usa el skill buscar-ofertas de Job Hunter.', reason: '…' }],
+            details: [{ field: 'prompt', received: 'Usa el skill buscar-ofertas de CandidatAI.', reason: '…' }],
           },
         },
       },
     })
     renderApp('/')
     await userEvent.click(await screen.findByRole('button', { name: 'Buscar ofertas' }))
-    await waitFor(() => expect(writeText).toHaveBeenCalledWith('Usa el skill buscar-ofertas de Job Hunter.'))
+    await waitFor(() => expect(writeText).toHaveBeenCalledWith('Usa el skill buscar-ofertas de CandidatAI.'))
     expect(await screen.findByText(/He copiado la orden: pégala en tu agente\./)).toBeInTheDocument()
   })
 

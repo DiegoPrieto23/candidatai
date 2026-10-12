@@ -19,7 +19,7 @@ REQUISITOS
 - Rama de la fase:
       git switch fase/06-frontend-base
 
-Tu base de datos (data/jobhunter.db) está migrada y sin ofertas. Las ofertas de esta prueba se
+Tu base de datos (data/candidatai.db) está migrada y sin ofertas. Las ofertas de esta prueba se
 quedarán en ella; al final se explica cómo limpiarla.
 
 
@@ -37,7 +37,7 @@ PARTE 1 · PREPARAR
 
 2. Migra la base de datos (si ya está al día, no hace nada):
 
-      uv run --directory backend jh db upgrade
+      uv run --directory backend cai db upgrade
 
 3. (Opcional) Pasa los tests automáticos tú mismo:
 
@@ -52,7 +52,7 @@ PARTE 2 · ARRANCAR
 4. Terminal 1, la API:
 
       cd backend
-      uv run jh serve
+      uv run cai serve
 
    Esperado: "Uvicorn running on http://127.0.0.1:8000". Déjala abierta.
    (Si abres http://127.0.0.1:8000/docs verás la documentación de la API: es opcional.)
@@ -71,7 +71,7 @@ PARTE 2 · ARRANCAR
 PARTE 3 · PRIMER VISTAZO (BANDEJA VACÍA)
 ----------------------------------------
 7. Con la base de datos vacía debes ver:
-   - Arriba, "Job Hunter", el enlace "Bandeja", un botón de tema y "Nueva oferta".
+   - Arriba, "CandidatAI", el enlace "Bandeja", un botón de tema y "Nueva oferta".
    - Debajo, la fila de etapas: Todas 0, Por extraer 0, Por revisar 0… Cerrada 0.
    - Sin recuadro de "Hay N ofertas por extraer".
    - En el centro, "Tu bandeja está vacía" con el botón "Añadir la primera".
@@ -130,7 +130,7 @@ Este es el criterio de aceptación principal de la fase.
 
 13. Deja la API y la UI arrancadas. Abre Claude Code en la raíz del repo (si ya lo tenías
     abierto, reinícialo con /exit y "claude" para que cargue el servidor MCP) y comprueba con
-    /mcp que "jobhunter" aparece conectado.
+    /mcp que "candidatai" aparece conectado.
 
 14. Ejecuta:
 
@@ -210,10 +210,10 @@ PARTE 9 · SI LA API NO ESTÁ ARRANCADA
 -------------------------------------
 25. En la terminal 1, para la API con Ctrl+C. En el navegador, recarga la bandeja.
 
-    Esperado: un recuadro rojo "La API no responde" con el texto "…Arráncala con uv run jh serve
+    Esperado: un recuadro rojo "La API no responde" con el texto "…Arráncala con uv run cai serve
     en backend/." y un botón "Reintentar".
 
-26. Vuelve a arrancarla (uv run jh serve en la terminal 1) y pulsa "Reintentar": la bandeja
+26. Vuelve a arrancarla (uv run cai serve en la terminal 1) y pulsa "Reintentar": la bandeja
     vuelve a cargar.
 
 
@@ -229,17 +229,17 @@ PROBLEMAS FRECUENTES
       Stop-Process -Id <ProcessId>
 
   Si la línea de comando contiene "vite", es seguro cerrarlo.
-- "jh serve" falla con "La base de datos no está al día": ejecuta
-  "uv run --directory backend jh db upgrade".
-- "jh serve" dice que el puerto 8000 está en uso: tienes otra API abierta. Ciérrala o usa
-  "uv run jh serve --port 8001" (en ese caso la UI necesita VITE_API_URL=http://127.0.0.1:8001;
+- "cai serve" falla con "La base de datos no está al día": ejecuta
+  "uv run --directory backend cai db upgrade".
+- "cai serve" dice que el puerto 8000 está en uso: tienes otra API abierta. Ciérrala o usa
+  "uv run cai serve --port 8001" (en ese caso la UI necesita VITE_API_URL=http://127.0.0.1:8001;
   mejor cierra la otra).
-- /mcp muestra "jobhunter" como "failed": ejecuta a mano "uv run --directory backend jh-mcp"
+- /mcp muestra "candidatai" como "failed": ejecuta a mano "uv run --directory backend cai-mcp"
   y mira el error; revisa también data/logs/. Luego reinicia Claude Code. (En la sesión en la
   que se implementó la fase, el servidor MCP no llegó a conectar por un timeout; si te pasa,
   cuéntamelo.)
 - La ficha no muestra la extracción tras procesar: recarga con F5. Si sigue sin salir, ejecuta
-  "uv run --directory backend jh events list 1" y mira si hay un evento "extracted".
+  "uv run --directory backend cai events list 1" y mira si hay un evento "extracted".
 - Tras "pnpm install" el build falla por tipos de la API: ejecuta "pnpm gen:api" en frontend/.
 
 
@@ -249,9 +249,9 @@ No hay (todavía) un comando para borrar ofertas. Si quieres dejar la base de da
 ofertas de prueba, borra el fichero y vuelve a crearlo. OJO: también se borran las versiones de
 tu perfil guardadas, así que después hay que volver a importarlo:
 
-      Remove-Item data/jobhunter.db*
-      uv run --directory backend jh db upgrade
-      uv run --directory backend jh profile import
+      Remove-Item data/candidatai.db*
+      uv run --directory backend cai db upgrade
+      uv run --directory backend cai profile import
 
 Para cerrar la API y la UI, Ctrl+C en cada terminal.
 

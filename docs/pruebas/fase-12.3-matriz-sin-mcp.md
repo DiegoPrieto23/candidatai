@@ -1,7 +1,7 @@
 # Matriz de compatibilidad · Claude Code sin MCP (fase 12.3)
 
-Pasada del 2026-10-05 sobre `data-demo` (`jh demo seed --compat`), Claude Code con Opus 5.5,
-una ejecución por rol siguiendo `.agents/roles/*.md`, solo con comandos `jh … --json`.
+Pasada del 2026-10-05 sobre `data-demo` (`cai demo seed --compat`), Claude Code con Opus 5.5,
+una ejecución por rol siguiendo `.agents/roles/*.md`, solo con comandos `cai … --json`.
 Ofertas 61-65 = casos `cv01`, `cv03`, `cv05`, `cv07` y `cv09` de `evals/cv/cases.jsonl`.
 
 ## Extracción frente a la esperada
@@ -16,7 +16,7 @@ lo correcto.
 
 5/5 guardadas: 4 `strong` (scores 96, 68, 97 y 78) y 1 `possible` (73).
 
-## `jh eval cv --agent claude-code`
+## `cai eval cv --agent claude-code`
 
 (Salen como «sin alta» los casos del eval de CV que no forman parte de la matriz.)
 
@@ -40,7 +40,7 @@ lo correcto.
 | `cv09-etl-migracion` | pasa | claude-code | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ |
 | `cv10-ds-series` | sin alta |  |  |  |  |  |  |  |  |
 
-Pendientes: lanza `generar-cv` sobre esos casos (`sin alta`: antes, `jh demo seed --eval-cv`).
+Pendientes: lanza `generar-cv` sobre esos casos (`sin alta`: antes, `cai demo seed --eval-cv`).
 
 ## Verificador (ejecución independiente)
 

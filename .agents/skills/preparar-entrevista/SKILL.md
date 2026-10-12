@@ -1,6 +1,6 @@
 ---
 name: preparar-entrevista
-description: Prepara una entrevista de un proceso abierto de Job Hunter, con un dosier (empresa, temas técnicos probables, historias STAR, preguntas que hacer) y un plan por días hasta la fecha que se guarda en la ficha. Úsalo cuando se mencione una entrevista próxima o se pida prepararla.
+description: Prepara una entrevista de un proceso abierto de CandidatAI, con un dosier (empresa, temas técnicos probables, historias STAR, preguntas que hacer) y un plan por días hasta la fecha que se guarda en la ficha. Úsalo cuando se mencione una entrevista próxima o se pida prepararla.
 ---
 
 Sigue `docs/POLICIES.md` §1 y §6.

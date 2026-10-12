@@ -105,7 +105,7 @@ def _not_found(exc: agent_runs.RunNotFoundError) -> ToolError:
     dependencies=[Depends(require_ui)],
 )
 def start_agent_run(session: SessionDep, body: LaunchBody) -> agent_runs.AgentRunView:
-    """Deja en cola una ejecución en segundo plano (la ejecuta `jh worker`, de una en una)."""
+    """Deja en cola una ejecución en segundo plano (la ejecuta `cai worker`, de una en una)."""
     try:
         return agent_runs.start(session, body.action, body.job_id, body.milestone_id)
     except LaunchError as exc:

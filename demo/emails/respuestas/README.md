@@ -12,5 +12,5 @@ existen) para probar la lectura de respuestas y el skill `revisar-respuestas` si
 | `05-inyeccion.eml` | Castro Labs | Acuse de recibo con texto oculto dirigido a una IA | `none` con `injection_suspected`; `risk_flags` al guardarlo |
 
 Para probarlos sin IMAP: crea ofertas de esas empresas, márcalas como enviadas y copia los
-`.eml` a `data/inbox/respuestas/`; luego `uv run --directory backend jh replies poll`. Solo se
+`.eml` a `data/inbox/respuestas/`; luego `uv run --directory backend cai replies poll`. Solo se
 guardan los correos posteriores al envío.

@@ -1,8 +1,8 @@
 ---
 name: buscar-ofertas
-description: Busca ofertas en los portales de empleo aprobados recorriéndolos con el navegador del usuario y las da de alta en Job Hunter; también configura la lista de plataformas. Úsalo cuando se pida buscar ofertas en portales o elegir dónde buscar.
+description: Busca ofertas en los portales de empleo aprobados recorriéndolos con el navegador del usuario y las da de alta en CandidatAI; también configura la lista de plataformas. Úsalo cuando se pida buscar ofertas en portales o elegir dónde buscar.
 argument-hint: '[configurar | plataforma | nada para todas]'
-allowed-tools: mcp__jobhunter__get_profile mcp__jobhunter__list_sources
+allowed-tools: mcp__candidatai__get_profile mcp__candidatai__list_sources
 ---
 
 <!-- GENERADO por scripts/sync_agents.py desde .agents/skills/buscar-ofertas/SKILL.md. No editar a mano: edita la fuente y regenera. -->
@@ -15,7 +15,7 @@ Argumentos: `configurar`, el nombre de una plataforma o nada (todas las activas)
 
 ## Requisitos
 - Necesitas acceso al navegador del usuario (en Claude Code, Claude in Chrome). Si no lo tienes,
-  dilo y propón las alternativas: alertas por correo y el botón «Enviar a Job Hunter».
+  dilo y propón las alternativas: alertas por correo y el botón «Enviar a CandidatAI».
 - Ejecuta este skill en una sesión dedicada, no en una de desarrollo.
 
 ## Modo `configurar` (elegir dónde buscar)

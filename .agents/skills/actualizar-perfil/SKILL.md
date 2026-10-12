@@ -7,7 +7,7 @@ Sigue `docs/POLICIES.md` §1 y §4. El formato de referencia es `demo/profile.ex
 Los comandos se ejecutan desde la raíz del repo.
 
 **Si `data/profile.yaml` no existe:**
-1. Ejecuta `uv run --directory backend jh profile init`.
+1. Ejecuta `uv run --directory backend cai profile init`.
 2. Pide el CV. Mira antes en `data/documentos/` (ver «Documentos fuente»): si ya está ahí, propón
    usarlo. Si no, lo más cómodo es en PDF (si tu agente puede leerlo) o como texto pegado.
 3. Rellena el perfil sección a sección. Pregunta en bloques cortos lo que el CV no dice: niveles
@@ -23,7 +23,7 @@ Los comandos se ejecutan desde la raíz del repo.
 real si no la dan; si no hay métrica, se escribe sin ella.
 
 **Skills marcadas «La tengo»** (página Skills, fase 14): consulta cuáles son con
-`uv run --directory backend jh skills gaps --status have --json`. Son skills que piden las ofertas
+`uv run --directory backend cai skills gaps --status have --json`. Son skills que piden las ofertas
 y que el usuario dice tener, pero que faltan en el perfil. Para cada una, pregunta en bloques
 cortos su nivel (F/C+/C/B o básico), en qué experiencia o proyecto la usó y, si lo hay, un logro
 que la muestre. Escríbela como la suelen escribir las ofertas (`skill` del resultado). Esos
@@ -69,7 +69,7 @@ Puedes leer de ahí (PDF o texto) para crear o ampliar el perfil cuando te lo pi
 - no copies datos de terceros (nombre o teléfono de quien firma una referencia) al perfil.
 
 **Contexto** (`data/contexto/*.md`, opcional): ficheros de texto libre que el usuario edita en su
-editor. Créalos con `uv run --directory backend jh context init` (no sobrescribe los que ya hay)
+editor. Créalos con `uv run --directory backend cai context init` (no sobrescribe los que ya hay)
 y ayúdale a rellenarlos preguntando en bloques cortos:
 - `estilo-redaccion.md`: tono, estructura, palabras que usa y evita, un par de párrafos suyos;
 - `perfil-conductual.md`: cómo trabaja, fortalezas, puntos a mejorar, tests de personalidad;
@@ -81,12 +81,12 @@ y ayúdale a rellenarlos preguntando en bloques cortos:
 Escribe con sus palabras; si lo redactas tú, enséñaselo antes de guardarlo. El contexto **nunca
 respalda un hecho**: si al contarlo aparece un logro, una cifra o una certificación, propón
 añadirlo también a su sección del perfil (con su id), que es lo único que puede citar un CV o una
-carta. Consulta lo que ya hay con `uv run --directory backend jh context show`.
+carta. Consulta lo que ya hay con `uv run --directory backend cai context show`.
 
 **Siempre:**
 - Nada inventado ni "mejorado": si algo es ambiguo, pregunta.
 - Ids estables (`exp-<empresa>`, `a1`, `a2`…). No renumeres los existentes: los CVs antiguos los citan.
-- Al terminar, ejecuta `uv run --directory backend jh profile validate`, corrige los errores y
-  luego `uv run --directory backend jh profile import`. Enseña el resultado de
-  `uv run --directory backend jh profile diff`.
+- Al terminar, ejecuta `uv run --directory backend cai profile validate`, corrige los errores y
+  luego `uv run --directory backend cai profile import`. Enseña el resultado de
+  `uv run --directory backend cai profile diff`.
 - Recuerda que importar una versión nueva recalcula los scores de todas las ofertas.

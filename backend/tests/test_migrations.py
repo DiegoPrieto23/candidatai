@@ -49,12 +49,12 @@ def test_migrations_match_models(db_url: str) -> None:
 
 def test_default_url_comes_from_settings(isolated_env: Path) -> None:
     migrations.upgrade()
-    assert (isolated_env / "jobhunter.db").exists()
+    assert (isolated_env / "candidatai.db").exists()
     migrations.ensure_current()
 
 
 def test_ensure_current_on_missing_db_creates_nothing(db_url: str, isolated_env: Path) -> None:
-    with pytest.raises(migrations.DatabaseNotReadyError, match="jh db upgrade"):
+    with pytest.raises(migrations.DatabaseNotReadyError, match="cai db upgrade"):
         migrations.ensure_current(db_url)
     assert not (isolated_env / "migrated.db").exists()
 
