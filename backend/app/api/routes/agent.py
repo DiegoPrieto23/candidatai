@@ -26,6 +26,7 @@ class Action(BaseModel):
     id: ActionId
     label: str
     needs_job: bool
+    needs_milestone: bool  # acción de un hito de entrevista (`milestone_id`)
     prompt: str | None  # la orden (sin oferta); con oferta, la da `launch` o se compone en la UI
 
 
@@ -38,6 +39,7 @@ class LaunchBody(BaseModel):
 
     action: ActionId
     job_id: int | None = Field(default=None, ge=1)
+    milestone_id: int | None = Field(default=None, ge=1)  # acciones de una entrevista (fase 17)
 
 
 @router.get("", operation_id="get_agent_launcher")
@@ -48,6 +50,7 @@ def get_agent_launcher() -> AgentStatus:
             id=action_id,
             label=spec.label,
             needs_job=spec.needs_job,
+            needs_milestone=spec.milestone is not None,
             prompt=None if spec.needs_job else agent_launch.prompt_for(action_id),
         )
         for action_id, spec in agent_launch.ACTIONS.items()
@@ -64,11 +67,10 @@ def get_agent_launcher() -> AgentStatus:
 def launch_agent(session: SessionDep, body: LaunchBody) -> agent_launch.LaunchResult:
     """Abre tu agente en una terminal con la orden ya escrita. Tú ves y apruebas lo que haga."""
     try:
-        return agent_launch.launch(session, body.action, body.job_id)
+        return agent_launch.launch(session, body.action, body.job_id, body.milestone_id)
     except LaunchError as exc:
         if exc.code == "unavailable":
             # La UI copia la orden: va en `details` para que no tenga que componerla.
-            prompt = agent_launch.prompt_for(body.action, body.job_id)
-            detail = ErrorDetail(field="prompt", received=prompt, reason=str(exc))
+            detail = ErrorDetail(field="prompt", received=exc.prompt, reason=str(exc))
             raise ToolError("agent_unavailable", str(exc), [detail]) from exc
         raise ToolError(_ERROR_TYPES[exc.code], str(exc)) from exc

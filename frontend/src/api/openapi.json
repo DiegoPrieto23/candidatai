@@ -9452,7 +9452,11 @@
               "revisar-respuestas",
               "redactar-seguimientos",
               "redactar-seguimiento",
-              "ampliar-busqueda"
+              "ampliar-busqueda",
+              "preparar-entrevista",
+              "simular-entrevista",
+              "repasar-entrevista",
+              "dudas-oferta"
             ],
             "title": "Id"
           },
@@ -9463,6 +9467,10 @@
           "needs_job": {
             "type": "boolean",
             "title": "Needs Job"
+          },
+          "needs_milestone": {
+            "type": "boolean",
+            "title": "Needs Milestone"
           },
           "prompt": {
             "anyOf": [
@@ -9481,6 +9489,7 @@
           "id",
           "label",
           "needs_job",
+          "needs_milestone",
           "prompt"
         ],
         "title": "Action"
@@ -13097,6 +13106,56 @@
         "title": "InstructionsUsed",
         "description": "Copia de las indicaciones vigentes al guardar la carta: respaldo de la evidencia `user`."
       },
+      "InterviewPlan": {
+        "properties": {
+          "dossier": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dossier",
+            "description": "Nombre del dosier en data/entrevistas/ (p. ej. `42-acme.md`)."
+          },
+          "blocks": {
+            "items": {
+              "$ref": "#/components/schemas/PrepBlock"
+            },
+            "type": "array",
+            "maxItems": 60,
+            "minItems": 1,
+            "title": "Blocks",
+            "description": "Bloques de 30-60 min, desde hoy hasta el día de la entrevista."
+          },
+          "saved_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Saved At"
+          },
+          "agent_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent Name"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "blocks",
+          "saved_at"
+        ],
+        "title": "InterviewPlan",
+        "description": "Lo guardado: los bloques por fecha, más quién y cuándo."
+      },
       "InvalidTemplate": {
         "properties": {
           "id": {
@@ -13881,7 +13940,11 @@
               "revisar-respuestas",
               "redactar-seguimientos",
               "redactar-seguimiento",
-              "ampliar-busqueda"
+              "ampliar-busqueda",
+              "preparar-entrevista",
+              "simular-entrevista",
+              "repasar-entrevista",
+              "dudas-oferta"
             ],
             "title": "Action"
           },
@@ -13896,6 +13959,18 @@
               }
             ],
             "title": "Job Id"
+          },
+          "milestone_id": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Milestone Id"
           }
         },
         "additionalProperties": false,
@@ -14822,6 +14897,50 @@
             "type": "string",
             "format": "date-time",
             "title": "Updated At"
+          },
+          "prep_plan": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/InterviewPlan"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "debrief_notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Debrief Notes"
+          },
+          "next_steps": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Steps"
+          },
+          "debriefed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Debriefed At"
           }
         },
         "type": "object",
@@ -15040,6 +15159,7 @@
             "enum": [
               "contexto",
               "documentos",
+              "entrevistas",
               "candidatura"
             ],
             "title": "Folder"
@@ -15263,6 +15383,51 @@
         ],
         "title": "PreferencesFit"
       },
+      "PrepBlock": {
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date",
+            "title": "Date",
+            "description": "Día del bloque (calendario de Europe/Madrid)."
+          },
+          "minutes": {
+            "type": "integer",
+            "maximum": 120.0,
+            "minimum": 15.0,
+            "title": "Minutes",
+            "description": "Duración: entre 15 y 120 minutos."
+          },
+          "topic": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Topic",
+            "description": "Qué se prepara."
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail",
+            "description": "Cómo: qué repasar, qué historia ensayar…"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "date",
+          "minutes",
+          "topic"
+        ],
+        "title": "PrepBlock"
+      },
       "PrepareBody": {
         "properties": {
           "form_url": {
@@ -15458,6 +15623,11 @@
           },
           "documents": {
             "$ref": "#/components/schemas/ProcessDocuments"
+          },
+          "offer_received": {
+            "type": "boolean",
+            "title": "Offer Received",
+            "default": false
           }
         },
         "type": "object",

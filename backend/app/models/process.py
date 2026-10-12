@@ -1,6 +1,7 @@
 from datetime import datetime
+from typing import Any
 
-from sqlalchemy import ForeignKey, String, Text
+from sqlalchemy import JSON, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base, UTCDateTime, utcnow
@@ -31,6 +32,12 @@ class Milestone(Base):
     sequence: Mapped[int] = mapped_column(default=0)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
+    # Entrevistas (fase 17): plan de preparación (`services/interviews.py`) y repaso posterior.
+    # `notes` es lo que anota el usuario en el formulario; el repaso va aparte.
+    prep_plan: Mapped[dict[str, Any] | None] = mapped_column(JSON)
+    debrief_notes: Mapped[str | None] = mapped_column(Text)
+    next_steps: Mapped[str | None] = mapped_column(Text)
+    debriefed_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
 
 
 class Contact(Base):

@@ -28,6 +28,10 @@ Las reglas con valores ajustables tienen su parámetro en `config/policies.yaml`
    respaldan un hecho: un logro, una cifra, una formación o un rasgo que solo esté ahí no va en un
    CV, una carta ni una respuesta (el verificador lo marca `blocker`). Si el usuario lo quiere
    usar, se añade antes al perfil o, en una carta, a sus indicaciones.
+6. **Entrevistas** (fase 17). Los esquemas de respuesta del dosier y la «versión mejor» del
+   simulacro solo usan hechos del perfil. Lo que el usuario cuente en un simulacro o en un repaso
+   (un logro, una cifra, una historia) se queda en las notas del hito hasta que él confirme
+   añadirlo al perfil con `actualizar-perfil`; ningún otro skill escribe en el perfil.
 
 ## 2. Encaje y filtros
 

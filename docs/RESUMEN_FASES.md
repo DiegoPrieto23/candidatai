@@ -308,3 +308,17 @@ La carta es un documento propio, con sus indicaciones, su verificación y sus re
   de tus empresas por sus APIs públicas y propone darlas de alta (`--add` lo hace).
 - **Herramientas** `check_job_open` y `get_search_titles` (MCP) con sus comandos `jh`, con paridad.
 
+## 17 · Entrevistas: simulacro, repaso y banco de historias — 2026-10-12 · Claude Code (Opus 5.5)
+- **Plan de preparación:** `preparar-entrevista` hace, además del dosier, un plan por días hasta
+  la entrevista (bloques de 30-60 min: lo flojo primero, historias que ensayar, la empresa, un
+  simulacro y logística). Se ve en la ficha, bajo la entrevista, con «Abrir carpeta» del dosier.
+- **Simulacro** (skill `simular-entrevista`, botón «Simulacro»): una pregunta cada vez según el
+  tipo de entrevista, feedback concreto y una versión mejor solo con tu perfil; al final, puntos
+  fuertes y flojos.
+- **Repaso** (skill `repasar-entrevista`, botón «Repasar»): le cuentas cómo fue y guarda notas y
+  próximos pasos en la entrevista, predice la siguiente ronda y propone historias STAR nuevas.
+  Solo entran en tu perfil si dices que sí, con `actualizar-perfil`.
+- **Dudas antes de aceptar** (botón en la ficha cuando hay una oferta recibida): contradicciones,
+  criterios tuyos sin confirmar y lo que falta por escrito, con la pregunta que harías.
+- **Herramientas** `get_interviews`, `save_interview_plan` y `save_interview_notes` (MCP) con sus
+  comandos `jh interviews …`, con paridad.

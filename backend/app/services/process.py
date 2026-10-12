@@ -18,6 +18,7 @@ from sqlalchemy.orm import Session
 from app.core.policies import get_policies
 from app.models import Application, Contact, Event, Job, Milestone
 from app.models.base import utcnow
+from app.schemas.interviews import InterviewPlan
 from app.services import events
 from app.services.events import JobNotFoundError
 from app.services.pipeline import Actor, EventType, Stage
@@ -118,6 +119,11 @@ class MilestoneOut(BaseModel):
     event_id: int | None
     created_at: datetime
     updated_at: datetime
+    # Entrevistas (fase 17, `services/interviews.py`): plan de preparación y repaso posterior.
+    prep_plan: InterviewPlan | None = None
+    debrief_notes: str | None = None
+    next_steps: str | None = None
+    debriefed_at: datetime | None = None
 
 
 class ContactOut(BaseModel):
@@ -139,7 +145,7 @@ class NoteOut(BaseModel):
     occurred_at: datetime
 
 
-def _milestone_out(row: Milestone) -> MilestoneOut:
+def milestone_out(row: Milestone) -> MilestoneOut:
     return MilestoneOut.model_validate(row, from_attributes=True)
 
 
@@ -157,7 +163,7 @@ def _job(session: Session, job_id: int) -> Job:
     return job
 
 
-def _milestone(session: Session, milestone_id: int) -> Milestone:
+def milestone_row(session: Session, milestone_id: int) -> Milestone:
     row = session.get(Milestone, milestone_id)
     if row is None:
         raise MilestoneNotFoundError(f"No existe el hito {milestone_id}.")
@@ -228,13 +234,13 @@ def create_milestone(
             )
             row.event_id = event.id
     session.flush()
-    return _milestone_out(row)
+    return milestone_out(row)
 
 
 def update_milestone(session: Session, milestone_id: int, data: MilestoneFields) -> MilestoneOut:
     """Cambia los datos de un hito programado. Reprogramar una entrevista o una prueba deja una
     `note` en la oferta con la fecha nueva."""
-    row = _milestone(session, milestone_id)
+    row = milestone_row(session, milestone_id)
     if row.status != "scheduled":
         raise ValueError("Solo se edita un hito programado; uno hecho o cancelado queda así.")
     starts_at, ends_at = _normalized_times(data)
@@ -258,7 +264,7 @@ def update_milestone(session: Session, milestone_id: int, data: MilestoneFields)
     row.sequence += 1
     row.updated_at = utcnow()
     session.flush()
-    return _milestone_out(row)
+    return milestone_out(row)
 
 
 def set_milestone_status(
@@ -269,7 +275,7 @@ def set_milestone_status(
     Entrevista hecha: `interview_done`. Cancelar una entrevista o una prueba: `note`. El resto no
     registra eventos. Un hito hecho o cancelado no vuelve atrás: se crea otro.
     """
-    row = _milestone(session, milestone_id)
+    row = milestone_row(session, milestone_id)
     if row.status != "scheduled":
         raise ValueError(f"El hito ya está «{row.status}»; si hay una fecha nueva, crea otro hito.")
     payload: dict[str, Any] = {"milestone_id": row.id}
@@ -299,11 +305,11 @@ def set_milestone_status(
     row.sequence += 1
     row.updated_at = utcnow()
     session.flush()
-    return _milestone_out(row)
+    return milestone_out(row)
 
 
 def get_milestone(session: Session, milestone_id: int) -> MilestoneOut:
-    return _milestone_out(_milestone(session, milestone_id))
+    return milestone_out(milestone_row(session, milestone_id))
 
 
 def job_milestones(session: Session, job_id: int) -> list[MilestoneOut]:
@@ -312,7 +318,7 @@ def job_milestones(session: Session, job_id: int) -> list[MilestoneOut]:
         .where(Milestone.job_id == job_id)
         .order_by(Milestone.starts_at, Milestone.id)
     )
-    return [_milestone_out(row) for row in session.scalars(stmt)]
+    return [milestone_out(row) for row in session.scalars(stmt)]
 
 
 # --- Contactos ------------------------------------------------------------------------------
@@ -385,6 +391,7 @@ class ProcessView(BaseModel):
     contacts: list[ContactOut]
     notes: list[NoteOut]
     documents: ProcessDocuments
+    offer_received: bool = False  # hay un `offer_received`: «Dudas antes de aceptar» (fase 17)
 
 
 def followup_status(
@@ -417,6 +424,12 @@ def last_followup_at(session: Session, job_id: int) -> datetime | None:
         .limit(1)
     )
     return session.scalars(stmt).first()
+
+
+def offer_received(session: Session, job_id: int) -> bool:
+    """Si la oferta tiene un `offer_received` (la empresa ha hecho una propuesta)."""
+    stmt = select(Event.id).where(Event.job_id == job_id, Event.type == EventType.OFFER_RECEIVED)
+    return session.scalars(stmt.limit(1)).first() is not None
 
 
 def get_process(session: Session, job_id: int, now: datetime | None = None) -> ProcessView:
@@ -468,6 +481,7 @@ def get_process(session: Session, job_id: int, now: datetime | None = None) -> P
             answers_document_id=answers_doc.id if answers_doc else None,
             cover_letter_document_id=letter_doc.id if letter_doc else None,
         ),
+        offer_received=offer_received(session, job_id),
     )
 
 

@@ -9,6 +9,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
+from zoneinfo import ZoneInfo
 
 import httpx
 import pytest
@@ -206,6 +207,23 @@ def seed_upcoming() -> None:
             ),
         )
 
+
+def seed_offer() -> None:
+    """La oferta 1 con su entrevista de ayer hecha y una oferta recibida hoy."""
+    seed_interview_done()
+    with session_scope() as session:
+        events.record(session, 1, "offer_received", "user")
+
+
+TODAY = utcnow().astimezone(ZoneInfo("Europe/Madrid")).date().isoformat()
+PLAN: dict[str, Any] = {
+    "dossier": "1-acme.md",
+    "blocks": [{"date": TODAY, "minutes": 45, "topic": "Historias STAR", "detail": "s1 y s2"}],
+}
+INTERVIEW_NOTES: dict[str, Any] = {
+    "notes": "Preguntaron por dbt y por un conflicto.",
+    "next_steps": "Prueba técnica la semana que viene.",
+}
 
 CV_CONTENT = demo_content_data()
 CV_BAD_EVIDENCE = demo_content_data(
@@ -674,6 +692,36 @@ CASES = [
                {"job_id": 1, "draft": {**FOLLOWUP, "subject": ""}},
                ["drafts", "save", "1"], "d.json", {**FOLLOWUP, "subject": ""},
                seed=seed_applied_long_ago, expect_error="validation_error"),
+    Case("interviews", "get_interviews", {"job_id": 1}, ["interviews", "list", "1"],
+         seed=seed_upcoming),
+    Case("interviews-offer", "get_interviews", {"job_id": 1}, ["interviews", "list", "1"],
+         seed=seed_offer),
+    Case("interviews-unknown", "get_interviews", {"job_id": 9}, ["interviews", "list", "9"],
+         seed=seed_job, expect_error="not_found"),
+    _file_case("interview-plan", "save_interview_plan", {"milestone_id": 1, "plan": PLAN},
+               ["interviews", "plan", "1"], "p.json", PLAN, seed=seed_upcoming),
+    _file_case("interview-plan-not-interview", "save_interview_plan",
+               {"milestone_id": 2, "plan": PLAN},
+               ["interviews", "plan", "2"], "p.json", PLAN, seed=seed_upcoming,
+               expect_error="not_allowed"),
+    _file_case("interview-plan-bad", "save_interview_plan",
+               {"milestone_id": 1, "plan": {**PLAN, "dossier": "../perfil.md"}},
+               ["interviews", "plan", "1"], "p.json", {**PLAN, "dossier": "../perfil.md"},
+               seed=seed_upcoming, expect_error="validation_error"),
+    _file_case("interview-notes", "save_interview_notes",
+               {"milestone_id": 1, **INTERVIEW_NOTES},
+               ["interviews", "notes", "1"], "n.json", INTERVIEW_NOTES, seed=seed_interview_done),
+    _file_case("interview-notes-future", "save_interview_notes",
+               {"milestone_id": 1, **INTERVIEW_NOTES},
+               ["interviews", "notes", "1"], "n.json", INTERVIEW_NOTES, seed=seed_upcoming,
+               expect_error="not_allowed"),
+    _file_case("interview-notes-empty", "save_interview_notes",
+               {"milestone_id": 1, "notes": ""},
+               ["interviews", "notes", "1"], "n.json", {"notes": ""}, seed=seed_interview_done,
+               expect_error="validation_error"),
+    Case("interview-notes-unknown", "save_interview_notes", {"milestone_id": 9, "notes": "x"},
+         ["interviews", "notes", "9", "--file", "{tmp}/n.json"], files={"n.json": {"notes": "x"}},
+         seed=seed_job, expect_error="not_found"),
     _file_case("reply-propose-low", "save_reply_proposal",
                {"reply_id": 1, "proposal": {**PROPOSAL, "confidence": "low"}},
                ["replies", "propose", "1"], "p.json", {**PROPOSAL, "confidence": "low"},

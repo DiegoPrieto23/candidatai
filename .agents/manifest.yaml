@@ -47,9 +47,17 @@ targets:
       preparar-candidatura:
         argument-hint: "[job_id] [preguntas pegadas o 'carta']"
         allowed-tools: ["mcp:get_extraction", "mcp:get_profile", "mcp:get_cv_content"]
+      # Entrevistas (fase 17): el plan y el repaso se guardan sin preguntar porque el skill ya pide
+      # el OK del usuario antes (como save_message_draft). add_event (notas) no va: pide permiso.
       preparar-entrevista:
-        argument-hint: "[job_id] [rrhh|tecnica|caso|final]"
-        allowed-tools: ["mcp:get_extraction", "mcp:get_profile", "mcp:get_context", "mcp:get_timeline"]
+        argument-hint: "[job_id] [milestone_id] [rrhh|tecnica|caso|final]"
+        allowed-tools: ["mcp:get_interviews", "mcp:get_extraction", "mcp:get_profile", "mcp:get_context", "mcp:get_timeline", "mcp:save_interview_plan"]
+      simular-entrevista:
+        argument-hint: "[job_id] [milestone_id] [rrhh|tecnica|caso|final]"
+        allowed-tools: ["read", "mcp:get_interviews", "mcp:get_extraction", "mcp:get_profile", "mcp:get_context"]
+      repasar-entrevista:
+        argument-hint: "[job_id] [milestone_id], o 'dudas' con una oferta recibida"
+        allowed-tools: ["mcp:get_interviews", "mcp:get_extraction", "mcp:get_profile", "mcp:get_context", "mcp:get_timeline", "mcp:save_interview_notes"]
       actualizar-perfil:
         allowed-tools: ["read", "jh_profile_cli", "jh_context_cli", "jh_skills_cli"]
       resumen-diario:

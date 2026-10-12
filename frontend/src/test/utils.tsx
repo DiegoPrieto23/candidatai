@@ -376,6 +376,7 @@ export function processView(changes: Partial<ProcessView> = {}): ProcessView {
     contacts: [],
     notes: [],
     documents: { cv_render_id: null, cv_sent: false, answers_document_id: null, cover_letter_document_id: null },
+    offer_received: false,
     ...changes,
   }
 }

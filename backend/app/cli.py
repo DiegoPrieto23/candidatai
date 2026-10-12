@@ -50,6 +50,9 @@ drafts_app = typer.Typer(
     help="Borradores de seguimiento y agradecimiento (la app no envía nada).",
     no_args_is_help=True,
 )
+interviews_app = typer.Typer(
+    help="Entrevistas: plan de preparación y repaso posterior en el hito.", no_args_is_help=True
+)
 replies_app = typer.Typer(
     help="Respuestas de las empresas por correo: ingesta y propuestas del agente.",
     no_args_is_help=True,
@@ -85,6 +88,7 @@ app.add_typer(prompts_app, name="prompts")
 app.add_typer(skills_app, name="skills")
 app.add_typer(replies_app, name="replies")
 app.add_typer(drafts_app, name="drafts")
+app.add_typer(interviews_app, name="interviews")
 demo_app = typer.Typer(
     help="Modo demo: una búsqueda ficticia para probar la app.", no_args_is_help=True
 )
@@ -1613,6 +1617,22 @@ def _render_upcoming(result: Any) -> None:
         typer.echo(f"{when:<16}  {item.title} · {item.job_title} ({item.company}) [{item.job_id}]")
 
 
+def _render_interviews(view: Any) -> None:
+    offer = " · oferta recibida" if view.offer_received else ""
+    typer.echo(f"{view.job_title} ({view.company}) [{view.job_id}] · {view.stage or '—'}{offer}")
+    if not view.interviews:
+        typer.echo("Sin entrevistas anotadas.")
+    for item in view.interviews:
+        when = _local(item.starts_at, item.all_day)
+        extras = []
+        if item.prep_plan:
+            extras.append(f"plan de {len(item.prep_plan.blocks)} bloques")
+        if item.debrief_notes:
+            extras.append("con repaso")
+        extra = f"  ({', '.join(extras)})" if extras else ""
+        typer.echo(f"  [{item.id}] {when:<16}  {item.title} · {item.status}{extra}")
+
+
 def _pct(value: float | None) -> str:
     return "—" if value is None else f"{value:.0%}"
 
@@ -1770,6 +1790,7 @@ register_tools(
         "skills": skills_app,
         "replies": replies_app,
         "drafts": drafts_app,
+        "interviews": interviews_app,
     },
     {
         "get_status": _render_status,
@@ -1800,6 +1821,9 @@ register_tools(
         "list_replies": _render_replies,
         "save_reply_proposal": _render_message,
         "save_message_draft": _render_message,
+        "get_interviews": _render_interviews,
+        "save_interview_plan": _render_message,
+        "save_interview_notes": _render_message,
         "list_upcoming": _render_upcoming,
         "get_funnel_stats": _render_funnel,
         "get_skill_gaps": _render_skill_gaps,

@@ -24,6 +24,7 @@ from app.schemas.cover_letter import (
     CoverLetterRenderOptions,
 )
 from app.schemas.cv import CvContent, CvRenderOptions, CvVerification
+from app.schemas.interviews import InterviewPlanInput
 from app.schemas.llm_io import ApplicationAnswers, FitAssessment, JobExtraction
 from app.schemas.profile import MAX_LETTER_WORDS
 from app.schemas.sources import AgentBrowseSource, SourceList, SourceRunSummary
@@ -35,6 +36,7 @@ from app.services import (
     events,
     extractions,
     ingest,
+    interviews,
     jobs,
     liveness,
     profile,
@@ -360,6 +362,18 @@ class SaveMessageDraftInput(_Input):
     draft: drafts.MessageDraftInput
 
 
+class MilestoneIdInput(_Input):
+    milestone_id: int = Field(ge=1, description="Id del hito (la entrevista).")
+
+
+class SaveInterviewPlanInput(MilestoneIdInput):
+    plan: InterviewPlanInput
+
+
+class SaveInterviewNotesInput(MilestoneIdInput, interviews.InterviewNotesInput):
+    pass
+
+
 class JobList(BaseModel):
     jobs: list[jobs.JobSummary]
 
@@ -577,6 +591,27 @@ def _save_message_draft(
     session: Session, args: SaveMessageDraftInput, ctx: CallContext
 ) -> drafts.SaveDraftResult:
     return drafts.save_message_draft(session, args.job_id, args.draft, agent_name=ctx.client_name)
+
+
+def _get_interviews(
+    session: Session, args: JobIdInput, _ctx: CallContext
+) -> interviews.InterviewsView:
+    return interviews.get_interviews(session, args.job_id)
+
+
+def _save_interview_plan(
+    session: Session, args: SaveInterviewPlanInput, ctx: CallContext
+) -> interviews.SavePlanResult:
+    return interviews.save_interview_plan(
+        session, args.milestone_id, args.plan, agent_name=ctx.client_name
+    )
+
+
+def _save_interview_notes(
+    session: Session, args: SaveInterviewNotesInput, _ctx: CallContext
+) -> interviews.SaveNotesResult:
+    data = interviews.InterviewNotesInput(notes=args.notes, next_steps=args.next_steps)
+    return interviews.save_interview_notes(session, args.milestone_id, data)
 
 
 def _save_application_answers(
@@ -1156,6 +1191,52 @@ TOOLS: tuple[ToolSpec, ...] = (
             arguments=("job_id",),
             file_field="draft",
             file_format="json",
+        ),
+    ),
+    ToolSpec(
+        name="get_interviews",
+        description=(
+            "Entrevistas de una oferta (hitos de tipo entrevista, por fecha) con su plan de "
+            "preparación y su repaso, los contactos del proceso (nombre y cargo), si hay una "
+            "oferta recibida (`offer_received`) y la fecha de hoy en Europe/Madrid."
+        ),
+        input_model=JobIdInput,
+        output_model=interviews.InterviewsView,
+        handler=_get_interviews,
+        cli=CliSpec(path=("interviews", "list"), arguments=("job_id",)),
+    ),
+    ToolSpec(
+        name="save_interview_plan",
+        description=(
+            "Guarda en la ficha el plan de preparación de una entrevista programada: bloques de "
+            "15-120 min (mejor 30-60) desde hoy hasta el día de la entrevista y, opcional, el "
+            "nombre del dosier en data/entrevistas/. Sustituye al plan anterior."
+        ),
+        input_model=SaveInterviewPlanInput,
+        output_model=interviews.SavePlanResult,
+        handler=_save_interview_plan,
+        cli=CliSpec(
+            path=("interviews", "plan"),
+            arguments=("milestone_id",),
+            file_field="plan",
+            file_format="json",
+        ),
+    ),
+    ToolSpec(
+        name="save_interview_notes",
+        description=(
+            "Guarda el repaso de una entrevista que ya ha empezado: notas de cómo fue y próximos "
+            "pasos. Sustituye al repaso anterior. NO marca la entrevista como hecha (lo hace el "
+            "usuario en la ficha) ni toca el perfil: las historias nuevas van por "
+            "`actualizar-perfil`."
+        ),
+        input_model=SaveInterviewNotesInput,
+        output_model=interviews.SaveNotesResult,
+        handler=_save_interview_notes,
+        cli=CliSpec(
+            path=("interviews", "notes"),
+            arguments=("milestone_id",),
+            file_keys=("notes", "next_steps"),
         ),
     ),
 )

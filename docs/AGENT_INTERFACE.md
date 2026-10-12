@@ -75,6 +75,9 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | `get_reply` | `jh replies show ID --json` | 15 | `reply_id` | El correo en `<untrusted_email>`, `candidates` (oferta, etapa, envío, próximos hitos), `timezone` y `proposal` | — |
 | `save_reply_proposal` | `jh replies propose ID --file F --json` | 15 | `reply_id`, `proposal` (ver §Respuestas) | `status: proposed`, `stage`, `valid_now`, `message` | — (la acepta el usuario en la UI) |
 | `save_message_draft` | `jh drafts save ID --file F --json` | 15 | `job_id`, `draft`: `{kind: followup \| thank_you, subject, body, milestone_id?}` | `draft_id`, `kind`, `milestone_id`, `replaced`, `message` | — (no envía nada) |
+| `get_interviews` | `jh interviews list ID --json` | 17 | `job_id` | `job_id`, `job_title`, `company`, `stage`, `offer_received`, `today` (Europe/Madrid), `contacts` (nombre y cargo) e `interviews`: hitos de tipo entrevista, por fecha, con `prep_plan`, `debrief_notes`, `next_steps` y `debriefed_at` | — |
+| `save_interview_plan` | `jh interviews plan HITO --file F --json` | 17 | `milestone_id`, `plan`: `{dossier?, blocks: [{date, minutes (15-120), topic, detail?}]}`; por CLI, `F` = el plan | `milestone_id`, `job_id`, `blocks`, `replaced`, `message`. Entrevista programada y por empezar, proceso abierto y bloques de hoy al día de la entrevista (si no, `not_allowed`) | — |
+| `save_interview_notes` | `jh interviews notes HITO --file F --json` | 17 | `milestone_id`, `notes` (≤ 10 000), `next_steps?` (≤ 4000); por CLI, `F` = `{"notes": …, "next_steps": …}` | `milestone_id`, `job_id`, `replaced`, `milestone_status`, `message`. Entrevista ya empezada y no cancelada (si no, `not_allowed`) | — (no marca la entrevista como hecha) |
 | `list_sources` | `jh sources list [--kind K] --json` | 09b | `kind?` | `sources`: `SourceView` con su config (sin secretos), `browse` (en las `agent_browse`) y última ejecución; `agent_browse`: límites (`max_result_pages`, `delay_seconds`, `default_max_offers`) | — |
 | `save_source` | `jh sources save --file F --json` | 09b | `AgentBrowseSource`: `name, platform, search_urls[], priority=5 (1 = primera), access=free\|login\|blocked, allow_agent_browsing? (por defecto true; en LinkedIn false), max_offers?, notes?`; por CLI, `F` = ese objeto | `source_id`, `created`, `allow_agent_browsing` guardado y `message`. Crea o actualiza por `name`. LinkedIn (por `platform` o por cualquier URL de linkedin.com o lnkd.in) con `true`: `not_allowed`; si el usuario ya lo activó, se conserva. Búsquedas de otro dominio: `invalid_request` | — |
 | `record_source_run` | `jh sources record-run ID --file F --json` | 09b | `source_id` + `SourceRunSummary`: `found, created, existing=0, incidents[{code, message}], started_at?, finished_at?`; por CLI, `F` = el resumen | `ok`, `run_id`. Actor `agent`; avanza `last_run_at`. Plataforma desactivada: `not_allowed` | — |
@@ -210,9 +213,10 @@ las más recientes primero.
 - `list_upcoming`: hitos programados de ofertas abiertas desde las 00:00 de hoy (Europe/Madrid)
   hasta el final del día de dentro de `days` días, más el `application_deadline` de las ofertas
   aún sin enviar. Las horas van en UTC: muéstralas en Europe/Madrid.
-- Los hitos, los contactos y el kanban son de la UI (`/board`, `/jobs/{id}/process`,
-  `/jobs/{id}/milestones`…): no tienen herramienta. Si el usuario te cuenta una entrevista, pídele
-  que la anote en la ficha de la oferta (crea el hito con fecha y registra `interview_scheduled`).
+- Crear, editar y cerrar hitos y contactos, y el kanban, son de la UI (`/board`,
+  `/jobs/{id}/process`, `/jobs/{id}/milestones`…): no tienen herramienta. Si el usuario te cuenta
+  una entrevista, pídele que la anote en la ficha de la oferta (crea el hito con fecha y registra
+  `interview_scheduled`). Las entrevistas se leen con `get_interviews` (fase 17).
   Un `add_event` con `interview_scheduled` cambia la etapa pero no crea el hito: no saldría en
   `list_upcoming` ni en el calendario.
 - `list_upcoming(days=7)` cubre desde las 00:00 de hoy hasta el final del séptimo día (fin
@@ -220,6 +224,23 @@ las más recientes primero.
 - `jh calendar export [--out RUTA] [--json]` (solo CLI) escribe el `.ics` con los hitos futuros y
   los plazos (por defecto, `data/calendar/jobhunter.ics`). La API sirve el mismo feed en
   `GET /calendar.ics` y cada hito en `GET /milestones/{id}/ics`.
+
+### Entrevistas (fase 17)
+
+- `get_interviews`: las entrevistas de una oferta con su plan y su repaso, los contactos (solo
+  nombre y cargo) y si hay `offer_received`. Lo usan `preparar-entrevista`, `simular-entrevista`
+  y `repasar-entrevista`.
+- `save_interview_plan`: el plan de preparación por días de `preparar-entrevista`, en
+  `milestones.prep_plan`. `dossier` es solo el nombre del fichero en `data/entrevistas/` (sin
+  carpetas). Sustituye al anterior.
+- `save_interview_notes`: el repaso de `repasar-entrevista` (`debrief_notes`, `next_steps`).
+  Sustituye al anterior.
+- Ninguna registra eventos ni cambia el estado del hito: marcar la entrevista como hecha
+  (`interview_done`) lo hace el usuario en la ficha. Tampoco tocan el perfil: una historia STAR
+  nueva entra solo con `actualizar-perfil` y la confirmación del usuario (ADR-029).
+- Botones de la ficha (ADR-024): «Preparar» y «Simulacro» en una entrevista programada por
+  empezar, «Repasar» en una que ya ha empezado y «Dudas antes de aceptar» con un `offer_received`.
+  `POST /agent/launch` acepta `milestone_id` (entero) para las tres primeras.
 
 ### Analítica (fase 10.2)
 

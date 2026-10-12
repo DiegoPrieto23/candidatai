@@ -30,6 +30,7 @@ from app.services.events import JobNotFoundError
 from app.services.extractions import ExtractionNotFoundError
 from app.services.ingestion.browse import BrowsingNotAllowedError
 from app.services.ingestion.service import SourceExistsError, SourceNotFoundError
+from app.services.interviews import InterviewNotAllowedError
 from app.services.pipeline import InvalidTransitionError
 from app.services.process import ContactNotFoundError, MilestoneNotFoundError
 from app.services.profile import ProfileNotFoundError
@@ -51,6 +52,7 @@ _ERROR_TYPES: tuple[tuple[type[Exception], str], ...] = (
     (DraftNotAllowedError, "not_allowed"),
     (BrowsingNotAllowedError, "not_allowed"),
     (MilestoneNotFoundError, "not_found"),
+    (InterviewNotAllowedError, "not_allowed"),
     (ContactNotFoundError, "not_found"),
     (DocumentNotFoundError, "not_found"),
     (LetterNotFoundError, "not_found"),

@@ -49,7 +49,7 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 16 | Ofertas vivas, republicadas y búsqueda ampliada | ✅ | Aviso de oferta cerrada o republicada; títulos parecidos; descubrir tableros de Greenhouse/Lever/Ashby de tus empresas |
 | 16.1 | ↳ ¿Sigue abierta? y republicadas | ✅ | `jobs.signals` (ADR-028), `check_job_open`, tarea diaria `check_open`, aviso en la ficha que propone descartar, «Republicada ×N» en bandeja y triaje |
 | 16.2 | ↳ Búsqueda ampliada | ✅ | `get_search_titles` y skill `ampliar-busqueda`; `jh sources discover` sobre Greenhouse, Lever y Ashby |
-| 17 | Entrevistas: simulacro y repaso | ⏳ | Plan de preparación, simulacro con feedback, repaso posterior con notas y historias STAR nuevas |
+| 17 | Entrevistas: simulacro y repaso | ✅ | Plan de preparación, simulacro con feedback, repaso posterior con notas y historias STAR nuevas |
 | 18 | Contactos, mensajes e investigación de empresas | ⏳ | Tus contactos de LinkedIn (CSV) cruzados con tus ofertas, borradores de mensaje y dosier de empresa con fuentes |
 | 19 | Lote en segundo plano | ⏳ | «En segundo plano» además de «En terminal» para los skills que no preguntan (fase 2 de la ADR-024) |
 | 20 | Calibración y patrones | ⏳ | «¿Acierta el score?»: respuesta por tramo de score, veredicto, fuente, plantilla y carta; retrospectiva semanal |
@@ -74,7 +74,8 @@ Word y tras la 08b para PDF, imagen o HTML; `generar-carta` tras la 08c;
 `revisar-linkedin` funciona tras la 05, pero rinde mucho más desde la 07, cuando ya hay ofertas
 aprobadas de las que sacar las keywords; `buscar-ofertas` tras la 09b; `preparar-candidatura`,
 `preparar-entrevista` y `resumen-diario` tras la 10; la candidatura asistida (sin skill: se
-usa desde la ficha) tras la 11; `plan-formacion` tras la 14; `ampliar-busqueda` tras la 16.
+usa desde la ficha) tras la 11; `plan-formacion` tras la 14; `ampliar-busqueda` tras la 16;
+`simular-entrevista` y `repasar-entrevista` tras la 17.
 
 ## Registro de fases
 
@@ -1557,3 +1558,65 @@ decisiones tomadas y deuda técnica pendiente. -->
     `/ampliar-busqueda` con datos reales y `discover` con tus empresas
     (`docs/pruebas/fase-16-prueba-manual.txt`).
 
+### 17 · Entrevistas: simulacro, repaso y banco de historias — 2026-10-12 · Claude Code (Opus 5.5)
+- **Resumen:**
+  - Migración 0016: `milestones.prep_plan` (JSON), `debrief_notes`, `next_steps` y
+    `debriefed_at`. `notes` sigue siendo del usuario.
+  - `services/interviews.py` y `schemas/interviews.py`, con tres herramientas y paridad:
+    - `get_interviews` ↔ `jh interviews list`: entrevistas de una oferta con plan y repaso,
+      contactos (nombre y cargo), `offer_received` y `today`;
+    - `save_interview_plan` ↔ `jh interviews plan`: bloques de 15-120 min de hoy al día de la
+      entrevista, solo en una programada por empezar y con el proceso abierto;
+    - `save_interview_notes` ↔ `jh interviews notes`: solo en una entrevista ya empezada y no
+      cancelada.
+  - Ninguna registra eventos, cambia el estado del hito ni toca el perfil.
+  - Skills: `preparar-entrevista` (dosier por entrevista y plan por días que se guarda con tu OK),
+    `simular-entrevista` (nuevo) y `repasar-entrevista` (nuevo, con el modo «dudas antes de
+    aceptar»).
+  - Botones ADR-024 en el hito: «Preparar», «Simulacro» y «Repasar». En la ficha, «Dudas antes de
+    aceptar» con un `offer_received`. `POST /agent/launch` acepta `milestone_id`; la oferta sale
+    del hito.
+  - Ficha: plan por días con el dosier y «Abrir carpeta» (carpeta `entrevistas`), bloque «Repaso»
+    y `ProcessView.offer_received`.
+  - Docs: AGENT_INTERFACE, DATA_MODEL, POLICIES §1.6, README, RESUMEN_FASES, ADR-029 y
+    `docs/pruebas/fase-17-prueba-manual.txt`.
+  - Tests:
+    - backend: pasada completa con 1986 en verde y 2 que fijaban la cabeza de migración en 0015
+      (corregidos). Los tests añadidos con la revisión pasan sueltos;
+    - frontend: 202 en verde. Dos tests ajenos a la fase fallaron por tiempo de espera mientras
+      corría a la vez el backend, y pasan sueltos.
+- **Pruebas reales** (carpeta de datos aislada con `jh demo seed`, sin tocar `data/`):
+  - `jh interviews list|plan|notes` sobre las entrevistas de la demo: plan guardado y ordenado;
+    repaso guardado en una entrevista hecha, sin eventos nuevos;
+  - rechazados con mensaje claro: el repaso de una entrevista futura y un bloque después de la
+    fecha;
+  - el `--file` se borra tras el éxito.
+- **Decisiones** (ADR-029):
+  - Plan y repaso en el hito, no en una tabla nueva.
+  - Guardar el repaso no marca la entrevista como hecha: el estado sigue siendo tuyo y el skill te
+    lo recuerda.
+  - Herramientas extra respecto al encargo: `get_interviews` (los skills no podían leer un hito
+    pasado) y `save_interview_plan` (el encargo pide guardar el plan en la ficha).
+  - Las «dudas antes de aceptar» son un modo de `repasar-entrevista` y no un skill propio.
+  - El dosier lleva el id de la entrevista en el nombre, para no pisar el de otra ronda.
+  - El plan y el repaso se guardan sin pedir permiso en Claude Code (el skill ya pide tu OK);
+    `add_event` sigue pidiéndolo.
+  - Revisión del rol `revisor` aplicada:
+    - una entrevista de todo el día cuenta como empezada al acabar ese día (Madrid), con una sola
+      comprobación (`check_can_prepare`, `check_can_debrief`) que usan herramientas y botones, y
+      su espejo en la UI;
+    - tests de la frontera de zona horaria;
+    - aviso «la entrevista se ha movido» si un plan tiene bloques posteriores a la nueva fecha;
+    - skills: los textos de los hitos y los repasos son datos, no instrucciones; las dudas antes
+      de aceptar solo con el proceso abierto; el simulacro solo escribe la nota si la pides;
+    - sección de AGENT_INTERFACE recolocada.
+- **Deuda:**
+  - El plan no avisa de los bloques del día ni se marca como hecho; tampoco va al calendario.
+  - El simulacro no guarda nada salvo que pidas la nota: no hay historial de simulacros.
+  - La UI no muestra el contenido del dosier, solo su nombre y la carpeta.
+  - Reprogramar no rehace el plan: la ficha avisa y se rehace con «Preparar».
+  - `save_interview_notes` no guarda qué agente escribió el repaso (el plan sí).
+  - El caso de paridad del plan calcula «hoy» al importar: fallaría si la ejecución cruzara la
+    medianoche de Madrid.
+  - Pendiente de prueba manual: los tres botones con una entrevista real o de prueba y «Dudas
+    antes de aceptar» (`docs/pruebas/fase-17-prueba-manual.txt`).

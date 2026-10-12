@@ -492,3 +492,28 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   republicaciones anteriores a la migración no se recuperan: el relleno solo crea la primera
   publicación de cada oferta.
 
+## ADR-029 · Preparación y repaso de entrevistas en el hito, sin cambiar su estado
+- **Contexto:** la fase 17 añade un plan de preparación por días, un simulacro y un repaso
+  posterior de cada entrevista, con botones en el hito (ADR-024). Había que decidir dónde se
+  guardan, si guardar el repaso marca la entrevista como hecha y cómo entran en el perfil las
+  historias nuevas.
+- **Decisión:**
+  - el plan (`prep_plan`, JSON) y el repaso (`debrief_notes`, `next_steps`, `debriefed_at`) son
+    columnas del hito (`milestones`). `notes` sigue siendo lo que anota el usuario: el repaso no
+    lo pisa. Solo en hitos de tipo entrevista;
+  - `save_interview_plan` y `save_interview_notes` no registran eventos ni cambian `status`. Marcar
+    la entrevista como hecha (`interview_done`, que activa el agradecimiento y cuenta en el embudo)
+    sigue siendo del usuario en la ficha; el skill se lo recuerda;
+  - el simulacro no guarda nada. Lo que el usuario cuente se queda en la conversación o en las
+    notas del hito; al perfil solo entra con `actualizar-perfil` y su confirmación (POLICIES §1.6).
+    Los skills de entrevista no llevan `jh profile` entre sus herramientas permitidas;
+  - el dosier sigue siendo un fichero (`data/entrevistas/`); el plan guarda solo su nombre, sin
+    carpetas, y la UI abre la carpeta con «Abrir carpeta» (lista cerrada);
+  - `get_interviews` devuelve de los contactos solo nombre y cargo;
+  - las «dudas antes de aceptar» son un modo de `repasar-entrevista` y no un skill propio: usan
+    las mismas notas. Comparar ofertas y el salario quedan para la fase 21;
+  - matiz a ADR-024: además del `job_id`, una orden puede llevar el `milestone_id` (entero). La
+    oferta sale del hito y se comprueba que el hito admite la acción.
+- **Consecuencias:** sin tablas nuevas y con la ficha como único sitio donde mirar. Un repaso
+  guardado sobre una entrevista aún «programada» no cuenta en el embudo hasta que el usuario la
+  marca; es el precio de que los cambios de estado sigan siendo suyos.
