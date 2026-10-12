@@ -116,6 +116,16 @@ agent_browse:                   # fase 09b, skill buscar-ofertas
   delay_seconds: 5
   default_max_offers: 15
 
+linkedin_public:                # fase 22, ADR-033: búsqueda pública de LinkedIn sin sesión, apagada por defecto
+  max_searches_per_run: 5         # búsquedas (search_urls de la plataforma LinkedIn) por ejecución
+  max_pages_per_search: 2         # páginas de resultados por búsqueda (unas 10 ofertas cada una)
+  delay_seconds: 10               # pausa entre dos peticiones cualesquiera; no se admite menos de 10
+  min_hours_between_runs: 20      # como mucho, una ejecución al día
+  block_cooldown_days: 3          # tras un 429/999, redirección o captcha, días sin volver a intentarlo
+  max_details_per_run: 10         # descripciones por ejecución, solo si activas «Descargar también la descripción»
+  timeout_seconds: 20
+  default_time_posted: r86400     # si la búsqueda no dice `f_TPR`: publicadas en las últimas 24 h
+
 liveness:                       # fase 16: ¿sigue abierta? Nunca cierra la oferta: avisa y propone descartarla
   fresh_hours: 20                 # no se vuelve a comprobar antes (salvo «Comprobar otra vez»); el worker revisa cada día las aprobadas y con CV
   timeout_seconds: 15

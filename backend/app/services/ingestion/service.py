@@ -75,6 +75,7 @@ MANUAL_LABELS = {
     "email_alerts": "Alertas por correo",
     "browser_capture": "Botón «Enviar a Job Hunter»",
     "agent_browse": "Búsqueda con navegador",
+    "linkedin_public": "LinkedIn · búsqueda pública",
 }
 
 

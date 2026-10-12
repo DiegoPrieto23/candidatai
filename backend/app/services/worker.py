@@ -22,6 +22,10 @@ Candidatura asistida (fase 11): el worker es el único dueño del navegador pers
 (`services/applier/browser.py`). Sus tareas no se reintentan y, si el worker se cierra a medias,
 quedan `failed` al arrancar, nunca vuelven a la cola.
 
+Búsqueda pública de LinkedIn (fase 22, ADR-033): solo si el usuario la activó en la UI, con la
+ingesta diaria y al arrancar se encola `run_linkedin_public` si le toca (una vez al día y, tras un
+bloqueo, unos días después). Nunca se reintenta.
+
 En segundo plano (fase 19): las `agent_runs` que deja la UI se ejecutan en un hilo propio, de una
 en una, para que un agente de varios minutos no pare la cola. Tampoco se repiten si el worker se
 cierra a medias.
@@ -49,6 +53,7 @@ from app.services import (
     summaries,
     tasks,
 )
+from app.services.ingestion import linkedin_public
 from app.services.ingestion import service as sources
 from app.services.ingestion.email import service as email_alerts
 from app.services.ingestion.email.mailboxes import has_local_mail
@@ -98,6 +103,13 @@ def _poll_replies(session: Session, _payload: dict[str, Any]) -> dict[str, Any]:
 
 def _expire_summaries(session: Session, _payload: dict[str, Any]) -> dict[str, Any]:
     return summaries.expire_summaries(session).model_dump(mode="json")
+
+
+def _run_linkedin_public(session: Session, _payload: dict[str, Any]) -> dict[str, Any]:
+    # Sin `RETRY_KEY`: un fallo o un bloqueo de LinkedIn no se reintenta.
+    if not linkedin_public.due(session):
+        return {"message": f"{linkedin_public.NAME}: no toca ahora o está desactivada."}
+    return linkedin_public.run(session, actor="system").model_dump(mode="json")
 
 
 def _check_open(session: Session, payload: dict[str, Any]) -> dict[str, Any]:
@@ -160,6 +172,7 @@ HANDLERS: dict[str, Handler] = {
     "rescore_all": _rescore_all,
     "run_source": _run_source,
     "poll_email": _poll_email,
+    "run_linkedin_public": _run_linkedin_public,
     "poll_replies": _poll_replies,
     "expire_summaries": _expire_summaries,
     "browser_open": _browser_open,
@@ -271,6 +284,14 @@ def enqueue_email_poll(session: Session) -> bool:
     return True
 
 
+def enqueue_linkedin_public(session: Session) -> bool:
+    """Encola la búsqueda pública de LinkedIn solo si está activada y le toca: apagada, nada."""
+    if not linkedin_public.due(session):
+        return False
+    tasks.enqueue(session, "run_linkedin_public")
+    return True
+
+
 def enqueue_replies_poll(session: Session) -> bool:
     if not replies.replies_enabled() or not replies.has_open_processes(session):
         return False
@@ -289,7 +310,7 @@ def enqueue_liveness_checks(session: Session) -> int:
 def describe(outcome: TaskOutcome) -> str:
     """Una línea legible para el log del worker."""
     result = outcome.result or {}
-    kinds = ("run_source", "poll_email", "poll_replies", "expire_summaries")
+    kinds = ("run_source", "poll_email", "poll_replies", "expire_summaries", "run_linkedin_public")
     if outcome.kind in kinds and result.get("message"):
         line = str(result["message"])
         if outcome.error:
@@ -340,6 +361,7 @@ def run_scheduler(
         try:
             with session_scope() as session:
                 queued = enqueue_due_sources(session)
+                linkedin = enqueue_linkedin_public(session)
                 tasks.enqueue(session, "expire_summaries")
                 checks = enqueue_liveness_checks(session)
         except Exception as exc:
@@ -347,6 +369,8 @@ def run_scheduler(
             on_message(f"Error al encolar la ingesta diaria: {type(exc).__name__}: {exc}")
             return
         on_message(f"Ingesta diaria: {len(queued)} fuentes en cola.")
+        if linkedin:
+            on_message("Búsqueda pública de LinkedIn en cola (la activaste en Plataformas).")
         if checks:
             on_message(f"¿Siguen abiertas?: {checks} ofertas aprobadas o con CV en cola.")
         process()
@@ -400,6 +424,7 @@ def run_scheduler(
         if stuck := tasks.requeue_running(session):
             on_message(f"Tareas que quedaron a medias, de vuelta a la cola: {stuck}.")
         queued = enqueue_due_sources(session)
+        linkedin = enqueue_linkedin_public(session)
         email = enqueue_email_poll(session)
         email = enqueue_replies_poll(session) or email
         tasks.enqueue(session, "expire_summaries")
@@ -408,6 +433,8 @@ def run_scheduler(
         on_message(f"Fuentes pendientes desde la última ingesta: {len(queued)} en cola.")
     if checks:
         on_message(f"¿Siguen abiertas?: {checks} ofertas aprobadas o con CV en cola.")
+    if linkedin:
+        on_message("Búsqueda pública de LinkedIn en cola (la activaste en Plataformas).")
     if email:
         on_message(f"Correo (alertas y respuestas): se lee al arrancar y cada {poll_minutes} min.")
     process()

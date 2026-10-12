@@ -21,8 +21,10 @@ PLATFORM_LABELS: dict[str, str] = {
     "tecnoempleo": "Tecnoempleo",
 }
 
-# Plataformas cuya página de oferta no se descarga nunca desde el código (ADR-016): sus ofertas
-# entran como resumen y se completan con el botón de captura.
+# Plataformas cuya página de oferta no se descarga con el alta por URL, las alertas ni «¿sigue
+# abierta?» (ADR-016): sus ofertas entran como resumen y se completan con el botón de captura. La
+# única excepción es la búsqueda pública de LinkedIn sin sesión, apagada por defecto y con sus
+# propios límites (`ingestion/linkedin_public.py`, ADR-033).
 _NO_FETCH = frozenset({"linkedin"})
 
 _LINKEDIN_VIEW = re.compile(r"/jobs/view/(?:[^/]*?-)?(\d{6,20})(?:/|$)")

@@ -11,6 +11,7 @@ mismo sitio: la tabla `jobs`, con deduplicación, detección de riesgo e histori
 | **Alertas de empleo por correo** | 09b | Sí | LinkedIn, InfoJobs, Indeed, Tecnoempleo… (lo que te envíen) |
 | **Botón «Enviar a Job Hunter»** | 09b | No (un clic) | Cualquier página que estés viendo, LinkedIn incluido |
 | **Búsqueda con el navegador del agente** | 09b | A demanda | Portales que la permitan; LinkedIn solo si lo activas tú |
+| **Búsqueda pública de LinkedIn sin sesión** (opcional, apagada) | 22 | Sí, diaria | Tus búsquedas de LinkedIn, solo si la activas tú |
 
 ## Por qué LinkedIn va así
 
@@ -19,7 +20,7 @@ solo para socios aprobados y no admite nuevos. Las «APIs de LinkedIn Jobs» de 
 scrapers de pago que incumplen sus condiciones, y LinkedIn demanda a quien lo hace a escala. Por
 eso aquí LinkedIn entra por tres vías que no dependen de eso: sus propias alertas por correo, tu
 clic en el botón mientras ves una oferta y, solo si tú lo activas, la búsqueda con el navegador
-del agente (ADR-016).
+del agente (ADR-016) o la búsqueda pública sin sesión que hace la propia app (ADR-033, abajo).
 
 ## APIs de ATS y portales (fase 09)
 
@@ -191,6 +192,51 @@ hayas aprobado. Skill `buscar-ofertas`.
 - Requiere un agente con acceso a tu navegador (en Claude Code, Claude in Chrome). Ver
   `docs/AGENTS_COMPAT.md`.
 
+## Búsqueda pública de LinkedIn sin sesión (fase 22, opcional)
+
+LinkedIn sirve su búsqueda de empleo a quien no ha iniciado sesión desde unos endpoints públicos
+(`jobs-guest`). La app puede consultarlos una vez al día, **sin tu cuenta ni cookies**, para tener
+ofertas de LinkedIn sin depender del correo. Es **contrario a las condiciones de uso de LinkedIn**
+(prohíben el acceso automatizado) y puede hacer que bloquee tu IP un tiempo: por eso está
+**apagada por defecto**, es para uso personal y solo la activas tú (ADR-033).
+
+- **Dónde:** tarjeta de LinkedIn en «Plataformas» → «Búsqueda pública sin sesión». Es un interruptor
+  distinto de «El agente la recorre». Encenderlo abre un aviso de riesgo que hay que aceptar (la API
+  exige `confirm_risk: true` y solo la acepta desde la UI). El agente no puede activarla: no hay
+  herramienta MCP ni comando para eso, y `save_source` no la toca.
+- **Qué busca:** las `search_urls` de la plataforma LinkedIn que sean búsquedas de
+  `linkedin.com/jobs/search?…`. De cada una se usan solo `keywords`, `location`, `geoId`,
+  `distance`, `f_TPR`, `f_WT`, `f_E` y `f_JT`; sin `f_TPR`, las publicadas en las últimas 24 h
+  (`default_time_posted`). Las demás URLs (una oferta, colecciones…) se ignoran y la tarjeta dice
+  por qué.
+- **Endpoint:** `https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?…&start=N`,
+  que devuelve tarjetas HTML (id, título, empresa, ubicación, fecha). Sin cookies, sin seguir
+  redirecciones y con un user-agent que dice lo que es.
+- **Límites** (`config/policies.yaml` → `linkedin_public`; los mínimos están en el código):
+  `max_searches_per_run` (5), `max_pages_per_search` (2, no más), `delay_seconds` (10, no menos)
+  entre dos peticiones cualesquiera, `min_hours_between_runs` (20: una al día) y
+  `max_details_per_run` (10).
+- **Bloqueo:** ante 429, 999, 401/403, una redirección (al inicio de sesión o a un control) o una
+  página de captcha o anti-bot servida con 200, **se corta en el acto**: ni una petición más, lo ya
+  leído se guarda, `blocked` en `source_runs`, aviso en la tarjeta y `block_cooldown_days` (3) sin
+  volver a intentarlo. La tarea del worker no se reintenta nunca. Un 5xx o un fallo de red es un
+  aviso de esa búsqueda, no un bloqueo.
+- **Entrada:** las ofertas pasan el **filtro previo de resúmenes** (título, ubicación y seniority del
+  título) **antes** de guardarse: lo que no pasa no entra. Lo nuevo entra como **resumen**
+  (`pending_detail`, `platform: linkedin`, `external_id`) en «Alertas», igual que las del correo, y
+  se completa con el botón «Enviar a Job Hunter». Lo ya visto (por `platform` + `external_id`) no
+  se duplica.
+- **Descripción por el endpoint público** (`jobs-guest/jobs/api/jobPosting/{id}`): otro interruptor,
+  también apagado y con su propio aviso. Solo para las nuevas que pasan el filtro y hasta
+  `max_details_per_run`; con descripción suficiente entran completas (`pending_extraction`), con la
+  detección de riesgo sobre su HTML. Más peticiones, más riesgo.
+- **Cuándo:** con la ingesta diaria del worker y al arrancar, si está activada y le toca; o «Buscar
+  ahora» en la tarjeta, o `jh sources linkedin-public run` (mismos límites). `jh sources
+  linkedin-public status` enseña el estado y las búsquedas.
+- **Si no funciona:** con un user-agent honesto es posible que LinkedIn responda siempre 999. Entonces
+  la función queda bloqueada y se ve en la tarjeta; no se intenta esquivar. Si su HTML cambia, la
+  ejecución deja el aviso `page_changed`.
+
 ## ¿Sigue abierta? y republicadas (fase 16)
 
 Para no gastar tiempo ni cuota del agente en ofertas cerradas o que se publican una y otra vez.
@@ -223,7 +269,7 @@ son **observaciones, no veredictos**: la app nunca cierra una oferta por ellas.
 - En la práctica (comprobado en octubre de 2026): los ATS y Tecnoempleo responden bien; InfoJobs
   sirve un control anti-bot e Indeed responde 401 a peticiones sin navegador, así que sus ofertas
   suelen quedar en `unknown`. No se intenta esquivar: el aviso solo sale cuando hay evidencia.
-- **LinkedIn nunca** (ADR-016; ver fase 22): `skipped`.
+- **LinkedIn nunca** (ADR-016; la búsqueda pública de la fase 22 no cambia esto): `skipped`.
 
 Cuándo se comprueba:
 

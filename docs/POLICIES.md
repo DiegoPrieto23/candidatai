@@ -254,3 +254,19 @@ Cuando el agente recorre portales con tu navegador (skill `buscar-ofertas`, deta
   `agent_browse`. LinkedIn solo si lo has activado tú en la UI: la interfaz para agentes no puede
   activarlo. La API local no tiene autenticación, así que un agente con terminal podría
   llamarla directamente (riesgo residual, `docs/FUENTES_OFERTAS.md`).
+
+### Búsqueda pública de LinkedIn sin sesión (fase 22, ADR-033)
+
+Distinta de la búsqueda con navegador: la hace el código, no el agente, y no usa tu navegador.
+
+- **Apagada por defecto.** Solo la activas tú, en la tarjeta de LinkedIn de Plataformas, aceptando
+  el riesgo (condiciones de uso de LinkedIn y posible bloqueo de tu IP). El agente no puede
+  activarla: no hay herramienta ni comando para eso. Mientras está apagada no sale ninguna petición.
+- **Sin sesión:** nunca con cookies ni con tu cuenta; user-agent honesto, sin redirecciones.
+- **Límites** de `config/policies.yaml` → `linkedin_public` (con mínimos en el código): búsquedas por
+  ejecución, 2 páginas por búsqueda como mucho, ≥ 10 s entre peticiones y una ejecución al día.
+- **Bloqueo** (429, 999, 401/403, redirección al inicio de sesión, captcha o anti-bot): se corta en el
+  acto, se avisa en la UI y no se vuelve a intentar en `block_cooldown_days` días. Nunca se esquiva.
+- **Solo lectura de ofertas:** entran como resumen y se completan con el botón de captura; la
+  descripción por el endpoint público es otro interruptor, también apagado. Nunca candidaturas ni
+  mensajes (regla 6).

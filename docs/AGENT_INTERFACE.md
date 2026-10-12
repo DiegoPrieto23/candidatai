@@ -524,6 +524,12 @@ la pantalla «Plataformas».
 | `jh sources run [ID] [--json]` | Ejecuta ya una fuente (o todas las activas) y guarda lo nuevo en `pending_extraction`. `{runs: [SourceRunResult]}` con `created`, `existing`, `duplicates`, `job_ids` y `errors` |
 | `jh sources enable ID` / `disable ID` | Activa o pausa una fuente en la ingesta diaria |
 | `jh sources discover --file F [--add] [--json]` | Fase 16: busca el tablero de Greenhouse, Lever o Ashby de cada empresa del fichero (una por línea; `Nombre \| slug` fuerza un slug) por sus APIs públicas. `DiscoverResult`: por empresa, `tried`, `hits` (`kind`, `slug`, `region`, `board_name`, `jobs_count`, `sample_titles`, `confidence`: `confirmed`/`probable`/`doubtful`, `existing_source_id`, `add_command`), `errors` y `added_source_ids`. Con `--add`, da de alta las `confirmed` y `probable` que faltan. Sin herramienta MCP |
+| `jh sources linkedin-public status [--json]` | Fase 22 (ADR-033): estado de la búsqueda pública de LinkedIn sin sesión. `LinkedInPublicView`: `enabled`, `fetch_detail`, búsquedas que lanzará (`searches`) e ignoradas (`ignored`), `blocked_at`, `next_run_at`, `last_run` y `limits` |
+| `jh sources linkedin-public run [--json]` | La ejecuta ya si está activada y le toca (una vez al día; días sin ejecutar tras un bloqueo). `LinkedInPublicRunResult` con `skipped`, `blocked`, `requests`, `found`, `after_filters`, `created`, `summaries`, `existing`, `job_ids` y `errors`. Apagada: `not_allowed`. Código 1 si LinkedIn la bloquea |
+
+La búsqueda pública de LinkedIn **no se activa por la interfaz para agentes**: no hay herramienta
+MCP ni comando para encenderla; solo la UI (`POST /sources/linkedin-public/settings` con
+`confirm_risk`). Un agente no debe llamar a esa API.
 
 ### Candidatura asistida (fase 11): sin herramientas, a propósito
 

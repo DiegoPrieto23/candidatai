@@ -1,17 +1,19 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Depends, status
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.api.deps import SessionDep
+from app.api.deps import EmptyBody, SessionDep, require_ui
 from app.schemas.sources import (
     AgentBrowseSource,
     BrowseAccess,
+    LinkedInPublicRunResult,
+    LinkedInPublicView,
     SourceInput,
     SourceList,
     SourceRunResult,
     SourceTestResult,
     SourceView,
 )
-from app.services.ingestion import browse
+from app.services.ingestion import browse, linkedin_public
 from app.services.ingestion import service as sources
 
 router = APIRouter(prefix="/sources", tags=["sources"])
@@ -40,6 +42,53 @@ def add_platform(session: SessionDep, body: AgentBrowseSource) -> browse.SaveSou
     """«Añadir plataforma»: una web donde el agente busca ofertas con tu navegador. LinkedIn se
     crea siempre con la búsqueda desactivada (se activa después, aceptando el riesgo)."""
     return browse.add_platform(session, body)
+
+
+# --- Búsqueda pública de LinkedIn (fase 22, ADR-033). Antes de las rutas `/{source_id}`. ---------
+
+
+class LinkedInPublicSettingsBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    enabled: bool | None = None
+    fetch_detail: bool | None = None
+    confirm_risk: bool = False  # obligatorio para encender cualquiera de los dos
+
+
+@router.get("/linkedin-public", operation_id="get_linkedin_public")
+def get_linkedin_public(session: SessionDep) -> LinkedInPublicView:
+    """Estado de la búsqueda pública de LinkedIn sin sesión: interruptores, búsquedas que lanzará,
+    límites, última ejecución y desde cuándo puede volver a ejecutarse."""
+    return linkedin_public.get_view(session)
+
+
+@router.post(
+    "/linkedin-public/settings",
+    operation_id="update_linkedin_public",
+    dependencies=[Depends(require_ui)],
+)
+def update_linkedin_public(
+    session: SessionDep, body: LinkedInPublicSettingsBody
+) -> LinkedInPublicView:
+    """Enciende o apaga la búsqueda pública (y la descarga de la descripción). Encender exige
+    `confirm_risk: true`. Solo desde la UI."""
+    return linkedin_public.update_settings(
+        session,
+        enabled=body.enabled,
+        fetch_detail=body.fetch_detail,
+        confirm_risk=body.confirm_risk,
+    )
+
+
+@router.post(
+    "/linkedin-public/run",
+    operation_id="run_linkedin_public",
+    dependencies=[Depends(require_ui)],
+)
+def run_linkedin_public(session: SessionDep, _body: EmptyBody) -> LinkedInPublicRunResult:
+    """«Buscar ahora»: respeta los mismos límites (una vez al día, días sin buscar tras un
+    bloqueo). Tarda: hay una pausa de al menos 10 s entre peticiones."""
+    return linkedin_public.run(session, actor="user")
 
 
 @router.post("/test", operation_id="preview_new_source")

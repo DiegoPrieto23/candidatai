@@ -6,7 +6,7 @@ cada fase y lo quita cuando el usuario confirma que está hecho.
 
 Marca `[x]` lo que hagas y, si algo falla, apúntalo debajo de la línea con `→`.
 
-Última actualización: 2026-10-12 (fase 21).
+Última actualización: 2026-10-12 (fase 22).
 
 ## 1. Poner la app al día (antes de probar nada)
 
@@ -47,6 +47,13 @@ bloquea el entorno de Python):
 Cada guía está en `docs/pruebas/`. No consta en el ROADMAP que estén hechas; si alguna ya la
 hiciste, márcala.
 
+- [ ] **Fase 22 · LinkedIn por sus endpoints públicos** (`fase-22-prueba-manual.txt`), **solo si
+      quieres usarla** (va contra las condiciones de LinkedIn y puede bloquear tu IP un tiempo):
+  - comprobar que la tarjeta de LinkedIn de «Plataformas» muestra «Búsqueda pública sin sesión»
+    apagada y con las búsquedas que usaría;
+  - activarla aceptando el aviso, «Buscar ahora» y ver en «Alertas» los resúmenes nuevos (o el
+    aviso de bloqueo, si LinkedIn responde 999 a un user-agent honesto: apúntalo);
+  - apagarla al terminar si no la quieres diaria.
 - [ ] **Fase 21 · Ofertas recibidas y salario** (`fase-21-prueba-manual.txt`), con la demo o
       cuando llegue la primera oferta:
   - poner `private.salary_floor_eur` en tu perfil (si no, la comparación sale sin mínimo);

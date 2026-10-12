@@ -379,3 +379,15 @@ La carta es un documento propio, con sus indicaciones, su verificación y sus re
   recojas; el agente solo cita filas que encajen y nunca inventa rangos.
 - Para agentes y terminal: `get_received_offer` ↔ `jh received-offers show`.
 
+
+## 22 · LinkedIn por sus endpoints públicos (opcional) — 2026-10-12 · Claude Code (Opus 5.5)
+- **«Búsqueda pública sin sesión»** en la tarjeta de LinkedIn de Plataformas, **apagada por
+  defecto**: si la activas (aceptando el aviso), la app consulta una vez al día la búsqueda pública
+  de LinkedIn con tus búsquedas, sin tu cuenta ni cookies. Lo nuevo que pasa tus filtros entra como
+  resumen en «Alertas» y lo completas con el botón «Enviar a Job Hunter».
+- **Con riesgo y con freno:** va contra las condiciones de LinkedIn y puede bloquear tu IP. Por eso
+  va despacio (≥ 10 s entre peticiones, 2 páginas por búsqueda, una vez al día), se corta en el acto
+  ante un bloqueo o un captcha y no lo vuelve a intentar en 3 días. Tu agente no puede activarla.
+- **Opcional dentro de lo opcional:** «Descargar también la descripción» (otro interruptor
+  apagado) trae la oferta completa, a costa de más peticiones.
+- Desde la terminal: `jh sources linkedin-public status` y `run`.
