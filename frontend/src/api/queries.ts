@@ -39,6 +39,7 @@ export const keys = {
   drafts: (jobId: number) => ['drafts', jobId] as const,
   network: ['network'] as const,
   jobNetwork: (jobId: number) => ['network', 'job', jobId] as const,
+  research: (jobId: number) => ['research', jobId] as const,
 }
 
 type JobsQuery = NonNullable<operations['list_jobs']['parameters']['query']>
@@ -1017,5 +1018,18 @@ export function useSetReferral(jobId: number) {
         client.invalidateQueries({ queryKey: keys.process(jobId) }),
         client.invalidateQueries({ queryKey: ['funnel'] }),
       ]),
+  })
+}
+
+// --- Dosier de empresa (fase 18) ----------------------------------------------------------------
+
+export function useCompanyResearch(jobId: number, enabled = true) {
+  return useQuery({
+    queryKey: keys.research(jobId),
+    queryFn: () =>
+      unwrap(api.GET('/jobs/{job_id}/company-research', { params: { path: { job_id: jobId } } })),
+    enabled: enabled && Number.isInteger(jobId) && jobId > 0,
+    // Lo guarda el agente desde fuera: se refresca solo.
+    refetchInterval: 60_000,
   })
 }

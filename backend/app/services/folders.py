@@ -1,8 +1,8 @@
 """Abrir una carpeta de datos en el explorador de archivos (botones «Abrir carpeta» de la UI).
 
-Lista cerrada: el contexto, los documentos, los dosieres de entrevista y la carpeta archivada de
-una candidatura. Nunca una ruta que llegue de fuera. Solo Windows de momento (`os.startfile`); en
-otro sistema, o si falla, se devuelve la ruta para que la UI la copie.
+Lista cerrada: el contexto, los documentos, los dosieres de entrevista y de empresa y la carpeta
+archivada de una candidatura. Nunca una ruta que llegue de fuera. Solo Windows de momento
+(`os.startfile`); en otro sistema, o si falla, se devuelve la ruta para que la UI la copie.
 """
 
 import os
@@ -11,9 +11,9 @@ from typing import Literal
 
 from pydantic import BaseModel
 
-from app.services import application_archive, context, interviews
+from app.services import application_archive, company_research, context, interviews
 
-FolderKind = Literal["contexto", "documentos", "entrevistas", "candidatura"]
+FolderKind = Literal["contexto", "documentos", "entrevistas", "empresas", "candidatura"]
 
 
 class FolderNotFoundError(FileNotFoundError):
@@ -30,8 +30,12 @@ def resolve(kind: FolderKind, job_id: int | None = None) -> str:
         path = context.context_dir()
     elif kind == "documentos":
         path = context.documents_dir()
-    elif kind == "entrevistas":  # dosieres de `preparar-entrevista` (fase 17)
-        path = interviews.interviews_dir()
+    elif kind in ("entrevistas", "empresas"):  # dosieres de las fases 17 y 18
+        path = (
+            interviews.interviews_dir()
+            if kind == "entrevistas"
+            else company_research.research_dir()
+        )
         path.mkdir(parents=True, exist_ok=True)
         return str(path)
     else:

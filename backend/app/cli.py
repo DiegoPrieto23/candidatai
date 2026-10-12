@@ -50,6 +50,9 @@ drafts_app = typer.Typer(
     help="Borradores de seguimiento y agradecimiento (la app no envía nada).",
     no_args_is_help=True,
 )
+companies_app = typer.Typer(
+    help="Dosier de cada empresa (skill investigar-empresa).", no_args_is_help=True
+)
 contacts_app = typer.Typer(
     help="Tu red de LinkedIn (Connections.csv) y los contactos de cada proceso.",
     no_args_is_help=True,
@@ -94,6 +97,7 @@ app.add_typer(replies_app, name="replies")
 app.add_typer(drafts_app, name="drafts")
 app.add_typer(interviews_app, name="interviews")
 app.add_typer(contacts_app, name="contacts")
+app.add_typer(companies_app, name="companies")
 demo_app = typer.Typer(
     help="Modo demo: una búsqueda ficticia para probar la app.", no_args_is_help=True
 )
@@ -1858,6 +1862,22 @@ def _render_job_contacts(view: Any) -> None:
         typer.echo(f"  {person.name}{position}{probable}{added}")
 
 
+def _render_company_research(view: Any) -> None:
+    research = view.research
+    if research is None:
+        typer.echo(f"{view.company}: sin dosier. Usa el skill investigar-empresa.")
+        return
+    content = research.content
+    typer.echo(f"{view.company} · dosier de hace {research.age_days} días ({research.file})")
+    if research.risk_flags:
+        typer.secho("  Ojo: contiene frases dirigidas a una IA.", fg="yellow")
+    typer.echo(content.summary)
+    if content.stack:
+        typer.echo(f"Stack: {', '.join(content.stack)}")
+    for n, source in enumerate(content.sources, start=1):
+        typer.echo(f"  [{n}] {source.title} · {source.url}")
+
+
 # Al final: los renderizadores de arriba ya existen.
 register_tools(
     app,
@@ -1879,10 +1899,13 @@ register_tools(
         "drafts": drafts_app,
         "interviews": interviews_app,
         "contacts": contacts_app,
+        "companies": companies_app,
     },
     {
         "get_status": _render_status,
         "get_job_contacts": _render_job_contacts,
+        "get_company_research": _render_company_research,
+        "save_company_research": _render_message,
         "add_job_from_url": _render_added,
         "add_job_from_text": _render_added,
         "list_jobs": _render_jobs,

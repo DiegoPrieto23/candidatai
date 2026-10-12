@@ -2,7 +2,7 @@
 
 from app.models.applier import ApplicationAttempt
 from app.models.base import Base
-from app.models.companies import Company
+from app.models.companies import Company, CompanyResearch
 from app.models.documents import CoverLetterBrief, Document, DocumentRender
 from app.models.events import Application, Event
 from app.models.jobs import Job, JobExtraction, JobSighting
@@ -20,6 +20,7 @@ __all__ = [
     "ApplicationAttempt",
     "Base",
     "Company",
+    "CompanyResearch",
     "Contact",
     "CoverLetterBrief",
     "Document",

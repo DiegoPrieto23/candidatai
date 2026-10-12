@@ -464,9 +464,9 @@ eventos `followup_sent`.
 |---|---|---|
 | id | int PK | |
 | job_id | FK | |
-| kind | str | `followup` o `thank_you` |
+| kind | str | `followup` o `thank_you`; desde la fase 18, también `linkedin` y `email` |
 | milestone_id | FK? | La entrevista que se agradece |
-| subject, body | str, text | |
+| subject, body | str?, text | Sin asunto solo en `linkedin` (migración 0018) |
 | status | str | `draft`, `sent` (el usuario marcó que lo envió) o `discarded` |
 | event_id | FK? | `followup_sent` al marcarlo enviado |
 | agent_name | str? | |
@@ -524,10 +524,43 @@ nunca el agente.
 
 - **Sin email**: aunque la exportación lo traiga, no se guarda.
 - **Importar sincroniza**: se reconoce a cada persona por su URL (sin URL, por nombre y empresa);
-  añade, actualiza y borra lo que ya no está. Un fichero sin filas no borra la red.
+  añade, actualiza y borra lo que ya no está. Un fichero sin filas no borra la red; si quita más de
+  la mitad, el mensaje lo avisa. Los contactos del proceso y los borradores que apuntaban a una
+  persona borrada siguen, sin el enlace.
 - **Cruce con una oferta** (`services/network.py`): `exact` si las claves de empresa son iguales (o
   iguales sin espacios); `probable` si una es el principio de la otra palabra a palabra
   («bretema» ↔ «bretema analytics»), salvo que la corta sea una sola palabra de menos de 5 letras
   o genérica («banco», «grupo», «data»…). `JobRow.known_contacts` lleva el recuento a la bandeja y
   al triaje.
 
+### `message_drafts` (fase 18, migración 0018)
+Mensajes a personas de la empresa: `linkedin` (≤ 300 caracteres, sin asunto ni adjuntos) y `email`
+(con asunto). Se guardan desde `approved` hasta `in_process` (los seguimientos y agradecimientos,
+solo en `applied`/`in_process`). «Ya lo he enviado» no registra evento. Como mucho uno vigente por
+oferta, tipo y destinatario.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| recipient_role | str? | `recruiter`, `hiring_manager` (responsable del puesto) o `peer` (compañero). Obligatorio en `linkedin` y `email` |
+| contact_id | FK contacts? | El contacto del proceso al que va (de esa oferta) |
+| network_contact_id | FK network_contacts? | O la persona de tu red, de la empresa de la oferta. No los dos. Queda en `null` si sale de la red al reimportar |
+| recipient_name | str? | El nombre del destinatario al guardar (sigue aunque la persona salga de la red) |
+| attachments | JSON? | Solo en `email`: nombres de los adjuntos que menciona (la app no adjunta nada) |
+
+### `company_research`
+Dosier de una empresa (skill `investigar-empresa`, migración 0018). Uno por empresa: lo comparten
+todas sus ofertas y guardar otro lo sustituye. No lleva evento: no es estado de una oferta.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | int PK | |
+| company_id | FK companies, único | |
+| job_id | FK jobs? | La oferta desde la que se investigó |
+| content | JSON | `CompanyResearchContent`: `summary`, `product?`, `news?`, `engineering_culture?`, `stack[]`, `notes?` y `sources[]` (`title`, `url` http(s) y no de LinkedIn, `accessed_on?`). Cada apartado con texto, salvo `notes`, cita `[n]` de `sources` |
+| risk_flags | JSON | `injection_phrase` si el texto guardado contiene frases dirigidas a una IA (sale de webs) |
+| file_name | str | `<Empresa>_<company_id>.md` en `data/documentos/empresas/`, que escribe el código (se reescribe al sustituirlo) |
+| agent_name | str? | |
+| created_at / updated_at | datetime | |
+
+Al archivar una candidatura (fase 13) se copia ese `.md` a su carpeta como `empresa.md`: el
+dosier vigente al archivar, que no forma parte de lo enviado (el README lo dice).

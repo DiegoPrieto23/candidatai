@@ -67,6 +67,8 @@ export type MessageDraftOut = Schemas['MessageDraftOut']
 export type JobNetwork = Schemas['JobNetwork']
 export type NetworkPerson = Schemas['NetworkPerson']
 export type NetworkStatus = Schemas['NetworkStatus']
+export type CompanyResearchResult = Schemas['CompanyResearchResult']
+export type CompanyResearchContent = Schemas['CompanyResearchContent']
 export type ContactRelation = NonNullable<Schemas['ContactOut']['relation']>
 export type ReferralStatus = NonNullable<Schemas['ContactOut']['referral']>
 

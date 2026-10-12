@@ -14,6 +14,7 @@ from app.api.routes import (
     applications,
     apply,
     capture,
+    companies,
     context,
     cv,
     drafts,
@@ -74,6 +75,7 @@ def create_app() -> FastAPI:
     app.include_router(replies.router)
     app.include_router(drafts.router)
     app.include_router(network.router)
+    app.include_router(companies.router)
     return app
 
 

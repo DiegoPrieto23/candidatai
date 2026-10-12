@@ -4,24 +4,29 @@ PRUEBA MANUAL · FASE 18 · CONTACTOS, MENSAJES E INVESTIGACIÓN DE EMPRESAS
 Objetivo: comprobar con tus datos reales que
 - tu exportación de LinkedIn se importa sin emails y se cruza bien con tus ofertas;
 - la ficha y el triaje dicen a quién conoces en cada empresa y lo puedes añadir al proceso;
-- la marca «referencia pedida / dada» sale en el embudo.
-(La parte 2, mensajes e investigación de empresa, llega con la subfase 18.2.)
+- la marca «referencia pedida / dada» sale en el embudo;
+- «Redactar mensaje» deja en la ficha un mensaje de LinkedIn (≤ 300 caracteres) o un correo con
+  adjuntos que no inventa nada y que nunca se envía;
+- «Investigar empresa» deja un dosier con fuentes en la ficha y en data/documentos/empresas/, y
+  la carta no lo usa.
 
 Los tests automáticos cubren el formato del CSV (con el CSV ficticio de demo/linkedin/), el cruce
 por empresa normalizada, la paridad MCP↔CLI de `get_job_contacts`, la API y la UI con datos
 simulados. Lo que no cubren es tu exportación real (nombres de empresa tal como los escribe la
 gente) ni el aspecto en el navegador.
-Duración aproximada: 20 minutos (más lo que tarde LinkedIn en mandarte la exportación).
+Duración aproximada: 45 minutos (más lo que tarde LinkedIn en mandarte la exportación).
 
 
 REQUISITOS
 ----------
 - Tres terminales de PowerShell (API, worker y UI), desde la RAÍZ del repo, fuera de tu agente.
 - Rama: fase/18-contactos-mensajes (o main, si ya está fusionada).
-- Migración nueva (0017: `network_contacts` y referencias en `contacts`):
+- Migraciones nuevas (0017: `network_contacts` y referencias en `contacts`; 0018: mensajes y
+  `company_research`):
       uv run --directory backend jh db upgrade
 - Cliente del frontend al día: cd frontend; pnpm install
-- Abre Claude Code de nuevo para que el servidor MCP cargue `get_job_contacts` (/mcp).
+- Abre Claude Code de nuevo para que el servidor MCP cargue `get_job_contacts`,
+  `get_company_research` y `save_company_research` (/mcp).
 - Tu exportación de LinkedIn: LinkedIn › Yo › Ajustes y privacidad › Privacidad de los datos ›
   Obtener una copia de tus datos › «Contactos» (o el archivo completo). Llega por correo en unos
   minutos. Descomprime el ZIP y deja Connections.csv en
@@ -66,6 +71,34 @@ PARTE 3 · REFERENCIAS Y EMBUDO
 8. Página «Embudo». Esperado: un bloque «Por referencia» (con referencia / referencia pedida / sin
    referencia) con enviadas y tasa de respuesta. Solo aparece si alguna oferta tiene la marca.
 9. `uv run --directory backend jh stats funnel`: líneas «Con referencia: N enviadas, respuesta X %».
+
+
+PARTE 4 · INVESTIGAR LA EMPRESA
+-------------------------------
+10. Ficha de una oferta que te interese, sección «Empresa»: «Investigar empresa».
+    Esperado: se abre tu agente con «Usa el skill investigar-empresa…». Busca en la web pública
+    (nada de LinkedIn), comprueba que es la empresa correcta (no una homónima) y guarda el dosier.
+11. Recarga la ficha. Esperado: resumen, producto, noticias con fecha, cultura de ingeniería y
+    stack, cada cosa con su cita [n] enlazada; «Fuentes» con las URLs; «Abrir carpeta de
+    dosieres» abre data\documentos\empresas\ con <Empresa>_<id>.md.
+12. Abre 2-3 fuentes y comprueba que dicen lo que el dosier les atribuye. Apunta lo que no.
+13. En otra oferta de la misma empresa, el mismo dosier (es uno por empresa).
+14. Pide la carta de esa oferta (`/generar-carta`). Esperado: no usa nada del dosier que no esté
+    en la oferta o en tus indicaciones.
+
+
+PARTE 5 · REDACTAR UN MENSAJE
+-----------------------------
+15. En la ficha de una oferta aprobada con alguien en «Tu red», sección «Borradores»: «Redactar
+    mensaje». Pídele un mensaje de LinkedIn para esa persona.
+    Esperado: te propone a quién (contactos del proceso primero, luego tu red), te enseña el
+    borrador con el recuento de caracteres (≤ 300) y lo guarda con tu OK.
+16. En «Borradores»: «LinkedIn», «Para <nombre> (<papel>)», «N/300 caracteres», «Copiar texto».
+    Comprueba que solo cita hechos de tu perfil, sin teléfono ni salario.
+17. Pide ahora un correo de candidatura al recruiter. Esperado: asunto, cuerpo de 80-150
+    palabras y «Adjunta tú: CV (PDF)…» solo con lo que existe.
+18. «Ya lo he enviado» en uno: desaparece de la lista y el historial no cambia. Nada se ha
+    enviado desde la app.
 
 
 SI ALGO FALLA

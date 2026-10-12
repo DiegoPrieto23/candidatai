@@ -173,6 +173,10 @@ página para comprobarla: hace falta un agente con búsqueda y lectura web (en C
 `WebSearch` y `WebFetch`). Sin web, el skill no puede verificar recursos y no debe proponerlos de
 memoria: puede priorizar los huecos, pero cada recurso necesita una URL abierta. Probado con
 Claude Code: pendiente de la prueba manual de la fase 14; Codex y otros, sin probar.
+`investigar-empresa` (fase 18) también: busca y abre las páginas de la empresa y guarda el dosier
+con sus URLs (`save_company_research` rechaza un apartado sin fuente). Sin web, dice que no puede y
+para; `preparar-entrevista` trabaja entonces con el dosier que haya. Probado solo con los tests de
+sus herramientas; pendiente de la prueba manual con Claude Code.
 
 ### Skills que editan el perfil
 `ampliar-busqueda` (fase 16) añade los títulos que aceptas a `preferences.roles` editando
@@ -186,8 +190,9 @@ prueba manual con Claude Code.
 «Buscar ofertas», «Procesar ofertas», «Evaluar encaje», «Generar CV», en la página Skills
 (fase 14) «Añadir al perfil las que tengo» (`actualizar-perfil`) y «Plan de formación», y desde
 la fase 15 «Revisar respuestas» (Inicio y «Respuestas»), «Redactar borradores» (Procesos) y
-«Redactar seguimiento» (ficha de una candidatura enviada), y desde la fase 16 «Ampliar búsqueda»
-(Plataformas), abren tu
+«Redactar seguimiento» (ficha de una candidatura enviada), desde la fase 16 «Ampliar búsqueda»
+(Plataformas), desde la 17 los de las entrevistas y desde la 18 «Redactar mensaje» e «Investigar
+empresa» (ficha), abren tu
 agente en una terminal (Windows Terminal o PowerShell) con la orden del skill ya escrita; tú
 ves, contestas y apruebas lo que haga. Qué programa se abre lo dice `launch` de cada agente en el
 manifiesto: `command` (con `{prompt}` donde va la orden) y `unset_env` (variables que se quitan

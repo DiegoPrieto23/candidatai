@@ -1670,6 +1670,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/jobs/{job_id}/company-research": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Company Research
+         * @description El dosier de la empresa de la oferta (con fuentes), si ya se investigó.
+         */
+        get: operations["get_company_research"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1692,7 +1712,7 @@ export interface components {
              * Id
              * @enum {string}
              */
-            id: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion" | "revisar-respuestas" | "redactar-seguimientos" | "redactar-seguimiento" | "ampliar-busqueda" | "preparar-entrevista" | "simular-entrevista" | "repasar-entrevista" | "dudas-oferta";
+            id: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion" | "revisar-respuestas" | "redactar-seguimientos" | "redactar-seguimiento" | "ampliar-busqueda" | "preparar-entrevista" | "simular-entrevista" | "repasar-entrevista" | "dudas-oferta" | "redactar-mensaje" | "investigar-empresa";
             /** Label */
             label: string;
             /** Needs Job */
@@ -2211,6 +2231,55 @@ export interface components {
             detail: string;
             /** Http Status */
             http_status?: number | null;
+        };
+        /**
+         * CompanyResearchContent
+         * @description El dosier. Cada apartado con texto cita sus fuentes con `[n]` (1 = la primera).
+         */
+        CompanyResearchContent: {
+            /**
+             * Summary
+             * @description Qué hace la empresa, en 3-5 líneas, con [n].
+             */
+            summary: string;
+            /**
+             * Product
+             * @description Producto y clientes, con [n].
+             */
+            product?: string | null;
+            /**
+             * News
+             * @description Noticias recientes relevantes (financiación, lanzamientos, despidos…), con su fecha y [n].
+             */
+            news?: string | null;
+            /**
+             * Engineering Culture
+             * @description Cultura de ingeniería: equipos, forma de trabajar, blog técnico, con [n].
+             */
+            engineering_culture?: string | null;
+            /**
+             * Stack
+             * @description Tecnologías que usa según fuentes públicas (nombres cortos).
+             */
+            stack?: string[];
+            /**
+             * Notes
+             * @description Para el candidato: qué conviene preguntar o comprobar, con [n] si sale de una fuente. Sin opiniones sin respaldo.
+             */
+            notes?: string | null;
+            /**
+             * Sources
+             * @description Fuentes, en el orden de las citas [1], [2]…
+             */
+            sources: components["schemas"]["ResearchSource"][];
+        };
+        /** CompanyResearchResult */
+        CompanyResearchResult: {
+            /** Job Id */
+            job_id: number;
+            /** Company */
+            company: string;
+            research: components["schemas"]["ResearchView"] | null;
         };
         /** ContactFields */
         ContactFields: {
@@ -3255,7 +3324,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion" | "revisar-respuestas" | "redactar-seguimientos" | "redactar-seguimiento" | "ampliar-busqueda" | "preparar-entrevista" | "simular-entrevista" | "repasar-entrevista" | "dudas-oferta";
+            action: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion" | "revisar-respuestas" | "redactar-seguimientos" | "redactar-seguimiento" | "ampliar-busqueda" | "preparar-entrevista" | "simular-entrevista" | "repasar-entrevista" | "dudas-oferta" | "redactar-mensaje" | "investigar-empresa";
             /** Job Id */
             job_id?: number | null;
             /** Milestone Id */
@@ -3472,11 +3541,11 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "followup" | "thank_you";
+            kind: "followup" | "thank_you" | "linkedin" | "email";
             /** Milestone Id */
             milestone_id: number | null;
             /** Subject */
-            subject: string;
+            subject: string | null;
             /** Body */
             body: string;
             /**
@@ -3498,6 +3567,16 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+            /** Recipient Role */
+            recipient_role?: ("recruiter" | "hiring_manager" | "peer") | null;
+            /** Contact Id */
+            contact_id?: number | null;
+            /** Network Contact Id */
+            network_contact_id?: number | null;
+            /** Recipient Name */
+            recipient_name?: string | null;
+            /** Attachments */
+            attachments?: string[] | null;
         };
         /** MilestoneCreate */
         MilestoneCreate: {
@@ -3739,7 +3818,7 @@ export interface components {
              * Folder
              * @enum {string}
              */
-            folder: "contexto" | "documentos" | "entrevistas" | "candidatura";
+            folder: "contexto" | "documentos" | "entrevistas" | "empresas" | "candidatura";
             /** Job Id */
             job_id?: number | null;
         };
@@ -4275,6 +4354,48 @@ export interface components {
             channel: string;
             /** Window Days */
             window_days: number;
+        };
+        /** ResearchSource */
+        ResearchSource: {
+            /**
+             * Title
+             * @description Título de la página.
+             */
+            title: string;
+            /**
+             * Url
+             * @description URL `http(s)` de la página.
+             */
+            url: string;
+            /**
+             * Accessed On
+             * @description Cuándo la consultaste.
+             */
+            accessed_on?: string | null;
+        };
+        /** ResearchView */
+        ResearchView: {
+            content: components["schemas"]["CompanyResearchContent"];
+            /** Risk Flags */
+            risk_flags: string[];
+            /** File */
+            file: string;
+            /** Agent Name */
+            agent_name: string | null;
+            /** Job Id */
+            job_id: number | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Age Days */
+            age_days: number;
         };
         /** ResolvedOptions */
         ResolvedOptions: {
@@ -13011,6 +13132,100 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ContactOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_company_research: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompanyResearchResult"];
                 };
             };
             /** @description Unauthorized */

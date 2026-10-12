@@ -19,6 +19,7 @@ import { useAddNote, useJob, useJobEvent, useJobMatch, type UserEventBody } from
 import { ApplySection } from '@/components/ApplySection'
 import { ArchivedApplication } from '@/components/ArchivedApplication'
 import { CoverLetterSection } from '@/components/CoverLetterSection'
+import { CompanyResearchSection } from '@/components/CompanyResearchSection'
 import { CvSection } from '@/components/CvSection'
 import { JobReplyNotice } from '@/components/JobReplyNotice'
 import { ClosedNotice, RepostNote } from '@/components/JobSignals'
@@ -621,6 +622,7 @@ export function JobPage() {
                 <>
                   <ProcessSection job={job} />
                   <DraftsSection job={job} />
+                  <CompanyResearchSection job={job} />
                   <ArchivedApplication job={job} />
                   <ExtractionBlock job={job} />
                   <EarlierStages>
@@ -635,6 +637,8 @@ export function JobPage() {
                 <>
                   <ExtractionBlock job={job} />
                   <ProcessSection job={job} />
+                  <DraftsSection job={job} />
+                  <CompanyResearchSection job={job} />
                   <PackageSection job={job} />
                   <ApplySection job={job} />
                   <CvSection job={job} />

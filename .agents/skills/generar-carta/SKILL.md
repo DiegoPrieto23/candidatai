@@ -42,7 +42,8 @@ Argumentos: `job_id` y, opcionalmente, indicaciones para esta carta («máximo 1
    - una skill de la oferta que no está en el perfil solo puede nombrarse en un párrafo que cite
      `extraction`, hablando del puesto y nunca como experiencia tuya. Una skill básica (nivel B
      o `basic_skills`), solo si la oferta la pide;
-   - de la empresa, solo lo que dice la oferta o el usuario; nada buscado ni supuesto;
+   - de la empresa, solo lo que dice la oferta o el usuario; nada buscado ni supuesto. El dosier
+     de `investigar-empresa` tampoco: solo lo que el usuario haya copiado a sus indicaciones;
    - sin clichés (§7), sin salario y dentro del límite de palabras;
    - el contacto, la fecha y el nombre los pone el código: `sign_off` es solo la despedida
      («Un saludo,»), sin tu nombre.

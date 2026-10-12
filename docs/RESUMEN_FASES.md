@@ -322,3 +322,21 @@ La carta es un documento propio, con sus indicaciones, su verificación y sus re
   criterios tuyos sin confirmar y lo que falta por escrito, con la pregunta que harías.
 - **Herramientas** `get_interviews`, `save_interview_plan` y `save_interview_notes` (MCP) con sus
   comandos `jh interviews …`, con paridad.
+
+## 18 · Contactos, mensajes e investigación de empresas — 2026-10-12 · Claude Code (Opus 5.5)
+- **Tu red de LinkedIn:** descargas la exportación oficial (`Connections.csv`) y la importas con
+  `jh contacts import-linkedin` o con «Importar» en la ficha. No guarda emails ni navega LinkedIn.
+- **«Conoces a N»:** en la bandeja, el triaje y la ficha ves a quién conoces en cada empresa, con
+  su cargo; si el nombre de LinkedIn solo se parece, te lo dice. «Añadir al proceso» lo pasa a los
+  contactos de la oferta como referencia, recruiter o responsable.
+- **Referencias:** marca «referencia pedida / dada» en el contacto; el embudo enseña si las
+  candidaturas con referencia reciben más respuesta.
+- **Skill `redactar-mensaje`** (botón «Redactar mensaje»): mensaje de LinkedIn de ≤ 300 caracteres
+  o correo de candidatura con asunto y adjuntos, para el recruiter, el responsable o un compañero.
+  Se guarda en «Borradores» para copiarlo; nunca se envía.
+- **Skill `investigar-empresa`** (botón «Investigar empresa»): dosier con fuentes (producto,
+  noticias, cultura de ingeniería, stack) en la sección «Empresa» de la ficha y en
+  `data/documentos/empresas/`; se copia al archivo de la candidatura. Lo usan `preparar-entrevista`
+  y `redactar-mensaje`; la carta no, salvo lo que copies a sus indicaciones.
+- **Herramientas** `get_job_contacts`, `get_company_research` y `save_company_research` (MCP) con
+  sus comandos `jh`, con paridad; `save_message_draft` admite `linkedin` y `email`.

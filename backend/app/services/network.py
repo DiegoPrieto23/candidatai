@@ -28,7 +28,7 @@ from sqlalchemy import delete, func, select, update
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
-from app.models import Company, Contact, Job, NetworkContact
+from app.models import Company, Contact, Job, MessageDraft, NetworkContact
 from app.models.base import utcnow
 from app.services import context, events
 from app.services.normalize import fold, normalize_company
@@ -246,11 +246,14 @@ def import_connections(session: Session, path: Path | None = None) -> ImportResu
         row.imported_at = now
     gone = [row.id for key, row in existing.items() if key not in seen]
     if gone:
-        session.execute(
-            update(Contact)
-            .where(Contact.network_contact_id.in_(gone))
-            .values(network_contact_id=None)
-        )
+        # Los contactos del proceso y los borradores siguen; solo pierden el enlace (el
+        # borrador guarda el nombre del destinatario).
+        for model in (Contact, MessageDraft):
+            session.execute(
+                update(model)
+                .where(model.network_contact_id.in_(gone))
+                .values(network_contact_id=None)
+            )
         session.execute(delete(NetworkContact).where(NetworkContact.id.in_(gone)))
     session.flush()
     total = session.scalar(select(func.count()).select_from(NetworkContact)) or 0
@@ -275,7 +278,12 @@ def import_connections(session: Session, path: Path | None = None) -> ImportResu
         skipped=skipped,
         without_company=without_company,
         message=f"Red importada: {total} personas ({added} nuevas, {updated} actualizadas, "
-        f"{len(gone)} quitadas).",
+        f"{len(gone)} quitadas)."
+        + (
+            " Ojo: se ha quitado más de la mitad de la red; comprueba que el fichero está entero."
+            if existing and len(gone) * 2 > len(existing)
+            else ""
+        ),
     )
 
 
@@ -395,6 +403,11 @@ def _people(session: Session, job_id: int) -> tuple[str, list[tuple[NetworkConta
         key=lambda pair: (pair[1] != "exact", fold(_name(pair[0]))),
     )
     return company, ranked
+
+
+def people_ids(session: Session, job_id: int) -> set[int]:
+    """Ids de las personas de tu red en la empresa de la oferta (exacta o probable)."""
+    return {row.id for row, _kind in _people(session, job_id)[1]}
 
 
 def job_network(session: Session, job_id: int) -> JobNetwork:

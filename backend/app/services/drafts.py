@@ -1,28 +1,46 @@
-"""Borradores de seguimiento y de agradecimiento (fase 15).
+"""Borradores de mensajes: seguimiento y agradecimiento (fase 15), LinkedIn y correo (fase 18).
 
 El agente redacta (`save_message_draft`); la app **nunca envía nada** (regla dura 5). El usuario
-copia el texto, lo manda desde su correo y, si es un seguimiento, pulsa «Ya lo he enviado» en la
-UI, que registra `followup_sent`. Como mucho `followups.max_followups` seguimientos (2) por
-candidatura; un agradecimiento, solo tras una entrevista hecha.
+copia el texto, lo manda él y pulsa «Ya lo he enviado» en la UI; solo un seguimiento registra un
+evento (`followup_sent`). Como mucho `followups.max_followups` seguimientos (2) por candidatura;
+un agradecimiento, solo tras una entrevista hecha.
+
+Fase 18: un mensaje de LinkedIn (`linkedin`, ≤ 300 caracteres, sin asunto ni adjuntos) o un correo
+de candidatura (`email`, con asunto y la lista de adjuntos que menciona) a un recruiter, al
+responsable del puesto o a un compañero (`recipient_role`), desde que la oferta está aprobada. Puede
+apuntar a un contacto del proceso o a una persona de tu red de LinkedIn.
 """
 
 from datetime import datetime
-from typing import Literal
+from typing import Any, Literal, Self
 
-from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, model_validator
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.core.policies import get_policies
-from app.models import Event, Job, MessageDraft, Milestone
+from app.models import Contact, Event, Job, MessageDraft, Milestone, NetworkContact
 from app.models.base import utcnow
-from app.services import events
+from app.services import events, network
 from app.services.pipeline import Actor, EventType, Stage
 
-DraftKind = Literal["followup", "thank_you"]
+DraftKind = Literal["followup", "thank_you", "linkedin", "email"]
 DraftStatus = Literal["draft", "sent", "discarded"]
-# Candidaturas enviadas y vivas: las únicas a las que tiene sentido escribir.
+RecipientRole = Literal["recruiter", "hiring_manager", "peer"]
+# Candidaturas enviadas y vivas: las únicas a las que tiene sentido un seguimiento o un
+# agradecimiento.
 DRAFT_STAGES = (Stage.APPLIED, Stage.IN_PROCESS)
+# Mensajes a personas (fase 18): desde que apruebas la oferta hasta que se cierra el proceso.
+OUTREACH_KINDS = ("linkedin", "email")
+OUTREACH_STAGES = (Stage.APPROVED, Stage.CV_READY, Stage.APPLIED, Stage.IN_PROCESS)
+LINKEDIN_MAX_CHARS = 300
+MAX_ATTACHMENTS = 10
+KIND_NAMES: dict[str, str] = {
+    "followup": "seguimiento",
+    "thank_you": "agradecimiento",
+    "linkedin": "mensaje de LinkedIn",
+    "email": "correo",
+}
 
 
 class DraftNotFoundError(LookupError):
@@ -38,15 +56,82 @@ class _Input(BaseModel):
 
 
 class MessageDraftInput(_Input):
-    kind: DraftKind = Field(description="`followup` (seguimiento) o `thank_you` (agradecimiento).")
-    subject: str = Field(min_length=1, max_length=300, description="Asunto del correo.")
-    body: str = Field(min_length=1, max_length=10000, description="Texto del correo, sin firma.")
+    kind: DraftKind = Field(
+        description="`followup` (seguimiento), `thank_you` (agradecimiento), `linkedin` (mensaje "
+        "o nota de invitación de LinkedIn, ≤ 300 caracteres) o `email` (correo de candidatura o a "
+        "una persona de la empresa)."
+    )
+    subject: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=300,
+        description="Asunto del correo. Obligatorio salvo en `linkedin`, que no lleva.",
+    )
+    body: str = Field(min_length=1, max_length=10000, description="Texto del mensaje, sin firma.")
     milestone_id: int | None = Field(
         default=None,
         ge=1,
         description="Solo en `thank_you`: la entrevista que agradeces (por defecto, la última "
         "hecha).",
     )
+    recipient_role: RecipientRole | None = Field(
+        default=None,
+        description="Solo en `linkedin` y `email` (obligatorio): `recruiter`, `hiring_manager` "
+        "(responsable del puesto) o `peer` (compañero en el equipo).",
+    )
+    contact_id: int | None = Field(
+        default=None, ge=1, description="Contacto del proceso al que va (de `get_job_contacts`)."
+    )
+    network_contact_id: int | None = Field(
+        default=None,
+        ge=1,
+        description="Persona de tu red de LinkedIn a la que va (`network[].id` de "
+        "`get_job_contacts`). No a la vez que `contact_id`.",
+    )
+    attachments: list[str] | None = Field(
+        default=None,
+        max_length=MAX_ATTACHMENTS,
+        description="Solo en `email`: los adjuntos que menciona el correo (p. ej. «CV (PDF)», "
+        "«Carta de presentación»). La app no adjunta nada: es la lista para el usuario.",
+    )
+
+    @model_validator(mode="after")
+    def _by_kind(self) -> Self:
+        if self.kind not in OUTREACH_KINDS:
+            if self.subject is None:
+                raise ValueError("Un seguimiento o un agradecimiento lleva asunto (`subject`).")
+            extra = [
+                name
+                for name in ("recipient_role", "contact_id", "network_contact_id", "attachments")
+                if getattr(self, name) is not None
+            ]
+            if extra:
+                raise ValueError(f"{', '.join(extra)}: solo en `linkedin` y `email`.")
+            return self
+        if self.milestone_id is not None:
+            raise ValueError("`milestone_id` solo va en un agradecimiento (`thank_you`).")
+        if self.recipient_role is None:
+            raise ValueError(
+                "Indica a quién va: `recipient_role` (recruiter, hiring_manager o peer)."
+            )
+        if self.contact_id is not None and self.network_contact_id is not None:
+            raise ValueError("`contact_id` o `network_contact_id`, no los dos.")
+        if self.kind == "linkedin":
+            if self.subject is not None or self.attachments is not None:
+                raise ValueError("Un mensaje de LinkedIn no lleva asunto ni adjuntos.")
+            if len(self.body) > LINKEDIN_MAX_CHARS:
+                raise ValueError(
+                    f"Un mensaje de LinkedIn tiene como mucho {LINKEDIN_MAX_CHARS} caracteres "
+                    f"(este tiene {len(self.body)})."
+                )
+        elif self.subject is None:
+            raise ValueError("Un correo lleva asunto (`subject`).")
+        if self.attachments is not None:
+            cleaned = [" ".join(a.split()) for a in self.attachments]
+            if any(not a or len(a) > 200 for a in cleaned):
+                raise ValueError("Cada adjunto es un nombre de 1 a 200 caracteres.")
+            self.attachments = cleaned
+        return self
 
 
 class MessageDraftOut(BaseModel):
@@ -54,13 +139,18 @@ class MessageDraftOut(BaseModel):
     job_id: int
     kind: DraftKind
     milestone_id: int | None
-    subject: str
+    subject: str | None
     body: str
     status: DraftStatus
     event_id: int | None
     agent_name: str | None
     created_at: datetime
     updated_at: datetime
+    recipient_role: RecipientRole | None = None
+    contact_id: int | None = None
+    network_contact_id: int | None = None
+    recipient_name: str | None = None  # el del contacto o de la persona de la red al guardarlo
+    attachments: list[str] | None = None
 
 
 class SaveDraftResult(BaseModel):
@@ -159,6 +249,32 @@ def _interview_done(session: Session, job_id: int, milestone_id: int | None) -> 
     return milestone
 
 
+def _recipient_name(session: Session, job_id: int, data: MessageDraftInput) -> str | None:
+    """El nombre del destinatario, tras comprobar que es de esta oferta (o de su empresa)."""
+    if data.contact_id is not None:
+        contact = session.get(Contact, data.contact_id)
+        if contact is None or contact.job_id != job_id:
+            raise ValueError(f"El contacto {data.contact_id} no es de la oferta {job_id}.")
+        return contact.name
+    if data.network_contact_id is not None:
+        person = session.get(NetworkContact, data.network_contact_id)
+        if person is None:
+            raise ValueError(
+                f"No existe la persona {data.network_contact_id} en la red del usuario."
+            )
+        if person.id not in network.people_ids(session, job_id):
+            raise ValueError(
+                f"{person.first_name} {person.last_name} no trabaja en la empresa de la oferta "
+                f"{job_id} según tu red (mira `get_job_contacts`)."
+            )
+        return f"{person.first_name} {person.last_name}".strip()[:200]
+    return None
+
+
+def _same(column: Any, value: object) -> Any:
+    return column.is_(None) if value is None else column == value
+
+
 def save_message_draft(
     session: Session, job_id: int, data: MessageDraftInput, agent_name: str | None = None
 ) -> SaveDraftResult:
@@ -166,12 +282,20 @@ def save_message_draft(
     if session.get(Job, job_id) is None:
         raise events.JobNotFoundError(f"No existe la oferta {job_id}.")
     stage = events.current_stage(session, job_id)
-    if stage not in DRAFT_STAGES:
+    outreach = data.kind in OUTREACH_KINDS
+    if outreach and stage not in OUTREACH_STAGES:
+        raise DraftNotAllowedError(
+            f"Solo se escribe a la empresa de una oferta aprobada y abierta (etapa «{stage}»)."
+        )
+    if not outreach and stage not in DRAFT_STAGES:
         raise DraftNotAllowedError(
             f"Solo se escribe a la empresa de una candidatura enviada y abierta (etapa «{stage}»)."
         )
     milestone_id: int | None = None
-    if data.kind == "followup":
+    recipient_name: str | None = None
+    if outreach:
+        recipient_name = _recipient_name(session, job_id, data)
+    elif data.kind == "followup":
         if data.milestone_id is not None:
             raise ValueError("`milestone_id` solo va en un agradecimiento (`thank_you`).")
         limit = get_policies().followups.max_followups
@@ -186,13 +310,15 @@ def save_message_draft(
         if thanked_milestones(session, [milestone_id]):
             raise DraftNotAllowedError("Ya enviaste el agradecimiento de esa entrevista.")
 
+    # El vigente del mismo tipo y destinatario (y entrevista, en un agradecimiento).
     current = session.scalars(
         select(MessageDraft).where(
             MessageDraft.job_id == job_id,
             MessageDraft.kind == data.kind,
-            MessageDraft.milestone_id.is_(None)
-            if milestone_id is None
-            else MessageDraft.milestone_id == milestone_id,
+            _same(MessageDraft.milestone_id, milestone_id),
+            _same(MessageDraft.recipient_role, data.recipient_role),
+            _same(MessageDraft.contact_id, data.contact_id),
+            _same(MessageDraft.network_contact_id, data.network_contact_id),
             MessageDraft.status == "draft",
         )
     ).first()
@@ -212,16 +338,21 @@ def save_message_draft(
     current.body = data.body
     current.agent_name = agent
     current.updated_at = now
+    current.recipient_role = data.recipient_role
+    current.contact_id = data.contact_id
+    current.network_contact_id = data.network_contact_id
+    current.recipient_name = recipient_name
+    current.attachments = data.attachments
     session.flush()
-    what = "seguimiento" if data.kind == "followup" else "agradecimiento"
+    what = KIND_NAMES[data.kind]
     return SaveDraftResult(
         draft_id=current.id,
         job_id=job_id,
         kind=data.kind,
         milestone_id=milestone_id,
         replaced=replaced,
-        message=f"Borrador de {what} guardado: el usuario lo revisa, lo copia y lo envía él "
-        "desde su correo. La app no envía nada.",
+        message=f"Borrador de {what} guardado: el usuario lo revisa, lo copia y lo envía él. "
+        "La app no envía nada.",
     )
 
 
