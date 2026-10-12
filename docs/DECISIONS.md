@@ -461,3 +461,34 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   Leer `INBOX` requiere una contraseña de aplicación con acceso a todo el correo; la limitación la
   pone el código, no el proveedor (`CONFIGURAR_CORREO.md`).
 
+## ADR-028 · Señales de oferta fuera de `risk_flags`, y republicadas por canal
+- **Contexto:** la fase 16 añade dos observaciones sobre una oferta: que puede estar cerrada (con
+  fecha y motivo) y que se ha publicado varias veces (con cuántas y cuándo). El encargo las ponía en
+  `risk_flags`, pero ese campo significa «posible inyección» en toda la app: dispara el aviso de la
+  ficha, se pinta como `[!]` en la CLI, viaja en `<untrusted_job_posting risk_flags=…>` y la captura
+  lo sobrescribe al completar un resumen. Además es una lista de cadenas, sin sitio para fechas.
+  Por otro lado, una republicación con la misma huella no dejaba rastro: el alta devolvía la oferta
+  existente y los conectores ni siquiera la veían.
+- **Decisión:**
+  - **Columna `jobs.signals`** (JSON tipado en `services/signals.py`): `possibly_closed`,
+    `liveness`, `open_confirmed` y `reposted`. `risk_flags` no cambia de significado.
+  - **«¿Sigue abierta?» nunca cierra la oferta.** La primera vez que avisa registra
+    `closure_suspected` (sin cambio de etapa); descartar (motivo nuevo `closed`) o «Sigue abierta»
+    lo decide el usuario en la UI. «Sigue abierta» silencia ese motivo, no los demás, hasta que una
+    comprobación vea la oferta abierta. Un resultado
+    `unknown` (bloqueo, red, login) no avisa ni borra un aviso anterior.
+  - **Tabla `job_sightings`** con cada publicación vista (canal + referencia), también cuando la
+    huella reconoce la oferta. **Republicada = mismo canal y misma ubicación**, publicaciones
+    distintas en días distintos dentro de `reposts.window_days`. Ni varias el mismo día (ubicaciones) ni la misma
+    oferta en varios portales cuentan como republicación.
+  - LinkedIn no se comprueba (ADR-016). Las URLs vienen de alertas, correos y conectores y el
+    worker las abre solo: además de rechazar IPs locales, se resuelve el dominio y se rechaza si
+    apunta a la red local o privada (queda el margen de un DNS que cambie entre la consulta y la
+    conexión). En los textos que llegan al agente solo va el dominio de una redirección.
+- **Consecuencias:** las listas y la ficha leen `signals` sin mezclarlo con el riesgo. Las frases de
+  «oferta cerrada» son heurísticas configurables (`liveness.closed_phrases`) y pueden fallar en
+  ambos sentidos; por eso el resultado es un aviso, no una acción. Un portal que redirige toda
+  oferta cerrada a su portada se detecta; uno que la deja publicada sin aviso, no. Las
+  republicaciones anteriores a la migración no se recuperan: el relleno solo crea la primera
+  publicación de cada oferta.
+

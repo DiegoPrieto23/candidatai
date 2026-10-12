@@ -19,6 +19,8 @@
       "mcp__jobhunter__get_status",
       "mcp__jobhunter__list_jobs",
       "mcp__jobhunter__get_job",
+      "mcp__jobhunter__check_job_open",
+      "mcp__jobhunter__get_search_titles",
       "mcp__jobhunter__save_extraction",
       "mcp__jobhunter__get_extraction",
       "mcp__jobhunter__get_timeline",

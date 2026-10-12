@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 import {
   assistedApplication,
   jobCoverLetter,
+  isUserPost,
   jobCv,
   jobPackage,
   jobView,
@@ -124,8 +125,8 @@ describe('Sección CV de la ficha', () => {
     await userEvent.click(within(form).getByRole('checkbox', { name: 'Proyectos' }))
     await userEvent.click(within(form).getByRole('button', { name: 'Renderizar' }))
 
-    await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true))
-    const post = calls.find((c) => c.method === 'POST')
+    await waitFor(() => expect(calls.some(isUserPost)).toBe(true))
+    const post = calls.find(isUserPost)
     expect(post?.path).toBe('/documents/1/renders')
     expect(post?.body).toEqual({
       template_id: 'clasica-foto',
@@ -174,7 +175,7 @@ describe('Sección CV de la ficha', () => {
     await userEvent.click(within(second).getByRole('button', { name: /Usar este para enviar/ }))
 
     await waitFor(() => expect(within(second).getByText('Para enviar')).toBeInTheDocument())
-    expect(calls.filter((c) => c.method === 'POST').map((c) => c.path)).toEqual(['/renders/2/select'])
+    expect(calls.filter(isUserPost).map((c) => c.path)).toEqual(['/renders/2/select'])
     const first = screen.getByRole('listitem', { name: 'Render 1' })
     expect(within(first).getByRole('button', { name: /Usar este para enviar/ })).toBeInTheDocument()
   })

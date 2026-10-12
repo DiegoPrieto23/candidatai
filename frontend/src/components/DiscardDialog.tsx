@@ -26,10 +26,12 @@ interface Props {
   onConfirm: (choice: DiscardChoice) => void
   pending?: boolean
   error?: string | null
+  /** Motivo ya elegido al abrir (p. ej. `closed` desde el aviso de oferta cerrada). */
+  initialReason?: DiscardReason
 }
 
 /**
- * Descartar con motivo obligatorio. Atajos: 1-6 eligen motivo (fuera del campo de nota),
+ * Descartar con motivo obligatorio. Atajos: 1-7 eligen motivo (fuera del campo de nota),
  * Intro confirma (Mayús+Intro, salto de línea en la nota) y Esc cancela.
  */
 export function DiscardDialog({ open, onOpenChange, ...props }: Props) {
@@ -49,8 +51,9 @@ function DiscardForm({
   onCancel,
   pending = false,
   error,
+  initialReason,
 }: Omit<Props, 'open' | 'onOpenChange'> & { onCancel: () => void }) {
-  const [reason, setReason] = useState<DiscardReason | null>(null)
+  const [reason, setReason] = useState<DiscardReason | null>(initialReason ?? null)
   const [note, setNote] = useState('')
 
   const needsNote = reason === 'other' && !note.trim()
@@ -67,7 +70,7 @@ function DiscardForm({
     const inNote = target.tagName === 'TEXTAREA'
     // Intro sobre «Cancelar» o «Descartar» hace lo de su botón, no lo pisamos.
     const onButton = target.tagName === 'BUTTON' && target.getAttribute('role') !== 'radio'
-    if (!inNote && /^[1-6]$/.test(e.key)) {
+    if (!inNote && /^[1-7]$/.test(e.key)) {
       e.preventDefault()
       setReason(DISCARD_REASONS[Number(e.key) - 1].value)
     } else if (e.key === 'Enter' && !e.shiftKey && !onButton) {

@@ -289,3 +289,22 @@ La carta es un documento propio, con sus indicaciones, su verificación y sus re
 - **Herramientas** `list_replies`, `get_reply`, `save_reply_proposal` y `save_message_draft` (MCP)
   con sus comandos `jh`, con paridad.
 
+## 16 · Ofertas vivas, republicadas y búsqueda ampliada — 2026-10-12 · Claude Code (Opus 5.5)
+- **¿Sigue abierta?:** la app comprueba si una oferta sigue publicada: por la API del ATS
+  (Greenhouse, Lever, Ashby) o con una petición ligera a su página (404/410, redirección a una
+  lista, frases de «oferta cerrada», fecha de caducidad pasada). LinkedIn nunca. Cada día revisa
+  las aprobadas y con CV listo, y también al abrir su ficha.
+- **Nunca la cierra sola:** la ficha avisa «Puede que ya no esté publicada» con el motivo y ofrece
+  «Descartar» (motivo nuevo «Ya no está publicada»), «Sigue abierta» o «Comprobar otra vez». El
+  botón «Generar CV» y el skill `generar-cv` avisan antes de gastar cuota.
+- **Republicadas:** «Republicada ×N» en bandeja, triaje y ficha cuando la misma empresa vuelve a
+  publicar el mismo puesto en el mismo portal en días distintos. Es una observación, no un
+  veredicto.
+- **Skill `ampliar-busqueda`** (botón en Plataformas): con tus aprobadas y descartadas propone
+  títulos cercanos (p. ej. «Analytics Engineer») y, solo con tu OK, los añade a tus puestos o a
+  las búsquedas de tus plataformas. Detecta puestos que apruebas y la ingesta automática se deja
+  fuera.
+- **`jh sources discover --file empresas.txt`:** encuentra el tablero de Greenhouse, Lever o Ashby
+  de tus empresas por sus APIs públicas y propone darlas de alta (`--add` lo hace).
+- **Herramientas** `check_job_open` y `get_search_titles` (MCP) con sus comandos `jh`, con paridad.
+

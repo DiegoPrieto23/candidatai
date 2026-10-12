@@ -27,6 +27,7 @@ TaskKind = Literal[
     "apply_submit",
     "apply_focus",
     "archive_application",
+    "check_open",
 ]
 # Candidatura asistida (fase 11): sin reintentos (POLICIES §5.4). Si fallan o el worker se cierra
 # a medias, quedan `failed` y decides tú; un envío nunca se repite solo.

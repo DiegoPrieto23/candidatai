@@ -21,6 +21,7 @@ import { ArchivedApplication } from '@/components/ArchivedApplication'
 import { CoverLetterSection } from '@/components/CoverLetterSection'
 import { CvSection } from '@/components/CvSection'
 import { JobReplyNotice } from '@/components/JobReplyNotice'
+import { ClosedNotice, RepostNote } from '@/components/JobSignals'
 import { DiscardDialog } from '@/components/DiscardDialog'
 import { DraftsSection } from '@/components/DraftsSection'
 import { MatchDetails, ScoreBadge } from '@/components/MatchDetails'
@@ -294,6 +295,8 @@ function eventDetail(event: EventOut): string | null {
   if (event.type === 'duplicate_detected' && payload.duplicate_of)
     return `Duplicado de la oferta ${String(payload.duplicate_of)}.`
   if (event.type === 'extraction_failed' && typeof payload.reason === 'string') return payload.reason
+  if (event.type === 'closure_suspected' && typeof payload.detail === 'string')
+    return `${payload.detail.charAt(0).toUpperCase()}${payload.detail.slice(1)}. No se ha cerrado: decides tú.`
   return null
 }
 
@@ -611,6 +614,8 @@ export function JobPage() {
           <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
             <div className="space-y-6">
               {job.injection && <InjectionAlert injection={job.injection} />}
+              <ClosedNotice job={job} />
+              <RepostNote job={job} />
               {sent ? (
                 <>
                   <ProcessSection job={job} />

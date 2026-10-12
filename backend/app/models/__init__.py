@@ -5,7 +5,7 @@ from app.models.base import Base
 from app.models.companies import Company
 from app.models.documents import CoverLetterBrief, Document, DocumentRender
 from app.models.events import Application, Event
-from app.models.jobs import Job, JobExtraction
+from app.models.jobs import Job, JobExtraction, JobSighting
 from app.models.matches import Match
 from app.models.ops import McpCall, Task
 from app.models.process import Contact, Milestone
@@ -28,6 +28,7 @@ __all__ = [
     "Event",
     "Job",
     "JobExtraction",
+    "JobSighting",
     "Match",
     "McpCall",
     "MessageDraft",

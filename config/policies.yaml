@@ -115,3 +115,50 @@ agent_browse:                   # fase 09b, skill buscar-ofertas
   max_result_pages: 2
   delay_seconds: 5
   default_max_offers: 15
+
+liveness:                       # fase 16: ¿sigue abierta? Nunca cierra la oferta: avisa y propone descartarla
+  fresh_hours: 20                 # no se vuelve a comprobar antes (salvo «Comprobar otra vez»); el worker revisa cada día las aprobadas y con CV
+  timeout_seconds: 15
+  max_bytes: 2000000              # lo que se lee de la página, como mucho
+  # Frases de «oferta cerrada» por portal (se comparan sin tildes ni mayúsculas con el texto visible).
+  # Son heurísticas: si ves una oferta cerrada que no se detecta, añade aquí la frase que muestra.
+  closed_phrases:
+    any:
+      - this job is no longer available
+      - this position is no longer available
+      - this job posting is no longer available
+      - no longer accepting applications
+      - this job has expired
+      - the job you are looking for is no longer
+      - esta oferta ya no esta disponible
+      - esta oferta ya no esta activa
+      - esta oferta ha caducado
+      - esta oferta ha expirado
+      - esta oferta esta cerrada
+      - la oferta ha finalizado
+      - ya no se aceptan candidaturas
+      - este puesto ya no esta disponible
+    infojobs:
+      - la oferta que buscas ya no esta disponible
+      - esta oferta ya no admite inscripciones
+      - oferta caducada
+    indeed:
+      - esta oferta de empleo ha caducado
+      - this job has expired on indeed
+      - esta oferta ha caducado en indeed
+    tecnoempleo:
+      - oferta caducada
+      - oferta no disponible
+  # Controles anti-bot servidos con HTTP 200 (no dicen nada de la oferta): la comprobación da «no se sabe».
+  blocked_phrases:
+    - no podemos identificar tu navegador
+    - to regain access please make sure that cookies and javascript are enabled
+    - verify you are human
+    - verifica que eres humano
+    - checking your browser before accessing
+    - enable javascript and cookies to continue
+    - please complete the security check
+
+reposts:                        # fase 16: «Republicada ×N» (observación, no veredicto)
+  window_days: 90                 # se cuentan las publicaciones de los últimos N días
+  min_count: 2                    # días distintos con una publicación nueva (otro id o URL) en el mismo canal

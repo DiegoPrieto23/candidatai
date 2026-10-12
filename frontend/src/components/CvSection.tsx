@@ -25,6 +25,7 @@ import {
 } from '@/api/client'
 import { useJobCv, useRenderCv, useSelectRender, useTemplates } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
+import { ClosedHint } from '@/components/JobSignals'
 import { ErrorState, InlineCode } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -545,10 +546,12 @@ function Renders({ cv, jobId, names }: { cv: CvView; jobId: number; names: Map<s
 function CvBody({
   data,
   jobId,
+  signals,
   templatesQuery,
 }: {
   data: JobCv
   jobId: number
+  signals?: JobView['signals']
   templatesQuery: ReturnType<typeof useTemplates>
 }) {
   if (!data.cv) {
@@ -566,6 +569,7 @@ function CvBody({
               <AgentButton action="generar-cv" jobId={jobId} variant="default" className="mt-3">
                 Generar CV
               </AgentButton>
+              <ClosedHint signals={signals} />
             </>
           ) : (
             <p className="mt-1 text-muted-foreground">Esta oferta no llegó a tener CV.</p>
@@ -611,7 +615,7 @@ export function CvSection({ job }: { job: JobView }) {
       ) : cvQuery.isError ? (
         <ErrorState error={cvQuery.error} onRetry={() => cvQuery.refetch()} className="border-0 p-0" />
       ) : (
-        <CvBody data={cvQuery.data} jobId={job.id} templatesQuery={templatesQuery} />
+        <CvBody data={cvQuery.data} jobId={job.id} signals={job.signals} templatesQuery={templatesQuery} />
       )}
     </section>
   )

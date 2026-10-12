@@ -36,7 +36,7 @@ from app.schemas.sources import (
     SourceView,
     parse_config,
 )
-from app.services import ingest
+from app.services import ingest, reposts
 from app.services import profile as profile_service
 from app.services.ingestion.adzuna import AdzunaConnector
 from app.services.ingestion.ashby import AshbyConnector
@@ -370,23 +370,27 @@ def _collect(
     config: SourceConfig,
     client: httpx.Client,
     result: SourceRunResult,
-) -> list[RawJob]:
+) -> tuple[list[RawJob], list[tuple[int, RawJob]]]:
     """Toda la parte de red, sin escribir en la BD (SQLite no queda bloqueado mientras se
-    descarga): descarga, filtro previo, descarte de lo ya visto y detalle de lo nuevo."""
+    descarga): descarga, filtro previo, descarte de lo ya visto y detalle de lo nuevo.
+
+    Devuelve lo nuevo y lo ya visto (con su oferta), para anotar luego si es otra publicación."""
     connector = CONNECTORS[source.kind]
     fetched = _fetch(source.kind, source.name, config, client)
     prefilter = Prefilter(_preferences(session), config.title_keywords)
     result.found = len(fetched.jobs)
     result.errors.extend(fetched.issues)
     pending: list[RawJob] = []
+    seen: list[tuple[int, RawJob]] = []
     details_blocked: ConnectorError | None = None
     skipped_details = 0
     for raw in fetched.jobs:
         if not prefilter.check(raw.title, raw.location, raw.remote).passed:
             continue
         result.after_filters += 1
-        if _already_stored(session, source, raw) is not None:
+        if (stored := _already_stored(session, source, raw)) is not None:
             result.existing += 1
+            seen.append((stored.id, raw))
             continue
         if raw.needs_detail:
             if details_blocked is not None:
@@ -411,7 +415,17 @@ def _collect(
                 "en la próxima ejecución.",
             )
         )
-    return pending
+    return pending, seen
+
+
+def _note_seen(session: Session, seen: list[tuple[int, RawJob]]) -> None:
+    """Lo ya visto con otro id o URL es otra publicación de la misma oferta (fase 16)."""
+    for job_id, raw in seen:
+        job = session.get(Job, job_id)
+        if job is not None:
+            reposts.note_sighting(
+                session, job, url=raw.url, platform=None, external_id=raw.external_id
+            )
 
 
 def _store(session: Session, source: Source, raw: RawJob, result: SourceRunResult) -> None:
@@ -477,8 +491,9 @@ def run_source(session: Session, source_id: int, actor: str = "user") -> SourceR
     try:
         config = parse_config(source.kind, source.config)
         with _client() as client:
-            pending = _collect(session, source, config, client, result)
+            pending, seen = _collect(session, source, config, client, result)
         with session.begin_nested():  # si algo inesperado falla, no queda nada a medias
+            _note_seen(session, seen)
             for raw in pending:
                 _store(session, source, raw, result)
     except MissingKeysError as exc:

@@ -1285,6 +1285,24 @@ def _render_message(result: Any) -> None:
     typer.echo(result.message)
 
 
+def _render_search_titles(result: Any) -> None:
+    roles = ", ".join(result.roles) or "ninguno (sin perfil)"
+    typer.echo(f"Puestos buscados: {roles}")
+    sections = (("Aprobadas o enviadas", result.positive), ("Descartadas", result.negative))
+    for label, groups in sections:
+        typer.echo("")
+        typer.echo(f"{label} (últimos {result.days} días):")
+        if not groups:
+            typer.echo("  (ninguna)")
+        for group in groups:
+            extra = ""
+            if group.matches_roles is False:
+                extra = "  [no pasa el filtro previo]"
+            if group.reasons:
+                extra += "  " + ", ".join(f"{k} ×{v}" for k, v in group.reasons.items())
+            typer.echo(f"  {group.count:>3}  {group.title}{extra}")
+
+
 def _render_prompt(result: Any) -> None:
     left = f", quedan {result.seconds_left} s" if result.status == "pending" else ""
     typer.echo(f"Aviso {result.id} ({result.kind}): {result.status}{left}.")
@@ -1382,6 +1400,74 @@ def _set_active(source_id: int, active: bool, as_json: bool) -> None:
         typer.echo(dump_json(view))
     else:
         _render_source(view)
+
+
+DISCOVER_FILE_OPTION = typer.Option(
+    ..., "--file", help="Texto con una empresa por línea (`Nombre | slug` fuerza un slug)."
+)
+DISCOVER_ADD_OPTION = typer.Option(
+    False, "--add", help="Da de alta las encontradas fiables (confirmadas o probables)."
+)
+
+_CONFIDENCE_LABEL = {
+    "confirmed": "confirmada",
+    "probable": "probable",
+    "doubtful": "dudosa: compruébala antes",
+}
+
+
+def _render_discover(result: Any, add: bool) -> None:
+    for item in result.companies:
+        if not item.hits:
+            tried = ", ".join(item.tried) or "ningún slug válido"
+            typer.echo(f"- {item.company}: sin tablero (probado: {tried})")
+        for hit in item.hits:
+            label = {"greenhouse": "Greenhouse", "lever": "Lever", "ashby": "Ashby"}[hit.kind]
+            region = " (UE)" if hit.region == "eu" else ""
+            name = f" «{hit.board_name}»" if hit.board_name else ""
+            typer.echo(
+                f"+ {item.company}: {label}{region} `{hit.slug}`{name}, {hit.jobs_count} ofertas, "
+                f"{_CONFIDENCE_LABEL[hit.confidence]}"
+            )
+            if hit.sample_titles:
+                typer.echo(f"    p. ej.: {'; '.join(hit.sample_titles)}")
+            if hit.existing_source_id is not None:
+                state = "añadida" if hit.existing_source_id in item.added_source_ids else "ya es"
+                typer.echo(f"    {state} fuente {hit.existing_source_id}")
+            elif not add or hit.confidence == "doubtful":
+                typer.echo(f"    {hit.add_command}")
+        for error in item.errors:
+            typer.secho(f"    ! {error}", fg="yellow")
+    typer.echo(result.message)
+    if not add and any(h.existing_source_id is None for c in result.companies for h in c.hits):
+        typer.echo("Para darlas de alta, ejecuta los comandos de arriba o repite con --add.")
+
+
+@sources_app.command("discover")
+def sources_discover(
+    file: Path = DISCOVER_FILE_OPTION,
+    add: bool = DISCOVER_ADD_OPTION,
+    as_json: bool = JSON_OPTION,
+) -> None:
+    """Busca el tablero de Greenhouse, Lever o Ashby de cada empresa del fichero y lo propone
+    como fuente (con --add, lo da de alta). Solo APIs públicas: sin agente ni tokens."""
+    from app.services.ingestion import discover
+
+    # Con `uv run --directory backend` el proceso corre en `backend/`: una ruta relativa vale
+    # también desde la raíz del repo (`data/empresas.txt`).
+    if not file.is_absolute() and not file.exists() and (REPO_ROOT / file).exists():
+        file = REPO_ROOT / file
+    try:
+        companies = discover.read_companies(file)
+        migrations.ensure_current()
+        with session_scope() as session:
+            result = discover.discover(session, companies, add=add)
+    except Exception as exc:
+        _profile_fail(exc, as_json)
+    if as_json:
+        typer.echo(dump_json(result))
+    else:
+        _render_discover(result, add)
 
 
 @sources_app.command("enable")
@@ -1691,6 +1777,8 @@ register_tools(
         "add_job_from_text": _render_added,
         "list_jobs": _render_jobs,
         "get_job": _render_job,
+        "check_job_open": _render_message,
+        "get_search_titles": _render_search_titles,
         "save_extraction": _render_saved_extraction,
         "add_event": _render_event,
         "get_timeline": _render_timeline,

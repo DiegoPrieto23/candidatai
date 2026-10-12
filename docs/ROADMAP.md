@@ -46,7 +46,9 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 15.1 | ↳ Ingesta y clasificador | ✅ | IMAP en solo lectura (solo cabeceras salvo lo que casa con una candidatura), `<untrusted_email>`, rol `clasificador` y skill `revisar-respuestas` |
 | 15.2 | ↳ Bandeja «Respuestas» | ✅ | Aceptar (tal cual o cambiada) o ignorar, solo desde la UI; aviso en la ficha y «Revisar respuestas» en Inicio |
 | 15.3 | ↳ Borradores de seguimiento | ✅ | `save_message_draft`, tope de 2 seguimientos, `thanks_due`, skill `redactar-seguimiento` y sección «Borradores» |
-| 16 | Ofertas vivas, republicadas y búsqueda ampliada | ⏳ | Aviso de oferta cerrada o republicada; títulos parecidos; descubrir tableros de Greenhouse/Lever/Ashby de tus empresas |
+| 16 | Ofertas vivas, republicadas y búsqueda ampliada | ✅ | Aviso de oferta cerrada o republicada; títulos parecidos; descubrir tableros de Greenhouse/Lever/Ashby de tus empresas |
+| 16.1 | ↳ ¿Sigue abierta? y republicadas | ✅ | `jobs.signals` (ADR-028), `check_job_open`, tarea diaria `check_open`, aviso en la ficha que propone descartar, «Republicada ×N» en bandeja y triaje |
+| 16.2 | ↳ Búsqueda ampliada | ✅ | `get_search_titles` y skill `ampliar-busqueda`; `jh sources discover` sobre Greenhouse, Lever y Ashby |
 | 17 | Entrevistas: simulacro y repaso | ⏳ | Plan de preparación, simulacro con feedback, repaso posterior con notas y historias STAR nuevas |
 | 18 | Contactos, mensajes e investigación de empresas | ⏳ | Tus contactos de LinkedIn (CSV) cruzados con tus ofertas, borradores de mensaje y dosier de empresa con fuentes |
 | 19 | Lote en segundo plano | ⏳ | «En segundo plano» además de «En terminal» para los skills que no preguntan (fase 2 de la ADR-024) |
@@ -72,7 +74,7 @@ Word y tras la 08b para PDF, imagen o HTML; `generar-carta` tras la 08c;
 `revisar-linkedin` funciona tras la 05, pero rinde mucho más desde la 07, cuando ya hay ofertas
 aprobadas de las que sacar las keywords; `buscar-ofertas` tras la 09b; `preparar-candidatura`,
 `preparar-entrevista` y `resumen-diario` tras la 10; la candidatura asistida (sin skill: se
-usa desde la ficha) tras la 11; `plan-formacion` tras la 14.
+usa desde la ficha) tras la 11; `plan-formacion` tras la 14; `ampliar-busqueda` tras la 16.
 
 ## Registro de fases
 
@@ -1489,4 +1491,69 @@ decisiones tomadas y deuda técnica pendiente. -->
   - Pendiente de prueba manual: IMAP real sobre `INBOX`, la UI de «Respuestas» y «Borradores» en
     el navegador y `redactar-seguimiento` con datos reales
     (`docs/pruebas/fase-15-prueba-manual.txt`).
+
+### 16 · Ofertas vivas, republicadas y búsqueda ampliada — 2026-10-12 · Claude Code (Opus 5.5)
+- **Resumen** (dos subfases en la misma rama):
+  - **16.1** · Migración 0015:
+    - `jobs.signals`: `possibly_closed`, `liveness`, `open_confirmed` y `reposted`;
+    - `job_sightings`, con relleno de la primera publicación de cada oferta.
+  - **16.1** · `services/liveness.py`, ¿sigue abierta?:
+    - ATS por su API pública (Greenhouse y Lever 404; Ashby, ausencia en el tablero);
+    - el resto con un GET acotado: 404/410, redirección que pierde la oferta, frases de
+      `liveness.closed_phrases`, `validThrough` pasado;
+    - `unknown` ante bloqueos, anti-bot (`liveness.blocked_phrases`) o páginas que no muestran la
+      oferta. LinkedIn, `skipped`.
+  - **16.1** · Cuándo y cómo avisa:
+    - evento `closure_suspected` sin cambio de etapa; motivo de descarte nuevo `closed`;
+    - tarea `check_open` cada día (aprobadas y con CV) y al arrancar el worker;
+    - `check_job_open` ↔ `jh jobs check-open`, que llama `generar-cv` antes de redactar;
+    - API `check-open` y `still-open` con `require_ui`.
+  - **16.1** · `services/reposts.py`: publicación anotada en el alta, por huella y en los
+    conectores. Republicada = mismo canal, empresa, título comparable y ubicación, en días
+    distintos dentro de 90.
+  - **16.1** · UI: insignias «¿Cerrada?» y «Republicada ×N» en Bandeja y Triaje; aviso en la ficha
+    con «Descartar» (ya marcado con «Ya no está publicada»), «Sigue abierta» y «Comprobar otra
+    vez»; comprobación al abrir una aprobada; aviso junto a «Generar CV».
+  - **16.2** · `services/search_titles.py`: `get_search_titles` ↔ `jh jobs titles`, con
+    `matches_roles` (puestos que apruebas y el filtro previo deja fuera). Skill `ampliar-busqueda`
+    y botón en Plataformas (acción `ampliar-busqueda`).
+  - **16.2** · `services/ingestion/discover.py`: `jh sources discover --file F [--add] [--json]`
+    (hasta 3 slugs por empresa en Greenhouse, Lever global/UE y Ashby; `confirmed`, `probable` o
+    `doubtful`; `--add` nunca da de alta las dudosas). Sin MCP, a propósito.
+  - Docs: FUENTES_OFERTAS, DATA_MODEL, AGENT_INTERFACE, POLICIES §2, ARCHITECTURE, AGENTS_COMPAT,
+    README, RESUMEN_FASES, ADR-028 y `docs/pruebas/fase-16-prueba-manual.txt`.
+  - Tests: última pasada completa con 1937 de backend y 195 de frontend en verde, antes de
+    aplicar la revisión. Los tests añadidos después (revisión y botón de Plataformas) pasan por
+    separado. La pasada completa final la paró Claude Code por falta de memoria: pendiente.
+- **Pruebas reales** (carpeta de datos aislada, sin tocar `data/`):
+  - las APIs de Greenhouse, Lever y Ashby responden 404 a una oferta o tablero inexistente y 200 a
+    uno vivo; `check_ats` lo interpreta bien con ofertas reales de Stripe, Palantir y Ramp;
+  - `jh sources discover` encontró los tableros de las tres y nada para una empresa inventada;
+  - en las páginas, Tecnoempleo responde 410 a una oferta inexistente (detectada), Indeed responde 401
+    y InfoJobs sirve un control anti-bot con HTTP 200. Por eso se añadió la detección de anti-bot y
+    la exigencia de ver la oferta en la página antes de decir «abierta».
+- **Decisiones:**
+  - Señales en una columna propia y no en `risk_flags`, que sigue siendo solo riesgo de inyección
+    (ADR-028, aprobado antes de empezar). Desviación respecto al encargo.
+  - Republicadas por canal y ubicación, en días distintos: ni varias ubicaciones el mismo día ni la
+    misma oferta en varios portales cuentan.
+  - «Sigue abierta» silencia ese motivo hasta que una comprobación vea la oferta abierta.
+  - El aviso solo en etapas anteriores al envío; la comprobación diaria, solo de aprobadas y con CV.
+  - Las URLs que comprueba el worker vienen de contenido no confiable: se resuelve el DNS y se
+    rechaza la red local; del destino de una redirección solo se guarda el dominio.
+  - `discover` sin herramienta MCP; «confirmada» exige el nombre completo (no `token_set_ratio`).
+  - Revisión del rol `revisor` aplicada: ids en la query (`gh_jid`) y el id de la fuente en el ref,
+    `confirmed` estricto, DNS, URL de redirección fuera de los textos, «Sigue abierta» que caduca,
+    `InvalidURL`, ubicación en el grupo, textos de API limpios, slugs, Ashby sin mayúsculas, lógica
+    de la migración congelada y aviso del servidor MCP matizado.
+- **Deuda:**
+  - `reposted` no caduca sola: se recalcula al ver otra publicación.
+  - Las frases de «oferta cerrada» y anti-bot son heurísticas sin páginas reales cerradas de
+    InfoJobs e Indeed (que en la práctica dan `unknown`).
+  - El plazo de lectura es por petición, no total (como en el alta por URL).
+  - `discover` no enseña progreso y Lever devuelve el tablero entero.
+  - Descubrir empresas desde la UI («Empresas»), pendiente.
+  - Pendiente de prueba manual: una oferta cerrada real en la ficha, `/generar-cv` con aviso,
+    `/ampliar-busqueda` con datos reales y `discover` con tus empresas
+    (`docs/pruebas/fase-16-prueba-manual.txt`).
 

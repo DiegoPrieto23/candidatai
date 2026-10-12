@@ -191,6 +191,101 @@ hayas aprobado. Skill `buscar-ofertas`.
 - Requiere un agente con acceso a tu navegador (en Claude Code, Claude in Chrome). Ver
   `docs/AGENTS_COMPAT.md`.
 
+## ¿Sigue abierta? y republicadas (fase 16)
+
+Para no gastar tiempo ni cuota del agente en ofertas cerradas o que se publican una y otra vez.
+Las dos cosas van a `jobs.signals` (no a `risk_flags`, que es solo riesgo de inyección; ADR-028) y
+son **observaciones, no veredictos**: la app nunca cierra una oferta por ellas.
+
+### ¿Sigue abierta?
+
+`services/liveness.py`, una petición ligera por oferta:
+
+- **ATS por su API pública**, si la URL (`boards.greenhouse.io/{slug}/jobs/{id}`,
+  `jobs.lever.co/{slug}/{id}`, `jobs.ashbyhq.com/{slug}/{id}`) o la fuente con conector dan el
+  tablero y el id: Greenhouse `boards-api.greenhouse.io/v1/boards/{slug}/jobs/{id}` y Lever
+  `api.lever.co/v0/postings/{slug}/{id}` (o `api.eu.lever.co`) responden 404 a una oferta retirada;
+  en Ashby, la oferta deja de aparecer en `posting-api/job-board/{slug}`.
+- **El resto con un GET** como el del alta por URL (sin cookies ni JavaScript, nada local ni de red
+  privada, también tras redirecciones; además se resuelve el dominio y se rechaza si apunta a la
+  red local), leyendo como mucho `liveness.max_bytes`. Posible cierre si:
+  - responde **404 o 410**;
+  - **redirige y pierde la oferta**: otro id de plataforma (o ninguno), la portada, un tramo superior
+    de la ruta (la lista) o una página de error (`?error=true`, como Greenhouse);
+  - el texto visible contiene una frase de **`liveness.closed_phrases`** (`config/policies.yaml`):
+    genéricas en español e inglés y propias de InfoJobs, Indeed y Tecnoempleo. Son heurísticas: si
+    ves una oferta cerrada que no se detecta, añade la frase que muestra;
+  - el JSON-LD `JobPosting` tiene un **`validThrough` ya pasado** (con un día de margen).
+- 401/403/429/5xx, fallos de red, una página de login o un **control anti-bot** servido con
+  HTTP 200 (`liveness.blocked_phrases`): `unknown`, sin aviso.
+- **«Abierta» exige ver la oferta**: su título en la página o un JSON-LD `JobPosting`. Una página
+  genérica sin ninguno de los dos da `unknown`.
+- En la práctica (comprobado en octubre de 2026): los ATS y Tecnoempleo responden bien; InfoJobs
+  sirve un control anti-bot e Indeed responde 401 a peticiones sin navegador, así que sus ofertas
+  suelen quedar en `unknown`. No se intenta esquivar: el aviso solo sale cuando hay evidencia.
+- **LinkedIn nunca** (ADR-016; ver fase 22): `skipped`.
+
+Cuándo se comprueba:
+
+- cada día, con la ingesta, y al arrancar `jh worker`: las ofertas en `approved` y `cv_ready` sin
+  comprobación en las últimas `liveness.fresh_hours` (tarea `check_open`, una por oferta);
+- al abrir la ficha de una oferta aprobada o con CV listo (si la última es reciente, no repite);
+- antes de redactar un CV: el skill `generar-cv` llama a `check_job_open` y, si puede estar
+  cerrada, pregunta antes de gastar cuota; el botón «Generar CV» también lo avisa;
+- a mano: «Comprobar otra vez» en la ficha o `jh jobs check-open ID --force true`.
+
+Si puede estar cerrada, la ficha lo dice con el motivo y la fecha y ofrece **«Descartar»** (con el
+motivo nuevo «Ya no está publicada», `closed`), **«Sigue abierta»** (quita el aviso y ese mismo
+motivo ya no vuelve a avisar, hasta que una comprobación la vea abierta) y «Comprobar otra vez». La bandeja y el triaje la marcan «¿Cerrada?».
+La primera vez se registra el evento `closure_suspected`, que no cambia la etapa.
+
+### Republicadas
+
+`services/reposts.py`. Cada publicación vista queda en `job_sightings`: la primera al dar de alta
+la oferta y las siguientes cuando reaparece con otro id o URL aunque la huella la reconozca como la
+misma (alta manual, alertas, captura y conectores). Una oferta está **republicada** cuando, en los
+últimos `reposts.window_days` días (90), el mismo canal ha mostrado publicaciones distintas de la
+misma empresa con el mismo título normalizado (también traducido con `config/title_aliases.yaml`)
+y la misma ubicación en al menos `reposts.min_count` días distintos (2):
+
+- varias publicaciones el mismo día suelen ser varias ubicaciones: no cuentan;
+- la misma oferta en varios portales (InfoJobs e Indeed) no es republicar: no cuenta.
+
+La bandeja y el triaje muestran «Republicada ×N» (las fechas, al pasar el ratón) y la ficha una
+nota. Puede ser una oferta difícil de cubrir o una que el portal renueva sola: decides tú.
+
+## Búsqueda ampliada (fase 16)
+
+### Títulos parecidos: skill `ampliar-busqueda`
+
+`get_search_titles` (`jh jobs titles`) agrupa los títulos de las ofertas que apruebas o envías y de
+las que descartas (con sus motivos; no las descartadas por estar cerradas) en los últimos 90 días.
+Marca con `matches_roles: false` los puestos que te interesan y que el filtro previo de conectores y
+alertas deja fuera. El skill `ampliar-busqueda` propone, con esa base, hasta 8 títulos cercanos
+(«Data Platform Engineer», «Analytics Engineer», «BI Engineer»…) con su porqué y su riesgo y, solo
+con tu OK a cada uno, los añade a `preferences.roles` (editando `data/profile.yaml` y reimportándolo)
+o a las `search_urls` de tus plataformas (`save_source`). Botón «Ampliar búsqueda» en Plataformas.
+
+### Descubrir empresas: `jh sources discover`
+
+```
+jh sources discover --file empresas.txt [--add] [--json]
+```
+
+- `empresas.txt`: una empresa por línea; `#` comenta. `Nombre | slug` prueba solo ese slug.
+- Para cada empresa prueba hasta 3 slugs (`acmedatos`, `acme-datos` y, si tiene 4 letras o más, la
+  primera palabra) en las APIs públicas de los conectores: Greenhouse
+  (`boards-api.greenhouse.io/v1/boards/{slug}`), Lever (`api.lever.co` y `api.eu.lever.co`) y Ashby
+  (`api.ashbyhq.com/posting-api/job-board/{slug}`). Las tres responden 404 a un tablero que no
+  existe. Sin agente ni tokens; una pausa corta entre peticiones.
+- Confianza: Greenhouse da el nombre del tablero (`confirmed` si casa entero con la empresa y el
+  slug sale del nombre completo; `doubtful` si no: un tablero «Capital» no confirma «Capital
+  Energy»). Lever y Ashby no lo dan: `probable` si el slug sale del nombre completo, `doubtful` si de
+  la primera palabra. Se enseñan el número de ofertas y hasta 3 títulos para comprobarlo.
+- Sin `--add` solo propone e imprime el `jh sources add …` de cada una. Con `--add` da de alta las
+  `confirmed` y `probable` que aún no son fuente (la empresa queda como objetivo); las `doubtful`,
+  nunca. Sin herramienta MCP: es un comando para ti.
+
 ## Modelo de datos (fase 09b)
 
 - `jobs`: `platform` (str?, p. ej. `linkedin`), `detail_level` (`summary` | `full`) e índice

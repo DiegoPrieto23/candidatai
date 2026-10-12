@@ -1,7 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
-import { jobView, milestone, mockApi, processView, renderApp, status } from '@/test/utils'
+import { isUserPost, jobView, milestone, mockApi, processView, renderApp, status } from '@/test/utils'
 
 describe('Sección Proceso de la ficha', () => {
   it('no aparece antes de aprobar la oferta', async () => {
@@ -76,8 +76,8 @@ describe('Sección Proceso de la ficha', () => {
     await userEvent.clear(within(section).getByLabelText('Día'))
     await userEvent.type(within(section).getByLabelText('Día'), '2026-10-09')
     await userEvent.click(within(section).getByRole('button', { name: 'Guardar hito' }))
-    await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true))
-    expect(calls.find((c) => c.method === 'POST')?.body).toMatchObject({
+    await waitFor(() => expect(calls.some(isUserPost)).toBe(true))
+    expect(calls.find(isUserPost)?.body).toMatchObject({
       kind: 'deadline',
       all_day: true,
       starts_at: '2026-10-09T00:00:00+02:00',
@@ -97,6 +97,6 @@ describe('Sección Proceso de la ficha', () => {
     const section = await screen.findByRole('region', { name: 'Proceso' })
     expect(await within(section).findByText(/12 días sin respuesta/)).toBeInTheDocument()
     await userEvent.click(within(section).getByRole('button', { name: 'Seguimiento enviado' }))
-    await waitFor(() => expect(calls.find((c) => c.method === 'POST')?.body).toEqual({ type: 'followup_sent' }))
+    await waitFor(() => expect(calls.find(isUserPost)?.body).toEqual({ type: 'followup_sent' }))
   })
 })

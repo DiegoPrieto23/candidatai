@@ -1,10 +1,10 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Query, status
+from fastapi import APIRouter, Depends, Query, status
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 
-from app.api.deps import SessionDep
-from app.services import events, ingest, jobs
+from app.api.deps import EmptyBody, SessionDep, require_ui
+from app.services import events, ingest, jobs, liveness
 from app.services.matching import service as matching
 from app.services.pipeline import EventType, Stage
 
@@ -25,6 +25,10 @@ class AddFromTextBody(_Body):
     text: str = Field(min_length=1)
     url: str | None = None
     location: str | None = None
+
+
+class CheckOpenBody(_Body):
+    force: bool = Field(default=False, description="Repetir aunque haya una comprobación reciente.")
 
 
 class AddUserEventBody(_Body):
@@ -102,3 +106,19 @@ def add_job_event(
         reason=body.reason,
         channel=body.channel,
     )
+
+
+@router.post(
+    "/{job_id}/check-open", operation_id="check_job_open", dependencies=[Depends(require_ui)]
+)
+def check_job_open(session: SessionDep, job_id: int, body: CheckOpenBody) -> liveness.LivenessView:
+    """¿Sigue abierta? (fase 16). Solo avisa: nunca cierra la oferta."""
+    return liveness.check_job(session, job_id, force=body.force)
+
+
+@router.post(
+    "/{job_id}/still-open", operation_id="confirm_job_open", dependencies=[Depends(require_ui)]
+)
+def confirm_job_open(session: SessionDep, job_id: int, body: EmptyBody) -> liveness.LivenessView:
+    """«Sigue abierta»: quita el aviso de posible cierre; ese motivo ya no vuelve a avisar."""
+    return liveness.confirm_open(session, job_id)

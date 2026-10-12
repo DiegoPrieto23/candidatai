@@ -13,6 +13,8 @@ from app.schemas.llm_io import JobExtraction, Salary
 from app.services import application_archive, extractions
 from app.services.events import EventOut, JobNotFoundError
 from app.services.pipeline import EventType, Stage, job_events
+from app.services.signals import JobSignals
+from app.services.signals import read as read_signals
 from app.services.untrusted import wrap_untrusted
 
 DEFAULT_LIMIT = 20
@@ -37,6 +39,8 @@ class JobSummary(BaseModel):
     duplicate_of: int | None
     first_seen_at: datetime
     score: int | None  # del último match; None si aún no se ha puntuado
+    # Posible cierre y republicación (fase 16): observaciones del código, no veredictos.
+    signals: JobSignals = JobSignals()
 
 
 def last_match_subquery():
@@ -93,6 +97,7 @@ def list_jobs(
             url=job.url,
             stage=Stage(job_stage) if job_stage else None,
             risk_flags=job.risk_flags,
+            signals=read_signals(job),
             duplicate_of=job.duplicate_of,
             first_seen_at=job.first_seen_at,
             score=score,
@@ -120,6 +125,7 @@ def get_job(session: Session, job_id: int) -> JobDetail:
         url=job.url,
         stage=Stage(job_stage) if job_stage else None,
         risk_flags=job.risk_flags,
+        signals=read_signals(job),
         duplicate_of=job.duplicate_of,
         first_seen_at=job.first_seen_at,
         score=score,
@@ -244,6 +250,7 @@ def search_jobs(
                 url=job.url,
                 stage=Stage(job_stage) if job_stage else None,
                 risk_flags=job.risk_flags,
+                signals=read_signals(job),
                 duplicate_of=job.duplicate_of,
                 first_seen_at=job.first_seen_at,
                 score=score,
@@ -318,6 +325,7 @@ def get_job_view(session: Session, job_id: int) -> JobView:
         url=job.url,
         stage=Stage(job_stage) if job_stage else None,
         risk_flags=job.risk_flags,
+        signals=read_signals(job),
         duplicate_of=job.duplicate_of,
         first_seen_at=job.first_seen_at,
         score=score,

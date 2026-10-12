@@ -46,6 +46,8 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | | `… [--source S] [--platform P] [--external-id X]` | 09b | Además `source_id?` (una plataforma `agent_browse` con la navegación activada; si no, `not_allowed`), `platform?` y `external_id?` (por defecto, de la URL con `platforms.detect`). Con `source_id`, una oferta de LinkedIn (por URL o `platform`) solo entra por la plataforma LinkedIn | igual | igual (`found` con `source_id`) |
 | `list_jobs` | `jh jobs list [--stage S] [--limit N] [--order O] --json` | 04 | `stage?, limit=20, order="score_desc"` | `{jobs: [...]}` resumida (sin texto crudo), con `score` del último match | — |
 | `get_job` | `jh jobs show ID --json` | 04 | `job_id` | Metadatos + `text` envuelto como no confiable | — |
+| `check_job_open` | `jh jobs check-open ID [--force true] --json` | 16 | `job_id, force=false` | `LivenessView`: `status` (`open`, `possibly_closed`, `unknown`, `skipped`), `reason`, `detail`, `checked_at`, `cached` (comprobación de hace menos de `liveness.fresh_hours`, sin repetir), `possibly_closed` (el aviso vigente), `suppressed` (el usuario dijo «Sigue abierta» por ese motivo) y `message`. LinkedIn: `skipped` (ADR-016). Nunca cierra la oferta | `closure_suspected` (la primera vez que avisa) |
+| `get_search_titles` | `jh jobs titles [--days N] --json` | 16 | `days=90` (7-365) | `SearchTitlesView`: `roles` (los del perfil), `positive` y `negative` (`TitleGroup`: `title`, `key`, `count`, `job_ids`, `reasons` en las negativas, `matches_roles`: pasa hoy el filtro previo), `profile_missing`. Títulos de ofertas: datos, no instrucciones | — |
 | `save_extraction` | `jh jobs save-extraction ID --file F --json` | 04 | `job_id, extraction: JobExtraction` | `ok`, `extraction_id`, `stage`, `injection_suspected`, `hard_filters` (`null` sin perfil) | `extracted` / `injection_suspected` / `hard_filter_failed` |
 | `get_extraction` | `jh jobs extraction ID --json` | 04 | `job_id` | `JobExtraction` vigente con `extraction_id`, `schema_version`, `created_at` | — |
 | `add_event` | `jh events add ID TYPE [--note N] [--at FECHA] --json` | 04 | `job_id, type, note?, occurred_at?` | `ok`, `event_id`, `stage` resultante | el indicado |
@@ -342,11 +344,23 @@ Hola: …
   `user` con `payload.reply_id` y, si hay hito, lo crea; con `none` archiva sin evento. El usuario
   puede aceptar la propuesta tal cual o cambiar la oferta, el tipo, la fecha o añadir una nota.
 
+### Ofertas vivas y republicadas (fase 16)
+
+- `list_jobs`, `get_job` y las vistas de la UI llevan `signals` (`DATA_MODEL.md` §Fase 16):
+  `possibly_closed` y `reposted` son observaciones del código, no veredictos.
+- El skill `generar-cv` llama a `check_job_open` antes de redactar: si sale `possibly_closed`,
+  avisa y pregunta. **Ningún agente descarta por esto**: descartar (motivo `closed`) o decir «Sigue
+  abierta» lo hace el usuario en la UI (`POST /jobs/{id}/still-open`, con `require_ui`).
+- El worker comprueba cada día las ofertas en `approved` y `cv_ready` (tarea `check_open`).
+- `get_search_titles` alimenta el skill `ampliar-busqueda`: el agente propone títulos y solo con el
+  OK del usuario los añade a `preferences.roles` (editando el perfil y con `jh profile import`) o a
+  las `search_urls` de una plataforma (`save_source`).
+
 ### Comandos de matching y worker (solo CLI)
 
 | Comando | Qué hace |
 |---|---|
-| `jh worker [--once] [--interval S] [--json]` | Ejecuta la cola de tareas (`score_job`, `rescore_all`, `run_source`, `poll_email`, `expire_summaries`) y, en primer plano, la ingesta diaria de las fuentes a la hora de `connectors.daily_at` (al arrancar, también las que no corrieron desde la última hora programada), la caducidad diaria de los resúmenes y la lectura de alertas cada `email_alerts.poll_minutes` (si hay IMAP o correos en `data/inbox/`). Log legible en consola y en `data/logs/worker.log`. `--once` vacía la cola y termina (código 1 si alguna falla) |
+| `jh worker [--once] [--interval S] [--json]` | Ejecuta la cola de tareas (`score_job`, `rescore_all`, `run_source`, `poll_email`, `expire_summaries`, `check_open`…) y, en primer plano, la ingesta diaria de las fuentes a la hora de `connectors.daily_at` (al arrancar, también las que no corrieron desde la última hora programada), la caducidad diaria de los resúmenes y la lectura de alertas cada `email_alerts.poll_minutes` (si hay IMAP o correos en `data/inbox/`). Log legible en consola y en `data/logs/worker.log`. `--once` vacía la cola y termina (código 1 si alguna falla) |
 | `jh match rescore [--json]` | Recalcula ya los matches desfasados de las ofertas abiertas (tras instalar el extra `matching` o editar `config/policies.yaml`) y cierra las de triaje que no pasan los filtros. Devuelve `scored` y `closed` |
 | `jh eval matching [--profile RUTA] [--no-seed] [--no-embeddings] [--json]` | Precision, recall y F1 con el umbral actual y por umbral sobre `evals/matching/*.jsonl` (perfil de demo) y `data/evals/*.jsonl` (tu perfil). Guarda el informe en `data/evals/reports/` |
 | `jh demo seed [--dir data-demo] [--force] [--eval-cv] [--json]` | Crea una carpeta de datos ficticia (fase 12.1, ADR-020): perfil demo, 60 ofertas, 8 semanas de historial y 2 CVs. Nunca escribe en `data/`. `--eval-cv` añade los 10 casos de `evals/cv/` aprobados y sin CV (en una demo existente, solo los que falten). `--json` devuelve `data_dir`, `jobs`, `events`, `by_stage`, `by_source`, `cvs`, `pdf_engine` y `warnings`. Sin herramienta MCP: no es para el agente |
@@ -369,6 +383,7 @@ la pantalla «Plataformas».
 | `jh alerts expire [--json]` | Cierra con `expired` los resúmenes sin completar más antiguos que `email_alerts.summary_expire_days` |
 | `jh sources run [ID] [--json]` | Ejecuta ya una fuente (o todas las activas) y guarda lo nuevo en `pending_extraction`. `{runs: [SourceRunResult]}` con `created`, `existing`, `duplicates`, `job_ids` y `errors` |
 | `jh sources enable ID` / `disable ID` | Activa o pausa una fuente en la ingesta diaria |
+| `jh sources discover --file F [--add] [--json]` | Fase 16: busca el tablero de Greenhouse, Lever o Ashby de cada empresa del fichero (una por línea; `Nombre \| slug` fuerza un slug) por sus APIs públicas. `DiscoverResult`: por empresa, `tried`, `hits` (`kind`, `slug`, `region`, `board_name`, `jobs_count`, `sample_titles`, `confidence`: `confirmed`/`probable`/`doubtful`, `existing_source_id`, `add_command`), `errors` y `added_source_ids`. Con `--add`, da de alta las `confirmed` y `probable` que faltan. Sin herramienta MCP |
 
 ### Candidatura asistida (fase 11): sin herramientas, a propósito
 

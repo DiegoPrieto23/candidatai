@@ -159,3 +159,49 @@ def test_0007_keeps_jobs_full_and_platform_id_is_unique(db_url: str) -> None:
             conn.exec_driver_sql("UPDATE jobs SET platform = 'linkedin' WHERE id = 2")
     finally:
         engine.dispose()
+
+
+def test_0015_backfills_one_sighting_per_job_with_identity(db_url: str) -> None:
+    migrations.upgrade(db_url, "0014")
+    engine = create_engine(db_url)
+    insert = (
+        "INSERT INTO jobs (id, source_id, company_id, external_id, platform, url, title, "
+        "raw_text, risk_flags, fingerprint, first_seen_at) VALUES ({id}, 1, 1, {ext}, {plat}, "
+        "'{url}', 'T', 'x', '[]', 'f{id}', '2026-09-01 09:00:00')"
+    )
+    try:
+        with engine.begin() as conn:
+            conn.exec_driver_sql(
+                "INSERT INTO sources (id, kind, name, config, active) "
+                "VALUES (1, 'manual_text', 'x', '{}', 1)"
+            )
+            conn.exec_driver_sql(
+                "INSERT INTO companies (id, name, normalized_name, watchlist) "
+                "VALUES (1, 'Acme', 'acme', 0)"
+            )
+            url = "https://www.infojobs.net/madrid/data/of-i0123456789abcdef0123456789abcd"
+            conn.exec_driver_sql(
+                insert.format(
+                    id=1, ext="'0123456789abcdef0123456789abcd'", plat="'infojobs'", url=url
+                )
+            )
+            conn.exec_driver_sql(
+                insert.format(id=2, ext="NULL", plat="NULL", url="https://acme.com/jobs/9?utm=x")
+            )
+            conn.exec_driver_sql(insert.format(id=3, ext="NULL", plat="NULL", url=""))
+        engine.dispose()
+
+        migrations.upgrade(db_url, "0015")
+        with engine.begin() as conn:
+            rows = conn.exec_driver_sql(
+                "SELECT job_id, channel, ref, seen_at FROM job_sightings ORDER BY job_id"
+            ).all()
+            assert [tuple(r[:3]) for r in rows] == [
+                (1, "infojobs", "0123456789abcdef0123456789abcd"),
+                (2, "acme.com", "acme.com/jobs/9"),
+            ]
+            assert str(rows[0][3]).startswith("2026-09-01 09:00:00")
+            assert conn.exec_driver_sql("SELECT signals FROM jobs WHERE id = 3").scalar() == "{}"
+        migrations.downgrade(db_url, "0014")
+    finally:
+        engine.dispose()

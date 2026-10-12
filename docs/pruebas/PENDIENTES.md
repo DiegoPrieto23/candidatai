@@ -6,7 +6,7 @@ cada fase y lo quita cuando el usuario confirma que está hecho.
 
 Marca `[x]` lo que hagas y, si algo falla, apúntalo debajo de la línea con `→`.
 
-Última actualización: 2026-10-12 (fase 15).
+Última actualización: 2026-10-12 (fase 16).
 
 ## 1. Poner la app al día (antes de probar nada)
 
@@ -16,10 +16,12 @@ bloquea el entorno de Python):
 - [ ] Copia de seguridad de la BD: `copy data\jobhunter.db data\jobhunter.db.bak-0012`
 - [ ] `uv sync --directory backend` (dependencias añadidas con `--no-sync`, p. ej. `tzdata`)
 - [ ] `uv run --directory backend jh db upgrade`: tu BD está en **0012** y el código espera la
-      **0014** (`skill_gap_marks` de la fase 14; `replies` y `message_drafts` de la 15)
+      **0015** (`skill_gap_marks` de la fase 14; `replies` y `message_drafts` de la 15;
+      `jobs.signals` y `job_sightings` de la 16)
 - [ ] `cd frontend; pnpm install`
 - [ ] Abrir Claude Code de nuevo para que el servidor MCP cargue las herramientas nuevas
-      (`list_replies`, `get_reply`, `save_reply_proposal`, `save_message_draft`, `get_skill_gaps`…).
+      (`list_replies`, `get_reply`, `save_reply_proposal`, `save_message_draft`, `get_skill_gaps`,
+      `check_job_open`, `get_search_titles`…).
       Comprobar con `/mcp`.
 
 ## 2. `.env.example` (el agente no puede leerlo ni editarlo)
@@ -40,6 +42,12 @@ bloquea el entorno de Python):
 Cada guía está en `docs/pruebas/`. No consta en el ROADMAP que estén hechas; si alguna ya la
 hiciste, márcala.
 
+- [ ] **Fase 16 · Ofertas vivas y búsqueda ampliada** (`fase-16-prueba-manual.txt`):
+  - aviso «Puede que ya no esté publicada» con una oferta cerrada real, «Descartar», «Sigue
+    abierta» y «Comprobar otra vez»;
+  - `/generar-cv` sobre una oferta con aviso (debe preguntar antes de redactar);
+  - `/ampliar-busqueda` (o el botón en Plataformas) y `jh sources discover` con tus empresas;
+  - «Republicada ×N» cuando aparezca con el uso.
 - [ ] **Fase 15 · Respuestas y seguimientos** (`fase-15-prueba-manual.txt`):
   - IMAP real sobre `INBOX`: `jh doctor` en verde y «Revisar correo ahora» en «Respuestas»;
   - pantalla «Respuestas» y aviso en la ficha en el navegador (Aceptar, Cambiar, Ignorar);

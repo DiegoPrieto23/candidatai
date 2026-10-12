@@ -82,6 +82,19 @@ describe('Plataformas', () => {
     expect(screen.getByText('El agente aún no la ha recorrido')).toBeInTheDocument()
   })
 
+  it('«Ampliar búsqueda» abre el agente con su skill', async () => {
+    const calls = mockApi({
+      'GET /status': status(),
+      'GET /sources': { sources: [tecno], agent_browse: LIMITS },
+      'GET /agent': { available: true, agent: 'claude', reason: null, actions: [] },
+      'POST /agent/launch': { ok: true, agent: 'claude', prompt: 'Usa el skill ampliar-busqueda…', message: 'ok' },
+    })
+    renderApp('/plataformas')
+    await userEvent.click(await screen.findByRole('button', { name: 'Ampliar búsqueda' }))
+    expect(await screen.findByText('Abierto en claude: sigue en la terminal.')).toBeInTheDocument()
+    expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ action: 'ampliar-busqueda' })
+  })
+
   it('activar LinkedIn pide confirmar el riesgo y manda confirm_risk', async () => {
     const calls = mockApi({
       'GET /status': status(),

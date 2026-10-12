@@ -14,6 +14,10 @@ configurado o correos en `data/inbox/`, y cada día, con la ingesta, `expire_sum
 Respuestas de las empresas (fase 15): con la misma frecuencia se encola `poll_replies` si hay de
 dónde leer y alguna candidatura enviada abierta.
 
+¿Sigue abierta? (fase 16): cada día, con la ingesta, y al arrancar se encola `check_open` para
+cada oferta aprobada o con CV listo sin comprobación reciente. Una tarea por oferta: cada una en su
+transacción, sin bloquear SQLite mientras espera a la red.
+
 Candidatura asistida (fase 11): el worker es el único dueño del navegador persistente
 (`services/applier/browser.py`). Sus tareas no se reintentan y, si el worker se cierra a medias,
 quedan `failed` al arrancar, nunca vuelven a la cola.
@@ -33,7 +37,7 @@ from app.core.config import get_settings
 from app.core.db import session_scope
 from app.core.policies import ConnectorsPolicy, get_policies
 from app.models.base import utcnow
-from app.services import application_archive, replies, summaries, tasks
+from app.services import application_archive, liveness, replies, summaries, tasks
 from app.services.ingestion import service as sources
 from app.services.ingestion.email import service as email_alerts
 from app.services.ingestion.email.mailboxes import has_local_mail
@@ -83,6 +87,10 @@ def _poll_replies(session: Session, _payload: dict[str, Any]) -> dict[str, Any]:
 
 def _expire_summaries(session: Session, _payload: dict[str, Any]) -> dict[str, Any]:
     return summaries.expire_summaries(session).model_dump(mode="json")
+
+
+def _check_open(session: Session, payload: dict[str, Any]) -> dict[str, Any]:
+    return liveness.check_job(session, int(payload["job_id"])).model_dump(mode="json")
 
 
 # Candidatura asistida (fase 11). Abren sus propias sesiones cortas: el navegador puede tardar.
@@ -151,6 +159,7 @@ HANDLERS: dict[str, Handler] = {
     "apply_submit": _apply_submit,
     "apply_focus": _apply_focus,
     "archive_application": _archive_application,
+    "check_open": _check_open,
 }
 
 
@@ -257,6 +266,14 @@ def enqueue_replies_poll(session: Session) -> bool:
     return True
 
 
+def enqueue_liveness_checks(session: Session) -> int:
+    """Encola `check_open` para las aprobadas y con CV listo sin comprobación reciente."""
+    due = liveness.due_for_check(session)
+    for job_id in due:
+        tasks.enqueue(session, "check_open", {"job_id": job_id})
+    return len(due)
+
+
 def describe(outcome: TaskOutcome) -> str:
     """Una línea legible para el log del worker."""
     result = outcome.result or {}
@@ -276,6 +293,8 @@ def describe(outcome: TaskOutcome) -> str:
     if outcome.kind == "archive_application" and result.get("folder"):
         verb = "archivada en" if result.get("created") else "ya estaba archivada en"
         return f"Candidatura de la oferta {result.get('job_id')} {verb} data/{result['folder']}"
+    if outcome.kind == "check_open" and result.get("message"):
+        return f"Oferta {result.get('job_id')}: {result['message']}"
     if outcome.kind == "rescore_all":
         scored, closed = result.get("scored", 0), len(result.get("closed") or [])
         return f"Recálculo de matches: {scored} ofertas, {closed} cerradas por filtros"
@@ -310,11 +329,14 @@ def run_scheduler(
             with session_scope() as session:
                 queued = enqueue_due_sources(session)
                 tasks.enqueue(session, "expire_summaries")
+                checks = enqueue_liveness_checks(session)
         except Exception as exc:
             logger.exception("Fallo al encolar la ingesta diaria")
             on_message(f"Error al encolar la ingesta diaria: {type(exc).__name__}: {exc}")
             return
         on_message(f"Ingesta diaria: {len(queued)} fuentes en cola.")
+        if checks:
+            on_message(f"¿Siguen abiertas?: {checks} ofertas aprobadas o con CV en cola.")
         process()
 
     # Un solo hilo: la cola y la ingesta nunca escriben a la vez en SQLite.
@@ -356,8 +378,11 @@ def run_scheduler(
         email = enqueue_email_poll(session)
         email = enqueue_replies_poll(session) or email
         tasks.enqueue(session, "expire_summaries")
+        checks = enqueue_liveness_checks(session)
     if queued:
         on_message(f"Fuentes pendientes desde la última ingesta: {len(queued)} en cola.")
+    if checks:
+        on_message(f"¿Siguen abiertas?: {checks} ofertas aprobadas o con CV en cola.")
     if email:
         on_message(f"Correo (alertas y respuestas): se lee al arrancar y cada {poll_minutes} min.")
     process()
