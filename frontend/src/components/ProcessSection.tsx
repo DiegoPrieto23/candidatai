@@ -29,6 +29,8 @@ import {
   useUpdateMilestone,
   type ContactFields,
 } from '@/api/queries'
+import { AgentButton } from '@/components/AgentButton'
+import { InterviewActions, InterviewDetails } from '@/components/InterviewDetails'
 import { ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -268,6 +270,8 @@ function MilestoneRow({ milestone, stage }: { milestone: MilestoneOut; stage: St
           </p>
         )}
         {milestone.notes && <p className="mt-0.5 text-xs whitespace-pre-line text-muted-foreground">{milestone.notes}</p>}
+        <InterviewDetails milestone={milestone} />
+        <InterviewActions milestone={milestone} stage={stage} />
         {status.error && (
           <p role="alert" className="mt-1 text-xs text-destructive">
             {status.error.message}
@@ -550,6 +554,14 @@ function Sending({ process }: { process: ProcessView }) {
           <FilePdfIcon className="size-4" />
           {process.documents.cv_sent ? 'CV enviado' : 'CV seleccionado para enviar'}
         </a>
+      )}
+      {process.offer_received && process.stage === 'in_process' && (
+        <div className="space-y-1.5">
+          <p className="text-sm">Tienes una propuesta: antes de aceptar, revisa qué conviene aclarar.</p>
+          <AgentButton action="dudas-oferta" jobId={process.job_id}>
+            Dudas antes de aceptar
+          </AgentButton>
+        </div>
       )}
       {canFollowUp && (
         <div>

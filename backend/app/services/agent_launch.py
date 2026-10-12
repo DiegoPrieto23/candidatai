@@ -2,8 +2,9 @@
 de un skill ya escrita. La app no llama a ningún modelo (ADR-001): lanza el agente que ya usas,
 con tu suscripción, y tú ves, contestas y apruebas lo que haga.
 
-- Las órdenes son una lista cerrada (`ACTIONS`) que construye la app. Lo único variable es el
-  `job_id`, un entero: ningún texto de una oferta ni de una web llega al comando.
+- Las órdenes son una lista cerrada (`ACTIONS`) que construye la app. Lo único variable son el
+  `job_id` y el `milestone_id` (fase 17), enteros: ningún texto de una oferta ni de una web llega
+  al comando.
 - Qué programa se lanza no está aquí: es `launch` del agente en `.agents/manifest.yaml` (regla
   dura 2). Con varios, elige `JH_AGENT`; si no, el primero que lo tenga y esté instalado.
 - Antes de lanzar se quitan del entorno las variables de `launch.unset_env` (p. ej. la clave de la
@@ -24,7 +25,9 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.core.config import REPO_ROOT, get_settings
-from app.services import events
+from app.models import Milestone
+from app.models.base import utcnow
+from app.services import events, interviews, process
 from app.services.pipeline import Stage
 
 MANIFEST = REPO_ROOT / ".agents" / "manifest.yaml"
@@ -41,7 +44,15 @@ ActionId = Literal[
     "redactar-seguimientos",
     "redactar-seguimiento",
     "ampliar-busqueda",
+    "preparar-entrevista",
+    "simular-entrevista",
+    "repasar-entrevista",
+    "dudas-oferta",
 ]
+
+# Hitos de entrevista (fase 17): `upcoming`, programada y por empezar; `past`, ya empezada y no
+# cancelada.
+MilestoneRule = Literal["upcoming", "past"]
 
 
 # Etapas en las que tiene sentido redactar el CV de una oferta (también para rehacerlo).
@@ -53,10 +64,12 @@ SENT_STAGES = frozenset({Stage.APPLIED, Stage.IN_PROCESS})
 @dataclass(frozen=True)
 class Action:
     label: str
-    prompt: str  # `{job_id}` si la acción es de una oferta
+    prompt: str  # `{job_id}` si la acción es de una oferta; `{milestone_id}`, de un hito
     needs_job: bool = False
     stages: frozenset[Stage] = frozenset()  # con oferta: etapas en las que se puede lanzar
     wrong_stage: str = ""  # el motivo si la oferta no está en ellas
+    milestone: MilestoneRule | None = None  # acción de un hito de entrevista (y de su oferta)
+    needs_offer: bool = False  # solo si la oferta tiene un `offer_received`
 
 
 ACTIONS: dict[ActionId, Action] = {
@@ -115,13 +128,51 @@ ACTIONS: dict[ActionId, Action] = {
         stages=SENT_STAGES,
         wrong_stage="Solo se escribe a la empresa de una candidatura enviada y abierta.",
     ),
+    # Ficha, hitos de entrevista (fase 17). El agente prepara, simula o repasa; lo que proponga
+    # para el perfil pasa por `actualizar-perfil` y la confirmación del usuario.
+    "preparar-entrevista": Action(
+        "Preparar",
+        "Usa el skill preparar-entrevista de Job Hunter para la entrevista {milestone_id} de la "
+        "oferta {job_id}.",
+        needs_job=True,
+        milestone="upcoming",
+    ),
+    "simular-entrevista": Action(
+        "Simulacro",
+        "Usa el skill simular-entrevista de Job Hunter para la entrevista {milestone_id} de la "
+        "oferta {job_id}.",
+        needs_job=True,
+        milestone="upcoming",
+    ),
+    "repasar-entrevista": Action(
+        "Repasar",
+        "Usa el skill repasar-entrevista de Job Hunter para repasar la entrevista {milestone_id} "
+        "de la oferta {job_id}.",
+        needs_job=True,
+        milestone="past",
+    ),
+    "dudas-oferta": Action(
+        "Dudas antes de aceptar",
+        "Usa el skill repasar-entrevista de Job Hunter para revisar las dudas antes de aceptar la "
+        "oferta {job_id}.",
+        needs_job=True,
+        stages=frozenset({Stage.IN_PROCESS}),
+        wrong_stage="Solo con un proceso abierto.",
+        needs_offer=True,
+    ),
 }
 
 
 class LaunchError(Exception):
-    def __init__(self, code: Literal["not_found", "invalid_request", "unavailable"], message: str):
+    def __init__(
+        self,
+        code: Literal["not_found", "invalid_request", "unavailable"],
+        message: str,
+        prompt: str | None = None,
+    ):
         super().__init__(message)
         self.code = code
+        self.prompt = prompt  # con `unavailable`: la orden, para que la UI la copie
 
 
 class AgentInfo(BaseModel):
@@ -146,12 +197,14 @@ class _Launcher:
     unset_env: list[str]
 
 
-def prompt_for(action: ActionId, job_id: int | None = None) -> str:
+def prompt_for(action: ActionId, job_id: int | None = None, milestone_id: int | None = None) -> str:
     """La orden que se le da al agente (la misma que copia la UI si no puede lanzarlo)."""
     spec = ACTIONS[action]
     if spec.needs_job and job_id is None:
         raise LaunchError("invalid_request", f"«{spec.label}» necesita una oferta.")
-    return spec.prompt.format(job_id=job_id)
+    if spec.milestone and milestone_id is None:
+        raise LaunchError("invalid_request", f"«{spec.label}» necesita una entrevista.")
+    return spec.prompt.format(job_id=job_id, milestone_id=milestone_id)
 
 
 def _launchers() -> list[_Launcher]:
@@ -225,10 +278,39 @@ def _open_terminal(title: str, command: str) -> None:
     subprocess.Popen(shell, cwd=REPO_ROOT, creationflags=flags)  # noqa: S603
 
 
-def launch(session: Session, action: ActionId, job_id: int | None = None) -> LaunchResult:
+def _check_milestone(
+    session: Session, rule: MilestoneRule, milestone_id: int | None, job_id: int | None
+) -> int:
+    """Comprueba el hito de una acción de entrevista y devuelve el id de su oferta."""
+    if milestone_id is None:
+        raise LaunchError("invalid_request", "Esta acción necesita una entrevista.")
+    row = session.get(Milestone, milestone_id)
+    if row is None:
+        raise LaunchError("not_found", f"No existe el hito {milestone_id}.")
+    if job_id is not None and job_id != row.job_id:
+        raise LaunchError("invalid_request", "El hito no es de esa oferta.")
+    # Las mismas comprobaciones que las herramientas, para que botón y herramienta no diverjan.
+    try:
+        if rule == "upcoming":
+            interviews.check_can_prepare(session, row, utcnow())
+        else:
+            interviews.check_can_debrief(row, utcnow())
+    except interviews.InterviewNotAllowedError as exc:
+        raise LaunchError("invalid_request", str(exc)) from exc
+    return row.job_id
+
+
+def launch(
+    session: Session,
+    action: ActionId,
+    job_id: int | None = None,
+    milestone_id: int | None = None,
+) -> LaunchResult:
     """Abre el agente en una terminal con la orden de `action`. No espera a que termine."""
     spec = ACTIONS[action]
-    if spec.needs_job:
+    if spec.milestone:
+        job_id = _check_milestone(session, spec.milestone, milestone_id, job_id)
+    elif spec.needs_job:
         if job_id is None:
             raise LaunchError("invalid_request", f"«{spec.label}» necesita una oferta.")
         try:
@@ -237,14 +319,18 @@ def launch(session: Session, action: ActionId, job_id: int | None = None) -> Lau
             raise LaunchError("not_found", f"No existe la oferta {job_id}.") from exc
         if stage not in spec.stages:
             raise LaunchError("invalid_request", spec.wrong_stage)
-    prompt = prompt_for(action, job_id if spec.needs_job else None)
+        if spec.needs_offer and not process.offer_received(session, job_id):
+            raise LaunchError("invalid_request", "Esta oferta no tiene una propuesta recibida.")
+    prompt = prompt_for(
+        action, job_id if spec.needs_job else None, milestone_id if spec.milestone else None
+    )
     picked = _pick()
     if isinstance(picked, str):
-        raise LaunchError("unavailable", picked)
+        raise LaunchError("unavailable", picked, prompt)
     try:
         _open_terminal(f"Job Hunter · {spec.label}", powershell_command(picked, prompt))
     except OSError as exc:
-        raise LaunchError("unavailable", f"No se pudo abrir la terminal: {exc}") from exc
+        raise LaunchError("unavailable", f"No se pudo abrir la terminal: {exc}", prompt) from exc
     return LaunchResult(
         agent=picked.agent,
         prompt=prompt,

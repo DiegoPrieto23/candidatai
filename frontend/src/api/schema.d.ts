@@ -1592,11 +1592,13 @@ export interface components {
              * Id
              * @enum {string}
              */
-            id: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion" | "revisar-respuestas" | "redactar-seguimientos" | "redactar-seguimiento" | "ampliar-busqueda";
+            id: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion" | "revisar-respuestas" | "redactar-seguimientos" | "redactar-seguimiento" | "ampliar-busqueda" | "preparar-entrevista" | "simular-entrevista" | "repasar-entrevista" | "dudas-oferta";
             /** Label */
             label: string;
             /** Needs Job */
             needs_job: boolean;
+            /** Needs Milestone */
+            needs_milestone: boolean;
             /** Prompt */
             prompt: string | null;
         };
@@ -2845,6 +2847,29 @@ export interface components {
             max_words: number;
         };
         /**
+         * InterviewPlan
+         * @description Lo guardado: los bloques por fecha, más quién y cuándo.
+         */
+        InterviewPlan: {
+            /**
+             * Dossier
+             * @description Nombre del dosier en data/entrevistas/ (p. ej. `42-acme.md`).
+             */
+            dossier?: string | null;
+            /**
+             * Blocks
+             * @description Bloques de 30-60 min, desde hoy hasta el día de la entrevista.
+             */
+            blocks: components["schemas"]["PrepBlock"][];
+            /**
+             * Saved At
+             * Format: date-time
+             */
+            saved_at: string;
+            /** Agent Name */
+            agent_name?: string | null;
+        };
+        /**
          * InvalidTemplate
          * @description Una carpeta con `template.yaml` que no se puede usar, y por qué.
          */
@@ -3062,9 +3087,11 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion" | "revisar-respuestas" | "redactar-seguimientos" | "redactar-seguimiento" | "ampliar-busqueda";
+            action: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion" | "revisar-respuestas" | "redactar-seguimientos" | "redactar-seguimiento" | "ampliar-busqueda" | "preparar-entrevista" | "simular-entrevista" | "repasar-entrevista" | "dudas-oferta";
             /** Job Id */
             job_id?: number | null;
+            /** Milestone Id */
+            milestone_id?: number | null;
         };
         /** LaunchResult */
         LaunchResult: {
@@ -3415,6 +3442,13 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+            prep_plan?: components["schemas"]["InterviewPlan"] | null;
+            /** Debrief Notes */
+            debrief_notes?: string | null;
+            /** Next Steps */
+            next_steps?: string | null;
+            /** Debriefed At */
+            debriefed_at?: string | null;
         };
         /** MilestoneStatusChange */
         MilestoneStatusChange: {
@@ -3499,7 +3533,7 @@ export interface components {
              * Folder
              * @enum {string}
              */
-            folder: "contexto" | "documentos" | "candidatura";
+            folder: "contexto" | "documentos" | "entrevistas" | "candidatura";
             /** Job Id */
             job_id?: number | null;
         };
@@ -3577,6 +3611,30 @@ export interface components {
             /** Location */
             location: number;
         };
+        /** PrepBlock */
+        PrepBlock: {
+            /**
+             * Date
+             * Format: date
+             * @description Día del bloque (calendario de Europe/Madrid).
+             */
+            date: string;
+            /**
+             * Minutes
+             * @description Duración: entre 15 y 120 minutos.
+             */
+            minutes: number;
+            /**
+             * Topic
+             * @description Qué se prepara.
+             */
+            topic: string;
+            /**
+             * Detail
+             * @description Cómo: qué repasar, qué historia ensayar…
+             */
+            detail?: string | null;
+        };
         /** PrepareBody */
         PrepareBody: {
             /** Form Url */
@@ -3630,6 +3688,11 @@ export interface components {
             /** Notes */
             notes: components["schemas"]["NoteOut"][];
             documents: components["schemas"]["ProcessDocuments"];
+            /**
+             * Offer Received
+             * @default false
+             */
+            offer_received: boolean;
         };
         /** ProfileSkillOption */
         ProfileSkillOption: {

@@ -195,7 +195,9 @@ Arranca `jh serve`, `jh worker` y `pnpm dev`. Crea tu perfil con el skill `actua
 | `generar-cv 42` | Redacta, renderiza y verifica el CV para la oferta 42 |
 | `generar-carta 42 máximo 150 palabras` | Carta de presentación según tus indicaciones, verificada; TXT y PDF a juego con el CV |
 | `preparar-candidatura 42` | Respuestas de screening y carta, si hace falta |
-| `preparar-entrevista 42 tecnica` | Dosier de entrevista y simulacro |
+| `preparar-entrevista 42 tecnica` | Dosier de entrevista y plan por días hasta la fecha, guardado en la ficha |
+| `simular-entrevista 42` | Simulacro: una pregunta cada vez, feedback y una versión mejor con tu perfil; al final, puntos fuertes y flojos |
+| `repasar-entrevista 42` | Cuentas cómo fue: guarda notas y próximos pasos, predice la siguiente ronda y propone historias STAR (con tu OK, vía `actualizar-perfil`). Con una oferta recibida, las dudas a aclarar antes de aceptar |
 | `resumen-diario` | Qué tienes hoy, seguimientos vencidos, qué procesar |
 | `revisar-respuestas` | Clasifica los correos de las empresas (entrevista con su fecha, prueba, oferta, rechazo); tú aceptas cada propuesta en «Respuestas» |
 | `redactar-seguimiento` | Borradores de seguimiento (máximo 2 por candidatura) y de agradecimiento tras una entrevista; los copias y los envías tú |

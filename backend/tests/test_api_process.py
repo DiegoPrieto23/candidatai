@@ -155,3 +155,29 @@ def test_calendar_endpoints(client: TestClient) -> None:
     assert feed.text.count("BEGIN:VEVENT") == 1
     download = client.get("/calendar.ics", params={"download": True})
     assert download.headers["content-disposition"] == 'attachment; filename="jobhunter.ics"'
+
+
+def test_process_shows_interview_debrief_and_offer(client: TestClient) -> None:
+    """Fase 17: el repaso que guarda el agente aparece en la ficha; y si hay propuesta, se dice."""
+    from app.services import interviews
+
+    job_id = _job(client)
+    _event(client, job_id, type="applied_manually", channel="email")
+    past = (datetime.now(UTC) - timedelta(days=1)).replace(microsecond=0).isoformat()
+    created = client.post(
+        f"/jobs/{job_id}/milestones", json={"kind": "interview", "starts_at": past}
+    ).json()
+    with session_scope() as session:
+        interviews.save_interview_notes(
+            session,
+            created["id"],
+            interviews.InterviewNotesInput(notes="Preguntaron por dbt.", next_steps="Prueba."),
+        )
+
+    body = client.get(f"/jobs/{job_id}/process").json()
+    [shown] = body["milestones"]
+    assert shown["debrief_notes"] == "Preguntaron por dbt." and shown["next_steps"] == "Prueba."
+    assert shown["status"] == "scheduled" and body["offer_received"] is False
+
+    _event(client, job_id, type="offer_received")
+    assert client.get(f"/jobs/{job_id}/process").json()["offer_received"] is True

@@ -12,6 +12,7 @@ from fastapi.testclient import TestClient
 from app.api.deps import UI_ORIGIN
 from app.api.main import create_app
 from app.core import migrations
+from app.core.config import get_settings
 from app.services import application_archive, context, folders
 
 JSON = {"Origin": UI_ORIGIN, "Content-Type": "application/json"}
@@ -63,6 +64,14 @@ def test_open_documents_folder(client: TestClient, opened: list[str]) -> None:
     response = client.post("/folders/open", json={"folder": "documentos"}, headers=JSON)
     assert response.json()["path"] == str(context.documents_dir())
     assert opened == [str(context.documents_dir())]
+
+
+def test_open_interviews_folder_creates_it(client: TestClient, opened: list[str]) -> None:
+    """Fase 17: los dosieres de `preparar-entrevista`."""
+    response = client.post("/folders/open", json={"folder": "entrevistas"}, headers=JSON)
+    path = get_settings().data_dir / "entrevistas"
+    assert response.json() == {"path": str(path), "opened": True}
+    assert opened == [str(path)] and path.is_dir()
 
 
 def test_open_application_folder(client: TestClient, opened: list[str]) -> None:

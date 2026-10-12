@@ -25,6 +25,7 @@ async function copy(text: string): Promise<boolean> {
 export function AgentButton({
   action,
   jobId,
+  milestoneId,
   children,
   variant = 'outline',
   size = 'sm',
@@ -32,6 +33,8 @@ export function AgentButton({
 }: {
   action: AgentAction
   jobId?: number
+  /** Acciones de una entrevista (fase 17): la oferta sale del hito. */
+  milestoneId?: number
   children: ReactNode
   variant?: 'default' | 'outline' | 'secondary' | 'ghost'
   size?: 'sm' | 'default'
@@ -51,7 +54,7 @@ export function AgentButton({
 
   const run = () =>
     launch.mutate(
-      { action, job_id: jobId },
+      { action, job_id: jobId, milestone_id: milestoneId },
       {
         onSuccess: (result) => show({ tone: 'ok', text: `Abierto en ${result.agent}: sigue en la terminal.` }),
         onError: async (error) => {

@@ -265,13 +265,19 @@ cambia la etapa.
 | event_id | FK events? | El evento que registró al crearse |
 | sequence | int | `SEQUENCE` del iCalendar: sube con cada cambio |
 | created_at / updated_at | datetime | |
+| prep_plan | json? | Fase 17. Plan de preparación de una entrevista (`save_interview_plan`): `dossier?` (nombre del fichero en `data/entrevistas/`), `blocks` (`date`, `minutes`, `topic`, `detail?`), `saved_at`, `agent_name` |
+| debrief_notes / next_steps | text? / text? | Fase 17. Repaso de la entrevista (`save_interview_notes`). Aparte de `notes`, que es lo que anota el usuario |
+| debriefed_at | datetime? | Cuándo se guardó el repaso |
+
+Ni el plan ni el repaso registran eventos ni cambian `status` (ADR-029).
 
 Si el evento no es válido en la etapa (p. ej. una entrevista antes de enviar), no se guarda el hito.
 Editar la fecha de una entrevista o una prueba deja una `note` («reprogramada para el…»).
 
 ### `contacts`
 `id, job_id, name, role?, email?, phone?, linkedin?, notes?, created_at`. Personas del proceso
-(recruiter, hiring manager…). Solo se ven en la UI: ninguna herramienta para agentes las devuelve.
+(recruiter, hiring manager…). Las herramientas para agentes solo devuelven el nombre
+(`list_followups_due`) y el cargo (`get_interviews`); el email, el teléfono y las notas, solo la UI.
 
 ### Seguimientos y calendario
 - **Seguimiento vencido**: oferta en `applied` con `followups.days_without_reply` días o más (10 por

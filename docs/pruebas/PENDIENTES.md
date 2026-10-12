@@ -6,7 +6,7 @@ cada fase y lo quita cuando el usuario confirma que está hecho.
 
 Marca `[x]` lo que hagas y, si algo falla, apúntalo debajo de la línea con `→`.
 
-Última actualización: 2026-10-12 (fase 16).
+Última actualización: 2026-10-12 (fase 17).
 
 ## 1. Poner la app al día (antes de probar nada)
 
@@ -16,12 +16,14 @@ bloquea el entorno de Python):
 - [ ] Copia de seguridad de la BD: `copy data\jobhunter.db data\jobhunter.db.bak-0012`
 - [ ] `uv sync --directory backend` (dependencias añadidas con `--no-sync`, p. ej. `tzdata`)
 - [ ] `uv run --directory backend jh db upgrade`: tu BD está en **0012** y el código espera la
-      **0015** (`skill_gap_marks` de la fase 14; `replies` y `message_drafts` de la 15;
-      `jobs.signals` y `job_sightings` de la 16)
+      **0016** (`skill_gap_marks` de la fase 14; `replies` y `message_drafts` de la 15;
+      `jobs.signals` y `job_sightings` de la 16; plan y repaso de entrevistas en `milestones`
+      de la 17)
 - [ ] `cd frontend; pnpm install`
 - [ ] Abrir Claude Code de nuevo para que el servidor MCP cargue las herramientas nuevas
       (`list_replies`, `get_reply`, `save_reply_proposal`, `save_message_draft`, `get_skill_gaps`,
-      `check_job_open`, `get_search_titles`…).
+      `check_job_open`, `get_search_titles`, `get_interviews`, `save_interview_plan`,
+      `save_interview_notes`…).
       Comprobar con `/mcp`.
 
 ## 2. `.env.example` (el agente no puede leerlo ni editarlo)
@@ -42,6 +44,11 @@ bloquea el entorno de Python):
 Cada guía está en `docs/pruebas/`. No consta en el ROADMAP que estén hechas; si alguna ya la
 hiciste, márcala.
 
+- [ ] **Fase 17 · Entrevistas** (`fase-17-prueba-manual.txt`):
+  - «Preparar» con una entrevista real o de prueba: dosier y plan en la ficha;
+  - «Simulacro» (que no invente nada y que los hechos nuevos solo se propongan);
+  - «Repasar»: notas en la ficha e historia nueva solo con tu OK vía `actualizar-perfil`;
+  - «Dudas antes de aceptar» cuando llegue una oferta.
 - [ ] **Fase 16 · Ofertas vivas y búsqueda ampliada** (`fase-16-prueba-manual.txt`):
   - aviso «Puede que ya no esté publicada» con una oferta cerrada real, «Descartar», «Sigue
     abierta» y «Comprobar otra vez»;

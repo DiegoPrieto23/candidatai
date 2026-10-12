@@ -791,7 +791,8 @@ export function useAgentLauncher() {
 /** Abre tu agente en una terminal con la orden escrita. No espera a que termine. */
 export function useLaunchAgent() {
   return useMutation({
-    mutationFn: (body: { action: AgentAction; job_id?: number }) => unwrap(api.POST('/agent/launch', { body })),
+    mutationFn: (body: { action: AgentAction; job_id?: number; milestone_id?: number }) =>
+      unwrap(api.POST('/agent/launch', { body })),
   })
 }
 
