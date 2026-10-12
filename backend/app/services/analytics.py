@@ -17,8 +17,24 @@ Todo sale de `events` con consultas agregadas en la BD. Definiciones (también e
 
 Solo SQLite: la semana usa `jh_iso_week` (registrada en `app/core/db.py`) y los filtros duros,
 `json_each`.
+
+**Calibración** (fase 20, `get_calibration`): ¿predicen el score y el veredicto las respuestas?
+Sobre las ofertas **enviadas** (con `applied` o `applied_manually`), tasa de respuesta y de
+entrevista por tramo de score, veredicto, fuente, portal, plantilla, carta, referencia y días entre
+el alta y el envío, con intervalo de Wilson al 95 % y `low_data` por debajo de `min_cases`. Todo
+se mide **en el momento del primer envío**:
+
+- **Score**: el del último match calculado antes del envío; si no hay ninguno, el primero después
+  (el score lo calcula código y no sabe del resultado). Sin match: `none`.
+- **Veredicto**: el del último `fit_assessed` antes del envío. Uno posterior no cuenta (pudo
+  escribirse sabiendo cómo fue).
+- **Plantilla**: la del render de `payload.render_id` del primer envío (el CV enviado).
+- **Carta**: algún documento `cover_letter` creado antes del envío.
+- **Referencia**: como en el embudo (dada, pedida o ninguna, sin fecha de corte).
+- `since` filtra por la fecha del **primer envío**, desde las 00:00 de ese día en Europe/Madrid.
 """
 
+import math
 import statistics
 from datetime import date, timedelta
 from typing import Any, Literal
@@ -39,7 +55,18 @@ from sqlalchemy import (
 from sqlalchemy.orm import Session, aliased
 from sqlalchemy.sql.expression import CTE
 
-from app.models import Application, Contact, Event, Job, JobExtraction, Source
+from app.models import (
+    Application,
+    Contact,
+    Document,
+    DocumentRender,
+    Event,
+    Job,
+    JobExtraction,
+    Match,
+    Source,
+)
+from app.services.documents.cover_letter import LETTER_KIND
 from app.services.pipeline import EventType, Stage
 from app.services.process import start_of_local_day
 
@@ -352,7 +379,9 @@ def _by_week(session: Session, per_job: CTE) -> list[WeekFunnel]:
     return out
 
 
-def _by_referral(session: Session, per_job: CTE) -> list[ReferralFunnel]:
+def _referral_group(per_job: CTE) -> Any:
+    """`given`, `requested` o `none` según la marca de referencia de los contactos del proceso."""
+
     def marked(status: str) -> ColumnElement[bool]:
         return (
             exists()
@@ -360,7 +389,11 @@ def _by_referral(session: Session, per_job: CTE) -> list[ReferralFunnel]:
             .correlate(per_job)
         )
 
-    group = case((marked("given"), "given"), (marked("requested"), "requested"), else_="none")
+    return case((marked("given"), "given"), (marked("requested"), "requested"), else_="none")
+
+
+def _by_referral(session: Session, per_job: CTE) -> list[ReferralFunnel]:
+    group = _referral_group(per_job)
     rows = {
         r.group: r
         for r in session.execute(
@@ -449,4 +482,255 @@ def get_funnel_stats(
         response_time=_response_time(session, per_job),
         discard_reasons=_discard_reasons(session, per_job),
         hard_filter_failures=_hard_filter_failures(session, per_job),
+    )
+
+
+# --- Calibración (fase 20) -------------------------------------------------------------------
+
+MIN_CASES = 10  # por debajo, el grupo lleva `low_data`
+CONFIDENCE = 0.95
+_Z = 1.959964  # cuantil normal del 97,5 %: intervalo bilateral al 95 %
+
+SCORE_BANDS: tuple[tuple[str, str], ...] = (
+    ("lt60", "< 60"),
+    ("60_74", "60-74"),
+    ("75_84", "75-84"),
+    ("gte85", "≥ 85"),
+    ("none", "Sin score"),
+)
+VERDICTS: tuple[tuple[str, str], ...] = (
+    ("strong", "Fuerte"),
+    ("possible", "Posible"),
+    ("weak", "Débil"),
+    ("none", "Sin valorar"),
+)
+LETTER_GROUPS: tuple[tuple[str, str], ...] = (("with", "Con carta"), ("without", "Sin carta"))
+REFERRAL_LABELS: tuple[tuple[str, str], ...] = (
+    ("given", "Con referencia"),
+    ("requested", "Referencia pedida"),
+    ("none", "Sin referencia"),
+)
+# Días entre el alta (`first_seen_at`) y el primer envío: menos de `limit` días.
+DAY_BUCKETS: tuple[tuple[str, str, float], ...] = (
+    ("0_1", "0-1 días", 2),
+    ("2_3", "2-3 días", 4),
+    ("4_7", "4-7 días", 8),
+    ("8_plus", "8 días o más", math.inf),
+)
+# Grupos sin dato. Una plantilla del usuario con id «none» se sumaría a «Sin CV de la app».
+NO_PLATFORM = "none"
+NO_TEMPLATE = "none"
+
+
+class RateInterval(BaseModel):
+    rate: float | None  # 0-1; `null` sin envíos
+    low: float | None  # intervalo de Wilson al 95 %
+    high: float | None
+
+
+class CalibrationGroup(BaseModel):
+    key: str  # estable: tramo, veredicto, id de fuente, portal, id de plantilla…
+    label: str
+    applied: int  # enviadas
+    replied: int  # con respuesta (la que sea, también un rechazo)
+    interview: int  # con entrevista
+    awaiting: int  # enviadas sin respuesta y aún en `applied`: bajan la tasa sin ser un «no»
+    reply_rate: RateInterval
+    interview_rate: RateInterval
+    low_data: bool  # `applied < min_cases`: no saques conclusiones
+
+
+class Calibration(BaseModel):
+    since: date | None  # fecha del primer envío
+    min_cases: int
+    confidence: float
+    total: CalibrationGroup
+    by_score: list[CalibrationGroup]  # siempre los cinco tramos, en orden
+    by_verdict: list[CalibrationGroup]  # strong, possible, weak, none
+    by_source: list[CalibrationGroup]  # las que tienen envíos; `key` = id de la fuente
+    by_platform: list[CalibrationGroup]  # `jobs.platform`; `none` sin portal
+    by_template: list[CalibrationGroup]  # plantilla del CV enviado; `none` sin CV de la app
+    by_cover_letter: list[CalibrationGroup]  # with, without
+    by_referral: list[CalibrationGroup]  # given, requested, none
+    by_days_to_apply: list[CalibrationGroup]  # 0_1, 2_3, 4_7, 8_plus
+
+
+def wilson_interval(successes: int, n: int, z: float = _Z) -> RateInterval:
+    """Tasa e intervalo de Wilson: no se sale de [0, 1] y no colapsa con 0 o n éxitos."""
+    if n == 0:
+        return RateInterval(rate=None, low=None, high=None)
+    p = successes / n
+    denominator = 1 + z * z / n
+    centre = (p + z * z / (2 * n)) / denominator
+    margin = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / denominator
+    low, high = max(0.0, centre - margin), min(1.0, centre + margin)
+    return RateInterval(rate=round(p, 4), low=round(low, 4), high=round(high, 4))
+
+
+def _calibration_rows(session: Session, since: date | None) -> CTE:
+    """Una fila por oferta enviada con su resultado y lo que se sabía al enviarla."""
+    per_job, _ = _per_job(session, None)
+    applied_at, job_id = per_job.c.applied_at, per_job.c.job_id
+
+    def nearest_score(before: bool) -> Any:
+        if before:
+            when = Match.created_at <= applied_at
+            order = (Match.created_at.desc(), Match.id.desc())
+        else:
+            when = Match.created_at > applied_at
+            order = (Match.created_at, Match.id)
+        query = select(Match.score).where(Match.job_id == job_id, when).order_by(*order).limit(1)
+        return query.correlate(per_job).scalar_subquery()
+
+    verdict = (
+        select(Event.payload["verdict"].as_string())
+        .where(
+            Event.job_id == job_id,
+            Event.type == EventType.FIT_ASSESSED,
+            Event.occurred_at <= applied_at,
+        )
+        .order_by(Event.occurred_at.desc(), Event.id.desc())
+        .limit(1)
+        .correlate(per_job)
+        .scalar_subquery()
+    )
+    render_id = (
+        select(Event.payload["render_id"].as_integer())
+        .where(Event.job_id == job_id, Event.type.in_(APPLIED_TYPES))
+        .order_by(Event.occurred_at, Event.id)
+        .limit(1)
+        .correlate(per_job)
+        .scalar_subquery()
+    )
+    template = (
+        select(DocumentRender.template_id)
+        .where(DocumentRender.id == render_id)
+        .correlate(per_job)
+        .scalar_subquery()
+    )
+    letter = (
+        exists()
+        .where(
+            Document.job_id == job_id,
+            Document.kind == LETTER_KIND,
+            Document.created_at <= applied_at,
+        )
+        .correlate(per_job)
+    )
+    # Como el paso «Con respuesta» del embudo: una entrevista anterior al envío cuenta como
+    # respuesta aunque no tenga `reply_at`.
+    awaiting = and_(per_job.c.replied == 0, Application.stage == Stage.APPLIED)
+    scope = [applied_at.is_not(None)]
+    if since is not None:
+        scope.append(applied_at >= start_of_local_day(since))
+    return (
+        select(
+            job_id,
+            per_job.c.source_id,
+            func.coalesce(Job.platform, NO_PLATFORM).label("platform"),
+            per_job.c.replied,
+            per_job.c.interview,
+            case((awaiting, 1), else_=0).label("awaiting"),
+            func.coalesce(nearest_score(True), nearest_score(False)).label("score"),
+            func.coalesce(verdict, "none").label("verdict"),
+            func.coalesce(template, NO_TEMPLATE).label("template"),
+            case((letter, "with"), else_="without").label("letter"),
+            _referral_group(per_job).label("referral"),
+            (func.julianday(applied_at) - func.julianday(per_job.c.first_seen_at)).label("days"),
+        )
+        .select_from(per_job)
+        .join(Job, Job.id == job_id)
+        .outerjoin(Application, Application.job_id == job_id)
+        .where(*scope)
+        .cte("calibration")
+    )
+
+
+def _group(key: str, label: str, row: Any | None, min_cases: int) -> CalibrationGroup:
+    applied, replied, interview, awaiting = (
+        (int(row.applied), int(row.replied), int(row.interview), int(row.awaiting))
+        if row is not None
+        else (0, 0, 0, 0)
+    )
+    return CalibrationGroup(
+        key=key,
+        label=label,
+        applied=applied,
+        replied=replied,
+        interview=interview,
+        awaiting=awaiting,
+        reply_rate=wilson_interval(replied, applied),
+        interview_rate=wilson_interval(interview, applied),
+        low_data=applied < min_cases,
+    )
+
+
+def _counts(session: Session, cal: CTE, key: Any = None) -> list[Any]:
+    """Enviadas, con respuesta, con entrevista y esperando; agrupadas por `key` si se da."""
+    sums = [
+        func.count().label("applied"),
+        func.coalesce(func.sum(cal.c.replied), 0).label("replied"),
+        func.coalesce(func.sum(cal.c.interview), 0).label("interview"),
+        func.coalesce(func.sum(cal.c.awaiting), 0).label("awaiting"),
+    ]
+    if key is None:
+        return [session.execute(select(*sums).select_from(cal)).one()]
+    return list(session.execute(select(key.label("key"), *sums).group_by(key)).all())
+
+
+def _fixed(
+    session: Session, cal: CTE, key: Any, groups: tuple[tuple[str, str], ...], min_cases: int
+) -> list[CalibrationGroup]:
+    """Siempre los mismos grupos y en ese orden, a cero si no tienen envíos."""
+    rows = {r.key: r for r in _counts(session, cal, key)}
+    return [_group(k, label, rows.get(k), min_cases) for k, label in groups]
+
+
+def _open(
+    session: Session, cal: CTE, key: Any, labels: dict[str, str], min_cases: int
+) -> list[CalibrationGroup]:
+    """Los grupos que salen de los datos, de más a menos envíos y por etiqueta."""
+    out = [
+        _group(str(r.key), labels.get(str(r.key), str(r.key)), r, min_cases)
+        for r in _counts(session, cal, key)
+    ]
+    return sorted(out, key=lambda g: (-g.applied, g.label.casefold(), g.key))
+
+
+def get_calibration(
+    session: Session, since: date | None = None, min_cases: int = MIN_CASES
+) -> Calibration:
+    """Tasa de respuesta y de entrevista de las candidaturas enviadas desde `since` (todas si es
+    `None`) por tramo de score, veredicto, fuente, portal, plantilla, carta, referencia y días
+    entre el alta y el envío. Orientativa: con pocos casos, el intervalo lo dice."""
+    cal = _calibration_rows(session, since)
+    score = cal.c.score
+    band = case(
+        (score.is_(None), "none"),
+        (score < 60, "lt60"),
+        (score < 75, "60_74"),
+        (score < 85, "75_84"),
+        else_="gte85",
+    )
+    days = case(
+        *((cal.c.days < limit, key) for key, _, limit in DAY_BUCKETS[:-1]),
+        else_=DAY_BUCKETS[-1][0],
+    )
+    sources = {str(s.id): s.name for s in session.scalars(select(Source))}
+    day_groups = tuple((key, label) for key, label, _ in DAY_BUCKETS)
+    return Calibration(
+        since=since,
+        min_cases=min_cases,
+        confidence=CONFIDENCE,
+        total=_group("total", "Total", _counts(session, cal)[0], min_cases),
+        by_score=_fixed(session, cal, band, SCORE_BANDS, min_cases),
+        by_verdict=_fixed(session, cal, cal.c.verdict, VERDICTS, min_cases),
+        by_source=_open(session, cal, cal.c.source_id, sources, min_cases),
+        by_platform=_open(session, cal, cal.c.platform, {NO_PLATFORM: "Sin portal"}, min_cases),
+        by_template=_open(
+            session, cal, cal.c.template, {NO_TEMPLATE: "Sin CV de la app"}, min_cases
+        ),
+        by_cover_letter=_fixed(session, cal, cal.c.letter, LETTER_GROUPS, min_cases),
+        by_referral=_fixed(session, cal, cal.c.referral, REFERRAL_LABELS, min_cases),
+        by_days_to_apply=_fixed(session, cal, days, day_groups, min_cases),
     )

@@ -919,6 +919,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/stats/calibration": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Calibration
+         * @description «¿Acierta el score?»: respuesta y entrevista de las candidaturas enviadas desde `since`
+         *     por tramo de score, veredicto, fuente, portal, plantilla, carta, referencia y días hasta el
+         *     envío. Orientativa.
+         */
+        get: operations["get_calibration"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/jobs/{job_id}/package": {
         parameters: {
             query?: never;
@@ -1834,7 +1856,7 @@ export interface components {
              * Id
              * @enum {string}
              */
-            id: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion" | "revisar-respuestas" | "redactar-seguimientos" | "redactar-seguimiento" | "ampliar-busqueda" | "preparar-entrevista" | "simular-entrevista" | "repasar-entrevista" | "dudas-oferta" | "redactar-mensaje" | "investigar-empresa" | "atender-encargos";
+            id: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion" | "revisar-respuestas" | "redactar-seguimientos" | "redactar-seguimiento" | "ampliar-busqueda" | "preparar-entrevista" | "simular-entrevista" | "repasar-entrevista" | "dudas-oferta" | "redactar-mensaje" | "investigar-empresa" | "atender-encargos" | "revisar-busqueda";
             /** Label */
             label: string;
             /** Needs Job */
@@ -1991,7 +2013,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion" | "revisar-respuestas" | "redactar-seguimientos" | "redactar-seguimiento" | "ampliar-busqueda" | "preparar-entrevista" | "simular-entrevista" | "repasar-entrevista" | "dudas-oferta" | "redactar-mensaje" | "investigar-empresa" | "atender-encargos";
+            action: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion" | "revisar-respuestas" | "redactar-seguimientos" | "redactar-seguimiento" | "ampliar-busqueda" | "preparar-entrevista" | "simular-entrevista" | "repasar-entrevista" | "dudas-oferta" | "redactar-mensaje" | "investigar-empresa" | "atender-encargos" | "revisar-busqueda";
             /** Label */
             label: string;
             /** Job Id */
@@ -2032,7 +2054,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion" | "revisar-respuestas" | "redactar-seguimientos" | "redactar-seguimiento" | "ampliar-busqueda" | "preparar-entrevista" | "simular-entrevista" | "repasar-entrevista" | "dudas-oferta" | "redactar-mensaje" | "investigar-empresa" | "atender-encargos";
+            action: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion" | "revisar-respuestas" | "redactar-seguimientos" | "redactar-seguimiento" | "ampliar-busqueda" | "preparar-entrevista" | "simular-entrevista" | "repasar-entrevista" | "dudas-oferta" | "redactar-mensaje" | "investigar-empresa" | "atender-encargos" | "revisar-busqueda";
             /** Label */
             label: string;
             /** Job Id */
@@ -2386,6 +2408,51 @@ export interface components {
              * @default false
              */
             confirm_risk: boolean;
+        };
+        /** Calibration */
+        Calibration: {
+            /** Since */
+            since: string | null;
+            /** Min Cases */
+            min_cases: number;
+            /** Confidence */
+            confidence: number;
+            total: components["schemas"]["CalibrationGroup"];
+            /** By Score */
+            by_score: components["schemas"]["CalibrationGroup"][];
+            /** By Verdict */
+            by_verdict: components["schemas"]["CalibrationGroup"][];
+            /** By Source */
+            by_source: components["schemas"]["CalibrationGroup"][];
+            /** By Platform */
+            by_platform: components["schemas"]["CalibrationGroup"][];
+            /** By Template */
+            by_template: components["schemas"]["CalibrationGroup"][];
+            /** By Cover Letter */
+            by_cover_letter: components["schemas"]["CalibrationGroup"][];
+            /** By Referral */
+            by_referral: components["schemas"]["CalibrationGroup"][];
+            /** By Days To Apply */
+            by_days_to_apply: components["schemas"]["CalibrationGroup"][];
+        };
+        /** CalibrationGroup */
+        CalibrationGroup: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Applied */
+            applied: number;
+            /** Replied */
+            replied: number;
+            /** Interview */
+            interview: number;
+            /** Awaiting */
+            awaiting: number;
+            reply_rate: components["schemas"]["RateInterval"];
+            interview_rate: components["schemas"]["RateInterval"];
+            /** Low Data */
+            low_data: boolean;
         };
         /**
          * CaptureInput
@@ -3561,7 +3628,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion" | "revisar-respuestas" | "redactar-seguimientos" | "redactar-seguimiento" | "ampliar-busqueda" | "preparar-entrevista" | "simular-entrevista" | "repasar-entrevista" | "dudas-oferta" | "redactar-mensaje" | "investigar-empresa" | "atender-encargos";
+            action: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion" | "revisar-respuestas" | "redactar-seguimientos" | "redactar-seguimiento" | "ampliar-busqueda" | "preparar-entrevista" | "simular-entrevista" | "repasar-entrevista" | "dudas-oferta" | "redactar-mensaje" | "investigar-empresa" | "atender-encargos" | "revisar-busqueda";
             /** Job Id */
             job_id?: number | null;
             /** Milestone Id */
@@ -4291,6 +4358,15 @@ export interface components {
             ok: boolean;
             /** Message */
             message: string;
+        };
+        /** RateInterval */
+        RateInterval: {
+            /** Rate */
+            rate: number | null;
+            /** Low */
+            low: number | null;
+            /** High */
+            high: number | null;
         };
         /** ReasonCount */
         ReasonCount: {
@@ -9757,6 +9833,101 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FunnelStats"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_calibration: {
+        parameters: {
+            query?: {
+                since?: string | null;
+                min_cases?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Calibration"];
                 };
             };
             /** @description Unauthorized */

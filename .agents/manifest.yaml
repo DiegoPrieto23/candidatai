@@ -127,6 +127,10 @@ targets:
       ampliar-busqueda:
         argument-hint: "[nada para los últimos 90 días, o un número de días]"
         allowed-tools: ["read", "jh_profile_cli", "mcp:get_search_titles", "mcp:get_profile", "mcp:list_sources"]
+      # Fase 20: retrospectiva. Solo lee: los pesos y filtros los cambia el usuario.
+      revisar-busqueda:
+        argument-hint: "[nada para la última semana, o un número de días]"
+        allowed-tools: ["read", "mcp:get_calibration", "mcp:get_funnel_stats"]
 
   codex:                          # Codex (ChatGPT): CLI, extensión IDE o app
     enabled: true

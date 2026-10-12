@@ -70,6 +70,7 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | `list_followups_due` | `jh followups [--days N] --json` | 10 (15) | `days_without_reply?` (por defecto, `followups.days_without_reply` = 10) | `days_without_reply` usado, `max_followups` y `followups`: `job_id`, `title`, `company`, `url`, `channel`, `applied_at`, `last_followup_at`, `days_waiting`, `followups_sent`, `contacts` (nombres, sin datos de contacto) y `draft_id`; la que más espera, primero, sin las que ya tienen `max_followups`. `thank_you_days` y `thanks_due`: entrevistas hechas en esos días sin agradecimiento (`milestone_id`, `interview_title`, `interview_at`, `contacts`, `draft_id`) | — |
 | `list_upcoming` | `jh upcoming [--days N] --json` | 10 | `days=7` (1-365) | `days` e `items`: `kind` (`interview`, `test`, `deadline`, `other`, `application_deadline`), `job_id`, `job_title`, `company`, `stage`, `milestone_id` (`null` en el plazo de la oferta), `title`, `starts_at`, `ends_at`, `all_day`, `location`; por fecha | — |
 | `get_funnel_stats` | `jh stats funnel [--since AAAA-MM-DD] --json` | 10 | `since?` (fecha; ofertas vistas desde las 00:00 de ese día en Europe/Madrid) | `FunnelStats` (ver §Analítica) | — |
+| `get_calibration` | `jh stats calibration [--since AAAA-MM-DD] [--min-cases N] --json` | 20 | `since?` (fecha; candidaturas **enviadas** desde las 00:00 de ese día en Europe/Madrid), `min_cases=10` (1-1000) | `Calibration` (ver §Calibración) | — |
 | `get_skill_gaps` | `jh skills gaps [--days N] [--status gap\|have\|unmarked] --json` | 14 | `days=60` (1-365), `status?` | `days`, `jobs_considered`, `gaps` y `profile_skills` (ver §Huecos de skills) | — |
 | `list_replies` | `jh replies list [--status S] [--limit N] --json` | 15 | `status?` (`new`, `proposed`, `accepted`, `ignored`), `limit=50` | `replies` (sin texto: remitente, candidatas, propuesta) y `counts` por estado | — |
 | `get_reply` | `jh replies show ID --json` | 15 | `reply_id` | El correo en `<untrusted_email>`, `candidates` (oferta, etapa, envío, próximos hitos), `timezone` y `proposal` | — |
@@ -331,6 +332,44 @@ cuenta toda oferta del periodo con algún `discarded` (o `hard_filter_failed`), 
 reabriera; descartada dos veces por lo mismo cuenta una vez, y por motivos distintos (o con dos
 filtros fallidos) cuenta en cada uno, así que la suma puede pasar del número de ofertas.
 Solo lectura: no registra eventos.
+
+### Calibración (fase 20)
+
+`get_calibration(since?, min_cases=10)` responde a «¿acierta el score?» (la API, lo mismo en
+`GET /stats/calibration?since=&min_cases=`). Cuenta solo las ofertas **enviadas** (`applied` o
+`applied_manually`, sin las duplicadas) y las agrupa por lo que se sabía **al enviarlas**; las
+definiciones de cada grupo están en `DATA_MODEL.md` §Calibración. «Con respuesta» y «entrevista»
+son los pasos del embudo.
+
+```jsonc
+{
+  "since": null,                    // fecha del primer envío, o null
+  "min_cases": 10,
+  "confidence": 0.95,
+  "total": {
+    "key": "total", "label": "Total",
+    "applied": 24, "replied": 9, "interview": 4,
+    "awaiting": 3,                  // sin respuesta y aún en `applied`: bajan la tasa sin ser un «no»
+    "reply_rate": {"rate": 0.375, "low": 0.2116, "high": 0.5729},   // Wilson al 95 %
+    "interview_rate": {"rate": 0.1667, "low": 0.0668, "high": 0.3585},
+    "low_data": false               // applied < min_cases
+  },
+  "by_score": [ /* siempre: lt60, 60_74, 75_84, gte85, none (sin score) */ ],
+  "by_verdict": [ /* siempre: strong, possible, weak, none (sin valorar) */ ],
+  "by_source": [ /* key = id de la fuente, label = su nombre; solo las que tienen envíos */ ],
+  "by_platform": [ /* key = jobs.platform; none = sin portal */ ],
+  "by_template": [ /* key = id de la plantilla del CV enviado; none = sin CV de la app */ ],
+  "by_cover_letter": [ /* siempre: with, without */ ],
+  "by_referral": [ /* siempre: given, requested, none */ ],
+  "by_days_to_apply": [ /* siempre: 0_1, 2_3, 4_7, 8_plus (días entre el alta y el envío) */ ]
+}
+```
+
+Cada grupo tiene la misma forma que `total`. Los fijos salen siempre, en ese orden (a cero si no
+tienen envíos, con tasas `null`); los abiertos (fuente, portal, plantilla), de más a menos envíos.
+Es **orientativa**: dos grupos con intervalos solapados no son distintos y uno con `low_data` no
+permite conclusiones. Solo lectura. El skill `revisar-busqueda` la usa para proponer cambios;
+**nunca** cambia pesos ni filtros (`evals/matching/README.md` §Calibración).
 
 ### Huecos de skills (fase 14)
 

@@ -5564,6 +5564,139 @@
         }
       }
     },
+    "/stats/calibration": {
+      "get": {
+        "tags": [
+          "stats"
+        ],
+        "summary": "Get Calibration",
+        "description": "«¿Acierta el score?»: respuesta y entrevista de las candidaturas enviadas desde `since`\npor tramo de score, veredicto, fuente, portal, plantilla, carta, referencia y días hasta el\nenvío. Orientativa.",
+        "operationId": "get_calibration",
+        "parameters": [
+          {
+            "name": "since",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Since"
+            }
+          },
+          {
+            "name": "min_cases",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000,
+              "minimum": 1,
+              "default": 10,
+              "title": "Min Cases"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Calibration"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
     "/jobs/{job_id}/package": {
       "get": {
         "tags": [
@@ -11115,7 +11248,8 @@
               "dudas-oferta",
               "redactar-mensaje",
               "investigar-empresa",
-              "atender-encargos"
+              "atender-encargos",
+              "revisar-busqueda"
             ],
             "title": "Id"
           },
@@ -11549,7 +11683,8 @@
               "dudas-oferta",
               "redactar-mensaje",
               "investigar-empresa",
-              "atender-encargos"
+              "atender-encargos",
+              "revisar-busqueda"
             ],
             "title": "Action"
           },
@@ -11694,7 +11829,8 @@
               "dudas-oferta",
               "redactar-mensaje",
               "investigar-empresa",
-              "atender-encargos"
+              "atender-encargos",
+              "revisar-busqueda"
             ],
             "title": "Action"
           },
@@ -12774,6 +12910,156 @@
         "type": "object",
         "title": "BrowseSettingsBody",
         "description": "Cambios del usuario en una plataforma de búsqueda con navegador."
+      },
+      "Calibration": {
+        "properties": {
+          "since": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Since"
+          },
+          "min_cases": {
+            "type": "integer",
+            "title": "Min Cases"
+          },
+          "confidence": {
+            "type": "number",
+            "title": "Confidence"
+          },
+          "total": {
+            "$ref": "#/components/schemas/CalibrationGroup"
+          },
+          "by_score": {
+            "items": {
+              "$ref": "#/components/schemas/CalibrationGroup"
+            },
+            "type": "array",
+            "title": "By Score"
+          },
+          "by_verdict": {
+            "items": {
+              "$ref": "#/components/schemas/CalibrationGroup"
+            },
+            "type": "array",
+            "title": "By Verdict"
+          },
+          "by_source": {
+            "items": {
+              "$ref": "#/components/schemas/CalibrationGroup"
+            },
+            "type": "array",
+            "title": "By Source"
+          },
+          "by_platform": {
+            "items": {
+              "$ref": "#/components/schemas/CalibrationGroup"
+            },
+            "type": "array",
+            "title": "By Platform"
+          },
+          "by_template": {
+            "items": {
+              "$ref": "#/components/schemas/CalibrationGroup"
+            },
+            "type": "array",
+            "title": "By Template"
+          },
+          "by_cover_letter": {
+            "items": {
+              "$ref": "#/components/schemas/CalibrationGroup"
+            },
+            "type": "array",
+            "title": "By Cover Letter"
+          },
+          "by_referral": {
+            "items": {
+              "$ref": "#/components/schemas/CalibrationGroup"
+            },
+            "type": "array",
+            "title": "By Referral"
+          },
+          "by_days_to_apply": {
+            "items": {
+              "$ref": "#/components/schemas/CalibrationGroup"
+            },
+            "type": "array",
+            "title": "By Days To Apply"
+          }
+        },
+        "type": "object",
+        "required": [
+          "since",
+          "min_cases",
+          "confidence",
+          "total",
+          "by_score",
+          "by_verdict",
+          "by_source",
+          "by_platform",
+          "by_template",
+          "by_cover_letter",
+          "by_referral",
+          "by_days_to_apply"
+        ],
+        "title": "Calibration"
+      },
+      "CalibrationGroup": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "applied": {
+            "type": "integer",
+            "title": "Applied"
+          },
+          "replied": {
+            "type": "integer",
+            "title": "Replied"
+          },
+          "interview": {
+            "type": "integer",
+            "title": "Interview"
+          },
+          "awaiting": {
+            "type": "integer",
+            "title": "Awaiting"
+          },
+          "reply_rate": {
+            "$ref": "#/components/schemas/RateInterval"
+          },
+          "interview_rate": {
+            "$ref": "#/components/schemas/RateInterval"
+          },
+          "low_data": {
+            "type": "boolean",
+            "title": "Low Data"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "applied",
+          "replied",
+          "interview",
+          "awaiting",
+          "reply_rate",
+          "interview_rate",
+          "low_data"
+        ],
+        "title": "CalibrationGroup"
       },
       "CaptureInput": {
         "properties": {
@@ -16335,7 +16621,8 @@
               "dudas-oferta",
               "redactar-mensaje",
               "investigar-empresa",
-              "atender-encargos"
+              "atender-encargos",
+              "revisar-busqueda"
             ],
             "title": "Action"
           },
@@ -18432,6 +18719,50 @@
           "message"
         ],
         "title": "QueuedResult"
+      },
+      "RateInterval": {
+        "properties": {
+          "rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rate"
+          },
+          "low": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Low"
+          },
+          "high": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "High"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rate",
+          "low",
+          "high"
+        ],
+        "title": "RateInterval"
       },
       "ReasonCount": {
         "properties": {

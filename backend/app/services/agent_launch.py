@@ -61,6 +61,7 @@ ActionId = Literal[
     "redactar-mensaje",
     "investigar-empresa",
     "atender-encargos",
+    "revisar-busqueda",
 ]
 
 # Hitos de entrevista (fase 17): `upcoming`, programada y por empezar; `past`, ya empezada y no
@@ -166,6 +167,12 @@ ACTIONS: dict[ActionId, Action] = {
         "Ampliar búsqueda",
         "Usa el skill ampliar-busqueda de Job Hunter para proponerme títulos de puesto cercanos a "
         "los que apruebo.",
+    ),
+    # Embudo (fase 20): retrospectiva. Solo propone: los pesos y filtros los cambia el usuario.
+    "revisar-busqueda": Action(
+        "Revisar mi búsqueda",
+        "Usa el skill revisar-busqueda de Job Hunter para hacer la retrospectiva de mi búsqueda: "
+        "qué funciona y qué cambiar.",
     ),
     "redactar-seguimiento": Action(
         "Redactar seguimiento",
