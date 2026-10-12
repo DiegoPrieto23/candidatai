@@ -37,6 +37,7 @@ from app.services.pipeline import InvalidTransitionError
 from app.services.process import ContactNotFoundError, MilestoneNotFoundError
 from app.services.profile import ProfileNotFoundError
 from app.services.prompts import PromptNotFoundError
+from app.services.received_offers import ReceivedOfferNotFoundError
 from app.services.replies import ReplyNotFoundError, ReplyResolvedError
 
 logger = logging.getLogger(__name__)
@@ -58,6 +59,7 @@ _ERROR_TYPES: tuple[tuple[type[Exception], str], ...] = (
     (MilestoneNotFoundError, "not_found"),
     (InterviewNotAllowedError, "not_allowed"),
     (ContactNotFoundError, "not_found"),
+    (ReceivedOfferNotFoundError, "not_found"),
     (NetworkContactNotFoundError, "not_found"),
     (DocumentNotFoundError, "not_found"),
     (LetterNotFoundError, "not_found"),

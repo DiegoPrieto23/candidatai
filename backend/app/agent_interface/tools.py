@@ -44,6 +44,7 @@ from app.services import (
     network,
     profile,
     prompts,
+    received_offers,
     replies,
     search_titles,
     skill_gaps,
@@ -649,6 +650,12 @@ def _get_company_research(
     session: Session, args: JobIdInput, _ctx: CallContext
 ) -> company_research.CompanyResearchResult:
     return company_research.get_company_research(session, args.job_id)
+
+
+def _get_received_offer(
+    session: Session, args: JobIdInput, _ctx: CallContext
+) -> received_offers.ReceivedOfferAgentView:
+    return received_offers.agent_view(session, args.job_id)
 
 
 def _get_job_contacts(session: Session, args: JobIdInput, _ctx: CallContext) -> network.JobContacts:
@@ -1340,6 +1347,20 @@ TOOLS: tuple[ToolSpec, ...] = (
         output_model=interviews.InterviewsView,
         handler=_get_interviews,
         cli=CliSpec(path=("interviews", "list"), arguments=("job_id",)),
+    ),
+    ToolSpec(
+        name="get_received_offer",
+        description=(
+            "Condiciones de la oferta que ha hecho la empresa, anotadas por el usuario en la "
+            "ficha: beneficios, modalidad, ubicación, incorporación, fecha límite para responder y "
+            "notas. Fijo y variable solo si el usuario no los marcó como privados "
+            "(`amounts_private`). Nunca incluye su mínimo ni la diferencia con él: no los pidas "
+            "ni los deduzcas, y no propongas ninguna cifra."
+        ),
+        input_model=JobIdInput,
+        output_model=received_offers.ReceivedOfferAgentView,
+        handler=_get_received_offer,
+        cli=CliSpec(path=("received-offers", "show"), arguments=("job_id",)),
     ),
     ToolSpec(
         name="save_interview_plan",

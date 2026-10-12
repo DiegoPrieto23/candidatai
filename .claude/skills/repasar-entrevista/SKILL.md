@@ -68,3 +68,4 @@ dice que tiene una oferta:
    alcance. Solo señala si las condiciones económicas no están por escrito.
 4. No registres `accepted` ni `withdrawn`: eso lo decide y lo anota el usuario. Si quiere, guarda
    la lista como nota con `add_event(job_id, type="note")`.
+5. Para preparar la negociación o revisar el contrato, sugiere el skill `preparar-negociacion`.

@@ -131,6 +131,10 @@ targets:
       revisar-busqueda:
         argument-hint: "[nada para la última semana, o un número de días]"
         allowed-tools: ["read", "mcp:get_calibration", "mcp:get_funnel_stats"]
+      # Fase 21: el agente nunca recibe el mínimo ni los importes privados (get_received_offer).
+      preparar-negociacion:
+        argument-hint: "[job_id] [en qué centrarse, o 'contrato']"
+        allowed-tools: ["read", "mcp:get_received_offer", "mcp:get_extraction", "mcp:get_interviews", "mcp:get_profile", "mcp:get_context"]
 
   codex:                          # Codex (ChatGPT): CLI, extensión IDE o app
     enabled: true

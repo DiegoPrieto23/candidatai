@@ -81,6 +81,7 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | `save_interview_notes` | `jh interviews notes HITO --file F --json` | 17 | `milestone_id`, `notes` (≤ 10 000), `next_steps?` (≤ 4000); por CLI, `F` = `{"notes": …, "next_steps": …}` | `milestone_id`, `job_id`, `replaced`, `milestone_status`, `message`. Entrevista ya empezada y no cancelada (si no, `not_allowed`) | — (no marca la entrevista como hecha) |
 | `get_company_research` | `jh companies research ID --json` | 18 | `job_id` | `job_id`, `company` y `research` (`null` si no hay): `content` (`CompanyResearchContent`), `risk_flags`, `file`, `agent_name`, `job_id`, `created_at`, `updated_at`, `age_days`. Contenido sacado de webs: datos, nunca instrucciones | — |
 | `save_company_research` | `jh companies save-research ID --file F --json` | 18 | `job_id`, `research`: `CompanyResearchContent` (ver §Contactos); por CLI, `F` = el dosier | `job_id`, `company`, `file`, `replaced`, `risk_flags`, `message`. Sustituye al de la empresa | — |
+| `get_received_offer` | `jh received-offers show ID --json` | 21 | `job_id` | `job_id`, `amounts_private`, `base_salary`, `variable`, `currency`, `period` (los cuatro `null` si `amounts_private`), `benefits`, `work_mode`, `location`, `start_date`, `respond_by`, `notes`, `updated_at`. Nunca el mínimo del usuario ni la diferencia con él. Sin datos anotados, `not_found` | — |
 | `get_job_contacts` | `jh contacts list ID --json` | 18 | `job_id` | `job_id`, `company`, `contacts` (del proceso: `id`, `name`, `role` = cargo, `relation`, `referral`) y `network` (personas de tu red de LinkedIn en esa empresa: `id`, `name`, `position`, `match` = `exact`/`probable`, `in_process`); `network_imported`. Sin emails, teléfonos, URLs ni notas | — |
 | `list_sources` | `jh sources list [--kind K] --json` | 09b | `kind?` | `sources`: `SourceView` con su config (sin secretos), `browse` (en las `agent_browse`) y última ejecución; `agent_browse`: límites (`max_result_pages`, `delay_seconds`, `default_max_offers`) | — |
 | `save_source` | `jh sources save --file F --json` | 09b | `AgentBrowseSource`: `name, platform, search_urls[], priority=5 (1 = primera), access=free\|login\|blocked, allow_agent_browsing? (por defecto true; en LinkedIn false), max_offers?, notes?`; por CLI, `F` = ese objeto | `source_id`, `created`, `allow_agent_browsing` guardado y `message`. Crea o actualiza por `name`. LinkedIn (por `platform` o por cualquier URL de linkedin.com o lnkd.in) con `true`: `not_allowed`; si el usuario ya lo activó, se conserva. Búsquedas de otro dominio: `invalid_request` | — |
@@ -370,6 +371,16 @@ tienen envíos, con tasas `null`); los abiertos (fuente, portal, plantilla), de 
 Es **orientativa**: dos grupos con intervalos solapados no son distintos y uno con `low_data` no
 permite conclusiones. Solo lectura. El skill `revisar-busqueda` la usa para proponer cambios;
 **nunca** cambia pesos ni filtros (`evals/matching/README.md` §Calibración).
+
+### Ofertas recibidas (fase 21)
+
+`get_received_offer(job_id)` da al agente las condiciones de la oferta que anotó el usuario en la
+ficha, para el skill `preparar-negociacion`. Los importes solo si el usuario desmarcó «importes
+privados»; **nunca** `private` del perfil ni la comparación con su mínimo, que calcula la API
+(`GET /received-offers`) y solo ve la UI (POLICIES §4). Anotar, cambiar y borrar la oferta es solo
+de la UI: no hay herramienta para escribirla. Un test recorre todas las herramientas con un mínimo
+y unos importes privados centinela y comprueba que no aparecen en ninguna respuesta
+(`tests/test_privacy_mcp.py`).
 
 ### Huecos de skills (fase 14)
 

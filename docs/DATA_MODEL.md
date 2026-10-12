@@ -645,3 +645,37 @@ Cola de encargos: lo que la UI deja para la próxima sesión interactiva del age
 
 Mismo encargo pendiente (acción, oferta e hito) no se duplica. `get_status` cuenta los pendientes
 en `agent_requests`.
+
+## Ampliaciones de la fase 21
+
+### `received_offers`
+La oferta que ha hecho la empresa de un proceso (migración 0020). La anota solo el usuario desde
+la ficha («Oferta recibida»); una por oferta de empleo. Guardarla sin `offer_received` previo lo
+registra (actor `user`, así que solo vale en `applied` o `in_process`); cambiarla deja una `note`
+con los campos cambiados, **sin valores** (el historial lo leen los agentes). Borrarla no quita el
+`offer_received`.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | int PK | |
+| job_id | FK jobs, único | |
+| base_salary | int? | Fijo bruto |
+| variable | int? | Variable o bonus bruto objetivo, siempre anual |
+| currency | str | ISO 4217, `EUR` por defecto |
+| period | str | `year` o `month`: el del fijo |
+| benefits | text? | |
+| work_mode | str? | `remote`, `hybrid` u `onsite` |
+| location | str? | |
+| start_date | date? | Incorporación |
+| respond_by | date? | Fecha límite para responder |
+| notes | text? | Las ve el agente: la UI avisa de no poner cifras propias |
+| amounts_private | bool | `true` por defecto: fijo y variable no salen por la interfaz para agentes |
+| created_at / updated_at | datetime | |
+
+**Comparación** (`received_offers.compare`, `GET /received-offers`, solo la UI): por oferta, el
+fijo anualizado (mensual ×12, marcado como aproximado: no cuenta pagas extra) y el total (fijo
+anual + variable; sin fijo no hay total), su diferencia con `private.salary_floor_eur` del perfil (solo si la oferta está en
+EUR) y la del fijo con el mínimo y el máximo del rango publicado en la extracción vigente (misma
+moneda; un rango sin moneda, sin periodo o por hora no se compara, y uno mal formado se ignora). `remarks` explica lo que no se ha podido comparar.
+Nunca recomienda una cifra.
+

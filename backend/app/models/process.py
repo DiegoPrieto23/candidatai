@@ -85,3 +85,30 @@ class NetworkContact(Base):
     position: Mapped[str | None] = mapped_column(String(300))
     connected_on: Mapped[date | None]
     imported_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
+
+
+class ReceivedOffer(Base):
+    """La oferta que ha hecho la empresa de un proceso (fase 21). Solo la escribe el usuario.
+
+    Una por oferta de empleo: si la empresa la mejora, se sobrescribe (el cambio queda como nota en
+    el historial). Con `amounts_private` (por defecto), fijo y variable no salen nunca por la
+    interfaz para agentes; la comparación con `private.salary_floor_eur` solo la ve la UI.
+    """
+
+    __tablename__ = "received_offers"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    job_id: Mapped[int] = mapped_column(ForeignKey("jobs.id"), unique=True)
+    base_salary: Mapped[int | None] = mapped_column()  # fijo bruto
+    variable: Mapped[int | None] = mapped_column()  # variable o bonus bruto objetivo, anual
+    currency: Mapped[str] = mapped_column(String(3), default="EUR")
+    period: Mapped[str] = mapped_column(String(8), default="year")  # del fijo: year | month
+    benefits: Mapped[str | None] = mapped_column(Text)
+    work_mode: Mapped[str | None] = mapped_column(String(16))  # remote | hybrid | onsite
+    location: Mapped[str | None] = mapped_column(String(200))
+    start_date: Mapped[date | None] = mapped_column()
+    respond_by: Mapped[date | None] = mapped_column()
+    notes: Mapped[str | None] = mapped_column(Text)
+    amounts_private: Mapped[bool] = mapped_column(default=True)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)

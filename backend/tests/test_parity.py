@@ -35,6 +35,7 @@ from app.services import (
     network,
     process,
     profile,
+    received_offers,
 )
 from app.services.documents import cover_letter, pdf
 from app.services.documents import service as cv_service
@@ -267,6 +268,23 @@ def seed_offer() -> None:
     seed_interview_done()
     with session_scope() as session:
         events.record(session, 1, "offer_received", "user")
+
+
+def seed_received_offer(private: bool = True) -> None:
+    """La oferta 1 con la oferta recibida anotada en la ficha."""
+    seed_offer()
+    with session_scope() as session:
+        received_offers.save_received_offer(
+            session,
+            1,
+            received_offers.ReceivedOfferFields(
+                base_salary=45000,
+                variable=3000,
+                benefits="Seguro médico",
+                work_mode="hybrid",
+                amounts_private=private,
+            ),
+        )
 
 
 TODAY = utcnow().astimezone(ZoneInfo("Europe/Madrid")).date().isoformat()
@@ -806,6 +824,14 @@ CASES = [
     Case("research-none", "get_company_research", {"job_id": 1}, ["companies", "research", "1"]),
     Case("research-unknown", "get_company_research", {"job_id": 9},
          ["companies", "research", "9"], expect_error="not_found"),
+    Case("received-offer", "get_received_offer", {"job_id": 1},
+         ["received-offers", "show", "1"], seed=seed_received_offer),
+    Case("received-offer-public", "get_received_offer", {"job_id": 1},
+         ["received-offers", "show", "1"], seed=lambda: seed_received_offer(private=False)),
+    Case("received-offer-none", "get_received_offer", {"job_id": 1},
+         ["received-offers", "show", "1"], seed=seed_offer, expect_error="not_found"),
+    Case("received-offer-unknown", "get_received_offer", {"job_id": 9},
+         ["received-offers", "show", "9"], expect_error="not_found"),
     Case("contacts", "get_job_contacts", {"job_id": 1}, ["contacts", "list", "1"],
          seed=seed_network),
     Case("contacts-unknown", "get_job_contacts", {"job_id": 9}, ["contacts", "list", "9"],

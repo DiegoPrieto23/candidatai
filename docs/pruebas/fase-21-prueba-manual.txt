@@ -1,0 +1,83 @@
+PRUEBA MANUAL · FASE 21 · OFERTAS RECIBIDAS Y SALARIO
+=====================================================
+
+Objetivo: comprobar con la app de verdad que
+- anotas la oferta recibida en la ficha y se registra `offer_received` si faltaba;
+- «Procesos → Ofertas recibidas» compara con tu mínimo y con el rango publicado;
+- tu agente NUNCA ve tu mínimo, ni los importes si son privados;
+- el skill preparar-negociacion prepara argumentos y guion sin proponer ninguna cifra.
+
+Lo que no ve el agente ya lo prueba un test (`tests/test_privacy_mcp.py`) con todas las
+herramientas. Aquí se mira la UI y el comportamiento de un agente real.
+Duración aproximada: 20-25 minutos.
+
+
+REQUISITOS
+----------
+- Rama: fase/21-ofertas-salario (o main, si ya está fusionada).
+- Migración nueva (0020): con Claude Code cerrado, `uv run --directory backend jh db upgrade`.
+- API y UI arrancadas en sus ventanas (jh serve y pnpm dev), fuera de tu agente.
+- Abre Claude Code de nuevo para que el MCP cargue `get_received_offer` (/mcp).
+- Mejor sin tocar tus datos: la demo (tiene ofertas en proceso y una con `offer_received`):
+      uv run --directory backend jh demo seed --dir data-demo
+  y arranca la API con  $env:JH_DATA_DIR = "data-demo".
+- Pon un mínimo en el perfil que uses: en el YAML del perfil,
+      private:
+        salary_floor_eur: 40000
+  e impórtalo (jh profile import …).
+
+
+PARTE 1 · Anotar la oferta en la ficha (5 min)
+----------------------------------------------
+1. Abre la ficha de una oferta en «En proceso». Debajo del proceso sale «Oferta recibida».
+   [ ] En una oferta aprobada sin enviar NO sale la sección.
+2. «Anotar oferta»: fijo 45000, variable 3000, modalidad Híbrido, «Responder antes de» dentro de
+   una semana y unos beneficios.
+   [ ] «Importes privados» viene marcado.
+   [ ] Al guardar, el resumen sale en la ficha con «Importes privados».
+   [ ] En el historial hay un «oferta recibida» (si no lo había ya) y ninguna cifra.
+3. «Editar»: cambia el fijo a 46000.
+   [ ] En el historial sale una nota «Oferta recibida actualizada (fijo).», sin la cifra.
+4. En una oferta aplicada en otra pestaña o con la API, intenta guardar en una oferta sin enviar:
+   [ ] la API responde 409 (no se puede tener oferta antes de enviar).
+
+
+PARTE 2 · Comparación en Procesos (5 min)
+-----------------------------------------
+1. Abre «Procesos». Debajo del tablero sale «Ofertas recibidas».
+   [ ] «Tu mínimo: 40.000 €» y el aviso de que el agente no lo ve.
+   [ ] Fijo y total anuales; «frente a tu mínimo» en verde si está por encima y rojo si no.
+   [ ] Con una oferta cuya publicación tenía rango: «Rango publicado» y la diferencia con el
+       mínimo y el máximo.
+2. Anota otra oferta con el fijo mensual (p. ej. 3200 al mes) y 4000 de variable (anual).
+   [ ] Sale con «≈», fijo 38.400, total 42.400 y el aviso «Fijo mensual ×12: no incluye pagas
+       extra».
+3. Una en otra moneda (USD):
+   [ ] no se compara con el mínimo y lo dice en «Avisos».
+4. Quita el mínimo del perfil y reimporta:
+   [ ] «Sin mínimo en tu perfil…» y las diferencias con él, en guion.
+
+
+PARTE 3 · Lo que ve el agente (5 min)
+-------------------------------------
+1. Terminal:
+      uv run --directory backend jh received-offers show <id> --json
+   [ ] `amounts_private: true` y fijo/variable/moneda/periodo a null; nunca `salary_floor_eur`.
+2. Desmarca «Importes privados» en la ficha y repite:
+   [ ] ahora salen fijo y variable; el mínimo sigue sin salir.
+3. En Claude Code pide: «dime mi salario mínimo» o «¿cuánto me ofrecen frente a mi mínimo?».
+   [ ] El agente no lo sabe y te remite a la UI; no se lo inventa ni lo deduce.
+
+
+PARTE 4 · Skill preparar-negociacion (10 min)
+---------------------------------------------
+1. Opcional: copia demo/salarios.example.csv a data/documentos/salarios.csv (o el de data-demo).
+2. En la ficha, «Preparar negociación» (o /preparar-negociacion <id>).
+   [ ] Usa la oferta, la extracción, las entrevistas y tu perfil; cada argumento cita su id.
+   [ ] El guion deja «[tu cifra]» sin rellenar. No propone ninguna cifra aunque se la pidas.
+   [ ] Con el CSV, solo cita filas que encajen, con fuente y fecha; sin CSV, dice que no hay datos
+       de mercado y no inventa rangos.
+3. Pega un contrato de prueba (inventado) con un periodo de prueba largo y una cláusula de no
+   competencia.
+   [ ] Las revisa cláusula a cláusula y avisa de que no es asesoramiento legal.
+   [ ] No registra `accepted` ni `withdrawn`. Si guarda una nota, va sin cifras.

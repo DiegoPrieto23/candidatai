@@ -139,6 +139,21 @@ export function formatSalary(salary: Extraction['salary']): string | null {
   return salary.period ? `${range} / ${PERIOD_LABEL[salary.period]}` : range
 }
 
+/** Un importe con su moneda, sin decimales («45.000 €»). */
+export function formatMoney(amount: number, currency = 'EUR'): string {
+  try {
+    return new Intl.NumberFormat('es-ES', { style: 'currency', currency, maximumFractionDigits: 0 }).format(amount)
+  } catch {
+    return `${amount.toLocaleString('es-ES')} ${currency}`
+  }
+}
+
+/** Una diferencia con signo («+4.000 €», «−3.000 €»). */
+export function formatMoneyDiff(diff: number, currency = 'EUR'): string {
+  if (diff === 0) return formatMoney(0, currency)
+  return `${diff > 0 ? '+' : '−'}${formatMoney(Math.abs(diff), currency)}`
+}
+
 const dateFmt = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })
 const dateTimeFmt = new Intl.DateTimeFormat('es-ES', {
   day: 'numeric',

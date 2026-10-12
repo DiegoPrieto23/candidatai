@@ -41,6 +41,7 @@
       "mcp__jobhunter__save_message_draft",
       "mcp__jobhunter__get_job_contacts",
       "mcp__jobhunter__get_company_research",
+      "mcp__jobhunter__get_received_offer",
       "mcp__jobhunter__wait_user_action",
       "mcp__jobhunter__list_agent_requests"
     ],

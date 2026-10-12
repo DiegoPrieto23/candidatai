@@ -1,0 +1,4 @@
+puesto,empresa,ubicacion,nivel,min,max,moneda,periodo,fuente,url,fecha
+Data Engineer,,Madrid,mid,38000,46000,EUR,year,Informe salarial ficticio 2026,https://example.com/informe-salarial,2026-03-01
+Data Engineer,Acme Analytics,Remoto (España),senior,48000,56000,EUR,year,Oferta publicada (ficticia),https://careers.example.com/jobs/1,2026-09-15
+Analytics Engineer,,Barcelona,mid,3000,3600,EUR,month,Encuesta de una comunidad (ficticia),https://example.org/encuesta,2026-05-20

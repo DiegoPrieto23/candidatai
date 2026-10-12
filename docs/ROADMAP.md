@@ -57,7 +57,7 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 19.1 | ↳ Ejecución en segundo plano | ✅ | `launch.headless`, `agent_runs` en un hilo del worker con solo las herramientas MCP de la acción (las demás denegadas), progreso, preguntas, tiempo máximo y cancelación |
 | 19.2 | ↳ Cola de encargos y UI | ✅ | «Dejar para mi próxima sesión», `list_agent_requests` / `complete_agent_request`, skill `atender-encargos` y página «Agente» |
 | 20 | Calibración y patrones | ✅ | «¿Acierta el score?»: respuesta por tramo de score, veredicto, fuente, plantilla y carta; retrospectiva semanal |
-| 21 | Ofertas recibidas y salario | ⏳ | Comparar ofertas recibidas y la distancia a tu mínimo sin exponerlo al agente; preparar la negociación |
+| 21 | Ofertas recibidas y salario | ✅ | Comparar ofertas recibidas y la distancia a tu mínimo sin exponerlo al agente; preparar la negociación |
 | 22 | LinkedIn por sus endpoints públicos (opcional) | ⏳ | Búsqueda pública sin sesión, apagada por defecto y con límites estrictos; ADR que matiza la 016 |
 
 **MVP usable:** al terminar la 08 ya puedes pegar ofertas, triarlas y sacar CVs a medida; con la
@@ -80,7 +80,8 @@ aprobadas de las que sacar las keywords; `buscar-ofertas` tras la 09b; `preparar
 `preparar-entrevista` y `resumen-diario` tras la 10; la candidatura asistida (sin skill: se
 usa desde la ficha) tras la 11; `plan-formacion` tras la 14; `ampliar-busqueda` tras la 16;
 `simular-entrevista` y `repasar-entrevista` tras la 17; `redactar-mensaje` e `investigar-empresa`
-tras la 18; `atender-encargos` tras la 19.
+tras la 18; `atender-encargos` tras la 19; `revisar-busqueda` tras la 20;
+`preparar-negociacion` tras la 21.
 
 ## Registro de fases
 
@@ -1807,3 +1808,60 @@ decisiones tomadas y deuda técnica pendiente. -->
   - Una plantilla del usuario con id `none` se sumaría a «Sin CV de la app».
   - Pendiente de prueba manual: la retrospectiva con un agente real y datos reales
     (`docs/pruebas/fase-20-prueba-manual.txt`).
+
+### 21 · Ofertas recibidas y salario — 2026-10-12 · Claude Code (Opus 5.5)
+- **Resumen:**
+  - Tabla `received_offers` (migración 0020): una por oferta y solo la escribe el usuario desde la
+    ficha. Campos: fijo (anual o mensual), variable (anual), moneda, beneficios, modalidad,
+    ubicación, incorporación, fecha límite, notas y `amounts_private` (por defecto `true`).
+    Guardarla registra `offer_received` si falta. Cada cambio deja una `note` con los campos
+    cambiados, sin valores.
+  - `services/received_offers.py`:
+    - `compare` (solo la API, `GET /received-offers`): fijo y total anuales, diferencia con
+      `private.salary_floor_eur` y con el rango publicado, con `remarks` para lo no comparable;
+    - `agent_view`: lo que ve el agente, sin el mínimo y sin importes si son privados.
+  - `get_received_offer` ↔ `jh received-offers show` (4 casos de paridad), en el allow de
+    `.claude/settings.json` (solo lectura). La acción `preparar-negociacion` del lanzador va solo
+    en terminal y necesita `offer_received`.
+  - Skill `preparar-negociacion`: argumentos del perfil con su id, qué negociar además del fijo,
+    preguntas, un guion con el hueco `[tu cifra]` y revisión del contrato cláusula a cláusula,
+    que no es asesoramiento legal. `repasar-entrevista` lo sugiere tras las dudas antes de aceptar.
+  - Datos de mercado: `data/documentos/salarios.csv` opcional, con el formato de
+    `demo/salarios.example.csv`. Solo los cita el skill; el código no busca salarios.
+  - UI:
+    - sección «Oferta recibida» en la ficha (formulario, resumen, «Preparar negociación»);
+    - tabla «Ofertas recibidas» en Procesos, con las ofertas lado a lado y las diferencias en
+      verde o rojo.
+  - Docs: POLICIES §4, DATA_MODEL, AGENT_INTERFACE, RESUMEN_FASES, PENDIENTES y
+    `docs/pruebas/fase-21-prueba-manual.txt`.
+  - Tests:
+    - `test_received_offers.py` (22), `test_api_received_offers.py` (2) y el lanzador;
+    - **`test_privacy_mcp.py`**: los 175 casos de la paridad con un mínimo y unos importes
+      privados centinela, sin que aparezcan en ninguna respuesta. Comprobado que falla si se
+      quita la ocultación;
+    - 5 de frontend.
+- **Decisiones** (aprobadas en el plan):
+  - «Importes privados» por oferta, marcado por defecto.
+  - El `offer_received` se registra solo.
+  - Una oferta recibida por oferta de empleo, sobrescrita al cambiar.
+  - Se usa la clave existente `salary_floor_eur`.
+  - Comando `jh received-offers` en vez de `jh offers`: en la app, «ofertas» son las de empleo.
+  - Revisión del rol `revisor` aplicada:
+    - el variable es siempre anual y `period` es solo del fijo;
+    - sin fijo no hay total;
+    - un rango publicado sin moneda o sin periodo no se compara y lo explica;
+    - una extracción con salario mal formado no rompe la tabla;
+    - en la CLI, un 0 cuenta como importe;
+    - en la UI, `Number.isFinite` en los importes;
+    - límite de beneficios y notas documentado en POLICIES §4;
+    - tests nuevos.
+- **Deuda:**
+  - Beneficios y notas son texto libre que el agente ve siempre. Solo hay un aviso en la UI; no
+    se detectan cifras al guardar.
+  - Dos guardados simultáneos de la primera vez podrían dar un 500 por la restricción única (raro
+    en local).
+  - La demo no trae ofertas recibidas anotadas.
+  - Tras guardar desde `applied`, la oferta pasa a `in_process` (por el `offer_received`), así que
+    el botón sale siempre.
+  - Pendiente de prueba manual con un agente real (`fase-21-prueba-manual.txt`).
+

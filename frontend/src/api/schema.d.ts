@@ -1834,6 +1834,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/received-offers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Compare Received Offers
+         * @description Ofertas recibidas lado a lado, con la diferencia con tu mínimo y con el rango publicado.
+         */
+        get: operations["compare_received_offers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/jobs/{job_id}/received-offer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Received Offer
+         * @description Los datos de la oferta recibida de esa oferta, o `null` si aún no se han anotado.
+         */
+        get: operations["get_received_offer"];
+        put?: never;
+        /**
+         * Save Received Offer
+         * @description Guarda (o sustituye) la oferta recibida. Registra `offer_received` si aún no lo hay.
+         */
+        post: operations["save_received_offer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/jobs/{job_id}/received-offer/delete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Delete Received Offer
+         * @description Borra los datos anotados; el `offer_received` del historial se queda.
+         */
+        post: operations["delete_received_offer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1856,7 +1920,7 @@ export interface components {
              * Id
              * @enum {string}
              */
-            id: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion" | "revisar-respuestas" | "redactar-seguimientos" | "redactar-seguimiento" | "ampliar-busqueda" | "preparar-entrevista" | "simular-entrevista" | "repasar-entrevista" | "dudas-oferta" | "redactar-mensaje" | "investigar-empresa" | "atender-encargos" | "revisar-busqueda";
+            id: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion" | "revisar-respuestas" | "redactar-seguimientos" | "redactar-seguimiento" | "ampliar-busqueda" | "preparar-entrevista" | "simular-entrevista" | "repasar-entrevista" | "dudas-oferta" | "preparar-negociacion" | "redactar-mensaje" | "investigar-empresa" | "atender-encargos" | "revisar-busqueda";
             /** Label */
             label: string;
             /** Needs Job */
@@ -2013,7 +2077,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion" | "revisar-respuestas" | "redactar-seguimientos" | "redactar-seguimiento" | "ampliar-busqueda" | "preparar-entrevista" | "simular-entrevista" | "repasar-entrevista" | "dudas-oferta" | "redactar-mensaje" | "investigar-empresa" | "atender-encargos" | "revisar-busqueda";
+            action: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion" | "revisar-respuestas" | "redactar-seguimientos" | "redactar-seguimiento" | "ampliar-busqueda" | "preparar-entrevista" | "simular-entrevista" | "repasar-entrevista" | "dudas-oferta" | "preparar-negociacion" | "redactar-mensaje" | "investigar-empresa" | "atender-encargos" | "revisar-busqueda";
             /** Label */
             label: string;
             /** Job Id */
@@ -2054,7 +2118,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion" | "revisar-respuestas" | "redactar-seguimientos" | "redactar-seguimiento" | "ampliar-busqueda" | "preparar-entrevista" | "simular-entrevista" | "repasar-entrevista" | "dudas-oferta" | "redactar-mensaje" | "investigar-empresa" | "atender-encargos" | "revisar-busqueda";
+            action: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion" | "revisar-respuestas" | "redactar-seguimientos" | "redactar-seguimiento" | "ampliar-busqueda" | "preparar-entrevista" | "simular-entrevista" | "repasar-entrevista" | "dudas-oferta" | "preparar-negociacion" | "redactar-mensaje" | "investigar-empresa" | "atender-encargos" | "revisar-busqueda";
             /** Label */
             label: string;
             /** Job Id */
@@ -3628,7 +3692,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion" | "revisar-respuestas" | "redactar-seguimientos" | "redactar-seguimiento" | "ampliar-busqueda" | "preparar-entrevista" | "simular-entrevista" | "repasar-entrevista" | "dudas-oferta" | "redactar-mensaje" | "investigar-empresa" | "atender-encargos" | "revisar-busqueda";
+            action: "buscar-ofertas" | "procesar-ofertas" | "evaluar-encaje" | "generar-cv" | "anadir-skills" | "plan-formacion" | "revisar-respuestas" | "redactar-seguimientos" | "redactar-seguimiento" | "ampliar-busqueda" | "preparar-entrevista" | "simular-entrevista" | "repasar-entrevista" | "dudas-oferta" | "preparar-negociacion" | "redactar-mensaje" | "investigar-empresa" | "atender-encargos" | "revisar-busqueda";
             /** Job Id */
             job_id?: number | null;
             /** Milestone Id */
@@ -4082,6 +4146,49 @@ export interface components {
             occurred_at: string;
         };
         /**
+         * OfferComparison
+         * @description Una oferta recibida en la tabla comparativa (solo UI).
+         */
+        OfferComparison: {
+            /** Job Id */
+            job_id: number;
+            /** Title */
+            title: string;
+            /** Company */
+            company: string;
+            /** Stage */
+            stage: string | null;
+            offer: components["schemas"]["ReceivedOfferOut"];
+            /** Annual Base */
+            annual_base: number | null;
+            /** Annual Total */
+            annual_total: number | null;
+            /** Approximate */
+            approximate: boolean;
+            /** Floor Diff Base */
+            floor_diff_base: number | null;
+            /** Floor Diff Total */
+            floor_diff_total: number | null;
+            published: components["schemas"]["Salary"] | null;
+            /** Published Annual Min */
+            published_annual_min: number | null;
+            /** Published Annual Max */
+            published_annual_max: number | null;
+            /** Published Diff Min */
+            published_diff_min: number | null;
+            /** Published Diff Max */
+            published_diff_max: number | null;
+            /** Remarks */
+            remarks: string[];
+        };
+        /** OfferComparisonView */
+        OfferComparisonView: {
+            /** Floor Eur */
+            floor_eur: number | null;
+            /** Offers */
+            offers: components["schemas"]["OfferComparison"][];
+        };
+        /**
          * OfferContext
          * @description Lo que las reglas saben de la oferta.
          */
@@ -4374,6 +4481,102 @@ export interface components {
             reason: string;
             /** Count */
             count: number;
+        };
+        /** ReceivedOfferFields */
+        ReceivedOfferFields: {
+            /**
+             * Base Salary
+             * @description Fijo bruto.
+             */
+            base_salary?: number | null;
+            /**
+             * Variable
+             * @description Variable o bonus bruto objetivo, anual.
+             */
+            variable?: number | null;
+            /**
+             * Currency
+             * @description Código ISO 4217 (EUR, USD, GBP…).
+             * @default EUR
+             */
+            currency: string;
+            /**
+             * Period
+             * @description El fijo es anual o mensual.
+             * @default year
+             * @enum {string}
+             */
+            period: "year" | "month";
+            /** Benefits */
+            benefits?: string | null;
+            /** Work Mode */
+            work_mode?: ("remote" | "hybrid" | "onsite") | null;
+            /** Location */
+            location?: string | null;
+            /**
+             * Start Date
+             * @description Fecha de incorporación.
+             */
+            start_date?: string | null;
+            /**
+             * Respond By
+             * @description Hasta cuándo tienes para responder.
+             */
+            respond_by?: string | null;
+            /**
+             * Notes
+             * @description Notas. Las ve el agente: sin tus cifras.
+             */
+            notes?: string | null;
+            /**
+             * Amounts Private
+             * @description Fijo y variable no salen nunca hacia el agente.
+             * @default true
+             */
+            amounts_private: boolean;
+        };
+        /**
+         * ReceivedOfferOut
+         * @description Los datos tal cual, para la ficha (UI).
+         */
+        ReceivedOfferOut: {
+            /** Job Id */
+            job_id: number;
+            /** Base Salary */
+            base_salary: number | null;
+            /** Variable */
+            variable: number | null;
+            /** Currency */
+            currency: string;
+            /**
+             * Period
+             * @enum {string}
+             */
+            period: "year" | "month";
+            /** Benefits */
+            benefits: string | null;
+            /** Work Mode */
+            work_mode: ("remote" | "hybrid" | "onsite") | null;
+            /** Location */
+            location: string | null;
+            /** Start Date */
+            start_date: string | null;
+            /** Respond By */
+            respond_by: string | null;
+            /** Notes */
+            notes: string | null;
+            /** Amounts Private */
+            amounts_private: boolean;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
         };
         /** ReferralChange */
         ReferralChange: {
@@ -14421,6 +14624,384 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CompanyResearchResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    compare_received_offers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OfferComparisonView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_received_offer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceivedOfferOut"] | null;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    save_received_offer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReceivedOfferFields"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceivedOfferOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_received_offer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OkResult"];
                 };
             };
             /** @description Unauthorized */
