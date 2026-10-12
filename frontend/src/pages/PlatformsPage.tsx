@@ -1,7 +1,13 @@
 import { useState } from 'react'
-import { ArrowSquareOutIcon, ClockIcon, CompassIcon, WarningIcon } from '@phosphor-icons/react'
-import type { AgentBrowseLimits, BrowseAccess, SourceView } from '@/api/client'
-import { usePlatforms, useUpdateBrowseSettings } from '@/api/queries'
+import { ArrowSquareOutIcon, ClockIcon, CompassIcon, GlobeIcon, WarningIcon } from '@phosphor-icons/react'
+import type { AgentBrowseLimits, BrowseAccess, LinkedInPublicView, SourceView } from '@/api/client'
+import {
+  useLinkedInPublic,
+  usePlatforms,
+  useRunLinkedInPublic,
+  useUpdateBrowseSettings,
+  useUpdateLinkedInPublic,
+} from '@/api/queries'
 import { AddPlatformButton } from '@/components/AddPlatformDialog'
 import { AgentButton } from '@/components/AgentButton'
 import { EmptyState, ErrorState, InlineCode } from '@/components/States'
@@ -205,6 +211,246 @@ function LinkedInRiskDialog({
   )
 }
 
+// --- Búsqueda pública de LinkedIn sin sesión (fase 22) ------------------------------------------
+
+type PublicConfirm = 'enabled' | 'fetch_detail' | null
+
+function PublicRiskDialog({
+  what,
+  onOpenChange,
+  onConfirm,
+  pending,
+}: {
+  what: PublicConfirm
+  onOpenChange: (open: boolean) => void
+  onConfirm: () => void
+  pending: boolean
+}) {
+  const detail = what === 'fetch_detail'
+  return (
+    <Dialog open={what !== null} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <WarningIcon weight="fill" className="size-5 text-amber-600 dark:text-amber-400" />
+            {detail ? '¿Descargar también la descripción?' : '¿Activar la búsqueda pública de LinkedIn?'}
+          </DialogTitle>
+          <DialogDescription asChild>
+            <div className="grid gap-2.5 text-sm leading-relaxed">
+              {detail ? (
+                <p>
+                  Además de la lista de resultados, la app pedirá la página pública de cada oferta nueva que pase
+                  tus filtros (con un tope por ejecución). Son <strong>más peticiones a LinkedIn</strong> y, por
+                  tanto, más probabilidad de que bloquee tu IP. Sin esto, las ofertas entran como resumen y las
+                  completas tú con el botón «Enviar a Job Hunter».
+                </p>
+              ) : (
+                <>
+                  <p>
+                    La app consultará una vez al día la búsqueda pública de LinkedIn (la que ve quien no ha iniciado
+                    sesión) con las búsquedas de esta tarjeta. <strong>No usa tu cuenta ni tus cookies</strong>, va
+                    despacio y se identifica como lo que es.
+                  </p>
+                  <p>
+                    Aun así, <strong>las condiciones de LinkedIn prohíben el acceso automatizado</strong>, y LinkedIn
+                    puede bloquear tu IP durante un tiempo (también para navegar con normalidad). Si lo hace, la app
+                    se corta en el acto y no lo vuelve a intentar en unos días.
+                  </p>
+                  <p>
+                    Es para uso personal. Las alternativas sin riesgo son las alertas por correo y el botón «Enviar a
+                    Job Hunter». Las candidaturas nunca se envían solas.
+                  </p>
+                </>
+              )}
+            </div>
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancelar
+          </Button>
+          <Button variant="destructive" disabled={pending} onClick={onConfirm}>
+            {pending ? 'Activando…' : detail ? 'Descargarla bajo mi responsabilidad' : 'Activar bajo mi responsabilidad'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function PublicLastRun({ view }: { view: LinkedInPublicView }) {
+  const last = view.last_run
+  if (!last) {
+    return <p className="text-xs text-muted-foreground">Aún no se ha ejecutado.</p>
+  }
+  const existing = Math.max(0, last.after_filters - last.created)
+  const warnings = last.errors.filter((e) => e.code !== 'blocked')
+  return (
+    <div className="text-xs text-muted-foreground">
+      <p className="flex items-center gap-1.5">
+        <ClockIcon className="size-3.5" />
+        <span>
+          {formatWhen(last.finished_at ?? last.started_at)}: {plural(last.found, 'encontrada', 'encontradas')},{' '}
+          {last.after_filters} tras filtros, {plural(last.created, 'nueva', 'nuevas')},{' '}
+          {plural(existing, 'ya conocida', 'ya conocidas')}
+        </span>
+      </p>
+      {warnings.length > 0 && (
+        <ul className="mt-1 space-y-0.5 pl-5">
+          {warnings.slice(0, 3).map((issue, i) => (
+            <li key={i}>
+              <InlineCode text={issue.message} />
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+
+/** Si la espera hasta la próxima ejecución es por un bloqueo de LinkedIn (y no por el límite diario). */
+function isBlocked(view: LinkedInPublicView, now: number): boolean {
+  if (!view.blocked_at || !view.next_run_at) return false
+  const until = new Date(view.next_run_at).getTime()
+  const cooldownEnd = new Date(view.blocked_at).getTime() + view.limits.block_cooldown_days * 86_400_000
+  return until > now && cooldownEnd >= until
+}
+
+function LinkedInPublicPanel() {
+  const query = useLinkedInPublic()
+  const update = useUpdateLinkedInPublic()
+  const runNow = useRunLinkedInPublic()
+  const [confirming, setConfirming] = useState<PublicConfirm>(null)
+  // Hora de referencia al montar: los datos se refrescan cada minuto y el servidor vuelve a
+  // comprobar los límites al ejecutar.
+  const [now] = useState(() => Date.now())
+
+  if (query.isPending) return <Skeleton className="h-16" />
+  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />
+  const view = query.data
+  const waiting = view.next_run_at !== null && new Date(view.next_run_at).getTime() > now
+  const blocked = isBlocked(view, now)
+
+  const toggle = (key: 'enabled' | 'fetch_detail', next: boolean) => {
+    if (next) setConfirming(key)
+    else update.mutate({ [key]: false })
+  }
+
+  return (
+    <section className="grid gap-3 rounded-lg border border-dashed p-3" aria-label="Búsqueda pública de LinkedIn">
+      <div className="flex flex-wrap items-start gap-x-4 gap-y-2">
+        <GlobeIcon className="mt-0.5 size-5 shrink-0 text-muted-foreground" aria-hidden />
+        <div className="min-w-0 flex-1">
+          <h4 className="text-sm font-medium">Búsqueda pública sin sesión</h4>
+          <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+            Distinta de «El agente la recorre»: la app consulta una vez al día la búsqueda pública de LinkedIn, sin tu
+            cuenta, con las búsquedas de arriba. Lo nuevo que pasa tus filtros entra como resumen en «Alertas».
+          </p>
+        </div>
+        <label className="flex items-center gap-2.5 text-sm">
+          <span className={cn(!view.enabled && 'text-muted-foreground')}>
+            {view.enabled ? 'Activada' : 'Desactivada'}
+          </span>
+          <Switch
+            checked={view.enabled}
+            disabled={update.isPending}
+            label="Búsqueda pública de LinkedIn sin sesión"
+            onChange={(next) => toggle('enabled', next)}
+          />
+        </label>
+      </div>
+
+      {view.enabled && (
+        <label className="flex items-center justify-between gap-3 text-sm">
+          <span>
+            Descargar también la descripción
+            <span className="block text-xs text-muted-foreground">
+              Hasta {plural(view.limits.max_details_per_run, 'oferta', 'ofertas')} por ejecución; más peticiones, más
+              riesgo
+            </span>
+          </span>
+          <Switch
+            checked={view.fetch_detail}
+            disabled={update.isPending}
+            label="Descargar también la descripción"
+            onChange={(next) => toggle('fetch_detail', next)}
+          />
+        </label>
+      )}
+
+      {view.searches.length > 0 ? (
+        <div className="grid gap-1">
+          <span className="text-xs text-muted-foreground">Qué consultará</span>
+          <ul className="flex flex-wrap gap-1.5">
+            {view.searches.map((s) => (
+              <li key={s.url} className="rounded-md border bg-background px-2 py-1 text-xs">
+                {[s.keywords, s.location].filter(Boolean).join(' · ') || searchLabel(s.url)}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : (
+        <p className="text-xs text-muted-foreground">
+          Ninguna búsqueda sirve: añade a esta plataforma una URL de <InlineCode text="`linkedin.com/jobs/search`" /> con
+          palabras clave o ubicación.
+        </p>
+      )}
+      {view.ignored.length > 0 && (
+        <p className="text-xs text-amber-700 dark:text-amber-400">
+          {view.ignored.length === 1 ? 'Una búsqueda no se usa' : `${view.ignored.length} búsquedas no se usan`}:{' '}
+          {view.ignored.map((i) => i.message).join(' ')}
+        </p>
+      )}
+
+      {blocked && view.next_run_at && (
+        <p role="status" className="flex items-start gap-1.5 text-sm text-amber-700 dark:text-amber-400">
+          <WarningIcon weight="fill" className="mt-0.5 size-4 shrink-0" />
+          LinkedIn cortó la última búsqueda (límite de peticiones, inicio de sesión o captcha). No se vuelve a intentar
+          hasta el {formatWhen(view.next_run_at)}.
+        </p>
+      )}
+      <PublicLastRun view={view} />
+
+      {view.enabled && (
+        <div className="flex flex-wrap items-center gap-3">
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={runNow.isPending || waiting || view.searches.length === 0}
+            onClick={() => runNow.mutate()}
+          >
+            {runNow.isPending ? 'Buscando… (va despacio)' : 'Buscar ahora'}
+          </Button>
+          {waiting && !blocked && view.next_run_at && (
+            <span className="text-xs text-muted-foreground">
+              Una vez al día: la próxima, desde el {formatWhen(view.next_run_at)}
+            </span>
+          )}
+          {runNow.data && <span className="text-xs text-muted-foreground">{runNow.data.message}</span>}
+        </div>
+      )}
+      {(update.error || runNow.error) && (
+        <p role="alert" className="text-sm text-destructive">
+          {errorMessage(update.error ?? runNow.error)}
+        </p>
+      )}
+
+      <PublicRiskDialog
+        what={confirming}
+        pending={update.isPending}
+        onOpenChange={(open) => {
+          if (!open) setConfirming(null)
+        }}
+        onConfirm={() => {
+          if (confirming) {
+            update.mutate({ [confirming]: true, confirm_risk: true }, { onSettled: () => setConfirming(null) })
+          }
+        }}
+      />
+    </section>
+  )
+}
+
 // --- Una plataforma ------------------------------------------------------------------------------
 
 function LastRun({ source }: { source: SourceView }) {
@@ -366,6 +612,7 @@ function PlatformRow({ source }: { source: SourceView }) {
       <Searches urls={browse.search_urls} name={source.name} />
       {browse.notes && <p className="text-sm text-muted-foreground">{browse.notes}</p>}
       <LastRun source={source} />
+      {linkedin && <LinkedInPublicPanel />}
       {update.error && (
         <p role="alert" className="text-sm text-destructive">
           {errorMessage(update.error)}

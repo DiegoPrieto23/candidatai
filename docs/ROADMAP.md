@@ -58,7 +58,7 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 19.2 | ↳ Cola de encargos y UI | ✅ | «Dejar para mi próxima sesión», `list_agent_requests` / `complete_agent_request`, skill `atender-encargos` y página «Agente» |
 | 20 | Calibración y patrones | ✅ | «¿Acierta el score?»: respuesta por tramo de score, veredicto, fuente, plantilla y carta; retrospectiva semanal |
 | 21 | Ofertas recibidas y salario | ✅ | Comparar ofertas recibidas y la distancia a tu mínimo sin exponerlo al agente; preparar la negociación |
-| 22 | LinkedIn por sus endpoints públicos (opcional) | ⏳ | Búsqueda pública sin sesión, apagada por defecto y con límites estrictos; ADR que matiza la 016 |
+| 22 | LinkedIn por sus endpoints públicos (opcional) | ✅ | Búsqueda pública sin sesión, apagada por defecto y con límites estrictos; ADR que matiza la 016 |
 
 **MVP usable:** al terminar la 08 ya puedes pegar ofertas, triarlas y sacar CVs a medida; con la
 08c, también cartas de presentación. La 08c va antes que la 08b, aunque el orden entre ambas da
@@ -1865,3 +1865,46 @@ decisiones tomadas y deuda técnica pendiente. -->
     el botón sale siempre.
   - Pendiente de prueba manual con un agente real (`fase-21-prueba-manual.txt`).
 
+
+### 22 · LinkedIn por sus endpoints públicos (opcional) — 2026-10-12 · Claude Code (Opus 5.5)
+- **Resumen:**
+  - ADR-033, que matiza la 016 y la 009; `AGENTS.md` (regla 6), POLICIES §8, `FUENTES_OFERTAS.md`,
+    `DATA_MODEL.md`, `AGENT_INTERFACE.md` y el skill `buscar-ofertas` actualizados.
+  - `services/ingestion/linkedin_public.py`: fuente `linkedin_public` que consulta
+    `jobs-guest/jobs/api/seeMoreJobPostings/search` con las búsquedas de la plataforma LinkedIn, sin
+    cookies ni redirecciones y con un user-agent honesto. Límites en `policies.yaml` →
+    `linkedin_public` (mínimos en el esquema): ≤ 2 páginas, ≥ 10 s entre peticiones, una ejecución
+    al día, búsquedas y descripciones con tope. Corte inmediato ante 429/999/401/403/3xx o captcha y
+    3 días sin volver a intentarlo.
+  - Lo que pasa el filtro previo entra como resumen (`pending_detail`); la descripción por
+    `jobPosting/{id}` es un segundo interruptor, también apagado.
+  - Tarea `run_linkedin_public` (sin reintentos) con la ingesta diaria y al arrancar el worker;
+    API `GET /sources/linkedin-public`, `POST …/settings` y `POST …/run` (con `require_ui`); CLI
+    `jh sources linkedin-public status|run`.
+  - UI: bloque «Búsqueda pública sin sesión» en la tarjeta de LinkedIn de Plataformas, con su
+    interruptor, diálogo de riesgo, «Descargar también la descripción», búsquedas, aviso de
+    bloqueo, última ejecución y «Buscar ahora».
+  - Tests: 22 de backend (`test_linkedin_public.py`, HTML inventado en
+    `fixtures/linkedin_public/`) y 4 nuevos de frontend. Sin migraciones ni dependencias.
+- **Decisiones** (aprobadas en el plan):
+  - Fuente propia `linkedin_public` (una fila), con las búsquedas sacadas de la plataforma
+    LinkedIn: así el embudo por fuente la separa y `save_source` del agente no puede tocarla.
+  - El filtro previo se aplica **antes** de guardar (a diferencia del correo): menos volumen.
+  - User-agent honesto aunque LinkedIn pueda responder 999: no se disfraza de navegador.
+  - Tras un bloqueo, 3 días sin ejecutar (no se apaga sola).
+  - Revisión del rol `revisor` aplicada:
+    - la ejecución del día se reserva con un `UPDATE` condicionado y un commit antes de salir a la
+      red, para que dos ejecuciones simultáneas no lancen dos ráfagas;
+    - la descripción no se puede encender sin la búsqueda;
+    - comandos en `AGENT_INTERFACE.md`;
+    - texto del botón del diálogo de la descripción.
+- **Deuda:**
+  - **Sin probar contra LinkedIn real:** el formato de `jobs-guest` se ha imitado con HTML inventado
+    y no se ha hecho ninguna petición real. Es posible que responda 999 al user-agent honesto
+    (`fase-22-prueba-manual.txt`).
+  - El cuerpo de la respuesta se descarga entero antes de recortarlo a 2 MB (sin `stream`).
+  - `require_ui` no para a un proceso local que falsifique el origen (riesgo residual de la
+    ADR-016).
+  - `blocked_at` se escribe al final de la ejecución, justo después del corte: si el proceso muere
+    en ese instante, el día cuenta igualmente, pero no el periodo de 3 días.
+  - Ejecutada por CLI, la ejecución queda con actor `user` aunque la lance un agente.

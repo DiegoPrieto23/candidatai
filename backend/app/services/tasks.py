@@ -28,6 +28,7 @@ TaskKind = Literal[
     "apply_focus",
     "archive_application",
     "check_open",
+    "run_linkedin_public",
 ]
 # Candidatura asistida (fase 11): sin reintentos (POLICIES §5.4). Si fallan o el worker se cierra
 # a medias, quedan `failed` y decides tú; un envío nunca se repite solo.
@@ -40,6 +41,8 @@ NO_RETRY_KINDS = frozenset(
         "apply_rescan",
         "apply_submit",
         "apply_focus",
+        # Búsqueda pública de LinkedIn (fase 22): nunca se reintenta sola.
+        "run_linkedin_public",
     }  # fmt: skip
 )
 TaskStatus = Literal["queued", "running", "done", "failed"]

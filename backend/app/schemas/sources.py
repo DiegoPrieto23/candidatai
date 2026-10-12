@@ -310,3 +310,58 @@ class SourceRunResult(BaseModel):
 
 class SourceRunBatch(BaseModel):
     runs: list[SourceRunResult]
+
+
+# --- Búsqueda pública de LinkedIn sin sesión (fase 22, ADR-033) --------------------------------
+
+
+class LinkedInSearch(BaseModel):
+    """Una búsqueda de la plataforma LinkedIn traducida a los parámetros del endpoint público."""
+
+    url: str  # la `search_url` de la que sale
+    keywords: str | None
+    location: str | None
+    params: dict[str, str]  # lo que se enviará (sin `start`)
+
+
+class LinkedInPublicLimits(BaseModel):
+    """Límites de `config/policies.yaml` → `linkedin_public`."""
+
+    max_searches_per_run: int
+    max_pages_per_search: int
+    delay_seconds: float
+    min_hours_between_runs: float
+    block_cooldown_days: int
+    max_details_per_run: int
+
+
+class LinkedInPublicView(BaseModel):
+    """Estado de la búsqueda pública para la tarjeta de LinkedIn en Plataformas."""
+
+    source_id: int | None  # `None` hasta que se activa por primera vez
+    enabled: bool
+    fetch_detail: bool
+    enabled_at: datetime | None
+    platform_source_id: int | None  # la plataforma LinkedIn de la que salen las búsquedas
+    searches: list[LinkedInSearch]  # las que se lanzarán, en orden
+    ignored: list[Issue]  # búsquedas que no se pueden usar (y por qué) o que pasan del límite
+    blocked_at: datetime | None  # último bloqueo (429/999, redirección o captcha)
+    next_run_at: datetime | None  # a partir de cuándo puede volver a ejecutarse
+    last_run: SourceRunView | None
+    limits: LinkedInPublicLimits
+
+
+class LinkedInPublicRunResult(BaseModel):
+    source_id: int | None
+    run_id: int | None  # `None` si no se ejecutó (`skipped`)
+    skipped: str | None
+    blocked: bool  # LinkedIn cortó la búsqueda: no se vuelve a intentar en unos días
+    requests: int  # peticiones hechas a LinkedIn
+    found: int
+    after_filters: int
+    created: int
+    summaries: int  # de las nuevas, cuántas entraron como resumen (`pending_detail`)
+    existing: int
+    job_ids: list[int]
+    errors: list[Issue]
+    message: str

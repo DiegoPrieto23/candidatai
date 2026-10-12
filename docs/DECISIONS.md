@@ -56,6 +56,8 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
 - **Consecuencias:** algo menos de automatización a cambio de no arriesgar cuentas.
 - **Matizada por la ADR-016:** la búsqueda con el navegador del agente en LinkedIn es posible solo
   si la activa el usuario. Las candidaturas en LinkedIn siguen sin automatizarse.
+- **Matizada por la ADR-033:** el código puede consultar la búsqueda pública de LinkedIn, sin
+  sesión, solo si la activa el usuario.
 
 ## ADR-010 · Interfaz para agentes neutral: MCP + CLI con paridad
 - **Contexto:** el proyecto debe poder usarse con distintos agentes (Claude Code, Codex, Gemini
@@ -164,6 +166,8 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   parsers de correo pueden romperse si cambian los formatos (se nota porque un correo deja de
   producir ofertas, y queda en `source_runs`). La navegación del agente es la superficie más
   expuesta: se limita por reglas y por ejecutarse en una sesión dedicada.
+- **Matizada por la ADR-033:** el código ya no «nunca descarga LinkedIn»: puede consultar su
+  búsqueda pública sin sesión si el usuario la activa.
 
 ## ADR-017 · CV: cuándo está listo, país de la oferta y contacto
 - **Contexto:** la fase 08 separa contenido y renders (ADR-014), así que «CV verificado» y «PDF que
@@ -627,3 +631,46 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   ejecución queda `done` y la duda se ve en el resultado. Sin Job Object de Windows: si el worker
   muere de golpe, el agente sigue hasta el siguiente arranque del worker, que lo para. Dos
   `jh worker` a la vez no están soportados (igual que con `tasks`).
+
+## ADR-033 · Búsqueda pública de LinkedIn sin sesión, apagada por defecto (matiza la 016 y la 009)
+- **Contexto:** con la ADR-016, LinkedIn solo entra por sus alertas por correo, por el botón de
+  captura o por el navegador del agente si el usuario lo activa; el código nunca descargaba nada de
+  LinkedIn. Otros proyectos personales (AI Job Search, `linkedin-search`) usan los endpoints públicos
+  `jobs-guest`, los que sirven la búsqueda a quien no ha iniciado sesión, avisando de que el acceso
+  automatizado va contra las condiciones de LinkedIn. El usuario decidió (2026-10-11) tenerlo como
+  opción, desactivada por defecto.
+- **Decisión:**
+  - fuente `linkedin_public` (`services/ingestion/linkedin_public.py`): consulta
+    `jobs-guest/jobs/api/seeMoreJobPostings/search` con las búsquedas de la plataforma LinkedIn
+    (sus `search_urls` de `linkedin.com/jobs/search`; se pasan solo `keywords`, `location`, `geoId`,
+    `distance`, `f_TPR`, `f_WT`, `f_E` y `f_JT`). Sin `f_TPR`, las de las últimas 24 h;
+  - **apagada por defecto y solo la activa el usuario**: `POST /sources/linkedin-public/settings`
+    con `require_ui` y `confirm_risk: true` para encender (también el segundo interruptor). No hay
+    herramienta MCP ni comando que la active; la CLI solo da el estado y «ejecutar ahora». Apagada,
+    ni el servicio ni el worker hacen una sola petición (test);
+  - **sin sesión:** sin cookies ni cuenta, sin seguir redirecciones, user-agent honesto
+    (`JobHunter/0.1 (…; public job search, no login)`). No se disfraza de navegador: si LinkedIn
+    lo rechaza, la función queda bloqueada, no se esquiva;
+  - **límites** en `config/policies.yaml` → `linkedin_public`, con mínimos en el esquema que no se
+    bajan editando el YAML: ≤ 2 páginas por búsqueda, ≥ 10 s entre dos peticiones cualesquiera,
+    ≥ 20 h entre ejecuciones, búsquedas y descripciones con tope por ejecución. La ejecución del día
+    se reserva antes de salir a la red (`UPDATE` condicionado al `last_run_at` leído y commit): el
+    worker, «Buscar ahora» y la CLI a la vez no lanzan dos ráfagas, y un proceso que muere a medias
+    no repite ese día (lo encontró la revisión);
+  - **corte inmediato** ante 429, 999, 401/403, cualquier 3xx (authwall, checkpoint) o una página
+    de control servida con 200: ninguna petición más, `blocked` en `source_runs`, aviso en la UI y
+    `block_cooldown_days` sin volver a intentarlo. La tarea no se reintenta nunca
+    (`NO_RETRY_KINDS`);
+  - **entrada:** filtro previo de resúmenes antes de guardar (título, ubicación y seniority del
+    título; a diferencia de las alertas, que se guardan todas: aquí la búsqueda es automática y se
+    quiere el menor volumen). Lo que pasa entra como resumen (`pending_detail`, `platform` +
+    `external_id`) y se completa con la extensión. La descripción por `jobs-guest/jobs/api/jobPosting/{id}`
+    es un interruptor aparte, también apagado y con riesgo confirmado;
+  - `platforms.can_fetch("linkedin")` sigue siendo falso: el alta por URL, las alertas y «¿sigue
+    abierta?» siguen sin descargar LinkedIn.
+- **Consecuencias:** ofertas de LinkedIn sin depender del correo ni de la cuenta, a cambio de un
+  riesgo que asume el usuario (condiciones de uso, bloqueo temporal de su IP). Con un user-agent
+  honesto es posible que LinkedIn la bloquee siempre; entonces la función queda inactiva y se ve en
+  la UI. El HTML de LinkedIn puede cambiar: una respuesta sin ofertas reconocibles deja
+  `page_changed`. Riesgo residual igual que en la ADR-016: la API local no tiene autenticación y
+  `require_ui` no para a un proceso local que falsifique el origen.

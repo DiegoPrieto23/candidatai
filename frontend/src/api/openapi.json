@@ -3097,6 +3097,332 @@
         }
       }
     },
+    "/sources/linkedin-public": {
+      "get": {
+        "tags": [
+          "sources"
+        ],
+        "summary": "Get Linkedin Public",
+        "description": "Estado de la búsqueda pública de LinkedIn sin sesión: interruptores, búsquedas que lanzará,\nlímites, última ejecución y desde cuándo puede volver a ejecutarse.",
+        "operationId": "get_linkedin_public",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkedInPublicView"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sources/linkedin-public/settings": {
+      "post": {
+        "tags": [
+          "sources"
+        ],
+        "summary": "Update Linkedin Public",
+        "description": "Enciende o apaga la búsqueda pública (y la descarga de la descripción). Encender exige\n`confirm_risk: true`. Solo desde la UI.",
+        "operationId": "update_linkedin_public",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LinkedInPublicSettingsBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkedInPublicView"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sources/linkedin-public/run": {
+      "post": {
+        "tags": [
+          "sources"
+        ],
+        "summary": "Run Linkedin Public",
+        "description": "«Buscar ahora»: respeta los mismos límites (una vez al día, días sin buscar tras un\nbloqueo). Tarda: hay una pausa de al menos 10 s entre peticiones.",
+        "operationId": "run_linkedin_public",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmptyBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkedInPublicRunResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/sources/test": {
       "post": {
         "tags": [
@@ -17393,6 +17719,338 @@
         ],
         "title": "LetterTemplateInfo",
         "description": "Una plantilla con diseño de carta, para el selector de la ficha."
+      },
+      "LinkedInPublicLimits": {
+        "properties": {
+          "max_searches_per_run": {
+            "type": "integer",
+            "title": "Max Searches Per Run"
+          },
+          "max_pages_per_search": {
+            "type": "integer",
+            "title": "Max Pages Per Search"
+          },
+          "delay_seconds": {
+            "type": "number",
+            "title": "Delay Seconds"
+          },
+          "min_hours_between_runs": {
+            "type": "number",
+            "title": "Min Hours Between Runs"
+          },
+          "block_cooldown_days": {
+            "type": "integer",
+            "title": "Block Cooldown Days"
+          },
+          "max_details_per_run": {
+            "type": "integer",
+            "title": "Max Details Per Run"
+          }
+        },
+        "type": "object",
+        "required": [
+          "max_searches_per_run",
+          "max_pages_per_search",
+          "delay_seconds",
+          "min_hours_between_runs",
+          "block_cooldown_days",
+          "max_details_per_run"
+        ],
+        "title": "LinkedInPublicLimits",
+        "description": "Límites de `config/policies.yaml` → `linkedin_public`."
+      },
+      "LinkedInPublicRunResult": {
+        "properties": {
+          "source_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Id"
+          },
+          "run_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Id"
+          },
+          "skipped": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Skipped"
+          },
+          "blocked": {
+            "type": "boolean",
+            "title": "Blocked"
+          },
+          "requests": {
+            "type": "integer",
+            "title": "Requests"
+          },
+          "found": {
+            "type": "integer",
+            "title": "Found"
+          },
+          "after_filters": {
+            "type": "integer",
+            "title": "After Filters"
+          },
+          "created": {
+            "type": "integer",
+            "title": "Created"
+          },
+          "summaries": {
+            "type": "integer",
+            "title": "Summaries"
+          },
+          "existing": {
+            "type": "integer",
+            "title": "Existing"
+          },
+          "job_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Job Ids"
+          },
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Issue"
+            },
+            "type": "array",
+            "title": "Errors"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_id",
+          "run_id",
+          "skipped",
+          "blocked",
+          "requests",
+          "found",
+          "after_filters",
+          "created",
+          "summaries",
+          "existing",
+          "job_ids",
+          "errors",
+          "message"
+        ],
+        "title": "LinkedInPublicRunResult"
+      },
+      "LinkedInPublicSettingsBody": {
+        "properties": {
+          "enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enabled"
+          },
+          "fetch_detail": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fetch Detail"
+          },
+          "confirm_risk": {
+            "type": "boolean",
+            "title": "Confirm Risk",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "LinkedInPublicSettingsBody"
+      },
+      "LinkedInPublicView": {
+        "properties": {
+          "source_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Id"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          },
+          "fetch_detail": {
+            "type": "boolean",
+            "title": "Fetch Detail"
+          },
+          "enabled_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enabled At"
+          },
+          "platform_source_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Platform Source Id"
+          },
+          "searches": {
+            "items": {
+              "$ref": "#/components/schemas/LinkedInSearch"
+            },
+            "type": "array",
+            "title": "Searches"
+          },
+          "ignored": {
+            "items": {
+              "$ref": "#/components/schemas/Issue"
+            },
+            "type": "array",
+            "title": "Ignored"
+          },
+          "blocked_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Blocked At"
+          },
+          "next_run_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Run At"
+          },
+          "last_run": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SourceRunView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "limits": {
+            "$ref": "#/components/schemas/LinkedInPublicLimits"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_id",
+          "enabled",
+          "fetch_detail",
+          "enabled_at",
+          "platform_source_id",
+          "searches",
+          "ignored",
+          "blocked_at",
+          "next_run_at",
+          "last_run",
+          "limits"
+        ],
+        "title": "LinkedInPublicView",
+        "description": "Estado de la búsqueda pública para la tarjeta de LinkedIn en Plataformas."
+      },
+      "LinkedInSearch": {
+        "properties": {
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "keywords": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Keywords"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
+          "params": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Params"
+          }
+        },
+        "type": "object",
+        "required": [
+          "url",
+          "keywords",
+          "location",
+          "params"
+        ],
+        "title": "LinkedInSearch",
+        "description": "Una búsqueda de la plataforma LinkedIn traducida a los parámetros del endpoint público."
       },
       "LivenessCheck": {
         "properties": {

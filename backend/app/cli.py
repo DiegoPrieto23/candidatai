@@ -1527,6 +1527,71 @@ def sources_disable(source_id: int = SOURCE_ID_ARG, as_json: bool = JSON_OPTION)
     _set_active(source_id, False, as_json)
 
 
+# --- Búsqueda pública de LinkedIn (fase 22, ADR-033) -----------------------------------------
+
+linkedin_public_app = typer.Typer(
+    help="Búsqueda pública de LinkedIn sin sesión. Se activa solo en la UI (Plataformas).",
+    no_args_is_help=True,
+)
+sources_app.add_typer(linkedin_public_app, name="linkedin-public")
+
+
+def _render_linkedin_public(view: Any) -> None:
+    state = "activada" if view.enabled else "desactivada (se activa en la UI, en Plataformas)"
+    typer.echo(f"Búsqueda pública de LinkedIn: {state}")
+    if view.enabled:
+        detail = "sí" if view.fetch_detail else "no (entran como resumen)"
+        typer.echo(f"  Descarga la descripción: {detail}")
+    for search in view.searches:
+        what = " · ".join(v for v in (search.keywords, search.location) if v)
+        typer.echo(f"  - {what or search.url}")
+    for issue in view.ignored:
+        typer.secho(f"  ! {issue.item}: {issue.message}", fg="yellow")
+    if view.blocked_at:
+        typer.secho(f"  Último bloqueo de LinkedIn: {view.blocked_at:%d/%m %H:%M} UTC", fg="yellow")
+    if view.next_run_at:
+        typer.echo(f"  Próxima ejecución posible: {view.next_run_at:%d/%m %H:%M} UTC")
+
+
+@linkedin_public_app.command("status")
+def linkedin_public_status(as_json: bool = JSON_OPTION) -> None:
+    """Estado, búsquedas que lanzará y límites."""
+    from app.services.ingestion import linkedin_public
+
+    try:
+        migrations.ensure_current()
+        with session_scope() as session:
+            view = linkedin_public.get_view(session)
+    except Exception as exc:
+        _profile_fail(exc, as_json)
+    if as_json:
+        typer.echo(dump_json(view))
+    else:
+        _render_linkedin_public(view)
+
+
+@linkedin_public_app.command("run")
+def linkedin_public_run(as_json: bool = JSON_OPTION) -> None:
+    """Ejecuta ahora la búsqueda, si está activada y le toca (una vez al día). Tarda: hay una
+    pausa de al menos 10 s entre peticiones."""
+    from app.services.ingestion import linkedin_public
+
+    try:
+        migrations.ensure_current()
+        with session_scope() as session:
+            result = linkedin_public.run(session, actor="user")
+    except Exception as exc:
+        _profile_fail(exc, as_json)
+    if as_json:
+        typer.echo(dump_json(result))
+    else:
+        typer.echo(result.message)
+        for issue in result.errors:
+            typer.secho(f"  ! {issue.message}", fg="yellow")
+    if result.blocked:
+        raise typer.Exit(code=1)
+
+
 # --- Alertas por correo y ofertas resumen ---------------------------------------------------
 
 

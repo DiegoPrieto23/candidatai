@@ -103,7 +103,9 @@ uv run scripts/sync_agents.py --check   # CI: falla si lo generado no está al d
 5. Nada sale hacia terceros (formularios, emails, mensajes) sin confirmación explícita del
    usuario en la UI.
 6. Nada de candidaturas automáticas en LinkedIn ni de resolver o esquivar captchas. La búsqueda con
-   el navegador del agente en LinkedIn solo si el usuario la ha activado (ADR-016, POLICIES §8).
+   el navegador del agente en LinkedIn solo si el usuario la ha activado (ADR-016, POLICIES §8). El
+   código solo consulta LinkedIn por su búsqueda pública sin sesión, nunca con cookies ni cuenta, y
+   solo si el usuario la ha activado en la UI (ADR-033); el agente no puede activarla.
 7. No inventar datos del candidato. Todo lo que se escriba en un CV sale de `data/profile.yaml`.
 8. Al cerrar una fase: tests en verde, ruff limpio, `sync_agents.py --check` en verde y
    `docs/ROADMAP.md` actualizado. No hagas commit ni push sin que el usuario lo pida.

@@ -395,6 +395,38 @@ export function useUpdateBrowseSettings() {
   })
 }
 
+/** Búsqueda pública de LinkedIn sin sesión (fase 22). Bajo `sources`: añadir búsquedas la cambia. */
+export function useLinkedInPublic() {
+  return useQuery({
+    queryKey: [...keys.sources, 'linkedin-public'] as const,
+    queryFn: () => unwrap(api.GET('/sources/linkedin-public')),
+    refetchInterval: 60_000, // el worker la ejecuta por su cuenta
+  })
+}
+
+/** Encender exige `confirm_risk`; apagar, no. */
+export function useUpdateLinkedInPublic() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (body: Partial<Schemas['LinkedInPublicSettingsBody']>) =>
+      unwrap(api.POST('/sources/linkedin-public/settings', { body: { confirm_risk: false, ...body } })),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.sources }),
+  })
+}
+
+/** «Buscar ahora»: tarda (≥ 10 s entre peticiones) y respeta el límite de una al día. */
+export function useRunLinkedInPublic() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: () => unwrap(api.POST('/sources/linkedin-public/run', { body: {} })),
+    onSuccess: () => {
+      client.invalidateQueries({ queryKey: keys.sources })
+      client.invalidateQueries({ queryKey: keys.alerts })
+      client.invalidateQueries({ queryKey: keys.status })
+    },
+  })
+}
+
 /** «Añadir plataforma»: una web donde el agente busca con tu navegador (LinkedIn, desactivada). */
 export function useAddPlatform() {
   const client = useQueryClient()

@@ -1,7 +1,7 @@
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
-import type { AgentBrowseSource, SourceView } from '@/api/client'
+import type { AgentBrowseSource, LinkedInPublicView, SourceView } from '@/api/client'
 import { mockApi, renderApp, status } from '@/test/utils'
 
 const LIMITS = { max_result_pages: 2, delay_seconds: 5, default_max_offers: 15 }
@@ -55,11 +55,43 @@ const linkedin = platform(2, {
   allow_agent_browsing: false,
 })
 
+function publicView(overrides: Partial<LinkedInPublicView> = {}): LinkedInPublicView {
+  return {
+    source_id: null,
+    enabled: false,
+    fetch_detail: false,
+    enabled_at: null,
+    platform_source_id: 2,
+    searches: [
+      {
+        url: 'https://www.linkedin.com/jobs/search/?keywords=data',
+        keywords: 'data',
+        location: null,
+        params: { keywords: 'data', f_TPR: 'r86400' },
+      },
+    ],
+    ignored: [],
+    blocked_at: null,
+    next_run_at: null,
+    last_run: null,
+    limits: {
+      max_searches_per_run: 5,
+      max_pages_per_search: 2,
+      delay_seconds: 10,
+      min_hours_between_runs: 20,
+      block_cooldown_days: 3,
+      max_details_per_run: 10,
+    },
+    ...overrides,
+  }
+}
+
 describe('Plataformas', () => {
   it('lista por prioridad con búsquedas, límites y resultados', async () => {
     const calls = mockApi({
       'GET /status': status(),
       'GET /sources': { sources: [tecno, linkedin], agent_browse: LIMITS },
+      'GET /sources/linkedin-public': publicView(),
     })
     renderApp('/plataformas')
 
@@ -99,18 +131,19 @@ describe('Plataformas', () => {
     const calls = mockApi({
       'GET /status': status(),
       'GET /sources': { sources: [linkedin], agent_browse: LIMITS },
+      'GET /sources/linkedin-public': publicView(),
       'POST /sources/2/browse': { status: 200, body: platform(2, { ...linkedin.browse, allow_agent_browsing: true }) },
     })
     renderApp('/plataformas')
 
-    await userEvent.click(await screen.findByRole('switch', { name: /LinkedIn/ }))
+    await userEvent.click(await screen.findByRole('switch', { name: 'Búsqueda con navegador en LinkedIn' }))
     const dialog = await screen.findByRole('dialog')
     expect(within(dialog).getByText(/puede restringir o cerrar tu\s+cuenta/)).toBeInTheDocument()
 
     await userEvent.click(within(dialog).getByRole('button', { name: 'Cancelar' }))
     expect(calls.some((c) => c.path === '/sources/2/browse')).toBe(false)
 
-    await userEvent.click(screen.getByRole('switch', { name: /LinkedIn/ }))
+    await userEvent.click(screen.getByRole('switch', { name: 'Búsqueda con navegador en LinkedIn' }))
     await userEvent.click(await screen.findByRole('button', { name: 'Activar bajo mi responsabilidad' }))
     expect(calls.find((c) => c.path === '/sources/2/browse')?.body).toEqual({
       confirm_risk: true,
@@ -139,6 +172,113 @@ describe('Plataformas', () => {
     renderApp('/plataformas')
     expect(await screen.findByText('Aún no hay plataformas')).toBeInTheDocument()
     expect(screen.getByText(/buscar-ofertas configurar/)).toBeInTheDocument()
+  })
+})
+
+describe('Búsqueda pública de LinkedIn', () => {
+  const SWITCH = 'Búsqueda pública de LinkedIn sin sesión'
+
+  it('apagada por defecto; encenderla pide confirmar el riesgo y manda confirm_risk', async () => {
+    const calls = mockApi({
+      'GET /status': status(),
+      'GET /sources': { sources: [linkedin], agent_browse: LIMITS },
+      'GET /sources/linkedin-public': publicView(),
+      'POST /sources/linkedin-public/settings': { status: 200, body: publicView({ enabled: true }) },
+    })
+    renderApp('/plataformas')
+
+    const toggle = await screen.findByRole('switch', { name: SWITCH })
+    expect(toggle).toHaveAttribute('aria-checked', 'false')
+    expect(screen.getByText('Qué consultará')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Buscar ahora' })).not.toBeInTheDocument()
+
+    await userEvent.click(toggle)
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getByText(/prohíben el acceso automatizado/)).toBeInTheDocument()
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Cancelar' }))
+    expect(calls.some((c) => c.path === '/sources/linkedin-public/settings')).toBe(false)
+
+    await userEvent.click(screen.getByRole('switch', { name: SWITCH }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Activar bajo mi responsabilidad' }))
+    expect(calls.find((c) => c.path === '/sources/linkedin-public/settings')?.body).toEqual({
+      confirm_risk: true,
+      enabled: true,
+    })
+  })
+
+  it('apagarla no pide confirmación', async () => {
+    const calls = mockApi({
+      'GET /status': status(),
+      'GET /sources': { sources: [linkedin], agent_browse: LIMITS },
+      'GET /sources/linkedin-public': publicView({ enabled: true, source_id: 9 }),
+      'POST /sources/linkedin-public/settings': { status: 200, body: publicView() },
+    })
+    renderApp('/plataformas')
+    await userEvent.click(await screen.findByRole('switch', { name: SWITCH }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(calls.find((c) => c.path === '/sources/linkedin-public/settings')?.body).toEqual({
+      confirm_risk: false,
+      enabled: false,
+    })
+  })
+
+  it('tras un bloqueo lo avisa y no deja buscar', async () => {
+    const blockedAt = new Date(Date.now() - 3_600_000).toISOString()
+    const until = new Date(Date.now() + 3 * 86_400_000 - 3_600_000).toISOString()
+    mockApi({
+      'GET /status': status(),
+      'GET /sources': { sources: [linkedin], agent_browse: LIMITS },
+      'GET /sources/linkedin-public': publicView({
+        enabled: true,
+        source_id: 9,
+        blocked_at: blockedAt,
+        next_run_at: until,
+        last_run: {
+          id: 4,
+          actor: 'system',
+          started_at: blockedAt,
+          finished_at: blockedAt,
+          found: 5,
+          after_filters: 2,
+          created: 2,
+          errors: [{ code: 'blocked', message: 'LinkedIn respondió HTTP 429: corta la búsqueda.', item: null }],
+        },
+      }),
+    })
+    renderApp('/plataformas')
+    expect(await screen.findByText(/LinkedIn cortó la última búsqueda/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Buscar ahora' })).toBeDisabled()
+    expect(screen.getByText(/5 encontradas,\s+2 tras filtros, 2 nuevas/)).toBeInTheDocument()
+  })
+
+  it('«Buscar ahora» la ejecuta y enseña el resultado', async () => {
+    const calls = mockApi({
+      'GET /status': status(),
+      'GET /sources': { sources: [linkedin], agent_browse: LIMITS },
+      'GET /sources/linkedin-public': publicView({ enabled: true, source_id: 9 }),
+      'POST /sources/linkedin-public/run': {
+        status: 200,
+        body: {
+          source_id: 9,
+          run_id: 1,
+          skipped: null,
+          blocked: false,
+          requests: 2,
+          found: 5,
+          after_filters: 3,
+          created: 3,
+          summaries: 3,
+          existing: 0,
+          job_ids: [1, 2, 3],
+          errors: [],
+          message: 'LinkedIn · búsqueda pública: 5 ofertas encontradas, 3 tras filtros, 3 nuevas',
+        },
+      },
+    })
+    renderApp('/plataformas')
+    await userEvent.click(await screen.findByRole('button', { name: 'Buscar ahora' }))
+    expect(await screen.findByText(/3 tras filtros, 3 nuevas/)).toBeInTheDocument()
+    expect(calls.find((c) => c.path === '/sources/linkedin-public/run')?.body).toEqual({})
   })
 })
 

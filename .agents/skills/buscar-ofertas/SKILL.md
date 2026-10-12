@@ -30,7 +30,9 @@ Argumentos: `configurar`, el nombre de una plataforma o nada (todas las activas)
    `true`, `save_source` responde `not_allowed`). Explica que puede activarlo él en la UI
    (Plataformas) bajo su responsabilidad, y que las alternativas sin riesgo son las alertas por
    correo y el botón de captura. Nunca llames a la API de la app (`/sources/…/browse`) para
-   activarlo.
+   activarlo. Lo mismo con la búsqueda pública sin sesión de la tarjeta de LinkedIn (fase 22):
+   la activa él en la UI si quiere; nunca llames a `/sources/linkedin-public/…`. Para ella, las
+   `search_urls` útiles son búsquedas `linkedin.com/jobs/search/?keywords=…&location=…`.
 
 ## Modo búsqueda
 1. `get_profile()` y `list_sources(kind="agent_browse")`. Cada fuente trae su configuración en

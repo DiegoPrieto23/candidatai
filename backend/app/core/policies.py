@@ -124,6 +124,20 @@ class AgentBrowsePolicy(BaseModel):
     default_max_offers: int = Field(gt=0)  # ofertas por plataforma si no dice `max_offers`
 
 
+class LinkedInPublicPolicy(BaseModel):
+    """Búsqueda pública de LinkedIn sin sesión (fase 22, ADR-033). Límites estrictos: el mínimo de
+    la pausa está en el esquema para que no se pueda bajar editando el YAML."""
+
+    max_searches_per_run: int = Field(default=5, ge=1, le=10)
+    max_pages_per_search: int = Field(default=2, ge=1, le=2)
+    delay_seconds: float = Field(default=10, ge=10)
+    min_hours_between_runs: float = Field(default=20, ge=20)
+    block_cooldown_days: int = Field(default=3, ge=1)
+    max_details_per_run: int = Field(default=10, ge=0, le=25)
+    timeout_seconds: float = Field(default=20, gt=0)
+    default_time_posted: str | None = Field(default="r86400", pattern=r"^r\d{1,8}$")
+
+
 class FollowupsPolicy(BaseModel):
     """Seguimientos (fase 10): días sin respuesta tras enviar la candidatura. Fase 15: tope de
     seguimientos por candidatura y días para agradecer una entrevista."""
@@ -208,6 +222,7 @@ class Policies(BaseModel):
     connectors: ConnectorsPolicy
     email_alerts: EmailAlertsPolicy
     agent_browse: AgentBrowsePolicy
+    linkedin_public: LinkedInPublicPolicy = Field(default_factory=LinkedInPublicPolicy)
     followups: FollowupsPolicy
     replies: RepliesPolicy
     calendar: CalendarPolicy

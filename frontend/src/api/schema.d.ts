@@ -502,6 +502,69 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/sources/linkedin-public": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Linkedin Public
+         * @description Estado de la búsqueda pública de LinkedIn sin sesión: interruptores, búsquedas que lanzará,
+         *     límites, última ejecución y desde cuándo puede volver a ejecutarse.
+         */
+        get: operations["get_linkedin_public"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/sources/linkedin-public/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Update Linkedin Public
+         * @description Enciende o apaga la búsqueda pública (y la descarga de la descripción). Encender exige
+         *     `confirm_risk: true`. Solo desde la UI.
+         */
+        post: operations["update_linkedin_public"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/sources/linkedin-public/run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Run Linkedin Public
+         * @description «Buscar ahora»: respeta los mismos límites (una vez al día, días sin buscar tras un
+         *     bloqueo). Tarda: hay una pausa de al menos 10 s entre peticiones.
+         */
+        post: operations["run_linkedin_public"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/sources/test": {
         parameters: {
             query?: never;
@@ -3805,6 +3868,107 @@ export interface components {
             /** Photo Supported */
             photo_supported: boolean;
             accent_colors: components["schemas"]["AccentColors"] | null;
+        };
+        /**
+         * LinkedInPublicLimits
+         * @description Límites de `config/policies.yaml` → `linkedin_public`.
+         */
+        LinkedInPublicLimits: {
+            /** Max Searches Per Run */
+            max_searches_per_run: number;
+            /** Max Pages Per Search */
+            max_pages_per_search: number;
+            /** Delay Seconds */
+            delay_seconds: number;
+            /** Min Hours Between Runs */
+            min_hours_between_runs: number;
+            /** Block Cooldown Days */
+            block_cooldown_days: number;
+            /** Max Details Per Run */
+            max_details_per_run: number;
+        };
+        /** LinkedInPublicRunResult */
+        LinkedInPublicRunResult: {
+            /** Source Id */
+            source_id: number | null;
+            /** Run Id */
+            run_id: number | null;
+            /** Skipped */
+            skipped: string | null;
+            /** Blocked */
+            blocked: boolean;
+            /** Requests */
+            requests: number;
+            /** Found */
+            found: number;
+            /** After Filters */
+            after_filters: number;
+            /** Created */
+            created: number;
+            /** Summaries */
+            summaries: number;
+            /** Existing */
+            existing: number;
+            /** Job Ids */
+            job_ids: number[];
+            /** Errors */
+            errors: components["schemas"]["Issue"][];
+            /** Message */
+            message: string;
+        };
+        /** LinkedInPublicSettingsBody */
+        LinkedInPublicSettingsBody: {
+            /** Enabled */
+            enabled?: boolean | null;
+            /** Fetch Detail */
+            fetch_detail?: boolean | null;
+            /**
+             * Confirm Risk
+             * @default false
+             */
+            confirm_risk: boolean;
+        };
+        /**
+         * LinkedInPublicView
+         * @description Estado de la búsqueda pública para la tarjeta de LinkedIn en Plataformas.
+         */
+        LinkedInPublicView: {
+            /** Source Id */
+            source_id: number | null;
+            /** Enabled */
+            enabled: boolean;
+            /** Fetch Detail */
+            fetch_detail: boolean;
+            /** Enabled At */
+            enabled_at: string | null;
+            /** Platform Source Id */
+            platform_source_id: number | null;
+            /** Searches */
+            searches: components["schemas"]["LinkedInSearch"][];
+            /** Ignored */
+            ignored: components["schemas"]["Issue"][];
+            /** Blocked At */
+            blocked_at: string | null;
+            /** Next Run At */
+            next_run_at: string | null;
+            last_run: components["schemas"]["SourceRunView"] | null;
+            limits: components["schemas"]["LinkedInPublicLimits"];
+        };
+        /**
+         * LinkedInSearch
+         * @description Una búsqueda de la plataforma LinkedIn traducida a los parámetros del endpoint público.
+         */
+        LinkedInSearch: {
+            /** Url */
+            url: string;
+            /** Keywords */
+            keywords: string | null;
+            /** Location */
+            location: string | null;
+            /** Params */
+            params: {
+                [key: string]: string;
+            };
         };
         /** LivenessCheck */
         LivenessCheck: {
@@ -8031,6 +8195,290 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SaveSourceResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_linkedin_public: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LinkedInPublicView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    update_linkedin_public: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LinkedInPublicSettingsBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LinkedInPublicView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    run_linkedin_public: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmptyBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LinkedInPublicRunResult"];
                 };
             };
             /** @description Unauthorized */
