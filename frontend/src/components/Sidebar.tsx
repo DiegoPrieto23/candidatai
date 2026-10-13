@@ -207,16 +207,35 @@ export function NavLinks({ collapsed = false, onNavigate }: { collapsed?: boolea
 
 // --- Marca y tema -------------------------------------------------------------------------------
 
+/** El isotipo de `docs/brand/mark.svg`: torso de una persona con un sello de verificado por cabeza (fase 23.5a). */
+export function BrandMark({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 64 64" aria-hidden className={className}>
+      <rect width="64" height="64" rx="14" fill="#0F766E" />
+      <path d="M12 64 C12 47 20.5 40.5 32 40.5 C43.5 40.5 52 47 52 64 Z" fill="#FFFFFF" />
+      <polygon
+        points="32.00,9.40 34.74,11.76 38.30,11.09 39.50,14.50 42.91,15.70 42.24,19.26 44.60,22.00 42.24,24.74 42.91,28.30 39.50,29.50 38.30,32.91 34.74,32.24 32.00,34.60 29.26,32.24 25.70,32.91 24.50,29.50 21.09,28.30 21.76,24.74 19.40,22.00 21.76,19.26 21.09,15.70 24.50,14.50 25.70,11.09 29.26,11.76"
+        fill="#FFFFFF"
+        stroke="#FFFFFF"
+        strokeWidth="2.6"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M26.4 21.6 L30.4 25.6 L37.8 18.2"
+        fill="none"
+        stroke="#0F766E"
+        strokeWidth="3.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
 export function Brand({ compact = false }: { compact?: boolean }) {
   return (
     <Link to="/" className="flex items-center gap-2.5 font-semibold tracking-tight whitespace-nowrap">
-      <span
-        aria-hidden
-        className="relative grid size-7 shrink-0 place-items-center rounded-md bg-foreground font-mono text-[11px] font-bold text-background"
-      >
-        CA
-        <span className="absolute -right-0.5 -bottom-0.5 size-2 rounded-full bg-primary ring-2 ring-background" />
-      </span>
+      <BrandMark className="size-7 shrink-0" />
       <span className={cn(compact && 'sr-only')}>CandidatAI</span>
     </Link>
   )

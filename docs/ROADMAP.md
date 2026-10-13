@@ -64,8 +64,9 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 23.2 | ↳ Skills y roles en inglés | ✅ | `/generate-cv 42`, `/prepare-interview 42`…; roles `writer`, `verifier`… |
 | 23.3 | ↳ Barra lateral | ✅ | Navegación lateral agrupada, plegable y con cajón en el móvil |
 | 23.4 | ↳ Instalación fácil | ✅ | `cai start`, `install.ps1`, acceso directo y releases con la UI compilada |
-| 23.6 | ↳ UI en inglés y español | ⏳ | Toda la UI traducida, con un selector de idioma junto al del tema (va antes de la 23.5) |
-| 23.5 | ↳ Logo, medios y README | ⏳ | Logo nuevo; banner, capturas en los dos idiomas, GIF y vídeo; README sin la comparativa |
+| 23.5a | ↳ Logo | ✅ | Logo nuevo, elegido entre propuestas, en la UI, el favicon, la extensión, el icono y el banner |
+| 23.6 | ↳ UI en inglés y español | ⏳ | Toda la UI traducida, con un selector de idioma junto al del tema |
+| 23.5b | ↳ Medios y README | ⏳ | Capturas en los dos idiomas, GIF y vídeo; README sin la comparativa |
 
 **MVP usable:** al terminar la 08 ya puedes pegar ofertas, triarlas y sacar CVs a medida; con la
 08c, también cartas de presentación. La 08c va antes que la 08b, aunque el orden entre ambas da
@@ -2020,3 +2021,19 @@ decisiones tomadas y deuda técnica pendiente. -->
   - El frontend sigue teniendo algún fallo intermitente por carga en la suite completa (importación
     de FunnelPage); por separado y en una segunda pasada, todo en verde.
   - Pendiente de la 23.5: el icono definitivo.
+
+### 23.5a · Logo — 2026-10-13 · Claude Code (Opus 5.5)
+- **Resumen:** logo de CandidatAI: **el torso de una persona con un sello de verificado en lugar
+  de la cabeza** (candidato y *candid*: verificado, nada inventado), plano, sin degradados ni
+  adornos, verde `#0F766E` con la figura en blanco. Elegido por el usuario en varias rondas:
+  conceptos (persona verificada, «C» con chispa, lupa con persona), color (verde, tinta, papel) y
+  forma final (cabeza en círculo, sello o trazo: ganó el sello). Fuente en
+  `docs/brand/` (`mark.svg`, `mark-mono.svg`, `logo.svg`, `logo-dark.svg` y su README con
+  colores y usos). `scripts/build_icons.py` rasteriza `mark.svg` con Chromium: iconos de la
+  extensión, favicon, `apple-touch-icon` y `.ico` de Windows. La barra lateral (`BrandMark`) y la
+  extensión usan el isotipo; el banner del README pasa a fondo plano con el logo.
+- **Decisiones:**
+  - El logotipo es «Candidat» + «AI» en verde, en peso medio; el texto usa la pila de fuentes del
+    sistema (Geist si está), sin convertir a trazados.
+  - El banner pierde la cuadrícula y los círculos decorativos: el mismo criterio minimalista.
+- **Deuda:** capturas, GIF y vídeo del README siguen con la marca anterior: la 23.5b, tras la 23.6.

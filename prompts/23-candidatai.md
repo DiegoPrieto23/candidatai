@@ -1,9 +1,9 @@
 # Fase 23 · CandidatAI: nombre y logo, identificadores en inglés, barra lateral, UI bilingüe e
 # instalación fácil
 
-Rama `fase/23-candidatai`. Seis subfases, cada una con su encargo y un commit en la misma rama, en
-este orden: 23.1 → 23.2 → 23.3 → 23.4 → **23.6 → 23.5** (la 23.5, la de los medios, va la última
-para que las capturas salgan con la UI traducida y con el logo nuevo). Decisiones del usuario
+Rama `fase/23-candidatai`. Siete subfases, cada una con su encargo y un commit en la misma rama, en
+este orden: 23.1 → 23.2 → 23.3 → 23.4 → **23.5a → 23.6 → 23.5b** (el logo antes de traducir la
+UI; los medios, al final, para que las capturas salgan traducidas y con el logo nuevo). Decisiones del usuario
 (2026-10-12) tras la comparativa con AI Job Search y career-ops (`docs/COMPARATIVA.md`) y la página
 de GitHub nueva.
 
@@ -26,7 +26,7 @@ aguante las 13 páginas que ya tiene.
   abrirlo arranca todo en un solo proceso y se abre el navegador. Sin Node para quien solo la usa.
 - **README:** fuera la sección «Compared with similar projects» (la comparativa sigue enlazada en
   la tabla de documentación).
-- **Logo:** el monograma «CA» es provisional; la 23.5 diseña un logo de verdad (el usuario elige
+- **Logo:** el monograma «CA» es provisional; la 23.5a diseña un logo de verdad (el usuario elige
   entre propuestas) y lo aplica en la UI, el favicon, la extensión, el icono de Windows y el README.
 - **UI en inglés y en español** con un selector de idioma junto al del tema (decisión del usuario
   tras la 23.3, 2026-10-12).
@@ -38,8 +38,9 @@ aguante las 13 páginas que ya tiene.
 | 23.2 | `prompts/23.2-skills-ingles.md` | `/generate-cv 42`, `/prepare-interview 42`…; roles `writer`, `verifier`… |
 | 23.3 | `prompts/23.3-barra-lateral.md` | Navegación lateral agrupada, plegable y con cajón en el móvil |
 | 23.4 | `prompts/23.4-instalacion.md` | `cai start`, `install.ps1`, acceso directo y releases con la UI compilada |
+| 23.5a | `prompts/23.5a-logo.md` | Logo nuevo (elegido entre propuestas) en la UI, favicon, extensión, icono y banner |
 | 23.6 | `prompts/23.6-idioma-ui.md` | Toda la UI en inglés o en español, con un selector junto al del tema |
-| 23.5 | `prompts/23.5-medios-readme.md` | Logo nuevo; banner, capturas (en los dos idiomas), GIF y vídeo; README sin la comparativa |
+| 23.5b | `prompts/23.5b-medios-readme.md` | Capturas (en los dos idiomas), GIF y vídeo; README sin la comparativa |
 
 ## Criterios de aceptación de la fase
 - `git grep -i "job hunter\|jobhunter\|\bjh\b"` solo encuentra el historial (`docs/ROADMAP.md`,

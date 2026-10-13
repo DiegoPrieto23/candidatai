@@ -83,4 +83,4 @@ su cuenta ni envía candidaturas. El riesgo es bajo, pero no es cero. Ver ADR-01
   **inventado** de `tests/fixtures/`: `pnpm test` en `frontend/`.
 - Tras cambiar un fichero, pulsa **Actualizar** en la tarjeta de la extensión en
   `chrome://extensions`.
-- Los iconos se generaron con Pillow (el monograma «CA» de la UI).
+- Los iconos salen del logo (`docs/brand/mark.svg`) con `scripts/build_icons.py`.
