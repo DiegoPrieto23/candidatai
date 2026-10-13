@@ -1,12 +1,16 @@
-# Fase 23 · CandidatAI: nombre, identificadores en inglés, barra lateral e instalación fácil
+# Fase 23 · CandidatAI: nombre y logo, identificadores en inglés, barra lateral, UI bilingüe e
+# instalación fácil
 
-Rama `fase/23-candidatai`. Cinco subfases en orden, cada una con su encargo y un commit en la misma
-rama: 23.1 → 23.2 → 23.3 → 23.4 → 23.5. Decisiones del usuario (2026-10-12) tras la comparativa con
-AI Job Search y career-ops (`docs/COMPARATIVA.md`) y la página de GitHub nueva.
+Rama `fase/23-candidatai`. Seis subfases, cada una con su encargo y un commit en la misma rama, en
+este orden: 23.1 → 23.2 → 23.3 → 23.4 → **23.6 → 23.5** (la 23.5, la de los medios, va la última
+para que las capturas salgan con la UI traducida y con el logo nuevo). Decisiones del usuario
+(2026-10-12) tras la comparativa con AI Job Search y career-ops (`docs/COMPARATIVA.md`) y la página
+de GitHub nueva.
 
 ## Objetivo
-Que la herramienta tenga un nombre propio y coherente en todas partes, que se pueda instalar y usar
-sin saber de backend ni de frontend, y que su navegación aguante las 13 páginas que ya tiene.
+Que la herramienta tenga un nombre y un logo propios y coherentes en todas partes, que se pueda
+instalar y usar sin saber de backend ni de frontend, en inglés o en español, y que su navegación
+aguante las 13 páginas que ya tiene.
 
 ## Decisiones tomadas con el usuario
 - **Nombre:** «Job Hunter» pasa a **CandidatAI** (*candidato* + *AI*; también *candid*: un CV que
@@ -22,6 +26,10 @@ sin saber de backend ni de frontend, y que su navegación aguante las 13 página
   abrirlo arranca todo en un solo proceso y se abre el navegador. Sin Node para quien solo la usa.
 - **README:** fuera la sección «Compared with similar projects» (la comparativa sigue enlazada en
   la tabla de documentación).
+- **Logo:** el monograma «CA» es provisional; la 23.5 diseña un logo de verdad (el usuario elige
+  entre propuestas) y lo aplica en la UI, el favicon, la extensión, el icono de Windows y el README.
+- **UI en inglés y en español** con un selector de idioma junto al del tema (decisión del usuario
+  tras la 23.3, 2026-10-12).
 
 ## Subfases
 | | Encargo | Resultado visible |
@@ -30,7 +38,8 @@ sin saber de backend ni de frontend, y que su navegación aguante las 13 página
 | 23.2 | `prompts/23.2-skills-ingles.md` | `/generate-cv 42`, `/prepare-interview 42`…; roles `writer`, `verifier`… |
 | 23.3 | `prompts/23.3-barra-lateral.md` | Navegación lateral agrupada, plegable y con cajón en el móvil |
 | 23.4 | `prompts/23.4-instalacion.md` | `cai start`, `install.ps1`, acceso directo y releases con la UI compilada |
-| 23.5 | `prompts/23.5-medios-readme.md` | Banner, capturas, GIF y vídeo nuevos; README sin la comparativa |
+| 23.6 | `prompts/23.6-idioma-ui.md` | Toda la UI en inglés o en español, con un selector junto al del tema |
+| 23.5 | `prompts/23.5-medios-readme.md` | Logo nuevo; banner, capturas (en los dos idiomas), GIF y vídeo; README sin la comparativa |
 
 ## Criterios de aceptación de la fase
 - `git grep -i "job hunter\|jobhunter\|\bjh\b"` solo encuentra el historial (`docs/ROADMAP.md`,

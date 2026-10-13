@@ -151,30 +151,39 @@ en Workday o en el Reino Unido).
 
 ## Pruébalo en 5 minutos
 
-Necesitas **Windows 11** (otros sistemas deberían funcionar, pero aún no están probados),
-[uv](https://docs.astral.sh/uv/), **Node LTS** con **pnpm** y, para los PDF de los CVs,
-**LibreOffice** o el Chromium de Playwright.
+**Para usarla**, en PowerShell (Windows 11; no hace falta ser administrador ni tener Python o Node):
+
+```powershell
+iwr -useb https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/install.ps1 -OutFile $env:TEMP\cai-install.ps1
+powershell -ExecutionPolicy Bypass -File $env:TEMP\cai-install.ps1
+```
+
+Instala lo necesario y deja un acceso directo **«CandidatAI»** en el escritorio: al abrirlo se
+arranca todo y se abre el navegador. Para actualizar, vuelve a ejecutarlo; tus datos no se tocan.
+Con `-WhatIf` al final de la segunda línea, explica antes lo que haría.
+
+**Para desarrollar**, con [uv](https://docs.astral.sh/uv/), Node LTS y pnpm, y la demo:
 
 ```powershell
 git clone https://github.com/DiegoPrieto23/candidatai.git candidatai; cd candidatai
-cd backend
+cd frontend; pnpm install; pnpm build; cd ..\backend
 uv sync
 uv run playwright install chromium     # PDF sin LibreOffice
-uv run cai demo seed                    # data-demo/: 60 ofertas, 8 semanas de historial, 2 CVs
-$env:CAI_DATA_DIR = "data-demo"; uv run cai serve
-# en otra terminal
-cd frontend; pnpm install; pnpm dev    # http://127.0.0.1:5173
+uv run cai demo seed                   # data-demo/: 60 ofertas, 8 semanas de historial, 2 CVs
+$env:CAI_DATA_DIR = "data-demo"; uv run cai start    # http://127.0.0.1:8000
 ```
 
-La UI muestra un banner «Modo demo». La demo es determinista y nunca toca `data/`, donde irían tus
-datos reales. Para probar los skills sobre la demo, arranca tu agente con `CAI_DATA_DIR=data-demo`.
+`cai start` arranca la API (que sirve la UI) y el worker en un solo comando y abre el navegador;
+`--dev` añade Vite con recarga en caliente. La UI muestra un banner «Modo demo»: la demo es
+determinista y nunca toca `data/`, donde irían tus datos reales. Para probar los skills sobre la
+demo, arranca tu agente con `CAI_DATA_DIR=data-demo`.
 
-Paso a paso, con tu propio perfil, las alertas por correo y la extensión del navegador:
+Paso a paso, con tu propio perfil, tu agente, las alertas por correo y la extensión del navegador:
 **[Guía de uso](docs/GUIA.md)**.
 
 ## Úsalo con tus datos
 
-Tus datos viven en `data/`, fuera de git. Arranca `cai serve`, `cai worker` y `pnpm dev`, crea tu
+Tus datos viven en `data/`, fuera de git. Abre CandidatAI (el acceso directo, o `cai start`), crea tu
 perfil con el skill `update-profile` y, después, pide a tu agente:
 
 | Skill | Qué hace |

@@ -78,6 +78,8 @@ class Settings(BaseSettings):
     # el navegador instalado en vez del Chromium de Playwright.
     browser_headless: bool = Field(default=False, validation_alias=_env("BROWSER_HEADLESS"))
     browser_channel: str | None = Field(default=None, validation_alias=_env("BROWSER_CHANNEL"))
+    # Otra carpeta con la UI compilada (por defecto, `frontend/dist`).
+    ui_dir_override: Path | None = Field(default=None, validation_alias=_env("UI_DIR"))
     # Solo tests: permite abrir formularios servidos en 127.0.0.1 (nunca la API de la app).
     applier_allow_loopback: bool = Field(
         default=False, validation_alias=_env("APPLIER_ALLOW_LOOPBACK")
@@ -153,6 +155,11 @@ class Settings(BaseSettings):
     @property
     def logs_dir(self) -> Path:
         return self.data_dir / "logs"
+
+    @property
+    def ui_dir(self) -> Path:
+        """UI compilada (`pnpm build`, o la que trae la release) que sirve la API (fase 23.4)."""
+        return self.ui_dir_override or REPO_ROOT / "frontend" / "dist"
 
     @property
     def browser_profile_dir(self) -> Path:

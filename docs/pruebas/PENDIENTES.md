@@ -6,7 +6,7 @@ cada fase y lo quita cuando el usuario confirma que está hecho.
 
 Marca `[x]` lo que hagas y, si algo falla, apúntalo debajo de la línea con `→`.
 
-Última actualización: 2026-10-12 (fase 23.2).
+Última actualización: 2026-10-13 (fase 23.4).
 
 ## 1. Poner la app al día (antes de probar nada)
 
@@ -60,6 +60,21 @@ funcionando. Los roles son `writer`, `verifier`, `classifier`, `reviewer` y `ext
       ejecuciones en cola ya usan los nombres nuevos.
 - [ ] Si tienes tareas programadas o rutinas de tu agente que llamen a un skill por su nombre
       antiguo (p. ej. `resumen-diario` cada mañana), cámbialas (`daily-summary`).
+
+### Arranque con un comando e instalador (fase 23.4)
+
+- [ ] Compila la UI una vez: `cd frontend; pnpm build`. Desde entonces basta con
+      `cd backend; uv run cai start` (API con la UI y worker, en http://127.0.0.1:8000): ya no
+      hacen falta tres ventanas. `--dev` añade Vite si vas a tocar la UI.
+- [ ] Prueba el instalador desde tu repositorio (aún no hay release pública):
+      `powershell -ExecutionPolicy Bypass -File .\install.ps1 -WhatIf -Source .` y, si te
+      convence, lo mismo sin `-WhatIf`. Instala en
+      `%LOCALAPPDATA%\CandidatAI` (sus datos van aparte de los tuyos de `data/`) y crea el acceso
+      directo. Ábrelo, comprueba que se abre el navegador y que al cerrar la ventana se para todo.
+      Desinstala con `.\install.ps1 -Uninstall` (tus datos se quedan).
+- [ ] Cuando quieras publicar una versión: `git tag v0.1.0; git push origin v0.1.0` crea la release
+      con `candidatai.zip`. Para que el instalador de una línea funcione para otros, el
+      repositorio tiene que ser público.
 
 ## 2. `.env.example` (el agente no puede leerlo ni editarlo)
 

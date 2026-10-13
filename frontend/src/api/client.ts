@@ -83,7 +83,10 @@ export type CompanyResearchContent = Schemas['CompanyResearchContent']
 export type ContactRelation = NonNullable<Schemas['ContactOut']['relation']>
 export type ReferralStatus = NonNullable<Schemas['ContactOut']['referral']>
 
-export const API_URL: string = import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:8000'
+// En desarrollo (`pnpm dev`, 5173) la API está en 8000; la UI compilada la sirve la propia API
+// (`cai start`, fase 23.4), así que llama a su mismo origen, sea cual sea el puerto.
+export const API_URL: string =
+  import.meta.env.VITE_API_URL ?? (import.meta.env.DEV ? 'http://127.0.0.1:8000' : window.location.origin)
 
 /** Ficheros que sirve la API (PDF y DOCX de un render, preview de una plantilla). */
 export const fileUrls = {

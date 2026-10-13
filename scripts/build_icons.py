@@ -1,5 +1,8 @@
 """Iconos de CandidatAI: monograma «CA» blanco sobre un cuadrado redondeado oscuro, con el punto
-verde azulado de la marca. Genera los PNG de la extensión y el favicon SVG de la UI.
+verde azulado de la marca. Genera los PNG de la extensión, el favicon SVG de la UI y el icono de
+Windows (`frontend/public/candidatai.ico`, el del acceso directo del instalador; fase 23.4).
+
+Provisional: la fase 23.5 lo sustituye por el logo de `docs/brand/`.
 
 Uso (desde backend/, que trae Pillow): uv run python ../scripts/build_icons.py
 La fuente es Segoe UI Bold (Windows); en otro sistema, pasa otra con --font.
@@ -49,6 +52,13 @@ def main() -> None:
     for size in (16, 32, 48, 128):
         icon(size, args.font).save(ROOT / "extension" / "icons" / f"icon{size}.png")
     (ROOT / "frontend" / "public" / "favicon.svg").write_text(FAVICON, encoding="utf-8")
+    sizes = [16, 24, 32, 48, 64, 128, 256]
+    big = icon(256, args.font)
+    big.save(
+        ROOT / "frontend" / "public" / "candidatai.ico",
+        sizes=[(n, n) for n in sizes],
+        append_images=[icon(n, args.font) for n in sizes[:-1]],
+    )
     print("ok")
 
 

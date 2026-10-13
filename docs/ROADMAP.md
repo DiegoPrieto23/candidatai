@@ -59,12 +59,13 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 20 | Calibración y patrones | ✅ | «¿Acierta el score?»: respuesta por tramo de score, veredicto, fuente, plantilla y carta; retrospectiva semanal |
 | 21 | Ofertas recibidas y salario | ✅ | Comparar ofertas recibidas y la distancia a tu mínimo sin exponerlo al agente; preparar la negociación |
 | 22 | LinkedIn por sus endpoints públicos (opcional) | ✅ | Búsqueda pública sin sesión, apagada por defecto y con límites estrictos; ADR que matiza la 016 |
-| 23 | CandidatAI | 🚧 | Nombre nuevo en todas partes, identificadores en inglés, barra lateral e instalación con un clic |
+| 23 | CandidatAI | 🚧 | Nombre y logo nuevos, identificadores en inglés, barra lateral, UI en inglés y español e instalación con un clic |
 | 23.1 | ↳ Renombrado a CandidatAI | ✅ | Todo dice CandidatAI; `cai` en vez de `jh`; MCP `candidatai`; repositorio renombrado |
 | 23.2 | ↳ Skills y roles en inglés | ✅ | `/generate-cv 42`, `/prepare-interview 42`…; roles `writer`, `verifier`… |
 | 23.3 | ↳ Barra lateral | ✅ | Navegación lateral agrupada, plegable y con cajón en el móvil |
-| 23.4 | ↳ Instalación fácil | ⏳ | `cai start`, `install.ps1`, acceso directo y releases con la UI compilada |
-| 23.5 | ↳ Medios y README | ⏳ | Banner, capturas, GIF y vídeo nuevos; README sin la comparativa |
+| 23.4 | ↳ Instalación fácil | ✅ | `cai start`, `install.ps1`, acceso directo y releases con la UI compilada |
+| 23.6 | ↳ UI en inglés y español | ⏳ | Toda la UI traducida, con un selector de idioma junto al del tema (va antes de la 23.5) |
+| 23.5 | ↳ Logo, medios y README | ⏳ | Logo nuevo; banner, capturas en los dos idiomas, GIF y vídeo; README sin la comparativa |
 
 **MVP usable:** al terminar la 08 ya puedes pegar ofertas, triarlas y sacar CVs a medida; con la
 08c, también cartas de presentación. La 08c va antes que la 08b, aunque el orden entre ambas da
@@ -1984,3 +1985,38 @@ decisiones tomadas y deuda técnica pendiente. -->
     causa (sospecha: el import de barril de los iconos).
   - Un test de Plataformas fallaba a veces por dos `Date.now()` distintos; corregido.
   - La UI sigue solo en español (punto 9 de «Lo que nos falta» en `docs/COMPARATIVA.md`).
+
+### 23.4 · Instalación fácil — 2026-10-13 · Claude Code (Opus 5.5)
+- **Resumen:**
+  - **La API sirve la UI compilada** (`app/api/ui.py`): navegación del navegador a una ruta de la
+    UI → `index.html`; el resto, la API. La UI compilada llama a su propio origen.
+  - **`cai start`** (`services/launcher.py`): migraciones, API y worker como procesos hijos, espera
+    a que la API responda y abre el navegador; Ctrl+C o cerrar la ventana lo para todo sin
+    huérfanos; `--dev` añade Vite. Logs en `data/logs/start-*.log`.
+  - **`install.ps1`**: uv, release (o zip/carpeta local con `-Source`), `%LOCALAPPDATA%\CandidatAI`
+    con los datos aparte, entorno, Chromium, base de datos y accesos directos con icono
+    (provisional, `frontend/public/candidatai.ico`); `-WhatIf`, `-Uninstall`, `-RemoveData`.
+  - **Releases** con `.github/workflows/release.yml` (etiqueta `v*` → `candidatai.zip`).
+  - Encargos de la 23.6 (UI bilingüe) y la 23.5 (logo) redactados; orden 23.4 → 23.6 → 23.5.
+  - ADR-035. 2380 tests de backend y 235 de frontend. Probado de verdad: `cai start` sobre la
+    demo; instalar desde la carpeta del repositorio, actualizar conservando el `.env`, negarse a
+    actualizar con la app abierta y desinstalar dejando los datos.
+- **Decisiones:**
+  - `require_ui` acepta el mismo origen solo en `127.0.0.1`/`localhost`, y
+    `TrustedHostMiddleware` (el más externo) rechaza cualquier otro `Host` también en las
+    lecturas: contra DNS rebinding.
+  - Cada fichero suelto de la UI tiene una ruta fija sin parámetros (con el fichero como
+    parámetro por defecto, FastAPI lo habría convertido en `?file=` y permitido leer cualquiera).
+  - El puerto se comprueba intentando escuchar y conectar: en Windows conectar a un puerto cerrado
+    tarda ~2 s y parecía «ocupado por otro programa».
+  - El instalador se ejecuta descargándolo a un fichero: con `irm | iex` no es un script avanzado y
+    `-WhatIf` falla (lo encontró la revisión). Solo sustituye o borra carpetas que sean una app de
+    CandidatAI, se niega con la raíz o la carpeta de usuario y prepara la versión nueva aparte.
+- **Deuda:**
+  - El instalador de una línea necesita una release pública: hoy el repositorio es privado y no hay
+    ninguna (se instala con `-Source <carpeta>`).
+  - El acceso directo y Ctrl+C en una consola real no se han probado aquí (sin consola
+    interactiva); queda en `PENDIENTES.md`.
+  - El frontend sigue teniendo algún fallo intermitente por carga en la suite completa (importación
+    de FunnelPage); por separado y en una segunda pasada, todo en verde.
+  - Pendiente de la 23.5: el icono definitivo.

@@ -31,27 +31,65 @@ AI agent. To learn what it is and why it works this way, start with the [README]
 CandidatAI is built and tested on **Windows 11**. It should work on macOS and Linux (everything
 uses `pathlib` and cross-platform tools), but that hasn't been tested yet.
 
+**To use it** you only need Windows and, if you want Word CVs on top of PDFs, LibreOffice. The
+installer takes care of the rest (uv, Python and the Chromium that renders PDFs). For the agent's
+part you also need **an AI agent** (Claude Code, Codex…; see section 5).
+
+**To develop it** (clone the repository and change the code):
+
 | What | For | How |
 |---|---|---|
 | [uv](https://docs.astral.sh/uv/) | Python 3.12 and backend dependencies (no separate Python install needed) | `powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 \| iex"` |
-| Node LTS + pnpm | The UI | Node from nodejs.org; `npm install -g pnpm` (Node 25+ no longer ships `corepack`) |
+| Node LTS + pnpm | Building and developing the UI | Node from nodejs.org; `npm install -g pnpm` (Node 25+ no longer ships `corepack`) |
 | LibreOffice **or** Playwright's Chromium | CV and cover-letter PDFs | LibreOffice from libreoffice.org (if it isn't in `C:\Program Files\LibreOffice` or on the `PATH`, set `SOFFICE_PATH` in `.env`); Chromium with `uv run playwright install chromium` |
-| An AI agent | Extracting jobs, assessing fit, writing the CV | Claude Code (reference), Codex or another one that speaks MCP or runs commands |
 | Git | Cloning and updating | git-scm.com |
 
 Open a new terminal after installing so the `PATH` is refreshed.
 
 ## 2. Installation
 
+### To use it: the installer
+
+In PowerShell (no administrator rights needed):
+
+```powershell
+iwr -useb https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/install.ps1 -OutFile $env:TEMP\cai-install.ps1
+powershell -ExecutionPolicy Bypass -File $env:TEMP\cai-install.ps1
+```
+
+The installer:
+
+1. installs [uv](https://docs.astral.sh/uv/) if it's missing (it brings Python 3.12);
+2. downloads the latest CandidatAI release, with the UI already built (no Node needed);
+3. puts it in `%LOCALAPPDATA%\CandidatAI\app`, and your data in `%LOCALAPPDATA%\CandidatAI\data`;
+4. prepares the environment, the PDF Chromium and the database;
+5. creates a **"CandidatAI"** shortcut on the desktop and in the Start menu.
+
+Opening the shortcut starts everything and opens your browser at `http://127.0.0.1:8000`. Keep the
+window that appears open while you use it; to close CandidatAI, close that window.
+
+- **Before installing**, `-WhatIf` (at the end of the second line) explains what it would do
+  without changing anything. In the examples below, if PowerShell refuses to run scripts, use
+  `powershell -ExecutionPolicy Bypass -File .\install.ps1 …` instead of `.\install.ps1 …`.
+- **Updating:** run the installer again (with CandidatAI closed). Your data isn't touched, and
+  the app's `.env` (`…\CandidatAI\app\.env`) is kept.
+- **Uninstalling:** `.\install.ps1 -Uninstall` removes the app and the shortcuts, not your data
+  (with `-RemoveData`, your data too, after confirming).
+- While the repository is private or no release has been published, the one-line command has
+  nothing to download: install from your copy of the repository (below) with
+  `.\install.ps1 -Source <repository folder>`, after building the UI (`pnpm build`).
+
+### To develop it: clone the repository
+
 ```powershell
 git clone https://github.com/DiegoPrieto23/candidatai.git candidatai
 cd candidatai\backend
 uv sync                                # backend dependencies (creates .venv)
 uv run playwright install chromium     # html templates and PDFs without LibreOffice
-uv run cai doctor                       # checks the environment and tells you what's missing
-uv run cai db upgrade                   # creates the database in data/
+uv run cai doctor                      # checks the environment and tells you what's missing
 cd ..\frontend
 pnpm install
+pnpm build                             # the built UI that `cai start` serves
 ```
 
 Optional: `uv sync --extra matching` installs local semantic similarity (brings torch, ~1 GB).
@@ -65,13 +103,11 @@ The demo is a fictional candidate with 60 jobs, 8 weeks of history and 2 CVs. It
 ```powershell
 cd backend
 uv run cai demo seed                         # --force to recreate it
-$env:CAI_DATA_DIR = "data-demo"; uv run cai serve
-# in a second terminal
-cd frontend; pnpm dev                       # http://127.0.0.1:5173
+$env:CAI_DATA_DIR = "data-demo"; uv run cai start
 ```
 
-The UI shows a "Modo demo" banner. To try the skills on the demo, start your agent with
-`CAI_DATA_DIR=data-demo` so its MCP server uses that folder.
+Your browser opens at `http://127.0.0.1:8000` with a "Modo demo" banner. To try the skills on the
+demo, start your agent with `CAI_DATA_DIR=data-demo` so its MCP server uses that folder.
 
 ## 4. Your data and your profile
 
@@ -106,14 +142,16 @@ More detail, and how to add an agent: [`AGENTS_COMPAT.md`](AGENTS_COMPAT.md) (Sp
 
 ## 6. Start the app every day
 
-Three processes, ideally each in its own terminal window and **outside your agent** (if the agent
-runs out of memory it may close what it started):
+- **With the installer:** open the "CandidatAI" shortcut. To close it, close its window.
+- **From the repository:** `cd backend; uv run cai start`. It starts the API (which also serves
+  the UI) and the worker in one command, applies pending migrations and opens your browser.
+  Ctrl+C to close. Its logs go to `data/logs/start-*.log`.
+- **To develop the UI** with hot reload: `uv run cai start --dev` also starts Vite and opens
+  `http://127.0.0.1:5173`. You can also run `cai serve`, `cai worker` and `pnpm dev` separately,
+  each in its own window.
 
-```powershell
-cd backend; uv run cai serve       # API at http://127.0.0.1:8000 (local only)
-cd backend; uv run cai worker      # daily ingestion, scores, email, assisted applications, background runs
-cd frontend; pnpm dev             # UI at http://127.0.0.1:5173
-```
+Start CandidatAI **outside your agent** (its own window or the shortcut): if the agent runs out of
+memory it may close what it started.
 
 A typical day:
 
@@ -209,16 +247,19 @@ Many pages have buttons that open your agent with the instruction already writte
 
 ## 13. Updating
 
-With your agent **closed** (its MCP server locks the Python environment):
+**With the installer:** run it again; your data (`%LOCALAPPDATA%\CandidatAI\data`) isn't touched and
+migrations apply by themselves.
+
+**From the repository**, with your agent **closed** (its MCP server locks the Python environment):
 
 ```powershell
 copy data\candidatai.db data\candidatai.db.bak     # backup
 git pull
-cd backend; uv sync; uv run cai db upgrade
-cd ..\frontend; pnpm install
+cd backend; uv sync
+cd ..\frontend; pnpm install; pnpm build
 ```
 
-Restart `cai serve`, `cai worker` and your agent.
+`cai start` applies migrations when it starts. Restart CandidatAI and your agent.
 
 ## 14. Troubleshooting
 
@@ -228,9 +269,10 @@ Restart `cai serve`, `cai worker` and your agent.
 | "Ejecuta `cai db upgrade`" | There are new migrations: `uv run cai db upgrade` |
 | `uv sync` fails with "file in use" | Close your agent (its MCP server uses `cai-mcp.exe`) and try again |
 | No PDFs | Install LibreOffice or run `uv run playwright install chromium`; `cai doctor` checks it |
-| The UI can't reach the API | Start `cai serve`; the UI expects the API at `127.0.0.1:8000` |
-| Port 5173 is busy | Another `pnpm dev` is still open: close it (the API only accepts the UI on that port) |
-| Nothing comes in by itself in the morning | `cai worker` must be running |
+| The UI can't reach the API | Start CandidatAI (`cai start` or the shortcut) and keep its window open |
+| "Port 8000 is used by another program" | Close that program or use `cai start --port 8001` |
+| The built UI is missing | In the repository, `cd frontend; pnpm install; pnpm build` (the installer ships it) |
+| Nothing comes in by itself in the morning | CandidatAI must be open (`cai start` runs the worker) |
 | Accents look wrong in `cai --help` | Known Windows console (cp1252) issue; `--json` output is fine |
 
 ## 15. Development

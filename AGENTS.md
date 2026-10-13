@@ -47,6 +47,7 @@ templates/        plantillas de CV integradas (sin datos personales)
 extension/        extensión «Enviar a CandidatAI» (fase 09b)
 config/           policies.yaml y listas genéricas (sin datos personales)
 demo/             candidato y ofertas ficticios
+install.ps1       instalador para Windows: descarga la release, prepara todo y crea el acceso directo
 data/             GITIGNORED: candidatai.db, profile.yaml, contexto/, documentos/, photo, templates/,
                   uploads/, CVs, tmp/…
 ```
@@ -58,12 +59,14 @@ cd backend
 uv run pytest                      # tests
 uv run ruff check --fix && uv run ruff format
 uv run alembic upgrade head        # migraciones
-uv run cai --help                   # CLI
-uv run cai serve                    # API en http://127.0.0.1:8000
-uv run cai worker                   # tareas en segundo plano (--once: vacía la cola)
-uv run cai eval matching            # precision/recall del matching (evals/matching/)
+uv run cai --help                  # CLI
+uv run cai start                   # app entera: API con la UI compilada y worker (--dev: más Vite)
+uv run cai serve                   # solo la API en http://127.0.0.1:8000
+uv run cai worker                  # solo las tareas en segundo plano (--once: vacía la cola)
+uv run cai eval matching           # precision/recall del matching (evals/matching/)
 uv run python ../scripts/build_builtin_templates.py   # regenerar las plantillas de templates/
-cd frontend && pnpm dev            # UI en http://127.0.0.1:5173
+cd frontend && pnpm dev            # UI en desarrollo en http://127.0.0.1:5173
+cd frontend && pnpm build          # UI compilada (frontend/dist) que sirve `cai start`
 uv run scripts/sync_agents.py      # regenerar configuración de agentes (desde la raíz)
 uv run scripts/sync_agents.py --check   # CI: falla si lo generado no está al día
 ```

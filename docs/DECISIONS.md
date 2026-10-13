@@ -697,3 +697,40 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
 - **Consecuencias:** un solo nombre en todas partes. Tras actualizar hay que ejecutar `uv sync` con
   el agente cerrado (el ejecutable cambia de nombre), reiniciar el agente (el servidor MCP cambia
   de nombre) y, cuando se quiera, renombrar las `JH_*` del `.env` y la base de datos.
+
+## ADR-035 · Instalación con un clic: la API sirve la UI compilada y `cai start` lo arranca todo
+- **Contexto:** para usar la app hacían falta uv, Node, pnpm y tres terminales (`serve`, `worker`,
+  `pnpm dev`). Mucha gente solo quiere usar la herramienta (fase 23.4).
+- **Decisión:**
+  - **la API sirve la UI compilada** (`frontend/dist`, o `CAI_UI_DIR`) en su mismo origen. Una
+    navegación del navegador (`Accept: text/html`) a una ruta de la UI recibe `index.html`; todo lo
+    demás es la API. Así `/jobs/7` es la ficha si la pide el navegador y el JSON si la pide la UI, y
+    un PDF abierto en otra pestaña sigue llegando a la API. Las rutas de la UI están en
+    `app/api/ui.py` y un test las compara con `App.tsx`. Cada fichero suelto de la raíz tiene su
+    ruta fija, sin parámetros (una ruta con el fichero por parámetro dejaría leer cualquiera);
+  - **`require_ui` acepta también el mismo origen**, pero solo si es `127.0.0.1` o `localhost`:
+    comparar solo con la cabecera `Host` dejaría pasar a una web que apunte su dominio a 127.0.0.1
+    (DNS rebinding). La UI compilada llama a la API en `window.location.origin`;
+  - **`cai start`** (`services/launcher.py`): aplica las migraciones, arranca la API y el worker como
+    procesos hijos (`python -m app …`, con su salida en `data/logs/start-*.log`), espera a que la
+    API responda y abre el navegador. Si un hijo se cae, para el otro; Ctrl+C o cerrar la ventana
+    lo paran todo (el árbol entero, sin huérfanos). Un puerto ocupado por otra CandidatAI solo abre
+    el navegador; por otro programa, se explica. El puerto se comprueba intentando escuchar en él:
+    en Windows, conectar a un puerto cerrado tarda unos 2 s en fallar;
+  - **releases** (`.github/workflows/release.yml`): con una etiqueta `v*`, `candidatai.zip` con el
+    repositorio (`git archive`, sin los medios del README) y la UI compilada;
+  - **`install.ps1`**: instala uv si falta, descarga la release (o usa un zip o una carpeta local
+    con `-Source`), la deja en `%LOCALAPPDATA%\CandidatAI\app` con los datos en `…\data` (se lo
+    dice a la app su `.env`, sin BOM, que se conserva al actualizar), prepara el entorno y crea
+    los accesos directos. Sin administrador; `-WhatIf` lo describe sin tocar nada. Solo sustituye
+    o borra una carpeta que sea una app de CandidatAI, se niega con la raíz de la unidad o la
+    carpeta de usuario, prepara la versión nueva aparte antes de cambiarla y `-Uninstall` nunca
+    borra los datos sin `-RemoveData` y confirmación. Se ejecuta descargándolo a un fichero (con
+    `irm | iex` no sería un script y `-WhatIf` no funcionaría). Sigue siendo una app nativa de
+    Windows, sin Docker (ADR-002/007);
+  - **DNS rebinding también en las lecturas:** `TrustedHostMiddleware` solo atiende a
+    `127.0.0.1` y `localhost` (y `testserver`, el de los tests), y va el último para cubrir
+    también la UI. Antes, una web que apuntara su dominio a 127.0.0.1 podía leer la API.
+- **Consecuencias:** quien solo la usa no necesita Node ni terminales. A cambio, la API tiene una
+  lista de rutas de la UI que mantener (con su test). El instalador de una línea necesita una
+  release pública: con el repositorio privado, se instala desde una carpeta local.

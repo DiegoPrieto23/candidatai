@@ -183,6 +183,27 @@ def serve(
     uvicorn.run("app.api.main:app", host=HOST, port=port, reload=reload)
 
 
+@app.command()
+def start(
+    port: int = typer.Option(8000, help="Puerto de la app (siempre en 127.0.0.1)."),
+    dev: bool = typer.Option(
+        False, "--dev", help="Arranca también Vite (pnpm dev) para desarrollar."
+    ),
+    no_browser: bool = typer.Option(False, "--no-browser", help="No abre el navegador."),
+) -> None:
+    """Arranca CandidatAI entera (la API con la UI, y el worker) y abre el navegador. Ctrl+C para
+    cerrarla."""
+    from app.services import launcher
+
+    try:
+        launcher.start(get_settings(), port, dev=dev, open_browser=not no_browser, say=typer.echo)
+    except launcher.LaunchError as exc:
+        typer.secho(f"Error: {exc}", fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=1) from exc
+    except KeyboardInterrupt:
+        typer.echo("Cancelado.")
+
+
 OPENAPI_OUT_OPTION = typer.Option(None, "--out", help="Fichero de salida. Por defecto, stdout.")
 
 
