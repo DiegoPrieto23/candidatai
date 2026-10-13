@@ -1,0 +1,42 @@
+{
+  "sections": {
+    "estilo-redaccion": {
+      "title": "Writing style",
+      "hint": "Tone, structure, words you use and avoid. Used by CVs and letters."
+    },
+    "perfil-conductual": {
+      "title": "Behavioral profile",
+      "hint": "How you work, strengths, personality tests. For preparing interviews."
+    },
+    "criterios": {
+      "title": "Criteria",
+      "hint": "Deal-breakers and preferences in free text. The fit assessment cites them as risks."
+    },
+    "narrativa": {
+      "title": "Narrative",
+      "hint": "Your story, motivation and how you explain changes. For interviews."
+    }
+  },
+  "folders": {
+    "cv": "Your previous CVs (PDF or Word)",
+    "linkedin": "Exports of your LinkedIn profile",
+    "titulos": "Degrees and certificates",
+    "referencias": "Reference letters",
+    "candidaturas": "What you sent in each application (fills up on its own)"
+  },
+  "state": {
+    "missing": "Doesn't exist",
+    "empty": "Empty",
+    "filled": "Has content"
+  },
+  "files_one": "{{count}} file",
+  "files_other": "{{count}} files",
+  "context": "Context",
+  "contextIntro": "It guides your agent: the tone of your CVs and letters, a job's risks and interview prep. <strong>It never backs up a fact</strong>: whatever a CV or a letter says has to be in your profile. Edit them with your editor or ask your agent for <code>update-profile</code>.",
+  "openContext": "Open the context folder",
+  "documents": "Documents",
+  "documentsIntro": "Your source documents. <code>update-profile</code> can read them to create or extend your profile, always asking you before writing.",
+  "openDocuments": "Open the documents folder",
+  "title": "My profile",
+  "intro": "Your profile (<code>data/profile.yaml</code>) is the only thing a CV, a letter or an answer can claim. Here's what goes with it."
+}

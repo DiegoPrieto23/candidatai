@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router'
 import { ArrowsClockwiseIcon, EnvelopeSimpleIcon, ShieldWarningIcon, XIcon } from '@phosphor-icons/react'
 import type { RepliesPollResult, ReplyInboxItem } from '@/api/client'
@@ -8,30 +9,25 @@ import { ReplyProposalCard } from '@/components/ReplyDecision'
 import { EmptyState, ErrorState, InlineCode } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { formatList, i18n } from '@/lib/i18n'
 import { formatRelative, STAGE_LABEL } from '@/lib/labels'
 import { MATCH_REASON_LABEL, REPLY_EVENT_LABEL } from '@/lib/replies'
 import { formatWhen } from '@/lib/time'
+import { errorMessage } from '@/lib/errors'
 import { cn } from '@/lib/utils'
 
 type Filter = 'pending' | 'accepted' | 'ignored' | 'all'
 
-const FILTERS: { value: Filter; label: string; statuses: ReplyStatus[] }[] = [
-  { value: 'pending', label: 'Pendientes', statuses: ['new', 'proposed'] },
-  { value: 'accepted', label: 'Aceptadas', statuses: ['accepted'] },
-  { value: 'ignored', label: 'Ignoradas', statuses: ['ignored'] },
-  { value: 'all', label: 'Todas', statuses: ['new', 'proposed', 'accepted', 'ignored'] },
+const FILTERS: { value: Filter; statuses: ReplyStatus[] }[] = [
+  { value: 'pending', statuses: ['new', 'proposed'] },
+  { value: 'accepted', statuses: ['accepted'] },
+  { value: 'ignored', statuses: ['ignored'] },
+  { value: 'all', statuses: ['new', 'proposed', 'accepted', 'ignored'] },
 ]
 
-const RISK_TEXT: Record<string, string> = {
-  hidden_text: 'texto oculto',
-  injection_phrase: 'frases que parecen instrucciones para una IA',
-}
-
-const STATUS_LABEL: Record<ReplyStatus, string> = {
-  new: 'Sin clasificar',
-  proposed: 'Por revisar',
-  accepted: 'Aceptada',
-  ignored: 'Ignorada',
+function riskText(flag: string): string {
+  const key = `replies:page.risk.${flag}`
+  return i18n.exists(key) ? String(i18n.t(key as never)) : flag
 }
 
 function from(item: ReplyInboxItem): string {
@@ -39,6 +35,7 @@ function from(item: ReplyInboxItem): string {
 }
 
 function PollResult({ result, onClose }: { result: RepliesPollResult; onClose: () => void }) {
+  const { t } = useTranslation('replies', { keyPrefix: 'page' })
   return (
     <div
       role="status"
@@ -55,7 +52,7 @@ function PollResult({ result, onClose }: { result: RepliesPollResult; onClose: (
           </ul>
         )}
       </div>
-      <button type="button" onClick={onClose} className="text-muted-foreground hover:text-foreground" aria-label="Cerrar aviso">
+      <button type="button" onClick={onClose} className="text-muted-foreground hover:text-foreground" aria-label={t('closeNotice')}>
         <XIcon className="size-4" />
       </button>
     </div>
@@ -63,6 +60,7 @@ function PollResult({ result, onClose }: { result: RepliesPollResult; onClose: (
 }
 
 function ReplyRow({ item, selected, onSelect }: { item: ReplyInboxItem; selected: boolean; onSelect: () => void }) {
+  const { t } = useTranslation('replies', { keyPrefix: 'page' })
   const job = item.candidates.find((c) => c.job_id === (item.proposal?.job_id ?? item.job_id)) ?? item.candidates[0]
   return (
     <li>
@@ -83,7 +81,7 @@ function ReplyRow({ item, selected, onSelect }: { item: ReplyInboxItem; selected
               <ShieldWarningIcon
                 className="size-3.5 shrink-0 text-warning-foreground"
                 weight="fill"
-                aria-label="Posible contenido dirigido a una IA"
+                aria-label={t('riskAria')}
               />
             )}
           </span>
@@ -91,9 +89,9 @@ function ReplyRow({ item, selected, onSelect }: { item: ReplyInboxItem; selected
             <span className="tabular shrink-0 text-xs text-muted-foreground">{formatRelative(item.received_at)}</span>
           )}
         </span>
-        <span className="truncate text-sm text-foreground/80">{item.subject || '(sin asunto)'}</span>
+        <span className="truncate text-sm text-foreground/80">{item.subject || t('noSubject')}</span>
         <span className="flex items-center gap-2 text-xs text-muted-foreground">
-          <span className="truncate">{job ? `${job.title} · ${job.company}` : 'Sin oferta'}</span>
+          <span className="truncate">{job ? `${job.title} · ${job.company}` : t('noJob')}</span>
           <span
             className={cn(
               'ml-auto shrink-0 rounded-full border px-2 py-0.5 font-medium',
@@ -102,7 +100,7 @@ function ReplyRow({ item, selected, onSelect }: { item: ReplyInboxItem; selected
           >
             {item.status === 'proposed' && item.proposal
               ? REPLY_EVENT_LABEL[item.proposal.event_type]
-              : STATUS_LABEL[item.status]}
+              : t(`status.${item.status}`)}
           </span>
         </span>
       </button>
@@ -111,11 +109,12 @@ function ReplyRow({ item, selected, onSelect }: { item: ReplyInboxItem; selected
 }
 
 function ReplyDetail({ item }: { item: ReplyInboxItem }) {
+  const { t } = useTranslation('replies', { keyPrefix: 'page' })
   const { data, isPending, isError, error, refetch } = useReply(item.reply_id)
   return (
-    <article aria-label="Correo" className="space-y-5 rounded-xl border bg-card p-5 sm:p-6">
+    <article aria-label={t('email')} className="space-y-5 rounded-xl border bg-card p-5 sm:p-6">
       <header className="space-y-1">
-        <h2 className="text-lg leading-snug font-semibold text-balance">{item.subject || '(sin asunto)'}</h2>
+        <h2 className="text-lg leading-snug font-semibold text-balance">{item.subject || t('noSubject')}</h2>
         <p className="text-sm text-muted-foreground">
           {item.sender_name ? (
             <>
@@ -132,13 +131,13 @@ function ReplyDetail({ item }: { item: ReplyInboxItem }) {
               <Link to={`/jobs/${c.job_id}`} className="font-medium text-foreground/90 underline-offset-4 hover:underline">
                 {c.title} · {c.company}
               </Link>{' '}
-              ({STAGE_LABEL[c.stage]}; por {MATCH_REASON_LABEL[c.reason]})
+              {t('byReason', { stage: STAGE_LABEL[c.stage], reason: MATCH_REASON_LABEL[c.reason] })}
             </li>
           ))}
         </ul>
       </header>
 
-      <section aria-label="Propuesta" className="rounded-lg border border-primary/30 bg-primary/[0.03] p-4">
+      <section aria-label={t('proposal')} className="rounded-lg border border-primary/30 bg-primary/[0.03] p-4">
         <ReplyProposalCard item={item} />
       </section>
 
@@ -146,14 +145,13 @@ function ReplyDetail({ item }: { item: ReplyInboxItem }) {
         <p role="note" className="flex items-start gap-2 rounded-lg border border-warning-border bg-warning px-3 py-2 text-sm text-warning-foreground">
           <ShieldWarningIcon className="mt-0.5 size-4 shrink-0" weight="fill" />
           <span>
-            Este correo tiene {item.risk_flags.map((f) => RISK_TEXT[f] ?? f).join(' y ')}. Puede intentar engañar a tu
-            agente: comprueba la propuesta con el texto.
+            {t('riskNote', { list: formatList(item.risk_flags.map(riskText)) })}
           </span>
         </p>
       )}
 
-      <section aria-label="Texto del correo">
-        <h3 className="mb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">Texto del correo</h3>
+      <section aria-label={t('body')}>
+        <h3 className="mb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">{t('body')}</h3>
         {isPending ? (
           <Skeleton className="h-40" />
         ) : isError ? (
@@ -161,7 +159,7 @@ function ReplyDetail({ item }: { item: ReplyInboxItem }) {
         ) : (
           // Texto plano: el correo nunca se muestra como HTML.
           <pre className="max-h-[32rem] overflow-auto rounded-lg border bg-background p-4 font-sans text-sm leading-relaxed whitespace-pre-wrap">
-            {data.body_text || '(vacío)'}
+            {data.body_text || t('empty')}
           </pre>
         )}
       </section>
@@ -170,8 +168,9 @@ function ReplyDetail({ item }: { item: ReplyInboxItem }) {
 }
 
 function ListSkeleton() {
+  const { t } = useTranslation('replies', { keyPrefix: 'page' })
   return (
-    <div aria-busy="true" aria-label="Cargando respuestas" className="space-y-2 rounded-xl border bg-card p-3">
+    <div aria-busy="true" aria-label={t('loading')} className="space-y-2 rounded-xl border bg-card p-3">
       {Array.from({ length: 5 }, (_, i) => (
         <Skeleton key={i} className="h-14" />
       ))}
@@ -180,6 +179,7 @@ function ListSkeleton() {
 }
 
 export function RepliesPage() {
+  const { t } = useTranslation('replies', { keyPrefix: 'page' })
   const { data, isPending, isError, error, refetch } = useReplies()
   const poll = usePollReplies()
   const [filter, setFilter] = useState<Filter>('pending')
@@ -201,16 +201,15 @@ export function RepliesPage() {
     <div className="animate-in fade-in duration-300">
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Respuestas</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
           <p className="max-w-prose text-sm text-muted-foreground">
-            Correos de las empresas sobre tus candidaturas. Tu agente propone qué significa cada uno; nada cambia de
-            etapa hasta que lo aceptas aquí.
+            {t('intro')}
           </p>
         </div>
         <div className="flex shrink-0 flex-wrap items-start gap-2">
           {unclassified > 0 && (
-            <AgentButton action="revisar-respuestas" variant="default">
-              Revisar respuestas
+            <AgentButton action="review-replies" variant="default">
+              {t('review')}
             </AgentButton>
           )}
           <Button
@@ -221,7 +220,7 @@ export function RepliesPage() {
             className="active:translate-y-px"
           >
             <ArrowsClockwiseIcon className={cn(poll.isPending && 'animate-spin')} />
-            {poll.isPending ? 'Leyendo el correo…' : 'Revisar correo ahora'}
+            {poll.isPending ? t('reading') : t('poll')}
           </Button>
         </div>
       </div>
@@ -230,18 +229,17 @@ export function RepliesPage() {
         {poll.data && <PollResult result={poll.data} onClose={() => poll.reset()} />}
         {poll.error && (
           <p role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-2.5 text-sm">
-            No se pudo leer el correo: {poll.error.message}
+            {t('pollFailed', { error: errorMessage(poll.error) })}
           </p>
         )}
         {unclassified > 0 && (
           <p role="status" className="text-sm text-muted-foreground">
-            {unclassified === 1 ? '1 correo sin clasificar' : `${unclassified} correos sin clasificar`}: «Revisar
-            respuestas» abre tu agente para que proponga qué es cada uno.
+            {t('unclassified', { count: unclassified })}
           </p>
         )}
       </div>
 
-      <div role="group" aria-label="Filtrar por estado" className="mb-4 flex flex-wrap gap-1">
+      <div role="group" aria-label={t('filterAria')} className="mb-4 flex flex-wrap gap-1">
         {FILTERS.map((f) => (
           <button
             key={f.value}
@@ -258,7 +256,7 @@ export function RepliesPage() {
                 : 'text-muted-foreground hover:bg-foreground/[0.04] hover:text-foreground',
             )}
           >
-            {f.label}
+            {t(`filters.${f.value}`)}
             <span className="tabular text-xs font-medium">{countFor(f)}</span>
           </button>
         ))}
@@ -270,15 +268,14 @@ export function RepliesPage() {
         <ErrorState error={error} onRetry={() => void refetch()} />
       ) : items.length === 0 ? (
         <section className="rounded-xl border bg-card">
-          <EmptyState icon={<EnvelopeSimpleIcon className="size-6" weight="duotone" />} title="Sin respuestas aquí">
-            Los correos de las empresas a tus candidaturas enviadas aparecen aquí. Se leen por IMAP (
-            <InlineCode text="JH_IMAP_REPLIES_FOLDER" />) o de <InlineCode text="data/inbox/respuestas/" />.
+          <EmptyState icon={<EnvelopeSimpleIcon className="size-6" weight="duotone" />} title={t('noneTitle')}>
+            <InlineCode text={t('noneBody')} />
           </EmptyState>
         </section>
       ) : (
         <div className="grid items-start gap-6 lg:grid-cols-[22rem_minmax(0,1fr)]">
           <section className="overflow-hidden rounded-xl border bg-card">
-            <ul aria-label="Respuestas" className="divide-y">
+            <ul aria-label={t('list')} className="divide-y">
               {items.map((item) => (
                 <ReplyRow
                   key={item.reply_id}

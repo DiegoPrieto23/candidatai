@@ -18,13 +18,13 @@ from app.services.audit import Channel
 @dataclass(frozen=True)
 class CallContext:
     channel: Channel
-    client_name: str | None = None  # el cliente MCP (`claude-code`, `codex`…) o `JH_CLIENT_NAME`
+    client_name: str | None = None  # el cliente MCP (`claude-code`, `codex`…) o `CAI_CLIENT_NAME`
     audit: bool = True
 
 
 @dataclass(frozen=True)
 class CliSpec:
-    """Forma del comando `jh` equivalente. Todos los valores llegan como texto y los valida el
+    """Forma del comando `cai` equivalente. Todos los valores llegan como texto y los valida el
     `input_model`, igual que por MCP, para que los errores coincidan."""
 
     path: tuple[str, ...]  # p. ej. ("jobs", "add-url")

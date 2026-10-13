@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/img/banner-en.svg" alt="Job Hunter: your job search, end to end, on your own machine" width="100%">
+  <img src="docs/img/banner-en.svg" alt="CandidatAI: your job search, end to end, on your own machine" width="100%">
 </p>
 
 <p align="center">
@@ -16,14 +16,14 @@
   <img alt="No LLM API calls" src="https://img.shields.io/badge/LLM%20API%20calls-none-555">
 </p>
 
-**Job Hunter** is a local app that runs your whole job search: jobs come in from several sources,
+**CandidatAI** is a local app that runs your whole job search: jobs come in from several sources,
 you triage them with an explained score, each one gets a **tailored, verified CV and cover
 letter**, the app fills the application form and **waits for you to press Send**, and then
 tracks the process all the way to the offer.
 
 **The app never calls an LLM.** The thinking (reading postings, judging fit, writing the CV) is
 done by the AI agent you already use (Claude Code, Codex, Gemini CLI, Cursor…) through a
-dedicated agent interface: MCP tools plus an equivalent `jh … --json` CLI. The app keeps the
+dedicated agent interface: MCP tools plus an equivalent `cai … --json` CLI. The app keeps the
 state, the rules and the checks, so the agent can't invent your experience or send anything on its
 own.
 
@@ -33,8 +33,9 @@ own.
 </p>
 
 > [!NOTE]
-> The user interface and most technical docs are in **Spanish** (it started as a personal project
-> in Spain). This README, the [user guide](docs/GUIDE.md) and the code are in English.
+> The user interface is in **English and Spanish** (switch from the sidebar). Most technical docs
+> are in Spanish (it started as a personal project in Spain); this README, the
+> [user guide](docs/GUIDE.md) and the code are in English.
 > Watch the **[short video tour](docs/video/recorrido.mp4)**.
 
 ## Contents
@@ -64,7 +65,7 @@ AI assistants help with each step on its own, but they have no memory and no sta
 conversation starts from scratch, nothing stops them from "improving" your CV with things you never
 did, and a posting can carry hidden instructions aimed at the AI that reads it.
 
-Job Hunter puts the state, the rules and the verification in a deterministic app, and leaves the
+CandidatAI puts the state, the rules and the verification in a deterministic app, and leaves the
 agent only what needs reasoning, always against your profile and with checks that don't depend on
 the agent.
 
@@ -79,10 +80,10 @@ checks and automates. A typical day:
 
 1. Every morning the worker brings in new jobs (ATS APIs, email alerts, LinkedIn's public search if
    you enabled it).
-2. You ask your agent to `procesar-ofertas` and `evaluar-encaje` (or launch them from the UI, in the
+2. You ask your agent to `process-jobs` and `assess-fit` (or launch them from the UI, in the
    background).
 3. You triage with `J`/`K`, `A` and `D`.
-4. `generar-cv 42` writes and verifies the CV for job 42; you pick the template, photo and colour
+4. `generate-cv 42` writes and verifies the CV for job 42; you pick the template, photo and colour
    in the UI, which costs no agent time.
 5. You review the filled form and press Send. The app records it, archives what was sent and reminds
    you to follow up.
@@ -154,68 +155,78 @@ Workday jobs or UK companies).
 
 ## Try it in 5 minutes
 
-You need **Windows 11** (other systems should work but aren't tested yet), [uv](https://docs.astral.sh/uv/),
-**Node LTS** with **pnpm** and, for CV PDFs, **LibreOffice** or Playwright's Chromium.
+**To use it**, in PowerShell (Windows 11; no admin rights, Python or Node needed):
 
 ```powershell
-git clone https://github.com/DiegoPrieto23/job-search.git job-hunter; cd job-hunter
-cd backend
-uv sync
-uv run playwright install chromium     # PDFs without LibreOffice
-uv run jh demo seed                    # data-demo/: 60 jobs, 8 weeks of history, 2 CVs
-$env:JH_DATA_DIR = "data-demo"; uv run jh serve
-# in a second terminal
-cd frontend; pnpm install; pnpm dev    # http://127.0.0.1:5173
+iwr -useb https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/install.ps1 -OutFile $env:TEMP\cai-install.ps1
+powershell -ExecutionPolicy Bypass -File $env:TEMP\cai-install.ps1
 ```
 
-The UI shows a "Modo demo" banner. The demo is deterministic and never touches `data/`, where your
-real data would go. To try the skills on the demo, start your agent with `JH_DATA_DIR=data-demo`.
+It installs what's needed and leaves a **"CandidatAI"** shortcut on your desktop: opening it starts
+everything and opens your browser. To update, run it again; your data isn't touched.
+Add `-WhatIf` to the second line to see first what it would do.
 
-Step by step, including your own profile, email alerts and the browser extension:
+**To develop it**, with [uv](https://docs.astral.sh/uv/), Node LTS and pnpm, and the demo:
+
+```powershell
+git clone https://github.com/DiegoPrieto23/candidatai.git candidatai; cd candidatai
+cd frontend; pnpm install; pnpm build; cd ..\backend
+uv sync
+uv run playwright install chromium     # PDFs without LibreOffice
+uv run cai demo seed                   # data-demo/: 60 jobs, 8 weeks of history, 2 CVs
+$env:CAI_DATA_DIR = "data-demo"; uv run cai start    # http://127.0.0.1:8000
+```
+
+`cai start` runs the API (which serves the UI) and the worker in one command and opens your
+browser; `--dev` adds Vite with hot reload. The UI shows a "Modo demo" banner: the demo is
+deterministic and never touches `data/`, where your real data would go. To try the skills on the
+demo, start your agent with `CAI_DATA_DIR=data-demo`.
+
+Step by step, including your own profile, your agent, email alerts and the browser extension:
 **[User guide](docs/GUIDE.md)**.
 
 ## Use it with your own data
 
-Your data lives in `data/`, outside git. Start `jh serve`, `jh worker` and `pnpm dev`, create your
-profile with the `actualizar-perfil` skill, and then ask your agent:
+Your data lives in `data/`, outside git. Open CandidatAI (the shortcut, or `cai start`), create your
+profile with the `update-profile` skill, and then ask your agent:
 
 | Skill | What it does |
 |---|---|
-| `actualizar-perfil` | Creates or updates `data/profile.yaml` (your single source of truth) from your CV, and versions it |
-| `procesar-ofertas` | Extracts new jobs (the `extractor` role, isolated when the agent allows it) |
-| `evaluar-encaje` | Assesses and explains the fit of jobs waiting for triage |
-| `generar-cv 42` | Writes, renders and verifies the CV for job 42 |
-| `generar-carta 42` | Cover letter following your instructions, verified; TXT and PDF matching the CV |
-| `preparar-candidatura 42` | Screening answers and, if needed, the cover letter |
-| `preparar-entrevista 42` | Interview dossier and a day-by-day plan up to the date |
-| `simular-entrevista 42` | Mock interview: one question at a time, feedback and a better answer from your profile |
-| `repasar-entrevista 42` | Debrief: notes, next steps, likely next round and new STAR stories |
-| `preparar-negociacion 42` | Arguments, questions and a script for a received offer; reviews the contract. Never proposes a figure |
-| `investigar-empresa 42` | Company dossier with sources (product, news, engineering culture, stack) |
-| `redactar-mensaje 42` | LinkedIn message (≤ 300 characters) or application email, as a draft |
-| `redactar-seguimiento` | Follow-up (max. 2 per application) and thank-you drafts |
-| `revisar-respuestas` | Classifies company emails (interview with its date, test, offer, rejection) into proposals |
-| `resumen-diario` | What's on today: pending work, overdue follow-ups, upcoming milestones |
-| `atender-encargos` | Does what you left in the UI with "Leave for my next session" |
-| `buscar-ofertas` | Browses the portals you approved with your browser and adds what fits |
-| `ampliar-busqueda` | Suggests adjacent job titles ("Analytics Engineer") from what you approve |
-| `revisar-busqueda` | Weekly retrospective: what works (score bands, sources, template, referrals) and what to change |
-| `plan-formacion` | Training plan from your real skill gaps, with verified resources |
-| `revisar-linkedin` | Improvement report for your LinkedIn profile, ready to copy |
-| `importar-plantilla-cv` | Turns your CV (or any design) into a template for tailored CVs |
+| `update-profile` | Creates or updates `data/profile.yaml` (your single source of truth) from your CV, and versions it |
+| `process-jobs` | Extracts new jobs (the `extractor` role, isolated when the agent allows it) |
+| `assess-fit` | Assesses and explains the fit of jobs waiting for triage |
+| `generate-cv 42` | Writes, renders and verifies the CV for job 42 |
+| `generate-cover-letter 42` | Cover letter following your instructions, verified; TXT and PDF matching the CV |
+| `prepare-application 42` | Screening answers and, if needed, the cover letter |
+| `prepare-interview 42` | Interview dossier and a day-by-day plan up to the date |
+| `mock-interview 42` | Mock interview: one question at a time, feedback and a better answer from your profile |
+| `debrief-interview 42` | Debrief: notes, next steps, likely next round and new STAR stories |
+| `prepare-negotiation 42` | Arguments, questions and a script for a received offer; reviews the contract. Never proposes a figure |
+| `research-company 42` | Company dossier with sources (product, news, engineering culture, stack) |
+| `draft-message 42` | LinkedIn message (≤ 300 characters) or application email, as a draft |
+| `draft-follow-up` | Follow-up (max. 2 per application) and thank-you drafts |
+| `review-replies` | Classifies company emails (interview with its date, test, offer, rejection) into proposals |
+| `daily-summary` | What's on today: pending work, overdue follow-ups, upcoming milestones |
+| `handle-requests` | Does what you left in the UI with "Leave for my next session" |
+| `search-jobs` | Browses the portals you approved with your browser and adds what fits |
+| `broaden-search` | Suggests adjacent job titles ("Analytics Engineer") from what you approve |
+| `review-search` | Weekly retrospective: what works (score bands, sources, template, referrals) and what to change |
+| `training-plan` | Training plan from your real skill gaps, with verified resources |
+| `review-linkedin` | Improvement report for your LinkedIn profile, ready to copy |
+| `import-cv-template` | Turns your CV (or any design) into a template for tailored CVs |
 
-Skill names are in Spanish; invoke them as `/generar-cv 42` in Claude Code, `$generar-cv 42` in
-Codex, or just ask in plain language.
+Invoke them as `/generate-cv 42` in Claude Code, `$generate-cv 42` in Codex, or just ask in plain
+language (in English or Spanish).
 
 ### Where jobs come from
 
 | Source | Automatic | Covers |
 |---|---|---|
 | Paste a URL or text | No | Any job |
-| Public ATS APIs (Greenhouse, Lever, Ashby) | Daily | Your target companies (`jh sources discover` finds their boards) |
+| Public ATS APIs (Greenhouse, Lever, Ashby) | Daily | Your target companies (`cai sources discover` finds their boards) |
 | Portal APIs (InfoJobs, Adzuna), with keys | Daily | Keyword searches |
 | Job alerts by email (read-only IMAP or exported `.eml`) | Yes | LinkedIn, InfoJobs, Indeed, Tecnoempleo… |
-| "Send to Job Hunter" browser button | One click | Any page you're viewing, LinkedIn included |
+| "Send to CandidatAI" browser button | One click | Any page you're viewing, LinkedIn included |
 | Your agent browsing with your browser | On demand | Portals you approve; LinkedIn only if you enable it |
 | LinkedIn's public search, without login | Daily, **off by default** | Your LinkedIn searches, at most once a day, with strict limits |
 
@@ -249,11 +260,11 @@ These are rules enforced by code, not promises made by the agent:
 
 ## Compared with similar projects
 
-Job Hunter borrows the best ideas of two great open projects,
+CandidatAI borrows the best ideas of two great open projects,
 [AI Job Search](https://github.com/MadsLorentzen/ai-job-search) and
 [career-ops](https://github.com/career-ops-hq/career-ops), and turns them into an app with state.
 
-| | Job Hunter | AI Job Search | career-ops |
+| | CandidatAI | AI Job Search | career-ops |
 |---|:---:|:---:|:---:|
 | Full web UI (triage, kanban, funnel…) | ✅ | ❌ | 🟡 terminal |
 | MCP + CLI with tested parity | ✅ | ❌ | ❌ |
@@ -279,7 +290,7 @@ flowchart LR
     user --> agent([Your AI agent])
     ui -->|REST| api[FastAPI]
     agent -->|MCP| mcp[MCP server]
-    agent -->|commands| cli[CLI jh --json]
+    agent -->|commands| cli[CLI cai --json]
     api --> svc
     mcp --> svc
     cli --> svc
@@ -290,7 +301,7 @@ flowchart LR
 ```
 
 - **Thin layers.** API, MCP and CLI only translate; the logic lives in `app/services/` and is tested
-  there. Every MCP tool has a `jh … --json` command with the same input and output (a test checks
+  there. Every MCP tool has a `cai … --json` command with the same input and output (a test checks
   it), so an agent without MCP can do exactly the same.
 - **Events are the source of truth.** Every change to a job is an event validated against a
   transition table; the current stage is a projection that can be rebuilt.
@@ -313,7 +324,7 @@ stateDiagram-v2
 ```
 
 <details>
-<summary><b>Key decisions</b> (33 ADRs in <code>docs/DECISIONS.md</code>)</summary>
+<summary><b>Key decisions</b> (34 ADRs in <code>docs/DECISIONS.md</code>)</summary>
 
 | Decision | Why |
 |---|---|
@@ -336,7 +347,7 @@ stateDiagram-v2
 - **Matching eval** (80 fictional cases, no embeddings): precision **0.88**, recall **0.95**,
   F1 **0.92** at the default triage threshold. Typical errors and why:
   [`evals/REPORT.md`](evals/REPORT.md).
-- **CV eval** (`jh eval cv`): 7 automatic checks on the CVs an agent leaves (evidence exists, no
+- **CV eval** (`cai eval cv`): 7 automatic checks on the CVs an agent leaves (evidence exists, no
   invented or unrequested skills, one page, keyword coverage, language and independent
   verification).
 
@@ -359,7 +370,7 @@ All documents, grouped: [`docs/README.md`](docs/README.md). Technical docs are i
 
 In 22 phases (with sub-phases), each with its brief in `prompts/`, implemented with an AI agent
 (Claude Code) against a specification written before the code: a plan, a branch per phase, tests,
-a review by a `revisor` role, and a log of decisions and debt. The phase log is in
+a review by a `reviewer` role, and a log of decisions and debt. The phase log is in
 [`docs/ROADMAP.md`](docs/ROADMAP.md) and the method in
 [`docs/DESARROLLO_POR_FASES.md`](docs/DESARROLLO_POR_FASES.md).
 

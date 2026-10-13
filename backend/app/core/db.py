@@ -18,7 +18,7 @@ def iso_week(value: str | None) -> str | None:
     """Semana ISO (`2026-W39`) de una fecha UTC guardada por `UTCDateTime`, en la zona de la UI.
 
     SQLite no sabe de zonas horarias con cambio de hora: la analítica (fase 10.2) agrupa por
-    semana en la BD con esta función, registrada como `jh_iso_week` en cada conexión.
+    semana en la BD con esta función, registrada como `cai_iso_week` en cada conexión.
     """
     if value is None:
         return None
@@ -33,7 +33,7 @@ def _set_sqlite_pragmas(dbapi_connection: Any, _connection_record: Any) -> None:
     cursor.execute("PRAGMA journal_mode=WAL")
     cursor.execute("PRAGMA foreign_keys=ON")
     cursor.close()
-    dbapi_connection.create_function("jh_iso_week", 1, iso_week, deterministic=True)
+    dbapi_connection.create_function("cai_iso_week", 1, iso_week, deterministic=True)
 
 
 def make_engine(url: str) -> Engine:

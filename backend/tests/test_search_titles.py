@@ -1,4 +1,4 @@
-"""Títulos para `ampliar-busqueda` (`services/search_titles.py`)."""
+"""Títulos para `broaden-search` (`services/search_titles.py`)."""
 
 from datetime import timedelta
 

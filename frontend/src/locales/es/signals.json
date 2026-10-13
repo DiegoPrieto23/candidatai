@@ -1,0 +1,20 @@
+{
+  "reposted": "Publicada de nuevo en {{channel}} en {{count}} días distintos: {{dates}}.",
+  "closedBadge": "¿Cerrada?",
+  "closedTooltip": "Puede que ya no esté publicada: {{detail}}.",
+  "repostedBadge": "Republicada ×{{count}}",
+  "observation": "Es una observación, no un veredicto.",
+  "closedNotice": {
+    "label": "Puede que esté cerrada",
+    "title": "Puede que ya no esté publicada",
+    "checked": "{{detail}}. Comprobado el {{checkedAt}}",
+    "since": " (lo dice desde el {{since}})",
+    "decide": ". CandidatAI no la cierra: decide tú.",
+    "discard": "Descartar",
+    "stillOpen": "Sigue abierta",
+    "checking": "Comprobando…",
+    "checkAgain": "Comprobar otra vez"
+  },
+  "repostNote": "<strong>Republicada ×{{count}}.</strong> {{text}} Puede ser una oferta difícil de cubrir o una publicación que se renueva sola: es una observación, no un veredicto.",
+  "closedHint": "Antes de gastar cuota: puede que esta oferta ya no esté publicada ({{detail}})."
+}

@@ -1,4 +1,4 @@
-"""Comandos `jh` derivados del registro de herramientas (paridad con la MCP por construcción).
+"""Comandos `cai` derivados del registro de herramientas (paridad con la MCP por construcción).
 
 Cada comando recoge sus argumentos como texto, lee `--file` si lo hay y llama a `runner.call_tool`
 con el mismo diccionario que enviaría un cliente MCP. Con `--json` imprime exactamente el mismo JSON
@@ -36,7 +36,7 @@ def resolve_input_file(path: Path) -> Path:
     """Ruta absoluta de `--file`, que debe estar dentro de `data/tmp/`.
 
     Una ruta relativa vale desde el directorio actual o desde la raíz del repo: con
-    `uv run --directory backend jh …` (lo que usan los agentes) el proceso corre en `backend/`,
+    `uv run --directory backend cai …` (lo que usan los agentes) el proceso corre en `backend/`,
     pero la ruta se escribe pensando en la raíz (`data/tmp/oferta.txt`).
     """
     tmp_dir = get_settings().tmp_dir.resolve()
@@ -112,7 +112,7 @@ def _parameters(spec: ToolSpec) -> list[inspect.Parameter]:
             what = "JSON con " + ", ".join(f"`{k}`" for k in spec.cli.file_keys)
         else:
             what = "texto de la oferta" if spec.cli.file_format == "text" else "JSON"
-        where = "tmp/ de la carpeta de datos (data/tmp/, o la de JH_DATA_DIR)"
+        where = "tmp/ de la carpeta de datos (data/tmp/, o la de CAI_DATA_DIR)"
         option = typer.Option(None, "--file", help=f"Fichero con el {what}, dentro de {where}.")
         params.append(inspect.Parameter("file", kind, default=option, annotation=Path | None))
     params.append(
@@ -163,7 +163,7 @@ def register_tools(
     groups: dict[str, typer.Typer],
     renderers: dict[str, Callable[[Any], None]],
 ) -> None:
-    """Añade a `jh` un comando por herramienta del registro."""
+    """Añade a `cai` un comando por herramienta del registro."""
     for spec in TOOLS:
         *group_path, name = spec.cli.path
         target = groups[group_path[0]] if group_path else root

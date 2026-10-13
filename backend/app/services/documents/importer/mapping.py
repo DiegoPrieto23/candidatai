@@ -1,4 +1,4 @@
-"""Mapeo párrafo → marcador que decide el agente para `jh templates build-docx`.
+"""Mapeo párrafo → marcador que decide el agente para `cai templates build-docx`.
 
 ```json
 {"paragraphs": [

@@ -11,7 +11,7 @@ describe('Candidatura archivada en la ficha', () => {
     const calls = mockApi({
       'GET /status': status(),
       'GET /jobs/1': jobView({ stage: 'applied', archive_folder: FOLDER }),
-      'POST /folders/open': { status: 200, body: { path: `C:/jh/data/${FOLDER}`, opened: true } },
+      'POST /folders/open': { status: 200, body: { path: `C:/cai/data/${FOLDER}`, opened: true } },
     })
     renderApp('/jobs/1')
     const section = await screen.findByRole('region', { name: NAME })

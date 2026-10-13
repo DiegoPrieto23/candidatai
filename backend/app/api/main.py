@@ -1,9 +1,10 @@
-"""Aplicación FastAPI. Escucha solo en 127.0.0.1 (`jh serve`) y solo admite CORS de la UI local."""
+"""Aplicación FastAPI. Escucha solo en 127.0.0.1 (`cai serve`) y solo admite CORS de la UI local."""
 
 import json
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.routing import APIRoute
 
 from app.api.deps import UI_ORIGIN
@@ -31,6 +32,8 @@ from app.api.routes import (
     status,
     triage,
 )
+from app.api.ui import install_ui
+from app.core.config import get_settings
 
 HOST = "127.0.0.1"
 __all__ = ["HOST", "UI_ORIGIN", "create_app", "openapi_json"]
@@ -42,9 +45,9 @@ def _operation_id(route: APIRoute) -> str:
 
 def create_app() -> FastAPI:
     app = FastAPI(
-        title="Job Hunter",
+        title="CandidatAI",
         version="0.1.0",
-        description="API local de Job Hunter para la UI.",
+        description="API local de CandidatAI para la UI.",
         generate_unique_id_function=_operation_id,
         responses=ERROR_RESPONSES,
     )
@@ -78,6 +81,14 @@ def create_app() -> FastAPI:
     app.include_router(network.router)
     app.include_router(companies.router)
     app.include_router(received_offers.router)
+    # Al final: la UI compilada (si está) no puede tapar ninguna ruta de la API.
+    install_ui(app, get_settings().ui_dir)
+    # Contra DNS rebinding también en las lecturas: una web que apunte su dominio a 127.0.0.1 llega
+    # con su propio `Host` y se rechaza. Se añade el último para ser el middleware más externo y
+    # cubrir también la UI. `testserver` es el host del `TestClient` de los tests.
+    app.add_middleware(
+        TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost", "testserver"]
+    )
     return app
 
 

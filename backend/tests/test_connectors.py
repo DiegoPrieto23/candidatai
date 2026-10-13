@@ -197,13 +197,13 @@ def test_ashby_unexpected_json_and_404(client: httpx.Client) -> None:
 
 @pytest.fixture
 def infojobs_keys(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("JH_INFOJOBS_CLIENT_ID", "id-demo")
-    monkeypatch.setenv("JH_INFOJOBS_CLIENT_SECRET", "secreto-demo")
+    monkeypatch.setenv("CAI_INFOJOBS_CLIENT_ID", "id-demo")
+    monkeypatch.setenv("CAI_INFOJOBS_CLIENT_SECRET", "secreto-demo")
     get_settings.cache_clear()
 
 
 def test_infojobs_without_keys_is_skipped(client: httpx.Client) -> None:
-    with pytest.raises(MissingKeysError, match="JH_INFOJOBS_CLIENT_ID"):
+    with pytest.raises(MissingKeysError, match="CAI_INFOJOBS_CLIENT_ID"):
         InfoJobsConnector().fetch("InfoJobs", InfoJobsConfig(query="data engineer"), client)
 
 
@@ -251,14 +251,14 @@ def test_infojobs_bad_keys(client: httpx.Client, infojobs_keys: None) -> None:
 
 
 def test_adzuna_without_keys_is_skipped(client: httpx.Client) -> None:
-    with pytest.raises(MissingKeysError, match="JH_ADZUNA_APP_ID"):
+    with pytest.raises(MissingKeysError, match="CAI_ADZUNA_APP_ID"):
         AdzunaConnector().fetch("Adzuna", AdzunaConfig(query="data"), client)
 
 
 @respx.mock
 def test_adzuna_search(client: httpx.Client, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("JH_ADZUNA_APP_ID", "app-demo")
-    monkeypatch.setenv("JH_ADZUNA_APP_KEY", "key-demo")
+    monkeypatch.setenv("CAI_ADZUNA_APP_ID", "app-demo")
+    monkeypatch.setenv("CAI_ADZUNA_APP_KEY", "key-demo")
     get_settings.cache_clear()
     route = respx.get(ADZUNA_URL).mock(
         return_value=httpx.Response(200, json=load("adzuna_search.json"))

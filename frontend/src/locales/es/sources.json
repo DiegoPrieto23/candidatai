@@ -1,0 +1,55 @@
+{
+  "kinds": {
+    "infojobs": "InfoJobs (búsqueda)",
+    "adzuna": "Adzuna (búsqueda)",
+    "keysHint": "Necesita claves en .env"
+  },
+  "more": "… y {{count}} más.",
+  "pass": "Pasa",
+  "filtered": "Filtrada",
+  "nonePass": "Ninguna pasa el filtro previo.",
+  "onlyPassing": "Ver solo las que pasan",
+  "alsoFiltered": "Ver también las {{count}} filtradas",
+  "runHint": "Quedan en «Por extraer»: ejecuta `process-jobs` en tu agente.",
+  "see": "Verlas",
+  "form": {
+    "label": "Añadir fuente",
+    "origin": "Origen",
+    "company": "Empresa",
+    "searchName": "Nombre de la búsqueda",
+    "slug": "Slug del tablero",
+    "slugHint": "Lo que va en la URL:",
+    "region": "Región de Lever",
+    "global": "Global (jobs.lever.co)",
+    "eu": "Europa (jobs.eu.lever.co)",
+    "query": "Palabras de búsqueda",
+    "where": "Ubicación (opcional)",
+    "province": "Provincia (opcional)",
+    "provinceHint": "Como la usa InfoJobs, p. ej. a-coruna",
+    "added": "«{{name}}» añadida. Entrará en la ingesta diaria; también puedes ejecutarla ahora.",
+    "testing": "Probando…",
+    "test": "Probar",
+    "saving": "Guardando…",
+    "add": "Añadir"
+  },
+  "row": {
+    "paused": "Pausada",
+    "noKeys": "Sin claves en .env",
+    "last": "{{when}}: {{found}} encontradas, {{after}} tras filtros, {{created}} nuevas",
+    "notRun": "Aún no se ha ejecutado",
+    "testing": "Probando…",
+    "test": "Probar",
+    "running": "Ejecutando…",
+    "run": "Ejecutar ahora",
+    "pause": "Pausar",
+    "resume": "Reactivar"
+  },
+  "empty": {
+    "title": "Aún no sigues ninguna empresa",
+    "body": "Añade una con su ATS y su slug. Pruébala antes de guardarla para ver cuántas ofertas tiene y cuántas pasan tus filtros."
+  },
+  "title": "Empresas objetivo",
+  "intro": "Sus ofertas llegan solas cada día con `cai worker`, desde las APIs públicas de su ATS. Solo se guardan las que encajan por título y ubicación con tus preferencias, y quedan en «Por extraer» para tu agente.",
+  "addTitle": "Añadir empresa o búsqueda",
+  "following": "Seguidas"
+}

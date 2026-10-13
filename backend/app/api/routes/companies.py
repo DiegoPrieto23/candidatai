@@ -1,4 +1,4 @@
-"""Dosier de empresa (fase 18): lo redacta el agente con `investigar-empresa`; la UI lo enseña."""
+"""Dosier de empresa (fase 18): lo redacta el agente con `research-company`; la UI lo enseña."""
 
 from fastapi import APIRouter
 

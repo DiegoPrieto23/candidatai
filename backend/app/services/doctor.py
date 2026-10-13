@@ -1,6 +1,7 @@
-"""Comprobaciones del entorno local para `jh doctor`."""
+"""Comprobaciones del entorno local para `cai doctor`."""
 
 import contextlib
+import os
 import shutil
 import sys
 import tempfile
@@ -11,7 +12,7 @@ from typing import TYPE_CHECKING
 
 from pydantic import BaseModel
 
-from app.core.config import REPO_ROOT, Settings
+from app.core.config import LEGACY_DB_FILENAME, LEGACY_ENV_PREFIX, REPO_ROOT, Settings
 from app.services.documents import pdf
 
 if TYPE_CHECKING:
@@ -67,6 +68,38 @@ def check_data_dir(data_dir: Path) -> CheckResult:
     return CheckResult(name=name, status=CheckStatus.OK, detail=f"{data_dir} (escribible)")
 
 
+def legacy_env_names(env_file: Path | None = None) -> list[str]:
+    """Variables `JH_*` de antes de la fase 23 que siguen en el entorno o en `.env` (solo los
+    nombres: los valores no se leen aquí)."""
+    from dotenv import dotenv_values
+
+    names = {n.upper() for n in os.environ if n.upper().startswith(LEGACY_ENV_PREFIX)}
+    env_file = env_file or REPO_ROOT / ".env"
+    if env_file.is_file():
+        names |= {
+            n.upper() for n in dotenv_values(env_file) if n.upper().startswith(LEGACY_ENV_PREFIX)
+        }
+    return sorted(names)
+
+
+def check_legacy_names(settings: Settings, env_file: Path | None = None) -> CheckResult:
+    """Lo que queda del nombre anterior (Job Hunter, fase 23): sigue funcionando, pero conviene
+    renombrarlo."""
+    name = "Nombres de antes de CandidatAI"
+    problems = []
+    if legacy := legacy_env_names(env_file):
+        renamed = ", ".join(f"{n} → CAI_{n.removeprefix(LEGACY_ENV_PREFIX)}" for n in legacy)
+        problems.append(f"variables con el prefijo antiguo (se leen igual; renómbralas): {renamed}")
+    if settings.uses_legacy_db:
+        problems.append(
+            f"se usa data/{LEGACY_DB_FILENAME}; para el nombre nuevo, con la app parada, "
+            "renómbrala a candidatai.db"
+        )
+    if problems:
+        return CheckResult(name=name, status=CheckStatus.WARN, detail="; ".join(problems))
+    return CheckResult(name=name, status=CheckStatus.OK, detail="ninguno")
+
+
 def check_soffice(configured: Path | None) -> CheckResult:
     name = "LibreOffice"
     path = pdf.find_soffice(configured)
@@ -94,7 +127,7 @@ def check_cv_templates(builtin_dir: Path, user_dir: Path) -> CheckResult:
         parts.append(f"tuyas: {', '.join(own)}")
     problems = []
     if invalid:
-        problems.append(f"no válidas: {', '.join(i.id for i in invalid)} (jh templates list)")
+        problems.append(f"no válidas: {', '.join(i.id for i in invalid)} (cai templates list)")
     if fallback not in [t.id for t in found]:
         problems.append(
             f"falta «{fallback}», la de reserva: regenérala con scripts/build_builtin_templates.py"
@@ -130,7 +163,7 @@ def check_pdf_conversion() -> CheckResult:
         template = templates.get(fallback)
     except templates.TemplateNotFoundError as exc:
         return CheckResult(name=name, status=CheckStatus.WARN, detail=str(exc))
-    workdir = Path(tempfile.mkdtemp(prefix="jh-doctor-"))
+    workdir = Path(tempfile.mkdtemp(prefix="cai-doctor-"))
     start = time.monotonic()
     try:
         output = render_preview(template, load_from_yaml(EXAMPLE_PATH), workdir / "doctor.pdf")
@@ -160,8 +193,8 @@ def check_photo(profile_path: Path, data_dir: Path) -> CheckResult:
         return CheckResult(name=name, status=CheckStatus.OK, detail="sin perfil: no se comprueba")
     try:
         profile = profile_service.load_from_yaml(profile_path)
-    except Exception as exc:  # perfil a medio escribir: lo explica `jh profile validate`
-        detail = f"no se puede leer el perfil ({type(exc).__name__}); usa jh profile validate"
+    except Exception as exc:  # perfil a medio escribir: lo explica `cai profile validate`
+        detail = f"no se puede leer el perfil ({type(exc).__name__}); usa cai profile validate"
         return CheckResult(name=name, status=CheckStatus.WARN, detail=detail)
 
     found = photo.find_photo(profile, data_dir)
@@ -202,7 +235,7 @@ def check_html_engine() -> CheckResult:
     except templates.TemplateNotFoundError as exc:
         return CheckResult(name=name, status=CheckStatus.WARN, detail=str(exc))
     requests: list[tuple[str, bool]] = []
-    workdir = Path(tempfile.mkdtemp(prefix="jh-doctor-"))
+    workdir = Path(tempfile.mkdtemp(prefix="cai-doctor-"))
     start = time.monotonic()
     try:
         output = html_engine.render_pdf(
@@ -270,7 +303,7 @@ def check_connectors(settings: Settings) -> CheckResult:
     detail = (
         f"Greenhouse, Lever y Ashby listos; portales con claves: "
         f"{', '.join(configured) or 'ninguno (opcionales)'}; ingesta diaria a las "
-        f"{policy.daily_at} ({policy.timezone}) con `jh worker`"
+        f"{policy.daily_at} ({policy.timezone}) con `cai worker`"
     )
     if half:
         detail += f". Falta una de las dos claves de {', '.join(half)} en `.env`"
@@ -295,7 +328,7 @@ def check_email_alerts(
             return CheckResult(
                 name=name,
                 status=CheckStatus.WARN,
-                detail="IMAP a medias: faltan JH_IMAP_HOST, JH_IMAP_USER o JH_IMAP_PASSWORD "
+                detail="IMAP a medias: faltan CAI_IMAP_HOST, CAI_IMAP_USER o CAI_IMAP_PASSWORD "
                 "en `.env`",
             )
         detail = "sin IMAP (opcional); "
@@ -315,7 +348,7 @@ def check_email_alerts(
         name=name,
         status=CheckStatus.OK,
         detail=f"IMAP en solo lectura: {settings.imap_user} en {settings.imap_host}, carpeta "
-        f"«{settings.imap_folder}»; cada {minutes} min con `jh worker`",
+        f"«{settings.imap_folder}»; cada {minutes} min con `cai worker`",
     )
 
 
@@ -352,7 +385,7 @@ def check_email_replies(
 
 
 def check_capture(settings: Settings) -> CheckResult:
-    """Botón «Enviar a Job Hunter» (fase 09b): token creado e id de la extensión aceptada."""
+    """Botón «Enviar a CandidatAI» (fase 09b): token creado e id de la extensión aceptada."""
     from app.services.capture import token_configured
 
     name = "Botón de captura"
@@ -361,7 +394,7 @@ def check_capture(settings: Settings) -> CheckResult:
             name=name,
             status=CheckStatus.OK,
             detail="sin configurar (opcional): carga extension/ en el navegador y ejecuta "
-            "`jh capture token`",
+            "`cai capture token`",
         )
     return CheckResult(
         name=name,
@@ -375,6 +408,7 @@ def run_doctor(settings: Settings) -> DoctorReport:
         checks=[
             check_python(),
             check_data_dir(settings.data_dir),
+            check_legacy_names(settings),
             check_soffice(settings.soffice_path),
             check_cv_templates(BUILTIN_TEMPLATES_DIR, settings.user_templates_dir),
             check_pdf_conversion(),

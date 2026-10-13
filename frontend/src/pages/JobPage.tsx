@@ -14,6 +14,8 @@ import {
   ShieldWarningIcon,
   XIcon,
 } from '@phosphor-icons/react'
+import { Trans, useTranslation } from 'react-i18next'
+import { SafeTrans } from '@/components/SafeTrans'
 import type { AddJobResult, EventOut, JobView, Schemas } from '@/api/client'
 import { useAddNote, useJob, useJobEvent, useJobMatch, type UserEventBody } from '@/api/queries'
 import { ApplySection } from '@/components/ApplySection'
@@ -38,6 +40,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Textarea } from '@/components/ui/textarea'
+import { errorMessage } from '@/lib/errors'
+import { i18n, serverText } from '@/lib/i18n'
 import {
   actorLabel,
   discardReasonLabel,
@@ -46,6 +50,7 @@ import {
   formatDate,
   formatDateTime,
   formatSalary,
+  HARD_FILTER_LABEL,
   REMOTE_LABEL,
   riskLabel,
   SENIORITY_LABEL,
@@ -59,23 +64,25 @@ export interface AddedState {
 }
 
 function AddedNotice({ added }: { added: AddJobResult }) {
+  const { t } = useTranslation('job', { keyPrefix: 'added' })
   const [open, setOpen] = useState(true)
   if (!open) return null
   const tone = added.created && !added.duplicate_of
   const Icon = tone ? CheckCircleIcon : added.created ? CopyIcon : InfoIcon
   let text: ReactNode
-  if (!added.created) text = 'Esta oferta ya estaba dada de alta. No se ha cambiado nada.'
+  if (!added.created) text = t('exists')
   else if (added.duplicate_of)
     text = (
-      <>
-        Dada de alta, pero parece un duplicado de la{' '}
-        <Link to={`/jobs/${added.duplicate_of}`} className="font-medium underline underline-offset-4">
-          oferta {added.duplicate_of}
-        </Link>
-        , así que queda cerrada.
-      </>
+      <SafeTrans
+        t={t}
+        i18nKey="duplicate"
+        values={{ id: added.duplicate_of }}
+        components={{
+          to: <Link to={`/jobs/${added.duplicate_of}`} className="font-medium underline underline-offset-4" />,
+        }}
+      />
     )
-  else text = 'Oferta dada de alta. Tu agente la extraerá con el skill procesar-ofertas.'
+  else text = t('created')
   return (
     <div
       role="status"
@@ -91,27 +98,27 @@ function AddedNotice({ added }: { added: AddJobResult }) {
         onClick={() => setOpen(false)}
         className="text-xs text-muted-foreground hover:text-foreground"
       >
-        Cerrar
+        {t('close')}
       </button>
     </div>
   )
 }
 
 function InjectionAlert({ injection }: { injection: NonNullable<JobView['injection']> }) {
+  const { t } = useTranslation('job', { keyPrefix: 'injection' })
   const excerpts = injection.reports.filter((r) => r.excerpt)
   return (
     <section
-      aria-label="Aviso de posible inyección"
+      aria-label={t('label')}
       className="rounded-xl border border-warning-border bg-warning p-5 text-warning-foreground"
     >
       <div className="flex items-start gap-3">
         <ShieldWarningIcon className="mt-0.5 size-6 shrink-0" weight="duotone" />
         <div className="min-w-0 flex-1 space-y-3">
           <div>
-            <h2 className="font-semibold">Posible contenido dirigido a una IA</h2>
+            <h2 className="font-semibold">{t('title')}</h2>
             <p className="mt-1 text-sm opacity-90">
-              El texto de esta oferta podría intentar manipular a un agente. Se trata solo como datos,
-              pero revísala con calma antes de confiar en la extracción.
+              {t('body')}
             </p>
           </div>
           {injection.risk_flags.length > 0 && (
@@ -132,7 +139,9 @@ function InjectionAlert({ injection }: { injection: NonNullable<JobView['injecti
                 {report.excerpt}
               </blockquote>
               <figcaption className="mt-1 text-xs opacity-80">
-                Detectado por {report.source === 'agent' ? actorLabel('agent', report.agent_name) : 'el sistema'}
+                {t('detectedBy', {
+                  who: report.source === 'agent' ? actorLabel('agent', report.agent_name) : t('system'),
+                })}
               </figcaption>
             </figure>
           ))}
@@ -152,7 +161,8 @@ function Fact({ label, children }: { label: string; children: ReactNode }) {
 }
 
 function SkillList({ skills, strong }: { skills: string[]; strong?: boolean }) {
-  if (!skills.length) return <p className="text-sm text-muted-foreground">Ninguna indicada.</p>
+  const { t } = useTranslation('job', { keyPrefix: 'extraction' })
+  if (!skills.length) return <p className="text-sm text-muted-foreground">{t('noneListed')}</p>
   return (
     <ul className="flex flex-wrap gap-1.5">
       {skills.map((skill) => (
@@ -173,6 +183,7 @@ function SkillList({ skills, strong }: { skills: string[]; strong?: boolean }) {
 }
 
 function ExtractionPanel({ extraction }: { extraction: Schemas['ExtractionView'] }) {
+  const { t } = useTranslation('job', { keyPrefix: 'extraction' })
   const data = extraction.data
   const salary = formatSalary(data.salary)
   const languages = data.languages_required
@@ -181,41 +192,41 @@ function ExtractionPanel({ extraction }: { extraction: Schemas['ExtractionView']
   return (
     <div className="space-y-8">
       <dl className="grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-3">
-        <Fact label="Seniority">{SENIORITY_LABEL[data.seniority]}</Fact>
-        <Fact label="Modalidad">{REMOTE_LABEL[data.remote_mode]}</Fact>
-        <Fact label="Experiencia mínima">
+        <Fact label={t('seniority')}>{SENIORITY_LABEL[data.seniority]}</Fact>
+        <Fact label={t('mode')}>{REMOTE_LABEL[data.remote_mode]}</Fact>
+        <Fact label={t('minExperience')}>
           {data.years_experience_min != null
-            ? `${data.years_experience_min} ${data.years_experience_min === 1 ? 'año' : 'años'}`
-            : <span className="font-normal text-muted-foreground">Sin especificar</span>}
+            ? t('years', { count: data.years_experience_min })
+            : <span className="font-normal text-muted-foreground">{t('unspecified')}</span>}
         </Fact>
-        <Fact label="Contrato">{EMPLOYMENT_LABEL[data.employment_type]}</Fact>
-        <Fact label="Salario">
-          {salary ?? <span className="font-normal text-muted-foreground">No lo indica</span>}
+        <Fact label={t('contract')}>{EMPLOYMENT_LABEL[data.employment_type]}</Fact>
+        <Fact label={t('salary')}>
+          {salary ?? <span className="font-normal text-muted-foreground">{t('noSalary')}</span>}
         </Fact>
-        <Fact label="Idiomas">
-          {languages || <span className="font-normal text-muted-foreground">No indica</span>}
+        <Fact label={t('languages')}>
+          {languages || <span className="font-normal text-muted-foreground">{t('noLanguages')}</span>}
         </Fact>
-        {data.locations.length > 0 && <Fact label="Ubicación">{data.locations.join(', ')}</Fact>}
-        {data.domain && <Fact label="Sector">{data.domain}</Fact>}
+        {data.locations.length > 0 && <Fact label={t('location')}>{data.locations.join(', ')}</Fact>}
+        {data.domain && <Fact label={t('sector')}>{data.domain}</Fact>}
         {data.application_deadline && (
-          <Fact label="Plazo">{formatDate(data.application_deadline)}</Fact>
+          <Fact label={t('deadline')}>{formatDate(data.application_deadline)}</Fact>
         )}
       </dl>
 
       <div className="grid gap-6 sm:grid-cols-2">
         <div className="space-y-2.5">
-          <h3 className="text-sm font-semibold">Obligatorias</h3>
+          <h3 className="text-sm font-semibold">{t('mustHave')}</h3>
           <SkillList skills={data.must_have_skills} strong />
         </div>
         <div className="space-y-2.5">
-          <h3 className="text-sm font-semibold">Deseables</h3>
+          <h3 className="text-sm font-semibold">{t('niceToHave')}</h3>
           <SkillList skills={data.nice_to_have_skills} />
         </div>
       </div>
 
       {data.responsibilities.length > 0 && (
         <div className="space-y-2.5">
-          <h3 className="text-sm font-semibold">Responsabilidades</h3>
+          <h3 className="text-sm font-semibold">{t('responsibilities')}</h3>
           <ul className="space-y-1.5 text-sm leading-relaxed text-foreground/85">
             {data.responsibilities.map((r) => (
               <li key={r} className="flex gap-2.5">
@@ -229,7 +240,7 @@ function ExtractionPanel({ extraction }: { extraction: Schemas['ExtractionView']
 
       {data.red_flags.length > 0 && (
         <div className="space-y-2.5">
-          <h3 className="text-sm font-semibold">A tener en cuenta</h3>
+          <h3 className="text-sm font-semibold">{t('redFlags')}</h3>
           <ul className="space-y-1.5 text-sm text-foreground/85">
             {data.red_flags.map((flag) => (
               <li key={flag} className="flex gap-2.5">
@@ -242,7 +253,7 @@ function ExtractionPanel({ extraction }: { extraction: Schemas['ExtractionView']
       )}
 
       <p className="text-xs text-muted-foreground">
-        Extraída el {formatDateTime(extraction.created_at)}
+        {t('extractedAt', { date: formatDateTime(extraction.created_at) })}
       </p>
     </div>
   )
@@ -258,14 +269,15 @@ function Panel({ title, children, className }: { title: string; children: ReactN
 }
 
 function OriginalText({ text }: { text: string }) {
+  const { t } = useTranslation('job', { keyPrefix: 'original' })
   const [open, setOpen] = useState(false)
   return (
     <Collapsible open={open} onOpenChange={setOpen} className="rounded-xl border bg-card">
       <CollapsibleTrigger className="flex w-full items-center justify-between gap-4 rounded-xl p-5 text-left outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 sm:px-6">
         <span>
-          <span className="block text-base font-semibold tracking-tight">Texto original</span>
+          <span className="block text-base font-semibold tracking-tight">{t('title')}</span>
           <span className="text-xs text-muted-foreground">
-            Tal cual se guardó. Contenido no confiable: se muestra, nunca se interpreta.
+            {t('hint')}
           </span>
         </span>
         <CaretDownIcon
@@ -284,22 +296,25 @@ function OriginalText({ text }: { text: string }) {
 }
 
 function eventDetail(event: EventOut): string | null {
+  const t = i18n.getFixedT(null, 'job', 'events')
   const payload = event.payload as Record<string, unknown>
   if (event.type === 'discarded' && typeof payload.reason === 'string') {
     const note = typeof payload.note === 'string' ? `. ${payload.note}` : ''
-    return `Motivo: ${discardReasonLabel(payload.reason)}${note}`
+    return `${t('reason', { reason: discardReasonLabel(payload.reason) })}${note}`
   }
   if (typeof payload.note === 'string') return payload.note
   if (event.type === 'hard_filter_failed' && Array.isArray(payload.failures))
-    return (payload.failures as { reason?: string }[]).map((f) => f.reason).join('\n')
-  if (event.type === 'scored' && typeof payload.score === 'number') return `Score ${payload.score}/100`
+    return (payload.failures as { filter?: string; reason?: string }[])
+      .map((f) => serverText(f.filter ? HARD_FILTER_LABEL[f.filter] : null, f.reason ?? ''))
+      .join('\n')
+  if (event.type === 'scored' && typeof payload.score === 'number') return t('score', { score: payload.score })
   if (event.type === 'fit_assessed' && typeof payload.verdict === 'string')
     return VERDICT_LABEL[payload.verdict as keyof typeof VERDICT_LABEL] ?? payload.verdict
   if (event.type === 'duplicate_detected' && payload.duplicate_of)
-    return `Duplicado de la oferta ${String(payload.duplicate_of)}.`
+    return t('duplicateOf', { id: String(payload.duplicate_of) })
   if (event.type === 'extraction_failed' && typeof payload.reason === 'string') return payload.reason
   if (event.type === 'closure_suspected' && typeof payload.detail === 'string')
-    return `${payload.detail.charAt(0).toUpperCase()}${payload.detail.slice(1)}. No se ha cerrado: decides tú.`
+    return t('closureSuspected', { detail: `${payload.detail.charAt(0).toUpperCase()}${payload.detail.slice(1)}` })
   return null
 }
 
@@ -342,6 +357,7 @@ function TimelineItem({ event, first, line }: { event: EventOut; first: boolean;
  * medio se despliega con un botón (los avisos de posible inyección se ven siempre).
  */
 function Timeline({ events }: { events: EventOut[] }) {
+  const { t } = useTranslation('job', { keyPrefix: 'timeline' })
   const [expanded, setExpanded] = useState(false)
   const ordered = [...events].reverse() // lo último, arriba
   const compact = !expanded && ordered.length >= TIMELINE_COMPACT_FROM
@@ -363,7 +379,7 @@ function Timeline({ events }: { events: EventOut[] }) {
                 onClick={() => setExpanded(true)}
                 className="ml-[25px] text-xs font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
               >
-                {hidden === 1 ? 'Ver 1 evento más' : `Ver ${hidden} eventos más`}
+                {t('more', { count: hidden })}
               </button>
             </li>
           )}
@@ -377,7 +393,7 @@ function Timeline({ events }: { events: EventOut[] }) {
             onClick={() => setExpanded(false)}
             className="text-xs font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
           >
-            Ver menos
+            {t('less')}
           </button>
         </li>
       )}
@@ -386,6 +402,7 @@ function Timeline({ events }: { events: EventOut[] }) {
 }
 
 function NoteForm({ jobId }: { jobId: number }) {
+  const { t } = useTranslation('job', { keyPrefix: 'note' })
   const [note, setNote] = useState('')
   const addNote = useAddNote(jobId)
   const submit = (e: FormEvent) => {
@@ -395,25 +412,25 @@ function NoteForm({ jobId }: { jobId: number }) {
   }
   return (
     <form onSubmit={submit} className="space-y-2">
-      <Label htmlFor="note">Añadir nota</Label>
+      <Label htmlFor="note">{t('label')}</Label>
       <Textarea
         id="note"
         value={note}
         onChange={(e) => setNote(e.target.value)}
         maxLength={2000}
         rows={3}
-        placeholder="Qué te ha dicho el recruiter, dudas, próximos pasos…"
+        placeholder={t('placeholder')}
         className="resize-y bg-background"
       />
       {addNote.isError && (
         <p role="alert" className="text-sm text-destructive">
-          {addNote.error.message}
+          {errorMessage(addNote.error)}
         </p>
       )}
       <div className="flex justify-end">
         <Button type="submit" size="sm" disabled={!note.trim() || addNote.isPending} className="active:translate-y-px">
           <NotePencilIcon />
-          {addNote.isPending ? 'Guardando…' : 'Guardar nota'}
+          {addNote.isPending ? t('saving') : t('save')}
         </Button>
       </div>
     </form>
@@ -421,12 +438,13 @@ function NoteForm({ jobId }: { jobId: number }) {
 }
 
 function MatchPanel({ job }: { job: JobView }) {
+  const { t } = useTranslation('job', { keyPrefix: 'match' })
   const { data: match, isPending, isError, error, refetch } = useJobMatch(job.id, job.extraction !== null)
   if (!job.extraction) return null
   return (
-    <section className="rounded-xl border bg-card p-5 sm:p-6" aria-label="Encaje">
+    <section className="rounded-xl border bg-card p-5 sm:p-6" aria-label={t('title')}>
       <div className="mb-5 flex items-start justify-between gap-4">
-        <h2 className="text-base font-semibold tracking-tight">Encaje</h2>
+        <h2 className="text-base font-semibold tracking-tight">{t('title')}</h2>
         {match && <ScoreBadge score={match.score} threshold={match.triage_threshold} size="lg" />}
       </div>
       {isPending ? (
@@ -437,8 +455,11 @@ function MatchPanel({ job }: { job: JobView }) {
         <MatchDetails match={match} />
       ) : (
         <p className="text-sm text-muted-foreground">
-          Sin score: importa tu perfil con{' '}
-          <code className="rounded bg-muted px-1 py-0.5 font-mono text-[0.85em] text-foreground">jh profile import</code>.
+          <Trans
+            t={t}
+            i18nKey="noScore"
+            components={{ code: <code className="rounded bg-muted px-1 py-0.5 font-mono text-[0.85em] text-foreground" /> }}
+          />
         </p>
       )}
     </section>
@@ -447,6 +468,7 @@ function MatchPanel({ job }: { job: JobView }) {
 
 /** Aprobar o descartar (por revisar), descartar un resumen de una alerta y reabrir (si está cerrada). */
 function Decision({ job }: { job: JobView }) {
+  const { t } = useTranslation('job', { keyPrefix: 'decision' })
   const event = useJobEvent()
   const [discarding, setDiscarding] = useState(false)
   const send = (body: UserEventBody) =>
@@ -456,9 +478,9 @@ function Decision({ job }: { job: JobView }) {
       <div className="flex flex-col items-end gap-1">
         <Button variant="outline" size="sm" onClick={() => send({ type: 'reopened' })} disabled={event.isPending}>
           <ArrowCounterClockwiseIcon />
-          Reabrir
+          {t('reopen')}
         </Button>
-        {event.isError && <p role="alert" className="text-xs text-destructive">{event.error.message}</p>}
+        {event.isError && <p role="alert" className="text-xs text-destructive">{errorMessage(event.error)}</p>}
       </div>
     )
   }
@@ -469,21 +491,21 @@ function Decision({ job }: { job: JobView }) {
         {job.stage === 'pending_triage' && (
           <Button size="sm" onClick={() => send({ type: 'approved' })} disabled={event.isPending}>
             <CheckIcon weight="bold" />
-            Aprobar
+            {t('approve')}
           </Button>
         )}
         <Button variant="outline" size="sm" onClick={() => setDiscarding(true)} disabled={event.isPending}>
           <XIcon weight="bold" />
-          Descartar
+          {t('discard')}
         </Button>
       </div>
-      {event.isError && !discarding && <p role="alert" className="text-xs text-destructive">{event.error.message}</p>}
+      {event.isError && !discarding && <p role="alert" className="text-xs text-destructive">{errorMessage(event.error)}</p>}
       <DiscardDialog
         open={discarding}
         onOpenChange={setDiscarding}
         jobTitle={`${job.title} · ${job.company}`}
         pending={event.isPending}
-        error={event.isError ? event.error.message : null}
+        error={event.isError ? errorMessage(event.error) : null}
         onConfirm={(choice) => send({ type: 'discarded', reason: choice.reason, note: choice.note })}
       />
     </div>
@@ -497,9 +519,10 @@ function wasSent(job: JobView): boolean {
 }
 
 function ExtractionBlock({ job }: { job: JobView }) {
+  const { t } = useTranslation('job', { keyPrefix: 'extraction' })
   if (job.extraction) {
     return (
-      <Panel title="Extracción">
+      <Panel title={t('title')}>
         <ExtractionPanel extraction={job.extraction} />
       </Panel>
     )
@@ -508,11 +531,13 @@ function ExtractionBlock({ job }: { job: JobView }) {
     <section className="flex items-start gap-4 rounded-xl border border-dashed p-6">
       <HourglassMediumIcon className="mt-0.5 size-6 shrink-0 text-primary" weight="duotone" />
       <div>
-        <h2 className="font-semibold">Aún sin extraer</h2>
+        <h2 className="font-semibold">{t('pendingTitle')}</h2>
         <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-          Ejecuta el skill{' '}
-          <code className="rounded bg-muted px-1 py-0.5 font-mono text-[0.85em] text-foreground">procesar-ofertas</code>{' '}
-          en tu agente. Cuando termine, aquí verás seniority, modalidad, skills y salario.
+          <Trans
+            t={t}
+            i18nKey="pendingBody"
+            components={{ code: <code className="rounded bg-muted px-1 py-0.5 font-mono text-[0.85em] text-foreground" /> }}
+          />
         </p>
       </div>
     </section>
@@ -521,9 +546,10 @@ function ExtractionBlock({ job }: { job: JobView }) {
 
 /** Lo de antes de enviar (candidatura asistida, paquete, CV, carta y texto), plegado. Se carga al abrirlo. */
 function EarlierStages({ children }: { children: ReactNode }) {
+  const { t } = useTranslation('job', { keyPrefix: 'earlier' })
   const [open, setOpen] = useState(false)
   return (
-    <section aria-label="Antes de enviar" className="rounded-xl border border-dashed">
+    <section aria-label={t('label')} className="rounded-xl border border-dashed">
       <button
         type="button"
         aria-expanded={open}
@@ -531,8 +557,8 @@ function EarlierStages({ children }: { children: ReactNode }) {
         className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left text-sm sm:px-6"
       >
         <span>
-          <span className="font-medium">Antes de enviar</span>
-          <span className="text-muted-foreground"> · candidatura asistida, paquete, CV, carta y texto de la oferta</span>
+          <span className="font-medium">{t('label')}</span>
+          <span className="text-muted-foreground">{t('hint')}</span>
         </span>
         <CaretDownIcon className={cn('size-4 shrink-0 transition-transform', open && 'rotate-180')} />
       </button>
@@ -542,8 +568,9 @@ function EarlierStages({ children }: { children: ReactNode }) {
 }
 
 function JobSkeleton() {
+  const { t } = useTranslation('job')
   return (
-    <div aria-busy="true" aria-label="Cargando oferta" className="space-y-6">
+    <div aria-busy="true" aria-label={t('loading')} className="space-y-6">
       <div className="space-y-3">
         <Skeleton className="h-8 w-[min(28rem,80%)]" />
         <Skeleton className="h-4 w-56" />
@@ -557,6 +584,7 @@ function JobSkeleton() {
 }
 
 export function JobPage() {
+  const { t } = useTranslation('job')
   const id = Number(useParams().id)
   const location = useLocation()
   const added = (location.state as AddedState | null)?.added
@@ -570,13 +598,13 @@ export function JobPage() {
         className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
         <ArrowLeftIcon className="size-4" />
-        Bandeja
+        {t('back')}
       </Link>
 
       {added && <AddedNotice added={added} />}
 
       {!Number.isInteger(id) || id < 1 ? (
-        <ErrorState error={new Error('Ese identificador de oferta no es válido.')} />
+        <ErrorState error={new Error(t('invalidId'))} />
       ) : isPending ? (
         <JobSkeleton />
       ) : isError ? (
@@ -599,7 +627,7 @@ export function JobPage() {
               {job.url && (
                 <Button asChild variant="outline" size="sm">
                   <a href={job.url} target="_blank" rel="noopener noreferrer nofollow">
-                    Ver original
+                    {t('viewOriginal')}
                     <ArrowSquareOutIcon />
                   </a>
                 </Button>
@@ -653,15 +681,15 @@ export function JobPage() {
             <aside className="space-y-6">
               <MatchPanel job={job} />
               {job.stage !== 'pending_detail' && <NetworkPanel job={job} />}
-              <Panel title="Historial">
+              <Panel title={t('timeline.title')}>
                 <Timeline events={job.events} />
               </Panel>
               <section className="rounded-xl border bg-card p-5 sm:p-6">
                 <NoteForm jobId={job.id} />
               </section>
               <p className="px-1 text-xs text-muted-foreground">
-                Alta el {formatDate(job.first_seen_at)}
-                {job.posted_at && <>. Publicada el {formatDate(job.posted_at)}</>}.
+                {t('addedOn', { date: formatDate(job.first_seen_at) })}
+                {job.posted_at && t('postedOn', { date: formatDate(job.posted_at) })}.
               </p>
             </aside>
           </div>

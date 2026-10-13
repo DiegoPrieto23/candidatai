@@ -67,7 +67,7 @@ def test_open_documents_folder(client: TestClient, opened: list[str]) -> None:
 
 
 def test_open_interviews_folder_creates_it(client: TestClient, opened: list[str]) -> None:
-    """Fase 17: los dosieres de `preparar-entrevista`."""
+    """Fase 17: los dosieres de `prepare-interview`."""
     response = client.post("/folders/open", json={"folder": "entrevistas"}, headers=JSON)
     path = get_settings().data_dir / "entrevistas"
     assert response.json() == {"path": str(path), "opened": True}

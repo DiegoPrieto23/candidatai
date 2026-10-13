@@ -634,7 +634,7 @@ def test_real_render_of_ats_simple_with_demo_profile(
     assert {"Python", "SQL", "Snowflake"} <= set(render.keyword_coverage.present)
     info = pdf.read_pdf(data_file(render.pdf_path))
     assert "Lucía Varela Otero" in info.text
-    assert not list(Path(get_settings().data_dir).glob("**/jh-soffice-*"))
+    assert not list(Path(get_settings().data_dir).glob("**/cai-soffice-*"))
 
 
 @needs_soffice

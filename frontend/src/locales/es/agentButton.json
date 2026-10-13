@@ -1,0 +1,22 @@
+{
+  "opened": "Abierto en {{agent}}: sigue en la terminal.",
+  "copiedPrompt": "No puedo abrir tu agente desde aquí ({{error}}). He copiado la orden: pégala en tu agente.",
+  "pastePrompt": "No puedo abrir tu agente desde aquí. Pégale esta orden: «{{prompt}}»",
+  "openFailed": "No se pudo abrir tu agente.",
+  "alreadyRunning": "Ya se está ejecutando en segundo plano.",
+  "queued": "En cola en segundo plano.",
+  "backgroundFailed": "No se pudo lanzar en segundo plano.",
+  "requestSaved": "Encargo guardado: tu agente lo verá en tu próxima sesión.",
+  "requestFailed": "No se pudo guardar el encargo.",
+  "titleAgent": "Abre {{agent}} en una terminal con la orden ya escrita",
+  "titleCopy": "Copia la orden para tu agente",
+  "more": "Más formas de lanzarlo",
+  "terminal": "En terminal",
+  "terminalHint": "Lo ves, contestas y apruebas tú.",
+  "background": "En segundo plano",
+  "backgroundHint": "Sin ventana y solo con las herramientas de la app. Síguelo en «Agente».",
+  "unavailable": "No disponible.",
+  "later": "Dejar para mi próxima sesión",
+  "laterHint": "Tu agente lo verá con el skill handle-requests.",
+  "seeInAgent": "Ver en «Agente»"
+}

@@ -19,9 +19,9 @@ REQUISITOS
   de tu agente.
 - Rama: fase/15-respuestas-correo (o main, si ya está fusionada).
 - Migración nueva (0014, tablas `replies` y `message_drafts`):
-      uv run --directory backend jh db upgrade
+      uv run --directory backend cai db upgrade
 - IMAP configurado en `.env` (docs/CONFIGURAR_CORREO.md). Opcional: para leer una etiqueta en vez
-  de la bandeja de entrada, añade `JH_IMAP_REPLIES_FOLDER="Procesos"` y reinicia la API y el
+  de la bandeja de entrada, añade `CAI_IMAP_REPLIES_FOLDER="Procesos"` y reinicia la API y el
   worker.
 - Al menos una candidatura enviada («Enviada» o «En proceso»), idealmente con alguna respuesta de
   la empresa en tu correo.
@@ -29,13 +29,13 @@ REQUISITOS
 
 PARTE 1 · CONEXIÓN Y LECTURA
 ----------------------------
-1. uv run --directory backend jh doctor
+1. uv run --directory backend cai doctor
    Esperado: la línea «Respuestas por correo» en verde (solo hace login y abre la carpeta en
    solo lectura).
-2. uv run --directory backend jh replies poll
+2. uv run --directory backend cai replies poll
    Esperado: «Respuestas: K correos nuevos de tus procesos (M correos mirados; N candidaturas
    abiertas)». De los M solo se han leído las cabeceras.
-3. uv run --directory backend jh replies list
+3. uv run --directory backend cai replies list
    Esperado: solo correos de las empresas de tus candidaturas, posteriores al envío. Ningún
    correo personal, boletín ni alerta. Si falta una respuesta que esperabas, añade el contacto
    (con su correo) en la ficha de la oferta y repite el paso 2.
@@ -46,8 +46,8 @@ PARTE 1 · CONEXIÓN Y LECTURA
 PARTE 2 · CLASIFICAR Y ACEPTAR
 ------------------------------
 5. En la UI, «Inicio»: si hay correos sin clasificar, «Para tu agente: N correos sin clasificar»
-   y el botón «Revisar respuestas». Púlsalo (o ejecuta /revisar-respuestas en tu agente).
-   Esperado: el agente delega cada correo en el rol `clasificador` y termina con una tabla de
+   y el botón «Revisar respuestas». Púlsalo (o ejecuta /review-replies en tu agente).
+   Esperado: el agente delega cada correo en el rol `classifier` y termina con una tabla de
    propuestas y el recordatorio de que nada ha cambiado.
 6. Antes de aceptar nada, mira la ficha de esas ofertas: siguen en su etapa.
 7. Menú «Respuestas» (con el número de propuestas): cada correo con su propuesta en una frase
@@ -65,14 +65,14 @@ PARTE 2 · CLASIFICAR Y ACEPTAR
 PARTE 3 · BORRADORES
 --------------------
 10. En la ficha de una candidatura enviada, sección «Borradores» → «Redactar seguimiento» (o
-    /redactar-seguimiento <ID>).
+    /draft-follow-up <ID>).
     Esperado: aparece un borrador corto, sin nada que no esté en tu perfil ni firma. «X de 2
     seguimientos enviados».
 11. «Copiar texto» y pega en un correo nuevo (NO lo envíes si no quieres). «Ya lo he enviado»:
     el historial muestra «Seguimiento enviado».
-12. Con 2 seguimientos enviados, pide otro (/redactar-seguimiento <ID>).
+12. Con 2 seguimientos enviados, pide otro (/draft-follow-up <ID>).
     Esperado: el agente explica que no se propone un tercero.
-13. Tras marcar una entrevista como hecha, /redactar-seguimiento sin argumentos.
+13. Tras marcar una entrevista como hecha, /draft-follow-up sin argumentos.
     Esperado: propone un agradecimiento para esa entrevista. «Descartar» lo quita sin registrar
     nada.
 

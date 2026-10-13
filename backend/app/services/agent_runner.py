@@ -5,7 +5,7 @@ en streaming y guarda progreso, resultado y errores. Lo llama el worker, en un h
   no haya otra `running`.
 - Sin las variables de `unset_env` (la clave de la API): el agente usa tu suscripción.
 - Tiempo máximo (`background_runs.timeout_minutes`), cancelación desde la UI y parada del worker:
-  se para el árbol de procesos entero (el agente y el `jh-mcp` que lanza). Pase lo que pase, al
+  se para el árbol de procesos entero (el agente y el `cai-mcp` que lanza). Pase lo que pase, al
   salir de `execute` el proceso no sigue vivo.
 - Del progreso solo se guardan los nombres de las herramientas y el texto del agente principal,
   nunca sus entradas ni el detalle de sus errores (pueden llevar texto de una oferta). El formato
@@ -218,7 +218,7 @@ def execute(run: AgentRun, timeout: float | None = None, poll: float = 0.5) -> A
     factory = PARSERS.get(run.output_format)
     if factory is None:
         return finish("failed", f"Formato de salida desconocido: «{run.output_format}».")
-    parser = factory(_mcp_prefix(run.agent) or "mcp__jobhunter__")
+    parser = factory(_mcp_prefix(run.agent) or "mcp__candidatai__")
     try:
         proc = _popen(list(run.command), list(run.unset_env))
     except OSError as exc:
@@ -308,7 +308,7 @@ def execute(run: AgentRun, timeout: float | None = None, poll: float = 0.5) -> A
         return finish(
             "failed",
             f"El servidor MCP de la app no se conectó (estado: {state.mcp_status}). "
-            "Comprueba que `uv run --directory backend jh-mcp` arranca.",
+            "Comprueba que `uv run --directory backend cai-mcp` arranca.",
             **common,
         )
     if not state.finished:

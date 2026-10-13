@@ -3,7 +3,7 @@ PRUEBA MANUAL · FASE 07 · MATCHING Y TRIAJE
 
 Objetivo: comprobar que el triaje con teclado es fluido con 10 ofertas o más, que el score y su
 desglose tienen sentido con TU perfil, y que tu agente valora el encaje con el skill
-evaluar-encaje.
+assess-fit.
 
 Duración aproximada: 25 minutos (30-40 si instalas los embeddings).
 
@@ -17,7 +17,7 @@ REQUISITOS
 - Rama de la fase:
       git switch fase/07-matching-triaje
 
-Las ofertas ficticias se quedarán en tu base de datos (data/jobhunter.db); al final se explica
+Las ofertas ficticias se quedarán en tu base de datos (data/candidatai.db); al final se explica
 cómo limpiarla. Los scores se calculan contra la versión de tu perfil importada en la BD.
 
 
@@ -30,17 +30,17 @@ PARTE 1 · PREPARAR
 
 2. Migra la base de datos. Tu BD está en la versión 0002 y esta fase añade la 0003:
 
-      uv run --directory backend jh db upgrade
+      uv run --directory backend cai db upgrade
 
    Esperado: "Base de datos actualizada: 0002 -> 0003."
 
 3. Importa tu perfil (si ya estaba importado y no ha cambiado, no crea versión):
 
-      uv run --directory backend jh profile import
+      uv run --directory backend cai profile import
 
 4. Comprueba el entorno:
 
-      uv run --directory backend jh doctor
+      uv run --directory backend cai doctor
 
    Esperado, y termina con "Todo listo.":
       [ OK  ] Python, Directorio de datos y LibreOffice.
@@ -81,8 +81,8 @@ PARTE 2 · OFERTAS DE PRUEBA
 
 7. Mira el desglose de una oferta en la terminal:
 
-      uv run --directory backend jh jobs list --stage pending_triage
-      uv run --directory backend jh match show <id de una de la lista>
+      uv run --directory backend cai jobs list --stage pending_triage
+      uv run --directory backend cai match show <id de una de la lista>
 
    Esperado: "score NN/100", "Filtros duros: pasa.", la tabla de componentes y las skills
    cubiertas (con tu nivel) y ausentes.
@@ -93,7 +93,7 @@ PARTE 3 · TRIAJE EN LA UI
 8. Terminal 1, la API:
 
       cd backend
-      uv run jh serve
+      uv run cai serve
 
 9. Terminal 2, la UI:
 
@@ -132,13 +132,13 @@ PARTE 3 · TRIAJE EN LA UI
 
 PARTE 4 · VALORACIÓN DEL AGENTE
 -------------------------------
-14. En Claude Code, comprueba que el servidor MCP está conectado (/mcp → jobhunter). Si
+14. En Claude Code, comprueba que el servidor MCP está conectado (/mcp → candidatai). Si
     arrancaste la sesión antes de este cambio, reinicia Claude Code para que cargue las
     herramientas nuevas (get_match y save_fit_assessment).
 
 15. Pide que valore unas pocas ofertas (para no gastar cuota):
 
-      /evaluar-encaje <id1> <id2> <id3>
+      /assess-fit <id1> <id2> <id3>
 
     Esperado: llama a get_profile, get_match y get_extraction (no a get_job) y te pide permiso
     para save_fit_assessment (es la única escritura). Termina con un resumen por veredicto y,
@@ -152,7 +152,7 @@ PARTE 5 · EVALUACIÓN (criterio de aceptación)
 ---------------------------------------------
 17. Ejecuta el set de evaluación:
 
-      uv run --directory backend jh eval matching
+      uv run --directory backend cai eval matching
 
     Esperado: "Matching · 20 casos · umbral 55 · sin embeddings", precision 0.91, recall 1.00 y
     F1 0.95 (el único error es "sales-engineer-data", un caso trampa a propósito), la curva por
@@ -161,13 +161,13 @@ PARTE 5 · EVALUACIÓN (criterio de aceptación)
 18. (Opcional, ~1 GB de descarga) Instala los embeddings y repite:
 
       uv sync --directory backend --extra matching
-      uv run --directory backend jh doctor
-      uv run --directory backend jh eval matching
+      uv run --directory backend cai doctor
+      uv run --directory backend cai eval matching
 
     Esperado: doctor pone "Embeddings" en OK con el modelo; la primera evaluación descarga el
     modelo a data/models/ (tarda) y el informe dice el modelo usado. Compara las métricas con
     las del paso 17. Tras instalarlo, el score de la UI incluye la similitud (recalcula al
-    abrir el triaje; reinicia `jh serve`).
+    abrir el triaje; reinicia `cai serve`).
 
 
 LIMPIAR AL TERMINAR (OPCIONAL)
@@ -176,9 +176,9 @@ No hay (todavía) un comando para borrar ofertas. Para dejar la BD sin estas ofe
 borra el fichero y vuelve a crearlo (se pierden también las versiones de tu perfil guardadas,
 por eso se reimporta):
 
-      Remove-Item data/jobhunter.db*
-      uv run --directory backend jh db upgrade
-      uv run --directory backend jh profile import
+      Remove-Item data/candidatai.db*
+      uv run --directory backend cai db upgrade
+      uv run --directory backend cai profile import
 
 Si instalaste los embeddings y quieres liberar espacio: borra data/models/ y ejecuta
 `uv sync --directory backend` (sin --extra) para quitar torch.
@@ -190,5 +190,5 @@ QUÉ ME CUENTAS AL TERMINAR
 --------------------------
 - Si el triaje de 10 ofertas con teclado fue fluido y qué cambiarías.
 - Cuántas ofertas quedaron en triaje con tu perfil (paso 6) y si el orden te cuadra.
-- La salida de evaluar-encaje (el resumen final basta).
+- La salida de assess-fit (el resumen final basta).
 - Si hiciste el paso 18: las métricas con y sin embeddings.

@@ -1,4 +1,4 @@
-"""Modo demo (fase 12.1): `jh demo seed` crea una carpeta de datos con una búsqueda ficticia.
+"""Modo demo (fase 12.1): `cai demo seed` crea una carpeta de datos con una búsqueda ficticia.
 
 Todo pasa por los servicios de siempre (alta, extracción, filtros, score, eventos de usuario, hitos
 y CVs), así que la demo cumple las mismas reglas que los datos reales. Lo único propio de la demo
@@ -119,7 +119,7 @@ def prepare_dir(target: Path, force: bool) -> None:
             shutil.rmtree(target)
     target.mkdir(parents=True, exist_ok=True)
     (target / DEMO_MARKER).write_text(
-        "Carpeta creada por `jh demo seed`: datos ficticios. Se puede borrar.\n", encoding="utf-8"
+        "Carpeta creada por `cai demo seed`: datos ficticios. Se puede borrar.\n", encoding="utf-8"
     )
 
 
@@ -130,12 +130,12 @@ def use_data_dir(target: Path, embeddings: bool = True) -> Iterator[None]:
     Cambia `os.environ`: es para la CLI y los tests, no para usar entre hilos. Sin `embeddings`,
     el score no usa la similitud semántica (el seed no descarga modelos y es reproducible).
     """
-    keys = ("JH_DATA_DIR", "JH_DB_URL", "JH_EMBEDDINGS")
+    keys = ("CAI_DATA_DIR", "CAI_DB_URL", "CAI_EMBEDDINGS")
     saved = {key: os.environ.get(key) for key in keys}
-    os.environ["JH_DATA_DIR"] = str(target)
-    os.environ["JH_DB_URL"] = f"sqlite:///{(target / 'jobhunter.db').as_posix()}"
+    os.environ["CAI_DATA_DIR"] = str(target)
+    os.environ["CAI_DB_URL"] = f"sqlite:///{(target / 'candidatai.db').as_posix()}"
     if not embeddings:
-        os.environ["JH_EMBEDDINGS"] = "off"
+        os.environ["CAI_EMBEDDINGS"] = "off"
     get_settings.cache_clear()
     get_engine.cache_clear()
     try:
@@ -629,12 +629,12 @@ def seed(
     """
     target = (target if target.is_absolute() else REPO_ROOT / target).resolve()
     extra = eval_cv or compat
-    if extra and not force and is_demo_dir(target) and (target / "jobhunter.db").is_file():
+    if extra and not force and is_demo_dir(target) and (target / "candidatai.db").is_file():
         return add_eval_cases(target, eval_cv=eval_cv, compat=compat)
     prepare_dir(target, force)
     shutil.copyfile(DEMO_DIR / "profile.example.yaml", target / "profile.yaml")
     shutil.copyfile(DEMO_DIR / "photo.png", target / "photo.png")
-    # Red de LinkedIn ficticia (fase 18), donde la buscaría `jh contacts import-linkedin`.
+    # Red de LinkedIn ficticia (fase 18), donde la buscaría `cai contacts import-linkedin`.
     linkedin = target / "documentos" / "linkedin"
     linkedin.mkdir(parents=True)
     shutil.copyfile(DEMO_DIR / "linkedin" / "Connections.csv", linkedin / "Connections.csv")

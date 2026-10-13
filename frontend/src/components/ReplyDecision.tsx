@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { CheckIcon, PencilSimpleIcon, ShieldWarningIcon, WarningIcon, XIcon } from '@phosphor-icons/react'
 import type { ReplyInboxItem } from '@/api/client'
@@ -25,6 +26,7 @@ import {
   type ProposalEvent,
 } from '@/lib/replies'
 import { fromLocalInput, toLocalDateInput, toLocalInput } from '@/lib/time'
+import { errorMessage } from '@/lib/errors'
 import { cn } from '@/lib/utils'
 
 const CONFIDENCE_TONE = {
@@ -45,6 +47,7 @@ function asIs(item: ReplyInboxItem): ReplyDecision | null {
  * que el usuario pulsa uno de ellos (fase 15). Sin propuesta, el usuario puede decidir él.
  */
 export function ReplyProposalCard({ item, showJob = false }: { item: ReplyInboxItem; showJob?: boolean }) {
+  const { t } = useTranslation('replies', { keyPrefix: 'card' })
   const accept = useAcceptReply()
   const ignore = useIgnoreReply()
   const [editing, setEditing] = useState(false)
@@ -58,7 +61,7 @@ export function ReplyProposalCard({ item, showJob = false }: { item: ReplyInboxI
     return (
       <p className="flex items-center gap-2 text-sm text-muted-foreground">
         {item.status === 'accepted' ? <CheckIcon className="size-4 text-primary" /> : <XIcon className="size-4" />}
-        {item.status === 'accepted' ? 'Aceptada: ya está registrada en la oferta.' : 'Ignorada: no se registró nada.'}
+        {item.status === 'accepted' ? t('accepted') : t('ignored')}
       </p>
     )
   }
@@ -74,11 +77,11 @@ export function ReplyProposalCard({ item, showJob = false }: { item: ReplyInboxI
               {CONFIDENCE_LABEL[proposal.confidence]}
             </span>
             {proposal.milestone?.location && <span className="truncate">{proposal.milestone.location}</span>}
-            {item.proposed_by && <span>Propuesta de {item.proposed_by}</span>}
+            {item.proposed_by && <span>{t('proposedBy', { agent: item.proposed_by })}</span>}
           </p>
           {showJob && job && (
             <p className="text-sm">
-              Para{' '}
+              {t('for')}{' '}
               <Link to={`/jobs/${job.job_id}`} className="font-medium underline-offset-4 hover:underline">
                 {job.title} · {job.company}
               </Link>{' '}
@@ -88,19 +91,19 @@ export function ReplyProposalCard({ item, showJob = false }: { item: ReplyInboxI
           {proposal.injection_suspected && (
             <p className="flex items-start gap-1.5 text-sm text-destructive">
               <ShieldWarningIcon className="mt-0.5 size-4 shrink-0" weight="fill" />
-              Tu agente cree que el correo trae instrucciones para una IA. Léelo tú antes de decidir.
+              {t('injection')}
             </p>
           )}
           {item.valid_now === false && (
             <p className="flex items-start gap-1.5 text-sm text-warning-foreground">
               <WarningIcon className="mt-0.5 size-4 shrink-0" weight="fill" />
-              No encaja con la etapa actual de la oferta: si aceptas, puede que la app no lo admita.
+              {t('invalidNow')}
             </p>
           )}
         </div>
       ) : (
         <p className="text-sm text-muted-foreground">
-          Sin clasificar todavía: pide a tu agente que la revise o decide tú con «Decidir».
+          {t('unclassified')}
         </p>
       )}
 
@@ -114,7 +117,7 @@ export function ReplyProposalCard({ item, showJob = false }: { item: ReplyInboxI
             className="active:translate-y-px"
           >
             <CheckIcon weight="bold" />
-            Aceptar
+            {t('accept')}
           </Button>
         )}
         <Button
@@ -126,7 +129,7 @@ export function ReplyProposalCard({ item, showJob = false }: { item: ReplyInboxI
           className="active:translate-y-px"
         >
           <PencilSimpleIcon />
-          {decision ? 'Cambiar' : 'Decidir'}
+          {decision ? t('change') : t('decide')}
         </Button>
         <Button
           type="button"
@@ -137,12 +140,12 @@ export function ReplyProposalCard({ item, showJob = false }: { item: ReplyInboxI
           className="active:translate-y-px"
         >
           <XIcon weight="bold" />
-          Ignorar
+          {t('ignore')}
         </Button>
       </div>
       {error && (
         <p role="alert" className="text-sm text-destructive">
-          No se pudo guardar: {error.message}
+          {t('saveFailed', { error: errorMessage(error) })}
         </p>
       )}
       <ReplyDecisionDialog item={item} open={editing} onOpenChange={setEditing} />
@@ -170,6 +173,7 @@ export function ReplyDecisionDialog({
 }
 
 function DecisionForm({ item, onDone }: { item: ReplyInboxItem; onDone: () => void }) {
+  const { t } = useTranslation('replies', { keyPrefix: 'decision' })
   const proposal = item.proposal
   const milestone = proposal?.milestone
   const [jobId, setJobId] = useState(proposal?.job_id ?? item.candidates[0]?.job_id ?? 0)
@@ -216,13 +220,13 @@ function DecisionForm({ item, onDone }: { item: ReplyInboxItem; onDone: () => vo
   return (
     <form onSubmit={submit} className="grid gap-5">
       <DialogHeader>
-        <DialogTitle>Registrar la respuesta</DialogTitle>
+        <DialogTitle>{t('title')}</DialogTitle>
         <DialogDescription className="truncate">{item.subject || item.sender}</DialogDescription>
       </DialogHeader>
 
       {item.candidates.length > 1 && (
         <div className="space-y-2">
-          <Label htmlFor="reply-job">Oferta</Label>
+          <Label htmlFor="reply-job">{t('job')}</Label>
           <select
             id="reply-job"
             value={jobId}
@@ -239,8 +243,8 @@ function DecisionForm({ item, onDone }: { item: ReplyInboxItem; onDone: () => vo
       )}
 
       <fieldset>
-        <legend className="mb-2 text-sm font-medium">¿Qué es?</legend>
-        <div role="radiogroup" aria-label="Qué es" className="grid gap-1.5 sm:grid-cols-2">
+        <legend className="mb-2 text-sm font-medium">{t('what')}</legend>
+        <div role="radiogroup" aria-label={t('whatAria')} className="grid gap-1.5 sm:grid-cols-2">
           {REPLY_EVENTS.map((value) => (
             <button
               key={value}
@@ -263,7 +267,7 @@ function DecisionForm({ item, onDone }: { item: ReplyInboxItem; onDone: () => vo
         <div className="grid gap-3 rounded-lg border border-dashed p-3 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="reply-starts">
-              {kind === 'interview' ? 'Fecha y hora (opcional)' : 'Fecha de entrega (opcional)'}
+              {kind === 'interview' ? t('dateTime') : t('due')}
             </Label>
             <Input
               id="reply-starts"
@@ -280,32 +284,32 @@ function DecisionForm({ item, onDone }: { item: ReplyInboxItem; onDone: () => vo
                   setStartsAt((v) => (e.target.checked ? v.slice(0, 10) : v ? `${v.slice(0, 10)}T09:00` : v))
                 }}
               />
-              Todo el día
+              {t('allDay')}
             </label>
           </div>
           {kind === 'interview' && !allDay && (
             <div className="space-y-2">
-              <Label htmlFor="reply-ends">Fin (opcional)</Label>
+              <Label htmlFor="reply-ends">{t('end')}</Label>
               <Input id="reply-ends" type="datetime-local" value={endsAt} onChange={(e) => setEndsAt(e.target.value)} />
             </div>
           )}
           <div className="space-y-2">
-            <Label htmlFor="reply-title">Título (opcional)</Label>
+            <Label htmlFor="reply-title">{t('title2')}</Label>
             <Input id="reply-title" value={title} onChange={(e) => setTitle(e.target.value)} maxLength={200} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="reply-location">Lugar o enlace (opcional)</Label>
+            <Label htmlFor="reply-location">{t('location')}</Label>
             <Input id="reply-location" value={location} onChange={(e) => setLocation(e.target.value)} maxLength={500} />
           </div>
           <p className="text-xs text-muted-foreground sm:col-span-2">
-            Horas de Madrid. Sin fecha, se registra sin hito en el calendario.
+            {t('madrid')}
           </p>
         </div>
       )}
 
       {eventType !== 'none' && (
         <div className="space-y-2">
-          <Label htmlFor="reply-note">Nota (opcional)</Label>
+          <Label htmlFor="reply-note">{t('note')}</Label>
           <Textarea
             id="reply-note"
             value={note}
@@ -319,16 +323,16 @@ function DecisionForm({ item, onDone }: { item: ReplyInboxItem; onDone: () => vo
 
       {accept.error && (
         <p role="alert" className="text-sm text-destructive">
-          {accept.error.message}
+          {errorMessage(accept.error)}
         </p>
       )}
 
       <DialogFooter>
         <Button type="button" variant="outline" onClick={onDone}>
-          Cancelar
+          {t('cancel')}
         </Button>
         <Button type="submit" disabled={invalid || accept.isPending}>
-          {accept.isPending ? 'Guardando…' : eventType === 'none' ? 'Archivar' : 'Registrar'}
+          {accept.isPending ? t('saving') : eventType === 'none' ? t('archive') : t('register')}
         </Button>
       </DialogFooter>
     </form>

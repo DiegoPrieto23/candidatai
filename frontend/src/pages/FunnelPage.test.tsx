@@ -234,7 +234,7 @@ describe('¿Acierta el score?', () => {
 
     const panel = await screen.findByRole('region', { name: '¿Acierta el score?' })
     expect(within(panel).getByText(/Orientativo/)).toBeInTheDocument()
-    expect(within(panel).getByText('jh eval matching')).toBeInTheDocument()
+    expect(within(panel).getByText('cai eval matching')).toBeInTheDocument()
     expect(within(panel).getByRole('button', { name: 'Revisar mi búsqueda' })).toBeInTheDocument()
     const table = await within(panel).findByRole('table', { name: 'Calibración por score' })
     const summary = within(panel).getByText((_, el) => el?.tagName === 'P' && /enviadas · respuesta/.test(el.textContent ?? ''))

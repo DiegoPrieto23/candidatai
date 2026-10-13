@@ -1,4 +1,5 @@
 import createClient from 'openapi-fetch'
+import { i18n } from '@/lib/i18n'
 import type { components, paths } from './schema'
 
 export type Schemas = components['schemas']
@@ -83,7 +84,10 @@ export type CompanyResearchContent = Schemas['CompanyResearchContent']
 export type ContactRelation = NonNullable<Schemas['ContactOut']['relation']>
 export type ReferralStatus = NonNullable<Schemas['ContactOut']['referral']>
 
-export const API_URL: string = import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:8000'
+// En desarrollo (`pnpm dev`, 5173) la API está en 8000; la UI compilada la sirve la propia API
+// (`cai start`, fase 23.4), así que llama a su mismo origen, sea cual sea el puerto.
+export const API_URL: string =
+  import.meta.env.VITE_API_URL ?? (import.meta.env.DEV ? 'http://127.0.0.1:8000' : window.location.origin)
 
 /** Ficheros que sirve la API (PDF y DOCX de un render, preview de una plantilla). */
 export const fileUrls = {
@@ -130,11 +134,8 @@ export class ApiError extends Error {
   }
 }
 
-const OFFLINE = new ApiError(
-  'No hay conexión con la API. Arráncala con `uv run jh serve` en backend/.',
-  'offline',
-  0,
-)
+/** La API no responde: el mensaje, en el idioma activo al lanzarlo. */
+const offline = () => new ApiError(i18n.t('errors.offline'), 'offline', 0)
 
 interface Result<T> {
   data?: T
@@ -152,7 +153,7 @@ export async function unwrap<T>(call: Promise<Result<T>>): Promise<T> {
   try {
     result = await call
   } catch {
-    throw OFFLINE
+    throw offline()
   }
   const { data, error, response } = result
   if (error !== undefined || data === undefined) {
@@ -160,7 +161,7 @@ export async function unwrap<T>(call: Promise<Result<T>>): Promise<T> {
       const { message, type, details } = error.error
       throw new ApiError(message, type, response.status, details ?? [])
     }
-    throw new ApiError(`Error inesperado de la API (${response.status}).`, 'unknown', response.status)
+    throw new ApiError(i18n.t('errors.unexpected', { status: response.status }), 'unknown', response.status)
   }
   return data
 }

@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import { HandshakeIcon, LockSimpleIcon } from '@phosphor-icons/react'
 import type { JobView, ReceivedOffer, ReceivedOfferFields, Stage } from '@/api/client'
 import { useDeleteReceivedOffer, useReceivedOffer, useSaveReceivedOffer } from '@/api/queries'
@@ -8,10 +9,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { formatDate, formatMoney, REMOTE_LABEL } from '@/lib/labels'
+import { errorMessage } from '@/lib/errors'
 
 /** Etapas en las que la empresa puede haberte hecho una oferta (`offer_received`). */
 const OFFER_STAGES: ReadonlySet<Stage> = new Set(['applied', 'in_process'])
-const PERIOD_LABEL = { year: 'al año', month: 'al mes' } as const
 const WORK_MODES = ['remote', 'hybrid', 'onsite'] as const
 
 type FormState = {
@@ -65,6 +66,7 @@ function toBody(f: FormState): ReceivedOfferFields {
 }
 
 function OfferForm({ jobId, offer, onDone }: { jobId: number; offer: ReceivedOffer | null; onDone: () => void }) {
+  const { t } = useTranslation('offers', { keyPrefix: 'received.form' })
   const [f, setF] = useState<FormState>(() => toForm(offer))
   const save = useSaveReceivedOffer(jobId)
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) => setF((prev) => ({ ...prev, [key]: value }))
@@ -87,30 +89,30 @@ function OfferForm({ jobId, offer, onDone }: { jobId: number; offer: ReceivedOff
   return (
     <form onSubmit={submit} className="grid gap-3 rounded-lg border bg-background p-3">
       <div className="grid gap-3 sm:grid-cols-2">
-        {input('base_salary', 'Fijo bruto', 'number')}
-        {input('variable', 'Variable bruto anual', 'number')}
-        {input('currency', 'Moneda')}
+        {input('base_salary', t('base'), 'number')}
+        {input('variable', t('variable'), 'number')}
+        {input('currency', t('currency'))}
         <div className="space-y-1.5">
-          <Label htmlFor="offer-period">El fijo es</Label>
+          <Label htmlFor="offer-period">{t('period')}</Label>
           <select
             id="offer-period"
             value={f.period}
             onChange={(e) => set('period', e.target.value as FormState['period'])}
             className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
           >
-            <option value="year">Anual</option>
-            <option value="month">Mensual</option>
+            <option value="year">{t('yearly')}</option>
+            <option value="month">{t('monthly')}</option>
           </select>
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="offer-work_mode">Modalidad</Label>
+          <Label htmlFor="offer-work_mode">{t('mode')}</Label>
           <select
             id="offer-work_mode"
             value={f.work_mode}
             onChange={(e) => set('work_mode', e.target.value as FormState['work_mode'])}
             className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
           >
-            <option value="">Sin indicar</option>
+            <option value="">{t('noMode')}</option>
             {WORK_MODES.map((m) => (
               <option key={m} value={m}>
                 {REMOTE_LABEL[m]}
@@ -118,16 +120,16 @@ function OfferForm({ jobId, offer, onDone }: { jobId: number; offer: ReceivedOff
             ))}
           </select>
         </div>
-        {input('location', 'Ubicación')}
-        {input('start_date', 'Incorporación', 'date')}
-        {input('respond_by', 'Responder antes de', 'date')}
+        {input('location', t('location'))}
+        {input('start_date', t('start'), 'date')}
+        {input('respond_by', t('respondBy'), 'date')}
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="offer-benefits">Beneficios</Label>
+        <Label htmlFor="offer-benefits">{t('benefits')}</Label>
         <Textarea id="offer-benefits" rows={2} value={f.benefits} onChange={(e) => set('benefits', e.target.value)} />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="offer-notes">Notas (las lee tu agente: no pongas aquí tus cifras)</Label>
+        <Label htmlFor="offer-notes">{t('notes')}</Label>
         <Textarea id="offer-notes" rows={2} value={f.notes} onChange={(e) => set('notes', e.target.value)} />
       </div>
       <label className="flex items-start gap-2 text-sm">
@@ -138,23 +140,21 @@ function OfferForm({ jobId, offer, onDone }: { jobId: number; offer: ReceivedOff
           onChange={(e) => set('amounts_private', e.target.checked)}
         />
         <span>
-          Importes privados: tu agente no ve el fijo ni el variable.
-          <span className="block text-xs text-muted-foreground">
-            Tu mínimo y la diferencia con él no los ve nunca.
-          </span>
+          {t('private')}
+          <span className="block text-xs text-muted-foreground">{t('privateHint')}</span>
         </span>
       </label>
       {save.error && (
         <p role="alert" className="text-sm text-destructive">
-          {save.error.message}
+          {errorMessage(save.error)}
         </p>
       )}
       <div className="flex justify-end gap-2">
         <Button type="button" variant="outline" size="sm" onClick={onDone}>
-          Cancelar
+          {t('cancel')}
         </Button>
         <Button type="submit" size="sm" disabled={save.isPending}>
-          {save.isPending ? 'Guardando…' : 'Guardar oferta'}
+          {save.isPending ? t('saving') : t('save')}
         </Button>
       </div>
     </form>
@@ -162,15 +162,18 @@ function OfferForm({ jobId, offer, onDone }: { jobId: number; offer: ReceivedOff
 }
 
 function OfferSummary({ offer }: { offer: ReceivedOffer }) {
+  const { t } = useTranslation('offers', { keyPrefix: 'received.summary' })
+  const per = (amount: number, period: 'year' | 'month') =>
+    t(period === 'year' ? 'perYear' : 'perMonth', { amount: formatMoney(amount, offer.currency) })
   const rows: [string, string | null][] = [
-    ['Fijo', offer.base_salary != null ? `${formatMoney(offer.base_salary, offer.currency)} ${PERIOD_LABEL[offer.period]}` : null],
-    ['Variable', offer.variable != null ? `${formatMoney(offer.variable, offer.currency)} al año` : null],
-    ['Modalidad', offer.work_mode ? REMOTE_LABEL[offer.work_mode] : null],
-    ['Ubicación', offer.location],
-    ['Incorporación', offer.start_date ? formatDate(offer.start_date) : null],
-    ['Responder antes de', offer.respond_by ? formatDate(offer.respond_by) : null],
-    ['Beneficios', offer.benefits],
-    ['Notas', offer.notes],
+    [t('base'), offer.base_salary != null ? per(offer.base_salary, offer.period) : null],
+    [t('variable'), offer.variable != null ? per(offer.variable, 'year') : null],
+    [t('mode'), offer.work_mode ? REMOTE_LABEL[offer.work_mode] : null],
+    [t('location'), offer.location],
+    [t('start'), offer.start_date ? formatDate(offer.start_date) : null],
+    [t('respondBy'), offer.respond_by ? formatDate(offer.respond_by) : null],
+    [t('benefits'), offer.benefits],
+    [t('notes'), offer.notes],
   ]
   return (
     <dl className="grid gap-x-4 gap-y-1.5 text-sm sm:grid-cols-[10rem_minmax(0,1fr)]">
@@ -192,29 +195,30 @@ function OfferSummary({ offer }: { offer: ReceivedOffer }) {
  * Procesos → «Ofertas recibidas» y nunca sale hacia el agente.
  */
 export function ReceivedOfferSection({ job }: { job: JobView }) {
+  const { t } = useTranslation('offers', { keyPrefix: 'received' })
   const canHave = job.stage !== null && OFFER_STAGES.has(job.stage)
   const { data: offer, isPending } = useReceivedOffer(job.id)
   const remove = useDeleteReceivedOffer(job.id)
   const [editing, setEditing] = useState(false)
   if (isPending || (!offer && !canHave)) return null
   return (
-    <section aria-label="Oferta recibida" className="rounded-xl border bg-card p-5 sm:p-6">
+    <section aria-label={t('title')} className="rounded-xl border bg-card p-5 sm:p-6">
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="flex items-center gap-2 font-semibold">
             <HandshakeIcon className="size-[18px] text-primary" weight="duotone" />
-            Oferta recibida
+            {t('title')}
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
             {offer
-              ? `Anotada el ${formatDate(offer.updated_at)}. Compárala con tu mínimo en Procesos.`
-              : '¿Te han hecho una oferta? Anótala para compararla y preparar la negociación.'}
+              ? t('noted', { date: formatDate(offer.updated_at) })
+              : t('prompt')}
           </p>
         </div>
         {offer && offer.amounts_private && (
           <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
             <LockSimpleIcon className="size-3.5" />
-            Importes privados
+            {t('private')}
           </span>
         )}
       </div>
@@ -225,22 +229,22 @@ export function ReceivedOfferSection({ job }: { job: JobView }) {
           {offer && <OfferSummary offer={offer} />}
           <div className="flex flex-wrap gap-2">
             <Button variant={offer ? 'outline' : 'default'} size="sm" onClick={() => setEditing(true)}>
-              {offer ? 'Editar' : 'Anotar oferta'}
+              {offer ? t('edit') : t('add')}
             </Button>
             {offer && job.stage === 'in_process' && (
-              <AgentButton action="preparar-negociacion" jobId={job.id}>
-                Preparar negociación
+              <AgentButton action="prepare-negotiation" jobId={job.id}>
+                {t('negotiate')}
               </AgentButton>
             )}
             {offer && (
               <Button variant="ghost" size="sm" disabled={remove.isPending} onClick={() => remove.mutate()}>
-                Borrar datos
+                {t('delete')}
               </Button>
             )}
           </div>
           {remove.error && (
             <p role="alert" className="text-sm text-destructive">
-              {remove.error.message}
+              {errorMessage(remove.error)}
             </p>
           )}
         </div>

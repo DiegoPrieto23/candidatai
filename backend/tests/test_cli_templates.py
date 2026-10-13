@@ -1,4 +1,4 @@
-"""Comandos `jh templates inspect | build-docx | validate | preview` (fase 08.3)."""
+"""Comandos `cai templates inspect | build-docx | validate | preview` (fase 08.3)."""
 
 import json
 from pathlib import Path

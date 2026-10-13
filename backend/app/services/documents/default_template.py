@@ -1,10 +1,11 @@
 """«Usar por defecto» en la página Plantillas: fija `preferences.cv.default_template`.
 
 Es la única escritura de `data/profile.yaml` desde la app (el resto lo hace el usuario o su agente
-con `actualizar-perfil`), así que toca solo esa clave: se edita con ruamel.yaml en modo ida y
+con `update-profile`), así que toca solo esa clave: se edita con ruamel.yaml en modo ida y
 vuelta, que conserva comentarios, orden y formato; se valida el resultado antes de escribirlo y se
 importa como versión nueva. No hace copia: la versión anterior queda en `profile_versions` (y
-`jh profile diff` la muestra). Si alguna regla de `template_rules` elige otra plantilla, se explica.
+`cai profile diff` la muestra). Si alguna regla de `template_rules` elige otra plantilla, se
+explica.
 """
 
 import io
@@ -62,7 +63,7 @@ def set_default_template(
     path = path or profile_service.default_path()
     if not path.is_file():
         raise profile_service.ProfileNotFoundError(
-            f"No existe {path}: crea tu perfil con el skill `actualizar-perfil`."
+            f"No existe {path}: crea tu perfil con el skill `update-profile`."
         )
     yaml = _round_trip_yaml()
     data = yaml.load(path.read_text(encoding="utf-8-sig"))

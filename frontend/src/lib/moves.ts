@@ -1,4 +1,5 @@
 import type { BoardCard, BoardMove, EventType, Stage } from '@/api/client'
+import { i18n } from '@/lib/i18n'
 import { STAGE_LABEL } from '@/lib/labels'
 
 /** Un evento posible para mover la tarjeta y la etapa a la que la lleva. */
@@ -22,12 +23,10 @@ export function moveOptions(card: BoardCard, moves: BoardMove[], target?: Stage)
 
 /** Por qué no se puede soltar una tarjeta en una columna. */
 export function noMoveReason(card: BoardCard, target: Stage): string {
-  if (target === 'cv_ready')
-    return 'Una oferta llega a «CV listo» cuando su CV está verificado (skill generar-cv), no a mano.'
-  if (target === 'approved') return 'Para volver a «Aprobada» hay que reabrirla desde su ficha.'
+  const t = i18n.getFixedT(null, 'move', 'noMove')
+  if (target === 'cv_ready') return t('cvReady')
+  if (target === 'approved') return t('approved')
   if (card.stage === 'closed')
-    return card.reopen_to
-      ? `Al reabrirla vuelve a «${STAGE_LABEL[card.reopen_to]}».`
-      : 'Esta oferta no se puede reabrir desde el tablero.'
-  return `Desde «${STAGE_LABEL[card.stage]}» no hay ningún evento que la lleve a «${STAGE_LABEL[target]}».`
+    return card.reopen_to ? t('reopenTo', { stage: STAGE_LABEL[card.reopen_to] }) : t('cannotReopen')
+  return t('noEvent', { from: STAGE_LABEL[card.stage], to: STAGE_LABEL[target] })
 }

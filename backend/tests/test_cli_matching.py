@@ -1,4 +1,5 @@
-"""CLI de matching (`jh match`, `jh worker`), orden por score y aviso de embeddings en `doctor`."""
+"""CLI de matching (`cai match`, `cai worker`), orden por score y aviso de embeddings en
+`doctor`."""
 
 import json
 from pathlib import Path
@@ -161,7 +162,7 @@ def test_match_rescore_without_profile(db: None) -> None:
 def test_doctor_embeddings_check(monkeypatch: pytest.MonkeyPatch) -> None:
     check = doctor.check_embeddings(get_settings())
     assert check.status == doctor.CheckStatus.WARN
-    assert "JH_EMBEDDINGS=off" in check.detail
+    assert "CAI_EMBEDDINGS=off" in check.detail
     monkeypatch.setattr(embeddings, "unavailable_reason", lambda: None)
     check = doctor.check_embeddings(get_settings())
     assert check.status == doctor.CheckStatus.OK

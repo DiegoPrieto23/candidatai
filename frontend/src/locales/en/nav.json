@@ -1,0 +1,64 @@
+{
+  "groups": {
+    "search": "Search",
+    "processes": "Processes",
+    "analysis": "Analysis",
+    "configure": "Configure"
+  },
+  "entries": {
+    "home": "Home",
+    "inbox": "Inbox",
+    "triage": "To review",
+    "alerts": "Alerts",
+    "processes": "Processes",
+    "replies": "Replies",
+    "funnel": "Funnel",
+    "skills": "Skills",
+    "sources": "Sources",
+    "templates": "Templates",
+    "profile": "My profile",
+    "agent": "Agent"
+  },
+  "counts": {
+    "toReview": "to review",
+    "toComplete": "to complete",
+    "agent": "running or pending"
+  },
+  "entryWithCount": "{{label}} ({{count}} {{what}})",
+  "mainNav": "Main navigation",
+  "sidebar": "Sidebar",
+  "collapse": "Collapse the menu",
+  "expand": "Expand the menu",
+  "openMenu": "Open the menu",
+  "closeMenu": "Close the menu",
+  "theme": {
+    "system": "Theme: system",
+    "light": "Theme: light",
+    "dark": "Theme: dark"
+  },
+  "language": {
+    "button": "Language: {{name}}"
+  },
+  "header": {
+    "byStage": "Jobs by stage",
+    "all": "All",
+    "newJob": "New job"
+  },
+  "reminders": {
+    "toExtract_one": "There is {{count}} job to extract.",
+    "toExtract_other": "There are {{count}} jobs to extract.",
+    "extractHint": "Your agent extracts them with the skill",
+    "processNow": "Process now",
+    "followups_one": "{{count}} application has had no reply for {{days}} days or more.",
+    "followups_other": "{{count}} applications have had no reply for {{days}} days or more.",
+    "followupsLink": "Review the follow-ups in Processes",
+    "running": "Your agent is working in the background",
+    "queued": "Queued in the background",
+    "seeProgress": "See progress"
+  },
+  "demo": {
+    "label": "Demo mode",
+    "title": "Demo mode: fictitious data.",
+    "body": "People, companies and jobs are made up; your real data is not touched."
+  }
+}

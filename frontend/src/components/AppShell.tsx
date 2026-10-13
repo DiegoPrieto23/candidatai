@@ -1,49 +1,20 @@
 import { useEffect, useRef } from 'react'
-import { Link, NavLink, Outlet, useLocation, useSearchParams } from 'react-router'
+import { Link, Outlet, useLocation, useSearchParams } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
-import {
-  BellRingingIcon,
-  CircleNotchIcon,
-  DesktopIcon,
-  FlaskIcon,
-  MoonIcon,
-  PlusIcon,
-  SunIcon,
-  TerminalWindowIcon,
-} from '@phosphor-icons/react'
+import { useTranslation } from 'react-i18next'
+import { BellRingingIcon, CircleNotchIcon, FlaskIcon, PlusIcon, TerminalWindowIcon } from '@phosphor-icons/react'
 import type { Stage } from '@/api/client'
-import { keys, useAgentRuns, useFollowups, useReplies, useStatus } from '@/api/queries'
+import { keys, useAgentRuns, useFollowups, useStatus } from '@/api/queries'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { STAGE_LABEL, STAGES } from '@/lib/labels'
-import { useTheme, type ThemeChoice } from '@/lib/theme'
 import { cn } from '@/lib/utils'
 import { UserPrompts } from '@/components/UserPrompts'
 import { AgentButton } from '@/components/AgentButton'
-
-const THEME_META: Record<ThemeChoice, { icon: typeof SunIcon; label: string }> = {
-  system: { icon: DesktopIcon, label: 'Tema: el del sistema' },
-  light: { icon: SunIcon, label: 'Tema: claro' },
-  dark: { icon: MoonIcon, label: 'Tema: oscuro' },
-}
-
-function ThemeToggle() {
-  const { choice, cycle } = useTheme()
-  const { icon: Icon, label } = THEME_META[choice]
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button variant="ghost" size="icon" onClick={cycle} aria-label={label}>
-          <Icon className="size-[18px]" />
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent>{label}</TooltipContent>
-    </Tooltip>
-  )
-}
+import { Brand, MobileNav, Sidebar } from '@/components/Sidebar'
 
 function StageCounts() {
+  const { t } = useTranslation('nav')
   const { data, isPending, isError } = useStatus()
   const [params] = useSearchParams()
   const { pathname } = useLocation()
@@ -51,11 +22,11 @@ function StageCounts() {
 
   if (isError) return null
   const items: { key: Stage | 'all'; label: string; count?: number }[] = [
-    { key: 'all', label: 'Todas', count: data?.total },
+    { key: 'all', label: t('header.all'), count: data?.total },
     ...STAGES.map((stage) => ({ key: stage, label: STAGE_LABEL[stage], count: data?.by_stage[stage] })),
   ]
   return (
-    <nav aria-label="Ofertas por etapa" className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+    <nav aria-label={t('header.byStage')} className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
       <ul className="flex min-w-max gap-1">
         {items.map(({ key, label, count }) => {
           const selected = active === key
@@ -94,6 +65,7 @@ function StageCounts() {
 }
 
 function ExtractionReminder() {
+  const { t } = useTranslation('nav')
   const { data } = useStatus()
   const pending = data?.by_stage.pending_extraction ?? 0
   if (!pending) return null
@@ -105,19 +77,18 @@ function ExtractionReminder() {
       <TerminalWindowIcon className="mt-0.5 size-[18px] shrink-0" weight="duotone" />
       <div className="flex flex-1 flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <p>
-          <span className="font-medium">
-            {pending === 1 ? 'Hay 1 oferta por extraer.' : `Hay ${pending} ofertas por extraer.`}
-          </span>{' '}
-          Las extrae tu agente con el skill{' '}
-          <code className="rounded bg-background/70 px-1.5 py-0.5 font-mono text-[0.85em]">procesar-ofertas</code>.
+          <span className="font-medium">{t('reminders.toExtract', { count: pending })}</span>{' '}
+          {t('reminders.extractHint')}{' '}
+          <code className="rounded bg-background/70 px-1.5 py-0.5 font-mono text-[0.85em]">process-jobs</code>.
         </p>
-        <AgentButton action="procesar-ofertas">Procesar ahora</AgentButton>
+        <AgentButton action="process-jobs">{t('reminders.processNow')}</AgentButton>
       </div>
     </div>
   )
 }
 
 function FollowupReminder() {
+  const { t } = useTranslation('nav')
   const { data } = useFollowups()
   const { pathname } = useLocation()
   const due = data?.followups.length ?? 0
@@ -130,12 +101,10 @@ function FollowupReminder() {
       <BellRingingIcon className="mt-0.5 size-[18px] shrink-0" weight="duotone" />
       <p>
         <span className="font-medium">
-          {due === 1
-            ? `1 candidatura lleva ${data?.days_without_reply} días o más sin respuesta.`
-            : `${due} candidaturas llevan ${data?.days_without_reply} días o más sin respuesta.`}
+          {t('reminders.followups', { count: due, days: data?.days_without_reply })}
         </span>{' '}
         <Link to="/procesos" className="underline underline-offset-4">
-          Revisa los seguimientos en Procesos
+          {t('reminders.followupsLink')}
         </Link>
         .
       </p>
@@ -148,6 +117,7 @@ function FollowupReminder() {
  * ejecución, refresca todo: el agente ha podido extraer ofertas, valorarlas o generar un CV.
  */
 function BackgroundRunReminder() {
+  const { t } = useTranslation('nav')
   const { data } = useAgentRuns()
   const { pathname } = useLocation()
   const client = useQueryClient()
@@ -178,183 +148,83 @@ function BackgroundRunReminder() {
         weight="bold"
       />
       <p>
-        {current.status === 'running' ? 'Tu agente trabaja en segundo plano' : 'En cola en segundo plano'}: «
-        {current.label}».{' '}
+        {current.status === 'running' ? t('reminders.running') : t('reminders.queued')}: «{current.label}».{' '}
         <Link to="/agente" className="underline underline-offset-4">
-          Ver el progreso
+          {t('reminders.seeProgress')}
         </Link>
       </p>
     </div>
   )
 }
 
-/** Ejecuciones en curso (fase 19) y encargos pendientes. */
-function AgentNavCount() {
-  const runs = useAgentRuns()
-  const { data } = useStatus()
-  const active = runs.data?.active ?? 0
-  const waiting = runs.data?.runs.filter((r) => r.status === 'needs_user').length ?? 0
-  const requests = data?.agent_requests ?? 0
-  const count = active + waiting + requests
-  if (!count) return null
-  return (
-    <span
-      className={cn(
-        'tabular grid h-[18px] min-w-[18px] place-items-center rounded-full px-1 text-[0.7rem] font-semibold',
-        active + waiting ? 'bg-primary text-primary-foreground' : 'bg-foreground/10 text-foreground/80',
-      )}
-    >
-      <span className="sr-only">, </span>
-      {count}
-      <span className="sr-only"> en curso o pendientes</span>
-    </span>
-  )
-}
-
-// Modo demo (fase 12.1): la carpeta de datos la creó `jh demo seed`. Fijo en todas las páginas.
+// Modo demo (fase 12.1): la carpeta de datos la creó `cai demo seed`. Fijo en todas las páginas.
 function DemoBanner() {
+  const { t } = useTranslation('nav')
   const { data } = useStatus()
   if (!data?.demo_mode) return null
   return (
     <div
       role="note"
-      aria-label="Modo demo"
+      aria-label={t('demo.label')}
       className="border-b border-warning-border bg-warning text-warning-foreground"
     >
       <p className="mx-auto flex max-w-6xl items-center gap-2 px-4 py-1.5 text-xs sm:px-6">
         <FlaskIcon className="size-4 shrink-0" weight="duotone" />
         <span>
-          <span className="font-semibold">Modo demo: datos ficticios.</span> Personas, empresas y ofertas son
-          inventadas; tus datos reales no se tocan.
+          <span className="font-semibold">{t('demo.title')}</span> {t('demo.body')}
         </span>
       </p>
     </div>
   )
 }
 
-function navClass({ isActive }: { isActive: boolean }) {
-  return cn(
-    'flex shrink-0 items-center gap-1.5 rounded-md px-2.5 py-1.5 whitespace-nowrap transition-colors',
-    isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
-  )
-}
-
-function NavCount({ stage, label, muted = false }: { stage: Stage; label: string; muted?: boolean }) {
-  const { data } = useStatus()
-  const count = data?.by_stage[stage] ?? 0
-  if (!count) return null
-  return (
-    <span
-      className={cn(
-        'tabular grid h-[18px] min-w-[18px] place-items-center rounded-full px-1 text-[0.7rem] font-semibold',
-        muted ? 'bg-foreground/10 text-foreground/80' : 'bg-primary text-primary-foreground',
-      )}
-    >
-      <span className="sr-only">, </span>
-      {count}
-      <span className="sr-only"> {label}</span>
-    </span>
-  )
-}
-
-/** Respuestas de las empresas que esperan tu decisión (fase 15). */
-function RepliesNavCount() {
-  const { data } = useReplies()
-  const count = data?.counts.proposed ?? 0
-  if (!count) return null
-  return (
-    <span className="tabular grid h-[18px] min-w-[18px] place-items-center rounded-full bg-primary px-1 text-[0.7rem] font-semibold text-primary-foreground">
-      <span className="sr-only">, </span>
-      {count}
-      <span className="sr-only"> por revisar</span>
-    </span>
-  )
-}
-
 export function AppShell() {
+  const { t } = useTranslation('nav')
   // En Inicio el recorrido ya enseña las etapas: sin la fila de recuentos.
   const { pathname } = useLocation()
+  const home = pathname === '/'
   return (
-    <div className="min-h-[100dvh]">
-      <header className="sticky top-0 z-20 border-b bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/65">
-        <DemoBanner />
-        <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4 sm:px-6 lg:gap-6">
-          <Link to="/" className="flex shrink-0 items-center gap-2.5 font-semibold tracking-tight whitespace-nowrap">
-            <span className="grid size-7 place-items-center rounded-md bg-foreground font-mono text-[11px] font-bold text-background">
-              JH
-            </span>
-            <span className="hidden sm:inline">Job Hunter</span>
-          </Link>
-          {/* En pantallas estrechas el menú se desplaza en horizontal en vez de ensanchar la página. */}
-          <nav className="relative -my-2 flex min-w-0 items-center gap-0.5 overflow-x-auto py-2 text-sm [scrollbar-width:none]">
-            <NavLink to="/" end className={navClass}>
-              Inicio
-            </NavLink>
-            <NavLink to="/bandeja" className={navClass}>
-              Bandeja
-            </NavLink>
-            <NavLink to="/por-revisar" className={navClass}>
-              Por revisar
-              <NavCount stage="pending_triage" label="por revisar" />
-            </NavLink>
-            <NavLink to="/procesos" className={navClass}>
-              Procesos
-            </NavLink>
-            <NavLink to="/respuestas" className={navClass}>
-              Respuestas
-              <RepliesNavCount />
-            </NavLink>
-            <NavLink to="/embudo" className={navClass}>
-              Embudo
-            </NavLink>
-            <NavLink to="/skills" className={navClass}>
-              Skills
-            </NavLink>
-            <NavLink to="/alertas" className={navClass}>
-              Alertas
-              <NavCount stage="pending_detail" label="por completar" muted />
-            </NavLink>
-            <NavLink to="/empresas" className={navClass}>
-              Empresas
-            </NavLink>
-            <NavLink to="/plataformas" className={navClass}>
-              Plataformas
-            </NavLink>
-            <NavLink to="/plantillas" className={navClass}>
-              Plantillas
-            </NavLink>
-            <NavLink to="/perfil" className={navClass}>
-              Mi perfil
-            </NavLink>
-            <NavLink to="/agente" className={navClass}>
-              Agente
-              <AgentNavCount />
-            </NavLink>
-          </nav>
-          <div className="ml-auto flex shrink-0 items-center gap-1.5">
-            <ThemeToggle />
-            <Button asChild size="sm" className="active:translate-y-px">
-              <Link to="/nueva">
-                <PlusIcon weight="bold" />
-                <span className="sr-only sm:not-sr-only">Nueva oferta</span>
-              </Link>
-            </Button>
+    <div className="flex min-h-[100dvh]">
+      <Sidebar />
+      <div className="min-w-0 flex-1">
+        <header className="sticky top-0 z-20 border-b bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/65">
+          <DemoBanner />
+          {/* Una sola fila en escritorio; en móvil los recuentos bajan a una segunda línea. */}
+          {/* En Inicio, «Nueva oferta» va con las acciones de la página: en escritorio, sin esta fila. */}
+          <div
+            className={cn(
+              'mx-auto flex max-w-6xl flex-wrap items-center lg:flex-nowrap gap-x-3 gap-y-1 px-4 py-2 sm:px-6',
+              home && 'lg:hidden',
+            )}
+          >
+            <MobileNav />
+            <div className="lg:hidden">
+              <Brand />
+            </div>
+            {!home && (
+              <div className="order-last min-w-0 basis-full lg:order-none lg:basis-auto lg:flex-1">
+                <StageCounts />
+              </div>
+            )}
+            {!home && (
+              <Button asChild size="sm" className="ml-auto shrink-0 active:translate-y-px">
+                <Link to="/nueva">
+                  <PlusIcon weight="bold" />
+                  <span className="sr-only sm:not-sr-only">{t('header.newJob')}</span>
+                </Link>
+              </Button>
+            )}
           </div>
-        </div>
-        {pathname !== '/' && (
-          <div className="mx-auto max-w-6xl px-4 pb-2 sm:px-6">
-            <StageCounts />
+        </header>
+        <main className="mx-auto max-w-6xl px-4 pb-24 pt-6 sm:px-6 sm:pt-8">
+          <div className="mb-6 space-y-3 empty:hidden">
+            <BackgroundRunReminder />
+            <ExtractionReminder />
+            <FollowupReminder />
           </div>
-        )}
-      </header>
-      <main className="mx-auto max-w-6xl px-4 pb-24 pt-6 sm:px-6 sm:pt-8">
-        <div className="mb-6 space-y-3 empty:hidden">
-          <BackgroundRunReminder />
-          <ExtractionReminder />
-          <FollowupReminder />
-        </div>
-        <Outlet />
-      </main>
+          <Outlet />
+        </main>
+      </div>
       <UserPrompts />
     </div>
   )

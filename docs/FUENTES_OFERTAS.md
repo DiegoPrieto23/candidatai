@@ -1,6 +1,6 @@
 # Fuentes de ofertas
 
-De dónde llegan las ofertas a Job Hunter, qué hace cada vía y con qué límites. Todas acaban en el
+De dónde llegan las ofertas a CandidatAI, qué hace cada vía y con qué límites. Todas acaban en el
 mismo sitio: la tabla `jobs`, con deduplicación, detección de riesgo e historial de eventos.
 
 | Vía | Fase | Automática | Cubre |
@@ -9,7 +9,7 @@ mismo sitio: la tabla `jobs`, con deduplicación, detección de riesgo e histori
 | APIs públicas de ATS (Greenhouse, Lever, Ashby) | 09 | Sí, diaria | Tus empresas objetivo |
 | APIs de portales (InfoJobs, Adzuna), si hay claves | 09 | Sí, diaria | Búsquedas por palabras clave |
 | **Alertas de empleo por correo** | 09b | Sí | LinkedIn, InfoJobs, Indeed, Tecnoempleo… (lo que te envíen) |
-| **Botón «Enviar a Job Hunter»** | 09b | No (un clic) | Cualquier página que estés viendo, LinkedIn incluido |
+| **Botón «Enviar a CandidatAI»** | 09b | No (un clic) | Cualquier página que estés viendo, LinkedIn incluido |
 | **Búsqueda con el navegador del agente** | 09b | A demanda | Portales que la permitan; LinkedIn solo si lo activas tú |
 | **Búsqueda pública de LinkedIn sin sesión** (opcional, apagada) | 22 | Sí, diaria | Tus búsquedas de LinkedIn, solo si la activas tú |
 
@@ -24,15 +24,15 @@ del agente (ADR-016) o la búsqueda pública sin sesión que hace la propia app 
 
 ## APIs de ATS y portales (fase 09)
 
-- **Empresas objetivo:** nombre + ATS + slug del tablero, en la pantalla «Empresas» o con
-  `jh sources add`. Endpoints públicos documentados, sin autenticación ni scraping:
+- **Empresas objetivo:** nombre + ATS + slug del tablero, en la página «Fuentes → Empresas objetivo» o con
+  `cai sources add`. Endpoints públicos documentados, sin autenticación ni scraping:
   Greenhouse `boards-api.greenhouse.io/v1/boards/{slug}/jobs?content=true`, Lever
   `api.lever.co/v0/postings/{slug}?mode=json` (o `api.eu.lever.co`) y Ashby
   `api.ashbyhq.com/posting-api/job-board/{slug}`.
 - **Portales con API (opcionales):** InfoJobs (`api.infojobs.net/api/9/offer` y el detalle de
-  cada oferta, con `JH_INFOJOBS_CLIENT_ID` y `JH_INFOJOBS_CLIENT_SECRET`) y Adzuna
-  (`api.adzuna.com/v1/api/jobs/{país}/search/{página}`, con `JH_ADZUNA_APP_ID` y
-  `JH_ADZUNA_APP_KEY`). Sin claves, esas fuentes se omiten con un aviso. Adzuna solo da un
+  cada oferta, con `CAI_INFOJOBS_CLIENT_ID` y `CAI_INFOJOBS_CLIENT_SECRET`) y Adzuna
+  (`api.adzuna.com/v1/api/jobs/{país}/search/{página}`, con `CAI_ADZUNA_APP_ID` y
+  `CAI_ADZUNA_APP_KEY`). Sin claves, esas fuentes se omiten con un aviso. Adzuna solo da un
   extracto de la descripción: la extracción sale más pobre.
 - **Filtro previo** antes de guardar (`ingestion/prefilter.py`): el título debe contener todas las
   palabras de alguno de tus `preferences.roles` (también en español, con
@@ -41,7 +41,7 @@ del agente (ADR-016) o la búsqueda pública sin sesión que hace la propia app 
   Ante la duda deja pasar (sin ubicación, sin perfil). La 09b lo reutiliza para los resúmenes.
 - **Idempotente:** lo ya visto (por id en la fuente, URL o huella) no se vuelve a crear ni a
   descargar. Lo nuevo queda en `pending_extraction` con el evento `found`.
-- **Cada día** a la hora de `connectors.daily_at` (`config/policies.yaml`), `jh worker` encola una
+- **Cada día** a la hora de `connectors.daily_at` (`config/policies.yaml`), `cai worker` encola una
   tarea por fuente activa. Si una falla, se anota en `source_runs` y las demás siguen.
 
 ## Ofertas «resumen» y «completas»
@@ -71,8 +71,8 @@ found ─► pending_detail ─(detail_captured)─► pending_extraction ─►
   entrar en ninguno.
 - **Conexión IMAP de solo lectura** a una única carpeta o etiqueta (p. ej. una etiqueta de Gmail
   «Alertas empleo» rellenada por un filtro). Abre la carpeta en modo solo lectura: no marca como
-  leído, no mueve, no borra. Credenciales en `.env` (`JH_IMAP_HOST`, `JH_IMAP_PORT` (993),
-  `JH_IMAP_USER`, `JH_IMAP_PASSWORD`, `JH_IMAP_FOLDER`).
+  leído, no mueve, no borra. Credenciales en `.env` (`CAI_IMAP_HOST`, `CAI_IMAP_PORT` (993),
+  `CAI_IMAP_USER`, `CAI_IMAP_PASSWORD`, `CAI_IMAP_FOLDER`).
   - Solo usa `LOGIN`, `EXAMINE`, `UID SEARCH`, `UID FETCH` con `BODY.PEEK[]` y `LOGOUT`. Busca los
     correos de los últimos `summary_expire_days` días, pide primero solo sus `Message-ID` y
     descarga el cuerpo solo de los nuevos. Un test con un servidor IMAP falso que falla ante
@@ -101,11 +101,11 @@ found ─► pending_detail ─(detail_captured)─► pending_extraction ─►
   riesgo y no se sigue ningún enlace de LinkedIn automáticamente. La detección mira el texto de
   cada oferta, no el HTML del correo: casi todas las alertas llevan texto oculto legítimo (el
   «preheader») y marcarían `hidden_text` en todas.
-- Frecuencia: la del worker (`email_alerts.poll_minutes`). A mano: `jh alerts poll` o «Revisar
+- Frecuencia: la del worker (`email_alerts.poll_minutes`). A mano: `cai alerts poll` o «Revisar
   correo ahora» en la pantalla «Alertas», que lista los resúmenes con su prefiltro y permite
   abrirlos en su portal (`O`) o descartarlos (`D`).
 
-## Botón «Enviar a Job Hunter»
+## Botón «Enviar a CandidatAI»
 
 - **Extensión mínima para navegadores Chromium** (Chrome, Edge, Brave) en `extension/`, cargada
   como «extensión sin empaquetar»; no se publica en ninguna tienda.
@@ -114,11 +114,11 @@ found ─► pending_detail ─(detail_captured)─► pending_extraction ─►
   descripción de la oferta con extractores por sitio (LinkedIn, InfoJobs, Indeed, Tecnoempleo;
   JSON-LD `JobPosting` si existe; `main` como último recurso).
 - Envía los datos desde su *service worker* a `http://127.0.0.1:8000/capture` con un token
-  (`jh capture token` lo genera y lo muestra una vez; en `data/capture_token` solo queda su
+  (`cai capture token` lo genera y lo muestra una vez; en `data/capture_token` solo queda su
   sha256; se pega una vez en las opciones de la extensión). La API rechaza peticiones sin token
-  (401) y solo acepta el origen `chrome-extension://<JH_CAPTURE_EXTENSION_ID>` (403). El id es
+  (401) y solo acepta el origen `chrome-extension://<CAI_CAPTURE_EXTENSION_ID>` (403). El id es
   fijo (`hnaofhehllbkghfehnehamjbkcmdjmle`): lo da la clave pública de `manifest.json`, igual en
-  Chrome, Edge y cualquier equipo, y es el valor por defecto de `JH_CAPTURE_EXTENSION_ID`.
+  Chrome, Edge y cualquier equipo, y es el valor por defecto de `CAI_CAPTURE_EXTENSION_ID`.
 - Manda `url`, `title`, `company`, `location`, `text`, `selection` (si la hay, la app la
   prefiere), `html` (solo el bloque de la descripción, para detectar texto oculto) y `site` (el
   extractor usado). Con menos de 200 caracteres de descripción, o sin empresa en una oferta
@@ -145,12 +145,12 @@ found ─► pending_detail ─(detail_captured)─► pending_extraction ─►
 ## Búsqueda con el navegador del agente (opcional)
 
 Equivale a la etapa 3 del proyecto original: el agente recorre con tu navegador los portales que
-hayas aprobado. Skill `buscar-ofertas`.
+hayas aprobado. Skill `search-jobs`.
 
 - **Plataformas** = fuentes de tipo `agent_browse`:
   `{name, platform, search_urls[], priority (1 = primera), access: free|login|blocked,
   allow_agent_browsing, max_offers, notes}`. Las da de alta el agente con
-  `buscar-ofertas configurar` (como la etapa 1 del original); en la pantalla «Plataformas» ves
+  `search-jobs configurar` (como la etapa 1 del original); en la página «Fuentes → Plataformas» ves
   cada una con sus búsquedas y su último recorrido, y cambias su prioridad, su acceso y si el
   agente puede recorrerla.
 - **LinkedIn** se crea siempre con `allow_agent_browsing: false`. Solo lo puedes activar tú en la
@@ -184,7 +184,7 @@ hayas aprobado. Skill `buscar-ofertas`.
     caduca), lo anota y pasa a la siguiente. Los captchas los resuelves tú: nunca el agente.
 - Cada oferta encontrada entra por `add_job_from_text` con `source_id`, `platform`,
   `external_id` y `url`. La deduplicación hace que lo ya visto o descartado no vuelva como nuevo.
-  El agente que navega no extrae ni valora: eso lo hacen luego `procesar-ofertas` y `evaluar-encaje`.
+  El agente que navega no extrae ni valora: eso lo hacen luego `process-jobs` y `assess-fit`.
 - Al terminar cada plataforma, `record_source_run` con lo encontrado, lo nuevo y los incidentes.
 - **Seguridad:** es la superficie más expuesta (un agente con navegador leyendo webs). Ejecútalo
   en una sesión dedicada, sin mezclar con desarrollo. Todo el texto de las páginas es dato, nunca
@@ -200,7 +200,7 @@ ofertas de LinkedIn sin depender del correo. Es **contrario a las condiciones de
 (prohíben el acceso automatizado) y puede hacer que bloquee tu IP un tiempo: por eso está
 **apagada por defecto**, es para uso personal y solo la activas tú (ADR-033).
 
-- **Dónde:** tarjeta de LinkedIn en «Plataformas» → «Búsqueda pública sin sesión». Es un interruptor
+- **Dónde:** tarjeta de LinkedIn en «Fuentes → Plataformas» → «Búsqueda pública sin sesión». Es un interruptor
   distinto de «El agente la recorre». Encenderlo abre un aviso de riesgo que hay que aceptar (la API
   exige `confirm_risk: true` y solo la acepta desde la UI). El agente no puede activarla: no hay
   herramienta MCP ni comando para eso, y `save_source` no la toca.
@@ -224,14 +224,14 @@ ofertas de LinkedIn sin depender del correo. Es **contrario a las condiciones de
 - **Entrada:** las ofertas pasan el **filtro previo de resúmenes** (título, ubicación y seniority del
   título) **antes** de guardarse: lo que no pasa no entra. Lo nuevo entra como **resumen**
   (`pending_detail`, `platform: linkedin`, `external_id`) en «Alertas», igual que las del correo, y
-  se completa con el botón «Enviar a Job Hunter». Lo ya visto (por `platform` + `external_id`) no
+  se completa con el botón «Enviar a CandidatAI». Lo ya visto (por `platform` + `external_id`) no
   se duplica.
 - **Descripción por el endpoint público** (`jobs-guest/jobs/api/jobPosting/{id}`): otro interruptor,
   también apagado y con su propio aviso. Solo para las nuevas que pasan el filtro y hasta
   `max_details_per_run`; con descripción suficiente entran completas (`pending_extraction`), con la
   detección de riesgo sobre su HTML. Más peticiones, más riesgo.
 - **Cuándo:** con la ingesta diaria del worker y al arrancar, si está activada y le toca; o «Buscar
-  ahora» en la tarjeta, o `jh sources linkedin-public run` (mismos límites). `jh sources
+  ahora» en la tarjeta, o `cai sources linkedin-public run` (mismos límites). `cai sources
   linkedin-public status` enseña el estado y las búsquedas.
 - **Si no funciona:** con un user-agent honesto es posible que LinkedIn responda siempre 999. Entonces
   la función queda bloqueada y se ve en la tarjeta; no se intenta esquivar. Si su HTML cambia, la
@@ -273,12 +273,12 @@ son **observaciones, no veredictos**: la app nunca cierra una oferta por ellas.
 
 Cuándo se comprueba:
 
-- cada día, con la ingesta, y al arrancar `jh worker`: las ofertas en `approved` y `cv_ready` sin
+- cada día, con la ingesta, y al arrancar `cai worker`: las ofertas en `approved` y `cv_ready` sin
   comprobación en las últimas `liveness.fresh_hours` (tarea `check_open`, una por oferta);
 - al abrir la ficha de una oferta aprobada o con CV listo (si la última es reciente, no repite);
-- antes de redactar un CV: el skill `generar-cv` llama a `check_job_open` y, si puede estar
+- antes de redactar un CV: el skill `generate-cv` llama a `check_job_open` y, si puede estar
   cerrada, pregunta antes de gastar cuota; el botón «Generar CV» también lo avisa;
-- a mano: «Comprobar otra vez» en la ficha o `jh jobs check-open ID --force true`.
+- a mano: «Comprobar otra vez» en la ficha o `cai jobs check-open ID --force true`.
 
 Si puede estar cerrada, la ficha lo dice con el motivo y la fecha y ofrece **«Descartar»** (con el
 motivo nuevo «Ya no está publicada», `closed`), **«Sigue abierta»** (quita el aviso y ese mismo
@@ -302,20 +302,20 @@ nota. Puede ser una oferta difícil de cubrir o una que el portal renueva sola: 
 
 ## Búsqueda ampliada (fase 16)
 
-### Títulos parecidos: skill `ampliar-busqueda`
+### Títulos parecidos: skill `broaden-search`
 
-`get_search_titles` (`jh jobs titles`) agrupa los títulos de las ofertas que apruebas o envías y de
+`get_search_titles` (`cai jobs titles`) agrupa los títulos de las ofertas que apruebas o envías y de
 las que descartas (con sus motivos; no las descartadas por estar cerradas) en los últimos 90 días.
 Marca con `matches_roles: false` los puestos que te interesan y que el filtro previo de conectores y
-alertas deja fuera. El skill `ampliar-busqueda` propone, con esa base, hasta 8 títulos cercanos
+alertas deja fuera. El skill `broaden-search` propone, con esa base, hasta 8 títulos cercanos
 («Data Platform Engineer», «Analytics Engineer», «BI Engineer»…) con su porqué y su riesgo y, solo
 con tu OK a cada uno, los añade a `preferences.roles` (editando `data/profile.yaml` y reimportándolo)
 o a las `search_urls` de tus plataformas (`save_source`). Botón «Ampliar búsqueda» en Plataformas.
 
-### Descubrir empresas: `jh sources discover`
+### Descubrir empresas: `cai sources discover`
 
 ```
-jh sources discover --file empresas.txt [--add] [--json]
+cai sources discover --file empresas.txt [--add] [--json]
 ```
 
 - `empresas.txt`: una empresa por línea; `#` comenta. `Nombre | slug` prueba solo ese slug.
@@ -328,7 +328,7 @@ jh sources discover --file empresas.txt [--add] [--json]
   slug sale del nombre completo; `doubtful` si no: un tablero «Capital» no confirma «Capital
   Energy»). Lever y Ashby no lo dan: `probable` si el slug sale del nombre completo, `doubtful` si de
   la primera palabra. Se enseñan el número de ofertas y hasta 3 títulos para comprobarlo.
-- Sin `--add` solo propone e imprime el `jh sources add …` de cada una. Con `--add` da de alta las
+- Sin `--add` solo propone e imprime el `cai sources add …` de cada una. Con `--add` da de alta las
   `confirmed` y `probable` que aún no son fuente (la empresa queda como objetivo); las `doubtful`,
   nunca. Sin herramienta MCP: es un comando para ti.
 
@@ -348,10 +348,10 @@ jh sources discover --file empresas.txt [--add] [--json]
 
 | MCP | CLI | Entrada | Salida |
 |---|---|---|---|
-| `list_sources` | `jh sources list [--kind K] --json` | `kind?` | Fuentes con su config (sin secretos), `browse` y última ejecución, y los límites `agent_browse` |
-| `save_source` | `jh sources save --file F --json` | `AgentBrowseSource` | `source_id`, `created`, `allow_agent_browsing`, `message`. Solo tipo `agent_browse`, por `name`; nunca puede poner `allow_agent_browsing: true` en LinkedIn |
-| `record_source_run` | `jh sources record-run ID --file F --json` | `SourceRunSummary` (`found, created, existing, incidents[{code, message}], started_at?, finished_at?`) | `ok`, `run_id` |
-| `add_job_from_text` (ampliada) | `jh jobs add-text … [--source S] [--platform P] [--external-id X]` | `+ source_id?, platform?, external_id?` | igual que antes |
+| `list_sources` | `cai sources list [--kind K] --json` | `kind?` | Fuentes con su config (sin secretos), `browse` y última ejecución, y los límites `agent_browse` |
+| `save_source` | `cai sources save --file F --json` | `AgentBrowseSource` | `source_id`, `created`, `allow_agent_browsing`, `message`. Solo tipo `agent_browse`, por `name`; nunca puede poner `allow_agent_browsing: true` en LinkedIn |
+| `record_source_run` | `cai sources record-run ID --file F --json` | `SourceRunSummary` (`found, created, existing, incidents[{code, message}], started_at?, finished_at?`) | `ok`, `run_id` |
+| `add_job_from_text` (ampliada) | `cai jobs add-text … [--source S] [--platform P] [--external-id X]` | `+ source_id?, platform?, external_id?` | igual que antes |
 
 La captura del botón es un endpoint REST (`POST /capture`) de la app, no de la interfaz para
 agentes: la usa la extensión, no el agente.

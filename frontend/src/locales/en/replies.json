@@ -1,0 +1,111 @@
+{
+  "event": {
+    "interview_scheduled": "Interview",
+    "test_assigned": "Technical test",
+    "offer_received": "Job offer",
+    "rejected": "Rejection",
+    "reply_received": "Reply (the process continues)",
+    "none": "Nothing to log"
+  },
+  "confidence": {
+    "high": "Clear",
+    "medium": "Check it",
+    "low": "Doubtful"
+  },
+  "matchReason": {
+    "contact": "contact on the job",
+    "domain": "company domain",
+    "ats": "applicant tracking system",
+    "company_name": "company name"
+  },
+  "likely": {
+    "interview_scheduled": "Looks like an interview invitation",
+    "test_assigned": "Looks like a technical test",
+    "offer_received": "Looks like a job offer",
+    "rejected": "Looks like a rejection",
+    "reply_received": "Looks like a reply from the company",
+    "none": "There doesn't seem to be anything to log"
+  },
+  "when": {
+    "day": "on {{weekday}} {{date}}",
+    "at": "{{day}} at {{time}}",
+    "atOne": "{{day}} at {{time}}"
+  },
+  "sentence": {
+    "withDue": "{{base}} due {{when}}",
+    "withWhen": "{{base}} {{when}}"
+  },
+  "card": {
+    "accepted": "Accepted: it's already logged on the job.",
+    "ignored": "Ignored: nothing was logged.",
+    "proposedBy": "Proposed by {{agent}}",
+    "for": "For",
+    "injection": "Your agent thinks the email contains instructions for an AI. Read it yourself before deciding.",
+    "invalidNow": "It doesn't fit the job's current stage: if you accept, the app may not allow it.",
+    "unclassified": "Not classified yet: ask your agent to review it or decide yourself with “Decide”.",
+    "accept": "Accept",
+    "change": "Change",
+    "decide": "Decide",
+    "ignore": "Ignore",
+    "saveFailed": "Couldn't save: {{error}}"
+  },
+  "decision": {
+    "title": "Log the reply",
+    "job": "Job",
+    "what": "What is it?",
+    "whatAria": "What it is",
+    "dateTime": "Date and time (optional)",
+    "due": "Due date (optional)",
+    "allDay": "All day",
+    "end": "End (optional)",
+    "title2": "Title (optional)",
+    "location": "Place or link (optional)",
+    "madrid": "Madrid time. Without a date, it's logged without a calendar milestone.",
+    "note": "Note (optional)",
+    "cancel": "Cancel",
+    "saving": "Saving…",
+    "archive": "Archive",
+    "register": "Log it"
+  },
+  "page": {
+    "filters": {
+      "pending": "Pending",
+      "accepted": "Accepted",
+      "ignored": "Ignored",
+      "all": "All"
+    },
+    "risk": {
+      "hidden_text": "hidden text",
+      "injection_phrase": "phrases that look like instructions for an AI"
+    },
+    "status": {
+      "new": "Unclassified",
+      "proposed": "To review",
+      "accepted": "Accepted",
+      "ignored": "Ignored"
+    },
+    "closeNotice": "Close notice",
+    "riskAria": "Possible content aimed at an AI",
+    "noSubject": "(no subject)",
+    "noJob": "No job",
+    "email": "Email",
+    "proposal": "Proposal",
+    "riskNote": "This email has {{list}}. It may try to fool your agent: check the proposal against the text.",
+    "body": "Email text",
+    "empty": "(empty)",
+    "loading": "Loading replies",
+    "title": "Replies",
+    "intro": "Emails from companies about your applications. Your agent proposes what each one means; nothing changes stage until you accept it here.",
+    "review": "Review replies",
+    "reading": "Reading email…",
+    "poll": "Check email now",
+    "pollFailed": "Couldn't read the email: {{error}}",
+    "unclassified_one": "{{count}} unclassified email: “Review replies” opens your agent so it proposes what each one is.",
+    "unclassified_other": "{{count}} unclassified emails: “Review replies” opens your agent so it proposes what each one is.",
+    "filterAria": "Filter by status",
+    "noneTitle": "No replies here",
+    "noneBody": "Emails from companies about the applications you've sent show up here. They're read over IMAP (`CAI_IMAP_REPLIES_FOLDER`) or from `data/inbox/respuestas/`.",
+    "list": "Replies",
+    "byReason": "({{stage}}; by {{reason}})"
+  }
+}

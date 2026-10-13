@@ -5,7 +5,7 @@ Objetivo: comprobar que, sobre un CV ya redactado y verificado, desde la UI y SI
 cambiar de plantilla, poner o quitar la foto, elegir color y ocultar secciones; que cada cambio
 crea un render nuevo en segundos; que puedes comparar dos renders lado a lado y elegir cuál se
 enviará. También revisas la plantilla nueva clasica-foto, la página Plantillas y el aviso de
-foto de jh doctor.
+foto de cai doctor.
 
 Duración aproximada: 25 minutos (parte 3) + 20 si haces también la parte 5 con tus datos.
 
@@ -30,15 +30,15 @@ aparte (data\demo-cv\): no tocan tu base de datos ni tus CVs. La parte 5 sí usa
 PARTE 1 · PREPARAR
 ------------------
 1. CIERRA Claude Code antes de este paso: con su servidor MCP abierto, `uv sync` falla con
-   "El proceso no tiene acceso al archivo… jh-mcp.exe" (el fichero está en uso).
+   "El proceso no tiene acceso al archivo… cai-mcp.exe" (el fichero está en uso).
    Esta fase añade pypdfium2 al backend (miniaturas de las plantillas); el frontend no cambia
    de dependencias:
 
       uv sync --directory backend
 
-2. Comprueba el entorno (con TU directorio de datos, sin JH_DATA_DIR):
+2. Comprueba el entorno (con TU directorio de datos, sin CAI_DATA_DIR):
 
-      uv run --directory backend jh doctor
+      uv run --directory backend cai doctor
 
    Esperado, entre otras líneas, y termina con "Todo listo.":
       [ OK  ] Plantillas de CV     integradas: ats-simple, clasica-foto
@@ -76,18 +76,18 @@ PARTE 3 · LA SECCIÓN «CV» DE LA UI (criterio de aceptación)
 6. Prepara el CV ficticio (una oferta aprobada con su CV ya redactado y verificado), en la
    terminal que usarás para la API:
 
-      $env:JH_DATA_DIR = "data/demo-cv"
+      $env:CAI_DATA_DIR = "data/demo-cv"
       uv run --directory backend python ../scripts/seed_cv_demo.py
 
    Esperado (tarda unos 10-20 s: hace una conversión real):
       Oferta 1 en «cv_ready» (…\job-search\data\demo-cv)
       Render 1: clasica-foto, foto sí, 1 pág., N s
    Si lo ejecutas otra vez dice "Ya preparado: oferta 1 …" y no hace nada.
-   Sin JH_DATA_DIR se niega ("Usa un directorio aparte…"): así nunca escribe en tu data\.
+   Sin CAI_DATA_DIR se niega ("Usa un directorio aparte…"): así nunca escribe en tu data\.
 
-7. En ESA MISMA terminal (que tiene JH_DATA_DIR), arranca la API:
+7. En ESA MISMA terminal (que tiene CAI_DATA_DIR), arranca la API:
 
-      uv run --directory backend jh serve
+      uv run --directory backend cai serve
 
    En la otra terminal, la UI:
 
@@ -147,7 +147,7 @@ PARTE 3 · LA SECCIÓN «CV» DE LA UI (criterio de aceptación)
 
 15. Página Plantillas: en la barra de arriba, "Plantillas" (nueva, después de "Triaje").
     Esperado: "Plantillas de CV", un texto que explica que la plantilla solo decide el aspecto y
-    que tu CV de Word se convierte con el skill importar-plantilla-cv, y dos tarjetas grandes
+    que tu CV de Word se convierte con el skill import-cv-template, y dos tarjetas grandes
     con su miniatura, nombre, id, descripción y etiquetas:
       ATS sencilla:     Apta para ATS · Sin foto · 1 columna · Motor docx · Integrada
       Clásica con foto: No apta para ATS · Con foto · 1 columna · Motor docx · 4 colores · Integrada
@@ -174,7 +174,7 @@ PARTE 4 · CASOS LÍMITE
 ----------------------
 17. API caída: para la API (Ctrl+C en su terminal) y pulsa "Renderizar".
     Esperado: un mensaje en rojo bajo el formulario que dice que la API no responde y cómo
-    arrancarla. Vuelve a arrancarla (paso 7, con JH_DATA_DIR) y sigue.
+    arrancarla. Vuelve a arrancarla (paso 7, con CAI_DATA_DIR) y sigue.
 
 18. Sin conversor: no hace falta desinstalar nada; si en algún momento ves en rojo
     "No hay LibreOffice ni Word…", es este caso y el mensaje dice qué instalar.
@@ -185,23 +185,23 @@ PARTE 5 · CON TUS DATOS (opcional, cierra el flujo completo de la fase 08)
 Necesita haber hecho la prueba de la 08.1 (docs\pruebas\fase-08.1-prueba-manual.txt), o al menos
 sus partes 1 y 3: tu base de datos migrada a la 0005 y una oferta tuya en "CV listo".
 IMPORTANTE: abre terminales NUEVAS o quita la variable antes de seguir:
-      Remove-Item Env:JH_DATA_DIR
+      Remove-Item Env:CAI_DATA_DIR
 
 19. Tu foto: deja tu foto como data\photo.jpg (también vale .png o .webp). Si la tienes en otro
     sitio dentro de data\, pon su ruta en tu perfil, preferences.cv.photo_file (p. ej.
-    `photo_file: fotos/yo.jpg`), con el skill actualizar-perfil.
+    `photo_file: fotos/yo.jpg`), con el skill update-profile.
     Comprueba:
 
-      uv run --directory backend jh doctor
+      uv run --directory backend cai doctor
 
     Esperado: "[ OK  ] Foto del CV  …\data\photo.jpg".
 
 20. Si quieres que tus CVs salgan con foto por defecto donde se estila (España), pide a tu
-    agente con actualizar-perfil `default_template: clasica-foto` y unas reglas como las del
+    agente con update-profile `default_template: clasica-foto` y unas reglas como las del
     perfil demo (ats-simple para Workday y similares y para GB, IE, US y NL). Si no, todo
     seguirá saliendo con ats-simple y la foto solo cuando la pidas en la UI.
 
-21. Arranca API y UI (paso 7, SIN JH_DATA_DIR) y abre la ficha de tu oferta en "CV listo".
+21. Arranca API y UI (paso 7, SIN CAI_DATA_DIR) y abre la ficha de tu oferta en "CV listo".
     Repite los pasos 9 a 13 con tu CV: pasa a "Clásica con foto" con "Con foto" y renderiza.
     Comprueba en el PDF:
     - La foto recortada en círculo, centrada en tu cara y bien orientada (si salía tumbada en
@@ -217,7 +217,7 @@ LIMPIAR AL TERMINAR
 - Para la API y la UI: Ctrl+C en cada terminal.
 - Borra el directorio demo y la variable:
       Remove-Item -Recurse -Force data\demo-cv
-      Remove-Item Env:JH_DATA_DIR
+      Remove-Item Env:CAI_DATA_DIR
 - Las fotos recortadas de la parte 5 están en data\cache\photo\; se pueden borrar cuando quieras
   (se regeneran solas).
 

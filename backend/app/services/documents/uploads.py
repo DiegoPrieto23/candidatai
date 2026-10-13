@@ -92,7 +92,7 @@ def _info(path: Path, sources: dict[str, str]) -> UploadInfo:
         format=path.suffix.lstrip(".").casefold(),
         supported=path.suffix.casefold() in SUPPORTED_NOW,
         template_id=sources.get(_digest(path)),
-        agent_command=f"importar-plantilla-cv data/uploads/{path.name}",
+        agent_command=f"import-cv-template data/uploads/{path.name}",
         uploaded_at=datetime.fromtimestamp(stat.st_mtime, tz=UTC),
     )
 

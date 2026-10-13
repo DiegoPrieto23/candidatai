@@ -12,7 +12,7 @@ La app nunca llama a un modelo y no depende de ningún proveedor.
   Tú ──── UI ─────┤  FastAPI  ─┐                                 │
   (React)         │            ├──► services/ ──► SQLite (data/) │
   Tú ─ tu agente ─┤  MCP     ──┤        │                        │
-  (Claude Code,   │  CLI jh  ──┘        ├──► docxtpl + LibreOffice│
+  (Claude Code,   │  CLI cai  ──┘        ├──► docxtpl + LibreOffice│
    Codex, …)      │                     ├──► embeddings locales  │
                   │  worker ────────────┘   (scheduler, ingesta) │
                   └──────────────────────────────────────────────┘
@@ -27,14 +27,14 @@ La app nunca llama a un modelo y no depende de ningún proveedor.
 | `app/services` | Toda la lógica de negocio | Se prueba aquí; no conoce HTTP, MCP ni CLI |
 | `app/api` | Endpoints REST para la UI | Solo traduce HTTP ↔ servicios |
 | `app/mcp` | Herramientas MCP para agentes | Solo traduce MCP ↔ servicios; valida con Pydantic |
-| `app/cli.py` | CLI `jh`, con modo `--json` equivalente a la MCP | Solo traduce CLI ↔ servicios |
-| `app/services/tasks.py`, `worker.py` | Cola de tareas en BD y worker (`jh worker`, APScheduler): scores, recálculos, ingesta diaria, alertas por correo y caducidad de resúmenes | Ejecuta servicios; nunca un LLM |
+| `app/cli.py` | CLI `cai`, con modo `--json` equivalente a la MCP | Solo traduce CLI ↔ servicios |
+| `app/services/tasks.py`, `worker.py` | Cola de tareas en BD y worker (`cai worker`, APScheduler): scores, recálculos, ingesta diaria, alertas por correo y caducidad de resúmenes | Ejecuta servicios; nunca un LLM |
 | `app/services/ingestion/` | Conectores de ATS y portales, filtro previo y ejecución de fuentes (fase 09); `email/`: alertas por correo (09b) | Solo endpoints públicos documentados; IMAP en solo lectura; guardan con el mismo servicio que el alta manual |
 | `app/services/capture.py` | Captura desde la extensión: token (solo su hash en `data/`) y alta o compleción de la oferta (09b) | Todo lo capturado es no confiable: pasa por la detección de riesgo |
 | `app/services/platforms.py`, `summaries.py` | Identidad de oferta por plataforma (`platform` + `external_id`) y ofertas resumen en `pending_detail`: bandeja «Alertas» y caducidad (09b) | Sin red ni agente |
 | `app/services/process.py`, `tracking.py`, `calendar_ics.py` | Ficha de proceso (hitos con su evento, contactos, notas, documentos usados), seguimientos vencidos, próximos hitos, kanban y calendario iCalendar escrito a mano (fase 10) | Nada cambia de etapa sin evento; el calendario no sale de `127.0.0.1` |
 | `app/services/skill_gaps.py`, `skill_aliases.py` | Huecos de skills agregados de las ofertas, marcas del usuario y alias añadidos desde la UI (fase 14) | Recalcula la cobertura sin escribir; el único que escribe `config/skill_aliases.yaml` (ruamel.yaml, conserva comentarios) |
-| `app/services/liveness.py`, `reposts.py`, `signals.py`, `search_titles.py`, `ingestion/discover.py` | ¿Sigue abierta? (URL o API del ATS), republicadas (`job_sightings`), señales en `jobs.signals`, títulos para `ampliar-busqueda` y descubrimiento de tableros de ATS (fase 16) | Nunca cierran una oferta ni añaden fuentes sin el usuario; LinkedIn no se comprueba (ADR-016, ADR-028) |
+| `app/services/liveness.py`, `reposts.py`, `signals.py`, `search_titles.py`, `ingestion/discover.py` | ¿Sigue abierta? (URL o API del ATS), republicadas (`job_sightings`), señales en `jobs.signals`, títulos para `broaden-search` y descubrimiento de tableros de ATS (fase 16) | Nunca cierran una oferta ni añaden fuentes sin el usuario; LinkedIn no se comprueba (ADR-016, ADR-028) |
 | `app/services/agent_launch.py`, `agent_runs.py`, `agent_runner.py`, `agent_requests.py` | Botones «en tu agente» (ADR-024): terminal; en segundo plano desde el worker con solo las herramientas de la acción, de una en una, y cola de encargos (fase 19, ADR-032) | Lanzan el agente que ya usas, nunca un modelo; las órdenes son una lista cerrada; solo la UI lanza |
 | `frontend/` | UI | Solo habla con la API |
 | `.agents/` | Skills, roles y manifiesto, sin nada específico de un proveedor | Fuente única; lo nativo se genera |
@@ -59,13 +59,13 @@ La app nunca llama a un modelo y no depende de ningún proveedor.
 | `GET /renders/{id}/pdf`, `GET /renders/{id}/docx` | Ficheros del render |
 | `GET /uploads`, `POST /uploads`, `DELETE /uploads/{name}` | «Mi CV»: CVs subidos a `data/uploads/` (máximo 10 MB, nombre saneado, nunca se sobrescribe) y la plantilla creada desde cada uno, si la hay (por sha256 del `source.*`) |
 | `GET /templates/{id}/source.png`, `GET /templates/{id}/preview-real.png` | Primera página del original importado y la plantilla con el perfil real (en caché por plantilla y versión del perfil) |
-| `GET /sources`, `POST /sources` | Pantalla «Empresas»: fuentes con conector (empresas objetivo y portales) con su última ejecución; alta (`exists` 409 si ya está) |
+| `GET /sources`, `POST /sources` | Página «Fuentes → Empresas objetivo»: fuentes con conector (empresas objetivo y portales) con su última ejecución; alta (`exists` 409 si ya está) |
 | `POST /sources/platforms` | «Añadir plataforma» (búsqueda con navegador): `AgentBrowseSource`; `exists` 409 si ya hay una con ese nombre. LinkedIn se crea siempre desactivada |
 | `GET /prompts/pending`, `POST /prompts/{id}/answer` | Avisos al usuario (captcha, login…) para el pop-up global; contestar `{outcome: done\|skipped}` |
 | `POST /sources/test`, `POST /sources/{id}/test` | Prueba una fuente nueva o guardada sin guardar nada: «12 ofertas encontradas, 3 tras filtros». Un fallo de la fuente es 200 con `errors` |
 | `POST /sources/{id}/run`, `POST /sources/{id}/active` | Ejecuta ya la fuente (lo nuevo, a `pending_extraction`) o la activa/pausa en la ingesta diaria |
-| `GET /alerts`, `POST /alerts/poll` | Pantalla «Alertas»: ofertas resumen (`pending_detail`) con su prefiltro, primero las que pasan; leer ya el correo (como `jh alerts poll`). Descartar va por `POST /jobs/{id}/events` |
-| `POST /capture` | Botón «Enviar a Job Hunter» (la extensión, no la UI): exige el origen de la extensión (403) y su token (401; 503 si no hay); completa un resumen, reconoce una oferta ya guardada o da de alta una nueva (`services/capture.py`) |
+| `GET /alerts`, `POST /alerts/poll` | Pantalla «Alertas»: ofertas resumen (`pending_detail`) con su prefiltro, primero las que pasan; leer ya el correo (como `cai alerts poll`). Descartar va por `POST /jobs/{id}/events` |
+| `POST /capture` | Botón «Enviar a CandidatAI» (la extensión, no la UI): exige el origen de la extensión (403) y su token (401; 503 si no hay); completa un resumen, reconoce una oferta ya guardada o da de alta una nueva (`services/capture.py`) |
 | `GET /templates/default`, `POST /templates/{id}/default` | Plantilla por defecto del perfil vigente; fijarla edita solo esa clave de `data/profile.yaml` (con ruamel.yaml, conserva comentarios) e importa la versión nueva |
 | `GET /board` | Kanban (fase 10): tarjetas de `approved` a `closed` (las cerradas, solo las que llegaron a aprobarse; las 50 más recientes) y los movimientos posibles (eventos del usuario por etapa de origen y destino) |
 | `GET /followups`, `GET /upcoming?days=` | Seguimientos vencidos y próximos hitos (como `list_followups_due` y `list_upcoming`) |
@@ -89,7 +89,7 @@ La app nunca llama a un modelo y no depende de ningún proveedor.
 | `POST /apply/{id}/submit` | **La única puerta al envío**: `{company_confirmation, reviewed_at}`; comprueba el nombre de la empresa, la versión revisada y que no falta nada, emite la confirmación de un solo uso y encola el envío (202). El token nunca sale por la API |
 | `GET /apply/{id}/screenshot/{review\|confirmation}`, `POST /browser/open` | Capturas del intento (desde `data/applications/`) y «Abrir navegador» |
 
-- `jh serve` escucha solo en `127.0.0.1`; CORS solo para `http://127.0.0.1:5173`. La extensión de
+- `cai serve` escucha solo en `127.0.0.1`; CORS solo para `http://127.0.0.1:5173`. La extensión de
   captura no lo necesita: sus `host_permissions` la eximen, y `POST /capture` exige su origen y token.
 - Errores con el mismo formato que la interfaz para agentes (`{ok: false, error: {type, message,
   details}}`): 404 `not_found`, 409 `invalid_transition` o `exists`, 413 `too_large`, 422
@@ -114,7 +114,7 @@ found ─► pending_extraction ─► pending_triage ─► approved ─► cv_
                   │                   │              │           │
               [agente]            [Tú en UI,     [agente:     [Tú confirmas
              rol extractor        con ayuda de   redactor +   en la UI]
-                                  evaluar-encaje] verificador]
+                                  assess-fit] verificador]
 ```
 
 - Las etapas marcadas [agente] se quedan en cola hasta que ejecutas el skill correspondiente en tu
@@ -127,7 +127,7 @@ found ─► pending_extraction ─► pending_triage ─► approved ─► cv_
 |---|---|---|
 | Descargar ofertas (APIs de ATS, URL, texto pegado) | Código | Determinista y repetible |
 | Leer alertas de correo y capturas del botón del navegador | Código | Determinista; nunca entra en los portales |
-| Recorrer portales con el navegador (opcional) | Agente, skill `buscar-ofertas` | Solo donde no hay otra vía; con reglas estrictas (POLICIES §8) |
+| Recorrer portales con el navegador (opcional) | Agente, skill `search-jobs` | Solo donde no hay otra vía; con reglas estrictas (POLICIES §8) |
 | Deduplicar (huella + similitud difusa) | Código | Determinista |
 | Detectar texto oculto y frases de inyección | Código | No depende del agente que se use |
 | Extraer la oferta a JSON | Agente, rol `extractor` (modelo rápido) | Necesita comprensión de texto |
@@ -135,8 +135,8 @@ found ─► pending_extraction ─► pending_triage ─► approved ─► cv_
 | Score de encaje (embeddings + cobertura de skills) | Código | Medible y evaluable |
 | Explicar el encaje y sus riesgos | Agente | Criterio |
 | Aprobar o descartar | Tú | Decisión tuya |
-| Redactar el contenido del CV | Agente, rol `redactor` | Redacción |
-| Verificar que no hay nada inventado | Agente, rol `verificador` (distinto del redactor) | Segunda opinión independiente |
+| Redactar el contenido del CV | Agente, rol `writer` | Redacción |
+| Verificar que no hay nada inventado | Agente, rol `verifier` (distinto del redactor) | Segunda opinión independiente |
 | Comprobar evidencias, skills y páginas | Código | Determinista; no se fía del agente |
 | Elegir plantilla y foto para una oferta | Código, por reglas; tú puedes cambiarlo en la UI | Configurable y sin coste |
 | Renderizar DOCX/PDF, también en otra plantilla o sin foto | Código | Determinista; no hace falta volver al agente |
@@ -200,13 +200,13 @@ API confirm_submission ─► token de un solo uso ─► tarea apply_submit ─
 
 - Todo nativo con `uv` y `pnpm`, sin Docker: Playwright necesita un navegador visible para que
   inicies sesión y revises formularios, y LibreOffice se usa instalado en el sistema.
-- `jh serve` levanta la API, `jh worker` el scheduler y `pnpm dev` la UI. El worker debe estar en
+- `cai serve` levanta la API, `cai worker` el scheduler y `pnpm dev` la UI. El worker debe estar en
   marcha para la ingesta diaria; si el equipo estaba apagado a esa hora, al arrancarlo ejecuta
   las fuentes pendientes. También para la candidatura asistida: abre el navegador
-  visible de las candidaturas (`JH_BROWSER_CHANNEL=chrome|msedge` usa el navegador instalado).
+  visible de las candidaturas (`CAI_BROWSER_CHANNEL=chrome|msedge` usa el navegador instalado).
 - Cada agente arranca el servidor MCP solo, según su configuración generada (`.mcp.json` para
   Claude Code, `.codex/config.toml` para Codex…).
-- **Modo demo (fase 12.1, ADR-020):** `jh demo seed` (`services/demo.py`) crea `data-demo/` con datos
+- **Modo demo (fase 12.1, ADR-020):** `cai demo seed` (`services/demo.py`) crea `data-demo/` con datos
   ficticios usando los mismos servicios (alta, extracción, filtros, score, eventos, hitos, CVs);
   solo reparte después las fechas de lo automático en las 8 semanas anteriores. La carpeta lleva
   la marca `.demo`: `Settings.demo_mode` la detecta, `get_status` devuelve `demo_mode` y la UI

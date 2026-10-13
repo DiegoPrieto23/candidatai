@@ -1,0 +1,47 @@
+{
+  "columnHint": {
+    "approved": "Falta el CV",
+    "cv_ready": "Lista para enviar",
+    "applied": "Esperando respuesta",
+    "in_process": "Entrevistas y pruebas",
+    "closed": "Recientes"
+  },
+  "card": {
+    "followup": "Seguimiento · {{count}} días",
+    "updateAria": "Actualizar estado de «{{title}}»",
+    "update": "Actualizar estado",
+    "draggable": "tarjeta arrastrable"
+  },
+  "empty": "Vacía",
+  "dnd": {
+    "start": "Has cogido «{{title}}».",
+    "over": "Sobre la columna «{{stage}}».",
+    "outside": "Fuera de las columnas.",
+    "end": "Soltada en «{{stage}}». Confirma el evento en el diálogo.",
+    "endNone": "Soltada sin moverla.",
+    "cancel": "Movimiento cancelado.",
+    "instructions": "Pulsa espacio para coger la tarjeta, muévela con las flechas y suéltala con espacio. Esc cancela. También puedes usar «Mover»."
+  },
+  "noMoves": "Esta oferta no tiene movimientos posibles desde aquí.",
+  "refused": "La tarjeta vuelve a su sitio. {{reason}}",
+  "upcomingEmpty": "Nada en los próximos 7 días.",
+  "calendar": {
+    "toggle": "Llevar los hitos a tu calendario",
+    "google": "<strong>Google Calendar:</strong> descarga el fichero e impórtalo (Configuración → Importar y exportar). Google no puede suscribirse a una dirección de tu equipo, así que vuelve a importarlo cuando cambien tus hitos: los eventos se actualizan, no se duplican.",
+    "others": "<strong>Outlook, Apple Calendar o Thunderbird:</strong> suscríbete a esta dirección (se actualiza sola mientras <code>cai serve</code> esté en marcha):",
+    "download": "Descargar .ics",
+    "copy": "Copiar dirección"
+  },
+  "title": "Procesos",
+  "intro": "Pulsa «Actualizar estado» en una tarjeta (o arrástrala de columna) para registrar lo que ha pasado: una respuesta, una entrevista, un rechazo… Nada cambia de columna sin su evento. Las entrevistas y pruebas crean su hito con fecha.",
+  "followups_one": "{{count}} seguimiento pendiente",
+  "followups_other": "{{count}} seguimientos pendientes",
+  "thanks_one": "{{count}} entrevista por agradecer",
+  "thanks_other": "{{count}} entrevistas por agradecer",
+  "draftAll": "Redactar borradores",
+  "none": {
+    "title": "Aún no hay procesos",
+    "body": "Aparecen aquí las ofertas que apruebas en <to>Por revisar</to>."
+  },
+  "next7": "Próximos 7 días"
+}

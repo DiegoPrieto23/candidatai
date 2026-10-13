@@ -2,7 +2,7 @@
 
 Un match se calcula con la extracción vigente de la oferta, la versión vigente del perfil y la
 configuración de puntuación vigente (`scoring_key`); si cualquiera cambia, queda desfasado y se
-recalcula al pedirlo (`get_match`), en el worker o con `jh match rescore`.
+recalcula al pedirlo (`get_match`), en el worker o con `cai match rescore`.
 Los filtros duros cierran la oferta (`hard_filter_failed`) al guardar una extracción y al recalcular
 tras importar un perfil nuevo, nunca al consultar. Si el usuario reabrió la oferta después de un
 `hard_filter_failed`, los filtros ya no la vuelven a cerrar: decidió él.

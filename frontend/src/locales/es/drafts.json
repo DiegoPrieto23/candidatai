@@ -1,0 +1,34 @@
+{
+  "title": "Borradores",
+  "kind": {
+    "followup": "Seguimiento",
+    "thank_you": "Agradecimiento",
+    "linkedin": "LinkedIn",
+    "email": "Correo"
+  },
+  "role": {
+    "recruiter": "recruiter",
+    "hiring_manager": "responsable del puesto",
+    "peer": "compañero"
+  },
+  "toNamed": "Para {{name}} ({{role}})",
+  "to": "Para: {{role}}",
+  "from": " · de {{agent}}",
+  "copySubject": "Copiar asunto",
+  "copySubjectAria": "Copiar el asunto: {{subject}}",
+  "chars": "{{count}}/{{max}} caracteres",
+  "attach": "Adjunta tú:",
+  "attachments": "Adjuntos",
+  "copyText": "Copiar texto",
+  "sent": "Ya lo he enviado",
+  "discard": "Descartar",
+  "saveFailed": "No se pudo guardar: {{error}}",
+  "intro": "Tu agente los redacta; la app nunca envía nada.",
+  "followups": " {{sent}} de {{max}} seguimientos enviados",
+  "capped": ": no conviene insistir más",
+  "draftMessage": "Redactar mensaje",
+  "draftFollowup": "Redactar seguimiento",
+  "loadFailed": "No se pudieron cargar los borradores: {{error}}",
+  "none": "Sin borradores. Tu agente redacta un mensaje de LinkedIn o un correo para alguien de la empresa.",
+  "noneSent": "Sin borradores. Tu agente redacta un mensaje de LinkedIn o un correo para alguien de la empresa, un seguimiento si la candidatura lleva días sin respuesta o un agradecimiento tras una entrevista."
+}

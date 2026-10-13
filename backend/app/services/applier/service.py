@@ -642,7 +642,7 @@ def _fill_page_in_browser(
 
 _NO_FORM = (
     "No se reconoce ningún formulario de candidatura. Si en la web hay que pulsar un botón para "
-    "verlo, púlsalo en el navegador de Job Hunter y luego «Rellenar esta página»; si no, termina "
+    "verlo, púlsalo en el navegador de CandidatAI y luego «Rellenar esta página»; si no, termina "
     "tú en la web."
 )
 
@@ -663,7 +663,7 @@ def _open_application_form(page: Any, log: AttemptLog) -> str | None:
             page.goto(href, wait_until="domcontentloaded")
         else:
             try:  # nunca un control de envío: solo el que abre el formulario
-                fields.open_form_click(page.locator("[data-jh-apply='1']").first)
+                fields.open_form_click(page.locator("[data-cai-apply='1']").first)
             except fields.SubmitControlError:
                 return None
         _settle(page)
@@ -750,7 +750,7 @@ def _store_outcome(
             prompts.request(
                 session,
                 _PROMPT_KINDS[outcome.blocker.kind],
-                f"{outcome.blocker.message} Resuélvelo en el navegador de Job Hunter y pulsa "
+                f"{outcome.blocker.message} Resuélvelo en el navegador de CandidatAI y pulsa "
                 "«Ya está»: se rellenará el formulario.",
                 url=attempt.url,
                 attempt_id=attempt.id,
@@ -855,7 +855,7 @@ def _fill_page_problem(session: Session, attempt: ApplicationAttempt) -> str | N
 
 def fill_page(session: Session, attempt_id: int) -> AttemptView:
     """«Rellenar esta página»: encola rellenar la pestaña que tienes delante en el navegador de
-    Job Hunter (el formulario de la empresa al que te llevó el portal). No envía nada."""
+    CandidatAI (el formulario de la empresa al que te llevó el portal). No envía nada."""
     attempt = _get(session, attempt_id)
     if (problem := _fill_page_problem(session, attempt)) is not None:
         raise ApplierError("invalid_state", problem)
@@ -882,7 +882,7 @@ def _current_page(state: BrowserState, attempt_id: int, job_id: int) -> Any:
     page = visible[-1] if visible else state.page_for(attempt_id) or (pages[-1] if pages else None)
     if page is None:
         raise ApplierError(
-            "wrong_page", "No hay ninguna pestaña abierta en el navegador de Job Hunter."
+            "wrong_page", "No hay ninguna pestaña abierta en el navegador de CandidatAI."
         )
     state.pages[attempt_id] = PreparedPage(job_id=job_id, page=page)
     return page
@@ -1238,22 +1238,22 @@ def open_browser(session: Session) -> None:
 
 
 def _start_page() -> str:
-    """La página de inicio del navegador de Job Hunter: para qué sirve y enlaces a los portales
+    """La página de inicio del navegador de CandidatAI: para qué sirve y enlaces a los portales
     para iniciar sesión. HTML local, sin datos tuyos."""
     links = "".join(f'<li><a href="{url}">{label}</a></li>' for label, url in platforms.LOGIN_LINKS)
     return (
         '<!doctype html><html lang="es"><head><meta charset="utf-8">'
-        "<title>Navegador de Job Hunter</title><style>"
+        "<title>Navegador de CandidatAI</title><style>"
         "body{font:16px/1.5 system-ui,sans-serif;max-width:40rem;margin:3rem auto;padding:0 1rem;"
         "color:#1f2933}h1{font-size:1.4rem}li{margin:.3rem 0}"
         "p.note{color:#52606d;font-size:.9rem}</style></head><body>"
-        "<h1>Navegador de Job Hunter</h1>"
-        "<p>Aquí abre Job Hunter las ofertas y rellena los formularios. Tiene su propio perfil, "
+        "<h1>Navegador de CandidatAI</h1>"
+        "<p>Aquí abre CandidatAI las ofertas y rellena los formularios. Tiene su propio perfil, "
         "separado de tu Chrome: inicia sesión en los portales que uses y las sesiones se quedan "
         "guardadas para las próximas candidaturas.</p>"
         f"<ul>{links}</ul>"
         "<p>Después, en la ficha de la oferta, pulsa «Preparar candidatura».</p>"
-        '<p class="note">Las cuentas y las contraseñas las introduces tú: Job Hunter no las lee. '
+        '<p class="note">Las cuentas y las contraseñas las introduces tú: CandidatAI no las lee. '
         "Puedes dejar esta ventana abierta.</p></body></html>"
     )
 

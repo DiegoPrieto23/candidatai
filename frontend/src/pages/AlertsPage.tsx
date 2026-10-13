@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import {
   ArrowSquareOutIcon,
@@ -18,6 +19,7 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { isActivatable, isTyping } from '@/lib/keyboard'
 import { discardReasonLabel, formatRelative } from '@/lib/labels'
+import { errorMessage } from '@/lib/errors'
 import { cn } from '@/lib/utils'
 
 /** Abre la oferta en su portal, en una pestaña nueva y sin dar acceso a esta. */
@@ -36,6 +38,7 @@ function AlertRow({
   onSelect: () => void
   onDiscard: () => void
 }) {
+  const { t } = useTranslation('alerts')
   const ref = useRef<HTMLLIElement>(null)
   useEffect(() => {
     if (selected) ref.current?.scrollIntoView({ block: 'nearest' })
@@ -66,7 +69,7 @@ function AlertRow({
             <WarningIcon
               className="size-3.5 shrink-0 text-warning-foreground"
               weight="fill"
-              aria-label="Posible contenido dirigido a una IA"
+              aria-label={t('risk')}
             />
           )}
         </p>
@@ -82,7 +85,7 @@ function AlertRow({
         {job.platform_label && (
           <span className="rounded-full border px-2 py-0.5 font-medium text-foreground/80">{job.platform_label}</span>
         )}
-        <span className="tabular hidden w-24 text-right md:inline" title={`Caduca ${formatRelative(job.expires_at)}`}>
+        <span className="tabular hidden w-24 text-right md:inline" title={t('expires', { when: formatRelative(job.expires_at) })}>
           {formatRelative(job.first_seen_at)}
         </span>
         <Button
@@ -93,7 +96,7 @@ function AlertRow({
           className="active:translate-y-px"
         >
           <a href={job.url} target="_blank" rel="noopener noreferrer">
-            Abrir
+            {t('open')}
             <ArrowSquareOutIcon />
           </a>
         </Button>
@@ -108,7 +111,7 @@ function AlertRow({
           className="active:translate-y-px"
         >
           <XIcon weight="bold" />
-          Descartar
+          {t('discard')}
         </Button>
       </div>
     </li>
@@ -116,6 +119,7 @@ function AlertRow({
 }
 
 function PollResult({ result, onClose }: { result: EmailPollResult; onClose: () => void }) {
+  const { t } = useTranslation('alerts')
   return (
     <div
       role="status"
@@ -132,7 +136,7 @@ function PollResult({ result, onClose }: { result: EmailPollResult; onClose: () 
           </ul>
         )}
       </div>
-      <button type="button" onClick={onClose} className="text-muted-foreground hover:text-foreground" aria-label="Cerrar aviso">
+      <button type="button" onClick={onClose} className="text-muted-foreground hover:text-foreground" aria-label={t('closeNotice')}>
         <XIcon className="size-4" />
       </button>
     </div>
@@ -146,8 +150,9 @@ interface Done {
 }
 
 function ListSkeleton() {
+  const { t } = useTranslation('alerts')
   return (
-    <div aria-busy="true" aria-label="Cargando alertas" className="space-y-2 rounded-xl border bg-card p-3">
+    <div aria-busy="true" aria-label={t('loading')} className="space-y-2 rounded-xl border bg-card p-3">
       {Array.from({ length: 6 }, (_, i) => (
         <Skeleton key={i} className="h-12" />
       ))}
@@ -156,6 +161,7 @@ function ListSkeleton() {
 }
 
 export function AlertsPage() {
+  const { t } = useTranslation('alerts')
   const { data, isPending, isError, error, refetch } = useAlerts()
   const event = useJobEvent()
   const poll = usePollAlerts()
@@ -198,7 +204,7 @@ export function AlertsPage() {
               return next
             })
             setSelectedId(job.job_id)
-            setActionError(err.message)
+            setActionError(errorMessage(err))
           },
         },
       )
@@ -221,7 +227,7 @@ export function AlertsPage() {
           })
           setSelectedId(jobId)
         },
-        onError: (err) => setActionError(err.message),
+        onError: (err) => setActionError(errorMessage(err)),
       },
     )
   }
@@ -257,12 +263,9 @@ export function AlertsPage() {
     <div className="animate-in fade-in duration-300">
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Alertas</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
           <p className="max-w-prose text-sm text-muted-foreground">
-            {isPending
-              ? 'Cargando…'
-              : `${total === 1 ? '1 oferta resumen' : `${total} ofertas resumen`} de tus alertas por correo. ` +
-                'Ábrelas en su portal y envíalas con el botón «Enviar a Job Hunter» para completarlas, o descártalas.'}
+            {isPending ? t('loading', { ns: 'common' }) : t('summary', { count: total })}
           </p>
         </div>
         <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
@@ -274,13 +277,13 @@ export function AlertsPage() {
             className="active:translate-y-px"
           >
             <ArrowsClockwiseIcon className={cn(poll.isPending && 'animate-spin')} />
-            {poll.isPending ? 'Leyendo el correo…' : 'Revisar correo ahora'}
+            {poll.isPending ? t('reading') : t('poll')}
           </Button>
           {total > 0 && (
-            <p className="hidden items-center gap-3 text-xs text-muted-foreground md:flex" aria-label="Atajos de teclado">
-              <span className="flex items-center gap-1"><Kbd>J</Kbd><Kbd>K</Kbd> mover</span>
-              <span className="flex items-center gap-1"><Kbd>O</Kbd> abrir</span>
-              <span className="flex items-center gap-1"><Kbd>D</Kbd> descartar</span>
+            <p className="hidden items-center gap-3 text-xs text-muted-foreground md:flex" aria-label={t('shortcuts.label')}>
+              <span className="flex items-center gap-1"><Kbd>J</Kbd><Kbd>K</Kbd> {t('shortcuts.move')}</span>
+              <span className="flex items-center gap-1"><Kbd>O</Kbd> {t('shortcuts.open')}</span>
+              <span className="flex items-center gap-1"><Kbd>D</Kbd> {t('shortcuts.discard')}</span>
             </p>
           )}
         </div>
@@ -290,27 +293,27 @@ export function AlertsPage() {
         {poll.data && <PollResult result={poll.data} onClose={() => poll.reset()} />}
         {poll.error && (
           <p role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-2.5 text-sm">
-            No se pudo leer el correo: {poll.error.message}
+            {t('pollFailed', { error: errorMessage(poll.error) })}
           </p>
         )}
         {done && (
           <div role="status" className="flex items-center gap-3 rounded-xl border bg-card px-4 py-2.5 text-sm animate-in fade-in slide-in-from-top-1">
             <ProhibitIcon className="size-[18px] shrink-0 text-muted-foreground" />
             <p className="min-w-0 flex-1 truncate">
-              Descartada <span className="font-medium">{done.title}</span>
+              {t('discarded')} <span className="font-medium">{done.title}</span>
               <span className="text-muted-foreground"> · {discardReasonLabel(done.reason)}</span>
             </p>
             <Button variant="ghost" size="xs" onClick={undo}>
-              Deshacer
+              {t('undo')}
             </Button>
-            <button type="button" onClick={() => setDone(null)} className="text-muted-foreground hover:text-foreground" aria-label="Cerrar aviso">
+            <button type="button" onClick={() => setDone(null)} className="text-muted-foreground hover:text-foreground" aria-label={t('closeNotice')}>
               <XIcon className="size-4" />
             </button>
           </div>
         )}
         {actionError && (
           <p role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-2.5 text-sm">
-            No se pudo guardar: {actionError}
+            {t('saveFailed', { error: actionError })}
           </p>
         )}
       </div>
@@ -321,16 +324,15 @@ export function AlertsPage() {
         <ErrorState error={error} onRetry={() => refetch()} />
       ) : total === 0 ? (
         <section className="rounded-xl border bg-card">
-          <EmptyState icon={<EnvelopeSimpleIcon className="size-6" weight="duotone" />} title="Sin alertas pendientes">
-            Las ofertas de tus alertas de LinkedIn y otros portales aparecen aquí. Configura IMAP en{' '}
-            <InlineCode text=".env" /> o deja correos <InlineCode text=".eml" /> en <InlineCode text="data/inbox/" />.
+          <EmptyState icon={<EnvelopeSimpleIcon className="size-6" weight="duotone" />} title={t('empty.title')}>
+            <InlineCode text={t('empty.body')} />
           </EmptyState>
         </section>
       ) : (
         <div className="space-y-6">
           {passing.length > 0 && (
             <section className="overflow-hidden rounded-xl border bg-card">
-              <ul role="listbox" aria-label="Encajan con tus preferencias" className="divide-y">
+              <ul role="listbox" aria-label={t('passing')} className="divide-y">
                 {passing.map(renderRow)}
               </ul>
             </section>
@@ -338,10 +340,10 @@ export function AlertsPage() {
           {failing.length > 0 && (
             <section>
               <h2 className="mb-2 px-1 text-sm font-medium text-muted-foreground">
-                No pasan el prefiltro ({failing.length})
+                {t('failingCount', { count: failing.length })}
               </h2>
               <div className="overflow-hidden rounded-xl border bg-card">
-                <ul role="listbox" aria-label="No pasan el prefiltro" className="divide-y">
+                <ul role="listbox" aria-label={t('failing')} className="divide-y">
                   {failing.map(renderRow)}
                 </ul>
               </div>

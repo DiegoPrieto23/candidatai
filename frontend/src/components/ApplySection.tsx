@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import {
   ArrowClockwiseIcon,
   ArrowSquareOutIcon,
@@ -41,6 +42,8 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
+import { errorMessage } from '@/lib/errors'
+import { codeLabel, i18n, serverText } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
 /** Etapas en las que la sección puede tener algo que enseñar. */
@@ -54,22 +57,9 @@ const MANUAL = new Set(['manual', 'needs_user', 'submit_failed', 'submit_unconfi
 /** Segundos en cola tras los que se sospecha que el worker no está en marcha. */
 const WORKER_HINT_AFTER = 15
 
-const FIELD_STATUS: Record<FieldReport['status'], string> = {
-  filled: 'Rellenado',
-  empty: 'Vacío',
-  needs_user_input: 'Falta un dato tuyo',
-  sensitive: 'Dato sensible: decides tú',
-  consent: 'Se acepta al enviar',
-  skipped: 'Sin marcar',
-  error: 'Error',
-}
-
-const ATTEMPT_STATUS: Record<string, string> = {
-  ready: 'Listo para revisar',
-  needs_user: 'Necesita tu intervención',
-  submit_failed: 'No se pudo enviar',
-  submit_unconfirmed: 'Envío sin confirmar',
-  manual: 'Abierta en el navegador de Job Hunter',
+/** Un aviso del intento: el mensaje del servidor, con su código traducido fuera del español. */
+function warningText(warning: { code: string; message: string }): string {
+  return serverText(codeLabel(`apply:warnings.${warning.code}`), warning.message)
 }
 
 /** Igual que el servidor, a grandes rasgos: sin mayúsculas, acentos ni espacios de más. */
@@ -100,22 +90,24 @@ function Notice({ tone, children }: { tone: 'amber' | 'red' | 'muted'; children:
 }
 
 function WorkerHint({ attempt }: { attempt: AttemptView }) {
+  const { t } = useTranslation('apply')
   const task = attempt.pending_task
   if (!task || task.status !== 'queued' || task.waiting_seconds < WORKER_HINT_AFTER) return null
   return (
     <Notice tone="amber">
-      <InlineCode text="El worker aún no lo ha recogido. ¿Está en marcha? Arráncalo con `uv run jh worker` en backend/." />
+      <InlineCode text={t('workerHint')} />
     </Notice>
   )
 }
 
 function Busy({ attempt }: { attempt: AttemptView }) {
+  const { t } = useTranslation('apply', { keyPrefix: 'busy' })
   const text =
     attempt.status === 'submitting'
-      ? 'Enviando… No cierres el navegador de Job Hunter.'
+      ? t('submitting')
       : attempt.status === 'filling'
-        ? `Rellenando el formulario de ${attempt.domain} en el navegador…`
-        : 'En cola para el worker…'
+        ? t('filling', { domain: attempt.domain })
+        : t('queued')
   return (
     <div className="space-y-3">
       <p className="flex items-center gap-2 text-sm">
@@ -128,17 +120,18 @@ function Busy({ attempt }: { attempt: AttemptView }) {
 }
 
 function FieldsTable({ fields }: { fields: FieldReport[] }) {
+  const { t } = useTranslation('apply')
   if (fields.length === 0) return null
   return (
     <div className="overflow-x-auto rounded-lg border">
       <table className="w-full text-left text-sm">
-        <caption className="sr-only">Campos del formulario</caption>
+        <caption className="sr-only">{t('fields.caption')}</caption>
         <thead className="bg-muted/50 text-xs text-muted-foreground">
           <tr>
-            <th scope="col" className="px-3 py-2 font-medium">Campo</th>
-            <th scope="col" className="px-3 py-2 font-medium">Estado</th>
-            <th scope="col" className="px-3 py-2 font-medium">Valor</th>
-            <th scope="col" className="px-3 py-2 font-medium">De dónde sale</th>
+            <th scope="col" className="px-3 py-2 font-medium">{t('fields.field')}</th>
+            <th scope="col" className="px-3 py-2 font-medium">{t('fields.status')}</th>
+            <th scope="col" className="px-3 py-2 font-medium">{t('fields.value')}</th>
+            <th scope="col" className="px-3 py-2 font-medium">{t('fields.source')}</th>
           </tr>
         </thead>
         <tbody>
@@ -153,19 +146,19 @@ function FieldsTable({ fields }: { fields: FieldReport[] }) {
                 <th scope="row" className="px-3 py-2 font-medium">
                   {field.label}
                   {field.required && (
-                    <span className="ml-1 text-muted-foreground" aria-hidden title="Obligatorio">
+                    <span className="ml-1 text-muted-foreground" aria-hidden title={t('fields.required')}>
                       *
                     </span>
                   )}
                   {field.required && (
-                    <span className="sr-only"> (obligatorio)</span>
+                    <span className="sr-only">{t('fields.requiredSr')}</span>
                   )}
                 </th>
                 <td className="px-3 py-2 whitespace-nowrap">
-                  {FIELD_STATUS[field.status]}
+                  {t(`fieldStatus.${field.status}`)}
                   {missing && (
                     <span className="block text-xs font-medium text-amber-700 dark:text-amber-400">
-                      Obligatorio sin respuesta
+                      {t('fields.missing')}
                     </span>
                   )}
                 </td>
@@ -183,8 +176,9 @@ function FieldsTable({ fields }: { fields: FieldReport[] }) {
 }
 
 function Screenshot({ attempt, kind }: { attempt: AttemptView; kind: 'review' | 'confirmation' }) {
+  const { t } = useTranslation('apply', { keyPrefix: 'screenshot' })
   const url = fileUrls.applicationScreenshot(attempt.id, kind, attempt.updated_at)
-  const alt = kind === 'review' ? 'Captura del formulario rellenado' : 'Captura después de enviar'
+  const alt = t(kind)
   return (
     <a href={url} target="_blank" rel="noopener noreferrer" className="block w-fit">
       <img
@@ -193,7 +187,7 @@ function Screenshot({ attempt, kind }: { attempt: AttemptView; kind: 'review' | 
         className="max-h-96 w-full max-w-xl rounded-lg border object-cover object-top"
       />
       <span className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-        <ArrowSquareOutIcon className="size-3.5" /> Ver la captura completa
+        <ArrowSquareOutIcon className="size-3.5" /> {t('full')}
       </span>
     </a>
   )
@@ -214,6 +208,7 @@ function SubmitDialog({ attempt, onClose }: { attempt: AttemptView | null; onClo
 }
 
 function SubmitConfirm({ attempt, onClose }: { attempt: AttemptView; onClose: () => void }) {
+  const { t } = useTranslation('apply', { keyPrefix: 'submit' })
   const submit = useSubmitApplication(attempt.job_id)
   const [typed, setTyped] = useState('')
   const matches = fold(typed) !== '' && fold(typed) === fold(attempt.company)
@@ -227,16 +222,22 @@ function SubmitConfirm({ attempt, onClose }: { attempt: AttemptView; onClose: ()
   return (
     <div className="grid gap-5">
       <DialogHeader>
-        <DialogTitle>Enviar la candidatura a {attempt.company}</DialogTitle>
+        <DialogTitle>{t('title', { company: attempt.company })}</DialogTitle>
         <DialogDescription>
-          Se pulsará {attempt.submit_button ? `«${attempt.submit_button}»` : 'el botón de envío'} en{' '}
-          <strong className="font-medium text-foreground">{attempt.domain}</strong>. Esta confirmación vale
-          solo para este envío.
+          {/* El botón y el dominio vienen de la web del formulario: van como nodos, nunca interpolados. */}
+          <Trans
+            t={t}
+            i18nKey="description"
+            components={{
+              button: <>{attempt.submit_button ? t('button', { label: attempt.submit_button }) : t('defaultButton')}</>,
+              domain: <strong className="font-medium text-foreground">{attempt.domain}</strong>,
+            }}
+          />
         </DialogDescription>
       </DialogHeader>
       {attempt.consents.length > 0 && (
         <div className="space-y-1.5 text-sm">
-          <p className="font-medium">Al enviar aceptas:</p>
+          <p className="font-medium">{t('consents')}</p>
           <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
             {attempt.consents.map((c) => (
               <li key={c.marker}>{c.label}</li>
@@ -245,7 +246,7 @@ function SubmitConfirm({ attempt, onClose }: { attempt: AttemptView; onClose: ()
         </div>
       )}
       <div className="space-y-2">
-        <Label htmlFor="apply-company">Escribe el nombre de la empresa para confirmar</Label>
+        <Label htmlFor="apply-company">{t('typeCompany')}</Label>
         <Input
           id="apply-company"
           value={typed}
@@ -257,16 +258,16 @@ function SubmitConfirm({ attempt, onClose }: { attempt: AttemptView; onClose: ()
       </div>
       {submit.error && (
         <p role="alert" className="text-sm text-destructive">
-          {submit.error.message}
+          {errorMessage(submit.error)}
         </p>
       )}
       <DialogFooter>
         <Button type="button" variant="ghost" onClick={onClose}>
-          Cancelar
+          {t('cancel')}
         </Button>
         <Button type="button" onClick={confirm} disabled={!matches || submit.isPending}>
           <PaperPlaneTiltIcon aria-hidden />
-          Enviar candidatura
+          {t('send')}
         </Button>
       </DialogFooter>
     </div>
@@ -278,6 +279,7 @@ function SubmitConfirm({ attempt, onClose }: { attempt: AttemptView; onClose: ()
  * la pestaña que tienes delante en su navegador. Nunca una página del portal ni de LinkedIn.
  */
 function FillPage({ attempt }: { attempt: AttemptView }) {
+  const { t } = useTranslation('apply')
   const fillPage = useFillApplicationPage(attempt.job_id)
   if (!attempt.can_fill_page) return null
   return (
@@ -289,11 +291,11 @@ function FillPage({ attempt }: { attempt: AttemptView }) {
         onClick={() => fillPage.mutate(attempt.id)}
       >
         <CursorClickIcon />
-        Rellenar esta página
+        {t('fillPage')}
       </Button>
       {fillPage.error && (
         <p role="alert" className="basis-full text-sm text-destructive">
-          {fillPage.error.message}
+          {errorMessage(fillPage.error)}
         </p>
       )}
     </>
@@ -301,16 +303,17 @@ function FillPage({ attempt }: { attempt: AttemptView }) {
 }
 
 function ManualDone({ jobId }: { jobId: number }) {
+  const { t } = useTranslation('apply')
   const done = useMarkApplicationSent(jobId)
   return (
     <>
       <Button type="button" variant="outline" size="sm" onClick={() => done.mutate()} disabled={done.isPending}>
         <CheckCircleIcon />
-        Marcar como enviada
+        {t('markSent')}
       </Button>
       {done.error && (
         <p role="alert" className="basis-full text-sm text-destructive">
-          {done.error.message}
+          {errorMessage(done.error)}
         </p>
       )}
     </>
@@ -318,6 +321,7 @@ function ManualDone({ jobId }: { jobId: number }) {
 }
 
 function Review({ state, attempt, stage }: { state: AssistedApplication; attempt: AttemptView; stage: Stage | null }) {
+  const { t } = useTranslation('apply')
   const rescan = useRescanApplication(attempt.job_id)
   const focus = useFocusApplication(attempt.job_id)
   const [confirming, setConfirming] = useState<AttemptView | null>(null)
@@ -327,15 +331,15 @@ function Review({ state, attempt, stage }: { state: AssistedApplication; attempt
   return (
     <div className="space-y-4">
       <p className="text-sm">
-        <span className="font-medium">{ATTEMPT_STATUS[attempt.status] ?? attempt.status}</span>
+        <span className="font-medium">{codeLabel(`apply:attemptStatus.${attempt.status}`) ?? attempt.status}</span>
         <span className="text-muted-foreground"> · {attempt.domain}</span>
       </p>
       {attempt.error && <Notice tone={attempt.status === 'submit_failed' ? 'red' : 'amber'}>{attempt.error}</Notice>}
       {warnings.length > 0 && (
-        <ul className="space-y-1.5" aria-label="Avisos">
+        <ul className="space-y-1.5" aria-label={t('review.warnings')}>
           {warnings.map((w, i) => (
             <li key={`${w.code}-${i}`}>
-              <Notice tone={w.code === 'possible_duplicate' ? 'red' : 'amber'}>{w.message}</Notice>
+              <Notice tone={w.code === 'possible_duplicate' ? 'red' : 'amber'}>{warningText(w)}</Notice>
             </li>
           ))}
         </ul>
@@ -344,9 +348,7 @@ function Review({ state, attempt, stage }: { state: AssistedApplication; attempt
       <FieldsTable fields={attempt.fields} />
       {attempt.status === 'ready' && attempt.missing_required > 0 && (
         <Notice tone="amber">
-          {attempt.missing_required === 1
-            ? 'Falta 1 campo obligatorio: complétalo en el navegador y pulsa «Volver a revisar», o termina tú.'
-            : `Faltan ${attempt.missing_required} campos obligatorios: complétalos en el navegador y pulsa «Volver a revisar», o termina tú.`}
+          {t('review.missing', { count: attempt.missing_required })}
         </Notice>
       )}
       <WorkerHint attempt={attempt} />
@@ -355,7 +357,7 @@ function Review({ state, attempt, stage }: { state: AssistedApplication; attempt
         {attempt.status === 'ready' && attempt.mode === 'fill' && (
           <Button type="button" size="sm" disabled={!attempt.can_submit || working} onClick={() => setConfirming(attempt)}>
             <PaperPlaneTiltIcon />
-            Enviar
+            {t('review.send')}
           </Button>
         )}
         {attempt.can_rescan && (
@@ -367,7 +369,7 @@ function Review({ state, attempt, stage }: { state: AssistedApplication; attempt
             onClick={() => rescan.mutate(attempt.id)}
           >
             <ArrowClockwiseIcon />
-            Volver a revisar
+            {t('review.rescan')}
           </Button>
         )}
         <Button
@@ -378,23 +380,23 @@ function Review({ state, attempt, stage }: { state: AssistedApplication; attempt
           onClick={() => focus.mutate(attempt.id)}
         >
           <BrowserIcon />
-          {attempt.mode === 'open' ? 'Volver a abrir la oferta' : 'Lo termino yo'}
+          {attempt.mode === 'open' ? t('review.reopen') : t('review.finishMyself')}
         </Button>
         {MANUAL.has(attempt.status) && <ManualDone jobId={attempt.job_id} />}
         {attempt.status === 'submit_unconfirmed' && (
           <span className="basis-full text-xs text-muted-foreground">
-            Antes de marcarla como enviada, comprueba en la web o en tu correo que llegó.
+            {t('review.checkFirst')}
           </span>
         )}
         {working && (
           <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-            <CircleNotchIcon aria-hidden className="size-4 animate-spin" /> Trabajando en el navegador…
+            <CircleNotchIcon aria-hidden className="size-4 animate-spin" /> {t('review.working')}
           </span>
         )}
       </div>
       {actionError && (
         <p role="alert" className="text-sm text-destructive">
-          {actionError.message}
+          {errorMessage(actionError)}
         </p>
       )}
       {RETRY.has(attempt.status) && <Prepare state={state} stage={stage} again />}
@@ -404,10 +406,8 @@ function Review({ state, attempt, stage }: { state: AssistedApplication; attempt
 }
 
 function prepareText(state: AssistedApplication): string {
-  if (state.mode === 'open') {
-    return 'LinkedIn no se automatiza: se abrirá la oferta en el navegador de Job Hunter y copias el paquete desde arriba.'
-  }
-  return `Se abrirá ${state.domain} en el navegador de Job Hunter y se rellenará el formulario. No se envía nada hasta que lo confirmes.`
+  if (state.mode === 'open') return i18n.t('apply:prepare.linkedin')
+  return i18n.t('apply:prepare.fill', { domain: state.domain })
 }
 
 /**
@@ -415,6 +415,7 @@ function prepareText(state: AssistedApplication): string {
  * rellena directamente. Solo cuando la oferta está en «CV listo».
  */
 function FormUrl({ state }: { state: AssistedApplication }) {
+  const { t } = useTranslation('apply', { keyPrefix: 'formUrl' })
   const prepare = usePrepareApplication(state.job_id)
   const [url, setUrl] = useState('')
   const valid = /^https?:\/\/\S+$/.test(url.trim())
@@ -428,23 +429,23 @@ function FormUrl({ state }: { state: AssistedApplication }) {
         }}
       >
         <div className="grid min-w-64 flex-1 gap-1.5">
-          <Label htmlFor={`form-url-${state.job_id}`}>URL del formulario</Label>
+          <Label htmlFor={`form-url-${state.job_id}`}>{t('label')}</Label>
           <Input
             id={`form-url-${state.job_id}`}
             type="url"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://empresa.com/empleo/…"
+            placeholder={t('placeholder')}
             autoComplete="off"
           />
         </div>
         <Button type="submit" size="sm" variant="outline" disabled={!valid || prepare.isPending}>
-          Rellenar ese formulario
+          {t('fill')}
         </Button>
       </form>
       {prepare.error && (
         <p role="alert" className="mt-1 text-sm text-destructive">
-          {prepare.error.message}
+          {errorMessage(prepare.error)}
         </p>
       )}
     </div>
@@ -454,9 +455,10 @@ function FormUrl({ state }: { state: AssistedApplication }) {
 /**
  * Oferta de un portal de empleo (ADR-021). Los portales bloquean los navegadores automatizados
  * (Cloudflare…) y eso no se esquiva: la oferta se abre en tu navegador, con tu sesión. Desde ahí
- * pegas el enlace al formulario de la empresa y Job Hunter lo rellena en el suyo.
+ * pegas el enlace al formulario de la empresa y CandidatAI lo rellena en el suyo.
  */
 function PortalApply({ state, stage, again }: { state: AssistedApplication; stage: Stage | null; again: boolean }) {
+  const { t } = useTranslation('apply', { keyPrefix: 'portal' })
   const portal = state.portal ?? state.domain
   const canFill = stage === 'cv_ready'
   return (
@@ -464,19 +466,12 @@ function PortalApply({ state, stage, again }: { state: AssistedApplication; stag
       {!again && (
         <>
           <p className="text-sm text-muted-foreground">
-            {portal} es un portal de empleo y bloquea los navegadores automatizados, así que la oferta se abre en tu
-            navegador, con tu sesión.
+            {t('intro', { portal })}
           </p>
           <ol className="list-decimal space-y-1 pl-5 text-sm text-muted-foreground">
-            <li>Abre la oferta y pulsa «Solicitar» o «Inscribirme».</li>
-            <li>
-              Si te lleva al formulario de la empresa, copia la dirección de esa página y pégala abajo: Job Hunter lo
-              rellena en su navegador y se para antes de enviar.
-            </li>
-            <li>
-              Si la candidatura se completa dentro de {portal}, termínala allí (el CV está en «Paquete de
-              candidatura») y pulsa «Marcar como enviada».
-            </li>
+            <li>{t('step1')}</li>
+            <li>{t('step2')}</li>
+            <li>{t('step3', { portal })}</li>
           </ol>
         </>
       )}
@@ -484,7 +479,7 @@ function PortalApply({ state, stage, again }: { state: AssistedApplication; stag
         <Button asChild size="sm" variant={again ? 'outline' : 'default'}>
           <a href={state.url} target="_blank" rel="noopener noreferrer">
             <ArrowSquareOutIcon />
-            Abrir la oferta en {portal}
+            {t('open', { portal })}
           </a>
         </Button>
         {!again && (stage === 'cv_ready' || stage === 'approved') && <ManualDone jobId={state.job_id} />}
@@ -503,13 +498,14 @@ function Prepare({
   stage: Stage | null
   again?: boolean
 }) {
+  const { t } = useTranslation('apply', { keyPrefix: 'prepare' })
   const prepare = usePrepareApplication(state.job_id)
   if (!state.can_prepare) {
     return again ? null : <Notice tone="muted">{state.reason}</Notice>
   }
   if (state.portal) return <PortalApply state={state} stage={stage} again={again} />
   const open = state.mode === 'open'
-  const label = open ? 'Abrir y preparar' : again ? 'Preparar de nuevo' : 'Preparar candidatura'
+  const label = open ? t('openAndPrepare') : again ? t('again') : t('prepare')
   return (
     <div className="space-y-3">
       {!again && <p className="text-sm text-muted-foreground">{prepareText(state)}</p>}
@@ -524,7 +520,7 @@ function Prepare({
       </Button>
       {prepare.error && (
         <p role="alert" className="text-sm text-destructive">
-          {prepare.error.message}
+          {errorMessage(prepare.error)}
         </p>
       )}
     </div>
@@ -532,18 +528,19 @@ function Prepare({
 }
 
 function Done({ attempt, stage }: { attempt: AttemptView; stage: Stage | null }) {
+  const { t } = useTranslation('apply', { keyPrefix: 'done' })
   if (attempt.status === 'manual_done') {
-    return <Notice tone="muted">Marcada como enviada por ti.</Notice>
+    return <Notice tone="muted">{t('manual')}</Notice>
   }
   const noEvidence = attempt.warnings.find((w) => w.code === 'no_evidence')
   return (
     <div className="space-y-3">
       <p className="flex items-center gap-2 text-sm font-medium">
         <CheckCircleIcon aria-hidden className="size-5 text-primary" weight="fill" />
-        Enviada a {attempt.domain}: la web confirmó el envío.
+        {t('sent', { domain: attempt.domain })}
       </p>
       {attempt.error && <Notice tone="amber">{attempt.error}</Notice>}
-      {noEvidence && <Notice tone="amber">{noEvidence.message}</Notice>}
+      {noEvidence && <Notice tone="amber">{warningText(noEvidence)}</Notice>}
       {attempt.has_confirmation && <Screenshot attempt={attempt} kind="confirmation" />}
       {/* Si no se pudo registrar el envío, la oferta sigue en «CV listo»: lo registras tú. */}
       {stage === 'cv_ready' && (
@@ -556,6 +553,7 @@ function Done({ attempt, stage }: { attempt: AttemptView; stage: Stage | null })
 }
 
 function Body({ state, stage }: { state: AssistedApplication; stage: Stage | null }) {
+  const { t } = useTranslation('apply')
   const attempt = state.attempt
   if (!attempt || attempt.status === 'cancelled') return <Prepare state={state} stage={stage} />
   if (attempt.status === 'queued' || attempt.status === 'filling' || attempt.status === 'submitting') {
@@ -567,7 +565,7 @@ function Body({ state, stage }: { state: AssistedApplication; stage: Stage | nul
   if (attempt.status === 'failed') {
     return (
       <div className="space-y-3">
-        <Notice tone="red">{attempt.error ?? 'No se pudo rellenar el formulario.'}</Notice>
+        <Notice tone="red">{attempt.error ?? t('fillFailed')}</Notice>
         <Prepare state={state} stage={stage} again />
       </div>
     )
@@ -576,8 +574,9 @@ function Body({ state, stage }: { state: AssistedApplication; stage: Stage | nul
   return null
 }
 
-/** Abre el navegador de Job Hunter con su página de inicio, para iniciar sesión en los portales. */
+/** Abre el navegador de CandidatAI con su página de inicio, para iniciar sesión en los portales. */
 function OpenBrowser() {
+  const { t } = useTranslation('apply', { keyPrefix: 'openBrowser' })
   const open = useOpenBrowser()
   return (
     <div className="flex flex-col items-end gap-1">
@@ -587,15 +586,15 @@ function OpenBrowser() {
         size="sm"
         onClick={() => open.mutate()}
         disabled={open.isPending}
-        title="Abre el navegador de Job Hunter para iniciar sesión en tus portales. Tiene su propio perfil, separado de tu Chrome."
+        title={t('title')}
       >
         <BrowserIcon />
-        Abrir navegador
+        {t('label')}
       </Button>
       {open.isSuccess && <span className="text-xs text-muted-foreground">{open.data.message}</span>}
       {open.error && (
         <span role="alert" className="text-xs text-destructive">
-          {open.error.message}
+          {errorMessage(open.error)}
         </span>
       )}
     </div>
@@ -616,6 +615,7 @@ function useRefreshWhenSent(jobId: number, status: string | undefined) {
 }
 
 export function ApplySection({ job }: { job: JobView }) {
+  const { t } = useTranslation('apply')
   const relevant = job.stage !== null && APPLY_STAGES.has(job.stage)
   const { data, isPending, isError, error, refetch } = useAssistedApplication(job.id, relevant)
   useRefreshWhenSent(job.id, data?.attempt?.status)
@@ -626,15 +626,14 @@ export function ApplySection({ job }: { job: JobView }) {
   return (
     <section
       id="candidatura"
-      aria-label="Candidatura asistida"
+      aria-label={t('title')}
       className="scroll-mt-6 rounded-xl border bg-card p-5 sm:p-6"
     >
       <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="text-base font-semibold tracking-tight">Candidatura asistida</h2>
+          <h2 className="text-base font-semibold tracking-tight">{t('title')}</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Job Hunter abre la oferta en su propio navegador, rellena el formulario de candidatura y se para antes
-            de enviar. Nada se envía sin tu confirmación. Inicia sesión en tus portales con «Abrir navegador».
+            {t('intro')}
           </p>
         </div>
         <OpenBrowser />

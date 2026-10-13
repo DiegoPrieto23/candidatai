@@ -1,0 +1,52 @@
+{
+  "today": {
+    "toReview_one": "{{count}} oferta por revisar",
+    "toReview_other": "{{count}} ofertas por revisar",
+    "cvReady_one": "{{count}} CV listo para enviar",
+    "cvReady_other": "{{count}} CVs listos para enviar",
+    "replies_one": "{{count}} respuesta de empresa por revisar",
+    "replies_other": "{{count}} respuestas de empresas por revisar",
+    "followups_one": "{{count}} seguimiento pendiente",
+    "followups_other": "{{count}} seguimientos pendientes",
+    "agentToExtract": "{{count}} por extraer",
+    "agentApproved_one": "{{count}} aprobada sin CV",
+    "agentApproved_other": "{{count}} aprobadas sin CV",
+    "agentUnclassified_one": "{{count}} correo sin clasificar",
+    "agentUnclassified_other": "{{count}} correos sin clasificar",
+    "youHave": "Tienes <list/>.",
+    "nothing": "Nada pendiente por tu parte.",
+    "forAgent": "Para tu agente: {{list}}.",
+    "searchJobs": "Buscar ofertas",
+    "processJobs": "Procesar ofertas",
+    "assessFit": "Evaluar encaje",
+    "reviewReplies": "Revisar respuestas",
+    "newJob": "Nueva oferta"
+  },
+  "track": {
+    "title": "Recorrido de tus ofertas",
+    "closed_one": "{{count}} cerrada",
+    "closed_other": "{{count}} cerradas",
+    "actor": {
+      "you": "Te toca",
+      "agent": "Agente",
+      "company": "Empresa"
+    }
+  },
+  "upcomingEmpty": "Sin entrevistas, pruebas ni plazos en los próximos 7 días.",
+  "followups": {
+    "title": "Sin respuesta",
+    "more": "Procesos",
+    "days_one": "{{count}} día",
+    "days_other": "{{count}} días"
+  },
+  "panels": {
+    "bestFit": "Mejor encaje por revisar",
+    "review": "Revisar",
+    "bestFitEmpty": "No hay ofertas por revisar. Las nuevas llegan por las alertas, las empresas que sigues o «Nueva oferta».",
+    "readyToSend": "Listas para enviar",
+    "all": "Todas",
+    "readyEmpty": "Ningún CV listo. Aprueba ofertas y pide el CV a tu agente.",
+    "next7": "Próximos 7 días",
+    "calendar": "Calendario"
+  }
+}

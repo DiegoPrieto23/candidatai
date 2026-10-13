@@ -1,13 +1,13 @@
 """El navegador de las candidaturas: contexto persistente de Playwright en `data/browser-profile/`.
 
-- Visible (salvo `JH_BROWSER_HEADLESS`, para los tests): ahí inicias tú las sesiones que quieras,
+- Visible (salvo `CAI_BROWSER_HEADLESS`, para los tests): ahí inicias tú las sesiones que quieras,
   resuelves un captcha o terminas una candidatura.
 - Lo abre y lo usa solo el worker: el perfil solo admite un proceso a la vez y la página rellenada
   tiene que seguir viva hasta que confirmes el envío.
 - La API síncrona de Playwright queda atada al hilo que la arranca, así que todas las llamadas
   pasan por un hilo propio (`BrowserHost.call`), sea cual sea el hilo del worker que las pide.
 - Si cierras la ventana, el siguiente uso lo vuelve a abrir (las pestañas preparadas se pierden).
-- `JH_BROWSER_CHANNEL` (`chrome`, `msedge`) usa el navegador instalado en vez de Chromium.
+- `CAI_BROWSER_CHANNEL` (`chrome`, `msedge`) usa el navegador instalado en vez de Chromium.
 
 Sin trucos anti-detección: si una web pide demostrar que eres humano, se te pasa la pestaña.
 """
@@ -77,7 +77,7 @@ class BrowserState:
                     "No se pudo abrir el navegador: "
                     f"{str(exc).splitlines()[0]}. Si falta Chromium: "
                     "`uv run --directory backend playwright install chromium`. Si ya hay otro "
-                    "navegador con el perfil de Job Hunter abierto, ciérralo."
+                    "navegador con el perfil de CandidatAI abierto, ciérralo."
                 ) from exc
             context.set_default_timeout(self.step_timeout_ms)
             context.set_default_navigation_timeout(self.step_timeout_ms)
@@ -142,7 +142,7 @@ class BrowserHost:
         with self._lock:
             if self._thread is None or not self._thread.is_alive():
                 self._thread = threading.Thread(
-                    target=self._run, name="jobhunter-browser", daemon=True
+                    target=self._run, name="candidatai-browser", daemon=True
                 )
                 self._thread.start()
             return self._thread

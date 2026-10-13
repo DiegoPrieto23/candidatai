@@ -1,4 +1,4 @@
-"""Modo demo (fase 12.1): `jh demo seed` y la marca de demo."""
+"""Modo demo (fase 12.1): `cai demo seed` y la marca de demo."""
 
 import json
 import os
@@ -68,7 +68,7 @@ def test_seed_fills_a_demo_folder(tmp_path: Path, isolated_env: Path) -> None:
     assert summary.by_stage[Stage.CLOSED] > 0
     # Nada fuera de la carpeta: la configuración vuelve a la de antes.
     assert get_settings().data_dir == isolated_env.resolve()
-    assert not (isolated_env / "jobhunter.db").exists()
+    assert not (isolated_env / "candidatai.db").exists()
 
     with demo.use_data_dir(target), session_scope() as session:
         assert get_settings().demo_mode
@@ -121,10 +121,10 @@ def test_status_is_not_demo_by_default(session) -> None:  # noqa: ANN001
 def test_seed_refuses_a_folder_that_is_not_a_demo(tmp_path: Path) -> None:
     target = tmp_path / "mis-datos"
     target.mkdir()
-    (target / "jobhunter.db").write_text("no tocar", encoding="utf-8")
+    (target / "candidatai.db").write_text("no tocar", encoding="utf-8")
     with pytest.raises(demo.DemoSeedError, match="no es una demo"):
         demo.seed(target)
-    assert (target / "jobhunter.db").read_text(encoding="utf-8") == "no tocar"
+    assert (target / "candidatai.db").read_text(encoding="utf-8") == "no tocar"
 
 
 @pytest.mark.parametrize("where", ["data", "data/demo", ".", ".."])
@@ -136,13 +136,13 @@ def test_seed_refuses_the_real_data_folder_and_its_parents(where: str) -> None:
 def test_use_data_dir_restores_the_environment_after_an_error(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, isolated_env: Path
 ) -> None:
-    monkeypatch.delenv("JH_DB_URL", raising=False)
+    monkeypatch.delenv("CAI_DB_URL", raising=False)
     with pytest.raises(RuntimeError), demo.use_data_dir(tmp_path / "demo", embeddings=False):
         assert get_settings().data_dir == (tmp_path / "demo").resolve()
         assert get_settings().embeddings == "off"
         raise RuntimeError("falla dentro")
-    assert "JH_DB_URL" not in os.environ
-    assert os.environ["JH_DATA_DIR"] == str(isolated_env)
+    assert "CAI_DB_URL" not in os.environ
+    assert os.environ["CAI_DATA_DIR"] == str(isolated_env)
     assert get_settings().data_dir == isolated_env.resolve()
 
 
@@ -150,7 +150,7 @@ def test_seed_needs_force_to_replace_a_demo(tmp_path: Path) -> None:
     target = tmp_path / "data-demo"
     target.mkdir()
     (target / DEMO_MARKER).write_text("", encoding="utf-8")
-    (target / "jobhunter.db").write_text("", encoding="utf-8")
+    (target / "candidatai.db").write_text("", encoding="utf-8")
     with pytest.raises(demo.DemoSeedError, match="--force"):
         demo.prepare_dir(target, force=False)
     demo.prepare_dir(target, force=True)
@@ -174,7 +174,7 @@ def test_cli_demo_seed(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     result = runner.invoke(cli.app, ["demo", "seed", "--dir", str(target)])
     assert result.exit_code == 0, result.output
     assert "60 ofertas" in result.stdout
-    assert "JH_DATA_DIR" in result.stdout
+    assert "CAI_DATA_DIR" in result.stdout
 
     again = runner.invoke(cli.app, ["demo", "seed", "--dir", str(target), "--json"])
     assert again.exit_code == 1

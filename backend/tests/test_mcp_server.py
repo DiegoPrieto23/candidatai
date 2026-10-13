@@ -108,11 +108,11 @@ def test_summarize_args(args: dict[str, Any], safe: tuple[str, ...], expected: A
     assert json.loads(summarize_args(args, safe)) == expected
 
 
-def test_jh_mcp_over_stdio_writes_only_protocol(tmp_path: Path) -> None:
-    """El proceso real `jh-mcp`: se inicializa por stdio y lista herramientas (stdout limpio)."""
+def test_cai_mcp_over_stdio_writes_only_protocol(tmp_path: Path) -> None:
+    """El proceso real `cai-mcp`: se inicializa por stdio y lista herramientas (stdout limpio)."""
     from mcp.client.stdio import StdioServerParameters
 
-    env = {"JH_DATA_DIR": str(tmp_path / "stdio"), "PYTHONIOENCODING": "utf-8"}
+    env = {"CAI_DATA_DIR": str(tmp_path / "stdio"), "PYTHONIOENCODING": "utf-8"}
     params = StdioServerParameters(
         command=sys.executable,
         args=["-c", "from app.mcp.server import main; main()"],
@@ -158,7 +158,7 @@ def test_agents_check_delegates_to_sync_script(monkeypatch: pytest.MonkeyPatch) 
 
 
 def test_agents_check_real() -> None:
-    # El repo tiene lo generado al día (CI lo exige): `jh agents check` debe pasar de verdad.
+    # El repo tiene lo generado al día (CI lo exige): `cai agents check` debe pasar de verdad.
     assert runner.invoke(cli.app, ["agents", "check"]).exit_code == 0
 
 

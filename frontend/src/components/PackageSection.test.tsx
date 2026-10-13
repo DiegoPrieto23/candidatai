@@ -42,7 +42,7 @@ describe('Paquete de candidatura en la ficha', () => {
     expect(within(section).getByText('1 respuesta espera un dato tuyo (salario, disponibilidad…).')).toBeInTheDocument()
     expect(within(section).getByText(/Falta un dato tuyo/)).toBeInTheDocument()
     expect(within(section).getByRole('button', { name: 'Copiar la respuesta 2' })).toBeDisabled()
-    expect(within(section).getByText('generar-carta 1')).toBeInTheDocument()
+    expect(within(section).getByText('generate-cover-letter 1')).toBeInTheDocument()
     // Ningún botón envía nada.
     expect(within(section).queryByRole('button', { name: /enviar/i })).not.toBeInTheDocument()
   })

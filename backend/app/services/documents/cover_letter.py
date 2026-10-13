@@ -258,7 +258,7 @@ def validate_letter(
     used: InstructionsUsed,
     user_is_author: bool = False,
 ) -> list[ContentIssue]:
-    """Lo que el código comprueba sin IA (POLICIES §1 y §7). El resto, el rol `verificador`.
+    """Lo que el código comprueba sin IA (POLICIES §1 y §7). El resto, el rol `verifier`.
 
     `user` exige indicaciones guardadas cuando escribe el agente (son su respaldo). Si quien
     escribe es el usuario (`user_is_author`), su texto es su propio respaldo.

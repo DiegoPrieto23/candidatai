@@ -1,4 +1,4 @@
-"""`jh templates build-docx`: aplica el mapeo al Word del usuario y crea la plantilla.
+"""`cai templates build-docx`: aplica el mapeo al Word del usuario y crea la plantilla.
 
 Cada párrafo mapeado se reescribe con un solo fragmento (o uno por parte de `runs`) con el formato
 del original, así que ningún marcador queda partido. Los bloques se insertan como párrafos o filas
@@ -234,7 +234,7 @@ def _source_pdf(source: Path, folder: Path) -> tuple[int | None, bool, str | Non
     """Páginas del original y su primera página como `source.png` (para «Original | Recreación»)."""
     from app.services.documents.preview import pdf_to_png
 
-    workdir = Path(tempfile.mkdtemp(prefix="jh-source-"))
+    workdir = Path(tempfile.mkdtemp(prefix="cai-source-"))
     try:
         copy_docx = workdir / SOURCE_DOCX
         shutil.copyfile(source, copy_docx)
@@ -317,7 +317,7 @@ def build_docx(
 
     settings = get_settings()
     settings.tmp_dir.mkdir(parents=True, exist_ok=True)
-    staging = Path(tempfile.mkdtemp(prefix="jh-build-", dir=settings.tmp_dir))
+    staging = Path(tempfile.mkdtemp(prefix="cai-build-", dir=settings.tmp_dir))
     try:
         target = staging / template_id
         target.mkdir()

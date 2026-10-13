@@ -382,7 +382,7 @@ def _message(view_status: str, detail: str, suppressed: bool, cached: bool) -> s
                 f"abierta: no se avisa{when}."
             )
         return (
-            f"Puede que esté cerrada: {detail}{when}. No se ha cerrado en Job Hunter: "
+            f"Puede que esté cerrada: {detail}{when}. No se ha cerrado en CandidatAI: "
             "descártala tú si lo confirmas."
         )
     if view_status == "unknown":
@@ -477,7 +477,7 @@ def check_job(
     if job is None:
         raise JobNotFoundError(f"No existe la oferta {job_id}.")
     if _stage(session, job_id) == Stage.CLOSED:
-        detail = "la oferta ya está cerrada en Job Hunter"
+        detail = "la oferta ya está cerrada en CandidatAI"
         return LivenessView(
             job_id=job_id,
             status="skipped",

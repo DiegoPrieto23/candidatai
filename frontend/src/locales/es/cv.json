@@ -1,0 +1,70 @@
+{
+  "title": "CV",
+  "verification": {
+    "pending": "Sin verificar todavía: el skill <code>generate-cv</code> lo verifica tras redactarlo.",
+    "passed": "Verificado: nada inventado ni exagerado",
+    "failed": "El verificador encontró problemas",
+    "blocker": "Bloqueante",
+    "warning": "Aviso"
+  },
+  "template": {
+    "legend": "Plantilla",
+    "yourCv": "Tu CV",
+    "ats": "Apta para ATS",
+    "notAts": "No apta para ATS",
+    "withPhoto": " · con foto",
+    "pdfOnly": " · solo PDF"
+  },
+  "photo": {
+    "legend": "Foto",
+    "autoHint": "Automática: según el país de la oferta y tu photo_policy, si tienes data/photo.*.",
+    "unsupported": "Esta plantilla no lleva foto."
+  },
+  "accent": "Color de acento",
+  "hideSections": "Ocultar secciones",
+  "renderForm": "Renderizar el CV",
+  "rendering": "Renderizando…",
+  "render": "Renderizar",
+  "renderingHint": "Convirtiendo a PDF: tarda unos segundos.",
+  "renderHint": "Mismo contenido verificado, otra presentación. Sin IA.",
+  "summary": {
+    "withPhoto": "Con foto",
+    "noPhoto": "Sin foto",
+    "without": "sin {{sections}}"
+  },
+  "renderAria": "Render {{id}}",
+  "toSend": "Para enviar",
+  "templateChanged": "Plantilla cambiada",
+  "pages": "Páginas",
+  "keywords": "Keywords",
+  "missingKeywords": "Faltan: {{list}}",
+  "keywordsOf": "{{present}} de {{total}}",
+  "templateChangedHint": "La plantilla ha cambiado desde este render: vuelve a renderizar para ver la versión actual.",
+  "viewPdf": "Ver PDF",
+  "compare": "Comparar",
+  "useThis": "Usar este para enviar",
+  "comparison": "Comparación de renders",
+  "sideBySide": "Lado a lado",
+  "closeComparison": "Cerrar comparación",
+  "pdfOf": "PDF del render {{id}}",
+  "renders": "Renders",
+  "pickAnother": "Marca otro render para verlos lado a lado.",
+  "none": {
+    "title": "Aún sin CV",
+    "hint": "Tu agente redacta el contenido desde tu perfil, lo verifica y lo renderiza (skill <code>generate-cv {{id}}</code>). Después podrás cambiar plantilla, foto y color aquí, sin IA.",
+    "generate": "Generar CV",
+    "never": "Esta oferta no llegó a tener CV."
+  },
+  "rewrite": "Volver a redactar",
+  "warnings": {
+    "too_long": "Demasiado largo",
+    "photo_excluded": "Sin foto",
+    "font_substituted": "Fuente sustituida",
+    "section_not_supported": "Sección no admitida",
+    "letter_fallback": "Plantilla de carta por defecto",
+    "not_ats_friendly": "No apta para ATS",
+    "pdf_only": "Solo PDF",
+    "truncated": "Recortado",
+    "details_skipped": "Detalles omitidos"
+  }
+}

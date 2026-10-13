@@ -41,7 +41,7 @@ USER_AGENT = (
 )
 _BLOCKED_HOSTS = ("linkedin.com", "lnkd.in")
 _LOGIN_PATH_WORDS = ("login", "signin", "sign-in", "sign_in", "auth", "sso", "iniciar-sesion")
-_SUGGEST_TEXT = "Copia el texto de la oferta y usa `jh jobs add-text`."
+_SUGGEST_TEXT = "Copia el texto de la oferta y usa `cai jobs add-text`."
 
 DetailLevel = Literal["summary", "full"]
 
@@ -480,7 +480,7 @@ def add_from_url(session: Session, url: str) -> AddJobResult:
     if not page.title or not page.company:
         missing = "el título" if not page.title else "la empresa"
         raise IngestError(
-            f"No se encontró {missing} en la página. Usa `jh jobs add-text` indicando "
+            f"No se encontró {missing} en la página. Usa `cai jobs add-text` indicando "
             "--title y --company."
         )
     return store_job(

@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react'
 import { PlugsIcon, WarningCircleIcon } from '@phosphor-icons/react'
+import { useTranslation } from 'react-i18next'
 import { ApiError } from '@/api/client'
 import { Button } from '@/components/ui/button'
+import { errorMessage } from '@/lib/errors'
 import { cn } from '@/lib/utils'
 
 export function ErrorState({
@@ -13,8 +15,9 @@ export function ErrorState({
   onRetry?: () => void
   className?: string
 }) {
+  const { t } = useTranslation()
   const offline = error instanceof ApiError && error.type === 'offline'
-  const message = error instanceof Error ? error.message : 'Algo ha fallado.'
+  const message = errorMessage(error)
   const Icon = offline ? PlugsIcon : WarningCircleIcon
   return (
     <div
@@ -26,14 +29,14 @@ export function ErrorState({
     >
       <Icon className="size-6 shrink-0 text-destructive" weight="duotone" />
       <div className="min-w-0 flex-1">
-        <p className="font-medium">{offline ? 'La API no responde' : 'No se ha podido cargar'}</p>
+        <p className="font-medium">{offline ? t('errors.offlineTitle') : t('errors.loadFailed')}</p>
         <p className="mt-0.5 text-sm text-muted-foreground">
           <InlineCode text={message} />
         </p>
       </div>
       {onRetry && (
         <Button variant="outline" size="sm" onClick={onRetry}>
-          Reintentar
+          {t('retry')}
         </Button>
       )}
     </div>
@@ -67,7 +70,7 @@ export function EmptyState({
   )
 }
 
-/** Pinta como código lo que va entre acentos graves: «ejecuta `jh serve`». */
+/** Pinta como código lo que va entre acentos graves: «ejecuta `cai serve`». */
 export function InlineCode({ text }: { text: string }) {
   const parts = text.split(/`([^`]+)`/g)
   return (

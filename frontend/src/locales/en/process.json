@@ -1,0 +1,64 @@
+{
+  "title": "Process",
+  "milestoneForm": {
+    "kind": "Type",
+    "title": "Title (optional)",
+    "day": "Day",
+    "dateTime": "Date and time (Madrid)",
+    "allDay": "All day",
+    "location": "Place or link",
+    "notes": "Notes",
+    "blocked": "Interviews and tests are logged once the application has been sent (they log their event and move the job to “In process”). Before that, use “Deadline” or “Other milestone”.",
+    "cancel": "Cancel",
+    "saving": "Saving…",
+    "save": "Save milestone"
+  },
+  "milestone": {
+    "ics": "Download .ics for “{{title}}”",
+    "edit": "Edit “{{title}}”",
+    "done": "Mark “{{title}}” as done",
+    "cancel": "Cancel “{{title}}”"
+  },
+  "milestones": {
+    "title": "Milestones",
+    "add": "Add",
+    "none": "No interviews, tests or deadlines logged."
+  },
+  "contactForm": {
+    "name": "Name",
+    "role": "Job title",
+    "email": "Email",
+    "phone": "Phone",
+    "linkedin": "LinkedIn",
+    "notes": "Notes",
+    "relation": "Role in the process",
+    "noRelation": "Not set",
+    "cancel": "Cancel",
+    "saving": "Saving…",
+    "save": "Save contact"
+  },
+  "referral": {
+    "of": "Referral from {{name}}",
+    "none": "No referral"
+  },
+  "contact": {
+    "edit": "Edit {{name}}",
+    "remove": "Remove {{name}}"
+  },
+  "contacts": {
+    "title": "Contacts",
+    "add": "Add",
+    "none": "Nobody logged yet."
+  },
+  "sending": {
+    "title": "Sending",
+    "sentOn": "Sent on {{date}}",
+    "notSent": "Not sent yet. Log it in Processes when you send it.",
+    "followupDue": "{{count}} days without a reply: time for a follow-up.",
+    "cvSent": "CV sent",
+    "cvSelected": "CV selected to send",
+    "offer": "You have an offer: before accepting, check what's worth clarifying.",
+    "offerQuestions": "Questions before accepting",
+    "followupSent": "Follow-up sent"
+  }
+}

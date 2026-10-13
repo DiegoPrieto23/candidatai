@@ -1,0 +1,93 @@
+{
+  "added": {
+    "exists": "Esta oferta ya estaba dada de alta. No se ha cambiado nada.",
+    "duplicate": "Dada de alta, pero parece un duplicado de la <to>oferta {{id}}</to>, así que queda cerrada.",
+    "created": "Oferta dada de alta. Tu agente la extraerá con el skill process-jobs.",
+    "close": "Cerrar"
+  },
+  "injection": {
+    "label": "Aviso de posible inyección",
+    "title": "Posible contenido dirigido a una IA",
+    "body": "El texto de esta oferta podría intentar manipular a un agente. Se trata solo como datos, pero revísala con calma antes de confiar en la extracción.",
+    "detectedBy": "Detectado por {{who}}",
+    "system": "el sistema"
+  },
+  "extraction": {
+    "title": "Extracción",
+    "noneListed": "Ninguna indicada.",
+    "seniority": "Seniority",
+    "mode": "Modalidad",
+    "minExperience": "Experiencia mínima",
+    "years_one": "{{count}} año",
+    "years_other": "{{count}} años",
+    "unspecified": "Sin especificar",
+    "contract": "Contrato",
+    "salary": "Salario",
+    "noSalary": "No lo indica",
+    "languages": "Idiomas",
+    "noLanguages": "No indica",
+    "location": "Ubicación",
+    "sector": "Sector",
+    "deadline": "Plazo",
+    "mustHave": "Obligatorias",
+    "niceToHave": "Deseables",
+    "responsibilities": "Responsabilidades",
+    "redFlags": "A tener en cuenta",
+    "extractedAt": "Extraída el {{date}}",
+    "pendingTitle": "Aún sin extraer",
+    "pendingBody": "Ejecuta el skill <code>process-jobs</code> en tu agente. Cuando termine, aquí verás seniority, modalidad, skills y salario."
+  },
+  "original": {
+    "title": "Texto original",
+    "hint": "Tal cual se guardó. Contenido no confiable: se muestra, nunca se interpreta."
+  },
+  "events": {
+    "reason": "Motivo: {{reason}}",
+    "score": "Score {{score}}/100",
+    "duplicateOf": "Duplicado de la oferta {{id}}.",
+    "closureSuspected": "{{detail}}. No se ha cerrado: decides tú."
+  },
+  "timeline": {
+    "title": "Historial",
+    "more_one": "Ver {{count}} evento más",
+    "more_other": "Ver {{count}} eventos más",
+    "less": "Ver menos"
+  },
+  "note": {
+    "label": "Añadir nota",
+    "placeholder": "Qué te ha dicho el recruiter, dudas, próximos pasos…",
+    "saving": "Guardando…",
+    "save": "Guardar nota"
+  },
+  "match": {
+    "title": "Encaje",
+    "noScore": "Sin score: importa tu perfil con <code>cai profile import</code>."
+  },
+  "decision": {
+    "reopen": "Reabrir",
+    "approve": "Aprobar",
+    "discard": "Descartar"
+  },
+  "earlier": {
+    "label": "Antes de enviar",
+    "hint": " · candidatura asistida, paquete, CV, carta y texto de la oferta"
+  },
+  "loading": "Cargando oferta",
+  "back": "Bandeja",
+  "invalidId": "Ese identificador de oferta no es válido.",
+  "viewOriginal": "Ver original",
+  "addedOn": "Alta el {{date}}",
+  "postedOn": ". Publicada el {{date}}",
+  "archive": {
+    "pending": "Aún sin copia de lo enviado: la guarda el worker al marcarla como enviada. Para las de antes, `cai applications archive --all`.",
+    "label": "Candidatura archivada",
+    "title": "Copia de lo que enviaste",
+    "open": "Abrir carpeta",
+    "openAria": "Abrir la carpeta archivada de la candidatura"
+  },
+  "replyNotice": {
+    "label": "Respuesta de la empresa por revisar",
+    "from": "Correo de {{sender}}",
+    "see": "Ver el correo"
+  }
+}

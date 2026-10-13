@@ -1,4 +1,5 @@
 import { useRef, useState, type ChangeEvent, type ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   CheckIcon,
   CopyIcon,
@@ -21,6 +22,7 @@ import { InlineCode } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatDateTime } from '@/lib/labels'
+import { errorMessage } from '@/lib/errors'
 import { cn } from '@/lib/utils'
 
 const ACCEPT = '.docx,.pdf,.png,.jpg,.jpeg,.html'
@@ -45,6 +47,7 @@ function formatSize(bytes: number): string {
 }
 
 function CopyCommand({ command }: { command: string }) {
+  const { t } = useTranslation('templates', { keyPrefix: 'myCv' })
   const [copied, setCopied] = useState(false)
   const copy = async () => {
     try {
@@ -60,15 +63,16 @@ function CopyCommand({ command }: { command: string }) {
       <code className="min-w-0 flex-1 truncate font-mono text-[0.8rem]" title={command}>
         {command}
       </code>
-      <Button variant="ghost" size="xs" onClick={copy} aria-label="Copiar la petición para tu agente">
+      <Button variant="ghost" size="xs" onClick={copy} aria-label={t('copyAria')}>
         {copied ? <CheckIcon /> : <CopyIcon />}
-        {copied ? 'Copiado' : 'Copiar'}
+        {copied ? t('copied') : t('copy')}
       </Button>
     </div>
   )
 }
 
 function Page({ src, alt, note }: { src: string | null; alt: string; note?: string }) {
+  const { t } = useTranslation('templates', { keyPrefix: 'myCv' })
   return (
     <figure className="min-w-0">
       <figcaption className="mb-1.5 text-xs font-medium text-muted-foreground">{alt}</figcaption>
@@ -81,7 +85,7 @@ function Page({ src, alt, note }: { src: string | null; alt: string; note?: stri
           <span className="grid size-full place-items-center px-3 text-center text-xs text-muted-foreground">
             <span className="flex flex-col items-center gap-2">
               <ImageIcon className="size-6" />
-              {note ?? 'Sin vista'}
+              {note ?? t('noPreview')}
             </span>
           </span>
         )}
@@ -91,20 +95,19 @@ function Page({ src, alt, note }: { src: string | null; alt: string; note?: stri
 }
 
 function PendingUpload({ upload }: { upload: UploadInfo }) {
+  const { t } = useTranslation('templates', { keyPrefix: 'myCv' })
   const recreated = upload.format !== 'docx'
   return (
     <div className="space-y-2">
       <p className="text-sm text-foreground/80">
-        Pídele a tu agente que lo convierta en plantilla (una sola vez; después no gasta cuota):
+        {t('askAgent')}
       </p>
       <CopyCommand command={upload.agent_command} />
       {recreated && (
         <p className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
           <WarningIcon className="mt-0.5 size-3.5 shrink-0" weight="duotone" />
           <span>
-            Desde {upload.format.toUpperCase()} el agente recrea el diseño en HTML: se parecerá mucho, pero no será
-            exacto, y solo dará PDF. Necesita un agente que vea imágenes. Si tienes el Word, súbelo: se conserva
-            tal cual.
+            {t('recreated', { format: upload.format.toUpperCase() })}
           </span>
         </p>
       )}
@@ -113,6 +116,7 @@ function PendingUpload({ upload }: { upload: UploadInfo }) {
 }
 
 function ImportedUpload({ template, isDefault }: { template: TemplateInfo; isDefault: boolean }) {
+  const { t } = useTranslation('templates', { keyPrefix: 'myCv' })
   const setDefault = useSetDefaultTemplate()
   const conflicts = setDefault.data?.conflicts ?? []
   return (
@@ -120,27 +124,26 @@ function ImportedUpload({ template, isDefault }: { template: TemplateInfo; isDef
       <div className="grid grid-cols-2 gap-3 sm:max-w-md">
         <Page
           src={template.has_source_preview ? fileUrls.templateSource(template.id) : null}
-          alt="Original"
-          note="Sin vista del original"
+          alt={t('original')}
+          note={t('noOriginal')}
         />
         <Page
           src={fileUrls.templateRealPreview(template.id)}
-          alt={template.engine === 'html' ? 'Recreación con tu perfil' : 'Con tu perfil'}
+          alt={template.engine === 'html' ? t('recreation') : t('withProfile')}
         />
       </div>
       {template.engine === 'html' && (
         <p className="text-xs text-muted-foreground">
-          Plantilla html: solo PDF. Si un portal pide Word, renderiza ese CV con una plantilla docx.
+          {t('htmlOnly')}
         </p>
       )}
       <p className="text-xs text-muted-foreground">
-        La vista con tu perfil es orientativa (los primeros logros de cada experiencia); la primera vez tarda unos
-        segundos. Cada CV a medida lo redacta tu agente para la oferta.
+        {t('previewHint')}
       </p>
       <div className="flex flex-wrap items-center gap-2">
         {isDefault ? (
           <Chip tone="primary">
-            <StarIcon weight="fill" /> Plantilla por defecto
+            <StarIcon weight="fill" /> {t('default')}
           </Chip>
         ) : (
           <Button
@@ -149,17 +152,17 @@ function ImportedUpload({ template, isDefault }: { template: TemplateInfo; isDef
             disabled={setDefault.isPending}
             className="active:translate-y-px"
           >
-            <StarIcon /> {setDefault.isPending ? 'Guardando…' : 'Usar por defecto'}
+            <StarIcon /> {setDefault.isPending ? t('saving') : t('useDefault')}
           </Button>
         )}
       </div>
       {setDefault.isError && (
         <p role="alert" className="text-sm text-destructive">
-          <InlineCode text={setDefault.error.message} />
+          <InlineCode text={errorMessage(setDefault.error)} />
         </p>
       )}
       {conflicts.length > 0 && (
-        <ul aria-label="Reglas que eligen otra plantilla" className="space-y-1 text-sm text-muted-foreground">
+        <ul aria-label={t('conflicts')} className="space-y-1 text-sm text-muted-foreground">
           {conflicts.map((conflict) => (
             <li key={conflict}>
               <InlineCode text={conflict} />
@@ -180,6 +183,7 @@ function UploadCard({
   template: TemplateInfo | undefined
   isDefault: boolean
 }) {
+  const { t } = useTranslation('templates', { keyPrefix: 'myCv' })
   const remove = useDeleteUpload()
   return (
     <li aria-label={upload.name} className="rounded-xl border bg-card p-4">
@@ -187,7 +191,7 @@ function UploadCard({
         <div className="min-w-0">
           <p className="flex flex-wrap items-center gap-2 font-medium">
             <span className="truncate">{template ? template.name : upload.name}</span>
-            {template ? <Chip>Tu CV</Chip> : <Chip tone="warning">Pendiente de importar</Chip>}
+            {template ? <Chip>{t('yourCv')}</Chip> : <Chip tone="warning">{t('pending')}</Chip>}
           </p>
           <p className="mt-0.5 text-xs text-muted-foreground">
             {upload.name} · {formatSize(upload.size)} · {formatDateTime(upload.uploaded_at)}
@@ -199,9 +203,9 @@ function UploadCard({
             size="xs"
             onClick={() => remove.mutate(upload.name)}
             disabled={remove.isPending}
-            aria-label={`Quitar ${upload.name}`}
+            aria-label={t('removeAria', { name: upload.name })}
           >
-            <TrashIcon /> Quitar
+            <TrashIcon /> {t('remove')}
           </Button>
         )}
       </div>
@@ -212,6 +216,7 @@ function UploadCard({
 
 /** «Mi CV»: el camino principal para usar tu propio diseño (fase 08.3). */
 export function MyCv() {
+  const { t } = useTranslation('templates', { keyPrefix: 'myCv' })
   const input = useRef<HTMLInputElement>(null)
   const uploadsQuery = useUploads()
   const templates = useTemplates()
@@ -223,7 +228,7 @@ export function MyCv() {
     if (file) upload.mutate(file)
     event.target.value = '' // permite volver a elegir el mismo fichero
   }
-  const byId = new Map((templates.data?.templates ?? []).map((t) => [t.id, t]))
+  const byId = new Map((templates.data?.templates ?? []).map((tpl) => [tpl.id, tpl]))
   const uploads = uploadsQuery.data ?? []
 
   return (
@@ -231,21 +236,20 @@ export function MyCv() {
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div className="max-w-[65ch]">
           <h2 id="my-cv-title" className="text-lg font-semibold tracking-tight">
-            Mi CV
+            {t('title')}
           </h2>
           <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-            Sube tu CV y tu agente lo convierte una vez en plantilla. A partir de ahí, cada CV a medida sale con tu
-            diseño y tu orden de secciones, con el texto adaptado a la oferta desde tu perfil.
+            {t('intro')}
           </p>
         </div>
-        <input ref={input} type="file" accept={ACCEPT} onChange={onFile} className="sr-only" aria-label="Fichero del CV" />
+        <input ref={input} type="file" accept={ACCEPT} onChange={onFile} className="sr-only" aria-label={t('file')} />
         <Button onClick={() => input.current?.click()} disabled={upload.isPending} className="active:translate-y-px">
-          <FileArrowUpIcon /> {upload.isPending ? 'Subiendo…' : 'Subir mi CV'}
+          <FileArrowUpIcon /> {upload.isPending ? t('uploading') : t('upload')}
         </Button>
       </div>
       {upload.isError && (
         <p role="alert" className="mb-4 text-sm text-destructive">
-          <InlineCode text={upload.error.message} />
+          <InlineCode text={errorMessage(upload.error)} />
         </p>
       )}
 
@@ -258,8 +262,8 @@ export function MyCv() {
           className="flex w-full flex-col items-center gap-2 rounded-xl border border-dashed px-6 py-10 text-center text-sm text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground"
         >
           <FileArrowUpIcon className="size-6 text-primary" weight="duotone" />
-          <span className="font-medium text-foreground">Aún no has subido tu CV</span>
-          <span>Mejor en Word (.docx): el diseño se conserva exacto. Máximo 10 MB.</span>
+          <span className="font-medium text-foreground">{t('none')}</span>
+          <span>{t('noneHint')}</span>
         </button>
       ) : (
         <ul className="space-y-4">

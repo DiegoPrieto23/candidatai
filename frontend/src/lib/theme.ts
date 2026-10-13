@@ -2,12 +2,14 @@ import { useCallback, useEffect, useSyncExternalStore } from 'react'
 
 export type ThemeChoice = 'system' | 'light' | 'dark'
 
-const STORAGE_KEY = 'jh-theme'
+const STORAGE_KEY = 'cai-theme'
+// Clave de antes de la fase 23 (Job Hunter): se lee si aún no hay la nueva.
+const LEGACY_STORAGE_KEY = 'jh-theme'
 const listeners = new Set<() => void>()
 
 function readChoice(): ThemeChoice {
   try {
-    const value = localStorage.getItem(STORAGE_KEY)
+    const value = localStorage.getItem(STORAGE_KEY) ?? localStorage.getItem(LEGACY_STORAGE_KEY)
     return value === 'light' || value === 'dark' ? value : 'system'
   } catch {
     return 'system'

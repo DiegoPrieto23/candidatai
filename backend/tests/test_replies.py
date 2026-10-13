@@ -283,11 +283,11 @@ def _plain(host: str, port: int, timeout: float) -> imaplib.IMAP4:
 
 def _configure_imap(monkeypatch: pytest.MonkeyPatch, port: int) -> None:
     env = {
-        "JH_IMAP_HOST": "127.0.0.1",
-        "JH_IMAP_PORT": str(port),
-        "JH_IMAP_USER": USER,
-        "JH_IMAP_PASSWORD": PASSWORD,
-        "JH_IMAP_REPLIES_FOLDER": "INBOX",
+        "CAI_IMAP_HOST": "127.0.0.1",
+        "CAI_IMAP_PORT": str(port),
+        "CAI_IMAP_USER": USER,
+        "CAI_IMAP_PASSWORD": PASSWORD,
+        "CAI_IMAP_REPLIES_FOLDER": "INBOX",
     }
     for key, value in env.items():
         monkeypatch.setenv(key, value)
@@ -331,7 +331,7 @@ def test_imap_folder_error_is_reported(
     applied_job("Néboa Data")
     with fake_imap({}) as server:
         _configure_imap(monkeypatch, server.port)
-        monkeypatch.setenv("JH_IMAP_REPLIES_FOLDER", "No existe")
+        monkeypatch.setenv("CAI_IMAP_REPLIES_FOLDER", "No existe")
         get_settings.cache_clear()
         result = replies.poll_replies(session, imap_factory=_plain, now=NOW)
     assert [e.code for e in result.errors] == ["imap_folder"]

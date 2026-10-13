@@ -60,7 +60,7 @@ def write_tmp(name: str, content: str | dict[str, Any]) -> Path:
 
 
 def cli_call(argv: list[str]) -> tuple[bool, dict[str, Any]]:
-    """Ejecuta `jh … --json` y devuelve (es_error, JSON de la salida)."""
+    """Ejecuta `cai … --json` y devuelve (es_error, JSON de la salida)."""
     result = runner.invoke(cli.app, argv)
     assert result.exit_code in (0, 1), result.output
     return result.exit_code == 1, json.loads(result.stdout)

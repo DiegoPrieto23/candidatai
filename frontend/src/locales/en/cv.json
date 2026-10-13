@@ -1,0 +1,70 @@
+{
+  "title": "CV",
+  "verification": {
+    "pending": "Not verified yet: the skill <code>generate-cv</code> verifies it after writing it.",
+    "passed": "Verified: nothing made up or exaggerated",
+    "failed": "The verifier found problems",
+    "blocker": "Blocker",
+    "warning": "Warning"
+  },
+  "template": {
+    "legend": "Template",
+    "yourCv": "Your CV",
+    "ats": "ATS-friendly",
+    "notAts": "Not ATS-friendly",
+    "withPhoto": " · with photo",
+    "pdfOnly": " · PDF only"
+  },
+  "photo": {
+    "legend": "Photo",
+    "autoHint": "Automatic: based on the job's country and your photo_policy, if you have data/photo.*.",
+    "unsupported": "This template has no photo."
+  },
+  "accent": "Accent color",
+  "hideSections": "Hide sections",
+  "renderForm": "Render the CV",
+  "rendering": "Rendering…",
+  "render": "Render",
+  "renderingHint": "Converting to PDF: it takes a few seconds.",
+  "renderHint": "Same verified content, different presentation. No AI.",
+  "summary": {
+    "withPhoto": "With photo",
+    "noPhoto": "No photo",
+    "without": "without {{sections}}"
+  },
+  "renderAria": "Render {{id}}",
+  "toSend": "To send",
+  "templateChanged": "Template changed",
+  "pages": "Pages",
+  "keywords": "Keywords",
+  "missingKeywords": "Missing: {{list}}",
+  "keywordsOf": "{{present}} of {{total}}",
+  "templateChangedHint": "The template has changed since this render: render again to see the current version.",
+  "viewPdf": "View PDF",
+  "compare": "Compare",
+  "useThis": "Use this one to send",
+  "comparison": "Render comparison",
+  "sideBySide": "Side by side",
+  "closeComparison": "Close comparison",
+  "pdfOf": "PDF of render {{id}}",
+  "renders": "Renders",
+  "pickAnother": "Tick another render to see them side by side.",
+  "none": {
+    "title": "No CV yet",
+    "hint": "Your agent writes the content from your profile, verifies it and renders it (skill <code>generate-cv {{id}}</code>). Then you can change template, photo and color here, without AI.",
+    "generate": "Generate CV",
+    "never": "This job never had a CV."
+  },
+  "rewrite": "Rewrite",
+  "warnings": {
+    "too_long": "Too long",
+    "photo_excluded": "No photo",
+    "font_substituted": "Font substituted",
+    "section_not_supported": "Section not supported",
+    "letter_fallback": "Default letter template",
+    "not_ats_friendly": "Not ATS-friendly",
+    "pdf_only": "PDF only",
+    "truncated": "Truncated",
+    "details_skipped": "Details skipped"
+  }
+}

@@ -143,7 +143,7 @@ def _readme(
         f"- **Fecha del envío:** {when}",
         f"- **Canal:** {channel}",
         f"- **URL de la oferta:** {job.url or 'sin URL'}",
-        f"- **Oferta en Job Hunter:** {job.id}",
+        f"- **Oferta en CandidatAI:** {job.id}",
         f"- **Versión del perfil:** {version}",
         "",
         "## Ficheros",
@@ -229,7 +229,7 @@ def archive(session: Session, payload: dict[str, Any]) -> ArchiveResult:
         try:
             tmp.rename(target)
         except OSError:
-            # Otro proceso (el worker y `jh applications archive` a la vez) la archivó antes.
+            # Otro proceso (el worker y `cai applications archive` a la vez) la archivó antes.
             already = find_folder(job_id)
             if already is None:
                 raise

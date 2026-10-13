@@ -53,14 +53,8 @@ body.options {
 }
 
 .mark {
-  display: inline-grid;
-  place-items: center;
   width: 22px;
   height: 22px;
-  border-radius: 5px;
-  background: var(--fg);
-  color: var(--bg);
-  font: 700 10px ui-monospace, monospace;
 }
 
 p {

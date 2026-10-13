@@ -167,7 +167,7 @@ describe('Candidatura asistida en la ficha', () => {
     renderApp('/jobs/1')
     const region = await section()
     expect(await within(region).findByText('En cola para el worker…')).toBeInTheDocument()
-    expect(within(region).getByText('uv run jh worker')).toBeInTheDocument()
+    expect(within(region).getByText('uv run cai worker')).toBeInTheDocument()
   })
 
   it('«Lo termino yo» y «Marcar como enviada»', async () => {
@@ -201,7 +201,7 @@ describe('Candidatura asistida en la ficha', () => {
     expect(within(region).getByRole('img', { name: 'Captura después de enviar' })).toBeInTheDocument()
   })
 
-  it('en un portal de empleo la oferta se abre en tu navegador, no en el de Job Hunter', async () => {
+  it('en un portal de empleo la oferta se abre en tu navegador, no en el de CandidatAI', async () => {
     const url = 'https://www.glassdoor.es/job-listing/1'
     const calls = mockApi({
       ...base(),

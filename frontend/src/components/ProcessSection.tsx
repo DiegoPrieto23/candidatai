@@ -1,4 +1,5 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   BellRingingIcon,
   CalendarBlankIcon,
@@ -49,6 +50,7 @@ import {
   REFERRAL_LABEL,
 } from '@/lib/labels'
 import { formatWhen, fromLocalInput, toLocalDateInput, toLocalInput } from '@/lib/time'
+import { errorMessage } from '@/lib/errors'
 import { cn } from '@/lib/utils'
 
 /** Etapas con ficha de proceso: desde que se aprueba la oferta. */
@@ -110,6 +112,7 @@ function MilestoneForm({
   onSubmit: (draft: MilestoneDraft, startsAt: string) => void
   onCancel: () => void
 }) {
+  const { t } = useTranslation('process', { keyPrefix: 'milestoneForm' })
   const [draft, setDraft] = useState<MilestoneDraft>(() => draftFrom(initial))
   const set = (changes: Partial<MilestoneDraft>) => setDraft((d) => ({ ...d, ...changes }))
   const startsAt = draft.date ? fromLocalInput(draft.date) : null
@@ -126,7 +129,7 @@ function MilestoneForm({
       <div className="grid gap-3 sm:grid-cols-2">
         {!initial && (
           <div className="space-y-1.5">
-            <Label htmlFor="ms-kind">Tipo</Label>
+            <Label htmlFor="ms-kind">{t('kind')}</Label>
             <select
               id="ms-kind"
               value={draft.kind}
@@ -142,7 +145,7 @@ function MilestoneForm({
           </div>
         )}
         <div className="space-y-1.5">
-          <Label htmlFor="ms-title">Título (opcional)</Label>
+          <Label htmlFor="ms-title">{t('title')}</Label>
           <Input
             id="ms-title"
             value={draft.title}
@@ -152,7 +155,7 @@ function MilestoneForm({
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="ms-date">{draft.allDay ? 'Día' : 'Fecha y hora (Madrid)'}</Label>
+          <Label htmlFor="ms-date">{draft.allDay ? t('day') : t('dateTime')}</Label>
           <Input
             id="ms-date"
             type={draft.allDay ? 'date' : 'datetime-local'}
@@ -168,11 +171,11 @@ function MilestoneForm({
                 set({ allDay: e.target.checked, date: e.target.checked ? draft.date.slice(0, 10) : '' })
               }
             />
-            Todo el día
+            {t('allDay')}
           </label>
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="ms-location">Lugar o enlace</Label>
+          <Label htmlFor="ms-location">{t('location')}</Label>
           <Input
             id="ms-location"
             value={draft.location}
@@ -182,7 +185,7 @@ function MilestoneForm({
         </div>
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="ms-notes">Notas</Label>
+        <Label htmlFor="ms-notes">{t('notes')}</Label>
         <Textarea
           id="ms-notes"
           rows={2}
@@ -194,21 +197,20 @@ function MilestoneForm({
       </div>
       {blocked && (
         <p className="text-xs text-muted-foreground">
-          Las entrevistas y las pruebas se anotan cuando la candidatura ya está enviada (registran su evento y
-          mueven la oferta a «En proceso»). Antes, usa «Plazo» u «Otro hito».
+          {t('blocked')}
         </p>
       )}
       {error && (
         <p role="alert" className="text-sm text-destructive">
-          {error.message}
+          {errorMessage(error)}
         </p>
       )}
       <div className="flex justify-end gap-2">
         <Button type="button" variant="outline" size="sm" onClick={onCancel}>
-          Cancelar
+          {t('cancel')}
         </Button>
         <Button type="submit" size="sm" disabled={!startsAt || blocked || pending}>
-          {pending ? 'Guardando…' : 'Guardar hito'}
+          {pending ? t('saving') : t('save')}
         </Button>
       </div>
     </form>
@@ -216,6 +218,7 @@ function MilestoneForm({
 }
 
 function MilestoneRow({ milestone, stage }: { milestone: MilestoneOut; stage: Stage | null }) {
+  const { t } = useTranslation('process', { keyPrefix: 'milestone' })
   const [editing, setEditing] = useState(false)
   const update = useUpdateMilestone(milestone.job_id)
   const status = useMilestoneStatus(milestone.job_id)
@@ -279,12 +282,12 @@ function MilestoneRow({ milestone, stage }: { milestone: MilestoneOut; stage: St
         <InterviewActions milestone={milestone} stage={stage} />
         {status.error && (
           <p role="alert" className="mt-1 text-xs text-destructive">
-            {status.error.message}
+            {errorMessage(status.error)}
           </p>
         )}
       </div>
       <div className="flex shrink-0 items-center gap-0.5">
-        <Button asChild variant="ghost" size="icon" className="size-8" aria-label={`Descargar .ics de «${milestone.title}»`}>
+        <Button asChild variant="ghost" size="icon" className="size-8" aria-label={t('ics', { title: milestone.title })}>
           <a href={fileUrls.milestoneIcs(milestone.id)} download>
             <DownloadSimpleIcon />
           </a>
@@ -295,7 +298,7 @@ function MilestoneRow({ milestone, stage }: { milestone: MilestoneOut; stage: St
               variant="ghost"
               size="icon"
               className="size-8"
-              aria-label={`Editar «${milestone.title}»`}
+              aria-label={t('edit', { title: milestone.title })}
               onClick={() => setEditing(true)}
             >
               <PencilSimpleIcon />
@@ -304,7 +307,7 @@ function MilestoneRow({ milestone, stage }: { milestone: MilestoneOut; stage: St
               variant="ghost"
               size="icon"
               className="size-8"
-              aria-label={`Marcar «${milestone.title}» como hecho`}
+              aria-label={t('done', { title: milestone.title })}
               disabled={status.isPending}
               onClick={() => status.mutate({ milestoneId: milestone.id, body: { status: 'done' } })}
             >
@@ -314,7 +317,7 @@ function MilestoneRow({ milestone, stage }: { milestone: MilestoneOut; stage: St
               variant="ghost"
               size="icon"
               className="size-8"
-              aria-label={`Cancelar «${milestone.title}»`}
+              aria-label={t('cancel', { title: milestone.title })}
               disabled={status.isPending}
               onClick={() => status.mutate({ milestoneId: milestone.id, body: { status: 'cancelled' } })}
             >
@@ -328,16 +331,17 @@ function MilestoneRow({ milestone, stage }: { milestone: MilestoneOut; stage: St
 }
 
 function Milestones({ process }: { process: ProcessView }) {
+  const { t } = useTranslation('process', { keyPrefix: 'milestones' })
   const [adding, setAdding] = useState(false)
   const create = useCreateMilestone()
   return (
     <Block
-      title="Hitos"
+      title={t('title')}
       action={
         !adding && (
           <Button variant="outline" size="sm" onClick={() => setAdding(true)}>
             <PlusIcon />
-            Añadir
+            {t('add')}
           </Button>
         )
       }
@@ -367,7 +371,7 @@ function Milestones({ process }: { process: ProcessView }) {
         />
       )}
       {process.milestones.length === 0 ? (
-        !adding && <p className="text-sm text-muted-foreground">Sin entrevistas, pruebas ni plazos anotados.</p>
+        !adding && <p className="text-sm text-muted-foreground">{t('none')}</p>
       ) : (
         <ul className="divide-y">
           {process.milestones.map((m) => (
@@ -415,6 +419,7 @@ function ContactForm({
         }
       : EMPTY_CONTACT,
   )
+  const { t } = useTranslation('process', { keyPrefix: 'contactForm' })
   const save = useSaveContact(jobId)
   const field = (key: Exclude<keyof ContactFields, 'relation'>, label: string, type = 'text') => (
     <div className="space-y-1.5">
@@ -436,21 +441,21 @@ function ContactForm({
   return (
     <form onSubmit={submit} className="grid gap-3 rounded-lg border bg-background p-3">
       <div className="grid gap-3 sm:grid-cols-2">
-        {field('name', 'Nombre')}
-        {field('role', 'Cargo')}
-        {field('email', 'Correo', 'email')}
-        {field('phone', 'Teléfono', 'tel')}
-        {field('linkedin', 'LinkedIn')}
-        {field('notes', 'Notas')}
+        {field('name', t('name'))}
+        {field('role', t('role'))}
+        {field('email', t('email'), 'email')}
+        {field('phone', t('phone'), 'tel')}
+        {field('linkedin', t('linkedin'))}
+        {field('notes', t('notes'))}
         <div className="space-y-1.5">
-          <Label htmlFor="contact-relation">Papel en el proceso</Label>
+          <Label htmlFor="contact-relation">{t('relation')}</Label>
           <select
             id="contact-relation"
             value={fields.relation ?? ''}
             onChange={(e) => setFields((f) => ({ ...f, relation: (e.target.value || null) as ContactRelation | null }))}
             className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
           >
-            <option value="">Sin indicar</option>
+            <option value="">{t('noRelation')}</option>
             {RELATIONS.map((r) => (
               <option key={r} value={r}>
                 {CONTACT_RELATION_LABEL[r]}
@@ -461,15 +466,15 @@ function ContactForm({
       </div>
       {save.error && (
         <p role="alert" className="text-sm text-destructive">
-          {save.error.message}
+          {errorMessage(save.error)}
         </p>
       )}
       <div className="flex justify-end gap-2">
         <Button type="button" variant="outline" size="sm" onClick={onDone}>
-          Cancelar
+          {t('cancel')}
         </Button>
         <Button type="submit" size="sm" disabled={!fields.name.trim() || save.isPending}>
-          {save.isPending ? 'Guardando…' : 'Guardar contacto'}
+          {save.isPending ? t('saving') : t('save')}
         </Button>
       </div>
     </form>
@@ -477,12 +482,13 @@ function ContactForm({
 }
 
 function ReferralSelect({ contact }: { contact: ContactOut }) {
+  const { t } = useTranslation('process', { keyPrefix: 'referral' })
   const set = useSetReferral(contact.job_id)
   const id = `referral-${contact.id}`
   return (
     <span className="inline-flex items-center gap-1.5">
       <label htmlFor={id} className="sr-only">
-        Referencia de {contact.name}
+        {t('of', { name: contact.name })}
       </label>
       <select
         id={id}
@@ -491,7 +497,7 @@ function ReferralSelect({ contact }: { contact: ContactOut }) {
         onChange={(e) => set.mutate({ contactId: contact.id, referral: (e.target.value || null) as ReferralStatus | null })}
         className="h-7 rounded-md border border-input bg-background px-1.5 text-xs"
       >
-        <option value="">Sin referencia</option>
+        <option value="">{t('none')}</option>
         {REFERRALS.map((r) => (
           <option key={r} value={r}>
             {REFERRAL_LABEL[r]}
@@ -500,7 +506,7 @@ function ReferralSelect({ contact }: { contact: ContactOut }) {
       </select>
       {set.error && (
         <span role="alert" className="text-xs text-destructive">
-          {set.error.message}
+          {errorMessage(set.error)}
         </span>
       )}
     </span>
@@ -508,6 +514,7 @@ function ReferralSelect({ contact }: { contact: ContactOut }) {
 }
 
 function ContactRow({ contact }: { contact: ContactOut }) {
+  const { t } = useTranslation('process', { keyPrefix: 'contact' })
   const [editing, setEditing] = useState(false)
   const remove = useDeleteContact(contact.job_id)
   if (editing) {
@@ -548,14 +555,14 @@ function ContactRow({ contact }: { contact: ContactOut }) {
           <ReferralSelect contact={contact} />
         </div>
       </div>
-      <Button variant="ghost" size="icon" className="size-8" aria-label={`Editar a ${contact.name}`} onClick={() => setEditing(true)}>
+      <Button variant="ghost" size="icon" className="size-8" aria-label={t('edit', { name: contact.name })} onClick={() => setEditing(true)}>
         <PencilSimpleIcon />
       </Button>
       <Button
         variant="ghost"
         size="icon"
         className="size-8"
-        aria-label={`Quitar a ${contact.name}`}
+        aria-label={t('remove', { name: contact.name })}
         disabled={remove.isPending}
         onClick={() => remove.mutate(contact.id)}
       >
@@ -566,22 +573,23 @@ function ContactRow({ contact }: { contact: ContactOut }) {
 }
 
 function Contacts({ process }: { process: ProcessView }) {
+  const { t } = useTranslation('process', { keyPrefix: 'contacts' })
   const [adding, setAdding] = useState(false)
   return (
     <Block
-      title="Contactos"
+      title={t('title')}
       action={
         !adding && (
           <Button variant="outline" size="sm" onClick={() => setAdding(true)}>
             <PlusIcon />
-            Añadir
+            {t('add')}
           </Button>
         )
       }
     >
       {adding && <ContactForm jobId={process.job_id} onDone={() => setAdding(false)} />}
       {process.contacts.length === 0 ? (
-        !adding && <p className="text-sm text-muted-foreground">Nadie anotado todavía.</p>
+        !adding && <p className="text-sm text-muted-foreground">{t('none')}</p>
       ) : (
         <ul className="divide-y">
           {process.contacts.map((c) => (
@@ -596,23 +604,24 @@ function Contacts({ process }: { process: ProcessView }) {
 // --- Envío y seguimiento --------------------------------------------------------------------
 
 function Sending({ process }: { process: ProcessView }) {
+  const { t } = useTranslation('process', { keyPrefix: 'sending' })
   const event = useJobEvent()
   const canFollowUp = process.stage === 'applied' || process.stage === 'in_process'
   const followup = process.followup
   return (
-    <Block title="Envío">
+    <Block title={t('title')}>
       {process.applied_at ? (
         <p className="text-sm">
-          Enviada el {formatDate(process.applied_at)}
+          {t('sentOn', { date: formatDate(process.applied_at) })}
           {channelLabel(process.channel) && <span className="text-muted-foreground"> · {channelLabel(process.channel)}</span>}
         </p>
       ) : (
-        <p className="text-sm text-muted-foreground">Aún sin enviar. Regístralo en Procesos cuando la envíes.</p>
+        <p className="text-sm text-muted-foreground">{t('notSent')}</p>
       )}
       {followup?.due && (
         <p className="inline-flex items-center gap-1.5 rounded-md bg-primary/10 px-2.5 py-1.5 text-sm font-medium text-primary">
           <BellRingingIcon className="size-4" weight="duotone" />
-          {followup.days_waiting} días sin respuesta: toca un seguimiento.
+          {t('followupDue', { count: followup.days_waiting })}
         </p>
       )}
       {process.documents.cv_render_id != null && (
@@ -623,14 +632,14 @@ function Sending({ process }: { process: ProcessView }) {
           className="flex items-center gap-1.5 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
         >
           <FilePdfIcon className="size-4" />
-          {process.documents.cv_sent ? 'CV enviado' : 'CV seleccionado para enviar'}
+          {process.documents.cv_sent ? t('cvSent') : t('cvSelected')}
         </a>
       )}
       {process.offer_received && process.stage === 'in_process' && (
         <div className="space-y-1.5">
-          <p className="text-sm">Tienes una propuesta: antes de aceptar, revisa qué conviene aclarar.</p>
-          <AgentButton action="dudas-oferta" jobId={process.job_id}>
-            Dudas antes de aceptar
+          <p className="text-sm">{t('offer')}</p>
+          <AgentButton action="offer-questions" jobId={process.job_id}>
+            {t('offerQuestions')}
           </AgentButton>
         </div>
       )}
@@ -642,11 +651,11 @@ function Sending({ process }: { process: ProcessView }) {
             disabled={event.isPending}
             onClick={() => event.mutate({ jobId: process.job_id, body: { type: 'followup_sent' } })}
           >
-            Seguimiento enviado
+            {t('followupSent')}
           </Button>
           {event.error && (
             <p role="alert" className="mt-1 text-xs text-destructive">
-              {event.error.message}
+              {errorMessage(event.error)}
             </p>
           )}
         </div>
@@ -656,12 +665,13 @@ function Sending({ process }: { process: ProcessView }) {
 }
 
 export function ProcessSection({ job }: { job: JobView }) {
+  const { t } = useTranslation('process')
   const visible = job.stage !== null && PROCESS_STAGES.has(job.stage)
   const { data, isPending, isError, error, refetch } = useJobProcess(job.id, visible)
   if (!visible) return null
   return (
-    <section className="rounded-xl border bg-card p-5 sm:p-6" aria-label="Proceso">
-      <h2 className="mb-5 font-semibold">Proceso</h2>
+    <section className="rounded-xl border bg-card p-5 sm:p-6" aria-label={t('title')}>
+      <h2 className="mb-5 font-semibold">{t('title')}</h2>
       {isPending ? (
         <Skeleton className="h-32" />
       ) : isError ? (

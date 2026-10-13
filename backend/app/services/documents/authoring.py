@@ -1,4 +1,4 @@
-"""Autoría de plantillas (fases 08.3, 08b y 08c): lo que usan `jh templates …` y la UI.
+"""Autoría de plantillas (fases 08.3, 08b y 08c): lo que usan `cai templates …` y la UI.
 
 `inspect`, `build_docx`, `build_letter` (08c), `scaffold_html` y `compare` trabajan con
 ficheros dentro de `data/` (`importer/paths.py`). Word va al motor docx; PDF, imagen y HTML,

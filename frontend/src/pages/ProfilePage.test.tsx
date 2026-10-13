@@ -20,8 +20,8 @@ function file(section: ContextFileInfo['section'], changes: Partial<ContextFileI
 
 function contextStatus(changes: Partial<ContextStatus> = {}): ContextStatus {
   return {
-    context_dir: 'C:/jh/data/contexto',
-    documents_dir: 'C:/jh/data/documentos',
+    context_dir: 'C:/cai/data/contexto',
+    documents_dir: 'C:/cai/data/documentos',
     files: [
       file('estilo-redaccion'),
       file('perfil-conductual', { empty: true, size_bytes: 500 }),
@@ -66,7 +66,7 @@ describe('Mi perfil', () => {
     const calls = mockApi({
       'GET /status': status(),
       'GET /context': contextStatus(),
-      'POST /folders/open': { status: 200, body: { path: 'C:/jh/data/contexto', opened: true } },
+      'POST /folders/open': { status: 200, body: { path: 'C:/cai/data/contexto', opened: true } },
     })
     renderApp('/perfil')
     await userEvent.click(await screen.findByRole('button', { name: 'Abrir la carpeta del contexto' }))
@@ -79,12 +79,12 @@ describe('Mi perfil', () => {
     mockApi({
       'GET /status': status(),
       'GET /context': contextStatus(),
-      'POST /folders/open': { status: 200, body: { path: 'C:/jh/data/documentos', opened: false } },
+      'POST /folders/open': { status: 200, body: { path: 'C:/cai/data/documentos', opened: false } },
     })
     renderApp('/perfil')
     await userEvent.click(await screen.findByRole('button', { name: 'Abrir la carpeta de documentos' }))
     expect(await screen.findByText(/No se pudo abrir aquí/)).toBeInTheDocument()
-    expect(screen.getByText('C:/jh/data/documentos')).toBeInTheDocument()
+    expect(screen.getByText('C:/cai/data/documentos')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Copiar ruta' })).toBeInTheDocument()
   })
 

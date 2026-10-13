@@ -1,6 +1,6 @@
 # Desarrollo por fases con un agente
 
-Job Hunter empezó como un kit de arranque: especificación, encargos por fase, skills y roles para
+CandidatAI empezó como un kit de arranque: especificación, encargos por fase, skills y roles para
 construir la app **con el agente de IA que prefieras**. Esta guía cuenta cómo se construye (o se
 amplía) fase a fase. El estado de cada fase está en `ROADMAP.md`; lo que aporta cada una, en
 `RESUMEN_FASES.md`.
@@ -8,7 +8,7 @@ amplía) fase a fase. El estado de cada fase está en `ROADMAP.md`; lo que aport
 ## Qué necesita tu agente
 
 Poder **leer y escribir ficheros** en la carpeta y, además, **hablar MCP o ejecutar comandos**.
-Con MCP es más cómodo; sin MCP, usa la CLI `jh … --json`, que es equivalente.
+Con MCP es más cómodo; sin MCP, usa la CLI `cai … --json`, que es equivalente.
 Detalle por agente y garantías de seguridad: `docs/AGENTS_COMPAT.md`.
 
 ## Qué hay en el kit
@@ -49,14 +49,14 @@ demo/profile.example.yaml  esquema del perfil con una candidata ficticia
    git commit -m "Kit inicial"
    ```
 3. Abre tu agente en esa carpeta y pide la primera fase:
-   - Claude Code: `/implementar-fase 01`
-   - Codex: `$implementar-fase 01`
-   - Otros: "Lee AGENTS.md y usa el skill implementar-fase para la fase 01"
+   - Claude Code: `/implement-phase 01`
+   - Codex: `$implement-phase 01`
+   - Otros: "Lee AGENTS.md y usa el skill implement-phase para la fase 01"
 
 ## Cómo construir cada fase
 
 ```
-implementar-fase NN   →  el agente lee el encargo y propone un plan
+implement-phase NN   →  el agente lee el encargo y propone un plan
 revisas y apruebas    →  implementa con tests
 pruebas manuales      →  las que te indique
 commit                →  cuando estés conforme

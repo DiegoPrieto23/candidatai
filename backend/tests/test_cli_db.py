@@ -1,4 +1,4 @@
-"""Comandos `jh db upgrade`, `jh status` y `jh events list`."""
+"""Comandos `cai db upgrade`, `cai status` y `cai events list`."""
 
 import json
 from datetime import UTC, datetime
@@ -39,17 +39,17 @@ def test_commands_require_migrated_db() -> None:
     assert result.exit_code == 1
     error = json.loads(result.stdout)["error"]
     assert error["type"] == "database_not_ready"
-    assert "jh db upgrade" in error["message"]
+    assert "cai db upgrade" in error["message"]
 
     result = runner.invoke(cli.app, ["status"])
     assert result.exit_code == 1
-    assert "jh db upgrade" in result.stderr
+    assert "cai db upgrade" in result.stderr
 
 
 def test_db_upgrade() -> None:
     result = runner.invoke(cli.app, ["db", "upgrade", "--json"])
     assert result.exit_code == 0, result.output
-    assert json.loads(result.stdout) == {"ok": True, "from": None, "to": "0020"}
+    assert json.loads(result.stdout) == {"ok": True, "from": None, "to": "0021"}
 
     result = runner.invoke(cli.app, ["db", "upgrade"])
     assert result.exit_code == 0
@@ -59,7 +59,7 @@ def test_db_upgrade() -> None:
 def test_db_upgrade_text() -> None:
     result = runner.invoke(cli.app, ["db", "upgrade"])
     assert result.exit_code == 0
-    assert "vacía -> 0020" in result.stdout
+    assert "vacía -> 0021" in result.stdout
 
 
 def test_status() -> None:

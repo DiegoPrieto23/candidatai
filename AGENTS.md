@@ -1,12 +1,12 @@
-# Job Hunter
+# CandidatAI
 
 App local para gestionar una búsqueda de empleo: ingesta de ofertas, triaje, CV a medida,
 candidaturas asistidas, seguimiento y analítica del embudo. Backend FastAPI + SQLite, frontend
-React, servidor MCP y CLI `jh`.
+React, servidor MCP y CLI `cai`.
 
 **El código de la app no llama a ningún LLM.** El razonamiento (extraer ofertas, valorar encaje,
 redactar CVs) lo hace el agente de IA que use cada persona (Claude Code, Codex, Gemini CLI, Cursor,
-Copilot…), a través de la interfaz para agentes de la app: herramientas MCP o comandos `jh`
+Copilot…), a través de la interfaz para agentes de la app: herramientas MCP o comandos `cai`
 equivalentes. Ver `docs/DECISIONS.md`, ADR-001 y ADR-010.
 
 Este fichero es la fuente de instrucciones para **cualquier** agente. `CLAUDE.md` y `GEMINI.md`
@@ -38,16 +38,17 @@ solo apuntan aquí.
 backend/          pyproject.toml, app/, alembic/, tests/
   app/services/   lógica de negocio (única fuente de verdad)
   app/api/        FastAPI (capa fina)
-  app/cli.py      CLI `jh` con Typer (capa fina)
+  app/cli.py      CLI `cai` con Typer (capa fina)
   app/mcp/        servidor MCP (capa fina)
 frontend/         Vite + React + TypeScript
 .agents/          FUENTE ÚNICA de skills, roles (subagentes) y manifiesto para agentes
 .claude/ .codex/ .mcp.json   GENERADOS desde .agents/ con scripts/sync_agents.py
 templates/        plantillas de CV integradas (sin datos personales)
-extension/        extensión «Enviar a Job Hunter» (fase 09b)
+extension/        extensión «Enviar a CandidatAI» (fase 09b)
 config/           policies.yaml y listas genéricas (sin datos personales)
 demo/             candidato y ofertas ficticios
-data/             GITIGNORED: jobhunter.db, profile.yaml, contexto/, documentos/, photo, templates/,
+install.ps1       instalador para Windows: descarga la release, prepara todo y crea el acceso directo
+data/             GITIGNORED: candidatai.db, profile.yaml, contexto/, documentos/, photo, templates/,
                   uploads/, CVs, tmp/…
 ```
 
@@ -58,12 +59,14 @@ cd backend
 uv run pytest                      # tests
 uv run ruff check --fix && uv run ruff format
 uv run alembic upgrade head        # migraciones
-uv run jh --help                   # CLI
-uv run jh serve                    # API en http://127.0.0.1:8000
-uv run jh worker                   # tareas en segundo plano (--once: vacía la cola)
-uv run jh eval matching            # precision/recall del matching (evals/matching/)
+uv run cai --help                  # CLI
+uv run cai start                   # app entera: API con la UI compilada y worker (--dev: más Vite)
+uv run cai serve                   # solo la API en http://127.0.0.1:8000
+uv run cai worker                  # solo las tareas en segundo plano (--once: vacía la cola)
+uv run cai eval matching           # precision/recall del matching (evals/matching/)
 uv run python ../scripts/build_builtin_templates.py   # regenerar las plantillas de templates/
-cd frontend && pnpm dev            # UI en http://127.0.0.1:5173
+cd frontend && pnpm dev            # UI en desarrollo en http://127.0.0.1:5173
+cd frontend && pnpm build          # UI compilada (frontend/dist) que sirve `cai start`
 uv run scripts/sync_agents.py      # regenerar configuración de agentes (desde la raíz)
 uv run scripts/sync_agents.py --check   # CI: falla si lo generado no está al día
 ```
@@ -72,19 +75,24 @@ uv run scripts/sync_agents.py --check   # CI: falla si lo generado no está al d
 
 - Python 3.12, tipado estricto, Pydantic v2, SQLAlchemy 2.0 (estilo `select()`), Typer, FastAPI.
 - API, CLI y MCP son capas finas: toda la lógica vive en `app/services/` y se prueba ahí.
-- **Paridad MCP ↔ CLI**: cada herramienta MCP tiene su comando `jh … --json` con la misma
+- **Paridad MCP ↔ CLI**: cada herramienta MCP tiene su comando `cai … --json` con la misma
   entrada y salida. Un test lo comprueba. Así la app funciona con agentes sin MCP.
 - Todo cambio de estado de una oferta se registra como evento con `services.events.record()`.
   El estado actual es una proyección de los eventos; nunca se actualiza sin evento.
 - Cualquier cambio de esquema lleva migración de Alembic.
 - Tests con pytest sobre SQLite temporal. Sin red en los tests: usa fixtures y `respx`.
-- Código e identificadores en inglés; UI, docs y mensajes al usuario en español. Excepción: el
+- Código e identificadores en inglés; docs y mensajes al usuario en español; la UI, en español e
+  inglés (ver «Textos de la UI»). Excepción: el
   README y la guía de uso existen en inglés (`README.md`, `docs/GUIDE.md`) y en español
   (`README.es.md`, `docs/GUIA.md`); un cambio en uno va también al otro.
 - Windows 11 es el entorno principal: `pathlib` siempre, nada de comandos solo-Unix en código,
   rutas de herramientas externas configurables por variable de entorno (`SOFFICE_PATH`).
 - Frontend: TypeScript estricto, cliente de API generado desde el OpenAPI de FastAPI, TanStack
   Query para datos remotos, shadcn/ui para componentes.
+- **Textos de la UI**: en `frontend/src/locales/<idioma>/<zona>.json` (español e inglés, con
+  i18next), nunca escritos en los componentes. Un texto nuevo va en los dos idiomas: un test
+  comprueba que tienen las mismas claves y otro busca textos en español fuera de `locales/`. Los
+  mensajes del servidor siguen en español; si la UI los recibe con un código estable, lo traduce.
 - **Configuración de agentes**: se edita solo en `.agents/`. Nunca a mano en `.claude/skills`,
   `.claude/agents`, `.codex/` ni `.mcp.json`: se regeneran con `scripts/sync_agents.py`.
   `.claude/settings.json` es la excepción (permisos de Claude Code, se mantiene a mano).
@@ -120,8 +128,8 @@ uv run scripts/sync_agents.py --check   # CI: falla si lo generado no está al d
 Los skills de `.agents/skills/` siguen `docs/POLICIES.md` y usan estas convenciones:
 
 - **Herramientas**: "llama a `get_status`" significa la herramienta MCP `get_status` del servidor
-  `jobhunter`. Si tu agente no tiene MCP conectado, usa el comando equivalente de la tabla de
-  `docs/AGENT_INTERFACE.md` (p. ej. `uv run --directory backend jh status --json`). Las entradas
+  `candidatai`. Si tu agente no tiene MCP conectado, usa el comando equivalente de la tabla de
+  `docs/AGENT_INTERFACE.md` (p. ej. `uv run --directory backend cai status --json`). Las entradas
   JSON largas se pasan en un fichero dentro de `data/tmp/`.
 - **Roles**: "delega en el rol `extractor`" significa:
   1. si tu agente admite subagentes, lanza el subagente con ese nombre (generado desde
@@ -131,5 +139,5 @@ Los skills de `.agents/skills/` siguen `docs/POLICIES.md` y usan estas convencio
      importante por seguridad: ver `docs/AGENTS_COMPAT.md`.
 - **Argumentos**: cuando un skill habla de "los argumentos", son los que el usuario escribió al
   invocarlo (un `job_id`, un número de fase…).
-- **Invocación**: cada agente tiene su sintaxis (`/generar-cv 42` en Claude Code,
-  `$generar-cv 42` en Codex); también basta con pedirlo en lenguaje natural.
+- **Invocación**: cada agente tiene su sintaxis (`/generate-cv 42` en Claude Code,
+  `$generate-cv 42` en Codex); también basta con pedirlo en lenguaje natural.

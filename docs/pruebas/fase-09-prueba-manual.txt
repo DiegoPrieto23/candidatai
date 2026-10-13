@@ -3,7 +3,7 @@ PRUEBA MANUAL · FASE 09 · CONECTORES DE ATS Y SCHEDULER
 
 Objetivo: comprobar con tus empresas objetivo reales que la pantalla «Empresas» las prueba y las
 añade, que una ejecución guarda solo lo que encaja y no duplica nada al repetirla, y que
-`jh worker` las trae solo a la hora configurada con un log legible.
+`cai worker` las trae solo a la hora configurada con un log legible.
 
 Duración aproximada: 20 minutos.
 
@@ -21,26 +21,26 @@ REQUISITOS
 - Rama de la fase:
       git switch fase/09-conectores-scheduler
 
-Las ofertas que se den de alta son REALES y se quedan en tu base de datos (data/jobhunter.db).
+Las ofertas que se den de alta son REALES y se quedan en tu base de datos (data/candidatai.db).
 Elige empresas que de verdad quieras seguir; al final se explica cómo pausarlas.
 
 
 PARTE 1 · PREPARAR
 ------------------
 1. Dependencias (el backend añade APScheduler). Con Claude Code CERRADO (si no, falla al
-   reinstalar jh-mcp.exe):
+   reinstalar cai-mcp.exe):
 
       uv sync --directory backend
 
 2. Migra la base de datos (esta fase añade la 0006):
 
-      uv run --directory backend jh db upgrade
+      uv run --directory backend cai db upgrade
 
    Esperado: "Base de datos actualizada: 0005 -> 0006."
 
 3. Comprueba el entorno:
 
-      uv run --directory backend jh doctor
+      uv run --directory backend cai doctor
 
    Esperado: una línea «Conectores de ofertas» en OK con «Greenhouse, Lever y Ashby listos» y la
    hora de la ingesta diaria (07:30, Europe/Madrid). Puedes cambiarla en config/policies.yaml →
@@ -49,7 +49,7 @@ PARTE 1 · PREPARAR
 
 PARTE 2 · PANTALLA «EMPRESAS»
 -----------------------------
-1. Terminal 1:   uv run --directory backend jh serve
+1. Terminal 1:   uv run --directory backend cai serve
    Terminal 2:   cd frontend; pnpm dev
    Abre http://127.0.0.1:5173 y entra en «Empresas» (menú superior).
 
@@ -79,8 +79,8 @@ PARTE 3 · EJECUTAR Y REPETIR
 
 3. Lo mismo por CLI (todas las activas):
 
-      uv run --directory backend jh sources run
-      uv run --directory backend jh sources list
+      uv run --directory backend cai sources run
+      uv run --directory backend cai sources list
 
    Esperado: «0 nuevas» en las ya ejecutadas; «list» muestra la última ejecución de cada una.
 
@@ -93,7 +93,7 @@ PARTE 4 · WORKER Y EXTRACCIÓN
 1. Para ver la ingesta sin esperar a mañana, pon la hora de dentro de 2-3 minutos en
    config/policies.yaml → connectors.daily_at (p. ej. "17:42"). Terminal 3:
 
-      uv run --directory backend jh worker
+      uv run --directory backend cai worker
 
    Esperado al arrancar: «Worker en marcha…», «Próxima ingesta diaria: 17:42 (Europe/Madrid)».
    (Las fuentes que nunca se han ejecutado se ejecutan ya al arrancar.)
@@ -106,19 +106,19 @@ PARTE 4 · WORKER Y EXTRACCIÓN
    hora programada sin haberlo tenido encendido, debe decir «Fuentes pendientes desde la última
    ingesta: N en cola.» y ejecutarlas.
 
-3. En tu agente: /procesar-ofertas → las ofertas nuevas pasan a «Por revisar».
+3. En tu agente: /process-jobs → las ofertas nuevas pasan a «Por revisar».
 
 4. (Opcional) Extracción automática cada mañana: ver docs/AGENTS_COMPAT.md → «Extracción
    automática cada mañana». En Claude Code Desktop, una tarea programada local diaria después de
-   la ingesta con el prompt /procesar-ofertas.
+   la ingesta con el prompt /process-jobs.
 
 
 PARTE 5 · OPCIONAL: INFOJOBS O ADZUNA
 -------------------------------------
 Solo si tienes claves (developer.infojobs.net o developer.adzuna.com). Añádelas a .env:
-      JH_INFOJOBS_CLIENT_ID=...      JH_INFOJOBS_CLIENT_SECRET=...
-      JH_ADZUNA_APP_ID=...           JH_ADZUNA_APP_KEY=...
-Reinicia `jh serve`, añade en «Empresas» un origen InfoJobs o Adzuna con unas palabras de búsqueda
+      CAI_INFOJOBS_CLIENT_ID=...      CAI_INFOJOBS_CLIENT_SECRET=...
+      CAI_ADZUNA_APP_ID=...           CAI_ADZUNA_APP_KEY=...
+Reinicia `cai serve`, añade en «Empresas» un origen InfoJobs o Adzuna con unas palabras de búsqueda
 y pulsa «Probar». Sin claves, la fuente aparece con «Sin claves en .env» y el worker la omite con
 un aviso.
 
@@ -133,4 +133,4 @@ QUÉ ANOTAR
 LIMPIEZA
 --------
 Las ofertas se quedan (son reales). Para dejar de seguir una empresa: «Pausar» en la UI o
-      uv run --directory backend jh sources disable <id>
+      uv run --directory backend cai sources disable <id>

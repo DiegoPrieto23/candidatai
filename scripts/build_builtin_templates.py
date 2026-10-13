@@ -103,7 +103,7 @@ def _base_document(font: str, size: float) -> Any:
     bullet.paragraph_format.space_after = Pt(1)
 
     core = doc.core_properties
-    core.author = core.last_modified_by = "Job Hunter"
+    core.author = core.last_modified_by = "CandidatAI"
     core.title = core.subject = core.keywords = core.comments = ""
     core.created = core.modified = _FIXED_CORE_DATE
     core.revision = 1

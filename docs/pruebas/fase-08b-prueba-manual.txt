@@ -4,7 +4,7 @@ PRUEBA MANUAL · FASE 08b · MOTOR HTML E IMPORTACIÓN DE CVs EN CUALQUIER FORMA
 Objetivo: comprobar que el motor html imprime CVs sin red con Chromium, que la plantilla
 integrada `moderna-2col` se ve bien con foto y color, y que un CV que solo tienes en PDF o en
 imagen (Canva, un diseño descargado…) se recrea UNA vez como plantilla y a partir de ahí
-/generar-cv saca los CVs a medida con ese diseño.
+/generate-cv saca los CVs a medida con ese diseño.
 
 Duración aproximada: 15 minutos (partes 1 a 3, datos ficticios) + 30-40 (parte 4, tu CV).
 
@@ -28,7 +28,7 @@ datos.
 PARTE 1 · PREPARAR
 ------------------
 1. CIERRA Claude Code antes de este paso (con su servidor MCP abierto, `uv sync` falla porque
-   jh-mcp.exe está en uso). Esta fase añade playwright y numpy:
+   cai-mcp.exe está en uso). Esta fase añade playwright y numpy:
 
       uv sync --directory backend
       uv run --directory backend playwright install chromium
@@ -37,29 +37,29 @@ PARTE 1 · PREPARAR
 
 2. Diagnóstico:
 
-      uv run --directory backend jh doctor
+      uv run --directory backend cai doctor
 
    Esperado: "[ OK  ] Motor html (Chromium)  «moderna-2col» → PDF de 1 pág. sin red en 2 s" y,
    en «Plantillas de CV», las integradas ats-simple, clasica-foto y moderna-2col.
 
 3. Directorio de datos de prueba con el perfil demo y el CV ficticio en PDF y en imagen:
 
-      $env:JH_DATA_DIR = "data\demo-08b"
-      uv run --directory backend jh db upgrade
+      $env:CAI_DATA_DIR = "data\demo-08b"
+      uv run --directory backend cai db upgrade
       New-Item -ItemType Directory -Force data\demo-08b\uploads, data\demo-08b\tmp | Out-Null
       Copy-Item demo\profile.example.yaml data\demo-08b\profile.yaml
-      uv run --directory backend jh profile import
+      uv run --directory backend cai profile import
       Copy-Item backend\tests\fixtures\cv-ficticio.pdf data\demo-08b\uploads\marta.pdf
       uv run --directory backend python -c "from pathlib import Path; from app.services.documents.preview import pdf_to_png; pdf_to_png(Path('tests/fixtures/cv-ficticio.pdf'), Path('../data/demo-08b/uploads/marta.png'), 900)"
 
 
 PARTE 2 · LOS COMANDOS (sin agente)
 -----------------------------------
-Con $env:JH_DATA_DIR aún puesto:
+Con $env:CAI_DATA_DIR aún puesto:
 
 1. Inspeccionar el PDF:
 
-      uv run --directory backend jh templates inspect data\demo-08b\uploads\marta.pdf
+      uv run --directory backend cai templates inspect data\demo-08b\uploads\marta.pdf
 
    Esperado: A4, "Columnas: 2, banda de cabecera #0E6E6E", fuentes Georgia y Arial, "Secciones:
    PERFIL (summary, col. 0) · EXPERIENCIA … · PREMIOS (extra, col. 0) · CONTACTO (contact,
@@ -69,16 +69,16 @@ Con $env:JH_DATA_DIR aún puesto:
 
 2. Inspeccionar la imagen:
 
-      uv run --directory backend jh templates inspect data\demo-08b\uploads\marta.png
+      uv run --directory backend cai templates inspect data\demo-08b\uploads\marta.png
 
    Esperado: 2 columnas y la banda de cabecera, pero sin secciones ni bloques de texto, y una
    nota pidiendo que el agente lea las secciones en la imagen (`--sections`).
 
 3. Crear la plantilla base desde el PDF, validarla y compararla:
 
-      uv run --directory backend jh templates scaffold-html --source data\demo-08b\uploads\marta.pdf --id marta --name "CV de Marta"
-      uv run --directory backend jh templates validate marta
-      uv run --directory backend jh templates compare marta --source data\demo-08b\uploads\marta.pdf
+      uv run --directory backend cai templates scaffold-html --source data\demo-08b\uploads\marta.pdf --id marta --name "CV de Marta"
+      uv run --directory backend cai templates validate marta
+      uv run --directory backend cai templates compare marta --source data\demo-08b\uploads\marta.pdf
 
    Esperado: "Plantilla html creada: data/templates/marta", lateral skills y languages, acento
    #0E6E6E; "Plantilla válida: marta (html)"; y una SSIM en torno a 0,7. Abre
@@ -89,22 +89,22 @@ Con $env:JH_DATA_DIR aún puesto:
 4. El saneado: abre data\demo-08b\templates\marta\template.html, añade justo después de <body>
    la línea  <script>alert(1)</script><img src="https://example.com/x.png">  y guarda.
 
-      uv run --directory backend jh templates validate marta
+      uv run --directory backend cai templates validate marta
 
    Esperado: error con "template.html:<línea>: No se admite etiqueta <script>" y la URL
    externa. Quita esa línea y vuelve a validar: válida.
 
 5. Desde la imagen, diciendo tú las secciones (lo que haría el agente al leerla):
 
-      uv run --directory backend jh templates scaffold-html --source data\demo-08b\uploads\marta.png --id marta-img --sections summary,experience,education,extra_sections,skills,languages --side skills,languages
+      uv run --directory backend cai templates scaffold-html --source data\demo-08b\uploads\marta.png --id marta-img --sections summary,experience,education,extra_sections,skills,languages --side skills,languages
 
 
 PARTE 3 · LA UI
 ---------------
 1. Terminal A (API, con el directorio de prueba):
 
-      $env:JH_DATA_DIR = "data\demo-08b"
-      uv run --directory backend jh serve
+      $env:CAI_DATA_DIR = "data\demo-08b"
+      uv run --directory backend cai serve
 
    Terminal B (UI):
 
@@ -125,7 +125,7 @@ PARTE 3 · LA UI
 
 4. Limpieza (para la API con Ctrl+C):
 
-      Remove-Item Env:JH_DATA_DIR
+      Remove-Item Env:CAI_DATA_DIR
       Remove-Item -Recurse -Force data\demo-08b
 
 
@@ -135,12 +135,12 @@ Necesitas tu perfil importado, una oferta aprobada y un CV en PDF (tuyo exportad
 similar, o un diseño que te guste). Si solo lo tienes en Word, esta parte no aplica (la 08.3 lo
 conserva exacto).
 
-1. `jh serve` y `pnpm dev` SIN JH_DATA_DIR. En Plantillas → «Subir mi CV», sube el PDF. Queda
+1. `cai serve` y `pnpm dev` SIN CAI_DATA_DIR. En Plantillas → «Subir mi CV», sube el PDF. Queda
    «Pendiente de importar» con la petición para el agente: cópiala.
 
 2. Abre Claude Code en la raíz del repo y pega la petición:
 
-      /importar-plantilla-cv data/uploads/<tu-fichero>.pdf
+      /import-cv-template data/uploads/<tu-fichero>.pdf
 
    El agente analiza el PDF (te cuenta columnas, colores, fuentes, secciones y extensión), crea
    la base con scaffold-html, la ajusta mirando el original y compara (hasta 3 vueltas). Si
@@ -152,13 +152,13 @@ conserva exacto).
 
 4. Genera el CV de una oferta aprobada:
 
-      /generar-cv <job_id>
+      /generate-cv <job_id>
 
    En la ficha, sección CV: el render usa tu plantilla y lleva el aviso «solo PDF» (pdf_only); no
    hay botón DOCX. Abre el PDF y comprueba:
    - diseño y orden de secciones como el original;
    - extensión parecida (mismas páginas);
-   - texto adaptado a la oferta, sin nada inventado (lo verifica el rol verificador).
+   - texto adaptado a la oferta, sin nada inventado (lo verifica el rol `verifier`).
 
 5. Prueba también `moderna-2col` en esa misma oferta, desde la ficha y sin agente: con y sin
    foto y con otro color. Cada render tarda unos 2-3 s (los docx, 10-15 s).

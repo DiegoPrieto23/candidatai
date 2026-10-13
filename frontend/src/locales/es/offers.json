@@ -1,0 +1,67 @@
+{
+  "comparison": {
+    "label": "Ofertas recibidas",
+    "rows": {
+      "annualBase": "Fijo anual",
+      "annualTotal": "Total anual (con variable)",
+      "baseVsFloor": "Fijo frente a tu mínimo",
+      "totalVsFloor": "Total frente a tu mínimo",
+      "published": "Rango publicado",
+      "baseVsRange": "Fijo frente al rango",
+      "mode": "Modalidad",
+      "location": "Ubicación",
+      "start": "Incorporación",
+      "respondBy": "Responder antes de",
+      "benefits": "Beneficios",
+      "remarks": "Avisos"
+    },
+    "notPublished": "No lo indicaba",
+    "min": "mín.",
+    "max": "máx.",
+    "floor": "Tu mínimo: {{amount}} brutos al año. ",
+    "noFloor": "Sin mínimo en tu perfil (private.salary_floor_eur): no se compara con él. ",
+    "private": "Solo lo ves tú: tu agente no recibe tu mínimo ni estas diferencias. Son cuentas, no una recomendación."
+  },
+  "received": {
+    "title": "Oferta recibida",
+    "form": {
+      "base": "Fijo bruto",
+      "variable": "Variable bruto anual",
+      "currency": "Moneda",
+      "period": "El fijo es",
+      "yearly": "Anual",
+      "monthly": "Mensual",
+      "mode": "Modalidad",
+      "noMode": "Sin indicar",
+      "location": "Ubicación",
+      "start": "Incorporación",
+      "respondBy": "Responder antes de",
+      "benefits": "Beneficios",
+      "notes": "Notas (las lee tu agente: no pongas aquí tus cifras)",
+      "private": "Importes privados: tu agente no ve el fijo ni el variable.",
+      "privateHint": "Tu mínimo y la diferencia con él no los ve nunca.",
+      "cancel": "Cancelar",
+      "saving": "Guardando…",
+      "save": "Guardar oferta"
+    },
+    "summary": {
+      "base": "Fijo",
+      "variable": "Variable",
+      "mode": "Modalidad",
+      "location": "Ubicación",
+      "start": "Incorporación",
+      "respondBy": "Responder antes de",
+      "benefits": "Beneficios",
+      "notes": "Notas",
+      "perYear": "{{amount}} al año",
+      "perMonth": "{{amount}} al mes"
+    },
+    "noted": "Anotada el {{date}}. Compárala con tu mínimo en Procesos.",
+    "prompt": "¿Te han hecho una oferta? Anótala para compararla y preparar la negociación.",
+    "private": "Importes privados",
+    "edit": "Editar",
+    "add": "Anotar oferta",
+    "negotiate": "Preparar negociación",
+    "delete": "Borrar datos"
+  }
+}

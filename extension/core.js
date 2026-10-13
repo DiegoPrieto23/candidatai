@@ -2,7 +2,7 @@
  * Lo que comparten el service worker y el popup: dónde está la API y cómo se presenta la
  * respuesta de `POST /capture`. Sin dependencias.
  */
-var JH = (function () {
+var CAI = (function () {
   'use strict'
 
   var API_URL = 'http://127.0.0.1:8000'
@@ -15,11 +15,11 @@ var JH = (function () {
   }
 
   var ERRORS = {
-    unauthorized: 'El token no vale. Genera uno con «jh capture token» y pégalo en las opciones.',
+    unauthorized: 'El token no vale. Genera uno con «cai capture token» y pégalo en las opciones.',
     forbidden:
-      'La app no acepta esta extensión. Revisa JH_CAPTURE_EXTENSION_ID en .env y reinicia «jh serve».',
-    capture_not_configured: 'Falta crear el token: ejecuta «jh capture token» y pégalo en las opciones.',
-    database_not_ready: 'La base de datos no está al día: ejecuta «jh db upgrade».',
+      'La app no acepta esta extensión. Revisa CAI_CAPTURE_EXTENSION_ID en .env y reinicia «cai serve».',
+    capture_not_configured: 'Falta crear el token: ejecuta «cai capture token» y pégalo en las opciones.',
+    database_not_ready: 'La base de datos no está al día: ejecuta «cai db upgrade».',
   }
 
   function jobUrl(uiUrl, jobId) {

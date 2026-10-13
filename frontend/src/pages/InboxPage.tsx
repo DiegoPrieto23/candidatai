@@ -12,6 +12,7 @@ import {
   WarningIcon,
   XIcon,
 } from '@phosphor-icons/react'
+import { Trans, useTranslation } from 'react-i18next'
 import type { JobRow, Stage } from '@/api/client'
 import { type JobSort, PAGE_SIZE, type SortDirection, useJobs } from '@/api/queries'
 import { SignalBadges } from '@/components/JobSignals'
@@ -46,14 +47,14 @@ function parseSort(params: URLSearchParams): Sort {
 }
 
 /** Para el selector del móvil, donde no hay cabeceras. */
-const SORT_OPTIONS: { value: string; label: string }[] = [
-  { value: 'date:desc', label: 'Más recientes' },
-  { value: 'date:asc', label: 'Más antiguas' },
-  { value: 'score:desc', label: 'Más encaje' },
-  { value: 'score:asc', label: 'Menos encaje' },
-  { value: 'salary:desc', label: 'Más salario' },
-  { value: 'salary:asc', label: 'Menos salario' },
-]
+const SORT_OPTIONS = [
+  { value: 'date:desc', label: 'dateDesc' },
+  { value: 'date:asc', label: 'dateAsc' },
+  { value: 'score:desc', label: 'scoreDesc' },
+  { value: 'score:asc', label: 'scoreAsc' },
+  { value: 'salary:desc', label: 'salaryDesc' },
+  { value: 'salary:asc', label: 'salaryAsc' },
+] as const
 
 /** Búsqueda con retardo: no se lanza una consulta por cada tecla. */
 function useDebounced<T>(value: T, ms = 250): T {
@@ -66,26 +67,29 @@ function useDebounced<T>(value: T, ms = 250): T {
 }
 
 function RiskMark() {
+  const { t } = useTranslation('inbox')
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <span className="inline-flex text-warning-foreground" aria-label="Posible contenido dirigido a una IA">
+        <span className="inline-flex text-warning-foreground" aria-label={t('risk')}>
           <WarningIcon className="size-4" weight="fill" />
         </span>
       </TooltipTrigger>
-      <TooltipContent>Posible contenido dirigido a una IA</TooltipContent>
+      <TooltipContent>{t('risk')}</TooltipContent>
     </Tooltip>
   )
 }
 
 function RemoteMode({ mode }: { mode: JobRow['remote_mode'] }) {
-  if (!mode) return <span className="text-muted-foreground/60">Sin extraer</span>
+  const { t } = useTranslation('inbox')
+  if (!mode) return <span className="text-muted-foreground/60">{t('notExtracted')}</span>
   return <span className={cn(mode === 'unknown' && 'text-muted-foreground')}>{REMOTE_LABEL[mode]}</span>
 }
 
 function Salary({ salary }: { salary: JobRow['salary'] }) {
+  const { t } = useTranslation('inbox')
   const text = formatSalary(salary)
-  if (!text) return <span className="text-muted-foreground/60">No lo indica</span>
+  if (!text) return <span className="text-muted-foreground/60">{t('noSalary')}</span>
   return <span className="tabular">{text}</span>
 }
 
@@ -126,6 +130,7 @@ function SortHeader({
 }
 
 function JobTable({ jobs, sort, onSort }: { jobs: JobRow[]; sort: Sort; onSort: (sort: Sort) => void }) {
+  const { t } = useTranslation('inbox')
   const navigate = useNavigate()
   return (
     <>
@@ -133,17 +138,17 @@ function JobTable({ jobs, sort, onSort }: { jobs: JobRow[]; sort: Sort; onSort: 
       <table className="hidden w-full text-sm md:table">
         <thead>
           <tr className="text-left text-xs text-muted-foreground">
-            <th className="pb-3 pl-4 font-medium">Oferta</th>
-            <th className="pb-3 font-medium">Modalidad</th>
+            <th className="pb-3 pl-4 font-medium">{t('columns.job')}</th>
+            <th className="pb-3 font-medium">{t('columns.mode')}</th>
             <SortHeader field="salary" current={sort} onSort={onSort}>
-              Salario
+              {t('columns.salary')}
             </SortHeader>
             <SortHeader field="score" current={sort} onSort={onSort} className="pr-6 text-right">
-              Encaje
+              {t('columns.fit')}
             </SortHeader>
-            <th className="pb-3 font-medium">Etapa</th>
+            <th className="pb-3 font-medium">{t('columns.stage')}</th>
             <SortHeader field="date" current={sort} onSort={onSort} className="pr-4 text-right">
-              Alta
+              {t('columns.added')}
             </SortHeader>
           </tr>
         </thead>
@@ -228,8 +233,9 @@ function JobTable({ jobs, sort, onSort }: { jobs: JobRow[]; sort: Sort; onSort: 
 }
 
 function TableSkeleton() {
+  const { t } = useTranslation('inbox')
   return (
-    <div aria-busy="true" aria-label="Cargando ofertas" className="divide-y">
+    <div aria-busy="true" aria-label={t('loadingJobs')} className="divide-y">
       {Array.from({ length: 6 }, (_, i) => (
         <div key={i} className="flex items-center gap-6 px-4 py-4">
           <div className="flex-1 space-y-2">
@@ -246,6 +252,7 @@ function TableSkeleton() {
 }
 
 export function InboxPage() {
+  const { t } = useTranslation('inbox')
   const [params, setParams] = useSearchParams()
   const stageParam = params.get('stage')
   const stage = isStage(stageParam) ? stageParam : undefined
@@ -295,11 +302,11 @@ export function InboxPage() {
     <div className="animate-in fade-in duration-300">
       <div className="mb-6 flex flex-col gap-1">
         <h1 className="text-2xl font-semibold tracking-tight">
-          {stage ? STAGE_LABEL[stage] : 'Bandeja'}
+          {stage ? STAGE_LABEL[stage] : t('title')}
         </h1>
         <p className="text-sm text-muted-foreground">
-          {isPending ? 'Cargando…' : total === 1 ? '1 oferta' : `${total} ofertas`}
-          {q && <> que coinciden con «{q}»</>}
+          {isPending ? t('loading', { ns: 'common' }) : t('count', { count: total })}
+          {q && t('matching', { q })}
         </p>
       </div>
 
@@ -308,8 +315,8 @@ export function InboxPage() {
           <MagnifyingGlassIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="search"
-            aria-label="Buscar por título o empresa"
-            placeholder="Buscar por título o empresa"
+            aria-label={t('search')}
+            placeholder={t('search')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="h-10 bg-card pl-9"
@@ -319,11 +326,11 @@ export function InboxPage() {
           value={stage ?? 'all'}
           onValueChange={(value) => update({ stage: value === 'all' ? null : value, page: null })}
         >
-          <SelectTrigger aria-label="Filtrar por etapa" className="h-10 w-full bg-card data-[size=default]:h-10 sm:w-48">
+          <SelectTrigger aria-label={t('filterStage')} className="h-10 w-full bg-card data-[size=default]:h-10 sm:w-48">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todas las etapas</SelectItem>
+            <SelectItem value="all">{t('allStages')}</SelectItem>
             {STAGES.map((s) => (
               <SelectItem key={s} value={s}>
                 {STAGE_LABEL[s]}
@@ -338,13 +345,13 @@ export function InboxPage() {
             setSort({ sort: field as JobSort, dir: dir as SortDirection })
           }}
         >
-          <SelectTrigger aria-label="Ordenar" className="h-10 w-full bg-card data-[size=default]:h-10 md:hidden">
+          <SelectTrigger aria-label={t('sortLabel')} className="h-10 w-full bg-card data-[size=default]:h-10 md:hidden">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             {SORT_OPTIONS.map((option) => (
               <SelectItem key={option.value} value={option.value}>
-                {option.label}
+                {t(`sort.${option.label}`)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -365,7 +372,7 @@ export function InboxPage() {
           filtered ? (
             <EmptyState
               icon={<MagnifyingGlassIcon className="size-6" weight="duotone" />}
-              title="Nada por aquí"
+              title={t('noResults.title')}
               action={
                 <Button
                   variant="outline"
@@ -375,27 +382,30 @@ export function InboxPage() {
                   }}
                 >
                   <XIcon />
-                  Quitar filtros
+                  {t('noResults.clear')}
                 </Button>
               }
             >
-              Ninguna oferta coincide con estos filtros.
+              {t('noResults.body')}
             </EmptyState>
           ) : (
             <EmptyState
               icon={<TrayIcon className="size-6" weight="duotone" />}
-              title="Tu bandeja está vacía"
+              title={t('empty.title')}
               action={
                 <Button asChild>
                   <Link to="/nueva">
                     <PlusIcon weight="bold" />
-                    Añadir la primera
+                    {t('empty.addFirst')}
                   </Link>
                 </Button>
               }
             >
-              Da de alta una oferta desde su URL o pegando el texto. Después, tu agente la extrae con
-              el skill <code className="font-mono text-foreground">procesar-ofertas</code>.
+              <Trans
+                t={t}
+                i18nKey="empty.body"
+                components={{ code: <code className="font-mono text-foreground" /> }}
+              />
             </EmptyState>
           )
         ) : (
@@ -408,7 +418,7 @@ export function InboxPage() {
       {total > PAGE_SIZE && (
         <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
           <span className="tabular">
-            {from}-{to} de {total}
+            {t('range', { from, to, total })}
           </span>
           <div className="flex gap-2">
             <Button
@@ -418,7 +428,7 @@ export function InboxPage() {
               onClick={() => update({ page: page > 2 ? String(page - 1) : null })}
             >
               <ArrowLeftIcon />
-              Anteriores
+              {t('previous')}
             </Button>
             <Button
               variant="outline"
@@ -426,7 +436,7 @@ export function InboxPage() {
               disabled={to >= total}
               onClick={() => update({ page: String(page + 1) })}
             >
-              Siguientes
+              {t('next')}
               <ArrowRightIcon />
             </Button>
           </div>

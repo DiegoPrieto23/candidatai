@@ -1,0 +1,64 @@
+{
+  "title": "Proceso",
+  "milestoneForm": {
+    "kind": "Tipo",
+    "title": "Título (opcional)",
+    "day": "Día",
+    "dateTime": "Fecha y hora (Madrid)",
+    "allDay": "Todo el día",
+    "location": "Lugar o enlace",
+    "notes": "Notas",
+    "blocked": "Las entrevistas y las pruebas se anotan cuando la candidatura ya está enviada (registran su evento y mueven la oferta a «En proceso»). Antes, usa «Plazo» u «Otro hito».",
+    "cancel": "Cancelar",
+    "saving": "Guardando…",
+    "save": "Guardar hito"
+  },
+  "milestone": {
+    "ics": "Descargar .ics de «{{title}}»",
+    "edit": "Editar «{{title}}»",
+    "done": "Marcar «{{title}}» como hecho",
+    "cancel": "Cancelar «{{title}}»"
+  },
+  "milestones": {
+    "title": "Hitos",
+    "add": "Añadir",
+    "none": "Sin entrevistas, pruebas ni plazos anotados."
+  },
+  "contactForm": {
+    "name": "Nombre",
+    "role": "Cargo",
+    "email": "Correo",
+    "phone": "Teléfono",
+    "linkedin": "LinkedIn",
+    "notes": "Notas",
+    "relation": "Papel en el proceso",
+    "noRelation": "Sin indicar",
+    "cancel": "Cancelar",
+    "saving": "Guardando…",
+    "save": "Guardar contacto"
+  },
+  "referral": {
+    "of": "Referencia de {{name}}",
+    "none": "Sin referencia"
+  },
+  "contact": {
+    "edit": "Editar a {{name}}",
+    "remove": "Quitar a {{name}}"
+  },
+  "contacts": {
+    "title": "Contactos",
+    "add": "Añadir",
+    "none": "Nadie anotado todavía."
+  },
+  "sending": {
+    "title": "Envío",
+    "sentOn": "Enviada el {{date}}",
+    "notSent": "Aún sin enviar. Regístralo en Procesos cuando la envíes.",
+    "followupDue": "{{count}} días sin respuesta: toca un seguimiento.",
+    "cvSent": "CV enviado",
+    "cvSelected": "CV seleccionado para enviar",
+    "offer": "Tienes una propuesta: antes de aceptar, revisa qué conviene aclarar.",
+    "offerQuestions": "Dudas antes de aceptar",
+    "followupSent": "Seguimiento enviado"
+  }
+}

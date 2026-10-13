@@ -1,12 +1,12 @@
 {
   "mcpServers": {
-    "jobhunter": {
+    "candidatai": {
       "command": "uv",
       "args": [
         "run",
         "--directory",
         "backend",
-        "jh-mcp"
+        "cai-mcp"
       ],
       "env": {}
     }

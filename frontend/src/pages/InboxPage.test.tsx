@@ -96,7 +96,7 @@ describe('Bandeja', () => {
     globalThis.fetch = () => Promise.reject(new TypeError('Failed to fetch'))
     renderApp('/bandeja')
     expect(await screen.findByText('La API no responde')).toBeInTheDocument()
-    expect(screen.getByText('uv run jh serve')).toBeInTheDocument()
+    expect(screen.getByText('uv run cai serve')).toBeInTheDocument()
   })
 })
 
@@ -109,7 +109,7 @@ describe('Cabecera', () => {
     await waitFor(() => expect(within(nav).getByRole('link', { name: /Por extraer\s*3/ })).toBeInTheDocument())
     expect(within(nav).getByRole('link', { name: /Todas\s*5/ })).toHaveAttribute('aria-current', 'page')
     expect(screen.getAllByRole('status')[0]).toHaveTextContent(
-      'Hay 3 ofertas por extraer. Las extrae tu agente con el skill procesar-ofertas.',
+      'Hay 3 ofertas por extraer. Las extrae tu agente con el skill process-jobs.',
     )
     expect(screen.getByRole('button', { name: 'Procesar ahora' })).toBeInTheDocument()
   })

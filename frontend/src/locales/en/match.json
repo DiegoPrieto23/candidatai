@@ -1,0 +1,21 @@
+{
+  "noScore": "No score",
+  "scoreAria": "Score {{score}} out of 100",
+  "belowThreshold": ", below the threshold",
+  "noSkills": "The posting doesn't list any.",
+  "basicShort": "bas.",
+  "inProfile": "In your profile: {{skill}}. ",
+  "notInProfile": "Not in your profile",
+  "missing": "Missing: ",
+  "notAssessed": "Not assessed. Run the skill <code>assess-fit</code> in your agent.",
+  "stale": "From an earlier calculation: the profile or the job changed.",
+  "questions": "Questions for you",
+  "failsFilters": "Fails the filters",
+  "failsHardFilters": "Fails the hard filters",
+  "sections": {
+    "breakdown": "Breakdown",
+    "mustHave": "Must-have skills",
+    "niceToHave": "Nice-to-have skills",
+    "assessment": "Agent's assessment"
+  }
+}

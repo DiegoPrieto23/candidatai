@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router'
 import './index.css'
 import { App } from './App.tsx'
 import { createQueryClient } from './lib/queryClient'
+import './lib/i18n'
 import { applyTheme } from './lib/theme'
 
 applyTheme() // antes de pintar: sin destello del tema equivocado

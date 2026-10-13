@@ -1,0 +1,22 @@
+{
+  "opened": "Opened in {{agent}}: carry on in the terminal.",
+  "copiedPrompt": "I can't open your agent from here ({{error}}). I've copied the command: paste it into your agent.",
+  "pastePrompt": "I can't open your agent from here. Paste it this command: “{{prompt}}”",
+  "openFailed": "Couldn't open your agent.",
+  "alreadyRunning": "Already running in the background.",
+  "queued": "Queued in the background.",
+  "backgroundFailed": "Couldn't start it in the background.",
+  "requestSaved": "Request saved: your agent will see it in your next session.",
+  "requestFailed": "Couldn't save the request.",
+  "titleAgent": "Opens {{agent}} in a terminal with the command already typed",
+  "titleCopy": "Copies the command for your agent",
+  "more": "More ways to launch it",
+  "terminal": "In a terminal",
+  "terminalHint": "You see it, answer and approve.",
+  "background": "In the background",
+  "backgroundHint": "No window and only with the app's tools. Follow it in “Agent”.",
+  "unavailable": "Not available.",
+  "later": "Leave for my next session",
+  "laterHint": "Your agent will see it with the skill handle-requests.",
+  "seeInAgent": "See in “Agent”"
+}

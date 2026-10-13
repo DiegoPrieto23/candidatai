@@ -1,8 +1,8 @@
-# Enviar a Job Hunter
+# Enviar a CandidatAI
 
 Extensión mínima para navegadores Chromium (Chrome, Edge, Brave) que envía la oferta que estás
-viendo a tu Job Hunter local con un clic. Detalle y límites en `docs/FUENTES_OFERTAS.md`
-§Botón «Enviar a Job Hunter».
+viendo a tu CandidatAI local con un clic. Detalle y límites en `docs/FUENTES_OFERTAS.md`
+§Botón «Enviar a CandidatAI».
 
 - **Solo actúa cuando pulsas su botón**, en la pestaña actual. No se queda cargada en ninguna web,
   no lee cookies, no recorre páginas ni lee nada en segundo plano.
@@ -16,16 +16,16 @@ viendo a tu Job Hunter local con un clic. Detalle y límites en `docs/FUENTES_OF
 
 ## Instalar
 
-1. Arranca la app: `uv run jh serve` en `backend/` (y `pnpm dev` en `frontend/` para la UI).
+1. Arranca la app: `uv run cai serve` en `backend/` (y `pnpm dev` en `frontend/` para la UI).
 2. Abre `chrome://extensions` (en Edge, `edge://extensions`).
 3. Activa el **Modo de desarrollador** (arriba a la derecha en Chrome; a la izquierda en Edge).
 4. Pulsa **Cargar descomprimida** y elige esta carpeta, `extension/`.
-5. Fija el botón en la barra: icono del puzle → chincheta junto a «Enviar a Job Hunter».
+5. Fija el botón en la barra: icono del puzle → chincheta junto a «Enviar a CandidatAI».
 
 El id de la extensión es siempre `hnaofhehllbkghfehnehamjbkcmdjmle`: lo fija la clave pública
 (`key`) de `manifest.json`, igual en Chrome, Edge y en cualquier equipo. La app solo acepta
 peticiones con ese origen. Si cambias la clave, pon el id nuevo en `.env`
-(`JH_CAPTURE_EXTENSION_ID`) y reinicia `jh serve`.
+(`CAI_CAPTURE_EXTENSION_ID`) y reinicia `cai serve`.
 
 La protección real es el **token**: la clave pública está en el repositorio, así que cualquiera
 podría montar otra extensión con el mismo id. El origen solo impide que una web cualquiera lo
@@ -36,14 +36,14 @@ intente desde tu navegador. No compartas el token; si se filtra, genera otro.
 1. En `backend/`, genera el token:
 
    ```
-   uv run jh capture token
+   uv run cai capture token
    ```
 
    Se muestra una sola vez. La app guarda solo su huella en `data/capture_token`. Volver a
    ejecutarlo crea otro y el anterior deja de valer.
 2. Abre las opciones de la extensión (clic derecho en su icono → **Opciones**), pega el token y
    guarda. **Probar conexión** comprueba que la app responde y acepta el token, sin crear nada.
-3. `uv run jh doctor` muestra «Botón de captura: token creado».
+3. `uv run cai doctor` muestra «Botón de captura: token creado».
 
 ## Usarla
 
@@ -58,15 +58,15 @@ intente desde tu navegador. No compartas el token; si se filtra, genera otro.
    **Abrir ficha** lleva a la oferta en la UI. El icono queda marcado en esa pestaña: ✓, = o !.
 3. Si no encuentra la descripción o la empresa (los portales cambian su HTML), **selecciona con el
    ratón el texto de la oferta**, empresa incluida, y vuelve a pulsar: se envía lo seleccionado.
-4. Después, en tu agente, `procesar-ofertas` como con cualquier otra oferta.
+4. Después, en tu agente, `process-jobs` como con cualquier otra oferta.
 
 ## Problemas
 
 | Mensaje | Qué hacer |
 |---|---|
-| «La app no responde» | Arranca `uv run jh serve`. La extensión solo habla con `http://127.0.0.1:8000`: si sirves la API en otro puerto, cambia `host_permissions` en `manifest.json` y `API_URL` en `core.js`. |
-| «Falta el token» o «El token no vale» | `uv run jh capture token` y pégalo en las opciones. |
-| «La app no acepta esta extensión» | El id cargado no es el de `JH_CAPTURE_EXTENSION_ID`: revisa `.env` o que `manifest.json` conserve su `key`. |
+| «La app no responde» | Arranca `uv run cai serve`. La extensión solo habla con `http://127.0.0.1:8000`: si sirves la API en otro puerto, cambia `host_permissions` en `manifest.json` y `API_URL` en `core.js`. |
+| «Falta el token» o «El token no vale» | `uv run cai capture token` y pégalo en las opciones. |
+| «La app no acepta esta extensión» | El id cargado no es el de `CAI_CAPTURE_EXTENSION_ID`: revisa `.env` o que `manifest.json` conserve su `key`. |
 | «No se puede leer esta página» | Las páginas del navegador y de las tiendas de extensiones no se dejan leer. |
 | «No se encontró la descripción» o «la empresa» | Selecciona el texto de la oferta, con la empresa, y vuelve a pulsar. En LinkedIn, la sección «Acerca del empleo» se carga al llegar a ella: baja hasta verla (no hace falta pulsar «… más») y vuelve a pulsar. |
 
@@ -83,4 +83,4 @@ su cuenta ni envía candidaturas. El riesgo es bajo, pero no es cero. Ver ADR-01
   **inventado** de `tests/fixtures/`: `pnpm test` en `frontend/`.
 - Tras cambiar un fichero, pulsa **Actualizar** en la tarjeta de la extensión en
   `chrome://extensions`.
-- Los iconos se generaron con Pillow (el monograma «JH» de la UI).
+- Los iconos salen del logo (`docs/brand/mark.svg`) con `scripts/build_icons.py`.

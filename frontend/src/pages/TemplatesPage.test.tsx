@@ -71,7 +71,7 @@ describe('Galería de plantillas', () => {
       format: 'docx',
       supported: true,
       template_id: null,
-      agent_command: 'importar-plantilla-cv data/uploads/mi-cv.docx',
+      agent_command: 'import-cv-template data/uploads/mi-cv.docx',
       uploaded_at: '2026-10-02T09:00:00Z',
     }
     const mine = templateInfo({
@@ -133,17 +133,17 @@ describe('Galería de plantillas', () => {
         'GET /templates': templateList(),
         'GET /uploads': [
           pending,
-          { ...pending, name: 'canva.pdf', format: 'pdf', agent_command: 'importar-plantilla-cv data/uploads/canva.pdf' },
+          { ...pending, name: 'canva.pdf', format: 'pdf', agent_command: 'import-cv-template data/uploads/canva.pdf' },
         ],
         'GET /templates/default': { template_id: null },
       })
       renderApp('/plantillas')
       const card = await screen.findByRole('listitem', { name: 'mi-cv.docx' })
       expect(within(card).getByText('Pendiente de importar')).toBeInTheDocument()
-      expect(within(card).getByText('importar-plantilla-cv data/uploads/mi-cv.docx')).toBeInTheDocument()
+      expect(within(card).getByText('import-cv-template data/uploads/mi-cv.docx')).toBeInTheDocument()
       expect(within(card).queryByText(/recrea el diseño/)).not.toBeInTheDocument()
       const pdf = screen.getByRole('listitem', { name: 'canva.pdf' })
-      expect(within(pdf).getByText('importar-plantilla-cv data/uploads/canva.pdf')).toBeInTheDocument()
+      expect(within(pdf).getByText('import-cv-template data/uploads/canva.pdf')).toBeInTheDocument()
       expect(within(pdf).getByText(/recrea el diseño en HTML/)).toBeInTheDocument()
       expect(screen.queryByText(/08b/)).not.toBeInTheDocument()
     })

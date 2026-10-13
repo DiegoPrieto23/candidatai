@@ -106,7 +106,7 @@ def get_calendar_feed(session: SessionDep, download: Annotated[bool, Query()] = 
     """Feed con los hitos futuros y los plazos. Con `download`, como fichero para importar."""
     headers = {"Cache-Control": "no-cache"}
     if download:
-        headers["Content-Disposition"] = 'attachment; filename="jobhunter.ics"'
+        headers["Content-Disposition"] = 'attachment; filename="candidatai.ics"'
     return Response(
         content=calendar_ics.feed_ics(session).encode("utf-8"),
         media_type=ICS_MEDIA_TYPE,

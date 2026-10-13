@@ -2,7 +2,7 @@
 
 El original va en `data/uploads/` (lo deja la UI) o en `data/tmp/`; el mapeo, en `data/tmp/`. Una
 ruta relativa vale desde el directorio actual o desde la raíz del repo, como `--file` (con
-`uv run --directory backend jh …` el proceso corre en `backend/`).
+`uv run --directory backend cai …` el proceso corre en `backend/`).
 """
 
 from pathlib import Path

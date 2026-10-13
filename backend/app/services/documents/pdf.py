@@ -62,7 +62,7 @@ def _kill_tree(process: subprocess.Popen[bytes]) -> None:
 
 def libreoffice_converter(soffice: Path) -> Converter:
     def convert(docx: Path, pdf: Path, timeout: int) -> None:
-        workdir = Path(tempfile.mkdtemp(prefix="jh-soffice-"))
+        workdir = Path(tempfile.mkdtemp(prefix="cai-soffice-"))
         try:
             profile = (workdir / "profile").resolve().as_uri()
             outdir = workdir / "out"
@@ -147,7 +147,7 @@ def get_converter() -> Converter:
         return word
     raise PdfConverterUnavailableError(
         "No hay con qué convertir a PDF: instala LibreOffice (o define SOFFICE_PATH) o, en "
-        "Windows con Word, `uv sync --extra word`. Comprueba con `jh doctor`."
+        "Windows con Word, `uv sync --extra word`. Comprueba con `cai doctor`."
     )
 
 

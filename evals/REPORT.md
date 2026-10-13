@@ -1,6 +1,6 @@
 # Informe de evaluación
 
-Resultados de los evals de Job Hunter con datos **inventados** (perfil de `demo/`). Se reproducen
+Resultados de los evals de CandidatAI con datos **inventados** (perfil de `demo/`). Se reproducen
 con los comandos de cada sección; cómo funcionan, en `evals/README.md`.
 
 ## Matching (fase 12.2)
@@ -22,7 +22,7 @@ Predice «encaja» si la oferta pasa los filtros duros y su score llega a `triag
 
 ```powershell
 cd backend
-uv run jh eval matching --no-embeddings
+uv run cai eval matching --no-embeddings
 ```
 
 ### Resultado con el umbral actual (55)
@@ -78,22 +78,22 @@ cobertura de skills los deja por debajo de 55 o los cortan los filtros.
 
 ## CV (fase 12.2)
 
-**Pregunta:** ¿los CVs que deja el agente con `generar-cv` son veraces, caben en una página y
-cubren lo que la oferta pide y la candidata tiene? `jh eval cv` mide lo guardado en la demo sobre
+**Pregunta:** ¿los CVs que deja el agente con `generate-cv` son veraces, caben en una página y
+cubren lo que la oferta pide y la candidata tiene? `cai eval cv` mide lo guardado en la demo sobre
 los 10 casos de `cv/cases.jsonl` (comprobaciones en `evals/README.md`).
 
 ```powershell
 cd backend
-uv run jh demo seed --eval-cv
-# generar-cv con tu agente sobre las 10 ofertas de los casos (JH_DATA_DIR=data-demo)
-$env:JH_DATA_DIR = "data-demo"; uv run jh eval cv --agent claude-code
+uv run cai demo seed --eval-cv
+# generate-cv con tu agente sobre las 10 ofertas de los casos (CAI_DATA_DIR=data-demo)
+$env:CAI_DATA_DIR = "data-demo"; uv run cai eval cv --agent claude-code
 ```
 
 ### Primera prueba: Claude Code sin MCP, 2 casos (2026-10-05)
 
 Para probar el circuito se redactaron y verificaron dos casos con trampa. Fueron dos ejecuciones
-distintas de Claude Code (Opus 5.5), siguiendo `.agents/roles/redactor.md` y `verificador.md`,
-solo con comandos `jh … --json` contra `data-demo`.
+distintas de Claude Code (Opus 5.5), siguiendo `.agents/roles/writer.md` y `verifier.md`,
+solo con comandos `cai … --json` contra `data-demo`.
 
 | Caso | Trampa | Resultado | Intentos del redactor |
 |---|---|---|---|
@@ -108,9 +108,9 @@ Lo que vio el verificador (avisos, ningún bloqueante) y que el eval no puede de
 
 Problemas de compatibilidad sin MCP: pasan a la matriz de `docs/AGENTS_COMPAT.md` (fase 12.3).
 
-- los roles nombran herramientas MCP y no su comando `jh`;
+- los roles nombran herramientas MCP y no su comando `cai`;
 - las skills no se pueden traducir en un CV en inglés;
-- `JH_DATA_DIR` relativo se resuelve desde la raíz del repo;
+- `CAI_DATA_DIR` relativo se resuelve desde la raíz del repo;
 - la ayuda de Typer sale mal codificada en Git Bash sin `PYTHONIOENCODING=utf-8`.
 
 Los 10 casos con cada agente se ejecutan en la fase 12.3.

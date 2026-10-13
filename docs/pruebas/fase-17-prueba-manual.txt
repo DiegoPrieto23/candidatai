@@ -5,7 +5,7 @@ Objetivo: comprobar con tus datos reales que
 - «Preparar» deja un dosier en data/entrevistas/ y un plan por días que se ve en la ficha;
 - «Simulacro» hace una pregunta cada vez, da feedback y una versión mejor sin inventar nada;
 - «Repasar» guarda tus notas y los próximos pasos bajo la entrevista y solo propone historias
-  nuevas, que entran en tu perfil únicamente si dices que sí (vía actualizar-perfil);
+  nuevas, que entran en tu perfil únicamente si dices que sí (vía update-profile);
 - con una oferta recibida, «Dudas antes de aceptar» lista lo que conviene aclarar.
 
 Los tests automáticos cubren las herramientas, la paridad MCP↔CLI, los botones y la ficha. Lo que
@@ -18,7 +18,7 @@ REQUISITOS
 - Tres terminales de PowerShell (API, worker y UI), desde la RAÍZ del repo, fuera de tu agente.
 - Rama: fase/17-entrevistas (o main, si ya está fusionada).
 - Migración nueva (0016: plan y repaso en `milestones`):
-      uv run --directory backend jh db upgrade
+      uv run --directory backend cai db upgrade
 - Cliente del frontend al día: cd frontend; pnpm install
 - Abre Claude Code de nuevo para que el servidor MCP cargue `get_interviews`,
   `save_interview_plan` y `save_interview_notes` (compruébalo con /mcp).
@@ -29,7 +29,7 @@ REQUISITOS
 PARTE 1 · PREPARAR
 ------------------
 1. En la ficha, bajo la entrevista programada, pulsa «Preparar».
-   Esperado: se abre tu agente con «Usa el skill preparar-entrevista … para la entrevista N de la
+   Esperado: se abre tu agente con «Usa el skill prepare-interview … para la entrevista N de la
    oferta M». Te pregunta con quién, formato, duración y cuánto tiempo puedes dedicar al día.
 2. Contesta. Esperado:
    - dosier en data/entrevistas/<oferta>-<hito>-<empresa>.md con las secciones del skill, fuentes
@@ -52,9 +52,9 @@ PARTE 2 · SIMULACRO
    solo cita hechos de tu perfil (con su id).
 7. En una respuesta, menciona un logro que NO esté en tu perfil (p. ej. una cifra nueva).
    Esperado: no aparece en la versión mejor; al final sale en «hechos nuevos» con la propuesta de
-   añadirlo con actualizar-perfil.
+   añadirlo con update-profile.
 8. Escribe «para». Esperado: resumen con 3 puntos fuertes y 3 flojos. Comprueba que tu perfil no
-   ha cambiado: uv run --directory backend jh profile diff (sin cambios).
+   ha cambiado: uv run --directory backend cai profile diff (sin cambios).
 
 
 PARTE 3 · REPASAR
@@ -68,8 +68,8 @@ PARTE 3 · REPASAR
 11. Recarga la ficha. Esperado: bloque «Repaso» con las notas y «Próximos pasos»; el botón pasa a
     «Repasar otra vez». La entrevista sigue programada hasta que pulses ✓.
 12. Si al contarlo mencionaste una historia nueva: te propone el borrador STAR y pregunta si lo
-    añade. Di que NO y comprueba que el perfil no cambia (jh profile diff). Repite y di que SÍ:
-    debe seguir actualizar-perfil (pregunta la métrica real, valida, importa y enseña el diff).
+    añade. Di que NO y comprueba que el perfil no cambia (cai profile diff). Repite y di que SÍ:
+    debe seguir update-profile (pregunta la métrica real, valida, importa y enseña el diff).
 13. Marca la entrevista como hecha (✓). Esperado: en Procesos, «1 entrevista por agradecer»
     (fase 15).
 
@@ -85,7 +85,7 @@ PARTE 4 · DUDAS ANTES DE ACEPTAR
 
 PARTE 5 · SIN MCP (OPCIONAL)
 ----------------------------
-16. uv run --directory backend jh interviews list M --json
+16. uv run --directory backend cai interviews list M --json
     Esperado: tus entrevistas con `prep_plan`, `debrief_notes`, `next_steps`, contactos solo con
     nombre y cargo, y `offer_received`.
 

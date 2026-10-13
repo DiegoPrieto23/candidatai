@@ -7,8 +7,8 @@ Objetivo: comprobar con tu Claude Code real que
 - el agente solo tiene las herramientas MCP de la acción (nada de terminal, web ni otras
   herramientas que escriben);
 - un skill que necesita algo termina con preguntas y «Contestar en terminal» sigue la misma sesión;
-- «Cancelar» y el tiempo máximo paran el proceso (y su jh-mcp);
-- «Dejar para mi próxima sesión» deja un encargo que tu agente ve y cierra con atender-encargos.
+- «Cancelar» y el tiempo máximo paran el proceso (y su cai-mcp);
+- «Dejar para mi próxima sesión» deja un encargo que tu agente ve y cierra con handle-requests.
 
 Los tests usan un agente falso que imita `stream-json`: no prueban las flags del `claude` real
 (`--tools`, `--permission-mode dontAsk`, `--strict-mcp-config`, `--allowedTools`), que salen de
@@ -22,14 +22,14 @@ REQUISITOS
 - Tres terminales de PowerShell (API, worker y UI), desde la RAÍZ del repo, fuera de tu agente.
 - Rama: fase/19-lote-segundo-plano (o main, si ya está fusionada).
 - Migración nueva (0019: `agent_runs` y `agent_requests`):
-      uv run --directory backend jh db upgrade
+      uv run --directory backend cai db upgrade
 - Cliente del frontend al día: cd frontend; pnpm install
 - Abre Claude Code de nuevo para que el MCP cargue `list_agent_requests` y
   `complete_agent_request` (/mcp).
 - Opcional, para no tocar tus datos: una demo aislada
-      uv run --directory backend jh demo seed --dir data-demo
-  y arranca API y worker con  $env:JH_DATA_DIR = "data-demo"  (en las dos ventanas).
-  Ojo: el agente en segundo plano hereda el JH_DATA_DIR del worker.
+      uv run --directory backend cai demo seed --dir data-demo
+  y arranca API y worker con  $env:CAI_DATA_DIR = "data-demo"  (en las dos ventanas).
+  Ojo: el agente en segundo plano hereda el CAI_DATA_DIR del worker.
 
 
 PARTE 1 · Comprobar el comando a mano (5 min, opcional pero recomendable)
@@ -37,17 +37,17 @@ PARTE 1 · Comprobar el comando a mano (5 min, opcional pero recomendable)
 Desde la raíz, en PowerShell, con una orden que no hace nada (una sola línea):
 
     Remove-Item Env:ANTHROPIC_API_KEY -ErrorAction SilentlyContinue
-    claude -p "Llama a get_status de Job Hunter y dime cuántas ofertas hay." --output-format stream-json --verbose --permission-mode dontAsk --strict-mcp-config --mcp-config .mcp.json --tools Skill,Agent,Read --disallowedTools "Read(./.env)" "Read(./data/**)" mcp__jobhunter__get_funnel_stats --allowedTools Agent "Read(./docs/**)" "Skill(procesar-ofertas)" mcp__jobhunter__get_status
+    claude -p "Llama a get_status de CandidatAI y dime cuántas ofertas hay." --output-format stream-json --verbose --permission-mode dontAsk --strict-mcp-config --mcp-config .mcp.json --tools Skill,Agent,Read --disallowedTools "Read(./.env)" "Read(./data/**)" mcp__candidatai__get_funnel_stats --allowedTools Agent "Read(./docs/**)" "Skill(process-jobs)" mcp__candidatai__get_status
 
     (Las reglas de este comando ya se comprobaron el 2026-10-12 con una BD sin migrar; esta parte
     es para repetirlo con tus datos y tu versión de `claude`.)
 
 [ ] Sale una línea JSON por evento; la primera (`system`/`init`) trae `mcp_servers` con
-    `jobhunter` en `connected` y `tools` SIN Bash, PowerShell, WebFetch ni WebSearch.
+    `candidatai` en `connected` y `tools` SIN Bash, PowerShell, WebFetch ni WebSearch.
 [ ] La última es `result` con `subtype: success` y el recuento.
 [ ] Cambia la orden a «Llama a get_funnel_stats»: responde que no existe (está denegada, aunque
     `.claude/settings.json` la permita).
-[ ] Cambia la orden a «Usa el skill resumen-diario»: sale en `permission_denials` (solo se
+[ ] Cambia la orden a «Usa el skill daily-summary»: sale en `permission_denials` (solo se
     permite el skill de la acción).
 [ ] Cambia la orden a «Ejecuta dir en la terminal»: no puede (no tiene la herramienta).
 
@@ -65,10 +65,10 @@ PARTE 2 · Procesar ofertas en segundo plano (10 min)
 [ ] «Solo con: get_status, list_jobs, get_job, save_extraction».
 [ ] En la línea de comandos del proceso `claude.exe` (Administrador de tareas › Detalles ›
     columna «Línea de comandos»), `--disallowedTools` lleva las demás herramientas
-    (`mcp__jobhunter__add_event`, `…save_source`…).
+    (`mcp__candidatai__add_event`, `…save_source`…).
 [ ] Al terminar: «Terminada», el resultado (la tabla del skill) y las ofertas ya en «Por revisar»
     sin recargar la página.
-[ ] En el log del worker: «En segundo plano, «procesar-ofertas» (ejecución N): terminada.»
+[ ] En el log del worker: «En segundo plano, «process-jobs» (ejecución N): terminada.»
 [ ] Ninguna ventana se ha abierto.
 
 
@@ -93,7 +93,7 @@ PARTE 4 · Cancelar y tiempo máximo (5 min)
 -----------------------------------------
 1. Lanza «Procesar ofertas» en segundo plano con varias ofertas pendientes y pulsa «Cancelar».
 [ ] En ≤ 3 s pasa a «Cancelada». En el Administrador de tareas no queda ningún `claude.exe`
-    ni `jh-mcp` de esa ejecución.
+    ni `cai-mcp` de esa ejecución.
 2. (Opcional) Pon `background_runs.timeout_minutes: 0.5` en config/policies.yaml, reinicia el
    worker y lanza algo largo.
 [ ] Queda «Tiempo agotado» con el progreso que llevaba. Deja el valor como estaba.
@@ -101,16 +101,16 @@ PARTE 4 · Cancelar y tiempo máximo (5 min)
 [ ] El worker sale en pocos segundos, la ejecución queda «Fallida» («Se paró el worker…») y
     no queda ningún `claude.exe` suyo.
 4. Con el worker parado, lanza algo en segundo plano.
-[ ] A los 30 s, «Agente» avisa: «¿está jh worker en marcha?». Al arrancarlo, se ejecuta.
+[ ] A los 30 s, «Agente» avisa: «¿está cai worker en marcha?». Al arrancarlo, se ejecuta.
 
 
 PARTE 5 · Cola de encargos (5 min)
 ---------------------------------
 1. En una ficha, «Investigar empresa» › flecha › «Dejar para mi próxima sesión».
 [ ] «Encargo guardado…». En «Agente», sale en «Para tu próxima sesión» con la orden.
-2. En una sesión nueva de Claude Code: /resumen-diario.
-[ ] Menciona el encargo y sugiere atender-encargos.
-3. /atender-encargos.
+2. En una sesión nueva de Claude Code: /daily-summary.
+[ ] Menciona el encargo y sugiere handle-requests.
+3. /handle-requests.
 [ ] Lo lista, pregunta cuáles hacer, sigue la orden y lo cierra con `complete_agent_request`.
 [ ] En «Agente», pasa a «Cerrados recientemente» con su resumen.
 4. Deja otro y pulsa «Quitar»: [ ] desaparece de los pendientes.
@@ -120,7 +120,7 @@ SI ALGO FALLA
 -------------
 - «El agente terminó sin resultado (código N)»: el detalle de stderr va detrás. Suele ser una flag
   que el `claude` instalado no reconoce: pruébalo como en la parte 1 y corrige el manifiesto.
-- «El servidor MCP «jobhunter» no se conectó»: `uv run --directory backend jh-mcp` debe arrancar
+- «El servidor MCP «candidatai» no se conectó»: `uv run --directory backend cai-mcp` debe arrancar
   desde la raíz (¿entorno de Python bloqueado por otra sesión?).
 - Herramientas denegadas en el progreso: el skill necesita una que no está en la lista de su
   acción (`backend/app/services/agent_launch.py`, `background=`). Anótala: es un ajuste del código.

@@ -59,6 +59,14 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 20 | Calibración y patrones | ✅ | «¿Acierta el score?»: respuesta por tramo de score, veredicto, fuente, plantilla y carta; retrospectiva semanal |
 | 21 | Ofertas recibidas y salario | ✅ | Comparar ofertas recibidas y la distancia a tu mínimo sin exponerlo al agente; preparar la negociación |
 | 22 | LinkedIn por sus endpoints públicos (opcional) | ✅ | Búsqueda pública sin sesión, apagada por defecto y con límites estrictos; ADR que matiza la 016 |
+| 23 | CandidatAI | 🚧 | Nombre y logo nuevos, identificadores en inglés, barra lateral, UI en inglés y español e instalación con un clic |
+| 23.1 | ↳ Renombrado a CandidatAI | ✅ | Todo dice CandidatAI; `cai` en vez de `jh`; MCP `candidatai`; repositorio renombrado |
+| 23.2 | ↳ Skills y roles en inglés | ✅ | `/generate-cv 42`, `/prepare-interview 42`…; roles `writer`, `verifier`… |
+| 23.3 | ↳ Barra lateral | ✅ | Navegación lateral agrupada, plegable y con cajón en el móvil |
+| 23.4 | ↳ Instalación fácil | ✅ | `cai start`, `install.ps1`, acceso directo y releases con la UI compilada |
+| 23.5a | ↳ Logo | ✅ | Logo nuevo, elegido entre propuestas, en la UI, el favicon, la extensión, el icono y el banner |
+| 23.6 | ↳ UI en inglés y español | ✅ | Toda la UI traducida, con un selector de idioma junto al del tema |
+| 23.5b | ↳ Medios y README | ⏳ | Capturas en los dos idiomas, GIF y vídeo; README sin la comparativa |
 
 **MVP usable:** al terminar la 08 ya puedes pegar ofertas, triarlas y sacar CVs a medida; con la
 08c, también cartas de presentación. La 08c va antes que la 08b, aunque el orden entre ambas da
@@ -84,6 +92,10 @@ tras la 18; `atender-encargos` tras la 19; `revisar-busqueda` tras la 20;
 `preparar-negociacion` tras la 21.
 
 ## Registro de fases
+
+> **Nombre (fase 23, ADR-034):** hasta la fase 22 la herramienta se llamaba «Job Hunter», la CLI
+> `jh`, el servidor MCP `jobhunter` y las variables `JH_*`. Desde la 23 es **CandidatAI**: `cai`,
+> `candidatai` y `CAI_*`. El registro de abajo conserva los nombres de cada momento.
 
 <!-- El agente añade aquí, al cerrar cada fase: fecha, agente usado, resumen de 2-3 líneas,
 decisiones tomadas y deuda técnica pendiente. -->
@@ -1908,3 +1920,151 @@ decisiones tomadas y deuda técnica pendiente. -->
   - `blocked_at` se escribe al final de la ejecución, justo después del corte: si el proceso muere
     en ese instante, el día cuenta igualmente, pero no el periodo de 3 días.
   - Ejecutada por CLI, la ejecución queda con actor `user` aunque la lance un agente.
+
+### 23.1 · Renombrado a CandidatAI — 2026-10-12 · Claude Code (Opus 5.5)
+- **Resumen:** «Job Hunter» pasa a **CandidatAI** en todo lo vivo: UI y logo «CA», extensión
+  («Enviar a CandidatAI», iconos nuevos con `scripts/build_icons.py`), favicon (era el de Vite),
+  docs, README en los dos idiomas, skills y roles. Lo técnico también: CLI `cai` y `cai-mcp`,
+  servidor MCP `candidatai` (`mcp__candidatai__*`), variables `CAI_*`, paquete `candidatai`,
+  `cai.local`, `data-cai-*` y `cai_iso_week`. Repositorio de GitHub renombrado a
+  `DiegoPrieto23/candidatai`. ADR-034. Encargos de toda la fase 23 en `prompts/23*.md`.
+  2355 tests de backend y los de frontend en verde.
+- **Decisiones:**
+  - Sin alias `jh` (decisión del usuario): lo de fuera del repositorio se actualiza a mano.
+  - Compatibilidades: `JH_*` se leen si falta la `CAI_*` (`AliasChoices`) y `data/jobhunter.db`
+    se usa si no hay `candidatai.db`. `cai doctor` («Nombres de antes de CandidatAI») lo avisa con
+    los nombres, nunca con los valores. La clave antigua del tema se lee como respaldo.
+  - El historial (este registro, `RESUMEN_FASES.md`, encargos anteriores) no se reescribe.
+  - Renombrado con reglas ordenadas y revisión de cada coincidencia arriesgada; la revisión del
+    rol `revisor` encontró las plantillas integradas sin regenerar (autor del docx) y restos de
+    `jh` en el frontend y en un test que, con el patrón antiguo, no comprobaba nada.
+- **Deuda:**
+  - `uv sync` pendiente con el agente cerrado: hasta entonces no existen los ejecutables `cai`
+    y `cai-mcp` (en esta sesión se probó todo con `uv run --no-sync` y llamando a la CLI desde
+    Python).
+  - `~/.claude/settings.json` del usuario sigue mencionando `jh` y el repositorio `job-search`
+    (decidió no tocarlo).
+  - Medios del README (banner, capturas, GIF y vídeo) aún con «Job Hunter»: la 23.5.
+
+### 23.2 · Skills y roles en inglés — 2026-10-12 · Claude Code (Opus 5.5)
+- **Resumen:** los 23 skills pasan a inglés (`process-jobs`, `assess-fit`, `generate-cv`,
+  `prepare-interview`, `daily-summary`…) y los roles a `writer`, `verifier`, `classifier`,
+  `reviewer` (`extractor` igual). También las tres acciones de la UI que no son skill:
+  `add-skills`, `draft-follow-ups`, `offer-questions`. Descripciones, UI y docs siguen en
+  español, y cada `description` termina con «Antes se llamaba …» para que el agente los encuentre
+  por su nombre de siempre. Migración `0021` que traduce acción, orden y comando de los encargos y
+  ejecuciones guardados (con `downgrade`). `sync_agents.py` borra también las carpetas vacías de
+  los generados obsoletos.
+- **Decisiones:**
+  - Los roles se renombran solo donde son identificadores (entre comillas invertidas, rutas,
+    «rol X», `Agent(X)`); la prosa y la UI en castellano («el verificador encontró problemas»)
+    se quedan.
+  - La migración no traduce nombres de fichero (`plan-formacion-<fecha>.md` en `data/`) ni el
+    historial de progreso de ejecuciones pasadas (lo encontró la revisión).
+- **Deuda:**
+  - Esta sesión de desarrollo cargó los subagentes con su nombre antiguo; desde una sesión nueva
+    ya aparecen `writer`, `verifier`…
+
+### 23.3 · Barra lateral — 2026-10-12 · Claude Code (Opus 5.5)
+- **Resumen:** la fila de 13 enlaces de la cabecera pasa a una barra lateral
+  (`components/Sidebar.tsx`) con grupos (Búsqueda, Procesos, Análisis, Configurar), iconos,
+  recuentos, plegable a solo iconos (con tooltip y recordado en `localStorage`) y, por debajo de
+  1024 px, un cajón que se abre con un botón y se cierra al navegar. «Empresas» y «Plataformas»
+  se unen en **Fuentes**, con pestañas (`/fuentes/empresas`, `/fuentes/plataformas`); las rutas
+  antiguas redirigen. La cabecera se queda con la fila de recuentos por etapa y «Nueva oferta» en
+  una sola línea. Docs y mensajes («Fuentes → Plataformas») al día. 235 tests de frontend.
+- **Decisiones:**
+  - Sin título de sección en la cabecera (el encargo lo pedía): cada página ya tiene su `h1`.
+  - El recuento va en el nombre accesible del enlace («Por revisar (3 por revisar)»); antes se
+    leía pegado («Por revisar,3por revisar»).
+  - Los títulos de grupo son etiquetas de lista, no encabezados, para no competir con el `h1`.
+  - «Bandeja» queda activa también en la ficha de una oferta y en «Nueva oferta».
+  - El cajón se cierra con cualquier navegación (también la marca) y al pasar a escritorio.
+- **Deuda:**
+  - Márgenes de los tests subidos (`testTimeout` 15 s, `asyncUtilTimeout` 4 s): con la suite
+    completa en paralelo en Windows algunas páginas tardaban más de 5 s. Provisional: sin medir la
+    causa (sospecha: el import de barril de los iconos).
+  - Un test de Plataformas fallaba a veces por dos `Date.now()` distintos; corregido.
+  - La UI sigue solo en español (punto 9 de «Lo que nos falta» en `docs/COMPARATIVA.md`).
+
+### 23.4 · Instalación fácil — 2026-10-13 · Claude Code (Opus 5.5)
+- **Resumen:**
+  - **La API sirve la UI compilada** (`app/api/ui.py`): navegación del navegador a una ruta de la
+    UI → `index.html`; el resto, la API. La UI compilada llama a su propio origen.
+  - **`cai start`** (`services/launcher.py`): migraciones, API y worker como procesos hijos, espera
+    a que la API responda y abre el navegador; Ctrl+C o cerrar la ventana lo para todo sin
+    huérfanos; `--dev` añade Vite. Logs en `data/logs/start-*.log`.
+  - **`install.ps1`**: uv, release (o zip/carpeta local con `-Source`), `%LOCALAPPDATA%\CandidatAI`
+    con los datos aparte, entorno, Chromium, base de datos y accesos directos con icono
+    (provisional, `frontend/public/candidatai.ico`); `-WhatIf`, `-Uninstall`, `-RemoveData`.
+  - **Releases** con `.github/workflows/release.yml` (etiqueta `v*` → `candidatai.zip`).
+  - Encargos de la 23.6 (UI bilingüe) y la 23.5 (logo) redactados; orden 23.4 → 23.6 → 23.5.
+  - ADR-035. 2380 tests de backend y 235 de frontend. Probado de verdad: `cai start` sobre la
+    demo; instalar desde la carpeta del repositorio, actualizar conservando el `.env`, negarse a
+    actualizar con la app abierta y desinstalar dejando los datos.
+- **Decisiones:**
+  - `require_ui` acepta el mismo origen solo en `127.0.0.1`/`localhost`, y
+    `TrustedHostMiddleware` (el más externo) rechaza cualquier otro `Host` también en las
+    lecturas: contra DNS rebinding.
+  - Cada fichero suelto de la UI tiene una ruta fija sin parámetros (con el fichero como
+    parámetro por defecto, FastAPI lo habría convertido en `?file=` y permitido leer cualquiera).
+  - El puerto se comprueba intentando escuchar y conectar: en Windows conectar a un puerto cerrado
+    tarda ~2 s y parecía «ocupado por otro programa».
+  - El instalador se ejecuta descargándolo a un fichero: con `irm | iex` no es un script avanzado y
+    `-WhatIf` falla (lo encontró la revisión). Solo sustituye o borra carpetas que sean una app de
+    CandidatAI, se niega con la raíz o la carpeta de usuario y prepara la versión nueva aparte.
+- **Deuda:**
+  - El instalador de una línea necesita una release pública: hoy el repositorio es privado y no hay
+    ninguna (se instala con `-Source <carpeta>`).
+  - El acceso directo y Ctrl+C en una consola real no se han probado aquí (sin consola
+    interactiva); queda en `PENDIENTES.md`.
+  - El frontend sigue teniendo algún fallo intermitente por carga en la suite completa (importación
+    de FunnelPage); por separado y en una segunda pasada, todo en verde.
+  - Pendiente de la 23.5: el icono definitivo.
+
+### 23.5a · Logo — 2026-10-13 · Claude Code (Opus 5.5)
+- **Resumen:** logo de CandidatAI: **el torso de una persona con un sello de verificado en lugar
+  de la cabeza** (candidato y *candid*: verificado, nada inventado), plano, sin degradados ni
+  adornos, verde `#0F766E` con la figura en blanco. Elegido por el usuario en varias rondas:
+  conceptos (persona verificada, «C» con chispa, lupa con persona), color (verde, tinta, papel) y
+  forma final (cabeza en círculo, sello o trazo: ganó el sello). Fuente en
+  `docs/brand/` (`mark.svg`, `mark-mono.svg`, `logo.svg`, `logo-dark.svg` y su README con
+  colores y usos). `scripts/build_icons.py` rasteriza `mark.svg` con Chromium: iconos de la
+  extensión, favicon, `apple-touch-icon` y `.ico` de Windows. La barra lateral (`BrandMark`) y la
+  extensión usan el isotipo; el banner del README pasa a fondo plano con el logo.
+- **Decisiones:**
+  - El logotipo es «Candidat» + «AI» en verde, en peso medio; el texto usa la pila de fuentes del
+    sistema (Geist si está), sin convertir a trazados.
+  - El banner pierde la cuadrícula y los círculos decorativos: el mismo criterio minimalista.
+- **Deuda:** capturas, GIF y vídeo del README siguen con la marca anterior: la 23.5b, tras la 23.6.
+
+### 23.6 · UI en inglés y español — 2026-10-13 · Claude Code (Opus 5.5)
+- **Resumen:** toda la UI en español y en inglés con i18next (ADR-036). Textos en
+  `frontend/src/locales/{es,en}/` (33 ficheros por idioma, uno por zona), claves tipadas, plurales
+  de i18next y fechas y números con `Intl` según el idioma. Selector de idioma (globo, nombre del
+  idioma y su bandera en SVG, con menú) junto al del tema en la barra lateral y en el cajón; se recuerda en
+  `cai-language` y, si no hay, sigue al navegador. `lib/labels.ts` traduce al leer; los códigos
+  del servidor (`error.type`, avisos de render y de candidatura, filtros duros, pasos del embudo,
+  grupos de calibración, acciones del agente) se traducen y su mensaje queda como detalle
+  (`lib/errors.ts`, `serverText`). Docs: guía en los dos idiomas (sección «Idioma»; la inglesa ya
+  cita los nombres en inglés), notas de los README, `COMPARATIVA` (punto 9 hecho) y `AGENTS.md`.
+- **Tests:** 250 en verde (15 nuevos): mismas claves y variables en los dos idiomas y ninguna vacía,
+  ningún texto en español fuera de `locales/`, ninguna etiqueta de `Trans` vacía en HTML, el
+  selector (cambia al momento, se recuerda, `<html lang>`, idioma del navegador) e Inicio, Por
+  revisar, la ficha y Procesos en inglés, y `SafeTrans` con un valor malicioso. `tsc`, `pnpm lint` (sin avisos nuevos) y `pnpm build`.
+  Comprobación visual de todas las páginas en inglés con la demo.
+- **Decisiones:**
+  - Al cambiar de idioma se vuelven a montar las páginas (`key` del idioma): más simple y seguro
+    que asegurar que cada componente se repinta; se pierde lo escrito a medias en un formulario.
+  - En `Trans`, `<link>` no sirve como etiqueta (es un elemento vacío de HTML): se usa `<to>`.
+  - De paso, el aviso de oferta cerrada ya no dice «Job Hunter», sino «CandidatAI».
+  - Banderas en SVG, no emojis: Windows no pinta los emojis de banderas.
+  - A petición del usuario, en Inicio «Nueva oferta» va junto a las acciones de la página y la
+    fila de arriba desaparece en escritorio; en el resto de páginas sigue en la cabecera.
+  - Revisión (rol `reviewer`): en el diálogo de envío de la candidatura asistida, el nombre del
+    botón y el dominio (de la web del formulario) se interpolaban en un `Trans` sin escapar y
+    podían colarse como marcado. Ahora van como nodos de React, y los demás `Trans` con datos de
+    fuera usan `SafeTrans` (ADR-036).
+- **Deuda:** traducir los mensajes del servidor que no traen código (avisos del doctor, motivos del
+  prefiltro, resultados de ejecuciones, notas del score); los datos de la demo siguen en español
+  (para las capturas en inglés de la 23.5b, valorar una demo en inglés).

@@ -29,11 +29,11 @@ def _plain(host: str, port: int, timeout: float) -> imaplib.IMAP4:
 
 def _configure(monkeypatch: pytest.MonkeyPatch, server: FakeImap, **overrides: str) -> None:
     env = {
-        "JH_IMAP_HOST": "127.0.0.1",
-        "JH_IMAP_PORT": str(server.port),
-        "JH_IMAP_USER": USER,
-        "JH_IMAP_PASSWORD": PASSWORD,
-        "JH_IMAP_FOLDER": FOLDER,
+        "CAI_IMAP_HOST": "127.0.0.1",
+        "CAI_IMAP_PORT": str(server.port),
+        "CAI_IMAP_USER": USER,
+        "CAI_IMAP_PASSWORD": PASSWORD,
+        "CAI_IMAP_FOLDER": FOLDER,
     } | overrides
     for key, value in env.items():
         monkeypatch.setenv(key, value)
@@ -92,7 +92,7 @@ def test_strict_server_catches_writes(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_wrong_password_gives_clear_error(monkeypatch: pytest.MonkeyPatch) -> None:
     with fake_imap({}) as server:
-        _configure(monkeypatch, server, JH_IMAP_PASSWORD="otra")
+        _configure(monkeypatch, server, CAI_IMAP_PASSWORD="otra")
         with pytest.raises(MailboxError) as exc:
             connect_imap(get_settings(), _plain)
     assert exc.value.code == "imap_auth"
@@ -102,7 +102,7 @@ def test_wrong_password_gives_clear_error(monkeypatch: pytest.MonkeyPatch) -> No
 
 def test_missing_folder_gives_clear_error(monkeypatch: pytest.MonkeyPatch) -> None:
     with fake_imap({}) as server:
-        _configure(monkeypatch, server, JH_IMAP_FOLDER="No existe")
+        _configure(monkeypatch, server, CAI_IMAP_FOLDER="No existe")
         with pytest.raises(MailboxError) as exc:
             list(read_imap(get_settings(), lambda _mid: False, 21, _plain))
     assert exc.value.code == "imap_folder"
@@ -115,7 +115,7 @@ def test_imap_failure_is_reported_and_local_inbox_still_read(
     inbox.mkdir(parents=True)
     (inbox / "a.eml").write_bytes(MESSAGES[9])
     with fake_imap({}) as server:
-        _configure(monkeypatch, server, JH_IMAP_PASSWORD="otra")
+        _configure(monkeypatch, server, CAI_IMAP_PASSWORD="otra")
         result = poll_email(session, imap_factory=_plain, fetch=_no_fetch)
     assert [e.code for e in result.errors] == ["imap_auth"]
     assert result.created == 1
@@ -124,10 +124,10 @@ def test_imap_failure_is_reported_and_local_inbox_still_read(
 def test_unreachable_server(monkeypatch: pytest.MonkeyPatch) -> None:
     with fake_imap({}) as server:
         port = server.port
-    monkeypatch.setenv("JH_IMAP_HOST", "127.0.0.1")
-    monkeypatch.setenv("JH_IMAP_PORT", str(port))
-    monkeypatch.setenv("JH_IMAP_USER", USER)
-    monkeypatch.setenv("JH_IMAP_PASSWORD", PASSWORD)
+    monkeypatch.setenv("CAI_IMAP_HOST", "127.0.0.1")
+    monkeypatch.setenv("CAI_IMAP_PORT", str(port))
+    monkeypatch.setenv("CAI_IMAP_USER", USER)
+    monkeypatch.setenv("CAI_IMAP_PASSWORD", PASSWORD)
     get_settings.cache_clear()
     with pytest.raises(MailboxError) as exc:
         connect_imap(get_settings(), _plain)
@@ -153,7 +153,7 @@ def test_doctor_checks_login_and_folder_only(monkeypatch: pytest.MonkeyPatch) ->
     with fake_imap(dict(MESSAGES)) as server:
         _configure(monkeypatch, server)
         ok = check_email_alerts(get_settings(), _plain)
-        _configure(monkeypatch, server, JH_IMAP_PASSWORD="otra")
+        _configure(monkeypatch, server, CAI_IMAP_PASSWORD="otra")
         bad = check_email_alerts(get_settings(), _plain)
     assert ok.status == CheckStatus.OK
     assert "solo lectura" in ok.detail and FOLDER in ok.detail
@@ -166,7 +166,7 @@ def test_doctor_without_imap(monkeypatch: pytest.MonkeyPatch) -> None:
     from app.services.doctor import CheckStatus, check_email_alerts
 
     assert check_email_alerts(get_settings()).status == CheckStatus.OK
-    monkeypatch.setenv("JH_IMAP_USER", USER)
+    monkeypatch.setenv("CAI_IMAP_USER", USER)
     get_settings.cache_clear()
     assert check_email_alerts(get_settings()).status == CheckStatus.WARN
 

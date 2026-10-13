@@ -1,4 +1,4 @@
-"""Set de evaluación del matching y `jh eval matching`."""
+"""Set de evaluación del matching y `cai eval matching`."""
 
 import json
 from pathlib import Path
@@ -102,7 +102,7 @@ def test_curve_covers_every_threshold() -> None:
 
 def test_semantic_notes_when_embeddings_missing() -> None:
     report = evaluation.run()
-    assert report.notes == ["Similitud semántica desactivada (JH_EMBEDDINGS=off)."]
+    assert report.notes == ["Similitud semántica desactivada (CAI_EMBEDDINGS=off)."]
 
 
 def test_with_fake_embedder() -> None:

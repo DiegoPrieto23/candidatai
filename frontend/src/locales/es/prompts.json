@@ -1,0 +1,15 @@
+{
+  "enableNotifications": "Avisarme también con notificaciones de Windows",
+  "where": {
+    "appBrowser": "en el navegador de CandidatAI",
+    "source": "en {{source}}, en tu navegador",
+    "browser": "en tu navegador"
+  },
+  "description": "Hace falta que lo hagas tú, {{where}}. CandidatAI nunca lo resuelve por ti.",
+  "openPage": "Abrir la página",
+  "expires": "Si no contestas en {{time}}, el aviso caduca.",
+  "agentContinues": "Si no contestas en {{time}}, el agente sigue con lo siguiente.",
+  "timeUp": "Se ha acabado el tiempo.",
+  "skip": "Saltar",
+  "done": "Ya está"
+}

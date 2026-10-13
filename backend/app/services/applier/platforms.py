@@ -44,7 +44,7 @@ BOARD_LABELS: dict[str, str] = {
     "glassdoor": "Glassdoor",
     "manfred": "Manfred",
 }
-# Para iniciar sesión desde la página de inicio del navegador de Job Hunter.
+# Para iniciar sesión desde la página de inicio del navegador de CandidatAI.
 LOGIN_LINKS: tuple[tuple[str, str], ...] = (
     ("InfoJobs", "https://www.infojobs.net/"),
     ("Tecnoempleo", "https://www.tecnoempleo.com/"),
@@ -183,14 +183,14 @@ _APPLY_BUTTON_JS = """(pattern) => {
   const el = [...document.querySelectorAll('a, button, [role=button]')]
     .find(e => !e.closest('form') && visible(e) && rx.test(text(e)));
   if (!el) return null;
-  el.setAttribute('data-jh-apply', '1');
+  el.setAttribute('data-cai-apply', '1');
   const href = el.tagName === 'A' ? el.href : null;
   return {label: text(el), href, blank: el.tagName === 'A' && el.target === '_blank'};
 }"""
 
 
 def find_apply_button(page: Page) -> dict | None:
-    """El botón que abre el formulario (marcado con `data-jh-apply`), o `None`."""
+    """El botón que abre el formulario (marcado con `data-cai-apply`), o `None`."""
     return page.evaluate(_APPLY_BUTTON_JS, APPLY_BUTTON)
 
 

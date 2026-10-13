@@ -92,7 +92,7 @@ def test_invalid_file_is_not_imported(session: Session, tmp_path: Path) -> None:
 
 
 def test_current_without_profile(session: Session) -> None:
-    with pytest.raises(profile.ProfileNotFoundError, match="jh profile import"):
+    with pytest.raises(profile.ProfileNotFoundError, match="cai profile import"):
         profile.current(session)
 
 

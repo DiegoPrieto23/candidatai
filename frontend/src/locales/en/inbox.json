@@ -1,0 +1,43 @@
+{
+  "title": "Inbox",
+  "sort": {
+    "dateDesc": "Newest",
+    "dateAsc": "Oldest",
+    "scoreDesc": "Best fit",
+    "scoreAsc": "Worst fit",
+    "salaryDesc": "Highest salary",
+    "salaryAsc": "Lowest salary"
+  },
+  "risk": "Possible content aimed at an AI",
+  "notExtracted": "Not extracted",
+  "noSalary": "Not stated",
+  "columns": {
+    "job": "Job",
+    "mode": "Work mode",
+    "salary": "Salary",
+    "fit": "Fit",
+    "stage": "Stage",
+    "added": "Added"
+  },
+  "loadingJobs": "Loading jobs",
+  "count_one": "{{count}} job",
+  "count_other": "{{count}} jobs",
+  "matching": " matching “{{q}}”",
+  "search": "Search by title or company",
+  "filterStage": "Filter by stage",
+  "allStages": "All stages",
+  "sortLabel": "Sort",
+  "noResults": {
+    "title": "Nothing here",
+    "clear": "Clear filters",
+    "body": "No job matches these filters."
+  },
+  "empty": {
+    "title": "Your inbox is empty",
+    "addFirst": "Add the first one",
+    "body": "Add a job from its URL or by pasting the text. Then your agent extracts it with the skill <code>process-jobs</code>."
+  },
+  "range": "{{from}}-{{to}} of {{total}}",
+  "previous": "Previous",
+  "next": "Next"
+}

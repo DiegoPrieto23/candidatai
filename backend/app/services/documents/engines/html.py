@@ -7,7 +7,7 @@
   los enlaces del perfil (`context.links`) pasan a ser `<a href>` (ADR-023): la plantilla no puede
   poner enlaces externos, el código sí.
 - Chromium (Playwright) imprime sin JavaScript y sin red: la página se carga desde un origen
-  virtual (`http://jh.local/`) y cada petición se sirve solo desde la carpeta de la plantilla, sus
+  virtual (`http://cai.local/`) y cada petición se sirve solo desde la carpeta de la plantilla, sus
   `fonts/` (o `data/fonts/`) y la foto ya recortada. Cualquier otra se aborta.
 - El tamaño de página y los márgenes los pone el CSS (`@page`); el tamaño se fuerza con el de las
   opciones de render.
@@ -32,10 +32,10 @@ from app.services.documents.context import links, split_links
 from app.services.documents.pdf import PdfConversionError, PdfConverterUnavailableError
 from app.services.documents.templates import Template
 
-ORIGIN = "http://jh.local"
+ORIGIN = "http://cai.local"
 PAGE_URL = f"{ORIGIN}/index.html"
 # Nombre con el que la plantilla ve la foto: `<img src="{{ photo }}">`.
-PHOTO_URL = "jh-photo.png"
+PHOTO_URL = "cai-photo.png"
 RENDER_TIMEOUT_MS = 60_000
 # Tipos fijos: `mimetypes` en Windows depende del registro.
 MIME_TYPES = {
@@ -59,7 +59,7 @@ class HtmlRenderError(PdfConversionError):
 
 
 class ChromiumUnavailableError(PdfConverterUnavailableError):
-    """Falta Chromium: `pdf_unavailable` (`jh doctor` dice cómo instalarlo)."""
+    """Falta Chromium: `pdf_unavailable` (`cai doctor` dice cómo instalarlo)."""
 
 
 def environment(folder: Path) -> SandboxedEnvironment:
@@ -221,7 +221,7 @@ def _print(
             try:
                 # Sin resolución de nombres: si algo escapase a `route`, tampoco saldría a la red.
                 browser = pw.chromium.launch(
-                    args=["--host-resolver-rules=MAP * ~NOTFOUND , EXCLUDE jh.local"]
+                    args=["--host-resolver-rules=MAP * ~NOTFOUND , EXCLUDE cai.local"]
                 )
             except PlaywrightError as exc:
                 raise ChromiumUnavailableError(

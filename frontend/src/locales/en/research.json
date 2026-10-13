@@ -1,0 +1,22 @@
+{
+  "title": "Company",
+  "sections": {
+    "product": "Product",
+    "news": "Recent news",
+    "engineering_culture": "Engineering culture",
+    "notes": "For you"
+  },
+  "dossier": "Dossier from {{date}}",
+  "by": " · by {{agent}}",
+  "fromWeb": ". Taken from public websites: check it at the source.",
+  "intro": "Your agent researches the company on the public web and leaves a dossier with sources here.",
+  "update": "Update dossier",
+  "research": "Research company",
+  "loadFailed": "Couldn't load the dossier: {{error}}",
+  "risk": "The dossier contains phrases aimed at an AI (they came from some website). Review it before using it.",
+  "old": "It's {{count}} days old: it may be out of date.",
+  "stack": "Stack",
+  "sources": "Sources",
+  "openFolder": "Open dossiers folder",
+  "letterHint": "The letter doesn't use it: if you want it to mention something, copy it into its instructions."
+}

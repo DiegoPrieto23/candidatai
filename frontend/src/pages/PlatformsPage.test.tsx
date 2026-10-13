@@ -119,12 +119,12 @@ describe('Plataformas', () => {
       'GET /status': status(),
       'GET /sources': { sources: [tecno], agent_browse: LIMITS },
       'GET /agent': { available: true, agent: 'claude', reason: null, actions: [] },
-      'POST /agent/launch': { ok: true, agent: 'claude', prompt: 'Usa el skill ampliar-busqueda…', message: 'ok' },
+      'POST /agent/launch': { ok: true, agent: 'claude', prompt: 'Usa el skill broaden-search…', message: 'ok' },
     })
     renderApp('/plataformas')
     await userEvent.click(await screen.findByRole('button', { name: 'Ampliar búsqueda' }))
     expect(await screen.findByText('Abierto en claude: sigue en la terminal.')).toBeInTheDocument()
-    expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ action: 'ampliar-busqueda' })
+    expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ action: 'broaden-search' })
   })
 
   it('activar LinkedIn pide confirmar el riesgo y manda confirm_risk', async () => {
@@ -171,7 +171,7 @@ describe('Plataformas', () => {
     mockApi({ 'GET /status': status(), 'GET /sources': { sources: [], agent_browse: LIMITS } })
     renderApp('/plataformas')
     expect(await screen.findByText('Aún no hay plataformas')).toBeInTheDocument()
-    expect(screen.getByText(/buscar-ofertas configurar/)).toBeInTheDocument()
+    expect(screen.getByText(/search-jobs configurar/)).toBeInTheDocument()
   })
 })
 
@@ -223,8 +223,10 @@ describe('Búsqueda pública de LinkedIn', () => {
   })
 
   it('tras un bloqueo lo avisa y no deja buscar', async () => {
-    const blockedAt = new Date(Date.now() - 3_600_000).toISOString()
-    const until = new Date(Date.now() + 3 * 86_400_000 - 3_600_000).toISOString()
+    // Una sola referencia: con dos `Date.now()` podía pasar 1 ms entre medias y el bloqueo no cuadraba.
+    const now = Date.now()
+    const blockedAt = new Date(now - 3_600_000).toISOString()
+    const until = new Date(now + 3 * 86_400_000 - 3_600_000).toISOString()
     mockApi({
       'GET /status': status(),
       'GET /sources': { sources: [linkedin], agent_browse: LIMITS },

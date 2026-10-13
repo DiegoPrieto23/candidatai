@@ -27,7 +27,7 @@ describe('Entrevistas en la ficha (fase 17)', () => {
     await userEvent.click(await within(section).findByRole('button', { name: 'Simulacro' }))
     await waitFor(() => expect(calls.some((c) => c.path === '/agent/launch')).toBe(true))
     expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({
-      action: 'simular-entrevista',
+      action: 'mock-interview',
       milestone_id: 5,
     })
     expect(within(section).getByRole('button', { name: 'Preparar' })).toBeInTheDocument()
@@ -51,7 +51,7 @@ describe('Entrevistas en la ficha (fase 17)', () => {
     await userEvent.click(within(section).getByRole('button', { name: 'Repasar otra vez' }))
     await waitFor(() =>
       expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({
-        action: 'repasar-entrevista',
+        action: 'debrief-interview',
         milestone_id: 6,
       }),
     )
@@ -88,7 +88,7 @@ describe('Entrevistas en la ficha (fase 17)', () => {
     const section = await screen.findByRole('region', { name: 'Proceso' })
     await userEvent.click(await within(section).findByRole('button', { name: 'Dudas antes de aceptar' }))
     await waitFor(() =>
-      expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ action: 'dudas-oferta', job_id: 1 }),
+      expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ action: 'offer-questions', job_id: 1 }),
     )
   })
 })

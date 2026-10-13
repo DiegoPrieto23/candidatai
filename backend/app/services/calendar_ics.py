@@ -28,10 +28,10 @@ from app.services import process, tracking
 from app.services.events import JobNotFoundError
 from app.services.process import MilestoneNotFoundError, local_zone, start_of_local_day
 
-PRODID = "-//Job Hunter//Seguimiento//ES"
-UID_DOMAIN = "jobhunter.local"
+PRODID = "-//CandidatAI//Seguimiento//ES"
+UID_DOMAIN = "candidatai.local"
 UI_URL = "http://127.0.0.1:5173"
-CALENDAR_NAME = "Job Hunter"
+CALENDAR_NAME = "CandidatAI"
 LABELS = {
     "interview": "Entrevista",
     "test": "Prueba",
@@ -122,7 +122,7 @@ def _summary(kind: str, title: str, job_title: str, company: str) -> str:
 
 
 def _description(job_id: int, notes: str | None) -> str:
-    link = f"Ficha en Job Hunter: {UI_URL}/jobs/{job_id}"
+    link = f"Ficha en CandidatAI: {UI_URL}/jobs/{job_id}"
     return f"{notes}\n\n{link}" if notes else link
 
 
@@ -192,11 +192,11 @@ def feed_ics(session: Session, now: datetime | None = None) -> str:
 
 
 def default_export_path() -> Path:
-    return get_settings().data_dir / "calendar" / "jobhunter.ics"
+    return get_settings().data_dir / "calendar" / "candidatai.ics"
 
 
 def export_feed(session: Session, out: Path | None = None) -> Path:
-    """Escribe el feed en un fichero (por defecto `data/calendar/jobhunter.ics`)."""
+    """Escribe el feed en un fichero (por defecto `data/calendar/candidatai.ics`)."""
     path = out or default_export_path()
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(feed_ics(session).encode("utf-8"))

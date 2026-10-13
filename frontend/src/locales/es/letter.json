@@ -1,0 +1,69 @@
+{
+  "title": "Carta de presentación",
+  "instructions": {
+    "title": "Indicaciones",
+    "edit": "Editar indicaciones",
+    "add": "Añadir indicaciones",
+    "forJob": "Para esta oferta",
+    "placeholder": "Qué quieres que cuente: por qué esta empresa, algo que la carta deba mencionar…",
+    "onlySource": "Lo que escribas aquí es lo único que la carta puede contar de ti fuera de tu perfil.",
+    "maxWords": "Máximo de palabras (opcional)",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "forJobLabel": "Para esta oferta: ",
+    "none": "ninguna",
+    "general": "Generales (tu perfil): ",
+    "generalNone": "ninguna. Puedes añadirlas con el skill <code>update-profile</code>.",
+    "limit": "Límite: {{count}} palabras (mandan las de la oferta).",
+    "prefMaxWords": "máximo {{count}} palabras",
+    "prefTone": "tono {{tone}}",
+    "prefAvoid": "evitar: {{list}}"
+  },
+  "status": {
+    "words": "{{count}} de {{max}} palabras",
+    "editedByYou": "Editada por ti",
+    "verified": "Verificada",
+    "failed": "El verificador encontró problemas",
+    "notVerified": "Sin verificar",
+    "blocker": "Bloqueante",
+    "warning": "Aviso"
+  },
+  "editor": {
+    "label": "Editar la carta",
+    "greeting": "Saludo",
+    "paragraph": "Párrafo {{n}}",
+    "signOff": "Despedida",
+    "hint": "{{count}} de {{max}} palabras. Se guarda como una carta nueva «Editada por ti», sin verificar. Un párrafo vacío se quita.",
+    "needsParagraph": "La carta necesita al menos un párrafo.",
+    "saving": "Guardando…",
+    "save": "Guardar",
+    "cancel": "Cancelar"
+  },
+  "render": {
+    "label": "Renderizar la carta",
+    "design": "Diseño",
+    "matchCv": "A juego con el CV",
+    "photo": "Foto",
+    "likeCv": "Como el CV",
+    "color": "Color",
+    "rendering": "Renderizando…",
+    "render": "Renderizar",
+    "withPhoto": "Con foto",
+    "noPhoto": "Sin foto",
+    "cardAria": "Render de carta {{id}}",
+    "toSend": "Para enviar",
+    "pages": "{{count}} pág.",
+    "downloadPdf": "Descargar PDF",
+    "useAria": "Usar el render {{id}} de la carta para enviar",
+    "use": "Usar esta para enviar",
+    "renders": "Renders ({{count}})"
+  },
+  "none": {
+    "title": "Aún sin carta",
+    "hint": "Ejecuta <code>generate-cover-letter {{id}}</code> en tu agente: la redacta con tus indicaciones, la verifica y la deja a juego con tu CV. Después podrás copiarla, retocarla y cambiar el diseño aquí, sin IA.",
+    "never": "Esta oferta no llegó a tener carta."
+  },
+  "copyText": "Copiar texto",
+  "downloadTxt": "Descargar TXT",
+  "edit": "Editar"
+}

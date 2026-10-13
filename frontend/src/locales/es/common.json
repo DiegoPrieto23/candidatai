@@ -1,0 +1,49 @@
+{
+  "language": {
+    "name": "Español"
+  },
+  "notFound": {
+    "title": "Esta página no existe",
+    "goHome": "Ir al inicio"
+  },
+  "loading": "Cargando…",
+  "retry": "Reintentar",
+  "copy": {
+    "label": "Copiar",
+    "copied": "Copiado",
+    "failed": "No se pudo copiar",
+    "copiedStatus": "Copiado al portapapeles",
+    "path": "Copiar ruta"
+  },
+  "folder": {
+    "open": "Abrir carpeta",
+    "notOpened": "No se pudo abrir aquí. Está en"
+  },
+  "noStage": "Sin etapa",
+  "errors": {
+    "offlineTitle": "La API no responde",
+    "loadFailed": "No se ha podido cargar",
+    "generic": "Algo ha fallado.",
+    "offline": "No hay conexión con la API. Arráncala con `uv run cai serve` en backend/.",
+    "unexpected": "Error inesperado de la API ({{status}}).",
+    "types": {
+      "unauthorized": "No autorizado",
+      "forbidden": "No permitido",
+      "not_allowed": "No permitido",
+      "capture_not_configured": "Captura sin configurar",
+      "not_found": "No encontrado",
+      "validation_error": "Entrada no válida",
+      "invalid_request": "Petición no válida",
+      "invalid_transition": "Cambio de estado no válido",
+      "exists": "Ya existe",
+      "invalid_file": "Fichero no válido",
+      "too_large": "Demasiado grande",
+      "pdf_unavailable": "PDF no disponible",
+      "agent_unavailable": "Agente no disponible",
+      "pdf_failed": "Falló la conversión a PDF",
+      "database_not_ready": "Base de datos sin preparar",
+      "internal_error": "Error interno"
+    }
+  },
+  "close": "Cerrar"
+}

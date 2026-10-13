@@ -1,4 +1,4 @@
-"""Resumen del estado de la búsqueda (`get_status` / `jh status`)."""
+"""Resumen del estado de la búsqueda (`get_status` / `cai status`)."""
 
 from pydantic import BaseModel
 from sqlalchemy import func, select
@@ -15,7 +15,7 @@ class StatusReport(BaseModel):
     by_stage: dict[Stage, int]
     pending_tasks: int  # tareas del worker en cola
     agent_requests: int  # encargos que el usuario te dejó en la UI (fase 19): `list_agent_requests`
-    demo_mode: bool  # datos ficticios de `jh demo seed` (fase 12.1)
+    demo_mode: bool  # datos ficticios de `cai demo seed` (fase 12.1)
 
 
 def get_status(session: Session) -> StatusReport:

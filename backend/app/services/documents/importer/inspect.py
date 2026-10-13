@@ -1,4 +1,4 @@
-"""`jh templates inspect`: qué tiene un CV de Word, para decidir el mapeo y el `template.yaml`.
+"""`cai templates inspect`: qué tiene un CV de Word, para decidir el mapeo y el `template.yaml`.
 
 Da el diseño (página, columnas, fuentes, colores, tablas, cuadros de texto, imágenes, cabecera y
 pie), los párrafos numerados con sus fragmentos fusionados, las secciones en su orden (también las
@@ -465,7 +465,7 @@ def open_docx(path: Path) -> DocxDocument:
     if path.suffix.casefold() != ".docx":
         raise TemplateImportError(
             f"No es un Word: {path.suffix or 'sin extensión'}. Para PDF, imagen o HTML, "
-            "`jh templates inspect` lo analiza con el motor html."
+            "`cai templates inspect` lo analiza con el motor html."
         )
     try:
         return Document(str(path))
@@ -475,7 +475,7 @@ def open_docx(path: Path) -> DocxDocument:
 
 def count_pages(path: Path) -> tuple[int | None, str | None]:
     """Páginas del original convirtiéndolo a PDF; si no hay conversor, `None` y el motivo."""
-    workdir = Path(tempfile.mkdtemp(prefix="jh-inspect-"))
+    workdir = Path(tempfile.mkdtemp(prefix="cai-inspect-"))
     try:
         copy = workdir / "source.docx"
         shutil.copyfile(path, copy)

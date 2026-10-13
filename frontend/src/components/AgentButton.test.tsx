@@ -11,8 +11,8 @@ const launcher = {
   reason: null,
   background: { available: true, agent: 'claude', reason: null },
   actions: [
-    { id: 'buscar-ofertas', label: 'Buscar ofertas', needs_job: false, prompt: 'Usa el skill buscar-ofertas…', background: false },
-    { id: 'procesar-ofertas', label: 'Procesar ofertas', needs_job: false, prompt: 'Usa…', background: true },
+    { id: 'search-jobs', label: 'Buscar ofertas', needs_job: false, prompt: 'Usa el skill search-jobs…', background: false },
+    { id: 'process-jobs', label: 'Procesar ofertas', needs_job: false, prompt: 'Usa…', background: true },
   ],
 }
 
@@ -30,12 +30,12 @@ function home(extra: Record<string, unknown>) {
 describe('Botones «en tu agente»', () => {
   it('«Buscar ofertas» abre el agente y lo dice', async () => {
     const calls = home({
-      'POST /agent/launch': { ok: true, agent: 'claude', prompt: 'Usa el skill buscar-ofertas…', message: 'ok' },
+      'POST /agent/launch': { ok: true, agent: 'claude', prompt: 'Usa el skill search-jobs…', message: 'ok' },
     })
     renderApp('/')
     await userEvent.click(await screen.findByRole('button', { name: 'Buscar ofertas' }))
     expect(await screen.findByText('Abierto en claude: sigue en la terminal.')).toBeInTheDocument()
-    expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ action: 'buscar-ofertas' })
+    expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ action: 'search-jobs' })
   })
 
   it('si no puede abrir el agente, copia la orden', async () => {
@@ -49,14 +49,14 @@ describe('Botones «en tu agente»', () => {
           error: {
             type: 'agent_unavailable',
             message: 'No se encuentra el programa del agente (claude) en el PATH.',
-            details: [{ field: 'prompt', received: 'Usa el skill buscar-ofertas de Job Hunter.', reason: '…' }],
+            details: [{ field: 'prompt', received: 'Usa el skill search-jobs de CandidatAI.', reason: '…' }],
           },
         },
       },
     })
     renderApp('/')
     await userEvent.click(await screen.findByRole('button', { name: 'Buscar ofertas' }))
-    await waitFor(() => expect(writeText).toHaveBeenCalledWith('Usa el skill buscar-ofertas de Job Hunter.'))
+    await waitFor(() => expect(writeText).toHaveBeenCalledWith('Usa el skill search-jobs de CandidatAI.'))
     expect(await screen.findByText(/He copiado la orden: pégala en tu agente\./)).toBeInTheDocument()
   })
 
@@ -78,7 +78,7 @@ describe('Botones «en tu agente»', () => {
     await userEvent.click(await screen.findByRole('menuitem', { name: /En segundo plano/ }))
     expect(await screen.findByText('En cola en segundo plano.', { exact: false })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Ver en «Agente»' })).toHaveAttribute('href', '/agente')
-    expect(calls.find((c) => c.method === 'POST' && c.path === '/agent/runs')?.body).toEqual({ action: 'procesar-ofertas' })
+    expect(calls.find((c) => c.method === 'POST' && c.path === '/agent/runs')?.body).toEqual({ action: 'process-jobs' })
   })
 
   it('los skills que preguntan no ofrecen segundo plano, pero sí dejarlo para luego', async () => {
@@ -90,6 +90,6 @@ describe('Botones «en tu agente»', () => {
     expect(screen.queryByRole('menuitem', { name: /En segundo plano/ })).not.toBeInTheDocument()
     await userEvent.click(screen.getByRole('menuitem', { name: /Dejar para mi próxima sesión/ }))
     expect(await screen.findByText(/Encargo guardado/)).toBeInTheDocument()
-    expect(calls.find((c) => c.method === 'POST' && c.path === '/agent/requests')?.body).toEqual({ action: 'buscar-ofertas' })
+    expect(calls.find((c) => c.method === 'POST' && c.path === '/agent/requests')?.body).toEqual({ action: 'search-jobs' })
   })
 })

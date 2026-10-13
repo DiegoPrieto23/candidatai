@@ -154,7 +154,7 @@ def test_calendar_endpoints(client: TestClient) -> None:
     assert feed.status_code == 200 and "content-disposition" not in feed.headers
     assert feed.text.count("BEGIN:VEVENT") == 1
     download = client.get("/calendar.ics", params={"download": True})
-    assert download.headers["content-disposition"] == 'attachment; filename="jobhunter.ics"'
+    assert download.headers["content-disposition"] == 'attachment; filename="candidatai.ics"'
 
 
 def test_process_shows_interview_debrief_and_offer(client: TestClient) -> None:

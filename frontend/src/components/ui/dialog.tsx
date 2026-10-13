@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { XIcon } from "@phosphor-icons/react"
+import { i18n } from "@/lib/i18n"
 import { Dialog as DialogPrimitive } from "radix-ui"
 import { cn } from "@/lib/utils"
 
@@ -58,7 +59,7 @@ function DialogContent({
             className="absolute top-4 right-4 rounded-md opacity-70 transition-opacity outline-none hover:opacity-100 focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
           >
             <XIcon />
-            <span className="sr-only">Cerrar</span>
+            <span className="sr-only">{i18n.t('close')}</span>
           </DialogPrimitive.Close>
         )}
       </DialogPrimitive.Content>

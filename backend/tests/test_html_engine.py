@@ -47,7 +47,7 @@ def test_clean_html_removes_scripts_handlers_and_remote_urls() -> None:
         "<style>@import url(http://e.example/b.css); body{background:url('https://t.example/p.png')}"
         ".x{background:url(fonts/ok.png)}</style></head>"
         '<body onload="steal()"><script>alert(1)</script><iframe src="x.html"></iframe>'
-        '<img src="http://evil.example/pixel.png"><img src="jh-photo.png">'
+        '<img src="http://evil.example/pixel.png"><img src="cai-photo.png">'
         '<a href="javascript:alert(1)">j</a><a href="mailto:a@example.com">m</a>'
         '<p style="background:url(//e.example/x)">t</p></body></html>'
     )
@@ -65,7 +65,7 @@ def test_clean_html_removes_scripts_handlers_and_remote_urls() -> None:
         "//e.example",
     ):
         assert gone not in clean
-    for kept in ('src="jh-photo.png"', "url(fonts/ok.png)", "mailto:a@example.com"):
+    for kept in ('src="cai-photo.png"', "url(fonts/ok.png)", "mailto:a@example.com"):
         assert kept in clean
 
 
@@ -140,7 +140,7 @@ def test_render_string_escapes_profile_text() -> None:
     html = html_engine.render_string(template, ctx, None)
     assert "<script" not in html
     assert "&lt;script&gt;" in html and "&amp; más" in html
-    assert "jh-photo.png" not in html  # sin foto, no hay <img>
+    assert "cai-photo.png" not in html  # sin foto, no hay <img>
 
 
 def test_resolver_serves_only_local_files(tmp_path: Path) -> None:
@@ -270,7 +270,7 @@ def test_page_size_comes_from_render_options(tmp_path: Path) -> None:
 
 @requires_chromium
 def test_no_render_reaches_the_network(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """Aunque el saneado fallase, Chromium no sale de `jh.local` ni sirve nada de fuera."""
+    """Aunque el saneado fallase, Chromium no sale de `cai.local` ni sirve nada de fuera."""
     monkeypatch.setattr(html_engine.sanitize, "clean_html", lambda html: html)
     root = get_settings().user_templates_dir
     folder = html_template(

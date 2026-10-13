@@ -1,7 +1,7 @@
 """Plataformas para la búsqueda con el navegador del agente (fase 09b, ADR-016).
 
 Una plataforma es una fuente `agent_browse`: búsquedas ya filtradas que el agente recorre con el
-navegador del usuario (skill `buscar-ofertas`). La app no navega: guarda la configuración, recibe
+navegador del usuario (skill `search-jobs`). La app no navega: guarda la configuración, recibe
 las ofertas por `add_job_from_text` y anota cada recorrido en `source_runs`.
 
 LinkedIn es especial: el agente nunca puede activar su navegación. Solo el usuario, desde la UI y
@@ -101,7 +101,7 @@ def require_browsing(source: Source) -> None:
         where = "LinkedIn" if is_linkedin(source.config or {}) else f"«{source.name}»"
         raise BrowsingNotAllowedError(
             f"La búsqueda con navegador no está activada en {where}. Solo el usuario puede "
-            "activarla, en la pantalla Plataformas."
+            "activarla, en «Fuentes → Plataformas»."
         )
 
 

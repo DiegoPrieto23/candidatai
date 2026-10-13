@@ -1,0 +1,43 @@
+{
+  "title": "Bandeja",
+  "sort": {
+    "dateDesc": "Más recientes",
+    "dateAsc": "Más antiguas",
+    "scoreDesc": "Más encaje",
+    "scoreAsc": "Menos encaje",
+    "salaryDesc": "Más salario",
+    "salaryAsc": "Menos salario"
+  },
+  "risk": "Posible contenido dirigido a una IA",
+  "notExtracted": "Sin extraer",
+  "noSalary": "No lo indica",
+  "columns": {
+    "job": "Oferta",
+    "mode": "Modalidad",
+    "salary": "Salario",
+    "fit": "Encaje",
+    "stage": "Etapa",
+    "added": "Alta"
+  },
+  "loadingJobs": "Cargando ofertas",
+  "count_one": "{{count}} oferta",
+  "count_other": "{{count}} ofertas",
+  "matching": " que coinciden con «{{q}}»",
+  "search": "Buscar por título o empresa",
+  "filterStage": "Filtrar por etapa",
+  "allStages": "Todas las etapas",
+  "sortLabel": "Ordenar",
+  "noResults": {
+    "title": "Nada por aquí",
+    "clear": "Quitar filtros",
+    "body": "Ninguna oferta coincide con estos filtros."
+  },
+  "empty": {
+    "title": "Tu bandeja está vacía",
+    "addFirst": "Añadir la primera",
+    "body": "Da de alta una oferta desde su URL o pegando el texto. Después, tu agente la extrae con el skill <code>process-jobs</code>."
+  },
+  "range": "{{from}}-{{to}} de {{total}}",
+  "previous": "Anteriores",
+  "next": "Siguientes"
+}

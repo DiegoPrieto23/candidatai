@@ -1,0 +1,61 @@
+{
+  "kinds": {
+    "all": "All",
+    "must": "Must-haves",
+    "nice": "Nice-to-haves"
+  },
+  "marks": {
+    "all": "All",
+    "unmarked": "Undecided",
+    "gap": "I don't have it",
+    "have": "I have it"
+  },
+  "alias": {
+    "added": "“{{skill}}” now counts as “{{profile}}”. Job scores are recalculated in the background.",
+    "existed": "“{{skill}}” already counted as “{{profile}}”.",
+    "title": "“{{skill}}” is the same as…",
+    "description": "Pick the skill from your profile that means the same. It's added as a synonym in <code>config/skill_aliases.yaml</code> and your jobs' scores are recalculated.",
+    "search": "Search your profile",
+    "list": "Skills in your profile",
+    "none": "No skill in your profile matches.",
+    "cancel": "Cancel",
+    "saving": "Saving…",
+    "submit": "They're the same"
+  },
+  "removeMark": "Remove the mark",
+  "row": {
+    "gone": "No job in the period asks for it any more",
+    "split": "{{must}} must · {{nice}} nice",
+    "actions": "Actions for {{skill}}",
+    "same": "Same as…",
+    "have": "I have it",
+    "gap": "I don't have it"
+  },
+  "noProfile": {
+    "title": "You don't have a profile yet",
+    "body": "Gaps are calculated against your profile. Create it with the skill `update-profile`."
+  },
+  "title": "Skills",
+  "intro": "What your jobs ask for and your profile doesn't cover. Often it's vocabulary: if it's the same as one of your skills, say so and the score is recalculated. If you have it, add it to your profile; if not, it goes to your training plan.",
+  "addHave": "Add the ones I have to my profile ({{count}})",
+  "training": "Training plan",
+  "period": "Period",
+  "days": "{{count}} days",
+  "kind": "Type",
+  "mark": "Mark",
+  "covered": {
+    "title": "Your profile covers what your jobs ask for",
+    "body": "No missing skills across {{jobs}} jobs (open, and approved or sent in the last {{days}} days)."
+  },
+  "missing": "Missing skills",
+  "summary": "{{count}} missing skills across {{jobs}} jobs: the open ones and those approved or sent in the last {{days}} days. The weight adds 1 per job that requires it and 0.5 per job that lists it as nice-to-have, times the job's score.",
+  "tableLabel": "Missing skills by frequency",
+  "cols": {
+    "skill": "Skill",
+    "jobs": "Jobs",
+    "weight": "Weight",
+    "examples": "Examples",
+    "actions": "Actions"
+  },
+  "noneFiltered": "None with this filter."
+}

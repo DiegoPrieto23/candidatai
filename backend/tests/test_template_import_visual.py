@@ -204,7 +204,7 @@ def test_scaffold_html_errors(cv_pdf: Path, uploads_dir: Path) -> None:
     with pytest.raises(TemplateExistsError):
         authoring.scaffold_html(cv_pdf, "doble")
     authoring.scaffold_html(cv_pdf, "doble", force=True)
-    assert not list(get_settings().tmp_dir.glob("jh-scaffold-*"))  # sin restos del staging
+    assert not list(get_settings().tmp_dir.glob("cai-scaffold-*"))  # sin restos del staging
 
 
 @requires_chromium

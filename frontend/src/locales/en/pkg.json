@@ -1,0 +1,50 @@
+{
+  "title": "Application package",
+  "intro": "Everything you need to send it by hand. Nothing is sent from here.",
+  "form": {
+    "question": "Question",
+    "answer": "Answer",
+    "emptyHint": "If you leave it empty, it stays pending your input.",
+    "save": "Save",
+    "cancel": "Cancel"
+  },
+  "item": {
+    "needsInput": "Needs your input: complete it before sending.",
+    "noAnswer": "No answer.",
+    "evidence": "Backed by:",
+    "copyAria": "Copy answer {{n}}",
+    "editAria": "Edit answer {{n}}",
+    "edit": "Edit"
+  },
+  "answers": {
+    "title": "Screening answers",
+    "editedByYou": "Edited by you",
+    "add": "Add question",
+    "pending_one": "{{count}} answer needs your input (salary, availability…).",
+    "pending_other": "{{count}} answers need your input (salary, availability…).",
+    "none": "No answers yet. Paste the form's questions to your agent with the skill `prepare-application`, or add them yourself."
+  },
+  "cv": {
+    "title": "CV",
+    "openPdf": "Open PDF",
+    "sent": "The one you sent",
+    "selected": "Selected to send",
+    "pages_one": "{{count}} page",
+    "pages_other": "{{count}} pages",
+    "verified": "Verified",
+    "change": "Change it in the CV section",
+    "none": "No CV selected to send yet."
+  },
+  "letter": {
+    "title": "Cover letter",
+    "none": "No letter. If the job asks for one or you want it, run `generate-cover-letter {{id}}` in your agent.",
+    "editedByYou": "Edited by you",
+    "verified": "Verified",
+    "notVerified": "Not verified",
+    "words": "{{count}} words · {{state}}",
+    "copy": "Copy letter",
+    "openPdf": "Open PDF",
+    "change": "Change it in the Letter section",
+    "see": "See it in the Letter section"
+  }
+}

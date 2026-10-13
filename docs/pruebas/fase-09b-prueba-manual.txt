@@ -4,7 +4,7 @@ PRUEBA MANUAL · FASE 09b.1 y 09b.2 · ALERTAS POR CORREO Y BOTÓN «ENVIAR A JO
 Objetivo: comprobar con correos y portales reales que
 - las alertas de empleo por correo entran solas como ofertas «resumen» en la pantalla «Alertas»,
   sin duplicarse y sin tocar tu buzón;
-- el botón «Enviar a Job Hunter» manda la oferta que estás viendo, completa un resumen de una
+- el botón «Enviar a CandidatAI» manda la oferta que estás viendo, completa un resumen de una
   alerta sin duplicarlo y, de ahí, sale un CV.
 La búsqueda con el navegador del agente (09b.3) tendrá su propia guía.
 
@@ -21,27 +21,27 @@ REQUISITOS
       cd <carpeta-del-repo>
 - Rama: main (la fase ya está fusionada) o fase/09b-alertas-captura-busqueda.
 
-Las ofertas que se den de alta son REALES y se quedan en tu base de datos (data/jobhunter.db).
+Las ofertas que se den de alta son REALES y se quedan en tu base de datos (data/candidatai.db).
 
 
 PARTE 1 · PREPARAR
 ------------------
 1. Migra la base de datos (la 09b.1 añade la 0007):
 
-      uv run --directory backend jh db upgrade
+      uv run --directory backend cai db upgrade
 
    Esperado: "Base de datos actualizada: 0006 -> 0007." (o desde la que tengas).
 
 2. Comprueba el entorno:
 
-      uv run --directory backend jh doctor
+      uv run --directory backend cai doctor
 
    Esperado, entre otras:
    - «Alertas por correo»: OK, «sin IMAP (opcional); deja correos .eml o .mbox en data/inbox/».
    - «Botón de captura»: OK, «sin configurar (opcional)…».
 
 3. Arranca la app:
-      Terminal 1:   uv run --directory backend jh serve
+      Terminal 1:   uv run --directory backend cai serve
       Terminal 2:   cd frontend; pnpm dev
    Abre http://127.0.0.1:5173. En el menú superior debe aparecer «Alertas».
 
@@ -60,7 +60,7 @@ PARTE 2 · ALERTAS DESDE UNA CARPETA (SIN IMAP)
    - LinkedIn: siempre como resumen (no se descarga nada de LinkedIn).
    - InfoJobs, Indeed, Tecnoempleo: se intenta la oferta completa; si el portal la bloquea, entra
      como resumen.
-   Lo mismo por consola:   uv run --directory backend jh alerts poll
+   Lo mismo por consola:   uv run --directory backend cai alerts poll
 
 4. Revisa la lista:
    - título, empresa, ubicación y portal correctos en cada fila;
@@ -91,17 +91,17 @@ Solo lectura: no marca como leído, no mueve ni borra nada.
    myaccount.google.com → Seguridad → Contraseñas de aplicaciones.
 3. Añade a .env (raíz del repo):
 
-      JH_IMAP_HOST=imap.gmail.com
-      JH_IMAP_USER=tu-correo@gmail.com
-      JH_IMAP_PASSWORD=la-contraseña-de-aplicación
-      JH_IMAP_FOLDER=Alertas empleo
+      CAI_IMAP_HOST=imap.gmail.com
+      CAI_IMAP_USER=tu-correo@gmail.com
+      CAI_IMAP_PASSWORD=la-contraseña-de-aplicación
+      CAI_IMAP_FOLDER=Alertas empleo
 
-4. Reinicia `jh serve` y ejecuta:   uv run --directory backend jh doctor
+4. Reinicia `cai serve` y ejecuta:   uv run --directory backend cai doctor
    Esperado: «Alertas por correo»: OK, «IMAP en solo lectura: … carpeta «Alertas empleo»».
    Con una contraseña mal: ERROR con «contraseña de aplicación».
 5. «Revisar correo ahora» en «Alertas». Esperado: lee las alertas de los últimos 21 días.
 6. Comprueba en Gmail que esos correos siguen como estaban (sin leer si lo estaban).
-7. Con `uv run --directory backend jh worker` en marcha, el correo se lee al arrancar y cada 60
+7. Con `uv run --directory backend cai worker` en marcha, el correo se lee al arrancar y cada 60
    minutos (config/policies.yaml → email_alerts.poll_minutes).
 
 
@@ -109,17 +109,17 @@ PARTE 4 · INSTALAR LA EXTENSIÓN
 -------------------------------
 1. Abre chrome://extensions (en Edge, edge://extensions) y activa «Modo de desarrollador».
 2. «Cargar descomprimida» → elige la carpeta extension\ del repo.
-   Esperado: «Enviar a Job Hunter» con el id hnaofhehllbkghfehnehamjbkcmdjmle.
-3. Fija el botón: icono del puzle → chincheta junto a «Enviar a Job Hunter».
+   Esperado: «Enviar a CandidatAI» con el id hnaofhehllbkghfehnehamjbkcmdjmle.
+3. Fija el botón: icono del puzle → chincheta junto a «Enviar a CandidatAI».
 4. Genera el token:
 
-      uv run --directory backend jh capture token
+      uv run --directory backend cai capture token
 
    Cópialo (solo se muestra una vez).
 5. Clic derecho en el icono → «Opciones» → pega el token → «Guardar» → «Probar conexión».
    Esperado: «Todo listo: la app responde y acepta este token».
    Prueba también con un token cualquiera: «El token no vale…».
-6. `jh doctor`: «Botón de captura»: «token creado; acepta la extensión hnaofheh…».
+6. `cai doctor`: «Botón de captura»: «token creado; acepta la extensión hnaofheh…».
 
 
 PARTE 5 · CAPTURAR UNA OFERTA DE LINKEDIN QUE YA ESTÁ EN «ALERTAS»
@@ -148,22 +148,22 @@ alguna empresa):
    el texto de la oferta, empresa incluida, y vuelve a pulsar. Esperado: «Nueva» y, en el popup,
    «Se envió el texto que tenías seleccionado».
 3. Casos de error:
-   - con `jh serve` parado: «La app no responde. ¿Está «jh serve» en marcha?»;
+   - con `cai serve` parado: «La app no responde. ¿Está «cai serve» en marcha?»;
    - en chrome://extensions: «No se puede leer esta página».
 
 
 PARTE 7 · DE LA CAPTURA AL CV (CRITERIO DE ACEPTACIÓN)
 -----------------------------------------------------
-1. En tu agente: /procesar-ofertas → las capturadas pasan a «Por revisar».
+1. En tu agente: /process-jobs → las capturadas pasan a «Por revisar».
 2. En «Triaje», aprueba la oferta de LinkedIn de la parte 5.
-3. En tu agente: /generar-cv <id> → la oferta llega a «CV listo» con su PDF.
+3. En tu agente: /generate-cv <id> → la oferta llega a «CV listo» con su PDF.
 
 
 PARTE 8 · PLATAFORMAS (09b.3)
 -----------------------------
-Requisitos: `jh db upgrade`, `jh serve` y `pnpm dev`. Cierra antes Claude Code una vez y vuelve a
+Requisitos: `cai db upgrade`, `cai serve` y `pnpm dev`. Cierra antes Claude Code una vez y vuelve a
 abrirlo, para que el servidor MCP cargue las herramientas nuevas.
-1. En una sesión NUEVA de Claude Code (solo para esto): /buscar-ofertas configurar
+1. En una sesión NUEVA de Claude Code (solo para esto): /search-jobs configurar
    Esperado: te pregunta dónde buscas, recomienda de 3 a 6 portales con un motivo y guarda los que
    apruebes con `save_source`. Pídele que guarde también LinkedIn.
 2. Abre http://127.0.0.1:5173/plataformas.
@@ -181,7 +181,7 @@ abrirlo, para que el servidor MCP cargue las herramientas nuevas.
 PARTE 9 · BÚSQUEDA CON NAVEGADOR (CRITERIO DE ACEPTACIÓN)
 --------------------------------------------------------
 Con Claude in Chrome conectado, en una sesión nueva de Claude Code:
-1. /buscar-ofertas <una plataforma de acceso libre, p. ej. Tecnoempleo>
+1. /search-jobs <una plataforma de acceso libre, p. ej. Tecnoempleo>
    Esperado: abre tus búsquedas, lee como mucho 2 páginas con pausa entre ellas, abre solo las
    ofertas que encajan (hasta max_offers), las da de alta y termina con un resumen por plataforma.
    No pulsa «Inscribirme», «Guardar» ni similares, ni sale del dominio del portal.
@@ -210,6 +210,6 @@ LIMPIEZA
 --------
 - Las ofertas se quedan (son reales). Las de «Alertas» que no completes caducan solas a los 21
   días (email_alerts.summary_expire_days).
-- Para dejar de leer el correo: quita las variables JH_IMAP_* de .env y vacía data\inbox\.
-- Para invalidar el token: vuelve a ejecutar `jh capture token` (el anterior deja de valer).
+- Para dejar de leer el correo: quita las variables CAI_IMAP_* de .env y vacía data\inbox\.
+- Para invalidar el token: vuelve a ejecutar `cai capture token` (el anterior deja de valer).
 - Para quitar la extensión: chrome://extensions → «Quitar».

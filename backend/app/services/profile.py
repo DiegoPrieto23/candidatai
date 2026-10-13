@@ -1,6 +1,6 @@
 """Perfil del candidato: validar `data/profile.yaml`, versionarlo y exponer su vista pública.
 
-`data/profile.yaml` es lo que edita la persona (o su agente con el skill `actualizar-perfil`); lo
+`data/profile.yaml` es lo que edita la persona (o su agente con el skill `update-profile`); lo
 que usa la app es la última versión importada en `profile_versions`. Ver `docs/POLICIES.md` §1 y §4.
 """
 
@@ -76,8 +76,8 @@ class ProfileNotFoundError(LookupError):
 
 
 NO_PROFILE = (
-    "Aún no hay perfil importado: crea data/profile.yaml (skill `actualizar-perfil`) y ejecuta "
-    "`jh profile import`."
+    "Aún no hay perfil importado: crea data/profile.yaml (skill `update-profile`) y ejecuta "
+    "`cai profile import`."
 )
 
 
@@ -146,7 +146,7 @@ def load_from_yaml(path: Path) -> CandidateProfile:
     try:
         text = path.read_text(encoding="utf-8-sig")
     except FileNotFoundError as exc:
-        raise ProfileNotFoundError(f"No existe {path}. Créalo con `jh profile init`.") from exc
+        raise ProfileNotFoundError(f"No existe {path}. Créalo con `cai profile init`.") from exc
     try:
         data = yaml.safe_load(text)
     except yaml.YAMLError as exc:

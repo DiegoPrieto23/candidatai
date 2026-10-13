@@ -1,4 +1,5 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { ClipboardTextIcon, LinkIcon, WarningCircleIcon } from '@phosphor-icons/react'
 import { ApiError, type AddJobResult } from '@/api/client'
@@ -9,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
+import { errorMessage } from '@/lib/errors'
 import type { AddedState } from './JobPage'
 
 function useGoToJob() {
@@ -24,8 +26,9 @@ function fieldErrors(error: unknown): Record<string, string> {
 }
 
 function FormError({ error }: { error: unknown }) {
+  const { t } = useTranslation('newJob')
   if (!error) return null
-  const message = error instanceof Error ? error.message : 'No se ha podido dar de alta.'
+  const message = error instanceof Error ? errorMessage(error) : t('failed')
   return (
     <div
       role="alert"
@@ -54,11 +57,12 @@ function Field({
   optional?: boolean
   children: ReactNode
 }) {
+  const { t } = useTranslation('newJob')
   return (
     <div className="grid gap-2">
       <Label htmlFor={id} className="gap-1.5">
         {label}
-        {optional && <span className="font-normal text-muted-foreground">(opcional)</span>}
+        {optional && <span className="font-normal text-muted-foreground">{t('optional')}</span>}
       </Label>
       {children}
       {error ? (
@@ -77,6 +81,7 @@ function Field({
 }
 
 function UrlForm({ onUsePaste }: { onUsePaste: () => void }) {
+  const { t } = useTranslation('newJob', { keyPrefix: 'url' })
   const [url, setUrl] = useState('')
   const add = useAddFromUrl()
   const goToJob = useGoToJob()
@@ -91,17 +96,22 @@ function UrlForm({ onUsePaste }: { onUsePaste: () => void }) {
     <form onSubmit={submit} className="grid gap-5" noValidate>
       <Field
         id="url"
-        label="URL de la oferta"
+        label={t('label')}
         error={errors.url}
         hint={
-          <>
-            Una página pública (Greenhouse, Lever, la web de la empresa…). LinkedIn no: para esas
-            ofertas,{' '}
-            <button type="button" onClick={onUsePaste} className="font-medium text-primary underline-offset-4 hover:underline">
-              pega el texto
-            </button>
-            .
-          </>
+          <Trans
+            t={t}
+            i18nKey="hint"
+            components={{
+              paste: (
+                <button
+                  type="button"
+                  onClick={onUsePaste}
+                  className="font-medium text-primary underline-offset-4 hover:underline"
+                />
+              ),
+            }}
+          />
         }
       >
         <Input
@@ -120,7 +130,7 @@ function UrlForm({ onUsePaste }: { onUsePaste: () => void }) {
       <FormError error={add.error && !errors.url ? add.error : null} />
       <div className="flex justify-end">
         <Button type="submit" disabled={!url.trim() || add.isPending} className="h-10 px-5 active:translate-y-px">
-          {add.isPending ? 'Descargando…' : 'Dar de alta'}
+          {add.isPending ? t('downloading') : t('submit')}
         </Button>
       </div>
     </form>
@@ -128,6 +138,7 @@ function UrlForm({ onUsePaste }: { onUsePaste: () => void }) {
 }
 
 function TextForm() {
+  const { t } = useTranslation('newJob', { keyPrefix: 'text' })
   const [form, setForm] = useState({ title: '', company: '', location: '', url: '', text: '' })
   const add = useAddFromText()
   const goToJob = useGoToJob()
@@ -154,16 +165,16 @@ function TextForm() {
   return (
     <form onSubmit={submit} className="grid gap-5" noValidate>
       <div className="grid gap-5 sm:grid-cols-2">
-        <Field id="title" label="Puesto" error={errors.title}>
+        <Field id="title" label={t('title')} error={errors.title}>
           <Input id="title" required value={form.title} onChange={set('title')} className="h-10 bg-background" />
         </Field>
-        <Field id="company" label="Empresa" error={errors.company}>
+        <Field id="company" label={t('company')} error={errors.company}>
           <Input id="company" required value={form.company} onChange={set('company')} className="h-10 bg-background" />
         </Field>
-        <Field id="location" label="Ubicación" optional error={errors.location}>
+        <Field id="location" label={t('location')} optional error={errors.location}>
           <Input id="location" value={form.location} onChange={set('location')} className="h-10 bg-background" />
         </Field>
-        <Field id="text-url" label="URL" optional error={errors.url}>
+        <Field id="text-url" label={t('url')} optional error={errors.url}>
           <Input
             id="text-url"
             type="url"
@@ -177,9 +188,9 @@ function TextForm() {
       </div>
       <Field
         id="text"
-        label="Texto de la oferta"
+        label={t('text')}
         error={errors.text}
-        hint="Pega la oferta completa: requisitos, condiciones y salario si lo indica."
+        hint={t('hint')}
       >
         <Textarea
           id="text"
@@ -193,7 +204,7 @@ function TextForm() {
       <FormError error={add.error && !hasFieldError ? add.error : null} />
       <div className="flex justify-end">
         <Button type="submit" disabled={!ready || add.isPending} className="h-10 px-5 active:translate-y-px">
-          {add.isPending ? 'Guardando…' : 'Dar de alta'}
+          {add.isPending ? t('saving') : t('submit')}
         </Button>
       </div>
     </form>
@@ -201,25 +212,25 @@ function TextForm() {
 }
 
 export function NewJobPage() {
+  const { t } = useTranslation('newJob')
   const [tab, setTab] = useState('url')
   return (
     <div className="mx-auto max-w-2xl animate-in fade-in duration-300">
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold tracking-tight">Nueva oferta</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
         <p className="mt-1.5 text-sm text-muted-foreground">
-          Se guarda, se deduplica y se revisa en busca de texto dirigido a una IA. La extracción la hace
-          después tu agente.
+          {t('intro')}
         </p>
       </div>
       <Tabs value={tab} onValueChange={setTab} className="gap-0">
         <TabsList className="mb-5 h-10 w-full sm:w-auto">
           <TabsTrigger value="url" className="px-4">
             <LinkIcon />
-            Por URL
+            {t('byUrl')}
           </TabsTrigger>
           <TabsTrigger value="text" className="px-4">
             <ClipboardTextIcon />
-            Pegar texto
+            {t('pasteText')}
           </TabsTrigger>
         </TabsList>
         <div className="rounded-xl border bg-card p-5 sm:p-6">

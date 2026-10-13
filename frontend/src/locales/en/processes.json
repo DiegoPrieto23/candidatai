@@ -1,0 +1,47 @@
+{
+  "columnHint": {
+    "approved": "CV missing",
+    "cv_ready": "Ready to send",
+    "applied": "Waiting for a reply",
+    "in_process": "Interviews and tests",
+    "closed": "Recent"
+  },
+  "card": {
+    "followup": "Follow-up · {{count}} days",
+    "updateAria": "Update status of “{{title}}”",
+    "update": "Update status",
+    "draggable": "draggable card"
+  },
+  "empty": "Empty",
+  "dnd": {
+    "start": "You picked up “{{title}}”.",
+    "over": "Over the “{{stage}}” column.",
+    "outside": "Outside the columns.",
+    "end": "Dropped on “{{stage}}”. Confirm the event in the dialog.",
+    "endNone": "Dropped without moving it.",
+    "cancel": "Move cancelled.",
+    "instructions": "Press space to pick up the card, move it with the arrow keys and drop it with space. Esc cancels. You can also use “Move”."
+  },
+  "noMoves": "This job has no possible moves from here.",
+  "refused": "The card goes back to its place. {{reason}}",
+  "upcomingEmpty": "Nothing in the next 7 days.",
+  "calendar": {
+    "toggle": "Bring the milestones into your calendar",
+    "google": "<strong>Google Calendar:</strong> download the file and import it (Settings → Import & export). Google can't subscribe to an address on your computer, so import it again when your milestones change: events are updated, not duplicated.",
+    "others": "<strong>Outlook, Apple Calendar or Thunderbird:</strong> subscribe to this address (it updates on its own while <code>cai serve</code> is running):",
+    "download": "Download .ics",
+    "copy": "Copy address"
+  },
+  "title": "Processes",
+  "intro": "Click “Update status” on a card (or drag it to another column) to log what happened: a reply, an interview, a rejection… Nothing changes column without its event. Interviews and tests create their milestone with a date.",
+  "followups_one": "{{count}} follow-up due",
+  "followups_other": "{{count}} follow-ups due",
+  "thanks_one": "{{count}} interview to thank for",
+  "thanks_other": "{{count}} interviews to thank for",
+  "draftAll": "Draft messages",
+  "none": {
+    "title": "No processes yet",
+    "body": "The jobs you approve in <to>To review</to> show up here."
+  },
+  "next7": "Next 7 days"
+}

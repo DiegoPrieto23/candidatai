@@ -26,8 +26,8 @@ from tests.cv_support import requires_chromium
 
 @pytest.fixture
 def db(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
-    monkeypatch.setenv("JH_BROWSER_HEADLESS", "1")
-    monkeypatch.setenv("JH_APPLIER_ALLOW_LOOPBACK", "1")  # el servidor de prueba es local
+    monkeypatch.setenv("CAI_BROWSER_HEADLESS", "1")
+    monkeypatch.setenv("CAI_APPLIER_ALLOW_LOOPBACK", "1")  # el servidor de prueba es local
     get_settings.cache_clear()
     migrations.upgrade()
     yield
@@ -379,7 +379,7 @@ def test_rejected_token_is_annotated_and_cleared(db: None) -> None:
 
 
 def test_prepare_refuses_non_web_and_local_urls(db: None, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("JH_APPLIER_ALLOW_LOOPBACK", "0")
+    monkeypatch.setenv("CAI_APPLIER_ALLOW_LOOPBACK", "0")
     get_settings.cache_clear()
     for url in ("file:///C:/Windows/win.ini", "javascript:alert(1)", "http://127.0.0.1:8000/"):
         with session_scope() as session:
@@ -507,8 +507,8 @@ def test_open_browser_shows_the_start_page(db: None) -> None:
     def _title(state: browser.BrowserState) -> str:
         return state.ensure_context().pages[0].title()
 
-    assert browser.get_host().call(_title) == "Navegador de Job Hunter"
+    assert browser.get_host().call(_title) == "Navegador de CandidatAI"
     # Si cierras la pestaña (o la ventana), volver a pulsar la abre de nuevo.
     browser.get_host().call(lambda state: state.ensure_context().pages[0].close())
     assert service.run_browser_open() == {"opened": True}
-    assert browser.get_host().call(_title) == "Navegador de Job Hunter"
+    assert browser.get_host().call(_title) == "Navegador de CandidatAI"

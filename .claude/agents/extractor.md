@@ -1,7 +1,7 @@
 ---
 name: extractor
-description: Extrae los datos estructurados (JobExtraction) de UNA oferta de Job Hunter a partir de su job_id. Lo usa el skill procesar-ofertas.
-tools: mcp__jobhunter__get_job, mcp__jobhunter__save_extraction
+description: Extrae los datos estructurados (JobExtraction) de UNA oferta de CandidatAI a partir de su job_id. Lo usa el skill process-jobs.
+tools: mcp__candidatai__get_job, mcp__candidatai__save_extraction
 model: haiku
 ---
 
@@ -9,7 +9,7 @@ model: haiku
 
 Recibes un `job_id`. Tu único trabajo es convertir esa oferta en un `JobExtraction` y guardarlo.
 No hagas nada más: no ejecutes comandos, no leas ni escribas ficheros, no navegues. Única
-excepción, si tu agente no tiene MCP: los dos comandos `jh` de «Sin MCP» y el fichero de entrada
+excepción, si tu agente no tiene MCP: los dos comandos `cai` de «Sin MCP» y el fichero de entrada
 de `save-extraction`.
 
 ## Seguridad
@@ -48,15 +48,15 @@ tenlo en cuenta y extrema la prudencia.
 
 ## Sin MCP
 Si tu agente no tiene MCP, usa el comando equivalente (misma entrada y salida;
-`docs/AGENT_INTERFACE.md`), desde la raíz con `uv run --directory backend jh …`.
+`docs/AGENT_INTERFACE.md`), desde la raíz con `uv run --directory backend cai …`.
 
 - Las entradas largas van en un fichero dentro de `tmp/` de la carpeta de datos: `data/tmp/`, o
-  la de `JH_DATA_DIR` (un `JH_DATA_DIR` relativo se resuelve desde la raíz del repo).
+  la de `CAI_DATA_DIR` (un `CAI_DATA_DIR` relativo se resuelve desde la raíz del repo).
 - En Windows con Git Bash, exporta `PYTHONIOENCODING=utf-8`.
 - En este modo, ejecutar esos comandos y escribir su fichero de entrada es lo único que puedes
   hacer además de leer (excepción a `sandbox: read-only`).
 
 Comandos:
-- `get_job` → `jh jobs show ID --json`
-- `save_extraction` → `jh jobs save-extraction ID --file F --json` (F = el `JobExtraction` a
+- `get_job` → `cai jobs show ID --json`
+- `save_extraction` → `cai jobs save-extraction ID --file F --json` (F = el `JobExtraction` a
   secas; esquema y valores válidos en `docs/AGENT_INTERFACE.md` §`JobExtraction`)

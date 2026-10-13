@@ -1,4 +1,5 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import {
   BuildingsIcon,
@@ -30,15 +31,27 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
+import { errorMessage } from '@/lib/errors'
+import { i18n } from '@/lib/i18n'
+import { dateFormatter, SOURCE_KIND_LABEL } from '@/lib/labels'
 import { cn } from '@/lib/utils'
 
-const KINDS: { value: ConnectorKind; label: string; hint: string }[] = [
+/** Las búsquedas (InfoJobs, Adzuna) toman su nombre y su pista de los textos: `kinds.*`. */
+const KINDS: { value: ConnectorKind; label: string | null; hint: string | null }[] = [
   { value: 'greenhouse', label: 'Greenhouse', hint: 'boards.greenhouse.io/<slug>' },
   { value: 'lever', label: 'Lever', hint: 'jobs.lever.co/<slug>' },
   { value: 'ashby', label: 'Ashby', hint: 'jobs.ashbyhq.com/<slug>' },
-  { value: 'infojobs', label: 'InfoJobs (búsqueda)', hint: 'Necesita claves en .env' },
-  { value: 'adzuna', label: 'Adzuna (búsqueda)', hint: 'Necesita claves en .env' },
+  { value: 'infojobs', label: null, hint: null },
+  { value: 'adzuna', label: null, hint: null },
 ]
+
+function kindLabel(kind: (typeof KINDS)[number]): string {
+  return kind.label ?? i18n.t(`sources:kinds.${kind.value as 'infojobs' | 'adzuna'}`)
+}
+
+function kindHint(kind: (typeof KINDS)[number]): string {
+  return kind.hint ?? i18n.t('sources:kinds.keysHint')
+}
 const ATS: ConnectorKind[] = ['greenhouse', 'lever', 'ashby']
 const CONNECTOR_KINDS = new Set<string>(KINDS.map((k) => k.value))
 
@@ -47,17 +60,8 @@ function fieldErrors(error: unknown): Record<string, string> {
   return Object.fromEntries(error.details.map((d) => [d.field || 'form', d.reason]))
 }
 
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : 'Algo ha fallado.'
-}
-
 function formatWhen(iso: string): string {
-  return new Date(iso).toLocaleString('es-ES', {
-    day: 'numeric',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  return dateFormatter({ day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(iso))
 }
 
 // --- Resultado de una prueba o de una ejecución ---------------------------------------------------
@@ -89,6 +93,7 @@ function Notice({ tone, children }: { tone: 'ok' | 'warn' | 'error'; children: R
 }
 
 function Issues({ issues }: { issues: SourceTestResult['errors'] }) {
+  const { t } = useTranslation('sources')
   if (issues.length === 0) return null
   return (
     <ul className="mt-1.5 space-y-0.5 text-xs text-muted-foreground">
@@ -97,12 +102,13 @@ function Issues({ issues }: { issues: SourceTestResult['errors'] }) {
           <InlineCode text={issue.message} />
         </li>
       ))}
-      {issues.length > 5 && <li>… y {issues.length - 5} más.</li>}
+      {issues.length > 5 && <li>{t('more', { count: issues.length - 5 })}</li>}
     </ul>
   )
 }
 
 function PreviewResult({ result }: { result: SourceTestResult }) {
+  const { t } = useTranslation('sources')
   const [showAll, setShowAll] = useState(false)
   const failed = result.found === 0 && result.errors.length > 0
   const jobs = showAll ? result.jobs : result.jobs.filter((j) => j.passed)
@@ -120,9 +126,9 @@ function PreviewResult({ result }: { result: SourceTestResult }) {
             {jobs.map((job) => (
               <li key={job.external_id} className="flex items-start gap-2.5 px-3.5 py-2.5">
                 {job.passed ? (
-                  <CheckCircleIcon className="mt-0.5 size-4 shrink-0 text-primary" weight="fill" aria-label="Pasa" />
+                  <CheckCircleIcon className="mt-0.5 size-4 shrink-0 text-primary" weight="fill" aria-label={t('pass')} />
                 ) : (
-                  <MinusCircleIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-label="Filtrada" />
+                  <MinusCircleIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-label={t('filtered')} />
                 )}
                 <div className="min-w-0 flex-1">
                   <a
@@ -140,7 +146,7 @@ function PreviewResult({ result }: { result: SourceTestResult }) {
               </li>
             ))}
             {jobs.length === 0 && (
-              <li className="px-3.5 py-2.5 text-muted-foreground">Ninguna pasa el filtro previo.</li>
+              <li className="px-3.5 py-2.5 text-muted-foreground">{t('nonePass')}</li>
             )}
           </ul>
           {result.found > result.after_filters && (
@@ -149,7 +155,7 @@ function PreviewResult({ result }: { result: SourceTestResult }) {
               onClick={() => setShowAll((v) => !v)}
               className="w-full border-t px-3.5 py-2 text-left text-xs font-medium text-primary hover:bg-muted/50"
             >
-              {showAll ? 'Ver solo las que pasan' : `Ver también las ${result.found - result.after_filters} filtradas`}
+              {showAll ? t('onlyPassing') : t('alsoFiltered', { count: result.found - result.after_filters })}
             </button>
           )}
         </div>
@@ -159,6 +165,7 @@ function PreviewResult({ result }: { result: SourceTestResult }) {
 }
 
 function RunResult({ result }: { result: SourceRunResult }) {
+  const { t } = useTranslation('sources')
   const tone = result.skipped || (result.errors.length > 0 && result.found === 0) ? 'error' : 'ok'
   return (
     <Notice tone={tone}>
@@ -167,9 +174,9 @@ function RunResult({ result }: { result: SourceRunResult }) {
       </p>
       {result.job_ids.length > 0 && (
         <p className="mt-1 text-xs text-muted-foreground">
-          Quedan en «Por extraer»: ejecuta <InlineCode text="`procesar-ofertas`" /> en tu agente.{' '}
+          <InlineCode text={t('runHint')} />{' '}
           <Link to="/bandeja?stage=pending_extraction" className="font-medium text-primary hover:underline">
-            Verlas
+            {t('see')}
           </Link>
         </p>
       )}
@@ -197,6 +204,7 @@ function Field({ id, label, error, hint, children }: { id: string; label: string
 const EMPTY = { kind: 'greenhouse' as ConnectorKind, name: '', slug: '', region: 'global' as 'global' | 'eu', query: '', where: '', province: '' }
 
 function AddSourceForm() {
+  const { t } = useTranslation('sources', { keyPrefix: 'form' })
   const [form, setForm] = useState(EMPTY)
   const preview = usePreviewSource()
   const add = useAddSource()
@@ -239,9 +247,9 @@ function AddSourceForm() {
   )
 
   return (
-    <form onSubmit={save} className="grid gap-5" noValidate aria-label="Añadir fuente">
+    <form onSubmit={save} className="grid gap-5" noValidate aria-label={t('label')}>
       <div className="grid gap-5 sm:grid-cols-2">
-        <Field id="source-kind" label="Origen">
+        <Field id="source-kind" label={t('origin')}>
           <Select
             value={form.kind}
             onValueChange={(value) => {
@@ -255,29 +263,29 @@ function AddSourceForm() {
             <SelectContent>
               {KINDS.map((k) => (
                 <SelectItem key={k.value} value={k.value}>
-                  {k.label}
+                  {kindLabel(k)}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </Field>
-        <Field id="source-name" label={isAts ? 'Empresa' : 'Nombre de la búsqueda'} error={errors.name}>
+        <Field id="source-name" label={isAts ? t('company') : t('searchName')} error={errors.name}>
           <Input id="source-name" value={form.name} onChange={set('name')} className="h-10 bg-background" />
         </Field>
         {isAts ? (
           <>
-            <Field id="source-slug" label="Slug del tablero" error={errors.slug ?? errors.form} hint={<>Lo que va en la URL: <span className="font-mono">{kind.hint}</span></>}>
+            <Field id="source-slug" label={t('slug')} error={errors.slug ?? errors.form} hint={<>{t('slugHint')} <span className="font-mono">{kindHint(kind)}</span></>}>
               <Input id="source-slug" value={form.slug} onChange={set('slug')} spellCheck={false} className="h-10 bg-background font-mono" />
             </Field>
             {form.kind === 'lever' && (
-              <Field id="source-region" label="Región de Lever">
+              <Field id="source-region" label={t('region')}>
                 <Select value={form.region} onValueChange={(value) => setForm((prev) => ({ ...prev, region: value as 'global' | 'eu' }))}>
                   <SelectTrigger id="source-region" className="h-10 w-full bg-background">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="global">Global (jobs.lever.co)</SelectItem>
-                    <SelectItem value="eu">Europa (jobs.eu.lever.co)</SelectItem>
+                    <SelectItem value="global">{t('global')}</SelectItem>
+                    <SelectItem value="eu">{t('eu')}</SelectItem>
                   </SelectContent>
                 </Select>
               </Field>
@@ -285,15 +293,15 @@ function AddSourceForm() {
           </>
         ) : (
           <>
-            <Field id="source-query" label="Palabras de búsqueda" error={errors.query ?? errors.form} hint={kind.hint}>
+            <Field id="source-query" label={t('query')} error={errors.query ?? errors.form} hint={kindHint(kind)}>
               <Input id="source-query" value={form.query} onChange={set('query')} className="h-10 bg-background" />
             </Field>
             {form.kind === 'adzuna' ? (
-              <Field id="source-where" label="Ubicación (opcional)">
+              <Field id="source-where" label={t('where')}>
                 <Input id="source-where" value={form.where} onChange={set('where')} className="h-10 bg-background" />
               </Field>
             ) : (
-              <Field id="source-province" label="Provincia (opcional)" hint="Como la usa InfoJobs, p. ej. a-coruna">
+              <Field id="source-province" label={t('province')} hint={t('provinceHint')}>
                 <Input id="source-province" value={form.province} onChange={set('province')} className="h-10 bg-background" />
               </Field>
             )}
@@ -309,16 +317,16 @@ function AddSourceForm() {
       )}
       {add.isSuccess && (
         <Notice tone="ok">
-          «{add.data.name}» añadida. Entrará en la ingesta diaria; también puedes ejecutarla ahora.
+          {t('added', { name: add.data.name })}
         </Notice>
       )}
 
       <div className="flex flex-wrap justify-end gap-2">
         <Button type="button" variant="outline" disabled={!ready || preview.isPending} onClick={test} className="h-10">
-          {preview.isPending ? 'Probando…' : 'Probar'}
+          {preview.isPending ? t('testing') : t('test')}
         </Button>
         <Button type="submit" disabled={!ready || add.isPending} className="h-10 px-5 active:translate-y-px">
-          {add.isPending ? 'Guardando…' : 'Añadir'}
+          {add.isPending ? t('saving') : t('add')}
         </Button>
       </div>
     </form>
@@ -328,6 +336,7 @@ function AddSourceForm() {
 // --- Lista de fuentes ----------------------------------------------------------------------------
 
 function SourceRow({ source }: { source: SourceView }) {
+  const { t } = useTranslation('sources', { keyPrefix: 'row' })
   const preview = usePreviewSource()
   const run = useRunSource()
   const toggle = useSetSourceActive()
@@ -342,11 +351,13 @@ function SourceRow({ source }: { source: SourceView }) {
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="font-medium">{source.name}</h3>
-            <span className="rounded-md border px-1.5 py-0.5 text-xs text-muted-foreground">{source.kind_label}</span>
-            {!source.active && <span className="rounded-md bg-muted px-1.5 py-0.5 text-xs">Pausada</span>}
+            <span className="rounded-md border px-1.5 py-0.5 text-xs text-muted-foreground">
+              {SOURCE_KIND_LABEL[source.kind] ?? source.kind_label}
+            </span>
+            {!source.active && <span className="rounded-md bg-muted px-1.5 py-0.5 text-xs">{t('paused')}</span>}
             {source.keys_missing && (
               <span className="rounded-md bg-amber-500/10 px-1.5 py-0.5 text-xs text-amber-700 dark:text-amber-400">
-                Sin claves en .env
+                {t('noKeys')}
               </span>
             )}
           </div>
@@ -355,24 +366,28 @@ function SourceRow({ source }: { source: SourceView }) {
             <ClockIcon className="size-3.5" />
             {last ? (
               <span>
-                {formatWhen(last.started_at)}: {last.found} encontradas, {last.after_filters} tras filtros,{' '}
-                {last.created} nuevas
+                {t('last', {
+                  when: formatWhen(last.started_at),
+                  found: last.found,
+                  after: last.after_filters,
+                  created: last.created,
+                })}
                 {last.errors.length > 0 && last.found === 0 && (
                   <span className="text-destructive"> · {last.errors[0]!.message}</span>
                 )}
               </span>
             ) : (
-              <span>Aún no se ha ejecutado</span>
+              <span>{t('notRun')}</span>
             )}
           </p>
         </div>
         <div className="flex flex-wrap gap-1.5">
           <Button variant="outline" size="sm" disabled={busy} onClick={() => preview.mutate(source.id)}>
-            {preview.isPending ? 'Probando…' : 'Probar'}
+            {preview.isPending ? t('testing') : t('test')}
           </Button>
           <Button variant="outline" size="sm" disabled={busy || !source.active} onClick={() => run.mutate(source.id)}>
             <PlayIcon weight="fill" />
-            {run.isPending ? 'Ejecutando…' : 'Ejecutar ahora'}
+            {run.isPending ? t('running') : t('run')}
           </Button>
           <Button
             variant="ghost"
@@ -381,7 +396,7 @@ function SourceRow({ source }: { source: SourceView }) {
             onClick={() => toggle.mutate({ sourceId: source.id, active: !source.active })}
           >
             {source.active ? <PauseIcon /> : <PlayIcon />}
-            {source.active ? 'Pausar' : 'Reactivar'}
+            {source.active ? t('pause') : t('resume')}
           </Button>
         </div>
       </div>
@@ -397,6 +412,7 @@ function SourceRow({ source }: { source: SourceView }) {
 }
 
 function SourceList() {
+  const { t } = useTranslation('sources', { keyPrefix: 'empty' })
   const sources = useSources()
   if (sources.isPending) {
     return (
@@ -410,9 +426,8 @@ function SourceList() {
   const items = sources.data.sources.filter((s) => CONNECTOR_KINDS.has(s.kind))
   if (items.length === 0) {
     return (
-      <EmptyState icon={<BuildingsIcon className="size-6" weight="duotone" />} title="Aún no sigues ninguna empresa">
-        Añade una con su ATS y su slug. Pruébala antes de guardarla para ver cuántas ofertas tiene y cuántas
-        pasan tus filtros.
+      <EmptyState icon={<BuildingsIcon className="size-6" weight="duotone" />} title={t('title')}>
+        {t('body')}
       </EmptyState>
     )
   }
@@ -426,22 +441,21 @@ function SourceList() {
 }
 
 export function SourcesPage() {
+  const { t } = useTranslation('sources')
   return (
     <div className="mx-auto max-w-3xl animate-in fade-in duration-300">
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold tracking-tight">Empresas objetivo</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
         <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-          Sus ofertas llegan solas cada día con <InlineCode text="`jh worker`" />, desde las APIs públicas de
-          su ATS. Solo se guardan las que encajan por título y ubicación con tus preferencias, y quedan en
-          «Por extraer» para tu agente.
+          <InlineCode text={t('intro')} />
         </p>
       </div>
       <section className="mb-10 rounded-xl border bg-card p-5 sm:p-6">
-        <h2 className="mb-4 font-medium">Añadir empresa o búsqueda</h2>
+        <h2 className="mb-4 font-medium">{t('addTitle')}</h2>
         <AddSourceForm />
       </section>
       <section>
-        <h2 className="mb-3 font-medium">Seguidas</h2>
+        <h2 className="mb-3 font-medium">{t('following')}</h2>
         <SourceList />
       </section>
     </div>

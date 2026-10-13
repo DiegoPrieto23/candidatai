@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { HandshakeIcon } from '@phosphor-icons/react'
+import { useTranslation } from 'react-i18next'
 import type { OfferComparison } from '@/api/client'
 import { useReceivedOffers } from '@/api/queries'
 import { ErrorState } from '@/components/States'
@@ -34,49 +35,47 @@ type Row = { label: string; cell: (o: OfferComparison) => ReactNode }
  * ves tú: tu agente nunca recibe el mínimo ni estas diferencias. No recomienda ninguna cifra.
  */
 export function ReceivedOffersComparison() {
+  const { t } = useTranslation('offers', { keyPrefix: 'comparison' })
   const { data, isPending, isError, error, refetch } = useReceivedOffers()
   if (isPending) return null
   if (isError) return <ErrorState error={error} onRetry={() => refetch()} />
   if (data.offers.length === 0) return null
   const floor = data.floor_eur
   const rows: Row[] = [
-    { label: 'Fijo anual', cell: (o) => money(o.annual_base, o.offer.currency, o.approximate) },
-    { label: 'Total anual (con variable)', cell: (o) => money(o.annual_total, o.offer.currency, o.approximate) },
-    { label: 'Fijo frente a tu mínimo', cell: (o) => <Diff value={o.floor_diff_base} currency="EUR" /> },
-    { label: 'Total frente a tu mínimo', cell: (o) => <Diff value={o.floor_diff_total} currency="EUR" /> },
-    { label: 'Rango publicado', cell: (o) => formatSalary(o.published) ?? <span className="text-muted-foreground">No lo indicaba</span> },
+    { label: t('rows.annualBase'), cell: (o) => money(o.annual_base, o.offer.currency, o.approximate) },
+    { label: t('rows.annualTotal'), cell: (o) => money(o.annual_total, o.offer.currency, o.approximate) },
+    { label: t('rows.baseVsFloor'), cell: (o) => <Diff value={o.floor_diff_base} currency="EUR" /> },
+    { label: t('rows.totalVsFloor'), cell: (o) => <Diff value={o.floor_diff_total} currency="EUR" /> },
+    { label: t('rows.published'), cell: (o) => formatSalary(o.published) ?? <span className="text-muted-foreground">{t('notPublished')}</span> },
     {
-      label: 'Fijo frente al rango',
+      label: t('rows.baseVsRange'),
       cell: (o) =>
         o.published_diff_min == null ? (
           <span className="text-muted-foreground">—</span>
         ) : (
           <span className="space-x-1.5">
-            <span className="text-muted-foreground">mín.</span>
+            <span className="text-muted-foreground">{t('min')}</span>
             <Diff value={o.published_diff_min} currency={o.offer.currency} />
-            <span className="text-muted-foreground">máx.</span>
+            <span className="text-muted-foreground">{t('max')}</span>
             <Diff value={o.published_diff_max} currency={o.offer.currency} />
           </span>
         ),
     },
-    { label: 'Modalidad', cell: (o) => (o.offer.work_mode ? REMOTE_LABEL[o.offer.work_mode] : '—') },
-    { label: 'Ubicación', cell: (o) => o.offer.location ?? '—' },
-    { label: 'Incorporación', cell: (o) => (o.offer.start_date ? formatDate(o.offer.start_date) : '—') },
-    { label: 'Responder antes de', cell: (o) => (o.offer.respond_by ? formatDate(o.offer.respond_by) : '—') },
-    { label: 'Beneficios', cell: (o) => <span className="whitespace-pre-line">{o.offer.benefits ?? '—'}</span> },
+    { label: t('rows.mode'), cell: (o) => (o.offer.work_mode ? REMOTE_LABEL[o.offer.work_mode] : '—') },
+    { label: t('rows.location'), cell: (o) => o.offer.location ?? '—' },
+    { label: t('rows.start'), cell: (o) => (o.offer.start_date ? formatDate(o.offer.start_date) : '—') },
+    { label: t('rows.respondBy'), cell: (o) => (o.offer.respond_by ? formatDate(o.offer.respond_by) : '—') },
+    { label: t('rows.benefits'), cell: (o) => <span className="whitespace-pre-line">{o.offer.benefits ?? '—'}</span> },
   ]
   return (
-    <section aria-label="Ofertas recibidas" className="mt-10 rounded-xl border bg-card p-5 sm:p-6">
+    <section aria-label={t('label')} className="mt-10 rounded-xl border bg-card p-5 sm:p-6">
       <h2 className="flex items-center gap-2 font-medium">
         <HandshakeIcon className="size-[18px] text-primary" weight="duotone" />
-        Ofertas recibidas
+        {t('label')}
       </h2>
       <p className="mt-1 mb-4 max-w-[70ch] text-sm text-muted-foreground">
-        {floor != null
-          ? `Tu mínimo: ${formatMoney(floor)} brutos al año. `
-          : 'Sin mínimo en tu perfil (private.salary_floor_eur): no se compara con él. '}
-        Solo lo ves tú: tu agente no recibe tu mínimo ni estas diferencias. Son cuentas, no una
-        recomendación.
+        {floor != null ? t('floor', { amount: formatMoney(floor) }) : t('noFloor')}
+        {t('private')}
       </p>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[32rem] text-sm">
@@ -108,7 +107,7 @@ export function ReceivedOffersComparison() {
             ))}
             <tr>
               <th scope="row" className="py-2 pr-4 text-left font-normal text-muted-foreground">
-                Avisos
+                {t('rows.remarks')}
               </th>
               {data.offers.map((o) => (
                 <td key={o.job_id} className="py-2 pr-4 align-top text-xs text-muted-foreground">

@@ -1,7 +1,7 @@
 """Búsqueda pública de LinkedIn sin sesión (fase 22, ADR-033). Apagada por defecto.
 
 Consulta los endpoints públicos `jobs-guest` de LinkedIn, los mismos que sirven la búsqueda a quien
-no ha iniciado sesión, con las búsquedas de la plataforma LinkedIn de la pantalla Plataformas
+no ha iniciado sesión, con las búsquedas de la plataforma LinkedIn de «Fuentes → Plataformas»
 (sus `search_urls`). Reglas que viven aquí y no en la UI ni en un skill (ADR-012):
 
 - solo si el usuario la ha activado desde la UI, aceptando el riesgo. El agente no puede: no hay
@@ -62,7 +62,7 @@ NAME = "LinkedIn · búsqueda pública"
 SEARCH_URL = "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search"
 DETAIL_URL = "https://www.linkedin.com/jobs-guest/jobs/api/jobPosting/{id}"
 # Honesto: dice qué es y para qué. Solo ASCII en cabeceras.
-USER_AGENT = "JobHunter/0.1 (local personal job search app; public job search, no login)"
+USER_AGENT = "CandidatAI/0.1 (local personal job search app; public job search, no login)"
 
 # Parámetros de una búsqueda de LinkedIn que se pasan tal cual al endpoint público.
 _TEXT_PARAMS = ("keywords", "location")
@@ -681,7 +681,7 @@ def run(
     if not is_enabled(source):
         raise BrowsingNotAllowedError(
             "La búsqueda pública de LinkedIn está desactivada. Solo el usuario puede activarla, "
-            "en la tarjeta de LinkedIn de la pantalla Plataformas."
+            "en la tarjeta de LinkedIn de «Fuentes → Plataformas»."
         )
     assert source is not None
     policy = get_policies().linkedin_public

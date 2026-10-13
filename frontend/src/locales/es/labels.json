@@ -1,0 +1,157 @@
+{
+  "stage": {
+    "pending_detail": "Por completar",
+    "pending_extraction": "Por extraer",
+    "pending_triage": "Por revisar",
+    "approved": "Aprobada",
+    "cv_ready": "CV listo",
+    "applied": "Enviada",
+    "in_process": "En proceso",
+    "closed": "Cerrada"
+  },
+  "event": {
+    "found": "Dada de alta",
+    "detail_captured": "Descripción capturada",
+    "duplicate_detected": "Duplicado detectado",
+    "extracted": "Extracción guardada",
+    "hard_filter_failed": "No pasa los filtros",
+    "extraction_failed": "Extracción fallida",
+    "injection_suspected": "Posible contenido dirigido a una IA",
+    "closure_suspected": "Puede que ya no esté publicada",
+    "scored": "Puntuada",
+    "fit_assessed": "Encaje valorado",
+    "approved": "Aprobada",
+    "discarded": "Descartada",
+    "cv_generated": "CV redactado",
+    "cv_rendered": "CV renderizado",
+    "cv_verified": "CV verificado",
+    "cv_rejected": "CV rechazado",
+    "cover_letter_generated": "Carta de presentación guardada",
+    "cover_letter_verified": "Carta de presentación verificada",
+    "application_prepared": "Candidatura preparada",
+    "application_filled": "Formulario rellenado (sin enviar)",
+    "applied": "Candidatura enviada",
+    "applied_manually": "Enviada por tu cuenta",
+    "reply_received": "Respuesta recibida",
+    "interview_scheduled": "Entrevista programada",
+    "interview_done": "Entrevista hecha",
+    "test_assigned": "Prueba técnica",
+    "followup_sent": "Seguimiento enviado",
+    "offer_received": "Oferta recibida",
+    "rejected": "Rechazada",
+    "withdrawn": "Retirada",
+    "expired": "Caducada",
+    "accepted": "Aceptada",
+    "reopened": "Reabierta",
+    "note": "Nota"
+  },
+  "remote": { "onsite": "Presencial", "hybrid": "Híbrido", "remote": "Remoto", "unknown": "Sin especificar" },
+  "seniority": {
+    "intern": "Prácticas",
+    "junior": "Junior",
+    "mid": "Intermedio",
+    "senior": "Senior",
+    "lead": "Lead",
+    "unknown": "Sin especificar"
+  },
+  "employment": {
+    "full_time": "Jornada completa",
+    "part_time": "Media jornada",
+    "contract": "Contrato temporal",
+    "internship": "Prácticas",
+    "unknown": "Sin especificar"
+  },
+  "risk": {
+    "injection_phrase": "Frases que parecen instrucciones para una IA",
+    "hidden_text": "Texto oculto en la página original"
+  },
+  "actor": { "user": "Tú", "agent": "Agente", "agentNamed": "Agente {{name}}", "system": "Sistema" },
+  "period": { "year": "año", "month": "mes", "hour": "hora" },
+  "discardReason": {
+    "skills": "No encaja el stack",
+    "seniority": "Seniority o años",
+    "location": "Ubicación o modalidad",
+    "salary": "Salario o condiciones",
+    "company": "Empresa o sector",
+    "closed": "Ya no está publicada",
+    "other": "Otro motivo"
+  },
+  "component": {
+    "must_have_coverage": "Obligatorias",
+    "semantic_similarity": "Similitud",
+    "preferences_fit": "Preferencias",
+    "nice_to_have_coverage": "Deseables"
+  },
+  "level": {
+    "F": "Fuerte",
+    "C+": "Entre conozco y fuerte",
+    "C": "Conozco",
+    "B": "Básico",
+    "basic": "Conocimientos básicos"
+  },
+  "verdict": { "strong": "Encaje fuerte", "possible": "Encaje posible", "weak": "Encaje débil" },
+  "section": {
+    "summary": "Perfil",
+    "experience": "Experiencia",
+    "projects": "Proyectos",
+    "education": "Formación",
+    "certifications": "Certificaciones",
+    "extra_sections": "Secciones extra",
+    "skills": "Habilidades",
+    "languages": "Idiomas"
+  },
+  "photoMode": { "auto": "Automática", "include": "Con foto", "exclude": "Sin foto" },
+  "color": { "#1F4E79": "Azul", "#2E5E4E": "Verde", "#7A2E39": "Granate", "#3F3F46": "Grafito" },
+  "milestoneKind": { "interview": "Entrevista", "test": "Prueba técnica", "deadline": "Plazo", "other": "Otro hito" },
+  "upcomingKind": {
+    "interview": "Entrevista",
+    "test": "Prueba técnica",
+    "deadline": "Plazo",
+    "other": "Otro hito",
+    "application_deadline": "Plazo de la oferta"
+  },
+  "contactRelation": { "referral": "Referencia", "recruiter": "Recruiter", "hiring_manager": "Responsable" },
+  "referral": { "requested": "Referencia pedida", "given": "Referencia dada" },
+  "milestoneStatus": { "scheduled": "Programado", "done": "Hecho", "cancelled": "Cancelado" },
+  "channel": {
+    "ats_form": "Formulario de la empresa",
+    "email": "Correo",
+    "linkedin_manual": "LinkedIn (a mano)",
+    "portal_manual": "Portal de empleo (a mano)"
+  },
+  "moveHint": {
+    "applied": "La enviaste con el CV seleccionado en la app.",
+    "applied_manually": "La enviaste por tu cuenta (con o sin el CV de la app).",
+    "reply_received": "Te han contestado.",
+    "interview_scheduled": "Tienes una entrevista: se crea su hito con fecha y hora.",
+    "interview_done": "Ya hiciste una entrevista que no tenías anotada.",
+    "test_assigned": "Te han mandado una prueba: se crea su hito con la fecha de entrega.",
+    "offer_received": "Te han hecho una oferta.",
+    "discarded": "La dejas antes de enviarla.",
+    "rejected": "La empresa te ha descartado.",
+    "withdrawn": "Te retiras del proceso.",
+    "expired": "La oferta ha caducado o no hubo respuesta.",
+    "accepted": "Has aceptado la oferta.",
+    "reopened": "Vuelve a la etapa en la que estaba al cerrarse."
+  },
+  "hardFilter": {
+    "seniority": "Seniority",
+    "years": "Años de experiencia",
+    "remote_mode": "Modalidad",
+    "location": "Ubicación",
+    "language": "Idioma",
+    "title_keyword": "Palabras del título"
+  },
+  "sourceKind": {
+    "manual_url": "Enlace",
+    "manual_text": "Texto pegado",
+    "greenhouse": "Greenhouse",
+    "lever": "Lever",
+    "ashby": "Ashby",
+    "infojobs": "InfoJobs",
+    "adzuna": "Adzuna",
+    "email_alerts": "Alertas por correo",
+    "browser_capture": "Botón del navegador",
+    "agent_browse": "Búsqueda con navegador"
+  }
+}

@@ -1,7 +1,7 @@
 """Respuestas de las empresas por correo (fase 15).
 
 1. **Ingesta** (`poll_replies`): lee la carpeta de respuestas por IMAP en solo lectura
-   (`JH_IMAP_REPLIES_FOLDER`, por defecto la bandeja de entrada) y `data/inbox/respuestas/`. Sin
+   (`CAI_IMAP_REPLIES_FOLDER`, por defecto la bandeja de entrada) y `data/inbox/respuestas/`. Sin
    candidaturas en `applied` o `in_process` no se abre el buzón. De IMAP se piden primero solo las
    cabeceras (`FROM`, `DATE`, `MESSAGE-ID`, `SUBJECT`) y el cuerpo solo de los correos que casan
    con un proceso; de los demás no se guarda nada.

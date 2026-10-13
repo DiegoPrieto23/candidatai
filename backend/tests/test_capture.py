@@ -1,4 +1,4 @@
-"""Botón «Enviar a Job Hunter» (fase 09b.2): token, origen y servicio de captura.
+"""Botón «Enviar a CandidatAI» (fase 09b.2): token, origen y servicio de captura.
 
 Todo el contenido es inventado: ofertas, empresas y enlaces con la forma de los reales.
 """
@@ -248,7 +248,7 @@ def test_api_without_token_configured(client: tuple[TestClient, str]) -> None:
     get_settings().capture_token_path.unlink()
     response = _post(api, token)
     assert response.status_code == 503
-    assert "jh capture token" in response.json()["error"]["message"]
+    assert "cai capture token" in response.json()["error"]["message"]
 
 
 def test_api_missing_description_is_422(client: tuple[TestClient, str]) -> None:
@@ -301,10 +301,10 @@ def test_long_unknown_url_is_shortened(session: Session) -> None:
 
 
 def test_configured_extension_id(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("JH_CAPTURE_EXTENSION_ID", "b" * 32)
+    monkeypatch.setenv("CAI_CAPTURE_EXTENSION_ID", "b" * 32)
     get_settings.cache_clear()
     assert get_settings().capture_origin == "chrome-extension://" + "b" * 32
-    monkeypatch.setenv("JH_CAPTURE_EXTENSION_ID", "no-vale")
+    monkeypatch.setenv("CAI_CAPTURE_EXTENSION_ID", "no-vale")
     get_settings.cache_clear()
     with pytest.raises(ValueError):
         get_settings()

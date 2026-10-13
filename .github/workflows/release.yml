@@ -1,0 +1,41 @@
+name: Release
+
+# Al publicar una etiqueta `v*` (p. ej. `git tag v0.1.0 && git push origin v0.1.0`), compila la UI y
+# publica `candidatai.zip`: el repositorio (sin datos: `data/` no está en git) más `frontend/dist`.
+# Es lo que descarga `install.ps1` (fase 23.4).
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: frontend/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - name: Compila la UI
+        working-directory: frontend
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm build
+      - name: Empaqueta candidatai.zip
+        run: |
+          git archive --format=zip --prefix=candidatai/ -o candidatai.zip HEAD
+          mkdir -p stage/candidatai/frontend
+          cp -r frontend/dist stage/candidatai/frontend/dist
+          (cd stage && zip -qr ../candidatai.zip candidatai/frontend/dist)
+          unzip -l candidatai.zip | grep -q "candidatai/frontend/dist/index.html"
+      - name: Publica la release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" candidatai.zip --title "CandidatAI $GITHUB_REF_NAME" --generate-notes

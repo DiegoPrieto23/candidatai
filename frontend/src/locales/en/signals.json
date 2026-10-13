@@ -1,0 +1,20 @@
+{
+  "reposted": "Posted again on {{channel}} on {{count}} different days: {{dates}}.",
+  "closedBadge": "Closed?",
+  "closedTooltip": "It may no longer be posted: {{detail}}.",
+  "repostedBadge": "Reposted ×{{count}}",
+  "observation": "It's an observation, not a verdict.",
+  "closedNotice": {
+    "label": "It may be closed",
+    "title": "It may no longer be posted",
+    "checked": "{{detail}}. Checked on {{checkedAt}}",
+    "since": " (saying so since {{since}})",
+    "decide": ". CandidatAI doesn't close it: you decide.",
+    "discard": "Discard",
+    "stillOpen": "Still open",
+    "checking": "Checking…",
+    "checkAgain": "Check again"
+  },
+  "repostNote": "<strong>Reposted ×{{count}}.</strong> {{text}} It may be a hard-to-fill role or a posting that renews itself: it's an observation, not a verdict.",
+  "closedHint": "Before using up quota: this job may no longer be posted ({{detail}})."
+}

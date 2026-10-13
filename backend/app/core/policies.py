@@ -117,7 +117,7 @@ class EmailAlertsPolicy(BaseModel):
 
 
 class AgentBrowsePolicy(BaseModel):
-    """Límites de la búsqueda con el navegador del agente (fase 09b, skill `buscar-ofertas`)."""
+    """Límites de la búsqueda con el navegador del agente (fase 09b, skill `search-jobs`)."""
 
     max_result_pages: int = Field(gt=0)  # páginas de resultados por búsqueda
     delay_seconds: float = Field(ge=0)  # pausa entre páginas

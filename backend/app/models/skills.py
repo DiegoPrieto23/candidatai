@@ -10,7 +10,7 @@ class SkillGapMark(Base):
     """Lo que el usuario dijo de una skill que piden las ofertas y el perfil no cubre (fase 14).
 
     `gap`: «No la tengo», un hueco real que va al plan de formación. `have`: «La tengo», pendiente
-    de que su agente la añada al perfil con `actualizar-perfil`. Se identifica por la forma
+    de que su agente la añada al perfil con `update-profile`. Se identifica por la forma
     canónica plegada de la skill (`skill_key`), la misma con la que compara el matching.
     """
 

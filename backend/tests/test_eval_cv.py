@@ -1,4 +1,4 @@
-"""Eval de CV (fase 12.2): casos, comprobaciones y `jh eval cv`."""
+"""Eval de CV (fase 12.2): casos, comprobaciones y `cai eval cv`."""
 
 import json
 from datetime import UTC, datetime
@@ -261,7 +261,7 @@ def test_eval_cv_outside_the_demo_is_refused(session) -> None:  # noqa: ANN001
 
 
 def test_cli_eval_cv(demo_dir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("JH_DATA_DIR", str(demo_dir))
+    monkeypatch.setenv("CAI_DATA_DIR", str(demo_dir))
     from app.core.config import get_settings
     from app.core.db import get_engine
 

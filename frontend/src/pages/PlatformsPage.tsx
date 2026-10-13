@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { ArrowSquareOutIcon, ClockIcon, CompassIcon, GlobeIcon, WarningIcon } from '@phosphor-icons/react'
 import type { AgentBrowseLimits, BrowseAccess, LinkedInPublicView, SourceView } from '@/api/client'
 import {
@@ -22,37 +23,29 @@ import {
 } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
+import { errorMessage } from '@/lib/errors'
+import { i18n } from '@/lib/i18n'
+import { dateFormatter } from '@/lib/labels'
 import { iconCandidates, platformHome, searchLabel } from '@/lib/searches'
 import { cn } from '@/lib/utils'
 
-const ACCESS: { value: BrowseAccess; label: string; hint: string }[] = [
-  { value: 'free', label: 'Libre', hint: 'Se ve sin iniciar sesión' },
-  { value: 'login', label: 'Con sesión', hint: 'Inicias sesión tú antes de que busque' },
-  { value: 'blocked', label: 'Bloqueada', hint: 'El agente la salta' },
-]
+const ACCESS: readonly BrowseAccess[] = ['free', 'login', 'blocked']
 const PRIORITIES = Array.from({ length: 10 }, (_, i) => i + 1)
 
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : 'Algo ha fallado.'
-}
-
 function formatWhen(iso: string): string {
-  return new Date(iso).toLocaleString('es-ES', {
-    day: 'numeric',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  return dateFormatter({ day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(iso))
 }
 
 /** Lo que busca el agente en esta plataforma, legible; las URLs completas, al desplegar. */
 function Searches({ urls, name }: { urls: string[]; name: string }) {
+  const { t } = useTranslation('platforms', { keyPrefix: 'searches' })
   const [showUrls, setShowUrls] = useState(false)
   if (!urls.length) return null
   return (
     <div className="grid gap-1.5">
       <span className="text-xs text-muted-foreground">
-        Qué busca el agente <span className="sr-only">en {name}</span>
+        {t('what')}
+        <span className="sr-only">{t('whatSr', { name })}</span>
       </span>
       <ul className="flex flex-wrap gap-1.5">
         {urls.map((url) => (
@@ -61,7 +54,7 @@ function Searches({ urls, name }: { urls: string[]; name: string }) {
               href={url}
               target="_blank"
               rel="noopener noreferrer"
-              title={`Abrir esta búsqueda en ${name}`}
+              title={t('open', { name })}
               className="inline-flex items-center gap-1 rounded-md border bg-background px-2 py-1 text-xs transition-colors hover:border-foreground/25 hover:bg-foreground/[0.03]"
             >
               {searchLabel(url)}
@@ -76,7 +69,7 @@ function Searches({ urls, name }: { urls: string[]; name: string }) {
         aria-expanded={showUrls}
         className="justify-self-start text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
       >
-        {showUrls ? 'Ocultar las URLs' : 'Ver las URLs'}
+        {showUrls ? t('hideUrls') : t('showUrls')}
       </button>
       {showUrls && (
         <ul className="grid gap-0.5">
@@ -123,8 +116,10 @@ function PlatformIcon({ name, home }: { name: string; home: { origin: string; ho
   )
 }
 
-function plural(n: number, one: string, many: string): string {
-  return `${n} ${n === 1 ? one : many}`
+type CountKey = 'found' | 'new' | 'known' | 'issues' | 'offers' | 'pages' | 'afterFilters'
+
+function plural(key: CountKey, count: number): string {
+  return i18n.t(`platforms:counts.${key}`, { count })
 }
 
 // --- Interruptor y aviso de LinkedIn -------------------------------------------------------------
@@ -175,35 +170,32 @@ function LinkedInRiskDialog({
   onConfirm: () => void
   pending: boolean
 }) {
+  const { t } = useTranslation('platforms', { keyPrefix: 'linkedinRisk' })
+  const strong = { strong: <strong /> }
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <WarningIcon weight="fill" className="size-5 text-amber-600 dark:text-amber-400" />
-            ¿Dejar que el agente recorra LinkedIn?
+            {t('title')}
           </DialogTitle>
           <DialogDescription asChild>
             <div className="grid gap-2.5 text-sm leading-relaxed">
               <p>
-                Las condiciones de LinkedIn prohíben recorrer su web con herramientas automáticas. Aunque el
-                agente usa tu navegador, va despacio y solo lee, <strong>LinkedIn puede restringir o cerrar tu
-                cuenta</strong> si lo detecta.
+                <Trans t={t} i18nKey="p1" components={strong} />
               </p>
-              <p>
-                Las alternativas sin riesgo son sus alertas por correo (pantalla «Alertas») y el botón «Enviar a
-                Job Hunter» mientras ves una oferta.
-              </p>
-              <p>Puedes desactivarlo cuando quieras. Las candidaturas nunca se envían solas.</p>
+              <p>{t('p2')}</p>
+              <p>{t('p3')}</p>
             </div>
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancelar
+            {t('cancel')}
           </Button>
           <Button variant="destructive" disabled={pending} onClick={onConfirm}>
-            {pending ? 'Activando…' : 'Activar bajo mi responsabilidad'}
+            {pending ? t('activating') : t('activate')}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -226,6 +218,8 @@ function PublicRiskDialog({
   onConfirm: () => void
   pending: boolean
 }) {
+  const { t } = useTranslation('platforms', { keyPrefix: 'publicRisk' })
+  const strong = { strong: <strong /> }
   const detail = what === 'fetch_detail'
   return (
     <Dialog open={what !== null} onOpenChange={onOpenChange}>
@@ -233,33 +227,23 @@ function PublicRiskDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <WarningIcon weight="fill" className="size-5 text-amber-600 dark:text-amber-400" />
-            {detail ? '¿Descargar también la descripción?' : '¿Activar la búsqueda pública de LinkedIn?'}
+            {detail ? t('detailTitle') : t('enableTitle')}
           </DialogTitle>
           <DialogDescription asChild>
             <div className="grid gap-2.5 text-sm leading-relaxed">
               {detail ? (
                 <p>
-                  Además de la lista de resultados, la app pedirá la página pública de cada oferta nueva que pase
-                  tus filtros (con un tope por ejecución). Son <strong>más peticiones a LinkedIn</strong> y, por
-                  tanto, más probabilidad de que bloquee tu IP. Sin esto, las ofertas entran como resumen y las
-                  completas tú con el botón «Enviar a Job Hunter».
+                  <Trans t={t} i18nKey="detail" components={strong} />
                 </p>
               ) : (
                 <>
                   <p>
-                    La app consultará una vez al día la búsqueda pública de LinkedIn (la que ve quien no ha iniciado
-                    sesión) con las búsquedas de esta tarjeta. <strong>No usa tu cuenta ni tus cookies</strong>, va
-                    despacio y se identifica como lo que es.
+                    <Trans t={t} i18nKey="p1" components={strong} />
                   </p>
                   <p>
-                    Aun así, <strong>las condiciones de LinkedIn prohíben el acceso automatizado</strong>, y LinkedIn
-                    puede bloquear tu IP durante un tiempo (también para navegar con normalidad). Si lo hace, la app
-                    se corta en el acto y no lo vuelve a intentar en unos días.
+                    <Trans t={t} i18nKey="p2" components={strong} />
                   </p>
-                  <p>
-                    Es para uso personal. Las alternativas sin riesgo son las alertas por correo y el botón «Enviar a
-                    Job Hunter». Las candidaturas nunca se envían solas.
-                  </p>
+                  <p>{t('p3')}</p>
                 </>
               )}
             </div>
@@ -267,10 +251,10 @@ function PublicRiskDialog({
         </DialogHeader>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancelar
+            {t('cancel')}
           </Button>
           <Button variant="destructive" disabled={pending} onClick={onConfirm}>
-            {pending ? 'Activando…' : detail ? 'Descargarla bajo mi responsabilidad' : 'Activar bajo mi responsabilidad'}
+            {pending ? t('activating') : detail ? t('download') : t('activate')}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -279,9 +263,10 @@ function PublicRiskDialog({
 }
 
 function PublicLastRun({ view }: { view: LinkedInPublicView }) {
+  const { t } = useTranslation('platforms')
   const last = view.last_run
   if (!last) {
-    return <p className="text-xs text-muted-foreground">Aún no se ha ejecutado.</p>
+    return <p className="text-xs text-muted-foreground">{t('public.notRun')}</p>
   }
   const existing = Math.max(0, last.after_filters - last.created)
   const warnings = last.errors.filter((e) => e.code !== 'blocked')
@@ -290,9 +275,8 @@ function PublicLastRun({ view }: { view: LinkedInPublicView }) {
       <p className="flex items-center gap-1.5">
         <ClockIcon className="size-3.5" />
         <span>
-          {formatWhen(last.finished_at ?? last.started_at)}: {plural(last.found, 'encontrada', 'encontradas')},{' '}
-          {last.after_filters} tras filtros, {plural(last.created, 'nueva', 'nuevas')},{' '}
-          {plural(existing, 'ya conocida', 'ya conocidas')}
+          {formatWhen(last.finished_at ?? last.started_at)}: {plural('found', last.found)},{' '}
+          {plural('afterFilters', last.after_filters)}, {plural('new', last.created)}, {plural('known', existing)}
         </span>
       </p>
       {warnings.length > 0 && (
@@ -317,6 +301,7 @@ function isBlocked(view: LinkedInPublicView, now: number): boolean {
 }
 
 function LinkedInPublicPanel() {
+  const { t } = useTranslation('platforms', { keyPrefix: 'public' })
   const query = useLinkedInPublic()
   const update = useUpdateLinkedInPublic()
   const runNow = useRunLinkedInPublic()
@@ -337,24 +322,23 @@ function LinkedInPublicPanel() {
   }
 
   return (
-    <section className="grid gap-3 rounded-lg border border-dashed p-3" aria-label="Búsqueda pública de LinkedIn">
+    <section className="grid gap-3 rounded-lg border border-dashed p-3" aria-label={t('label')}>
       <div className="flex flex-wrap items-start gap-x-4 gap-y-2">
         <GlobeIcon className="mt-0.5 size-5 shrink-0 text-muted-foreground" aria-hidden />
         <div className="min-w-0 flex-1">
-          <h4 className="text-sm font-medium">Búsqueda pública sin sesión</h4>
+          <h4 className="text-sm font-medium">{t('title')}</h4>
           <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
-            Distinta de «El agente la recorre»: la app consulta una vez al día la búsqueda pública de LinkedIn, sin tu
-            cuenta, con las búsquedas de arriba. Lo nuevo que pasa tus filtros entra como resumen en «Alertas».
+            {t('intro')}
           </p>
         </div>
         <label className="flex items-center gap-2.5 text-sm">
           <span className={cn(!view.enabled && 'text-muted-foreground')}>
-            {view.enabled ? 'Activada' : 'Desactivada'}
+            {view.enabled ? t('enabled') : t('disabled')}
           </span>
           <Switch
             checked={view.enabled}
             disabled={update.isPending}
-            label="Búsqueda pública de LinkedIn sin sesión"
+            label={t('switch')}
             onChange={(next) => toggle('enabled', next)}
           />
         </label>
@@ -363,16 +347,15 @@ function LinkedInPublicPanel() {
       {view.enabled && (
         <label className="flex items-center justify-between gap-3 text-sm">
           <span>
-            Descargar también la descripción
+            {t('detail')}
             <span className="block text-xs text-muted-foreground">
-              Hasta {plural(view.limits.max_details_per_run, 'oferta', 'ofertas')} por ejecución; más peticiones, más
-              riesgo
+              {t('detailHint', { offers: plural('offers', view.limits.max_details_per_run) })}
             </span>
           </span>
           <Switch
             checked={view.fetch_detail}
             disabled={update.isPending}
-            label="Descargar también la descripción"
+            label={t('detail')}
             onChange={(next) => toggle('fetch_detail', next)}
           />
         </label>
@@ -380,7 +363,7 @@ function LinkedInPublicPanel() {
 
       {view.searches.length > 0 ? (
         <div className="grid gap-1">
-          <span className="text-xs text-muted-foreground">Qué consultará</span>
+          <span className="text-xs text-muted-foreground">{t('what')}</span>
           <ul className="flex flex-wrap gap-1.5">
             {view.searches.map((s) => (
               <li key={s.url} className="rounded-md border bg-background px-2 py-1 text-xs">
@@ -391,22 +374,19 @@ function LinkedInPublicPanel() {
         </div>
       ) : (
         <p className="text-xs text-muted-foreground">
-          Ninguna búsqueda sirve: añade a esta plataforma una URL de <InlineCode text="`linkedin.com/jobs/search`" /> con
-          palabras clave o ubicación.
+          <InlineCode text={t('noSearch')} />
         </p>
       )}
       {view.ignored.length > 0 && (
         <p className="text-xs text-amber-700 dark:text-amber-400">
-          {view.ignored.length === 1 ? 'Una búsqueda no se usa' : `${view.ignored.length} búsquedas no se usan`}:{' '}
-          {view.ignored.map((i) => i.message).join(' ')}
+          {t('ignored', { count: view.ignored.length, list: view.ignored.map((i) => i.message).join(' ') })}
         </p>
       )}
 
       {blocked && view.next_run_at && (
         <p role="status" className="flex items-start gap-1.5 text-sm text-amber-700 dark:text-amber-400">
           <WarningIcon weight="fill" className="mt-0.5 size-4 shrink-0" />
-          LinkedIn cortó la última búsqueda (límite de peticiones, inicio de sesión o captcha). No se vuelve a intentar
-          hasta el {formatWhen(view.next_run_at)}.
+          {t('blocked', { date: formatWhen(view.next_run_at) })}
         </p>
       )}
       <PublicLastRun view={view} />
@@ -419,11 +399,11 @@ function LinkedInPublicPanel() {
             disabled={runNow.isPending || waiting || view.searches.length === 0}
             onClick={() => runNow.mutate()}
           >
-            {runNow.isPending ? 'Buscando… (va despacio)' : 'Buscar ahora'}
+            {runNow.isPending ? t('searching') : t('searchNow')}
           </Button>
           {waiting && !blocked && view.next_run_at && (
             <span className="text-xs text-muted-foreground">
-              Una vez al día: la próxima, desde el {formatWhen(view.next_run_at)}
+              {t('daily', { date: formatWhen(view.next_run_at) })}
             </span>
           )}
           {runNow.data && <span className="text-xs text-muted-foreground">{runNow.data.message}</span>}
@@ -454,12 +434,13 @@ function LinkedInPublicPanel() {
 // --- Una plataforma ------------------------------------------------------------------------------
 
 function LastRun({ source }: { source: SourceView }) {
+  const { t } = useTranslation('platforms', { keyPrefix: 'row' })
   const last = source.last_run
   if (!last) {
     return (
       <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
         <ClockIcon className="size-3.5" />
-        El agente aún no la ha recorrido
+        {t('notRun')}
       </p>
     )
   }
@@ -469,12 +450,12 @@ function LastRun({ source }: { source: SourceView }) {
       <p className="flex items-center gap-1.5">
         <ClockIcon className="size-3.5" />
         <span>
-          {formatWhen(last.finished_at ?? last.started_at)}: {plural(last.found, 'encontrada', 'encontradas')},{' '}
-          {plural(last.created, 'nueva', 'nuevas')}, {plural(existing, 'ya conocida', 'ya conocidas')}
+          {formatWhen(last.finished_at ?? last.started_at)}: {plural('found', last.found)}, {plural('new', last.created)},{' '}
+          {plural('known', existing)}
           {last.errors.length > 0 && (
             <span className="text-amber-700 dark:text-amber-400">
               {' '}
-              · {plural(last.errors.length, 'incidente', 'incidentes')}
+              · {plural('issues', last.errors.length)}
             </span>
           )}
         </span>
@@ -493,6 +474,7 @@ function LastRun({ source }: { source: SourceView }) {
 }
 
 function PlatformRow({ source }: { source: SourceView }) {
+  const { t } = useTranslation('platforms')
   const update = useUpdateBrowseSettings()
   const [confirming, setConfirming] = useState(false)
   const browse = source.browse
@@ -502,8 +484,7 @@ function PlatformRow({ source }: { source: SourceView }) {
       <li className="px-4 py-4 sm:px-5">
         <h3 className="font-medium">{source.name}</h3>
         <p className="mt-1 text-sm text-destructive">
-          Su configuración no es válida. Pide a tu agente que la vuelva a guardar con{' '}
-          <InlineCode text="`buscar-ofertas configurar`" />.
+          <InlineCode text={t('row.invalid')} />
         </p>
       </li>
     )
@@ -532,7 +513,7 @@ function PlatformRow({ source }: { source: SourceView }) {
             </span>
             {linkedin && (
               <span className="rounded-md bg-amber-500/10 px-1.5 py-0.5 text-xs text-amber-700 dark:text-amber-400">
-                Riesgo para tu cuenta
+                {t('row.risk')}
               </span>
             )}
           </div>
@@ -551,17 +532,17 @@ function PlatformRow({ source }: { source: SourceView }) {
                 <span aria-hidden>·</span>
               </>
             )}
-            Hasta {plural(browse.max_offers ?? 0, 'oferta', 'ofertas')} por recorrido
+            {t('row.upTo', { offers: plural('offers', browse.max_offers ?? 0) })}
           </p>
         </div>
         <label className="flex items-center gap-2.5 text-sm">
           <span className={cn(!enabled && 'text-muted-foreground')}>
-            {enabled ? 'El agente la recorre' : 'Desactivada'}
+            {enabled ? t('row.browsing') : t('row.disabled')}
           </span>
           <Switch
             checked={enabled}
             disabled={update.isPending}
-            label={`Búsqueda con navegador en ${source.name}`}
+            label={t('row.switch', { name: source.name })}
             onChange={onToggle}
           />
         </label>
@@ -569,39 +550,39 @@ function PlatformRow({ source }: { source: SourceView }) {
 
       <div className="flex flex-wrap gap-3">
         <div className="grid gap-1">
-          <span className="text-xs text-muted-foreground">Prioridad</span>
+          <span className="text-xs text-muted-foreground">{t('row.priority')}</span>
           <Select
             value={String(browse.priority)}
             onValueChange={(v) => change({ priority: Number(v) })}
             disabled={update.isPending}
           >
-            <SelectTrigger className="h-8 w-24" aria-label={`Prioridad de ${source.name}`}>
+            <SelectTrigger className="h-8 w-24" aria-label={t('row.priorityAria', { name: source.name })}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {PRIORITIES.map((p) => (
                 <SelectItem key={p} value={String(p)}>
-                  {p === 1 ? '1 (primera)' : p}
+                  {p === 1 ? t('row.first') : p}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
         <div className="grid gap-1">
-          <span className="text-xs text-muted-foreground">Acceso</span>
+          <span className="text-xs text-muted-foreground">{t('row.access')}</span>
           <Select
             value={browse.access}
             onValueChange={(v) => change({ access: v as BrowseAccess })}
             disabled={update.isPending}
           >
-            <SelectTrigger className="h-8 w-36" aria-label={`Acceso a ${source.name}`}>
+            <SelectTrigger className="h-8 w-36" aria-label={t('row.accessAria', { name: source.name })}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {ACCESS.map((a) => (
-                <SelectItem key={a.value} value={a.value}>
-                  {a.label}
-                  <span className="ml-1.5 text-xs text-muted-foreground">{a.hint}</span>
+                <SelectItem key={a} value={a}>
+                  {t(`access.${a}`)}
+                  <span className="ml-1.5 text-xs text-muted-foreground">{t(`access.${a}Hint`)}</span>
                 </SelectItem>
               ))}
             </SelectContent>
@@ -639,11 +620,16 @@ function PlatformRow({ source }: { source: SourceView }) {
 // --- Página --------------------------------------------------------------------------------------
 
 function Limits({ limits }: { limits: AgentBrowseLimits }) {
+  const { t } = useTranslation('platforms')
   return (
     <p className="mt-2 text-xs text-muted-foreground">
-      Límites en <InlineCode text="`config/policies.yaml`" />: como mucho{' '}
-      {plural(limits.max_result_pages, 'página', 'páginas')} de resultados por búsqueda, {limits.delay_seconds} s
-      de pausa entre páginas y {limits.default_max_offers} ofertas por plataforma si no dice otra cosa.
+      <InlineCode
+        text={t('limits', {
+          pages: plural('pages', limits.max_result_pages),
+          delay: limits.delay_seconds,
+          offers: limits.default_max_offers,
+        })}
+      />
     </p>
   )
 }
@@ -651,10 +637,11 @@ function Limits({ limits }: { limits: AgentBrowseLimits }) {
 function byPriority(a: SourceView, b: SourceView): number {
   const pa = a.browse?.priority ?? 99
   const pb = b.browse?.priority ?? 99
-  return pa - pb || a.name.localeCompare(b.name, 'es')
+  return pa - pb || a.name.localeCompare(b.name, i18n.language)
 }
 
 export function PlatformsPage() {
+  const { t } = useTranslation('platforms')
   const platforms = usePlatforms()
 
   let body
@@ -669,9 +656,8 @@ export function PlatformsPage() {
     body = <ErrorState error={platforms.error} onRetry={() => platforms.refetch()} />
   } else if (platforms.data.sources.length === 0) {
     body = (
-      <EmptyState icon={<CompassIcon className="size-6" weight="duotone" />} title="Aún no hay plataformas">
-        Añádelas con «Añadir plataforma» o pide a tu agente <InlineCode text="`buscar-ofertas configurar`" />:
-        te preguntará dónde buscas, te recomendará portales y guardará aquí las búsquedas.
+      <EmptyState icon={<CompassIcon className="size-6" weight="duotone" />} title={t('empty.title')}>
+        <InlineCode text={t('empty.body')} />
       </EmptyState>
     )
   } else {
@@ -688,17 +674,14 @@ export function PlatformsPage() {
     <div className="mx-auto max-w-3xl animate-in fade-in duration-300">
       <div className="mb-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-2xl font-semibold tracking-tight">Plataformas</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
           <div className="flex flex-wrap gap-2">
-            <AgentButton action="ampliar-busqueda">Ampliar búsqueda</AgentButton>
+            <AgentButton action="broaden-search">{t('broaden')}</AgentButton>
             <AddPlatformButton />
           </div>
         </div>
         <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-          Portales que tu agente recorre con tu navegador cuando le pides{' '}
-          <InlineCode text="`buscar-ofertas`" />, por orden de prioridad. Solo lee: no se postula, no guarda
-          ofertas en el portal ni resuelve captchas. Lo que encuentra queda en «Por extraer».
-          «Ampliar búsqueda» propone puestos cercanos a los que apruebas; tú decides cuáles añadir.
+          <InlineCode text={t('intro')} />
         </p>
         {platforms.data && <Limits limits={platforms.data.agent_browse} />}
       </div>

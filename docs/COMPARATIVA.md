@@ -1,6 +1,6 @@
-# Job Hunter frente a AI Job Search y career-ops
+# CandidatAI frente a AI Job Search y career-ops
 
-Comparativa de octubre de 2026 entre Job Hunter (este repositorio, tras la fase 22) y los dos
+Comparativa de octubre de 2026 entre CandidatAI (este repositorio, tras la fase 22) y los dos
 proyectos abiertos de los que más ideas ha tomado:
 
 - **[AI Job Search](https://github.com/MadsLorentzen/ai-job-search)** (Mads Lorentzen, MIT): un
@@ -16,23 +16,23 @@ cambiado desde entonces.
 
 | Proyecto | Qué es |
 |---|---|
-| **Job Hunter** | Una **aplicación** local (API + base de datos + UI web + worker) con una interfaz para agentes (MCP y CLI con paridad). El estado, las reglas y las comprobaciones viven en código; el agente solo razona |
+| **CandidatAI** | Una **aplicación** local (API + base de datos + UI web + worker) con una interfaz para agentes (MCP y CLI con paridad). El estado, las reglas y las comprobaciones viven en código; el agente solo razona |
 | **AI Job Search** | Un **conjunto de instrucciones y comandos** para Claude Code sobre ficheros (Markdown, CSV, LaTeX). El agente hace casi todo, guiado por los ficheros del perfil |
 | **career-ops** | Un **agente con muchos modos** y scripts Node sobre ficheros de texto (Markdown, YAML, TSV), con un dashboard de terminal y soporte para una docena de CLIs |
 
 La diferencia de fondo: en los otros dos el agente lee y escribe ficheros, y las reglas son
-instrucciones que el agente debería seguir. En Job Hunter el agente solo puede rellenar esquemas
+instrucciones que el agente debería seguir. En CandidatAI el agente solo puede rellenar esquemas
 que el código valida, y las reglas importantes (no inventar, no enviar nada, no seguir
 instrucciones de una oferta) se comprueban en código, sea cual sea el agente (ADR-012).
 
 ## Arquitectura y filosofía
 
-| | Job Hunter | AI Job Search | career-ops |
+| | CandidatAI | AI Job Search | career-ops |
 |---|---|---|---|
 | Forma | App: FastAPI + SQLite + React + worker | Instrucciones + comandos + utilidades | Modos de agente + scripts Node |
 | Dónde viven los datos | SQLite con eventos (`data/`, fuera de git) | CSV, Markdown y JSON en el repo | Markdown, YAML y TSV (`data/`, fuera de git) |
 | Interfaz para el usuario | **UI web completa** (bandeja, triaje, ficha, kanban, embudo…) | Chat con el agente + informe HTML | Chat + dashboard de terminal (Go) + web en alfa |
-| Interfaz para el agente | **MCP + CLI `jh --json` con paridad comprobada** | Comandos `/…` y ficheros | Modos `/career-ops …` y scripts |
+| Interfaz para el agente | **MCP + CLI `cai --json` con paridad comprobada** | Comandos `/…` y ficheros | Modos `/career-ops …` y scripts |
 | ¿La app llama a un LLM? | **Nunca** (ADR-001) | No (lo hace Claude Code) | Opcional (script con la API de Gemini, OpenRouter, Ollama) |
 | Agentes | Claude Code (referencia), Codex; cualquiera con MCP o terminal | Claude Code; parcial en Codex, Gemini CLI | ~12 CLIs (Claude Code, Codex, OpenCode, Gemini, Copilot, Cursor…) |
 | Estado de cada oferta | Eventos validados contra una tabla de transiciones | Fila de un CSV | Fila de una tabla Markdown con estados canónicos |
@@ -46,7 +46,7 @@ Leyenda: ✅ lo tiene · 🟡 en parte · ❌ no lo tiene · 🚫 no lo tendrá 
 
 ### Entrada de ofertas
 
-| Función | Job Hunter | AI Job Search | career-ops |
+| Función | CandidatAI | AI Job Search | career-ops |
 |---|---|---|---|
 | Alta por URL o texto pegado | ✅ | ✅ | ✅ |
 | APIs públicas de ATS (Greenhouse, Lever, Ashby) | ✅ diaria | ❌ | ✅ |
@@ -57,7 +57,7 @@ Leyenda: ✅ lo tiene · 🟡 en parte · ❌ no lo tiene · 🚫 no lo tendrá 
 | Botón de extensión del navegador para la página que ves | ✅ | ❌ | ❌ |
 | El agente recorre portales con tu navegador | ✅ opcional | ❌ | ❌ |
 | LinkedIn por la búsqueda pública sin sesión | ✅ opcional y apagado (ADR-033) | ✅ | ❌ |
-| Descubrir el tablero de ATS de tus empresas | ✅ `jh sources discover` | ❌ | ✅ |
+| Descubrir el tablero de ATS de tus empresas | ✅ `cai sources discover` | ❌ | ✅ |
 | Empresas recién financiadas desde feeds públicos | 🚫 descartado | ❌ | ✅ |
 | Lista de empresas objetivo preconfigurada | ❌ | ❌ | ✅ 100+ |
 | Deduplicación y republicadas | ✅ huella, plataforma e id, «Republicada ×N» | 🟡 vistas | ✅ |
@@ -67,40 +67,40 @@ Leyenda: ✅ lo tiene · 🟡 en parte · ❌ no lo tiene · 🚫 no lo tendrá 
 
 ### Valorar el encaje
 
-| Función | Job Hunter | AI Job Search | career-ops |
+| Función | CandidatAI | AI Job Search | career-ops |
 |---|---|---|---|
 | Filtros duros (nivel, años, modalidad, zona, idiomas) | ✅ en código | ✅ deal-breakers + Language Gate | ✅ |
 | Score explicado | ✅ 0-100 por componentes | ✅ 5 dimensiones | ✅ 1-5 con pesos y su origen |
 | Similitud semántica local (embeddings) | ✅ opcional | ❌ | ❌ |
-| Valoración razonada del agente | ✅ `evaluar-encaje` | ✅ | ✅ informe A-H |
+| Valoración razonada del agente | ✅ `assess-fit` | ✅ | ✅ informe A-H |
 | Triaje rápido con teclado | ✅ J/K, A, D, deshacer | ❌ | 🟡 en la TUI |
 | Autorización de trabajo / patrocinio de visado | ❌ | ❌ | ✅ |
 | Estrategia de nivel y arquetipo del puesto | 🟡 | ❌ | ✅ |
 | Eval publicado del matching | ✅ 80 casos, precision 0,88 / recall 0,95 | ❌ | 🟡 `evals/` |
 | ¿Acierta el score? (calibración con resultados) | ✅ | ❌ | ✅ |
 | Huecos de skills agregados y plan de formación | ✅ | ✅ `/upskill` | ✅ |
-| Valorar un curso o un proyecto | ✅ `plan-formacion` | ❌ | ✅ |
-| Títulos cercanos para ampliar la búsqueda | ✅ `ampliar-busqueda` | ❌ | ✅ |
+| Valorar un curso o un proyecto | ✅ `training-plan` | ❌ | ✅ |
+| Títulos cercanos para ampliar la búsqueda | ✅ `broaden-search` | ❌ | ✅ |
 | Evaluación en lote en paralelo | 🟡 en segundo plano, de una en una | ✅ `/rank` | ✅ `batch` con varios workers |
 
 ### CV y carta
 
-| Función | Job Hunter | AI Job Search | career-ops |
+| Función | CandidatAI | AI Job Search | career-ops |
 |---|---|---|---|
 | CV a medida sin inventar | ✅ cada línea cita su evidencia; el código la comprueba | ✅ por instrucciones + revisor | ✅ comprobación de hechos |
-| Verificación independiente | ✅ rol `verificador` en otra ejecución | ✅ revisor con contexto limpio | 🟡 |
+| Verificación independiente | ✅ rol `verifier` en otra ejecución | ✅ revisor con contexto limpio | 🟡 |
 | Formatos | Word + PDF (docx) o PDF (html) | PDF con LaTeX | PDF con HTML, Markdown, LaTeX para Overleaf |
-| **Tu propio diseño como plantilla** (Word, PDF, imagen, Canva) | ✅ `importar-plantilla-cv` | 🟡 LaTeX/Typst con `/add-template` | 🟡 tu `resume.tex` |
+| **Tu propio diseño como plantilla** (Word, PDF, imagen, Canva) | ✅ `import-cv-template` | 🟡 LaTeX/Typst con `/add-template` | 🟡 tu `resume.tex` |
 | Foto, color y secciones por oferta sin gastar agente | ✅ | ❌ | ❌ |
 | Foto según el país | ✅ | ❌ | ❌ |
 | Control de páginas y recorte | ✅ aviso `too_long` | ✅ recorte puntuado | 🟡 |
 | Comprobación ATS del texto del PDF | ✅ cobertura de keywords | ✅ | 🟡 PDF legible por ATS |
 | Carta a medida, a juego con el CV | ✅ | ✅ | ✅ con 4 ángulos |
-| Respuestas de formularios | ✅ `preparar-candidatura` | ❌ | ✅ |
+| Respuestas de formularios | ✅ `prepare-application` | ❌ | ✅ |
 
 ### Candidatura y seguimiento
 
-| Función | Job Hunter | AI Job Search | career-ops |
+| Función | CandidatAI | AI Job Search | career-ops |
 |---|---|---|---|
 | Rellenar el formulario de la candidatura | ✅ Greenhouse, Lever, Ashby y genéricos | ❌ | 🟡 lee campos y genera respuestas |
 | Enviar | ✅ **solo tras tu confirmación** (token de un uso) | 🚫 | 🚫 |
@@ -117,7 +117,7 @@ Leyenda: ✅ lo tiene · 🟡 en parte · ❌ no lo tiene · 🚫 no lo tendrá 
 
 ### Entrevistas y ofertas
 
-| Función | Job Hunter | AI Job Search | career-ops |
+| Función | CandidatAI | AI Job Search | career-ops |
 |---|---|---|---|
 | Plan de preparación por días | ✅ | ✅ | ✅ |
 | Simulacro con feedback | ✅ | ✅ | ✅ |
@@ -129,7 +129,7 @@ Leyenda: ✅ lo tiene · 🟡 en parte · ❌ no lo tiene · 🚫 no lo tendrá 
 
 ### Perfil, agentes y uso
 
-| Función | Job Hunter | AI Job Search | career-ops |
+| Función | CandidatAI | AI Job Search | career-ops |
 |---|---|---|---|
 | Perfil validado y versionado | ✅ YAML con esquema | 🟡 Markdown | 🟡 YAML + Markdown |
 | Contexto que orienta sin respaldar hechos (estilo, narrativa…) | ✅ `data/contexto/` | ✅ perfil conductual y estilo | ✅ |
@@ -137,15 +137,15 @@ Leyenda: ✅ lo tiene · 🟡 en parte · ❌ no lo tiene · 🚫 no lo tendrá 
 | Revisar tu perfil de LinkedIn | ✅ | ❌ | ❌ |
 | Lanzar el agente desde la UI (terminal o segundo plano) | ✅ | ❌ | ❌ |
 | Cola de encargos para la próxima sesión | ✅ | ❌ | ✅ `agent-inbox` |
-| Modo demo con datos inventados | ✅ `jh demo seed` | ❌ | ✅ `examples/` |
+| Modo demo con datos inventados | ✅ `cai demo seed` | ❌ | ✅ `examples/` |
 | Instalación de un comando | ❌ | ❌ | ✅ `npx … init` |
 | Docker / macOS / Linux documentados | ❌ (solo Windows probado) | ✅ | ✅ |
 | Modelos gratuitos o locales | 🟡 si tu CLI los usa | ❌ | ✅ guía de presupuesto |
 | Actualizar sin pisar tus datos | ✅ datos fuera del código | ✅ herramientas de triaje upstream | ✅ `update` |
-| README en varios idiomas | ❌ (solo español) | ❌ | ✅ 17 idiomas |
-| UI en varios idiomas | ❌ | n/a | n/a |
+| README en varios idiomas | 🟡 español e inglés | ❌ | ✅ 17 idiomas |
+| UI en varios idiomas | ✅ español e inglés, con selector | n/a | n/a |
 
-## Lo que solo tiene Job Hunter
+## Lo que solo tiene CandidatAI
 
 - Una **UI web completa**: bandeja, triaje con teclado, ficha con el CV y sus renders, kanban,
   calendario, embudo, respuestas, skills, plataformas, alertas y la página del agente.
@@ -173,8 +173,8 @@ Ordenado por lo que más aportaría, de mayor a menor.
 | 5 | **Enriquecer el perfil desde enlaces públicos** (GitHub, portfolio, Scholar) | ambos | Proyectos y logros que no están en el CV; con tu confirmación antes de escribir | Bajo (un skill) |
 | 6 | **Autorización de trabajo y visado** como filtro duro | career-ops | Ofertas que excluyen patrocinio, si buscas fuera de la UE | Bajo |
 | 7 | **Evaluación en lote en paralelo** | ambos | Hoy el segundo plano va de una en una | Medio |
-| 8 | **Detector de banderas rojas** de una empresa antes de la entrevista | career-ops | Rotación, despidos, reseñas; encaja en `investigar-empresa` | Bajo |
-| 9 | **UI en inglés** | — | Para que la use alguien que no lea español | Alto |
+| 8 | **Detector de banderas rojas** de una empresa antes de la entrevista | career-ops | Rotación, despidos, reseñas; encaja en `research-company` | Bajo |
+| 9 | ~~**UI en inglés**~~ ✅ hecho (fase 23.6) | — | Para que la use alguien que no lea español | Alto |
 | 10 | **Estrategia de nivel / arquetipo del puesto** en la valoración | career-ops | Ayuda a decidir a qué nivel presentarse | Bajo |
 | 11 | **Herramienta para traer cambios del repositorio original** sin pisar lo tuyo | AI Job Search | Útil si otros lo usan con sus datos | Bajo |
 | 12 | **Guía de agentes con modelos gratuitos o locales** (OpenCode + Ollama…) | career-ops | Sin suscripción de pago; la app no cambia, solo el agente | Bajo (documentación) |
@@ -200,7 +200,7 @@ Ordenado por lo que más aportaría, de mayor a menor.
 
 ## Conclusión
 
-Job Hunter ya cubre casi todo lo que hacen bien los otros dos: el ciclo entero (ofertas, triaje,
+CandidatAI ya cubre casi todo lo que hacen bien los otros dos: el ciclo entero (ofertas, triaje,
 CV, carta, candidatura, seguimiento, entrevistas, ofertas recibidas) y la mayoría de sus extras
 (calibración, republicadas, huecos de skills, títulos cercanos, red de contactos, negociación).
 Donde va por delante es en lo que necesita una app: UI, estado fiable, comprobaciones en código y

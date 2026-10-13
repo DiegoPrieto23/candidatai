@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { ApplicationChannel, BoardCard, DiscardReason, EventType } from '@/api/client'
 import { useCreateMilestone, useJobEvent } from '@/api/queries'
 import { Button } from '@/components/ui/button'
@@ -16,6 +17,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { CHANNEL_LABEL, DISCARD_REASONS, eventLabel, MOVE_HINT, STAGE_LABEL } from '@/lib/labels'
 import { fromLocalInput, toLocalInput } from '@/lib/time'
 import type { MoveOption } from '@/lib/moves'
+import { errorMessage } from '@/lib/errors'
 import { cn } from '@/lib/utils'
 
 const MILESTONE_EVENTS: Partial<Record<EventType, 'interview' | 'test'>> = {
@@ -41,6 +43,7 @@ export function MoveDialog({ card, options, onOpenChange }: Props) {
 }
 
 function MoveForm({ card, options, onDone }: { card: BoardCard; options: MoveOption[]; onDone: () => void }) {
+  const { t } = useTranslation('move')
   const [choice, setChoice] = useState<MoveOption | null>(options.length === 1 ? options[0] : null)
   const [occurredAt, setOccurredAt] = useState(() => toLocalInput(new Date()))
   const [note, setNote] = useState('')
@@ -101,15 +104,15 @@ function MoveForm({ card, options, onDone }: { card: BoardCard; options: MoveOpt
   return (
     <form onSubmit={submit} className="grid gap-5">
       <DialogHeader>
-        <DialogTitle>Mover proceso</DialogTitle>
+        <DialogTitle>{t('title')}</DialogTitle>
         <DialogDescription className="truncate">
           {card.title} · {card.company}
         </DialogDescription>
       </DialogHeader>
 
       <fieldset>
-        <legend className="mb-2 text-sm font-medium">¿Qué ha pasado?</legend>
-        <div role="radiogroup" aria-label="Evento" className="grid gap-1.5">
+        <legend className="mb-2 text-sm font-medium">{t('what')}</legend>
+        <div role="radiogroup" aria-label={t('event')} className="grid gap-1.5">
           {options.map((option) => {
             const selected = choice?.event === option.event
             return (
@@ -139,8 +142,8 @@ function MoveForm({ card, options, onDone }: { card: BoardCard; options: MoveOpt
 
       {choice?.event === 'discarded' && (
         <fieldset>
-          <legend className="mb-2 text-sm font-medium">Motivo</legend>
-          <div role="radiogroup" aria-label="Motivo" className="grid gap-1.5 sm:grid-cols-2">
+          <legend className="mb-2 text-sm font-medium">{t('reason')}</legend>
+          <div role="radiogroup" aria-label={t('reason')} className="grid gap-1.5 sm:grid-cols-2">
             {DISCARD_REASONS.map((option) => (
               <button
                 key={option.value}
@@ -162,14 +165,14 @@ function MoveForm({ card, options, onDone }: { card: BoardCard; options: MoveOpt
 
       {choice?.event.startsWith('applied') && (
         <div className="space-y-2">
-          <Label htmlFor="move-channel">Canal (opcional)</Label>
+          <Label htmlFor="move-channel">{t('channel')}</Label>
           <select
             id="move-channel"
             value={channel}
             onChange={(e) => setChannel(e.target.value as ApplicationChannel | '')}
             className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
           >
-            <option value="">Sin indicar</option>
+            <option value="">{t('noChannel')}</option>
             {Object.entries(CHANNEL_LABEL).map(([value, label]) => (
               <option key={value} value={value}>
                 {label}
@@ -183,7 +186,7 @@ function MoveForm({ card, options, onDone }: { card: BoardCard; options: MoveOpt
         <div className="grid gap-3 rounded-lg border border-dashed p-3 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="move-starts">
-              {milestoneKind === 'interview' ? 'Fecha y hora de la entrevista' : 'Fecha de entrega'}
+              {milestoneKind === 'interview' ? t('interviewAt') : t('dueAt')}
             </Label>
             <Input
               id="move-starts"
@@ -194,7 +197,7 @@ function MoveForm({ card, options, onDone }: { card: BoardCard; options: MoveOpt
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="move-location">Lugar o enlace (opcional)</Label>
+            <Label htmlFor="move-location">{t('location')}</Label>
             <Input id="move-location" value={location} onChange={(e) => setLocation(e.target.value)} maxLength={500} />
           </div>
         </div>
@@ -202,7 +205,7 @@ function MoveForm({ card, options, onDone }: { card: BoardCard; options: MoveOpt
 
       <div className="grid gap-3 sm:grid-cols-[12rem_1fr]">
         <div className="space-y-2">
-          <Label htmlFor="move-at">Cuándo pasó</Label>
+          <Label htmlFor="move-at">{t('when')}</Label>
           <Input
             id="move-at"
             type="datetime-local"
@@ -213,7 +216,7 @@ function MoveForm({ card, options, onDone }: { card: BoardCard; options: MoveOpt
         </div>
         <div className="space-y-2">
           <Label htmlFor="move-note">
-            Nota {choice?.event === 'discarded' && reason === 'other' ? '(obligatoria)' : '(opcional)'}
+            {t('note')} {choice?.event === 'discarded' && reason === 'other' ? t('noteRequired') : t('noteOptional')}
           </Label>
           <Textarea
             id="move-note"
@@ -225,20 +228,20 @@ function MoveForm({ card, options, onDone }: { card: BoardCard; options: MoveOpt
           />
         </div>
       </div>
-      <p className="-mt-3 text-xs text-muted-foreground">Horas de Madrid.</p>
+      <p className="-mt-3 text-xs text-muted-foreground">{t('madrid')}</p>
 
       {error && (
         <p role="alert" className="text-sm text-destructive">
-          {error.message}
+          {errorMessage(error)}
         </p>
       )}
 
       <DialogFooter>
         <Button type="button" variant="outline" onClick={onDone}>
-          Cancelar
+          {t('cancel')}
         </Button>
         <Button type="submit" disabled={missing || pending}>
-          {pending ? 'Guardando…' : 'Registrar'}
+          {pending ? t('saving') : t('register')}
         </Button>
       </DialogFooter>
     </form>

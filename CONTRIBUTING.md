@@ -2,7 +2,7 @@
 
 **English** · [Español](#contribuir)
 
-Thanks for your interest. Job Hunter is a personal project that's open to ideas, fixes and new
+Thanks for your interest. CandidatAI is a personal project that's open to ideas, fixes and new
 job sources. Before opening a pull request, please read this page.
 
 ## Ground rules
@@ -27,7 +27,7 @@ These come from [`AGENTS.md`](AGENTS.md) and are checked in review:
 - **Code:**
   1. Branch from an up-to-date `main`.
   2. Logic goes in `backend/app/services/` and is tested there; API, CLI and MCP stay thin.
-  3. Every MCP tool needs its `jh … --json` command with the same input and output.
+  3. Every MCP tool needs its `cai … --json` command with the same input and output.
   4. Any schema change needs an Alembic migration; any job state change goes through an event.
   5. Before pushing: `uv run pytest`, `uv run ruff check`, `uv run ruff format --check`,
      `pnpm typecheck && pnpm test` and `uv run scripts/sync_agents.py --check`.
@@ -46,7 +46,7 @@ tests and a review.
 
 [English](#contributing) · **Español**
 
-Gracias por el interés. Job Hunter es un proyecto personal abierto a ideas, arreglos y nuevas
+Gracias por el interés. CandidatAI es un proyecto personal abierto a ideas, arreglos y nuevas
 fuentes de ofertas. Antes de abrir un pull request, lee esto.
 
 ## Reglas básicas
@@ -71,7 +71,7 @@ Salen de [`AGENTS.md`](AGENTS.md) y se comprueban en la revisión:
 - **Código:**
   1. Rama desde `main` al día.
   2. La lógica va en `backend/app/services/` y se prueba ahí; API, CLI y MCP son capas finas.
-  3. Cada herramienta MCP necesita su comando `jh … --json` con la misma entrada y salida.
+  3. Cada herramienta MCP necesita su comando `cai … --json` con la misma entrada y salida.
   4. Todo cambio de esquema lleva migración de Alembic y todo cambio de estado de una oferta, su
      evento.
   5. Antes de subir: `uv run pytest`, `uv run ruff check`, `uv run ruff format --check`,

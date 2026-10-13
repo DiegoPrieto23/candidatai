@@ -322,7 +322,7 @@ def validate(
     kind: Kind | None = "cv",
 ) -> Template:
     """Comprueba `template.yaml`, los ficheros del motor y que solo use variables del contrato
-    (el de la carta en `letter.*`). `kind=None`: cualquier plantilla (`jh templates validate`)."""
+    (el de la carta en `letter.*`). `kind=None`: cualquier plantilla (`cai templates validate`)."""
     template = get(template_id, builtin_dir, user_dir, kind)
     try:
         unsafe = unsafe_content(template)

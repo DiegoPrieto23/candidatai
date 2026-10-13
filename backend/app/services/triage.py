@@ -1,7 +1,7 @@
 """Cola de triaje para la UI: ofertas en `pending_triage` con su match, ordenadas por score.
 
 Los matches que falten o estén desfasados se calculan al pedir la cola (el worker los adelanta):
-así el triaje funciona aunque `jh worker` no esté en marcha.
+así el triaje funciona aunque `cai worker` no esté en marcha.
 """
 
 from pydantic import BaseModel

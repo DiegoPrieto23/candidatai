@@ -61,7 +61,7 @@ def test_upload_saves_with_safe_name_and_never_overwrites(
     assert first["name"] == "mi-cv-version-2.docx"
     assert first["path"] == "data/uploads/mi-cv-version-2.docx"
     assert first["supported"] and first["template_id"] is None
-    assert first["agent_command"] == "importar-plantilla-cv data/uploads/mi-cv-version-2.docx"
+    assert first["agent_command"] == "import-cv-template data/uploads/mi-cv-version-2.docx"
     second = _upload(client, "Mi CV (versión 2).docx", data)
     assert second["name"] == "mi-cv-version-2-2.docx"
     assert (uploads.paths.uploads_dir() / "mi-cv-version-2.docx").read_bytes() == data
@@ -131,9 +131,7 @@ def test_set_default_errors(client: TestClient, real_profile: Path) -> None:
     assert client.post("/templates/no-existe/default").status_code == 404
     real_profile.unlink()
     response = client.post("/templates/ats-simple/default")
-    assert (
-        response.status_code == 404 and "actualizar-perfil" in response.json()["error"]["message"]
-    )
+    assert response.status_code == 404 and "update-profile" in response.json()["error"]["message"]
 
 
 def test_real_preview_is_cached(client: TestClient, real_profile: Path) -> None:

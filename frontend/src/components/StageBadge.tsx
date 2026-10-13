@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import type { Stage } from '@/api/client'
 import { STAGE_LABEL } from '@/lib/labels'
 import { cn } from '@/lib/utils'
@@ -15,8 +16,9 @@ const TONE: Record<Stage, string> = {
 }
 
 export function StageBadge({ stage, className }: { stage: Stage | null; className?: string }) {
+  const { t } = useTranslation()
   if (!stage) {
-    return <span className={cn('text-xs text-muted-foreground', className)}>Sin etapa</span>
+    return <span className={cn('text-xs text-muted-foreground', className)}>{t('noStage')}</span>
   }
   return (
     <span

@@ -1,4 +1,4 @@
-# Catálogo FICTICIO para `jh demo seed` (fase 12.1). Empresas, personas y ofertas inventadas.
+# Catálogo FICTICIO para `cai demo seed` (fase 12.1). Empresas, personas y ofertas inventadas.
 # El generador (backend/app/services/demo.py) combina estas listas con una semilla fija: misma
 # entrada, misma demo. Las ofertas se evalúan contra demo/profile.example.yaml.
 

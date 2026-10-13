@@ -1,8 +1,8 @@
 """InfoJobs API (opcional): búsqueda `GET api.infojobs.net/api/9/offer` y detalle
 `GET api.infojobs.net/api/7/offer/{id}`.
 
-Necesita las claves de una aplicación de InfoJobs (`JH_INFOJOBS_CLIENT_ID` y
-`JH_INFOJOBS_CLIENT_SECRET` en `.env`), por autenticación HTTP básica. El listado no trae la
+Necesita las claves de una aplicación de InfoJobs (`CAI_INFOJOBS_CLIENT_ID` y
+`CAI_INFOJOBS_CLIENT_SECRET` en `.env`), por autenticación HTTP básica. El listado no trae la
 descripción: se pide el detalle solo de las ofertas que pasan el filtro previo y no se tenían.
 Documentación: https://developer.infojobs.net/documentation/operation-list/index.xhtml
 """
@@ -39,7 +39,7 @@ def _auth() -> tuple[str, str]:
     settings = get_settings()
     if not settings.infojobs_client_id or not settings.infojobs_client_secret:
         raise MissingKeysError(
-            "InfoJobs necesita JH_INFOJOBS_CLIENT_ID y JH_INFOJOBS_CLIENT_SECRET en `.env` "
+            "InfoJobs necesita CAI_INFOJOBS_CLIENT_ID y CAI_INFOJOBS_CLIENT_SECRET en `.env` "
             "(se registran en developer.infojobs.net)."
         )
     return settings.infojobs_client_id, settings.infojobs_client_secret

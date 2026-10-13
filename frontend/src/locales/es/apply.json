@@ -1,0 +1,109 @@
+{
+  "title": "Candidatura asistida",
+  "intro": "CandidatAI abre la oferta en su propio navegador, rellena el formulario de candidatura y se para antes de enviar. Nada se envía sin tu confirmación. Inicia sesión en tus portales con «Abrir navegador».",
+  "fieldStatus": {
+    "filled": "Rellenado",
+    "empty": "Vacío",
+    "needs_user_input": "Falta un dato tuyo",
+    "sensitive": "Dato sensible: decides tú",
+    "consent": "Se acepta al enviar",
+    "skipped": "Sin marcar",
+    "error": "Error"
+  },
+  "attemptStatus": {
+    "ready": "Listo para revisar",
+    "needs_user": "Necesita tu intervención",
+    "submit_failed": "No se pudo enviar",
+    "submit_unconfirmed": "Envío sin confirmar",
+    "manual": "Abierta en el navegador de CandidatAI"
+  },
+  "warnings": {
+    "possible_duplicate": "Posible duplicado",
+    "no_evidence": "Sin prueba del envío",
+    "submit_blocked": "Envío bloqueado",
+    "no_submit_button": "Sin botón de envío",
+    "no_resume_field": "Sin campo para el CV",
+    "missing_required": "Faltan obligatorios",
+    "unused_answers": "Respuestas sin usar",
+    "invisible_captcha": "Captcha invisible",
+    "page_changed": "La página cambió",
+    "form_opened": "Formulario abierto",
+    "blocked": "Bloqueado",
+    "form_error": "Error del formulario",
+    "http_error": "Error HTTP",
+    "unexpected_format": "Formato inesperado",
+    "no_answers": "Sin respuestas"
+  },
+  "workerHint": "El worker aún no lo ha recogido. ¿Está en marcha? Arráncalo con `uv run cai worker` en backend/.",
+  "busy": {
+    "submitting": "Enviando… No cierres el navegador de CandidatAI.",
+    "filling": "Rellenando el formulario de {{domain}} en el navegador…",
+    "queued": "En cola para el worker…"
+  },
+  "fields": {
+    "caption": "Campos del formulario",
+    "field": "Campo",
+    "status": "Estado",
+    "value": "Valor",
+    "source": "De dónde sale",
+    "required": "Obligatorio",
+    "requiredSr": " (obligatorio)",
+    "missing": "Obligatorio sin respuesta"
+  },
+  "screenshot": {
+    "review": "Captura del formulario rellenado",
+    "confirmation": "Captura después de enviar",
+    "full": "Ver la captura completa"
+  },
+  "submit": {
+    "title": "Enviar la candidatura a {{company}}",
+    "description": "Se pulsará <button/> en <domain/>. Esta confirmación vale solo para este envío.",
+    "button": "«{{label}}»",
+    "defaultButton": "el botón de envío",
+    "consents": "Al enviar aceptas:",
+    "typeCompany": "Escribe el nombre de la empresa para confirmar",
+    "cancel": "Cancelar",
+    "send": "Enviar candidatura"
+  },
+  "fillPage": "Rellenar esta página",
+  "markSent": "Marcar como enviada",
+  "review": {
+    "warnings": "Avisos",
+    "missing_one": "Falta {{count}} campo obligatorio: complétalo en el navegador y pulsa «Volver a revisar», o termina tú.",
+    "missing_other": "Faltan {{count}} campos obligatorios: complétalos en el navegador y pulsa «Volver a revisar», o termina tú.",
+    "send": "Enviar",
+    "rescan": "Volver a revisar",
+    "reopen": "Volver a abrir la oferta",
+    "finishMyself": "Lo termino yo",
+    "checkFirst": "Antes de marcarla como enviada, comprueba en la web o en tu correo que llegó.",
+    "working": "Trabajando en el navegador…"
+  },
+  "prepare": {
+    "linkedin": "LinkedIn no se automatiza: se abrirá la oferta en el navegador de CandidatAI y copias el paquete desde arriba.",
+    "fill": "Se abrirá {{domain}} en el navegador de CandidatAI y se rellenará el formulario. No se envía nada hasta que lo confirmes.",
+    "openAndPrepare": "Abrir y preparar",
+    "again": "Preparar de nuevo",
+    "prepare": "Preparar candidatura"
+  },
+  "formUrl": {
+    "label": "URL del formulario",
+    "placeholder": "https://empresa.com/empleo/…",
+    "fill": "Rellenar ese formulario"
+  },
+  "portal": {
+    "intro": "{{portal}} es un portal de empleo y bloquea los navegadores automatizados, así que la oferta se abre en tu navegador, con tu sesión.",
+    "step1": "Abre la oferta y pulsa «Solicitar» o «Inscribirme».",
+    "step2": "Si te lleva al formulario de la empresa, copia la dirección de esa página y pégala abajo: CandidatAI lo rellena en su navegador y se para antes de enviar.",
+    "step3": "Si la candidatura se completa dentro de {{portal}}, termínala allí (el CV está en «Paquete de candidatura») y pulsa «Marcar como enviada».",
+    "open": "Abrir la oferta en {{portal}}"
+  },
+  "done": {
+    "manual": "Marcada como enviada por ti.",
+    "sent": "Enviada a {{domain}}: la web confirmó el envío."
+  },
+  "fillFailed": "No se pudo rellenar el formulario.",
+  "openBrowser": {
+    "title": "Abre el navegador de CandidatAI para iniciar sesión en tus portales. Tiene su propio perfil, separado de tu Chrome.",
+    "label": "Abrir navegador"
+  }
+}

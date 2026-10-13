@@ -1,6 +1,6 @@
 """Adzuna API (opcional): `GET api.adzuna.com/v1/api/jobs/{country}/search/{page}`.
 
-Necesita `JH_ADZUNA_APP_ID` y `JH_ADZUNA_APP_KEY` en `.env` (registro en developer.adzuna.com).
+Necesita `CAI_ADZUNA_APP_ID` y `CAI_ADZUNA_APP_KEY` en `.env` (registro en developer.adzuna.com).
 Adzuna solo da un extracto de la descripción: la oferta entra con ese extracto y la extracción
 saldrá más pobre (en la fase 09b podrá entrar como oferta «resumen» y completarse).
 Documentación: https://developer.adzuna.com/docs/search
@@ -36,7 +36,7 @@ def _keys() -> dict[str, str]:
     settings = get_settings()
     if not settings.adzuna_app_id or not settings.adzuna_app_key:
         raise MissingKeysError(
-            "Adzuna necesita JH_ADZUNA_APP_ID y JH_ADZUNA_APP_KEY en `.env` "
+            "Adzuna necesita CAI_ADZUNA_APP_ID y CAI_ADZUNA_APP_KEY en `.env` "
             "(se registran en developer.adzuna.com)."
         )
     return {"app_id": settings.adzuna_app_id, "app_key": settings.adzuna_app_key}

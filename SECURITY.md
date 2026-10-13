@@ -10,7 +10,7 @@ GitHub profile. Include the steps to reproduce it with the demo data.
 
 ## Threat model in short
 
-Job Hunter runs locally and reads untrusted text all the time (job postings, emails, websites) that
+CandidatAI runs locally and reads untrusted text all the time (job postings, emails, websites) that
 an AI agent then reads too. Its defences live in code, so they hold whatever agent you use
 ([ADR-012](docs/DECISIONS.md)):
 
@@ -42,7 +42,7 @@ desde su perfil de GitHub. Incluye los pasos para reproducirlo con los datos de 
 
 ### El modelo de amenazas, en corto
 
-Job Hunter se ejecuta en local y lee continuamente texto no confiable (ofertas, correos, webs) que
+CandidatAI se ejecuta en local y lee continuamente texto no confiable (ofertas, correos, webs) que
 luego también lee un agente de IA. Sus defensas están en el código, así que valen con cualquier
 agente ([ADR-012](docs/DECISIONS.md)):
 

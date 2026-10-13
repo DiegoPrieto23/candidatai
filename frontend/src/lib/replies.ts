@@ -1,4 +1,6 @@
 import type { ReplyProposal, Schemas } from '@/api/client'
+import { i18n } from '@/lib/i18n'
+import { dateFormatter, translatedMap } from '@/lib/labels'
 import { APP_TIME_ZONE } from '@/lib/time'
 
 /** Respuestas de las empresas (fase 15): textos de las propuestas del agente. */
@@ -17,65 +19,44 @@ export const REPLY_EVENTS: readonly ProposalEvent[] = [
   'none',
 ]
 
-export const REPLY_EVENT_LABEL: Record<ProposalEvent, string> = {
-  interview_scheduled: 'Entrevista',
-  test_assigned: 'Prueba técnica',
-  offer_received: 'Oferta de trabajo',
-  rejected: 'Rechazo',
-  reply_received: 'Respuesta (el proceso sigue)',
-  none: 'Nada que registrar',
-}
+export const REPLY_EVENT_LABEL = translatedMap<ProposalEvent>('replies:event', REPLY_EVENTS)
 
 export const MILESTONE_EVENTS: Partial<Record<ProposalEvent, 'interview' | 'test'>> = {
   interview_scheduled: 'interview',
   test_assigned: 'test',
 }
 
-export const CONFIDENCE_LABEL: Record<Confidence, string> = {
-  high: 'Clara',
-  medium: 'Revísala',
-  low: 'Dudosa',
-}
+export const CONFIDENCE_LABEL = translatedMap<Confidence>('replies:confidence', ['high', 'medium', 'low'])
 
-export const MATCH_REASON_LABEL: Record<Schemas['ReplyJob']['reason'], string> = {
-  contact: 'contacto de la ficha',
-  domain: 'dominio de la empresa',
-  ats: 'plataforma de selección',
-  company_name: 'nombre de la empresa',
-}
+export const MATCH_REASON_LABEL = translatedMap<Schemas['ReplyJob']['reason']>('replies:matchReason', [
+  'contact',
+  'domain',
+  'ats',
+  'company_name',
+])
 
-const LIKELY: Record<ProposalEvent, string> = {
-  interview_scheduled: 'Parece una invitación a entrevista',
-  test_assigned: 'Parece una prueba técnica',
-  offer_received: 'Parece una oferta de trabajo',
-  rejected: 'Parece un rechazo',
-  reply_received: 'Parece una respuesta de la empresa',
-  none: 'No parece que haya nada que registrar',
-}
+const LIKELY = translatedMap<ProposalEvent>('replies:likely', REPLY_EVENTS)
 
-const weekdayFmt = new Intl.DateTimeFormat('es-ES', { timeZone: APP_TIME_ZONE, weekday: 'long' })
-const dayMonthFmt = new Intl.DateTimeFormat('es-ES', { timeZone: APP_TIME_ZONE, day: 'numeric', month: 'long' })
-const timeFmt = new Intl.DateTimeFormat('es-ES', {
-  timeZone: APP_TIME_ZONE,
-  hour: 'numeric',
-  minute: '2-digit',
-  hourCycle: 'h23',
-})
+const WEEKDAY = { timeZone: APP_TIME_ZONE, weekday: 'long' } as const
+const DAY_MONTH = { timeZone: APP_TIME_ZONE, day: 'numeric', month: 'long' } as const
+const TIME = { timeZone: APP_TIME_ZONE, hour: 'numeric', minute: '2-digit', hourCycle: 'h23' } as const
 
 /** «el jueves 8 de octubre a las 10:00» (o sin hora si es de todo el día), en hora de Madrid. */
 export function spokenWhen(iso: string, allDay = false): string {
+  const t = i18n.getFixedT(null, 'replies', 'when')
   const date = new Date(iso)
-  const day = `el ${weekdayFmt.format(date)} ${dayMonthFmt.format(date)}`
+  const day = t('day', { weekday: dateFormatter(WEEKDAY).format(date), date: dateFormatter(DAY_MONTH).format(date) })
   if (allDay) return day
-  const time = timeFmt.format(date)
-  return `${day} ${time.startsWith('1:') ? 'a la' : 'a las'} ${time}`
+  const time = dateFormatter(TIME).format(date)
+  return t(time.startsWith('1:') ? 'atOne' : 'at', { day, time })
 }
 
 /** «Parece una invitación a entrevista el jueves 8 de octubre a las 10:00». */
 export function proposalSentence(proposal: Pick<ReplyProposal, 'event_type' | 'milestone'>): string {
+  const t = i18n.getFixedT(null, 'replies', 'sentence')
   const base = LIKELY[proposal.event_type]
   const milestone = proposal.milestone
   if (!milestone) return base
   const when = spokenWhen(milestone.starts_at, milestone.all_day)
-  return proposal.event_type === 'test_assigned' ? `${base} con entrega ${when}` : `${base} ${when}`
+  return t(proposal.event_type === 'test_assigned' ? 'withDue' : 'withWhen', { base, when })
 }

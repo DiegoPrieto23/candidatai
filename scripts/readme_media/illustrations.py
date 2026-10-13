@@ -14,7 +14,7 @@ TEXT = {
         "sub": "Your AI agent does the thinking. The app keeps the state, the rules and the checks.",
         "steps": ["Find", "Triage", "Tailor CV", "Apply", "Follow up", "Offer"],
         "how_title": "How it works",
-        "lanes": ["You", "Your AI agent", "Job Hunter"],
+        "lanes": ["You", "Your AI agent", "CandidatAI"],
         "cards": [
             # (paso, quién: 0 tú, 1 agente, 2 app, título, detalle)
             ("1", 2, "Jobs come in", "ATS APIs, email alerts,\nbrowser button, portals"),
@@ -32,7 +32,7 @@ TEXT = {
         "sub": "Tu agente de IA pone el criterio. La app guarda el estado, las reglas y las comprobaciones.",
         "steps": ["Buscar", "Triar", "CV a medida", "Postular", "Seguir", "Oferta"],
         "how_title": "Cómo funciona",
-        "lanes": ["Tú", "Tu agente de IA", "Job Hunter"],
+        "lanes": ["Tú", "Tu agente de IA", "CandidatAI"],
         "cards": [
             ("1", 2, "Entran ofertas", "APIs de ATS, alertas por\ncorreo, botón, portales"),
             ("2", 1, "Extrae y valora", "datos estructurados y\nuna valoración razonada"),
@@ -46,8 +46,8 @@ TEXT = {
     },
 }
 
-TEAL = "#0F6E69"
-TEAL_LIGHT = "#5FC8BD"
+TEAL = "#0F766E"  # docs/brand
+TEAL_LIGHT = "#5EEAD4"
 
 
 def banner(lang: str) -> str:
@@ -71,34 +71,23 @@ def banner(lang: str) -> str:
                 f'stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'
             )
             x += 34
-    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img" aria-label="Job Hunter — {escape(t['tagline'])}">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#0B3D3A"/>
-      <stop offset="0.55" stop-color="{TEAL}"/>
-      <stop offset="1" stop-color="#14897F"/>
-    </linearGradient>
-    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
-      <path d="M32 0H0V32" fill="none" stroke="#ffffff" stroke-opacity="0.05"/>
-    </pattern>
-  </defs>
-  <rect width="{w}" height="{h}" rx="20" fill="url(#bg)"/>
-  <rect width="{w}" height="{h}" rx="20" fill="url(#grid)"/>
-  <circle cx="1130" cy="70" r="190" fill="#ffffff" fill-opacity="0.05"/>
-  <circle cx="1180" cy="300" r="120" fill="#ffffff" fill-opacity="0.04"/>
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img" aria-label="CandidatAI — {escape(t['tagline'])}">
+  <rect width="{w}" height="{h}" rx="20" fill="{TEAL}"/>
   <g font-family="{FONT}">
-    <g transform="translate(96,70)">
-      <rect width="76" height="76" rx="18" fill="#ffffff"/>
-      <text x="38" y="50" text-anchor="middle" font-size="32" font-weight="800" fill="{TEAL}">JH</text>
+    <g transform="translate(96,66) scale(1.25)">
+      <rect width="64" height="64" rx="14" fill="#ffffff"/>
+      <path d="M12 64 C12 47 20.5 40.5 32 40.5 C43.5 40.5 52 47 52 64 Z" fill="{TEAL}"/>
+      <polygon points="32.00,9.40 34.74,11.76 38.30,11.09 39.50,14.50 42.91,15.70 42.24,19.26 44.60,22.00 42.24,24.74 42.91,28.30 39.50,29.50 38.30,32.91 34.74,32.24 32.00,34.60 29.26,32.24 25.70,32.91 24.50,29.50 21.09,28.30 21.76,24.74 19.40,22.00 21.76,19.26 21.09,15.70 24.50,14.50 25.70,11.09 29.26,11.76" fill="{TEAL}" stroke="{TEAL}" stroke-width="2.6" stroke-linejoin="round"/>
+      <path d="M26.4 21.6 L30.4 25.6 L37.8 18.2" fill="none" stroke="#ffffff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
     </g>
-    <text x="196" y="122" font-size="64" font-weight="800" fill="#ffffff" letter-spacing="-1">Job Hunter</text>
+    <text x="196" y="122" font-size="64" font-weight="700" fill="#ffffff" letter-spacing="-1.6">Candidat<tspan fill="{TEAL_LIGHT}">AI</tspan></text>
     <text x="96" y="194" font-size="28" font-weight="600" fill="#ffffff">{escape(t['tagline'])}</text>
     <text x="96" y="230" font-size="19" fill="#D7F2EE">{escape(t['sub'])}</text>
     {''.join(chips)}
   </g>
   <g transform="translate(1010,110)" font-family="{MONO}" font-size="15" fill="#D7F2EE" fill-opacity="0.9">
     <rect x="-24" y="-34" width="230" height="132" rx="12" fill="#06201E" fill-opacity="0.55" stroke="#ffffff" stroke-opacity="0.15"/>
-    <text y="0"><tspan fill="{TEAL_LIGHT}">$</tspan> jh status</text>
+    <text y="0"><tspan fill="{TEAL_LIGHT}">$</tspan> cai status</text>
     <text y="26">pending_triage  <tspan fill="#ffffff">8</tspan></text>
     <text y="50">cv_ready        <tspan fill="#ffffff">2</tspan></text>
     <text y="74">in_process      <tspan fill="#ffffff">6</tspan></text>

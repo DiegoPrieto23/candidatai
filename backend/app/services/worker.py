@@ -1,5 +1,5 @@
 """Worker: ejecuta las tareas de la cola (`services/tasks.py`) y programa la ingesta diaria. Lo
-lanza `jh worker`.
+lanza `cai worker`.
 
 Cada tarea corre en su propia transacción: si falla, no deja nada a medias y vuelve a la cola con
 espera creciente hasta `tasks.MAX_ATTEMPTS` intentos.
@@ -199,7 +199,7 @@ class WorkerRun(BaseModel):
     done: int
     failed: int
     outcomes: list[TaskOutcome]
-    agent_runs: list[agent_runner.AgentRunOutcome] = []  # `jh worker --once` (fase 19)
+    agent_runs: list[agent_runner.AgentRunOutcome] = []  # `cai worker --once` (fase 19)
 
 
 def run_one() -> TaskOutcome | None:

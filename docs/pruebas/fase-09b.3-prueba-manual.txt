@@ -2,7 +2,7 @@ PRUEBA MANUAL · FASE 09b.3 · PLATAFORMAS Y BÚSQUEDA CON NAVEGADOR
 =================================================================
 
 Objetivo: comprobar con portales reales que
-- el agente configura contigo las plataformas donde buscar (`buscar-ofertas configurar`) y las
+- el agente configura contigo las plataformas donde buscar (`search-jobs configurar`) y las
   ves y ajustas en la pantalla «Plataformas»;
 - LinkedIn queda desactivado y solo tú puedes activarlo, confirmando el riesgo;
 - el agente recorre con tu navegador una plataforma de acceso libre, da de alta lo que encaja sin
@@ -15,34 +15,34 @@ REQUISITOS
 ----------
 - Claude Code con Claude in Chrome conectado (extensión instalada y con permiso en el portal que
   vayas a probar). Otros agentes con acceso al navegador también valen; anota cuál usas.
-- Perfil importado (`jh profile import`) con `preferences` (puestos, zonas, modalidad).
+- Perfil importado (`cai profile import`) con `preferences` (puestos, zonas, modalidad).
 - Dos terminales de PowerShell (API y UI).
 - Los comandos se ejecutan desde la RAÍZ del repo:
       cd <carpeta-del-repo>
 - Rama: main (la fase ya está fusionada).
 
-Las ofertas que se den de alta son REALES y se quedan en tu base de datos (data/jobhunter.db).
+Las ofertas que se den de alta son REALES y se quedan en tu base de datos (data/candidatai.db).
 
 
 PARTE 1 · PREPARAR
 ------------------
 1. Cierra Claude Code (su servidor MCP bloquea el entorno) y sincroniza:
        uv sync --directory backend
-       uv run --directory backend jh db upgrade
+       uv run --directory backend cai db upgrade
 2. Arranca la API y la UI, cada una en su terminal:
-       uv run --directory backend jh serve
+       uv run --directory backend cai serve
        cd frontend; pnpm dev
 3. Abre Claude Code de nuevo, así su servidor MCP carga las herramientas nuevas (`list_sources`,
    `save_source`, `record_source_run`).
    Comprobación rápida en otra terminal:
-       uv run --directory backend jh sources list --kind agent_browse
+       uv run --directory backend cai sources list --kind agent_browse
    Esperado: «No hay fuentes…» (o tus plataformas, si ya había).
 
 
 PARTE 2 · CONFIGURAR PLATAFORMAS
 --------------------------------
 1. En una sesión NUEVA de Claude Code (solo para esto, sin mezclar con desarrollo):
-       /buscar-ofertas configurar
+       /search-jobs configurar
    Esperado:
    - te pregunta en qué portales buscas, en cuáles tienes cuenta y cuáles no quieres;
    - recomienda de 3 a 6 plataformas, cada una con un motivo ligado a tu perfil;
@@ -76,7 +76,7 @@ PARTE 4 · BÚSQUEDA CON NAVEGADOR (CRITERIO DE ACEPTACIÓN)
 --------------------------------------------------------
 Usa una plataforma de acceso libre (`access: free`), por ejemplo Tecnoempleo.
 1. En una sesión nueva de Claude Code:
-       /buscar-ofertas <nombre de la plataforma>
+       /search-jobs <nombre de la plataforma>
    Mientras trabaja, observa que:
    - abre solo tus búsquedas y no sale del dominio del portal;
    - lee como mucho 2 páginas de resultados, con una pausa entre ellas;
@@ -90,7 +90,7 @@ Usa una plataforma de acceso libre (`access: free`), por ejemplo Tecnoempleo.
    Esperado: lo mismo cuenta como «ya conocidas»; ninguna oferta duplicada.
 5. Si aparece un captcha, un aviso anti-bot o un login inesperado: el agente para esa plataforma,
    lo anota como incidente (se ve en «Plataformas») y no intenta resolverlo.
-6. Opcional: /procesar-ofertas en otra sesión para extraerlas.
+6. Opcional: /process-jobs en otra sesión para extraerlas.
 
 
 QUÉ ANOTAR

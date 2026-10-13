@@ -2,7 +2,7 @@
 
 [English](GUIDE.md) · **Español**
 
-Cómo instalar Job Hunter, probarlo con la demo y usarlo cada día con tus datos y tu agente de IA.
+Cómo instalar CandidatAI, probarlo con la demo y usarlo cada día con tus datos y tu agente de IA.
 Para saber qué es y por qué funciona así, empieza por el [README](../README.es.md).
 
 ## Índice
@@ -25,30 +25,68 @@ Para saber qué es y por qué funciona así, empieza por el [README](../README.e
 
 ## 1. Requisitos
 
-Job Hunter se desarrolla y se prueba en **Windows 11**. En macOS y Linux debería funcionar (todo
+CandidatAI se desarrolla y se prueba en **Windows 11**. En macOS y Linux debería funcionar (todo
 usa `pathlib` y herramientas multiplataforma), pero aún no se ha probado.
+
+**Para usarla** solo hace falta Windows y, si quieres CVs en Word además de en PDF, LibreOffice. El
+instalador se encarga del resto (uv, Python y el Chromium que genera los PDF). Para que el agente
+haga su parte necesitas también **un agente de IA** (Claude Code, Codex…; ver la sección 5).
+
+**Para desarrollar** (clonar el repositorio y cambiar el código):
 
 | Qué | Para qué | Cómo |
 |---|---|---|
 | [uv](https://docs.astral.sh/uv/) | Python 3.12 y las dependencias del backend (no hace falta instalar Python aparte) | `powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 \| iex"` |
-| Node LTS + pnpm | La UI | Node desde nodejs.org; `npm install -g pnpm` (desde Node 25 ya no viene `corepack`) |
+| Node LTS + pnpm | Compilar la UI y desarrollarla | Node desde nodejs.org; `npm install -g pnpm` (desde Node 25 ya no viene `corepack`) |
 | LibreOffice **o** el Chromium de Playwright | Los PDF de los CVs y las cartas | LibreOffice desde libreoffice.org (si no está en `C:\Program Files\LibreOffice` ni en el `PATH`, define `SOFFICE_PATH` en `.env`); Chromium con `uv run playwright install chromium` |
-| Un agente de IA | Extraer ofertas, valorar el encaje, redactar el CV | Claude Code (referencia), Codex u otro que hable MCP o ejecute comandos |
 | Git | Clonar y actualizar | git-scm.com |
 
 Abre una terminal nueva después de instalar para que el `PATH` se actualice.
 
 ## 2. Instalación
 
+### Para usarla: el instalador
+
+En PowerShell (no hace falta ser administrador):
+
 ```powershell
-git clone https://github.com/DiegoPrieto23/job-search.git job-hunter
-cd job-hunter\backend
+iwr -useb https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/install.ps1 -OutFile $env:TEMP\cai-install.ps1
+powershell -ExecutionPolicy Bypass -File $env:TEMP\cai-install.ps1
+```
+
+El instalador:
+
+1. instala [uv](https://docs.astral.sh/uv/) si no está (con él viene Python 3.12);
+2. descarga la última versión de CandidatAI, con la UI ya compilada (no hace falta Node);
+3. la deja en `%LOCALAPPDATA%\CandidatAI\app`, y tus datos en `%LOCALAPPDATA%\CandidatAI\data`;
+4. prepara el entorno, el Chromium de los PDF y la base de datos;
+5. crea un acceso directo **«CandidatAI»** en el escritorio y en el menú Inicio.
+
+Al abrir el acceso directo se arranca todo y se abre el navegador en `http://127.0.0.1:8000`. Deja
+abierta la ventana que aparece mientras la uses; para cerrar CandidatAI, cierra esa ventana.
+
+- **Antes de instalar**, `-WhatIf` (al final de la segunda línea) explica lo que haría sin cambiar
+  nada. En los ejemplos de abajo, si PowerShell no deja ejecutar scripts, usa
+  `powershell -ExecutionPolicy Bypass -File .\install.ps1 …` en vez de `.\install.ps1 …`.
+- **Actualizar:** vuelve a ejecutar el instalador (con CandidatAI cerrada). Tus datos no se
+  tocan, y el `.env` de la app (`…\CandidatAI\app\.env`) se conserva.
+- **Desinstalar:** `.\install.ps1 -Uninstall` quita la app y los accesos directos, no tus datos
+  (con `-RemoveData`, también tus datos, previa confirmación).
+- Mientras el repositorio sea privado o no haya ninguna versión publicada, el comando de una línea
+  no tiene qué descargar: instala desde tu copia del repositorio (abajo) con
+  `.\install.ps1 -Source <carpeta del repositorio>`, después de compilar la UI (`pnpm build`).
+
+### Para desarrollar: clonar el repositorio
+
+```powershell
+git clone https://github.com/DiegoPrieto23/candidatai.git candidatai
+cd candidatai\backend
 uv sync                                # dependencias del backend (crea .venv)
 uv run playwright install chromium     # plantillas html y PDF sin LibreOffice
-uv run jh doctor                       # comprueba el entorno y dice qué falta
-uv run jh db upgrade                   # crea la base de datos en data/
+uv run cai doctor                      # comprueba el entorno y dice qué falta
 cd ..\frontend
 pnpm install
+pnpm build                             # la UI compilada que sirve `cai start`
 ```
 
 Opcional: `uv sync --extra matching` instala la similitud semántica local (trae torch, ~1 GB). Sin
@@ -61,14 +99,13 @@ La demo es una candidata inventada con 60 ofertas, 8 semanas de historial y 2 CV
 
 ```powershell
 cd backend
-uv run jh demo seed                         # --force para recrearla
-$env:JH_DATA_DIR = "data-demo"; uv run jh serve
-# en otra terminal
-cd frontend; pnpm dev                       # http://127.0.0.1:5173
+uv run cai demo seed                         # --force para recrearla
+$env:CAI_DATA_DIR = "data-demo"; uv run cai start
 ```
 
-La UI muestra un banner «Modo demo». Para probar los skills sobre la demo, arranca tu agente con
-`JH_DATA_DIR=data-demo` para que su servidor MCP use esa carpeta.
+Se abre el navegador en `http://127.0.0.1:8000` con un banner «Modo demo». Para probar los skills
+sobre la demo, arranca tu agente con `CAI_DATA_DIR=data-demo` para que su servidor MCP use esa
+carpeta.
 
 ## 4. Tus datos y tu perfil
 
@@ -77,11 +114,11 @@ documentos y correos. Las claves van en `.env`, también fuera de git.
 
 | Qué | Dónde | Cómo |
 |---|---|---|
-| **Perfil** (la fuente de verdad de todo lo que se escribe sobre ti) | `data/profile.yaml` | Skill `actualizar-perfil`: lee tu CV, te pregunta lo que falte y lo valida. Cada cambio crea una versión |
-| **Tu CV como diseño** | `data/templates/<id>/` | Sube tu CV en «Plantillas → Mi CV» y usa el skill `importar-plantilla-cv`. Vale Word, PDF, imagen o HTML (Canva, Google Docs…) |
+| **Perfil** (la fuente de verdad de todo lo que se escribe sobre ti) | `data/profile.yaml` | Skill `update-profile`: lee tu CV, te pregunta lo que falte y lo valida. Cada cambio crea una versión |
+| **Tu CV como diseño** | `data/templates/<id>/` | Sube tu CV en «Plantillas → Mi CV» y usa el skill `import-cv-template`. Vale Word, PDF, imagen o HTML (Canva, Google Docs…) |
 | **Foto** | `data/photo.jpg` (o png) | Cada plantilla la recorta a su forma; se incluye o no según el país de la oferta |
 | **Contexto** (estilo, narrativa, criterios) | `data/contexto/*.md` | Orienta al agente, pero nunca respalda un hecho del CV |
-| **Documentos fuente** (CVs antiguos, títulos, referencias) | `data/documentos/` | `actualizar-perfil` los puede leer, confirmando antes de escribir |
+| **Documentos fuente** (CVs antiguos, títulos, referencias) | `data/documentos/` | `update-profile` los puede leer, confirmando antes de escribir |
 
 Tu mínimo salarial va en `private.salary_floor_eur` del perfil: la app lo usa para comparar
 ofertas, pero el agente nunca lo recibe.
@@ -91,46 +128,48 @@ ofertas, pero el agente nunca lo recibe.
 Abre tu agente **en la raíz del repositorio**: ahí encuentra las instrucciones (`AGENTS.md`), los
 skills y el servidor MCP ya configurados.
 
-- **Claude Code:** `claude` en la raíz. Comprueba con `/mcp` que el servidor `jobhunter` está
-  conectado. Los skills se invocan como `/generar-cv 42`.
-- **Codex:** usa `.codex/` (generado). Los skills se invocan como `$generar-cv 42`.
-- **Otros agentes:** si leen `AGENTS.md` y hablan MCP, registra el servidor `jobhunter` con el
+- **Claude Code:** `claude` en la raíz. Comprueba con `/mcp` que el servidor `candidatai` está
+  conectado. Los skills se invocan como `/generate-cv 42`.
+- **Codex:** usa `.codex/` (generado). Los skills se invocan como `$generate-cv 42`.
+- **Otros agentes:** si leen `AGENTS.md` y hablan MCP, registra el servidor `candidatai` con el
   comando de `.mcp.json`. Si no hablan MCP, cada herramienta tiene su comando
-  `uv run --directory backend jh … --json` (tabla en
+  `uv run --directory backend cai … --json` (tabla en
   [`AGENT_INTERFACE.md`](AGENT_INTERFACE.md)).
 
 Más detalle, y cómo añadir un agente: [`AGENTS_COMPAT.md`](AGENTS_COMPAT.md).
 
 ## 6. Arrancar la app cada día
 
-Tres procesos, mejor cada uno en su ventana de terminal y **fuera de tu agente** (si el agente se
-queda sin memoria, puede cerrar lo que haya lanzado él):
+- **Con el instalador:** abre el acceso directo «CandidatAI». Para cerrarla, cierra su ventana.
+- **Desde el repositorio:** `cd backend; uv run cai start`. Arranca la API (que sirve también la
+  UI) y el worker en un solo comando, aplica las migraciones pendientes y abre el navegador.
+  Ctrl+C para cerrar. Sus registros van a `data/logs/start-*.log`.
+- **Para desarrollar la UI** con recarga en caliente: `uv run cai start --dev` arranca además Vite
+  y abre `http://127.0.0.1:5173`. También se pueden arrancar por separado `cai serve`,
+  `cai worker` y `pnpm dev`, cada uno en su ventana.
 
-```powershell
-cd backend; uv run jh serve       # API en http://127.0.0.1:8000 (solo en local)
-cd backend; uv run jh worker      # ingesta diaria, scores, correo, candidatura asistida, segundo plano
-cd frontend; pnpm dev             # UI en http://127.0.0.1:5173
-```
+Arranca CandidatAI **fuera de tu agente** (una ventana propia o el acceso directo): si el agente se
+queda sin memoria, puede cerrar lo que haya lanzado él.
 
 Un día normal:
 
 1. Abre **Inicio**: te dice qué tienes (ofertas por revisar, CVs listos, seguimientos vencidos).
-2. Pide a tu agente `procesar-ofertas` y `evaluar-encaje`, o pulsa sus botones en la UI.
+2. Pide a tu agente `process-jobs` y `assess-fit`, o pulsa sus botones en la UI.
 3. Triaga en **Por revisar**.
-4. `generar-cv` para las aprobadas y, cuando quieras, envía desde la ficha.
-5. `resumen-diario` resume todo eso en una respuesta.
+4. `generate-cv` para las aprobadas y, cuando quieras, envía desde la ficha.
+5. `daily-summary` resume todo eso en una respuesta.
 
 ## 7. Configurar las fuentes de ofertas
 
 | Fuente | Cómo se configura |
 |---|---|
 | **Alta manual** | «Nueva oferta» en la UI (URL o texto pegado) |
-| **Empresas objetivo** (Greenhouse, Lever, Ashby) | Pantalla «Empresas» o `jh sources add --kind greenhouse --name "Acme" --slug acme`. `jh sources discover --file empresas.txt` busca el tablero de cada empresa de una lista |
-| **InfoJobs y Adzuna** | Sus claves en `.env` (`JH_INFOJOBS_CLIENT_ID`/`_SECRET`, `JH_ADZUNA_APP_ID`/`_KEY`) y una búsqueda con `jh sources add` |
+| **Empresas objetivo** (Greenhouse, Lever, Ashby) | Página «Fuentes → Empresas objetivo» o `cai sources add --kind greenhouse --name "Acme" --slug acme`. `cai sources discover --file empresas.txt` busca el tablero de cada empresa de una lista |
+| **InfoJobs y Adzuna** | Sus claves en `.env` (`CAI_INFOJOBS_CLIENT_ID`/`_SECRET`, `CAI_ADZUNA_APP_ID`/`_KEY`) y una búsqueda con `cai sources add` |
 | **Alertas por correo** | Crea alertas en LinkedIn, InfoJobs, Indeed… y que lleguen a una etiqueta de tu correo. Configura IMAP de solo lectura en `.env`: paso a paso en [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md). Sin IMAP, deja los `.eml` en `data/inbox/`. Lo que llega aparece en «Alertas» |
-| **Botón «Enviar a Job Hunter»** | Carga `extension/` como extensión sin empaquetar en Chrome o Edge y pega el token de `jh capture token` en sus opciones. Instrucciones: [`extension/README.md`](../extension/README.md) |
-| **Tu agente con tu navegador** | `buscar-ofertas configurar` elige portales y búsquedas (pantalla «Plataformas»); `buscar-ofertas` los recorre. LinkedIn queda desactivado hasta que lo actives tú |
-| **Búsqueda pública de LinkedIn** | Interruptor «Búsqueda pública sin sesión» en la tarjeta de LinkedIn de «Plataformas». Apagado por defecto: va contra las condiciones de LinkedIn y puede bloquear tu IP un tiempo |
+| **Botón «Enviar a CandidatAI»** | Carga `extension/` como extensión sin empaquetar en Chrome o Edge y pega el token de `cai capture token` en sus opciones. Instrucciones: [`extension/README.md`](../extension/README.md) |
+| **Tu agente con tu navegador** | `search-jobs configurar` elige portales y búsquedas (página «Fuentes → Plataformas»); `search-jobs` los recorre. LinkedIn queda desactivado hasta que lo actives tú |
+| **Búsqueda pública de LinkedIn** | Interruptor «Búsqueda pública sin sesión» en la tarjeta de LinkedIn de «Fuentes → Plataformas». Apagado por defecto: va contra las condiciones de LinkedIn y puede bloquear tu IP un tiempo |
 
 El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.daily_at`
 (`config/policies.yaml`) y al arrancar si se perdió alguna. Detalle de cada vía:
@@ -138,19 +177,19 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
 
 ## 8. De la oferta al envío
 
-1. **Extraer:** `procesar-ofertas` convierte el texto de cada oferta en datos estructurados. El
+1. **Extraer:** `process-jobs` convierte el texto de cada oferta en datos estructurados. El
    texto de las ofertas es contenido no confiable: si trae texto oculto o frases dirigidas a una
    IA, la ficha lo avisa.
-2. **Valorar:** la app calcula el score y aplica tus filtros duros; `evaluar-encaje` añade una
+2. **Valorar:** la app calcula el score y aplica tus filtros duros; `assess-fit` añade una
    valoración razonada.
 3. **Triar:** en «Por revisar», `J`/`K` para moverte, `A` para aprobar, `D` para descartar (con
    motivo) y `O` para abrir la ficha. Se puede deshacer.
-4. **CV:** `generar-cv 42` redacta el contenido, el código lo valida y renderiza y el rol
-   `verificador` lo revisa. En la ficha cambias plantilla, foto, color y secciones sin gastar
+4. **CV:** `generate-cv 42` redacta el contenido, el código lo valida y renderiza y el rol
+   `verifier` lo revisa. En la ficha cambias plantilla, foto, color y secciones sin gastar
    agente, comparas renders y marcas cuál envías.
-5. **Carta:** `generar-carta 42`, con tus indicaciones generales (perfil) y las de la oferta
+5. **Carta:** `generate-cover-letter 42`, con tus indicaciones generales (perfil) y las de la oferta
    (ficha). Sale a juego con el CV.
-6. **Candidatura:** `preparar-candidatura 42` prepara las respuestas de screening. En la ficha,
+6. **Candidatura:** `prepare-application 42` prepara las respuestas de screening. En la ficha,
    «Preparar candidatura» abre un navegador propio (perfil en `data/browser-profile/`), rellena el
    formulario y se para. Revisas, y solo si escribes el nombre de la empresa, envía. Ante un
    captcha o un login, se para y te pasa la pestaña. Si la envías tú por otro lado, márcala como
@@ -161,24 +200,24 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
 - **Procesos:** kanban por etapas. Una tarjeta solo cambia de columna registrando lo que pasó
   (respuesta, entrevista, prueba, oferta, rechazo). Entrevistas y pruebas crean un hito con fecha,
   exportable a tu calendario (`.ics`).
-- **Seguimientos:** te avisa de las candidaturas sin respuesta; `redactar-seguimiento` deja los
+- **Seguimientos:** te avisa de las candidaturas sin respuesta; `draft-follow-up` deja los
   borradores (máximo 2 por candidatura) y el de agradecimiento tras una entrevista. Los envías tú.
 - **Respuestas:** con IMAP configurado, la app lee los correos de las empresas de tus procesos;
-  `revisar-respuestas` propone qué ha pasado y tú lo aceptas en «Respuestas».
+  `review-replies` propone qué ha pasado y tú lo aceptas en «Respuestas».
 - **Embudo:** conversión por paso, fuente, puesto, semana, plantilla, carta y referencia, y
-  «¿Acierta el score?». `revisar-busqueda` hace la retrospectiva semanal.
-- **Red:** importa tus contactos de LinkedIn (exportación CSV) con `jh contacts import-linkedin`
-  y verás «Conoces a N» en las ofertas de sus empresas; `redactar-mensaje` prepara el mensaje.
+  «¿Acierta el score?». `review-search` hace la retrospectiva semanal.
+- **Red:** importa tus contactos de LinkedIn (exportación CSV) con `cai contacts import-linkedin`
+  y verás «Conoces a N» en las ofertas de sus empresas; `draft-message` prepara el mensaje.
 
 ## 10. Entrevistas y ofertas recibidas
 
-- `preparar-entrevista 42`: dosier y plan por días hasta la fecha, guardados en la ficha.
-- `simular-entrevista 42`: una pregunta cada vez, con feedback y una versión mejor basada en tu
+- `prepare-interview 42`: dosier y plan por días hasta la fecha, guardados en la ficha.
+- `mock-interview 42`: una pregunta cada vez, con feedback y una versión mejor basada en tu
   perfil.
-- `repasar-entrevista 42`: cuentas cómo fue; guarda notas y próximos pasos y propone historias STAR
+- `debrief-interview 42`: cuentas cómo fue; guarda notas y próximos pasos y propone historias STAR
   nuevas para tu perfil (con tu OK).
 - **Ofertas recibidas:** las anotas en la ficha y las comparas en «Procesos → Ofertas recibidas»
-  con tu mínimo y con el rango publicado. `preparar-negociacion 42` prepara argumentos y guion sin
+  con tu mínimo y con el rango publicado. `prepare-negotiation 42` prepara argumentos y guion sin
   proponer cifras.
 
 ## 11. El agente desde la UI
@@ -186,50 +225,67 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
 Muchas pantallas tienen botones que abren tu agente con la orden ya escrita:
 
 - **En terminal:** abre una ventana con tu agente; tú ves y apruebas lo que hace.
-- **En segundo plano** (Claude Code): para los skills que no preguntan (`procesar-ofertas`,
-  `evaluar-encaje`, `generar-cv`). Corre sin ventana, solo con las herramientas de la app que
-  necesita, y ves el progreso en la página «Agente». Necesita `jh worker` en marcha.
-- **Dejar para mi próxima sesión:** guarda el encargo; `atender-encargos` lo hace cuando abras tu
+- **En segundo plano** (Claude Code): para los skills que no preguntan (`process-jobs`,
+  `assess-fit`, `generate-cv`). Corre sin ventana, solo con las herramientas de la app que
+  necesita, y ves el progreso en la página «Agente». Necesita `cai worker` en marcha.
+- **Dejar para mi próxima sesión:** guarda el encargo; `handle-requests` lo hace cuando abras tu
   agente.
 
 ## 12. Configuración
 
-- **`.env`** (en la raíz, fuera de git): `JH_DATA_DIR`, `SOFFICE_PATH`, claves de InfoJobs y
-  Adzuna, IMAP (`JH_IMAP_HOST`, `JH_IMAP_PORT`, `JH_IMAP_USER`, `JH_IMAP_PASSWORD`,
-  `JH_IMAP_FOLDER`, `JH_IMAP_REPLIES_FOLDER`), `JH_BROWSER_CHANNEL` (`chrome` o `msedge` para la
-  candidatura asistida), `JH_EMBEDDINGS=off`. Nada es obligatorio.
+- **`.env`** (en la raíz, fuera de git): `CAI_DATA_DIR`, `SOFFICE_PATH`, claves de InfoJobs y
+  Adzuna, IMAP (`CAI_IMAP_HOST`, `CAI_IMAP_PORT`, `CAI_IMAP_USER`, `CAI_IMAP_PASSWORD`,
+  `CAI_IMAP_FOLDER`, `CAI_IMAP_REPLIES_FOLDER`), `CAI_BROWSER_CHANNEL` (`chrome` o `msedge` para la
+  candidatura asistida), `CAI_EMBEDDINGS=off`. Nada es obligatorio.
 - **`config/policies.yaml`:** umbral de triaje, pesos del score, hora de la ingesta diaria,
   frecuencia del correo, límites de la búsqueda con navegador y de la búsqueda pública de
-  LinkedIn, frases de oferta cerrada… Tras cambiar el score, `jh match rescore` recalcula y
-  `jh eval matching` mide el efecto.
+  LinkedIn, frases de oferta cerrada… Tras cambiar el score, `cai match rescore` recalcula y
+  `cai eval matching` mide el efecto.
 - **Tu perfil:** preferencias (puestos, nivel, modalidad, zonas, idiomas), plantilla por defecto,
   reglas de plantilla y política de foto por país.
 
+### Idioma
+
+La interfaz está en **español** y en **inglés**. El botón del globo, abajo en la barra lateral (o
+en el menú, en el móvil), abre la lista de idiomas; el cambio es instantáneo y la app lo recuerda
+en ese navegador. La primera vez sigue el idioma del navegador: español si es español; si no,
+inglés. Las fechas y los números también siguen el idioma. Al cambiarlo se vuelve a pintar la
+página: un diálogo o un formulario a medias se cierran, así que termínalo antes.
+
+Lo que la interfaz no traduce: tus datos (ofertas, perfil, notas), lo que redacta tu agente (los
+CVs, las cartas y las valoraciones siguen el idioma de cada oferta) y algunos mensajes que escribe
+el servidor sin un código que traducir (ciertos avisos y resultados de ejecuciones), que siguen en
+español.
+
 ## 13. Actualizar
 
-Con tu agente **cerrado** (su servidor MCP bloquea el entorno de Python):
+**Con el instalador:** vuelve a ejecutarlo; tus datos (`%LOCALAPPDATA%\CandidatAI\data`) no se
+tocan y las migraciones se aplican solas.
+
+**Desde el repositorio**, con tu agente **cerrado** (su servidor MCP bloquea el entorno de Python):
 
 ```powershell
-copy data\jobhunter.db data\jobhunter.db.bak     # copia de seguridad
+copy data\candidatai.db data\candidatai.db.bak     # copia de seguridad
 git pull
-cd backend; uv sync; uv run jh db upgrade
-cd ..\frontend; pnpm install
+cd backend; uv sync
+cd ..\frontend; pnpm install; pnpm build
 ```
 
-Reinicia `jh serve`, `jh worker` y tu agente.
+`cai start` aplica las migraciones al arrancar. Reinicia CandidatAI y tu agente.
 
 ## 14. Problemas frecuentes
 
 | Síntoma | Solución |
 |---|---|
-| Algo no funciona y no sabes qué | `uv run jh doctor` comprueba base de datos, PDF, Chromium, plantillas, foto, correo y captura |
-| «Ejecuta `jh db upgrade`» | Hay migraciones nuevas: `uv run jh db upgrade` |
-| `uv sync` falla con «fichero en uso» | Cierra tu agente (su servidor MCP usa `jh-mcp.exe`) y repite |
-| Los PDF no salen | Instala LibreOffice o `uv run playwright install chromium`; `jh doctor` lo comprueba |
-| La UI dice que no conecta con la API | Arranca `jh serve`; la UI espera la API en `127.0.0.1:8000` |
-| El puerto 5173 está ocupado | Otro `pnpm dev` sigue abierto: ciérralo (la API solo acepta la UI en ese puerto) |
-| Nada entra solo por la mañana | `jh worker` tiene que estar en marcha |
-| Las tildes salen mal en `jh --help` | Problema conocido de la consola de Windows con cp1252; la salida `--json` está bien |
+| Algo no funciona y no sabes qué | `uv run cai doctor` comprueba base de datos, PDF, Chromium, plantillas, foto, correo y captura |
+| «Ejecuta `cai db upgrade`» | Hay migraciones nuevas: `uv run cai db upgrade` |
+| `uv sync` falla con «fichero en uso» | Cierra tu agente (su servidor MCP usa `cai-mcp.exe`) y repite |
+| Los PDF no salen | Instala LibreOffice o `uv run playwright install chromium`; `cai doctor` lo comprueba |
+| La UI dice que no conecta con la API | Arranca CandidatAI (`cai start` o el acceso directo) y no cierres su ventana |
+| «El puerto 8000 lo usa otro programa» | Cierra ese programa o usa `cai start --port 8001` |
+| No está la UI compilada | En el repositorio, `cd frontend; pnpm install; pnpm build` (con el instalador ya viene) |
+| Nada entra solo por la mañana | CandidatAI tiene que estar abierta (`cai start` arranca el worker) |
+| Las tildes salen mal en `cai --help` | Problema conocido de la consola de Windows con cp1252; la salida `--json` está bien |
 
 ## 15. Desarrollo
 
@@ -237,7 +293,7 @@ Reinicia `jh serve`, `jh worker` y tu agente.
 cd backend
 uv run pytest                                   # tests
 uv run ruff check --fix; uv run ruff format     # estilo
-uv run jh eval matching                         # calidad del matching
+uv run cai eval matching                         # calidad del matching
 cd ..\frontend
 pnpm typecheck; pnpm test; pnpm build
 pnpm gen:api                                    # regenera el cliente tras cambiar la API

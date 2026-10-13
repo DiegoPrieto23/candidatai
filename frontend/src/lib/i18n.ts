@@ -1,0 +1,111 @@
+/**
+ * Idioma de la UI (fase 23.6), con i18next. Se elige así: el guardado en `cai-language`; si no hay,
+ * el del navegador (`es*` → español; cualquier otro → inglés). Cambiar de idioma no recarga la
+ * página y actualiza `<html lang>`.
+ */
+import { useCallback, useSyncExternalStore, type ReactNode } from 'react'
+import i18n from 'i18next'
+import { initReactI18next } from 'react-i18next'
+import { LANGUAGES, NAMESPACES, SOURCE_LANGUAGE, resources } from '@/locales'
+
+export type Language = string
+
+const STORAGE_KEY = 'cai-language'
+const FALLBACK_LANGUAGE = 'en'
+
+/** El locale de `Intl` de cada idioma (fechas y números). */
+const INTL_LOCALE: Record<string, string> = { es: 'es-ES', en: 'en-GB' }
+
+function storedLanguage(): Language | null {
+  try {
+    const value = localStorage.getItem(STORAGE_KEY)
+    return value && LANGUAGES.includes(value) ? value : null
+  } catch {
+    return null
+  }
+}
+
+/** El idioma con el que arranca la app. */
+export function detectLanguage(): Language {
+  const stored = storedLanguage()
+  if (stored) return stored
+  const browser = typeof navigator !== 'undefined' ? (navigator.languages?.[0] ?? navigator.language ?? '') : ''
+  const base = browser.toLowerCase().split('-')[0]
+  return LANGUAGES.includes(base) ? base : FALLBACK_LANGUAGE
+}
+
+void i18n.use(initReactI18next).init({
+  resources,
+  lng: detectLanguage(),
+  fallbackLng: SOURCE_LANGUAGE,
+  supportedLngs: [...LANGUAGES],
+  ns: [...NAMESPACES],
+  defaultNS: 'common',
+  interpolation: { escapeValue: false }, // React ya escapa
+  returnNull: false,
+  initAsync: false, // los textos van empaquetados: listo antes del primer render
+})
+
+function applyLanguage(language: string) {
+  if (typeof document !== 'undefined') document.documentElement.lang = language
+}
+applyLanguage(i18n.language)
+i18n.on('languageChanged', applyLanguage)
+
+/** Cambia el idioma y lo recuerda. */
+export function setLanguage(language: Language): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, language)
+  } catch {
+    // Sin almacenamiento (ventana privada): el idioma dura lo que la pestaña.
+  }
+  void i18n.changeLanguage(language)
+}
+
+function subscribe(notify: () => void): () => void {
+  i18n.on('languageChanged', notify)
+  return () => i18n.off('languageChanged', notify)
+}
+
+const currentLanguage = () => i18n.resolvedLanguage ?? i18n.language
+
+export function useLanguage() {
+  const language = useSyncExternalStore(subscribe, currentLanguage, currentLanguage)
+  const change = useCallback((next: Language) => setLanguage(next), [])
+  return { language, setLanguage: change, languages: LANGUAGES }
+}
+
+/** El locale de `Intl` del idioma activo: `es-ES` o `en-GB`. */
+export function intlLocale(): string {
+  return INTL_LOCALE[currentLanguage()] ?? currentLanguage()
+}
+
+/**
+ * Un texto que genera el servidor (en español) con un código estable que la UI sí traduce: en
+ * español, el texto tal cual; en otro idioma, la etiqueta traducida del código y el texto del
+ * servidor como detalle.
+ */
+export function serverText(label: string | null | undefined, message: string): string {
+  if (currentLanguage() === SOURCE_LANGUAGE || !label) return message
+  return `${label}: ${message}`
+}
+
+/** La etiqueta traducida de un código del servidor (`ns:grupo.código`), o `null` si no la hay. */
+export function codeLabel(key: string): string | null {
+  return i18n.exists(key) ? String(i18n.t(key as never)) : null
+}
+
+/** «a, b y c» / «a, b and c», en el idioma activo. */
+export function formatList(parts: readonly string[]): string {
+  return new Intl.ListFormat(intlLocale(), { type: 'conjunction' }).format(parts)
+}
+
+/** Como `formatList`, pero con elementos de React (enlaces…) entre las comas y la «y». */
+export function joinNodes(parts: readonly ReactNode[]): ReactNode[] {
+  const placeholders = parts.map((_, i) => `\u0000${i}\u0000`)
+  return new Intl.ListFormat(intlLocale(), { type: 'conjunction' })
+    .formatToParts(placeholders)
+    .map((part) => (part.type === 'element' ? parts[Number(part.value.slice(1, -1))] : part.value))
+}
+
+export { i18n, SOURCE_LANGUAGE }

@@ -25,7 +25,7 @@ from app.schemas.sources import Issue, SourceConfig
 from app.services.ingest import MAX_TEXT_CHARS, clean_text
 
 _SAFE_ID = re.compile(r"^[A-Za-z0-9_-]{1,100}$")
-USER_AGENT = "JobHunter/0.1 (local job search app)"  # solo ASCII en cabeceras
+USER_AGENT = "CandidatAI/0.1 (local job search app)"  # solo ASCII en cabeceras
 _BLOCK_TAGS = frozenset(
     {"p", "div", "br", "ul", "ol", "h1", "h2", "h3", "h4", "h5", "h6", "tr", "section"}
 )

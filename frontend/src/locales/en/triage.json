@@ -1,0 +1,46 @@
+{
+  "title": "To review",
+  "risk": "Possible content aimed at an AI",
+  "failsFilters": "Fails the filters",
+  "yearsPlus": "{{count}}+ years",
+  "selected": "Selected job",
+  "approve": "Approve",
+  "discard": "Discard",
+  "detail": "Details",
+  "noScore": "No score: import your profile with <code>cai profile import</code>.",
+  "done": {
+    "approved": "Approved",
+    "discarded": "Discarded",
+    "undo": "Undo",
+    "close": "Close notice"
+  },
+  "loadingQueue": "Loading jobs to review",
+  "count_one": "{{count}} job to review",
+  "count_other": "{{count}} jobs to review",
+  "byFit": ", best fit first",
+  "shortcuts": {
+    "label": "Keyboard shortcuts",
+    "move": "move",
+    "approve": "approve",
+    "discard": "discard",
+    "detail": "details"
+  },
+  "profileMissing": "<strong>No score without an imported profile.</strong> Create your profile with the skill <code>update-profile</code> or run <code>cai profile import</code>.",
+  "saveFailed": "Couldn't save: {{error}}",
+  "empty": {
+    "title": "Nothing to review",
+    "body": "When your agent extracts new jobs with <code>process-jobs</code>, they'll show up here sorted by fit."
+  },
+  "queue": "Jobs to review",
+  "discardDialog": {
+    "title": "Discard job",
+    "reason": "Reason",
+    "note": "Note",
+    "noteRequired": "(required with “Other reason”)",
+    "noteOptional": "(optional)",
+    "notePlaceholder": "Anything you want to remember about this decision",
+    "cancel": "Cancel",
+    "discarding": "Discarding…",
+    "discard": "Discard"
+  }
+}

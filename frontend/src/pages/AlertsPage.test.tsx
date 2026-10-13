@@ -51,10 +51,9 @@ describe('Alertas', () => {
     expect(open).toHaveAttribute('href', 'https://www.linkedin.com/jobs/view/400000001/')
     expect(open).toHaveAttribute('target', '_blank')
     expect(open).toHaveAttribute('rel', 'noopener noreferrer')
-    // El recuento de la cabecera.
-    const nav = screen.getByRole('link', { name: /^Alertas/ })
-    expect(await within(nav).findByText('2')).toBeInTheDocument()
-    expect(nav).toHaveTextContent('por completar')
+    // El recuento de la barra lateral, en el nombre del enlace.
+    const nav = await screen.findByRole('link', { name: 'Alertas (2 por completar)' })
+    expect(within(nav).getByText('2')).toBeInTheDocument()
   })
 
   it('se mueve con J/K, abre con O en otra pestaña y descarta con D', async () => {

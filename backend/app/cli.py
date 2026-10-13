@@ -1,4 +1,4 @@
-"""CLI `jh`: capa fina sobre `app.services`."""
+"""CLI `cai`: capa fina sobre `app.services`."""
 
 import io
 import json
@@ -21,7 +21,7 @@ from app.core.db import session_scope
 from app.services import profile
 from app.services.doctor import CheckStatus, run_doctor
 
-app = typer.Typer(help="Job Hunter: gestión local de la búsqueda de empleo.", no_args_is_help=True)
+app = typer.Typer(help="CandidatAI: gestión local de la búsqueda de empleo.", no_args_is_help=True)
 db_app = typer.Typer(help="Base de datos.", no_args_is_help=True)
 events_app = typer.Typer(help="Eventos de las ofertas.", no_args_is_help=True)
 jobs_app = typer.Typer(help="Ofertas: alta, consulta y extracción.", no_args_is_help=True)
@@ -55,7 +55,7 @@ drafts_app = typer.Typer(
     no_args_is_help=True,
 )
 companies_app = typer.Typer(
-    help="Dosier de cada empresa (skill investigar-empresa).", no_args_is_help=True
+    help="Dosier de cada empresa (skill research-company).", no_args_is_help=True
 )
 contacts_app = typer.Typer(
     help="Tu red de LinkedIn (Connections.csv) y los contactos de cada proceso.",
@@ -77,7 +77,7 @@ prompts_app = typer.Typer(
     no_args_is_help=True,
 )
 capture_app = typer.Typer(
-    help="Botón «Enviar a Job Hunter» (extensión del navegador).", no_args_is_help=True
+    help="Botón «Enviar a CandidatAI» (extensión del navegador).", no_args_is_help=True
 )
 alerts_app = typer.Typer(
     help="Alertas de empleo por correo y ofertas resumen (pending_detail).", no_args_is_help=True
@@ -125,7 +125,7 @@ _MARKS = {
 
 @app.callback()
 def main() -> None:
-    """Job Hunter: gestión local de la búsqueda de empleo."""
+    """CandidatAI: gestión local de la búsqueda de empleo."""
     # En Windows, si la salida va a una tubería (un agente leyendo `--json`), Python usa la
     # codificación ANSI del sistema. Forzamos UTF-8 para que tildes y eñes lleguen intactas.
     for stream in (sys.stdout, sys.stderr):
@@ -143,7 +143,7 @@ def doctor(
         payload = {"ok": report.ok, "checks": [c.model_dump(mode="json") for c in report.checks]}
         typer.echo(json.dumps(payload, ensure_ascii=False, indent=2))
     else:
-        typer.echo("Job Hunter · diagnóstico del entorno\n")
+        typer.echo("CandidatAI · diagnóstico del entorno\n")
         width = max(len(c.name) for c in report.checks)
         for check in report.checks:
             label, color = _MARKS[check.status]
@@ -183,6 +183,27 @@ def serve(
     uvicorn.run("app.api.main:app", host=HOST, port=port, reload=reload)
 
 
+@app.command()
+def start(
+    port: int = typer.Option(8000, help="Puerto de la app (siempre en 127.0.0.1)."),
+    dev: bool = typer.Option(
+        False, "--dev", help="Arranca también Vite (pnpm dev) para desarrollar."
+    ),
+    no_browser: bool = typer.Option(False, "--no-browser", help="No abre el navegador."),
+) -> None:
+    """Arranca CandidatAI entera (la API con la UI, y el worker) y abre el navegador. Ctrl+C para
+    cerrarla."""
+    from app.services import launcher
+
+    try:
+        launcher.start(get_settings(), port, dev=dev, open_browser=not no_browser, say=typer.echo)
+    except launcher.LaunchError as exc:
+        typer.secho(f"Error: {exc}", fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=1) from exc
+    except KeyboardInterrupt:
+        typer.echo("Cancelado.")
+
+
 OPENAPI_OUT_OPTION = typer.Option(None, "--out", help="Fichero de salida. Por defecto, stdout.")
 
 
@@ -209,7 +230,7 @@ def _render_status(report: Any) -> None:
     if report.pending_tasks:
         typer.echo(f"\nTareas pendientes del worker: {report.pending_tasks}")
     if report.agent_requests:
-        typer.echo(f"Encargos para tu agente: {report.agent_requests} (`jh requests list`)")
+        typer.echo(f"Encargos para tu agente: {report.agent_requests} (`cai requests list`)")
 
 
 def _render_added(result: Any) -> None:
@@ -502,18 +523,18 @@ def demo_seed(
         typer.secho(f"Aviso: {warning}", fg=typer.colors.YELLOW, err=True)
     folder = target.as_posix()
     typer.echo("\nPara abrirla (PowerShell, desde backend/):")
-    typer.echo(f'  $env:JH_DATA_DIR = "{folder}"; uv run jh serve')
+    typer.echo(f'  $env:CAI_DATA_DIR = "{folder}"; uv run cai serve')
     typer.echo("  y en otra terminal: cd frontend; pnpm dev")
-    typer.echo(f"Con un agente, arráncalo con JH_DATA_DIR={folder} para que el MCP use la demo.")
+    typer.echo(f"Con un agente, arráncalo con CAI_DATA_DIR={folder} para que el MCP use la demo.")
     if compat:
         typer.echo(
-            "Matriz de compatibilidad: con tu agente, procesar-ofertas, evaluar-encaje, aprueba "
-            "las de empleo.example.com/eval-cv/ y generar-cv; después `jh eval cv --agent …`."
+            "Matriz de compatibilidad: con tu agente, process-jobs, assess-fit, aprueba "
+            "las de empleo.example.com/eval-cv/ y generate-cv; después `cai eval cv --agent …`."
         )
     if eval_cv:
         typer.echo(
-            "Eval de CV: lanza `generar-cv` sobre las ofertas de empleo.example.com/eval-cv/ "
-            "(«CV listo» pendiente) y después `jh eval cv`."
+            "Eval de CV: lanza `generate-cv` sobre las ofertas de empleo.example.com/eval-cv/ "
+            "(«CV listo» pendiente) y después `cai eval cv`."
         )
 
 
@@ -527,7 +548,7 @@ def eval_cv_command(
     ),
     as_json: bool = JSON_OPTION,
 ) -> None:
-    """Comprueba los CVs que dejó `generar-cv` sobre los casos de evals/cv/ (en la demo)."""
+    """Comprueba los CVs que dejó `generate-cv` sobre los casos de evals/cv/ (en la demo)."""
     from app.services.evals import cv as cv_eval
 
     try:
@@ -630,7 +651,7 @@ def _render_worker_run(run: Any) -> None:
 
 def _worker_logger() -> logging.Logger:
     """Log legible en consola y en `data/logs/worker.log` (rotado, 1 MB x 3)."""
-    logger = logging.getLogger("jobhunter.worker")
+    logger = logging.getLogger("candidatai.worker")
     logger.setLevel(logging.INFO)
     logger.propagate = False
     for handler in list(logger.handlers):
@@ -714,7 +735,7 @@ PROFILE_PATH_ARG = typer.Argument(None, help="Ruta del perfil. Por defecto, data
 def _profile_path(path: Path | None) -> Path:
     """Ruta del perfil: relativa al directorio actual o, si ahí no existe, a la raíz del repo.
 
-    Con `uv run --directory backend jh …` el proceso corre en `backend/`, pero la ruta se escribe
+    Con `uv run --directory backend cai …` el proceso corre en `backend/`, pero la ruta se escribe
     pensando en la raíz (`demo/profile.example.yaml`).
     """
     if path is None:
@@ -816,7 +837,7 @@ def profile_init(as_json: bool = JSON_OPTION) -> None:
     else:
         typer.echo(
             f"Creado {dest} a partir del ejemplo (candidata ficticia). Rellénalo con tus datos "
-            "(skill `actualizar-perfil`) y luego ejecuta `jh profile validate` e `import`."
+            "(skill `update-profile`) y luego ejecuta `cai profile validate` e `import`."
         )
 
 
@@ -837,7 +858,7 @@ def context_init(as_json: bool = JSON_OPTION) -> None:
     for path in result.existing:
         typer.echo(f"Ya existía data/{path} (no se toca)")
     typer.echo(
-        "Rellénalos con tu editor (o con el skill `actualizar-perfil`). Orientan a los skills, "
+        "Rellénalos con tu editor (o con el skill `update-profile`). Orientan a los skills, "
         "pero nunca respaldan un hecho: eso va en data/profile.yaml."
     )
 
@@ -845,7 +866,7 @@ def context_init(as_json: bool = JSON_OPTION) -> None:
 def _render_context(view: Any) -> None:
     for item in view.files:
         if not item.exists:
-            typer.echo(f"## {item.section}: no existe (crea los ficheros con `jh context init`)")
+            typer.echo(f"## {item.section}: no existe (crea los ficheros con `cai context init`)")
             continue
         state = "vacío" if item.empty else f"{item.size_bytes} bytes"
         typer.echo(f"## {item.section} ({state})")
@@ -901,7 +922,7 @@ def _fail_plain(message: str, as_json: bool) -> NoReturn:
     raise typer.Exit(code=1)
 
 
-# --- Plantillas: importar un CV de Word (solo CLI; las usa el skill importar-plantilla-cv) -----
+# --- Plantillas: importar un CV de Word (solo CLI; las usa el skill import-cv-template) -----
 
 
 def _templates_fail(exc: Exception, as_json: bool) -> NoReturn:
@@ -1044,7 +1065,7 @@ def templates_build_docx(
     typer.echo(f"Secciones: {', '.join(result.sections)} · máximo {result.max_pages} página(s).")
     for warning in result.warnings:
         typer.secho(f"  Aviso: {warning}", fg=typer.colors.YELLOW)
-    typer.echo("Completa template.yaml y ejecuta `jh templates validate` y `preview`.")
+    typer.echo("Completa template.yaml y ejecuta `cai templates validate` y `preview`.")
 
 
 @templates_app.command("build-letter")
@@ -1066,7 +1087,7 @@ def templates_build_letter(
     typer.echo(f"Carta creada: data/{result.path} ({result.header_blocks} bloques de cabecera).")
     for warning in result.warnings:
         typer.secho(f"  Aviso: {warning}", fg=typer.colors.YELLOW)
-    typer.echo(f"Mírala con `jh templates preview {result.template_id} --letter`.")
+    typer.echo(f"Mírala con `cai templates preview {result.template_id} --letter`.")
 
 
 def _csv(value: str | None) -> list[str] | None:
@@ -1198,7 +1219,7 @@ COUNTRY_OPTION = typer.Option("es", "--country", help="Adzuna: país (código de
 KEYWORDS_OPTION = typer.Option(
     None, "--keywords", help="Palabras extra que dejan pasar un título, separadas por comas."
 )
-SOURCE_ID_ARG = typer.Argument(..., help="Id de la fuente (ver `jh sources list`).")
+SOURCE_ID_ARG = typer.Argument(..., help="Id de la fuente (ver `cai sources list`).")
 
 
 def _source_input(
@@ -1273,7 +1294,7 @@ def _render_source_run(result: Any) -> None:
             ids += f" y {len(result.job_ids) - 10} más"
         typer.echo(
             f"  Nuevas en pending_extraction: {ids}. "
-            "Ejecuta `procesar-ofertas` en tu agente para extraerlas."
+            "Ejecuta `process-jobs` en tu agente para extraerlas."
         )
 
 
@@ -1303,13 +1324,13 @@ def sources_add(
     if as_json:
         typer.echo(dump_json(view))
         return
-    typer.echo(f"Fuente añadida. Pruébala con `jh sources test {view.id}`.")
+    typer.echo(f"Fuente añadida. Pruébala con `cai sources test {view.id}`.")
     _render_source(view)
 
 
 def _render_source_list(result: Any) -> None:
     if not result.sources:
-        typer.echo("No hay fuentes. Añade una con `jh sources add`.")
+        typer.echo("No hay fuentes. Añade una con `cai sources add`.")
     for source in result.sources:
         _render_source(source)
 
@@ -1424,7 +1445,7 @@ def sources_run(
     if as_json:
         typer.echo(dump_json(SourceRunBatch(runs=runs)))
     elif not runs:
-        typer.echo("No hay fuentes activas. Añade una con `jh sources add`.")
+        typer.echo("No hay fuentes activas. Añade una con `cai sources add`.")
     else:
         for run in runs:
             _render_source_run(run)
@@ -1659,7 +1680,7 @@ def alerts_expire(as_json: bool = JSON_OPTION) -> None:
     typer.echo(dump_json(result) if as_json else result.message)
 
 
-# --- Botón «Enviar a Job Hunter» ---------------------------------------------------------------
+# --- Botón «Enviar a CandidatAI» ---------------------------------------------------------------
 
 
 @capture_app.command("token")
@@ -1677,7 +1698,7 @@ def capture_token(as_json: bool = JSON_OPTION) -> None:
     typer.secho(f"  {token}", bold=True)
     typer.echo()
     typer.echo(
-        "Pégalo en las opciones de la extensión «Enviar a Job Hunter» "
+        "Pégalo en las opciones de la extensión «Enviar a CandidatAI» "
         "(clic derecho en su icono → Opciones)."
     )
     typer.echo(f"Origen aceptado: {settings.capture_origin}")
@@ -1823,7 +1844,7 @@ def _render_calibration(result: Any) -> None:
 
 
 CALENDAR_OUT_OPTION = typer.Option(
-    None, "--out", help="Fichero de salida. Por defecto, data/calendar/jobhunter.ics."
+    None, "--out", help="Fichero de salida. Por defecto, data/calendar/candidatai.ics."
 )
 
 
@@ -1849,7 +1870,7 @@ def calendar_export(out: Path | None = CALENDAR_OUT_OPTION, as_json: bool = JSON
 
 
 def _run_sync(*extra: str) -> None:
-    # Mismo intérprete que `jh` (el venv del backend ya trae pyyaml, la única dependencia).
+    # Mismo intérprete que `cai` (el venv del backend ya trae pyyaml, la única dependencia).
     completed = subprocess.run([sys.executable, str(SYNC_SCRIPT), *extra], cwd=REPO_ROOT)
     raise typer.Exit(code=completed.returncode)
 
@@ -1889,7 +1910,7 @@ def replies_poll(as_json: bool = JSON_OPTION) -> None:
             where = f" ({issue.item})" if issue.item else ""
             typer.secho(f"  ! {issue.message}{where}", fg="yellow")
         if result.created:
-            typer.echo("  Clasifícalos con revisar-respuestas y revísalos en «Respuestas».")
+            typer.echo("  Clasifícalos con review-replies y revísalos en «Respuestas».")
     if result.errors and not result.created:
         raise typer.Exit(code=1)
 
@@ -1976,7 +1997,7 @@ def _render_job_contacts(view: Any) -> None:
         tags = f"  [{', '.join(extra)}]" if extra else ""
         typer.echo(f"  #{c.id} {c.name}{role}{tags}")
     if not view.network_imported:
-        typer.echo("Red de LinkedIn sin importar: jh contacts import-linkedin")
+        typer.echo("Red de LinkedIn sin importar: cai contacts import-linkedin")
         return
     typer.echo(
         f"Conoces a {len(view.network)} en {view.company}:"
@@ -1993,7 +2014,7 @@ def _render_job_contacts(view: Any) -> None:
 def _render_company_research(view: Any) -> None:
     research = view.research
     if research is None:
-        typer.echo(f"{view.company}: sin dosier. Usa el skill investigar-empresa.")
+        typer.echo(f"{view.company}: sin dosier. Usa el skill research-company.")
         return
     content = research.content
     typer.echo(f"{view.company} · dosier de hace {research.age_days} días ({research.file})")

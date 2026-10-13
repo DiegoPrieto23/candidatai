@@ -2,7 +2,7 @@ PRUEBA MANUAL · FASE 08c · CARTA DE PRESENTACIÓN (08c.1, 08c.2 Y 08c.3)
 =======================================================================
 
 Objetivo: comprobar con tu agente, el navegador y Word que
-- `/generar-carta` redacta una carta que sigue tus indicaciones (las generales del perfil y las de
+- `/generate-cover-letter` redacta una carta que sigue tus indicaciones (las generales del perfil y las de
   la oferta), la verifica y la guarda (criterio de aceptación de la fase);
 - el PDF sale a juego con el CV seleccionado (cabecera, foto y color) y el TXT se copia sin
   errores de codificación;
@@ -16,7 +16,7 @@ Duración aproximada: 30 minutos.
 
 REQUISITOS
 ----------
-- Dos terminales de PowerShell (API y UI) y Claude Code (u otro agente con el MCP `jobhunter`).
+- Dos terminales de PowerShell (API y UI) y Claude Code (u otro agente con el MCP `candidatai`).
 - Los comandos se ejecutan desde la RAÍZ del repo.
 - Rama: fase/08c-carta-presentacion (o main, si ya está fusionada).
 - Una oferta aprobada o en «CV listo», con su CV generado. Abajo, <ID> es su id.
@@ -25,13 +25,13 @@ REQUISITOS
 PARTE 1 · PREPARAR
 ------------------
 1. Cierra Claude Code (su servidor MCP bloquea el entorno) y migra (la 08c añade la 0010):
-       uv run --directory backend jh db upgrade
+       uv run --directory backend cai db upgrade
    Esperado: «… -> 0010».
 2. Comprueba el entorno:
-       uv run --directory backend jh doctor
+       uv run --directory backend cai doctor
    Esperado: «Plantillas de CV» OK, sin avisar de que falta «carta-simple».
 3. Arranca la app:
-       Terminal 1:  uv run --directory backend jh serve
+       Terminal 1:  uv run --directory backend cai serve
        Terminal 2:  cd frontend; pnpm dev
 4. Abre Claude Code de nuevo, para que el MCP cargue las herramientas de la carta.
 
@@ -39,7 +39,7 @@ PARTE 1 · PREPARAR
 PARTE 2 · INDICACIONES
 ----------------------
 5. Generales (perfil), opcional: pide en tu agente «quiero indicaciones generales para mis
-   cartas» (skill `actualizar-perfil`). Por ejemplo: tono cercano, despedida «Un saludo,», no
+   cartas» (skill `update-profile`). Por ejemplo: tono cercano, despedida «Un saludo,», no
    mencionar nunca el salario.
    Esperado: añade `preferences.cover_letter` a data/profile.yaml y lo importa.
 6. De la oferta: abre http://127.0.0.1:5173/jobs/<ID>. En la sección «Carta de presentación»,
@@ -50,7 +50,7 @@ PARTE 2 · INDICACIONES
 
 PARTE 3 · CARTA DESDE EL AGENTE (CRITERIO DE ACEPTACIÓN)
 --------------------------------------------------------
-7. En Claude Code:  /generar-carta <ID>
+7. En Claude Code:  /generate-cover-letter <ID>
    Esperado:
    - lee tus indicaciones (`get_cover_letter`) y no pregunta lo que ya está guardado;
    - redacta en el idioma de la oferta, con 150 palabras o menos en el cuerpo;
@@ -91,8 +91,8 @@ PARTE 4 · SIN AGENTE
 PARTE 5 · TU PLANTILLA DE WORD
 ------------------------------
 17. Si tienes una plantilla importada desde Word (p. ej. «mi-cv»):
-        uv run --directory backend jh templates build-letter mi-cv
-        uv run --directory backend jh templates preview mi-cv --letter
+        uv run --directory backend cai templates build-letter mi-cv
+        uv run --directory backend cai templates preview mi-cv --letter
     Esperado: «Carta creada: …» y una preview en data/cache/previews/ con la cabecera de tu CV y
     la letra de su cuerpo. Si la cabecera estaba mezclada con el cuerpo (dos columnas), dice que
     no puede y la carta sigue saliendo con «carta-simple».
@@ -110,6 +110,6 @@ PARTE 6 · DESPUÉS DE ENVIAR
 
 SI ALGO FALLA
 -------------
-- «No se ha podido cargar» en la sección: ¿hiciste `jh db upgrade` (0010)?
+- «No se ha podido cargar» en la sección: ¿hiciste `cai db upgrade` (0010)?
 - El agente no ve `get_cover_letter`: cierra y vuelve a abrir Claude Code.
 - El PDF tarda ~15-20 s: es LibreOffice convirtiendo (igual que el CV).
