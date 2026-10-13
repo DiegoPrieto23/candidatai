@@ -1,4 +1,5 @@
 import { useState, type FormEvent, type KeyboardEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { DiscardReason } from '@/api/client'
 import { Button } from '@/components/ui/button'
 import {
@@ -53,6 +54,7 @@ function DiscardForm({
   error,
   initialReason,
 }: Omit<Props, 'open' | 'onOpenChange'> & { onCancel: () => void }) {
+  const { t } = useTranslation('triage', { keyPrefix: 'discardDialog' })
   const [reason, setReason] = useState<DiscardReason | null>(initialReason ?? null)
   const [note, setNote] = useState('')
 
@@ -82,13 +84,13 @@ function DiscardForm({
   return (
     <form onSubmit={submit} onKeyDown={onKeyDown} className="grid gap-5">
       <DialogHeader>
-        <DialogTitle>Descartar oferta</DialogTitle>
+        <DialogTitle>{t('title')}</DialogTitle>
         <DialogDescription className="truncate">{jobTitle}</DialogDescription>
       </DialogHeader>
 
       <fieldset>
-        <legend className="mb-2 text-sm font-medium">Motivo</legend>
-        <div role="radiogroup" aria-label="Motivo" className="grid gap-1.5 sm:grid-cols-2">
+        <legend className="mb-2 text-sm font-medium">{t('reason')}</legend>
+        <div role="radiogroup" aria-label={t('reason')} className="grid gap-1.5 sm:grid-cols-2">
           {DISCARD_REASONS.map((option, i) => {
             const selected = reason === option.value
             return (
@@ -117,7 +119,7 @@ function DiscardForm({
 
       <div className="space-y-2">
         <Label htmlFor="discard-note">
-          Nota {reason === 'other' ? '(obligatoria con «Otro motivo»)' : '(opcional)'}
+          {t('note')} {reason === 'other' ? t('noteRequired') : t('noteOptional')}
         </Label>
         <Textarea
           id="discard-note"
@@ -125,7 +127,7 @@ function DiscardForm({
           onChange={(e) => setNote(e.target.value)}
           maxLength={2000}
           rows={2}
-          placeholder="Lo que quieras recordar de esta decisión"
+          placeholder={t('notePlaceholder')}
           className="resize-y bg-background"
         />
       </div>
@@ -138,10 +140,10 @@ function DiscardForm({
 
       <DialogFooter>
         <Button type="button" variant="outline" onClick={onCancel}>
-          Cancelar
+          {t('cancel')}
         </Button>
         <Button type="submit" disabled={!canSubmit}>
-          {pending ? 'Descartando…' : 'Descartar'}
+          {pending ? t('discarding') : t('discard')}
         </Button>
       </DialogFooter>
     </form>

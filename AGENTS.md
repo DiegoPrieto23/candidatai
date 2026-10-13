@@ -81,13 +81,18 @@ uv run scripts/sync_agents.py --check   # CI: falla si lo generado no está al d
   El estado actual es una proyección de los eventos; nunca se actualiza sin evento.
 - Cualquier cambio de esquema lleva migración de Alembic.
 - Tests con pytest sobre SQLite temporal. Sin red en los tests: usa fixtures y `respx`.
-- Código e identificadores en inglés; UI, docs y mensajes al usuario en español. Excepción: el
+- Código e identificadores en inglés; docs y mensajes al usuario en español; la UI, en español e
+  inglés (ver «Textos de la UI»). Excepción: el
   README y la guía de uso existen en inglés (`README.md`, `docs/GUIDE.md`) y en español
   (`README.es.md`, `docs/GUIA.md`); un cambio en uno va también al otro.
 - Windows 11 es el entorno principal: `pathlib` siempre, nada de comandos solo-Unix en código,
   rutas de herramientas externas configurables por variable de entorno (`SOFFICE_PATH`).
 - Frontend: TypeScript estricto, cliente de API generado desde el OpenAPI de FastAPI, TanStack
   Query para datos remotos, shadcn/ui para componentes.
+- **Textos de la UI**: en `frontend/src/locales/<idioma>/<zona>.json` (español e inglés, con
+  i18next), nunca escritos en los componentes. Un texto nuevo va en los dos idiomas: un test
+  comprueba que tienen las mismas claves y otro busca textos en español fuera de `locales/`. Los
+  mensajes del servidor siguen en español; si la UI los recibe con un código estable, lo traduce.
 - **Configuración de agentes**: se edita solo en `.agents/`. Nunca a mano en `.claude/skills`,
   `.claude/agents`, `.codex/` ni `.mcp.json`: se regeneran con `scripts/sync_agents.py`.
   `.claude/settings.json` es la excepción (permisos de Claude Code, se mantiene a mano).

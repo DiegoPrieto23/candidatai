@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { ArrowSquareOutIcon, BellRingingIcon, ShieldWarningIcon } from '@phosphor-icons/react'
+import { useTranslation } from 'react-i18next'
 import type { PromptView } from '@/api/client'
 import { useAnswerPrompt, usePendingPrompts } from '@/api/queries'
 import { Button } from '@/components/ui/button'
+import { errorMessage } from '@/lib/errors'
 import {
   Dialog,
   DialogContent,
@@ -59,6 +61,7 @@ function notify(prompt: PromptView) {
 }
 
 function EnableNotifications() {
+  const { t } = useTranslation('prompts')
   const [permission, setPermission] = useState(() =>
     notificationsSupported() ? Notification.permission : 'denied',
   )
@@ -71,7 +74,7 @@ function EnableNotifications() {
       onClick={() => void Notification.requestPermission().then(setPermission)}
     >
       <BellRingingIcon />
-      Avisarme también con notificaciones de Windows
+      {t('enableNotifications')}
     </Button>
   )
 }
@@ -82,6 +85,7 @@ function EnableNotifications() {
  * contestas a tiempo, el agente sigue sin ello. Nunca se resuelve un captcha por ti.
  */
 export function UserPrompts() {
+  const { t } = useTranslation('prompts')
   const { data } = usePendingPrompts()
   const answer = useAnswerPrompt()
   const prompt = data?.prompts[0]
@@ -110,10 +114,10 @@ export function UserPrompts() {
   const send = (outcome: 'done' | 'skipped') => answer.mutate({ promptId: prompt.id, outcome })
   const open = hidden !== prompt.id
   const where = prompt.attempt_id
-    ? 'en el navegador de CandidatAI'
+    ? t('where.appBrowser')
     : prompt.source_name
-      ? `en ${prompt.source_name}, en tu navegador`
-      : 'en tu navegador'
+      ? t('where.source', { source: prompt.source_name })
+      : t('where.browser')
 
   return (
     <>
@@ -124,7 +128,7 @@ export function UserPrompts() {
               <ShieldWarningIcon className="size-5 text-amber-600" weight="duotone" />
               {prompt.title}
             </DialogTitle>
-            <DialogDescription>Hace falta que lo hagas tú, {where}. CandidatAI nunca lo resuelve por ti.</DialogDescription>
+            <DialogDescription>{t('description', { where })}</DialogDescription>
           </DialogHeader>
           <p className="text-sm">{prompt.message}</p>
           {prompt.url && !prompt.attempt_id && (
@@ -134,28 +138,28 @@ export function UserPrompts() {
               rel="noopener noreferrer"
               className="inline-flex w-fit items-center gap-1 text-sm underline underline-offset-4"
             >
-              Abrir la página
+              {t('openPage')}
               <ArrowSquareOutIcon className="size-3.5" />
             </a>
           )}
           <p role="timer" aria-live="off" className="text-sm text-muted-foreground">
             {left > 0
-              ? `Si no contestas en ${clock(left)}, ${prompt.attempt_id ? 'el aviso caduca' : 'el agente sigue con lo siguiente'}.`
-              : 'Se ha acabado el tiempo.'}
+              ? t(prompt.attempt_id ? 'expires' : 'agentContinues', { time: clock(left) })
+              : t('timeUp')}
           </p>
           {answer.error && (
             <p role="alert" className="text-sm text-destructive">
-              {answer.error.message}
+              {errorMessage(answer.error)}
             </p>
           )}
           <DialogFooter className="flex-wrap gap-2 sm:justify-between">
             <EnableNotifications />
             <div className="flex gap-2">
               <Button type="button" variant="outline" disabled={answer.isPending} onClick={() => send('skipped')}>
-                Saltar
+                {t('skip')}
               </Button>
               <Button type="button" disabled={answer.isPending} onClick={() => send('done')}>
-                Ya está
+                {t('done')}
               </Button>
             </div>
           </DialogFooter>

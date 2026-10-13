@@ -5,8 +5,11 @@
  * convierten desde y hacia instantes ISO con zona, que es lo que acepta la API.
  */
 
+import { dateFormatter } from '@/lib/labels'
+
 export const APP_TIME_ZONE = 'Europe/Madrid'
 
+// `en-GB` fijo a propósito: solo se leen las partes numéricas (no depende del idioma de la UI).
 const partsFmt = new Intl.DateTimeFormat('en-GB', {
   timeZone: APP_TIME_ZONE,
   year: 'numeric',
@@ -67,16 +70,12 @@ export function fromLocalInput(value: string): string | null {
   return `${y}-${mo}-${d}T${h}:${mi}:00${sign}${pad(Math.floor(abs / 60))}:${pad(abs % 60)}`
 }
 
-const dayFmt = new Intl.DateTimeFormat('es-ES', {
-  timeZone: APP_TIME_ZONE,
-  weekday: 'short',
-  day: 'numeric',
-  month: 'short',
-})
-const timeFmt = new Intl.DateTimeFormat('es-ES', { timeZone: APP_TIME_ZONE, hour: '2-digit', minute: '2-digit' })
+const DAY = { timeZone: APP_TIME_ZONE, weekday: 'short', day: 'numeric', month: 'short' } as const
+const TIME = { timeZone: APP_TIME_ZONE, hour: '2-digit', minute: '2-digit' } as const
 
-/** «lun, 5 oct · 10:30» (o solo el día si es de todo el día), en hora de Madrid. */
+/** «lun, 5 oct · 10:30» (o solo el día si es de todo el día), en hora de Madrid y en el idioma activo. */
 export function formatWhen(iso: string, allDay = false): string {
   const date = new Date(iso)
-  return allDay ? dayFmt.format(date) : `${dayFmt.format(date)} · ${timeFmt.format(date)}`
+  const day = dateFormatter(DAY).format(date)
+  return allDay ? day : `${day} · ${dateFormatter(TIME).format(date)}`
 }

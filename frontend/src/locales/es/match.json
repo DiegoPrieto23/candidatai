@@ -1,0 +1,21 @@
+{
+  "noScore": "Sin score",
+  "scoreAria": "Score {{score}} de 100",
+  "belowThreshold": ", por debajo del umbral",
+  "noSkills": "La oferta no indica ninguna.",
+  "basicShort": "bás.",
+  "inProfile": "En tu perfil: {{skill}}. ",
+  "notInProfile": "No está en tu perfil",
+  "missing": "Falta: ",
+  "notAssessed": "Sin valorar. Ejecuta el skill <code>assess-fit</code> en tu agente.",
+  "stale": "De un cálculo anterior: el perfil o la oferta cambiaron.",
+  "questions": "Preguntas para ti",
+  "failsFilters": "No pasa los filtros",
+  "failsHardFilters": "No pasa los filtros duros",
+  "sections": {
+    "breakdown": "Desglose",
+    "mustHave": "Skills obligatorias",
+    "niceToHave": "Skills deseables",
+    "assessment": "Valoración del agente"
+  }
+}

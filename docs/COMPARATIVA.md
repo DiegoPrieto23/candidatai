@@ -142,8 +142,8 @@ Leyenda: ✅ lo tiene · 🟡 en parte · ❌ no lo tiene · 🚫 no lo tendrá 
 | Docker / macOS / Linux documentados | ❌ (solo Windows probado) | ✅ | ✅ |
 | Modelos gratuitos o locales | 🟡 si tu CLI los usa | ❌ | ✅ guía de presupuesto |
 | Actualizar sin pisar tus datos | ✅ datos fuera del código | ✅ herramientas de triaje upstream | ✅ `update` |
-| README en varios idiomas | ❌ (solo español) | ❌ | ✅ 17 idiomas |
-| UI en varios idiomas | ❌ | n/a | n/a |
+| README en varios idiomas | 🟡 español e inglés | ❌ | ✅ 17 idiomas |
+| UI en varios idiomas | ✅ español e inglés, con selector | n/a | n/a |
 
 ## Lo que solo tiene CandidatAI
 
@@ -174,7 +174,7 @@ Ordenado por lo que más aportaría, de mayor a menor.
 | 6 | **Autorización de trabajo y visado** como filtro duro | career-ops | Ofertas que excluyen patrocinio, si buscas fuera de la UE | Bajo |
 | 7 | **Evaluación en lote en paralelo** | ambos | Hoy el segundo plano va de una en una | Medio |
 | 8 | **Detector de banderas rojas** de una empresa antes de la entrevista | career-ops | Rotación, despidos, reseñas; encaja en `research-company` | Bajo |
-| 9 | **UI en inglés** | — | Para que la use alguien que no lea español | Alto |
+| 9 | ~~**UI en inglés**~~ ✅ hecho (fase 23.6) | — | Para que la use alguien que no lea español | Alto |
 | 10 | **Estrategia de nivel / arquetipo del puesto** en la valoración | career-ops | Ayuda a decidir a qué nivel presentarse | Bajo |
 | 11 | **Herramienta para traer cambios del repositorio original** sin pisar lo tuyo | AI Job Search | Útil si otros lo usan con sus datos | Bajo |
 | 12 | **Guía de agentes con modelos gratuitos o locales** (OpenCode + Ollama…) | career-ops | Sin suscripción de pago; la app no cambia, solo el agente | Bajo (documentación) |

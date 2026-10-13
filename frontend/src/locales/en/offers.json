@@ -1,0 +1,67 @@
+{
+  "comparison": {
+    "label": "Offers received",
+    "rows": {
+      "annualBase": "Annual base",
+      "annualTotal": "Annual total (with bonus)",
+      "baseVsFloor": "Base vs your minimum",
+      "totalVsFloor": "Total vs your minimum",
+      "published": "Published range",
+      "baseVsRange": "Base vs the range",
+      "mode": "Work mode",
+      "location": "Location",
+      "start": "Start date",
+      "respondBy": "Reply by",
+      "benefits": "Benefits",
+      "remarks": "Notes"
+    },
+    "notPublished": "Not stated",
+    "min": "min.",
+    "max": "max.",
+    "floor": "Your minimum: {{amount}} gross per year. ",
+    "noFloor": "No minimum in your profile (private.salary_floor_eur): no comparison with it. ",
+    "private": "Only you see this: your agent doesn't get your minimum or these differences. They're numbers, not a recommendation."
+  },
+  "received": {
+    "title": "Offer received",
+    "form": {
+      "base": "Gross base",
+      "variable": "Gross annual bonus",
+      "currency": "Currency",
+      "period": "The base is",
+      "yearly": "Annual",
+      "monthly": "Monthly",
+      "mode": "Work mode",
+      "noMode": "Not set",
+      "location": "Location",
+      "start": "Start date",
+      "respondBy": "Reply by",
+      "benefits": "Benefits",
+      "notes": "Notes (your agent reads them: don't put your numbers here)",
+      "private": "Private amounts: your agent doesn't see the base or the bonus.",
+      "privateHint": "It never sees your minimum or the difference with it.",
+      "cancel": "Cancel",
+      "saving": "Saving…",
+      "save": "Save offer"
+    },
+    "summary": {
+      "base": "Base",
+      "variable": "Bonus",
+      "mode": "Work mode",
+      "location": "Location",
+      "start": "Start date",
+      "respondBy": "Reply by",
+      "benefits": "Benefits",
+      "notes": "Notes",
+      "perYear": "{{amount}} per year",
+      "perMonth": "{{amount}} per month"
+    },
+    "noted": "Logged on {{date}}. Compare it with your minimum in Processes.",
+    "prompt": "Have they made you an offer? Log it to compare it and prepare the negotiation.",
+    "private": "Private amounts",
+    "edit": "Edit",
+    "add": "Log offer",
+    "negotiate": "Prepare negotiation",
+    "delete": "Delete data"
+  }
+}

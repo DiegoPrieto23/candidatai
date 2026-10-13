@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { CheckIcon, CopyIcon } from '@phosphor-icons/react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 
 /** Copia un texto al portapapeles y lo confirma durante un momento. */
 export function CopyButton({
   text,
-  label = 'Copiar',
+  label,
   ariaLabel,
   disabled = false,
 }: {
@@ -14,6 +15,7 @@ export function CopyButton({
   ariaLabel?: string
   disabled?: boolean
 }) {
+  const { t } = useTranslation()
   const [state, setState] = useState<'idle' | 'copied' | 'failed'>('idle')
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
   useEffect(() => () => clearTimeout(timer.current), [])
@@ -41,10 +43,10 @@ export function CopyButton({
         onClick={copy}
       >
         {state === 'copied' ? <CheckIcon /> : <CopyIcon />}
-        {state === 'copied' ? 'Copiado' : state === 'failed' ? 'No se pudo copiar' : label}
+        {state === 'copied' ? t('copy.copied') : state === 'failed' ? t('copy.failed') : (label ?? t('copy.label'))}
       </Button>
       <span role="status" className="sr-only">
-        {state === 'copied' ? 'Copiado al portapapeles' : state === 'failed' ? 'No se pudo copiar' : ''}
+        {state === 'copied' ? t('copy.copiedStatus') : state === 'failed' ? t('copy.failed') : ''}
       </span>
     </>
   )

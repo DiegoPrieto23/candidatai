@@ -1,4 +1,5 @@
 import createClient from 'openapi-fetch'
+import { i18n } from '@/lib/i18n'
 import type { components, paths } from './schema'
 
 export type Schemas = components['schemas']
@@ -133,11 +134,8 @@ export class ApiError extends Error {
   }
 }
 
-const OFFLINE = new ApiError(
-  'No hay conexión con la API. Arráncala con `uv run cai serve` en backend/.',
-  'offline',
-  0,
-)
+/** La API no responde: el mensaje, en el idioma activo al lanzarlo. */
+const offline = () => new ApiError(i18n.t('errors.offline'), 'offline', 0)
 
 interface Result<T> {
   data?: T
@@ -155,7 +153,7 @@ export async function unwrap<T>(call: Promise<Result<T>>): Promise<T> {
   try {
     result = await call
   } catch {
-    throw OFFLINE
+    throw offline()
   }
   const { data, error, response } = result
   if (error !== undefined || data === undefined) {
@@ -163,7 +161,7 @@ export async function unwrap<T>(call: Promise<Result<T>>): Promise<T> {
       const { message, type, details } = error.error
       throw new ApiError(message, type, response.status, details ?? [])
     }
-    throw new ApiError(`Error inesperado de la API (${response.status}).`, 'unknown', response.status)
+    throw new ApiError(i18n.t('errors.unexpected', { status: response.status }), 'unknown', response.status)
   }
   return data
 }

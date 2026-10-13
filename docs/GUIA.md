@@ -244,6 +244,19 @@ Muchas pantallas tienen botones que abren tu agente con la orden ya escrita:
 - **Tu perfil:** preferencias (puestos, nivel, modalidad, zonas, idiomas), plantilla por defecto,
   reglas de plantilla y política de foto por país.
 
+### Idioma
+
+La interfaz está en **español** y en **inglés**. El botón del globo, abajo en la barra lateral (o
+en el menú, en el móvil), abre la lista de idiomas; el cambio es instantáneo y la app lo recuerda
+en ese navegador. La primera vez sigue el idioma del navegador: español si es español; si no,
+inglés. Las fechas y los números también siguen el idioma. Al cambiarlo se vuelve a pintar la
+página: un diálogo o un formulario a medias se cierran, así que termínalo antes.
+
+Lo que la interfaz no traduce: tus datos (ofertas, perfil, notas), lo que redacta tu agente (los
+CVs, las cartas y las valoraciones siguen el idioma de cada oferta) y algunos mensajes que escribe
+el servidor sin un código que traducir (ciertos avisos y resultados de ejecuciones), que siguen en
+español.
+
 ## 13. Actualizar
 
 **Con el instalador:** vuelve a ejecutarlo; tus datos (`%LOCALAPPDATA%\CandidatAI\data`) no se

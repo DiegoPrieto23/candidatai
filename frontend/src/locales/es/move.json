@@ -1,0 +1,26 @@
+{
+  "title": "Mover proceso",
+  "what": "¿Qué ha pasado?",
+  "event": "Evento",
+  "reason": "Motivo",
+  "channel": "Canal (opcional)",
+  "noChannel": "Sin indicar",
+  "interviewAt": "Fecha y hora de la entrevista",
+  "dueAt": "Fecha de entrega",
+  "location": "Lugar o enlace (opcional)",
+  "when": "Cuándo pasó",
+  "note": "Nota",
+  "noteRequired": "(obligatoria)",
+  "noteOptional": "(opcional)",
+  "madrid": "Horas de Madrid.",
+  "cancel": "Cancelar",
+  "saving": "Guardando…",
+  "register": "Registrar",
+  "noMove": {
+    "cvReady": "Una oferta llega a «CV listo» cuando su CV está verificado (skill generate-cv), no a mano.",
+    "approved": "Para volver a «Aprobada» hay que reabrirla desde su ficha.",
+    "reopenTo": "Al reabrirla vuelve a «{{stage}}».",
+    "cannotReopen": "Esta oferta no se puede reabrir desde el tablero.",
+    "noEvent": "Desde «{{from}}» no hay ningún evento que la lleve a «{{to}}»."
+  }
+}

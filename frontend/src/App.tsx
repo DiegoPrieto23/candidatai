@@ -1,12 +1,14 @@
 import { lazy, Suspense } from 'react'
 import { type QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Link, Navigate, Route, Routes } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import { CompassIcon } from '@phosphor-icons/react'
 import { AppShell } from '@/components/AppShell'
 import { EmptyState } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { useLanguage } from '@/lib/i18n'
 import { AgentPage } from '@/pages/AgentPage'
 import { AlertsPage } from '@/pages/AlertsPage'
 import { HomePage } from '@/pages/HomePage'
@@ -27,13 +29,14 @@ import { TriagePage } from '@/pages/TriagePage'
 const FunnelPage = lazy(() => import('@/pages/FunnelPage').then((m) => ({ default: m.FunnelPage })))
 
 function NotFound() {
+  const { t } = useTranslation()
   return (
     <EmptyState
       icon={<CompassIcon className="size-6" weight="duotone" />}
-      title="Esta página no existe"
+      title={t('notFound.title')}
       action={
         <Button asChild variant="outline">
-          <Link to="/">Ir al inicio</Link>
+          <Link to="/">{t('notFound.goHome')}</Link>
         </Button>
       }
     />
@@ -81,10 +84,13 @@ export function AppRoutes() {
 }
 
 export function App({ client }: { client: QueryClient }) {
+  // Al cambiar de idioma se vuelven a montar las páginas: así no queda ningún texto (etiquetas,
+  // fechas) del idioma anterior. Los datos siguen en la caché de TanStack Query.
+  const { language } = useLanguage()
   return (
     <QueryClientProvider client={client}>
       <TooltipProvider delayDuration={300}>
-        <AppRoutes />
+        <AppRoutes key={language} />
       </TooltipProvider>
     </QueryClientProvider>
   )

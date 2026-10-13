@@ -1,0 +1,55 @@
+{
+  "kinds": {
+    "infojobs": "InfoJobs (search)",
+    "adzuna": "Adzuna (search)",
+    "keysHint": "Needs keys in .env"
+  },
+  "more": "… and {{count}} more.",
+  "pass": "Passes",
+  "filtered": "Filtered",
+  "nonePass": "None passes the pre-filter.",
+  "onlyPassing": "Show only the ones that pass",
+  "alsoFiltered": "Also show the {{count}} filtered",
+  "runHint": "They're in “To extract”: run `process-jobs` in your agent.",
+  "see": "See them",
+  "form": {
+    "label": "Add source",
+    "origin": "Source",
+    "company": "Company",
+    "searchName": "Search name",
+    "slug": "Board slug",
+    "slugHint": "What goes in the URL:",
+    "region": "Lever region",
+    "global": "Global (jobs.lever.co)",
+    "eu": "Europe (jobs.eu.lever.co)",
+    "query": "Search keywords",
+    "where": "Location (optional)",
+    "province": "Province (optional)",
+    "provinceHint": "As InfoJobs uses it, e.g. a-coruna",
+    "added": "“{{name}}” added. It'll be part of the daily intake; you can also run it now.",
+    "testing": "Testing…",
+    "test": "Test",
+    "saving": "Saving…",
+    "add": "Add"
+  },
+  "row": {
+    "paused": "Paused",
+    "noKeys": "No keys in .env",
+    "last": "{{when}}: {{found}} found, {{after}} after filters, {{created}} new",
+    "notRun": "It hasn't run yet",
+    "testing": "Testing…",
+    "test": "Test",
+    "running": "Running…",
+    "run": "Run now",
+    "pause": "Pause",
+    "resume": "Resume"
+  },
+  "empty": {
+    "title": "You don't follow any company yet",
+    "body": "Add one with its ATS and its slug. Test it before saving it to see how many jobs it has and how many pass your filters."
+  },
+  "title": "Target companies",
+  "intro": "Their jobs arrive on their own every day with `cai worker`, from their ATS's public APIs. Only the ones that match your preferences by title and location are kept, and they wait in “To extract” for your agent.",
+  "addTitle": "Add company or search",
+  "following": "Following"
+}

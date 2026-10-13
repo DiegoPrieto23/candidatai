@@ -1,0 +1,26 @@
+{
+  "addToProcess": "Añadir al proceso",
+  "roleOf": "Papel de {{name}} en el proceso",
+  "add": "Añadir",
+  "cancel": "Cancelar",
+  "probable": "En LinkedIn pone «{{company}}»: comprueba que es la misma.",
+  "alreadyContact": "Ya es contacto del proceso",
+  "import": {
+    "hint": "Importa tus contactos de LinkedIn para ver a quién conoces en cada empresa. En LinkedIn: Ajustes → Privacidad de los datos → Obtener una copia de tus datos → Contactos. Deja el fichero en <code>data/{{file}}</code>.",
+    "importing": "Importando…",
+    "button": "Importar Connections.csv",
+    "missing": "Aún no está el fichero en esa carpeta."
+  },
+  "title": "Tu red",
+  "loadFailed": "No se pudo cargar tu red: {{error}}",
+  "nobody": "Nadie de tu red trabaja en {{company}}.",
+  "youKnow_one": "Conoces a {{count}} persona en {{company}}.",
+  "youKnow_other": "Conoces a {{count}} personas en {{company}}.",
+  "approveToAdd": "Apruébala para añadirlos como contactos del proceso.",
+  "imported_one": "Red importada el {{date}} ({{count}} persona).",
+  "imported_other": "Red importada el {{date}} ({{count}} personas).",
+  "knownTitle": "Personas de tu red de LinkedIn en esta empresa",
+  "knownBadge": "Conoces a {{count}}",
+  "knownPeople_one": "Conoces a {{count}} persona en {{company}}: {{list}}.",
+  "knownPeople_other": "Conoces a {{count}} personas en {{company}}: {{list}}."
+}

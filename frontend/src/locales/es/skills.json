@@ -1,0 +1,61 @@
+{
+  "kinds": {
+    "all": "Todas",
+    "must": "Obligatorias",
+    "nice": "Deseables"
+  },
+  "marks": {
+    "all": "Todas",
+    "unmarked": "Sin decidir",
+    "gap": "No la tengo",
+    "have": "La tengo"
+  },
+  "alias": {
+    "added": "«{{skill}}» cuenta ya como «{{profile}}». El score de las ofertas se recalcula en segundo plano.",
+    "existed": "«{{skill}}» ya contaba como «{{profile}}».",
+    "title": "«{{skill}}» es lo mismo que…",
+    "description": "Elige la skill de tu perfil que significa lo mismo. Se añade como sinónimo en <code>config/skill_aliases.yaml</code> y se recalcula el score de tus ofertas.",
+    "search": "Buscar en tu perfil",
+    "list": "Skills de tu perfil",
+    "none": "Ninguna skill de tu perfil coincide.",
+    "cancel": "Cancelar",
+    "saving": "Guardando…",
+    "submit": "Son lo mismo"
+  },
+  "removeMark": "Quitar la marca",
+  "row": {
+    "gone": "Ya no la pide ninguna oferta del periodo",
+    "split": "{{must}} oblig. · {{nice}} des.",
+    "actions": "Acciones para {{skill}}",
+    "same": "Es lo mismo que…",
+    "have": "La tengo",
+    "gap": "No la tengo"
+  },
+  "noProfile": {
+    "title": "Aún no tienes perfil",
+    "body": "Los huecos se calculan frente a tu perfil. Créalo con el skill `update-profile`."
+  },
+  "title": "Skills",
+  "intro": "Lo que piden tus ofertas y tu perfil no cubre. Muchas veces es vocabulario: si es lo mismo que una skill tuya, dilo y el score se recalcula. Si la tienes, añádela al perfil; si no, va a tu plan de formación.",
+  "addHave": "Añadir al perfil las que tengo ({{count}})",
+  "training": "Plan de formación",
+  "period": "Periodo",
+  "days": "{{count}} días",
+  "kind": "Tipo",
+  "mark": "Marca",
+  "covered": {
+    "title": "Tu perfil cubre lo que piden tus ofertas",
+    "body": "Sin skills ausentes en {{jobs}} ofertas (abiertas y aprobadas o enviadas en los últimos {{days}} días)."
+  },
+  "missing": "Skills ausentes",
+  "summary": "{{count}} skills ausentes en {{jobs}} ofertas: las abiertas y las aprobadas o enviadas en los últimos {{days}} días. El peso suma 1 por oferta que la pide como obligatoria y 0,5 como deseable, por el score de la oferta.",
+  "tableLabel": "Skills ausentes por frecuencia",
+  "cols": {
+    "skill": "Skill",
+    "jobs": "Ofertas",
+    "weight": "Peso",
+    "examples": "Ejemplos",
+    "actions": "Acciones"
+  },
+  "noneFiltered": "Ninguna con este filtro."
+}

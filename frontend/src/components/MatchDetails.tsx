@@ -1,8 +1,10 @@
 import type { ReactNode } from 'react'
 import { ChatCircleDotsIcon, CheckIcon, InfoIcon, ProhibitIcon, RobotIcon } from '@phosphor-icons/react'
+import { Trans, useTranslation } from 'react-i18next'
 import type { MatchView, Schemas } from '@/api/client'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { COMPONENT_LABEL, LEVEL_LABEL, VERDICT_LABEL } from '@/lib/labels'
+import { serverText } from '@/lib/i18n'
+import { COMPONENT_LABEL, HARD_FILTER_LABEL, LEVEL_LABEL, VERDICT_LABEL } from '@/lib/labels'
 import { cn } from '@/lib/utils'
 
 /** Score 0-100: número tabular con una barra fina. Por debajo del umbral, atenuado. */
@@ -17,14 +19,15 @@ export function ScoreBadge({
   size?: 'md' | 'lg'
   className?: string
 }) {
+  const { t } = useTranslation('match')
   if (score == null) {
-    return <span className={cn('text-xs text-muted-foreground/70', className)}>Sin score</span>
+    return <span className={cn('text-xs text-muted-foreground/70', className)}>{t('noScore')}</span>
   }
   const low = threshold != null && score < threshold
   return (
     <span
       className={cn('inline-flex flex-col items-end gap-1', className)}
-      aria-label={`Score ${score} de 100${low ? ', por debajo del umbral' : ''}`}
+      aria-label={t('scoreAria', { score }) + (low ? t('belowThreshold') : '')}
     >
       <span
         className={cn(
@@ -75,8 +78,9 @@ function Components({ components }: { components: Schemas['ScoreComponent'][] })
 }
 
 function SkillCoverage({ coverage }: { coverage: Schemas['SkillCoverage'] }) {
+  const { t } = useTranslation('match')
   if (!coverage.covered.length && !coverage.missing.length) {
-    return <p className="text-sm text-muted-foreground">La oferta no indica ninguna.</p>
+    return <p className="text-sm text-muted-foreground">{t('noSkills')}</p>
   }
   return (
     <ul className="flex flex-wrap gap-1.5">
@@ -87,11 +91,11 @@ function SkillCoverage({ coverage }: { coverage: Schemas['SkillCoverage'] }) {
               <span className="inline-flex items-center gap-1.5 rounded-md bg-accent px-2 py-1 text-[0.8rem] leading-none font-medium text-accent-foreground ring-1 ring-primary/15 ring-inset">
                 <CheckIcon className="size-3" weight="bold" />
                 {c.skill}
-                <span className="font-mono text-[0.7rem] opacity-70">{c.level === 'basic' ? 'bás.' : c.level}</span>
+                <span className="font-mono text-[0.7rem] opacity-70">{c.level === 'basic' ? t('basicShort') : c.level}</span>
               </span>
             </TooltipTrigger>
             <TooltipContent>
-              {c.profile_skill !== c.skill && <>En tu perfil: {c.profile_skill}. </>}
+              {c.profile_skill !== c.skill && t('inProfile', { skill: c.profile_skill })}
               {LEVEL_LABEL[c.level]}
             </TooltipContent>
           </Tooltip>
@@ -101,9 +105,9 @@ function SkillCoverage({ coverage }: { coverage: Schemas['SkillCoverage'] }) {
         <li
           key={skill}
           className="rounded-md border border-dashed border-input px-2 py-[3px] text-[0.8rem] leading-none text-muted-foreground"
-          title="No está en tu perfil"
+          title={t('notInProfile')}
         >
-          <span className="sr-only">Falta: </span>
+          <span className="sr-only">{t('missing')}</span>
           {skill}
         </li>
       ))}
@@ -112,15 +116,18 @@ function SkillCoverage({ coverage }: { coverage: Schemas['SkillCoverage'] }) {
 }
 
 function Assessment({ match }: { match: MatchView }) {
+  const { t } = useTranslation('match')
   const a = match.assessment
   if (!a) {
     return (
       <p className="flex items-start gap-2 text-sm text-muted-foreground">
         <RobotIcon className="mt-0.5 size-4 shrink-0" />
         <span>
-          Sin valorar. Ejecuta el skill{' '}
-          <code className="rounded bg-muted px-1 py-0.5 font-mono text-[0.85em] text-foreground">assess-fit</code>{' '}
-          en tu agente.
+          <Trans
+            t={t}
+            i18nKey="notAssessed"
+            components={{ code: <code className="rounded bg-muted px-1 py-0.5 font-mono text-[0.85em] text-foreground" /> }}
+          />
         </span>
       </p>
     )
@@ -139,7 +146,7 @@ function Assessment({ match }: { match: MatchView }) {
           {VERDICT_LABEL[a.verdict]}
         </span>
         {match.assessment_stale && (
-          <span className="text-xs text-muted-foreground">De un cálculo anterior: el perfil o la oferta cambiaron.</span>
+          <span className="text-xs text-muted-foreground">{t('stale')}</span>
         )}
       </p>
       <p className="text-sm leading-relaxed text-foreground/90">{a.rationale}</p>
@@ -157,7 +164,7 @@ function Assessment({ match }: { match: MatchView }) {
         <div className="rounded-lg border border-primary/20 bg-accent/50 p-3">
           <p className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-accent-foreground">
             <ChatCircleDotsIcon className="size-4" weight="duotone" />
-            Preguntas para ti
+            {t('questions')}
           </p>
           <ul className="list-disc space-y-1 pl-5 text-sm">
             {a.questions_for_user.map((q) => (
@@ -171,16 +178,17 @@ function Assessment({ match }: { match: MatchView }) {
 }
 
 export function FilterFailures({ failures }: { failures: Schemas['FilterFailure'][] }) {
+  const { t } = useTranslation('match')
   if (!failures.length) return null
   return (
-    <div role="note" aria-label="No pasa los filtros" className="rounded-lg border border-foreground/15 bg-muted/60 p-3">
+    <div role="note" aria-label={t('failsFilters')} className="rounded-lg border border-foreground/15 bg-muted/60 p-3">
       <p className="mb-1.5 flex items-center gap-1.5 text-sm font-medium">
         <ProhibitIcon className="size-4" weight="bold" />
-        No pasa los filtros duros
+        {t('failsHardFilters')}
       </p>
       <ul className="space-y-1 pl-5.5 text-sm text-foreground/85">
         {failures.map((f) => (
-          <li key={f.filter}>{f.reason}</li>
+          <li key={f.filter}>{serverText(HARD_FILTER_LABEL[f.filter], f.reason)}</li>
         ))}
       </ul>
     </div>
@@ -189,17 +197,18 @@ export function FilterFailures({ failures }: { failures: Schemas['FilterFailure'
 
 /** Desglose completo de un match: filtros, componentes, skills, notas y valoración del agente. */
 export function MatchDetails({ match }: { match: MatchView }) {
+  const { t } = useTranslation('match')
   const b = match.breakdown
   return (
     <div className="space-y-6">
       <FilterFailures failures={match.hard_filters.failures} />
-      <Section title="Desglose">
+      <Section title={t('sections.breakdown')}>
         <Components components={b.components} />
       </Section>
-      <Section title="Skills obligatorias">
+      <Section title={t('sections.mustHave')}>
         <SkillCoverage coverage={b.must_have} />
       </Section>
-      <Section title="Skills deseables">
+      <Section title={t('sections.niceToHave')}>
         <SkillCoverage coverage={b.nice_to_have} />
       </Section>
       {b.notes.length > 0 && (
@@ -209,7 +218,7 @@ export function MatchDetails({ match }: { match: MatchView }) {
           ))}
         </ul>
       )}
-      <Section title="Valoración del agente">
+      <Section title={t('sections.assessment')}>
         <Assessment match={match} />
       </Section>
     </div>

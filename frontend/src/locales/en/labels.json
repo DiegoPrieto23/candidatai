@@ -1,0 +1,157 @@
+{
+  "stage": {
+    "pending_detail": "To complete",
+    "pending_extraction": "To extract",
+    "pending_triage": "To review",
+    "approved": "Approved",
+    "cv_ready": "CV ready",
+    "applied": "Applied",
+    "in_process": "In process",
+    "closed": "Closed"
+  },
+  "event": {
+    "found": "Added",
+    "detail_captured": "Description captured",
+    "duplicate_detected": "Duplicate detected",
+    "extracted": "Extraction saved",
+    "hard_filter_failed": "Fails the filters",
+    "extraction_failed": "Extraction failed",
+    "injection_suspected": "Possible content aimed at an AI",
+    "closure_suspected": "May no longer be posted",
+    "scored": "Scored",
+    "fit_assessed": "Fit assessed",
+    "approved": "Approved",
+    "discarded": "Discarded",
+    "cv_generated": "CV written",
+    "cv_rendered": "CV rendered",
+    "cv_verified": "CV verified",
+    "cv_rejected": "CV rejected",
+    "cover_letter_generated": "Cover letter saved",
+    "cover_letter_verified": "Cover letter verified",
+    "application_prepared": "Application prepared",
+    "application_filled": "Form filled in (not sent)",
+    "applied": "Application sent",
+    "applied_manually": "Sent on your own",
+    "reply_received": "Reply received",
+    "interview_scheduled": "Interview scheduled",
+    "interview_done": "Interview done",
+    "test_assigned": "Technical test",
+    "followup_sent": "Follow-up sent",
+    "offer_received": "Offer received",
+    "rejected": "Rejected",
+    "withdrawn": "Withdrawn",
+    "expired": "Expired",
+    "accepted": "Accepted",
+    "reopened": "Reopened",
+    "note": "Note"
+  },
+  "remote": { "onsite": "On-site", "hybrid": "Hybrid", "remote": "Remote", "unknown": "Not specified" },
+  "seniority": {
+    "intern": "Internship",
+    "junior": "Junior",
+    "mid": "Mid-level",
+    "senior": "Senior",
+    "lead": "Lead",
+    "unknown": "Not specified"
+  },
+  "employment": {
+    "full_time": "Full-time",
+    "part_time": "Part-time",
+    "contract": "Fixed-term contract",
+    "internship": "Internship",
+    "unknown": "Not specified"
+  },
+  "risk": {
+    "injection_phrase": "Phrases that look like instructions for an AI",
+    "hidden_text": "Hidden text on the original page"
+  },
+  "actor": { "user": "You", "agent": "Agent", "agentNamed": "Agent {{name}}", "system": "System" },
+  "period": { "year": "year", "month": "month", "hour": "hour" },
+  "discardReason": {
+    "skills": "Stack doesn't fit",
+    "seniority": "Seniority or years",
+    "location": "Location or work mode",
+    "salary": "Salary or conditions",
+    "company": "Company or sector",
+    "closed": "No longer posted",
+    "other": "Other reason"
+  },
+  "component": {
+    "must_have_coverage": "Must-haves",
+    "semantic_similarity": "Similarity",
+    "preferences_fit": "Preferences",
+    "nice_to_have_coverage": "Nice-to-haves"
+  },
+  "level": {
+    "F": "Strong",
+    "C+": "Between familiar and strong",
+    "C": "Familiar",
+    "B": "Basic",
+    "basic": "Basic knowledge"
+  },
+  "verdict": { "strong": "Strong fit", "possible": "Possible fit", "weak": "Weak fit" },
+  "section": {
+    "summary": "Profile",
+    "experience": "Experience",
+    "projects": "Projects",
+    "education": "Education",
+    "certifications": "Certifications",
+    "extra_sections": "Extra sections",
+    "skills": "Skills",
+    "languages": "Languages"
+  },
+  "photoMode": { "auto": "Automatic", "include": "With photo", "exclude": "No photo" },
+  "color": { "#1F4E79": "Blue", "#2E5E4E": "Green", "#7A2E39": "Maroon", "#3F3F46": "Graphite" },
+  "milestoneKind": { "interview": "Interview", "test": "Technical test", "deadline": "Deadline", "other": "Other milestone" },
+  "upcomingKind": {
+    "interview": "Interview",
+    "test": "Technical test",
+    "deadline": "Deadline",
+    "other": "Other milestone",
+    "application_deadline": "Posting deadline"
+  },
+  "contactRelation": { "referral": "Referral", "recruiter": "Recruiter", "hiring_manager": "Hiring manager" },
+  "referral": { "requested": "Referral requested", "given": "Referral given" },
+  "milestoneStatus": { "scheduled": "Scheduled", "done": "Done", "cancelled": "Cancelled" },
+  "channel": {
+    "ats_form": "Company form",
+    "email": "Email",
+    "linkedin_manual": "LinkedIn (by hand)",
+    "portal_manual": "Job board (by hand)"
+  },
+  "moveHint": {
+    "applied": "You sent it with the CV selected in the app.",
+    "applied_manually": "You sent it on your own (with or without the app's CV).",
+    "reply_received": "They've replied.",
+    "interview_scheduled": "You have an interview: a milestone is created with its date and time.",
+    "interview_done": "You had an interview you hadn't logged.",
+    "test_assigned": "They've sent you a test: a milestone is created with its due date.",
+    "offer_received": "They've made you an offer.",
+    "discarded": "You drop it before sending it.",
+    "rejected": "The company has turned you down.",
+    "withdrawn": "You withdraw from the process.",
+    "expired": "The posting has expired or there was no reply.",
+    "accepted": "You've accepted the offer.",
+    "reopened": "It goes back to the stage it was in when it closed."
+  },
+  "hardFilter": {
+    "seniority": "Seniority",
+    "years": "Years of experience",
+    "remote_mode": "Work mode",
+    "location": "Location",
+    "language": "Language",
+    "title_keyword": "Title keywords"
+  },
+  "sourceKind": {
+    "manual_url": "Link",
+    "manual_text": "Pasted text",
+    "greenhouse": "Greenhouse",
+    "lever": "Lever",
+    "ashby": "Ashby",
+    "infojobs": "InfoJobs",
+    "adzuna": "Adzuna",
+    "email_alerts": "Email alerts",
+    "browser_capture": "Browser button",
+    "agent_browse": "Browser search"
+  }
+}

@@ -1,36 +1,22 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
-import { ArrowRightIcon } from '@phosphor-icons/react'
+import { ArrowRightIcon, PlusIcon } from '@phosphor-icons/react'
+import { Trans, useTranslation } from 'react-i18next'
 import type { JobRow, Stage, UpcomingItem } from '@/api/client'
 import { useFollowups, useJobs, useReplies, useStatus, useUpcoming } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
 import { ScoreBadge } from '@/components/MatchDetails'
 import { ErrorState } from '@/components/States'
+import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { STAGE_LABEL, UPCOMING_KIND_LABEL } from '@/lib/labels'
+import { formatList, joinNodes } from '@/lib/i18n'
+import { dateFormatter, STAGE_LABEL, UPCOMING_KIND_LABEL } from '@/lib/labels'
 import { APP_TIME_ZONE, formatWhen } from '@/lib/time'
 import { cn } from '@/lib/utils'
 
 // --- Qué toca hoy ---------------------------------------------------------------------------
 
-const dateFmt = new Intl.DateTimeFormat('es-ES', {
-  timeZone: APP_TIME_ZONE,
-  weekday: 'long',
-  day: 'numeric',
-  month: 'long',
-})
-
-function plural(n: number, one: string, many: string) {
-  return n === 1 ? one : many
-}
-
-/** «a, b y c» */
-function joinEs(parts: ReactNode[]): ReactNode[] {
-  return parts.flatMap((part, i) => {
-    if (i === 0) return [part]
-    return [i === parts.length - 1 ? ' y ' : ', ', part]
-  })
-}
+const TODAY = { timeZone: APP_TIME_ZONE, weekday: 'long', day: 'numeric', month: 'long' } as const
 
 function Pending({ to, children }: { to: string; children: ReactNode }) {
   return (
@@ -44,6 +30,7 @@ function Pending({ to, children }: { to: string; children: ReactNode }) {
 }
 
 function Today() {
+  const { t } = useTranslation('home')
   const status = useStatus()
   const followups = useFollowups()
   const replies = useReplies()
@@ -56,66 +43,72 @@ function Today() {
   if (s?.pending_triage)
     yours.push(
       <Pending key="triage" to="/por-revisar">
-        {s.pending_triage} {plural(s.pending_triage, 'oferta por revisar', 'ofertas por revisar')}
+        {t('today.toReview', { count: s.pending_triage })}
       </Pending>,
     )
   if (s?.cv_ready)
     yours.push(
       <Pending key="cv" to="/bandeja?stage=cv_ready">
-        {s.cv_ready} {plural(s.cv_ready, 'CV listo para enviar', 'CVs listos para enviar')}
+        {t('today.cvReady', { count: s.cv_ready })}
       </Pending>,
     )
   if (proposed)
     yours.push(
       <Pending key="replies" to="/respuestas">
-        {proposed} {plural(proposed, 'respuesta de empresa por revisar', 'respuestas de empresas por revisar')}
+        {t('today.replies', { count: proposed })}
       </Pending>,
     )
   if (due)
     yours.push(
       <Pending key="followups" to="/procesos">
-        {due} {plural(due, 'seguimiento pendiente', 'seguimientos pendientes')}
+        {t('today.followups', { count: due })}
       </Pending>,
     )
 
   const agent: string[] = []
-  if (s?.pending_extraction) agent.push(`${s.pending_extraction} por extraer`)
-  if (s?.approved) agent.push(`${s.approved} ${plural(s.approved, 'aprobada', 'aprobadas')} sin CV`)
-  if (unclassified) agent.push(`${unclassified} ${plural(unclassified, 'correo sin clasificar', 'correos sin clasificar')}`)
+  if (s?.pending_extraction) agent.push(t('today.agentToExtract', { count: s.pending_extraction }))
+  if (s?.approved) agent.push(t('today.agentApproved', { count: s.approved }))
+  if (unclassified) agent.push(t('today.agentUnclassified', { count: unclassified }))
 
   return (
     <section aria-labelledby="hoy" className="max-w-3xl">
-      <p className="text-sm text-muted-foreground first-letter:uppercase">{dateFmt.format(new Date())}</p>
+      <p className="text-sm text-muted-foreground first-letter:uppercase">{dateFormatter(TODAY).format(new Date())}</p>
       <h1 id="hoy" className="mt-3 text-3xl leading-[1.2] font-semibold tracking-tight text-balance sm:text-[2.6rem]">
         {status.isPending ? (
           <Skeleton className="h-12 w-full max-w-xl" />
         ) : yours.length ? (
-          <>Tienes {joinEs(yours)}.</>
+          <Trans t={t} i18nKey="today.youHave" components={{ list: <>{joinNodes(yours)}</> }} />
         ) : (
-          'Nada pendiente por tu parte.'
+          t('today.nothing')
         )}
       </h1>
       {agent.length > 0 && (
-        <p className="mt-4 text-base text-muted-foreground">Para tu agente: {agent.join(' y ')}.</p>
+        <p className="mt-4 text-base text-muted-foreground">{t('today.forAgent', { list: formatList(agent) })}</p>
       )}
       {/* Abren tu agente en una terminal con la orden escrita (ADR-024): lo que haga lo ves y lo apruebas tú. */}
       <div className="mt-6 flex flex-wrap items-start gap-2">
+        <Button asChild variant="outline" className="active:translate-y-px">
+          <Link to="/nueva">
+            <PlusIcon weight="bold" />
+            {t('today.newJob')}
+          </Link>
+        </Button>
         <AgentButton action="search-jobs" variant="default" size="default">
-          Buscar ofertas
+          {t('today.searchJobs')}
         </AgentButton>
         {!!s?.pending_extraction && (
           <AgentButton action="process-jobs" size="default">
-            Procesar ofertas
+            {t('today.processJobs')}
           </AgentButton>
         )}
         {!!s?.pending_triage && (
           <AgentButton action="assess-fit" size="default">
-            Evaluar encaje
+            {t('today.assessFit')}
           </AgentButton>
         )}
         {unclassified > 0 && (
           <AgentButton action="review-replies" size="default">
-            Revisar respuestas
+            {t('today.reviewReplies')}
           </AgentButton>
         )}
       </div>
@@ -125,42 +118,41 @@ function Today() {
 
 // --- Recorrido ------------------------------------------------------------------------------
 
-type Actor = 'tú' | 'agente' | 'empresa'
+type Actor = 'you' | 'agent' | 'company'
 
 const TRACK: { stage: Stage; actor: Actor; to: string }[] = [
-  { stage: 'pending_detail', actor: 'tú', to: '/alertas' },
-  { stage: 'pending_extraction', actor: 'agente', to: '/bandeja?stage=pending_extraction' },
-  { stage: 'pending_triage', actor: 'tú', to: '/por-revisar' },
-  { stage: 'approved', actor: 'agente', to: '/bandeja?stage=approved' },
-  { stage: 'cv_ready', actor: 'tú', to: '/bandeja?stage=cv_ready' },
-  { stage: 'applied', actor: 'empresa', to: '/procesos' },
-  { stage: 'in_process', actor: 'tú', to: '/procesos' },
+  { stage: 'pending_detail', actor: 'you', to: '/alertas' },
+  { stage: 'pending_extraction', actor: 'agent', to: '/bandeja?stage=pending_extraction' },
+  { stage: 'pending_triage', actor: 'you', to: '/por-revisar' },
+  { stage: 'approved', actor: 'agent', to: '/bandeja?stage=approved' },
+  { stage: 'cv_ready', actor: 'you', to: '/bandeja?stage=cv_ready' },
+  { stage: 'applied', actor: 'company', to: '/procesos' },
+  { stage: 'in_process', actor: 'you', to: '/procesos' },
 ]
 
-const ACTOR_LABEL: Record<Actor, string> = { tú: 'Te toca', agente: 'Agente', empresa: 'Empresa' }
-
 function Track() {
+  const { t } = useTranslation('home')
   const { data, isPending, isError, error, refetch } = useStatus()
   if (isError) return <ErrorState error={error} onRetry={() => void refetch()} />
   const counts = data?.by_stage
-  const max = Math.max(1, ...TRACK.map((t) => counts?.[t.stage] ?? 0))
+  const max = Math.max(1, ...TRACK.map((step) => counts?.[step.stage] ?? 0))
 
   return (
     <section aria-labelledby="recorrido">
       <div className="mb-3 flex items-baseline justify-between gap-4">
         <h2 id="recorrido" className="text-sm font-medium">
-          Recorrido de tus ofertas
+          {t('track.title')}
         </h2>
         {counts && (
           <Link to="/bandeja?stage=closed" className="text-xs text-muted-foreground hover:text-foreground">
-            {counts.closed} {plural(counts.closed, 'cerrada', 'cerradas')}
+            {t('track.closed', { count: counts.closed })}
           </Link>
         )}
       </div>
       <ol className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border bg-border sm:grid-cols-4 lg:grid-cols-7">
         {TRACK.map(({ stage, actor, to }, i) => {
           const count = counts?.[stage] ?? 0
-          const yours = actor === 'tú' && count > 0
+          const yours = actor === 'you' && count > 0
           // 7 etapas: en 2 y 4 columnas la última ocupa dos celdas para no dejar un hueco.
           const last = i === TRACK.length - 1
           return (
@@ -179,7 +171,7 @@ function Track() {
                     yours ? 'text-accent-foreground' : 'text-muted-foreground/80',
                   )}
                 >
-                  {ACTOR_LABEL[actor]}
+                  {t(`track.actor.${actor}`)}
                 </span>
                 {isPending ? (
                   <Skeleton className="h-8 w-10" />
@@ -295,10 +287,11 @@ function JobItem({ job }: { job: JobRow }) {
 }
 
 function Upcoming() {
+  const { t } = useTranslation('home')
   const { data, isPending, isError, error, refetch } = useUpcoming(7)
   if (isPending) return <Loading rows={2} />
   if (isError) return <ErrorState error={error} onRetry={() => void refetch()} className="py-8" />
-  if (!data.items.length) return <Empty>Sin entrevistas, pruebas ni plazos en los próximos 7 días.</Empty>
+  if (!data.items.length) return <Empty>{t('upcomingEmpty')}</Empty>
   return (
     <ul className="divide-y">
       {data.items.slice(0, 4).map((item: UpcomingItem) => (
@@ -320,10 +313,11 @@ function Upcoming() {
 }
 
 function Followups() {
+  const { t } = useTranslation('home')
   const { data, isPending } = useFollowups()
   if (isPending || !data?.followups.length) return null
   return (
-    <Panel title="Sin respuesta" more={{ to: '/procesos', label: 'Procesos' }}>
+    <Panel title={t('followups.title')} more={{ to: '/procesos', label: t('followups.more') }}>
       <ul className="divide-y">
         {data.followups.slice(0, 4).map((f) => (
           <li key={f.job_id}>
@@ -335,7 +329,7 @@ function Followups() {
                 <span className="block truncate text-sm font-medium">{f.title}</span>
                 <span className="block truncate text-xs text-muted-foreground">{f.company}</span>
               </span>
-              <span className="tabular shrink-0 text-xs text-muted-foreground">{f.days_waiting} días</span>
+              <span className="tabular shrink-0 text-xs text-muted-foreground">{t('followups.days', { count: f.days_waiting })}</span>
             </Link>
           </li>
         ))}
@@ -347,27 +341,28 @@ function Followups() {
 // --- Página ---------------------------------------------------------------------------------
 
 export function HomePage() {
+  const { t } = useTranslation('home')
   return (
     <div className="space-y-12 animate-in fade-in duration-300 sm:space-y-14">
       <Today />
       <Track />
       <div className="grid items-start gap-6 lg:grid-cols-5">
         <Panel
-          title="Mejor encaje por revisar"
-          more={{ to: '/por-revisar', label: 'Revisar' }}
+          title={t('panels.bestFit')}
+          more={{ to: '/por-revisar', label: t('panels.review') }}
           className="lg:col-span-3"
         >
           <JobList
             stage="pending_triage"
             limit={6}
-            empty="No hay ofertas por revisar. Las nuevas llegan por las alertas, las empresas que sigues o «Nueva oferta»."
+            empty={t('panels.bestFitEmpty')}
           />
         </Panel>
         <div className="grid min-w-0 gap-6 lg:col-span-2">
-          <Panel title="Listas para enviar" more={{ to: '/bandeja?stage=cv_ready', label: 'Todas' }}>
-            <JobList stage="cv_ready" limit={4} empty="Ningún CV listo. Aprueba ofertas y pide el CV a tu agente." />
+          <Panel title={t('panels.readyToSend')} more={{ to: '/bandeja?stage=cv_ready', label: t('panels.all') }}>
+            <JobList stage="cv_ready" limit={4} empty={t('panels.readyEmpty')} />
           </Panel>
-          <Panel title="Próximos 7 días" more={{ to: '/procesos', label: 'Calendario' }}>
+          <Panel title={t('panels.next7')} more={{ to: '/procesos', label: t('panels.calendar') }}>
             <Upcoming />
           </Panel>
           <Followups />

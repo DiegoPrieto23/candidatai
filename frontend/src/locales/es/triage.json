@@ -1,0 +1,46 @@
+{
+  "title": "Por revisar",
+  "risk": "Posible contenido dirigido a una IA",
+  "failsFilters": "No pasa los filtros",
+  "yearsPlus": "{{count}}+ años",
+  "selected": "Oferta seleccionada",
+  "approve": "Aprobar",
+  "discard": "Descartar",
+  "detail": "Ficha",
+  "noScore": "Sin score: importa tu perfil con <code>cai profile import</code>.",
+  "done": {
+    "approved": "Aprobada",
+    "discarded": "Descartada",
+    "undo": "Deshacer",
+    "close": "Cerrar aviso"
+  },
+  "loadingQueue": "Cargando ofertas por revisar",
+  "count_one": "{{count}} oferta por revisar",
+  "count_other": "{{count}} ofertas por revisar",
+  "byFit": ", de más a menos encaje",
+  "shortcuts": {
+    "label": "Atajos de teclado",
+    "move": "mover",
+    "approve": "aprobar",
+    "discard": "descartar",
+    "detail": "ficha"
+  },
+  "profileMissing": "<strong>Sin perfil importado no hay score.</strong> Crea tu perfil con el skill <code>update-profile</code> o ejecuta <code>cai profile import</code>.",
+  "saveFailed": "No se pudo guardar: {{error}}",
+  "empty": {
+    "title": "Nada por revisar",
+    "body": "Cuando tu agente extraiga ofertas nuevas con <code>process-jobs</code>, aparecerán aquí ordenadas por encaje."
+  },
+  "queue": "Ofertas por revisar",
+  "discardDialog": {
+    "title": "Descartar oferta",
+    "reason": "Motivo",
+    "note": "Nota",
+    "noteRequired": "(obligatoria con «Otro motivo»)",
+    "noteOptional": "(opcional)",
+    "notePlaceholder": "Lo que quieras recordar de esta decisión",
+    "cancel": "Cancelar",
+    "discarding": "Descartando…",
+    "discard": "Descartar"
+  }
+}

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import { CaretDownIcon, ClockCountdownIcon, GearSixIcon, TerminalWindowIcon } from '@phosphor-icons/react'
+import { useTranslation } from 'react-i18next'
 import { ApiError } from '@/api/client'
 import {
   useAgentLauncher,
@@ -11,6 +12,7 @@ import {
 } from '@/api/queries'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { errorMessage } from '@/lib/errors'
 import { cn } from '@/lib/utils'
 
 type Feedback = {
@@ -55,6 +57,7 @@ export function AgentButton({
   size?: 'sm' | 'default'
   className?: string
 }) {
+  const { t } = useTranslation('agentButton')
   const launcher = useAgentLauncher()
   const launch = useLaunchAgent()
   const startRun = useStartAgentRun()
@@ -70,11 +73,11 @@ export function AgentButton({
   }
   const target = { action, job_id: jobId, milestone_id: milestoneId }
   const failed = (error: unknown, fallback: string) =>
-    show({ tone: 'error', text: error instanceof Error ? error.message : fallback })
+    show({ tone: 'error', text: error instanceof Error ? errorMessage(error) : fallback })
 
   const run = () =>
     launch.mutate(target, {
-      onSuccess: (result) => show({ tone: 'ok', text: `Abierto en ${result.agent}: sigue en la terminal.` }),
+      onSuccess: (result) => show({ tone: 'ok', text: t('opened', { agent: result.agent }) }),
       onError: async (error) => {
         const prompt = error instanceof ApiError ? error.details.find((d) => d.field === 'prompt')?.received : null
         if (prompt) {
@@ -82,11 +85,11 @@ export function AgentButton({
           show({
             tone: 'info',
             text: copied
-              ? `No puedo abrir tu agente desde aquí (${error.message}). He copiado la orden: pégala en tu agente.`
-              : `No puedo abrir tu agente desde aquí. Pégale esta orden: «${prompt}»`,
+              ? t('copiedPrompt', { error: errorMessage(error) })
+              : t('pastePrompt', { prompt }),
           })
         } else {
-          failed(error, 'No se pudo abrir tu agente.')
+          failed(error, t('openFailed'))
         }
       },
     })
@@ -96,16 +99,16 @@ export function AgentButton({
       onSuccess: (result) =>
         show({
           tone: 'ok',
-          text: result.status === 'running' ? 'Ya se está ejecutando en segundo plano.' : 'En cola en segundo plano.',
+          text: result.status === 'running' ? t('alreadyRunning') : t('queued'),
           link: true,
         }),
-      onError: (error) => failed(error, 'No se pudo lanzar en segundo plano.'),
+      onError: (error) => failed(error, t('backgroundFailed')),
     })
 
   const leaveForLater = () =>
     leave.mutate(target, {
-      onSuccess: () => show({ tone: 'ok', text: 'Encargo guardado: tu agente lo verá en tu próxima sesión.', link: true }),
-      onError: (error) => failed(error, 'No se pudo guardar el encargo.'),
+      onSuccess: () => show({ tone: 'ok', text: t('requestSaved'), link: true }),
+      onError: (error) => failed(error, t('requestFailed')),
     })
 
   const agent = launcher.data?.available ? launcher.data.agent : null
@@ -122,7 +125,7 @@ export function AgentButton({
           onClick={run}
           disabled={busy}
           className="rounded-r-none"
-          title={agent ? `Abre ${agent} en una terminal con la orden ya escrita` : 'Copia la orden para tu agente'}
+          title={agent ? t('titleAgent', { agent }) : t('titleCopy')}
         >
           <TerminalWindowIcon weight="duotone" />
           {children}
@@ -134,7 +137,7 @@ export function AgentButton({
               variant={variant}
               size={size}
               disabled={busy}
-              aria-label="Más formas de lanzarlo"
+              aria-label={t('more')}
               className={cn('rounded-l-none border-l px-2', variant === 'default' && 'border-l-primary-foreground/25')}
             >
               <CaretDownIcon weight="bold" />
@@ -144,19 +147,19 @@ export function AgentButton({
             <DropdownMenuItem onSelect={run}>
               <TerminalWindowIcon weight="duotone" />
               <span>
-                <span className="block font-medium">En terminal</span>
-                <span className="block text-xs text-muted-foreground">Lo ves, contestas y apruebas tú.</span>
+                <span className="block font-medium">{t('terminal')}</span>
+                <span className="block text-xs text-muted-foreground">{t('terminalHint')}</span>
               </span>
             </DropdownMenuItem>
             {canBackground && (
               <DropdownMenuItem onSelect={runInBackground} disabled={!background?.available}>
                 <GearSixIcon weight="duotone" />
                 <span>
-                  <span className="block font-medium">En segundo plano</span>
+                  <span className="block font-medium">{t('background')}</span>
                   <span className="block text-xs text-muted-foreground">
                     {background?.available
-                      ? 'Sin ventana y solo con las herramientas de la app. Síguelo en «Agente».'
-                      : (background?.reason ?? 'No disponible.')}
+                      ? t('backgroundHint')
+                      : (background?.reason ?? t('unavailable'))}
                   </span>
                 </span>
               </DropdownMenuItem>
@@ -165,9 +168,9 @@ export function AgentButton({
               <DropdownMenuItem onSelect={leaveForLater}>
                 <ClockCountdownIcon weight="duotone" />
                 <span>
-                  <span className="block font-medium">Dejar para mi próxima sesión</span>
+                  <span className="block font-medium">{t('later')}</span>
                   <span className="block text-xs text-muted-foreground">
-                    Tu agente lo verá con el skill handle-requests.
+                    {t('laterHint')}
                   </span>
                 </span>
               </DropdownMenuItem>
@@ -187,7 +190,7 @@ export function AgentButton({
           <>
             {' '}
             <Link to="/agente" className="underline underline-offset-4">
-              Ver en «Agente»
+              {t('seeInAgent')}
             </Link>
           </>
         )}

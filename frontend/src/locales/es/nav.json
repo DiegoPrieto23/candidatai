@@ -1,0 +1,64 @@
+{
+  "groups": {
+    "search": "Búsqueda",
+    "processes": "Procesos",
+    "analysis": "Análisis",
+    "configure": "Configurar"
+  },
+  "entries": {
+    "home": "Inicio",
+    "inbox": "Bandeja",
+    "triage": "Por revisar",
+    "alerts": "Alertas",
+    "processes": "Procesos",
+    "replies": "Respuestas",
+    "funnel": "Embudo",
+    "skills": "Skills",
+    "sources": "Fuentes",
+    "templates": "Plantillas",
+    "profile": "Mi perfil",
+    "agent": "Agente"
+  },
+  "counts": {
+    "toReview": "por revisar",
+    "toComplete": "por completar",
+    "agent": "en curso o pendientes"
+  },
+  "entryWithCount": "{{label}} ({{count}} {{what}})",
+  "mainNav": "Navegación principal",
+  "sidebar": "Barra lateral",
+  "collapse": "Plegar el menú",
+  "expand": "Desplegar el menú",
+  "openMenu": "Abrir el menú",
+  "closeMenu": "Cerrar el menú",
+  "theme": {
+    "system": "Tema: el del sistema",
+    "light": "Tema: claro",
+    "dark": "Tema: oscuro"
+  },
+  "language": {
+    "button": "Idioma: {{name}}"
+  },
+  "header": {
+    "byStage": "Ofertas por etapa",
+    "all": "Todas",
+    "newJob": "Nueva oferta"
+  },
+  "reminders": {
+    "toExtract_one": "Hay {{count}} oferta por extraer.",
+    "toExtract_other": "Hay {{count}} ofertas por extraer.",
+    "extractHint": "Las extrae tu agente con el skill",
+    "processNow": "Procesar ahora",
+    "followups_one": "{{count}} candidatura lleva {{days}} días o más sin respuesta.",
+    "followups_other": "{{count}} candidaturas llevan {{days}} días o más sin respuesta.",
+    "followupsLink": "Revisa los seguimientos en Procesos",
+    "running": "Tu agente trabaja en segundo plano",
+    "queued": "En cola en segundo plano",
+    "seeProgress": "Ver el progreso"
+  },
+  "demo": {
+    "label": "Modo demo",
+    "title": "Modo demo: datos ficticios.",
+    "body": "Personas, empresas y ofertas son inventadas; tus datos reales no se tocan."
+  }
+}

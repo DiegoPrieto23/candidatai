@@ -1,0 +1,69 @@
+{
+  "title": "Cover letter",
+  "instructions": {
+    "title": "Instructions",
+    "edit": "Edit instructions",
+    "add": "Add instructions",
+    "forJob": "For this job",
+    "placeholder": "What you want it to say: why this company, something the letter should mention…",
+    "onlySource": "What you write here is the only thing the letter can say about you beyond your profile.",
+    "maxWords": "Maximum words (optional)",
+    "save": "Save",
+    "cancel": "Cancel",
+    "forJobLabel": "For this job: ",
+    "none": "none",
+    "general": "General (your profile): ",
+    "generalNone": "none. You can add them with the skill <code>update-profile</code>.",
+    "limit": "Limit: {{count}} words (the job's take precedence).",
+    "prefMaxWords": "maximum {{count}} words",
+    "prefTone": "{{tone}} tone",
+    "prefAvoid": "avoid: {{list}}"
+  },
+  "status": {
+    "words": "{{count}} of {{max}} words",
+    "editedByYou": "Edited by you",
+    "verified": "Verified",
+    "failed": "The verifier found problems",
+    "notVerified": "Not verified",
+    "blocker": "Blocker",
+    "warning": "Warning"
+  },
+  "editor": {
+    "label": "Edit the letter",
+    "greeting": "Greeting",
+    "paragraph": "Paragraph {{n}}",
+    "signOff": "Sign-off",
+    "hint": "{{count}} of {{max}} words. It's saved as a new “Edited by you” letter, not verified. An empty paragraph is removed.",
+    "needsParagraph": "The letter needs at least one paragraph.",
+    "saving": "Saving…",
+    "save": "Save",
+    "cancel": "Cancel"
+  },
+  "render": {
+    "label": "Render the letter",
+    "design": "Design",
+    "matchCv": "Matching the CV",
+    "photo": "Photo",
+    "likeCv": "Same as the CV",
+    "color": "Color",
+    "rendering": "Rendering…",
+    "render": "Render",
+    "withPhoto": "With photo",
+    "noPhoto": "No photo",
+    "cardAria": "Letter render {{id}}",
+    "toSend": "To send",
+    "pages": "{{count}} p.",
+    "downloadPdf": "Download PDF",
+    "useAria": "Use letter render {{id}} to send",
+    "use": "Use this one to send",
+    "renders": "Renders ({{count}})"
+  },
+  "none": {
+    "title": "No letter yet",
+    "hint": "Run <code>generate-cover-letter {{id}}</code> in your agent: it writes it with your instructions, verifies it and matches it to your CV. Then you can copy it, tweak it and change the design here, without AI.",
+    "never": "This job never had a letter."
+  },
+  "copyText": "Copy text",
+  "downloadTxt": "Download TXT",
+  "edit": "Edit"
+}

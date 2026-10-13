@@ -1,0 +1,32 @@
+{
+  "steps": {
+    "reply_received": "They replied",
+    "interview_scheduled": "I have an interview",
+    "interview_done": "Interview done",
+    "test_assigned": "Technical test",
+    "offer_received": "Offer received",
+    "accepted": "I accept the offer",
+    "rejected": "They turned me down",
+    "withdrawn": "I'm withdrawing",
+    "expired": "No reply, I'll consider it closed"
+  },
+  "label": "What happened?",
+  "title": "What happened with this application?",
+  "hint": "It's in “{{stage}}”. Log each step: the job changes stage on its own and it stays in its history.",
+  "loadFailed": "Couldn't load the options: {{error}}",
+  "interview": {
+    "prepare": "Prepare",
+    "mock": "Mock interview",
+    "debrief": "Debrief",
+    "debriefAgain": "Debrief again",
+    "plan_one": "Preparation plan · {{count}} block, {{minutes}} min",
+    "plan_other": "Preparation plan · {{count}} blocks, {{minutes}} min",
+    "stale": "The interview has moved before some blocks: click “Prepare” to redo the plan.",
+    "minutes": "{{count}} min",
+    "dossier": "Dossier:",
+    "openDossiers": "Open dossiers folder",
+    "debriefLabel": "Interview debrief",
+    "debriefTitle": "Debrief",
+    "nextSteps": "Next steps"
+  }
+}

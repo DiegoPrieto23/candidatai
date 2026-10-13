@@ -12,6 +12,7 @@ import {
   TerminalWindowIcon,
   WarningIcon,
 } from '@phosphor-icons/react'
+import { Trans, useTranslation } from 'react-i18next'
 import {
   fileUrls,
   type CvRenderOptions,
@@ -29,6 +30,8 @@ import { ClosedHint } from '@/components/JobSignals'
 import { ErrorState, InlineCode } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { errorMessage } from '@/lib/errors'
+import { codeLabel, i18n, serverText } from '@/lib/i18n'
 import { colorLabel, formatDateTime, PHOTO_MODE_LABEL, SECTION_LABEL } from '@/lib/labels'
 import { cn } from '@/lib/utils'
 
@@ -42,7 +45,7 @@ const PHOTO_MODES: PhotoMode[] = ['auto', 'include', 'exclude']
  */
 const CV_SECTION_STAGES = new Set<Stage>(['approved', 'cv_ready', 'applied', 'in_process', 'closed'])
 
-function Code({ children }: { children: ReactNode }) {
+function Code({ children }: { children?: ReactNode }) {
   return (
     <code className="rounded bg-muted px-1 py-0.5 font-mono text-[0.85em] text-foreground">{children}</code>
   )
@@ -66,12 +69,15 @@ function Chip({ children, tone = 'plain' }: { children: ReactNode; tone?: 'plain
 // --- Verificación --------------------------------------------------------------------------------
 
 function Verification({ cv }: { cv: CvView }) {
+  const { t } = useTranslation('cv', { keyPrefix: 'verification' })
   const verification = cv.verification
   if (!verification) {
     return (
       <p className="flex items-start gap-2 text-sm text-muted-foreground">
         <SealWarningIcon className="mt-0.5 size-4 shrink-0" />
-        Sin verificar todavía: el skill <Code>generate-cv</Code> lo verifica tras redactarlo.
+        <span>
+          <Trans t={t} i18nKey="pending" components={{ code: <Code /> }} />
+        </span>
       </p>
     )
   }
@@ -83,14 +89,14 @@ function Verification({ cv }: { cv: CvView }) {
         ) : (
           <SealWarningIcon className="size-[18px]" weight="duotone" />
         )}
-        {verification.passed ? 'Verificado: nada inventado ni exagerado' : 'El verificador encontró problemas'}
+        {verification.passed ? t('passed') : t('failed')}
       </p>
       {verification.issues.length > 0 && (
         <ul className="space-y-1.5 text-sm">
           {verification.issues.map((issue, i) => (
             <li key={i} className="rounded-md bg-muted/70 px-3 py-2">
               <span className={cn('font-medium', issue.severity === 'blocker' && 'text-destructive')}>
-                {issue.severity === 'blocker' ? 'Bloqueante' : 'Aviso'} · {issue.location}
+                {issue.severity === 'blocker' ? t('blocker') : t('warning')} · {issue.location}
               </span>
               <span className="block text-foreground/85">{issue.problem}</span>
               {issue.suggestion && <span className="block text-muted-foreground">{issue.suggestion}</span>}
@@ -113,9 +119,10 @@ function TemplatePicker({
   value: string
   onChange: (id: string) => void
 }) {
+  const { t } = useTranslation('cv', { keyPrefix: 'template' })
   return (
     <fieldset>
-      <legend className="mb-2 text-sm font-medium">Plantilla</legend>
+      <legend className="mb-2 text-sm font-medium">{t('legend')}</legend>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {templates.map((template) => {
           const checked = template.id === value
@@ -151,12 +158,12 @@ function TemplatePicker({
               </span>
               <span className="mt-2 flex items-center gap-1.5 text-sm font-medium">
                 <span className="truncate">{template.name}</span>
-                {template.from_user_cv && <Chip>Tu CV</Chip>}
+                {template.from_user_cv && <Chip>{t('yourCv')}</Chip>}
               </span>
               <span className="block truncate text-xs text-muted-foreground">
-                {template.ats_friendly ? 'Apta para ATS' : 'No apta para ATS'}
-                {template.photo_supported && ' · con foto'}
-                {template.engine === 'html' && ' · solo PDF'}
+                {template.ats_friendly ? t('ats') : t('notAts')}
+                {template.photo_supported && t('withPhoto')}
+                {template.engine === 'html' && t('pdfOnly')}
               </span>
             </label>
           )
@@ -175,9 +182,10 @@ function PhotoPicker({
   onChange: (mode: PhotoMode) => void
   supported: boolean
 }) {
+  const { t } = useTranslation('cv', { keyPrefix: 'photo' })
   return (
     <fieldset disabled={!supported}>
-      <legend className="mb-2 text-sm font-medium">Foto</legend>
+      <legend className="mb-2 text-sm font-medium">{t('legend')}</legend>
       <div className="inline-flex rounded-md border bg-background p-0.5">
         {PHOTO_MODES.map((mode) => (
           <label
@@ -201,8 +209,8 @@ function PhotoPicker({
       </div>
       <p className="mt-1.5 text-xs text-muted-foreground">
         {supported
-          ? 'Automática: según el país de la oferta y tu photo_policy, si tienes data/photo.*.'
-          : 'Esta plantilla no lleva foto.'}
+          ? t('autoHint')
+          : t('unsupported')}
       </p>
     </fieldset>
   )
@@ -217,9 +225,10 @@ function ColorPicker({
   value: string
   onChange: (color: string) => void
 }) {
+  const { t } = useTranslation('cv')
   return (
     <fieldset>
-      <legend className="mb-2 text-sm font-medium">Color de acento</legend>
+      <legend className="mb-2 text-sm font-medium">{t('accent')}</legend>
       <div className="flex flex-wrap gap-2">
         {colors.choices.map((color) => (
           <label
@@ -257,11 +266,12 @@ function SectionsPicker({
   hidden: SectionName[]
   onChange: (hidden: SectionName[]) => void
 }) {
+  const { t } = useTranslation('cv')
   const toggle = (section: SectionName, hide: boolean) =>
     onChange(hide ? [...hidden, section] : hidden.filter((s) => s !== section))
   return (
     <fieldset>
-      <legend className="mb-2 text-sm font-medium">Ocultar secciones</legend>
+      <legend className="mb-2 text-sm font-medium">{t('hideSections')}</legend>
       <div className="flex flex-wrap gap-x-4 gap-y-2">
         {sections.map((section) => (
           <label key={section} className="flex cursor-pointer items-center gap-2 text-sm">
@@ -288,6 +298,7 @@ function RenderForm({
   jobId: number
   templates: TemplateInfo[]
 }) {
+  const { t } = useTranslation('cv')
   const base = cv.renders.find((r) => r.selected) ?? cv.renders.at(-1)
   const [templateId, setTemplateId] = useState(base?.template_id ?? templates[0]?.id ?? '')
   const [photo, setPhoto] = useState<PhotoMode>('auto')
@@ -295,7 +306,7 @@ function RenderForm({
   const [hidden, setHidden] = useState<SectionName[]>(base?.options.hidden_sections ?? [])
   const render = useRenderCv(jobId)
 
-  const template = templates.find((t) => t.id === templateId)
+  const template = templates.find((tpl) => tpl.id === templateId)
   const colors = template?.accent_colors ?? null
   const color = colors ? (accent && colors.choices.includes(accent) ? accent : colors.default) : null
 
@@ -318,7 +329,7 @@ function RenderForm({
   }
 
   return (
-    <form onSubmit={submit} aria-label="Renderizar el CV" className="space-y-6">
+    <form onSubmit={submit} aria-label={t('renderForm')} className="space-y-6">
       <TemplatePicker templates={templates} value={templateId} onChange={chooseTemplate} />
       {template && (
         <div className="grid gap-6 sm:grid-cols-2">
@@ -331,18 +342,18 @@ function RenderForm({
       )}
       {render.isError && (
         <p role="alert" className="text-sm text-destructive">
-          <InlineCode text={render.error.message} />
+          <InlineCode text={errorMessage(render.error)} />
         </p>
       )}
       <div className="flex flex-wrap items-center gap-3">
         <Button type="submit" disabled={!template || render.isPending} className="active:translate-y-px">
           <ArrowsClockwiseIcon className={cn(render.isPending && 'animate-spin')} />
-          {render.isPending ? 'Renderizando…' : 'Renderizar'}
+          {render.isPending ? t('rendering') : t('render')}
         </Button>
         <p className="text-xs text-muted-foreground">
           {render.isPending
-            ? 'Convirtiendo a PDF: tarda unos segundos.'
-            : 'Mismo contenido verificado, otra presentación. Sin IA.'}
+            ? t('renderingHint')
+            : t('renderHint')}
         </p>
       </div>
     </form>
@@ -352,11 +363,17 @@ function RenderForm({
 // --- Renders -------------------------------------------------------------------------------------
 
 function optionsSummary(render: RenderResult): string {
-  const parts = [render.options.photo ? 'Con foto' : 'Sin foto']
+  const t = i18n.getFixedT(null, 'cv', 'summary')
+  const parts = [render.options.photo ? t('withPhoto') : t('noPhoto')]
   if (render.options.accent_color) parts.push(colorLabel(render.options.accent_color))
   if (render.options.hidden_sections.length)
-    parts.push(`sin ${render.options.hidden_sections.map((s) => SECTION_LABEL[s].toLowerCase()).join(', ')}`)
+    parts.push(t('without', { sections: render.options.hidden_sections.map((s) => SECTION_LABEL[s].toLowerCase()).join(', ') }))
   return parts.join(' · ')
+}
+
+/** Un aviso del render: el mensaje del servidor, con su código traducido fuera del español. */
+function warningText(warning: { code: string; message: string }): string {
+  return serverText(codeLabel(`cv:warnings.${warning.code}`), warning.message)
 }
 
 function RenderCard({
@@ -372,13 +389,14 @@ function RenderCard({
   onCompare: (on: boolean) => void
   jobId: number
 }) {
+  const { t } = useTranslation('cv')
   const select = useSelectRender(jobId)
   const coverage = render.keyword_coverage
   const total = coverage.present.length + coverage.missing.length
   const tooLong = render.warnings.some((w) => w.code === 'too_long')
   return (
     <li
-      aria-label={`Render ${render.render_id}`}
+      aria-label={t('renderAria', { id: render.render_id })}
       className={cn('rounded-lg border bg-background p-4', render.selected && 'border-primary/50 ring-1 ring-primary/30')}
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -387,10 +405,10 @@ function RenderCard({
             {templateName}
             {render.selected && (
               <Chip tone="primary">
-                <PaperPlaneTiltIcon weight="fill" /> Para enviar
+                <PaperPlaneTiltIcon weight="fill" /> {t('toSend')}
               </Chip>
             )}
-            {render.template_changed && <Chip tone="warning">Plantilla cambiada</Chip>}
+            {render.template_changed && <Chip tone="warning">{t('templateChanged')}</Chip>}
           </p>
           <p className="mt-0.5 text-xs text-muted-foreground">
             {optionsSummary(render)} · {formatDateTime(render.created_at)}
@@ -398,19 +416,19 @@ function RenderCard({
         </div>
         <dl className="flex gap-4 text-right text-xs">
           <div>
-            <dt className="text-muted-foreground">Páginas</dt>
+            <dt className="text-muted-foreground">{t('pages')}</dt>
             <dd className={cn('tabular font-medium', tooLong && 'text-destructive')}>
               {render.pages}/{render.max_pages}
             </dd>
           </div>
           {total > 0 && (
             <div>
-              <dt className="text-muted-foreground">Keywords</dt>
+              <dt className="text-muted-foreground">{t('keywords')}</dt>
               <dd
                 className="tabular font-medium"
-                title={coverage.missing.length ? `Faltan: ${coverage.missing.join(', ')}` : undefined}
+                title={coverage.missing.length ? t('missingKeywords', { list: coverage.missing.join(', ') }) : undefined}
               >
-                {coverage.present.length} de {total}
+                {t('keywordsOf', { present: coverage.present.length, total })}
               </dd>
             </div>
           )}
@@ -419,7 +437,7 @@ function RenderCard({
 
       {render.template_changed && (
         <p className="mt-2 text-xs text-muted-foreground">
-          La plantilla ha cambiado desde este render: vuelve a renderizar para ver la versión actual.
+          {t('templateChangedHint')}
         </p>
       )}
       {render.warnings.length > 0 && (
@@ -428,7 +446,7 @@ function RenderCard({
             <li key={i} className="flex items-start gap-2 text-sm text-warning-foreground">
               <WarningIcon className="mt-0.5 size-4 shrink-0" weight="duotone" />
               <span>
-                <InlineCode text={warning.message} />
+                <InlineCode text={warningText(warning)} />
               </span>
             </li>
           ))}
@@ -438,7 +456,7 @@ function RenderCard({
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <Button asChild variant="outline" size="xs">
           <a href={fileUrls.renderPdf(render.render_id)} target="_blank" rel="noopener noreferrer">
-            <FilePdfIcon /> Ver PDF
+            <FilePdfIcon /> {t('viewPdf')}
           </a>
         </Button>
         {render.docx_path && (
@@ -455,7 +473,7 @@ function RenderCard({
             onChange={(e) => onCompare(e.target.checked)}
             className="size-3.5 accent-[var(--primary)]"
           />
-          Comparar
+          {t('compare')}
         </label>
         {!render.selected && (
           <Button
@@ -465,13 +483,13 @@ function RenderCard({
             disabled={select.isPending}
             onClick={() => select.mutate(render.render_id)}
           >
-            <PaperPlaneTiltIcon /> Usar este para enviar
+            <PaperPlaneTiltIcon /> {t('useThis')}
           </Button>
         )}
       </div>
       {select.isError && (
         <p role="alert" className="mt-2 text-xs text-destructive">
-          {select.error.message}
+          {errorMessage(select.error)}
         </p>
       )}
     </li>
@@ -479,14 +497,15 @@ function RenderCard({
 }
 
 function Compare({ renders, names, onClose }: { renders: RenderResult[]; names: Map<string, string>; onClose: () => void }) {
+  const { t } = useTranslation('cv')
   return (
-    <section aria-label="Comparación de renders" className="space-y-3">
+    <section aria-label={t('comparison')} className="space-y-3">
       <div className="flex items-center justify-between gap-3">
         <h3 className="flex items-center gap-2 text-sm font-semibold">
-          <ColumnsIcon className="size-4" /> Lado a lado
+          <ColumnsIcon className="size-4" /> {t('sideBySide')}
         </h3>
         <Button variant="ghost" size="xs" onClick={onClose}>
-          Cerrar comparación
+          {t('closeComparison')}
         </Button>
       </div>
       <div className="grid gap-3 md:grid-cols-2">
@@ -496,7 +515,7 @@ function Compare({ renders, names, onClose }: { renders: RenderResult[]; names: 
               {names.get(render.template_id) ?? render.template_id} · {optionsSummary(render)}
             </figcaption>
             <iframe
-              title={`PDF del render ${render.render_id}`}
+              title={t('pdfOf', { id: render.render_id })}
               src={`${fileUrls.renderPdf(render.render_id)}#view=FitH`}
               className="h-[75vh] w-full rounded-lg border bg-white"
             />
@@ -508,6 +527,7 @@ function Compare({ renders, names, onClose }: { renders: RenderResult[]; names: 
 }
 
 function Renders({ cv, jobId, names }: { cv: CvView; jobId: number; names: Map<string, string> }) {
+  const { t } = useTranslation('cv')
   const [compare, setCompare] = useState<number[]>([])
   const newest = [...cv.renders].reverse()
   const toggle = (id: number, on: boolean) =>
@@ -519,11 +539,11 @@ function Renders({ cv, jobId, names }: { cv: CvView; jobId: number; names: Map<s
   return (
     <div className="space-y-4">
       <h3 className="text-sm font-semibold">
-        Renders <span className="tabular font-normal text-muted-foreground">({cv.renders.length})</span>
+        {t('renders')} <span className="tabular font-normal text-muted-foreground">({cv.renders.length})</span>
       </h3>
       {compared.length === 2 && <Compare renders={compared} names={names} onClose={() => setCompare([])} />}
       {compared.length === 1 && (
-        <p className="text-xs text-muted-foreground">Marca otro render para verlos lado a lado.</p>
+        <p className="text-xs text-muted-foreground">{t('pickAnother')}</p>
       )}
       <ul className="space-y-3">
         {newest.map((render) => (
@@ -554,38 +574,38 @@ function CvBody({
   signals?: JobView['signals']
   templatesQuery: ReturnType<typeof useTemplates>
 }) {
+  const { t } = useTranslation('cv')
   if (!data.cv) {
     return (
       <div className="flex items-start gap-4 rounded-lg border border-dashed p-5">
         <TerminalWindowIcon className="mt-0.5 size-6 shrink-0 text-primary" weight="duotone" />
         <div className="text-sm leading-relaxed">
-          <p className="font-semibold">Aún sin CV</p>
+          <p className="font-semibold">{t('none.title')}</p>
           {data.can_render ? (
             <>
               <p className="mt-1 text-muted-foreground">
-                Tu agente redacta el contenido desde tu perfil, lo verifica y lo renderiza (skill{' '}
-                <Code>generate-cv {jobId}</Code>). Después podrás cambiar plantilla, foto y color aquí, sin IA.
+                <Trans t={t} i18nKey="none.hint" values={{ id: jobId }} components={{ code: <Code /> }} />
               </p>
               <AgentButton action="generate-cv" jobId={jobId} variant="default" className="mt-3">
-                Generar CV
+                {t('none.generate')}
               </AgentButton>
               <ClosedHint signals={signals} />
             </>
           ) : (
-            <p className="mt-1 text-muted-foreground">Esta oferta no llegó a tener CV.</p>
+            <p className="mt-1 text-muted-foreground">{t('none.never')}</p>
           )}
         </div>
       </div>
     )
   }
   const templates = templatesQuery.data?.templates ?? []
-  const names = new Map(templates.map((t) => [t.id, t.name]))
+  const names = new Map(templates.map((tpl) => [tpl.id, tpl.name]))
   return (
     <div className="space-y-8">
       <Verification cv={data.cv} />
       {data.can_render && (
         <AgentButton action="generate-cv" jobId={jobId}>
-          Volver a redactar
+          {t('rewrite')}
         </AgentButton>
       )}
       {data.can_render &&
@@ -602,14 +622,15 @@ function CvBody({
 }
 
 export function CvSection({ job }: { job: JobView }) {
+  const { t } = useTranslation('cv')
   const relevant = job.stage !== null && CV_SECTION_STAGES.has(job.stage)
   const cvQuery = useJobCv(job.id, relevant)
   const templatesQuery = useTemplates()
   if (!relevant) return null
   if (job.stage === 'closed' && cvQuery.data && !cvQuery.data.cv) return null
   return (
-    <section id="cv" aria-label="CV" className="scroll-mt-6 rounded-xl border bg-card p-5 sm:p-6">
-      <h2 className="mb-5 text-base font-semibold tracking-tight">CV</h2>
+    <section id="cv" aria-label={t('title')} className="scroll-mt-6 rounded-xl border bg-card p-5 sm:p-6">
+      <h2 className="mb-5 text-base font-semibold tracking-tight">{t('title')}</h2>
       {cvQuery.isPending ? (
         <Skeleton className="h-48" />
       ) : cvQuery.isError ? (

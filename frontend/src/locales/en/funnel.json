@@ -1,0 +1,195 @@
+{
+  "days_one": "{{value}} day",
+  "days_other": "{{value}} days",
+  "presets": {
+    "all": "All",
+    "30": "30 days",
+    "90": "90 days",
+    "365": "12 months"
+  },
+  "period": "Period",
+  "since": "Since",
+  "steps": {
+    "found": "Found",
+    "triaged": "Triaged",
+    "approved": "Approved",
+    "applied": "Applied",
+    "replied": "Replied",
+    "interview": "Interview",
+    "offer": "Offer",
+    "accepted": "Accepted"
+  },
+  "funnel": {
+    "title": "Funnel",
+    "hint": "Each job counts once in every step it reached (and the earlier ones). The percentage is the conversion from the previous step.",
+    "duplicates": " Not counting {{count}} duplicates.",
+    "caption": "Jobs per funnel step",
+    "valueHead": "Jobs (conversion)"
+  },
+  "week": {
+    "title": "By week",
+    "hint": "Week the job was seen (Monday to Sunday, Madrid time).",
+    "label": "Week of {{date}} ({{week}})",
+    "caption": "Jobs per week",
+    "head": "Week"
+  },
+  "cols": {
+    "found": "Found",
+    "approved": "Approved",
+    "applied": "Applied",
+    "replied": "Replied",
+    "interview": "Interview",
+    "reply": "Reply rate"
+  },
+  "response": {
+    "title": "First reply",
+    "hint": "From sending to the first reply, interview, test, offer or rejection.",
+    "none": "You haven't sent any application in this period yet.",
+    "median": "Median",
+    "mean": "Mean",
+    "replied": "Replied",
+    "repliedOf": "{{replied}} of {{applied}}",
+    "noReply": "No reply",
+    "waiting": "{{waiting}} waiting · {{closed}} closed"
+  },
+  "reasons": {
+    "title": "Discard reasons",
+    "hint": "Jobs per reason; a job can fail several filters at once.",
+    "unspecified": "No reason",
+    "byYou": "Discarded by you",
+    "byYouCaption": "Discards per reason",
+    "jobs": "Jobs",
+    "noDiscards": "No discards in this period.",
+    "byFilters": "Closed by the hard filters",
+    "byFiltersCaption": "Closures per hard filter",
+    "noFilters": "No closures by filters in this period."
+  },
+  "stats": {
+    "found": "Found",
+    "applied": "Applied",
+    "appliedDetail": "{{pct}} of the ones found",
+    "replyRate": "Reply rate",
+    "replyDetail": "{{count}} replied",
+    "firstReply": "First reply (median)",
+    "waitingDetail": "{{count}} waiting for a reply"
+  },
+  "bySource": {
+    "title": "By source",
+    "hint": "Where the jobs that move forward come from.",
+    "caption": "Funnel by source",
+    "head": "Source"
+  },
+  "byTitle": {
+    "title": "By role type",
+    "hint": "Normalized title from the extraction; the least frequent go into “Others”.",
+    "caption": "Funnel by role type",
+    "head": "Role",
+    "others": "Others",
+    "not_extracted": "Not extracted"
+  },
+  "byReferral": {
+    "title": "By referral",
+    "hint": "Whether a contact in the process gave you a referral, or you only asked for one. You mark it on the job page.",
+    "caption": "Funnel by referral",
+    "head": "Referral",
+    "groups": {
+      "given": "With referral",
+      "requested": "Referral requested",
+      "none": "No referral"
+    }
+  },
+  "calibration": {
+    "title": "Is the score right?",
+    "hint": "Reply and interview rates of the applications you sent (in the chosen period, by sending date) based on what you knew when you sent them.",
+    "note": "Indicative. In brackets, the 95% interval: if two groups' intervals overlap, there's no clear difference. Weights and filters don't change on their own: your agent proposes and you decide, checking with <code>cai eval matching</code>.",
+    "review": "Review my search",
+    "none": "You haven't sent any application in this period yet. It makes sense from about {{min}}-30 sent.",
+    "summary": "<strong>{{applied}}</strong> sent · reply <strong>{{reply}}</strong> · interview <strong>{{interview}}</strong>",
+    "caution": " · with fewer than {{min}}, take it with a big pinch of salt",
+    "lowData": "little data",
+    "lowDataHint": "“Little data”: fewer than {{count}} sent.",
+    "caption": "Calibration by {{tab}}",
+    "cols": {
+      "group": "Group",
+      "applied": "Sent",
+      "reply": "Reply",
+      "interview": "Interview",
+      "waiting": "Waiting"
+    },
+    "tabs": {
+      "score": {
+        "label": "Score",
+        "hint": "The job's score when you sent it."
+      },
+      "verdict": {
+        "label": "Verdict",
+        "hint": "The agent's assessment before sending it."
+      },
+      "source": {
+        "label": "Source",
+        "hint": "Where the job came from."
+      },
+      "platform": {
+        "label": "Job board",
+        "hint": "The job's job board, if known."
+      },
+      "template": {
+        "label": "Template",
+        "hint": "Template of the CV sent."
+      },
+      "letter": {
+        "label": "Letter",
+        "hint": "Whether there was a cover letter when sending."
+      },
+      "referral": {
+        "label": "Referral",
+        "hint": "Whether a contact in the process gave you a referral or you asked for one."
+      },
+      "days": {
+        "label": "Speed",
+        "hint": "Days between the job coming in and you sending it."
+      }
+    },
+    "groups": {
+      "score": {
+        "none": "No score"
+      },
+      "verdict": {
+        "strong": "Strong",
+        "possible": "Possible",
+        "weak": "Weak",
+        "none": "Not assessed"
+      },
+      "platform": {
+        "none": "No job board"
+      },
+      "template": {
+        "none": "No CV from the app"
+      },
+      "letter": {
+        "with": "With letter",
+        "without": "Without letter"
+      },
+      "referral": {
+        "given": "With referral",
+        "requested": "Referral requested",
+        "none": "No referral"
+      },
+      "days": {
+        "0_1": "0-1 days",
+        "2_3": "2-3 days",
+        "4_7": "4-7 days",
+        "8_plus": "8 days or more"
+      }
+    }
+  },
+  "loading": "Loading",
+  "title": "Funnel",
+  "intro": "What works in your search: how many jobs move forward at each step, through which channel and role type they arrive, how long companies take to reply and why jobs are discarded.",
+  "empty": {
+    "periodTitle": "No jobs in this period",
+    "title": "No data yet",
+    "period": "Try a longer period.",
+    "body": "The funnel fills up as you add jobs (<to>New job</to>), review them and log what happens with each application."
+  }
+}

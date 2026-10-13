@@ -1,4 +1,6 @@
 import { useState, type ReactNode } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
+import { SafeTrans } from '@/components/SafeTrans'
 import { Link } from 'react-router'
 import { ChartBarHorizontalIcon, InfoIcon } from '@phosphor-icons/react'
 import {
@@ -21,7 +23,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { discardReasonLabel, HARD_FILTER_LABEL, SOURCE_KIND_LABEL } from '@/lib/labels'
+import { i18n } from '@/lib/i18n'
+import { dateFormatter, discardReasonLabel, formatNumber, HARD_FILTER_LABEL, SOURCE_KIND_LABEL } from '@/lib/labels'
 import { toLocalDateInput } from '@/lib/time'
 import { cn } from '@/lib/utils'
 
@@ -29,23 +32,25 @@ type Summary = Pick<Schemas['SourceFunnel'], 'found' | 'approved' | 'applied' | 
 
 // --- Formato --------------------------------------------------------------------------------
 
-const intFmt = new Intl.NumberFormat('es-ES')
-const pctFmt = new Intl.NumberFormat('es-ES', { style: 'percent', maximumFractionDigits: 0 })
-const daysFmt = new Intl.NumberFormat('es-ES', { maximumFractionDigits: 1 })
-const weekFmt = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short', timeZone: 'UTC' })
-
-const pct = (value: number | null | undefined) => (value == null ? '—' : pctFmt.format(value))
-const days = (value: number | null) => (value == null ? '—' : `${daysFmt.format(value)} días`)
-const weekLabel = (weekStart: string) => weekFmt.format(new Date(`${weekStart}T00:00:00Z`))
+// Formateadores del idioma activo (cambian al cambiar de idioma).
+const intFmt = { format: (n: number) => formatNumber(n) }
+const pct = (value: number | null | undefined) =>
+  value == null ? '—' : formatNumber(value, { style: 'percent', maximumFractionDigits: 0 })
+const days = (value: number | null) =>
+  value == null
+    ? '—'
+    : i18n.t('funnel:days', { count: value, value: formatNumber(value, { maximumFractionDigits: 1 }) })
+const weekLabel = (weekStart: string) =>
+  dateFormatter({ day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(`${weekStart}T00:00:00Z`))
 
 // --- Periodo --------------------------------------------------------------------------------
 
-const PRESETS: readonly { id: string; label: string; days: number | null }[] = [
-  { id: 'all', label: 'Todo', days: null },
-  { id: '30', label: '30 días', days: 30 },
-  { id: '90', label: '90 días', days: 90 },
-  { id: '365', label: '12 meses', days: 365 },
-]
+const PRESETS = [
+  { id: 'all', days: null },
+  { id: '30', days: 30 },
+  { id: '90', days: 90 },
+  { id: '365', days: 365 },
+] as const
 
 /** Fecha (Madrid) de hace `n - 1` días: «30 días» incluye hoy y los 29 anteriores. */
 function daysAgo(n: number): string {
@@ -63,9 +68,10 @@ function PeriodPicker({
   onPreset: (id: string) => void
   onCustom: (value: string) => void
 }) {
+  const { t } = useTranslation('funnel')
   return (
     <div className="flex flex-wrap items-end gap-3">
-      <div role="group" aria-label="Periodo" className="inline-flex rounded-lg border bg-card p-0.5">
+      <div role="group" aria-label={t('period')} className="inline-flex rounded-lg border bg-card p-0.5">
         {PRESETS.map((p) => (
           <Button
             key={p.id}
@@ -75,13 +81,13 @@ function PeriodPicker({
             className={cn('h-7 px-2.5', preset === p.id && 'bg-secondary font-medium')}
             onClick={() => onPreset(p.id)}
           >
-            {p.label}
+            {t(`presets.${p.id}`)}
           </Button>
         ))}
       </div>
       <div className="grid gap-1">
         <Label htmlFor="funnel-since" className="text-xs text-muted-foreground">
-          Desde
+          {t('since')}
         </Label>
         <Input
           id="funnel-since"
@@ -196,31 +202,32 @@ function HorizontalBars({
 // --- Secciones ------------------------------------------------------------------------------
 
 function FunnelChart({ stats }: { stats: FunnelStats }) {
+  const { t } = useTranslation('funnel')
   const data = stats.steps.map((s, i) => ({
-    name: s.label,
+    name: t(`steps.${s.step}`),
     value: s.count,
     label: i === 0 ? intFmt.format(s.count) : `${intFmt.format(s.count)} · ${pct(s.rate_from_previous)}`,
   }))
   return (
     <Panel
-      title="Embudo"
+      title={t('funnel.title')}
       hint={
         <>
-          Cada oferta cuenta una vez en cada paso al que llegó (y en los anteriores). El porcentaje es la
-          conversión desde el paso anterior.
-          {stats.duplicates_excluded > 0 && ` Sin contar ${stats.duplicates_excluded} duplicadas.`}
+          {t('funnel.hint')}
+          {stats.duplicates_excluded > 0 && t('funnel.duplicates', { count: stats.duplicates_excluded })}
         </>
       }
     >
-      <HorizontalBars data={data} caption="Ofertas por paso del embudo" valueHead="Ofertas (conversión)" />
+      <HorizontalBars data={data} caption={t('funnel.caption')} valueHead={t('funnel.valueHead')} />
     </Panel>
   )
 }
 
 function WeekChart({ weeks }: { weeks: Schemas['WeekFunnel'][] }) {
+  const { t } = useTranslation('funnel')
   const data = weeks.map((w) => ({ ...w, name: weekLabel(w.week_start) }))
   return (
-    <Panel title="Por semana" hint="Semana en que se vio la oferta (lunes a domingo, hora de Madrid).">
+    <Panel title={t('week.title')} hint={t('week.hint')}>
       <div aria-hidden="true">
         <ResponsiveContainer width="100%" height={240} initialDimension={{ width: 640, height: 240 }}>
           <BarChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -16 }} barGap={2}>
@@ -231,18 +238,25 @@ function WeekChart({ weeks }: { weeks: Schemas['WeekFunnel'][] }) {
               {...TOOLTIP_PROPS}
               labelFormatter={(_, payload) => {
                 const week = payload?.[0]?.payload as (typeof data)[number] | undefined
-                return week ? `Semana del ${week.name} (${week.week})` : ''
+                return week ? t('week.label', { date: week.name, week: week.week }) : ''
               }}
             />
             <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12, color: 'var(--muted-foreground)' }} />
-            <Bar dataKey="found" name="Encontradas" fill="var(--chart-1)" radius={[4, 4, 0, 0]} maxBarSize={20} isAnimationActive={false} />
-            <Bar dataKey="applied" name="Enviadas" fill="var(--chart-2)" radius={[4, 4, 0, 0]} maxBarSize={20} isAnimationActive={false} />
+            <Bar dataKey="found" name={t('cols.found')} fill="var(--chart-1)" radius={[4, 4, 0, 0]} maxBarSize={20} isAnimationActive={false} />
+            <Bar dataKey="applied" name={t('cols.applied')} fill="var(--chart-2)" radius={[4, 4, 0, 0]} maxBarSize={20} isAnimationActive={false} />
           </BarChart>
         </ResponsiveContainer>
       </div>
       <SrTable
-        caption="Ofertas por semana"
-        head={['Semana', 'Encontradas', 'Aprobadas', 'Enviadas', 'Con respuesta', 'Entrevista']}
+        caption={t('week.caption')}
+        head={[
+          t('week.head'),
+          t('cols.found'),
+          t('cols.approved'),
+          t('cols.applied'),
+          t('cols.replied'),
+          t('cols.interview'),
+        ]}
         rows={weeks.map((w) => [`${weekLabel(w.week_start)} (${w.week})`, w.found, w.approved, w.applied, w.replied, w.interview])}
       />
     </Panel>
@@ -269,6 +283,7 @@ function BreakdownTable({
   firstHead: string
   rows: { key: string; name: ReactNode; summary: Summary; muted?: boolean }[]
 }) {
+  const { t } = useTranslation('funnel', { keyPrefix: 'cols' })
   return (
     <div className="-mx-1 overflow-x-auto">
       <table className="w-full min-w-[34rem] text-sm">
@@ -278,13 +293,13 @@ function BreakdownTable({
             <th scope="col" className="px-1 pb-2 font-medium">
               {firstHead}
             </th>
-            {['Encontradas', 'Aprobadas', 'Enviadas', 'Con respuesta', 'Entrevista'].map((h) => (
+            {[t('found'), t('approved'), t('applied'), t('replied'), t('interview')].map((h) => (
               <th key={h} scope="col" className="px-1 pb-2 text-right font-medium">
                 {h}
               </th>
             ))}
             <th scope="col" className="px-1 pb-2 text-right font-medium">
-              Respuesta
+              {t('reply')}
             </th>
           </tr>
         </thead>
@@ -311,30 +326,31 @@ function BreakdownTable({
 }
 
 function ResponseTimePanel({ rt }: { rt: Schemas['ResponseTime'] }) {
+  const { t } = useTranslation('funnel', { keyPrefix: 'response' })
   return (
-    <Panel title="Primera respuesta" hint="Desde el envío hasta la primera respuesta, entrevista, prueba, oferta o rechazo.">
+    <Panel title={t('title')} hint={t('hint')}>
       {rt.applied === 0 ? (
-        <p className="text-sm text-muted-foreground">Aún no has enviado ninguna candidatura en este periodo.</p>
+        <p className="text-sm text-muted-foreground">{t('none')}</p>
       ) : (
         <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
           <div>
-            <dt className="text-muted-foreground">Mediana</dt>
+            <dt className="text-muted-foreground">{t('median')}</dt>
             <dd className="tabular text-lg font-semibold">{days(rt.median_days)}</dd>
           </div>
           <div>
-            <dt className="text-muted-foreground">Media</dt>
+            <dt className="text-muted-foreground">{t('mean')}</dt>
             <dd className="tabular text-lg font-semibold">{days(rt.mean_days)}</dd>
           </div>
           <div>
-            <dt className="text-muted-foreground">Con respuesta</dt>
+            <dt className="text-muted-foreground">{t('replied')}</dt>
             <dd className="tabular">
-              {rt.replied} de {rt.applied}
+              {t('repliedOf', { replied: rt.replied, applied: rt.applied })}
             </dd>
           </div>
           <div>
-            <dt className="text-muted-foreground">Sin respuesta</dt>
+            <dt className="text-muted-foreground">{t('noReply')}</dt>
             <dd className="tabular">
-              {rt.awaiting_reply} esperando · {rt.closed_without_reply} cerradas
+              {t('waiting', { waiting: rt.awaiting_reply, closed: rt.closed_without_reply })}
             </dd>
           </div>
         </dl>
@@ -344,8 +360,9 @@ function ResponseTimePanel({ rt }: { rt: Schemas['ResponseTime'] }) {
 }
 
 function ReasonsPanel({ stats }: { stats: FunnelStats }) {
+  const { t } = useTranslation('funnel', { keyPrefix: 'reasons' })
   const discards = stats.discard_reasons.map((r) => ({
-    name: r.reason === 'unspecified' ? 'Sin motivo' : discardReasonLabel(r.reason),
+    name: r.reason === 'unspecified' ? t('unspecified') : discardReasonLabel(r.reason),
     value: r.count,
     label: intFmt.format(r.count),
   }))
@@ -355,22 +372,22 @@ function ReasonsPanel({ stats }: { stats: FunnelStats }) {
     label: intFmt.format(f.count),
   }))
   return (
-    <Panel title="Motivos de descarte" hint="Ofertas por motivo; una oferta puede fallar varios filtros a la vez.">
+    <Panel title={t('title')} hint={t('hint')}>
       <div className="grid gap-6 md:grid-cols-2">
         <div>
-          <h3 className="mb-2 text-sm font-medium">Descartadas por ti</h3>
+          <h3 className="mb-2 text-sm font-medium">{t('byYou')}</h3>
           {discards.length ? (
-            <HorizontalBars data={discards} caption="Descartes por motivo" valueHead="Ofertas" />
+            <HorizontalBars data={discards} caption={t('byYouCaption')} valueHead={t('jobs')} />
           ) : (
-            <p className="text-sm text-muted-foreground">Ningún descarte en este periodo.</p>
+            <p className="text-sm text-muted-foreground">{t('noDiscards')}</p>
           )}
         </div>
         <div>
-          <h3 className="mb-2 text-sm font-medium">Cerradas por los filtros duros</h3>
+          <h3 className="mb-2 text-sm font-medium">{t('byFilters')}</h3>
           {filters.length ? (
-            <HorizontalBars data={filters} caption="Cierres por filtro duro" valueHead="Ofertas" />
+            <HorizontalBars data={filters} caption={t('byFiltersCaption')} valueHead={t('jobs')} />
           ) : (
-            <p className="text-sm text-muted-foreground">Ningún cierre por filtros en este periodo.</p>
+            <p className="text-sm text-muted-foreground">{t('noFilters')}</p>
           )}
         </div>
       </div>
@@ -379,6 +396,7 @@ function ReasonsPanel({ stats }: { stats: FunnelStats }) {
 }
 
 function Dashboard({ stats, since }: { stats: FunnelStats; since: string | null }) {
+  const { t } = useTranslation('funnel')
   const step = (name: string) => stats.steps.find((s) => s.step === name)
   const found = step('found')?.count ?? 0
   const applied = step('applied')
@@ -386,21 +404,21 @@ function Dashboard({ stats, since }: { stats: FunnelStats; since: string | null 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Stat label="Encontradas" value={intFmt.format(found)} />
+        <Stat label={t('stats.found')} value={intFmt.format(found)} />
         <Stat
-          label="Enviadas"
+          label={t('stats.applied')}
           value={intFmt.format(applied?.count ?? 0)}
-          detail={`${pct(applied?.rate_from_start)} de las encontradas`}
+          detail={t('stats.appliedDetail', { pct: pct(applied?.rate_from_start) })}
         />
         <Stat
-          label="Tasa de respuesta"
+          label={t('stats.replyRate')}
           value={pct(replied?.rate_from_previous)}
-          detail={`${replied?.count ?? 0} con respuesta`}
+          detail={t('stats.replyDetail', { count: replied?.count ?? 0 })}
         />
         <Stat
-          label="Primera respuesta (mediana)"
+          label={t('stats.firstReply')}
           value={days(stats.response_time.median_days)}
-          detail={`${stats.response_time.awaiting_reply} esperando respuesta`}
+          detail={t('stats.waitingDetail', { count: stats.response_time.awaiting_reply })}
         />
       </div>
 
@@ -411,10 +429,10 @@ function Dashboard({ stats, since }: { stats: FunnelStats; since: string | null 
 
       {stats.by_week.length > 0 && <WeekChart weeks={stats.by_week} />}
 
-      <Panel title="Por fuente" hint="Por dónde llegan las ofertas que avanzan.">
+      <Panel title={t('bySource.title')} hint={t('bySource.hint')}>
         <BreakdownTable
-          caption="Embudo por fuente"
-          firstHead="Fuente"
+          caption={t('bySource.caption')}
+          firstHead={t('bySource.head')}
           rows={stats.by_source.map((s) => ({
             key: String(s.source_id),
             name: (
@@ -428,30 +446,30 @@ function Dashboard({ stats, since }: { stats: FunnelStats; since: string | null 
         />
       </Panel>
 
-      <Panel title="Por tipo de puesto" hint="Título normalizado de la extracción; los menos frecuentes van en «Otros».">
+      <Panel title={t('byTitle.title')} hint={t('byTitle.hint')}>
         <BreakdownTable
-          caption="Embudo por tipo de puesto"
-          firstHead="Puesto"
-          rows={stats.by_title.map((t) => ({
-            key: `${t.group}-${t.title}`,
-            name: t.title,
-            summary: t,
-            muted: t.group !== 'title',
+          caption={t('byTitle.caption')}
+          firstHead={t('byTitle.head')}
+          rows={stats.by_title.map((row) => ({
+            key: `${row.group}-${row.title}`,
+            name: row.group === 'title' ? row.title : t(`byTitle.${row.group}`),
+            summary: row,
+            muted: row.group !== 'title',
           }))}
         />
       </Panel>
 
       {stats.by_referral.some((r) => r.group !== 'none' && r.found > 0) && (
         <Panel
-          title="Por referencia"
-          hint="Si algún contacto del proceso te dio una referencia, o solo se la pediste. Lo marcas en la ficha."
+          title={t('byReferral.title')}
+          hint={t('byReferral.hint')}
         >
           <BreakdownTable
-            caption="Embudo por referencia"
-            firstHead="Referencia"
+            caption={t('byReferral.caption')}
+            firstHead={t('byReferral.head')}
             rows={stats.by_referral.map((r) => ({
               key: r.group,
-              name: REFERRAL_GROUP_LABEL[r.group],
+              name: t(`byReferral.groups.${r.group}`),
               summary: r,
               muted: r.group === 'none',
             }))}
@@ -471,26 +489,24 @@ function Dashboard({ stats, since }: { stats: FunnelStats; since: string | null 
 /** Por debajo de tantas enviadas, la calibración es poco más que anecdótica (el skill dice lo mismo). */
 const CALIBRATION_MIN_SENT = 20
 
-const CALIBRATION_TABS: readonly {
-  id: string
-  label: string
-  hint: string
-  pick: (c: Calibration) => CalibrationGroup[]
-}[] = [
-  { id: 'score', label: 'Score', hint: 'Score de la oferta al enviarla.', pick: (c) => c.by_score },
-  { id: 'verdict', label: 'Veredicto', hint: 'Valoración del agente antes de enviarla.', pick: (c) => c.by_verdict },
-  { id: 'source', label: 'Fuente', hint: 'Por dónde llegó la oferta.', pick: (c) => c.by_source },
-  { id: 'platform', label: 'Portal', hint: 'Portal de empleo de la oferta, si se sabe.', pick: (c) => c.by_platform },
-  { id: 'template', label: 'Plantilla', hint: 'Plantilla del CV enviado.', pick: (c) => c.by_template },
-  { id: 'letter', label: 'Carta', hint: 'Si había carta de presentación al enviar.', pick: (c) => c.by_cover_letter },
-  {
-    id: 'referral',
-    label: 'Referencia',
-    hint: 'Si algún contacto del proceso te dio una referencia o se la pediste.',
-    pick: (c) => c.by_referral,
-  },
-  { id: 'days', label: 'Rapidez', hint: 'Días entre que entró la oferta y la enviaste.', pick: (c) => c.by_days_to_apply },
-]
+const CALIBRATION_TABS = [
+  { id: 'score', pick: (c: Calibration) => c.by_score },
+  { id: 'verdict', pick: (c: Calibration) => c.by_verdict },
+  { id: 'source', pick: (c: Calibration) => c.by_source },
+  { id: 'platform', pick: (c: Calibration) => c.by_platform },
+  { id: 'template', pick: (c: Calibration) => c.by_template },
+  { id: 'letter', pick: (c: Calibration) => c.by_cover_letter },
+  { id: 'referral', pick: (c: Calibration) => c.by_referral },
+  { id: 'days', pick: (c: Calibration) => c.by_days_to_apply },
+] as const
+
+type CalibrationTab = (typeof CALIBRATION_TABS)[number]['id']
+
+/** La etiqueta de un grupo: la traducida si su clave es estable («none», «with»…); si no, la del servidor. */
+function groupLabel(tab: CalibrationTab, group: CalibrationGroup): string {
+  const key = `funnel:calibration.groups.${tab}.${group.key}`
+  return i18n.exists(key) ? String(i18n.t(key as never)) : group.label
+}
 
 /** Tasa con su intervalo: la banda clara es el intervalo; la marca, la tasa. */
 function IntervalBar({ interval }: { interval: CalibrationGroup['reply_rate'] }) {
@@ -526,7 +542,8 @@ function IntervalBar({ interval }: { interval: CalibrationGroup['reply_rate'] })
   )
 }
 
-function CalibrationTable({ caption, groups }: { caption: string; groups: CalibrationGroup[] }) {
+function CalibrationTable({ caption, tab, groups }: { caption: string; tab: CalibrationTab; groups: CalibrationGroup[] }) {
+  const { t } = useTranslation('funnel', { keyPrefix: 'calibration' })
   return (
     <div className="-mx-1 overflow-x-auto">
       <table className="w-full min-w-[36rem] text-sm">
@@ -534,9 +551,9 @@ function CalibrationTable({ caption, groups }: { caption: string; groups: Calibr
         <thead>
           <tr className="border-b text-left text-xs text-muted-foreground">
             <th scope="col" className="px-1 pb-2 font-medium">
-              Grupo
+              {t('cols.group')}
             </th>
-            {['Enviadas', 'Respuesta', 'Entrevista', 'Esperando'].map((h) => (
+            {[t('cols.applied'), t('cols.reply'), t('cols.interview'), t('cols.waiting')].map((h) => (
               <th key={h} scope="col" className="px-1 pb-2 text-right font-medium">
                 {h}
               </th>
@@ -547,10 +564,10 @@ function CalibrationTable({ caption, groups }: { caption: string; groups: Calibr
           {groups.map((g) => (
             <tr key={g.key} className={cn('border-b last:border-0', g.applied === 0 && 'text-muted-foreground')}>
               <th scope="row" className="max-w-56 px-1 py-2 text-left font-normal">
-                {g.label}
+                {groupLabel(tab, g)}
                 {g.applied > 0 && g.low_data && (
                   <span className="ml-2 rounded-full border px-1.5 py-px text-[11px] whitespace-nowrap text-muted-foreground">
-                    pocos datos
+                    {t('lowData')}
                   </span>
                 )}
               </th>
@@ -571,25 +588,24 @@ function CalibrationTable({ caption, groups }: { caption: string; groups: Calibr
 }
 
 function CalibrationPanel({ since }: { since: string | null }) {
+  const { t } = useTranslation('funnel', { keyPrefix: 'calibration' })
   const calibration = useCalibration(since)
   const [tab, setTab] = useState('score')
   const data = calibration.data
   return (
     <Panel
-      title="¿Acierta el score?"
-      hint="Respuesta y entrevista de tus candidaturas enviadas (en el periodo elegido, por fecha de envío) según lo que sabías al enviarlas."
+      title={t('title')}
+      hint={t('hint')}
     >
       <div className="mb-4 flex flex-col gap-3 rounded-lg border border-dashed bg-muted/40 p-3 text-sm sm:flex-row sm:items-start sm:justify-between">
         <p className="flex gap-2 text-muted-foreground">
           <InfoIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
           <span>
-            Orientativo. Entre paréntesis, el intervalo al 95 %: si los de dos grupos se solapan, no hay una diferencia
-            clara. Los pesos y filtros no cambian solos: tu agente propone y tú decides, comprobándolo con{' '}
-            <code className="text-xs">cai eval matching</code>.
+            <Trans t={t} i18nKey="note" components={{ code: <code className="text-xs" /> }} />
           </span>
         </p>
         <AgentButton action="review-search" className="shrink-0">
-          Revisar mi búsqueda
+          {t('review')}
         </AgentButton>
       </div>
       {calibration.isPending ? (
@@ -598,32 +614,43 @@ function CalibrationPanel({ since }: { since: string | null }) {
         <ErrorState error={calibration.error} onRetry={() => calibration.refetch()} />
       ) : !data || data.total.applied === 0 ? (
         <p className="text-sm text-muted-foreground">
-          Aún no has enviado ninguna candidatura en este periodo. Tiene sentido a partir de unas {CALIBRATION_MIN_SENT}-30 enviadas.
+          {t('none', { min: CALIBRATION_MIN_SENT })}
         </p>
       ) : (
         <>
           <p className="mb-3 text-sm">
-            <span className="tabular font-medium">{intFmt.format(data.total.applied)}</span> enviadas · respuesta{' '}
-            <span className="tabular font-medium">{pct(data.total.reply_rate.rate)}</span> · entrevista{' '}
-            <span className="tabular font-medium">{pct(data.total.interview_rate.rate)}</span>
+            <SafeTrans
+              t={t}
+              i18nKey="summary"
+              values={{
+                applied: intFmt.format(data.total.applied),
+                reply: pct(data.total.reply_rate.rate),
+                interview: pct(data.total.interview_rate.rate),
+              }}
+              components={{ strong: <span className="tabular font-medium" /> }}
+            />
             {data.total.applied < CALIBRATION_MIN_SENT && (
-              <span className="text-muted-foreground"> · con menos de {CALIBRATION_MIN_SENT}, tómalo con mucha cautela</span>
+              <span className="text-muted-foreground">{t('caution', { min: CALIBRATION_MIN_SENT })}</span>
             )}
           </p>
           <Tabs value={tab} onValueChange={setTab} className="gap-3">
             <TabsList className="h-auto flex-wrap justify-start">
-              {CALIBRATION_TABS.map((t) => (
-                <TabsTrigger key={t.id} value={t.id} className="px-2.5">
-                  {t.label}
+              {CALIBRATION_TABS.map((tab) => (
+                <TabsTrigger key={tab.id} value={tab.id} className="px-2.5">
+                  {t(`tabs.${tab.id}.label`)}
                 </TabsTrigger>
               ))}
             </TabsList>
-            {CALIBRATION_TABS.map((t) => (
-              <TabsContent key={t.id} value={t.id}>
+            {CALIBRATION_TABS.map((tab) => (
+              <TabsContent key={tab.id} value={tab.id}>
                 <p className="mb-2 text-xs text-muted-foreground">
-                  {t.hint} «Pocos datos»: menos de {data.min_cases} enviadas.
+                  {t(`tabs.${tab.id}.hint`)} {t('lowDataHint', { count: data.min_cases })}
                 </p>
-                <CalibrationTable caption={`Calibración por ${t.label.toLowerCase()}`} groups={t.pick(data)} />
+                <CalibrationTable
+                  caption={t('caption', { tab: t(`tabs.${tab.id}.label`).toLowerCase() })}
+                  tab={tab.id}
+                  groups={tab.pick(data)}
+                />
               </TabsContent>
             ))}
           </Tabs>
@@ -633,15 +660,10 @@ function CalibrationPanel({ since }: { since: string | null }) {
   )
 }
 
-const REFERRAL_GROUP_LABEL: Record<Schemas['ReferralFunnel']['group'], string> = {
-  given: 'Con referencia',
-  requested: 'Referencia pedida',
-  none: 'Sin referencia',
-}
-
 function DashboardSkeleton() {
+  const { t } = useTranslation('funnel')
   return (
-    <div className="space-y-6" aria-busy="true" aria-label="Cargando">
+    <div className="space-y-6" aria-busy="true" aria-label={t('loading')}>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {[0, 1, 2, 3].map((i) => (
           <Skeleton key={i} className="h-20 rounded-xl" />
@@ -653,6 +675,7 @@ function DashboardSkeleton() {
 }
 
 export function FunnelPage() {
+  const { t } = useTranslation('funnel')
   const [preset, setPreset] = useState<string | null>('all')
   const [custom, setCustom] = useState('')
   const presetDays = PRESETS.find((p) => p.id === preset)?.days
@@ -664,10 +687,9 @@ export function FunnelPage() {
     <div className="animate-in fade-in duration-300">
       <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Embudo</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
           <p className="mt-1.5 max-w-[65ch] text-sm leading-relaxed text-muted-foreground">
-            Qué funciona en tu búsqueda: cuántas ofertas avanzan en cada paso, por qué canal y tipo de puesto llegan, cuánto
-            tardan en responder y por qué se descartan.
+            {t('intro')}
           </p>
         </div>
         <PeriodPicker
@@ -692,18 +714,16 @@ export function FunnelPage() {
         <>
           <EmptyState
             icon={<ChartBarHorizontalIcon className="size-7" weight="duotone" />}
-            title={since ? 'No hay ofertas en este periodo' : 'Aún no hay datos'}
+            title={since ? t('empty.periodTitle') : t('empty.title')}
           >
             {since ? (
-              'Prueba con un periodo más largo.'
+              t('empty.period')
             ) : (
-              <>
-                El embudo se llena a medida que das de alta ofertas (
-                <Link to="/nueva" className="underline underline-offset-4">
-                  Nueva oferta
-                </Link>
-                ), las revisas y registras lo que pasa con cada candidatura.
-              </>
+              <Trans
+                t={t}
+                i18nKey="empty.body"
+                components={{ to: <Link to="/nueva" className="underline underline-offset-4" /> }}
+              />
             )}
           </EmptyState>
           {/* La calibración va por fecha de envío: puede haber envíos de ofertas vistas antes. */}

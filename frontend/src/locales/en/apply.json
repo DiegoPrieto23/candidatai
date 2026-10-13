@@ -1,0 +1,109 @@
+{
+  "title": "Assisted application",
+  "intro": "CandidatAI opens the job in its own browser, fills in the application form and stops before sending. Nothing is sent without your confirmation. Sign in to your job boards with “Open browser”.",
+  "fieldStatus": {
+    "filled": "Filled",
+    "empty": "Empty",
+    "needs_user_input": "Needs your input",
+    "sensitive": "Sensitive data: your call",
+    "consent": "Accepted on sending",
+    "skipped": "Not ticked",
+    "error": "Error"
+  },
+  "attemptStatus": {
+    "ready": "Ready to review",
+    "needs_user": "Needs your attention",
+    "submit_failed": "Couldn't send",
+    "submit_unconfirmed": "Sending not confirmed",
+    "manual": "Open in CandidatAI's browser"
+  },
+  "warnings": {
+    "possible_duplicate": "Possible duplicate",
+    "no_evidence": "No proof of sending",
+    "submit_blocked": "Sending blocked",
+    "no_submit_button": "No submit button",
+    "no_resume_field": "No CV field",
+    "missing_required": "Required fields missing",
+    "unused_answers": "Unused answers",
+    "invisible_captcha": "Invisible captcha",
+    "page_changed": "The page changed",
+    "form_opened": "Form opened",
+    "blocked": "Blocked",
+    "form_error": "Form error",
+    "http_error": "HTTP error",
+    "unexpected_format": "Unexpected format",
+    "no_answers": "No answers"
+  },
+  "workerHint": "The worker hasn't picked it up yet. Is it running? Start it with `uv run cai worker` in backend/.",
+  "busy": {
+    "submitting": "Sending… Don't close CandidatAI's browser.",
+    "filling": "Filling in the {{domain}} form in the browser…",
+    "queued": "Queued for the worker…"
+  },
+  "fields": {
+    "caption": "Form fields",
+    "field": "Field",
+    "status": "Status",
+    "value": "Value",
+    "source": "Where it comes from",
+    "required": "Required",
+    "requiredSr": " (required)",
+    "missing": "Required, no answer"
+  },
+  "screenshot": {
+    "review": "Screenshot of the filled-in form",
+    "confirmation": "Screenshot after sending",
+    "full": "See the full screenshot"
+  },
+  "submit": {
+    "title": "Send the application to {{company}}",
+    "description": "<button/> will be clicked on <domain/>. This confirmation is only valid for this submission.",
+    "button": "“{{label}}”",
+    "defaultButton": "The submit button",
+    "consents": "By sending you accept:",
+    "typeCompany": "Type the company name to confirm",
+    "cancel": "Cancel",
+    "send": "Send application"
+  },
+  "fillPage": "Fill in this page",
+  "markSent": "Mark as sent",
+  "review": {
+    "warnings": "Warnings",
+    "missing_one": "{{count}} required field is missing: complete it in the browser and click “Review again”, or finish it yourself.",
+    "missing_other": "{{count}} required fields are missing: complete them in the browser and click “Review again”, or finish it yourself.",
+    "send": "Send",
+    "rescan": "Review again",
+    "reopen": "Reopen the job",
+    "finishMyself": "I'll finish it",
+    "checkFirst": "Before marking it as sent, check on the website or in your email that it arrived.",
+    "working": "Working in the browser…"
+  },
+  "prepare": {
+    "linkedin": "LinkedIn isn't automated: the job will open in CandidatAI's browser and you copy the package from above.",
+    "fill": "{{domain}} will open in CandidatAI's browser and the form will be filled in. Nothing is sent until you confirm.",
+    "openAndPrepare": "Open and prepare",
+    "again": "Prepare again",
+    "prepare": "Prepare application"
+  },
+  "formUrl": {
+    "label": "Form URL",
+    "placeholder": "https://company.com/careers/…",
+    "fill": "Fill in that form"
+  },
+  "portal": {
+    "intro": "{{portal}} is a job board and blocks automated browsers, so the job opens in your browser, with your session.",
+    "step1": "Open the job and click “Apply”.",
+    "step2": "If it takes you to the company's form, copy that page's address and paste it below: CandidatAI fills it in its browser and stops before sending.",
+    "step3": "If the application is completed inside {{portal}}, finish it there (the CV is in “Application package”) and click “Mark as sent”.",
+    "open": "Open the job on {{portal}}"
+  },
+  "done": {
+    "manual": "Marked as sent by you.",
+    "sent": "Sent to {{domain}}: the website confirmed it."
+  },
+  "fillFailed": "Couldn't fill in the form.",
+  "openBrowser": {
+    "title": "Opens CandidatAI's browser so you can sign in to your job boards. It has its own profile, separate from your Chrome.",
+    "label": "Open browser"
+  }
+}

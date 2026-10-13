@@ -1,0 +1,24 @@
+{
+  "failed": "No se ha podido dar de alta.",
+  "optional": "(opcional)",
+  "url": {
+    "label": "URL de la oferta",
+    "hint": "Una página pública (Greenhouse, Lever, la web de la empresa…). LinkedIn no: para esas ofertas, <paste>pega el texto</paste>.",
+    "downloading": "Descargando…",
+    "submit": "Dar de alta"
+  },
+  "text": {
+    "title": "Puesto",
+    "company": "Empresa",
+    "location": "Ubicación",
+    "url": "URL",
+    "text": "Texto de la oferta",
+    "hint": "Pega la oferta completa: requisitos, condiciones y salario si lo indica.",
+    "saving": "Guardando…",
+    "submit": "Dar de alta"
+  },
+  "title": "Nueva oferta",
+  "intro": "Se guarda, se deduplica y se revisa en busca de texto dirigido a una IA. La extracción la hace después tu agente.",
+  "byUrl": "Por URL",
+  "pasteText": "Pegar texto"
+}

@@ -1,0 +1,195 @@
+{
+  "days_one": "{{value}} día",
+  "days_other": "{{value}} días",
+  "presets": {
+    "all": "Todo",
+    "30": "30 días",
+    "90": "90 días",
+    "365": "12 meses"
+  },
+  "period": "Periodo",
+  "since": "Desde",
+  "steps": {
+    "found": "Encontradas",
+    "triaged": "Triadas",
+    "approved": "Aprobadas",
+    "applied": "Enviadas",
+    "replied": "Con respuesta",
+    "interview": "Entrevista",
+    "offer": "Oferta",
+    "accepted": "Aceptadas"
+  },
+  "funnel": {
+    "title": "Embudo",
+    "hint": "Cada oferta cuenta una vez en cada paso al que llegó (y en los anteriores). El porcentaje es la conversión desde el paso anterior.",
+    "duplicates": " Sin contar {{count}} duplicadas.",
+    "caption": "Ofertas por paso del embudo",
+    "valueHead": "Ofertas (conversión)"
+  },
+  "week": {
+    "title": "Por semana",
+    "hint": "Semana en que se vio la oferta (lunes a domingo, hora de Madrid).",
+    "label": "Semana del {{date}} ({{week}})",
+    "caption": "Ofertas por semana",
+    "head": "Semana"
+  },
+  "cols": {
+    "found": "Encontradas",
+    "approved": "Aprobadas",
+    "applied": "Enviadas",
+    "replied": "Con respuesta",
+    "interview": "Entrevista",
+    "reply": "Respuesta"
+  },
+  "response": {
+    "title": "Primera respuesta",
+    "hint": "Desde el envío hasta la primera respuesta, entrevista, prueba, oferta o rechazo.",
+    "none": "Aún no has enviado ninguna candidatura en este periodo.",
+    "median": "Mediana",
+    "mean": "Media",
+    "replied": "Con respuesta",
+    "repliedOf": "{{replied}} de {{applied}}",
+    "noReply": "Sin respuesta",
+    "waiting": "{{waiting}} esperando · {{closed}} cerradas"
+  },
+  "reasons": {
+    "title": "Motivos de descarte",
+    "hint": "Ofertas por motivo; una oferta puede fallar varios filtros a la vez.",
+    "unspecified": "Sin motivo",
+    "byYou": "Descartadas por ti",
+    "byYouCaption": "Descartes por motivo",
+    "jobs": "Ofertas",
+    "noDiscards": "Ningún descarte en este periodo.",
+    "byFilters": "Cerradas por los filtros duros",
+    "byFiltersCaption": "Cierres por filtro duro",
+    "noFilters": "Ningún cierre por filtros en este periodo."
+  },
+  "stats": {
+    "found": "Encontradas",
+    "applied": "Enviadas",
+    "appliedDetail": "{{pct}} de las encontradas",
+    "replyRate": "Tasa de respuesta",
+    "replyDetail": "{{count}} con respuesta",
+    "firstReply": "Primera respuesta (mediana)",
+    "waitingDetail": "{{count}} esperando respuesta"
+  },
+  "bySource": {
+    "title": "Por fuente",
+    "hint": "Por dónde llegan las ofertas que avanzan.",
+    "caption": "Embudo por fuente",
+    "head": "Fuente"
+  },
+  "byTitle": {
+    "title": "Por tipo de puesto",
+    "hint": "Título normalizado de la extracción; los menos frecuentes van en «Otros».",
+    "caption": "Embudo por tipo de puesto",
+    "head": "Puesto",
+    "others": "Otros",
+    "not_extracted": "Sin extraer"
+  },
+  "byReferral": {
+    "title": "Por referencia",
+    "hint": "Si algún contacto del proceso te dio una referencia, o solo se la pediste. Lo marcas en la ficha.",
+    "caption": "Embudo por referencia",
+    "head": "Referencia",
+    "groups": {
+      "given": "Con referencia",
+      "requested": "Referencia pedida",
+      "none": "Sin referencia"
+    }
+  },
+  "calibration": {
+    "title": "¿Acierta el score?",
+    "hint": "Respuesta y entrevista de tus candidaturas enviadas (en el periodo elegido, por fecha de envío) según lo que sabías al enviarlas.",
+    "note": "Orientativo. Entre paréntesis, el intervalo al 95 %: si los de dos grupos se solapan, no hay una diferencia clara. Los pesos y filtros no cambian solos: tu agente propone y tú decides, comprobándolo con <code>cai eval matching</code>.",
+    "review": "Revisar mi búsqueda",
+    "none": "Aún no has enviado ninguna candidatura en este periodo. Tiene sentido a partir de unas {{min}}-30 enviadas.",
+    "summary": "<strong>{{applied}}</strong> enviadas · respuesta <strong>{{reply}}</strong> · entrevista <strong>{{interview}}</strong>",
+    "caution": " · con menos de {{min}}, tómalo con mucha cautela",
+    "lowData": "pocos datos",
+    "lowDataHint": "«Pocos datos»: menos de {{count}} enviadas.",
+    "caption": "Calibración por {{tab}}",
+    "cols": {
+      "group": "Grupo",
+      "applied": "Enviadas",
+      "reply": "Respuesta",
+      "interview": "Entrevista",
+      "waiting": "Esperando"
+    },
+    "tabs": {
+      "score": {
+        "label": "Score",
+        "hint": "Score de la oferta al enviarla."
+      },
+      "verdict": {
+        "label": "Veredicto",
+        "hint": "Valoración del agente antes de enviarla."
+      },
+      "source": {
+        "label": "Fuente",
+        "hint": "Por dónde llegó la oferta."
+      },
+      "platform": {
+        "label": "Portal",
+        "hint": "Portal de empleo de la oferta, si se sabe."
+      },
+      "template": {
+        "label": "Plantilla",
+        "hint": "Plantilla del CV enviado."
+      },
+      "letter": {
+        "label": "Carta",
+        "hint": "Si había carta de presentación al enviar."
+      },
+      "referral": {
+        "label": "Referencia",
+        "hint": "Si algún contacto del proceso te dio una referencia o se la pediste."
+      },
+      "days": {
+        "label": "Rapidez",
+        "hint": "Días entre que entró la oferta y la enviaste."
+      }
+    },
+    "groups": {
+      "score": {
+        "none": "Sin score"
+      },
+      "verdict": {
+        "strong": "Fuerte",
+        "possible": "Posible",
+        "weak": "Débil",
+        "none": "Sin valorar"
+      },
+      "platform": {
+        "none": "Sin portal"
+      },
+      "template": {
+        "none": "Sin CV de la app"
+      },
+      "letter": {
+        "with": "Con carta",
+        "without": "Sin carta"
+      },
+      "referral": {
+        "given": "Con referencia",
+        "requested": "Referencia pedida",
+        "none": "Sin referencia"
+      },
+      "days": {
+        "0_1": "0-1 días",
+        "2_3": "2-3 días",
+        "4_7": "4-7 días",
+        "8_plus": "8 días o más"
+      }
+    }
+  },
+  "loading": "Cargando",
+  "title": "Embudo",
+  "intro": "Qué funciona en tu búsqueda: cuántas ofertas avanzan en cada paso, por qué canal y tipo de puesto llegan, cuánto tardan en responder y por qué se descartan.",
+  "empty": {
+    "periodTitle": "No hay ofertas en este periodo",
+    "title": "Aún no hay datos",
+    "period": "Prueba con un periodo más largo.",
+    "body": "El embudo se llena a medida que das de alta ofertas (<to>Nueva oferta</to>), las revisas y registras lo que pasa con cada candidatura."
+  }
+}

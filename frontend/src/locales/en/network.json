@@ -1,0 +1,26 @@
+{
+  "addToProcess": "Add to the process",
+  "roleOf": "{{name}}'s role in the process",
+  "add": "Add",
+  "cancel": "Cancel",
+  "probable": "LinkedIn says “{{company}}”: check it's the same one.",
+  "alreadyContact": "Already a contact in the process",
+  "import": {
+    "hint": "Import your LinkedIn connections to see who you know at each company. On LinkedIn: Settings → Data privacy → Get a copy of your data → Connections. Put the file in <code>data/{{file}}</code>.",
+    "importing": "Importing…",
+    "button": "Import Connections.csv",
+    "missing": "The file isn't in that folder yet."
+  },
+  "title": "Your network",
+  "loadFailed": "Couldn't load your network: {{error}}",
+  "nobody": "Nobody in your network works at {{company}}.",
+  "youKnow_one": "You know {{count}} person at {{company}}.",
+  "youKnow_other": "You know {{count}} people at {{company}}.",
+  "approveToAdd": "Approve it to add them as contacts in the process.",
+  "imported_one": "Network imported on {{date}} ({{count}} person).",
+  "imported_other": "Network imported on {{date}} ({{count}} people).",
+  "knownTitle": "People from your LinkedIn network at this company",
+  "knownBadge": "You know {{count}}",
+  "knownPeople_one": "You know {{count}} person at {{company}}: {{list}}.",
+  "knownPeople_other": "You know {{count}} people at {{company}}: {{list}}."
+}

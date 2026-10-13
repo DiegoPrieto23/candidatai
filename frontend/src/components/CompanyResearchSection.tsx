@@ -1,10 +1,12 @@
 import { Fragment, type ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ArrowSquareOutIcon, BuildingsIcon, WarningIcon } from '@phosphor-icons/react'
 import type { CompanyResearchContent, JobView, Stage } from '@/api/client'
 import { useCompanyResearch } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
 import { OpenFolderButton } from '@/components/OpenFolderButton'
 import { formatDate } from '@/lib/labels'
+import { errorMessage } from '@/lib/errors'
 
 /** Las que admite el botón (`research-company`): ofertas abiertas ya extraídas. */
 const RESEARCH_STAGES: ReadonlySet<Stage> = new Set([
@@ -16,12 +18,7 @@ const RESEARCH_STAGES: ReadonlySet<Stage> = new Set([
 ])
 const OLD_DAYS = 30
 
-const SECTIONS: { key: keyof CompanyResearchContent; label: string }[] = [
-  { key: 'product', label: 'Producto' },
-  { key: 'news', label: 'Noticias recientes' },
-  { key: 'engineering_culture', label: 'Cultura de ingeniería' },
-  { key: 'notes', label: 'Para ti' },
-]
+const SECTIONS = ['product', 'news', 'engineering_culture', 'notes'] as const satisfies readonly (keyof CompanyResearchContent)[]
 
 function isUrl(value: string): boolean {
   return /^https?:\/\//i.test(value)
@@ -58,34 +55,35 @@ function Cited({ text, sources }: { text: string; sources: CompanyResearchConten
  * webs públicas: se muestra como texto, con sus fuentes. La carta no lo usa (POLICIES §7).
  */
 export function CompanyResearchSection({ job }: { job: JobView }) {
+  const { t } = useTranslation('research')
   const { data, isError, error } = useCompanyResearch(job.id)
   const canResearch = job.stage !== null && RESEARCH_STAGES.has(job.stage)
   const research = data?.research
   if (!research && !canResearch) return null
   const content = research?.content
   return (
-    <section aria-label="Empresa" className="rounded-xl border bg-card p-5 sm:p-6">
+    <section aria-label={t('title')} className="rounded-xl border bg-card p-5 sm:p-6">
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="flex items-center gap-2 font-semibold">
             <BuildingsIcon className="size-[18px] text-primary" weight="duotone" />
-            Empresa
+            {t('title')}
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
             {research
-              ? `Dosier del ${formatDate(research.updated_at)}${research.agent_name ? ` · de ${research.agent_name}` : ''}. Sacado de webs públicas: compruébalo en la fuente.`
-              : 'Tu agente investiga la empresa en la web pública y deja aquí un dosier con fuentes.'}
+              ? `${t('dossier', { date: formatDate(research.updated_at) })}${research.agent_name ? t('by', { agent: research.agent_name }) : ''}${t('fromWeb')}`
+              : t('intro')}
           </p>
         </div>
         {canResearch && (
           <AgentButton action="research-company" jobId={job.id}>
-            {research ? 'Actualizar dosier' : 'Investigar empresa'}
+            {research ? t('update') : t('research')}
           </AgentButton>
         )}
       </div>
       {isError ? (
         // Sección secundaria: el fallo se dice sin `alert`, para no tapar los avisos de la ficha.
-        <p className="text-sm text-muted-foreground">No se pudo cargar el dosier: {error.message}</p>
+        <p className="text-sm text-muted-foreground">{t('loadFailed', { error: errorMessage(error) })}</p>
       ) : (
         research &&
         content && (
@@ -93,21 +91,21 @@ export function CompanyResearchSection({ job }: { job: JobView }) {
             {research.risk_flags.length > 0 && (
               <p className="flex items-start gap-2 rounded-md border border-warning-border bg-warning px-3 py-2 text-warning-foreground">
                 <WarningIcon className="mt-0.5 size-4 shrink-0" weight="fill" />
-                El dosier contiene frases dirigidas a una IA (venían de alguna web). Revísalo antes de usarlo.
+                {t('risk')}
               </p>
             )}
             {research.age_days > OLD_DAYS && (
-              <p className="text-xs text-muted-foreground">Tiene {research.age_days} días: puede estar desfasado.</p>
+              <p className="text-xs text-muted-foreground">{t('old', { count: research.age_days })}</p>
             )}
             <p className="leading-relaxed whitespace-pre-line">
               <Cited text={content.summary} sources={content.sources} />
             </p>
-            {SECTIONS.map(({ key, label }) => {
+            {SECTIONS.map((key) => {
               const text = content[key]
               if (typeof text !== 'string' || !text) return null
               return (
                 <div key={key}>
-                  <h3 className="mb-1 text-xs font-medium tracking-wide text-muted-foreground uppercase">{label}</h3>
+                  <h3 className="mb-1 text-xs font-medium tracking-wide text-muted-foreground uppercase">{t(`sections.${key}`)}</h3>
                   <p className="leading-relaxed whitespace-pre-line">
                     <Cited text={text} sources={content.sources} />
                   </p>
@@ -116,8 +114,8 @@ export function CompanyResearchSection({ job }: { job: JobView }) {
             })}
             {content.stack && content.stack.length > 0 && (
               <div>
-                <h3 className="mb-1.5 text-xs font-medium tracking-wide text-muted-foreground uppercase">Stack</h3>
-                <ul className="flex flex-wrap gap-1.5" aria-label="Stack">
+                <h3 className="mb-1.5 text-xs font-medium tracking-wide text-muted-foreground uppercase">{t('stack')}</h3>
+                <ul className="flex flex-wrap gap-1.5" aria-label={t('stack')}>
                   {content.stack.map((tech) => (
                     <li key={tech} className="rounded-full border px-2 py-0.5 text-xs">
                       {tech}
@@ -127,8 +125,8 @@ export function CompanyResearchSection({ job }: { job: JobView }) {
               </div>
             )}
             <div>
-              <h3 className="mb-1.5 text-xs font-medium tracking-wide text-muted-foreground uppercase">Fuentes</h3>
-              <ol className="list-decimal space-y-1 pl-5" aria-label="Fuentes">
+              <h3 className="mb-1.5 text-xs font-medium tracking-wide text-muted-foreground uppercase">{t('sources')}</h3>
+              <ol className="list-decimal space-y-1 pl-5" aria-label={t('sources')}>
                 {content.sources.map((source, i) => (
                   <li key={i}>
                     {isUrl(source.url) ? (
@@ -152,9 +150,9 @@ export function CompanyResearchSection({ job }: { job: JobView }) {
               </ol>
             </div>
             <div className="flex flex-wrap items-center gap-3 border-t pt-3">
-              <OpenFolderButton folder="empresas" label="Abrir carpeta de dosieres" />
+              <OpenFolderButton folder="empresas" label={t('openFolder')} />
               <p className="text-xs text-muted-foreground">
-                La carta no lo usa: si quieres que mencione algo, cópialo a sus indicaciones.
+                {t('letterHint')}
               </p>
             </div>
           </div>

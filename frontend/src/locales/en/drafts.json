@@ -1,0 +1,34 @@
+{
+  "title": "Drafts",
+  "kind": {
+    "followup": "Follow-up",
+    "thank_you": "Thank-you",
+    "linkedin": "LinkedIn",
+    "email": "Email"
+  },
+  "role": {
+    "recruiter": "recruiter",
+    "hiring_manager": "hiring manager",
+    "peer": "peer"
+  },
+  "toNamed": "To {{name}} ({{role}})",
+  "to": "To: {{role}}",
+  "from": " · by {{agent}}",
+  "copySubject": "Copy subject",
+  "copySubjectAria": "Copy the subject: {{subject}}",
+  "chars": "{{count}}/{{max}} characters",
+  "attach": "Attach yourself:",
+  "attachments": "Attachments",
+  "copyText": "Copy text",
+  "sent": "I've sent it",
+  "discard": "Discard",
+  "saveFailed": "Couldn't save: {{error}}",
+  "intro": "Your agent writes them; the app never sends anything.",
+  "followups": " {{sent}} of {{max}} follow-ups sent",
+  "capped": ": better not to push any further",
+  "draftMessage": "Draft message",
+  "draftFollowup": "Draft follow-up",
+  "loadFailed": "Couldn't load the drafts: {{error}}",
+  "none": "No drafts. Your agent writes a LinkedIn message or an email for someone at the company.",
+  "noneSent": "No drafts. Your agent writes a LinkedIn message or an email for someone at the company, a follow-up if the application has gone days without a reply, or a thank-you after an interview."
+}

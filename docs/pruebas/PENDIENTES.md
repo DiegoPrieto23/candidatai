@@ -76,6 +76,12 @@ funcionando. Los roles son `writer`, `verifier`, `classifier`, `reviewer` y `ext
       con `candidatai.zip`. Para que el instalador de una línea funcione para otros, el
       repositorio tiene que ser público.
 
+### Idioma de la UI (fase 23.6)
+
+- [ ] Abre la app y pulsa el globo de abajo en la barra lateral: cambia a «English», recorre unas
+      cuantas páginas y vuelve a «Español». Recarga y comprueba que recuerda el idioma. Si ves
+      algún texto de la interfaz (no de tus datos) que se haya quedado en español, apúntalo.
+
 ## 2. `.env.example` (el agente no puede leerlo ni editarlo)
 
 - [ ] Crear o completar `.env.example`, **sin valores reales**, con todas las variables de

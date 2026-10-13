@@ -1,0 +1,52 @@
+{
+  "today": {
+    "toReview_one": "{{count}} job to review",
+    "toReview_other": "{{count}} jobs to review",
+    "cvReady_one": "{{count}} CV ready to send",
+    "cvReady_other": "{{count}} CVs ready to send",
+    "replies_one": "{{count}} company reply to review",
+    "replies_other": "{{count}} company replies to review",
+    "followups_one": "{{count}} follow-up due",
+    "followups_other": "{{count}} follow-ups due",
+    "agentToExtract": "{{count}} to extract",
+    "agentApproved_one": "{{count}} approved without a CV",
+    "agentApproved_other": "{{count}} approved without a CV",
+    "agentUnclassified_one": "{{count}} unclassified email",
+    "agentUnclassified_other": "{{count}} unclassified emails",
+    "youHave": "You have <list/>.",
+    "nothing": "Nothing waiting on you.",
+    "forAgent": "For your agent: {{list}}.",
+    "searchJobs": "Search jobs",
+    "processJobs": "Process jobs",
+    "assessFit": "Assess fit",
+    "reviewReplies": "Review replies",
+    "newJob": "New job"
+  },
+  "track": {
+    "title": "Your jobs' journey",
+    "closed_one": "{{count}} closed",
+    "closed_other": "{{count}} closed",
+    "actor": {
+      "you": "Your turn",
+      "agent": "Agent",
+      "company": "Company"
+    }
+  },
+  "upcomingEmpty": "No interviews, tests or deadlines in the next 7 days.",
+  "followups": {
+    "title": "No reply",
+    "more": "Processes",
+    "days_one": "{{count}} day",
+    "days_other": "{{count}} days"
+  },
+  "panels": {
+    "bestFit": "Best fit to review",
+    "review": "Review",
+    "bestFitEmpty": "No jobs to review. New ones arrive through alerts, the companies you follow or “New job”.",
+    "readyToSend": "Ready to send",
+    "all": "All",
+    "readyEmpty": "No CV ready. Approve jobs and ask your agent for the CV.",
+    "next7": "Next 7 days",
+    "calendar": "Calendar"
+  }
+}

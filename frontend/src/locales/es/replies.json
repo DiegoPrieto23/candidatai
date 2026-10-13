@@ -1,0 +1,111 @@
+{
+  "event": {
+    "interview_scheduled": "Entrevista",
+    "test_assigned": "Prueba técnica",
+    "offer_received": "Oferta de trabajo",
+    "rejected": "Rechazo",
+    "reply_received": "Respuesta (el proceso sigue)",
+    "none": "Nada que registrar"
+  },
+  "confidence": {
+    "high": "Clara",
+    "medium": "Revísala",
+    "low": "Dudosa"
+  },
+  "matchReason": {
+    "contact": "contacto de la ficha",
+    "domain": "dominio de la empresa",
+    "ats": "plataforma de selección",
+    "company_name": "nombre de la empresa"
+  },
+  "likely": {
+    "interview_scheduled": "Parece una invitación a entrevista",
+    "test_assigned": "Parece una prueba técnica",
+    "offer_received": "Parece una oferta de trabajo",
+    "rejected": "Parece un rechazo",
+    "reply_received": "Parece una respuesta de la empresa",
+    "none": "No parece que haya nada que registrar"
+  },
+  "when": {
+    "day": "el {{weekday}} {{date}}",
+    "at": "{{day}} a las {{time}}",
+    "atOne": "{{day}} a la {{time}}"
+  },
+  "sentence": {
+    "withDue": "{{base}} con entrega {{when}}",
+    "withWhen": "{{base}} {{when}}"
+  },
+  "card": {
+    "accepted": "Aceptada: ya está registrada en la oferta.",
+    "ignored": "Ignorada: no se registró nada.",
+    "proposedBy": "Propuesta de {{agent}}",
+    "for": "Para",
+    "injection": "Tu agente cree que el correo trae instrucciones para una IA. Léelo tú antes de decidir.",
+    "invalidNow": "No encaja con la etapa actual de la oferta: si aceptas, puede que la app no lo admita.",
+    "unclassified": "Sin clasificar todavía: pide a tu agente que la revise o decide tú con «Decidir».",
+    "accept": "Aceptar",
+    "change": "Cambiar",
+    "decide": "Decidir",
+    "ignore": "Ignorar",
+    "saveFailed": "No se pudo guardar: {{error}}"
+  },
+  "decision": {
+    "title": "Registrar la respuesta",
+    "job": "Oferta",
+    "what": "¿Qué es?",
+    "whatAria": "Qué es",
+    "dateTime": "Fecha y hora (opcional)",
+    "due": "Fecha de entrega (opcional)",
+    "allDay": "Todo el día",
+    "end": "Fin (opcional)",
+    "title2": "Título (opcional)",
+    "location": "Lugar o enlace (opcional)",
+    "madrid": "Horas de Madrid. Sin fecha, se registra sin hito en el calendario.",
+    "note": "Nota (opcional)",
+    "cancel": "Cancelar",
+    "saving": "Guardando…",
+    "archive": "Archivar",
+    "register": "Registrar"
+  },
+  "page": {
+    "filters": {
+      "pending": "Pendientes",
+      "accepted": "Aceptadas",
+      "ignored": "Ignoradas",
+      "all": "Todas"
+    },
+    "risk": {
+      "hidden_text": "texto oculto",
+      "injection_phrase": "frases que parecen instrucciones para una IA"
+    },
+    "status": {
+      "new": "Sin clasificar",
+      "proposed": "Por revisar",
+      "accepted": "Aceptada",
+      "ignored": "Ignorada"
+    },
+    "closeNotice": "Cerrar aviso",
+    "riskAria": "Posible contenido dirigido a una IA",
+    "noSubject": "(sin asunto)",
+    "noJob": "Sin oferta",
+    "email": "Correo",
+    "proposal": "Propuesta",
+    "riskNote": "Este correo tiene {{list}}. Puede intentar engañar a tu agente: comprueba la propuesta con el texto.",
+    "body": "Texto del correo",
+    "empty": "(vacío)",
+    "loading": "Cargando respuestas",
+    "title": "Respuestas",
+    "intro": "Correos de las empresas sobre tus candidaturas. Tu agente propone qué significa cada uno; nada cambia de etapa hasta que lo aceptas aquí.",
+    "review": "Revisar respuestas",
+    "reading": "Leyendo el correo…",
+    "poll": "Revisar correo ahora",
+    "pollFailed": "No se pudo leer el correo: {{error}}",
+    "unclassified_one": "{{count}} correo sin clasificar: «Revisar respuestas» abre tu agente para que proponga qué es cada uno.",
+    "unclassified_other": "{{count}} correos sin clasificar: «Revisar respuestas» abre tu agente para que proponga qué es cada uno.",
+    "filterAria": "Filtrar por estado",
+    "noneTitle": "Sin respuestas aquí",
+    "noneBody": "Los correos de las empresas a tus candidaturas enviadas aparecen aquí. Se leen por IMAP (`CAI_IMAP_REPLIES_FOLDER`) o de `data/inbox/respuestas/`.",
+    "list": "Respuestas",
+    "byReason": "({{stage}}; por {{reason}})"
+  }
+}

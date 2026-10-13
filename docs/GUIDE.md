@@ -5,8 +5,8 @@
 How to install CandidatAI, try it with the demo and use it every day with your own data and your
 AI agent. To learn what it is and why it works this way, start with the [README](../README.md).
 
-> The user interface is in Spanish. This guide quotes button and page names in Spanish with an
-> English translation the first time, e.g. «Por revisar» (Triage).
+> The user interface is in English and Spanish: switch with the globe button at the bottom of the
+> sidebar (see [Language](#language)). This guide quotes the English names.
 
 ## Contents
 
@@ -117,7 +117,7 @@ photo, documents and emails. Keys go in `.env`, also outside git.
 | What | Where | How |
 |---|---|---|
 | **Profile** (the source of truth for anything written about you) | `data/profile.yaml` | The `update-profile` skill reads your CV, asks for what's missing and validates it. Every change creates a version |
-| **Your CV as a design** | `data/templates/<id>/` | Upload your CV in «Plantillas → Mi CV» (Templates → My CV) and use the `import-cv-template` skill. Word, PDF, image or HTML (Canva, Google Docs…) |
+| **Your CV as a design** | `data/templates/<id>/` | Upload your CV in **Templates → My CV** and use the `import-cv-template` skill. Word, PDF, image or HTML (Canva, Google Docs…) |
 | **Photo** | `data/photo.jpg` (or png) | Each template crops it to its shape; it's included or not depending on the job's country |
 | **Context** (style, narrative, criteria) | `data/contexto/*.md` | Guides the agent, but never backs a CV claim |
 | **Source documents** (old CVs, degrees, references) | `data/documentos/` | `update-profile` can read them, confirming before writing |
@@ -155,9 +155,9 @@ memory it may close what it started.
 
 A typical day:
 
-1. Open «Inicio» (Home): it tells you what's waiting (jobs to triage, CVs ready, overdue follow-ups).
+1. Open **Home**: it tells you what's waiting (jobs to triage, CVs ready, overdue follow-ups).
 2. Ask your agent for `process-jobs` and `assess-fit`, or press their buttons in the UI.
-3. Triage in «Por revisar» (Triage).
+3. Triage in **To review**.
 4. `generate-cv` for the approved ones and, when you're ready, apply from the job page.
 5. `daily-summary` sums all of that up in one answer.
 
@@ -165,13 +165,13 @@ A typical day:
 
 | Source | How to set it up |
 |---|---|
-| **Manual** | «Nueva oferta» (New job) in the UI: a URL or pasted text |
-| **Target companies** (Greenhouse, Lever, Ashby) | «Fuentes → Empresas objetivo» (Sources → Target companies) page or `cai sources add --kind greenhouse --name "Acme" --slug acme`. `cai sources discover --file companies.txt` finds the board of each company in a list |
+| **Manual** | **New job** in the UI: a URL or pasted text |
+| **Target companies** (Greenhouse, Lever, Ashby) | **Sources → Target companies** page or `cai sources add --kind greenhouse --name "Acme" --slug acme`. `cai sources discover --file companies.txt` finds the board of each company in a list |
 | **InfoJobs and Adzuna** | Their keys in `.env` (`CAI_INFOJOBS_CLIENT_ID`/`_SECRET`, `CAI_ADZUNA_APP_ID`/`_KEY`) and a search with `cai sources add` |
-| **Email alerts** | Create job alerts on LinkedIn, InfoJobs, Indeed… and have them land in a label of your mailbox. Set up read-only IMAP in `.env`: step by step in [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md) (Spanish). Without IMAP, drop `.eml` files in `data/inbox/`. What comes in shows up in «Alertas» (Alerts) |
+| **Email alerts** | Create job alerts on LinkedIn, InfoJobs, Indeed… and have them land in a label of your mailbox. Set up read-only IMAP in `.env`: step by step in [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md) (Spanish). Without IMAP, drop `.eml` files in `data/inbox/`. What comes in shows up in **Alerts** |
 | **"Send to CandidatAI" button** | Load `extension/` as an unpacked extension in Chrome or Edge and paste the token from `cai capture token` into its options. Instructions: [`extension/README.md`](../extension/README.md) (Spanish) |
-| **Your agent with your browser** | `search-jobs configurar` picks portals and searches («Fuentes → Plataformas», Sources → Platforms page); `search-jobs` browses them. LinkedIn stays off until you turn it on |
-| **LinkedIn's public search** | The «Búsqueda pública sin sesión» (public search without login) switch on the LinkedIn card in «Fuentes → Plataformas». Off by default: it goes against LinkedIn's terms and may get your IP blocked for a while |
+| **Your agent with your browser** | `search-jobs configurar` picks portals and searches (**Sources → Platforms** page); `search-jobs` browses them. LinkedIn stays off until you turn it on |
+| **LinkedIn's public search** | The **Public search without signing in** switch on the LinkedIn card in **Sources → Platforms**. Off by default: it goes against LinkedIn's terms and may get your IP blocked for a while |
 
 The worker runs the automatic sources every day at `connectors.daily_at`
 (`config/policies.yaml`), and on start-up if one was missed. Detail of each source:
@@ -183,7 +183,7 @@ The worker runs the automatic sources every day at `connectors.daily_at`
    untrusted content: if it carries hidden text or phrases aimed at an AI, the job page warns you.
 2. **Assess:** the app computes the score and applies your hard filters; `assess-fit` adds a
    reasoned verdict.
-3. **Triage:** in «Por revisar», `J`/`K` to move, `A` to approve, `D` to discard (with a reason)
+3. **Triage:** in **To review**, `J`/`K` to move, `A` to approve, `D` to discard (with a reason)
    and `O` to open the job page. It can be undone.
 4. **CV:** `generate-cv 42` writes the content, the code validates and renders it, and the
    `verifier` role reviews it. On the job page you change template, photo, colour and sections
@@ -191,24 +191,24 @@ The worker runs the automatic sources every day at `connectors.daily_at`
 5. **Cover letter:** `generate-cover-letter 42`, with your general instructions (profile) and the job's
    (job page). It matches the CV.
 6. **Application:** `prepare-application 42` prepares the screening answers. On the job page,
-   «Preparar candidatura» (Prepare application) opens a dedicated browser (profile in
+   **Prepare application** opens a dedicated browser (profile in
    `data/browser-profile/`), fills in the form and stops. You review it, and it only submits if you
    type the company name. At a captcha or a login it stops and hands you the tab. If you apply
    some other way, mark it as applied manually.
 
 ## 9. Tracking, replies and funnel
 
-- **«Procesos» (Processes):** a kanban by stage. A card only changes column by recording what
+- **Processes:** a kanban by stage. A card only changes column by recording what
   happened (reply, interview, test, offer, rejection). Interviews and tests create a dated
   milestone you can export to your calendar (`.ics`).
 - **Follow-ups:** it reminds you of applications without a reply; `draft-follow-up` leaves
   the drafts (max. 2 per application) and the thank-you note after an interview. You send them.
-- **«Respuestas» (Replies):** with IMAP set up, the app reads emails from the companies in your
-  processes; `review-replies` proposes what happened and you accept it in «Respuestas».
-- **«Embudo» (Funnel):** conversion by step, source, role, week, template, cover letter and
-  referral, plus "Does the score work?". `review-search` runs the weekly retrospective.
+- **Replies:** with IMAP set up, the app reads emails from the companies in your
+  processes; `review-replies` proposes what happened and you accept it in **Replies**.
+- **Funnel:** conversion by step, source, role, week, template, cover letter and
+  referral, plus "Is the score right?". `review-search` runs the weekly retrospective.
 - **Network:** import your LinkedIn connections (CSV export) with `cai contacts import-linkedin` and
-  you'll see «Conoces a N» (You know N) on jobs at their companies; `draft-message` drafts the
+  you'll see “You know N” on jobs at their companies; `draft-message` drafts the
   message.
 
 ## 10. Interviews and received offers
@@ -218,8 +218,8 @@ The worker runs the automatic sources every day at `connectors.daily_at`
   your profile.
 - `debrief-interview 42`: you tell it how it went; it saves notes and next steps and proposes new
   STAR stories for your profile (with your OK).
-- **Received offers:** you record them on the job page and compare them in «Procesos → Ofertas
-  recibidas» against your minimum and the advertised range. `prepare-negotiation 42` prepares
+- **Received offers:** you record them on the job page and compare them in **Processes → Offers
+  received** against your minimum and the advertised range. `prepare-negotiation 42` prepares
   arguments and a script without proposing figures.
 
 ## 11. The agent from the UI
@@ -229,8 +229,8 @@ Many pages have buttons that open your agent with the instruction already writte
 - **In a terminal:** opens a window with your agent; you see and approve what it does.
 - **In the background** (Claude Code): for skills that don't ask questions (`process-jobs`,
   `assess-fit`, `generate-cv`). It runs without a window, only with the app tools it needs, and
-  you follow its progress on the «Agente» (Agent) page. Requires `cai worker`.
-- **«Dejar para mi próxima sesión»** (Leave for my next session): stores the request;
+  you follow its progress on the **Agent** page. Requires `cai worker`.
+- **Leave for my next session**: stores the request;
   `handle-requests` does it when you open your agent.
 
 ## 12. Configuration
@@ -244,6 +244,18 @@ Many pages have buttons that open your agent with the instruction already writte
   the score, `cai match rescore` recalculates and `cai eval matching` measures the effect.
 - **Your profile:** preferences (roles, level, remote mode, locations, languages), default template,
   template rules and photo policy per country.
+
+### Language
+
+The interface is in **English** and **Spanish**. The globe button at the bottom of the sidebar
+(or of the menu on a phone) opens the list of languages; the change is instant and the app
+remembers it in this browser. The first time, it follows your browser's language: Spanish if it's
+Spanish, English otherwise. Dates and numbers follow the language too. Changing it redraws the
+page: a dialog or a half-written form closes, so finish it first.
+
+What the interface doesn't translate: your own data (jobs, profile, notes), what your agent writes
+(CVs, letters and assessments follow each job's language) and a few messages that the server
+writes without a code to translate (some warnings and run results), which stay in Spanish.
 
 ## 13. Updating
 

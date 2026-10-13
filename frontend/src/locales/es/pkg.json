@@ -1,0 +1,50 @@
+{
+  "title": "Paquete de candidatura",
+  "intro": "Todo lo que necesitas para enviarla a mano. Desde aquí no se envía nada.",
+  "form": {
+    "question": "Pregunta",
+    "answer": "Respuesta",
+    "emptyHint": "Si la dejas vacía, queda pendiente de un dato tuyo.",
+    "save": "Guardar",
+    "cancel": "Cancelar"
+  },
+  "item": {
+    "needsInput": "Falta un dato tuyo: complétala antes de enviar.",
+    "noAnswer": "Sin respuesta.",
+    "evidence": "Respaldo:",
+    "copyAria": "Copiar la respuesta {{n}}",
+    "editAria": "Editar la respuesta {{n}}",
+    "edit": "Editar"
+  },
+  "answers": {
+    "title": "Respuestas de screening",
+    "editedByYou": "Editadas por ti",
+    "add": "Añadir pregunta",
+    "pending_one": "{{count}} respuesta espera un dato tuyo (salario, disponibilidad…).",
+    "pending_other": "{{count}} respuestas esperan un dato tuyo (salario, disponibilidad…).",
+    "none": "Aún no hay respuestas. Pega las preguntas del formulario a tu agente con el skill `prepare-application`, o añádelas tú."
+  },
+  "cv": {
+    "title": "CV",
+    "openPdf": "Abrir PDF",
+    "sent": "El que enviaste",
+    "selected": "Seleccionado para enviar",
+    "pages_one": "{{count}} página",
+    "pages_other": "{{count}} páginas",
+    "verified": "Verificado",
+    "change": "Cambiarlo en la sección CV",
+    "none": "Aún no hay un CV seleccionado para enviar."
+  },
+  "letter": {
+    "title": "Carta de presentación",
+    "none": "Sin carta. Si la oferta la pide o la quieres, ejecuta `generate-cover-letter {{id}}` en tu agente.",
+    "editedByYou": "Editada por ti",
+    "verified": "Verificada",
+    "notVerified": "Sin verificar",
+    "words": "{{count}} palabras · {{state}}",
+    "copy": "Copiar carta",
+    "openPdf": "Abrir PDF",
+    "change": "Cambiarla en la sección Carta",
+    "see": "Verla en la sección Carta"
+  }
+}

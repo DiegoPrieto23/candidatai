@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import { PlusIcon, WarningIcon } from '@phosphor-icons/react'
 import type { BrowseAccess } from '@/api/client'
 import { useAddPlatform } from '@/api/queries'
@@ -14,6 +15,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { errorMessage } from '@/lib/errors'
 
 /** Portales conocidos: rellenan el id y una búsqueda de ejemplo. «Otra» deja escribir el id. */
 const KNOWN: { id: string; name: string; example: string }[] = [
@@ -27,23 +29,21 @@ const KNOWN: { id: string; name: string; example: string }[] = [
 const OTHER = 'otra'
 
 function LinkedInNotice() {
+  const { t } = useTranslation('platforms', { keyPrefix: 'add' })
   return (
     <div role="note" className="flex gap-2 rounded-lg border border-amber-500/50 bg-amber-500/10 p-3 text-sm text-amber-900 dark:text-amber-200">
       <WarningIcon weight="fill" className="mt-0.5 size-4 shrink-0" />
       <div className="space-y-1.5">
-        <p className="font-medium">Se guarda con la búsqueda desactivada, y es lo recomendable.</p>
-        <p>
-          Las condiciones de LinkedIn prohíben recorrer su web con herramientas automáticas y puede restringir o
-          cerrar tu cuenta si lo detecta, aunque el agente use tu navegador y solo lea. Lo seguro es recibir sus
-          ofertas por las alertas por correo (pantalla «Alertas») o con el botón «Enviar a CandidatAI».
-        </p>
-        <p>Si aun así quieres que el agente la recorra, actívala después con su interruptor, bajo tu responsabilidad.</p>
+        <p className="font-medium">{t('linkedinTitle')}</p>
+        <p>{t('linkedinP1')}</p>
+        <p>{t('linkedinP2')}</p>
       </div>
     </div>
   )
 }
 
 function AddPlatformForm({ onDone }: { onDone: () => void }) {
+  const { t } = useTranslation('platforms', { keyPrefix: 'add' })
   const add = useAddPlatform()
   const [known, setKnown] = useState('')
   const [name, setName] = useState('')
@@ -87,18 +87,18 @@ function AddPlatformForm({ onDone }: { onDone: () => void }) {
     )
   }
 
-  const example = KNOWN.find((k) => k.id === known)?.example ?? 'https://www.portal.com/empleos?q=data+engineer'
+  const example = KNOWN.find((k) => k.id === known)?.example ?? t('examplePlaceholder')
   return (
     <form onSubmit={submit} className="grid gap-4">
       <DialogHeader>
-        <DialogTitle>Añadir plataforma</DialogTitle>
+        <DialogTitle>{t('title')}</DialogTitle>
         <DialogDescription>
-          Un portal donde tu agente busca ofertas con tu navegador cuando le pides «search-jobs».
+          {t('description')}
         </DialogDescription>
       </DialogHeader>
 
       <div className="grid gap-1.5">
-        <Label htmlFor="platform-known">Portal</Label>
+        <Label htmlFor="platform-known">{t('portal')}</Label>
         <select
           id="platform-known"
           value={known}
@@ -106,14 +106,14 @@ function AddPlatformForm({ onDone }: { onDone: () => void }) {
           className="h-9 rounded-md border border-input bg-background px-3 text-sm"
         >
           <option value="" disabled>
-            Elige un portal…
+            {t('pick')}
           </option>
           {KNOWN.map((k) => (
             <option key={k.id} value={k.id}>
               {k.name}
             </option>
           ))}
-          <option value={OTHER}>Otro portal</option>
+          <option value={OTHER}>{t('other')}</option>
         </select>
       </div>
 
@@ -121,24 +121,24 @@ function AddPlatformForm({ onDone }: { onDone: () => void }) {
         <>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="grid gap-1.5">
-              <Label htmlFor="platform-name">Nombre</Label>
+              <Label htmlFor="platform-name">{t('name')}</Label>
               <Input id="platform-name" value={name} onChange={(e) => setName(e.target.value)} maxLength={120} />
             </div>
             <div className="grid gap-1.5">
-              <Label htmlFor="platform-id">Id corto</Label>
+              <Label htmlFor="platform-id">{t('id')}</Label>
               <Input
                 id="platform-id"
                 value={platform}
                 onChange={(e) => setPlatform(e.target.value.toLowerCase())}
                 disabled={known !== OTHER}
-                placeholder="miportal"
+                placeholder={t('idPlaceholder')}
                 maxLength={40}
               />
             </div>
           </div>
           {linkedin && <LinkedInNotice />}
           <div className="grid gap-1.5">
-            <Label htmlFor="platform-urls">Búsquedas (una URL por línea)</Label>
+            <Label htmlFor="platform-urls">{t('urls')}</Label>
             <Textarea
               id="platform-urls"
               value={urls}
@@ -147,25 +147,25 @@ function AddPlatformForm({ onDone }: { onDone: () => void }) {
               rows={3}
             />
             <p className="text-xs text-muted-foreground">
-              Haz la búsqueda en el portal (puesto, ubicación, filtros) y copia aquí la dirección de los resultados.
+              {t('urlsHint')}
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="grid gap-1.5">
-              <Label htmlFor="platform-access">Acceso</Label>
+              <Label htmlFor="platform-access">{t('access')}</Label>
               <select
                 id="platform-access"
                 value={access}
                 onChange={(e) => setAccess(e.target.value as BrowseAccess)}
                 className="h-9 rounded-md border border-input bg-background px-3 text-sm"
               >
-                <option value="free">Libre (sin iniciar sesión)</option>
-                <option value="login">Con sesión (inicias sesión tú)</option>
-                <option value="blocked">Bloqueada (el agente la salta)</option>
+                <option value="free">{t('free')}</option>
+                <option value="login">{t('login')}</option>
+                <option value="blocked">{t('blocked')}</option>
               </select>
             </div>
             <div className="grid gap-1.5">
-              <Label htmlFor="platform-priority">Prioridad (1 = primero)</Label>
+              <Label htmlFor="platform-priority">{t('priority')}</Label>
               <Input
                 id="platform-priority"
                 type="number"
@@ -181,15 +181,15 @@ function AddPlatformForm({ onDone }: { onDone: () => void }) {
 
       {add.error && (
         <p role="alert" className="text-sm text-destructive">
-          {add.error.message}
+          {errorMessage(add.error)}
         </p>
       )}
       <DialogFooter>
         <Button type="button" variant="outline" onClick={onDone}>
-          Cancelar
+          {t('cancel')}
         </Button>
         <Button type="submit" disabled={!ready || add.isPending}>
-          {add.isPending ? 'Guardando…' : 'Añadir'}
+          {add.isPending ? t('saving') : t('submit')}
         </Button>
       </DialogFooter>
     </form>
@@ -198,12 +198,13 @@ function AddPlatformForm({ onDone }: { onDone: () => void }) {
 
 /** Botón y diálogo «Añadir plataforma». */
 export function AddPlatformButton() {
+  const { t } = useTranslation('platforms', { keyPrefix: 'add' })
   const [open, setOpen] = useState(false)
   return (
     <>
       <Button type="button" size="sm" onClick={() => setOpen(true)}>
         <PlusIcon />
-        Añadir plataforma
+        {t('button')}
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-h-[90dvh] overflow-y-auto">

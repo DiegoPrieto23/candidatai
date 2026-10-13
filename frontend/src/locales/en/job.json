@@ -1,0 +1,93 @@
+{
+  "added": {
+    "exists": "This job was already added. Nothing has changed.",
+    "duplicate": "Added, but it looks like a duplicate of <to>job {{id}}</to>, so it stays closed.",
+    "created": "Job added. Your agent will extract it with the skill process-jobs.",
+    "close": "Close"
+  },
+  "injection": {
+    "label": "Possible injection warning",
+    "title": "Possible content aimed at an AI",
+    "body": "The text of this posting might try to manipulate an agent. It's treated only as data, but review it calmly before trusting the extraction.",
+    "detectedBy": "Detected by {{who}}",
+    "system": "the system"
+  },
+  "extraction": {
+    "title": "Extraction",
+    "noneListed": "None listed.",
+    "seniority": "Seniority",
+    "mode": "Work mode",
+    "minExperience": "Minimum experience",
+    "years_one": "{{count}} year",
+    "years_other": "{{count}} years",
+    "unspecified": "Not specified",
+    "contract": "Contract",
+    "salary": "Salary",
+    "noSalary": "Not stated",
+    "languages": "Languages",
+    "noLanguages": "Not stated",
+    "location": "Location",
+    "sector": "Sector",
+    "deadline": "Deadline",
+    "mustHave": "Must-haves",
+    "niceToHave": "Nice-to-haves",
+    "responsibilities": "Responsibilities",
+    "redFlags": "Worth noting",
+    "extractedAt": "Extracted on {{date}}",
+    "pendingTitle": "Not extracted yet",
+    "pendingBody": "Run the skill <code>process-jobs</code> in your agent. When it's done, you'll see seniority, work mode, skills and salary here."
+  },
+  "original": {
+    "title": "Original text",
+    "hint": "Exactly as saved. Untrusted content: shown, never interpreted."
+  },
+  "events": {
+    "reason": "Reason: {{reason}}",
+    "score": "Score {{score}}/100",
+    "duplicateOf": "Duplicate of job {{id}}.",
+    "closureSuspected": "{{detail}}. It hasn't been closed: you decide."
+  },
+  "timeline": {
+    "title": "History",
+    "more_one": "Show {{count}} more event",
+    "more_other": "Show {{count}} more events",
+    "less": "Show less"
+  },
+  "note": {
+    "label": "Add a note",
+    "placeholder": "What the recruiter told you, questions, next steps…",
+    "saving": "Saving…",
+    "save": "Save note"
+  },
+  "match": {
+    "title": "Fit",
+    "noScore": "No score: import your profile with <code>cai profile import</code>."
+  },
+  "decision": {
+    "reopen": "Reopen",
+    "approve": "Approve",
+    "discard": "Discard"
+  },
+  "earlier": {
+    "label": "Before sending",
+    "hint": " · assisted application, package, CV, letter and posting text"
+  },
+  "loading": "Loading job",
+  "back": "Inbox",
+  "invalidId": "That job ID isn't valid.",
+  "viewOriginal": "View original",
+  "addedOn": "Added on {{date}}",
+  "postedOn": ". Posted on {{date}}",
+  "archive": {
+    "pending": "No copy of what was sent yet: the worker saves it when it's marked as sent. For older ones, `cai applications archive --all`.",
+    "label": "Archived application",
+    "title": "Copy of what you sent",
+    "open": "Open folder",
+    "openAria": "Open the application's archived folder"
+  },
+  "replyNotice": {
+    "label": "Company reply to review",
+    "from": "Email from {{sender}}",
+    "see": "See the email"
+  }
+}

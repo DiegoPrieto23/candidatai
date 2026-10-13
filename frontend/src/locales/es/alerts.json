@@ -1,0 +1,30 @@
+{
+  "risk": "Posible contenido dirigido a una IA",
+  "expires": "Caduca {{when}}",
+  "open": "Abrir",
+  "discard": "Descartar",
+  "closeNotice": "Cerrar aviso",
+  "loading": "Cargando alertas",
+  "title": "Alertas",
+  "summary_one": "{{count}} oferta resumen de tus alertas por correo. Ábrelas en su portal y envíalas con el botón «Enviar a CandidatAI» para completarlas, o descártalas.",
+  "summary_other": "{{count}} ofertas resumen de tus alertas por correo. Ábrelas en su portal y envíalas con el botón «Enviar a CandidatAI» para completarlas, o descártalas.",
+  "reading": "Leyendo el correo…",
+  "poll": "Revisar correo ahora",
+  "shortcuts": {
+    "label": "Atajos de teclado",
+    "move": "mover",
+    "open": "abrir",
+    "discard": "descartar"
+  },
+  "pollFailed": "No se pudo leer el correo: {{error}}",
+  "discarded": "Descartada",
+  "undo": "Deshacer",
+  "saveFailed": "No se pudo guardar: {{error}}",
+  "empty": {
+    "title": "Sin alertas pendientes",
+    "body": "Las ofertas de tus alertas de LinkedIn y otros portales aparecen aquí. Configura IMAP en `.env` o deja correos `.eml` en `data/inbox/`."
+  },
+  "passing": "Encajan con tus preferencias",
+  "failing": "No pasan el prefiltro",
+  "failingCount": "No pasan el prefiltro ({{count}})"
+}

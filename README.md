@@ -33,8 +33,9 @@ own.
 </p>
 
 > [!NOTE]
-> The user interface and most technical docs are in **Spanish** (it started as a personal project
-> in Spain). This README, the [user guide](docs/GUIDE.md) and the code are in English.
+> The user interface is in **English and Spanish** (switch from the sidebar). Most technical docs
+> are in Spanish (it started as a personal project in Spain); this README, the
+> [user guide](docs/GUIDE.md) and the code are in English.
 > Watch the **[short video tour](docs/video/recorrido.mp4)**.
 
 ## Contents

@@ -65,7 +65,7 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 23.3 | ↳ Barra lateral | ✅ | Navegación lateral agrupada, plegable y con cajón en el móvil |
 | 23.4 | ↳ Instalación fácil | ✅ | `cai start`, `install.ps1`, acceso directo y releases con la UI compilada |
 | 23.5a | ↳ Logo | ✅ | Logo nuevo, elegido entre propuestas, en la UI, el favicon, la extensión, el icono y el banner |
-| 23.6 | ↳ UI en inglés y español | ⏳ | Toda la UI traducida, con un selector de idioma junto al del tema |
+| 23.6 | ↳ UI en inglés y español | ✅ | Toda la UI traducida, con un selector de idioma junto al del tema |
 | 23.5b | ↳ Medios y README | ⏳ | Capturas en los dos idiomas, GIF y vídeo; README sin la comparativa |
 
 **MVP usable:** al terminar la 08 ya puedes pegar ofertas, triarlas y sacar CVs a medida; con la
@@ -2037,3 +2037,34 @@ decisiones tomadas y deuda técnica pendiente. -->
     sistema (Geist si está), sin convertir a trazados.
   - El banner pierde la cuadrícula y los círculos decorativos: el mismo criterio minimalista.
 - **Deuda:** capturas, GIF y vídeo del README siguen con la marca anterior: la 23.5b, tras la 23.6.
+
+### 23.6 · UI en inglés y español — 2026-10-13 · Claude Code (Opus 5.5)
+- **Resumen:** toda la UI en español y en inglés con i18next (ADR-036). Textos en
+  `frontend/src/locales/{es,en}/` (33 ficheros por idioma, uno por zona), claves tipadas, plurales
+  de i18next y fechas y números con `Intl` según el idioma. Selector de idioma (globo, nombre del
+  idioma y su bandera en SVG, con menú) junto al del tema en la barra lateral y en el cajón; se recuerda en
+  `cai-language` y, si no hay, sigue al navegador. `lib/labels.ts` traduce al leer; los códigos
+  del servidor (`error.type`, avisos de render y de candidatura, filtros duros, pasos del embudo,
+  grupos de calibración, acciones del agente) se traducen y su mensaje queda como detalle
+  (`lib/errors.ts`, `serverText`). Docs: guía en los dos idiomas (sección «Idioma»; la inglesa ya
+  cita los nombres en inglés), notas de los README, `COMPARATIVA` (punto 9 hecho) y `AGENTS.md`.
+- **Tests:** 250 en verde (15 nuevos): mismas claves y variables en los dos idiomas y ninguna vacía,
+  ningún texto en español fuera de `locales/`, ninguna etiqueta de `Trans` vacía en HTML, el
+  selector (cambia al momento, se recuerda, `<html lang>`, idioma del navegador) e Inicio, Por
+  revisar, la ficha y Procesos en inglés, y `SafeTrans` con un valor malicioso. `tsc`, `pnpm lint` (sin avisos nuevos) y `pnpm build`.
+  Comprobación visual de todas las páginas en inglés con la demo.
+- **Decisiones:**
+  - Al cambiar de idioma se vuelven a montar las páginas (`key` del idioma): más simple y seguro
+    que asegurar que cada componente se repinta; se pierde lo escrito a medias en un formulario.
+  - En `Trans`, `<link>` no sirve como etiqueta (es un elemento vacío de HTML): se usa `<to>`.
+  - De paso, el aviso de oferta cerrada ya no dice «Job Hunter», sino «CandidatAI».
+  - Banderas en SVG, no emojis: Windows no pinta los emojis de banderas.
+  - A petición del usuario, en Inicio «Nueva oferta» va junto a las acciones de la página y la
+    fila de arriba desaparece en escritorio; en el resto de páginas sigue en la cabecera.
+  - Revisión (rol `reviewer`): en el diálogo de envío de la candidatura asistida, el nombre del
+    botón y el dominio (de la web del formulario) se interpolaban en un `Trans` sin escapar y
+    podían colarse como marcado. Ahora van como nodos de React, y los demás `Trans` con datos de
+    fuera usan `SafeTrans` (ADR-036).
+- **Deuda:** traducir los mensajes del servidor que no traen código (avisos del doctor, motivos del
+  prefiltro, resultados de ejecuciones, notas del score); los datos de la demo siguen en español
+  (para las capturas en inglés de la 23.5b, valorar una demo en inglés).

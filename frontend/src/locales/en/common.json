@@ -1,0 +1,49 @@
+{
+  "language": {
+    "name": "English"
+  },
+  "notFound": {
+    "title": "This page doesn't exist",
+    "goHome": "Go to home"
+  },
+  "loading": "Loading…",
+  "retry": "Retry",
+  "copy": {
+    "label": "Copy",
+    "copied": "Copied",
+    "failed": "Couldn't copy",
+    "copiedStatus": "Copied to the clipboard",
+    "path": "Copy path"
+  },
+  "folder": {
+    "open": "Open folder",
+    "notOpened": "Couldn't open it here. It's in"
+  },
+  "noStage": "No stage",
+  "errors": {
+    "offlineTitle": "The API isn't responding",
+    "loadFailed": "Couldn't load",
+    "generic": "Something went wrong.",
+    "offline": "No connection to the API. Start it with `uv run cai serve` in backend/.",
+    "unexpected": "Unexpected API error ({{status}}).",
+    "types": {
+      "unauthorized": "Unauthorized",
+      "forbidden": "Not allowed",
+      "not_allowed": "Not allowed",
+      "capture_not_configured": "Capture not configured",
+      "not_found": "Not found",
+      "validation_error": "Invalid input",
+      "invalid_request": "Invalid request",
+      "invalid_transition": "Invalid state change",
+      "exists": "Already exists",
+      "invalid_file": "Invalid file",
+      "too_large": "Too large",
+      "pdf_unavailable": "PDF unavailable",
+      "agent_unavailable": "Agent unavailable",
+      "pdf_failed": "PDF conversion failed",
+      "database_not_ready": "Database not ready",
+      "internal_error": "Internal error"
+    }
+  },
+  "close": "Close"
+}

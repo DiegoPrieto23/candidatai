@@ -1,10 +1,12 @@
 import { useEffect, useState, type ComponentType } from 'react'
 import { Link, useLocation } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import {
   ChatsCircleIcon,
   DesktopIcon,
   FileTextIcon,
   FunnelIcon,
+  GlobeIcon,
   GraduationCapIcon,
   HouseIcon,
   KanbanIcon,
@@ -24,24 +26,35 @@ import {
 import { Dialog as DialogPrimitive } from 'radix-ui'
 import type { Stage } from '@/api/client'
 import { useAgentRuns, useReplies, useStatus } from '@/api/queries'
+import { LanguageFlag } from '@/components/LanguageFlag'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { useLanguage } from '@/lib/i18n'
 import { useTheme, type ThemeChoice } from '@/lib/theme'
+import { languageName } from '@/locales'
 import { cn } from '@/lib/utils'
 
 // --- Recuentos --------------------------------------------------------------------------------
 
 /** Lo que espera algo de ti en cada página. `strong`: te toca a ti; si no, es informativo. */
-type Count = { value: number; strong: boolean; label: string }
+type CountLabel = 'toReview' | 'toComplete' | 'agent'
+type Count = { value: number; strong: boolean; label: CountLabel | null }
 
-function useStageCount(stage: Stage, label: string, strong = true): Count {
+function useStageCount(stage: Stage, label: CountLabel, strong = true): Count {
   const { data } = useStatus()
   return { value: data?.by_stage[stage] ?? 0, strong, label }
 }
 
 function useRepliesCount(): Count {
   const { data } = useReplies()
-  return { value: data?.counts.proposed ?? 0, strong: true, label: 'por revisar' }
+  return { value: data?.counts.proposed ?? 0, strong: true, label: 'toReview' }
 }
 
 /** Ejecuciones en curso (fase 19), las que esperan una respuesta tuya y los encargos pendientes. */
@@ -51,7 +64,7 @@ function useAgentCount(): Count {
   const active = runs.data?.active ?? 0
   const waiting = runs.data?.runs.filter((r) => r.status === 'needs_user').length ?? 0
   const requests = data?.agent_requests ?? 0
-  return { value: active + waiting + requests, strong: active + waiting > 0, label: 'en curso o pendientes' }
+  return { value: active + waiting + requests, strong: active + waiting > 0, label: 'agent' }
 }
 
 function CountBadge({ count }: { count: Count }) {
@@ -71,9 +84,23 @@ function CountBadge({ count }: { count: Count }) {
 
 // --- Entradas -----------------------------------------------------------------------------------
 
+type EntryKey =
+  | 'home'
+  | 'inbox'
+  | 'triage'
+  | 'alerts'
+  | 'processes'
+  | 'replies'
+  | 'funnel'
+  | 'skills'
+  | 'sources'
+  | 'templates'
+  | 'profile'
+  | 'agent'
+
 type Entry = {
   to: string
-  label: string
+  label: EntryKey
   icon: ComponentType<IconProps>
   end?: boolean
   useCount?: () => Count
@@ -81,48 +108,52 @@ type Entry = {
   alsoActive?: string[]
 }
 
-const usePendingTriage = () => useStageCount('pending_triage', 'por revisar')
-const usePendingDetail = () => useStageCount('pending_detail', 'por completar', false)
+const usePendingTriage = () => useStageCount('pending_triage', 'toReview')
+const usePendingDetail = () => useStageCount('pending_detail', 'toComplete', false)
 
-const NAV_GROUPS: { title: string | null; entries: Entry[] }[] = [
-  { title: null, entries: [{ to: '/', label: 'Inicio', icon: HouseIcon, end: true }] },
+type GroupKey = 'search' | 'processes' | 'analysis' | 'configure'
+
+const NAV_GROUPS: { title: GroupKey | null; entries: Entry[] }[] = [
+  { title: null, entries: [{ to: '/', label: 'home', icon: HouseIcon, end: true }] },
   {
-    title: 'Búsqueda',
+    title: 'search',
     entries: [
-      { to: '/bandeja', label: 'Bandeja', icon: TrayIcon, alsoActive: ['/jobs/', '/nueva'] },
-      { to: '/por-revisar', label: 'Por revisar', icon: ListChecksIcon, useCount: usePendingTriage },
-      { to: '/alertas', label: 'Alertas', icon: LightningIcon, useCount: usePendingDetail },
+      { to: '/bandeja', label: 'inbox', icon: TrayIcon, alsoActive: ['/jobs/', '/nueva'] },
+      { to: '/por-revisar', label: 'triage', icon: ListChecksIcon, useCount: usePendingTriage },
+      { to: '/alertas', label: 'alerts', icon: LightningIcon, useCount: usePendingDetail },
     ],
   },
   {
-    title: 'Procesos',
+    title: 'processes',
     entries: [
-      { to: '/procesos', label: 'Procesos', icon: KanbanIcon },
-      { to: '/respuestas', label: 'Respuestas', icon: ChatsCircleIcon, useCount: useRepliesCount },
+      { to: '/procesos', label: 'processes', icon: KanbanIcon },
+      { to: '/respuestas', label: 'replies', icon: ChatsCircleIcon, useCount: useRepliesCount },
     ],
   },
   {
-    title: 'Análisis',
+    title: 'analysis',
     entries: [
-      { to: '/embudo', label: 'Embudo', icon: FunnelIcon },
-      { to: '/skills', label: 'Skills', icon: GraduationCapIcon },
+      { to: '/embudo', label: 'funnel', icon: FunnelIcon },
+      { to: '/skills', label: 'skills', icon: GraduationCapIcon },
     ],
   },
   {
-    title: 'Configurar',
+    title: 'configure',
     entries: [
-      { to: '/fuentes', label: 'Fuentes', icon: PlugsConnectedIcon },
-      { to: '/plantillas', label: 'Plantillas', icon: FileTextIcon },
-      { to: '/perfil', label: 'Mi perfil', icon: UserCircleIcon },
-      { to: '/agente', label: 'Agente', icon: RobotIcon, useCount: useAgentCount },
+      { to: '/fuentes', label: 'sources', icon: PlugsConnectedIcon },
+      { to: '/plantillas', label: 'templates', icon: FileTextIcon },
+      { to: '/perfil', label: 'profile', icon: UserCircleIcon },
+      { to: '/agente', label: 'agent', icon: RobotIcon, useCount: useAgentCount },
     ],
   },
 ]
 
-const noCount = (): Count => ({ value: 0, strong: false, label: '' })
+const noCount = (): Count => ({ value: 0, strong: false, label: null })
 
 function NavEntry({ entry, collapsed, onNavigate }: { entry: Entry; collapsed: boolean; onNavigate?: () => void }) {
+  const { t } = useTranslation('nav')
   const count = (entry.useCount ?? noCount)()
+  const label = t(`entries.${entry.label}`)
   const Icon = entry.icon
   const { pathname } = useLocation()
   const isActive =
@@ -133,7 +164,11 @@ function NavEntry({ entry, collapsed, onNavigate }: { entry: Entry; collapsed: b
       to={entry.to}
       onClick={onNavigate}
       // El nombre completo, con lo que te espera: «Por revisar (3 por revisar)».
-      aria-label={count.value ? `${entry.label} (${count.value} ${count.label})` : entry.label}
+      aria-label={
+        count.value && count.label
+          ? t('entryWithCount', { label, count: count.value, what: t(`counts.${count.label}`) })
+          : label
+      }
       aria-current={isActive ? 'page' : undefined}
       className={cn(
           'relative flex items-center gap-2.5 rounded-md text-sm transition-colors',
@@ -157,7 +192,7 @@ function NavEntry({ entry, collapsed, onNavigate }: { entry: Entry; collapsed: b
             )
           ) : (
             <>
-              <span className="truncate">{entry.label}</span>
+              <span className="truncate">{label}</span>
               <CountBadge count={count} />
             </>
           )}
@@ -168,7 +203,7 @@ function NavEntry({ entry, collapsed, onNavigate }: { entry: Entry; collapsed: b
     <Tooltip>
       <TooltipTrigger asChild>{link}</TooltipTrigger>
       <TooltipContent side="right">
-        {entry.label}
+        {label}
         {count.value > 0 && ` · ${count.value}`}
       </TooltipContent>
     </Tooltip>
@@ -176,8 +211,9 @@ function NavEntry({ entry, collapsed, onNavigate }: { entry: Entry; collapsed: b
 }
 
 export function NavLinks({ collapsed = false, onNavigate }: { collapsed?: boolean; onNavigate?: () => void }) {
+  const { t } = useTranslation('nav')
   return (
-    <nav aria-label="Navegación principal" className="grid gap-4">
+    <nav aria-label={t('mainNav')} className="grid gap-4">
       {NAV_GROUPS.map((group) => (
         <div key={group.title ?? 'inicio'} className="grid gap-0.5">
           {group.title &&
@@ -189,10 +225,10 @@ export function NavLinks({ collapsed = false, onNavigate }: { collapsed?: boolea
                 aria-hidden
                 className="px-2.5 pb-1 text-[0.7rem] font-semibold tracking-wider text-muted-foreground/80 uppercase"
               >
-                {group.title}
+                {t(`groups.${group.title}`)}
               </span>
             ))}
-          <ul className="grid gap-0.5" aria-label={group.title ?? undefined}>
+          <ul className="grid gap-0.5" aria-label={group.title ? t(`groups.${group.title}`) : undefined}>
             {group.entries.map((entry) => (
               <li key={entry.to}>
                 <NavEntry entry={entry} collapsed={collapsed} onNavigate={onNavigate} />
@@ -241,15 +277,13 @@ export function Brand({ compact = false }: { compact?: boolean }) {
   )
 }
 
-const THEME_META: Record<ThemeChoice, { icon: typeof SunIcon; label: string }> = {
-  system: { icon: DesktopIcon, label: 'Tema: el del sistema' },
-  light: { icon: SunIcon, label: 'Tema: claro' },
-  dark: { icon: MoonIcon, label: 'Tema: oscuro' },
-}
+const THEME_ICON: Record<ThemeChoice, typeof SunIcon> = { system: DesktopIcon, light: SunIcon, dark: MoonIcon }
 
 export function ThemeToggle({ withLabel = false }: { withLabel?: boolean }) {
+  const { t } = useTranslation('nav')
   const { choice, cycle } = useTheme()
-  const { icon: Icon, label } = THEME_META[choice]
+  const Icon = THEME_ICON[choice]
+  const label = t(`theme.${choice}`)
   const button = (
     <Button
       variant="ghost"
@@ -268,6 +302,54 @@ export function ThemeToggle({ withLabel = false }: { withLabel?: boolean }) {
       <TooltipTrigger asChild>{button}</TooltipTrigger>
       <TooltipContent side="right">{label}</TooltipContent>
     </Tooltip>
+  )
+}
+
+/** Selector de idioma (fase 23.6): un menú con los idiomas, no un ciclo a ciegas. */
+export function LanguageMenu({ withLabel = false }: { withLabel?: boolean }) {
+  const { t } = useTranslation('nav')
+  const { language, setLanguage, languages } = useLanguage()
+  const name = languageName(language)
+  const label = t('language.button', { name })
+  const button = (
+    <Button
+      variant="ghost"
+      size={withLabel ? 'sm' : 'icon'}
+      aria-label={label}
+      className={cn(withLabel && 'w-full justify-start gap-2.5 px-2.5 font-normal text-muted-foreground')}
+    >
+      <GlobeIcon className="size-[18px]" />
+      {withLabel && (
+        <>
+          {name}
+          <LanguageFlag language={language} />
+        </>
+      )}
+    </Button>
+  )
+  return (
+    <DropdownMenu>
+      {withLabel ? (
+        <DropdownMenuTrigger asChild>{button}</DropdownMenuTrigger>
+      ) : (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DropdownMenuTrigger asChild>{button}</DropdownMenuTrigger>
+          </TooltipTrigger>
+          <TooltipContent side="right">{label}</TooltipContent>
+        </Tooltip>
+      )}
+      <DropdownMenuContent side={withLabel ? 'top' : 'right'} align="start" className="min-w-[10rem]">
+        <DropdownMenuRadioGroup value={language} onValueChange={setLanguage}>
+          {languages.map((code) => (
+            <DropdownMenuRadioItem key={code} value={code} lang={code}>
+              <LanguageFlag language={code} />
+              {languageName(code)}
+            </DropdownMenuRadioItem>
+          ))}
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
 
@@ -292,6 +374,7 @@ function writeCollapsed(value: boolean) {
 }
 
 export function Sidebar() {
+  const { t } = useTranslation('nav')
   const [collapsed, setCollapsed] = useState(readCollapsed)
   const toggle = () => {
     const next = !collapsed
@@ -300,7 +383,7 @@ export function Sidebar() {
   }
   return (
     <aside
-      aria-label="Barra lateral"
+      aria-label={t('sidebar')}
       className={cn(
         'sticky top-0 hidden h-[100dvh] shrink-0 flex-col border-r bg-card transition-[width] duration-200 lg:flex',
         collapsed ? 'w-16 items-center px-2' : 'w-60 px-3',
@@ -313,6 +396,7 @@ export function Sidebar() {
         <NavLinks collapsed={collapsed} />
       </div>
       <div className={cn('grid shrink-0 gap-0.5 border-t py-3', collapsed ? 'justify-items-center' : '')}>
+        <LanguageMenu withLabel={!collapsed} />
         <ThemeToggle withLabel={!collapsed} />
         <SidebarButton collapsed={collapsed} onClick={toggle} />
       </div>
@@ -321,7 +405,8 @@ export function Sidebar() {
 }
 
 function SidebarButton({ collapsed, onClick }: { collapsed: boolean; onClick: () => void }) {
-  const label = collapsed ? 'Desplegar el menú' : 'Plegar el menú'
+  const { t } = useTranslation('nav')
+  const label = collapsed ? t('expand') : t('collapse')
   const button = (
     <Button
       variant="ghost"
@@ -347,6 +432,7 @@ function SidebarButton({ collapsed, onClick }: { collapsed: boolean; onClick: ()
 // --- Cajón (móvil) ------------------------------------------------------------------------------
 
 export function MobileNav() {
+  const { t } = useTranslation('nav')
   const [open, setOpen] = useState(false)
   const { pathname } = useLocation()
   // Cualquier navegación (un enlace, la marca, el botón Atrás) cierra el cajón.
@@ -372,7 +458,7 @@ export function MobileNav() {
       }}
     >
       <DialogPrimitive.Trigger asChild>
-        <Button variant="ghost" size="icon" aria-label="Abrir el menú" className="lg:hidden">
+        <Button variant="ghost" size="icon" aria-label={t('openMenu')} className="lg:hidden">
           <ListIcon className="size-5" />
         </Button>
       </DialogPrimitive.Trigger>
@@ -389,7 +475,7 @@ export function MobileNav() {
               </span>
             </DialogPrimitive.Title>
             <DialogPrimitive.Close asChild>
-              <Button variant="ghost" size="icon" aria-label="Cerrar el menú">
+              <Button variant="ghost" size="icon" aria-label={t('closeMenu')}>
                 <XIcon className="size-5" />
               </Button>
             </DialogPrimitive.Close>
@@ -397,7 +483,8 @@ export function MobileNav() {
           <div className="flex-1 overflow-y-auto py-2">
             <NavLinks onNavigate={() => setOpen(false)} />
           </div>
-          <div className="border-t py-3">
+          <div className="grid gap-0.5 border-t py-3">
+            <LanguageMenu withLabel />
             <ThemeToggle withLabel />
           </div>
         </DialogPrimitive.Content>

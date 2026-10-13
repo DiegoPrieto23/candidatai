@@ -1,4 +1,5 @@
 import { useMemo, useState, type FormEvent, type ReactNode } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { CheckCircleIcon, EqualsIcon, ProhibitIcon, PuzzlePieceIcon, UserCircleIcon } from '@phosphor-icons/react'
 import { ApiError } from '@/api/client'
@@ -16,7 +17,8 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
-import { LEVEL_LABEL } from '@/lib/labels'
+import { formatNumber, LEVEL_LABEL } from '@/lib/labels'
+import { errorMessage } from '@/lib/errors'
 import { cn } from '@/lib/utils'
 
 type Kind = 'all' | 'must' | 'nice'
@@ -25,18 +27,9 @@ type Sort = 'jobs' | 'weight'
 type ProfileSkill = { name: string; level: keyof typeof LEVEL_LABEL }
 
 const PERIODS = [30, 60, 90, 180] as const
-const KINDS: { id: Kind; label: string }[] = [
-  { id: 'all', label: 'Todas' },
-  { id: 'must', label: 'Obligatorias' },
-  { id: 'nice', label: 'Deseables' },
-]
-const MARK_FILTERS: { id: MarkFilter; label: string }[] = [
-  { id: 'all', label: 'Todas' },
-  { id: 'unmarked', label: 'Sin decidir' },
-  { id: 'gap', label: 'No la tengo' },
-  { id: 'have', label: 'La tengo' },
-]
-const weightFmt = new Intl.NumberFormat('es-ES', { maximumFractionDigits: 2 })
+const KINDS: readonly Kind[] = ['all', 'must', 'nice']
+const MARK_FILTERS: readonly MarkFilter[] = ['all', 'unmarked', 'gap', 'have']
+const weightFmt = { format: (n: number) => formatNumber(n, { maximumFractionDigits: 2 }) }
 
 function Segmented<T extends string | number>({
   label,
@@ -106,6 +99,7 @@ function AliasForm({
   onCancel: () => void
   onDone: (message: string) => void
 }) {
+  const { t } = useTranslation('skills', { keyPrefix: 'alias' })
   const [query, setQuery] = useState('')
   const [chosen, setChosen] = useState<string | null>(null)
   const addAlias = useAddSkillAlias()
@@ -120,9 +114,7 @@ function AliasForm({
       {
         onSuccess: (result) =>
           onDone(
-            result.added
-              ? `«${result.skill}» cuenta ya como «${result.profile_skill}». El score de las ofertas se recalcula en segundo plano.`
-              : `«${result.skill}» ya contaba como «${result.profile_skill}».`,
+            t(result.added ? 'added' : 'existed', { skill: result.skill, profile: result.profile_skill }),
           ),
       },
     )
@@ -131,23 +123,21 @@ function AliasForm({
   return (
     <form onSubmit={submit} className="grid gap-5">
       <DialogHeader>
-        <DialogTitle>«{gap.skill}» es lo mismo que…</DialogTitle>
+        <DialogTitle>{t('title', { skill: gap.skill })}</DialogTitle>
         <DialogDescription>
-          Elige la skill de tu perfil que significa lo mismo. Se añade como sinónimo en{' '}
-          <code className="font-mono text-[0.85em]">config/skill_aliases.yaml</code> y se recalcula el score de tus
-          ofertas.
+          <Trans t={t} i18nKey="description" components={{ code: <code className="font-mono text-[0.85em]" /> }} />
         </DialogDescription>
       </DialogHeader>
 
       <div className="grid gap-2">
         <Input
-          aria-label="Buscar en tu perfil"
-          placeholder="Buscar en tu perfil"
+          aria-label={t('search')}
+          placeholder={t('search')}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className="bg-background"
         />
-        <div role="radiogroup" aria-label="Skills de tu perfil" className="grid max-h-64 gap-1 overflow-y-auto pr-1">
+        <div role="radiogroup" aria-label={t('list')} className="grid max-h-64 gap-1 overflow-y-auto pr-1">
           {visible.map((s) => {
             const selected = chosen === s.name
             return (
@@ -167,22 +157,22 @@ function AliasForm({
               </button>
             )
           })}
-          {visible.length === 0 && <p className="px-1 py-2 text-sm text-muted-foreground">Ninguna skill de tu perfil coincide.</p>}
+          {visible.length === 0 && <p className="px-1 py-2 text-sm text-muted-foreground">{t('none')}</p>}
         </div>
       </div>
 
       {addAlias.error && (
         <p role="alert" className="text-sm text-destructive">
-          {addAlias.error.message}
+          {errorMessage(addAlias.error)}
         </p>
       )}
 
       <DialogFooter>
         <Button type="button" variant="outline" onClick={onCancel}>
-          Cancelar
+          {t('cancel')}
         </Button>
         <Button type="submit" disabled={!chosen || addAlias.isPending}>
-          {addAlias.isPending ? 'Guardando…' : 'Son lo mismo'}
+          {addAlias.isPending ? t('saving') : t('submit')}
         </Button>
       </DialogFooter>
     </form>
@@ -202,6 +192,7 @@ function MarkButton({
   children: string
   icon: ReactNode
 }) {
+  const { t } = useTranslation('skills')
   const setMark = useSetSkillMark()
   const active = gap.mark === status
   return (
@@ -211,7 +202,7 @@ function MarkButton({
       variant="ghost"
       aria-pressed={active}
       disabled={setMark.isPending}
-      title={active ? 'Quitar la marca' : undefined}
+      title={active ? t('removeMark') : undefined}
       className={cn('h-7 px-2', active && 'bg-secondary font-medium text-foreground')}
       onClick={() => setMark.mutate({ skill: gap.skill, status: active ? null : status })}
     >
@@ -222,19 +213,20 @@ function MarkButton({
 }
 
 function GapRow({ gap, kind, onAlias }: { gap: SkillGap; kind: Kind; onAlias: (gap: SkillGap) => void }) {
+  const { t } = useTranslation('skills', { keyPrefix: 'row' })
   return (
     <tr className="border-t align-top">
       <th scope="row" className="py-3 pr-4 text-left font-medium">
         {gap.skill}
         {gap.jobs_count === 0 && (
-          <span className="block text-xs font-normal text-muted-foreground">Ya no la pide ninguna oferta del periodo</span>
+          <span className="block text-xs font-normal text-muted-foreground">{t('gone')}</span>
         )}
       </th>
       <td className="tabular py-3 pr-4 whitespace-nowrap">
         <span className="font-medium">{countFor(gap, kind)}</span>
         {kind === 'all' && gap.jobs_count > 0 && (
           <span className="block text-xs text-muted-foreground">
-            {gap.must_have_count} oblig. · {gap.nice_to_have_count} des.
+            {t('split', { must: gap.must_have_count, nice: gap.nice_to_have_count })}
           </span>
         )}
       </td>
@@ -252,16 +244,16 @@ function GapRow({ gap, kind, onAlias }: { gap: SkillGap; kind: Kind; onAlias: (g
         </ul>
       </td>
       <td className="py-2.5">
-        <div className="flex flex-wrap gap-1" role="group" aria-label={`Acciones para ${gap.skill}`}>
+        <div className="flex flex-wrap gap-1" role="group" aria-label={t('actions', { skill: gap.skill })}>
           <Button type="button" size="sm" variant="outline" className="h-7 px-2" onClick={() => onAlias(gap)}>
             <EqualsIcon />
-            Es lo mismo que…
+            {t('same')}
           </Button>
           <MarkButton gap={gap} status="have" icon={<CheckCircleIcon />}>
-            La tengo
+            {t('have')}
           </MarkButton>
           <MarkButton gap={gap} status="gap" icon={<ProhibitIcon />}>
-            No la tengo
+            {t('gap')}
           </MarkButton>
         </div>
       </td>
@@ -272,6 +264,7 @@ function GapRow({ gap, kind, onAlias }: { gap: SkillGap; kind: Kind; onAlias: (g
 // --- Página -----------------------------------------------------------------------------------
 
 export function SkillsPage() {
+  const { t } = useTranslation('skills')
   const [days, setDays] = useState<number>(60)
   const [kind, setKind] = useState<Kind>('all')
   const [markFilter, setMarkFilter] = useState<MarkFilter>('all')
@@ -298,8 +291,8 @@ export function SkillsPage() {
 
   if (error instanceof ApiError && error.type === 'not_found') {
     return (
-      <EmptyState icon={<UserCircleIcon className="size-6" weight="duotone" />} title="Aún no tienes perfil">
-        <InlineCode text="Los huecos se calculan frente a tu perfil. Créalo con el skill `update-profile`." />
+      <EmptyState icon={<UserCircleIcon className="size-6" weight="duotone" />} title={t('noProfile.title')}>
+        <InlineCode text={t('noProfile.body')} />
       </EmptyState>
     )
   }
@@ -308,33 +301,42 @@ export function SkillsPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Skills</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
           <p className="mt-1 max-w-[68ch] text-sm text-muted-foreground">
-            Lo que piden tus ofertas y tu perfil no cubre. Muchas veces es vocabulario: si es lo mismo que una skill tuya,
-            dilo y el score se recalcula. Si la tienes, añádela al perfil; si no, va a tu plan de formación.
+            {t('intro')}
           </p>
         </div>
         <div className="flex flex-wrap items-start gap-2">
           {marked('have') > 0 && (
             <AgentButton action="add-skills">
-              Añadir al perfil las que tengo ({marked('have')})
+              {t('addHave', { count: marked('have') })}
             </AgentButton>
           )}
           <AgentButton action="training-plan" variant={marked('gap') > 0 ? 'default' : 'outline'}>
-            Plan de formación
+            {t('training')}
           </AgentButton>
         </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
         <Segmented
-          label="Periodo"
-          options={PERIODS.map((d) => ({ id: d, label: `${d} días` }))}
+          label={t('period')}
+          options={PERIODS.map((d) => ({ id: d, label: t('days', { count: d }) }))}
           value={days}
           onChange={setDays}
         />
-        <Segmented label="Tipo" options={KINDS} value={kind} onChange={setKind} />
-        <Segmented label="Marca" options={MARK_FILTERS} value={markFilter} onChange={setMarkFilter} />
+        <Segmented
+          label={t('kind')}
+          options={KINDS.map((id) => ({ id, label: t(`kinds.${id}`) }))}
+          value={kind}
+          onChange={setKind}
+        />
+        <Segmented
+          label={t('mark')}
+          options={MARK_FILTERS.map((id) => ({ id, label: t(`marks.${id}`) }))}
+          value={markFilter}
+          onChange={setMarkFilter}
+        />
       </div>
 
       {notice && (
@@ -348,39 +350,38 @@ export function SkillsPage() {
       ) : error ? (
         <ErrorState error={error} onRetry={() => void refetch()} />
       ) : data.gaps.length === 0 ? (
-        <EmptyState icon={<PuzzlePieceIcon className="size-6" weight="duotone" />} title="Tu perfil cubre lo que piden tus ofertas">
-          Sin skills ausentes en {data.jobs_considered} ofertas (abiertas y aprobadas o enviadas en los últimos {data.days}{' '}
-          días).
+        <EmptyState icon={<PuzzlePieceIcon className="size-6" weight="duotone" />} title={t('covered.title')}>
+          {t('covered.body', { jobs: data.jobs_considered, days: data.days })}
         </EmptyState>
       ) : (
-        <section aria-label="Skills ausentes" className="rounded-xl border bg-card p-5 sm:p-6">
+        <section aria-label={t('missing')} className="rounded-xl border bg-card p-5 sm:p-6">
           <p className="text-sm text-muted-foreground">
-            {data.gaps.length} skills ausentes en {data.jobs_considered} ofertas: las abiertas y las aprobadas o enviadas en
-            los últimos {data.days} días. El peso suma 1 por oferta que la pide como obligatoria y 0,5 como deseable, por
-            el score de la oferta.
+            {t('summary', { count: data.gaps.length, jobs: data.jobs_considered, days: data.days })}
           </p>
           <div className="mt-4 overflow-x-auto">
-            <table className="w-full min-w-[36rem] text-sm" aria-label="Skills ausentes por frecuencia">
+            <table className="w-full min-w-[36rem] text-sm" aria-label={t('tableLabel')}>
               <thead>
                 <tr className="text-left text-xs text-muted-foreground">
                   <th scope="col" className="pb-2 pr-4 font-medium">
-                    Skill
+                    {t('cols.skill')}
                   </th>
                   <th scope="col" className="pb-2 pr-4 font-medium" aria-sort={sort === 'jobs' ? 'descending' : 'none'}>
                     <button type="button" className="hover:text-foreground" onClick={() => setSort('jobs')}>
-                      Ofertas{sort === 'jobs' && ' ↓'}
+                      {t('cols.jobs')}
+                      {sort === 'jobs' && ' ↓'}
                     </button>
                   </th>
                   <th scope="col" className="pb-2 pr-4 font-medium" aria-sort={sort === 'weight' ? 'descending' : 'none'}>
                     <button type="button" className="hover:text-foreground" onClick={() => setSort('weight')}>
-                      Peso{sort === 'weight' && ' ↓'}
+                      {t('cols.weight')}
+                      {sort === 'weight' && ' ↓'}
                     </button>
                   </th>
                   <th scope="col" className="hidden pb-2 pr-4 font-medium md:table-cell">
-                    Ejemplos
+                    {t('cols.examples')}
                   </th>
                   <th scope="col" className="pb-2 font-medium">
-                    <span className="sr-only">Acciones</span>
+                    <span className="sr-only">{t('cols.actions')}</span>
                   </th>
                 </tr>
               </thead>
@@ -390,7 +391,7 @@ export function SkillsPage() {
                 ))}
               </tbody>
             </table>
-            {rows.length === 0 && <p className="py-6 text-center text-sm text-muted-foreground">Ninguna con este filtro.</p>}
+            {rows.length === 0 && <p className="py-6 text-center text-sm text-muted-foreground">{t('noneFiltered')}</p>}
           </div>
         </section>
       )}

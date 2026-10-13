@@ -4,6 +4,8 @@
  * lo que no entiende lo deja fuera y la URL completa sigue a mano.
  */
 
+import { i18n, intlLocale } from '@/lib/i18n'
+
 export type SearchSummary = { query: string | null; place: string | null }
 
 const QUERY_PARAMS = ['q', 'keyword', 'keywords', 'te', 'k', 'query', 'search', 'what']
@@ -30,7 +32,7 @@ function clean(text: string): string {
 }
 
 function capitalize(text: string): string {
-  return text.charAt(0).toLocaleUpperCase('es-ES') + text.slice(1)
+  return text.charAt(0).toLocaleUpperCase(intlLocale()) + text.slice(1)
 }
 
 /** Glassdoor: `/Empleo/<lugar>-<puesto>-empleos-SRCH_IL.0,6_..._KO7,20.htm`: los rangos dicen qué es qué. */
@@ -67,7 +69,11 @@ export function describeSearch(raw: string): SearchSummary {
     const [param, id] = Object.entries(province)[0]
     if ((params.get(param) ?? '').split(',').includes(id)) place = province.name
   }
-  if (remote) place = place && !/^(remoto|españa|spain)$/i.test(place) ? `Remoto (${place})` : 'Remoto'
+  if (remote)
+    place =
+      place && !/^(remoto|remote|españa|spain)$/i.test(place)
+        ? i18n.t('platforms:searches.remoteIn', { place })
+        : i18n.t('platforms:searches.remote')
   return { query, place }
 }
 
@@ -75,7 +81,7 @@ export function describeSearch(raw: string): SearchSummary {
 export function searchLabel(raw: string): string {
   const { query, place } = describeSearch(raw)
   const parts = [query, place].filter(Boolean)
-  return parts.length ? parts.join(' · ') : 'Todas las ofertas'
+  return parts.length ? parts.join(' · ') : i18n.t('platforms:searches.all')
 }
 
 /** Página base de una plataforma, sacada de sus búsquedas: `https://www.infojobs.net` e `infojobs.net`. */

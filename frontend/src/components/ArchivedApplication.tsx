@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { FolderSimpleIcon } from '@phosphor-icons/react'
+import { useTranslation } from 'react-i18next'
 import { useQueryClient } from '@tanstack/react-query'
 import type { JobView } from '@/api/client'
 import { keys } from '@/api/queries'
@@ -30,6 +31,7 @@ function useRecheckUntilArchived(job: JobView) {
 }
 
 export function ArchivedApplication({ job }: { job: JobView }) {
+  const { t } = useTranslation('job', { keyPrefix: 'archive' })
   useRecheckUntilArchived(job)
   if (!job.archive_folder) {
     if (job.stage === 'closed') return null
@@ -37,28 +39,28 @@ export function ArchivedApplication({ job }: { job: JobView }) {
       <p className="flex items-start gap-2 px-1 text-sm text-muted-foreground">
         <FolderSimpleIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
         <span>
-          <InlineCode text="Aún sin copia de lo enviado: la guarda el worker al marcarla como enviada. Para las de antes, `cai applications archive --all`." />
+          <InlineCode text={t('pending')} />
         </span>
       </p>
     )
   }
   return (
     <section
-      aria-label="Candidatura archivada"
+      aria-label={t('label')}
       className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card px-5 py-4"
     >
       <div className="flex min-w-0 items-start gap-2.5 text-sm">
         <FolderSimpleIcon className="mt-0.5 size-5 shrink-0 text-muted-foreground" weight="duotone" aria-hidden />
         <span className="min-w-0">
-          <span className="font-medium">Copia de lo que enviaste</span>
+          <span className="font-medium">{t('title')}</span>
           <span className="block font-mono text-xs break-all text-muted-foreground">data/{job.archive_folder}</span>
         </span>
       </div>
       <OpenFolderButton
         folder="candidatura"
         jobId={job.id}
-        label="Abrir carpeta"
-        ariaLabel="Abrir la carpeta archivada de la candidatura"
+        label={t('open')}
+        ariaLabel={t('openAria')}
       />
     </section>
   )

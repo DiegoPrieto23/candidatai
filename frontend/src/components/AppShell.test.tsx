@@ -110,3 +110,21 @@ describe('Barra lateral: detalles (fase 23.3)', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 })
+
+describe('«Nueva oferta»', () => {
+  it('en Inicio va con las acciones de la página; en el resto, arriba en la cabecera', async () => {
+    mockApi({
+      'GET /status': status(),
+      'GET /jobs': emptyPage,
+      'GET /followups': { days_without_reply: 7, followups: [] },
+      'GET /upcoming': { days: 7, items: [] },
+    })
+    const { unmount } = renderApp('/')
+    const main = await screen.findByRole('main')
+    expect(await within(main).findByRole('link', { name: 'Nueva oferta' })).toHaveAttribute('href', '/nueva')
+    expect(within(screen.getByRole('banner')).queryByRole('link', { name: 'Nueva oferta' })).not.toBeInTheDocument()
+    unmount()
+    renderApp('/bandeja')
+    expect(await within(screen.getByRole('banner')).findByRole('link', { name: 'Nueva oferta' })).toBeInTheDocument()
+  })
+})

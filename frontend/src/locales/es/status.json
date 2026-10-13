@@ -1,0 +1,32 @@
+{
+  "steps": {
+    "reply_received": "Me han respondido",
+    "interview_scheduled": "Tengo entrevista",
+    "interview_done": "Entrevista hecha",
+    "test_assigned": "Prueba técnica",
+    "offer_received": "Oferta recibida",
+    "accepted": "Acepto la oferta",
+    "rejected": "Me han rechazado",
+    "withdrawn": "Me retiro",
+    "expired": "Sin respuesta, la doy por cerrada"
+  },
+  "label": "¿Qué ha pasado?",
+  "title": "¿Qué ha pasado con esta candidatura?",
+  "hint": "Está en «{{stage}}». Registra cada paso: la oferta cambia de etapa sola y queda en su historial.",
+  "loadFailed": "No se pudieron cargar las opciones: {{error}}",
+  "interview": {
+    "prepare": "Preparar",
+    "mock": "Simulacro",
+    "debrief": "Repasar",
+    "debriefAgain": "Repasar otra vez",
+    "plan_one": "Plan de preparación · {{count}} bloque, {{minutes}} min",
+    "plan_other": "Plan de preparación · {{count}} bloques, {{minutes}} min",
+    "stale": "La entrevista se ha movido antes de algunos bloques: pulsa «Preparar» para rehacer el plan.",
+    "minutes": "{{count}} min",
+    "dossier": "Dosier:",
+    "openDossiers": "Abrir carpeta de dosieres",
+    "debriefLabel": "Repaso de la entrevista",
+    "debriefTitle": "Repaso",
+    "nextSteps": "Próximos pasos"
+  }
+}

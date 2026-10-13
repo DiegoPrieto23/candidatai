@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import {
   DndContext,
@@ -35,19 +36,14 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { eventLabel, STAGE_LABEL, UPCOMING_KIND_LABEL } from '@/lib/labels'
 import { moveOptions, noMoveReason, type MoveOption } from '@/lib/moves'
 import { formatWhen } from '@/lib/time'
+import { i18n } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
-const COLUMN_HINT: Partial<Record<Stage, string>> = {
-  approved: 'Falta el CV',
-  cv_ready: 'Lista para enviar',
-  applied: 'Esperando respuesta',
-  in_process: 'Entrevistas y pruebas',
-  closed: 'Recientes',
-}
 
 // --- Tarjeta --------------------------------------------------------------------------------
 
 function CardBody({ card, onMove }: { card: BoardCard; onMove?: () => void }) {
+  const { t } = useTranslation('processes', { keyPrefix: 'card' })
   return (
     <>
       <div className="flex items-start justify-between gap-2">
@@ -74,7 +70,7 @@ function CardBody({ card, onMove }: { card: BoardCard; onMove?: () => void }) {
           {card.followup_due && (
             <span className="inline-flex items-center gap-1 rounded bg-primary/10 px-1.5 py-0.5 font-medium text-primary">
               <BellRingingIcon className="size-3.5" />
-              Seguimiento · {card.days_waiting} días
+              {t('followup', { count: card.days_waiting })}
             </span>
           )}
           {card.closed_by && (
@@ -88,10 +84,10 @@ function CardBody({ card, onMove }: { card: BoardCard; onMove?: () => void }) {
           onClick={onMove}
           onPointerDown={(e) => e.stopPropagation()}
           className="mt-2.5 inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-2.5 py-1 text-xs font-medium hover:bg-accent hover:text-accent-foreground"
-          aria-label={`Actualizar estado de «${card.title}»`}
+          aria-label={t('updateAria', { title: card.title })}
         >
           <ArrowsLeftRightIcon className="size-3.5" />
-          Actualizar estado
+          {t('update')}
         </button>
       )}
     </>
@@ -99,6 +95,7 @@ function CardBody({ card, onMove }: { card: BoardCard; onMove?: () => void }) {
 }
 
 function DraggableCard({ card, onMove }: { card: BoardCard; onMove: () => void }) {
+  const { t } = useTranslation('processes', { keyPrefix: 'card' })
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: card.job_id,
     data: { card },
@@ -108,7 +105,7 @@ function DraggableCard({ card, onMove }: { card: BoardCard; onMove: () => void }
       ref={setNodeRef}
       {...attributes}
       {...listeners}
-      aria-roledescription="tarjeta arrastrable"
+      aria-roledescription={t('draggable')}
       className={cn(
         'cursor-grab touch-none rounded-lg border bg-card p-3 shadow-xs outline-none transition-shadow focus-visible:ring-[3px] focus-visible:ring-ring/50 active:cursor-grabbing',
         isDragging && 'opacity-40',
@@ -132,6 +129,7 @@ function Column({
   children: ReactNode
   empty: boolean
 }) {
+  const { t } = useTranslation('processes')
   const { setNodeRef, isOver } = useDroppable({ id: stage })
   return (
     <section
@@ -145,12 +143,16 @@ function Column({
       <header className="flex items-baseline justify-between px-1.5 pt-1 pb-2.5">
         <div>
           <h2 className="text-sm font-semibold">{STAGE_LABEL[stage]}</h2>
-          <p className="text-xs text-muted-foreground">{COLUMN_HINT[stage]}</p>
+          <p className="text-xs text-muted-foreground">
+            {stage === 'pending_detail' || stage === 'pending_extraction' || stage === 'pending_triage'
+              ? null
+              : t(`columnHint.${stage}`)}
+          </p>
         </div>
         <span className="tabular text-xs font-medium text-muted-foreground">{total}</span>
       </header>
       {empty ? (
-        <p className="rounded-lg border border-dashed px-3 py-6 text-center text-xs text-muted-foreground">Vacía</p>
+        <p className="rounded-lg border border-dashed px-3 py-6 text-center text-xs text-muted-foreground">{t('empty')}</p>
       ) : (
         <ul className="flex flex-col gap-2">{children}</ul>
       )}
@@ -158,15 +160,17 @@ function Column({
   )
 }
 
+const dnd = () => i18n.getFixedT(null, 'processes', 'dnd')
+
 const ANNOUNCEMENTS: Announcements = {
-  onDragStart: ({ active }) => `Has cogido «${(active.data.current?.card as BoardCard | undefined)?.title ?? ''}».`,
-  onDragOver: ({ over }) => (over ? `Sobre la columna «${STAGE_LABEL[over.id as Stage]}».` : 'Fuera de las columnas.'),
-  onDragEnd: ({ over }) =>
-    over ? `Soltada en «${STAGE_LABEL[over.id as Stage]}». Confirma el evento en el diálogo.` : 'Soltada sin moverla.',
-  onDragCancel: () => 'Movimiento cancelado.',
+  onDragStart: ({ active }) => dnd()('start', { title: (active.data.current?.card as BoardCard | undefined)?.title ?? '' }),
+  onDragOver: ({ over }) => (over ? dnd()('over', { stage: STAGE_LABEL[over.id as Stage] }) : dnd()('outside')),
+  onDragEnd: ({ over }) => (over ? dnd()('end', { stage: STAGE_LABEL[over.id as Stage] }) : dnd()('endNone')),
+  onDragCancel: () => dnd()('cancel'),
 }
 
 function Board({ columns, moves }: { columns: { stage: Stage; cards: BoardCard[]; total: number }[]; moves: BoardMove[] }) {
+  const { t } = useTranslation('processes')
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor),
@@ -178,7 +182,7 @@ function Board({ columns, moves }: { columns: { stage: Stage; cards: BoardCard[]
   const openMove = (card: BoardCard, target?: Stage) => {
     const options = moveOptions(card, moves, target)
     if (options.length === 0) {
-      setRefused(target ? noMoveReason(card, target) : 'Esta oferta no tiene movimientos posibles desde aquí.')
+      setRefused(target ? noMoveReason(card, target) : t('noMoves'))
       return
     }
     setRefused(null)
@@ -197,7 +201,7 @@ function Board({ columns, moves }: { columns: { stage: Stage; cards: BoardCard[]
     <>
       {refused && (
         <p role="alert" className="mb-3 rounded-lg border bg-card px-4 py-2.5 text-sm">
-          La tarjeta vuelve a su sitio. {refused}
+          {t('refused', { reason: refused })}
         </p>
       )}
       <DndContext
@@ -208,8 +212,7 @@ function Board({ columns, moves }: { columns: { stage: Stage; cards: BoardCard[]
         accessibility={{
           announcements: ANNOUNCEMENTS,
           screenReaderInstructions: {
-            draggable:
-              'Pulsa espacio para coger la tarjeta, muévela con las flechas y suéltala con espacio. Esc cancela. También puedes usar «Mover».',
+            draggable: t('dnd.instructions'),
           },
         }}
       >
@@ -244,7 +247,8 @@ function Board({ columns, moves }: { columns: { stage: Stage; cards: BoardCard[]
 // --- Próximos y calendario ------------------------------------------------------------------
 
 function UpcomingList({ items }: { items: UpcomingItem[] }) {
-  if (items.length === 0) return <p className="text-sm text-muted-foreground">Nada en los próximos 7 días.</p>
+  const { t } = useTranslation('processes')
+  if (items.length === 0) return <p className="text-sm text-muted-foreground">{t('upcomingEmpty')}</p>
   return (
     <ul className="divide-y">
       {items.map((item) => (
@@ -264,31 +268,33 @@ function UpcomingList({ items }: { items: UpcomingItem[] }) {
 }
 
 function CalendarHelp() {
+  const { t } = useTranslation('processes', { keyPrefix: 'calendar' })
   return (
     <Collapsible>
       <CollapsibleTrigger className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
         <CalendarPlusIcon className="size-4" />
-        Llevar los hitos a tu calendario
+        {t('toggle')}
       </CollapsibleTrigger>
       <CollapsibleContent className="mt-3 space-y-3 rounded-xl border bg-card p-4 text-sm leading-relaxed">
         <p>
-          <span className="font-medium">Google Calendar:</span> descarga el fichero e impórtalo (Configuración →
-          Importar y exportar). Google no puede suscribirse a una dirección de tu equipo, así que vuelve a
-          importarlo cuando cambien tus hitos: los eventos se actualizan, no se duplican.
+          <Trans t={t} i18nKey="google" components={{ strong: <span className="font-medium" /> }} />
         </p>
         <p>
-          <span className="font-medium">Outlook, Apple Calendar o Thunderbird:</span> suscríbete a esta dirección
-          (se actualiza sola mientras <code className="font-mono text-[0.85em]">cai serve</code> esté en marcha):
+          <Trans
+            t={t}
+            i18nKey="others"
+            components={{ strong: <span className="font-medium" />, code: <code className="font-mono text-[0.85em]" /> }}
+          />
         </p>
         <code className="block rounded bg-muted px-2 py-1.5 font-mono text-xs break-all">{fileUrls.calendarFeed}</code>
         <div className="flex flex-wrap gap-2">
           <Button asChild size="sm">
             <a href={fileUrls.calendarDownload} download>
               <DownloadSimpleIcon />
-              Descargar .ics
+              {t('download')}
             </a>
           </Button>
-          <CopyButton text={fileUrls.calendarFeed} label="Copiar dirección" />
+          <CopyButton text={fileUrls.calendarFeed} label={t('copy')} />
         </div>
       </CollapsibleContent>
     </Collapsible>
@@ -306,6 +312,7 @@ function BoardSkeleton() {
 }
 
 export function ProcessesPage() {
+  const { t } = useTranslation('processes')
   const board = useBoard()
   const upcoming = useUpcoming(7)
   const followups = board.data?.columns.flatMap((c) => c.cards).filter((c) => c.followup_due).length ?? 0
@@ -316,11 +323,9 @@ export function ProcessesPage() {
     <div className="animate-in fade-in duration-300">
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Procesos</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
           <p className="mt-1.5 max-w-[65ch] text-sm leading-relaxed text-muted-foreground">
-            Pulsa «Actualizar estado» en una tarjeta (o arrástrala de columna) para registrar lo que ha
-            pasado: una respuesta, una entrevista, un rechazo… Nada cambia de columna sin su evento. Las
-            entrevistas y pruebas crean su hito con fecha.
+            {t('intro')}
           </p>
         </div>
         {(followups > 0 || thanks > 0) && (
@@ -328,14 +333,14 @@ export function ProcessesPage() {
             <p className="inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary">
               <BellRingingIcon className="size-4" weight="duotone" />
               {[
-                followups === 1 ? '1 seguimiento pendiente' : followups ? `${followups} seguimientos pendientes` : null,
-                thanks === 1 ? '1 entrevista por agradecer' : thanks ? `${thanks} entrevistas por agradecer` : null,
+                followups ? t('followups', { count: followups }) : null,
+                thanks ? t('thanks', { count: thanks }) : null,
               ]
                 .filter(Boolean)
                 .join(' · ')}
             </p>
             {/* El agente redacta los borradores en la ficha de cada oferta; la app no envía nada. */}
-            <AgentButton action="draft-follow-ups">Redactar borradores</AgentButton>
+            <AgentButton action="draft-follow-ups">{t('draftAll')}</AgentButton>
           </div>
         )}
       </div>
@@ -345,8 +350,12 @@ export function ProcessesPage() {
       ) : board.isError ? (
         <ErrorState error={board.error} onRetry={() => board.refetch()} />
       ) : empty ? (
-        <EmptyState icon={<KanbanIcon className="size-7" weight="duotone" />} title="Aún no hay procesos">
-          Aparecen aquí las ofertas que apruebas en <Link to="/por-revisar" className="underline underline-offset-4">Por revisar</Link>.
+        <EmptyState icon={<KanbanIcon className="size-7" weight="duotone" />} title={t('none.title')}>
+          <Trans
+            t={t}
+            i18nKey="none.body"
+            components={{ to: <Link to="/por-revisar" className="underline underline-offset-4" /> }}
+          />
         </EmptyState>
       ) : (
         <Board columns={board.data.columns} moves={board.data.moves} />
@@ -355,8 +364,8 @@ export function ProcessesPage() {
       <ReceivedOffersComparison />
 
       <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
-        <section className="rounded-xl border bg-card p-5 sm:p-6" aria-label="Próximos 7 días">
-          <h2 className="mb-3 font-medium">Próximos 7 días</h2>
+        <section className="rounded-xl border bg-card p-5 sm:p-6" aria-label={t('next7')}>
+          <h2 className="mb-3 font-medium">{t('next7')}</h2>
           {upcoming.isPending ? (
             <Skeleton className="h-16" />
           ) : upcoming.isError ? (

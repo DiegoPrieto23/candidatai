@@ -734,3 +734,37 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
 - **Consecuencias:** quien solo la usa no necesita Node ni terminales. A cambio, la API tiene una
   lista de rutas de la UI que mantener (con su test). El instalador de una línea necesita una
   release pública: con el repositorio privado, se instala desde una carpeta local.
+
+## ADR-036 · UI en español e inglés con i18next; el servidor sigue en español
+- **Contexto:** la UI estaba escrita en español dentro de los componentes; quien no lee español no
+  podía usar CandidatAI (fase 23.6, punto 9 de `COMPARATIVA.md`).
+- **Decisión:**
+  - **i18next + react-i18next**, con los textos empaquetados (sin cargas por red) en
+    `frontend/src/locales/<idioma>/<zona>.json`: un idioma es una carpeta y una zona de la UI, un
+    fichero. Las claves están tipadas desde los textos en español (`src/i18next.d.ts`): una clave
+    que no existe no compila. Plurales con las reglas de i18next; fechas, horas y números con
+    `Intl` según el idioma (`es-ES` o `en-GB`), en hora de Madrid donde ya lo era;
+  - **idioma**: el guardado en `localStorage` (`cai-language`); si no hay, el del navegador
+    (`es*` → español; cualquier otro → inglés). El selector va junto al del tema, en la barra
+    lateral y en el cajón: un menú con los idiomas, no un ciclo. Al cambiar se actualiza
+    `<html lang>` y se vuelven a montar las páginas (sin recargar ni perder la caché de datos),
+    para que ninguna etiqueta calculada antes quede en el idioma anterior;
+  - **etiquetas de dominio** (`lib/labels.ts`: etapas, eventos, motivos…): se mantienen los mismos
+    nombres (`STAGE_LABEL[stage]`), pero cada valor se traduce al leerlo;
+  - **mensajes del servidor**: siguen en español. Donde la UI recibe un código estable
+    (`error.type`, código de un aviso, filtro duro, paso del embudo, grupo de la calibración,
+    acción del agente), lo traduce y deja el mensaje del servidor como detalle. Lo que no trae
+    código se enseña tal cual (límite conocido);
+  - **escape en `Trans`**: la app no escapa al interpolar (`escapeValue: false`: React ya lo
+    hace), pero `Trans` interpola antes de leer sus etiquetas. Un dato de fuera en `values` (el
+    nombre de un botón de una web, un canal, una ruta) podría colarse como marcado, así que esos
+    textos usan `SafeTrans` (escapa al interpolar y desescapa al pintar) o pasan el dato como nodo
+    de React en `components`, como el diálogo de envío de la candidatura asistida;
+  - **tests**: arrancan en español (los de siempre no cambian); uno comprueba que todos los
+    idiomas tienen las mismas claves y variables y ninguna vacía, otro busca textos en español
+    fuera de `locales/` y otro que ninguna etiqueta de `Trans` sea un elemento vacío de HTML
+    (`<link>`: su texto se queda fuera del enlace).
+- **Consecuencias:** un texto nuevo de la UI va en los dos idiomas (`AGENTS.md`). Traducir el
+  backend (avisos del doctor, motivos del prefiltro, resultados de ejecuciones) queda como deuda;
+  hasta entonces, en inglés aparecen algunas frases del servidor en español.
+

@@ -33,7 +33,8 @@ experiencia ni enviar nada por su cuenta.
 </p>
 
 > [!NOTE]
-> Mira el **[recorrido en vídeo](docs/video/recorrido.mp4)** (42 s).
+> La interfaz está en **español e inglés** (se cambia desde la barra lateral). Mira el
+> **[recorrido en vídeo](docs/video/recorrido.mp4)** (42 s).
 
 ## Índice
 

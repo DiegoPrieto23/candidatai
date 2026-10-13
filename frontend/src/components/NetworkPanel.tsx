@@ -1,9 +1,13 @@
 import { useState } from 'react'
 import { ArrowSquareOutIcon, DownloadSimpleIcon, PlusIcon, UsersThreeIcon } from '@phosphor-icons/react'
+import { useTranslation } from 'react-i18next'
+import { SafeTrans } from '@/components/SafeTrans'
 import type { ContactRelation, JobView, NetworkPerson, Stage } from '@/api/client'
 import { useAddContactFromNetwork, useImportNetwork, useJobNetwork, useNetworkStatus } from '@/api/queries'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { errorMessage } from '@/lib/errors'
+import { formatList } from '@/lib/i18n'
 import { CONTACT_RELATION_LABEL, formatDate } from '@/lib/labels'
 
 /** Etapas con ficha de proceso: solo ahí se puede añadir a alguien como contacto. */
@@ -15,6 +19,7 @@ function isUrl(value: string): boolean {
 }
 
 function AddToProcess({ jobId, person }: { jobId: number; person: NetworkPerson }) {
+  const { t } = useTranslation('network')
   const [open, setOpen] = useState(false)
   const [relation, setRelation] = useState<ContactRelation>('referral')
   const add = useAddContactFromNetwork(jobId)
@@ -22,7 +27,7 @@ function AddToProcess({ jobId, person }: { jobId: number; person: NetworkPerson 
     return (
       <Button variant="outline" size="sm" className="h-7 px-2 text-xs" onClick={() => setOpen(true)}>
         <PlusIcon />
-        Añadir al proceso
+        {t('addToProcess')}
       </Button>
     )
   }
@@ -36,7 +41,7 @@ function AddToProcess({ jobId, person }: { jobId: number; person: NetworkPerson 
       }}
     >
       <label htmlFor={id} className="sr-only">
-        Papel de {person.name} en el proceso
+        {t('roleOf', { name: person.name })}
       </label>
       <select
         id={id}
@@ -51,14 +56,14 @@ function AddToProcess({ jobId, person }: { jobId: number; person: NetworkPerson 
         ))}
       </select>
       <Button type="submit" size="sm" className="h-7 px-2 text-xs" disabled={add.isPending}>
-        Añadir
+        {t('add')}
       </Button>
       <Button type="button" variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => setOpen(false)}>
-        Cancelar
+        {t('cancel')}
       </Button>
       {add.error && (
         <p role="alert" className="w-full text-xs text-destructive">
-          {add.error.message}
+          {errorMessage(add.error)}
         </p>
       )}
     </form>
@@ -66,6 +71,7 @@ function AddToProcess({ jobId, person }: { jobId: number; person: NetworkPerson 
 }
 
 function Person({ person, jobId, canAdd }: { person: NetworkPerson; jobId: number; canAdd: boolean }) {
+  const { t } = useTranslation('network')
   return (
     <li className="space-y-1.5 py-2.5 text-sm">
       <p>
@@ -85,10 +91,10 @@ function Person({ person, jobId, canAdd }: { person: NetworkPerson; jobId: numbe
         {person.position && <span className="text-muted-foreground"> · {person.position}</span>}
       </p>
       {person.match === 'probable' && person.company && (
-        <p className="text-xs text-muted-foreground">En LinkedIn pone «{person.company}»: comprueba que es la misma.</p>
+        <p className="text-xs text-muted-foreground">{t('probable', { company: person.company })}</p>
       )}
       {person.contact_id != null ? (
-        <p className="text-xs font-medium text-primary">Ya es contacto del proceso</p>
+        <p className="text-xs font-medium text-primary">{t('alreadyContact')}</p>
       ) : (
         canAdd && <AddToProcess jobId={jobId} person={person} />
       )}
@@ -97,14 +103,18 @@ function Person({ person, jobId, canAdd }: { person: NetworkPerson; jobId: numbe
 }
 
 function ImportNetwork() {
+  const { t } = useTranslation('network', { keyPrefix: 'import' })
   const { data } = useNetworkStatus()
   const run = useImportNetwork()
   return (
     <div className="space-y-3 text-sm">
       <p className="text-muted-foreground">
-        Importa tus contactos de LinkedIn para ver a quién conoces en cada empresa. En LinkedIn: Ajustes → Privacidad
-        de los datos → Obtener una copia de tus datos → Contactos. Deja el fichero en{' '}
-        <code className="font-mono text-xs">data/{data?.default_file ?? 'documentos/linkedin/Connections.csv'}</code>.
+        <SafeTrans
+          t={t}
+          i18nKey="hint"
+          values={{ file: data?.default_file ?? 'documentos/linkedin/Connections.csv' }}
+          components={{ code: <code className="font-mono text-xs" /> }}
+        />
       </p>
       <Button
         variant="outline"
@@ -113,14 +123,14 @@ function ImportNetwork() {
         onClick={() => run.mutate()}
       >
         <DownloadSimpleIcon />
-        {run.isPending ? 'Importando…' : 'Importar Connections.csv'}
+        {run.isPending ? t('importing') : t('button')}
       </Button>
       {data && !data.default_file_exists && (
-        <p className="text-xs text-muted-foreground">Aún no está el fichero en esa carpeta.</p>
+        <p className="text-xs text-muted-foreground">{t('missing')}</p>
       )}
       {run.error && (
         <p role="alert" className="text-xs text-destructive">
-          {run.error.message}
+          {errorMessage(run.error)}
         </p>
       )}
     </div>
@@ -132,42 +142,41 @@ function ImportNetwork() {
  * no navega LinkedIn ni envía nada: solo cruza tu exportación con tus ofertas.
  */
 export function NetworkPanel({ job }: { job: JobView }) {
+  const { t } = useTranslation('network')
   const { data, isPending, isError, error } = useJobNetwork(job.id)
   const canAdd = job.stage !== null && PROCESS_STAGES.has(job.stage)
   const count = data?.people.length ?? 0
   return (
-    <section aria-label="Tu red" className="rounded-xl border bg-card p-5 sm:p-6">
+    <section aria-label={t('title')} className="rounded-xl border bg-card p-5 sm:p-6">
       <h2 className="mb-4 flex items-center gap-2 text-base font-semibold tracking-tight">
         <UsersThreeIcon className="size-[18px] text-primary" weight="duotone" />
-        Tu red
+        {t('title')}
       </h2>
       {isPending ? (
         <Skeleton className="h-16" />
       ) : isError ? (
         // Panel secundario: el fallo se dice sin `alert`, para no tapar los avisos de la ficha.
-        <p className="text-sm text-muted-foreground">No se pudo cargar tu red: {error.message}</p>
+        <p className="text-sm text-muted-foreground">{t('loadFailed', { error: errorMessage(error) })}</p>
       ) : data.network_size === 0 ? (
         <ImportNetwork />
       ) : count === 0 ? (
-        <p className="text-sm text-muted-foreground">Nadie de tu red trabaja en {data.company}.</p>
+        <p className="text-sm text-muted-foreground">{t('nobody', { company: data.company })}</p>
       ) : (
         <>
-          <p className="text-sm">
-            Conoces a {count === 1 ? '1 persona' : `${count} personas`} en {data.company}.
-          </p>
+          <p className="text-sm">{t('youKnow', { count, company: data.company })}</p>
           <ul className="mt-1 divide-y">
             {data.people.map((person) => (
               <Person key={person.id} person={person} jobId={job.id} canAdd={canAdd} />
             ))}
           </ul>
           {!canAdd && job.stage !== 'closed' && (
-            <p className="mt-2 text-xs text-muted-foreground">Apruébala para añadirlos como contactos del proceso.</p>
+            <p className="mt-2 text-xs text-muted-foreground">{t('approveToAdd')}</p>
           )}
         </>
       )}
       {data && data.network_size > 0 && data.imported_at && (
         <p className="mt-3 text-xs text-muted-foreground">
-          Red importada el {formatDate(data.imported_at)} ({data.network_size} personas).
+          {t('imported', { date: formatDate(data.imported_at), count: data.network_size })}
         </p>
       )}
     </section>
@@ -176,30 +185,30 @@ export function NetworkPanel({ job }: { job: JobView }) {
 
 /** Insignia «Conoces a N» para listas (bandeja, triaje). */
 export function KnownBadge({ count }: { count?: number }) {
+  const { t } = useTranslation('network')
   if (!count) return null
   return (
     <span
       className="inline-flex shrink-0 items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-1.5 py-px text-[0.7rem] leading-4 font-medium whitespace-nowrap text-primary"
-      title="Personas de tu red de LinkedIn en esta empresa"
+      title={t('knownTitle')}
     >
       <UsersThreeIcon className="size-3" weight="bold" />
-      Conoces a {count}
+      {t('knownBadge', { count })}
     </span>
   )
 }
 
 /** Triaje: «Conoces a 2 personas en Acme: Ana (CTO) y Luis (Recruiter)». Solo si hay alguien. */
 export function KnownPeople({ jobId, count }: { jobId: number; count?: number }) {
+  const { t } = useTranslation('network')
   const { data } = useJobNetwork(jobId, Boolean(count))
   if (!count || !data?.people.length) return null
-  const names = data.people.map((p) => (p.position ? `${p.name} (${p.position})` : p.name))
-  const list = names.length < 2 ? names.join('') : `${names.slice(0, -1).join(', ')} y ${names[names.length - 1]}`
+  const list = formatList(data.people.map((p) => (p.position ? `${p.name} (${p.position})` : p.name)))
   return (
     <p className="mt-3 flex items-start gap-1.5 text-sm">
       <UsersThreeIcon className="mt-0.5 size-4 shrink-0 text-primary" weight="duotone" />
       <span>
-        Conoces a {data.people.length === 1 ? '1 persona' : `${data.people.length} personas`} en {data.company}:{' '}
-        {list}.
+        {t('knownPeople', { count: data.people.length, company: data.company, list })}
       </span>
     </p>
   )
