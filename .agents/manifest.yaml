@@ -288,6 +288,26 @@ targets:
       example: ollama/qwen3:8b
     launch:
       command: [opencode, --prompt, "{prompt}"]
+      resume: [opencode, --session, "{session_id}"]
+      # «En segundo plano» (fase 24.5): el techo va en una configuración propia de la ejecución
+      # (`ceiling: config`, backend/app/services/agent_run_config.py). Define el agente `cai-run`
+      # con "*": "deny" y solo las herramientas MCP de la acción, su skill y sus roles. Se le
+      # pasa en OPENCODE_CONFIG_CONTENT, la configuración que se carga la última, y sus reglas
+      # van detrás de las de opencode.json (manda la última que coincide). --pure: sin plugins
+      # externos. Sin --auto: lo que quede en `ask` se rechaza solo. Comprobado con OpenCode
+      # 1.19.3 (docs/AGENTS_COMPAT.md).
+      headless:
+        ceiling: config
+        command: [opencode, run, --format, json, --pure, --agent, cai-run, "{model}", "{prompt}"]
+        config:
+          format: opencode
+          env: OPENCODE_CONFIG_CONTENT
+          value: content
+          agent: cai-run
+          # Solo en segundo plano: otra carpeta de configuración, otro fichero o permisos por
+          # variable no deben colarse por debajo de la de la ejecución.
+          clear_env: [OPENCODE_CONFIG, OPENCODE_CONFIG_DIR, OPENCODE_PERMISSION]
+        output: opencode-json
     tools:                        # herramientas lógicas → claves de `permission` de OpenCode
       mcp_prefix: "candidatai_"
       read: [read]

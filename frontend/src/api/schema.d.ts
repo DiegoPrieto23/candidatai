@@ -2595,6 +2595,10 @@ export interface components {
             agent?: string | null;
             /** Reason */
             reason?: string | null;
+            /** Suggested */
+            suggested?: string | null;
+            /** Suggested Name */
+            suggested_name?: string | null;
         };
         /** Board */
         Board: {

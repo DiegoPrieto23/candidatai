@@ -246,7 +246,7 @@ en español (`generar-cv`…).
 |---|---|
 | **Claude Code** | Referencia: se desarrolla y prueba con él, con MCP y sin él (solo CLI: 5/5 ofertas extraídas, valoradas y con un CV que pasa el eval). Los skills también se lanzan **en segundo plano** desde la UI |
 | **Codex** | Configuración generada (`.codex/`); aún fuera de la matriz probada. Con `--oss` usa modelos locales por Ollama o LM Studio |
-| **OpenCode** (open-source) | Configuración generada (`opencode.json`, `.opencode/agents/`), comprobada con su binario; sin probar con un modelo. Funciona con Ollama, LM Studio, OpenRouter o cualquier API compatible con OpenAI |
+| **OpenCode** (open-source) | Configuración generada (`opencode.json`, `.opencode/agents/`), comprobada con su binario; sin probar con un modelo. Funciona con Ollama, LM Studio, OpenRouter o cualquier API compatible con OpenAI. Lanza `process-jobs` y `assess-fit` **en segundo plano** con el mismo techo de herramientas que Claude Code |
 | **Qwen Code** (open-source) | Configuración generada (`.qwen/`), sin probar. Su plan gratuito con OAuth cerró el 15/04/2026: úsalo con Ollama, LM Studio, OpenRouter o una clave de DashScope |
 | **Antigravity CLI** | Configuración MCP generada (`.agents/mcp_config.json`), sin probar. Plan gratuito con una cuenta de Google; sustituye a Gemini CLI |
 | **Cursor, Copilot CLI, Pi, goose…** | Sin probar: valen si leen `AGENTS.md` y hablan MCP o ejecutan comandos |

@@ -23,7 +23,7 @@ uv run --directory backend cai agents doctor         # cuál se usaría hoy, por
 |---|---|---|---|---|---|
 | Claude Code | propietaria | habilitado, configuración generada | A | sí | sí |
 | Codex | Apache-2.0 | habilitado, configuración generada | B | sí | no |
-| OpenCode | MIT | habilitado, configuración generada (24.3) | B | sí | no |
+| OpenCode | MIT | habilitado, configuración generada (24.3) | B | sí | sí (24.5), salvo `generate-cv` |
 | Qwen Code | Apache-2.0 | habilitado, configuración generada (24.3) | B | sí | no |
 | Antigravity CLI | propietaria | habilitado, configuración generada (24.3) | C | sí | no |
 | Cursor CLI | propietaria | solo compatible vía `AGENTS.md` | C | sí | no |
@@ -163,7 +163,10 @@ aceptas en la UI, y aceptar no tiene herramienta ni comando.
   (`opencode debug skill --print-logs`). Los permisos de skills filtran por nombre, no por
   carpeta, así que no se puede desactivar una copia sola; no hace falta.
 - **Lanzar:** `opencode --prompt "<orden>"` abre la interfaz con la orden escrita; `-m
-  proveedor/modelo` elige el modelo.
+  proveedor/modelo` elige el modelo. «Abrir en terminal» retoma una ejecución en segundo plano con
+  `opencode --session <id>` (fase 24.5; la opción existe en la 1.19.3, el recorrido está pendiente
+  de la prueba manual).
+- **En segundo plano (fase 24.5):** ver «En segundo plano y cola de encargos».
 - **Modelos gratuitos de OpenCode Zen:** rechazan una sesión con un agente propio («OpenCode's free
   tier can only be used from within OpenCode»), así que los subagentes de la app no funcionan con
   ellos (probado el 2026-10-16 con `deepseek-v4.1-flash-free` y `glm-5.3-flash-free`). Usa un
@@ -305,18 +308,32 @@ terminal con un aviso y nunca en segundo plano. El agente lanzado lleva `CAI_CLI
 nombre, para que lo que haga por la CLI quede a su nombre. Solo Windows de momento; en otro sistema, o sin el agente en el `PATH`, el botón copia
 la orden para que la pegues tú. Probado con Claude Code; Codex, sin probar.
 
-### En segundo plano y cola de encargos (fase 19, ADR-032)
+### En segundo plano y cola de encargos (fase 19, ADR-032; varios agentes en la 24.5)
 El desplegable de cada botón ofrece **«En segundo plano»** en `process-jobs`, `assess-fit`
 y `generate-cv`: el worker lanza tu agente sin ventana y la página «Agente» enseña el progreso, el
-resultado y, si el skill necesita algo, sus preguntas, con «Contestar en terminal» para seguir en
-la misma sesión. Sale de `launch.headless` del manifiesto: `command` (con `{prompt}` y
-`{allowed_tools}`), `allow` (las herramientas no MCP) y `output` (formato de la salida), con el
-mismo `unset_env`.
+resultado, el uso (turnos, tokens y coste si el agente lo da) y, si el skill necesita algo, sus
+preguntas, con «Contestar en terminal» para seguir en la misma sesión. Sale de `launch.headless`
+del manifiesto, con el mismo `unset_env`. La garantía es el **techo de herramientas**: la
+ejecución solo tiene las herramientas MCP de su acción, sin terminal, edición ni web, y sus
+subagentes no tienen más. Hay dos formas de ponerlo (`ceiling`):
 
-| | Claude Code | Codex | Otros |
-|---|---|---|---|
-| En segundo plano | Sí: `claude -p` con `stream-json`, `--tools Skill,Agent,Read`, `dontAsk`, `--allowedTools` con las herramientas MCP de la acción, `Skill(<su skill>)` y `Read(./docs/**)`, y `--disallowedTools` con todas las demás MCP de la app. Los tests usan un agente falso; las reglas se comprobaron con `claude` 2.1.296 (ver abajo). El recorrido completo, pendiente de la prueba manual (`docs/pruebas/fase-19-prueba-manual.txt`) | No: no permite limitar las herramientas MCP de una ejecución con garantías (nivel B). El botón lo dice | No |
-| Cola de encargos | Sí (`list_agent_requests`, `complete_agent_request`, skill `handle-requests`) | Sí (mismas herramientas o `cai requests … --json`) | Sí, con MCP o CLI |
+- `args` (Claude Code): en la orden, con `{allowed_tools}` (las de `allow`, el skill de la acción y
+  sus herramientas MCP) y `{denied_tools}` (todas las demás MCP de la app);
+- `config` (OpenCode): en una configuración propia de la ejecución que escribe el runner en
+  `data/tmp/agent-runs/<id>/` (`backend/app/services/agent_run_config.py`) y borra al terminar,
+  también si se cancela, falla, agota el tiempo o se para el worker. Define un agente con
+  `"*": "deny"` y, detrás, solo las herramientas MCP de la acción, su skill (`skill`) y los roles
+  en que delega (`task`). Un rol solo se permite si sus herramientas caben en las de la acción.
+
+`{model}` en la orden marca dónde van los argumentos del modelo (sin modelo, desaparece). Si el
+agente efectivo de una acción no tiene segundo plano, el desplegable propone uno que sí lo tenga.
+La cola sigue ejecutando una cada vez, pero cada ejecución lleva su agente: se puede extraer con
+OpenCode y generar un CV con Claude Code.
+
+| | Claude Code | OpenCode | Codex | Qwen Code | Otros |
+|---|---|---|---|---|---|
+| En segundo plano | Sí: `claude -p` con `stream-json`, `--tools Skill,Agent,Read`, `dontAsk`, `--allowedTools` con las herramientas MCP de la acción, `Skill(<su skill>)` y `Read(./docs/**)`, y `--disallowedTools` con todas las demás MCP de la app. Comprobado con `claude` 2.1.296 (ver abajo); el recorrido completo, pendiente de la prueba manual (`docs/pruebas/fase-19-prueba-manual.txt`) | Sí en `process-jobs` y `assess-fit`: `opencode run --format json --pure --agent cai-run [-m <modelo>] "<orden>"` con la configuración de la ejecución en `OPENCODE_CONFIG_CONTENT`. **No en `generate-cv`**: `writer` y `verifier` leen ficheros (`POLICIES.md`) y en OpenCode su `read` no se acota a `docs/` como en la ejecución, así que el subagente tendría más que ella. La UI propone Claude Code. Comprobado con OpenCode 1.19.3 (ver abajo); con un modelo, pendiente de la prueba manual (`docs/pruebas/fase-24.5-prueba-manual.txt`) | No: solo deja **apagar** herramientas (`--disable shell_tool`, `unified_exec`, `browser_use`…), una lista negra que cada versión puede ampliar, y sin terminal no lee los skills. Revisado con codex-cli 0.163.0 el 2026-10-16 | No, de momento: tiene `--core-tools` (lista blanca), `--allowed-mcp-server-names`, `--exclude-tools` y `-o stream-json`, pero no tiene forma de comprobar el techo sin un modelo (no tiene `debug`). Revisado con Qwen Code 0.25.2 el 2026-10-16; candidato para la 24.6, con modelos locales | No (Antigravity no imprime nada sin terminal) |
+| Cola de encargos | Sí (`list_agent_requests`, `complete_agent_request`, skill `handle-requests`) | Sí | Sí (mismas herramientas o `cai requests … --json`) | Sí | Sí, con MCP o CLI |
 
 Comprobado con `claude` 2.1.296 (2026-10-12, modelo haiku, sin datos):
 - una herramienta MCP permitida en `.claude/settings.json` pero no en `--allowedTools` **se usa**,
@@ -328,10 +345,44 @@ Comprobado con `claude` 2.1.296 (2026-10-12, modelo haiku, sin datos):
 - con `--strict-mcp-config` solo carga `candidatai` (ni Claude in Chrome ni los conectores de
   claude.ai).
 
-Para dar segundo plano a otro agente: un bloque `headless` cuyo comando limite las herramientas a
-las de `{allowed_tools}`, deniegue las de `{denied_tools}` y no tenga terminal ni web, y un lector
-de su salida en `backend/app/services/agent_output.py` (`PARSERS`). Si el agente no puede
-limitarlas, no lo añadas: la garantía de este modo es justo esa.
+Comprobado con OpenCode 1.19.3 (2026-10-16, vía `npx opencode-ai@1.19.3`, sobre una demo aparte),
+con la configuración que genera el código para `process-jobs`:
+- **El techo no se mezcla con `opencode.json`:** `opencode debug agent cai-run` lista las reglas
+  de `opencode.json` (que enciende, p. ej., `candidatai_get_profile`) y, **detrás**, las de
+  `cai-run`: `"*": "deny"` y solo las cuatro MCP de la acción. Gana la última regla que coincide,
+  así que lo del proyecto no la amplía. Con `OPENCODE_CONFIG_CONTENT`, que se carga la última, y
+  también con `OPENCODE_CONFIG`.
+- **Sin terminal, edición ni web:** en `cai-run`, `bash`, `read`, `glob`, `grep`, `edit`,
+  `write`, `webfetch`, `websearch`, `todowrite` y `question` están en `false`; `debug agent
+  --tool bash` y `--tool webfetch` responden «Tool … is disabled for agent cai-run».
+- **Solo su skill y sus roles:** `--tool skill` con `process-jobs` carga el skill; con
+  `generate-cv` se deniega («a rule which prevents you…»). `--tool task` con `writer` se deniega.
+- **Un subagente no tiene más que la ejecución:** con la configuración cargada, `debug agent
+  extractor` sigue con `"*": "deny"` y solo `candidatai_get_job` y `candidatai_save_extraction`,
+  que son de la acción.
+- **`ask` no se aprueba solo:** sin `--auto`, `opencode run` rechaza lo que quede en `ask`
+  («permission requested: candidatai_add_event; auto-rejecting») y **la ejecución se para**. Con
+  `--auto` lo aprobaría: por eso la orden no lo lleva y `cai-run` no deja nada en `ask`.
+- **Salida:** `--format json` da un JSON por línea (`step_start`, `text`, `tool_use` con su
+  entrada y su salida, `step_finish` con `reason`, `tokens` y `cost`, y `error`). No hay evento de
+  resultado: el final es el `step_finish` con `reason` distinto de `tool-calls`. El lector
+  (`opencode-json`) no guarda las entradas ni las salidas de las herramientas. Grabado en
+  `backend/tests/fixtures/agent_output/`.
+- **Sin comprobar todavía, porque necesita un modelo:** que el modelo use una herramienta MCP de
+  la acción desde `cai-run` y que otra de `candidatai` no esté disponible (`debug agent --tool`
+  no carga las herramientas MCP). Los modelos gratuitos de OpenCode Zen rechazan los agentes
+  propios («free tier can only be used from within OpenCode»), así que hace falta un modelo local
+  o tu clave. Lo cubre la prueba manual.
+- `--pure`: sin plugins externos, que podrían añadir herramientas. En segundo plano se quitan del
+  entorno `OPENCODE_CONFIG`, `OPENCODE_CONFIG_DIR` y `OPENCODE_PERMISSION` (`config.clear_env`), y
+  `HeadlessSpec` rechaza una orden con banderas que lo aprueban todo (`--auto`, `--yolo`…). `share: disabled` y
+  `autoupdate: false` en la configuración de la ejecución (aceptados por `debug config`).
+
+Para dar segundo plano a otro agente: un bloque `headless` que limite las herramientas a las de la
+acción (en la orden o con una configuración propia y su escritor en `agent_run_config.py`), sin
+terminal ni web y sin que sus subagentes tengan más, y un lector de su salida en
+`backend/app/services/agent_output.py` (`PARSERS`). Si el agente no puede limitarlas, no lo
+añadas: la garantía de este modo es justo esa.
 
 **«Dejar para mi próxima sesión»** funciona con cualquier agente: guarda la orden y tu próxima
 sesión la ve en `get_status` (`agent_requests`) o con el skill `handle-requests`.

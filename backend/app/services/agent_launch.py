@@ -15,7 +15,8 @@ con tu suscripción, y tú ves, contestas y apruebas lo que haga.
   sistema, o sin agente instalado, la UI copia la orden para que la pegues tú.
 - «En segundo plano» (fase 19, ADR-032): las acciones con `background` también se pueden lanzar
   sin ventana desde el worker (`services/agent_runs.py`), con `launch.headless` del manifiesto y
-  solo las herramientas MCP que declara la acción.
+  solo las herramientas MCP que declara la acción: en la orden (`ceiling: args`) o, desde la fase
+  24.5, en una configuración propia de la ejecución (`ceiling: config`, `agent_run_config`).
 """
 
 import base64
@@ -34,7 +35,7 @@ from sqlalchemy.orm import Session
 from app.core.config import REPO_ROOT, get_settings
 from app.models import Milestone
 from app.models.base import utcnow
-from app.services import agent_prefs, agent_registry, events, interviews, process
+from app.services import agent_prefs, agent_registry, agent_run_config, events, interviews, process
 from app.services.agent_actions import (  # noqa: F401 - se reexportan
     ACTIONS,
     CV_STAGES,
@@ -48,10 +49,12 @@ from app.services.agent_actions import (  # noqa: F401 - se reexportan
 from app.services.agent_prefs import Preferences, Resolution
 from app.services.agent_registry import (
     DENIED_PLACEHOLDER,
+    MODEL_PLACEHOLDER,
     PROMPT_PLACEHOLDER,
     SESSION_PLACEHOLDER,
     SKILL_PLACEHOLDER,
     TOOLS_PLACEHOLDER,
+    RunConfigSpec,
 )
 
 logger = logging.getLogger(__name__)
@@ -90,11 +93,14 @@ class LaunchResult(BaseModel):
 class Headless:
     """`launch.headless` del manifiesto: cómo se lanza el agente sin ventana (fase 19)."""
 
-    command: list[str]  # con `{prompt}`, `{allowed_tools}` y `{denied_tools}`
+    command: list[str]  # con `{prompt}`; con `ceiling: args`, `{allowed_tools}` y `{denied_tools}`
     allow: list[str]  # herramientas permitidas además del skill y las MCP de la acción
     skill_rule: str  # cómo se permite solo el skill de la acción (con `{skill}`)
-    output: str  # formato de la salida (`claude-stream-json`)
+    output: str  # formato de la salida (`claude-stream-json`, `opencode-json`)
     mcp_prefix: str  # `tools.mcp_prefix` del agente: nombre MCP → nombre nativo
+    # Fase 24.5: `config` = el techo va en una configuración propia de la ejecución (`config`).
+    ceiling: Literal["args", "config"] = "args"
+    config: RunConfigSpec | None = None
 
 
 @dataclass(frozen=True)
@@ -164,6 +170,8 @@ def _headless(spec: agent_registry.AgentSpec) -> Headless | None:
         headless.skill_rule,
         headless.output,
         spec.mcp_prefix,
+        headless.ceiling,
+        headless.config,
     )
 
 
@@ -176,7 +184,11 @@ _UNAVAILABLE: frozenset[str] = frozenset(
 
 
 def _with_model(parts: list[str], args: list[str]) -> list[str]:
-    """Los argumentos del modelo (`models.flag` o un preset) van justo detrás del programa."""
+    """Los argumentos del modelo (`models.flag` o un preset) van donde diga `{model}` (fase 24.5:
+    `opencode run` no los acepta delante de `run`) o, si no lo dice, justo detrás del programa.
+    Sin modelo, `{model}` desaparece."""
+    if MODEL_PLACEHOLDER in parts:
+        return [arg for part in parts for arg in (args if part == MODEL_PLACEHOLDER else [part])]
     return [*parts[:1], *args, *parts[1:]] if args and parts else list(parts)
 
 
@@ -233,11 +245,7 @@ def choose(
     if not res.usable or res.agent is None:
         return None, res
     launcher = ctx.by_name[res.agent]
-    if mode == "background" and launcher.headless is None:
-        blocked = (
-            f"Tu agente ({res.display_name}) no tiene `launch.headless` en "
-            ".agents/manifest.yaml: usa «En terminal»."
-        )
+    if mode == "background" and (blocked := _no_background(launcher, res, action)) is not None:
         return None, res.model_copy(update={"blocked": blocked, "blocked_code": "no_headless"})
     spec = agent_registry.get(res.agent)
     args = spec.model_args(res.model, res.preset) if spec is not None else []
@@ -254,6 +262,18 @@ def choose(
         warning=res.warning,
     )
     return picked, res
+
+
+def _no_background(launcher: _Launcher, res: Resolution, action: str | None) -> str | None:
+    """Por qué el agente no puede lanzar `action` en segundo plano, o `None` si puede."""
+    if launcher.headless is None:
+        return (
+            f"Tu agente ({res.display_name}) no tiene `launch.headless` en "
+            ".agents/manifest.yaml: usa «En terminal»."
+        )
+    if launcher.headless.ceiling == "config" and action in ACTIONS:
+        return agent_run_config.ceiling_problem(action)  # type: ignore[arg-type]
+    return None
 
 
 def pick(
@@ -505,7 +525,7 @@ GAPS_MARKED_NOTE = (
 )
 QUESTION_PREFIX = "PREGUNTA:"
 # Identificador de sesión que devuelve el agente: solo se pasa al comando si tiene esta forma.
-SESSION_ID_RE = re.compile(r"[A-Za-z0-9-]{8,64}")
+SESSION_ID_RE = re.compile(r"[A-Za-z0-9_-]{8,64}")  # OpenCode: `ses_…`
 
 
 class BackgroundInfo(BaseModel):
@@ -514,6 +534,23 @@ class BackgroundInfo(BaseModel):
     available: bool
     agent: str | None = None
     reason: str | None = None
+    # Fase 24.5: si no se puede, otro agente que sí lanza esta acción en segundo plano.
+    suggested: str | None = None
+    suggested_name: str | None = None
+
+
+def suggest_background(
+    session: Session | None, action: str, ctx: Context, skip: str | None = None
+) -> Resolution | None:
+    """El primer agente (en el orden del manifiesto) que puede lanzar `action` en segundo plano,
+    sin contar `skip`."""
+    for name in ctx.by_name:
+        if name == skip:
+            continue
+        launcher, res = choose(session, action, agent=name, mode="background", ctx=ctx)
+        if launcher is not None:
+            return res
+    return None
 
 
 def pick_headless(session: Session | None = None, action: str | None = None) -> _Launcher | str:
@@ -538,13 +575,20 @@ def all_mcp_tools() -> list[str]:
 
 
 def headless_command(launcher: _Launcher, prompt: str, action: ActionId) -> list[str]:
-    """El comando sin ventana. Una herramienta por argumento: en `{allowed_tools}`, las de `allow`,
-    el skill de la acción y sus herramientas MCP; en `{denied_tools}`, todas las demás MCP (un
-    deny gana a cualquier allow de la configuración del agente y vale para sus subagentes)."""
+    """El comando sin ventana. Con `ceiling: args`, una herramienta por argumento: en
+    `{allowed_tools}`, las de `allow`, el skill de la acción y sus herramientas MCP; en
+    `{denied_tools}`, todas las demás MCP (un deny gana a cualquier allow de la configuración del
+    agente y vale para sus subagentes). Con `ceiling: config`, solo la orden: el techo lo pone la
+    configuración de la ejecución (`run_config`)."""
     spec = ACTIONS[action]
     if launcher.headless is None or not spec.background:
         raise LaunchError("unavailable", "Esta acción no se puede lanzar en segundo plano.")
     headless = launcher.headless
+    if headless.ceiling == "config":
+        if (problem := agent_run_config.ceiling_problem(action)) is not None:
+            raise LaunchError("unavailable", problem)
+        parts = _with_model(headless.command, [])  # sin modelo elegido, `{model}` sobra
+        return [prompt if part == PROMPT_PLACEHOLDER else part for part in parts]
     prefix = headless.mcp_prefix
     allowed = [
         *headless.allow,
@@ -553,7 +597,7 @@ def headless_command(launcher: _Launcher, prompt: str, action: ActionId) -> list
     ]
     denied = [prefix + tool for tool in all_mcp_tools() if tool not in spec.background]
     command: list[str] = []
-    for part in headless.command:
+    for part in _with_model(headless.command, []):
         if part == PROMPT_PLACEHOLDER:
             command.append(prompt)
         elif part == TOOLS_PLACEHOLDER:
@@ -563,6 +607,15 @@ def headless_command(launcher: _Launcher, prompt: str, action: ActionId) -> list
         else:
             command.append(part)
     return command
+
+
+def run_config(launcher: _Launcher) -> dict[str, str] | None:
+    """Lo que se guarda en la fila para que el runner escriba la configuración de la ejecución
+    (`ceiling: config`), o `None` si el techo va en la orden."""
+    headless = launcher.headless
+    if headless is None or headless.ceiling != "config" or headless.config is None:
+        return None
+    return {**headless.config.model_dump(), "mcp_prefix": headless.mcp_prefix}
 
 
 # --- Elegir agente desde la UI (fase 24.4) -----------------------------------------------------

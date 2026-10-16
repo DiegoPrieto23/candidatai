@@ -78,6 +78,22 @@ function Target({ jobId }: { jobId: number | null }) {
   )
 }
 
+/** Fase 24.5: el uso que dice el agente (turnos, tokens y coste), si dice alguno. */
+function usageText(usage: AgentRunView['usage']): string | null {
+  if (!usage) return null
+  const num = (key: string) => (typeof usage[key] === 'number' ? (usage[key] as number) : null)
+  const parts: string[] = []
+  const turns = num('num_turns')
+  const input = num('input_tokens')
+  const output = num('output_tokens')
+  const cost = num('total_cost_usd')
+  if (turns !== null) parts.push(i18n.t('agent:usageTurns', { count: turns }))
+  if (input !== null || output !== null)
+    parts.push(i18n.t('agent:usageTokens', { input: (input ?? 0).toLocaleString(), output: (output ?? 0).toLocaleString() }))
+  if (cost) parts.push(i18n.t('agent:usageCost', { cost: cost.toFixed(4) }))
+  return parts.length ? parts.join(' · ') : null
+}
+
 function RunCard({ run }: { run: AgentRunView }) {
   const { t } = useTranslation('agent')
   const cancel = useCancelAgentRun()
@@ -87,6 +103,7 @@ function RunCard({ run }: { run: AgentRunView }) {
   const active = run.status === 'queued' || run.status === 'running'
   const lines = all ? run.progress : run.progress.slice(-PROGRESS_PREVIEW)
   const took = duration(run)
+  const usage = usageText(run.usage)
   const error = cancel.error ?? open.error
 
   return (
@@ -105,6 +122,7 @@ function RunCard({ run }: { run: AgentRunView }) {
         {' · '}
         {t('onlyWith')} <span className="font-mono">{run.allowed_tools.join(', ')}</span>
       </p>
+      {usage && <p className="mt-0.5 text-xs text-muted-foreground tabular">{usage}</p>}
 
       {run.questions.length > 0 && (
         <div className="mt-3 rounded-lg border border-warning-border bg-warning px-3 py-2.5 text-sm text-warning-foreground">

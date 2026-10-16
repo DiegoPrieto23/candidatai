@@ -248,7 +248,7 @@ language (in English or Spanish).
 |---|---|
 | **Claude Code** | Reference: built and tested with it, with MCP and without (CLI only: 5/5 jobs extracted, assessed and with a CV passing the eval). Skills can also run **in the background** from the UI |
 | **Codex** | Generated configuration (`.codex/`); not yet in the tested matrix. With `--oss` it uses local models through Ollama or LM Studio |
-| **OpenCode** (open-source) | Generated configuration (`opencode.json`, `.opencode/agents/`), checked against its binary; untested with a model. Works with Ollama, LM Studio, OpenRouter or any OpenAI-compatible API |
+| **OpenCode** (open-source) | Generated configuration (`opencode.json`, `.opencode/agents/`), checked against its binary; untested with a model. Works with Ollama, LM Studio, OpenRouter or any OpenAI-compatible API. Runs `process-jobs` and `assess-fit` **in the background** with the same tool ceiling as Claude Code |
 | **Qwen Code** (open-source) | Generated configuration (`.qwen/`), untested. Its free OAuth plan closed on 15/04/2026: use it with Ollama, LM Studio, OpenRouter or a DashScope key |
 | **Antigravity CLI** | Generated MCP configuration (`.agents/mcp_config.json`), untested. Free plan with a Google account; replaces Gemini CLI |
 | **Cursor, Copilot CLI, Pi, goose…** | Untested: they work if they read `AGENTS.md` and speak MCP or run commands |

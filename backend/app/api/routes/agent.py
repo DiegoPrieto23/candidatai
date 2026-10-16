@@ -61,10 +61,15 @@ class LaunchBody(RequestBody):
     preset: str | None = Field(default=None, max_length=40)
 
 
-def _background(res: Resolution) -> agent_launch.BackgroundInfo:
+def _background(res: Resolution, other: Resolution | None) -> agent_launch.BackgroundInfo:
     if res.usable:
         return agent_launch.BackgroundInfo(available=True, agent=res.agent)
-    return agent_launch.BackgroundInfo(available=False, reason=res.blocked)
+    return agent_launch.BackgroundInfo(
+        available=False,
+        reason=res.blocked,
+        suggested=other.agent if other else None,
+        suggested_name=other.display_name if other else None,
+    )
 
 
 @router.get("", operation_id="get_agent_launcher")
@@ -79,7 +84,13 @@ def get_agent_launcher(session: SessionDep) -> AgentStatus:
         background = None
         if spec.background:
             _, bg = agent_launch.choose(session, action_id, mode="background", ctx=ctx)
-            background = _background(bg)
+            # Fase 24.5: si su agente no puede, se propone uno que sí.
+            other = (
+                None
+                if bg.usable
+                else agent_launch.suggest_background(session, action_id, ctx, skip=bg.agent)
+            )
+            background = _background(bg, other)
         actions.append(
             Action(
                 id=action_id,

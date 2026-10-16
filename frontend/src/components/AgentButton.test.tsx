@@ -157,6 +157,37 @@ describe('Botones «en tu agente»', () => {
       expect(screen.getByRole('menuitem', { name: /Abrir con Claude Code/ })).not.toHaveAttribute('aria-disabled')
     })
 
+    it('si su agente no tiene segundo plano, propone otro que sí (fase 24.5)', async () => {
+      const reason = 'El rol «writer» de «Generar CV» necesita read…'
+      const calls = home({
+        'GET /status': status(2, 0),
+        'GET /agent': {
+          ...launcher,
+          actions: [
+            launcher.actions[0],
+            {
+              ...launcher.actions[1],
+              agent: { ...claude, agent: 'opencode', display_name: 'OpenCode' },
+              alternatives: [],
+              background_agent: { available: false, agent: null, reason, suggested: 'claude', suggested_name: 'Claude Code' },
+            },
+          ],
+        },
+        'POST /agent/runs': { status: 202, body: { id: 2, status: 'queued' } },
+      })
+      renderApp('/')
+      const main = await screen.findByRole('button', { name: 'Procesar ofertas' })
+      await userEvent.click(await within(main.parentElement!).findByRole('button', { name: /con OpenCode/ }))
+      const own = await screen.findByRole('menuitem', { name: new RegExp(`En segundo plano.*${reason}`) })
+      expect(own).toHaveAttribute('aria-disabled', 'true')
+      await userEvent.click(screen.getByRole('menuitem', { name: /En segundo plano con Claude Code/ }))
+      expect(await screen.findByText('En cola en segundo plano.', { exact: false })).toBeInTheDocument()
+      expect(calls.find((c) => c.method === 'POST' && c.path === '/agent/runs')?.body).toEqual({
+        action: 'process-jobs',
+        agent: 'claude',
+      })
+    })
+
     it('un agente de nivel C avisa al abrirse', async () => {
       const warning = 'Qwen Code es de nivel C: esta acción lee contenido no confiable.'
       home({

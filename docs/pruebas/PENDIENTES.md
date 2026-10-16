@@ -6,7 +6,7 @@ cada fase y lo quita cuando el usuario confirma que está hecho.
 
 Marca `[x]` lo que hagas y, si algo falla, apúntalo debajo de la línea con `→`.
 
-Última actualización: 2026-10-16 (fase 24.4).
+Última actualización: 2026-10-16 (fase 24.5).
 
 ## 1. Poner la app al día (antes de probar nada)
 
@@ -121,6 +121,14 @@ funcionando. Los roles son `writer`, `verifier`, `classifier`, `reviewer` y `ext
 - [ ] `uv run --directory backend alembic upgrade head` (migración 0022) o arranca `cai start`.
 - [ ] `fase-24.4-prueba-manual.txt`: sección «Agentes», agente por defecto y por acción,
       «con Claude Code ▾» y el modelo en terminal y en segundo plano.
+
+### Segundo plano con OpenCode (fase 24.5)
+
+- [ ] `uv run --directory backend alembic upgrade head` (migración 0023) o arranca `cai start`.
+- [ ] Con OpenCode instalado y **un modelo local o tu clave** (los gratuitos de OpenCode Zen
+      rechazan el agente de la ejecución): `fase-24.5-prueba-manual.txt`. `process-jobs` y
+      `assess-fit` en segundo plano sobre una demo, el techo de herramientas con un modelo y
+      `generate-cv`, que propone Claude Code.
 
 ## 2. `.env.example` (el agente no puede leerlo ni editarlo)
 

@@ -59,6 +59,10 @@ class Action:
     # la acción solo se abre en una terminal (pregunta, usa tu navegador o la web).
     background: tuple[str, ...] = ()
     skill: str | None = None  # el skill que usa la orden, si no se llama como la acción
+    # Fase 24.5: los roles (`.agents/roles/`) en que delega el skill en segundo plano. Con techo
+    # por configuración solo se pueden lanzar esos, y solo si sus herramientas caben en
+    # `background` (`agent_run_config`).
+    roles: tuple[str, ...] = ()
 
 
 ACTIONS: dict[ActionId, Action] = {
@@ -73,6 +77,7 @@ ACTIONS: dict[ActionId, Action] = {
         "Procesar ofertas",
         "Usa el skill process-jobs de CandidatAI con las ofertas pendientes de extraer.",
         background=("get_status", "list_jobs", "get_job", "save_extraction"),
+        roles=("extractor",),
     ),
     "assess-fit": Action(
         "Evaluar encaje",
@@ -105,6 +110,7 @@ ACTIONS: dict[ActionId, Action] = {
             "get_cv_content",
             "save_cv_verification",
         ),
+        roles=("writer", "verifier"),
     ),
     # Página «Skills» (fase 14). Los nombres de las skills salen de las ofertas, así que no van en
     # la orden: el agente los lee de las marcas con `get_skill_gaps`.

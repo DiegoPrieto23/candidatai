@@ -31,6 +31,9 @@ class AgentRun(Base):
     command: Mapped[list[str]] = mapped_column(JSON)
     unset_env: Mapped[list[str]] = mapped_column(JSON, default=list)
     output_format: Mapped[str] = mapped_column(String(32))
+    # Fase 24.5: con techo por configuración, cómo se escribe la de la ejecución (formato,
+    # variable de entorno, agente y prefijo MCP). `None`: el techo va en `command`.
+    run_config: Mapped[dict[str, str] | None] = mapped_column(JSON)
     session_id: Mapped[str | None] = mapped_column(String(64))
     progress: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
     result: Mapped[str | None] = mapped_column(Text)

@@ -632,7 +632,8 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
     `list_agent_requests` (skill `handle-requests`) y la cierra con `complete_agent_request`;
   - **Codex** no tiene `headless`: no permite limitar las herramientas MCP de una ejecución con
     garantías (nivel B). El botón dice que tu agente no lo admite; añadirlo es un bloque del
-    manifiesto y un lector de su salida (`agent_output.PARSERS`).
+    manifiesto y un lector de su salida (`agent_output.PARSERS`). En la 24.5, OpenCode sí, con el
+    techo en una configuración propia de cada ejecución (ver ADR-037).
 - **Consecuencias:** sin coste de API, pero gasta los límites de uso de tu plan como una sesión
   normal. Hace falta `cai worker` arrancado: la UI avisa si algo lleva más de 30 s en cola sin nada
   en curso. Las flags del comando son las de Claude Code 2.1.x; si cambian, se corrige el
@@ -779,8 +780,8 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
 
 
 ## ADR-037 · Varios agentes con registro de capacidades; la app sigue sin llamar a un LLM (borrador)
-> Borrador de la fase 24.1, ampliado en la 24.3 y la 24.4. La 24.5 (segundo plano con varios
-> agentes) lo completa.
+> Borrador de la fase 24.1, ampliado en la 24.3, la 24.4 y la 24.5. La 24.6 (modelos gratuitos
+> y matriz) lo cierra.
 
 - **Contexto:** la fase 24 abre CandidatAI a varios agentes, algunos open-source y con modelos
   gratuitos o locales, elegibles desde la UI (`prompts/24-multiagente.md`). Hasta la 23 el
@@ -868,4 +869,33 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
     /agent/preferences` (solo la UI); `POST /agent/launch` y `POST /agent/runs` aceptan `agent`,
     `model` y `preset` para una sola ejecución; los encargos no eligen agente (lo decide la sesión
     que los atienda).
-- **Pendiente (24.5):** con qué criterio se abre el segundo plano a otro agente.
+- **Añadido en la 24.5 (segundo plano con varios agentes):**
+  - **criterio:** un agente tiene segundo plano solo si su ejecución queda con **las herramientas
+    MCP de la acción y nada más** (sin terminal, edición ni web), sus subagentes no tienen más que
+    ella y eso se ha comprobado con su binario real (versión y fecha en `AGENTS_COMPAT.md`). Si no,
+    no se añade: la garantía de la ADR-032 no se rebaja por tener más agentes;
+  - **dos formas de poner el techo** (`launch.headless.ceiling`): `args`, en la orden (Claude
+    Code, como en la ADR-032); `config`, en una configuración propia de cada ejecución
+    (`services/agent_run_config.py`) que el runner escribe en `data/tmp/agent-runs/<id>/`, pasa
+    por el entorno y borra al salir, termine como termine. `_headless` rechaza un bloque
+    incompleto: sin forma de denegar el resto, no hay segundo plano;
+  - **OpenCode, con configuración:** un agente `cai-run` con `"*": "deny"` y detrás las MCP de la
+    acción, `skill` acotado a su skill y `task` a sus roles. Va en `OPENCODE_CONFIG_CONTENT` (la
+    que se carga la última) y sus reglas quedan detrás de las de `opencode.json`: gana la última
+    que coincide, así que el proyecto no lo amplía. Con `--pure` (sin plugins), sin `--auto` (lo
+    que queda en `ask` se rechaza; `HeadlessSpec` rechaza las banderas que lo aprueban todo) y sin
+    las variables que cargarían otra configuración o permisos (`config.clear_env`). Comprobado con OpenCode 1.19.3 con `debug agent` y `--tool`;
+    con un modelo, pendiente de la prueba manual (los gratuitos de Zen rechazan agentes propios);
+  - **cada acción declara sus roles** (`Action.roles`). Con techo por configuración, un rol solo se
+    lanza si sus herramientas caben en las de la acción. `writer` y `verifier` leen ficheros y en
+    OpenCode su `read` no se acota a `docs/`: **`generate-cv` no va en segundo plano con
+    OpenCode** y la UI propone un agente que sí pueda (`BackgroundInfo.suggested`);
+  - **la fila guarda cómo se limitó** (`agent_runs.run_config`, migración 0023), igual que guarda
+    el comando: si el manifiesto cambia entre la cola y la ejecución, no se lanza sin techo;
+  - **`{model}` en la orden:** dónde van los argumentos del modelo (`opencode run` no los acepta
+    delante de `run`); sin modelo, desaparece. Sin `{model}`, siguen detrás del programa;
+  - **Codex y Qwen Code, sin segundo plano por ahora:** Codex solo deja apagar herramientas (lista
+    negra) y sin terminal no lee los skills; Qwen tiene lista blanca (`--core-tools`) pero no hay
+    forma de comprobarla sin un modelo. Se reevalúan en la 24.6, con modelos locales;
+  - **cola:** sigue de una en una; cada fila lleva su agente, su formato de salida y, si hace
+    falta, su configuración, así que se encolan ejecuciones de agentes distintos.

@@ -230,9 +230,10 @@ The worker runs the automatic sources every day at `connectors.daily_at`
 Many pages have buttons that open your agent with the instruction already written:
 
 - **In a terminal:** opens a window with your agent; you see and approve what it does.
-- **In the background** (Claude Code): for skills that don't ask questions (`process-jobs`,
-  `assess-fit`, `generate-cv`). It runs without a window, only with the app tools it needs, and
-  you follow its progress on the **Agent** page. Requires `cai worker`.
+- **In the background** (Claude Code; OpenCode for `process-jobs` and `assess-fit`): for skills
+  that don't ask questions (`process-jobs`, `assess-fit`, `generate-cv`). It runs without a
+  window, only with the app tools it needs, and you follow its progress and usage on the **Agent**
+  page. If your agent can't, the menu suggests one that can. Requires `cai worker`.
 - **Leave for my next session**: stores the request;
   `handle-requests` does it when you open your agent.
 

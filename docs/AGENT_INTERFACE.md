@@ -505,6 +505,12 @@ lanza a sí mismo.
   `PREGUNTA:`»; esas líneas dejan la ejecución en `needs_user` y la UI ofrece «Contestar en
   terminal» (en las demás, «Abrir en terminal»), que retoma la misma sesión. `generate-cv` solo va en segundo
   plano si a la oferta no le faltan obligatorias o si todas están marcadas «No la tengo».
+  Fase 24.5: con Claude Code, el techo va en la orden; con OpenCode, en una configuración propia
+  de la ejecución (`services/agent_run_config.py`) que solo enciende esas herramientas, el skill y
+  los roles de la acción. `generate-cv` no va en segundo plano con OpenCode (sus roles leen
+  ficheros). Si el agente de la acción no puede, `GET /agent` propone otro en
+  `background_agent.suggested` y `suggested_name`. Cada ejecución guarda su agente, su formato de
+  salida, `run_config` y el uso que informe el agente (`usage`: turnos, tokens, coste).
 - **Cola de encargos** (`POST /agent/requests`, solo la UI): guarda la orden de cualquier acción.
   Tu próxima sesión la ve en `get_status` (`agent_requests`) y con el skill `handle-requests`
   (`list_agent_requests` → sigue el `prompt` → `complete_agent_request`). Un encargo que no se hizo
@@ -529,7 +535,8 @@ preset existir y el modelo tener caracteres seguros, no empezar por `-` y, si el
 `POST /agent/launch` y `POST /agent/runs` aceptan `agent`, `model` y `preset` para una sola
 ejecución. La precedencia (botón > acción > por defecto > `CAI_AGENT` > el primero instalado) y las
 comprobaciones por capacidad y por nivel viven en `services/agent_prefs.py`. El modelo va con
-`models.flag` (o el preset) justo detrás del programa, en terminal y en segundo plano. El agente
+`models.flag` (o el preset) justo detrás del programa (o donde diga `{model}` en la orden de
+segundo plano, fase 24.5), en terminal y en segundo plano. El agente
 lanzado recibe `CAI_CLIENT_NAME=<agente>`.
 
 ### Comandos de matching y worker (solo CLI)

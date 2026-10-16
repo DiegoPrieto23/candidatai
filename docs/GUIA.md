@@ -228,9 +228,10 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
 Muchas pantallas tienen botones que abren tu agente con la orden ya escrita:
 
 - **En terminal:** abre una ventana con tu agente; tú ves y apruebas lo que hace.
-- **En segundo plano** (Claude Code): para los skills que no preguntan (`process-jobs`,
-  `assess-fit`, `generate-cv`). Corre sin ventana, solo con las herramientas de la app que
-  necesita, y ves el progreso en la página «Agente». Necesita `cai worker` en marcha.
+- **En segundo plano** (Claude Code; OpenCode en `process-jobs` y `assess-fit`): para los skills
+  que no preguntan (`process-jobs`, `assess-fit`, `generate-cv`). Corre sin ventana, solo con las
+  herramientas de la app que necesita, y ves el progreso y el uso en la página «Agente». Si tu
+  agente no puede, el desplegable propone uno que sí. Necesita `cai worker` en marcha.
 - **Dejar para mi próxima sesión:** guarda el encargo; `handle-requests` lo hace cuando abras tu
   agente.
 

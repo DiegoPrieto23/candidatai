@@ -397,7 +397,13 @@ def client(db: None) -> Iterator[TestClient]:
 
 def test_api_start_list_get_and_cancel(client: TestClient, fake: Path) -> None:
     status = client.get("/agent").json()
-    assert status["background"] == {"available": True, "agent": "claude", "reason": None}
+    assert status["background"] == {
+        "available": True,
+        "agent": "claude",
+        "reason": None,
+        "suggested": None,
+        "suggested_name": None,
+    }
     actions = {a["id"]: a for a in status["actions"]}
     assert actions["process-jobs"]["background"] is True
     assert actions["search-jobs"]["background"] is False

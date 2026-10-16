@@ -1,6 +1,8 @@
 """Agente falso para los tests de «En segundo plano» (fase 19): imita `claude -p --output-format
-stream-json` sin red ni LLM. El modo sale de `FAKE_AGENT_MODE`; si hay `FAKE_AGENT_LOG`, escribe ahí
-sus argumentos, si ve las variables que se debían quitar y su `CAI_CLIENT_NAME`.
+stream-json` sin red ni LLM o, si su primer argumento es `run` (fase 24.5), `opencode run --format
+json`. El modo sale de `FAKE_AGENT_MODE`; si hay `FAKE_AGENT_LOG`, escribe ahí sus
+argumentos, si ve las variables que se debían quitar, su `CAI_CLIENT_NAME` y la configuración que
+recibe en `OPENCODE_CONFIG_CONTENT`.
 
 Modos: `ok`, `question`, `error`, `denied`, `hang`, `nomcp`, `crash`, `garbage` (líneas que no son
 JSON), `linger` (responde y no sale) y `child` (lanza un hijo que se queda colgado y deja su pid en
@@ -14,6 +16,8 @@ import sys
 import time
 
 SESSION = "0f7c2d1e-aaaa-bbbb-cccc-123456789abc"
+OC_SESSION = "ses_0f7c2d1eaaaaBBBBcccc12"
+OC_CHILD = "ses_1a2b3c4dddddEEEEffff34"
 
 
 def emit(event: dict) -> None:
@@ -56,11 +60,19 @@ def main() -> int:
                 "argv": sys.argv[1:],
                 "api_key": "ANTHROPIC_API_KEY" in os.environ,
                 "client_name": os.environ.get("CAI_CLIENT_NAME"),
+                "opencode_config": os.environ.get("OPENCODE_CONFIG_CONTENT"),
+                "opencode_env": sorted(
+                    k
+                    for k in ("OPENCODE_CONFIG", "OPENCODE_CONFIG_DIR", "OPENCODE_PERMISSION")
+                    if k in os.environ
+                ),
             }
             json.dump(seen, fh)
     if mode == "crash":
         print("boom: algo ha ido mal", file=sys.stderr, flush=True)
         return 3
+    if sys.argv[1:2] == ["run"]:  # como `opencode run`
+        return opencode(mode)
     status = "failed" if mode == "nomcp" else "connected"
     emit(
         {
@@ -123,6 +135,81 @@ def main() -> int:
         result("Procesadas 2 ofertas, 0 fallidas.")
     if mode == "linger":
         time.sleep(60)  # el runner debe pararlo tras el resultado
+    return 0
+
+
+def oc(kind: str, part: dict | None = None, session: str = OC_SESSION, **extra: object) -> None:
+    emit(
+        {
+            "type": kind,
+            "timestamp": 1792164979000 + int(time.time() * 1000) % 1000,
+            "sessionID": session,
+            **({"part": {"sessionID": session, **part}} if part is not None else {}),
+            **extra,
+        }
+    )
+
+
+def oc_tool(
+    tool: str, status: str = "completed", session: str = OC_SESSION, **data: object
+) -> None:
+    state: dict[str, object] = {"status": status, "input": data}
+    if status == "error":
+        state["error"] = "The user rejected permission to use this specific tool call."
+    else:
+        state["output"] = "TEXTO DE LA OFERTA"  # nunca debe llegar al progreso
+    oc("tool_use", {"type": "tool", "tool": tool, "state": state}, session)
+
+
+def oc_finish(reason: str, session: str = OC_SESSION) -> None:
+    tokens = {"total": 120, "input": 100, "output": 15, "reasoning": 5, "cache": {"read": 40}}
+    oc(
+        "step_finish",
+        {"type": "step-finish", "reason": reason, "tokens": tokens, "cost": 0.01},
+        session,
+    )
+
+
+def opencode(mode: str) -> int:
+    """`opencode run --format json`: pasos, herramientas, texto y `step_finish` con su uso."""
+    if mode == "garbage":
+        print("Aviso: esto no es JSON", flush=True)
+        print("{roto", flush=True)
+    if mode == "child":
+        child = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)"])
+        with open(os.environ["FAKE_AGENT_CHILD"], "w", encoding="utf-8") as fh:
+            fh.write(str(child.pid))
+    if mode == "error":
+        oc(
+            "error",
+            error={"name": "APIError", "data": {"message": "El proveedor rechaza el modelo"}},
+        )
+        return 1
+    oc("step_start", {"type": "step-start"})
+    oc("text", {"type": "text", "text": "Voy a procesar las ofertas pendientes."})
+    oc_tool("skill", name="process-jobs")
+    oc_tool("candidatai_list_jobs")
+    oc_tool("task", subagent_type="extractor", prompt="TEXTO DE LA OFERTA")
+    oc_tool("candidatai_get_job", session=OC_CHILD, job_id=1)
+    oc_finish("tool-calls", OC_CHILD)
+    if mode == "denied":
+        oc_tool("candidatai_add_event", status="error", job_id=1)
+    oc_finish("tool-calls")
+    if mode in ("hang", "child"):
+        time.sleep(60)
+        return 0
+    if mode == "denied":
+        print("! permission requested: candidatai_add_event (*); auto-rejecting", file=sys.stderr)
+        return 0  # OpenCode se para tras una denegación, sin paso final
+    oc("step_start", {"type": "step-start"})
+    if mode == "question":
+        text = "No he podido terminar.\n\nPREGUNTA: ¿Con foto o sin foto?"
+    else:
+        text = "Procesadas 2 ofertas, 0 fallidas."
+    oc("text", {"type": "text", "text": text})
+    oc_finish("stop")
+    if mode == "linger":
+        time.sleep(60)
     return 0
 
 

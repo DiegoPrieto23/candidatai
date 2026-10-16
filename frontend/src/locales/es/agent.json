@@ -60,5 +60,9 @@
   "background": "En segundo plano",
   "nextSession": "Para tu próxima sesión",
   "withAgent": "Con {{agent}}",
-  "withAgentModel": "Con {{agent}} ({{model}})"
+  "withAgentModel": "Con {{agent}} ({{model}})",
+  "usageTurns_one": "{{count}} turno",
+  "usageTurns_other": "{{count}} turnos",
+  "usageTokens": "{{input}} tokens de entrada y {{output}} de salida",
+  "usageCost": "{{cost}} USD estimados"
 }

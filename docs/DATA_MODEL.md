@@ -609,11 +609,12 @@ Ejecuciones del agente en segundo plano (ADR-032). Es su propia cola: la llena l
 | action | str | Una de `agent_launch.ACTIONS` con `background` (`process-jobs`, `assess-fit`, `generate-cv`) |
 | job_id | FK jobs? | En `generate-cv` |
 | milestone_id | FK milestones? | Reservado (ninguna acción de entrevista va en segundo plano) |
-| agent | str | El agente del manifiesto (`claude`) |
+| agent | str | El agente del manifiesto (`claude`, `opencode`) |
 | model / preset | str? | El modelo o el preset con que se lanzó (fase 24.4, migración 0022); vacíos: el del agente |
 | status | str | `queued`, `running`, `done`, `needs_user` (terminó con preguntas), `failed`, `cancelled`, `timeout` |
 | prompt | text | La orden, con la nota de segundo plano (y, en `generate-cv`, la de las skills marcadas «No la tengo») |
-| command | JSON | El comando exacto, con las herramientas permitidas: para auditar qué podía hacer |
+| command | JSON | El comando exacto (con las herramientas permitidas si el techo va en la orden): para auditar qué podía hacer |
+| run_config | JSON? | Fase 24.5 (migración 0023): con techo por configuración (OpenCode), cómo se escribe la de la ejecución: `format`, `env`, `value`, `agent` y `mcp_prefix`. El runner la escribe en `data/tmp/agent-runs/<id>/` al lanzar y la borra al terminar. Vacía: el techo va en `command` |
 | unset_env | JSON | Variables que se quitan antes de lanzarlo (`ANTHROPIC_API_KEY`) |
 | output_format | str | El `output` de `launch.headless`: qué lector de `agent_output.PARSERS` usa |
 | session_id | str? | La sesión del agente: «Abrir en terminal» la retoma |
@@ -621,7 +622,7 @@ Ejecuciones del agente en segundo plano (ADR-032). Es su propia cola: la llena l
 | result | text? | La respuesta final (hasta 20 000 caracteres) |
 | questions | JSON | Las líneas «PREGUNTA:» del resultado |
 | error | text? | |
-| usage | JSON? | `num_turns`, `duration_ms`, `total_cost_usd` (el que informa el agente; con suscripción no se factura) y `denied_tools` |
+| usage | JSON? | `num_turns`, `duration_ms`, `total_cost_usd` (el que informa el agente; con suscripción no se factura) y `denied_tools`; con OpenCode, también `input_tokens`, `output_tokens` y `cache_read_tokens` |
 | cancel_requested | bool | La UI lo pide; el worker para el proceso en ≤ 2 s |
 | pid | int? | |
 | created_at / started_at / finished_at | datetime | |

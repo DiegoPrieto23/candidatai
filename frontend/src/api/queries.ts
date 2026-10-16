@@ -884,7 +884,7 @@ export function useAgentRuns() {
 export function useStartAgentRun() {
   const client = useQueryClient()
   return useMutation({
-    mutationFn: (body: LaunchTarget) => unwrap(api.POST('/agent/runs', { body })),
+    mutationFn: (body: LaunchTarget & { agent?: string }) => unwrap(api.POST('/agent/runs', { body })),
     onSuccess: () => client.invalidateQueries({ queryKey: keys.agentRuns }),
   })
 }

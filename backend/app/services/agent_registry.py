@@ -40,7 +40,20 @@ SKILL_PLACEHOLDER = "{skill}"
 SESSION_PLACEHOLDER = "{session_id}"
 MODEL_PLACEHOLDER = "{model}"
 # Formatos de salida en segundo plano que sabe leer `agent_output.py`.
-HEADLESS_OUTPUTS = frozenset({"claude-stream-json"})
+HEADLESS_OUTPUTS = frozenset({"claude-stream-json", "opencode-json"})
+# Configuraciones de una ejecución que sabe escribir `agent_run_config.py` (fase 24.5).
+RUN_CONFIG_FORMATS = frozenset({"opencode"})
+# Banderas de los agentes que aprueban solas lo que pida permiso o quitan el sandbox: una orden en
+# segundo plano que lleve alguna no tiene techo (fase 24.5).
+APPROVE_ALL_FLAGS = frozenset(
+    {
+        "--auto",
+        "--yolo",
+        "--dangerously-skip-permissions",
+        "--dangerously-bypass-approvals-and-sandbox",
+        "--allow-dangerously-skip-permissions",
+    }
+)
 
 DETECT_TIMEOUT = 5.0  # segundos para `info.detect`
 DETECT_TTL = 300.0  # segundos que vale una detección con versión
@@ -131,23 +144,57 @@ class ModelsSpec(_Strict):
         return {"fast": self.fast, "capable": self.capable}.get(tier)
 
 
-class HeadlessSpec(_Strict):
-    """`launch.headless`: cómo se lanza sin ventana (fase 19, ADR-032)."""
+class RunConfigSpec(_Strict):
+    """`launch.headless.config` (fase 24.5): la configuración propia de cada ejecución, para los
+    agentes que limitan las herramientas por configuración y no por argumentos."""
 
+    format: str  # quién la escribe en `agent_run_config.py` (`opencode`)
+    env: str  # la variable de entorno con que se le pasa al agente
+    value: Literal["content", "path"] = "content"  # el contenido del fichero o su ruta
+    agent: str  # el agente que define la configuración; la orden lo nombra
+    # Variables que se quitan del entorno solo en segundo plano: las que podrían cargar otra
+    # configuración o cambiar permisos por debajo de la de la ejecución.
+    clear_env: list[str] = []
+
+
+class HeadlessSpec(_Strict):
+    """`launch.headless`: cómo se lanza sin ventana (fase 19, ADR-032).
+
+    `ceiling` (fase 24.5) es cómo se pone el techo de herramientas: `args`, en la orden
+    (`{allowed_tools}` y `{denied_tools}`); `config`, en una configuración propia de la ejecución
+    (`config`) que solo enciende las herramientas MCP de la acción."""
+
+    ceiling: Literal["args", "config"] = "args"
     command: list[str] = []
     allow: list[str] = []
     skill_rule: str = ""
     output: str = ""
+    config: RunConfigSpec | None = None
 
     @property
     def complete(self) -> bool:
-        """Lleva la orden, las permitidas, las denegadas y un formato de salida conocido. Sin la
-        lista de denegadas no hay garantía: entonces no hay segundo plano."""
-        placeholders = (PROMPT_PLACEHOLDER, TOOLS_PLACEHOLDER, DENIED_PLACEHOLDER)
+        """Lleva la orden, un formato de salida conocido y una forma de denegar el resto: la lista
+        de denegadas (`args`) o una configuración que se sabe escribir (`config`). Sin eso no hay
+        garantía, y entonces no hay segundo plano."""
+        if PROMPT_PLACEHOLDER not in self.command or self.output not in HEADLESS_OUTPUTS:
+            return False
+        if APPROVE_ALL_FLAGS & set(self.command):
+            return False
+        if self.ceiling == "args":
+            return (
+                TOOLS_PLACEHOLDER in self.command
+                and DENIED_PLACEHOLDER in self.command
+                and SKILL_PLACEHOLDER in self.skill_rule
+                and self.config is None
+            )
+        config = self.config
         return (
-            all(p in self.command for p in placeholders)
-            and SKILL_PLACEHOLDER in self.skill_rule
-            and self.output in HEADLESS_OUTPUTS
+            config is not None
+            and config.format in RUN_CONFIG_FORMATS
+            and config.agent in self.command
+            and not self.allow  # lo que se permite lo decide la configuración, no el manifiesto
+            and TOOLS_PLACEHOLDER not in self.command
+            and DENIED_PLACEHOLDER not in self.command
         )
 
 

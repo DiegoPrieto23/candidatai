@@ -11,6 +11,9 @@ en streaming y guarda progreso, resultado y errores. Lo llama el worker, en un h
 - Del progreso solo se guardan los nombres de las herramientas y el texto del agente principal,
   nunca sus entradas ni el detalle de sus errores (pueden llevar texto de una oferta). El formato
   de cada agente lo lee `agent_output.py`.
+- Con techo por configuración (`run_config`, fase 24.5), la configuración de la ejecución se
+  escribe antes de lanzar (`agent_run_config`) y se borra al salir de `execute`, termine como
+  termine. Si no se puede escribir, no se lanza.
 """
 
 import logging
@@ -36,7 +39,7 @@ from app.core.db import session_scope
 from app.core.policies import get_policies
 from app.models import AgentRun
 from app.models.base import utcnow
-from app.services import agent_registry
+from app.services import agent_registry, agent_run_config
 from app.services.agent_launch import CLIENT_ENV, QUESTION_PREFIX
 from app.services.agent_output import PARSERS, short
 from app.services.agent_runs import INTERRUPTED, ProgressKind, RunStatus
@@ -47,6 +50,7 @@ FLUSH_SECONDS = 2.0  # cada cuánto se guarda el progreso y se mira si han pedid
 RESULT_GRACE_SECONDS = 10.0  # tras el resultado final, lo que se espera a que el agente salga
 MAX_QUESTIONS = 10
 QUESTION_RE = re.compile(rf"^[\W_]*{re.escape(QUESTION_PREFIX.rstrip(':'))}\s*:\**\s*(.+)$", re.I)
+ANSI_RE = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")  # colores de la consola en stderr (OpenCode)
 STOPPED = "Se paró el worker mientras se ejecutaba. No se repite: lánzala otra vez si quieres."
 
 # Procesos en marcha y aviso de parada del worker (`stop_active`).
@@ -77,12 +81,15 @@ def questions_in(text: str) -> list[str]:
 # --- Proceso -----------------------------------------------------------------------------------
 
 
-def _popen(command: list[str], unset_env: list[str], agent: str) -> subprocess.Popen[str]:
+def _popen(
+    command: list[str], unset_env: list[str], agent: str, extra_env: dict[str, str] | None = None
+) -> subprocess.Popen[str]:
     exe = shutil.which(command[0])
     if exe is None:
         raise FileNotFoundError(f"No se encuentra el programa del agente ({command[0]}).")
-    # Fase 24.4: lo que haga por la CLI queda a nombre del agente (`CAI_CLIENT_NAME`).
-    env = {**agent_registry.clean_env(unset_env), CLIENT_ENV: agent}
+    # Fase 24.4: lo que haga por la CLI queda a nombre del agente (`CAI_CLIENT_NAME`). Fase 24.5:
+    # `extra_env` lleva la configuración de la ejecución.
+    env = {**agent_registry.clean_env(unset_env), **(extra_env or {}), CLIENT_ENV: agent}
     kwargs: dict[str, Any] = {}
     if sys.platform == "win32":
         kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW | subprocess.CREATE_NEW_PROCESS_GROUP
@@ -144,7 +151,7 @@ def _pump(stream: IO[str], sink: "queue.Queue[object]") -> None:
 def _tail(stream: IO[str], keep: deque[str]) -> None:
     try:
         for line in stream:
-            keep.append(line.rstrip())
+            keep.append(ANSI_RE.sub("", line).rstrip())
     except (OSError, ValueError):
         pass
 
@@ -199,8 +206,30 @@ def _mcp_prefix(agent: str) -> str | None:
     return spec.mcp_prefix if spec is not None and spec.headless is not None else None
 
 
+def _write_config(run: AgentRun) -> tuple[dict[str, str], list[str]]:
+    """Escribe la configuración de la ejecución, si la lleva, y devuelve las variables que se la
+    pasan al agente y las que hay que quitar (`RunConfigError` si no se puede limitar)."""
+    if not run.run_config:
+        return {}, []
+    data = dict(run.run_config)
+    prefix = data.pop("mcp_prefix", "") or ""
+    try:
+        spec = agent_registry.RunConfigSpec.model_validate(data)
+    except ValueError as exc:
+        raise agent_run_config.RunConfigError("La configuración guardada no es válida.") from exc
+    env = agent_run_config.write(run.id, run.action, spec, prefix)  # type: ignore[arg-type]
+    return env, list(spec.clear_env)
+
+
 def execute(run: AgentRun, timeout: float | None = None, poll: float = 0.5) -> AgentRunOutcome:
     """Ejecuta una `agent_run` ya reclamada hasta que termina, se cancela o supera el tiempo."""
+    try:
+        return _execute(run, timeout, poll)
+    finally:
+        agent_run_config.remove(run.id)  # también si se cancela, falla o se para el worker
+
+
+def _execute(run: AgentRun, timeout: float | None, poll: float) -> AgentRunOutcome:
     policy = get_policies().background_runs
     timeout = timeout if timeout is not None else policy.timeout_minutes * 60
     progress: deque[dict[str, Any]] = deque(maxlen=policy.max_progress_lines)
@@ -223,7 +252,12 @@ def execute(run: AgentRun, timeout: float | None = None, poll: float = 0.5) -> A
         return finish("failed", f"Formato de salida desconocido: «{run.output_format}».")
     parser = factory(_mcp_prefix(run.agent) or "mcp__candidatai__")
     try:
-        proc = _popen(list(run.command), list(run.unset_env), run.agent)
+        extra_env, clear_env = _write_config(run)
+    except (agent_run_config.RunConfigError, OSError) as exc:
+        return finish("failed", f"No se pudo preparar la configuración de la ejecución: {exc}")
+    try:
+        unset = [*run.unset_env, *clear_env]
+        proc = _popen(list(run.command), unset, run.agent, extra_env)
     except OSError as exc:
         return finish("failed", f"No se pudo lanzar el agente: {exc}")
 
@@ -395,6 +429,12 @@ def recover_interrupted() -> int:
                 _kill_pid_tree(pid)
         except OSError:
             logger.warning("No se pudo comprobar el proceso %s", pid, exc_info=True)
+    # Fase 24.5: ninguna está en curso, así que sobra cualquier configuración que quedara.
+    folder = agent_run_config.runs_dir()
+    if folder.is_dir():
+        for child in folder.iterdir():
+            if child.name.isdigit():
+                agent_run_config.remove(int(child.name))
     return len(rows)
 
 

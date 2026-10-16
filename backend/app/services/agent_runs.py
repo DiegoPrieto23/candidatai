@@ -3,8 +3,10 @@ que no preguntan. Sin coste de API (ADR-001): es el mismo agente de los botones,
 
 - Solo las acciones con `background` en `agent_launch.ACTIONS` (procesar ofertas, evaluar encaje y
   generar el CV) y solo con un agente que tenga `launch.headless` en el manifiesto.
-- El comando lleva solo las herramientas MCP de la acción: sin terminal ni web, y lo demás lo
-  deniega el agente (`dontAsk`). Se guarda en la fila para auditar qué podía hacer.
+- La ejecución tiene solo las herramientas MCP de la acción, sin terminal ni web: van en el comando
+  (Claude Code, que deniega lo demás con `dontAsk`) o, en los agentes que las limitan por
+  configuración (OpenCode, fase 24.5), en una propia de la ejecución (`run_config`). Las dos cosas
+  se guardan en la fila para auditar qué podía hacer.
 - `agent_runs` es su propia cola: la lanza la UI y la ejecuta el worker (`agent_runner.py`), de
   una en una y en un hilo aparte, para no parar la ingesta ni la candidatura asistida.
 - Si el skill necesita al usuario, termina con líneas «PREGUNTA:» y la ejecución queda
@@ -170,6 +172,7 @@ def start(
         command=agent_launch.headless_command(picked, full_prompt, action),
         unset_env=list(picked.unset_env),
         output_format=picked.headless.output,
+        run_config=agent_launch.run_config(picked),
         progress=[],
         questions=[],
         cancel_requested=False,

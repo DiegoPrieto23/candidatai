@@ -116,8 +116,8 @@ export function AgentButton({
       },
     })
 
-  const runInBackground = () =>
-    startRun.mutate(target, {
+  const runInBackground = (agentName?: string) =>
+    startRun.mutate(agentName ? { ...target, agent: agentName } : target, {
       onSuccess: (result) =>
         show({
           tone: 'ok',
@@ -187,7 +187,7 @@ export function AgentButton({
               </span>
             </DropdownMenuItem>
             {canBackground && (
-              <DropdownMenuItem onSelect={runInBackground} disabled={!background?.available}>
+              <DropdownMenuItem onSelect={() => runInBackground()} disabled={!background?.available}>
                 <GearSixIcon weight="duotone" />
                 <span>
                   <span className="block font-medium">{t('background')}</span>
@@ -196,6 +196,18 @@ export function AgentButton({
                       ? t('backgroundHint')
                       : (background?.reason ?? t('unavailable'))}
                   </span>
+                </span>
+              </DropdownMenuItem>
+            )}
+            {canBackground && !background?.available && background?.suggested && (
+              // Fase 24.5: el agente de esta acción no puede en segundo plano; otro sí.
+              <DropdownMenuItem onSelect={() => runInBackground(background.suggested ?? undefined)}>
+                <GearSixIcon weight="duotone" />
+                <span>
+                  <span className="block font-medium">
+                    {t('backgroundWith', { agent: background.suggested_name ?? background.suggested })}
+                  </span>
+                  <span className="block text-xs text-muted-foreground">{t('backgroundHint')}</span>
                 </span>
               </DropdownMenuItem>
             )}

@@ -1,0 +1,87 @@
+Fase 24.5 · Segundo plano con varios agentes: prueba manual
+===========================================================
+
+Qué se prueba: que «En segundo plano» funciona con OpenCode en `process-jobs` y `assess-fit`, que
+la ejecución solo tiene las herramientas de su acción también con un modelo de verdad, y que
+`generate-cv` propone Claude Code.
+
+Lo que ya se comprobó el 2026-10-16 con OpenCode 1.19.3 (vía `npx`, sin modelo propio), con la
+configuración que genera el código: el agente de la ejecución (`cai-run`) queda con "*": "deny" y
+solo las MCP de la acción, detrás de las reglas de opencode.json; sin bash, read, edit ni web; solo
+su skill y su rol; el subagente `extractor` sigue acotado; sin --auto, lo que queda en `ask` se
+rechaza. Detalle en docs/AGENTS_COMPAT.md, «En segundo plano y cola de encargos».
+
+Lo que falta y necesita un modelo: los gratuitos de OpenCode Zen rechazan el agente de la ejecución
+(«free tier can only be used from within OpenCode»). Usa un modelo local (Ollama, LM Studio) o tu
+clave (OpenRouter, una API compatible con OpenAI…).
+
+Preparación (una vez, en PowerShell desde la raíz del repo)
+-----------------------------------------------------------
+1. npm install -g opencode-ai     (o scoop install opencode)
+   opencode --version             → anótala: ______
+2. Configura tu proveedor: opencode, luego /connect. Anota el modelo «proveedor/modelo»: ______
+   Comprueba que responde: opencode run -m <proveedor/modelo> "di hola"
+3. uv run --directory backend cai demo seed --dir data-demo-245 --compat
+4. $env:CAI_DATA_DIR = "data-demo-245"
+5. uv run --directory backend cai start     (en esta misma ventana; deja el worker en marcha)
+6. En la UI, página «Agente» → «Agentes»: OpenCode «instalado». En «Por acción», pon OpenCode en
+   «Procesar ofertas» y en «Evaluar encaje», con tu modelo.
+
+A. process-jobs en segundo plano con OpenCode
+---------------------------------------------
+1. Inicio → «Procesar ofertas» ▾ (debe decir «con OpenCode») → «En segundo plano».
+   → «En cola en segundo plano» y el enlace a «Agente».
+2. Página «Agente»: la ejecución dice «Con opencode (<modelo>)», «Solo con: get_status, list_jobs,
+   get_job, save_extraction», y el progreso enseña «Skill «process-jobs»», «list_jobs»,
+   «Subagente «extractor»» y, debajo, «↳ get_job» / «↳ save_extraction».
+   → Al terminar: «Terminada», el resultado y una línea de uso (turnos, tokens y, si tu proveedor
+     lo da, coste).
+   → Las 5 ofertas de la matriz pasan a «Por triar».
+   Si falla, anota el error de la tarjeta: ______
+3. Mientras corre, data-demo-245\tmp\agent-runs\<id>\config.json existe; al terminar, ya no.
+4. Si instalaste OpenCode con npm, el worker lo lanza por el shim opencode.cmd (cmd.exe). Mira en
+   la tarjeta que la orden llegó entera: el progreso empieza por «Skill «process-jobs»» y el
+   agente no pregunta (la orden lleva «», acentos y «PREGUNTA:»). Si llega cortada o con
+   caracteres raros, anótalo: ______ (habría que pasar la orden por otra vía).
+
+B. assess-fit en segundo plano con OpenCode
+-------------------------------------------
+1. Inicio → «Evaluar encaje» ▾ → «En segundo plano».
+2. «Agente»: progreso con get_profile, get_match…, save_fit_assessment. Termina y las ofertas
+   tienen su valoración en «Triaje».
+
+C. El techo con un modelo (lo que no se pudo comprobar sin él)
+--------------------------------------------------------------
+Con la misma configuración que usa el runner, desde la raíz y con $env:CAI_DATA_DIR puesto:
+
+1. Genera la configuración de process-jobs:
+   uv run --directory backend python -c "import json; from app.services import agent_run_config as c, agent_registry as r; print(json.dumps(c.build('process-jobs', r.get('opencode').launch.headless.config, 'candidatai_')))" > data-demo-245\cfg.json
+   $env:OPENCODE_CONFIG_CONTENT = Get-Content data-demo-245\cfg.json -Raw
+2. opencode run --format json --pure --agent cai-run -m <proveedor/modelo> "Llama a candidatai_get_status y dime cuántas ofertas hay por extraer."
+   → Usa candidatai_get_status (una herramienta de la acción) y responde.
+3. opencode run --format json --pure --agent cai-run -m <proveedor/modelo> "Llama a candidatai_get_profile, luego a candidatai_add_event con job_id 1, ejecuta 'echo hola' con bash, lee AGENTS.md y abre https://example.com."
+   → Ninguna funciona: dice que no tiene esas herramientas, o salen como denegadas. Nada de
+     bash, lectura ni web. Si alguna funciona, anótala aquí: ______ (OpenCode se queda sin
+     segundo plano hasta corregirlo).
+4. opencode run --format json --pure --agent cai-run -m <proveedor/modelo> "Lanza el subagente writer y que lea AGENTS.md. Después lanza el extractor y que ejecute 'echo hola' con bash."
+   → El writer se deniega; el extractor no tiene bash.
+5. Remove-Item Env:OPENCODE_CONFIG_CONTENT; Remove-Item data-demo-245\cfg.json
+
+D. generate-cv propone Claude Code
+----------------------------------
+1. En «Por acción», pon OpenCode en «Generar CV». Aprueba una oferta de la demo.
+2. En su ficha, «Generar CV» ▾ con OpenCode: «En segundo plano» deshabilitado con el motivo (el rol
+   «writer» necesita read…) y debajo «En segundo plano con Claude Code».
+3. Si tienes Claude Code: pulsa «En segundo plano con Claude Code». La cola lleva ahora
+   ejecuciones de dos agentes: «Agente» las enseña con su agente cada una.
+
+E. Retomar la sesión
+--------------------
+1. En una ejecución de OpenCode terminada, «Abrir en terminal».
+   → Se abre OpenCode con la misma sesión (opencode --session <id>). Si abre una sesión vacía o
+     falla, anótalo: ______ (se quitaría `resume` de OpenCode en el manifiesto).
+
+Limpieza: cierra `cai start`, Remove-Item Env:CAI_DATA_DIR y borra data-demo-245 si quieres.
+
+Si todo va bien, dímelo y lo anoto en docs/AGENTS_COMPAT.md (OpenCode: segundo plano comprobado
+con un modelo, versión y fecha).

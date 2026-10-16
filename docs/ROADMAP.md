@@ -72,7 +72,7 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 24.2 | ↳ Esquemas y errores para cualquier modelo | ✅ | `cai schema` y `get_schema`; errores de validación con `path` y pista |
 | 24.3 | ↳ Agentes nuevos | ✅ | Configuración generada para OpenCode, Qwen Code y Antigravity; Codex con `--oss`; Gemini CLI fuera |
 | 24.4 | ↳ Elegir y cambiar de agente | ✅ | Sección «Agentes» con capacidades, agente por defecto y por acción, «con Claude Code ▾» en cada botón |
-| 24.5 | ↳ Segundo plano con varios agentes | ⏳ | «En segundo plano» también con OpenCode (y Codex o Qwen Code si su techo se comprueba) |
+| 24.5 | ↳ Segundo plano con varios agentes | ✅ | «En segundo plano» también con OpenCode (`process-jobs` y `assess-fit`), con el techo en una configuración propia de cada ejecución; Codex y Qwen Code, aún no |
 | 24.6 | ↳ Modelos gratuitos, niveles de gasto y matriz | ⏳ | Guía de modelos gratis y locales, diagnóstico de Ollama, «Económico/Equilibrado/Máximo» y matriz probada por agente y modelo |
 | 25 | Más fuentes, perfil más rico, ofertas dudosas, coste y calidad del CV | ⏳ | Más ATS con API, `expand`, señales de oferta dudosa, coste por oferta y agente, maquetación del PDF y `CHANGELOG` |
 | 25.1 | ↳ Conectores de ATS y portales con API | ⏳ | Personio, Teamtailor, Workable, SmartRecruiters y Recruitee, más Manfred y freehire.me; `cai sources discover` para todos |
@@ -2372,3 +2372,79 @@ decisiones tomadas y deuda técnica pendiente. -->
   - Con otro idioma, los motivos detallados del servidor se resumen con un texto genérico por
     código.
   - `RESUMEN_FASES.md` se pone al día al cerrar la fase 24 entera.
+
+### 24.5 · Segundo plano con varios agentes — 2026-10-16 · Claude Code (Opus 5.5)
+- **Resumen:** «En segundo plano» también con OpenCode, sin rebajar el techo de herramientas.
+  - **`launch.headless.ceiling`:** `args` (Claude Code, el techo en la orden, como antes) o
+    `config`: una configuración propia de cada ejecución. `HeadlessSpec.complete` exige una forma
+    de denegar el resto y rechaza banderas que lo aprueban todo (`--auto`, `--yolo`…). `{model}`
+    en la orden marca dónde va el modelo.
+  - **`services/agent_run_config.py` (nuevo):** escribe en `data/tmp/agent-runs/<id>/` un agente
+    `cai-run` con `"*": "deny"` y, detrás, solo las MCP de la acción, su skill y sus roles. El
+    runner se la pasa en `OPENCODE_CONFIG_CONTENT`, quita `OPENCODE_CONFIG`,
+    `OPENCODE_CONFIG_DIR` y `OPENCODE_PERMISSION` (`clear_env`) y la borra en un `finally`. Si
+    queda alguna de un worker caído, la borra `recover_interrupted`.
+  - **`Action.roles`:** con techo por configuración, un rol solo se lanza si sus herramientas caben
+    en las de la acción. `generate-cv` queda sin segundo plano con OpenCode (`writer` y
+    `verifier` leen ficheros).
+  - **`agent_runs.run_config`** (migración 0023): cómo se limitó cada ejecución. El runner no
+    relee el manifiesto.
+  - **Lector `opencode-json`** en `agent_output.py`: pasos, herramientas (sin entradas ni salidas),
+    subagentes, denegaciones, errores, resultado y uso (tokens, coste, turnos). Fixtures grabadas
+    de OpenCode 1.19.3 sobre una demo aparte.
+  - **Manifiesto:** `headless` y `resume` de OpenCode
+    (`opencode run --format json --pure --agent cai-run`).
+  - **API y UI:** `BackgroundInfo.suggested`/`suggested_name` en `GET /agent`. El desplegable
+    ofrece «En segundo plano con X» si el agente de la acción no puede. La tarjeta de cada
+    ejecución enseña el uso. Textos en es/en.
+  - **Cola:** sin cambios de lógica; los tests cubren ejecuciones de agentes distintos y la
+    recuperación tras reiniciar.
+- **Comprobado con OpenCode 1.19.3** (vía `npx`, en `AGENTS_COMPAT.md`):
+  - `debug agent cai-run`: las reglas de `cai-run` van detrás de las de `opencode.json`, sin bash,
+    read, edit ni web;
+  - `--tool`: bash y webfetch, deshabilitados; un skill ajeno y el subagente `writer`, denegados;
+  - el `extractor` sigue acotado con la configuración de la ejecución cargada;
+  - sin `--auto`, lo que queda en `ask` se rechaza solo y la ejecución se para.
+  - **Sin comprobar con un modelo:** los gratuitos de Zen rechazan agentes propios. Va en la
+    prueba manual.
+- **Codex 0.163.0 y Qwen Code 0.25.2, reevaluados, sin segundo plano:**
+  - Codex solo deja apagar herramientas (una lista negra) y sin terminal no lee los skills;
+  - Qwen tiene lista blanca, pero no hay forma de comprobarla sin un modelo.
+- **Tests:**
+  - 36 en `test_agent_run_config.py`:
+    - la configuración solo enciende lo de la acción;
+    - los roles caben en su acción y coinciden con los de cada `SKILL.md`;
+    - `generate-cv` bloqueado con OpenCode;
+    - validación de `headless` y `{model}`;
+    - el runner con el OpenCode falso: progreso, uso, entorno limpio;
+    - la configuración se borra al cancelar, fallar, agotar el tiempo, con una excepción, al parar
+      el worker y al recuperar;
+    - una configuración que no se puede escribir no lanza;
+    - denegación, preguntas, cola con dos agentes y recuperación;
+    - el lector sobre las salidas grabadas;
+    - la sugerencia en la API.
+  - El agente falso imita también `opencode run --format json`.
+  - 2 de Vitest nuevos: «En segundo plano con Claude Code» y la línea de uso.
+  - 2534 tests de backend en verde (los 2 de `test_cli_db.py`, al día con la 0023 y repetidos aparte). 264 de frontend, `tsc`, ruff y `sync_agents.py --check` limpios.
+- **Decisiones:** ADR-037 ampliado (criterio, dos techos, roles, `run_config`, Codex y Qwen) y nota
+  en la ADR-032. Con el usuario: sin modelo de pago ni local en esta sesión (la ejecución completa
+  queda en la prueba manual); Qwen sin segundo plano hasta poder comprobarlo.
+  - Revisión (rol `reviewer`), sin nada bloqueante. Se aplicó:
+    - `clear_env` para las variables de OpenCode;
+    - rechazar banderas que lo aprueban todo;
+    - test de roles frente a los skills;
+    - tests de limpieza al parar el worker y de carpetas huérfanas;
+    - mensaje al usuario sin nombre de agente;
+    - el shim `.cmd`, en la prueba manual.
+- **Deuda:**
+  - OpenCode en segundo plano, sin probar con un modelo (`docs/pruebas/fase-24.5-prueba-manual.txt`).
+  - Si OpenCode se instala con npm, el worker lo lanza por `opencode.cmd` (cmd.exe). La orden la
+    compone la app (sin texto de ofertas), pero «» y acentos sin probar por esa vía.
+  - `generate-cv` con OpenCode, posible si `read` de `writer`/`verifier` se acota a `docs/` en la
+    configuración de la ejecución.
+  - El motivo «un rol no cabe» usa `blocked_code` `no_headless`; con otro idioma se ve el texto del
+    servidor.
+  - `agent_runs.start` devuelve una ejecución activa de la misma acción aunque sea de otro agente.
+  - Con `value: content`, `config.json` también se escribe en disco (para auditar y probar), aunque
+    se pasa por el entorno.
+  - Qwen Code: lector `stream-json` y `headless` en la 24.6, con modelos locales.
