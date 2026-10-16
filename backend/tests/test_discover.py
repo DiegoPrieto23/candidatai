@@ -16,6 +16,7 @@ from app.models import Company, Source
 from app.schemas.sources import SourceInput
 from app.services.ingestion import discover
 from app.services.ingestion import service as sources
+from tests.sources_support import load, load_text
 
 GH = "https://boards-api.greenhouse.io/v1/boards"
 LEVER = "https://api.lever.co/v0/postings"
@@ -227,3 +228,87 @@ def test_slugs_and_command_are_safe() -> None:
     assert discover.parse_companies("Acme | ., -x, ok-1") == [("Acme", ["ok-1"])]
     command = discover._command('Acme `rm` $HOME "x"', "greenhouse", "acme", "global")
     assert "`" not in command and "$" not in command
+
+
+def _smartrecruiters_page(company: str) -> dict:
+    page = load("smartrecruiters_postings_1.json")
+    for posting in page["content"]:
+        posting["company"]["name"] = company
+    return page
+
+
+@respx.mock
+def test_finds_a_board_of_each_new_ats(session: Session) -> None:
+    """Fase 25.1: Personio, Teamtailor, Workable, SmartRecruiters y Recruitee, con los fixtures
+    de los conectores."""
+    respx.get("https://personio-co.jobs.personio.de/xml").mock(
+        return_value=httpx.Response(200, text=load_text("personio_feed.xml"))
+    )
+    respx.get("https://teamtailor-co.teamtailor.com/jobs.rss").mock(
+        return_value=httpx.Response(200, text=load_text("teamtailor_jobs.rss"))
+    )
+    respx.get("https://apply.workable.com/api/v1/widget/accounts/workable-co").mock(
+        return_value=httpx.Response(
+            200, json=load("workable_widget.json") | {"name": "Workable Co"}
+        )
+    )
+    respx.get("https://api.smartrecruiters.com/v1/companies/smartrecruiters-co/postings").mock(
+        return_value=httpx.Response(200, json=_smartrecruiters_page("SmartRecruiters Co"))
+    )
+    respx.get("https://api.smartrecruiters.com/v1/companies/smart/postings").mock(
+        return_value=httpx.Response(200, json=_smartrecruiters_page("Otra Empresa"))
+    )
+    # Una empresa que no existe en SmartRecruiters: lista vacía, no 404.
+    respx.get(url__regex=r"^https://api\.smartrecruiters\.com/v1/companies/[^/]+/postings").mock(
+        return_value=httpx.Response(200, json={"totalFound": 0, "content": []})
+    )
+    respx.get("https://recruitee-co.recruitee.com/api/offers/").mock(
+        return_value=httpx.Response(200, json=load("recruitee_offers.json"))
+    )
+    _not_found_by_default()
+    text = (
+        "Personio Co | personio-co\nTeamtailor Co | teamtailor-co\nWorkable Co | workable-co\n"
+        "SmartRecruiters Co | smartrecruiters-co\nRecruitee Co | recruitee-co\nNadie | nadie\n"
+        "Smart Labs | smart\n"
+    )
+    result = _run(session, text, add=True)
+    hits = {
+        item.company: [(h.kind, h.jobs_count, h.confidence) for h in item.hits]
+        for item in result.companies
+    }
+    assert hits == {
+        "Personio Co": [("personio", 3, "probable")],
+        "Teamtailor Co": [("teamtailor", 3, "probable")],
+        "Workable Co": [("workable", 3, "confirmed")],
+        "SmartRecruiters Co": [("smartrecruiters", 4, "confirmed")],
+        "Recruitee Co": [("recruitee", 4, "probable")],
+        "Nadie": [],
+        "Smart Labs": [("smartrecruiters", 4, "doubtful")],  # otra empresa con ese slug
+    }
+    [personio] = result.companies[0].hits
+    assert personio.sample_titles == ["Data Engineer", "Analytics Engineer"]
+    assert personio.add_command == (
+        'cai sources add --kind personio --name "Personio Co" --slug personio-co'
+    )
+    assert result.found == 6 and result.added == 5
+    kinds = sorted(s.kind for s in session.scalars(select(Source)))
+    assert kinds == ["personio", "recruitee", "smartrecruiters", "teamtailor", "workable"]
+    assert "6 de 7 empresas con tablero en algún ATS" in result.message
+
+
+@respx.mock
+def test_cli_discover_text_with_a_new_ats(
+    isolated_env: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    migrations.upgrade()
+    monkeypatch.setattr(discover, "DELAY_SECONDS", 0)
+    respx.get("https://acmedatos.jobs.personio.de/xml").mock(
+        return_value=httpx.Response(200, text=load_text("personio_feed.xml"))
+    )
+    _not_found_by_default()
+    companies = tmp_path / "empresas.txt"
+    companies.write_text("Acme Datos\n", encoding="utf-8")
+    text = CliRunner().invoke(cli.app, ["sources", "discover", "--file", str(companies)])
+    assert text.exit_code == 0, text.output
+    assert "+ Acme Datos: Personio `acmedatos`, 3 ofertas, probable" in text.stdout
+    assert "cai sources add --kind personio" in text.stdout

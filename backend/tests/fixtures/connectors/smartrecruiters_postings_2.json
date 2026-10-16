@@ -1,0 +1,62 @@
+{
+  "offset": 2,
+  "limit": 2,
+  "totalFound": 4,
+  "content": [
+    {
+      "id": "744000156074003",
+      "name": "Office Manager",
+      "uuid": "00000000-0000-4000-8000-000156074003",
+      "jobAdId": "10000000-0000-4000-8000-000156074003",
+      "defaultJobAd": true,
+      "refNumber": "REF4003",
+      "company": {
+        "identifier": "AcmeDatos",
+        "name": "Acme Datos"
+      },
+      "releasedDate": "2026-09-29T13:00:00.000Z",
+      "location": {
+        "city": "Vigo",
+        "country": "es",
+        "remote": false,
+        "hybrid": false,
+        "fullLocation": "Vigo, , Spain"
+      },
+      "industry": {
+        "id": "it_and_services",
+        "label": "Information Technology And Services"
+      },
+      "department": {
+        "id": "1",
+        "label": "Datos"
+      },
+      "function": {
+        "id": "information_technology",
+        "label": "Information Technology"
+      },
+      "typeOfEmployment": {
+        "id": "permanent",
+        "label": "Full-time"
+      },
+      "experienceLevel": {
+        "id": "mid_senior_level",
+        "label": "Mid-Senior Level"
+      },
+      "customField": [],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/...",
+      "creator": {
+        "name": "Equipo de selección"
+      },
+      "language": {
+        "code": "es",
+        "label": "Spanish"
+      }
+    },
+    {
+      "id": "744000156074004",
+      "name": "",
+      "location": {}
+    }
+  ]
+}

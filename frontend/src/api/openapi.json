@@ -24090,8 +24090,15 @@
               "greenhouse",
               "lever",
               "ashby",
+              "personio",
+              "teamtailor",
+              "workable",
+              "smartrecruiters",
+              "recruitee",
               "infojobs",
-              "adzuna"
+              "adzuna",
+              "manfred",
+              "freehire"
             ],
             "title": "Kind"
           },
@@ -24162,6 +24169,32 @@
             "pattern": "^[a-z]{2}$",
             "title": "Country",
             "default": "es"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-z]{2}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language"
+          },
+          "lang": {
+            "type": "string",
+            "enum": [
+              "ES",
+              "EN"
+            ],
+            "title": "Lang",
+            "default": "ES"
+          },
+          "remote_only": {
+            "type": "boolean",
+            "title": "Remote Only",
+            "default": false
           },
           "title_keywords": {
             "items": {

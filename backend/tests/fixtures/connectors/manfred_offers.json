@@ -1,0 +1,155 @@
+[
+  {
+    "id": 8510,
+    "position": "Data Engineer",
+    "slug": "acme-datos-data-engineer-oct26",
+    "status": "ACTIVE",
+    "internalCode": "Acme_8510",
+    "salaryFrom": 40000,
+    "salaryTo": 50000,
+    "bonus": 0,
+    "remotePercentage": 40,
+    "equityInf": 0,
+    "equitySup": 0,
+    "currency": "€",
+    "noStack": false,
+    "highlights": [
+      "🏠 Híbrido"
+    ],
+    "locations": [
+      "Vigo, España"
+    ],
+    "offerLanguages": [
+      "ES"
+    ],
+    "updatedAt": "2026-09-29T12:45:55.380Z",
+    "company": {
+      "name": "Acme Datos",
+      "web": "https://acmedatos.example",
+      "logo": {
+        "id": 1,
+        "url": "https://media.example/logo.png"
+      }
+    },
+    "migratedToMarkdown": true,
+    "isFreelance": false,
+    "feeRateFrom": 0,
+    "feeRateTo": 0
+  },
+  {
+    "id": 8511,
+    "position": "Senior Data Engineer (Python)",
+    "slug": "acme-datos-senior-data-engineer",
+    "status": "ACTIVE",
+    "internalCode": "Acme_8511",
+    "salaryFrom": 40000,
+    "salaryTo": 50000,
+    "bonus": 0,
+    "remotePercentage": 100,
+    "equityInf": 0,
+    "equitySup": 0,
+    "currency": "€",
+    "noStack": false,
+    "highlights": [
+      "🏠 Híbrido"
+    ],
+    "locations": [],
+    "offerLanguages": [
+      "ES"
+    ],
+    "updatedAt": "2026-09-29T12:45:55.380Z",
+    "company": {
+      "name": "Acme Datos",
+      "web": "https://acmedatos.example",
+      "logo": {
+        "id": 1,
+        "url": "https://media.example/logo.png"
+      }
+    },
+    "migratedToMarkdown": true,
+    "isFreelance": false,
+    "feeRateFrom": 0,
+    "feeRateTo": 0
+  },
+  {
+    "id": 8512,
+    "position": "Frontend Developer",
+    "slug": "beta-frontend-developer",
+    "status": "ACTIVE",
+    "internalCode": "Acme_8512",
+    "salaryFrom": 40000,
+    "salaryTo": 50000,
+    "bonus": 0,
+    "remotePercentage": 0,
+    "equityInf": 0,
+    "equitySup": 0,
+    "currency": "€",
+    "noStack": false,
+    "highlights": [
+      "🏠 Híbrido"
+    ],
+    "locations": [
+      "Madrid, España"
+    ],
+    "offerLanguages": [
+      "ES"
+    ],
+    "updatedAt": "2026-09-29T12:45:55.380Z",
+    "company": {
+      "name": "Beta Software",
+      "web": "https://acmedatos.example",
+      "logo": {
+        "id": 1,
+        "url": "https://media.example/logo.png"
+      }
+    },
+    "migratedToMarkdown": true,
+    "isFreelance": false,
+    "feeRateFrom": 0,
+    "feeRateTo": 0
+  },
+  {
+    "id": 8513,
+    "position": "Data Engineer",
+    "slug": "cerrada-data-engineer",
+    "status": "CLOSED",
+    "internalCode": "Acme_8513",
+    "salaryFrom": 40000,
+    "salaryTo": 50000,
+    "bonus": 0,
+    "remotePercentage": 0,
+    "equityInf": 0,
+    "equitySup": 0,
+    "currency": "€",
+    "noStack": false,
+    "highlights": [
+      "🏠 Híbrido"
+    ],
+    "locations": [
+      "Madrid, España"
+    ],
+    "offerLanguages": [
+      "ES"
+    ],
+    "updatedAt": "2026-09-29T12:45:55.380Z",
+    "company": {
+      "name": "Gamma",
+      "web": "https://acmedatos.example",
+      "logo": {
+        "id": 1,
+        "url": "https://media.example/logo.png"
+      }
+    },
+    "migratedToMarkdown": true,
+    "isFreelance": false,
+    "feeRateFrom": 0,
+    "feeRateTo": 0
+  },
+  {
+    "id": 8514,
+    "position": "Data Engineer",
+    "slug": "sin-empresa",
+    "status": "ACTIVE",
+    "company": {}
+  }
+]

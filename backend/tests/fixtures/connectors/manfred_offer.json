@@ -1,0 +1,84 @@
+{
+  "id": 8510,
+  "position": "Data Engineer",
+  "slug": "acme-datos-data-engineer-oct26",
+  "status": "ACTIVE",
+  "internalCode": "Acme_8510",
+  "salaryFrom": 40000,
+  "salaryTo": 50000,
+  "bonus": 0,
+  "remotePercentage": 40,
+  "equityInf": 0,
+  "equitySup": 0,
+  "currency": "€",
+  "noStack": false,
+  "highlights": [
+    "🏠 Híbrido"
+  ],
+  "locations": [
+    "Vigo, España"
+  ],
+  "offerLanguages": [
+    "ES"
+  ],
+  "updatedAt": "2026-09-29T12:45:55.380Z",
+  "company": {
+    "name": "Acme Datos",
+    "web": "https://acmedatos.example",
+    "logo": {
+      "id": 1,
+      "url": "https://media.example/logo.png"
+    }
+  },
+  "migratedToMarkdown": true,
+  "isFreelance": false,
+  "feeRateFrom": 0,
+  "feeRateTo": 0,
+  "introduction": "¿Te gustan los **datos**?",
+  "responsibilities": [
+    "Construir pipelines con Airflow",
+    "Mantener el modelo en dbt"
+  ],
+  "whatWillYouDo": "Acme Datos es una empresa de datos.",
+  "howWillYouDoIt": "Con Python y SQL.",
+  "whoWillDoItWith": "Un equipo de 5 personas.",
+  "whatTheyAskFor": "* 2 años de experiencia con Python",
+  "whereWillDoIt": "Dos días en la oficina de Vigo.",
+  "whenWillDoIt": "Jornada flexible.",
+  "whatOffering": "Formación y seguro médico.",
+  "inOneMonth": "",
+  "inThreeMonths": "",
+  "inSixMonths": "",
+  "lastStatusChange": "2026-09-29T12:45:55.400Z",
+  "techs": [
+    {
+      "name": "Python",
+      "level": "ADVANCED",
+      "section": "MUST",
+      "order": 1
+    },
+    {
+      "name": "Airflow",
+      "level": "INTERMEDIATE",
+      "section": "COULD",
+      "order": 2
+    }
+  ],
+  "softSkills": [],
+  "languages": [],
+  "perks": [],
+  "faq": [],
+  "workingDayInfo": {
+    "isFullTime": true,
+    "hasFlexTime": true
+  },
+  "scout": {
+    "firstName": "Nombre",
+    "lastName": "Ficticio",
+    "email": "scout@example.com"
+  },
+  "watches": {
+    "description": "",
+    "faq": []
+  }
+}

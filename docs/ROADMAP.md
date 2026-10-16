@@ -74,8 +74,8 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 24.4 | ↳ Elegir y cambiar de agente | ✅ | Sección «Agentes» con capacidades, agente por defecto y por acción, «con Claude Code ▾» en cada botón |
 | 24.5 | ↳ Segundo plano con varios agentes | ✅ | «En segundo plano» también con OpenCode (`process-jobs` y `assess-fit`), con el techo en una configuración propia de cada ejecución; Codex y Qwen Code, aún no |
 | 24.6 | ↳ Modelos gratuitos, niveles de gasto y matriz | 🚧 código y docs hechos; falta pasar la matriz (`docs/pruebas/fase-24.6-matriz.md`) | Guía de modelos gratis y locales, diagnóstico de Ollama, «Económico/Equilibrado/Máximo» y matriz probada por agente y modelo |
-| 25 | Más fuentes, perfil más rico, ofertas dudosas, coste y calidad del CV | ⏳ | Más ATS con API, `expand`, señales de oferta dudosa, coste por oferta y agente, maquetación del PDF y `CHANGELOG` |
-| 25.1 | ↳ Conectores de ATS y portales con API | ⏳ | Personio, Teamtailor, Workable, SmartRecruiters y Recruitee, más Manfred y freehire.me; `cai sources discover` para todos |
+| 25 | Más fuentes, perfil más rico, ofertas dudosas, coste y calidad del CV | 🚧 25.1 hecha | Más ATS con API, `expand`, señales de oferta dudosa, coste por oferta y agente, maquetación del PDF y `CHANGELOG` |
+| 25.1 | ↳ Conectores de ATS y portales con API | ✅ | Personio, Teamtailor, Workable, SmartRecruiters y Recruitee, más Manfred y freehire.me; `cai sources discover` para todos |
 | 25.2 | ↳ Skill `expand` | ⏳ | Proyectos, skills y logros propuestos desde GitHub, portfolio o Scholar, con su fuente y solo con tu OK |
 | 25.3 | ↳ Ofertas dudosas y banderas rojas | ⏳ | Señales (rango salarial ancho, empresa oculta, temporal, republicada, cribado con IA) y `red_flags` con fuentes en el dosier |
 | 25.4 | ↳ Coste y lote en paralelo | ⏳ | Coste por oferta, skill y agente; umbral de score antes de `assess-fit`; hasta N ejecuciones a la vez |
@@ -2533,3 +2533,64 @@ decisiones tomadas y deuda técnica pendiente. -->
   - La propuesta de «Económico» con OpenCode no trae modelo (no hay preset `local` en el manifiesto).
   - Los tokens de la matriz no cuentan la caché.
 
+### 25.1 · Conectores de ATS y portales con API — 2026-10-16 · Claude Code (Opus 5.5)
+- **Hecho:**
+  - cinco ATS nuevos con su conector (`services/ingestion/`):
+    - **Personio**: feed XML oficial; la descripción solo viene en el idioma pedido, así que se
+      prueba `es` y luego `en`, o el `language` de la fuente;
+    - **Teamtailor**: RSS paginado con `per_page` y `offset`, sin repetir si el feed no pagina;
+    - **Workable**: widget documentado, más el detalle por el JSON de su página de empleo;
+    - **SmartRecruiters**: Posting API paginada, con el detalle solo de lo que pasa el filtro;
+    - **Recruitee**: Careers Site API;
+  - dos portales sin claves:
+    - **Manfred**: filtra por el título, porque la API no busca; nunca guarda los datos de su
+      «scout»;
+    - **freehire.me**: por título, país y remoto, con la URL base cambiable con
+      `CAI_FREEHIRE_BASE_URL`;
+  - `base.py`: `get_xml` con lxml sin entidades ni red (test de XXE) y `RawJob.detail_url`;
+  - `cai sources discover` prueba también los cinco ATS:
+    - Workable y SmartRecruiters confirman el slug por el nombre de la empresa;
+    - en SmartRecruiters, una lista vacía cuenta como «no encontrado»;
+  - CLI: `--language` (Personio), `--lang` (Manfred) y `--country` y `--remote-only` (freehire);
+    `SourceInput` rechaza las opciones de otro tipo;
+  - UI «Empresas objetivo»: los tipos nuevos con su ejemplo de slug, el enlace «Cómo encontrarlo»
+    y los campos propios. Textos en es y en;
+  - Docs:
+    - `FUENTES_OFERTAS.md`: tabla de fuentes con endpoint y cobertura, y «Cómo encontrar el slug»;
+    - `COMPARATIVA.md`, `AGENT_INTERFACE.md`, `DATA_MODEL.md`, README y guía en los dos idiomas;
+    - nota de la 25.1 en la ADR-016.
+- **Comprobado en vivo** (2026-10-16), contra las APIs reales, con un script fuera de los tests:
+  - los siete conectores devuelven ofertas con texto completo;
+  - un slug inexistente da 404 con su pista, salvo en SmartRecruiters (lista vacía y aviso
+    `empty`);
+  - los fixtures copian la forma de esas respuestas con contenido inventado (Acme Datos).
+- **Tests:**
+  - 22 en `test_connectors_ats.py`: listado, detalle, oferta mal formada como `Issue`, 404,
+    paginación, idioma de Personio, XXE, feed que no pagina, Manfred en inglés y URL base de
+    freehire;
+  - extremo a extremo con Personio y SmartRecruiters (demo), validación de opciones,
+    `discover` de cada tipo nuevo y en texto, y CLI;
+  - 2 de Vitest.
+  - 2603 tests de backend y 271 de frontend en verde; `tsc`, ruff y `sync_agents.py --check` limpios; OpenAPI regenerado.
+- **Decisiones (con el usuario):**
+  - detalle de Workable y API de Manfred: JSON público sin documentar, aceptado (nota en la
+    ADR-016);
+  - rama `fase/25-fuentes-perfil-calidad` desde `main`, que ya incluye la 24;
+  - los ATS nuevos no tienen comprobación «¿sigue abierta?» por API: van por su página;
+  - el rellenado de candidaturas de estos ATS no entra: siguen como «genérico».
+- **Revisión** (rol `reviewer`). Se aplicó:
+  - el bloqueante: `discover` en texto fallaba con un ATS nuevo;
+  - Teamtailor sin duplicados si el feed no pagina;
+  - el salario del listado de Manfred se conserva y sus encabezados siguen el idioma;
+  - escapado del encabezado HTML de Personio;
+  - confirmación por nombre en SmartRecruiters;
+  - rechazo de opciones de otro tipo;
+  - el enlace de ayuda en inglés avisa de que la guía está en español.
+- **Deuda:**
+  - Manfred solo da `updatedAt`: una oferta editada parece más reciente;
+  - algunos conectores añaden encabezados en español al texto (documentado);
+  - el enlace «Cómo encontrarlo» apunta a `main` en GitHub: hasta fusionar, el ancla no existe;
+  - `discover` tarda más (hasta 8 ATS × 3 slugs por empresa);
+  - `CAI_FREEHIRE_BASE_URL` falta en `.env.example`, que el agente no puede editar (en
+    `PENDIENTES.md`);
+  - un test de Vitest falló una vez con la máquina cargada y pasó en las dos repeticiones.

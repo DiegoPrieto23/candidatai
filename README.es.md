@@ -88,7 +88,7 @@ comprueba y automatiza. Un día normal:
 
 | | |
 |---|---|
-| 📥 **Ofertas de muchas fuentes** | Alta por URL o texto; APIs públicas de Greenhouse, Lever y Ashby; InfoJobs y Adzuna con claves; **alertas de empleo por correo** (IMAP de solo lectura); un **botón de extensión** para la página que estás viendo; tu agente recorriendo portales con tu navegador y, si lo activas, la búsqueda pública de LinkedIn. Con deduplicación, aviso de republicadas y de ofertas cerradas, y **detección de texto dirigido a una IA** |
+| 📥 **Ofertas de muchas fuentes** | Alta por URL o texto; APIs y feeds públicos de Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters y Recruitee; InfoJobs y Adzuna con claves, Manfred y freehire.me sin ellas; **alertas de empleo por correo** (IMAP de solo lectura); un **botón de extensión** para la página que estás viendo; tu agente recorriendo portales con tu navegador y, si lo activas, la búsqueda pública de LinkedIn. Con deduplicación, aviso de republicadas y de ofertas cerradas, y **detección de texto dirigido a una IA** |
 | 🎯 **Triaje con score explicado** | Filtros duros (nivel, años, modalidad, zona, idiomas) y un score 0-100 por cobertura de skills, preferencias y similitud semántica local opcional. Tu agente añade una valoración razonada. «¿Acierta el score?» lo compara con los resultados reales |
 | 📄 **CV y carta a medida** | El agente redacta el contenido citando **la evidencia de tu perfil de cada línea**; el código lo valida, lo renderiza (Word o HTML → PDF) con tu plantilla, foto y color, y otro rol lo verifica. **Importa tu propio diseño de CV** (Word, PDF, imagen, Canva) como plantilla |
 | 📝 **Candidatura asistida** | Rellena formularios de Greenhouse, Lever, Ashby o genéricos, se para ante captchas o logins y **solo envía tras tu confirmación**, escribiendo el nombre de la empresa |
@@ -233,8 +233,8 @@ en español (`generar-cv`…).
 | Vía | Automática | Cubre |
 |---|---|---|
 | Alta por URL o texto | No | Cualquier oferta |
-| APIs públicas de ATS (Greenhouse, Lever, Ashby) | Diaria | Tus empresas objetivo (`cai sources discover` encuentra sus tableros) |
-| APIs de portales (InfoJobs, Adzuna), con claves | Diaria | Búsquedas por palabras clave |
+| APIs y feeds públicos de ATS (Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters, Recruitee) | Diaria | Tus empresas objetivo (`cai sources discover` encuentra sus tableros) |
+| APIs de portales (InfoJobs y Adzuna con claves; Manfred y freehire.me sin ellas) | Diaria | Búsquedas por palabras clave |
 | Alertas de empleo por correo (IMAP de solo lectura o `.eml` exportados) | Sí | LinkedIn, InfoJobs, Indeed, Tecnoempleo… |
 | Botón «Enviar a CandidatAI» del navegador | Un clic | Cualquier página que estés viendo, LinkedIn incluido |
 | Tu agente con tu navegador | A demanda | Portales que apruebas; LinkedIn solo si lo activas |

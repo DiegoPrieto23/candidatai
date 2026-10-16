@@ -34,7 +34,7 @@ def test_add_and_list(db: None) -> None:
     result = runner.invoke(cli.app, ADD)
     assert result.exit_code == 0, result.output
     assert "Fuente añadida. Pruébala con `cai sources test 1`." in result.stdout
-    assert "Greenhouse  Acme Datos [acmedatos] (activa)" in result.stdout
+    assert "Greenhouse      Acme Datos [acmedatos] (activa)" in result.stdout
 
     listed = _json(["sources", "list"])
     assert [(s["id"], s["kind"], s["config"]["slug"]) for s in listed["sources"]] == [
@@ -130,3 +130,25 @@ def test_needs_migrated_db(isolated_env: Path) -> None:
     result = runner.invoke(cli.app, ["sources", "list", "--json"])
     assert result.exit_code == 1
     assert json.loads(result.stdout)["error"]["type"] == "database_not_ready"
+
+
+def test_add_new_kinds_with_their_options(db: None) -> None:
+    personio = _json(
+        ["sources", "add", "--kind", "personio", "--name", "Acme Datos", "--slug", "acmedatos",
+         "--language", "en"]
+    )  # fmt: skip
+    assert personio["config"]["language"] == "en" and personio["kind_label"] == "Personio"
+    manfred = _json(
+        ["sources", "add", "--kind", "manfred", "--name", "Manfred", "--query", "data",
+         "--lang", "EN"]
+    )  # fmt: skip
+    assert manfred["config"] == {"query": "data", "lang": "EN", "title_keywords": []}
+    freehire = _json(
+        ["sources", "add", "--kind", "freehire", "--name", "freehire", "--query", "python",
+         "--country", "pt", "--remote-only"]
+    )  # fmt: skip
+    assert freehire["config"] == {
+        "query": "python", "country": "pt", "remote_only": True, "title_keywords": []
+    }  # fmt: skip
+    listed = runner.invoke(cli.app, ["sources", "list"])
+    assert "Personio        Acme Datos [acmedatos] (activa)" in listed.stdout

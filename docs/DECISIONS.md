@@ -173,6 +173,13 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   expuesta: se limita por reglas y por ejecutarse en una sesión dedicada.
 - **Matizada por la ADR-033:** el código ya no «nunca descarga LinkedIn»: puede consultar su
   búsqueda pública sin sesión si el usuario la activa.
+- **Nota de la fase 25.1 (2026-10-16, decisión del usuario):** los conectores usan APIs o feeds
+  públicos y, siempre que exista, documentados. Se acepta un **JSON público sin documentar** cuando
+  no es HTML, no pide sesión ni claves y no hay alternativa documentada que dé lo mismo. Hoy son
+  dos: el detalle de una oferta de **Workable** (`apply.workable.com/api/v2/accounts/{cuenta}/jobs/{código}`,
+  el que usa su propia página de empleo; el widget documentado no trae la descripción) y la API de
+  **Manfred** (`getmanfred.com/api/v2/public/offers`). Si cambian, el conector falla con
+  `unexpected_format` o `not_found` y se ve en `source_runs`; no se pasa a leer HTML.
 
 ## ADR-017 · CV: cuándo está listo, país de la oferta y contacto
 - **Contexto:** la fase 08 separa contenido y renders (ADR-014), así que «CV verificado» y «PDF que

@@ -85,10 +85,10 @@ compatible y Antigravity CLI ocupa su sitio.
 |---|---|---|---|
 | Alta por URL o texto pegado | ✅ | ✅ | ✅ |
 | APIs públicas de ATS (Greenhouse, Lever, Ashby) | ✅ diaria | ❌ | ✅ |
-| Otros ATS con API (Workable, SmartRecruiters, Personio, Teamtailor, Recruitee, Workday…) | ❌ | ❌ | ✅ más de 55 proveedores |
-| Portales con API (InfoJobs, Adzuna) | ✅ con claves | ❌ | 🟡 otros feeds (Manfred, Remotive, WWR, HN «Who's hiring», Telegram…) |
+| Otros ATS con API (Workable, SmartRecruiters, Personio, Teamtailor, Recruitee, Workday…) | 🟡 Personio, Teamtailor, Workable, SmartRecruiters y Recruitee, diaria y en `cai sources discover` (25.1); Workday y los que solo dan HTML, no | ❌ | ✅ más de 55 proveedores |
+| Portales con API (InfoJobs, Adzuna, Manfred) | ✅ InfoJobs y Adzuna con claves; Manfred sin claves (25.1) | ❌ | 🟡 otros feeds (Manfred, Remotive, WWR, HN «Who's hiring», Telegram…) |
 | Scrapers HTML de portales locales | 🚫 (ADR-016) | ✅ daneses + generador `/add-portal` | ✅ |
-| Agregador con API pública (freehire.me) | ❌ | ✅ | ❌ |
+| Agregador con API pública (freehire.me) | ✅ por título, país y remoto (25.1) | ✅ | ❌ |
 | Alertas de empleo por correo (IMAP de solo lectura) | ✅ | ❌ | ❌ |
 | Botón de extensión del navegador para la página que ves | ✅ | ❌ | ❌ |
 | El agente recorre portales con tu navegador | ✅ opcional | ❌ | 🟡 descubrimiento asistido en la web alfa |
@@ -220,7 +220,7 @@ dudosas, coste y calidad del CV) y la 26 (macOS, Linux y Docker).
 | 4 | **Elegir y cambiar de agente desde la UI**, global y por acción, con el modelo de cada uno | career-ops (en parte) | Extraer con un modelo local gratis y redactar el CV con el más capaz, sin tocar variables de entorno | Medio | 24.4 |
 | 5 | **Segundo plano con varios agentes** (OpenCode y, si se puede garantizar, Codex) | career-ops (`--cli` en el lote) | Que el lote no dependa de Claude Code, con el mismo techo de herramientas | Medio | 24.5 |
 | 6 | **Guía de modelos gratuitos y locales + matriz probada por agente y modelo** | career-ops | Recomendar modelos con datos (`cai eval cv`) y no por opinión | Medio | 24.6 |
-| 7 | **Más conectores de ATS con API pública**: Personio, Teamtailor, Workable, SmartRecruiters, Recruitee, y feeds como Manfred o freehire.me | ambos | Mucha empresa española y europea usa estos ATS; son APIs, sin scraping (ADR-016) | Medio | 25.1 |
+| 7 | **Más conectores de ATS con API pública**: Personio, Teamtailor, Workable, SmartRecruiters, Recruitee, y feeds como Manfred o freehire.me | ambos | Mucha empresa española y europea usa estos ATS; son APIs, sin scraping (ADR-016) | Medio | 25.1 ✅ |
 | 8 | **Enriquecer el perfil desde enlaces públicos** (GitHub, portfolio, Scholar), con tu OK antes de escribir | ambos | Proyectos y logros que no están en el CV | Bajo (un skill) | 25.2 |
 | 9 | **Señales de oferta dudosa y banderas rojas** en `assess-fit` y `research-company` | career-ops | Evita perder tiempo con ofertas fantasma, agencias o condiciones escondidas | Bajo | 25.3 |
 | 10 | **Lote en paralelo y coste por skill y por agente** (tokens, turnos, tiempo) con un filtro previo por score | ambos | Saber qué cuesta cada oferta y gastar solo en las que pasan el umbral | Medio | 25.4 |

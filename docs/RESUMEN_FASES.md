@@ -380,6 +380,16 @@ La carta es un documento propio, con sus indicaciones, su verificación y sus re
 - Para agentes y terminal: `get_received_offer` ↔ `jh received-offers show`.
 
 
+## 25.1 · Más fuentes de ofertas con API — 2026-10-16 · Claude Code (Opus 5.5)
+- **Cinco ATS más** para tus empresas objetivo: Personio, Teamtailor, Workable, SmartRecruiters y
+  Recruitee. Sus ofertas llegan solas cada día, como las de Greenhouse, Lever y Ashby, por sus APIs
+  y feeds públicos, sin scraping.
+- **Dos portales sin claves:**
+  - Manfred, de tecnología en España;
+  - freehire.me, un agregador que filtra por país y remoto.
+- **`cai sources discover`** busca también el tablero de tus empresas en esos cinco ATS.
+- En «Empresas objetivo», cada tipo trae su ejemplo de slug y un enlace a cómo encontrarlo.
+
 ## 24 · Varios agentes, open-source, gratuitos y a elegir — 2026-10-16 · Claude Code (Opus 5.5)
 - **Registro de agentes** (24.1): `cai agents list` y `cai agents doctor` dicen qué agentes hay,
   cuáles tienes, qué saben hacer (MCP, subagentes, segundo plano, web, navegador, modelos locales)

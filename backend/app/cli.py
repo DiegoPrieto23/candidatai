@@ -1279,14 +1279,28 @@ def templates_preview(
 
 # --- Fuentes: empresas objetivo y portales -----------------------------------------------------
 
-KIND_OPTION = typer.Option(..., "--kind", help="greenhouse, lever, ashby, infojobs o adzuna.")
+KIND_OPTION = typer.Option(
+    ...,
+    "--kind",
+    help=(
+        "ATS: greenhouse, lever, ashby, personio, teamtailor, workable, smartrecruiters o "
+        "recruitee. Portales: infojobs, adzuna, manfred o freehire."
+    ),
+)
 NAME_OPTION = typer.Option(..., "--name", help="Empresa (en un ATS) o etiqueta de la búsqueda.")
 SLUG_OPTION = typer.Option(None, "--slug", help="Slug del tablero del ATS (p. ej. `acme`).")
 REGION_OPTION = typer.Option("global", "--region", help="Lever: `global` o `eu`.")
 QUERY_OPTION = typer.Option(None, "--query", help="Portales: palabras de búsqueda.")
 WHERE_OPTION = typer.Option(None, "--where", help="Adzuna: ubicación.")
 PROVINCE_OPTION = typer.Option(None, "--province", help="InfoJobs: provincia (p. ej. `a-coruna`).")
-COUNTRY_OPTION = typer.Option("es", "--country", help="Adzuna: país (código de 2 letras).")
+COUNTRY_OPTION = typer.Option(
+    "es", "--country", help="Adzuna y freehire: país (código de 2 letras)."
+)
+LANGUAGE_OPTION = typer.Option(
+    None, "--language", help="Personio: idioma de la descripción (`es`, `en`…)."
+)
+LANG_OPTION = typer.Option("ES", "--lang", help="Manfred: idioma de las ofertas (`ES` o `EN`).")
+REMOTE_ONLY_OPTION = typer.Option(False, "--remote-only", help="freehire: solo ofertas remotas.")
 KEYWORDS_OPTION = typer.Option(
     None, "--keywords", help="Palabras extra que dejan pasar un título, separadas por comas."
 )
@@ -1303,6 +1317,9 @@ def _source_input(
     province: str | None,
     country: str,
     keywords: str | None,
+    language: str | None = None,
+    lang: str = "ES",
+    remote_only: bool = False,
 ) -> Any:
     from app.schemas.sources import SourceInput
 
@@ -1316,6 +1333,9 @@ def _source_input(
             "where": where,
             "province": province,
             "country": country,
+            "language": language,
+            "lang": lang,
+            "remote_only": remote_only,
             "title_keywords": _csv(keywords) or [],
         }
     )
@@ -1328,7 +1348,7 @@ def _render_source(source: Any) -> None:
         browse = source.browse
         state = "navegación " + ("activada" if browse.allow_agent_browsing else "desactivada")
         target = f"{browse.platform}, prioridad {browse.priority}, acceso {browse.access}"
-    typer.echo(f"{source.id:>4}  {source.kind_label:<11} {source.name} [{target}] ({state})")
+    typer.echo(f"{source.id:>4}  {source.kind_label:<15} {source.name} [{target}] ({state})")
     if source.keys_missing:
         typer.secho("      Sin claves en .env: se omite al ejecutar.", fg="yellow")
     if source.last_run:
@@ -1380,6 +1400,9 @@ def sources_add(
     province: str | None = PROVINCE_OPTION,
     country: str = COUNTRY_OPTION,
     keywords: str | None = KEYWORDS_OPTION,
+    language: str | None = LANGUAGE_OPTION,
+    lang: str = LANG_OPTION,
+    remote_only: bool = REMOTE_ONLY_OPTION,
     as_json: bool = JSON_OPTION,
 ) -> None:
     """Añade una empresa objetivo (ATS + slug) o una búsqueda en un portal con API."""
@@ -1387,7 +1410,20 @@ def sources_add(
 
     try:
         migrations.ensure_current()
-        data = _source_input(kind, name, slug, region, query, where, province, country, keywords)
+        data = _source_input(
+            kind,
+            name,
+            slug,
+            region,
+            query,
+            where,
+            province,
+            country,
+            keywords,
+            language,
+            lang,
+            remote_only,
+        )
         with session_scope() as session:
             view = sources.add_source(session, data)
     except Exception as exc:
@@ -1461,6 +1497,9 @@ def sources_test(
     province: str | None = PROVINCE_OPTION,
     country: str = COUNTRY_OPTION,
     keywords: str | None = KEYWORDS_OPTION,
+    language: str | None = LANGUAGE_OPTION,
+    lang: str = LANG_OPTION,
+    remote_only: bool = REMOTE_ONLY_OPTION,
     as_json: bool = JSON_OPTION,
 ) -> None:
     """Descarga y filtra una fuente sin guardar nada: «12 ofertas encontradas, 3 tras filtros»."""
@@ -1472,7 +1511,18 @@ def sources_test(
             target: Any = source_id
         elif kind and name:
             target = _source_input(
-                kind, name, slug, region, query, where, province, country, keywords
+                kind,
+                name,
+                slug,
+                region,
+                query,
+                where,
+                province,
+                country,
+                keywords,
+                language,
+                lang,
+                remote_only,
             )
         else:
             raise ValueError(
@@ -1554,12 +1604,14 @@ _CONFIDENCE_LABEL = {
 
 
 def _render_discover(result: Any, add: bool) -> None:
+    from app.schemas.sources import KIND_LABELS
+
     for item in result.companies:
         if not item.hits:
             tried = ", ".join(item.tried) or "ningún slug válido"
             typer.echo(f"- {item.company}: sin tablero (probado: {tried})")
         for hit in item.hits:
-            label = {"greenhouse": "Greenhouse", "lever": "Lever", "ashby": "Ashby"}[hit.kind]
+            label = KIND_LABELS.get(hit.kind, hit.kind)
             region = " (UE)" if hit.region == "eu" else ""
             name = f" «{hit.board_name}»" if hit.board_name else ""
             typer.echo(

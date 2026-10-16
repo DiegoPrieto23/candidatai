@@ -16,15 +16,44 @@ from pydantic import (
     model_validator,
 )
 
-ConnectorKind = Literal["greenhouse", "lever", "ashby", "infojobs", "adzuna"]
-ATS_KINDS: tuple[ConnectorKind, ...] = ("greenhouse", "lever", "ashby")
-PORTAL_KINDS: tuple[ConnectorKind, ...] = ("infojobs", "adzuna")
+ConnectorKind = Literal[
+    "greenhouse",
+    "lever",
+    "ashby",
+    "personio",
+    "teamtailor",
+    "workable",
+    "smartrecruiters",
+    "recruitee",
+    "infojobs",
+    "adzuna",
+    "manfred",
+    "freehire",
+]
+ATS_KINDS: tuple[ConnectorKind, ...] = (
+    "greenhouse",
+    "lever",
+    "ashby",
+    "personio",
+    "teamtailor",
+    "workable",
+    "smartrecruiters",
+    "recruitee",
+)
+PORTAL_KINDS: tuple[ConnectorKind, ...] = ("infojobs", "adzuna", "manfred", "freehire")
 KIND_LABELS: dict[str, str] = {
     "greenhouse": "Greenhouse",
     "lever": "Lever",
     "ashby": "Ashby",
+    "personio": "Personio",
+    "teamtailor": "Teamtailor",
+    "workable": "Workable",
+    "smartrecruiters": "SmartRecruiters",
+    "recruitee": "Recruitee",
     "infojobs": "InfoJobs",
     "adzuna": "Adzuna",
+    "manfred": "Manfred",
+    "freehire": "freehire",
 }
 InfoJobsSince = Literal["_24_HOURS", "_7_DAYS", "_15_DAYS", "ANY"]
 
@@ -51,9 +80,15 @@ class _Strict(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+Language = Annotated[str, Field(pattern=r"^[a-z]{2}$")]
+
+
 class AtsConfig(_Strict):
     slug: Slug
     region: Literal["global", "eu"] = "global"  # Lever tiene una instancia europea
+    # Personio solo da la descripción en el idioma que se le pide (`?language=`). Sin valor, se
+    # prueba `es` y, si no trae ninguna, `en`.
+    language: Language | None = None
     title_keywords: Keywords = []  # palabras extra que dejan pasar un título en el filtro previo
 
 
@@ -72,7 +107,20 @@ class AdzunaConfig(_Strict):
     title_keywords: Keywords = []
 
 
-SourceConfig = AtsConfig | InfoJobsConfig | AdzunaConfig
+class ManfredConfig(_Strict):
+    query: Text  # la API no busca: se filtra aquí por el título
+    lang: Literal["ES", "EN"] = "ES"
+    title_keywords: Keywords = []
+
+
+class FreehireConfig(_Strict):
+    query: Text
+    country: str = Field(default="es", pattern=r"^[a-z]{2}$")
+    remote_only: bool = False
+    title_keywords: Keywords = []
+
+
+SourceConfig = AtsConfig | InfoJobsConfig | AdzunaConfig | ManfredConfig | FreehireConfig
 
 
 def parse_config(kind: str, config: dict[str, Any]) -> SourceConfig:
@@ -83,6 +131,10 @@ def parse_config(kind: str, config: dict[str, Any]) -> SourceConfig:
         return InfoJobsConfig.model_validate(config)
     if kind == "adzuna":
         return AdzunaConfig.model_validate(config)
+    if kind == "manfred":
+        return ManfredConfig.model_validate(config)
+    if kind == "freehire":
+        return FreehireConfig.model_validate(config)
     raise ValueError(f"La fuente de tipo «{kind}» no tiene conector.")
 
 
@@ -97,6 +149,9 @@ class SourceInput(_Strict):
     where: str | None = Field(default=None, max_length=120)
     province: str | None = Field(default=None, max_length=80)
     country: str = Field(default="es", pattern=r"^[a-z]{2}$")
+    language: Language | None = None  # Personio: idioma de la descripción
+    lang: Literal["ES", "EN"] = "ES"  # Manfred: idioma de las ofertas
+    remote_only: bool = False  # freehire: solo remotas
     title_keywords: Keywords = []
 
     @model_validator(mode="after")
@@ -106,17 +161,37 @@ class SourceInput(_Strict):
 
     def to_config(self) -> SourceConfig:
         keywords = [k.strip() for k in self.title_keywords if k.strip()]
+        if self.lang != "ES" and self.kind != "manfred":
+            raise ValueError("El idioma de las ofertas (`lang`) solo se usa en Manfred.")
+        if self.remote_only and self.kind != "freehire":
+            raise ValueError("«Solo remotas» (`remote_only`) solo se usa en freehire.")
         if self.kind in ATS_KINDS:
             if not self.slug:
                 raise ValueError(f"Falta el slug del tablero de {KIND_LABELS[self.kind]}.")
             if self.region == "eu" and self.kind != "lever":
                 raise ValueError("La región `eu` solo existe en Lever.")
-            return AtsConfig(slug=self.slug, region=self.region, title_keywords=keywords)
+            if self.language and self.kind != "personio":
+                raise ValueError("El idioma (`language`) solo se usa en Personio.")
+            return AtsConfig(
+                slug=self.slug,
+                region=self.region,
+                language=self.language,
+                title_keywords=keywords,
+            )
         if not self.query or not self.query.strip():
             raise ValueError(f"Falta la búsqueda (`query`) para {KIND_LABELS[self.kind]}.")
         if self.kind == "infojobs":
             return InfoJobsConfig(
                 query=self.query.strip(), province=self.province, title_keywords=keywords
+            )
+        if self.kind == "manfred":
+            return ManfredConfig(query=self.query.strip(), lang=self.lang, title_keywords=keywords)
+        if self.kind == "freehire":
+            return FreehireConfig(
+                query=self.query.strip(),
+                country=self.country,
+                remote_only=self.remote_only,
+                title_keywords=keywords,
             )
         return AdzunaConfig(
             query=self.query.strip(),

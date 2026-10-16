@@ -91,7 +91,7 @@ checks and automates. A typical day:
 
 | | |
 |---|---|
-| 📥 **Jobs from many sources** | Paste a URL or text; public APIs of Greenhouse, Lever and Ashby; InfoJobs and Adzuna with keys; **job alerts by email** (read-only IMAP); a **browser-extension button** for the page you're viewing; your agent browsing portals with your browser; and, opt-in, LinkedIn's public search. Deduplicated, with repost and "still open?" detection, and with **detection of text aimed at an AI** |
+| 📥 **Jobs from many sources** | Paste a URL or text; public APIs and feeds of Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters and Recruitee; InfoJobs and Adzuna with keys, Manfred and freehire.me without; **job alerts by email** (read-only IMAP); a **browser-extension button** for the page you're viewing; your agent browsing portals with your browser; and, opt-in, LinkedIn's public search. Deduplicated, with repost and "still open?" detection, and with **detection of text aimed at an AI** |
 | 🎯 **Triage with an explained score** | Hard filters (level, years, remote mode, location, languages) and a 0-100 score from skill coverage, preferences and optional local semantic similarity. Your agent adds a reasoned verdict. "Is the score right?" compares it with real outcomes |
 | 📄 **Tailored CV and cover letter** | The agent writes the content citing **evidence from your profile for every line**; the code validates it, renders it (Word or HTML → PDF) with your template, photo and colour, and a separate role verifies it. **Import your own CV design** (Word, PDF, image, Canva) as a template |
 | 📝 **Assisted applications** | Fills Greenhouse, Lever, Ashby or generic forms, stops at captchas or logins, and **only submits after you confirm** by typing the company name |
@@ -235,8 +235,8 @@ language (in English or Spanish).
 | Source | Automatic | Covers |
 |---|---|---|
 | Paste a URL or text | No | Any job |
-| Public ATS APIs (Greenhouse, Lever, Ashby) | Daily | Your target companies (`cai sources discover` finds their boards) |
-| Portal APIs (InfoJobs, Adzuna), with keys | Daily | Keyword searches |
+| Public ATS APIs and feeds (Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters, Recruitee) | Daily | Your target companies (`cai sources discover` finds their boards) |
+| Portal APIs (InfoJobs and Adzuna with keys; Manfred and freehire.me without) | Daily | Keyword searches |
 | Job alerts by email (read-only IMAP or exported `.eml`) | Yes | LinkedIn, InfoJobs, Indeed, Tecnoempleo… |
 | "Send to CandidatAI" browser button | One click | Any page you're viewing, LinkedIn included |
 | Your agent browsing with your browser | On demand | Portals you approve; LinkedIn only if you enable it |

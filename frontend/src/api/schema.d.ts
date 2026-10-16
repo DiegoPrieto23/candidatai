@@ -5816,7 +5816,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "greenhouse" | "lever" | "ashby" | "infojobs" | "adzuna";
+            kind: "greenhouse" | "lever" | "ashby" | "personio" | "teamtailor" | "workable" | "smartrecruiters" | "recruitee" | "infojobs" | "adzuna" | "manfred" | "freehire";
             /** Name */
             name: string;
             /** Slug */
@@ -5838,6 +5838,19 @@ export interface components {
              * @default es
              */
             country: string;
+            /** Language */
+            language?: string | null;
+            /**
+             * Lang
+             * @default ES
+             * @enum {string}
+             */
+            lang: "ES" | "EN";
+            /**
+             * Remote Only
+             * @default false
+             */
+            remote_only: boolean;
             /**
              * Title Keywords
              * @default []

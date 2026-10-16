@@ -1,0 +1,167 @@
+{
+  "data": [
+    {
+      "public_slug": "data-engineer-acme-datos-1a2b",
+      "source": "greenhouse",
+      "manually_added": false,
+      "external_id": "x:data-engineer-acme-datos-1a2b",
+      "url": "https://boards.greenhouse.io/acmedatos/jobs/1001",
+      "title": "Data Engineer",
+      "company": "Acme Datos",
+      "company_slug": "acme-datos",
+      "location": "Vigo, Spain",
+      "description": "<b>Overview</b>\n<p>Construirás <strong>pipelines de datos</strong>.</p>",
+      "countries": [
+        "es"
+      ],
+      "regions": [
+        "eu"
+      ],
+      "work_mode": "hybrid",
+      "skills": [
+        "python",
+        "sql"
+      ],
+      "cities": [
+        "Vigo"
+      ],
+      "collections": [],
+      "is_tech": "tech",
+      "posted_at": "2026-09-29T16:51:30Z",
+      "created_at": "2026-09-29T16:51:30Z",
+      "updated_at": "2026-09-29T16:51:30Z",
+      "last_seen_at": "2026-09-30T16:51:30Z",
+      "closed_at": null,
+      "enrichment": {
+        "category": "data_engineering",
+        "posting_language": "es"
+      },
+      "enriched_at": null,
+      "enrichment_version": 0,
+      "view_count": 0,
+      "applied_count": 0,
+      "upvote_count": 0,
+      "downvote_count": 0,
+      "my_vote": 0,
+      "reality": {
+        "class": "fresh",
+        "age_days": 0,
+        "repost_count": 0,
+        "mass_posting_count": 0,
+        "fake_freshness": false
+      }
+    },
+    {
+      "public_slug": "data-engineer-beta-3c4d",
+      "source": "greenhouse",
+      "manually_added": false,
+      "external_id": "x:data-engineer-beta-3c4d",
+      "url": "https://jobs.lever.co/beta/5f1c2b9e-0001-4a6b-9c1d-000000000001",
+      "title": "Data Engineer",
+      "company": "Beta Software",
+      "company_slug": "beta-software",
+      "location": "Madrid, Spain",
+      "description": "<b>Overview</b>\n<p>Construirás <strong>pipelines de datos</strong>.</p>",
+      "countries": [
+        "es"
+      ],
+      "regions": [
+        "eu"
+      ],
+      "work_mode": "remote",
+      "skills": [
+        "python",
+        "sql"
+      ],
+      "cities": [
+        "Madrid"
+      ],
+      "collections": [],
+      "is_tech": "tech",
+      "posted_at": "2026-09-29T16:51:30Z",
+      "created_at": "2026-09-29T16:51:30Z",
+      "updated_at": "2026-09-29T16:51:30Z",
+      "last_seen_at": "2026-09-30T16:51:30Z",
+      "closed_at": null,
+      "enrichment": {
+        "category": "data_engineering",
+        "posting_language": "es"
+      },
+      "enriched_at": null,
+      "enrichment_version": 0,
+      "view_count": 0,
+      "applied_count": 0,
+      "upvote_count": 0,
+      "downvote_count": 0,
+      "my_vote": 0,
+      "reality": {
+        "class": "fresh",
+        "age_days": 0,
+        "repost_count": 0,
+        "mass_posting_count": 0,
+        "fake_freshness": false
+      }
+    },
+    {
+      "public_slug": "data-engineer-gamma-5e6f",
+      "source": "greenhouse",
+      "manually_added": false,
+      "external_id": "x:data-engineer-gamma-5e6f",
+      "url": "https://gamma.example/jobs/1",
+      "title": "Data Engineer",
+      "company": "Gamma",
+      "company_slug": "gamma",
+      "location": "Madrid, Spain",
+      "description": "<b>Overview</b>\n<p>Construirás <strong>pipelines de datos</strong>.</p>",
+      "countries": [
+        "es"
+      ],
+      "regions": [
+        "eu"
+      ],
+      "work_mode": "onsite",
+      "skills": [
+        "python",
+        "sql"
+      ],
+      "cities": [
+        "Madrid"
+      ],
+      "collections": [],
+      "is_tech": "tech",
+      "posted_at": "2026-09-29T16:51:30Z",
+      "created_at": "2026-09-29T16:51:30Z",
+      "updated_at": "2026-09-29T16:51:30Z",
+      "last_seen_at": "2026-09-30T16:51:30Z",
+      "closed_at": "2026-09-30T00:00:00Z",
+      "enrichment": {
+        "category": "data_engineering",
+        "posting_language": "es"
+      },
+      "enriched_at": null,
+      "enrichment_version": 0,
+      "view_count": 0,
+      "applied_count": 0,
+      "upvote_count": 0,
+      "downvote_count": 0,
+      "my_vote": 0,
+      "reality": {
+        "class": "fresh",
+        "age_days": 0,
+        "repost_count": 0,
+        "mass_posting_count": 0,
+        "fake_freshness": false
+      }
+    },
+    {
+      "public_slug": "sin-titulo",
+      "company": "Delta",
+      "url": "https://delta.example/1"
+    }
+  ],
+  "meta": {
+    "total": 4,
+    "limit": 100,
+    "offset": 0
+  }
+}

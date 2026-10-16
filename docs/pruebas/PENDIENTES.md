@@ -142,6 +142,14 @@ funcionando. Los roles son `writer`, `verifier`, `classifier`, `reviewer` y `ext
       Después, pásame `evals/compat/REPORT.md` para completar `AGENTS_COMPAT.md`, el README y la
       ADR-037.
 
+### Conectores de ATS y portales con API (fase 25.1)
+
+- [ ] «Fuentes → Empresas objetivo»: añade con «Probar» una empresa tuya en Personio, Teamtailor,
+      Workable, SmartRecruiters o Recruitee (el enlace «Cómo encontrarlo» explica el slug), y una
+      búsqueda en Manfred y otra en freehire. Guía: `fase-25.1-prueba-manual.txt`.
+- [ ] `uv run --directory backend cai sources discover --file empresas.txt` con tu lista: ahora
+      prueba también esos cinco ATS (tarda más: hasta 8 ATS × 3 slugs por empresa).
+
 ## 2. `.env.example` (el agente no puede leerlo ni editarlo)
 
 - [ ] Crear o completar `.env.example`, **sin valores reales**, con todas las variables de
@@ -149,7 +157,8 @@ funcionando. Los roles son `writer`, `verifier`, `classifier`, `reviewer` y `ext
   - generales: `CAI_DATA_DIR`, `CAI_DB_URL`, `SOFFICE_PATH`, `CAI_CLIENT_NAME`, `CAI_AGENT`,
     `CAI_EMBEDDINGS`;
   - portales: `CAI_INFOJOBS_CLIENT_ID`, `CAI_INFOJOBS_CLIENT_SECRET`, `CAI_ADZUNA_APP_ID`,
-    `CAI_ADZUNA_APP_KEY`;
+    `CAI_ADZUNA_APP_KEY` y, de la fase 25.1, `CAI_FREEHIRE_BASE_URL` (opcional, comentada: por
+    defecto `https://freehire.me/api/v1`);
   - correo: `CAI_IMAP_HOST`, `CAI_IMAP_PORT`, `CAI_IMAP_USER`, `CAI_IMAP_PASSWORD`,
     `CAI_IMAP_FOLDER` y, de la fase 15, `CAI_IMAP_REPLIES_FOLDER` (por defecto `INBOX`);
   - navegador: `CAI_CAPTURE_EXTENSION_ID`, `CAI_BROWSER_HEADLESS`, `CAI_BROWSER_CHANNEL`,
