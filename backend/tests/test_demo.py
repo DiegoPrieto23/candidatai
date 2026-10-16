@@ -181,3 +181,57 @@ def test_cli_demo_seed(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     error = json.loads(again.stdout)["error"]
     assert error["type"] == "validation_error"
     assert "--force" in error["message"]
+
+
+@pytest.mark.usefixtures("fake_pdf")
+def test_seed_in_english(tmp_path: Path, isolated_env: Path) -> None:
+    """La demo en inglés (fase 23.5b): misma búsqueda, con la candidata y las ofertas en inglés."""
+    target = tmp_path / "data-demo-en"
+    summary = demo.seed(target, now=NOW, lang="en")
+
+    assert summary.jobs == 60
+    assert summary.cvs == 2
+    assert summary.warnings == []
+    assert "Aoife Brennan" in (target / "profile.yaml").read_text(encoding="utf-8")
+    with demo.use_data_dir(target), session_scope() as session:
+        jobs = session.scalars(select(Job)).all()
+        assert all("fictitious company" in job.raw_text for job in jobs[3:])  # salvo las fijas
+        names = {s.kind: s.name for s in session.scalars(select(Source))}
+        assert names["manual_url"] == "Added by URL"
+        assert names["email_alerts"] == "Email alerts"
+        notes = [
+            e.payload.get("note") for e in session.scalars(select(Event)) if e.payload.get("note")
+        ]
+        assert notes and not any(
+            n.startswith(("La ", "Correo", "Respuesta", "Siguen")) for n in notes
+        )
+        assert [j.title for j in jobs if j.risk_flags] == ["Analytics Engineer"]
+        assert sum(network.known_counts(session, [j.id for j in jobs]).values()) > 0
+
+
+def test_seed_rejects_an_unknown_language(tmp_path: Path) -> None:
+    with pytest.raises(demo.DemoSeedError, match="Idioma"):
+        demo.seed(tmp_path / "data-demo", lang="fr")
+
+
+def test_demo_never_uses_the_real_mailbox(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """En una demo, el IMAP de `.env` no se usa: el worker no lee tu buzón real (fase 23.5b)."""
+    from app.services import doctor, worker
+
+    for key, value in {
+        "CAI_IMAP_HOST": "imap.example.com",
+        "CAI_IMAP_USER": "yo@example.com",
+        "CAI_IMAP_PASSWORD": "secreto",
+    }.items():
+        monkeypatch.setenv(key, value)
+    target = tmp_path / "data-demo"
+    demo.prepare_dir(target, force=False)
+    with demo.use_data_dir(target):
+        settings = get_settings()
+        assert settings.demo_mode
+        assert not settings.imap_configured
+        assert not worker.email_alerts_enabled()
+        for check in (doctor.check_email_alerts(settings), doctor.check_email_replies(settings)):
+            assert check.detail.startswith("demo: el IMAP de `.env` no se usa")
+    get_settings.cache_clear()
+    assert get_settings().imap_configured  # fuera de la demo, sí

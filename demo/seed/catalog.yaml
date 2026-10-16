@@ -2,6 +2,30 @@
 # El generador (backend/app/services/demo.py) combina estas listas con una semilla fija: misma
 # entrada, misma demo. Las ofertas se evalúan contra demo/profile.example.yaml.
 
+posting_language: es
+second_language: {language: Inglés, level: B2}   # lo que pide el 40 % de las ofertas
+job_url: "https://empleo.example.com/{company}/ofertas/{n}"
+
+# Textos fijos del historial de la demo.
+texts:
+  expired: La oferta se retiró del portal.
+  followup: Correo de seguimiento.
+  rejected: Respuesta genérica por correo.
+  reply: Respuesta de selección.
+  test: Prueba técnica (SQL)
+  interview: Entrevista con {name}
+  interview_location: Videollamada
+  offer: Oferta por escrito.
+  rejected_after_interview: Siguen con otra candidatura.
+
+# La oferta con la instrucción oculta para IAs (`demo/jobs/02`).
+risky_job:
+  title: Analytics Engineer
+  company: Lonxa Retail Tech
+  location: España
+  text_file: demo/jobs/02-analytics-engineer.txt
+  extraction_file: demo/jobs/02-analytics-engineer.extraction.json
+
 companies:   # nombres inventados; el sector va a `domain` de la extracción
   - {name: Brisa Atlántica Software, sector: software}
   - {name: Faro Norte Analytics, sector: consultoría}
@@ -156,3 +180,30 @@ contacts:   # personas inventadas para los procesos con entrevista
   - {name: Iago Rial, role: Head of Data}
   - {name: Noa Pereira, role: Recruiter}
   - {name: Brais Lema, role: Engineering Manager}
+
+# Plataformas donde el agente busca con tu navegador (`agent_browse`, fase 16). LinkedIn se crea
+# desactivada, como desde la UI.
+platforms:
+  - name: InfoJobs
+    platform: infojobs
+    search_urls:
+      - https://www.infojobs.net/ofertas-trabajo/a-coruna?keyword=data%20engineer
+      - https://www.infojobs.net/ofertas-trabajo?keyword=analytics%20engineer&teleworkingIds=2
+    priority: 1
+    access: login
+  - name: Tecnoempleo
+    platform: tecnoempleo
+    search_urls:
+      - https://www.tecnoempleo.com/ofertas-trabajo/?te=data+engineer&pr=263
+    priority: 2
+  - name: Indeed
+    platform: indeed
+    search_urls:
+      - https://es.indeed.com/jobs?q=data+engineer&l=Galicia
+    priority: 3
+  - name: LinkedIn
+    platform: linkedin
+    search_urls:
+      - https://www.linkedin.com/jobs/search/?keywords=data%20engineer&location=Galicia
+    priority: 4
+    access: login

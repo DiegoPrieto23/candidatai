@@ -1,0 +1,24 @@
+{
+  "title_normalized": "Data Engineer",
+  "seniority": "mid",
+  "years_experience_min": 2,
+  "employment_type": "full_time",
+  "remote_mode": "hybrid",
+  "locations": ["Dublin"],
+  "languages_required": [],
+  "salary": {"min": 50000, "max": 58000, "currency": "EUR", "period": "year"},
+  "must_have_skills": ["Python", "SQL", "Snowflake", "dbt"],
+  "nice_to_have_skills": ["Power BI", "Docker"],
+  "responsibilities": [
+    "Design and maintain ELT pipelines on Snowflake with dbt",
+    "Orchestrate daily loads with Apache Airflow",
+    "Model sales and inventory data for the business",
+    "Review code and document the models"
+  ],
+  "domain": "retail",
+  "posting_language": "en",
+  "application_deadline": "2026-10-31",
+  "red_flags": [],
+  "injection_suspected": false,
+  "injection_excerpt": null
+}

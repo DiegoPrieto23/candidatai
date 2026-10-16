@@ -264,6 +264,13 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
 - **Consecuencias:** los eventos de los CVs de la demo llevan la hora real del seed (son de la
   última semana, así que la cronología sigue en orden). `get_status` devuelve `demo_mode` y la UI
   muestra un banner.
+- **Añadido en la 23.5b:**
+  - la demo existe en dos idiomas: `cai demo seed --lang en` siembra una candidata en Dublín con
+    ofertas y textos en inglés (`demo/en/`); los textos del historial, las plataformas y las
+    fuentes salen del catálogo de cada idioma;
+  - **la demo nunca usa el buzón real**: en una carpeta de demo, `imap_configured` es falso aunque
+    `.env` tenga `CAI_IMAP_*`, así que el worker no lee alertas ni respuestas de verdad (antes, un
+    `cai start` sobre la demo metía en ella los correos reales). `cai doctor` lo explica.
 
 ## ADR-021 · Candidaturas desde portales de empleo: abrir la oferta y rellenar la página del formulario
 - **Contexto:** la candidatura asistida (fase 11) solo sabía rellenar formularios de ATS (Greenhouse,

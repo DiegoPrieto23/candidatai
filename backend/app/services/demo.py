@@ -7,6 +7,10 @@ reparte en las 8 semanas anteriores y se recalcula la proyección.
 
 Determinista: el catálogo (`demo/seed/`) y una semilla fija deciden ofertas, fuentes y destinos.
 Solo cambian las fechas, que son relativas al día en que se ejecuta.
+
+Dos idiomas (fase 23.5b): `es`, la candidata de Galicia (`demo/`), y `en`, una candidata de
+Dublín (`demo/en/`, misma estructura). Lo que escribe la demo (ofertas, notas, hitos, nombres de
+las fuentes) sale del catálogo de su idioma; los mensajes del servidor siguen en español.
 """
 
 import contextlib
@@ -35,20 +39,21 @@ from app.models import Event, Job, Match, Source, Task
 from app.models import JobExtraction as JobExtractionRow
 from app.schemas.cv import CvContent, CvRenderOptions, CvVerification
 from app.schemas.llm_io import JobExtraction
-from app.schemas.sources import SourceInput
+from app.schemas.sources import AgentBrowseSource, SourceInput
 from app.services import capture as capture_service
 from app.services import events, extractions, ingest, network, pipeline, process, profile, tasks
 from app.services.demo_text import posting_text
 from app.services.documents import pdf
 from app.services.documents import service as cv_service
 from app.services.evals import cv as cv_eval
+from app.services.ingestion import browse
 from app.services.ingestion import service as sources_service
 from app.services.ingestion.email import service as email_service
 from app.services.matching import service as matching
 from app.services.normalize import fold, normalize_title
 
 DEMO_DIR = REPO_ROOT / "demo"
-SEED_DIR = DEMO_DIR / "seed"
+LANGUAGES = ("es", "en")
 SEED = 12
 WEEKS = 8
 AGENT_NAME = "demo-seed"  # extracciones y CVs: en la auditoría no parecen de un agente real
@@ -156,12 +161,20 @@ def use_data_dir(target: Path, embeddings: bool = True) -> Iterator[None]:
 # --- Catálogo ------------------------------------------------------------------------------
 
 
-def load_catalog() -> dict[str, Any]:
-    return yaml.safe_load((SEED_DIR / "catalog.yaml").read_text(encoding="utf-8"))
+def demo_dir(lang: str = "es") -> Path:
+    """Los datos de la demo en un idioma: `demo/` (español) o `demo/<idioma>/`."""
+    if lang not in LANGUAGES:
+        options = ", ".join(LANGUAGES)
+        raise DemoSeedError(f"Idioma de la demo no válido: «{lang}». Usa uno de {options}.")
+    return DEMO_DIR if lang == "es" else DEMO_DIR / lang
 
 
-def load_cv_jobs() -> list[dict[str, Any]]:
-    return yaml.safe_load((SEED_DIR / "cvs.yaml").read_text(encoding="utf-8"))
+def load_catalog(lang: str = "es") -> dict[str, Any]:
+    return yaml.safe_load((demo_dir(lang) / "seed" / "catalog.yaml").read_text(encoding="utf-8"))
+
+
+def load_cv_jobs(lang: str = "es") -> list[dict[str, Any]]:
+    return yaml.safe_load((demo_dir(lang) / "seed" / "cvs.yaml").read_text(encoding="utf-8"))
 
 
 def _slug(text: str) -> str:
@@ -220,7 +233,7 @@ class _Planner:
         must = rng.sample(role["must"], k=min(len(role["must"]), rng.choice((3, 4))))
         nice = rng.sample(role["nice"], k=min(len(role["nice"]), rng.choice((1, 2))))
         languages = role.get("languages") or (
-            [{"language": "Inglés", "level": "B2"}] if rng.random() < 0.4 else []
+            [self.catalog["second_language"]] if rng.random() < 0.4 else []
         )
         salary = None
         if rng.random() < 0.6:
@@ -239,7 +252,7 @@ class _Planner:
             nice_to_have_skills=[s for s in nice if s not in must],
             responsibilities=list(role["responsibilities"]),
             domain=company["sector"],
-            posting_language="es",
+            posting_language=self.catalog["posting_language"],
             application_deadline=None,
             red_flags=[],
             injection_suspected=False,
@@ -264,10 +277,10 @@ class _Planner:
         return self.rng.choices([s["kind"] for s in plain], [s["weight"] for s in plain])[0]
 
 
-def _featured() -> list[JobPlan]:
-    """Las ofertas fijas: dos con CV (`cvs.yaml`) y la de la instrucción oculta (`demo/jobs/02`)."""
+def _featured(catalog: dict[str, Any], lang: str) -> list[JobPlan]:
+    """Las ofertas fijas: dos con CV (`cvs.yaml`) y la de la instrucción oculta (`jobs/02`)."""
     plans = []
-    for item in load_cv_jobs():
+    for item in load_cv_jobs(lang):
         job = item["job"]
         text = (
             (REPO_ROOT / job["text_file"]).read_text(encoding="utf-8")
@@ -291,17 +304,17 @@ def _featured() -> list[JobPlan]:
                 cv=item["content"],
             )
         )
-    risky = JobExtraction.model_validate_json(
-        (DEMO_DIR / "jobs" / "02-analytics-engineer.extraction.json").read_text(encoding="utf-8")
-    )
+    risky = catalog["risky_job"]
     plans.append(
         JobPlan(
             fate="pending_triage",
-            title="Analytics Engineer",
-            company="Lonxa Retail Tech",
-            location="España",
-            text=(DEMO_DIR / "jobs" / "02-analytics-engineer.txt").read_text(encoding="utf-8"),
-            extraction=risky,
+            title=risky["title"],
+            company=risky["company"],
+            location=risky["location"],
+            text=(REPO_ROOT / risky["text_file"]).read_text(encoding="utf-8"),
+            extraction=JobExtraction.model_validate_json(
+                (REPO_ROOT / risky["extraction_file"]).read_text(encoding="utf-8")
+            ),
             source_key="manual_text",
         )
     )
@@ -361,10 +374,10 @@ def _timeline(plan: JobPlan, rng: random.Random) -> None:
     plan.offsets["age"] = _u(rng, span + newest, min(oldest, WEEKS * 7 - 0.5))
 
 
-def build_plans(rng: random.Random) -> list[JobPlan]:
-    catalog = load_catalog()
+def build_plans(rng: random.Random, lang: str = "es") -> list[JobPlan]:
+    catalog = load_catalog(lang)
     planner = _Planner(catalog, rng)
-    plans = _featured()
+    plans = _featured(catalog, lang)
     for job in plans:
         planner.used.setdefault(job.company, []).append(normalize_title(job.title))
     remaining = dict(FATES)
@@ -402,6 +415,7 @@ def build_plans(rng: random.Random) -> list[JobPlan]:
 
 
 def _sources(session: Session, catalog: dict[str, Any]) -> dict[str, Source]:
+    """Las fuentes de la demo, con el nombre del catálogo si lo da (`source_names`)."""
     found: dict[str, Source] = {}
     for spec in catalog["sources"]:
         kind = spec["kind"]
@@ -419,7 +433,11 @@ def _sources(session: Session, catalog: dict[str, Any]) -> dict[str, Source]:
             sources_service.set_active(session, view.id, False)
             source = session.get(Source, view.id)
             assert source is not None
+        if kind in catalog.get("source_names", {}):
+            source.name = catalog["source_names"][kind]
         found[kind] = source
+    for spec in catalog.get("platforms", []):
+        browse.add_platform(session, AgentBrowseSource.model_validate(spec))
     return found
 
 
@@ -446,9 +464,15 @@ def _user(session: Session, job_id: int, type_: str, when: datetime, **kwargs: A
 
 
 def _story(
-    session: Session, plan: JobPlan, job_id: int, now: datetime, contact: dict[str, Any]
+    session: Session,
+    plan: JobPlan,
+    job_id: int,
+    now: datetime,
+    contact: dict[str, Any],
+    texts: dict[str, str],
 ) -> None:
-    """Los pasos del usuario (triaje, envío, respuestas, hitos), con su fecha."""
+    """Los pasos del usuario (triaje, envío, respuestas, hitos), con su fecha. Las notas y los
+    títulos salen del catálogo (`texts`), en el idioma de la demo."""
     o, found_at = plan.offsets, plan.found_at
     assert found_at is not None
 
@@ -465,17 +489,17 @@ def _story(
     if fate in ("approved", "cv_ready"):
         return
     if fate == "expired":
-        _user(session, job_id, "expired", at("end"), note="La oferta se retiró del portal.")
+        _user(session, job_id, "expired", at("end"), note=texts["expired"])
         return
     _user(session, job_id, "applied_manually", at("applied"), channel=plan.channel)
     if "followup" in o:
-        _user(session, job_id, "followup_sent", at("followup"), note="Correo de seguimiento.")
+        _user(session, job_id, "followup_sent", at("followup"), note=texts["followup"])
     if fate == "applied":
         return
     if fate == "rejected_after_apply":
-        _user(session, job_id, "rejected", at("end"), note="Respuesta genérica por correo.")
+        _user(session, job_id, "rejected", at("end"), note=texts["rejected"])
         return
-    _user(session, job_id, "reply_received", at("reply"), note="Respuesta de selección.")
+    _user(session, job_id, "reply_received", at("reply"), note=texts["reply"])
     process.add_contact(
         session,
         job_id,
@@ -492,7 +516,7 @@ def _story(
             job_id,
             process.MilestoneCreate(
                 kind="test",
-                title="Prueba técnica (SQL)",
+                title=texts["test"],
                 starts_at=now + timedelta(days=plan.starts_in),
                 all_day=True,
                 occurred_at=at("milestone"),
@@ -516,10 +540,10 @@ def _story(
         job_id,
         process.MilestoneCreate(
             kind="interview",
-            title=f"Entrevista con {contact['name']}",
+            title=texts["interview"].format(name=contact["name"]),
             starts_at=starts,
             ends_at=starts + timedelta(hours=1),
-            location="Videollamada",
+            location=texts["interview_location"],
             occurred_at=at("milestone"),
         ),
     )
@@ -531,9 +555,9 @@ def _story(
         process.MilestoneStatusChange(status="done", occurred_at=starts + timedelta(hours=1)),
     )
     if fate == "offer":
-        _user(session, job_id, "offer_received", at("end"), note="Oferta por escrito.")
+        _user(session, job_id, "offer_received", at("end"), note=texts["offer"])
     else:
-        _user(session, job_id, "rejected", at("end"), note="Siguen con otra candidatura.")
+        _user(session, job_id, "rejected", at("end"), note=texts["rejected_after_interview"])
 
 
 def _pdf_engine() -> tuple[str | None, str | None]:
@@ -564,8 +588,9 @@ def _write_cv(session: Session, job_id: int, content: dict[str, Any], template: 
     )
 
 
-def _populate(session: Session, plans: list[JobPlan], now: datetime) -> list[str]:
-    catalog = load_catalog()
+def _populate(
+    session: Session, plans: list[JobPlan], now: datetime, catalog: dict[str, Any]
+) -> list[str]:
     sources = _sources(session, catalog)
     template, _engine = _pdf_engine()
     warnings: list[str] = []
@@ -579,7 +604,7 @@ def _populate(session: Session, plans: list[JobPlan], now: datetime) -> list[str
             title=plan.title,
             company=plan.company,
             text=plan.text,
-            url=f"https://empleo.example.com/{_slug(plan.company)}/ofertas/{n}",
+            url=catalog["job_url"].format(company=_slug(plan.company), n=n),
             location=plan.location,
             posted_at=None,
             html=None,
@@ -599,7 +624,7 @@ def _populate(session: Session, plans: list[JobPlan], now: datetime) -> list[str
                 )
             matching.compute_match(session, job_id)
         _retime(session, job_id, plan.found_at)
-        _story(session, plan, job_id, now, contacts[n % len(contacts)])
+        _story(session, plan, job_id, now, contacts[n % len(contacts)], catalog["texts"])
         if plan.cv is not None:
             if template is None:
                 warnings.append(
@@ -620,8 +645,10 @@ def seed(
     now: datetime | None = None,
     eval_cv: bool = False,
     compat: bool = False,
+    lang: str = "es",
 ) -> DemoSummary:
-    """Crea la demo en `target` (por defecto `data-demo/`). Ver la cabecera del módulo.
+    """Crea la demo en `target` (por defecto `data-demo/`) en el idioma `lang` (`es` o `en`).
+    Ver la cabecera del módulo.
 
     Con `eval_cv`, añade además los casos del eval de CV (`evals/cv/`) como ofertas aprobadas y
     sin CV. Con `compat`, las 5 ofertas de la matriz de compatibilidad (`evals/compat/jobs.txt`)
@@ -631,22 +658,24 @@ def seed(
     extra = eval_cv or compat
     if extra and not force and is_demo_dir(target) and (target / "candidatai.db").is_file():
         return add_eval_cases(target, eval_cv=eval_cv, compat=compat)
+    source = demo_dir(lang)
+    catalog = load_catalog(lang)
     prepare_dir(target, force)
-    shutil.copyfile(DEMO_DIR / "profile.example.yaml", target / "profile.yaml")
+    shutil.copyfile(source / "profile.example.yaml", target / "profile.yaml")
     shutil.copyfile(DEMO_DIR / "photo.png", target / "photo.png")
     # Red de LinkedIn ficticia (fase 18), donde la buscaría `cai contacts import-linkedin`.
     linkedin = target / "documentos" / "linkedin"
     linkedin.mkdir(parents=True)
-    shutil.copyfile(DEMO_DIR / "linkedin" / "Connections.csv", linkedin / "Connections.csv")
+    shutil.copyfile(source / "linkedin" / "Connections.csv", linkedin / "Connections.csv")
     (target / "tmp").mkdir()  # entradas `--file` de los agentes sin MCP
     now = now or datetime.now(UTC)
     rng = random.Random(SEED)
-    plans = build_plans(rng)
+    plans = build_plans(rng, lang)
     with use_data_dir(target, embeddings=False):
         migrations.upgrade()
         with session_scope() as session:
             profile.import_profile(session, target / "profile.yaml")
-            warnings = _populate(session, plans, now)
+            warnings = _populate(session, plans, now, catalog)
             network.import_connections(session, linkedin / "Connections.csv")
             _add_cases(session, eval_cv, compat)
         with session_scope() as session:

@@ -496,6 +496,11 @@ def demo_seed(
         help="Añade las 5 ofertas de la matriz de compatibilidad (evals/compat/), solo con su "
         "texto: por extraer.",
     ),
+    lang: str = typer.Option(
+        "es",
+        "--lang",
+        help="Idioma de la demo: es (candidata en Galicia) o en (candidata en Dublín, en inglés).",
+    ),
     as_json: bool = JSON_OPTION,
 ) -> None:
     """Crea una carpeta de datos con 60 ofertas ficticias, 8 semanas de historial y 2 CVs."""
@@ -503,7 +508,7 @@ def demo_seed(
     from app.services.evals.cv import CvEvalFileError
 
     try:
-        summary = demo.seed(target, force=force, eval_cv=eval_cv, compat=compat)
+        summary = demo.seed(target, force=force, eval_cv=eval_cv, compat=compat, lang=lang)
     except (demo.DemoSeedError, CvEvalFileError) as exc:
         if as_json:
             typer.echo(dump_json(ToolError("validation_error", str(exc)).payload()))

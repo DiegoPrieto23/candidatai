@@ -17,5 +17,13 @@
     "mustHave": "Skills obligatorias",
     "niceToHave": "Skills deseables",
     "assessment": "Valoración del agente"
+  },
+  "notes": {
+    "off": "Similitud semántica desactivada (CAI_EMBEDDINGS=off).",
+    "notInstalled": "Similitud semántica no disponible: instala el extra con `uv sync --extra matching` (en backend/).",
+    "unavailable": "Similitud semántica no disponible.",
+    "failed": "No se pudo calcular la similitud semántica ({{error}}).",
+    "noMust": "La oferta no lista skills obligatorias: la cobertura obligatoria no cuenta.",
+    "noNice": "La oferta no lista skills deseables: la cobertura deseable no cuenta."
   }
 }

@@ -1,0 +1,211 @@
+# FICTITIOUS catalogue for `cai demo seed --lang en` (phase 23.5b). Made-up companies, people and
+# jobs, in Ireland. Same structure as demo/seed/catalog.yaml; the jobs are checked against
+# demo/en/profile.example.yaml.
+
+posting_language: en
+second_language: {language: English, level: C1}   # what 40% of the jobs ask for
+job_url: "https://jobs.example.com/{company}/jobs/{n}"
+
+# Names of the sources the services create, in the demo's language.
+source_names:
+  manual_url: Added by URL
+  manual_text: Added as pasted text
+  email_alerts: Email alerts
+  browser_capture: “Send to CandidatAI” button
+
+# Fixed texts of the demo's history.
+texts:
+  expired: The job was taken down from the board.
+  followup: Follow-up email.
+  rejected: Generic email reply.
+  reply: Reply from the recruiting team.
+  test: Technical test (SQL)
+  interview: Interview with {name}
+  interview_location: Video call
+  offer: Written offer.
+  rejected_after_interview: They went ahead with another candidate.
+
+# The job with a hidden instruction for AIs (`jobs/02`).
+risky_job:
+  title: Analytics Engineer
+  company: Turlough Retail Tech
+  location: Ireland
+  text_file: demo/en/jobs/02-analytics-engineer.txt
+  extraction_file: demo/en/jobs/02-analytics-engineer.extraction.json
+
+companies:
+  - {name: Liffey Signal Software, sector: software}
+  - {name: Burren Point Analytics, sector: consulting}
+  - {name: Shannon Freightlines, sector: logistics}
+  - {name: Claddagh Cover Digital, sector: insurance}
+  - {name: Tara Wind Energy, sector: energy}
+  - {name: Moher Street Retail, sector: retail}
+  - {name: Selkie Fintech, sector: banking}
+  - {name: Glendalough Health Data, sector: healthcare}
+  - {name: Wild Atlantic Trips Online, sector: tourism}
+  - {name: Banshee Games, sector: video games}
+  - {name: Copper Kettle Foods, sector: food}
+  - {name: Corrib Telecom, sector: telecommunications}
+  - {name: Púca Labs, sector: software}
+  - {name: Boyne Industrial 4.0, sector: manufacturing}
+  - {name: Quayside Marketplace, sector: retail}
+  - {name: Ogham Learning, sector: education}
+  - {name: Lough Swilly Marine Tech, sector: manufacturing}
+  - {name: Rampart Cybersecurity, sector: cybersecurity}
+  - {name: Inis Mobility, sector: transport}
+  - {name: Barley Field Agri Data, sector: agriculture}
+  - {name: Halfpenny Media, sector: media}
+  - {name: Fanlight Property Digital, sector: real estate}
+  - {name: Saltee Pharma, sector: pharma}
+  - {name: Ardee Private Bank, sector: banking}
+  - {name: Spire Cloud Architecture, sector: software}
+  - {name: Hearth Home Insurance, sector: insurance}
+  - {name: Drumlin Distribution, sector: logistics}
+  - {name: Sunbeam Solar Ireland, sector: energy}
+  - {name: Curragh Travel, sector: tourism}
+  - {name: Kestrel Consulting Group, sector: consulting}
+
+# `fits`: match the demo profile (preferred, or Limerick when not on-site);
+# `filtered`: the work mode or the place doesn't fit (on-site outside the preferred cities).
+locations:
+  fits:
+    - {city: Dublin, modes: [hybrid, remote]}
+    - {city: Cork, modes: [hybrid, remote]}
+    - {city: Galway, modes: [hybrid, remote]}
+    - {city: Limerick, modes: [hybrid, remote]}
+    - {city: Ireland, modes: [remote]}
+  filtered:
+    - {city: Berlin, modes: [onsite]}
+    - {city: Amsterdam, modes: [onsite]}
+    - {city: Limerick, modes: [onsite]}
+
+roles:
+  - title: Data Engineer
+    variants: [Data Engineer, Data Engineer (Snowflake), Data Platform Engineer]
+    fit: good
+    seniority: [junior, mid]
+    years: [null, 1, 2, 3]
+    must: [Python, SQL, Snowflake, ETL, Apache Airflow]
+    nice: [dbt, Docker, AWS, Power BI]
+    responsibilities:
+      - Design and maintain data pipelines in Python
+      - Model analytical data in Snowflake
+      - Orchestrate daily loads and monitor their quality
+      - Document the models and review code
+  - title: Analytics Engineer
+    variants: [Analytics Engineer, Analytics Engineer (dbt)]
+    fit: good
+    seniority: [junior, mid]
+    years: [null, 2, 3]
+    must: [SQL, dbt, Snowflake, Python]
+    nice: [Power BI, Dimensional modeling, Looker]
+    responsibilities:
+      - Build the analytical data model with dbt
+      - Define business metrics with product
+      - Automate data quality checks
+  - title: Data Analyst
+    variants: [Data Analyst, Business Data Analyst, Data Analyst (Power BI)]
+    fit: good
+    seniority: [junior, mid]
+    years: [null, 1, 2]
+    must: [SQL, Power BI, DAX, Python]
+    nice: [Snowflake, Excel, Statistics]
+    responsibilities:
+      - Build Power BI dashboards for the business
+      - Analyse sales and operations and present findings
+      - Define KPIs with the business teams
+  - title: BI Developer
+    variants: [BI Developer, BI Developer (Qlik)]
+    fit: weak
+    seniority: [mid]
+    years: [2, 3]
+    must: [Qlik Sense, Tableau, SAP BW, SQL]
+    nice: [Oracle, PL/SQL]
+    responsibilities:
+      - Maintain the corporate reports in Qlik and Tableau
+      - Integrate SAP data into the data warehouse
+  - title: Data Scientist
+    variants: [Data Scientist, Machine Learning Scientist]
+    fit: weak
+    seniority: [mid]
+    years: [2, 3, 4]
+    must: [R, PyTorch, Deep Learning, Statistics]
+    nice: [Python, Spark]
+    responsibilities:
+      - Train computer vision models
+      - Design experiments and measure their impact
+  - title: Backend Developer
+    variants: [Backend Developer (Java), Java Backend Engineer]
+    fit: weak
+    seniority: [junior, mid]
+    years: [2, 3]
+    must: [Java, Spring Boot, Kubernetes, PostgreSQL]
+    nice: [Kafka, AWS]
+    responsibilities:
+      - Develop Java microservices with Spring Boot
+      - Maintain the platform on Kubernetes
+  - title: Senior Data Engineer
+    variants: [Senior Data Engineer, Lead Data Engineer]
+    fit: filtered
+    seniority: [senior, lead]
+    years: [6, 8]
+    must: [Python, Spark, Databricks, Scala]
+    nice: [Kafka, Terraform]
+    responsibilities:
+      - Lead the data platform architecture
+      - Mentor a team of five engineers
+  - title: Data Engineer (Germany)
+    variants: [Data Engineer – Remote DACH]
+    fit: filtered
+    seniority: [mid]
+    years: [3]
+    must: [Python, SQL, Azure Data Factory]
+    nice: [Databricks]
+    languages: [{language: German, level: C1}]
+    responsibilities:
+      - Build Azure pipelines for German-speaking clients
+
+sources:
+  - {kind: manual_url, weight: 3}
+  - {kind: manual_text, weight: 2}
+  - {kind: email_alerts, weight: 4}
+  - {kind: browser_capture, weight: 2}
+  - {kind: greenhouse, name: Liffey Signal Software, slug: liffey-signal-demo, weight: 2}
+  - {kind: lever, name: Selkie Fintech, slug: selkie-fintech-demo, weight: 2}
+
+discard_notes:
+  - The company has a poor reputation among people I know in the sector.
+  - The project is maintenance of a legacy system.
+
+contacts:
+  - {name: Siobhán Doyle, role: Talent Acquisition}
+  - {name: Cian Murphy, role: Head of Data}
+  - {name: Róisín Kelly, role: Recruiter}
+  - {name: Darragh Walsh, role: Engineering Manager}
+
+# Platforms where the agent searches with your browser (`agent_browse`, phase 16). LinkedIn is
+# created turned off, as from the UI.
+platforms:
+  - name: Indeed
+    platform: indeed
+    search_urls:
+      - https://ie.indeed.com/jobs?q=data+engineer&l=Dublin
+      - https://ie.indeed.com/jobs?q=analytics+engineer&l=Ireland&remotejob=1
+    priority: 1
+  - name: IrishJobs
+    platform: irishjobs
+    search_urls:
+      - https://www.irishjobs.ie/jobs/data-engineer/in-dublin
+    priority: 2
+  - name: Jobs.ie
+    platform: jobsie
+    search_urls:
+      - https://www.jobs.ie/data-engineer-jobs
+    priority: 3
+    access: login
+  - name: LinkedIn
+    platform: linkedin
+    search_urls:
+      - https://www.linkedin.com/jobs/search/?keywords=data%20engineer&location=Ireland
+    priority: 4
+    access: login

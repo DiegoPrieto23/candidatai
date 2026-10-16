@@ -380,6 +380,20 @@ La carta es un documento propio, con sus indicaciones, su verificación y sus re
 - Para agentes y terminal: `get_received_offer` ↔ `jh received-offers show`.
 
 
+## 23 · CandidatAI — 2026-10-13 · Claude Code (Opus 5.5)
+- **Nombre nuevo:** Job Hunter pasa a ser **CandidatAI**: la CLI es `cai`, el servidor MCP
+  `candidatai` y las variables `CAI_*` (ADR-034). Los skills y los roles pasan a inglés
+  (`/generate-cv 42`, `writer`, `verifier`…).
+- **Barra lateral** agrupada y plegable, con lo que te espera en cada página y un cajón en el móvil.
+- **Instalación con un clic:** `install.ps1` descarga la release, lo prepara todo y deja un acceso
+  directo; `cai start` arranca la API con la UI compilada y el worker, y abre el navegador
+  (ADR-035).
+- **Logo:** el torso de una persona con un sello de verificado en lugar de la cabeza.
+- **UI en español e inglés**, con un selector de idioma junto al del tema (ADR-036).
+- **README en dos idiomas con sus medios:** capturas, GIF y vídeo hechos con la demo en el idioma de
+  cada README. La demo existe también en inglés (`cai demo seed --lang en`) y nunca lee tu buzón.
+  Guía para probar todas las funciones con la demo: `docs/pruebas/guia-prueba-demo.md`.
+
 ## 22 · LinkedIn por sus endpoints públicos (opcional) — 2026-10-12 · Claude Code (Opus 5.5)
 - **«Búsqueda pública sin sesión»** en la tarjeta de LinkedIn de Plataformas, **apagada por
   defecto**: si la activas (aceptando el aviso), la app consulta una vez al día la búsqueda pública

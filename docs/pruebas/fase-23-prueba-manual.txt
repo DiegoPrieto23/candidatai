@@ -1,0 +1,65 @@
+PRUEBA MANUAL · FASE 23 · CANDIDATAI (CIERRE: MEDIOS, README Y DEMO EN INGLÉS)
+=============================================================================
+
+Objetivo: comprobar con la app de verdad lo que cierra la fase 23 (subfase 23.5b):
+- los dos README se ven bien en GitHub, con sus capturas, GIF y modo oscuro;
+- la demo en inglés se siembra y se ve entera en inglés;
+- una demo nunca lee tu buzón real, aunque `.env` tenga el correo configurado.
+Lo de las subfases anteriores (nombre, skills, arranque, idioma) está en PENDIENTES.md, §1.
+Para recorrer todas las funciones con la demo: guia-prueba-demo.md.
+Duración aproximada: 20 minutos.
+
+
+REQUISITOS
+----------
+- Rama: fase/23-candidatai (o main, si ya está fusionada). Sin migraciones nuevas.
+- UI compilada (`cd frontend; pnpm build`) para usar `cai start`.
+- Tu app real parada, o arranca la demo en otro puerto (`--port 8001`).
+
+
+PARTE 1 · Los README en GitHub (5 min, tras el push)
+----------------------------------------------------
+1. Abre el repositorio en github.com. README.md (inglés):
+   → el banner, el GIF de triaje, el diagrama «How it works», las capturas de Home y To review,
+     el GIF del CV y, en «Try it», el GIF de `cai start`. Todo en inglés y con el logo nuevo.
+   → despliega los bloques de detalles (Job page, Templates, Skills, Sources, Agent, Sidebar):
+     cada uno enseña sus capturas.
+2. Cambia GitHub a tema oscuro (Settings → Appearance): Home, To review y la sección del CV de
+   la ficha cambian a su captura oscura.
+3. Abre README.es.md: lo mismo, con capturas en español de la demo española.
+4. El enlace «short video tour» / «recorrido en vídeo» abre el .mp4 (GitHub no lo incrusta solo:
+   ver PENDIENTES.md).
+→ Apunta cualquier imagen rota o texto con la marca antigua («Job Hunter», «JH»).
+
+
+PARTE 2 · Demo en inglés (8 min)
+--------------------------------
+En PowerShell, desde backend/:
+1. uv run cai demo seed --lang en --dir data-demo-en
+   → dice que ha creado 60 ofertas y 2 CVs.
+2. $env:CAI_DATA_DIR = "data-demo-en"; uv run cai start
+   → se abre el navegador con el banner «Demo mode».
+3. Si la UI sale en español, pulsa el globo de la barra lateral y elige «English».
+   → candidata Aoife Brennan, en Dublín; empresas y ofertas en inglés (Selkie Fintech…).
+4. Abre Fuentes → Plataformas: Indeed, IrishJobs, Jobs.ie y LinkedIn (desactivada).
+5. Abre una oferta de «To review»: en el desglose, la nota «Semantic similarity turned off…» sale
+   en inglés.
+6. uv run cai demo seed --lang fr --dir data-demo-fr
+   → error claro: idioma desconocido, con los disponibles (es, en). No crea la carpeta.
+
+
+PARTE 3 · La demo no toca tu buzón (5 min, solo si tienes el correo en .env)
+---------------------------------------------------------------------------
+1. Con la demo de la parte 2 arrancada, espera un par de minutos.
+   → en «Inbox» (y su pestaña de alertas) no aparece ningún correo tuyo: solo los de la demo.
+2. $env:CAI_DATA_DIR = "data-demo-en"; uv run cai doctor
+   → «Alertas por correo» sale en OK con «demo: el IMAP de `.env` no se usa (tu buzón real queda
+     fuera)…», no como error.
+3. Para la demo (Ctrl+C) y arranca tu app real sin CAI_DATA_DIR: el correo vuelve a leerse como
+   siempre.
+
+
+AL TERMINAR
+-----------
+- Borra las carpetas de prueba si no las quieres: data-demo-en (y data-demo-fr si se creó).
+- Marca en PENDIENTES.md lo que hayas hecho y apunta debajo con «→» lo que falle.

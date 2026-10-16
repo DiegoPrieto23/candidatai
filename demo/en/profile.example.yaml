@@ -1,0 +1,160 @@
+# Sample profile: a FICTITIOUS candidate, for the English demo (`cai demo seed --lang en`).
+# Same schema as demo/profile.example.yaml. Your real profile goes in data/profile.yaml.
+schema_version: 1
+
+personal:
+  name: Aoife Brennan
+  email: aoife.brennan@example.com         # get_profile doesn't return it
+  phone: "+353 80 000 0000"                # get_profile doesn't return it; only in the delivered CV
+  linkedin: linkedin.com/in/aoife-brennan-demo
+  github: github.com/aoife-brennan-demo
+  city: Dublin
+  profile_location: Dublin, Ireland
+  availability: 2 weeks
+  mobility: full driving licence
+
+headline: Data Engineer · Python · SQL · Snowflake · Power BI
+
+summary:
+  en: >
+    Data Engineer with three years building ETL pipelines and analytical models on Snowflake for
+    retail and banking clients, comfortable between engineering (Python, SQL, orchestration) and
+    business (Power BI, KPI design), recently applying LLMs to data problems.
+  es: >
+    Data Engineer con tres años construyendo pipelines ETL y modelos analíticos sobre Snowflake
+    para clientes de retail y banca, entre la ingeniería y el negocio, y aplicando LLMs a problemas
+    de datos.
+
+experience:
+  - id: exp-northgate
+    company: Northgate Consulting (fictitious)
+    city: Dublin
+    role: Data Engineer
+    start: 2024-03
+    end: present
+    context: Technology consultancy; data projects for retail clients.
+    achievements:
+      - id: a1
+        text: Migrated 40 ETL processes from SSIS to Python pipelines on Snowflake.
+        metrics: "-35% nightly load time"
+        skills: [Python, Snowflake, ETL, SQL]
+      - id: a2
+        text: Designed the sales and stock dimensional model used by 3 business teams.
+        skills: [SQL, Snowflake, Dimensional modeling]
+      - id: a3
+        text: Built an internal LangChain assistant to search project technical documentation.
+        nda: true
+        skills: [Python, LangChain, LLMs]
+  - id: exp-datawest
+    company: DataWest (fictitious)
+    city: Galway
+    role: Junior Data Engineer
+    start: 2023-01
+    end: 2024-02
+    context: Data team at an industrial software company.
+    achievements:
+      - id: a1
+        text: Automated weekly Power BI reports that used to be prepared by hand.
+        metrics: "6 h/week saved for the operations team"
+        skills: [Power BI, SQL, DAX]
+      - id: a2
+        text: Helped build ingestion pipelines for sensor data.
+        skills: [Python, ETL]
+
+projects:
+  - id: prj-fyp
+    name: Anomaly detection in household energy use (final-year project)
+    date: 2022-06
+    text: Anomaly detection model on energy-consumption time series from 500 homes.
+    url: github.com/aoife-brennan-demo/fyp-anomalies   # optional; shown in the CV as a link
+    skills: [Python, scikit-learn, Time series]
+
+education:
+  - id: edu-bsc
+    title: BSc in Data Science and Engineering
+    center: Fictitious University of Dublin
+    start: 2018-09
+    end: 2022-06
+
+certifications:
+  - id: cert-aws-ccp
+    name: AWS Certified Cloud Practitioner
+    issuer: Amazon Web Services
+    date: 2024-05
+
+extra_sections:
+  - id: volunteering
+    title: {en: Volunteering, es: Voluntariado}
+    items:
+      - id: v1
+        text: Data analysis mentor in an introductory programme for further-education students
+        date: 2023-10
+
+languages:
+  - {language: English, level: Native}
+  - {language: Spanish, level: B2}
+
+skills:                      # private levels: F strong · C+ · C familiar · B basic
+  - {name: Python, level: F, category: Languages}
+  - {name: SQL, level: F, category: Languages}
+  - {name: Snowflake, level: F, category: Data}
+  - {name: ETL, level: F, category: Data}
+  - {name: Power BI, level: C+, category: BI}
+  - {name: DAX, level: C, category: BI}
+  - {name: Dimensional modeling, level: C+, category: Data}
+  - {name: LangChain, level: C+, category: AI}
+  - {name: LLMs, level: C+, category: AI}
+  - {name: AWS, level: C, category: Cloud}
+  - {name: scikit-learn, level: C, category: ML}
+  - {name: Time series, level: C, category: ML}
+
+basic_skills: [dbt, Apache Airflow, Docker]   # only if the job asks for it, as "knowledge of X"
+
+stories:                     # STAR stories for interviews; they cite achievements as evidence
+  - id: st-migration
+    title: Migrating from SSIS to Python
+    situation: Slow, fragile nightly loads in SSIS.
+    task: Migrate without stopping daily reporting.
+    action: Migrated domain by domain, validating the data in parallel for two weeks per domain.
+    result: -35% load time and zero incidents during the switch.
+    evidence: [exp-northgate/a1]
+  - id: st-reports
+    title: Automating manual reports
+    situation: Operations lost hours every week putting reports together.
+    task: Automate them without changing what people looked at.
+    action: Rebuilt the reports in Power BI on automated sources and validated them with the team.
+    result: 6 h/week saved.
+    evidence: [exp-datawest/a1]
+
+preferences:
+  roles: [Data Engineer, Analytics Engineer, Data Analyst]   # by priority
+  seniority_target: [junior, mid]
+  max_years_required: 4
+  remote_modes: [remote, hybrid]
+  locations:
+    preferred: [Dublin, Cork, Galway]
+    allowed: [Limerick]            # only if hybrid or remote
+    excluded: []
+  languages_for_work: [en, es]
+  cv:
+    default_template: ats-simple
+    photo_file: photo.jpg
+    photo_policy: {default: false, by_country: {ES: true, DE: true}}
+    template_rules:
+      - when: {ats: [workday, taleo, successfactors, icims]}
+        use: ats-simple
+    instructions: >-
+      Give more weight to pipeline optimisation and business impact than to maintenance tasks.
+    avoid: [Clichés like "passionate" or "results-driven"]
+  cover_letter:
+    max_words: 170
+    tone: warm and direct
+    sign_off: {en: "Kind regards,", es: "Un saludo,"}
+    instructions: >-
+      I moved back to Ireland to work in data and I'm looking for teams that care about data
+      quality. I prefer to close by offering a short call.
+    avoid: [mentioning salary, clichés about passion]
+    default_format: text
+
+private:                     # never leaves through the MCP or any document
+  salary_floor_eur: null

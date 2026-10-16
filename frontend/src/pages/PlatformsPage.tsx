@@ -556,7 +556,7 @@ function PlatformRow({ source }: { source: SourceView }) {
             onValueChange={(v) => change({ priority: Number(v) })}
             disabled={update.isPending}
           >
-            <SelectTrigger className="h-8 w-24" aria-label={t('row.priorityAria', { name: source.name })}>
+            <SelectTrigger className="h-8 w-32" aria-label={t('row.priorityAria', { name: source.name })}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -576,7 +576,8 @@ function PlatformRow({ source }: { source: SourceView }) {
             disabled={update.isPending}
           >
             <SelectTrigger className="h-8 w-36" aria-label={t('row.accessAria', { name: source.name })}>
-              <SelectValue />
+              {/* Solo el nombre: la pista de cada opción va en el menú. */}
+              <SelectValue>{t(`access.${browse.access}`)}</SelectValue>
             </SelectTrigger>
             <SelectContent>
               {ACCESS.map((a) => (

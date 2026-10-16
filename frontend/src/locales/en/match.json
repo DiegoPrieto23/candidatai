@@ -17,5 +17,13 @@
     "mustHave": "Must-have skills",
     "niceToHave": "Nice-to-have skills",
     "assessment": "Agent's assessment"
+  },
+  "notes": {
+    "off": "Semantic similarity turned off (CAI_EMBEDDINGS=off).",
+    "notInstalled": "Semantic similarity unavailable: install the extra with `uv sync --extra matching` (in backend/).",
+    "unavailable": "Semantic similarity unavailable.",
+    "failed": "Couldn't calculate the semantic similarity ({{error}}).",
+    "noMust": "The job lists no must-have skills: must-have coverage doesn't count.",
+    "noNice": "The job lists no nice-to-have skills: nice-to-have coverage doesn't count."
   }
 }

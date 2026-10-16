@@ -324,6 +324,13 @@ def check_email_alerts(
     local = has_local_mail(settings.inbox_dir)
     if not settings.imap_configured:
         partial = settings.imap_host or settings.imap_user or settings.imap_password
+        if partial and settings.demo_mode:
+            return CheckResult(
+                name=name,
+                status=CheckStatus.OK,
+                detail="demo: el IMAP de `.env` no se usa (tu buzón real queda fuera); "
+                "deja correos .eml en la carpeta inbox/ de la demo",
+            )
         if partial:
             return CheckResult(
                 name=name,
@@ -361,6 +368,14 @@ def check_email_replies(
 
     name = "Respuestas por correo"
     if not settings.imap_configured:
+        partial = settings.imap_host or settings.imap_user or settings.imap_password
+        if partial and settings.demo_mode:
+            return CheckResult(
+                name=name,
+                status=CheckStatus.OK,
+                detail="demo: el IMAP de `.env` no se usa (tu buzón real queda fuera); "
+                "deja las respuestas .eml en la carpeta inbox/respuestas/ de la demo",
+            )
         return CheckResult(
             name=name,
             status=CheckStatus.OK,

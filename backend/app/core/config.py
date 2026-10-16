@@ -130,6 +130,11 @@ class Settings(BaseSettings):
 
     @property
     def imap_configured(self) -> bool:
+        """Hay IMAP en `.env` y se puede usar. Nunca en una demo: su worker leería tu buzón real
+        y mezclaría tus alertas y respuestas con los datos inventados (fase 23.5b). En la demo, el
+        correo se prueba con `.eml` en su `inbox/`."""
+        if self.demo_mode:
+            return False
         password = self.imap_password.get_secret_value() if self.imap_password else ""
         return bool(self.imap_host and self.imap_user and password)
 
