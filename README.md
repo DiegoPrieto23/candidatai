@@ -12,7 +12,7 @@
   <img alt="React + TypeScript" src="https://img.shields.io/badge/react-typescript-61DAFB?logo=react&logoColor=black">
   <img alt="MCP + CLI" src="https://img.shields.io/badge/agents-MCP%20%2B%20CLI-6D28D9">
   <img alt="Windows 11" src="https://img.shields.io/badge/runs%20on-Windows%2011-0078D4?logo=windows&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-2%2C581-2E7D32">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-2%2C636-2E7D32">
   <img alt="No LLM API calls" src="https://img.shields.io/badge/LLM%20API%20calls-none-555">
 </p>
 
@@ -28,7 +28,7 @@ state, the rules and the checks, so the agent can't invent your experience or se
 own.
 
 <p align="center">
-  <img src="docs/img/triaje.gif" alt="Triage with the keyboard: J/K to move, A to approve" width="88%">
+  <img src="docs/img/en/triage.gif" alt="Triage with the keyboard: J/K to move, A to approve" width="88%">
   <br><sub>Triage with the keyboard. Everything you see is the <b>demo</b>: a fictional candidate, companies and jobs.</sub>
 </p>
 
@@ -36,7 +36,7 @@ own.
 > The user interface is in **English and Spanish** (switch from the sidebar). Most technical docs
 > are in Spanish (it started as a personal project in Spain); this README, the
 > [user guide](docs/GUIDE.md) and the code are in English.
-> Watch the **[short video tour](docs/video/recorrido.mp4)**.
+> Watch the **[short video tour](docs/video/tour-en.mp4)**.
 
 ## Contents
 
@@ -48,7 +48,6 @@ own.
 - [Use it with your own data](#use-it-with-your-own-data)
 - [Compatible agents](#compatible-agents)
 - [Guarantees](#guarantees)
-- [Compared with similar projects](#compared-with-similar-projects)
 - [Architecture](#architecture)
 - [Quality and evals](#quality-and-evals)
 - [Documentation](#documentation)
@@ -72,7 +71,7 @@ the agent.
 ## How it works
 
 <p align="center">
-  <img src="docs/img/como-funciona-en.svg" alt="How it works: jobs come in, the agent extracts and assesses, you triage, the agent writes the CV, the app verifies and renders it, the app fills the form and you send it, the app tracks the process" width="100%">
+  <img src="docs/img/how-it-works-en.svg" alt="How it works: jobs come in, the agent extracts and assesses, you triage, the agent writes the CV, the app verifies and renders it, the app fills the form and you send it, the app tracks the process" width="100%">
 </p>
 
 Each colour is who does the step: **you** decide, **your agent** reasons, **the app** stores,
@@ -93,7 +92,7 @@ checks and automates. A typical day:
 | | |
 |---|---|
 | 📥 **Jobs from many sources** | Paste a URL or text; public APIs of Greenhouse, Lever and Ashby; InfoJobs and Adzuna with keys; **job alerts by email** (read-only IMAP); a **browser-extension button** for the page you're viewing; your agent browsing portals with your browser; and, opt-in, LinkedIn's public search. Deduplicated, with repost and "still open?" detection, and with **detection of text aimed at an AI** |
-| 🎯 **Triage with an explained score** | Hard filters (level, years, remote mode, location, languages) and a 0-100 score from skill coverage, preferences and optional local semantic similarity. Your agent adds a reasoned verdict. "Does the score work?" compares it with real outcomes |
+| 🎯 **Triage with an explained score** | Hard filters (level, years, remote mode, location, languages) and a 0-100 score from skill coverage, preferences and optional local semantic similarity. Your agent adds a reasoned verdict. "Is the score right?" compares it with real outcomes |
 | 📄 **Tailored CV and cover letter** | The agent writes the content citing **evidence from your profile for every line**; the code validates it, renders it (Word or HTML → PDF) with your template, photo and colour, and a separate role verifies it. **Import your own CV design** (Word, PDF, image, Canva) as a template |
 | 📝 **Assisted applications** | Fills Greenhouse, Lever, Ashby or generic forms, stops at captchas or logins, and **only submits after you confirm** by typing the company name |
 | 📊 **Tracking and analytics** | A kanban that only moves through recorded events, milestones with `.ics` calendar, follow-up reminders, email replies classified into proposals you accept, and a funnel by source, role, week, template, cover letter and referral |
@@ -101,18 +100,18 @@ checks and automates. A typical day:
 | 🤝 **Network and messages** | Your LinkedIn connections (CSV export) matched to your jobs ("you know 2 people here"), LinkedIn messages (≤ 300 characters) and application emails as drafts you send yourself |
 | 🧭 **Search strategy** | Aggregated skill gaps with a training plan, adjacent job titles to widen the search, a weekly retrospective and a review of your LinkedIn profile |
 
-| Home | Triage |
+| Home | To review (triage) |
 |---|---|
-| <picture><source media="(prefers-color-scheme: dark)" srcset="docs/img/dark/inicio.png"><img src="docs/img/inicio.png" alt="Home"></picture> | <picture><source media="(prefers-color-scheme: dark)" srcset="docs/img/dark/por-revisar.png"><img src="docs/img/por-revisar.png" alt="Triage"></picture> |
+| <picture><source media="(prefers-color-scheme: dark)" srcset="docs/img/en/dark/home.png"><img src="docs/img/en/home.png" alt="Home"></picture> | <picture><source media="(prefers-color-scheme: dark)" srcset="docs/img/en/dark/triage.png"><img src="docs/img/en/triage.png" alt="To review"></picture> |
 | **Processes (kanban)** | **Funnel** |
-| <img src="docs/img/procesos.png" alt="Processes"> | <img src="docs/img/embudo.png" alt="Funnel"> |
+| <img src="docs/img/en/processes.png" alt="Processes"> | <img src="docs/img/en/funnel.png" alt="Funnel"> |
 
 ## A closer look
 
 <details open>
 <summary><b>Tailored CV: same verified content, any design, in seconds</b></summary>
 <br>
-<p align="center"><img src="docs/img/cv.gif" alt="Changing the CV template and colour and rendering it again" width="88%"></p>
+<p align="center"><img src="docs/img/en/cv.gif" alt="Changing the CV template and colour and rendering it again" width="88%"></p>
 
 The agent writes the CV content once. In the job page you choose the template, photo (automatic
 by country, with or without), accent colour and hidden sections, and press "Render": it takes
@@ -124,33 +123,40 @@ Workday jobs or UK companies).
 <details>
 <summary><b>The job page</b>: extraction, fit breakdown, CV, cover letter, application package and process</summary>
 <br>
-<img src="docs/img/ficha.png" alt="Job page with extraction and fit">
-<img src="docs/img/ficha-cv.png" alt="CV section of a job page">
+<img src="docs/img/en/job.png" alt="Job page with extraction and fit">
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/img/en/dark/job-cv.png"><img src="docs/img/en/job-cv.png" alt="CV section of a job page"></picture>
+<img src="docs/img/en/job-process.png" alt="A job in process: what happened, milestones and contacts">
 </details>
 
 <details>
 <summary><b>CV templates</b>: built-in ones and yours, imported from any design</summary>
 <br>
-<img src="docs/img/plantillas.png" alt="CV templates">
+<img src="docs/img/en/templates.png" alt="CV templates">
 </details>
 
 <details>
 <summary><b>Skills</b>: what jobs ask for that you lack, and "it's the same as…" aliases</summary>
 <br>
-<img src="docs/img/skills.png" alt="Skills page">
+<img src="docs/img/en/skills.png" alt="Skills page">
 </details>
 
 <details>
-<summary><b>Sources</b>: target companies and portals your agent browses</summary>
+<summary><b>Sources</b>: target companies and portals your agent browses, in two tabs</summary>
 <br>
-<img src="docs/img/empresas.png" alt="Target companies">
-<img src="docs/img/plataformas.png" alt="Platforms">
+<img src="docs/img/en/sources-companies.png" alt="Target companies">
+<img src="docs/img/en/sources-platforms.png" alt="Platforms">
 </details>
 
 <details>
 <summary><b>Agent</b>: launch skills from the UI, in a terminal or in the background</summary>
 <br>
-<img src="docs/img/agente.png" alt="Agent page">
+<img src="docs/img/en/agent.png" alt="Agent page">
+</details>
+
+<details>
+<summary><b>Sidebar</b>: grouped pages with what's waiting, collapsible, and language and theme at the bottom</summary>
+<br>
+<img src="docs/img/en/sidebar-collapsed.png" alt="Collapsed sidebar">
 </details>
 
 ## Try it in 5 minutes
@@ -166,6 +172,10 @@ It installs what's needed and leaves a **"CandidatAI"** shortcut on your desktop
 everything and opens your browser. To update, run it again; your data isn't touched.
 Add `-WhatIf` to the second line to see first what it would do.
 
+<p align="center">
+  <img src="docs/img/en/start.gif" alt="cai start starts CandidatAI and the app opens in the browser" width="80%">
+</p>
+
 **To develop it**, with [uv](https://docs.astral.sh/uv/), Node LTS and pnpm, and the demo:
 
 ```powershell
@@ -173,14 +183,16 @@ git clone https://github.com/DiegoPrieto23/candidatai.git candidatai; cd candida
 cd frontend; pnpm install; pnpm build; cd ..\backend
 uv sync
 uv run playwright install chromium     # PDFs without LibreOffice
-uv run cai demo seed                   # data-demo/: 60 jobs, 8 weeks of history, 2 CVs
-$env:CAI_DATA_DIR = "data-demo"; uv run cai start    # http://127.0.0.1:8000
+uv run cai demo seed --lang en --dir data-demo-en   # 60 jobs, 8 weeks of history, 2 CVs
+$env:CAI_DATA_DIR = "data-demo-en"; uv run cai start  # http://127.0.0.1:8000
 ```
 
 `cai start` runs the API (which serves the UI) and the worker in one command and opens your
-browser; `--dev` adds Vite with hot reload. The UI shows a "Modo demo" banner: the demo is
-deterministic and never touches `data/`, where your real data would go. To try the skills on the
-demo, start your agent with `CAI_DATA_DIR=data-demo`.
+browser; `--dev` adds Vite with hot reload. The UI shows a "Demo mode" banner: the demo (a
+fictional candidate in Dublin; without `--lang en`, one in Spain) is deterministic and never
+touches `data/` or your mailbox. To try the skills on it, start your agent with
+`CAI_DATA_DIR=data-demo-en`. A walk-through of every feature with the demo:
+[demo test guide](docs/pruebas/guia-prueba-demo.md) (Spanish).
 
 Step by step, including your own profile, your agent, email alerts and the browser extension:
 **[User guide](docs/GUIDE.md)**.
@@ -258,30 +270,6 @@ These are rules enforced by code, not promises made by the agent:
   bypassed. Searching LinkedIn (with your browser, or its public search) only happens if you turn it
   on in the UI.
 
-## Compared with similar projects
-
-CandidatAI borrows the best ideas of two great open projects,
-[AI Job Search](https://github.com/MadsLorentzen/ai-job-search) and
-[career-ops](https://github.com/career-ops-hq/career-ops), and turns them into an app with state.
-
-| | CandidatAI | AI Job Search | career-ops |
-|---|:---:|:---:|:---:|
-| Full web UI (triage, kanban, funnel…) | ✅ | ❌ | 🟡 terminal |
-| MCP + CLI with tested parity | ✅ | ❌ | ❌ |
-| CV claims checked by code against your profile | ✅ | 🟡 | 🟡 |
-| Use your own CV design (Word, PDF, image) | ✅ | 🟡 LaTeX | 🟡 LaTeX |
-| Fills application forms (you submit) | ✅ | ❌ | 🟡 answers only |
-| Email alerts and browser button as sources | ✅ | ❌ | ❌ |
-| Score calibration against outcomes | ✅ | ❌ | ✅ |
-| Received offers without exposing your minimum | ✅ | ❌ | 🟡 |
-| Many ATS and job boards out of the box | 🟡 5 | 🟡 | ✅ 55+ |
-| Parallel batch evaluation | 🟡 | ✅ | ✅ |
-| One-command install, macOS/Linux, Docker | ❌ | 🟡 | ✅ |
-| README in several languages | 🟡 2 | ❌ | ✅ 17 |
-
-Full feature-by-feature comparison, what's missing and what we'll never do (and which rule forbids
-it): [`docs/COMPARATIVA.md`](docs/COMPARATIVA.md) (Spanish).
-
 ## Architecture
 
 ```mermaid
@@ -324,7 +312,7 @@ stateDiagram-v2
 ```
 
 <details>
-<summary><b>Key decisions</b> (34 ADRs in <code>docs/DECISIONS.md</code>)</summary>
+<summary><b>Key decisions</b> (36 ADRs in <code>docs/DECISIONS.md</code>)</summary>
 
 | Decision | Why |
 |---|---|
@@ -341,7 +329,7 @@ stateDiagram-v2
 
 ## Quality and evals
 
-- **Tests:** 2,351 backend tests (pytest, ≥ 85 % coverage enforced on `services/`) and 230
+- **Tests:** 2,384 backend tests (pytest, ≥ 85 % coverage enforced on `services/`) and 252
   frontend tests (Vitest). CI on Windows (backend) and Linux (frontend), plus a check that the
   generated agent configuration is up to date and a demo seed as smoke test.
 - **Matching eval** (80 fictional cases, no embeddings): precision **0.88**, recall **0.95**,
@@ -368,7 +356,7 @@ All documents, grouped: [`docs/README.md`](docs/README.md). Technical docs are i
 
 ## How it was built
 
-In 22 phases (with sub-phases), each with its brief in `prompts/`, implemented with an AI agent
+In 23 phases (with sub-phases), each with its brief in `prompts/`, implemented with an AI agent
 (Claude Code) against a specification written before the code: a plan, a branch per phase, tests,
 a review by a `reviewer` role, and a log of decisions and debt. The phase log is in
 [`docs/ROADMAP.md`](docs/ROADMAP.md) and the method in

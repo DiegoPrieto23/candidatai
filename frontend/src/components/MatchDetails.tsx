@@ -4,6 +4,7 @@ import { Trans, useTranslation } from 'react-i18next'
 import type { MatchView, Schemas } from '@/api/client'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { serverText } from '@/lib/i18n'
+import { scoreNote } from '@/lib/scoreNotes'
 import { COMPONENT_LABEL, HARD_FILTER_LABEL, LEVEL_LABEL, VERDICT_LABEL } from '@/lib/labels'
 import { cn } from '@/lib/utils'
 
@@ -214,7 +215,7 @@ export function MatchDetails({ match }: { match: MatchView }) {
       {b.notes.length > 0 && (
         <ul className="space-y-1 text-xs text-muted-foreground">
           {b.notes.map((note) => (
-            <li key={note}>{note}</li>
+            <li key={note}>{scoreNote(note)}</li>
           ))}
         </ul>
       )}

@@ -12,7 +12,7 @@
   <img alt="React + TypeScript" src="https://img.shields.io/badge/react-typescript-61DAFB?logo=react&logoColor=black">
   <img alt="MCP + CLI" src="https://img.shields.io/badge/agentes-MCP%20%2B%20CLI-6D28D9">
   <img alt="Windows 11" src="https://img.shields.io/badge/funciona%20en-Windows%2011-0078D4?logo=windows&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-2.581-2E7D32">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-2.636-2E7D32">
   <img alt="Sin llamadas a APIs de LLM" src="https://img.shields.io/badge/llamadas%20a%20LLM-ninguna-555">
 </p>
 
@@ -28,13 +28,13 @@ guarda el estado, las reglas y las comprobaciones, así que el agente no puede i
 experiencia ni enviar nada por su cuenta.
 
 <p align="center">
-  <img src="docs/img/triaje.gif" alt="Triaje con el teclado: J/K para moverse, A para aprobar" width="88%">
+  <img src="docs/img/es/triage.gif" alt="Triaje con el teclado: J/K para moverse, A para aprobar" width="88%">
   <br><sub>Triaje con el teclado. Todo lo que se ve es la <b>demo</b>: una candidata, empresas y ofertas inventadas.</sub>
 </p>
 
 > [!NOTE]
 > La interfaz está en **español e inglés** (se cambia desde la barra lateral). Mira el
-> **[recorrido en vídeo](docs/video/recorrido.mp4)** (42 s).
+> **[recorrido en vídeo](docs/video/tour-es.mp4)**.
 
 ## Índice
 
@@ -46,7 +46,6 @@ experiencia ni enviar nada por su cuenta.
 - [Úsalo con tus datos](#úsalo-con-tus-datos)
 - [Agentes compatibles](#agentes-compatibles)
 - [Garantías](#garantías)
-- [Frente a proyectos parecidos](#frente-a-proyectos-parecidos)
 - [Arquitectura](#arquitectura)
 - [Calidad y evals](#calidad-y-evals)
 - [Documentación](#documentación)
@@ -100,16 +99,16 @@ comprueba y automatiza. Un día normal:
 
 | Inicio | Por revisar |
 |---|---|
-| <picture><source media="(prefers-color-scheme: dark)" srcset="docs/img/dark/inicio.png"><img src="docs/img/inicio.png" alt="Inicio"></picture> | <picture><source media="(prefers-color-scheme: dark)" srcset="docs/img/dark/por-revisar.png"><img src="docs/img/por-revisar.png" alt="Por revisar"></picture> |
+| <picture><source media="(prefers-color-scheme: dark)" srcset="docs/img/es/dark/home.png"><img src="docs/img/es/home.png" alt="Inicio"></picture> | <picture><source media="(prefers-color-scheme: dark)" srcset="docs/img/es/dark/triage.png"><img src="docs/img/es/triage.png" alt="Por revisar"></picture> |
 | **Procesos (kanban)** | **Embudo** |
-| <img src="docs/img/procesos.png" alt="Procesos"> | <img src="docs/img/embudo.png" alt="Embudo"> |
+| <img src="docs/img/es/processes.png" alt="Procesos"> | <img src="docs/img/es/funnel.png" alt="Embudo"> |
 
 ## Más de cerca
 
 <details open>
 <summary><b>CV a medida: el mismo contenido verificado, cualquier diseño, en segundos</b></summary>
 <br>
-<p align="center"><img src="docs/img/cv.gif" alt="Cambiar la plantilla y el color del CV y volver a renderizarlo" width="88%"></p>
+<p align="center"><img src="docs/img/es/cv.gif" alt="Cambiar la plantilla y el color del CV y volver a renderizarlo" width="88%"></p>
 
 El agente redacta el contenido del CV una sola vez. En la ficha de la oferta eliges plantilla, foto
 (automática según el país, con o sin), color de acento y secciones ocultas, y pulsas «Renderizar»:
@@ -121,33 +120,40 @@ en Workday o en el Reino Unido).
 <details>
 <summary><b>La ficha</b>: extracción, desglose del encaje, CV, carta, paquete de candidatura y proceso</summary>
 <br>
-<img src="docs/img/ficha.png" alt="Ficha con la extracción y el encaje">
-<img src="docs/img/ficha-cv.png" alt="Sección del CV en la ficha">
+<img src="docs/img/es/job.png" alt="Ficha con la extracción y el encaje">
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/img/es/dark/job-cv.png"><img src="docs/img/es/job-cv.png" alt="Sección del CV en la ficha"></picture>
+<img src="docs/img/es/job-process.png" alt="Una oferta en proceso: qué ha pasado, hitos y contactos">
 </details>
 
 <details>
 <summary><b>Plantillas de CV</b>: las integradas y las tuyas, importadas de cualquier diseño</summary>
 <br>
-<img src="docs/img/plantillas.png" alt="Plantillas de CV">
+<img src="docs/img/es/templates.png" alt="Plantillas de CV">
 </details>
 
 <details>
 <summary><b>Skills</b>: lo que piden las ofertas y no tienes, y alias «es lo mismo que…»</summary>
 <br>
-<img src="docs/img/skills.png" alt="Página Skills">
+<img src="docs/img/es/skills.png" alt="Página Skills">
 </details>
 
 <details>
-<summary><b>Fuentes</b>: empresas objetivo y portales que recorre tu agente</summary>
+<summary><b>Fuentes</b>: empresas objetivo y portales que recorre tu agente, en dos pestañas</summary>
 <br>
-<img src="docs/img/empresas.png" alt="Empresas objetivo">
-<img src="docs/img/plataformas.png" alt="Plataformas">
+<img src="docs/img/es/sources-companies.png" alt="Empresas objetivo">
+<img src="docs/img/es/sources-platforms.png" alt="Plataformas">
 </details>
 
 <details>
 <summary><b>Agente</b>: lanza skills desde la UI, en una terminal o en segundo plano</summary>
 <br>
-<img src="docs/img/agente.png" alt="Página Agente">
+<img src="docs/img/es/agent.png" alt="Página Agente">
+</details>
+
+<details>
+<summary><b>Barra lateral</b>: páginas agrupadas con lo que te espera, plegable, y el idioma y el tema abajo</summary>
+<br>
+<img src="docs/img/es/sidebar-collapsed.png" alt="Barra lateral plegada">
 </details>
 
 ## Pruébalo en 5 minutos
@@ -163,6 +169,10 @@ Instala lo necesario y deja un acceso directo **«CandidatAI»** en el escritori
 arranca todo y se abre el navegador. Para actualizar, vuelve a ejecutarlo; tus datos no se tocan.
 Con `-WhatIf` al final de la segunda línea, explica antes lo que haría.
 
+<p align="center">
+  <img src="docs/img/es/start.gif" alt="cai start arranca CandidatAI y la app se abre en el navegador" width="80%">
+</p>
+
 **Para desarrollar**, con [uv](https://docs.astral.sh/uv/), Node LTS y pnpm, y la demo:
 
 ```powershell
@@ -175,9 +185,11 @@ $env:CAI_DATA_DIR = "data-demo"; uv run cai start    # http://127.0.0.1:8000
 ```
 
 `cai start` arranca la API (que sirve la UI) y el worker en un solo comando y abre el navegador;
-`--dev` añade Vite con recarga en caliente. La UI muestra un banner «Modo demo»: la demo es
-determinista y nunca toca `data/`, donde irían tus datos reales. Para probar los skills sobre la
-demo, arranca tu agente con `CAI_DATA_DIR=data-demo`.
+`--dev` añade Vite con recarga en caliente. La UI muestra un banner «Modo demo»: la demo (una
+candidata inventada en Galicia; con `--lang en`, una en Dublín y en inglés) es determinista y nunca
+toca `data/` ni tu buzón. Para probar los skills sobre la demo, arranca tu agente con
+`CAI_DATA_DIR=data-demo`. Para recorrer todas las funciones con ella:
+[guía de prueba con la demo](docs/pruebas/guia-prueba-demo.md).
 
 Paso a paso, con tu propio perfil, tu agente, las alertas por correo y la extensión del navegador:
 **[Guía de uso](docs/GUIA.md)**.
@@ -256,30 +268,6 @@ Son reglas del código, no promesas del agente:
   resuelven ni se esquivan. Buscar en LinkedIn (con tu navegador o por su búsqueda pública) solo
   ocurre si lo activas tú en la UI.
 
-## Frente a proyectos parecidos
-
-CandidatAI toma las mejores ideas de dos grandes proyectos abiertos,
-[AI Job Search](https://github.com/MadsLorentzen/ai-job-search) y
-[career-ops](https://github.com/career-ops-hq/career-ops), y las convierte en una app con estado.
-
-| | CandidatAI | AI Job Search | career-ops |
-|---|:---:|:---:|:---:|
-| UI web completa (triaje, kanban, embudo…) | ✅ | ❌ | 🟡 terminal |
-| MCP + CLI con paridad comprobada | ✅ | ❌ | ❌ |
-| El código comprueba el CV contra tu perfil | ✅ | 🟡 | 🟡 |
-| Tu propio diseño de CV (Word, PDF, imagen) | ✅ | 🟡 LaTeX | 🟡 LaTeX |
-| Rellena formularios de candidatura (envías tú) | ✅ | ❌ | 🟡 solo respuestas |
-| Alertas por correo y botón del navegador como fuentes | ✅ | ❌ | ❌ |
-| Calibración del score con los resultados | ✅ | ❌ | ✅ |
-| Ofertas recibidas sin exponer tu mínimo | ✅ | ❌ | 🟡 |
-| Muchos ATS y portales de serie | 🟡 5 | 🟡 | ✅ 55+ |
-| Evaluación en lote en paralelo | 🟡 | ✅ | ✅ |
-| Instalación de un comando, macOS/Linux, Docker | ❌ | 🟡 | ✅ |
-| README en varios idiomas | 🟡 2 | ❌ | ✅ 17 |
-
-Comparativa completa función a función, lo que nos falta y lo que no haremos (y qué regla lo
-impide): [`docs/COMPARATIVA.md`](docs/COMPARATIVA.md).
-
 ## Arquitectura
 
 ```mermaid
@@ -322,7 +310,7 @@ stateDiagram-v2
 ```
 
 <details>
-<summary><b>Decisiones clave</b> (34 ADR en <code>docs/DECISIONS.md</code>)</summary>
+<summary><b>Decisiones clave</b> (36 ADR en <code>docs/DECISIONS.md</code>)</summary>
 
 | Decisión | Por qué |
 |---|---|
@@ -339,7 +327,7 @@ stateDiagram-v2
 
 ## Calidad y evals
 
-- **Tests:** 2.351 de backend (pytest, cobertura mínima del 85 % en `services/`) y 230 de frontend
+- **Tests:** 2.384 de backend (pytest, cobertura mínima del 85 % en `services/`) y 252 de frontend
   (Vitest). CI en Windows (backend) y Linux (frontend), más la comprobación de que la configuración
   generada de agentes está al día y una siembra de la demo como prueba de humo.
 - **Eval de matching** (80 casos inventados, sin embeddings): precision **0,88**, recall **0,95**,
@@ -366,7 +354,7 @@ Todos los documentos, agrupados: [`docs/README.md`](docs/README.md).
 
 ## Cómo se construyó
 
-En 22 fases (con subfases), cada una con su encargo en `prompts/`, implementadas con un agente de
+En 23 fases (con subfases), cada una con su encargo en `prompts/`, implementadas con un agente de
 IA (Claude Code) sobre una especificación escrita antes del código: plan, rama por fase, tests,
 revisión por un rol `reviewer` y registro de decisiones y deuda. El registro de cada fase está en
 [`docs/ROADMAP.md`](docs/ROADMAP.md), su resumen en [`docs/RESUMEN_FASES.md`](docs/RESUMEN_FASES.md)

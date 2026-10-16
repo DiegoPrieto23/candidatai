@@ -190,5 +190,6 @@ def how(lang: str) -> str:
 OUT.mkdir(parents=True, exist_ok=True)
 for lang in ("en", "es"):
     (OUT / f"banner-{lang}.svg").write_text(banner(lang), encoding="utf-8")
-    (OUT / f"como-funciona-{lang}.svg").write_text(how(lang), encoding="utf-8")
+    name = "how-it-works" if lang == "en" else "como-funciona"
+    (OUT / f"{name}-{lang}.svg").write_text(how(lang), encoding="utf-8")
 print("ok")

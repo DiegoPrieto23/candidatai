@@ -97,17 +97,19 @@ Without it the score works the same, minus that component.
 
 ## 3. Try the demo
 
-The demo is a fictional candidate with 60 jobs, 8 weeks of history and 2 CVs. It lives in
-`data-demo/` and never touches your data.
+The demo is a fictional candidate with 60 jobs, 8 weeks of history and 2 CVs. It lives in its own
+folder and never touches your data. There are two: in English (a candidate in Dublin) and in
+Spanish (a candidate in Galicia).
 
 ```powershell
 cd backend
-uv run cai demo seed                         # --force to recreate it
-$env:CAI_DATA_DIR = "data-demo"; uv run cai start
+uv run cai demo seed --lang en --dir data-demo-en      # --force to recreate it
+$env:CAI_DATA_DIR = "data-demo-en"; uv run cai start
 ```
 
-Your browser opens at `http://127.0.0.1:8000` with a "Modo demo" banner. To try the skills on the
-demo, start your agent with `CAI_DATA_DIR=data-demo` so its MCP server uses that folder.
+Without `--lang en` you get the Spanish demo in `data-demo/`. Your browser opens at
+`http://127.0.0.1:8000` with a "Demo mode" banner. To try the skills on the
+demo, start your agent with `CAI_DATA_DIR` pointing at the demo folder so its MCP server uses it.
 
 ## 4. Your data and your profile
 

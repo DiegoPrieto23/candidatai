@@ -94,13 +94,15 @@ ella el score funciona igual, sin ese componente.
 
 ## 3. Probar la demo
 
-La demo es una candidata inventada con 60 ofertas, 8 semanas de historial y 2 CVs. Vive en
-`data-demo/` y nunca toca tus datos.
+La demo es una candidata inventada con 60 ofertas, 8 semanas de historial y 2 CVs. Vive en su
+propia carpeta y nunca toca tus datos. Hay dos: en español (una candidata en Galicia) y en inglés
+(una candidata en Dublín, con `--lang en`).
 
 ```powershell
 cd backend
 uv run cai demo seed                         # --force para recrearla
 $env:CAI_DATA_DIR = "data-demo"; uv run cai start
+# en inglés: uv run cai demo seed --lang en --dir data-demo-en
 ```
 
 Se abre el navegador en `http://127.0.0.1:8000` con un banner «Modo demo». Para probar los skills

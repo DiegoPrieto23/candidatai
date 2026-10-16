@@ -1,0 +1,26 @@
+Data Engineer – Fogline Analytics
+
+Fogline Analytics (fictitious company) helps Irish retail chains make decisions with data. We are looking for someone to strengthen our data platform team in Dublin, hybrid (two days a week in the office).
+
+What you'll do
+- Design and maintain ELT pipelines on Snowflake with dbt.
+- Orchestrate daily loads with Apache Airflow.
+- Model sales and inventory data for the business teams.
+- Review code and document the models.
+
+Requirements
+- 2+ years of experience as a Data Engineer or similar.
+- Advanced Python and SQL.
+- Experience with Snowflake and dbt.
+
+Nice to have
+- Power BI.
+- Retail experience.
+- Docker.
+
+We offer
+- Permanent full-time contract.
+- Salary between EUR 50,000 and 58,000 gross per year.
+- 23 days of annual leave and flexible hours.
+
+Apply before 31 October 2026.

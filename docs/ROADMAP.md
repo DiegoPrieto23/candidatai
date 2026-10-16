@@ -59,14 +59,14 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 20 | Calibración y patrones | ✅ | «¿Acierta el score?»: respuesta por tramo de score, veredicto, fuente, plantilla y carta; retrospectiva semanal |
 | 21 | Ofertas recibidas y salario | ✅ | Comparar ofertas recibidas y la distancia a tu mínimo sin exponerlo al agente; preparar la negociación |
 | 22 | LinkedIn por sus endpoints públicos (opcional) | ✅ | Búsqueda pública sin sesión, apagada por defecto y con límites estrictos; ADR que matiza la 016 |
-| 23 | CandidatAI | 🚧 | Nombre y logo nuevos, identificadores en inglés, barra lateral, UI en inglés y español e instalación con un clic |
+| 23 | CandidatAI | ✅ | Nombre y logo nuevos, identificadores en inglés, barra lateral, UI en inglés y español e instalación con un clic |
 | 23.1 | ↳ Renombrado a CandidatAI | ✅ | Todo dice CandidatAI; `cai` en vez de `jh`; MCP `candidatai`; repositorio renombrado |
 | 23.2 | ↳ Skills y roles en inglés | ✅ | `/generate-cv 42`, `/prepare-interview 42`…; roles `writer`, `verifier`… |
 | 23.3 | ↳ Barra lateral | ✅ | Navegación lateral agrupada, plegable y con cajón en el móvil |
 | 23.4 | ↳ Instalación fácil | ✅ | `cai start`, `install.ps1`, acceso directo y releases con la UI compilada |
 | 23.5a | ↳ Logo | ✅ | Logo nuevo, elegido entre propuestas, en la UI, el favicon, la extensión, el icono y el banner |
 | 23.6 | ↳ UI en inglés y español | ✅ | Toda la UI traducida, con un selector de idioma junto al del tema |
-| 23.5b | ↳ Medios y README | ⏳ | Capturas en los dos idiomas, GIF y vídeo; README sin la comparativa |
+| 23.5b | ↳ Medios y README | ✅ | Capturas en los dos idiomas, GIF y vídeo; README sin la comparativa |
 
 **MVP usable:** al terminar la 08 ya puedes pegar ofertas, triarlas y sacar CVs a medida; con la
 08c, también cartas de presentación. La 08c va antes que la 08b, aunque el orden entre ambas da
@@ -2068,3 +2068,42 @@ decisiones tomadas y deuda técnica pendiente. -->
 - **Deuda:** traducir los mensajes del servidor que no traen código (avisos del doctor, motivos del
   prefiltro, resultados de ejecuciones, notas del score); los datos de la demo siguen en español
   (para las capturas en inglés de la 23.5b, valorar una demo en inglés).
+
+### 23.5b · Medios y README — 2026-10-13 · Claude Code (Opus 5.5)
+- **Resumen:** medios nuevos del README, por idioma: `docs/img/en/` para `README.md` y
+  `docs/img/es/` para `README.es.md` (14 capturas, 3 en oscuro, GIF de triaje, CV y arranque) y
+  `docs/video/tour-{en,es}.mp4`. Se retiran los antiguos, con la marca anterior. Diagrama
+  `how-it-works-en.svg`. Los scripts de `scripts/readme_media/` toman el idioma y usan nombres en
+  inglés; escena nueva `start`, que graba la salida real de `cai start`. Los README pierden la
+  sección de comparativa (la tabla de documentación sigue enlazando `COMPARATIVA.md`), ganan la
+  barra lateral y el GIF de arranque, y la cifra de ADR, fases y tests al día.
+  `scripts/check_links.py` comprueba los enlaces e imágenes relativos de los `.md`.
+- **Demo en inglés:** `cai demo seed --lang en` (candidata en Dublín, `demo/en/`); los textos del
+  historial, la oferta de riesgo, las plataformas y las fuentes salen del catálogo de cada idioma.
+  La demo española trae ahora también sus plataformas (InfoJobs, Tecnoempleo, Indeed y LinkedIn,
+  desactivada). Guía para recorrer todas las funciones con la demo:
+  `docs/pruebas/guia-prueba-demo.md`.
+- **Arreglos encontrados al grabar:**
+  - **la demo leía el buzón real**: `cai start` sobre una demo arrancaba el worker con el IMAP de
+    `.env` y metía en ella los correos reales. Ahora `imap_configured` es falso en la demo y el
+    doctor lo explica (ADR-020, añadido);
+  - las notas del score («Similitud semántica desactivada…») salen traducidas en la UI
+    (`lib/scoreNotes.ts`, por patrón sobre el texto del servidor);
+  - el detector de inyección reconoce también «ignore the previous instructions»;
+  - en Plataformas, el selector de acceso muestra solo el nombre y el de prioridad es más ancho.
+- **Tests:** 3 de la demo (siembra en inglés, idioma desconocido, nunca el buzón real) y los de
+  `scoreNotes`, un caso del patrón de inyección y el doctor en la demo. 2384 tests de backend y 252
+  de frontend en verde; ruff, `tsc`, `pnpm lint` (sin avisos nuevos), `pnpm build`,
+  `sync_agents.py --check` y `check_links.py` limpios.
+- **Decisiones:**
+  - Cada README lleva capturas de la demo en su idioma, con la UI en ese idioma.
+  - En el GIF de arranque inglés, la salida de `cai start` sale en español: la CLI no está
+    traducida (ADR-036).
+  - Las miniaturas de las plantillas muestran a la candidata española: son imágenes fijas de
+    `templates/`.
+  - Revisión (rol `reviewer`), sin nada bloqueante: la nota de error del score se traduce aunque
+    traiga saltos de línea, y el doctor explica también en «Respuestas por correo» que la demo no
+    usa el IMAP de `.env`.
+- **Deuda:** traducir la CLI y los mensajes del servidor sin código; los niveles de las skills en
+  la ficha siguen como códigos del perfil (F, C, B) con su nombre en el tooltip; los iconos de los
+  portales caen a la inicial cuando no cargan.

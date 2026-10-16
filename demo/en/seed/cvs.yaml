@@ -1,0 +1,115 @@
+# The two jobs of the English demo that arrive with a generated and verified CV. All FICTITIOUS.
+# The content only cites ids from demo/en/profile.example.yaml, as the `writer` role would.
+
+- job:
+    title: Data Engineer
+    company: Fogline Analytics
+    location: Dublin
+    text_file: demo/en/jobs/01-data-engineer.txt
+    extraction_file: demo/en/jobs/01-data-engineer.extraction.json
+  content:
+    language: en
+    subtitle: Data Engineer · Python · SQL · Snowflake
+    summary: >-
+      Data Engineer with three years building ETL pipelines and analytical models on Snowflake for
+      retail and banking clients, between engineering and the business.
+    experience:
+      - experience_id: exp-northgate
+        bullets:
+          - text: Migrated 40 ETL processes from SSIS to Python on Snowflake (-35% nightly load time).
+            evidence: [exp-northgate/a1]
+          - text: Designed the sales and stock dimensional model used by 3 business teams.
+            evidence: [exp-northgate/a2]
+      - experience_id: exp-datawest
+        bullets:
+          - text: Automated weekly Power BI reports (6 h/week saved for operations).
+            evidence: [exp-datawest/a1]
+          - text: Helped build sensor-data ingestion pipelines in Python.
+            evidence: [exp-datawest/a2]
+    projects:
+      - project_id: prj-fyp
+        bullets:
+          - text: Anomaly detection on energy-consumption time series from 500 homes.
+            evidence: [prj-fyp]
+    skills:
+      - {group: Languages, items: [Python, SQL]}
+      - {group: Data, items: [Snowflake, ETL, Dimensional modeling, dbt]}
+      - {group: BI and tools, items: [Power BI, Docker]}
+    education_ids: [edu-bsc]
+    certification_ids: [cert-aws-ccp]
+    languages:
+      - {language: English, level: Native}
+      - {language: Spanish, level: B2}
+    keywords_targeted: [Python, SQL, Snowflake, dbt, Power BI]
+
+- job:
+    title: Analytics Engineer
+    company: Moher Street Retail
+    location: Cork
+    text: |
+      Analytics Engineer – Moher Street Retail
+
+      Moher Street Retail (fictitious company) runs 120 fashion stores across Ireland. We are
+      hiring an Analytics Engineer in Cork, hybrid (two days a week in the office).
+
+      Responsibilities
+      - Model sales and stock data in Snowflake.
+      - Build and maintain the transformations in SQL and Python.
+      - Publish Power BI dashboards for stores and buying.
+
+      Requirements
+      - Two years of experience with SQL and Python.
+      - Experience with Snowflake or another cloud data warehouse.
+
+      Nice to have
+      - Dimensional modeling.
+      - Power BI.
+
+      We offer a permanent contract, EUR 48,000-56,000 gross per year and flexible hours.
+    extraction:
+      title_normalized: Analytics Engineer
+      seniority: mid
+      years_experience_min: 2
+      employment_type: full_time
+      remote_mode: hybrid
+      locations: [Cork]
+      languages_required: []
+      salary: {min: 48000, max: 56000, currency: EUR, period: year}
+      must_have_skills: [SQL, Python, Snowflake]
+      nice_to_have_skills: [Dimensional modeling, Power BI]
+      responsibilities:
+        - Model sales and stock data in Snowflake
+        - Build and maintain the transformations in SQL and Python
+        - Publish Power BI dashboards
+      domain: retail
+      posting_language: en
+      application_deadline: null
+      red_flags: []
+      injection_suspected: false
+      injection_excerpt: null
+  content:
+    language: en
+    subtitle: Analytics Engineer · SQL · Snowflake · Power BI
+    summary: >-
+      Data Engineer with three years modelling retail data in Snowflake and publishing Power BI
+      dashboards, comfortable between engineering and the business.
+    experience:
+      - experience_id: exp-northgate
+        bullets:
+          - text: Designed the sales and stock dimensional model used by 3 business teams.
+            evidence: [exp-northgate/a2]
+          - text: Migrated 40 ETL processes from SSIS to Python on Snowflake (-35% nightly load time).
+            evidence: [exp-northgate/a1]
+      - experience_id: exp-datawest
+        bullets:
+          - text: Automated weekly Power BI reports (6 h/week saved for operations).
+            evidence: [exp-datawest/a1]
+    skills:
+      - {group: Languages, items: [SQL, Python]}
+      - {group: Data, items: [Snowflake, Dimensional modeling, ETL]}
+      - {group: BI, items: [Power BI, DAX]}
+    education_ids: [edu-bsc]
+    languages:
+      - {language: English, level: Native}
+      - {language: Spanish, level: B2}
+    keywords_targeted: [SQL, Python, Snowflake, Power BI, Dimensional modeling]

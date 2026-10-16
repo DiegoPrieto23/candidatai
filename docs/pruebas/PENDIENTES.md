@@ -6,7 +6,7 @@ cada fase y lo quita cuando el usuario confirma que está hecho.
 
 Marca `[x]` lo que hagas y, si algo falla, apúntalo debajo de la línea con `→`.
 
-Última actualización: 2026-10-13 (fase 23.4).
+Última actualización: 2026-10-13 (fase 23.5b).
 
 ## 1. Poner la app al día (antes de probar nada)
 
@@ -82,6 +82,16 @@ funcionando. Los roles son `writer`, `verifier`, `classifier`, `reviewer` y `ext
       cuantas páginas y vuelve a «Español». Recarga y comprueba que recuerda el idioma. Si ves
       algún texto de la interfaz (no de tus datos) que se haya quedado en español, apúntalo.
 
+### README y demo en inglés (fase 23.5b)
+
+- [ ] Cuando hagas push, abre el repositorio en github.com y mira los dos README: capturas, GIF y
+      el modo oscuro (cambia el tema de GitHub). Guía: `fase-23-prueba-manual.txt`, parte 1.
+- [ ] Opcional: para que el vídeo se vea dentro del README, edítalo en github.com y arrastra
+      `docs/video/tour-en.mp4` (y `tour-es.mp4` en `README.es.md`); ver
+      `scripts/readme_media/README.md`.
+- [ ] Si tenías una demo creada antes de hoy y la arrancaste con `cai start`, puede tener tus
+      correos reales dentro (ya no pasa): bórrala y vuelve a sembrarla con `cai demo seed --force`.
+
 ## 2. `.env.example` (el agente no puede leerlo ni editarlo)
 
 - [ ] Crear o completar `.env.example`, **sin valores reales**, con todas las variables de
@@ -96,6 +106,9 @@ funcionando. Los roles son `writer`, `verifier`, `classifier`, `reviewer` y `ext
     `CAI_APPLIER_ALLOW_LOOPBACK`.
 
 ## 3. Pruebas manuales pendientes
+
+- [ ] **Recorrido completo con la demo** (`guia-prueba-demo.md`): todas las funciones, página a
+      página, con lo que debes ver. Sirve también para la demo en inglés (`--lang en`).
 
 Cada guía está en `docs/pruebas/`. No consta en el ROADMAP que estén hechas; si alguna ya la
 hiciste, márcala.
