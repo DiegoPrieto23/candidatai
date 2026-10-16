@@ -61,7 +61,8 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
 
 ## ADR-010 · Interfaz para agentes neutral: MCP + CLI con paridad
 - **Contexto:** el proyecto debe poder usarse con distintos agentes (Claude Code, Codex, Gemini
-  CLI, Cursor, Copilot…), no solo con uno de pago concreto.
+  CLI, Cursor, Copilot…), no solo con uno de pago concreto. (Gemini CLI dejó de servir con cuentas
+  gratuitas en 2026: ver ADR-037.)
 - **Decisión:** toda la interacción del agente con la app pasa por una interfaz con dos canales
   equivalentes: servidor MCP y CLI `cai … --json`. Un test garantiza la paridad.
 - **Consecuencias:** cualquier agente que hable MCP o ejecute comandos sirve. El listón queda algo
@@ -71,7 +72,8 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
 ## ADR-011 · `.agents/` como fuente única y configuración nativa generada
 - **Contexto:** cada agente espera instrucciones, skills, subagentes y servidores MCP en rutas y
   formatos distintos. Mantener copias a mano diverge enseguida.
-- **Decisión:** `AGENTS.md` para instrucciones (`CLAUDE.md` y `GEMINI.md` solo lo importan);
+- **Decisión:** `AGENTS.md` para instrucciones (`CLAUDE.md` solo lo importa; `GEMINI.md`, que
+  también lo importaba, está vacío a propósito desde la 24.3, ver ADR-037);
   `.agents/skills/` con skills en el estándar Agent Skills y frontmatter mínimo (`name`,
   `description`); `.agents/roles/` con subagentes en un formato propio y neutral;
   `.agents/manifest.yaml` con lo específico de cada agente. `scripts/sync_agents.py` genera
@@ -812,6 +814,23 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
     y la UI, no para el agente;
   - **lo específico de cada agente sigue fuera de la lógica** (regla dura 2): binarios, formatos,
     flags e instalación están en el manifiesto. El registro y el doctor solo los leen.
+- **Añadido en la 24.3:**
+  - emisores para OpenCode, Qwen Code y Antigravity CLI, con los formatos comprobados en su
+    binario (OpenCode 1.19.3, Qwen Code 0.25.2) o, si no hay binario, en su documentación
+    (Antigravity). La versión y la fecha quedan en `docs/AGENTS_COMPAT.md`;
+  - **`policy` neutral en el manifiesto:** qué herramientas MCP usa sin preguntar la sesión
+    principal (`auto_allow`) y qué rutas no se leen ni se editan. Cada emisor la traduce a su
+    agente. `.claude/settings.json` sigue a mano (ADR-011), pero `--check` falla si sus permisos
+    de la app no coinciden con `policy`, para que no diverjan;
+  - **un rol nunca tiene más de lo que declara:** en OpenCode, `permission` con `"*": "deny"` y
+    encima solo sus herramientas; en Qwen Code, la lista `tools`, que es exclusiva. Los niveles A
+    se asignan solo tras comprobarlo con el binario y un modelo: hasta entonces, B;
+  - **`models.flag` y `models.presets`:** cómo se elige un modelo al lanzar el agente y
+    configuraciones con nombre (Codex `local` = `--oss -m gpt-oss:20b`). `AgentSpec.model_args()`
+    los aplica; la elección persistente es de la 24.4;
+  - **Gemini CLI, deshabilitado con `info.note`:** desde el 18/06/2026 solo funciona con una clave
+    de pago o una licencia de empresa. `GEMINI.md` queda vacío a propósito: Antigravity lee
+    `AGENTS.md` y `GEMINI.md`, y este manda, así que importarlo duplicaría el contexto.
 - **Sigue igual:** la app no llama a ningún LLM (ADR-001). Los modelos gratuitos o locales se usan
   a través de agentes que ya saben hablar con ellos.
 - **Pendiente (24.4 y 24.5):** dónde se guardan las preferencias (agente por defecto y por acción,

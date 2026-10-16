@@ -15,7 +15,8 @@ Detalle por agente y garantías de seguridad: `docs/AGENTS_COMPAT.md`.
 
 ```
 AGENTS.md                  instrucciones del proyecto para CUALQUIER agente
-CLAUDE.md, GEMINI.md       solo importan AGENTS.md
+CLAUDE.md                  solo importa AGENTS.md
+GEMINI.md                  vacío a propósito (ADR-037)
 docs/
   ARCHITECTURE.md          capas, etapas, quién hace qué, seguridad en profundidad
   DATA_MODEL.md            tablas, catálogo de eventos, proyección de etapas

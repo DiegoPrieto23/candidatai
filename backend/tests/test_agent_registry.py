@@ -69,11 +69,28 @@ def _write(path: Path, data: dict[str, Any]) -> Path:
 
 def test_real_manifest_loads() -> None:
     agents = agent_registry.load()
-    assert list(agents) == ["claude", "codex", "cursor", "copilot", "pi", "goose"]
-    assert agents["claude"].enabled and agents["codex"].enabled
+    assert list(agents) == [
+        "claude",
+        "codex",
+        "opencode",
+        "qwen",
+        "antigravity",
+        "cursor",
+        "copilot",
+        "pi",
+        "gemini",
+        "goose",
+    ]
+    for name in ("claude", "codex", "opencode", "qwen", "antigravity"):
+        assert agents[name].enabled and agents[name].config == "generated", name
     assert agents["claude"].capabilities.isolation_level == "A"
     assert agents["codex"].capabilities.isolation_level == "B"
-    for name in ("cursor", "copilot", "pi", "goose"):
+    # Fase 24.3: A solo tras la prueba manual del aislamiento; Antigravity, sin subagentes.
+    assert agents["opencode"].capabilities.isolation_level == "B"
+    assert agents["qwen"].capabilities.isolation_level == "B"
+    assert agents["antigravity"].capabilities.isolation_level == "C"
+    assert agents["antigravity"].capabilities.subagents == "none"
+    for name in ("cursor", "copilot", "pi", "gemini", "goose"):
         spec = agents[name]
         assert not spec.enabled and spec.config == "none", name
         assert spec.capabilities.isolation_level == "C", name
@@ -215,7 +232,25 @@ def test_cli_agents_list_json(fake_detect: list[str]) -> None:
     result = runner.invoke(cli.app, ["agents", "list", "--json"])
     assert result.exit_code == 0, result.output
     agents = {a["name"]: a for a in json.loads(result.output)["agents"]}
-    assert set(agents) == {"claude", "codex", "cursor", "copilot", "pi", "goose"}
+    assert set(agents) == {
+        "claude",
+        "codex",
+        "opencode",
+        "qwen",
+        "antigravity",
+        "cursor",
+        "copilot",
+        "pi",
+        "gemini",
+        "goose",
+    }
+    for name in ("opencode", "qwen", "antigravity"):
+        assert agents[name]["config"] == "generated" and agents[name]["enabled"] is True, name
+    gemini = agents["gemini"]
+    assert gemini["enabled"] is False and gemini["config"] == "none"
+    assert "clave de pago" in gemini["info"]["note"]
+    assert agents["codex"]["models"] == {"by_name": True, "presets": ["local"]}
+    assert agents["goose"]["models"] == {"by_name": False, "presets": []}
     assert agents["claude"]["enabled"] is True and agents["claude"]["installed"] is True
     assert agents["goose"]["config"] == "none" and agents["goose"]["enabled"] is False
     assert agents["claude"]["capabilities"]["headless"] is True
@@ -227,6 +262,8 @@ def test_cli_agents_list_text(fake_detect: list[str]) -> None:
     assert result.exit_code == 0, result.output
     assert "Claude Code (claude)" in result.output
     assert "solo compatible vía AGENTS.md" in result.output
+    assert "Gemini CLI (gemini)\n  deshabilitado" in result.output
+    assert "clave de pago de la API de Gemini" in result.output
 
 
 def test_cli_agents_list_with_invalid_manifest(
@@ -250,6 +287,9 @@ def test_cli_agents_doctor(fake_detect: list[str], monkeypatch: pytest.MonkeyPat
     assert "En segundo plano: claude." in result.output
     assert "falta instalarlo: npm install -g @openai/codex" in result.output
     assert "sin configuración generada" in result.output
+    assert "no se recomienda: Desde el 18/06/2026" in result.output
+    # Antigravity no tiene `launch` (no se sabe abrirlo con una orden): los botones la copian.
+    assert "los botones de la UI copian la orden" in result.output
 
 
 def test_overview_follows_cai_agent(
@@ -347,3 +387,56 @@ def test_detection_misses_expire_sooner(
     agent_registry.detect(agents["codex"])
     agent_registry.detect(agents["claude"])
     assert fake_detect == ["codex", "claude", "codex"]
+
+
+# --- Modelos (fase 24.3) -------------------------------------------------------------------------
+
+
+def test_model_args_from_flag_and_presets() -> None:
+    agents = agent_registry.load()
+    assert agents["claude"].model_args() == []
+    assert agents["claude"].model_args(model="opus") == ["--model", "opus"]
+    assert agents["codex"].model_args(model="o4-mini") == ["-m", "o4-mini"]
+    assert agents["codex"].model_args(preset="local") == ["--oss", "-m", "gpt-oss:20b"]
+    assert agents["opencode"].model_args(model="ollama/qwen3") == ["-m", "ollama/qwen3"]
+    assert agents["qwen"].model_args(model="qwen3-coder") == ["-m", "qwen3-coder"]
+    with pytest.raises(ValueError, match="no tiene el preset «local»"):
+        agents["claude"].model_args(preset="local")
+    with pytest.raises(ValueError, match="no sabe elegir el modelo"):
+        agents["goose"].model_args(model="x")
+    with pytest.raises(ValueError, match="no los dos"):
+        agents["codex"].model_args(model="x", preset="local")
+
+
+def test_launch_command_with_a_model() -> None:
+    """Lo que la 24.4 lanzará: la orden de `launch` más los argumentos del modelo."""
+    codex = agent_registry.load()["codex"]
+    assert codex.launch is not None
+    command = [*codex.launch.command, *codex.model_args(preset="local")]
+    assert command == ["codex", "{prompt}", "--oss", "-m", "gpt-oss:20b"]
+    opencode = agent_registry.load()["opencode"]
+    assert opencode.launch is not None
+    assert [*opencode.launch.command, *opencode.model_args(model="ollama/qwen3")] == [
+        "opencode",
+        "--prompt",
+        "{prompt}",
+        "-m",
+        "ollama/qwen3",
+    ]
+
+
+def test_invalid_models(tmp_path: Path) -> None:
+    data = _real_manifest()
+    data["targets"]["codex"]["models"]["flag"] = ["-m"]
+    with pytest.raises(ManifestError, match=r"codex\.models.*\{model\}"):
+        agent_registry.load(_write(tmp_path / "a.yaml", data))
+
+    data = _real_manifest()
+    data["targets"]["codex"]["models"]["presets"]["vacio"] = []
+    with pytest.raises(ManifestError, match="preset «vacio» está vacío"):
+        agent_registry.load(_write(tmp_path / "b.yaml", data))
+
+    data = _real_manifest()
+    data["targets"]["codex"]["models"]["fsat"] = "x"
+    with pytest.raises(ManifestError, match="clave desconocida «fsat»"):
+        agent_registry.load(_write(tmp_path / "c.yaml", data))

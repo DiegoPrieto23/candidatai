@@ -70,7 +70,7 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 24 | Varios agentes: open-source, gratuitos y a elegir | ⏳ | Usar la app con OpenCode, Qwen Code, Antigravity o Codex con modelos locales, además de Claude Code, y cambiar de agente y modelo desde la UI, globalmente o por acción |
 | 24.1 | ↳ Registro de agentes y diagnóstico | ✅ | `cai agents list` y `cai agents doctor`: qué agentes hay, cuáles están instalados, qué saben hacer y si son open-source |
 | 24.2 | ↳ Esquemas y errores para cualquier modelo | ✅ | `cai schema` y `get_schema`; errores de validación con `path` y pista |
-| 24.3 | ↳ Agentes nuevos | ⏳ | Configuración generada para OpenCode, Qwen Code y Antigravity; Codex con `--oss`; Gemini CLI fuera |
+| 24.3 | ↳ Agentes nuevos | ✅ | Configuración generada para OpenCode, Qwen Code y Antigravity; Codex con `--oss`; Gemini CLI fuera |
 | 24.4 | ↳ Elegir y cambiar de agente | ⏳ | Sección «Agentes» con capacidades, agente por defecto y por acción, «con Claude Code ▾» en cada botón |
 | 24.5 | ↳ Segundo plano con varios agentes | ⏳ | «En segundo plano» también con OpenCode (y Codex o Qwen Code si su techo se comprueba) |
 | 24.6 | ↳ Modelos gratuitos, niveles de gasto y matriz | ⏳ | Guía de modelos gratis y locales, diagnóstico de Ollama, «Económico/Equilibrado/Máximo» y matriz probada por agente y modelo |
@@ -2248,3 +2248,75 @@ decisiones tomadas y deuda técnica pendiente. -->
     traducciones.
   - Medir en la 24.6 si los modelos pequeños aciertan al segundo intento.
 
+### 24.3 · Agentes nuevos — 2026-10-16 · Claude Code (Opus 5.5)
+- **Resumen:** configuración generada para OpenCode, Qwen Code y Antigravity CLI. Codex con modelos
+  locales. Gemini CLI fuera.
+  - **Comprobado con su binario** (vía `npx`, sin instalar): OpenCode 1.19.3, Qwen Code 0.25.2 y
+    codex-cli 0.163.0. Antigravity, solo con su documentación (no está en npm). Versiones y fechas
+    en `docs/AGENTS_COMPAT.md`.
+  - **OpenCode:**
+    - `opencode.json` con el MCP local y `permission` (`tools` está obsoleto desde la 1.1.1): en
+      la sesión principal, `candidatai_*` pide permiso y las de `policy.auto_allow` van sin
+      preguntar;
+    - `.opencode/agents/<rol>.md` en modo subagente, con `"*": "deny"` y solo sus herramientas.
+      `opencode debug agent extractor` confirma que solo tiene `get_job` y `save_extraction`;
+    - skills: los lee de `.agents/skills` y `.claude/skills` sin duplicar (se queda con una copia;
+      `debug skill`);
+    - se lanza con `opencode --prompt`.
+  - **Qwen Code:**
+    - `.qwen/settings.json` con el MCP, `context.fileName: AGENTS.md`, los permisos de `policy` y
+      `"$version": 4`. Sin la versión, Qwen reescribe el fichero al abrirlo (lo vimos con
+      `qwen mcp list`);
+    - copia de los skills en `.qwen/skills/`, porque solo lee esa carpeta (decisión del usuario: se
+      invocan con `/skill`);
+    - subagentes con lista `tools` exclusiva;
+    - se lanza con `qwen -i`.
+  - **Antigravity:**
+    - `.agents/mcp_config.json`, el único fichero generado dentro de `.agents/`;
+    - sin subagentes (nivel C) y sin `launch`, porque no está documentado cómo abrirlo con una
+      orden.
+  - **Gemini CLI:** deshabilitado con `info.note`. `GEMINI.md`, vacío a propósito. Fuera del README
+    (en los dos idiomas), de `AGENTS.md` y de `AGENTS_COMPAT.md`.
+  - **Modelos:**
+    - `models` pasa a ser un objeto estricto (`fast`, `capable`, `flag`, `presets`);
+    - `AgentSpec.model_args()` aplica la `flag` o un preset. Codex trae el preset `local`
+      (`--oss -m gpt-oss:20b`);
+    - `cai agents list --json` y `GET /agent/agents` dicen qué admite cada agente (`models`).
+  - **`policy`** (nueva en el manifiesto): `auto_allow`, `deny_read` y `deny_edit`. La traduce cada
+    emisor. `--check` falla si `.claude/settings.json` no dice lo mismo.
+- **Tests:**
+  - 15 nuevos en `test_sync_agents.py`:
+    - salida determinista;
+    - el extractor con sus dos herramientas en los tres agentes;
+    - ningún rol con terminal que no declare;
+    - permisos de la sesión principal de OpenCode y de Qwen;
+    - Antigravity;
+    - `GEMINI.md`;
+    - herramienta lógica desconocida;
+    - `settings.json` frente a `policy`.
+  - 3 nuevos en `test_agent_registry.py` (modelos, presets, orden con modelo); los suyos, al día
+    con los agentes nuevos y la nota.
+  - 2475 tests de backend en verde, ruff limpio, `sync_agents.py --check` en verde, OpenAPI regenerado
+    y `tsc` limpio.
+- **Prueba de aislamiento con modelo:** no se pudo hacer.
+  - Los modelos gratuitos de OpenCode Zen rechazan cualquier agente con instrucciones propias
+    («free tier can only be used from within OpenCode»), también los subagentes. Probado con dos
+    modelos, sobre una demo aparte, ya borrada.
+  - OpenCode y Qwen quedan en nivel B hasta la prueba manual (`docs/pruebas/fase-24.3-prueba-manual.txt`)
+    con un modelo local o una clave.
+- **Decisiones:** ADR-037 ampliado (policy, roles acotados, models, Gemini). ADR-010 y ADR-011, con
+  una nota.
+  - Revisión (rol `reviewer`), sin nada bloqueante. Se aplicó:
+    - el `reviewer` va sin terminal en Qwen (`git_read: []`): `run_shell_command(git diff)` no
+      está comprobado y, si no acotara, daría la terminal entera;
+    - la prueba manual comprueba que un subagente de Qwen no lee `.env`;
+    - `DESARROLLO_POR_FASES.md` al día;
+    - `note` documentada como «no recomendado».
+- **Deuda:**
+  - OpenCode también carga la copia de `.claude/skills` (con el frontmatter de Claude), que tapa la
+    de `.agents/skills`. Es inofensivo: el cuerpo es el mismo y solo sale un aviso en el log.
+  - Los `deny_read` de OpenCode son rutas relativas: falta comprobar que encajan con las rutas
+    absolutas de Windows. El `.env` ya lo cubre su regla por defecto (`*.env: ask`).
+  - Nombres de las herramientas MCP en Qwen (`mcp__candidatai__…`) y en los subagentes de
+    Antigravity, sin probar con un modelo.
+  - `launch` de Antigravity, pendiente de su `--help`.

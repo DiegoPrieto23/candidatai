@@ -37,6 +37,7 @@ TOOLS_PLACEHOLDER = "{allowed_tools}"
 DENIED_PLACEHOLDER = "{denied_tools}"
 SKILL_PLACEHOLDER = "{skill}"
 SESSION_PLACEHOLDER = "{session_id}"
+MODEL_PLACEHOLDER = "{model}"
 # Formatos de salida en segundo plano que sabe leer `agent_output.py`.
 HEADLESS_OUTPUTS = frozenset({"claude-stream-json"})
 
@@ -74,6 +75,7 @@ class AgentInfo(_Strict):
     detect: list[str] = Field(min_length=1)  # p. ej. `[claude, --version]`
     invoke: str  # `"/{skill} {args}"`, `"${skill} {args}"` o `natural`
     instructions: str  # qué fichero de instrucciones lee (`AGENTS.md`, `CLAUDE.md`…)
+    note: str | None = None  # por qué no se recomienda (p. ej. Gemini CLI); el doctor lo avisa
 
 
 class AgentCapabilities(_Strict):
@@ -96,6 +98,27 @@ class AgentCapabilities(_Strict):
                 "«headless» no se escribe: se deriva de que haya un `launch.headless` válido"
             )
         return data
+
+
+class ModelsSpec(_Strict):
+    """`models` (fase 24.3): el modelo de cada `tier` de los roles y cómo se elige uno al lanzar."""
+
+    fast: str | None = None  # `None`: el subagente hereda el modelo de la sesión
+    capable: str | None = None
+    flag: list[str] = []  # argumentos con `{model}`, p. ej. `["--model", "{model}"]`
+    presets: dict[str, list[str]] = {}  # configuraciones con nombre, p. ej. `local` en Codex
+
+    @model_validator(mode="after")
+    def _flag_has_model(self) -> "ModelsSpec":
+        if self.flag and MODEL_PLACEHOLDER not in self.flag:
+            raise ValueError(f"`flag` necesita un argumento «{MODEL_PLACEHOLDER}»")
+        for name, args in self.presets.items():
+            if not args:
+                raise ValueError(f"el preset «{name}» está vacío")
+        return self
+
+    def tier(self, tier: str) -> str | None:
+        return {"fast": self.fast, "capable": self.capable}.get(tier)
 
 
 class HeadlessSpec(_Strict):
@@ -140,7 +163,7 @@ class AgentSpec(_Strict):
     agents_dir: str | None = None
     mcp_file: str | None = None
     config_file: str | None = None
-    models: dict[str, str | None] = {}
+    models: ModelsSpec = ModelsSpec()
     tools: dict[str, str | list[str]] = {}  # herramientas lógicas → nativas, y `mcp_prefix`
     skill_extras: dict[str, dict[str, Any]] = {}
     launch: LaunchSpec | None = None
@@ -172,11 +195,27 @@ class AgentSpec(_Strict):
     def unset_env(self) -> list[str]:
         return list(self.launch.unset_env) if self.launch else []
 
+    def model_args(self, model: str | None = None, preset: str | None = None) -> list[str]:
+        """Los argumentos que eligen un modelo al lanzar el agente: un `preset` de `models.presets`
+        o un `model` con `models.flag`. Nada si no se pide ninguno (el modelo por defecto)."""
+        if model and preset:
+            raise ValueError("elige un modelo o un preset, no los dos")
+        if preset:
+            if preset not in self.models.presets:
+                raise ValueError(f"{self.info.display_name} no tiene el preset «{preset}»")
+            return list(self.models.presets[preset])
+        if model:
+            if not self.models.flag:
+                raise ValueError(f"{self.info.display_name} no sabe elegir el modelo al lanzarlo")
+            return [part.replace(MODEL_PLACEHOLDER, model) for part in self.models.flag]
+        return []
+
 
 class _Manifest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     mcp_server: dict[str, Any]
+    policy: dict[str, Any] = {}  # permisos neutrales; los traduce `scripts/sync_agents.py`
     targets: dict[str, Any]
 
 
@@ -336,6 +375,13 @@ def clear_detection_cache() -> None:
         _detected.clear()
 
 
+class ModelChoice(BaseModel):
+    """Cómo se puede elegir el modelo de un agente (la elección persistente llega en la 24.4)."""
+
+    by_name: bool  # admite un modelo por su nombre (`models.flag`)
+    presets: list[str]  # nombres de `models.presets`
+
+
 class AgentEntry(BaseModel):
     """Un agente para `cai agents list --json` y `GET /agent/agents`."""
 
@@ -344,6 +390,7 @@ class AgentEntry(BaseModel):
     config: Literal["generated", "none"]
     info: AgentInfo
     capabilities: AgentCapabilities
+    models: ModelChoice
     installed: bool
     version: str | None = None
     detect_error: str | None = None
@@ -366,6 +413,9 @@ def list_agents(refresh: bool = False) -> AgentList:
                 config=spec.config,
                 info=spec.info,
                 capabilities=spec.capabilities,
+                models=ModelChoice(
+                    by_name=bool(spec.models.flag), presets=list(spec.models.presets)
+                ),
                 installed=detection.installed,
                 version=detection.version,
                 detect_error=detection.error,

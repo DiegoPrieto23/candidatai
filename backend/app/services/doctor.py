@@ -448,10 +448,12 @@ class AgentsOverview(BaseModel):
 
 def _missing(spec: "AgentSpec", installed: bool, platform: str) -> list[str]:
     missing = []
+    if spec.info.note:
+        missing.append(f"no se recomienda: {spec.info.note}")
     if not installed:
         how = getattr(spec.info.install, platform) or spec.info.homepage
         missing.append(f"falta instalarlo: {how}")
-    if spec.config == "none":
+    if spec.config == "none" and not spec.info.note:
         missing.append(
             "sin configuración generada: solo compatible vía AGENTS.md, pidiéndole los skills en "
             f"lenguaje natural y con el nivel {spec.capabilities.isolation_level} de aislamiento"

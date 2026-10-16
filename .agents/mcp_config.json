@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "candidatai": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "backend",
+        "cai-mcp"
+      ]
+    }
+  }
+}

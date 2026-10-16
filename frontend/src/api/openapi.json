@@ -12631,6 +12631,9 @@
           "capabilities": {
             "$ref": "#/components/schemas/AgentCapabilities"
           },
+          "models": {
+            "$ref": "#/components/schemas/ModelChoice"
+          },
           "installed": {
             "type": "boolean",
             "title": "Installed"
@@ -12665,6 +12668,7 @@
           "config",
           "info",
           "capabilities",
+          "models",
           "installed"
         ],
         "title": "AgentEntry",
@@ -12711,6 +12715,17 @@
           "instructions": {
             "type": "string",
             "title": "Instructions"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
           }
         },
         "additionalProperties": false,
@@ -19256,6 +19271,28 @@
           "status"
         ],
         "title": "MilestoneStatusChange"
+      },
+      "ModelChoice": {
+        "properties": {
+          "by_name": {
+            "type": "boolean",
+            "title": "By Name"
+          },
+          "presets": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Presets"
+          }
+        },
+        "type": "object",
+        "required": [
+          "by_name",
+          "presets"
+        ],
+        "title": "ModelChoice",
+        "description": "Cómo se puede elegir el modelo de un agente (la elección persistente llega en la 24.4)."
       },
       "NetworkPerson": {
         "properties": {

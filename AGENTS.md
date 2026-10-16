@@ -5,12 +5,12 @@ candidaturas asistidas, seguimiento y analítica del embudo. Backend FastAPI + S
 React, servidor MCP y CLI `cai`.
 
 **El código de la app no llama a ningún LLM.** El razonamiento (extraer ofertas, valorar encaje,
-redactar CVs) lo hace el agente de IA que use cada persona (Claude Code, Codex, Gemini CLI, Cursor,
-Copilot…), a través de la interfaz para agentes de la app: herramientas MCP o comandos `cai`
-equivalentes. Ver `docs/DECISIONS.md`, ADR-001 y ADR-010.
+redactar CVs) lo hace el agente de IA que use cada persona (Claude Code, Codex, OpenCode, Qwen
+Code, Antigravity CLI…), a través de la interfaz para agentes de la app: herramientas MCP o comandos
+`cai` equivalentes. Ver `docs/DECISIONS.md`, ADR-001 y ADR-010.
 
-Este fichero es la fuente de instrucciones para **cualquier** agente. `CLAUDE.md` y `GEMINI.md`
-solo apuntan aquí.
+Este fichero es la fuente de instrucciones para **cualquier** agente. `CLAUDE.md` solo apunta
+aquí; `GEMINI.md` está vacío a propósito (Antigravity lee los dos y ese manda).
 
 ## Documentación (léela bajo demanda, no entera en cada sesión)
 
@@ -42,7 +42,9 @@ backend/          pyproject.toml, app/, alembic/, tests/
   app/mcp/        servidor MCP (capa fina)
 frontend/         Vite + React + TypeScript
 .agents/          FUENTE ÚNICA de skills, roles (subagentes) y manifiesto para agentes
-.claude/ .codex/ .mcp.json   GENERADOS desde .agents/ con scripts/sync_agents.py
+                  (salvo .agents/mcp_config.json, que es generado)
+.claude/ .codex/ .opencode/ .qwen/ .mcp.json opencode.json
+                  GENERADOS desde .agents/ con scripts/sync_agents.py
 templates/        plantillas de CV integradas (sin datos personales)
 extension/        extensión «Enviar a CandidatAI» (fase 09b)
 config/           policies.yaml y listas genéricas (sin datos personales)
@@ -94,8 +96,10 @@ uv run scripts/sync_agents.py --check   # CI: falla si lo generado no está al d
   comprueba que tienen las mismas claves y otro busca textos en español fuera de `locales/`. Los
   mensajes del servidor siguen en español; si la UI los recibe con un código estable, lo traduce.
 - **Configuración de agentes**: se edita solo en `.agents/`. Nunca a mano en `.claude/skills`,
-  `.claude/agents`, `.codex/` ni `.mcp.json`: se regeneran con `scripts/sync_agents.py`.
-  `.claude/settings.json` es la excepción (permisos de Claude Code, se mantiene a mano).
+  `.claude/agents`, `.codex/`, `.opencode/`, `.qwen/`, `.mcp.json`, `opencode.json` ni
+  `.agents/mcp_config.json`: se regeneran con `scripts/sync_agents.py`. `.claude/settings.json` es
+  la excepción (permisos de Claude Code, a mano), pero sus permisos de la app tienen que coincidir
+  con `policy` del manifiesto: `--check` falla si no.
 
 ## Git
 

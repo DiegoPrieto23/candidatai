@@ -6,7 +6,7 @@ cada fase y lo quita cuando el usuario confirma que está hecho.
 
 Marca `[x]` lo que hagas y, si algo falla, apúntalo debajo de la línea con `→`.
 
-Última actualización: 2026-10-13 (fase 23.5b).
+Última actualización: 2026-10-16 (fase 24.3).
 
 ## 1. Poner la app al día (antes de probar nada)
 
@@ -107,6 +107,14 @@ funcionando. Los roles son `writer`, `verifier`, `classifier`, `reviewer` y `ext
       `uv run --directory backend cai schema cv-content --example true --json`: mira que el
       ejemplo tenga sentido con tu forma de trabajar.
 - [ ] `uv run --directory backend cai agents doctor --tokens`: cuánto pesa cada skill.
+
+### Agentes nuevos (fase 24.3)
+
+- [ ] `uv run --directory backend cai agents list`: OpenCode, Qwen Code y Antigravity CLI
+      habilitados; Gemini CLI deshabilitado, con el motivo.
+- [ ] Si instalas OpenCode, Qwen Code o Antigravity: `fase-24.3-prueba-manual.txt` (servidor,
+      skills, `process-jobs` y aislamiento del extractor). OpenCode necesita un modelo local o tu
+      clave: los gratuitos de OpenCode Zen no admiten agentes propios.
 
 ## 2. `.env.example` (el agente no puede leerlo ni editarlo)
 

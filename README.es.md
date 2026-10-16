@@ -22,7 +22,7 @@ verificados**, la app rellena el formulario de la candidatura y **espera a que t
 después sigue el proceso hasta la oferta.
 
 **La app no llama a ningún LLM.** Lo que necesita criterio (leer ofertas, valorar el encaje,
-redactar el CV) lo hace el agente de IA que ya uses (Claude Code, Codex, Gemini CLI, Cursor…) a
+redactar el CV) lo hace el agente de IA que ya uses (Claude Code, Codex, OpenCode, Qwen Code…) a
 través de una interfaz para agentes: herramientas MCP y una CLI `cai … --json` equivalente. La app
 guarda el estado, las reglas y las comprobaciones, así que el agente no puede inventarse tu
 experiencia ni enviar nada por su cuenta.
@@ -245,8 +245,14 @@ en español (`generar-cv`…).
 | Agente | Estado |
 |---|---|
 | **Claude Code** | Referencia: se desarrolla y prueba con él, con MCP y sin él (solo CLI: 5/5 ofertas extraídas, valoradas y con un CV que pasa el eval). Los skills también se lanzan **en segundo plano** desde la UI |
-| **Codex** | Configuración generada (`.codex/`); aún fuera de la matriz probada |
-| **Gemini CLI, Cursor, Copilot, OpenCode…** | Sin probar: valen si leen `AGENTS.md` y hablan MCP o ejecutan comandos |
+| **Codex** | Configuración generada (`.codex/`); aún fuera de la matriz probada. Con `--oss` usa modelos locales por Ollama o LM Studio |
+| **OpenCode** (open-source) | Configuración generada (`opencode.json`, `.opencode/agents/`), comprobada con su binario; sin probar con un modelo. Funciona con Ollama, LM Studio, OpenRouter o cualquier API compatible con OpenAI |
+| **Qwen Code** (open-source) | Configuración generada (`.qwen/`), sin probar. Su plan gratuito con OAuth cerró el 15/04/2026: úsalo con Ollama, LM Studio, OpenRouter o una clave de DashScope |
+| **Antigravity CLI** | Configuración MCP generada (`.agents/mcp_config.json`), sin probar. Plan gratuito con una cuenta de Google; sustituye a Gemini CLI |
+| **Cursor, Copilot CLI, Pi, goose…** | Sin probar: valen si leen `AGENTS.md` y hablan MCP o ejecutan comandos |
+
+Gemini CLI ya no figura: desde el 18/06/2026 solo funciona con una clave de pago de la API de
+Gemini o con una licencia de empresa. Con una cuenta gratuita de Google, usa Antigravity CLI.
 
 Skills, roles (subagentes) y el manifiesto de agentes se escriben una vez en `.agents/` y se generan
 para cada agente con `scripts/sync_agents.py`. Detalle y cómo añadir un agente:

@@ -1913,6 +1913,8 @@ def agents_list(
         return
     for entry in listed.agents:
         state = "habilitado" if entry.enabled else "solo compatible vía AGENTS.md"
+        if not entry.enabled and entry.info.note:
+            state = "deshabilitado"
         found = entry.version or entry.detect_error or "instalado"
         installed = found if entry.installed else "no instalado"
         license_ = f"{entry.info.license}{', open-source' if entry.info.open_source else ''}"
@@ -1924,6 +1926,8 @@ def agents_list(
             f"{caps.isolation_level} · segundo plano {_yes_no(caps.headless)} · modelos locales "
             f"{_yes_no(caps.local_models)}"
         )
+        if entry.info.note:
+            typer.secho(f"  {entry.info.note}", fg="yellow")
 
 
 def _instruction_tokens() -> None:

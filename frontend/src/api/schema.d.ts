@@ -2193,6 +2193,7 @@ export interface components {
             config: "generated" | "none";
             info: components["schemas"]["AgentInfo"];
             capabilities: components["schemas"]["AgentCapabilities"];
+            models: components["schemas"]["ModelChoice"];
             /** Installed */
             installed: boolean;
             /** Version */
@@ -2220,6 +2221,8 @@ export interface components {
             invoke: string;
             /** Instructions */
             instructions: string;
+            /** Note */
+            note?: string | null;
         };
         /** AgentList */
         AgentList: {
@@ -4357,6 +4360,16 @@ export interface components {
             occurred_at?: string | null;
             /** Note */
             note?: string | null;
+        };
+        /**
+         * ModelChoice
+         * @description Cómo se puede elegir el modelo de un agente (la elección persistente llega en la 24.4).
+         */
+        ModelChoice: {
+            /** By Name */
+            by_name: boolean;
+            /** Presets */
+            presets: string[];
         };
         /**
          * NetworkPerson

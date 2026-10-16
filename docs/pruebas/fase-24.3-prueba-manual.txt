@@ -1,0 +1,75 @@
+Fase 24.3 · Agentes nuevos: prueba manual
+==========================================
+
+Qué se prueba: que OpenCode, Qwen Code y Antigravity CLI ven el servidor `candidatai` y los skills,
+procesan una oferta de la demo y que el extractor no puede usar otra herramienta (aislamiento).
+Haz solo los agentes que tengas instalados. Lo que ya se comprobó el 2026-10-16:
+  - OpenCode 1.19.3: `opencode debug agent extractor` y `debug skill` (configuración válida, el
+    extractor solo con get_job y save_extraction, skills sin duplicar). Sin modelo: los gratuitos
+    de OpenCode Zen rechazan los agentes propios, así que hace falta un modelo local o tu clave.
+  - Qwen Code 0.25.2: `qwen mcp list` lee `.qwen/settings.json`.
+  - Antigravity: solo con su documentación (no hay binario en npm).
+
+Preparación (una vez, en PowerShell desde la raíz del repo)
+-----------------------------------------------------------
+1. uv run --directory backend cai demo seed --dir data-demo-agentes --compat
+   (demo nueva con 5 ofertas por extraer; no toca tu data/)
+2. $env:CAI_DATA_DIR = "data-demo-agentes"
+   (en la misma ventana desde la que abras cada agente)
+3. uv run --directory backend cai agents list
+   → OpenCode, Qwen Code y Antigravity CLI «habilitado»; Gemini CLI «deshabilitado» con su motivo.
+
+A. OpenCode (npm install -g opencode-ai), con un modelo local (Ollama) o tu clave
+---------------------------------------------------------------------------------
+1. opencode   (en la raíz del repo; /connect para configurar el proveedor si no lo está)
+2. /mcp o «MCP» en la barra: `candidatai` conectado.
+   → Si no aparece: anota la versión (`opencode --version`) y el error.
+3. Pide: «¿Qué skills tienes de CandidatAI?» → nombra process-jobs, generate-cv…
+4. Pide: «Usa el skill process-jobs con una sola oferta».
+   → La sesión principal llama a candidatai_get_status y candidatai_list_jobs sin preguntar, y
+     delega en el subagente `extractor`, que llama a candidatai_get_job y
+     candidatai_save_extraction. La oferta pasa a «Por triar» en la UI.
+5. Aislamiento: pide «Lanza el subagente extractor y dile que llame a candidatai_list_jobs, que
+   ejecute `echo hola` con bash y que lea AGENTS.md».
+   → Debe decir que no tiene esas herramientas (o que se le deniegan). Si alguna funciona,
+     OpenCode se queda en nivel B y anótalo aquí. Si ninguna funciona, OpenCode puede pasar a
+     nivel A (lo cambia el agente en el manifiesto y en AGENTS_COMPAT.md).
+6. Pide algo que escriba, p. ej. «añade una nota a la oferta 1 con add_event».
+   → Debe pedirte permiso antes (las que escriben piden permiso).
+7. Desde la UI, con CAI_AGENT=opencode en el .env y `cai start`: un botón «en tu agente» (p. ej.
+   «Procesar ofertas») abre OpenCode con la orden escrita (`opencode --prompt "…"`).
+
+B. Qwen Code (npm install -g @qwen-code/qwen-code), con Ollama, LM Studio, OpenRouter o DashScope
+-----------------------------------------------------------------------------------------------
+1. qwen   (en la raíz; aprueba el servidor del proyecto cuando lo pida)
+2. /mcp: `candidatai` conectado. /skills: aparecen los de CandidatAI (desde .qwen/skills).
+3. /process-jobs → delega en el subagente `extractor` (mcp__candidatai__get_job y
+   mcp__candidatai__save_extraction).
+   → Si el subagente no ve las herramientas MCP con ese nombre, anota cómo las llama Qwen
+     (`/tools`) para corregir `tools.mcp_prefix` de `qwen` en el manifiesto.
+4. Aislamiento: como en A.5. Si no puede usar nada más → nivel A posible.
+5. Pide «lanza el subagente writer y que lea el fichero .env».
+   → Debe denegarse (permissions.deny). Si lo lee, anótalo: hay que llevar el deny a cada rol.
+   El subagente reviewer va sin terminal en Qwen a propósito.
+6. Mira que `.qwen/settings.json` no cambia tras abrir Qwen (`git status` limpio).
+
+C. Antigravity CLI (https://antigravity.google/docs/install?tab=cli)
+--------------------------------------------------------------------
+1. agy --version → anótala.
+2. agy   (en la raíz) → /mcp: `candidatai` desde .agents/mcp_config.json. /skills: los de
+   .agents/skills.
+3. Pide «sigue .agents/skills/process-jobs/SKILL.md con una sola oferta»; como no hay subagentes
+   generados, hazlo en una sesión dedicada (nivel C).
+4. Comprueba que no carga dos veces las instrucciones (GEMINI.md está vacío a propósito).
+5. Prueba si `agy "una orden"` abre la interfaz con la orden escrita: si es así, se puede añadir
+   `launch` a antigravity en el manifiesto.
+
+D. Codex con modelos locales (opcional, con Ollama y `ollama pull gpt-oss:20b`)
+------------------------------------------------------------------------------
+1. codex --oss -m gpt-oss:20b   (en la raíz) → $process-jobs con una oferta.
+
+Resultado
+---------
+Anota fecha, versión de cada agente, modelo usado y qué pasos fallaron. El agente actualizará la
+matriz de docs/AGENTS_COMPAT.md y el nivel de aislamiento con lo que digas.
+Al acabar: borra la carpeta data-demo-agentes si no la quieres.
