@@ -262,7 +262,7 @@ def test_api_errors(client: TestClient) -> None:
     )
     assert bad.status_code == 422
     assert bad.json()["error"]["type"] == "validation_error"
-    assert bad.json()["error"]["details"][0]["field"] == "answers[0].answer"
+    assert bad.json()["error"]["details"][0]["field"] == "answers.0.answer"
 
     assert client.get("/jobs/999/package").status_code == 404
     applied = client.post(f"/jobs/{job_id}/events", json={"type": "applied_manually"})

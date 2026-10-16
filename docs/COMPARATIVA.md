@@ -49,24 +49,24 @@ La parte en la que más nos separa career-ops. Leyenda: ✅ lo tiene · 🟡 en 
 
 | | CandidatAI | AI Job Search | career-ops |
 |---|---|---|---|
-| Fuente única de instrucciones | ✅ `AGENTS.md` (+ `CLAUDE.md` y `GEMINI.md` que lo importan) | 🟡 `CLAUDE.md` es la fuente; `AGENTS.md` apunta a él | ✅ `AGENTS.md` + un envoltorio por CLI |
+| Fuente única de instrucciones | ✅ `AGENTS.md` (+ `CLAUDE.md`, que lo importa, y `GEMINI.md`, vacío a propósito) | 🟡 `CLAUDE.md` es la fuente; `AGENTS.md` apunta a él | ✅ `AGENTS.md` + un envoltorio por CLI |
 | Skills en el estándar Agent Skills | ✅ `.agents/skills/` (+ copia generada para Claude Code) | 🟡 solo los portales | ✅ un skill router en `.agents/skills/career-ops/` |
-| Configuración nativa generada desde una fuente | ✅ `sync_agents.py` (Claude Code y Codex) | ❌ | 🟡 envoltorios y enlaces por CLI, mantenidos a mano |
+| Configuración nativa generada desde una fuente | ✅ `sync_agents.py` (Claude Code, Codex, OpenCode, Qwen Code y Antigravity) | ❌ | 🟡 envoltorios y enlaces por CLI, mantenidos a mano |
 | Claude Code | ✅ referencia, probado | ✅ referencia | ✅ |
 | Codex | 🟡 configuración generada, **sin probar** | 🟡 parcial | ✅ con guía propia |
-| **OpenCode** (open-source) | ❌ | ❌ | ✅ también para el lote en paralelo (`opencode run`) |
-| **Qwen Code** (open-source) | ❌ | ❌ | ✅ |
-| Antigravity CLI (sustituye a Gemini CLI) | ❌ | 🟡 mencionado | ✅ con guía de su plan gratuito |
-| Gemini CLI | ❌ **ya no sirve con cuentas gratuitas ni Pro** (ver nota) | 🟡 `gemini -p` en un subagente | 🟡 `GEMINI.md` vacío a propósito |
+| **OpenCode** (open-source) | 🟡 configuración generada y comprobada con su binario (24.3), sin probar con un modelo | ❌ | ✅ también para el lote en paralelo (`opencode run`) |
+| **Qwen Code** (open-source) | 🟡 configuración generada (24.3), sin probar | ❌ | ✅ |
+| Antigravity CLI (sustituye a Gemini CLI) | 🟡 MCP del espacio de trabajo generado (24.3), sin probar; nivel C | 🟡 mencionado | ✅ con guía de su plan gratuito |
+| Gemini CLI | ❌ **ya no sirve con cuentas gratuitas ni Pro** (ver nota); deshabilitado en el registro y `GEMINI.md` vacío a propósito (24.3) | 🟡 `gemini -p` en un subagente | 🟡 `GEMINI.md` vacío a propósito |
 | Pi, Grok, Kimi, Copilot CLI, Cursor, Hermes | 🟡 sin probar, valdrían si leen `AGENTS.md` | ❌ | ✅ |
-| Subagentes con herramientas limitadas | ✅ Claude Code (nivel A); Codex en nivel B | ✅ revisor con contexto limpio | 🟡 |
-| Segundo plano / lote | 🟡 solo Claude Code, de una en una, con herramientas limitadas | ✅ `/rank` en paralelo | ✅ `batch-runner.sh --cli claude\|opencode\|gemini\|qwen --model …` |
-| Elegir el agente | 🟡 variable de entorno `CAI_AGENT` | ❌ | ✅ el CLI que abras; `--cli` en el lote |
-| **Cambiar de agente desde la UI**, por acción | ❌ | n/a | 🟡 la web en alfa usa el CLI o la clave que le des |
-| Elegir modelo o nivel de gasto | 🟡 `fast`/`capable` por agente en el manifiesto | ❌ | ✅ `spend_tier` economy/standard/premium + filtro previo que ahorra evaluaciones |
-| **Modelos gratuitos o locales** (Ollama, OpenRouter `:free`) | 🟡 «si tu CLI los usa», sin guía ni prueba | ❌ | ✅ guías verificadas (OpenCode + Ollama, Kimi, OpenRouter) y rutas de coste cero |
-| Esquemas para el agente | 🟡 en `docs/AGENT_INTERFACE.md`; sin MCP, el agente tiene que buscarlos | n/a | 🟡 |
-| Matriz de agentes probada | 🟡 Claude Code sin MCP (5/5) | ❌ | 🟡 verificaciones por CLI en sus docs |
+| Subagentes con herramientas limitadas | ✅ Claude Code (nivel A); Codex, OpenCode y Qwen Code en nivel B (OpenCode y Qwen generan cada rol con solo sus herramientas, pendiente de probar) | ✅ revisor con contexto limpio | 🟡 |
+| Segundo plano / lote | 🟡 Claude Code y OpenCode (24.5), de una en una, con herramientas limitadas | ✅ `/rank` en paralelo | ✅ `batch-runner.sh --cli claude\|opencode\|gemini\|qwen --model …` |
+| Elegir el agente | ✅ desde la UI (24.4); `CAI_AGENT` como respaldo | ❌ | ✅ el CLI que abras; `--cli` en el lote |
+| **Cambiar de agente desde la UI**, por acción | ✅ por defecto, por acción y «con Claude Code ▾» en cada botón, con las capacidades de cada agente comprobadas (24.4) | n/a | 🟡 la web en alfa usa el CLI o la clave que le des |
+| Elegir modelo o nivel de gasto | ✅ modelo o preset por agente y por acción (24.4) y niveles «Económico/Equilibrado/Máximo» que se aplican con un clic y se deshacen (24.6) | ❌ | ✅ `spend_tier` economy/standard/premium + filtro previo que ahorra evaluaciones |
+| **Modelos gratuitos o locales** (Ollama, OpenRouter `:free`) | ✅ guía `MODELOS_GRATIS.md` (Ollama en Windows, modelos por memoria, privacidad por vía) y diagnóstico de Ollama solo con metadatos (24.6) | ❌ | ✅ guías verificadas (OpenCode + Ollama, Kimi, OpenRouter) y rutas de coste cero |
+| Esquemas para el agente | ✅ `cai schema` / `get_schema` con ejemplos y errores con `hint` (24.2) | n/a | 🟡 |
+| Matriz de agentes probada | 🟡 automatizada con `cai eval compat` (24.6, resultados en `evals/compat/REPORT.md`); medida: Claude Code sin MCP (5/5). El resto, pendiente de la pasada del usuario | ❌ | 🟡 verificaciones por CLI en sus docs |
 
 **Nota sobre Gemini.** Google cortó Gemini CLI para cuentas gratuitas, Google AI Pro/Ultra y Gemini
 Code Assist gratuito el 18 de junio de 2026 (responde 410) y lo ha sustituido por **Antigravity CLI
@@ -74,7 +74,8 @@ Code Assist gratuito el 18 de junio de 2026 (responde 410) y lo ha sustituido po
 manda si están los dos), los skills de `.agents/skills/` y el MCP del espacio de trabajo en
 `.agents/mcp_config.json`. Gemini CLI solo sigue funcionando con una clave de pago de la API de
 Gemini o con una licencia de empresa. Hasta la fase 24, el README de CandidatAI decía «Gemini CLI»
-como agente válido sin que hubiera configuración MCP para él.
+como agente válido sin que hubiera configuración MCP para él; desde la 24.3 ya no figura como
+compatible y Antigravity CLI ocupa su sitio.
 
 ## Funciones, una a una
 

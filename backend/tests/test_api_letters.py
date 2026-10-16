@@ -134,7 +134,7 @@ def test_user_edit_creates_unverified_document(client: TestClient) -> None:
         json={**LETTER, "paragraphs": [{"text": "Hola.", "evidence": ["exp-x"]}]},
     )
     assert bad.status_code == 422
-    assert bad.json()["error"]["details"][0]["field"] == "paragraphs[0].evidence[0]"
+    assert bad.json()["error"]["details"][0]["field"] == "paragraphs.0.evidence.0"
 
 
 def test_user_edit_without_instructions_marks_changed_paragraphs(

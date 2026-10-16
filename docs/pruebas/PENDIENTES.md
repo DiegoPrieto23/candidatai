@@ -6,7 +6,7 @@ cada fase y lo quita cuando el usuario confirma que está hecho.
 
 Marca `[x]` lo que hagas y, si algo falla, apúntalo debajo de la línea con `→`.
 
-Última actualización: 2026-10-13 (fase 23.5b).
+Última actualización: 2026-10-16 (fase 24.6).
 
 ## 1. Poner la app al día (antes de probar nada)
 
@@ -91,6 +91,56 @@ funcionando. Los roles son `writer`, `verifier`, `classifier`, `reviewer` y `ext
       `scripts/readme_media/README.md`.
 - [ ] Si tenías una demo creada antes de hoy y la arrancaste con `cai start`, puede tener tus
       correos reales dentro (ya no pasa): bórrala y vuelve a sembrarla con `cai demo seed --force`.
+
+### Registro de agentes (fase 24.1)
+
+- [ ] `uv run --directory backend cai agents doctor`: comprueba que dice que se usaría Claude
+      Code y que ve Copilot CLI como instalado y «solo compatible». Si instalas otro agente
+      (p. ej. Codex), vuelve a ejecutarlo con `--refresh` y mira que lo detecta.
+- [ ] `uv run --directory backend cai doctor`: la sección «Agentes» al final.
+
+### Esquemas y errores (fase 24.2)
+
+- [ ] Abre Claude Code de nuevo (o reconecta en `/mcp`) para que cargue la herramienta
+      `get_schema`.
+- [ ] `uv run --directory backend cai schema list --json` y
+      `uv run --directory backend cai schema cv-content --example true --json`: mira que el
+      ejemplo tenga sentido con tu forma de trabajar.
+- [ ] `uv run --directory backend cai agents doctor --tokens`: cuánto pesa cada skill.
+
+### Agentes nuevos (fase 24.3)
+
+- [ ] `uv run --directory backend cai agents list`: OpenCode, Qwen Code y Antigravity CLI
+      habilitados; Gemini CLI deshabilitado, con el motivo.
+- [ ] Si instalas OpenCode, Qwen Code o Antigravity: `fase-24.3-prueba-manual.txt` (servidor,
+      skills, `process-jobs` y aislamiento del extractor). OpenCode necesita un modelo local o tu
+      clave: los gratuitos de OpenCode Zen no admiten agentes propios.
+
+### Elegir agente desde la UI (fase 24.4)
+
+- [ ] `uv run --directory backend alembic upgrade head` (migración 0022) o arranca `cai start`.
+- [ ] `fase-24.4-prueba-manual.txt`: sección «Agentes», agente por defecto y por acción,
+      «con Claude Code ▾» y el modelo en terminal y en segundo plano.
+
+### Segundo plano con OpenCode (fase 24.5)
+
+- [ ] `uv run --directory backend alembic upgrade head` (migración 0023) o arranca `cai start`.
+- [ ] Con OpenCode instalado y **un modelo local o tu clave** (los gratuitos de OpenCode Zen
+      rechazan el agente de la ejecución): `fase-24.5-prueba-manual.txt`. `process-jobs` y
+      `assess-fit` en segundo plano sobre una demo, el techo de herramientas con un modelo y
+      `generate-cv`, que propone Claude Code.
+
+### Modelos gratuitos, niveles de gasto y matriz (fase 24.6)
+
+- [ ] Página «Agente»: «Niveles de gasto» con los tres niveles. Aplica uno, mira que cambia la tabla
+      «Por acción» y pulsa «Deshacer el último».
+- [ ] `uv run --directory backend cai agents doctor`: sección «Modelos locales (Ollama)» («no
+      responde» si no lo tienes).
+- [ ] **La matriz** (`fase-24.6-matriz.md`): como mínimo Claude Code con MCP
+      (`cai eval compat --agent claude`, cierra el pendiente de la 12.3). Si instalas Ollama y
+      OpenCode, también OpenCode con un modelo local: es el criterio de cierre de la fase 24.
+      Después, pásame `evals/compat/REPORT.md` para completar `AGENTS_COMPAT.md`, el README y la
+      ADR-037.
 
 ## 2. `.env.example` (el agente no puede leerlo ni editarlo)
 

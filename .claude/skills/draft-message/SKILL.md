@@ -63,3 +63,9 @@ Sustituye al borrador vigente para la misma persona y formato.
 Una línea: dónde está (ficha › «Borradores») y que **no se ha enviado nada**. Si pidió una
 referencia, recuérdale que puede marcar «Referencia pedida» en el contacto del proceso (o
 añadirlo antes desde «Tu red»).
+
+## Esquema y errores
+Con MCP, el esquema de lo que guardas viene en la propia herramienta. Sin MCP:
+`cai schema message-draft --json` (con `--example true`, un ejemplo mínimo válido). Si la app rechaza la entrada,
+corrige solo los campos de `details[].field` siguiendo su `hint` y vuelve a enviar, como mucho dos
+veces; si sigue fallando, para y explica qué falta.

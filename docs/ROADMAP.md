@@ -68,12 +68,12 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 23.6 | ↳ UI en inglés y español | ✅ | Toda la UI traducida, con un selector de idioma junto al del tema |
 | 23.5b | ↳ Medios y README | ✅ | Capturas en los dos idiomas, GIF y vídeo; README sin la comparativa |
 | 24 | Varios agentes: open-source, gratuitos y a elegir | ⏳ | Usar la app con OpenCode, Qwen Code, Antigravity o Codex con modelos locales, además de Claude Code, y cambiar de agente y modelo desde la UI, globalmente o por acción |
-| 24.1 | ↳ Registro de agentes y diagnóstico | ⏳ | `cai agents list` y `cai agents doctor`: qué agentes hay, cuáles están instalados, qué saben hacer y si son open-source |
-| 24.2 | ↳ Esquemas y errores para cualquier modelo | ⏳ | `cai schema` y `get_schema`; errores de validación con `path` y pista |
-| 24.3 | ↳ Agentes nuevos | ⏳ | Configuración generada para OpenCode, Qwen Code y Antigravity; Codex con `--oss`; Gemini CLI fuera |
-| 24.4 | ↳ Elegir y cambiar de agente | ⏳ | Sección «Agentes» con capacidades, agente por defecto y por acción, «con Claude Code ▾» en cada botón |
-| 24.5 | ↳ Segundo plano con varios agentes | ⏳ | «En segundo plano» también con OpenCode (y Codex o Qwen Code si su techo se comprueba) |
-| 24.6 | ↳ Modelos gratuitos, niveles de gasto y matriz | ⏳ | Guía de modelos gratis y locales, diagnóstico de Ollama, «Económico/Equilibrado/Máximo» y matriz probada por agente y modelo |
+| 24.1 | ↳ Registro de agentes y diagnóstico | ✅ | `cai agents list` y `cai agents doctor`: qué agentes hay, cuáles están instalados, qué saben hacer y si son open-source |
+| 24.2 | ↳ Esquemas y errores para cualquier modelo | ✅ | `cai schema` y `get_schema`; errores de validación con `path` y pista |
+| 24.3 | ↳ Agentes nuevos | ✅ | Configuración generada para OpenCode, Qwen Code y Antigravity; Codex con `--oss`; Gemini CLI fuera |
+| 24.4 | ↳ Elegir y cambiar de agente | ✅ | Sección «Agentes» con capacidades, agente por defecto y por acción, «con Claude Code ▾» en cada botón |
+| 24.5 | ↳ Segundo plano con varios agentes | ✅ | «En segundo plano» también con OpenCode (`process-jobs` y `assess-fit`), con el techo en una configuración propia de cada ejecución; Codex y Qwen Code, aún no |
+| 24.6 | ↳ Modelos gratuitos, niveles de gasto y matriz | 🚧 código y docs hechos; falta pasar la matriz (`docs/pruebas/fase-24.6-matriz.md`) | Guía de modelos gratis y locales, diagnóstico de Ollama, «Económico/Equilibrado/Máximo» y matriz probada por agente y modelo |
 | 25 | Más fuentes, perfil más rico, ofertas dudosas, coste y calidad del CV | ⏳ | Más ATS con API, `expand`, señales de oferta dudosa, coste por oferta y agente, maquetación del PDF y `CHANGELOG` |
 | 25.1 | ↳ Conectores de ATS y portales con API | ⏳ | Personio, Teamtailor, Workable, SmartRecruiters y Recruitee, más Manfred y freehire.me; `cai sources discover` para todos |
 | 25.2 | ↳ Skill `expand` | ⏳ | Proyectos, skills y logros propuestos desde GitHub, portfolio o Scholar, con su fuente y solo con tu OK |
@@ -2139,3 +2139,397 @@ decisiones tomadas y deuda técnica pendiente. -->
 - **Deuda:** traducir la CLI y los mensajes del servidor sin código; los niveles de las skills en
   la ficha siguen como códigos del perfil (F, C, B) con su nombre en el tooltip; los iconos de los
   portales caen a la inicial cuando no cargan.
+
+### 24.1 · Registro de agentes y diagnóstico — 2026-10-16 · Claude Code (Opus 5.5)
+- **Resumen:** manifiesto v2. Cada agente lleva `config` (`generated` o `none`), `info`
+  (proveedor, licencia, open-source, instalación por sistema, `detect`, cómo se invoca un skill,
+  qué instrucciones lee) y `capabilities` (MCP, subagentes, nivel de aislamiento A/B/C, visión,
+  web, navegador, modelos locales; `null` = sin comprobar).
+  - Claude Code y Codex: con lo ya comprobado en `AGENTS_COMPAT.md`.
+  - Cursor CLI, Copilot CLI, Pi y goose: entran como «solo compatibles vía `AGENTS.md`»
+    (`enabled: false`, `config: none`, nivel C), con datos comprobados en sus webs.
+- **`services/agent_registry.py`:** único lector del manifiesto en el backend.
+  - Pydantic estricto: una clave mal escrita falla nombrando agente y clave.
+  - Caché por fecha de modificación.
+  - `capabilities.headless` derivada de `launch.headless`.
+  - Detección con 5 s de máximo y sin las variables de `unset_env`. Va en caché 5 min, o 30 s si
+    no está instalado, con una sola detección a la vez por agente.
+  - `agent_launch` y `agent_runner` lo usan sin cambiar su comportamiento: sus tests no se tocan.
+- **Comandos y API:**
+  - `cai agents list [--json] [--refresh]`;
+  - `cai agents doctor`: cuál se usaría hoy y por qué, el segundo plano y qué falta para los
+    demás;
+  - `GET /agent/agents`: lo mismo que `list --json`;
+  - sección «Agentes» en `cai doctor`.
+  - Con el manifiesto roto, la UI dice que el manifiesto no es válido, en vez de «ningún agente».
+  - `sync_agents.py` valida `config`.
+- **En este equipo:** Claude Code 2.1.301, habilitado, con segundo plano. Copilot CLI 1.0.75
+  instalado, solo compatible. Codex, Cursor, Pi y goose, no instalados.
+- **Tests:** 25 nuevos en `test_agent_registry.py`:
+  - clave mal escrita y anidada;
+  - valores inválidos y caché por mtime;
+  - ejecutable falso que tarda (corte por tiempo) y que lee la clave (no la recibe);
+  - caché de la detección;
+  - CLI y API iguales;
+  - doctor con el manifiesto roto y con `CAI_AGENT`.
+  2409 tests de backend en verde, ruff limpio, `sync_agents.py --check` en verde y OpenAPI
+  regenerado.
+- **Decisiones:** ADR-037 (borrador; lo completan la 24.4 y la 24.5).
+  - `install` es un texto por sistema que solo se enseña, nunca se ejecuta.
+  - La API no tiene `--refresh`: la UI de la 24.4 decidirá si lo necesita.
+  - Revisión (rol `reviewer`), sin nada bloqueante. Se aplicó:
+    - el motivo con un manifiesto roto;
+    - el aviso en el log una vez por mensaje;
+    - una sola detección a la vez;
+    - TTL corto para los no instalados;
+    - `clean_env` compartido con el runner;
+    - `load()` de solo lectura;
+    - errores sin rutas absolutas;
+    - la sección en `AGENT_INTERFACE.md`;
+    - tests de paridad CLI/API y de `CAI_AGENT` desconocido.
+- **Deuda:**
+  - `shutil.which` en Windows también mira la carpeta actual; habría que pasarle el `PATH`
+    explícito en los tres sitios a la vez (registro, `agent_launch` y los tests que lo sustituyen).
+  - El registro importa `_kill_tree` de `agent_runner` dentro de la función, por el ciclo de
+    imports. Conviene llevarlo a un módulo de procesos común.
+  - Falta un test con un `.cmd` real de Windows en una ruta con espacios.
+
+### 24.2 · Esquemas y errores para cualquier modelo — 2026-10-16 · Claude Code (Opus 5.5)
+- **Resumen:** lo que necesita un modelo pequeño para acertar sin MCP.
+  - **Esquemas:** `get_schema` / `cai schema [NOMBRE] [--example true] --json`, con 17 esquemas
+    (`agent_interface/schemas.py`). Cada uno es exactamente lo que va en `--file`: el modelo del
+    campo o un objeto con las claves de `file_keys`. Ejemplos mínimos en `demo/schemas/`, con los
+    ids del perfil demo; el del CV pasa las comprobaciones del perfil.
+  - **Errores accionables** (formato aditivo, decidido con el usuario): se conservan `field`,
+    `received` y `reason`, y se añaden `expected` y `hint`.
+    - `field` es siempre un path con puntos, también en las comprobaciones del CV, la carta y
+      las respuestas (con `content.` delante desde la interfaz para agentes; sin él en la API).
+    - Pistas: campo obligatorio, campo inexistente (el más parecido), enumeración casi bien
+      escrita, `language` con el nombre del idioma, texto vacío, skill que no está en el perfil
+      (el nombre tal cual, sin traducir) y evidencia o id inexistente (los 5 más parecidos).
+    - `scrub`: ningún error devuelve más de 80 caracteres seguidos de la entrada.
+  - **`--file` tolerante:** JSON en un bloque de código Markdown, o con texto antes o después.
+  - **Roles y skills:** nombran su `cai schema …`. Regla común: corregir solo los `field` del
+    error y reenviar, como mucho dos veces.
+  - **Tokens:** `cai agents doctor --tokens`.
+- **Tokens medidos** (4 caracteres por token):
+  - `AGENTS.md`, ~2 200. Una valoración (AGENTS.md + `assess-fit`), ~2 900. Un CV (AGENTS.md +
+    `generate-cv` + `writer` + `verifier`), ~6 200, sin contar `POLICIES.md`. career-ops: ~26 000.
+  - El skill más largo es `import-cv-template`, con ~2 500. Ninguno pasa de 6 000: sin deuda.
+- **Tests:**
+  - 40 en `test_schemas_errors.py`:
+    - catálogo completo frente al registro, cada ejemplo valida;
+    - los casos de la matriz: skill traducida, evidencia inexistente, `language`;
+    - campos que faltan o mal escritos;
+    - el límite de 80 caracteres, también en las pistas, las claves de `--file` y las copias
+      parciales;
+    - `--file` tolerante, y un JSON truncado que no se acepta;
+    - la salida de texto de la CLI y los tokens.
+  - 4 casos de paridad de `get_schema`.
+  - Al día: los tests de paths con puntos y el detalle de error de la paridad.
+  - 2457 tests de backend en verde (los dos de render real con LibreOffice, repetidos aparte
+    tras agotar los 60 s con la máquina cargada) y 252 de frontend, `tsc`, ruff y
+    `sync_agents.py --check` limpios.
+- **Decisiones:**
+  - `get_schema` va en el allow de `.claude/settings.json`, pero en ningún techo de segundo plano
+    (ADR-032 sin cambios).
+  - «Sección en otro idioma»: sin validaciones nuevas (fuera de alcance), la pista sale del
+    `language` mal puesto.
+  - Revisión (rol `reviewer`), sin nada bloqueante. Se aplicó:
+    - `lenient_json` solo acepta el primer objeto si no hay otro detrás;
+    - recorte en las claves desconocidas de `--file` y en `unknown_tool`;
+    - `esperado:` y `pista:` en la salida de texto;
+    - el mensaje de los errores de contenido se rehace desde los paths;
+    - test de que las pistas no citan la entrada;
+    - una sola regla de reintento en el `extractor`.
+- **Deuda:**
+  - `scrub` no reconoce un texto que un servicio normalice antes de citarlo.
+  - La pista de la skill traducida solo sugiere nombres parecidos por escritura (`difflib`), no
+    traducciones.
+  - Medir en la 24.6 si los modelos pequeños aciertan al segundo intento.
+
+### 24.3 · Agentes nuevos — 2026-10-16 · Claude Code (Opus 5.5)
+- **Resumen:** configuración generada para OpenCode, Qwen Code y Antigravity CLI. Codex con modelos
+  locales. Gemini CLI fuera.
+  - **Comprobado con su binario** (vía `npx`, sin instalar): OpenCode 1.19.3, Qwen Code 0.25.2 y
+    codex-cli 0.163.0. Antigravity, solo con su documentación (no está en npm). Versiones y fechas
+    en `docs/AGENTS_COMPAT.md`.
+  - **OpenCode:**
+    - `opencode.json` con el MCP local y `permission` (`tools` está obsoleto desde la 1.1.1): en
+      la sesión principal, `candidatai_*` pide permiso y las de `policy.auto_allow` van sin
+      preguntar;
+    - `.opencode/agents/<rol>.md` en modo subagente, con `"*": "deny"` y solo sus herramientas.
+      `opencode debug agent extractor` confirma que solo tiene `get_job` y `save_extraction`;
+    - skills: los lee de `.agents/skills` y `.claude/skills` sin duplicar (se queda con una copia;
+      `debug skill`);
+    - se lanza con `opencode --prompt`.
+  - **Qwen Code:**
+    - `.qwen/settings.json` con el MCP, `context.fileName: AGENTS.md`, los permisos de `policy` y
+      `"$version": 4`. Sin la versión, Qwen reescribe el fichero al abrirlo (lo vimos con
+      `qwen mcp list`);
+    - copia de los skills en `.qwen/skills/`, porque solo lee esa carpeta (decisión del usuario: se
+      invocan con `/skill`);
+    - subagentes con lista `tools` exclusiva;
+    - se lanza con `qwen -i`.
+  - **Antigravity:**
+    - `.agents/mcp_config.json`, el único fichero generado dentro de `.agents/`;
+    - sin subagentes (nivel C) y sin `launch`, porque no está documentado cómo abrirlo con una
+      orden.
+  - **Gemini CLI:** deshabilitado con `info.note`. `GEMINI.md`, vacío a propósito. Fuera del README
+    (en los dos idiomas), de `AGENTS.md` y de `AGENTS_COMPAT.md`.
+  - **Modelos:**
+    - `models` pasa a ser un objeto estricto (`fast`, `capable`, `flag`, `presets`);
+    - `AgentSpec.model_args()` aplica la `flag` o un preset. Codex trae el preset `local`
+      (`--oss -m gpt-oss:20b`);
+    - `cai agents list --json` y `GET /agent/agents` dicen qué admite cada agente (`models`).
+  - **`policy`** (nueva en el manifiesto): `auto_allow`, `deny_read` y `deny_edit`. La traduce cada
+    emisor. `--check` falla si `.claude/settings.json` no dice lo mismo.
+- **Tests:**
+  - 15 nuevos en `test_sync_agents.py`:
+    - salida determinista;
+    - el extractor con sus dos herramientas en los tres agentes;
+    - ningún rol con terminal que no declare;
+    - permisos de la sesión principal de OpenCode y de Qwen;
+    - Antigravity;
+    - `GEMINI.md`;
+    - herramienta lógica desconocida;
+    - `settings.json` frente a `policy`.
+  - 3 nuevos en `test_agent_registry.py` (modelos, presets, orden con modelo); los suyos, al día
+    con los agentes nuevos y la nota.
+  - 2475 tests de backend en verde, ruff limpio, `sync_agents.py --check` en verde, OpenAPI regenerado
+    y `tsc` limpio.
+- **Prueba de aislamiento con modelo:** no se pudo hacer.
+  - Los modelos gratuitos de OpenCode Zen rechazan cualquier agente con instrucciones propias
+    («free tier can only be used from within OpenCode»), también los subagentes. Probado con dos
+    modelos, sobre una demo aparte, ya borrada.
+  - OpenCode y Qwen quedan en nivel B hasta la prueba manual (`docs/pruebas/fase-24.3-prueba-manual.txt`)
+    con un modelo local o una clave.
+- **Decisiones:** ADR-037 ampliado (policy, roles acotados, models, Gemini). ADR-010 y ADR-011, con
+  una nota.
+  - Revisión (rol `reviewer`), sin nada bloqueante. Se aplicó:
+    - el `reviewer` va sin terminal en Qwen (`git_read: []`): `run_shell_command(git diff)` no
+      está comprobado y, si no acotara, daría la terminal entera;
+    - la prueba manual comprueba que un subagente de Qwen no lee `.env`;
+    - `DESARROLLO_POR_FASES.md` al día;
+    - `note` documentada como «no recomendado».
+- **Deuda:**
+  - OpenCode también carga la copia de `.claude/skills` (con el frontmatter de Claude), que tapa la
+    de `.agents/skills`. Es inofensivo: el cuerpo es el mismo y solo sale un aviso en el log.
+  - Los `deny_read` de OpenCode son rutas relativas: falta comprobar que encajan con las rutas
+    absolutas de Windows. El `.env` ya lo cubre su regla por defecto (`*.env: ask`).
+  - Nombres de las herramientas MCP en Qwen (`mcp__candidatai__…`) y en los subagentes de
+    Antigravity, sin probar con un modelo.
+  - `launch` de Antigravity, pendiente de su `--help`.
+
+### 24.4 · Elegir y cambiar de agente — 2026-10-16 · Claude Code (Opus 5.5)
+- **Resumen:** el agente y el modelo se eligen desde la UI, globalmente o por acción.
+  - **Preferencias en la base de datos** (`agent_preferences`, migración 0022): agente por
+    defecto, modelo o preset por agente y agente (y modelo) por acción. `agent_runs` guarda el
+    modelo y el preset.
+  - **`services/agent_prefs.py`**, el único sitio con la precedencia: botón > acción > por defecto
+    > `CAI_AGENT` > el primero habilitado e instalado, con el motivo (código y texto).
+  - **Comprobaciones:** capacidades del registro (`search-jobs` → navegador; `research-company` y
+    `training-plan` → web; `import-cv-template` → visión, aún sin botón). `false` bloquea, `null`
+    avisa. Nivel C con contenido no confiable: aviso en terminal, nunca en segundo plano. Un
+    agente preferido sin instalar no se cambia por otro.
+  - **Modelo:** texto libre validado sin red (`MODEL_RE` y `models.pattern`, nuevo en el
+    manifiesto para OpenCode); va con `models.flag` o el preset detrás del programa, en terminal y
+    en segundo plano.
+  - **Auditoría:** `CAI_CLIENT_NAME=<agente>` en la terminal y en el runner.
+  - **`agent_actions.py`:** el catálogo de acciones sale de `agent_launch` (que lo reexporta) para
+    que `agent_prefs` no tenga un import circular.
+  - **API y CLI:** `GET /agent` con el agente efectivo y las alternativas de cada acción;
+    `GET /agent/agents` y `cai agents list --json` con `launchable`, `preferences` y `effective`;
+    `PUT /agent/preferences`; `agent`, `model` y `preset` en `POST /agent/launch` y
+    `/agent/runs`. Los encargos no eligen agente. El doctor tiene en cuenta las preferencias.
+  - **UI:** sección «Agentes» en la página «Agente» (tarjetas con versión o instalación para
+    copiar, insignias, modelo o preset y qué modelo usan los subagentes), selector «Agente por
+    defecto», tabla «Por acción» con el efectivo y su motivo, «con Claude Code ▾» y «Abrir con…»
+    en cada botón, y agente y modelo en cada ejecución. Textos en `locales/` (es/en, `agents.json`
+    nuevo).
+- **Tests:** 23 en `test_agent_prefs.py` (precedencia, modelo por nivel, no instalado,
+  `CAI_AGENT`, capacidades, nivel C, formato del modelo, bandera de cada agente, guardar,
+  extremo a extremo por la API en terminal y en segundo plano, `CAI_AGENT` sin preferencias,
+  errores); `CAI_CLIENT_NAME` en el runner y en PowerShell; 10 de Vitest nuevos (sección,
+  selector, modelo, tabla, error, desplegable, capacidad, aviso y la lista de ejecuciones).
+  2498 tests de backend en verde (los 2 de `test_cli_db.py`, al día con la 0022 y repetidos aparte), 262 de frontend, `tsc`, ruff y `sync_agents.py --check` limpios.
+- **Decisiones:** ADR-037 ampliado (preferencias, precedencia, comprobaciones, modelo,
+  auditoría). Con el usuario: capacidad `null` = aviso; agente preferido sin instalar = bloquea
+  sin cambiar; `import-cv-template` sin botón por ahora.
+  - Revisión (rol `reviewer`), sin nada bloqueante. Se aplicó:
+    - por qué `assess-fit` y `generate-cv` no cuentan como contenido no confiable (sin
+      `get_job`), en el código y en el ADR;
+    - «Abrir en terminal» avisa si el agente que la ejecutó ya no se puede usar;
+    - controles bloqueados mientras se guarda (el `PUT` sustituye todo);
+    - el preset de una acción deshabilita su modelo;
+    - `re.ASCII` en `MODEL_RE` y el docstring de `agent_launch`.
+- **Deuda:**
+  - La UI deduce el sistema por `navigator.userAgent` para la orden de instalación; mejor que lo
+    diga el backend.
+  - `GET /agent` resuelve acciones × agentes en cada petición (barato con la caché de `which`;
+    medir si crecen los agentes).
+  - El `pattern` de OpenCode, sin probar con `opencode models`.
+  - Con otro idioma, los motivos detallados del servidor se resumen con un texto genérico por
+    código.
+  - `RESUMEN_FASES.md` se pone al día al cerrar la fase 24 entera.
+
+### 24.5 · Segundo plano con varios agentes — 2026-10-16 · Claude Code (Opus 5.5)
+- **Resumen:** «En segundo plano» también con OpenCode, sin rebajar el techo de herramientas.
+  - **`launch.headless.ceiling`:** `args` (Claude Code, el techo en la orden, como antes) o
+    `config`: una configuración propia de cada ejecución. `HeadlessSpec.complete` exige una forma
+    de denegar el resto y rechaza banderas que lo aprueban todo (`--auto`, `--yolo`…). `{model}`
+    en la orden marca dónde va el modelo.
+  - **`services/agent_run_config.py` (nuevo):** escribe en `data/tmp/agent-runs/<id>/` un agente
+    `cai-run` con `"*": "deny"` y, detrás, solo las MCP de la acción, su skill y sus roles. El
+    runner se la pasa en `OPENCODE_CONFIG_CONTENT`, quita `OPENCODE_CONFIG`,
+    `OPENCODE_CONFIG_DIR` y `OPENCODE_PERMISSION` (`clear_env`) y la borra en un `finally`. Si
+    queda alguna de un worker caído, la borra `recover_interrupted`.
+  - **`Action.roles`:** con techo por configuración, un rol solo se lanza si sus herramientas caben
+    en las de la acción. `generate-cv` queda sin segundo plano con OpenCode (`writer` y
+    `verifier` leen ficheros).
+  - **`agent_runs.run_config`** (migración 0023): cómo se limitó cada ejecución. El runner no
+    relee el manifiesto.
+  - **Lector `opencode-json`** en `agent_output.py`: pasos, herramientas (sin entradas ni salidas),
+    subagentes, denegaciones, errores, resultado y uso (tokens, coste, turnos). Fixtures grabadas
+    de OpenCode 1.19.3 sobre una demo aparte.
+  - **Manifiesto:** `headless` y `resume` de OpenCode
+    (`opencode run --format json --pure --agent cai-run`).
+  - **API y UI:** `BackgroundInfo.suggested`/`suggested_name` en `GET /agent`. El desplegable
+    ofrece «En segundo plano con X» si el agente de la acción no puede. La tarjeta de cada
+    ejecución enseña el uso. Textos en es/en.
+  - **Cola:** sin cambios de lógica; los tests cubren ejecuciones de agentes distintos y la
+    recuperación tras reiniciar.
+- **Comprobado con OpenCode 1.19.3** (vía `npx`, en `AGENTS_COMPAT.md`):
+  - `debug agent cai-run`: las reglas de `cai-run` van detrás de las de `opencode.json`, sin bash,
+    read, edit ni web;
+  - `--tool`: bash y webfetch, deshabilitados; un skill ajeno y el subagente `writer`, denegados;
+  - el `extractor` sigue acotado con la configuración de la ejecución cargada;
+  - sin `--auto`, lo que queda en `ask` se rechaza solo y la ejecución se para.
+  - **Sin comprobar con un modelo:** los gratuitos de Zen rechazan agentes propios. Va en la
+    prueba manual.
+- **Codex 0.163.0 y Qwen Code 0.25.2, reevaluados, sin segundo plano:**
+  - Codex solo deja apagar herramientas (una lista negra) y sin terminal no lee los skills;
+  - Qwen tiene lista blanca, pero no hay forma de comprobarla sin un modelo.
+- **Tests:**
+  - 36 en `test_agent_run_config.py`:
+    - la configuración solo enciende lo de la acción;
+    - los roles caben en su acción y coinciden con los de cada `SKILL.md`;
+    - `generate-cv` bloqueado con OpenCode;
+    - validación de `headless` y `{model}`;
+    - el runner con el OpenCode falso: progreso, uso, entorno limpio;
+    - la configuración se borra al cancelar, fallar, agotar el tiempo, con una excepción, al parar
+      el worker y al recuperar;
+    - una configuración que no se puede escribir no lanza;
+    - denegación, preguntas, cola con dos agentes y recuperación;
+    - el lector sobre las salidas grabadas;
+    - la sugerencia en la API.
+  - El agente falso imita también `opencode run --format json`.
+  - 2 de Vitest nuevos: «En segundo plano con Claude Code» y la línea de uso.
+  - 2534 tests de backend en verde (los 2 de `test_cli_db.py`, al día con la 0023 y repetidos aparte). 264 de frontend, `tsc`, ruff y `sync_agents.py --check` limpios.
+- **Decisiones:** ADR-037 ampliado (criterio, dos techos, roles, `run_config`, Codex y Qwen) y nota
+  en la ADR-032. Con el usuario: sin modelo de pago ni local en esta sesión (la ejecución completa
+  queda en la prueba manual); Qwen sin segundo plano hasta poder comprobarlo.
+  - Revisión (rol `reviewer`), sin nada bloqueante. Se aplicó:
+    - `clear_env` para las variables de OpenCode;
+    - rechazar banderas que lo aprueban todo;
+    - test de roles frente a los skills;
+    - tests de limpieza al parar el worker y de carpetas huérfanas;
+    - mensaje al usuario sin nombre de agente;
+    - el shim `.cmd`, en la prueba manual.
+- **Deuda:**
+  - OpenCode en segundo plano, sin probar con un modelo (`docs/pruebas/fase-24.5-prueba-manual.txt`).
+  - Si OpenCode se instala con npm, el worker lo lanza por `opencode.cmd` (cmd.exe). La orden la
+    compone la app (sin texto de ofertas), pero «» y acentos sin probar por esa vía.
+  - `generate-cv` con OpenCode, posible si `read` de `writer`/`verifier` se acota a `docs/` en la
+    configuración de la ejecución.
+  - El motivo «un rol no cabe» usa `blocked_code` `no_headless`; con otro idioma se ve el texto del
+    servidor.
+  - `agent_runs.start` devuelve una ejecución activa de la misma acción aunque sea de otro agente.
+  - Con `value: content`, `config.json` también se escribe en disco (para auditar y probar), aunque
+    se pasa por el entorno.
+  - Qwen Code: lector `stream-json` y `headless` en la 24.6, con modelos locales.
+
+### 24.6 · Modelos gratuitos, niveles de gasto y matriz — 2026-10-16 · Claude Code (Opus 5.5)
+- **Estado:** el código, los tests y los docs están hechos. Falta que el usuario pase la matriz real
+  (criterio de cierre: al menos un agente open-source con un modelo local). Este equipo no tiene
+  Ollama, OpenCode, Codex ni Qwen, y con 15 GB de RAM sin gráfica dedicada `gpt-oss:20b` iría justo.
+  Claude Code con MCP lo pasa el usuario (decisión suya). La 24.6 y la 24 quedan 🚧 hasta importar
+  los resultados.
+- **Resumen:**
+  - **Guía `docs/MODELOS_GRATIS.md`:**
+    - tres vías (local, nube gratis y suscripción) y qué sale de tu equipo en cada una;
+    - Ollama en Windows con `OLLAMA_CONTEXT_LENGTH`;
+    - modelos por memoria, con etiquetas y tamaños comprobados hoy en ollama.com (`qwen3:8b`,
+      `gpt-oss:20b`, `qwen3:14b`, `devstral:24b`, `qwen3-coder:30b`) y el aviso de los de ~8B;
+    - la configuración personal de cada agente, fuera del repo;
+    - `unset_env`, niveles de gasto y `cai eval compat`.
+    Resumen en `GUIA.md` y `GUIDE.md`.
+  - **Diagnóstico de Ollama** (`services/local_models.py`):
+    - solo `GET /api/version`, `GET /api/tags` y `POST /api/show`, con una lista blanca en la
+      llamada y en un `event_hook`;
+    - solo direcciones de este equipo (`CAI_OLLAMA_URL`);
+    - contexto por `num_ctx`, `OLLAMA_CONTEXT_LENGTH` o el valor por defecto (4 096), limitado al
+      máximo del modelo;
+    - avisos de contexto bajo (< 32 768), de modelo pequeño (≤ ~8B, umbral 9B) elegido para
+      `generate-cv` y de un Ollama sin modelos;
+    - superficie: `cai agents doctor`, `GET /agent/local-models` y la tarjeta de los agentes con
+      modelos locales.
+  - **Niveles de gasto** (`services/spend_tiers.py`):
+    - «Económico», «Equilibrado» y «Máximo» para `process-jobs`, `assess-fit`, `review-replies` y
+      `generate-cv`, en `agent_preferences` (`scope` `tier` y `tier_undo`), sin migración;
+    - propuesta desde el manifiesto y lo instalado, sin nombres de modelos en el código;
+    - aplicar copia antes las preferencias por acción y «Deshacer» las devuelve;
+    - API `GET /agent/tiers`, `PUT /agent/tiers/{nivel}`, `POST …/reset`, `…/apply` y
+      `/agent/tiers/undo`, todas las de escritura con `require_ui`;
+    - UI «Niveles de gasto» en la página «Agente».
+  - **`cai eval compat`** (`services/evals/compat.py`):
+    - demo propia, con el segundo plano (`agent_runs` y `agent_runner.run_next`, en el mismo
+      proceso);
+    - aprueba y marca las obligatorias que faltan solo en la demo;
+    - mide 11 campos de la extracción, valoraciones, `eval cv`, tiempo, turnos y tokens;
+    - pasos manuales con `--approve` y `--import` para los agentes sin segundo plano;
+    - guarda `evals/compat/results/` y genera `evals/compat/REPORT.md`, que de momento está vacío.
+    El lector de Claude Code guarda ahora los tokens del resultado.
+  - **Docs:**
+    - README (es/en): tabla «Agentes compatibles» con licencia, gratis, en local y estado; se
+      mantiene el badge;
+    - `AGENTS_COMPAT.md`: matriz con una columna por agente y modelo, con insignias, y sección de
+      modelos locales;
+    - `COMPARATIVA.md`, `AGENT_INTERFACE.md`, `evals/README.md`, `RESUMEN_FASES.md` (fase 24
+      entera), `PENDIENTES.md` y `docs/pruebas/fase-24.6-matriz.md`.
+- **Tests:**
+  - 20 en `test_local_models.py`: modelos y contexto, solo metadatos, 7 rutas de inferencia
+    rechazadas en la llamada y en el hook, un test que busca rutas de inferencia en el código,
+    variable de entorno, tope del modelo, modelo pequeño por nombre, preset y `:latest`, Ollama
+    caído, fuera del equipo, sin modelos, API y doctor;
+  - 12 en `test_spend_tiers.py`: propuesta, preset `local`, sin agente local, aplicar y deshacer,
+    deshacer sin preferencias, guardar preferencias borra la copia, «Económico» exige el modelo
+    local, editar y volver, validación y `require_ui`;
+  - 10 en `test_eval_compat.py`: flujo completo con un agente falso (54/55, resultado e informe),
+    paso manual e `--import`, primer paso manual, CLI, el runner de verdad con el proceso falso
+    (que recibe `CAI_DATA_DIR` de la demo), errores, normalización y nombres;
+  - 5 de Vitest nuevos (niveles, deshacer, editar, Ollama, Ollama caído).
+  - 2574 tests de backend en verde, 269 de frontend; `tsc`, ruff y `sync_agents.py --check` limpios; OpenAPI regenerado.
+- **Decisiones:** ADR-037 cerrado salvo la decisión sobre el ADR-001, que espera a la matriz. Nota
+  en el ADR-001: leer metadatos de un servidor local no es llamar a un LLM.
+  - Revisión (rol `reviewer`), sin nada bloqueante. Se aplicó:
+    - «Económico» no se aplica sin modelo local (API y botón);
+    - guardar preferencias a mano borra la copia para deshacer;
+    - errores de la demo y del manifiesto como error de la CLI;
+    - `--approve --json`;
+    - test de que el agente recibe la carpeta de la demo;
+    - texto de privacidad en segundo plano;
+    - recorte de los metadatos;
+    - nota de tokens en el informe y «Pendiente» en la ADR-037.
+- **Deuda:**
+  - Matriz real pendiente: Claude Code con MCP, OpenCode con Ollama, Codex y OpenCode con un modelo
+    gratuito en la nube.
+  - Qwen Code sigue sin segundo plano y sin lector `stream-json`: sin un modelo no se puede
+    comprobar el techo.
+  - El diagnóstico solo conoce Ollama, no LM Studio.
+  - El contexto real del servidor no se ve por los endpoints de metadatos: se lee
+    `OLLAMA_CONTEXT_LENGTH` de este proceso (si la cambias, reinicia la app).
+  - «Deshacer» guarda un solo nivel.
+  - La propuesta de «Económico» con OpenCode no trae modelo (no hay preset `local` en el manifiesto).
+  - Los tokens de la matriz no cuentan la caché.
+

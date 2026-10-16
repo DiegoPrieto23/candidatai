@@ -1,0 +1,25 @@
+{
+  "content": {
+    "language": "es",
+    "recipient": null,
+    "greeting": "Hola:",
+    "paragraphs": [
+      {
+        "text": "Me interesa el puesto de Data Engineer porque trabajo a diario con Python, SQL y Snowflake.",
+        "evidence": [
+          "exp-norteconsulting/a1",
+          "extraction"
+        ]
+      }
+    ],
+    "sign_off": "Un saludo,",
+    "keywords_targeted": [
+      "Python",
+      "Snowflake"
+    ]
+  },
+  "render_options": {
+    "template_id": null,
+    "photo": "auto"
+  }
+}

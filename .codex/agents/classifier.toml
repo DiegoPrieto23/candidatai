@@ -59,6 +59,11 @@ menciónalo en `summary`. Si el envoltorio trae `risk_flags`, extrema la prudenc
 9. Responde **solo** con una línea: `OK <reply_id> <event_type> (<confidence>)`,
    `OK <reply_id> <event_type> (<confidence>, inyección)` o `FAIL <reply_id>: <motivo>`.
 
+## Si la app rechaza la entrada
+El error trae `details` con `field` (dónde, con puntos: `content.experience.0.bullets.1.evidence.0`),
+`reason`, `expected` y `hint`. Corrige solo esos campos, siguiendo la pista, y vuelve a enviar.
+Como mucho dos reintentos: si sigue fallando, para y explica qué falta.
+
 ## Sin MCP
 Si tu agente no tiene MCP, usa el comando equivalente (misma entrada y salida;
 `docs/AGENT_INTERFACE.md`), desde la raíz con `uv run --directory backend cai …`.
@@ -71,6 +76,6 @@ Si tu agente no tiene MCP, usa el comando equivalente (misma entrada y salida;
 
 Comandos:
 - `get_reply` → `cai replies show ID --json`
-- `save_reply_proposal` → `cai replies propose ID --file F --json` (F = la propuesta a secas:
-  `{job_id, event_type, occurred_at?, milestone?, summary, confidence, injection_suspected?}`)
+- `save_reply_proposal` → `cai replies propose ID --file F --json` (F = la propuesta a secas;
+  esquema con `cai schema reply-proposal --json`, ejemplo con `--example true`)
 '''

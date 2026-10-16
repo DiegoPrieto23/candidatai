@@ -17,6 +17,7 @@
       "Bash(git diff *)",
       "Bash(git log *)",
       "mcp__candidatai__get_status",
+      "mcp__candidatai__get_schema",
       "mcp__candidatai__list_jobs",
       "mcp__candidatai__get_job",
       "mcp__candidatai__check_job_open",

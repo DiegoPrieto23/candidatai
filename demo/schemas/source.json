@@ -1,0 +1,9 @@
+{
+  "name": "InfoJobs · Data Engineer",
+  "platform": "infojobs",
+  "search_urls": [
+    "https://www.infojobs.net/jobsearch/search-results/list.xhtml?keyword=data+engineer"
+  ],
+  "priority": 3,
+  "access": "free"
+}

@@ -1,0 +1,58 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "candidatai": {
+      "type": "local",
+      "command": [
+        "uv",
+        "run",
+        "--directory",
+        "backend",
+        "cai-mcp"
+      ],
+      "enabled": true
+    }
+  },
+  "permission": {
+    "candidatai_*": "ask",
+    "candidatai_get_status": "allow",
+    "candidatai_get_schema": "allow",
+    "candidatai_list_jobs": "allow",
+    "candidatai_get_job": "allow",
+    "candidatai_check_job_open": "allow",
+    "candidatai_get_search_titles": "allow",
+    "candidatai_save_extraction": "allow",
+    "candidatai_get_extraction": "allow",
+    "candidatai_get_timeline": "allow",
+    "candidatai_get_profile": "allow",
+    "candidatai_get_context": "allow",
+    "candidatai_get_match": "allow",
+    "candidatai_get_cv_content": "allow",
+    "candidatai_list_cv_templates": "allow",
+    "candidatai_list_sources": "allow",
+    "candidatai_list_followups_due": "allow",
+    "candidatai_list_upcoming": "allow",
+    "candidatai_get_funnel_stats": "allow",
+    "candidatai_get_calibration": "allow",
+    "candidatai_get_skill_gaps": "allow",
+    "candidatai_list_replies": "allow",
+    "candidatai_get_reply": "allow",
+    "candidatai_save_reply_proposal": "allow",
+    "candidatai_save_message_draft": "allow",
+    "candidatai_get_job_contacts": "allow",
+    "candidatai_get_company_research": "allow",
+    "candidatai_get_received_offer": "allow",
+    "candidatai_wait_user_action": "allow",
+    "candidatai_list_agent_requests": "allow",
+    "read": {
+      "*": "allow",
+      ".env": "deny",
+      ".env.*": "deny",
+      "data/browser-profile/**": "deny"
+    },
+    "edit": {
+      "*": "allow",
+      "data/browser-profile/**": "deny"
+    }
+  }
+}

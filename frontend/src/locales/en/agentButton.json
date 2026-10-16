@@ -15,8 +15,14 @@
   "terminalHint": "You see it, answer and approve.",
   "background": "In the background",
   "backgroundHint": "No window and only with the app's tools. Follow it in “Agent”.",
+  "backgroundWith": "In the background with {{agent}}",
   "unavailable": "Not available.",
   "later": "Leave for my next session",
   "laterHint": "Your agent will see it with the skill handle-requests.",
-  "seeInAgent": "See in “Agent”"
+  "seeInAgent": "See in “Agent”",
+  "with": "with {{agent}}",
+  "moreWith": "More ways to launch it (with {{agent}})",
+  "onceWith": "Just this once, with:",
+  "openWith": "Open with {{agent}}",
+  "warning": "Heads up: {{warning}}"
 }

@@ -1,0 +1,104 @@
+{
+  "title": "Agentes",
+  "intro": "Los agentes de IA que puede abrir la app, qué sabe hacer cada uno y cuál usa cada acción. Tus elecciones se guardan en tu base de datos, no en el repositorio.",
+  "defaultAgent": "Agente por defecto",
+  "defaultAuto": "Automático (CAI_AGENT o el primero instalado)",
+  "notInstalled": "No instalado",
+  "installWith": "Instálalo con:",
+  "copy": "Copiar",
+  "copied": "Copiado",
+  "onlyCompatible": "Solo compatible vía AGENTS.md: sin configuración generada ni botón.",
+  "notLaunchable": "Configurado, pero la app no sabe abrirlo con una orden: úsalo tú desde su terminal.",
+  "badges": {
+    "openSource": "Open-source",
+    "localModels": "Modelos locales",
+    "mcp": "MCP",
+    "isolation": "Subagentes aislados (nivel {{level}})",
+    "headless": "Segundo plano",
+    "vision": "Visión",
+    "web": "Web",
+    "browser": "Navegador"
+  },
+  "unchecked": "sin comprobar",
+  "model": "Modelo",
+  "modelDefault": "El que use el agente",
+  "preset": "Preset",
+  "noPreset": "Sin preset",
+  "modelHelp": "Texto libre: no se comprueba con la red.",
+  "modelExample": "p. ej. {{example}}",
+  "noModelChoice": "Este agente no admite elegir el modelo al lanzarlo.",
+  "subagentsInherit": "Los subagentes (roles) heredan el modelo de la sesión.",
+  "subagentsFixed": "Los subagentes (roles) usan {{models}}, de la configuración generada.",
+  "save": "Guardar",
+  "saved": "Guardado.",
+  "byAction": "Por acción",
+  "byActionIntro": "Cambia el agente y el modelo de una acción concreta. Lo efectivo es lo que usará el próximo botón.",
+  "action": "Acción",
+  "agent": "Agente",
+  "effective": "Efectivo",
+  "inherit": "Por defecto",
+  "modelPlaceholder": "Modelo (opcional)",
+  "none": "Ninguno",
+  "reason": {
+    "explicit": "elegido para esta ejecución",
+    "action": "elegido para esta acción",
+    "default": "tu agente por defecto",
+    "env": "por CAI_AGENT",
+    "first_installed": "el primero instalado",
+    "none": "ninguno disponible"
+  },
+  "blocked": {
+    "no_agent": "No hay ningún agente que abrir.",
+    "not_launchable": "La app no puede abrir este agente.",
+    "not_installed": "Este agente no está instalado.",
+    "no_headless": "Este agente no tiene segundo plano.",
+    "capability": "Este agente no tiene una capacidad que la acción necesita.",
+    "untrusted": "Nivel C con contenido no confiable: solo en terminal.",
+    "model": "El modelo elegido no vale para este agente."
+  },
+  "warning": "Revisa antes de lanzarlo: ver docs/AGENTS_COMPAT.md.",
+  "loadFailed": "No se pudieron leer los agentes.",
+  "local": {
+    "title": "Modelos locales (Ollama)",
+    "down": "Ollama no responde en {{url}}.",
+    "running": "Ollama {{version}}",
+    "envContext": "OLLAMA_CONTEXT_LENGTH = {{tokens}}",
+    "noEnvContext": "sin OLLAMA_CONTEXT_LENGTH (Ollama usa {{tokens}})",
+    "context": "contexto {{tokens}}",
+    "noTools": "sin herramientas",
+    "contextLow": "{{model}}: contexto de {{tokens}} tokens. Los agentes necesitan al menos {{min}}: pon OLLAMA_CONTEXT_LENGTH={{min}} y reinicia Ollama.",
+    "smallModel": "{{model}} está elegido para «{{action}}»: los modelos de unos 8B o menos suelen fallar con los esquemas del CV.",
+    "noModels": "Ollama responde, pero no tiene ningún modelo: descarga uno con «ollama pull».",
+    "guide": "Cómo montarlo: docs/MODELOS_GRATIS.md. La app solo lee qué modelos hay; nunca les pide nada."
+  },
+  "tiers": {
+    "title": "Niveles de gasto",
+    "intro": "Agente y modelo para las acciones principales, en tres niveles. Rellénalos una vez y aplica uno con un clic: cambia tu tabla «Por acción» y se puede deshacer.",
+    "economy": {
+      "label": "Económico",
+      "help": "Las acciones cerradas (procesar, valorar, respuestas) con un modelo local; el CV, con tu agente más capaz."
+    },
+    "balanced": {
+      "label": "Equilibrado",
+      "help": "Las acciones cerradas con el modelo rápido de tu agente más capaz; el CV, con su modelo de siempre."
+    },
+    "max": {
+      "label": "Máximo",
+      "help": "Todo con tu agente más capaz y su modelo de siempre."
+    },
+    "active": "En uso",
+    "custom": "Editado",
+    "apply": "Aplicar",
+    "edit": "Editar",
+    "reset": "Volver a la propuesta",
+    "cancel": "Cancelar",
+    "undo": "Deshacer el último",
+    "agentFor": "Agente para {{action}}",
+    "modelFor": "Modelo para {{action}}",
+    "notes": {
+      "no_local_agent": "No tienes instalado ningún agente con modelos locales: va con el modelo rápido de tu agente.",
+      "needs_local_model": "Pon el modelo local en «Editar» (p. ej. el de Ollama) para poder aplicarlo.",
+      "no_agent": "No hay ningún agente que se pueda abrir desde la app."
+    }
+  }
+}

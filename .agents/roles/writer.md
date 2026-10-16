@@ -86,6 +86,11 @@ Después, aplícalo en cada sección:
 4. Responde con: `document_id`, plantilla usada, avisos del render, páginas, keywords cubiertas y ausentes, y cualquier decisión
    discutible que hayas tomado (en una línea cada una).
 
+## Si la app rechaza la entrada
+El error trae `details` con `field` (dónde, con puntos: `content.experience.0.bullets.1.evidence.0`),
+`reason`, `expected` y `hint`. Corrige solo esos campos, siguiendo la pista, y vuelve a enviar.
+Como mucho dos reintentos: si sigue fallando, para y explica qué falta.
+
 ## Sin MCP
 Si tu agente no tiene MCP, usa el comando equivalente (misma entrada y salida;
 `docs/AGENT_INTERFACE.md`), desde la raíz con `uv run --directory backend cai …`.
@@ -102,5 +107,6 @@ Comandos:
 - `get_extraction` → `cai jobs extraction ID --json`
 - `get_match` → `cai match show ID --json`
 - `list_cv_templates` → `cai templates list --json`
-- `save_cv_content` → `cai cv save ID --file F --json` (F = `{"content": …, "render_options": …}`)
+- `save_cv_content` → `cai cv save ID --file F --json` (F = `{"content": …, "render_options": …}`;
+  esquema con `cai schema cv-content --json`, ejemplo con `--example true`)
 - `get_cv_content` → `cai cv show ID --json`

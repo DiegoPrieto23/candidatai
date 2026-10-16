@@ -67,6 +67,11 @@ Eres un revisor escéptico. No has escrito este documento y no tienes que defend
 5. Responde con `PASSED` o `FAILED` y la lista de problemas: ubicación (p. ej. «párrafo 2»),
    problema y sugerencia concreta.
 
+## Si la app rechaza la entrada
+El error trae `details` con `field` (dónde, con puntos: `content.experience.0.bullets.1.evidence.0`),
+`reason`, `expected` y `hint`. Corrige solo esos campos, siguiendo la pista, y vuelve a enviar.
+Como mucho dos reintentos: si sigue fallando, para y explica qué falta.
+
 ## Sin MCP
 Si tu agente no tiene MCP, usa el comando equivalente (misma entrada y salida;
 `docs/AGENT_INTERFACE.md`), desde la raíz con `uv run --directory backend cai …`.
@@ -83,6 +88,8 @@ Comandos:
 - `get_profile` → `cai profile show --json`
 - `get_context` → `cai context show --json`
 - `get_extraction` → `cai jobs extraction ID --json`
-- `save_cv_verification` → `cai cv save-verification DOC --file F --json`
-- `save_cover_letter_verification` → `cai letter save-verification DOC --file F --json`
+- `save_cv_verification` → `cai cv save-verification DOC --file F --json` (esquema:
+  `cai schema cv-verification --json`)
+- `save_cover_letter_verification` → `cai letter save-verification DOC --file F --json` (esquema:
+  `cai schema cover-letter-verification --json`)
 '''

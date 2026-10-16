@@ -15,8 +15,14 @@
   "terminalHint": "Lo ves, contestas y apruebas tú.",
   "background": "En segundo plano",
   "backgroundHint": "Sin ventana y solo con las herramientas de la app. Síguelo en «Agente».",
+  "backgroundWith": "En segundo plano con {{agent}}",
   "unavailable": "No disponible.",
   "later": "Dejar para mi próxima sesión",
   "laterHint": "Tu agente lo verá con el skill handle-requests.",
-  "seeInAgent": "Ver en «Agente»"
+  "seeInAgent": "Ver en «Agente»",
+  "with": "con {{agent}}",
+  "moreWith": "Más formas de lanzarlo (con {{agent}})",
+  "onceWith": "Solo esta vez, con:",
+  "openWith": "Abrir con {{agent}}",
+  "warning": "Ojo: {{warning}}"
 }

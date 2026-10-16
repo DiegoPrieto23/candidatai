@@ -1,0 +1,56 @@
+{
+  "context": {
+    "fileName": "AGENTS.md"
+  },
+  "mcpServers": {
+    "candidatai": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "backend",
+        "cai-mcp"
+      ]
+    }
+  },
+  "permissions": {
+    "allow": [
+      "mcp__candidatai__get_status",
+      "mcp__candidatai__get_schema",
+      "mcp__candidatai__list_jobs",
+      "mcp__candidatai__get_job",
+      "mcp__candidatai__check_job_open",
+      "mcp__candidatai__get_search_titles",
+      "mcp__candidatai__save_extraction",
+      "mcp__candidatai__get_extraction",
+      "mcp__candidatai__get_timeline",
+      "mcp__candidatai__get_profile",
+      "mcp__candidatai__get_context",
+      "mcp__candidatai__get_match",
+      "mcp__candidatai__get_cv_content",
+      "mcp__candidatai__list_cv_templates",
+      "mcp__candidatai__list_sources",
+      "mcp__candidatai__list_followups_due",
+      "mcp__candidatai__list_upcoming",
+      "mcp__candidatai__get_funnel_stats",
+      "mcp__candidatai__get_calibration",
+      "mcp__candidatai__get_skill_gaps",
+      "mcp__candidatai__list_replies",
+      "mcp__candidatai__get_reply",
+      "mcp__candidatai__save_reply_proposal",
+      "mcp__candidatai__save_message_draft",
+      "mcp__candidatai__get_job_contacts",
+      "mcp__candidatai__get_company_research",
+      "mcp__candidatai__get_received_offer",
+      "mcp__candidatai__wait_user_action",
+      "mcp__candidatai__list_agent_requests"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./data/browser-profile/**)",
+      "Edit(./data/browser-profile/**)"
+    ]
+  },
+  "$version": 4
+}

@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "issues": [
+    {
+      "severity": "warning",
+      "location": "experience.0.bullets.1",
+      "problem": "«cuadros de mando» no aparece literal en la evidencia `exp-datagal/a1`.",
+      "suggestion": "Usa «informes de Power BI», como dice el perfil."
+    }
+  ]
+}

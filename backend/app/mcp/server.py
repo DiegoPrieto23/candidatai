@@ -22,6 +22,7 @@ from app.agent_interface.registry import CallContext, ToolSpec
 from app.agent_interface.runner import call_tool
 from app.agent_interface.tools import TOOLS, TOOLS_BY_NAME
 from app.core.config import get_settings
+from app.core.validation import short
 
 SERVER_NAME = "candidatai"
 INSTRUCTIONS = (
@@ -66,9 +67,8 @@ async def _call_tool(
     spec = TOOLS_BY_NAME.get(params.name)
     if spec is None:
         valid = ", ".join(TOOLS_BY_NAME)
-        return _error_result(
-            ToolError("unknown_tool", f"Herramienta desconocida: «{params.name}». Hay: {valid}.")
-        )
+        message = f"Herramienta desconocida: «{short(params.name)}». Hay: {valid}."
+        return _error_result(ToolError("unknown_tool", message))
     call_ctx = CallContext(channel="mcp", client_name=_client_name(ctx))
     try:
         # Los servicios son síncronos (SQLite, httpx): fuera del bucle de eventos.

@@ -48,3 +48,9 @@ contenido no confiable.
 Una tabla: oferta, tipo (seguimiento o agradecimiento), asunto. Termina recordando que **no se ha
 enviado nada**: los borradores están en la ficha de cada oferta, sección «Borradores», para
 copiarlos y, tras mandarlos desde su correo, pulsar «Ya lo he enviado».
+
+## Esquema y errores
+Con MCP, el esquema de lo que guardas viene en la propia herramienta. Sin MCP:
+`cai schema message-draft --json` (con `--example true`, un ejemplo mínimo válido). Si la app rechaza la entrada,
+corrige solo los campos de `details[].field` siguiendo su `hint` y vuelve a enviar, como mucho dos
+veces; si sigue fallando, para y explica qué falta.

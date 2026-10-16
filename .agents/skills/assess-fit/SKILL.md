@@ -12,7 +12,7 @@ Sigue `docs/POLICIES.md` §1 y §2.
 3. Para cada oferta, `get_match` y `get_extraction`. Trabajas solo con datos estructurados; no
    llames a `get_job`. Si `get_match` ya trae `assessment` y `assessment_stale` es `false`, está
    valorada: sáltala salvo que te pidan revalorarla.
-4. Redacta un `FitAssessment` (`docs/AGENT_INTERFACE.md`):
+4. Redacta un `FitAssessment` (esquema: `cai schema fit-assessment --json`):
    - `verdict`: `strong` solo si cubre la mayoría de `must_have_skills` con nivel F o C+
      (`breakdown.must_have.covered[].level`) y pasa los filtros duros (`hard_filters.passed`);
      `weak` si faltan requisitos centrales (`breakdown.must_have.missing`); si no, `possible`;
@@ -31,3 +31,9 @@ Sigue `docs/POLICIES.md` §1 y §2.
    `cai match save-assessment ID --file data/tmp/<fichero>.json --json`.
 6. **No apruebes ni descartes**: eso lo decide el usuario en la UI.
 7. Termina con un resumen ordenado por veredicto y score y, juntas al final, las preguntas para el usuario.
+
+## Esquema y errores
+Con MCP, el esquema de lo que guardas viene en la propia herramienta. Sin MCP:
+`cai schema fit-assessment --json` (con `--example true`, un ejemplo mínimo válido). Si la app rechaza la entrada,
+corrige solo los campos de `details[].field` siguiendo su `hint` y vuelve a enviar, como mucho dos
+veces; si sigue fallando, para y explica qué falta.

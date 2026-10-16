@@ -380,6 +380,30 @@ La carta es un documento propio, con sus indicaciones, su verificación y sus re
 - Para agentes y terminal: `get_received_offer` ↔ `jh received-offers show`.
 
 
+## 24 · Varios agentes, open-source, gratuitos y a elegir — 2026-10-16 · Claude Code (Opus 5.5)
+- **Registro de agentes** (24.1): `cai agents list` y `cai agents doctor` dicen qué agentes hay,
+  cuáles tienes, qué saben hacer (MCP, subagentes, segundo plano, web, navegador, modelos locales)
+  y si son open-source. Todo sale de `.agents/manifest.yaml` (ADR-037).
+- **Esquemas y errores para cualquier modelo** (24.2): `cai schema` y `get_schema` dan cada entrada
+  con un ejemplo. Los errores dicen qué campo arreglar y cómo.
+- **Agentes nuevos** (24.3): configuración generada para OpenCode y Qwen Code (open-source) y
+  Antigravity CLI. Codex con modelos locales (preset `local`). Gemini CLI, fuera.
+- **Elegir agente y modelo desde la UI** (24.4): agente por defecto, por acción y «con Claude
+  Code ▾» en cada botón, con las capacidades de cada agente comprobadas.
+- **Segundo plano con OpenCode** (24.5): `process-jobs` y `assess-fit`, con el mismo techo de
+  herramientas que Claude Code, en una configuración propia de cada ejecución.
+- **Modelos gratuitos y locales** (24.6):
+  - la guía `docs/MODELOS_GRATIS.md` explica Ollama en Windows, qué modelo usar según tu memoria y
+    qué sale de tu equipo en cada vía;
+  - `cai agents doctor` y la tarjeta de cada agente miran tu Ollama (solo metadatos) y avisan si
+    el contexto no llega;
+  - **niveles de gasto** «Económico», «Equilibrado» y «Máximo», que se aplican con un clic y se
+    deshacen;
+  - **`cai eval compat`** pasa la matriz a cualquier agente y modelo y la resume en
+    `evals/compat/REPORT.md`.
+- **Sigue igual:** la app no llama a ningún LLM. Los modelos gratuitos se usan a través de agentes
+  que ya saben hablar con ellos.
+
 ## 23 · CandidatAI — 2026-10-13 · Claude Code (Opus 5.5)
 - **Nombre nuevo:** Job Hunter pasa a ser **CandidatAI**: la CLI es `cai`, el servidor MCP
   `candidatai` y las variables `CAI_*` (ADR-034). Los skills y los roles pasan a inglés

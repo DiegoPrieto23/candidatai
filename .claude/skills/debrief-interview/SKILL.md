@@ -69,3 +69,9 @@ dice que tiene una oferta:
 4. No registres `accepted` ni `withdrawn`: eso lo decide y lo anota el usuario. Si quiere, guarda
    la lista como nota con `add_event(job_id, type="note")`.
 5. Para preparar la negociación o revisar el contrato, sugiere el skill `prepare-negotiation`.
+
+## Esquema y errores
+Con MCP, el esquema de lo que guardas viene en la propia herramienta. Sin MCP:
+`cai schema interview-notes --json` (con `--example true`, un ejemplo mínimo válido). Si la app rechaza la entrada,
+corrige solo los campos de `details[].field` siguiendo su `hint` y vuelve a enviar, como mucho dos
+veces; si sigue fallando, para y explica qué falta.

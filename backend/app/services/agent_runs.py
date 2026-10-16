@@ -3,8 +3,10 @@ que no preguntan. Sin coste de API (ADR-001): es el mismo agente de los botones,
 
 - Solo las acciones con `background` en `agent_launch.ACTIONS` (procesar ofertas, evaluar encaje y
   generar el CV) y solo con un agente que tenga `launch.headless` en el manifiesto.
-- El comando lleva solo las herramientas MCP de la acción: sin terminal ni web, y lo demás lo
-  deniega el agente (`dontAsk`). Se guarda en la fila para auditar qué podía hacer.
+- La ejecución tiene solo las herramientas MCP de la acción, sin terminal ni web: van en el comando
+  (Claude Code, que deniega lo demás con `dontAsk`) o, en los agentes que las limitan por
+  configuración (OpenCode, fase 24.5), en una propia de la ejecución (`run_config`). Las dos cosas
+  se guardan en la fila para auditar qué podía hacer.
 - `agent_runs` es su propia cola: la lanza la UI y la ejecuta el worker (`agent_runner.py`), de
   una en una y en un hilo aparte, para no parar la ingesta ni la candidatura asistida.
 - Si el skill necesita al usuario, termina con líneas «PREGUNTA:» y la ejecución queda
@@ -46,6 +48,7 @@ class AgentRunView(BaseModel):
     job_id: int | None
     milestone_id: int | None
     agent: str
+    model: str | None  # fase 24.4: el modelo o el preset con que se lanzó (`None`: el del agente)
     status: RunStatus
     prompt: str
     allowed_tools: list[str]  # herramientas MCP de la acción (sin prefijo)
@@ -81,6 +84,7 @@ def view(row: AgentRun, resumable: frozenset[str] | None = None) -> AgentRunView
         job_id=row.job_id,
         milestone_id=row.milestone_id,
         agent=row.agent,
+        model=agent_launch.model_label(row.model, row.preset),
         status=row.status,
         prompt=row.prompt,
         allowed_tools=list(spec.background),
@@ -132,9 +136,14 @@ def start(
     action: ActionId,
     job_id: int | None = None,
     milestone_id: int | None = None,
+    *,
+    agent: str | None = None,
+    model: str | None = None,
+    preset: str | None = None,
 ) -> AgentRunView:
     """Deja en cola una ejecución en segundo plano. Si ya hay una igual en cola o en curso,
-    devuelve esa en vez de duplicarla."""
+    devuelve esa en vez de duplicarla. `agent`, `model` y `preset`: la elección puntual (si no, las
+    preferencias de `agent_prefs`)."""
     spec = ACTIONS[action]
     if not spec.background:
         raise LaunchError(
@@ -143,9 +152,9 @@ def start(
             "web): usa «En terminal».",
         )
     prompt, job_id, milestone_id = agent_launch.check_target(session, action, job_id, milestone_id)
-    picked = agent_launch.pick_headless()
-    if isinstance(picked, str):
-        raise LaunchError("unavailable", picked, prompt)
+    picked = agent_launch.pick(
+        session, action, prompt, agent=agent, model=model, preset=preset, mode="background"
+    )
     if (existing := _active(session, action, job_id)) is not None:
         return view(existing)
     note = _cv_gaps_note(session, job_id) if action == "generate-cv" and job_id else ""
@@ -156,11 +165,14 @@ def start(
         job_id=job_id,
         milestone_id=milestone_id,
         agent=picked.agent,
+        model=picked.model,
+        preset=picked.preset,
         status="queued",
         prompt=full_prompt,
         command=agent_launch.headless_command(picked, full_prompt, action),
         unset_env=list(picked.unset_env),
         output_format=picked.headless.output,
+        run_config=agent_launch.run_config(picked),
         progress=[],
         questions=[],
         cancel_requested=False,
@@ -222,5 +234,6 @@ def open_in_terminal(session: Session, run_id: int) -> LaunchResult:
         raise LaunchError("invalid_request", "Espera a que termine o cancélala antes.")
     action: ActionId = row.action  # validado al crearla
     prompt = agent_launch.prompt_for(action, row.job_id, row.milestone_id)
-    label = ACTIONS[action].label
-    return agent_launch.resume_in_terminal(label, prompt, row.agent, row.session_id)
+    return agent_launch.resume_in_terminal(
+        session, action, prompt, row.agent, row.session_id, row.model, row.preset
+    )

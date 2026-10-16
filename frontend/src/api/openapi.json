@@ -8121,7 +8121,7 @@
           "agent"
         ],
         "summary": "Get Agent Launcher",
-        "description": "Qué agente abren los botones (o por qué no se puede) y las órdenes disponibles.",
+        "description": "Qué agente abren los botones (o por qué no se puede) y las órdenes disponibles, con el\nagente de cada una según tus preferencias (fase 24.4).",
         "operationId": "get_agent_launcher",
         "responses": {
           "200": {
@@ -8213,6 +8213,920 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/agent/agents": {
+      "get": {
+        "tags": [
+          "agent"
+        ],
+        "summary": "List Agents",
+        "description": "Los agentes del manifiesto (fase 24.1): qué son, qué saben hacer y si están instalados, con\ntus preferencias y el agente efectivo de cada acción (fase 24.4). Lo mismo que\n`cai agents list --json`; solo lectura.",
+        "operationId": "list_agents",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentsOverview"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/agent/local-models": {
+      "get": {
+        "tags": [
+          "agent"
+        ],
+        "summary": "Get Local Models",
+        "description": "Si Ollama responde en este equipo, qué modelos tiene y con qué contexto (fase 24.6). Solo\nlee sus metadatos: la app no hace inferencia (ADR-001).",
+        "operationId": "get_local_models",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LocalModelsStatus"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/agent/preferences": {
+      "put": {
+        "tags": [
+          "agent"
+        ],
+        "summary": "Save Agent Preferences",
+        "description": "Guarda tus preferencias de agente (fase 24.4): sustituye todas las anteriores.",
+        "operationId": "save_agent_preferences",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Preferences"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Preferences"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/agent/tiers": {
+      "get": {
+        "tags": [
+          "agent"
+        ],
+        "summary": "Get Spend Tiers",
+        "description": "«Económico», «Equilibrado» y «Máximo»: el agente y modelo de cada acción en cada nivel (lo\nguardado o la propuesta) y cuál coincide con tus preferencias de ahora.",
+        "operationId": "get_spend_tiers",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TiersView"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/agent/tiers/{tier}": {
+      "put": {
+        "tags": [
+          "agent"
+        ],
+        "summary": "Save Spend Tier",
+        "description": "Guarda lo que pones en un nivel (sustituye lo que tenía).",
+        "operationId": "save_spend_tier",
+        "parameters": [
+          {
+            "name": "tier",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "economy",
+                "balanced",
+                "max"
+              ],
+              "type": "string",
+              "title": "Tier"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TierActions"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TiersView"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/agent/tiers/{tier}/reset": {
+      "post": {
+        "tags": [
+          "agent"
+        ],
+        "summary": "Reset Spend Tier",
+        "description": "Vuelve a la propuesta de la app.",
+        "operationId": "reset_spend_tier",
+        "parameters": [
+          {
+            "name": "tier",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "economy",
+                "balanced",
+                "max"
+              ],
+              "type": "string",
+              "title": "Tier"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmptyBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TiersView"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/agent/tiers/undo": {
+      "post": {
+        "tags": [
+          "agent"
+        ],
+        "summary": "Undo Spend Tier",
+        "description": "Devuelve las preferencias por acción de antes de aplicar el último nivel.",
+        "operationId": "undo_spend_tier",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmptyBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TiersView"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/agent/tiers/{tier}/apply": {
+      "post": {
+        "tags": [
+          "agent"
+        ],
+        "summary": "Apply Spend Tier",
+        "description": "Pone en tus preferencias por acción las del nivel. Se puede deshacer.",
+        "operationId": "apply_spend_tier",
+        "parameters": [
+          {
+            "name": "tier",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "economy",
+                "balanced",
+                "max"
+              ],
+              "type": "string",
+              "title": "Tier"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmptyBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TiersView"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
           }
         }
       }
@@ -9078,7 +9992,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/LaunchBody"
+                "$ref": "#/components/schemas/RequestBody"
               }
             }
           }
@@ -12063,6 +12977,26 @@
           "background": {
             "type": "boolean",
             "title": "Background"
+          },
+          "agent": {
+            "$ref": "#/components/schemas/Resolution"
+          },
+          "alternatives": {
+            "items": {
+              "$ref": "#/components/schemas/Resolution"
+            },
+            "type": "array",
+            "title": "Alternatives"
+          },
+          "background_agent": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BackgroundInfo"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -12072,9 +13006,48 @@
           "needs_job",
           "needs_milestone",
           "prompt",
-          "background"
+          "background",
+          "agent",
+          "alternatives",
+          "background_agent"
         ],
         "title": "Action"
+      },
+      "ActionPref": {
+        "properties": {
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "preset": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preset"
+          },
+          "agent": {
+            "type": "string",
+            "title": "Agent"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "agent"
+        ],
+        "title": "ActionPref"
       },
       "AddEventResult": {
         "properties": {
@@ -12421,6 +13394,225 @@
         "title": "AgentBrowseSource",
         "description": "Una plataforma donde el agente busca con el navegador del usuario (`agent_browse`).\n\nSe identifica por `name`: guardar otra con el mismo nombre la actualiza."
       },
+      "AgentCapabilities": {
+        "properties": {
+          "mcp": {
+            "type": "boolean",
+            "title": "Mcp"
+          },
+          "subagents": {
+            "type": "string",
+            "enum": [
+              "isolated",
+              "inherited",
+              "none"
+            ],
+            "title": "Subagents"
+          },
+          "isolation_level": {
+            "type": "string",
+            "enum": [
+              "A",
+              "B",
+              "C"
+            ],
+            "title": "Isolation Level"
+          },
+          "vision": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vision"
+          },
+          "web": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Web"
+          },
+          "browser": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Browser"
+          },
+          "local_models": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Local Models"
+          },
+          "headless": {
+            "type": "boolean",
+            "title": "Headless",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "mcp",
+          "subagents",
+          "isolation_level"
+        ],
+        "title": "AgentCapabilities",
+        "description": "Qué sabe hacer el agente. `None`: sin comprobar."
+      },
+      "AgentEntry": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          },
+          "config": {
+            "type": "string",
+            "enum": [
+              "generated",
+              "none"
+            ],
+            "title": "Config"
+          },
+          "info": {
+            "$ref": "#/components/schemas/AgentInfo"
+          },
+          "capabilities": {
+            "$ref": "#/components/schemas/AgentCapabilities"
+          },
+          "models": {
+            "$ref": "#/components/schemas/ModelChoice"
+          },
+          "installed": {
+            "type": "boolean",
+            "title": "Installed"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version"
+          },
+          "detect_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detect Error"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "enabled",
+          "config",
+          "info",
+          "capabilities",
+          "models",
+          "installed"
+        ],
+        "title": "AgentEntry",
+        "description": "Un agente para `cai agents list --json` y `GET /agent/agents`."
+      },
+      "AgentInfo": {
+        "properties": {
+          "display_name": {
+            "type": "string",
+            "title": "Display Name"
+          },
+          "vendor": {
+            "type": "string",
+            "title": "Vendor"
+          },
+          "open_source": {
+            "type": "boolean",
+            "title": "Open Source"
+          },
+          "license": {
+            "type": "string",
+            "title": "License"
+          },
+          "homepage": {
+            "type": "string",
+            "title": "Homepage"
+          },
+          "install": {
+            "$ref": "#/components/schemas/InstallSpec",
+            "default": {}
+          },
+          "detect": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Detect"
+          },
+          "invoke": {
+            "type": "string",
+            "title": "Invoke"
+          },
+          "instructions": {
+            "type": "string",
+            "title": "Instructions"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "display_name",
+          "vendor",
+          "open_source",
+          "license",
+          "homepage",
+          "detect",
+          "invoke",
+          "instructions"
+        ],
+        "title": "AgentInfo"
+      },
       "AgentRequestList": {
         "properties": {
           "requests": {
@@ -12650,6 +13842,17 @@
             "type": "string",
             "title": "Agent"
           },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
           "status": {
             "type": "string",
             "enum": [
@@ -12768,6 +13971,7 @@
           "job_id",
           "milestone_id",
           "agent",
+          "model",
           "status",
           "prompt",
           "allowed_tools",
@@ -12830,6 +14034,43 @@
           "background"
         ],
         "title": "AgentStatus"
+      },
+      "AgentsOverview": {
+        "properties": {
+          "agents": {
+            "items": {
+              "$ref": "#/components/schemas/AgentEntry"
+            },
+            "type": "array",
+            "title": "Agents"
+          },
+          "launchable": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Launchable"
+          },
+          "preferences": {
+            "$ref": "#/components/schemas/Preferences"
+          },
+          "effective": {
+            "items": {
+              "$ref": "#/components/schemas/EffectiveAction"
+            },
+            "type": "array",
+            "title": "Effective"
+          }
+        },
+        "type": "object",
+        "required": [
+          "agents",
+          "launchable",
+          "preferences",
+          "effective"
+        ],
+        "title": "AgentsOverview",
+        "description": "`GET /agent/agents` y `cai agents list --json`: los agentes del manifiesto, tus preferencias\ny el agente efectivo de cada acción."
       },
       "AlertJob": {
         "properties": {
@@ -13395,6 +14636,28 @@
               }
             ],
             "title": "Reason"
+          },
+          "suggested": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suggested"
+          },
+          "suggested_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suggested Name"
           }
         },
         "type": "object",
@@ -15522,6 +16785,60 @@
         "type": "object",
         "title": "DraftSentBody"
       },
+      "EffectiveAction": {
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "search-jobs",
+              "process-jobs",
+              "assess-fit",
+              "generate-cv",
+              "add-skills",
+              "training-plan",
+              "review-replies",
+              "draft-follow-ups",
+              "draft-follow-up",
+              "broaden-search",
+              "prepare-interview",
+              "mock-interview",
+              "debrief-interview",
+              "offer-questions",
+              "prepare-negotiation",
+              "draft-message",
+              "research-company",
+              "handle-requests",
+              "review-search"
+            ],
+            "title": "Action"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "terminal": {
+            "$ref": "#/components/schemas/Resolution"
+          },
+          "background": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Resolution"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "action",
+          "label",
+          "terminal"
+        ],
+        "title": "EffectiveAction",
+        "description": "Con qué agente y modelo iría una acción, por qué y si se puede (en terminal y, si la\nacción lo admite, en segundo plano)."
+      },
       "EmailPollResult": {
         "properties": {
           "source_id": {
@@ -15613,6 +16930,28 @@
           "reason": {
             "type": "string",
             "title": "Reason"
+          },
+          "expected": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected"
+          },
+          "hint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hint"
           }
         },
         "type": "object",
@@ -16478,6 +17817,47 @@
         ],
         "title": "InjectionWarning",
         "description": "Por qué la oferta puede llevar contenido dirigido a una IA."
+      },
+      "InstallSpec": {
+        "properties": {
+          "windows": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Windows"
+          },
+          "macos": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Macos"
+          },
+          "linux": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Linux"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "InstallSpec",
+        "description": "Cómo se instala, por sistema (solo texto para enseñar)."
       },
       "InstructionsUsed": {
         "properties": {
@@ -17436,6 +18816,42 @@
               }
             ],
             "title": "Milestone Id"
+          },
+          "agent": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 32
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "preset": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 40
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preset"
           }
         },
         "additionalProperties": false,
@@ -17443,7 +18859,8 @@
         "required": [
           "action"
         ],
-        "title": "LaunchBody"
+        "title": "LaunchBody",
+        "description": "Fase 24.4: `agent`, `model` y `preset` eligen agente y modelo solo para esta ejecución."
       },
       "LaunchResult": {
         "properties": {
@@ -17456,6 +18873,17 @@
             "type": "string",
             "title": "Agent"
           },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
           "prompt": {
             "type": "string",
             "title": "Prompt"
@@ -17463,6 +18891,17 @@
           "message": {
             "type": "string",
             "title": "Message"
+          },
+          "warning": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warning"
           }
         },
         "type": "object",
@@ -18184,6 +19623,245 @@
         ],
         "title": "LivenessView"
       },
+      "LocalModel": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "family": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Family"
+          },
+          "parameter_size": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parameter Size"
+          },
+          "params_b": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Params B"
+          },
+          "quantization": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantization"
+          },
+          "size_gb": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Size Gb"
+          },
+          "max_context": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Context"
+          },
+          "context": {
+            "type": "integer",
+            "title": "Context"
+          },
+          "context_source": {
+            "type": "string",
+            "enum": [
+              "model",
+              "env",
+              "default"
+            ],
+            "title": "Context Source"
+          },
+          "tools": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tools"
+          },
+          "small": {
+            "type": "boolean",
+            "title": "Small",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "context",
+          "context_source"
+        ],
+        "title": "LocalModel"
+      },
+      "LocalModelsStatus": {
+        "properties": {
+          "provider": {
+            "type": "string",
+            "const": "ollama",
+            "title": "Provider",
+            "default": "ollama"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "running": {
+            "type": "boolean",
+            "title": "Running"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "env_context": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Env Context"
+          },
+          "default_context": {
+            "type": "integer",
+            "title": "Default Context",
+            "default": 4096
+          },
+          "min_context": {
+            "type": "integer",
+            "title": "Min Context",
+            "default": 32768
+          },
+          "models": {
+            "items": {
+              "$ref": "#/components/schemas/LocalModel"
+            },
+            "type": "array",
+            "title": "Models",
+            "default": []
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/LocalWarning"
+            },
+            "type": "array",
+            "title": "Warnings",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "url",
+          "running"
+        ],
+        "title": "LocalModelsStatus"
+      },
+      "LocalWarning": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "context_low",
+              "small_model",
+              "no_models",
+              "model_missing"
+            ],
+            "title": "Code"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "action": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Action"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "text"
+        ],
+        "title": "LocalWarning"
+      },
       "MarkBody": {
         "properties": {
           "skill": {
@@ -18872,6 +20550,91 @@
         ],
         "title": "MilestoneStatusChange"
       },
+      "ModelChoice": {
+        "properties": {
+          "by_name": {
+            "type": "boolean",
+            "title": "By Name"
+          },
+          "presets": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Presets"
+          },
+          "example": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Example"
+          },
+          "fast": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fast"
+          },
+          "capable": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Capable"
+          }
+        },
+        "type": "object",
+        "required": [
+          "by_name",
+          "presets"
+        ],
+        "title": "ModelChoice",
+        "description": "Cómo se puede elegir el modelo de un agente (la elección se guarda con `agent_prefs`)."
+      },
+      "ModelPref": {
+        "properties": {
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "preset": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preset"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ModelPref",
+        "description": "El modelo (por su nombre) o el preset de un agente. Los dos vacíos: el que use el agente."
+      },
       "NetworkPerson": {
         "properties": {
           "id": {
@@ -19530,6 +21293,63 @@
         ],
         "title": "PendingTask",
         "description": "Tarea del worker para este intento que aún no ha terminado."
+      },
+      "Preferences": {
+        "properties": {
+          "default_agent": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Default Agent"
+          },
+          "agents": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ModelPref"
+            },
+            "type": "object",
+            "title": "Agents",
+            "default": {}
+          },
+          "actions": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ActionPref"
+            },
+            "propertyNames": {
+              "enum": [
+                "search-jobs",
+                "process-jobs",
+                "assess-fit",
+                "generate-cv",
+                "add-skills",
+                "training-plan",
+                "review-replies",
+                "draft-follow-ups",
+                "draft-follow-up",
+                "broaden-search",
+                "prepare-interview",
+                "mock-interview",
+                "debrief-interview",
+                "offer-questions",
+                "prepare-negotiation",
+                "draft-message",
+                "research-company",
+                "handle-requests",
+                "review-search"
+              ]
+            },
+            "type": "object",
+            "title": "Actions",
+            "default": {}
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "Preferences"
       },
       "PreferencesFit": {
         "properties": {
@@ -21273,6 +23093,65 @@
         ],
         "title": "RepostSignal"
       },
+      "RequestBody": {
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "search-jobs",
+              "process-jobs",
+              "assess-fit",
+              "generate-cv",
+              "add-skills",
+              "training-plan",
+              "review-replies",
+              "draft-follow-ups",
+              "draft-follow-up",
+              "broaden-search",
+              "prepare-interview",
+              "mock-interview",
+              "debrief-interview",
+              "offer-questions",
+              "prepare-negotiation",
+              "draft-message",
+              "research-company",
+              "handle-requests",
+              "review-search"
+            ],
+            "title": "Action"
+          },
+          "job_id": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Job Id"
+          },
+          "milestone_id": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Milestone Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "action"
+        ],
+        "title": "RequestBody"
+      },
       "ResearchSource": {
         "properties": {
           "title": {
@@ -21376,6 +23255,120 @@
           "age_days"
         ],
         "title": "ResearchView"
+      },
+      "Resolution": {
+        "properties": {
+          "agent": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent"
+          },
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "preset": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preset"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "explicit",
+              "action",
+              "default",
+              "env",
+              "first_installed",
+              "none"
+            ],
+            "title": "Reason"
+          },
+          "reason_text": {
+            "type": "string",
+            "title": "Reason Text"
+          },
+          "blocked": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Blocked"
+          },
+          "blocked_code": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "no_agent",
+                  "not_launchable",
+                  "not_installed",
+                  "no_headless",
+                  "capability",
+                  "untrusted",
+                  "model"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Blocked Code"
+          },
+          "warning": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warning"
+          }
+        },
+        "type": "object",
+        "required": [
+          "agent",
+          "reason",
+          "reason_text"
+        ],
+        "title": "Resolution",
+        "description": "El agente que usaría una acción, con qué modelo, por qué y si se puede lanzar con él."
       },
       "ResolvedOptions": {
         "properties": {
@@ -22799,6 +24792,174 @@
         ],
         "title": "ThanksItem",
         "description": "Entrevista hecha hace poco sin agradecimiento enviado (fase 15)."
+      },
+      "TierActions": {
+        "properties": {
+          "actions": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ActionPref"
+            },
+            "propertyNames": {
+              "enum": [
+                "search-jobs",
+                "process-jobs",
+                "assess-fit",
+                "generate-cv",
+                "add-skills",
+                "training-plan",
+                "review-replies",
+                "draft-follow-ups",
+                "draft-follow-up",
+                "broaden-search",
+                "prepare-interview",
+                "mock-interview",
+                "debrief-interview",
+                "offer-questions",
+                "prepare-negotiation",
+                "draft-message",
+                "research-company",
+                "handle-requests",
+                "review-search"
+              ]
+            },
+            "type": "object",
+            "title": "Actions"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "actions"
+        ],
+        "title": "TierActions",
+        "description": "Lo que se guarda de un nivel: el agente (y modelo) de cada acción."
+      },
+      "TierView": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "enum": [
+              "economy",
+              "balanced",
+              "max"
+            ],
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "actions": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ActionPref"
+            },
+            "propertyNames": {
+              "enum": [
+                "search-jobs",
+                "process-jobs",
+                "assess-fit",
+                "generate-cv",
+                "add-skills",
+                "training-plan",
+                "review-replies",
+                "draft-follow-ups",
+                "draft-follow-up",
+                "broaden-search",
+                "prepare-interview",
+                "mock-interview",
+                "debrief-interview",
+                "offer-questions",
+                "prepare-negotiation",
+                "draft-message",
+                "research-company",
+                "handle-requests",
+                "review-search"
+              ]
+            },
+            "type": "object",
+            "title": "Actions"
+          },
+          "custom": {
+            "type": "boolean",
+            "title": "Custom"
+          },
+          "active": {
+            "type": "boolean",
+            "title": "Active"
+          },
+          "notes": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "no_local_agent",
+                "needs_local_model",
+                "no_agent"
+              ]
+            },
+            "type": "array",
+            "title": "Notes",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "actions",
+          "custom",
+          "active"
+        ],
+        "title": "TierView"
+      },
+      "TiersView": {
+        "properties": {
+          "actions": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "search-jobs",
+                "process-jobs",
+                "assess-fit",
+                "generate-cv",
+                "add-skills",
+                "training-plan",
+                "review-replies",
+                "draft-follow-ups",
+                "draft-follow-up",
+                "broaden-search",
+                "prepare-interview",
+                "mock-interview",
+                "debrief-interview",
+                "offer-questions",
+                "prepare-negotiation",
+                "draft-message",
+                "research-company",
+                "handle-requests",
+                "review-search"
+              ]
+            },
+            "type": "array",
+            "title": "Actions"
+          },
+          "tiers": {
+            "items": {
+              "$ref": "#/components/schemas/TierView"
+            },
+            "type": "array",
+            "title": "Tiers"
+          },
+          "can_undo": {
+            "type": "boolean",
+            "title": "Can Undo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "actions",
+          "tiers",
+          "can_undo"
+        ],
+        "title": "TiersView"
       },
       "TitleFunnel": {
         "properties": {

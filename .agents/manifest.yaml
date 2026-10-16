@@ -1,8 +1,20 @@
 # Configuración para agentes: FUENTE ÚNICA de lo específico de cada herramienta.
 # Tras editar cualquier cosa en .agents/, regenera desde la raíz del repo:
-#   uv run scripts/sync_agents.py           # escribe .claude/, .codex/ y .mcp.json
+#   uv run scripts/sync_agents.py           # escribe .claude/, .codex/, .opencode/, .qwen/,
+#                                           # .mcp.json, opencode.json y .agents/mcp_config.json
 #   uv run scripts/sync_agents.py --check   # CI: falla si lo generado no está al día
 # Las rutas y formatos de cada agente cambian con el tiempo: si algo deja de cargar, se corrige aquí.
+#
+# Por agente (fase 24.1, ADR-037): `config` (`generated`: sync_agents.py le escribe configuración;
+# `none`: solo compatible vía AGENTS.md), `info` (qué es y cómo se instala y detecta) y
+# `capabilities` (qué sabe hacer; `isolation_level` es el nivel de docs/AGENTS_COMPAT.md). `null` en
+# una capacidad = sin comprobar. `capabilities.headless` no se escribe: se deriva de `launch.headless`.
+# El backend lo lee solo con app/services/agent_registry.py, que valida cada clave.
+#
+# `models` (fase 24.3): `fast` y `capable` son el modelo de cada `tier` de los roles (null = hereda
+# el de la sesión); `flag`, los argumentos que eligen un modelo al lanzar (con `{model}`); `presets`,
+# configuraciones con nombre que ofrece la UI; `pattern` y `example`, cómo se escribe un
+# nombre de modelo (fase 24.4). La elección de cada persona se guarda en la base de datos, no aquí.
 
 mcp_server:
   name: candidatai
@@ -10,13 +22,77 @@ mcp_server:
   args: [run, --directory, backend, cai-mcp]
   env: {}
 
+# Permisos neutrales (fase 24.3). Los emisores los traducen a cada agente. `.claude/settings.json`
+# se mantiene a mano, pero `sync_agents.py --check` falla si no dice lo mismo que esto.
+policy:
+  # Herramientas MCP que la sesión principal usa sin preguntar: las de lectura y las que solo guardan
+  # algo que el usuario revisa después (extracción, propuestas, borradores). El resto piden permiso.
+  auto_allow:
+    - mcp:get_status
+    - mcp:get_schema
+    - mcp:list_jobs
+    - mcp:get_job
+    - mcp:check_job_open
+    - mcp:get_search_titles
+    - mcp:save_extraction
+    - mcp:get_extraction
+    - mcp:get_timeline
+    - mcp:get_profile
+    - mcp:get_context
+    - mcp:get_match
+    - mcp:get_cv_content
+    - mcp:list_cv_templates
+    - mcp:list_sources
+    - mcp:list_followups_due
+    - mcp:list_upcoming
+    - mcp:get_funnel_stats
+    - mcp:get_calibration
+    - mcp:get_skill_gaps
+    - mcp:list_replies
+    - mcp:get_reply
+    - mcp:save_reply_proposal
+    - mcp:save_message_draft
+    - mcp:get_job_contacts
+    - mcp:get_company_research
+    - mcp:get_received_offer
+    - mcp:wait_user_action
+    - mcp:list_agent_requests
+  # Rutas (relativas a la raíz, con comodines) que ningún agente lee o edita.
+  deny_read: [.env, .env.*, data/browser-profile/**]
+  deny_edit: [data/browser-profile/**]
+
 targets:
   claude:                         # Claude Code
     enabled: true
+    config: generated
+    info:
+      display_name: Claude Code
+      vendor: Anthropic
+      open_source: false
+      license: propietaria
+      homepage: https://code.claude.com/docs
+      install:
+        windows: "irm https://claude.ai/install.ps1 | iex"
+        macos: "curl -fsSL https://claude.ai/install.sh | bash"
+        linux: "curl -fsSL https://claude.ai/install.sh | bash"
+      detect: [claude, --version]
+      invoke: "/{skill} {args}"
+      instructions: CLAUDE.md       # importa AGENTS.md
+    capabilities:
+      mcp: true
+      subagents: isolated           # cada rol con solo sus herramientas
+      isolation_level: A
+      vision: true
+      web: true                     # WebSearch y WebFetch
+      browser: true                 # con Claude in Chrome
+      local_models: false
     skills_dir: .claude/skills    # copia de .agents/skills con extras de Claude
     agents_dir: .claude/agents
     mcp_file: .mcp.json
-    models: {fast: haiku, capable: sonnet}
+    models:
+      fast: haiku
+      capable: sonnet
+      flag: [--model, "{model}"]
     launch:                       # botones «en tu agente» de la UI (ADR-024): sesión interactiva
       command: [claude, "{prompt}"]   # {prompt} = la orden del skill
       unset_env: [ANTHROPIC_API_KEY]  # sin clave de API, Claude Code usa tu suscripción
@@ -138,12 +214,303 @@ targets:
 
   codex:                          # Codex (ChatGPT): CLI, extensión IDE o app
     enabled: true
+    config: generated
+    info:
+      display_name: Codex
+      vendor: OpenAI
+      open_source: true
+      license: Apache-2.0
+      homepage: https://github.com/openai/codex
+      install:
+        windows: "npm install -g @openai/codex"
+        macos: "npm install -g @openai/codex   (o brew install --cask codex)"
+        linux: "npm install -g @openai/codex"
+      detect: [codex, --version]
+      invoke: "${skill} {args}"
+      instructions: AGENTS.md
+    capabilities:
+      mcp: true
+      subagents: inherited          # heredan la política de la sesión padre
+      isolation_level: B
+      vision: true
+      web: true
+      browser: null
+      local_models: true            # --oss (Ollama, LM Studio)
     skills_dir: null              # Codex lee .agents/skills directamente
     agents_dir: .codex/agents
     config_file: .codex/config.toml
-    models: {fast: null, capable: null}   # null = hereda el modelo de la sesión; pon aquí los de tu plan
+    models:                       # null = hereda el modelo de la sesión; pon aquí los de tu plan
+      fast: null
+      capable: null
+      flag: [-m, "{model}"]
+      presets:                    # comprobado con codex-cli 0.163.0 (--oss, --local-provider, -m)
+        local: [--oss, -m, "gpt-oss:20b"]   # Ollama; con LM Studio, añade --local-provider lmstudio
     launch:                       # botones «en tu agente» de la UI (ADR-024): sesión interactiva
       command: [codex, "{prompt}"]
       unset_env: [OPENAI_API_KEY]     # sin clave de API, Codex usa tu sesión de ChatGPT
     # Codex no permite limitar herramientas por subagente: se aplica sandbox_mode del rol.
     # Los subagentes heredan la política de la sesión padre (ver docs/AGENTS_COMPAT.md, nivel B).
+
+  # Fase 24.3. Formatos comprobados el 2026-10-16 con OpenCode 1.19.3 y Qwen Code 0.25.2 (binario y
+  # documentación oficial) y con la documentación de Antigravity CLI (sin el binario).
+  opencode:                       # OpenCode (anomalyco/opencode, antes sst/opencode)
+    enabled: true
+    config: generated
+    info:
+      display_name: OpenCode
+      vendor: Anomaly
+      open_source: true
+      license: MIT
+      homepage: https://opencode.ai
+      install:
+        windows: "npm install -g opencode-ai   (o scoop install opencode)"
+        macos: "brew install anomalyco/tap/opencode   (o npm install -g opencode-ai)"
+        linux: "curl -fsSL https://opencode.ai/install | bash"
+      detect: [opencode, --version]
+      invoke: natural               # carga los skills de .agents/skills (y de .claude/skills, sin duplicar)
+      instructions: AGENTS.md
+    capabilities:
+      mcp: true
+      subagents: isolated           # `permission` por agente: el rol solo tiene sus herramientas
+      isolation_level: B            # A solo si la prueba manual lo confirma (docs/AGENTS_COMPAT.md)
+      vision: null
+      web: true                     # webfetch y websearch
+      browser: null
+      local_models: true            # Ollama, LM Studio, OpenRouter o cualquier API compatible con OpenAI
+    skills_dir: null              # lee .agents/skills
+    agents_dir: .opencode/agents
+    config_file: opencode.json
+    models:                       # «proveedor/modelo»; null = hereda el de la sesión
+      fast: null
+      capable: null
+      flag: [-m, "{model}"]
+      pattern: '^[\w.-]+/[\w.:@/-]+$'   # la UI valida el nombre con esto (fase 24.4); sin probar con `opencode models`
+      example: ollama/qwen3:8b
+    launch:
+      command: [opencode, --prompt, "{prompt}"]
+      resume: [opencode, --session, "{session_id}"]
+      # «En segundo plano» (fase 24.5): el techo va en una configuración propia de la ejecución
+      # (`ceiling: config`, backend/app/services/agent_run_config.py). Define el agente `cai-run`
+      # con "*": "deny" y solo las herramientas MCP de la acción, su skill y sus roles. Se le
+      # pasa en OPENCODE_CONFIG_CONTENT, la configuración que se carga la última, y sus reglas
+      # van detrás de las de opencode.json (manda la última que coincide). --pure: sin plugins
+      # externos. Sin --auto: lo que quede en `ask` se rechaza solo. Comprobado con OpenCode
+      # 1.19.3 (docs/AGENTS_COMPAT.md).
+      headless:
+        ceiling: config
+        command: [opencode, run, --format, json, --pure, --agent, cai-run, "{model}", "{prompt}"]
+        config:
+          format: opencode
+          env: OPENCODE_CONFIG_CONTENT
+          value: content
+          agent: cai-run
+          # Solo en segundo plano: otra carpeta de configuración, otro fichero o permisos por
+          # variable no deben colarse por debajo de la de la ejecución.
+          clear_env: [OPENCODE_CONFIG, OPENCODE_CONFIG_DIR, OPENCODE_PERMISSION]
+        output: opencode-json
+    tools:                        # herramientas lógicas → claves de `permission` de OpenCode
+      mcp_prefix: "candidatai_"
+      read: [read]
+      search: [grep, glob, list]
+      git_read: ["bash:git diff *", "bash:git status *", "bash:git log *"]
+      web: [webfetch, websearch]
+
+  qwen:                           # Qwen Code (QwenLM/qwen-code)
+    enabled: true
+    config: generated
+    info:
+      display_name: Qwen Code
+      vendor: Alibaba (Qwen)
+      open_source: true
+      license: Apache-2.0
+      homepage: https://github.com/QwenLM/qwen-code
+      install:
+        windows: "npm install -g @qwen-code/qwen-code   (su plan gratuito con OAuth cerró el 15/04/2026: úsalo con Ollama, LM Studio, OpenRouter o una clave de DashScope)"
+        macos: "npm install -g @qwen-code/qwen-code   (su plan gratuito con OAuth cerró el 15/04/2026: úsalo con Ollama, LM Studio, OpenRouter o una clave de DashScope)"
+        linux: "npm install -g @qwen-code/qwen-code   (su plan gratuito con OAuth cerró el 15/04/2026: úsalo con Ollama, LM Studio, OpenRouter o una clave de DashScope)"
+      detect: [qwen, --version]
+      invoke: "/{skill} {args}"
+      instructions: AGENTS.md       # context.fileName de .qwen/settings.json
+    capabilities:
+      mcp: true
+      subagents: isolated           # `tools` del subagente: solo las que nombra
+      isolation_level: B            # A solo si la prueba manual lo confirma
+      vision: null
+      web: true                     # web_fetch y web_search
+      browser: null
+      local_models: true
+    skills_dir: .qwen/skills      # solo lee .qwen/skills: copia de .agents/skills
+    agents_dir: .qwen/agents
+    config_file: .qwen/settings.json
+    models:
+      fast: null
+      capable: null
+      flag: [-m, "{model}"]
+    launch:
+      command: [qwen, -i, "{prompt}"]   # -i: ejecuta la orden y sigue en interactivo
+    tools:
+      mcp_prefix: "mcp__candidatai__"
+      read: [read_file, read_many_files]
+      search: [grep_search, glob, list_directory]
+      # Sin terminal: no está comprobado que `run_shell_command(git diff)` acote la orden en un
+      # subagente, y fallar daría de más. El `reviewer` en Qwen lee el diff que le pegues.
+      git_read: []
+      web: [web_fetch, web_search]
+
+  antigravity:                    # Antigravity CLI (`agy`): sustituye a Gemini CLI en cuentas gratuitas
+    enabled: true
+    config: generated
+    info:
+      display_name: Antigravity CLI
+      vendor: Google
+      open_source: false
+      license: propietaria
+      homepage: https://antigravity.google/docs/cli/
+      install:
+        windows: "Ver https://antigravity.google/docs/install?tab=cli (plan gratuito con tu cuenta de Google)"
+        macos: "Ver https://antigravity.google/docs/install?tab=cli (plan gratuito con tu cuenta de Google)"
+        linux: "Ver https://antigravity.google/docs/install?tab=cli (plan gratuito con tu cuenta de Google)"
+      detect: [agy, --version]
+      invoke: natural
+      instructions: AGENTS.md       # y GEMINI.md, vacío a propósito
+    capabilities:
+      mcp: true
+      subagents: none               # sin subagentes generados: su documentación no dice cómo se llaman las MCP
+      isolation_level: C
+      vision: null
+      web: null
+      browser: null
+      local_models: false
+    skills_dir: null              # lee .agents/skills
+    mcp_file: .agents/mcp_config.json
+    # Sin `launch`: su documentación no dice cómo abrirlo con una orden inicial (pendiente de la
+    # prueba manual), así que los botones copian la orden. Sin segundo plano: `agy -p` no imprime
+    # nada sin terminal en la 1.1.0.
+
+  # Solo compatibles vía AGENTS.md (fase 24.1): sin configuración generada ni botones de la UI. Están
+  # para que la detección y la UI los conozcan. Datos comprobados en sus webs el 2026-10-16.
+  cursor:                         # Cursor CLI (`agent`, con el alias `cursor-agent`)
+    enabled: false
+    config: none
+    info:
+      display_name: Cursor CLI
+      vendor: Anysphere
+      open_source: false
+      license: propietaria
+      homepage: https://cursor.com/cli
+      install:
+        windows: "Ver https://cursor.com/cli"
+        macos: "curl https://cursor.com/install -fsS | bash"
+        linux: "curl https://cursor.com/install -fsS | bash"
+      detect: [cursor-agent, --version]
+      invoke: natural
+      instructions: AGENTS.md
+    capabilities:
+      mcp: true                     # el mismo mcp.json que el editor
+      subagents: none
+      isolation_level: C
+      vision: null
+      web: null
+      browser: null
+      local_models: false
+
+  copilot:                        # GitHub Copilot CLI
+    enabled: false
+    config: none
+    info:
+      display_name: GitHub Copilot CLI
+      vendor: GitHub
+      open_source: false
+      license: propietaria
+      homepage: https://github.com/features/copilot/cli
+      install:
+        windows: "npm install -g @github/copilot   (o winget install GitHub.Copilot)"
+        macos: "npm install -g @github/copilot   (o brew install copilot-cli)"
+        linux: "npm install -g @github/copilot"
+      detect: [copilot, --version]
+      invoke: natural
+      instructions: AGENTS.md
+    capabilities:
+      mcp: true
+      subagents: none
+      isolation_level: C
+      vision: null
+      web: null
+      browser: null
+      local_models: false
+
+  pi:                             # Pi (pi-coding-agent)
+    enabled: false
+    config: none
+    info:
+      display_name: Pi
+      vendor: Earendil
+      open_source: true
+      license: MIT
+      homepage: https://pi.dev
+      install:
+        windows: "npm install -g --ignore-scripts @earendil-works/pi-coding-agent"
+        macos: "npm install -g --ignore-scripts @earendil-works/pi-coding-agent"
+        linux: "npm install -g --ignore-scripts @earendil-works/pi-coding-agent"
+      detect: [pi, --version]
+      invoke: natural
+      instructions: AGENTS.md
+    capabilities:
+      mcp: true
+      subagents: none               # solo con extensiones
+      isolation_level: C
+      vision: null
+      web: null
+      browser: null
+      local_models: true
+
+  gemini:                         # Gemini CLI: fuera desde la fase 24.3
+    enabled: false
+    config: none
+    info:
+      display_name: Gemini CLI
+      vendor: Google
+      open_source: true
+      license: Apache-2.0
+      homepage: https://github.com/google-gemini/gemini-cli
+      install:
+        windows: "npm install -g @google/gemini-cli"
+        macos: "npm install -g @google/gemini-cli"
+        linux: "npm install -g @google/gemini-cli"
+      detect: [gemini, --version]
+      invoke: natural
+      instructions: GEMINI.md
+      note: "Desde el 18/06/2026 solo funciona con una clave de pago de la API de Gemini o con una licencia de empresa, no con cuentas gratuitas ni de Google AI Pro. Con una cuenta gratuita, usa Antigravity CLI."
+    capabilities:
+      mcp: true
+      subagents: none
+      isolation_level: C
+      vision: null
+      web: null
+      browser: null
+      local_models: false
+
+  goose:                          # goose (antes de Block, ahora en la Agentic AI Foundation)
+    enabled: false
+    config: none
+    info:
+      display_name: goose
+      vendor: Agentic AI Foundation
+      open_source: true
+      license: Apache-2.0
+      homepage: https://goose-docs.ai
+      install:
+        windows: "Ver https://goose-docs.ai"
+        macos: "brew install block-goose-cli"
+        linux: "curl -fsSL https://github.com/aaif-goose/goose/releases/download/stable/download_cli.sh | bash"
+      detect: [goose, --version]
+      invoke: natural
+      instructions: AGENTS.md       # y .goosehints
+    capabilities:
+      mcp: true                     # sus extensiones son servidores MCP
+      subagents: none
+      isolation_level: C
+      vision: null
+      web: null
+      browser: null
+      local_models: true

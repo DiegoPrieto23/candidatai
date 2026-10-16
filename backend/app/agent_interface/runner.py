@@ -6,7 +6,13 @@ from typing import Any
 
 from pydantic import BaseModel, ValidationError
 
-from app.agent_interface.errors import ErrorDetail, ToolError, from_validation_error
+from app.agent_interface.errors import (
+    ErrorDetail,
+    ToolError,
+    dotted,
+    from_validation_error,
+    scrub,
+)
 from app.agent_interface.registry import CallContext, ToolSpec
 from app.core import migrations
 from app.core.db import session_scope
@@ -80,17 +86,32 @@ _ERROR_TYPES: tuple[tuple[type[Exception], str], ...] = (
 )
 
 
-def to_tool_error(exc: Exception) -> ToolError:
+def to_tool_error(exc: Exception, spec: ToolSpec | None = None) -> ToolError:
+    """`spec`, si se conoce la herramienta, da pistas mejores en los errores de validación."""
     if isinstance(exc, ToolError):
         return exc
     if isinstance(exc, ValidationError):
-        return from_validation_error(exc)
+        if spec is None:
+            return from_validation_error(exc)
+        from app.agent_interface.schemas import schema_for_tool  # el catálogo importa `tools`
+
+        return from_validation_error(exc, spec.input_model, schema_for_tool(spec.name))
     if isinstance(
         exc,
         CvContentError | AnswersContentError | CoverLetterContentError | TemplateImportError,
     ):
-        details = [ErrorDetail(**issue.model_dump()) for issue in exc.issues]
-        return ToolError("validation_error", str(exc), details)
+        # Desde una herramienta, el path empieza en su entrada (`content.…`); la API recibe el
+        # contenido sin envolver.
+        root = getattr(exc, "root", None) if spec is not None else None
+        details = [
+            ErrorDetail(**{**issue.model_dump(), "field": dotted(issue.field, root)})
+            for issue in exc.issues
+        ]
+        message = str(exc)
+        head, sep, _ = message.partition("): ")
+        if sep and hasattr(exc, "root"):  # «… (2 problemas): a, b.» con los paths nuevos
+            message = f"{head}{sep}{', '.join(d.field for d in details)}."
+        return ToolError("validation_error", message, details)
     for exc_type, error_type in _ERROR_TYPES:
         if isinstance(exc, exc_type):
             return ToolError(error_type, str(exc))
@@ -137,7 +158,7 @@ def call_tool(spec: ToolSpec, raw_args: Mapping[str, Any] | None, ctx: CallConte
         with session_scope() as session:
             result = spec.handler(session, args, ctx)
     except Exception as exc:
-        error = to_tool_error(exc)
+        error = scrub(to_tool_error(exc, spec), raw_args)
         job_id = spec.job_id_of(args, None) if args is not None else None
         _audit(spec, raw_args, ctx, job_id, error)
         raise error from exc

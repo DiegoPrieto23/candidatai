@@ -65,6 +65,8 @@ class LetterNotFoundError(LookupError):
 class CoverLetterContentError(ValueError):
     """La carta incumple las reglas; `issues` dice dónde y por qué, para corregir."""
 
+    root = "content"  # el campo de la entrada que lo lleva
+
     def __init__(self, issues: list[ContentIssue]) -> None:
         self.issues = issues
         count = len(issues)
@@ -294,6 +296,7 @@ def validate_letter(
                         received=ref,
                         reason="La evidencia no existe en el perfil (p. ej. `exp-acme/a2`); valen "
                         "también `extraction` (la oferta) y `user` (tus indicaciones).",
+                        hint=checks.similar_hint(ref, [*refs, *EVIDENCE_LABELS], "Evidencias"),
                     )
                 )
 
@@ -340,6 +343,7 @@ def _skill_issues(
                     field=field,
                     received=keyword,
                     reason="Esta skill no está en el perfil: no la declares como cubierta.",
+                    hint=checks.skill_hint(keyword, profile),
                 )
             )
         elif is_basic(key) and key not in requested:

@@ -20,6 +20,7 @@ function run(changes: Partial<AgentRunView> = {}): AgentRunView {
     job_id: null,
     milestone_id: null,
     agent: 'claude',
+    model: null,
     status: 'done',
     prompt: 'Usa el skill process-jobs…',
     allowed_tools: ['get_status', 'list_jobs', 'get_job', 'save_extraction'],
@@ -58,6 +59,33 @@ function request(changes: Partial<AgentRequestView> = {}): AgentRequestView {
 }
 
 describe('Página «Agente» (fase 19)', () => {
+  it('cada ejecución dice con qué agente y modelo se lanzó (fase 24.4)', async () => {
+    mockApi({
+      'GET /status': status(),
+      'GET /agent': launcher,
+      'GET /agent/runs': { active: 0, runs: [run({ id: 4, model: 'sonnet' }), run({ id: 5, agent: 'opencode' })] },
+      'GET /agent/requests': { pending: 0, requests: [] },
+    })
+    renderApp('/agente')
+    expect(await screen.findByText(/Con claude \(sonnet\)/)).toBeInTheDocument()
+    expect(screen.getByText(/Con opencode ·/)).toBeInTheDocument()
+  })
+
+  it('cada ejecución enseña su uso: turnos, tokens y coste (fase 24.5)', async () => {
+    const usage = { num_turns: 3, input_tokens: 35464, output_tokens: 61, total_cost_usd: 0.0123 }
+    mockApi({
+      'GET /status': status(),
+      'GET /agent': launcher,
+      'GET /agent/runs': { active: 0, runs: [run({ id: 6, agent: 'opencode', usage }), run({ id: 7 })] },
+      'GET /agent/requests': { pending: 0, requests: [] },
+    })
+    renderApp('/agente')
+    const line = await screen.findByText(/3 turnos/)
+    expect(line).toHaveTextContent(/35.?464 tokens de entrada y 61 de salida/)
+    expect(line).toHaveTextContent('0.0123 USD estimados')
+    expect(screen.getAllByText(/turno/)).toHaveLength(1) // sin uso, no se enseña nada
+  })
+
   it('enseña las ejecuciones con su estado, progreso y preguntas', async () => {
     const calls = mockApi({
       'GET /status': status(),

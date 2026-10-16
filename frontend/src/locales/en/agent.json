@@ -58,5 +58,11 @@
   "title": "Agent",
   "intro": "What your agent does in the background and what you've left for your next session. No API cost: it uses your subscription, one run at a time.",
   "background": "In the background",
-  "nextSession": "For your next session"
+  "nextSession": "For your next session",
+  "withAgent": "With {{agent}}",
+  "withAgentModel": "With {{agent}} ({{model}})",
+  "usageTurns_one": "{{count}} turn",
+  "usageTurns_other": "{{count}} turns",
+  "usageTokens": "{{input}} input and {{output}} output tokens",
+  "usageCost": "{{cost}} USD estimated"
 }

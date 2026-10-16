@@ -137,6 +137,16 @@ class ClaudeStreamParser:
         for key in ("num_turns", "duration_ms", "total_cost_usd"):
             if isinstance(event.get(key), int | float):
                 state.usage[key] = event[key]
+        # Fase 24.6: los tokens, para la matriz (`cai eval compat`).
+        tokens = event.get("usage") if isinstance(event.get("usage"), dict) else {}
+        for key, source in (
+            ("input_tokens", "input_tokens"),
+            ("output_tokens", "output_tokens"),
+            ("cache_read_tokens", "cache_read_input_tokens"),
+        ):
+            value = tokens.get(source)
+            if isinstance(value, int) and not isinstance(value, bool):
+                state.usage[key] = value
         denied = sorted(
             {
                 self._name({"name": d.get("tool_name")})
@@ -149,4 +159,124 @@ class ClaudeStreamParser:
             self._add("error", "Herramientas denegadas: " + ", ".join(denied))
 
 
-PARSERS: dict[str, Callable[[str], StreamParser]] = {"claude-stream-json": ClaudeStreamParser}
+class OpenCodeJsonParser:
+    """`opencode run --format json` (fase 24.5, comprobado con OpenCode 1.19.3): un JSON por línea
+    con `type` (`step_start`, `text`, `tool_use`, `step_finish` o `error`), `sessionID` y `part`.
+    No hay evento de resultado: el final es un `step_finish` de la sesión principal con un `reason`
+    distinto de `tool-calls`, y la respuesta, el texto de ese último paso. El uso (tokens y coste)
+    se suma de cada `step_finish`. Lo que no es JSON se ignora."""
+
+    FINAL_ERRORS = frozenset({"length", "error", "content-filter"})
+
+    def __init__(self, mcp_prefix: str = f"{MCP_SERVER}_") -> None:
+        self.state = StreamState()
+        self.prefix = mcp_prefix
+        self._main: str | None = None  # la sesión principal (la del primer evento)
+        self._texts: list[str] = []  # el texto del paso en curso de la sesión principal
+        self._started: int | None = None
+        self._steps = 0
+        self._denied: set[str] = set()
+
+    def _add(self, kind: ProgressKind, text: str) -> None:
+        self.state.progress.append((kind, short(text)))
+
+    def feed(self, line: str) -> None:
+        line = line.strip()
+        if not line.startswith("{"):
+            return
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            return
+        if not isinstance(event, dict):
+            return
+        sid = event.get("sessionID")
+        if self._main is None and isinstance(sid, str) and SESSION_ID_RE.fullmatch(sid):
+            self._main = self.state.session_id = sid
+            self._add("info", "Agente arrancado.")
+        main = sid == self._main
+        if isinstance(ts := event.get("timestamp"), int):
+            self._started = self._started if self._started is not None else ts
+            self.state.usage["duration_ms"] = ts - self._started
+        part = event.get("part") if isinstance(event.get("part"), dict) else {}
+        kind = event.get("type")
+        if kind == "step_start" and main:
+            self._texts = []
+        elif kind == "text" and main and str(part.get("text") or "").strip():
+            self._texts.append(str(part["text"]))
+            self._add("text", str(part["text"]))
+        elif kind == "tool_use":
+            self._tool(part, main)
+        elif kind == "step_finish":
+            self._step_finish(part, main)
+        elif kind == "error":
+            self._error(event)
+
+    def _name(self, part: dict[str, Any]) -> str:
+        name = str(part.get("tool") or "?")
+        return name.removeprefix(self.prefix) if name.startswith(self.prefix) else name
+
+    def _tool(self, part: dict[str, Any], main: bool) -> None:
+        """El nombre y si falló; nunca su entrada ni su salida (pueden llevar texto de una
+        oferta)."""
+        name = self._name(part)
+        tool_state = part.get("state") if isinstance(part.get("state"), dict) else {}
+        data = tool_state.get("input") if isinstance(tool_state.get("input"), dict) else {}
+        if name == "task":
+            label = f"Subagente «{short(str(data.get('subagent_type') or '?'), 40)}»"
+        elif name == "skill":
+            label = f"Skill «{short(str(data.get('name') or '?'), 40)}»"
+        else:
+            label = short(name, 60)
+        self._add("tool", ("" if main else "↳ ") + label)
+        if tool_state.get("status") == "error":
+            error = str(tool_state.get("error") or "").lower()
+            if "permission" in error or "denied" in error or "rejected" in error:
+                self._denied.add(name)
+                self.state.usage["denied_tools"] = sorted(self._denied)
+                self._add("error", f"Denegada: {name}")
+            else:
+                self._add("error", f"Error en {name}")
+
+    def _step_finish(self, part: dict[str, Any], main: bool) -> None:
+        usage = self.state.usage
+        tokens = part.get("tokens") if isinstance(part.get("tokens"), dict) else {}
+        cache = tokens.get("cache") if isinstance(tokens.get("cache"), dict) else {}
+        for key, value in (
+            ("input_tokens", tokens.get("input")),
+            ("output_tokens", (tokens.get("output") or 0) + (tokens.get("reasoning") or 0)),
+            ("cache_read_tokens", cache.get("read")),
+            ("total_cost_usd", part.get("cost")),
+        ):
+            if isinstance(value, int | float) and not isinstance(value, bool):
+                usage[key] = usage.get(key, 0) + value
+        if not main:
+            return
+        self._steps += 1
+        usage["num_turns"] = self._steps
+        reason = str(part.get("reason") or "")
+        if reason == "tool-calls":
+            return
+        state = self.state
+        state.finished = True
+        state.subtype = reason or None
+        state.is_error = reason in self.FINAL_ERRORS
+        text = "\n\n".join(self._texts).strip()
+        state.result = text[:RESULT_CHARS] if text else None
+
+    def _error(self, event: dict[str, Any]) -> None:
+        """Un error que para la ejecución (p. ej. el proveedor rechaza el modelo). Del detalle,
+        solo el mensaje."""
+        error = event.get("error") if isinstance(event.get("error"), dict) else {}
+        data = error.get("data") if isinstance(error.get("data"), dict) else {}
+        state = self.state
+        state.finished = True
+        state.is_error = True
+        state.subtype = str(error.get("name") or "error")
+        state.result = short(str(data.get("message") or error.get("name") or "sin detalle"), 500)
+
+
+PARSERS: dict[str, Callable[[str], StreamParser]] = {
+    "claude-stream-json": ClaudeStreamParser,
+    "opencode-json": OpenCodeJsonParser,
+}

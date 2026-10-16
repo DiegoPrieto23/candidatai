@@ -586,6 +586,72 @@ def eval_cv_command(
     typer.echo(f"\nInforme: {md_path}")
 
 
+@eval_app.command("compat")
+def eval_compat_command(
+    agent: str = typer.Option(
+        ..., "--agent", help="El agente del manifiesto (`claude`, `opencode`…)."
+    ),
+    model: str | None = typer.Option(None, "--model", help="El modelo, como lo escribe el agente."),
+    preset: str | None = typer.Option(
+        None, "--preset", help="Un preset del agente (p. ej. `local`)."
+    ),
+    import_: bool = typer.Option(
+        False, "--import", help="No lanza nada: mide la demo en la que trabajaste a mano."
+    ),
+    approve_only: bool = typer.Option(
+        False, "--approve", help="Solo aprueba en la demo las 5 ofertas de la matriz (paso manual)."
+    ),
+    timeout: int | None = typer.Option(
+        None, "--timeout", min=1, help="Minutos máximos por ejecución (por defecto, la política)."
+    ),
+    as_json: bool = JSON_OPTION,
+) -> None:
+    """Matriz de compatibilidad (fase 24.6): process-jobs, assess-fit y generate-cv con ese agente y
+    modelo sobre una demo propia (`data-demo-compat-<agente>-<modelo>/`), medidos y guardados en
+    evals/compat/. Lanza tu agente: usa tu suscripción o tu modelo, como los botones."""
+    from app.services.evals import compat
+    from app.services.evals import cv as cv_eval
+
+    def say(message: str) -> None:
+        if not as_json:
+            typer.echo(message)
+
+    try:
+        if approve_only:
+            target = compat.data_dir(agent, model, preset)
+            notes = compat.approve(target)
+            if as_json:
+                typer.echo(dump_json({"ok": True, "data_dir": target.name, "notes": notes}))
+            say("Aprobadas en la demo." + (f" Ojo: {'; '.join(notes)}" if notes else ""))
+            return
+        if import_:
+            result = compat.import_results(agent, model, preset)
+        else:
+            result = compat.run(
+                agent, model, preset, timeout=timeout * 60 if timeout else None, progress=say
+            )
+    except (compat.CompatError, cv_eval.CvEvalFileError, cv_eval.CvEvalNotDemoError) as exc:
+        if as_json:
+            typer.echo(dump_json(ToolError("validation_error", str(exc)).payload()))
+        else:
+            typer.secho(f"Error: {exc}", fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=1) from None
+    path = compat.save(result)
+    if as_json:
+        typer.echo(dump_json({**result.model_dump(mode="json"), "result_path": str(path)}))
+        return
+    typer.echo(
+        f"\n{result.display_name} · {result.model or result.preset or 'modelo por defecto'}: "
+        f"extracción {result.fields_equal}/{result.fields_total} campos, "
+        f"{result.assessed}/5 valoraciones, CVs {result.cv.passed}/{result.cv.evaluated} pasan."
+    )
+    if result.manual_steps:
+        typer.secho("\nFalta hacerlo a mano (este agente no puede en segundo plano):", bold=True)
+        for number, line in enumerate(result.manual_steps, 1):
+            typer.echo(f"  {number}. {line}")
+    typer.echo(f"\nResultado: {path}\nInforme: {compat.REPORT_PATH}")
+
+
 @eval_app.command("matching")
 def eval_matching(
     profile_path: Path | None = EVAL_PROFILE_OPTION,
@@ -1890,6 +1956,142 @@ def agents_sync() -> None:
 def agents_check() -> None:
     """Falla si la configuración generada de los agentes no está al día."""
     _run_sync("--check")
+
+
+def _yes_no(value: bool | None) -> str:
+    return "sin comprobar" if value is None else ("sí" if value else "no")
+
+
+@agents_app.command("list")
+def agents_list(
+    as_json: bool = JSON_OPTION,
+    refresh: bool = typer.Option(False, "--refresh", help="Vuelve a detectar sin usar la caché."),
+) -> None:
+    """Los agentes del manifiesto: qué son, qué saben hacer y si los tienes instalados."""
+    from app.services import agent_launch, agent_registry
+
+    try:
+        if as_json:  # lo mismo que `GET /agent/agents`, con tus preferencias (fase 24.4)
+            with session_scope() as session:
+                typer.echo(dump_json(agent_launch.overview(session, refresh=refresh)))
+            return
+        listed = agent_registry.list_agents(refresh=refresh)
+    except agent_registry.ManifestError as exc:
+        _fail_plain(str(exc), as_json)
+    for entry in listed.agents:
+        state = "habilitado" if entry.enabled else "solo compatible vía AGENTS.md"
+        if not entry.enabled and entry.info.note:
+            state = "deshabilitado"
+        found = entry.version or entry.detect_error or "instalado"
+        installed = found if entry.installed else "no instalado"
+        license_ = f"{entry.info.license}{', open-source' if entry.info.open_source else ''}"
+        caps = entry.capabilities
+        typer.secho(f"{entry.info.display_name} ({entry.name})", bold=True)
+        typer.echo(f"  {state} · {installed} · {entry.info.vendor}, {license_}")
+        typer.echo(
+            f"  MCP {_yes_no(caps.mcp)} · subagentes {caps.subagents} · nivel "
+            f"{caps.isolation_level} · segundo plano {_yes_no(caps.headless)} · modelos locales "
+            f"{_yes_no(caps.local_models)}"
+        )
+        if entry.info.note:
+            typer.secho(f"  {entry.info.note}", fg="yellow")
+
+
+def _instruction_tokens() -> None:
+    from app.services import instruction_size
+
+    sizes = instruction_size.measure()
+    per = instruction_size.CHARS_PER_TOKEN
+    typer.echo(f"CandidatAI · tokens de las instrucciones (aprox., {per} caracteres por token)\n")
+    labels = {"instructions": "Instrucciones", "skill": "Skills", "role": "Roles"}
+    for kind, label in labels.items():
+        rows = sorted(
+            (i for i in sizes.items if i.kind == kind), key=lambda i: i.tokens, reverse=True
+        )
+        typer.secho(label, bold=True)
+        for item in rows:
+            mark = typer.style("  > límite", fg="yellow") if item.over_limit else ""
+            typer.echo(f"  {item.tokens:>6}  {item.name}{mark}")
+    base = sizes.total("AGENTS.md")
+    typer.echo(
+        f"\nUna valoración (AGENTS.md + assess-fit): ~{base + sizes.total('assess-fit')} tokens; "
+        f"un CV (AGENTS.md + generate-cv + writer + verifier): "
+        f"~{base + sizes.total('generate-cv', 'writer', 'verifier')} tokens."
+    )
+    over = [i.name for i in sizes.items if i.over_limit]
+    if over:
+        typer.secho(f"Skills por encima de {sizes.limit} tokens: {', '.join(over)}.", fg="yellow")
+
+
+@agents_app.command("doctor")
+def agents_doctor(
+    refresh: bool = typer.Option(False, "--refresh", help="Vuelve a detectar sin usar la caché."),
+    tokens: bool = typer.Option(
+        False, "--tokens", help="Tokens estimados de AGENTS.md y de cada skill y rol."
+    ),
+) -> None:
+    """Qué agentes tienes, cuál se usaría hoy y por qué, y qué falta para los demás."""
+    from app.services.doctor import agents_overview
+
+    if tokens:
+        _instruction_tokens()
+        return
+    overview = agents_overview(get_settings(), refresh=refresh)
+    typer.echo("CandidatAI · agentes de IA\n")
+    if overview.error:
+        typer.secho(overview.error, fg="red", err=True)
+        raise typer.Exit(code=1)
+    if overview.selected:
+        typer.secho(f"Se usaría: {overview.selected} ({overview.selected_reason}).", bold=True)
+    else:
+        typer.secho(f"No se usaría ninguno: {overview.selected_reason}", fg="yellow", bold=True)
+    if overview.background:
+        typer.echo(f"En segundo plano: {overview.background}.")
+    else:
+        typer.echo(f"En segundo plano: no disponible ({overview.background_reason})")
+    if sys.platform != "win32":
+        typer.echo("Los botones que abren una terminal solo funcionan en Windows de momento.")
+    for line in overview.agents:
+        mark, color = ("OK", typer.colors.GREEN) if line.installed else ("--", None)
+        found = (line.version or "instalado") if line.installed else "no instalado"
+        typer.echo("")
+        typer.secho(f"[{mark:^4}] ", fg=color, bold=True, nl=False)
+        open_source = ", open-source" if line.open_source else ""
+        typer.echo(f"{line.display_name} ({line.name}): {found}{open_source}")
+        for item in line.missing:
+            typer.echo(f"       - {item}")
+        if not line.missing:
+            typer.echo("       listo")
+    _local_models_section()
+
+
+def _local_models_section() -> None:
+    """Fase 24.6: el Ollama de este equipo, solo con sus metadatos."""
+    from sqlalchemy.exc import SQLAlchemyError
+
+    from app.services import local_models
+
+    try:
+        with session_scope() as session:
+            status = local_models.diagnose_for(session)
+    except SQLAlchemyError:  # sin base de datos todavía: sin el aviso del modelo para redactar
+        status = local_models.diagnose()
+    typer.echo("")
+    typer.secho("Modelos locales (Ollama)", bold=True)
+    if not status.running:
+        typer.echo(f"  {status.error or 'Ollama no responde.'} Ver docs/MODELOS_GRATIS.md.")
+        return
+    env = f"{status.env_context}" if status.env_context else "sin poner"
+    typer.echo(f"  {status.url} · versión {status.version} · OLLAMA_CONTEXT_LENGTH {env}")
+    for item in status.models:
+        size = f"{item.parameter_size or '?'}"
+        tools = {True: "herramientas sí", False: "herramientas no", None: "herramientas ?"}
+        typer.echo(
+            f"  - {item.name}: {size}, contexto {item.context} ({item.context_source}), "
+            f"{tools[item.tools]}"
+        )
+    for warning in status.warnings:
+        typer.secho(f"  ! {warning.text}", fg="yellow")
 
 
 # --- Respuestas de las empresas (fase 15) ---------------------------------------------------

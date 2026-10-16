@@ -11,6 +11,9 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   ejecuta un skill (o una tarea programada del agente, si la soporta). Los botones de la UI no
   pueden generar texto por sí solos. Toda la frontera con el LLM está en la interfaz para agentes,
   así que añadir una vía por API en el futuro no obliga a rehacer los servicios.
+- **Nota (fase 24.6):** leer los metadatos de un servidor de modelos local (qué modelos tiene y su
+  contexto, en Ollama) no es llamar a un LLM. No se envía texto ni se genera nada. Está limitado
+  por código a esas rutas (ADR-037).
 
 ## ADR-002 · SQLite + SQLAlchemy 2 + Alembic
 - **Contexto:** un solo usuario en local; despliegue más adelante.
@@ -61,7 +64,8 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
 
 ## ADR-010 · Interfaz para agentes neutral: MCP + CLI con paridad
 - **Contexto:** el proyecto debe poder usarse con distintos agentes (Claude Code, Codex, Gemini
-  CLI, Cursor, Copilot…), no solo con uno de pago concreto.
+  CLI, Cursor, Copilot…), no solo con uno de pago concreto. (Gemini CLI dejó de servir con cuentas
+  gratuitas en 2026: ver ADR-037.)
 - **Decisión:** toda la interacción del agente con la app pasa por una interfaz con dos canales
   equivalentes: servidor MCP y CLI `cai … --json`. Un test garantiza la paridad.
 - **Consecuencias:** cualquier agente que hable MCP o ejecute comandos sirve. El listón queda algo
@@ -71,7 +75,8 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
 ## ADR-011 · `.agents/` como fuente única y configuración nativa generada
 - **Contexto:** cada agente espera instrucciones, skills, subagentes y servidores MCP en rutas y
   formatos distintos. Mantener copias a mano diverge enseguida.
-- **Decisión:** `AGENTS.md` para instrucciones (`CLAUDE.md` y `GEMINI.md` solo lo importan);
+- **Decisión:** `AGENTS.md` para instrucciones (`CLAUDE.md` solo lo importa; `GEMINI.md`, que
+  también lo importaba, está vacío a propósito desde la 24.3, ver ADR-037);
   `.agents/skills/` con skills en el estándar Agent Skills y frontmatter mínimo (`name`,
   `description`); `.agents/roles/` con subagentes en un formato propio y neutral;
   `.agents/manifest.yaml` con lo específico de cada agente. `scripts/sync_agents.py` genera
@@ -630,7 +635,8 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
     `list_agent_requests` (skill `handle-requests`) y la cierra con `complete_agent_request`;
   - **Codex** no tiene `headless`: no permite limitar las herramientas MCP de una ejecución con
     garantías (nivel B). El botón dice que tu agente no lo admite; añadirlo es un bloque del
-    manifiesto y un lector de su salida (`agent_output.PARSERS`).
+    manifiesto y un lector de su salida (`agent_output.PARSERS`). En la 24.5, OpenCode sí, con el
+    techo en una configuración propia de cada ejecución (ver ADR-037).
 - **Consecuencias:** sin coste de API, pero gasta los límites de uso de tu plan como una sesión
   normal. Hace falta `cai worker` arrancado: la UI avisa si algo lleva más de 30 s en cola sin nada
   en curso. Las flags del comando son las de Claude Code 2.1.x; si cambian, se corrige el
@@ -775,3 +781,165 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   backend (avisos del doctor, motivos del prefiltro, resultados de ejecuciones) queda como deuda;
   hasta entonces, en inglés aparecen algunas frases del servidor en español.
 
+
+## ADR-037 · Varios agentes con registro de capacidades; la app sigue sin llamar a un LLM
+> Fase 24.1, ampliado en la 24.3, la 24.4 y la 24.5 y cerrado en la 24.6 (modelos gratuitos,
+> niveles de gasto y matriz). Los resultados de la matriz con agentes open-source los añade la
+> pasada del usuario (`docs/pruebas/fase-24.6-matriz.md`).
+> **Pendiente:** la decisión sobre el ADR-001 (al final), que espera a esos resultados.
+
+- **Contexto:** la fase 24 abre CandidatAI a varios agentes, algunos open-source y con modelos
+  gratuitos o locales, elegibles desde la UI (`prompts/24-multiagente.md`). Hasta la 23 el
+  manifiesto se leía en dos sitios con análisis a mano (`sync_agents.py` y `agent_launch.py`),
+  solo conocía Claude Code y Codex y no decía qué sabe hacer cada uno. La app elegía agente con
+  `CAI_AGENT` o con el primero que encontraba en el `PATH`.
+- **Decisión:**
+  - **registro único:** `backend/app/services/agent_registry.py` es el único lector de
+    `.agents/manifest.yaml` en el backend. Valida cada clave con Pydantic (`extra="forbid"`) y
+    falla con un mensaje que nombra el agente y la clave. Tiene una caché que se invalida con la
+    fecha de modificación del fichero. `agent_launch` y `agent_runner` lo usan sin cambiar su
+    comportamiento. `scripts/sync_agents.py` sigue siendo un script autónomo con `pyyaml` que
+    valida lo mínimo; un test del backend carga el manifiesto real con el registro, así la CI
+    detecta uno inválido;
+  - **manifiesto v2:** cada agente lleva `config` (`generated`: `sync_agents.py` le escribe
+    configuración; `none`: solo compatible vía `AGENTS.md`), `info` (nombre, proveedor, licencia,
+    si es open-source, cómo se instala, cómo se detecta, cómo se invoca un skill y qué
+    instrucciones lee) y `capabilities` (MCP, subagentes, nivel de aislamiento, visión, web,
+    navegador y modelos locales; `null` significa sin comprobar). Un agente `enabled` necesita
+    `config: generated`. `capabilities.headless` no se escribe: se deriva de que haya un
+    `launch.headless` completo, para que dato y comportamiento no se contradigan;
+  - **el nivel de aislamiento es un dato del manifiesto** (`A`, `B` o `C`, la tabla de garantías
+    de `docs/AGENTS_COMPAT.md`), no algo que el código deduzca. La UI y el doctor lo enseñan; las
+    garantías siguen dependiendo de lo que el código comprueba (ADR-012, ADR-032);
+  - **detección:** un agente está instalado si el programa de `info.detect` está en el `PATH`; su
+    versión es la primera línea de la salida de `detect`, con un máximo de 5 s y sin las
+    variables de `launch.unset_env` (las claves de API). En caché 5 minutos, para no lanzar
+    procesos en cada petición;
+  - **superficie:** `cai agents list [--json]`, `cai agents doctor`, `GET /agent/agents` (solo
+    lectura) y la sección «Agentes» de `cai doctor`. No hay herramienta MCP: es para la persona
+    y la UI, no para el agente;
+  - **lo específico de cada agente sigue fuera de la lógica** (regla dura 2): binarios, formatos,
+    flags e instalación están en el manifiesto. El registro y el doctor solo los leen.
+- **Añadido en la 24.3:**
+  - emisores para OpenCode, Qwen Code y Antigravity CLI, con los formatos comprobados en su
+    binario (OpenCode 1.19.3, Qwen Code 0.25.2) o, si no hay binario, en su documentación
+    (Antigravity). La versión y la fecha quedan en `docs/AGENTS_COMPAT.md`;
+  - **`policy` neutral en el manifiesto:** qué herramientas MCP usa sin preguntar la sesión
+    principal (`auto_allow`) y qué rutas no se leen ni se editan. Cada emisor la traduce a su
+    agente. `.claude/settings.json` sigue a mano (ADR-011), pero `--check` falla si sus permisos
+    de la app no coinciden con `policy`, para que no diverjan;
+  - **un rol nunca tiene más de lo que declara:** en OpenCode, `permission` con `"*": "deny"` y
+    encima solo sus herramientas; en Qwen Code, la lista `tools`, que es exclusiva. Los niveles A
+    se asignan solo tras comprobarlo con el binario y un modelo: hasta entonces, B;
+  - **`models.flag` y `models.presets`:** cómo se elige un modelo al lanzar el agente y
+    configuraciones con nombre (Codex `local` = `--oss -m gpt-oss:20b`). `AgentSpec.model_args()`
+    los aplica; la elección persistente es de la 24.4;
+  - **Gemini CLI, deshabilitado con `info.note`:** desde el 18/06/2026 solo funciona con una clave
+    de pago o una licencia de empresa. `GEMINI.md` queda vacío a propósito: Antigravity lee
+    `AGENTS.md` y `GEMINI.md`, y este manda, así que importarlo duplicaría el contexto.
+- **Sigue igual:** la app no llama a ningún LLM (ADR-001). Los modelos gratuitos o locales se usan
+  a través de agentes que ya saben hablar con ellos.
+- **Añadido en la 24.4 (elegir y cambiar de agente desde la UI):**
+  - **preferencias en la base de datos** (`agent_preferences`, migración 0022): agente por
+    defecto, modelo o preset por agente y agente (y modelo) por acción. Son datos de uso de cada
+    persona: viven en `data/`, nunca en el repositorio ni en la configuración generada, que se
+    commitea;
+  - **precedencia en un único sitio** (`services/agent_prefs.py`): elección puntual del botón >
+    preferencia de la acción > agente por defecto > `CAI_AGENT` (respaldo) > el primero habilitado
+    e instalado. El modelo sale del mismo nivel que eligió el agente; si no lo da, del guardado
+    para ese agente. Siempre se devuelve el motivo (`reason`, con un código estable que la UI
+    traduce);
+  - **un agente preferido que no está instalado no se sustituye por otro**: se dice por qué y el
+    botón copia la orden, como hacía `CAI_AGENT`. Cambiar de agente sin avisar haría que una
+    acción corriera con garantías distintas de las que eligió la persona;
+  - **comprobaciones con el registro como fuente:** `search-jobs` necesita `browser`;
+    `research-company` y `training-plan`, `web`; `import-cv-template`, `vision` (queda escrito;
+    aún no tiene botón). Una capacidad `false` bloquea la acción con ese agente; `null` (sin
+    comprobar) la deja lanzar con un aviso, para no dejar fuera a los agentes nuevos mientras se
+    prueban. Las acciones que leen contenido no confiable (`process-jobs`, `review-replies`,
+    `search-jobs`) con un agente de nivel C se abren en terminal con un aviso (sesión dedicada) y
+    nunca en segundo plano. `assess-fit` y `generate-cv` no cuentan como tales: no tienen
+    `get_job` y leen la extracción, ya validada por su esquema;
+  - **el modelo es texto libre validado sin red:** empieza por letra o número (nunca `-`, que
+    sería una bandera), sin espacios ni caracteres que haya que escapar, y con `models.pattern`
+    del agente si lo tiene (clave nueva del manifiesto; OpenCode, `proveedor/modelo`). Sus
+    argumentos (`models.flag` o el preset) van justo detrás del programa, en terminal y en
+    segundo plano. Los subagentes siguen con el modelo de la configuración generada
+    (`fast`/`capable`) o heredan el de la sesión; la UI lo dice;
+  - **auditoría:** el agente lanzado recibe `CAI_CLIENT_NAME=<agente>`, en terminal y en segundo
+    plano, para que lo que haga por la CLI quede a su nombre; `agent_runs` guarda el modelo o el
+    preset. «Abrir en terminal» retoma la sesión con el agente y el modelo que la ejecutaron;
+  - **superficie:** `GET /agent/agents` y `cai agents list --json` ganan `launchable`,
+    `preferences` y `effective` (por acción, en terminal y en segundo plano); `PUT
+    /agent/preferences` (solo la UI); `POST /agent/launch` y `POST /agent/runs` aceptan `agent`,
+    `model` y `preset` para una sola ejecución; los encargos no eligen agente (lo decide la sesión
+    que los atienda).
+- **Añadido en la 24.5 (segundo plano con varios agentes):**
+  - **criterio:** un agente tiene segundo plano solo si su ejecución queda con **las herramientas
+    MCP de la acción y nada más** (sin terminal, edición ni web), sus subagentes no tienen más que
+    ella y eso se ha comprobado con su binario real (versión y fecha en `AGENTS_COMPAT.md`). Si no,
+    no se añade: la garantía de la ADR-032 no se rebaja por tener más agentes;
+  - **dos formas de poner el techo** (`launch.headless.ceiling`): `args`, en la orden (Claude
+    Code, como en la ADR-032); `config`, en una configuración propia de cada ejecución
+    (`services/agent_run_config.py`) que el runner escribe en `data/tmp/agent-runs/<id>/`, pasa
+    por el entorno y borra al salir, termine como termine. `_headless` rechaza un bloque
+    incompleto: sin forma de denegar el resto, no hay segundo plano;
+  - **OpenCode, con configuración:** un agente `cai-run` con `"*": "deny"` y detrás las MCP de la
+    acción, `skill` acotado a su skill y `task` a sus roles. Va en `OPENCODE_CONFIG_CONTENT` (la
+    que se carga la última) y sus reglas quedan detrás de las de `opencode.json`: gana la última
+    que coincide, así que el proyecto no lo amplía. Con `--pure` (sin plugins), sin `--auto` (lo
+    que queda en `ask` se rechaza; `HeadlessSpec` rechaza las banderas que lo aprueban todo) y sin
+    las variables que cargarían otra configuración o permisos (`config.clear_env`). Comprobado con OpenCode 1.19.3 con `debug agent` y `--tool`;
+    con un modelo, pendiente de la prueba manual (los gratuitos de Zen rechazan agentes propios);
+  - **cada acción declara sus roles** (`Action.roles`). Con techo por configuración, un rol solo se
+    lanza si sus herramientas caben en las de la acción. `writer` y `verifier` leen ficheros y en
+    OpenCode su `read` no se acota a `docs/`: **`generate-cv` no va en segundo plano con
+    OpenCode** y la UI propone un agente que sí pueda (`BackgroundInfo.suggested`);
+  - **la fila guarda cómo se limitó** (`agent_runs.run_config`, migración 0023), igual que guarda
+    el comando: si el manifiesto cambia entre la cola y la ejecución, no se lanza sin techo;
+  - **`{model}` en la orden:** dónde van los argumentos del modelo (`opencode run` no los acepta
+    delante de `run`); sin modelo, desaparece. Sin `{model}`, siguen detrás del programa;
+  - **Codex y Qwen Code, sin segundo plano por ahora:** Codex solo deja apagar herramientas (lista
+    negra) y sin terminal no lee los skills; Qwen tiene lista blanca (`--core-tools`) pero no hay
+    forma de comprobarla sin un modelo. Se reevalúan en la 24.6, con modelos locales;
+  - **cola:** sigue de una en una; cada fila lleva su agente, su formato de salida y, si hace
+    falta, su configuración, así que se encolan ejecuciones de agentes distintos.
+- **Añadido en la 24.6 (modelos gratuitos, niveles de gasto y matriz):**
+  - **diagnóstico de modelos locales solo con metadatos:** `services/local_models.py` consulta el
+    Ollama de este equipo (`CAI_OLLAMA_URL`, solo direcciones locales) con `GET /api/version`,
+    `GET /api/tags` y `POST /api/show`. Cualquier otra ruta se rechaza antes de salir (lista
+    blanca en la llamada y en un `event_hook` del cliente) y un test busca rutas de inferencia en
+    el código. No es una llamada a un LLM: no se envía texto ni se genera nada (ADR-001, nota). El
+    contexto de cada modelo sale de `num_ctx`, de `OLLAMA_CONTEXT_LENGTH` o del valor por defecto
+    (4 096). Se avisa por debajo de 32 768 y si se elige un modelo de unos 8B o menos para
+    redactar. Superficie: `cai agents doctor`, `GET /agent/local-models` y la tarjeta del agente;
+  - **niveles de gasto** (`services/spend_tiers.py`): «Económico», «Equilibrado» y «Máximo» son
+    conjuntos de agente y modelo para `process-jobs`, `assess-fit`, `review-replies` y
+    `generate-cv`. Se guardan en `agent_preferences` (`scope` `tier`), sin migración. Aplicar copia
+    antes las preferencias por acción (`tier_undo`) y «Deshacer» las devuelve. Las demás acciones,
+    el agente por defecto y los modelos por agente no se tocan. Guardar las preferencias de la
+    24.4 ya no borra estas filas. **La propuesta sale del manifiesto y de lo instalado**, sin
+    nombres de modelos en el código:
+    - el agente más capaz es el primero instalado en el orden del manifiesto;
+    - el local es el primero instalado con `local_models` y nivel A o B, mejor con segundo plano,
+      y con su preset `local` si lo tiene;
+    - el rápido es `models.fast`;
+  - **matriz automatizada:** `cai eval compat --agent <a> [--model|--preset]` crea su propia demo
+    (`data-demo-compat-<agente>-<modelo>/`) y lanza `process-jobs` y `assess-fit` por el camino del
+    segundo plano (`agent_runs` + `agent_runner`, en el mismo proceso, sin worker). Después
+    aprueba las 5 ofertas y marca como «No la tengo» las obligatorias que falten, solo en esa demo
+    (lo que contestaría la persona). Por último lanza `generate-cv` y mide:
+    - 11 campos de la extracción;
+    - las valoraciones;
+    - las 7 comprobaciones de `cai eval cv`;
+    - el tiempo, los turnos y los tokens (el lector de Claude Code guarda ahora los tokens del
+      resultado).
+    Si un paso no puede ir en segundo plano, imprime los pasos manuales; `--approve` y `--import`
+    los completan. Guarda `evals/compat/results/*.json` y regenera `evals/compat/REPORT.md`;
+  - **la configuración personal de cada agente** (proveedor, clave, modelos) va en su carpeta de
+    usuario, nunca en los ficheros generados del repositorio (`docs/MODELOS_GRATIS.md`);
+  - **Qwen Code sigue sin segundo plano:** sin un modelo no se puede comprobar su techo (criterio de
+    la 24.5);
+  - **¿Hay que revisar el ADR-001?** Solo si ningún agente con un modelo local supera la matriz en
+    las acciones cerradas (`process-jobs`, `assess-fit`). La decisión espera a la pasada del
+    usuario con OpenCode y Ollama. Hasta entonces, el ADR-001 se mantiene sin cambios.

@@ -34,7 +34,10 @@ export const keys = {
   apply: (id: number) => ['apply', id] as const,
   agent: ['agent'] as const,
   agentRuns: ['agent', 'runs'] as const,
+  agentAgents: ['agent', 'agents'] as const,
   agentRequests: ['agent', 'requests'] as const,
+  localModels: ['agent', 'local-models'] as const,
+  spendTiers: ['agent', 'tiers'] as const,
   skillGaps: (days: number) => ['skill-gaps', days] as const,
   allSkillGaps: ['skill-gaps'] as const,
   replies: (params: RepliesParams) => ['replies', params] as const,
@@ -839,12 +842,73 @@ export function useAgentLauncher() {
   return useQuery({ queryKey: keys.agent, queryFn: () => unwrap(api.GET('/agent')), staleTime: Infinity })
 }
 
-/** Abre tu agente en una terminal con la orden escrita. No espera a que termine. */
+/** Abre tu agente en una terminal con la orden escrita. No espera a que termine. `agent`: otro
+ * agente solo para esta ejecución (fase 24.4). */
 export function useLaunchAgent() {
   return useMutation({
-    mutationFn: (body: { action: AgentAction; job_id?: number; milestone_id?: number }) =>
-      unwrap(api.POST('/agent/launch', { body })),
+    mutationFn: (body: LaunchTarget & { agent?: string }) => unwrap(api.POST('/agent/launch', { body })),
   })
+}
+
+// --- Elegir agente (fase 24.4) -----------------------------------------------------------------
+
+/** Los agentes del manifiesto, tus preferencias y el agente efectivo de cada acción. */
+export function useAgentsOverview() {
+  return useQuery({ queryKey: keys.agentAgents, queryFn: () => unwrap(api.GET('/agent/agents')) })
+}
+
+/** Guarda las preferencias (sustituye todas). Cambia el agente de los botones: se refresca todo. */
+export function useSaveAgentPreferences() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (body: Schemas['Preferences']) => unwrap(api.PUT('/agent/preferences', { body })),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.agent }),
+  })
+}
+
+// --- Modelos locales y niveles de gasto (fase 24.6) ---------------------------------------------
+
+/** El Ollama de este equipo (solo sus metadatos). No se reintenta: si no responde, es la respuesta. */
+export function useLocalModels(enabled = true) {
+  return useQuery({
+    queryKey: keys.localModels,
+    queryFn: () => unwrap(api.GET('/agent/local-models')),
+    enabled,
+    staleTime: 30_000,
+  })
+}
+
+export type SpendTierId = Schemas['TierView']['id']
+
+/** «Económico», «Equilibrado» y «Máximo»: lo guardado (o la propuesta) y cuál está activo. */
+export function useSpendTiers() {
+  return useQuery({ queryKey: keys.spendTiers, queryFn: () => unwrap(api.GET('/agent/tiers')) })
+}
+
+/** Editar, volver a la propuesta, aplicar o deshacer: cambian preferencias, se refresca `agent`. */
+export function useSpendTierActions() {
+  const client = useQueryClient()
+  const onSuccess = () => client.invalidateQueries({ queryKey: keys.agent })
+  return {
+    save: useMutation({
+      mutationFn: ({ tier, body }: { tier: SpendTierId; body: Schemas['TierActions'] }) =>
+        unwrap(api.PUT('/agent/tiers/{tier}', { params: { path: { tier } }, body })),
+      onSuccess,
+    }),
+    reset: useMutation({
+      mutationFn: (tier: SpendTierId) => unwrap(api.POST('/agent/tiers/{tier}/reset', { params: { path: { tier } }, body: {} })),
+      onSuccess,
+    }),
+    apply: useMutation({
+      mutationFn: (tier: SpendTierId) =>
+        unwrap(api.POST('/agent/tiers/{tier}/apply', { params: { path: { tier } }, body: {} })),
+      onSuccess,
+    }),
+    undo: useMutation({
+      mutationFn: () => unwrap(api.POST('/agent/tiers/undo', { body: {} })),
+      onSuccess,
+    }),
+  }
 }
 
 // --- En segundo plano y cola de encargos (fase 19) ---------------------------------------------
@@ -867,7 +931,7 @@ export function useAgentRuns() {
 export function useStartAgentRun() {
   const client = useQueryClient()
   return useMutation({
-    mutationFn: (body: LaunchTarget) => unwrap(api.POST('/agent/runs', { body })),
+    mutationFn: (body: LaunchTarget & { agent?: string }) => unwrap(api.POST('/agent/runs', { body })),
     onSuccess: () => client.invalidateQueries({ queryKey: keys.agentRuns }),
   })
 }

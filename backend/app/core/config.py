@@ -46,6 +46,8 @@ class Settings(BaseSettings):
     # Qué agente abren los botones de la UI (ADR-024), por su nombre en `.agents/manifest.yaml`.
     # Sin valor, el primero con `launch` que esté instalado.
     agent: str | None = Field(default=None, validation_alias=_env("AGENT"))
+    # Ollama en este equipo (fase 24.6): solo se leen sus metadatos, nunca se le pide inferencia.
+    ollama_url: str = Field(default="http://127.0.0.1:11434", validation_alias=_env("OLLAMA_URL"))
     # `off` desactiva la similitud semántica aunque esté instalado el extra `matching` (tests, CI).
     embeddings: Literal["auto", "off"] = Field(default="auto", validation_alias=_env("EMBEDDINGS"))
     # Conectores opcionales de portales (fase 09). Sin claves, esas fuentes se omiten con un aviso.

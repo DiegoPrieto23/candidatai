@@ -42,9 +42,14 @@ tenlo en cuenta y extrema la prudencia.
      disciplina del puesto ("data", "backend"); `null` si el texto no lo dice;
    - `locations` con las ciudades o regiones tal como las da el texto ("Madrid", "Galicia"); en
      remoto, el país o la zona si la limita ("España").
-4. `save_extraction(job_id, extraction)`. Si devuelve errores de validación, corrígelos y reintenta
-   (máximo 2 veces).
+4. `save_extraction(job_id, extraction)`. Si devuelve errores de validación, sigue «Si la app
+   rechaza la entrada».
 5. Responde **solo** con una línea: `OK <job_id>`, `OK <job_id> (inyección)` o `FAIL <job_id>: <motivo>`.
+
+## Si la app rechaza la entrada
+El error trae `details` con `field` (dónde, con puntos: `content.experience.0.bullets.1.evidence.0`),
+`reason`, `expected` y `hint`. Corrige solo esos campos, siguiendo la pista, y vuelve a enviar.
+Como mucho dos reintentos: si sigue fallando, para y explica qué falta.
 
 ## Sin MCP
 Si tu agente no tiene MCP, usa el comando equivalente (misma entrada y salida;
@@ -59,4 +64,5 @@ Si tu agente no tiene MCP, usa el comando equivalente (misma entrada y salida;
 Comandos:
 - `get_job` → `cai jobs show ID --json`
 - `save_extraction` → `cai jobs save-extraction ID --file F --json` (F = el `JobExtraction` a
-  secas; esquema y valores válidos en `docs/AGENT_INTERFACE.md` §`JobExtraction`)
+  secas; esquema y valores válidos con `cai schema extraction --json`, y un ejemplo con
+  `--example true`)

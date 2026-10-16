@@ -32,7 +32,7 @@ from app.schemas.profile import CandidateProfile
 from app.services import events, extractions
 from app.services import profile as profile_service
 from app.services.documents import cover_letter
-from app.services.documents.checks import ContentIssue, citable_refs
+from app.services.documents.checks import ContentIssue, citable_refs, similar_hint
 from app.services.documents.service import selected_render_id
 from app.services.pipeline import CV_STAGES, Actor, EventType, InvalidTransitionError, Stage
 
@@ -47,6 +47,8 @@ EVIDENCE_LABELS = {
 
 class AnswersContentError(ValueError):
     """Las respuestas incumplen las reglas; `issues` dice dónde y por qué, para corregir."""
+
+    root = "answers"  # el campo de la entrada que lo lleva
 
     def __init__(self, issues: list[ContentIssue]) -> None:
         self.issues = issues
@@ -149,6 +151,7 @@ def _validate(
                         received=ref,
                         reason="La evidencia no existe en el perfil (p. ej. `exp-acme/a2` o el id "
                         "de una historia); valen también `extraction` y `user`.",
+                        hint=similar_hint(ref, [*refs, *EVIDENCE_LABELS], "Evidencias"),
                     )
                 )
     return issues

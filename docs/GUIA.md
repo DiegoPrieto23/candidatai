@@ -84,6 +84,7 @@ cd candidatai\backend
 uv sync                                # dependencias del backend (crea .venv)
 uv run playwright install chromium     # plantillas html y PDF sin LibreOffice
 uv run cai doctor                      # comprueba el entorno y dice qué falta
+uv run cai agents doctor               # qué agentes de IA tienes, cuál se usa y qué falta
 cd ..\frontend
 pnpm install
 pnpm build                             # la UI compilada que sirve `cai start`
@@ -139,6 +140,17 @@ skills y el servidor MCP ya configurados.
   [`AGENT_INTERFACE.md`](AGENT_INTERFACE.md)).
 
 Más detalle, y cómo añadir un agente: [`AGENTS_COMPAT.md`](AGENTS_COMPAT.md).
+
+### Sin pagar por tokens: modelos gratuitos y locales
+
+Además de tu suscripción (Claude, ChatGPT), puedes usar agentes open-source con un **modelo local**
+(Ollama o LM Studio: gratis y nada sale de tu equipo) o con un **modelo gratuito en la nube**
+(OpenRouter `:free`, el plan gratuito de Antigravity: gratis, con límites diarios, y las ofertas y tu
+perfil van al proveedor). Con Ollama, pon `OLLAMA_CONTEXT_LENGTH=32768` o más: con los 4 096 que trae
+por defecto, los agentes no funcionan. `cai agents doctor` y la tarjeta de cada agente dicen qué
+modelos tienes y si el contexto llega. Los modelos de unos 8B o menos suelen fallar con el CV.
+Guía completa, con los modelos recomendados según tu memoria y qué sale de tu equipo en cada vía:
+[`MODELOS_GRATIS.md`](MODELOS_GRATIS.md).
 
 ## 6. Arrancar la app cada día
 
@@ -227,11 +239,25 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
 Muchas pantallas tienen botones que abren tu agente con la orden ya escrita:
 
 - **En terminal:** abre una ventana con tu agente; tú ves y apruebas lo que hace.
-- **En segundo plano** (Claude Code): para los skills que no preguntan (`process-jobs`,
-  `assess-fit`, `generate-cv`). Corre sin ventana, solo con las herramientas de la app que
-  necesita, y ves el progreso en la página «Agente». Necesita `cai worker` en marcha.
+- **En segundo plano** (Claude Code; OpenCode en `process-jobs` y `assess-fit`): para los skills
+  que no preguntan (`process-jobs`, `assess-fit`, `generate-cv`). Corre sin ventana, solo con las
+  herramientas de la app que necesita, y ves el progreso y el uso en la página «Agente». Si tu
+  agente no puede, el desplegable propone uno que sí. Necesita `cai worker` en marcha.
 - **Dejar para mi próxima sesión:** guarda el encargo; `handle-requests` lo hace cuando abras tu
   agente.
+
+**Qué agente se abre.** En la página «Agente», la sección «Agentes» enseña los agentes que tienes,
+qué sabe hacer cada uno y cómo instalar los que faltan. Ahí eliges el agente por defecto, el modelo
+de cada agente y, en la tabla «Por acción», otro agente o modelo para una acción concreta (p. ej.
+OpenCode con un modelo local para procesar ofertas y Claude Code para el CV). El desplegable de cada
+botón dice con qué agente iría («con Claude Code ▾») y te deja usar otro solo esa vez. Si un agente
+no sirve para una acción (le falta el navegador para buscar ofertas, p. ej.), el botón lo dice y no
+lo lanza. Sin nada elegido, se usa `CAI_AGENT` del `.env` o el primero instalado.
+
+**Niveles de gasto.** En la misma página, «Económico», «Equilibrado» y «Máximo» guardan el agente y
+el modelo de las acciones principales. «Económico» usa un modelo local para procesar, valorar y
+clasificar respuestas, y tu agente más capaz para el CV. Rellénalos una vez y aplica uno con un clic.
+«Deshacer el último» deja las preferencias como estaban.
 
 ## 12. Configuración
 

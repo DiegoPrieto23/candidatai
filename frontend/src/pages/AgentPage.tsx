@@ -5,6 +5,7 @@ import {
   ChatCircleDotsIcon,
   CircleNotchIcon,
   ClockCountdownIcon,
+  RobotIcon,
   TerminalWindowIcon,
   XIcon,
 } from '@phosphor-icons/react'
@@ -18,6 +19,7 @@ import {
   useOpenAgentRun,
 } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
+import { AgentsSection } from '@/components/AgentsSection'
 import { ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -76,6 +78,22 @@ function Target({ jobId }: { jobId: number | null }) {
   )
 }
 
+/** Fase 24.5: el uso que dice el agente (turnos, tokens y coste), si dice alguno. */
+function usageText(usage: AgentRunView['usage']): string | null {
+  if (!usage) return null
+  const num = (key: string) => (typeof usage[key] === 'number' ? (usage[key] as number) : null)
+  const parts: string[] = []
+  const turns = num('num_turns')
+  const input = num('input_tokens')
+  const output = num('output_tokens')
+  const cost = num('total_cost_usd')
+  if (turns !== null) parts.push(i18n.t('agent:usageTurns', { count: turns }))
+  if (input !== null || output !== null)
+    parts.push(i18n.t('agent:usageTokens', { input: (input ?? 0).toLocaleString(), output: (output ?? 0).toLocaleString() }))
+  if (cost) parts.push(i18n.t('agent:usageCost', { cost: cost.toFixed(4) }))
+  return parts.length ? parts.join(' · ') : null
+}
+
 function RunCard({ run }: { run: AgentRunView }) {
   const { t } = useTranslation('agent')
   const cancel = useCancelAgentRun()
@@ -85,6 +103,7 @@ function RunCard({ run }: { run: AgentRunView }) {
   const active = run.status === 'queued' || run.status === 'running'
   const lines = all ? run.progress : run.progress.slice(-PROGRESS_PREVIEW)
   const took = duration(run)
+  const usage = usageText(run.usage)
   const error = cancel.error ?? open.error
 
   return (
@@ -99,8 +118,11 @@ function RunCard({ run }: { run: AgentRunView }) {
         </span>
       </div>
       <p className="mt-1 text-xs text-muted-foreground">
+        {run.model ? t('withAgentModel', { agent: run.agent, model: run.model }) : t('withAgent', { agent: run.agent })}
+        {' · '}
         {t('onlyWith')} <span className="font-mono">{run.allowed_tools.join(', ')}</span>
       </p>
+      {usage && <p className="mt-0.5 text-xs text-muted-foreground tabular">{usage}</p>}
 
       {run.questions.length > 0 && (
         <div className="mt-3 rounded-lg border border-warning-border bg-warning px-3 py-2.5 text-sm text-warning-foreground">
@@ -316,6 +338,7 @@ function Requests() {
 
 export function AgentPage() {
   const { t } = useTranslation('agent')
+  const { t: tAgents } = useTranslation('agents')
   return (
     <div className="animate-in fade-in duration-300">
       <div className="mb-6">
@@ -340,6 +363,13 @@ export function AgentPage() {
           <Requests />
         </section>
       </div>
+      <section aria-labelledby="agents-title" className="mt-10">
+        <h2 id="agents-title" className="mb-3 flex items-center gap-2 text-lg font-semibold tracking-tight">
+          <RobotIcon className="size-5 text-muted-foreground" weight="duotone" />
+          {tAgents('title')}
+        </h2>
+        <AgentsSection />
+      </section>
     </div>
   )
 }

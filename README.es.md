@@ -22,7 +22,7 @@ verificados**, la app rellena el formulario de la candidatura y **espera a que t
 después sigue el proceso hasta la oferta.
 
 **La app no llama a ningún LLM.** Lo que necesita criterio (leer ofertas, valorar el encaje,
-redactar el CV) lo hace el agente de IA que ya uses (Claude Code, Codex, Gemini CLI, Cursor…) a
+redactar el CV) lo hace el agente de IA que ya uses (Claude Code, Codex, OpenCode, Qwen Code…) a
 través de una interfaz para agentes: herramientas MCP y una CLI `cai … --json` equivalente. La app
 guarda el estado, las reglas y las comprobaciones, así que el agente no puede inventarse tu
 experiencia ni enviar nada por su cuenta.
@@ -242,11 +242,21 @@ en español (`generar-cv`…).
 
 ## Agentes compatibles
 
-| Agente | Estado |
-|---|---|
-| **Claude Code** | Referencia: se desarrolla y prueba con él, con MCP y sin él (solo CLI: 5/5 ofertas extraídas, valoradas y con un CV que pasa el eval). Los skills también se lanzan **en segundo plano** desde la UI |
-| **Codex** | Configuración generada (`.codex/`); aún fuera de la matriz probada |
-| **Gemini CLI, Cursor, Copilot, OpenCode…** | Sin probar: valen si leen `AGENTS.md` y hablan MCP o ejecutan comandos |
+| Agente | Licencia | Gratis | En local | Estado |
+|---|---|---|---|---|
+| **Claude Code** | propietaria | no (tu plan de Claude) | no | **Probado**: referencia, con MCP y sin él (solo CLI: 5/5 ofertas extraídas, valoradas y con un CV que pasa el eval). Los skills también se lanzan **en segundo plano** desde la UI |
+| **Codex** | Apache-2.0 | con un modelo local | sí (`--oss`, preset `local`) | **Configurado, sin probar** (`.codex/`). Usa tu cuenta de ChatGPT o Ollama/LM Studio |
+| **OpenCode** | MIT | con un modelo local o gratuito | sí (Ollama, LM Studio) | **Configurado, sin probar con un modelo** (`opencode.json`, `.opencode/agents/`), comprobado con su binario. Lanza `process-jobs` y `assess-fit` **en segundo plano** con el mismo techo de herramientas que Claude Code |
+| **Qwen Code** | Apache-2.0 | con un modelo local o gratuito | sí | **Configurado, sin probar** (`.qwen/`). Su plan gratuito con OAuth cerró el 15/04/2026 |
+| **Antigravity CLI** | propietaria | sí (plan gratuito de Google) | no | **Configurado, sin probar** (`.agents/mcp_config.json`). Sustituye a Gemini CLI |
+| **Cursor, Copilot CLI, Pi, goose…** | varias | según la herramienta | según la herramienta | **Compatibles vía `AGENTS.md`**: valen si leen `AGENTS.md` y hablan MCP o ejecutan comandos |
+
+Cómo usarla sin pagar por tokens (Ollama en Windows, qué modelo según tu memoria y qué sale de tu
+equipo en cada caso): [`docs/MODELOS_GRATIS.md`](docs/MODELOS_GRATIS.md). La matriz medida de cada
+agente y modelo, con `cai eval compat`, está en [`evals/compat/REPORT.md`](evals/compat/REPORT.md).
+
+Gemini CLI ya no figura: desde el 18/06/2026 solo funciona con una clave de pago de la API de
+Gemini o con una licencia de empresa. Con una cuenta gratuita de Google, usa Antigravity CLI.
 
 Skills, roles (subagentes) y el manifiesto de agentes se escriben una vez en `.agents/` y se generan
 para cada agente con `scripts/sync_agents.py`. Detalle y cómo añadir un agente:

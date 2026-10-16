@@ -1,4 +1,2 @@
-@AGENTS.md
-
-Si no se ha importado el contenido anterior, lee `AGENTS.md` en la raíz del repositorio y sigue
-sus instrucciones: es la fuente única para cualquier agente.
+<!-- Vacío a propósito (fase 24.3). Las instrucciones están en AGENTS.md, que Antigravity CLI ya lee;
+importarlo aquí duplicaría el contexto, porque Antigravity lee los dos y este manda. -->

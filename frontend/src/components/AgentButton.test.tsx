@@ -92,4 +92,115 @@ describe('Botones «en tu agente»', () => {
     expect(await screen.findByText(/Encargo guardado/)).toBeInTheDocument()
     expect(calls.find((c) => c.method === 'POST' && c.path === '/agent/requests')?.body).toEqual({ action: 'search-jobs' })
   })
+
+  describe('elegir agente (fase 24.4)', () => {
+    const claude = {
+      agent: 'claude',
+      display_name: 'Claude Code',
+      model: null,
+      preset: null,
+      reason: 'default',
+      reason_text: 'tu agente por defecto',
+      blocked: null,
+      blocked_code: null,
+      warning: null,
+    }
+    const codex = { ...claude, agent: 'codex', display_name: 'Codex', reason: 'explicit', reason_text: 'elegido para esta ejecución' }
+    const qwen = {
+      ...codex,
+      agent: 'qwen',
+      display_name: 'Qwen Code',
+      blocked: 'Qwen Code no está instalado.',
+      blocked_code: 'not_installed',
+    }
+    function withAgents(search: Record<string, unknown>) {
+      return {
+        ...launcher,
+        actions: [{ ...launcher.actions[0], ...search }, launcher.actions[1]],
+      }
+    }
+
+    it('el desplegable dice «con Claude Code» y abre con otro agente solo esta vez', async () => {
+      const calls = home({
+        'GET /agent': withAgents({ agent: claude, alternatives: [codex, qwen], background_agent: null }),
+        'POST /agent/launch': { ok: true, agent: 'codex', prompt: '…', message: 'ok', model: null, warning: null },
+      })
+      renderApp('/')
+      const main = await screen.findByRole('button', { name: 'Buscar ofertas' })
+      const more = await within(main.parentElement!).findByRole('button', {
+        name: 'Más formas de lanzarlo (con Claude Code)',
+      })
+      expect(more).toHaveTextContent('con Claude Code')
+      await userEvent.click(more)
+      expect(await screen.findByText('Solo esta vez, con:')).toBeInTheDocument()
+      expect(screen.getByRole('menuitem', { name: /Abrir con Qwen Code/ })).toHaveAttribute('aria-disabled', 'true')
+      expect(screen.getByText('Qwen Code no está instalado.')).toBeInTheDocument()
+      await userEvent.click(screen.getByRole('menuitem', { name: /Abrir con Codex/ }))
+      expect(await screen.findByText('Abierto en codex: sigue en la terminal.')).toBeInTheDocument()
+      expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ action: 'search-jobs', agent: 'codex' })
+    })
+
+    it('si al agente le falta una capacidad, el botón se deshabilita y dice por qué', async () => {
+      const blocked = {
+        ...codex,
+        reason: 'action',
+        blocked: 'Codex no tiene navegador, y esta acción lo necesita.',
+        blocked_code: 'capability',
+      }
+      home({ 'GET /agent': withAgents({ agent: blocked, alternatives: [{ ...claude, reason: 'explicit' }], background_agent: null }) })
+      renderApp('/')
+      const main = await screen.findByRole('button', { name: 'Buscar ofertas' })
+      await waitFor(() => expect(main).toBeDisabled())
+      expect(main).toHaveAttribute('title', 'Codex no tiene navegador, y esta acción lo necesita.')
+      await userEvent.click(within(main.parentElement!).getByRole('button', { name: /con Codex/ }))
+      expect(await screen.findByRole('menuitem', { name: /En terminal/ })).toHaveAttribute('aria-disabled', 'true')
+      expect(screen.getByRole('menuitem', { name: /Abrir con Claude Code/ })).not.toHaveAttribute('aria-disabled')
+    })
+
+    it('si su agente no tiene segundo plano, propone otro que sí (fase 24.5)', async () => {
+      const reason = 'El rol «writer» de «Generar CV» necesita read…'
+      const calls = home({
+        'GET /status': status(2, 0),
+        'GET /agent': {
+          ...launcher,
+          actions: [
+            launcher.actions[0],
+            {
+              ...launcher.actions[1],
+              agent: { ...claude, agent: 'opencode', display_name: 'OpenCode' },
+              alternatives: [],
+              background_agent: { available: false, agent: null, reason, suggested: 'claude', suggested_name: 'Claude Code' },
+            },
+          ],
+        },
+        'POST /agent/runs': { status: 202, body: { id: 2, status: 'queued' } },
+      })
+      renderApp('/')
+      const main = await screen.findByRole('button', { name: 'Procesar ofertas' })
+      await userEvent.click(await within(main.parentElement!).findByRole('button', { name: /con OpenCode/ }))
+      const own = await screen.findByRole('menuitem', { name: new RegExp(`En segundo plano.*${reason}`) })
+      expect(own).toHaveAttribute('aria-disabled', 'true')
+      await userEvent.click(screen.getByRole('menuitem', { name: /En segundo plano con Claude Code/ }))
+      expect(await screen.findByText('En cola en segundo plano.', { exact: false })).toBeInTheDocument()
+      expect(calls.find((c) => c.method === 'POST' && c.path === '/agent/runs')?.body).toEqual({
+        action: 'process-jobs',
+        agent: 'claude',
+      })
+    })
+
+    it('un agente de nivel C avisa al abrirse', async () => {
+      const warning = 'Qwen Code es de nivel C: esta acción lee contenido no confiable.'
+      home({
+        'GET /agent': withAgents({ agent: { ...claude, warning }, alternatives: [], background_agent: null }),
+        'POST /agent/launch': { ok: true, agent: 'qwen', prompt: '…', message: 'ok', model: null, warning },
+      })
+      renderApp('/')
+      const main = await screen.findByRole('button', { name: 'Buscar ofertas' })
+      await userEvent.click(await within(main.parentElement!).findByRole('button', { name: /con Claude Code/ }))
+      expect(await screen.findByRole('menuitem', { name: new RegExp(warning) })).toBeInTheDocument()
+      await userEvent.keyboard('{Escape}')
+      await userEvent.click(main)
+      expect(await screen.findByText(`Abierto en qwen: sigue en la terminal. Ojo: ${warning}`)).toBeInTheDocument()
+    })
+  })
 })
