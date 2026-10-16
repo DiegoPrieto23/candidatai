@@ -1372,6 +1372,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/agent/agents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Agents
+         * @description Los agentes del manifiesto (fase 24.1): qué son, qué saben hacer y si están instalados. Lo
+         *     mismo que `cai agents list --json`; solo lectura.
+         */
+        get: operations["list_agents"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/agent/launch": {
         parameters: {
             query?: never;
@@ -2124,6 +2145,86 @@ export interface components {
             max_offers?: number | null;
             /** Notes */
             notes?: string | null;
+        };
+        /**
+         * AgentCapabilities
+         * @description Qué sabe hacer el agente. `None`: sin comprobar.
+         */
+        AgentCapabilities: {
+            /** Mcp */
+            mcp: boolean;
+            /**
+             * Subagents
+             * @enum {string}
+             */
+            subagents: "isolated" | "inherited" | "none";
+            /**
+             * Isolation Level
+             * @enum {string}
+             */
+            isolation_level: "A" | "B" | "C";
+            /** Vision */
+            vision?: boolean | null;
+            /** Web */
+            web?: boolean | null;
+            /** Browser */
+            browser?: boolean | null;
+            /** Local Models */
+            local_models?: boolean | null;
+            /**
+             * Headless
+             * @default false
+             */
+            headless: boolean;
+        };
+        /**
+         * AgentEntry
+         * @description Un agente para `cai agents list --json` y `GET /agent/agents`.
+         */
+        AgentEntry: {
+            /** Name */
+            name: string;
+            /** Enabled */
+            enabled: boolean;
+            /**
+             * Config
+             * @enum {string}
+             */
+            config: "generated" | "none";
+            info: components["schemas"]["AgentInfo"];
+            capabilities: components["schemas"]["AgentCapabilities"];
+            /** Installed */
+            installed: boolean;
+            /** Version */
+            version?: string | null;
+            /** Detect Error */
+            detect_error?: string | null;
+        };
+        /** AgentInfo */
+        AgentInfo: {
+            /** Display Name */
+            display_name: string;
+            /** Vendor */
+            vendor: string;
+            /** Open Source */
+            open_source: boolean;
+            /** License */
+            license: string;
+            /** Homepage */
+            homepage: string;
+            /** @default {} */
+            install: components["schemas"]["InstallSpec"];
+            /** Detect */
+            detect: string[];
+            /** Invoke */
+            invoke: string;
+            /** Instructions */
+            instructions: string;
+        };
+        /** AgentList */
+        AgentList: {
+            /** Agents */
+            agents: components["schemas"]["AgentEntry"][];
         };
         /** AgentRequestList */
         AgentRequestList: {
@@ -3482,6 +3583,18 @@ export interface components {
             risk_flags: string[];
             /** Reports */
             reports: components["schemas"]["InjectionReport"][];
+        };
+        /**
+         * InstallSpec
+         * @description Cómo se instala, por sistema (solo texto para enseñar).
+         */
+        InstallSpec: {
+            /** Windows */
+            windows?: string | null;
+            /** Macos */
+            macos?: string | null;
+            /** Linux */
+            linux?: string | null;
         };
         /**
          * InstructionsUsed
@@ -12388,6 +12501,98 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AgentStatus"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_agents: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentList"];
                 };
             };
             /** @description Unauthorized */

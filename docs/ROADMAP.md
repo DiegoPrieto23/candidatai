@@ -68,7 +68,7 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 23.6 | ↳ UI en inglés y español | ✅ | Toda la UI traducida, con un selector de idioma junto al del tema |
 | 23.5b | ↳ Medios y README | ✅ | Capturas en los dos idiomas, GIF y vídeo; README sin la comparativa |
 | 24 | Varios agentes: open-source, gratuitos y a elegir | ⏳ | Usar la app con OpenCode, Qwen Code, Antigravity o Codex con modelos locales, además de Claude Code, y cambiar de agente y modelo desde la UI, globalmente o por acción |
-| 24.1 | ↳ Registro de agentes y diagnóstico | ⏳ | `cai agents list` y `cai agents doctor`: qué agentes hay, cuáles están instalados, qué saben hacer y si son open-source |
+| 24.1 | ↳ Registro de agentes y diagnóstico | ✅ | `cai agents list` y `cai agents doctor`: qué agentes hay, cuáles están instalados, qué saben hacer y si son open-source |
 | 24.2 | ↳ Esquemas y errores para cualquier modelo | ⏳ | `cai schema` y `get_schema`; errores de validación con `path` y pista |
 | 24.3 | ↳ Agentes nuevos | ⏳ | Configuración generada para OpenCode, Qwen Code y Antigravity; Codex con `--oss`; Gemini CLI fuera |
 | 24.4 | ↳ Elegir y cambiar de agente | ⏳ | Sección «Agentes» con capacidades, agente por defecto y por acción, «con Claude Code ▾» en cada botón |
@@ -2139,3 +2139,58 @@ decisiones tomadas y deuda técnica pendiente. -->
 - **Deuda:** traducir la CLI y los mensajes del servidor sin código; los niveles de las skills en
   la ficha siguen como códigos del perfil (F, C, B) con su nombre en el tooltip; los iconos de los
   portales caen a la inicial cuando no cargan.
+
+### 24.1 · Registro de agentes y diagnóstico — 2026-10-16 · Claude Code (Opus 5.5)
+- **Resumen:** manifiesto v2. Cada agente lleva `config` (`generated` o `none`), `info`
+  (proveedor, licencia, open-source, instalación por sistema, `detect`, cómo se invoca un skill,
+  qué instrucciones lee) y `capabilities` (MCP, subagentes, nivel de aislamiento A/B/C, visión,
+  web, navegador, modelos locales; `null` = sin comprobar).
+  - Claude Code y Codex: con lo ya comprobado en `AGENTS_COMPAT.md`.
+  - Cursor CLI, Copilot CLI, Pi y goose: entran como «solo compatibles vía `AGENTS.md`»
+    (`enabled: false`, `config: none`, nivel C), con datos comprobados en sus webs.
+- **`services/agent_registry.py`:** único lector del manifiesto en el backend.
+  - Pydantic estricto: una clave mal escrita falla nombrando agente y clave.
+  - Caché por fecha de modificación.
+  - `capabilities.headless` derivada de `launch.headless`.
+  - Detección con 5 s de máximo y sin las variables de `unset_env`. Va en caché 5 min, o 30 s si
+    no está instalado, con una sola detección a la vez por agente.
+  - `agent_launch` y `agent_runner` lo usan sin cambiar su comportamiento: sus tests no se tocan.
+- **Comandos y API:**
+  - `cai agents list [--json] [--refresh]`;
+  - `cai agents doctor`: cuál se usaría hoy y por qué, el segundo plano y qué falta para los
+    demás;
+  - `GET /agent/agents`: lo mismo que `list --json`;
+  - sección «Agentes» en `cai doctor`.
+  - Con el manifiesto roto, la UI dice que el manifiesto no es válido, en vez de «ningún agente».
+  - `sync_agents.py` valida `config`.
+- **En este equipo:** Claude Code 2.1.301, habilitado, con segundo plano. Copilot CLI 1.0.75
+  instalado, solo compatible. Codex, Cursor, Pi y goose, no instalados.
+- **Tests:** 25 nuevos en `test_agent_registry.py`:
+  - clave mal escrita y anidada;
+  - valores inválidos y caché por mtime;
+  - ejecutable falso que tarda (corte por tiempo) y que lee la clave (no la recibe);
+  - caché de la detección;
+  - CLI y API iguales;
+  - doctor con el manifiesto roto y con `CAI_AGENT`.
+  2409 tests de backend en verde, ruff limpio, `sync_agents.py --check` en verde y OpenAPI
+  regenerado.
+- **Decisiones:** ADR-037 (borrador; lo completan la 24.4 y la 24.5).
+  - `install` es un texto por sistema que solo se enseña, nunca se ejecuta.
+  - La API no tiene `--refresh`: la UI de la 24.4 decidirá si lo necesita.
+  - Revisión (rol `reviewer`), sin nada bloqueante. Se aplicó:
+    - el motivo con un manifiesto roto;
+    - el aviso en el log una vez por mensaje;
+    - una sola detección a la vez;
+    - TTL corto para los no instalados;
+    - `clean_env` compartido con el runner;
+    - `load()` de solo lectura;
+    - errores sin rutas absolutas;
+    - la sección en `AGENT_INTERFACE.md`;
+    - tests de paridad CLI/API y de `CAI_AGENT` desconocido.
+- **Deuda:**
+  - `shutil.which` en Windows también mira la carpeta actual; habría que pasarle el `PATH`
+    explícito en los tres sitios a la vez (registro, `agent_launch` y los tests que lo sustituyen).
+  - El registro importa `_kill_tree` de `agent_runner` dentro de la función, por el ciclo de
+    imports. Conviene llevarlo a un módulo de procesos común.
+  - Falta un test con un `.cmd` real de Windows en una ruta con espacios.
+

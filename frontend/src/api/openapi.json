@@ -8217,6 +8217,108 @@
         }
       }
     },
+    "/agent/agents": {
+      "get": {
+        "tags": [
+          "agent"
+        ],
+        "summary": "List Agents",
+        "description": "Los agentes del manifiesto (fase 24.1): qué son, qué saben hacer y si están instalados. Lo\nmismo que `cai agents list --json`; solo lectura.",
+        "operationId": "list_agents",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/agent/launch": {
       "post": {
         "tags": [
@@ -12421,6 +12523,226 @@
         "title": "AgentBrowseSource",
         "description": "Una plataforma donde el agente busca con el navegador del usuario (`agent_browse`).\n\nSe identifica por `name`: guardar otra con el mismo nombre la actualiza."
       },
+      "AgentCapabilities": {
+        "properties": {
+          "mcp": {
+            "type": "boolean",
+            "title": "Mcp"
+          },
+          "subagents": {
+            "type": "string",
+            "enum": [
+              "isolated",
+              "inherited",
+              "none"
+            ],
+            "title": "Subagents"
+          },
+          "isolation_level": {
+            "type": "string",
+            "enum": [
+              "A",
+              "B",
+              "C"
+            ],
+            "title": "Isolation Level"
+          },
+          "vision": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vision"
+          },
+          "web": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Web"
+          },
+          "browser": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Browser"
+          },
+          "local_models": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Local Models"
+          },
+          "headless": {
+            "type": "boolean",
+            "title": "Headless",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "mcp",
+          "subagents",
+          "isolation_level"
+        ],
+        "title": "AgentCapabilities",
+        "description": "Qué sabe hacer el agente. `None`: sin comprobar."
+      },
+      "AgentEntry": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          },
+          "config": {
+            "type": "string",
+            "enum": [
+              "generated",
+              "none"
+            ],
+            "title": "Config"
+          },
+          "info": {
+            "$ref": "#/components/schemas/AgentInfo"
+          },
+          "capabilities": {
+            "$ref": "#/components/schemas/AgentCapabilities"
+          },
+          "installed": {
+            "type": "boolean",
+            "title": "Installed"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version"
+          },
+          "detect_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detect Error"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "enabled",
+          "config",
+          "info",
+          "capabilities",
+          "installed"
+        ],
+        "title": "AgentEntry",
+        "description": "Un agente para `cai agents list --json` y `GET /agent/agents`."
+      },
+      "AgentInfo": {
+        "properties": {
+          "display_name": {
+            "type": "string",
+            "title": "Display Name"
+          },
+          "vendor": {
+            "type": "string",
+            "title": "Vendor"
+          },
+          "open_source": {
+            "type": "boolean",
+            "title": "Open Source"
+          },
+          "license": {
+            "type": "string",
+            "title": "License"
+          },
+          "homepage": {
+            "type": "string",
+            "title": "Homepage"
+          },
+          "install": {
+            "$ref": "#/components/schemas/InstallSpec",
+            "default": {}
+          },
+          "detect": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Detect"
+          },
+          "invoke": {
+            "type": "string",
+            "title": "Invoke"
+          },
+          "instructions": {
+            "type": "string",
+            "title": "Instructions"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "display_name",
+          "vendor",
+          "open_source",
+          "license",
+          "homepage",
+          "detect",
+          "invoke",
+          "instructions"
+        ],
+        "title": "AgentInfo"
+      },
+      "AgentList": {
+        "properties": {
+          "agents": {
+            "items": {
+              "$ref": "#/components/schemas/AgentEntry"
+            },
+            "type": "array",
+            "title": "Agents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "agents"
+        ],
+        "title": "AgentList"
+      },
       "AgentRequestList": {
         "properties": {
           "requests": {
@@ -16478,6 +16800,47 @@
         ],
         "title": "InjectionWarning",
         "description": "Por qué la oferta puede llevar contenido dirigido a una IA."
+      },
+      "InstallSpec": {
+        "properties": {
+          "windows": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Windows"
+          },
+          "macos": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Macos"
+          },
+          "linux": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Linux"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "InstallSpec",
+        "description": "Cómo se instala, por sistema (solo texto para enseñar)."
       },
       "InstructionsUsed": {
         "properties": {

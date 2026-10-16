@@ -775,3 +775,44 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   backend (avisos del doctor, motivos del prefiltro, resultados de ejecuciones) queda como deuda;
   hasta entonces, en inglés aparecen algunas frases del servidor en español.
 
+
+## ADR-037 · Varios agentes con registro de capacidades; la app sigue sin llamar a un LLM (borrador)
+> Borrador de la fase 24.1. La 24.4 (preferencias y selector en la UI) y la 24.5 (segundo plano con
+> varios agentes) lo completan.
+
+- **Contexto:** la fase 24 abre CandidatAI a varios agentes, algunos open-source y con modelos
+  gratuitos o locales, elegibles desde la UI (`prompts/24-multiagente.md`). Hasta la 23 el
+  manifiesto se leía en dos sitios con análisis a mano (`sync_agents.py` y `agent_launch.py`),
+  solo conocía Claude Code y Codex y no decía qué sabe hacer cada uno. La app elegía agente con
+  `CAI_AGENT` o con el primero que encontraba en el `PATH`.
+- **Decisión:**
+  - **registro único:** `backend/app/services/agent_registry.py` es el único lector de
+    `.agents/manifest.yaml` en el backend. Valida cada clave con Pydantic (`extra="forbid"`) y
+    falla con un mensaje que nombra el agente y la clave. Tiene una caché que se invalida con la
+    fecha de modificación del fichero. `agent_launch` y `agent_runner` lo usan sin cambiar su
+    comportamiento. `scripts/sync_agents.py` sigue siendo un script autónomo con `pyyaml` que
+    valida lo mínimo; un test del backend carga el manifiesto real con el registro, así la CI
+    detecta uno inválido;
+  - **manifiesto v2:** cada agente lleva `config` (`generated`: `sync_agents.py` le escribe
+    configuración; `none`: solo compatible vía `AGENTS.md`), `info` (nombre, proveedor, licencia,
+    si es open-source, cómo se instala, cómo se detecta, cómo se invoca un skill y qué
+    instrucciones lee) y `capabilities` (MCP, subagentes, nivel de aislamiento, visión, web,
+    navegador y modelos locales; `null` significa sin comprobar). Un agente `enabled` necesita
+    `config: generated`. `capabilities.headless` no se escribe: se deriva de que haya un
+    `launch.headless` completo, para que dato y comportamiento no se contradigan;
+  - **el nivel de aislamiento es un dato del manifiesto** (`A`, `B` o `C`, la tabla de garantías
+    de `docs/AGENTS_COMPAT.md`), no algo que el código deduzca. La UI y el doctor lo enseñan; las
+    garantías siguen dependiendo de lo que el código comprueba (ADR-012, ADR-032);
+  - **detección:** un agente está instalado si el programa de `info.detect` está en el `PATH`; su
+    versión es la primera línea de la salida de `detect`, con un máximo de 5 s y sin las
+    variables de `launch.unset_env` (las claves de API). En caché 5 minutos, para no lanzar
+    procesos en cada petición;
+  - **superficie:** `cai agents list [--json]`, `cai agents doctor`, `GET /agent/agents` (solo
+    lectura) y la sección «Agentes» de `cai doctor`. No hay herramienta MCP: es para la persona
+    y la UI, no para el agente;
+  - **lo específico de cada agente sigue fuera de la lógica** (regla dura 2): binarios, formatos,
+    flags e instalación están en el manifiesto. El registro y el doctor solo los leen.
+- **Sigue igual:** la app no llama a ningún LLM (ADR-001). Los modelos gratuitos o locales se usan
+  a través de agentes que ya saben hablar con ellos.
+- **Pendiente (24.4 y 24.5):** dónde se guardan las preferencias (agente por defecto y por acción,
+  en `data/`, no en el repositorio) y con qué criterio se abre el segundo plano a otro agente.

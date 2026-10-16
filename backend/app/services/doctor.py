@@ -8,7 +8,7 @@ import tempfile
 import time
 from enum import StrEnum
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 from pydantic import BaseModel
 
@@ -16,6 +16,7 @@ from app.core.config import LEGACY_DB_FILENAME, LEGACY_ENV_PREFIX, REPO_ROOT, Se
 from app.services.documents import pdf
 
 if TYPE_CHECKING:
+    from app.services.agent_registry import AgentSpec
     from app.services.ingestion.email.mailboxes import ImapFactory
 
 MIN_PYTHON = (3, 12)
@@ -418,6 +419,117 @@ def check_capture(settings: Settings) -> CheckResult:
     )
 
 
+# --- Agentes (fase 24.1) -----------------------------------------------------------------------
+
+
+class AgentStatusLine(BaseModel):
+    """Un agente en `cai agents doctor`: si lo tienes y qué le falta."""
+
+    name: str
+    display_name: str
+    enabled: bool
+    installed: bool
+    version: str | None
+    open_source: bool
+    isolation_level: Literal["A", "B", "C"]
+    missing: list[str]  # qué falta para usarlo con la app (vacío: nada)
+
+
+class AgentsOverview(BaseModel):
+    """Qué agentes tienes, cuál se usaría hoy y por qué, y qué falta para los demás."""
+
+    error: str | None = None  # el manifiesto no es válido
+    selected: str | None = None
+    selected_reason: str = ""
+    background: str | None = None  # con qué agente iría «En segundo plano»
+    background_reason: str | None = None  # o por qué no hay
+    agents: list[AgentStatusLine] = []
+
+
+def _missing(spec: "AgentSpec", installed: bool, platform: str) -> list[str]:
+    missing = []
+    if not installed:
+        how = getattr(spec.info.install, platform) or spec.info.homepage
+        missing.append(f"falta instalarlo: {how}")
+    if spec.config == "none":
+        missing.append(
+            "sin configuración generada: solo compatible vía AGENTS.md, pidiéndole los skills en "
+            f"lenguaje natural y con el nivel {spec.capabilities.isolation_level} de aislamiento"
+        )
+    elif not spec.launchable:
+        missing.append("sin `launch` en el manifiesto: los botones de la UI copian la orden")
+    if spec.config == "generated" and not spec.capabilities.headless:
+        missing.append(
+            "sin «En segundo plano»: no tiene un `launch.headless` completo en el manifiesto"
+        )
+    return missing
+
+
+def agents_overview(settings: Settings, refresh: bool = False) -> AgentsOverview:
+    from app.services import agent_launch, agent_registry
+
+    try:
+        specs = agent_registry.load()
+        listed = agent_registry.list_agents(refresh=refresh).agents
+    except agent_registry.ManifestError as exc:
+        return AgentsOverview(error=str(exc))
+    platform = agent_registry.current_platform()
+    lines = [
+        AgentStatusLine(
+            name=entry.name,
+            display_name=entry.info.display_name,
+            enabled=entry.enabled,
+            installed=entry.installed,
+            version=entry.version,
+            open_source=entry.info.open_source,
+            isolation_level=entry.capabilities.isolation_level,
+            missing=_missing(specs[entry.name], entry.installed, platform),
+        )
+        for entry in listed
+    ]
+    picked = agent_launch.selection()
+    if picked.available:
+        reason = (
+            f"porque CAI_AGENT={settings.agent}"
+            if settings.agent
+            else "el primero del manifiesto que está habilitado e instalado"
+        )
+    else:
+        reason = picked.reason or ""
+    background = agent_launch.background_info()
+    return AgentsOverview(
+        selected=picked.agent,
+        selected_reason=reason,
+        background=background.agent,
+        background_reason=background.reason,
+        agents=lines,
+    )
+
+
+def check_agents(settings: Settings) -> CheckResult:
+    """Agentes de IA (fase 24.1): cuál usarían los botones y cuáles más tienes."""
+    name = "Agentes"
+    overview = agents_overview(settings)
+    if overview.error:
+        return CheckResult(name=name, status=CheckStatus.ERROR, detail=overview.error)
+    by_name = {line.name: line for line in overview.agents}
+    others = [
+        line.display_name
+        for line in overview.agents
+        if line.installed and line.name != overview.selected
+    ]
+    also = f"; también instalados: {', '.join(others)}" if others else ""
+    more = "; detalle con `cai agents doctor`"
+    if overview.selected is None:
+        detail = f"ninguno disponible ({overview.selected_reason}){also}{more}"
+        return CheckResult(name=name, status=CheckStatus.WARN, detail=detail)
+    line = by_name[overview.selected]
+    version = f" {line.version}" if line.version else ""
+    background = "con «En segundo plano»" if overview.background else "sin «En segundo plano»"
+    detail = f"se usa {line.display_name}{version}, {background}{also}{more}"
+    return CheckResult(name=name, status=CheckStatus.OK, detail=detail)
+
+
 def run_doctor(settings: Settings) -> DoctorReport:
     return DoctorReport(
         checks=[
@@ -434,5 +546,6 @@ def run_doctor(settings: Settings) -> DoctorReport:
             check_email_alerts(settings),
             check_email_replies(settings),
             check_capture(settings),
+            check_agents(settings),
         ]
     )

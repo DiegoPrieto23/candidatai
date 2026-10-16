@@ -496,6 +496,16 @@ lanza a sí mismo.
   (`list_agent_requests` → sigue el `prompt` → `complete_agent_request`). Un encargo que no se hizo
   no se cierra.
 
+### Agentes (fase 24.1, solo CLI y API)
+
+Sin herramienta MCP, a propósito: son para la persona y la UI, no para el agente (ADR-037).
+
+| Comando | Qué hace |
+|---|---|
+| `cai agents list [--json] [--refresh]` | Los agentes de `.agents/manifest.yaml` con `info`, `capabilities`, `enabled`, `config`, `installed`, `version` y `detect_error`. `GET /agent/agents` devuelve lo mismo. La detección se guarda en caché (5 min; 30 s si no está instalado); `--refresh` la repite |
+| `cai agents doctor [--refresh]` | Texto: qué agentes tienes, cuál se usaría hoy y por qué, si hay segundo plano y qué falta para los demás |
+| `cai agents sync` / `cai agents check` | Regeneran o comprueban la configuración generada (`scripts/sync_agents.py`) |
+
 ### Comandos de matching y worker (solo CLI)
 
 | Comando | Qué hace |

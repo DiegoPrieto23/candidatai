@@ -8,6 +8,36 @@ Las rutas y formatos de cada herramienta cambian con frecuencia. Si algo de esta
 funcionar, corrige el bloque del agente en `.agents/manifest.yaml` (o su emisor en el script),
 regenera y actualiza esta página.
 
+## Registro de agentes (fase 24.1)
+
+Qué agentes conoce la app, qué sabe hacer cada uno y si los tienes instalados sale de
+`.agents/manifest.yaml`, que el backend lee solo con `app/services/agent_registry.py` (ADR-037):
+
+```
+uv run --directory backend cai agents list           # todos, con capacidades y detección
+uv run --directory backend cai agents list --json    # lo mismo en JSON (y GET /agent/agents)
+uv run --directory backend cai agents doctor         # cuál se usaría hoy, por qué y qué falta
+```
+
+| Agente | Licencia | En el manifiesto | Nivel | MCP | Segundo plano |
+|---|---|---|---|---|---|
+| Claude Code | propietaria | habilitado, configuración generada | A | sí | sí |
+| Codex | Apache-2.0 | habilitado, configuración generada | B | sí | no |
+| Cursor CLI | propietaria | solo compatible vía `AGENTS.md` | C | sí | no |
+| GitHub Copilot CLI | propietaria | solo compatible vía `AGENTS.md` | C | sí | no |
+| Pi | MIT | solo compatible vía `AGENTS.md` | C | sí | no |
+| goose | Apache-2.0 | solo compatible vía `AGENTS.md` | C | sí | no |
+
+Los datos de Cursor CLI, Copilot CLI, Pi y goose (binario, instalación, licencia, MCP) se
+comprobaron en sus webs el 2026-10-16. Copilot CLI 1.0.75 respondió a `copilot --version` en
+Windows. Ninguno de los cuatro se ha probado con la app: «compatible vía `AGENTS.md`» quiere decir
+que lee las instrucciones del repo y puede usar el servidor MCP o la CLI, con el nivel C de
+aislamiento.
+
+La detección busca en el `PATH` el programa de `info.detect` y lo ejecuta (máximo 5 s, sin las
+variables de `launch.unset_env`). El resultado se guarda en caché 5 minutos. `--refresh` vuelve a
+detectar. `cai doctor` resume lo mismo en su sección «Agentes».
+
 ## Matriz
 
 | | Claude Code | Codex (ChatGPT) | Otros (Gemini CLI, Cursor, Copilot, OpenCode…) |
@@ -232,8 +262,10 @@ limitarlas, no lo añadas: la garantía de este modo es justo esa.
 sesión la ve en `get_status` (`agent_requests`) o con el skill `handle-requests`.
 
 ### Añadir otro agente
-1. Añade su bloque a `targets` en `.agents/manifest.yaml` (rutas, modelos, formato MCP y, si
-   quieres los botones de la UI, `launch`; para el segundo plano, `launch.headless`).
+1. Añade su bloque a `targets` en `.agents/manifest.yaml`: `config`, `info` y `capabilities`
+   (ver el comentario del principio del manifiesto) y, si tiene configuración generada, rutas,
+   modelos, formato MCP y, si quieres los botones de la UI, `launch`; para el segundo plano,
+   `launch.headless`. `cai agents list` falla con el agente y la clave si algo está mal escrito.
 2. Si su formato no es JSON ni TOML de los ya soportados, añade un emisor en `scripts/sync_agents.py`.
 3. Regenera y pasa la matriz: `cai demo seed --dir data-demo-<agente> --compat`, arranca el
    agente con `CAI_DATA_DIR` apuntando ahí, recorre `process-jobs`, `assess-fit` y

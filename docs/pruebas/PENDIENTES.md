@@ -92,6 +92,13 @@ funcionando. Los roles son `writer`, `verifier`, `classifier`, `reviewer` y `ext
 - [ ] Si tenías una demo creada antes de hoy y la arrancaste con `cai start`, puede tener tus
       correos reales dentro (ya no pasa): bórrala y vuelve a sembrarla con `cai demo seed --force`.
 
+### Registro de agentes (fase 24.1)
+
+- [ ] `uv run --directory backend cai agents doctor`: comprueba que dice que se usaría Claude
+      Code y que ve Copilot CLI como instalado y «solo compatible». Si instalas otro agente
+      (p. ej. Codex), vuelve a ejecutarlo con `--refresh` y mira que lo detecta.
+- [ ] `uv run --directory backend cai doctor`: la sección «Agentes» al final.
+
 ## 2. `.env.example` (el agente no puede leerlo ni editarlo)
 
 - [ ] Crear o completar `.env.example`, **sin valores reales**, con todas las variables de

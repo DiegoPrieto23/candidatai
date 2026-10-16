@@ -163,8 +163,18 @@ def build() -> tuple[dict[Path, str], list[Path]]:
     expected: dict[Path, str] = {}
     managed_dirs: list[Path] = []
     for target, cfg in manifest["targets"].items():
+        # Lo mínimo que necesita este script. El backend valida el resto (agent_registry.py, y un
+        # test carga el manifiesto real), así la CI detecta un manifiesto inválido.
+        if not isinstance(cfg, dict):
+            raise SystemExit(f"manifest.yaml, agente '{target}': no es un mapa")
+        if cfg.get("config") not in ("generated", "none"):
+            raise SystemExit(f"manifest.yaml, agente '{target}': 'config' debe ser generated o none")
         if not cfg.get("enabled"):
             continue
+        if cfg["config"] != "generated":
+            raise SystemExit(
+                f"manifest.yaml, agente '{target}': 'enabled: true' necesita 'config: generated'"
+            )
         if target not in EMITTERS:
             raise SystemExit(f"No hay emisor para el agente '{target}' en scripts/sync_agents.py")
         expected.update(EMITTERS[target](cfg, skills, roles, manifest["mcp_server"]))

@@ -3,6 +3,12 @@
 #   uv run scripts/sync_agents.py           # escribe .claude/, .codex/ y .mcp.json
 #   uv run scripts/sync_agents.py --check   # CI: falla si lo generado no está al día
 # Las rutas y formatos de cada agente cambian con el tiempo: si algo deja de cargar, se corrige aquí.
+#
+# Por agente (fase 24.1, ADR-037): `config` (`generated`: sync_agents.py le escribe configuración;
+# `none`: solo compatible vía AGENTS.md), `info` (qué es y cómo se instala y detecta) y
+# `capabilities` (qué sabe hacer; `isolation_level` es el nivel de docs/AGENTS_COMPAT.md). `null` en
+# una capacidad = sin comprobar. `capabilities.headless` no se escribe: se deriva de `launch.headless`.
+# El backend lo lee solo con app/services/agent_registry.py, que valida cada clave.
 
 mcp_server:
   name: candidatai
@@ -13,6 +19,28 @@ mcp_server:
 targets:
   claude:                         # Claude Code
     enabled: true
+    config: generated
+    info:
+      display_name: Claude Code
+      vendor: Anthropic
+      open_source: false
+      license: propietaria
+      homepage: https://code.claude.com/docs
+      install:
+        windows: "irm https://claude.ai/install.ps1 | iex"
+        macos: "curl -fsSL https://claude.ai/install.sh | bash"
+        linux: "curl -fsSL https://claude.ai/install.sh | bash"
+      detect: [claude, --version]
+      invoke: "/{skill} {args}"
+      instructions: CLAUDE.md       # importa AGENTS.md
+    capabilities:
+      mcp: true
+      subagents: isolated           # cada rol con solo sus herramientas
+      isolation_level: A
+      vision: true
+      web: true                     # WebSearch y WebFetch
+      browser: true                 # con Claude in Chrome
+      local_models: false
     skills_dir: .claude/skills    # copia de .agents/skills con extras de Claude
     agents_dir: .claude/agents
     mcp_file: .mcp.json
@@ -138,6 +166,28 @@ targets:
 
   codex:                          # Codex (ChatGPT): CLI, extensión IDE o app
     enabled: true
+    config: generated
+    info:
+      display_name: Codex
+      vendor: OpenAI
+      open_source: true
+      license: Apache-2.0
+      homepage: https://github.com/openai/codex
+      install:
+        windows: "npm install -g @openai/codex"
+        macos: "npm install -g @openai/codex   (o brew install --cask codex)"
+        linux: "npm install -g @openai/codex"
+      detect: [codex, --version]
+      invoke: "${skill} {args}"
+      instructions: AGENTS.md
+    capabilities:
+      mcp: true
+      subagents: inherited          # heredan la política de la sesión padre
+      isolation_level: B
+      vision: true
+      web: true
+      browser: null
+      local_models: true            # --oss (Ollama, LM Studio)
     skills_dir: null              # Codex lee .agents/skills directamente
     agents_dir: .codex/agents
     config_file: .codex/config.toml
@@ -147,3 +197,105 @@ targets:
       unset_env: [OPENAI_API_KEY]     # sin clave de API, Codex usa tu sesión de ChatGPT
     # Codex no permite limitar herramientas por subagente: se aplica sandbox_mode del rol.
     # Los subagentes heredan la política de la sesión padre (ver docs/AGENTS_COMPAT.md, nivel B).
+
+  # Solo compatibles vía AGENTS.md (fase 24.1): sin configuración generada ni botones de la UI. Están
+  # para que la detección y la UI los conozcan. Datos comprobados en sus webs el 2026-10-16.
+  cursor:                         # Cursor CLI (`agent`, con el alias `cursor-agent`)
+    enabled: false
+    config: none
+    info:
+      display_name: Cursor CLI
+      vendor: Anysphere
+      open_source: false
+      license: propietaria
+      homepage: https://cursor.com/cli
+      install:
+        windows: "Ver https://cursor.com/cli"
+        macos: "curl https://cursor.com/install -fsS | bash"
+        linux: "curl https://cursor.com/install -fsS | bash"
+      detect: [cursor-agent, --version]
+      invoke: natural
+      instructions: AGENTS.md
+    capabilities:
+      mcp: true                     # el mismo mcp.json que el editor
+      subagents: none
+      isolation_level: C
+      vision: null
+      web: null
+      browser: null
+      local_models: false
+
+  copilot:                        # GitHub Copilot CLI
+    enabled: false
+    config: none
+    info:
+      display_name: GitHub Copilot CLI
+      vendor: GitHub
+      open_source: false
+      license: propietaria
+      homepage: https://github.com/features/copilot/cli
+      install:
+        windows: "npm install -g @github/copilot   (o winget install GitHub.Copilot)"
+        macos: "npm install -g @github/copilot   (o brew install copilot-cli)"
+        linux: "npm install -g @github/copilot"
+      detect: [copilot, --version]
+      invoke: natural
+      instructions: AGENTS.md
+    capabilities:
+      mcp: true
+      subagents: none
+      isolation_level: C
+      vision: null
+      web: null
+      browser: null
+      local_models: false
+
+  pi:                             # Pi (pi-coding-agent)
+    enabled: false
+    config: none
+    info:
+      display_name: Pi
+      vendor: Earendil
+      open_source: true
+      license: MIT
+      homepage: https://pi.dev
+      install:
+        windows: "npm install -g --ignore-scripts @earendil-works/pi-coding-agent"
+        macos: "npm install -g --ignore-scripts @earendil-works/pi-coding-agent"
+        linux: "npm install -g --ignore-scripts @earendil-works/pi-coding-agent"
+      detect: [pi, --version]
+      invoke: natural
+      instructions: AGENTS.md
+    capabilities:
+      mcp: true
+      subagents: none               # solo con extensiones
+      isolation_level: C
+      vision: null
+      web: null
+      browser: null
+      local_models: true
+
+  goose:                          # goose (antes de Block, ahora en la Agentic AI Foundation)
+    enabled: false
+    config: none
+    info:
+      display_name: goose
+      vendor: Agentic AI Foundation
+      open_source: true
+      license: Apache-2.0
+      homepage: https://goose-docs.ai
+      install:
+        windows: "Ver https://goose-docs.ai"
+        macos: "brew install block-goose-cli"
+        linux: "curl -fsSL https://github.com/aaif-goose/goose/releases/download/stable/download_cli.sh | bash"
+      detect: [goose, --version]
+      invoke: natural
+      instructions: AGENTS.md       # y .goosehints
+    capabilities:
+      mcp: true                     # sus extensiones son servidores MCP
+      subagents: none
+      isolation_level: C
+      vision: null
+      web: null
+      browser: null
+      local_models: true

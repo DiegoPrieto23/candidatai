@@ -6,7 +6,8 @@ con tu suscripción, y tú ves, contestas y apruebas lo que haga.
   `job_id` y el `milestone_id` (fase 17), enteros: ningún texto de una oferta ni de una web llega
   al comando.
 - Qué programa se lanza no está aquí: es `launch` del agente en `.agents/manifest.yaml` (regla
-  dura 2). Con varios, elige `CAI_AGENT`; si no, el primero que lo tenga y esté instalado.
+  dura 2), que se lee con `agent_registry`. Con varios, elige `CAI_AGENT`; si no, el primero que
+  lo tenga y esté instalado.
 - Antes de lanzar se quitan del entorno las variables de `launch.unset_env` (p. ej. la clave de la
   API): así el agente usa tu suscripción y no factura por API.
 - Solo Windows de momento (Windows Terminal o, si no está, una ventana de PowerShell). En otro
@@ -17,6 +18,7 @@ con tu suscripción, y tú ves, contestas y apruebas lo que haga.
 """
 
 import base64
+import logging
 import re
 import shutil
 import subprocess
@@ -25,23 +27,23 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from typing import Literal
 
-import yaml
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.core.config import REPO_ROOT, get_settings
 from app.models import Milestone
 from app.models.base import utcnow
-from app.services import events, interviews, process
+from app.services import agent_registry, events, interviews, process
+from app.services.agent_registry import (
+    DENIED_PLACEHOLDER,
+    PROMPT_PLACEHOLDER,
+    SESSION_PLACEHOLDER,
+    SKILL_PLACEHOLDER,
+    TOOLS_PLACEHOLDER,
+)
 from app.services.pipeline import Stage
 
-MANIFEST = REPO_ROOT / ".agents" / "manifest.yaml"
-PROMPT_PLACEHOLDER = "{prompt}"
-TOOLS_PLACEHOLDER = "{allowed_tools}"
-DENIED_PLACEHOLDER = "{denied_tools}"
-SKILL_PLACEHOLDER = "{skill}"
-SESSION_PLACEHOLDER = "{session_id}"
-HEADLESS_OUTPUTS = frozenset({"claude-stream-json"})
+logger = logging.getLogger(__name__)
 
 ActionId = Literal[
     "search-jobs",
@@ -304,39 +306,51 @@ def prompt_for(action: ActionId, job_id: int | None = None, milestone_id: int | 
     return spec.prompt.format(job_id=job_id, milestone_id=milestone_id)
 
 
-def _launchers() -> list[_Launcher]:
+def _manifest_problem() -> str | None:
+    """El error del manifiesto, si no es válido (se avisa en el log una vez por mensaje)."""
     try:
-        manifest = yaml.safe_load(MANIFEST.read_text(encoding="utf-8")) or {}
-    except (OSError, yaml.YAMLError):
+        agent_registry.load()
+    except agent_registry.ManifestError as exc:
+        message = str(exc)
+        if message not in _logged_problems:
+            _logged_problems.add(message)
+            logger.warning("Manifiesto de agentes inválido: %s", message)
+        return message
+    return None
+
+
+_logged_problems: set[str] = set()
+
+
+def _launchers() -> list[_Launcher]:
+    """Los agentes habilitados con `launch`, en el orden del manifiesto (vía `agent_registry`)."""
+    if _manifest_problem() is not None:
         return []
+    agents = agent_registry.load()
     found = []
-    for name, cfg in (manifest.get("targets") or {}).items():
-        launch = (cfg or {}).get("launch") or {}
-        command = [str(part) for part in launch.get("command") or []]
-        if cfg.get("enabled") and command and PROMPT_PLACEHOLDER in command:
-            unset = [str(v) for v in launch.get("unset_env") or []]
-            resume = [str(part) for part in launch.get("resume") or []]
-            if SESSION_PLACEHOLDER not in resume:
-                resume = []
-            headless = _headless(launch.get("headless"), (cfg.get("tools") or {}).get("mcp_prefix"))
-            found.append(_Launcher(str(name), command, unset, resume, headless))
+    for spec in agents.values():
+        if not spec.launchable or spec.launch is None:
+            continue
+        launch = spec.launch
+        resume = list(launch.resume) if SESSION_PLACEHOLDER in launch.resume else []
+        found.append(
+            _Launcher(spec.name, list(launch.command), spec.unset_env, resume, _headless(spec))
+        )
     return found
 
 
-def _headless(cfg: object, prefix: object) -> Headless | None:
+def _headless(spec: agent_registry.AgentSpec) -> Headless | None:
     """`launch.headless`, si está completo: orden, herramientas y un formato de salida conocido."""
-    if not isinstance(cfg, dict) or not isinstance(prefix, str) or not prefix:
+    headless = spec.headless
+    if headless is None or spec.mcp_prefix is None:
         return None
-    command = [str(part) for part in cfg.get("command") or []]
-    output = str(cfg.get("output") or "")
-    skill_rule = str(cfg.get("skill_rule") or "")
-    placeholders = (PROMPT_PLACEHOLDER, TOOLS_PLACEHOLDER, DENIED_PLACEHOLDER)
-    if any(p not in command for p in placeholders) or SKILL_PLACEHOLDER not in skill_rule:
-        return None  # sin la lista de denegadas no hay garantía: mejor sin segundo plano
-    if output not in HEADLESS_OUTPUTS:
-        return None
-    allow = [str(t) for t in cfg.get("allow") or []]
-    return Headless(command, allow, skill_rule, output, prefix)
+    return Headless(
+        list(headless.command),
+        list(headless.allow),
+        headless.skill_rule,
+        headless.output,
+        spec.mcp_prefix,
+    )
 
 
 def _pick() -> _Launcher | str:
@@ -350,6 +364,9 @@ def _pick_any() -> _Launcher | str:
     """Como `_pick`, sin exigir Windows: el segundo plano no abre ninguna ventana."""
     launchers = _launchers()
     if not launchers:
+        problem = _manifest_problem()
+        if problem is not None:
+            return f"El manifiesto de agentes no es válido: {problem}"
         return "Ningún agente tiene `launch` en .agents/manifest.yaml."
     wanted = get_settings().agent
     if wanted:
@@ -365,6 +382,14 @@ def _pick_any() -> _Launcher | str:
 
 def info() -> AgentInfo:
     picked = _pick()
+    if isinstance(picked, str):
+        return AgentInfo(available=False, reason=picked)
+    return AgentInfo(available=True, agent=picked.agent)
+
+
+def selection() -> AgentInfo:
+    """Como `info`, sin exigir Windows: el agente que se usaría hoy (`cai agents doctor`)."""
+    picked = _pick_any()
     if isinstance(picked, str):
         return AgentInfo(available=False, reason=picked)
     return AgentInfo(available=True, agent=picked.agent)

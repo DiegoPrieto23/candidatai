@@ -17,7 +17,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.agent_interface.errors import ErrorDetail, ToolError
 from app.api.deps import EmptyBody, SessionDep, require_ui
-from app.services import agent_launch, agent_requests, agent_runs
+from app.services import agent_launch, agent_registry, agent_requests, agent_runs
 from app.services.agent_launch import ActionId, LaunchError
 
 router = APIRouter(prefix="/agent", tags=["agent"])
@@ -66,6 +66,16 @@ def get_agent_launcher() -> AgentStatus:
         actions=actions,
         background=agent_launch.background_info(),
     )
+
+
+@router.get("/agents", operation_id="list_agents")
+def list_agents() -> agent_registry.AgentList:
+    """Los agentes del manifiesto (fase 24.1): qué son, qué saben hacer y si están instalados. Lo
+    mismo que `cai agents list --json`; solo lectura."""
+    try:
+        return agent_registry.list_agents()
+    except agent_registry.ManifestError as exc:
+        raise ToolError("internal_error", str(exc)) from exc
 
 
 def _raise(exc: LaunchError) -> None:

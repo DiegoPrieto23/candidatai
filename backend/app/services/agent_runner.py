@@ -35,7 +35,7 @@ from app.core.db import session_scope
 from app.core.policies import get_policies
 from app.models import AgentRun
 from app.models.base import utcnow
-from app.services import agent_launch
+from app.services import agent_registry
 from app.services.agent_launch import QUESTION_PREFIX
 from app.services.agent_output import PARSERS, short
 from app.services.agent_runs import INTERRUPTED, ProgressKind, RunStatus
@@ -80,8 +80,7 @@ def _popen(command: list[str], unset_env: list[str]) -> subprocess.Popen[str]:
     exe = shutil.which(command[0])
     if exe is None:
         raise FileNotFoundError(f"No se encuentra el programa del agente ({command[0]}).")
-    unset = {name.upper() for name in unset_env}
-    env = {k: v for k, v in os.environ.items() if k.upper() not in unset}
+    env = agent_registry.clean_env(unset_env)
     kwargs: dict[str, Any] = {}
     if sys.platform == "win32":
         kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW | subprocess.CREATE_NEW_PROCESS_GROUP
@@ -190,10 +189,12 @@ def _save(run_id: int, **values: Any) -> bool:
 
 
 def _mcp_prefix(agent: str) -> str | None:
-    for launcher in agent_launch._launchers():
-        if launcher.agent == agent and launcher.headless is not None:
-            return launcher.headless.mcp_prefix
-    return None
+    """`tools.mcp_prefix` del agente que ejecutó, si tiene segundo plano (`agent_registry`)."""
+    try:
+        spec = agent_registry.get(agent)
+    except agent_registry.ManifestError:
+        return None
+    return spec.mcp_prefix if spec is not None and spec.headless is not None else None
 
 
 def execute(run: AgentRun, timeout: float | None = None, poll: float = 0.5) -> AgentRunOutcome:

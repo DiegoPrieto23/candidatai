@@ -84,6 +84,7 @@ cd candidatai\backend
 uv sync                                # dependencias del backend (crea .venv)
 uv run playwright install chromium     # plantillas html y PDF sin LibreOffice
 uv run cai doctor                      # comprueba el entorno y dice qué falta
+uv run cai agents doctor               # qué agentes de IA tienes, cuál se usa y qué falta
 cd ..\frontend
 pnpm install
 pnpm build                             # la UI compilada que sirve `cai start`

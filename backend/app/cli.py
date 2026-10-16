@@ -1892,6 +1892,75 @@ def agents_check() -> None:
     _run_sync("--check")
 
 
+def _yes_no(value: bool | None) -> str:
+    return "sin comprobar" if value is None else ("sí" if value else "no")
+
+
+@agents_app.command("list")
+def agents_list(
+    as_json: bool = JSON_OPTION,
+    refresh: bool = typer.Option(False, "--refresh", help="Vuelve a detectar sin usar la caché."),
+) -> None:
+    """Los agentes del manifiesto: qué son, qué saben hacer y si los tienes instalados."""
+    from app.services import agent_registry
+
+    try:
+        listed = agent_registry.list_agents(refresh=refresh)
+    except agent_registry.ManifestError as exc:
+        _fail_plain(str(exc), as_json)
+    if as_json:
+        typer.echo(dump_json(listed))
+        return
+    for entry in listed.agents:
+        state = "habilitado" if entry.enabled else "solo compatible vía AGENTS.md"
+        found = entry.version or entry.detect_error or "instalado"
+        installed = found if entry.installed else "no instalado"
+        license_ = f"{entry.info.license}{', open-source' if entry.info.open_source else ''}"
+        caps = entry.capabilities
+        typer.secho(f"{entry.info.display_name} ({entry.name})", bold=True)
+        typer.echo(f"  {state} · {installed} · {entry.info.vendor}, {license_}")
+        typer.echo(
+            f"  MCP {_yes_no(caps.mcp)} · subagentes {caps.subagents} · nivel "
+            f"{caps.isolation_level} · segundo plano {_yes_no(caps.headless)} · modelos locales "
+            f"{_yes_no(caps.local_models)}"
+        )
+
+
+@agents_app.command("doctor")
+def agents_doctor(
+    refresh: bool = typer.Option(False, "--refresh", help="Vuelve a detectar sin usar la caché."),
+) -> None:
+    """Qué agentes tienes, cuál se usaría hoy y por qué, y qué falta para los demás."""
+    from app.services.doctor import agents_overview
+
+    overview = agents_overview(get_settings(), refresh=refresh)
+    typer.echo("CandidatAI · agentes de IA\n")
+    if overview.error:
+        typer.secho(overview.error, fg="red", err=True)
+        raise typer.Exit(code=1)
+    if overview.selected:
+        typer.secho(f"Se usaría: {overview.selected} ({overview.selected_reason}).", bold=True)
+    else:
+        typer.secho(f"No se usaría ninguno: {overview.selected_reason}", fg="yellow", bold=True)
+    if overview.background:
+        typer.echo(f"En segundo plano: {overview.background}.")
+    else:
+        typer.echo(f"En segundo plano: no disponible ({overview.background_reason})")
+    if sys.platform != "win32":
+        typer.echo("Los botones que abren una terminal solo funcionan en Windows de momento.")
+    for line in overview.agents:
+        mark, color = ("OK", typer.colors.GREEN) if line.installed else ("--", None)
+        found = (line.version or "instalado") if line.installed else "no instalado"
+        typer.echo("")
+        typer.secho(f"[{mark:^4}] ", fg=color, bold=True, nl=False)
+        open_source = ", open-source" if line.open_source else ""
+        typer.echo(f"{line.display_name} ({line.name}): {found}{open_source}")
+        for item in line.missing:
+            typer.echo(f"       - {item}")
+        if not line.missing:
+            typer.echo("       listo")
+
+
 # --- Respuestas de las empresas (fase 15) ---------------------------------------------------
 
 
