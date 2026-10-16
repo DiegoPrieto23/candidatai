@@ -67,6 +67,25 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 23.5a | ↳ Logo | ✅ | Logo nuevo, elegido entre propuestas, en la UI, el favicon, la extensión, el icono y el banner |
 | 23.6 | ↳ UI en inglés y español | ✅ | Toda la UI traducida, con un selector de idioma junto al del tema |
 | 23.5b | ↳ Medios y README | ✅ | Capturas en los dos idiomas, GIF y vídeo; README sin la comparativa |
+| 24 | Varios agentes: open-source, gratuitos y a elegir | ⏳ | Usar la app con OpenCode, Qwen Code, Antigravity o Codex con modelos locales, además de Claude Code, y cambiar de agente y modelo desde la UI, globalmente o por acción |
+| 24.1 | ↳ Registro de agentes y diagnóstico | ⏳ | `cai agents list` y `cai agents doctor`: qué agentes hay, cuáles están instalados, qué saben hacer y si son open-source |
+| 24.2 | ↳ Esquemas y errores para cualquier modelo | ⏳ | `cai schema` y `get_schema`; errores de validación con `path` y pista |
+| 24.3 | ↳ Agentes nuevos | ⏳ | Configuración generada para OpenCode, Qwen Code y Antigravity; Codex con `--oss`; Gemini CLI fuera |
+| 24.4 | ↳ Elegir y cambiar de agente | ⏳ | Sección «Agentes» con capacidades, agente por defecto y por acción, «con Claude Code ▾» en cada botón |
+| 24.5 | ↳ Segundo plano con varios agentes | ⏳ | «En segundo plano» también con OpenCode (y Codex o Qwen Code si su techo se comprueba) |
+| 24.6 | ↳ Modelos gratuitos, niveles de gasto y matriz | ⏳ | Guía de modelos gratis y locales, diagnóstico de Ollama, «Económico/Equilibrado/Máximo» y matriz probada por agente y modelo |
+| 25 | Más fuentes, perfil más rico, ofertas dudosas, coste y calidad del CV | ⏳ | Más ATS con API, `expand`, señales de oferta dudosa, coste por oferta y agente, maquetación del PDF y `CHANGELOG` |
+| 25.1 | ↳ Conectores de ATS y portales con API | ⏳ | Personio, Teamtailor, Workable, SmartRecruiters y Recruitee, más Manfred y freehire.me; `cai sources discover` para todos |
+| 25.2 | ↳ Skill `expand` | ⏳ | Proyectos, skills y logros propuestos desde GitHub, portfolio o Scholar, con su fuente y solo con tu OK |
+| 25.3 | ↳ Ofertas dudosas y banderas rojas | ⏳ | Señales (rango salarial ancho, empresa oculta, temporal, republicada, cribado con IA) y `red_flags` con fuentes en el dosier |
+| 25.4 | ↳ Coste y lote en paralelo | ⏳ | Coste por oferta, skill y agente; umbral de score antes de `assess-fit`; hasta N ejecuciones a la vez |
+| 25.5 | ↳ Maquetación del PDF | ⏳ | Avisos de títulos huérfanos, huecos, pie y última página casi vacía en CV y carta |
+| 25.6 | ↳ CHANGELOG y la historia con números | ⏳ | `CHANGELOG.md`, notas de release desde él y `cai stats story` para el README |
+| 26 | macOS, Linux y Docker | ⏳ | Instalar y usar la app en los tres sistemas, botones «en tu agente» incluidos, y Docker opcional |
+| 26.1 | ↳ Núcleo multiplataforma | ⏳ | Rutas, procesos, LibreOffice y terminales en macOS y Linux (`CAI_TERMINAL`) |
+| 26.2 | ↳ Instalador para macOS y Linux | ⏳ | `install.sh` con acceso directo, datos en la carpeta de cada sistema y desinstalación |
+| 26.3 | ↳ Docker opcional | ⏳ | `docker compose up` con los datos en un volumen; el agente desde fuera por MCP; límites documentados |
+| 26.4 | ↳ CI en tres sistemas y docs | ⏳ | Backend probado en Windows, Linux y macOS, humo del instalador y de Docker, guía y README al día |
 
 **MVP usable:** al terminar la 08 ya puedes pegar ofertas, triarlas y sacar CVs a medida; con la
 08c, también cartas de presentación. La 08c va antes que la 08b, aunque el orden entre ambas da
@@ -79,6 +98,19 @@ cuando haya unas 20-30 candidaturas enviadas; la 21 cuando llegue la primera ofe
 la quieres. Descartado: candidaturas automáticas (reglas 5 y 6), sincronización con Notion,
 plantillas LaTeX (ya hay docx y html), portales daneses, descubrimiento de empresas financiadas
 desde feeds externos y modelos llamados desde la app (ADR-001).
+
+**Plan 24 (2026-10-16):** tras revisar `docs/COMPARATIVA.md`, imitar a career-ops en lo que más
+nos saca: varios agentes (algunos open-source y con modelos gratuitos o locales) y cambiar entre
+ellos desde la UI. Se mantiene el ADR-001: los modelos gratuitos se usan a través de agentes
+open-source, no desde la app. Orden: 24.1 → 24.2 → 24.3 → 24.4 → 24.5 → 24.6, una subfase por
+sesión.
+
+**Fases 25 y 26 (2026-10-16):** el resto de «Lo que nos falta» de `docs/COMPARATIVA.md`. La 25
+(fuentes, `expand`, ofertas dudosas, coste y lote, maquetación del PDF y `CHANGELOG`) va después de
+la 24, porque la 25.4 usa el agente y el modelo que guarda la 24.4. La 26 (macOS, Linux y Docker)
+va aparte porque toca el instalador, los botones de terminal y la CI, y gana sentido cuando ya hay
+agentes open-source que funcionan en los tres sistemas. Descartado por ahora: autorización de
+trabajo y visado (solo importa fuera de la UE).
 
 **Skills que se desbloquean por fase:** `actualizar-perfil` tras la 05; `procesar-ofertas` tras la
 04 (y con perfil, tras la 05); `evaluar-encaje` tras la 07; `generar-cv` tras la 08; `importar-plantilla-cv` tras la 08 para
