@@ -25,3 +25,9 @@ pegadas del formulario o la palabra `carta`.
    «Candidatura asistida» para que la app rellene el formulario y lo revise antes de enviar.
    **No envíes nada ni abras formularios**: el envío solo se desencadena desde la UI, con su
    confirmación (POLICIES §5); no hay herramienta para ello.
+
+## Esquema y errores
+Con MCP, el esquema de lo que guardas viene en la propia herramienta. Sin MCP:
+`cai schema application-answers --json` (con `--example true`, un ejemplo mínimo válido). Si la app rechaza la entrada,
+corrige solo los campos de `details[].field` siguiendo su `hint` y vuelve a enviar, como mucho dos
+veces; si sigue fallando, para y explica qué falta.

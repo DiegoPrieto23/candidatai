@@ -21,6 +21,19 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 - Las entradas largas por CLI se pasan con `--file <ruta>`, que debe estar dentro de `data/tmp/`
   (gitignored): texto de la oferta en `add-text`, JSON en `save-extraction`. El comando borra el
   fichero tras procesarlo correctamente; si falla, lo deja para corregir y reintentar.
+- **`--file` tolerante (fase 24.2):** si un `--file` JSON no es JSON tal cual, se acepta el
+  primer bloque de código Markdown que lo sea (```` ```json … ``` ````) o, si no, un objeto o
+  lista que empiece en el primer `{` o `[` del texto y tras el que no haya otro (texto antes o
+  después, sí; un JSON truncado no se convierte en uno de sus fragmentos y conserva su error con
+  línea y columna). Los modelos pequeños lo envuelven a menudo. Nada más se relaja: el esquema
+  sigue siendo estricto.
+- **Esquemas (fase 24.2):** `get_schema` (`cai schema [NOMBRE] [--example true] --json`) da el
+  JSON Schema de exactamente lo que va en el `--file` de cada herramienta de escritura, cómo se
+  envía y, con `example`, un ejemplo mínimo válido (`demo/schemas/`, con los ids del perfil demo).
+  Sin nombre, o con `list`, el catálogo. Un test comprueba que toda herramienta con `--file` JSON
+  tiene esquema y que cada ejemplo valida. `get_schema` no está en el techo de ninguna acción en segundo
+  plano (ADR-032), a propósito: con MCP el esquema ya llega con la herramienta. Sin `--json`, la
+  CLI enseña también `esperado:` y `pista:` de cada error.
 - Las salidas son JSON compacto, idéntico por los dos canales (por MCP, además, en
   `structuredContent`). Nada de volcar tablas enteras: siempre `limit`.
 - Todos los comandos de la tabla aceptan `--json`. Sin él muestran una salida legible para personas.
@@ -40,6 +53,7 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 
 | MCP | CLI | Fase | Entrada | Salida | Evento |
 |---|---|---|---|---|---|
+| `get_schema` | `cai schema [NOMBRE] [--example true] --json` | 24.2 | `name?` (sin él, o `list`: el catálogo), `example=false` | Catálogo: `schemas` (`name`, `tool`, `description`). Uno: `name`, `tool`, `description`, `send` (cómo va por `--file` y por MCP), `json_schema` y `example` (o `null`). Nombres: `extraction`, `fit-assessment`, `cv-content`, `cv-render-options`, `cv-verification`, `application-answers`, `cover-letter-brief`, `cover-letter`, `cover-letter-render-options`, `cover-letter-verification`, `reply-proposal`, `message-draft`, `company-research`, `interview-plan`, `interview-notes`, `source`, `source-run`. Uno que no existe: `not_found` con los más parecidos | — |
 | `get_status` | `cai status --json` | 04 | — | `total`, `by_stage`, `pending_tasks`, `agent_requests` (encargos pendientes, 19), `demo_mode` (12.1) | — |
 | `add_job_from_url` | `cai jobs add-url URL --json` | 04 | `url` | `job_id`, `created`, `duplicate_of?`, `risk_flags` | `found` |
 | `add_job_from_text` | `cai jobs add-text --title T --company C --file F [--url U] [--location L] --json` | 04 | `title, company, text, url?, location?` | `job_id`, `created`, `duplicate_of?`, `risk_flags` | `found` |
@@ -504,6 +518,7 @@ Sin herramienta MCP, a propósito: son para la persona y la UI, no para el agent
 |---|---|
 | `cai agents list [--json] [--refresh]` | Los agentes de `.agents/manifest.yaml` con `info`, `capabilities`, `enabled`, `config`, `installed`, `version` y `detect_error`. `GET /agent/agents` devuelve lo mismo. La detección se guarda en caché (5 min; 30 s si no está instalado); `--refresh` la repite |
 | `cai agents doctor [--refresh]` | Texto: qué agentes tienes, cuál se usaría hoy y por qué, si hay segundo plano y qué falta para los demás |
+| `cai agents doctor --tokens` | Fase 24.2: tokens estimados (4 caracteres por token) de `AGENTS.md` y de cada skill y rol, y lo que cuestan una valoración y un CV. Marca los skills de más de 6 000 |
 | `cai agents sync` / `cai agents check` | Regeneran o comprueban la configuración generada (`scripts/sync_agents.py`) |
 
 ### Comandos de matching y worker (solo CLI)
@@ -557,12 +572,33 @@ Mismo JSON por los dos canales (por MCP, con `isError: true`; por CLI, con códi
 {"ok": false, "error": {"type": "validation_error",
   "message": "Entrada no válida (1 error): extraction.seniority.",
   "details": [{"field": "extraction.seniority", "received": "sr",
-               "reason": "Debe ser uno de: intern, junior, mid, senior, lead, unknown."}]}}
+               "reason": "Debe ser uno de: intern, junior, mid, senior, lead, unknown.",
+               "expected": "uno de: intern, junior, mid, senior, lead, unknown",
+               "hint": null}]}}
 ```
+
+Cada detalle (fase 24.2, para que un modelo pequeño acierte al segundo intento):
+
+- `field`: dónde, como path con puntos desde la raíz de la entrada
+  (`content.experience.2.bullets.0.evidence.1`). Las comprobaciones del contenido del CV, la carta
+  y las respuestas usan el mismo formato (en la API de la UI, sin el prefijo `content.`);
+- `received`: el valor recibido como texto, recortado a 80 caracteres;
+- `reason`: el problema;
+- `expected`: lo que se esperaba, corto (tipo, valores permitidos, longitud), o `null`;
+- `hint`: cómo arreglarlo, o `null`. Hoy: campo obligatorio (y `cai schema <nombre>`), campo que
+  no existe (el más parecido y los válidos de ese objeto), valor de una enumeración casi bien
+  escrito, `language` con el nombre del idioma en vez de `es`/`en`, texto vacío, skill que no está
+  en el perfil (el nombre tal cual del perfil, sin traducir) y evidencia o id inexistente (los 5
+  más parecidos del perfil).
+
+**Ningún error devuelve más de 80 caracteres seguidos de la entrada** (ni en el valor, ni en el
+motivo, ni en el path de una clave larga): puede ser texto no confiable que el agente volvería a
+leer. Las pistas solo citan el esquema y el perfil, nunca la oferta. Corregir y reintentar lo hace
+el agente (los roles: solo los campos de `field`, como mucho dos veces); la app no reintenta.
 
 | `type` | Cuándo |
 |---|---|
-| `validation_error` | La entrada no cumple el esquema. `details` lista cada campo, el valor recibido (como texto, recortado) y el motivo |
+| `validation_error` | La entrada no cumple el esquema. `details` lista cada campo, el valor recibido (como texto, recortado), el motivo, lo esperado y una pista |
 | `not_found` | No existe la oferta, aún no tiene extracción, no hay perfil importado, no existe el CV o la plantilla |
 | `invalid_transition` | El evento no es válido en la etapa actual de la oferta |
 | `invalid_request` | El servicio rechaza la petición (URL de LinkedIn, evento reservado…) |
@@ -570,13 +606,15 @@ Mismo JSON por los dos canales (por MCP, con `isError: true`; por CLI, con códi
 | `database_not_ready` | Falta `cai db upgrade` |
 | `pdf_unavailable` | No hay LibreOffice ni Word para convertir a PDF (`cai doctor`) |
 | `pdf_failed` | La conversión a PDF falló o superó `cv.pdf_timeout_seconds` |
-| `invalid_file` | Solo CLI: `--file` fuera de `data/tmp/`, ilegible, JSON mal formado o con claves que no se esperan |
+| `invalid_file` | Solo CLI: `--file` fuera de `data/tmp/`, ilegible, sin ningún JSON reconocible (ni en un bloque de código) o con claves que no se esperan |
 | `unknown_tool` | Solo MCP: la herramienta no existe |
 | `internal_error` | Fallo inesperado; el detalle queda en `data/logs/` |
 
 ## Esquemas que rellena el agente
 
 Definidos en `app/schemas/llm_io.py`. Estos son los campos; los tipos exactos, en Pydantic.
+El JSON Schema exacto de cada uno, con un ejemplo, lo da `get_schema` (`cai schema <nombre>
+--json`): es la fuente para el agente; esta sección explica el porqué de los campos.
 
 ### `JobExtraction` (schema_version 1)
 ```

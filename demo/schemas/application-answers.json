@@ -1,0 +1,18 @@
+{
+  "answers": [
+    {
+      "question": "¿Cuántos años de experiencia tienes con Python?",
+      "answer": "Más de dos años en proyectos de datos.",
+      "evidence": [
+        "exp-norteconsulting/a1"
+      ],
+      "needs_user_input": false
+    },
+    {
+      "question": "¿Cuál es tu expectativa salarial?",
+      "answer": "",
+      "evidence": [],
+      "needs_user_input": true
+    }
+  ]
+}

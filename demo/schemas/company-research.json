@@ -1,0 +1,13 @@
+{
+  "summary": "Distribuidora de alimentación con sede en Galicia [1].",
+  "stack": [
+    "Snowflake",
+    "dbt"
+  ],
+  "sources": [
+    {
+      "title": "Web de la empresa",
+      "url": "https://example.com/empresa"
+    }
+  ]
+}

@@ -31,7 +31,7 @@ Argumentos: `job_id` y, opcionalmente, indicaciones para esta carta («máximo 1
      `save_cover_letter_brief` antes de citarlo como `user`.
 
    Si no existen o están vacíos, sigue sin ellos.
-3. Escribe un `CoverLetterContent` (`docs/AGENT_INTERFACE.md`) en el idioma de la oferta, salvo
+3. Escribe un `CoverLetterContent` (`cai schema cover-letter --json`) en el idioma de la oferta, salvo
    indicación:
    - cada párrafo con sus `evidence`:
      - ids del perfil para tus logros (también las historias STAR);
@@ -72,3 +72,9 @@ Recuerda que en la ficha de la oferta (sección «Carta de presentación») pued
 
 La carta también aparece en el «Paquete de candidatura». Si es él quien te pide otro diseño:
 `render_cover_letter`, sin redactar de nuevo. **No envíes nada ni abras formularios.**
+
+## Esquema y errores
+Con MCP, el esquema de lo que guardas viene en la propia herramienta. Sin MCP:
+`cai schema cover-letter-brief --json` y `cai schema cover-letter --json` (con `--example true`, un ejemplo mínimo válido). Si la app rechaza la entrada,
+corrige solo los campos de `details[].field` siguiendo su `hint` y vuelve a enviar, como mucho dos
+veces; si sigue fallando, para y explica qué falta.

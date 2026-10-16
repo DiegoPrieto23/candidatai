@@ -492,6 +492,12 @@ class Case:
 
 CASES = [
     Case("status", "get_status", {}, ["status"]),
+    Case("schema-list", "get_schema", {}, ["schema"], seed=None),
+    Case("schema-list-word", "get_schema", {"name": "list"}, ["schema", "list"], seed=None),
+    Case("schema-one", "get_schema", {"name": "fit-assessment", "example": True},
+         ["schema", "fit-assessment", "--example", "true"], seed=None),
+    Case("schema-unknown", "get_schema", {"name": "cv-contnt"}, ["schema", "cv-contnt"],
+         seed=None, expect_error="not_found"),
     Case("url", "add_job_from_url", {"url": URL}, ["jobs", "add-url", URL], seed=None),
     Case("url-existing", "add_job_from_url", {"url": URL}, ["jobs", "add-url", URL]),
     Case("url-linkedin", "add_job_from_url", {"url": "https://www.linkedin.com/jobs/view/1"},
@@ -995,7 +1001,13 @@ def test_unknown_field_rejected_by_mcp(tmp_path: Path, monkeypatch: pytest.Monke
     is_error, out = mcp_call("get_status", {"foo": 1})
     assert is_error
     assert out["error"]["details"] == [
-        {"field": "foo", "received": "1", "reason": "Campo no permitido: no existe en el esquema."}
+        {
+            "field": "foo",
+            "received": "1",
+            "reason": "Campo no permitido: no existe en el esquema.",
+            "expected": None,
+            "hint": "Quita `foo`: aquí no hay ningún campo.",
+        }
     ]
     get_engine.cache_clear()
 

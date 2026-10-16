@@ -65,3 +65,9 @@ Pregunta cuáles acepta y dónde. Sin respuesta clara, no hagas nada.
 ## 5. Resumen
 Qué títulos se añadieron y dónde, y qué cambia: la próxima ingesta diaria (o `search-jobs`)
 traerá esos puestos. Sugiere repetir el análisis dentro de unas semanas, con más decisiones.
+
+## Esquema y errores
+Con MCP, el esquema de lo que guardas viene en la propia herramienta. Sin MCP:
+`cai schema source --json` (con `--example true`, un ejemplo mínimo válido). Si la app rechaza la entrada,
+corrige solo los campos de `details[].field` siguiendo su `hint` y vuelve a enviar, como mucho dos
+veces; si sigue fallando, para y explica qué falta.

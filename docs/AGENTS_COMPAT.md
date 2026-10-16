@@ -85,9 +85,11 @@ pasada: `docs/pruebas/fase-12.3-matriz-sin-mcp.md`. Sin subagentes, el aislamien
   otra carpeta;
 - en Git Bash, `PYTHONIOENCODING=utf-8` para que la salida de texto no salga mal codificada.
 
+**Resuelto en la 24.2:** sin MCP, el esquema de cada entrada llega con `cai schema <nombre> --json`
+(con un ejemplo); los errores dicen qué campo arreglar y cómo (`expected`, `hint`) y `--file`
+acepta el JSON envuelto en un bloque de código.
+
 **Pendiente** (no impide usarlo):
-- sin MCP, el esquema de cada entrada está en `docs/AGENT_INTERFACE.md` y no llega con la
-  herramienta: el agente tiene que buscarlo. Una salida `cai schema <modelo> --json` lo resolvería;
 - `process-jobs` no admite elegir ofertas concretas (procesa todas las pendientes);
 - sin subagentes, quien extrae lee el texto de las ofertas en la misma sesión: hazlo en una
   sesión dedicada (nivel C);

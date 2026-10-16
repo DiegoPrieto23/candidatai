@@ -13,6 +13,7 @@ from collections.abc import Iterable
 from pydantic import BaseModel
 
 from app.core.policies import get_skill_aliases
+from app.core.validation import quoted, similar
 from app.schemas.cv import CvContent
 from app.schemas.llm_io import JobExtraction
 from app.schemas.profile import CandidateProfile
@@ -36,13 +37,33 @@ _BASIC_PREFIXES = (
 
 
 class ContentIssue(BaseModel):
-    field: str
+    field: str  # relativo al contenido; la interfaz para agentes le pone delante `root` y puntos
     received: str | None
     reason: str
+    expected: str | None = None
+    hint: str | None = None
+
+
+def similar_hint(value: str, valid: Iterable[str], what: str) -> str | None:
+    """«<what> del perfil más parecidos: `a`, `b`…» (los 5 más cercanos), o None si no hay."""
+    close = similar(value, sorted(valid), n=5)
+    return f"{what} del perfil más parecidos: {quoted(close)}." if close else None
+
+
+def skill_hint(value: str, profile: CandidateProfile) -> str:
+    """Una skill que no está en el perfil, a menudo traducida: el nombre tal cual del perfil."""
+    names = [s.name for s in profile.skills] + list(profile.basic_skills)
+    close = similar(value, names, n=3, cutoff=0.5)
+    base = "Usa el nombre tal como aparece en el perfil, sin traducirlo aunque el CV sea en otro "
+    if close:
+        return base + f"idioma: {quoted(close)}."
+    return base + "idioma (`get_profile` con `skills`). Si no la tienes, quítala."
 
 
 class CvContentError(ValueError):
     """El contenido incumple las reglas; `issues` dice dónde y por qué, para corregir."""
+
+    root = "content"  # el campo de la entrada que lo lleva (`save_cv_content`)
 
     def __init__(self, issues: list[ContentIssue]) -> None:
         self.issues = issues
@@ -99,6 +120,7 @@ def validate_content(
                         field=f"{field}[{i}]",
                         received=value,
                         reason=f"No existe {what} con ese id en el perfil.",
+                        hint=similar_hint(value, valid, "Ids"),
                     )
                 )
 
@@ -111,6 +133,7 @@ def validate_content(
                             field=f"{field}.bullets[{b}].evidence[{e}]",
                             received=ref,
                             reason="La evidencia no existe en el perfil (p. ej. `exp-acme/a2`).",
+                            hint=similar_hint(ref, refs, "Evidencias"),
                         )
                     )
 
@@ -122,6 +145,7 @@ def validate_content(
                     field=f"{field}.experience_id",
                     received=item.experience_id,
                     reason="No existe una experiencia con ese id en el perfil.",
+                    hint=similar_hint(item.experience_id, experiences, "Experiencias"),
                 )
             )
         check_bullets(field, item.bullets)
@@ -133,6 +157,7 @@ def validate_content(
                     field=f"{field}.project_id",
                     received=item.project_id,
                     reason="No existe un proyecto con ese id en el perfil.",
+                    hint=similar_hint(item.project_id, projects, "Proyectos"),
                 )
             )
         check_bullets(field, item.bullets)
@@ -154,6 +179,7 @@ def validate_content(
                     field=f"{field}.section_id",
                     received=section.section_id,
                     reason="No existe una sección extra con ese id en el perfil.",
+                    hint=similar_hint(section.section_id, extra_sections, "Secciones"),
                 )
             )
             continue
@@ -183,6 +209,7 @@ def validate_content(
                         received=item,
                         reason="Esta skill no está en el perfil (`skills` ni `basic_skills`). Si "
                         "la tienes, añádela primero con el skill `update-profile`.",
+                        hint=skill_hint(item, profile),
                     )
                 )
             elif is_basic(key) and key not in requested:

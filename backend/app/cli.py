@@ -1926,13 +1926,45 @@ def agents_list(
         )
 
 
+def _instruction_tokens() -> None:
+    from app.services import instruction_size
+
+    sizes = instruction_size.measure()
+    per = instruction_size.CHARS_PER_TOKEN
+    typer.echo(f"CandidatAI · tokens de las instrucciones (aprox., {per} caracteres por token)\n")
+    labels = {"instructions": "Instrucciones", "skill": "Skills", "role": "Roles"}
+    for kind, label in labels.items():
+        rows = sorted(
+            (i for i in sizes.items if i.kind == kind), key=lambda i: i.tokens, reverse=True
+        )
+        typer.secho(label, bold=True)
+        for item in rows:
+            mark = typer.style("  > límite", fg="yellow") if item.over_limit else ""
+            typer.echo(f"  {item.tokens:>6}  {item.name}{mark}")
+    base = sizes.total("AGENTS.md")
+    typer.echo(
+        f"\nUna valoración (AGENTS.md + assess-fit): ~{base + sizes.total('assess-fit')} tokens; "
+        f"un CV (AGENTS.md + generate-cv + writer + verifier): "
+        f"~{base + sizes.total('generate-cv', 'writer', 'verifier')} tokens."
+    )
+    over = [i.name for i in sizes.items if i.over_limit]
+    if over:
+        typer.secho(f"Skills por encima de {sizes.limit} tokens: {', '.join(over)}.", fg="yellow")
+
+
 @agents_app.command("doctor")
 def agents_doctor(
     refresh: bool = typer.Option(False, "--refresh", help="Vuelve a detectar sin usar la caché."),
+    tokens: bool = typer.Option(
+        False, "--tokens", help="Tokens estimados de AGENTS.md y de cada skill y rol."
+    ),
 ) -> None:
     """Qué agentes tienes, cuál se usaría hoy y por qué, y qué falta para los demás."""
     from app.services.doctor import agents_overview
 
+    if tokens:
+        _instruction_tokens()
+        return
     overview = agents_overview(get_settings(), refresh=refresh)
     typer.echo("CandidatAI · agentes de IA\n")
     if overview.error:

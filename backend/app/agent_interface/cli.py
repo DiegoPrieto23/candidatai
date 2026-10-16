@@ -7,6 +7,7 @@ que la herramienta MCP (o el mismo error) y la llamada queda en `mcp_calls` con 
 
 import inspect
 import json
+import re
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any, NoReturn
@@ -19,6 +20,7 @@ from app.agent_interface.registry import CallContext, ToolSpec
 from app.agent_interface.runner import call_tool
 from app.agent_interface.tools import TOOLS
 from app.core.config import REPO_ROOT, get_settings
+from app.core.validation import short
 
 
 def _fail(error: ToolError, as_json: bool) -> NoReturn:
@@ -29,6 +31,10 @@ def _fail(error: ToolError, as_json: bool) -> NoReturn:
         for detail in error.info.details:
             received = f" (recibido: {detail.received!r})" if detail.received is not None else ""
             typer.secho(f"  - {detail.field}: {detail.reason}{received}", err=True)
+            if detail.expected:
+                typer.secho(f"    esperado: {detail.expected}", err=True)
+            if detail.hint:
+                typer.secho(f"    pista: {detail.hint}", err=True)
     raise typer.Exit(code=1)
 
 
@@ -63,10 +69,38 @@ def read_input_file(resolved: Path, file_format: str) -> Any:
     try:
         return json.loads(text)
     except json.JSONDecodeError as exc:
+        found = lenient_json(text)
+        if found is not None:
+            return found
         raise ToolError(
             "invalid_file",
             f"{resolved} no es JSON válido (línea {exc.lineno}, columna {exc.colno}): {exc.msg}.",
         ) from exc
+
+
+_FENCE = re.compile(r"```[a-zA-Z]*[ \t]*\r?\n(.*?)```", re.DOTALL)
+
+
+def lenient_json(text: str) -> Any | None:
+    """Fase 24.2: los modelos pequeños envuelven a menudo el JSON en un bloque de código Markdown
+    o le ponen texto antes o después. Se acepta el primer bloque de código que sea JSON o, si no,
+    un objeto o lista que empiece en el primer `{` o `[` del texto y tras el que no haya otro (así
+    un JSON truncado no se convierte en uno de sus fragmentos). Si no, None, y vale el error
+    original con su línea y columna. Nada más: el esquema sigue siendo estricto."""
+    for block in _FENCE.findall(text):
+        try:
+            return json.loads(block)
+        except json.JSONDecodeError:
+            continue
+    starts = [i for i in (text.find("{"), text.find("[")) if i >= 0]
+    if not starts:
+        return None
+    try:
+        value, end = json.JSONDecoder().raw_decode(text, min(starts))
+    except json.JSONDecodeError:
+        return None
+    rest = text[end:]
+    return None if "{" in rest or "[" in rest else value
 
 
 def read_json_fields(resolved: Path, keys: tuple[str, ...]) -> dict[str, Any]:
@@ -80,7 +114,7 @@ def read_json_fields(resolved: Path, keys: tuple[str, ...]) -> dict[str, Any]:
     if unknown:
         raise ToolError(
             "invalid_file",
-            f"{resolved} tiene claves que no se esperan ({', '.join(unknown)}); "
+            f"{resolved} tiene claves que no se esperan ({', '.join(short(k) for k in unknown)}); "
             f"solo: {', '.join(keys)}.",
         )
     return data

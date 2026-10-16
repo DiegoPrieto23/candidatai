@@ -99,6 +99,15 @@ funcionando. Los roles son `writer`, `verifier`, `classifier`, `reviewer` y `ext
       (p. ej. Codex), vuelve a ejecutarlo con `--refresh` y mira que lo detecta.
 - [ ] `uv run --directory backend cai doctor`: la sección «Agentes» al final.
 
+### Esquemas y errores (fase 24.2)
+
+- [ ] Abre Claude Code de nuevo (o reconecta en `/mcp`) para que cargue la herramienta
+      `get_schema`.
+- [ ] `uv run --directory backend cai schema list --json` y
+      `uv run --directory backend cai schema cv-content --example true --json`: mira que el
+      ejemplo tenga sentido con tu forma de trabajar.
+- [ ] `uv run --directory backend cai agents doctor --tokens`: cuánto pesa cada skill.
+
 ## 2. `.env.example` (el agente no puede leerlo ni editarlo)
 
 - [ ] Crear o completar `.env.example`, **sin valores reales**, con todas las variables de

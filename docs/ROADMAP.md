@@ -69,7 +69,7 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 23.5b | ↳ Medios y README | ✅ | Capturas en los dos idiomas, GIF y vídeo; README sin la comparativa |
 | 24 | Varios agentes: open-source, gratuitos y a elegir | ⏳ | Usar la app con OpenCode, Qwen Code, Antigravity o Codex con modelos locales, además de Claude Code, y cambiar de agente y modelo desde la UI, globalmente o por acción |
 | 24.1 | ↳ Registro de agentes y diagnóstico | ✅ | `cai agents list` y `cai agents doctor`: qué agentes hay, cuáles están instalados, qué saben hacer y si son open-source |
-| 24.2 | ↳ Esquemas y errores para cualquier modelo | ⏳ | `cai schema` y `get_schema`; errores de validación con `path` y pista |
+| 24.2 | ↳ Esquemas y errores para cualquier modelo | ✅ | `cai schema` y `get_schema`; errores de validación con `path` y pista |
 | 24.3 | ↳ Agentes nuevos | ⏳ | Configuración generada para OpenCode, Qwen Code y Antigravity; Codex con `--oss`; Gemini CLI fuera |
 | 24.4 | ↳ Elegir y cambiar de agente | ⏳ | Sección «Agentes» con capacidades, agente por defecto y por acción, «con Claude Code ▾» en cada botón |
 | 24.5 | ↳ Segundo plano con varios agentes | ⏳ | «En segundo plano» también con OpenCode (y Codex o Qwen Code si su techo se comprueba) |
@@ -2193,4 +2193,58 @@ decisiones tomadas y deuda técnica pendiente. -->
   - El registro importa `_kill_tree` de `agent_runner` dentro de la función, por el ciclo de
     imports. Conviene llevarlo a un módulo de procesos común.
   - Falta un test con un `.cmd` real de Windows en una ruta con espacios.
+
+### 24.2 · Esquemas y errores para cualquier modelo — 2026-10-16 · Claude Code (Opus 5.5)
+- **Resumen:** lo que necesita un modelo pequeño para acertar sin MCP.
+  - **Esquemas:** `get_schema` / `cai schema [NOMBRE] [--example true] --json`, con 17 esquemas
+    (`agent_interface/schemas.py`). Cada uno es exactamente lo que va en `--file`: el modelo del
+    campo o un objeto con las claves de `file_keys`. Ejemplos mínimos en `demo/schemas/`, con los
+    ids del perfil demo; el del CV pasa las comprobaciones del perfil.
+  - **Errores accionables** (formato aditivo, decidido con el usuario): se conservan `field`,
+    `received` y `reason`, y se añaden `expected` y `hint`.
+    - `field` es siempre un path con puntos, también en las comprobaciones del CV, la carta y
+      las respuestas (con `content.` delante desde la interfaz para agentes; sin él en la API).
+    - Pistas: campo obligatorio, campo inexistente (el más parecido), enumeración casi bien
+      escrita, `language` con el nombre del idioma, texto vacío, skill que no está en el perfil
+      (el nombre tal cual, sin traducir) y evidencia o id inexistente (los 5 más parecidos).
+    - `scrub`: ningún error devuelve más de 80 caracteres seguidos de la entrada.
+  - **`--file` tolerante:** JSON en un bloque de código Markdown, o con texto antes o después.
+  - **Roles y skills:** nombran su `cai schema …`. Regla común: corregir solo los `field` del
+    error y reenviar, como mucho dos veces.
+  - **Tokens:** `cai agents doctor --tokens`.
+- **Tokens medidos** (4 caracteres por token):
+  - `AGENTS.md`, ~2 200. Una valoración (AGENTS.md + `assess-fit`), ~2 900. Un CV (AGENTS.md +
+    `generate-cv` + `writer` + `verifier`), ~6 200, sin contar `POLICIES.md`. career-ops: ~26 000.
+  - El skill más largo es `import-cv-template`, con ~2 500. Ninguno pasa de 6 000: sin deuda.
+- **Tests:**
+  - 40 en `test_schemas_errors.py`:
+    - catálogo completo frente al registro, cada ejemplo valida;
+    - los casos de la matriz: skill traducida, evidencia inexistente, `language`;
+    - campos que faltan o mal escritos;
+    - el límite de 80 caracteres, también en las pistas, las claves de `--file` y las copias
+      parciales;
+    - `--file` tolerante, y un JSON truncado que no se acepta;
+    - la salida de texto de la CLI y los tokens.
+  - 4 casos de paridad de `get_schema`.
+  - Al día: los tests de paths con puntos y el detalle de error de la paridad.
+  - 2457 tests de backend en verde (los dos de render real con LibreOffice, repetidos aparte
+    tras agotar los 60 s con la máquina cargada) y 252 de frontend, `tsc`, ruff y
+    `sync_agents.py --check` limpios.
+- **Decisiones:**
+  - `get_schema` va en el allow de `.claude/settings.json`, pero en ningún techo de segundo plano
+    (ADR-032 sin cambios).
+  - «Sección en otro idioma»: sin validaciones nuevas (fuera de alcance), la pista sale del
+    `language` mal puesto.
+  - Revisión (rol `reviewer`), sin nada bloqueante. Se aplicó:
+    - `lenient_json` solo acepta el primer objeto si no hay otro detrás;
+    - recorte en las claves desconocidas de `--file` y en `unknown_tool`;
+    - `esperado:` y `pista:` en la salida de texto;
+    - el mensaje de los errores de contenido se rehace desde los paths;
+    - test de que las pistas no citan la entrada;
+    - una sola regla de reintento en el `extractor`.
+- **Deuda:**
+  - `scrub` no reconoce un texto que un servicio normalice antes de citarlo.
+  - La pista de la skill traducida solo sugiere nombres parecidos por escritura (`difflib`), no
+    traducciones.
+  - Medir en la 24.6 si los modelos pequeños aciertan al segundo intento.
 

@@ -17,7 +17,10 @@ from pydantic import (
 )
 from sqlalchemy.orm import Session
 
+from app.agent_interface import schemas as published
+from app.agent_interface.errors import ToolError
 from app.agent_interface.registry import CallContext, CliSpec, ToolSpec
+from app.core.validation import quoted, similar
 from app.schemas.cover_letter import (
     MAX_INSTRUCTIONS,
     CoverLetterContent,
@@ -65,6 +68,32 @@ class _Input(BaseModel):
 
 class NoInput(_Input):
     pass
+
+
+class GetSchemaInput(_Input):
+    name: str | None = Field(
+        default=None,
+        description="Nombre del esquema (p. ej. `cv-content`). Sin nombre, o `list`, el catálogo.",
+    )
+    example: bool = Field(default=False, description="Incluir un ejemplo mínimo válido.")
+
+
+class SchemaSummary(BaseModel):
+    name: str
+    tool: str
+    description: str
+
+
+class SchemaView(BaseModel):
+    """El catálogo (sin `name`) o un esquema: su JSON Schema, cómo se envía y un ejemplo."""
+
+    schemas: list[SchemaSummary] = []
+    name: str | None = None
+    tool: str | None = None
+    description: str | None = None
+    send: str | None = None  # cómo va por `--file` y por MCP
+    json_schema: dict[str, Any] | None = None
+    example: Any | None = None
 
 
 class JobIdInput(_Input):
@@ -421,6 +450,32 @@ def _get_status(session: Session, _args: NoInput, _ctx: CallContext) -> status.S
     return status.get_status(session)
 
 
+def _get_schema(_session: Session, args: GetSchemaInput, _ctx: CallContext) -> SchemaView:
+    if args.name in (None, "list"):
+        return SchemaView(
+            schemas=[
+                SchemaSummary(name=e.name, tool=e.tool, description=e.description)
+                for e in published.CATALOG
+            ]
+        )
+    entry = published.BY_NAME.get(args.name)
+    if entry is None:
+        names = [e.name for e in published.CATALOG]
+        close = similar(args.name, names, n=3, cutoff=0.4)
+        guess = f" ¿Querías decir {quoted(close)}?" if close else ""
+        raise ToolError(
+            "not_found", f"No hay un esquema «{args.name[:80]}».{guess} Hay: {', '.join(names)}."
+        )
+    return SchemaView(
+        name=entry.name,
+        tool=entry.tool,
+        description=entry.description,
+        send=published.file_note(entry.name),
+        json_schema=published.json_schema(entry.name),
+        example=published.example(entry.name) if args.example else None,
+    )
+
+
 def _add_job_from_url(
     session: Session, args: AddJobFromUrlInput, _ctx: CallContext
 ) -> ingest.AddJobResult:
@@ -746,6 +801,19 @@ TOOLS: tuple[ToolSpec, ...] = (
         output_model=status.StatusReport,
         handler=_get_status,
         cli=CliSpec(path=("status",)),
+    ),
+    ToolSpec(
+        name="get_schema",
+        description=(
+            "JSON Schema de lo que rellenas para una herramienta de escritura (extracción, "
+            "valoración, CV, carta, respuestas…), cómo se envía y, con `example`, un ejemplo "
+            "mínimo válido. Sin `name`, el catálogo. Úsalo antes de escribir el JSON."
+        ),
+        input_model=GetSchemaInput,
+        output_model=SchemaView,
+        handler=_get_schema,
+        cli=CliSpec(path=("schema",), arguments=("name",), option_names={"example": "--example"}),
+        audit_fields=("name",),
     ),
     ToolSpec(
         name="add_job_from_url",

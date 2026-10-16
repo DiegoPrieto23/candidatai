@@ -76,3 +76,9 @@ Argumentos: `configurar`, el nombre de una plataforma o nada (todas las activas)
    - no extraigas ni valores las ofertas aquí: eso lo hacen `process-jobs` y `assess-fit`.
 4. Resume: por plataforma, encontradas, nuevas, ya conocidas e incidentes. Sugiere ejecutar
    `process-jobs` después, idealmente en otra sesión.
+
+## Esquema y errores
+Con MCP, el esquema de lo que guardas viene en la propia herramienta. Sin MCP:
+`cai schema source --json` y `cai schema source-run --json` (con `--example true`, un ejemplo mínimo válido). Si la app rechaza la entrada,
+corrige solo los campos de `details[].field` siguiendo su `hint` y vuelve a enviar, como mucho dos
+veces; si sigue fallando, para y explica qué falta.

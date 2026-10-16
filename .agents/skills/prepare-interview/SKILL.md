@@ -74,3 +74,9 @@ Sin hito (no hay plan), registra `add_event(type="note")` con la ruta del dosier
 ## 6. Cierre
 Resume en tres líneas dónde está el dosier y el plan. Ofrece un simulacro con el skill
 `mock-interview` (o el botón «Simulacro» de la entrevista en la ficha).
+
+## Esquema y errores
+Con MCP, el esquema de lo que guardas viene en la propia herramienta. Sin MCP:
+`cai schema interview-plan --json` (con `--example true`, un ejemplo mínimo válido). Si la app rechaza la entrada,
+corrige solo los campos de `details[].field` siguiendo su `hint` y vuelve a enviar, como mucho dos
+veces; si sigue fallando, para y explica qué falta.

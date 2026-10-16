@@ -3295,6 +3295,10 @@ export interface components {
             received: string | null;
             /** Reason */
             reason: string;
+            /** Expected */
+            expected?: string | null;
+            /** Hint */
+            hint?: string | null;
         };
         /** ErrorInfo */
         ErrorInfo: {

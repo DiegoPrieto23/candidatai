@@ -1,0 +1,10 @@
+{
+  "verdict": "strong",
+  "rationale": "Cubre las obligatorias principales (Python, SQL, Snowflake) con experiencia demostrada; dbt solo a nivel básico.",
+  "risks": [
+    "dbt es una skill básica del perfil y la oferta la pide como obligatoria."
+  ],
+  "questions_for_user": [
+    "¿Has usado dbt en algún proyecto, aunque sea personal?"
+  ]
+}

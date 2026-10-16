@@ -1,0 +1,15 @@
+{
+  "job_id": 1,
+  "event_type": "interview_scheduled",
+  "occurred_at": "2026-10-14T09:30:00+02:00",
+  "milestone": {
+    "title": "Entrevista con RR. HH.",
+    "starts_at": "2026-10-20T10:00:00+02:00",
+    "ends_at": null,
+    "all_day": false,
+    "location": "Videollamada"
+  },
+  "summary": "Proponen una entrevista con RR. HH. el 20 de octubre a las 10:00.",
+  "confidence": "high",
+  "injection_suspected": false
+}

@@ -45,3 +45,9 @@ Dile dónde está el dosier (ficha › «Empresa» y el fichero de `data/documen
 Recuérdale que **la carta no usa el dosier** (§7): si
 quiere que mencione algo, que lo copie a las indicaciones de la carta de esa oferta. Ofrece
 `draft-message` o, con una entrevista, `prepare-interview`.
+
+## Esquema y errores
+Con MCP, el esquema de lo que guardas viene en la propia herramienta. Sin MCP:
+`cai schema company-research --json` (con `--example true`, un ejemplo mínimo válido). Si la app rechaza la entrada,
+corrige solo los campos de `details[].field` siguiendo su `hint` y vuelve a enviar, como mucho dos
+veces; si sigue fallando, para y explica qué falta.
