@@ -58,5 +58,7 @@
   "title": "Agente",
   "intro": "Lo que tu agente hace en segundo plano y lo que le has dejado para tu próxima sesión. Sin coste de API: usa tu suscripción, de una ejecución en una.",
   "background": "En segundo plano",
-  "nextSession": "Para tu próxima sesión"
+  "nextSession": "Para tu próxima sesión",
+  "withAgent": "Con {{agent}}",
+  "withAgentModel": "Con {{agent}} ({{model}})"
 }

@@ -71,7 +71,7 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 24.1 | ↳ Registro de agentes y diagnóstico | ✅ | `cai agents list` y `cai agents doctor`: qué agentes hay, cuáles están instalados, qué saben hacer y si son open-source |
 | 24.2 | ↳ Esquemas y errores para cualquier modelo | ✅ | `cai schema` y `get_schema`; errores de validación con `path` y pista |
 | 24.3 | ↳ Agentes nuevos | ✅ | Configuración generada para OpenCode, Qwen Code y Antigravity; Codex con `--oss`; Gemini CLI fuera |
-| 24.4 | ↳ Elegir y cambiar de agente | ⏳ | Sección «Agentes» con capacidades, agente por defecto y por acción, «con Claude Code ▾» en cada botón |
+| 24.4 | ↳ Elegir y cambiar de agente | ✅ | Sección «Agentes» con capacidades, agente por defecto y por acción, «con Claude Code ▾» en cada botón |
 | 24.5 | ↳ Segundo plano con varios agentes | ⏳ | «En segundo plano» también con OpenCode (y Codex o Qwen Code si su techo se comprueba) |
 | 24.6 | ↳ Modelos gratuitos, niveles de gasto y matriz | ⏳ | Guía de modelos gratis y locales, diagnóstico de Ollama, «Económico/Equilibrado/Máximo» y matriz probada por agente y modelo |
 | 25 | Más fuentes, perfil más rico, ofertas dudosas, coste y calidad del CV | ⏳ | Más ATS con API, `expand`, señales de oferta dudosa, coste por oferta y agente, maquetación del PDF y `CHANGELOG` |
@@ -2320,3 +2320,55 @@ decisiones tomadas y deuda técnica pendiente. -->
   - Nombres de las herramientas MCP en Qwen (`mcp__candidatai__…`) y en los subagentes de
     Antigravity, sin probar con un modelo.
   - `launch` de Antigravity, pendiente de su `--help`.
+
+### 24.4 · Elegir y cambiar de agente — 2026-10-16 · Claude Code (Opus 5.5)
+- **Resumen:** el agente y el modelo se eligen desde la UI, globalmente o por acción.
+  - **Preferencias en la base de datos** (`agent_preferences`, migración 0022): agente por
+    defecto, modelo o preset por agente y agente (y modelo) por acción. `agent_runs` guarda el
+    modelo y el preset.
+  - **`services/agent_prefs.py`**, el único sitio con la precedencia: botón > acción > por defecto
+    > `CAI_AGENT` > el primero habilitado e instalado, con el motivo (código y texto).
+  - **Comprobaciones:** capacidades del registro (`search-jobs` → navegador; `research-company` y
+    `training-plan` → web; `import-cv-template` → visión, aún sin botón). `false` bloquea, `null`
+    avisa. Nivel C con contenido no confiable: aviso en terminal, nunca en segundo plano. Un
+    agente preferido sin instalar no se cambia por otro.
+  - **Modelo:** texto libre validado sin red (`MODEL_RE` y `models.pattern`, nuevo en el
+    manifiesto para OpenCode); va con `models.flag` o el preset detrás del programa, en terminal y
+    en segundo plano.
+  - **Auditoría:** `CAI_CLIENT_NAME=<agente>` en la terminal y en el runner.
+  - **`agent_actions.py`:** el catálogo de acciones sale de `agent_launch` (que lo reexporta) para
+    que `agent_prefs` no tenga un import circular.
+  - **API y CLI:** `GET /agent` con el agente efectivo y las alternativas de cada acción;
+    `GET /agent/agents` y `cai agents list --json` con `launchable`, `preferences` y `effective`;
+    `PUT /agent/preferences`; `agent`, `model` y `preset` en `POST /agent/launch` y
+    `/agent/runs`. Los encargos no eligen agente. El doctor tiene en cuenta las preferencias.
+  - **UI:** sección «Agentes» en la página «Agente» (tarjetas con versión o instalación para
+    copiar, insignias, modelo o preset y qué modelo usan los subagentes), selector «Agente por
+    defecto», tabla «Por acción» con el efectivo y su motivo, «con Claude Code ▾» y «Abrir con…»
+    en cada botón, y agente y modelo en cada ejecución. Textos en `locales/` (es/en, `agents.json`
+    nuevo).
+- **Tests:** 23 en `test_agent_prefs.py` (precedencia, modelo por nivel, no instalado,
+  `CAI_AGENT`, capacidades, nivel C, formato del modelo, bandera de cada agente, guardar,
+  extremo a extremo por la API en terminal y en segundo plano, `CAI_AGENT` sin preferencias,
+  errores); `CAI_CLIENT_NAME` en el runner y en PowerShell; 10 de Vitest nuevos (sección,
+  selector, modelo, tabla, error, desplegable, capacidad, aviso y la lista de ejecuciones).
+  2498 tests de backend en verde (los 2 de `test_cli_db.py`, al día con la 0022 y repetidos aparte), 262 de frontend, `tsc`, ruff y `sync_agents.py --check` limpios.
+- **Decisiones:** ADR-037 ampliado (preferencias, precedencia, comprobaciones, modelo,
+  auditoría). Con el usuario: capacidad `null` = aviso; agente preferido sin instalar = bloquea
+  sin cambiar; `import-cv-template` sin botón por ahora.
+  - Revisión (rol `reviewer`), sin nada bloqueante. Se aplicó:
+    - por qué `assess-fit` y `generate-cv` no cuentan como contenido no confiable (sin
+      `get_job`), en el código y en el ADR;
+    - «Abrir en terminal» avisa si el agente que la ejecutó ya no se puede usar;
+    - controles bloqueados mientras se guarda (el `PUT` sustituye todo);
+    - el preset de una acción deshabilita su modelo;
+    - `re.ASCII` en `MODEL_RE` y el docstring de `agent_launch`.
+- **Deuda:**
+  - La UI deduce el sistema por `navigator.userAgent` para la orden de instalación; mejor que lo
+    diga el backend.
+  - `GET /agent` resuelve acciones × agentes en cada petición (barato con la caché de `which`;
+    medir si crecen los agentes).
+  - El `pattern` de OpenCode, sin probar con `opencode models`.
+  - Con otro idioma, los motivos detallados del servidor se resumen con un texto genérico por
+    código.
+  - `RESUMEN_FASES.md` se pone al día al cerrar la fase 24 entera.

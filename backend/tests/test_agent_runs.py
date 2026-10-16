@@ -252,6 +252,7 @@ def test_run_ok_saves_progress_result_and_usage(db: None, fake: Path) -> None:
 
     seen = json.loads(fake.read_text(encoding="utf-8"))
     assert seen["api_key"] is False  # `unset_env` quitada
+    assert seen["client_name"] == "claude"  # fase 24.4: lo que haga por la CLI, a su nombre
     assert seen["argv"][0].startswith("Usa el skill process-jobs")
     argv = seen["argv"]
     assert argv[argv.index("--allowedTools") + 1 :] == ["Agent", "Skill(process-jobs)"] + [

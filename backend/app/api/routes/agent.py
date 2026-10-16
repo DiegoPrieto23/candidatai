@@ -17,8 +17,9 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.agent_interface.errors import ErrorDetail, ToolError
 from app.api.deps import EmptyBody, SessionDep, require_ui
-from app.services import agent_launch, agent_registry, agent_requests, agent_runs
+from app.services import agent_launch, agent_prefs, agent_registry, agent_requests, agent_runs
 from app.services.agent_launch import ActionId, LaunchError
+from app.services.agent_prefs import Preferences, Resolution
 
 router = APIRouter(prefix="/agent", tags=["agent"])
 
@@ -32,6 +33,11 @@ class Action(BaseModel):
     needs_milestone: bool  # acción de un hito de entrevista (`milestone_id`)
     prompt: str | None  # la orden (sin oferta); con oferta, la da `launch` o se compone en la UI
     background: bool  # admite «En segundo plano» (fase 19)
+    # Fase 24.4: con qué agente iría y por qué; los demás agentes, para elegir solo esta vez; y en
+    # segundo plano, con cuál iría (o por qué no).
+    agent: Resolution
+    alternatives: list[Resolution]
+    background_agent: agent_launch.BackgroundInfo | None
 
 
 class AgentStatus(agent_launch.AgentInfo):
@@ -39,7 +45,7 @@ class AgentStatus(agent_launch.AgentInfo):
     background: agent_launch.BackgroundInfo
 
 
-class LaunchBody(BaseModel):
+class RequestBody(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     action: ActionId
@@ -47,35 +53,77 @@ class LaunchBody(BaseModel):
     milestone_id: int | None = Field(default=None, ge=1)  # acciones de una entrevista (fase 17)
 
 
+class LaunchBody(RequestBody):
+    """Fase 24.4: `agent`, `model` y `preset` eligen agente y modelo solo para esta ejecución."""
+
+    agent: str | None = Field(default=None, max_length=32)
+    model: str | None = Field(default=None, max_length=100)
+    preset: str | None = Field(default=None, max_length=40)
+
+
+def _background(res: Resolution) -> agent_launch.BackgroundInfo:
+    if res.usable:
+        return agent_launch.BackgroundInfo(available=True, agent=res.agent)
+    return agent_launch.BackgroundInfo(available=False, reason=res.blocked)
+
+
 @router.get("", operation_id="get_agent_launcher")
-def get_agent_launcher() -> AgentStatus:
-    """Qué agente abren los botones (o por qué no se puede) y las órdenes disponibles."""
-    actions = [
-        Action(
-            id=action_id,
-            label=spec.label,
-            needs_job=spec.needs_job,
-            needs_milestone=spec.milestone is not None,
-            prompt=None if spec.needs_job else agent_launch.prompt_for(action_id),
-            background=bool(spec.background),
+def get_agent_launcher(session: SessionDep) -> AgentStatus:
+    """Qué agente abren los botones (o por qué no se puede) y las órdenes disponibles, con el
+    agente de cada una según tus preferencias (fase 24.4)."""
+    ctx = agent_launch.Context(session)
+    actions = []
+    for action_id, spec in agent_launch.ACTIONS.items():
+        _, res = agent_launch.choose(session, action_id, ctx=ctx)
+        others = [name for name in ctx.by_name if name != res.agent]
+        background = None
+        if spec.background:
+            _, bg = agent_launch.choose(session, action_id, mode="background", ctx=ctx)
+            background = _background(bg)
+        actions.append(
+            Action(
+                id=action_id,
+                label=spec.label,
+                needs_job=spec.needs_job,
+                needs_milestone=spec.milestone is not None,
+                prompt=None if spec.needs_job else agent_launch.prompt_for(action_id),
+                background=bool(spec.background),
+                agent=res,
+                alternatives=[
+                    agent_launch.choose(session, action_id, agent=name, ctx=ctx)[1]
+                    for name in others
+                ],
+                background_agent=background,
+            )
         )
-        for action_id, spec in agent_launch.ACTIONS.items()
-    ]
     return AgentStatus(
-        **agent_launch.info().model_dump(),
+        **agent_launch.info(session).model_dump(),
         actions=actions,
-        background=agent_launch.background_info(),
+        background=agent_launch.background_info(session),
     )
 
 
 @router.get("/agents", operation_id="list_agents")
-def list_agents() -> agent_registry.AgentList:
-    """Los agentes del manifiesto (fase 24.1): qué son, qué saben hacer y si están instalados. Lo
-    mismo que `cai agents list --json`; solo lectura."""
+def list_agents(session: SessionDep) -> agent_launch.AgentsOverview:
+    """Los agentes del manifiesto (fase 24.1): qué son, qué saben hacer y si están instalados, con
+    tus preferencias y el agente efectivo de cada acción (fase 24.4). Lo mismo que
+    `cai agents list --json`; solo lectura."""
     try:
-        return agent_registry.list_agents()
+        return agent_launch.overview(session)
     except agent_registry.ManifestError as exc:
         raise ToolError("internal_error", str(exc)) from exc
+
+
+@router.put(
+    "/preferences", operation_id="save_agent_preferences", dependencies=[Depends(require_ui)]
+)
+def save_agent_preferences(session: SessionDep, body: Preferences) -> Preferences:
+    """Guarda tus preferencias de agente (fase 24.4): sustituye todas las anteriores."""
+    try:
+        return agent_launch.save_preferences(session, body)
+    except agent_prefs.PreferenceError as exc:
+        detail = ErrorDetail(field=exc.field, received=None, reason=str(exc))
+        raise ToolError("invalid_request", str(exc), [detail]) from exc
 
 
 def _raise(exc: LaunchError) -> None:
@@ -95,7 +143,15 @@ def _raise(exc: LaunchError) -> None:
 def launch_agent(session: SessionDep, body: LaunchBody) -> agent_launch.LaunchResult:
     """Abre tu agente en una terminal con la orden ya escrita. Tú ves y apruebas lo que haga."""
     try:
-        return agent_launch.launch(session, body.action, body.job_id, body.milestone_id)
+        return agent_launch.launch(
+            session,
+            body.action,
+            body.job_id,
+            body.milestone_id,
+            agent=body.agent,
+            model=body.model,
+            preset=body.preset,
+        )
     except LaunchError as exc:
         _raise(exc)
         raise
@@ -117,7 +173,15 @@ def _not_found(exc: agent_runs.RunNotFoundError) -> ToolError:
 def start_agent_run(session: SessionDep, body: LaunchBody) -> agent_runs.AgentRunView:
     """Deja en cola una ejecución en segundo plano (la ejecuta `cai worker`, de una en una)."""
     try:
-        return agent_runs.start(session, body.action, body.job_id, body.milestone_id)
+        return agent_runs.start(
+            session,
+            body.action,
+            body.job_id,
+            body.milestone_id,
+            agent=body.agent,
+            model=body.model,
+            preset=body.preset,
+        )
     except LaunchError as exc:
         _raise(exc)
         raise
@@ -191,7 +255,7 @@ def list_agent_requests(
     status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(require_ui)],
 )
-def create_agent_request(session: SessionDep, body: LaunchBody) -> agent_requests.AgentRequestView:
+def create_agent_request(session: SessionDep, body: RequestBody) -> agent_requests.AgentRequestView:
     """«Dejar para mi próxima sesión»: el agente lo verá con `list_agent_requests`."""
     try:
         return agent_requests.create(session, body.action, body.job_id, body.milestone_id)

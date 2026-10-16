@@ -3,7 +3,8 @@ en streaming y guarda progreso, resultado y errores. Lo llama el worker, en un h
 
 - Una sola ejecución a la vez, también entre procesos: reclamar es un `UPDATE` condicionado a que
   no haya otra `running`.
-- Sin las variables de `unset_env` (la clave de la API): el agente usa tu suscripción.
+- Sin las variables de `unset_env` (la clave de la API): el agente usa tu suscripción. Con
+  `CAI_CLIENT_NAME` = el agente, para que lo que haga por la CLI quede a su nombre (fase 24.4).
 - Tiempo máximo (`background_runs.timeout_minutes`), cancelación desde la UI y parada del worker:
   se para el árbol de procesos entero (el agente y el `cai-mcp` que lanza). Pase lo que pase, al
   salir de `execute` el proceso no sigue vivo.
@@ -36,7 +37,7 @@ from app.core.policies import get_policies
 from app.models import AgentRun
 from app.models.base import utcnow
 from app.services import agent_registry
-from app.services.agent_launch import QUESTION_PREFIX
+from app.services.agent_launch import CLIENT_ENV, QUESTION_PREFIX
 from app.services.agent_output import PARSERS, short
 from app.services.agent_runs import INTERRUPTED, ProgressKind, RunStatus
 
@@ -76,11 +77,12 @@ def questions_in(text: str) -> list[str]:
 # --- Proceso -----------------------------------------------------------------------------------
 
 
-def _popen(command: list[str], unset_env: list[str]) -> subprocess.Popen[str]:
+def _popen(command: list[str], unset_env: list[str], agent: str) -> subprocess.Popen[str]:
     exe = shutil.which(command[0])
     if exe is None:
         raise FileNotFoundError(f"No se encuentra el programa del agente ({command[0]}).")
-    env = agent_registry.clean_env(unset_env)
+    # Fase 24.4: lo que haga por la CLI queda a nombre del agente (`CAI_CLIENT_NAME`).
+    env = {**agent_registry.clean_env(unset_env), CLIENT_ENV: agent}
     kwargs: dict[str, Any] = {}
     if sys.platform == "win32":
         kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW | subprocess.CREATE_NEW_PROCESS_GROUP
@@ -221,7 +223,7 @@ def execute(run: AgentRun, timeout: float | None = None, poll: float = 0.5) -> A
         return finish("failed", f"Formato de salida desconocido: «{run.output_format}».")
     parser = factory(_mcp_prefix(run.agent) or "mcp__candidatai__")
     try:
-        proc = _popen(list(run.command), list(run.unset_env))
+        proc = _popen(list(run.command), list(run.unset_env), run.agent)
     except OSError as exc:
         return finish("failed", f"No se pudo lanzar el agente: {exc}")
 

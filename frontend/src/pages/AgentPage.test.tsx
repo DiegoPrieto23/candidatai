@@ -20,6 +20,7 @@ function run(changes: Partial<AgentRunView> = {}): AgentRunView {
     job_id: null,
     milestone_id: null,
     agent: 'claude',
+    model: null,
     status: 'done',
     prompt: 'Usa el skill process-jobs…',
     allowed_tools: ['get_status', 'list_jobs', 'get_job', 'save_extraction'],
@@ -58,6 +59,18 @@ function request(changes: Partial<AgentRequestView> = {}): AgentRequestView {
 }
 
 describe('Página «Agente» (fase 19)', () => {
+  it('cada ejecución dice con qué agente y modelo se lanzó (fase 24.4)', async () => {
+    mockApi({
+      'GET /status': status(),
+      'GET /agent': launcher,
+      'GET /agent/runs': { active: 0, runs: [run({ id: 4, model: 'sonnet' }), run({ id: 5, agent: 'opencode' })] },
+      'GET /agent/requests': { pending: 0, requests: [] },
+    })
+    renderApp('/agente')
+    expect(await screen.findByText(/Con claude \(sonnet\)/)).toBeInTheDocument()
+    expect(screen.getByText(/Con opencode ·/)).toBeInTheDocument()
+  })
+
   it('enseña las ejecuciones con su estado, progreso y preguntas', async () => {
     const calls = mockApi({
       'GET /status': status(),

@@ -96,11 +96,12 @@ def test_launchers_come_from_the_manifest() -> None:
     assert "codex" in launchers
 
 
-def test_powershell_command_unsets_api_keys_and_quotes_the_prompt() -> None:
+def test_powershell_command_unsets_api_keys_names_the_client_and_quotes_the_prompt() -> None:
     launcher = agent_launch._Launcher("claude", ["claude", "{prompt}"], ["ANTHROPIC_API_KEY"])
     command = agent_launch.powershell_command(launcher, "Usa 'esto'; y aquello")
     assert command == (
         "Remove-Item Env:ANTHROPIC_API_KEY -ErrorAction SilentlyContinue; "
+        "$env:CAI_CLIENT_NAME = 'claude'; "
         "& 'claude' 'Usa ''esto''; y aquello'"
     )
 

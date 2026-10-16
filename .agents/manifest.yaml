@@ -13,7 +13,8 @@
 #
 # `models` (fase 24.3): `fast` y `capable` son el modelo de cada `tier` de los roles (null = hereda
 # el de la sesión); `flag`, los argumentos que eligen un modelo al lanzar (con `{model}`); `presets`,
-# configuraciones con nombre que ofrece la UI (la elección persistente llega en la 24.4).
+# configuraciones con nombre que ofrece la UI; `pattern` y `example`, cómo se escribe un
+# nombre de modelo (fase 24.4). La elección de cada persona se guarda en la base de datos, no aquí.
 
 mcp_server:
   name: candidatai
@@ -283,6 +284,8 @@ targets:
       fast: null
       capable: null
       flag: [-m, "{model}"]
+      pattern: '^[\w.-]+/[\w.:@/-]+$'   # la UI valida el nombre con esto (fase 24.4); sin probar con `opencode models`
+      example: ollama/qwen3:8b
     launch:
       command: [opencode, --prompt, "{prompt}"]
     tools:                        # herramientas lógicas → claves de `permission` de OpenCode

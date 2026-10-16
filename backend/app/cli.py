@@ -1902,15 +1902,16 @@ def agents_list(
     refresh: bool = typer.Option(False, "--refresh", help="Vuelve a detectar sin usar la caché."),
 ) -> None:
     """Los agentes del manifiesto: qué son, qué saben hacer y si los tienes instalados."""
-    from app.services import agent_registry
+    from app.services import agent_launch, agent_registry
 
     try:
+        if as_json:  # lo mismo que `GET /agent/agents`, con tus preferencias (fase 24.4)
+            with session_scope() as session:
+                typer.echo(dump_json(agent_launch.overview(session, refresh=refresh)))
+            return
         listed = agent_registry.list_agents(refresh=refresh)
     except agent_registry.ManifestError as exc:
         _fail_plain(str(exc), as_json)
-    if as_json:
-        typer.echo(dump_json(listed))
-        return
     for entry in listed.agents:
         state = "habilitado" if entry.enabled else "solo compatible vía AGENTS.md"
         if not entry.enabled and entry.info.note:

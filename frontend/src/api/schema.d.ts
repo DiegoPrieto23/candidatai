@@ -1361,7 +1361,8 @@ export interface paths {
         };
         /**
          * Get Agent Launcher
-         * @description Qué agente abren los botones (o por qué no se puede) y las órdenes disponibles.
+         * @description Qué agente abren los botones (o por qué no se puede) y las órdenes disponibles, con el
+         *     agente de cada una según tus preferencias (fase 24.4).
          */
         get: operations["get_agent_launcher"];
         put?: never;
@@ -1381,11 +1382,32 @@ export interface paths {
         };
         /**
          * List Agents
-         * @description Los agentes del manifiesto (fase 24.1): qué son, qué saben hacer y si están instalados. Lo
-         *     mismo que `cai agents list --json`; solo lectura.
+         * @description Los agentes del manifiesto (fase 24.1): qué son, qué saben hacer y si están instalados, con
+         *     tus preferencias y el agente efectivo de cada acción (fase 24.4). Lo mismo que
+         *     `cai agents list --json`; solo lectura.
          */
         get: operations["list_agents"];
         put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/agent/preferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Save Agent Preferences
+         * @description Guarda tus preferencias de agente (fase 24.4): sustituye todas las anteriores.
+         */
+        put: operations["save_agent_preferences"];
         post?: never;
         delete?: never;
         options?: never;
@@ -2015,6 +2037,19 @@ export interface components {
             prompt: string | null;
             /** Background */
             background: boolean;
+            agent: components["schemas"]["Resolution"];
+            /** Alternatives */
+            alternatives: components["schemas"]["Resolution"][];
+            background_agent: components["schemas"]["BackgroundInfo"] | null;
+        };
+        /** ActionPref */
+        ActionPref: {
+            /** Model */
+            model?: string | null;
+            /** Preset */
+            preset?: string | null;
+            /** Agent */
+            agent: string;
         };
         /** AddEventResult */
         AddEventResult: {
@@ -2224,11 +2259,6 @@ export interface components {
             /** Note */
             note?: string | null;
         };
-        /** AgentList */
-        AgentList: {
-            /** Agents */
-            agents: components["schemas"]["AgentEntry"][];
-        };
         /** AgentRequestList */
         AgentRequestList: {
             /** Requests */
@@ -2294,6 +2324,8 @@ export interface components {
             milestone_id: number | null;
             /** Agent */
             agent: string;
+            /** Model */
+            model: string | null;
             /**
              * Status
              * @enum {string}
@@ -2340,6 +2372,20 @@ export interface components {
             /** Actions */
             actions: components["schemas"]["Action"][];
             background: components["schemas"]["BackgroundInfo"];
+        };
+        /**
+         * AgentsOverview
+         * @description `GET /agent/agents` y `cai agents list --json`: los agentes del manifiesto, tus preferencias
+         *     y el agente efectivo de cada acción.
+         */
+        AgentsOverview: {
+            /** Agents */
+            agents: components["schemas"]["AgentEntry"][];
+            /** Launchable */
+            launchable: string[];
+            preferences: components["schemas"]["Preferences"];
+            /** Effective */
+            effective: components["schemas"]["EffectiveAction"][];
         };
         /** AlertJob */
         AlertJob: {
@@ -3262,6 +3308,22 @@ export interface components {
              */
             occurred_at?: string | null;
         };
+        /**
+         * EffectiveAction
+         * @description Con qué agente y modelo iría una acción, por qué y si se puede (en terminal y, si la
+         *     acción lo admite, en segundo plano).
+         */
+        EffectiveAction: {
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "search-jobs" | "process-jobs" | "assess-fit" | "generate-cv" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search";
+            /** Label */
+            label: string;
+            terminal: components["schemas"]["Resolution"];
+            background?: components["schemas"]["Resolution"] | null;
+        };
         /** EmailPollResult */
         EmailPollResult: {
             /** Source Id */
@@ -3869,7 +3931,10 @@ export interface components {
             /** Level */
             level?: string | null;
         };
-        /** LaunchBody */
+        /**
+         * LaunchBody
+         * @description Fase 24.4: `agent`, `model` y `preset` eligen agente y modelo solo para esta ejecución.
+         */
         LaunchBody: {
             /**
              * Action
@@ -3880,6 +3945,12 @@ export interface components {
             job_id?: number | null;
             /** Milestone Id */
             milestone_id?: number | null;
+            /** Agent */
+            agent?: string | null;
+            /** Model */
+            model?: string | null;
+            /** Preset */
+            preset?: string | null;
         };
         /** LaunchResult */
         LaunchResult: {
@@ -3890,10 +3961,14 @@ export interface components {
             ok: boolean;
             /** Agent */
             agent: string;
+            /** Model */
+            model?: string | null;
             /** Prompt */
             prompt: string;
             /** Message */
             message: string;
+            /** Warning */
+            warning?: string | null;
         };
         /** LetterParagraph */
         LetterParagraph: {
@@ -4363,13 +4438,29 @@ export interface components {
         };
         /**
          * ModelChoice
-         * @description Cómo se puede elegir el modelo de un agente (la elección persistente llega en la 24.4).
+         * @description Cómo se puede elegir el modelo de un agente (la elección se guarda con `agent_prefs`).
          */
         ModelChoice: {
             /** By Name */
             by_name: boolean;
             /** Presets */
             presets: string[];
+            /** Example */
+            example?: string | null;
+            /** Fast */
+            fast?: string | null;
+            /** Capable */
+            capable?: string | null;
+        };
+        /**
+         * ModelPref
+         * @description El modelo (por su nombre) o el preset de un agente. Los dos vacíos: el que use el agente.
+         */
+        ModelPref: {
+            /** Model */
+            model?: string | null;
+            /** Preset */
+            preset?: string | null;
         };
         /**
          * NetworkPerson
@@ -4587,6 +4678,25 @@ export interface components {
             status: string;
             /** Waiting Seconds */
             waiting_seconds: number;
+        };
+        /** Preferences */
+        Preferences: {
+            /** Default Agent */
+            default_agent?: string | null;
+            /**
+             * Agents
+             * @default {}
+             */
+            agents: {
+                [key: string]: components["schemas"]["ModelPref"];
+            };
+            /**
+             * Actions
+             * @default {}
+             */
+            actions: {
+                [key: string]: components["schemas"]["ActionPref"];
+            };
         };
         /** PreferencesFit */
         PreferencesFit: {
@@ -5180,6 +5290,18 @@ export interface components {
             /** Window Days */
             window_days: number;
         };
+        /** RequestBody */
+        RequestBody: {
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "search-jobs" | "process-jobs" | "assess-fit" | "generate-cv" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search";
+            /** Job Id */
+            job_id?: number | null;
+            /** Milestone Id */
+            milestone_id?: number | null;
+        };
         /** ResearchSource */
         ResearchSource: {
             /**
@@ -5221,6 +5343,33 @@ export interface components {
             updated_at: string;
             /** Age Days */
             age_days: number;
+        };
+        /**
+         * Resolution
+         * @description El agente que usaría una acción, con qué modelo, por qué y si se puede lanzar con él.
+         */
+        Resolution: {
+            /** Agent */
+            agent: string | null;
+            /** Display Name */
+            display_name?: string | null;
+            /** Model */
+            model?: string | null;
+            /** Preset */
+            preset?: string | null;
+            /**
+             * Reason
+             * @enum {string}
+             */
+            reason: "explicit" | "action" | "default" | "env" | "first_installed" | "none";
+            /** Reason Text */
+            reason_text: string;
+            /** Blocked */
+            blocked?: string | null;
+            /** Blocked Code */
+            blocked_code?: ("no_agent" | "not_launchable" | "not_installed" | "no_headless" | "capability" | "untrusted" | "model") | null;
+            /** Warning */
+            warning?: string | null;
         };
         /** ResolvedOptions */
         ResolvedOptions: {
@@ -12609,7 +12758,103 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["AgentList"];
+                    "application/json": components["schemas"]["AgentsOverview"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    save_agent_preferences: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Preferences"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Preferences"];
                 };
             };
             /** @description Unauthorized */
@@ -13367,7 +13612,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["LaunchBody"];
+                "application/json": components["schemas"]["RequestBody"];
             };
         };
         responses: {

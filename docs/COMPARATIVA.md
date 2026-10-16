@@ -61,9 +61,9 @@ La parte en la que más nos separa career-ops. Leyenda: ✅ lo tiene · 🟡 en 
 | Pi, Grok, Kimi, Copilot CLI, Cursor, Hermes | 🟡 sin probar, valdrían si leen `AGENTS.md` | ❌ | ✅ |
 | Subagentes con herramientas limitadas | ✅ Claude Code (nivel A); Codex, OpenCode y Qwen Code en nivel B (OpenCode y Qwen generan cada rol con solo sus herramientas, pendiente de probar) | ✅ revisor con contexto limpio | 🟡 |
 | Segundo plano / lote | 🟡 solo Claude Code, de una en una, con herramientas limitadas | ✅ `/rank` en paralelo | ✅ `batch-runner.sh --cli claude\|opencode\|gemini\|qwen --model …` |
-| Elegir el agente | 🟡 variable de entorno `CAI_AGENT` | ❌ | ✅ el CLI que abras; `--cli` en el lote |
-| **Cambiar de agente desde la UI**, por acción | ❌ | n/a | 🟡 la web en alfa usa el CLI o la clave que le des |
-| Elegir modelo o nivel de gasto | 🟡 `fast`/`capable` por agente y `models.flag`/`presets` en el manifiesto (Codex `local` = `--oss`); sin elegir aún desde la UI | ❌ | ✅ `spend_tier` economy/standard/premium + filtro previo que ahorra evaluaciones |
+| Elegir el agente | ✅ desde la UI (24.4); `CAI_AGENT` como respaldo | ❌ | ✅ el CLI que abras; `--cli` en el lote |
+| **Cambiar de agente desde la UI**, por acción | ✅ por defecto, por acción y «con Claude Code ▾» en cada botón, con las capacidades de cada agente comprobadas (24.4) | n/a | 🟡 la web en alfa usa el CLI o la clave que le des |
+| Elegir modelo o nivel de gasto | 🟡 modelo o preset por agente y por acción desde la UI (24.4; Codex `local` = `--oss`); sin niveles de gasto | ❌ | ✅ `spend_tier` economy/standard/premium + filtro previo que ahorra evaluaciones |
 | **Modelos gratuitos o locales** (Ollama, OpenRouter `:free`) | 🟡 «si tu CLI los usa», sin guía ni prueba | ❌ | ✅ guías verificadas (OpenCode + Ollama, Kimi, OpenRouter) y rutas de coste cero |
 | Esquemas para el agente | 🟡 en `docs/AGENT_INTERFACE.md`; sin MCP, el agente tiene que buscarlos | n/a | 🟡 |
 | Matriz de agentes probada | 🟡 Claude Code sin MCP (5/5) | ❌ | 🟡 verificaciones por CLI en sus docs |

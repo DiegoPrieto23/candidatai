@@ -5,6 +5,7 @@ import {
   ChatCircleDotsIcon,
   CircleNotchIcon,
   ClockCountdownIcon,
+  RobotIcon,
   TerminalWindowIcon,
   XIcon,
 } from '@phosphor-icons/react'
@@ -18,6 +19,7 @@ import {
   useOpenAgentRun,
 } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
+import { AgentsSection } from '@/components/AgentsSection'
 import { ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -99,6 +101,8 @@ function RunCard({ run }: { run: AgentRunView }) {
         </span>
       </div>
       <p className="mt-1 text-xs text-muted-foreground">
+        {run.model ? t('withAgentModel', { agent: run.agent, model: run.model }) : t('withAgent', { agent: run.agent })}
+        {' · '}
         {t('onlyWith')} <span className="font-mono">{run.allowed_tools.join(', ')}</span>
       </p>
 
@@ -316,6 +320,7 @@ function Requests() {
 
 export function AgentPage() {
   const { t } = useTranslation('agent')
+  const { t: tAgents } = useTranslation('agents')
   return (
     <div className="animate-in fade-in duration-300">
       <div className="mb-6">
@@ -340,6 +345,13 @@ export function AgentPage() {
           <Requests />
         </section>
       </div>
+      <section aria-labelledby="agents-title" className="mt-10">
+        <h2 id="agents-title" className="mb-3 flex items-center gap-2 text-lg font-semibold tracking-tight">
+          <RobotIcon className="size-5 text-muted-foreground" weight="duotone" />
+          {tAgents('title')}
+        </h2>
+        <AgentsSection />
+      </section>
     </div>
   )
 }

@@ -779,8 +779,8 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
 
 
 ## ADR-037 · Varios agentes con registro de capacidades; la app sigue sin llamar a un LLM (borrador)
-> Borrador de la fase 24.1. La 24.4 (preferencias y selector en la UI) y la 24.5 (segundo plano con
-> varios agentes) lo completan.
+> Borrador de la fase 24.1, ampliado en la 24.3 y la 24.4. La 24.5 (segundo plano con varios
+> agentes) lo completa.
 
 - **Contexto:** la fase 24 abre CandidatAI a varios agentes, algunos open-source y con modelos
   gratuitos o locales, elegibles desde la UI (`prompts/24-multiagente.md`). Hasta la 23 el
@@ -833,5 +833,39 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
     `AGENTS.md` y `GEMINI.md`, y este manda, así que importarlo duplicaría el contexto.
 - **Sigue igual:** la app no llama a ningún LLM (ADR-001). Los modelos gratuitos o locales se usan
   a través de agentes que ya saben hablar con ellos.
-- **Pendiente (24.4 y 24.5):** dónde se guardan las preferencias (agente por defecto y por acción,
-  en `data/`, no en el repositorio) y con qué criterio se abre el segundo plano a otro agente.
+- **Añadido en la 24.4 (elegir y cambiar de agente desde la UI):**
+  - **preferencias en la base de datos** (`agent_preferences`, migración 0022): agente por
+    defecto, modelo o preset por agente y agente (y modelo) por acción. Son datos de uso de cada
+    persona: viven en `data/`, nunca en el repositorio ni en la configuración generada, que se
+    commitea;
+  - **precedencia en un único sitio** (`services/agent_prefs.py`): elección puntual del botón >
+    preferencia de la acción > agente por defecto > `CAI_AGENT` (respaldo) > el primero habilitado
+    e instalado. El modelo sale del mismo nivel que eligió el agente; si no lo da, del guardado
+    para ese agente. Siempre se devuelve el motivo (`reason`, con un código estable que la UI
+    traduce);
+  - **un agente preferido que no está instalado no se sustituye por otro**: se dice por qué y el
+    botón copia la orden, como hacía `CAI_AGENT`. Cambiar de agente sin avisar haría que una
+    acción corriera con garantías distintas de las que eligió la persona;
+  - **comprobaciones con el registro como fuente:** `search-jobs` necesita `browser`;
+    `research-company` y `training-plan`, `web`; `import-cv-template`, `vision` (queda escrito;
+    aún no tiene botón). Una capacidad `false` bloquea la acción con ese agente; `null` (sin
+    comprobar) la deja lanzar con un aviso, para no dejar fuera a los agentes nuevos mientras se
+    prueban. Las acciones que leen contenido no confiable (`process-jobs`, `review-replies`,
+    `search-jobs`) con un agente de nivel C se abren en terminal con un aviso (sesión dedicada) y
+    nunca en segundo plano. `assess-fit` y `generate-cv` no cuentan como tales: no tienen
+    `get_job` y leen la extracción, ya validada por su esquema;
+  - **el modelo es texto libre validado sin red:** empieza por letra o número (nunca `-`, que
+    sería una bandera), sin espacios ni caracteres que haya que escapar, y con `models.pattern`
+    del agente si lo tiene (clave nueva del manifiesto; OpenCode, `proveedor/modelo`). Sus
+    argumentos (`models.flag` o el preset) van justo detrás del programa, en terminal y en
+    segundo plano. Los subagentes siguen con el modelo de la configuración generada
+    (`fast`/`capable`) o heredan el de la sesión; la UI lo dice;
+  - **auditoría:** el agente lanzado recibe `CAI_CLIENT_NAME=<agente>`, en terminal y en segundo
+    plano, para que lo que haga por la CLI quede a su nombre; `agent_runs` guarda el modelo o el
+    preset. «Abrir en terminal» retoma la sesión con el agente y el modelo que la ejecutaron;
+  - **superficie:** `GET /agent/agents` y `cai agents list --json` ganan `launchable`,
+    `preferences` y `effective` (por acción, en terminal y en segundo plano); `PUT
+    /agent/preferences` (solo la UI); `POST /agent/launch` y `POST /agent/runs` aceptan `agent`,
+    `model` y `preset` para una sola ejecución; los encargos no eligen agente (lo decide la sesión
+    que los atienda).
+- **Pendiente (24.5):** con qué criterio se abre el segundo plano a otro agente.

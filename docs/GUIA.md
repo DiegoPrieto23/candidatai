@@ -234,6 +234,14 @@ Muchas pantallas tienen botones que abren tu agente con la orden ya escrita:
 - **Dejar para mi próxima sesión:** guarda el encargo; `handle-requests` lo hace cuando abras tu
   agente.
 
+**Qué agente se abre.** En la página «Agente», la sección «Agentes» enseña los agentes que tienes,
+qué sabe hacer cada uno y cómo instalar los que faltan. Ahí eliges el agente por defecto, el modelo
+de cada agente y, en la tabla «Por acción», otro agente o modelo para una acción concreta (p. ej.
+OpenCode con un modelo local para procesar ofertas y Claude Code para el CV). El desplegable de cada
+botón dice con qué agente iría («con Claude Code ▾») y te deja usar otro solo esa vez. Si un agente
+no sirve para una acción (le falta el navegador para buscar ofertas, p. ej.), el botón lo dice y no
+lo lanza. Sin nada elegido, se usa `CAI_AGENT` del `.env` o el primero instalado.
+
 ## 12. Configuración
 
 - **`.env`** (en la raíz, fuera de git): `CAI_DATA_DIR`, `SOFFICE_PATH`, claves de InfoJobs y

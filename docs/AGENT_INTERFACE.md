@@ -516,10 +516,21 @@ Sin herramienta MCP, a propósito: son para la persona y la UI, no para el agent
 
 | Comando | Qué hace |
 |---|---|
-| `cai agents list [--json] [--refresh]` | Los agentes de `.agents/manifest.yaml` con `info`, `capabilities`, `enabled`, `config`, `installed`, `version` y `detect_error`. `GET /agent/agents` devuelve lo mismo. La detección se guarda en caché (5 min; 30 s si no está instalado); `--refresh` la repite |
+| `cai agents list [--json] [--refresh]` | Los agentes de `.agents/manifest.yaml` con `info`, `capabilities`, `models` (por nombre, presets, ejemplo y el modelo de los subagentes), `enabled`, `config`, `installed`, `version` y `detect_error`. Con `--json`, también `launchable`, `preferences` y `effective` (fase 24.4: el agente, el modelo, el motivo y si se puede lanzar, por acción, en terminal y en segundo plano). `GET /agent/agents` devuelve lo mismo. La detección se guarda en caché (5 min; 30 s si no está instalado); `--refresh` la repite |
 | `cai agents doctor [--refresh]` | Texto: qué agentes tienes, cuál se usaría hoy y por qué, si hay segundo plano y qué falta para los demás |
 | `cai agents doctor --tokens` | Fase 24.2: tokens estimados (4 caracteres por token) de `AGENTS.md` y de cada skill y rol, y lo que cuestan una valoración y un CV. Marca los skills de más de 6 000 |
 | `cai agents sync` / `cai agents check` | Regeneran o comprueban la configuración generada (`scripts/sync_agents.py`) |
+
+**Elegir agente y modelo (fase 24.4, solo la UI).** `PUT /agent/preferences` guarda (sustituye
+todas) las preferencias: `default_agent`, `agents` (`{agente: {model | preset}}`) y `actions`
+(`{acción: {agent, model | preset}}`). Se validan sin red: el agente tiene que tener `launch`, el
+preset existir y el modelo tener caracteres seguros, no empezar por `-` y, si el agente tiene
+`models.pattern`, cumplirlo (OpenCode: `proveedor/modelo`); si no, 422 con el `field` que falla.
+`POST /agent/launch` y `POST /agent/runs` aceptan `agent`, `model` y `preset` para una sola
+ejecución. La precedencia (botón > acción > por defecto > `CAI_AGENT` > el primero instalado) y las
+comprobaciones por capacidad y por nivel viven en `services/agent_prefs.py`. El modelo va con
+`models.flag` (o el preset) justo detrás del programa, en terminal y en segundo plano. El agente
+lanzado recibe `CAI_CLIENT_NAME=<agente>`.
 
 ### Comandos de matching y worker (solo CLI)
 

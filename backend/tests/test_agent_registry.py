@@ -15,6 +15,7 @@ from typer.testing import CliRunner
 
 from app import cli
 from app.api.main import create_app
+from app.core import migrations
 from app.core.config import REPO_ROOT, get_settings
 from app.services import agent_registry, doctor
 from app.services.agent_registry import Detection, ManifestError
@@ -38,6 +39,11 @@ def fresh_detection() -> Iterator[None]:
     agent_registry.clear_detection_cache()
     yield
     agent_registry.clear_detection_cache()
+
+
+@pytest.fixture
+def db() -> None:
+    migrations.upgrade()
 
 
 @pytest.fixture
@@ -228,7 +234,7 @@ def test_list_agents(fake_detect: list[str]) -> None:
 # --- CLI, API y doctor ---------------------------------------------------------------------------
 
 
-def test_cli_agents_list_json(fake_detect: list[str]) -> None:
+def test_cli_agents_list_json(db: None, fake_detect: list[str]) -> None:
     result = runner.invoke(cli.app, ["agents", "list", "--json"])
     assert result.exit_code == 0, result.output
     agents = {a["name"]: a for a in json.loads(result.output)["agents"]}
@@ -249,8 +255,12 @@ def test_cli_agents_list_json(fake_detect: list[str]) -> None:
     gemini = agents["gemini"]
     assert gemini["enabled"] is False and gemini["config"] == "none"
     assert "clave de pago" in gemini["info"]["note"]
-    assert agents["codex"]["models"] == {"by_name": True, "presets": ["local"]}
-    assert agents["goose"]["models"] == {"by_name": False, "presets": []}
+    none = {"example": None, "fast": None, "capable": None}
+    assert agents["codex"]["models"] == {"by_name": True, "presets": ["local"], **none}
+    assert agents["goose"]["models"] == {"by_name": False, "presets": [], **none}
+    assert agents["claude"]["models"]["fast"] == "haiku"  # los roles no heredan el de la sesión
+    assert agents["opencode"]["models"]["example"] == "ollama/qwen3:8b"
+    assert "preferences" in json.loads(result.output) and "effective" in json.loads(result.output)
     assert agents["claude"]["enabled"] is True and agents["claude"]["installed"] is True
     assert agents["goose"]["config"] == "none" and agents["goose"]["enabled"] is False
     assert agents["claude"]["capabilities"]["headless"] is True
@@ -333,7 +343,7 @@ def test_check_agents_with_invalid_manifest(
     assert "licence" in result.detail
 
 
-def test_api_lists_agents(fake_detect: list[str]) -> None:
+def test_api_lists_agents(db: None, fake_detect: list[str]) -> None:
     with TestClient(create_app()) as client:
         response = client.get("/agent/agents")
     assert response.status_code == 200
@@ -343,7 +353,7 @@ def test_api_lists_agents(fake_detect: list[str]) -> None:
     assert agents["cursor"]["capabilities"]["isolation_level"] == "C"
 
 
-def test_cli_and_api_return_the_same(fake_detect: list[str]) -> None:
+def test_cli_and_api_return_the_same(db: None, fake_detect: list[str]) -> None:
     result = runner.invoke(cli.app, ["agents", "list", "--json"])
     with TestClient(create_app()) as client:
         response = client.get("/agent/agents")

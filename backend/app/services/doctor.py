@@ -16,6 +16,7 @@ from app.core.config import LEGACY_DB_FILENAME, LEGACY_ENV_PREFIX, REPO_ROOT, Se
 from app.services.documents import pdf
 
 if TYPE_CHECKING:
+    from app.services.agent_prefs import Resolution
     from app.services.agent_registry import AgentSpec
     from app.services.ingestion.email.mailboxes import ImapFactory
 
@@ -467,6 +468,23 @@ def _missing(spec: "AgentSpec", installed: bool, platform: str) -> list[str]:
     return missing
 
 
+def _effective_agents() -> tuple["Resolution", "Resolution"]:
+    """El agente general en terminal y en segundo plano, con las preferencias de la UI (fase 24.4)
+    si la base de datos ya existe."""
+    from sqlalchemy.exc import SQLAlchemyError
+
+    from app.core.db import session_scope
+    from app.services import agent_launch
+
+    try:
+        with session_scope() as session:
+            return agent_launch.choose(session)[1], agent_launch.choose(session, mode="background")[
+                1
+            ]
+    except SQLAlchemyError:
+        return agent_launch.choose(None)[1], agent_launch.choose(None, mode="background")[1]
+
+
 def agents_overview(settings: Settings, refresh: bool = False) -> AgentsOverview:
     from app.services import agent_launch, agent_registry
 
@@ -489,21 +507,21 @@ def agents_overview(settings: Settings, refresh: bool = False) -> AgentsOverview
         )
         for entry in listed
     ]
-    picked = agent_launch.selection()
-    if picked.available:
-        reason = (
-            f"porque CAI_AGENT={settings.agent}"
-            if settings.agent
-            else "el primero del manifiesto que está habilitado e instalado"
-        )
+    picked, background = _effective_agents()
+    if picked.agent and not picked.blocked:
+        reason = {
+            "env": f"porque CAI_AGENT={settings.agent}",
+            "first_installed": "el primero del manifiesto que está habilitado e instalado",
+        }.get(picked.reason, picked.reason_text)
+        if model := agent_launch.model_label(picked.model, picked.preset):
+            reason += f", con {model}"
     else:
-        reason = picked.reason or ""
-    background = agent_launch.background_info()
+        reason = picked.blocked or ""
     return AgentsOverview(
-        selected=picked.agent,
+        selected=picked.agent if not picked.blocked else None,
         selected_reason=reason,
-        background=background.agent,
-        background_reason=background.reason,
+        background=background.agent if not background.blocked else None,
+        background_reason=background.blocked,
         agents=lines,
     )
 

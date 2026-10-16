@@ -3,6 +3,7 @@
 import 'i18next'
 import type agent from '@/locales/es/agent.json'
 import type agentButton from '@/locales/es/agentButton.json'
+import type agents from '@/locales/es/agents.json'
 import type alerts from '@/locales/es/alerts.json'
 import type apply from '@/locales/es/apply.json'
 import type common from '@/locales/es/common.json'
@@ -41,6 +42,7 @@ declare module 'i18next' {
     resources: {
       agent: typeof agent
       agentButton: typeof agentButton
+      agents: typeof agents
       alerts: typeof alerts
       apply: typeof apply
       common: typeof common

@@ -34,6 +34,7 @@ export const keys = {
   apply: (id: number) => ['apply', id] as const,
   agent: ['agent'] as const,
   agentRuns: ['agent', 'runs'] as const,
+  agentAgents: ['agent', 'agents'] as const,
   agentRequests: ['agent', 'requests'] as const,
   skillGaps: (days: number) => ['skill-gaps', days] as const,
   allSkillGaps: ['skill-gaps'] as const,
@@ -839,11 +840,27 @@ export function useAgentLauncher() {
   return useQuery({ queryKey: keys.agent, queryFn: () => unwrap(api.GET('/agent')), staleTime: Infinity })
 }
 
-/** Abre tu agente en una terminal con la orden escrita. No espera a que termine. */
+/** Abre tu agente en una terminal con la orden escrita. No espera a que termine. `agent`: otro
+ * agente solo para esta ejecución (fase 24.4). */
 export function useLaunchAgent() {
   return useMutation({
-    mutationFn: (body: { action: AgentAction; job_id?: number; milestone_id?: number }) =>
-      unwrap(api.POST('/agent/launch', { body })),
+    mutationFn: (body: LaunchTarget & { agent?: string }) => unwrap(api.POST('/agent/launch', { body })),
+  })
+}
+
+// --- Elegir agente (fase 24.4) -----------------------------------------------------------------
+
+/** Los agentes del manifiesto, tus preferencias y el agente efectivo de cada acción. */
+export function useAgentsOverview() {
+  return useQuery({ queryKey: keys.agentAgents, queryFn: () => unwrap(api.GET('/agent/agents')) })
+}
+
+/** Guarda las preferencias (sustituye todas). Cambia el agente de los botones: se refresca todo. */
+export function useSaveAgentPreferences() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (body: Schemas['Preferences']) => unwrap(api.PUT('/agent/preferences', { body })),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.agent }),
   })
 }
 

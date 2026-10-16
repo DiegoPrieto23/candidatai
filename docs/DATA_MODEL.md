@@ -610,6 +610,7 @@ Ejecuciones del agente en segundo plano (ADR-032). Es su propia cola: la llena l
 | job_id | FK jobs? | En `generate-cv` |
 | milestone_id | FK milestones? | Reservado (ninguna acción de entrevista va en segundo plano) |
 | agent | str | El agente del manifiesto (`claude`) |
+| model / preset | str? | El modelo o el preset con que se lanzó (fase 24.4, migración 0022); vacíos: el del agente |
 | status | str | `queued`, `running`, `done`, `needs_user` (terminó con preguntas), `failed`, `cancelled`, `timeout` |
 | prompt | text | La orden, con la nota de segundo plano (y, en `generate-cv`, la de las skills marcadas «No la tengo») |
 | command | JSON | El comando exacto, con las herramientas permitidas: para auditar qué podía hacer |
@@ -646,6 +647,25 @@ Cola de encargos: lo que la UI deja para la próxima sesión interactiva del age
 
 Mismo encargo pendiente (acción, oferta e hito) no se duplica. `get_status` cuenta los pendientes
 en `agent_requests`.
+
+### `agent_preferences`
+Qué agente y qué modelo usa cada acción (fase 24.4, ADR-037, migración 0022). Son datos de uso de
+la persona: viven en la base de datos de `data/`, nunca en el repositorio ni en la configuración
+generada. Las escribe la página «Agente» (`PUT /agent/preferences`, que las sustituye todas) y las
+lee `services/agent_prefs.py`.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | int PK | |
+| scope | str | `default` (el agente por defecto), `agent` (el modelo de un agente) o `action` (el agente de una acción) |
+| key | str | Vacía en `default`; el agente en `agent`; la acción en `action`. Única con `scope` |
+| agent | str? | En `default` y `action` |
+| model / preset | str? | Uno de los dos o ninguno. El modelo es texto libre validado con `models.pattern` del agente, sin red |
+| updated_at | datetime | |
+
+Precedencia: elección puntual del botón > `action` > `default` > `CAI_AGENT` > el primero
+habilitado e instalado. El modelo sale del mismo nivel que eligió el agente; si no lo da, del
+`agent` de ese agente.
 
 ## Ampliaciones de la fase 21
 

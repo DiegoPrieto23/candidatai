@@ -236,6 +236,15 @@ Many pages have buttons that open your agent with the instruction already writte
 - **Leave for my next session**: stores the request;
   `handle-requests` does it when you open your agent.
 
+**Which agent opens.** On the “Agent” page, the “Agents” section shows the agents you have, what
+each one can do and how to install the missing ones. There you pick the default agent, each
+agent's model and, in the “By action” table, a different agent or model for a specific action (e.g.
+OpenCode with a local model to process postings and Claude Code for the CV). Each button's dropdown
+says which agent it would use (“with Claude Code ▾”) and lets you use another one just this once.
+If an agent isn't suited to an action (it has no browser to search for postings, say), the button
+says so and doesn't launch it. With nothing chosen, `CAI_AGENT` from `.env` or the first installed
+agent is used.
+
 ## 12. Configuration
 
 - **`.env`** (at the root, outside git): `CAI_DATA_DIR`, `SOFFICE_PATH`, InfoJobs and Adzuna keys,

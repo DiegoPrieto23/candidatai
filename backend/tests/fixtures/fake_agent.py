@@ -1,6 +1,6 @@
 """Agente falso para los tests de «En segundo plano» (fase 19): imita `claude -p --output-format
 stream-json` sin red ni LLM. El modo sale de `FAKE_AGENT_MODE`; si hay `FAKE_AGENT_LOG`, escribe ahí
-sus argumentos y si ve las variables que se debían quitar.
+sus argumentos, si ve las variables que se debían quitar y su `CAI_CLIENT_NAME`.
 
 Modos: `ok`, `question`, `error`, `denied`, `hang`, `nomcp`, `crash`, `garbage` (líneas que no son
 JSON), `linger` (responde y no sale) y `child` (lanza un hijo que se queda colgado y deja su pid en
@@ -52,7 +52,12 @@ def main() -> int:
     mode = os.environ.get("FAKE_AGENT_MODE", "ok")
     if log := os.environ.get("FAKE_AGENT_LOG"):
         with open(log, "w", encoding="utf-8") as fh:
-            json.dump({"argv": sys.argv[1:], "api_key": "ANTHROPIC_API_KEY" in os.environ}, fh)
+            seen = {
+                "argv": sys.argv[1:],
+                "api_key": "ANTHROPIC_API_KEY" in os.environ,
+                "client_name": os.environ.get("CAI_CLIENT_NAME"),
+            }
+            json.dump(seen, fh)
     if mode == "crash":
         print("boom: algo ha ido mal", file=sys.stderr, flush=True)
         return 3

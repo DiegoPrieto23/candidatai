@@ -6,8 +6,9 @@ con tu suscripción, y tú ves, contestas y apruebas lo que haga.
   `job_id` y el `milestone_id` (fase 17), enteros: ningún texto de una oferta ni de una web llega
   al comando.
 - Qué programa se lanza no está aquí: es `launch` del agente en `.agents/manifest.yaml` (regla
-  dura 2), que se lee con `agent_registry`. Con varios, elige `CAI_AGENT`; si no, el primero que
-  lo tenga y esté instalado.
+  dura 2), que se lee con `agent_registry`. Con varios, cuál se abre lo decide `agent_prefs`
+  (fase 24.4): el botón, la acción, el agente por defecto, `CAI_AGENT` y, si no, el primero
+  habilitado e instalado.
 - Antes de lanzar se quitan del entorno las variables de `launch.unset_env` (p. ej. la clave de la
   API): así el agente usa tu suscripción y no factura por API.
 - Solo Windows de momento (Windows Terminal o, si no está, una ventana de PowerShell). En otro
@@ -23,8 +24,8 @@ import re
 import shutil
 import subprocess
 import sys
-from collections.abc import Callable, Sequence
-from dataclasses import dataclass, field
+from collections.abc import Sequence
+from dataclasses import dataclass, field, replace
 from typing import Literal
 
 from pydantic import BaseModel
@@ -33,7 +34,18 @@ from sqlalchemy.orm import Session
 from app.core.config import REPO_ROOT, get_settings
 from app.models import Milestone
 from app.models.base import utcnow
-from app.services import agent_registry, events, interviews, process
+from app.services import agent_prefs, agent_registry, events, interviews, process
+from app.services.agent_actions import (  # noqa: F401 - se reexportan
+    ACTIONS,
+    CV_STAGES,
+    OUTREACH_STAGES,
+    RESEARCH_STAGES,
+    SENT_STAGES,
+    Action,
+    ActionId,
+    MilestoneRule,
+)
+from app.services.agent_prefs import Preferences, Resolution
 from app.services.agent_registry import (
     DENIED_PLACEHOLDER,
     PROMPT_PLACEHOLDER,
@@ -41,212 +53,8 @@ from app.services.agent_registry import (
     SKILL_PLACEHOLDER,
     TOOLS_PLACEHOLDER,
 )
-from app.services.pipeline import Stage
 
 logger = logging.getLogger(__name__)
-
-ActionId = Literal[
-    "search-jobs",
-    "process-jobs",
-    "assess-fit",
-    "generate-cv",
-    "add-skills",
-    "training-plan",
-    "review-replies",
-    "draft-follow-ups",
-    "draft-follow-up",
-    "broaden-search",
-    "prepare-interview",
-    "mock-interview",
-    "debrief-interview",
-    "offer-questions",
-    "prepare-negotiation",
-    "draft-message",
-    "research-company",
-    "handle-requests",
-    "review-search",
-]
-
-# Hitos de entrevista (fase 17): `upcoming`, programada y por empezar; `past`, ya empezada y no
-# cancelada.
-MilestoneRule = Literal["upcoming", "past"]
-
-
-# Etapas en las que tiene sentido redactar el CV de una oferta (también para rehacerlo).
-CV_STAGES = frozenset({Stage.APPROVED, Stage.CV_READY})
-# Candidaturas enviadas y abiertas: a las que se escribe un seguimiento o un agradecimiento.
-SENT_STAGES = frozenset({Stage.APPLIED, Stage.IN_PROCESS})
-# Mensajes a personas de la empresa (fase 18): desde que apruebas la oferta.
-OUTREACH_STAGES = frozenset({Stage.APPROVED, Stage.CV_READY, Stage.APPLIED, Stage.IN_PROCESS})
-# Investigar la empresa: cualquier oferta abierta ya extraída (también para triarla).
-RESEARCH_STAGES = OUTREACH_STAGES | {Stage.PENDING_TRIAGE}
-
-
-@dataclass(frozen=True)
-class Action:
-    label: str
-    prompt: str  # `{job_id}` si la acción es de una oferta; `{milestone_id}`, de un hito
-    needs_job: bool = False
-    stages: frozenset[Stage] = frozenset()  # con oferta: etapas en las que se puede lanzar
-    wrong_stage: str = ""  # el motivo si la oferta no está en ellas
-    milestone: MilestoneRule | None = None  # acción de un hito de entrevista (y de su oferta)
-    needs_offer: bool = False  # solo si la oferta tiene un `offer_received`
-    # Fase 19: herramientas MCP (sin prefijo) con las que se puede lanzar en segundo plano. Vacío:
-    # la acción solo se abre en una terminal (pregunta, usa tu navegador o la web).
-    background: tuple[str, ...] = ()
-    skill: str | None = None  # el skill que usa la orden, si no se llama como la acción
-
-
-ACTIONS: dict[ActionId, Action] = {
-    "search-jobs": Action(
-        "Buscar ofertas",
-        "Usa el skill search-jobs de CandidatAI para buscar ofertas en las plataformas activas.",
-    ),
-    # Las tres que admiten segundo plano (fase 19). Cada lista es lo mínimo que usan el skill y
-    # sus roles: con un comodín, una oferta con una inyección podría llamar a herramientas que
-    # escriben (`add_event`, `save_source`…).
-    "process-jobs": Action(
-        "Procesar ofertas",
-        "Usa el skill process-jobs de CandidatAI con las ofertas pendientes de extraer.",
-        background=("get_status", "list_jobs", "get_job", "save_extraction"),
-    ),
-    "assess-fit": Action(
-        "Evaluar encaje",
-        "Usa el skill assess-fit de CandidatAI con las ofertas pendientes de revisar.",
-        background=(
-            "list_jobs",
-            "get_profile",
-            "get_context",
-            "get_match",
-            "get_extraction",
-            "save_fit_assessment",
-        ),
-    ),
-    "generate-cv": Action(
-        "Generar CV",
-        "Usa el skill generate-cv de CandidatAI para la oferta {job_id}.",
-        needs_job=True,
-        stages=CV_STAGES,
-        wrong_stage="Solo se genera el CV de una oferta aprobada.",
-        # Las obligatorias ausentes sin marcar se preguntan: `agent_runs` lo comprueba antes.
-        background=(
-            "list_jobs",
-            "check_job_open",
-            "get_match",
-            "get_extraction",
-            "get_profile",
-            "get_context",
-            "list_cv_templates",
-            "save_cv_content",
-            "get_cv_content",
-            "save_cv_verification",
-        ),
-    ),
-    # Página «Skills» (fase 14). Los nombres de las skills salen de las ofertas, así que no van en
-    # la orden: el agente los lee de las marcas con `get_skill_gaps`.
-    "add-skills": Action(
-        "Añadir al perfil las que tengo",
-        "Usa el skill update-profile de CandidatAI para añadir a mi perfil las skills que he "
-        "marcado como «La tengo» en la página Skills (get_skill_gaps con status have).",
-    ),
-    "training-plan": Action(
-        "Plan de formación",
-        "Usa el skill training-plan de CandidatAI con los huecos de skills que he marcado como "
-        "«No la tengo».",
-    ),
-    # Inicio y «Respuestas» (fase 15): el agente propone; el usuario acepta en la UI.
-    "review-replies": Action(
-        "Revisar respuestas",
-        "Usa el skill review-replies de CandidatAI con los correos de empresas sin clasificar.",
-    ),
-    # Procesos y ficha (fase 15): el agente redacta; el usuario copia y envía desde su correo.
-    "draft-follow-ups": Action(
-        "Redactar seguimientos",
-        "Usa el skill draft-follow-up de CandidatAI con los seguimientos y agradecimientos "
-        "pendientes.",
-    ),
-    # Plataformas (fase 16): títulos cercanos a los que apruebas. El agente propone; tú decides.
-    "broaden-search": Action(
-        "Ampliar búsqueda",
-        "Usa el skill broaden-search de CandidatAI para proponerme títulos de puesto cercanos a "
-        "los que apruebo.",
-    ),
-    # Embudo (fase 20): retrospectiva. Solo propone: los pesos y filtros los cambia el usuario.
-    "review-search": Action(
-        "Revisar mi búsqueda",
-        "Usa el skill review-search de CandidatAI para hacer la retrospectiva de mi búsqueda: "
-        "qué funciona y qué cambiar.",
-    ),
-    "draft-follow-up": Action(
-        "Redactar seguimiento",
-        "Usa el skill draft-follow-up de CandidatAI para la oferta {job_id}.",
-        needs_job=True,
-        stages=SENT_STAGES,
-        wrong_stage="Solo se escribe a la empresa de una candidatura enviada y abierta.",
-    ),
-    # Ficha, hitos de entrevista (fase 17). El agente prepara, simula o repasa; lo que proponga
-    # para el perfil pasa por `update-profile` y la confirmación del usuario.
-    "prepare-interview": Action(
-        "Preparar",
-        "Usa el skill prepare-interview de CandidatAI para la entrevista {milestone_id} de la "
-        "oferta {job_id}.",
-        needs_job=True,
-        milestone="upcoming",
-    ),
-    "mock-interview": Action(
-        "Simulacro",
-        "Usa el skill mock-interview de CandidatAI para la entrevista {milestone_id} de la "
-        "oferta {job_id}.",
-        needs_job=True,
-        milestone="upcoming",
-    ),
-    "debrief-interview": Action(
-        "Repasar",
-        "Usa el skill debrief-interview de CandidatAI para repasar la entrevista {milestone_id} "
-        "de la oferta {job_id}.",
-        needs_job=True,
-        milestone="past",
-    ),
-    # Ficha (fase 18): mensaje a una persona de la empresa y dosier de la empresa. El agente
-    # redacta o investiga; la app no envía nada.
-    "draft-message": Action(
-        "Redactar mensaje",
-        "Usa el skill draft-message de CandidatAI para la oferta {job_id}.",
-        needs_job=True,
-        stages=OUTREACH_STAGES,
-        wrong_stage="Solo se escribe a la empresa de una oferta aprobada y abierta.",
-    ),
-    "research-company": Action(
-        "Investigar empresa",
-        "Usa el skill research-company de CandidatAI para la empresa de la oferta {job_id}.",
-        needs_job=True,
-        stages=RESEARCH_STAGES,
-        wrong_stage="Solo para una oferta ya extraída y sin cerrar.",
-    ),
-    # Panel «Agente» (fase 19): la cola de encargos que dejaste para tu próxima sesión.
-    "handle-requests": Action(
-        "Atender encargos",
-        "Usa el skill handle-requests de CandidatAI con los encargos pendientes.",
-    ),
-    "offer-questions": Action(
-        "Dudas antes de aceptar",
-        "Usa el skill debrief-interview de CandidatAI para revisar las dudas antes de aceptar la "
-        "oferta {job_id}.",
-        needs_job=True,
-        stages=frozenset({Stage.IN_PROCESS}),
-        wrong_stage="Solo con un proceso abierto.",
-        needs_offer=True,
-    ),
-    # Fase 21: pregunta y admite pegar el contrato, así que solo en terminal.
-    "prepare-negotiation": Action(
-        "Preparar negociación",
-        "Usa el skill prepare-negotiation de CandidatAI para la oferta {job_id}.",
-        needs_job=True,
-        stages=frozenset({Stage.IN_PROCESS}),
-        wrong_stage="Solo con un proceso abierto.",
-        needs_offer=True,
-    ),
-}
 
 
 class LaunchError(Exception):
@@ -272,8 +80,10 @@ class AgentInfo(BaseModel):
 class LaunchResult(BaseModel):
     ok: bool = True
     agent: str
+    model: str | None = None  # fase 24.4: el modelo o el preset con que se abrió
     prompt: str
     message: str
+    warning: str | None = None  # p. ej. un agente de nivel C con contenido no confiable
 
 
 @dataclass(frozen=True)
@@ -294,6 +104,10 @@ class _Launcher:
     unset_env: list[str]
     resume: list[str] = field(default_factory=list)  # con `{session_id}`
     headless: Headless | None = None
+    # Fase 24.4: el modelo o preset elegido; sus argumentos ya van en los comandos de arriba.
+    model: str | None = None
+    preset: str | None = None
+    warning: str | None = None
 
 
 def prompt_for(action: ActionId, job_id: int | None = None, milestone_id: int | None = None) -> str:
@@ -353,43 +167,146 @@ def _headless(spec: agent_registry.AgentSpec) -> Headless | None:
     )
 
 
-def _pick() -> _Launcher | str:
-    """El agente que se lanzaría, o el motivo por el que no hay ninguno."""
+WINDOWS_ONLY = "Abrir el agente desde la UI solo está disponible en Windows de momento."
+# Motivos por los que no hay agente que lanzar: la UI copia la orden para que la pegues tú. Los
+# demás (capacidad, nivel, modelo) son una elección que no vale y se dicen sin copiar nada.
+_UNAVAILABLE: frozenset[str] = frozenset(
+    {"no_agent", "not_launchable", "not_installed", "no_headless"}
+)
+
+
+def _with_model(parts: list[str], args: list[str]) -> list[str]:
+    """Los argumentos del modelo (`models.flag` o un preset) van justo detrás del programa."""
+    return [*parts[:1], *args, *parts[1:]] if args and parts else list(parts)
+
+
+class Context:
+    """Lo que se lee una vez para elegir agente varias veces en la misma petición: los lanzadores,
+    las preferencias y qué programas están en el `PATH`."""
+
+    def __init__(self, session: Session | None = None):
+        self.launchers = _launchers()
+        self.by_name = {launcher.agent: launcher for launcher in self.launchers}
+        self.prefs = agent_prefs.get_preferences(session) if session is not None else Preferences()
+        self._found: dict[str, bool] = {}
+
+    def installed(self, name: str) -> bool:
+        if name not in self._found:
+            launcher = self.by_name.get(name)
+            self._found[name] = bool(launcher and shutil.which(launcher.command[0]))
+        return self._found[name]
+
+
+def choose(
+    session: Session | None,
+    action: str | None = None,
+    *,
+    agent: str | None = None,
+    model: str | None = None,
+    preset: str | None = None,
+    mode: agent_prefs.Mode = "terminal",
+    ctx: Context | None = None,
+) -> tuple[_Launcher | None, Resolution]:
+    """El agente que usaría `action` (con el modelo ya puesto en sus comandos) y por qué. Sin
+    lanzador si no se puede usar; el motivo va en `Resolution.blocked`. La precedencia y las
+    comprobaciones son de `agent_prefs`."""
+    ctx = ctx or Context(session)
+    if not ctx.launchers and (problem := _manifest_problem()) is not None:
+        return None, Resolution(
+            agent=None,
+            reason="none",
+            reason_text=agent_prefs.REASON_TEXTS["none"],
+            blocked=f"El manifiesto de agentes no es válido: {problem}",
+            blocked_code="no_agent",
+        )
+    res = agent_prefs.resolve(
+        ctx.prefs,
+        action,
+        candidates=list(ctx.by_name),
+        installed=ctx.installed,
+        env_agent=get_settings().agent,
+        agent=agent,
+        model=model,
+        preset=preset,
+        mode=mode,
+    )
+    if not res.usable or res.agent is None:
+        return None, res
+    launcher = ctx.by_name[res.agent]
+    if mode == "background" and launcher.headless is None:
+        blocked = (
+            f"Tu agente ({res.display_name}) no tiene `launch.headless` en "
+            ".agents/manifest.yaml: usa «En terminal»."
+        )
+        return None, res.model_copy(update={"blocked": blocked, "blocked_code": "no_headless"})
+    spec = agent_registry.get(res.agent)
+    args = spec.model_args(res.model, res.preset) if spec is not None else []
+    headless = launcher.headless
+    if headless is not None:
+        headless = replace(headless, command=_with_model(headless.command, args))
+    picked = replace(
+        launcher,
+        command=_with_model(launcher.command, args),
+        resume=_with_model(launcher.resume, args),
+        headless=headless,
+        model=res.model,
+        preset=res.preset,
+        warning=res.warning,
+    )
+    return picked, res
+
+
+def pick(
+    session: Session | None,
+    action: str | None,
+    prompt: str,
+    *,
+    agent: str | None = None,
+    model: str | None = None,
+    preset: str | None = None,
+    mode: agent_prefs.Mode = "terminal",
+) -> _Launcher:
+    """Como `choose`, pero lanza `LaunchError` si no se puede: `unavailable` (con la orden, para
+    copiarla) si no hay agente; `invalid_request` si la elección no vale para la acción."""
+    if mode == "terminal" and sys.platform != "win32":
+        raise LaunchError("unavailable", WINDOWS_ONLY, prompt)
+    ctx = Context(session)
+    try:
+        agent_prefs.check_explicit(agent, model, preset, list(ctx.by_name))
+    except agent_prefs.PreferenceError as exc:
+        raise LaunchError("invalid_request", str(exc)) from exc
+    launcher, res = choose(
+        session, action, agent=agent, model=model, preset=preset, mode=mode, ctx=ctx
+    )
+    if launcher is None:
+        code = "unavailable" if res.blocked_code in _UNAVAILABLE else "invalid_request"
+        raise LaunchError(code, res.blocked or "No se puede lanzar el agente.", prompt)
+    return launcher
+
+
+def _pick(session: Session | None = None) -> _Launcher | str:
+    """El agente que se lanzaría (sin acción), o el motivo por el que no hay ninguno."""
     if sys.platform != "win32":
-        return "Abrir el agente desde la UI solo está disponible en Windows de momento."
-    return _pick_any()
+        return WINDOWS_ONLY
+    return _pick_any(session)
 
 
-def _pick_any() -> _Launcher | str:
+def _pick_any(session: Session | None = None) -> _Launcher | str:
     """Como `_pick`, sin exigir Windows: el segundo plano no abre ninguna ventana."""
-    launchers = _launchers()
-    if not launchers:
-        problem = _manifest_problem()
-        if problem is not None:
-            return f"El manifiesto de agentes no es válido: {problem}"
-        return "Ningún agente tiene `launch` en .agents/manifest.yaml."
-    wanted = get_settings().agent
-    if wanted:
-        launchers = [launcher for launcher in launchers if launcher.agent == wanted]
-        if not launchers:
-            return f"CAI_AGENT={wanted}, pero ese agente no tiene `launch` en el manifiesto."
-    for launcher in launchers:
-        if shutil.which(launcher.command[0]):
-            return launcher
-    names = ", ".join(launcher.command[0] for launcher in launchers)
-    return f"No se encuentra el programa del agente ({names}) en el PATH."
+    launcher, res = choose(session)
+    return launcher if launcher is not None else (res.blocked or "")
 
 
-def info() -> AgentInfo:
-    picked = _pick()
+def info(session: Session | None = None) -> AgentInfo:
+    picked = _pick(session)
     if isinstance(picked, str):
         return AgentInfo(available=False, reason=picked)
     return AgentInfo(available=True, agent=picked.agent)
 
 
-def selection() -> AgentInfo:
+def selection(session: Session | None = None) -> AgentInfo:
     """Como `info`, sin exigir Windows: el agente que se usaría hoy (`cai agents doctor`)."""
-    picked = _pick_any()
+    picked = _pick_any(session)
     if isinstance(picked, str):
         return AgentInfo(available=False, reason=picked)
     return AgentInfo(available=True, agent=picked.agent)
@@ -400,15 +317,22 @@ def _quote(value: str) -> str:
     return "'" + value.replace("'", "''") + "'"
 
 
+# Fase 24.4: el agente lanzado se identifica con esta variable, para que los eventos que haga por
+# la CLI queden a su nombre (por MCP lo dice el propio cliente).
+CLIENT_ENV = "CAI_CLIENT_NAME"
+
+
 def powershell_command(
     launcher: _Launcher, value: str, command: Sequence[str] | None = None
 ) -> str:
-    """Lo que ejecuta la ventana: quitar las variables de `unset_env` y abrir el agente. `value`
-    va donde esté `{prompt}` (o `{session_id}`, si `command` es `launch.resume`)."""
+    """Lo que ejecuta la ventana: quitar las variables de `unset_env`, poner `CAI_CLIENT_NAME` y
+    abrir el agente. `value` va donde esté `{prompt}` (o `{session_id}`, si `command` es
+    `launch.resume`)."""
     markers = (PROMPT_PLACEHOLDER, SESSION_PLACEHOLDER)
     parts = [value if p in markers else p for p in command or launcher.command]
     unset = [f"Remove-Item Env:{name} -ErrorAction SilentlyContinue" for name in launcher.unset_env]
-    return "; ".join([*unset, "& " + " ".join(_quote(p) for p in parts)])
+    client = f"$env:{CLIENT_ENV} = {_quote(launcher.agent)}"
+    return "; ".join([*unset, client, "& " + " ".join(_quote(p) for p in parts)])
 
 
 def shell_args(command: str) -> list[str]:
@@ -483,55 +407,85 @@ def launch(
     action: ActionId,
     job_id: int | None = None,
     milestone_id: int | None = None,
+    *,
+    agent: str | None = None,
+    model: str | None = None,
+    preset: str | None = None,
 ) -> LaunchResult:
-    """Abre el agente en una terminal con la orden de `action`. No espera a que termine."""
+    """Abre el agente en una terminal con la orden de `action`. No espera a que termine. `agent`,
+    `model` y `preset`: la elección puntual del botón (si no, las preferencias)."""
     spec = ACTIONS[action]
     prompt, _, _ = check_target(session, action, job_id, milestone_id)
-    return _open(spec.label, prompt, lambda picked: picked.command, prompt)
+    picked = pick(session, action, prompt, agent=agent, model=model, preset=preset)
+    return _open(spec.label, prompt, picked, picked.command, prompt)
+
+
+def model_label(model: str | None, preset: str | None) -> str | None:
+    """El modelo o el preset, para enseñarlo (`None`: el que use el agente por defecto)."""
+    return f"preset {preset}" if preset else model
 
 
 def _open(
-    label: str, prompt: str, command_of: Callable[[_Launcher], list[str]], value: str
+    label: str, prompt: str, picked: _Launcher, command: list[str], value: str
 ) -> LaunchResult:
-    """Abre la terminal con `command_of(agente)`, sustituyendo el marcador por `value`."""
-    picked = _pick()
-    if isinstance(picked, str):
-        raise LaunchError("unavailable", picked, prompt)
-    command = command_of(picked)
+    """Abre la terminal con `command` de `picked`, sustituyendo el marcador por `value`."""
     try:
         _open_terminal(f"CandidatAI · {label}", powershell_command(picked, value, command))
     except OSError as exc:
         raise LaunchError("unavailable", f"No se pudo abrir la terminal: {exc}", prompt) from exc
+    model = model_label(picked.model, picked.preset)
+    with_model = f" ({model})" if model else ""
     return LaunchResult(
         agent=picked.agent,
+        model=model,
         prompt=prompt,
-        message=f"Se ha abierto {picked.agent} en una terminal con la orden escrita.",
+        message=f"Se ha abierto {picked.agent}{with_model} en una terminal con la orden escrita.",
+        warning=picked.warning,
     )
 
 
 def resumable_agents() -> frozenset[str]:
-    """Los agentes que «Abrir en terminal» puede retomar: el que se abriría, si tiene `resume`."""
-    picked = _pick()
-    if isinstance(picked, str) or not picked.resume:
+    """Los agentes que «Abrir en terminal» puede retomar: los que se pueden abrir, están
+    instalados y tienen `resume` (la sesión se retoma con el agente que la ejecutó)."""
+    if sys.platform != "win32":
         return frozenset()
-    return frozenset({picked.agent})
+    return frozenset(
+        launcher.agent
+        for launcher in _launchers()
+        if launcher.resume and shutil.which(launcher.command[0])
+    )
 
 
-def resume_in_terminal(label: str, prompt: str, agent: str, session_id: str | None) -> LaunchResult:
-    """«Abrir en terminal» de una ejecución en segundo plano (fase 19): retoma su sesión si el
-    agente sabe (`launch.resume`) y es el mismo que la ejecutó; si no, abre la orden de nuevo."""
-    picked = _pick()
-    if (
-        not isinstance(picked, str)
-        and session_id
-        and picked.agent == agent
-        and picked.resume
-        and SESSION_ID_RE.fullmatch(session_id)
-    ):
-        result = _open(label, prompt, lambda launcher: launcher.resume, session_id)
-        result.message = f"Se ha abierto {picked.agent} en una terminal con la misma sesión."
+def resume_in_terminal(
+    session: Session,
+    action: ActionId,
+    prompt: str,
+    run_agent: str,
+    session_id: str | None,
+    model: str | None = None,
+    preset: str | None = None,
+) -> LaunchResult:
+    """«Abrir en terminal» de una ejecución en segundo plano (fase 19): retoma su sesión con el
+    agente y el modelo que la ejecutaron si ese agente sabe (`launch.resume`); si no, abre la
+    orden de nuevo con el agente que toque."""
+    label = ACTIONS[action].label
+    if sys.platform != "win32":
+        raise LaunchError("unavailable", WINDOWS_ONLY, prompt)
+    same, _ = choose(session, action, agent=run_agent, model=model, preset=preset)
+    if same is not None and session_id and same.resume and SESSION_ID_RE.fullmatch(session_id):
+        result = _open(label, prompt, same, same.resume, session_id)
+        result.message = f"Se ha abierto {same.agent} en una terminal con la misma sesión."
         return result
-    return _open(label, prompt, lambda launcher: launcher.command, prompt)
+    if same is not None:
+        return _open(label, prompt, same, same.command, prompt)
+    # El agente que la ejecutó ya no se puede usar: se abre el que toque hoy, y se dice.
+    picked = pick(session, action, prompt)
+    result = _open(label, prompt, picked, picked.command, prompt)
+    changed = (
+        f"No se puede abrir {run_agent}, que la ejecutó: se ha abierto {picked.agent} desde cero."
+    )
+    result.warning = " ".join(filter(None, [changed, result.warning]))
+    return result
 
 
 # --- En segundo plano (fase 19) ----------------------------------------------------------------
@@ -562,21 +516,14 @@ class BackgroundInfo(BaseModel):
     reason: str | None = None
 
 
-def pick_headless() -> _Launcher | str:
+def pick_headless(session: Session | None = None, action: str | None = None) -> _Launcher | str:
     """El agente con el que se lanzaría en segundo plano, o el motivo por el que no se puede."""
-    picked = _pick_any()
-    if isinstance(picked, str):
-        return picked
-    if picked.headless is None:
-        return (
-            f"Tu agente ({picked.agent}) no tiene `launch.headless` en .agents/manifest.yaml: "
-            "usa «En terminal»."
-        )
-    return picked
+    launcher, res = choose(session, action, mode="background")
+    return launcher if launcher is not None else (res.blocked or "")
 
 
-def background_info() -> BackgroundInfo:
-    picked = pick_headless()
+def background_info(session: Session | None = None, action: str | None = None) -> BackgroundInfo:
+    picked = pick_headless(session, action)
     if isinstance(picked, str):
         return BackgroundInfo(available=False, reason=picked)
     return BackgroundInfo(available=True, agent=picked.agent)
@@ -616,3 +563,59 @@ def headless_command(launcher: _Launcher, prompt: str, action: ActionId) -> list
         else:
             command.append(part)
     return command
+
+
+# --- Elegir agente desde la UI (fase 24.4) -----------------------------------------------------
+
+
+class EffectiveAction(BaseModel):
+    """Con qué agente y modelo iría una acción, por qué y si se puede (en terminal y, si la
+    acción lo admite, en segundo plano)."""
+
+    action: ActionId
+    label: str
+    terminal: Resolution
+    background: Resolution | None = None
+
+
+class AgentsOverview(agent_registry.AgentList):
+    """`GET /agent/agents` y `cai agents list --json`: los agentes del manifiesto, tus preferencias
+    y el agente efectivo de cada acción."""
+
+    launchable: list[str]  # los que se pueden abrir desde la app (habilitados y con `launch`)
+    preferences: Preferences
+    effective: list[EffectiveAction]
+
+
+def effective_actions(session: Session | None, ctx: Context | None = None) -> list[EffectiveAction]:
+    ctx = ctx or Context(session)
+    return [
+        EffectiveAction(
+            action=action_id,
+            label=spec.label,
+            terminal=choose(session, action_id, ctx=ctx)[1],
+            background=choose(session, action_id, mode="background", ctx=ctx)[1]
+            if spec.background
+            else None,
+        )
+        for action_id, spec in ACTIONS.items()
+    ]
+
+
+def overview(session: Session | None, refresh: bool = False) -> AgentsOverview:
+    """Lanza `agent_registry.ManifestError` si el manifiesto no es válido."""
+    listed = agent_registry.list_agents(refresh=refresh)
+    ctx = Context(session)
+    return AgentsOverview(
+        agents=listed.agents,
+        launchable=list(ctx.by_name),
+        preferences=ctx.prefs,
+        effective=effective_actions(session, ctx),
+    )
+
+
+def save_preferences(session: Session, prefs: Preferences) -> Preferences:
+    """Guarda las preferencias (`agent_prefs.PreferenceError` si alguna no vale)."""
+    return agent_prefs.save_preferences(
+        session, prefs, [launcher.agent for launcher in _launchers()]
+    )

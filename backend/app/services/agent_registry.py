@@ -14,6 +14,7 @@ Lo específico de cada agente está en el manifiesto, nunca aquí (regla dura 2)
 
 import contextlib
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -107,11 +108,20 @@ class ModelsSpec(_Strict):
     capable: str | None = None
     flag: list[str] = []  # argumentos con `{model}`, p. ej. `["--model", "{model}"]`
     presets: dict[str, list[str]] = {}  # configuraciones con nombre, p. ej. `local` en Codex
+    # Fase 24.4: expresión regular que valida el nombre de un modelo (p. ej. `proveedor/modelo` en
+    # OpenCode) y su ejemplo para la UI. Sin ella, cualquier nombre con caracteres seguros.
+    pattern: str | None = None
+    example: str | None = None
 
     @model_validator(mode="after")
     def _flag_has_model(self) -> "ModelsSpec":
         if self.flag and MODEL_PLACEHOLDER not in self.flag:
             raise ValueError(f"`flag` necesita un argumento «{MODEL_PLACEHOLDER}»")
+        if self.pattern is not None:
+            try:
+                re.compile(self.pattern)
+            except re.error as exc:
+                raise ValueError(f"`pattern` no es una expresión regular válida: {exc}") from exc
         for name, args in self.presets.items():
             if not args:
                 raise ValueError(f"el preset «{name}» está vacío")
@@ -376,10 +386,14 @@ def clear_detection_cache() -> None:
 
 
 class ModelChoice(BaseModel):
-    """Cómo se puede elegir el modelo de un agente (la elección persistente llega en la 24.4)."""
+    """Cómo se puede elegir el modelo de un agente (la elección se guarda con `agent_prefs`)."""
 
     by_name: bool  # admite un modelo por su nombre (`models.flag`)
     presets: list[str]  # nombres de `models.presets`
+    example: str | None = None  # cómo se escribe un nombre de modelo (`models.example`)
+    # El modelo de los subagentes (roles), de la configuración generada; `None`: el de la sesión.
+    fast: str | None = None
+    capable: str | None = None
 
 
 class AgentEntry(BaseModel):
@@ -414,7 +428,11 @@ def list_agents(refresh: bool = False) -> AgentList:
                 info=spec.info,
                 capabilities=spec.capabilities,
                 models=ModelChoice(
-                    by_name=bool(spec.models.flag), presets=list(spec.models.presets)
+                    by_name=bool(spec.models.flag),
+                    presets=list(spec.models.presets),
+                    example=spec.models.example,
+                    fast=spec.models.fast,
+                    capable=spec.models.capable,
                 ),
                 installed=detection.installed,
                 version=detection.version,

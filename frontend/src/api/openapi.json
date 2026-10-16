@@ -8121,7 +8121,7 @@
           "agent"
         ],
         "summary": "Get Agent Launcher",
-        "description": "Qué agente abren los botones (o por qué no se puede) y las órdenes disponibles.",
+        "description": "Qué agente abren los botones (o por qué no se puede) y las órdenes disponibles, con el\nagente de cada una según tus preferencias (fase 24.4).",
         "operationId": "get_agent_launcher",
         "responses": {
           "200": {
@@ -8223,7 +8223,7 @@
           "agent"
         ],
         "summary": "List Agents",
-        "description": "Los agentes del manifiesto (fase 24.1): qué son, qué saben hacer y si están instalados. Lo\nmismo que `cai agents list --json`; solo lectura.",
+        "description": "Los agentes del manifiesto (fase 24.1): qué son, qué saben hacer y si están instalados, con\ntus preferencias y el agente efectivo de cada acción (fase 24.4). Lo mismo que\n`cai agents list --json`; solo lectura.",
         "operationId": "list_agents",
         "responses": {
           "200": {
@@ -8231,7 +8231,119 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AgentList"
+                  "$ref": "#/components/schemas/AgentsOverview"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/agent/preferences": {
+      "put": {
+        "tags": [
+          "agent"
+        ],
+        "summary": "Save Agent Preferences",
+        "description": "Guarda tus preferencias de agente (fase 24.4): sustituye todas las anteriores.",
+        "operationId": "save_agent_preferences",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Preferences"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Preferences"
                 }
               }
             }
@@ -9180,7 +9292,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/LaunchBody"
+                "$ref": "#/components/schemas/RequestBody"
               }
             }
           }
@@ -12165,6 +12277,26 @@
           "background": {
             "type": "boolean",
             "title": "Background"
+          },
+          "agent": {
+            "$ref": "#/components/schemas/Resolution"
+          },
+          "alternatives": {
+            "items": {
+              "$ref": "#/components/schemas/Resolution"
+            },
+            "type": "array",
+            "title": "Alternatives"
+          },
+          "background_agent": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BackgroundInfo"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -12174,9 +12306,48 @@
           "needs_job",
           "needs_milestone",
           "prompt",
-          "background"
+          "background",
+          "agent",
+          "alternatives",
+          "background_agent"
         ],
         "title": "Action"
+      },
+      "ActionPref": {
+        "properties": {
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "preset": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preset"
+          },
+          "agent": {
+            "type": "string",
+            "title": "Agent"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "agent"
+        ],
+        "title": "ActionPref"
       },
       "AddEventResult": {
         "properties": {
@@ -12742,22 +12913,6 @@
         ],
         "title": "AgentInfo"
       },
-      "AgentList": {
-        "properties": {
-          "agents": {
-            "items": {
-              "$ref": "#/components/schemas/AgentEntry"
-            },
-            "type": "array",
-            "title": "Agents"
-          }
-        },
-        "type": "object",
-        "required": [
-          "agents"
-        ],
-        "title": "AgentList"
-      },
       "AgentRequestList": {
         "properties": {
           "requests": {
@@ -12987,6 +13142,17 @@
             "type": "string",
             "title": "Agent"
           },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
           "status": {
             "type": "string",
             "enum": [
@@ -13105,6 +13271,7 @@
           "job_id",
           "milestone_id",
           "agent",
+          "model",
           "status",
           "prompt",
           "allowed_tools",
@@ -13167,6 +13334,43 @@
           "background"
         ],
         "title": "AgentStatus"
+      },
+      "AgentsOverview": {
+        "properties": {
+          "agents": {
+            "items": {
+              "$ref": "#/components/schemas/AgentEntry"
+            },
+            "type": "array",
+            "title": "Agents"
+          },
+          "launchable": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Launchable"
+          },
+          "preferences": {
+            "$ref": "#/components/schemas/Preferences"
+          },
+          "effective": {
+            "items": {
+              "$ref": "#/components/schemas/EffectiveAction"
+            },
+            "type": "array",
+            "title": "Effective"
+          }
+        },
+        "type": "object",
+        "required": [
+          "agents",
+          "launchable",
+          "preferences",
+          "effective"
+        ],
+        "title": "AgentsOverview",
+        "description": "`GET /agent/agents` y `cai agents list --json`: los agentes del manifiesto, tus preferencias\ny el agente efectivo de cada acción."
       },
       "AlertJob": {
         "properties": {
@@ -15859,6 +16063,60 @@
         "type": "object",
         "title": "DraftSentBody"
       },
+      "EffectiveAction": {
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "search-jobs",
+              "process-jobs",
+              "assess-fit",
+              "generate-cv",
+              "add-skills",
+              "training-plan",
+              "review-replies",
+              "draft-follow-ups",
+              "draft-follow-up",
+              "broaden-search",
+              "prepare-interview",
+              "mock-interview",
+              "debrief-interview",
+              "offer-questions",
+              "prepare-negotiation",
+              "draft-message",
+              "research-company",
+              "handle-requests",
+              "review-search"
+            ],
+            "title": "Action"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "terminal": {
+            "$ref": "#/components/schemas/Resolution"
+          },
+          "background": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Resolution"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "action",
+          "label",
+          "terminal"
+        ],
+        "title": "EffectiveAction",
+        "description": "Con qué agente y modelo iría una acción, por qué y si se puede (en terminal y, si la\nacción lo admite, en segundo plano)."
+      },
       "EmailPollResult": {
         "properties": {
           "source_id": {
@@ -17836,6 +18094,42 @@
               }
             ],
             "title": "Milestone Id"
+          },
+          "agent": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 32
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "preset": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 40
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preset"
           }
         },
         "additionalProperties": false,
@@ -17843,7 +18137,8 @@
         "required": [
           "action"
         ],
-        "title": "LaunchBody"
+        "title": "LaunchBody",
+        "description": "Fase 24.4: `agent`, `model` y `preset` eligen agente y modelo solo para esta ejecución."
       },
       "LaunchResult": {
         "properties": {
@@ -17856,6 +18151,17 @@
             "type": "string",
             "title": "Agent"
           },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
           "prompt": {
             "type": "string",
             "title": "Prompt"
@@ -17863,6 +18169,17 @@
           "message": {
             "type": "string",
             "title": "Message"
+          },
+          "warning": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warning"
           }
         },
         "type": "object",
@@ -19284,6 +19601,39 @@
             },
             "type": "array",
             "title": "Presets"
+          },
+          "example": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Example"
+          },
+          "fast": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fast"
+          },
+          "capable": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Capable"
           }
         },
         "type": "object",
@@ -19292,7 +19642,37 @@
           "presets"
         ],
         "title": "ModelChoice",
-        "description": "Cómo se puede elegir el modelo de un agente (la elección persistente llega en la 24.4)."
+        "description": "Cómo se puede elegir el modelo de un agente (la elección se guarda con `agent_prefs`)."
+      },
+      "ModelPref": {
+        "properties": {
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "preset": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preset"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ModelPref",
+        "description": "El modelo (por su nombre) o el preset de un agente. Los dos vacíos: el que use el agente."
       },
       "NetworkPerson": {
         "properties": {
@@ -19952,6 +20332,63 @@
         ],
         "title": "PendingTask",
         "description": "Tarea del worker para este intento que aún no ha terminado."
+      },
+      "Preferences": {
+        "properties": {
+          "default_agent": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Default Agent"
+          },
+          "agents": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ModelPref"
+            },
+            "type": "object",
+            "title": "Agents",
+            "default": {}
+          },
+          "actions": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ActionPref"
+            },
+            "propertyNames": {
+              "enum": [
+                "search-jobs",
+                "process-jobs",
+                "assess-fit",
+                "generate-cv",
+                "add-skills",
+                "training-plan",
+                "review-replies",
+                "draft-follow-ups",
+                "draft-follow-up",
+                "broaden-search",
+                "prepare-interview",
+                "mock-interview",
+                "debrief-interview",
+                "offer-questions",
+                "prepare-negotiation",
+                "draft-message",
+                "research-company",
+                "handle-requests",
+                "review-search"
+              ]
+            },
+            "type": "object",
+            "title": "Actions",
+            "default": {}
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "Preferences"
       },
       "PreferencesFit": {
         "properties": {
@@ -21695,6 +22132,65 @@
         ],
         "title": "RepostSignal"
       },
+      "RequestBody": {
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "search-jobs",
+              "process-jobs",
+              "assess-fit",
+              "generate-cv",
+              "add-skills",
+              "training-plan",
+              "review-replies",
+              "draft-follow-ups",
+              "draft-follow-up",
+              "broaden-search",
+              "prepare-interview",
+              "mock-interview",
+              "debrief-interview",
+              "offer-questions",
+              "prepare-negotiation",
+              "draft-message",
+              "research-company",
+              "handle-requests",
+              "review-search"
+            ],
+            "title": "Action"
+          },
+          "job_id": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Job Id"
+          },
+          "milestone_id": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Milestone Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "action"
+        ],
+        "title": "RequestBody"
+      },
       "ResearchSource": {
         "properties": {
           "title": {
@@ -21798,6 +22294,120 @@
           "age_days"
         ],
         "title": "ResearchView"
+      },
+      "Resolution": {
+        "properties": {
+          "agent": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent"
+          },
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "preset": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preset"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "explicit",
+              "action",
+              "default",
+              "env",
+              "first_installed",
+              "none"
+            ],
+            "title": "Reason"
+          },
+          "reason_text": {
+            "type": "string",
+            "title": "Reason Text"
+          },
+          "blocked": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Blocked"
+          },
+          "blocked_code": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "no_agent",
+                  "not_launchable",
+                  "not_installed",
+                  "no_headless",
+                  "capability",
+                  "untrusted",
+                  "model"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Blocked Code"
+          },
+          "warning": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warning"
+          }
+        },
+        "type": "object",
+        "required": [
+          "agent",
+          "reason",
+          "reason_text"
+        ],
+        "title": "Resolution",
+        "description": "El agente que usaría una acción, con qué modelo, por qué y si se puede lanzar con él."
       },
       "ResolvedOptions": {
         "properties": {

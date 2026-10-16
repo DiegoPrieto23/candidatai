@@ -1,6 +1,12 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
-import { CaretDownIcon, ClockCountdownIcon, GearSixIcon, TerminalWindowIcon } from '@phosphor-icons/react'
+import {
+  ArrowsLeftRightIcon,
+  CaretDownIcon,
+  ClockCountdownIcon,
+  GearSixIcon,
+  TerminalWindowIcon,
+} from '@phosphor-icons/react'
 import { useTranslation } from 'react-i18next'
 import { ApiError } from '@/api/client'
 import {
@@ -11,7 +17,15 @@ import {
   type AgentAction,
 } from '@/api/queries'
 import { Button } from '@/components/ui/button'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { blockedText, COPY_PROMPT_CODES, warningText } from '@/lib/agentText'
 import { errorMessage } from '@/lib/errors'
 import { cn } from '@/lib/utils'
 
@@ -38,6 +52,10 @@ async function copy(text: string): Promise<boolean> {
  *
  * El desplegable de al lado (fase 19) ofrece «En segundo plano» (sin ventana, desde el worker, solo
  * en los skills que no preguntan) y «Dejar para mi próxima sesión» (cola de encargos).
+ *
+ * Fase 24.4: el desplegable dice con qué agente iría («con Claude Code ▾», según tus preferencias)
+ * y deja abrirlo con otro solo esta vez. Si el agente no sirve para la acción (le falta una
+ * capacidad, p. ej.), el botón se deshabilita y el desplegable dice por qué.
  */
 export function AgentButton({
   action,
@@ -75,9 +93,13 @@ export function AgentButton({
   const failed = (error: unknown, fallback: string) =>
     show({ tone: 'error', text: error instanceof Error ? errorMessage(error) : fallback })
 
-  const run = () =>
-    launch.mutate(target, {
-      onSuccess: (result) => show({ tone: 'ok', text: t('opened', { agent: result.agent }) }),
+  const run = (agentName?: string) =>
+    launch.mutate(agentName ? { ...target, agent: agentName } : target, {
+      onSuccess: (result) => {
+        const opened = t('opened', { agent: result.agent })
+        const warning = result.warning ? warningText(result) : null
+        show({ tone: 'ok', text: warning ? `${opened} ${t('warning', { warning })}` : opened })
+      },
       onError: async (error) => {
         const prompt = error instanceof ApiError ? error.details.find((d) => d.field === 'prompt')?.received : null
         if (prompt) {
@@ -111,9 +133,15 @@ export function AgentButton({
       onError: (error) => failed(error, t('requestFailed')),
     })
 
+  const spec = launcher.data?.actions.find((a) => a.id === action)
   const agent = launcher.data?.available ? launcher.data.agent : null
-  const canBackground = launcher.data?.actions.find((a) => a.id === action)?.background ?? false
-  const background = launcher.data?.background
+  const canBackground = spec?.background ?? false
+  const background = spec?.background_agent ?? launcher.data?.background
+  // Fase 24.4: el agente de esta acción y los demás, para elegir solo esta vez.
+  const effective = spec?.agent
+  const shownAgent = effective?.display_name ?? null
+  const blocked = effective?.blocked && !COPY_PROMPT_CODES.has(effective.blocked_code ?? '') ? blockedText(effective) : null
+  const alternatives = spec?.alternatives ?? []
   const busy = launch.isPending || startRun.isPending || leave.isPending
   return (
     <span className={cn('inline-flex flex-col items-start gap-1.5', className)}>
@@ -122,10 +150,10 @@ export function AgentButton({
           type="button"
           variant={variant}
           size={size}
-          onClick={run}
-          disabled={busy}
+          onClick={() => run()}
+          disabled={busy || blocked !== null}
           className="rounded-r-none"
-          title={agent ? t('titleAgent', { agent }) : t('titleCopy')}
+          title={blocked ?? (agent ? t('titleAgent', { agent: shownAgent ?? agent }) : t('titleCopy'))}
         >
           <TerminalWindowIcon weight="duotone" />
           {children}
@@ -137,18 +165,25 @@ export function AgentButton({
               variant={variant}
               size={size}
               disabled={busy}
-              aria-label={t('more')}
+              aria-label={shownAgent ? t('moreWith', { agent: shownAgent }) : t('more')}
               className={cn('rounded-l-none border-l px-2', variant === 'default' && 'border-l-primary-foreground/25')}
             >
+              {shownAgent && (
+                <span className="hidden max-w-32 truncate text-xs font-normal sm:inline">
+                  {t('with', { agent: shownAgent })}
+                </span>
+              )}
               <CaretDownIcon weight="bold" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-72">
-            <DropdownMenuItem onSelect={run}>
+            <DropdownMenuItem onSelect={() => run()} disabled={blocked !== null}>
               <TerminalWindowIcon weight="duotone" />
               <span>
                 <span className="block font-medium">{t('terminal')}</span>
-                <span className="block text-xs text-muted-foreground">{t('terminalHint')}</span>
+                <span className={cn('block text-xs', blocked ? 'text-destructive' : 'text-muted-foreground')}>
+                  {blocked ?? (effective && warningText(effective)) ?? t('terminalHint')}
+                </span>
               </span>
             </DropdownMenuItem>
             {canBackground && (
@@ -163,6 +198,28 @@ export function AgentButton({
                   </span>
                 </span>
               </DropdownMenuItem>
+            )}
+            {alternatives.length > 0 && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">{t('onceWith')}</DropdownMenuLabel>
+                {alternatives.map((alt) => {
+                  const altBlocked = blockedText(alt)
+                  const altWarning = warningText(alt)
+                  return (
+                    <DropdownMenuItem key={alt.agent} onSelect={() => run(alt.agent ?? undefined)} disabled={altBlocked !== null}>
+                      <ArrowsLeftRightIcon weight="duotone" />
+                      <span>
+                        <span className="block font-medium">{t('openWith', { agent: alt.display_name ?? alt.agent })}</span>
+                        {(altBlocked ?? altWarning) && (
+                          <span className="block text-xs text-muted-foreground">{altBlocked ?? altWarning}</span>
+                        )}
+                      </span>
+                    </DropdownMenuItem>
+                  )
+                })}
+                <DropdownMenuSeparator />
+              </>
             )}
             {action !== 'handle-requests' && (
               <DropdownMenuItem onSelect={leaveForLater}>

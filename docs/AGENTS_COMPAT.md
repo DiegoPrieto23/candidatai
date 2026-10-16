@@ -295,8 +295,14 @@ empresa» (ficha), abren tu
 agente en una terminal (Windows Terminal o PowerShell) con la orden del skill ya escrita; tú
 ves, contestas y apruebas lo que haga. Qué programa se abre lo dice `launch` de cada agente en el
 manifiesto: `command` (con `{prompt}` donde va la orden) y `unset_env` (variables que se quitan
-antes, como la clave de la API, para que use tu suscripción). Con varios agentes, elige `CAI_AGENT` (`claude`,
-`codex`…). Solo Windows de momento; en otro sistema, o sin el agente en el `PATH`, el botón copia
+antes, como la clave de la API, para que use tu suscripción). Con varios agentes, se elige en la
+página «Agente» (fase 24.4): agente por defecto, agente y modelo por acción y, en cada botón,
+«con Claude Code ▾» para usar otro solo esa vez. Sin preferencias guardadas manda `CAI_AGENT`
+(`claude`, `codex`…) y, si no, el primero habilitado e instalado. Una acción que necesita una
+capacidad que el agente no tiene (navegador, web) no se lanza con él; las que leen contenido no
+confiable (`process-jobs`, `review-replies`, `search-jobs`) con un agente de nivel C se abren en
+terminal con un aviso y nunca en segundo plano. El agente lanzado lleva `CAI_CLIENT_NAME` con su
+nombre, para que lo que haga por la CLI quede a su nombre. Solo Windows de momento; en otro sistema, o sin el agente en el `PATH`, el botón copia
 la orden para que la pegues tú. Probado con Claude Code; Codex, sin probar.
 
 ### En segundo plano y cola de encargos (fase 19, ADR-032)
