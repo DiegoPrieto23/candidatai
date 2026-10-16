@@ -143,6 +143,17 @@ Open your agent **at the repository root**: that's where it finds the instructio
 
 More detail, and how to add an agent: [`AGENTS_COMPAT.md`](AGENTS_COMPAT.md) (Spanish).
 
+### Without paying for tokens: free and local models
+
+Besides your subscription (Claude, ChatGPT), you can use open-source agents with a **local model**
+(Ollama or LM Studio: free, and nothing leaves your computer) or a **free cloud model** (OpenRouter
+`:free`, Antigravity's free plan: free, with daily limits, and the postings and your profile go to
+the provider). With Ollama, set `OLLAMA_CONTEXT_LENGTH=32768` or more: with its default 4,096,
+agents don't work. `cai agents doctor` and each agent's card tell you which models you have and
+whether the context is enough. Models of about 8B or less tend to fail on the CV. Full guide, with
+recommended models by memory and what leaves your computer in each case:
+[`MODELOS_GRATIS.md`](MODELOS_GRATIS.md) (Spanish).
+
 ## 6. Start the app every day
 
 - **With the installer:** open the "CandidatAI" shortcut. To close it, close its window.
@@ -245,6 +256,11 @@ says which agent it would use (“with Claude Code ▾”) and lets you use anot
 If an agent isn't suited to an action (it has no browser to search for postings, say), the button
 says so and doesn't launch it. With nothing chosen, `CAI_AGENT` from `.env` or the first installed
 agent is used.
+
+**Spending tiers.** On the same page, “Economy”, “Balanced” and “Maximum” store the agent and model
+for the main actions. “Economy” uses a local model to process, assess and classify replies, and
+your most capable agent for the CV. Fill them in once and apply one with a click. “Undo the last
+one” puts your preferences back as they were.
 
 ## 12. Configuration
 

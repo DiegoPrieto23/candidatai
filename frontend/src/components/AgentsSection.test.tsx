@@ -1,7 +1,14 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
-import type { AgentEntry, AgentResolution, AgentsOverview } from '@/api/client'
+import type {
+  AgentEntry,
+  AgentResolution,
+  AgentsOverview,
+  LocalModelsStatus,
+  SpendTier,
+  SpendTiers,
+} from '@/api/client'
 import { mockApi, renderApp, status } from '@/test/utils'
 
 const launcher = {
@@ -102,7 +109,7 @@ function overview(changes: Partial<AgentsOverview> = {}): AgentsOverview {
   }
 }
 
-function page(data: AgentsOverview = overview()) {
+function page(data: AgentsOverview = overview(), extra: Record<string, unknown> = {}) {
   return mockApi({
     'GET /status': status(),
     'GET /agent': launcher,
@@ -110,7 +117,65 @@ function page(data: AgentsOverview = overview()) {
     'GET /agent/requests': { pending: 0, requests: [] },
     'GET /agent/agents': data,
     'PUT /agent/preferences': (request: Request) => request.json(),
+    'GET /agent/tiers': tiers(),
+    'GET /agent/local-models': localModels(),
+    ...extra,
   })
+}
+
+const pref = (agent: string, model: string | null = null, preset: string | null = null) => ({ agent, model, preset })
+
+function tiers(changes: Partial<SpendTiers> = {}): SpendTiers {
+  const closed = ['process-jobs', 'assess-fit', 'review-replies'] as const
+  const make = (id: SpendTier['id'], label: string, closedPref: ReturnType<typeof pref>, extra: Partial<SpendTier> = {}) => ({
+    id,
+    label,
+    actions: { ...Object.fromEntries(closed.map((a) => [a, closedPref])), 'generate-cv': pref('claude') },
+    custom: false,
+    active: false,
+    notes: [],
+    ...extra,
+  })
+  return {
+    actions: [...closed, 'generate-cv'],
+    tiers: [
+      make('economy', 'Económico', pref('opencode'), { notes: ['needs_local_model'] }),
+      make('balanced', 'Equilibrado', pref('claude', 'haiku')),
+      make('max', 'Máximo', pref('claude')),
+    ],
+    can_undo: false,
+    ...changes,
+  }
+}
+
+function localModels(changes: Partial<LocalModelsStatus> = {}): LocalModelsStatus {
+  return {
+    provider: 'ollama',
+    url: 'http://127.0.0.1:11434',
+    running: true,
+    version: '0.12.6',
+    error: null,
+    env_context: null,
+    default_context: 4096,
+    min_context: 32768,
+    models: [
+      {
+        name: 'gpt-oss:20b',
+        family: 'gptoss',
+        parameter_size: '20.9B',
+        params_b: 20.9,
+        quantization: 'MXFP4',
+        size_gb: 13.8,
+        max_context: 131072,
+        context: 4096,
+        context_source: 'default',
+        tools: true,
+        small: false,
+      },
+    ],
+    warnings: [{ code: 'context_low', text: 'texto del servidor', model: 'gpt-oss:20b', action: null }],
+    ...changes,
+  }
 }
 
 function lastPut(calls: ReturnType<typeof mockApi>) {
@@ -209,6 +274,8 @@ describe('Sección «Agentes» (fase 24.4)', () => {
       'GET /agent/runs': { active: 0, runs: [] },
       'GET /agent/requests': { pending: 0, requests: [] },
       'GET /agent/agents': overview(),
+      'GET /agent/tiers': tiers(),
+      'GET /agent/local-models': localModels(),
       'PUT /agent/preferences': {
         status: 422,
         body: {
@@ -225,5 +292,72 @@ describe('Sección «Agentes» (fase 24.4)', () => {
     const opencode = await screen.findByRole('listitem', { name: 'OpenCode' })
     await userEvent.type(within(opencode).getByLabelText('Modelo'), 'qwen3{Enter}')
     expect(await screen.findByRole('alert')).toHaveTextContent('no tiene el formato de OpenCode')
+  })
+})
+
+describe('Niveles de gasto y modelos locales (fase 24.6)', () => {
+  it('enseña los tres niveles con su propuesta y aplica uno con un clic', async () => {
+    const applied = tiers({
+      can_undo: true,
+      tiers: tiers().tiers.map((t) => (t.id === 'balanced' ? { ...t, active: true } : t)),
+    })
+    const calls = page(overview(), { 'POST /agent/tiers/balanced/apply': applied })
+    renderApp('/agente')
+    const economy = await screen.findByRole('listitem', { name: 'Económico' })
+    expect(within(economy).getAllByText('OpenCode')).toHaveLength(3)
+    expect(within(economy).getByText(/Pon el modelo local/)).toBeInTheDocument()
+    const balanced = screen.getByRole('listitem', { name: 'Equilibrado' })
+    expect(within(balanced).getAllByText('Claude Code · haiku')).toHaveLength(3)
+    await userEvent.click(within(balanced).getByRole('button', { name: 'Aplicar' }))
+    await waitFor(() =>
+      expect(calls.some((c) => c.method === 'POST' && c.path === '/agent/tiers/balanced/apply')).toBe(true),
+    )
+  })
+
+  it('«Deshacer» aparece si hay algo que deshacer', async () => {
+    const calls = page(overview(), {
+      'GET /agent/tiers': tiers({ can_undo: true }),
+      'POST /agent/tiers/undo': tiers(),
+    })
+    renderApp('/agente')
+    await userEvent.click(await screen.findByRole('button', { name: 'Deshacer el último' }))
+    await waitFor(() => expect(calls.some((c) => c.path === '/agent/tiers/undo')).toBe(true))
+  })
+
+  it('edita un nivel y guarda el modelo local', async () => {
+    const calls = page(overview(), { 'PUT /agent/tiers/economy': tiers() })
+    renderApp('/agente')
+    const economy = await screen.findByRole('listitem', { name: 'Económico' })
+    await userEvent.click(within(economy).getByRole('button', { name: 'Editar' }))
+    await userEvent.type(within(economy).getByLabelText('Modelo para Procesar ofertas'), 'ollama/gpt-oss:20b')
+    await userEvent.click(within(economy).getByRole('button', { name: 'Guardar' }))
+    await waitFor(() => {
+      const put = calls.find((c) => c.method === 'PUT' && c.path === '/agent/tiers/economy')
+      expect(put?.body).toMatchObject({
+        actions: { 'process-jobs': { agent: 'opencode', model: 'ollama/gpt-oss:20b' }, 'generate-cv': { agent: 'claude' } },
+      })
+    })
+  })
+
+  it('la tarjeta de un agente con modelos locales enseña Ollama y avisa del contexto', async () => {
+    page()
+    renderApp('/agente')
+    const codex = await screen.findByRole('listitem', { name: 'Codex' })
+    const local = await within(codex).findByLabelText('Modelos locales (Ollama)')
+    expect(within(local).getByText('gpt-oss:20b')).toBeInTheDocument()
+    expect(within(local).getByText(/sin OLLAMA_CONTEXT_LENGTH/)).toBeInTheDocument()
+    expect(within(local).getByText(/contexto de 4096 tokens/)).toBeInTheDocument()
+    // Claude Code no admite modelos locales: sin bloque.
+    const claude = screen.getByRole('listitem', { name: 'Claude Code' })
+    expect(within(claude).queryByLabelText('Modelos locales (Ollama)')).not.toBeInTheDocument()
+  })
+
+  it('dice si Ollama no responde', async () => {
+    page(overview(), {
+      'GET /agent/local-models': localModels({ running: false, version: null, models: [], warnings: [], error: 'x' }),
+    })
+    renderApp('/agente')
+    const codex = await screen.findByRole('listitem', { name: 'Codex' })
+    expect(await within(codex).findByText(/Ollama no responde en http:\/\/127\.0\.0\.1:11434/)).toBeInTheDocument()
   })
 })

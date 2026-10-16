@@ -1,8 +1,16 @@
 import { useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CheckIcon, CopyIcon } from '@phosphor-icons/react'
-import type { AgentEntry, AgentPreferences, AgentResolution, AgentsOverview } from '@/api/client'
-import { useAgentsOverview, useSaveAgentPreferences, type AgentAction } from '@/api/queries'
+import type {
+  AgentEntry,
+  AgentPreferences,
+  AgentResolution,
+  AgentsOverview,
+  LocalModelsStatus,
+} from '@/api/client'
+import { useAgentsOverview, useLocalModels, useSaveAgentPreferences, type AgentAction } from '@/api/queries'
+import { LocalModels } from '@/components/LocalModels'
+import { SpendTiers } from '@/components/SpendTiers'
 import { ErrorState, InlineCode } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -17,6 +25,7 @@ import { cn } from '@/lib/utils'
  * Sección «Agentes» de la página «Agente» (fase 24.4, ADR-037): qué agentes hay y qué sabe hacer
  * cada uno, el agente por defecto, el modelo de cada agente y el agente y el modelo de cada acción.
  * Las preferencias se guardan enteras (`PUT /agent/preferences`) en la base de datos de `data/`.
+ * Fase 24.6: niveles de gasto y, en los agentes con modelos locales, el Ollama de este equipo.
  */
 
 type Save = (change: (prefs: AgentPreferences) => void) => void
@@ -187,12 +196,14 @@ function AgentCard({
   prefs,
   save,
   busy,
+  local,
 }: {
   entry: AgentEntry
   launchable: boolean
   prefs: AgentPreferences
   save: Save
   busy: boolean
+  local?: LocalModelsStatus
 }) {
   const { t } = useTranslation('agents')
   const platform = navigator.userAgent.includes('Mac') ? 'macos' : navigator.userAgent.includes('Linux') ? 'linux' : 'windows'
@@ -216,6 +227,7 @@ function AgentCard({
       {!entry.enabled && <p className="mt-2 text-xs text-muted-foreground">{t('onlyCompatible')}</p>}
       {entry.enabled && !launchable && <p className="mt-2 text-xs text-muted-foreground">{t('notLaunchable')}</p>}
       {launchable && <ModelControls entry={entry} prefs={prefs} save={save} busy={busy} />}
+      {entry.enabled && entry.capabilities.local_models && <LocalModels status={local} />}
     </li>
   )
 }
@@ -317,6 +329,7 @@ export function AgentsSection() {
   const { t } = useTranslation('agents')
   const { data, isPending, isError, error, refetch } = useAgentsOverview()
   const mutation = useSaveAgentPreferences()
+  const local = useLocalModels(Boolean(data?.agents.some((a) => a.enabled && a.capabilities.local_models)))
   if (isPending) return <Skeleton className="h-48" />
   if (isError) return <ErrorState error={error} onRetry={() => void refetch()} />
 
@@ -371,9 +384,12 @@ export function AgentsSection() {
             prefs={data.preferences}
             save={save}
             busy={mutation.isPending}
+            local={local.data}
           />
         ))}
       </ul>
+
+      <SpendTiers overview={data} />
 
       <section aria-labelledby="by-action-title">
         <h3 id="by-action-title" className="text-base font-semibold tracking-tight">

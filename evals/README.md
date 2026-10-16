@@ -1,12 +1,13 @@
 # Evals
 
-Dos evaluaciones con datos **inventados** contra el perfil de `demo/`. Resultados y lectura en
+Tres evaluaciones con datos **inventados** contra el perfil de `demo/`. Resultados y lectura en
 `REPORT.md`.
 
 | Eval | Qué mide | Casos | Comando (desde `backend/`) |
 |---|---|---|---|
 | Matching | Si la app separa las ofertas que encajan de las que no (filtros duros + score frente al umbral de triaje) | `matching/seed.jsonl` (80) | `uv run cai eval matching [--no-embeddings]` |
 | CV | Los CVs que deja el agente con `generate-cv` | `cv/cases.jsonl` (10) | `uv run cai eval cv [--agent NOMBRE]` |
+| Compatibilidad | Un agente y un modelo recorren `process-jobs`, `assess-fit` y `generate-cv` sobre 5 ofertas, en su propia demo | `compat/jobs.txt` (5 de `cv/`) | `uv run cai eval compat --agent NOMBRE [--model M]` |
 
 ## Matching
 
@@ -52,3 +53,16 @@ Comprobaciones:
 
 Informe en JSON y Markdown en `data-demo/evals/reports/cv-*`. Solo funciona en la demo
 (`CAI_DATA_DIR` con la marca `.demo`): los casos se escriben para el perfil ficticio.
+
+## Compatibilidad
+
+`cai eval compat` (fase 24.6) es la matriz de `docs/AGENTS_COMPAT.md` automatizada:
+
+1. crea `data-demo-compat-<agente>-<modelo>/` y lanza tu agente en segundo plano;
+2. aprueba las 5 ofertas en esa demo;
+3. mide la extracción (11 campos frente a la esperada), las valoraciones, `eval cv`, el tiempo y
+   los tokens.
+
+Resultados en `compat/results/` (uno por agente, modelo y día) y el resumen, en `compat/REPORT.md`
+(generado). Con un agente sin segundo plano da los pasos manuales; después, `--import`.
+

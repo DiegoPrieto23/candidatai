@@ -523,7 +523,7 @@ Sin herramienta MCP, a propósito: son para la persona y la UI, no para el agent
 | Comando | Qué hace |
 |---|---|
 | `cai agents list [--json] [--refresh]` | Los agentes de `.agents/manifest.yaml` con `info`, `capabilities`, `models` (por nombre, presets, ejemplo y el modelo de los subagentes), `enabled`, `config`, `installed`, `version` y `detect_error`. Con `--json`, también `launchable`, `preferences` y `effective` (fase 24.4: el agente, el modelo, el motivo y si se puede lanzar, por acción, en terminal y en segundo plano). `GET /agent/agents` devuelve lo mismo. La detección se guarda en caché (5 min; 30 s si no está instalado); `--refresh` la repite |
-| `cai agents doctor [--refresh]` | Texto: qué agentes tienes, cuál se usaría hoy y por qué, si hay segundo plano y qué falta para los demás |
+| `cai agents doctor [--refresh]` | Texto: qué agentes tienes, cuál se usaría hoy y por qué, si hay segundo plano y qué falta para los demás. Fase 24.6: sección «Modelos locales (Ollama)» (lo mismo que `GET /agent/local-models`): si responde, sus modelos con parámetros, contexto y si admiten herramientas, y avisos de contexto bajo (< 32 768) o de un modelo pequeño elegido para `generate-cv`. Solo `/api/version`, `/api/tags` y `/api/show` |
 | `cai agents doctor --tokens` | Fase 24.2: tokens estimados (4 caracteres por token) de `AGENTS.md` y de cada skill y rol, y lo que cuestan una valoración y un CV. Marca los skills de más de 6 000 |
 | `cai agents sync` / `cai agents check` | Regeneran o comprueban la configuración generada (`scripts/sync_agents.py`) |
 
@@ -539,6 +539,14 @@ comprobaciones por capacidad y por nivel viven en `services/agent_prefs.py`. El 
 segundo plano, fase 24.5), en terminal y en segundo plano. El agente
 lanzado recibe `CAI_CLIENT_NAME=<agente>`.
 
+**Niveles de gasto (fase 24.6, solo la UI).** `GET /agent/tiers` devuelve los tres niveles
+(`economy`, `balanced`, `max`) con el agente y el modelo de `process-jobs`, `assess-fit`,
+`review-replies` y `generate-cv`, si están editados (`custom`), si coinciden con tus preferencias
+(`active`), avisos (`notes`) y `can_undo`. `PUT /agent/tiers/{nivel}` guarda un nivel (se valida
+como las preferencias); `POST /agent/tiers/{nivel}/reset` vuelve a la propuesta;
+`POST /agent/tiers/{nivel}/apply` pone sus acciones en tus preferencias por acción y guarda las de
+antes; `POST /agent/tiers/undo` las devuelve.
+
 ### Comandos de matching y worker (solo CLI)
 
 | Comando | Qué hace |
@@ -548,6 +556,7 @@ lanzado recibe `CAI_CLIENT_NAME=<agente>`.
 | `cai eval matching [--profile RUTA] [--no-seed] [--no-embeddings] [--json]` | Precision, recall y F1 con el umbral actual y por umbral sobre `evals/matching/*.jsonl` (perfil de demo) y `data/evals/*.jsonl` (tu perfil). Guarda el informe en `data/evals/reports/` |
 | `cai demo seed [--dir data-demo] [--force] [--eval-cv] [--json]` | Crea una carpeta de datos ficticia (fase 12.1, ADR-020): perfil demo, 60 ofertas, 8 semanas de historial y 2 CVs. Nunca escribe en `data/`. `--eval-cv` añade los 10 casos de `evals/cv/` aprobados y sin CV (en una demo existente, solo los que falten). `--json` devuelve `data_dir`, `jobs`, `events`, `by_stage`, `by_source`, `cvs`, `pdf_engine` y `warnings`. Sin herramienta MCP: no es para el agente |
 | `cai eval cv [--agent NOMBRE] [--min-coverage 0.8] [--json]` | Comprueba los CVs guardados de los casos de `evals/cv/` (solo en la demo): evidencias, skills, skills básicas, una página, cobertura, idioma y verificación. Un caso sin CV es «pendiente». Guarda el informe en `evals/reports/` de la carpeta de datos (`evals/README.md`) |
+| `cai eval compat --agent NOMBRE [--model M \| --preset P] [--timeout MIN] [--import] [--approve] [--json]` | Fase 24.6: la matriz de compatibilidad sobre su propia demo (`data-demo-compat-<agente>-<modelo>/`). Lanza el agente en segundo plano para `process-jobs`, `assess-fit` y `generate-cv`, y aprueba las 5 ofertas y marca las skills ausentes solo en esa demo. Mide la extracción (11 campos), las valoraciones, `eval cv`, el tiempo, los turnos y los tokens. Guarda `evals/compat/results/<fecha>-<agente>-<modelo>.json` y regenera `evals/compat/REPORT.md`. Si un paso no tiene segundo plano, imprime los pasos manuales; `--approve` aprueba y `--import` mide lo hecho a mano. Lanza tu agente: sin herramienta MCP |
 
 ### Fuentes: empresas objetivo y portales (fase 09, solo CLI)
 

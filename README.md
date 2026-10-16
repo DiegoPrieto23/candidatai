@@ -244,14 +244,19 @@ language (in English or Spanish).
 
 ## Compatible agents
 
-| Agent | Status |
-|---|---|
-| **Claude Code** | Reference: built and tested with it, with MCP and without (CLI only: 5/5 jobs extracted, assessed and with a CV passing the eval). Skills can also run **in the background** from the UI |
-| **Codex** | Generated configuration (`.codex/`); not yet in the tested matrix. With `--oss` it uses local models through Ollama or LM Studio |
-| **OpenCode** (open-source) | Generated configuration (`opencode.json`, `.opencode/agents/`), checked against its binary; untested with a model. Works with Ollama, LM Studio, OpenRouter or any OpenAI-compatible API. Runs `process-jobs` and `assess-fit` **in the background** with the same tool ceiling as Claude Code |
-| **Qwen Code** (open-source) | Generated configuration (`.qwen/`), untested. Its free OAuth plan closed on 15/04/2026: use it with Ollama, LM Studio, OpenRouter or a DashScope key |
-| **Antigravity CLI** | Generated MCP configuration (`.agents/mcp_config.json`), untested. Free plan with a Google account; replaces Gemini CLI |
-| **Cursor, Copilot CLI, Pi, goose…** | Untested: they work if they read `AGENTS.md` and speak MCP or run commands |
+| Agent | Licence | Free | Local | Status |
+|---|---|---|---|---|
+| **Claude Code** | proprietary | no (your Claude plan) | no | **Tested**: reference, with MCP and without (CLI only: 5/5 jobs extracted, assessed and with a CV passing the eval). Skills can also run **in the background** from the UI |
+| **Codex** | Apache-2.0 | with a local model | yes (`--oss`, `local` preset) | **Configured, untested** (`.codex/`). Uses your ChatGPT account or Ollama/LM Studio |
+| **OpenCode** | MIT | with a local or free model | yes (Ollama, LM Studio) | **Configured, untested with a model** (`opencode.json`, `.opencode/agents/`), checked against its binary. Runs `process-jobs` and `assess-fit` **in the background** with the same tool ceiling as Claude Code |
+| **Qwen Code** | Apache-2.0 | with a local or free model | yes | **Configured, untested** (`.qwen/`). Its free OAuth plan closed on 15/04/2026 |
+| **Antigravity CLI** | proprietary | yes (Google free plan) | no | **Configured, untested** (`.agents/mcp_config.json`). Replaces Gemini CLI |
+| **Cursor, Copilot CLI, Pi, goose…** | various | depends | depends | **Compatible via `AGENTS.md`**: they work if they read `AGENTS.md` and speak MCP or run commands |
+
+How to use it without paying for tokens (Ollama on Windows, which model for your memory and what
+leaves your computer in each case): [`docs/MODELOS_GRATIS.md`](docs/MODELOS_GRATIS.md) (Spanish).
+The measured matrix for each agent and model, from `cai eval compat`, is in
+[`evals/compat/REPORT.md`](evals/compat/REPORT.md).
 
 Gemini CLI is no longer listed: since 18/06/2026 it only works with a paid Gemini API key or an
 enterprise licence. With a free Google account, use Antigravity CLI.

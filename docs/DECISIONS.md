@@ -11,6 +11,9 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   ejecuta un skill (o una tarea programada del agente, si la soporta). Los botones de la UI no
   pueden generar texto por sí solos. Toda la frontera con el LLM está en la interfaz para agentes,
   así que añadir una vía por API en el futuro no obliga a rehacer los servicios.
+- **Nota (fase 24.6):** leer los metadatos de un servidor de modelos local (qué modelos tiene y su
+  contexto, en Ollama) no es llamar a un LLM. No se envía texto ni se genera nada. Está limitado
+  por código a esas rutas (ADR-037).
 
 ## ADR-002 · SQLite + SQLAlchemy 2 + Alembic
 - **Contexto:** un solo usuario en local; despliegue más adelante.
@@ -779,9 +782,11 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   hasta entonces, en inglés aparecen algunas frases del servidor en español.
 
 
-## ADR-037 · Varios agentes con registro de capacidades; la app sigue sin llamar a un LLM (borrador)
-> Borrador de la fase 24.1, ampliado en la 24.3, la 24.4 y la 24.5. La 24.6 (modelos gratuitos
-> y matriz) lo cierra.
+## ADR-037 · Varios agentes con registro de capacidades; la app sigue sin llamar a un LLM
+> Fase 24.1, ampliado en la 24.3, la 24.4 y la 24.5 y cerrado en la 24.6 (modelos gratuitos,
+> niveles de gasto y matriz). Los resultados de la matriz con agentes open-source los añade la
+> pasada del usuario (`docs/pruebas/fase-24.6-matriz.md`).
+> **Pendiente:** la decisión sobre el ADR-001 (al final), que espera a esos resultados.
 
 - **Contexto:** la fase 24 abre CandidatAI a varios agentes, algunos open-source y con modelos
   gratuitos o locales, elegibles desde la UI (`prompts/24-multiagente.md`). Hasta la 23 el
@@ -899,3 +904,42 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
     forma de comprobarla sin un modelo. Se reevalúan en la 24.6, con modelos locales;
   - **cola:** sigue de una en una; cada fila lleva su agente, su formato de salida y, si hace
     falta, su configuración, así que se encolan ejecuciones de agentes distintos.
+- **Añadido en la 24.6 (modelos gratuitos, niveles de gasto y matriz):**
+  - **diagnóstico de modelos locales solo con metadatos:** `services/local_models.py` consulta el
+    Ollama de este equipo (`CAI_OLLAMA_URL`, solo direcciones locales) con `GET /api/version`,
+    `GET /api/tags` y `POST /api/show`. Cualquier otra ruta se rechaza antes de salir (lista
+    blanca en la llamada y en un `event_hook` del cliente) y un test busca rutas de inferencia en
+    el código. No es una llamada a un LLM: no se envía texto ni se genera nada (ADR-001, nota). El
+    contexto de cada modelo sale de `num_ctx`, de `OLLAMA_CONTEXT_LENGTH` o del valor por defecto
+    (4 096). Se avisa por debajo de 32 768 y si se elige un modelo de unos 8B o menos para
+    redactar. Superficie: `cai agents doctor`, `GET /agent/local-models` y la tarjeta del agente;
+  - **niveles de gasto** (`services/spend_tiers.py`): «Económico», «Equilibrado» y «Máximo» son
+    conjuntos de agente y modelo para `process-jobs`, `assess-fit`, `review-replies` y
+    `generate-cv`. Se guardan en `agent_preferences` (`scope` `tier`), sin migración. Aplicar copia
+    antes las preferencias por acción (`tier_undo`) y «Deshacer» las devuelve. Las demás acciones,
+    el agente por defecto y los modelos por agente no se tocan. Guardar las preferencias de la
+    24.4 ya no borra estas filas. **La propuesta sale del manifiesto y de lo instalado**, sin
+    nombres de modelos en el código:
+    - el agente más capaz es el primero instalado en el orden del manifiesto;
+    - el local es el primero instalado con `local_models` y nivel A o B, mejor con segundo plano,
+      y con su preset `local` si lo tiene;
+    - el rápido es `models.fast`;
+  - **matriz automatizada:** `cai eval compat --agent <a> [--model|--preset]` crea su propia demo
+    (`data-demo-compat-<agente>-<modelo>/`) y lanza `process-jobs` y `assess-fit` por el camino del
+    segundo plano (`agent_runs` + `agent_runner`, en el mismo proceso, sin worker). Después
+    aprueba las 5 ofertas y marca como «No la tengo» las obligatorias que falten, solo en esa demo
+    (lo que contestaría la persona). Por último lanza `generate-cv` y mide:
+    - 11 campos de la extracción;
+    - las valoraciones;
+    - las 7 comprobaciones de `cai eval cv`;
+    - el tiempo, los turnos y los tokens (el lector de Claude Code guarda ahora los tokens del
+      resultado).
+    Si un paso no puede ir en segundo plano, imprime los pasos manuales; `--approve` y `--import`
+    los completan. Guarda `evals/compat/results/*.json` y regenera `evals/compat/REPORT.md`;
+  - **la configuración personal de cada agente** (proveedor, clave, modelos) va en su carpeta de
+    usuario, nunca en los ficheros generados del repositorio (`docs/MODELOS_GRATIS.md`);
+  - **Qwen Code sigue sin segundo plano:** sin un modelo no se puede comprobar su techo (criterio de
+    la 24.5);
+  - **¿Hay que revisar el ADR-001?** Solo si ningún agente con un modelo local supera la matriz en
+    las acciones cerradas (`process-jobs`, `assess-fit`). La decisión espera a la pasada del
+    usuario con OpenCode y Ollama. Hasta entonces, el ADR-001 se mantiene sin cambios.

@@ -137,6 +137,16 @@ class ClaudeStreamParser:
         for key in ("num_turns", "duration_ms", "total_cost_usd"):
             if isinstance(event.get(key), int | float):
                 state.usage[key] = event[key]
+        # Fase 24.6: los tokens, para la matriz (`cai eval compat`).
+        tokens = event.get("usage") if isinstance(event.get("usage"), dict) else {}
+        for key, source in (
+            ("input_tokens", "input_tokens"),
+            ("output_tokens", "output_tokens"),
+            ("cache_read_tokens", "cache_read_input_tokens"),
+        ):
+            value = tokens.get(source)
+            if isinstance(value, int) and not isinstance(value, bool):
+                state.usage[key] = value
         denied = sorted(
             {
                 self._name({"name": d.get("tool_name")})

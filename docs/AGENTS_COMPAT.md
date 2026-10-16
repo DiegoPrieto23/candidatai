@@ -57,23 +57,37 @@ detectar. `cai doctor` resume lo mismo en su sección «Agentes».
 | Elegir modelo al lanzar | `--model <modelo>` | `-m <modelo>`; preset `local` = `--oss -m gpt-oss:20b` | `-m proveedor/modelo` | `-m <modelo>` | — | — |
 | Permisos | `.claude/settings.json` (a mano, igual que `policy`) | Sandbox y aprobaciones de Codex | `permission` de `opencode.json`, desde `policy` | `permissions` de `.qwen/settings.json`, desde `policy` | Los suyos | Los de cada herramienta |
 
-## Matriz probada (fase 12.3)
+## Matriz probada (fases 12.3 y 24.6)
 
-Mismas 5 ofertas ficticias para todos (`evals/compat/jobs.txt`, casos de `evals/cv/cases.jsonl`),
-dadas de alta solo con su texto con `cai demo seed --compat`. Cada agente recorre
-`process-jobs` → `assess-fit` → (el usuario aprueba) → `generate-cv`, y se mide con
-`cai eval cv --agent …` y comparando la extracción con la esperada.
+Mismas 5 ofertas ficticias para todos (`evals/compat/jobs.txt`, casos de `evals/cv/cases.jsonl`).
+Cada agente recorre `process-jobs` → `assess-fit` → (aprobar) → `generate-cv`. Se mide la extracción
+frente a la esperada (11 campos por oferta), las valoraciones, `cai eval cv`, el tiempo y los tokens.
 
-| | Claude Code sin MCP (solo `cai … --json`) | Claude Code con MCP | Codex | Otros |
-|---|---|---|---|---|
-| Fecha | 2026-10-05 | Pendiente (`docs/pruebas/fase-12-compatibilidad.txt`) | Sin probar | Sin probar |
-| Cómo | Opus 5.5; cada rol en una ejecución distinta siguiendo `.agents/roles/*.md` (nivel C: sin subagentes con herramientas propias) | Skills y subagentes generados | — | — |
-| `process-jobs` | 5/5 al primer intento; **54 de 55 campos** iguales a la extracción esperada (difiere un `title_normalized`, en español) | | | |
-| `assess-fit` | 5/5 valoraciones guardadas (4 `strong`, 1 `possible`) | | | |
-| `generate-cv` | 5/5 CVs al primer intento, 1 página, sin avisos; verificador: 5 `passed`, 0 bloqueantes, 4 avisos | | | |
-| `cai eval cv` | **5/5 pasan las 7 comprobaciones** | | | |
-| Tiempo | ~2 min extraer, ~4,5 min redactar y ~2 min verificar (más lectura); ~3,5 s por comando `cai` | | | |
-| Ajustes | Ver abajo | | | |
+Desde la 24.6 lo hace `cai eval compat` (`docs/MODELOS_GRATIS.md`, «Comprobar que tu modelo da la
+talla»):
+
+```
+uv run --directory backend cai eval compat --agent claude
+uv run --directory backend cai eval compat --agent opencode --model ollama/gpt-oss:20b
+uv run --directory backend cai eval compat --agent codex --preset local      # pasos a mano + --import
+```
+
+Cada pasada deja un JSON en `evals/compat/results/` y regenera
+[`evals/compat/REPORT.md`](../evals/compat/REPORT.md), que tiene una columna por agente y modelo.
+Cómo pasarla con cada agente: `docs/pruebas/fase-24.6-matriz.md`.
+
+Insignias: 🔓 open-source · 🆓 gratis · 💻 modelo local.
+
+| | Claude Code sin MCP (solo `cai … --json`) | Claude Code con MCP | Codex (ChatGPT) 🔓 | OpenCode 🔓🆓💻 + Ollama | OpenCode 🔓🆓 + modelo gratuito en la nube | Qwen Code 🔓🆓💻 o Antigravity 🆓 |
+|---|---|---|---|---|---|---|
+| Fecha | 2026-10-05 | Pendiente (`cai eval compat --agent claude`) | Pendiente | Pendiente | Pendiente | Si están instalados |
+| Cómo | Opus 5.5; cada rol en una ejecución distinta siguiendo `.agents/roles/*.md` (nivel C: sin subagentes con herramientas propias) | En segundo plano, los tres pasos | A mano (sin segundo plano) + `--import` | `process-jobs` y `assess-fit` en segundo plano; `generate-cv` a mano + `--import` | Igual que con Ollama (no con los gratuitos de OpenCode Zen, que rechazan agentes propios) | A mano + `--import` |
+| `process-jobs` | 5/5 al primer intento; **54 de 55 campos** iguales a la extracción esperada (difiere un `title_normalized`, en español) | | | | | |
+| `assess-fit` | 5/5 valoraciones guardadas (4 `strong`, 1 `possible`) | | | | | |
+| `generate-cv` | 5/5 CVs al primer intento, 1 página, sin avisos; verificador: 5 `passed`, 0 bloqueantes, 4 avisos | | | | | |
+| `cai eval cv` | **5/5 pasan las 7 comprobaciones** | | | | | |
+| Tiempo | ~2 min extraer, ~4,5 min redactar y ~2 min verificar (más lectura); ~3,5 s por comando `cai` | | | | | |
+| Ajustes | Ver abajo | | | | | |
 
 Prueba previa (fase 12.2): dos casos con trampa (`cv04`, `cv07`), también 2/2. Informe de esta
 pasada: `docs/pruebas/fase-12.3-matriz-sin-mcp.md`. Sin subagentes, el aislamiento del rol
@@ -101,6 +115,18 @@ acepta el JSON envuelto en un bloque de código.
 - `generate-cv` solo pregunta por skills obligatorias ausentes; las básicas cubiertas como
   «conocimientos de» no generan pregunta aunque la valoración la planteara;
 - con una oferta remota sin país («Europa»), la foto sale según la política por defecto.
+
+## Modelos locales y niveles de gasto (fase 24.6)
+
+- **Diagnóstico de Ollama:** `cai agents doctor` (sección «Modelos locales (Ollama)») y la tarjeta
+  de cada agente que admite modelos locales dicen si Ollama responde en `127.0.0.1:11434`
+  (`CAI_OLLAMA_URL`), qué modelos tiene y con qué contexto. Avisa con menos de 32 768 tokens o con
+  un modelo de unos 8B o menos elegido para `generate-cv`. Solo usa `/api/version`, `/api/tags` y
+  `/api/show`: la app no hace inferencia (ADR-001).
+- **Niveles de gasto:** «Económico», «Equilibrado» y «Máximo», en la página «Agente», con la
+  propuesta sacada del manifiesto y de lo instalado. Aplicar cambia las preferencias por acción y
+  se puede deshacer.
+- Cómo montarlo, qué modelo según tu memoria y qué sale de tu equipo: `docs/MODELOS_GRATIS.md`.
 
 ## Garantías de seguridad por nivel
 
@@ -393,7 +419,6 @@ sesión la ve en `get_status` (`agent_requests`) o con el skill `handle-requests
    modelos, formato MCP y, si quieres los botones de la UI, `launch`; para el segundo plano,
    `launch.headless`. `cai agents list` falla con el agente y la clave si algo está mal escrito.
 2. Si su formato no es JSON ni TOML de los ya soportados, añade un emisor en `scripts/sync_agents.py`.
-3. Regenera y pasa la matriz: `cai demo seed --dir data-demo-<agente> --compat`, arranca el
-   agente con `CAI_DATA_DIR` apuntando ahí, recorre `process-jobs`, `assess-fit` y
-   `generate-cv` sobre las 5 ofertas (guía: `docs/pruebas/fase-12-compatibilidad.txt`), mide con
-   `cai eval cv --agent <nombre>` y añade su columna a «Matriz probada».
+3. Regenera y pasa la matriz con `cai eval compat --agent <nombre> [--model …]`. Si no tiene
+   segundo plano, el comando da los pasos manuales y `--import` mide el resultado. Añade su columna
+   a «Matriz probada» con lo que diga `evals/compat/REPORT.md`.

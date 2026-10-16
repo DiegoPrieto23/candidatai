@@ -242,14 +242,18 @@ en español (`generar-cv`…).
 
 ## Agentes compatibles
 
-| Agente | Estado |
-|---|---|
-| **Claude Code** | Referencia: se desarrolla y prueba con él, con MCP y sin él (solo CLI: 5/5 ofertas extraídas, valoradas y con un CV que pasa el eval). Los skills también se lanzan **en segundo plano** desde la UI |
-| **Codex** | Configuración generada (`.codex/`); aún fuera de la matriz probada. Con `--oss` usa modelos locales por Ollama o LM Studio |
-| **OpenCode** (open-source) | Configuración generada (`opencode.json`, `.opencode/agents/`), comprobada con su binario; sin probar con un modelo. Funciona con Ollama, LM Studio, OpenRouter o cualquier API compatible con OpenAI. Lanza `process-jobs` y `assess-fit` **en segundo plano** con el mismo techo de herramientas que Claude Code |
-| **Qwen Code** (open-source) | Configuración generada (`.qwen/`), sin probar. Su plan gratuito con OAuth cerró el 15/04/2026: úsalo con Ollama, LM Studio, OpenRouter o una clave de DashScope |
-| **Antigravity CLI** | Configuración MCP generada (`.agents/mcp_config.json`), sin probar. Plan gratuito con una cuenta de Google; sustituye a Gemini CLI |
-| **Cursor, Copilot CLI, Pi, goose…** | Sin probar: valen si leen `AGENTS.md` y hablan MCP o ejecutan comandos |
+| Agente | Licencia | Gratis | En local | Estado |
+|---|---|---|---|---|
+| **Claude Code** | propietaria | no (tu plan de Claude) | no | **Probado**: referencia, con MCP y sin él (solo CLI: 5/5 ofertas extraídas, valoradas y con un CV que pasa el eval). Los skills también se lanzan **en segundo plano** desde la UI |
+| **Codex** | Apache-2.0 | con un modelo local | sí (`--oss`, preset `local`) | **Configurado, sin probar** (`.codex/`). Usa tu cuenta de ChatGPT o Ollama/LM Studio |
+| **OpenCode** | MIT | con un modelo local o gratuito | sí (Ollama, LM Studio) | **Configurado, sin probar con un modelo** (`opencode.json`, `.opencode/agents/`), comprobado con su binario. Lanza `process-jobs` y `assess-fit` **en segundo plano** con el mismo techo de herramientas que Claude Code |
+| **Qwen Code** | Apache-2.0 | con un modelo local o gratuito | sí | **Configurado, sin probar** (`.qwen/`). Su plan gratuito con OAuth cerró el 15/04/2026 |
+| **Antigravity CLI** | propietaria | sí (plan gratuito de Google) | no | **Configurado, sin probar** (`.agents/mcp_config.json`). Sustituye a Gemini CLI |
+| **Cursor, Copilot CLI, Pi, goose…** | varias | según la herramienta | según la herramienta | **Compatibles vía `AGENTS.md`**: valen si leen `AGENTS.md` y hablan MCP o ejecutan comandos |
+
+Cómo usarla sin pagar por tokens (Ollama en Windows, qué modelo según tu memoria y qué sale de tu
+equipo en cada caso): [`docs/MODELOS_GRATIS.md`](docs/MODELOS_GRATIS.md). La matriz medida de cada
+agente y modelo, con `cai eval compat`, está en [`evals/compat/REPORT.md`](evals/compat/REPORT.md).
 
 Gemini CLI ya no figura: desde el 18/06/2026 solo funciona con una clave de pago de la API de
 Gemini o con una licencia de empresa. Con una cuenta gratuita de Google, usa Antigravity CLI.

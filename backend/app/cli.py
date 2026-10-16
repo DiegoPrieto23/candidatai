@@ -586,6 +586,72 @@ def eval_cv_command(
     typer.echo(f"\nInforme: {md_path}")
 
 
+@eval_app.command("compat")
+def eval_compat_command(
+    agent: str = typer.Option(
+        ..., "--agent", help="El agente del manifiesto (`claude`, `opencode`…)."
+    ),
+    model: str | None = typer.Option(None, "--model", help="El modelo, como lo escribe el agente."),
+    preset: str | None = typer.Option(
+        None, "--preset", help="Un preset del agente (p. ej. `local`)."
+    ),
+    import_: bool = typer.Option(
+        False, "--import", help="No lanza nada: mide la demo en la que trabajaste a mano."
+    ),
+    approve_only: bool = typer.Option(
+        False, "--approve", help="Solo aprueba en la demo las 5 ofertas de la matriz (paso manual)."
+    ),
+    timeout: int | None = typer.Option(
+        None, "--timeout", min=1, help="Minutos máximos por ejecución (por defecto, la política)."
+    ),
+    as_json: bool = JSON_OPTION,
+) -> None:
+    """Matriz de compatibilidad (fase 24.6): process-jobs, assess-fit y generate-cv con ese agente y
+    modelo sobre una demo propia (`data-demo-compat-<agente>-<modelo>/`), medidos y guardados en
+    evals/compat/. Lanza tu agente: usa tu suscripción o tu modelo, como los botones."""
+    from app.services.evals import compat
+    from app.services.evals import cv as cv_eval
+
+    def say(message: str) -> None:
+        if not as_json:
+            typer.echo(message)
+
+    try:
+        if approve_only:
+            target = compat.data_dir(agent, model, preset)
+            notes = compat.approve(target)
+            if as_json:
+                typer.echo(dump_json({"ok": True, "data_dir": target.name, "notes": notes}))
+            say("Aprobadas en la demo." + (f" Ojo: {'; '.join(notes)}" if notes else ""))
+            return
+        if import_:
+            result = compat.import_results(agent, model, preset)
+        else:
+            result = compat.run(
+                agent, model, preset, timeout=timeout * 60 if timeout else None, progress=say
+            )
+    except (compat.CompatError, cv_eval.CvEvalFileError, cv_eval.CvEvalNotDemoError) as exc:
+        if as_json:
+            typer.echo(dump_json(ToolError("validation_error", str(exc)).payload()))
+        else:
+            typer.secho(f"Error: {exc}", fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=1) from None
+    path = compat.save(result)
+    if as_json:
+        typer.echo(dump_json({**result.model_dump(mode="json"), "result_path": str(path)}))
+        return
+    typer.echo(
+        f"\n{result.display_name} · {result.model or result.preset or 'modelo por defecto'}: "
+        f"extracción {result.fields_equal}/{result.fields_total} campos, "
+        f"{result.assessed}/5 valoraciones, CVs {result.cv.passed}/{result.cv.evaluated} pasan."
+    )
+    if result.manual_steps:
+        typer.secho("\nFalta hacerlo a mano (este agente no puede en segundo plano):", bold=True)
+        for number, line in enumerate(result.manual_steps, 1):
+            typer.echo(f"  {number}. {line}")
+    typer.echo(f"\nResultado: {path}\nInforme: {compat.REPORT_PATH}")
+
+
 @eval_app.command("matching")
 def eval_matching(
     profile_path: Path | None = EVAL_PROFILE_OPTION,
@@ -1996,6 +2062,36 @@ def agents_doctor(
             typer.echo(f"       - {item}")
         if not line.missing:
             typer.echo("       listo")
+    _local_models_section()
+
+
+def _local_models_section() -> None:
+    """Fase 24.6: el Ollama de este equipo, solo con sus metadatos."""
+    from sqlalchemy.exc import SQLAlchemyError
+
+    from app.services import local_models
+
+    try:
+        with session_scope() as session:
+            status = local_models.diagnose_for(session)
+    except SQLAlchemyError:  # sin base de datos todavía: sin el aviso del modelo para redactar
+        status = local_models.diagnose()
+    typer.echo("")
+    typer.secho("Modelos locales (Ollama)", bold=True)
+    if not status.running:
+        typer.echo(f"  {status.error or 'Ollama no responde.'} Ver docs/MODELOS_GRATIS.md.")
+        return
+    env = f"{status.env_context}" if status.env_context else "sin poner"
+    typer.echo(f"  {status.url} · versión {status.version} · OLLAMA_CONTEXT_LENGTH {env}")
+    for item in status.models:
+        size = f"{item.parameter_size or '?'}"
+        tools = {True: "herramientas sí", False: "herramientas no", None: "herramientas ?"}
+        typer.echo(
+            f"  - {item.name}: {size}, contexto {item.context} ({item.context_source}), "
+            f"{tools[item.tools]}"
+        )
+    for warning in status.warnings:
+        typer.secho(f"  ! {warning.text}", fg="yellow")
 
 
 # --- Respuestas de las empresas (fase 15) ---------------------------------------------------

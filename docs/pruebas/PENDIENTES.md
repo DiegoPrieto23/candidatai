@@ -6,7 +6,7 @@ cada fase y lo quita cuando el usuario confirma que está hecho.
 
 Marca `[x]` lo que hagas y, si algo falla, apúntalo debajo de la línea con `→`.
 
-Última actualización: 2026-10-16 (fase 24.5).
+Última actualización: 2026-10-16 (fase 24.6).
 
 ## 1. Poner la app al día (antes de probar nada)
 
@@ -129,6 +129,18 @@ funcionando. Los roles son `writer`, `verifier`, `classifier`, `reviewer` y `ext
       rechazan el agente de la ejecución): `fase-24.5-prueba-manual.txt`. `process-jobs` y
       `assess-fit` en segundo plano sobre una demo, el techo de herramientas con un modelo y
       `generate-cv`, que propone Claude Code.
+
+### Modelos gratuitos, niveles de gasto y matriz (fase 24.6)
+
+- [ ] Página «Agente»: «Niveles de gasto» con los tres niveles. Aplica uno, mira que cambia la tabla
+      «Por acción» y pulsa «Deshacer el último».
+- [ ] `uv run --directory backend cai agents doctor`: sección «Modelos locales (Ollama)» («no
+      responde» si no lo tienes).
+- [ ] **La matriz** (`fase-24.6-matriz.md`): como mínimo Claude Code con MCP
+      (`cai eval compat --agent claude`, cierra el pendiente de la 12.3). Si instalas Ollama y
+      OpenCode, también OpenCode con un modelo local: es el criterio de cierre de la fase 24.
+      Después, pásame `evals/compat/REPORT.md` para completar `AGENTS_COMPAT.md`, el README y la
+      ADR-037.
 
 ## 2. `.env.example` (el agente no puede leerlo ni editarlo)
 

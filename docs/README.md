@@ -32,6 +32,7 @@ the rest are in Spanish only.
 | [`DATA_MODEL.md`](DATA_MODEL.md) | Tablas, eventos, etapas y tareas del worker |
 | [`AGENT_INTERFACE.md`](AGENT_INTERFACE.md) | Herramientas MCP y comandos `cai` con sus esquemas |
 | [`AGENTS_COMPAT.md`](AGENTS_COMPAT.md) | Agentes soportados, con qué garantías y cómo añadir uno |
+| [`MODELOS_GRATIS.md`](MODELOS_GRATIS.md) | Usarla sin pagar por tokens: modelos locales (Ollama) y gratuitos, privacidad por vía y niveles de gasto |
 | [`DECISIONS.md`](DECISIONS.md) | Las 34 decisiones de arquitectura (ADR), con contexto y consecuencias |
 | [`../evals/REPORT.md`](../evals/REPORT.md) | Resultados del eval de matching |
 

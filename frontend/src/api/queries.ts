@@ -36,6 +36,8 @@ export const keys = {
   agentRuns: ['agent', 'runs'] as const,
   agentAgents: ['agent', 'agents'] as const,
   agentRequests: ['agent', 'requests'] as const,
+  localModels: ['agent', 'local-models'] as const,
+  spendTiers: ['agent', 'tiers'] as const,
   skillGaps: (days: number) => ['skill-gaps', days] as const,
   allSkillGaps: ['skill-gaps'] as const,
   replies: (params: RepliesParams) => ['replies', params] as const,
@@ -862,6 +864,51 @@ export function useSaveAgentPreferences() {
     mutationFn: (body: Schemas['Preferences']) => unwrap(api.PUT('/agent/preferences', { body })),
     onSuccess: () => client.invalidateQueries({ queryKey: keys.agent }),
   })
+}
+
+// --- Modelos locales y niveles de gasto (fase 24.6) ---------------------------------------------
+
+/** El Ollama de este equipo (solo sus metadatos). No se reintenta: si no responde, es la respuesta. */
+export function useLocalModels(enabled = true) {
+  return useQuery({
+    queryKey: keys.localModels,
+    queryFn: () => unwrap(api.GET('/agent/local-models')),
+    enabled,
+    staleTime: 30_000,
+  })
+}
+
+export type SpendTierId = Schemas['TierView']['id']
+
+/** «Económico», «Equilibrado» y «Máximo»: lo guardado (o la propuesta) y cuál está activo. */
+export function useSpendTiers() {
+  return useQuery({ queryKey: keys.spendTiers, queryFn: () => unwrap(api.GET('/agent/tiers')) })
+}
+
+/** Editar, volver a la propuesta, aplicar o deshacer: cambian preferencias, se refresca `agent`. */
+export function useSpendTierActions() {
+  const client = useQueryClient()
+  const onSuccess = () => client.invalidateQueries({ queryKey: keys.agent })
+  return {
+    save: useMutation({
+      mutationFn: ({ tier, body }: { tier: SpendTierId; body: Schemas['TierActions'] }) =>
+        unwrap(api.PUT('/agent/tiers/{tier}', { params: { path: { tier } }, body })),
+      onSuccess,
+    }),
+    reset: useMutation({
+      mutationFn: (tier: SpendTierId) => unwrap(api.POST('/agent/tiers/{tier}/reset', { params: { path: { tier } }, body: {} })),
+      onSuccess,
+    }),
+    apply: useMutation({
+      mutationFn: (tier: SpendTierId) =>
+        unwrap(api.POST('/agent/tiers/{tier}/apply', { params: { path: { tier } }, body: {} })),
+      onSuccess,
+    }),
+    undo: useMutation({
+      mutationFn: () => unwrap(api.POST('/agent/tiers/undo', { body: {} })),
+      onSuccess,
+    }),
+  }
 }
 
 // --- En segundo plano y cola de encargos (fase 19) ---------------------------------------------

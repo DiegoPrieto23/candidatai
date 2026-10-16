@@ -61,6 +61,7 @@ def main() -> int:
                 "api_key": "ANTHROPIC_API_KEY" in os.environ,
                 "client_name": os.environ.get("CAI_CLIENT_NAME"),
                 "opencode_config": os.environ.get("OPENCODE_CONFIG_CONTENT"),
+                "data_dir": os.environ.get("CAI_DATA_DIR"),
                 "opencode_env": sorted(
                     k
                     for k in ("OPENCODE_CONFIG", "OPENCODE_CONFIG_DIR", "OPENCODE_PERMISSION")

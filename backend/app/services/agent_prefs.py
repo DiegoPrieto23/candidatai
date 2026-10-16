@@ -68,6 +68,7 @@ REASON_TEXTS: dict[ReasonCode, str] = {
 }
 # Nombre de un modelo: empieza por letra o número (nunca `-`, que sería una bandera) y solo lleva
 # caracteres que no hay que escapar en ningún sistema.
+PREF_SCOPES = ("default", "agent", "action")
 MODEL_RE = re.compile(r"[A-Za-z0-9][\w.:/@-]{0,99}", re.ASCII)
 
 
@@ -209,7 +210,11 @@ def save_preferences(
 ) -> Preferences:
     """Sustituye todas las preferencias. Los agentes sin modelo ni preset no se guardan."""
     validate(prefs, launchable)
-    session.execute(delete(AgentPreference))
+    # Solo las suyas y la copia para deshacer un nivel de gasto (fase 24.6), que tras un cambio a
+    # mano ya no vale: los niveles viven en la misma tabla con otros `scope`.
+    session.execute(
+        delete(AgentPreference).where(AgentPreference.scope.in_((*PREF_SCOPES, "tier_undo")))
+    )
     if prefs.default_agent:
         session.add(AgentPreference(scope="default", key="", agent=prefs.default_agent))
     for name, pref in prefs.agents.items():

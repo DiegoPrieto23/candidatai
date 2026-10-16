@@ -74,7 +74,9 @@ class AgentPreference(Base):
     `data/`, nunca en el repositorio ni en la configuración generada.
 
     `scope`: `default` (`key` vacía: el agente por defecto), `agent` (`key` = agente: su modelo o
-    preset) o `action` (`key` = acción: su agente y, si quieres, su modelo o preset).
+    preset) o `action` (`key` = acción: su agente y, si quieres, su modelo o preset). Fase 24.6:
+    `tier` (`key` = `<nivel>:<acción>`: el agente y modelo de esa acción en un nivel de gasto) y
+    `tier_undo` (`key` = acción: las preferencias por acción de antes de aplicar un nivel).
     """
 
     __tablename__ = "agent_preferences"

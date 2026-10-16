@@ -17,7 +17,15 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.agent_interface.errors import ErrorDetail, ToolError
 from app.api.deps import EmptyBody, SessionDep, require_ui
-from app.services import agent_launch, agent_prefs, agent_registry, agent_requests, agent_runs
+from app.services import (
+    agent_launch,
+    agent_prefs,
+    agent_registry,
+    agent_requests,
+    agent_runs,
+    local_models,
+    spend_tiers,
+)
 from app.services.agent_launch import ActionId, LaunchError
 from app.services.agent_prefs import Preferences, Resolution
 
@@ -125,6 +133,13 @@ def list_agents(session: SessionDep) -> agent_launch.AgentsOverview:
         raise ToolError("internal_error", str(exc)) from exc
 
 
+@router.get("/local-models", operation_id="get_local_models")
+def get_local_models(session: SessionDep) -> local_models.LocalModelsStatus:
+    """Si Ollama responde en este equipo, qué modelos tiene y con qué contexto (fase 24.6). Solo
+    lee sus metadatos: la app no hace inferencia (ADR-001)."""
+    return local_models.diagnose_for(session)
+
+
 @router.put(
     "/preferences", operation_id="save_agent_preferences", dependencies=[Depends(require_ui)]
 )
@@ -133,8 +148,65 @@ def save_agent_preferences(session: SessionDep, body: Preferences) -> Preference
     try:
         return agent_launch.save_preferences(session, body)
     except agent_prefs.PreferenceError as exc:
-        detail = ErrorDetail(field=exc.field, received=None, reason=str(exc))
-        raise ToolError("invalid_request", str(exc), [detail]) from exc
+        raise _pref_error(exc) from exc
+
+
+def _pref_error(exc: agent_prefs.PreferenceError) -> ToolError:
+    detail = ErrorDetail(field=exc.field, received=None, reason=str(exc))
+    return ToolError("invalid_request", str(exc), [detail])
+
+
+# --- Niveles de gasto (fase 24.6) -------------------------------------------------------------
+
+
+@router.get("/tiers", operation_id="get_spend_tiers")
+def get_spend_tiers(session: SessionDep) -> spend_tiers.TiersView:
+    """«Económico», «Equilibrado» y «Máximo»: el agente y modelo de cada acción en cada nivel (lo
+    guardado o la propuesta) y cuál coincide con tus preferencias de ahora."""
+    return spend_tiers.tiers(session)
+
+
+@router.put("/tiers/{tier}", operation_id="save_spend_tier", dependencies=[Depends(require_ui)])
+def save_spend_tier(
+    session: SessionDep, tier: spend_tiers.Tier, body: spend_tiers.TierActions
+) -> spend_tiers.TiersView:
+    """Guarda lo que pones en un nivel (sustituye lo que tenía)."""
+    try:
+        return spend_tiers.save_tier(session, tier, body)
+    except agent_prefs.PreferenceError as exc:
+        raise _pref_error(exc) from exc
+
+
+@router.post(
+    "/tiers/{tier}/reset", operation_id="reset_spend_tier", dependencies=[Depends(require_ui)]
+)
+def reset_spend_tier(
+    session: SessionDep, tier: spend_tiers.Tier, body: EmptyBody
+) -> spend_tiers.TiersView:
+    """Vuelve a la propuesta de la app."""
+    return spend_tiers.reset_tier(session, tier)
+
+
+@router.post("/tiers/undo", operation_id="undo_spend_tier", dependencies=[Depends(require_ui)])
+def undo_spend_tier(session: SessionDep, body: EmptyBody) -> spend_tiers.TiersView:
+    """Devuelve las preferencias por acción de antes de aplicar el último nivel."""
+    try:
+        return spend_tiers.undo(session)
+    except agent_prefs.PreferenceError as exc:
+        raise _pref_error(exc) from exc
+
+
+@router.post(
+    "/tiers/{tier}/apply", operation_id="apply_spend_tier", dependencies=[Depends(require_ui)]
+)
+def apply_spend_tier(
+    session: SessionDep, tier: spend_tiers.Tier, body: EmptyBody
+) -> spend_tiers.TiersView:
+    """Pone en tus preferencias por acción las del nivel. Se puede deshacer."""
+    try:
+        return spend_tiers.apply(session, tier)
+    except agent_prefs.PreferenceError as exc:
+        raise _pref_error(exc) from exc
 
 
 def _raise(exc: LaunchError) -> None:

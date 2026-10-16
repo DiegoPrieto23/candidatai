@@ -73,7 +73,7 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 24.3 | ↳ Agentes nuevos | ✅ | Configuración generada para OpenCode, Qwen Code y Antigravity; Codex con `--oss`; Gemini CLI fuera |
 | 24.4 | ↳ Elegir y cambiar de agente | ✅ | Sección «Agentes» con capacidades, agente por defecto y por acción, «con Claude Code ▾» en cada botón |
 | 24.5 | ↳ Segundo plano con varios agentes | ✅ | «En segundo plano» también con OpenCode (`process-jobs` y `assess-fit`), con el techo en una configuración propia de cada ejecución; Codex y Qwen Code, aún no |
-| 24.6 | ↳ Modelos gratuitos, niveles de gasto y matriz | ⏳ | Guía de modelos gratis y locales, diagnóstico de Ollama, «Económico/Equilibrado/Máximo» y matriz probada por agente y modelo |
+| 24.6 | ↳ Modelos gratuitos, niveles de gasto y matriz | 🚧 código y docs hechos; falta pasar la matriz (`docs/pruebas/fase-24.6-matriz.md`) | Guía de modelos gratis y locales, diagnóstico de Ollama, «Económico/Equilibrado/Máximo» y matriz probada por agente y modelo |
 | 25 | Más fuentes, perfil más rico, ofertas dudosas, coste y calidad del CV | ⏳ | Más ATS con API, `expand`, señales de oferta dudosa, coste por oferta y agente, maquetación del PDF y `CHANGELOG` |
 | 25.1 | ↳ Conectores de ATS y portales con API | ⏳ | Personio, Teamtailor, Workable, SmartRecruiters y Recruitee, más Manfred y freehire.me; `cai sources discover` para todos |
 | 25.2 | ↳ Skill `expand` | ⏳ | Proyectos, skills y logros propuestos desde GitHub, portfolio o Scholar, con su fuente y solo con tu OK |
@@ -2448,3 +2448,88 @@ decisiones tomadas y deuda técnica pendiente. -->
   - Con `value: content`, `config.json` también se escribe en disco (para auditar y probar), aunque
     se pasa por el entorno.
   - Qwen Code: lector `stream-json` y `headless` en la 24.6, con modelos locales.
+
+### 24.6 · Modelos gratuitos, niveles de gasto y matriz — 2026-10-16 · Claude Code (Opus 5.5)
+- **Estado:** el código, los tests y los docs están hechos. Falta que el usuario pase la matriz real
+  (criterio de cierre: al menos un agente open-source con un modelo local). Este equipo no tiene
+  Ollama, OpenCode, Codex ni Qwen, y con 15 GB de RAM sin gráfica dedicada `gpt-oss:20b` iría justo.
+  Claude Code con MCP lo pasa el usuario (decisión suya). La 24.6 y la 24 quedan 🚧 hasta importar
+  los resultados.
+- **Resumen:**
+  - **Guía `docs/MODELOS_GRATIS.md`:**
+    - tres vías (local, nube gratis y suscripción) y qué sale de tu equipo en cada una;
+    - Ollama en Windows con `OLLAMA_CONTEXT_LENGTH`;
+    - modelos por memoria, con etiquetas y tamaños comprobados hoy en ollama.com (`qwen3:8b`,
+      `gpt-oss:20b`, `qwen3:14b`, `devstral:24b`, `qwen3-coder:30b`) y el aviso de los de ~8B;
+    - la configuración personal de cada agente, fuera del repo;
+    - `unset_env`, niveles de gasto y `cai eval compat`.
+    Resumen en `GUIA.md` y `GUIDE.md`.
+  - **Diagnóstico de Ollama** (`services/local_models.py`):
+    - solo `GET /api/version`, `GET /api/tags` y `POST /api/show`, con una lista blanca en la
+      llamada y en un `event_hook`;
+    - solo direcciones de este equipo (`CAI_OLLAMA_URL`);
+    - contexto por `num_ctx`, `OLLAMA_CONTEXT_LENGTH` o el valor por defecto (4 096), limitado al
+      máximo del modelo;
+    - avisos de contexto bajo (< 32 768), de modelo pequeño (≤ ~8B, umbral 9B) elegido para
+      `generate-cv` y de un Ollama sin modelos;
+    - superficie: `cai agents doctor`, `GET /agent/local-models` y la tarjeta de los agentes con
+      modelos locales.
+  - **Niveles de gasto** (`services/spend_tiers.py`):
+    - «Económico», «Equilibrado» y «Máximo» para `process-jobs`, `assess-fit`, `review-replies` y
+      `generate-cv`, en `agent_preferences` (`scope` `tier` y `tier_undo`), sin migración;
+    - propuesta desde el manifiesto y lo instalado, sin nombres de modelos en el código;
+    - aplicar copia antes las preferencias por acción y «Deshacer» las devuelve;
+    - API `GET /agent/tiers`, `PUT /agent/tiers/{nivel}`, `POST …/reset`, `…/apply` y
+      `/agent/tiers/undo`, todas las de escritura con `require_ui`;
+    - UI «Niveles de gasto» en la página «Agente».
+  - **`cai eval compat`** (`services/evals/compat.py`):
+    - demo propia, con el segundo plano (`agent_runs` y `agent_runner.run_next`, en el mismo
+      proceso);
+    - aprueba y marca las obligatorias que faltan solo en la demo;
+    - mide 11 campos de la extracción, valoraciones, `eval cv`, tiempo, turnos y tokens;
+    - pasos manuales con `--approve` y `--import` para los agentes sin segundo plano;
+    - guarda `evals/compat/results/` y genera `evals/compat/REPORT.md`, que de momento está vacío.
+    El lector de Claude Code guarda ahora los tokens del resultado.
+  - **Docs:**
+    - README (es/en): tabla «Agentes compatibles» con licencia, gratis, en local y estado; se
+      mantiene el badge;
+    - `AGENTS_COMPAT.md`: matriz con una columna por agente y modelo, con insignias, y sección de
+      modelos locales;
+    - `COMPARATIVA.md`, `AGENT_INTERFACE.md`, `evals/README.md`, `RESUMEN_FASES.md` (fase 24
+      entera), `PENDIENTES.md` y `docs/pruebas/fase-24.6-matriz.md`.
+- **Tests:**
+  - 20 en `test_local_models.py`: modelos y contexto, solo metadatos, 7 rutas de inferencia
+    rechazadas en la llamada y en el hook, un test que busca rutas de inferencia en el código,
+    variable de entorno, tope del modelo, modelo pequeño por nombre, preset y `:latest`, Ollama
+    caído, fuera del equipo, sin modelos, API y doctor;
+  - 12 en `test_spend_tiers.py`: propuesta, preset `local`, sin agente local, aplicar y deshacer,
+    deshacer sin preferencias, guardar preferencias borra la copia, «Económico» exige el modelo
+    local, editar y volver, validación y `require_ui`;
+  - 10 en `test_eval_compat.py`: flujo completo con un agente falso (54/55, resultado e informe),
+    paso manual e `--import`, primer paso manual, CLI, el runner de verdad con el proceso falso
+    (que recibe `CAI_DATA_DIR` de la demo), errores, normalización y nombres;
+  - 5 de Vitest nuevos (niveles, deshacer, editar, Ollama, Ollama caído).
+  - 2574 tests de backend en verde, 269 de frontend; `tsc`, ruff y `sync_agents.py --check` limpios; OpenAPI regenerado.
+- **Decisiones:** ADR-037 cerrado salvo la decisión sobre el ADR-001, que espera a la matriz. Nota
+  en el ADR-001: leer metadatos de un servidor local no es llamar a un LLM.
+  - Revisión (rol `reviewer`), sin nada bloqueante. Se aplicó:
+    - «Económico» no se aplica sin modelo local (API y botón);
+    - guardar preferencias a mano borra la copia para deshacer;
+    - errores de la demo y del manifiesto como error de la CLI;
+    - `--approve --json`;
+    - test de que el agente recibe la carpeta de la demo;
+    - texto de privacidad en segundo plano;
+    - recorte de los metadatos;
+    - nota de tokens en el informe y «Pendiente» en la ADR-037.
+- **Deuda:**
+  - Matriz real pendiente: Claude Code con MCP, OpenCode con Ollama, Codex y OpenCode con un modelo
+    gratuito en la nube.
+  - Qwen Code sigue sin segundo plano y sin lector `stream-json`: sin un modelo no se puede
+    comprobar el techo.
+  - El diagnóstico solo conoce Ollama, no LM Studio.
+  - El contexto real del servidor no se ve por los endpoints de metadatos: se lee
+    `OLLAMA_CONTEXT_LENGTH` de este proceso (si la cambias, reinicia la app).
+  - «Deshacer» guarda un solo nivel.
+  - La propuesta de «Económico» con OpenCode no trae modelo (no hay preset `local` en el manifiesto).
+  - Los tokens de la matriz no cuentan la caché.
+

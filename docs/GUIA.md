@@ -141,6 +141,17 @@ skills y el servidor MCP ya configurados.
 
 Más detalle, y cómo añadir un agente: [`AGENTS_COMPAT.md`](AGENTS_COMPAT.md).
 
+### Sin pagar por tokens: modelos gratuitos y locales
+
+Además de tu suscripción (Claude, ChatGPT), puedes usar agentes open-source con un **modelo local**
+(Ollama o LM Studio: gratis y nada sale de tu equipo) o con un **modelo gratuito en la nube**
+(OpenRouter `:free`, el plan gratuito de Antigravity: gratis, con límites diarios, y las ofertas y tu
+perfil van al proveedor). Con Ollama, pon `OLLAMA_CONTEXT_LENGTH=32768` o más: con los 4 096 que trae
+por defecto, los agentes no funcionan. `cai agents doctor` y la tarjeta de cada agente dicen qué
+modelos tienes y si el contexto llega. Los modelos de unos 8B o menos suelen fallar con el CV.
+Guía completa, con los modelos recomendados según tu memoria y qué sale de tu equipo en cada vía:
+[`MODELOS_GRATIS.md`](MODELOS_GRATIS.md).
+
 ## 6. Arrancar la app cada día
 
 - **Con el instalador:** abre el acceso directo «CandidatAI». Para cerrarla, cierra su ventana.
@@ -242,6 +253,11 @@ OpenCode con un modelo local para procesar ofertas y Claude Code para el CV). El
 botón dice con qué agente iría («con Claude Code ▾») y te deja usar otro solo esa vez. Si un agente
 no sirve para una acción (le falta el navegador para buscar ofertas, p. ej.), el botón lo dice y no
 lo lanza. Sin nada elegido, se usa `CAI_AGENT` del `.env` o el primero instalado.
+
+**Niveles de gasto.** En la misma página, «Económico», «Equilibrado» y «Máximo» guardan el agente y
+el modelo de las acciones principales. «Económico» usa un modelo local para procesar, valorar y
+clasificar respuestas, y tu agente más capaz para el CV. Rellénalos una vez y aplica uno con un clic.
+«Deshacer el último» deja las preferencias como estaban.
 
 ## 12. Configuración
 

@@ -57,5 +57,48 @@
     "model": "The chosen model isn't valid for this agent."
   },
   "warning": "Check before launching it: see docs/AGENTS_COMPAT.md.",
-  "loadFailed": "Couldn't read the agents."
+  "loadFailed": "Couldn't read the agents.",
+  "local": {
+    "title": "Local models (Ollama)",
+    "down": "Ollama is not answering at {{url}}.",
+    "running": "Ollama {{version}}",
+    "envContext": "OLLAMA_CONTEXT_LENGTH = {{tokens}}",
+    "noEnvContext": "no OLLAMA_CONTEXT_LENGTH (Ollama uses {{tokens}})",
+    "context": "context {{tokens}}",
+    "noTools": "no tools",
+    "contextLow": "{{model}}: {{tokens}}-token context. Agents need at least {{min}}: set OLLAMA_CONTEXT_LENGTH={{min}} and restart Ollama.",
+    "smallModel": "{{model}} is chosen for “{{action}}”: models of about 8B or less tend to fail the CV schemas.",
+    "noModels": "Ollama is running but has no models: download one with “ollama pull”.",
+    "guide": "How to set it up: docs/MODELOS_GRATIS.md. The app only reads which models exist; it never asks them anything."
+  },
+  "tiers": {
+    "title": "Spending tiers",
+    "intro": "Agent and model for the main actions, in three tiers. Fill them in once and apply one with a click: it changes your “By action” table and can be undone.",
+    "economy": {
+      "label": "Economy",
+      "help": "Closed actions (process, assess, replies) with a local model; the CV with your most capable agent."
+    },
+    "balanced": {
+      "label": "Balanced",
+      "help": "Closed actions with the fast model of your most capable agent; the CV with its usual model."
+    },
+    "max": {
+      "label": "Maximum",
+      "help": "Everything with your most capable agent and its usual model."
+    },
+    "active": "In use",
+    "custom": "Edited",
+    "apply": "Apply",
+    "edit": "Edit",
+    "reset": "Back to the proposal",
+    "cancel": "Cancel",
+    "undo": "Undo the last one",
+    "agentFor": "Agent for {{action}}",
+    "modelFor": "Model for {{action}}",
+    "notes": {
+      "no_local_agent": "No agent with local models is installed: it uses your agent's fast model.",
+      "needs_local_model": "Set the local model under “Edit” (e.g. your Ollama one) to be able to apply it.",
+      "no_agent": "No agent can be opened from the app."
+    }
+  }
 }
