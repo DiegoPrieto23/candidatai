@@ -148,6 +148,10 @@
       "days": {
         "label": "Rapidez",
         "hint": "Días entre que entró la oferta y la enviaste."
+      },
+      "signal": {
+        "label": "Señal",
+        "hint": "Tasa de las enviadas con cada señal de oferta dudosa (las de ahora; una oferta cuenta en cada una que tenga) frente a las que no tienen ninguna. ¿Responden peor?"
       }
     },
     "groups": {
@@ -180,6 +184,14 @@
         "2_3": "2-3 días",
         "4_7": "4-7 días",
         "8_plus": "8 días o más"
+      },
+      "signal": {
+        "salary_range_wide": "Rango salarial amplio",
+        "employer_hidden": "Empresa oculta o agencia",
+        "fixed_term": "Temporal",
+        "stale_repost": "Publicada hace meses",
+        "ai_screening": "Cribado con IA",
+        "none": "Sin señales"
       }
     }
   },

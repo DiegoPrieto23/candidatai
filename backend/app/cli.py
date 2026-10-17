@@ -310,6 +310,10 @@ def _render_match(view: Any) -> None:
         typer.echo(f"{' ' * len(label)}  ausentes {', '.join(cov.missing) or '-'}")
     for note in breakdown.notes:
         typer.secho(f"\nNota: {note}", fg="yellow")
+    if view.signals:
+        typer.echo("\nSeñales de oferta dudosa (no cuentan en el score):")
+        for signal in view.signals:
+            typer.echo(f"  - {signal.code}: {signal.text}")
     if view.assessment:
         stale = " (de un cálculo anterior)" if view.assessment_stale else ""
         typer.echo(f"\nValoración del agente{stale}: {view.assessment.verdict}")
@@ -946,6 +950,39 @@ def _render_context(view: Any) -> None:
         if not item.empty:
             typer.echo(item.text)
         typer.echo("")
+
+
+@jobs_app.command("signals")
+def jobs_signals(
+    recompute: bool = typer.Option(
+        False, "--recompute", help="Recalcula las señales de oferta dudosa de todas las ofertas."
+    ),
+    as_json: bool = JSON_OPTION,
+) -> None:
+    """Señales de oferta dudosa (rango salarial amplio, empresa oculta, temporal, publicada hace
+    meses, cribado con IA). Se calculan solas al extraer; esto las recalcula todas, p. ej. tras
+    editar config/doubtful_patterns.yaml. No cambian el score."""
+    from app.services import doubtful
+
+    if not recompute:
+        _fail_plain("Indica `--recompute`.", as_json)
+    try:
+        migrations.ensure_current()
+        with session_scope() as session:
+            result = doubtful.recompute_all(session)
+    except Exception as exc:
+        error = to_tool_error(exc)
+        if as_json:
+            typer.echo(dump_json(error.payload()))
+        else:
+            typer.secho(f"Error: {error.info.message}", fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=1) from exc
+    if as_json:
+        typer.echo(dump_json(result.model_dump()))
+        return
+    typer.echo(f"{result.jobs} ofertas revisadas; {result.with_signals} con alguna señal.")
+    for code, count in result.counts.items():
+        typer.echo(f"  {code}: {count}")
 
 
 @applications_app.command("archive")
@@ -1950,6 +1987,10 @@ def _render_calibration(result: Any) -> None:
         ("Carta", result.by_cover_letter),
         ("Referencia", result.by_referral),
         ("Días hasta el envío", result.by_days_to_apply),
+        (
+            "Señal de oferta dudosa (las de ahora; una oferta puede estar en varias)",
+            result.by_signal,
+        ),
     )
     for title, groups in sections:
         typer.echo(f"{title}:")

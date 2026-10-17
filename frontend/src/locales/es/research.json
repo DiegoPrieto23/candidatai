@@ -18,5 +18,15 @@
   "stack": "Stack",
   "sources": "Fuentes",
   "openFolder": "Abrir carpeta de dosieres",
-  "letterHint": "La carta no lo usa: si quieres que mencione algo, cópialo a sus indicaciones."
+  "letterHint": "La carta no lo usa: si quieres que mencione algo, cópialo a sus indicaciones.",
+  "redFlags": "Banderas rojas",
+  "redFlagsHint": "Hechos con fuente y fecha. Úsalos para preguntar en la entrevista, no como veredicto.",
+  "redFlagKind": {
+    "layoffs": "Despidos o ERE",
+    "turnover": "Rotación alta",
+    "reviews": "Reseñas muy negativas",
+    "payments": "Impagos",
+    "legal": "Conflictos o sanciones",
+    "other": "Otra"
+  }
 }

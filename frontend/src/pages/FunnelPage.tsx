@@ -498,6 +498,7 @@ const CALIBRATION_TABS = [
   { id: 'letter', pick: (c: Calibration) => c.by_cover_letter },
   { id: 'referral', pick: (c: Calibration) => c.by_referral },
   { id: 'days', pick: (c: Calibration) => c.by_days_to_apply },
+  { id: 'signal', pick: (c: Calibration) => c.by_signal },
 ] as const
 
 type CalibrationTab = (typeof CALIBRATION_TABS)[number]['id']

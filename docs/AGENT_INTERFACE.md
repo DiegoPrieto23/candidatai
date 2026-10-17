@@ -68,7 +68,7 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | `get_timeline` | `cai events list ID --json` | 04 | `job_id` | Etapa actual y eventos (sin texto crudo) | — |
 | `get_profile` | `cai profile show [--sections S1,S2] --json` | 05 | `sections?` | `profile_version_id`, `created_at`, `profile`: `CandidateProfile` sin email, teléfono ni `private` | — |
 | `get_context` | `cai context show [--sections S1,S2] --json` | 13 | `sections?` (`estilo-redaccion`, `perfil-conductual`, `criterios`, `narrativa`) | `note` y `files`: por fichero, `section`, `path`, `exists`, `empty`, `size_bytes`, `modified_at`, `hash` (sha256), `text` (sin los comentarios-guía; vacío si no hay contenido), `truncated` y `warnings` (`too_large`, `invalid_encoding`) | — |
-| `get_match` | `cai match show ID --json` | 07 | `job_id` | `MatchView`: `score`, `triage_threshold`, `below_threshold`, `hard_filters`, `breakdown` (componentes, skills cubiertas con su nivel y ausentes, similitud, preferencias, notas), `assessment`, `assessment_stale` | `scored` si lo recalcula |
+| `get_match` | `cai match show ID --json` | 07 | `job_id` | `MatchView`: `score`, `triage_threshold`, `below_threshold`, `hard_filters`, `breakdown` (componentes, skills cubiertas con su nivel y ausentes, similitud, preferencias, notas), `assessment`, `assessment_stale`, `signals` (fase 25.3: `[{code, text}]` de las señales de oferta dudosa activas; no cuentan en el score) | `scored` si lo recalcula |
 | `save_fit_assessment` | `cai match save-assessment ID --file F --json` | 07 | `job_id, assessment: FitAssessment` | `ok`, `job_id`, `match_id` | `fit_assessed` |
 | `list_cv_templates` | `cai templates list --json` | 08 | — | `templates` (`id`, nombre, motor, origen, `ats_friendly`, foto, columnas, página, `capacity`, `sections`, `accent_colors`, fuentes, idiomas, `has_preview`), `invalid` (con el motivo) y `fallback_template` | — |
 | `save_cv_content` | `cai cv save ID --file F --json` | 08 | `job_id, content: CvContent, render_options?: CvRenderOptions`; por CLI, `F` = `{"content": …, "render_options": …}` | `document_id` + primer render (`RenderResult`) | `cv_generated`, `cv_rendered` |
@@ -296,12 +296,15 @@ las más recientes primero.
     "product": "… [1][2]", "news": "… (junio de 2026) [2]", "engineering_culture": "… [3]",
     "stack": ["Python", "dbt"],                      // nombres cortos, sin repetidos
     "notes": "Qué preguntar o comprobar.",           // la única sección que puede ir sin cita
+    "red_flags": [                                   // fase 25.3; 0-10, cada una con cita y fecha
+      {"kind": "layoffs", "text": "ERE de 40 personas [2].", "date": "2026-05-12"}
+    ],  // kind: layoffs | turnover | reviews | payments | legal | other
     "sources": [{"title": "…", "url": "https://…", "accessed_on": "2026-10-12"}]  // 1-30
   }
   ```
 
-  Una sección con texto sin cita, con un `[n]` mayor que el número de fuentes o una fuente de
-  LinkedIn da `validation_error`. Si `risk_flags` no está vacío, los skills no usan el dosier. El código escribe `data/documentos/empresas/<Empresa>_<id>.md` y busca
+  Una sección con texto o una bandera roja sin cita, con un `[n]` mayor que el número de fuentes,
+  una bandera roja sin fecha o una fuente de LinkedIn da `validation_error`. Si `risk_flags` no está vacío, los skills no usan el dosier. El código escribe `data/documentos/empresas/<Empresa>_<id>.md` y busca
   frases de inyección (`risk_flags`). `get_company_research` lo devuelve con `age_days`; lo usan
   `prepare-interview` y `draft-message`, nunca `generate-cover-letter` (POLICIES §7).
 
@@ -376,7 +379,10 @@ son los pasos del embudo.
   "by_template": [ /* key = id de la plantilla del CV enviado; none = sin CV de la app */ ],
   "by_cover_letter": [ /* siempre: with, without */ ],
   "by_referral": [ /* siempre: given, requested, none */ ],
-  "by_days_to_apply": [ /* siempre: 0_1, 2_3, 4_7, 8_plus (días entre el alta y el envío) */ ]
+  "by_days_to_apply": [ /* siempre: 0_1, 2_3, 4_7, 8_plus (días entre el alta y el envío) */ ],
+  "by_signal": [ /* fase 25.3, siempre: salary_range_wide, employer_hidden, fixed_term,
+                    stale_repost, ai_screening (una oferta cuenta en cada una que tenga; las de
+                    ahora, no las del envío) y none (sin ninguna) */ ]
 }
 ```
 
@@ -552,6 +558,7 @@ antes; `POST /agent/tiers/undo` las devuelve.
 | Comando | Qué hace |
 |---|---|
 | `cai worker [--once] [--interval S] [--json]` | Ejecuta la cola de tareas (`score_job`, `rescore_all`, `run_source`, `poll_email`, `expire_summaries`, `check_open`…) y, en primer plano, la ingesta diaria de las fuentes a la hora de `connectors.daily_at` (al arrancar, también las que no corrieron desde la última hora programada), la caducidad diaria de los resúmenes y la lectura de alertas cada `email_alerts.poll_minutes` (si hay IMAP o correos en `data/inbox/`). Desde la fase 19, en un hilo aparte, las ejecuciones en segundo plano de `agent_runs`, de una en una. Log legible en consola y en `data/logs/worker.log`. `--once` vacía la cola (también las de `agent_runs`, en `agent_runs` del JSON) y termina (código 1 si alguna falla) |
+| `cai jobs signals --recompute [--json]` | Fase 25.3: recalcula las señales de oferta dudosa de todas las ofertas (tras editar `config/doubtful_patterns.yaml` o `doubtful` de `config/policies.yaml`). Devuelve `jobs`, `with_signals` y `counts` por señal. No cambia el score. Sin herramienta MCP: se calculan solas al extraer |
 | `cai match rescore [--json]` | Recalcula ya los matches desfasados de las ofertas abiertas (tras instalar el extra `matching` o editar `config/policies.yaml`) y cierra las de triaje que no pasan los filtros. Devuelve `scored` y `closed` |
 | `cai eval matching [--profile RUTA] [--no-seed] [--no-embeddings] [--json]` | Precision, recall y F1 con el umbral actual y por umbral sobre `evals/matching/*.jsonl` (perfil de demo) y `data/evals/*.jsonl` (tu perfil). Guarda el informe en `data/evals/reports/` |
 | `cai demo seed [--dir data-demo] [--force] [--eval-cv] [--json]` | Crea una carpeta de datos ficticia (fase 12.1, ADR-020): perfil demo, 60 ofertas, 8 semanas de historial y 2 CVs. Nunca escribe en `data/`. `--eval-cv` añade los 10 casos de `evals/cv/` aprobados y sin CV (en una demo existente, solo los que falten). `--json` devuelve `data_dir`, `jobs`, `events`, `by_stage`, `by_source`, `cvs`, `pdf_engine` y `warnings`. Sin herramienta MCP: no es para el agente |
@@ -662,10 +669,15 @@ application_deadline: date | null
 red_flags: [str]                       # p. ej. "salario no indicado y 'multitarea'"
 injection_suspected: bool              # el texto contiene instrucciones dirigidas a una IA
 injection_excerpt: str | null          # máx. 200 caracteres, solo si lo anterior es true
+# Fase 25.3 (opcionales; null si el texto no lo dice; vacíos no se guardan):
+contract_type: permanent|fixed_term|freelance|unknown | null   # temporal, por obra, sustitución…
+hiring_entity: str | null              # quien contrata si el texto lo nombra (con agencia, el cliente)
+is_agency: bool | null                 # la publica una agencia, consultora de selección, ETT o headhunter
+mentions_ai_screening: bool | null     # IA o test automático antes de hablar con una persona
 ```
 Regla: lo que no está en el texto es `null`/`unknown`. No se infiere.
 Validación: todos los campos son obligatorios salvo `injection_excerpt` (por defecto `null`, y solo
-admitido si `injection_suspected` es true); no se aceptan campos extra; `responsibilities` admite
+admitido si `injection_suspected` es true) y los cuatro de la fase 25.3 (por defecto `null`); no se aceptan campos extra; `responsibilities` admite
 como mucho 6; `salary.min` no puede superar `salary.max`. Se guarda con `schema_version = 1`.
 
 ### `FitAssessment`

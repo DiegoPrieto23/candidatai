@@ -8,6 +8,9 @@ inyección» (aviso en la ficha, `<untrusted_job_posting risk_flags=…>`). Clav
 - `liveness`: resultado de la última comprobación, sea cual sea.
 - `open_confirmed`: el usuario dijo «Sigue abierta»; ese mismo motivo ya no vuelve a avisar.
 - `reposted`: publicada varias veces en el mismo canal (`services/reposts.py`).
+- Oferta dudosa (fase 25.3, `services/doubtful.py`): `salary_range_wide`, `employer_hidden`,
+  `fixed_term`, `ai_screening` y `stale_repost` (este en `services/reposts.py`). No cambian el
+  score ni los filtros duros, salvo que el usuario lo pida en `preferences.exclude_signals`.
 
 Son observaciones, no veredictos: el usuario decide.
 """
@@ -56,11 +59,67 @@ class RepostSignal(BaseModel):
     window_days: int
 
 
+# --- Oferta dudosa (fase 25.3) -----------------------------------------------------------------
+
+SignalOrigin = Literal["extraction", "text", "company"]  # de dónde sale: extracción, texto o nombre
+
+
+class SalaryRangeSignal(BaseModel):
+    min: int
+    max: int
+    currency: str | None = None
+    pct: int  # cuánto supera el máximo al mínimo, en %
+    threshold_pct: float
+
+
+class EmployerHiddenSignal(BaseModel):
+    # `agency`: agencia que no dice para quién; `agency_for_client`: agencia que sí lo dice;
+    # `unnamed`: el nombre de la empresa no dice quién es («Confidencial», «Importante empresa»).
+    reason: Literal["agency", "agency_for_client", "unnamed"]
+    origin: SignalOrigin
+    client: str | None = None  # para quién, si lo dice
+    matched: str | None = None  # el patrón de `config/doubtful_patterns.yaml`, si salió de ahí
+
+
+class FixedTermSignal(BaseModel):
+    origin: SignalOrigin = "extraction"
+
+
+class AiScreeningSignal(BaseModel):
+    origin: SignalOrigin
+    matched: str | None = None  # la frase del texto, si salió de ahí
+
+
+class StaleRepostSignal(BaseModel):
+    count: int  # días distintos con publicación nueva en el mismo canal (todo el historial)
+    channel: str
+    first_seen: date
+    last_seen: date
+    span_days: int
+
+
 class JobSignals(BaseModel):
     possibly_closed: ClosedSignal | None = None
     liveness: LivenessCheck | None = None
     open_confirmed: OpenConfirmed | None = None
     reposted: RepostSignal | None = None
+    salary_range_wide: SalaryRangeSignal | None = None
+    employer_hidden: EmployerHiddenSignal | None = None
+    fixed_term: FixedTermSignal | None = None
+    ai_screening: AiScreeningSignal | None = None
+    stale_repost: StaleRepostSignal | None = None
+
+
+DoubtfulCode = Literal[
+    "salary_range_wide", "employer_hidden", "fixed_term", "stale_repost", "ai_screening"
+]
+DOUBTFUL_CODES: tuple[DoubtfulCode, ...] = (
+    "salary_range_wide",
+    "employer_hidden",
+    "fixed_term",
+    "stale_repost",
+    "ai_screening",
+)
 
 
 def read(job: Job) -> JobSignals:

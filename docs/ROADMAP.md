@@ -74,10 +74,10 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 24.4 | ↳ Elegir y cambiar de agente | ✅ | Sección «Agentes» con capacidades, agente por defecto y por acción, «con Claude Code ▾» en cada botón |
 | 24.5 | ↳ Segundo plano con varios agentes | ✅ | «En segundo plano» también con OpenCode (`process-jobs` y `assess-fit`), con el techo en una configuración propia de cada ejecución; Codex y Qwen Code, aún no |
 | 24.6 | ↳ Modelos gratuitos, niveles de gasto y matriz | 🚧 código y docs hechos; falta pasar la matriz (`docs/pruebas/fase-24.6-matriz.md`) | Guía de modelos gratis y locales, diagnóstico de Ollama, «Económico/Equilibrado/Máximo» y matriz probada por agente y modelo |
-| 25 | Más fuentes, perfil más rico, ofertas dudosas, coste y calidad del CV | 🚧 25.1 y 25.2 hechas | Más ATS con API, `expand`, señales de oferta dudosa, coste por oferta y agente, maquetación del PDF y `CHANGELOG` |
+| 25 | Más fuentes, perfil más rico, ofertas dudosas, coste y calidad del CV | 🚧 25.1, 25.2 y 25.3 hechas | Más ATS con API, `expand`, señales de oferta dudosa, coste por oferta y agente, maquetación del PDF y `CHANGELOG` |
 | 25.1 | ↳ Conectores de ATS y portales con API | ✅ | Personio, Teamtailor, Workable, SmartRecruiters y Recruitee, más Manfred y freehire.me; `cai sources discover` para todos |
 | 25.2 | ↳ Skill `expand` | ✅ | Proyectos, skills y logros propuestos desde GitHub, portfolio o Scholar, con su fuente y solo con tu OK |
-| 25.3 | ↳ Ofertas dudosas y banderas rojas | ⏳ | Señales (rango salarial ancho, empresa oculta, temporal, republicada, cribado con IA) y `red_flags` con fuentes en el dosier |
+| 25.3 | ↳ Ofertas dudosas y banderas rojas | ✅ | Señales (rango salarial ancho, empresa oculta, temporal, republicada, cribado con IA) y `red_flags` con fuentes en el dosier |
 | 25.4 | ↳ Coste y lote en paralelo | ⏳ | Coste por oferta, skill y agente; umbral de score antes de `assess-fit`; hasta N ejecuciones a la vez |
 | 25.5 | ↳ Maquetación del PDF | ⏳ | Avisos de títulos huérfanos, huecos, pie y última página casi vacía en CV y carta |
 | 25.6 | ↳ CHANGELOG y la historia con números | ⏳ | `CHANGELOG.md`, notas de release desde él y `cai stats story` para el README |
@@ -2636,3 +2636,61 @@ decisiones tomadas y deuda técnica pendiente. -->
     barrera previa es el texto del skill (editar `data/profile.yaml` sí pide permiso);
   - `_public_url` no comprueba que el dominio exista ni rechaza `a..b`;
   - sin probar con un GitHub real: queda en la prueba manual.
+
+### 25.3 · Ofertas dudosas y banderas rojas — 2026-10-17 · Claude Code (Opus 5.5)
+- **Hecho:**
+  - cinco señales de oferta dudosa en `jobs.signals` (ADR-028), sin migración:
+    - `salary_range_wide`: máximo > mínimo + `doubtful.salary_range_max_pct` % (60);
+    - `employer_hidden`: agencia (por la extracción o el nombre, también si dice para quién, con
+      otro texto) o nombre que no dice quién contrata;
+    - `fixed_term`: `contract_type: fixed_term`;
+    - `ai_screening`: `mentions_ai_screening` o una frase del texto (palabras completas);
+    - `stale_repost` (en `reposts.py`): todo el historial, en el canal con más días, ≥ 4 días con
+      publicación nueva o ≥ 60 días entre la primera y la última;
+  - `services/doubtful.py`: se calculan al guardar la extracción y con `cai jobs signals
+    --recompute` (en lote, tolerante a extracciones mal formadas); patrones en
+    `config/doubtful_patterns.yaml` y umbrales en `doubtful` de `config/policies.yaml`;
+  - `JobExtraction`: `contract_type`, `hiring_entity`, `is_agency` y `mentions_ai_screening`,
+    opcionales y sin volcarse vacíos (las extracciones guardadas no cambian; `schema_version` 1);
+    rol `extractor` actualizado y regenerado;
+  - no cambian el score; `preferences.exclude_signals` (`employer_hidden`, `fixed_term`) los
+    convierte en filtro duro `signal` (vacío no se vuelca: el hash del perfil no cambia);
+  - `get_match` devuelve `signals` (`[{code, text}]`) y `cai match show` las enseña; `assess-fit`
+    las cita en `risks` y cuenta como deal-breaker la que choca con `criterios.md`;
+  - dosier de empresa: `red_flags` con `kind`, `text` con cita y `date` obligatorios, en la copia
+    Markdown y en la detección de inyección; `research-company` las busca y `prepare-interview`
+    las convierte en preguntas;
+  - UI: insignias con icono y texto en la bandeja y el triaje, nota «Antes de dedicarle tiempo» en
+    la ficha, banderas rojas en «Empresa» y pestaña «Señal» en «¿Acierta el score?»
+    (`by_signal`). Textos en es y en; OpenAPI regenerado;
+  - docs: POLICIES §2 (señales de oferta dudosa), DATA_MODEL, AGENT_INTERFACE, nota de la 25.3 en
+    la ADR-028, `config/README.md`, COMPARATIVA, prueba manual y PENDIENTES.
+- **Tests:**
+  - `test_doubtful.py` (41): cada señal con casos que la disparan y que no, umbral configurable,
+    palabras completas, un solo canal en `stale_repost`, recálculo (también sin extracción o con
+    una rota), el comando de la CLI, el score igual con y sin señales y el filtro opcional;
+  - `get_match` con señales, `exclude_signals` que cierra la oferta, `red_flags` sin cita, con
+    cita inexistente, sin fecha o de tipo desconocido rechazadas, y `by_signal` en la calibración;
+  - Vitest: insignias, nota de la ficha, banderas rojas y pestaña «Señal».
+  - 2654 tests de backend y 274 de frontend en verde (backend en tres tandas: la ejecución entera
+    se paró una vez por falta de memoria); `tsc`, ruff y `sync_agents.py --check` limpios; OpenAPI
+    regenerado. En la suite de Vitest, AppShell y Embudo dieron timeout con la máquina cargada;
+    solos, en verde.
+- **Decisiones (con el usuario):**
+  - una agencia que dice para quién es también avisa, con otro texto;
+  - las ofertas extraídas antes solo tienen las señales del nombre, el texto, el salario y las
+    publicaciones: no se vuelven a extraer solas;
+  - el embudo agrupa por las señales de ahora, no por las que tenía al enviarla;
+  - umbrales: 60 %, 4 días o 60 días.
+- **Revisión** (rol `reviewer`), sin bloqueantes. Se aplicó: el intervalo de `stale_repost`, solo
+  en un canal; `recompute_all` en lote y sin parar por una extracción rota; frases del texto como
+  palabras completas; fuera «recruiting» y «talent acquisition» de las agencias; el comando en
+  `AGENT_INTERFACE.md`; tests del comando, de varios canales y del recálculo sin extracción.
+- **Deuda:**
+  - una vacante nueva con la misma empresa, título y ciudad cuenta para `stale_repost`;
+  - las frases de cribado casan también negadas («no usamos AI screening»);
+  - la fecha de una bandera roja no se limita en código (el skill pide 24 meses);
+  - los evals de matching no pasan la empresa a los filtros: `exclude_signals` solo mira la
+    extracción ahí;
+  - sin probar con ofertas reales: queda en la prueba manual.
+

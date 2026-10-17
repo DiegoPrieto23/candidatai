@@ -119,6 +119,32 @@ Los pesos del score no cambian con esto; solo qué nombres casan.
 - **«Republicada ×N» es una observación**, no un motivo de descarte ni un dato para el score: puede
   ser una vacante difícil de cubrir, un portal que renueva la publicación o una oferta fantasma.
 
+### Señales de oferta dudosa (fase 25.3)
+
+Una oferta puede encajar en el papel y aun así no merecer la pena. El código marca cinco señales en
+`jobs.signals`, con reglas fijas y configurables (`doubtful` en `config/policies.yaml` y
+`config/doubtful_patterns.yaml`):
+
+| Señal | Cuándo |
+|---|---|
+| `salary_range_wide` | El máximo del salario supera al mínimo en más de `salary_range_max_pct` % (60) |
+| `employer_hidden` | La publica una agencia o consultora de selección (aunque diga para quién, con otro texto) o el nombre de la empresa no dice quién contrata |
+| `fixed_term` | Contrato temporal, por obra, de sustitución o de duración fija |
+| `stale_repost` | Con todo su historial: publicada de nuevo en al menos `stale_repost_min_count` días (4), o vista durante al menos `stale_repost_min_span_days` días (60) |
+| `ai_screening` | Dice que la cribará una IA o un test automático antes de hablar con una persona |
+
+- **Son información, no puntúan.** No cambian el score ni los filtros duros. Si quieres que
+  `employer_hidden` o `fixed_term` descarten, ponlas en `preferences.exclude_signals` del perfil y
+  pasan a ser un filtro duro (`signal`).
+- La UI las enseña en la bandeja, el triaje y la ficha, y `assess-fit` las cita en `risks`. Una
+  señal que choca con un deal-breaker de `criterios.md` cuenta como ese deal-breaker (§1.5).
+- Las que dependen de la extracción (`fixed_term`, el `is_agency` de `employer_hidden`,
+  `mentions_ai_screening`) solo existen en las ofertas extraídas desde esta fase.
+- **Banderas rojas de la empresa** (`red_flags` del dosier, `research-company`): despidos o ERE,
+  rotación alta, reseñas públicas muy negativas y recurrentes, impagos o conflictos. Cada una con
+  su fuente y su fecha (la herramienta rechaza las que no las tienen); nada de opiniones sin
+  respaldo. `prepare-interview` las convierte en preguntas neutrales que hacer.
+
 ## 3. CV
 
 | Regla | Detalle |

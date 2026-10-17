@@ -4,6 +4,7 @@ from datetime import date, datetime
 from typing import Any
 
 import pytest
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models import Contact, Document, DocumentRender, Job, Match, ProfileVersion
@@ -190,6 +191,25 @@ def test_by_source_and_platform(session: Session, history: Sent) -> None:
         ("none", 1, 0, 0, 1),
     ]
     assert cal.by_platform[-1].label == "Sin portal"
+
+
+def test_by_signal_counts_each_signal_and_none(session: Session, history: Sent) -> None:
+    # Fase 25.3: la 1 (respuesta y entrevista) es temporal y de agencia; la 3 (esperando), temporal.
+    sent = list(session.scalars(select(Job).order_by(Job.id)))
+    sent[0].signals = {
+        "fixed_term": {"origin": "extraction"},
+        "employer_hidden": {"reason": "agency"},
+    }
+    sent[2].signals = {"fixed_term": {"origin": "extraction"}, "reposted": {"count": 2}}
+    session.flush()
+    groups = {g.key: _row(g) for g in analytics.get_calibration(session).by_signal}
+    assert list(groups) == [
+        "salary_range_wide", "employer_hidden", "fixed_term", "stale_repost", "ai_screening", "none"
+    ]  # fmt: skip
+    assert groups["fixed_term"] == ("fixed_term", 2, 1, 1, 1)
+    assert groups["employer_hidden"] == ("employer_hidden", 1, 1, 1, 0)
+    assert groups["salary_range_wide"] == ("salary_range_wide", 0, 0, 0, 0)
+    assert groups["none"] == ("none", 3, 2, 1, 0)  # `reposted` (fase 16) no es de oferta dudosa
 
 
 def test_by_template_letter_referral_and_days(session: Session, history: Sent) -> None:

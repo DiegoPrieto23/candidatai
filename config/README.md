@@ -12,6 +12,7 @@ repositorio.
 | `title_aliases.yaml` | Puestos escritos de otra forma (sobre todo en español) → su nombre en inglés, para comparar títulos con `preferences.roles` | Tú, a mano |
 | `countries.yaml` | País de una oferta a partir de su ubicación (reglas de plantilla y política de foto) | Tú, a mano |
 | `injection_patterns.yaml` | Frases de posible inyección de instrucciones en ofertas (ADR-012) | Tú, a mano |
+| `doubtful_patterns.yaml` | Agencias, nombres que ocultan la empresa y frases de cribado con IA para las señales de oferta dudosa (fase 25.3). No cambian el score; tras editarlo, `cai jobs signals --recompute` | Tú, a mano |
 
 ## `skill_aliases.yaml`
 

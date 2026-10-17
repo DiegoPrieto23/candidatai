@@ -150,6 +150,16 @@ funcionando. Los roles son `writer`, `verifier`, `classifier`, `reviewer` y `ext
 - [ ] `uv run --directory backend cai sources discover --file empresas.txt` con tu lista: ahora
       prueba también esos cinco ATS (tarda más: hasta 8 ATS × 3 slugs por empresa).
 
+### Ofertas dudosas y banderas rojas (fase 25.3)
+
+- [ ] `uv run --directory backend cai jobs signals --recompute` con tus datos: apunta cuántas salen
+      de cada señal y si alguna es un falso positivo (sobre todo `employer_hidden` por el nombre:
+      edita `config/doubtful_patterns.yaml`). Guía: `fase-25.3-prueba-manual.txt`.
+- [ ] Procesa unas ofertas nuevas (`process-jobs`) y mira en la ficha si `fixed_term`,
+      `employer_hidden` (agencia) y `ai_screening` salen donde deben.
+- [ ] `research-company` de una empresa con noticias de despidos: banderas rojas con fuente y
+      fecha, y `prepare-interview` las convierte en preguntas.
+
 ### Skill `expand` (fase 25.2)
 
 - [ ] `/expand` sobre la demo con un GitHub público real (el tuyo si quieres): propone con la

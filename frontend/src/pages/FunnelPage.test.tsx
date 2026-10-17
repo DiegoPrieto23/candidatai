@@ -211,6 +211,11 @@ function calibration(overrides: Partial<Calibration> = {}): Calibration {
     by_cover_letter: [group('with', 'Con carta', 6, 3, 2), group('without', 'Sin carta', 18, 6, 2)],
     by_referral: [group('given', 'Con referencia', 2, 2, 1), group('none', 'Sin referencia', 22, 7, 3)],
     by_days_to_apply: [group('0_1', '0-1 días', 24, 9, 4)],
+    by_signal: [
+      group('employer_hidden', 'Empresa oculta o agencia', 6, 1, 0),
+      group('fixed_term', 'Temporal', 3, 1, 1),
+      group('none', 'Sin señales', 16, 7, 3),
+    ],
     ...overrides,
   }
 }
@@ -252,6 +257,22 @@ describe('¿Acierta el score?', () => {
     const greenhouse = within(sources).getByRole('row', { name: /Greenhouse Acme/ })
     expect(within(greenhouse).queryByText('pocos datos')).not.toBeInTheDocument()
     expect(within(sources).getByRole('row', { name: /Alertas por correo/ })).toBeInTheDocument()
+  })
+
+  it('agrupa por señal de oferta dudosa (fase 25.3)', async () => {
+    mockApi({
+      'GET /status': status(),
+      'GET /stats/funnel': stats(),
+      'GET /stats/calibration': calibration(),
+      'GET /agent': AGENT,
+    })
+    renderApp('/embudo')
+    const panel = await screen.findByRole('region', { name: '¿Acierta el score?' })
+    await userEvent.click(await within(panel).findByRole('tab', { name: 'Señal' }))
+    const table = await within(panel).findByRole('table', { name: 'Calibración por señal' })
+    expect(within(table).getByRole('row', { name: /Empresa oculta o agencia/ })).toBeInTheDocument()
+    expect(within(within(table).getByRole('row', { name: /Sin señales/ })).getAllByRole('cell')[0]).toHaveTextContent('16')
+    expect(within(panel).getByText(/¿Responden peor\?/)).toBeInTheDocument()
   })
 
   it('pide la calibración con el mismo periodo', async () => {

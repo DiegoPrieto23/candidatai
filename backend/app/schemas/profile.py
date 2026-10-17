@@ -322,6 +322,11 @@ class Preferences(_Strict):
     languages_for_work: list[LanguageCode] = Field(min_length=1)
     cv: CvPreferences
     cover_letter: CoverLetterPreferences | None = None  # fase 08c; opcional
+    # Fase 25.3: señales de oferta dudosa que quieres como filtro duro. Vacía no se vuelca, así
+    # que no cambia el hash de los perfiles que no la usan.
+    exclude_signals: list[Literal["employer_hidden", "fixed_term"]] = Field(
+        default_factory=list, exclude_if=lambda value: not value
+    )
 
 
 class ConsistencyIssue(BaseModel):

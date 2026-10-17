@@ -12,6 +12,12 @@ publicación nueva: una señal antigua no caduca sola cuando sus fechas salen de
 - La misma oferta en varios portales (InfoJobs e Indeed): no es republicar, no cuenta.
 
 Es una observación, no un veredicto: la UI enseña «Republicada ×N» con las fechas.
+
+`stale_repost` (fase 25.3, oferta dudosa) mira el mismo grupo con **todo** el historial, sin
+ventana, en el canal con más días: al menos `doubtful.stale_repost_min_count` días con publicación
+nueva, o al menos `doubtful.stale_repost_min_span_days` días entre la primera y la última de ese
+canal. Una vacante nueva con la misma empresa, título y ciudad un año después también cuenta: el
+código no las distingue.
 """
 
 from collections import defaultdict
@@ -27,7 +33,7 @@ from app.models import Job, JobSighting
 from app.models.base import utcnow
 from app.services import platforms
 from app.services.normalize import normalize_location, normalize_title, translate_title
-from app.services.signals import RepostSignal, set_signal
+from app.services.signals import RepostSignal, StaleRepostSignal, set_signal
 
 MAX_REF = 2000
 # Parámetros de URL que identifican una oferta (no de seguimiento).
@@ -141,6 +147,41 @@ def compute(
     return RepostSignal(count=count, dates=days, channel=channel, window_days=policy.window_days)
 
 
+def compute_stale(
+    session: Session, job: Job, group: list[Job] | None = None
+) -> StaleRepostSignal | None:
+    """`stale_repost` del grupo de `job`, con todo su historial de publicaciones."""
+    policy = get_policies().doubtful
+    zone = ZoneInfo(get_policies().calendar.timezone)
+    group = group if group is not None else _group(session, job)
+    rows = session.execute(
+        select(JobSighting.channel, JobSighting.ref, JobSighting.seen_at).where(
+            JobSighting.job_id.in_([j.id for j in group])
+        )
+    ).all()
+    if not rows:
+        return None
+    first_seen: dict[str, dict[str, datetime]] = defaultdict(dict)
+    for channel, ref, seen_at in rows:
+        known = first_seen[channel].get(ref)
+        if known is None or seen_at < known:
+            first_seen[channel][ref] = seen_at
+    count, channel = max(
+        (len({_local_date(m, zone) for m in refs.values()}), channel)
+        for channel, refs in first_seen.items()
+    )
+    # El intervalo, solo en ese canal: la misma oferta en otro portal semanas después no es
+    # republicarla (como en `reposted`). Con una sola publicación en él no hay intervalo.
+    moments = list(first_seen[channel].values())
+    first, last = _local_date(min(moments), zone), _local_date(max(moments), zone)
+    span = (last - first).days
+    if count < policy.stale_repost_min_count and span < policy.stale_repost_min_span_days:
+        return None
+    return StaleRepostSignal(
+        count=count, channel=channel, first_seen=first, last_seen=last, span_days=span
+    )
+
+
 def _group(session: Session, job: Job) -> list[Job]:
     """Misma empresa, mismo título comparable y misma ubicación (como la huella): la misma oferta
     en dos ciudades, publicada en días distintos, no es una republicación."""
@@ -154,10 +195,12 @@ def _group(session: Session, job: Job) -> list[Job]:
 
 
 def refresh(session: Session, job: Job, now: datetime | None = None) -> RepostSignal | None:
-    """Recalcula `reposted` y lo escribe en todas las ofertas del grupo."""
+    """Recalcula `reposted` y `stale_repost` y los escribe en todas las ofertas del grupo."""
     group = _group(session, job)
     signal = compute(session, job, now, group)
+    stale = compute_stale(session, job, group)
     for member in group:
         set_signal(member, "reposted", signal)
+        set_signal(member, "stale_repost", stale)
     session.flush()
     return signal

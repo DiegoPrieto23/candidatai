@@ -51,7 +51,7 @@ Una fila por ejecución de una fuente; la usan los conectores y, desde la 09b, a
 | location_raw | str? | Tal cual |
 | raw_text | text | Texto limpio de la oferta. **No confiable** |
 | risk_flags | JSON | Riesgo de inyección detectado por el código: `hidden_text`, `injection_phrase`… |
-| signals | JSON | Observaciones que no son riesgo (fase 16, ADR-028): `possibly_closed`, `liveness`, `open_confirmed`, `reposted`. Ver §Fase 16 |
+| signals | JSON | Observaciones que no son riesgo (fase 16, ADR-028): `possibly_closed`, `liveness`, `open_confirmed`, `reposted`; y de oferta dudosa (fase 25.3): `salary_range_wide`, `employer_hidden`, `fixed_term`, `stale_repost`, `ai_screening`. Ver §Fase 16 |
 | fingerprint | str UNIQUE | Ver abajo |
 | duplicate_of | FK jobs? | Si se detecta como duplicado difuso |
 | posted_at | datetime? | |
@@ -513,6 +513,17 @@ ADR-028). `risk_flags` sigue significando solo eso. Las escribe el código, nunc
 | `liveness` | `checked_at`, `status` (`open`, `possibly_closed`, `unknown`, `skipped`), `reason?`, `detail`, `http_status?` | Última comprobación, sea cual sea |
 | `open_confirmed` | `at`, `reason?` | «Sigue abierta» en la UI: ese mismo motivo ya no vuelve a avisar, hasta que una comprobación dé `open` (entonces se borra) |
 | `reposted` | `count` (días distintos con publicación nueva), `dates[]`, `channel`, `window_days` | `services/reposts.py`, en todas las ofertas del grupo (misma empresa, título normalizado y ubicación). Se recalcula al ver una publicación nueva; no caduca sola |
+| `salary_range_wide` (25.3) | `min`, `max`, `currency?`, `pct`, `threshold_pct` | `services/doubtful.py` al guardar la extracción: el máximo supera al mínimo en más de `doubtful.salary_range_max_pct` % |
+| `employer_hidden` (25.3) | `reason` (`agency`, `agency_for_client`, `unnamed`), `origin` (`extraction`, `company`), `client?`, `matched?` | Ídem: `is_agency` de la extracción, o el nombre de la empresa coincide con `agencies` o `hidden_employer` de `config/doubtful_patterns.yaml` |
+| `fixed_term` (25.3) | `origin` | Ídem: `contract_type: fixed_term` en la extracción |
+| `ai_screening` (25.3) | `origin` (`extraction`, `text`), `matched?` | Ídem: `mentions_ai_screening`, o una frase de `ai_screening` en el texto |
+| `stale_repost` (25.3) | `count`, `channel`, `first_seen`, `last_seen`, `span_days` | `services/reposts.py`, con todo el historial de `job_sightings` del grupo, sin ventana: `count ≥ doubtful.stale_repost_min_count` o `span_days ≥ doubtful.stale_repost_min_span_days` |
+
+Las cinco de la fase 25.3 son **señales de oferta dudosa**: no cambian el score ni los filtros
+duros, salvo `employer_hidden` y `fixed_term` si están en `preferences.exclude_signals` del perfil
+(filtro `signal`). `cai jobs signals --recompute` las recalcula todas. Sin migración: es la misma
+columna JSON. Las extracciones anteriores a la fase no traen los campos nuevos, así que solo
+cuentan las señales del nombre, el texto, el salario y las publicaciones.
 
 ### `job_sightings`
 Cada publicación vista de una oferta (migración 0015, que rellena una fila por oferta existente).

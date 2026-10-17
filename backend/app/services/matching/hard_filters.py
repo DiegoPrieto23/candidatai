@@ -16,7 +16,9 @@ from app.schemas.llm_io import JobExtraction
 from app.schemas.profile import CandidateProfile
 from app.services.normalize import fold
 
-FilterName = Literal["seniority", "years", "remote_mode", "location", "language", "title_keyword"]
+FilterName = Literal[
+    "seniority", "years", "remote_mode", "location", "language", "title_keyword", "signal"
+]
 
 SENIORITY_ORDER = ("intern", "junior", "mid", "senior", "lead")
 SENIORITY_LABEL = {
@@ -187,10 +189,31 @@ def _title_keywords(title: str, ext: JobExtraction, policy: HardFilterPolicy) ->
     return None
 
 
+def _signals(ext: JobExtraction, company: str | None, profile: CandidateProfile) -> str | None:
+    """Señales de oferta dudosa que el usuario pidió como filtro (`preferences.exclude_signals`).
+    Sin eso, las señales son solo información (fase 25.3)."""
+    from app.services import doubtful  # evita la importación circular
+
+    wanted = profile.preferences.exclude_signals
+    hits: list[str] = []
+    if "employer_hidden" in wanted and doubtful.employer_hidden(ext, company):
+        hits.append("empresa oculta o agencia")
+    if "fixed_term" in wanted and doubtful.fixed_term(ext):
+        hits.append("contrato temporal")
+    if hits:
+        return f"Excluida por tus preferencias (`exclude_signals`): {', '.join(hits)}."
+    return None
+
+
 def evaluate(
-    title: str, ext: JobExtraction, profile: CandidateProfile, policy: HardFilterPolicy
+    title: str,
+    ext: JobExtraction,
+    profile: CandidateProfile,
+    policy: HardFilterPolicy,
+    company: str | None = None,
 ) -> HardFilterResult:
-    """Aplica todos los filtros y devuelve todos los fallos a la vez (no se para en el primero)."""
+    """Aplica todos los filtros y devuelve todos los fallos a la vez (no se para en el primero).
+    `company` (el nombre de la empresa de la oferta) solo hace falta para `exclude_signals`."""
     checks: list[tuple[FilterName, str | None]] = [
         ("seniority", _seniority(ext, profile)),
         ("years", _years(ext, profile, policy)),
@@ -198,6 +221,7 @@ def evaluate(
         ("location", _location(ext, profile, policy)),
         ("language", _languages(ext, profile, policy)),
         ("title_keyword", _title_keywords(title, ext, policy)),
+        ("signal", _signals(ext, company, profile)),
     ]
     failures = [FilterFailure(filter=name, reason=reason) for name, reason in checks if reason]
     return HardFilterResult(passed=not failures, failures=failures)

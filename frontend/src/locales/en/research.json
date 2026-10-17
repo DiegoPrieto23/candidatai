@@ -18,5 +18,15 @@
   "stack": "Stack",
   "sources": "Sources",
   "openFolder": "Open dossiers folder",
-  "letterHint": "The letter doesn't use it: if you want it to mention something, copy it into its instructions."
+  "letterHint": "The letter doesn't use it: if you want it to mention something, copy it into its instructions.",
+  "redFlags": "Red flags",
+  "redFlagsHint": "Facts with a source and a date. Use them to ask in the interview, not as a verdict.",
+  "redFlagKind": {
+    "layoffs": "Layoffs",
+    "turnover": "High turnover",
+    "reviews": "Very negative reviews",
+    "payments": "Unpaid wages or bills",
+    "legal": "Disputes or sanctions",
+    "other": "Other"
+  }
 }

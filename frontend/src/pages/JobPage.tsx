@@ -24,7 +24,7 @@ import { CoverLetterSection } from '@/components/CoverLetterSection'
 import { CompanyResearchSection } from '@/components/CompanyResearchSection'
 import { CvSection } from '@/components/CvSection'
 import { JobReplyNotice } from '@/components/JobReplyNotice'
-import { ClosedNotice, RepostNote } from '@/components/JobSignals'
+import { ClosedNotice, DoubtfulNote, RepostNote } from '@/components/JobSignals'
 import { DiscardDialog } from '@/components/DiscardDialog'
 import { DraftsSection } from '@/components/DraftsSection'
 import { MatchDetails, ScoreBadge } from '@/components/MatchDetails'
@@ -647,6 +647,7 @@ export function JobPage() {
               {job.injection && <InjectionAlert injection={job.injection} />}
               <ClosedNotice job={job} />
               <RepostNote job={job} />
+              <DoubtfulNote job={job} />
               {sent ? (
                 <>
                   <ProcessSection job={job} />

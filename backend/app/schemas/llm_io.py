@@ -5,7 +5,7 @@ perderse en silencio.
 """
 
 from datetime import date
-from typing import Annotated, Literal, Self
+from typing import Annotated, Any, Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -17,6 +17,11 @@ MAX_INJECTION_EXCERPT = 200
 
 class _Strict(BaseModel):
     model_config = ConfigDict(extra="forbid")
+
+
+def _optional(**kwargs: Any) -> Any:
+    """Campo opcional que no se vuelca si es `None` (para añadir campos sin cambiar lo guardado)."""
+    return Field(default=None, exclude_if=lambda value: value is None, **kwargs)
 
 
 class LanguageRequirement(_Strict):
@@ -57,6 +62,13 @@ class JobExtraction(_Strict):
     red_flags: list[str]
     injection_suspected: bool
     injection_excerpt: str | None = Field(default=None, max_length=MAX_INJECTION_EXCERPT)
+    # Fase 25.3: para las señales de oferta dudosa (`services/doubtful.py`). `None` en las
+    # extracciones anteriores (vacíos no se vuelcan: se guardan igual que antes); el rol
+    # `extractor` los rellena siempre que el texto lo diga.
+    contract_type: Literal["permanent", "fixed_term", "freelance", "unknown"] | None = _optional()
+    hiring_entity: str | None = _optional(max_length=200)  # quién contrata, si lo dice
+    is_agency: bool | None = _optional()  # la publica una agencia, consultora de selección o ETT
+    mentions_ai_screening: bool | None = _optional()  # cribado con IA o test antes de hablar
 
     @model_validator(mode="after")
     def _excerpt_only_if_suspected(self) -> Self:

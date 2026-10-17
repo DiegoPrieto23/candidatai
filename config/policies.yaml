@@ -173,6 +173,12 @@ reposts:                        # fase 16: «Republicada ×N» (observación, no
   window_days: 90                 # se cuentan las publicaciones de los últimos N días
   min_count: 2                    # días distintos con una publicación nueva (otro id o URL) en el mismo canal
 
+doubtful:                       # fase 25.3: señales de oferta dudosa (observaciones: no cambian el score ni los filtros)
+  salary_range_max_pct: 60        # `salary_range_wide` si el máximo supera al mínimo en más de este %
+  stale_repost_min_count: 4       # `stale_repost`: días distintos con una publicación nueva en el mismo canal…
+  stale_repost_min_span_days: 60  # …o días entre la primera y la última vez vista (todo el historial)
+                                  # patrones de agencias, empresas ocultas y cribado con IA: config/doubtful_patterns.yaml
+
 background_runs:                # fase 19: «En segundo plano» (el agente sin ventana desde el worker, de uno en uno)
   timeout_minutes: 30             # después se para el proceso y la ejecución queda `timeout`
   max_progress_lines: 200         # líneas de progreso que se guardan (las últimas)

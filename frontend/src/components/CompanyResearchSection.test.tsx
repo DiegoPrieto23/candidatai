@@ -78,6 +78,41 @@ describe('Empresa en la ficha', () => {
     expect(within(section).getByText(/La carta no lo usa/)).toBeInTheDocument()
   })
 
+  it('enseña las banderas rojas con su tipo, su fecha y su cita (fase 25.3)', async () => {
+    const base = research().research!
+    mockApi({
+      'GET /status': status(),
+      'GET /agent': launcher,
+      'GET /jobs/1': jobView(),
+      'GET /jobs/1/company-research': research({
+        content: {
+          ...base.content,
+          red_flags: [{ kind: 'layoffs', text: 'ERE de 40 personas en mayo [2].', date: '2026-05-12' }],
+        },
+      }),
+    })
+    renderApp('/jobs/1')
+    const section = await screen.findByRole('region', { name: 'Empresa' })
+    const flags = await within(section).findByRole('list', { name: 'Banderas rojas' })
+    expect(flags).toHaveTextContent(/Despidos o ERE/)
+    expect(flags).toHaveTextContent('(12 may 2026)')
+    expect(within(flags).getByRole('link', { name: '[2]' })).toHaveAttribute('href', 'https://prensa.example.com/x')
+    expect(within(section).getByText(/no como veredicto/)).toBeInTheDocument()
+  })
+
+  it('sin banderas rojas no hay apartado', async () => {
+    mockApi({
+      'GET /status': status(),
+      'GET /agent': launcher,
+      'GET /jobs/1': jobView(),
+      'GET /jobs/1/company-research': research(),
+    })
+    renderApp('/jobs/1')
+    const section = await screen.findByRole('region', { name: 'Empresa' })
+    await within(section).findByText(/Consultora de datos/)
+    expect(within(section).queryByRole('list', { name: 'Banderas rojas' })).not.toBeInTheDocument()
+  })
+
   it('sin dosier ofrece investigar', async () => {
     mockApi({
       'GET /status': status(),

@@ -16,5 +16,27 @@
     "checkAgain": "Comprobar otra vez"
   },
   "repostNote": "<strong>Republicada ×{{count}}.</strong> {{text}} Puede ser una oferta difícil de cubrir o una publicación que se renueva sola: es una observación, no un veredicto.",
-  "closedHint": "Antes de gastar cuota: puede que esta oferta ya no esté publicada ({{detail}})."
+  "closedHint": "Antes de gastar cuota: puede que esta oferta ya no esté publicada ({{detail}}).",
+  "doubtful": {
+    "badge": {
+      "salary_range_wide": "Rango salarial amplio",
+      "employer_hidden": "Empresa oculta",
+      "fixed_term": "Temporal",
+      "stale_repost": "Publicada hace meses",
+      "ai_screening": "Cribado con IA"
+    },
+    "detail": {
+      "salary_range_wide": "Rango salarial muy amplio: {{min}} – {{max}} (el máximo supera al mínimo en un {{pct}} %).",
+      "agency": "La publica una agencia o consultora de selección y no dice para quién es.",
+      "agency_for_client": "La publica una agencia o consultora de selección para {{client}}.",
+      "unnamed": "El nombre de la empresa no dice quién contrata.",
+      "fixed_term": "Contrato temporal (por obra, sustitución o duración fija).",
+      "stale_repost": "Lleva tiempo publicada: vista por primera vez el {{first}} y por última el {{last}} ({{days}} días), con {{count}} publicaciones en días distintos en {{channel}}.",
+      "ai_screening": "Dice que la cribará una IA o un test automático antes de hablar con nadie.",
+      "ai_screening_phrase": "Dice que la cribará una IA o un test automático antes de hablar con nadie («{{phrase}}»)."
+    },
+    "label": "Señales de oferta dudosa",
+    "title": "Antes de dedicarle tiempo",
+    "intro": "No cambian el score ni descartan la oferta: son observaciones para que decidas tú. Si quieres que descarten, añádelas a <code>preferences.exclude_signals</code> de tu perfil (empresa oculta y temporal)."
+  }
 }

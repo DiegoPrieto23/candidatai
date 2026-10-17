@@ -527,6 +527,19 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   oferta cerrada a su portada se detecta; uno que la deja publicada sin aviso, no. Las
   republicaciones anteriores a la migración no se recuperan: el relleno solo crea la primera
   publicación de cada oferta.
+- **Nota de la fase 25.3 (señales de oferta dudosa):** cinco claves más en `jobs.signals`
+  (`salary_range_wide`, `employer_hidden`, `fixed_term`, `stale_repost`, `ai_screening`), con la
+  misma regla: observaciones del código, nunca del agente, que no cambian el score. Solo filtran si
+  el usuario pone `employer_hidden` o `fixed_term` en `preferences.exclude_signals` (filtro duro
+  `signal`). Salen de cuatro campos opcionales nuevos de `JobExtraction` (`contract_type`,
+  `hiring_entity`, `is_agency`, `mentions_ai_screening`; vacíos no se guardan, así que las
+  extracciones anteriores no cambian y `schema_version` sigue en 1), de patrones editables
+  (`config/doubtful_patterns.yaml`) sobre el nombre de la empresa y el texto, del salario y de
+  `job_sightings` (todo el historial, sin la ventana de `reposted`). Una agencia que dice para quién
+  es también avisa, con otro texto, porque así lo pide el encargo. `get_match` las devuelve en
+  texto para `assess-fit`, que no lee la oferta. La calibración agrupa por las señales de ahora,
+  no por las que tenía la oferta al enviarla (no se guarda su historia). El dosier de empresa gana
+  `red_flags`, cada una con tipo, fecha y cita obligatorias.
 
 ## ADR-029 · Preparación y repaso de entrevistas en el hito, sin cambiar su estado
 - **Contexto:** la fase 17 añade un plan de preparación por días, un simulacro y un repaso

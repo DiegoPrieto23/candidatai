@@ -27,6 +27,12 @@ Sigue `docs/POLICIES.md` §1 y §2.
    - un **deal-breaker** de `criterios.md` que la extracción confirma claramente es motivo de
      `weak` aunque el encaje técnico sea bueno; dilo en el `rationale`. Una preferencia (no un
      deal-breaker) solo va en `risks`. Lo dudoso va en `questions_for_user`;
+   - **señales de oferta dudosa** (`get_match` → `signals`: `salary_range_wide`,
+     `employer_hidden`, `fixed_term`, `stale_repost`, `ai_screening`): cada una va en `risks`
+     citándola por su código y su texto («fixed_term: contrato temporal…»). No cambian el score
+     ni son motivo de `weak` por sí solas, **salvo** que choquen con un deal-breaker de
+     `criterios.md` («criterios.md: «Nada de agencias» — employer_hidden: la publica una
+     agencia…»): entonces cuentan como tal deal-breaker;
    - `questions_for_user`: solo si una respuesta cambiaría el veredicto (p. ej. una skill ausente
      que quizá tenga y no está en el perfil).
 5. Guarda con `save_fit_assessment`. Sin MCP: escribe el JSON en `data/tmp/` y usa

@@ -204,6 +204,14 @@ class RepostsPolicy(BaseModel):
     min_count: int = Field(default=2, ge=2)  # días distintos con publicación nueva para avisar
 
 
+class DoubtfulPolicy(BaseModel):
+    """Señales de oferta dudosa (fase 25.3): observaciones; no cambian el score ni los filtros."""
+
+    salary_range_max_pct: float = Field(default=60, gt=0)
+    stale_repost_min_count: int = Field(default=4, ge=2)
+    stale_repost_min_span_days: int = Field(default=60, gt=0)
+
+
 class BackgroundRunsPolicy(BaseModel):
     """«En segundo plano» (fase 19): el agente sin ventana, desde el worker, de uno en uno."""
 
@@ -229,6 +237,7 @@ class Policies(BaseModel):
     applier: ApplierPolicy
     liveness: LivenessPolicy = Field(default_factory=LivenessPolicy)
     reposts: RepostsPolicy = Field(default_factory=RepostsPolicy)
+    doubtful: DoubtfulPolicy = Field(default_factory=DoubtfulPolicy)
     background_runs: BackgroundRunsPolicy = Field(default_factory=BackgroundRunsPolicy)
 
 
@@ -250,6 +259,20 @@ def get_policies() -> Policies:
 @lru_cache
 def get_injection_patterns() -> InjectionPatterns:
     return InjectionPatterns.model_validate(_read_yaml(CONFIG_DIR / "injection_patterns.yaml"))
+
+
+class DoubtfulPatterns(BaseModel):
+    """Patrones de `config/doubtful_patterns.yaml` (fase 25.3). Se comparan sin tildes ni
+    mayúsculas: los de empresa, como palabras del nombre; los de cribado, dentro del texto."""
+
+    agencies: list[str] = []
+    hidden_employer: list[str] = []
+    ai_screening: list[str] = []
+
+
+@lru_cache
+def get_doubtful_patterns() -> DoubtfulPatterns:
+    return DoubtfulPatterns.model_validate(_read_yaml(CONFIG_DIR / "doubtful_patterns.yaml"))
 
 
 SKILL_ALIASES_PATH = CONFIG_DIR / "skill_aliases.yaml"

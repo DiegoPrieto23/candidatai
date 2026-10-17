@@ -517,6 +517,16 @@ DAY_BUCKETS: tuple[tuple[str, str, float], ...] = (
     ("4_7", "4-7 días", 8),
     ("8_plus", "8 días o más", math.inf),
 )
+# Señales de oferta dudosa (fase 25.3). Una oferta cuenta en cada señal que tenga; «Sin señales»
+# son las que no tienen ninguna. Son las señales de ahora, no las que tenía al enviarla.
+SIGNAL_LABELS: tuple[tuple[str, str], ...] = (
+    ("salary_range_wide", "Rango salarial muy amplio"),
+    ("employer_hidden", "Empresa oculta o agencia"),
+    ("fixed_term", "Temporal"),
+    ("stale_repost", "Publicada hace meses"),
+    ("ai_screening", "Cribado con IA"),
+    ("none", "Sin señales"),
+)
 # Grupos sin dato. Una plantilla del usuario con id «none» se sumaría a «Sin CV de la app».
 NO_PLATFORM = "none"
 NO_TEMPLATE = "none"
@@ -553,6 +563,8 @@ class Calibration(BaseModel):
     by_cover_letter: list[CalibrationGroup]  # with, without
     by_referral: list[CalibrationGroup]  # given, requested, none
     by_days_to_apply: list[CalibrationGroup]  # 0_1, 2_3, 4_7, 8_plus
+    # Fase 25.3: una oferta cuenta en cada señal de oferta dudosa que tenga; `none`, sin ninguna.
+    by_signal: list[CalibrationGroup]
 
 
 def wilson_interval(successes: int, n: int, z: float = _Z) -> RateInterval:
@@ -637,6 +649,12 @@ def _calibration_rows(session: Session, since: date | None) -> CTE:
             case((letter, "with"), else_="without").label("letter"),
             _referral_group(per_job).label("referral"),
             (func.julianday(applied_at) - func.julianday(per_job.c.first_seen_at)).label("days"),
+            *(
+                case((func.json_extract(Job.signals, f"$.{code}").is_not(None), 1), else_=0).label(
+                    f"signal_{code}"
+                )
+                for code, _ in SIGNAL_LABELS[:-1]
+            ),
         )
         .select_from(per_job)
         .join(Job, Job.id == job_id)
@@ -676,6 +694,23 @@ def _counts(session: Session, cal: CTE, key: Any = None) -> list[Any]:
     if key is None:
         return [session.execute(select(*sums).select_from(cal)).one()]
     return list(session.execute(select(key.label("key"), *sums).group_by(key)).all())
+
+
+def _by_signal(session: Session, cal: CTE, min_cases: int) -> list[CalibrationGroup]:
+    """Un grupo por señal (una oferta puede estar en varios) y «Sin señales»."""
+    columns = [cal.c[f"signal_{code}"] for code, _ in SIGNAL_LABELS[:-1]]
+    sums = [
+        func.count().label("applied"),
+        func.coalesce(func.sum(cal.c.replied), 0).label("replied"),
+        func.coalesce(func.sum(cal.c.interview), 0).label("interview"),
+        func.coalesce(func.sum(cal.c.awaiting), 0).label("awaiting"),
+    ]
+    out = []
+    for (code, label), column in zip(SIGNAL_LABELS, [*columns, None], strict=True):
+        where = column == 1 if column is not None else and_(*(c == 0 for c in columns))
+        row = session.execute(select(*sums).select_from(cal).where(where)).one()
+        out.append(_group(code, label, row, min_cases))
+    return out
 
 
 def _fixed(
@@ -733,4 +768,5 @@ def get_calibration(
         by_cover_letter=_fixed(session, cal, cal.c.letter, LETTER_GROUPS, min_cases),
         by_referral=_fixed(session, cal, cal.c.referral, REFERRAL_LABELS, min_cases),
         by_days_to_apply=_fixed(session, cal, days, day_groups, min_cases),
+        by_signal=_by_signal(session, cal, min_cases),
     )

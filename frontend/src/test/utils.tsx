@@ -185,6 +185,7 @@ export function matchView(changes: Partial<MatchView> = {}): MatchView {
     triage_threshold: 55,
     below_threshold: false,
     hard_filters: { passed: true, failures: [] },
+    signals: [],
     breakdown: {
       components: [
         { name: 'must_have_coverage', value: 0.8, weight: 0.45, effective_weight: 0.6429, points: 51.43 },

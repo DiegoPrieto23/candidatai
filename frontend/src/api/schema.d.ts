@@ -2509,6 +2509,16 @@ export interface components {
             /** Effective */
             effective: components["schemas"]["EffectiveAction"][];
         };
+        /** AiScreeningSignal */
+        AiScreeningSignal: {
+            /**
+             * Origin
+             * @enum {string}
+             */
+            origin: "extraction" | "text" | "company";
+            /** Matched */
+            matched?: string | null;
+        };
         /** AlertJob */
         AlertJob: {
             /** Job Id */
@@ -2837,6 +2847,8 @@ export interface components {
             by_referral: components["schemas"]["CalibrationGroup"][];
             /** By Days To Apply */
             by_days_to_apply: components["schemas"]["CalibrationGroup"][];
+            /** By Signal */
+            by_signal: components["schemas"]["CalibrationGroup"][];
         };
         /** CalibrationGroup */
         CalibrationGroup: {
@@ -2974,6 +2986,11 @@ export interface components {
              * @description Para el candidato: qué conviene preguntar o comprobar, con [n] si sale de una fuente. Sin opiniones sin respaldo.
              */
             notes?: string | null;
+            /**
+             * Red Flags
+             * @description Banderas rojas con fuente y fecha (despidos, rotación, reseñas, impagos, conflictos). Vacío si no hay ninguna con fuente.
+             */
+            red_flags?: components["schemas"]["RedFlag"][];
             /**
              * Sources
              * @description Fuentes, en el orden de las citas [1], [2]…
@@ -3473,6 +3490,23 @@ export interface components {
             /** Message */
             message: string;
         };
+        /** EmployerHiddenSignal */
+        EmployerHiddenSignal: {
+            /**
+             * Reason
+             * @enum {string}
+             */
+            reason: "agency" | "agency_for_client" | "unnamed";
+            /**
+             * Origin
+             * @enum {string}
+             */
+            origin: "extraction" | "text" | "company";
+            /** Client */
+            client?: string | null;
+            /** Matched */
+            matched?: string | null;
+        };
         /**
          * EmptyBody
          * @description Cuerpo `{}` de las acciones de la UI sin datos: JSON, para que `require_ui` lo compruebe.
@@ -3599,7 +3633,7 @@ export interface components {
              * Filter
              * @enum {string}
              */
-            filter: "seniority" | "years" | "remote_mode" | "location" | "language" | "title_keyword";
+            filter: "seniority" | "years" | "remote_mode" | "location" | "language" | "title_keyword" | "signal";
             /** Reason */
             reason: string;
         };
@@ -3619,6 +3653,15 @@ export interface components {
             risks: string[];
             /** Questions For User */
             questions_for_user: string[];
+        };
+        /** FixedTermSignal */
+        FixedTermSignal: {
+            /**
+             * Origin
+             * @default extraction
+             * @enum {string}
+             */
+            origin: "extraction" | "text" | "company";
         };
         /** FollowupItem */
         FollowupItem: {
@@ -3925,6 +3968,14 @@ export interface components {
             injection_suspected: boolean;
             /** Injection Excerpt */
             injection_excerpt?: string | null;
+            /** Contract Type */
+            contract_type?: ("permanent" | "fixed_term" | "freelance" | "unknown") | null;
+            /** Hiring Entity */
+            hiring_entity?: string | null;
+            /** Is Agency */
+            is_agency?: boolean | null;
+            /** Mentions Ai Screening */
+            mentions_ai_screening?: boolean | null;
         };
         /** JobNetwork */
         JobNetwork: {
@@ -4002,6 +4053,11 @@ export interface components {
             liveness?: components["schemas"]["LivenessCheck"] | null;
             open_confirmed?: components["schemas"]["OpenConfirmed"] | null;
             reposted?: components["schemas"]["RepostSignal"] | null;
+            salary_range_wide?: components["schemas"]["SalaryRangeSignal"] | null;
+            employer_hidden?: components["schemas"]["EmployerHiddenSignal"] | null;
+            fixed_term?: components["schemas"]["FixedTermSignal"] | null;
+            ai_screening?: components["schemas"]["AiScreeningSignal"] | null;
+            stale_repost?: components["schemas"]["StaleRepostSignal"] | null;
         };
         /** JobView */
         JobView: {
@@ -4467,6 +4523,8 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+            /** Signals */
+            signals: components["schemas"]["SignalNote"][];
         };
         /** MessageDraftOut */
         MessageDraftOut: {
@@ -5192,6 +5250,29 @@ export interface components {
              */
             updated_at: string;
         };
+        /**
+         * RedFlag
+         * @description Una bandera roja de la empresa (fase 25.3): un hecho con fuente y fecha, no una opinión.
+         */
+        RedFlag: {
+            /**
+             * Kind
+             * @description layoffs (despidos, ERE), turnover (rotación alta), reviews (reseñas públicas muy negativas y recurrentes), payments (impagos, retrasos de nómina), legal (conflictos, sanciones, juicios) u other.
+             * @enum {string}
+             */
+            kind: "layoffs" | "turnover" | "reviews" | "payments" | "legal" | "other";
+            /**
+             * Text
+             * @description Qué pasó, en 1-2 frases, citando [n].
+             */
+            text: string;
+            /**
+             * Date
+             * Format: date
+             * @description Cuándo pasó o se publicó (AAAA-MM-DD; el día 1 si solo hay mes).
+             */
+            date: string;
+        };
         /** ReferralChange */
         ReferralChange: {
             /**
@@ -5638,6 +5719,19 @@ export interface components {
             /** Period */
             period?: ("year" | "month" | "hour") | null;
         };
+        /** SalaryRangeSignal */
+        SalaryRangeSignal: {
+            /** Min */
+            min: number;
+            /** Max */
+            max: number;
+            /** Currency */
+            currency?: string | null;
+            /** Pct */
+            pct: number;
+            /** Threshold Pct */
+            threshold_pct: number;
+        };
         /** SaveAnswersResult */
         SaveAnswersResult: {
             /** Ok */
@@ -5743,6 +5837,19 @@ export interface components {
             es?: string | null;
             /** En */
             en?: string | null;
+        };
+        /**
+         * SignalNote
+         * @description Una señal activa, en texto para el agente y la CLI (la UI lo traduce por `code`).
+         */
+        SignalNote: {
+            /**
+             * Code
+             * @enum {string}
+             */
+            code: "salary_range_wide" | "employer_hidden" | "fixed_term" | "stale_repost" | "ai_screening";
+            /** Text */
+            text: string;
         };
         /**
          * SkillCoverage
@@ -5964,6 +6071,25 @@ export interface components {
          * @enum {string}
          */
         Stage: "pending_detail" | "pending_extraction" | "pending_triage" | "approved" | "cv_ready" | "applied" | "in_process" | "closed";
+        /** StaleRepostSignal */
+        StaleRepostSignal: {
+            /** Count */
+            count: number;
+            /** Channel */
+            channel: string;
+            /**
+             * First Seen
+             * Format: date
+             */
+            first_seen: string;
+            /**
+             * Last Seen
+             * Format: date
+             */
+            last_seen: string;
+            /** Span Days */
+            span_days: number;
+        };
         /** StatusReport */
         StatusReport: {
             /** Total */

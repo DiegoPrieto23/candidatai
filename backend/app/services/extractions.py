@@ -42,13 +42,17 @@ def save_extraction(
 ) -> SaveExtractionResult:
     """Guarda una extracción y registra `extracted` (y antes `injection_suspected` si procede).
 
+    Recalcula las señales de oferta dudosa (`services/doubtful.py`), que no cambian el score.
+
     Después aplica los filtros duros (si no pasa, `hard_filter_failed` cierra la oferta) y encola
     el cálculo del score. Si algún evento no es válido en la etapa actual, se lanza el error y la
     sesión no debe confirmarse.
     """
-    from app.services.matching import service as matching  # evita la importación circular
+    from app.services import doubtful  # evita la importación circular
+    from app.services.matching import service as matching
 
-    if session.get(Job, job_id) is None:
+    job = session.get(Job, job_id)
+    if job is None:
         raise JobNotFoundError(f"No existe la oferta {job_id}.")
     if extraction.injection_suspected:
         events.record(
@@ -74,6 +78,7 @@ def save_extraction(
         payload={"extraction_id": row.id},
         agent_name=agent_name,
     )
+    doubtful.refresh(session, job, extraction)  # señales de oferta dudosa (fase 25.3)
     filters = matching.after_extraction(session, job_id)
     return SaveExtractionResult(
         ok=True,

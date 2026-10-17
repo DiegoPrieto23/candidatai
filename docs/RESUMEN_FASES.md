@@ -380,6 +380,16 @@ La carta es un documento propio, con sus indicaciones, su verificación y sus re
 - Para agentes y terminal: `get_received_offer` ↔ `jh received-offers show`.
 
 
+## 25.3 · Ofertas dudosas a la vista — 2026-10-17 · Claude Code (Opus 5.5)
+- **Cinco señales** en la bandeja, el triaje y la ficha: rango salarial muy amplio, empresa oculta o
+  agencia, contrato temporal, publicada hace meses y cribado con IA, cada una con su explicación.
+- **No cambian el score:** son información. Si quieres que descarten (empresa oculta o temporal),
+  lo pones en tu perfil.
+- **`assess-fit` las cita** en los riesgos, y cuentan como deal-breaker si chocan con tus criterios.
+- **Banderas rojas de la empresa** en el dosier (despidos, rotación, reseñas, impagos, conflictos),
+  cada una con su fuente y su fecha; `prepare-interview` las convierte en preguntas.
+- **Embudo:** «¿Acierta el score?» por señal, para ver si esas ofertas responden peor.
+
 ## 25.2 · Tu perfil, ampliado desde tus enlaces — 2026-10-16 · Claude Code (Opus 5.5)
 - **Skill `expand`** y botón «Ampliar perfil desde mis enlaces» en «Mi perfil»: tu agente lee tu
   GitHub, portfolio, Kaggle o Scholar públicos y te propone proyectos, skills, logros y

@@ -140,7 +140,8 @@
     "remote_mode": "Work mode",
     "location": "Location",
     "language": "Language",
-    "title_keyword": "Title keywords"
+    "title_keyword": "Title keywords",
+    "signal": "Doubtful-job signals you excluded"
   },
   "sourceKind": {
     "manual_url": "Link",

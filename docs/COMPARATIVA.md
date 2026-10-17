@@ -111,7 +111,7 @@ compatible y Antigravity CLI ocupa su sitio.
 | Similitud semántica local (embeddings) | ✅ opcional | ❌ | ❌ (solo léxica, para reutilizar un CV) |
 | Valoración razonada del agente | ✅ `assess-fit` | ✅ | ✅ informe A-H |
 | Triaje rápido con teclado | ✅ J/K, A, D, deshacer | ❌ | 🟡 en la TUI |
-| Señales de oferta dudosa (agencia sin licencia, rango salarial demasiado ancho, temporal oculto, cribado con IA…) | ❌ | ❌ | ✅ `oferta-signals` |
+| Señales de oferta dudosa (agencia sin licencia, rango salarial demasiado ancho, temporal oculto, cribado con IA…) | 🟡 rango ancho, empresa oculta o agencia, temporal, publicada hace meses y cribado con IA, sin puntuar (25.3); licencias de agencias, no | ❌ | ✅ `oferta-signals` |
 | Autorización de trabajo / patrocinio de visado | ❌ | ❌ | ✅ |
 | Estrategia de nivel y arquetipo del puesto | 🟡 | ❌ | ✅ |
 | Calibración por región (p. ej. ingeniería en Europa) | ❌ | ❌ | ✅ `eu-swe` |
@@ -163,7 +163,7 @@ compatible y Antigravity CLI ocupa su sitio.
 | Plan de preparación por días | ✅ | ✅ | ✅ |
 | Simulacro con feedback | ✅ | ✅ | ✅ |
 | Repaso posterior y banco de historias STAR | ✅ (al perfil, con tu OK) | 🟡 | ✅ STAR+R |
-| Detector de banderas rojas de la empresa | ❌ | ❌ | ✅ `interview-redflag` |
+| Detector de banderas rojas de la empresa | ✅ `red_flags` del dosier, con fuente y fecha, y preguntas en `prepare-interview` (25.3) | ❌ | ✅ `interview-redflag` |
 | Comparar ofertas recibidas con tu mínimo | ✅ **sin que el agente vea tu mínimo** | ❌ | ✅ `salary-gap` |
 | Preparar la negociación y revisar el contrato | ✅ sin proponer cifras | ❌ | ✅ |
 | Datos salariales propios | ✅ CSV opcional | ✅ | ✅ |
@@ -222,7 +222,7 @@ dudosas, coste y calidad del CV) y la 26 (macOS, Linux y Docker).
 | 6 | **Guía de modelos gratuitos y locales + matriz probada por agente y modelo** | career-ops | Recomendar modelos con datos (`cai eval cv`) y no por opinión | Medio | 24.6 |
 | 7 | **Más conectores de ATS con API pública**: Personio, Teamtailor, Workable, SmartRecruiters, Recruitee, y feeds como Manfred o freehire.me | ambos | Mucha empresa española y europea usa estos ATS; son APIs, sin scraping (ADR-016) | Medio | 25.1 ✅ |
 | 8 | **Enriquecer el perfil desde enlaces públicos** (GitHub, portfolio, Scholar), con tu OK antes de escribir | ambos | Proyectos y logros que no están en el CV | Bajo (un skill) | 25.2 ✅ |
-| 9 | **Señales de oferta dudosa y banderas rojas** en `assess-fit` y `research-company` | career-ops | Evita perder tiempo con ofertas fantasma, agencias o condiciones escondidas | Bajo | 25.3 |
+| 9 | **Señales de oferta dudosa y banderas rojas** en `assess-fit` y `research-company` | career-ops | Evita perder tiempo con ofertas fantasma, agencias o condiciones escondidas | Bajo | 25.3 ✅ |
 | 10 | **Lote en paralelo y coste por skill y por agente** (tokens, turnos, tiempo) con un filtro previo por score | ambos | Saber qué cuesta cada oferta y gastar solo en las que pasan el umbral | Medio | 25.4 |
 | 11 | **Verificar la maquetación del PDF** (huérfanos, huecos, pie) | AI Job Search | Hoy solo se avisa de que sobra una página | Bajo | 25.5 |
 | 12 | **macOS, Linux o Docker** | ambos | Solo si se busca que lo use más gente; hoy el instalador es solo para Windows | Medio | 26 |

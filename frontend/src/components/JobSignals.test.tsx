@@ -124,4 +124,55 @@ describe('Señales de la oferta', () => {
     expect(screen.queryByRole('region', { name: 'Puede que esté cerrada' })).not.toBeInTheDocument()
     expect(calls.some((c) => c.path === '/jobs/1/check-open')).toBe(false)
   })
+
+  describe('oferta dudosa (fase 25.3)', () => {
+    const DOUBTFUL: JobSignals = {
+      salary_range_wide: { min: 30000, max: 60000, currency: 'EUR', pct: 100, threshold_pct: 60 },
+      employer_hidden: { reason: 'agency_for_client', origin: 'extraction', client: 'Acme Datos', matched: null },
+      fixed_term: { origin: 'extraction' },
+      stale_repost: { count: 4, channel: 'infojobs', first_seen: '2026-06-01', last_seen: '2026-10-01', span_days: 122 },
+      ai_screening: { origin: 'text', matched: 'hirevue' },
+    }
+
+    it('la bandeja y el triaje enseñan cada señal con su icono y su texto', async () => {
+      mockApi({
+        'GET /status': status(),
+        'GET /jobs': { items: [jobRow({ signals: DOUBTFUL })], total: 1, limit: 50, offset: 0 },
+      })
+      renderApp('/bandeja')
+      for (const badge of ['Rango salarial amplio', 'Empresa oculta', 'Temporal', 'Publicada hace meses', 'Cribado con IA']) {
+        expect((await screen.findAllByText(badge)).length).toBeGreaterThan(0)
+      }
+    })
+
+    it('el triaje también', async () => {
+      const item = triageItem(1, 80)
+      mockApi({
+        'GET /status': status(0, 1),
+        'GET /triage': triageQueue([{ ...item, job: { ...item.job, signals: { fixed_term: { origin: 'extraction' } } } }]),
+      })
+      renderApp('/triaje')
+      expect(await screen.findByText('Temporal')).toBeInTheDocument()
+      expect(screen.queryByText('Empresa oculta')).not.toBeInTheDocument()
+    })
+
+    it('la ficha las explica sin aviso y dice que no cuentan en el score', async () => {
+      mockApi({ 'GET /status': status(), 'GET /jobs/1': jobView({ stage: 'pending_triage', signals: DOUBTFUL }) })
+      renderApp('/jobs/1')
+      const note = await screen.findByRole('region', { name: 'Señales de oferta dudosa' })
+      expect(within(note).getByText(/La publica una agencia o consultora de selección para Acme Datos/)).toBeInTheDocument()
+      expect(within(note).getByText(/el máximo supera al mínimo en un 100 %/)).toBeInTheDocument()
+      expect(within(note).getByText(/122 días/)).toBeInTheDocument()
+      expect(within(note).getByText(/«hirevue»/)).toBeInTheDocument()
+      expect(within(note).getByText(/No cambian el score/)).toBeInTheDocument()
+      expect(within(note).getByText('preferences.exclude_signals')).toBeInTheDocument()
+    })
+
+    it('sin señales no hay nota', async () => {
+      mockApi({ 'GET /status': status(), 'GET /jobs/1': jobView({ stage: 'pending_triage', signals: REPOSTED }) })
+      renderApp('/jobs/1')
+      await screen.findByText(/Republicada ×3\./)
+      expect(screen.queryByRole('region', { name: 'Señales de oferta dudosa' })).not.toBeInTheDocument()
+    })
+  })
 })

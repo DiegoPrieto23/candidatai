@@ -1,5 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowsClockwiseIcon, CheckIcon, ClockCounterClockwiseIcon, LinkBreakIcon, XIcon } from '@phosphor-icons/react'
+import {
+  ArrowsClockwiseIcon,
+  ArrowsHorizontalIcon,
+  CalendarXIcon,
+  CheckIcon,
+  ClockCounterClockwiseIcon,
+  EyeSlashIcon,
+  FlagIcon,
+  HourglassIcon,
+  LinkBreakIcon,
+  RobotIcon,
+  XIcon,
+  type Icon,
+} from '@phosphor-icons/react'
 import { useTranslation } from 'react-i18next'
 import { SafeTrans } from '@/components/SafeTrans'
 import type { JobSignals, JobView, Stage } from '@/api/client'
@@ -9,7 +22,7 @@ import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { errorMessage } from '@/lib/errors'
 import { formatList, i18n } from '@/lib/i18n'
-import { formatDate, formatDateTime } from '@/lib/labels'
+import { formatDate, formatDateTime, formatMoney, formatNumber } from '@/lib/labels'
 import { cn } from '@/lib/utils'
 
 /** Etapas en las que se puede descartar (el aviso de cierre solo tiene sentido antes de enviar). */
@@ -36,12 +49,73 @@ function repostText(reposted: NonNullable<JobSignals['reposted']>): string {
   return i18n.t('signals:reposted', { channel, count: reposted.count, dates })
 }
 
-/** Insignias «Republicada ×N» y «¿Cerrada?» para listas (bandeja, triaje). */
+type DoubtfulCode = 'salary_range_wide' | 'employer_hidden' | 'fixed_term' | 'stale_repost' | 'ai_screening'
+
+const DOUBTFUL_ICON: Record<DoubtfulCode, Icon> = {
+  salary_range_wide: ArrowsHorizontalIcon,
+  employer_hidden: EyeSlashIcon,
+  fixed_term: HourglassIcon,
+  stale_repost: CalendarXIcon,
+  ai_screening: RobotIcon,
+}
+
+function money(amount: number, currency: string | null | undefined): string {
+  return currency ? formatMoney(amount, currency) : formatNumber(amount)
+}
+
+/** Señales de oferta dudosa activas (fase 25.3), en el orden del backend, con su texto. */
+export function doubtfulSignals(signals?: JobSignals): { code: DoubtfulCode; detail: string }[] {
+  if (!signals) return []
+  type DetailKey =
+    | Exclude<DoubtfulCode, 'employer_hidden'>
+    | 'agency'
+    | 'agency_for_client'
+    | 'unnamed'
+    | 'ai_screening_phrase'
+  const t = (key: DetailKey, values?: Record<string, unknown>) =>
+    i18n.t(`signals:doubtful.detail.${key}`, values ?? {})
+  const out: { code: DoubtfulCode; detail: string }[] = []
+  const salary = signals.salary_range_wide
+  if (salary) {
+    out.push({
+      code: 'salary_range_wide',
+      detail: t('salary_range_wide', {
+        min: money(salary.min, salary.currency),
+        max: money(salary.max, salary.currency),
+        pct: salary.pct,
+      }),
+    })
+  }
+  const hidden = signals.employer_hidden
+  if (hidden) out.push({ code: 'employer_hidden', detail: t(hidden.reason, { client: hidden.client }) })
+  if (signals.fixed_term) out.push({ code: 'fixed_term', detail: t('fixed_term') })
+  const stale = signals.stale_repost
+  if (stale) {
+    out.push({
+      code: 'stale_repost',
+      detail: t('stale_repost', {
+        first: formatDate(stale.first_seen),
+        last: formatDate(stale.last_seen),
+        days: stale.span_days,
+        count: stale.count,
+        channel: CHANNEL_LABEL[stale.channel] ?? stale.channel,
+      }),
+    })
+  }
+  const ai = signals.ai_screening
+  if (ai) {
+    out.push({ code: 'ai_screening', detail: ai.matched ? t('ai_screening_phrase', { phrase: ai.matched }) : t('ai_screening') })
+  }
+  return out
+}
+
+/** Insignias «Republicada ×N», «¿Cerrada?» y de oferta dudosa para listas (bandeja, triaje). */
 export function SignalBadges({ signals, className }: { signals?: JobSignals; className?: string }) {
   const { t } = useTranslation('signals')
   const reposted = signals?.reposted
   const closed = signals?.possibly_closed
-  if (!reposted && !closed) return null
+  const doubtful = doubtfulSignals(signals)
+  if (!reposted && !closed && doubtful.length === 0) return null
   return (
     <span className={cn('inline-flex shrink-0 items-center gap-1', className)}>
       {closed && (
@@ -66,7 +140,56 @@ export function SignalBadges({ signals, className }: { signals?: JobSignals; cla
           </TooltipContent>
         </Tooltip>
       )}
+      {doubtful.map(({ code, detail }) => {
+        const SignalIcon = DOUBTFUL_ICON[code]
+        return (
+          <Tooltip key={code}>
+            <TooltipTrigger asChild>
+              <span className="inline-flex items-center gap-1 rounded-full border px-1.5 py-px text-[0.7rem] leading-4 font-medium whitespace-nowrap text-muted-foreground">
+                <SignalIcon className="size-3" weight="bold" aria-hidden />
+                {t(`doubtful.badge.${code}`)}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-xs">
+              {detail} {t('observation')}
+            </TooltipContent>
+          </Tooltip>
+        )
+      })}
     </span>
+  )
+}
+
+/** Oferta dudosa (fase 25.3): una nota en la ficha con cada señal y su explicación. No es un aviso:
+ *  no cambian el score ni descartan la oferta. */
+export function DoubtfulNote({ job }: { job: JobView }) {
+  const { t } = useTranslation('signals', { keyPrefix: 'doubtful' })
+  const doubtful = doubtfulSignals(job.signals)
+  if (doubtful.length === 0) return null
+  return (
+    <section aria-label={t('label')} className="rounded-xl border bg-card px-4 py-3 text-sm">
+      <h2 className="flex items-center gap-2 font-medium">
+        <FlagIcon className="size-[18px] shrink-0 text-muted-foreground" weight="duotone" aria-hidden />
+        {t('title')}
+      </h2>
+      <ul className="mt-2 space-y-1.5">
+        {doubtful.map(({ code, detail }) => {
+          const SignalIcon = DOUBTFUL_ICON[code]
+          return (
+            <li key={code} className="flex items-start gap-2">
+              <SignalIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground" weight="bold" aria-hidden />
+              <span>
+                <span className="font-medium">{t(`badge.${code}`)}.</span>{' '}
+                <span className="text-muted-foreground">{detail}</span>
+              </span>
+            </li>
+          )
+        })}
+      </ul>
+      <p className="mt-2 text-xs text-muted-foreground">
+        <SafeTrans t={t} i18nKey="intro" components={{ code: <code className="font-mono text-[0.85em]" /> }} />
+      </p>
+    </section>
   )
 }
 

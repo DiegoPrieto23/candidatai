@@ -18,17 +18,19 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.core.policies import get_policies, get_skill_aliases, get_title_aliases
-from app.models import Application, Job, Match
+from app.models import Application, Company, Job, Match
 from app.models import JobExtraction as JobExtractionRow
 from app.schemas.llm_io import FitAssessment, JobExtraction
-from app.services import events, extractions, tasks
+from app.services import doubtful, events, extractions, tasks
 from app.services import profile as profiles
+from app.services.doubtful import SignalNote
 from app.services.events import JobNotFoundError
 from app.services.extractions import ExtractionNotFoundError
 from app.services.matching import embeddings, hard_filters, scorer
 from app.services.matching.hard_filters import HardFilterResult
 from app.services.matching.scorer import ScoreBreakdown
 from app.services.pipeline import WORKING_STAGES, Actor, EventType, Stage, job_events
+from app.services.signals import read as read_signals
 
 
 class MatchView(BaseModel):
@@ -44,6 +46,9 @@ class MatchView(BaseModel):
     assessment: FitAssessment | None  # la última valoración del agente, aunque sea de otro cálculo
     assessment_stale: bool  # la valoración es de un match anterior (perfil, oferta o puntuación)
     created_at: datetime
+    # Fase 25.3: señales de oferta dudosa activas, para los riesgos de `assess-fit`. No cuentan en
+    # el score. Solo las rellena `get_match` (en las listas va vacía).
+    signals: list[SignalNote]
 
 
 class SaveAssessmentResult(BaseModel):
@@ -62,6 +67,11 @@ def _job(session: Session, job_id: int) -> Job:
     if job is None:
         raise JobNotFoundError(f"No existe la oferta {job_id}.")
     return job
+
+
+def _company_name(session: Session, job: Job) -> str | None:
+    company = session.get(Company, job.company_id)
+    return company.name if company else None
 
 
 def _latest_extraction(session: Session, job_id: int) -> JobExtractionRow:
@@ -110,7 +120,9 @@ def evaluate_filters(session: Session, job_id: int) -> HardFilterResult:
     job = _job(session, job_id)
     ext = JobExtraction.model_validate(_latest_extraction(session, job_id).data)
     profile = profiles.current(session).profile
-    return hard_filters.evaluate(job.title, ext, profile, get_policies().hard_filters)
+    return hard_filters.evaluate(
+        job.title, ext, profile, get_policies().hard_filters, _company_name(session, job)
+    )
 
 
 def after_extraction(session: Session, job_id: int) -> HardFilterResult | None:
@@ -153,7 +165,9 @@ def compute_match(session: Session, job_id: int) -> Match:
     stored = profiles.current(session)
     ext = JobExtraction.model_validate(ext_row.data)
     policies = get_policies()
-    filters = hard_filters.evaluate(job.title, ext, stored.profile, policies.hard_filters)
+    filters = hard_filters.evaluate(
+        job.title, ext, stored.profile, policies.hard_filters, _company_name(session, job)
+    )
     result = scorer.score(
         job.title, ext, stored.profile, policies.scoring, embeddings.get_embedder()
     )
@@ -220,13 +234,16 @@ def _view(match: Match, history: Sequence[Match]) -> MatchView:
         assessment=FitAssessment.model_validate(assessed.assessment) if assessed else None,
         assessment_stale=assessed is not None and assessed.id != match.id,
         created_at=match.created_at,
+        signals=[],
     )
 
 
 def get_match(session: Session, job_id: int) -> MatchView:
     """Filtros duros, score y desglose vigentes (se recalculan si estaban desfasados)."""
     match = current_match(session, job_id)
-    return _view(match, _matches(session, job_id))
+    view = _view(match, _matches(session, job_id))
+    notes = doubtful.notes(read_signals(_job(session, job_id)))
+    return view.model_copy(update={"signals": notes})
 
 
 def save_fit_assessment(

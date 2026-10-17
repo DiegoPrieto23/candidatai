@@ -14075,6 +14075,35 @@
         "title": "AgentsOverview",
         "description": "`GET /agent/agents` y `cai agents list --json`: los agentes del manifiesto, tus preferencias\ny el agente efectivo de cada acción."
       },
+      "AiScreeningSignal": {
+        "properties": {
+          "origin": {
+            "type": "string",
+            "enum": [
+              "extraction",
+              "text",
+              "company"
+            ],
+            "title": "Origin"
+          },
+          "matched": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Matched"
+          }
+        },
+        "type": "object",
+        "required": [
+          "origin"
+        ],
+        "title": "AiScreeningSignal"
+      },
       "AlertJob": {
         "properties": {
           "job_id": {
@@ -15043,6 +15072,13 @@
             },
             "type": "array",
             "title": "By Days To Apply"
+          },
+          "by_signal": {
+            "items": {
+              "$ref": "#/components/schemas/CalibrationGroup"
+            },
+            "type": "array",
+            "title": "By Signal"
           }
         },
         "type": "object",
@@ -15058,7 +15094,8 @@
           "by_template",
           "by_cover_letter",
           "by_referral",
-          "by_days_to_apply"
+          "by_days_to_apply",
+          "by_signal"
         ],
         "title": "Calibration"
       },
@@ -15407,6 +15444,15 @@
             ],
             "title": "Notes",
             "description": "Para el candidato: qué conviene preguntar o comprobar, con [n] si sale de una fuente. Sin opiniones sin respaldo."
+          },
+          "red_flags": {
+            "items": {
+              "$ref": "#/components/schemas/RedFlag"
+            },
+            "type": "array",
+            "maxItems": 10,
+            "title": "Red Flags",
+            "description": "Banderas rojas con fuente y fecha (despidos, rotación, reseñas, impagos, conflictos). Vacío si no hay ninguna con fuente."
           },
           "sources": {
             "items": {
@@ -16907,6 +16953,56 @@
         ],
         "title": "EmailPollResult"
       },
+      "EmployerHiddenSignal": {
+        "properties": {
+          "reason": {
+            "type": "string",
+            "enum": [
+              "agency",
+              "agency_for_client",
+              "unnamed"
+            ],
+            "title": "Reason"
+          },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "extraction",
+              "text",
+              "company"
+            ],
+            "title": "Origin"
+          },
+          "client": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client"
+          },
+          "matched": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Matched"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reason",
+          "origin"
+        ],
+        "title": "EmployerHiddenSignal"
+      },
       "EmptyBody": {
         "properties": {},
         "additionalProperties": false,
@@ -17262,7 +17358,8 @@
               "remote_mode",
               "location",
               "language",
-              "title_keyword"
+              "title_keyword",
+              "signal"
             ],
             "title": "Filter"
           },
@@ -17326,6 +17423,22 @@
         ],
         "title": "FitAssessment",
         "description": "Valoración del encaje que escribe el agente (skill `assess-fit`). Ver POLICIES §2."
+      },
+      "FixedTermSignal": {
+        "properties": {
+          "origin": {
+            "type": "string",
+            "enum": [
+              "extraction",
+              "text",
+              "company"
+            ],
+            "title": "Origin",
+            "default": "extraction"
+          }
+        },
+        "type": "object",
+        "title": "FixedTermSignal"
       },
       "FollowupItem": {
         "properties": {
@@ -18239,6 +18352,57 @@
               }
             ],
             "title": "Injection Excerpt"
+          },
+          "contract_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "permanent",
+                  "fixed_term",
+                  "freelance",
+                  "unknown"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contract Type"
+          },
+          "hiring_entity": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hiring Entity"
+          },
+          "is_agency": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Agency"
+          },
+          "mentions_ai_screening": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mentions Ai Screening"
           }
         },
         "additionalProperties": false,
@@ -18557,6 +18721,56 @@
             "anyOf": [
               {
                 "$ref": "#/components/schemas/RepostSignal"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "salary_range_wide": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SalaryRangeSignal"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "employer_hidden": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EmployerHiddenSignal"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fixed_term": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FixedTermSignal"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ai_screening": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AiScreeningSignal"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "stale_repost": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StaleRepostSignal"
               },
               {
                 "type": "null"
@@ -19999,6 +20213,13 @@
             "type": "string",
             "format": "date-time",
             "title": "Created At"
+          },
+          "signals": {
+            "items": {
+              "$ref": "#/components/schemas/SignalNote"
+            },
+            "type": "array",
+            "title": "Signals"
           }
         },
         "type": "object",
@@ -20014,7 +20235,8 @@
           "breakdown",
           "assessment",
           "assessment_stale",
-          "created_at"
+          "created_at",
+          "signals"
         ],
         "title": "MatchView"
       },
@@ -22199,6 +22421,45 @@
         "title": "ReceivedOfferOut",
         "description": "Los datos tal cual, para la ficha (UI)."
       },
+      "RedFlag": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "layoffs",
+              "turnover",
+              "reviews",
+              "payments",
+              "legal",
+              "other"
+            ],
+            "title": "Kind",
+            "description": "layoffs (despidos, ERE), turnover (rotación alta), reviews (reseñas públicas muy negativas y recurrentes), payments (impagos, retrasos de nómina), legal (conflictos, sanciones, juicios) u other."
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 600,
+            "minLength": 1,
+            "title": "Text",
+            "description": "Qué pasó, en 1-2 frases, citando [n]."
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "title": "Date",
+            "description": "Cuándo pasó o se publicó (AAAA-MM-DD; el día 1 si solo hay mes)."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "text",
+          "date"
+        ],
+        "title": "RedFlag",
+        "description": "Una bandera roja de la empresa (fase 25.3): un hecho con fuente y fecha, no una opinión."
+      },
       "ReferralChange": {
         "properties": {
           "referral": {
@@ -23583,6 +23844,45 @@
         "type": "object",
         "title": "Salary"
       },
+      "SalaryRangeSignal": {
+        "properties": {
+          "min": {
+            "type": "integer",
+            "title": "Min"
+          },
+          "max": {
+            "type": "integer",
+            "title": "Max"
+          },
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency"
+          },
+          "pct": {
+            "type": "integer",
+            "title": "Pct"
+          },
+          "threshold_pct": {
+            "type": "number",
+            "title": "Threshold Pct"
+          }
+        },
+        "type": "object",
+        "required": [
+          "min",
+          "max",
+          "pct",
+          "threshold_pct"
+        ],
+        "title": "SalaryRangeSignal"
+      },
       "SaveAnswersResult": {
         "properties": {
           "ok": {
@@ -23895,6 +24195,32 @@
         "type": "object",
         "title": "SignOff",
         "description": "Despedida de la carta por idioma («Un saludo,», «Kind regards,»)."
+      },
+      "SignalNote": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "salary_range_wide",
+              "employer_hidden",
+              "fixed_term",
+              "stale_repost",
+              "ai_screening"
+            ],
+            "title": "Code"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "text"
+        ],
+        "title": "SignalNote",
+        "description": "Una señal activa, en texto para el agente y la CLI (la UI lo traduce por `code`)."
       },
       "SkillCoverage": {
         "properties": {
@@ -24543,6 +24869,41 @@
           "closed"
         ],
         "title": "Stage"
+      },
+      "StaleRepostSignal": {
+        "properties": {
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "channel": {
+            "type": "string",
+            "title": "Channel"
+          },
+          "first_seen": {
+            "type": "string",
+            "format": "date",
+            "title": "First Seen"
+          },
+          "last_seen": {
+            "type": "string",
+            "format": "date",
+            "title": "Last Seen"
+          },
+          "span_days": {
+            "type": "integer",
+            "title": "Span Days"
+          }
+        },
+        "type": "object",
+        "required": [
+          "count",
+          "channel",
+          "first_seen",
+          "last_seen",
+          "span_days"
+        ],
+        "title": "StaleRepostSignal"
       },
       "StatusReport": {
         "properties": {
