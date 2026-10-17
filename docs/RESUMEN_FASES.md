@@ -380,6 +380,14 @@ La carta es un documento propio, con sus indicaciones, su verificación y sus re
 - Para agentes y terminal: `get_received_offer` ↔ `jh received-offers show`.
 
 
+## 25.2 · Tu perfil, ampliado desde tus enlaces — 2026-10-16 · Claude Code (Opus 5.5)
+- **Skill `expand`** y botón «Ampliar perfil desde mis enlaces» en «Mi perfil»: tu agente lee tu
+  GitHub, portfolio, Kaggle o Scholar públicos y te propone proyectos, skills, logros y
+  certificaciones que no estaban en tu perfil.
+- **Cada cosa con su fuente:** el enlace queda en el campo `source` del perfil.
+- **Solo con tu OK:** no escribe nada que no aceptes; las skills, con el nivel que digas tú, y
+  los números, solo los que da la fuente.
+
 ## 25.1 · Más fuentes de ofertas con API — 2026-10-16 · Claude Code (Opus 5.5)
 - **Cinco ATS más** para tus empresas objetivo: Personio, Teamtailor, Workable, SmartRecruiters y
   Recruitee. Sus ofertas llegan solas cada día, como las de Greenhouse, Lever y Ashby, por sus APIs

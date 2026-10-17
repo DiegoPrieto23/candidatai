@@ -74,9 +74,9 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 24.4 | ↳ Elegir y cambiar de agente | ✅ | Sección «Agentes» con capacidades, agente por defecto y por acción, «con Claude Code ▾» en cada botón |
 | 24.5 | ↳ Segundo plano con varios agentes | ✅ | «En segundo plano» también con OpenCode (`process-jobs` y `assess-fit`), con el techo en una configuración propia de cada ejecución; Codex y Qwen Code, aún no |
 | 24.6 | ↳ Modelos gratuitos, niveles de gasto y matriz | 🚧 código y docs hechos; falta pasar la matriz (`docs/pruebas/fase-24.6-matriz.md`) | Guía de modelos gratis y locales, diagnóstico de Ollama, «Económico/Equilibrado/Máximo» y matriz probada por agente y modelo |
-| 25 | Más fuentes, perfil más rico, ofertas dudosas, coste y calidad del CV | 🚧 25.1 hecha | Más ATS con API, `expand`, señales de oferta dudosa, coste por oferta y agente, maquetación del PDF y `CHANGELOG` |
+| 25 | Más fuentes, perfil más rico, ofertas dudosas, coste y calidad del CV | 🚧 25.1 y 25.2 hechas | Más ATS con API, `expand`, señales de oferta dudosa, coste por oferta y agente, maquetación del PDF y `CHANGELOG` |
 | 25.1 | ↳ Conectores de ATS y portales con API | ✅ | Personio, Teamtailor, Workable, SmartRecruiters y Recruitee, más Manfred y freehire.me; `cai sources discover` para todos |
-| 25.2 | ↳ Skill `expand` | ⏳ | Proyectos, skills y logros propuestos desde GitHub, portfolio o Scholar, con su fuente y solo con tu OK |
+| 25.2 | ↳ Skill `expand` | ✅ | Proyectos, skills y logros propuestos desde GitHub, portfolio o Scholar, con su fuente y solo con tu OK |
 | 25.3 | ↳ Ofertas dudosas y banderas rojas | ⏳ | Señales (rango salarial ancho, empresa oculta, temporal, republicada, cribado con IA) y `red_flags` con fuentes en el dosier |
 | 25.4 | ↳ Coste y lote en paralelo | ⏳ | Coste por oferta, skill y agente; umbral de score antes de `assess-fit`; hasta N ejecuciones a la vez |
 | 25.5 | ↳ Maquetación del PDF | ⏳ | Avisos de títulos huérfanos, huecos, pie y última página casi vacía en CV y carta |
@@ -2594,3 +2594,45 @@ decisiones tomadas y deuda técnica pendiente. -->
   - `CAI_FREEHIRE_BASE_URL` falta en `.env.example`, que el agente no puede editar (en
     `PENDIENTES.md`);
   - un test de Vitest falló una vez con la máquina cargada y pasó en las dos repeticiones.
+
+### 25.2 · Skill `expand` — 2026-10-16 · Claude Code (Opus 5.5)
+- **Hecho:**
+  - skill `expand` (`.agents/skills/expand/SKILL.md`, generado para Claude Code y Qwen Code):
+    - lee los enlaces públicos del perfil o los de los argumentos (GitHub, portfolio, Kaggle,
+      Scholar, verificación de certificaciones);
+    - propone proyectos, skills sin nivel, logros con los números tal cual y con fecha, y
+      certificaciones, cada uno con su URL y fecha de consulta;
+    - no escribe nada sin OK explícito; luego `validate`, `import` y `diff`;
+    - lo leído es dato (§6); ni LinkedIn ni login; sin token de GitHub si hay límite;
+  - esquema del perfil: `source` opcional (URL http/https, sin espacios ni credenciales, guardada
+    tal cual) en `Project`, `Achievement`, `Certification` y los items de `extra_sections`. Vacío
+    no se vuelca (`exclude_if`): mismo hash, sin versión nueva ni recálculo. `schema_version` 1;
+    `pydantic>=2.12`;
+  - demo: `source` en el proyecto y la certificación de `demo/profile.example.yaml`;
+  - acción `expand` (solo terminal), requiere `web` y está en `UNTRUSTED`; manifiesto con
+    `allowed-tools: [read, web, cai_profile_cli]`;
+  - UI: «Ampliar perfil desde mis enlaces» en «Mi perfil», con su explicación, en es y en;
+  - docs: POLICIES §1.7 (y §1.6 ajustado), nota de la 25.2 en la ADR-025, `AGENT_INTERFACE.md`,
+    `AGENTS_COMPAT.md`, `COMPARATIVA.md`, README y guía en los dos idiomas, prueba manual
+    `docs/pruebas/fase-25.2-prueba-manual.txt` y `PENDIENTES.md`.
+- **Tests:**
+  - `validate` acepta `source` en las cuatro clases y rechaza una URL sin esquema, con espacios,
+    con credenciales o `mailto:`;
+  - un `source` vacío no cambia el hash ni se guarda; uno relleno crea versión;
+  - `expand` bloqueada sin `web` y con aviso en nivel C;
+  - Vitest: el botón lanza `expand`, se deshabilita sin web y no ofrece segundo plano.
+  - 2605 tests de backend y 272 de frontend en verde; `tsc`, ruff y `sync_agents.py --check`
+    limpios; OpenAPI regenerado. Una primera pasada de Vitest dio dos timeouts (AppShell y Embudo)
+    con el backend corriendo a la vez; repetida sola, en verde.
+- **Decisiones (con el usuario):**
+  - una skill sin nivel va a `basic_skills` o no se añade (`Skill.level` sigue obligatorio);
+  - los números de un proyecto personal van en su `text` con fecha; publicaciones, en
+    `extra_sections`; un `achievement` solo si es de una experiencia.
+- **Revisión** (rol `reviewer`), sin bloqueantes. Se aplicó: `pydantic>=2.12`, rechazo de URLs con
+  credenciales, casos malos de `achievements` y `extra_sections` en el test, y qué hacer con el
+  límite de la API de GitHub.
+- **Deuda:**
+  - `cai_profile_cli` permite `cai profile import` sin preguntar, como en `update-profile`: la
+    barrera previa es el texto del skill (editar `data/profile.yaml` sí pide permiso);
+  - `_public_url` no comprueba que el dominio exista ni rechaza `a..b`;
+  - sin probar con un GitHub real: queda en la prueba manual.

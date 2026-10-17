@@ -174,7 +174,7 @@ compatible y Antigravity CLI ocupa su sitio.
 |---|---|---|---|
 | Perfil validado y versionado | ✅ YAML con esquema | 🟡 Markdown | 🟡 YAML + Markdown + perfil maestro |
 | Contexto que orienta sin respaldar hechos (estilo, narrativa…) | ✅ `data/contexto/` | ✅ perfil conductual y estilo | ✅ |
-| Enriquecer el perfil desde GitHub, portfolio, Scholar… | ❌ | ✅ `/expand` | ✅ `expand` |
+| Enriquecer el perfil desde GitHub, portfolio, Scholar… | ✅ `expand`, con la fuente de cada dato y tu OK (25.2) | ✅ `/expand` | ✅ `expand` |
 | Revisar tu perfil de LinkedIn | ✅ | ❌ | ❌ |
 | Lanzar el agente desde la UI (terminal o segundo plano) | ✅ | ❌ | 🟡 workers en la web alfa |
 | Cola de encargos para la próxima sesión | ✅ | ❌ | ✅ `agent-inbox` |
@@ -221,7 +221,7 @@ dudosas, coste y calidad del CV) y la 26 (macOS, Linux y Docker).
 | 5 | **Segundo plano con varios agentes** (OpenCode y, si se puede garantizar, Codex) | career-ops (`--cli` en el lote) | Que el lote no dependa de Claude Code, con el mismo techo de herramientas | Medio | 24.5 |
 | 6 | **Guía de modelos gratuitos y locales + matriz probada por agente y modelo** | career-ops | Recomendar modelos con datos (`cai eval cv`) y no por opinión | Medio | 24.6 |
 | 7 | **Más conectores de ATS con API pública**: Personio, Teamtailor, Workable, SmartRecruiters, Recruitee, y feeds como Manfred o freehire.me | ambos | Mucha empresa española y europea usa estos ATS; son APIs, sin scraping (ADR-016) | Medio | 25.1 ✅ |
-| 8 | **Enriquecer el perfil desde enlaces públicos** (GitHub, portfolio, Scholar), con tu OK antes de escribir | ambos | Proyectos y logros que no están en el CV | Bajo (un skill) | 25.2 |
+| 8 | **Enriquecer el perfil desde enlaces públicos** (GitHub, portfolio, Scholar), con tu OK antes de escribir | ambos | Proyectos y logros que no están en el CV | Bajo (un skill) | 25.2 ✅ |
 | 9 | **Señales de oferta dudosa y banderas rojas** en `assess-fit` y `research-company` | career-ops | Evita perder tiempo con ofertas fantasma, agencias o condiciones escondidas | Bajo | 25.3 |
 | 10 | **Lote en paralelo y coste por skill y por agente** (tokens, turnos, tiempo) con un filtro previo por score | ambos | Saber qué cuesta cada oferta y gastar solo en las que pasan el umbral | Medio | 25.4 |
 | 11 | **Verificar la maquetación del PDF** (huérfanos, huecos, pie) | AI Job Search | Hoy solo se avisa de que sobra una página | Bajo | 25.5 |

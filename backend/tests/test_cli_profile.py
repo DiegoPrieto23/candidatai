@@ -72,6 +72,31 @@ def test_validate_broken_profile(tmp_path: Path) -> None:
     assert "(recibido: 'A 1')" in err
 
 
+def test_validate_accepts_source_and_rejects_malformed_url(tmp_path: Path) -> None:
+    # Procedencia de lo que añade el skill `expand` (fase 25.2).
+    data = copy.deepcopy(EXAMPLE)
+    data["projects"][0]["source"] = "https://github.com/lucia-varela-demo/tfg-anomalias"
+    data["experience"][1]["achievements"][0]["source"] = "https://pypi.org/project/demo-pkg/"
+    data["certifications"][0]["source"] = "https://www.credly.com/badges/demo"
+    data["extra_sections"][0]["items"][0]["source"] = "http://example.org/mentoras"
+    assert _jh("profile", "validate", str(_write(tmp_path / "ok.yaml", data)))[0] == 0
+
+    data["projects"][0]["source"] = "github.com/sin-esquema"
+    data["certifications"][0]["source"] = "https://credly com/espacio"
+    data["experience"][1]["achievements"][0]["source"] = "https://user:secreto@pypi.org/project/x"
+    data["extra_sections"][0]["items"][0]["source"] = "mailto:alguien@example.org"
+    code, out, _ = _jh("profile", "validate", str(_write(tmp_path / "bad.yaml", data)), "--json")
+    assert code == 1
+    details = json.loads(out)["error"]["details"]
+    assert [d["field"] for d in details] == [
+        "experience[1].achievements[0].source",
+        "projects[0].source",
+        "certifications[0].source",
+        "extra_sections[0].items[0].source",
+    ]
+    assert all("URL pública" in d["reason"] for d in details)
+
+
 def test_validate_default_path_missing() -> None:
     code, out, _ = _jh("profile", "validate", "--json")
     assert code == 1

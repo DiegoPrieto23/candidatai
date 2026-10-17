@@ -67,6 +67,7 @@ projects:
     date: 2022-06
     text: Modelo de detección de anomalías sobre series temporales de consumo de 500 hogares.
     url: github.com/lucia-varela-demo/tfg-anomalias   # opcional; sale en el CV como enlace
+    source: https://github.com/lucia-varela-demo/tfg-anomalias   # opcional: de dónde salió (skill expand)
     skills: [Python, scikit-learn, Series temporales]
 
 education:
@@ -81,6 +82,7 @@ certifications:
     name: AWS Certified Cloud Practitioner
     issuer: Amazon Web Services
     date: 2024-05
+    source: https://www.credly.com/badges/00000000-demo   # opcional: enlace de verificación
 
 # Secciones que no encajan en las anteriores (voluntariado, premios, publicaciones…). Salen en el
 # CV tal cual; se citan como evidencia con `<sección>/<item>`.

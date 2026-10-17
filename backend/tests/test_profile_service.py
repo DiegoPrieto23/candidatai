@@ -61,6 +61,21 @@ def test_comments_and_formatting_do_not_create_a_version(session: Session, tmp_p
     assert profile.import_profile(session, reformatted).created is False
 
 
+def test_empty_source_does_not_change_the_hash(session: Session, tmp_path: Path) -> None:
+    # `source` (fase 25.2) vacío no se vuelca: los perfiles de antes no crean versión al importar.
+    data = copy.deepcopy(EXAMPLE)
+    for item in (*data["projects"], *data["certifications"]):
+        item.pop("source", None)
+    first = profile.import_profile(session, _write(tmp_path / "a.yaml", data))
+    data["projects"][0]["source"] = None
+    assert profile.import_profile(session, _write(tmp_path / "b.yaml", data)).created is False
+    stored = session.get(ProfileVersion, first.profile_version_id)
+    assert stored is not None
+    assert "source" not in stored.data["projects"][0]
+    data["projects"][0]["source"] = "https://github.com/lucia-varela-demo/tfg-anomalias"
+    assert profile.import_profile(session, _write(tmp_path / "c.yaml", data)).created is True
+
+
 def test_changed_content_creates_new_current_version(session: Session, tmp_path: Path) -> None:
     v1 = profile.import_profile(session, EXAMPLE_PATH)
     data = copy.deepcopy(EXAMPLE)

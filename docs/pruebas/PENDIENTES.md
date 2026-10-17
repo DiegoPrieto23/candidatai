@@ -150,6 +150,15 @@ funcionando. Los roles son `writer`, `verifier`, `classifier`, `reviewer` y `ext
 - [ ] `uv run --directory backend cai sources discover --file empresas.txt` con tu lista: ahora
       prueba también esos cinco ATS (tarda más: hasta 8 ATS × 3 slugs por empresa).
 
+### Skill `expand` (fase 25.2)
+
+- [ ] `/expand` sobre la demo con un GitHub público real (el tuyo si quieres): propone con la
+      fuente, no escribe nada si dices que no, y con tu OK añade lo aceptado con `source`. Guía:
+      `fase-25.2-prueba-manual.txt`.
+- [ ] «Mi perfil» → «Ampliar perfil desde mis enlaces» abre tu agente con la orden del skill.
+- [ ] Cuando lo uses con tu perfil real: el primer `cai profile import` tras la fase **no** crea
+      versión si no has añadido ningún `source` (si la crea, avísame).
+
 ## 2. `.env.example` (el agente no puede leerlo ni editarlo)
 
 - [ ] Crear o completar `.env.example`, **sin valores reales**, con todas las variables de

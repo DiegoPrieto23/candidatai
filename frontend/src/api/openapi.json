@@ -12947,7 +12947,8 @@
               "draft-message",
               "research-company",
               "handle-requests",
-              "review-search"
+              "review-search",
+              "expand"
             ],
             "title": "Id"
           },
@@ -13661,7 +13662,8 @@
               "draft-message",
               "research-company",
               "handle-requests",
-              "review-search"
+              "review-search",
+              "expand"
             ],
             "title": "Action"
           },
@@ -13808,7 +13810,8 @@
               "draft-message",
               "research-company",
               "handle-requests",
-              "review-search"
+              "review-search",
+              "expand"
             ],
             "title": "Action"
           },
@@ -16808,7 +16811,8 @@
               "draft-message",
               "research-company",
               "handle-requests",
-              "review-search"
+              "review-search",
+              "expand"
             ],
             "title": "Action"
           },
@@ -18789,7 +18793,8 @@
               "draft-message",
               "research-company",
               "handle-requests",
-              "review-search"
+              "review-search",
+              "expand"
             ],
             "title": "Action"
           },
@@ -21339,7 +21344,8 @@
                 "draft-message",
                 "research-company",
                 "handle-requests",
-                "review-search"
+                "review-search",
+                "expand"
               ]
             },
             "type": "object",
@@ -23116,7 +23122,8 @@
               "draft-message",
               "research-company",
               "handle-requests",
-              "review-search"
+              "review-search",
+              "expand"
             ],
             "title": "Action"
           },
@@ -24852,7 +24859,8 @@
                 "draft-message",
                 "research-company",
                 "handle-requests",
-                "review-search"
+                "review-search",
+                "expand"
               ]
             },
             "type": "object",
@@ -24906,7 +24914,8 @@
                 "draft-message",
                 "research-company",
                 "handle-requests",
-                "review-search"
+                "review-search",
+                "expand"
               ]
             },
             "type": "object",
@@ -24968,7 +24977,8 @@
                 "draft-message",
                 "research-company",
                 "handle-requests",
-                "review-search"
+                "review-search",
+                "expand"
               ]
             },
             "type": "array",

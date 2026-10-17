@@ -137,10 +137,10 @@ se recorta y avisa con `too_large`.
 
 ### Comandos del perfil (solo CLI)
 
-Mantenimiento de `data/profile.yaml`; los usa el skill `update-profile`. Todos aceptan `--json`
-(errores con el formato común; en `validation_error`, `field` es la ruta del campo, p. ej.
-`experience[1].achievements[0].id`). Una ruta relativa vale desde el directorio actual o desde la
-raíz del repo.
+Mantenimiento de `data/profile.yaml`; los usan los skills `update-profile` y `expand`
+(fase 25.2). Todos aceptan `--json` (errores con el formato común; en `validation_error`, `field`
+es la ruta del campo, p. ej. `experience[1].achievements[0].id`). Una ruta relativa vale desde el
+directorio actual o desde la raíz del repo.
 
 | Comando | Qué hace |
 |---|---|

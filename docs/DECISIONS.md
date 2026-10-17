@@ -420,6 +420,19 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   del código: el código solo comprueba que las evidencias existen en el perfil. El documento no
   guarda qué versión del contexto se usó al redactarlo. El archivo de una candidatura enviada
   antes de que corra el worker usa lo seleccionado al registrar el envío, no al archivar.
+- **Nota de la fase 25.2 (skill `expand`):** lo que has hecho en público (repositorios, portfolio,
+  Kaggle, Scholar, certificaciones verificables) entra como **hecho** en `data/profile.yaml`, no
+  como contexto, porque tiene una fuente comprobable. Solo con tu OK, y con procedencia: campo
+  opcional `source` (URL http/https) en `Project`, `Achievement`, `Certification` y los items de
+  `extra_sections`. En una certificación es el enlace de verificación. Un `source` vacío no se
+  vuelca (`exclude_if`), así que el hash de los perfiles de antes no cambia, no se crea versión y
+  no se recalculan los scores. Sigue siendo `schema_version: 1`: el campo es compatible hacia
+  atrás. Como `Skill.level` es obligatorio (lo usan el matching y las comprobaciones del CV y la
+  carta), una skill sin nivel va a `basic_skills` o no se añade: el agente nunca pone un nivel. Los
+  números de un proyecto personal (estrellas, descargas) van en su `text` con la fecha, porque los
+  logros (`achievements`) solo existen dentro de una experiencia. `expand` lee READMEs de terceros
+  y luego edita el perfil, así que cuenta como contenido no confiable (`UNTRUSTED`): con un agente
+  de nivel C, aviso en terminal. No tiene segundo plano porque pregunta.
 
 
 ## ADR-026 · Alias de skills desde la UI y huecos marcados por el usuario

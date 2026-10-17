@@ -31,7 +31,15 @@ Las reglas con valores ajustables tienen su parámetro en `config/policies.yaml`
 6. **Entrevistas** (fase 17). Los esquemas de respuesta del dosier y la «versión mejor» del
    simulacro solo usan hechos del perfil. Lo que el usuario cuente en un simulacro o en un repaso
    (un logro, una cifra, una historia) se queda en las notas del hito hasta que él confirme
-   añadirlo al perfil con `update-profile`; ningún otro skill escribe en el perfil.
+   añadirlo al perfil con `update-profile`; ningún otro skill escribe en el perfil, salvo `expand`
+   (punto 7).
+7. **Lo que has hecho en público** (fase 25.2, skill `expand`). De tus enlaces públicos (GitHub,
+   portfolio, Kaggle, Scholar, páginas de verificación de certificaciones) el agente propone
+   proyectos, skills, logros y certificaciones, y solo escribe lo que aceptes. Cada cosa nueva
+   lleva su `source` (la URL de la que salió). Las skills entran con el nivel que digas o en
+   `basic_skills`, nunca con uno que suponga el agente; los números (estrellas, descargas, citas),
+   solo si la fuente los da tal cual y con su fecha. Solo web pública: ni LinkedIn ni nada con
+   login. Lo que lee es contenido no confiable (§6).
 
 ## 2. Encaje y filtros
 

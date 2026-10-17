@@ -29,6 +29,7 @@ ActionId = Literal[
     "research-company",
     "handle-requests",
     "review-search",
+    "expand",
 ]
 
 # Hitos de entrevista (fase 17): `upcoming`, programada y por empezar; `past`, ya empezada y no
@@ -118,6 +119,13 @@ ACTIONS: dict[ActionId, Action] = {
         "Añadir al perfil las que tengo",
         "Usa el skill update-profile de CandidatAI para añadir a mi perfil las skills que he "
         "marcado como «La tengo» en la página Skills (get_skill_gaps con status have).",
+    ),
+    # Perfil (fase 25.2): lee tus enlaces públicos y propone; pregunta antes de escribir, así que
+    # solo en terminal.
+    "expand": Action(
+        "Ampliar perfil desde mis enlaces",
+        "Usa el skill expand de CandidatAI para proponerme proyectos, skills, logros y "
+        "certificaciones a partir de los enlaces públicos de mi perfil.",
     ),
     "training-plan": Action(
         "Plan de formación",

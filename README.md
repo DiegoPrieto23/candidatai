@@ -205,6 +205,7 @@ profile with the `update-profile` skill, and then ask your agent:
 | Skill | What it does |
 |---|---|
 | `update-profile` | Creates or updates `data/profile.yaml` (your single source of truth) from your CV, and versions it |
+| `expand` | Proposes projects, skills, achievements and certifications from your public GitHub, portfolio, Kaggle or Scholar, each with its source; writes only what you accept |
 | `process-jobs` | Extracts new jobs (the `extractor` role, isolated when the agent allows it) |
 | `assess-fit` | Assesses and explains the fit of jobs waiting for triage |
 | `generate-cv 42` | Writes, renders and verifies the CV for job 42 |

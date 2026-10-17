@@ -202,6 +202,7 @@ perfil con el skill `update-profile` y, después, pide a tu agente:
 | Skill | Qué hace |
 |---|---|
 | `update-profile` | Crea o actualiza `data/profile.yaml` (tu única fuente de verdad) desde tu CV y lo versiona |
+| `expand` | Propone proyectos, skills, logros y certificaciones desde tu GitHub, portfolio, Kaggle o Scholar públicos, cada uno con su fuente; solo escribe lo que aceptes |
 | `process-jobs` | Extrae las ofertas nuevas (rol `extractor`, aislado cuando el agente lo permite) |
 | `assess-fit` | Valora y explica el encaje de las ofertas por revisar |
 | `generate-cv 42` | Redacta, renderiza y verifica el CV para la oferta 42 |

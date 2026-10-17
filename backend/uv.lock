@@ -78,6 +78,90 @@ wheels = [
 ]
 
 [[package]]
+name = "candidatai"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "alembic" },
+    { name = "apscheduler" },
+    { name = "docxtpl" },
+    { name = "fastapi" },
+    { name = "httpx" },
+    { name = "lxml" },
+    { name = "mcp" },
+    { name = "numpy" },
+    { name = "pillow" },
+    { name = "playwright" },
+    { name = "pydantic" },
+    { name = "pydantic-settings" },
+    { name = "pypdf" },
+    { name = "pypdfium2" },
+    { name = "python-multipart" },
+    { name = "pyyaml" },
+    { name = "rapidfuzz" },
+    { name = "ruamel-yaml" },
+    { name = "sqlalchemy" },
+    { name = "trafilatura" },
+    { name = "typer" },
+    { name = "tzdata" },
+    { name = "uvicorn", extra = ["standard"] },
+]
+
+[package.optional-dependencies]
+matching = [
+    { name = "sentence-transformers" },
+]
+word = [
+    { name = "docx2pdf", marker = "sys_platform == 'win32'" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "respx" },
+    { name = "ruff" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "alembic" },
+    { name = "apscheduler", specifier = ">=3.11,<4" },
+    { name = "docx2pdf", marker = "sys_platform == 'win32' and extra == 'word'", specifier = ">=0.1.8" },
+    { name = "docxtpl", specifier = ">=0.20.2" },
+    { name = "fastapi" },
+    { name = "httpx" },
+    { name = "lxml", specifier = ">=6.1.3" },
+    { name = "mcp", specifier = ">=2.2,<3" },
+    { name = "numpy", specifier = ">=2.5.3" },
+    { name = "pillow", specifier = ">=12.3.0" },
+    { name = "playwright", specifier = ">=1.63.0" },
+    { name = "pydantic", specifier = ">=2.12" },
+    { name = "pydantic-settings" },
+    { name = "pypdf", specifier = ">=6.19.0" },
+    { name = "pypdfium2", specifier = ">=5.13.0" },
+    { name = "python-multipart", specifier = ">=0.0.20" },
+    { name = "pyyaml" },
+    { name = "rapidfuzz", specifier = ">=3.14.6" },
+    { name = "ruamel-yaml", specifier = ">=0.18" },
+    { name = "sentence-transformers", marker = "extra == 'matching'", specifier = ">=3" },
+    { name = "sqlalchemy", specifier = ">=2" },
+    { name = "trafilatura", specifier = ">=2.2.0" },
+    { name = "typer" },
+    { name = "tzdata", specifier = ">=2026.4" },
+    { name = "uvicorn", extras = ["standard"] },
+]
+provides-extras = ["matching", "word"]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "respx" },
+    { name = "ruff" },
+]
+
+[[package]]
 name = "certifi"
 version = "2026.7.22"
 source = { registry = "https://pypi.org/simple" }
@@ -586,90 +670,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/df/bf/f7da0350254c0ed7c72f3e33cef02e048281fec7ecec5f032d4aac52226b/jinja2-3.1.6.tar.gz", hash = "sha256:0137fb05990d35f1275a587e9aee6d56da821fc83491a0fb838183be43f66d6d", size = 245115, upload-time = "2025-03-05T20:05:02.478Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/62/a1/3d680cbfd5f4b8f15abc1d571870c5fc3e594bb582bc3b64ea099db13e56/jinja2-3.1.6-py3-none-any.whl", hash = "sha256:85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67", size = 134899, upload-time = "2025-03-05T20:05:00.369Z" },
-]
-
-[[package]]
-name = "candidatai"
-version = "0.1.0"
-source = { editable = "." }
-dependencies = [
-    { name = "alembic" },
-    { name = "apscheduler" },
-    { name = "docxtpl" },
-    { name = "fastapi" },
-    { name = "httpx" },
-    { name = "lxml" },
-    { name = "mcp" },
-    { name = "numpy" },
-    { name = "pillow" },
-    { name = "playwright" },
-    { name = "pydantic" },
-    { name = "pydantic-settings" },
-    { name = "pypdf" },
-    { name = "pypdfium2" },
-    { name = "python-multipart" },
-    { name = "pyyaml" },
-    { name = "rapidfuzz" },
-    { name = "ruamel-yaml" },
-    { name = "sqlalchemy" },
-    { name = "trafilatura" },
-    { name = "typer" },
-    { name = "tzdata" },
-    { name = "uvicorn", extra = ["standard"] },
-]
-
-[package.optional-dependencies]
-matching = [
-    { name = "sentence-transformers" },
-]
-word = [
-    { name = "docx2pdf", marker = "sys_platform == 'win32'" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "pytest" },
-    { name = "pytest-cov" },
-    { name = "respx" },
-    { name = "ruff" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "alembic" },
-    { name = "apscheduler", specifier = ">=3.11,<4" },
-    { name = "docx2pdf", marker = "sys_platform == 'win32' and extra == 'word'", specifier = ">=0.1.8" },
-    { name = "docxtpl", specifier = ">=0.20.2" },
-    { name = "fastapi" },
-    { name = "httpx" },
-    { name = "lxml", specifier = ">=6.1.3" },
-    { name = "mcp", specifier = ">=2.2,<3" },
-    { name = "numpy", specifier = ">=2.5.3" },
-    { name = "pillow", specifier = ">=12.3.0" },
-    { name = "playwright", specifier = ">=1.63.0" },
-    { name = "pydantic", specifier = ">=2" },
-    { name = "pydantic-settings" },
-    { name = "pypdf", specifier = ">=6.19.0" },
-    { name = "pypdfium2", specifier = ">=5.13.0" },
-    { name = "python-multipart", specifier = ">=0.0.20" },
-    { name = "pyyaml" },
-    { name = "rapidfuzz", specifier = ">=3.14.6" },
-    { name = "ruamel-yaml", specifier = ">=0.18" },
-    { name = "sentence-transformers", marker = "extra == 'matching'", specifier = ">=3" },
-    { name = "sqlalchemy", specifier = ">=2" },
-    { name = "trafilatura", specifier = ">=2.2.0" },
-    { name = "typer" },
-    { name = "tzdata", specifier = ">=2026.4" },
-    { name = "uvicorn", extras = ["standard"] },
-]
-provides-extras = ["matching", "word"]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "pytest" },
-    { name = "pytest-cov" },
-    { name = "respx" },
-    { name = "ruff" },
 ]
 
 [[package]]

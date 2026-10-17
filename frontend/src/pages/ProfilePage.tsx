@@ -2,6 +2,7 @@ import { FileTextIcon, FolderIcon, WarningIcon } from '@phosphor-icons/react'
 import { Trans, useTranslation } from 'react-i18next'
 import type { ContextFileInfo, ContextStatus } from '@/api/client'
 import { useContextStatus } from '@/api/queries'
+import { AgentButton } from '@/components/AgentButton'
 import { OpenFolderButton } from '@/components/OpenFolderButton'
 import { ErrorState } from '@/components/States'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -150,6 +151,13 @@ export function ProfilePage() {
         <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
           <Trans t={t} i18nKey="intro" components={{ code }} />
         </p>
+        {/* Fase 25.2: skill `expand`. Pregunta antes de escribir, así que solo en terminal. */}
+        <div className="mt-4 grid gap-2">
+          <AgentButton action="expand" variant="outline">
+            {t('expand')}
+          </AgentButton>
+          <p className="text-xs leading-relaxed text-muted-foreground">{t('expandHint')}</p>
+        </div>
       </div>
       {body}
     </div>

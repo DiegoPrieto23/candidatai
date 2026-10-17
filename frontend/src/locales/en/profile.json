@@ -37,6 +37,8 @@
   "documents": "Documents",
   "documentsIntro": "Your source documents. <code>update-profile</code> can read them to create or extend your profile, always asking you before writing.",
   "openDocuments": "Open the documents folder",
+  "expand": "Expand profile from my links",
+  "expandHint": "Your agent reads your public links (GitHub, portfolio, Kaggle, Scholar) and proposes projects, skills, achievements and certifications, each with its source. It only writes to your profile what you accept. Best right after creating it.",
   "title": "My profile",
   "intro": "Your profile (<code>data/profile.yaml</code>) is the only thing a CV, a letter or an answer can claim. Here's what goes with it."
 }
