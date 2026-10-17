@@ -1963,7 +1963,8 @@ export interface paths {
         };
         /**
          * Get Profile Diff
-         * @description Diff de las dos últimas versiones importadas (`private` oculto), como `cai profile diff`.
+         * @description Diff de las dos últimas versiones importadas, como `cai profile diff`: `private` oculto,
+         *     pero con tu contacto, así que solo para la UI.
          */
         get: operations["get_profile_diff"];
         put?: never;

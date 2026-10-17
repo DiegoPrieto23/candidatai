@@ -12011,7 +12011,7 @@
           "profile"
         ],
         "summary": "Get Profile Diff",
-        "description": "Diff de las dos últimas versiones importadas (`private` oculto), como `cai profile diff`.",
+        "description": "Diff de las dos últimas versiones importadas, como `cai profile diff`: `private` oculto,\npero con tu contacto, así que solo para la UI.",
         "operationId": "get_profile_diff",
         "responses": {
           "200": {

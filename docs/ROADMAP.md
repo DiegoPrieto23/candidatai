@@ -2877,7 +2877,8 @@ decisiones tomadas y deuda técnica pendiente. -->
   enviada); `test_api_profile_editor.py` (20: guardar, `conflict`, campos de validación,
   `referenced`, diff, escrituras y lecturas solo para la UI, ninguna herramienta MCP ni comando que
   escriba el perfil, contexto con guías, 20 KB y auditoría, muestras con `.docx`, inyección,
-  límites y envoltorio que no se puede cerrar desde dentro); los de `cli db` con la cabecera 0024.
+  límites y envoltorio que no se puede cerrar desde dentro); los de `cli db` con la cabecera 0024;
+  2752 tests de backend y 287 de frontend en verde; `tsc`, ruff y `sync_agents.py --check` limpios.
 - **Decisiones (con el usuario):** auditoría en una tabla propia y no en `events`; el nivel de
   idioma será un desplegable que conserva los valores libres (sin cambiar el esquema, en la
   25.7b); dos commits. Mías: subida de muestras en JSON para que valga `require_ui`; el servidor no
