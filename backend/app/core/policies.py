@@ -224,6 +224,15 @@ class LayoutPolicy(BaseModel):
     last_page_min_pct: float = Field(default=15, gt=0, lt=100)
 
 
+class ProfileEditingPolicy(BaseModel):
+    """«Mi perfil» editable (fase 25.7): copias del perfil y muestras de estilo."""
+
+    history_keep: int = Field(default=20, ge=1, le=200)  # copias en data/profile-history/
+    style_max_files: int = Field(default=10, ge=1, le=100)
+    style_max_upload_mb: float = Field(default=5, gt=0, le=50)
+    style_max_text_kb: int = Field(default=20, ge=1, le=200)  # todas juntas, en `get_context`
+
+
 MAX_PARALLEL_RUNS = 4
 
 
@@ -266,6 +275,7 @@ class Policies(BaseModel):
     reposts: RepostsPolicy = Field(default_factory=RepostsPolicy)
     doubtful: DoubtfulPolicy = Field(default_factory=DoubtfulPolicy)
     layout: LayoutPolicy = Field(default_factory=LayoutPolicy)
+    profile_editing: ProfileEditingPolicy = Field(default_factory=ProfileEditingPolicy)
     background_runs: BackgroundRunsPolicy = Field(default_factory=BackgroundRunsPolicy)
 
 

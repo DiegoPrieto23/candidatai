@@ -49,7 +49,7 @@ def test_commands_require_migrated_db() -> None:
 def test_db_upgrade() -> None:
     result = runner.invoke(cli.app, ["db", "upgrade", "--json"])
     assert result.exit_code == 0, result.output
-    assert json.loads(result.stdout) == {"ok": True, "from": None, "to": "0023"}
+    assert json.loads(result.stdout) == {"ok": True, "from": None, "to": "0024"}
 
     result = runner.invoke(cli.app, ["db", "upgrade"])
     assert result.exit_code == 0
@@ -59,7 +59,7 @@ def test_db_upgrade() -> None:
 def test_db_upgrade_text() -> None:
     result = runner.invoke(cli.app, ["db", "upgrade"])
     assert result.exit_code == 0
-    assert "vacía -> 0023" in result.stdout
+    assert "vacía -> 0024" in result.stdout
 
 
 def test_status() -> None:

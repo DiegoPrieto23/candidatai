@@ -434,6 +434,33 @@ Ficheros en `data/` (gitignored), fuera de la BD:
   medias. Si la carpeta ya existe no se toca: rehacer el CV o la carta después no cambia lo archivado.
   `JobView.archive_folder` (ficha de la UI) la da relativa a `data/`.
 
+## Ampliaciones de la fase 25.7 («Mi perfil» editable, ADR-039)
+
+Ficheros en `data/`:
+
+| Ruta | Qué es |
+|---|---|
+| `profile-history/<AAAAMMDDTHHMMSSffffffZ>.yaml` | Copia de `profile.yaml` antes de cada guardado desde la UI (las `profile_editing.history_keep` últimas, 20 por defecto). «Deshacer» escribe la más reciente y la quita |
+| `documentos/estilo/<nombre>` | Muestras de estilo (`.txt`, `.md`, `.docx`, `.pdf`), subidas desde «Mi perfil» (límites en `profile_editing`) |
+| `documentos/estilo/.texto/<nombre>.txt` | Su texto, extraído al subirlas: es lo que lee el agente (`get_context.style_samples`) |
+
+### `profile_edits` (migración 0024)
+
+Auditoría de lo que el usuario guarda desde «Mi perfil». No va en `events`, que son de una oferta.
+Sin el contenido: solo qué, cuándo y el sha256 del fichero.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | int PK | |
+| target | str | `profile`, `context` o `style_sample` |
+| section | str? | La sección del perfil, el fichero de contexto o el nombre de la muestra; `null` al deshacer |
+| action | str | `save`, `undo`, `upload` o `delete` |
+| hash_before / hash_after | str? | sha256 de los bytes del fichero antes y después (`null` si no existía) |
+| created_at | datetime | |
+
+Un guardado del perfil que no cambia los datos (comentarios aparte) no crea versión en
+`profile_versions` ni encola `rescore_all`, pero sí deja su copia y su fila.
+
 ## Ampliaciones de la fase 14
 
 ### `skill_gap_marks`

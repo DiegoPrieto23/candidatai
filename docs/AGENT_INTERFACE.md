@@ -67,7 +67,7 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | `add_event` | `cai events add ID TYPE [--note N] [--at FECHA] --json` | 04 | `job_id, type, note?, occurred_at?` | `ok`, `event_id`, `stage` resultante | el indicado |
 | `get_timeline` | `cai events list ID --json` | 04 | `job_id` | Etapa actual y eventos (sin texto crudo) | — |
 | `get_profile` | `cai profile show [--sections S1,S2] --json` | 05 | `sections?` | `profile_version_id`, `created_at`, `profile`: `CandidateProfile` sin email, teléfono ni `private` | — |
-| `get_context` | `cai context show [--sections S1,S2] --json` | 13 | `sections?` (`estilo-redaccion`, `perfil-conductual`, `criterios`, `narrativa`) | `note` y `files`: por fichero, `section`, `path`, `exists`, `empty`, `size_bytes`, `modified_at`, `hash` (sha256), `text` (sin los comentarios-guía; vacío si no hay contenido), `truncated` y `warnings` (`too_large`, `invalid_encoding`) | — |
+| `get_context` | `cai context show [--sections S1,S2] --json` | 13 | `sections?` (`estilo-redaccion`, `perfil-conductual`, `criterios`, `narrativa`) | `note` y `files`: por fichero, `section`, `path`, `exists`, `empty`, `size_bytes`, `modified_at`, `hash` (sha256), `text` (sin los comentarios-guía; vacío si no hay contenido), `truncated` y `warnings` (`too_large`, `invalid_encoding`); y `style_samples` (fase 25.7): por muestra de `data/documentos/estilo/`, `name`, `text` (dentro de `<untrusted_style_sample>`), `risk_flags` y `truncated`, con 20 KB entre todas (`profile_editing.style_max_text_kb`) | — |
 | `get_match` | `cai match show ID --json` | 07 | `job_id` | `MatchView`: `score`, `triage_threshold`, `below_threshold`, `hard_filters`, `breakdown` (componentes, skills cubiertas con su nivel y ausentes, similitud, preferencias, notas), `assessment`, `assessment_stale`, `signals` (fase 25.3: `[{code, text}]` de las señales de oferta dudosa activas; no cuentan en el score) | `scored` si lo recalcula |
 | `save_fit_assessment` | `cai match save-assessment ID --file F --json` | 07 | `job_id, assessment: FitAssessment` | `ok`, `job_id`, `match_id` | `fit_assessed` |
 | `list_cv_templates` | `cai templates list --json` | 08 | — | `templates` (`id`, nombre, motor, origen, `ats_friendly`, foto, columnas, página, `capacity`, `sections`, `accent_colors`, fuentes, idiomas, `has_preview`), `invalid` (con el motivo) y `fallback_template` | — |
@@ -150,6 +150,13 @@ directorio actual o desde la raíz del repo.
 | `cai profile diff` | Diff unificado entre las dos últimas versiones; `private` sale como `<oculto>` |
 | `cai context init` | Crea los ficheros de `data/contexto/` que falten (solo encabezados y comentarios-guía de las plantillas de `demo/contexto/`, sin sus datos) y las carpetas de `data/documentos/`. Nunca sobrescribe (fase 13) |
 | `cai applications archive (ID \| --all)` | Archiva ya, sin worker, las candidaturas enviadas que aún no tienen carpeta en `data/documentos/candidaturas/` (para las de antes de la fase 13). Usa la carta y las respuestas vigentes. Las que ya la tienen no se tocan |
+
+**Ni herramienta ni comando escriben el perfil desde el agente** (fase 25.7, ADR-039). El usuario
+edita el perfil, el contexto y sus muestras de estilo en «Mi perfil», por rutas de la API que solo
+acepta la UI (`require_ui`): `PUT /profile/sections/{section}`, `POST /profile/undo`,
+`PUT /context/{section}` y `POST`/`DELETE /context/style-samples`. Un test del registro comprueba
+que no hay ninguna herramienta MCP de escritura del perfil. Para el agente, el perfil se escribe
+con `update-profile` o `expand`, que preguntan antes, y `get_profile` sigue sin email ni teléfono.
 
 `add_event` no acepta los eventos que registra su propia herramienta o el sistema: `found`,
 `duplicate_detected`, `extracted`, `hard_filter_failed`, `scored`, `fit_assessed`,

@@ -433,6 +433,8 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   logros (`achievements`) solo existen dentro de una experiencia. `expand` lee READMEs de terceros
   y luego edita el perfil, así que cuenta como contenido no confiable (`UNTRUSTED`): con un agente
   de nivel C, aviso en terminal. No tiene segundo plano porque pregunta.
+- **Nota de la fase 25.7 (ADR-039):** el contexto y el perfil ya no se editan solo en el editor
+  del usuario: también en «Mi perfil» de la UI. Lo demás de esta decisión sigue igual.
 
 
 ## ADR-026 · Alias de skills desde la UI y huecos marcados por el usuario
@@ -1013,3 +1015,55 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   las herramientas: con `list_jobs`, el agente aún podría ver las demás. Si las valorase, no
   pasaría nada grave, pero gastaría lo que se quería ahorrar.
 
+## ADR-039 · «Mi perfil» editable desde la UI, por secciones y sin herramientas para el agente (matiza la 025 y la 024)
+- **Contexto:** el perfil (`data/profile.yaml`) y el contexto (`data/contexto/*.md`) solo se podían
+  cambiar en un editor o pidiéndoselo al agente con `update-profile` (ADR-025). Quien no se maneja
+  con YAML no podía usar la app, y añadir una historia STAR tras una entrevista obligaba a abrir una
+  terminal. Tampoco había dónde dejar textos propios que enseñen al agente cómo escribes.
+  Decisión del usuario (2026-10-17): que la app se pueda usar entera desde la UI.
+- **Decisión:**
+  - **Escribe la UI, que es el usuario:** `services/profile_editor.py` guarda una sección
+    (`PUT /profile/sections/{section}`, lista blanca de `ProfileSection`; `private` no se edita
+    aquí). Todas las rutas de escritura llevan `require_ui`; leer el perfil con contacto
+    (`GET /profile/editable`), `require_ui_read` (sin `Origin` ajeno ni `Sec-Fetch-Site:
+    cross-site`). El agente **no** gana ninguna herramienta ni comando de escritura del perfil:
+    sigue con `update-profile` y `expand`, que preguntan antes, y `get_profile` sin contacto.
+  - **Sin pisar ni romper:** concurrencia optimista con el sha256 de los bytes del fichero
+    (`conflict` si cambió), validación del perfil entero antes de escribir (los `ProfileIssue` de
+    `cai profile validate`, con la ruta del campo), escritura en un temporal que sustituye al
+    fichero y un lock para dos guardados seguidos. «Usar por defecto» de Plantillas pasa por el
+    mismo camino.
+  - **Formato del usuario intacto:** ruamel.yaml en modo ida y vuelta y **fusión** de la sección
+    con lo que había: claves en su sitio, listas casadas por `id` y escalares sin tocar si no
+    cambian, así que se conservan los comentarios y el estilo también dentro de la sección. Un
+    texto que YAML leería como otro tipo («no», «+34600…») se escribe entre comillas; uno con
+    saltos de línea, como bloque.
+  - **Ids estables:** los genera el servidor si vienen vacíos (`exp-<empresa>`, `a<n>`,
+    `prj-…`, `edu-…`, `cert-…`, `st-…`) y no cambian al renombrar. Borrar lo que cita una historia
+    STAR se rechaza (`referenced`, con las historias); si lo cita un CV o una carta ya generados,
+    se permite con aviso, porque guardan su versión del perfil.
+  - **Deshacer:** antes de escribir, copia en `data/profile-history/` (las 20 últimas). «Deshacer»
+    escribe la más reciente por el mismo camino (validación, versión y rescore) y la quita.
+    `dry_run` devuelve el diff sin escribir, para enseñarlo antes de cambiar filtros o skills.
+  - **Auditoría** en una tabla propia, `profile_edits` (qué, cuándo y los hashes, sin el texto),
+    porque `events` exige una oferta.
+  - **Contexto en la UI:** `PUT /context/{section}` con la misma concurrencia, el límite de 20 KB
+    antes de escribir (`too_large`) y el fichero tal cual, comentarios-guía incluidos (la UI los
+    enseña; el servidor no los quita). Si no existía, se parte de la plantilla de `cai context
+    init`. Sigue sin versiones en la BD.
+  - **Muestras de estilo:** carpeta `data/documentos/estilo/`, subida en JSON (base64) para que
+    `require_ui` valga, con límites en `profile_editing`. El texto se extrae al subir y se guarda
+    junto al original. Son **contexto, no hechos** (POLICIES §1.5), pasan por la detección de
+    inyección y llegan al agente en `get_context.style_samples`, envueltas en
+    `<untrusted_style_sample>` y recortadas a 20 KB entre todas.
+  - **Botones del agente** («Mejorar con mi agente», «Proponer historias»): `update-profile` con
+    dos modos nuevos, solo en terminal porque pregunta. Matiza la ADR-024: la orden llevará el id
+    del elemento del perfil (texto, validado contra el perfil vigente), lo que se cierra en la
+    fase 25.7b junto con la UI.
+- **Consecuencias:** el perfil se puede rellenar entero sin YAML ni terminal, y el agente sigue
+  sin poder escribirlo sin preguntar. Un guardado conserva los comentarios del fichero, pero
+  reordenar una lista mueve sus elementos sin los comentarios que tuvieran pegados. Se pierde la
+  idea de que el contexto «solo se edita en tu editor»: si el usuario lo edita a la vez en los dos
+  sitios, gana el primero en guardar y el otro recibe `conflict`. `content` es la sección entera:
+  una clave que la UI no reenvíe se borra. Y `require_ui_read` frena a otras webs, no a un programa
+  de tu equipo (`curl`), que de todos modos podría leer `data/profile.yaml` del disco.

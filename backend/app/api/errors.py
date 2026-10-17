@@ -23,6 +23,8 @@ STATUS_BY_TYPE = {
     "invalid_request": 422,
     "invalid_transition": 409,
     "exists": 409,
+    "conflict": 409,  # fase 25.7: el fichero cambió desde que la UI lo leyó
+    "referenced": 409,  # fase 25.7: lo cita una historia STAR
     "invalid_file": 422,
     "too_large": 413,
     "pdf_unavailable": 503,

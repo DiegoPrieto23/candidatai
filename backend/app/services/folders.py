@@ -13,7 +13,7 @@ from pydantic import BaseModel
 
 from app.services import application_archive, company_research, context, interviews
 
-FolderKind = Literal["contexto", "documentos", "entrevistas", "empresas", "candidatura"]
+FolderKind = Literal["contexto", "documentos", "estilo", "entrevistas", "empresas", "candidatura"]
 
 
 class FolderNotFoundError(FileNotFoundError):
@@ -30,6 +30,8 @@ def resolve(kind: FolderKind, job_id: int | None = None) -> str:
         path = context.context_dir()
     elif kind == "documentos":
         path = context.documents_dir()
+    elif kind == "estilo":  # muestras de estilo (fase 25.7)
+        path = context.documents_dir() / "estilo"
     elif kind in ("entrevistas", "empresas"):  # dosieres de las fases 17 y 18
         path = (
             interviews.interviews_dir()

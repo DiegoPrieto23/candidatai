@@ -29,7 +29,10 @@ qué cuesta cada oferta y con qué agente, y que el CV salga bien maquetado.
 Las subfases son independientes entre sí salvo la 25.4, que usa lo que la fase 24 guarda de cada
 ejecución (agente, modelo, uso). Si hace falta, se pueden reordenar. La 25.7 se añadió el
 2026-10-17 a petición del usuario (que la app se pueda usar entera desde la UI) y matiza el
-ADR-025 con un ADR nuevo.
+ADR-025 con un ADR nuevo (ADR-039). Por su tamaño se parte en dos commits (decisión del usuario,
+2026-10-17): la **25.7a** (backend: escritura del perfil, contexto y muestras de estilo, skills y
+docs de reglas) y la **25.7b** (la página «Mi perfil» editable, los botones del agente, la guía, el
+README y la prueba manual).
 
 ## Fuera de alcance
 macOS, Linux y Docker (fase 26). Autorización de trabajo y visado (solo importa fuera de la UE).

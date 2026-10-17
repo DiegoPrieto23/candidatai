@@ -74,14 +74,16 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 24.4 | ↳ Elegir y cambiar de agente | ✅ | Sección «Agentes» con capacidades, agente por defecto y por acción, «con Claude Code ▾» en cada botón |
 | 24.5 | ↳ Segundo plano con varios agentes | ✅ | «En segundo plano» también con OpenCode (`process-jobs` y `assess-fit`), con el techo en una configuración propia de cada ejecución; Codex y Qwen Code, aún no |
 | 24.6 | ↳ Modelos gratuitos, niveles de gasto y matriz | 🚧 código y docs hechos; falta pasar la matriz (`docs/pruebas/fase-24.6-matriz.md`) | Guía de modelos gratis y locales, diagnóstico de Ollama, «Económico/Equilibrado/Máximo» y matriz probada por agente y modelo |
-| 25 | Más fuentes, perfil más rico, ofertas dudosas, coste y calidad del CV | 🚧 25.1 a 25.6 hechas; falta la 25.7 | Más ATS con API, `expand`, señales de oferta dudosa, coste por oferta y agente, maquetación del PDF, `CHANGELOG` y el perfil editable desde la UI |
+| 25 | Más fuentes, perfil más rico, ofertas dudosas, coste y calidad del CV | 🚧 25.1 a 25.6 y 25.7a hechas; falta la 25.7b | Más ATS con API, `expand`, señales de oferta dudosa, coste por oferta y agente, maquetación del PDF, `CHANGELOG` y el perfil editable desde la UI |
 | 25.1 | ↳ Conectores de ATS y portales con API | ✅ | Personio, Teamtailor, Workable, SmartRecruiters y Recruitee, más Manfred y freehire.me; `cai sources discover` para todos |
 | 25.2 | ↳ Skill `expand` | ✅ | Proyectos, skills y logros propuestos desde GitHub, portfolio o Scholar, con su fuente y solo con tu OK |
 | 25.3 | ↳ Ofertas dudosas y banderas rojas | ✅ | Señales (rango salarial ancho, empresa oculta, temporal, republicada, cribado con IA) y `red_flags` con fuentes en el dosier |
 | 25.4 | ↳ Coste y lote en paralelo | ✅ | Coste por oferta, skill y agente; umbral de score antes de `assess-fit`; hasta N ejecuciones a la vez |
 | 25.5 | ↳ Maquetación del PDF | ✅ | Avisos de títulos huérfanos, huecos, pie y última página casi vacía en CV y carta |
 | 25.6 | ↳ CHANGELOG y la historia con números | ✅ | `CHANGELOG.md`, notas de release desde él y `cai stats story` para el README |
-| 25.7 | ↳ Tu perfil, editable desde la UI | ⏳ | Experiencia y logros, historias STAR, preferencias de búsqueda, CV y carta, contexto y muestras de estilo desde «Mi perfil», con validación, diff y «Deshacer»; «Mejorar con mi agente» opcional |
+| 25.7 | ↳ Tu perfil, editable desde la UI | 🚧 25.7a hecha | Experiencia y logros, historias STAR, preferencias de búsqueda, CV y carta, contexto y muestras de estilo desde «Mi perfil», con validación, diff y «Deshacer»; «Mejorar con mi agente» opcional |
+| 25.7a | ↳↳ Escritura del perfil, contexto y muestras (backend) | ✅ | `profile_editor` por secciones (conserva comentarios, `conflict`, validación, copia y «Deshacer»), contexto y muestras de estilo por la API solo para la UI, `style_samples` en `get_context`, ADR-039 |
+| 25.7b | ↳↳ La página «Mi perfil» editable (UI) | ⏳ | Formularios por bloque en es y en, diff antes de guardar, «Mejorar con mi agente» y «Proponer historias», guía, README y prueba manual |
 | 26 | macOS, Linux y Docker | ⏳ | Instalar y usar la app en los tres sistemas, botones «en tu agente» incluidos, y Docker opcional |
 | 26.1 | ↳ Núcleo multiplataforma | ⏳ | Rutas, procesos, LibreOffice y terminales en macOS y Linux (`CAI_TERMINAL`) |
 | 26.2 | ↳ Instalador para macOS y Linux | ⏳ | `install.sh` con acceso directo, datos en la carpeta de cada sistema y desinstalación |
@@ -2842,3 +2844,51 @@ decisiones tomadas y deuda técnica pendiente. -->
 - **Deuda:**
   - la prueba en seco en GitHub queda para cuando el usuario haga push (PENDIENTES);
   - la línea del README no dice «qué funcionó»: lo escribe el usuario.
+
+### 25.7a · «Mi perfil» editable: backend — 2026-10-17 · Claude Code (Opus 5.5)
+- **Hecho:**
+  - `services/profile_editor.py`: guarda una sección de `data/profile.yaml` desde la UI con
+    ruamel.yaml en modo ida y vuelta y **fusión** con lo que había (claves en su sitio, listas por
+    `id`, escalares sin tocar si no cambian), así que el diff solo toca lo cambiado; comillas para
+    lo que YAML leería como otro tipo y bloques para el texto con saltos de línea. Concurrencia
+    optimista por el sha256 de los bytes (`conflict`), validación entera (`ProfileIssue` con su
+    ruta), ids generados (`exp-…`, `a<n>`, `prj-…`, `st-…`) que no cambian al renombrar, rechazo al
+    borrar lo que cita una historia (`referenced`) y aviso si lo cita un CV o carta, `dry_run` con el
+    diff, copia en `data/profile-history/` (20) y «Deshacer», con lock e importación dentro;
+  - «Usar por defecto» de Plantillas pasa por el editor (copia, auditoría, lock);
+  - contexto editable (`GET`/`PUT /context/{section}`): el fichero tal cual, comentarios-guía
+    incluidos, plantilla si no existía, 20 KB antes de escribir (`too_large`) y `conflict`;
+  - muestras de estilo (`services/style_samples.py`, `data/documentos/estilo/`): subida en JSON
+    base64, `.txt`/`.md`/`.docx`/`.pdf`, texto extraído en `.texto/`, detección de inyección,
+    límites en `profile_editing` de `policies.yaml`, lock; `get_context.style_samples` envueltas
+    en `<untrusted_style_sample>` (el escape de etiquetas lo cubre) y recortadas a 20 KB;
+  - API (`routes/profile.py`, `routes/context.py`): escrituras con `require_ui`, lecturas con
+    contacto o texto tuyo con `require_ui_read` (nuevo: sin `Origin` ajeno ni `Sec-Fetch-Site:
+    cross-site`); errores `conflict` y `referenced` (409), `validation_error` con los campos;
+  - auditoría `profile_edits` (migración 0024): qué, cuándo y hashes, sin texto;
+  - skills: `update-profile` con «Mejorar un elemento» y «Proponer historias»; `writer`,
+    `generate-cover-letter` y `verifier` con las muestras (tono sí, hechos y frases enteras no);
+  - docs: ADR-039 (y nota en el ADR-025), POLICIES §1.5, DATA_MODEL, AGENT_INTERFACE; el encargo
+    y el plan de la fase recogen la partición en 25.7a y 25.7b.
+- **Tests:** `test_profile_editor.py` (18: comentarios y formato intactos byte a byte, `conflict`,
+  validación sin escribir ni copia ni auditoría, versión + rescore + copia + deshacer, sin cambios
+  no crea versión, `dry_run`, ids estables y sin choques, borrar lo citado, contacto y textos que
+  YAML leería mal, bloques, fichero inválido, límite de copias, CRLF, BOM al deshacer y clave no
+  enviada); `test_api_profile_editor.py` (20: guardar, `conflict`, campos de validación,
+  `referenced`, diff, escrituras y lecturas solo para la UI, ninguna herramienta MCP ni comando que
+  escriba el perfil, contexto con guías, 20 KB y auditoría, muestras con `.docx`, inyección,
+  límites y envoltorio que no se puede cerrar desde dentro); los de `cli db` con la cabecera 0024.
+- **Decisiones (con el usuario):** auditoría en una tabla propia y no en `events`; el nivel de
+  idioma será un desplegable que conserva los valores libres (sin cambiar el esquema, en la
+  25.7b); dos commits. Mías: subida de muestras en JSON para que valga `require_ui`; el servidor no
+  quita los comentarios-guía del contexto (la UI los enseña); el id del elemento en la orden de
+  «Mejorar con mi agente» va con los botones en la 25.7b, porque toca también la cola de encargos.
+- **Revisión** (rol `reviewer`), sin bloqueantes. Se aplicó: `require_ui_read` en `GET
+  /profile/diff` y en la lista de muestras; hash correcto al deshacer una copia con BOM; copia
+  después de escribir e importación dentro del lock; lock en las subidas; un solo modelo de muestra;
+  `section` a 128; el límite de «sección entera» y de las listas sin `id` en el docstring y el ADR;
+  y los tests de CRLF, BOM, rollback, envoltorio y clave no enviada.
+- **Deuda:** reordenar una lista mueve sus elementos sin sus comentarios; las listas sin `id` se
+  reescriben enteras si cambian; `require_ui_read` no frena a un programa local (`curl`), que de
+  todos modos lee el fichero; al pasar del límite de 20 KB, las muestras que no caben no se avisan
+  al agente; el CHANGELOG espera a la 25.7b, que es cuando el usuario ve el cambio.

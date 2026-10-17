@@ -22,7 +22,8 @@
     "linkedin": "Exports of your LinkedIn profile",
     "titulos": "Degrees and certificates",
     "referencias": "Reference letters",
-    "candidaturas": "What you sent in each application (fills up on its own)"
+    "candidaturas": "What you sent in each application (fills up on its own)",
+    "estilo": "Samples of how you write (letters, emails, posts): the agent takes your tone from them, never facts."
   },
   "state": {
     "missing": "Doesn't exist",

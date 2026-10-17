@@ -188,6 +188,12 @@ layout:                         # fase 25.5: maquetación del PDF del CV y la ca
   edge_margin_pt: 14              # …o a menos de 14 pt de un borde
   last_page_min_pct: 15           # `nearly_empty_last_page`: la última página ocupa menos del 15 % (con más de una)
 
+profile_editing:                # fase 25.7: «Mi perfil» editable desde la UI
+  history_keep: 20                # copias de data/profile.yaml en data/profile-history/ antes de cada guardado
+  style_max_files: 10             # muestras de estilo en data/documentos/estilo/
+  style_max_upload_mb: 5          # tamaño máximo de cada muestra (.txt, .md, .docx, .pdf)
+  style_max_text_kb: 20           # texto de todas las muestras juntas que recibe el agente (get_context)
+
 background_runs:                # fase 19: «En segundo plano» (el agente sin ventana desde el worker)
   timeout_minutes: 30             # después se para el proceso y la ejecución queda `timeout`
   max_progress_lines: 200         # líneas de progreso que se guardan (las últimas)

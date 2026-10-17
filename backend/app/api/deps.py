@@ -54,6 +54,22 @@ def require_ui(request: Request) -> None:
         raise ToolError("forbidden", "La petición tiene que ser JSON y venir de la UI.")
 
 
+def require_ui_read(request: Request) -> None:
+    """Lecturas solo para la UI (fase 25.7: el perfil con tu email y teléfono).
+
+    Un GET no lleva cuerpo, así que no vale `require_ui`. Basta con que no venga de otra web: el
+    navegador manda `Origin` o `Sec-Fetch-Site: cross-site` en una petición de otro origen, y una
+    web que apunte su dominio a 127.0.0.1 (DNS rebinding) llega con otro `Host`.
+    """
+    if request.url.hostname not in _LOCAL_HOSTS:
+        raise ToolError("forbidden", "Solo la UI de CandidatAI puede leer esto.")
+    origin = request.headers.get("origin")
+    if origin is not None and not is_ui_origin(request, origin):
+        raise ToolError("forbidden", "Solo la UI de CandidatAI puede leer esto.")
+    if request.headers.get("sec-fetch-site") == "cross-site":
+        raise ToolError("forbidden", "Solo la UI de CandidatAI puede leer esto.")
+
+
 class EmptyBody(BaseModel):
     """Cuerpo `{}` de las acciones de la UI sin datos: JSON, para que `require_ui` lo compruebe."""
 

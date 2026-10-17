@@ -142,6 +142,14 @@ funcionando. Los roles son `writer`, `verifier`, `classifier`, `reviewer` y `ext
       Después, pásame `evals/compat/REPORT.md` para completar `AGENTS_COMPAT.md`, el README y la
       ADR-037.
 
+### «Mi perfil» editable, parte de backend (fase 25.7a)
+
+- [ ] `uv run --directory backend cai db upgrade` (migración **0024**, `profile_edits`) o arranca
+      `cai start`. Sin ella, «Usar por defecto» en Plantillas falla al guardar.
+- [ ] En Plantillas, «Usar por defecto» con otra plantilla: tu `data/profile.yaml` conserva sus
+      comentarios y aparece una copia en `data/profile-history/`.
+- La página editable llega con la 25.7b; su prueba manual, también.
+
 ### CHANGELOG y tu búsqueda en números (fase 25.6)
 
 - [ ] Embudo → «Tu búsqueda en números»: ¿te cuadran las cifras? Copia la línea en los dos idiomas

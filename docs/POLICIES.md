@@ -28,6 +28,14 @@ Las reglas con valores ajustables tienen su parámetro en `config/policies.yaml`
    respaldan un hecho: un logro, una cifra, una formación o un rasgo que solo esté ahí no va en un
    CV, una carta ni una respuesta (el verificador lo marca `blocker`). Si el usuario lo quiere
    usar, se añade antes al perfil o, en una carta, a sus indicaciones.
+   Las **muestras de estilo** (fase 25.7, `data/documentos/estilo/`: cartas, correos o posts
+   suyos que sube en «Mi perfil») son contexto: `writer` y `generate-cover-letter` toman de ellas
+   el tono, la longitud de las frases, cómo abre y cierra y sus palabras, nunca un hecho ni frases
+   enteras. Como pueden traer texto de otros (una oferta pegada, una respuesta), pasan por la
+   detección de inyección y llegan al agente envueltas como contenido no confiable (§6).
+   El perfil y el contexto también se editan en «Mi perfil» de la UI (ADR-039). Ahí escribe el
+   usuario, que es quien pulsa «Guardar»; el agente sigue sin herramientas para escribir el
+   perfil.
 6. **Entrevistas** (fase 17). Los esquemas de respuesta del dosier y la «versión mejor» del
    simulacro solo usan hechos del perfil. Lo que el usuario cuente en un simulacro o en un repaso
    (un logro, una cifra, una historia) se queda en las notas del hito hasta que él confirme

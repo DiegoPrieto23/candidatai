@@ -294,11 +294,13 @@ def assess(text: str, html: str | None = None) -> RiskReport:
 
 WRAPPER_TAG = "untrusted_job_posting"
 EMAIL_WRAPPER_TAG = "untrusted_email"  # respuestas de las empresas (fase 15)
+STYLE_WRAPPER_TAG = "untrusted_style_sample"  # muestras de estilo del usuario (fase 25.7)
 # Cualquier cosa que un modelo pudiera leer como apertura o cierre de un envoltorio (el de las
 # ofertas o el de los correos): `<` normal o sus parecidos Unicode, espacios, `/` opcional y el
 # nombre con separadores o mayúsculas variadas.
 _TAG_LOOKALIKE = re.compile(
-    r"[<＜﹤〈〈⟨‹](\s*/?\s*untrusted[\s_\-]*(?:job[\s_\-]*posting|e[\s_\-]*mail))",
+    r"[<＜﹤〈〈⟨‹](\s*/?\s*untrusted[\s_\-]*"
+    r"(?:job[\s_\-]*posting|e[\s_\-]*mail|style[\s_\-]*sample))",
     re.IGNORECASE,
 )
 
@@ -331,4 +333,14 @@ def wrap_untrusted_email(reply_id: int, text: str, risk_flags: list[str]) -> str
         f'<{EMAIL_WRAPPER_TAG} id="{reply_id}" risk_flags="{flags}">\n'
         f"{escape_wrapper_tag(text)}\n"
         f"</{EMAIL_WRAPPER_TAG}>"
+    )
+
+
+def wrap_untrusted_style(name: str, text: str, risk_flags: list[str]) -> str:
+    """Envuelve una muestra de estilo: la escribe el usuario, pero puede traer texto de otros."""
+    flags = html_escape(",".join(risk_flags), quote=True)
+    return (
+        f'<{STYLE_WRAPPER_TAG} name="{html_escape(name, quote=True)}" risk_flags="{flags}">\n'
+        f"{escape_wrapper_tag(text)}\n"
+        f"</{STYLE_WRAPPER_TAG}>"
     )

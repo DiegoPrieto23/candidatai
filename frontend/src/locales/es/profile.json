@@ -22,7 +22,8 @@
     "linkedin": "Exportaciones de tu perfil de LinkedIn",
     "titulos": "Títulos y certificados",
     "referencias": "Cartas de referencia",
-    "candidaturas": "Lo que enviaste en cada candidatura (se llena solo)"
+    "candidaturas": "Lo que enviaste en cada candidatura (se llena solo)",
+    "estilo": "Muestras de cómo escribes (cartas, correos, posts): el agente toma de ellas el tono, nunca los hechos."
   },
   "state": {
     "missing": "No existe",
