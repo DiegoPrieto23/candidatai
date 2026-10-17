@@ -174,6 +174,7 @@ compatible y Antigravity CLI ocupa su sitio.
 |---|---|---|---|
 | Perfil validado y versionado | ✅ YAML con esquema | 🟡 Markdown | 🟡 YAML + Markdown + perfil maestro |
 | Contexto que orienta sin respaldar hechos (estilo, narrativa…) | ✅ `data/contexto/` | ✅ perfil conductual y estilo | ✅ |
+| Rellenar el perfil, el contexto y muestras de estilo desde una UI, sin YAML | ✅ «Mi perfil» por bloques: conserva tu formato, avisa si cambió por fuera, enseña el diff y se puede deshacer; el agente sigue sin poder escribirlo sin preguntar (25.7) | n/a (sin UI) | sin comprobar |
 | Enriquecer el perfil desde GitHub, portfolio, Scholar… | ✅ `expand`, con la fuente de cada dato y tu OK (25.2) | ✅ `/expand` | ✅ `expand` |
 | Revisar tu perfil de LinkedIn | ✅ | ❌ | ❌ |
 | Lanzar el agente desde la UI (terminal o segundo plano) | ✅ | ❌ | 🟡 workers en la web alfa |

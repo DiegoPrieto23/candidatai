@@ -210,7 +210,10 @@ Step by step, including your own profile, your agent, email alerts and the brows
 ## Use it with your own data
 
 Your data lives in `data/`, outside git. Open CandidatAI (the shortcut, or `cai start`), create your
-profile with the `update-profile` skill, and then ask your agent:
+profile with the `update-profile` skill (it reads your CV), then fill it in and refine it in **My
+profile**: experience, achievements, STAR stories, what you're looking for, your CV and letter
+preferences, your context and writing samples, with no YAML (each block saves on its own and can be
+undone). Then ask your agent:
 
 | Skill | What it does |
 |---|---|

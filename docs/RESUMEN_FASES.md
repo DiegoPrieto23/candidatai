@@ -380,6 +380,22 @@ La carta es un documento propio, con sus indicaciones, su verificación y sus re
 - Para agentes y terminal: `get_received_offer` ↔ `jh received-offers show`.
 
 
+## 25.7 · Tu perfil, editable desde la UI — 2026-10-17 · Claude Code (Opus 5.5)
+- **«Mi perfil» sin YAML:** experiencia y logros, proyectos, formación, certificaciones, otras
+  secciones, idiomas y skills, historias STAR, qué buscas y tus preferencias de CV y carta, por
+  pestañas y bloques. Cada bloque se guarda solo y enseña el error en el campo que toca.
+- **Tu fichero, intacto:** se conservan sus comentarios y su formato; si lo cambiaste por fuera, no
+  lo pisa y te pide recargar; cada guardado deja una copia y «Deshacer» vuelve atrás. Cambiar lo
+  que buscas o tus skills te enseña antes el cambio, porque recalcula los scores.
+- **Historias STAR** con sus evidencias elegidas por nombre: sin una, no se guarda. Borrar un logro
+  que cita una historia no se puede.
+- **Contexto y muestras de estilo:** los cuatro ficheros de contexto con vista previa, y cartas,
+  correos o posts tuyos para que tu agente copie tu tono, nunca tus hechos.
+- **«Mejorar con mi agente»** en cada logro e historia y **«Proponer historias desde mi
+  experiencia»**: tu agente propone y pregunta los números; solo escribe con tu OK.
+- **Sin vía nueva para el agente:** solo la UI escribe así (ADR-039); tu agente sigue sin ver tu
+  contacto ni poder escribir el perfil sin preguntar.
+
 ## 25.6 · Qué cambia en cada versión, y tu búsqueda en números — 2026-10-17 · Claude Code (Opus 5.5)
 - **`CHANGELOG.md`:** qué cambia para quien usa la app, versión a versión (la 0.1.0 con las fases 01
   a 23 y «Sin publicar» con la 24 y la 25). Cada fase añade lo suyo al cerrar.

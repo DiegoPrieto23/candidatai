@@ -117,15 +117,22 @@ documentos y correos. Las claves van en `.env`, también fuera de git.
 
 | Qué | Dónde | Cómo |
 |---|---|---|
-| **Perfil** (la fuente de verdad de todo lo que se escribe sobre ti) | `data/profile.yaml` | Skill `update-profile`: lee tu CV, te pregunta lo que falte y lo valida. Cada cambio crea una versión |
+| **Perfil** (la fuente de verdad de todo lo que se escribe sobre ti) | `data/profile.yaml` | Para empezar, el skill `update-profile`: lee tu CV, te pregunta lo que falte y lo valida. Después, **rellénalo y retócalo en «Mi perfil»**: experiencia y logros, proyectos, formación, skills e idiomas, historias STAR, qué buscas y tus preferencias de CV y carta, por bloques. Cada bloque se guarda solo, conserva el formato y los comentarios de tu fichero, avisa si lo cambiaste por fuera y se puede deshacer. Cada cambio crea una versión. Si prefieres, sigue valiendo editar el YAML |
 | **Tu CV como diseño** | `data/templates/<id>/` | Sube tu CV en «Plantillas → Mi CV» y usa el skill `import-cv-template`. Vale Word, PDF, imagen o HTML (Canva, Google Docs…) |
 | **Foto** | `data/photo.jpg` (o png) | Cada plantilla la recorta a su forma; se incluye o no según el país de la oferta |
-| **Contexto** (estilo, narrativa, criterios) | `data/contexto/*.md` | Orienta al agente, pero nunca respalda un hecho del CV |
+| **Contexto** (estilo, narrativa, criterios) | `data/contexto/*.md` | Se edita en «Mi perfil → Contexto y estilo» (con vista previa) o en tu editor. Orienta al agente, pero nunca respalda un hecho del CV |
+| **Muestras de estilo** (cartas, correos o posts tuyos) | `data/documentos/estilo/` | Súbelas en «Mi perfil → Contexto y estilo» (.txt, .md, .docx, .pdf). Tu agente toma de ellas el tono, nunca los hechos, y las lee como dato: si traen texto de otros con órdenes, no las sigue |
 | **Documentos fuente** (CVs antiguos, títulos, referencias) | `data/documentos/` | `update-profile` los puede leer, confirmando antes de escribir |
 | **Lo que has hecho en público** (repositorios, portfolio, Kaggle, Scholar, certificaciones verificables) | `data/profile.yaml` | Skill `expand`, o «Ampliar perfil desde mis enlaces» en «Mi perfil». Úsalo **justo después de crear el perfil**: propone proyectos, skills (sin nivel: lo pones tú), logros con los números que da la fuente y certificaciones, cada uno con su enlace en `source`, y solo escribe lo que aceptes. Solo web pública: ni LinkedIn ni nada con login. Necesita un agente con búsqueda web |
 
 Tu mínimo salarial va en `private.salary_floor_eur` del perfil: la app lo usa para comparar
 ofertas, pero el agente nunca lo recibe.
+
+En «Mi perfil», cada logro y cada historia tienen **«Mejorar con mi agente»**: tu agente propone
+una versión más clara, te pregunta los números que falten (nunca los inventa) y solo escribe con tu
+OK. En «Historias STAR», **«Proponer historias desde mi experiencia»** te sugiere historias a partir
+de los logros que aún no tienen. Tu correo y tu teléfono se editan ahí, pero tu agente sigue sin
+verlos. Tu mínimo salarial (`private`) solo se edita en el YAML.
 
 ## 5. Conectar tu agente
 

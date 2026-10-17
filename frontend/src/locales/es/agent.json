@@ -19,7 +19,9 @@
     "handle-requests": "Atender encargos",
     "offer-questions": "Dudas antes de aceptar",
     "prepare-negotiation": "Preparar negociación",
-    "expand": "Ampliar perfil desde mis enlaces"
+    "expand": "Ampliar perfil desde mis enlaces",
+    "improve-profile-item": "Mejorar con mi agente",
+    "propose-stories": "Proponer historias desde mi experiencia"
   },
   "status": {
     "queued": "En cola",

@@ -74,16 +74,16 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 24.4 | ↳ Elegir y cambiar de agente | ✅ | Sección «Agentes» con capacidades, agente por defecto y por acción, «con Claude Code ▾» en cada botón |
 | 24.5 | ↳ Segundo plano con varios agentes | ✅ | «En segundo plano» también con OpenCode (`process-jobs` y `assess-fit`), con el techo en una configuración propia de cada ejecución; Codex y Qwen Code, aún no |
 | 24.6 | ↳ Modelos gratuitos, niveles de gasto y matriz | 🚧 código y docs hechos; falta pasar la matriz (`docs/pruebas/fase-24.6-matriz.md`) | Guía de modelos gratis y locales, diagnóstico de Ollama, «Económico/Equilibrado/Máximo» y matriz probada por agente y modelo |
-| 25 | Más fuentes, perfil más rico, ofertas dudosas, coste y calidad del CV | 🚧 25.1 a 25.6 y 25.7a hechas; falta la 25.7b | Más ATS con API, `expand`, señales de oferta dudosa, coste por oferta y agente, maquetación del PDF, `CHANGELOG` y el perfil editable desde la UI |
+| 25 | Más fuentes, perfil más rico, ofertas dudosas, coste y calidad del CV | ✅ | Más ATS con API, `expand`, señales de oferta dudosa, coste por oferta y agente, maquetación del PDF, `CHANGELOG` y el perfil editable desde la UI |
 | 25.1 | ↳ Conectores de ATS y portales con API | ✅ | Personio, Teamtailor, Workable, SmartRecruiters y Recruitee, más Manfred y freehire.me; `cai sources discover` para todos |
 | 25.2 | ↳ Skill `expand` | ✅ | Proyectos, skills y logros propuestos desde GitHub, portfolio o Scholar, con su fuente y solo con tu OK |
 | 25.3 | ↳ Ofertas dudosas y banderas rojas | ✅ | Señales (rango salarial ancho, empresa oculta, temporal, republicada, cribado con IA) y `red_flags` con fuentes en el dosier |
 | 25.4 | ↳ Coste y lote en paralelo | ✅ | Coste por oferta, skill y agente; umbral de score antes de `assess-fit`; hasta N ejecuciones a la vez |
 | 25.5 | ↳ Maquetación del PDF | ✅ | Avisos de títulos huérfanos, huecos, pie y última página casi vacía en CV y carta |
 | 25.6 | ↳ CHANGELOG y la historia con números | ✅ | `CHANGELOG.md`, notas de release desde él y `cai stats story` para el README |
-| 25.7 | ↳ Tu perfil, editable desde la UI | 🚧 25.7a hecha | Experiencia y logros, historias STAR, preferencias de búsqueda, CV y carta, contexto y muestras de estilo desde «Mi perfil», con validación, diff y «Deshacer»; «Mejorar con mi agente» opcional |
+| 25.7 | ↳ Tu perfil, editable desde la UI | ✅ | Experiencia y logros, historias STAR, preferencias de búsqueda, CV y carta, contexto y muestras de estilo desde «Mi perfil», con validación, diff y «Deshacer»; «Mejorar con mi agente» opcional |
 | 25.7a | ↳↳ Escritura del perfil, contexto y muestras (backend) | ✅ | `profile_editor` por secciones (conserva comentarios, `conflict`, validación, copia y «Deshacer»), contexto y muestras de estilo por la API solo para la UI, `style_samples` en `get_context`, ADR-039 |
-| 25.7b | ↳↳ La página «Mi perfil» editable (UI) | ⏳ | Formularios por bloque en es y en, diff antes de guardar, «Mejorar con mi agente» y «Proponer historias», guía, README y prueba manual |
+| 25.7b | ↳↳ La página «Mi perfil» editable (UI) | ✅ | Formularios por bloque en es y en, diff antes de guardar, «Mejorar con mi agente» y «Proponer historias», guía, README y prueba manual |
 | 26 | macOS, Linux y Docker | ⏳ | Instalar y usar la app en los tres sistemas, botones «en tu agente» incluidos, y Docker opcional |
 | 26.1 | ↳ Núcleo multiplataforma | ⏳ | Rutas, procesos, LibreOffice y terminales en macOS y Linux (`CAI_TERMINAL`) |
 | 26.2 | ↳ Instalador para macOS y Linux | ⏳ | `install.sh` con acceso directo, datos en la carpeta de cada sistema y desinstalación |
@@ -2893,3 +2893,56 @@ decisiones tomadas y deuda técnica pendiente. -->
   reescriben enteras si cambian; `require_ui_read` no frena a un programa local (`curl`), que de
   todos modos lee el fichero; al pasar del límite de 20 KB, las muestras que no caben no se avisan
   al agente; el CHANGELOG espera a la 25.7b, que es cuando el usuario ve el cambio.
+
+
+### 25.7b · «Mi perfil» editable: la página — 2026-10-17 · Claude Code (Opus 5.5)
+- **Hecho:**
+  - «Mi perfil» por pestañas (Datos, Experiencia, Proyectos y formación, Skills e idiomas,
+    Historias STAR, Búsqueda, CV y carta, Contexto y estilo, Historial), con `forceMount` para no
+    perder lo que no se ha guardado al cambiar de pestaña;
+  - `components/profile/editor.tsx`: `useBlockEditor` (un borrador por bloque que se pone al día si
+    otro bloque guarda y adopta los ids del servidor tras guardar), guardado por secciones con el
+    `file_hash` que vuelve de cada una, errores de validación en el campo de su ruta, `conflict`
+    con «Recargar», aviso de guardado a medias, y aviso de cambios sin guardar al cerrar la pestaña
+    (`beforeunload`) o seguir un enlace de la app (con `BrowserRouter` no hay `useBlocker`);
+  - bloques: datos y resumen (contacto marcado como privado), experiencia con logros (meses,
+    «Actualidad», skills con las de tu perfil, NDA, fuente, reordenar y borrar), proyectos,
+    formación, certificaciones y secciones extra, idiomas (desplegable A1–C2/Nativo que conserva el
+    valor libre) y skills (F/C+/C/B) con básicas, historias STAR (pistas, evidencias por nombre, sin
+    evidencia no se guarda), lo que buscas, CV y carta; lo que buscas y las skills enseñan el diff
+    (`dry_run`) y avisan del recálculo antes de guardar; las claves que la UI no enseña (`source`,
+    `exclude_signals`, `template_rules`…) vuelven tal cual;
+  - contexto con editor y vista previa propia del Markdown (títulos, párrafos, listas, negrita y
+    cursiva, sin comentarios ni HTML), contador de tamaño y `conflict`; muestras de estilo con
+    «Subir», «Ver texto extraído», aviso de inyección y «Borrar»; el estado de ficheros y carpetas
+    de la fase 13 y el botón de `expand` siguen;
+  - historial: «Ver cambios» y «Deshacer el último cambio»;
+  - agente: acciones `improve-profile-item` (con `profile_item`, solo con formato de id y solo si
+    es un logro o historia del perfil vigente; sin «Dejar para mi próxima sesión» ni segundo plano)
+    y `propose-stories`; `AgentButton` con `profileItem`;
+  - textos en `locales/{es,en}/profileEditor.json` (y `conflict`/`referenced` en los errores);
+  - docs: GUIA y GUIDE (la UI como camino principal), README en los dos idiomas, CHANGELOG,
+    RESUMEN_FASES, COMPARATIVA, ADR-039 (la página y el matiz a la ADR-024), PENDIENTES y
+    `docs/pruebas/fase-25.7-prueba-manual.txt`.
+- **Tests:** `ProfileEditor.test.tsx` (11: logro guardado con su hash y sus claves ocultas, error
+  en su campo, historia sin evidencia, diff de lo que buscas con `exclude_signals` intacto, nivel de
+  idioma libre, contexto con guías y vista previa sin ellas, Markdown sin HTML, conflicto, contacto
+  privado, botón del agente con su id y sin «Dejar para luego», aviso al salir e inglés);
+  `ProfilePage.test.tsx` adaptado (sin perfil); `test_agent_launch.py` (+7: id válido, inexistente,
+  un proyecto, inyección en el id, sin cola ni segundo plano).
+  2759 tests de backend y 298 de frontend en verde (el de guardar un logro escribe mucho texto y
+  lleva 30 s de tiempo máximo: con la batería entera en paralelo pasaba de 15); `tsc`, ruff y
+  `sync_agents.py --check` limpios.
+- **Decisiones (con el usuario):** vista previa del Markdown propia y sin dependencias; nivel de
+  idioma con desplegable que conserva el texto libre. Mías: pestañas montadas siempre; las tres
+  partes de `preferences` (búsqueda, CV, carta) son bloques que guardan la sección entera con lo de
+  los demás tal cual; `template_rules` no se edita en la UI (se conserva y se explica); `private`
+  (tu mínimo salarial) sigue solo en el YAML.
+- **Revisión** (rol `reviewer`), sin bloqueantes. Se aplicó: modo «Otro» del nivel de idioma sin
+  centinela ni recortes; aviso y recarga si un bloque de varias secciones se guarda a medias; no
+  escribir titular ni resumen vacíos si el fichero no los tenía; `fullmatch` en el id; los enlaces
+  de ancla y de descarga no avisan; imports juntos; y los tests de claves ocultas, botones del
+  agente, Markdown sin HTML y aviso al salir.
+- **Deuda:** borrar una muestra no pide confirmación; los grupos de evidencias que no son de
+  experiencia se traducen con una lista fija; reordenar una lista mueve sus elementos sin sus
+  comentarios (de la 25.7a); la prueba manual con un agente de verdad queda en PENDIENTES.

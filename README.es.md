@@ -207,7 +207,10 @@ Paso a paso, con tu propio perfil, tu agente, las alertas por correo y la extens
 ## Úsalo con tus datos
 
 Tus datos viven en `data/`, fuera de git. Abre CandidatAI (el acceso directo, o `cai start`), crea tu
-perfil con el skill `update-profile` y, después, pide a tu agente:
+perfil con el skill `update-profile` (lee tu CV) y después rellénalo y retócalo en **«Mi perfil»**:
+experiencia, logros, historias STAR, qué buscas, tus preferencias de CV y carta, tu contexto y tus
+muestras de estilo, sin tocar YAML (cada bloque se guarda solo y se puede deshacer). Luego pide a tu
+agente:
 
 | Skill | Qué hace |
 |---|---|

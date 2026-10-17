@@ -43,17 +43,35 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   las candidaturas, las respuestas, las entrevistas y las ofertas desde el principio, y una línea
   para tu README en español y en inglés. Solo cifras, sin empresas; publicarlo o no lo decides tú.
 - **Este `CHANGELOG`**, del que salen las notas de cada release.
+- **«Mi perfil» editable, sin YAML:** experiencia y logros, proyectos, formación, certificaciones,
+  otras secciones, idiomas y skills, historias STAR (con sus evidencias elegidas por nombre), qué
+  buscas, y tus preferencias de CV y carta, por bloques. Cada bloque se guarda solo, valida en el
+  campo que toca, conserva los comentarios y el formato de tu `profile.yaml`, avisa si lo cambiaste
+  por fuera y deja una copia que se puede deshacer. Cambiar lo que buscas o tus skills enseña antes
+  el cambio y recalcula los scores.
+- **Contexto y muestras de estilo en la UI:** los cuatro ficheros de contexto se editan con vista
+  previa, y puedes subir cartas, correos o posts tuyos para que tu agente copie tu tono (nunca tus
+  hechos).
+- **«Mejorar con mi agente»** en cada logro e historia, y **«Proponer historias desde mi
+  experiencia»**: tu agente propone, te pregunta los números que falten y solo escribe con tu OK.
 
 ### Cambiado
 - Las releases de GitHub llevan como notas la sección de su versión en este `CHANGELOG`, en lugar de
   la lista de commits; la release falla si esa sección no existe.
 - Codex puede usar modelos locales con el preset `local`.
+- «Usar por defecto» en Plantillas deja una copia de tu perfil en `data/profile-history/`, como el
+  resto de cambios desde «Mi perfil».
 
 ### Eliminado
 - Gemini CLI deja de estar soportado: Antigravity CLI ocupa su lugar.
 
 ### Corregido
 - La plantilla `moderna-2col` deja que un ATS lea primero tu nombre.
+
+### Seguridad
+- Solo la UI puede escribir tu perfil, tu contexto y tus muestras, y leer tu perfil con contacto;
+  tu agente sigue sin ninguna herramienta para escribir el perfil. Las muestras de estilo le llegan
+  como contenido no confiable, con la detección de inyección.
 
 ## [0.1.0] - 2026-10-16
 

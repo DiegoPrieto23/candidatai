@@ -14628,7 +14628,9 @@
               "research-company",
               "handle-requests",
               "review-search",
-              "expand"
+              "expand",
+              "improve-profile-item",
+              "propose-stories"
             ],
             "title": "Id"
           },
@@ -14643,6 +14645,10 @@
           "needs_milestone": {
             "type": "boolean",
             "title": "Needs Milestone"
+          },
+          "needs_profile_item": {
+            "type": "boolean",
+            "title": "Needs Profile Item"
           },
           "prompt": {
             "anyOf": [
@@ -14686,6 +14692,7 @@
           "label",
           "needs_job",
           "needs_milestone",
+          "needs_profile_item",
           "prompt",
           "background",
           "agent",
@@ -15364,7 +15371,9 @@
               "research-company",
               "handle-requests",
               "review-search",
-              "expand"
+              "expand",
+              "improve-profile-item",
+              "propose-stories"
             ],
             "title": "Action"
           },
@@ -15512,7 +15521,9 @@
               "research-company",
               "handle-requests",
               "review-search",
-              "expand"
+              "expand",
+              "improve-profile-item",
+              "propose-stories"
             ],
             "title": "Action"
           },
@@ -18985,7 +18996,9 @@
               "research-company",
               "handle-requests",
               "review-search",
-              "expand"
+              "expand",
+              "improve-profile-item",
+              "propose-stories"
             ],
             "title": "Action"
           },
@@ -21329,7 +21342,9 @@
               "research-company",
               "handle-requests",
               "review-search",
-              "expand"
+              "expand",
+              "improve-profile-item",
+              "propose-stories"
             ],
             "title": "Action"
           },
@@ -21392,6 +21407,18 @@
               }
             ],
             "title": "Preset"
+          },
+          "profile_item": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 130
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Item"
           }
         },
         "additionalProperties": false,
@@ -23889,7 +23916,9 @@
                 "research-company",
                 "handle-requests",
                 "review-search",
-                "expand"
+                "expand",
+                "improve-profile-item",
+                "propose-stories"
               ]
             },
             "type": "object",
@@ -25792,7 +25821,9 @@
               "research-company",
               "handle-requests",
               "review-search",
-              "expand"
+              "expand",
+              "improve-profile-item",
+              "propose-stories"
             ],
             "title": "Action"
           },
@@ -28007,7 +28038,9 @@
                 "research-company",
                 "handle-requests",
                 "review-search",
-                "expand"
+                "expand",
+                "improve-profile-item",
+                "propose-stories"
               ]
             },
             "type": "object",
@@ -28062,7 +28095,9 @@
                 "research-company",
                 "handle-requests",
                 "review-search",
-                "expand"
+                "expand",
+                "improve-profile-item",
+                "propose-stories"
               ]
             },
             "type": "object",
@@ -28125,7 +28160,9 @@
                 "research-company",
                 "handle-requests",
                 "review-search",
-                "expand"
+                "expand",
+                "improve-profile-item",
+                "propose-stories"
               ]
             },
             "type": "array",

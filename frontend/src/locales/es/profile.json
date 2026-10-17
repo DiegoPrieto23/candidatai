@@ -33,7 +33,7 @@
   "files_one": "{{count}} fichero",
   "files_other": "{{count}} ficheros",
   "context": "Contexto",
-  "contextIntro": "Orienta a tu agente: el tono de tus CVs y cartas, los riesgos de una oferta y la preparación de entrevistas. <strong>Nunca respalda un hecho</strong>: lo que diga un CV o una carta tiene que estar en tu perfil. Edítalos con tu editor o pide a tu agente <code>update-profile</code>.",
+  "contextIntro": "Orienta a tu agente: el tono de tus CVs y cartas, los riesgos de una oferta y la preparación de entrevistas. <strong>Nunca respalda un hecho</strong>: lo que diga un CV o una carta tiene que estar en tu perfil. Edítalos arriba, en tu editor o con tu agente (<code>update-profile</code>).",
   "openContext": "Abrir la carpeta del contexto",
   "documents": "Documentos",
   "documentsIntro": "Tus documentos fuente. <code>update-profile</code> puede leerlos para crear o ampliar tu perfil, siempre preguntándote antes de escribir.",
@@ -41,5 +41,5 @@
   "expand": "Ampliar perfil desde mis enlaces",
   "expandHint": "Tu agente lee tus enlaces públicos (GitHub, portfolio, Kaggle, Scholar) y te propone proyectos, skills, logros y certificaciones, cada uno con su fuente. Solo escribe en tu perfil lo que aceptes. Mejor justo después de crearlo.",
   "title": "Mi perfil",
-  "intro": "Tu perfil (<code>data/profile.yaml</code>) es lo único que puede afirmar un CV, una carta o una respuesta. Aquí tienes lo que lo acompaña."
+  "intro": "Tu perfil (<code>data/profile.yaml</code>) es lo único que puede afirmar un CV, una carta o una respuesta. Rellénalo aquí por bloques: cada uno se guarda solo, conserva el formato de tu fichero y se puede deshacer. Si prefieres, sigue valiendo editar el YAML o pedírselo a tu agente."
 }

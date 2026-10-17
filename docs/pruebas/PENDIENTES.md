@@ -6,7 +6,7 @@ cada fase y lo quita cuando el usuario confirma que está hecho.
 
 Marca `[x]` lo que hagas y, si algo falla, apúntalo debajo de la línea con `→`.
 
-Última actualización: 2026-10-17 (fase 25.6).
+Última actualización: 2026-10-17 (fase 25.7).
 
 ## 1. Poner la app al día (antes de probar nada)
 
@@ -142,13 +142,15 @@ funcionando. Los roles son `writer`, `verifier`, `classifier`, `reviewer` y `ext
       Después, pásame `evals/compat/REPORT.md` para completar `AGENTS_COMPAT.md`, el README y la
       ADR-037.
 
-### «Mi perfil» editable, parte de backend (fase 25.7a)
+### «Mi perfil» editable (fase 25.7)
 
 - [ ] `uv run --directory backend cai db upgrade` (migración **0024**, `profile_edits`) o arranca
-      `cai start`. Sin ella, «Usar por defecto» en Plantillas falla al guardar.
-- [ ] En Plantillas, «Usar por defecto» con otra plantilla: tu `data/profile.yaml` conserva sus
-      comentarios y aparece una copia en `data/profile-history/`.
-- La página editable llega con la 25.7b; su prueba manual, también.
+      `cai start`. Sin ella, guardar desde «Mi perfil» o «Usar por defecto» en Plantillas falla.
+- [ ] La prueba manual sobre la demo: `fase-25.7-prueba-manual.txt` (empresa con dos logros e
+      historia STAR desde la UI, CV y carta que los usan, muestra de estilo que da el tono sin
+      colar hechos, deshacer y conflicto).
+- [ ] Con tu perfil real: abre «Mi perfil», guarda un bloque sin cambiar nada importante y mira con
+      `git diff --no-index` (o tu editor) que `data/profile.yaml` conserva tus comentarios.
 
 ### CHANGELOG y tu búsqueda en números (fase 25.6)
 

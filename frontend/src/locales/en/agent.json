@@ -19,7 +19,9 @@
     "handle-requests": "Handle requests",
     "offer-questions": "Questions before accepting",
     "expand": "Expand profile from my links",
-    "prepare-negotiation": "Prepare negotiation"
+    "prepare-negotiation": "Prepare negotiation",
+    "improve-profile-item": "Improve with my agent",
+    "propose-stories": "Propose stories from my experience"
   },
   "status": {
     "queued": "Queued",

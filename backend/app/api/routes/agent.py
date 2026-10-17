@@ -41,6 +41,7 @@ class Action(BaseModel):
     label: str
     needs_job: bool
     needs_milestone: bool  # acción de un hito de entrevista (`milestone_id`)
+    needs_profile_item: bool  # fase 25.7b: de un logro o una historia (`profile_item`)
     prompt: str | None  # la orden (sin oferta); con oferta, la da `launch` o se compone en la UI
     background: bool  # admite «En segundo plano» (fase 19)
     # Fase 24.4: con qué agente iría y por qué; los demás agentes, para elegir solo esta vez; y en
@@ -69,6 +70,8 @@ class LaunchBody(RequestBody):
     agent: str | None = Field(default=None, max_length=32)
     model: str | None = Field(default=None, max_length=100)
     preset: str | None = Field(default=None, max_length=40)
+    # Fase 25.7b: «Mejorar con mi agente» en un logro (`exp-acme/a2`) o una historia (`st-x`).
+    profile_item: str | None = Field(default=None, max_length=130)
 
 
 def _background(res: Resolution, other: Resolution | None) -> agent_launch.BackgroundInfo:
@@ -107,7 +110,10 @@ def get_agent_launcher(session: SessionDep) -> AgentStatus:
                 label=spec.label,
                 needs_job=spec.needs_job,
                 needs_milestone=spec.milestone is not None,
-                prompt=None if spec.needs_job else agent_launch.prompt_for(action_id),
+                needs_profile_item=spec.profile_item,
+                prompt=None
+                if spec.needs_job or spec.profile_item
+                else agent_launch.prompt_for(action_id),
                 background=bool(spec.background),
                 agent=res,
                 alternatives=[
@@ -264,6 +270,7 @@ def launch_agent(session: SessionDep, body: LaunchBody) -> agent_launch.LaunchRe
             agent=body.agent,
             model=body.model,
             preset=body.preset,
+            profile_item=body.profile_item,
         )
     except LaunchError as exc:
         _raise(exc)

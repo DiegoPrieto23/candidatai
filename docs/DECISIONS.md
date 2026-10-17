@@ -1047,6 +1047,10 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
     `dry_run` devuelve el diff sin escribir, para enseñarlo antes de cambiar filtros o skills.
   - **Auditoría** en una tabla propia, `profile_edits` (qué, cuándo y los hashes, sin el texto),
     porque `events` exige una oferta.
+  - **La página** (25.7b): pestañas que no se desmontan (no se pierde lo que no has guardado),
+    un borrador por bloque que se pone al día si otro bloque guarda, aviso de cambios sin guardar
+    al cerrar la pestaña o seguir un enlace, el diff antes de guardar lo que busca y las skills, y
+    una vista previa propia del Markdown, sin dependencias ni HTML.
   - **Contexto en la UI:** `PUT /context/{section}` con la misma concurrencia, el límite de 20 KB
     antes de escribir (`too_large`) y el fichero tal cual, comentarios-guía incluidos (la UI los
     enseña; el servidor no los quita). Si no existía, se parte de la plantilla de `cai context
@@ -1057,9 +1061,11 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
     inyección y llegan al agente en `get_context.style_samples`, envueltas en
     `<untrusted_style_sample>` y recortadas a 20 KB entre todas.
   - **Botones del agente** («Mejorar con mi agente», «Proponer historias»): `update-profile` con
-    dos modos nuevos, solo en terminal porque pregunta. Matiza la ADR-024: la orden llevará el id
-    del elemento del perfil (texto, validado contra el perfil vigente), lo que se cierra en la
-    fase 25.7b junto con la UI.
+    dos modos nuevos, solo en terminal porque pregunta (acciones `improve-profile-item` y
+    `propose-stories`). Matiza la ADR-024: la orden de «Mejorar» lleva el id del elemento del
+    perfil, que es texto, pero solo con el formato de un id (`exp-x/a1`, `st-x`) y solo si es un
+    logro o una historia del perfil vigente. Como la cola de encargos y el segundo plano no guardan
+    ese id, «Mejorar» no se puede dejar para la próxima sesión ni lanzar sin ventana.
 - **Consecuencias:** el perfil se puede rellenar entero sin YAML ni terminal, y el agente sigue
   sin poder escribirlo sin preguntar. Un guardado conserva los comentarios del fichero, pero
   reordenar una lista mueve sus elementos sin los comentarios que tuvieran pegados. Se pierde la

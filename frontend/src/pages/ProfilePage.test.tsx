@@ -39,9 +39,12 @@ function contextStatus(changes: Partial<ContextStatus> = {}): ContextStatus {
   }
 }
 
+/** Sin `data/profile.yaml`: la página enseña cómo crearlo y el estado del contexto (fase 13). */
+const NO_PROFILE = { exists: false, file_hash: null, profile: null, issues: [], profile_version_id: null, undo_available: 0 }
+
 describe('Mi perfil', () => {
   it('enseña el estado de cada fichero de contexto y las carpetas de documentos', async () => {
-    mockApi({ 'GET /status': status(), 'GET /context': contextStatus() })
+    mockApi({ 'GET /status': status(), 'GET /context': contextStatus(), 'GET /profile/editable': NO_PROFILE })
     renderApp('/perfil')
     const contexto = await screen.findByRole('region', { name: 'Contexto' })
     const items = within(contexto).getAllByRole('listitem')
@@ -66,6 +69,7 @@ describe('Mi perfil', () => {
     const calls = mockApi({
       'GET /status': status(),
       'GET /context': contextStatus(),
+      'GET /profile/editable': NO_PROFILE,
       'POST /folders/open': { status: 200, body: { path: 'C:/cai/data/contexto', opened: true } },
     })
     renderApp('/perfil')
@@ -79,6 +83,7 @@ describe('Mi perfil', () => {
     mockApi({
       'GET /status': status(),
       'GET /context': contextStatus(),
+      'GET /profile/editable': NO_PROFILE,
       'POST /folders/open': { status: 200, body: { path: 'C:/cai/data/documentos', opened: false } },
     })
     renderApp('/perfil')
@@ -111,6 +116,7 @@ describe('Mi perfil', () => {
     const calls = mockApi({
       'GET /status': status(),
       'GET /context': contextStatus(),
+      'GET /profile/editable': NO_PROFILE,
       'GET /agent': launcher(claude),
       'POST /agent/launch': { ok: true, agent: 'claude', prompt: 'Usa el skill expand…', message: 'ok' },
     })
@@ -126,6 +132,7 @@ describe('Mi perfil', () => {
     mockApi({
       'GET /status': status(),
       'GET /context': contextStatus(),
+      'GET /profile/editable': NO_PROFILE,
       'GET /agent': launcher({ ...claude, agent: 'codex', display_name: 'Codex', blocked: noWeb, blocked_code: 'capability' }),
     })
     renderApp('/perfil')
@@ -138,7 +145,7 @@ describe('Mi perfil', () => {
   })
 
   it('está en el menú', async () => {
-    mockApi({ 'GET /status': status(), 'GET /context': contextStatus() })
+    mockApi({ 'GET /status': status(), 'GET /context': contextStatus(), 'GET /profile/editable': NO_PROFILE })
     renderApp('/')
     expect(await screen.findByRole('link', { name: 'Mi perfil' })).toHaveAttribute('href', '/perfil')
   })
