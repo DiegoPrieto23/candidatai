@@ -27,6 +27,16 @@ dedicated agent interface: MCP tools plus an equivalent `cai … --json` CLI. Th
 state, the rules and the checks, so the agent can't invent your experience or send anything on its
 own.
 
+<!--
+  Your search in numbers (phase 25.6). `cai stats story` or the "Your search in numbers" card in
+  the Funnel gives you this line with your real figures: aggregated counts only, no companies.
+  To publish it, paste it below, write what worked in one line and remove this comment.
+
+> **My search with CandidatAI** (D Mon YYYY → D Mon YYYY, N weeks): N postings evaluated,
+> N approved, N applications, N replies, N interviews, N offers.
+> What worked: …
+-->
+
 <p align="center">
   <img src="docs/img/en/triage.gif" alt="Triage with the keyboard: J/K to move, A to approve" width="88%">
   <br><sub>Triage with the keyboard. Everything you see is the <b>demo</b>: a fictional candidate, companies and jobs.</sub>
@@ -95,7 +105,7 @@ checks and automates. A typical day:
 | 🎯 **Triage with an explained score** | Hard filters (level, years, remote mode, location, languages) and a 0-100 score from skill coverage, preferences and optional local semantic similarity. Your agent adds a reasoned verdict. "Is the score right?" compares it with real outcomes |
 | 📄 **Tailored CV and cover letter** | The agent writes the content citing **evidence from your profile for every line**; the code validates it, renders it (Word or HTML → PDF) with your template, photo and colour, and a separate role verifies it. **Import your own CV design** (Word, PDF, image, Canva) as a template |
 | 📝 **Assisted applications** | Fills Greenhouse, Lever, Ashby or generic forms, stops at captchas or logins, and **only submits after you confirm** by typing the company name |
-| 📊 **Tracking and analytics** | A kanban that only moves through recorded events, milestones with `.ics` calendar, follow-up reminders, email replies classified into proposals you accept, and a funnel by source, role, week, template, cover letter and referral |
+| 📊 **Tracking and analytics** | A kanban that only moves through recorded events, milestones with `.ics` calendar, follow-up reminders, email replies classified into proposals you accept, and a funnel by source, role, week, template, cover letter and referral, plus your whole search in numbers to share (`cai stats story`) |
 | 🎤 **Interviews and offers** | A day-by-day prep plan, mock interviews with feedback, debriefs that grow your STAR story bank, company research with sources, and a comparison of received offers against your minimum **without the agent ever seeing your minimum** |
 | 🤝 **Network and messages** | Your LinkedIn connections (CSV export) matched to your jobs ("you know 2 people here"), LinkedIn messages (≤ 300 characters) and application emails as drafts you send yourself |
 | 🧭 **Search strategy** | Aggregated skill gaps with a training plan, adjacent job titles to widen the search, a weekly retrospective and a review of your LinkedIn profile |
@@ -362,6 +372,7 @@ stateDiagram-v2
 | Set up job sources and email alerts | [`docs/FUENTES_OFERTAS.md`](docs/FUENTES_OFERTAS.md), [`docs/CONFIGURAR_CORREO.md`](docs/CONFIGURAR_CORREO.md) |
 | Work with CV templates | [`docs/CV_TEMPLATES.md`](docs/CV_TEMPLATES.md) |
 | Connect another agent | [`docs/AGENTS_COMPAT.md`](docs/AGENTS_COMPAT.md), [`docs/AGENT_INTERFACE.md`](docs/AGENT_INTERFACE.md) |
+| See what changed in each version | [`CHANGELOG.md`](CHANGELOG.md) |
 | Contribute | [`CONTRIBUTING.md`](CONTRIBUTING.md) |
 
 All documents, grouped: [`docs/README.md`](docs/README.md). Technical docs are in Spanish.

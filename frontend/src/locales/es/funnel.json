@@ -213,5 +213,19 @@
     "perApplied": "Por candidatura enviada",
     "perInterview": "Por entrevista",
     "tokens": "{{tokens}} tokens"
+  },
+  "story": {
+    "title": "Tu búsqueda en números",
+    "hint": "Desde la primera oferta, sea cual sea el periodo de arriba. Solo cifras: ni empresas, ni puestos, ni importes.",
+    "note": "Para contar en tu README o donde quieras si funciona. La app no lo publica nunca: lo copias tú, si quieres. También con <code>cai stats story</code>.",
+    "period": "Del {{start}} al {{end}}",
+    "evaluated": "Evaluadas",
+    "applied": "Candidaturas",
+    "replied": "Con respuesta",
+    "interviews": "Entrevistas",
+    "offers": "Ofertas recibidas",
+    "copyEs": "Copiar en español",
+    "copyEn": "Copiar en inglés",
+    "lineLabel": "Línea para el README"
   }
 }

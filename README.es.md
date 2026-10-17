@@ -27,6 +27,16 @@ través de una interfaz para agentes: herramientas MCP y una CLI `cai … --json
 guarda el estado, las reglas y las comprobaciones, así que el agente no puede inventarse tu
 experiencia ni enviar nada por su cuenta.
 
+<!--
+  Tu búsqueda en números (fase 25.6). `cai stats story` o la tarjeta «Tu búsqueda en números» del
+  Embudo te dan esta línea con tus cifras reales: solo recuentos agregados, sin empresas.
+  Para publicarla, pégala aquí abajo, cuenta en una línea qué funcionó y quita este comentario.
+
+> **Mi búsqueda con CandidatAI** (D mmm AAAA → D mmm AAAA, N semanas): N ofertas evaluadas,
+> N aprobadas, N candidaturas, N respuestas, N entrevistas y N ofertas.
+> Lo que funcionó: …
+-->
+
 <p align="center">
   <img src="docs/img/es/triage.gif" alt="Triaje con el teclado: J/K para moverse, A para aprobar" width="88%">
   <br><sub>Triaje con el teclado. Todo lo que se ve es la <b>demo</b>: una candidata, empresas y ofertas inventadas.</sub>
@@ -92,7 +102,7 @@ comprueba y automatiza. Un día normal:
 | 🎯 **Triaje con score explicado** | Filtros duros (nivel, años, modalidad, zona, idiomas) y un score 0-100 por cobertura de skills, preferencias y similitud semántica local opcional. Tu agente añade una valoración razonada. «¿Acierta el score?» lo compara con los resultados reales |
 | 📄 **CV y carta a medida** | El agente redacta el contenido citando **la evidencia de tu perfil de cada línea**; el código lo valida, lo renderiza (Word o HTML → PDF) con tu plantilla, foto y color, y otro rol lo verifica. **Importa tu propio diseño de CV** (Word, PDF, imagen, Canva) como plantilla |
 | 📝 **Candidatura asistida** | Rellena formularios de Greenhouse, Lever, Ashby o genéricos, se para ante captchas o logins y **solo envía tras tu confirmación**, escribiendo el nombre de la empresa |
-| 📊 **Seguimiento y analítica** | Kanban que solo se mueve con eventos, hitos con calendario `.ics`, avisos de seguimiento, correos de las empresas convertidos en propuestas que aceptas, y embudo por fuente, puesto, semana, plantilla, carta y referencia |
+| 📊 **Seguimiento y analítica** | Kanban que solo se mueve con eventos, hitos con calendario `.ics`, avisos de seguimiento, correos de las empresas convertidos en propuestas que aceptas, y embudo por fuente, puesto, semana, plantilla, carta y referencia, más tu búsqueda entera en números para contarla (`cai stats story`) |
 | 🎤 **Entrevistas y ofertas** | Plan de preparación por días, simulacros con feedback, repasos que alimentan tu banco de historias STAR, dosier de empresa con fuentes y comparación de ofertas recibidas con tu mínimo **sin que el agente lo vea nunca** |
 | 🤝 **Red y mensajes** | Tus contactos de LinkedIn (exportación CSV) cruzados con tus ofertas («conoces a 2 personas aquí»), mensajes de LinkedIn (≤ 300 caracteres) y correos de candidatura como borradores que envías tú |
 | 🧭 **Estrategia de búsqueda** | Huecos de skills agregados con plan de formación, títulos cercanos para ampliar la búsqueda, retrospectiva semanal y revisión de tu perfil de LinkedIn |
@@ -359,6 +369,7 @@ stateDiagram-v2
 | Configurar las fuentes y las alertas por correo | [`docs/FUENTES_OFERTAS.md`](docs/FUENTES_OFERTAS.md), [`docs/CONFIGURAR_CORREO.md`](docs/CONFIGURAR_CORREO.md) |
 | Trabajar con plantillas de CV | [`docs/CV_TEMPLATES.md`](docs/CV_TEMPLATES.md) |
 | Conectar otro agente | [`docs/AGENTS_COMPAT.md`](docs/AGENTS_COMPAT.md), [`docs/AGENT_INTERFACE.md`](docs/AGENT_INTERFACE.md) |
+| Ver qué cambia en cada versión | [`CHANGELOG.md`](CHANGELOG.md) |
 | Contribuir | [`CONTRIBUTING.md`](CONTRIBUTING.md) |
 
 Todos los documentos, agrupados: [`docs/README.md`](docs/README.md).

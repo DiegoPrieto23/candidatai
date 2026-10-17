@@ -15,8 +15,9 @@ import {
   YAxis,
 } from 'recharts'
 import type { Calibration, CalibrationGroup, FunnelStats, Schemas } from '@/api/client'
-import { useCalibration, useFunnelStats } from '@/api/queries'
+import { useCalibration, useFunnelStats, useSearchStory } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
+import { CopyButton } from '@/components/CopyButton'
 import { EmptyState, ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -536,6 +537,8 @@ function Dashboard({ stats, since }: { stats: FunnelStats; since: string | null 
       <CalibrationPanel since={since} />
 
       <ReasonsPanel stats={stats} />
+
+      <StoryPanel />
     </div>
   )
 }
@@ -713,6 +716,61 @@ function CalibrationPanel({ since }: { since: string | null }) {
           </Tabs>
         </>
       )}
+    </Panel>
+  )
+}
+
+// --- Tu búsqueda en números (fase 25.6) -------------------------------------------------------
+
+const storyDay = (iso: string) =>
+  dateFormatter({ day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${iso}T00:00:00Z`))
+
+/** Toda la búsqueda, sin periodo, en números agregados y con la línea para el README en los dos idiomas. */
+function StoryPanel() {
+  const { t, i18n: { language } } = useTranslation('funnel', { keyPrefix: 'story' })
+  const story = useSearchStory()
+  const data = story.data
+  if (story.isPending) return <Skeleton className="h-40 rounded-xl" />
+  if (story.isError) return <ErrorState error={story.error} onRetry={() => story.refetch()} />
+  if (!data || data.found === 0) return null
+  const line = language.startsWith('en') ? data.markdown.en : data.markdown.es
+  const counts = [
+    ['evaluated', data.evaluated],
+    ['applied', data.applied],
+    ['replied', data.replied],
+    ['interviews', data.interviews],
+    ['offers', data.offers],
+  ] as const
+  return (
+    <Panel
+      title={t('title')}
+      hint={
+        data.started_on && data.last_activity_on
+          ? `${t('period', { start: storyDay(data.started_on), end: storyDay(data.last_activity_on) })}. ${t('hint')}`
+          : t('hint')
+      }
+    >
+      <dl className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+        {counts.map(([key, value]) => (
+          <div key={key} className="rounded-lg border px-3 py-2.5">
+            <dt className="text-xs text-muted-foreground">{t(key)}</dt>
+            <dd className="tabular mt-0.5 text-xl font-semibold tracking-tight">{intFmt.format(value)}</dd>
+          </div>
+        ))}
+      </dl>
+      <p className="mt-4 text-xs text-muted-foreground">{t('lineLabel')}</p>
+      <pre className="mt-1 overflow-x-auto whitespace-pre-wrap rounded-lg border bg-muted/40 p-3 font-mono text-xs leading-relaxed">
+        {line}
+      </pre>
+      <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm text-muted-foreground">
+          <Trans t={t} i18nKey="note" components={{ code: <code className="text-xs" /> }} />
+        </p>
+        <div className="flex shrink-0 flex-wrap gap-2">
+          <CopyButton text={data.markdown.es} label={t('copyEs')} />
+          <CopyButton text={data.markdown.en} label={t('copyEn')} />
+        </div>
+      </div>
     </Panel>
   )
 }

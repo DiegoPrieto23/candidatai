@@ -6136,6 +6136,108 @@
         }
       }
     },
+    "/stats/story": {
+      "get": {
+        "tags": [
+          "stats"
+        ],
+        "summary": "Get Search Story",
+        "description": "Toda la búsqueda en números agregados, con una línea para pegar en el README (fase 25.6).",
+        "operationId": "get_search_story",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchStory"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/jobs/{job_id}/package": {
       "get": {
         "tags": [
@@ -25100,6 +25202,156 @@
           "needs_user_input"
         ],
         "title": "ScreeningAnswer"
+      },
+      "SearchStory": {
+        "properties": {
+          "started_on": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started On"
+          },
+          "first_applied_on": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Applied On"
+          },
+          "last_activity_on": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Activity On"
+          },
+          "weeks": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weeks"
+          },
+          "found": {
+            "type": "integer",
+            "title": "Found"
+          },
+          "evaluated": {
+            "type": "integer",
+            "title": "Evaluated"
+          },
+          "approved": {
+            "type": "integer",
+            "title": "Approved"
+          },
+          "applied": {
+            "type": "integer",
+            "title": "Applied"
+          },
+          "replied": {
+            "type": "integer",
+            "title": "Replied"
+          },
+          "interviews": {
+            "type": "integer",
+            "title": "Interviews"
+          },
+          "offers": {
+            "type": "integer",
+            "title": "Offers"
+          },
+          "accepted": {
+            "type": "integer",
+            "title": "Accepted"
+          },
+          "reply_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reply Rate"
+          },
+          "interview_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interview Rate"
+          },
+          "median_days_to_reply": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Median Days To Reply"
+          },
+          "markdown": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "propertyNames": {
+              "enum": [
+                "es",
+                "en"
+              ]
+            },
+            "type": "object",
+            "title": "Markdown"
+          }
+        },
+        "type": "object",
+        "required": [
+          "started_on",
+          "first_applied_on",
+          "last_activity_on",
+          "weeks",
+          "found",
+          "evaluated",
+          "approved",
+          "applied",
+          "replied",
+          "interviews",
+          "offers",
+          "accepted",
+          "reply_rate",
+          "interview_rate",
+          "median_days_to_reply",
+          "markdown"
+        ],
+        "title": "SearchStory",
+        "description": "Toda la búsqueda en números agregados, para contarla (p. ej. en el README).\n\nSolo recuentos y fechas: ni empresas, ni puestos, ni fuentes, ni importes. Es lo que el usuario\npuede publicar si quiere; la app no lo publica nunca."
       },
       "SemanticResult": {
         "properties": {

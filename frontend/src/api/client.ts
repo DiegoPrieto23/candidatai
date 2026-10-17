@@ -60,6 +60,7 @@ export type FollowupList = Schemas['FollowupList']
 export type FunnelStats = Schemas['FunnelStats']
 export type Calibration = Schemas['Calibration']
 export type CalibrationGroup = Schemas['CalibrationGroup']
+export type SearchStory = Schemas['SearchStory']
 export type ApplicationChannel = NonNullable<Schemas['AddUserEventBody']['channel']>
 export type AssistedApplication = Schemas['AssistedApplication']
 export type AttemptView = Schemas['AttemptView']

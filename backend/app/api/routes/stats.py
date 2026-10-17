@@ -1,4 +1,5 @@
-"""Analítica de la búsqueda (fase 10.2) y calibración del score (fase 20)."""
+"""Analítica de la búsqueda (fase 10.2), calibración del score (fase 20) y la historia con números
+(fase 25.6)."""
 
 from datetime import date
 from typing import Annotated
@@ -28,3 +29,9 @@ def get_calibration(
     por tramo de score, veredicto, fuente, portal, plantilla, carta, referencia y días hasta el
     envío. Orientativa."""
     return analytics.get_calibration(session, since, min_cases)
+
+
+@router.get("/stats/story", operation_id="get_search_story")
+def get_search_story(session: SessionDep) -> analytics.SearchStory:
+    """Toda la búsqueda en números agregados, con una línea para pegar en el README (fase 25.6)."""
+    return analytics.get_search_story(session)

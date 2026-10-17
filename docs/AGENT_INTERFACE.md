@@ -392,6 +392,29 @@ Es **orientativa**: dos grupos con intervalos solapados no son distintos y uno c
 permite conclusiones. Solo lectura. El skill `review-search` la usa para proponer cambios;
 **nunca** cambia pesos ni filtros (`evals/matching/README.md` §Calibración).
 
+### La historia con números (fase 25.6, solo CLI y API)
+
+`cai stats story [--json]` (y `GET /stats/story`, que usa la tarjeta «Tu búsqueda en números» del
+Embudo) cuenta **toda** la búsqueda, desde la primera oferta y sin periodo, en números agregados:
+
+```jsonc
+{
+  "started_on": "2026-08-13",       // día (Europe/Madrid) de la primera oferta vista
+  "first_applied_on": "2026-08-20",
+  "last_activity_on": "2026-10-05", // día del último evento
+  "weeks": 8,
+  "found": 65, "evaluated": 62,     // evaluadas: con extracción, pasaran o no los filtros duros
+  "approved": 32, "applied": 21, "replied": 14, "interviews": 6, "offers": 1, "accepted": 0,
+  "reply_rate": 0.6667, "interview_rate": 0.2857, "median_days_to_reply": 4.0,
+  "markdown": {"es": "**Mi búsqueda con CandidatAI** (13 ago 2026 → 5 oct 2026, 8 semanas): …",
+               "en": "**My search with CandidatAI** (13 Aug 2026 → 5 Oct 2026, 8 weeks): …"}
+}
+```
+
+Los pasos son los del embudo (acumulados, sin duplicadas). **Solo cifras y fechas**: ni empresas,
+ni puestos, ni fuentes, ni importes (un test lo comprueba con la demo). Es para que el usuario lo
+pegue en su README si quiere; la app no lo publica. Sin herramienta MCP: el agente no lo necesita.
+
 ### Ofertas recibidas (fase 21)
 
 `get_received_offer(job_id)` da al agente las condiciones de la oferta que anotó el usuario en la

@@ -260,10 +260,19 @@ def test_release_workflow_builds_the_ui_and_publishes_the_zip() -> None:
     )
     # PyYAML lee la clave `on` como el booleano True.
     trigger = workflow.get("on", workflow.get(True))
-    assert trigger == {"push": {"tags": ["v*"]}}
-    steps = " ".join(str(step.get("run", "")) for step in workflow["jobs"]["release"]["steps"])
+    assert trigger["push"] == {"tags": ["v*"]}
+    # Fase 25.6: el disparo manual solo prueba las notas; publicar, solo con la etiqueta.
+    assert set(trigger) == {"push", "workflow_dispatch"}
+    assert workflow["permissions"] == {"contents": "read"}
+    notes = " ".join(str(step.get("run", "")) for step in workflow["jobs"]["notes"]["steps"])
+    assert "scripts/release_notes.py" in notes and "gh release" not in notes
+    release = workflow["jobs"]["release"]
+    assert release["needs"] == "notes" and release["if"] == "github.event_name == 'push'"
+    assert release["permissions"] == {"contents": "write"}
+    steps = " ".join(str(step.get("run", "")) for step in release["steps"])
     assert "pnpm build" in steps and "git archive" in steps
     assert "frontend/dist" in steps and "gh release create" in steps
+    assert "--notes-file release-notes.md" in steps and "--generate-notes" not in steps
     # El zip lleva lo que el instalador espera.
     installer = (REPO_ROOT / "install.ps1").read_text(encoding="utf-8-sig")
     assert "releases/latest/download/candidatai.zip" in installer

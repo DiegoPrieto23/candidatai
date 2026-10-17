@@ -40,6 +40,26 @@ Larger changes follow the phase method in
 [`docs/DESARROLLO_POR_FASES.md`](docs/DESARROLLO_POR_FASES.md): a written brief, a plan, a branch,
 tests and a review.
 
+## Changelog, versions and releases
+
+- **Every change a user would notice** goes under `## [Sin publicar]` in
+  [`CHANGELOG.md`](CHANGELOG.md), in the group that fits (`Añadido`, `Cambiado`, `Obsoleto`,
+  `Eliminado`, `Corregido`, `Seguridad`), written for the person using the app, not as a commit
+  message. Its format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and a test checks
+  its structure.
+- **Versions** follow [semantic versioning](https://semver.org/). While it is `0.x`, a new minor
+  (`0.2.0`) brings new features and may change behaviour; a patch (`0.2.1`) only fixes things.
+- **Publishing a release** (maintainer only), from an up-to-date `main`:
+  1. Rename `## [Sin publicar]` to `## [X.Y.Z] - YYYY-MM-DD`, add a new empty `## [Sin publicar]`
+     above it and update the links at the end of the file.
+  2. Set the same version in `backend/pyproject.toml` (a test checks they match).
+  3. Check the notes: `python scripts/release_notes.py vX.Y.Z`.
+  4. Commit, then `git tag vX.Y.Z && git push origin vX.Y.Z`. The `Release` workflow publishes
+     `candidatai.zip` with that section of the changelog as its notes, and fails if it is missing.
+  To try the notes without publishing, run the `Release` workflow by hand ("Run workflow") on the
+  branch you want with a version: it uses that branch's changelog (the tag only picks the section
+  and doesn't need to exist) and only writes the notes to the run summary.
+
 ---
 
 ## Contribuir
@@ -84,3 +104,24 @@ Salen de [`AGENTS.md`](AGENTS.md) y se comprueban en la revisión:
 Los cambios grandes siguen el método por fases de
 [`docs/DESARROLLO_POR_FASES.md`](docs/DESARROLLO_POR_FASES.md): encargo escrito, plan, rama, tests
 y revisión.
+
+## Changelog, versiones y releases
+
+- **Todo cambio que note quien usa la app** va en `## [Sin publicar]` de
+  [`CHANGELOG.md`](CHANGELOG.md), en el grupo que toque (`Añadido`, `Cambiado`, `Obsoleto`,
+  `Eliminado`, `Corregido`, `Seguridad`), escrito para quien la usa y no como un mensaje de commit.
+  Sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y un test comprueba su
+  estructura.
+- **Las versiones** siguen el [versionado semántico](https://semver.org/lang/es/). Mientras sea
+  `0.x`, una versión menor nueva (`0.2.0`) trae funciones y puede cambiar comportamientos; un parche
+  (`0.2.1`) solo corrige.
+- **Publicar una release** (solo quien mantiene el proyecto), desde `main` al día:
+  1. Cambia `## [Sin publicar]` por `## [X.Y.Z] - AAAA-MM-DD`, añade encima un `## [Sin publicar]`
+     vacío y actualiza los enlaces del final del fichero.
+  2. Pon la misma versión en `backend/pyproject.toml` (un test comprueba que coinciden).
+  3. Revisa las notas: `python scripts/release_notes.py vX.Y.Z`.
+  4. Haz el commit y luego `git tag vX.Y.Z && git push origin vX.Y.Z`. El workflow `Release`
+     publica `candidatai.zip` con esa sección del changelog como notas, y falla si no existe.
+  Para probar las notas sin publicar nada, lanza a mano el workflow `Release` («Run workflow») en
+  la rama que quieras con una versión: usa el changelog de esa rama (la etiqueta solo elige la
+  sección y no hace falta que exista) y solo escribe las notas en el resumen de la ejecución.

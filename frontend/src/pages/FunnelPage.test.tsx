@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { beforeAll, describe, expect, it } from 'vitest'
+import { beforeAll, describe, expect, it, vi } from 'vitest'
 import type { Calibration, CalibrationGroup, FunnelStats } from '@/api/client'
 import { mockApi, renderApp, status } from '@/test/utils'
 
@@ -159,6 +159,39 @@ describe('Embudo', () => {
     expect(within(greenhouse).getAllByRole('cell').at(-1)).toHaveTextContent(/0[.,]5000 USD/)  // 1,5 / 3 enviadas
     const alerts = within(sources).getByRole('row', { name: /Alertas/ })
     expect(within(alerts).getAllByRole('cell').at(-1)).toHaveTextContent('—')
+  })
+
+  it('cuenta toda la búsqueda en números y copia la línea del README (fase 25.6)', async () => {
+    const story = {
+      started_on: '2026-08-13',
+      first_applied_on: '2026-08-20',
+      last_activity_on: '2026-10-05',
+      weeks: 8,
+      found: 65,
+      evaluated: 62,
+      approved: 32,
+      applied: 21,
+      replied: 14,
+      interviews: 6,
+      offers: 1,
+      accepted: 0,
+      reply_rate: 0.6667,
+      interview_rate: 0.2857,
+      median_days_to_reply: 4,
+      markdown: { es: '**Mi búsqueda con CandidatAI**: 62 ofertas evaluadas.', en: '**My search with CandidatAI**: 62 postings evaluated.' },
+    }
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
+    mockApi({ 'GET /status': status(), 'GET /stats/funnel': stats(), 'GET /stats/story': story })
+    renderApp('/embudo')
+
+    const panel = await screen.findByRole('region', { name: 'Tu búsqueda en números' })
+    expect(within(panel).getByText('Evaluadas').nextSibling).toHaveTextContent('62')
+    expect(within(panel).getByText('Ofertas recibidas').nextSibling).toHaveTextContent('1')
+    expect(within(panel).getByText(/^Del 13 ago 2026 al 5 oct 2026/)).toBeInTheDocument()
+    expect(within(panel).getByText(story.markdown.es)).toBeInTheDocument()
+    await userEvent.click(within(panel).getByRole('button', { name: 'Copiar en inglés' }))
+    expect(writeText).toHaveBeenCalledWith(story.markdown.en)
   })
 
   it('pide el periodo elegido con `since`', async () => {

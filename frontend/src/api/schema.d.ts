@@ -1025,6 +1025,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/stats/story": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Search Story
+         * @description Toda la búsqueda en números agregados, con una línea para pegar en el README (fase 25.6).
+         */
+        get: operations["get_search_story"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/jobs/{job_id}/package": {
         parameters: {
             query?: never;
@@ -6083,6 +6103,49 @@ export interface components {
             evidence: string[];
             /** Needs User Input */
             needs_user_input: boolean;
+        };
+        /**
+         * SearchStory
+         * @description Toda la búsqueda en números agregados, para contarla (p. ej. en el README).
+         *
+         *     Solo recuentos y fechas: ni empresas, ni puestos, ni fuentes, ni importes. Es lo que el usuario
+         *     puede publicar si quiere; la app no lo publica nunca.
+         */
+        SearchStory: {
+            /** Started On */
+            started_on: string | null;
+            /** First Applied On */
+            first_applied_on: string | null;
+            /** Last Activity On */
+            last_activity_on: string | null;
+            /** Weeks */
+            weeks: number | null;
+            /** Found */
+            found: number;
+            /** Evaluated */
+            evaluated: number;
+            /** Approved */
+            approved: number;
+            /** Applied */
+            applied: number;
+            /** Replied */
+            replied: number;
+            /** Interviews */
+            interviews: number;
+            /** Offers */
+            offers: number;
+            /** Accepted */
+            accepted: number;
+            /** Reply Rate */
+            reply_rate: number | null;
+            /** Interview Rate */
+            interview_rate: number | null;
+            /** Median Days To Reply */
+            median_days_to_reply: number | null;
+            /** Markdown */
+            markdown: {
+                [key: string]: string;
+            };
         };
         /** SemanticResult */
         SemanticResult: {
@@ -11619,6 +11682,98 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Calibration"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_search_story: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SearchStory"];
                 };
             };
             /** @description Unauthorized */

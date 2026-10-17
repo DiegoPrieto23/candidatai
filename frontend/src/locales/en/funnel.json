@@ -213,5 +213,19 @@
     "perApplied": "Per sent application",
     "perInterview": "Per interview",
     "tokens": "{{tokens}} tokens"
+  },
+  "story": {
+    "title": "Your search in numbers",
+    "hint": "Since the first posting, whatever the period above. Numbers only: no companies, roles or amounts.",
+    "note": "To show in your README, or anywhere, whether it works. The app never publishes it: you copy it if you want to. Also with <code>cai stats story</code>.",
+    "period": "From {{start}} to {{end}}",
+    "evaluated": "Evaluated",
+    "applied": "Applications",
+    "replied": "With a reply",
+    "interviews": "Interviews",
+    "offers": "Offers received",
+    "copyEs": "Copy in Spanish",
+    "copyEn": "Copy in English",
+    "lineLabel": "Line for the README"
   }
 }

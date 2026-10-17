@@ -124,8 +124,9 @@ uv run scripts/sync_agents.py --check   # CI: falla si lo generado no está al d
    código solo consulta LinkedIn por su búsqueda pública sin sesión, nunca con cookies ni cuenta, y
    solo si el usuario la ha activado en la UI (ADR-033); el agente no puede activarla.
 7. No inventar datos del candidato. Todo lo que se escriba en un CV sale de `data/profile.yaml`.
-8. Al cerrar una fase: tests en verde, ruff limpio, `sync_agents.py --check` en verde y
-   `docs/ROADMAP.md` actualizado. No hagas commit ni push sin que el usuario lo pida.
+8. Al cerrar una fase: tests en verde, ruff limpio, `sync_agents.py --check` en verde,
+   `docs/ROADMAP.md` actualizado y lo que note quien usa la app en la sección «Sin publicar» de
+   `CHANGELOG.md`. No hagas commit ni push sin que el usuario lo pida.
 
 ## Operar la app desde cualquier agente
 

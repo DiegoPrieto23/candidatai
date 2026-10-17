@@ -2007,6 +2007,49 @@ def _render_calibration(result: Any) -> None:
             )
 
 
+@stats_app.command("story")
+def stats_story(as_json: bool = JSON_OPTION) -> None:
+    """Tu búsqueda entera en números agregados (ofertas evaluadas, candidaturas, respuestas,
+    entrevistas y ofertas, con fechas) y una línea para pegar en un README. Sin empresas ni datos
+    personales; publicarlo o no lo decides tú."""
+    from app.services import analytics
+
+    with session_scope() as session:
+        story = analytics.get_search_story(session)
+    if as_json:
+        typer.echo(dump_json(story.model_dump(mode="json")))
+        return
+    if not story.found:
+        typer.echo("Aún no hay ofertas: no hay historia que contar.")
+        return
+    period = (
+        f"Del {story.started_on:%d/%m/%Y} al {story.last_activity_on:%d/%m/%Y} "
+        f"({story.weeks} semanas)."
+    )
+    typer.echo(period)
+    rows = (
+        ("Ofertas vistas", story.found),
+        ("Evaluadas", story.evaluated),
+        ("Aprobadas", story.approved),
+        ("Candidaturas", story.applied),
+        ("Con respuesta", story.replied),
+        ("Entrevistas", story.interviews),
+        ("Ofertas recibidas", story.offers),
+        ("Aceptadas", story.accepted),
+    )
+    for label, value in rows:
+        typer.echo(f"  {label:<18} {value:>6}")
+    if story.applied:
+        typer.echo(
+            f"Respuesta {_pct(story.reply_rate)}, entrevista {_pct(story.interview_rate)} "
+            "de las enviadas."
+        )
+    typer.echo("\nPara el README (español):")
+    typer.echo(story.markdown["es"])
+    typer.echo("\nFor the README (English):")
+    typer.echo(story.markdown["en"])
+
+
 CALENDAR_OUT_OPTION = typer.Option(
     None, "--out", help="Fichero de salida. Por defecto, data/calendar/candidatai.ics."
 )

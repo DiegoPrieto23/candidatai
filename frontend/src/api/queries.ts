@@ -30,6 +30,7 @@ export const keys = {
   funnel: (since: string | null) => ['funnel', since] as const,
   // Bajo 'funnel': lo que invalida el embudo (referencias…) invalida también la calibración.
   calibration: (since: string | null) => ['funnel', 'calibration', since] as const,
+  story: ['funnel', 'story'] as const,
   context: ['context'] as const,
   apply: (id: number) => ['apply', id] as const,
   agent: ['agent'] as const,
@@ -638,6 +639,14 @@ export function useCalibration(since: string | null) {
     queryKey: keys.calibration(since),
     queryFn: () => unwrap(api.GET('/stats/calibration', { params: { query: { since } } })),
     placeholderData: keepPreviousData,
+  })
+}
+
+/** Toda la búsqueda en números agregados, para contarla en el README (fase 25.6). */
+export function useSearchStory() {
+  return useQuery({
+    queryKey: keys.story,
+    queryFn: () => unwrap(api.GET('/stats/story')),
   })
 }
 

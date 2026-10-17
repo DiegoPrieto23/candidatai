@@ -380,6 +380,16 @@ La carta es un documento propio, con sus indicaciones, su verificación y sus re
 - Para agentes y terminal: `get_received_offer` ↔ `jh received-offers show`.
 
 
+## 25.6 · Qué cambia en cada versión, y tu búsqueda en números — 2026-10-17 · Claude Code (Opus 5.5)
+- **`CHANGELOG.md`:** qué cambia para quien usa la app, versión a versión (la 0.1.0 con las fases 01
+  a 23 y «Sin publicar» con la 24 y la 25). Cada fase añade lo suyo al cerrar.
+- **Releases con notas de verdad:** la release de GitHub toma la sección de su versión del
+  `CHANGELOG` y falla si no existe. Se puede probar en seco desde Actions sin publicar nada.
+  `CONTRIBUTING.md` explica cómo se versiona y se publica.
+- **Tu búsqueda en números:** al final del Embudo (y con `cai stats story`), ofertas evaluadas,
+  candidaturas, respuestas, entrevistas y ofertas desde el principio, con fechas, y una línea lista
+  para tu README en español y en inglés. Solo cifras, nunca empresas; publicarla es cosa tuya.
+
 ## 25.5 · El CV, bien maquetado — 2026-10-17 · Claude Code (Opus 5.5)
 - **El PDF se revisa:** título de un puesto solo al pie, hueco grande en medio, texto en el pie,
   una segunda página con dos líneas o un PDF cuyo texto no trae tu nombre, correo o teléfono. En el

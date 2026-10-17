@@ -6,7 +6,7 @@ cada fase y lo quita cuando el usuario confirma que está hecho.
 
 Marca `[x]` lo que hagas y, si algo falla, apúntalo debajo de la línea con `→`.
 
-Última actualización: 2026-10-16 (fase 24.6).
+Última actualización: 2026-10-17 (fase 25.6).
 
 ## 1. Poner la app al día (antes de probar nada)
 
@@ -141,6 +141,18 @@ funcionando. Los roles son `writer`, `verifier`, `classifier`, `reviewer` y `ext
       OpenCode, también OpenCode con un modelo local: es el criterio de cierre de la fase 24.
       Después, pásame `evals/compat/REPORT.md` para completar `AGENTS_COMPAT.md`, el README y la
       ADR-037.
+
+### CHANGELOG y tu búsqueda en números (fase 25.6)
+
+- [ ] Embudo → «Tu búsqueda en números»: ¿te cuadran las cifras? Copia la línea en los dos idiomas
+      y comprueba que no lleva ningún nombre. Guía: `fase-25.6-prueba-manual.txt`.
+- [ ] **Decidir si publicas tus cifras** en el README: el bloque está preparado y comentado en
+      `README.md` y `README.es.md` (pega la línea de `cai stats story`, escribe qué funcionó y
+      quita el comentario).
+- [ ] Tras el push de la rama: Actions → Release → «Run workflow» con `v0.1.0` (prueba en seco:
+      solo escribe las notas en el resumen).
+- [ ] Cuando quieras la primera release pública (0.2.0): `CONTRIBUTING.md` §Changelog, versiones
+      y releases.
 
 ### Conectores de ATS y portales con API (fase 25.1)
 

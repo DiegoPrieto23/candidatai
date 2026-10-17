@@ -74,13 +74,14 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 24.4 | ↳ Elegir y cambiar de agente | ✅ | Sección «Agentes» con capacidades, agente por defecto y por acción, «con Claude Code ▾» en cada botón |
 | 24.5 | ↳ Segundo plano con varios agentes | ✅ | «En segundo plano» también con OpenCode (`process-jobs` y `assess-fit`), con el techo en una configuración propia de cada ejecución; Codex y Qwen Code, aún no |
 | 24.6 | ↳ Modelos gratuitos, niveles de gasto y matriz | 🚧 código y docs hechos; falta pasar la matriz (`docs/pruebas/fase-24.6-matriz.md`) | Guía de modelos gratis y locales, diagnóstico de Ollama, «Económico/Equilibrado/Máximo» y matriz probada por agente y modelo |
-| 25 | Más fuentes, perfil más rico, ofertas dudosas, coste y calidad del CV | 🚧 25.1 a 25.5 hechas | Más ATS con API, `expand`, señales de oferta dudosa, coste por oferta y agente, maquetación del PDF y `CHANGELOG` |
+| 25 | Más fuentes, perfil más rico, ofertas dudosas, coste y calidad del CV | 🚧 25.1 a 25.6 hechas; falta la 25.7 | Más ATS con API, `expand`, señales de oferta dudosa, coste por oferta y agente, maquetación del PDF, `CHANGELOG` y el perfil editable desde la UI |
 | 25.1 | ↳ Conectores de ATS y portales con API | ✅ | Personio, Teamtailor, Workable, SmartRecruiters y Recruitee, más Manfred y freehire.me; `cai sources discover` para todos |
 | 25.2 | ↳ Skill `expand` | ✅ | Proyectos, skills y logros propuestos desde GitHub, portfolio o Scholar, con su fuente y solo con tu OK |
 | 25.3 | ↳ Ofertas dudosas y banderas rojas | ✅ | Señales (rango salarial ancho, empresa oculta, temporal, republicada, cribado con IA) y `red_flags` con fuentes en el dosier |
 | 25.4 | ↳ Coste y lote en paralelo | ✅ | Coste por oferta, skill y agente; umbral de score antes de `assess-fit`; hasta N ejecuciones a la vez |
 | 25.5 | ↳ Maquetación del PDF | ✅ | Avisos de títulos huérfanos, huecos, pie y última página casi vacía en CV y carta |
-| 25.6 | ↳ CHANGELOG y la historia con números | ⏳ | `CHANGELOG.md`, notas de release desde él y `cai stats story` para el README |
+| 25.6 | ↳ CHANGELOG y la historia con números | ✅ | `CHANGELOG.md`, notas de release desde él y `cai stats story` para el README |
+| 25.7 | ↳ Tu perfil, editable desde la UI | ⏳ | Experiencia y logros, historias STAR, preferencias de búsqueda, CV y carta, contexto y muestras de estilo desde «Mi perfil», con validación, diff y «Deshacer»; «Mejorar con mi agente» opcional |
 | 26 | macOS, Linux y Docker | ⏳ | Instalar y usar la app en los tres sistemas, botones «en tu agente» incluidos, y Docker opcional |
 | 26.1 | ↳ Núcleo multiplataforma | ⏳ | Rutas, procesos, LibreOffice y terminales en macOS y Linux (`CAI_TERMINAL`) |
 | 26.2 | ↳ Instalador para macOS y Linux | ⏳ | `install.sh` con acceso directo, datos en la carpeta de cada sistema y desinstalación |
@@ -106,7 +107,8 @@ open-source, no desde la app. Orden: 24.1 → 24.2 → 24.3 → 24.4 → 24.5 �
 sesión.
 
 **Fases 25 y 26 (2026-10-16):** el resto de «Lo que nos falta» de `docs/COMPARATIVA.md`. La 25
-(fuentes, `expand`, ofertas dudosas, coste y lote, maquetación del PDF y `CHANGELOG`) va después de
+(fuentes, `expand`, ofertas dudosas, coste y lote, maquetación del PDF, `CHANGELOG` y, desde el
+2026-10-17, el perfil editable desde la UI en la 25.7) va después de
 la 24, porque la 25.4 usa el agente y el modelo que guarda la 24.4. La 26 (macOS, Linux y Docker)
 va aparte porque toca el instalador, los botones de terminal y la CI, y gana sentido cuando ya hay
 agentes open-source que funcionan en los tres sistemas. Descartado por ahora: autorización de
@@ -2791,3 +2793,52 @@ decisiones tomadas y deuda técnica pendiente. -->
     puede quedar tapado por la otra (falta un aviso, nunca sobra);
   - el teléfono se busca en los dígitos de todo el texto (podría casar por coincidencia);
   - sin probar con plantillas importadas reales: queda en la prueba manual.
+
+
+### 25.6 · CHANGELOG y la historia con números — 2026-10-17 · Claude Code (Opus 5.5)
+- **Hecho:**
+  - `CHANGELOG.md` (Keep a Changelog 1.1.0 en español, versionado semántico): `[0.1.0] -
+    2026-10-16` con las fases 01 a 23 (commit `4d9d8b4`, nunca publicada como release) y
+    `[Sin publicar]` con la 24 y la 25, en Añadido, Cambiado, Eliminado, Corregido y Seguridad;
+  - `scripts/release_notes.py` (solo biblioteca estándar): saca la sección de una etiqueta y
+    comprueba la estructura (`--check`: «Sin publicar» primero, versiones de más nueva a más
+    vieja, grupos conocidos y en orden, una entrada por versión y su enlace al final);
+  - `release.yml`: un job `notes` (permiso de lectura) saca las notas y las deja en el resumen;
+    `release` (escritura, solo con `push` de una etiqueta) compila y publica con `--notes-file`.
+    Sin sección, falla antes de compilar. `workflow_dispatch` hace la prueba en seco;
+  - `analytics.get_search_story` + `cai stats story [--json]` + `GET /stats/story`: toda la
+    búsqueda (sin periodo y sin duplicadas) en números agregados, fechas en Europe/Madrid y una
+    línea para el README en español e inglés. Solo CLI y API: el agente no la necesita;
+  - Embudo: tarjeta «Tu búsqueda en números» con las cifras, la línea en el idioma de la UI y
+    «Copiar en español» / «Copiar en inglés» (es y en);
+  - regla de cierre: `AGENTS.md` (regla 8) y `implement-phase` piden actualizar «Sin publicar»;
+  - docs: `CONTRIBUTING.md` (§Changelog, versiones y releases, en los dos idiomas), README en los
+    dos idiomas (bloque comentado para tus cifras y fila del `CHANGELOG`), AGENT_INTERFACE,
+    GUIA/GUIDE, `docs/README.md`, COMPARATIVA, RESUMEN_FASES, prueba manual y PENDIENTES.
+- **Tests:**
+  - `test_changelog.py` (13): estructura del `CHANGELOG` real, «Sin publicar» con lo de la 24 y
+    la 25, versión igual a la de `pyproject.toml`, notas de una etiqueta, errores con su motivo y
+    la CLI del script;
+  - `test_search_story.py` (3): sin ofertas, recuentos y fechas con un histórico a mano
+    (duplicada fuera, filtros duros cuentan como evaluadas) y `cai stats story --json` sobre la
+    demo, igual que el embudo y sin ningún nombre de empresa, puesto, fuente ni lugar;
+  - `test_start.py`: el workflow nuevo (disparadores, permisos por job, notas desde el script);
+  - Vitest de la tarjeta del Embudo (cifras, fechas, copiar);
+  - prueba en seco local del paso de notas con `bash -eo pipefail` (como Actions): `v0.1.0` da
+    sus notas y `v0.2.0` sale con 1;
+  - 2714 tests de backend (en tres tandas) y 287 de frontend en verde; `tsc`, ruff,
+    `sync_agents.py --check` y `check_links.py` limpios; OpenAPI regenerado.
+- **Decisiones:**
+  - no había ninguna release publicada: la 0.1.0 es el estado de `main` al cerrar la fase 23 (es
+    la versión de `pyproject.toml`) y la primera release pública será la 0.2.0 con «Sin publicar»;
+    los enlaces del final apuntan a ese commit, no a una etiqueta;
+  - «Evaluadas» = ofertas con extracción, pasaran o no los filtros duros (como el «evaluadas» de
+    career-ops);
+  - las cifras del README van en un comentario: publicarlas es decisión del usuario;
+  - `cai stats story` sin herramienta MCP (la paridad es de MCP a CLI, no al revés).
+- **Revisión** (rol `reviewer`), sin bloqueantes. Se aplicó: la prueba en seco explicada bien
+  (usa el `CHANGELOG` de la rama; la etiqueta solo elige la sección), permisos de escritura solo
+  en el job que publica y una línea larga del skill.
+- **Deuda:**
+  - la prueba en seco en GitHub queda para cuando el usuario haga push (PENDIENTES);
+  - la línea del README no dice «qué funcionó»: lo escribe el usuario.

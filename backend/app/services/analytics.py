@@ -36,7 +36,7 @@ se mide **en el momento del primer envío**:
 
 import math
 import statistics
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from typing import Any, Literal
 
 from pydantic import BaseModel
@@ -68,7 +68,7 @@ from app.models import (
 )
 from app.services.documents.cover_letter import LETTER_KIND
 from app.services.pipeline import EventType, Stage
-from app.services.process import start_of_local_day
+from app.services.process import local_zone, start_of_local_day
 
 TOP_TITLES = 8
 
@@ -864,3 +864,144 @@ def get_calibration(
         by_days_to_apply=_fixed(session, cal, days, day_groups, min_cases),
         by_signal=_by_signal(session, cal, min_cases),
     )
+
+
+# --- La historia con números (fase 25.6) -----------------------------------------------------
+
+_MONTHS = {
+    "es": ("ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"),
+    "en": ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"),
+}
+# La línea para el README: campo, singular y plural, en el orden en que se cuenta.
+_STORY_WORDS: dict[str, dict[str, Any]] = {
+    "es": {
+        "head": "Mi búsqueda con CandidatAI",
+        "week": "semana",
+        "weeks": "semanas",
+        "last": " y ",
+        "counts": (
+            ("evaluated", "oferta evaluada", "ofertas evaluadas"),
+            ("approved", "aprobada", "aprobadas"),
+            ("applied", "candidatura", "candidaturas"),
+            ("replied", "respuesta", "respuestas"),
+            ("interviews", "entrevista", "entrevistas"),
+            ("offers", "oferta", "ofertas"),
+        ),
+    },
+    "en": {
+        "head": "My search with CandidatAI",
+        "week": "week",
+        "weeks": "weeks",
+        "last": ", ",
+        "counts": (
+            ("evaluated", "posting evaluated", "postings evaluated"),
+            ("approved", "approved", "approved"),
+            ("applied", "application", "applications"),
+            ("replied", "reply", "replies"),
+            ("interviews", "interview", "interviews"),
+            ("offers", "offer", "offers"),
+        ),
+    },
+}
+
+
+class SearchStory(BaseModel):
+    """Toda la búsqueda en números agregados, para contarla (p. ej. en el README).
+
+    Solo recuentos y fechas: ni empresas, ni puestos, ni fuentes, ni importes. Es lo que el usuario
+    puede publicar si quiere; la app no lo publica nunca.
+    """
+
+    started_on: date | None  # día (Europe/Madrid) de la primera oferta vista
+    first_applied_on: date | None
+    last_activity_on: date | None  # día del último evento
+    weeks: int | None  # semanas entre `started_on` y `last_activity_on`, redondeando hacia arriba
+    found: int
+    evaluated: int  # con extracción: pasaran o no los filtros duros
+    approved: int
+    applied: int
+    replied: int
+    interviews: int
+    offers: int
+    accepted: int
+    reply_rate: float | None  # con respuesta / enviadas
+    interview_rate: float | None  # con entrevista / enviadas
+    median_days_to_reply: float | None
+    markdown: dict[Literal["es", "en"], str]  # una línea para pegar, en cada idioma del README
+
+
+def _local_day(value: datetime | None) -> date | None:
+    return value.astimezone(local_zone()).date() if value is not None else None
+
+
+def _number(value: int, lang: str) -> str:
+    grouped = f"{value:,}"
+    return grouped.replace(",", " ") if lang == "es" else grouped
+
+
+def _day(value: date, lang: str) -> str:
+    return f"{value.day} {_MONTHS[lang][value.month - 1]} {value.year}"
+
+
+def _story_markdown(story: SearchStory, lang: Literal["es", "en"]) -> str:
+    words = _STORY_WORDS[lang]
+    parts = []
+    for field, singular, plural in words["counts"]:
+        value = getattr(story, field)
+        parts.append(f"{_number(value, lang)} {singular if value == 1 else plural}")
+    counts = ", ".join(parts[:-1]) + f"{words['last']}{parts[-1]}"
+    when = ""
+    if story.started_on and story.last_activity_on:
+        week = words["week"] if story.weeks == 1 else words["weeks"]
+        when = (
+            f" ({_day(story.started_on, lang)} → {_day(story.last_activity_on, lang)}, "
+            f"{story.weeks} {week})"
+        )
+    return f"**{words['head']}**{when}: {counts}."
+
+
+def get_search_story(session: Session) -> SearchStory:
+    """La búsqueda entera, desde la primera oferta, en números agregados (sin duplicadas)."""
+    per_job, _ = _per_job(session, None)
+    steps = ("found", "approved", "applied", "replied", "interview", "offer", "accepted")
+    row = session.execute(
+        select(
+            *_sums(per_job, steps),
+            func.min(per_job.c.first_seen_at).label("started"),
+            func.min(per_job.c.applied_at).label("first_applied"),
+        )
+    ).one()
+    evaluated = session.scalar(
+        select(func.count(Event.job_id.distinct())).where(
+            Event.type == EventType.EXTRACTED,
+            Event.job_id.in_(select(per_job.c.job_id)),
+        )
+    )
+    last = session.scalar(
+        select(func.max(Event.occurred_at)).where(Event.job_id.in_(select(per_job.c.job_id)))
+    )
+    started, last_day = _local_day(row.started), _local_day(last)
+    weeks = None
+    if started is not None and last_day is not None:
+        weeks = max(1, math.ceil(((last_day - started).days + 1) / 7))
+    applied = int(row.applied)
+    story = SearchStory(
+        started_on=started,
+        first_applied_on=_local_day(row.first_applied),
+        last_activity_on=last_day,
+        weeks=weeks,
+        found=int(row.found),
+        evaluated=evaluated or 0,
+        approved=int(row.approved),
+        applied=applied,
+        replied=int(row.replied),
+        interviews=int(row.interview),
+        offers=int(row.offer),
+        accepted=int(row.accepted),
+        reply_rate=_rate(int(row.replied), applied),
+        interview_rate=_rate(int(row.interview), applied),
+        median_days_to_reply=_response_time(session, per_job).median_days,
+        markdown={"es": "", "en": ""},
+    )
+    story.markdown = {"es": _story_markdown(story, "es"), "en": _story_markdown(story, "en")}
+    return story
