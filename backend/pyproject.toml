@@ -72,3 +72,4 @@ known-third-party = ["alembic"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra"
+markers = ["layout: con la comprobación de maquetación del PDF encendida (fase 25.5)"]

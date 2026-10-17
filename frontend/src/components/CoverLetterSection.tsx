@@ -8,7 +8,6 @@ import {
   PencilSimpleIcon,
   SealCheckIcon,
   SealWarningIcon,
-  WarningIcon,
 } from '@phosphor-icons/react'
 import { Trans, useTranslation } from 'react-i18next'
 import {
@@ -29,6 +28,7 @@ import {
   type CoverLetterRenderOptions,
 } from '@/api/queries'
 import { CopyButton } from '@/components/CopyButton'
+import { RenderWarnings } from '@/components/RenderWarnings'
 import { ErrorState, InlineCode } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -36,7 +36,6 @@ import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Textarea } from '@/components/ui/textarea'
 import { errorMessage } from '@/lib/errors'
-import { codeLabel, serverText } from '@/lib/i18n'
 import { colorLabel, formatDateTime, PHOTO_MODE_LABEL } from '@/lib/labels'
 import { countWords } from '@/lib/letters'
 import { cn } from '@/lib/utils'
@@ -427,18 +426,7 @@ function RenderCard({ render, name, jobId }: { render: LetterRenderResult; name:
       <p className="mt-0.5 text-xs text-muted-foreground">
         {parts.join(' · ')} · {t('pages', { count: render.pages })} · {formatDateTime(render.created_at)}
       </p>
-      {render.warnings.length > 0 && (
-        <ul className="mt-2 space-y-1.5">
-          {render.warnings.map((w, i) => (
-            <li key={i} className="flex items-start gap-2 text-sm text-warning-foreground">
-              <WarningIcon className="mt-0.5 size-4 shrink-0" weight="duotone" />
-              <span>
-                <InlineCode text={serverText(codeLabel(`cv:warnings.${w.code}`), w.message)} />
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
+      <RenderWarnings warnings={render.warnings} className="mt-2 space-y-1.5" />
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <Button asChild variant="outline" size="xs">
           <a href={fileUrls.renderPdf(render.render_id)} target="_blank" rel="noopener noreferrer">

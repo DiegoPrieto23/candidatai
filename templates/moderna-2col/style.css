@@ -108,6 +108,9 @@ body {
 .sidebar .muted { color: rgba(255, 255, 255, 0.78); }
 
 .main { padding: 13mm 12mm 12mm 10mm; }
+/* La barra va después en el HTML (orden de lectura): se coloca en la primera columna. */
+.sidebar { grid-column: 1; grid-row: 1; }
+.main { grid-column: 2; grid-row: 1; }
 
 .head { margin-bottom: 5mm; }
 .head h1 {

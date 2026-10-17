@@ -151,6 +151,7 @@ Una oferta puede encajar en el papel y aun así no merecer la pena. El código m
 |---|---|
 | Plantilla | La elegida para la oferta: opción explícita > reglas de `preferences.cv.template_rules` > `default_template` > `ats-simple` (`docs/CV_TEMPLATES.md`). El contenido no depende de la plantilla y el diseño solo se cambia en la plantilla |
 | Longitud | `max_pages` de la opción > `preferences.cv.max_pages` > el de la plantilla (1 en las integradas). Si no cabe, se recorta contenido; nunca márgenes ni fuente |
+| Maquetación | Fase 25.5: el PDF del CV y de la carta se revisa (título huérfano, hueco grande, texto en el pie, última página casi vacía, texto del PDF sin nombre, correo o teléfono). Son avisos con su página, no bloqueos. Si se arregla con una opción de render, lo cambias tú en la ficha; si hace falta recortar, se recorta lo menos relevante para la oferta, no lo más antiguo (`docs/CV_TEMPLATES.md` §Avisos) |
 | Idioma | El de la oferta (`posting_language`). En caso de duda, preguntar |
 | Subtítulo | Identidad profesional estable + 3-4 tecnologías clave separadas por `·`. Puede nombrar la familia de rol si es tu identidad real ("Data Engineer"), pero **nunca** copia el título literal de la oferta con seniority, empresa o equipo |
 | Resumen | Adaptado a la oferta, con sus keywords solo si son verdad |

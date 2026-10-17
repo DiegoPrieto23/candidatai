@@ -23588,6 +23588,32 @@
           "message": {
             "type": "string",
             "title": "Message"
+          },
+          "page": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page"
+          },
+          "fix": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "template",
+                  "content"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fix"
           }
         },
         "type": "object",

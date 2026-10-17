@@ -36,7 +36,7 @@ from app.schemas.llm_io import JobExtraction
 from app.schemas.profile import CandidateProfile, CoverLetterPreferences
 from app.services import events
 from app.services import profile as profile_service
-from app.services.documents import checks, context, options, pdf, photo, service, templates
+from app.services.documents import checks, context, layout, options, pdf, photo, service, templates
 from app.services.documents.checks import ContentIssue
 from app.services.documents.options import (
     InvalidRenderOptionsError,
@@ -626,6 +626,8 @@ def render_cover_letter(
                 + " y el PDF usa otra: instálala para que se vea como la plantilla.",
             )
         )
+    # Fase 25.5: las mismas comprobaciones de maquetación que el CV (sin títulos de sección).
+    warnings += layout.analyze(pdf_file, layout.expected_from_context(ctx))
     service.store_files(session, row, docx_file, pdf_file, info.pages, warnings)
     return _to_result(row, job.id)
 

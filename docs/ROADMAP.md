@@ -74,12 +74,12 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 24.4 | ↳ Elegir y cambiar de agente | ✅ | Sección «Agentes» con capacidades, agente por defecto y por acción, «con Claude Code ▾» en cada botón |
 | 24.5 | ↳ Segundo plano con varios agentes | ✅ | «En segundo plano» también con OpenCode (`process-jobs` y `assess-fit`), con el techo en una configuración propia de cada ejecución; Codex y Qwen Code, aún no |
 | 24.6 | ↳ Modelos gratuitos, niveles de gasto y matriz | 🚧 código y docs hechos; falta pasar la matriz (`docs/pruebas/fase-24.6-matriz.md`) | Guía de modelos gratis y locales, diagnóstico de Ollama, «Económico/Equilibrado/Máximo» y matriz probada por agente y modelo |
-| 25 | Más fuentes, perfil más rico, ofertas dudosas, coste y calidad del CV | 🚧 25.1 a 25.4 hechas | Más ATS con API, `expand`, señales de oferta dudosa, coste por oferta y agente, maquetación del PDF y `CHANGELOG` |
+| 25 | Más fuentes, perfil más rico, ofertas dudosas, coste y calidad del CV | 🚧 25.1 a 25.5 hechas | Más ATS con API, `expand`, señales de oferta dudosa, coste por oferta y agente, maquetación del PDF y `CHANGELOG` |
 | 25.1 | ↳ Conectores de ATS y portales con API | ✅ | Personio, Teamtailor, Workable, SmartRecruiters y Recruitee, más Manfred y freehire.me; `cai sources discover` para todos |
 | 25.2 | ↳ Skill `expand` | ✅ | Proyectos, skills y logros propuestos desde GitHub, portfolio o Scholar, con su fuente y solo con tu OK |
 | 25.3 | ↳ Ofertas dudosas y banderas rojas | ✅ | Señales (rango salarial ancho, empresa oculta, temporal, republicada, cribado con IA) y `red_flags` con fuentes en el dosier |
 | 25.4 | ↳ Coste y lote en paralelo | ✅ | Coste por oferta, skill y agente; umbral de score antes de `assess-fit`; hasta N ejecuciones a la vez |
-| 25.5 | ↳ Maquetación del PDF | ⏳ | Avisos de títulos huérfanos, huecos, pie y última página casi vacía en CV y carta |
+| 25.5 | ↳ Maquetación del PDF | ✅ | Avisos de títulos huérfanos, huecos, pie y última página casi vacía en CV y carta |
 | 25.6 | ↳ CHANGELOG y la historia con números | ⏳ | `CHANGELOG.md`, notas de release desde él y `cai stats story` para el README |
 | 26 | macOS, Linux y Docker | ⏳ | Instalar y usar la app en los tres sistemas, botones «en tu agente» incluidos, y Docker opcional |
 | 26.1 | ↳ Núcleo multiplataforma | ⏳ | Rutas, procesos, LibreOffice y terminales en macOS y Linux (`CAI_TERMINAL`) |
@@ -2744,3 +2744,50 @@ decisiones tomadas y deuda técnica pendiente. -->
   - el umbral va en la orden, no en las herramientas (`list_jobs` seguiría viendo las demás);
   - el coste por fuente del embudo no sale en la calibración;
   - sin probar con agentes reales: queda en la prueba manual.
+
+### 25.5 · Maquetación del PDF — 2026-10-17 · Claude Code (Opus 5.5)
+- **Hecho:**
+  - `services/documents/layout.py`: lee el PDF renderizado con `pypdfium2` (ya era dependencia)
+    y avisa de `orphan_heading`, `large_gap` (también al pie de una página que no es la última),
+    `footer_overlap`, `nearly_empty_last_page` y `text_layer` (nombre, correo y teléfono en el
+    texto del PDF y el nombre antes que los títulos). Los títulos salen del contexto del render
+    (secciones presentes y puesto de cada experiencia), también con espaciado entre letras y sin
+    confundir una frase que empieza igual. Umbrales en `layout` de `config/policies.yaml`;
+  - avisos, no bloqueos: `RenderWarning` gana `page` y `fix` (`template` o `content`), vacíos no
+    se guardan; solo `too_long` sigue impidiendo «Usar este para enviar». En el CV y la carta;
+  - ficha: cada aviso con su página y cómo arreglarlo (`RenderWarnings`, en CV y carta), en es y en;
+  - `generate-cv` y el rol `writer`: con `fix: content`, se recorta lo menos relevante para la
+    oferta (por relevancia, no por antigüedad), como con `too_long`; con `template`, se le dice al
+    usuario que cambie la plantilla en la UI;
+  - `cai eval cv`: comprobación `layout` sobre el render que se enviaría;
+  - **plantilla `moderna-2col` corregida:** la barra iba antes que el nombre en el HTML y el texto
+    del PDF (lo que lee un ATS) empezaba por ella; ahora va después y el CSS la coloca igual (la
+    vista previa en PNG no cambia);
+  - docs: `CV_TEMPLATES.md` §Avisos (tabla de maquetación y cómo hacer una plantilla de dos
+    columnas), POLICIES §3, DATA_MODEL, AGENT_INTERFACE, `evals/README.md`, COMPARATIVA, prueba
+    manual y PENDIENTES.
+- **Tests:**
+  - `test_layout.py` (19): un PDF de prueba por aviso (con un generador de PDFs con texto colocado
+    en `tests/cv_support.py`), CVs correctos de una y dos páginas sin avisos, título al pie de la
+    última página, frase que empieza como un título, títulos y nombre con espaciado, correo
+    partido, teléfono por dígitos, umbrales de `policies.yaml` y apagado;
+  - `test_layout_builtin.py`: el CV y la carta de la demo con todas las plantillas integradas, con
+    LibreOffice y Chromium de verdad, sin avisos (se salta si faltan);
+  - el aviso se guarda con el render y no bloquea; `layout` en `cai eval cv`; Vitest de la ficha;
+  - en los demás tests la maquetación va apagada (`tests/conftest.py`): el conversor falso no
+    maqueta. Los que la prueban llevan `@pytest.mark.layout`.
+  - 2698 tests de backend (en tres tandas) y 286 de frontend en verde; `tsc`, ruff y
+    `sync_agents.py --check` limpios; OpenAPI regenerado.
+- **Decisiones (con el usuario):**
+  - títulos del contexto del render, no adivinados por la fuente;
+  - el hueco al pie de una página que no es la última cuenta como `large_gap`;
+  - la maquetación se apaga en los tests desde `conftest.py`, no con una marca en el PDF.
+- **Revisión** (rol `reviewer`), sin bloqueantes. Se aplicó: una frase que empieza como un título
+  ya no es un título; nombre y correo comparados sin espacios; cierre de cada página aunque falle;
+  fuera los `fix` que nunca se emitían (`hide_section`, `page_size`); `layout` en las listas de
+  `cai eval cv`; el límite de las dos columnas en `CV_TEMPLATES.md`; y los tests que faltaban.
+- **Deuda:**
+  - en dos columnas, las líneas se juntan por altura: un huérfano o un hueco de una columna
+    puede quedar tapado por la otra (falta un aviso, nunca sobra);
+  - el teléfono se busca en los dígitos de todo el texto (podría casar por coincidencia);
+  - sin probar con plantillas importadas reales: queda en la prueba manual.

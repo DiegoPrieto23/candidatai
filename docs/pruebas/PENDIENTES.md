@@ -150,6 +150,12 @@ funcionando. Los roles son `writer`, `verifier`, `classifier`, `reviewer` y `ext
 - [ ] `uv run --directory backend cai sources discover --file empresas.txt` con tu lista: ahora
       prueba también esos cinco ATS (tarda más: hasta 8 ATS × 3 slugs por empresa).
 
+### Maquetación del PDF (fase 25.5)
+
+- [ ] Renderiza tus CVs con cada plantilla (y tus plantillas importadas) y mira los avisos de
+      maquetación en la ficha: ¿alguno es un falso positivo? Guía: `fase-25.5-prueba-manual.txt`.
+- [ ] Con un CV de dos páginas, el aviso de última página casi vacía y «Generar CV» recortando.
+
 ### Coste, umbral y lote en paralelo (fase 25.4)
 
 - [ ] Página «Agente» → «Coste» con tus ejecuciones reales: por acción, agente y modelo, y lo que

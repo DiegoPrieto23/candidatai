@@ -114,6 +114,23 @@ def test_two_pages_fails_and_no_pdf_is_not_measured() -> None:
     assert _check(_content(), pages=None)["one_page"].passed is None
 
 
+def test_layout_warnings_fail_the_layout_check() -> None:
+    # Fase 25.5: los avisos de maquetación del render que se enviaría; los demás no cuentan.
+    profile = load_from_yaml(EXAMPLE_PATH)
+    case, content = _case("cv01-de-snowflake"), _content()
+
+    def layout(warnings: list[dict[str, object]] | None, pages: int | None = 1) -> object:
+        results = cv_eval.check_cv(
+            case, content, profile, pages, {"passed": True}, warnings=warnings
+        )
+        return next(r for r in results if r.name == "layout")
+
+    assert layout([{"code": "pdf_only", "message": "Solo PDF."}]).passed is True
+    hole = layout([{"code": "large_gap", "message": "Hay un hueco.", "page": 1}])
+    assert hole.passed is False and hole.detail == "Hay un hueco."
+    assert layout(None, pages=None).passed is None  # sin PDF: no se mide
+
+
 def test_low_coverage_fails() -> None:
     content = _content(
         subtitle="Data Engineer",

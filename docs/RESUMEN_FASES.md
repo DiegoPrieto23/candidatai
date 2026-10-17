@@ -380,6 +380,14 @@ La carta es un documento propio, con sus indicaciones, su verificación y sus re
 - Para agentes y terminal: `get_received_offer` ↔ `jh received-offers show`.
 
 
+## 25.5 · El CV, bien maquetado — 2026-10-17 · Claude Code (Opus 5.5)
+- **El PDF se revisa:** título de un puesto solo al pie, hueco grande en medio, texto en el pie,
+  una segunda página con dos líneas o un PDF cuyo texto no trae tu nombre, correo o teléfono. En el
+  CV y en la carta.
+- **Avisos con la página y el arreglo**, sin bloquear: si basta otra plantilla, lo cambias en la
+  ficha sin agente; si hay que recortar, «Generar CV» recorta lo menos relevante para la oferta.
+- **`moderna-2col` corregida** para que un ATS lea primero tu nombre.
+
 ## 25.4 · Qué cuesta cada oferta, y gastar solo donde merece la pena — 2026-10-17 · Claude Code (Opus 5.5)
 - **Coste:** la página «Agente» suma tokens, tiempo y, si el agente lo da, dinero, por acción,
   agente y modelo (7 y 30 días), con lo que pesa cada skill. La ficha dice lo gastado en esa

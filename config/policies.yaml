@@ -179,6 +179,15 @@ doubtful:                       # fase 25.3: señales de oferta dudosa (observac
   stale_repost_min_span_days: 60  # …o días entre la primera y la última vez vista (todo el historial)
                                   # patrones de agencias, empresas ocultas y cribado con IA: config/doubtful_patterns.yaml
 
+layout:                         # fase 25.5: maquetación del PDF del CV y la carta (avisos, nunca bloqueos)
+  enabled: true
+  orphan_bottom_pct: 10           # `orphan_heading`: un título en el último 10 % de una página y su contenido en la siguiente
+  large_gap_pct: 15               # `large_gap`: un hueco vertical mayor que el 15 % de la página en medio del documento
+  bottom_margin_pct: 8            # margen normal al pie (no cuenta como hueco)
+  footer_zone_pct: 3              # `footer_overlap`: texto en el último 3 % de la página…
+  edge_margin_pt: 14              # …o a menos de 14 pt de un borde
+  last_page_min_pct: 15           # `nearly_empty_last_page`: la última página ocupa menos del 15 % (con más de una)
+
 background_runs:                # fase 19: «En segundo plano» (el agente sin ventana desde el worker)
   timeout_minutes: 30             # después se para el proceso y la ejecución queda `timeout`
   max_progress_lines: 200         # líneas de progreso que se guardan (las últimas)

@@ -10,7 +10,6 @@ import {
   SealCheckIcon,
   SealWarningIcon,
   TerminalWindowIcon,
-  WarningIcon,
 } from '@phosphor-icons/react'
 import { Trans, useTranslation } from 'react-i18next'
 import {
@@ -27,11 +26,12 @@ import {
 import { useJobCv, useRenderCv, useSelectRender, useTemplates } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
 import { ClosedHint } from '@/components/JobSignals'
+import { RenderWarnings } from '@/components/RenderWarnings'
 import { ErrorState, InlineCode } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { errorMessage } from '@/lib/errors'
-import { codeLabel, i18n, serverText } from '@/lib/i18n'
+import { i18n } from '@/lib/i18n'
 import { colorLabel, formatDateTime, PHOTO_MODE_LABEL, SECTION_LABEL } from '@/lib/labels'
 import { cn } from '@/lib/utils'
 
@@ -371,11 +371,6 @@ function optionsSummary(render: RenderResult): string {
   return parts.join(' · ')
 }
 
-/** Un aviso del render: el mensaje del servidor, con su código traducido fuera del español. */
-function warningText(warning: { code: string; message: string }): string {
-  return serverText(codeLabel(`cv:warnings.${warning.code}`), warning.message)
-}
-
 function RenderCard({
   render,
   templateName,
@@ -440,18 +435,7 @@ function RenderCard({
           {t('templateChangedHint')}
         </p>
       )}
-      {render.warnings.length > 0 && (
-        <ul className="mt-3 space-y-1.5">
-          {render.warnings.map((warning, i) => (
-            <li key={i} className="flex items-start gap-2 text-sm text-warning-foreground">
-              <WarningIcon className="mt-0.5 size-4 shrink-0" weight="duotone" />
-              <span>
-                <InlineCode text={warningText(warning)} />
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
+      <RenderWarnings warnings={render.warnings} />
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <Button asChild variant="outline" size="xs">

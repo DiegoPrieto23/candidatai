@@ -46,6 +46,16 @@ def no_dns(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(liveness, "_resolve", lambda _host: ["93.184.215.14"])
 
 
+@pytest.fixture(autouse=True)
+def no_layout(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch) -> None:
+    """La maquetación del PDF (fase 25.5) mira posiciones reales: con el conversor falso (una línea
+    por párrafo) daría avisos sin sentido. Los tests que la prueban llevan `@pytest.mark.layout`."""
+    from app.services.documents import layout
+
+    if request.node.get_closest_marker("layout") is None:
+        monkeypatch.setattr(layout, "ENABLED", False)
+
+
 @pytest.fixture
 def engine(isolated_env: Path) -> Iterator[Engine]:
     """Engine sobre SQLite temporal con el esquema de los modelos."""

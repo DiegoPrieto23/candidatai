@@ -5610,6 +5610,10 @@ export interface components {
             code: string;
             /** Message */
             message: string;
+            /** Page */
+            page?: number | null;
+            /** Fix */
+            fix?: ("template" | "content") | null;
         };
         /** RepliesPollResult */
         RepliesPollResult: {

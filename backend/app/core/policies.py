@@ -212,6 +212,18 @@ class DoubtfulPolicy(BaseModel):
     stale_repost_min_span_days: int = Field(default=60, gt=0)
 
 
+class LayoutPolicy(BaseModel):
+    """Maquetación del PDF (fase 25.5): avisos, no bloqueos. Porcentajes del alto de la página."""
+
+    enabled: bool = True
+    orphan_bottom_pct: float = Field(default=10, gt=0, lt=50)  # «al pie»: el último 10 %
+    large_gap_pct: float = Field(default=15, gt=0, lt=100)
+    bottom_margin_pct: float = Field(default=8, ge=0, lt=50)  # margen normal al pie
+    footer_zone_pct: float = Field(default=3, ge=0, lt=20)  # el texto no debería entrar aquí
+    edge_margin_pt: float = Field(default=14, ge=0)  # ni acercarse más a un borde
+    last_page_min_pct: float = Field(default=15, gt=0, lt=100)
+
+
 MAX_PARALLEL_RUNS = 4
 
 
@@ -253,6 +265,7 @@ class Policies(BaseModel):
     liveness: LivenessPolicy = Field(default_factory=LivenessPolicy)
     reposts: RepostsPolicy = Field(default_factory=RepostsPolicy)
     doubtful: DoubtfulPolicy = Field(default_factory=DoubtfulPolicy)
+    layout: LayoutPolicy = Field(default_factory=LayoutPolicy)
     background_runs: BackgroundRunsPolicy = Field(default_factory=BackgroundRunsPolicy)
 
 

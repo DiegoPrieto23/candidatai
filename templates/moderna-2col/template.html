@@ -8,56 +8,6 @@
 </head>
 <body>
 <div class="page">
-  <aside class="sidebar">
-    {% if photo %}
-    <img class="photo" src="{{ photo }}" alt="">
-    {% endif %}
-
-    <section class="side-block">
-      <h2>{{ labels.contact }}</h2>
-      <ul class="contact">
-        {% if contact.email %}<li><span class="ico">@</span>{{ contact.email }}</li>{% endif %}
-        {% if contact.phone %}<li><span class="ico">&#9742;</span>{{ contact.phone }}</li>{% endif %}
-        {% if contact.city %}<li><span class="ico">&#9673;</span>{{ contact.city }}</li>{% endif %}
-        {% if contact.linkedin %}<li><span class="ico">in</span>{{ contact.linkedin }}</li>{% endif %}
-        {% if contact.github %}<li><span class="ico">&lt;/&gt;</span>{{ contact.github }}</li>{% endif %}
-      </ul>
-    </section>
-
-    {% if show.skills %}
-    <section class="side-block">
-      <h2>{{ labels.skills }}</h2>
-      {% for s in skills %}
-      <div class="skill-group">
-        <h3>{{ s.group }}</h3>
-        <p>{{ s.items | join(' · ') }}</p>
-      </div>
-      {% endfor %}
-    </section>
-    {% endif %}
-
-    {% if show.languages %}
-    <section class="side-block">
-      <h2>{{ labels.languages }}</h2>
-      <ul class="plain">
-        {% for l in languages %}
-        <li><strong>{{ l.language }}</strong>{% if l.level %} · {{ l.level }}{% endif %}</li>
-        {% endfor %}
-      </ul>
-    </section>
-    {% endif %}
-
-    {% if show.certifications %}
-    <section class="side-block">
-      <h2>{{ labels.certifications }}</h2>
-      <ul class="plain">
-        {% for c in certifications %}
-        <li><strong>{{ c.name }}</strong>{% if c.issuer or c.date %}<br><span class="muted">{{ c.issuer }}{% if c.issuer and c.date %} · {% endif %}{{ c.date }}</span>{% endif %}</li>
-        {% endfor %}
-      </ul>
-    </section>
-    {% endif %}
-  </aside>
 
   <main class="main">
     <header class="head">
@@ -139,6 +89,58 @@
     {% endfor %}
     {% endif %}
   </main>
+  <!-- Fase 25.5: la barra va después en el HTML para que el texto del PDF (lo que lee un ATS)
+       empiece por el nombre; el CSS la pone a la izquierda. -->
+  <aside class="sidebar">
+    {% if photo %}
+    <img class="photo" src="{{ photo }}" alt="">
+    {% endif %}
+
+    <section class="side-block">
+      <h2>{{ labels.contact }}</h2>
+      <ul class="contact">
+        {% if contact.email %}<li><span class="ico">@</span>{{ contact.email }}</li>{% endif %}
+        {% if contact.phone %}<li><span class="ico">&#9742;</span>{{ contact.phone }}</li>{% endif %}
+        {% if contact.city %}<li><span class="ico">&#9673;</span>{{ contact.city }}</li>{% endif %}
+        {% if contact.linkedin %}<li><span class="ico">in</span>{{ contact.linkedin }}</li>{% endif %}
+        {% if contact.github %}<li><span class="ico">&lt;/&gt;</span>{{ contact.github }}</li>{% endif %}
+      </ul>
+    </section>
+
+    {% if show.skills %}
+    <section class="side-block">
+      <h2>{{ labels.skills }}</h2>
+      {% for s in skills %}
+      <div class="skill-group">
+        <h3>{{ s.group }}</h3>
+        <p>{{ s.items | join(' · ') }}</p>
+      </div>
+      {% endfor %}
+    </section>
+    {% endif %}
+
+    {% if show.languages %}
+    <section class="side-block">
+      <h2>{{ labels.languages }}</h2>
+      <ul class="plain">
+        {% for l in languages %}
+        <li><strong>{{ l.language }}</strong>{% if l.level %} · {{ l.level }}{% endif %}</li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+
+    {% if show.certifications %}
+    <section class="side-block">
+      <h2>{{ labels.certifications }}</h2>
+      <ul class="plain">
+        {% for c in certifications %}
+        <li><strong>{{ c.name }}</strong>{% if c.issuer or c.date %}<br><span class="muted">{{ c.issuer }}{% if c.issuer and c.date %} · {% endif %}{{ c.date }}</span>{% endif %}</li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+  </aside>
 </div>
 </body>
 </html>

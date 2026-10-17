@@ -133,7 +133,7 @@ compatible y Antigravity CLI ocupa su sitio.
 | Foto, color y secciones por oferta sin gastar agente | ✅ | ❌ | ❌ |
 | Foto según el país | ✅ | ❌ | ❌ |
 | Control de páginas | ✅ aviso `too_long` | ✅ páginas exactas y recorte por relevancia | 🟡 |
-| **Verificar la maquetación del PDF** (títulos huérfanos, huecos, pie) | ❌ | ✅ `verify_layout.py` | 🟡 `verify-cv-structure` |
+| **Verificar la maquetación del PDF** (títulos huérfanos, huecos, pie) | ✅ cinco avisos con página y arreglo, en CV y carta, y en `cai eval cv` (25.5) | ✅ `verify_layout.py` | 🟡 `verify-cv-structure` |
 | Comprobación ATS del texto del PDF | ✅ cobertura de keywords | ✅ | ✅ `verify-ats` |
 | Carta a medida, a juego con el CV | ✅ | ✅ | ✅ con 4 ángulos |
 | Respuestas de formularios | ✅ `prepare-application` | ❌ | ✅ |
@@ -224,7 +224,7 @@ dudosas, coste y calidad del CV) y la 26 (macOS, Linux y Docker).
 | 8 | **Enriquecer el perfil desde enlaces públicos** (GitHub, portfolio, Scholar), con tu OK antes de escribir | ambos | Proyectos y logros que no están en el CV | Bajo (un skill) | 25.2 ✅ |
 | 9 | **Señales de oferta dudosa y banderas rojas** en `assess-fit` y `research-company` | career-ops | Evita perder tiempo con ofertas fantasma, agencias o condiciones escondidas | Bajo | 25.3 ✅ |
 | 10 | **Lote en paralelo y coste por skill y por agente** (tokens, turnos, tiempo) con un filtro previo por score | ambos | Saber qué cuesta cada oferta y gastar solo en las que pasan el umbral | Medio | 25.4 ✅ |
-| 11 | **Verificar la maquetación del PDF** (huérfanos, huecos, pie) | AI Job Search | Hoy solo se avisa de que sobra una página | Bajo | 25.5 |
+| 11 | **Verificar la maquetación del PDF** (huérfanos, huecos, pie) | AI Job Search | Hoy solo se avisa de que sobra una página | Bajo | 25.5 ✅ |
 | 12 | **macOS, Linux o Docker** | ambos | Solo si se busca que lo use más gente; hoy el instalador es solo para Windows | Medio | 26 |
 | 13 | **`CHANGELOG`, historia con números reales y comunidad** | career-ops | Lo que hace famoso a career-ops no son las funciones, sino la historia y la comunidad | Bajo | 25.6 (sin comunidad) |
 | 14 | Autorización de trabajo y visado como filtro duro | career-ops | Solo si se busca fuera de la UE | Bajo | Sin fecha |

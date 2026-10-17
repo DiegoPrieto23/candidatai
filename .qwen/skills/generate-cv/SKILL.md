@@ -26,9 +26,14 @@ Sigue `docs/POLICIES.md` §1, §3 y §4.
 5. Cuando devuelva el `document_id`, delega en el rol `verifier` con ese id. Tiene que ser una
    ejecución distinta de la del redactor: la independencia es el sentido del paso.
 6. Si la verificación falla o hay aviso `too_long`, devuelve los problemas al `writer` para una
-   nueva versión. Máximo 2 vueltas; después, para y enseña los problemas.
+   nueva versión. Máximo 2 vueltas; después, para y enseña los problemas. Los avisos de
+   maquetación (fase 25.5: `orphan_heading`, `large_gap`, `footer_overlap`,
+   `nearly_empty_last_page`, `text_layer`) traen la página y un `fix`: con `fix: content`
+   (un título huérfano o una última página casi vacía), devuélvelo al `writer` como `too_long`;
+   con `template`, no redactes otra vez: díselo al usuario para que pruebe otra plantilla en la UI
+   (o con `render_cv`).
 7. Resume por oferta: plantilla y foto usadas, ruta del PDF, páginas, keywords cubiertas y
    ausentes, avisos del render (p. ej. `not_ats_friendly`) y resultado de la verificación.
 8. Recuerda que cambiar de plantilla, quitar o poner la foto o cambiar el color se hace desde la
    UI (o con `render_cv`) sin volver a redactar: no gasta cuota del agente. Solo hace falta
-   volver al `writer` si el nuevo render da `too_long`.
+   volver al `writer` si el nuevo render da `too_long` o un aviso con `fix: content`.

@@ -124,7 +124,7 @@ cambia `documents` ni necesita al agente.
 | docx_path / pdf_path | str? | Relativos a `data/` (`cvs/<job_id>/<document_id>/<render_id>/CV-<Nombre>.pdf`); `docx_path` vacío en el motor html |
 | pages | int | |
 | keyword_coverage | JSON | Keywords de la oferta presentes y ausentes en el PDF |
-| warnings | JSON | `[{code, message}]`: `too_long`, `not_ats_friendly`, `font_substituted`… |
+| warnings | JSON | `[{code, message, page?, fix?}]`: `too_long`, `not_ats_friendly`, `font_substituted`…; desde la fase 25.5, los de maquetación del PDF (`orphan_heading`, `large_gap`, `footer_overlap`, `nearly_empty_last_page`, `text_layer`) con la página y cómo arreglarlo (`fix`: `template` o `content`). Los demás no llevan `page` ni `fix`. Sin migración |
 | selected | bool | El que se usará al enviar; como mucho uno por documento. El primer render sin `too_long` queda seleccionado; después lo cambias en la UI (`select_render`, sin evento: no cambia la etapa) |
 | created_at | datetime | |
 

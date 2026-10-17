@@ -90,8 +90,10 @@ Después, aplícalo en cada sección:
 ## Guardar
 1. `save_cv_content(job_id, content, render_options)`: guarda el contenido y hace el primer render.
 2. Si lo rechaza, corrige exactamente lo que dice y reintenta (máximo 3 veces).
-3. Si vuelve con aviso `too_long`, recorta: primero bullets menos relevantes, después proyectos, y
-   por último acorta frases. Nunca toques formato ni cambies de plantilla por tu cuenta.
+3. Si vuelve con aviso `too_long`, o con un aviso de maquetación con `fix: content` (un título
+   huérfano al pie de una página, una última página casi vacía), recorta: primero bullets menos
+   relevantes para esta oferta (por relevancia, no por antigüedad), después proyectos, y por
+   último acorta frases. Nunca toques formato ni cambies de plantilla por tu cuenta.
 4. Responde con: `document_id`, plantilla usada, avisos del render, páginas, keywords cubiertas y ausentes, y cualquier decisión
    discutible que hayas tomado (en una línea cada una).
 

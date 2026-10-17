@@ -11,15 +11,16 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.core.config import REPO_ROOT, get_settings
-from app.models import Document, Event, Job
+from app.models import Document, DocumentRender, Event, Job
 from app.schemas.cv import CvRenderOptions, CvVerification
 from app.services import events, extractions, profile
-from app.services.documents import checks, options, pdf, service, templates
+from app.services.documents import checks, layout, options, pdf, service, templates
 from app.services.pipeline import Actor, InvalidTransitionError, Stage
 from tests.cv_support import (
     demo_content,
     demo_content_data,
     fake_converter,
+    make_layout_pdf,
     requires_chromium,
     write_template,
 )
@@ -384,6 +385,31 @@ def test_html_template_renders_pdf_only(session: Session, approved_job: Job) -> 
     assert "font_substituted" not in codes  # Lato va en fonts/ de la plantilla
     with pytest.raises(service.FileNotAvailableError):
         service.render_file(session, result.render_id, "docx")
+
+
+@pytest.mark.layout
+def test_layout_warnings_are_stored_with_the_render_and_do_not_block(
+    session: Session, approved_job: Job, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Fase 25.5: un conversor que deja un hueco grande en medio de la página.
+    def with_a_gap(_docx: Path, out: Path, _timeout: int) -> None:
+        lines = [(50, 50, "Lucía Varela Otero"), (50, 66, "lucia.varela@example.com")]
+        lines += [(50, 100 + 14 * i, f"Línea {i}") for i in range(10)]
+        lines += [(50, 600 + 14 * i, f"Después {i}") for i in range(5)]
+        out.write_bytes(make_layout_pdf([lines]))
+
+    use_converter(monkeypatch, with_a_gap)
+    saved = service.save_content(session, approved_job.id, demo_content())
+    render = saved.render
+    gap = next(w for w in render.warnings if w.code == "large_gap")
+    assert gap.page == 1 and gap.fix == "template"
+    assert render.selected  # un aviso de maquetación no impide seleccionarlo (too_long sí)
+    stored = session.get(DocumentRender, render.render_id)
+    assert stored is not None
+    saved_gap = next(w for w in stored.warnings if w["code"] == "large_gap")
+    assert saved_gap["page"] == 1 and saved_gap["fix"] == "template"
+    # Los avisos de antes no llevan página: se guardan como siempre.
+    assert all("page" not in w for w in stored.warnings if w["code"] not in layout.CODES)
 
 
 def test_failed_conversion_leaves_no_files(
