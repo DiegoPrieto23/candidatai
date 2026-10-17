@@ -39,7 +39,8 @@
     "applied": "Applied",
     "replied": "Replied",
     "interview": "Interview",
-    "reply": "Reply rate"
+    "reply": "Reply rate",
+    "costPerApplied": "Cost per sent"
   },
   "response": {
     "title": "First reply",
@@ -203,5 +204,14 @@
     "title": "No data yet",
     "period": "Try a longer period.",
     "body": "The funnel fills up as you add jobs (<to>New job</to>), review them and log what happens with each application."
+  },
+  "cost": {
+    "title": "Agent cost",
+    "hint": "What this period's jobs used in background runs, as each agent reports it (terminal sessions don't count). In dollars if the agent gives them; otherwise, in tokens.",
+    "none": "No background runs with jobs from this period.",
+    "total": "Total",
+    "perApplied": "Per sent application",
+    "perInterview": "Per interview",
+    "tokens": "{{tokens}} tokens"
   }
 }

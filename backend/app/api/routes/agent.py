@@ -18,11 +18,13 @@ from pydantic import BaseModel, ConfigDict, Field
 from app.agent_interface.errors import ErrorDetail, ToolError
 from app.api.deps import EmptyBody, SessionDep, require_ui
 from app.services import (
+    agent_costs,
     agent_launch,
     agent_prefs,
     agent_registry,
     agent_requests,
     agent_runs,
+    assess_threshold,
     local_models,
     spend_tiers,
 )
@@ -154,6 +156,34 @@ def save_agent_preferences(session: SessionDep, body: Preferences) -> Preference
 def _pref_error(exc: agent_prefs.PreferenceError) -> ToolError:
     detail = ErrorDetail(field=exc.field, received=None, reason=str(exc))
     return ToolError("invalid_request", str(exc), [detail])
+
+
+# --- Coste y umbral (fase 25.4) ----------------------------------------------------------------
+
+
+@router.get("/costs", operation_id="get_agent_costs")
+def get_agent_costs(session: SessionDep) -> agent_costs.AgentCosts:
+    """Lo que han gastado las ejecuciones en segundo plano en los últimos 7 y 30 días, por acción,
+    agente y modelo, y lo que pesan las instrucciones de cada skill. Solo lo que da cada agente."""
+    return agent_costs.get_costs(session)
+
+
+@router.get("/assess-threshold", operation_id="get_assess_threshold")
+def get_assess_threshold(session: SessionDep) -> assess_threshold.AssessThreshold:
+    """El score mínimo con que «Evaluar encaje» valora en segundo plano."""
+    return assess_threshold.get_threshold(session)
+
+
+@router.put(
+    "/assess-threshold",
+    operation_id="save_assess_threshold",
+    dependencies=[Depends(require_ui)],
+)
+def save_assess_threshold(
+    session: SessionDep, body: assess_threshold.AssessThresholdInput
+) -> assess_threshold.AssessThreshold:
+    """Cambia el umbral (`value: null` vuelve al de `config/policies.yaml`)."""
+    return assess_threshold.set_threshold(session, body)
 
 
 # --- Niveles de gasto (fase 24.6) -------------------------------------------------------------

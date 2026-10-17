@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Query, status
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 
 from app.api.deps import EmptyBody, SessionDep, require_ui
-from app.services import events, ingest, jobs, liveness
+from app.services import agent_costs, events, ingest, jobs, liveness
 from app.services.matching import service as matching
 from app.services.pipeline import EventType, Stage
 
@@ -70,6 +70,13 @@ def list_jobs(
 def get_job(session: SessionDep, job_id: int) -> jobs.JobView:
     """Ficha: metadatos, texto original, extracción vigente, eventos y aviso de inyección."""
     return jobs.get_job_view(session, job_id)
+
+
+@router.get("/{job_id}/costs", operation_id="get_job_costs")
+def get_job_costs(session: SessionDep, job_id: int) -> agent_costs.JobCost:
+    """Lo que se ha gastado en esta oferta en segundo plano (fase 25.4): sus ejecuciones y su
+    parte de las de lote. Lo de una terminal no cuenta: el agente no lo devuelve."""
+    return agent_costs.job_cost(session, job_id)
 
 
 @router.get("/{job_id}/match", operation_id="get_job_match")

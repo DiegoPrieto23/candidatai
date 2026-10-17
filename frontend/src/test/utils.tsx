@@ -223,7 +223,7 @@ export function triageItem(id: number, score: number, changes: Partial<TriageIte
 }
 
 export function triageQueue(items: TriageItem[], changes: Partial<TriageQueue> = {}): TriageQueue {
-  return { items, total: items.length, triage_threshold: 55, profile_missing: false, ...changes }
+  return { items, total: items.length, triage_threshold: 55, assess_min_score: 45, profile_missing: false, ...changes }
 }
 
 // --- CV ------------------------------------------------------------------------------------------

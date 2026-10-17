@@ -119,6 +119,18 @@ export function formatMoneyDiff(diff: number, currency = 'EUR'): string {
   return `${diff > 0 ? '+' : '−'}${formatMoney(Math.abs(diff), currency)}`
 }
 
+/** Dólares con los decimales que hacen falta (fase 25.4: el coste de una ejecución son céntimos). */
+export function formatUsd(value: number | null | undefined): string {
+  if (value == null) return '—'
+  const digits = value !== 0 && Math.abs(value) < 1 ? 4 : 2
+  return `${formatNumber(value, { minimumFractionDigits: digits, maximumFractionDigits: digits })} USD`
+}
+
+/** Tokens redondeados, con separadores. */
+export function formatTokens(value: number | null | undefined): string {
+  return value == null ? '—' : formatNumber(Math.round(value))
+}
+
 /** Un número con los separadores del idioma activo («1.234» o «1,234»). */
 export function formatNumber(n: number, options?: Intl.NumberFormatOptions): string {
   return new Intl.NumberFormat(intlLocale(), options).format(n)

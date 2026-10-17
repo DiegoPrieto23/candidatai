@@ -9,7 +9,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from app.core.config import REPO_ROOT
 
@@ -212,11 +212,26 @@ class DoubtfulPolicy(BaseModel):
     stale_repost_min_span_days: int = Field(default=60, gt=0)
 
 
+MAX_PARALLEL_RUNS = 4
+
+
 class BackgroundRunsPolicy(BaseModel):
-    """«En segundo plano» (fase 19): el agente sin ventana, desde el worker, de uno en uno."""
+    """«En segundo plano» (fase 19): el agente sin ventana, desde el worker. Fase 25.4: hasta
+    `max_parallel` a la vez (con un tope por agente) y un umbral de score para `assess-fit`."""
 
     timeout_minutes: float = Field(default=30, gt=0)  # después se para el proceso (`timeout`)
     max_progress_lines: int = Field(default=200, gt=0)  # las últimas que se guardan
+    max_parallel: int = Field(default=1, ge=1, le=MAX_PARALLEL_RUNS)
+    per_agent: dict[str, int] = Field(default_factory=dict)  # tope por agente (p. ej. local: 1)
+    # Score mínimo para valorar en segundo plano; `None`: el de triaje menos 10. La UI lo cambia.
+    assess_min_score: int | None = Field(default=None, ge=0, le=100)
+
+    @field_validator("per_agent")
+    @classmethod
+    def _limits(cls, value: dict[str, int]) -> dict[str, int]:
+        if any(not 1 <= n <= MAX_PARALLEL_RUNS for n in value.values()):
+            raise ValueError(f"Cada tope por agente va de 1 a {MAX_PARALLEL_RUNS}.")
+        return value
 
 
 class Policies(BaseModel):

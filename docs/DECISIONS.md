@@ -976,3 +976,40 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   - **¿Hay que revisar el ADR-001?** Solo si ningún agente con un modelo local supera la matriz en
     las acciones cerradas (`process-jobs`, `assess-fit`). La decisión espera a la pasada del
     usuario con OpenCode y Ollama. Hasta entonces, el ADR-001 se mantiene sin cambios.
+
+## ADR-038 · Coste por oferta y por agente, umbral antes de gastar y varias ejecuciones a la vez
+- **Contexto:** no se sabía cuánto cuesta cada oferta ni con qué agente sale más barata; el
+  segundo plano iba de una en una (ADR-032) y `assess-fit` gastaba agente en ofertas que el código
+  ya puntúa muy bajo. Extiende el ADR-032.
+- **Decisión:**
+  - **Uso normalizado:** cada lector de salida rellena `usage` con `input_tokens`,
+    `output_tokens`, `cached_tokens`, `turns`, `duration_ms` y `cost_usd`, todas opcionales. Nada
+    se estima ni se pasa a euros; en una terminal no hay uso. Las filas viejas se traducen al leer.
+  - **Coste por oferta:** una ejecución con oferta es entera suya; una de lote se reparte a partes
+    iguales entre las ofertas en que escribió, que salen de `mcp_calls` (las herramientas `save_*`
+    de su acción entre su inicio y su fin). Sin migración ni variables de entorno hacia el
+    servidor MCP. Vista por acción, agente y modelo (7 y 30 días) en «Agente», con los tokens de
+    las instrucciones de cada skill (fase 24.2); en la ficha y en el embudo, por candidatura enviada
+    y por entrevista.
+  - **Umbral antes de gastar:** `assess-fit` en segundo plano lleva en su orden los ids de las
+    pendientes sin valorar con score ≥ el umbral (página «Agente», `background_runs.
+    assess_min_score` o el de triaje menos 10), como mucho 30. Si no queda ninguna, no se lanza y
+    dice cuántas quedan por debajo. La UI explica por qué se queda sin valorar una oferta. En una
+    terminal, el skill valora lo que le pidas; la matriz de `cai eval compat` usa 0.
+  - **Varias a la vez:** hasta `background_runs.max_parallel` (1 por defecto, 4 como máximo), con
+    `per_agent` (p. ej. 1 para un modelo local). Reclamar sigue siendo un único `UPDATE`, ahora
+    condicionado a hueco, al tope del agente y a no chocar con otra en curso: la misma oferta o,
+    sin oferta, la misma acción de lote. Dos CVs de ofertas distintas pueden ir a la vez; dos
+    «Procesar ofertas», nunca. Cada ejecución conserva su techo de herramientas (ADR-032), su
+    configuración propia (fase 24.5) y su tiempo máximo; cancelar, parar el worker y recuperar
+    tras reiniciar ya trataban todas las que hubiera en curso. Las escrituras de la fila se
+    reintentan si SQLite está bloqueado.
+- **Consecuencias:** la atribución por ventana de tiempo cuenta también lo que hagas a la vez en
+  una terminal, o lo que haga otro agente, con las mismas herramientas: `mcp_calls.client_name` es
+  el nombre que da el cliente MCP («claude-code»), no el del agente, así que no sirve para filtrar.
+  Sin ofertas que valorar, «Evaluar encaje» en segundo plano ya no se lanza (antes se lanzaba y no
+  hacía nada). Un lote sigue siendo una sola ejecución: el paralelo
+  sirve entre acciones y entre ofertas, no parte un lote en trozos. El umbral va en la orden, no en
+  las herramientas: con `list_jobs`, el agente aún podría ver las demás. Si las valorase, no
+  pasaría nada grave, pero gastaría lo que se quería ahorrar.
+

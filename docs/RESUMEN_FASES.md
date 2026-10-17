@@ -380,6 +380,15 @@ La carta es un documento propio, con sus indicaciones, su verificación y sus re
 - Para agentes y terminal: `get_received_offer` ↔ `jh received-offers show`.
 
 
+## 25.4 · Qué cuesta cada oferta, y gastar solo donde merece la pena — 2026-10-17 · Claude Code (Opus 5.5)
+- **Coste:** la página «Agente» suma tokens, tiempo y, si el agente lo da, dinero, por acción,
+  agente y modelo (7 y 30 días), con lo que pesa cada skill. La ficha dice lo gastado en esa
+  oferta y el embudo, por candidatura enviada y por entrevista.
+- **Umbral antes de gastar:** «Evaluar encaje» en segundo plano se salta las ofertas con poco
+  score, y el triaje dice por qué. El umbral lo cambias en la página «Agente».
+- **Varias a la vez:** hasta 4 ejecuciones en segundo plano, nunca dos de la misma oferta, con un
+  tope por agente para un modelo local.
+
 ## 25.3 · Ofertas dudosas a la vista — 2026-10-17 · Claude Code (Opus 5.5)
 - **Cinco señales** en la bandeja, el triaje y la ficha: rango salarial muy amplio, empresa oculta o
   agencia, contrato temporal, publicada hace meses y cribado con IA, cada una con su explicación.

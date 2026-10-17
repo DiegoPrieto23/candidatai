@@ -258,6 +258,11 @@ Una oferta puede encajar en el papel y aun así no merecer la pena. El código m
   solo `docs/`. Lo que intente fuera de eso queda en el progreso como «denegada». Solo se lanzan
   así los skills que no preguntan; si uno necesita al usuario, para y deja la pregunta en la UI.
   Tiempo máximo: `background_runs.timeout_minutes` de `config/policies.yaml`.
+- **Varias a la vez y umbral** (fase 25.4, ADR-038): hasta `background_runs.max_parallel`
+  ejecuciones a la vez (1 por defecto), nunca dos de la misma oferta ni dos lotes de la misma
+  acción, cada una con su techo de herramientas. «Evaluar encaje» en segundo plano solo valora las
+  ofertas con score ≥ el umbral de la página «Agente» (por defecto, el de triaje menos 10).
+  `max_parallel` y `per_agent` se leen al arrancar: tras cambiarlos, reinicia `cai worker`.
 
 ## 7. Estilo de redacción
 

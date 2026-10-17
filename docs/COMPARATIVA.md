@@ -60,7 +60,7 @@ La parte en la que más nos separa career-ops. Leyenda: ✅ lo tiene · 🟡 en 
 | Gemini CLI | ❌ **ya no sirve con cuentas gratuitas ni Pro** (ver nota); deshabilitado en el registro y `GEMINI.md` vacío a propósito (24.3) | 🟡 `gemini -p` en un subagente | 🟡 `GEMINI.md` vacío a propósito |
 | Pi, Grok, Kimi, Copilot CLI, Cursor, Hermes | 🟡 sin probar, valdrían si leen `AGENTS.md` | ❌ | ✅ |
 | Subagentes con herramientas limitadas | ✅ Claude Code (nivel A); Codex, OpenCode y Qwen Code en nivel B (OpenCode y Qwen generan cada rol con solo sus herramientas, pendiente de probar) | ✅ revisor con contexto limpio | 🟡 |
-| Segundo plano / lote | 🟡 Claude Code y OpenCode (24.5), de una en una, con herramientas limitadas | ✅ `/rank` en paralelo | ✅ `batch-runner.sh --cli claude\|opencode\|gemini\|qwen --model …` |
+| Segundo plano / lote | ✅ Claude Code y OpenCode (24.5), hasta 4 a la vez con tope por agente (25.4), con herramientas limitadas | ✅ `/rank` en paralelo | ✅ `batch-runner.sh --cli claude\|opencode\|gemini\|qwen --model …` |
 | Elegir el agente | ✅ desde la UI (24.4); `CAI_AGENT` como respaldo | ❌ | ✅ el CLI que abras; `--cli` en el lote |
 | **Cambiar de agente desde la UI**, por acción | ✅ por defecto, por acción y «con Claude Code ▾» en cada botón, con las capacidades de cada agente comprobadas (24.4) | n/a | 🟡 la web en alfa usa el CLI o la clave que le des |
 | Elegir modelo o nivel de gasto | ✅ modelo o preset por agente y por acción (24.4) y niveles «Económico/Equilibrado/Máximo» que se aplican con un clic y se deshacen (24.6) | ❌ | ✅ `spend_tier` economy/standard/premium + filtro previo que ahorra evaluaciones |
@@ -120,7 +120,7 @@ compatible y Antigravity CLI ocupa su sitio.
 | Huecos de skills agregados y plan de formación | ✅ | ✅ `/upskill` | ✅ |
 | Valorar un curso o un proyecto | ✅ `training-plan` | ❌ | ✅ |
 | Títulos cercanos para ampliar la búsqueda | ✅ `broaden-search` | ❌ | ✅ |
-| Evaluación en lote en paralelo | 🟡 en segundo plano, de una en una | ✅ `/rank` | ✅ `batch` con varios workers |
+| Evaluación en lote en paralelo | 🟡 en segundo plano, hasta 4 ejecuciones a la vez (25.4); cada lote es una ejecución | ✅ `/rank` | ✅ `batch` con varios workers |
 
 ### CV y carta
 
@@ -223,7 +223,7 @@ dudosas, coste y calidad del CV) y la 26 (macOS, Linux y Docker).
 | 7 | **Más conectores de ATS con API pública**: Personio, Teamtailor, Workable, SmartRecruiters, Recruitee, y feeds como Manfred o freehire.me | ambos | Mucha empresa española y europea usa estos ATS; son APIs, sin scraping (ADR-016) | Medio | 25.1 ✅ |
 | 8 | **Enriquecer el perfil desde enlaces públicos** (GitHub, portfolio, Scholar), con tu OK antes de escribir | ambos | Proyectos y logros que no están en el CV | Bajo (un skill) | 25.2 ✅ |
 | 9 | **Señales de oferta dudosa y banderas rojas** en `assess-fit` y `research-company` | career-ops | Evita perder tiempo con ofertas fantasma, agencias o condiciones escondidas | Bajo | 25.3 ✅ |
-| 10 | **Lote en paralelo y coste por skill y por agente** (tokens, turnos, tiempo) con un filtro previo por score | ambos | Saber qué cuesta cada oferta y gastar solo en las que pasan el umbral | Medio | 25.4 |
+| 10 | **Lote en paralelo y coste por skill y por agente** (tokens, turnos, tiempo) con un filtro previo por score | ambos | Saber qué cuesta cada oferta y gastar solo en las que pasan el umbral | Medio | 25.4 ✅ |
 | 11 | **Verificar la maquetación del PDF** (huérfanos, huecos, pie) | AI Job Search | Hoy solo se avisa de que sobra una página | Bajo | 25.5 |
 | 12 | **macOS, Linux o Docker** | ambos | Solo si se busca que lo use más gente; hoy el instalador es solo para Windows | Medio | 26 |
 | 13 | **`CHANGELOG`, historia con números reales y comunidad** | career-ops | Lo que hace famoso a career-ops no son las funciones, sino la historia y la comunidad | Bajo | 25.6 (sin comunidad) |

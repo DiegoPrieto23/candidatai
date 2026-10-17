@@ -5,6 +5,7 @@ import {
   ChatCircleDotsIcon,
   CircleNotchIcon,
   ClockCountdownIcon,
+  CoinsIcon,
   RobotIcon,
   TerminalWindowIcon,
   XIcon,
@@ -20,6 +21,7 @@ import {
 } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
 import { AgentsSection } from '@/components/AgentsSection'
+import { CostsSection } from '@/components/CostsSection'
 import { ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -78,15 +80,16 @@ function Target({ jobId }: { jobId: number | null }) {
   )
 }
 
-/** Fase 24.5: el uso que dice el agente (turnos, tokens y coste), si dice alguno. */
+/** Fase 24.5: el uso que dice el agente (turnos, tokens y coste), si dice alguno. Claves comunes
+ *  desde la 25.4 (`agent_usage.USAGE_KEYS`). */
 function usageText(usage: AgentRunView['usage']): string | null {
   if (!usage) return null
   const num = (key: string) => (typeof usage[key] === 'number' ? (usage[key] as number) : null)
   const parts: string[] = []
-  const turns = num('num_turns')
+  const turns = num('turns')
   const input = num('input_tokens')
   const output = num('output_tokens')
-  const cost = num('total_cost_usd')
+  const cost = num('cost_usd')
   if (turns !== null) parts.push(i18n.t('agent:usageTurns', { count: turns }))
   if (input !== null || output !== null)
     parts.push(i18n.t('agent:usageTokens', { input: (input ?? 0).toLocaleString(), output: (output ?? 0).toLocaleString() }))
@@ -363,6 +366,13 @@ export function AgentPage() {
           <Requests />
         </section>
       </div>
+      <section aria-labelledby="costs-title" className="mt-10">
+        <h2 id="costs-title" className="mb-3 flex items-center gap-2 text-lg font-semibold tracking-tight">
+          <CoinsIcon className="size-5 text-muted-foreground" weight="duotone" />
+          {t('costs.title')}
+        </h2>
+        <CostsSection />
+      </section>
       <section aria-labelledby="agents-title" className="mt-10">
         <h2 id="agents-title" className="mb-3 flex items-center gap-2 text-lg font-semibold tracking-tight">
           <RobotIcon className="size-5 text-muted-foreground" weight="duotone" />

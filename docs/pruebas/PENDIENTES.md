@@ -150,6 +150,16 @@ funcionando. Los roles son `writer`, `verifier`, `classifier`, `reviewer` y `ext
 - [ ] `uv run --directory backend cai sources discover --file empresas.txt` con tu lista: ahora
       prueba también esos cinco ATS (tarda más: hasta 8 ATS × 3 slugs por empresa).
 
+### Coste, umbral y lote en paralelo (fase 25.4)
+
+- [ ] Página «Agente» → «Coste» con tus ejecuciones reales: por acción, agente y modelo, y lo que
+      pesa cada skill. Guía: `fase-25.4-prueba-manual.txt`.
+- [ ] Umbral de «Evaluar encaje»: con una oferta por debajo, el triaje dice por qué y la ejecución
+      en segundo plano no la incluye.
+- [ ] `background_runs.max_parallel: 2` en `config/policies.yaml`: dos «Generar CV» de ofertas
+      distintas a la vez y la misma oferta nunca dos veces. Con un modelo local de Ollama,
+      `per_agent: {opencode: 1}`.
+
 ### Ofertas dudosas y banderas rojas (fase 25.3)
 
 - [ ] `uv run --directory backend cai jobs signals --recompute` con tus datos: apunta cuántas salen

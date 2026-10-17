@@ -65,6 +65,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/jobs/{job_id}/costs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Job Costs
+         * @description Lo que se ha gastado en esta oferta en segundo plano (fase 25.4): sus ejecuciones y su
+         *     parte de las de lote. Lo de una terminal no cuenta: el agente no lo devuelve.
+         */
+        get: operations["get_job_costs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/jobs/{job_id}/match": {
         parameters: {
             query?: never;
@@ -1436,6 +1457,51 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/agent/costs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Agent Costs
+         * @description Lo que han gastado las ejecuciones en segundo plano en los últimos 7 y 30 días, por acción,
+         *     agente y modelo, y lo que pesan las instrucciones de cada skill. Solo lo que da cada agente.
+         */
+        get: operations["get_agent_costs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/agent/assess-threshold": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Assess Threshold
+         * @description El score mínimo con que «Evaluar encaje» valora en segundo plano.
+         */
+        get: operations["get_assess_threshold"];
+        /**
+         * Save Assess Threshold
+         * @description Cambia el umbral (`value: null` vuelve al de `config/policies.yaml`).
+         */
+        put: operations["save_assess_threshold"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/agent/tiers": {
         parameters: {
             query?: never;
@@ -2334,6 +2400,13 @@ export interface components {
              */
             headless: boolean;
         };
+        /** AgentCosts */
+        AgentCosts: {
+            /** Windows */
+            windows: components["schemas"]["CostWindow"][];
+            /** Terminal Note */
+            terminal_note: string;
+        };
         /**
          * AgentEntry
          * @description Un agente para `cai agents list --json` y `GET /agent/agents`.
@@ -2467,7 +2540,7 @@ export interface components {
             error: string | null;
             /** Usage */
             usage: {
-                [key: string]: unknown;
+                [key: string]: number;
             } | null;
             /** Cancel Requested */
             cancel_requested: boolean;
@@ -2628,6 +2701,25 @@ export interface components {
         ApplicationAnswers: {
             /** Answers */
             answers: components["schemas"]["ScreeningAnswer"][];
+        };
+        /** AssessThreshold */
+        AssessThreshold: {
+            /** Value */
+            value: number;
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "ui" | "policies" | "default";
+            /** Triage Threshold */
+            triage_threshold: number;
+            /** Default */
+            default: number;
+        };
+        /** AssessThresholdInput */
+        AssessThresholdInput: {
+            /** Value */
+            value: number | null;
         };
         /**
          * AssistedApplication
@@ -3092,6 +3184,121 @@ export interface components {
             files: components["schemas"]["ContextFileInfo"][];
             /** Folders */
             folders: components["schemas"]["DocumentFolderInfo"][];
+        };
+        /** CostGroup */
+        CostGroup: {
+            /**
+             * Runs
+             * @default 0
+             */
+            runs: number;
+            /**
+             * With Usage
+             * @default 0
+             */
+            with_usage: number;
+            /**
+             * Input Tokens
+             * @default 0
+             */
+            input_tokens: number;
+            /**
+             * Output Tokens
+             * @default 0
+             */
+            output_tokens: number;
+            /**
+             * Cached Tokens
+             * @default 0
+             */
+            cached_tokens: number;
+            /**
+             * Turns
+             * @default 0
+             */
+            turns: number;
+            /**
+             * Duration Ms
+             * @default 0
+             */
+            duration_ms: number;
+            /** Cost Usd */
+            cost_usd?: number | null;
+            /** Avg Tokens */
+            avg_tokens?: number | null;
+            /** Avg Duration Ms */
+            avg_duration_ms?: number | null;
+            /** Avg Cost Usd */
+            avg_cost_usd?: number | null;
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Instruction Tokens */
+            instruction_tokens?: number | null;
+        };
+        /** CostTotals */
+        CostTotals: {
+            /**
+             * Runs
+             * @default 0
+             */
+            runs: number;
+            /**
+             * With Usage
+             * @default 0
+             */
+            with_usage: number;
+            /**
+             * Input Tokens
+             * @default 0
+             */
+            input_tokens: number;
+            /**
+             * Output Tokens
+             * @default 0
+             */
+            output_tokens: number;
+            /**
+             * Cached Tokens
+             * @default 0
+             */
+            cached_tokens: number;
+            /**
+             * Turns
+             * @default 0
+             */
+            turns: number;
+            /**
+             * Duration Ms
+             * @default 0
+             */
+            duration_ms: number;
+            /** Cost Usd */
+            cost_usd?: number | null;
+            /** Avg Tokens */
+            avg_tokens?: number | null;
+            /** Avg Duration Ms */
+            avg_duration_ms?: number | null;
+            /** Avg Cost Usd */
+            avg_cost_usd?: number | null;
+        };
+        /** CostWindow */
+        CostWindow: {
+            /** Days */
+            days: number;
+            /**
+             * Since
+             * Format: date-time
+             */
+            since: string;
+            total: components["schemas"]["CostTotals"];
+            /** By Action */
+            by_action: components["schemas"]["CostGroup"][];
+            /** By Agent */
+            by_agent: components["schemas"]["CostGroup"][];
+            /** By Model */
+            by_model: components["schemas"]["CostGroup"][];
         };
         /**
          * CoverLetterBriefInput
@@ -3713,6 +3920,31 @@ export interface components {
             /** Days Without Reply */
             days_without_reply: number;
         };
+        /**
+         * FunnelCost
+         * @description Lo que han gastado en segundo plano las ofertas del periodo (fase 25.4). Lo de una terminal
+         *     no cuenta: el agente no devuelve su uso.
+         */
+        FunnelCost: {
+            /** Runs */
+            runs: number;
+            /** Tokens */
+            tokens: number;
+            /** Cost Usd */
+            cost_usd: number | null;
+            /** Applied */
+            applied: number;
+            /** Interview */
+            interview: number;
+            /** Tokens Per Applied */
+            tokens_per_applied: number | null;
+            /** Cost Per Applied Usd */
+            cost_per_applied_usd: number | null;
+            /** Tokens Per Interview */
+            tokens_per_interview: number | null;
+            /** Cost Per Interview Usd */
+            cost_per_interview_usd: number | null;
+        };
         /** FunnelStats */
         FunnelStats: {
             /** Since */
@@ -3734,6 +3966,7 @@ export interface components {
             discard_reasons: components["schemas"]["ReasonCount"][];
             /** Hard Filter Failures */
             hard_filter_failures: components["schemas"]["FilterCount"][];
+            agent_cost: components["schemas"]["FunnelCost"];
         };
         /** FunnelStep */
         FunnelStep: {
@@ -3894,6 +4127,16 @@ export interface components {
             /** Item */
             item?: string | null;
         };
+        /** JobCost */
+        JobCost: {
+            /** Job Id */
+            job_id: number;
+            /** Runs */
+            runs: components["schemas"]["JobRunCost"][];
+            total: components["schemas"]["CostTotals"];
+            /** Terminal Note */
+            terminal_note: string;
+        };
         /**
          * JobCoverLetter
          * @description La sección «Carta de presentación» de la ficha.
@@ -4046,6 +4289,29 @@ export interface components {
              * @default 0
              */
             known_contacts: number;
+        };
+        /** JobRunCost */
+        JobRunCost: {
+            /** Run Id */
+            run_id: number;
+            /** Action */
+            action: string;
+            /** Label */
+            label: string;
+            /** Agent */
+            agent: string;
+            /** Model */
+            model: string | null;
+            /** Finished At */
+            finished_at: string | null;
+            /** Share */
+            share: number;
+            /** Shared With */
+            shared_with: number;
+            /** Usage */
+            usage: {
+                [key: string]: number;
+            };
         };
         /** JobSignals */
         JobSignals: {
@@ -5913,6 +6179,10 @@ export interface components {
             kind: string;
             /** Name */
             name: string;
+            /** Tokens */
+            tokens: number;
+            /** Cost Usd */
+            cost_usd: number | null;
         };
         /**
          * SourceInput
@@ -6274,6 +6544,8 @@ export interface components {
             total: number;
             /** Triage Threshold */
             triage_threshold: number;
+            /** Assess Min Score */
+            assess_min_score: number;
             /** Profile Missing */
             profile_missing: boolean;
         };
@@ -6593,6 +6865,100 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["JobView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_job_costs: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobCost"];
                 };
             };
             /** @description Unauthorized */
@@ -13338,6 +13704,286 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Preferences"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_agent_costs: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentCosts"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_assess_threshold: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssessThreshold"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    save_assess_threshold: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssessThresholdInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssessThreshold"];
                 };
             };
             /** @description Unauthorized */

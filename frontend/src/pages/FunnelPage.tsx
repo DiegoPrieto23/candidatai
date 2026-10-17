@@ -24,7 +24,15 @@ import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { i18n } from '@/lib/i18n'
-import { dateFormatter, discardReasonLabel, formatNumber, HARD_FILTER_LABEL, SOURCE_KIND_LABEL } from '@/lib/labels'
+import {
+  dateFormatter,
+  discardReasonLabel,
+  formatNumber,
+  formatTokens,
+  formatUsd,
+  HARD_FILTER_LABEL,
+  SOURCE_KIND_LABEL,
+} from '@/lib/labels'
 import { toLocalDateInput } from '@/lib/time'
 import { cn } from '@/lib/utils'
 
@@ -281,9 +289,10 @@ function BreakdownTable({
 }: {
   caption: string
   firstHead: string
-  rows: { key: string; name: ReactNode; summary: Summary; muted?: boolean }[]
+  rows: { key: string; name: ReactNode; summary: Summary; muted?: boolean; spend?: Spend }[]
 }) {
   const { t } = useTranslation('funnel', { keyPrefix: 'cols' })
+  const withCost = rows.some((r) => r.spend !== undefined)
   return (
     <div className="-mx-1 overflow-x-auto">
       <table className="w-full min-w-[34rem] text-sm">
@@ -301,10 +310,15 @@ function BreakdownTable({
             <th scope="col" className="px-1 pb-2 text-right font-medium">
               {t('reply')}
             </th>
+            {withCost && (
+              <th scope="col" className="px-1 pb-2 text-right font-medium">
+                {t('costPerApplied')}
+              </th>
+            )}
           </tr>
         </thead>
         <tbody>
-          {rows.map(({ key, name, summary: s, muted }) => (
+          {rows.map(({ key, name, summary: s, muted, spend }) => (
             <tr key={key} className="border-b last:border-0">
               <th scope="row" className={cn('max-w-56 px-1 py-2 text-left font-normal', muted && 'text-muted-foreground')}>
                 {name}
@@ -317,11 +331,50 @@ function BreakdownTable({
               <td className="px-1 py-2 text-right">
                 <RateBar value={s.reply_rate} />
               </td>
+              {withCost && <td className="tabular px-1 py-2 text-right">{perApplied(spend, s.applied)}</td>}
             </tr>
           ))}
         </tbody>
       </table>
     </div>
+  )
+}
+
+/** Fase 25.4: lo gastado en segundo plano por las ofertas de una fila. */
+type Spend = { tokens: number; cost_usd: number | null }
+
+/** Por candidatura enviada: dólares si algún agente los dio; si no, tokens. */
+function perApplied(spend: Spend | undefined, applied: number): string {
+  if (!spend || applied === 0 || (spend.tokens === 0 && spend.cost_usd == null)) return '—'
+  if (spend.cost_usd != null) return formatUsd(spend.cost_usd / applied)
+  return i18n.t('funnel:cost.tokens', { tokens: formatTokens(spend.tokens / applied) })
+}
+
+function CostPanel({ cost }: { cost: Schemas['FunnelCost'] }) {
+  const { t } = useTranslation('funnel', { keyPrefix: 'cost' })
+  const value = (usd: number | null, tokens: number | null) =>
+    usd != null ? formatUsd(usd) : tokens != null ? t('tokens', { tokens: formatTokens(tokens) }) : '—'
+  return (
+    <Panel title={t('title')} hint={t('hint')}>
+      {cost.runs === 0 ? (
+        <p className="text-sm text-muted-foreground">{t('none')}</p>
+      ) : (
+        <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm sm:grid-cols-3">
+          <div>
+            <dt className="text-muted-foreground">{t('total')}</dt>
+            <dd className="tabular text-lg font-semibold">{value(cost.cost_usd, cost.tokens)}</dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground">{t('perApplied')}</dt>
+            <dd className="tabular text-lg font-semibold">{value(cost.cost_per_applied_usd, cost.tokens_per_applied)}</dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground">{t('perInterview')}</dt>
+            <dd className="tabular text-lg font-semibold">{value(cost.cost_per_interview_usd, cost.tokens_per_interview)}</dd>
+          </div>
+        </dl>
+      )}
+    </Panel>
   )
 }
 
@@ -442,9 +495,12 @@ function Dashboard({ stats, since }: { stats: FunnelStats; since: string | null 
               </>
             ),
             summary: s,
+            spend: { tokens: s.tokens, cost_usd: s.cost_usd },
           }))}
         />
       </Panel>
+
+      <CostPanel cost={stats.agent_cost} />
 
       <Panel title={t('byTitle.title')} hint={t('byTitle.hint')}>
         <BreakdownTable

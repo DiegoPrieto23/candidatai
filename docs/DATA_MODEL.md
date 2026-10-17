@@ -612,7 +612,7 @@ el agente sí los registra, por sus herramientas, como siempre).
 
 ### `agent_runs`
 Ejecuciones del agente en segundo plano (ADR-032). Es su propia cola: la llena la UI
-(`POST /agent/runs`) y la vacía el worker en un hilo aparte, de una en una.
+(`POST /agent/runs`) y la vacía el worker en un hilo aparte, de una en una o, desde la fase 25.4, hasta `background_runs.max_parallel` a la vez (ADR-038).
 
 | Columna | Tipo | Notas |
 |---|---|---|
@@ -633,7 +633,7 @@ Ejecuciones del agente en segundo plano (ADR-032). Es su propia cola: la llena l
 | result | text? | La respuesta final (hasta 20 000 caracteres) |
 | questions | JSON | Las líneas «PREGUNTA:» del resultado |
 | error | text? | |
-| usage | JSON? | `num_turns`, `duration_ms`, `total_cost_usd` (el que informa el agente; con suscripción no se factura) y `denied_tools`; con OpenCode, también `input_tokens`, `output_tokens` y `cache_read_tokens` |
+| usage | JSON? | Desde la fase 25.4, las mismas claves para todos los agentes, todas opcionales: `input_tokens`, `output_tokens`, `cached_tokens`, `turns`, `duration_ms` y `cost_usd` (el que informa el agente; con suscripción no se factura), más `denied_tools`. Las filas de antes usaban `num_turns`, `total_cost_usd` y `cache_read_tokens`: `agent_usage.normalize_usage` las traduce al leer. Sin migración |
 | cancel_requested | bool | La UI lo pide; el worker para el proceso en ≤ 2 s |
 | pid | int? | |
 | created_at / started_at / finished_at | datetime | |

@@ -99,11 +99,13 @@ function Facts({ item }: { item: TriageItem }) {
 function Detail({
   item,
   threshold,
+  assessMinScore,
   onApprove,
   onDiscard,
 }: {
   item: TriageItem
   threshold: number
+  assessMinScore: number
   onApprove: () => void
   onDiscard: () => void
 }) {
@@ -148,7 +150,7 @@ function Detail({
 
       <div className="mt-6">
         {item.match ? (
-          <MatchDetails match={item.match} />
+          <MatchDetails match={item.match} assessMinScore={assessMinScore} />
         ) : (
           <p className="text-sm text-muted-foreground">
             <Trans
@@ -377,6 +379,7 @@ export function TriagePage() {
             <Detail
               item={current}
               threshold={threshold}
+              assessMinScore={data?.assess_min_score ?? 0}
               onApprove={() => act(current)}
               onDiscard={() => setDiscarding(true)}
             />

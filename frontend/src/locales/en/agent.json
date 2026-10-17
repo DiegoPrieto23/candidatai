@@ -65,5 +65,45 @@
   "usageTurns_one": "{{count}} turn",
   "usageTurns_other": "{{count}} turns",
   "usageTokens": "{{input}} input and {{output}} output tokens",
-  "usageCost": "{{cost}} USD estimated"
+  "usageCost": "{{cost}} USD estimated",
+  "costs": {
+    "title": "Cost",
+    "intro": "What background runs have used, as each agent reports it: tokens, turns, time and, if it says so, money. Nothing is estimated.",
+    "window": "Period",
+    "days_one": "Last day",
+    "days_other": "Last {{count}} days",
+    "runs": "Runs",
+    "tokens": "Tokens",
+    "cost": "Cost",
+    "avgTokens": "Average tokens",
+    "avgDuration": "Average duration",
+    "avgCost": "Average cost",
+    "instructions": "Skill tokens",
+    "withUsage_one": "({{count}} with usage)",
+    "withUsage_other": "({{count}} with usage)",
+    "byAction": "By action",
+    "byAgent": "By agent",
+    "byModel": "By model",
+    "empty": "No runs in this period.",
+    "terminal": "Only background runs count: in a terminal, the agent doesn't report its usage back to the app. \"Skill tokens\" is how much its instructions weigh, so you know where to trim.",
+    "threshold": "Threshold before spending",
+    "thresholdIntro": "\"Assess fit\" in the background only assesses jobs with this score or more; the rest stay unassessed and triage says why. The triage threshold is {{triage}} and the default, {{default}}. In a terminal, the skill assesses whatever you ask.",
+    "thresholdLabel": "Minimum score",
+    "thresholdSave": "Save",
+    "thresholdReset": "Back to {{value}}",
+    "thresholdSource": {
+      "ui": "You changed it here.",
+      "policies": "From config/policies.yaml (background_runs.assess_min_score).",
+      "default": "Default: the triage threshold minus 10."
+    }
+  },
+  "jobCost": {
+    "title": "Agent cost",
+    "total_one": "{{tokens}} tokens · {{cost}} in {{count}} background run.",
+    "total_other": "{{tokens}} tokens · {{cost}} in {{count}} background runs.",
+    "runs": "Runs",
+    "shared_one": "shared among {{count}} job",
+    "shared_other": "shared among {{count}} jobs",
+    "terminal": "What you do in a terminal doesn't count: there the agent doesn't report its usage."
+  }
 }

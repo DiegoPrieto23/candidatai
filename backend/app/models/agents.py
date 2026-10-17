@@ -76,7 +76,8 @@ class AgentPreference(Base):
     `scope`: `default` (`key` vacía: el agente por defecto), `agent` (`key` = agente: su modelo o
     preset) o `action` (`key` = acción: su agente y, si quieres, su modelo o preset). Fase 24.6:
     `tier` (`key` = `<nivel>:<acción>`: el agente y modelo de esa acción en un nivel de gasto) y
-    `tier_undo` (`key` = acción: las preferencias por acción de antes de aplicar un nivel).
+    `tier_undo` (`key` = acción: las preferencias por acción de antes de aplicar un nivel). Fase
+    25.4: `setting` (`key="assess_min_score"`: el umbral de «Evaluar encaje», el número en `model`).
     """
 
     __tablename__ = "agent_preferences"

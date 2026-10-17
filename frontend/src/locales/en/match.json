@@ -25,5 +25,6 @@
     "failed": "Couldn't calculate the semantic similarity ({{error}}).",
     "noMust": "The job lists no must-have skills: must-have coverage doesn't count.",
     "noNice": "The job lists no nice-to-have skills: nice-to-have coverage doesn't count."
-  }
+  },
+  "belowAssessThreshold": "Not assessed in the background: its score ({{score}}) is below the threshold ({{threshold}}). Change it on the \"Agent\" page or assess it \"In a terminal\"."
 }

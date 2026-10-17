@@ -247,6 +247,16 @@ Many pages have buttons that open your agent with the instruction already writte
   that don't ask questions (`process-jobs`, `assess-fit`, `generate-cv`). It runs without a
   window, only with the app tools it needs, and you follow its progress and usage on the **Agent**
   page. If your agent can't, the menu suggests one that can. Requires `cai worker`.
+  - **Cost:** the **Cost** section of the **Agent** page adds up tokens, time and, if the agent
+    reports it, money, by action, agent and model (7 and 30 days), with how much each skill
+    weighs; the job page shows what was spent on that job and the funnel, per sent application and
+    per interview. What you do in a terminal doesn't count: there the agent doesn't report usage.
+  - **Threshold before spending:** `assess-fit` in the background only assesses jobs with a
+    minimum score (by default, the triage threshold minus 10; change it under **Cost**). Triage
+    says why a job below it stays unassessed.
+  - **Several at once:** one at a time by default. With `background_runs.max_parallel` (up to 4)
+    in `config/policies.yaml` several run at once, never two for the same job; with
+    `per_agent: {opencode: 1}` you cap a local model.
 - **Leave for my next session**: stores the request;
   `handle-requests` does it when you open your agent.
 

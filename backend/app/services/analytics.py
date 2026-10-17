@@ -120,6 +120,24 @@ class SourceFunnel(FunnelSummary):
     source_id: int
     kind: str
     name: str
+    # Fase 25.4: lo que han gastado sus ofertas en segundo plano (`agent_costs`).
+    tokens: int  # entrada + salida
+    cost_usd: float | None  # `None` si ningún agente dio coste
+
+
+class FunnelCost(BaseModel):
+    """Lo que han gastado en segundo plano las ofertas del periodo (fase 25.4). Lo de una terminal
+    no cuenta: el agente no devuelve su uso."""
+
+    runs: int  # ejecuciones con alguna oferta del periodo
+    tokens: int
+    cost_usd: float | None
+    applied: int
+    interview: int
+    tokens_per_applied: float | None
+    cost_per_applied_usd: float | None
+    tokens_per_interview: float | None
+    cost_per_interview_usd: float | None
 
 
 class TitleFunnel(FunnelSummary):
@@ -170,6 +188,7 @@ class FunnelStats(BaseModel):
     response_time: ResponseTime
     discard_reasons: list[ReasonCount]
     hard_filter_failures: list[FilterCount]
+    agent_cost: FunnelCost
 
 
 # --- Consultas ------------------------------------------------------------------------------
@@ -305,14 +324,87 @@ def _steps(session: Session, per_job: CTE) -> list[FunnelStep]:
     ]
 
 
-def _by_source(session: Session, per_job: CTE) -> list[SourceFunnel]:
+_Spend = tuple[float, float | None]  # tokens y dólares (`None`: ningún agente dio coste)
+
+
+def _job_spend(session: Session) -> tuple[dict[int, _Spend], dict[int, set[int]]]:
+    """Tokens y coste de cada oferta (su parte de cada ejecución) y las ejecuciones de cada una."""
+    from app.services import agent_costs  # evita la importación circular
+
+    spend: dict[int, _Spend] = {}
+    runs: dict[int, set[int]] = {}
+    for job_id, items in agent_costs.attributed(session).items():
+        tokens = sum(
+            i.usage.get("input_tokens", 0) + i.usage.get("output_tokens", 0) for i in items
+        )
+        costs = [i.usage["cost_usd"] for i in items if "cost_usd" in i.usage]
+        spend[job_id] = (tokens, sum(costs) if costs else None)
+        runs[job_id] = {i.run_id for i in items}
+    return spend, runs
+
+
+def _add_spend(a: _Spend, b: _Spend) -> _Spend:
+    cost = None if a[1] is None and b[1] is None else (a[1] or 0) + (b[1] or 0)
+    return a[0] + b[0], cost
+
+
+def _per(value: float | None, count: int, digits: int) -> float | None:
+    return round(value / count, digits) if value is not None and count else None
+
+
+def _agent_cost(
+    session: Session, per_job: CTE, spend: dict[int, _Spend], job_runs: dict[int, set[int]]
+) -> FunnelCost:
+    rows = session.execute(select(per_job.c.job_id, per_job.c.applied, per_job.c.interview)).all()
+    total: _Spend = (0, None)
+    runs: set[int] = set()
+    for row in rows:
+        total = _add_spend(total, spend.get(row.job_id, (0, None)))
+        runs |= job_runs.get(row.job_id, set())
+    applied = sum(int(r.applied) for r in rows)
+    interview = sum(int(r.interview) for r in rows)
+    tokens, cost = total
+    return FunnelCost(
+        runs=len(runs),
+        tokens=round(tokens),
+        cost_usd=round(cost, 6) if cost is not None else None,
+        applied=applied,
+        interview=interview,
+        tokens_per_applied=_per(tokens, applied, 1),
+        cost_per_applied_usd=_per(cost, applied, 6),
+        tokens_per_interview=_per(tokens, interview, 1),
+        cost_per_interview_usd=_per(cost, interview, 6),
+    )
+
+
+def _by_source(
+    session: Session, per_job: CTE, spend: dict[int, _Spend] | None = None
+) -> list[SourceFunnel]:
     rows = session.execute(
         select(Source.id, Source.kind, Source.name, *_sums(per_job, SUMMARY_STEPS))
         .join(per_job, per_job.c.source_id == Source.id)
         .group_by(Source.id)
         .order_by(func.sum(per_job.c.found).desc(), Source.id)
     ).all()
-    return [SourceFunnel(source_id=r.id, kind=r.kind, name=r.name, **_summary(r)) for r in rows]
+    by_source: dict[int, _Spend] = {}
+    for job_id, source_id in session.execute(select(per_job.c.job_id, per_job.c.source_id)):
+        by_source[source_id] = _add_spend(
+            by_source.get(source_id, (0, None)), (spend or {}).get(job_id, (0, None))
+        )
+    out = []
+    for r in rows:
+        tokens, cost = by_source.get(r.id, (0, None))
+        out.append(
+            SourceFunnel(
+                source_id=r.id,
+                kind=r.kind,
+                name=r.name,
+                tokens=round(tokens),
+                cost_usd=round(cost, 6) if cost is not None else None,
+                **_summary(r),
+            )
+        )
+    return out
 
 
 def _by_title(session: Session, per_job: CTE, top: int) -> list[TitleFunnel]:
@@ -471,17 +563,19 @@ def get_funnel_stats(
     """Embudo, desglose por fuente, puesto y semana, tiempo hasta la primera respuesta y motivos
     de descarte de las ofertas vistas desde `since` (todas si es `None`)."""
     per_job, duplicates = _per_job(session, since)
+    spend, job_runs = _job_spend(session)
     return FunnelStats(
         since=since,
         duplicates_excluded=duplicates,
         steps=_steps(session, per_job),
-        by_source=_by_source(session, per_job),
+        by_source=_by_source(session, per_job, spend),
         by_title=_by_title(session, per_job, top_titles),
         by_week=_by_week(session, per_job),
         by_referral=_by_referral(session, per_job),
         response_time=_response_time(session, per_job),
         discard_reasons=_discard_reasons(session, per_job),
         hard_filter_failures=_hard_filter_failures(session, per_job),
+        agent_cost=_agent_cost(session, per_job, spend, job_runs),
     )
 
 

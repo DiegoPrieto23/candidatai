@@ -184,10 +184,10 @@ def test_by_source(session: Session, history: History) -> None:
     assert [s.model_dump() for s in stats.by_source] == [
         {"source_id": history.ats.id, "kind": "greenhouse", "name": "Greenhouse Acme",
          "found": 5, "approved": 3, "applied": 3, "replied": 2, "interview": 1,
-         "reply_rate": 0.6667},
+         "reply_rate": 0.6667, "tokens": 0, "cost_usd": None},
         {"source_id": history.alerts.id, "kind": "email_alerts", "name": "Alertas por correo",
          "found": 5, "approved": 3, "applied": 2, "replied": 1, "interview": 0,
-         "reply_rate": 0.5},
+         "reply_rate": 0.5, "tokens": 0, "cost_usd": None},
     ]  # fmt: skip
 
 

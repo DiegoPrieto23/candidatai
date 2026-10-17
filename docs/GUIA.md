@@ -245,6 +245,16 @@ Muchas pantallas tienen botones que abren tu agente con la orden ya escrita:
   que no preguntan (`process-jobs`, `assess-fit`, `generate-cv`). Corre sin ventana, solo con las
   herramientas de la app que necesita, y ves el progreso y el uso en la página «Agente». Si tu
   agente no puede, el desplegable propone uno que sí. Necesita `cai worker` en marcha.
+  - **Coste:** la sección «Coste» de la página «Agente» suma tokens, tiempo y, si el agente lo da,
+    dinero, por acción, agente y modelo (7 y 30 días), con lo que pesa cada skill; la ficha dice lo
+    gastado en esa oferta y el embudo, por candidatura enviada y por entrevista. Lo que hagas en una
+    terminal no cuenta: ahí el agente no devuelve su uso.
+  - **Umbral antes de gastar:** `assess-fit` en segundo plano solo valora las ofertas con un score
+    mínimo (por defecto, el de triaje menos 10; lo cambias en «Coste»). El triaje dice por qué se
+    queda sin valorar una oferta por debajo.
+  - **Varias a la vez:** por defecto, de una en una. Con `background_runs.max_parallel` (hasta 4)
+    en `config/policies.yaml` van varias a la vez, nunca dos de la misma oferta; con
+    `per_agent: {opencode: 1}` limitas un modelo local.
 - **Dejar para mi próxima sesión:** guarda el encargo; `handle-requests` lo hace cuando abras tu
   agente.
 

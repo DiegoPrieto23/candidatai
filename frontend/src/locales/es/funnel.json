@@ -39,7 +39,8 @@
     "applied": "Enviadas",
     "replied": "Con respuesta",
     "interview": "Entrevista",
-    "reply": "Respuesta"
+    "reply": "Respuesta",
+    "costPerApplied": "Coste por enviada"
   },
   "response": {
     "title": "Primera respuesta",
@@ -203,5 +204,14 @@
     "title": "Aún no hay datos",
     "period": "Prueba con un periodo más largo.",
     "body": "El embudo se llena a medida que das de alta ofertas (<to>Nueva oferta</to>), las revisas y registras lo que pasa con cada candidatura."
+  },
+  "cost": {
+    "title": "Coste del agente",
+    "hint": "Lo que han gastado en segundo plano las ofertas de este periodo, según lo que dice cada agente (lo de una terminal no cuenta). En dólares si el agente los da; si no, en tokens.",
+    "none": "Ninguna ejecución en segundo plano con ofertas de este periodo.",
+    "total": "Total",
+    "perApplied": "Por candidatura enviada",
+    "perInterview": "Por entrevista",
+    "tokens": "{{tokens}} tokens"
   }
 }

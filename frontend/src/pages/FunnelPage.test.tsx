@@ -36,8 +36,8 @@ function stats(overrides: Partial<FunnelStats> = {}): FunnelStats {
       rate_from_start: count / 10,
     })),
     by_source: [
-      { source_id: 1, kind: 'greenhouse', name: 'Greenhouse Acme', ...summary(5, 3, 3, 2, 1) },
-      { source_id: 2, kind: 'email_alerts', name: 'Alertas', ...summary(5, 3, 2, 1, 0) },
+      { source_id: 1, kind: 'greenhouse', name: 'Greenhouse Acme', ...summary(5, 3, 3, 2, 1), tokens: 120_000, cost_usd: 1.5 },
+      { source_id: 2, kind: 'email_alerts', name: 'Alertas', ...summary(5, 3, 2, 1, 0), tokens: 0, cost_usd: null },
     ],
     by_title: [
       { title: 'data engineer', group: 'title', ...summary(3, 3, 3, 3, 1) },
@@ -66,6 +66,17 @@ function stats(overrides: Partial<FunnelStats> = {}): FunnelStats {
       { reason: 'unspecified', count: 1 },
     ],
     hard_filter_failures: [{ filter: 'location', count: 2 }],
+    agent_cost: {
+      runs: 6,
+      tokens: 120_000,
+      cost_usd: 1.5,
+      applied: 5,
+      interview: 1,
+      tokens_per_applied: 24_000,
+      cost_per_applied_usd: 0.3,
+      tokens_per_interview: 120_000,
+      cost_per_interview_usd: 1.5,
+    },
     ...overrides,
   }
 }
@@ -115,7 +126,7 @@ describe('Embudo', () => {
 
     const sources = screen.getByRole('table', { name: 'Embudo por fuente' })
     const greenhouse = within(sources).getByRole('row', { name: /Greenhouse Acme/ })
-    expect(within(greenhouse).getAllByRole('cell').map(text)).toEqual(['5', '3', '3', '2', '1', '67 %'])
+    expect(within(greenhouse).getAllByRole('cell').map(text)).toEqual(['5', '3', '3', '2', '1', '67 %', '0,5000 USD'])
     expect(within(sources).getByText('Alertas por correo')).toBeInTheDocument()
 
     const titles = screen.getByRole('table', { name: 'Embudo por tipo de puesto' })
@@ -134,6 +145,20 @@ describe('Embudo', () => {
     expect(within(discards).getByRole('rowheader', { name: 'Sin motivo' })).toBeInTheDocument()
     const filters = screen.getByRole('table', { name: 'Cierres por filtro duro' })
     expect(within(filters).getByRole('rowheader', { name: 'Ubicación' })).toBeInTheDocument()
+  })
+
+  it('enseña el coste del agente por candidatura y por entrevista, y por fuente (fase 25.4)', async () => {
+    mockApi({ 'GET /status': status(), 'GET /stats/funnel': stats(), 'GET /stats/calibration': calibration(), 'GET /agent': AGENT })
+    renderApp('/embudo')
+    const panel = await screen.findByRole('region', { name: 'Coste del agente' })
+    expect(within(panel).getByText('Por candidatura enviada').nextSibling).toHaveTextContent(/0[.,]3000 USD/)
+    expect(within(panel).getByText('Por entrevista').nextSibling).toHaveTextContent(/1[.,]50 USD/)
+    const sources = screen.getByRole('table', { name: 'Embudo por fuente' })
+    expect(within(sources).getByRole('columnheader', { name: 'Coste por enviada' })).toBeInTheDocument()
+    const greenhouse = within(sources).getByRole('row', { name: /Greenhouse Acme/ })
+    expect(within(greenhouse).getAllByRole('cell').at(-1)).toHaveTextContent(/0[.,]5000 USD/)  // 1,5 / 3 enviadas
+    const alerts = within(sources).getByRole('row', { name: /Alertas/ })
+    expect(within(alerts).getAllByRole('cell').at(-1)).toHaveTextContent('—')
   })
 
   it('pide el periodo elegido con `since`', async () => {

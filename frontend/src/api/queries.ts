@@ -38,6 +38,9 @@ export const keys = {
   agentRequests: ['agent', 'requests'] as const,
   localModels: ['agent', 'local-models'] as const,
   spendTiers: ['agent', 'tiers'] as const,
+  agentCosts: ['agent', 'costs'] as const,
+  assessThreshold: ['agent', 'assess-threshold'] as const,
+  jobCosts: (id: number) => ['jobs', id, 'costs'] as const,
   skillGaps: (days: number) => ['skill-gaps', days] as const,
   allSkillGaps: ['skill-gaps'] as const,
   replies: (params: RepliesParams) => ['replies', params] as const,
@@ -909,6 +912,40 @@ export function useSpendTierActions() {
       onSuccess,
     }),
   }
+}
+
+// --- Coste y umbral (fase 25.4) -----------------------------------------------------------------
+
+export function useAgentCosts() {
+  return useQuery({ queryKey: keys.agentCosts, queryFn: () => unwrap(api.GET('/agent/costs')) })
+}
+
+/** Lo gastado en una oferta en segundo plano (sus ejecuciones y su parte de las de lote). */
+export function useJobCosts(jobId: number) {
+  return useQuery({
+    queryKey: keys.jobCosts(jobId),
+    queryFn: () => unwrap(api.GET('/jobs/{job_id}/costs', { params: { path: { job_id: jobId } } })),
+  })
+}
+
+export function useAssessThreshold(enabled = true) {
+  return useQuery({
+    queryKey: keys.assessThreshold,
+    queryFn: () => unwrap(api.GET('/agent/assess-threshold')),
+    enabled,
+  })
+}
+
+/** Cambia el umbral de «Evaluar encaje» en segundo plano (`null`: el de `policies.yaml`). */
+export function useSaveAssessThreshold() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (value: number | null) => unwrap(api.PUT('/agent/assess-threshold', { body: { value } })),
+    onSuccess: (data) => {
+      client.setQueryData(keys.assessThreshold, data)
+      void client.invalidateQueries({ queryKey: keys.triage })
+    },
+  })
 }
 
 // --- En segundo plano y cola de encargos (fase 19) ---------------------------------------------

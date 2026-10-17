@@ -65,5 +65,45 @@
   "usageTurns_one": "{{count}} turno",
   "usageTurns_other": "{{count}} turnos",
   "usageTokens": "{{input}} tokens de entrada y {{output}} de salida",
-  "usageCost": "{{cost}} USD estimados"
+  "usageCost": "{{cost}} USD estimados",
+  "costs": {
+    "title": "Coste",
+    "intro": "Lo que han gastado las ejecuciones en segundo plano, según lo que dice cada agente: tokens, turnos, tiempo y, si lo da, dinero. Nada se estima.",
+    "window": "Periodo",
+    "days_one": "Último día",
+    "days_other": "Últimos {{count}} días",
+    "runs": "Ejecuciones",
+    "tokens": "Tokens",
+    "cost": "Coste",
+    "avgTokens": "Tokens de media",
+    "avgDuration": "Duración media",
+    "avgCost": "Coste medio",
+    "instructions": "Tokens del skill",
+    "withUsage_one": "({{count}} con uso)",
+    "withUsage_other": "({{count}} con uso)",
+    "byAction": "Por acción",
+    "byAgent": "Por agente",
+    "byModel": "Por modelo",
+    "empty": "Ninguna ejecución en este periodo.",
+    "terminal": "Solo cuenta lo que se ejecuta en segundo plano: en una terminal, el agente no devuelve su uso a la app. «Tokens del skill» es lo que pesan sus instrucciones, para saber dónde recortar.",
+    "threshold": "Umbral antes de gastar",
+    "thresholdIntro": "«Evaluar encaje» en segundo plano solo valora las ofertas con este score o más; las demás se quedan sin valorar y el triaje dice por qué. El umbral de triaje es {{triage}} y el de por defecto, {{default}}. En una terminal, el skill valora lo que le pidas.",
+    "thresholdLabel": "Score mínimo",
+    "thresholdSave": "Guardar",
+    "thresholdReset": "Volver a {{value}}",
+    "thresholdSource": {
+      "ui": "Lo has cambiado aquí.",
+      "policies": "Sale de config/policies.yaml (background_runs.assess_min_score).",
+      "default": "Por defecto: el umbral de triaje menos 10."
+    }
+  },
+  "jobCost": {
+    "title": "Coste del agente",
+    "total_one": "{{tokens}} tokens · {{cost}} en {{count}} ejecución en segundo plano.",
+    "total_other": "{{tokens}} tokens · {{cost}} en {{count}} ejecuciones en segundo plano.",
+    "runs": "Ejecuciones",
+    "shared_one": "repartida entre {{count}} oferta",
+    "shared_other": "repartida entre {{count}} ofertas",
+    "terminal": "No cuenta lo que hagas en una terminal: ahí el agente no devuelve su uso."
+  }
 }

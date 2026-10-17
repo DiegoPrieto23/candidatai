@@ -6,7 +6,7 @@ recibe en `OPENCODE_CONFIG_CONTENT`.
 
 Modos: `ok`, `question`, `error`, `denied`, `hang`, `nomcp`, `crash`, `garbage` (líneas que no son
 JSON), `linger` (responde y no sale) y `child` (lanza un hijo que se queda colgado y deja su pid en
-`FAKE_AGENT_CHILD`).
+`FAKE_AGENT_CHILD`) y `slow` (tarda `FAKE_AGENT_SLEEP` segundos antes de responder; fase 25.4).
 """
 
 import json
@@ -119,6 +119,8 @@ def main() -> int:
     if mode in ("hang", "child"):
         time.sleep(60)
         return 0
+    if mode == "slow":  # para ver dos ejecuciones a la vez
+        time.sleep(float(os.environ.get("FAKE_AGENT_SLEEP", "1.5")))
     if mode == "question":
         result(
             "No he podido terminar.\n\n"

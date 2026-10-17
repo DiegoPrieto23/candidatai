@@ -516,7 +516,7 @@ lanza a sí mismo.
   los roles de la acción. `generate-cv` no va en segundo plano con OpenCode (sus roles leen
   ficheros). Si el agente de la acción no puede, `GET /agent` propone otro en
   `background_agent.suggested` y `suggested_name`. Cada ejecución guarda su agente, su formato de
-  salida, `run_config` y el uso que informe el agente (`usage`: turnos, tokens, coste).
+  salida, `run_config` y el uso que informe el agente (`usage`: desde la fase 25.4, `input_tokens`, `output_tokens`, `cached_tokens`, `turns`, `duration_ms` y `cost_usd`, todas opcionales).
 - **Cola de encargos** (`POST /agent/requests`, solo la UI): guarda la orden de cualquier acción.
   Tu próxima sesión la ve en `get_status` (`agent_requests`) y con el skill `handle-requests`
   (`list_agent_requests` → sigue el `prompt` → `complete_agent_request`). Un encargo que no se hizo
@@ -557,7 +557,8 @@ antes; `POST /agent/tiers/undo` las devuelve.
 
 | Comando | Qué hace |
 |---|---|
-| `cai worker [--once] [--interval S] [--json]` | Ejecuta la cola de tareas (`score_job`, `rescore_all`, `run_source`, `poll_email`, `expire_summaries`, `check_open`…) y, en primer plano, la ingesta diaria de las fuentes a la hora de `connectors.daily_at` (al arrancar, también las que no corrieron desde la última hora programada), la caducidad diaria de los resúmenes y la lectura de alertas cada `email_alerts.poll_minutes` (si hay IMAP o correos en `data/inbox/`). Desde la fase 19, en un hilo aparte, las ejecuciones en segundo plano de `agent_runs`, de una en una. Log legible en consola y en `data/logs/worker.log`. `--once` vacía la cola (también las de `agent_runs`, en `agent_runs` del JSON) y termina (código 1 si alguna falla) |
+| `cai worker [--once] [--interval S] [--json]` | Ejecuta la cola de tareas (`score_job`, `rescore_all`, `run_source`, `poll_email`, `expire_summaries`, `check_open`…) y, en primer plano, la ingesta diaria de las fuentes a la hora de `connectors.daily_at` (al arrancar, también las que no corrieron desde la última hora programada), la caducidad diaria de los resúmenes y la lectura de alertas cada `email_alerts.poll_minutes` (si hay IMAP o correos en `data/inbox/`). Desde la fase 19, en un hilo aparte, las ejecuciones en segundo plano de `agent_runs`: de una en una o, desde la 25.4, hasta `background_runs.max_parallel` a la vez (ADR-038). Log legible en consola y en `data/logs/worker.log`. `--once` vacía la cola (también las de `agent_runs`, en `agent_runs` del JSON) y termina (código 1 si alguna falla) |
+| `GET /agent/costs`, `GET`/`PUT /agent/assess-threshold`, `GET /jobs/{id}/costs` (API de la UI) | Fase 25.4: coste por acción, agente y modelo (7 y 30 días), umbral de «Evaluar encaje» en segundo plano y coste de una oferta. Sin herramienta MCP ni comando: son para la UI, como `POST /agent/runs` |
 | `cai jobs signals --recompute [--json]` | Fase 25.3: recalcula las señales de oferta dudosa de todas las ofertas (tras editar `config/doubtful_patterns.yaml` o `doubtful` de `config/policies.yaml`). Devuelve `jobs`, `with_signals` y `counts` por señal. No cambia el score. Sin herramienta MCP: se calculan solas al extraer |
 | `cai match rescore [--json]` | Recalcula ya los matches desfasados de las ofertas abiertas (tras instalar el extra `matching` o editar `config/policies.yaml`) y cierra las de triaje que no pasan los filtros. Devuelve `scored` y `closed` |
 | `cai eval matching [--profile RUTA] [--no-seed] [--no-embeddings] [--json]` | Precision, recall y F1 con el umbral actual y por umbral sobre `evals/matching/*.jsonl` (perfil de demo) y `data/evals/*.jsonl` (tu perfil). Guarda el informe en `data/evals/reports/` |

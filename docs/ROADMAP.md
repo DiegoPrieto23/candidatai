@@ -74,11 +74,11 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 24.4 | ↳ Elegir y cambiar de agente | ✅ | Sección «Agentes» con capacidades, agente por defecto y por acción, «con Claude Code ▾» en cada botón |
 | 24.5 | ↳ Segundo plano con varios agentes | ✅ | «En segundo plano» también con OpenCode (`process-jobs` y `assess-fit`), con el techo en una configuración propia de cada ejecución; Codex y Qwen Code, aún no |
 | 24.6 | ↳ Modelos gratuitos, niveles de gasto y matriz | 🚧 código y docs hechos; falta pasar la matriz (`docs/pruebas/fase-24.6-matriz.md`) | Guía de modelos gratis y locales, diagnóstico de Ollama, «Económico/Equilibrado/Máximo» y matriz probada por agente y modelo |
-| 25 | Más fuentes, perfil más rico, ofertas dudosas, coste y calidad del CV | 🚧 25.1, 25.2 y 25.3 hechas | Más ATS con API, `expand`, señales de oferta dudosa, coste por oferta y agente, maquetación del PDF y `CHANGELOG` |
+| 25 | Más fuentes, perfil más rico, ofertas dudosas, coste y calidad del CV | 🚧 25.1 a 25.4 hechas | Más ATS con API, `expand`, señales de oferta dudosa, coste por oferta y agente, maquetación del PDF y `CHANGELOG` |
 | 25.1 | ↳ Conectores de ATS y portales con API | ✅ | Personio, Teamtailor, Workable, SmartRecruiters y Recruitee, más Manfred y freehire.me; `cai sources discover` para todos |
 | 25.2 | ↳ Skill `expand` | ✅ | Proyectos, skills y logros propuestos desde GitHub, portfolio o Scholar, con su fuente y solo con tu OK |
 | 25.3 | ↳ Ofertas dudosas y banderas rojas | ✅ | Señales (rango salarial ancho, empresa oculta, temporal, republicada, cribado con IA) y `red_flags` con fuentes en el dosier |
-| 25.4 | ↳ Coste y lote en paralelo | ⏳ | Coste por oferta, skill y agente; umbral de score antes de `assess-fit`; hasta N ejecuciones a la vez |
+| 25.4 | ↳ Coste y lote en paralelo | ✅ | Coste por oferta, skill y agente; umbral de score antes de `assess-fit`; hasta N ejecuciones a la vez |
 | 25.5 | ↳ Maquetación del PDF | ⏳ | Avisos de títulos huérfanos, huecos, pie y última página casi vacía en CV y carta |
 | 25.6 | ↳ CHANGELOG y la historia con números | ⏳ | `CHANGELOG.md`, notas de release desde él y `cai stats story` para el README |
 | 26 | macOS, Linux y Docker | ⏳ | Instalar y usar la app en los tres sistemas, botones «en tu agente» incluidos, y Docker opcional |
@@ -2694,3 +2694,53 @@ decisiones tomadas y deuda técnica pendiente. -->
     extracción ahí;
   - sin probar con ofertas reales: queda en la prueba manual.
 
+### 25.4 · Coste y lote en paralelo — 2026-10-17 · Claude Code (Opus 5.5)
+- **Hecho:**
+  - **uso normalizado** (`services/agent_usage.py`): los dos lectores (Claude Code y OpenCode)
+    rellenan `input_tokens`, `output_tokens`, `cached_tokens`, `turns`, `duration_ms` y
+    `cost_usd`; las filas de antes se traducen al leer; `cai eval compat` y la UI usan las nuevas;
+  - **coste** (`services/agent_costs.py`): por acción, agente y modelo en 7 y 30 días, con los
+    tokens del skill de cada acción; por oferta (la ejecución con oferta, entera; las de lote,
+    repartidas entre las ofertas que escribieron según `mcp_calls`); en el embudo, por candidatura
+    enviada, por entrevista y por fuente. `GET /agent/costs` y `GET /jobs/{id}/costs`;
+  - **umbral antes de gastar** (`services/assess_threshold.py`): «Evaluar encaje» en segundo plano
+    lleva en la orden solo los ids con score ≥ el umbral (página «Agente», `background_runs.
+    assess_min_score` o el de triaje menos 10; como mucho 30); si no queda ninguna, no se lanza y
+    dice por qué; el triaje y la ficha lo explican. `GET`/`PUT /agent/assess-threshold`;
+    `cai eval compat` las valora todas;
+  - **varias a la vez** (`agent_runner.py`): `background_runs.max_parallel` (1-4) y `per_agent`;
+    reclamo atómico con hueco, tope por agente y sin chocar (misma oferta o misma acción de lote);
+    hilos en `run_pending`; reintentos ante `database is locked`;
+  - UI: sección «Coste» en «Agente» (pestañas 7/30 días, por acción, agente y modelo, y el umbral),
+    «Coste del agente» en la ficha, aviso de «sin valorar en segundo plano» y coste en el embudo.
+    Textos en es y en; OpenAPI regenerado;
+  - docs: ADR-038 (extiende el ADR-032), POLICIES §6, DATA_MODEL, AGENT_INTERFACE, ARCHITECTURE,
+    COMPARATIVA, guía en los dos idiomas, prueba manual y PENDIENTES.
+- **Tests:**
+  - `test_agent_costs.py`: claves viejas, sumas y medias por acción, agente y modelo con
+    ejecuciones falsas (con y sin coste), reparto de un lote entre ofertas y coste en el embudo;
+  - `test_assess_threshold.py`: por defecto, `policies.yaml` y la UI, las de debajo fuera de la
+    orden, sin ninguna no se lanza, las ya valoradas fuera y la API solo desde la UI;
+  - `test_agent_parallel.py`: reglas del reclamo, tope por agente, **con N=2 dos ofertas a la vez
+    y la misma nunca dos veces** (agente falso lento), parar el worker con dos en curso, cancelar
+    una de dos, recuperar tras reiniciar y reintento ante bloqueo;
+  - Vitest: vista de coste y umbral, panel de la ficha, aviso del triaje y coste del embudo.
+  - 2671 tests de backend (en tres tandas) y 285 de frontend en verde; `tsc`, ruff y
+    `sync_agents.py --check` limpios; OpenAPI regenerado.
+- **Decisiones (con el usuario):**
+  - atribución de los lotes por `mcp_calls` y ventana de tiempo, sin migración;
+  - «misma acción» = misma acción de lote: dos CVs de ofertas distintas sí van a la vez;
+  - el paralelo solo en `policies.yaml`; el umbral, también en la UI;
+  - sin `cost_usd`, tokens; nada se pasa a euros.
+- **Revisión** (rol `reviewer`), sin bloqueantes. Se aplicó: `attributed()` con solo las columnas
+  necesarias y una consulta a `mcp_calls` para todos los lotes (y en la ficha, solo los suyos);
+  `run_pending(max_parallel=1)` pasa su límite al reclamo; tests de parar y cancelar con varias en
+  curso; el agente falso lento, más holgado; docstrings, el componente `Window` renombrado, los
+  endpoints en AGENT_INTERFACE y el aviso de reiniciar el worker tras cambiar el paralelo.
+- **Deuda:**
+  - la atribución de un lote cuenta también lo que se haga a la vez en una terminal o con otro
+    agente con las mismas herramientas (`client_name` es el del cliente MCP, no el agente);
+  - un lote sigue siendo una sola ejecución: el paralelo es entre acciones y entre ofertas;
+  - el umbral va en la orden, no en las herramientas (`list_jobs` seguiría viendo las demás);
+  - el coste por fuente del embudo no sale en la calibración;
+  - sin probar con agentes reales: queda en la prueba manual.

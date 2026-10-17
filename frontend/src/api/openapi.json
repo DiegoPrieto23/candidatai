@@ -410,6 +410,119 @@
         }
       }
     },
+    "/jobs/{job_id}/costs": {
+      "get": {
+        "tags": [
+          "jobs"
+        ],
+        "summary": "Get Job Costs",
+        "description": "Lo que se ha gastado en esta oferta en segundo plano (fase 25.4): sus ejecuciones y su\nparte de las de lote. Lo de una terminal no cuenta: el agente no lo devuelve.",
+        "operationId": "get_job_costs",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobCost"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
     "/jobs/{job_id}/match": {
       "get": {
         "tags": [
@@ -8533,6 +8646,320 @@
         }
       }
     },
+    "/agent/costs": {
+      "get": {
+        "tags": [
+          "agent"
+        ],
+        "summary": "Get Agent Costs",
+        "description": "Lo que han gastado las ejecuciones en segundo plano en los últimos 7 y 30 días, por acción,\nagente y modelo, y lo que pesan las instrucciones de cada skill. Solo lo que da cada agente.",
+        "operationId": "get_agent_costs",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentCosts"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/agent/assess-threshold": {
+      "get": {
+        "tags": [
+          "agent"
+        ],
+        "summary": "Get Assess Threshold",
+        "description": "El score mínimo con que «Evaluar encaje» valora en segundo plano.",
+        "operationId": "get_assess_threshold",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssessThreshold"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "agent"
+        ],
+        "summary": "Save Assess Threshold",
+        "description": "Cambia el umbral (`value: null` vuelve al de `config/policies.yaml`).",
+        "operationId": "save_assess_threshold",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssessThresholdInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssessThreshold"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/agent/tiers": {
       "get": {
         "tags": [
@@ -13479,6 +13906,27 @@
         "title": "AgentCapabilities",
         "description": "Qué sabe hacer el agente. `None`: sin comprobar."
       },
+      "AgentCosts": {
+        "properties": {
+          "windows": {
+            "items": {
+              "$ref": "#/components/schemas/CostWindow"
+            },
+            "type": "array",
+            "title": "Windows"
+          },
+          "terminal_note": {
+            "type": "string",
+            "title": "Terminal Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "windows",
+          "terminal_note"
+        ],
+        "title": "AgentCosts"
+      },
       "AgentEntry": {
         "properties": {
           "name": {
@@ -13919,7 +14367,16 @@
           "usage": {
             "anyOf": [
               {
-                "additionalProperties": true,
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ]
+                },
                 "type": "object"
               },
               {
@@ -14384,6 +14841,61 @@
         ],
         "title": "ApplicationAnswers",
         "description": "Respuestas de screening (skill `prepare-application`). Sin carta: es un documento propio.\n\nLas reglas que dependen del perfil (evidencias, respuestas vacías) las comprueba\n`services/answers.py`, para dar todos los problemas juntos."
+      },
+      "AssessThreshold": {
+        "properties": {
+          "value": {
+            "type": "integer",
+            "title": "Value"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "ui",
+              "policies",
+              "default"
+            ],
+            "title": "Source"
+          },
+          "triage_threshold": {
+            "type": "integer",
+            "title": "Triage Threshold"
+          },
+          "default": {
+            "type": "integer",
+            "title": "Default"
+          }
+        },
+        "type": "object",
+        "required": [
+          "value",
+          "source",
+          "triage_threshold",
+          "default"
+        ],
+        "title": "AssessThreshold"
+      },
+      "AssessThresholdInput": {
+        "properties": {
+          "value": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 100.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "value"
+        ],
+        "title": "AssessThresholdInput"
       },
       "AssistedApplication": {
         "properties": {
@@ -15845,6 +16357,246 @@
         ],
         "title": "ContextStatus",
         "description": "Estado para la UI («Mi perfil»): sin el texto de los ficheros."
+      },
+      "CostGroup": {
+        "properties": {
+          "runs": {
+            "type": "integer",
+            "title": "Runs",
+            "default": 0
+          },
+          "with_usage": {
+            "type": "integer",
+            "title": "With Usage",
+            "default": 0
+          },
+          "input_tokens": {
+            "type": "integer",
+            "title": "Input Tokens",
+            "default": 0
+          },
+          "output_tokens": {
+            "type": "integer",
+            "title": "Output Tokens",
+            "default": 0
+          },
+          "cached_tokens": {
+            "type": "integer",
+            "title": "Cached Tokens",
+            "default": 0
+          },
+          "turns": {
+            "type": "integer",
+            "title": "Turns",
+            "default": 0
+          },
+          "duration_ms": {
+            "type": "integer",
+            "title": "Duration Ms",
+            "default": 0
+          },
+          "cost_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Usd"
+          },
+          "avg_tokens": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Tokens"
+          },
+          "avg_duration_ms": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Duration Ms"
+          },
+          "avg_cost_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Cost Usd"
+          },
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "instruction_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instruction Tokens"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label"
+        ],
+        "title": "CostGroup"
+      },
+      "CostTotals": {
+        "properties": {
+          "runs": {
+            "type": "integer",
+            "title": "Runs",
+            "default": 0
+          },
+          "with_usage": {
+            "type": "integer",
+            "title": "With Usage",
+            "default": 0
+          },
+          "input_tokens": {
+            "type": "integer",
+            "title": "Input Tokens",
+            "default": 0
+          },
+          "output_tokens": {
+            "type": "integer",
+            "title": "Output Tokens",
+            "default": 0
+          },
+          "cached_tokens": {
+            "type": "integer",
+            "title": "Cached Tokens",
+            "default": 0
+          },
+          "turns": {
+            "type": "integer",
+            "title": "Turns",
+            "default": 0
+          },
+          "duration_ms": {
+            "type": "integer",
+            "title": "Duration Ms",
+            "default": 0
+          },
+          "cost_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Usd"
+          },
+          "avg_tokens": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Tokens"
+          },
+          "avg_duration_ms": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Duration Ms"
+          },
+          "avg_cost_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Cost Usd"
+          }
+        },
+        "type": "object",
+        "title": "CostTotals"
+      },
+      "CostWindow": {
+        "properties": {
+          "days": {
+            "type": "integer",
+            "title": "Days"
+          },
+          "since": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Since"
+          },
+          "total": {
+            "$ref": "#/components/schemas/CostTotals"
+          },
+          "by_action": {
+            "items": {
+              "$ref": "#/components/schemas/CostGroup"
+            },
+            "type": "array",
+            "title": "By Action"
+          },
+          "by_agent": {
+            "items": {
+              "$ref": "#/components/schemas/CostGroup"
+            },
+            "type": "array",
+            "title": "By Agent"
+          },
+          "by_model": {
+            "items": {
+              "$ref": "#/components/schemas/CostGroup"
+            },
+            "type": "array",
+            "title": "By Model"
+          }
+        },
+        "type": "object",
+        "required": [
+          "days",
+          "since",
+          "total",
+          "by_action",
+          "by_agent",
+          "by_model"
+        ],
+        "title": "CostWindow"
       },
       "CoverLetterBriefInput": {
         "properties": {
@@ -17606,6 +18358,95 @@
         "title": "FollowupStatus",
         "description": "Seguimiento de una candidatura enviada (solo en `applied`)."
       },
+      "FunnelCost": {
+        "properties": {
+          "runs": {
+            "type": "integer",
+            "title": "Runs"
+          },
+          "tokens": {
+            "type": "integer",
+            "title": "Tokens"
+          },
+          "cost_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Usd"
+          },
+          "applied": {
+            "type": "integer",
+            "title": "Applied"
+          },
+          "interview": {
+            "type": "integer",
+            "title": "Interview"
+          },
+          "tokens_per_applied": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tokens Per Applied"
+          },
+          "cost_per_applied_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Per Applied Usd"
+          },
+          "tokens_per_interview": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tokens Per Interview"
+          },
+          "cost_per_interview_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Per Interview Usd"
+          }
+        },
+        "type": "object",
+        "required": [
+          "runs",
+          "tokens",
+          "cost_usd",
+          "applied",
+          "interview",
+          "tokens_per_applied",
+          "cost_per_applied_usd",
+          "tokens_per_interview",
+          "cost_per_interview_usd"
+        ],
+        "title": "FunnelCost",
+        "description": "Lo que han gastado en segundo plano las ofertas del periodo (fase 25.4). Lo de una terminal\nno cuenta: el agente no devuelve su uso."
+      },
       "FunnelStats": {
         "properties": {
           "since": {
@@ -17675,6 +18516,9 @@
             },
             "type": "array",
             "title": "Hard Filter Failures"
+          },
+          "agent_cost": {
+            "$ref": "#/components/schemas/FunnelCost"
           }
         },
         "type": "object",
@@ -17688,7 +18532,8 @@
           "by_referral",
           "response_time",
           "discard_reasons",
-          "hard_filter_failures"
+          "hard_filter_failures",
+          "agent_cost"
         ],
         "title": "FunnelStats"
       },
@@ -18117,6 +18962,36 @@
         ],
         "title": "Issue",
         "description": "Un problema de una ejecución. `item` identifica la oferta si es de una sola."
+      },
+      "JobCost": {
+        "properties": {
+          "job_id": {
+            "type": "integer",
+            "title": "Job Id"
+          },
+          "runs": {
+            "items": {
+              "$ref": "#/components/schemas/JobRunCost"
+            },
+            "type": "array",
+            "title": "Runs"
+          },
+          "total": {
+            "$ref": "#/components/schemas/CostTotals"
+          },
+          "terminal_note": {
+            "type": "string",
+            "title": "Terminal Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "runs",
+          "total",
+          "terminal_note"
+        ],
+        "title": "JobCost"
       },
       "JobCoverLetter": {
         "properties": {
@@ -18684,6 +19559,77 @@
           "salary"
         ],
         "title": "JobRow"
+      },
+      "JobRunCost": {
+        "properties": {
+          "run_id": {
+            "type": "integer",
+            "title": "Run Id"
+          },
+          "action": {
+            "type": "string",
+            "title": "Action"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "agent": {
+            "type": "string",
+            "title": "Agent"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "share": {
+            "type": "number",
+            "title": "Share"
+          },
+          "shared_with": {
+            "type": "integer",
+            "title": "Shared With"
+          },
+          "usage": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Usage"
+          }
+        },
+        "type": "object",
+        "required": [
+          "run_id",
+          "action",
+          "label",
+          "agent",
+          "model",
+          "finished_at",
+          "share",
+          "shared_with",
+          "usage"
+        ],
+        "title": "JobRunCost"
       },
       "JobSignals": {
         "properties": {
@@ -24399,6 +25345,21 @@
           "name": {
             "type": "string",
             "title": "Name"
+          },
+          "tokens": {
+            "type": "integer",
+            "title": "Tokens"
+          },
+          "cost_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Usd"
           }
         },
         "type": "object",
@@ -24411,7 +25372,9 @@
           "reply_rate",
           "source_id",
           "kind",
-          "name"
+          "name",
+          "tokens",
+          "cost_usd"
         ],
         "title": "SourceFunnel"
       },
@@ -25476,6 +26439,10 @@
             "type": "integer",
             "title": "Triage Threshold"
           },
+          "assess_min_score": {
+            "type": "integer",
+            "title": "Assess Min Score"
+          },
           "profile_missing": {
             "type": "boolean",
             "title": "Profile Missing"
@@ -25486,6 +26453,7 @@
           "items",
           "total",
           "triage_threshold",
+          "assess_min_score",
           "profile_missing"
         ],
         "title": "TriageQueue"

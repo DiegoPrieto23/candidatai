@@ -36,7 +36,15 @@ from app.core.db import session_scope
 from app.models import AgentRun, Event
 from app.models.base import utcnow
 from app.schemas.llm_io import JobExtraction
-from app.services import agent_launch, agent_registry, agent_runner, agent_runs, demo, events
+from app.services import (
+    agent_launch,
+    agent_registry,
+    agent_runner,
+    agent_runs,
+    agent_usage,
+    demo,
+    events,
+)
 from app.services import skill_gaps as gaps
 from app.services.agent_launch import LaunchError
 from app.services.evals import cv as cv_eval
@@ -173,7 +181,7 @@ def _case_jobs(session: Session) -> dict[str, int | None]:
 
 
 def _summary(row: AgentRun) -> RunSummary:
-    usage = row.usage or {}
+    usage = agent_usage.normalize_usage(row.usage)  # también las filas de antes de la 25.4
     seconds = (
         (row.finished_at - row.started_at).total_seconds()
         if row.finished_at and row.started_at
@@ -189,10 +197,10 @@ def _summary(row: AgentRun) -> RunSummary:
         job_id=row.job_id,
         status=row.status,
         seconds=round(seconds, 1) if seconds is not None else None,
-        turns=number("num_turns"),
+        turns=number("turns"),
         input_tokens=number("input_tokens"),
         output_tokens=number("output_tokens"),
-        cost_usd=number("total_cost_usd"),
+        cost_usd=number("cost_usd"),
         error=(row.error or "")[:300] or None,
     )
 
@@ -221,8 +229,9 @@ def _run(
     timeout: float | None,
 ) -> RunSummary:
     with session_scope() as session:
+        # La matriz mide todas sus ofertas: sin el umbral de score de la fase 25.4.
         run_id = agent_runs.start(
-            session, action, job_id, agent=agent, model=model, preset=preset
+            session, action, job_id, agent=agent, model=model, preset=preset, min_score=0
         ).id
     execute(timeout)
     with session_scope() as session:

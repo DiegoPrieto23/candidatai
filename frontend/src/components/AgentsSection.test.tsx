@@ -276,6 +276,7 @@ describe('Sección «Agentes» (fase 24.4)', () => {
       'GET /agent/agents': overview(),
       'GET /agent/tiers': tiers(),
       'GET /agent/local-models': localModels(),
+      'GET /agent/costs': { windows: [], terminal_note: '' }, // fase 25.4: sin su error en la página
       'PUT /agent/preferences': {
         status: 422,
         body: {
