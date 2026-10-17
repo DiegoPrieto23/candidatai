@@ -14,3 +14,21 @@ class ProfileVersion(Base):
     data: Mapped[dict[str, Any]] = mapped_column(JSON)
     content_hash: Mapped[str] = mapped_column(String(64), index=True)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
+
+
+class ProfileEdit(Base):
+    """Auditoría de lo que el usuario guarda desde la UI (fase 25.7): qué y cuándo, sin el texto.
+
+    `target`: `profile` (una sección de `data/profile.yaml`), `context` (un fichero de
+    `data/contexto/`) o `style_sample` (una muestra de `data/documentos/estilo/`).
+    """
+
+    __tablename__ = "profile_edits"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    target: Mapped[str] = mapped_column(String(16))
+    section: Mapped[str | None] = mapped_column(String(128))  # sección, fichero o muestra
+    action: Mapped[str] = mapped_column(String(16))  # save, undo, upload, delete
+    hash_before: Mapped[str | None] = mapped_column(String(64))  # sha256 del fichero
+    hash_after: Mapped[str | None] = mapped_column(String(64))
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)

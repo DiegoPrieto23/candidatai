@@ -19,6 +19,7 @@ from app.core.db import session_scope
 from app.services.agent_requests import RequestClosedError, RequestNotFoundError
 from app.services.answers import AnswersContentError
 from app.services.audit import record_call, summarize_args
+from app.services.context import ContextTooLargeError
 from app.services.documents.checks import CvContentError
 from app.services.documents.cover_letter import CoverLetterContentError, LetterNotFoundError
 from app.services.documents.importer import TemplateImportError
@@ -41,10 +42,16 @@ from app.services.interviews import InterviewNotAllowedError
 from app.services.network import NetworkContactNotFoundError
 from app.services.pipeline import InvalidTransitionError
 from app.services.process import ContactNotFoundError, MilestoneNotFoundError
-from app.services.profile import ProfileNotFoundError
+from app.services.profile import ProfileNotFoundError, ProfileValidationError
+from app.services.profile_editor import (
+    NothingToUndoError,
+    ProfileConflictError,
+    ProfileReferencedError,
+)
 from app.services.prompts import PromptNotFoundError
 from app.services.received_offers import ReceivedOfferNotFoundError
 from app.services.replies import ReplyNotFoundError, ReplyResolvedError
+from app.services.style_samples import StyleSampleNotFoundError
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +59,10 @@ _ERROR_TYPES: tuple[tuple[type[Exception], str], ...] = (
     (JobNotFoundError, "not_found"),
     (ExtractionNotFoundError, "not_found"),
     (ProfileNotFoundError, "not_found"),
+    (NothingToUndoError, "not_found"),
+    (StyleSampleNotFoundError, "not_found"),
+    (ContextTooLargeError, "too_large"),
+    (ProfileReferencedError, "referenced"),
     (SourceNotFoundError, "not_found"),
     (SourceExistsError, "exists"),
     (PromptNotFoundError, "not_found"),
@@ -112,6 +123,22 @@ def to_tool_error(exc: Exception, spec: ToolSpec | None = None) -> ToolError:
         if sep and hasattr(exc, "root"):  # «… (2 problemas): a, b.» con los paths nuevos
             message = f"{head}{sep}{', '.join(d.field for d in details)}."
         return ToolError("validation_error", message, details)
+    if isinstance(exc, ProfileConflictError):
+        # Fase 25.7: la UI recarga con el hash de ahora.
+        detail = ErrorDetail(
+            field="file_hash",
+            received=None,
+            reason="El fichero ha cambiado desde que lo leíste.",
+            expected=exc.current_hash,
+            hint="Recarga el perfil y vuelve a aplicar tu cambio.",
+        )
+        return ToolError("conflict", str(exc), [detail])
+    if isinstance(exc, ProfileValidationError):
+        details = [
+            ErrorDetail(field=dotted(i.field), received=i.received, reason=i.reason)
+            for i in exc.issues
+        ]
+        return ToolError("validation_error", str(exc), details)
     for exc_type, error_type in _ERROR_TYPES:
         if isinstance(exc, exc_type):
             return ToolError(error_type, str(exc))

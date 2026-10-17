@@ -19,6 +19,7 @@ from urllib.parse import urlsplit
 
 import httpx
 import lxml.html
+from lxml import etree
 from lxml.etree import ParserError
 
 from app.schemas.sources import Issue, SourceConfig
@@ -61,6 +62,7 @@ class RawJob:
     posted_at: datetime | None = None
     remote: bool | None = None  # la fuente dice que es remota (None: no lo dice)
     needs_detail: bool = False  # el listado no trae la descripción: hay que llamar a `complete`
+    detail_url: str | None = None  # dónde pide `complete` el detalle, si no sale del id
 
 
 @dataclass
@@ -94,18 +96,19 @@ def make_client(timeout: float, transport: httpx.BaseTransport | None = None) ->
     )
 
 
-def get_json(
+def _get(
     client: httpx.Client,
     url: str,
     *,
     label: str,
     params: dict[str, Any] | None = None,
     auth: httpx.Auth | tuple[str, str] | None = None,
+    headers: dict[str, str] | None = None,
     not_found: str | None = None,
-) -> Any:
-    """GET que devuelve el JSON o lanza `ConnectorError` con un mensaje para el usuario."""
+) -> httpx.Response:
+    """GET con los errores traducidos a `ConnectorError` con un mensaje para el usuario."""
     try:
-        response = client.get(url, params=params, auth=auth)
+        response = client.get(url, params=params, auth=auth, headers=headers)
     except httpx.TimeoutException as exc:
         raise ConnectorError("timeout", f"{label} no respondió a tiempo.") from exc
     except httpx.HTTPError as exc:
@@ -127,10 +130,63 @@ def get_json(
         raise ConnectorError("rate_limited", f"{label} pide esperar (HTTP 429).")
     if status >= 400:
         raise ConnectorError("http_error", f"{label} respondió con un error HTTP {status}.")
+    return response
+
+
+def get_json(
+    client: httpx.Client,
+    url: str,
+    *,
+    label: str,
+    params: dict[str, Any] | None = None,
+    auth: httpx.Auth | tuple[str, str] | None = None,
+    not_found: str | None = None,
+) -> Any:
+    """GET que devuelve el JSON o lanza `ConnectorError` con un mensaje para el usuario."""
+    response = _get(client, url, label=label, params=params, auth=auth, not_found=not_found)
     try:
         return response.json()
     except ValueError as exc:
         raise ConnectorError("unexpected_format", f"{label} no devolvió JSON.") from exc
+
+
+def get_xml(
+    client: httpx.Client,
+    url: str,
+    *,
+    label: str,
+    params: dict[str, Any] | None = None,
+    not_found: str | None = None,
+) -> etree._Element:
+    """GET de un feed XML o RSS (Personio, Teamtailor). Sin entidades externas ni red: el feed
+    no es confiable."""
+    response = _get(
+        client,
+        url,
+        label=label,
+        params=params,
+        headers={"Accept": "application/xml, application/rss+xml, text/xml"},
+        not_found=not_found,
+    )
+    parser = etree.XMLParser(resolve_entities=False, no_network=True, huge_tree=False)
+    try:
+        root = etree.fromstring(response.content, parser)
+    except etree.XMLSyntaxError as exc:
+        raise ConnectorError("unexpected_format", f"{label} no devolvió XML válido.") from exc
+    if root is None:
+        raise ConnectorError("unexpected_format", f"{label} devolvió un XML vacío.")
+    return root
+
+
+def xml_text(node: etree._Element | None, path: str) -> str | None:
+    """Texto de un hijo del XML (`path` admite prefijos de espacio de nombres)."""
+    if node is None:
+        return None
+    namespaces = {k: v for k, v in node.nsmap.items() if k}
+    found = node.find(path, namespaces=namespaces or None)
+    if found is None:
+        return None
+    return optional_str("".join(found.itertext()))
 
 
 def unexpected(label: str, what: str) -> ConnectorError:

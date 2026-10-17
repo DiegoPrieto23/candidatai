@@ -140,7 +140,8 @@
     "remote_mode": "Work mode",
     "location": "Location",
     "language": "Language",
-    "title_keyword": "Title keywords"
+    "title_keyword": "Title keywords",
+    "signal": "Doubtful-job signals you excluded"
   },
   "sourceKind": {
     "manual_url": "Link",
@@ -148,8 +149,15 @@
     "greenhouse": "Greenhouse",
     "lever": "Lever",
     "ashby": "Ashby",
+    "personio": "Personio",
+    "teamtailor": "Teamtailor",
+    "workable": "Workable",
+    "smartrecruiters": "SmartRecruiters",
+    "recruitee": "Recruitee",
     "infojobs": "InfoJobs",
     "adzuna": "Adzuna",
+    "manfred": "Manfred",
+    "freehire": "freehire",
     "email_alerts": "Email alerts",
     "browser_capture": "Browser button",
     "agent_browse": "Browser search"

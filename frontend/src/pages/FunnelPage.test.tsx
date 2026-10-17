@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { beforeAll, describe, expect, it } from 'vitest'
+import { beforeAll, describe, expect, it, vi } from 'vitest'
 import type { Calibration, CalibrationGroup, FunnelStats } from '@/api/client'
 import { mockApi, renderApp, status } from '@/test/utils'
 
@@ -36,8 +36,8 @@ function stats(overrides: Partial<FunnelStats> = {}): FunnelStats {
       rate_from_start: count / 10,
     })),
     by_source: [
-      { source_id: 1, kind: 'greenhouse', name: 'Greenhouse Acme', ...summary(5, 3, 3, 2, 1) },
-      { source_id: 2, kind: 'email_alerts', name: 'Alertas', ...summary(5, 3, 2, 1, 0) },
+      { source_id: 1, kind: 'greenhouse', name: 'Greenhouse Acme', ...summary(5, 3, 3, 2, 1), tokens: 120_000, cost_usd: 1.5 },
+      { source_id: 2, kind: 'email_alerts', name: 'Alertas', ...summary(5, 3, 2, 1, 0), tokens: 0, cost_usd: null },
     ],
     by_title: [
       { title: 'data engineer', group: 'title', ...summary(3, 3, 3, 3, 1) },
@@ -66,6 +66,17 @@ function stats(overrides: Partial<FunnelStats> = {}): FunnelStats {
       { reason: 'unspecified', count: 1 },
     ],
     hard_filter_failures: [{ filter: 'location', count: 2 }],
+    agent_cost: {
+      runs: 6,
+      tokens: 120_000,
+      cost_usd: 1.5,
+      applied: 5,
+      interview: 1,
+      tokens_per_applied: 24_000,
+      cost_per_applied_usd: 0.3,
+      tokens_per_interview: 120_000,
+      cost_per_interview_usd: 1.5,
+    },
     ...overrides,
   }
 }
@@ -115,7 +126,7 @@ describe('Embudo', () => {
 
     const sources = screen.getByRole('table', { name: 'Embudo por fuente' })
     const greenhouse = within(sources).getByRole('row', { name: /Greenhouse Acme/ })
-    expect(within(greenhouse).getAllByRole('cell').map(text)).toEqual(['5', '3', '3', '2', '1', '67 %'])
+    expect(within(greenhouse).getAllByRole('cell').map(text)).toEqual(['5', '3', '3', '2', '1', '67 %', '0,5000 USD'])
     expect(within(sources).getByText('Alertas por correo')).toBeInTheDocument()
 
     const titles = screen.getByRole('table', { name: 'Embudo por tipo de puesto' })
@@ -134,6 +145,53 @@ describe('Embudo', () => {
     expect(within(discards).getByRole('rowheader', { name: 'Sin motivo' })).toBeInTheDocument()
     const filters = screen.getByRole('table', { name: 'Cierres por filtro duro' })
     expect(within(filters).getByRole('rowheader', { name: 'Ubicación' })).toBeInTheDocument()
+  })
+
+  it('enseña el coste del agente por candidatura y por entrevista, y por fuente (fase 25.4)', async () => {
+    mockApi({ 'GET /status': status(), 'GET /stats/funnel': stats(), 'GET /stats/calibration': calibration(), 'GET /agent': AGENT })
+    renderApp('/embudo')
+    const panel = await screen.findByRole('region', { name: 'Coste del agente' })
+    expect(within(panel).getByText('Por candidatura enviada').nextSibling).toHaveTextContent(/0[.,]3000 USD/)
+    expect(within(panel).getByText('Por entrevista').nextSibling).toHaveTextContent(/1[.,]50 USD/)
+    const sources = screen.getByRole('table', { name: 'Embudo por fuente' })
+    expect(within(sources).getByRole('columnheader', { name: 'Coste por enviada' })).toBeInTheDocument()
+    const greenhouse = within(sources).getByRole('row', { name: /Greenhouse Acme/ })
+    expect(within(greenhouse).getAllByRole('cell').at(-1)).toHaveTextContent(/0[.,]5000 USD/)  // 1,5 / 3 enviadas
+    const alerts = within(sources).getByRole('row', { name: /Alertas/ })
+    expect(within(alerts).getAllByRole('cell').at(-1)).toHaveTextContent('—')
+  })
+
+  it('cuenta toda la búsqueda en números y copia la línea del README (fase 25.6)', async () => {
+    const story = {
+      started_on: '2026-08-13',
+      first_applied_on: '2026-08-20',
+      last_activity_on: '2026-10-05',
+      weeks: 8,
+      found: 65,
+      evaluated: 62,
+      approved: 32,
+      applied: 21,
+      replied: 14,
+      interviews: 6,
+      offers: 1,
+      accepted: 0,
+      reply_rate: 0.6667,
+      interview_rate: 0.2857,
+      median_days_to_reply: 4,
+      markdown: { es: '**Mi búsqueda con CandidatAI**: 62 ofertas evaluadas.', en: '**My search with CandidatAI**: 62 postings evaluated.' },
+    }
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
+    mockApi({ 'GET /status': status(), 'GET /stats/funnel': stats(), 'GET /stats/story': story })
+    renderApp('/embudo')
+
+    const panel = await screen.findByRole('region', { name: 'Tu búsqueda en números' })
+    expect(within(panel).getByText('Evaluadas').nextSibling).toHaveTextContent('62')
+    expect(within(panel).getByText('Ofertas recibidas').nextSibling).toHaveTextContent('1')
+    expect(within(panel).getByText(/^Del 13 ago 2026 al 5 oct 2026/)).toBeInTheDocument()
+    expect(within(panel).getByText(story.markdown.es)).toBeInTheDocument()
+    await userEvent.click(within(panel).getByRole('button', { name: 'Copiar en inglés' }))
+    expect(writeText).toHaveBeenCalledWith(story.markdown.en)
   })
 
   it('pide el periodo elegido con `since`', async () => {
@@ -211,6 +269,11 @@ function calibration(overrides: Partial<Calibration> = {}): Calibration {
     by_cover_letter: [group('with', 'Con carta', 6, 3, 2), group('without', 'Sin carta', 18, 6, 2)],
     by_referral: [group('given', 'Con referencia', 2, 2, 1), group('none', 'Sin referencia', 22, 7, 3)],
     by_days_to_apply: [group('0_1', '0-1 días', 24, 9, 4)],
+    by_signal: [
+      group('employer_hidden', 'Empresa oculta o agencia', 6, 1, 0),
+      group('fixed_term', 'Temporal', 3, 1, 1),
+      group('none', 'Sin señales', 16, 7, 3),
+    ],
     ...overrides,
   }
 }
@@ -252,6 +315,22 @@ describe('¿Acierta el score?', () => {
     const greenhouse = within(sources).getByRole('row', { name: /Greenhouse Acme/ })
     expect(within(greenhouse).queryByText('pocos datos')).not.toBeInTheDocument()
     expect(within(sources).getByRole('row', { name: /Alertas por correo/ })).toBeInTheDocument()
+  })
+
+  it('agrupa por señal de oferta dudosa (fase 25.3)', async () => {
+    mockApi({
+      'GET /status': status(),
+      'GET /stats/funnel': stats(),
+      'GET /stats/calibration': calibration(),
+      'GET /agent': AGENT,
+    })
+    renderApp('/embudo')
+    const panel = await screen.findByRole('region', { name: '¿Acierta el score?' })
+    await userEvent.click(await within(panel).findByRole('tab', { name: 'Señal' }))
+    const table = await within(panel).findByRole('table', { name: 'Calibración por señal' })
+    expect(within(table).getByRole('row', { name: /Empresa oculta o agencia/ })).toBeInTheDocument()
+    expect(within(within(table).getByRole('row', { name: /Sin señales/ })).getAllByRole('cell')[0]).toHaveTextContent('16')
+    expect(within(panel).getByText(/¿Responden peor\?/)).toBeInTheDocument()
   })
 
   it('pide la calibración con el mismo periodo', async () => {

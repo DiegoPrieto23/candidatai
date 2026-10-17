@@ -6,7 +6,7 @@ cada fase y lo quita cuando el usuario confirma que está hecho.
 
 Marca `[x]` lo que hagas y, si algo falla, apúntalo debajo de la línea con `→`.
 
-Última actualización: 2026-10-16 (fase 24.6).
+Última actualización: 2026-10-17 (fase 25.7).
 
 ## 1. Poner la app al día (antes de probar nada)
 
@@ -142,6 +142,71 @@ funcionando. Los roles son `writer`, `verifier`, `classifier`, `reviewer` y `ext
       Después, pásame `evals/compat/REPORT.md` para completar `AGENTS_COMPAT.md`, el README y la
       ADR-037.
 
+### «Mi perfil» editable (fase 25.7)
+
+- [ ] `uv run --directory backend cai db upgrade` (migración **0024**, `profile_edits`) o arranca
+      `cai start`. Sin ella, guardar desde «Mi perfil» o «Usar por defecto» en Plantillas falla.
+- [ ] La prueba manual sobre la demo: `fase-25.7-prueba-manual.txt` (empresa con dos logros e
+      historia STAR desde la UI, CV y carta que los usan, muestra de estilo que da el tono sin
+      colar hechos, deshacer y conflicto).
+- [ ] Con tu perfil real: abre «Mi perfil», guarda un bloque sin cambiar nada importante y mira con
+      `git diff --no-index` (o tu editor) que `data/profile.yaml` conserva tus comentarios.
+
+### CHANGELOG y tu búsqueda en números (fase 25.6)
+
+- [ ] Embudo → «Tu búsqueda en números»: ¿te cuadran las cifras? Copia la línea en los dos idiomas
+      y comprueba que no lleva ningún nombre. Guía: `fase-25.6-prueba-manual.txt`.
+- [ ] **Decidir si publicas tus cifras** en el README: el bloque está preparado y comentado en
+      `README.md` y `README.es.md` (pega la línea de `cai stats story`, escribe qué funcionó y
+      quita el comentario).
+- [ ] Tras el push de la rama: Actions → Release → «Run workflow» con `v0.1.0` (prueba en seco:
+      solo escribe las notas en el resumen).
+- [ ] Cuando quieras la primera release pública (0.2.0): `CONTRIBUTING.md` §Changelog, versiones
+      y releases.
+
+### Conectores de ATS y portales con API (fase 25.1)
+
+- [ ] «Fuentes → Empresas objetivo»: añade con «Probar» una empresa tuya en Personio, Teamtailor,
+      Workable, SmartRecruiters o Recruitee (el enlace «Cómo encontrarlo» explica el slug), y una
+      búsqueda en Manfred y otra en freehire. Guía: `fase-25.1-prueba-manual.txt`.
+- [ ] `uv run --directory backend cai sources discover --file empresas.txt` con tu lista: ahora
+      prueba también esos cinco ATS (tarda más: hasta 8 ATS × 3 slugs por empresa).
+
+### Maquetación del PDF (fase 25.5)
+
+- [ ] Renderiza tus CVs con cada plantilla (y tus plantillas importadas) y mira los avisos de
+      maquetación en la ficha: ¿alguno es un falso positivo? Guía: `fase-25.5-prueba-manual.txt`.
+- [ ] Con un CV de dos páginas, el aviso de última página casi vacía y «Generar CV» recortando.
+
+### Coste, umbral y lote en paralelo (fase 25.4)
+
+- [ ] Página «Agente» → «Coste» con tus ejecuciones reales: por acción, agente y modelo, y lo que
+      pesa cada skill. Guía: `fase-25.4-prueba-manual.txt`.
+- [ ] Umbral de «Evaluar encaje»: con una oferta por debajo, el triaje dice por qué y la ejecución
+      en segundo plano no la incluye.
+- [ ] `background_runs.max_parallel: 2` en `config/policies.yaml`: dos «Generar CV» de ofertas
+      distintas a la vez y la misma oferta nunca dos veces. Con un modelo local de Ollama,
+      `per_agent: {opencode: 1}`.
+
+### Ofertas dudosas y banderas rojas (fase 25.3)
+
+- [ ] `uv run --directory backend cai jobs signals --recompute` con tus datos: apunta cuántas salen
+      de cada señal y si alguna es un falso positivo (sobre todo `employer_hidden` por el nombre:
+      edita `config/doubtful_patterns.yaml`). Guía: `fase-25.3-prueba-manual.txt`.
+- [ ] Procesa unas ofertas nuevas (`process-jobs`) y mira en la ficha si `fixed_term`,
+      `employer_hidden` (agencia) y `ai_screening` salen donde deben.
+- [ ] `research-company` de una empresa con noticias de despidos: banderas rojas con fuente y
+      fecha, y `prepare-interview` las convierte en preguntas.
+
+### Skill `expand` (fase 25.2)
+
+- [ ] `/expand` sobre la demo con un GitHub público real (el tuyo si quieres): propone con la
+      fuente, no escribe nada si dices que no, y con tu OK añade lo aceptado con `source`. Guía:
+      `fase-25.2-prueba-manual.txt`.
+- [ ] «Mi perfil» → «Ampliar perfil desde mis enlaces» abre tu agente con la orden del skill.
+- [ ] Cuando lo uses con tu perfil real: el primer `cai profile import` tras la fase **no** crea
+      versión si no has añadido ningún `source` (si la crea, avísame).
+
 ## 2. `.env.example` (el agente no puede leerlo ni editarlo)
 
 - [ ] Crear o completar `.env.example`, **sin valores reales**, con todas las variables de
@@ -149,7 +214,8 @@ funcionando. Los roles son `writer`, `verifier`, `classifier`, `reviewer` y `ext
   - generales: `CAI_DATA_DIR`, `CAI_DB_URL`, `SOFFICE_PATH`, `CAI_CLIENT_NAME`, `CAI_AGENT`,
     `CAI_EMBEDDINGS`;
   - portales: `CAI_INFOJOBS_CLIENT_ID`, `CAI_INFOJOBS_CLIENT_SECRET`, `CAI_ADZUNA_APP_ID`,
-    `CAI_ADZUNA_APP_KEY`;
+    `CAI_ADZUNA_APP_KEY` y, de la fase 25.1, `CAI_FREEHIRE_BASE_URL` (opcional, comentada: por
+    defecto `https://freehire.me/api/v1`);
   - correo: `CAI_IMAP_HOST`, `CAI_IMAP_PORT`, `CAI_IMAP_USER`, `CAI_IMAP_PASSWORD`,
     `CAI_IMAP_FOLDER` y, de la fase 15, `CAI_IMAP_REPLIES_FOLDER` (por defecto `INBOX`);
   - navegador: `CAI_CAPTURE_EXTENSION_ID`, `CAI_BROWSER_HEADLESS`, `CAI_BROWSER_CHANNEL`,

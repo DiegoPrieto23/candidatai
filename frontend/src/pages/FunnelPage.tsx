@@ -15,8 +15,9 @@ import {
   YAxis,
 } from 'recharts'
 import type { Calibration, CalibrationGroup, FunnelStats, Schemas } from '@/api/client'
-import { useCalibration, useFunnelStats } from '@/api/queries'
+import { useCalibration, useFunnelStats, useSearchStory } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
+import { CopyButton } from '@/components/CopyButton'
 import { EmptyState, ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -24,7 +25,15 @@ import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { i18n } from '@/lib/i18n'
-import { dateFormatter, discardReasonLabel, formatNumber, HARD_FILTER_LABEL, SOURCE_KIND_LABEL } from '@/lib/labels'
+import {
+  dateFormatter,
+  discardReasonLabel,
+  formatNumber,
+  formatTokens,
+  formatUsd,
+  HARD_FILTER_LABEL,
+  SOURCE_KIND_LABEL,
+} from '@/lib/labels'
 import { toLocalDateInput } from '@/lib/time'
 import { cn } from '@/lib/utils'
 
@@ -281,9 +290,10 @@ function BreakdownTable({
 }: {
   caption: string
   firstHead: string
-  rows: { key: string; name: ReactNode; summary: Summary; muted?: boolean }[]
+  rows: { key: string; name: ReactNode; summary: Summary; muted?: boolean; spend?: Spend }[]
 }) {
   const { t } = useTranslation('funnel', { keyPrefix: 'cols' })
+  const withCost = rows.some((r) => r.spend !== undefined)
   return (
     <div className="-mx-1 overflow-x-auto">
       <table className="w-full min-w-[34rem] text-sm">
@@ -301,10 +311,15 @@ function BreakdownTable({
             <th scope="col" className="px-1 pb-2 text-right font-medium">
               {t('reply')}
             </th>
+            {withCost && (
+              <th scope="col" className="px-1 pb-2 text-right font-medium">
+                {t('costPerApplied')}
+              </th>
+            )}
           </tr>
         </thead>
         <tbody>
-          {rows.map(({ key, name, summary: s, muted }) => (
+          {rows.map(({ key, name, summary: s, muted, spend }) => (
             <tr key={key} className="border-b last:border-0">
               <th scope="row" className={cn('max-w-56 px-1 py-2 text-left font-normal', muted && 'text-muted-foreground')}>
                 {name}
@@ -317,11 +332,50 @@ function BreakdownTable({
               <td className="px-1 py-2 text-right">
                 <RateBar value={s.reply_rate} />
               </td>
+              {withCost && <td className="tabular px-1 py-2 text-right">{perApplied(spend, s.applied)}</td>}
             </tr>
           ))}
         </tbody>
       </table>
     </div>
+  )
+}
+
+/** Fase 25.4: lo gastado en segundo plano por las ofertas de una fila. */
+type Spend = { tokens: number; cost_usd: number | null }
+
+/** Por candidatura enviada: dólares si algún agente los dio; si no, tokens. */
+function perApplied(spend: Spend | undefined, applied: number): string {
+  if (!spend || applied === 0 || (spend.tokens === 0 && spend.cost_usd == null)) return '—'
+  if (spend.cost_usd != null) return formatUsd(spend.cost_usd / applied)
+  return i18n.t('funnel:cost.tokens', { tokens: formatTokens(spend.tokens / applied) })
+}
+
+function CostPanel({ cost }: { cost: Schemas['FunnelCost'] }) {
+  const { t } = useTranslation('funnel', { keyPrefix: 'cost' })
+  const value = (usd: number | null, tokens: number | null) =>
+    usd != null ? formatUsd(usd) : tokens != null ? t('tokens', { tokens: formatTokens(tokens) }) : '—'
+  return (
+    <Panel title={t('title')} hint={t('hint')}>
+      {cost.runs === 0 ? (
+        <p className="text-sm text-muted-foreground">{t('none')}</p>
+      ) : (
+        <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm sm:grid-cols-3">
+          <div>
+            <dt className="text-muted-foreground">{t('total')}</dt>
+            <dd className="tabular text-lg font-semibold">{value(cost.cost_usd, cost.tokens)}</dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground">{t('perApplied')}</dt>
+            <dd className="tabular text-lg font-semibold">{value(cost.cost_per_applied_usd, cost.tokens_per_applied)}</dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground">{t('perInterview')}</dt>
+            <dd className="tabular text-lg font-semibold">{value(cost.cost_per_interview_usd, cost.tokens_per_interview)}</dd>
+          </div>
+        </dl>
+      )}
+    </Panel>
   )
 }
 
@@ -442,9 +496,12 @@ function Dashboard({ stats, since }: { stats: FunnelStats; since: string | null 
               </>
             ),
             summary: s,
+            spend: { tokens: s.tokens, cost_usd: s.cost_usd },
           }))}
         />
       </Panel>
+
+      <CostPanel cost={stats.agent_cost} />
 
       <Panel title={t('byTitle.title')} hint={t('byTitle.hint')}>
         <BreakdownTable
@@ -480,6 +537,8 @@ function Dashboard({ stats, since }: { stats: FunnelStats; since: string | null 
       <CalibrationPanel since={since} />
 
       <ReasonsPanel stats={stats} />
+
+      <StoryPanel />
     </div>
   )
 }
@@ -498,6 +557,7 @@ const CALIBRATION_TABS = [
   { id: 'letter', pick: (c: Calibration) => c.by_cover_letter },
   { id: 'referral', pick: (c: Calibration) => c.by_referral },
   { id: 'days', pick: (c: Calibration) => c.by_days_to_apply },
+  { id: 'signal', pick: (c: Calibration) => c.by_signal },
 ] as const
 
 type CalibrationTab = (typeof CALIBRATION_TABS)[number]['id']
@@ -656,6 +716,61 @@ function CalibrationPanel({ since }: { since: string | null }) {
           </Tabs>
         </>
       )}
+    </Panel>
+  )
+}
+
+// --- Tu búsqueda en números (fase 25.6) -------------------------------------------------------
+
+const storyDay = (iso: string) =>
+  dateFormatter({ day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${iso}T00:00:00Z`))
+
+/** Toda la búsqueda, sin periodo, en números agregados y con la línea para el README en los dos idiomas. */
+function StoryPanel() {
+  const { t, i18n: { language } } = useTranslation('funnel', { keyPrefix: 'story' })
+  const story = useSearchStory()
+  const data = story.data
+  if (story.isPending) return <Skeleton className="h-40 rounded-xl" />
+  if (story.isError) return <ErrorState error={story.error} onRetry={() => story.refetch()} />
+  if (!data || data.found === 0) return null
+  const line = language.startsWith('en') ? data.markdown.en : data.markdown.es
+  const counts = [
+    ['evaluated', data.evaluated],
+    ['applied', data.applied],
+    ['replied', data.replied],
+    ['interviews', data.interviews],
+    ['offers', data.offers],
+  ] as const
+  return (
+    <Panel
+      title={t('title')}
+      hint={
+        data.started_on && data.last_activity_on
+          ? `${t('period', { start: storyDay(data.started_on), end: storyDay(data.last_activity_on) })}. ${t('hint')}`
+          : t('hint')
+      }
+    >
+      <dl className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+        {counts.map(([key, value]) => (
+          <div key={key} className="rounded-lg border px-3 py-2.5">
+            <dt className="text-xs text-muted-foreground">{t(key)}</dt>
+            <dd className="tabular mt-0.5 text-xl font-semibold tracking-tight">{intFmt.format(value)}</dd>
+          </div>
+        ))}
+      </dl>
+      <p className="mt-4 text-xs text-muted-foreground">{t('lineLabel')}</p>
+      <pre className="mt-1 overflow-x-auto whitespace-pre-wrap rounded-lg border bg-muted/40 p-3 font-mono text-xs leading-relaxed">
+        {line}
+      </pre>
+      <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm text-muted-foreground">
+          <Trans t={t} i18nKey="note" components={{ code: <code className="text-xs" /> }} />
+        </p>
+        <div className="flex shrink-0 flex-wrap gap-2">
+          <CopyButton text={data.markdown.es} label={t('copyEs')} />
+          <CopyButton text={data.markdown.en} label={t('copyEn')} />
+        </div>
+      </div>
     </Panel>
   )
 }

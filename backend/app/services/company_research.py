@@ -10,6 +10,8 @@ además una copia en Markdown en `data/documentos/empresas/<Empresa>_<id>.md`, q
   y solo URLs `http(s)`.
 - **No confiable**: sale de páginas web. Al guardarlo se buscan frases de inyección
   (`risk_flags`); quien lo lea lo trata como datos, nunca como instrucciones (POLICIES §6).
+- **Banderas rojas** (fase 25.3): `red_flags`, cada una con su tipo, su fecha y al menos una cita.
+  Hechos con fuente (despidos, rotación, reseñas, impagos, conflictos), nunca opiniones.
 - **La carta no lo usa** (POLICIES §7): `get_cover_letter` no lo devuelve. Un dato de aquí solo
   entra en la carta si el usuario lo copia a las indicaciones de esa oferta.
 """
@@ -17,7 +19,7 @@ además una copia en Markdown en `data/documentos/empresas/<Empresa>_<id>.md`, q
 import re
 from datetime import date, datetime
 from pathlib import Path
-from typing import Self
+from typing import Literal, Self
 from urllib.parse import quote, urlsplit
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
@@ -65,6 +67,35 @@ class ResearchSource(_Input):
         return value
 
 
+RedFlagKind = Literal["layoffs", "turnover", "reviews", "payments", "legal", "other"]
+RED_FLAG_LABELS: dict[str, str] = {
+    "layoffs": "Despidos o ERE",
+    "turnover": "Rotación alta",
+    "reviews": "Reseñas muy negativas",
+    "payments": "Impagos",
+    "legal": "Conflictos o sanciones",
+    "other": "Otra",
+}
+MAX_RED_FLAGS = 10
+_Date = date  # el campo `date` de `RedFlag` taparía el tipo
+
+
+class RedFlag(_Input):
+    """Una bandera roja de la empresa (fase 25.3): un hecho con fuente y fecha, no una opinión."""
+
+    kind: RedFlagKind = Field(
+        description="layoffs (despidos, ERE), turnover (rotación alta), reviews (reseñas públicas "
+        "muy negativas y recurrentes), payments (impagos, retrasos de nómina), legal (conflictos, "
+        "sanciones, juicios) u other."
+    )
+    text: str = Field(
+        min_length=1, max_length=600, description="Qué pasó, en 1-2 frases, citando [n]."
+    )
+    date: _Date = Field(
+        description="Cuándo pasó o se publicó (AAAA-MM-DD; el día 1 si solo hay mes)."
+    )
+
+
 class CompanyResearchContent(_Input):
     """El dosier. Cada apartado con texto cita sus fuentes con `[n]` (1 = la primera)."""
 
@@ -96,6 +127,12 @@ class CompanyResearchContent(_Input):
         description="Para el candidato: qué conviene preguntar o comprobar, con [n] si sale de "
         "una fuente. Sin opiniones sin respaldo.",
     )
+    red_flags: list[RedFlag] = Field(
+        default_factory=list,
+        max_length=MAX_RED_FLAGS,
+        description="Banderas rojas con fuente y fecha (despidos, rotación, reseñas, impagos, "
+        "conflictos). Vacío si no hay ninguna con fuente.",
+    )
     sources: list[ResearchSource] = Field(
         min_length=1, max_length=30, description="Fuentes, en el orden de las citas [1], [2]…"
     )
@@ -123,6 +160,16 @@ class CompanyResearchContent(_Input):
                 raise ValueError(
                     f"«{label}» cita {', '.join(f'[{n}]' for n in wrong)}, pero solo hay "
                     f"{total} fuentes."
+                )
+        for i, flag in enumerate(self.red_flags, start=1):
+            cited = [int(n) for n in _CITATION.findall(flag.text)]
+            if not cited:
+                raise ValueError(f"La bandera roja {i} no cita ninguna fuente: añade [n].")
+            wrong = sorted({n for n in cited if not 1 <= n <= total})
+            if wrong:
+                raise ValueError(
+                    f"La bandera roja {i} cita {', '.join(f'[{n}]' for n in wrong)}, pero solo "
+                    f"hay {total} fuentes."
                 )
         return self
 
@@ -175,6 +222,7 @@ def _job_company(session: Session, job_id: int) -> Company:
 def _all_text(content: CompanyResearchContent) -> str:
     parts = [getattr(content, name) or "" for name, _ in SECTIONS]
     parts += content.stack + [s.title for s in content.sources]
+    parts += [flag.text for flag in content.red_flags]
     return "\n".join(parts)
 
 
@@ -200,6 +248,12 @@ def render_markdown(
             lines += ["", f"## {label}", "", text]
     if content.stack:
         lines += ["", "## Stack", "", ", ".join(content.stack)]
+    if content.red_flags:
+        lines += ["", "## Banderas rojas", ""]
+        lines += [
+            f"- **{RED_FLAG_LABELS[flag.kind]}** ({flag.date:%d/%m/%Y}): {flag.text}"
+            for flag in content.red_flags
+        ]
     lines += ["", "## Fuentes", ""]
     for n, source in enumerate(content.sources, start=1):
         seen = f" (consultada el {source.accessed_on:%d/%m/%Y})" if source.accessed_on else ""

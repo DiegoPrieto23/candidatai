@@ -17,14 +17,15 @@ import {
 import { Trans, useTranslation } from 'react-i18next'
 import { SafeTrans } from '@/components/SafeTrans'
 import type { AddJobResult, EventOut, JobView, Schemas } from '@/api/client'
-import { useAddNote, useJob, useJobEvent, useJobMatch, type UserEventBody } from '@/api/queries'
+import { useAddNote, useAssessThreshold, useJob, useJobEvent, useJobMatch, type UserEventBody } from '@/api/queries'
+import { JobCostPanel } from '@/components/JobCostPanel'
 import { ApplySection } from '@/components/ApplySection'
 import { ArchivedApplication } from '@/components/ArchivedApplication'
 import { CoverLetterSection } from '@/components/CoverLetterSection'
 import { CompanyResearchSection } from '@/components/CompanyResearchSection'
 import { CvSection } from '@/components/CvSection'
 import { JobReplyNotice } from '@/components/JobReplyNotice'
-import { ClosedNotice, RepostNote } from '@/components/JobSignals'
+import { ClosedNotice, DoubtfulNote, RepostNote } from '@/components/JobSignals'
 import { DiscardDialog } from '@/components/DiscardDialog'
 import { DraftsSection } from '@/components/DraftsSection'
 import { MatchDetails, ScoreBadge } from '@/components/MatchDetails'
@@ -440,6 +441,8 @@ function NoteForm({ jobId }: { jobId: number }) {
 function MatchPanel({ job }: { job: JobView }) {
   const { t } = useTranslation('job', { keyPrefix: 'match' })
   const { data: match, isPending, isError, error, refetch } = useJobMatch(job.id, job.extraction !== null)
+  // Fase 25.4: solo en triaje importa el umbral de «Evaluar encaje» en segundo plano.
+  const assessThreshold = useAssessThreshold(job.stage === 'pending_triage')
   if (!job.extraction) return null
   return (
     <section className="rounded-xl border bg-card p-5 sm:p-6" aria-label={t('title')}>
@@ -452,7 +455,10 @@ function MatchPanel({ job }: { job: JobView }) {
       ) : isError ? (
         <ErrorState error={error} onRetry={() => refetch()} className="border-0 p-0" />
       ) : match ? (
-        <MatchDetails match={match} />
+        <MatchDetails
+          match={match}
+          assessMinScore={job.stage === 'pending_triage' ? assessThreshold.data?.value : undefined}
+        />
       ) : (
         <p className="text-sm text-muted-foreground">
           <Trans
@@ -647,6 +653,7 @@ export function JobPage() {
               {job.injection && <InjectionAlert injection={job.injection} />}
               <ClosedNotice job={job} />
               <RepostNote job={job} />
+              <DoubtfulNote job={job} />
               {sent ? (
                 <>
                   <ProcessSection job={job} />
@@ -681,6 +688,7 @@ export function JobPage() {
             <aside className="space-y-6">
               <MatchPanel job={job} />
               {job.stage !== 'pending_detail' && <NetworkPanel job={job} />}
+              <JobCostPanel jobId={job.id} />
               <Panel title={t('timeline.title')}>
                 <Timeline events={job.events} />
               </Panel>

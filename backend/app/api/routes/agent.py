@@ -18,11 +18,13 @@ from pydantic import BaseModel, ConfigDict, Field
 from app.agent_interface.errors import ErrorDetail, ToolError
 from app.api.deps import EmptyBody, SessionDep, require_ui
 from app.services import (
+    agent_costs,
     agent_launch,
     agent_prefs,
     agent_registry,
     agent_requests,
     agent_runs,
+    assess_threshold,
     local_models,
     spend_tiers,
 )
@@ -39,6 +41,7 @@ class Action(BaseModel):
     label: str
     needs_job: bool
     needs_milestone: bool  # acción de un hito de entrevista (`milestone_id`)
+    needs_profile_item: bool  # fase 25.7b: de un logro o una historia (`profile_item`)
     prompt: str | None  # la orden (sin oferta); con oferta, la da `launch` o se compone en la UI
     background: bool  # admite «En segundo plano» (fase 19)
     # Fase 24.4: con qué agente iría y por qué; los demás agentes, para elegir solo esta vez; y en
@@ -67,6 +70,8 @@ class LaunchBody(RequestBody):
     agent: str | None = Field(default=None, max_length=32)
     model: str | None = Field(default=None, max_length=100)
     preset: str | None = Field(default=None, max_length=40)
+    # Fase 25.7b: «Mejorar con mi agente» en un logro (`exp-acme/a2`) o una historia (`st-x`).
+    profile_item: str | None = Field(default=None, max_length=130)
 
 
 def _background(res: Resolution, other: Resolution | None) -> agent_launch.BackgroundInfo:
@@ -105,7 +110,10 @@ def get_agent_launcher(session: SessionDep) -> AgentStatus:
                 label=spec.label,
                 needs_job=spec.needs_job,
                 needs_milestone=spec.milestone is not None,
-                prompt=None if spec.needs_job else agent_launch.prompt_for(action_id),
+                needs_profile_item=spec.profile_item,
+                prompt=None
+                if spec.needs_job or spec.profile_item
+                else agent_launch.prompt_for(action_id),
                 background=bool(spec.background),
                 agent=res,
                 alternatives=[
@@ -154,6 +162,34 @@ def save_agent_preferences(session: SessionDep, body: Preferences) -> Preference
 def _pref_error(exc: agent_prefs.PreferenceError) -> ToolError:
     detail = ErrorDetail(field=exc.field, received=None, reason=str(exc))
     return ToolError("invalid_request", str(exc), [detail])
+
+
+# --- Coste y umbral (fase 25.4) ----------------------------------------------------------------
+
+
+@router.get("/costs", operation_id="get_agent_costs")
+def get_agent_costs(session: SessionDep) -> agent_costs.AgentCosts:
+    """Lo que han gastado las ejecuciones en segundo plano en los últimos 7 y 30 días, por acción,
+    agente y modelo, y lo que pesan las instrucciones de cada skill. Solo lo que da cada agente."""
+    return agent_costs.get_costs(session)
+
+
+@router.get("/assess-threshold", operation_id="get_assess_threshold")
+def get_assess_threshold(session: SessionDep) -> assess_threshold.AssessThreshold:
+    """El score mínimo con que «Evaluar encaje» valora en segundo plano."""
+    return assess_threshold.get_threshold(session)
+
+
+@router.put(
+    "/assess-threshold",
+    operation_id="save_assess_threshold",
+    dependencies=[Depends(require_ui)],
+)
+def save_assess_threshold(
+    session: SessionDep, body: assess_threshold.AssessThresholdInput
+) -> assess_threshold.AssessThreshold:
+    """Cambia el umbral (`value: null` vuelve al de `config/policies.yaml`)."""
+    return assess_threshold.set_threshold(session, body)
 
 
 # --- Niveles de gasto (fase 24.6) -------------------------------------------------------------
@@ -234,6 +270,7 @@ def launch_agent(session: SessionDep, body: LaunchBody) -> agent_launch.LaunchRe
             agent=body.agent,
             model=body.model,
             preset=body.preset,
+            profile_item=body.profile_item,
         )
     except LaunchError as exc:
         _raise(exc)

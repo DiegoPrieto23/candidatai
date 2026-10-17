@@ -60,7 +60,7 @@ La parte en la que más nos separa career-ops. Leyenda: ✅ lo tiene · 🟡 en 
 | Gemini CLI | ❌ **ya no sirve con cuentas gratuitas ni Pro** (ver nota); deshabilitado en el registro y `GEMINI.md` vacío a propósito (24.3) | 🟡 `gemini -p` en un subagente | 🟡 `GEMINI.md` vacío a propósito |
 | Pi, Grok, Kimi, Copilot CLI, Cursor, Hermes | 🟡 sin probar, valdrían si leen `AGENTS.md` | ❌ | ✅ |
 | Subagentes con herramientas limitadas | ✅ Claude Code (nivel A); Codex, OpenCode y Qwen Code en nivel B (OpenCode y Qwen generan cada rol con solo sus herramientas, pendiente de probar) | ✅ revisor con contexto limpio | 🟡 |
-| Segundo plano / lote | 🟡 Claude Code y OpenCode (24.5), de una en una, con herramientas limitadas | ✅ `/rank` en paralelo | ✅ `batch-runner.sh --cli claude\|opencode\|gemini\|qwen --model …` |
+| Segundo plano / lote | ✅ Claude Code y OpenCode (24.5), hasta 4 a la vez con tope por agente (25.4), con herramientas limitadas | ✅ `/rank` en paralelo | ✅ `batch-runner.sh --cli claude\|opencode\|gemini\|qwen --model …` |
 | Elegir el agente | ✅ desde la UI (24.4); `CAI_AGENT` como respaldo | ❌ | ✅ el CLI que abras; `--cli` en el lote |
 | **Cambiar de agente desde la UI**, por acción | ✅ por defecto, por acción y «con Claude Code ▾» en cada botón, con las capacidades de cada agente comprobadas (24.4) | n/a | 🟡 la web en alfa usa el CLI o la clave que le des |
 | Elegir modelo o nivel de gasto | ✅ modelo o preset por agente y por acción (24.4) y niveles «Económico/Equilibrado/Máximo» que se aplican con un clic y se deshacen (24.6) | ❌ | ✅ `spend_tier` economy/standard/premium + filtro previo que ahorra evaluaciones |
@@ -85,10 +85,10 @@ compatible y Antigravity CLI ocupa su sitio.
 |---|---|---|---|
 | Alta por URL o texto pegado | ✅ | ✅ | ✅ |
 | APIs públicas de ATS (Greenhouse, Lever, Ashby) | ✅ diaria | ❌ | ✅ |
-| Otros ATS con API (Workable, SmartRecruiters, Personio, Teamtailor, Recruitee, Workday…) | ❌ | ❌ | ✅ más de 55 proveedores |
-| Portales con API (InfoJobs, Adzuna) | ✅ con claves | ❌ | 🟡 otros feeds (Manfred, Remotive, WWR, HN «Who's hiring», Telegram…) |
+| Otros ATS con API (Workable, SmartRecruiters, Personio, Teamtailor, Recruitee, Workday…) | 🟡 Personio, Teamtailor, Workable, SmartRecruiters y Recruitee, diaria y en `cai sources discover` (25.1); Workday y los que solo dan HTML, no | ❌ | ✅ más de 55 proveedores |
+| Portales con API (InfoJobs, Adzuna, Manfred) | ✅ InfoJobs y Adzuna con claves; Manfred sin claves (25.1) | ❌ | 🟡 otros feeds (Manfred, Remotive, WWR, HN «Who's hiring», Telegram…) |
 | Scrapers HTML de portales locales | 🚫 (ADR-016) | ✅ daneses + generador `/add-portal` | ✅ |
-| Agregador con API pública (freehire.me) | ❌ | ✅ | ❌ |
+| Agregador con API pública (freehire.me) | ✅ por título, país y remoto (25.1) | ✅ | ❌ |
 | Alertas de empleo por correo (IMAP de solo lectura) | ✅ | ❌ | ❌ |
 | Botón de extensión del navegador para la página que ves | ✅ | ❌ | ❌ |
 | El agente recorre portales con tu navegador | ✅ opcional | ❌ | 🟡 descubrimiento asistido en la web alfa |
@@ -111,7 +111,7 @@ compatible y Antigravity CLI ocupa su sitio.
 | Similitud semántica local (embeddings) | ✅ opcional | ❌ | ❌ (solo léxica, para reutilizar un CV) |
 | Valoración razonada del agente | ✅ `assess-fit` | ✅ | ✅ informe A-H |
 | Triaje rápido con teclado | ✅ J/K, A, D, deshacer | ❌ | 🟡 en la TUI |
-| Señales de oferta dudosa (agencia sin licencia, rango salarial demasiado ancho, temporal oculto, cribado con IA…) | ❌ | ❌ | ✅ `oferta-signals` |
+| Señales de oferta dudosa (agencia sin licencia, rango salarial demasiado ancho, temporal oculto, cribado con IA…) | 🟡 rango ancho, empresa oculta o agencia, temporal, publicada hace meses y cribado con IA, sin puntuar (25.3); licencias de agencias, no | ❌ | ✅ `oferta-signals` |
 | Autorización de trabajo / patrocinio de visado | ❌ | ❌ | ✅ |
 | Estrategia de nivel y arquetipo del puesto | 🟡 | ❌ | ✅ |
 | Calibración por región (p. ej. ingeniería en Europa) | ❌ | ❌ | ✅ `eu-swe` |
@@ -120,7 +120,7 @@ compatible y Antigravity CLI ocupa su sitio.
 | Huecos de skills agregados y plan de formación | ✅ | ✅ `/upskill` | ✅ |
 | Valorar un curso o un proyecto | ✅ `training-plan` | ❌ | ✅ |
 | Títulos cercanos para ampliar la búsqueda | ✅ `broaden-search` | ❌ | ✅ |
-| Evaluación en lote en paralelo | 🟡 en segundo plano, de una en una | ✅ `/rank` | ✅ `batch` con varios workers |
+| Evaluación en lote en paralelo | 🟡 en segundo plano, hasta 4 ejecuciones a la vez (25.4); cada lote es una ejecución | ✅ `/rank` | ✅ `batch` con varios workers |
 
 ### CV y carta
 
@@ -133,7 +133,7 @@ compatible y Antigravity CLI ocupa su sitio.
 | Foto, color y secciones por oferta sin gastar agente | ✅ | ❌ | ❌ |
 | Foto según el país | ✅ | ❌ | ❌ |
 | Control de páginas | ✅ aviso `too_long` | ✅ páginas exactas y recorte por relevancia | 🟡 |
-| **Verificar la maquetación del PDF** (títulos huérfanos, huecos, pie) | ❌ | ✅ `verify_layout.py` | 🟡 `verify-cv-structure` |
+| **Verificar la maquetación del PDF** (títulos huérfanos, huecos, pie) | ✅ cinco avisos con página y arreglo, en CV y carta, y en `cai eval cv` (25.5) | ✅ `verify_layout.py` | 🟡 `verify-cv-structure` |
 | Comprobación ATS del texto del PDF | ✅ cobertura de keywords | ✅ | ✅ `verify-ats` |
 | Carta a medida, a juego con el CV | ✅ | ✅ | ✅ con 4 ángulos |
 | Respuestas de formularios | ✅ `prepare-application` | ❌ | ✅ |
@@ -163,7 +163,7 @@ compatible y Antigravity CLI ocupa su sitio.
 | Plan de preparación por días | ✅ | ✅ | ✅ |
 | Simulacro con feedback | ✅ | ✅ | ✅ |
 | Repaso posterior y banco de historias STAR | ✅ (al perfil, con tu OK) | 🟡 | ✅ STAR+R |
-| Detector de banderas rojas de la empresa | ❌ | ❌ | ✅ `interview-redflag` |
+| Detector de banderas rojas de la empresa | ✅ `red_flags` del dosier, con fuente y fecha, y preguntas en `prepare-interview` (25.3) | ❌ | ✅ `interview-redflag` |
 | Comparar ofertas recibidas con tu mínimo | ✅ **sin que el agente vea tu mínimo** | ❌ | ✅ `salary-gap` |
 | Preparar la negociación y revisar el contrato | ✅ sin proponer cifras | ❌ | ✅ |
 | Datos salariales propios | ✅ CSV opcional | ✅ | ✅ |
@@ -174,7 +174,8 @@ compatible y Antigravity CLI ocupa su sitio.
 |---|---|---|---|
 | Perfil validado y versionado | ✅ YAML con esquema | 🟡 Markdown | 🟡 YAML + Markdown + perfil maestro |
 | Contexto que orienta sin respaldar hechos (estilo, narrativa…) | ✅ `data/contexto/` | ✅ perfil conductual y estilo | ✅ |
-| Enriquecer el perfil desde GitHub, portfolio, Scholar… | ❌ | ✅ `/expand` | ✅ `expand` |
+| Rellenar el perfil, el contexto y muestras de estilo desde una UI, sin YAML | ✅ «Mi perfil» por bloques: conserva tu formato, avisa si cambió por fuera, enseña el diff y se puede deshacer; el agente sigue sin poder escribirlo sin preguntar (25.7) | n/a (sin UI) | sin comprobar |
+| Enriquecer el perfil desde GitHub, portfolio, Scholar… | ✅ `expand`, con la fuente de cada dato y tu OK (25.2) | ✅ `/expand` | ✅ `expand` |
 | Revisar tu perfil de LinkedIn | ✅ | ❌ | ❌ |
 | Lanzar el agente desde la UI (terminal o segundo plano) | ✅ | ❌ | 🟡 workers en la web alfa |
 | Cola de encargos para la próxima sesión | ✅ | ❌ | ✅ `agent-inbox` |
@@ -183,7 +184,8 @@ compatible y Antigravity CLI ocupa su sitio.
 | macOS / Linux / Docker documentados | ❌ (solo Windows probado) | ✅ | ✅ |
 | Actualizar sin pisar tus datos | ✅ datos fuera del código | ✅ triaje de cambios upstream | ✅ `update` |
 | Licencia, `CONTRIBUTING`, `SECURITY` | ✅ | ✅ | ✅ |
-| `CHANGELOG` y releases | 🟡 releases por etiqueta, sin `CHANGELOG` | ✅ | ✅ también en npm |
+| `CHANGELOG` y releases | ✅ `CHANGELOG.md` (Keep a Changelog) del que salen las notas de cada release; sin él, la release falla (25.6) | ✅ | ✅ también en npm |
+| Historia con números reales | 🟡 `cai stats story` y «Tu búsqueda en números» en el Embudo dan la línea para el README, solo con cifras agregadas; publicarla es decisión tuya (25.6) | ✅ la del autor | ✅ la del autor en el README |
 | README en varios idiomas | 🟡 español e inglés | ❌ | ✅ 18 idiomas |
 | UI en varios idiomas | ✅ español e inglés, con selector | n/a | n/a |
 | Comunidad | ❌ | 🟡 Discussions, índice de forks | ✅ Discord, muro de contratados, manifiesto, prensa |
@@ -214,23 +216,26 @@ dudosas, coste y calidad del CV) y la 26 (macOS, Linux y Docker).
 
 | # | Qué | Lo tiene | Por qué merece la pena | Esfuerzo | Dónde |
 |---|---|---|---|---|---|
-| 1 | **Registro de agentes y diagnóstico**: qué agentes hay, cuáles están instalados, qué saben hacer (MCP, subagentes, segundo plano, ver imágenes, web, navegador) y si son open-source | career-ops | Base para todo lo demás; hoy el manifiesto solo sabe de dos agentes | Medio | 24.1 |
-| 2 | **Esquemas y errores para cualquier modelo** (`cai schema`, errores de validación que dicen qué campo arreglar) | — | Los modelos abiertos y pequeños fallan sobre todo en esquemas estrictos; el pendiente de la 12.3 | Bajo | 24.2 |
-| 3 | **Agentes nuevos**: OpenCode y Qwen Code (open-source), Antigravity CLI (gratis, cerrado) y Codex con modelos locales (`--oss`); corregir lo de Gemini | career-ops | Usar la app sin suscripción de pago y sin depender de un proveedor | Medio | 24.3 |
-| 4 | **Elegir y cambiar de agente desde la UI**, global y por acción, con el modelo de cada uno | career-ops (en parte) | Extraer con un modelo local gratis y redactar el CV con el más capaz, sin tocar variables de entorno | Medio | 24.4 |
-| 5 | **Segundo plano con varios agentes** (OpenCode y, si se puede garantizar, Codex) | career-ops (`--cli` en el lote) | Que el lote no dependa de Claude Code, con el mismo techo de herramientas | Medio | 24.5 |
-| 6 | **Guía de modelos gratuitos y locales + matriz probada por agente y modelo** | career-ops | Recomendar modelos con datos (`cai eval cv`) y no por opinión | Medio | 24.6 |
-| 7 | **Más conectores de ATS con API pública**: Personio, Teamtailor, Workable, SmartRecruiters, Recruitee, y feeds como Manfred o freehire.me | ambos | Mucha empresa española y europea usa estos ATS; son APIs, sin scraping (ADR-016) | Medio | 25.1 |
-| 8 | **Enriquecer el perfil desde enlaces públicos** (GitHub, portfolio, Scholar), con tu OK antes de escribir | ambos | Proyectos y logros que no están en el CV | Bajo (un skill) | 25.2 |
-| 9 | **Señales de oferta dudosa y banderas rojas** en `assess-fit` y `research-company` | career-ops | Evita perder tiempo con ofertas fantasma, agencias o condiciones escondidas | Bajo | 25.3 |
-| 10 | **Lote en paralelo y coste por skill y por agente** (tokens, turnos, tiempo) con un filtro previo por score | ambos | Saber qué cuesta cada oferta y gastar solo en las que pasan el umbral | Medio | 25.4 |
-| 11 | **Verificar la maquetación del PDF** (huérfanos, huecos, pie) | AI Job Search | Hoy solo se avisa de que sobra una página | Bajo | 25.5 |
+| 1 | **Registro de agentes y diagnóstico**: qué agentes hay, cuáles están instalados, qué saben hacer (MCP, subagentes, segundo plano, ver imágenes, web, navegador) y si son open-source | career-ops | Base para todo lo demás; hoy el manifiesto solo sabe de dos agentes | Medio | 24.1 ✅ |
+| 2 | **Esquemas y errores para cualquier modelo** (`cai schema`, errores de validación que dicen qué campo arreglar) | — | Los modelos abiertos y pequeños fallan sobre todo en esquemas estrictos; el pendiente de la 12.3 | Bajo | 24.2 ✅ |
+| 3 | **Agentes nuevos**: OpenCode y Qwen Code (open-source), Antigravity CLI (gratis, cerrado) y Codex con modelos locales (`--oss`); corregir lo de Gemini | career-ops | Usar la app sin suscripción de pago y sin depender de un proveedor | Medio | 24.3 ✅ |
+| 4 | **Elegir y cambiar de agente desde la UI**, global y por acción, con el modelo de cada uno | career-ops (en parte) | Extraer con un modelo local gratis y redactar el CV con el más capaz, sin tocar variables de entorno | Medio | 24.4 ✅ |
+| 5 | **Segundo plano con varios agentes** (OpenCode y, si se puede garantizar, Codex) | career-ops (`--cli` en el lote) | Que el lote no dependa de Claude Code, con el mismo techo de herramientas | Medio | 24.5 ✅ |
+| 6 | **Guía de modelos gratuitos y locales + matriz probada por agente y modelo** | career-ops | Recomendar modelos con datos (`cai eval cv`) y no por opinión | Medio | 24.6 🚧 (falta pasar la matriz) |
+| 7 | **Más conectores de ATS con API pública**: Personio, Teamtailor, Workable, SmartRecruiters, Recruitee, y feeds como Manfred o freehire.me | ambos | Mucha empresa española y europea usa estos ATS; son APIs, sin scraping (ADR-016) | Medio | 25.1 ✅ |
+| 8 | **Enriquecer el perfil desde enlaces públicos** (GitHub, portfolio, Scholar), con tu OK antes de escribir | ambos | Proyectos y logros que no están en el CV | Bajo (un skill) | 25.2 ✅ |
+| 9 | **Señales de oferta dudosa y banderas rojas** en `assess-fit` y `research-company` | career-ops | Evita perder tiempo con ofertas fantasma, agencias o condiciones escondidas | Bajo | 25.3 ✅ |
+| 10 | **Lote en paralelo y coste por skill y por agente** (tokens, turnos, tiempo) con un filtro previo por score | ambos | Saber qué cuesta cada oferta y gastar solo en las que pasan el umbral | Medio | 25.4 ✅ |
+| 11 | **Verificar la maquetación del PDF** (huérfanos, huecos, pie) | AI Job Search | Hoy solo se avisa de que sobra una página | Bajo | 25.5 ✅ |
 | 12 | **macOS, Linux o Docker** | ambos | Solo si se busca que lo use más gente; hoy el instalador es solo para Windows | Medio | 26 |
-| 13 | **`CHANGELOG`, historia con números reales y comunidad** | career-ops | Lo que hace famoso a career-ops no son las funciones, sino la historia y la comunidad | Bajo | 25.6 (sin comunidad) |
+| 13 | **`CHANGELOG`, historia con números reales y comunidad** | career-ops | Lo que hace famoso a career-ops no son las funciones, sino la historia y la comunidad | Bajo | 25.6 ✅ (sin comunidad) |
 | 14 | Autorización de trabajo y visado como filtro duro | career-ops | Solo si se busca fuera de la UE | Bajo | Sin fecha |
 
 Hecho desde la revisión anterior: licencia MIT, `CONTRIBUTING` y `SECURITY`, README y guía en
-inglés, instalación con un clic (`install.ps1`, `cai start`, releases) y UI en inglés (fase 23).
+inglés, instalación con un clic (`install.ps1`, `cai start`, releases) y UI en inglés (fase 23);
+varios agentes, open-source y gratuitos, a elegir desde la UI (fase 24); y más fuentes con API,
+`expand`, señales de oferta dudosa, coste por oferta, maquetación del PDF, `CHANGELOG` e historia
+con números (fase 25, a 17 de octubre de 2026).
 
 ## Lo que no vamos a hacer (y qué regla lo impide)
 

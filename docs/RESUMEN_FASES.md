@@ -380,6 +380,77 @@ La carta es un documento propio, con sus indicaciones, su verificación y sus re
 - Para agentes y terminal: `get_received_offer` ↔ `jh received-offers show`.
 
 
+## 25.7 · Tu perfil, editable desde la UI — 2026-10-17 · Claude Code (Opus 5.5)
+- **«Mi perfil» sin YAML:** experiencia y logros, proyectos, formación, certificaciones, otras
+  secciones, idiomas y skills, historias STAR, qué buscas y tus preferencias de CV y carta, por
+  pestañas y bloques. Cada bloque se guarda solo y enseña el error en el campo que toca.
+- **Tu fichero, intacto:** se conservan sus comentarios y su formato; si lo cambiaste por fuera, no
+  lo pisa y te pide recargar; cada guardado deja una copia y «Deshacer» vuelve atrás. Cambiar lo
+  que buscas o tus skills te enseña antes el cambio, porque recalcula los scores.
+- **Historias STAR** con sus evidencias elegidas por nombre: sin una, no se guarda. Borrar un logro
+  que cita una historia no se puede.
+- **Contexto y muestras de estilo:** los cuatro ficheros de contexto con vista previa, y cartas,
+  correos o posts tuyos para que tu agente copie tu tono, nunca tus hechos.
+- **«Mejorar con mi agente»** en cada logro e historia y **«Proponer historias desde mi
+  experiencia»**: tu agente propone y pregunta los números; solo escribe con tu OK.
+- **Sin vía nueva para el agente:** solo la UI escribe así (ADR-039); tu agente sigue sin ver tu
+  contacto ni poder escribir el perfil sin preguntar.
+
+## 25.6 · Qué cambia en cada versión, y tu búsqueda en números — 2026-10-17 · Claude Code (Opus 5.5)
+- **`CHANGELOG.md`:** qué cambia para quien usa la app, versión a versión (la 0.1.0 con las fases 01
+  a 23 y «Sin publicar» con la 24 y la 25). Cada fase añade lo suyo al cerrar.
+- **Releases con notas de verdad:** la release de GitHub toma la sección de su versión del
+  `CHANGELOG` y falla si no existe. Se puede probar en seco desde Actions sin publicar nada.
+  `CONTRIBUTING.md` explica cómo se versiona y se publica.
+- **Tu búsqueda en números:** al final del Embudo (y con `cai stats story`), ofertas evaluadas,
+  candidaturas, respuestas, entrevistas y ofertas desde el principio, con fechas, y una línea lista
+  para tu README en español y en inglés. Solo cifras, nunca empresas; publicarla es cosa tuya.
+
+## 25.5 · El CV, bien maquetado — 2026-10-17 · Claude Code (Opus 5.5)
+- **El PDF se revisa:** título de un puesto solo al pie, hueco grande en medio, texto en el pie,
+  una segunda página con dos líneas o un PDF cuyo texto no trae tu nombre, correo o teléfono. En el
+  CV y en la carta.
+- **Avisos con la página y el arreglo**, sin bloquear: si basta otra plantilla, lo cambias en la
+  ficha sin agente; si hay que recortar, «Generar CV» recorta lo menos relevante para la oferta.
+- **`moderna-2col` corregida** para que un ATS lea primero tu nombre.
+
+## 25.4 · Qué cuesta cada oferta, y gastar solo donde merece la pena — 2026-10-17 · Claude Code (Opus 5.5)
+- **Coste:** la página «Agente» suma tokens, tiempo y, si el agente lo da, dinero, por acción,
+  agente y modelo (7 y 30 días), con lo que pesa cada skill. La ficha dice lo gastado en esa
+  oferta y el embudo, por candidatura enviada y por entrevista.
+- **Umbral antes de gastar:** «Evaluar encaje» en segundo plano se salta las ofertas con poco
+  score, y el triaje dice por qué. El umbral lo cambias en la página «Agente».
+- **Varias a la vez:** hasta 4 ejecuciones en segundo plano, nunca dos de la misma oferta, con un
+  tope por agente para un modelo local.
+
+## 25.3 · Ofertas dudosas a la vista — 2026-10-17 · Claude Code (Opus 5.5)
+- **Cinco señales** en la bandeja, el triaje y la ficha: rango salarial muy amplio, empresa oculta o
+  agencia, contrato temporal, publicada hace meses y cribado con IA, cada una con su explicación.
+- **No cambian el score:** son información. Si quieres que descarten (empresa oculta o temporal),
+  lo pones en tu perfil.
+- **`assess-fit` las cita** en los riesgos, y cuentan como deal-breaker si chocan con tus criterios.
+- **Banderas rojas de la empresa** en el dosier (despidos, rotación, reseñas, impagos, conflictos),
+  cada una con su fuente y su fecha; `prepare-interview` las convierte en preguntas.
+- **Embudo:** «¿Acierta el score?» por señal, para ver si esas ofertas responden peor.
+
+## 25.2 · Tu perfil, ampliado desde tus enlaces — 2026-10-16 · Claude Code (Opus 5.5)
+- **Skill `expand`** y botón «Ampliar perfil desde mis enlaces» en «Mi perfil»: tu agente lee tu
+  GitHub, portfolio, Kaggle o Scholar públicos y te propone proyectos, skills, logros y
+  certificaciones que no estaban en tu perfil.
+- **Cada cosa con su fuente:** el enlace queda en el campo `source` del perfil.
+- **Solo con tu OK:** no escribe nada que no aceptes; las skills, con el nivel que digas tú, y
+  los números, solo los que da la fuente.
+
+## 25.1 · Más fuentes de ofertas con API — 2026-10-16 · Claude Code (Opus 5.5)
+- **Cinco ATS más** para tus empresas objetivo: Personio, Teamtailor, Workable, SmartRecruiters y
+  Recruitee. Sus ofertas llegan solas cada día, como las de Greenhouse, Lever y Ashby, por sus APIs
+  y feeds públicos, sin scraping.
+- **Dos portales sin claves:**
+  - Manfred, de tecnología en España;
+  - freehire.me, un agregador que filtra por país y remoto.
+- **`cai sources discover`** busca también el tablero de tus empresas en esos cinco ATS.
+- En «Empresas objetivo», cada tipo trae su ejemplo de slug y un enlace a cómo encontrarlo.
+
 ## 24 · Varios agentes, open-source, gratuitos y a elegir — 2026-10-16 · Claude Code (Opus 5.5)
 - **Registro de agentes** (24.1): `cai agents list` y `cai agents doctor` dicen qué agentes hay,
   cuáles tienes, qué saben hacer (MCP, subagentes, segundo plano, web, navegador, modelos locales)

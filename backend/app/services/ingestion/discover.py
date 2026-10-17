@@ -1,12 +1,15 @@
 """Descubrir los tableros de ATS de tus empresas (fase 16): `cai sources discover --file F`.
 
-Para cada empresa de la lista prueba unos pocos slugs candidatos en las mismas APIs públicas que
-usan los conectores (sin agente, sin tokens, sin scraping): Greenhouse, Lever (global y UE) y
-Ashby. Las tres responden 404 a un tablero que no existe.
+Para cada empresa de la lista prueba unos pocos slugs candidatos en las mismas APIs y feeds
+públicos que usan los conectores (sin agente, sin tokens, sin scraping): Greenhouse, Lever (global
+y UE), Ashby y, desde la fase 25.1, Personio, Teamtailor, Workable, SmartRecruiters y Recruitee.
+Todos responden 404 a un tablero que no existe salvo SmartRecruiters, que devuelve una lista
+vacía: ahí solo cuenta si tiene alguna oferta.
 
-- Greenhouse da el nombre del tablero: si casa con la empresa, `confirmed`; si no, `doubtful`.
-- Lever y Ashby no lo dan: `probable` si el slug sale del nombre completo y `doubtful` si solo de
-  su primera palabra. Se enseñan el número de ofertas y algunos títulos para comprobarlo.
+- Greenhouse y Workable dan el nombre del tablero, y SmartRecruiters el de la empresa en cada
+  oferta: si casa con la empresa, `confirmed`; si no, `doubtful`.
+- El resto no lo da: `probable` si el slug sale del nombre completo y `doubtful` si solo de su
+  primera palabra. Se enseñan el número de ofertas y algunos títulos para comprobarlo.
 
 Solo propone. Con `add=True` da de alta las `confirmed` y `probable` que aún no son fuente
 (`service.add_source`, que marca la empresa como objetivo). Las `doubtful`, nunca: se añaden a
@@ -24,6 +27,7 @@ from pathlib import Path
 from typing import Any, Literal
 
 import httpx
+from lxml import etree
 from pydantic import BaseModel
 from rapidfuzz import fuzz
 from sqlalchemy import select
@@ -55,6 +59,21 @@ LEVER = {
     "eu": "https://api.eu.lever.co/v0/postings/{slug}",
 }
 ASHBY = "https://api.ashbyhq.com/posting-api/job-board/{slug}"
+PERSONIO = "https://{slug}.jobs.personio.de/xml"
+TEAMTAILOR = "https://{slug}.teamtailor.com/jobs.rss"
+WORKABLE = "https://apply.workable.com/api/v1/widget/accounts/{slug}"
+SMARTRECRUITERS = "https://api.smartrecruiters.com/v1/companies/{slug}/postings"
+RECRUITEE = "https://{slug}.recruitee.com/api/offers/"
+DISCOVER_KINDS = (
+    "greenhouse",
+    "lever",
+    "ashby",
+    "personio",
+    "teamtailor",
+    "workable",
+    "smartrecruiters",
+    "recruitee",
+)
 
 Confidence = Literal["confirmed", "probable", "doubtful"]
 
@@ -64,10 +83,10 @@ class DiscoverError(ValueError):
 
 
 class BoardHit(BaseModel):
-    kind: str  # greenhouse | lever | ashby
+    kind: str  # uno de `DISCOVER_KINDS`
     slug: str
     region: str = "global"
-    board_name: str | None  # solo Greenhouse
+    board_name: str | None  # solo Greenhouse y Workable
     jobs_count: int
     sample_titles: list[str]
     confidence: Confidence
@@ -177,6 +196,22 @@ class _Probe:
             raise ValueError(f"HTTP {response.status_code}")
         return response.json()
 
+    def get_xml(self, url: str) -> Any:
+        """Como `get`, para los feeds XML (Personio, Teamtailor): sin entidades ni red."""
+        if self.calls:
+            self.sleep(DELAY_SECONDS)
+        self.calls += 1
+        response = self.client.get(url, headers={"Accept": "application/xml, text/xml"})
+        if response.status_code == 404:
+            return None
+        if response.status_code != 200:
+            raise ValueError(f"HTTP {response.status_code}")
+        parser = etree.XMLParser(resolve_entities=False, no_network=True, huge_tree=False)
+        try:
+            return etree.fromstring(response.content, parser)
+        except etree.XMLSyntaxError as exc:
+            raise ValueError("no es XML") from exc
+
 
 def _titles(items: list[Any], key: str) -> list[str]:
     """Hasta `MAX_SAMPLES` títulos distintos, en el orden de la API."""
@@ -191,17 +226,25 @@ def _greenhouse(probe: _Probe, slug: str, company: str, full_name: bool) -> dict
     jobs = probe.get(GREENHOUSE_JOBS.format(slug=slug)) or {}
     items = jobs.get("jobs") if isinstance(jobs, dict) else None
     items = items if isinstance(items, list) else []
-    name = board.get("name") if isinstance(board, dict) else None
-    name = _clean(name) if isinstance(name, str) and name.strip() else None
-    score = fuzz.ratio(normalize_company(name or ""), normalize_company(company))
-    # «Confirmada» exige que el nombre case y que el slug salga del nombre completo.
-    confirmed = name is not None and score >= NAME_MATCH and full_name
+    name = _board_name(board)
     return {
         "board_name": name,
         "jobs_count": len(items),
         "sample_titles": _titles(items, "title"),
-        "confidence": "confirmed" if confirmed else "doubtful",
+        "confidence": _named_confidence(name, company, full_name),
     }
+
+
+def _board_name(data: Any) -> str | None:
+    name = data.get("name") if isinstance(data, dict) else None
+    return _clean(name) if isinstance(name, str) and name.strip() else None
+
+
+def _named_confidence(name: str | None, company: str, full_name: bool) -> Confidence:
+    """«Confirmada» exige que el nombre del tablero case y que el slug salga del nombre
+    completo."""
+    score = fuzz.ratio(normalize_company(name or ""), normalize_company(company))
+    return "confirmed" if name is not None and score >= NAME_MATCH and full_name else "doubtful"
 
 
 def _lever(probe: _Probe, slug: str) -> dict[str, Any] | None:
@@ -227,8 +270,101 @@ def _ashby(probe: _Probe, slug: str) -> dict[str, Any] | None:
     return {"jobs_count": len(items), "sample_titles": _titles(items, "title")}
 
 
+def _xml_titles(nodes: list[Any], tag: str) -> list[str]:
+    titles = (_clean(n.findtext(tag) or "") for n in nodes)
+    return list(dict.fromkeys(t for t in titles if t))[:MAX_SAMPLES]
+
+
+def _personio(probe: _Probe, slug: str) -> dict[str, Any] | None:
+    root = probe.get_xml(PERSONIO.format(slug=slug))
+    if root is None:
+        return None
+    if root.tag != "workzag-jobs":
+        raise ValueError("formato inesperado")
+    positions = root.findall("position")
+    return {"jobs_count": len(positions), "sample_titles": _xml_titles(positions, "name")}
+
+
+def _teamtailor(probe: _Probe, slug: str) -> dict[str, Any] | None:
+    root = probe.get_xml(TEAMTAILOR.format(slug=slug))
+    if root is None:
+        return None
+    channel = root.find("channel")
+    if root.tag != "rss" or channel is None:
+        raise ValueError("formato inesperado")
+    items = channel.findall("item")
+    return {"jobs_count": len(items), "sample_titles": _xml_titles(items, "title")}
+
+
+def _workable(probe: _Probe, slug: str, company: str, full_name: bool) -> dict[str, Any] | None:
+    data = probe.get(WORKABLE.format(slug=slug))
+    if data is None:
+        return None
+    jobs = data.get("jobs") if isinstance(data, dict) else None
+    items = jobs if isinstance(jobs, list) else []
+    name = _board_name(data)
+    return {
+        "board_name": name,
+        "jobs_count": len(items),
+        "sample_titles": _titles(items, "title"),
+        "confidence": _named_confidence(name, company, full_name),
+    }
+
+
+def _smartrecruiters(
+    probe: _Probe, slug: str, company: str, full_name: bool
+) -> dict[str, Any] | None:
+    data = probe.get(SMARTRECRUITERS.format(slug=slug), params={"limit": "10"})
+    if not isinstance(data, dict) or not isinstance(data.get("content"), list):
+        return None
+    total = data.get("totalFound")
+    if not isinstance(total, int) or total == 0:  # no distingue «no existe» de «sin ofertas»
+        return None
+    # Cada oferta trae el nombre de la empresa: sirve para confirmar el slug, como en Greenhouse.
+    first = data["content"][0] if data["content"] else None
+    name = _board_name(first.get("company")) if isinstance(first, dict) else None
+    return {
+        "board_name": name,
+        "jobs_count": total,
+        "sample_titles": _titles(data["content"], "name"),
+        "confidence": _named_confidence(name, company, full_name),
+    }
+
+
+def _recruitee(probe: _Probe, slug: str) -> dict[str, Any] | None:
+    data = probe.get(RECRUITEE.format(slug=slug))
+    if data is None:
+        return None
+    offers = data.get("offers") if isinstance(data, dict) else None
+    items = offers if isinstance(offers, list) else []
+    return {"jobs_count": len(items), "sample_titles": _titles(items, "title")}
+
+
+_PROBES: dict[str, Callable[[_Probe, str], dict[str, Any] | None]] = {
+    "lever": _lever,
+    "ashby": _ashby,
+    "personio": _personio,
+    "teamtailor": _teamtailor,
+    "recruitee": _recruitee,
+}
+# Los que dan el nombre del tablero (o de la empresa) y pueden confirmar el slug.
+_NAMED_PROBES: dict[str, Callable[[_Probe, str, str, bool], dict[str, Any] | None]] = {
+    "greenhouse": _greenhouse,
+    "workable": _workable,
+    "smartrecruiters": _smartrecruiters,
+}
+
+
+def _probe_kind(
+    probe: _Probe, kind: str, slug: str, company: str, full_name: bool
+) -> dict[str, Any] | None:
+    if kind in _NAMED_PROBES:
+        return _NAMED_PROBES[kind](probe, slug, company, full_name)
+    return _PROBES[kind](probe, slug)
+
+
 def _existing(session: Session) -> dict[tuple[str, str], int]:
-    rows = session.scalars(select(Source).where(Source.kind.in_(("greenhouse", "lever", "ashby"))))
+    rows = session.scalars(select(Source).where(Source.kind.in_(DISCOVER_KINDS)))
     return {(row.kind, str((row.config or {}).get("slug") or "").lower()): row.id for row in rows}
 
 
@@ -249,15 +385,10 @@ def _discover_one(
     result = CompanyDiscovery(
         company=company, tried=[s for s, _ in slugs], hits=[], errors=[], added_source_ids=[]
     )
-    for kind in ("greenhouse", "lever", "ashby"):
+    for kind in DISCOVER_KINDS:
         for slug, full_name in slugs:
             try:
-                if kind == "greenhouse":
-                    found = _greenhouse(probe, slug, company, full_name)
-                elif kind == "lever":
-                    found = _lever(probe, slug)
-                else:
-                    found = _ashby(probe, slug)
+                found = _probe_kind(probe, kind, slug, company, full_name)
             except (httpx.HTTPError, ValueError) as exc:
                 label = KIND_LABELS[kind]
                 reason = type(exc).__name__ if isinstance(exc, httpx.HTTPError) else str(exc)
@@ -320,6 +451,6 @@ def discover(
                 item.added_source_ids.append(view.id)
                 added += 1
     found = sum(1 for r in results if r.hits)
-    message = f"{found} de {len(results)} empresas con tablero en Greenhouse, Lever o Ashby"
+    message = f"{found} de {len(results)} empresas con tablero en algún ATS"
     message += f"; {added} añadidas como fuente." if add else "."
     return DiscoverResult(companies=results, found=found, added=added, message=message)

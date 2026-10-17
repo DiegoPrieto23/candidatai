@@ -28,10 +28,26 @@ Las reglas con valores ajustables tienen su parámetro en `config/policies.yaml`
    respaldan un hecho: un logro, una cifra, una formación o un rasgo que solo esté ahí no va en un
    CV, una carta ni una respuesta (el verificador lo marca `blocker`). Si el usuario lo quiere
    usar, se añade antes al perfil o, en una carta, a sus indicaciones.
+   Las **muestras de estilo** (fase 25.7, `data/documentos/estilo/`: cartas, correos o posts
+   suyos que sube en «Mi perfil») son contexto: `writer` y `generate-cover-letter` toman de ellas
+   el tono, la longitud de las frases, cómo abre y cierra y sus palabras, nunca un hecho ni frases
+   enteras. Como pueden traer texto de otros (una oferta pegada, una respuesta), pasan por la
+   detección de inyección y llegan al agente envueltas como contenido no confiable (§6).
+   El perfil y el contexto también se editan en «Mi perfil» de la UI (ADR-039). Ahí escribe el
+   usuario, que es quien pulsa «Guardar»; el agente sigue sin herramientas para escribir el
+   perfil.
 6. **Entrevistas** (fase 17). Los esquemas de respuesta del dosier y la «versión mejor» del
    simulacro solo usan hechos del perfil. Lo que el usuario cuente en un simulacro o en un repaso
    (un logro, una cifra, una historia) se queda en las notas del hito hasta que él confirme
-   añadirlo al perfil con `update-profile`; ningún otro skill escribe en el perfil.
+   añadirlo al perfil con `update-profile`; ningún otro skill escribe en el perfil, salvo `expand`
+   (punto 7).
+7. **Lo que has hecho en público** (fase 25.2, skill `expand`). De tus enlaces públicos (GitHub,
+   portfolio, Kaggle, Scholar, páginas de verificación de certificaciones) el agente propone
+   proyectos, skills, logros y certificaciones, y solo escribe lo que aceptes. Cada cosa nueva
+   lleva su `source` (la URL de la que salió). Las skills entran con el nivel que digas o en
+   `basic_skills`, nunca con uno que suponga el agente; los números (estrellas, descargas, citas),
+   solo si la fuente los da tal cual y con su fecha. Solo web pública: ni LinkedIn ni nada con
+   login. Lo que lee es contenido no confiable (§6).
 
 ## 2. Encaje y filtros
 
@@ -111,12 +127,39 @@ Los pesos del score no cambian con esto; solo qué nombres casan.
 - **«Republicada ×N» es una observación**, no un motivo de descarte ni un dato para el score: puede
   ser una vacante difícil de cubrir, un portal que renueva la publicación o una oferta fantasma.
 
+### Señales de oferta dudosa (fase 25.3)
+
+Una oferta puede encajar en el papel y aun así no merecer la pena. El código marca cinco señales en
+`jobs.signals`, con reglas fijas y configurables (`doubtful` en `config/policies.yaml` y
+`config/doubtful_patterns.yaml`):
+
+| Señal | Cuándo |
+|---|---|
+| `salary_range_wide` | El máximo del salario supera al mínimo en más de `salary_range_max_pct` % (60) |
+| `employer_hidden` | La publica una agencia o consultora de selección (aunque diga para quién, con otro texto) o el nombre de la empresa no dice quién contrata |
+| `fixed_term` | Contrato temporal, por obra, de sustitución o de duración fija |
+| `stale_repost` | Con todo su historial: publicada de nuevo en al menos `stale_repost_min_count` días (4), o vista durante al menos `stale_repost_min_span_days` días (60) |
+| `ai_screening` | Dice que la cribará una IA o un test automático antes de hablar con una persona |
+
+- **Son información, no puntúan.** No cambian el score ni los filtros duros. Si quieres que
+  `employer_hidden` o `fixed_term` descarten, ponlas en `preferences.exclude_signals` del perfil y
+  pasan a ser un filtro duro (`signal`).
+- La UI las enseña en la bandeja, el triaje y la ficha, y `assess-fit` las cita en `risks`. Una
+  señal que choca con un deal-breaker de `criterios.md` cuenta como ese deal-breaker (§1.5).
+- Las que dependen de la extracción (`fixed_term`, el `is_agency` de `employer_hidden`,
+  `mentions_ai_screening`) solo existen en las ofertas extraídas desde esta fase.
+- **Banderas rojas de la empresa** (`red_flags` del dosier, `research-company`): despidos o ERE,
+  rotación alta, reseñas públicas muy negativas y recurrentes, impagos o conflictos. Cada una con
+  su fuente y su fecha (la herramienta rechaza las que no las tienen); nada de opiniones sin
+  respaldo. `prepare-interview` las convierte en preguntas neutrales que hacer.
+
 ## 3. CV
 
 | Regla | Detalle |
 |---|---|
 | Plantilla | La elegida para la oferta: opción explícita > reglas de `preferences.cv.template_rules` > `default_template` > `ats-simple` (`docs/CV_TEMPLATES.md`). El contenido no depende de la plantilla y el diseño solo se cambia en la plantilla |
 | Longitud | `max_pages` de la opción > `preferences.cv.max_pages` > el de la plantilla (1 en las integradas). Si no cabe, se recorta contenido; nunca márgenes ni fuente |
+| Maquetación | Fase 25.5: el PDF del CV y de la carta se revisa (título huérfano, hueco grande, texto en el pie, última página casi vacía, texto del PDF sin nombre, correo o teléfono). Son avisos con su página, no bloqueos. Si se arregla con una opción de render, lo cambias tú en la ficha; si hace falta recortar, se recorta lo menos relevante para la oferta, no lo más antiguo (`docs/CV_TEMPLATES.md` §Avisos) |
 | Idioma | El de la oferta (`posting_language`). En caso de duda, preguntar |
 | Subtítulo | Identidad profesional estable + 3-4 tecnologías clave separadas por `·`. Puede nombrar la familia de rol si es tu identidad real ("Data Engineer"), pero **nunca** copia el título literal de la oferta con seniority, empresa o equipo |
 | Resumen | Adaptado a la oferta, con sus keywords solo si son verdad |
@@ -224,6 +267,11 @@ Los pesos del score no cambian con esto; solo qué nombres casan.
   solo `docs/`. Lo que intente fuera de eso queda en el progreso como «denegada». Solo se lanzan
   así los skills que no preguntan; si uno necesita al usuario, para y deja la pregunta en la UI.
   Tiempo máximo: `background_runs.timeout_minutes` de `config/policies.yaml`.
+- **Varias a la vez y umbral** (fase 25.4, ADR-038): hasta `background_runs.max_parallel`
+  ejecuciones a la vez (1 por defecto), nunca dos de la misma oferta ni dos lotes de la misma
+  acción, cada una con su techo de herramientas. «Evaluar encaje» en segundo plano solo valora las
+  ofertas con score ≥ el umbral de la página «Agente» (por defecto, el de triaje menos 10).
+  `max_parallel` y `per_agent` se leen al arrancar: tras cambiarlos, reinicia `cai worker`.
 
 ## 7. Estilo de redacción
 

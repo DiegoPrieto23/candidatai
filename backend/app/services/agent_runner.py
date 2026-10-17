@@ -1,8 +1,11 @@
 """Ejecuta las `agent_runs` en cola (fase 19, ADR-032): lanza el agente sin ventana, lee su salida
 en streaming y guarda progreso, resultado y errores. Lo llama el worker, en un hilo propio.
 
-- Una sola ejecución a la vez, también entre procesos: reclamar es un `UPDATE` condicionado a que
-  no haya otra `running`.
+- Hasta `background_runs.max_parallel` a la vez (fase 25.4, ADR-038; 1 por defecto), también entre
+  procesos: reclamar es un único `UPDATE` condicionado a que haya hueco, a que el agente no haya
+  llegado a su tope (`per_agent`) y a que ninguna en curso trabaje la misma oferta o, si es de lote
+  (sin oferta), la misma acción. Cada ejecución sigue con el techo de herramientas de su acción.
+- SQLite con varias escribiendo: las escrituras de la fila se reintentan si la base está bloqueada.
 - Sin las variables de `unset_env` (la clave de la API): el agente usa tu suscripción. Con
   `CAI_CLIENT_NAME` = el agente, para que lo que haga por la CLI quede a su nombre (fase 24.4).
 - Tiempo máximo (`background_runs.timeout_minutes`), cancelación desde la UI y parada del worker:
@@ -27,11 +30,14 @@ import sys
 import threading
 import time
 from collections import deque
+from collections.abc import Callable
+from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
 from pathlib import Path
 from typing import IO, Any
 
 from pydantic import BaseModel
-from sqlalchemy import exists, select, update
+from sqlalchemy import and_, exists, func, select, update
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import aliased
 
 from app.core.config import REPO_ROOT
@@ -159,42 +165,96 @@ def _tail(stream: IO[str], keep: deque[str]) -> None:
 # --- Ejecución ---------------------------------------------------------------------------------
 
 
-def claim_next() -> AgentRun | None:
-    """Pasa a `running` la más antigua en cola, si no hay otra en curso. Devuelve una copia."""
-    other = aliased(AgentRun)
+LOCK_RETRIES = 5
+LOCK_PAUSE = 0.2  # segundos; se dobla en cada intento
+
+
+def _retry_locked[T](work: Callable[[], T]) -> T:
+    """Repite `work` si SQLite dice «database is locked» (varias ejecuciones escribiendo)."""
+    pause = LOCK_PAUSE
+    for attempt in range(LOCK_RETRIES):
+        try:
+            return work()
+        except OperationalError as exc:
+            if "locked" not in str(exc).lower() or attempt == LOCK_RETRIES - 1:
+                raise
+            logger.info("Base de datos bloqueada; reintento %s", attempt + 1)
+            time.sleep(pause)
+            pause *= 2
+    raise AssertionError("inalcanzable")
+
+
+def _limits() -> tuple[int, dict[str, int]]:
+    policy = get_policies().background_runs
+    return policy.max_parallel, dict(policy.per_agent)
+
+
+def _claim(candidate: AgentRun, max_parallel: int, per_agent: dict[str, int]) -> bool:
+    """Un único `UPDATE`: atómico también entre procesos."""
+    running = aliased(AgentRun)
+    busy = select(func.count()).select_from(running).where(running.status == "running")
+    # Choca con otra en curso de la misma oferta o, si es de lote (sin oferta), de la misma acción.
+    if candidate.job_id is not None:
+        clash = running.job_id == candidate.job_id
+    else:
+        clash = and_(running.job_id.is_(None), running.action == candidate.action)
+    conditions = [
+        AgentRun.id == candidate.id,
+        AgentRun.status == "queued",
+        busy.scalar_subquery() < max_parallel,
+        ~exists().where(running.status == "running", clash),
+    ]
+    if (cap := per_agent.get(candidate.agent)) is not None:
+        conditions.append(busy.where(running.agent == candidate.agent).scalar_subquery() < cap)
     with session_scope() as session:
-        candidate = session.scalars(
-            select(AgentRun).where(AgentRun.status == "queued").order_by(AgentRun.id).limit(1)
-        ).first()
-        if candidate is None:
-            return None
         claimed = session.execute(
             update(AgentRun)
-            .where(
-                AgentRun.id == candidate.id,
-                AgentRun.status == "queued",
-                ~exists().where(other.status == "running"),
-            )
+            .where(*conditions)
             .values(status="running", started_at=utcnow())
             .execution_options(synchronize_session=False)
         )
-        if claimed.rowcount != 1:
-            return None
-        session.refresh(candidate)
-        session.expunge(candidate)
-        return candidate
+        return claimed.rowcount == 1
+
+
+def claim_next(
+    max_parallel: int | None = None, per_agent: dict[str, int] | None = None
+) -> AgentRun | None:
+    """Pasa a `running` la más antigua en cola que se pueda empezar ya (hay hueco, su agente no
+    está en su tope y no choca con otra en curso). Devuelve una copia, o `None` si no hay."""
+    default_parallel, default_agents = _limits()
+    max_parallel = max_parallel or default_parallel
+    per_agent = default_agents if per_agent is None else per_agent
+    with session_scope() as session:
+        queued = list(
+            session.scalars(
+                select(AgentRun).where(AgentRun.status == "queued").order_by(AgentRun.id)
+            )
+        )
+        session.expunge_all()
+    for candidate in queued:
+        if _retry_locked(lambda c=candidate: _claim(c, max_parallel, per_agent)):
+            with session_scope() as session:
+                row = session.get(AgentRun, candidate.id)
+                assert row is not None
+                session.expunge(row)
+                return row
+    return None
 
 
 def _save(run_id: int, **values: Any) -> bool:
     """Guarda en la fila mientras sigue `running` y devuelve si han pedido cancelar (o si ya no
     está en curso, que para el caso es lo mismo)."""
-    with session_scope() as session:
-        row = session.get(AgentRun, run_id)
-        if row is None or row.status != "running":
-            return True
-        for key, value in values.items():
-            setattr(row, key, value)
-        return row.cancel_requested
+
+    def work() -> bool:
+        with session_scope() as session:
+            row = session.get(AgentRun, run_id)
+            if row is None or row.status != "running":
+                return True
+            for key, value in values.items():
+                setattr(row, key, value)
+            return row.cancel_requested
+
+    return _retry_locked(work)
 
 
 def _mcp_prefix(agent: str) -> str | None:
@@ -364,12 +424,7 @@ def _execute(run: AgentRun, timeout: float | None, poll: float) -> AgentRunOutco
     return finish("needs_user" if questions else "done", questions=questions, **common)
 
 
-def run_next(timeout: float | None = None, poll: float = 0.5) -> AgentRunOutcome | None:
-    if _shutdown.is_set():
-        return None
-    run = claim_next()
-    if run is None:
-        return None
+def _run_claimed(run: AgentRun, timeout: float | None, poll: float) -> AgentRunOutcome:
     try:
         return execute(run, timeout=timeout, poll=poll)
     except Exception as exc:  # que una ejecución rota no quede `running` para siempre
@@ -379,11 +434,39 @@ def run_next(timeout: float | None = None, poll: float = 0.5) -> AgentRunOutcome
         return AgentRunOutcome(run_id=run.id, action=run.action, status="failed", error=error)
 
 
-def run_pending(timeout: float | None = None, poll: float = 0.5) -> list[AgentRunOutcome]:
-    """Ejecuta, de una en una, las que hay en cola."""
-    outcomes = []
-    while (outcome := run_next(timeout=timeout, poll=poll)) is not None:
-        outcomes.append(outcome)
+def run_next(timeout: float | None = None, poll: float = 0.5) -> AgentRunOutcome | None:
+    if _shutdown.is_set():
+        return None
+    run = claim_next()
+    if run is None:
+        return None
+    return _run_claimed(run, timeout, poll)
+
+
+def run_pending(
+    timeout: float | None = None, poll: float = 0.5, max_parallel: int | None = None
+) -> list[AgentRunOutcome]:
+    """Ejecuta las que hay en cola: hasta `max_parallel` a la vez (por defecto, el de
+    `policies.yaml`), cada una en su hilo. Cuando una termina, se reclama la siguiente."""
+    limit, per_agent = _limits()
+    limit = max_parallel or limit
+    outcomes: list[AgentRunOutcome] = []
+    if limit <= 1:  # sin hilos, con el límite pedido también al reclamar
+        while not _shutdown.is_set() and (run := claim_next(limit, per_agent)) is not None:
+            outcomes.append(_run_claimed(run, timeout, poll))
+        return outcomes
+    with ThreadPoolExecutor(max_workers=limit, thread_name_prefix="agent-run") as pool:
+        pending: set[Future[AgentRunOutcome]] = set()
+        while True:
+            while len(pending) < limit and not _shutdown.is_set():
+                run = claim_next(limit, per_agent)
+                if run is None:
+                    break
+                pending.add(pool.submit(_run_claimed, run, timeout, poll))
+            if not pending:
+                break
+            done, pending = wait(pending, return_when=FIRST_COMPLETED)
+            outcomes.extend(future.result() for future in done)
     return outcomes
 
 

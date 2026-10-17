@@ -155,6 +155,8 @@ def evaluate(
     for source, profile, cases in batches:
         for case in cases:
             fixture = case.job_fixture
+            # Sin `company`: los casos del eval no tienen empresa, así que `exclude_signals` solo
+            # mira la extracción (no los patrones del nombre).
             filters = hard_filters.evaluate(
                 fixture.title, fixture.extraction, profile, policies.hard_filters
             )

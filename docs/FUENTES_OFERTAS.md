@@ -6,8 +6,8 @@ mismo sitio: la tabla `jobs`, con deduplicación, detección de riesgo e histori
 | Vía | Fase | Automática | Cubre |
 |---|---|---|---|
 | Alta manual por URL o texto | 03 | No | Cualquier oferta |
-| APIs públicas de ATS (Greenhouse, Lever, Ashby) | 09 | Sí, diaria | Tus empresas objetivo |
-| APIs de portales (InfoJobs, Adzuna), si hay claves | 09 | Sí, diaria | Búsquedas por palabras clave |
+| APIs y feeds públicos de ATS (Greenhouse, Lever, Ashby; Personio, Teamtailor, Workable, SmartRecruiters y Recruitee desde la 25.1) | 09, 25.1 | Sí, diaria | Tus empresas objetivo |
+| APIs de portales: InfoJobs y Adzuna (si hay claves), Manfred y freehire (sin claves) | 09, 25.1 | Sí, diaria | Búsquedas por palabras clave |
 | **Alertas de empleo por correo** | 09b | Sí | LinkedIn, InfoJobs, Indeed, Tecnoempleo… (lo que te envíen) |
 | **Botón «Enviar a CandidatAI»** | 09b | No (un clic) | Cualquier página que estés viendo, LinkedIn incluido |
 | **Búsqueda con el navegador del agente** | 09b | A demanda | Portales que la permitan; LinkedIn solo si lo activas tú |
@@ -22,18 +22,72 @@ eso aquí LinkedIn entra por tres vías que no dependen de eso: sus propias aler
 clic en el botón mientras ves una oferta y, solo si tú lo activas, la búsqueda con el navegador
 del agente (ADR-016) o la búsqueda pública sin sesión que hace la propia app (ADR-033, abajo).
 
-## APIs de ATS y portales (fase 09)
+## APIs de ATS y portales (fases 09 y 25.1)
 
 - **Empresas objetivo:** nombre + ATS + slug del tablero, en la página «Fuentes → Empresas objetivo» o con
-  `cai sources add`. Endpoints públicos documentados, sin autenticación ni scraping:
-  Greenhouse `boards-api.greenhouse.io/v1/boards/{slug}/jobs?content=true`, Lever
-  `api.lever.co/v0/postings/{slug}?mode=json` (o `api.eu.lever.co`) y Ashby
-  `api.ashbyhq.com/posting-api/job-board/{slug}`.
-- **Portales con API (opcionales):** InfoJobs (`api.infojobs.net/api/9/offer` y el detalle de
-  cada oferta, con `CAI_INFOJOBS_CLIENT_ID` y `CAI_INFOJOBS_CLIENT_SECRET`) y Adzuna
-  (`api.adzuna.com/v1/api/jobs/{país}/search/{página}`, con `CAI_ADZUNA_APP_ID` y
-  `CAI_ADZUNA_APP_KEY`). Sin claves, esas fuentes se omiten con un aviso. Adzuna solo da un
-  extracto de la descripción: la extracción sale más pobre.
+  `cai sources add`. Solo APIs y feeds públicos, sin autenticación ni scraping de HTML (ADR-016).
+  La tabla de abajo dice qué usa cada uno.
+- **Portales con API:** búsquedas por palabras clave, no por empresa. InfoJobs y Adzuna necesitan
+  claves en `.env` (sin ellas, esas fuentes se omiten con un aviso); Manfred y freehire, no.
+
+| Fuente | `--kind` | Endpoint | Descripción | Qué cubre |
+|---|---|---|---|---|
+| Greenhouse | `greenhouse` | `boards-api.greenhouse.io/v1/boards/{slug}/jobs?content=true` | En el listado | Tablero de la empresa |
+| Lever | `lever` | `api.lever.co/v0/postings/{slug}?mode=json` (o `api.eu.lever.co`, `--region eu`) | En el listado | Tablero de la empresa |
+| Ashby | `ashby` | `api.ashbyhq.com/posting-api/job-board/{slug}` | En el listado | Tablero de la empresa |
+| Personio | `personio` | Feed XML `{slug}.jobs.personio.de/xml?language={idioma}` | En el listado, solo en el idioma pedido: sin `--language`, se prueba `es` y luego `en`; si no viene, entran departamento y tipo de contrato | Muchas empresas españolas y alemanas |
+| Teamtailor | `teamtailor` | Feed RSS `{slug}.teamtailor.com/jobs.rss` (paginado con `per_page` y `offset`) | En el listado | Empresas europeas, sobre todo nórdicas |
+| Workable | `workable` | Widget `apply.workable.com/api/v1/widget/accounts/{slug}` y detalle `apply.workable.com/api/v2/accounts/{slug}/jobs/{código}` | Se pide el detalle solo de las que pasan el filtro previo | Startups y pymes |
+| SmartRecruiters | `smartrecruiters` | `api.smartrecruiters.com/v1/companies/{slug}/postings` (paginado) y `…/postings/{id}` | Igual: detalle solo de las que pasan | Empresas grandes |
+| Recruitee | `recruitee` | `{slug}.recruitee.com/api/offers/` | En el listado | Pymes europeas |
+| InfoJobs | `infojobs` | `api.infojobs.net/api/9/offer` y el detalle; `CAI_INFOJOBS_CLIENT_ID` y `CAI_INFOJOBS_CLIENT_SECRET` | Detalle solo de las que pasan | Portal generalista en España |
+| Adzuna | `adzuna` | `api.adzuna.com/v1/api/jobs/{país}/search/{página}`; `CAI_ADZUNA_APP_ID` y `CAI_ADZUNA_APP_KEY` | Solo un extracto: la extracción sale más pobre | Agregador por países |
+| Manfred | `manfred` | `www.getmanfred.com/api/v2/public/offers?lang=ES` y `…/offers/{id}` | Detalle solo de las que pasan | Tecnología en España (unas decenas de ofertas activas) |
+| freehire | `freehire` | `freehire.me/api/v1/agent/jobs/search` (cambiable con `CAI_FREEHIRE_BASE_URL`) | En la búsqueda | Agregador de tecnología de muchos ATS; país y remoto |
+
+Notas:
+
+- **Documentación.** Greenhouse, Lever, Ashby, Personio (feed XML), Teamtailor (RSS), Recruitee
+  (Careers Site API), SmartRecruiters (Posting API), InfoJobs, Adzuna y freehire documentan sus
+  endpoints. Dos excepciones aceptadas en la fase 25.1 (ADR-016) porque son JSON público, no HTML,
+  y no piden sesión: el **detalle de Workable** (el JSON que usa su propia página de empleo; el
+  widget documentado no trae la descripción y su variante con detalles redirige a un dominio que
+  bloquea las peticiones sin navegador) y la **API de Manfred**, que no está documentada.
+- **SmartRecruiters no da 404** a una empresa que no existe: devuelve una lista vacía, igual que una
+  que hoy no publica nada. La ejecución lo avisa (`empty`) sin poder distinguirlas.
+- **Manfred no busca:** devuelve todas sus ofertas activas y aquí se quedan las que casan con la
+  búsqueda por el título (todas sus palabras, sin tildes ni mayúsculas; varias búsquedas, separadas
+  por comas). El detalle trae el nombre y el correo de su «scout»: nunca se guardan.
+- **freehire** busca solo en el título (`q_fields=title`); con varias palabras, todas tienen que
+  estar. `--country` (por defecto `es`) y `--remote-only` acotan. La URL de cada oferta es la de
+  origen (el ATS o el portal donde se publicó), así que se reconoce si ya la tenías por otra vía.
+- **Encabezados añadidos al texto:** al juntar varias partes de una oferta, algunos conectores
+  ponen un encabezado propio en español («Requisitos» y «Beneficios» en Workable y Recruitee;
+  «Departamento» y «Contrato» en Personio si no hay descripción). Manfred los pone en el idioma de
+  la búsqueda (`--lang`). Solo ordenan el texto para la extracción; no cambian lo que dice la oferta.
+- **Fuera:** Workday, iCIMS, Taleo y otros ATS que solo ofrecen HTML o exigen sesión. Siguen
+  entrando por el alta manual, el botón del navegador o las alertas por correo.
+
+### Cómo encontrar el slug
+
+Abre la página de empleo de la empresa (el enlace «Careers» o «Trabaja con nosotros») y mira la URL
+de una oferta:
+
+| Si la URL es… | ATS | Slug |
+|---|---|---|
+| `boards.greenhouse.io/acme/jobs/123` o `job-boards.greenhouse.io/acme` | Greenhouse | `acme` |
+| `jobs.lever.co/acme/…` (o `jobs.eu.lever.co`, región `eu`) | Lever | `acme` |
+| `jobs.ashbyhq.com/acme/…` | Ashby | `acme` |
+| `acme.jobs.personio.de/job/123` (o `.com`) | Personio | `acme` |
+| `acme.teamtailor.com/jobs/123-…` | Teamtailor | `acme` |
+| `apply.workable.com/acme/j/ABC123` | Workable | `acme` |
+| `jobs.smartrecruiters.com/Acme/123-…` | SmartRecruiters | `Acme` (da igual en mayúsculas o minúsculas) |
+| `acme.recruitee.com/o/…` | Recruitee | `acme` |
+
+Si la página de empleo tiene dominio propio (`careers.acme.com`), busca en su código o en el
+enlace de «Aplicar» uno de esos dominios. `cai sources discover` lo prueba solo para una lista de
+empresas (abajo). Antes de guardar, «Probar» enseña cuántas ofertas tiene y cuántas pasan tus
+filtros.
 - **Filtro previo** antes de guardar (`ingestion/prefilter.py`): el título debe contener todas las
   palabras de alguno de tus `preferences.roles` (también en español, con
   `config/title_aliases.yaml`; o una `title_keywords` de la fuente) y ninguna
@@ -251,7 +305,9 @@ son **observaciones, no veredictos**: la app nunca cierra una oferta por ellas.
   `jobs.lever.co/{slug}/{id}`, `jobs.ashbyhq.com/{slug}/{id}`) o la fuente con conector dan el
   tablero y el id: Greenhouse `boards-api.greenhouse.io/v1/boards/{slug}/jobs/{id}` y Lever
   `api.lever.co/v0/postings/{slug}/{id}` (o `api.eu.lever.co`) responden 404 a una oferta retirada;
-  en Ashby, la oferta deja de aparecer en `posting-api/job-board/{slug}`.
+  en Ashby, la oferta deja de aparecer en `posting-api/job-board/{slug}`. Los ATS de la fase 25.1
+  (Personio, Teamtailor, Workable, SmartRecruiters, Recruitee) van por la vía siguiente, la de su
+  página.
 - **El resto con un GET** como el del alta por URL (sin cookies ni JavaScript, nada local ni de red
   privada, también tras redirecciones; además se resuelve el dominio y se rechaza si apunta a la
   red local), leyendo como mucho `liveness.max_bytes`. Posible cierre si:
@@ -320,14 +376,18 @@ cai sources discover --file empresas.txt [--add] [--json]
 
 - `empresas.txt`: una empresa por línea; `#` comenta. `Nombre | slug` prueba solo ese slug.
 - Para cada empresa prueba hasta 3 slugs (`acmedatos`, `acme-datos` y, si tiene 4 letras o más, la
-  primera palabra) en las APIs públicas de los conectores: Greenhouse
-  (`boards-api.greenhouse.io/v1/boards/{slug}`), Lever (`api.lever.co` y `api.eu.lever.co`) y Ashby
-  (`api.ashbyhq.com/posting-api/job-board/{slug}`). Las tres responden 404 a un tablero que no
-  existe. Sin agente ni tokens; una pausa corta entre peticiones.
-- Confianza: Greenhouse da el nombre del tablero (`confirmed` si casa entero con la empresa y el
-  slug sale del nombre completo; `doubtful` si no: un tablero «Capital» no confirma «Capital
-  Energy»). Lever y Ashby no lo dan: `probable` si el slug sale del nombre completo, `doubtful` si de
-  la primera palabra. Se enseñan el número de ofertas y hasta 3 títulos para comprobarlo.
+  primera palabra) en las APIs y feeds públicos de los conectores: Greenhouse
+  (`boards-api.greenhouse.io/v1/boards/{slug}`), Lever (`api.lever.co` y `api.eu.lever.co`), Ashby
+  (`api.ashbyhq.com/posting-api/job-board/{slug}`) y, desde la fase 25.1, Personio, Teamtailor,
+  Workable, SmartRecruiters y Recruitee (los endpoints de la tabla de arriba). Todos responden 404 a
+  un tablero que no existe salvo SmartRecruiters, que devuelve una lista vacía: ahí solo cuenta si
+  tiene alguna oferta. Sin agente ni tokens; una pausa corta entre peticiones (hasta 8 ATS × 3
+  slugs por empresa).
+- Confianza: Greenhouse y Workable dan el nombre del tablero (SmartRecruiters, el de la empresa en
+  cada oferta) (`confirmed` si casa entero con la
+  empresa y el slug sale del nombre completo; `doubtful` si no: un tablero «Capital» no confirma
+  «Capital Energy»). El resto no lo da: `probable` si el slug sale del nombre completo, `doubtful` si
+  de la primera palabra. Se enseñan el número de ofertas y hasta 3 títulos para comprobarlo.
 - Sin `--add` solo propone e imprime el `cai sources add …` de cada una. Con `--add` da de alta las
   `confirmed` y `probable` que aún no son fuente (la empresa queda como objetivo); las `doubtful`,
   nunca. Sin herramienta MCP: es un comando para ti.

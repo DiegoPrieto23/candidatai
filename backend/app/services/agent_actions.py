@@ -29,6 +29,9 @@ ActionId = Literal[
     "research-company",
     "handle-requests",
     "review-search",
+    "expand",
+    "improve-profile-item",
+    "propose-stories",
 ]
 
 # Hitos de entrevista (fase 17): `upcoming`, programada y por empezar; `past`, ya empezada y no
@@ -63,6 +66,9 @@ class Action:
     # por configuración solo se pueden lanzar esos, y solo si sus herramientas caben en
     # `background` (`agent_run_config`).
     roles: tuple[str, ...] = ()
+    # Fase 25.7b: acción de un logro o una historia del perfil; la orden lleva su id
+    # (`{profile_item}`), validado contra el perfil vigente antes de lanzar.
+    profile_item: bool = False
 
 
 ACTIONS: dict[ActionId, Action] = {
@@ -118,6 +124,28 @@ ACTIONS: dict[ActionId, Action] = {
         "Añadir al perfil las que tengo",
         "Usa el skill update-profile de CandidatAI para añadir a mi perfil las skills que he "
         "marcado como «La tengo» en la página Skills (get_skill_gaps con status have).",
+    ),
+    # Perfil (fase 25.2): lee tus enlaces públicos y propone; pregunta antes de escribir, así que
+    # solo en terminal.
+    "expand": Action(
+        "Ampliar perfil desde mis enlaces",
+        "Usa el skill expand de CandidatAI para proponerme proyectos, skills, logros y "
+        "certificaciones a partir de los enlaces públicos de mi perfil.",
+    ),
+    # «Mi perfil» (fase 25.7b): mejorar un logro o una historia, o proponer historias. Preguntan
+    # antes de escribir, así que solo en terminal; «Mejorar» lleva el id del elemento.
+    "improve-profile-item": Action(
+        "Mejorar con mi agente",
+        "Usa el skill update-profile de CandidatAI en modo «Mejorar un elemento» con "
+        "{profile_item} de mi perfil.",
+        skill="update-profile",
+        profile_item=True,
+    ),
+    "propose-stories": Action(
+        "Proponer historias desde mi experiencia",
+        "Usa el skill update-profile de CandidatAI en modo «Proponer historias desde mi "
+        "experiencia».",
+        skill="update-profile",
     ),
     "training-plan": Action(
         "Plan de formación",

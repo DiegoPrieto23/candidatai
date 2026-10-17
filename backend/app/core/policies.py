@@ -9,7 +9,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from app.core.config import REPO_ROOT
 
@@ -204,11 +204,55 @@ class RepostsPolicy(BaseModel):
     min_count: int = Field(default=2, ge=2)  # días distintos con publicación nueva para avisar
 
 
+class DoubtfulPolicy(BaseModel):
+    """Señales de oferta dudosa (fase 25.3): observaciones; no cambian el score ni los filtros."""
+
+    salary_range_max_pct: float = Field(default=60, gt=0)
+    stale_repost_min_count: int = Field(default=4, ge=2)
+    stale_repost_min_span_days: int = Field(default=60, gt=0)
+
+
+class LayoutPolicy(BaseModel):
+    """Maquetación del PDF (fase 25.5): avisos, no bloqueos. Porcentajes del alto de la página."""
+
+    enabled: bool = True
+    orphan_bottom_pct: float = Field(default=10, gt=0, lt=50)  # «al pie»: el último 10 %
+    large_gap_pct: float = Field(default=15, gt=0, lt=100)
+    bottom_margin_pct: float = Field(default=8, ge=0, lt=50)  # margen normal al pie
+    footer_zone_pct: float = Field(default=3, ge=0, lt=20)  # el texto no debería entrar aquí
+    edge_margin_pt: float = Field(default=14, ge=0)  # ni acercarse más a un borde
+    last_page_min_pct: float = Field(default=15, gt=0, lt=100)
+
+
+class ProfileEditingPolicy(BaseModel):
+    """«Mi perfil» editable (fase 25.7): copias del perfil y muestras de estilo."""
+
+    history_keep: int = Field(default=20, ge=1, le=200)  # copias en data/profile-history/
+    style_max_files: int = Field(default=10, ge=1, le=100)
+    style_max_upload_mb: float = Field(default=5, gt=0, le=50)
+    style_max_text_kb: int = Field(default=20, ge=1, le=200)  # todas juntas, en `get_context`
+
+
+MAX_PARALLEL_RUNS = 4
+
+
 class BackgroundRunsPolicy(BaseModel):
-    """«En segundo plano» (fase 19): el agente sin ventana, desde el worker, de uno en uno."""
+    """«En segundo plano» (fase 19): el agente sin ventana, desde el worker. Fase 25.4: hasta
+    `max_parallel` a la vez (con un tope por agente) y un umbral de score para `assess-fit`."""
 
     timeout_minutes: float = Field(default=30, gt=0)  # después se para el proceso (`timeout`)
     max_progress_lines: int = Field(default=200, gt=0)  # las últimas que se guardan
+    max_parallel: int = Field(default=1, ge=1, le=MAX_PARALLEL_RUNS)
+    per_agent: dict[str, int] = Field(default_factory=dict)  # tope por agente (p. ej. local: 1)
+    # Score mínimo para valorar en segundo plano; `None`: el de triaje menos 10. La UI lo cambia.
+    assess_min_score: int | None = Field(default=None, ge=0, le=100)
+
+    @field_validator("per_agent")
+    @classmethod
+    def _limits(cls, value: dict[str, int]) -> dict[str, int]:
+        if any(not 1 <= n <= MAX_PARALLEL_RUNS for n in value.values()):
+            raise ValueError(f"Cada tope por agente va de 1 a {MAX_PARALLEL_RUNS}.")
+        return value
 
 
 class Policies(BaseModel):
@@ -229,6 +273,9 @@ class Policies(BaseModel):
     applier: ApplierPolicy
     liveness: LivenessPolicy = Field(default_factory=LivenessPolicy)
     reposts: RepostsPolicy = Field(default_factory=RepostsPolicy)
+    doubtful: DoubtfulPolicy = Field(default_factory=DoubtfulPolicy)
+    layout: LayoutPolicy = Field(default_factory=LayoutPolicy)
+    profile_editing: ProfileEditingPolicy = Field(default_factory=ProfileEditingPolicy)
     background_runs: BackgroundRunsPolicy = Field(default_factory=BackgroundRunsPolicy)
 
 
@@ -250,6 +297,20 @@ def get_policies() -> Policies:
 @lru_cache
 def get_injection_patterns() -> InjectionPatterns:
     return InjectionPatterns.model_validate(_read_yaml(CONFIG_DIR / "injection_patterns.yaml"))
+
+
+class DoubtfulPatterns(BaseModel):
+    """Patrones de `config/doubtful_patterns.yaml` (fase 25.3). Se comparan sin tildes ni
+    mayúsculas: los de empresa, como palabras del nombre; los de cribado, dentro del texto."""
+
+    agencies: list[str] = []
+    hidden_employer: list[str] = []
+    ai_screening: list[str] = []
+
+
+@lru_cache
+def get_doubtful_patterns() -> DoubtfulPatterns:
+    return DoubtfulPatterns.model_validate(_read_yaml(CONFIG_DIR / "doubtful_patterns.yaml"))
 
 
 SKILL_ALIASES_PATH = CONFIG_DIR / "skill_aliases.yaml"

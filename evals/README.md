@@ -47,6 +47,7 @@ Comprobaciones:
 | Skills | Todas las skills están en el perfil y no aparece ninguna de `forbidden_skills` |
 | Skills básicas | No hay skills básicas (`basic_skills` o nivel B) que la oferta no pida |
 | Una página | El render seleccionado (o el último) tiene 1 página; sin PDF, «sin medir» |
+| Maquetación | Fase 25.5: el render seleccionado (o el último) no tiene avisos de maquetación (`orphan_heading`, `large_gap`, `footer_overlap`, `nearly_empty_last_page`, `text_layer`); un render anterior a la 25.5 no los tiene; sin PDF, «sin medir» |
 | Cobertura | Aparecen al menos el 80 % (`--min-coverage`) de las skills pedidas **que la candidata tiene** más las `keywords` del caso |
 | Idioma | El CV está en el idioma de la oferta |
 | Verificado | El rol `verifier` lo dejó en `passed` |

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:tt="https://teamtailor.com/locations">
+  <channel>
+    <title>Acme Datos</title>
+    <description>Current job openings</description>
+    <link>https://acmedatos.teamtailor.com/jobs</link>
+    <item>
+      <title>Data Engineer</title>
+      <description>&lt;p&gt;En Acme Datos construimos &lt;strong&gt;pipelines de datos&lt;/strong&gt;.&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Python y SQL&lt;/li&gt;&lt;li&gt;Airflow&lt;/li&gt;&lt;/ul&gt;</description>
+      <pubDate>Tue, 29 Sep 2026 15:00:00 +0200</pubDate>
+      <link>https://acmedatos.teamtailor.com/jobs/8118064-data-engineer</link>
+      <remoteStatus>hybrid</remoteStatus>
+      <guid>4ff07fd5-3ac0-4333-8f4c-acmedatos0001</guid>
+      <tt:locations>
+        <tt:location>
+          <tt:name>Oficina Vigo</tt:name>
+          <tt:address>Rúa Falsa 1</tt:address>
+          <tt:zip>36201</tt:zip>
+          <tt:city>Vigo</tt:city>
+          <tt:country>Spain</tt:country>
+        </tt:location>
+        <tt:location>
+          <tt:name>Oficina Coruña</tt:name>
+          <tt:city>A Coruña</tt:city>
+          <tt:country>Spain</tt:country>
+        </tt:location>
+      </tt:locations>
+      <tt:department>Datos</tt:department>
+      <tt:role>Data Engineer</tt:role>
+      <tt:division/>
+    </item>
+    <item>
+      <title>Analytics Engineer</title>
+      <description>&lt;p&gt;Modelado con dbt.&lt;/p&gt;</description>
+      <pubDate>Wed, 30 Sep 2026 11:00:00 +0200</pubDate>
+      <link>https://acmedatos.teamtailor.com/jobs/8118065-analytics-engineer</link>
+      <remoteStatus>fully</remoteStatus>
+      <guid>4ff07fd5-3ac0-4333-8f4c-acmedatos0002</guid>
+      <tt:locations/>
+      <tt:department>Datos</tt:department>
+      <tt:role/>
+      <tt:division/>
+    </item>
+    <item>
+      <title>Office Manager</title>
+      <description>&lt;p&gt;Gestión de la oficina.&lt;/p&gt;</description>
+      <pubDate>Wed, 30 Sep 2026 12:00:00 +0200</pubDate>
+      <link>javascript:alert(1)</link>
+      <remoteStatus>none</remoteStatus>
+      <guid>4ff07fd5-3ac0-4333-8f4c-acmedatos0003</guid>
+      <tt:locations/>
+      <tt:department>Operaciones</tt:department>
+    </item>
+  </channel>
+</rss>

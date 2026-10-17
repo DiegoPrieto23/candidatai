@@ -410,6 +410,119 @@
         }
       }
     },
+    "/jobs/{job_id}/costs": {
+      "get": {
+        "tags": [
+          "jobs"
+        ],
+        "summary": "Get Job Costs",
+        "description": "Lo que se ha gastado en esta oferta en segundo plano (fase 25.4): sus ejecuciones y su\nparte de las de lote. Lo de una terminal no cuenta: el agente no lo devuelve.",
+        "operationId": "get_job_costs",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobCost"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
     "/jobs/{job_id}/match": {
       "get": {
         "tags": [
@@ -6023,6 +6136,108 @@
         }
       }
     },
+    "/stats/story": {
+      "get": {
+        "tags": [
+          "stats"
+        ],
+        "summary": "Get Search Story",
+        "description": "Toda la búsqueda en números agregados, con una línea para pegar en el README (fase 25.6).",
+        "operationId": "get_search_story",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchStory"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/jobs/{job_id}/package": {
       "get": {
         "tags": [
@@ -8533,6 +8748,320 @@
         }
       }
     },
+    "/agent/costs": {
+      "get": {
+        "tags": [
+          "agent"
+        ],
+        "summary": "Get Agent Costs",
+        "description": "Lo que han gastado las ejecuciones en segundo plano en los últimos 7 y 30 días, por acción,\nagente y modelo, y lo que pesan las instrucciones de cada skill. Solo lo que da cada agente.",
+        "operationId": "get_agent_costs",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentCosts"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/agent/assess-threshold": {
+      "get": {
+        "tags": [
+          "agent"
+        ],
+        "summary": "Get Assess Threshold",
+        "description": "El score mínimo con que «Evaluar encaje» valora en segundo plano.",
+        "operationId": "get_assess_threshold",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssessThreshold"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "agent"
+        ],
+        "summary": "Save Assess Threshold",
+        "description": "Cambia el umbral (`value: null` vuelve al de `config/policies.yaml`).",
+        "operationId": "save_assess_threshold",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssessThresholdInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssessThreshold"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/agent/tiers": {
       "get": {
         "tags": [
@@ -10315,6 +10844,703 @@
         }
       }
     },
+    "/context/style-samples": {
+      "get": {
+        "tags": [
+          "context"
+        ],
+        "summary": "List Style Samples",
+        "description": "Muestras de `data/documentos/estilo/`, con el tamaño de su texto y si traen frases\ndirigidas a una IA.",
+        "operationId": "list_style_samples",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/StyleSampleInfo"
+                  },
+                  "type": "array",
+                  "title": "Response List Style Samples"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "context"
+        ],
+        "summary": "Upload Style Sample",
+        "description": "Sube una muestra (.txt, .md, .docx o .pdf) y extrae su texto.",
+        "operationId": "upload_style_sample",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadSampleBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StyleSampleInfo"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/context/style-samples/{name}/text": {
+      "get": {
+        "tags": [
+          "context"
+        ],
+        "summary": "Get Style Sample Text",
+        "description": "El texto que se extrajo de la muestra (lo que leería tu agente).",
+        "operationId": "get_style_sample_text",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SampleText"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/context/style-samples/{name}": {
+      "delete": {
+        "tags": [
+          "context"
+        ],
+        "summary": "Delete Style Sample",
+        "operationId": "delete_style_sample",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmptyBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmptyBody"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/context/{section}": {
+      "get": {
+        "tags": [
+          "context"
+        ],
+        "summary": "Get Context Document",
+        "description": "El fichero tal cual, comentarios-guía incluidos (o la plantilla vacía si no existe).",
+        "operationId": "get_context_document",
+        "parameters": [
+          {
+            "name": "section",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "estilo-redaccion",
+                "perfil-conductual",
+                "criterios",
+                "narrativa"
+              ],
+              "type": "string",
+              "title": "Section"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextDocument"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "context"
+        ],
+        "summary": "Save Context Document",
+        "description": "Guarda el fichero (máximo 20 KB). `conflict` si cambió desde que lo leíste.",
+        "operationId": "save_context_document",
+        "parameters": [
+          {
+            "name": "section",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "estilo-redaccion",
+                "perfil-conductual",
+                "criterios",
+                "narrativa"
+              ],
+              "type": "string",
+              "title": "Section"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveContextBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextDocument"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
     "/folders/open": {
       "post": {
         "tags": [
@@ -10340,6 +11566,460 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OpenFolderResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/profile/editable": {
+      "get": {
+        "tags": [
+          "profile"
+        ],
+        "summary": "Get Editable Profile",
+        "description": "El perfil del fichero tal cual (sin `private`), con su `file_hash` y si valida.",
+        "operationId": "get_editable_profile",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EditableProfile"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/profile/sections/{section}": {
+      "put": {
+        "tags": [
+          "profile"
+        ],
+        "summary": "Save Profile Section",
+        "description": "Guarda una sección: fusiona con lo que había (conserva comentarios), valida el perfil\nentero, copia el anterior, crea la versión y recalcula los scores. `conflict` si el fichero\ncambió; `referenced` si se borra lo que cita una historia STAR.",
+        "operationId": "save_profile_section",
+        "parameters": [
+          {
+            "name": "section",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "personal",
+                "headline",
+                "summary",
+                "experience",
+                "projects",
+                "education",
+                "certifications",
+                "extra_sections",
+                "languages",
+                "skills",
+                "basic_skills",
+                "stories",
+                "preferences"
+              ],
+              "type": "string",
+              "title": "Section"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveSectionBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaveResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/profile/undo": {
+      "post": {
+        "tags": [
+          "profile"
+        ],
+        "summary": "Undo Profile",
+        "description": "Vuelve a la copia anterior al último guardado.",
+        "operationId": "undo_profile",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UndoBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UndoResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/profile/diff": {
+      "get": {
+        "tags": [
+          "profile"
+        ],
+        "summary": "Get Profile Diff",
+        "description": "Diff de las dos últimas versiones importadas, como `cai profile diff`: `private` oculto,\npero con tu contacto, así que solo para la UI.",
+        "operationId": "get_profile_diff",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileDiff"
                 }
               }
             }
@@ -12947,7 +14627,10 @@
               "draft-message",
               "research-company",
               "handle-requests",
-              "review-search"
+              "review-search",
+              "expand",
+              "improve-profile-item",
+              "propose-stories"
             ],
             "title": "Id"
           },
@@ -12962,6 +14645,10 @@
           "needs_milestone": {
             "type": "boolean",
             "title": "Needs Milestone"
+          },
+          "needs_profile_item": {
+            "type": "boolean",
+            "title": "Needs Profile Item"
           },
           "prompt": {
             "anyOf": [
@@ -13005,6 +14692,7 @@
           "label",
           "needs_job",
           "needs_milestone",
+          "needs_profile_item",
           "prompt",
           "background",
           "agent",
@@ -13478,6 +15166,27 @@
         "title": "AgentCapabilities",
         "description": "Qué sabe hacer el agente. `None`: sin comprobar."
       },
+      "AgentCosts": {
+        "properties": {
+          "windows": {
+            "items": {
+              "$ref": "#/components/schemas/CostWindow"
+            },
+            "type": "array",
+            "title": "Windows"
+          },
+          "terminal_note": {
+            "type": "string",
+            "title": "Terminal Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "windows",
+          "terminal_note"
+        ],
+        "title": "AgentCosts"
+      },
       "AgentEntry": {
         "properties": {
           "name": {
@@ -13661,7 +15370,10 @@
               "draft-message",
               "research-company",
               "handle-requests",
-              "review-search"
+              "review-search",
+              "expand",
+              "improve-profile-item",
+              "propose-stories"
             ],
             "title": "Action"
           },
@@ -13808,7 +15520,10 @@
               "draft-message",
               "research-company",
               "handle-requests",
-              "review-search"
+              "review-search",
+              "expand",
+              "improve-profile-item",
+              "propose-stories"
             ],
             "title": "Action"
           },
@@ -13916,7 +15631,16 @@
           "usage": {
             "anyOf": [
               {
-                "additionalProperties": true,
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ]
+                },
                 "type": "object"
               },
               {
@@ -14071,6 +15795,35 @@
         ],
         "title": "AgentsOverview",
         "description": "`GET /agent/agents` y `cai agents list --json`: los agentes del manifiesto, tus preferencias\ny el agente efectivo de cada acción."
+      },
+      "AiScreeningSignal": {
+        "properties": {
+          "origin": {
+            "type": "string",
+            "enum": [
+              "extraction",
+              "text",
+              "company"
+            ],
+            "title": "Origin"
+          },
+          "matched": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Matched"
+          }
+        },
+        "type": "object",
+        "required": [
+          "origin"
+        ],
+        "title": "AiScreeningSignal"
       },
       "AlertJob": {
         "properties": {
@@ -14352,6 +16105,61 @@
         ],
         "title": "ApplicationAnswers",
         "description": "Respuestas de screening (skill `prepare-application`). Sin carta: es un documento propio.\n\nLas reglas que dependen del perfil (evidencias, respuestas vacías) las comprueba\n`services/answers.py`, para dar todos los problemas juntos."
+      },
+      "AssessThreshold": {
+        "properties": {
+          "value": {
+            "type": "integer",
+            "title": "Value"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "ui",
+              "policies",
+              "default"
+            ],
+            "title": "Source"
+          },
+          "triage_threshold": {
+            "type": "integer",
+            "title": "Triage Threshold"
+          },
+          "default": {
+            "type": "integer",
+            "title": "Default"
+          }
+        },
+        "type": "object",
+        "required": [
+          "value",
+          "source",
+          "triage_threshold",
+          "default"
+        ],
+        "title": "AssessThreshold"
+      },
+      "AssessThresholdInput": {
+        "properties": {
+          "value": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 100.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "value"
+        ],
+        "title": "AssessThresholdInput"
       },
       "AssistedApplication": {
         "properties": {
@@ -15040,6 +16848,13 @@
             },
             "type": "array",
             "title": "By Days To Apply"
+          },
+          "by_signal": {
+            "items": {
+              "$ref": "#/components/schemas/CalibrationGroup"
+            },
+            "type": "array",
+            "title": "By Signal"
           }
         },
         "type": "object",
@@ -15055,7 +16870,8 @@
           "by_template",
           "by_cover_letter",
           "by_referral",
-          "by_days_to_apply"
+          "by_days_to_apply",
+          "by_signal"
         ],
         "title": "Calibration"
       },
@@ -15405,6 +17221,15 @@
             "title": "Notes",
             "description": "Para el candidato: qué conviene preguntar o comprobar, con [n] si sale de una fuente. Sin opiniones sin respaldo."
           },
+          "red_flags": {
+            "items": {
+              "$ref": "#/components/schemas/RedFlag"
+            },
+            "type": "array",
+            "maxItems": 10,
+            "title": "Red Flags",
+            "description": "Banderas rojas con fuente y fecha (despidos, rotación, reseñas, impagos, conflictos). Vacío si no hay ninguna con fuente."
+          },
           "sources": {
             "items": {
               "$ref": "#/components/schemas/ResearchSource"
@@ -15690,6 +17515,63 @@
         ],
         "title": "ContactOut"
       },
+      "ContextDocument": {
+        "properties": {
+          "section": {
+            "type": "string",
+            "enum": [
+              "estilo-redaccion",
+              "perfil-conductual",
+              "criterios",
+              "narrativa"
+            ],
+            "title": "Section"
+          },
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "exists": {
+            "type": "boolean",
+            "title": "Exists"
+          },
+          "file_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File Hash"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "title": "Size Bytes"
+          },
+          "max_bytes": {
+            "type": "integer",
+            "title": "Max Bytes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "section",
+          "path",
+          "exists",
+          "file_hash",
+          "text",
+          "size_bytes",
+          "max_bytes"
+        ],
+        "title": "ContextDocument",
+        "description": "Un fichero de contexto tal cual, comentarios-guía incluidos, para editarlo en la UI."
+      },
       "ContextFileInfo": {
         "properties": {
           "section": {
@@ -15796,6 +17678,246 @@
         ],
         "title": "ContextStatus",
         "description": "Estado para la UI («Mi perfil»): sin el texto de los ficheros."
+      },
+      "CostGroup": {
+        "properties": {
+          "runs": {
+            "type": "integer",
+            "title": "Runs",
+            "default": 0
+          },
+          "with_usage": {
+            "type": "integer",
+            "title": "With Usage",
+            "default": 0
+          },
+          "input_tokens": {
+            "type": "integer",
+            "title": "Input Tokens",
+            "default": 0
+          },
+          "output_tokens": {
+            "type": "integer",
+            "title": "Output Tokens",
+            "default": 0
+          },
+          "cached_tokens": {
+            "type": "integer",
+            "title": "Cached Tokens",
+            "default": 0
+          },
+          "turns": {
+            "type": "integer",
+            "title": "Turns",
+            "default": 0
+          },
+          "duration_ms": {
+            "type": "integer",
+            "title": "Duration Ms",
+            "default": 0
+          },
+          "cost_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Usd"
+          },
+          "avg_tokens": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Tokens"
+          },
+          "avg_duration_ms": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Duration Ms"
+          },
+          "avg_cost_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Cost Usd"
+          },
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "instruction_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instruction Tokens"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label"
+        ],
+        "title": "CostGroup"
+      },
+      "CostTotals": {
+        "properties": {
+          "runs": {
+            "type": "integer",
+            "title": "Runs",
+            "default": 0
+          },
+          "with_usage": {
+            "type": "integer",
+            "title": "With Usage",
+            "default": 0
+          },
+          "input_tokens": {
+            "type": "integer",
+            "title": "Input Tokens",
+            "default": 0
+          },
+          "output_tokens": {
+            "type": "integer",
+            "title": "Output Tokens",
+            "default": 0
+          },
+          "cached_tokens": {
+            "type": "integer",
+            "title": "Cached Tokens",
+            "default": 0
+          },
+          "turns": {
+            "type": "integer",
+            "title": "Turns",
+            "default": 0
+          },
+          "duration_ms": {
+            "type": "integer",
+            "title": "Duration Ms",
+            "default": 0
+          },
+          "cost_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Usd"
+          },
+          "avg_tokens": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Tokens"
+          },
+          "avg_duration_ms": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Duration Ms"
+          },
+          "avg_cost_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Cost Usd"
+          }
+        },
+        "type": "object",
+        "title": "CostTotals"
+      },
+      "CostWindow": {
+        "properties": {
+          "days": {
+            "type": "integer",
+            "title": "Days"
+          },
+          "since": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Since"
+          },
+          "total": {
+            "$ref": "#/components/schemas/CostTotals"
+          },
+          "by_action": {
+            "items": {
+              "$ref": "#/components/schemas/CostGroup"
+            },
+            "type": "array",
+            "title": "By Action"
+          },
+          "by_agent": {
+            "items": {
+              "$ref": "#/components/schemas/CostGroup"
+            },
+            "type": "array",
+            "title": "By Agent"
+          },
+          "by_model": {
+            "items": {
+              "$ref": "#/components/schemas/CostGroup"
+            },
+            "type": "array",
+            "title": "By Model"
+          }
+        },
+        "type": "object",
+        "required": [
+          "days",
+          "since",
+          "total",
+          "by_action",
+          "by_agent",
+          "by_model"
+        ],
+        "title": "CostWindow"
       },
       "CoverLetterBriefInput": {
         "properties": {
@@ -16664,7 +18786,8 @@
               "linkedin",
               "titulos",
               "referencias",
-              "candidaturas"
+              "candidaturas",
+              "estilo"
             ],
             "title": "Name"
           },
@@ -16785,6 +18908,70 @@
         "type": "object",
         "title": "DraftSentBody"
       },
+      "EditableProfile": {
+        "properties": {
+          "exists": {
+            "type": "boolean",
+            "title": "Exists"
+          },
+          "file_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File Hash"
+          },
+          "profile": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile"
+          },
+          "issues": {
+            "items": {
+              "$ref": "#/components/schemas/ProfileIssue"
+            },
+            "type": "array",
+            "title": "Issues"
+          },
+          "profile_version_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Version Id"
+          },
+          "undo_available": {
+            "type": "integer",
+            "title": "Undo Available"
+          }
+        },
+        "type": "object",
+        "required": [
+          "exists",
+          "file_hash",
+          "profile",
+          "issues",
+          "profile_version_id",
+          "undo_available"
+        ],
+        "title": "EditableProfile",
+        "description": "Lo que ve el editor de la UI: el perfil del fichero tal cual, con email y teléfono."
+      },
       "EffectiveAction": {
         "properties": {
           "action": {
@@ -16808,7 +18995,10 @@
               "draft-message",
               "research-company",
               "handle-requests",
-              "review-search"
+              "review-search",
+              "expand",
+              "improve-profile-item",
+              "propose-stories"
             ],
             "title": "Action"
           },
@@ -16902,6 +19092,56 @@
           "message"
         ],
         "title": "EmailPollResult"
+      },
+      "EmployerHiddenSignal": {
+        "properties": {
+          "reason": {
+            "type": "string",
+            "enum": [
+              "agency",
+              "agency_for_client",
+              "unnamed"
+            ],
+            "title": "Reason"
+          },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "extraction",
+              "text",
+              "company"
+            ],
+            "title": "Origin"
+          },
+          "client": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client"
+          },
+          "matched": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Matched"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reason",
+          "origin"
+        ],
+        "title": "EmployerHiddenSignal"
       },
       "EmptyBody": {
         "properties": {},
@@ -17258,7 +19498,8 @@
               "remote_mode",
               "location",
               "language",
-              "title_keyword"
+              "title_keyword",
+              "signal"
             ],
             "title": "Filter"
           },
@@ -17322,6 +19563,22 @@
         ],
         "title": "FitAssessment",
         "description": "Valoración del encaje que escribe el agente (skill `assess-fit`). Ver POLICIES §2."
+      },
+      "FixedTermSignal": {
+        "properties": {
+          "origin": {
+            "type": "string",
+            "enum": [
+              "extraction",
+              "text",
+              "company"
+            ],
+            "title": "Origin",
+            "default": "extraction"
+          }
+        },
+        "type": "object",
+        "title": "FixedTermSignal"
       },
       "FollowupItem": {
         "properties": {
@@ -17489,6 +19746,95 @@
         "title": "FollowupStatus",
         "description": "Seguimiento de una candidatura enviada (solo en `applied`)."
       },
+      "FunnelCost": {
+        "properties": {
+          "runs": {
+            "type": "integer",
+            "title": "Runs"
+          },
+          "tokens": {
+            "type": "integer",
+            "title": "Tokens"
+          },
+          "cost_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Usd"
+          },
+          "applied": {
+            "type": "integer",
+            "title": "Applied"
+          },
+          "interview": {
+            "type": "integer",
+            "title": "Interview"
+          },
+          "tokens_per_applied": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tokens Per Applied"
+          },
+          "cost_per_applied_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Per Applied Usd"
+          },
+          "tokens_per_interview": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tokens Per Interview"
+          },
+          "cost_per_interview_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Per Interview Usd"
+          }
+        },
+        "type": "object",
+        "required": [
+          "runs",
+          "tokens",
+          "cost_usd",
+          "applied",
+          "interview",
+          "tokens_per_applied",
+          "cost_per_applied_usd",
+          "tokens_per_interview",
+          "cost_per_interview_usd"
+        ],
+        "title": "FunnelCost",
+        "description": "Lo que han gastado en segundo plano las ofertas del periodo (fase 25.4). Lo de una terminal\nno cuenta: el agente no devuelve su uso."
+      },
       "FunnelStats": {
         "properties": {
           "since": {
@@ -17558,6 +19904,9 @@
             },
             "type": "array",
             "title": "Hard Filter Failures"
+          },
+          "agent_cost": {
+            "$ref": "#/components/schemas/FunnelCost"
           }
         },
         "type": "object",
@@ -17571,7 +19920,8 @@
           "by_referral",
           "response_time",
           "discard_reasons",
-          "hard_filter_failures"
+          "hard_filter_failures",
+          "agent_cost"
         ],
         "title": "FunnelStats"
       },
@@ -18001,6 +20351,36 @@
         "title": "Issue",
         "description": "Un problema de una ejecución. `item` identifica la oferta si es de una sola."
       },
+      "JobCost": {
+        "properties": {
+          "job_id": {
+            "type": "integer",
+            "title": "Job Id"
+          },
+          "runs": {
+            "items": {
+              "$ref": "#/components/schemas/JobRunCost"
+            },
+            "type": "array",
+            "title": "Runs"
+          },
+          "total": {
+            "$ref": "#/components/schemas/CostTotals"
+          },
+          "terminal_note": {
+            "type": "string",
+            "title": "Terminal Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "runs",
+          "total",
+          "terminal_note"
+        ],
+        "title": "JobCost"
+      },
       "JobCoverLetter": {
         "properties": {
           "info": {
@@ -18235,6 +20615,57 @@
               }
             ],
             "title": "Injection Excerpt"
+          },
+          "contract_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "permanent",
+                  "fixed_term",
+                  "freelance",
+                  "unknown"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contract Type"
+          },
+          "hiring_entity": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hiring Entity"
+          },
+          "is_agency": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Agency"
+          },
+          "mentions_ai_screening": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mentions Ai Screening"
           }
         },
         "additionalProperties": false,
@@ -18517,6 +20948,77 @@
         ],
         "title": "JobRow"
       },
+      "JobRunCost": {
+        "properties": {
+          "run_id": {
+            "type": "integer",
+            "title": "Run Id"
+          },
+          "action": {
+            "type": "string",
+            "title": "Action"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "agent": {
+            "type": "string",
+            "title": "Agent"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "share": {
+            "type": "number",
+            "title": "Share"
+          },
+          "shared_with": {
+            "type": "integer",
+            "title": "Shared With"
+          },
+          "usage": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Usage"
+          }
+        },
+        "type": "object",
+        "required": [
+          "run_id",
+          "action",
+          "label",
+          "agent",
+          "model",
+          "finished_at",
+          "share",
+          "shared_with",
+          "usage"
+        ],
+        "title": "JobRunCost"
+      },
       "JobSignals": {
         "properties": {
           "possibly_closed": {
@@ -18553,6 +21055,56 @@
             "anyOf": [
               {
                 "$ref": "#/components/schemas/RepostSignal"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "salary_range_wide": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SalaryRangeSignal"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "employer_hidden": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EmployerHiddenSignal"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fixed_term": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FixedTermSignal"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ai_screening": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AiScreeningSignal"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "stale_repost": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StaleRepostSignal"
               },
               {
                 "type": "null"
@@ -18789,7 +21341,10 @@
               "draft-message",
               "research-company",
               "handle-requests",
-              "review-search"
+              "review-search",
+              "expand",
+              "improve-profile-item",
+              "propose-stories"
             ],
             "title": "Action"
           },
@@ -18852,6 +21407,18 @@
               }
             ],
             "title": "Preset"
+          },
+          "profile_item": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 130
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Item"
           }
         },
         "additionalProperties": false,
@@ -19994,6 +22561,13 @@
             "type": "string",
             "format": "date-time",
             "title": "Created At"
+          },
+          "signals": {
+            "items": {
+              "$ref": "#/components/schemas/SignalNote"
+            },
+            "type": "array",
+            "title": "Signals"
           }
         },
         "type": "object",
@@ -20009,7 +22583,8 @@
           "breakdown",
           "assessment",
           "assessment_stale",
-          "created_at"
+          "created_at",
+          "signals"
         ],
         "title": "MatchView"
       },
@@ -21109,6 +23684,7 @@
             "enum": [
               "contexto",
               "documentos",
+              "estilo",
               "entrevistas",
               "empresas",
               "candidatura"
@@ -21339,7 +23915,10 @@
                 "draft-message",
                 "research-company",
                 "handle-requests",
-                "review-search"
+                "review-search",
+                "expand",
+                "improve-profile-item",
+                "propose-stories"
               ]
             },
             "type": "object",
@@ -21651,6 +24230,66 @@
           "documents"
         ],
         "title": "ProcessView"
+      },
+      "ProfileDiff": {
+        "properties": {
+          "from_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Version"
+          },
+          "to_version": {
+            "type": "integer",
+            "title": "To Version"
+          },
+          "diff": {
+            "type": "string",
+            "title": "Diff"
+          }
+        },
+        "type": "object",
+        "required": [
+          "from_version",
+          "to_version",
+          "diff"
+        ],
+        "title": "ProfileDiff"
+      },
+      "ProfileIssue": {
+        "properties": {
+          "field": {
+            "type": "string",
+            "title": "Field"
+          },
+          "received": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Received"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "field",
+          "received",
+          "reason"
+        ],
+        "title": "ProfileIssue"
       },
       "ProfileSkillOption": {
         "properties": {
@@ -22193,6 +24832,45 @@
         "title": "ReceivedOfferOut",
         "description": "Los datos tal cual, para la ficha (UI)."
       },
+      "RedFlag": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "layoffs",
+              "turnover",
+              "reviews",
+              "payments",
+              "legal",
+              "other"
+            ],
+            "title": "Kind",
+            "description": "layoffs (despidos, ERE), turnover (rotación alta), reviews (reseñas públicas muy negativas y recurrentes), payments (impagos, retrasos de nómina), legal (conflictos, sanciones, juicios) u other."
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 600,
+            "minLength": 1,
+            "title": "Text",
+            "description": "Qué pasó, en 1-2 frases, citando [n]."
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "title": "Date",
+            "description": "Cuándo pasó o se publicó (AAAA-MM-DD; el día 1 si solo hay mes)."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "text",
+          "date"
+        ],
+        "title": "RedFlag",
+        "description": "Una bandera roja de la empresa (fase 25.3): un hecho con fuente y fecha, no una opinión."
+      },
       "ReferralChange": {
         "properties": {
           "referral": {
@@ -22375,6 +25053,32 @@
           "message": {
             "type": "string",
             "title": "Message"
+          },
+          "page": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page"
+          },
+          "fix": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "template",
+                  "content"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fix"
           }
         },
         "type": "object",
@@ -23116,7 +25820,10 @@
               "draft-message",
               "research-company",
               "handle-requests",
-              "review-search"
+              "review-search",
+              "expand",
+              "improve-profile-item",
+              "propose-stories"
             ],
             "title": "Action"
           },
@@ -23576,6 +26283,63 @@
         "type": "object",
         "title": "Salary"
       },
+      "SalaryRangeSignal": {
+        "properties": {
+          "min": {
+            "type": "integer",
+            "title": "Min"
+          },
+          "max": {
+            "type": "integer",
+            "title": "Max"
+          },
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency"
+          },
+          "pct": {
+            "type": "integer",
+            "title": "Pct"
+          },
+          "threshold_pct": {
+            "type": "number",
+            "title": "Threshold Pct"
+          }
+        },
+        "type": "object",
+        "required": [
+          "min",
+          "max",
+          "pct",
+          "threshold_pct"
+        ],
+        "title": "SalaryRangeSignal"
+      },
+      "SampleText": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "text"
+        ],
+        "title": "SampleText"
+      },
       "SaveAnswersResult": {
         "properties": {
           "ok": {
@@ -23631,6 +26395,32 @@
         ],
         "title": "SaveBriefResult"
       },
+      "SaveContextBody": {
+        "properties": {
+          "file_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File Hash"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "file_hash",
+          "text"
+        ],
+        "title": "SaveContextBody"
+      },
       "SaveLetterResult": {
         "properties": {
           "ok": {
@@ -23662,6 +26452,124 @@
           "render"
         ],
         "title": "SaveLetterResult"
+      },
+      "SaveResult": {
+        "properties": {
+          "section": {
+            "type": "string",
+            "enum": [
+              "personal",
+              "headline",
+              "summary",
+              "experience",
+              "projects",
+              "education",
+              "certifications",
+              "extra_sections",
+              "languages",
+              "skills",
+              "basic_skills",
+              "stories",
+              "preferences"
+            ],
+            "title": "Section"
+          },
+          "dry_run": {
+            "type": "boolean",
+            "title": "Dry Run"
+          },
+          "changed": {
+            "type": "boolean",
+            "title": "Changed"
+          },
+          "diff": {
+            "type": "string",
+            "title": "Diff"
+          },
+          "file_hash": {
+            "type": "string",
+            "title": "File Hash"
+          },
+          "profile_version_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Version Id"
+          },
+          "version_created": {
+            "type": "boolean",
+            "title": "Version Created"
+          },
+          "rescore_queued": {
+            "type": "boolean",
+            "title": "Rescore Queued"
+          },
+          "generated_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Generated Ids"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "section",
+          "dry_run",
+          "changed",
+          "diff",
+          "file_hash",
+          "profile_version_id",
+          "version_created",
+          "rescore_queued",
+          "generated_ids",
+          "warnings"
+        ],
+        "title": "SaveResult"
+      },
+      "SaveSectionBody": {
+        "properties": {
+          "file_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File Hash",
+            "description": "El `file_hash` que leyó la UI."
+          },
+          "content": {
+            "title": "Content",
+            "description": "La sección entera, como la devuelve `GET /profile/editable`."
+          },
+          "dry_run": {
+            "type": "boolean",
+            "title": "Dry Run",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "file_hash",
+          "content"
+        ],
+        "title": "SaveSectionBody"
       },
       "SaveSourceResult": {
         "properties": {
@@ -23822,6 +26730,156 @@
         ],
         "title": "ScreeningAnswer"
       },
+      "SearchStory": {
+        "properties": {
+          "started_on": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started On"
+          },
+          "first_applied_on": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Applied On"
+          },
+          "last_activity_on": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Activity On"
+          },
+          "weeks": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weeks"
+          },
+          "found": {
+            "type": "integer",
+            "title": "Found"
+          },
+          "evaluated": {
+            "type": "integer",
+            "title": "Evaluated"
+          },
+          "approved": {
+            "type": "integer",
+            "title": "Approved"
+          },
+          "applied": {
+            "type": "integer",
+            "title": "Applied"
+          },
+          "replied": {
+            "type": "integer",
+            "title": "Replied"
+          },
+          "interviews": {
+            "type": "integer",
+            "title": "Interviews"
+          },
+          "offers": {
+            "type": "integer",
+            "title": "Offers"
+          },
+          "accepted": {
+            "type": "integer",
+            "title": "Accepted"
+          },
+          "reply_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reply Rate"
+          },
+          "interview_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interview Rate"
+          },
+          "median_days_to_reply": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Median Days To Reply"
+          },
+          "markdown": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "propertyNames": {
+              "enum": [
+                "es",
+                "en"
+              ]
+            },
+            "type": "object",
+            "title": "Markdown"
+          }
+        },
+        "type": "object",
+        "required": [
+          "started_on",
+          "first_applied_on",
+          "last_activity_on",
+          "weeks",
+          "found",
+          "evaluated",
+          "approved",
+          "applied",
+          "replied",
+          "interviews",
+          "offers",
+          "accepted",
+          "reply_rate",
+          "interview_rate",
+          "median_days_to_reply",
+          "markdown"
+        ],
+        "title": "SearchStory",
+        "description": "Toda la búsqueda en números agregados, para contarla (p. ej. en el README).\n\nSolo recuentos y fechas: ni empresas, ni puestos, ni fuentes, ni importes. Es lo que el usuario\npuede publicar si quiere; la app no lo publica nunca."
+      },
       "SemanticResult": {
         "properties": {
           "model": {
@@ -23888,6 +26946,32 @@
         "type": "object",
         "title": "SignOff",
         "description": "Despedida de la carta por idioma («Un saludo,», «Kind regards,»)."
+      },
+      "SignalNote": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "salary_range_wide",
+              "employer_hidden",
+              "fixed_term",
+              "stale_repost",
+              "ai_screening"
+            ],
+            "title": "Code"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "text"
+        ],
+        "title": "SignalNote",
+        "description": "Una señal activa, en texto para el agente y la CLI (la UI lo traduce por `code`)."
       },
       "SkillCoverage": {
         "properties": {
@@ -24066,6 +27150,21 @@
           "name": {
             "type": "string",
             "title": "Name"
+          },
+          "tokens": {
+            "type": "integer",
+            "title": "Tokens"
+          },
+          "cost_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Usd"
           }
         },
         "type": "object",
@@ -24078,7 +27177,9 @@
           "reply_rate",
           "source_id",
           "kind",
-          "name"
+          "name",
+          "tokens",
+          "cost_usd"
         ],
         "title": "SourceFunnel"
       },
@@ -24090,8 +27191,15 @@
               "greenhouse",
               "lever",
               "ashby",
+              "personio",
+              "teamtailor",
+              "workable",
+              "smartrecruiters",
+              "recruitee",
               "infojobs",
-              "adzuna"
+              "adzuna",
+              "manfred",
+              "freehire"
             ],
             "title": "Kind"
           },
@@ -24162,6 +27270,32 @@
             "pattern": "^[a-z]{2}$",
             "title": "Country",
             "default": "es"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-z]{2}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language"
+          },
+          "lang": {
+            "type": "string",
+            "enum": [
+              "ES",
+              "EN"
+            ],
+            "title": "Lang",
+            "default": "ES"
+          },
+          "remote_only": {
+            "type": "boolean",
+            "title": "Remote Only",
+            "default": false
           },
           "title_keywords": {
             "items": {
@@ -24504,6 +27638,41 @@
         ],
         "title": "Stage"
       },
+      "StaleRepostSignal": {
+        "properties": {
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "channel": {
+            "type": "string",
+            "title": "Channel"
+          },
+          "first_seen": {
+            "type": "string",
+            "format": "date",
+            "title": "First Seen"
+          },
+          "last_seen": {
+            "type": "string",
+            "format": "date",
+            "title": "Last Seen"
+          },
+          "span_days": {
+            "type": "integer",
+            "title": "Span Days"
+          }
+        },
+        "type": "object",
+        "required": [
+          "count",
+          "channel",
+          "first_seen",
+          "last_seen",
+          "span_days"
+        ],
+        "title": "StaleRepostSignal"
+      },
       "StatusReport": {
         "properties": {
           "total": {
@@ -24542,6 +27711,55 @@
           "demo_mode"
         ],
         "title": "StatusReport"
+      },
+      "StyleSampleInfo": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "title": "Size Bytes"
+          },
+          "chars": {
+            "type": "integer",
+            "title": "Chars"
+          },
+          "uploaded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Uploaded At"
+          },
+          "risk_flags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Risk Flags"
+          },
+          "excerpt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Excerpt"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "size_bytes",
+          "chars",
+          "uploaded_at",
+          "risk_flags",
+          "excerpt"
+        ],
+        "title": "StyleSampleInfo"
       },
       "SubmitBody": {
         "properties": {
@@ -24819,7 +28037,10 @@
                 "draft-message",
                 "research-company",
                 "handle-requests",
-                "review-search"
+                "review-search",
+                "expand",
+                "improve-profile-item",
+                "propose-stories"
               ]
             },
             "type": "object",
@@ -24873,7 +28094,10 @@
                 "draft-message",
                 "research-company",
                 "handle-requests",
-                "review-search"
+                "review-search",
+                "expand",
+                "improve-profile-item",
+                "propose-stories"
               ]
             },
             "type": "object",
@@ -24935,7 +28159,10 @@
                 "draft-message",
                 "research-company",
                 "handle-requests",
-                "review-search"
+                "review-search",
+                "expand",
+                "improve-profile-item",
+                "propose-stories"
               ]
             },
             "type": "array",
@@ -25072,6 +28299,10 @@
             "type": "integer",
             "title": "Triage Threshold"
           },
+          "assess_min_score": {
+            "type": "integer",
+            "title": "Assess Min Score"
+          },
           "profile_missing": {
             "type": "boolean",
             "title": "Profile Missing"
@@ -25082,9 +28313,64 @@
           "items",
           "total",
           "triage_threshold",
+          "assess_min_score",
           "profile_missing"
         ],
         "title": "TriageQueue"
+      },
+      "UndoBody": {
+        "properties": {
+          "file_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File Hash"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "file_hash"
+        ],
+        "title": "UndoBody"
+      },
+      "UndoResult": {
+        "properties": {
+          "restored_from": {
+            "type": "string",
+            "title": "Restored From"
+          },
+          "file_hash": {
+            "type": "string",
+            "title": "File Hash"
+          },
+          "profile_version_id": {
+            "type": "integer",
+            "title": "Profile Version Id"
+          },
+          "version_created": {
+            "type": "boolean",
+            "title": "Version Created"
+          },
+          "undo_available": {
+            "type": "integer",
+            "title": "Undo Available"
+          }
+        },
+        "type": "object",
+        "required": [
+          "restored_from",
+          "file_hash",
+          "profile_version_id",
+          "version_created",
+          "undo_available"
+        ],
+        "title": "UndoResult"
       },
       "UpcomingItem": {
         "properties": {
@@ -25254,6 +28540,27 @@
           "uploaded_at"
         ],
         "title": "UploadInfo"
+      },
+      "UploadSampleBody": {
+        "properties": {
+          "filename": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Filename"
+          },
+          "content_base64": {
+            "type": "string",
+            "title": "Content Base64"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "filename",
+          "content_base64"
+        ],
+        "title": "UploadSampleBody"
       },
       "VerificationIssue": {
         "properties": {

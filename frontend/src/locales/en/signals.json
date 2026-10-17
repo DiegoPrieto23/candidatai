@@ -16,5 +16,27 @@
     "checkAgain": "Check again"
   },
   "repostNote": "<strong>Reposted ×{{count}}.</strong> {{text}} It may be a hard-to-fill role or a posting that renews itself: it's an observation, not a verdict.",
-  "closedHint": "Before using up quota: this job may no longer be posted ({{detail}})."
+  "closedHint": "Before using up quota: this job may no longer be posted ({{detail}}).",
+  "doubtful": {
+    "badge": {
+      "salary_range_wide": "Wide salary range",
+      "employer_hidden": "Hidden employer",
+      "fixed_term": "Fixed-term",
+      "stale_repost": "Posted for months",
+      "ai_screening": "AI screening"
+    },
+    "detail": {
+      "salary_range_wide": "Very wide salary range: {{min}} – {{max}} (the maximum is {{pct}} % above the minimum).",
+      "agency": "Posted by a recruitment agency that doesn't say who it's for.",
+      "agency_for_client": "Posted by a recruitment agency for {{client}}.",
+      "unnamed": "The company name doesn't say who is hiring.",
+      "fixed_term": "Fixed-term contract (per project, cover or set duration).",
+      "stale_repost": "Posted for a long time: first seen on {{first}} and last on {{last}} ({{days}} days), with {{count}} postings on different days on {{channel}}.",
+      "ai_screening": "It says an AI or an automated test will screen you before you talk to anyone.",
+      "ai_screening_phrase": "It says an AI or an automated test will screen you before you talk to anyone (\"{{phrase}}\")."
+    },
+    "label": "Signs of a doubtful job",
+    "title": "Before you spend time on it",
+    "intro": "They don't change the score or discard the job: they're observations so you can decide. If you want them to discard, add them to <code>preferences.exclude_signals</code> in your profile (hidden employer and fixed-term)."
+  }
 }

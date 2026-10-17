@@ -74,13 +74,16 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 24.4 | ↳ Elegir y cambiar de agente | ✅ | Sección «Agentes» con capacidades, agente por defecto y por acción, «con Claude Code ▾» en cada botón |
 | 24.5 | ↳ Segundo plano con varios agentes | ✅ | «En segundo plano» también con OpenCode (`process-jobs` y `assess-fit`), con el techo en una configuración propia de cada ejecución; Codex y Qwen Code, aún no |
 | 24.6 | ↳ Modelos gratuitos, niveles de gasto y matriz | 🚧 código y docs hechos; falta pasar la matriz (`docs/pruebas/fase-24.6-matriz.md`) | Guía de modelos gratis y locales, diagnóstico de Ollama, «Económico/Equilibrado/Máximo» y matriz probada por agente y modelo |
-| 25 | Más fuentes, perfil más rico, ofertas dudosas, coste y calidad del CV | ⏳ | Más ATS con API, `expand`, señales de oferta dudosa, coste por oferta y agente, maquetación del PDF y `CHANGELOG` |
-| 25.1 | ↳ Conectores de ATS y portales con API | ⏳ | Personio, Teamtailor, Workable, SmartRecruiters y Recruitee, más Manfred y freehire.me; `cai sources discover` para todos |
-| 25.2 | ↳ Skill `expand` | ⏳ | Proyectos, skills y logros propuestos desde GitHub, portfolio o Scholar, con su fuente y solo con tu OK |
-| 25.3 | ↳ Ofertas dudosas y banderas rojas | ⏳ | Señales (rango salarial ancho, empresa oculta, temporal, republicada, cribado con IA) y `red_flags` con fuentes en el dosier |
-| 25.4 | ↳ Coste y lote en paralelo | ⏳ | Coste por oferta, skill y agente; umbral de score antes de `assess-fit`; hasta N ejecuciones a la vez |
-| 25.5 | ↳ Maquetación del PDF | ⏳ | Avisos de títulos huérfanos, huecos, pie y última página casi vacía en CV y carta |
-| 25.6 | ↳ CHANGELOG y la historia con números | ⏳ | `CHANGELOG.md`, notas de release desde él y `cai stats story` para el README |
+| 25 | Más fuentes, perfil más rico, ofertas dudosas, coste y calidad del CV | ✅ | Más ATS con API, `expand`, señales de oferta dudosa, coste por oferta y agente, maquetación del PDF, `CHANGELOG` y el perfil editable desde la UI |
+| 25.1 | ↳ Conectores de ATS y portales con API | ✅ | Personio, Teamtailor, Workable, SmartRecruiters y Recruitee, más Manfred y freehire.me; `cai sources discover` para todos |
+| 25.2 | ↳ Skill `expand` | ✅ | Proyectos, skills y logros propuestos desde GitHub, portfolio o Scholar, con su fuente y solo con tu OK |
+| 25.3 | ↳ Ofertas dudosas y banderas rojas | ✅ | Señales (rango salarial ancho, empresa oculta, temporal, republicada, cribado con IA) y `red_flags` con fuentes en el dosier |
+| 25.4 | ↳ Coste y lote en paralelo | ✅ | Coste por oferta, skill y agente; umbral de score antes de `assess-fit`; hasta N ejecuciones a la vez |
+| 25.5 | ↳ Maquetación del PDF | ✅ | Avisos de títulos huérfanos, huecos, pie y última página casi vacía en CV y carta |
+| 25.6 | ↳ CHANGELOG y la historia con números | ✅ | `CHANGELOG.md`, notas de release desde él y `cai stats story` para el README |
+| 25.7 | ↳ Tu perfil, editable desde la UI | ✅ | Experiencia y logros, historias STAR, preferencias de búsqueda, CV y carta, contexto y muestras de estilo desde «Mi perfil», con validación, diff y «Deshacer»; «Mejorar con mi agente» opcional |
+| 25.7a | ↳↳ Escritura del perfil, contexto y muestras (backend) | ✅ | `profile_editor` por secciones (conserva comentarios, `conflict`, validación, copia y «Deshacer»), contexto y muestras de estilo por la API solo para la UI, `style_samples` en `get_context`, ADR-039 |
+| 25.7b | ↳↳ La página «Mi perfil» editable (UI) | ✅ | Formularios por bloque en es y en, diff antes de guardar, «Mejorar con mi agente» y «Proponer historias», guía, README y prueba manual |
 | 26 | macOS, Linux y Docker | ⏳ | Instalar y usar la app en los tres sistemas, botones «en tu agente» incluidos, y Docker opcional |
 | 26.1 | ↳ Núcleo multiplataforma | ⏳ | Rutas, procesos, LibreOffice y terminales en macOS y Linux (`CAI_TERMINAL`) |
 | 26.2 | ↳ Instalador para macOS y Linux | ⏳ | `install.sh` con acceso directo, datos en la carpeta de cada sistema y desinstalación |
@@ -106,7 +109,8 @@ open-source, no desde la app. Orden: 24.1 → 24.2 → 24.3 → 24.4 → 24.5 �
 sesión.
 
 **Fases 25 y 26 (2026-10-16):** el resto de «Lo que nos falta» de `docs/COMPARATIVA.md`. La 25
-(fuentes, `expand`, ofertas dudosas, coste y lote, maquetación del PDF y `CHANGELOG`) va después de
+(fuentes, `expand`, ofertas dudosas, coste y lote, maquetación del PDF, `CHANGELOG` y, desde el
+2026-10-17, el perfil editable desde la UI en la 25.7) va después de
 la 24, porque la 25.4 usa el agente y el modelo que guarda la 24.4. La 26 (macOS, Linux y Docker)
 va aparte porque toca el instalador, los botones de terminal y la CI, y gana sentido cuando ya hay
 agentes open-source que funcionan en los tres sistemas. Descartado por ahora: autorización de
@@ -2533,3 +2537,412 @@ decisiones tomadas y deuda técnica pendiente. -->
   - La propuesta de «Económico» con OpenCode no trae modelo (no hay preset `local` en el manifiesto).
   - Los tokens de la matriz no cuentan la caché.
 
+### 25.1 · Conectores de ATS y portales con API — 2026-10-16 · Claude Code (Opus 5.5)
+- **Hecho:**
+  - cinco ATS nuevos con su conector (`services/ingestion/`):
+    - **Personio**: feed XML oficial; la descripción solo viene en el idioma pedido, así que se
+      prueba `es` y luego `en`, o el `language` de la fuente;
+    - **Teamtailor**: RSS paginado con `per_page` y `offset`, sin repetir si el feed no pagina;
+    - **Workable**: widget documentado, más el detalle por el JSON de su página de empleo;
+    - **SmartRecruiters**: Posting API paginada, con el detalle solo de lo que pasa el filtro;
+    - **Recruitee**: Careers Site API;
+  - dos portales sin claves:
+    - **Manfred**: filtra por el título, porque la API no busca; nunca guarda los datos de su
+      «scout»;
+    - **freehire.me**: por título, país y remoto, con la URL base cambiable con
+      `CAI_FREEHIRE_BASE_URL`;
+  - `base.py`: `get_xml` con lxml sin entidades ni red (test de XXE) y `RawJob.detail_url`;
+  - `cai sources discover` prueba también los cinco ATS:
+    - Workable y SmartRecruiters confirman el slug por el nombre de la empresa;
+    - en SmartRecruiters, una lista vacía cuenta como «no encontrado»;
+  - CLI: `--language` (Personio), `--lang` (Manfred) y `--country` y `--remote-only` (freehire);
+    `SourceInput` rechaza las opciones de otro tipo;
+  - UI «Empresas objetivo»: los tipos nuevos con su ejemplo de slug, el enlace «Cómo encontrarlo»
+    y los campos propios. Textos en es y en;
+  - Docs:
+    - `FUENTES_OFERTAS.md`: tabla de fuentes con endpoint y cobertura, y «Cómo encontrar el slug»;
+    - `COMPARATIVA.md`, `AGENT_INTERFACE.md`, `DATA_MODEL.md`, README y guía en los dos idiomas;
+    - nota de la 25.1 en la ADR-016.
+- **Comprobado en vivo** (2026-10-16), contra las APIs reales, con un script fuera de los tests:
+  - los siete conectores devuelven ofertas con texto completo;
+  - un slug inexistente da 404 con su pista, salvo en SmartRecruiters (lista vacía y aviso
+    `empty`);
+  - los fixtures copian la forma de esas respuestas con contenido inventado (Acme Datos).
+- **Tests:**
+  - 22 en `test_connectors_ats.py`: listado, detalle, oferta mal formada como `Issue`, 404,
+    paginación, idioma de Personio, XXE, feed que no pagina, Manfred en inglés y URL base de
+    freehire;
+  - extremo a extremo con Personio y SmartRecruiters (demo), validación de opciones,
+    `discover` de cada tipo nuevo y en texto, y CLI;
+  - 2 de Vitest.
+  - 2603 tests de backend y 271 de frontend en verde; `tsc`, ruff y `sync_agents.py --check` limpios; OpenAPI regenerado.
+- **Decisiones (con el usuario):**
+  - detalle de Workable y API de Manfred: JSON público sin documentar, aceptado (nota en la
+    ADR-016);
+  - rama `fase/25-fuentes-perfil-calidad` desde `main`, que ya incluye la 24;
+  - los ATS nuevos no tienen comprobación «¿sigue abierta?» por API: van por su página;
+  - el rellenado de candidaturas de estos ATS no entra: siguen como «genérico».
+- **Revisión** (rol `reviewer`). Se aplicó:
+  - el bloqueante: `discover` en texto fallaba con un ATS nuevo;
+  - Teamtailor sin duplicados si el feed no pagina;
+  - el salario del listado de Manfred se conserva y sus encabezados siguen el idioma;
+  - escapado del encabezado HTML de Personio;
+  - confirmación por nombre en SmartRecruiters;
+  - rechazo de opciones de otro tipo;
+  - el enlace de ayuda en inglés avisa de que la guía está en español.
+- **Deuda:**
+  - Manfred solo da `updatedAt`: una oferta editada parece más reciente;
+  - algunos conectores añaden encabezados en español al texto (documentado);
+  - el enlace «Cómo encontrarlo» apunta a `main` en GitHub: hasta fusionar, el ancla no existe;
+  - `discover` tarda más (hasta 8 ATS × 3 slugs por empresa);
+  - `CAI_FREEHIRE_BASE_URL` falta en `.env.example`, que el agente no puede editar (en
+    `PENDIENTES.md`);
+  - un test de Vitest falló una vez con la máquina cargada y pasó en las dos repeticiones.
+
+### 25.2 · Skill `expand` — 2026-10-16 · Claude Code (Opus 5.5)
+- **Hecho:**
+  - skill `expand` (`.agents/skills/expand/SKILL.md`, generado para Claude Code y Qwen Code):
+    - lee los enlaces públicos del perfil o los de los argumentos (GitHub, portfolio, Kaggle,
+      Scholar, verificación de certificaciones);
+    - propone proyectos, skills sin nivel, logros con los números tal cual y con fecha, y
+      certificaciones, cada uno con su URL y fecha de consulta;
+    - no escribe nada sin OK explícito; luego `validate`, `import` y `diff`;
+    - lo leído es dato (§6); ni LinkedIn ni login; sin token de GitHub si hay límite;
+  - esquema del perfil: `source` opcional (URL http/https, sin espacios ni credenciales, guardada
+    tal cual) en `Project`, `Achievement`, `Certification` y los items de `extra_sections`. Vacío
+    no se vuelca (`exclude_if`): mismo hash, sin versión nueva ni recálculo. `schema_version` 1;
+    `pydantic>=2.12`;
+  - demo: `source` en el proyecto y la certificación de `demo/profile.example.yaml`;
+  - acción `expand` (solo terminal), requiere `web` y está en `UNTRUSTED`; manifiesto con
+    `allowed-tools: [read, web, cai_profile_cli]`;
+  - UI: «Ampliar perfil desde mis enlaces» en «Mi perfil», con su explicación, en es y en;
+  - docs: POLICIES §1.7 (y §1.6 ajustado), nota de la 25.2 en la ADR-025, `AGENT_INTERFACE.md`,
+    `AGENTS_COMPAT.md`, `COMPARATIVA.md`, README y guía en los dos idiomas, prueba manual
+    `docs/pruebas/fase-25.2-prueba-manual.txt` y `PENDIENTES.md`.
+- **Tests:**
+  - `validate` acepta `source` en las cuatro clases y rechaza una URL sin esquema, con espacios,
+    con credenciales o `mailto:`;
+  - un `source` vacío no cambia el hash ni se guarda; uno relleno crea versión;
+  - `expand` bloqueada sin `web` y con aviso en nivel C;
+  - Vitest: el botón lanza `expand`, se deshabilita sin web y no ofrece segundo plano.
+  - 2605 tests de backend y 272 de frontend en verde; `tsc`, ruff y `sync_agents.py --check`
+    limpios; OpenAPI regenerado. Una primera pasada de Vitest dio dos timeouts (AppShell y Embudo)
+    con el backend corriendo a la vez; repetida sola, en verde.
+- **Decisiones (con el usuario):**
+  - una skill sin nivel va a `basic_skills` o no se añade (`Skill.level` sigue obligatorio);
+  - los números de un proyecto personal van en su `text` con fecha; publicaciones, en
+    `extra_sections`; un `achievement` solo si es de una experiencia.
+- **Revisión** (rol `reviewer`), sin bloqueantes. Se aplicó: `pydantic>=2.12`, rechazo de URLs con
+  credenciales, casos malos de `achievements` y `extra_sections` en el test, y qué hacer con el
+  límite de la API de GitHub.
+- **Deuda:**
+  - `cai_profile_cli` permite `cai profile import` sin preguntar, como en `update-profile`: la
+    barrera previa es el texto del skill (editar `data/profile.yaml` sí pide permiso);
+  - `_public_url` no comprueba que el dominio exista ni rechaza `a..b`;
+  - sin probar con un GitHub real: queda en la prueba manual.
+
+### 25.3 · Ofertas dudosas y banderas rojas — 2026-10-17 · Claude Code (Opus 5.5)
+- **Hecho:**
+  - cinco señales de oferta dudosa en `jobs.signals` (ADR-028), sin migración:
+    - `salary_range_wide`: máximo > mínimo + `doubtful.salary_range_max_pct` % (60);
+    - `employer_hidden`: agencia (por la extracción o el nombre, también si dice para quién, con
+      otro texto) o nombre que no dice quién contrata;
+    - `fixed_term`: `contract_type: fixed_term`;
+    - `ai_screening`: `mentions_ai_screening` o una frase del texto (palabras completas);
+    - `stale_repost` (en `reposts.py`): todo el historial, en el canal con más días, ≥ 4 días con
+      publicación nueva o ≥ 60 días entre la primera y la última;
+  - `services/doubtful.py`: se calculan al guardar la extracción y con `cai jobs signals
+    --recompute` (en lote, tolerante a extracciones mal formadas); patrones en
+    `config/doubtful_patterns.yaml` y umbrales en `doubtful` de `config/policies.yaml`;
+  - `JobExtraction`: `contract_type`, `hiring_entity`, `is_agency` y `mentions_ai_screening`,
+    opcionales y sin volcarse vacíos (las extracciones guardadas no cambian; `schema_version` 1);
+    rol `extractor` actualizado y regenerado;
+  - no cambian el score; `preferences.exclude_signals` (`employer_hidden`, `fixed_term`) los
+    convierte en filtro duro `signal` (vacío no se vuelca: el hash del perfil no cambia);
+  - `get_match` devuelve `signals` (`[{code, text}]`) y `cai match show` las enseña; `assess-fit`
+    las cita en `risks` y cuenta como deal-breaker la que choca con `criterios.md`;
+  - dosier de empresa: `red_flags` con `kind`, `text` con cita y `date` obligatorios, en la copia
+    Markdown y en la detección de inyección; `research-company` las busca y `prepare-interview`
+    las convierte en preguntas;
+  - UI: insignias con icono y texto en la bandeja y el triaje, nota «Antes de dedicarle tiempo» en
+    la ficha, banderas rojas en «Empresa» y pestaña «Señal» en «¿Acierta el score?»
+    (`by_signal`). Textos en es y en; OpenAPI regenerado;
+  - docs: POLICIES §2 (señales de oferta dudosa), DATA_MODEL, AGENT_INTERFACE, nota de la 25.3 en
+    la ADR-028, `config/README.md`, COMPARATIVA, prueba manual y PENDIENTES.
+- **Tests:**
+  - `test_doubtful.py` (41): cada señal con casos que la disparan y que no, umbral configurable,
+    palabras completas, un solo canal en `stale_repost`, recálculo (también sin extracción o con
+    una rota), el comando de la CLI, el score igual con y sin señales y el filtro opcional;
+  - `get_match` con señales, `exclude_signals` que cierra la oferta, `red_flags` sin cita, con
+    cita inexistente, sin fecha o de tipo desconocido rechazadas, y `by_signal` en la calibración;
+  - Vitest: insignias, nota de la ficha, banderas rojas y pestaña «Señal».
+  - 2654 tests de backend y 274 de frontend en verde (backend en tres tandas: la ejecución entera
+    se paró una vez por falta de memoria); `tsc`, ruff y `sync_agents.py --check` limpios; OpenAPI
+    regenerado. En la suite de Vitest, AppShell y Embudo dieron timeout con la máquina cargada;
+    solos, en verde.
+- **Decisiones (con el usuario):**
+  - una agencia que dice para quién es también avisa, con otro texto;
+  - las ofertas extraídas antes solo tienen las señales del nombre, el texto, el salario y las
+    publicaciones: no se vuelven a extraer solas;
+  - el embudo agrupa por las señales de ahora, no por las que tenía al enviarla;
+  - umbrales: 60 %, 4 días o 60 días.
+- **Revisión** (rol `reviewer`), sin bloqueantes. Se aplicó: el intervalo de `stale_repost`, solo
+  en un canal; `recompute_all` en lote y sin parar por una extracción rota; frases del texto como
+  palabras completas; fuera «recruiting» y «talent acquisition» de las agencias; el comando en
+  `AGENT_INTERFACE.md`; tests del comando, de varios canales y del recálculo sin extracción.
+- **Deuda:**
+  - una vacante nueva con la misma empresa, título y ciudad cuenta para `stale_repost`;
+  - las frases de cribado casan también negadas («no usamos AI screening»);
+  - la fecha de una bandera roja no se limita en código (el skill pide 24 meses);
+  - los evals de matching no pasan la empresa a los filtros: `exclude_signals` solo mira la
+    extracción ahí;
+  - sin probar con ofertas reales: queda en la prueba manual.
+
+### 25.4 · Coste y lote en paralelo — 2026-10-17 · Claude Code (Opus 5.5)
+- **Hecho:**
+  - **uso normalizado** (`services/agent_usage.py`): los dos lectores (Claude Code y OpenCode)
+    rellenan `input_tokens`, `output_tokens`, `cached_tokens`, `turns`, `duration_ms` y
+    `cost_usd`; las filas de antes se traducen al leer; `cai eval compat` y la UI usan las nuevas;
+  - **coste** (`services/agent_costs.py`): por acción, agente y modelo en 7 y 30 días, con los
+    tokens del skill de cada acción; por oferta (la ejecución con oferta, entera; las de lote,
+    repartidas entre las ofertas que escribieron según `mcp_calls`); en el embudo, por candidatura
+    enviada, por entrevista y por fuente. `GET /agent/costs` y `GET /jobs/{id}/costs`;
+  - **umbral antes de gastar** (`services/assess_threshold.py`): «Evaluar encaje» en segundo plano
+    lleva en la orden solo los ids con score ≥ el umbral (página «Agente», `background_runs.
+    assess_min_score` o el de triaje menos 10; como mucho 30); si no queda ninguna, no se lanza y
+    dice por qué; el triaje y la ficha lo explican. `GET`/`PUT /agent/assess-threshold`;
+    `cai eval compat` las valora todas;
+  - **varias a la vez** (`agent_runner.py`): `background_runs.max_parallel` (1-4) y `per_agent`;
+    reclamo atómico con hueco, tope por agente y sin chocar (misma oferta o misma acción de lote);
+    hilos en `run_pending`; reintentos ante `database is locked`;
+  - UI: sección «Coste» en «Agente» (pestañas 7/30 días, por acción, agente y modelo, y el umbral),
+    «Coste del agente» en la ficha, aviso de «sin valorar en segundo plano» y coste en el embudo.
+    Textos en es y en; OpenAPI regenerado;
+  - docs: ADR-038 (extiende el ADR-032), POLICIES §6, DATA_MODEL, AGENT_INTERFACE, ARCHITECTURE,
+    COMPARATIVA, guía en los dos idiomas, prueba manual y PENDIENTES.
+- **Tests:**
+  - `test_agent_costs.py`: claves viejas, sumas y medias por acción, agente y modelo con
+    ejecuciones falsas (con y sin coste), reparto de un lote entre ofertas y coste en el embudo;
+  - `test_assess_threshold.py`: por defecto, `policies.yaml` y la UI, las de debajo fuera de la
+    orden, sin ninguna no se lanza, las ya valoradas fuera y la API solo desde la UI;
+  - `test_agent_parallel.py`: reglas del reclamo, tope por agente, **con N=2 dos ofertas a la vez
+    y la misma nunca dos veces** (agente falso lento), parar el worker con dos en curso, cancelar
+    una de dos, recuperar tras reiniciar y reintento ante bloqueo;
+  - Vitest: vista de coste y umbral, panel de la ficha, aviso del triaje y coste del embudo.
+  - 2671 tests de backend (en tres tandas) y 285 de frontend en verde; `tsc`, ruff y
+    `sync_agents.py --check` limpios; OpenAPI regenerado.
+- **Decisiones (con el usuario):**
+  - atribución de los lotes por `mcp_calls` y ventana de tiempo, sin migración;
+  - «misma acción» = misma acción de lote: dos CVs de ofertas distintas sí van a la vez;
+  - el paralelo solo en `policies.yaml`; el umbral, también en la UI;
+  - sin `cost_usd`, tokens; nada se pasa a euros.
+- **Revisión** (rol `reviewer`), sin bloqueantes. Se aplicó: `attributed()` con solo las columnas
+  necesarias y una consulta a `mcp_calls` para todos los lotes (y en la ficha, solo los suyos);
+  `run_pending(max_parallel=1)` pasa su límite al reclamo; tests de parar y cancelar con varias en
+  curso; el agente falso lento, más holgado; docstrings, el componente `Window` renombrado, los
+  endpoints en AGENT_INTERFACE y el aviso de reiniciar el worker tras cambiar el paralelo.
+- **Deuda:**
+  - la atribución de un lote cuenta también lo que se haga a la vez en una terminal o con otro
+    agente con las mismas herramientas (`client_name` es el del cliente MCP, no el agente);
+  - un lote sigue siendo una sola ejecución: el paralelo es entre acciones y entre ofertas;
+  - el umbral va en la orden, no en las herramientas (`list_jobs` seguiría viendo las demás);
+  - el coste por fuente del embudo no sale en la calibración;
+  - sin probar con agentes reales: queda en la prueba manual.
+
+### 25.5 · Maquetación del PDF — 2026-10-17 · Claude Code (Opus 5.5)
+- **Hecho:**
+  - `services/documents/layout.py`: lee el PDF renderizado con `pypdfium2` (ya era dependencia)
+    y avisa de `orphan_heading`, `large_gap` (también al pie de una página que no es la última),
+    `footer_overlap`, `nearly_empty_last_page` y `text_layer` (nombre, correo y teléfono en el
+    texto del PDF y el nombre antes que los títulos). Los títulos salen del contexto del render
+    (secciones presentes y puesto de cada experiencia), también con espaciado entre letras y sin
+    confundir una frase que empieza igual. Umbrales en `layout` de `config/policies.yaml`;
+  - avisos, no bloqueos: `RenderWarning` gana `page` y `fix` (`template` o `content`), vacíos no
+    se guardan; solo `too_long` sigue impidiendo «Usar este para enviar». En el CV y la carta;
+  - ficha: cada aviso con su página y cómo arreglarlo (`RenderWarnings`, en CV y carta), en es y en;
+  - `generate-cv` y el rol `writer`: con `fix: content`, se recorta lo menos relevante para la
+    oferta (por relevancia, no por antigüedad), como con `too_long`; con `template`, se le dice al
+    usuario que cambie la plantilla en la UI;
+  - `cai eval cv`: comprobación `layout` sobre el render que se enviaría;
+  - **plantilla `moderna-2col` corregida:** la barra iba antes que el nombre en el HTML y el texto
+    del PDF (lo que lee un ATS) empezaba por ella; ahora va después y el CSS la coloca igual (la
+    vista previa en PNG no cambia);
+  - docs: `CV_TEMPLATES.md` §Avisos (tabla de maquetación y cómo hacer una plantilla de dos
+    columnas), POLICIES §3, DATA_MODEL, AGENT_INTERFACE, `evals/README.md`, COMPARATIVA, prueba
+    manual y PENDIENTES.
+- **Tests:**
+  - `test_layout.py` (19): un PDF de prueba por aviso (con un generador de PDFs con texto colocado
+    en `tests/cv_support.py`), CVs correctos de una y dos páginas sin avisos, título al pie de la
+    última página, frase que empieza como un título, títulos y nombre con espaciado, correo
+    partido, teléfono por dígitos, umbrales de `policies.yaml` y apagado;
+  - `test_layout_builtin.py`: el CV y la carta de la demo con todas las plantillas integradas, con
+    LibreOffice y Chromium de verdad, sin avisos (se salta si faltan);
+  - el aviso se guarda con el render y no bloquea; `layout` en `cai eval cv`; Vitest de la ficha;
+  - en los demás tests la maquetación va apagada (`tests/conftest.py`): el conversor falso no
+    maqueta. Los que la prueban llevan `@pytest.mark.layout`.
+  - 2698 tests de backend (en tres tandas) y 286 de frontend en verde; `tsc`, ruff y
+    `sync_agents.py --check` limpios; OpenAPI regenerado.
+- **Decisiones (con el usuario):**
+  - títulos del contexto del render, no adivinados por la fuente;
+  - el hueco al pie de una página que no es la última cuenta como `large_gap`;
+  - la maquetación se apaga en los tests desde `conftest.py`, no con una marca en el PDF.
+- **Revisión** (rol `reviewer`), sin bloqueantes. Se aplicó: una frase que empieza como un título
+  ya no es un título; nombre y correo comparados sin espacios; cierre de cada página aunque falle;
+  fuera los `fix` que nunca se emitían (`hide_section`, `page_size`); `layout` en las listas de
+  `cai eval cv`; el límite de las dos columnas en `CV_TEMPLATES.md`; y los tests que faltaban.
+- **Deuda:**
+  - en dos columnas, las líneas se juntan por altura: un huérfano o un hueco de una columna
+    puede quedar tapado por la otra (falta un aviso, nunca sobra);
+  - el teléfono se busca en los dígitos de todo el texto (podría casar por coincidencia);
+  - sin probar con plantillas importadas reales: queda en la prueba manual.
+
+
+### 25.6 · CHANGELOG y la historia con números — 2026-10-17 · Claude Code (Opus 5.5)
+- **Hecho:**
+  - `CHANGELOG.md` (Keep a Changelog 1.1.0 en español, versionado semántico): `[0.1.0] -
+    2026-10-16` con las fases 01 a 23 (commit `4d9d8b4`, nunca publicada como release) y
+    `[Sin publicar]` con la 24 y la 25, en Añadido, Cambiado, Eliminado, Corregido y Seguridad;
+  - `scripts/release_notes.py` (solo biblioteca estándar): saca la sección de una etiqueta y
+    comprueba la estructura (`--check`: «Sin publicar» primero, versiones de más nueva a más
+    vieja, grupos conocidos y en orden, una entrada por versión y su enlace al final);
+  - `release.yml`: un job `notes` (permiso de lectura) saca las notas y las deja en el resumen;
+    `release` (escritura, solo con `push` de una etiqueta) compila y publica con `--notes-file`.
+    Sin sección, falla antes de compilar. `workflow_dispatch` hace la prueba en seco;
+  - `analytics.get_search_story` + `cai stats story [--json]` + `GET /stats/story`: toda la
+    búsqueda (sin periodo y sin duplicadas) en números agregados, fechas en Europe/Madrid y una
+    línea para el README en español e inglés. Solo CLI y API: el agente no la necesita;
+  - Embudo: tarjeta «Tu búsqueda en números» con las cifras, la línea en el idioma de la UI y
+    «Copiar en español» / «Copiar en inglés» (es y en);
+  - regla de cierre: `AGENTS.md` (regla 8) y `implement-phase` piden actualizar «Sin publicar»;
+  - docs: `CONTRIBUTING.md` (§Changelog, versiones y releases, en los dos idiomas), README en los
+    dos idiomas (bloque comentado para tus cifras y fila del `CHANGELOG`), AGENT_INTERFACE,
+    GUIA/GUIDE, `docs/README.md`, COMPARATIVA, RESUMEN_FASES, prueba manual y PENDIENTES.
+- **Tests:**
+  - `test_changelog.py` (13): estructura del `CHANGELOG` real, «Sin publicar» con lo de la 24 y
+    la 25, versión igual a la de `pyproject.toml`, notas de una etiqueta, errores con su motivo y
+    la CLI del script;
+  - `test_search_story.py` (3): sin ofertas, recuentos y fechas con un histórico a mano
+    (duplicada fuera, filtros duros cuentan como evaluadas) y `cai stats story --json` sobre la
+    demo, igual que el embudo y sin ningún nombre de empresa, puesto, fuente ni lugar;
+  - `test_start.py`: el workflow nuevo (disparadores, permisos por job, notas desde el script);
+  - Vitest de la tarjeta del Embudo (cifras, fechas, copiar);
+  - prueba en seco local del paso de notas con `bash -eo pipefail` (como Actions): `v0.1.0` da
+    sus notas y `v0.2.0` sale con 1;
+  - 2714 tests de backend (en tres tandas) y 287 de frontend en verde; `tsc`, ruff,
+    `sync_agents.py --check` y `check_links.py` limpios; OpenAPI regenerado.
+- **Decisiones:**
+  - no había ninguna release publicada: la 0.1.0 es el estado de `main` al cerrar la fase 23 (es
+    la versión de `pyproject.toml`) y la primera release pública será la 0.2.0 con «Sin publicar»;
+    los enlaces del final apuntan a ese commit, no a una etiqueta;
+  - «Evaluadas» = ofertas con extracción, pasaran o no los filtros duros (como el «evaluadas» de
+    career-ops);
+  - las cifras del README van en un comentario: publicarlas es decisión del usuario;
+  - `cai stats story` sin herramienta MCP (la paridad es de MCP a CLI, no al revés).
+- **Revisión** (rol `reviewer`), sin bloqueantes. Se aplicó: la prueba en seco explicada bien
+  (usa el `CHANGELOG` de la rama; la etiqueta solo elige la sección), permisos de escritura solo
+  en el job que publica y una línea larga del skill.
+- **Deuda:**
+  - la prueba en seco en GitHub queda para cuando el usuario haga push (PENDIENTES);
+  - la línea del README no dice «qué funcionó»: lo escribe el usuario.
+
+### 25.7a · «Mi perfil» editable: backend — 2026-10-17 · Claude Code (Opus 5.5)
+- **Hecho:**
+  - `services/profile_editor.py`: guarda una sección de `data/profile.yaml` desde la UI con
+    ruamel.yaml en modo ida y vuelta y **fusión** con lo que había (claves en su sitio, listas por
+    `id`, escalares sin tocar si no cambian), así que el diff solo toca lo cambiado; comillas para
+    lo que YAML leería como otro tipo y bloques para el texto con saltos de línea. Concurrencia
+    optimista por el sha256 de los bytes (`conflict`), validación entera (`ProfileIssue` con su
+    ruta), ids generados (`exp-…`, `a<n>`, `prj-…`, `st-…`) que no cambian al renombrar, rechazo al
+    borrar lo que cita una historia (`referenced`) y aviso si lo cita un CV o carta, `dry_run` con el
+    diff, copia en `data/profile-history/` (20) y «Deshacer», con lock e importación dentro;
+  - «Usar por defecto» de Plantillas pasa por el editor (copia, auditoría, lock);
+  - contexto editable (`GET`/`PUT /context/{section}`): el fichero tal cual, comentarios-guía
+    incluidos, plantilla si no existía, 20 KB antes de escribir (`too_large`) y `conflict`;
+  - muestras de estilo (`services/style_samples.py`, `data/documentos/estilo/`): subida en JSON
+    base64, `.txt`/`.md`/`.docx`/`.pdf`, texto extraído en `.texto/`, detección de inyección,
+    límites en `profile_editing` de `policies.yaml`, lock; `get_context.style_samples` envueltas
+    en `<untrusted_style_sample>` (el escape de etiquetas lo cubre) y recortadas a 20 KB;
+  - API (`routes/profile.py`, `routes/context.py`): escrituras con `require_ui`, lecturas con
+    contacto o texto tuyo con `require_ui_read` (nuevo: sin `Origin` ajeno ni `Sec-Fetch-Site:
+    cross-site`); errores `conflict` y `referenced` (409), `validation_error` con los campos;
+  - auditoría `profile_edits` (migración 0024): qué, cuándo y hashes, sin texto;
+  - skills: `update-profile` con «Mejorar un elemento» y «Proponer historias»; `writer`,
+    `generate-cover-letter` y `verifier` con las muestras (tono sí, hechos y frases enteras no);
+  - docs: ADR-039 (y nota en el ADR-025), POLICIES §1.5, DATA_MODEL, AGENT_INTERFACE; el encargo
+    y el plan de la fase recogen la partición en 25.7a y 25.7b.
+- **Tests:** `test_profile_editor.py` (18: comentarios y formato intactos byte a byte, `conflict`,
+  validación sin escribir ni copia ni auditoría, versión + rescore + copia + deshacer, sin cambios
+  no crea versión, `dry_run`, ids estables y sin choques, borrar lo citado, contacto y textos que
+  YAML leería mal, bloques, fichero inválido, límite de copias, CRLF, BOM al deshacer y clave no
+  enviada); `test_api_profile_editor.py` (20: guardar, `conflict`, campos de validación,
+  `referenced`, diff, escrituras y lecturas solo para la UI, ninguna herramienta MCP ni comando que
+  escriba el perfil, contexto con guías, 20 KB y auditoría, muestras con `.docx`, inyección,
+  límites y envoltorio que no se puede cerrar desde dentro); los de `cli db` con la cabecera 0024;
+  2752 tests de backend y 287 de frontend en verde; `tsc`, ruff y `sync_agents.py --check` limpios.
+- **Decisiones (con el usuario):** auditoría en una tabla propia y no en `events`; el nivel de
+  idioma será un desplegable que conserva los valores libres (sin cambiar el esquema, en la
+  25.7b); dos commits. Mías: subida de muestras en JSON para que valga `require_ui`; el servidor no
+  quita los comentarios-guía del contexto (la UI los enseña); el id del elemento en la orden de
+  «Mejorar con mi agente» va con los botones en la 25.7b, porque toca también la cola de encargos.
+- **Revisión** (rol `reviewer`), sin bloqueantes. Se aplicó: `require_ui_read` en `GET
+  /profile/diff` y en la lista de muestras; hash correcto al deshacer una copia con BOM; copia
+  después de escribir e importación dentro del lock; lock en las subidas; un solo modelo de muestra;
+  `section` a 128; el límite de «sección entera» y de las listas sin `id` en el docstring y el ADR;
+  y los tests de CRLF, BOM, rollback, envoltorio y clave no enviada.
+- **Deuda:** reordenar una lista mueve sus elementos sin sus comentarios; las listas sin `id` se
+  reescriben enteras si cambian; `require_ui_read` no frena a un programa local (`curl`), que de
+  todos modos lee el fichero; al pasar del límite de 20 KB, las muestras que no caben no se avisan
+  al agente; el CHANGELOG espera a la 25.7b, que es cuando el usuario ve el cambio.
+
+
+### 25.7b · «Mi perfil» editable: la página — 2026-10-17 · Claude Code (Opus 5.5)
+- **Hecho:**
+  - «Mi perfil» por pestañas (Datos, Experiencia, Proyectos y formación, Skills e idiomas,
+    Historias STAR, Búsqueda, CV y carta, Contexto y estilo, Historial), con `forceMount` para no
+    perder lo que no se ha guardado al cambiar de pestaña;
+  - `components/profile/editor.tsx`: `useBlockEditor` (un borrador por bloque que se pone al día si
+    otro bloque guarda y adopta los ids del servidor tras guardar), guardado por secciones con el
+    `file_hash` que vuelve de cada una, errores de validación en el campo de su ruta, `conflict`
+    con «Recargar», aviso de guardado a medias, y aviso de cambios sin guardar al cerrar la pestaña
+    (`beforeunload`) o seguir un enlace de la app (con `BrowserRouter` no hay `useBlocker`);
+  - bloques: datos y resumen (contacto marcado como privado), experiencia con logros (meses,
+    «Actualidad», skills con las de tu perfil, NDA, fuente, reordenar y borrar), proyectos,
+    formación, certificaciones y secciones extra, idiomas (desplegable A1–C2/Nativo que conserva el
+    valor libre) y skills (F/C+/C/B) con básicas, historias STAR (pistas, evidencias por nombre, sin
+    evidencia no se guarda), lo que buscas, CV y carta; lo que buscas y las skills enseñan el diff
+    (`dry_run`) y avisan del recálculo antes de guardar; las claves que la UI no enseña (`source`,
+    `exclude_signals`, `template_rules`…) vuelven tal cual;
+  - contexto con editor y vista previa propia del Markdown (títulos, párrafos, listas, negrita y
+    cursiva, sin comentarios ni HTML), contador de tamaño y `conflict`; muestras de estilo con
+    «Subir», «Ver texto extraído», aviso de inyección y «Borrar»; el estado de ficheros y carpetas
+    de la fase 13 y el botón de `expand` siguen;
+  - historial: «Ver cambios» y «Deshacer el último cambio»;
+  - agente: acciones `improve-profile-item` (con `profile_item`, solo con formato de id y solo si
+    es un logro o historia del perfil vigente; sin «Dejar para mi próxima sesión» ni segundo plano)
+    y `propose-stories`; `AgentButton` con `profileItem`;
+  - textos en `locales/{es,en}/profileEditor.json` (y `conflict`/`referenced` en los errores);
+  - docs: GUIA y GUIDE (la UI como camino principal), README en los dos idiomas, CHANGELOG,
+    RESUMEN_FASES, COMPARATIVA, ADR-039 (la página y el matiz a la ADR-024), PENDIENTES y
+    `docs/pruebas/fase-25.7-prueba-manual.txt`.
+- **Tests:** `ProfileEditor.test.tsx` (11: logro guardado con su hash y sus claves ocultas, error
+  en su campo, historia sin evidencia, diff de lo que buscas con `exclude_signals` intacto, nivel de
+  idioma libre, contexto con guías y vista previa sin ellas, Markdown sin HTML, conflicto, contacto
+  privado, botón del agente con su id y sin «Dejar para luego», aviso al salir e inglés);
+  `ProfilePage.test.tsx` adaptado (sin perfil); `test_agent_launch.py` (+7: id válido, inexistente,
+  un proyecto, inyección en el id, sin cola ni segundo plano).
+  2759 tests de backend y 298 de frontend en verde (el de guardar un logro escribe mucho texto y
+  lleva 30 s de tiempo máximo: con la batería entera en paralelo pasaba de 15); `tsc`, ruff y
+  `sync_agents.py --check` limpios.
+- **Decisiones (con el usuario):** vista previa del Markdown propia y sin dependencias; nivel de
+  idioma con desplegable que conserva el texto libre. Mías: pestañas montadas siempre; las tres
+  partes de `preferences` (búsqueda, CV, carta) son bloques que guardan la sección entera con lo de
+  los demás tal cual; `template_rules` no se edita en la UI (se conserva y se explica); `private`
+  (tu mínimo salarial) sigue solo en el YAML.
+- **Revisión** (rol `reviewer`), sin bloqueantes. Se aplicó: modo «Otro» del nivel de idioma sin
+  centinela ni recortes; aviso y recarga si un bloque de varias secciones se guarda a medias; no
+  escribir titular ni resumen vacíos si el fichero no los tenía; `fullmatch` en el id; los enlaces
+  de ancla y de descarga no avisan; imports juntos; y los tests de claves ocultas, botones del
+  agente, Markdown sin HTML y aviso al salir.
+- **Deuda:** borrar una muestra no pide confirmación; los grupos de evidencias que no son de
+  experiencia se traducen con una lista fija; reordenar una lista mueve sus elementos sin sus
+  comentarios (de la 25.7a); la prueba manual con un agente de verdad queda en PENDIENTES.

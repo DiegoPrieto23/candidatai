@@ -173,6 +173,13 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   expuesta: se limita por reglas y por ejecutarse en una sesión dedicada.
 - **Matizada por la ADR-033:** el código ya no «nunca descarga LinkedIn»: puede consultar su
   búsqueda pública sin sesión si el usuario la activa.
+- **Nota de la fase 25.1 (2026-10-16, decisión del usuario):** los conectores usan APIs o feeds
+  públicos y, siempre que exista, documentados. Se acepta un **JSON público sin documentar** cuando
+  no es HTML, no pide sesión ni claves y no hay alternativa documentada que dé lo mismo. Hoy son
+  dos: el detalle de una oferta de **Workable** (`apply.workable.com/api/v2/accounts/{cuenta}/jobs/{código}`,
+  el que usa su propia página de empleo; el widget documentado no trae la descripción) y la API de
+  **Manfred** (`getmanfred.com/api/v2/public/offers`). Si cambian, el conector falla con
+  `unexpected_format` o `not_found` y se ve en `source_runs`; no se pasa a leer HTML.
 
 ## ADR-017 · CV: cuándo está listo, país de la oferta y contacto
 - **Contexto:** la fase 08 separa contenido y renders (ADR-014), así que «CV verificado» y «PDF que
@@ -413,6 +420,21 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   del código: el código solo comprueba que las evidencias existen en el perfil. El documento no
   guarda qué versión del contexto se usó al redactarlo. El archivo de una candidatura enviada
   antes de que corra el worker usa lo seleccionado al registrar el envío, no al archivar.
+- **Nota de la fase 25.2 (skill `expand`):** lo que has hecho en público (repositorios, portfolio,
+  Kaggle, Scholar, certificaciones verificables) entra como **hecho** en `data/profile.yaml`, no
+  como contexto, porque tiene una fuente comprobable. Solo con tu OK, y con procedencia: campo
+  opcional `source` (URL http/https) en `Project`, `Achievement`, `Certification` y los items de
+  `extra_sections`. En una certificación es el enlace de verificación. Un `source` vacío no se
+  vuelca (`exclude_if`), así que el hash de los perfiles de antes no cambia, no se crea versión y
+  no se recalculan los scores. Sigue siendo `schema_version: 1`: el campo es compatible hacia
+  atrás. Como `Skill.level` es obligatorio (lo usan el matching y las comprobaciones del CV y la
+  carta), una skill sin nivel va a `basic_skills` o no se añade: el agente nunca pone un nivel. Los
+  números de un proyecto personal (estrellas, descargas) van en su `text` con la fecha, porque los
+  logros (`achievements`) solo existen dentro de una experiencia. `expand` lee READMEs de terceros
+  y luego edita el perfil, así que cuenta como contenido no confiable (`UNTRUSTED`): con un agente
+  de nivel C, aviso en terminal. No tiene segundo plano porque pregunta.
+- **Nota de la fase 25.7 (ADR-039):** el contexto y el perfil ya no se editan solo en el editor
+  del usuario: también en «Mi perfil» de la UI. Lo demás de esta decisión sigue igual.
 
 
 ## ADR-026 · Alias de skills desde la UI y huecos marcados por el usuario
@@ -507,6 +529,19 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   oferta cerrada a su portada se detecta; uno que la deja publicada sin aviso, no. Las
   republicaciones anteriores a la migración no se recuperan: el relleno solo crea la primera
   publicación de cada oferta.
+- **Nota de la fase 25.3 (señales de oferta dudosa):** cinco claves más en `jobs.signals`
+  (`salary_range_wide`, `employer_hidden`, `fixed_term`, `stale_repost`, `ai_screening`), con la
+  misma regla: observaciones del código, nunca del agente, que no cambian el score. Solo filtran si
+  el usuario pone `employer_hidden` o `fixed_term` en `preferences.exclude_signals` (filtro duro
+  `signal`). Salen de cuatro campos opcionales nuevos de `JobExtraction` (`contract_type`,
+  `hiring_entity`, `is_agency`, `mentions_ai_screening`; vacíos no se guardan, así que las
+  extracciones anteriores no cambian y `schema_version` sigue en 1), de patrones editables
+  (`config/doubtful_patterns.yaml`) sobre el nombre de la empresa y el texto, del salario y de
+  `job_sightings` (todo el historial, sin la ventana de `reposted`). Una agencia que dice para quién
+  es también avisa, con otro texto, porque así lo pide el encargo. `get_match` las devuelve en
+  texto para `assess-fit`, que no lee la oferta. La calibración agrupa por las señales de ahora,
+  no por las que tenía la oferta al enviarla (no se guarda su historia). El dosier de empresa gana
+  `red_flags`, cada una con tipo, fecha y cita obligatorias.
 
 ## ADR-029 · Preparación y repaso de entrevistas en el hito, sin cambiar su estado
 - **Contexto:** la fase 17 añade un plan de preparación por días, un simulacro y un repaso
@@ -943,3 +978,98 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   - **¿Hay que revisar el ADR-001?** Solo si ningún agente con un modelo local supera la matriz en
     las acciones cerradas (`process-jobs`, `assess-fit`). La decisión espera a la pasada del
     usuario con OpenCode y Ollama. Hasta entonces, el ADR-001 se mantiene sin cambios.
+
+## ADR-038 · Coste por oferta y por agente, umbral antes de gastar y varias ejecuciones a la vez
+- **Contexto:** no se sabía cuánto cuesta cada oferta ni con qué agente sale más barata; el
+  segundo plano iba de una en una (ADR-032) y `assess-fit` gastaba agente en ofertas que el código
+  ya puntúa muy bajo. Extiende el ADR-032.
+- **Decisión:**
+  - **Uso normalizado:** cada lector de salida rellena `usage` con `input_tokens`,
+    `output_tokens`, `cached_tokens`, `turns`, `duration_ms` y `cost_usd`, todas opcionales. Nada
+    se estima ni se pasa a euros; en una terminal no hay uso. Las filas viejas se traducen al leer.
+  - **Coste por oferta:** una ejecución con oferta es entera suya; una de lote se reparte a partes
+    iguales entre las ofertas en que escribió, que salen de `mcp_calls` (las herramientas `save_*`
+    de su acción entre su inicio y su fin). Sin migración ni variables de entorno hacia el
+    servidor MCP. Vista por acción, agente y modelo (7 y 30 días) en «Agente», con los tokens de
+    las instrucciones de cada skill (fase 24.2); en la ficha y en el embudo, por candidatura enviada
+    y por entrevista.
+  - **Umbral antes de gastar:** `assess-fit` en segundo plano lleva en su orden los ids de las
+    pendientes sin valorar con score ≥ el umbral (página «Agente», `background_runs.
+    assess_min_score` o el de triaje menos 10), como mucho 30. Si no queda ninguna, no se lanza y
+    dice cuántas quedan por debajo. La UI explica por qué se queda sin valorar una oferta. En una
+    terminal, el skill valora lo que le pidas; la matriz de `cai eval compat` usa 0.
+  - **Varias a la vez:** hasta `background_runs.max_parallel` (1 por defecto, 4 como máximo), con
+    `per_agent` (p. ej. 1 para un modelo local). Reclamar sigue siendo un único `UPDATE`, ahora
+    condicionado a hueco, al tope del agente y a no chocar con otra en curso: la misma oferta o,
+    sin oferta, la misma acción de lote. Dos CVs de ofertas distintas pueden ir a la vez; dos
+    «Procesar ofertas», nunca. Cada ejecución conserva su techo de herramientas (ADR-032), su
+    configuración propia (fase 24.5) y su tiempo máximo; cancelar, parar el worker y recuperar
+    tras reiniciar ya trataban todas las que hubiera en curso. Las escrituras de la fila se
+    reintentan si SQLite está bloqueado.
+- **Consecuencias:** la atribución por ventana de tiempo cuenta también lo que hagas a la vez en
+  una terminal, o lo que haga otro agente, con las mismas herramientas: `mcp_calls.client_name` es
+  el nombre que da el cliente MCP («claude-code»), no el del agente, así que no sirve para filtrar.
+  Sin ofertas que valorar, «Evaluar encaje» en segundo plano ya no se lanza (antes se lanzaba y no
+  hacía nada). Un lote sigue siendo una sola ejecución: el paralelo
+  sirve entre acciones y entre ofertas, no parte un lote en trozos. El umbral va en la orden, no en
+  las herramientas: con `list_jobs`, el agente aún podría ver las demás. Si las valorase, no
+  pasaría nada grave, pero gastaría lo que se quería ahorrar.
+
+## ADR-039 · «Mi perfil» editable desde la UI, por secciones y sin herramientas para el agente (matiza la 025 y la 024)
+- **Contexto:** el perfil (`data/profile.yaml`) y el contexto (`data/contexto/*.md`) solo se podían
+  cambiar en un editor o pidiéndoselo al agente con `update-profile` (ADR-025). Quien no se maneja
+  con YAML no podía usar la app, y añadir una historia STAR tras una entrevista obligaba a abrir una
+  terminal. Tampoco había dónde dejar textos propios que enseñen al agente cómo escribes.
+  Decisión del usuario (2026-10-17): que la app se pueda usar entera desde la UI.
+- **Decisión:**
+  - **Escribe la UI, que es el usuario:** `services/profile_editor.py` guarda una sección
+    (`PUT /profile/sections/{section}`, lista blanca de `ProfileSection`; `private` no se edita
+    aquí). Todas las rutas de escritura llevan `require_ui`; leer el perfil con contacto
+    (`GET /profile/editable`), `require_ui_read` (sin `Origin` ajeno ni `Sec-Fetch-Site:
+    cross-site`). El agente **no** gana ninguna herramienta ni comando de escritura del perfil:
+    sigue con `update-profile` y `expand`, que preguntan antes, y `get_profile` sin contacto.
+  - **Sin pisar ni romper:** concurrencia optimista con el sha256 de los bytes del fichero
+    (`conflict` si cambió), validación del perfil entero antes de escribir (los `ProfileIssue` de
+    `cai profile validate`, con la ruta del campo), escritura en un temporal que sustituye al
+    fichero y un lock para dos guardados seguidos. «Usar por defecto» de Plantillas pasa por el
+    mismo camino.
+  - **Formato del usuario intacto:** ruamel.yaml en modo ida y vuelta y **fusión** de la sección
+    con lo que había: claves en su sitio, listas casadas por `id` y escalares sin tocar si no
+    cambian, así que se conservan los comentarios y el estilo también dentro de la sección. Un
+    texto que YAML leería como otro tipo («no», «+34600…») se escribe entre comillas; uno con
+    saltos de línea, como bloque.
+  - **Ids estables:** los genera el servidor si vienen vacíos (`exp-<empresa>`, `a<n>`,
+    `prj-…`, `edu-…`, `cert-…`, `st-…`) y no cambian al renombrar. Borrar lo que cita una historia
+    STAR se rechaza (`referenced`, con las historias); si lo cita un CV o una carta ya generados,
+    se permite con aviso, porque guardan su versión del perfil.
+  - **Deshacer:** antes de escribir, copia en `data/profile-history/` (las 20 últimas). «Deshacer»
+    escribe la más reciente por el mismo camino (validación, versión y rescore) y la quita.
+    `dry_run` devuelve el diff sin escribir, para enseñarlo antes de cambiar filtros o skills.
+  - **Auditoría** en una tabla propia, `profile_edits` (qué, cuándo y los hashes, sin el texto),
+    porque `events` exige una oferta.
+  - **La página** (25.7b): pestañas que no se desmontan (no se pierde lo que no has guardado),
+    un borrador por bloque que se pone al día si otro bloque guarda, aviso de cambios sin guardar
+    al cerrar la pestaña o seguir un enlace, el diff antes de guardar lo que busca y las skills, y
+    una vista previa propia del Markdown, sin dependencias ni HTML.
+  - **Contexto en la UI:** `PUT /context/{section}` con la misma concurrencia, el límite de 20 KB
+    antes de escribir (`too_large`) y el fichero tal cual, comentarios-guía incluidos (la UI los
+    enseña; el servidor no los quita). Si no existía, se parte de la plantilla de `cai context
+    init`. Sigue sin versiones en la BD.
+  - **Muestras de estilo:** carpeta `data/documentos/estilo/`, subida en JSON (base64) para que
+    `require_ui` valga, con límites en `profile_editing`. El texto se extrae al subir y se guarda
+    junto al original. Son **contexto, no hechos** (POLICIES §1.5), pasan por la detección de
+    inyección y llegan al agente en `get_context.style_samples`, envueltas en
+    `<untrusted_style_sample>` y recortadas a 20 KB entre todas.
+  - **Botones del agente** («Mejorar con mi agente», «Proponer historias»): `update-profile` con
+    dos modos nuevos, solo en terminal porque pregunta (acciones `improve-profile-item` y
+    `propose-stories`). Matiza la ADR-024: la orden de «Mejorar» lleva el id del elemento del
+    perfil, que es texto, pero solo con el formato de un id (`exp-x/a1`, `st-x`) y solo si es un
+    logro o una historia del perfil vigente. Como la cola de encargos y el segundo plano no guardan
+    ese id, «Mejorar» no se puede dejar para la próxima sesión ni lanzar sin ventana.
+- **Consecuencias:** el perfil se puede rellenar entero sin YAML ni terminal, y el agente sigue
+  sin poder escribirlo sin preguntar. Un guardado conserva los comentarios del fichero, pero
+  reordenar una lista mueve sus elementos sin los comentarios que tuvieran pegados. Se pierde la
+  idea de que el contexto «solo se edita en tu editor»: si el usuario lo edita a la vez en los dos
+  sitios, gana el primero en guardar y el otro recibe `conflict`. `content` es la sección entera:
+  una clave que la UI no reenvíe se borra. Y `require_ui_read` frena a otras webs, no a un programa
+  de tu equipo (`curl`), que de todos modos podría leer `data/profile.yaml` del disco.

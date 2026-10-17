@@ -3,8 +3,9 @@ de un skill ya escrita. La app no llama a ningún modelo (ADR-001): lanza el age
 con tu suscripción, y tú ves, contestas y apruebas lo que haga.
 
 - Las órdenes son una lista cerrada (`ACTIONS`) que construye la app. Lo único variable son el
-  `job_id` y el `milestone_id` (fase 17), enteros: ningún texto de una oferta ni de una web llega
-  al comando.
+  `job_id` y el `milestone_id` (fase 17), enteros, y el id de un logro o una historia del perfil
+  (fase 25.7b), con el formato de un id y solo si existe: ningún texto de una oferta ni de una
+  web llega al comando.
 - Qué programa se lanza no está aquí: es `launch` del agente en `.agents/manifest.yaml` (regla
   dura 2), que se lee con `agent_registry`. Con varios, cuál se abre lo decide `agent_prefs`
   (fase 24.4): el botón, la acción, el agente por defecto, `CAI_AGENT` y, si no, el primero
@@ -35,7 +36,15 @@ from sqlalchemy.orm import Session
 from app.core.config import REPO_ROOT, get_settings
 from app.models import Milestone
 from app.models.base import utcnow
-from app.services import agent_prefs, agent_registry, agent_run_config, events, interviews, process
+from app.services import (
+    agent_prefs,
+    agent_registry,
+    agent_run_config,
+    events,
+    interviews,
+    process,
+)
+from app.services import profile as profiles
 from app.services.agent_actions import (  # noqa: F401 - se reexportan
     ACTIONS,
     CV_STAGES,
@@ -116,14 +125,45 @@ class _Launcher:
     warning: str | None = None
 
 
-def prompt_for(action: ActionId, job_id: int | None = None, milestone_id: int | None = None) -> str:
+def prompt_for(
+    action: ActionId,
+    job_id: int | None = None,
+    milestone_id: int | None = None,
+    profile_item: str | None = None,
+) -> str:
     """La orden que se le da al agente (la misma que copia la UI si no puede lanzarlo)."""
     spec = ACTIONS[action]
     if spec.needs_job and job_id is None:
         raise LaunchError("invalid_request", f"«{spec.label}» necesita una oferta.")
     if spec.milestone and milestone_id is None:
         raise LaunchError("invalid_request", f"«{spec.label}» necesita una entrevista.")
-    return spec.prompt.format(job_id=job_id, milestone_id=milestone_id)
+    if spec.profile_item and profile_item is None:
+        raise LaunchError("invalid_request", f"«{spec.label}» necesita un logro o una historia.")
+    return spec.prompt.format(job_id=job_id, milestone_id=milestone_id, profile_item=profile_item)
+
+
+# Un logro (`exp-acme/a2`) o una historia (`st-x`): el formato de los ids del perfil.
+PROFILE_ITEM = re.compile(r"^[a-z0-9][a-z0-9_-]*(?:/[a-z0-9][a-z0-9_-]*)?$")
+
+
+def _check_profile_item(session: Session, profile_item: str | None) -> str:
+    """El id de un logro o una historia del perfil vigente (fase 25.7b, matiz a la ADR-024: es
+    texto, pero solo con el formato de un id y solo si existe)."""
+    if profile_item is None:
+        raise LaunchError("invalid_request", "Esta acción necesita un logro o una historia.")
+    if not PROFILE_ITEM.fullmatch(profile_item):
+        raise LaunchError("invalid_request", "Id de perfil no válido.")
+    try:
+        current = profiles.current(session).profile
+    except profiles.ProfileNotFoundError as exc:
+        raise LaunchError("not_found", str(exc)) from exc
+    known = {f"{exp.id}/{a.id}" for exp in current.experience for a in exp.achievements}
+    known |= {story.id for story in current.stories}
+    if profile_item not in known:
+        raise LaunchError(
+            "not_found", f"«{profile_item}» no es un logro ni una historia de tu perfil vigente."
+        )
+    return profile_item
 
 
 def _manifest_problem() -> str | None:
@@ -400,10 +440,12 @@ def check_target(
     action: ActionId,
     job_id: int | None = None,
     milestone_id: int | None = None,
+    profile_item: str | None = None,
 ) -> tuple[str, int | None, int | None]:
     """Comprueba que la acción se puede lanzar para esa oferta o hito y devuelve su orden, con la
     oferta y el hito que le corresponden (`None` si la acción no los usa)."""
     spec = ACTIONS[action]
+    item = _check_profile_item(session, profile_item) if spec.profile_item else None
     if spec.milestone:
         job_id = _check_milestone(session, spec.milestone, milestone_id, job_id)
     elif spec.needs_job:
@@ -419,7 +461,7 @@ def check_target(
             raise LaunchError("invalid_request", "Esta oferta no tiene una propuesta recibida.")
     job_id = job_id if spec.needs_job else None
     milestone_id = milestone_id if spec.milestone else None
-    return prompt_for(action, job_id, milestone_id), job_id, milestone_id
+    return prompt_for(action, job_id, milestone_id, item), job_id, milestone_id
 
 
 def launch(
@@ -431,11 +473,12 @@ def launch(
     agent: str | None = None,
     model: str | None = None,
     preset: str | None = None,
+    profile_item: str | None = None,
 ) -> LaunchResult:
     """Abre el agente en una terminal con la orden de `action`. No espera a que termine. `agent`,
     `model` y `preset`: la elección puntual del botón (si no, las preferencias)."""
     spec = ACTIONS[action]
-    prompt, _, _ = check_target(session, action, job_id, milestone_id)
+    prompt, _, _ = check_target(session, action, job_id, milestone_id, profile_item)
     picked = pick(session, action, prompt, agent=agent, model=model, preset=preset)
     return _open(spec.label, prompt, picked, picked.command, prompt)
 

@@ -230,3 +230,50 @@ def chromium_available() -> bool:
 requires_chromium = pytest.mark.skipif(
     not chromium_available(), reason="Chromium de Playwright no instalado"
 )
+
+
+# --- PDFs con texto colocado (fase 25.5, maquetación) -------------------------------------------
+
+Placed = tuple[float, float, str]  # x e y desde arriba a la izquierda (pt) y el texto
+
+
+def make_layout_pdf(
+    pages: list[list[Placed]], size: float = 10, width: float = 595, height: float = 842
+) -> bytes:
+    """PDF con cada línea donde se le dice (Helvetica, WinAnsi), para probar la maquetación."""
+    objects: list[bytes] = []
+    n_pages = len(pages)
+    page_ids = [4 + 2 * i for i in range(n_pages)]
+    objects.append(b"<< /Type /Catalog /Pages 2 0 R >>")
+    kids = " ".join(f"{pid} 0 R" for pid in page_ids)
+    objects.append(f"<< /Type /Pages /Kids [{kids}] /Count {n_pages} >>".encode())
+    objects.append(
+        b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>"
+    )
+    for i, lines in enumerate(pages):
+        objects.append(
+            f"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 {width} {height}] "
+            f"/Contents {page_ids[i] + 1} 0 R /Resources << /Font << /F1 3 0 R >> >> >>".encode()
+        )
+        ops = []
+        for x, y, line in lines:
+            text = line.encode("cp1252", "replace")
+            text = text.replace(b"\\", b"\\\\").replace(b"(", b"\\(").replace(b")", b"\\)")
+            baseline = height - y - size
+            ops.append(b"BT /F1 %g Tf %g %g Td (" % (size, x, baseline) + text + b") Tj ET")
+        stream = b"\n".join(ops)
+        objects.append(b"<< /Length %d >>\nstream\n" % len(stream) + stream + b"\nendstream")
+    out = bytearray(b"%PDF-1.4\n")
+    offsets = []
+    for number, body in enumerate(objects, start=1):
+        offsets.append(len(out))
+        out += b"%d 0 obj\n" % number + body + b"\nendobj\n"
+    xref = len(out)
+    out += b"xref\n0 %d\n0000000000 65535 f \n" % (len(objects) + 1)
+    for offset in offsets:
+        out += b"%010d 00000 n \n" % offset
+    out += b"trailer\n<< /Size %d /Root 1 0 R >>\nstartxref\n%d\n%%%%EOF\n" % (
+        len(objects) + 1,
+        xref,
+    )
+    return bytes(out)

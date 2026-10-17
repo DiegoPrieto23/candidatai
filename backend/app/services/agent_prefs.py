@@ -45,13 +45,14 @@ REQUIRES: dict[str, tuple[Capability, ...]] = {
     "search-jobs": ("browser",),
     "research-company": ("web",),
     "training-plan": ("web",),
+    "expand": ("web",),
     "import-cv-template": ("vision",),
 }
 # Acciones que leen contenido no confiable (ofertas, correos, webs): con un agente de nivel C, el
 # mismo agente que lee ese texto tiene todas las herramientas (docs/AGENTS_COMPAT.md). `assess-fit`
 # y `generate-cv` no están: no leen el texto de la oferta (no tienen `get_job`), sino la extracción
-# ya validada por su esquema.
-UNTRUSTED: frozenset[str] = frozenset({"process-jobs", "review-replies", "search-jobs"})
+# ya validada por su esquema. `expand` (fase 25.2) sí: lee READMEs de terceros y edita el perfil.
+UNTRUSTED: frozenset[str] = frozenset({"process-jobs", "review-replies", "search-jobs", "expand"})
 
 CAPABILITY_NAMES: dict[Capability, str] = {
     "browser": "navegador",

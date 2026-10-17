@@ -27,6 +27,16 @@ través de una interfaz para agentes: herramientas MCP y una CLI `cai … --json
 guarda el estado, las reglas y las comprobaciones, así que el agente no puede inventarse tu
 experiencia ni enviar nada por su cuenta.
 
+<!--
+  Tu búsqueda en números (fase 25.6). `cai stats story` o la tarjeta «Tu búsqueda en números» del
+  Embudo te dan esta línea con tus cifras reales: solo recuentos agregados, sin empresas.
+  Para publicarla, pégala aquí abajo, cuenta en una línea qué funcionó y quita este comentario.
+
+> **Mi búsqueda con CandidatAI** (D mmm AAAA → D mmm AAAA, N semanas): N ofertas evaluadas,
+> N aprobadas, N candidaturas, N respuestas, N entrevistas y N ofertas.
+> Lo que funcionó: …
+-->
+
 <p align="center">
   <img src="docs/img/es/triage.gif" alt="Triaje con el teclado: J/K para moverse, A para aprobar" width="88%">
   <br><sub>Triaje con el teclado. Todo lo que se ve es la <b>demo</b>: una candidata, empresas y ofertas inventadas.</sub>
@@ -88,11 +98,11 @@ comprueba y automatiza. Un día normal:
 
 | | |
 |---|---|
-| 📥 **Ofertas de muchas fuentes** | Alta por URL o texto; APIs públicas de Greenhouse, Lever y Ashby; InfoJobs y Adzuna con claves; **alertas de empleo por correo** (IMAP de solo lectura); un **botón de extensión** para la página que estás viendo; tu agente recorriendo portales con tu navegador y, si lo activas, la búsqueda pública de LinkedIn. Con deduplicación, aviso de republicadas y de ofertas cerradas, y **detección de texto dirigido a una IA** |
+| 📥 **Ofertas de muchas fuentes** | Alta por URL o texto; APIs y feeds públicos de Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters y Recruitee; InfoJobs y Adzuna con claves, Manfred y freehire.me sin ellas; **alertas de empleo por correo** (IMAP de solo lectura); un **botón de extensión** para la página que estás viendo; tu agente recorriendo portales con tu navegador y, si lo activas, la búsqueda pública de LinkedIn. Con deduplicación, aviso de republicadas y de ofertas cerradas, y **detección de texto dirigido a una IA** |
 | 🎯 **Triaje con score explicado** | Filtros duros (nivel, años, modalidad, zona, idiomas) y un score 0-100 por cobertura de skills, preferencias y similitud semántica local opcional. Tu agente añade una valoración razonada. «¿Acierta el score?» lo compara con los resultados reales |
 | 📄 **CV y carta a medida** | El agente redacta el contenido citando **la evidencia de tu perfil de cada línea**; el código lo valida, lo renderiza (Word o HTML → PDF) con tu plantilla, foto y color, y otro rol lo verifica. **Importa tu propio diseño de CV** (Word, PDF, imagen, Canva) como plantilla |
 | 📝 **Candidatura asistida** | Rellena formularios de Greenhouse, Lever, Ashby o genéricos, se para ante captchas o logins y **solo envía tras tu confirmación**, escribiendo el nombre de la empresa |
-| 📊 **Seguimiento y analítica** | Kanban que solo se mueve con eventos, hitos con calendario `.ics`, avisos de seguimiento, correos de las empresas convertidos en propuestas que aceptas, y embudo por fuente, puesto, semana, plantilla, carta y referencia |
+| 📊 **Seguimiento y analítica** | Kanban que solo se mueve con eventos, hitos con calendario `.ics`, avisos de seguimiento, correos de las empresas convertidos en propuestas que aceptas, y embudo por fuente, puesto, semana, plantilla, carta y referencia, más tu búsqueda entera en números para contarla (`cai stats story`) |
 | 🎤 **Entrevistas y ofertas** | Plan de preparación por días, simulacros con feedback, repasos que alimentan tu banco de historias STAR, dosier de empresa con fuentes y comparación de ofertas recibidas con tu mínimo **sin que el agente lo vea nunca** |
 | 🤝 **Red y mensajes** | Tus contactos de LinkedIn (exportación CSV) cruzados con tus ofertas («conoces a 2 personas aquí»), mensajes de LinkedIn (≤ 300 caracteres) y correos de candidatura como borradores que envías tú |
 | 🧭 **Estrategia de búsqueda** | Huecos de skills agregados con plan de formación, títulos cercanos para ampliar la búsqueda, retrospectiva semanal y revisión de tu perfil de LinkedIn |
@@ -197,11 +207,15 @@ Paso a paso, con tu propio perfil, tu agente, las alertas por correo y la extens
 ## Úsalo con tus datos
 
 Tus datos viven en `data/`, fuera de git. Abre CandidatAI (el acceso directo, o `cai start`), crea tu
-perfil con el skill `update-profile` y, después, pide a tu agente:
+perfil con el skill `update-profile` (lee tu CV) y después rellénalo y retócalo en **«Mi perfil»**:
+experiencia, logros, historias STAR, qué buscas, tus preferencias de CV y carta, tu contexto y tus
+muestras de estilo, sin tocar YAML (cada bloque se guarda solo y se puede deshacer). Luego pide a tu
+agente:
 
 | Skill | Qué hace |
 |---|---|
 | `update-profile` | Crea o actualiza `data/profile.yaml` (tu única fuente de verdad) desde tu CV y lo versiona |
+| `expand` | Propone proyectos, skills, logros y certificaciones desde tu GitHub, portfolio, Kaggle o Scholar públicos, cada uno con su fuente; solo escribe lo que aceptes |
 | `process-jobs` | Extrae las ofertas nuevas (rol `extractor`, aislado cuando el agente lo permite) |
 | `assess-fit` | Valora y explica el encaje de las ofertas por revisar |
 | `generate-cv 42` | Redacta, renderiza y verifica el CV para la oferta 42 |
@@ -233,8 +247,8 @@ en español (`generar-cv`…).
 | Vía | Automática | Cubre |
 |---|---|---|
 | Alta por URL o texto | No | Cualquier oferta |
-| APIs públicas de ATS (Greenhouse, Lever, Ashby) | Diaria | Tus empresas objetivo (`cai sources discover` encuentra sus tableros) |
-| APIs de portales (InfoJobs, Adzuna), con claves | Diaria | Búsquedas por palabras clave |
+| APIs y feeds públicos de ATS (Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters, Recruitee) | Diaria | Tus empresas objetivo (`cai sources discover` encuentra sus tableros) |
+| APIs de portales (InfoJobs y Adzuna con claves; Manfred y freehire.me sin ellas) | Diaria | Búsquedas por palabras clave |
 | Alertas de empleo por correo (IMAP de solo lectura o `.eml` exportados) | Sí | LinkedIn, InfoJobs, Indeed, Tecnoempleo… |
 | Botón «Enviar a CandidatAI» del navegador | Un clic | Cualquier página que estés viendo, LinkedIn incluido |
 | Tu agente con tu navegador | A demanda | Portales que apruebas; LinkedIn solo si lo activas |
@@ -358,6 +372,7 @@ stateDiagram-v2
 | Configurar las fuentes y las alertas por correo | [`docs/FUENTES_OFERTAS.md`](docs/FUENTES_OFERTAS.md), [`docs/CONFIGURAR_CORREO.md`](docs/CONFIGURAR_CORREO.md) |
 | Trabajar con plantillas de CV | [`docs/CV_TEMPLATES.md`](docs/CV_TEMPLATES.md) |
 | Conectar otro agente | [`docs/AGENTS_COMPAT.md`](docs/AGENTS_COMPAT.md), [`docs/AGENT_INTERFACE.md`](docs/AGENT_INTERFACE.md) |
+| Ver qué cambia en cada versión | [`CHANGELOG.md`](CHANGELOG.md) |
 | Contribuir | [`CONTRIBUTING.md`](CONTRIBUTING.md) |
 
 Todos los documentos, agrupados: [`docs/README.md`](docs/README.md).

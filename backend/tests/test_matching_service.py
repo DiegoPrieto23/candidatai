@@ -158,6 +158,29 @@ def test_get_match_computes_and_reuses() -> None:
         assert scored.payload == {"match_id": view.match_id, "score": view.score, "passed": True}
 
 
+def test_get_match_brings_doubtful_signals_without_changing_the_score() -> None:
+    # Fase 25.3: `assess-fit` las ve en `get_match` y las cita en los riesgos.
+    import_demo_profile()
+    plain, flagged = add_job(), add_job(company="Hays")
+    extract(plain)
+    extract(flagged, contract_type="fixed_term")
+    with session_scope() as session:
+        clean = matching.get_match(session, plain)
+        noted = matching.get_match(session, flagged)
+    assert clean.signals == []
+    assert [s.code for s in noted.signals] == ["employer_hidden", "fixed_term"]
+    assert noted.score == clean.score and noted.hard_filters.passed
+
+
+def test_exclude_signals_in_the_profile_closes_the_job(tmp_path: Path) -> None:
+    import_demo_profile(tmp_path, exclude_signals=["fixed_term"])
+    job_id = add_job()
+    result = extract(job_id, contract_type="fixed_term")
+    assert not result.hard_filters.passed
+    assert [f.filter for f in result.hard_filters.failures] == ["signal"]
+    assert "hard_filter_failed" in event_types(job_id)
+
+
 def test_get_match_recomputes_after_new_extraction() -> None:
     import_demo_profile()
     job_id = add_job()

@@ -33,7 +33,7 @@ from sqlalchemy.orm import Session
 from app.core.policies import get_policies
 from app.models import Application, Job, Source
 from app.models.base import utcnow
-from app.schemas.sources import ATS_KINDS, KIND_LABELS
+from app.schemas.sources import KIND_LABELS
 from app.services import ingest, platforms
 from app.services.events import JobNotFoundError, record
 from app.services.ingestion.base import make_client
@@ -48,6 +48,8 @@ from app.services.signals import (
     set_signal,
 )
 
+# ATS con comprobación por API; el resto de ATS (fase 25.1) se comprueban por su página.
+_API_KINDS = frozenset({"greenhouse", "lever", "ashby"})
 # Etapas que el worker revisa cada día (las que van camino de un CV o de enviarse).
 DAILY_STAGES = (Stage.APPROVED, Stage.CV_READY)
 
@@ -140,7 +142,7 @@ def ats_target(
         return _valid_target("ashby", m.group(1), m.group(2).lower())
     config = source_config or {}
     slug = config.get("slug")
-    if source_kind in ATS_KINDS and isinstance(slug, str) and external_id:
+    if source_kind in _API_KINDS and isinstance(slug, str) and external_id:
         region = str(config.get("region") or "global")
         return _valid_target(source_kind, slug, external_id, region if region == "eu" else "global")
     return None

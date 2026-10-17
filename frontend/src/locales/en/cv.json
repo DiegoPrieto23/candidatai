@@ -65,6 +65,18 @@
     "not_ats_friendly": "Not ATS-friendly",
     "pdf_only": "PDF only",
     "truncated": "Truncated",
-    "details_skipped": "Details skipped"
+    "details_skipped": "Details skipped",
+    "orphan_heading": "Orphan heading",
+    "large_gap": "Large gap",
+    "footer_overlap": "Text in the footer or margin",
+    "nearly_empty_last_page": "Nearly empty last page",
+    "text_layer": "Incomplete PDF text"
+  },
+  "layout": {
+    "page": "Page {{page}}",
+    "fix": {
+      "template": "Try another template below, no agent needed.",
+      "content": "Content needs trimming: \"Generate CV\" with your agent trims what matters least for the job."
+    }
   }
 }

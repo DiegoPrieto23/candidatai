@@ -1,0 +1,54 @@
+Fase 25.1 · Conectores de ATS y portales con API: prueba manual
+================================================================
+
+Qué se prueba: dar de alta, probar y ejecutar empresas en Personio, Teamtailor, Workable,
+SmartRecruiters y Recruitee, y búsquedas en Manfred y freehire.me, desde la UI y la terminal, y
+`cai sources discover` con tus empresas. Los tests automáticos usan respuestas grabadas sin red;
+esto es para verlo contra las APIs de verdad (cambian sin avisar). No hace falta migrar: no hay
+tablas nuevas.
+
+Preparación
+-----------
+1. cd frontend; pnpm build; cd ..   (la UI compilada que sirve `cai start`)
+2. Arranca la app en su propia ventana: uv run --directory backend cai start
+3. Ten importado tu perfil: el filtro previo usa tus puestos y zonas.
+
+Pasos
+-----
+1. «Fuentes → Empresas objetivo» → «Añadir empresa o búsqueda» → «Origen».
+   → Aparecen Personio, Teamtailor, Workable, SmartRecruiters, Recruitee, «Manfred (búsqueda)» y
+     «freehire (búsqueda)».
+   → En cada ATS, la pista dice dónde está el slug (p. ej. `<slug>.jobs.personio.de`) y «Cómo
+     encontrarlo» abre la tabla de `docs/FUENTES_OFERTAS.md`.
+2. Elige una empresa tuya que use uno de esos ATS (mira la URL de una oferta suya). Escribe nombre
+   y slug y pulsa «Probar».
+   → «N ofertas encontradas, M tras filtros» y la lista. Abre dos o tres enlaces: llevan a la
+     oferta real.
+   → Personio: si sus ofertas están en inglés y no salen descripciones, prueba a poner `en` en
+     «Idioma de la descripción».
+   → SmartRecruiters con un slug inventado: «0 ofertas» y el aviso de que no distingue «no existe»
+     de «sin ofertas». Con un slug inventado en los demás: el mensaje de 404 con la pista del slug.
+3. «Añadir» y luego «Ejecutar ahora» en su fila.
+   → Las nuevas quedan en «Por extraer». Abre una: el texto de la oferta está completo (en Workable
+     y SmartRecruiters llega del detalle, que solo se pide para las que pasan el filtro).
+   → «Ejecutar ahora» otra vez: 0 nuevas, «N ya estaban».
+4. «Manfred (búsqueda)»: palabras «data, backend» (o las tuyas) → «Probar».
+   → Solo salen ofertas cuyo título tiene todas las palabras de alguna búsqueda. Al ejecutar,
+     abre una oferta nueva: secciones («## Qué piden», «## Tecnologías»…) y salario, y **ni el
+     nombre ni el correo del «scout» de Manfred**.
+5. «freehire (búsqueda)»: «data engineer», país `es`, «Solo ofertas en remoto» → «Probar».
+   → Ofertas remotas en España; el enlace lleva al ATS o portal de origen. Si alguna ya la tenías
+     por otra vía, al ejecutar cuenta como «ya estaba».
+6. Terminal (opcional):
+   uv run --directory backend cai sources add --kind recruitee --name "Empresa" --slug SLUG
+   uv run --directory backend cai sources test --kind freehire --name prueba --query python --remote-only
+   → Igual que en la UI; `cai sources list` enseña el tipo bien alineado.
+7. `cai sources discover --file empresas.txt` con tu lista (una empresa por línea).
+   → Va más despacio que antes (prueba 8 ATS). Apunta las empresas que tienen tablero en alguno
+     de los cinco nuevos y que no detecta; con `Nombre | slug` se fuerza.
+
+Si algo falla
+-------------
+- Un conector que devuelve «Formato inesperado… Puede que la API haya cambiado»: guarda la salida
+  de `cai sources test ID --json` y pásamela. Las dos APIs sin documentar (detalle de Workable y
+  Manfred) son las más probables (ADR-016, nota de la 25.1).

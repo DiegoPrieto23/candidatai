@@ -69,8 +69,10 @@ def claude_launcher() -> _Launcher:
 
 
 @pytest.fixture
-def db() -> None:
+def db(monkeypatch: pytest.MonkeyPatch) -> None:
     migrations.upgrade()
+    # Sin ofertas, «Evaluar encaje» no se lanzaría (umbral de la fase 25.4): aquí da igual cuáles.
+    monkeypatch.setattr(agent_runs, "_assess_prompt", lambda *_a: "Usa el skill assess-fit con 1.")
 
 
 @pytest.fixture
@@ -297,9 +299,9 @@ def test_opencode_run_ok(db: None, fake: Path) -> None:
     assert "↳ get_job" in texts
     assert not any("TEXTO DE LA OFERTA" in text for text in texts)
     assert row.usage is not None
-    assert row.usage["num_turns"] == 2  # los pasos de la sesión principal
+    assert row.usage["turns"] == 2  # los pasos de la sesión principal
     assert row.usage["input_tokens"] == 300 and row.usage["output_tokens"] == 60
-    assert row.usage["total_cost_usd"] == pytest.approx(0.03)
+    assert row.usage["cost_usd"] == pytest.approx(0.03)
     seen = json.loads(fake.read_text("utf-8"))
     assert seen["client_name"] == "opencode"
     # Recibe la configuración de la ejecución, no la que hubiera en el entorno.
@@ -440,9 +442,9 @@ def test_recorded_ok_run() -> None:
     assert state.session_id is not None and state.session_id.startswith("ses_")
     assert ("tool", "get_status") in state.progress
     assert not any('"total"' in text for _, text in state.progress)  # nada de su salida
-    assert state.usage["num_turns"] == 2
+    assert state.usage["turns"] == 2
     assert state.usage["input_tokens"] == 35268 + 196
-    assert state.usage["total_cost_usd"] == 0
+    assert state.usage["cost_usd"] == 0
 
 
 def test_recorded_denied_run() -> None:

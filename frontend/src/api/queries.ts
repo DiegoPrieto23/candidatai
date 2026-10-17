@@ -30,7 +30,15 @@ export const keys = {
   funnel: (since: string | null) => ['funnel', since] as const,
   // Bajo 'funnel': lo que invalida el embudo (referencias…) invalida también la calibración.
   calibration: (since: string | null) => ['funnel', 'calibration', since] as const,
+  story: ['funnel', 'story'] as const,
   context: ['context'] as const,
+  // Fase 25.7b: «Mi perfil» editable. Bajo `profile`: guardar invalida todo lo del perfil.
+  profile: ['profile'] as const,
+  editableProfile: ['profile', 'editable'] as const,
+  profileDiff: ['profile', 'diff'] as const,
+  contextDocument: (section: string) => ['context', 'document', section] as const,
+  styleSamples: ['context', 'style-samples'] as const,
+  styleSampleText: (name: string) => ['context', 'style-samples', name] as const,
   apply: (id: number) => ['apply', id] as const,
   agent: ['agent'] as const,
   agentRuns: ['agent', 'runs'] as const,
@@ -38,6 +46,9 @@ export const keys = {
   agentRequests: ['agent', 'requests'] as const,
   localModels: ['agent', 'local-models'] as const,
   spendTiers: ['agent', 'tiers'] as const,
+  agentCosts: ['agent', 'costs'] as const,
+  assessThreshold: ['agent', 'assess-threshold'] as const,
+  jobCosts: (id: number) => ['jobs', id, 'costs'] as const,
   skillGaps: (days: number) => ['skill-gaps', days] as const,
   allSkillGaps: ['skill-gaps'] as const,
   replies: (params: RepliesParams) => ['replies', params] as const,
@@ -638,6 +649,14 @@ export function useCalibration(since: string | null) {
   })
 }
 
+/** Toda la búsqueda en números agregados, para contarla en el README (fase 25.6). */
+export function useSearchStory() {
+  return useQuery({
+    queryKey: keys.story,
+    queryFn: () => unwrap(api.GET('/stats/story')),
+  })
+}
+
 // --- Paquete de candidatura (fase 10.3) ----------------------------------------------------------
 
 export type ScreeningAnswer = Schemas['ScreeningAnswer']
@@ -911,6 +930,40 @@ export function useSpendTierActions() {
   }
 }
 
+// --- Coste y umbral (fase 25.4) -----------------------------------------------------------------
+
+export function useAgentCosts() {
+  return useQuery({ queryKey: keys.agentCosts, queryFn: () => unwrap(api.GET('/agent/costs')) })
+}
+
+/** Lo gastado en una oferta en segundo plano (sus ejecuciones y su parte de las de lote). */
+export function useJobCosts(jobId: number) {
+  return useQuery({
+    queryKey: keys.jobCosts(jobId),
+    queryFn: () => unwrap(api.GET('/jobs/{job_id}/costs', { params: { path: { job_id: jobId } } })),
+  })
+}
+
+export function useAssessThreshold(enabled = true) {
+  return useQuery({
+    queryKey: keys.assessThreshold,
+    queryFn: () => unwrap(api.GET('/agent/assess-threshold')),
+    enabled,
+  })
+}
+
+/** Cambia el umbral de «Evaluar encaje» en segundo plano (`null`: el de `policies.yaml`). */
+export function useSaveAssessThreshold() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (value: number | null) => unwrap(api.PUT('/agent/assess-threshold', { body: { value } })),
+    onSuccess: (data) => {
+      client.setQueryData(keys.assessThreshold, data)
+      void client.invalidateQueries({ queryKey: keys.triage })
+    },
+  })
+}
+
 // --- En segundo plano y cola de encargos (fase 19) ---------------------------------------------
 
 type LaunchTarget = { action: AgentAction; job_id?: number; milestone_id?: number }
@@ -996,6 +1049,125 @@ export type FolderKind = Schemas['OpenFolderBody']['folder']
 /** Estado de `data/contexto/` y `data/documentos/`. Se refresca al volver a la ventana. */
 export function useContextStatus() {
   return useQuery({ queryKey: keys.context, queryFn: () => unwrap(api.GET('/context')) })
+}
+
+// --- «Mi perfil» editable (fase 25.7b) -----------------------------------------------------------
+
+export type EditableProfile = Schemas['EditableProfile']
+export type ProfileSectionName = operations['save_profile_section']['parameters']['path']['section']
+export type ProfileSaveResult = Schemas['SaveResult']
+export type ContextSectionName = Schemas['ContextDocument']['section']
+export type ContextDocument = Schemas['ContextDocument']
+export type StyleSample = Schemas['StyleSampleInfo']
+
+/** El perfil del fichero tal cual (con contacto, sin `private`) y su `file_hash`. */
+export function useEditableProfile() {
+  return useQuery({
+    queryKey: keys.editableProfile,
+    queryFn: () => unwrap(api.GET('/profile/editable')),
+    refetchOnWindowFocus: false, // un formulario a medias no debe saltar al volver a la ventana
+  })
+}
+
+/** Guarda una sección. Con `dry_run`, solo el diff. Refresca el perfil, el contexto y los scores. */
+export function useSaveProfileSection() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (body: { section: ProfileSectionName; file_hash: string | null; content: unknown; dry_run?: boolean }) =>
+      unwrap(
+        api.PUT('/profile/sections/{section}', {
+          params: { path: { section: body.section } },
+          body: { file_hash: body.file_hash, content: body.content, dry_run: body.dry_run ?? false },
+        }),
+      ),
+    onSuccess: (result) => {
+      if (result.dry_run || !result.changed) return
+      void client.invalidateQueries({ queryKey: keys.profile })
+      void client.invalidateQueries({ queryKey: keys.defaultTemplate })
+    },
+  })
+}
+
+export function useUndoProfile() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (fileHash: string | null) => unwrap(api.POST('/profile/undo', { body: { file_hash: fileHash } })),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: keys.profile })
+      void client.invalidateQueries({ queryKey: keys.defaultTemplate })
+    },
+  })
+}
+
+/** Diff de las dos últimas versiones importadas («Ver cambios»). */
+export function useProfileDiff(enabled: boolean) {
+  return useQuery({ queryKey: keys.profileDiff, queryFn: () => unwrap(api.GET('/profile/diff')), enabled })
+}
+
+export function useContextDocument(section: ContextSectionName) {
+  return useQuery({
+    queryKey: keys.contextDocument(section),
+    queryFn: () => unwrap(api.GET('/context/{section}', { params: { path: { section } } })),
+    refetchOnWindowFocus: false,
+  })
+}
+
+export function useSaveContextDocument() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (body: { section: ContextSectionName; file_hash: string | null; text: string }) =>
+      unwrap(
+        api.PUT('/context/{section}', {
+          params: { path: { section: body.section } },
+          body: { file_hash: body.file_hash, text: body.text },
+        }),
+      ),
+    onSuccess: (document) => {
+      client.setQueryData(keys.contextDocument(document.section), document)
+      void client.invalidateQueries({ queryKey: keys.context, exact: true })
+    },
+  })
+}
+
+export function useStyleSamples() {
+  return useQuery({ queryKey: keys.styleSamples, queryFn: () => unwrap(api.GET('/context/style-samples')) })
+}
+
+export function useStyleSampleText(name: string, enabled: boolean) {
+  return useQuery({
+    queryKey: keys.styleSampleText(name),
+    queryFn: () => unwrap(api.GET('/context/style-samples/{name}/text', { params: { path: { name } } })),
+    enabled,
+  })
+}
+
+/** Sube una muestra de estilo. Va en JSON (base64) para que la API compruebe que viene de la UI. */
+export function useUploadStyleSample() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const bytes = new Uint8Array(await file.arrayBuffer())
+      let binary = ''
+      for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000))
+      return unwrap(api.POST('/context/style-samples', { body: { filename: file.name, content_base64: btoa(binary) } }))
+    },
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: keys.styleSamples })
+      void client.invalidateQueries({ queryKey: keys.context, exact: true })
+    },
+  })
+}
+
+export function useDeleteStyleSample() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (name: string) =>
+      unwrap(api.DELETE('/context/style-samples/{name}', { params: { path: { name } }, body: {} })),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: keys.styleSamples })
+      void client.invalidateQueries({ queryKey: keys.context, exact: true })
+    },
+  })
 }
 
 /** Abre la carpeta en el explorador; si no se puede, la respuesta trae la ruta para copiarla. */

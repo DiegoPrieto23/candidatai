@@ -65,6 +65,18 @@
     "not_ats_friendly": "No apta para ATS",
     "pdf_only": "Solo PDF",
     "truncated": "Recortado",
-    "details_skipped": "Detalles omitidos"
+    "details_skipped": "Detalles omitidos",
+    "orphan_heading": "Título huérfano",
+    "large_gap": "Hueco grande",
+    "footer_overlap": "Texto en el pie o el margen",
+    "nearly_empty_last_page": "Última página casi vacía",
+    "text_layer": "Texto del PDF incompleto"
+  },
+  "layout": {
+    "page": "Página {{page}}",
+    "fix": {
+      "template": "Prueba otra plantilla abajo, sin agente.",
+      "content": "Hay que recortar contenido: «Generar CV» con tu agente recorta lo menos relevante para la oferta."
+    }
   }
 }

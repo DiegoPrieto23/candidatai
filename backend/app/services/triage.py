@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.core.policies import get_policies
 from app.schemas.llm_io import JobExtraction
-from app.services import extractions, jobs
+from app.services import assess_threshold, extractions, jobs
 from app.services import profile as profiles
 from app.services.matching import service as matching
 from app.services.pipeline import Stage
@@ -27,6 +27,9 @@ class TriageQueue(BaseModel):
     items: list[TriageItem]
     total: int  # ofertas en `pending_triage` (puede haber más que `items`)
     triage_threshold: int
+    # Fase 25.4: «Evaluar encaje» en segundo plano solo valora desde este score; la UI dice por qué
+    # se queda sin valorar una oferta por debajo.
+    assess_min_score: int
     profile_missing: bool  # sin perfil no hay score: la UI lo avisa
 
 
@@ -60,5 +63,6 @@ def triage_queue(session: Session, limit: int = MAX_QUEUE) -> TriageQueue:
         items=items,
         total=page.total,
         triage_threshold=get_policies().scoring.triage_threshold,
+        assess_min_score=assess_threshold.get_threshold(session).value,
         profile_missing=profile_missing,
     )

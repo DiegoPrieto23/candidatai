@@ -8,7 +8,7 @@ dependencies = [
     "uvicorn[standard]",
     "sqlalchemy>=2",
     "alembic",
-    "pydantic>=2",
+    "pydantic>=2.12",  # `Field(exclude_if=…)` del perfil (fase 25.2)
     "pydantic-settings",
     "typer",
     "httpx",
@@ -72,3 +72,4 @@ known-third-party = ["alembic"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra"
+markers = ["layout: con la comprobación de maquetación del PDF encendida (fase 25.5)"]

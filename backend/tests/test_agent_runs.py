@@ -241,7 +241,7 @@ def test_run_ok_saves_progress_result_and_usage(db: None, fake: Path) -> None:
     row = run_row(run_id)
     assert row.status == "done" and row.result == "Procesadas 2 ofertas, 0 fallidas."
     assert row.session_id == "0f7c2d1e-aaaa-bbbb-cccc-123456789abc"
-    assert row.usage == {"num_turns": 4, "duration_ms": 1234, "total_cost_usd": 0.0}
+    assert row.usage == {"turns": 4, "duration_ms": 1234, "cost_usd": 0.0}
     assert row.started_at and row.finished_at and row.pid
     texts = [p["text"] for p in row.progress]
     assert "list_jobs" in texts
@@ -344,7 +344,9 @@ def test_cancel_queued_and_finished(db: None, fake: Path) -> None:
     assert agent_runner.run_next() is None  # la cancelada no se ejecuta
 
 
-def test_one_run_at_a_time(db: None, fake: Path) -> None:
+def test_one_run_at_a_time(db: None, fake: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    # Sin ofertas, «Evaluar encaje» no se lanzaría (fase 25.4): aquí da igual con cuáles.
+    monkeypatch.setattr(agent_runs, "_assess_prompt", lambda *_a: "Usa el skill assess-fit con 1.")
     first = start("process-jobs")
     second = start("assess-fit")
     with session_scope() as session:

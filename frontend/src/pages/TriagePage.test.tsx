@@ -54,6 +54,17 @@ describe('Por revisar', () => {
     expect(screen.getByText('2 ofertas por revisar, de más a menos encaje')).toBeInTheDocument()
   })
 
+  it('dice por qué una oferta bajo el umbral se queda sin valorar en segundo plano (fase 25.4)', async () => {
+    mockTriage([triageItem(1, 82), triageItem(2, 40)])
+    renderApp('/por-revisar')
+    const detail = await screen.findByRole('article', { name: 'Oferta seleccionada' })
+    expect(within(detail).queryByText(/Sin valorar en segundo plano/)).not.toBeInTheDocument()
+    await userEvent.keyboard('j')
+    await waitFor(() => expect(within(screen.getByRole('article', { name: 'Oferta seleccionada' })).getByRole('heading', { name: 'Oferta 2' })).toBeInTheDocument())
+    const note = within(screen.getByRole('article', { name: 'Oferta seleccionada' })).getByRole('note')
+    expect(note).toHaveTextContent('Sin valorar en segundo plano: su score (40) está por debajo del umbral (45).')
+  })
+
   it('se mueve con J/K y flechas, y abre la ficha con O', async () => {
     mockTriage([triageItem(1, 90), triageItem(2, 80), triageItem(3, 70)], {
       'GET /jobs/2': jobView({ id: 2, title: 'Oferta 2' }),

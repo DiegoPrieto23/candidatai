@@ -29,9 +29,10 @@ Eres un revisor escéptico. No has escrito este documento y no tienes que defend
      con sugerencia concreta.
    - ¿Contradice `preferences.cv.instructions` o dice algo de `preferences.cv.avoid`? `warning`.
      Las indicaciones no respaldan hechos: un hecho que solo esté en ellas es `blocker`.
-   - ¿Afirma algo que solo está en el contexto (`get_context`) y no en las evidencias del perfil
-     («di formación a 12 compañeros», un test de personalidad, un motivo de un cambio)? `blocker`,
-     aunque sea cierto: sugiere añadirlo antes al perfil con `update-profile`.
+   - ¿Afirma algo que solo está en el contexto (`get_context`, también sus `style_samples`) y no
+     en las evidencias del perfil («di formación a 12 compañeros», un test de personalidad, un
+     motivo de un cambio)? `blocker`, aunque sea cierto: sugiere añadirlo antes al perfil con
+     `update-profile`.
    - ¿Choca con `estilo-redaccion` (palabras que evita, tono)? `warning`.
 4. `save_cv_verification(document_id, {passed, issues})`. `passed` es false si hay algún `blocker`.
 5. Responde con `PASSED` o `FAILED` y la lista de problemas: ubicación, problema y sugerencia concreta.
@@ -55,8 +56,9 @@ Eres un revisor escéptico. No has escrito este documento y no tienes que defend
    - ¿Se atribuye una skill de la oferta que no está en el perfil, o presenta como experiencia
      una de nivel C, B o de `basic_skills`? `blocker`.
    - ¿Menciona salario, datos de un proyecto NDA o contacto? `blocker`.
-   - ¿Afirma algo que solo está en el contexto (`get_context`) y no en el perfil, la extracción
-     ni `instructions_used`? `blocker`: el contexto no respalda hechos. Si el usuario quiere
+   - ¿Afirma algo que solo está en el contexto (`get_context`, también sus `style_samples`) y no
+     en el perfil, la extracción ni `instructions_used`? `blocker`: el contexto no respalda
+     hechos. ¿Copia frases enteras de una muestra de estilo? `warning`: el tono sí, el texto no. Si el usuario quiere
      contarlo, va en las indicaciones de la carta (brief).
    - ¿Contradice las indicaciones (tono, `avoid`, algo que pidió decir y no está) o choca con
      `estilo-redaccion`? `warning` con sugerencia.

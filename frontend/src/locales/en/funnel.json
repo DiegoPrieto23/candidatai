@@ -39,7 +39,8 @@
     "applied": "Applied",
     "replied": "Replied",
     "interview": "Interview",
-    "reply": "Reply rate"
+    "reply": "Reply rate",
+    "costPerApplied": "Cost per sent"
   },
   "response": {
     "title": "First reply",
@@ -148,6 +149,10 @@
       "days": {
         "label": "Speed",
         "hint": "Days between the job coming in and you sending it."
+      },
+      "signal": {
+        "label": "Signal",
+        "hint": "Rate of sent applications with each doubtful-job signal (current ones; a job counts in each it has) against those with none. Do they reply less?"
       }
     },
     "groups": {
@@ -180,6 +185,14 @@
         "2_3": "2-3 days",
         "4_7": "4-7 days",
         "8_plus": "8 days or more"
+      },
+      "signal": {
+        "salary_range_wide": "Wide salary range",
+        "employer_hidden": "Hidden employer or agency",
+        "fixed_term": "Fixed-term",
+        "stale_repost": "Posted for months",
+        "ai_screening": "AI screening",
+        "none": "No signals"
       }
     }
   },
@@ -191,5 +204,28 @@
     "title": "No data yet",
     "period": "Try a longer period.",
     "body": "The funnel fills up as you add jobs (<to>New job</to>), review them and log what happens with each application."
+  },
+  "cost": {
+    "title": "Agent cost",
+    "hint": "What this period's jobs used in background runs, as each agent reports it (terminal sessions don't count). In dollars if the agent gives them; otherwise, in tokens.",
+    "none": "No background runs with jobs from this period.",
+    "total": "Total",
+    "perApplied": "Per sent application",
+    "perInterview": "Per interview",
+    "tokens": "{{tokens}} tokens"
+  },
+  "story": {
+    "title": "Your search in numbers",
+    "hint": "Since the first posting, whatever the period above. Numbers only: no companies, roles or amounts.",
+    "note": "To show in your README, or anywhere, whether it works. The app never publishes it: you copy it if you want to. Also with <code>cai stats story</code>.",
+    "period": "From {{start}} to {{end}}",
+    "evaluated": "Evaluated",
+    "applied": "Applications",
+    "replied": "With a reply",
+    "interviews": "Interviews",
+    "offers": "Offers received",
+    "copyEs": "Copy in Spanish",
+    "copyEn": "Copy in English",
+    "lineLabel": "Line for the README"
   }
 }

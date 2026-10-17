@@ -150,4 +150,64 @@ describe('Empresas objetivo', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Pausar' }))
     expect(calls.find((c) => c.path === '/sources/1/active')?.body).toEqual({ active: false })
   })
+
+  it('ofrece los ATS nuevos con su ejemplo de slug y su idioma en Personio', async () => {
+    const calls = mockApi({
+      'GET /status': status(),
+      'GET /sources': { sources: [] },
+      'POST /sources': source({ id: 6, kind: 'personio', kind_label: 'Personio', name: 'Brétema' }),
+    })
+    renderApp('/empresas')
+    const form = await screen.findByRole('form', { name: 'Añadir fuente' })
+    await userEvent.click(within(form).getByRole('combobox', { name: 'Origen' }))
+    for (const name of ['Teamtailor', 'Workable', 'SmartRecruiters', 'Recruitee', 'Manfred (búsqueda)', 'freehire (búsqueda)']) {
+      expect(await screen.findByRole('option', { name })).toBeInTheDocument()
+    }
+    await userEvent.click(screen.getByRole('option', { name: 'Personio' }))
+    expect(within(form).getByText('<slug>.jobs.personio.de')).toBeInTheDocument()
+    expect(within(form).getByRole('link', { name: 'Cómo encontrarlo' })).toHaveAttribute(
+      'href',
+      expect.stringContaining('docs/FUENTES_OFERTAS.md'),
+    )
+    await userEvent.type(within(form).getByLabelText('Empresa'), 'Brétema')
+    await userEvent.type(within(form).getByLabelText('Slug del tablero'), 'bretema')
+    await userEvent.type(within(form).getByLabelText('Idioma de la descripción (opcional)'), 'EN')
+    await userEvent.click(within(form).getByRole('button', { name: 'Añadir' }))
+    expect(await within(form).findByText(/«Brétema» añadida/)).toBeInTheDocument()
+    expect(calls.find((c) => c.method === 'POST')?.body).toMatchObject({
+      kind: 'personio',
+      slug: 'bretema',
+      language: 'en',
+      query: null,
+    })
+  })
+
+  it('busca en freehire por país y solo en remoto', async () => {
+    const calls = mockApi({
+      'GET /status': status(),
+      'GET /sources': { sources: [] },
+      'POST /sources/test': { ...preview, kind: 'freehire', name: 'Datos remoto' },
+    })
+    renderApp('/empresas')
+    const form = await screen.findByRole('form', { name: 'Añadir fuente' })
+    await userEvent.click(within(form).getByRole('combobox', { name: 'Origen' }))
+    await userEvent.click(await screen.findByRole('option', { name: 'freehire (búsqueda)' }))
+    expect(within(form).queryByLabelText('Slug del tablero')).not.toBeInTheDocument()
+    expect(within(form).getByText('Sin claves. Busca en el título de las ofertas.')).toBeInTheDocument()
+    await userEvent.type(within(form).getByLabelText('Nombre de la búsqueda'), 'Datos remoto')
+    await userEvent.type(within(form).getByLabelText('Palabras de búsqueda'), 'data engineer')
+    const country = within(form).getByLabelText('País')
+    await userEvent.clear(country)
+    await userEvent.type(country, 'PT')
+    await userEvent.click(within(form).getByLabelText('Solo ofertas en remoto'))
+    await userEvent.click(within(form).getByRole('button', { name: 'Probar' }))
+    expect(await within(form).findByText('12 ofertas encontradas, 3 tras filtros')).toBeInTheDocument()
+    expect(calls.find((c) => c.method === 'POST')?.body).toMatchObject({
+      kind: 'freehire',
+      query: 'data engineer',
+      country: 'pt',
+      remote_only: true,
+      slug: null,
+    })
+  })
 })

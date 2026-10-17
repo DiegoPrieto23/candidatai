@@ -10,9 +10,9 @@ Origen de ofertas.
 | Columna | Tipo | Notas |
 |---|---|---|
 | id | int PK | |
-| kind | str | `manual_url`, `manual_text`, `greenhouse`, `lever`, `ashby`, `infojobs`, `adzuna`; desde la fase 09b, también `email_alerts`, `browser_capture` y `agent_browse`; desde la fase 22, `linkedin_public` (una sola fila, se crea al activarla) |
+| kind | str | `manual_url`, `manual_text`, `greenhouse`, `lever`, `ashby`, `infojobs`, `adzuna`; desde la fase 25.1, también `personio`, `teamtailor`, `workable`, `smartrecruiters`, `recruitee`, `manfred` y `freehire`; desde la fase 09b, también `email_alerts`, `browser_capture` y `agent_browse`; desde la fase 22, `linkedin_public` (una sola fila, se crea al activarla) |
 | name | str | Etiqueta legible |
-| config | JSON | Parámetros del conector, validados por tipo (`app/schemas/sources.py`): ATS `{slug, region, title_keywords}` (`region: eu` solo en Lever); InfoJobs `{query, province, since, title_keywords}`; Adzuna `{query, where, country, max_days_old, title_keywords}`; plataforma `agent_browse` `{platform, search_urls, priority, access, allow_agent_browsing, max_offers, notes}` (el nombre va en `name`); `linkedin_public` `{enabled, fetch_detail, enabled_at, blocked_at}` (fase 22: las búsquedas salen de la plataforma LinkedIn). Nunca claves: van en `.env` |
+| config | JSON | Parámetros del conector, validados por tipo (`app/schemas/sources.py`): ATS `{slug, region, title_keywords}` (`region: eu` solo en Lever; Personio, además, `language` si se fija); InfoJobs `{query, province, since, title_keywords}`; Adzuna `{query, where, country, max_days_old, title_keywords}`; Manfred `{query, lang, title_keywords}`; freehire `{query, country, remote_only, title_keywords}`; plataforma `agent_browse` `{platform, search_urls, priority, access, allow_agent_browsing, max_offers, notes}` (el nombre va en `name`); `linkedin_public` `{enabled, fetch_detail, enabled_at, blocked_at}` (fase 22: las búsquedas salen de la plataforma LinkedIn). Nunca claves: van en `.env` |
 | active | bool | Las activas con conector entran en la ingesta diaria del worker |
 | last_run_at | datetime? | Última ejecución del conector que no falló entera. Si falla, no avanza: el worker la vuelve a encolar al arrancar (el fallo queda en `source_runs`) |
 
@@ -51,7 +51,7 @@ Una fila por ejecución de una fuente; la usan los conectores y, desde la 09b, a
 | location_raw | str? | Tal cual |
 | raw_text | text | Texto limpio de la oferta. **No confiable** |
 | risk_flags | JSON | Riesgo de inyección detectado por el código: `hidden_text`, `injection_phrase`… |
-| signals | JSON | Observaciones que no son riesgo (fase 16, ADR-028): `possibly_closed`, `liveness`, `open_confirmed`, `reposted`. Ver §Fase 16 |
+| signals | JSON | Observaciones que no son riesgo (fase 16, ADR-028): `possibly_closed`, `liveness`, `open_confirmed`, `reposted`; y de oferta dudosa (fase 25.3): `salary_range_wide`, `employer_hidden`, `fixed_term`, `stale_repost`, `ai_screening`. Ver §Fase 16 |
 | fingerprint | str UNIQUE | Ver abajo |
 | duplicate_of | FK jobs? | Si se detecta como duplicado difuso |
 | posted_at | datetime? | |
@@ -124,7 +124,7 @@ cambia `documents` ni necesita al agente.
 | docx_path / pdf_path | str? | Relativos a `data/` (`cvs/<job_id>/<document_id>/<render_id>/CV-<Nombre>.pdf`); `docx_path` vacío en el motor html |
 | pages | int | |
 | keyword_coverage | JSON | Keywords de la oferta presentes y ausentes en el PDF |
-| warnings | JSON | `[{code, message}]`: `too_long`, `not_ats_friendly`, `font_substituted`… |
+| warnings | JSON | `[{code, message, page?, fix?}]`: `too_long`, `not_ats_friendly`, `font_substituted`…; desde la fase 25.5, los de maquetación del PDF (`orphan_heading`, `large_gap`, `footer_overlap`, `nearly_empty_last_page`, `text_layer`) con la página y cómo arreglarlo (`fix`: `template` o `content`). Los demás no llevan `page` ni `fix`. Sin migración |
 | selected | bool | El que se usará al enviar; como mucho uno por documento. El primer render sin `too_long` queda seleccionado; después lo cambias en la UI (`select_render`, sin evento: no cambia la etapa) |
 | created_at | datetime | |
 
@@ -434,6 +434,33 @@ Ficheros en `data/` (gitignored), fuera de la BD:
   medias. Si la carpeta ya existe no se toca: rehacer el CV o la carta después no cambia lo archivado.
   `JobView.archive_folder` (ficha de la UI) la da relativa a `data/`.
 
+## Ampliaciones de la fase 25.7 («Mi perfil» editable, ADR-039)
+
+Ficheros en `data/`:
+
+| Ruta | Qué es |
+|---|---|
+| `profile-history/<AAAAMMDDTHHMMSSffffffZ>.yaml` | Copia de `profile.yaml` antes de cada guardado desde la UI (las `profile_editing.history_keep` últimas, 20 por defecto). «Deshacer» escribe la más reciente y la quita |
+| `documentos/estilo/<nombre>` | Muestras de estilo (`.txt`, `.md`, `.docx`, `.pdf`), subidas desde «Mi perfil» (límites en `profile_editing`) |
+| `documentos/estilo/.texto/<nombre>.txt` | Su texto, extraído al subirlas: es lo que lee el agente (`get_context.style_samples`) |
+
+### `profile_edits` (migración 0024)
+
+Auditoría de lo que el usuario guarda desde «Mi perfil». No va en `events`, que son de una oferta.
+Sin el contenido: solo qué, cuándo y el sha256 del fichero.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | int PK | |
+| target | str | `profile`, `context` o `style_sample` |
+| section | str? | La sección del perfil, el fichero de contexto o el nombre de la muestra; `null` al deshacer |
+| action | str | `save`, `undo`, `upload` o `delete` |
+| hash_before / hash_after | str? | sha256 de los bytes del fichero antes y después (`null` si no existía) |
+| created_at | datetime | |
+
+Un guardado del perfil que no cambia los datos (comentarios aparte) no crea versión en
+`profile_versions` ni encola `rescore_all`, pero sí deja su copia y su fila.
+
 ## Ampliaciones de la fase 14
 
 ### `skill_gap_marks`
@@ -513,6 +540,17 @@ ADR-028). `risk_flags` sigue significando solo eso. Las escribe el código, nunc
 | `liveness` | `checked_at`, `status` (`open`, `possibly_closed`, `unknown`, `skipped`), `reason?`, `detail`, `http_status?` | Última comprobación, sea cual sea |
 | `open_confirmed` | `at`, `reason?` | «Sigue abierta» en la UI: ese mismo motivo ya no vuelve a avisar, hasta que una comprobación dé `open` (entonces se borra) |
 | `reposted` | `count` (días distintos con publicación nueva), `dates[]`, `channel`, `window_days` | `services/reposts.py`, en todas las ofertas del grupo (misma empresa, título normalizado y ubicación). Se recalcula al ver una publicación nueva; no caduca sola |
+| `salary_range_wide` (25.3) | `min`, `max`, `currency?`, `pct`, `threshold_pct` | `services/doubtful.py` al guardar la extracción: el máximo supera al mínimo en más de `doubtful.salary_range_max_pct` % |
+| `employer_hidden` (25.3) | `reason` (`agency`, `agency_for_client`, `unnamed`), `origin` (`extraction`, `company`), `client?`, `matched?` | Ídem: `is_agency` de la extracción, o el nombre de la empresa coincide con `agencies` o `hidden_employer` de `config/doubtful_patterns.yaml` |
+| `fixed_term` (25.3) | `origin` | Ídem: `contract_type: fixed_term` en la extracción |
+| `ai_screening` (25.3) | `origin` (`extraction`, `text`), `matched?` | Ídem: `mentions_ai_screening`, o una frase de `ai_screening` en el texto |
+| `stale_repost` (25.3) | `count`, `channel`, `first_seen`, `last_seen`, `span_days` | `services/reposts.py`, con todo el historial de `job_sightings` del grupo, sin ventana: `count ≥ doubtful.stale_repost_min_count` o `span_days ≥ doubtful.stale_repost_min_span_days` |
+
+Las cinco de la fase 25.3 son **señales de oferta dudosa**: no cambian el score ni los filtros
+duros, salvo `employer_hidden` y `fixed_term` si están en `preferences.exclude_signals` del perfil
+(filtro `signal`). `cai jobs signals --recompute` las recalcula todas. Sin migración: es la misma
+columna JSON. Las extracciones anteriores a la fase no traen los campos nuevos, así que solo
+cuentan las señales del nombre, el texto, el salario y las publicaciones.
 
 ### `job_sightings`
 Cada publicación vista de una oferta (migración 0015, que rellena una fila por oferta existente).
@@ -601,7 +639,7 @@ el agente sí los registra, por sus herramientas, como siempre).
 
 ### `agent_runs`
 Ejecuciones del agente en segundo plano (ADR-032). Es su propia cola: la llena la UI
-(`POST /agent/runs`) y la vacía el worker en un hilo aparte, de una en una.
+(`POST /agent/runs`) y la vacía el worker en un hilo aparte, de una en una o, desde la fase 25.4, hasta `background_runs.max_parallel` a la vez (ADR-038).
 
 | Columna | Tipo | Notas |
 |---|---|---|
@@ -622,7 +660,7 @@ Ejecuciones del agente en segundo plano (ADR-032). Es su propia cola: la llena l
 | result | text? | La respuesta final (hasta 20 000 caracteres) |
 | questions | JSON | Las líneas «PREGUNTA:» del resultado |
 | error | text? | |
-| usage | JSON? | `num_turns`, `duration_ms`, `total_cost_usd` (el que informa el agente; con suscripción no se factura) y `denied_tools`; con OpenCode, también `input_tokens`, `output_tokens` y `cache_read_tokens` |
+| usage | JSON? | Desde la fase 25.4, las mismas claves para todos los agentes, todas opcionales: `input_tokens`, `output_tokens`, `cached_tokens`, `turns`, `duration_ms` y `cost_usd` (el que informa el agente; con suscripción no se factura), más `denied_tools`. Las filas de antes usaban `num_turns`, `total_cost_usd` y `cache_read_tokens`: `agent_usage.normalize_usage` las traduce al leer. Sin migración |
 | cancel_requested | bool | La UI lo pide; el worker para el proceso en ≤ 2 s |
 | pid | int? | |
 | created_at / started_at / finished_at | datetime | |

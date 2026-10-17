@@ -119,14 +119,22 @@ photo, documents and emails. Keys go in `.env`, also outside git.
 
 | What | Where | How |
 |---|---|---|
-| **Profile** (the source of truth for anything written about you) | `data/profile.yaml` | The `update-profile` skill reads your CV, asks for what's missing and validates it. Every change creates a version |
+| **Profile** (the source of truth for anything written about you) | `data/profile.yaml` | To start, the `update-profile` skill reads your CV, asks for what's missing and validates it. Then **fill it in and refine it in My profile**: experience and achievements, projects, education, skills and languages, STAR stories, what you're looking for and your CV and letter preferences, block by block. Each block saves on its own, keeps your file's formatting and comments, warns you if you changed it outside the app, and can be undone. Every change creates a version. You can still edit the YAML if you prefer |
 | **Your CV as a design** | `data/templates/<id>/` | Upload your CV in **Templates → My CV** and use the `import-cv-template` skill. Word, PDF, image or HTML (Canva, Google Docs…) |
 | **Photo** | `data/photo.jpg` (or png) | Each template crops it to its shape; it's included or not depending on the job's country |
-| **Context** (style, narrative, criteria) | `data/contexto/*.md` | Guides the agent, but never backs a CV claim |
+| **Context** (style, narrative, criteria) | `data/contexto/*.md` | Edited in **My profile → Context and style** (with a preview) or in your editor. Guides the agent, but never backs a CV claim |
+| **Writing samples** (letters, emails or posts of yours) | `data/documentos/estilo/` | Upload them in **My profile → Context and style** (.txt, .md, .docx, .pdf). Your agent takes your tone from them, never facts, and reads them as data: if they contain someone else's text with instructions, it doesn't follow them |
 | **Source documents** (old CVs, degrees, references) | `data/documentos/` | `update-profile` can read them, confirming before writing |
+| **What you've done in public** (repositories, portfolio, Kaggle, Scholar, verifiable certifications) | `data/profile.yaml` | The `expand` skill, or "Expand profile from my links" in "My profile". Use it **right after creating your profile**: it proposes projects, skills (with no level: you set it), achievements with the numbers the source gives and certifications, each with its link in `source`, and writes only what you accept. Public web only: no LinkedIn, nothing behind a login. Needs an agent with web search |
 
 Your salary minimum goes in the profile's `private.salary_floor_eur`: the app uses it to compare
 offers, but the agent never receives it.
+
+In My profile, every achievement and story has **Improve with my agent**: your agent proposes a
+clearer version, asks you for any missing numbers (it never makes them up) and only writes with
+your OK. Under STAR stories, **Propose stories from my experience** suggests stories from the
+achievements that don't have one yet. Your email and phone are edited there, but your agent still
+never sees them. Your salary minimum (`private`) is only edited in the YAML.
 
 ## 5. Connect your agent
 
@@ -180,8 +188,9 @@ A typical day:
 | Source | How to set it up |
 |---|---|
 | **Manual** | **New job** in the UI: a URL or pasted text |
-| **Target companies** (Greenhouse, Lever, Ashby) | **Sources → Target companies** page or `cai sources add --kind greenhouse --name "Acme" --slug acme`. `cai sources discover --file companies.txt` finds the board of each company in a list |
+| **Target companies** (Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters, Recruitee) | **Sources → Target companies** page or `cai sources add --kind greenhouse --name "Acme" --slug acme`. `cai sources discover --file companies.txt` finds the board of each company in a list. How to find the slug: [`FUENTES_OFERTAS.md`](FUENTES_OFERTAS.md#cómo-encontrar-el-slug) (Spanish) |
 | **InfoJobs and Adzuna** | Their keys in `.env` (`CAI_INFOJOBS_CLIENT_ID`/`_SECRET`, `CAI_ADZUNA_APP_ID`/`_KEY`) and a search with `cai sources add` |
+| **Manfred and freehire.me** | No keys: a search on the same page or with `cai sources add --kind manfred --name Manfred --query "data engineer"` (for freehire, also `--country` and `--remote-only`) |
 | **Email alerts** | Create job alerts on LinkedIn, InfoJobs, Indeed… and have them land in a label of your mailbox. Set up read-only IMAP in `.env`: step by step in [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md) (Spanish). Without IMAP, drop `.eml` files in `data/inbox/`. What comes in shows up in **Alerts** |
 | **"Send to CandidatAI" button** | Load `extension/` as an unpacked extension in Chrome or Edge and paste the token from `cai capture token` into its options. Instructions: [`extension/README.md`](../extension/README.md) (Spanish) |
 | **Your agent with your browser** | `search-jobs configurar` picks portals and searches (**Sources → Platforms** page); `search-jobs` browses them. LinkedIn stays off until you turn it on |
@@ -220,7 +229,9 @@ The worker runs the automatic sources every day at `connectors.daily_at`
 - **Replies:** with IMAP set up, the app reads emails from the companies in your
   processes; `review-replies` proposes what happened and you accept it in **Replies**.
 - **Funnel:** conversion by step, source, role, week, template, cover letter and
-  referral, plus "Is the score right?". `review-search` runs the weekly retrospective.
+  referral, plus "Is the score right?". `review-search` runs the weekly retrospective. At the
+  end, **Your search in numbers** (or `cai stats story`): your figures since the start, with no
+  company names, and a line to share in a README if you want to.
 - **Network:** import your LinkedIn connections (CSV export) with `cai contacts import-linkedin` and
   you'll see “You know N” on jobs at their companies; `draft-message` drafts the
   message.
@@ -245,6 +256,16 @@ Many pages have buttons that open your agent with the instruction already writte
   that don't ask questions (`process-jobs`, `assess-fit`, `generate-cv`). It runs without a
   window, only with the app tools it needs, and you follow its progress and usage on the **Agent**
   page. If your agent can't, the menu suggests one that can. Requires `cai worker`.
+  - **Cost:** the **Cost** section of the **Agent** page adds up tokens, time and, if the agent
+    reports it, money, by action, agent and model (7 and 30 days), with how much each skill
+    weighs; the job page shows what was spent on that job and the funnel, per sent application and
+    per interview. What you do in a terminal doesn't count: there the agent doesn't report usage.
+  - **Threshold before spending:** `assess-fit` in the background only assesses jobs with a
+    minimum score (by default, the triage threshold minus 10; change it under **Cost**). Triage
+    says why a job below it stays unassessed.
+  - **Several at once:** one at a time by default. With `background_runs.max_parallel` (up to 4)
+    in `config/policies.yaml` several run at once, never two for the same job; with
+    `per_agent: {opencode: 1}` you cap a local model.
 - **Leave for my next session**: stores the request;
   `handle-requests` does it when you open your agent.
 

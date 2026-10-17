@@ -23,8 +23,10 @@ Vas a implementar la fase de CandidatAI indicada en los argumentos (p. ej. `03`)
    requieren una prueba manual del usuario y cómo hacerla.
 7. Delega en el rol `reviewer` la revisión de los cambios de la fase y aplica lo razonable.
 8. Cierra: ejecuta `uv run scripts/sync_agents.py --check`, marca la fase en `docs/ROADMAP.md`,
-   añade una entrada al registro (fecha, agente usado, resumen, decisiones y deuda pendiente) y
-   propón un mensaje de commit. No hagas commit sin que te lo pidan; cuando lo pidan, va a la
-   rama de la fase. Fusionar en `main` o hacer push, solo si lo piden.
+   añade una entrada al registro (fecha, agente usado, resumen, decisiones y deuda pendiente),
+   actualiza la sección «Sin publicar» de `CHANGELOG.md` con lo que note quien usa la app (en su
+   grupo: Añadido, Cambiado, Eliminado, Corregido, Seguridad…) y propón un mensaje de commit.
+   No hagas commit sin que te lo pidan; cuando lo pidan, va a la rama de la fase. Fusionar en
+   `main` o hacer push, solo si lo piden.
 
 Si la fase es demasiado grande para una sesión, propón partirla en subfases y hazlas de una en una.

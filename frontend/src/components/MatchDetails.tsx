@@ -116,21 +116,30 @@ function SkillCoverage({ coverage }: { coverage: Schemas['SkillCoverage'] }) {
   )
 }
 
-function Assessment({ match }: { match: MatchView }) {
+function Assessment({ match, assessMinScore }: { match: MatchView; assessMinScore?: number }) {
   const { t } = useTranslation('match')
   const a = match.assessment
   if (!a) {
+    // Fase 25.4: por debajo del umbral, «Evaluar encaje» en segundo plano no la valora.
+    const below = assessMinScore != null && match.score < assessMinScore
     return (
-      <p className="flex items-start gap-2 text-sm text-muted-foreground">
-        <RobotIcon className="mt-0.5 size-4 shrink-0" />
-        <span>
-          <Trans
-            t={t}
-            i18nKey="notAssessed"
-            components={{ code: <code className="rounded bg-muted px-1 py-0.5 font-mono text-[0.85em] text-foreground" /> }}
-          />
-        </span>
-      </p>
+      <div className="space-y-1.5">
+        <p className="flex items-start gap-2 text-sm text-muted-foreground">
+          <RobotIcon className="mt-0.5 size-4 shrink-0" />
+          <span>
+            <Trans
+              t={t}
+              i18nKey="notAssessed"
+              components={{ code: <code className="rounded bg-muted px-1 py-0.5 font-mono text-[0.85em] text-foreground" /> }}
+            />
+          </span>
+        </p>
+        {below && (
+          <p role="note" className="pl-6 text-xs text-muted-foreground">
+            {t('belowAssessThreshold', { score: match.score, threshold: assessMinScore })}
+          </p>
+        )}
+      </div>
     )
   }
   return (
@@ -197,7 +206,9 @@ export function FilterFailures({ failures }: { failures: Schemas['FilterFailure'
 }
 
 /** Desglose completo de un match: filtros, componentes, skills, notas y valoración del agente. */
-export function MatchDetails({ match }: { match: MatchView }) {
+/** `assessMinScore`: el umbral de «Evaluar encaje» en segundo plano (fase 25.4), para decir por qué
+ *  una oferta se queda sin valorar. */
+export function MatchDetails({ match, assessMinScore }: { match: MatchView; assessMinScore?: number }) {
   const { t } = useTranslation('match')
   const b = match.breakdown
   return (
@@ -220,7 +231,7 @@ export function MatchDetails({ match }: { match: MatchView }) {
         </ul>
       )}
       <Section title={t('sections.assessment')}>
-        <Assessment match={match} />
+        <Assessment match={match} assessMinScore={assessMinScore} />
       </Section>
     </div>
   )

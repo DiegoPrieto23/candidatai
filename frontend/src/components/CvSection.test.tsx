@@ -55,6 +55,31 @@ describe('Sección CV de la ficha', () => {
     expect(within(section).queryByRole('button', { name: 'Renderizar' })).not.toBeInTheDocument()
   })
 
+  it('los avisos de maquetación dicen la página y cómo arreglarlo (fase 25.5)', async () => {
+    mockApi({
+      'GET /status': status(),
+      'GET /jobs/1': cvReady,
+      'GET /jobs/1/cv': jobCv([
+        renderResult(1, {
+          selected: true,
+          warnings: [
+            { code: 'large_gap', message: 'Hay un hueco de un 20 % de la página 1 en medio del documento.', page: 1, fix: 'template' },
+            { code: 'orphan_heading', message: '«Formación» queda al pie de la página 1.', page: 1, fix: 'content' },
+            { code: 'pdf_only', message: 'Solo hay PDF.' },
+          ],
+        }),
+      ]),
+      'GET /templates': templateList(),
+    })
+    renderApp('/jobs/1')
+    const section = await screen.findByRole('region', { name: 'CV' })
+    const render = await within(section).findByRole('listitem', { name: 'Render 1' })
+    expect(within(render).getByText('Página 1 · Prueba otra plantilla abajo, sin agente.')).toBeInTheDocument()
+    expect(within(render).getByText(/Página 1 · Hay que recortar contenido/)).toBeInTheDocument()
+    expect(within(render).getAllByText(/^Página \d/)).toHaveLength(2) // `pdf_only` no lleva página
+    expect(within(render).getByText('Para enviar')).toBeInTheDocument() // no bloquea la selección
+  })
+
   it('muestra la verificación y los renders con avisos, páginas y cobertura', async () => {
     mockApi({
       'GET /status': status(),

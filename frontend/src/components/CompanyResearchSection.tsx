@@ -1,6 +1,6 @@
 import { Fragment, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ArrowSquareOutIcon, BuildingsIcon, WarningIcon } from '@phosphor-icons/react'
+import { ArrowSquareOutIcon, BuildingsIcon, FlagIcon, WarningIcon } from '@phosphor-icons/react'
 import type { CompanyResearchContent, JobView, Stage } from '@/api/client'
 import { useCompanyResearch } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
@@ -112,6 +112,24 @@ export function CompanyResearchSection({ job }: { job: JobView }) {
                 </div>
               )
             })}
+            {content.red_flags && content.red_flags.length > 0 && (
+              <div>
+                <h3 className="mb-1 flex items-center gap-1.5 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                  <FlagIcon className="size-3.5" weight="bold" aria-hidden />
+                  {t('redFlags')}
+                </h3>
+                <ul className="space-y-1.5" aria-label={t('redFlags')}>
+                  {content.red_flags.map((flag, i) => (
+                    <li key={i} className="leading-relaxed">
+                      <span className="font-medium">{t(`redFlagKind.${flag.kind}`)}</span>{' '}
+                      <span className="text-muted-foreground">({formatDate(flag.date)})</span>:{' '}
+                      <Cited text={flag.text} sources={content.sources} />
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-1 text-xs text-muted-foreground">{t('redFlagsHint')}</p>
+              </div>
+            )}
             {content.stack && content.stack.length > 0 && (
               <div>
                 <h3 className="mb-1.5 text-xs font-medium tracking-wide text-muted-foreground uppercase">{t('stack')}</h3>

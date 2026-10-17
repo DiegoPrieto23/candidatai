@@ -48,10 +48,17 @@ from app.services.ingestion.base import (
     RawJob,
     make_client,
 )
+from app.services.ingestion.freehire import FreehireConnector
 from app.services.ingestion.greenhouse import GreenhouseConnector
 from app.services.ingestion.infojobs import InfoJobsConnector
 from app.services.ingestion.lever import LeverConnector
+from app.services.ingestion.manfred import ManfredConnector
+from app.services.ingestion.personio import PersonioConnector
 from app.services.ingestion.prefilter import Prefilter
+from app.services.ingestion.recruitee import RecruiteeConnector
+from app.services.ingestion.smartrecruiters import SmartRecruitersConnector
+from app.services.ingestion.teamtailor import TeamtailorConnector
+from app.services.ingestion.workable import WorkableConnector
 from app.services.normalize import fingerprint, normalize_company
 
 logger = logging.getLogger(__name__)
@@ -62,8 +69,15 @@ CONNECTORS: dict[str, Connector] = {
         GreenhouseConnector(),
         LeverConnector(),
         AshbyConnector(),
+        PersonioConnector(),
+        TeamtailorConnector(),
+        WorkableConnector(),
+        SmartRecruitersConnector(),
+        RecruiteeConnector(),
         InfoJobsConnector(),
         AdzunaConnector(),
+        ManfredConnector(),
+        FreehireConnector(),
     )
 }
 # Fallos de la fuente que merece la pena reintentar (el worker reintenta con espera creciente).
@@ -184,7 +198,10 @@ def connector_sources(session: Session, active_only: bool = True) -> list[Source
 
 
 def _same_target(kind: str, a: SourceConfig, b: dict[str, object]) -> bool:
-    keys = ("slug", "region") if kind in ATS_KINDS else ("query", "where", "province", "country")
+    if kind in ATS_KINDS:
+        keys: tuple[str, ...] = ("slug", "region")
+    else:
+        keys = ("query", "where", "province", "country", "lang", "remote_only")
     dumped = a.model_dump()
     return all(str(dumped.get(k) or "").lower() == str(b.get(k) or "").lower() for k in keys)
 
@@ -201,7 +218,10 @@ def add_source(session: Session, data: SourceInput) -> SourceView:
     name = " ".join(data.name.split())
     if data.kind in ATS_KINDS and not normalize_company(name):
         raise ValueError(f"Nombre de empresa no válido: «{name}».")
-    source = Source(kind=data.kind, name=name, config=config.model_dump(), active=True)
+    stored = config.model_dump()
+    if "language" in stored and stored["language"] is None:  # solo Personio lo usa
+        del stored["language"]
+    source = Source(kind=data.kind, name=name, config=stored, active=True)
     session.add(source)
     if data.kind in ATS_KINDS:
         company = ingest.get_or_create_company(session, name)

@@ -15,7 +15,7 @@ que no preguntan. Sin coste de API (ADR-001): es el mismo agente de los botones,
 """
 
 from datetime import datetime
-from typing import Any, Literal
+from typing import Literal
 
 from pydantic import BaseModel
 from sqlalchemy import select, update
@@ -23,8 +23,9 @@ from sqlalchemy.orm import Session
 
 from app.models import AgentRun, SkillGapMark
 from app.models.base import utcnow
-from app.services import agent_launch
+from app.services import agent_launch, assess_threshold
 from app.services.agent_launch import ACTIONS, ActionId, LaunchError, LaunchResult
+from app.services.agent_usage import normalize_usage
 from app.services.matching import service as matching
 from app.services.matching import skills
 
@@ -56,7 +57,7 @@ class AgentRunView(BaseModel):
     result: str | None
     questions: list[str]
     error: str | None
-    usage: dict[str, Any] | None
+    usage: dict[str, int | float] | None  # `agent_usage.USAGE_KEYS`; `None` sin uso
     cancel_requested: bool
     can_resume: bool  # «Abrir en terminal» retoma la misma sesión
     created_at: datetime
@@ -92,7 +93,7 @@ def view(row: AgentRun, resumable: frozenset[str] | None = None) -> AgentRunView
         result=row.result,
         questions=list(row.questions or []),
         error=row.error,
-        usage=row.usage,
+        usage=normalize_usage(row.usage) or None,  # fase 25.4: claves comunes
         cancel_requested=row.cancel_requested,
         can_resume=bool(row.session_id) and row.status in FINISHED and row.agent in resumable,
         created_at=row.created_at,
@@ -122,6 +123,23 @@ def _cv_gaps_note(session: Session, job_id: int) -> str:
     return agent_launch.GAPS_MARKED_NOTE
 
 
+def _assess_prompt(session: Session, min_score: int | None = None) -> str:
+    """«Evaluar encaje» en segundo plano solo con las ofertas que llegan al umbral; si no queda
+    ninguna, no se lanza y dice por qué."""
+    plan = assess_threshold.plan(session, min_score)
+    if not plan.eligible:
+        below = len(plan.skipped)
+        detail = (
+            f" {below} {'tiene' if below == 1 else 'tienen'} un score por debajo de "
+            f"{plan.threshold} y no se valoran en segundo plano (cambia el umbral en la página "
+            "«Agente» o valóralas «En terminal»)."
+            if below
+            else ""
+        )
+        raise LaunchError("invalid_request", f"No hay ofertas pendientes de valorar.{detail}")
+    return assess_threshold.prompt(plan)
+
+
 def _active(session: Session, action: str, job_id: int | None) -> AgentRun | None:
     return session.scalars(
         select(AgentRun)
@@ -140,10 +158,11 @@ def start(
     agent: str | None = None,
     model: str | None = None,
     preset: str | None = None,
+    min_score: int | None = None,
 ) -> AgentRunView:
     """Deja en cola una ejecución en segundo plano. Si ya hay una igual en cola o en curso,
     devuelve esa en vez de duplicarla. `agent`, `model` y `preset`: la elección puntual (si no, las
-    preferencias de `agent_prefs`)."""
+    preferencias de `agent_prefs`). `min_score`: el umbral de `assess-fit` solo esta vez."""
     spec = ACTIONS[action]
     if not spec.background:
         raise LaunchError(
@@ -157,6 +176,8 @@ def start(
     )
     if (existing := _active(session, action, job_id)) is not None:
         return view(existing)
+    if action == "assess-fit":  # fase 25.4: umbral antes de gastar
+        prompt = _assess_prompt(session, min_score)
     note = _cv_gaps_note(session, job_id) if action == "generate-cv" and job_id else ""
     full_prompt = prompt + note + agent_launch.BACKGROUND_NOTE
     assert picked.headless is not None  # lo garantiza `pick_headless`

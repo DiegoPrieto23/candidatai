@@ -125,7 +125,8 @@ def field_path(loc: tuple[str | int, ...]) -> str:
     return out or "(perfil)"
 
 
-def _issues(exc: ValidationError) -> list[ProfileIssue]:
+def issues_of(exc: ValidationError) -> list[ProfileIssue]:
+    """Los problemas de un `ValidationError` del perfil, uno por campo."""
     issues: list[ProfileIssue] = []
     for error in exc.errors(include_url=False):
         cause = (error.get("ctx") or {}).get("error")
@@ -161,7 +162,7 @@ def load_from_yaml(path: Path) -> CandidateProfile:
     try:
         return CandidateProfile.model_validate(data)
     except ValidationError as exc:
-        raise ProfileValidationError(path, _issues(exc)) from exc
+        raise ProfileValidationError(path, issues_of(exc)) from exc
 
 
 def content_hash(profile: CandidateProfile) -> str:

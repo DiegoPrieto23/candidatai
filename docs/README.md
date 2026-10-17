@@ -42,6 +42,7 @@ the rest are in Spanish only.
 |---|---|
 | [`../AGENTS.md`](../AGENTS.md) | Instrucciones para cualquier agente que trabaje en el repositorio: estructura, comandos, convenciones y reglas duras |
 | 🌐 [`../CONTRIBUTING.md`](../CONTRIBUTING.md) | Cómo contribuir |
+| 🌐 [`../CHANGELOG.md`](../CHANGELOG.md) | Qué cambia en cada versión (de ahí salen las notas de cada release) |
 | [`DESARROLLO_POR_FASES.md`](DESARROLLO_POR_FASES.md) | El método: encargo, plan, rama, tests, revisión y registro |
 | [`ROADMAP.md`](ROADMAP.md) | Estado de cada fase y su registro (decisiones y deuda) |
 | [`RESUMEN_FASES.md`](RESUMEN_FASES.md) | Qué aporta cada fase, en corto |

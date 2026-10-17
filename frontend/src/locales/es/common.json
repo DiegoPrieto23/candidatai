@@ -42,7 +42,9 @@
       "agent_unavailable": "Agente no disponible",
       "pdf_failed": "Falló la conversión a PDF",
       "database_not_ready": "Base de datos sin preparar",
-      "internal_error": "Error interno"
+      "internal_error": "Error interno",
+      "conflict": "El fichero ha cambiado",
+      "referenced": "Lo cita otra parte del perfil"
     }
   },
   "close": "Cerrar"

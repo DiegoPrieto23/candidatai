@@ -19,7 +19,7 @@ from functools import lru_cache
 from typing import Literal
 from urllib.parse import urlsplit
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.core.policies import get_countries, get_policies
 from app.schemas.cv import CvLanguage, CvRenderOptions, PageSize, SectionName
@@ -28,10 +28,17 @@ from app.schemas.profile import CandidateProfile, TemplateRuleWhen
 from app.services.documents import templates
 from app.services.normalize import fold
 
+# `template`: se arregla con otra plantilla, sin agente; `content`: hay que recortar contenido.
+RenderFix = Literal["template", "content"]
+
 
 class RenderWarning(BaseModel):
     code: str
     message: str
+    # Fase 25.5 (maquetación): la página afectada y cómo se arregla (una opción de render o
+    # recortar contenido). Las demás no los llevan.
+    page: int | None = Field(default=None, exclude_if=lambda v: v is None)
+    fix: RenderFix | None = Field(default=None, exclude_if=lambda v: v is None)
 
 
 class OfferContext(BaseModel):

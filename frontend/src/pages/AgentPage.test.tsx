@@ -72,7 +72,7 @@ describe('Página «Agente» (fase 19)', () => {
   })
 
   it('cada ejecución enseña su uso: turnos, tokens y coste (fase 24.5)', async () => {
-    const usage = { num_turns: 3, input_tokens: 35464, output_tokens: 61, total_cost_usd: 0.0123 }
+    const usage = { turns: 3, input_tokens: 35464, output_tokens: 61, cost_usd: 0.0123 }  // claves comunes (25.4)
     mockApi({
       'GET /status': status(),
       'GET /agent': launcher,
@@ -83,7 +83,7 @@ describe('Página «Agente» (fase 19)', () => {
     const line = await screen.findByText(/3 turnos/)
     expect(line).toHaveTextContent(/35.?464 tokens de entrada y 61 de salida/)
     expect(line).toHaveTextContent('0.0123 USD estimados')
-    expect(screen.getAllByText(/turno/)).toHaveLength(1) // sin uso, no se enseña nada
+    expect(screen.getAllByText(/\d+ turnos?\b/)).toHaveLength(1) // sin uso, no se enseña nada
   })
 
   it('enseña las ejecuciones con su estado, progreso y preguntas', async () => {
@@ -190,5 +190,77 @@ describe('Página «Agente» (fase 19)', () => {
     renderApp('/agente')
     expect(await screen.findByText(/ninguna en curso/)).toHaveTextContent('¿está cai worker en marcha?')
     expect(await screen.findByText(/no tiene `launch.headless`/)).toBeInTheDocument()
+  })
+
+  describe('coste y umbral (fase 25.4)', () => {
+    const totals = (runs: number, tokens: number, cost: number | null) => ({
+      runs,
+      with_usage: runs,
+      input_tokens: tokens,
+      output_tokens: 0,
+      cached_tokens: 0,
+      turns: 0,
+      duration_ms: runs * 60_000,
+      cost_usd: cost,
+      avg_tokens: runs ? tokens / runs : null,
+      avg_duration_ms: runs ? 60_000 : null,
+      avg_cost_usd: cost != null && runs ? cost / runs : null,
+    })
+    const group = (key: string, label: string, runs: number, tokens: number, cost: number | null, instruction_tokens: number | null = null) => ({
+      key,
+      label,
+      instruction_tokens,
+      ...totals(runs, tokens, cost),
+    })
+    const window = (days: number) => ({
+      days,
+      since: '2026-10-01T00:00:00Z',
+      total: totals(3, 30_000, 0.6),
+      by_action: [group('process-jobs', 'Procesar ofertas', 2, 20_000, 0.4, 251), group('assess-fit', 'Evaluar encaje', 1, 10_000, null, 839)],
+      by_agent: [group('claude', 'claude', 2, 20_000, 0.4), group('opencode', 'opencode', 1, 10_000, null)],
+      by_model: [group('claude/default', 'claude · por defecto', 2, 20_000, 0.4)],
+    })
+    const threshold = { value: 45, source: 'default', triage_threshold: 55, default: 45 }
+
+    function page(extra: Record<string, unknown> = {}) {
+      return mockApi({
+        'GET /status': status(),
+        'GET /agent': launcher,
+        'GET /agent/runs': { active: 0, runs: [] },
+        'GET /agent/requests': { pending: 0, requests: [] },
+        'GET /agent/costs': { windows: [window(7), window(30)], terminal_note: '…' },
+        'GET /agent/assess-threshold': threshold,
+        ...extra,
+      })
+    }
+
+    it('suma por acción, agente y modelo, con lo que pesa cada skill', async () => {
+      page()
+      renderApp('/agente')
+      const actions = await screen.findByRole('table', { name: 'Por acción' })
+      const row = within(actions).getByRole('row', { name: /Procesar ofertas/ })
+      const cells = within(row).getAllByRole('cell').map((c) => c.textContent)
+      expect(cells[0]).toBe('2')
+      expect(cells[3]).toMatch(/0[.,]4000 USD/)
+      expect(cells[5]).toBe('251')
+      const assess = within(actions).getByRole('row', { name: /Evaluar encaje/ })
+      expect(within(assess).getAllByRole('cell')[3]).toHaveTextContent('—')  // sin coste: no se estima
+      expect(screen.getByRole('table', { name: 'Por agente' })).toHaveTextContent('opencode')
+      expect(screen.getByRole('tab', { name: 'Últimos 30 días' })).toBeInTheDocument()
+      expect(screen.getByText(/en una terminal, el agente no devuelve su uso/)).toBeInTheDocument()
+    })
+
+    it('cambia el umbral de «Evaluar encaje»', async () => {
+      const calls = page({ 'PUT /agent/assess-threshold': { ...threshold, value: 60, source: 'ui' } })
+      renderApp('/agente')
+      const input = await screen.findByRole('spinbutton', { name: 'Score mínimo' })
+      expect(input).toHaveValue(45)
+      expect(screen.getByText(/el umbral de triaje menos 10/)).toBeInTheDocument()
+      await userEvent.clear(input)
+      await userEvent.type(input, '60')
+      await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+      expect(await screen.findByText('Lo has cambiado aquí.')).toBeInTheDocument()
+      expect(calls.find((c) => c.method === 'PUT' && c.path === '/agent/assess-threshold')?.body).toEqual({ value: 60 })
+    })
   })
 })

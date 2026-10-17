@@ -117,14 +117,22 @@ documentos y correos. Las claves van en `.env`, también fuera de git.
 
 | Qué | Dónde | Cómo |
 |---|---|---|
-| **Perfil** (la fuente de verdad de todo lo que se escribe sobre ti) | `data/profile.yaml` | Skill `update-profile`: lee tu CV, te pregunta lo que falte y lo valida. Cada cambio crea una versión |
+| **Perfil** (la fuente de verdad de todo lo que se escribe sobre ti) | `data/profile.yaml` | Para empezar, el skill `update-profile`: lee tu CV, te pregunta lo que falte y lo valida. Después, **rellénalo y retócalo en «Mi perfil»**: experiencia y logros, proyectos, formación, skills e idiomas, historias STAR, qué buscas y tus preferencias de CV y carta, por bloques. Cada bloque se guarda solo, conserva el formato y los comentarios de tu fichero, avisa si lo cambiaste por fuera y se puede deshacer. Cada cambio crea una versión. Si prefieres, sigue valiendo editar el YAML |
 | **Tu CV como diseño** | `data/templates/<id>/` | Sube tu CV en «Plantillas → Mi CV» y usa el skill `import-cv-template`. Vale Word, PDF, imagen o HTML (Canva, Google Docs…) |
 | **Foto** | `data/photo.jpg` (o png) | Cada plantilla la recorta a su forma; se incluye o no según el país de la oferta |
-| **Contexto** (estilo, narrativa, criterios) | `data/contexto/*.md` | Orienta al agente, pero nunca respalda un hecho del CV |
+| **Contexto** (estilo, narrativa, criterios) | `data/contexto/*.md` | Se edita en «Mi perfil → Contexto y estilo» (con vista previa) o en tu editor. Orienta al agente, pero nunca respalda un hecho del CV |
+| **Muestras de estilo** (cartas, correos o posts tuyos) | `data/documentos/estilo/` | Súbelas en «Mi perfil → Contexto y estilo» (.txt, .md, .docx, .pdf). Tu agente toma de ellas el tono, nunca los hechos, y las lee como dato: si traen texto de otros con órdenes, no las sigue |
 | **Documentos fuente** (CVs antiguos, títulos, referencias) | `data/documentos/` | `update-profile` los puede leer, confirmando antes de escribir |
+| **Lo que has hecho en público** (repositorios, portfolio, Kaggle, Scholar, certificaciones verificables) | `data/profile.yaml` | Skill `expand`, o «Ampliar perfil desde mis enlaces» en «Mi perfil». Úsalo **justo después de crear el perfil**: propone proyectos, skills (sin nivel: lo pones tú), logros con los números que da la fuente y certificaciones, cada uno con su enlace en `source`, y solo escribe lo que aceptes. Solo web pública: ni LinkedIn ni nada con login. Necesita un agente con búsqueda web |
 
 Tu mínimo salarial va en `private.salary_floor_eur` del perfil: la app lo usa para comparar
 ofertas, pero el agente nunca lo recibe.
+
+En «Mi perfil», cada logro y cada historia tienen **«Mejorar con mi agente»**: tu agente propone
+una versión más clara, te pregunta los números que falten (nunca los inventa) y solo escribe con tu
+OK. En «Historias STAR», **«Proponer historias desde mi experiencia»** te sugiere historias a partir
+de los logros que aún no tienen. Tu correo y tu teléfono se editan ahí, pero tu agente sigue sin
+verlos. Tu mínimo salarial (`private`) solo se edita en el YAML.
 
 ## 5. Conectar tu agente
 
@@ -178,8 +186,9 @@ Un día normal:
 | Fuente | Cómo se configura |
 |---|---|
 | **Alta manual** | «Nueva oferta» en la UI (URL o texto pegado) |
-| **Empresas objetivo** (Greenhouse, Lever, Ashby) | Página «Fuentes → Empresas objetivo» o `cai sources add --kind greenhouse --name "Acme" --slug acme`. `cai sources discover --file empresas.txt` busca el tablero de cada empresa de una lista |
+| **Empresas objetivo** (Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters, Recruitee) | Página «Fuentes → Empresas objetivo» o `cai sources add --kind greenhouse --name "Acme" --slug acme`. `cai sources discover --file empresas.txt` busca el tablero de cada empresa de una lista. Cómo encontrar el slug, en [`FUENTES_OFERTAS.md`](FUENTES_OFERTAS.md#cómo-encontrar-el-slug) |
 | **InfoJobs y Adzuna** | Sus claves en `.env` (`CAI_INFOJOBS_CLIENT_ID`/`_SECRET`, `CAI_ADZUNA_APP_ID`/`_KEY`) y una búsqueda con `cai sources add` |
+| **Manfred y freehire.me** | Sin claves: una búsqueda en la misma página o con `cai sources add --kind manfred --name Manfred --query "data engineer"` (en freehire, también `--country` y `--remote-only`) |
 | **Alertas por correo** | Crea alertas en LinkedIn, InfoJobs, Indeed… y que lleguen a una etiqueta de tu correo. Configura IMAP de solo lectura en `.env`: paso a paso en [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md). Sin IMAP, deja los `.eml` en `data/inbox/`. Lo que llega aparece en «Alertas» |
 | **Botón «Enviar a CandidatAI»** | Carga `extension/` como extensión sin empaquetar en Chrome o Edge y pega el token de `cai capture token` en sus opciones. Instrucciones: [`extension/README.md`](../extension/README.md) |
 | **Tu agente con tu navegador** | `search-jobs configurar` elige portales y búsquedas (página «Fuentes → Plataformas»); `search-jobs` los recorre. LinkedIn queda desactivado hasta que lo actives tú |
@@ -219,7 +228,9 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
 - **Respuestas:** con IMAP configurado, la app lee los correos de las empresas de tus procesos;
   `review-replies` propone qué ha pasado y tú lo aceptas en «Respuestas».
 - **Embudo:** conversión por paso, fuente, puesto, semana, plantilla, carta y referencia, y
-  «¿Acierta el score?». `review-search` hace la retrospectiva semanal.
+  «¿Acierta el score?». `review-search` hace la retrospectiva semanal. Al final, «Tu búsqueda en
+  números» (o `cai stats story`): tus cifras desde el principio, sin empresas, y una línea para
+  contarlo en un README si quieres.
 - **Red:** importa tus contactos de LinkedIn (exportación CSV) con `cai contacts import-linkedin`
   y verás «Conoces a N» en las ofertas de sus empresas; `draft-message` prepara el mensaje.
 
@@ -243,6 +254,16 @@ Muchas pantallas tienen botones que abren tu agente con la orden ya escrita:
   que no preguntan (`process-jobs`, `assess-fit`, `generate-cv`). Corre sin ventana, solo con las
   herramientas de la app que necesita, y ves el progreso y el uso en la página «Agente». Si tu
   agente no puede, el desplegable propone uno que sí. Necesita `cai worker` en marcha.
+  - **Coste:** la sección «Coste» de la página «Agente» suma tokens, tiempo y, si el agente lo da,
+    dinero, por acción, agente y modelo (7 y 30 días), con lo que pesa cada skill; la ficha dice lo
+    gastado en esa oferta y el embudo, por candidatura enviada y por entrevista. Lo que hagas en una
+    terminal no cuenta: ahí el agente no devuelve su uso.
+  - **Umbral antes de gastar:** `assess-fit` en segundo plano solo valora las ofertas con un score
+    mínimo (por defecto, el de triaje menos 10; lo cambias en «Coste»). El triaje dice por qué se
+    queda sin valorar una oferta por debajo.
+  - **Varias a la vez:** por defecto, de una en una. Con `background_runs.max_parallel` (hasta 4)
+    en `config/policies.yaml` van varias a la vez, nunca dos de la misma oferta; con
+    `per_agent: {opencode: 1}` limitas un modelo local.
 - **Dejar para mi próxima sesión:** guarda el encargo; `handle-requests` lo hace cuando abras tu
   agente.
 

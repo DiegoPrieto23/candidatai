@@ -28,7 +28,7 @@ from app.schemas.cv import CvContent, CvRenderOptions, CvVerification, PageSize,
 from app.schemas.llm_io import JobExtraction
 from app.services import events, extractions
 from app.services import profile as profile_service
-from app.services.documents import checks, context, options, pdf, photo, templates
+from app.services.documents import checks, context, layout, options, pdf, photo, templates
 from app.services.documents.engines import render_files
 from app.services.documents.options import RenderWarning
 from app.services.pipeline import CV_STAGES, Actor, EventType, InvalidTransitionError, Stage
@@ -306,6 +306,8 @@ def render(
     warnings = checks.render_warnings(
         content, template, resolved, info.pages, pdf.missing_fonts(template.meta.fonts, info.fonts)
     )
+    # Fase 25.5: maquetación del PDF (avisos con su página y cómo arreglarlo; no bloquean).
+    warnings += layout.analyze(pdf_file, layout.expected_from_context(ctx))
     row.keyword_coverage = checks.keyword_coverage(info.text, extraction).model_dump(mode="json")
     too_long = store_files(session, row, docx_file, pdf_file, info.pages, warnings)
 

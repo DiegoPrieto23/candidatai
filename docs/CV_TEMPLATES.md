@@ -326,6 +326,28 @@ El render nunca se bloquea en silencio: devuelve avisos que ves en la UI y recib
 | `pdf_only` | Motor html: no hay DOCX |
 | `letter_fallback` | Carta: la plantilla elegida no tiene diseño de carta y se usa `carta-simple` con su color |
 
+**Maquetación del PDF** (fase 25.5, `documents/layout.py`). Sobre el PDF ya renderizado, para el
+CV y la carta. Son avisos, nunca bloqueos (solo `too_long` impide «Usar este para enviar»), y
+cada uno lleva la página afectada (`page`) y cómo se arregla (`fix`: `template`, con otra plantilla y
+sin agente, o `content`, recortando). Umbrales en `layout` de `config/policies.yaml`.
+
+| Aviso | Cuándo | `fix` |
+|---|---|---|
+| `orphan_heading` | Un título de sección o de puesto en el último 10 % de una página, con casi nada debajo, y su contenido en la siguiente | `content` |
+| `large_gap` | Un hueco vertical de más del 15 % de la página entre dos líneas, o al pie de una página que no es la última | `template` |
+| `footer_overlap` | Texto en el último 3 % de la página o a menos de 14 pt de un borde | `template` |
+| `nearly_empty_last_page` | Más de una página y la última ocupa menos del 15 % de su alto | `content` |
+| `text_layer` | El texto del PDF no trae el nombre, el correo o el teléfono tal cual (iconos, glifos rotos) o el nombre no sale antes que los títulos | `template` |
+
+Los títulos no se adivinan por la fuente: son los de las secciones que tiene el CV y el puesto de
+cada experiencia. Una plantilla importada con dos columnas debe poner en el HTML primero el
+contenido con el nombre y después la barra lateral (como `moderna-2col`): si no, el texto del PDF,
+que es lo que lee un ATS, empieza por la barra y salta `text_layer`.
+
+Límite conocido: las líneas de las dos columnas se juntan por altura, así que en un diseño de dos
+columnas un título huérfano o un hueco de una columna puede quedar tapado por la otra (falta un
+aviso, nunca sobra).
+
 ## Renders
 
 Cada render guarda sus opciones resueltas, sus ficheros en `data/cvs/<job_id>/<document_id>/<render_id>/`

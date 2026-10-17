@@ -169,6 +169,10 @@ targets:
         allowed-tools: ["mcp:get_interviews", "mcp:get_extraction", "mcp:get_profile", "mcp:get_context", "mcp:get_timeline", "mcp:save_interview_notes"]
       update-profile:
         allowed-tools: ["read", "cai_profile_cli", "cai_context_cli", "cai_skills_cli"]
+      # Fase 25.2: lee tus enlaces públicos; editar data/profile.yaml sigue pidiendo permiso.
+      expand:
+        argument-hint: "[nada para los enlaces del perfil, o URLs públicas: GitHub, portfolio, Kaggle, Scholar]"
+        allowed-tools: ["read", "web", "cai_profile_cli"]
       daily-summary:
         allowed-tools: ["mcp:get_status", "mcp:list_followups_due", "mcp:list_upcoming", "mcp:list_jobs"]
       handle-requests:                   # fase 19: la cola de encargos que deja la UI

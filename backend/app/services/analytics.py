@@ -36,7 +36,7 @@ se mide **en el momento del primer envío**:
 
 import math
 import statistics
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from typing import Any, Literal
 
 from pydantic import BaseModel
@@ -68,7 +68,7 @@ from app.models import (
 )
 from app.services.documents.cover_letter import LETTER_KIND
 from app.services.pipeline import EventType, Stage
-from app.services.process import start_of_local_day
+from app.services.process import local_zone, start_of_local_day
 
 TOP_TITLES = 8
 
@@ -120,6 +120,24 @@ class SourceFunnel(FunnelSummary):
     source_id: int
     kind: str
     name: str
+    # Fase 25.4: lo que han gastado sus ofertas en segundo plano (`agent_costs`).
+    tokens: int  # entrada + salida
+    cost_usd: float | None  # `None` si ningún agente dio coste
+
+
+class FunnelCost(BaseModel):
+    """Lo que han gastado en segundo plano las ofertas del periodo (fase 25.4). Lo de una terminal
+    no cuenta: el agente no devuelve su uso."""
+
+    runs: int  # ejecuciones con alguna oferta del periodo
+    tokens: int
+    cost_usd: float | None
+    applied: int
+    interview: int
+    tokens_per_applied: float | None
+    cost_per_applied_usd: float | None
+    tokens_per_interview: float | None
+    cost_per_interview_usd: float | None
 
 
 class TitleFunnel(FunnelSummary):
@@ -170,6 +188,7 @@ class FunnelStats(BaseModel):
     response_time: ResponseTime
     discard_reasons: list[ReasonCount]
     hard_filter_failures: list[FilterCount]
+    agent_cost: FunnelCost
 
 
 # --- Consultas ------------------------------------------------------------------------------
@@ -305,14 +324,87 @@ def _steps(session: Session, per_job: CTE) -> list[FunnelStep]:
     ]
 
 
-def _by_source(session: Session, per_job: CTE) -> list[SourceFunnel]:
+_Spend = tuple[float, float | None]  # tokens y dólares (`None`: ningún agente dio coste)
+
+
+def _job_spend(session: Session) -> tuple[dict[int, _Spend], dict[int, set[int]]]:
+    """Tokens y coste de cada oferta (su parte de cada ejecución) y las ejecuciones de cada una."""
+    from app.services import agent_costs  # evita la importación circular
+
+    spend: dict[int, _Spend] = {}
+    runs: dict[int, set[int]] = {}
+    for job_id, items in agent_costs.attributed(session).items():
+        tokens = sum(
+            i.usage.get("input_tokens", 0) + i.usage.get("output_tokens", 0) for i in items
+        )
+        costs = [i.usage["cost_usd"] for i in items if "cost_usd" in i.usage]
+        spend[job_id] = (tokens, sum(costs) if costs else None)
+        runs[job_id] = {i.run_id for i in items}
+    return spend, runs
+
+
+def _add_spend(a: _Spend, b: _Spend) -> _Spend:
+    cost = None if a[1] is None and b[1] is None else (a[1] or 0) + (b[1] or 0)
+    return a[0] + b[0], cost
+
+
+def _per(value: float | None, count: int, digits: int) -> float | None:
+    return round(value / count, digits) if value is not None and count else None
+
+
+def _agent_cost(
+    session: Session, per_job: CTE, spend: dict[int, _Spend], job_runs: dict[int, set[int]]
+) -> FunnelCost:
+    rows = session.execute(select(per_job.c.job_id, per_job.c.applied, per_job.c.interview)).all()
+    total: _Spend = (0, None)
+    runs: set[int] = set()
+    for row in rows:
+        total = _add_spend(total, spend.get(row.job_id, (0, None)))
+        runs |= job_runs.get(row.job_id, set())
+    applied = sum(int(r.applied) for r in rows)
+    interview = sum(int(r.interview) for r in rows)
+    tokens, cost = total
+    return FunnelCost(
+        runs=len(runs),
+        tokens=round(tokens),
+        cost_usd=round(cost, 6) if cost is not None else None,
+        applied=applied,
+        interview=interview,
+        tokens_per_applied=_per(tokens, applied, 1),
+        cost_per_applied_usd=_per(cost, applied, 6),
+        tokens_per_interview=_per(tokens, interview, 1),
+        cost_per_interview_usd=_per(cost, interview, 6),
+    )
+
+
+def _by_source(
+    session: Session, per_job: CTE, spend: dict[int, _Spend] | None = None
+) -> list[SourceFunnel]:
     rows = session.execute(
         select(Source.id, Source.kind, Source.name, *_sums(per_job, SUMMARY_STEPS))
         .join(per_job, per_job.c.source_id == Source.id)
         .group_by(Source.id)
         .order_by(func.sum(per_job.c.found).desc(), Source.id)
     ).all()
-    return [SourceFunnel(source_id=r.id, kind=r.kind, name=r.name, **_summary(r)) for r in rows]
+    by_source: dict[int, _Spend] = {}
+    for job_id, source_id in session.execute(select(per_job.c.job_id, per_job.c.source_id)):
+        by_source[source_id] = _add_spend(
+            by_source.get(source_id, (0, None)), (spend or {}).get(job_id, (0, None))
+        )
+    out = []
+    for r in rows:
+        tokens, cost = by_source.get(r.id, (0, None))
+        out.append(
+            SourceFunnel(
+                source_id=r.id,
+                kind=r.kind,
+                name=r.name,
+                tokens=round(tokens),
+                cost_usd=round(cost, 6) if cost is not None else None,
+                **_summary(r),
+            )
+        )
+    return out
 
 
 def _by_title(session: Session, per_job: CTE, top: int) -> list[TitleFunnel]:
@@ -471,17 +563,19 @@ def get_funnel_stats(
     """Embudo, desglose por fuente, puesto y semana, tiempo hasta la primera respuesta y motivos
     de descarte de las ofertas vistas desde `since` (todas si es `None`)."""
     per_job, duplicates = _per_job(session, since)
+    spend, job_runs = _job_spend(session)
     return FunnelStats(
         since=since,
         duplicates_excluded=duplicates,
         steps=_steps(session, per_job),
-        by_source=_by_source(session, per_job),
+        by_source=_by_source(session, per_job, spend),
         by_title=_by_title(session, per_job, top_titles),
         by_week=_by_week(session, per_job),
         by_referral=_by_referral(session, per_job),
         response_time=_response_time(session, per_job),
         discard_reasons=_discard_reasons(session, per_job),
         hard_filter_failures=_hard_filter_failures(session, per_job),
+        agent_cost=_agent_cost(session, per_job, spend, job_runs),
     )
 
 
@@ -516,6 +610,16 @@ DAY_BUCKETS: tuple[tuple[str, str, float], ...] = (
     ("2_3", "2-3 días", 4),
     ("4_7", "4-7 días", 8),
     ("8_plus", "8 días o más", math.inf),
+)
+# Señales de oferta dudosa (fase 25.3). Una oferta cuenta en cada señal que tenga; «Sin señales»
+# son las que no tienen ninguna. Son las señales de ahora, no las que tenía al enviarla.
+SIGNAL_LABELS: tuple[tuple[str, str], ...] = (
+    ("salary_range_wide", "Rango salarial muy amplio"),
+    ("employer_hidden", "Empresa oculta o agencia"),
+    ("fixed_term", "Temporal"),
+    ("stale_repost", "Publicada hace meses"),
+    ("ai_screening", "Cribado con IA"),
+    ("none", "Sin señales"),
 )
 # Grupos sin dato. Una plantilla del usuario con id «none» se sumaría a «Sin CV de la app».
 NO_PLATFORM = "none"
@@ -553,6 +657,8 @@ class Calibration(BaseModel):
     by_cover_letter: list[CalibrationGroup]  # with, without
     by_referral: list[CalibrationGroup]  # given, requested, none
     by_days_to_apply: list[CalibrationGroup]  # 0_1, 2_3, 4_7, 8_plus
+    # Fase 25.3: una oferta cuenta en cada señal de oferta dudosa que tenga; `none`, sin ninguna.
+    by_signal: list[CalibrationGroup]
 
 
 def wilson_interval(successes: int, n: int, z: float = _Z) -> RateInterval:
@@ -637,6 +743,12 @@ def _calibration_rows(session: Session, since: date | None) -> CTE:
             case((letter, "with"), else_="without").label("letter"),
             _referral_group(per_job).label("referral"),
             (func.julianday(applied_at) - func.julianday(per_job.c.first_seen_at)).label("days"),
+            *(
+                case((func.json_extract(Job.signals, f"$.{code}").is_not(None), 1), else_=0).label(
+                    f"signal_{code}"
+                )
+                for code, _ in SIGNAL_LABELS[:-1]
+            ),
         )
         .select_from(per_job)
         .join(Job, Job.id == job_id)
@@ -676,6 +788,23 @@ def _counts(session: Session, cal: CTE, key: Any = None) -> list[Any]:
     if key is None:
         return [session.execute(select(*sums).select_from(cal)).one()]
     return list(session.execute(select(key.label("key"), *sums).group_by(key)).all())
+
+
+def _by_signal(session: Session, cal: CTE, min_cases: int) -> list[CalibrationGroup]:
+    """Un grupo por señal (una oferta puede estar en varios) y «Sin señales»."""
+    columns = [cal.c[f"signal_{code}"] for code, _ in SIGNAL_LABELS[:-1]]
+    sums = [
+        func.count().label("applied"),
+        func.coalesce(func.sum(cal.c.replied), 0).label("replied"),
+        func.coalesce(func.sum(cal.c.interview), 0).label("interview"),
+        func.coalesce(func.sum(cal.c.awaiting), 0).label("awaiting"),
+    ]
+    out = []
+    for (code, label), column in zip(SIGNAL_LABELS, [*columns, None], strict=True):
+        where = column == 1 if column is not None else and_(*(c == 0 for c in columns))
+        row = session.execute(select(*sums).select_from(cal).where(where)).one()
+        out.append(_group(code, label, row, min_cases))
+    return out
 
 
 def _fixed(
@@ -733,4 +862,146 @@ def get_calibration(
         by_cover_letter=_fixed(session, cal, cal.c.letter, LETTER_GROUPS, min_cases),
         by_referral=_fixed(session, cal, cal.c.referral, REFERRAL_LABELS, min_cases),
         by_days_to_apply=_fixed(session, cal, days, day_groups, min_cases),
+        by_signal=_by_signal(session, cal, min_cases),
     )
+
+
+# --- La historia con números (fase 25.6) -----------------------------------------------------
+
+_MONTHS = {
+    "es": ("ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"),
+    "en": ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"),
+}
+# La línea para el README: campo, singular y plural, en el orden en que se cuenta.
+_STORY_WORDS: dict[str, dict[str, Any]] = {
+    "es": {
+        "head": "Mi búsqueda con CandidatAI",
+        "week": "semana",
+        "weeks": "semanas",
+        "last": " y ",
+        "counts": (
+            ("evaluated", "oferta evaluada", "ofertas evaluadas"),
+            ("approved", "aprobada", "aprobadas"),
+            ("applied", "candidatura", "candidaturas"),
+            ("replied", "respuesta", "respuestas"),
+            ("interviews", "entrevista", "entrevistas"),
+            ("offers", "oferta", "ofertas"),
+        ),
+    },
+    "en": {
+        "head": "My search with CandidatAI",
+        "week": "week",
+        "weeks": "weeks",
+        "last": ", ",
+        "counts": (
+            ("evaluated", "posting evaluated", "postings evaluated"),
+            ("approved", "approved", "approved"),
+            ("applied", "application", "applications"),
+            ("replied", "reply", "replies"),
+            ("interviews", "interview", "interviews"),
+            ("offers", "offer", "offers"),
+        ),
+    },
+}
+
+
+class SearchStory(BaseModel):
+    """Toda la búsqueda en números agregados, para contarla (p. ej. en el README).
+
+    Solo recuentos y fechas: ni empresas, ni puestos, ni fuentes, ni importes. Es lo que el usuario
+    puede publicar si quiere; la app no lo publica nunca.
+    """
+
+    started_on: date | None  # día (Europe/Madrid) de la primera oferta vista
+    first_applied_on: date | None
+    last_activity_on: date | None  # día del último evento
+    weeks: int | None  # semanas entre `started_on` y `last_activity_on`, redondeando hacia arriba
+    found: int
+    evaluated: int  # con extracción: pasaran o no los filtros duros
+    approved: int
+    applied: int
+    replied: int
+    interviews: int
+    offers: int
+    accepted: int
+    reply_rate: float | None  # con respuesta / enviadas
+    interview_rate: float | None  # con entrevista / enviadas
+    median_days_to_reply: float | None
+    markdown: dict[Literal["es", "en"], str]  # una línea para pegar, en cada idioma del README
+
+
+def _local_day(value: datetime | None) -> date | None:
+    return value.astimezone(local_zone()).date() if value is not None else None
+
+
+def _number(value: int, lang: str) -> str:
+    grouped = f"{value:,}"
+    return grouped.replace(",", " ") if lang == "es" else grouped
+
+
+def _day(value: date, lang: str) -> str:
+    return f"{value.day} {_MONTHS[lang][value.month - 1]} {value.year}"
+
+
+def _story_markdown(story: SearchStory, lang: Literal["es", "en"]) -> str:
+    words = _STORY_WORDS[lang]
+    parts = []
+    for field, singular, plural in words["counts"]:
+        value = getattr(story, field)
+        parts.append(f"{_number(value, lang)} {singular if value == 1 else plural}")
+    counts = ", ".join(parts[:-1]) + f"{words['last']}{parts[-1]}"
+    when = ""
+    if story.started_on and story.last_activity_on:
+        week = words["week"] if story.weeks == 1 else words["weeks"]
+        when = (
+            f" ({_day(story.started_on, lang)} → {_day(story.last_activity_on, lang)}, "
+            f"{story.weeks} {week})"
+        )
+    return f"**{words['head']}**{when}: {counts}."
+
+
+def get_search_story(session: Session) -> SearchStory:
+    """La búsqueda entera, desde la primera oferta, en números agregados (sin duplicadas)."""
+    per_job, _ = _per_job(session, None)
+    steps = ("found", "approved", "applied", "replied", "interview", "offer", "accepted")
+    row = session.execute(
+        select(
+            *_sums(per_job, steps),
+            func.min(per_job.c.first_seen_at).label("started"),
+            func.min(per_job.c.applied_at).label("first_applied"),
+        )
+    ).one()
+    evaluated = session.scalar(
+        select(func.count(Event.job_id.distinct())).where(
+            Event.type == EventType.EXTRACTED,
+            Event.job_id.in_(select(per_job.c.job_id)),
+        )
+    )
+    last = session.scalar(
+        select(func.max(Event.occurred_at)).where(Event.job_id.in_(select(per_job.c.job_id)))
+    )
+    started, last_day = _local_day(row.started), _local_day(last)
+    weeks = None
+    if started is not None and last_day is not None:
+        weeks = max(1, math.ceil(((last_day - started).days + 1) / 7))
+    applied = int(row.applied)
+    story = SearchStory(
+        started_on=started,
+        first_applied_on=_local_day(row.first_applied),
+        last_activity_on=last_day,
+        weeks=weeks,
+        found=int(row.found),
+        evaluated=evaluated or 0,
+        approved=int(row.approved),
+        applied=applied,
+        replied=int(row.replied),
+        interviews=int(row.interview),
+        offers=int(row.offer),
+        accepted=int(row.accepted),
+        reply_rate=_rate(int(row.replied), applied),
+        interview_rate=_rate(int(row.interview), applied),
+        median_days_to_reply=_response_time(session, per_job).median_days,
+        markdown={"es": "", "en": ""},
+    )
+    story.markdown = {"es": _story_markdown(story, "es"), "en": _story_markdown(story, "en")}
+    return story

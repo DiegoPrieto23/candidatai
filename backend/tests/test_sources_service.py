@@ -10,7 +10,7 @@ from app.models import Company, Event, Job, SourceRun
 from app.schemas.sources import SourceInput
 from app.services import profile
 from app.services.events import current_stage
-from app.services.ingestion import service
+from app.services.ingestion import service, smartrecruiters
 from app.services.pipeline import Stage
 from tests.sources_support import (
     GREENHOUSE_URL,
@@ -19,6 +19,8 @@ from tests.sources_support import (
     load,
     mock_greenhouse,
     mock_lever,
+    mock_personio,
+    mock_smartrecruiters,
 )
 
 GREENHOUSE = SourceInput(kind="greenhouse", name="Acme Datos", slug="acmedatos")
@@ -419,3 +421,83 @@ def test_invalid_company_name_leaves_nothing(session: Session) -> None:
     with pytest.raises(ValueError, match="no válido"):
         service.add_source(session, SourceInput(kind="greenhouse", name="¿?", slug="x"))
     assert session.scalars(select(Source)).all() == []
+
+
+# --- Fase 25.1: ATS nuevos de extremo a extremo -------------------------------------------------
+
+
+@respx.mock
+def test_personio_and_smartrecruiters_companies_produce_jobs(
+    session: Session, with_profile: None, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Una empresa en Personio y otra en SmartRecruiters, dadas de alta con el perfil de la demo,
+    dejan ofertas nuevas en `pending_extraction`; SmartRecruiters pide el detalle solo de las que
+    pasan el filtro previo."""
+    monkeypatch.setattr(smartrecruiters, "PAGE_SIZE", 2)
+    mock_personio()
+    list_route = mock_smartrecruiters()
+    personio = service.add_source(
+        session, SourceInput(kind="personio", name="Acme Datos", slug="acmedatos")
+    )
+    smart = service.add_source(
+        session, SourceInput(kind="smartrecruiters", name="Beta Datos", slug="acmedatos")
+    )
+    assert personio.config == {"slug": "acmedatos", "region": "global", "title_keywords": []}
+
+    first = service.run_source(session, personio.id, actor="system")
+    second = service.run_source(session, smart.id, actor="system")
+
+    assert (first.found, first.created) == (2, first.after_filters)
+    assert first.created >= 1 and first.message.startswith("Personio · Acme Datos: 2 ofertas")
+    assert (second.found, second.created) == (3, second.after_filters)
+    assert second.created >= 1
+    details = [c for c in respx.calls if "/postings/" in c.request.url.path]
+    assert len(details) == second.after_filters  # «Office Manager» no pasa: sin detalle
+    assert len(list_route.calls) == 2
+
+    jobs = session.scalars(select(Job).order_by(Job.id)).all()
+    assert {j.source_id for j in jobs} == {personio.id, smart.id}
+    assert all(current_stage(session, j.id) == Stage.PENDING_EXTRACTION for j in jobs)
+    for source_id in (personio.id, smart.id):
+        texts = [j.raw_text for j in jobs if j.source_id == source_id]
+        assert any("pipelines de datos" in t for t in texts)
+    companies = {c.name: c for c in session.scalars(select(Company))}
+    assert companies["Acme Datos"].ats_kind == "personio" and companies["Acme Datos"].watchlist
+    assert companies["Beta Datos"].ats_kind == "smartrecruiters"
+
+    again = service.run_source(session, smart.id)
+    assert again.created == 0 and again.existing == second.created
+
+
+def test_new_kinds_validate_their_fields() -> None:
+    with pytest.raises(ValueError, match="slug"):
+        SourceInput(kind="workable", name="Acme")
+    with pytest.raises(ValueError, match="Personio"):
+        SourceInput(kind="recruitee", name="Acme", slug="acme", language="en")
+    with pytest.raises(ValueError, match="query"):
+        SourceInput(kind="manfred", name="Manfred")
+    config = SourceInput(kind="freehire", name="freehire", query=" python ", remote_only=True)
+    assert config.to_config().model_dump() == {
+        "query": "python",
+        "country": "es",
+        "remote_only": True,
+        "title_keywords": [],
+    }
+    personio = SourceInput(kind="personio", name="Acme", slug="acme", language="en")
+    assert personio.to_config().language == "en"  # type: ignore[union-attr]
+
+
+def test_same_portal_search_with_another_option_is_another_source(session: Session) -> None:
+    service.add_source(session, SourceInput(kind="manfred", name="Manfred", query="python"))
+    service.add_source(
+        session, SourceInput(kind="manfred", name="Manfred EN", query="python", lang="EN")
+    )
+    with pytest.raises(service.SourceExistsError):
+        service.add_source(session, SourceInput(kind="manfred", name="Otra", query="Python"))
+
+
+def test_options_of_another_kind_are_rejected() -> None:
+    with pytest.raises(ValueError, match="Manfred"):
+        SourceInput(kind="freehire", name="x", query="python", lang="EN")
+    with pytest.raises(ValueError, match="freehire"):
+        SourceInput(kind="greenhouse", name="Acme", slug="acme", remote_only=True)

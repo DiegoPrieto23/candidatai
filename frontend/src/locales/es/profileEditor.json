@@ -1,0 +1,304 @@
+{
+  "tabs": {
+    "personal": "Datos",
+    "experience": "Experiencia",
+    "background": "Proyectos y formación",
+    "skills": "Skills e idiomas",
+    "stories": "Historias STAR",
+    "search": "Búsqueda",
+    "documents": "CV y carta",
+    "context": "Contexto y estilo",
+    "history": "Historial"
+  },
+  "noProfile": {
+    "title": "Aún no tienes perfil",
+    "body": "Créalo con tu agente (<code>update-profile</code>, a partir de tu CV) o copia el de ejemplo con <code>cai profile init</code> y rellénalo aquí.",
+    "unreadable": "Tu <code>data/profile.yaml</code> no se puede leer como YAML. Arréglalo en tu editor (<code>cai profile validate</code> dice dónde) o pide ayuda a tu agente con <code>update-profile</code>."
+  },
+  "issues": {
+    "title": "Tu perfil tiene errores. Puedes arreglarlos aquí: hasta entonces, ningún bloque se guarda."
+  },
+  "unsaved": {
+    "badge": "Sin guardar",
+    "page_one": "Tienes {{count}} bloque sin guardar.",
+    "page_other": "Tienes {{count}} bloques sin guardar.",
+    "confirm": "Tienes cambios sin guardar en «Mi perfil». ¿Salir sin guardarlos?"
+  },
+  "actions": {
+    "save": "Guardar",
+    "saving": "Guardando…",
+    "saved": "Guardado",
+    "discard": "Descartar cambios",
+    "reload": "Recargar"
+  },
+  "errors": {
+    "validation": "Hay campos que revisar: están marcados abajo.",
+    "conflict": "Tu perfil ha cambiado desde que abriste la página (lo editaste a mano o tu agente). Pulsa «Recargar» para verlo y vuelve a hacer tu cambio.",
+    "partial": "Una parte de este bloque ya se guardó y otra no: he recargado tu perfil. Revisa el bloque y vuelve a guardar lo que falte."
+  },
+  "preview": {
+    "title": "Así cambiará tu perfil",
+    "rescore": "Al guardar se recalculan los scores de tus ofertas abiertas.",
+    "diff": "Cambios en profile.yaml",
+    "confirm": "Guardar estos cambios",
+    "cancel": "Volver a editar",
+    "noChanges": "Sin cambios en el fichero."
+  },
+  "agent": {
+    "improve": "Mejorar con mi agente",
+    "propose": "Proponer historias desde mi experiencia"
+  },
+  "blocks": {
+    "personal": {
+      "title": "Datos y resumen",
+      "hint": "El nombre, los enlaces y el resumen salen en tus CVs. El correo y el teléfono, solo en el CV que entregas: tu agente nunca los ve."
+    },
+    "experience": {
+      "title": "Experiencia",
+      "hint": "Cada logro es algo que un CV puede afirmar: escríbelo como pasó, con la métrica real si la tienes.",
+      "add": "Añadir empresa",
+      "empty": "Aún no hay experiencia.",
+      "untitled": "Empresa nueva",
+      "achievements": "Logros",
+      "newAchievement": "Logro nuevo",
+      "addAchievement": "Añadir logro"
+    },
+    "projects": {
+      "title": "Proyectos",
+      "hint": "Personales, académicos o de trabajo. Con el enlace al repositorio o a la demo si lo hay.",
+      "add": "Añadir proyecto",
+      "untitled": "Proyecto nuevo"
+    },
+    "education": {
+      "title": "Formación",
+      "add": "Añadir formación",
+      "untitled": "Formación nueva"
+    },
+    "certifications": {
+      "title": "Certificaciones",
+      "add": "Añadir certificación",
+      "untitled": "Certificación nueva"
+    },
+    "extra": {
+      "title": "Otras secciones",
+      "hint": "Voluntariado, premios, publicaciones…: salen en el CV tal cual las escribas.",
+      "add": "Añadir sección",
+      "untitled": "Sección nueva",
+      "addItem": "Añadir elemento"
+    },
+    "skills": {
+      "title": "Skills e idiomas",
+      "hint": "Los niveles son privados: deciden qué puede afirmar un CV, pero nunca salen en él. Al guardar se recalculan los scores.",
+      "languages": "Idiomas",
+      "addLanguage": "Añadir idioma",
+      "skills": "Skills",
+      "levels": "F: fuerte, la usas a diario · C+: la has usado en proyectos reales · C: la conoces · B: básica, solo como «conocimientos de».",
+      "addSkill": "Añadir skill"
+    },
+    "stories": {
+      "title": "Historias STAR",
+      "hint": "Para entrevistas: situación, tarea, acción y resultado. Cada una cita al menos un logro o proyecto de tu perfil.",
+      "add": "Añadir historia",
+      "untitled": "Historia nueva",
+      "needEvidence": "Cada historia necesita al menos una evidencia para poder guardarse."
+    },
+    "search": {
+      "title": "Qué buscas",
+      "hint": "Son los filtros duros y la base del score: al guardar verás el cambio y se recalcularán tus ofertas abiertas."
+    },
+    "cv": {
+      "title": "Preferencias de CV",
+      "hint": "Plantilla, extensión, foto e indicaciones para todos tus CVs. Las de una oferta se dan al generarlo.",
+      "rules_one": "Tienes {{count}} regla de plantilla (por ATS o país): se mantiene. Para cambiarla, edita el YAML o pídeselo a tu agente.",
+      "rules_other": "Tienes {{count}} reglas de plantilla (por ATS o país): se mantienen. Para cambiarlas, edita el YAML o pídeselo a tu agente."
+    },
+    "letter": {
+      "title": "Preferencias de carta",
+      "hint": "Para todas tus cartas. Las indicaciones de cada oferta están en su ficha y mandan sobre estas."
+    }
+  },
+  "fields": {
+    "name": "Nombre",
+    "headline": "Titular",
+    "headlineHint": "Una línea bajo tu nombre, p. ej. «Data Engineer · Python · SQL».",
+    "privateContact": "Privado: solo va en el CV que entregas. Tu agente no lo ve.",
+    "email": "Correo",
+    "phone": "Teléfono",
+    "linkedin": "LinkedIn",
+    "github": "GitHub",
+    "city": "Ciudad",
+    "profile_location": "Ubicación en el CV",
+    "availability": "Disponibilidad",
+    "mobility": "Movilidad",
+    "summary": {
+      "es": "Resumen (español)",
+      "en": "Resumen (inglés)"
+    },
+    "company": "Empresa",
+    "role": "Puesto",
+    "start": "Inicio",
+    "end": "Fin",
+    "present": "Actualidad",
+    "context": "Contexto de la empresa",
+    "contextHint": "A qué se dedica o qué equipo era, en una frase.",
+    "achievement": "Logro",
+    "achievementHint": "Qué hiciste y qué pasó, sin adornos. Tu agente puede ayudarte a redactarlo mejor.",
+    "metrics": "Métrica",
+    "metricsHint": "Solo la real: «-35 % de tiempo de carga». Si no la sabes, déjalo vacío.",
+    "source": "Fuente",
+    "sourceHint": "Enlace público que lo demuestra (opcional).",
+    "skills": "Skills",
+    "skillsHint": "Solo las de tu perfil (con nivel o básicas): añade antes las que falten en «Skills e idiomas».",
+    "nda": "Confidencial (NDA): el CV no da detalles internos ni el cliente",
+    "addTag": "Escribe y pulsa Intro",
+    "add": "Añadir",
+    "removeTag": "Quitar {{item}}",
+    "moveUp": "Subir {{item}}",
+    "moveDown": "Bajar {{item}}",
+    "remove": "Borrar {{item}}",
+    "projectName": "Nombre",
+    "date": "Fecha",
+    "description": "Descripción",
+    "url": "Enlace",
+    "degree": "Título",
+    "center": "Centro",
+    "certName": "Certificación",
+    "issuer": "Emisor",
+    "verifyUrl": "Enlace de verificación",
+    "titleEs": "Título (español)",
+    "titleEn": "Título (inglés)",
+    "item": "Elemento",
+    "language": "Idioma",
+    "level": "Nivel",
+    "choose": "Elige…",
+    "native": "Nativo",
+    "otherLevel": "Otro (escríbelo)",
+    "otherLevelText": "Nivel (texto libre)",
+    "regional": "Dónde ponerlo",
+    "regionalHint": "Solo si tiene sentido en una región (p. ej. gallego en Galicia).",
+    "skill": "Skill",
+    "category": "Categoría",
+    "basicSkills": "Skills básicas",
+    "basicSkillsHint": "Las conoces por encima: solo salen si la oferta las pide, como «conocimientos de».",
+    "storyTitle": "Título de la historia",
+    "evidence": "Evidencias",
+    "evidenceHint": "Los logros o proyectos de tu perfil que respaldan esta historia.",
+    "evidenceRequired": "Elige al menos una evidencia.",
+    "noEvidence": "Aún no hay logros ni proyectos que citar: añádelos antes en «Experiencia» o «Proyectos».",
+    "roles": "Puestos que buscas",
+    "rolesHint": "Por prioridad. Lo que no se parezca se puntúa más bajo.",
+    "seniority": "Niveles a los que te presentarías",
+    "maxYears": "Máximo de años de experiencia que pidan",
+    "maxYearsHint": "Vacío: sin límite.",
+    "workLanguages": "Idiomas de trabajo",
+    "workLanguagesHint": "Códigos de dos letras: es, en…",
+    "remoteModes": "Modalidad",
+    "locations": {
+      "preferred": "Ubicaciones preferidas",
+      "preferredHint": "Donde vives o quieres trabajar.",
+      "allowed": "También, en remoto o híbrido",
+      "allowedHint": "Solo si la oferta es remota o híbrida.",
+      "excluded": "Excluidas",
+      "excludedHint": "Se descartan solas."
+    },
+    "defaultTemplate": "Plantilla por defecto",
+    "templateAuto": "La de la app",
+    "maxPages": "Máximo de páginas",
+    "maxPagesAuto": "El de cada plantilla",
+    "photoDefault": "Poner foto en el CV",
+    "photoNo": "Países sin foto",
+    "photoNoHint": "Códigos de dos letras en mayúsculas: GB, US, IE…",
+    "cvInstructions": "Indicaciones para tus CVs",
+    "instructionsHint": "Énfasis o estilo. Orientan la redacción, pero nunca son un hecho: un dato nuevo va en su sección.",
+    "avoid": "Qué no debe decir nunca",
+    "avoidHint": "Frases o temas que no quieres ver.",
+    "tone": "Tono",
+    "maxWords": "Máximo de palabras",
+    "maxWordsHint": "Entre 50 y 600. Vacío: el de la app.",
+    "signOffEs": "Despedida (español)",
+    "signOffEn": "Despedida (inglés)",
+    "defaultFormat": "Cómo sueles enviarla",
+    "formatNone": "Sin preferencia",
+    "formatText": "Texto",
+    "letterInstructions": "Qué contar siempre",
+    "letterInstructionsHint": "Tu motivación, cómo llegaste a tu campo… La carta puede citarlo como dicho por ti, así que escríbelo con tus palabras."
+  },
+  "star": {
+    "situation": {
+      "label": "Situación",
+      "hint": "El contexto: dónde estabas y qué pasaba."
+    },
+    "task": {
+      "label": "Tarea",
+      "hint": "Qué te tocaba resolver a ti."
+    },
+    "action": {
+      "label": "Acción",
+      "hint": "Qué hiciste tú, en primera persona."
+    },
+    "result": {
+      "label": "Resultado",
+      "hint": "Qué pasó al final, con números si los tienes."
+    }
+  },
+  "levels": {
+    "F": "F · fuerte",
+    "C+": "C+ · usada en proyectos",
+    "C": "C · la conozco",
+    "B": "B · básica"
+  },
+  "seniority": {
+    "intern": "Prácticas",
+    "junior": "Junior",
+    "mid": "Mid",
+    "senior": "Senior",
+    "lead": "Lead"
+  },
+  "remote": {
+    "remote": "Remoto",
+    "hybrid": "Híbrido",
+    "onsite": "Presencial"
+  },
+  "groups": {
+    "projects": "proyecto",
+    "education": "formación",
+    "certifications": "certificación"
+  },
+  "context": {
+    "mode": "Modo del editor",
+    "edit": "Editar",
+    "preview": "Vista previa",
+    "editorLabel": "Texto de {{name}}",
+    "emptyPreview": "Aún no hay nada escrito (los comentarios-guía no se ven aquí).",
+    "size": "{{size}} KB de {{max}} KB",
+    "newFile": "aún no existe: se crea al guardar"
+  },
+  "style": {
+    "title": "Muestras de estilo",
+    "hint": "Cartas antiguas, correos o posts tuyos (.txt, .md, .docx, .pdf). Tu agente toma de ellos el tono, nunca los hechos.",
+    "upload": "Subir muestra",
+    "uploading": "Subiendo…",
+    "fileLabel": "Muestra de estilo",
+    "openFolder": "Abrir la carpeta de las muestras",
+    "empty": "Aún no hay muestras.",
+    "chars_one": "{{count}} carácter",
+    "chars_other": "{{count}} caracteres",
+    "showText": "Ver texto extraído",
+    "hideText": "Ocultar texto",
+    "delete": "Borrar {{name}}",
+    "risk": "Trae frases dirigidas a una IA («{{excerpt}}»): tu agente la leerá como dato y no las seguirá."
+  },
+  "history": {
+    "title": "Historial",
+    "hint": "Cada guardado deja una copia de tu perfil en data/profile-history/.",
+    "showDiff": "Ver cambios",
+    "hideDiff": "Ocultar cambios",
+    "diffLabel": "Cambios entre las dos últimas versiones",
+    "noDiff": "Solo hay una versión: aún no hay con qué comparar.",
+    "undo": "Deshacer el último cambio",
+    "undone": "Hecho: tu perfil ha vuelto a como estaba antes del último guardado.",
+    "saveFirst": "Guarda o descarta antes los bloques con cambios.",
+    "copies_one": "{{count}} copia guardada",
+    "copies_other": "{{count}} copias guardadas"
+  }
+}

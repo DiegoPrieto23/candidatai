@@ -3,6 +3,9 @@
 (como los emisores de `scripts/sync_agents.py`): el runner solo usa `StreamState`.
 
 Para dar segundo plano a otro agente, añade aquí un lector de su formato y regístralo en `PARSERS`.
+
+Uso (fase 25.4): todos los lectores rellenan `usage` con las mismas claves
+(`agent_usage.USAGE_KEYS`), todas opcionales: cada agente da lo que da y no se estima lo que falta.
 """
 
 import json
@@ -134,15 +137,20 @@ class ClaudeStreamParser:
         state.is_error = bool(event.get("is_error")) or state.subtype != "success"
         result = event.get("result")
         state.result = str(result)[:RESULT_CHARS] if result is not None else None
-        for key in ("num_turns", "duration_ms", "total_cost_usd"):
-            if isinstance(event.get(key), int | float):
-                state.usage[key] = event[key]
+        for key, source in (
+            ("turns", "num_turns"),
+            ("duration_ms", "duration_ms"),
+            ("cost_usd", "total_cost_usd"),
+        ):
+            value = event.get(source)
+            if isinstance(value, int | float) and not isinstance(value, bool):
+                state.usage[key] = value
         # Fase 24.6: los tokens, para la matriz (`cai eval compat`).
         tokens = event.get("usage") if isinstance(event.get("usage"), dict) else {}
         for key, source in (
             ("input_tokens", "input_tokens"),
             ("output_tokens", "output_tokens"),
-            ("cache_read_tokens", "cache_read_input_tokens"),
+            ("cached_tokens", "cache_read_input_tokens"),
         ):
             value = tokens.get(source)
             if isinstance(value, int) and not isinstance(value, bool):
@@ -245,15 +253,15 @@ class OpenCodeJsonParser:
         for key, value in (
             ("input_tokens", tokens.get("input")),
             ("output_tokens", (tokens.get("output") or 0) + (tokens.get("reasoning") or 0)),
-            ("cache_read_tokens", cache.get("read")),
-            ("total_cost_usd", part.get("cost")),
+            ("cached_tokens", cache.get("read")),
+            ("cost_usd", part.get("cost")),
         ):
             if isinstance(value, int | float) and not isinstance(value, bool):
                 usage[key] = usage.get(key, 0) + value
         if not main:
             return
         self._steps += 1
-        usage["num_turns"] = self._steps
+        usage["turns"] = self._steps
         reason = str(part.get("reason") or "")
         if reason == "tool-calls":
             return

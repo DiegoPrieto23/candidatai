@@ -1,0 +1,304 @@
+{
+  "tabs": {
+    "personal": "Details",
+    "experience": "Experience",
+    "background": "Projects and education",
+    "skills": "Skills and languages",
+    "stories": "STAR stories",
+    "search": "Search",
+    "documents": "CV and letter",
+    "context": "Context and style",
+    "history": "History"
+  },
+  "noProfile": {
+    "title": "You don't have a profile yet",
+    "body": "Create it with your agent (<code>update-profile</code>, from your CV) or copy the example with <code>cai profile init</code> and fill it in here.",
+    "unreadable": "Your <code>data/profile.yaml</code> can't be read as YAML. Fix it in your editor (<code>cai profile validate</code> tells you where) or ask your agent for help with <code>update-profile</code>."
+  },
+  "issues": {
+    "title": "Your profile has errors. You can fix them here: until then, no block can be saved."
+  },
+  "unsaved": {
+    "badge": "Not saved",
+    "page_one": "You have {{count}} block not saved.",
+    "page_other": "You have {{count}} blocks not saved.",
+    "confirm": "You have unsaved changes in My profile. Leave without saving them?"
+  },
+  "actions": {
+    "save": "Save",
+    "saving": "Saving…",
+    "saved": "Saved",
+    "discard": "Discard changes",
+    "reload": "Reload"
+  },
+  "errors": {
+    "validation": "Some fields need a look: they're marked below.",
+    "conflict": "Your profile changed since you opened this page (you edited it by hand, or your agent did). Press Reload to see it and make your change again.",
+    "partial": "Part of this block was saved and part wasn't: your profile has been reloaded. Check the block and save what's missing again."
+  },
+  "preview": {
+    "title": "This is how your profile will change",
+    "rescore": "Saving recalculates the scores of your open jobs.",
+    "diff": "Changes in profile.yaml",
+    "confirm": "Save these changes",
+    "cancel": "Back to editing",
+    "noChanges": "No changes in the file."
+  },
+  "agent": {
+    "improve": "Improve with my agent",
+    "propose": "Propose stories from my experience"
+  },
+  "blocks": {
+    "personal": {
+      "title": "Details and summary",
+      "hint": "Your name, links and summary go in your CVs. Email and phone only go in the CV you hand in: your agent never sees them."
+    },
+    "experience": {
+      "title": "Experience",
+      "hint": "Each achievement is something a CV can claim: write it as it happened, with the real metric if you have it.",
+      "add": "Add company",
+      "empty": "No experience yet.",
+      "untitled": "New company",
+      "achievements": "Achievements",
+      "newAchievement": "New achievement",
+      "addAchievement": "Add achievement"
+    },
+    "projects": {
+      "title": "Projects",
+      "hint": "Personal, academic or work projects. With the link to the repository or demo if there is one.",
+      "add": "Add project",
+      "untitled": "New project"
+    },
+    "education": {
+      "title": "Education",
+      "add": "Add education",
+      "untitled": "New education"
+    },
+    "certifications": {
+      "title": "Certifications",
+      "add": "Add certification",
+      "untitled": "New certification"
+    },
+    "extra": {
+      "title": "Other sections",
+      "hint": "Volunteering, awards, publications…: they go in the CV exactly as you write them.",
+      "add": "Add section",
+      "untitled": "New section",
+      "addItem": "Add item"
+    },
+    "skills": {
+      "title": "Skills and languages",
+      "hint": "Levels are private: they decide what a CV may claim, but never appear in it. Saving recalculates the scores.",
+      "languages": "Languages",
+      "addLanguage": "Add language",
+      "skills": "Skills",
+      "levels": "F: strong, you use it daily · C+: used in real projects · C: you know it · B: basic, only as \"knowledge of\".",
+      "addSkill": "Add skill"
+    },
+    "stories": {
+      "title": "STAR stories",
+      "hint": "For interviews: situation, task, action and result. Each one cites at least one achievement or project from your profile.",
+      "add": "Add story",
+      "untitled": "New story",
+      "needEvidence": "Each story needs at least one piece of evidence before it can be saved."
+    },
+    "search": {
+      "title": "What you're looking for",
+      "hint": "These are the hard filters and the basis of the score: when you save you'll see the change, and your open jobs will be rescored."
+    },
+    "cv": {
+      "title": "CV preferences",
+      "hint": "Template, length, photo and instructions for all your CVs. Instructions for one job are given when you generate it.",
+      "rules_one": "You have {{count}} template rule (by ATS or country): it stays. To change it, edit the YAML or ask your agent.",
+      "rules_other": "You have {{count}} template rules (by ATS or country): they stay. To change them, edit the YAML or ask your agent."
+    },
+    "letter": {
+      "title": "Cover letter preferences",
+      "hint": "For all your letters. The instructions for each job are on its page and take precedence."
+    }
+  },
+  "fields": {
+    "name": "Name",
+    "headline": "Headline",
+    "headlineHint": "One line under your name, e.g. \"Data Engineer · Python · SQL\".",
+    "privateContact": "Private: only goes in the CV you hand in. Your agent doesn't see it.",
+    "email": "Email",
+    "phone": "Phone",
+    "linkedin": "LinkedIn",
+    "github": "GitHub",
+    "city": "City",
+    "profile_location": "Location on the CV",
+    "availability": "Availability",
+    "mobility": "Mobility",
+    "summary": {
+      "es": "Summary (Spanish)",
+      "en": "Summary (English)"
+    },
+    "company": "Company",
+    "role": "Role",
+    "start": "Start",
+    "end": "End",
+    "present": "Present",
+    "context": "About the company",
+    "contextHint": "What it does or which team it was, in one sentence.",
+    "achievement": "Achievement",
+    "achievementHint": "What you did and what happened, plainly. Your agent can help you word it better.",
+    "metrics": "Metric",
+    "metricsHint": "Only the real one: \"-35% load time\". If you don't know it, leave it empty.",
+    "source": "Source",
+    "sourceHint": "A public link that proves it (optional).",
+    "skills": "Skills",
+    "skillsHint": "Only skills in your profile (with a level or basic): add missing ones first under Skills and languages.",
+    "nda": "Confidential (NDA): the CV gives no internal details or client",
+    "addTag": "Type and press Enter",
+    "add": "Add",
+    "removeTag": "Remove {{item}}",
+    "moveUp": "Move {{item}} up",
+    "moveDown": "Move {{item}} down",
+    "remove": "Delete {{item}}",
+    "projectName": "Name",
+    "date": "Date",
+    "description": "Description",
+    "url": "Link",
+    "degree": "Degree",
+    "center": "Institution",
+    "certName": "Certification",
+    "issuer": "Issuer",
+    "verifyUrl": "Verification link",
+    "titleEs": "Title (Spanish)",
+    "titleEn": "Title (English)",
+    "item": "Item",
+    "language": "Language",
+    "level": "Level",
+    "choose": "Choose…",
+    "native": "Native",
+    "otherLevel": "Other (type it)",
+    "otherLevelText": "Level (free text)",
+    "regional": "Where to show it",
+    "regionalHint": "Only if it matters in one region (e.g. Galician in Galicia).",
+    "skill": "Skill",
+    "category": "Category",
+    "basicSkills": "Basic skills",
+    "basicSkillsHint": "You know them a little: they only appear if the job asks for them, as \"knowledge of\".",
+    "storyTitle": "Story title",
+    "evidence": "Evidence",
+    "evidenceHint": "The achievements or projects in your profile that back this story.",
+    "evidenceRequired": "Pick at least one piece of evidence.",
+    "noEvidence": "No achievements or projects to cite yet: add them first under Experience or Projects.",
+    "roles": "Roles you're looking for",
+    "rolesHint": "By priority. Anything unlike them scores lower.",
+    "seniority": "Levels you would apply for",
+    "maxYears": "Maximum years of experience required",
+    "maxYearsHint": "Empty: no limit.",
+    "workLanguages": "Working languages",
+    "workLanguagesHint": "Two-letter codes: es, en…",
+    "remoteModes": "Work mode",
+    "locations": {
+      "preferred": "Preferred locations",
+      "preferredHint": "Where you live or want to work.",
+      "allowed": "Also, if remote or hybrid",
+      "allowedHint": "Only if the job is remote or hybrid.",
+      "excluded": "Excluded",
+      "excludedHint": "Dropped automatically."
+    },
+    "defaultTemplate": "Default template",
+    "templateAuto": "The app's",
+    "maxPages": "Maximum pages",
+    "maxPagesAuto": "Each template's own",
+    "photoDefault": "Include a photo in the CV",
+    "photoNo": "Countries without a photo",
+    "photoNoHint": "Two-letter codes in capitals: GB, US, IE…",
+    "cvInstructions": "Instructions for your CVs",
+    "instructionsHint": "Emphasis or style. They guide the writing but are never a fact: new information goes in its own section.",
+    "avoid": "What it must never say",
+    "avoidHint": "Phrases or topics you don't want to see.",
+    "tone": "Tone",
+    "maxWords": "Maximum words",
+    "maxWordsHint": "Between 50 and 600. Empty: the app's default.",
+    "signOffEs": "Sign-off (Spanish)",
+    "signOffEn": "Sign-off (English)",
+    "defaultFormat": "How you usually send it",
+    "formatNone": "No preference",
+    "formatText": "Text",
+    "letterInstructions": "What to always say",
+    "letterInstructionsHint": "Your motivation, how you got into your field… The letter may quote it as said by you, so write it in your own words."
+  },
+  "star": {
+    "situation": {
+      "label": "Situation",
+      "hint": "The context: where you were and what was going on."
+    },
+    "task": {
+      "label": "Task",
+      "hint": "What you had to solve."
+    },
+    "action": {
+      "label": "Action",
+      "hint": "What you did, in the first person."
+    },
+    "result": {
+      "label": "Result",
+      "hint": "What happened in the end, with numbers if you have them."
+    }
+  },
+  "levels": {
+    "F": "F · strong",
+    "C+": "C+ · used in projects",
+    "C": "C · I know it",
+    "B": "B · basic"
+  },
+  "seniority": {
+    "intern": "Internship",
+    "junior": "Junior",
+    "mid": "Mid",
+    "senior": "Senior",
+    "lead": "Lead"
+  },
+  "remote": {
+    "remote": "Remote",
+    "hybrid": "Hybrid",
+    "onsite": "On-site"
+  },
+  "groups": {
+    "projects": "project",
+    "education": "education",
+    "certifications": "certification"
+  },
+  "context": {
+    "mode": "Editor mode",
+    "edit": "Edit",
+    "preview": "Preview",
+    "editorLabel": "Text of {{name}}",
+    "emptyPreview": "Nothing written yet (the guide comments are not shown here).",
+    "size": "{{size}} KB of {{max}} KB",
+    "newFile": "doesn't exist yet: it's created when you save"
+  },
+  "style": {
+    "title": "Writing samples",
+    "hint": "Old letters, emails or posts of yours (.txt, .md, .docx, .pdf). Your agent takes your tone from them, never facts.",
+    "upload": "Upload sample",
+    "uploading": "Uploading…",
+    "fileLabel": "Writing sample",
+    "openFolder": "Open the samples folder",
+    "empty": "No samples yet.",
+    "chars_one": "{{count}} character",
+    "chars_other": "{{count}} characters",
+    "showText": "Show extracted text",
+    "hideText": "Hide text",
+    "delete": "Delete {{name}}",
+    "risk": "It contains phrases aimed at an AI (\"{{excerpt}}\"): your agent will read it as data and won't follow them."
+  },
+  "history": {
+    "title": "History",
+    "hint": "Every save leaves a copy of your profile in data/profile-history/.",
+    "showDiff": "Show changes",
+    "hideDiff": "Hide changes",
+    "diffLabel": "Changes between the last two versions",
+    "noDiff": "There's only one version: nothing to compare with yet.",
+    "undo": "Undo the last change",
+    "undone": "Done: your profile is back to how it was before the last save.",
+    "saveFirst": "Save or discard the blocks with changes first.",
+    "copies_one": "{{count}} copy saved",
+    "copies_other": "{{count}} copies saved"
+  }
+}

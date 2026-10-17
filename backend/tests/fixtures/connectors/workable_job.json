@@ -1,0 +1,37 @@
+{
+  "id": 5173018,
+  "shortcode": "186545F8C1",
+  "title": "Data Engineer",
+  "remote": false,
+  "location": {
+    "city": "Vigo",
+    "country": "Spain",
+    "countryCode": "ES",
+    "display": "Vigo, Spain",
+    "region": "Galicia"
+  },
+  "locations": [
+    {
+      "city": "Vigo",
+      "country": "Spain",
+      "countryCode": "ES",
+      "hidden": false,
+      "region": "Galicia"
+    }
+  ],
+  "state": "published",
+  "isInternal": false,
+  "code": null,
+  "published": "2026-09-29T00:00:00.000Z",
+  "type": "full",
+  "language": "es",
+  "department": [
+    "Datos"
+  ],
+  "accountUid": "00000000-0000-4000-8000-acmedatos000",
+  "approvalStatus": "approved",
+  "workplace": "hybrid",
+  "description": "<p>En Acme Datos construimos <strong>pipelines de datos</strong>.</p>",
+  "requirements": "<ul><li>Python y SQL</li><li>Airflow</li></ul>",
+  "benefits": "<ul><li>Formación</li></ul>"
+}

@@ -20,6 +20,7 @@ const ALLOWED = [
   /^(empresas|entrevistas|candidatura|contexto|documentos|plataformas)$/, // carpetas de datos (`OpenFolderButton`)
   /^[a-z0-9_.:-]+$/, // identificadores, claves, ids (en minúsculas)
   /^https?:\/\/\S+$/, // URLs de ejemplo
+  /^[a-z0-9.\-/]*<slug>[a-z0-9.\-/]*$/, // dónde está el slug de un ATS (`<slug>.jobs.personio.de`)
 ]
 
 function stripComments(code: string): string {

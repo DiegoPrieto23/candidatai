@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<workzag-jobs>
+
+<position>
+    <id>1834171</id>
+    <subcompany>Acme Datos S.L.</subcompany>
+    <office>Vigo</office>
+    <additionalOffices>
+        <office>A Coruña</office>
+    </additionalOffices>
+    <department>Product and Tech</department>
+    <recruitingCategory>Engineering</recruitingCategory>
+    <name>Data Engineer</name>
+    <jobDescriptions>
+        <jobDescription>
+            <name>El puesto</name>
+            <value>
+                <![CDATA[<p>En Acme Datos construimos <strong>pipelines de datos</strong>.</p>]]>
+            </value>
+        </jobDescription>
+        <jobDescription>
+            <name>Qué buscamos</name>
+            <value>
+                <![CDATA[<ul><li>Python y SQL</li><li>Airflow</li></ul>]]>
+            </value>
+        </jobDescription>
+    </jobDescriptions>
+    <employmentType>permanent</employmentType>
+    <seniority>experienced</seniority>
+    <schedule>full-time</schedule>
+    <yearsOfExperience>2-5</yearsOfExperience>
+    <occupation>software_and_web_development</occupation>
+    <occupationCategory>it_software</occupationCategory>
+    <createdAt>2026-09-29T13:00:00+00:00</createdAt>
+</position>
+
+<position>
+    <id>1834172</id>
+    <subcompany>Acme Datos S.L.</subcompany>
+    <office>Remote Spain</office>
+    <department>Product and Tech</department>
+    <recruitingCategory>Engineering</recruitingCategory>
+    <name>Analytics Engineer</name>
+    <jobDescriptions>
+        <jobDescription>
+            <name>El puesto</name>
+            <value>
+                <![CDATA[<p>Modelado con dbt.</p>]]>
+            </value>
+        </jobDescription>
+    </jobDescriptions>
+    <employmentType>permanent</employmentType>
+    <seniority>experienced</seniority>
+    <schedule>full-time</schedule>
+    <createdAt>2026-09-30T09:00:00+00:00</createdAt>
+</position>
+
+<position>
+    <id>1834173</id>
+    <subcompany>Acme Datos S.L.</subcompany>
+    <office>Vigo</office>
+    <department>Operations</department>
+    <name></name>
+    <jobDescriptions></jobDescriptions>
+    <createdAt>2026-09-30T10:00:00+00:00</createdAt>
+</position>
+
+</workzag-jobs>

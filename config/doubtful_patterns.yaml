@@ -1,0 +1,65 @@
+# Señales de oferta dudosa (fase 25.3, `backend/app/services/doubtful.py`). Son observaciones: no
+# cambian el score ni los filtros duros, salvo que tú lo pidas en `preferences.exclude_signals`.
+# Se comparan sin tildes ni mayúsculas. Añade o quita lo que quieras: es una lista genérica, sin
+# datos personales.
+
+# `employer_hidden`: el nombre de la empresa de la oferta es el de una agencia, consultora de
+# selección o ETT (como palabras completas del nombre). Sin «recruiting» ni «talent acquisition»:
+# también los usan empresas de producto de selección.
+agencies:
+  - adecco
+  - randstad
+  - hays
+  - michael page
+  - page personnel
+  - robert walters
+  - robert half
+  - manpower
+  - manpowergroup
+  - experis
+  - eurofirms
+  - gi group
+  - synergie
+  - kelly services
+  - spring professional
+  - harvey nash
+  - selección de personal
+  - seleccion de personal
+  - recruitment
+  - headhunter
+  - headhunting
+  - staffing
+  - ett
+
+# `employer_hidden`: el nombre de la empresa no dice quién es (como palabras completas). Sin
+# «anónima»: casaría con «Sociedad Anónima».
+hidden_employer:
+  - confidencial
+  - confidential
+  - empresa confidencial
+  - importante empresa
+  - empresa líder
+  - empresa lider
+  - leading company
+  - our client
+  - nuestro cliente
+  - anonymous
+  - undisclosed
+
+# `ai_screening`: frases del texto de la oferta que dicen que te cribará una IA o un test
+# automático antes de hablar con nadie (como palabras completas del texto). Nada de «test
+# automático» a secas: en un puesto de QA es una skill, no un cribado.
+ai_screening:
+  - hirevue
+  - entrevista en vídeo grabada
+  - entrevista en video grabada
+  - videoentrevista grabada
+  - video interview recorded
+  - recorded video interview
+  - one-way video interview
+  - ai-powered screening
+  - ai screening
+  - screened by ai
+  - cribado con inteligencia artificial
+  - cribado mediante ia
+  - evaluado por inteligencia artificial

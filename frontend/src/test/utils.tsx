@@ -185,6 +185,7 @@ export function matchView(changes: Partial<MatchView> = {}): MatchView {
     triage_threshold: 55,
     below_threshold: false,
     hard_filters: { passed: true, failures: [] },
+    signals: [],
     breakdown: {
       components: [
         { name: 'must_have_coverage', value: 0.8, weight: 0.45, effective_weight: 0.6429, points: 51.43 },
@@ -222,7 +223,7 @@ export function triageItem(id: number, score: number, changes: Partial<TriageIte
 }
 
 export function triageQueue(items: TriageItem[], changes: Partial<TriageQueue> = {}): TriageQueue {
-  return { items, total: items.length, triage_threshold: 55, profile_missing: false, ...changes }
+  return { items, total: items.length, triage_threshold: 55, assess_min_score: 45, profile_missing: false, ...changes }
 }
 
 // --- CV ------------------------------------------------------------------------------------------

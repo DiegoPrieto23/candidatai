@@ -173,6 +173,30 @@ reposts:                        # fase 16: «Republicada ×N» (observación, no
   window_days: 90                 # se cuentan las publicaciones de los últimos N días
   min_count: 2                    # días distintos con una publicación nueva (otro id o URL) en el mismo canal
 
-background_runs:                # fase 19: «En segundo plano» (el agente sin ventana desde el worker, de uno en uno)
+doubtful:                       # fase 25.3: señales de oferta dudosa (observaciones: no cambian el score ni los filtros)
+  salary_range_max_pct: 60        # `salary_range_wide` si el máximo supera al mínimo en más de este %
+  stale_repost_min_count: 4       # `stale_repost`: días distintos con una publicación nueva en el mismo canal…
+  stale_repost_min_span_days: 60  # …o días entre la primera y la última vez vista (todo el historial)
+                                  # patrones de agencias, empresas ocultas y cribado con IA: config/doubtful_patterns.yaml
+
+layout:                         # fase 25.5: maquetación del PDF del CV y la carta (avisos, nunca bloqueos)
+  enabled: true
+  orphan_bottom_pct: 10           # `orphan_heading`: un título en el último 10 % de una página y su contenido en la siguiente
+  large_gap_pct: 15               # `large_gap`: un hueco vertical mayor que el 15 % de la página en medio del documento
+  bottom_margin_pct: 8            # margen normal al pie (no cuenta como hueco)
+  footer_zone_pct: 3              # `footer_overlap`: texto en el último 3 % de la página…
+  edge_margin_pt: 14              # …o a menos de 14 pt de un borde
+  last_page_min_pct: 15           # `nearly_empty_last_page`: la última página ocupa menos del 15 % (con más de una)
+
+profile_editing:                # fase 25.7: «Mi perfil» editable desde la UI
+  history_keep: 20                # copias de data/profile.yaml en data/profile-history/ antes de cada guardado
+  style_max_files: 10             # muestras de estilo en data/documentos/estilo/
+  style_max_upload_mb: 5          # tamaño máximo de cada muestra (.txt, .md, .docx, .pdf)
+  style_max_text_kb: 20           # texto de todas las muestras juntas que recibe el agente (get_context)
+
+background_runs:                # fase 19: «En segundo plano» (el agente sin ventana desde el worker)
   timeout_minutes: 30             # después se para el proceso y la ejecución queda `timeout`
   max_progress_lines: 200         # líneas de progreso que se guardan (las últimas)
+  max_parallel: 1                 # fase 25.4: ejecuciones a la vez (1-4); nunca dos de la misma oferta ni dos lotes de la misma acción
+  per_agent: {}                   # tope por agente, p. ej. {opencode: 1} si usas un modelo local de Ollama
+  assess_min_score: null          # «Evaluar encaje» en segundo plano solo valora desde este score (null: el de triaje menos 10; la página «Agente» lo cambia)

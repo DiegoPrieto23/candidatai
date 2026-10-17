@@ -59,6 +59,12 @@ class Settings(BaseSettings):
     )
     adzuna_app_id: str | None = Field(default=None, validation_alias=_env("ADZUNA_APP_ID"))
     adzuna_app_key: str | None = Field(default=None, validation_alias=_env("ADZUNA_APP_KEY"))
+    # freehire.me (fase 25.1): sin claves; la URL base se cambia para usar otra instancia.
+    freehire_base_url: str = Field(
+        default="https://freehire.me/api/v1",
+        pattern=r"^https?://[^\s/?#]+(/[^\s?#]*)?$",
+        validation_alias=_env("FREEHIRE_BASE_URL"),
+    )
     # Alertas por correo (fase 09b): IMAP en solo lectura sobre una carpeta. Sin host, solo se
     # lee la carpeta local `data/inbox/`.
     imap_host: str | None = Field(default=None, validation_alias=_env("IMAP_HOST"))

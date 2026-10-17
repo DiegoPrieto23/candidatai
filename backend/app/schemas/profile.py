@@ -9,6 +9,7 @@ import re
 from collections.abc import Iterator
 from pathlib import PureWindowsPath
 from typing import Annotated, Any, Literal, Self
+from urllib.parse import urlsplit
 
 from pydantic import AfterValidator, BaseModel, BeforeValidator, ConfigDict, Field, model_validator
 
@@ -54,6 +55,22 @@ def _pattern(regex: re.Pattern[str], what: str) -> AfterValidator:
     return AfterValidator(check)
 
 
+def _public_url(value: str) -> str:
+    # Se guarda tal cual (sin normalizar, como `HttpUrl`): el YAML no cambia al validarlo.
+    parts = urlsplit(value)
+    if (
+        any(char.isspace() for char in value)
+        or parts.scheme not in ("http", "https")
+        or not parts.hostname
+        or "." not in parts.hostname
+        or parts.username is not None  # un enlace con usuario o contraseña no va en el perfil
+    ):
+        raise ValueError(
+            "Debe ser una URL pública con http:// o https:// (p. ej. https://github.com/tu-usuario)."
+        )
+    return value
+
+
 YearMonth = Annotated[str, BeforeValidator(_year_month)]
 YearMonthOrPresent = Annotated[str, BeforeValidator(_year_month_or_present)]
 Id = Annotated[str, Field(min_length=1), AfterValidator(_id)]
@@ -64,6 +81,15 @@ LanguageCode = Annotated[
 CountryCode = Annotated[
     str, _pattern(_COUNTRY, "código de país ISO 3166-1 de 2 letras en mayúsculas (p. ej. ES, GB)")
 ]
+
+
+# Procedencia (fase 25.2, skill `expand`): la página pública de la que salió el dato. Vacía no se
+# vuelca, así el hash de los perfiles que no la usan no cambia (no crea versión ni recalcula).
+Source = Annotated[str | None, AfterValidator(lambda v: v if v is None else _public_url(v))]
+
+
+def _source_field() -> Any:
+    return Field(default=None, exclude_if=lambda value: value is None)
 
 
 class _Strict(BaseModel):
@@ -99,6 +125,7 @@ class Achievement(_Strict):
     metrics: str | None = None
     skills: list[str] = []
     nda: bool = False
+    source: Source = _source_field()
 
 
 class Experience(_Strict):
@@ -127,6 +154,7 @@ class Project(_Strict):
     url: Annotated[str, Field(pattern=r"^\S+$")] | None = None
     skills: list[str] = []
     nda: bool = False
+    source: Source = _source_field()
 
 
 class Education(_Strict):
@@ -148,6 +176,7 @@ class Certification(_Strict):
     name: Text
     issuer: str | None = None
     date: YearMonth | None = None
+    source: Source = _source_field()  # enlace de verificación
 
 
 class LocalizedTitle(_Strict):
@@ -165,6 +194,7 @@ class ExtraItem(_Strict):
     id: Id
     text: Text
     date: YearMonth | None = None
+    source: Source = _source_field()
 
 
 class ExtraSection(_Strict):
@@ -292,6 +322,11 @@ class Preferences(_Strict):
     languages_for_work: list[LanguageCode] = Field(min_length=1)
     cv: CvPreferences
     cover_letter: CoverLetterPreferences | None = None  # fase 08c; opcional
+    # Fase 25.3: señales de oferta dudosa que quieres como filtro duro. Vacía no se vuelca, así
+    # que no cambia el hash de los perfiles que no la usan.
+    exclude_signals: list[Literal["employer_hidden", "fixed_term"]] = Field(
+        default_factory=list, exclude_if=lambda value: not value
+    )
 
 
 class ConsistencyIssue(BaseModel):

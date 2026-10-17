@@ -140,7 +140,8 @@
     "remote_mode": "Modalidad",
     "location": "Ubicación",
     "language": "Idioma",
-    "title_keyword": "Palabras del título"
+    "title_keyword": "Palabras del título",
+    "signal": "Señales de oferta dudosa que excluiste"
   },
   "sourceKind": {
     "manual_url": "Enlace",
@@ -148,8 +149,15 @@
     "greenhouse": "Greenhouse",
     "lever": "Lever",
     "ashby": "Ashby",
+    "personio": "Personio",
+    "teamtailor": "Teamtailor",
+    "workable": "Workable",
+    "smartrecruiters": "SmartRecruiters",
+    "recruitee": "Recruitee",
     "infojobs": "InfoJobs",
     "adzuna": "Adzuna",
+    "manfred": "Manfred",
+    "freehire": "freehire",
     "email_alerts": "Alertas por correo",
     "browser_capture": "Botón del navegador",
     "agent_browse": "Búsqueda con navegador"

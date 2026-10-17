@@ -61,6 +61,7 @@ export function AgentButton({
   action,
   jobId,
   milestoneId,
+  profileItem,
   children,
   variant = 'outline',
   size = 'sm',
@@ -70,6 +71,8 @@ export function AgentButton({
   jobId?: number
   /** Acciones de una entrevista (fase 17): la oferta sale del hito. */
   milestoneId?: number
+  /** «Mi perfil» (fase 25.7b): el id de un logro o una historia. Solo en terminal. */
+  profileItem?: string
   children: ReactNode
   variant?: 'default' | 'outline' | 'secondary' | 'ghost'
   size?: 'sm' | 'default'
@@ -89,7 +92,7 @@ export function AgentButton({
     clearTimeout(timer.current)
     timer.current = setTimeout(() => setFeedback(null), 8000)
   }
-  const target = { action, job_id: jobId, milestone_id: milestoneId }
+  const target = { action, job_id: jobId, milestone_id: milestoneId, profile_item: profileItem }
   const failed = (error: unknown, fallback: string) =>
     show({ tone: 'error', text: error instanceof Error ? errorMessage(error) : fallback })
 
@@ -233,7 +236,8 @@ export function AgentButton({
                 <DropdownMenuSeparator />
               </>
             )}
-            {action !== 'handle-requests' && (
+            {/* La cola de encargos no guarda el id de un elemento del perfil. */}
+            {action !== 'handle-requests' && !profileItem && (
               <DropdownMenuItem onSelect={leaveForLater}>
                 <ClockCountdownIcon weight="duotone" />
                 <span>

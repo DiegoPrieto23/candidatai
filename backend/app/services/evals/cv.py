@@ -30,7 +30,7 @@ from app.schemas.profile import CandidateProfile
 from app.services import events, extractions, ingest
 from app.services import profile as profile_service
 from app.services.demo_text import posting_text
-from app.services.documents import checks
+from app.services.documents import checks, layout
 from app.services.documents.service import CV_KIND
 from app.services.matching import service as matching
 from app.services.matching.skills import alias_index, canonical
@@ -44,13 +44,14 @@ DEFAULT_MIN_COVERAGE = 0.8
 AGENT_NAME = "demo-seed"
 
 CheckName = Literal[
-    "evidence", "skills", "basic_skills", "one_page", "coverage", "language", "verified"
+    "evidence", "skills", "basic_skills", "one_page", "layout", "coverage", "language", "verified"
 ]
 CHECKS: dict[CheckName, str] = {
     "evidence": "Evidencias que existen en el perfil",
     "skills": "Sin skills inventadas ni prohibidas",
     "basic_skills": "Sin skills básicas que la oferta no pide",
     "one_page": "Una página",
+    "layout": "Sin avisos de maquetación del PDF",
     "coverage": "Cobertura de keywords",
     "language": "Idioma de la oferta",
     "verified": "Verificado por el rol `verifier`",
@@ -259,6 +260,7 @@ def check_cv(
     pages: int | None,
     verification: dict[str, object] | None,
     min_coverage: float = DEFAULT_MIN_COVERAGE,
+    warnings: list[dict[str, object]] | None = None,
 ) -> list[CheckResult]:
     """Las comprobaciones de un CV. Funciones puras sobre lo guardado: sin BD."""
     index = alias_index()
@@ -325,6 +327,18 @@ def check_cv(
             name="one_page",
             passed=None if pages is None else pages == 1,
             detail="Sin PDF: no se ha podido medir." if pages is None else f"{pages} páginas.",
+        )
+    )
+
+    # Fase 25.5: los avisos de maquetación del render que se enviaría.
+    layout_warnings = [w for w in warnings or [] if w.get("code") in layout.CODES]
+    results.append(
+        CheckResult(
+            name="layout",
+            passed=None if pages is None else not layout_warnings,
+            detail="Sin PDF: no se ha podido medir."
+            if pages is None
+            else "; ".join(str(w.get("message")) for w in layout_warnings) or None,
         )
     )
 
@@ -396,16 +410,14 @@ def _author(session: Session, document: Document) -> str | None:
     return None
 
 
-def _pages(session: Session, document_id: int) -> int | None:
-    """Páginas del render que se enviaría (el seleccionado) o, si no hay, del último."""
-    renders = list(
-        session.scalars(
-            select(DocumentRender)
-            .where(DocumentRender.document_id == document_id)
-            .order_by(DocumentRender.selected.desc(), DocumentRender.id.desc())
-        )
-    )
-    return renders[0].pages if renders else None
+def _render(session: Session, document_id: int) -> DocumentRender | None:
+    """El render que se enviaría (el seleccionado) o, si no hay, el último."""
+    return session.scalars(
+        select(DocumentRender)
+        .where(DocumentRender.document_id == document_id)
+        .order_by(DocumentRender.selected.desc(), DocumentRender.id.desc())
+        .limit(1)
+    ).first()
 
 
 def evaluate(
@@ -438,13 +450,15 @@ def evaluate(
             results.append(CaseResult(id=case.id, job_id=job.id, status="pending"))
             continue
         profile = profile_service.get_version(session, document.profile_version_id).profile
+        render = _render(session, document.id)
         found = check_cv(
             case,
             CvContent.model_validate(document.content),
             profile,
-            _pages(session, document.id),
+            render.pages if render else None,
             document.verification,
             min_coverage,
+            list(render.warnings or []) if render else None,
         )
         failed = any(c.passed is False for c in found)
         results.append(

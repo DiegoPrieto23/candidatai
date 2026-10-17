@@ -36,23 +36,37 @@ import { i18n } from '@/lib/i18n'
 import { dateFormatter, SOURCE_KIND_LABEL } from '@/lib/labels'
 import { cn } from '@/lib/utils'
 
-/** Las búsquedas (InfoJobs, Adzuna) toman su nombre y su pista de los textos: `kinds.*`. */
+type Portal = 'infojobs' | 'adzuna' | 'manfred' | 'freehire'
+
+/** Las búsquedas (portales) toman su nombre y su pista de los textos: `kinds.*`. */
 const KINDS: { value: ConnectorKind; label: string | null; hint: string | null }[] = [
   { value: 'greenhouse', label: 'Greenhouse', hint: 'boards.greenhouse.io/<slug>' },
   { value: 'lever', label: 'Lever', hint: 'jobs.lever.co/<slug>' },
   { value: 'ashby', label: 'Ashby', hint: 'jobs.ashbyhq.com/<slug>' },
+  { value: 'personio', label: 'Personio', hint: '<slug>.jobs.personio.de' },
+  { value: 'teamtailor', label: 'Teamtailor', hint: '<slug>.teamtailor.com' },
+  { value: 'workable', label: 'Workable', hint: 'apply.workable.com/<slug>' },
+  { value: 'smartrecruiters', label: 'SmartRecruiters', hint: 'jobs.smartrecruiters.com/<slug>' },
+  { value: 'recruitee', label: 'Recruitee', hint: '<slug>.recruitee.com' },
   { value: 'infojobs', label: null, hint: null },
   { value: 'adzuna', label: null, hint: null },
+  { value: 'manfred', label: null, hint: null },
+  { value: 'freehire', label: null, hint: null },
 ]
 
 function kindLabel(kind: (typeof KINDS)[number]): string {
-  return kind.label ?? i18n.t(`sources:kinds.${kind.value as 'infojobs' | 'adzuna'}`)
+  return kind.label ?? i18n.t(`sources:kinds.${kind.value as Portal}`)
 }
 
 function kindHint(kind: (typeof KINDS)[number]): string {
-  return kind.hint ?? i18n.t('sources:kinds.keysHint')
+  if (kind.hint) return kind.hint
+  if (kind.value === 'manfred') return i18n.t('sources:kinds.manfredHint')
+  if (kind.value === 'freehire') return i18n.t('sources:kinds.freehireHint')
+  return i18n.t('sources:kinds.keysHint')
 }
-const ATS: ConnectorKind[] = ['greenhouse', 'lever', 'ashby']
+const ATS: ConnectorKind[] = KINDS.filter((k) => k.label !== null).map((k) => k.value)
+/** Cómo encontrar el slug de cada ATS (`docs/FUENTES_OFERTAS.md`). */
+const SLUG_HELP_URL = 'https://github.com/DiegoPrieto23/candidatai/blob/main/docs/FUENTES_OFERTAS.md#cómo-encontrar-el-slug'
 const CONNECTOR_KINDS = new Set<string>(KINDS.map((k) => k.value))
 
 function fieldErrors(error: unknown): Record<string, string> {
@@ -201,7 +215,20 @@ function Field({ id, label, error, hint, children }: { id: string; label: string
   )
 }
 
-const EMPTY = { kind: 'greenhouse' as ConnectorKind, name: '', slug: '', region: 'global' as 'global' | 'eu', query: '', where: '', province: '' }
+const EMPTY = {
+  kind: 'greenhouse' as ConnectorKind,
+  name: '',
+  slug: '',
+  region: 'global' as 'global' | 'eu',
+  query: '',
+  where: '',
+  province: '',
+  language: '',
+  lang: 'ES' as 'ES' | 'EN',
+  country: 'es',
+  remoteOnly: false,
+}
+type TextKey = 'name' | 'slug' | 'query' | 'where' | 'province' | 'language' | 'country'
 
 function AddSourceForm() {
   const { t } = useTranslation('sources', { keyPrefix: 'form' })
@@ -211,10 +238,11 @@ function AddSourceForm() {
   const isAts = ATS.includes(form.kind)
   const kind = KINDS.find((k) => k.value === form.kind)!
   const errors = { ...fieldErrors(preview.error), ...fieldErrors(add.error) }
-  const set = (key: keyof typeof EMPTY) => (e: { target: { value: string } }) => {
-    setForm((prev) => ({ ...prev, [key]: e.target.value }))
+  const update = (patch: Partial<typeof EMPTY>) => {
+    setForm((prev) => ({ ...prev, ...patch }))
     preview.reset()
   }
+  const set = (key: TextKey) => (e: { target: { value: string } }) => update({ [key]: e.target.value })
   const ready = form.name.trim() && (isAts ? form.slug.trim() : form.query.trim())
 
   const body = (): SourceInput => ({
@@ -225,7 +253,10 @@ function AddSourceForm() {
     query: isAts ? null : form.query.trim(),
     where: form.kind === 'adzuna' ? form.where.trim() || null : null,
     province: form.kind === 'infojobs' ? form.province.trim() || null : null,
-    country: 'es',
+    country: form.kind === 'freehire' ? form.country.trim().toLowerCase() || 'es' : 'es',
+    language: form.kind === 'personio' ? form.language.trim().toLowerCase() || null : null,
+    lang: form.kind === 'manfred' ? form.lang : 'ES',
+    remote_only: form.kind === 'freehire' && form.remoteOnly,
     title_keywords: [],
   })
 
@@ -252,10 +283,7 @@ function AddSourceForm() {
         <Field id="source-kind" label={t('origin')}>
           <Select
             value={form.kind}
-            onValueChange={(value) => {
-              setForm((prev) => ({ ...prev, kind: value as ConnectorKind }))
-              preview.reset()
-            }}
+            onValueChange={(value) => update({ kind: value as ConnectorKind })}
           >
             <SelectTrigger id="source-kind" className="h-10 w-full bg-background">
               <SelectValue />
@@ -274,12 +302,29 @@ function AddSourceForm() {
         </Field>
         {isAts ? (
           <>
-            <Field id="source-slug" label={t('slug')} error={errors.slug ?? errors.form} hint={<>{t('slugHint')} <span className="font-mono">{kindHint(kind)}</span></>}>
+            <Field
+              id="source-slug"
+              label={t('slug')}
+              error={errors.slug ?? errors.form}
+              hint={
+                <>
+                  {t('slugHint')} <span className="font-mono">{kindHint(kind)}</span>.{' '}
+                  <a href={SLUG_HELP_URL} target="_blank" rel="noreferrer noopener" className="font-medium text-primary hover:underline">
+                    {t('slugHelp')}
+                  </a>
+                </>
+              }
+            >
               <Input id="source-slug" value={form.slug} onChange={set('slug')} spellCheck={false} className="h-10 bg-background font-mono" />
             </Field>
+            {form.kind === 'personio' && (
+              <Field id="source-language" label={t('language')} error={errors.language} hint={t('languageHint')}>
+                <Input id="source-language" value={form.language} onChange={set('language')} maxLength={2} spellCheck={false} className="h-10 bg-background font-mono" />
+              </Field>
+            )}
             {form.kind === 'lever' && (
               <Field id="source-region" label={t('region')}>
-                <Select value={form.region} onValueChange={(value) => setForm((prev) => ({ ...prev, region: value as 'global' | 'eu' }))}>
+                <Select value={form.region} onValueChange={(value) => update({ region: value as 'global' | 'eu' })}>
                   <SelectTrigger id="source-region" className="h-10 w-full bg-background">
                     <SelectValue />
                   </SelectTrigger>
@@ -296,13 +341,41 @@ function AddSourceForm() {
             <Field id="source-query" label={t('query')} error={errors.query ?? errors.form} hint={kindHint(kind)}>
               <Input id="source-query" value={form.query} onChange={set('query')} className="h-10 bg-background" />
             </Field>
-            {form.kind === 'adzuna' ? (
+            {form.kind === 'adzuna' && (
               <Field id="source-where" label={t('where')}>
                 <Input id="source-where" value={form.where} onChange={set('where')} className="h-10 bg-background" />
               </Field>
-            ) : (
+            )}
+            {form.kind === 'infojobs' && (
               <Field id="source-province" label={t('province')} hint={t('provinceHint')}>
                 <Input id="source-province" value={form.province} onChange={set('province')} className="h-10 bg-background" />
+              </Field>
+            )}
+            {form.kind === 'manfred' && (
+              <Field id="source-lang" label={t('lang')}>
+                <Select value={form.lang} onValueChange={(value) => update({ lang: value as 'ES' | 'EN' })}>
+                  <SelectTrigger id="source-lang" className="h-10 w-full bg-background">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ES">{t('langEs')}</SelectItem>
+                    <SelectItem value="EN">{t('langEn')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </Field>
+            )}
+            {form.kind === 'freehire' && (
+              <Field id="source-country" label={t('country')} error={errors.country} hint={t('countryHint')}>
+                <Input id="source-country" value={form.country} onChange={set('country')} maxLength={2} spellCheck={false} className="h-10 bg-background font-mono" />
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={form.remoteOnly}
+                    onChange={(e) => update({ remoteOnly: e.target.checked })}
+                    className="size-4 accent-primary"
+                  />
+                  {t('remoteOnly')}
+                </label>
               </Field>
             )}
           </>

@@ -1,0 +1,79 @@
+{
+  "id": "744000156074001",
+  "name": "Data Engineer",
+  "uuid": "00000000-0000-4000-8000-000156074001",
+  "jobAdId": "10000000-0000-4000-8000-000156074001",
+  "defaultJobAd": true,
+  "refNumber": "REF4001",
+  "company": {
+    "identifier": "AcmeDatos",
+    "name": "Acme Datos"
+  },
+  "releasedDate": "2026-09-29T13:00:00.000Z",
+  "location": {
+    "city": "Vigo",
+    "country": "es",
+    "remote": false,
+    "hybrid": false,
+    "fullLocation": "Vigo, , Spain"
+  },
+  "industry": {
+    "id": "it_and_services",
+    "label": "Information Technology And Services"
+  },
+  "department": {
+    "id": "1",
+    "label": "Datos"
+  },
+  "function": {
+    "id": "information_technology",
+    "label": "Information Technology"
+  },
+  "typeOfEmployment": {
+    "id": "permanent",
+    "label": "Full-time"
+  },
+  "experienceLevel": {
+    "id": "mid_senior_level",
+    "label": "Mid-Senior Level"
+  },
+  "customField": [],
+  "visibility": "PUBLIC",
+  "ref": "https://api.smartrecruiters.com/...",
+  "creator": {
+    "name": "Equipo de selección"
+  },
+  "language": {
+    "code": "es",
+    "label": "Spanish"
+  },
+  "jobId": "20000000-0000-4000-8000-acmedatos001",
+  "postingUrl": "https://jobs.smartrecruiters.com/AcmeDatos/744000156074001-data-engineer",
+  "applyUrl": "https://jobs.smartrecruiters.com/AcmeDatos/744000156074001-data-engineer?oga=true",
+  "referralUrl": "https://jobs.smartrecruiters.com/AcmeDatos/744000156074001-data-engineer?trid=x",
+  "active": true,
+  "jobAd": {
+    "sections": {
+      "companyDescription": {
+        "title": "Company Description",
+        "text": "<p>Acme Datos ayuda a sus clientes con sus datos.</p>"
+      },
+      "jobDescription": {
+        "title": "Job Description",
+        "text": "<p>Construirás <strong>pipelines de datos</strong>.</p>"
+      },
+      "qualifications": {
+        "title": "Qualifications",
+        "text": "<ul><li>Python y SQL</li><li>Airflow</li></ul>"
+      },
+      "additionalInformation": {
+        "title": "Additional Information",
+        "text": "<p>Formación.</p>"
+      },
+      "videos": {
+        "title": "Videos To Watch",
+        "text": ""
+      }
+    }
+  }
+}
