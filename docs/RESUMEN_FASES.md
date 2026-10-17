@@ -380,6 +380,15 @@ La carta es un documento propio, con sus indicaciones, su verificación y sus re
 - Para agentes y terminal: `get_received_offer` ↔ `jh received-offers show`.
 
 
+## 26.1 · La app ya no supone Windows — 2026-10-17 · Claude Code (Opus 5.5)
+- **Botones «en tu agente» en macOS y Linux:** abren Terminal.app (o iTerm2) o la terminal de tu
+  escritorio con la orden del skill, sin tu clave de API y con el agente arrancado. `CAI_TERMINAL`
+  elige otra; sin terminal, se copia la orden como antes. En Windows no cambia nada.
+- **Sin procesos huérfanos:** cancelar una ejecución en segundo plano o cerrar `cai start` para
+  también lo que lanzó el agente, y el worker para al arrancar las que quedaron vivas.
+- **LibreOffice y carpetas:** se busca también en las rutas de macOS y Linux, y «Abrir carpeta» abre
+  el explorador de archivos. `cai paths` dice dónde guardaría tus datos la app instalada.
+
 ## 25.7 · Tu perfil, editable desde la UI — 2026-10-17 · Claude Code (Opus 5.5)
 - **«Mi perfil» sin YAML:** experiencia y logros, proyectos, formación, certificaciones, otras
   secciones, idiomas y skills, historias STAR, qué buscas y tus preferencias de CV y carta, por

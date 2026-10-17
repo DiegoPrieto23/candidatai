@@ -85,7 +85,7 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 25.7a | ↳↳ Escritura del perfil, contexto y muestras (backend) | ✅ | `profile_editor` por secciones (conserva comentarios, `conflict`, validación, copia y «Deshacer»), contexto y muestras de estilo por la API solo para la UI, `style_samples` en `get_context`, ADR-039 |
 | 25.7b | ↳↳ La página «Mi perfil» editable (UI) | ✅ | Formularios por bloque en es y en, diff antes de guardar, «Mejorar con mi agente» y «Proponer historias», guía, README y prueba manual |
 | 26 | macOS, Linux y Docker | ⏳ | Instalar y usar la app en los tres sistemas, botones «en tu agente» incluidos, y Docker opcional |
-| 26.1 | ↳ Núcleo multiplataforma | ⏳ | Rutas, procesos, LibreOffice y terminales en macOS y Linux (`CAI_TERMINAL`) |
+| 26.1 | ↳ Núcleo multiplataforma | ✅ | Rutas, procesos, LibreOffice y terminales en macOS y Linux (`CAI_TERMINAL`) |
 | 26.2 | ↳ Instalador para macOS y Linux | ⏳ | `install.sh` con acceso directo, datos en la carpeta de cada sistema y desinstalación |
 | 26.3 | ↳ Docker opcional | ⏳ | `docker compose up` con los datos en un volumen; el agente desde fuera por MCP; límites documentados |
 | 26.4 | ↳ CI en tres sistemas y docs | ⏳ | Backend probado en Windows, Linux y macOS, humo del instalador y de Docker, guía y README al día |
@@ -2946,3 +2946,53 @@ decisiones tomadas y deuda técnica pendiente. -->
 - **Deuda:** borrar una muestra no pide confirmación; los grupos de evidencias que no son de
   experiencia se traducen con una lista fija; reordenar una lista mueve sus elementos sin sus
   comentarios (de la 25.7a); la prueba manual con un agente de verdad queda en PENDIENTES.
+
+
+### 26.1 · Núcleo multiplataforma — 2026-10-17 · Claude Code (Opus 5.5)
+- **Hecho:**
+  - `services/terminals.py`: Terminal.app (o iTerm2) con `osascript` en macOS; en Linux,
+    `CAI_TERMINAL`, `$TERMINAL` o la primera de `x-terminal-emulator` (con la forma de la terminal a
+    la que apunta), `gnome-terminal`, `konsole`, `xfce4-terminal`, `kitty`, `wezterm` y
+    `alacritty`; sin pantalla, ninguna. La orden en bash o zsh con `shlex.quote` (`cd`, `unset`
+    de `unset_env` con nombres validados, `CAI_CLIENT_NAME`, el agente y el shell abierto al
+    salir); si la terminal sale con error en el primer segundo, la UI copia la orden;
+  - `agent_launch`: `no_terminal()` sustituye a `WINDOWS_ONLY` en los botones, «Abrir en
+    terminal» y `resumable_agents`; `terminal_command` elige PowerShell o POSIX. Windows, igual;
+  - `agent_runner._alive_as` en macOS y Linux (`kill -0`, jefe de su grupo y el programa, o el
+    primer argumento de un intérprete, por `/proc` o `ps`), así que `recover_interrupted` ya para
+    huérfanos fuera de Windows;
+  - `cai start`: cada hijo en su grupo, `SIGTERM` al grupo y hasta 10 s antes de `killpg`, y
+    `SIGTERM`/`SIGHUP` paran `cai start` y el worker como Ctrl+C;
+  - LibreOffice: `libreoffice` en el `PATH` y rutas de macOS y Linux, sin Flatpak ni Snap (su
+    sandbox no ve el `/tmp` donde se convierte; ADR-040); «Abrir carpeta» con `open` o `xdg-open`; `cai demo seed` da las indicaciones en bash fuera de Windows; `cai agents
+    doctor` dice qué terminal usaría;
+  - `config.installed_data_dir()` y `cai paths --json` para que el instalador (26.2) y la app
+    coincidan; `CAI_TERMINAL` en la configuración;
+  - ADR-040, `AGENTS_COMPAT.md` y `docs/pruebas/fase-26-prueba-manual.txt` (sección 26.1).
+- **Inventario** de suposiciones de Windows: `git grep -n win32 backend/app` solo encuentra ramas
+  con su equivalente para macOS y Linux (`agent_launch`, `agent_runner`, `agent_registry`,
+  `launcher`, `pdf`, `folders`, `cli`, `core/config`). `os.startfile` y `taskkill`/`tasklist`
+  quedan solo en su rama de Windows.
+- **Tests:** `test_terminals.py` (forma de cada terminal, precedencia, sin pantalla, AppleScript,
+  entrecomillado, `soffice` por sistema, carpeta de datos, `cai paths`, `cai start` y, en macOS y
+  Linux de verdad, el shell real, `SIGTERM` y matar el árbol); los dos tests de matar el árbol de
+  `test_agent_runs.py` ya no son solo de Windows; los de «sin terminal» de `test_agent_launch.py`
+  simulan Linux sin terminal y hay uno con terminal; `test_api_context.py` con `open`/`xdg-open`.
+  2797 tests de backend: en Windows pasan todos menos 3 que se saltan (los de POSIX real); ruff y
+  `sync_agents.py --check` limpios. Sin cambios en el frontend.
+- **Decisiones:** de acuerdo con el usuario, `cai paths --json` para que el instalador coincida con
+  la app y `CAI_TERMINAL` ignorada en Windows. Mías: sin Flatpak ni Snap para LibreOffice
+  (se aparta del encargo; motivo en la ADR-040); `x-terminal-emulator` con la forma de la
+  terminal a la que apunta; `gnome-terminal` sin título; la terminal que sale con error en el
+  primer segundo cuenta como no abierta.
+- **Revisión** (rol `reviewer`), sin bloqueantes. Se aplicó: `_alive_as` compara el programa (o
+  el primer argumento de un intérprete) y no cualquier argumento, y lee `/proc` en Linux; la
+  segunda señal se ignora para no cortar la limpieza, también en el worker; `SIGKILL` a lo que
+  quede del grupo; procesos recogidos en un hilo (sin zombis); fuera Flatpak y Snap;
+  `CAI_TERMINAL` en GUIA y GUIDE; COMPARATIVA al día; comentarios en `_realpath` y `shell()`.
+- **Deuda:** los tests de POSIX se saltan en Windows hasta la CI de la 26.4 (o la prueba en WSL);
+  las formas de cada terminal salen de su documentación, no de probarlas todas (iTerm2, sin
+  probar); Terminal.app puede abrir una ventana vacía de más si no estaba abierto; un
+  `$TERMINAL` con argumentos («alacritty -e») no se usa; `.env.example` no lo puede tocar el
+  agente (en PENDIENTES).
+

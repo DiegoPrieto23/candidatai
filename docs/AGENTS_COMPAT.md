@@ -336,7 +336,9 @@ página «Agente» (fase 24.4): agente por defecto, agente y modelo por acción 
 capacidad que el agente no tiene (navegador, web) no se lanza con él; las que leen contenido no
 confiable (`process-jobs`, `review-replies`, `search-jobs`) con un agente de nivel C se abren en
 terminal con un aviso y nunca en segundo plano. El agente lanzado lleva `CAI_CLIENT_NAME` con su
-nombre, para que lo que haga por la CLI quede a su nombre. Solo Windows de momento; en otro sistema, o sin el agente en el `PATH`, el botón copia
+nombre, para que lo que haga por la CLI quede a su nombre. En Windows se abre Windows Terminal o
+PowerShell; en macOS, Terminal.app (o iTerm2), y en Linux, la terminal del escritorio (fase 26.1,
+ADR-040; `CAI_TERMINAL` elige otra). Sin terminal, o sin el agente en el `PATH`, el botón copia
 la orden para que la pegues tú. Probado con Claude Code; Codex, sin probar.
 
 ### En segundo plano y cola de encargos (fase 19, ADR-032; varios agentes en la 24.5)

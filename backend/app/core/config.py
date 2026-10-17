@@ -1,5 +1,7 @@
 """Configuración de la app, leída de variables de entorno y de `.env` en la raíz del repo."""
 
+import os
+import sys
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal
@@ -31,6 +33,27 @@ def _env(name: str) -> AliasChoices:
 DEMO_MARKER = ".demo"
 
 
+def installed_data_dir(platform: str | None = None) -> Path:
+    """Carpeta de datos de la app instalada (fase 26.1), la que fija el instalador en
+    `CAI_DATA_DIR`. En desarrollo no se usa: sin `CAI_DATA_DIR`, los datos van en `data/`.
+
+    - Windows: `%LOCALAPPDATA%\\CandidatAI\\data` (como `install.ps1`).
+    - macOS: `~/Library/Application Support/CandidatAI`.
+    - Linux: `$XDG_DATA_HOME/candidatai` (por defecto, `~/.local/share/candidatai`).
+    """
+    platform = platform or sys.platform
+    home = Path.home()
+    if platform == "win32":
+        local = os.environ.get("LOCALAPPDATA")
+        return (Path(local) if local else home / "AppData" / "Local") / "CandidatAI" / "data"
+    if platform == "darwin":
+        return home / "Library" / "Application Support" / "CandidatAI"
+    xdg = os.environ.get("XDG_DATA_HOME", "").strip()
+    # La especificación XDG pide ignorar una ruta relativa.
+    base = Path(xdg) if xdg and Path(xdg).is_absolute() else home / ".local" / "share"
+    return base / "candidatai"
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=REPO_ROOT / ".env",
@@ -46,6 +69,9 @@ class Settings(BaseSettings):
     # Qué agente abren los botones de la UI (ADR-024), por su nombre en `.agents/manifest.yaml`.
     # Sin valor, el primero con `launch` que esté instalado.
     agent: str | None = Field(default=None, validation_alias=_env("AGENT"))
+    # Qué terminal abren esos botones en macOS y Linux (fase 26.1): `iterm`, `kitty`, una ruta…
+    # Sin valor, la del sistema (`services/terminals.py`). En Windows no se usa.
+    terminal: str | None = Field(default=None, validation_alias=_env("TERMINAL"))
     # Ollama en este equipo (fase 24.6): solo se leen sus metadatos, nunca se le pide inferencia.
     ollama_url: str = Field(default="http://127.0.0.1:11434", validation_alias=_env("OLLAMA_URL"))
     # `off` desactiva la similitud semántica aunque esté instalado el extra `matching` (tests, CI).

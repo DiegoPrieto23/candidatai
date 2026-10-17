@@ -6,18 +6,26 @@ para los dos. Si uno de los dos se cae, se para el otro: mejor nada que media ap
 
 La salida de cada hijo va a `data/logs/start-<nombre>.log`; en la consola solo se ven unas líneas
 de estado. `--dev` arranca además Vite (`pnpm dev`) para desarrollar con recarga en caliente.
+
+En macOS y Linux (fase 26.1) cada hijo va en su propio grupo de procesos, para pararlo con todo lo
+que lance, y `SIGTERM` o `SIGHUP` (cerrar la terminal) paran todo como Ctrl+C.
 """
 
+import contextlib
+import os
 import shutil
+import signal
 import socket
 import subprocess
 import sys
 import time
 import webbrowser
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import IO, Literal
+from types import FrameType
+from typing import IO, Any, Literal
 
 import httpx
 
@@ -132,6 +140,9 @@ def _spawn(child: Child, logs_dir: Path) -> None:
     # Se añade a lo anterior, salvo que pase de unos MB: entonces empieza de cero.
     mode = "w" if path.exists() and path.stat().st_size > MAX_LOG_BYTES else "a"
     child.log = path.open(mode, encoding="utf-8")
+    kwargs: dict[str, Any] = {}
+    if sys.platform != "win32":
+        kwargs["start_new_session"] = True  # `_kill_tree` para el grupo entero (`killpg`)
     child.process = subprocess.Popen(  # noqa: S603
         child.command,
         cwd=child.cwd,
@@ -139,11 +150,64 @@ def _spawn(child: Child, logs_dir: Path) -> None:
         stderr=subprocess.STDOUT,
         stdin=subprocess.DEVNULL,
         text=True,
+        **kwargs,
     )
 
 
-def stop(launch: Launch) -> None:
+STOP_SIGNALS = ("SIGTERM", "SIGHUP")
+SIGKILL = getattr(signal, "SIGKILL", 9)  # no existe en Windows, donde no se usa
+
+
+def _interrupt(signum: int, frame: FrameType | None) -> None:
+    # Solo la primera: cerrar la terminal manda SIGHUP y SIGTERM seguidos, y la segunda cortaría
+    # la limpieza (`stop`, `stop_active`) a medias.
+    for name in STOP_SIGNALS:
+        signal.signal(getattr(signal, name), signal.SIG_IGN)
+    raise KeyboardInterrupt
+
+
+@contextmanager
+def stop_on_signals() -> Iterator[None]:
+    """Fuera de Windows, `SIGTERM` y `SIGHUP` (cerrar la terminal) paran como Ctrl+C. Con los
+    hijos en su propio grupo, la señal de la terminal ya no les llega: los para `stop`."""
+    previous: dict[signal.Signals, Any] = {}
+    if sys.platform != "win32":
+        for name in STOP_SIGNALS:
+            sig = getattr(signal, name)
+            previous[sig] = signal.signal(sig, _interrupt)
+    try:
+        yield
+    finally:
+        for sig, handler in previous.items():
+            signal.signal(sig, handler)
+
+
+STOP_GRACE_SECONDS = 10.0
+
+
+def _terminate(process: "subprocess.Popen[str]") -> None:
+    """Fuera de Windows, `SIGTERM` al grupo del hijo: el worker para antes sus ejecuciones en
+    segundo plano, que van en su propio grupo y `killpg` no alcanzaría. En Windows no hace falta:
+    `taskkill /T` para todos los descendientes."""
+    if sys.platform == "win32" or process.poll() is not None:
+        return
+    with contextlib.suppress(OSError):
+        os.killpg(process.pid, signal.SIGTERM)
+
+
+def stop(launch: Launch, grace: float = STOP_GRACE_SECONDS) -> None:
     """Para todos los hijos con lo que hayan lanzado (el árbol entero) y cierra sus logs."""
+    running = [c.process for c in launch.children if c.process is not None]
+    for process in running:
+        _terminate(process)
+    if sys.platform != "win32":
+        deadline = time.monotonic() + grace
+        for process in running:
+            with contextlib.suppress(subprocess.TimeoutExpired):
+                process.wait(timeout=max(0.0, deadline - time.monotonic()))
+            # Aunque el hijo ya haya salido, lo que quede de su grupo (Vite bajo pnpm) también.
+            with contextlib.suppress(OSError):
+                os.killpg(process.pid, SIGKILL)
     for child in launch.children:
         if child.process is not None:
             _kill_tree(child.process)
@@ -208,17 +272,21 @@ def start(
     launch = plan(settings, port, dev=dev)
     migrations.upgrade()
     say("Arrancando CandidatAI…")
-    try:
-        for child in launch.children:
-            _spawn(child, settings.logs_dir)
-        wait_ready(f"http://{HOST}:{port}", launch)
-        say(f"CandidatAI en marcha: {launch.url}")
-        say("Deja esta ventana abierta mientras la uses. Para cerrar: Ctrl+C o cierra la ventana.")
-        if open_browser:
-            browser(launch.url)
-        ended = supervise(launch)
-        say(f"«{ended}» se ha cerrado: paro el resto. Detalles en data/logs/start-{ended}.log.")
-    except KeyboardInterrupt:
-        say("Cerrando CandidatAI…")
-    finally:
-        stop(launch)
+    with stop_on_signals():
+        try:
+            for child in launch.children:
+                _spawn(child, settings.logs_dir)
+            wait_ready(f"http://{HOST}:{port}", launch)
+            say(f"CandidatAI en marcha: {launch.url}")
+            say(
+                "Deja esta ventana abierta mientras la uses. "
+                "Para cerrar: Ctrl+C o cierra la ventana."
+            )
+            if open_browser:
+                browser(launch.url)
+            ended = supervise(launch)
+            say(f"«{ended}» se ha cerrado: paro el resto. Detalles en data/logs/start-{ended}.log.")
+        except KeyboardInterrupt:
+            say("Cerrando CandidatAI…")
+        finally:
+            stop(launch)

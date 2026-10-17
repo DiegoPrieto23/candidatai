@@ -277,6 +277,8 @@ says which agent it would use (“with Claude Code ▾”) and lets you use anot
 If an agent isn't suited to an action (it has no browser to search for postings, say), the button
 says so and doesn't launch it. With nothing chosen, `CAI_AGENT` from `.env` or the first installed
 agent is used.
+On macOS and Linux, the buttons open Terminal.app or your desktop's terminal; to use another one
+(iTerm2, kitty…), set `CAI_TERMINAL=iterm` (or its name or path) in `.env`.
 
 **Spending tiers.** On the same page, “Economy”, “Balanced” and “Maximum” store the agent and model
 for the main actions. “Economy” uses a local model to process, assess and classify replies, and

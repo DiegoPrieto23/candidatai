@@ -274,6 +274,8 @@ OpenCode con un modelo local para procesar ofertas y Claude Code para el CV). El
 botón dice con qué agente iría («con Claude Code ▾») y te deja usar otro solo esa vez. Si un agente
 no sirve para una acción (le falta el navegador para buscar ofertas, p. ej.), el botón lo dice y no
 lo lanza. Sin nada elegido, se usa `CAI_AGENT` del `.env` o el primero instalado.
+En macOS y Linux, los botones abren Terminal.app o la terminal de tu escritorio; para usar otra
+(iTerm2, kitty…), pon `CAI_TERMINAL=iterm` (o su nombre o ruta) en el `.env`.
 
 **Niveles de gasto.** En la misma página, «Económico», «Equilibrado» y «Máximo» guardan el agente y
 el modelo de las acciones principales. «Económico» usa un modelo local para procesar, valorar y

@@ -2,6 +2,7 @@
 una en una y el runner con un agente falso que imita `stream-json` (sin red ni LLM)."""
 
 import json
+import os
 import sys
 import threading
 import time
@@ -476,16 +477,18 @@ def test_worker_once_runs_background_runs(db: None, fake: Path) -> None:
 def _alive(pid: int) -> bool:
     import subprocess
 
+    if sys.platform != "win32":  # fase 26.1: macOS y Linux
+        try:
+            os.kill(pid, 0)
+        except ProcessLookupError:
+            return False
+        return True
     out = subprocess.run(
         ["tasklist", "/FI", f"PID eq {pid}", "/NH"], capture_output=True, text=True, check=False
     ).stdout
     return str(pid) in out
 
 
-windows_only = pytest.mark.skipif(sys.platform != "win32", reason="taskkill y tasklist (Windows)")
-
-
-@windows_only
 def test_timeout_kills_the_whole_tree(
     db: None, fake: Path, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
@@ -520,7 +523,6 @@ def test_agent_that_does_not_exit_after_its_result(
     assert run_row(run_id).result == "Procesadas 2 ofertas, 0 fallidas."
 
 
-@windows_only
 def test_an_exception_never_leaves_the_agent_running(
     db: None, fake: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

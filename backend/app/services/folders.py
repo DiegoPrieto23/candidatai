@@ -1,17 +1,20 @@
 """Abrir una carpeta de datos en el explorador de archivos (botones «Abrir carpeta» de la UI).
 
 Lista cerrada: el contexto, los documentos, los dosieres de entrevista y de empresa y la carpeta
-archivada de una candidatura. Nunca una ruta que llegue de fuera. Solo Windows de momento
-(`os.startfile`); en otro sistema, o si falla, se devuelve la ruta para que la UI la copie.
+archivada de una candidatura. Nunca una ruta que llegue de fuera. En Windows con `os.startfile`;
+en macOS con `open` y en Linux con `xdg-open` (fase 26.1). Si no se puede, o si falla, se devuelve
+la ruta para que la UI la copie.
 """
 
 import os
+import shutil
+import subprocess
 import sys
 from typing import Literal
 
 from pydantic import BaseModel
 
-from app.services import application_archive, company_research, context, interviews
+from app.services import application_archive, company_research, context, interviews, terminals
 
 FolderKind = Literal["contexto", "documentos", "estilo", "entrevistas", "empresas", "candidatura"]
 
@@ -55,10 +58,26 @@ def resolve(kind: FolderKind, job_id: int | None = None) -> str:
 
 def open_folder(kind: FolderKind, job_id: int | None = None) -> OpenFolderResult:
     path = resolve(kind, job_id)
-    if sys.platform != "win32":
-        return OpenFolderResult(path=path, opened=False)
     try:
-        os.startfile(path)  # type: ignore[attr-defined]  # solo existe en Windows
+        opened = _open(path)
     except OSError:
-        return OpenFolderResult(path=path, opened=False)
-    return OpenFolderResult(path=path, opened=True)
+        opened = False
+    return OpenFolderResult(path=path, opened=opened)
+
+
+def _open(path: str) -> bool:
+    if sys.platform == "win32":
+        os.startfile(path)  # type: ignore[attr-defined]  # solo existe en Windows
+        return True
+    opener = shutil.which("open" if sys.platform == "darwin" else "xdg-open")
+    if opener is None:
+        return False
+    proc = subprocess.Popen(  # noqa: S603 - una carpeta de la lista cerrada, sin shell
+        [opener, path],
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        start_new_session=True,
+    )
+    terminals.reap(proc)
+    return True

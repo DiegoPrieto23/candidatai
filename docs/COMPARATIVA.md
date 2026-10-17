@@ -181,7 +181,7 @@ compatible y Antigravity CLI ocupa su sitio.
 | Cola de encargos para la próxima sesión | ✅ | ❌ | ✅ `agent-inbox` |
 | Modo demo con datos inventados | ✅ `cai demo seed` (es y en) | ❌ | ✅ `examples/` |
 | Instalación de un comando | ✅ `install.ps1` (Windows) | 🟡 `install_portal_clis.py` | ✅ `npx … init` |
-| macOS / Linux / Docker documentados | ❌ (solo Windows probado) | ✅ | ✅ |
+| macOS / Linux / Docker documentados | 🚧 Windows probado; el núcleo para macOS y Linux, hecho y sin probar en ellos (26.1) | ✅ | ✅ |
 | Actualizar sin pisar tus datos | ✅ datos fuera del código | ✅ triaje de cambios upstream | ✅ `update` |
 | Licencia, `CONTRIBUTING`, `SECURITY` | ✅ | ✅ | ✅ |
 | `CHANGELOG` y releases | ✅ `CHANGELOG.md` (Keep a Changelog) del que salen las notas de cada release; sin él, la release falla (25.6) | ✅ | ✅ también en npm |

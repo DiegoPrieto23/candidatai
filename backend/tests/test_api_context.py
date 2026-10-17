@@ -118,8 +118,24 @@ def test_only_the_ui_can_open(client: TestClient, opened: list[str]) -> None:
 
 def test_other_systems_get_the_path(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(folders.sys, "platform", "linux")
+    monkeypatch.setattr(folders.shutil, "which", lambda name: None)  # sin xdg-open
     response = client.post("/folders/open", json={"folder": "documentos"}, headers=JSON)
     assert response.json() == {"path": str(context.documents_dir()), "opened": False}
+
+
+@pytest.mark.parametrize(("platform", "opener"), [("linux", "xdg-open"), ("darwin", "open")])
+def test_macos_and_linux_open_the_folder(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch, platform: str, opener: str
+) -> None:
+    """Fase 26.1: `open` en macOS y `xdg-open` en Linux."""
+    calls: list[list[str]] = []
+    monkeypatch.setattr(folders.sys, "platform", platform)
+    monkeypatch.setattr(folders.shutil, "which", lambda name: f"/usr/bin/{name}")
+    monkeypatch.setattr(folders.subprocess, "Popen", lambda args, **_: calls.append(args))
+    monkeypatch.setattr(folders.terminals, "reap", lambda proc: None)
+    response = client.post("/folders/open", json={"folder": "documentos"}, headers=JSON)
+    assert response.json() == {"path": str(context.documents_dir()), "opened": True}
+    assert calls == [[f"/usr/bin/{opener}", str(context.documents_dir())]]
 
 
 def test_startfile_failure_returns_path(

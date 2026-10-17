@@ -10,6 +10,10 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Botones «en tu agente» en macOS y Linux:** abren Terminal.app (o iTerm2) en macOS y la
+  terminal de tu escritorio en Linux (GNOME Terminal, Konsole, Xfce, kitty, WezTerm, Alacritty…).
+  `CAI_TERMINAL` en `.env` elige otra. Sin terminal, el botón copia la orden, como antes.
+- **`cai paths`** dice qué carpeta de datos usas y cuál usaría la app instalada en tu sistema.
 - **Varios agentes, a elegir desde la UI.** Además de Claude Code y Codex, configuración lista para
   OpenCode y Qwen Code (open-source) y Antigravity CLI. `cai agents list` y `cai agents doctor` dicen
   cuáles tienes y qué sabe hacer cada uno (MCP, subagentes, segundo plano, web, navegador, modelos
@@ -56,6 +60,10 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   experiencia»**: tu agente propone, te pregunta los números que falten y solo escribe con tu OK.
 
 ### Cambiado
+- En macOS y Linux, cancelar una ejecución en segundo plano o cerrar `cai start` para también lo que
+  lanzó el agente, y al arrancar el worker se paran las que quedaron huérfanas. LibreOffice se busca
+  también en las rutas de macOS y Linux (no en Flatpak ni Snap, que no pueden convertir los
+  ficheros de la app), y «Abrir carpeta» abre el explorador de archivos.
 - Las releases de GitHub llevan como notas la sección de su versión en este `CHANGELOG`, en lugar de
   la lista de commits; la release falla si esa sección no existe.
 - Codex puede usar modelos locales con el preset `local`.

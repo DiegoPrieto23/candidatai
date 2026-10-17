@@ -6,7 +6,7 @@ cada fase y lo quita cuando el usuario confirma que está hecho.
 
 Marca `[x]` lo que hagas y, si algo falla, apúntalo debajo de la línea con `→`.
 
-Última actualización: 2026-10-17 (fase 25.7).
+Última actualización: 2026-10-17 (fase 26.1).
 
 ## 1. Poner la app al día (antes de probar nada)
 
@@ -212,7 +212,8 @@ funcionando. Los roles son `writer`, `verifier`, `classifier`, `reviewer` y `ext
 - [ ] Crear o completar `.env.example`, **sin valores reales**, con todas las variables de
       `backend/app/core/config.py`:
   - generales: `CAI_DATA_DIR`, `CAI_DB_URL`, `SOFFICE_PATH`, `CAI_CLIENT_NAME`, `CAI_AGENT`,
-    `CAI_EMBEDDINGS`;
+    `CAI_EMBEDDINGS` y, de la fase 26.1, `CAI_TERMINAL` (comentada: solo macOS y Linux; p. ej.
+    `iterm`, `kitty` o la ruta de tu terminal);
   - portales: `CAI_INFOJOBS_CLIENT_ID`, `CAI_INFOJOBS_CLIENT_SECRET`, `CAI_ADZUNA_APP_ID`,
     `CAI_ADZUNA_APP_KEY` y, de la fase 25.1, `CAI_FREEHIRE_BASE_URL` (opcional, comentada: por
     defecto `https://freehire.me/api/v1`);
@@ -228,6 +229,14 @@ funcionando. Los roles son `writer`, `verifier`, `classifier`, `reviewer` y `ext
 
 Cada guía está en `docs/pruebas/`. No consta en el ROADMAP que estén hechas; si alguna ya la
 hiciste, márcala.
+
+- [ ] **Fase 26.1 · macOS y Linux** (`fase-26-prueba-manual.txt`, sección 26.1), en WSL2:
+  - los tests de `test_terminals.py` y `test_agent_runs.py` que en Windows se saltan («necesita
+    macOS o Linux») tienen que pasar en Ubuntu;
+  - un botón «en tu agente» abre gnome-terminal con la orden y el agente arrancado, sin la clave
+    de API y con `CAI_CLIENT_NAME`;
+  - cancelar una ejecución en segundo plano y cerrar `cai start` no dejan procesos huérfanos;
+  - en Windows, los botones siguen abriendo Windows Terminal como antes.
 
 - [ ] **Fase 22 · LinkedIn por sus endpoints públicos** (`fase-22-prueba-manual.txt`), **solo si
       quieres usarla** (va contra las condiciones de LinkedIn y puede bloquear tu IP un tiempo):

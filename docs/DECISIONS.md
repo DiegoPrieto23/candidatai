@@ -1073,3 +1073,42 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   sitios, gana el primero en guardar y el otro recibe `conflict`. `content` es la sección entera:
   una clave que la UI no reenvíe se borra. Y `require_ui_read` frena a otras webs, no a un programa
   de tu equipo (`curl`), que de todos modos podría leer `data/profile.yaml` del disco.
+
+## ADR-040 · Botones «en tu agente» y procesos en macOS y Linux (extiende la 024 y la 032)
+- **Contexto:** la ADR-024 abría el agente solo en Windows (Windows Terminal o PowerShell) y, fuera,
+  la UI copiaba la orden. Matar el árbol de procesos de una ejecución en segundo plano, comprobar
+  si un PID huérfano era del agente y buscar LibreOffice también suponían Windows. La fase 26 quiere
+  la app igual en macOS y Linux sin empeorar nada en Windows (fase 26.1).
+- **Decisión:**
+  - **Terminales** en un módulo propio (`services/terminals.py`). En macOS, Terminal.app con
+    `osascript` (iTerm2 con `CAI_TERMINAL=iterm`). En Linux, `CAI_TERMINAL`, `$TERMINAL` o la
+    primera de `x-terminal-emulator`, `gnome-terminal`, `konsole`, `xfce4-terminal`, `kitty`,
+    `wezterm` y `alacritty`, cada una con su forma de pasar la orden; sin `DISPLAY` ni
+    `WAYLAND_DISPLAY`, ninguna. Si la elegida no está, se dice y no se cambia por otra.
+  - **La orden**, en bash o zsh (`$SHELL` si es uno de los dos), con todo en `shlex.quote`: `cd` al
+    repositorio, `unset` de `launch.unset_env` (nombres validados), `export CAI_CLIENT_NAME`, el
+    agente y, al salir, el shell abierto, como `-NoExit`. Sigue sin llevar texto de ofertas.
+  - **Sin terminal** (o si la terminal sale con error en el primer segundo), `unavailable` con la
+    orden para copiar, como antes. `CAI_TERMINAL` no se usa en Windows: allí nada cambia.
+  - **Procesos:** cada agente sin ventana y cada hijo de `cai start` en su propio grupo
+    (`start_new_session`), que se para con `killpg`. Un PID huérfano solo se mata si sigue vivo, es
+    jefe de su grupo y es el programa del agente (`/proc/<pid>/cmdline` o `ps -o args=`, para los
+    que corren con `node`: el programa o el primer argumento de un intérprete, nunca cualquier
+    argumento). `cai start` manda antes `SIGTERM` al grupo y espera hasta 10 s, para que el worker
+    pare sus ejecuciones, que van en otro grupo, y después `SIGKILL` a lo que quede del grupo.
+    `SIGTERM` y `SIGHUP` paran `cai start` y el worker como Ctrl+C, una sola vez: la segunda se
+    ignora para no cortar la limpieza. Sin `psutil`.
+  - **LibreOffice:** `SOFFICE_PATH`, `soffice` o `libreoffice` en el `PATH` y las rutas típicas de
+    cada sistema (`/Applications/LibreOffice.app`, `/usr/lib/libreoffice`, `/opt/libreoffice*`).
+    **Sin Flatpak ni Snap**, aunque el encargo los pedía: su sandbox no ve el `/tmp` del sistema,
+    donde se convierte, y Snap tampoco las carpetas ocultas del home; un `libreoffice` del `PATH`
+    que esté en `/snap/` o en Flatpak se ignora. Sin otro, el PDF lo hace Chromium.
+    «Abrir carpeta», con `open` o `xdg-open`. Los procesos que no se esperan (la terminal,
+    `xdg-open`) se recogen en un hilo para no dejar zombis.
+  - **Carpeta de datos de la app instalada**, calculada en un solo sitio
+    (`config.installed_data_dir`, que imprime `cai paths --json`) para que los instaladores y la
+    app coincidan. En desarrollo sigue siendo `data/`.
+- **Consecuencias:** los botones funcionan en macOS y Linux con escritorio; en un servidor sin
+  pantalla, o en WSL sin WSLg, se copia la orden. Las formas de cada terminal están comprobadas con
+  tests, no con todas las terminales de verdad: la prueba manual va en WSL2 y macOS se cubre en la
+  CI (26.4). La primera vez, macOS pide permiso para que la app controle Terminal.

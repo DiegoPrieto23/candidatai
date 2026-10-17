@@ -1,0 +1,57 @@
+Fase 26 · Prueba manual (macOS, Linux y Docker)
+=================================================
+
+Se va completando en cada subfase. Linux se prueba en WSL2 (Windows 11 trae WSLg, con entorno
+gráfico) o en una máquina virtual; macOS, en la CI y a mano si alguien tiene un Mac.
+
+
+26.1 · Núcleo multiplataforma
+-----------------------------
+
+Preparación en WSL2 (Ubuntu), una sola vez:
+
+  1. Abre «Ubuntu» desde el menú Inicio. Comprueba que hay entorno gráfico:
+       echo $DISPLAY $WAYLAND_DISPLAY        (debe salir algo como «:0 wayland-0»)
+  2. Instala uv, una terminal y, si quieres, LibreOffice:
+       curl -LsSf https://astral.sh/uv/install.sh | sh
+       sudo apt update && sudo apt install -y gnome-terminal libreoffice-writer
+  3. Clona el repositorio DENTRO de Linux (no en /mnt/c: es lento y los permisos cambian):
+       git clone <tu repo> ~/candidatai && cd ~/candidatai && git checkout fase/26-multiplataforma
+  4. Instala tu agente en WSL (p. ej. Claude Code: https://docs.claude.com/claude-code) y
+     comprueba que `claude --version` responde.
+  5. Prepara la app:
+       cd backend && uv sync && uv run cai db upgrade
+       uv run pytest tests/test_terminals.py tests/test_agent_runs.py -q
+     Los tests marcados «necesita macOS o Linux» deben pasar aquí, no saltarse.
+
+A) Diagnóstico
+  - `uv run cai agents doctor` dice «Terminal para los botones: gnome-terminal (…)» (o la que
+    tengas). Con `CAI_TERMINAL=kitty uv run cai agents doctor` y sin kitty instalado, dice que no
+    la encuentra.
+  - `uv run cai paths` enseña «Datos de la app instalada: /home/<tú>/.local/share/candidatai».
+
+B) Un botón «en tu agente» abre una terminal
+  - Siembra la demo y arranca: `uv run cai demo seed` y sigue sus indicaciones (ahora en bash), o
+    con la UI compilada: `uv run cai start`. El navegador de Windows abre la app (WSL reenvía
+    127.0.0.1).
+  - Pulsa «Procesar ofertas» → «En terminal». Se abre una ventana de gnome-terminal en la carpeta
+    del repositorio con tu agente arrancado y la orden del skill ya escrita.
+  - En esa ventana, al salir del agente, queda un shell abierto. `echo $CAI_CLIENT_NAME` dice el
+    agente; `echo ${ANTHROPIC_API_KEY-sin}` dice «sin» aunque la tuvieras exportada.
+  - Desinstala o renombra la terminal (o pon `CAI_TERMINAL=no-existe` en .env y reinicia): el
+    botón dice que no encuentra la terminal y copia la orden.
+
+C) Segundo plano: cancelar no deja procesos huérfanos
+  - Con Claude Code u OpenCode instalados en WSL, lanza «Procesar ofertas» → «En segundo plano» y,
+    mientras corre, cancélalo en la página «Agente».
+  - `ps -ef | grep -E "claude|opencode|cai-mcp" | grep -v grep` no enseña nada de esa ejecución.
+  - Repite y, en vez de cancelar, cierra `cai start` con Ctrl+C: tampoco queda nada vivo, y la
+    ejecución aparece como fallida («Se paró el worker…»).
+
+D) LibreOffice y «Abrir carpeta»
+  - Con libreoffice-writer instalado, `uv run cai doctor` lo encuentra y la demo genera PDF y DOCX.
+  - «Abrir carpeta» en «Mi perfil» abre el explorador (xdg-open) o, si no hay, enseña la ruta.
+
+E) Windows no cambia
+  - En Windows, los botones siguen abriendo Windows Terminal (o PowerShell) como antes, y
+    `CAI_TERMINAL` no cambia nada.
