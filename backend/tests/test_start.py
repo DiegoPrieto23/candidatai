@@ -277,6 +277,11 @@ def test_release_workflow_builds_the_ui_and_publishes_the_zip() -> None:
     installer = (REPO_ROOT / "install.ps1").read_text(encoding="utf-8-sig")
     assert "releases/latest/download/candidatai.zip" in installer
     assert r"backend\pyproject.toml" in installer
+    # Fase 26.2: también install.sh, con los iconos de sus accesos directos.
+    assert "candidatai/install.sh" in steps and "candidatai.icns" in steps
+    unix = (REPO_ROOT / "install.sh").read_text(encoding="utf-8")
+    assert "releases/latest/download/candidatai.zip" in unix
+    assert "backend/pyproject.toml" in unix
 
 
 @pytest.mark.skipif(sys.platform != "win32", reason="install.ps1 es para Windows")
@@ -348,3 +353,14 @@ def test_installer_never_replaces_a_folder_that_is_not_candidatai(tmp_path: Path
         # PowerShell escribe en la página de códigos de la consola: sin tildes en lo que se busca.
         assert "CandidatAI" in output and ("otra carpeta" in output or "no se borra" in output)
     assert (target / "app" / "mis-cosas.txt").exists()
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="install.ps1 es para Windows")
+def test_installer_never_removes_data_of_a_folder_that_is_not_candidatai(tmp_path: Path) -> None:
+    """Fase 26.2: -RemoveData solo borra `data` si la carpeta es de CandidatAI (marca o app)."""
+    target = tmp_path / "trabajo"
+    (target / "data").mkdir(parents=True)
+    (target / "data" / "informe.txt").write_text("mío", encoding="utf-8")
+    result = _installer("-InstallDir", str(target), "-Uninstall", "-RemoveData")
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert (target / "data" / "informe.txt").exists()

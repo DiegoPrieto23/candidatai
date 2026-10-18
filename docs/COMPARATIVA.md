@@ -180,7 +180,7 @@ compatible y Antigravity CLI ocupa su sitio.
 | Lanzar el agente desde la UI (terminal o segundo plano) | ✅ | ❌ | 🟡 workers en la web alfa |
 | Cola de encargos para la próxima sesión | ✅ | ❌ | ✅ `agent-inbox` |
 | Modo demo con datos inventados | ✅ `cai demo seed` (es y en) | ❌ | ✅ `examples/` |
-| Instalación de un comando | ✅ `install.ps1` (Windows) | 🟡 `install_portal_clis.py` | ✅ `npx … init` |
+| Instalación de un comando | ✅ `install.ps1` (Windows) e `install.sh` (macOS y Linux, 26.2) | 🟡 `install_portal_clis.py` | ✅ `npx … init` |
 | macOS / Linux / Docker documentados | 🚧 Windows probado; el núcleo para macOS y Linux, hecho y sin probar en ellos (26.1) | ✅ | ✅ |
 | Actualizar sin pisar tus datos | ✅ datos fuera del código | ✅ triaje de cambios upstream | ✅ `update` |
 | Licencia, `CONTRIBUTING`, `SECURITY` | ✅ | ✅ | ✅ |

@@ -368,13 +368,13 @@ def test_open_in_terminal_resumes_the_session(
     db: None, fake: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     opened: list[tuple[str, str]] = []
-    monkeypatch.setattr(agent_launch.sys, "platform", "win32")
     monkeypatch.setattr(agent_launch, "_open_terminal", lambda t, c: opened.append((t, c)))
     monkeypatch.setenv("FAKE_AGENT_MODE", "question")
     run_id = start()
     with session_scope() as session, pytest.raises(LaunchError, match="Espera"):
         agent_runs.open_in_terminal(session, run_id)
-    run_now()
+    run_now()  # el agente falso, en el sistema real (fase 26.1: también en Linux)
+    monkeypatch.setattr(agent_launch.sys, "platform", "win32")  # la orden, en PowerShell
     with session_scope() as session:
         result = agent_runs.open_in_terminal(session, run_id)
     assert "misma sesión" in result.message

@@ -86,7 +86,7 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 25.7b | ↳↳ La página «Mi perfil» editable (UI) | ✅ | Formularios por bloque en es y en, diff antes de guardar, «Mejorar con mi agente» y «Proponer historias», guía, README y prueba manual |
 | 26 | macOS, Linux y Docker | ⏳ | Instalar y usar la app en los tres sistemas, botones «en tu agente» incluidos, y Docker opcional |
 | 26.1 | ↳ Núcleo multiplataforma | ✅ | Rutas, procesos, LibreOffice y terminales en macOS y Linux (`CAI_TERMINAL`) |
-| 26.2 | ↳ Instalador para macOS y Linux | ⏳ | `install.sh` con acceso directo, datos en la carpeta de cada sistema y desinstalación |
+| 26.2 | ↳ Instalador para macOS y Linux | ✅ | `install.sh` con acceso directo, datos en la carpeta de cada sistema y desinstalación |
 | 26.3 | ↳ Docker opcional | ⏳ | `docker compose up` con los datos en un volumen; el agente desde fuera por MCP; límites documentados |
 | 26.4 | ↳ CI en tres sistemas y docs | ⏳ | Backend probado en Windows, Linux y macOS, humo del instalador y de Docker, guía y README al día |
 
@@ -2966,7 +2966,7 @@ decisiones tomadas y deuda técnica pendiente. -->
   - LibreOffice: `libreoffice` en el `PATH` y rutas de macOS y Linux, sin Flatpak ni Snap (su
     sandbox no ve el `/tmp` donde se convierte; ADR-040); «Abrir carpeta» con `open` o `xdg-open`; `cai demo seed` da las indicaciones en bash fuera de Windows; `cai agents
     doctor` dice qué terminal usaría;
-  - `config.installed_data_dir()` y `cai paths --json` para que el instalador (26.2) y la app
+  - `config.install_dir()`, `installed_data_dir()` y `cai paths --json` para que el instalador (26.2) y la app
     coincidan; `CAI_TERMINAL` en la configuración;
   - ADR-040, `AGENTS_COMPAT.md` y `docs/pruebas/fase-26-prueba-manual.txt` (sección 26.1).
 - **Inventario** de suposiciones de Windows: `git grep -n win32 backend/app` solo encuentra ramas
@@ -2996,3 +2996,51 @@ decisiones tomadas y deuda técnica pendiente. -->
   `$TERMINAL` con argumentos («alacritty -e») no se usa; `.env.example` no lo puede tocar el
   agente (en PENDIENTES).
 
+### 26.2 · Instalador para macOS y Linux — 2026-10-18 · Claude Code (Opus 5.5)
+- **Hecho:**
+  - `install.sh` (bash 3.2+, para `curl | bash`): uv si falta, release (o zip o repositorio local),
+    `app.new` y sustitución solo de una CandidatAI, `.env` conservado con `CAI_DATA_DIR`, `uv
+    sync`, Chromium (con la pista de `playwright install-deps` en Linux, sin sudo), `cai db
+    upgrade`, y acceso directo: `.desktop` con `Terminal=true` en Linux y `.app` con icono que abre
+    un `.command` en Terminal en macOS. `--dry-run`, `--uninstall`, `--remove-data` (confirmación
+    por `/dev/tty`), `--no-shortcuts` y `--no-setup` (tests y CI); se niega con `/`, `HOME` y las
+    carpetas del sistema;
+  - `config.install_dir()` (y `installed_data_dir()` pasa a ser su `data/`, como en Windows: en la
+    26.1 apuntaba a la carpeta de CandidatAI) y `install_dir` en `cai paths`;
+  - `scripts/build_icons.py` genera también `candidatai.png` (512 px) y `candidatai.icns` (Pillow);
+  - `.gitattributes` con `*.sh text eol=lf`, `install.sh` ejecutable en git y el workflow de release
+    comprueba que el zip lleva `install.sh` y el `.icns`;
+  - README y guía en los dos idiomas, ADR-041, COMPARATIVA y la sección 26.2 de la prueba manual.
+- **Corregido de la 26.1** al pasar la suite en Linux (WSL2, Ubuntu): al parar el worker, `killpg`
+  cerraba la salida del agente antes de que el runner viera la parada y la ejecución quedaba como
+  «terminó sin resultado (código -9)» en vez de «Se paró el worker»; dos tests suponían Windows
+  (`test_open_in_terminal_resumes_the_session` simulaba `win32` antes de lanzar el agente falso) o
+  partían con un separador que estaba en el texto. La suite entera en Linux sacó tres más, de antes
+  de la fase 26: el archivo de candidaturas (`application_archive`) daba por archivada una carpeta
+  vacía de otro proceso porque en macOS y Linux `rename` la sustituye sin error (ahora se comprueba
+  antes); las plantillas de `templates/` no salían idénticas fuera de Windows (el zip guarda el
+  sistema que lo creó: `create_system = 0`); y `test_agent_prefs` simulaba `win32` en todo el
+  proceso (ahora fuerza solo PowerShell y la terminal). Y la foto de la demo se compara por píxeles,
+  no por bytes (el zlib de cada sistema comprime distinto).
+- **Tests:** `test_install_sh.py` (en macOS y Linux: `--dry-run` no escribe nada y anuncia las
+  rutas de `config.install_dir`, reinstalar conserva datos y `.env` y crea el acceso directo,
+  desinstalar sin terminal no borra datos, carpetas protegidas y ajenas, repositorio local sin UI y
+  sin `data/`, `shellcheck`; en todos: bash con LF, `main "$@"` al final, `100755` en git e
+  iconos); `test_start.py` comprueba el workflow. `shellcheck` 0.11 limpio.
+  2799 tests de backend: en Windows pasan todos salvo 12 de macOS y Linux que se saltan; en
+  Ubuntu (WSL2) pasan todos salvo los de Windows, Chromium sin librerías del sistema y LibreOffice;
+  ruff y `sync_agents.py --check` limpios.
+- **Revisión** (rol `reviewer`). Un bloqueante, aplicado: `--uninstall --remove-data` con un
+  `--install-dir` ajeno borraba su `data/` (y `install.ps1` igual). Ahora la carpeta lleva una marca
+  (`.candidatai`, en los dos instaladores) y sin ella ni una app de CandidatAI no se borran datos ni
+  se instala en una carpeta con cosas. También: rutas normalizadas (`.`, `..`, `//`), comprobar
+  antes de borrar, `rm -f` para ficheros, la `.app` solo si es nuestra, volver a la versión anterior
+  si se corta el cambio, `</dev/null` en lo que se lanza, `--remove-data` sin `--uninstall` da error,
+  `chmod +x` de `install.sh` tras `python -m zipfile`, `UV_INSTALL_DIR` y `XDG_BIN_HOME`, `trim` de
+  `XDG_DATA_HOME` como en Python, y tests de carpeta ajena, rutas con `..` y espacios, `.env` con
+  espacios (dotenv) y `-RemoveData` ajeno en `install.ps1`.
+- **Decisiones (con el usuario):** `.app` con icono en macOS; `--no-setup`. Mías: bash y no `sh`
+  (arrays, `printf %q`), compatible con el 3.2 de macOS; `CAI_DATA_DIR` entre comillas en el
+  `.env` (las rutas de macOS llevan espacios); rutas sin comillas, `\`, `` ` ``, `$` ni `%`.
+- **Deuda:** la `.app` de macOS y el `.desktop` dependen del escritorio y no se pueden comprobar en
+  un test; macOS, sin probar hasta la CI de la 26.4.

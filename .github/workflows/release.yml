@@ -2,7 +2,8 @@ name: Release
 
 # Al publicar una etiqueta `v*` (p. ej. `git tag v0.2.0 && git push origin v0.2.0`), compila la UI y
 # publica `candidatai.zip`: el repositorio (sin datos: `data/` no está en git) más `frontend/dist`.
-# Es lo que descarga `install.ps1` (fase 23.4). Las notas de la release son la sección de esa versión
+# Es lo que descargan `install.ps1` (fase 23.4) e `install.sh` (fase 26.2, va dentro con su permiso
+# de ejecución). Las notas de la release son la sección de esa versión
 # en `CHANGELOG.md` (fase 25.6): sin ella, la release falla antes de compilar nada.
 #
 # Prueba en seco: «Run workflow» en Actions, en la rama que quieras, con una versión (p. ej.
@@ -60,6 +61,8 @@ jobs:
           cp -r frontend/dist stage/candidatai/frontend/dist
           (cd stage && zip -qr ../candidatai.zip candidatai/frontend/dist)
           unzip -l candidatai.zip | grep -q "candidatai/frontend/dist/index.html"
+          unzip -l candidatai.zip | grep -q "candidatai/install.sh"
+          unzip -l candidatai.zip | grep -q "candidatai/frontend/public/candidatai.icns"
       - name: Publica la release
         env:
           GH_TOKEN: ${{ github.token }}

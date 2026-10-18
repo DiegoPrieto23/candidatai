@@ -344,6 +344,10 @@ def _execute(run: AgentRun, timeout: float | None, poll: float) -> AgentRunOutco
             except queue.Empty:
                 item = None
             if item is _EOF:
+                # Fase 26.1: en macOS y Linux, `killpg` cierra la salida al momento y se llega aquí
+                # antes de ver la parada del worker.
+                if _shutdown.is_set():
+                    stop = "shutdown"
                 break
             state = parser.state
             if isinstance(item, str):

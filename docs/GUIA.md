@@ -25,10 +25,12 @@ Para saber qué es y por qué funciona así, empieza por el [README](../README.e
 
 ## 1. Requisitos
 
-CandidatAI se desarrolla y se prueba en **Windows 11**. En macOS y Linux debería funcionar (todo
-usa `pathlib` y herramientas multiplataforma), pero aún no se ha probado.
+CandidatAI se desarrolla y se prueba en **Windows 11**. En macOS y Linux tiene instalador y los
+botones que abren tu agente funcionan (fase 26), pero se están probando todavía: Linux en WSL2 y
+macOS en la CI.
 
-**Para usarla** solo hace falta Windows y, si quieres CVs en Word además de en PDF, LibreOffice. El
+**Para usarla** solo hace falta Windows, macOS o Linux y, si quieres CVs en Word además de en PDF,
+LibreOffice. El
 instalador se encarga del resto (uv, Python y el Chromium que genera los PDF). Para que el agente
 haga su parte necesitas también **un agente de IA** (Claude Code, Codex…; ver la sección 5).
 
@@ -75,6 +77,35 @@ abierta la ventana que aparece mientras la uses; para cerrar CandidatAI, cierra 
 - Mientras el repositorio sea privado o no haya ninguna versión publicada, el comando de una línea
   no tiene qué descargar: instala desde tu copia del repositorio (abajo) con
   `.\install.ps1 -Source <carpeta del repositorio>`, después de compilar la UI (`pnpm build`).
+
+### En macOS y Linux: `install.sh`
+
+En una terminal (no hace falta `sudo`):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/install.sh | bash
+```
+
+Hace lo mismo que el de Windows:
+
+1. instala uv si no está;
+2. descarga la última versión, con la UI ya compilada;
+3. la deja en `~/Library/Application Support/CandidatAI/app` (macOS) o en
+   `~/.local/share/candidatai/app` (Linux, o `$XDG_DATA_HOME/candidatai/app`), y tus datos al
+   lado, en `…/data` (`uv run cai paths` te dice dónde);
+4. prepara el entorno, el Chromium de los PDF y la base de datos. En Linux, si a Chromium le faltan
+   librerías del sistema, te dice el comando de tu distribución (lleva `sudo`: lo ejecutas tú);
+5. crea el acceso directo **«CandidatAI»**: en macOS, `~/Applications/CandidatAI.app`, que abre
+   Terminal; en Linux, en el menú de aplicaciones, que abre tu terminal. Deja esa ventana abierta
+   mientras la uses; para cerrar CandidatAI, ciérrala.
+
+- **Antes de instalar:** `curl -fsSL …/install.sh | bash -s -- --dry-run` explica lo que haría.
+- **Actualizar:** vuelve a ejecutarlo con CandidatAI cerrada; tus datos y tu `.env` se conservan.
+- **Desinstalar:** `bash install.sh --uninstall` quita la app y el acceso directo, no tus datos (con
+  `--remove-data`, también tus datos, si lo confirmas escribiendo «borrar»). Solo toca carpetas que
+  creó él (llevan un fichero `.candidatai`).
+- **Desde tu copia del repositorio**, con la UI compilada: `bash install.sh --source <carpeta>`.
+- En macOS, la primera vez puede pedirte permiso para que la app controle Terminal: acéptalo.
 
 ### Para desarrollar: clonar el repositorio
 

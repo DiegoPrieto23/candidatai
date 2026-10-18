@@ -10,10 +10,14 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Instalador para macOS y Linux:** `curl -fsSL …/install.sh | bash` instala CandidatAI sin
+  `sudo`, con tus datos aparte, y crea el acceso directo (la app «CandidatAI» en macOS y una entrada
+  en el menú de aplicaciones en Linux). `--dry-run` explica lo que haría y `--uninstall` nunca
+  borra tus datos sin que lo confirmes.
 - **Botones «en tu agente» en macOS y Linux:** abren Terminal.app (o iTerm2) en macOS y la
   terminal de tu escritorio en Linux (GNOME Terminal, Konsole, Xfce, kitty, WezTerm, Alacritty…).
   `CAI_TERMINAL` en `.env` elige otra. Sin terminal, el botón copia la orden, como antes.
-- **`cai paths`** dice qué carpeta de datos usas y cuál usaría la app instalada en tu sistema.
+- **`cai paths`** dice qué carpeta de datos usas y dónde va la app instalada en tu sistema.
 - **Varios agentes, a elegir desde la UI.** Además de Claude Code y Codex, configuración lista para
   OpenCode y Qwen Code (open-source) y Antigravity CLI. `cai agents list` y `cai agents doctor` dicen
   cuáles tienes y qué sabe hacer cada uno (MCP, subagentes, segundo plano, web, navegador, modelos
@@ -74,6 +78,8 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 - Gemini CLI deja de estar soportado: Antigravity CLI ocupa su lugar.
 
 ### Corregido
+- En macOS y Linux, archivar una candidatura a la vez desde dos sitios (el worker y la CLI) ya no
+  puede dar por archivada una carpeta vacía.
 - La plantilla `moderna-2col` deja que un ATS lea primero tu nombre.
 
 ### Seguridad

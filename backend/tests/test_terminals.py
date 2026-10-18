@@ -183,7 +183,7 @@ def test_open_terminal_fails_if_it_exits_with_an_error(monkeypatch: pytest.Monke
 def test_posix_script_runs_in_a_real_shell(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Lo que llega al programa es exactamente lo que se quería, sin la clave y con el cliente."""
     monkeypatch.setenv("ANTHROPIC_API_KEY", "secreta")
-    printer = 'printf "%s|%s|%s|%s" "$1" "${ANTHROPIC_API_KEY-sin}" "$CAI_CLIENT_NAME" "$PWD"'
+    printer = r'printf "%s\n%s\n%s\n%s" "$1" "${ANTHROPIC_API_KEY-sin}" "$CAI_CLIENT_NAME" "$PWD"'
     script = terminals.posix_script(
         ["sh", "-c", printer, "sh", WEIRD],
         unset_env=["ANTHROPIC_API_KEY"],
@@ -193,7 +193,7 @@ def test_posix_script_runs_in_a_real_shell(tmp_path: Path, monkeypatch: pytest.M
     )
     bash = shutil.which("bash") or "/bin/sh"
     out = subprocess.run([bash, "-c", script], capture_output=True, text=True, check=True).stdout
-    assert out.split("|") == [WEIRD, "sin", "claude", str(tmp_path.resolve())]
+    assert out.split("\n") == [WEIRD, "sin", "claude", str(tmp_path.resolve())]
 
 
 # --- LibreOffice -------------------------------------------------------------------------------
@@ -240,15 +240,15 @@ def test_installed_data_dir_per_system(monkeypatch: pytest.MonkeyPatch, tmp_path
     monkeypatch.setenv("LOCALAPPDATA", str(tmp_path / "Local"))
     assert installed_data_dir("win32") == tmp_path / "Local" / "CandidatAI" / "data"
     assert installed_data_dir("darwin") == (
-        tmp_path / "Library" / "Application Support" / "CandidatAI"
+        tmp_path / "Library" / "Application Support" / "CandidatAI" / "data"
     )
     monkeypatch.delenv("XDG_DATA_HOME", raising=False)
-    assert installed_data_dir("linux") == tmp_path / ".local" / "share" / "candidatai"
+    assert installed_data_dir("linux") == tmp_path / ".local" / "share" / "candidatai" / "data"
     monkeypatch.setenv("XDG_DATA_HOME", "relativa")  # XDG: una ruta relativa no vale
-    assert installed_data_dir("linux") == tmp_path / ".local" / "share" / "candidatai"
+    assert installed_data_dir("linux") == tmp_path / ".local" / "share" / "candidatai" / "data"
     xdg = tmp_path / "xdg"
     monkeypatch.setenv("XDG_DATA_HOME", str(xdg))
-    assert installed_data_dir("linux") == xdg / "candidatai"
+    assert installed_data_dir("linux") == xdg / "candidatai" / "data"
 
 
 def test_cai_paths(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:

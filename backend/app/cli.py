@@ -212,11 +212,12 @@ OPENAPI_OUT_OPTION = typer.Option(None, "--out", help="Fichero de salida. Por de
 def paths(as_json: bool = JSON_OPTION) -> None:
     """Carpetas de la app: la de datos en uso y la que usa la app instalada en este sistema (la
     que fija el instalador en CAI_DATA_DIR). No crea ninguna."""
-    from app.core.config import Settings, installed_data_dir
+    from app.core.config import Settings, install_dir, installed_data_dir
 
     settings = Settings()  # sin `get_settings`: esa crea la carpeta de datos
     found = {
         "data_dir": str(settings.data_dir),
+        "install_dir": str(install_dir()),
         "installed_data_dir": str(installed_data_dir()),
         "repo_root": str(REPO_ROOT),
     }
@@ -224,6 +225,7 @@ def paths(as_json: bool = JSON_OPTION) -> None:
         typer.echo(dump_json(found))
         return
     typer.echo(f"Datos en uso: {found['data_dir']}")
+    typer.echo(f"App instalada en: {found['install_dir']}")
     typer.echo(f"Datos de la app instalada: {found['installed_data_dir']}")
     typer.echo(f"Código: {found['repo_root']}")
 

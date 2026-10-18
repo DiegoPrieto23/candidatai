@@ -380,6 +380,14 @@ La carta es un documento propio, con sus indicaciones, su verificación y sus re
 - Para agentes y terminal: `get_received_offer` ↔ `jh received-offers show`.
 
 
+## 26.2 · Instalar con una línea en macOS y Linux — 2026-10-18 · Claude Code (Opus 5.5)
+- **`install.sh`:** `curl -fsSL …/install.sh | bash` instala uv si falta, la última versión, el
+  entorno y la base de datos, sin `sudo` y con tus datos aparte. Reinstalar actualiza sin tocarlos.
+- **Acceso directo con icono:** «CandidatAI» en el menú de aplicaciones de Linux y en Aplicaciones
+  de macOS; abre una terminal con la app y el navegador.
+- **Con cuidado:** `--dry-run` no cambia nada, no instala en tu carpeta personal ni en las del
+  sistema, y `--uninstall --remove-data` solo borra tus datos si escribes «borrar».
+
 ## 26.1 · La app ya no supone Windows — 2026-10-17 · Claude Code (Opus 5.5)
 - **Botones «en tu agente» en macOS y Linux:** abren Terminal.app (o iTerm2) o la terminal de tu
   escritorio con la orden del skill, sin tu clave de API y con el agente arrancado. `CAI_TERMINAL`

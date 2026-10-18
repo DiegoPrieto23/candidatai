@@ -28,7 +28,7 @@ A) Diagnóstico
   - `uv run cai agents doctor` dice «Terminal para los botones: gnome-terminal (…)» (o la que
     tengas). Con `CAI_TERMINAL=kitty uv run cai agents doctor` y sin kitty instalado, dice que no
     la encuentra.
-  - `uv run cai paths` enseña «Datos de la app instalada: /home/<tú>/.local/share/candidatai».
+  - `uv run cai paths` enseña «Datos de la app instalada: /home/<tú>/.local/share/candidatai/data».
 
 B) Un botón «en tu agente» abre una terminal
   - Siembra la demo y arranca: `uv run cai demo seed` y sigue sus indicaciones (ahora en bash), o
@@ -55,3 +55,39 @@ D) LibreOffice y «Abrir carpeta»
 E) Windows no cambia
   - En Windows, los botones siguen abriendo Windows Terminal (o PowerShell) como antes, y
     `CAI_TERMINAL` no cambia nada.
+
+
+26.2 · Instalador para macOS y Linux
+------------------------------------
+
+En WSL2 (Ubuntu), en la rama: crea primero una release local (sin publicar nada), desde la raíz del
+repositorio clonado en Linux y con la UI compilada (`cd frontend && pnpm install && pnpm build`):
+
+    bash install.sh --source "$PWD"         # o un candidatai.zip descargado de una release
+
+A) Prueba en seco
+  - `bash install.sh --dry-run --source "$PWD"` explica los cinco pasos y termina con «no se ha
+    cambiado nada». `ls ~/.local/share/candidatai` no existe (si no habías instalado antes).
+
+B) Instalar
+  - Sin `--dry-run`: instala uv si no lo tenías, `uv sync`, Chromium y la base de datos. Si
+    Chromium no arranca, enseña el comando de `playwright install-deps` (con sudo) sin ejecutarlo.
+  - `~/.local/share/candidatai/app` tiene la app; `…/data`, tus datos; `…/app/.env` dice
+    `CAI_DATA_DIR="…/data"`.
+  - En el menú de aplicaciones de Windows aparece «CandidatAI (Ubuntu)» con el icono (WSLg los
+    exporta). Ábrelo: se abre una terminal con `cai start` y el navegador en http://127.0.0.1:8000.
+    Ciérrala: la app se para (`ps -ef | grep cai` sin nada).
+
+C) Reinstalar no toca tus datos
+  - Siembra algo (sube un CV o `uv run --directory ~/.local/share/candidatai/app/backend cai demo
+    seed --dir ~/.local/share/candidatai/data`… o crea un fichero en `…/data`), añade una línea
+    tuya a `…/app/.env` y vuelve a instalar: los datos y tu línea siguen ahí.
+
+D) Desinstalar
+  - `bash install.sh --uninstall`: se van la app y el acceso directo; `…/data` sigue.
+  - `bash install.sh --uninstall --remove-data`: pide escribir «borrar»; con otra cosa, no borra.
+
+E) macOS (si alguien tiene un Mac)
+  - El mismo recorrido: la app en `~/Library/Application Support/CandidatAI/app` y
+    `~/Applications/CandidatAI.app` con el icono, que abre Terminal (la primera vez macOS pide
+    permiso para controlar Terminal).

@@ -1106,9 +1106,44 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
     «Abrir carpeta», con `open` o `xdg-open`. Los procesos que no se esperan (la terminal,
     `xdg-open`) se recogen en un hilo para no dejar zombis.
   - **Carpeta de datos de la app instalada**, calculada en un solo sitio
-    (`config.installed_data_dir`, que imprime `cai paths --json`) para que los instaladores y la
+    (`config.install_dir` e `installed_data_dir`, que imprime `cai paths --json`) para que los instaladores y la
     app coincidan. En desarrollo sigue siendo `data/`.
 - **Consecuencias:** los botones funcionan en macOS y Linux con escritorio; en un servidor sin
   pantalla, o en WSL sin WSLg, se copia la orden. Las formas de cada terminal están comprobadas con
   tests, no con todas las terminales de verdad: la prueba manual va en WSL2 y macOS se cubre en la
   CI (26.4). La primera vez, macOS pide permiso para que la app controle Terminal.
+
+## ADR-041 · `install.sh` para macOS y Linux, el mismo contrato que `install.ps1` (extiende la 035)
+- **Contexto:** `install.ps1` instala la app en Windows sin saber de Python ni de Node (ADR-035). En
+  macOS y Linux había que clonar el repositorio y montar el entorno de desarrollo (fase 26.2).
+- **Decisión:**
+  - **`install.sh` en bash**, compatible con el bash 3.2 de macOS, para `curl -fsSL … | bash`.
+    Todo va en `main`, llamado en la última línea: un script descargado a medias no ejecuta nada.
+    Siempre con LF (`.gitattributes`) y con permiso de ejecución en git; va en el zip de la release.
+  - **Las mismas reglas que `install.ps1`:** instala uv si falta, prepara la versión nueva en
+    `app.new` y solo sustituye una carpeta que sea una CandidatAI, conserva el `.env` (fija
+    `CAI_DATA_DIR`), se niega con `/`, el `HOME` y las carpetas del sistema (con la ruta
+    normalizada: `.`, `..` y `//` no las esquivan), y `--uninstall` nunca borra los datos sin
+    `--remove-data` y escribir «borrar» en la terminal (`/dev/tty`: con `curl | bash` la entrada es
+    el script; sin terminal, no borra). `--dry-run` no escribe nada. Ningún programa que lanza lee
+    de la entrada (`</dev/null`). Si se corta al cambiar de versión, vuelve la anterior.
+  - **Marca de la carpeta de instalación** (`.candidatai`, también en `install.ps1`): solo se
+    instala en una carpeta que no existe, vacía o de CandidatAI, y `--remove-data` (`-RemoveData`)
+    solo borra `data/` si la carpeta tiene la marca o una app de CandidatAI. Así, `--install-dir
+    ~/trabajo --uninstall --remove-data` nunca borra `~/trabajo/data`. La `.app` de macOS solo se
+    sustituye o se borra si lleva el identificador del instalador.
+  - **Carpetas:** las de `config.install_dir()` (`~/Library/Application Support/CandidatAI` y
+    `$XDG_DATA_HOME/candidatai`), con `app/` y `data/` dentro, como en Windows. `cai paths` y un
+    test comprueban que el instalador y la app coinciden.
+  - **Sin sudo:** si a Chromium le faltan librerías en Linux, se enseña lo que instalaría
+    `playwright install-deps` y el comando con `sudo`, sin ejecutarlo.
+  - **Acceso directo:** en Linux, un `.desktop` con `Terminal=true` (se ve la ventana que hay que
+    dejar abierta, como el `cmd` de Windows); en macOS, una `.app` mínima con el icono `.icns`
+    (generado con Pillow) que abre un `.command` en Terminal. Sin firmar: al crearla en el propio
+    equipo no lleva cuarentena. Los dos lanzan un script que, si `cai start` falla, espera a que se
+    lea el error.
+  - **`--no-setup`** se salta uv y la preparación del entorno, para los tests y la CI con una
+    release falsa (decisión del usuario).
+- **Consecuencias:** la app se instala con una línea en los tres sistemas. La ruta de instalación no
+  puede llevar comillas, `\`, `` ` ``, `$` ni `%` (se rechaza), para escribir el `.desktop` y los
+  scripts sin escapar. La `.app` y el `.desktop` dependen del escritorio: se prueban a mano.

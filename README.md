@@ -178,9 +178,17 @@ iwr -useb https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/instal
 powershell -ExecutionPolicy Bypass -File $env:TEMP\cai-install.ps1
 ```
 
-It installs what's needed and leaves a **"CandidatAI"** shortcut on your desktop: opening it starts
-everything and opens your browser. To update, run it again; your data isn't touched.
-Add `-WhatIf` to the second line to see first what it would do.
+On **macOS or Linux**, in a terminal (no `sudo`):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/install.sh | bash
+```
+
+It installs what's needed and leaves a **"CandidatAI"** shortcut (on the desktop and Start menu on
+Windows, in Applications on macOS and in the applications menu on Linux): opening it starts
+everything and opens your browser. To update, run it again; your data isn't touched. To see first
+what it would do, add `-WhatIf` to the second Windows line or use `| bash -s -- --dry-run`. macOS
+and Linux are new (phase 26) and still being tested.
 
 <p align="center">
   <img src="docs/img/en/start.gif" alt="cai start starts CandidatAI and the app opens in the browser" width="80%">

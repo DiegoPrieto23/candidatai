@@ -6,7 +6,7 @@ cada fase y lo quita cuando el usuario confirma que está hecho.
 
 Marca `[x]` lo que hagas y, si algo falla, apúntalo debajo de la línea con `→`.
 
-Última actualización: 2026-10-17 (fase 26.1).
+Última actualización: 2026-10-18 (fase 26.2).
 
 ## 1. Poner la app al día (antes de probar nada)
 
@@ -237,6 +237,11 @@ hiciste, márcala.
     de API y con `CAI_CLIENT_NAME`;
   - cancelar una ejecución en segundo plano y cerrar `cai start` no dejan procesos huérfanos;
   - en Windows, los botones siguen abriendo Windows Terminal como antes.
+- [ ] **Fase 26.2 · `install.sh`** (`fase-26-prueba-manual.txt`, sección 26.2), en WSL2:
+  - instalar desde tu repositorio (`bash install.sh --source "$PWD"`, con la UI compilada) y abrir
+    «CandidatAI» desde el menú de aplicaciones (en Windows sale como «CandidatAI (Ubuntu)»);
+  - reinstalar no toca `…/data` ni tu línea del `.env`; desinstalar los deja;
+  - si alguien tiene un Mac: la `.app` de `~/Applications` con su icono.
 
 - [ ] **Fase 22 · LinkedIn por sus endpoints públicos** (`fase-22-prueba-manual.txt`), **solo si
       quieres usarla** (va contra las condiciones de LinkedIn y puede bloquear tu IP un tiempo):
