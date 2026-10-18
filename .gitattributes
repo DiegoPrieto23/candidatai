@@ -4,3 +4,4 @@ docs/video/ export-ignore
 
 # Scripts de shell (install.sh, fase 26.2): siempre con LF, también en un checkout de Windows.
 *.sh text eol=lf
+Dockerfile text eol=lf

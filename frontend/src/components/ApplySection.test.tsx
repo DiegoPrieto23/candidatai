@@ -201,6 +201,31 @@ describe('Candidatura asistida en la ficha', () => {
     expect(within(region).getByRole('img', { name: 'Captura después de enviar' })).toBeInTheDocument()
   })
 
+  it('en Docker abre la oferta en tu navegador y la marcas tú, sin el navegador de CandidatAI', async () => {
+    const calls = mockApi({
+      ...base(),
+      'GET /jobs/1/apply': assistedApplication({
+        in_docker: true,
+        can_prepare: false,
+        reason: 'En Docker no hay un navegador visible…',
+        attempt: attemptView(), // un intento de antes de pasar a Docker: no se sigue aquí
+      }),
+      'POST /jobs/1/apply/manual-done': { status: 200, body: { ok: true } },
+    })
+    renderApp('/jobs/1')
+    const region = await section()
+    expect(await within(region).findByText(/Estás usando CandidatAI en Docker/)).toBeInTheDocument()
+    const link = within(region).getByRole('link', { name: 'Abrir la oferta en tu navegador' })
+    expect(link).toHaveAttribute('href', 'https://boards.greenhouse.io/acme/jobs/1')
+    expect(link).toHaveAttribute('target', '_blank')
+    expect(within(region).queryByRole('button', { name: 'Abrir navegador' })).not.toBeInTheDocument()
+    expect(within(region).queryByRole('button', { name: 'Preparar candidatura' })).not.toBeInTheDocument()
+    expect(within(region).queryByRole('button', { name: 'Enviar' })).not.toBeInTheDocument()
+    await userEvent.click(within(region).getByRole('button', { name: 'Marcar como enviada' }))
+    await waitFor(() => expect(calls.some((c) => c.path === '/jobs/1/apply/manual-done')).toBe(true))
+    expect(calls.some((c) => c.path.startsWith('/apply/') || c.path === '/browser/open')).toBe(false)
+  })
+
   it('en un portal de empleo la oferta se abre en tu navegador, no en el de CandidatAI', async () => {
     const url = 'https://www.glassdoor.es/job-listing/1'
     const calls = mockApi({

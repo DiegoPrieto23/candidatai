@@ -9,6 +9,9 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 - **CLI `cai` con `--json`** para agentes sin MCP o para depurar. Se ejecuta desde la raíz con
   `uv run --directory backend cai …`. Misma entrada, misma salida y mismos errores que la MCP
   (un test de paridad lo garantiza).
+- **Con Docker** (fase 26.3, ADR-042), el agente sigue fuera del contenedor: el servidor MCP es
+  `docker exec -i candidatai cai-mcp` y la CLI, `docker exec -i candidatai cai … --json`. Mismas
+  herramientas y mismas salidas.
 
 ## Reglas comunes
 

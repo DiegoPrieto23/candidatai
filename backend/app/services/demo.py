@@ -41,7 +41,17 @@ from app.schemas.cv import CvContent, CvRenderOptions, CvVerification
 from app.schemas.llm_io import JobExtraction
 from app.schemas.sources import AgentBrowseSource, SourceInput
 from app.services import capture as capture_service
-from app.services import events, extractions, ingest, network, pipeline, process, profile, tasks
+from app.services import (
+    container,
+    events,
+    extractions,
+    ingest,
+    network,
+    pipeline,
+    process,
+    profile,
+    tasks,
+)
 from app.services.demo_text import posting_text
 from app.services.documents import pdf
 from app.services.documents import service as cv_service
@@ -569,6 +579,11 @@ def _pdf_engine() -> tuple[str | None, str | None]:
 
         with sync_playwright() as pw:
             if Path(pw.chromium.executable_path).is_file():
+                return "moderna-2col", "Chromium (Playwright)"
+            # La imagen de Docker (fase 26.3) solo trae el Chromium sin ventana, que no está en
+            # `executable_path`: basta con que arranque.
+            if container.in_docker():
+                pw.chromium.launch().close()
                 return "moderna-2col", "Chromium (Playwright)"
     except Exception:  # noqa: BLE001 - sin Playwright o sin navegador: sin PDF
         pass

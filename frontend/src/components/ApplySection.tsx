@@ -489,6 +489,29 @@ function PortalApply({ state, stage, again }: { state: AssistedApplication; stag
   )
 }
 
+/**
+ * En Docker (fase 26.3) no hay navegador visible: la oferta se abre en el tuyo, la envías tú y la
+ * marcas. Nada se envía sin ti, tampoco aquí.
+ */
+function DockerApply({ state, stage }: { state: AssistedApplication; stage: Stage | null }) {
+  const { t } = useTranslation('apply', { keyPrefix: 'docker' })
+  return (
+    <div className="space-y-3">
+      <p className="text-sm text-muted-foreground">{t('intro')}</p>
+      <p className="text-sm text-muted-foreground">{t('step')}</p>
+      <div className="flex flex-wrap items-center gap-2">
+        <Button asChild size="sm">
+          <a href={state.url} target="_blank" rel="noopener noreferrer">
+            <ArrowSquareOutIcon />
+            {t('open')}
+          </a>
+        </Button>
+        {(stage === 'cv_ready' || stage === 'approved') && <ManualDone jobId={state.job_id} />}
+      </div>
+    </div>
+  )
+}
+
 function Prepare({
   state,
   stage,
@@ -555,12 +578,14 @@ function Done({ attempt, stage }: { attempt: AttemptView; stage: Stage | null })
 function Body({ state, stage }: { state: AssistedApplication; stage: Stage | null }) {
   const { t } = useTranslation('apply')
   const attempt = state.attempt
+  if (attempt?.status === 'submitted' || attempt?.status === 'manual_done') {
+    return <Done attempt={attempt} stage={stage} />
+  }
+  // Un intento de antes de pasar a Docker no se puede seguir: aquí no está su navegador.
+  if (state.in_docker) return <DockerApply state={state} stage={stage} />
   if (!attempt || attempt.status === 'cancelled') return <Prepare state={state} stage={stage} />
   if (attempt.status === 'queued' || attempt.status === 'filling' || attempt.status === 'submitting') {
     return <Busy attempt={attempt} />
-  }
-  if (attempt.status === 'submitted' || attempt.status === 'manual_done') {
-    return <Done attempt={attempt} stage={stage} />
   }
   if (attempt.status === 'failed') {
     return (
@@ -633,10 +658,10 @@ export function ApplySection({ job }: { job: JobView }) {
         <div>
           <h2 className="text-base font-semibold tracking-tight">{t('title')}</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            {t('intro')}
+            {data?.in_docker ? t('docker.sectionIntro') : t('intro')}
           </p>
         </div>
-        <OpenBrowser />
+        {!data?.in_docker && <OpenBrowser />}
       </div>
       {isPending ? (
         <Skeleton className="h-16" />

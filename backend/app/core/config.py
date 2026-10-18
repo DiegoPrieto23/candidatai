@@ -75,6 +75,9 @@ class Settings(BaseSettings):
     # Qué agente abren los botones de la UI (ADR-024), por su nombre en `.agents/manifest.yaml`.
     # Sin valor, el primero con `launch` que esté instalado.
     agent: str | None = Field(default=None, validation_alias=_env("AGENT"))
+    # La pone la imagen de Docker (fase 26.3, ADR-042): la app sabe que tu agente está fuera del
+    # contenedor y no intenta abrir terminales, el segundo plano ni un navegador visible.
+    in_docker: bool = Field(default=False, validation_alias=_env("IN_DOCKER"))
     # Qué terminal abren esos botones en macOS y Linux (fase 26.1): `iterm`, `kitty`, una ruta…
     # Sin valor, la del sistema (`services/terminals.py`). En Windows no se usa.
     terminal: str | None = Field(default=None, validation_alias=_env("TERMINAL"))

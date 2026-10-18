@@ -187,6 +187,10 @@ y se abre el navegador. Para actualizar, vuelve a ejecutarlo; tus datos no se to
 lo que haría, añade `-WhatIf` al final de la segunda línea de Windows o usa `| bash -s -- --dry-run`.
 macOS y Linux son nuevos (fase 26) y aún se están probando.
 
+¿Prefieres no instalar nada más que Docker? `docker compose up -d --build` desde la carpeta del
+repositorio también sirve, con límites (tu agente se queda fuera del contenedor): ver
+[Con Docker](docs/GUIA.md#con-docker-opcional).
+
 <p align="center">
   <img src="docs/img/es/start.gif" alt="cai start arranca CandidatAI y la app se abre en el navegador" width="80%">
 </p>
@@ -353,7 +357,7 @@ stateDiagram-v2
 | Eventos como fuente de verdad | Historial completo, analítica fiable y estados que no se corrompen |
 | Contenido y presentación del CV separados | Cambiar plantilla, foto o color no vuelve a gastar agente |
 | LinkedIn solo por alertas, tus clics o funciones que activas tú | Respeta tu cuenta; la app prepara y tú terminas |
-| SQLite, nativo en Windows | Una app personal: sin servidores ni Docker |
+| SQLite, nativo en Windows | Una app personal: sin servidores; Docker solo si lo quieres |
 | Embeddings locales y opcionales | Mejor matching sin mandar tus datos fuera |
 </details>
 

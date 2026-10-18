@@ -39,7 +39,7 @@ from app.models import ApplicationAttempt, Company, DocumentRender, Job, Task
 from app.models.base import utcnow
 from app.schemas.llm_io import ApplicationAnswers
 from app.services import answers as answers_service
-from app.services import application_archive, events, normalize, prompts, tasks
+from app.services import application_archive, container, events, normalize, prompts, tasks
 from app.services import profile as profile_service
 from app.services.applier import fields, guard, platforms, submit, tokens
 from app.services.applier.browser import BrowserState, PreparedPage, get_host
@@ -202,6 +202,20 @@ def latest(session: Session, job_id: int) -> ApplicationAttempt | None:
     return session.scalars(stmt).first()
 
 
+def _no_docker() -> None:
+    """En Docker no hay navegador visible (fase 26.3): nada que abra o use el de CandidatAI."""
+    if container.in_docker():
+        raise ApplierError("docker", container.ASSISTED_APPLY)
+
+
+def refuse_in_docker(attempt_id: int | None) -> None:
+    """Una tarea del navegador que quedó en cola antes de pasar a Docker: el intento queda
+    fallido con el motivo, en vez de esperar a un navegador que no hay."""
+    if attempt_id is not None:
+        _fail(attempt_id, container.ASSISTED_APPLY)
+    raise ApplierError("docker", container.ASSISTED_APPLY)
+
+
 def view_by_id(attempt_id: int) -> AttemptView:
     with session_scope() as session:
         return view(session, _get(session, attempt_id))
@@ -219,6 +233,8 @@ class AssistedApplication(BaseModel):
     domain: str
     url: str  # la de la oferta: en un portal se abre en tu navegador, con tu sesión
     portal: str | None  # «Glassdoor», «InfoJobs»… si la oferta es de un portal de empleo
+    # Fase 26.3: en Docker no hay navegador visible; la UI ofrece abrir la oferta en el tuyo.
+    in_docker: bool = False
     can_prepare: bool
     reason: str | None  # por qué no se puede preparar ahora
 
@@ -231,7 +247,10 @@ def get_state(session: Session, job_id: int) -> AssistedApplication:
     mode = _mode(platforms.detect(job.url))
     attempt = latest(session, job_id)
     reason: str | None = None
-    if (problem := platforms.url_problem(job.url)) is not None:
+    docker = container.in_docker()
+    if docker:
+        reason = container.ASSISTED_APPLY
+    elif (problem := platforms.url_problem(job.url)) is not None:
         reason = problem
     elif mode == "fill" and stage != Stage.CV_READY:
         reason = "Hace falta un CV listo (verificado y elegido) para rellenar el formulario."
@@ -249,6 +268,7 @@ def get_state(session: Session, job_id: int) -> AssistedApplication:
         domain=urlsplit(job.url).hostname or "",
         url=job.url,
         portal=_portal(job.url),
+        in_docker=docker,
         can_prepare=reason is None,
         reason=reason,
     )
@@ -306,6 +326,7 @@ def prepare(session: Session, job_id: int, form_url: str | None = None) -> Attem
     (LinkedIn o un portal de empleo). Con `form_url` (el formulario de la empresa, p. ej. al que
     lleva el portal) se rellena esa URL. Los intentos anteriores que esperaban revisión se
     anulan."""
+    _no_docker()
     job = session.get(Job, job_id)
     if job is None:
         raise events.JobNotFoundError(f"No existe la oferta {job_id}.")
@@ -809,6 +830,7 @@ def run_fill(attempt_id: int) -> dict[str, Any]:
 
 def rescan(session: Session, attempt_id: int) -> AttemptView:
     """Vuelve a leer los campos y a capturar (tras completar algo en el navegador)."""
+    _no_docker()
     attempt = _get(session, attempt_id)
     if _clicked(attempt):
         raise ApplierError(
@@ -856,6 +878,7 @@ def _fill_page_problem(session: Session, attempt: ApplicationAttempt) -> str | N
 def fill_page(session: Session, attempt_id: int) -> AttemptView:
     """«Rellenar esta página»: encola rellenar la pestaña que tienes delante en el navegador de
     CandidatAI (el formulario de la empresa al que te llevó el portal). No envía nada."""
+    _no_docker()
     attempt = _get(session, attempt_id)
     if (problem := _fill_page_problem(session, attempt)) is not None:
         raise ApplierError("invalid_state", problem)
@@ -970,6 +993,7 @@ def confirm_submission(
     `reviewed_at` es el `updated_at` del intento que viste: si cambió después (se volvió a leer o
     a rellenar), hay que revisar otra vez.
     """
+    _no_docker()
     attempt = _get(session, attempt_id)
     if attempt.status != "ready" or attempt.mode != "fill":
         raise ApplierError(
@@ -1172,6 +1196,7 @@ def run_open(attempt_id: int) -> dict[str, Any]:
 
 def focus(session: Session, attempt_id: int) -> AttemptView:
     """«Lo termino yo»: encola traer la pestaña al frente y dejar que envíes tú."""
+    _no_docker()
     attempt = _get(session, attempt_id)
     if attempt.status not in REVIEWABLE:
         raise ApplierError("invalid_state", f"No se puede abrir el intento en «{attempt.status}».")
@@ -1234,6 +1259,7 @@ def mark_manual_done(session: Session, job_id: int) -> events.AddEventResult:
 
 def open_browser(session: Session) -> None:
     """«Preparar navegador»: encola abrir el navegador para que inicies tus sesiones."""
+    _no_docker()
     tasks.enqueue(session, "browser_open", {})
 
 

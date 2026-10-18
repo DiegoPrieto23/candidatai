@@ -190,6 +190,10 @@ everything and opens your browser. To update, run it again; your data isn't touc
 what it would do, add `-WhatIf` to the second Windows line or use `| bash -s -- --dry-run`. macOS
 and Linux are new (phase 26) and still being tested.
 
+Prefer not to install anything but Docker? `docker compose up -d --build` from the repository
+folder also works, with limits (your agent stays outside the container): see
+[With Docker](docs/GUIDE.md#with-docker-optional).
+
 <p align="center">
   <img src="docs/img/en/start.gif" alt="cai start starts CandidatAI and the app opens in the browser" width="80%">
 </p>
@@ -356,7 +360,7 @@ stateDiagram-v2
 | Events as the source of truth | Full history, reliable analytics and states that don't get corrupted |
 | CV content and presentation kept apart | Changing template, photo or colour doesn't spend agent quota again |
 | LinkedIn only through alerts, your clicks or opt-in features | Respects your account; the app prepares and you finish |
-| SQLite, native on Windows | A personal app: no servers, no Docker |
+| SQLite, native on Windows | A personal app: no servers; Docker only if you want it |
 | Optional local embeddings | Better matching without sending your data anywhere |
 </details>
 

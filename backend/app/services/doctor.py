@@ -6,6 +6,7 @@ import shutil
 import sys
 import tempfile
 import time
+from collections.abc import Callable
 from enum import StrEnum
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
@@ -280,6 +281,8 @@ def check_embeddings(settings: Settings) -> CheckResult:
 
     name = "Embeddings"
     reason = embeddings.unavailable_reason()
+    if reason is not None and settings.in_docker:
+        reason = "La imagen de Docker no la incluye (traería torch)."
     if reason is not None:
         detail = f"{reason} El score se calcula sin similitud semántica."
         return CheckResult(name=name, status=CheckStatus.WARN, detail=detail)
@@ -550,15 +553,80 @@ def check_agents(settings: Settings) -> CheckResult:
     return CheckResult(name=name, status=CheckStatus.OK, detail=detail)
 
 
+def check_docker(
+    settings: Settings, is_mount: Callable[[Path], bool] = os.path.ismount
+) -> list[CheckResult]:
+    """Sección «Docker» (fase 26.3, ADR-042): solo con `CAI_IN_DOCKER=1`. Dónde escucha la API,
+    dónde quedan tus datos, cómo llega tu agente y qué no funciona dentro."""
+    from app.services import container
+
+    if not settings.in_docker:
+        return []
+    if container.in_container():
+        api = CheckResult(
+            name="Docker · API",
+            status=CheckStatus.OK,
+            detail="escucha en el contenedor; el compose la publica solo en 127.0.0.1 de tu equipo",
+        )
+    else:
+        api = CheckResult(
+            name="Docker · API",
+            status=CheckStatus.WARN,
+            detail="CAI_IN_DOCKER=1 fuera de un contenedor: la API sigue solo en 127.0.0.1. "
+            "Quítalo de tu .env si no usas Docker",
+        )
+    mounts = (container.DATA_MOUNT, container.DEMO_MOUNT)
+    if settings.data_dir in mounts and is_mount(settings.data_dir):
+        data = CheckResult(
+            name="Docker · datos",
+            status=CheckStatus.OK,
+            detail=f"en el volumen montado en {settings.data_dir.as_posix()}: sobreviven al "
+            "contenedor (copia de seguridad: ver «Con Docker» en la guía)",
+        )
+    else:
+        data = CheckResult(
+            name="Docker · datos",
+            status=CheckStatus.WARN,
+            detail=f"{settings.data_dir} no es un volumen: se pierden al borrar el contenedor. "
+            "Monta uno en /data (lo hace docker-compose.yml)",
+        )
+    agent = CheckResult(
+        name="Docker · tu agente",
+        status=CheckStatus.OK,
+        detail=f"fuera del contenedor. Por MCP: `{container.MCP_COMMAND}`; sin MCP: "
+        f"`{container.CLI_COMMAND} … --json`",
+    )
+    limits = CheckResult(
+        name="Docker · límites",
+        status=CheckStatus.OK,  # esperados: no se arreglan dentro (ver la guía)
+        detail="los botones «en tu agente» copian la orden; sin «En segundo plano»; candidatura "
+        "asistida: abre la oferta en tu navegador y envíala tú; sin LibreOffice (motor html)",
+    )
+    return [api, data, agent, limits]
+
+
+DOCKER_NO_SOFFICE = CheckResult(
+    name="LibreOffice",
+    status=CheckStatus.OK,
+    detail="no viene en la imagen de Docker: los PDF salen con las plantillas html (motor html)",
+)
+
+
 def run_doctor(settings: Settings) -> DoctorReport:
+    docker = settings.in_docker
+    # En Docker no hay LibreOffice a propósito, ni agentes (están fuera del contenedor): lo
+    # explica la sección «Docker» en vez de dar avisos que no se pueden arreglar dentro.
+    soffice = [] if docker else [check_soffice(settings.soffice_path)]
+    conversion = [DOCKER_NO_SOFFICE] if docker else [check_pdf_conversion()]
+    agents = [] if docker else [check_agents(settings)]
     return DoctorReport(
         checks=[
             check_python(),
             check_data_dir(settings.data_dir),
             check_legacy_names(settings),
-            check_soffice(settings.soffice_path),
+            *soffice,
             check_cv_templates(BUILTIN_TEMPLATES_DIR, settings.user_templates_dir),
-            check_pdf_conversion(),
+            *conversion,
             check_html_engine(),
             check_photo(settings.data_dir / "profile.yaml", settings.data_dir),
             check_embeddings(settings),
@@ -566,6 +634,7 @@ def run_doctor(settings: Settings) -> DoctorReport:
             check_email_alerts(settings),
             check_email_replies(settings),
             check_capture(settings),
-            check_agents(settings),
+            *agents,
+            *check_docker(settings),
         ]
     )

@@ -178,10 +178,12 @@ def serve(
     """Levanta la API para la UI en http://127.0.0.1:<puerto>."""
     import uvicorn
 
-    from app.api.main import HOST
+    from app.services import container
 
     migrations.ensure_current()  # mejor fallar aquí que en cada petición
-    uvicorn.run("app.api.main:app", host=HOST, port=port, reload=reload)
+    # En Docker, en todas las interfaces del contenedor: el compose la publica solo en 127.0.0.1.
+    host = container.listen_host(get_settings())
+    uvicorn.run("app.api.main:app", host=host, port=port, reload=reload)
 
 
 @app.command()
@@ -503,13 +505,16 @@ EVAL_PROFILE_OPTION = typer.Option(
 
 
 DEMO_DIR_OPTION = typer.Option(
-    Path("data-demo"), "--dir", help="Carpeta de la demo (relativa a la raíz del repo)."
+    None,
+    "--dir",
+    help="Carpeta de la demo (relativa a la raíz del repo). Por defecto, data-demo; en Docker, "
+    "/data-demo (su volumen).",
 )
 
 
 @demo_app.command("seed")
 def demo_seed(
-    target: Path = DEMO_DIR_OPTION,
+    target: Path | None = DEMO_DIR_OPTION,
     force: bool = typer.Option(False, "--force", help="Recrea una demo que ya existe."),
     eval_cv: bool = typer.Option(
         False,
@@ -531,9 +536,12 @@ def demo_seed(
     as_json: bool = JSON_OPTION,
 ) -> None:
     """Crea una carpeta de datos con 60 ofertas ficticias, 8 semanas de historial y 2 CVs."""
-    from app.services import demo
+    from app.services import container, demo
     from app.services.evals.cv import CvEvalFileError
 
+    docker = container.in_docker()
+    if target is None:
+        target = container.DEMO_MOUNT if docker else Path("data-demo")
     try:
         summary = demo.seed(target, force=force, eval_cv=eval_cv, compat=compat, lang=lang)
     except (demo.DemoSeedError, CvEvalFileError) as exc:
@@ -554,7 +562,12 @@ def demo_seed(
     for warning in summary.warnings:
         typer.secho(f"Aviso: {warning}", fg=typer.colors.YELLOW, err=True)
     folder = target.as_posix()
-    if sys.platform == "win32":
+    if docker:  # fase 26.3: se abre desde tu equipo, cambiando la carpeta del contenedor
+        typer.echo("\nPara abrirla, desde la carpeta del repositorio en tu equipo:")
+        typer.echo(f"  {container.DEMO_COMPOSE}")
+        typer.echo("Para volver a tus datos: docker compose up -d")
+        typer.echo("Tu agente, por MCP contra el contenedor, ve la carpeta que esté abierta.")
+    elif sys.platform == "win32":
         typer.echo("\nPara abrirla (PowerShell, desde backend/):")
         typer.echo(f'  $env:CAI_DATA_DIR = "{folder}"; uv run cai serve')
         typer.echo("  y en otra terminal: cd frontend; pnpm dev")
@@ -562,7 +575,10 @@ def demo_seed(
         typer.echo("\nPara abrirla (desde backend/):")
         typer.echo(f"  CAI_DATA_DIR={shlex.quote(folder)} uv run cai serve")
         typer.echo("  y en otra terminal: cd frontend && pnpm dev")
-    typer.echo(f"Con un agente, arráncalo con CAI_DATA_DIR={folder} para que el MCP use la demo.")
+    if not docker:
+        typer.echo(
+            f"Con un agente, arráncalo con CAI_DATA_DIR={folder} para que el MCP use la demo."
+        )
     if compat:
         typer.echo(
             "Matriz de compatibilidad: con tu agente, process-jobs, assess-fit, aprueba "

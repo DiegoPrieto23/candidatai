@@ -1,4 +1,5 @@
-"""Aplicación FastAPI. Escucha solo en 127.0.0.1 (`cai serve`) y solo admite CORS de la UI local."""
+"""Aplicación FastAPI. Escucha solo en 127.0.0.1 (`cai serve`; en Docker, el compose la publica solo
+ahí: ver `services/container.py`) y solo admite CORS de la UI local."""
 
 import json
 

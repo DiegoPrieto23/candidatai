@@ -18,6 +18,11 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   terminal de tu escritorio en Linux (GNOME Terminal, Konsole, Xfce, kitty, WezTerm, Alacritty…).
   `CAI_TERMINAL` en `.env` elige otra. Sin terminal, el botón copia la orden, como antes.
 - **`cai paths`** dice qué carpeta de datos usas y dónde va la app instalada en tu sistema.
+- **Docker, opcional:** `docker compose up -d --build` arranca CandidatAI sin instalar Python ni
+  Chromium, solo en tu equipo (`127.0.0.1:8000`) y con tus datos en un volumen. Tu agente se queda
+  fuera y usa la app por MCP (`docker exec -i candidatai cai-mcp`) o `cai … --json`. Dentro, los
+  botones «en tu agente» copian la orden, no hay segundo plano y la candidatura asistida abre la
+  oferta en tu navegador para que la envíes tú. Lo recomendado sigue siendo el instalador.
 - **Varios agentes, a elegir desde la UI.** Además de Claude Code y Codex, configuración lista para
   OpenCode y Qwen Code (open-source) y Antigravity CLI. `cai agents list` y `cai agents doctor` dicen
   cuáles tienes y qué sabe hacer cada uno (MCP, subagentes, segundo plano, web, navegador, modelos

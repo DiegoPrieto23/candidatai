@@ -48,6 +48,8 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
 ## ADR-007 · Ejecución nativa en Windows, sin Docker de momento
 - **Decisión:** `uv` + `pnpm` en nativo. Playwright con navegador visible y LibreOffice del sistema.
 - **Consecuencias:** configuración por variables de entorno para rutas de herramientas.
+- **Matizada por la ADR-042:** Docker es una alternativa opcional, con límites; la instalación
+  nativa sigue siendo la recomendada.
 
 ## ADR-008 · Aislamiento del texto crudo (sustituido parcialmente por ADR-012)
 - **Decisión original:** el texto crudo de las ofertas solo lo ve el rol `extractor`, con
@@ -1147,3 +1149,42 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
 - **Consecuencias:** la app se instala con una línea en los tres sistemas. La ruta de instalación no
   puede llevar comillas, `\`, `` ` ``, `$` ni `%` (se rechaza), para escribir el `.desktop` y los
   scripts sin escapar. La `.app` y el `.desktop` dependen del escritorio: se prueban a mano.
+
+## ADR-042 · Docker opcional: la app en un contenedor, tu agente fuera (matiza la 007)
+- **Contexto:** hay quien prefiere no instalar Python, Node ni Chromium en su sistema (fase 26.3).
+  Con Docker se arranca todo con un comando, pero el agente de IA vive fuera del contenedor: sin él
+  dentro, no hay terminal que abrirle, segundo plano ni una ventana del navegador para que pulses
+  «Enviar».
+- **Decisión:**
+  - **Imagen** (`Dockerfile`, en dos etapas): Node compila la UI; la final lleva Python 3.12 con
+    uv, el backend y el Chromium sin ventana de Playwright con sus librerías (imprime los PDF del
+    motor html). Sin LibreOffice ni el extra de embeddings (traería torch). Usuario sin
+    privilegios (`cai`, uid 1000) y nada personal: `.dockerignore` deja fuera `data*`, `.env` y
+    `.git`. La caché de uv no entra en la imagen.
+  - **`docker-compose.yml`:** `cai start --no-browser`, el contenedor con nombre fijo
+    (`candidatai`), los datos en el volumen `candidatai-data` (`/data`), el `.env` como `env_file`
+    opcional (con `CAI_IN_DOCKER` y `CAI_DATA_DIR` por delante: el `.env` de una instalación nativa
+    no los cambia), el puerto **solo en `127.0.0.1:8000`** de tu equipo y un healthcheck sobre
+    `/status`. `init` reenvía las señales a `cai start`, que para API y worker.
+  - **Dónde escucha la API:** dentro del contenedor tiene que escuchar en todas sus interfaces (si
+    no, el puerto publicado no le llega). Solo lo hace con `CAI_IN_DOCKER=1` **y** una marca de
+    contenedor (`/.dockerenv`, `/run/.containerenv`): la variable copiada a tu `.env` no abre la
+    API a tu red. La comprobación de `Host` y `Origin` (ADR-035) no cambia.
+  - **El agente, desde fuera:** por MCP con `docker exec -i candidatai cai-mcp` (no necesita el
+    plugin `compose` ni la ruta del repositorio, así que funciona aunque el cliente MCP arranque el
+    servidor con un entorno mínimo); sin MCP, `docker exec -i candidatai cai … --json`. Los skills
+    y `AGENTS.md` se leen del repositorio clonado en tu equipo. La configuración generada
+    (`.mcp.json`…) sigue siendo la nativa: la guía da el bloque para Docker.
+  - **Qué no funciona dentro, y la app lo sabe** (`services/container.py`): los botones «en tu
+    agente» copian la orden con el motivo; «En segundo plano» se ofrece desactivado con el motivo
+    (y `agent_runs.start` lo rechaza); la candidatura asistida no prepara, rellena ni envía nada
+    (la API responde con el código `docker`) y la ficha ofrece abrir la oferta en tu navegador y
+    «Marcar como enviada». Nada se envía sin tu clic (regla dura 5). `cai doctor` lo resume en su
+    sección «Docker» y no avisa de LibreOffice ni de agentes, que no se pueden arreglar dentro.
+  - **La demo:** `cai demo seed` va en otro volumen (`/data-demo`) y se abre con
+    `docker-compose.demo.yml`, que solo cambia `CAI_DATA_DIR`. Tus datos no se tocan.
+- **Consecuencias:** la app arranca con `docker compose up -d` sin instalar nada más que Docker, a
+  cambio de esos límites y de una imagen de ~1,7 GB (Chromium y sus librerías son la mitad). La
+  copia de seguridad es la del volumen. La forma recomendada sigue siendo la nativa. Fuera de
+  alcance: el agente dentro del contenedor, un navegador remoto (noVNC) para la candidatura asistida
+  y publicar la imagen en un registro.

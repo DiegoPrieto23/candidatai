@@ -6,7 +6,7 @@ cada fase y lo quita cuando el usuario confirma que está hecho.
 
 Marca `[x]` lo que hagas y, si algo falla, apúntalo debajo de la línea con `→`.
 
-Última actualización: 2026-10-18 (fase 26.2).
+Última actualización: 2026-10-18 (fase 26.3).
 
 ## 1. Poner la app al día (antes de probar nada)
 
@@ -242,6 +242,16 @@ hiciste, márcala.
     «CandidatAI» desde el menú de aplicaciones (en Windows sale como «CandidatAI (Ubuntu)»);
   - reinstalar no toca `…/data` ni tu línea del `.env`; desinstalar los deja;
   - si alguien tiene un Mac: la `.app` de `~/Applications` con su icono.
+- [ ] **Fase 26.3 · Docker** (`fase-26-prueba-manual.txt`, sección 26.3), con Docker Desktop:
+  - **antes:** en mis pruebas, el contenedor leyó tu `.env` y su worker trajo tus alertas por
+    IMAP al volumen `candidatai-data`. Si no vas a usar Docker con tus datos, bórralo con
+    `docker compose down` y `docker volume rm candidatai-data`;
+  - un agente tuyo procesa una oferta de la demo por MCP contra el contenedor
+    (`claude mcp add --scope local candidatai -- docker exec -i candidatai cai-mcp`), y después
+    `claude mcp remove --scope local candidatai`;
+  - en la ficha, un botón «en tu agente» copia la orden con el aviso de Docker y la candidatura
+    asistida ofrece «Abrir la oferta en tu navegador» y «Marcar como enviada»;
+  - en WSL2 con la integración de Docker Desktop activada, el mismo `docker compose up -d`.
 
 - [ ] **Fase 22 · LinkedIn por sus endpoints públicos** (`fase-22-prueba-manual.txt`), **solo si
       quieres usarla** (va contra las condiciones de LinkedIn y puede bloquear tu IP un tiempo):

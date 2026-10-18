@@ -50,6 +50,8 @@ extension/        extensión «Enviar a CandidatAI» (fase 09b)
 config/           policies.yaml y listas genéricas (sin datos personales)
 demo/             candidato y ofertas ficticios
 install.ps1       instalador para Windows: descarga la release, prepara todo y crea el acceso directo
+install.sh        el mismo instalador para macOS y Linux (ADR-041)
+Dockerfile, docker-compose*.yml   Docker opcional: la app en un contenedor, tu agente fuera (ADR-042)
 data/             GITIGNORED: candidatai.db, profile.yaml, contexto/, documentos/, photo, templates/,
                   uploads/, CVs, tmp/…
 ```

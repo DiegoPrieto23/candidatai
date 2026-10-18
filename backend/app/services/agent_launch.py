@@ -41,6 +41,7 @@ from app.services import (
     agent_prefs,
     agent_registry,
     agent_run_config,
+    container,
     events,
     interviews,
     process,
@@ -283,6 +284,10 @@ def choose(
         preset=preset,
         mode=mode,
     )
+    if mode == "background" and container.in_docker():
+        # Fase 26.3: el agente no está en el contenedor; el worker no tiene a quién lanzar.
+        blocked = {"blocked": container.BACKGROUND, "blocked_code": "no_headless"}
+        res = res.model_copy(update=blocked)
     if not res.usable or res.agent is None:
         return None, res
     launcher = ctx.by_name[res.agent]
@@ -347,7 +352,9 @@ def pick(
 
 def no_terminal() -> str | None:
     """Por qué no se puede abrir una terminal aquí, o `None` si se puede. En Windows, siempre se
-    puede (Windows Terminal o PowerShell)."""
+    puede (Windows Terminal o PowerShell). En Docker, nunca: tu agente está fuera del contenedor."""
+    if container.in_docker():
+        return container.TERMINAL
     if sys.platform == "win32":
         return None
     found = terminals.find()

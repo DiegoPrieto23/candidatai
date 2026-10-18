@@ -91,3 +91,46 @@ E) macOS (si alguien tiene un Mac)
   - El mismo recorrido: la app en `~/Library/Application Support/CandidatAI/app` y
     `~/Applications/CandidatAI.app` con el icono, que abre Terminal (la primera vez macOS pide
     permiso para controlar Terminal).
+
+
+26.3 · Docker opcional
+----------------------
+
+Con Docker Desktop abierto, desde la raíz del repositorio (en la rama). Si ya tienes CandidatAI
+nativa en marcha, ciérrala antes: usan el mismo puerto.
+
+A) Arrancar
+  - `docker compose up -d --build`: la primera vez construye la imagen (unos minutos). Después,
+    `docker compose ps` dice «healthy» y http://127.0.0.1:8000 abre la app.
+  - Desde otro equipo de tu red, http://<tu IP>:8000 NO responde (el puerto es solo 127.0.0.1).
+
+B) La demo
+  - `docker compose exec candidatai cai demo seed`: «Demo creada en /data-demo», con 2 CVs en PDF
+    (Chromium).
+  - `docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d`: la app enseña la demo
+    (banner de demo, 60 ofertas). Abre uno de los CVs en PDF desde la ficha.
+  - `docker compose exec candidatai cai doctor`: sección «Docker» en verde, LibreOffice «no viene en
+    la imagen» y «Todo listo».
+
+C) Lo que no funciona dentro, y la app lo dice
+  - Un botón «en tu agente» (p. ej. «Procesar ofertas»): copia la orden con «Estás en Docker…».
+  - En la página «Agente», «En segundo plano» sale desactivado con el motivo.
+  - En una oferta en «CV listo»: «Abrir la oferta en tu navegador» (en una pestaña tuya) y «Marcar
+    como enviada»; no hay «Abrir navegador» ni «Preparar candidatura».
+
+D) Tu agente, desde fuera (con la demo abierta)
+  - `claude mcp add --scope local candidatai -- docker exec -i candidatai cai-mcp` en la raíz del
+    repositorio; en Claude Code, `/mcp` enseña `candidatai` conectado.
+  - `/process-jobs`: extrae las 3 ofertas pendientes de la demo; la UI las enseña en el triaje.
+  - Al terminar: `claude mcp remove --scope local candidatai`.
+  - Sin MCP: `docker exec -i candidatai cai status --json`.
+
+E) Parar, copia de seguridad y vuelta a tus datos
+  - `docker compose stop` termina en unos segundos (API y worker se paran limpios).
+  - La copia de la guía («Con Docker») deja `candidatai-data.tgz` en la carpeta.
+  - `docker compose up -d` vuelve a tu volumen. Para quitarlo todo: `docker compose down` y
+    `docker volume rm candidatai-data candidatai-demo` (borra lo que haya en ellos).
+
+F) WSL2 (opcional)
+  - Activa en Docker Desktop la integración con tu Ubuntu y repite A) desde el repositorio clonado
+    en Linux.

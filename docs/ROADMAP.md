@@ -87,7 +87,7 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 26 | macOS, Linux y Docker | ⏳ | Instalar y usar la app en los tres sistemas, botones «en tu agente» incluidos, y Docker opcional |
 | 26.1 | ↳ Núcleo multiplataforma | ✅ | Rutas, procesos, LibreOffice y terminales en macOS y Linux (`CAI_TERMINAL`) |
 | 26.2 | ↳ Instalador para macOS y Linux | ✅ | `install.sh` con acceso directo, datos en la carpeta de cada sistema y desinstalación |
-| 26.3 | ↳ Docker opcional | ⏳ | `docker compose up` con los datos en un volumen; el agente desde fuera por MCP; límites documentados |
+| 26.3 | ↳ Docker opcional | ✅ | `docker compose up` con los datos en un volumen; el agente desde fuera por MCP; límites documentados |
 | 26.4 | ↳ CI en tres sistemas y docs | ⏳ | Backend probado en Windows, Linux y macOS, humo del instalador y de Docker, guía y README al día |
 
 **MVP usable:** al terminar la 08 ya puedes pegar ofertas, triarlas y sacar CVs a medida; con la
@@ -3044,3 +3044,42 @@ decisiones tomadas y deuda técnica pendiente. -->
   `.env` (las rutas de macOS llevan espacios); rutas sin comillas, `\`, `` ` ``, `$` ni `%`.
 - **Deuda:** la `.app` de macOS y el `.desktop` dependen del escritorio y no se pueden comprobar en
   un test; macOS, sin probar hasta la CI de la 26.4.
+
+### 26.3 · Docker opcional — 2026-10-18 · Claude Code (Opus 5.5)
+- **Hecho:**
+  - `Dockerfile` en dos etapas (UI con Node 24 y pnpm; final con `uv:0.9.30-python3.12`, el
+    backend, la UI compilada y el Chromium sin ventana de Playwright con sus librerías), usuario
+    `cai` (uid 1000), sin LibreOffice ni torch, la caché de uv fuera de la imagen (1,7 GB);
+    `.dockerignore` deja fuera `data*`, `.env` y `.git`;
+  - `docker-compose.yml`: `cai start --no-browser`, contenedor `candidatai`, puerto solo en
+    `127.0.0.1:8000`, volúmenes con nombre fijo `candidatai-data` (`/data`) y `candidatai-demo`
+    (`/data-demo`), `.env` opcional con `CAI_IN_DOCKER` y `CAI_DATA_DIR` por delante, healthcheck
+    sobre `/status` e `init`; `docker-compose.demo.yml` abre la demo;
+  - `services/container.py`: `listen_host()` (todas las interfaces solo con `CAI_IN_DOCKER=1` y
+    marca de contenedor) y los motivos. Con `CAI_IN_DOCKER`: los botones de terminal copian la
+    orden, el segundo plano se bloquea (`no_headless`), la candidatura asistida no prepara, rellena
+    ni envía (código `docker`, también para las tareas ya encoladas en el worker) y la ficha ofrece
+    abrir la oferta en tu navegador y «Marcar como enviada»; `cai doctor` con sección «Docker» y sin
+    avisos de LibreOffice ni de agentes; `cai demo seed` va a `/data-demo`;
+  - guía «Con Docker» en los dos idiomas (tabla de qué funciona, MCP para Claude Code, Codex y
+    OpenCode, `cai … --json`, copia de seguridad del volumen), README, ADR-042 (matiza la 007),
+    AGENT_INTERFACE, COMPARATIVA, AGENTS.md y la sección 26.3 de la prueba manual.
+- **Probado con Docker Desktop (Windows):** `docker compose up -d --build`, `/status` y la UI desde
+  Windows, `cai demo seed` con 2 CVs en PDF (motor html), un cliente MCP por stdio con
+  `docker exec -i candidatai cai-mcp` (50 herramientas, los datos de la demo), `cai doctor` «Todo
+  listo», `docker compose stop` limpio (código 0) y la copia del volumen con `alpine tar`.
+- **Tests:** `test_docker.py` (dónde escucha la API, `cai serve`, botones, segundo plano por el
+  servicio y la API, candidatura asistida por la API, el servicio y el worker, diagnóstico, demo,
+  Dockerfile y compose) y un test de vitest de la ficha en Docker. 2813 tests de backend en Windows
+  (12 de macOS y Linux se saltan), frontend en verde (typecheck, lint y vitest), ruff y
+  `sync_agents.py --check` limpios.
+- **Revisión** (rol `reviewer`), sin bloqueantes. Aplicado: las tareas del navegador ya encoladas
+  fallan con el motivo en Docker; `demo._pdf_engine` solo lanza Chromium para comprobarlo en Docker
+  (Windows queda igual); `.dockerignore` con `**/data*` y `**/.env`; «Docker · límites» en OK
+  (esperados); aviso en el compose de no quitar `127.0.0.1:`; imagen de uv fijada.
+- **Decisiones:** volumen con nombre (usuario). Mías: `docker exec -i candidatai cai-mcp` en vez de
+  `docker compose exec -T` (un cliente MCP que arranca el servidor con un entorno mínimo no
+  encuentra el plugin `compose`, y no depende de la carpeta); la demo en su propio volumen; el
+  Chromium sin ventana (`--only-shell`), porque dentro no hay candidatura asistida.
+- **Deuda:** el agente procesando la demo por MCP y Docker en WSL2 quedan para la prueba manual; la
+  imagen no se publica en un registro (26.4 si se quiere); la parada tarda unos 13 s.

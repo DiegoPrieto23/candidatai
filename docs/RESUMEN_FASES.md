@@ -380,6 +380,14 @@ La carta es un documento propio, con sus indicaciones, su verificación y sus re
 - Para agentes y terminal: `get_received_offer` ↔ `jh received-offers show`.
 
 
+## 26.3 · Docker opcional — 2026-10-18 · Claude Code (Opus 5.5)
+- **`docker compose up -d --build`** arranca la app en `http://127.0.0.1:8000` sin instalar Python
+  ni Chromium, con tus datos en un volumen y la demo en otro.
+- **Tu agente, desde fuera:** por MCP con `docker exec -i candidatai cai-mcp` o con `cai … --json`.
+- **La app sabe que está en Docker:** los botones «en tu agente» copian la orden, «En segundo
+  plano» sale desactivado con el motivo, la candidatura asistida te abre la oferta en tu navegador
+  para que la envíes tú, y `cai doctor` lo explica en su sección «Docker».
+
 ## 26.2 · Instalar con una línea en macOS y Linux — 2026-10-18 · Claude Code (Opus 5.5)
 - **`install.sh`:** `curl -fsSL …/install.sh | bash` instala uv si falta, la última versión, el
   entorno y la base de datos, sin `sudo` y con tus datos aparte. Reinstalar actualiza sin tocarlos.

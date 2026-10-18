@@ -39,7 +39,7 @@ es cambiar entre ellos**. Es la base de la fase 24 (ver «Lo que nos falta»).
 | ¿La app llama a un LLM? | **Nunca** (ADR-001) | No (lo hace Claude Code) | Opcional: scripts que llaman a Gemini, a cualquier API compatible con OpenAI, a OpenRouter o a Ollama |
 | Estado de cada oferta | Eventos validados contra una tabla de transiciones | Fila de un CSV | Fila de una tabla Markdown con estados canónicos |
 | Defensas | En código: validación de esquemas, verificación determinista del CV, detección de inyección | Instrucciones + guardas de CI | Instrucciones + comprobación de hechos del PDF en código |
-| Sistema principal | Windows 11 (nativo, instalador `install.ps1`) | Cualquiera con LaTeX y Bun | Cualquiera con Node (`npx … init`, Docker, NixOS) |
+| Sistema principal | Windows 11 (nativo, instalador `install.ps1`; `install.sh` y Docker opcional, fase 26) | Cualquiera con LaTeX y Bun | Cualquiera con Node (`npx … init`, Docker, NixOS) |
 | Licencia | MIT | MIT | MIT (+ política de marca) |
 
 ## Agentes y modelos
@@ -181,7 +181,7 @@ compatible y Antigravity CLI ocupa su sitio.
 | Cola de encargos para la próxima sesión | ✅ | ❌ | ✅ `agent-inbox` |
 | Modo demo con datos inventados | ✅ `cai demo seed` (es y en) | ❌ | ✅ `examples/` |
 | Instalación de un comando | ✅ `install.ps1` (Windows) e `install.sh` (macOS y Linux, 26.2) | 🟡 `install_portal_clis.py` | ✅ `npx … init` |
-| macOS / Linux / Docker documentados | 🚧 Windows probado; el núcleo para macOS y Linux, hecho y sin probar en ellos (26.1) | ✅ | ✅ |
+| macOS / Linux / Docker documentados | 🚧 Windows probado; el núcleo para macOS y Linux, hecho y probado en WSL (26.1, 26.2); Docker opcional, con sus límites (26.3) | ✅ | ✅ |
 | Actualizar sin pisar tus datos | ✅ datos fuera del código | ✅ triaje de cambios upstream | ✅ `update` |
 | Licencia, `CONTRIBUTING`, `SECURITY` | ✅ | ✅ | ✅ |
 | `CHANGELOG` y releases | ✅ `CHANGELOG.md` (Keep a Changelog) del que salen las notas de cada release; sin él, la release falla (25.6) | ✅ | ✅ también en npm |

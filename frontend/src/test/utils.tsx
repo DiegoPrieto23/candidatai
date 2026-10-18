@@ -666,6 +666,7 @@ export function assistedApplication(changes: Partial<AssistedApplication> = {}):
     domain: 'boards.greenhouse.io',
     url: 'https://boards.greenhouse.io/acme/jobs/1',
     portal: null,
+    in_docker: false,
     can_prepare: true,
     reason: null,
     ...changes,

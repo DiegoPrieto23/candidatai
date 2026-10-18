@@ -107,6 +107,79 @@ Hace lo mismo que el de Windows:
 - **Desde tu copia del repositorio**, con la UI compilada: `bash install.sh --source <carpeta>`.
 - En macOS, la primera vez puede pedirte permiso para que la app controle Terminal: acéptalo.
 
+### Con Docker (opcional)
+
+Si prefieres no instalar Python ni Chromium en tu equipo, CandidatAI arranca en un contenedor. Es
+una alternativa con límites: **lo recomendado sigue siendo el instalador**. Tu agente de IA no va
+dentro del contenedor, así que lo que necesita abrirle una ventana no funciona igual.
+
+Necesitas Docker (en Windows, Docker Desktop) y una copia del repositorio. Desde su carpeta:
+
+```bash
+docker compose up -d --build        # la primera vez tarda unos minutos (construye la imagen)
+```
+
+La app queda en `http://127.0.0.1:8000`, solo en tu equipo. Tus datos van en el volumen
+`candidatai-data`, que sobrevive a parar, actualizar o borrar el contenedor. Si hay un `.env` en
+la carpeta, el contenedor lo lee (claves de portales, IMAP…): con IMAP configurado, su worker lee
+tus alertas por correo igual que el de la instalación nativa, pero las guarda en el volumen.
+
+- **Parar y arrancar:** `docker compose stop` y `docker compose start`.
+- **Actualizar:** `git pull` y `docker compose up -d --build`.
+- **Diagnóstico:** `docker compose exec candidatai cai doctor`. La sección «Docker» dice dónde
+  están tus datos y qué no funciona dentro.
+- **La demo:** `docker compose exec candidatai cai demo seed` la crea en otro volumen. Para abrirla,
+  `docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d`. Para volver a tus datos,
+  `docker compose up -d`.
+
+**Qué funciona y qué no dentro de Docker:**
+
+| | Con Docker |
+|---|---|
+| UI, ofertas, triaje, seguimiento y embudo | Sí |
+| Fuentes de ofertas y alertas por correo (el worker) | Sí |
+| CVs y cartas en PDF | Sí, con las plantillas html (`moderna-2col`…). Las docx salen solo en Word: no hay LibreOffice |
+| Tu agente por MCP o `cai … --json` | Sí, desde fuera del contenedor (abajo) |
+| Botones «en tu agente» | Copian la orden para que la pegues en tu agente |
+| «En segundo plano» | No: el agente no está en el contenedor |
+| Candidatura asistida | La oferta se abre en tu navegador, la envías tú y pulsas «Marcar como enviada» |
+| Similitud semántica del score | No (la imagen no trae torch); el score funciona igual |
+
+**Tu agente, desde fuera.** El agente se ejecuta en tu equipo, en la carpeta del repositorio (lee
+de ahí los skills y `AGENTS.md`), y habla con la app del contenedor:
+
+- **Por MCP**, con la orden `docker exec -i candidatai cai-mcp`. Funciona desde cualquier carpeta.
+  - **Claude Code:** `claude mcp add --scope local candidatai -- docker exec -i candidatai cai-mcp`.
+    La configuración local manda sobre la del proyecto (`.mcp.json`, que es la de la instalación
+    nativa); `claude mcp remove --scope local candidatai` la quita.
+  - **Codex**, en `.codex/config.toml`:
+    ```toml
+    [mcp_servers.candidatai]
+    command = "docker"
+    args = ["exec", "-i", "candidatai", "cai-mcp"]
+    ```
+  - **OpenCode**, en `opencode.json`:
+    `"candidatai": {"type": "local", "command": ["docker", "exec", "-i", "candidatai", "cai-mcp"], "enabled": true}`.
+  - En Codex y OpenCode cambias un fichero generado: `uv run scripts/sync_agents.py` lo devolvería
+    a la orden nativa.
+- **Sin MCP**, los comandos `cai … --json` van con `docker exec -i candidatai cai …`. Por ejemplo:
+  `docker exec -i candidatai cai status --json`. Las entradas largas se pasan con `--file`, en un
+  fichero dentro del contenedor: `docker cp entrada.json candidatai:/data/tmp/`.
+
+**Copia de seguridad.** Tus datos están en el volumen, no en una carpeta de tu equipo. Para copiarlo
+(con la app parada, para que la base de datos esté quieta):
+
+```bash
+docker compose stop
+docker run --rm -v candidatai-data:/data -v "$PWD":/backup alpine tar czf /backup/candidatai-data.tgz -C /data .
+docker compose start
+```
+
+Sirve igual en PowerShell. Para restaurarla en un volumen vacío:
+`docker run --rm -v candidatai-data:/data -v "$PWD":/backup alpine tar xzf /backup/candidatai-data.tgz -C /data`.
+Si prefieres tus datos en una carpeta de tu equipo, cambia en `docker-compose.yml` el volumen por
+esa carpeta (la línea comentada); en Linux, la carpeta tiene que poder escribirla el uid 1000.
+
 ### Para desarrollar: clonar el repositorio
 
 ```powershell

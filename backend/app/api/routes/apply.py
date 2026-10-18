@@ -64,7 +64,7 @@ class SubmitBody(BaseModel):
 def open_browser(session: SessionDep) -> QueuedResult:
     """«Abrir navegador»: el worker abre el navegador de las candidaturas, con una página de inicio
     para que inicies sesión en tus portales (se queda abierto)."""
-    service.open_browser(session)
+    _run(lambda: service.open_browser(session))
     return QueuedResult(
         message="El navegador se abrirá en unos segundos si el worker está en marcha."
     )
