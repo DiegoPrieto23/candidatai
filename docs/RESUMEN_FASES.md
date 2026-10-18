@@ -380,6 +380,12 @@ La carta es un documento propio, con sus indicaciones, su verificación y sus re
 - Para agentes y terminal: `get_received_offer` ↔ `jh received-offers show`.
 
 
+## 26.4 · Probado en los tres sistemas — 2026-10-18 · Claude Code (Opus 5.5)
+- **La CI prueba el backend en Windows, Linux y macOS**, el instalador en Linux y macOS y la imagen
+  de Docker. Ya encontró un fallo real del instalador en macOS.
+- **La guía dice dónde están tus datos en cada sistema** y cómo hacer copia de seguridad.
+- **Releases:** la prueba en seco genera y comprueba el zip sin publicar nada.
+
 ## 26.3 · Docker opcional — 2026-10-18 · Claude Code (Opus 5.5)
 - **`docker compose up -d --build`** arranca la app en `http://127.0.0.1:8000` sin instalar Python
   ni Chromium, con tus datos en un volumen y la demo en otro.

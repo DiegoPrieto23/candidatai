@@ -18,6 +18,8 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   terminal de tu escritorio en Linux (GNOME Terminal, Konsole, Xfce, kitty, WezTerm, Alacritty…).
   `CAI_TERMINAL` en `.env` elige otra. Sin terminal, el botón copia la orden, como antes.
 - **`cai paths`** dice qué carpeta de datos usas y dónde va la app instalada en tu sistema.
+- **Probado en Windows, macOS y Linux:** la CI pasa la suite en los tres y prueba el instalador y
+  Docker. La guía dice dónde guarda tus datos cada sistema y cómo hacer copia de seguridad.
 - **Docker, opcional:** `docker compose up -d --build` arranca CandidatAI sin instalar Python ni
   Chromium, solo en tu equipo (`127.0.0.1:8000`) y con tus datos en un volumen. Tu agente se queda
   fuera y usa la app por MCP (`docker exec -i candidatai cai-mcp`) o `cai … --json`. Dentro, los

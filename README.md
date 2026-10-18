@@ -12,7 +12,7 @@
   <img alt="React + TypeScript" src="https://img.shields.io/badge/react-typescript-61DAFB?logo=react&logoColor=black">
   <img alt="MCP + CLI" src="https://img.shields.io/badge/agents-MCP%20%2B%20CLI-6D28D9">
   <img alt="Runs on Windows, macOS and Linux" src="https://img.shields.io/badge/runs%20on-Windows%20%C2%B7%20macOS%20%C2%B7%20Linux-0078D4">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-2%2C636-2E7D32">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-2%2C827-2E7D32">
   <img alt="No LLM API calls" src="https://img.shields.io/badge/LLM%20API%20calls-none-555">
 </p>
 

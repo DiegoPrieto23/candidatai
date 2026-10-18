@@ -6,7 +6,7 @@ cada fase y lo quita cuando el usuario confirma que está hecho.
 
 Marca `[x]` lo que hagas y, si algo falla, apúntalo debajo de la línea con `→`.
 
-Última actualización: 2026-10-18 (fase 26.3).
+Última actualización: 2026-10-18 (fase 26.4).
 
 ## 1. Poner la app al día (antes de probar nada)
 
@@ -252,6 +252,10 @@ hiciste, márcala.
   - en la ficha, un botón «en tu agente» copia la orden con el aviso de Docker y la candidatura
     asistida ofrece «Abrir la oferta en tu navegador» y «Marcar como enviada»;
   - en WSL2 con la integración de Docker Desktop activada, el mismo `docker compose up -d`.
+- [ ] **Fase 26.4 · La guía de cero a la app** (`fase-26-prueba-manual.txt`, sección 26.4), en
+      WSL2: seguir solo la guía (requisitos, `install.sh`, abrir la app, conectar tu agente) sin
+      saltarte ni añadir pasos, y apuntar lo que falte.
+- [ ] **La primera CI en `main`** tras fusionar la fase: macOS corre ahí (en la rama ya pasó a mano).
 
 - [ ] **Fase 22 · LinkedIn por sus endpoints públicos** (`fase-22-prueba-manual.txt`), **solo si
       quieres usarla** (va contra las condiciones de LinkedIn y puede bloquear tu IP un tiempo):

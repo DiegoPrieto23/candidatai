@@ -134,3 +134,29 @@ E) Parar, copia de seguridad y vuelta a tus datos
 F) WSL2 (opcional)
   - Activa en Docker Desktop la integración con tu Ubuntu y repite A) desde el repositorio clonado
     en Linux.
+
+
+26.4 · La guía de cero a la app
+-------------------------------
+
+En un Ubuntu de WSL2 sin nada de CandidatAI (ni ~/.local/share/candidatai ni uv, si puedes), con la
+guía (docs/GUIA.md) abierta y sin mirar nada más:
+
+A) Requisitos e instalación
+  - Sigue «Requisitos» y «En macOS y Linux: install.sh» tal cual. Apunta cualquier paso que falte,
+    sobre o no se entienda.
+  - `uv run cai paths` (desde …/app/backend) dice la carpeta de datos de la tabla de «Tus datos y tu
+    perfil».
+
+B) Abrir la app y conectar tu agente
+  - Abre «CandidatAI» desde el menú: se abre la app en el navegador.
+  - Sigue «Conectar tu agente»: tu agente ve las herramientas de `candidatai`.
+
+C) Copia de seguridad
+  - Con la app cerrada, copia la carpeta de datos como dice la guía; bórrala, restaura la copia y
+    abre la app: todo sigue ahí.
+
+D) La CI
+  - En GitHub, Actions → CI: la última ejecución de la rama (a mano) está en verde en los tres
+    sistemas, con los jobs installer y docker.
+

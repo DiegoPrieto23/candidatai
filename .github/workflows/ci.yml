@@ -9,7 +9,8 @@ permissions:
   contents: read
 
 # macOS (fase 26.4): GitHub cobra sus minutos ×10 en un repositorio privado (Windows ×2, Linux ×1).
-# Con los tres sistemas en cada push serían unos 285 minutos por push; por eso macOS solo corre en
+# Con los tres sistemas en cada push serían unos 200 minutos facturados por push (medido el 2026-10-18:
+# backend 40 min en Windows, 18 en Linux y 10 en macOS); por eso macOS solo corre en
 # `main`, en las etiquetas `v*` y a mano («Run workflow» en Actions, en la rama que quieras). La
 # matriz no puede leer `env`: la condición se repite en cada `matrix.os`.
 

@@ -69,7 +69,7 @@ documentación; lo comprobado aquí:
 |---|---|---|---|---|
 | Claude Code | Probado (fases 04, 12.3 y 24.6) | Sin probar con la app | Sin probar con la app | Fuera del contenedor, por `docker exec -i candidatai cai-mcp` (fase 26.3; el MCP probado con un cliente, el agente pendiente de la prueba manual) |
 | Codex, OpenCode, Qwen Code, Antigravity CLI | Lo de la matriz de abajo | Sin probar con la app | Sin probar con la app | Igual que Claude Code: el bloque de cada uno, en «Con Docker» de la guía |
-| Sin MCP (`cai … --json`) | Probado (12.3) | La CI pasa la suite de la CLI en macOS | La CI pasa la suite de la CLI en Linux | `docker exec -i candidatai cai … --json` |
+| Sin MCP (`cai … --json`) | Probado (12.3) | La CI pasa la suite de la CLI en macOS (en `main`, etiquetas y a mano; primera vez el 2026-10-18) | La CI pasa la suite de la CLI en Linux en cada push | `docker exec -i candidatai cai … --json` |
 
 Con Docker no hay terminal que abrir ni segundo plano: tu agente vive fuera del contenedor (ADR-042).
 

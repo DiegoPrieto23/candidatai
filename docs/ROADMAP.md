@@ -84,11 +84,11 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 25.7 | ↳ Tu perfil, editable desde la UI | ✅ | Experiencia y logros, historias STAR, preferencias de búsqueda, CV y carta, contexto y muestras de estilo desde «Mi perfil», con validación, diff y «Deshacer»; «Mejorar con mi agente» opcional |
 | 25.7a | ↳↳ Escritura del perfil, contexto y muestras (backend) | ✅ | `profile_editor` por secciones (conserva comentarios, `conflict`, validación, copia y «Deshacer»), contexto y muestras de estilo por la API solo para la UI, `style_samples` en `get_context`, ADR-039 |
 | 25.7b | ↳↳ La página «Mi perfil» editable (UI) | ✅ | Formularios por bloque en es y en, diff antes de guardar, «Mejorar con mi agente» y «Proponer historias», guía, README y prueba manual |
-| 26 | macOS, Linux y Docker | ⏳ | Instalar y usar la app en los tres sistemas, botones «en tu agente» incluidos, y Docker opcional |
+| 26 | macOS, Linux y Docker | ✅ | Instalar y usar la app en los tres sistemas, botones «en tu agente» incluidos, y Docker opcional |
 | 26.1 | ↳ Núcleo multiplataforma | ✅ | Rutas, procesos, LibreOffice y terminales en macOS y Linux (`CAI_TERMINAL`) |
 | 26.2 | ↳ Instalador para macOS y Linux | ✅ | `install.sh` con acceso directo, datos en la carpeta de cada sistema y desinstalación |
 | 26.3 | ↳ Docker opcional | ✅ | `docker compose up` con los datos en un volumen; el agente desde fuera por MCP; límites documentados |
-| 26.4 | ↳ CI en tres sistemas y docs | ⏳ | Backend probado en Windows, Linux y macOS, humo del instalador y de Docker, guía y README al día |
+| 26.4 | ↳ CI en tres sistemas y docs | ✅ | Backend probado en Windows, Linux y macOS, humo del instalador y de Docker, guía y README al día |
 
 **MVP usable:** al terminar la 08 ya puedes pegar ofertas, triarlas y sacar CVs a medida; con la
 08c, también cartas de presentación. La 08c va antes que la 08b, aunque el orden entre ambas da
@@ -3083,3 +3083,36 @@ decisiones tomadas y deuda técnica pendiente. -->
   Chromium sin ventana (`--only-shell`), porque dentro no hay candidatura asistida.
 - **Deuda:** el agente procesando la demo por MCP y Docker en WSL2 quedan para la prueba manual; la
   imagen no se publica en un registro (26.4 si se quiere); la parada tarda unos 13 s.
+
+### 26.4 · CI en tres sistemas y docs — 2026-10-18 · Claude Code (Opus 5.5)
+- **Hecho:**
+  - `ci.yml`: backend en matriz (Windows y Ubuntu en cada push; macOS en `main`, etiquetas y
+    «Run workflow», por coste: macOS se factura ×10 en un repositorio privado), con caché de uv y de
+    Chromium (`PLAYWRIGHT_BROWSERS_PATH` común, clave con la versión de Playwright), Chromium con
+    sus librerías en Linux, shellcheck en macOS, ruff, pytest con la cobertura mínima (85 %) y la
+    demo de humo en `pwsh` en los tres; job `installer` (shellcheck, `--dry-run` que no escribe
+    nada, instalar, reinstalar conservando los datos y desinstalar con `--no-setup`) en Ubuntu y
+    macOS; job `docker` (imagen con caché de Actions, `/status`, `cai demo seed` con 60 ofertas y 2
+    CVs, y la sección «Docker» de `cai doctor`). `install.ps1 -WhatIf` ya lo probaba `test_start.py`;
+  - `release.yml`: la prueba en seco compila y comprueba `candidatai.zip` (con `install.sh`
+    ejecutable, el `.icns` y la UI) y lo deja como artefacto; `package` va sin permiso de
+    escritura y `release` (publicar) solo con la etiqueta;
+  - docs: badge «Windows · macOS · Linux», carpeta de datos de cada sistema y copia de seguridad en
+    la guía (es y en), «Por sistema» en AGENTS_COMPAT, COMPARATIVA, DESARROLLO_POR_FASES.
+- **La CI en la rama** (ejecución a mano, 2026-10-18): todo en verde en los tres sistemas. Backend:
+  2814 tests en Ubuntu y macOS (13 se saltan), cobertura del 94 %; 40 min en Windows, 18 en Ubuntu
+  y 10 en macOS. Instalador en Ubuntu y macOS, Docker, frontend y agents en verde. La prueba en seco
+  de la release deja el zip (4,8 MB) sin publicar.
+- **Lo que encontró la primera CI:** `install.sh` fallaba en macOS (el `chmod` de BSD lee `--` como
+  un fichero cuando va tras el modo); `test_run_with_questions_needs_the_user` suponía un escritorio
+  (en un Linux sin `DISPLAY` no hay terminal donde reanudar); y una descarga de PyPI caída en macOS.
+- **Revisión** (rol `reviewer`), sin fallos de seguridad. Aplicado: la release en dos jobs, para que
+  el token de escritura no exista en la prueba en seco; `bash` con pipefail y `timeout-minutes` en
+  los jobs de Docker y del instalador; las afirmaciones de la COMPARATIVA y AGENTS_COMPAT, solo tras
+  la CI en verde.
+- **Decisiones:** macOS solo en `main`, etiquetas y a mano (con los números); la imagen no se
+  publica en GHCR (el repositorio es privado); la demo de humo sigue en `pwsh`.
+- **Deuda:** la guía de cero a la app abierta en WSL2 y Docker en WSL2 quedan para la prueba manual;
+  los agentes no se han probado con la app en macOS ni en Linux; `ruff` y la cobertura corren en los
+  tres sistemas (bastaría uno).
+
