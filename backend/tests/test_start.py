@@ -267,16 +267,15 @@ def test_release_workflow_builds_the_ui_and_publishes_the_zip() -> None:
     assert workflow["permissions"] == {"contents": "read"}
     notes = " ".join(str(step.get("run", "")) for step in workflow["jobs"]["notes"]["steps"])
     assert "scripts/release_notes.py" in notes and "gh release" not in notes
+    # El zip se hace y se comprueba sin permiso de escritura; publicar es otro job, solo con push.
+    package = workflow["jobs"]["package"]
+    assert package["needs"] == "notes" and "permissions" not in package and "if" not in package
+    uploads = [str(step.get("uses", "")) for step in package["steps"]]
+    assert any(use.startswith("actions/upload-artifact@") for use in uploads)
     release = workflow["jobs"]["release"]
-    assert release["needs"] == "notes" and "if" not in release
+    assert release["needs"] == "package" and release["if"] == "github.event_name == 'push'"
     assert release["permissions"] == {"contents": "write"}
-    by_name = {step.get("name"): step for step in release["steps"]}
-    publish = by_name["Publica la release"]
-    assert publish["if"] == "github.event_name == 'push'" and "gh release create" in publish["run"]
-    artifact = by_name["Deja el zip de la prueba en seco"]
-    assert artifact["if"] == "github.event_name != 'push'"
-    assert artifact["uses"].startswith("actions/upload-artifact@")
-    steps = " ".join(str(step.get("run", "")) for step in release["steps"])
+    steps = " ".join(str(step.get("run", "")) for step in [*package["steps"], *release["steps"]])
     assert "pnpm build" in steps and "git archive" in steps
     assert "frontend/dist" in steps and "gh release create" in steps
     assert "--notes-file release-notes.md" in steps and "--generate-notes" not in steps

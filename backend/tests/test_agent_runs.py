@@ -266,6 +266,8 @@ def test_run_with_questions_needs_the_user(
     db: None, fake: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setenv("FAKE_AGENT_MODE", "question")
+    # Reanudar abre una terminal: en un Linux sin escritorio (la CI) no habría ninguna.
+    monkeypatch.setattr(agent_launch, "no_terminal", lambda: None)
     run_id = start()
     assert run_now().status == "needs_user"
     with session_scope() as session:

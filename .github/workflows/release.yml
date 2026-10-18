@@ -34,11 +34,10 @@ jobs:
           python3 scripts/release_notes.py "$TAG" > release-notes.md
           { echo "## Notas de $TAG"; echo; cat release-notes.md; } >> "$GITHUB_STEP_SUMMARY"
 
-  release:
+  # Empaqueta y comprueba el zip con permisos de solo lectura; lo deja como artefacto (fase 26.4).
+  package:
     needs: notes
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -66,15 +65,26 @@ jobs:
           # install.sh tiene que llegar ejecutable (`curl | bash` no lo necesita; `bash install.sh` sí
           # desde el zip descomprimido en macOS y Linux).
           zipinfo candidatai.zip candidatai/install.sh | grep -q "^-rwx"
-      - name: Deja el zip de la prueba en seco
-        if: github.event_name != 'push'
+      - name: Deja el zip como artefacto
         uses: actions/upload-artifact@v4
         with:
-          name: candidatai-${{ inputs.tag }}
+          name: candidatai-zip
           path: candidatai.zip
           retention-days: 7
+
+  # Solo con la etiqueta: el único job con permiso de escritura, y en la prueba en seco no existe.
+  release:
+    needs: package
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: candidatai-zip
       - name: Publica la release
-        if: github.event_name == 'push'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

@@ -390,7 +390,7 @@ step_copy() {
     mv -- "$UNZIPPED/candidatai" "$STAGING"
   fi
   is_candidatai_app "$STAGING" || fail "Lo descargado no parece CandidatAI (falta backend/pyproject.toml)."
-  [ ! -f "$STAGING/install.sh" ] || chmod +x -- "$STAGING/install.sh" # `python -m zipfile` no lo conserva
+  [ ! -f "$STAGING/install.sh" ] || chmod +x "$STAGING/install.sh" # `python -m zipfile` no lo conserva
   write_env "$STAGING"
   if [ -d "$APP_DIR" ]; then
     rm -rf -- "$INSTALL_DIR/app.old"
@@ -453,7 +453,7 @@ if [ "\$code" -ne 0 ]; then
 fi
 exit "\$code"
 EOF
-  chmod +x -- "$LAUNCHER"
+  chmod +x "$LAUNCHER"
 }
 
 write_desktop_file() {
@@ -503,7 +503,7 @@ EOF
 #!/usr/bin/env bash
 exec open -a Terminal $launcher
 EOF
-  chmod +x -- "$contents/MacOS/CandidatAI"
+  chmod +x "$contents/MacOS/CandidatAI"
   if [ -f "$APP_DIR/frontend/public/candidatai.icns" ]; then
     cp -- "$APP_DIR/frontend/public/candidatai.icns" "$contents/Resources/candidatai.icns"
   fi
