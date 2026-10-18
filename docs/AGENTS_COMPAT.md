@@ -57,6 +57,22 @@ detectar. `cai doctor` resume lo mismo en su sección «Agentes».
 | Elegir modelo al lanzar | `--model <modelo>` | `-m <modelo>`; preset `local` = `--oss -m gpt-oss:20b` | `-m proveedor/modelo` | `-m <modelo>` | — | — |
 | Permisos | `.claude/settings.json` (a mano, igual que `policy`) | Sandbox y aprobaciones de Codex | `permission` de `opencode.json`, desde `policy` | `permissions` de `.qwen/settings.json`, desde `policy` | Los suyos | Los de cada herramienta |
 
+## Por sistema (fase 26)
+
+La app no cambia según el sistema para los agentes: MCP, la CLI, los botones «en tu agente» y «En
+segundo plano» funcionan igual en Windows, macOS y Linux. Lo único propio de cada sistema es la
+terminal que abren los botones (Windows Terminal o PowerShell; Terminal.app o iTerm2; la del
+escritorio en Linux, o `CAI_TERMINAL`). Que el agente exista en tu sistema lo dice su
+documentación; lo comprobado aquí:
+
+| | Windows | macOS | Linux | Docker |
+|---|---|---|---|---|
+| Claude Code | Probado (fases 04, 12.3 y 24.6) | Sin probar con la app | Sin probar con la app | Fuera del contenedor, por `docker exec -i candidatai cai-mcp` (fase 26.3; el MCP probado con un cliente, el agente pendiente de la prueba manual) |
+| Codex, OpenCode, Qwen Code, Antigravity CLI | Lo de la matriz de abajo | Sin probar con la app | Sin probar con la app | Igual que Claude Code: el bloque de cada uno, en «Con Docker» de la guía |
+| Sin MCP (`cai … --json`) | Probado (12.3) | La CI pasa la suite de la CLI en macOS | La CI pasa la suite de la CLI en Linux | `docker exec -i candidatai cai … --json` |
+
+Con Docker no hay terminal que abrir ni segundo plano: tu agente vive fuera del contenedor (ADR-042).
+
 ## Matriz probada (fases 12.3 y 24.6)
 
 Mismas 5 ofertas ficticias para todos (`evals/compat/jobs.txt`, casos de `evals/cv/cases.jsonl`).

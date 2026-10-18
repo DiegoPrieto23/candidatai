@@ -181,7 +181,7 @@ compatible y Antigravity CLI ocupa su sitio.
 | Cola de encargos para la próxima sesión | ✅ | ❌ | ✅ `agent-inbox` |
 | Modo demo con datos inventados | ✅ `cai demo seed` (es y en) | ❌ | ✅ `examples/` |
 | Instalación de un comando | ✅ `install.ps1` (Windows) e `install.sh` (macOS y Linux, 26.2) | 🟡 `install_portal_clis.py` | ✅ `npx … init` |
-| macOS / Linux / Docker documentados | 🚧 Windows probado; el núcleo para macOS y Linux, hecho y probado en WSL (26.1, 26.2); Docker opcional, con sus límites (26.3) | ✅ | ✅ |
+| macOS / Linux / Docker documentados | ✅ Windows, macOS y Linux en la CI (26.4), instalador para cada uno y Docker opcional con sus límites (26.3) | ✅ | ✅ |
 | Actualizar sin pisar tus datos | ✅ datos fuera del código | ✅ triaje de cambios upstream | ✅ `update` |
 | Licencia, `CONTRIBUTING`, `SECURITY` | ✅ | ✅ | ✅ |
 | `CHANGELOG` y releases | ✅ `CHANGELOG.md` (Keep a Changelog) del que salen las notas de cada release; sin él, la release falla (25.6) | ✅ | ✅ también en npm |
@@ -227,7 +227,7 @@ dudosas, coste y calidad del CV) y la 26 (macOS, Linux y Docker).
 | 9 | **Señales de oferta dudosa y banderas rojas** en `assess-fit` y `research-company` | career-ops | Evita perder tiempo con ofertas fantasma, agencias o condiciones escondidas | Bajo | 25.3 ✅ |
 | 10 | **Lote en paralelo y coste por skill y por agente** (tokens, turnos, tiempo) con un filtro previo por score | ambos | Saber qué cuesta cada oferta y gastar solo en las que pasan el umbral | Medio | 25.4 ✅ |
 | 11 | **Verificar la maquetación del PDF** (huérfanos, huecos, pie) | AI Job Search | Hoy solo se avisa de que sobra una página | Bajo | 25.5 ✅ |
-| 12 | **macOS, Linux o Docker** | ambos | Solo si se busca que lo use más gente; hoy el instalador es solo para Windows | Medio | 26 |
+| 12 | **macOS, Linux o Docker** | ambos | Solo si se busca que lo use más gente; hoy el instalador es solo para Windows | Medio | 26 ✅ |
 | 13 | **`CHANGELOG`, historia con números reales y comunidad** | career-ops | Lo que hace famoso a career-ops no son las funciones, sino la historia y la comunidad | Bajo | 25.6 ✅ (sin comunidad) |
 | 14 | Autorización de trabajo y visado como filtro duro | career-ops | Solo si se busca fuera de la UE | Bajo | Sin fecha |
 

@@ -3,14 +3,27 @@ name: CI
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+# macOS (fase 26.4): GitHub cobra sus minutos ×10 en un repositorio privado (Windows ×2, Linux ×1).
+# Con los tres sistemas en cada push serían unos 285 minutos por push; por eso macOS solo corre en
+# `main`, en las etiquetas `v*` y a mano («Run workflow» en Actions, en la rama que quieras). La
+# matriz no puede leer `env`: la condición se repite en cada `matrix.os`.
+
 jobs:
   backend:
-    # Windows 11 es el entorno principal: el backend se prueba ahí.
-    runs-on: windows-latest
+    # Windows 11 es el entorno principal; Linux y macOS desde la fase 26.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ${{ fromJSON((github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch') && '["windows-latest", "ubuntu-latest", "macos-latest"]' || '["windows-latest", "ubuntu-latest"]') }}
+    runs-on: ${{ matrix.os }}
+    env:
+      # El mismo sitio en los tres sistemas, para guardar Chromium en la caché.
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/../ms-playwright
     defaults:
       run:
         working-directory: backend
@@ -20,14 +33,29 @@ jobs:
         with:
           enable-cache: true
       - run: uv sync --locked
-      # Motor html de plantillas (fase 08b): sin Chromium, sus tests se saltarían.
-      - run: uv run playwright install chromium
+      - name: Versión de Playwright (clave de la caché)
+        id: playwright
+        shell: bash
+        run: echo "version=$(uv run python -c 'from importlib.metadata import version; print(version("playwright"))')" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/../ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+      # Motor html de plantillas (fase 08b): sin Chromium, sus tests se saltarían. En Linux, además,
+      # las librerías del sistema que necesita (no van en la caché).
+      - if: runner.os == 'Linux'
+        run: uv run playwright install --with-deps chromium
+      - if: runner.os != 'Linux'
+        run: uv run playwright install chromium
+      # `test_install_sh.py` pasa shellcheck por install.sh si lo encuentra (en Ubuntu ya viene).
+      - if: runner.os == 'macOS'
+        run: brew install shellcheck
       - run: uv run ruff check
       - run: uv run ruff format --check
       # La lógica vive en services/: ahí se exige cobertura mínima (criterio de la fase 02).
       - run: uv run pytest --cov=app/services --cov-report=term-missing --cov-fail-under=85
       # Modo demo (fase 12.1): un clon limpio debe poder sembrar la demo. Sin LibreOffice, los PDF
-      # de los CVs salen con el Chromium de Playwright instalado arriba.
+      # de los CVs salen con el Chromium de Playwright instalado arriba. `pwsh` está en los tres.
       - name: Demo de humo
         shell: pwsh
         run: |
@@ -35,6 +63,72 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "cai demo seed falló: $out" }
           $summary = ($out -join "`n") | ConvertFrom-Json
           if ($summary.jobs -ne 70 -or $summary.cvs -ne 2) { throw "Demo incompleta: $out" }
+
+  installer:
+    # install.sh (fase 26.2) en macOS y Linux. install.ps1 -WhatIf lo prueba test_start.py en Windows.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ${{ fromJSON((github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch') && '["ubuntu-latest", "macos-latest"]' || '["ubuntu-latest"]') }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - if: runner.os == 'macOS'
+        run: brew install shellcheck
+      - run: shellcheck install.sh
+      # El instalador solo comprueba que la UI está compilada: basta con su index.html.
+      - name: UI compilada de mentira
+        run: mkdir -p frontend/dist && echo '<!doctype html>' > frontend/dist/index.html
+      - name: Prueba en seco
+        run: |
+          home="$RUNNER_TEMP/home"
+          mkdir -p "$home"
+          HOME="$home" bash install.sh --dry-run --source "$PWD" | tee dry-run.txt
+          grep -q "no se ha cambiado nada" dry-run.txt
+          test -z "$(ls -A "$home")"
+      - name: Instalar, reinstalar conservando los datos y desinstalar (sin preparar el entorno)
+        run: |
+          home="$RUNNER_TEMP/home2"
+          dir="$RUNNER_TEMP/cai"
+          mkdir -p "$home"
+          HOME="$home" bash install.sh --source "$PWD" --install-dir "$dir" --no-setup
+          test -f "$dir/app/install.sh" && test -f "$dir/.candidatai"
+          echo mio > "$dir/data/mio.txt"
+          HOME="$home" bash install.sh --source "$PWD" --install-dir "$dir" --no-setup
+          test "$(cat "$dir/data/mio.txt")" = mio
+          HOME="$home" bash install.sh --install-dir "$dir" --uninstall </dev/null
+          test ! -e "$dir/app" && test -f "$dir/data/mio.txt"
+
+  docker:
+    # Docker opcional (fase 26.3): la imagen se construye, la API responde y la demo se siembra.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: candidatai:local
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - run: docker compose up -d
+      - name: /status responde
+        run: |
+          for _ in $(seq 1 60); do
+            curl -fsS http://127.0.0.1:8000/status && exit 0
+            sleep 2
+          done
+          docker compose logs
+          exit 1
+      - name: La demo se siembra dentro
+        run: |
+          docker compose exec -T candidatai cai demo seed --json | tee demo.json
+          python3 -c "import json; s = json.load(open('demo.json')); assert s['jobs'] == 60 and s['cvs'] == 2, s"
+      - name: El diagnóstico tiene su sección Docker
+        run: docker compose exec -T candidatai cai doctor | tee doctor.txt; grep -q "Docker · API" doctor.txt
+      - if: always()
+        run: docker compose down
 
   frontend:
     runs-on: ubuntu-latest

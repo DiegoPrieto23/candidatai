@@ -54,6 +54,15 @@ demo/profile.example.yaml  esquema del perfil con una candidata ficticia
    - Codex: `$implement-phase 01`
    - Otros: "Lee AGENTS.md y usa el skill implement-phase para la fase 01"
 
+### En macOS y Linux (fase 26)
+
+Lo mismo: Git, [uv](https://docs.astral.sh/uv/) (`curl -LsSf https://astral.sh/uv/install.sh | sh`),
+Node LTS + pnpm (`npm install -g pnpm`) y tu agente. LibreOffice es opcional (los PDF salen con el
+Chromium de Playwright); en Linux, `uv run playwright install --with-deps chromium` instala también
+sus librerías (pide `sudo`). Los comandos de `AGENTS.md` son los mismos, con `/` en las rutas. La
+CI prueba el backend en Windows y Linux en cada push, y en macOS en `main`, en las etiquetas y a
+mano (`.github/workflows/ci.yml`).
+
 ## Cómo construir cada fase
 
 ```

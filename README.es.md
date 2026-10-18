@@ -11,7 +11,7 @@
   <img alt="Python 3.12" src="https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white">
   <img alt="React + TypeScript" src="https://img.shields.io/badge/react-typescript-61DAFB?logo=react&logoColor=black">
   <img alt="MCP + CLI" src="https://img.shields.io/badge/agentes-MCP%20%2B%20CLI-6D28D9">
-  <img alt="Windows 11" src="https://img.shields.io/badge/funciona%20en-Windows%2011-0078D4?logo=windows&logoColor=white">
+  <img alt="Funciona en Windows, macOS y Linux" src="https://img.shields.io/badge/funciona%20en-Windows%20%C2%B7%20macOS%20%C2%B7%20Linux-0078D4">
   <img alt="Tests" src="https://img.shields.io/badge/tests-2.636-2E7D32">
   <img alt="Sin llamadas a APIs de LLM" src="https://img.shields.io/badge/llamadas%20a%20LLM-ninguna-555">
 </p>

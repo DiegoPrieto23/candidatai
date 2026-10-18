@@ -241,6 +241,21 @@ your OK. Under STAR stories, **Propose stories from my experience** suggests sto
 achievements that don't have one yet. Your email and phone are edited there, but your agent still
 never sees them. Your salary minimum (`private`) is only edited in the YAML.
 
+**Where your data is and how to back it up.** `uv run cai paths` (or `cai paths` in the app
+folder) tells you which folder you're using. With the installer:
+
+| System | Data folder |
+|---|---|
+| Windows | `%LOCALAPPDATA%\CandidatAI\data` |
+| macOS | `~/Library/Application Support/CandidatAI/data` |
+| Linux | `~/.local/share/candidatai/data` (or `$XDG_DATA_HOME/candidatai/data`) |
+| Docker | the `candidatai-data` volume (see "With Docker") |
+| Cloned repository | `data/` at the root |
+
+To back it up, **close CandidatAI** (the database has to be idle) and copy that whole folder
+wherever you like: a zip, another disk or your cloud. To restore it, with the app closed, put the
+copy back in place. Keep the app's `.env` too if it holds your keys.
+
 ## 5. Connect your agent
 
 Open your agent **at the repository root**: that's where it finds the instructions

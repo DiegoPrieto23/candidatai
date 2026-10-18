@@ -232,6 +232,21 @@ documentos y correos. Las claves van en `.env`, también fuera de git.
 Tu mínimo salarial va en `private.salary_floor_eur` del perfil: la app lo usa para comparar
 ofertas, pero el agente nunca lo recibe.
 
+**Dónde están tus datos y cómo copiarlos.** `uv run cai paths` (o `cai paths` en la carpeta de la
+app) dice qué carpeta usas. Con el instalador:
+
+| Sistema | Carpeta de datos |
+|---|---|
+| Windows | `%LOCALAPPDATA%\CandidatAI\data` |
+| macOS | `~/Library/Application Support/CandidatAI/data` |
+| Linux | `~/.local/share/candidatai/data` (o `$XDG_DATA_HOME/candidatai/data`) |
+| Docker | el volumen `candidatai-data` (ver «Con Docker») |
+| Repositorio clonado | `data/` en la raíz |
+
+Para hacer una copia de seguridad, **cierra CandidatAI** (la base de datos tiene que estar quieta) y
+copia esa carpeta entera donde quieras: un zip, otro disco o tu nube. Para restaurarla, con la app
+cerrada, pon la copia en su sitio. Guarda también el `.env` de la app si tiene claves tuyas.
+
 En «Mi perfil», cada logro y cada historia tienen **«Mejorar con mi agente»**: tu agente propone
 una versión más clara, te pregunta los números que falten (nunca los inventa) y solo escribe con tu
 OK. En «Historias STAR», **«Proponer historias desde mi experiencia»** te sugiere historias a partir
