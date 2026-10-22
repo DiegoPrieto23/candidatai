@@ -1,58 +1,139 @@
-# Pruebas manuales de las fases 24, 25 y 26, en orden
+# Barrido final: funciones principales y fases 24, 25 y 26
 
-Todas las pruebas pendientes de las tres fases en un solo sitio, ordenadas para hacerlas de corrido:
-primero lo que solo necesita Windows y la demo, luego lo que pide instalar algo (agentes, Docker,
-WSL2) y al final GitHub. Cada prueba remite a su fichero por si quieres más detalle, pero no hace
-falta abrirlo.
+Todas las comprobaciones pendientes en un solo sitio, ordenadas para hacerlas de corrido sobre
+`main`. Primero, un barrido rápido de las funciones principales con la demo. Después, lo nuevo de
+las fases 24-26 y lo que solo se ve con tus datos. Al final, lo que pide instalar algo (Docker,
+WSL2) y GitHub. Cada bloque remite a su fichero por si quieres más detalle, pero no hace falta
+abrirlo.
 
 - Marca cada casilla al hacerla. Si algo no cuadra, escríbelo debajo con «→» y pásamelo.
-- Todo se hace sobre demos (datos ficticios), salvo los pasos marcados **Con tus datos**.
-- **Si solo tienes una tarde:** 0, 1.0 (lo que trae la demo), 1.1 («Mi perfil»), 2 (la matriz con
-  Claude Code) y 5.1 (la guía de cero en WSL2).
+- Todo se hace sobre demos (datos ficticios), salvo el bloque 3 y los pasos marcados **Con tus
+  datos**.
+- **Hecho el 2026-10-22, no hace falta repetirlo:** la matriz de compatibilidad con Claude Code,
+  Codex (una oferta) y Antigravity (`evals/compat/REPORT.md`). OpenCode con un modelo local no es
+  viable en este portátil.
+
+| Bloque | Qué | Tiempo aprox. |
+|---|---|---|
+| 0 | Preparación | 15 min |
+| 1 | Barrido de las funciones principales (demo) | 1,5-2 h |
+| 2 | Lo nuevo de las fases 24-26 (demo) | 2 h |
+| 3 | Con tus datos | 1 h |
+| 4 | Otros agentes (opcional) | 30 min |
+| 5 | Docker en Windows | 30 min |
+| 6 | Linux en WSL2 | 1,5 h |
+| 7 | De vuelta en Windows y GitHub | 15 min |
+
+**Si solo tienes una tarde:** 0, 1, 2.0 (lo que trae la demo), 2.1 («Mi perfil»), 3.1 y 3.2 (tu
+perfil y tus fuentes) y 6.1 (la guía de cero en WSL2).
 
 ---
 
 ## 0. Preparación (una vez)
 
-En PowerShell, desde la raíz del repositorio y **con Claude Code cerrado** (su servidor MCP bloquea
-el entorno de Python):
+En PowerShell, desde la raíz del repositorio y **con todos los agentes cerrados** (sus servidores
+MCP bloquean el entorno de Python y las bases de datos). Codex deja un proceso de fondo al cerrar
+la ventana: `taskkill /IM codex.exe /F`.
 
-- [ ] Fusiona antes en `main` las ramas que quieras probar, o haz `git checkout` de la rama.
-- [ ] Copia de seguridad de tu base de datos: `copy data\jobhunter.db data\jobhunter.db.bak-2426`
+- [ ] `git checkout main; git pull` → `git log --oneline -1` empieza por `db41a71` o algo posterior.
+- [ ] Copia de seguridad de tu base de datos: `copy data\jobhunter.db data\jobhunter.db.bak-final`
       (o `candidatai.db` si ya la renombraste).
 - [ ] `uv sync --directory backend`
-- [ ] `uv run --directory backend cai db upgrade` → llega a la migración **0024** (0022 y 0023 de
-      la fase 24, 0024 de «Mi perfil»). Sin ella, guardar desde «Mi perfil» falla.
+- [ ] `uv run --directory backend cai db upgrade` → llega a la migración **0024** (`profile_edits`).
+      Sin ella, guardar desde «Mi perfil» falla.
 - [ ] `cd frontend; pnpm install; pnpm build; cd ..` (la UI compilada que sirve `cai start`).
       **Repítelo después de cada `git checkout` o `git pull`**: `cai start` no sirve el código de
-      `frontend/src`, sino `frontend/dist`, y con una compilación vieja no ves lo nuevo (en «Mi
-      perfil» no salen «Añadir empresa», «Añadir historia» ni «Mejorar con mi agente»).
+      `frontend/src` sino `frontend/dist`, y con una compilación vieja no ves lo nuevo.
       → `frontend\dist\index.html` tiene la fecha de hoy.
+- [ ] `uv run --directory backend cai doctor` → «Todo listo» (o solo avisos que entiendes:
+      LibreOffice, IMAP…).
 - [ ] Abre Claude Code y comprueba con `/mcp` que `candidatai` está conectado y tiene `get_schema`.
+      Ciérralo otra vez antes de crear la demo.
 - [ ] Si no vas a usar Docker con tus datos: `docker compose down` y
-      `docker volume rm candidatai-data` (en mis pruebas el contenedor trajo tus alertas por IMAP a
-      ese volumen).
-- [ ] Demo nueva para el bloque 1: `uv run --directory backend cai demo seed --force`
-      → «60 ofertas» y «2 CVs», sin avisos. Hazla de nuevo si la creaste antes de la fase 26.5:
-      las de antes no traen cartas, correos, dosieres ni entrevistas preparadas.
+      `docker volume rm candidatai-data` (en las pruebas anteriores el contenedor trajo tus alertas
+      por IMAP a ese volumen).
+- [ ] Demo nueva: `uv run --directory backend cai demo seed --force` → «60 ofertas» y
+      «CVs verificados: 2», sin avisos.
 
----
-
-## 1. Windows con la demo (sin instalar nada)
-
-Arranca la demo en su propia ventana y déjala abierta durante todo el bloque:
+Arranca la demo en su propia ventana y déjala abierta durante los bloques 1 y 2:
 
 ```powershell
 $env:CAI_DATA_DIR = "data-demo"; uv run --directory backend cai start
 ```
 
-- La variable vale solo para esa ventana. **En cada PowerShell que abras para este bloque**, y
-  antes de abrir Claude Code a mano, escribe primero `$env:CAI_DATA_DIR = "data-demo"`: sin ella,
+- La variable vale solo para esa ventana. **En cada PowerShell que abras para estos bloques**, y
+  antes de abrir tu agente a mano, escribe primero `$env:CAI_DATA_DIR = "data-demo"`. Sin ella,
   `cai stats story`, `cai match show`, `cai doctor`… y tu agente usan tus datos reales.
 - Los botones «en tu agente» ya abren el agente sobre la demo; no hace falta nada más.
 - Recarga la página con Ctrl+F5 la primera vez, por si el navegador guardaba la UI vieja.
+- Si algo falla al arrancar, mira `data-demo\logs\start-*.log`.
 
-### 1.0 Lo que trae la demo (26.5)
+---
+
+## 1. Barrido de las funciones principales (demo) · `guia-prueba-demo.md`
+
+Una pasada rápida por cada pantalla para ver que nada se ha roto con las fases 24-26. Lo que se
+espera en detalle está en la sección de la guía que va entre paréntesis.
+
+### 1.1 Navegación y Inicio
+- [ ] Franja amarilla «Modo demo: datos ficticios» en todas las páginas (§0).
+- [ ] Barra lateral con sus cuatro grupos, plegarla, idioma (🇪🇸/🇬🇧) y tema oscuro; en una ventana
+      estrecha, el menú ☰ (§1).
+- [ ] `http://127.0.0.1:8000/no-existe` → «Esta página no existe» (§1).
+- [ ] **Inicio**: resumen del día con enlaces, «Para tu agente», recorrido de 7 casillas, paneles y
+      avisos de arriba (§2).
+
+### 1.2 Ofertas: bandeja, alta y triaje
+- [ ] **Bandeja**: recuentos por etapa, buscar «Data», ordenar por Salario, Encaje y Alta,
+      paginación, insignias «Conoces a N» y ⚠️ (§3).
+- [ ] **Nueva oferta**: pegar `demo/jobs/01-data-engineer.txt` → aviso de duplicado; una inventada →
+      «Por extraer» (§4).
+- [ ] **Por revisar**: score y desglose, teclas `J`/`K`/`O`/`A`/`D`, descartar con motivo y
+      «Deshacer» (§5).
+- [ ] La ficha #3 (Lonxa Retail Tech): ⚠️ y bloque «Posible contenido dirigido a una IA» (§5 y §6).
+
+### 1.3 Ficha de una oferta (#1, Brétema Analytics)
+- [ ] Encaje, red («Añadir al proceso»), historial y «Añadir nota» (§6).
+- [ ] Extracción, Proceso (añadir un hito y descargar su `.ics`), valoración del agente (§6).
+- [ ] Paquete de candidatura con las respuestas de screening y la de salario en ámbar (§6).
+- [ ] **CV**: otra plantilla, foto, color, ocultar una sección y «Renderizar»; «Comparar» dos renders
+      lado a lado; «Usar este para enviar» (§6).
+- [ ] **Carta**: verificada, con su PDF; cambiar las indicaciones y guardar (§6).
+- [ ] Una cerrada → «Reabrir»; una enviada → «Tengo entrevista» la pasa a «En proceso»; la #60 →
+      «Oferta recibida» y «Preparar negociación» (§6).
+
+### 1.4 Procesos, respuestas y seguimiento
+- [ ] **Procesos**: tablero de 5 columnas, «Actualizar estado», arrastrar (y que se niegue a «CV
+      listo»), seguimientos, ofertas recibidas, próximos 7 días y calendario `.ics` (§7).
+- [ ] **Respuestas**: aceptar la de entrevista, cambiar la del descarte, el acuse «Sin clasificar»
+      con el aviso de texto oculto, y los filtros (§8).
+- [ ] **Alertas**: vacía en la demo, sin errores (§9).
+
+### 1.5 Análisis y configuración
+- [ ] **Embudo**: cifras, embudo por pasos, por semana, fuente, tipo de puesto y motivos; cambiar el
+      periodo; «¿Acierta el score?» (§10).
+- [ ] **Skills**: filtros, «Es lo mismo que…» (deshazlo después en `config/skill_aliases.yaml`) y
+      «La tengo / No la tengo» (§11).
+- [ ] **Fuentes**: empresas objetivo pausadas, «Probar» con una real, plataformas y el aviso de
+      LinkedIn (§12).
+- [ ] **Plantillas**: «Subir mi CV» queda pendiente de importar; miniaturas de todas (§13).
+- [ ] **Mi perfil**: contexto, muestras de estilo y documentos con `salarios.csv` (§14).
+
+### 1.6 Con tu agente (Claude Code)
+- [ ] «Procesar ofertas» en terminal → las 3 por extraer pasan a «Por revisar» o «Cerrada» (§15).
+- [ ] «Evaluar encaje» en segundo plano → la página **Agente** enseña la ejecución, su progreso y su
+      resultado; la #3 no sale como encaje perfecto (§15).
+- [ ] «Generar CV» de una aprobada → redactado, verificado y renderizado; pasa a «CV listo» (§15).
+- [ ] «Dejar para mi próxima sesión» → el encargo sale en **Agente → Para tu próxima sesión**;
+      `handle-requests` lo atiende y lo cierra (§15).
+- [ ] Uno a elegir de los demás skills (`research-company`, `draft-message`, `prepare-interview`,
+      `mock-interview`, `review-search`) (§15).
+
+---
+
+## 2. Lo nuevo de las fases 24-26 (demo)
+
+### 2.0 Lo que trae la demo (26.5)
 
 Comprueba que ninguna pantalla sale vacía. Las empresas con CV son **Brétema Analytics** (Data
 Engineer) y **Lumieira Retail** (Analytics Engineer); el resto cambia con la demo.
@@ -63,26 +144,23 @@ Engineer) y **Lumieira Retail** (Analytics Engineer); el resto cambia con la dem
 - [ ] **Ficha de Lumieira Retail** → borrador de mensaje de LinkedIn para el recruiter; dosier con
       «Banderas rojas» (un ERE con fecha y fuente).
 - [ ] **Respuestas** → tres correos: entrevista y descarte con propuesta, y un acuse «Sin
-      clasificar» con el aviso de texto oculto. Acepta la de entrevista → la oferta pasa a «En
-      proceso» con el hito.
-      Con tu agente, `review-replies` clasifica el acuse como `none` con `injection_suspected`.
+      clasificar» con el aviso de texto oculto. Con tu agente, `review-replies` clasifica el acuse
+      como `none` con `injection_suspected`.
 - [ ] **Procesos** → la entrevista programada más próxima tiene «Plan de preparación» (bloques de hoy
       al día de la entrevista); dos entrevistas pasadas tienen «Repaso»; la oferta recibida tiene
       sus datos (importes ocultos) y sale en la comparación.
 - [ ] **Seguimientos** → un borrador de seguimiento de una candidatura enviada, listo para copiar.
 - [ ] **Skills** → Looker y Databricks marcadas «No la tengo»; «Plan de formación» las usa.
-- [ ] **Agente → Encargos** → uno pendiente («Generar CV» de una oferta aprobada). Con tu agente,
-      `handle-requests` lo hace y lo cierra.
+- [ ] **Agente → Encargos** → uno pendiente («Generar CV» de una oferta aprobada).
 - [ ] **Mi perfil → Contexto y estilo** → los cuatro ficheros con texto y la muestra
-      `carta-antigua.txt`; en `data-demo\documentos\` está `salarios.csv` (lo usa
-      `prepare-negotiation`).
+      `carta-antigua.txt`; en `data-demo\documentos\` está `salarios.csv`.
 - [ ] Cualquier botón «en tu agente» → en la terminal que abre, `echo $env:CAI_DATA_DIR` dice la
       ruta de `data-demo`.
 - [ ] (Opcional) La demo en inglés: `uv run --directory backend cai demo seed --lang en --dir
       data-demo-en --force` y arranca con `$env:CAI_DATA_DIR = "data-demo-en"` → lo mismo, en inglés
       (Fogline Analytics y Moher Street Retail).
 
-### 1.1 «Mi perfil» editable (25.7) · `fase-25.7-prueba-manual.txt`
+### 2.1 «Mi perfil» editable (25.7) · `fase-25.7-prueba-manual.txt`
 
 - [ ] **Experiencia → «Añadir empresa»**: «Ría Analytics (ficticia)», «Analytics Engineer», desde
       2026-05, «Actualidad», con dos logros (uno con métrica), cada uno con una skill de la lista.
@@ -113,30 +191,30 @@ Engineer) y **Lumieira Retail** (Analytics Engineer); el resto cambia con la dem
       página → «Tu perfil ha cambiado…» y «Recargar», sin pisar tu cambio.
 - [ ] Con un bloque sin guardar, sal de la página → te avisa.
 - [ ] Cambia la UI a inglés y repasa las pestañas: todo traducido.
-- [ ] **Con tus datos** (más tarde, sin la demo): guarda un bloque sin cambiar nada importante y
-      comprueba que `data/profile.yaml` conserva tus comentarios.
 
-### 1.2 Agentes y niveles de gasto desde la UI (24.4 y 24.6) · `fase-24.4-prueba-manual.txt`
+### 2.2 Agentes y niveles de gasto desde la UI (24.4 y 24.6) · `fase-24.4-prueba-manual.txt`
 
 - [ ] **Agente → «Agentes»**: una tarjeta por agente (versión o «No instalado» con «Copiar»,
-      insignias; las «sin comprobar», con borde discontinuo).
+      insignias; las «sin comprobar», con borde discontinuo). Codex y Antigravity salen instalados.
 - [ ] «Agente por defecto» en «Automático» → «Por acción», columna «Efectivo»: «Claude Code · el
       primero instalado».
 - [ ] Modelo `sonnet` en la tarjeta de Claude Code → «Buscar ofertas» abre
       `claude --model sonnet "…"`; en esa terminal, `echo $env:CAI_CLIENT_NAME` → `claude`. Borra
       el modelo después. Con `son net` → error en rojo, no se guarda.
 - [ ] El desplegable ▾ de un botón dice «con Claude Code»; los agentes no instalados salen
-      deshabilitados. Con otro agente instalado: «Solo esta vez, con…» lo abre sin cambiar la tabla.
+      deshabilitados. «Solo esta vez, con Codex» en «Procesar ofertas» → abre Codex con
+      `$process-jobs` sobre la demo, sin cambiar la tabla.
+- [ ] Con Codex en «Generar CV» (por acción) → «En segundo plano» deshabilitado con su motivo.
+      Vuelve a «Automático» después.
 - [ ] **En segundo plano** con un modelo en la tarjeta (p. ej. `haiku`): «Procesar ofertas» ▾ →
       «En segundo plano» → en «Agente», «Con claude (haiku)».
 - [ ] **Niveles de gasto**: aplica «Económico» → cambia «Por acción» → «Deshacer el último».
 - [ ] UI en inglés: la sección y la tabla en inglés.
 
-### 1.3 Coste, umbral y paralelo (25.4) · `fase-25.4-prueba-manual.txt`
+### 2.3 Coste, umbral y paralelo (25.4) · `fase-25.4-prueba-manual.txt`
 
 - [ ] **Agente → «Coste»**: ejecuciones sumadas, «Tokens del skill» por acción, pestañas de 7 y 30
-      días. En una demo nueva está vacío hasta que lanzas algo en segundo plano (el paso siguiente):
-      la demo no inventa costes.
+      días. Con la ejecución de 1.6 ya no está vacío (la demo no inventa costes).
 - [ ] «Procesar ofertas» en segundo plano → turnos, tokens y coste; «Por acción» +1; en la ficha de
       una oferta procesada, «Coste del agente» «repartida entre N ofertas».
 - [ ] **Umbral**: pon el score mínimo por encima de una oferta por revisar → «Sin valorar en segundo
@@ -144,29 +222,26 @@ Engineer) y **Lumieira Retail** (Analytics Engineer); el resto cambia con la dem
       lleva las que llegan. «Volver a…» deja el de por defecto.
 - [ ] **Paralelo**: `background_runs.max_parallel: 2` en `config/policies.yaml`, reinicia, y «Generar
       CV» en segundo plano de dos ofertas distintas → las dos «En curso» a la vez; la misma oferta
-      otra vez espera. Con `per_agent: {claude: 1}`, de una en una. Vuelve a `1` al acabar.
+      otra vez espera. Con `per_agent: {claude: 1}`, de una en una. **Vuelve a `1` al acabar.**
 - [ ] **Embudo**: panel «Coste del agente» y columna «Coste por enviada».
 
-### 1.4 Maquetación del PDF (25.5) · `fase-25.5-prueba-manual.txt`
+### 2.4 Maquetación del PDF (25.5) · `fase-25.5-prueba-manual.txt`
 
 - [ ] Renderiza un CV con `ats-simple`, `clasica-foto` y `moderna-2col` → ningún aviso con un CV de
       una página. Si sale alguno, mira la página que dice: ¿es real?
-- [ ] Con tus plantillas importadas (si tienes): con dos columnas, «Texto del PDF incompleto» es
-      real si un ATS leería primero la barra.
 - [ ] «Máximo de páginas» 2 y contenido que pase de una página → «Última página casi vacía» con la
       página; «Generar CV» recorta y el aviso desaparece.
 - [ ] La carta con `carta-simple` y con la plantilla del CV → sin avisos.
 
-### 1.5 Tu búsqueda en números (25.6) · `fase-25.6-prueba-manual.txt`
+### 2.5 Tu búsqueda en números (25.6) · `fase-25.6-prueba-manual.txt`
 
 - [ ] **Embudo → «Tu búsqueda en números»**: fechas y cinco cifras, que no cambian con el periodo.
 - [ ] «Copiar en español» y «Copiar en inglés» → ningún nombre de empresa, puesto, fuente ni importe.
 - [ ] `uv run --directory backend cai stats story` → las mismas cifras.
-- [ ] `python scripts/release_notes.py v0.1.0` → notas de la 0.1.0; con `v0.2.0`, error.
-- [ ] **Con tus datos**: ¿te cuadran las cifras? Decide si publicas la línea en el README (bloque
-      comentado en `README.md` y `README.es.md`).
+- [ ] `uv run --directory backend python ../scripts/release_notes.py v0.1.0` → notas de la 0.1.0;
+      con `v0.2.0`, error.
 
-### 1.6 Ofertas dudosas y banderas rojas (25.3) · `fase-25.3-prueba-manual.txt`
+### 2.6 Ofertas dudosas y banderas rojas (25.3) · `fase-25.3-prueba-manual.txt`
 
 - [ ] Nueva oferta pegada de una agencia, temporal («para importante cliente», «contrato de 6
       meses»), y `process-jobs` → en la ficha, «Temporal» y «Empresa oculta»; el score no cambia
@@ -177,11 +252,8 @@ Engineer) y **Lumieira Retail** (Analytics Engineer); el resto cambia con la dem
 - [ ] `research-company` de una empresa con despidos en prensa → «Banderas rojas» con tipo, fecha y
       cita; `prepare-interview` las convierte en preguntas neutrales.
 - [ ] **Embudo → «¿Acierta el score?» → «Señal»**: una fila por señal («pocos datos» es normal).
-- [ ] **Con tus datos**: `uv run --directory backend cai jobs signals --recompute` → apunta
-      cuántas de cada señal y los falsos positivos (sobre todo «Empresa oculta» por el nombre:
-      `config/doubtful_patterns.yaml`).
 
-### 1.7 Skill `expand` (25.2) · `fase-25.2-prueba-manual.txt`
+### 2.7 Skill `expand` (25.2) · `fase-25.2-prueba-manual.txt`
 
 - [ ] En `data-demo/profile.yaml`, `personal.github: https://github.com/<usuario>` (el tuyo u otro
       público). Copia: `Copy-Item data-demo/profile.yaml $env:TEMP/perfil-antes.yaml`.
@@ -197,11 +269,36 @@ Engineer) y **Lumieira Retail** (Analytics Engineer); el resto cambia con la dem
 - [ ] **«Mi perfil» → «Ampliar perfil desde mis enlaces»** → abre tu agente con la orden; sin «En
       segundo plano».
 
-### 1.8 Conectores nuevos (25.1) · `fase-25.1-prueba-manual.txt`
+### 2.8 Diagnóstico y esquemas (24.1 y 24.2)
 
-Esta va **con tus datos** (las APIs reales): cierra la demo y arranca `cai start` sin
-`CAI_DATA_DIR`.
+- [ ] `uv run --directory backend cai agents doctor` → se usaría Claude Code; detecta Codex y
+      Antigravity (con `--refresh` tras instalar uno nuevo); sección «Modelos locales (Ollama)».
+- [ ] `uv run --directory backend cai doctor` → sección «Agentes» al final.
+- [ ] `cai schema list --json` y `cai schema cv-content --example true --json` → el ejemplo tiene
+      sentido.
+- [ ] `cai agents doctor --tokens` → cuánto pesa cada skill.
 
+---
+
+## 3. Con tus datos
+
+Cierra la demo (Ctrl+C en su ventana), abre una PowerShell nueva **sin** `CAI_DATA_DIR` y arranca
+`uv run --directory backend cai start`. Antes de empezar, `uv run --directory backend cai paths`
+dice que usas `data\`.
+
+### 3.1 Tu perfil y tu búsqueda
+- [ ] La app arranca sin franja de demo y con tus ofertas; «Inicio» cuadra con lo que esperas.
+- [ ] **Mi perfil**: guarda un bloque sin cambiar nada importante → `data/profile.yaml` conserva tus
+      comentarios (`git diff` no aplica: compáralo con tu copia).
+- [ ] `uv run --directory backend cai profile validate` → válido.
+- [ ] **Embudo → «Tu búsqueda en números»**: ¿te cuadran las cifras? Decide si publicas la línea en
+      el README (bloque comentado en `README.md` y `README.es.md`).
+- [ ] `uv run --directory backend cai jobs signals --recompute` → apunta cuántas de cada señal y los
+      falsos positivos (sobre todo «Empresa oculta»: `config/doubtful_patterns.yaml`).
+- [ ] Renderiza uno de tus CVs con cada plantilla (y tus importadas): con dos columnas, «Texto del
+      PDF incompleto» es real si un ATS leería primero la barra.
+
+### 3.2 Fuentes reales (25.1) · `fase-25.1-prueba-manual.txt`
 - [ ] **Fuentes → Empresas objetivo → «Añadir»**: aparecen Personio, Teamtailor, Workable,
       SmartRecruiters, Recruitee, «Manfred (búsqueda)» y «freehire (búsqueda)», con la pista del
       slug y «Cómo encontrarlo».
@@ -216,70 +313,49 @@ Esta va **con tus datos** (las APIs reales): cierra la demo y arranca `cai start
 - [ ] `cai sources discover --file empresas.txt` con tu lista → apunta empresas con tablero en los
       cinco ATS nuevos que no detecte.
 
-### 1.9 Diagnóstico y esquemas (24.1 y 24.2)
+### 3.3 Entrada de ofertas y correo
+- [ ] **Alertas por correo**: «Alertas» → «Revisar correo ahora» con tu IMAP → llegan las de hoy, sin
+      duplicados (`fase-09b-prueba-manual.txt`).
+- [ ] **Respuestas**: «Revisar correo ahora» y «Revisar respuestas» con tu agente → propuestas con
+      sentido para tus procesos (`fase-15-prueba-manual.txt`).
+- [ ] **Extensión «Enviar a CandidatAI»**: en una oferta real en el navegador, el botón la da de alta
+      en «Por extraer» con su texto (`fase-09b.3-prueba-manual.txt`).
+- [ ] **Nueva oferta por URL** de Greenhouse o Lever → ficha con el texto completo.
+- [ ] «Procesar ofertas» y «Evaluar encaje» en segundo plano sobre las nuevas → «Por revisar» con
+      valoración.
 
-- [ ] `uv run --directory backend cai agents doctor` → se usaría Claude Code; detecta lo que tengas
-      instalado (con `--refresh` tras instalar uno nuevo); sección «Modelos locales (Ollama)».
-- [ ] `uv run --directory backend cai doctor` → sección «Agentes» al final.
-- [ ] `cai schema list --json` y `cai schema cv-content --example true --json` → el ejemplo tiene
-      sentido.
-- [ ] `cai agents doctor --tokens` → cuánto pesa cada skill.
+### 3.4 De la oferta al envío
+- [ ] Aprueba una oferta real y «Generar CV» → verificado, una página, con evidencias de tu perfil.
+- [ ] «Preparar candidatura» → respuestas de screening y, si procede, carta.
+- [ ] **Candidatura asistida** en una oferta real de acceso libre: el navegador de CandidatAI
+      rellena, **no envía nada** y espera tu confirmación (`fase-11-prueba-manual.txt`). Si no
+      quieres enviarla, cierra sin enviar.
+- [ ] «Marcar como enviada» → pasa a «Enviada» con su evento; sale en Procesos y en el embudo.
+
+### 3.5 Al acabar con tus datos
+- [ ] `uv run --directory backend cai status` → recuentos coherentes.
+- [ ] Si algo se torció, para la app y restaura la copia del paso 0
+      (`copy data\jobhunter.db.bak-final data\jobhunter.db`).
 
 ---
 
-## 2. La matriz de compatibilidad con Claude Code (24.6) · `fase-24.6-matriz.md`
+## 4. Otros agentes (opcional) · `fase-24.3-prueba-manual.txt`
 
-La más importante de la fase 24. Va sola, unos 30-40 minutos, y gasta tu suscripción. No hace falta
-`cai worker` ni la app abierta.
+La matriz ya está hecha con Codex y Antigravity. Esto comprueba el aislamiento del `extractor`,
+que la matriz no mide. Con una demo propia (`cai demo seed --dir data-demo-agentes --compat` y
+`$env:CAI_DATA_DIR = "data-demo-agentes"` antes de abrir el agente):
 
-- [ ] Cierra cualquier sesión de tu agente en este repositorio.
-- [ ] `uv run --directory backend cai eval compat --agent claude` (si una ejecución agota el tiempo,
-      repite con `--timeout 30`).
-- [ ] Apunta los permisos que te pidió y el error de lo que falle.
-- [ ] Pásame `evals/compat/REPORT.md`: con él completo AGENTS_COMPAT, el README y la ADR-037.
-
----
-
-## 3. Agentes opcionales (24.3, 24.5 y 24.6)
-
-Solo si instalas alguno. **Lo que cierra la fase 24 es OpenCode con un modelo local (3.1).**
-
-### 3.1 OpenCode con Ollama · `fase-24.6-matriz.md` §2 y `fase-24.5-prueba-manual.txt`
-
-- [ ] Ollama según `docs/MODELOS_GRATIS.md`: `OLLAMA_CONTEXT_LENGTH=32768` y
-      `ollama pull gpt-oss:20b` (o `qwen3:14b` si no cabe). `cai agents doctor`: Ollama responde,
-      sin aviso de contexto.
-- [ ] `npm install -g opencode-ai` y el proveedor `ollama` en `~/.config/opencode/opencode.json`.
-      `opencode run -m ollama/gpt-oss:20b "di hola"` responde.
-- [ ] **Matriz**: `cai eval compat --agent opencode --model ollama/gpt-oss:20b --timeout 30`;
-      `generate-cv` va a mano (imprime los pasos) y después `--import`.
-- [ ] **Segundo plano** (demo propia: `cai demo seed --dir data-demo-245 --compat`,
-      `$env:CAI_DATA_DIR = "data-demo-245"`, `cai start`; OpenCode en «Procesar ofertas» y «Evaluar
-      encaje»): «Procesar ofertas» en segundo plano → «Con opencode (<modelo>)», solo con
-      `get_status`, `list_jobs`, `get_job` y `save_extraction`; las 5 ofertas pasan a «Por triar».
-      «Evaluar encaje» igual.
-- [ ] **El techo con un modelo**: los pasos C.1-C.5 del fichero → ninguna herramienta fuera de la
-      acción funciona (ni bash, ni leer, ni web; el `writer` se deniega).
-- [ ] «Generar CV» con OpenCode → «En segundo plano» deshabilitado y «En segundo plano con Claude
-      Code» debajo.
-- [ ] «Abrir en terminal» en una ejecución terminada → OpenCode retoma la misma sesión.
-
-### 3.2 Qwen Code, Antigravity o Codex · `fase-24.3-prueba-manual.txt`
-
-Con una demo propia (`cai demo seed --dir data-demo-agentes --compat` y
-`$env:CAI_DATA_DIR = "data-demo-agentes"`):
-
-- [ ] `/mcp` con `candidatai` conectado y los skills visibles.
-- [ ] `process-jobs` con una oferta → delega en el `extractor`; la oferta pasa a «Por triar».
+- [ ] **Codex**: `codex mcp list` → `candidatai` con `CAI_DATA_DIR`; `get_status` dice modo demo.
+- [ ] `$process-jobs` → delega en el `extractor`; la oferta pasa a «Por triar». Las herramientas
+      de lectura no piden permiso; «Allow for this session» en las demás.
 - [ ] **Aislamiento**: pide al `extractor` que llame a `list_jobs`, ejecute `echo hola` y lea
-      `AGENTS.md` → no puede. En Qwen, el `writer` no puede leer `.env`.
-- [ ] Codex local: `codex --oss -m gpt-oss:20b` → `$process-jobs` con una oferta.
-- [ ] Matriz a mano: `cai eval compat --agent codex` (o `--preset local`) y sus pasos `--approve` e
-      `--import`.
+      `AGENTS.md` → apunta qué consigue (Codex está en nivel B: hereda la política de la sesión).
+- [ ] **Antigravity** (si te queda cupo semanal): `/process-jobs` con una oferta → la extrae.
+- [ ] Al acabar, cierra los agentes (`taskkill /IM codex.exe /F`) y borra `data-demo-agentes`.
 
 ---
 
-## 4. Docker en Windows (26.3) · `fase-26-prueba-manual.txt` §26.3
+## 5. Docker en Windows (26.3) · `fase-26-prueba-manual.txt` §26.3
 
 Con Docker Desktop abierto y la CandidatAI nativa cerrada (mismo puerto).
 
@@ -303,11 +379,11 @@ Con Docker Desktop abierto y la CandidatAI nativa cerrada (mismo puerto).
 
 ---
 
-## 5. Linux en WSL2 (26.1, 26.2 y 26.4) · `fase-26-prueba-manual.txt`
+## 6. Linux en WSL2 (26.1, 26.2 y 26.4) · `fase-26-prueba-manual.txt`
 
-El orden importa: **5.1 necesita un Ubuntu sin nada de CandidatAI**. Después se instala lo demás.
+El orden importa: **6.1 necesita un Ubuntu sin nada de CandidatAI**. Después se instala lo demás.
 
-### 5.1 La guía de cero a la app (26.4)
+### 6.1 La guía de cero a la app (26.4)
 
 Con `docs/GUIA.md` abierta y sin mirar nada más (ni este documento):
 
@@ -321,7 +397,7 @@ Con `docs/GUIA.md` abierta y sin mirar nada más (ni este documento):
 - [ ] **Copia de seguridad** como dice la guía: con la app cerrada, copia la carpeta de datos,
       bórrala, restáurala y abre la app → todo sigue ahí.
 
-### 5.2 `install.sh` (26.2)
+### 6.2 `install.sh` (26.2)
 
 - [ ] Reinstala con `bash install.sh` (o `--source "$PWD"` desde un clon con la UI compilada) tras
       crear un fichero en `…/data` y añadir una línea tuya a `…/app/.env` → los dos siguen ahí.
@@ -329,9 +405,9 @@ Con `docs/GUIA.md` abierta y sin mirar nada más (ni este documento):
 - [ ] `bash install.sh --uninstall` → se van la app y el acceso directo; `…/data` sigue.
 - [ ] `bash install.sh --uninstall --remove-data` → pide escribir «borrar»; con otra cosa no borra.
 
-### 5.3 Botones y procesos en Linux (26.1)
+### 6.3 Botones y procesos en Linux (26.1)
 
-En un clon de la rama **dentro de Linux** (no en `/mnt/c`), con `uv sync` y `cai db upgrade`:
+En un clon de `main` **dentro de Linux** (no en `/mnt/c`), con `uv sync` y `cai db upgrade`:
 
 - [ ] `uv run pytest tests/test_terminals.py tests/test_agent_runs.py -q` → los «necesita macOS o
       Linux» pasan, no se saltan.
@@ -346,28 +422,31 @@ En un clon de la rama **dentro de Linux** (no en `/mnt/c`), con `uv sync` y `cai
 - [ ] Con `libreoffice-writer`, `cai doctor` lo encuentra y la demo genera PDF y DOCX; «Abrir
       carpeta» abre el explorador.
 
-### 5.4 Docker en WSL2 (opcional)
+### 6.4 Docker en WSL2 (opcional)
 
 - [ ] Activa en Docker Desktop la integración con tu Ubuntu y repite `docker compose up -d` desde el
       clon de Linux.
 
 ---
 
-## 6. De vuelta en Windows y en GitHub
+## 7. De vuelta en Windows y en GitHub
 
 - [ ] Los botones «en tu agente» siguen abriendo Windows Terminal como antes, y `CAI_TERMINAL` no
       cambia nada.
-- [ ] **Actions → Release → «Run workflow»** con `v0.1.0` en la rama → notas en el resumen y el
+- [ ] **Actions → CI** de la fusión en `main` (`db41a71`): en verde, con macOS (backend e
+      instalador).
+- [ ] **Actions → Release → «Run workflow»** con `v0.1.0` en `main` → notas en el resumen y el
       artefacto `candidatai-zip`, sin publicar nada (el job «release» sale saltado).
-- [ ] Tras fusionar en `main`: la primera CI ahí incluye macOS (backend e instalador) y sale en
-      verde.
-- [ ] Mira los dos README en github.com: el badge «Windows · macOS · Linux».
+- [ ] Mira los dos README en github.com: el badge «Windows · macOS · Linux», la tabla «Agentes
+      compatibles» con Codex y Antigravity probados, capturas y GIF.
 
 ---
 
 ## Al terminar
 
-- Borra las demos que ya no quieras (`data-demo-245`, `data-demo-agentes`,
-  `data-demo-compat-*`) y quita `$env:CAI_DATA_DIR`.
-- Pásame lo apuntado con «→» y `evals/compat/REPORT.md`: con eso cierro la 24.6 y la fase 24, y
-  marco las pruebas en `docs/pruebas/PENDIENTES.md`.
+- Borra las demos que ya no quieras (`data-demo-agentes`, `data-demo-en`) y quita
+  `$env:CAI_DATA_DIR` (o cierra esas ventanas).
+- Comprueba que `config/policies.yaml` y `config/skill_aliases.yaml` no se quedaron con cambios de
+  prueba: `git status` sin nada en `config/`.
+- Pásame lo apuntado con «→»: con eso corrijo lo que haga falta y marco las pruebas en
+  `docs/pruebas/PENDIENTES.md`.

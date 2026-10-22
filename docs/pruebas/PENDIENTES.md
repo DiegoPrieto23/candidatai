@@ -224,7 +224,7 @@ funcionando. Los roles son `writer`, `verifier`, `classifier`, `reviewer` y `ext
 
 ## 3. Pruebas manuales pendientes
 
-**Fases 24, 25 y 26 en un solo documento, en orden:** `fases-24-26-pruebas.md`. Sigue ese y
+**Barrido final (funciones principales y fases 24-26), en orden:** `fases-24-26-pruebas.md`. Sigue ese y
 marca aquí lo que acabes.
 
 - [ ] **Recorrido completo con la demo** (`guia-prueba-demo.md`): todas las funciones, página a
@@ -259,7 +259,7 @@ hiciste, márcala.
       WSL2: seguir solo la guía (requisitos, `install.sh`, abrir la app, conectar tu agente) sin
       saltarte ni añadir pasos, y apuntar lo que falte.
 - [ ] **La primera CI en `main`** tras fusionar la fase: macOS corre ahí (en la rama ya pasó a mano).
-- [ ] **Fase 26.5 · Demo completa** (`fases-24-26-pruebas.md`, sección 1.0): con la demo recreada,
+- [ ] **Fase 26.5 · Demo completa** (`fases-24-26-pruebas.md`, sección 2.0): con la demo recreada,
       ninguna pantalla vacía (carta, dosieres, correos, entrevistas, oferta recibida, Skills,
       encargo, contexto) y los botones «en tu agente» abren el agente sobre `data-demo`.
 
@@ -316,8 +316,8 @@ hiciste, márcala.
       worker), «Añadir al perfil las que tengo» y `training-plan` (web y escritura de
       `data/documentos/training-plan.md`).
 - [ ] **Fase 13 · Contexto y documentos**: la UI en el navegador (solo se probó con tests).
-- [ ] **Fase 12 · Compatibilidad**: Claude Code con MCP sobre la matriz
-      (`fase-12-compatibilidad.txt`).
+- [x] **Fase 12 · Compatibilidad**: Claude Code con MCP sobre la matriz, hecho el 2026-10-22 con
+      `cai eval compat --agent claude` (5/5 CVs; `evals/compat/REPORT.md`).
 - [ ] **Fase 11 · Candidatura asistida** (`fase-11-prueba-manual.txt`): una oferta real de
       Greenhouse o Lever hasta la pantalla de revisión, **sin enviar** (sobre todo los desplegables
       con buscador de Greenhouse), y ofertas reales de cada portal.
