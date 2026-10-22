@@ -6,7 +6,7 @@ cada fase y lo quita cuando el usuario confirma que está hecho.
 
 Marca `[x]` lo que hagas y, si algo falla, apúntalo debajo de la línea con `→`.
 
-Última actualización: 2026-10-17 (fase 25.7).
+Última actualización: 2026-10-19 (fase 26.5).
 
 ## 1. Poner la app al día (antes de probar nada)
 
@@ -136,11 +136,11 @@ funcionando. Los roles son `writer`, `verifier`, `classifier`, `reviewer` y `ext
       «Por acción» y pulsa «Deshacer el último».
 - [ ] `uv run --directory backend cai agents doctor`: sección «Modelos locales (Ollama)» («no
       responde» si no lo tienes).
-- [ ] **La matriz** (`fase-24.6-matriz.md`): como mínimo Claude Code con MCP
-      (`cai eval compat --agent claude`, cierra el pendiente de la 12.3). Si instalas Ollama y
-      OpenCode, también OpenCode con un modelo local: es el criterio de cierre de la fase 24.
-      Después, pásame `evals/compat/REPORT.md` para completar `AGENTS_COMPAT.md`, el README y la
-      ADR-037.
+- [x] **La matriz** (`fase-24.6-matriz.md`), el 2026-10-22: Claude Code con MCP, Codex (una
+      oferta) y Antigravity, en `evals/compat/REPORT.md` y `AGENTS_COMPAT.md`.
+- [ ] **Matriz con un modelo local**, si algún día tienes un equipo con 24 GB de RAM o más, o con
+      gráfica dedicada: OpenCode con Ollama (`docs/MODELOS_GRATIS.md`). En el portátil actual no
+      es viable.
 
 ### «Mi perfil» editable (fase 25.7)
 
@@ -212,7 +212,8 @@ funcionando. Los roles son `writer`, `verifier`, `classifier`, `reviewer` y `ext
 - [ ] Crear o completar `.env.example`, **sin valores reales**, con todas las variables de
       `backend/app/core/config.py`:
   - generales: `CAI_DATA_DIR`, `CAI_DB_URL`, `SOFFICE_PATH`, `CAI_CLIENT_NAME`, `CAI_AGENT`,
-    `CAI_EMBEDDINGS`;
+    `CAI_EMBEDDINGS` y, de la fase 26.1, `CAI_TERMINAL` (comentada: solo macOS y Linux; p. ej.
+    `iterm`, `kitty` o la ruta de tu terminal);
   - portales: `CAI_INFOJOBS_CLIENT_ID`, `CAI_INFOJOBS_CLIENT_SECRET`, `CAI_ADZUNA_APP_ID`,
     `CAI_ADZUNA_APP_KEY` y, de la fase 25.1, `CAI_FREEHIRE_BASE_URL` (opcional, comentada: por
     defecto `https://freehire.me/api/v1`);
@@ -223,11 +224,44 @@ funcionando. Los roles son `writer`, `verifier`, `classifier`, `reviewer` y `ext
 
 ## 3. Pruebas manuales pendientes
 
+**Fases 24, 25 y 26 en un solo documento, en orden:** `fases-24-26-pruebas.md`. Sigue ese y
+marca aquí lo que acabes.
+
 - [ ] **Recorrido completo con la demo** (`guia-prueba-demo.md`): todas las funciones, página a
       página, con lo que debes ver. Sirve también para la demo en inglés (`--lang en`).
 
 Cada guía está en `docs/pruebas/`. No consta en el ROADMAP que estén hechas; si alguna ya la
 hiciste, márcala.
+
+- [ ] **Fase 26.1 · macOS y Linux** (`fase-26-prueba-manual.txt`, sección 26.1), en WSL2:
+  - los tests de `test_terminals.py` y `test_agent_runs.py` que en Windows se saltan («necesita
+    macOS o Linux») tienen que pasar en Ubuntu;
+  - un botón «en tu agente» abre gnome-terminal con la orden y el agente arrancado, sin la clave
+    de API y con `CAI_CLIENT_NAME`;
+  - cancelar una ejecución en segundo plano y cerrar `cai start` no dejan procesos huérfanos;
+  - en Windows, los botones siguen abriendo Windows Terminal como antes.
+- [ ] **Fase 26.2 · `install.sh`** (`fase-26-prueba-manual.txt`, sección 26.2), en WSL2:
+  - instalar desde tu repositorio (`bash install.sh --source "$PWD"`, con la UI compilada) y abrir
+    «CandidatAI» desde el menú de aplicaciones (en Windows sale como «CandidatAI (Ubuntu)»);
+  - reinstalar no toca `…/data` ni tu línea del `.env`; desinstalar los deja;
+  - si alguien tiene un Mac: la `.app` de `~/Applications` con su icono.
+- [ ] **Fase 26.3 · Docker** (`fase-26-prueba-manual.txt`, sección 26.3), con Docker Desktop:
+  - **antes:** en mis pruebas, el contenedor leyó tu `.env` y su worker trajo tus alertas por
+    IMAP al volumen `candidatai-data`. Si no vas a usar Docker con tus datos, bórralo con
+    `docker compose down` y `docker volume rm candidatai-data`;
+  - un agente tuyo procesa una oferta de la demo por MCP contra el contenedor
+    (`claude mcp add --scope local candidatai -- docker exec -i candidatai cai-mcp`), y después
+    `claude mcp remove --scope local candidatai`;
+  - en la ficha, un botón «en tu agente» copia la orden con el aviso de Docker y la candidatura
+    asistida ofrece «Abrir la oferta en tu navegador» y «Marcar como enviada»;
+  - en WSL2 con la integración de Docker Desktop activada, el mismo `docker compose up -d`.
+- [ ] **Fase 26.4 · La guía de cero a la app** (`fase-26-prueba-manual.txt`, sección 26.4), en
+      WSL2: seguir solo la guía (requisitos, `install.sh`, abrir la app, conectar tu agente) sin
+      saltarte ni añadir pasos, y apuntar lo que falte.
+- [ ] **La primera CI en `main`** tras fusionar la fase: macOS corre ahí (en la rama ya pasó a mano).
+- [ ] **Fase 26.5 · Demo completa** (`fases-24-26-pruebas.md`, sección 1.0): con la demo recreada,
+      ninguna pantalla vacía (carta, dosieres, correos, entrevistas, oferta recibida, Skills,
+      encargo, contexto) y los botones «en tu agente» abren el agente sobre `data-demo`.
 
 - [ ] **Fase 22 · LinkedIn por sus endpoints públicos** (`fase-22-prueba-manual.txt`), **solo si
       quieres usarla** (va contra las condiciones de LinkedIn y puede bloquear tu IP un tiempo):
@@ -301,8 +335,8 @@ hiciste, márcala.
 
 ## 4. Fuera de la app
 
-- [ ] **Codex**: cuando lo instales, parte 3 de la guía de la fase 04 y actualizar
-      `docs/AGENTS_COMPAT.md`.
+- [x] **Codex**: probado el 2026-10-22 con `cai eval compat --agent codex --cases 1` (11/11 campos,
+      1/1 valoración, 1/1 CV). Falta, si quieres, la matriz entera de 5 ofertas.
 - [ ] **CI en GitHub**: comprobar que pasa el paso de la fase 12 (en local solo se probó con
       LibreOffice; en CI va con Chromium). Requiere hacer push.
 - [ ] **Contraseña de aplicación de Gmail**: si la creaste para las alertas, sirve también para

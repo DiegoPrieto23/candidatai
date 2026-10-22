@@ -380,6 +380,44 @@ La carta es un documento propio, con sus indicaciones, su verificación y sus re
 - Para agentes y terminal: `get_received_offer` ↔ `jh received-offers show`.
 
 
+## 26.5 · Una demo con todo — 2026-10-19 · Claude Code (Opus 5.5)
+- **Ninguna pantalla vacía en la demo:** trae carta, respuestas de screening, mensajes, dosieres
+  de empresa (uno con bandera roja), plan y repaso de entrevistas, la oferta recibida, correos de
+  empresas en «Respuestas», huecos en «Skills», un encargo pendiente, contexto y una muestra de
+  estilo, en español y en inglés.
+- **Los botones «en tu agente» abren el agente sobre la demo**, no sobre tus datos.
+
+## 26.4 · Probado en los tres sistemas — 2026-10-18 · Claude Code (Opus 5.5)
+- **La CI prueba el backend en Windows, Linux y macOS**, el instalador en Linux y macOS y la imagen
+  de Docker. Ya encontró un fallo real del instalador en macOS.
+- **La guía dice dónde están tus datos en cada sistema** y cómo hacer copia de seguridad.
+- **Releases:** la prueba en seco genera y comprueba el zip sin publicar nada.
+
+## 26.3 · Docker opcional — 2026-10-18 · Claude Code (Opus 5.5)
+- **`docker compose up -d --build`** arranca la app en `http://127.0.0.1:8000` sin instalar Python
+  ni Chromium, con tus datos en un volumen y la demo en otro.
+- **Tu agente, desde fuera:** por MCP con `docker exec -i candidatai cai-mcp` o con `cai … --json`.
+- **La app sabe que está en Docker:** los botones «en tu agente» copian la orden, «En segundo
+  plano» sale desactivado con el motivo, la candidatura asistida te abre la oferta en tu navegador
+  para que la envíes tú, y `cai doctor` lo explica en su sección «Docker».
+
+## 26.2 · Instalar con una línea en macOS y Linux — 2026-10-18 · Claude Code (Opus 5.5)
+- **`install.sh`:** `curl -fsSL …/install.sh | bash` instala uv si falta, la última versión, el
+  entorno y la base de datos, sin `sudo` y con tus datos aparte. Reinstalar actualiza sin tocarlos.
+- **Acceso directo con icono:** «CandidatAI» en el menú de aplicaciones de Linux y en Aplicaciones
+  de macOS; abre una terminal con la app y el navegador.
+- **Con cuidado:** `--dry-run` no cambia nada, no instala en tu carpeta personal ni en las del
+  sistema, y `--uninstall --remove-data` solo borra tus datos si escribes «borrar».
+
+## 26.1 · La app ya no supone Windows — 2026-10-17 · Claude Code (Opus 5.5)
+- **Botones «en tu agente» en macOS y Linux:** abren Terminal.app (o iTerm2) o la terminal de tu
+  escritorio con la orden del skill, sin tu clave de API y con el agente arrancado. `CAI_TERMINAL`
+  elige otra; sin terminal, se copia la orden como antes. En Windows no cambia nada.
+- **Sin procesos huérfanos:** cancelar una ejecución en segundo plano o cerrar `cai start` para
+  también lo que lanzó el agente, y el worker para al arrancar las que quedaron vivas.
+- **LibreOffice y carpetas:** se busca también en las rutas de macOS y Linux, y «Abrir carpeta» abre
+  el explorador de archivos. `cai paths` dice dónde guardaría tus datos la app instalada.
+
 ## 25.7 · Tu perfil, editable desde la UI — 2026-10-17 · Claude Code (Opus 5.5)
 - **«Mi perfil» sin YAML:** experiencia y logros, proyectos, formación, certificaciones, otras
   secciones, idiomas y skills, historias STAR, qué buscas y tus preferencias de CV y carta, por
@@ -471,7 +509,9 @@ La carta es un documento propio, con sus indicaciones, su verificación y sus re
   - **niveles de gasto** «Económico», «Equilibrado» y «Máximo», que se aplican con un clic y se
     deshacen;
   - **`cai eval compat`** pasa la matriz a cualquier agente y modelo y la resume en
-    `evals/compat/REPORT.md`.
+    `evals/compat/REPORT.md`; con `--cases 1`, con una sola oferta;
+  - **probado** con Claude Code, Codex y Antigravity CLI; con un modelo local, no viable en un
+    portátil de 16 GB sin gráfica.
 - **Sigue igual:** la app no llama a ningún LLM. Los modelos gratuitos se usan a través de agentes
   que ya saben hablar con ellos.
 

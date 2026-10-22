@@ -2,12 +2,14 @@ name: Release
 
 # Al publicar una etiqueta `v*` (p. ej. `git tag v0.2.0 && git push origin v0.2.0`), compila la UI y
 # publica `candidatai.zip`: el repositorio (sin datos: `data/` no está en git) más `frontend/dist`.
-# Es lo que descarga `install.ps1` (fase 23.4). Las notas de la release son la sección de esa versión
+# Es lo que descargan `install.ps1` (fase 23.4) e `install.sh` (fase 26.2, va dentro con su permiso
+# de ejecución). Las notas de la release son la sección de esa versión
 # en `CHANGELOG.md` (fase 25.6): sin ella, la release falla antes de compilar nada.
 #
 # Prueba en seco: «Run workflow» en Actions, en la rama que quieras, con una versión (p. ej.
 # `v0.1.0`). Usa el CHANGELOG de esa rama; la etiqueta solo elige qué sección sacar y no hace falta
-# que exista. Escribe las notas en el resumen de la ejecución y no compila ni publica nada.
+# que exista. Escribe las notas en el resumen, compila y comprueba `candidatai.zip` (fase 26.4) y lo
+# deja como artefacto de la ejecución, sin publicar nada.
 on:
   push:
     tags: ["v*"]
@@ -32,12 +34,10 @@ jobs:
           python3 scripts/release_notes.py "$TAG" > release-notes.md
           { echo "## Notas de $TAG"; echo; cat release-notes.md; } >> "$GITHUB_STEP_SUMMARY"
 
-  release:
+  # Empaqueta y comprueba el zip con permisos de solo lectura; lo deja como artefacto (fase 26.4).
+  package:
     needs: notes
-    if: github.event_name == 'push'
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -60,6 +60,30 @@ jobs:
           cp -r frontend/dist stage/candidatai/frontend/dist
           (cd stage && zip -qr ../candidatai.zip candidatai/frontend/dist)
           unzip -l candidatai.zip | grep -q "candidatai/frontend/dist/index.html"
+          unzip -l candidatai.zip | grep -q "candidatai/install.sh"
+          unzip -l candidatai.zip | grep -q "candidatai/frontend/public/candidatai.icns"
+          # install.sh tiene que llegar ejecutable (`curl | bash` no lo necesita; `bash install.sh` sí
+          # desde el zip descomprimido en macOS y Linux).
+          zipinfo candidatai.zip candidatai/install.sh | grep -q "^-rwx"
+      - name: Deja el zip como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: candidatai-zip
+          path: candidatai.zip
+          retention-days: 7
+
+  # Solo con la etiqueta: el único job con permiso de escritura, y en la prueba en seco no existe.
+  release:
+    needs: package
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: candidatai-zip
       - name: Publica la release
         env:
           GH_TOKEN: ${{ github.token }}

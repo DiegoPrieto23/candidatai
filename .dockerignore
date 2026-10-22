@@ -1,0 +1,25 @@
+# Nada personal en la imagen: tus datos van en el volumen /data (ADR-042).
+data
+data-*
+**/data
+**/data-*
+.env
+.env.*
+**/.env
+**/*.db
+
+# Lo que se reconstruye dentro o no hace falta para ejecutar la app.
+.git
+**/node_modules
+**/.venv
+**/__pycache__
+**/.pytest_cache
+**/.ruff_cache
+frontend/dist
+backend/tests
+docs/img
+docs/video
+.claude/settings.local.json
+Dockerfile
+docker-compose*.yml
+.dockerignore

@@ -97,6 +97,12 @@
     "step3": "Si la candidatura se completa dentro de {{portal}}, termínala allí (el CV está en «Paquete de candidatura») y pulsa «Marcar como enviada».",
     "open": "Abrir la oferta en {{portal}}"
   },
+  "docker": {
+    "intro": "Estás usando CandidatAI en Docker: aquí no hay un navegador visible para rellenar el formulario y que pulses «Enviar». Abre la oferta en tu navegador y envía la candidatura tú (el CV está en «Paquete de candidatura»).",
+    "step": "Cuando la hayas enviado, pulsa «Marcar como enviada».",
+    "open": "Abrir la oferta en tu navegador",
+    "sectionIntro": "Abre la oferta en tu navegador y envíala tú; CandidatAI registra que la enviaste. Nada se envía sin ti."
+  },
   "done": {
     "manual": "Marcada como enviada por ti.",
     "sent": "Enviada a {{domain}}: la web confirmó el envío."

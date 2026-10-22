@@ -6,8 +6,13 @@ nube o con la suscripción que ya tengas. Qué funciona con cada agente y modelo
 sale de la matriz medida con `cai eval compat` (ver «Comprobar que tu modelo da la talla» y
 `evals/compat/REPORT.md`).
 
-Nombres, tamaños y límites comprobados el **2026-10-16**. Cambian a menudo: si algo no cuadra,
-mira la página que se enlaza en cada caso.
+Nombres, tamaños y límites comprobados el **2026-10-16**; los modelos gratuitos de OpenRouter y las
+medidas de velocidad, el **2026-10-22**. Cambian a menudo: si algo no cuadra, mira la página que se
+enlaza en cada caso.
+
+**Antes de elegir la vía local**, mira «Cuánto tarda en un portátil sin gráfica»: con 16 GB de RAM
+y sin gráfica dedicada, un agente con un modelo local no es usable en el día a día. En ese caso, la
+nube gratis (OpenRouter) es la vía práctica.
 
 ## Tres vías
 
@@ -54,11 +59,20 @@ puedes bloquear los que entrenan con ellos.
    - Vuelve a abrir Ollama desde el menú Inicio, y reinicia CandidatAI para que el diagnóstico la vea.
    También se puede cambiar desde los ajustes de la app de Ollama (el control deslizante del
    contexto).
-3. **Descarga un modelo** (ver la tabla de abajo), por ejemplo:
+3. **Ahorra memoria** (recomendable si no tienes gráfica dedicada). En las mismas variables de
+   entorno:
+   - `OLLAMA_FLASH_ATTENTION` = `1` y `OLLAMA_KV_CACHE_TYPE` = `q8_0`: el contexto ocupa la mitad
+     (con `qwen3:8b` y 32K, de 10 GB a 8,1 GB en total);
+   - `OLLAMA_MAX_LOADED_MODELS` = `1` y `OLLAMA_NUM_PARALLEL` = `1`: un solo modelo y una petición
+     a la vez.
+
+   Ollama lee las variables al arrancar: ciérralo del todo desde la bandeja y vuelve a abrirlo
+   desde el menú Inicio (no desde una terminal que ya estuviera abierta, que no las ve).
+4. **Descarga un modelo** (ver la tabla de abajo), por ejemplo:
    ```powershell
-   ollama pull gpt-oss:20b
+   ollama pull qwen3:14b
    ```
-4. **Comprueba** con `uv run --directory backend cai agents doctor`. La sección «Modelos locales
+5. **Comprueba** con `uv run --directory backend cai agents doctor`. La sección «Modelos locales
    (Ollama)» dice si responde, qué modelos tienes, su contexto y si algo no llega. Lo mismo sale en
    la tarjeta del agente de la página «Agente».
 
@@ -70,16 +84,47 @@ pon la longitud de contexto al cargar el modelo. El diagnóstico de la app solo 
 
 ## Qué modelo, según tu memoria
 
-Con memoria nos referimos a la de vídeo si tienes una gráfica dedicada, o a la RAM si no la tienes
-(más lento). Etiquetas y tamaños de https://ollama.com/library:
+Con memoria nos referimos a la de vídeo si tienes una gráfica dedicada. Si no la tienes, el modelo
+va en la RAM y comparte equipo con Windows y tus programas, que ya usan 4-6 GB: cuenta como
+memoria disponible la RAM total menos unos 6 GB. El tamaño de la tabla es el del fichero; cargado
+con 32K de contexto ocupa más (`ollama ps` lo dice). Etiquetas y tamaños de
+https://ollama.com/library:
 
 | Memoria disponible | Modelo | Tamaño | Para qué |
 |---|---|---|---|
 | 8 GB | `qwen3:8b` | 5,2 GB | Solo para probar. **Los modelos de unos 8B o menos suelen fallar con los esquemas estrictos** (extracción, CV): campos inventados, JSON roto, herramientas sin llamar |
-| 16 GB | `gpt-oss:20b` | 14 GB | Procesar ofertas y valorar el encaje. Admite herramientas y 128K de contexto. Con 16 GB de RAM y sin gráfica va justo y lento |
-| 16 GB | `qwen3:14b` | 9,3 GB | Alternativa más ligera a la anterior, con 40K de contexto |
+| 16 GB | `qwen3:14b` | 9,3 GB | Procesar ofertas y valorar el encaje, con 40K de contexto |
+| 16 GB de vídeo, o 24 GB de RAM o más | `gpt-oss:20b` | 14 GB | Lo mismo, con 128K de contexto. **Con 16 GB de RAM no es viable**: cargado ocupa 14 GB, quedan menos de 1 GB libres, Windows tira del disco y el agente se queda minutos sin responder |
 | 24 GB | `devstral:24b` | 14 GB | Agente de código con herramientas, 128K de contexto |
 | 24 GB o más | `qwen3-coder:30b` | 19 GB | Lo más capaz de esta lista para agentes, 256K de contexto |
+
+### Cuánto tarda en un portátil sin gráfica
+
+Que el modelo quepa no basta: el agente le manda en cada sesión sus instrucciones y la lista de
+herramientas de la app, unos **15 000 tokens** antes de tu primera frase. Sin gráfica dedicada, eso
+lo procesa el procesador, y es lo que más tarda. Medido el 2026-10-22 en un portátil ultraligero
+(AMD Ryzen 7 5700U de 15 W, 16 GB de RAM, gráfica integrada) con `qwen3:8b`, 32K de contexto y los
+ajustes del paso 3 de «Ollama en Windows»:
+
+| Cómo | Lee el prompt | Escribe | Primer turno del agente |
+|---|---|---|---|
+| Portátil en modo silencioso | ~10 tokens/s | ~2,7 tokens/s | ~25 min |
+| Portátil en modo rendimiento | ~12-14 tokens/s | ~4 tokens/s | ~18-20 min |
+| Con la gráfica integrada (Vulkan) | ~20 tokens/s | ~2,3 tokens/s | ~13 min |
+
+Los turnos siguientes van más rápido, porque Ollama reutiliza lo ya leído, pero un CV completo
+lleva horas. Un `qwen3:14b` iría más lento todavía, y `gpt-oss:20b` ni siquiera llega a contestar
+(ver la tabla de arriba). Si tu equipo es así, usa un modelo gratuito en la nube (ver «OpenRouter
+con OpenCode»).
+
+Si lo pruebas igualmente:
+
+- pon el portátil enchufado y en modo **rendimiento** (en ASUS, MyASUS → perfil del ventilador, o
+  `Fn + F`): en silencioso, el procesador baja al 40 % de su frecuencia con carga. Aun así, un
+  ultraligero se frena al 55-60 % en unos segundos por temperatura;
+- la gráfica integrada se activa con `OLLAMA_VULKAN` = `1` y `OLLAMA_IGPU_ENABLE` = `1` (Ollama la
+  descarta si falta la segunda). Lee más rápido pero escribe más lento: mide con tu equipo si te
+  compensa.
 
 Para **redactar el CV**, mejor tu suscripción o el modelo más grande que tengas: la app avisa si
 eliges un modelo de unos 8B o menos para `generate-cv`. Lo que dé la talla de verdad lo dice la
@@ -102,17 +147,51 @@ En `~/.config/opencode/opencode.json` (en Windows, `C:\Users\<tú>\.config\openc
       "npm": "@ai-sdk/openai-compatible",
       "name": "Ollama (local)",
       "options": { "baseURL": "http://localhost:11434/v1" },
-      "models": { "gpt-oss:20b": { "name": "gpt-oss 20B" } }
+      "models": { "qwen3:14b": { "name": "Qwen3 14B" } }
     }
   }
 }
 ```
 
-En la app, el modelo de OpenCode se escribe `ollama/gpt-oss:20b` (proveedor/modelo). Las claves de
-un proveedor en la nube (OpenRouter…) se añaden con `/connect` dentro de OpenCode y quedan en
-`~/.local/share/opencode/auth.json`. **Los modelos gratuitos de OpenCode Zen no sirven**: rechazan
-los agentes propios, y la app los usa en los subagentes y en segundo plano (ver
-`docs/AGENTS_COMPAT.md`).
+En la app, el modelo de OpenCode se escribe `ollama/qwen3:14b` (proveedor/modelo). **Los modelos
+gratuitos de OpenCode Zen no sirven**: rechazan los agentes propios, y la app los usa en los
+subagentes y en segundo plano (ver `docs/AGENTS_COMPAT.md`).
+
+### OpenRouter con OpenCode
+
+OpenRouter ya viene en OpenCode: no hace falta tocar `opencode.json`.
+
+1. Crea una cuenta en https://openrouter.ai y una clave en https://openrouter.ai/settings/keys.
+2. En https://openrouter.ai/settings/privacy decide qué permites. Los modelos `:free` suelen
+   necesitar que aceptes que el proveedor guarde las peticiones; si no lo aceptas, devuelven error.
+   Con la demo da igual; con tus datos reales, léelo antes.
+3. Abre OpenCode en la raíz del repo, escribe `/connect`, elige **OpenRouter** y pega la clave.
+   Queda en `~/.local/share/opencode/auth.json`, fuera del repositorio.
+4. Ábrelo con el modelo: `opencode -m openrouter/<modelo>`. En la app, el modelo se escribe igual,
+   `openrouter/<modelo>`.
+
+Modelos `:free` que admiten herramientas el 2026-10-22 (la lista completa, en
+https://openrouter.ai/models?max_price=0, filtrando por *tools*):
+
+| Modelo | Contexto | Nota |
+|---|---|---|
+| `nvidia/nemotron-3-ultra-550b-a55b:free` | 1M | El primero que probar: el más grande de los gratuitos |
+| `thinkingmachines/inkling:free` | 1M | Alternativa si el anterior falla o va saturado |
+| `nvidia/nemotron-3.5-lightning:free` | 1M | Más pequeño y rápido |
+
+Ese día, `nvidia/nemotron-3-super-120b-a12b:free` daba error en su proveedor («Function … Not
+found») y `google/gemma-4-31b-it:free` estaba saturado. Los gratuitos comparten cupo con todos los
+usuarios y a veces fallan durante horas: antes de lanzar algo largo, prueba el modelo con una
+petición desde una carpeta cualquiera, `opencode run -m openrouter/<modelo> "di hola"`.
+
+**Límites:** 20 peticiones por minuto y **50 al día**, o 1 000 al día si alguna vez compraste 10
+créditos (https://openrouter.ai/docs/api-reference/limits). Cada paso del agente (leer una oferta,
+guardar un resultado, cada subagente) es una petición, y OpenCode reintenta las que fallan. En la
+práctica (2026-10-22), procesar 5 ofertas con `process-jobs` agotó lo que quedaba del cupo de 50
+sin terminar. Sin créditos, OpenRouter gratis sirve para probar o para una oferta al día, no para
+el uso diario; si se agota, el agente se para con «Rate limit exceeded: free-models-per-day» y hay
+que esperar al día siguiente. Para usar la app sin pagar a diario, mejor Antigravity CLI con tu
+cuenta de Google (ver la tabla de «Tres vías»).
 
 ### Codex
 El preset `local` de la app lanza `codex --oss -m gpt-oss:20b`, que usa Ollama. Elige el preset en
@@ -159,7 +238,8 @@ tienes instalados y del manifiesto, no de nombres escritos en el código.
 ficticios. Tus datos de `data/` no se tocan.
 
 ```powershell
-uv run --directory backend cai eval compat --agent opencode --model ollama/gpt-oss:20b
+uv run --directory backend cai eval compat --agent opencode --model ollama/qwen3:14b
+uv run --directory backend cai eval compat --agent opencode --model openrouter/nvidia/nemotron-3-ultra-550b-a55b:free
 uv run --directory backend cai eval compat --agent codex --preset local
 ```
 
@@ -178,3 +258,8 @@ El resultado va a `evals/compat/results/` y el resumen, a `evals/compat/REPORT.m
 Si el agente no puede hacer un paso en segundo plano (Codex, Qwen Code o Antigravity, y
 `generate-cv` con OpenCode), el comando imprime los pasos manuales. Al acabarlos, `--import` mide lo
 que hiciste. `--timeout <minutos>` da más tiempo por ejecución, útil con modelos locales lentos.
+
+Con un cupo gratuito pequeño, empieza por **una sola oferta**: `--cases 1` hace lo mismo con la
+primera oferta de la matriz, en su propia demo y con su propio resultado, y gasta más o menos la
+quinta parte. Pásalo también en `--approve` e `--import`. Sirve para saber si el agente funciona;
+para comparar la calidad entre agentes, la matriz entera.

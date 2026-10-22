@@ -1,0 +1,8 @@
+# La demo de `cai demo seed` en Docker (fase 26.3): abre su volumen en lugar del tuyo.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d   # la demo
+#   docker compose up -d                                                     # vuelta a tus datos
+services:
+  candidatai:
+    environment:
+      CAI_DATA_DIR: /data-demo

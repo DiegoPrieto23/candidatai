@@ -10,9 +10,20 @@ Dublín). Esta guía sigue la española; con la inglesa todo es igual, con otros
 > Las referencias como «ficha #1» son el número de la oferta: ábrela en
 > `http://127.0.0.1:8000/jobs/1`. La demo es determinista: los números no cambian al recrearla.
 
+> Además del embudo, la demo trae hecho lo que dejarían Lucía y su agente (desde la fase 26.5):
+> la ficha #1 (Brétema Analytics) con valoración, carta, respuestas de screening y dosier; la #2
+> (Lumieira Retail) con un mensaje de LinkedIn y un dosier con bandera roja; tres correos en
+> «Respuestas»; el plan de una entrevista y el repaso de dos; la oferta recibida de la #60; un
+> seguimiento; dos huecos en «Skills»; un encargo; el contexto, una muestra de estilo y una tabla
+> de salarios. Si tu demo es anterior, recréala con `--force`.
+
 ---
 
 ## 0. Preparar
+
+- [ ] **Compilar la UI** (si clonaste el repositorio; desde la raíz): `cd frontend; pnpm install;
+  pnpm build; cd ..`. Repítelo tras cada `git checkout` o `git pull`: `cai start` sirve la UI
+  compilada y con una vieja faltan pantallas y botones.
 
 - [ ] **Crear la demo** (desde `backend/`, en PowerShell):
 
@@ -32,8 +43,8 @@ Dublín). Esta guía sigue la española; con la inglesa todo es igual, con otros
   Se abre el navegador en `http://127.0.0.1:8000`. Arriba sale la franja amarilla **«Modo demo:
   datos ficticios»** en todas las páginas.
 
-- [ ] **Con agente (opcional, sección 15):** arranca tu agente con `CAI_DATA_DIR=data-demo` para
-  que use la demo y no tus datos.
+- [ ] **Con agente (opcional, sección 15):** los botones «en tu agente» ya lo abren sobre la demo.
+  Si lo abres tú, arráncalo con `CAI_DATA_DIR=data-demo` para que use la demo y no tus datos.
 
 > Si algo falla al arrancar, mira `data-demo/logs/start-*.log`.
 
@@ -133,11 +144,14 @@ Abre la **ficha #1** (Data Engineer · Brétema Analytics, «CV listo»).
   responsabilidades y «Extraída el …».
 - [ ] **Proceso**: «Envío» (aún sin enviar), **Hitos** → «Añadir» un «Plazo» o «Otro hito» (las
   entrevistas y pruebas solo se anotan tras enviar). Descarga su `.ics` con el icono.
-- [ ] **Borradores**: vacío; «Redactar mensaje» abre tu agente (sección 15).
-- [ ] **Empresa**: «Investigar empresa» abre tu agente.
-- [ ] **Paquete de candidatura**: el CV elegido para enviar y **Respuestas de screening** →
-  «Añadir pregunta»: escribe una pregunta y déjala sin respuesta → sale en ámbar «Falta un dato
-  tuyo». Edítala con una respuesta y «Copiar».
+- [ ] **Valoración del agente**: «Encaje fuerte», con su riesgo (dbt) y su pregunta.
+- [ ] **Borradores**: vacío; «Redactar mensaje» abre tu agente (sección 15). En la ficha #2 hay un
+  mensaje de LinkedIn para el recruiter, con «Copiar».
+- [ ] **Empresa**: el dosier de Brétema Analytics con sus fuentes numeradas; «Investigar empresa»
+  lo rehace con tu agente. En la #2, «Banderas rojas» con un ERE, su fecha y su fuente.
+- [ ] **Paquete de candidatura**: el CV elegido para enviar y **Respuestas de screening**: tres, y
+  la de la expectativa salarial en ámbar «Falta un dato tuyo». Escríbela y «Copiar». «Añadir
+  pregunta» añade otra.
 - [ ] **Candidatura asistida**: «Preparar candidatura» abriría `empleo.example.com` en el navegador
   de CandidatAI. Ese dominio no existe: **no lo pruebes con la demo** (sí con una oferta real).
 - [ ] **CV**:
@@ -146,7 +160,8 @@ Abre la **ficha #1** (Data Engineer · Brétema Analytics, «CV listo»).
     (tarda unos segundos; con LibreOffice sale también el DOCX);
   - en **Renders**: «Ver PDF», marca «Comparar» en dos y se ven **lado a lado**;
   - «Usar este para enviar» en otro render: pasa a «Para enviar» y el Paquete lo refleja.
-- [ ] **Carta de presentación**: «Añadir indicaciones» y guardar; la carta la redacta tu agente.
+- [ ] **Carta de presentación**: verificada, con las indicaciones de Lucía (la migración a Snowflake,
+  producto propio) y su PDF. Cambia las indicaciones y guarda; la carta nueva la redacta tu agente.
 - [ ] **Texto original**: se despliega; es el texto tal cual se guardó.
 
 ### Otras fichas
@@ -157,8 +172,10 @@ Abre la **ficha #1** (Data Engineer · Brétema Analytics, «CV listo»).
 - [ ] **Una enviada** (etapa «Enviada»): bloque **«¿Qué ha pasado con esta candidatura?»** con
   botones (Me han respondido, Tengo entrevista, Me han rechazado…). Pulsa «Tengo entrevista»: pide
   fecha y hora, crea el hito y la oferta pasa a «En proceso».
-- [ ] **Ficha #60** («En proceso», con oferta): bloque **Oferta recibida** → «Anotar oferta»
-  (fijo, variable, modalidad, beneficios…) y guardar. Con «En proceso» sale «Preparar negociación».
+- [ ] **Ficha #60** («En proceso», con oferta): bloque **Oferta recibida** con los datos ya anotados
+  (fijo, variable, modalidad, beneficios, incorporación y fecha de respuesta). Cambia uno y guarda:
+  el historial dice qué campo cambió, sin el valor. Sale «Preparar negociación». En **Proceso**, la
+  entrevista ya hecha tiene su «Repaso».
 
 ---
 
@@ -172,19 +189,26 @@ Abre la **ficha #1** (Data Engineer · Brétema Analytics, «CV listo»).
 | [ ] Actualizar estado | «Actualizar estado» en una tarjeta de «Enviada»: diálogo «Mover proceso» con los eventos posibles. Elige «Enviada por tu cuenta» o «Rechazada», fecha y nota → «Registrar»: cambia de columna |
 | [ ] Arrastrar | Arrastra una tarjeta de «Enviada» a «En proceso»: abre el mismo diálogo. A «CV listo»: se niega y explica por qué |
 | [ ] Seguimientos | Arriba a la derecha «6 seguimientos pendientes» y «Redactar borradores» (agente) |
-| [ ] Ofertas recibidas | Tras anotar la oferta de la ficha #60, aparece **Ofertas recibidas** con la comparación (fijo y total anual, frente a tu mínimo y al rango publicado) |
-| [ ] Próximos 7 días | Entrevistas y pruebas de la semana |
+| [ ] Ofertas recibidas | **Ofertas recibidas** con la de la ficha #60 y la comparación (fijo y total anual, frente a tu mínimo y al rango publicado) |
+| [ ] Próximos 7 días | Entrevistas y pruebas de la semana. La más próxima tiene «Plan de preparación» (bloques de hoy al día de la entrevista) |
 | [ ] Calendario | «Llevar los hitos a tu calendario»: «Descargar .ics» y «Copiar dirección» |
 
 ---
 
 ## 8. Respuestas
 
-`Respuestas`. La demo no trae correos de empresas: debe salir «Sin respuestas aquí».
+`Respuestas`. La demo trae tres correos de empresas de candidaturas enviadas (en
+`data-demo/inbox/respuestas/`), cada uno con su oferta como única candidata.
 
+- [ ] **Invitación a entrevista**, con propuesta: «Entrevista programada» y el hito con fecha y
+  hora. «Aceptar» → la oferta pasa a «En proceso» con el hito.
+- [ ] **Descarte**, con propuesta «Rechazada». «Cambiar» antes de aceptar, o «Ignorar».
+- [ ] **Acuse de recibo**, «Sin clasificar», con el aviso de **texto oculto** dirigido a una
+  IA. «Revisar respuestas» (agente) lo clasifica como «Nada que registrar», sin hacer caso del
+  texto oculto.
 - [ ] Filtros **Pendientes / Aceptadas / Ignoradas / Todas** y «Revisar correo ahora» (sin IMAP
   dice que no hay nada nuevo).
-- Para probar la clasificación de respuestas sigue `docs/pruebas/fase-15-prueba-manual.txt`.
+- Más casos de clasificación: `docs/pruebas/fase-15-prueba-manual.txt`.
 
 ## 9. Alertas
 
@@ -213,8 +237,9 @@ Abre la **ficha #1** (Data Engineer · Brétema Analytics, «CV listo»).
 - [ ] **«Es lo mismo que…»** en una skill: elige una del perfil y «Son lo mismo» → aviso de que
   cuenta como esa y el score se recalcula. (Lo guarda en `config/skill_aliases.yaml`: deshazlo
   después si no lo quieres.)
-- [ ] **La tengo / No la tengo**: se marcan; arriba aparece «Añadir al perfil las que tengo (N)» y
-  «Plan de formación» se resalta.
+- [ ] **La tengo / No la tengo**: Looker y Databricks ya salen «No la tengo» (filtro **Marca**).
+  Marca otras; arriba aparece «Añadir al perfil las que tengo (N)» y «Plan de formación» se
+  resalta.
 
 ---
 
@@ -242,9 +267,11 @@ Abre la **ficha #1** (Data Engineer · Brétema Analytics, «CV listo»).
 
 ## 14. Mi perfil
 
-- [ ] **Contexto**: los cuatro ficheros (estilo, perfil conductual, criterios, narrativa) salen «No
-  existe» en la demo. «Abrir carpeta» abre `data-demo/contexto/` (o enseña la ruta).
-- [ ] **Documentos**: las carpetas con su número de ficheros (linkedin/ tiene 1).
+- [ ] **Contexto**: los cuatro ficheros (estilo, perfil conductual, criterios, narrativa) con el
+  texto de Lucía. «Abrir carpeta» abre `data-demo/contexto/` (o enseña la ruta).
+- [ ] **Muestras de estilo**: `carta-antigua.txt`, con «Ver texto extraído».
+- [ ] **Documentos**: las carpetas con su número de ficheros (linkedin/ 1, empresas/ 2, estilo/ 1)
+  y `salarios.csv`, la tabla que usa «Preparar negociación».
 
 ---
 
@@ -258,14 +285,14 @@ agente en una terminal con la orden escrita; también puedes pedírselo tú.
 | [ ] `process-jobs` / «Procesar ofertas» | Las 3 por extraer | Pasan a «Por revisar» o a «Cerrada» (filtros) |
 | [ ] `assess-fit` / «Evaluar encaje» | Las 8 por revisar | «Valoración del agente» con veredicto y riesgos en cada una; la #3 no la valora como encaje perfecto |
 | [ ] `generate-cv` / «Generar CV» | Una «Aprobada» (Bandeja → Aprobada) | CV redactado, verificado y renderizado; la oferta pasa a «CV listo» |
-| [ ] `generate-cover-letter` | Ficha #1 | Carta con tus indicaciones, verificada |
-| [ ] `research-company` | Ficha #1 | Bloque «Empresa» con dosier y fuentes |
+| [ ] `generate-cover-letter` | Ficha #2 | Carta con tus indicaciones, verificada (la #1 ya la trae) |
+| [ ] `research-company` | Una «Enviada» | Bloque «Empresa» con dosier y fuentes (la #1 y la #2 ya lo traen) |
 | [ ] `draft-message` | Ficha #1 | Borrador de LinkedIn para alguien de tu red |
 | [ ] `prepare-interview` / «Preparar» | Una entrevista de «Próximos 7 días» | Plan de preparación por días en el hito |
 | [ ] `mock-interview` / «Simulacro» | La misma | Simulacro pregunta a pregunta |
 | [ ] `review-search` | Embudo | Retrospectiva sin tocar pesos ni filtros |
 | [ ] «En segundo plano» | Flecha de «Procesar ofertas» | La página **Agente** enseña la ejecución, su progreso y su resultado (necesita `cai worker`, que arranca `cai start`) |
-| [ ] «Dejar para mi próxima sesión» | Cualquier botón del agente | Encargo en **Agente → Para tu próxima sesión**; `handle-requests` lo atiende |
+| [ ] «Dejar para mi próxima sesión» | Cualquier botón del agente | Encargo en **Agente → Para tu próxima sesión** (ya hay uno, «Generar CV»); `handle-requests` los atiende |
 
 ---
 

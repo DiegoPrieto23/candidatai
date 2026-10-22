@@ -12,8 +12,9 @@ con tu suscripción, y tú ves, contestas y apruebas lo que haga.
   habilitado e instalado.
 - Antes de lanzar se quitan del entorno las variables de `launch.unset_env` (p. ej. la clave de la
   API): así el agente usa tu suscripción y no factura por API.
-- Solo Windows de momento (Windows Terminal o, si no está, una ventana de PowerShell). En otro
-  sistema, o sin agente instalado, la UI copia la orden para que la pegues tú.
+- En Windows, Windows Terminal o, si no está, una ventana de PowerShell. En macOS y Linux (fase
+  26.1), la terminal que elige `terminals` (`CAI_TERMINAL` para cambiarla). Sin terminal, o sin
+  agente instalado, la UI copia la orden para que la pegues tú.
 - «En segundo plano» (fase 19, ADR-032): las acciones con `background` también se pueden lanzar
   sin ventana desde el worker (`services/agent_runs.py`), con `launch.headless` del manifiesto y
   solo las herramientas MCP que declara la acción: en la orden (`ceiling: args`) o, desde la fase
@@ -40,9 +41,11 @@ from app.services import (
     agent_prefs,
     agent_registry,
     agent_run_config,
+    container,
     events,
     interviews,
     process,
+    terminals,
 )
 from app.services import profile as profiles
 from app.services.agent_actions import (  # noqa: F401 - se reexportan
@@ -215,7 +218,6 @@ def _headless(spec: agent_registry.AgentSpec) -> Headless | None:
     )
 
 
-WINDOWS_ONLY = "Abrir el agente desde la UI solo está disponible en Windows de momento."
 # Motivos por los que no hay agente que lanzar: la UI copia la orden para que la pegues tú. Los
 # demás (capacidad, nivel, modelo) son una elección que no vale y se dicen sin copiar nada.
 _UNAVAILABLE: frozenset[str] = frozenset(
@@ -282,6 +284,10 @@ def choose(
         preset=preset,
         mode=mode,
     )
+    if mode == "background" and container.in_docker():
+        # Fase 26.3: el agente no está en el contenedor; el worker no tiene a quién lanzar.
+        blocked = {"blocked": container.BACKGROUND, "blocked_code": "no_headless"}
+        res = res.model_copy(update=blocked)
     if not res.usable or res.agent is None:
         return None, res
     launcher = ctx.by_name[res.agent]
@@ -328,8 +334,8 @@ def pick(
 ) -> _Launcher:
     """Como `choose`, pero lanza `LaunchError` si no se puede: `unavailable` (con la orden, para
     copiarla) si no hay agente; `invalid_request` si la elección no vale para la acción."""
-    if mode == "terminal" and sys.platform != "win32":
-        raise LaunchError("unavailable", WINDOWS_ONLY, prompt)
+    if mode == "terminal" and (problem := no_terminal()) is not None:
+        raise LaunchError("unavailable", problem, prompt)
     ctx = Context(session)
     try:
         agent_prefs.check_explicit(agent, model, preset, list(ctx.by_name))
@@ -344,15 +350,26 @@ def pick(
     return launcher
 
 
+def no_terminal() -> str | None:
+    """Por qué no se puede abrir una terminal aquí, o `None` si se puede. En Windows, siempre se
+    puede (Windows Terminal o PowerShell). En Docker, nunca: tu agente está fuera del contenedor."""
+    if container.in_docker():
+        return container.TERMINAL
+    if sys.platform == "win32":
+        return None
+    found = terminals.find()
+    return found if isinstance(found, str) else None
+
+
 def _pick(session: Session | None = None) -> _Launcher | str:
     """El agente que se lanzaría (sin acción), o el motivo por el que no hay ninguno."""
-    if sys.platform != "win32":
-        return WINDOWS_ONLY
+    if (problem := no_terminal()) is not None:
+        return problem
     return _pick_any(session)
 
 
 def _pick_any(session: Session | None = None) -> _Launcher | str:
-    """Como `_pick`, sin exigir Windows: el segundo plano no abre ninguna ventana."""
+    """Como `_pick`, sin exigir una terminal: el segundo plano no abre ninguna ventana."""
     launcher, res = choose(session)
     return launcher if launcher is not None else (res.blocked or "")
 
@@ -365,7 +382,7 @@ def info(session: Session | None = None) -> AgentInfo:
 
 
 def selection(session: Session | None = None) -> AgentInfo:
-    """Como `info`, sin exigir Windows: el agente que se usaría hoy (`cai agents doctor`)."""
+    """Como `info`, sin exigir una terminal: el agente que se usaría hoy (`cai agents doctor`)."""
     picked = _pick_any(session)
     if isinstance(picked, str):
         return AgentInfo(available=False, reason=picked)
@@ -380,6 +397,18 @@ def _quote(value: str) -> str:
 # Fase 24.4: el agente lanzado se identifica con esta variable, para que los eventos que haga por
 # la CLI queden a su nombre (por MCP lo dice el propio cliente).
 CLIENT_ENV = "CAI_CLIENT_NAME"
+DATA_DIR_ENV = "CAI_DATA_DIR"  # la carpeta de una demo, para que el agente no use `data/`
+
+
+def launch_env(launcher: _Launcher) -> dict[str, str]:
+    """Las variables que pone la ventana: el agente y, en una demo, su carpeta de datos. Una
+    pestaña nueva de Windows Terminal (`wt -w 0`) no hereda el entorno de `cai start`: sin
+    `CAI_DATA_DIR`, el agente escribiría en tus datos reales y no en la demo."""
+    env = {CLIENT_ENV: launcher.agent}
+    settings = get_settings()
+    if settings.demo_mode:
+        env[DATA_DIR_ENV] = str(settings.data_dir)
+    return env
 
 
 def powershell_command(
@@ -391,8 +420,28 @@ def powershell_command(
     markers = (PROMPT_PLACEHOLDER, SESSION_PLACEHOLDER)
     parts = [value if p in markers else p for p in command or launcher.command]
     unset = [f"Remove-Item Env:{name} -ErrorAction SilentlyContinue" for name in launcher.unset_env]
-    client = f"$env:{CLIENT_ENV} = {_quote(launcher.agent)}"
-    return "; ".join([*unset, client, "& " + " ".join(_quote(p) for p in parts)])
+    env = [f"$env:{name} = {_quote(value)}" for name, value in launch_env(launcher).items()]
+    return "; ".join([*unset, *env, "& " + " ".join(_quote(p) for p in parts)])
+
+
+def posix_command(launcher: _Launcher, value: str, command: Sequence[str] | None = None) -> str:
+    """Como `powershell_command`, para bash o zsh en macOS y Linux (fase 26.1)."""
+    markers = (PROMPT_PLACEHOLDER, SESSION_PLACEHOLDER)
+    parts = [value if p in markers else p for p in command or launcher.command]
+    return terminals.posix_script(
+        parts,
+        unset_env=launcher.unset_env,
+        env=launch_env(launcher),
+        cwd=REPO_ROOT,
+        shell_path=terminals.shell(),
+    )
+
+
+def terminal_command(launcher: _Launcher, value: str, command: Sequence[str] | None = None) -> str:
+    """Lo que ejecuta la ventana en este sistema."""
+    if sys.platform == "win32":
+        return powershell_command(launcher, value, command)
+    return posix_command(launcher, value, command)
 
 
 def shell_args(command: str) -> list[str]:
@@ -403,6 +452,12 @@ def shell_args(command: str) -> list[str]:
 
 
 def _open_terminal(title: str, command: str) -> None:
+    if sys.platform != "win32":
+        found = terminals.find()
+        if isinstance(found, str):
+            raise OSError(found)
+        terminals.open_terminal(found, title, REPO_ROOT, command)
+        return
     shell = shell_args(command)
     wt = shutil.which("wt")
     if wt:
@@ -493,7 +548,7 @@ def _open(
 ) -> LaunchResult:
     """Abre la terminal con `command` de `picked`, sustituyendo el marcador por `value`."""
     try:
-        _open_terminal(f"CandidatAI · {label}", powershell_command(picked, value, command))
+        _open_terminal(f"CandidatAI · {label}", terminal_command(picked, value, command))
     except OSError as exc:
         raise LaunchError("unavailable", f"No se pudo abrir la terminal: {exc}", prompt) from exc
     model = model_label(picked.model, picked.preset)
@@ -510,7 +565,7 @@ def _open(
 def resumable_agents() -> frozenset[str]:
     """Los agentes que «Abrir en terminal» puede retomar: los que se pueden abrir, están
     instalados y tienen `resume` (la sesión se retoma con el agente que la ejecutó)."""
-    if sys.platform != "win32":
+    if no_terminal() is not None:
         return frozenset()
     return frozenset(
         launcher.agent
@@ -532,8 +587,8 @@ def resume_in_terminal(
     agente y el modelo que la ejecutaron si ese agente sabe (`launch.resume`); si no, abre la
     orden de nuevo con el agente que toque."""
     label = ACTIONS[action].label
-    if sys.platform != "win32":
-        raise LaunchError("unavailable", WINDOWS_ONLY, prompt)
+    if (problem := no_terminal()) is not None:
+        raise LaunchError("unavailable", problem, prompt)
     same, _ = choose(session, action, agent=run_agent, model=model, preset=preset)
     if same is not None and session_id and same.resume and SESSION_ID_RE.fullmatch(session_id):
         result = _open(label, prompt, same, same.resume, session_id)

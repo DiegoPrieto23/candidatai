@@ -41,7 +41,18 @@ from app.schemas.cv import CvContent, CvRenderOptions, CvVerification
 from app.schemas.llm_io import JobExtraction
 from app.schemas.sources import AgentBrowseSource, SourceInput
 from app.services import capture as capture_service
-from app.services import events, extractions, ingest, network, pipeline, process, profile, tasks
+from app.services import (
+    container,
+    demo_extras,
+    events,
+    extractions,
+    ingest,
+    network,
+    pipeline,
+    process,
+    profile,
+    tasks,
+)
 from app.services.demo_text import posting_text
 from app.services.documents import pdf
 from app.services.documents import service as cv_service
@@ -198,6 +209,7 @@ class JobPlan:
     channel: str = "portal_manual"
     starts_in: float | None = None  # entrevista o prueba futura: días desde hoy
     hour: int = 10  # hora de Madrid de la entrevista
+    job_id: int | None = None  # al escribirla
 
 
 class _Planner:
@@ -570,6 +582,11 @@ def _pdf_engine() -> tuple[str | None, str | None]:
         with sync_playwright() as pw:
             if Path(pw.chromium.executable_path).is_file():
                 return "moderna-2col", "Chromium (Playwright)"
+            # La imagen de Docker (fase 26.3) solo trae el Chromium sin ventana, que no está en
+            # `executable_path`: basta con que arranque.
+            if container.in_docker():
+                pw.chromium.launch().close()
+                return "moderna-2col", "Chromium (Playwright)"
     except Exception:  # noqa: BLE001 - sin Playwright o sin navegador: sin PDF
         pass
     return None, None
@@ -589,7 +606,7 @@ def _write_cv(session: Session, job_id: int, content: dict[str, Any], template: 
 
 
 def _populate(
-    session: Session, plans: list[JobPlan], now: datetime, catalog: dict[str, Any]
+    session: Session, plans: list[JobPlan], now: datetime, catalog: dict[str, Any], lang: str
 ) -> list[str]:
     sources = _sources(session, catalog)
     template, _engine = _pdf_engine()
@@ -611,7 +628,7 @@ def _populate(
         )
         if not result.created or result.duplicate_of is not None:
             raise DemoSeedError(f"Oferta repetida en el catálogo: {plan.title} · {plan.company}.")
-        job_id = result.job_id
+        job_id = plan.job_id = result.job_id
         if plan.fate != "pending_extraction":
             saved = extractions.save_extraction(
                 session, job_id, plan.extraction, agent_name=AGENT_NAME
@@ -636,6 +653,19 @@ def _populate(
     # El score ya está calculado: la cola de `score_job` no tiene nada que hacer.
     for task in session.scalars(select(Task).where(Task.status == "queued")).all():
         tasks.mark_done(session, task.id)
+    seeded = [
+        demo_extras.SeededJob(p.fate, p.job_id, p.title, p.company)
+        for p in plans
+        if p.job_id is not None
+    ]
+    demo_extras.populate(
+        session,
+        seeded,
+        now,
+        demo_dir(lang),
+        with_letter=template is not None,
+        agent_name=AGENT_NAME,
+    )
     return warnings
 
 
@@ -646,18 +676,20 @@ def seed(
     eval_cv: bool = False,
     compat: bool = False,
     lang: str = "es",
+    compat_cases: int | None = None,
 ) -> DemoSummary:
     """Crea la demo en `target` (por defecto `data-demo/`) en el idioma `lang` (`es` o `en`).
     Ver la cabecera del módulo.
 
     Con `eval_cv`, añade además los casos del eval de CV (`evals/cv/`) como ofertas aprobadas y
     sin CV. Con `compat`, las 5 ofertas de la matriz de compatibilidad (`evals/compat/jobs.txt`)
-    solo con su texto. Si la demo ya existe, solo añade los casos que falten (sin `--force`).
+    solo con su texto (`compat_cases`: solo las N primeras). Si la demo ya existe, solo añade los
+    casos que falten (sin `--force`).
     """
     target = (target if target.is_absolute() else REPO_ROOT / target).resolve()
     extra = eval_cv or compat
     if extra and not force and is_demo_dir(target) and (target / "candidatai.db").is_file():
-        return add_eval_cases(target, eval_cv=eval_cv, compat=compat)
+        return add_eval_cases(target, eval_cv=eval_cv, compat=compat, compat_cases=compat_cases)
     source = demo_dir(lang)
     catalog = load_catalog(lang)
     prepare_dir(target, force)
@@ -675,27 +707,32 @@ def seed(
         migrations.upgrade()
         with session_scope() as session:
             profile.import_profile(session, target / "profile.yaml")
-            warnings = _populate(session, plans, now, catalog)
+            warnings = _populate(session, plans, now, catalog, lang)
             network.import_connections(session, linkedin / "Connections.csv")
-            _add_cases(session, eval_cv, compat)
+            _add_cases(session, eval_cv, compat, compat_cases)
         with session_scope() as session:
             return _summary(session, target, warnings)
 
 
-def _add_cases(session: Session, eval_cv: bool, compat: bool) -> None:
+def _add_cases(
+    session: Session, eval_cv: bool, compat: bool, compat_cases: int | None = None
+) -> None:
     # Primero los de la matriz (solo texto): si van los dos, esos 5 se quedan por extraer.
     if compat:
-        cv_eval.add_cases(session, cv_eval.load_compat_cases(), extract=False)
+        cases = cv_eval.load_compat_cases()[:compat_cases]
+        cv_eval.add_cases(session, cases, extract=False)
     if eval_cv:
         cv_eval.add_cases(session)
 
 
-def add_eval_cases(target: Path, eval_cv: bool, compat: bool) -> DemoSummary:
+def add_eval_cases(
+    target: Path, eval_cv: bool, compat: bool, compat_cases: int | None = None
+) -> DemoSummary:
     """Añade a una demo existente los casos de los evals que falten."""
     with use_data_dir(target, embeddings=False):
         migrations.upgrade()
         with session_scope() as session:
-            _add_cases(session, eval_cv, compat)
+            _add_cases(session, eval_cv, compat, compat_cases)
         with session_scope() as session:
             return _summary(session, target, [])
 

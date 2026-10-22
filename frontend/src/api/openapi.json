@@ -16208,6 +16208,11 @@
             ],
             "title": "Portal"
           },
+          "in_docker": {
+            "type": "boolean",
+            "title": "In Docker",
+            "default": false
+          },
           "can_prepare": {
             "type": "boolean",
             "title": "Can Prepare"

@@ -2933,6 +2933,11 @@ export interface components {
             url: string;
             /** Portal */
             portal: string | null;
+            /**
+             * In Docker
+             * @default false
+             */
+            in_docker: boolean;
             /** Can Prepare */
             can_prepare: boolean;
             /** Reason */

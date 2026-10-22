@@ -1,0 +1,162 @@
+Fase 26 · Prueba manual (macOS, Linux y Docker)
+=================================================
+
+Se va completando en cada subfase. Linux se prueba en WSL2 (Windows 11 trae WSLg, con entorno
+gráfico) o en una máquina virtual; macOS, en la CI y a mano si alguien tiene un Mac.
+
+
+26.1 · Núcleo multiplataforma
+-----------------------------
+
+Preparación en WSL2 (Ubuntu), una sola vez:
+
+  1. Abre «Ubuntu» desde el menú Inicio. Comprueba que hay entorno gráfico:
+       echo $DISPLAY $WAYLAND_DISPLAY        (debe salir algo como «:0 wayland-0»)
+  2. Instala uv, una terminal y, si quieres, LibreOffice:
+       curl -LsSf https://astral.sh/uv/install.sh | sh
+       sudo apt update && sudo apt install -y gnome-terminal libreoffice-writer
+  3. Clona el repositorio DENTRO de Linux (no en /mnt/c: es lento y los permisos cambian):
+       git clone <tu repo> ~/candidatai && cd ~/candidatai && git checkout fase/26-multiplataforma
+  4. Instala tu agente en WSL (p. ej. Claude Code: https://docs.claude.com/claude-code) y
+     comprueba que `claude --version` responde.
+  5. Prepara la app:
+       cd backend && uv sync && uv run cai db upgrade
+       uv run pytest tests/test_terminals.py tests/test_agent_runs.py -q
+     Los tests marcados «necesita macOS o Linux» deben pasar aquí, no saltarse.
+
+A) Diagnóstico
+  - `uv run cai agents doctor` dice «Terminal para los botones: gnome-terminal (…)» (o la que
+    tengas). Con `CAI_TERMINAL=kitty uv run cai agents doctor` y sin kitty instalado, dice que no
+    la encuentra.
+  - `uv run cai paths` enseña «Datos de la app instalada: /home/<tú>/.local/share/candidatai/data».
+
+B) Un botón «en tu agente» abre una terminal
+  - Siembra la demo y arranca: `uv run cai demo seed` y sigue sus indicaciones (ahora en bash), o
+    con la UI compilada: `uv run cai start`. El navegador de Windows abre la app (WSL reenvía
+    127.0.0.1).
+  - Pulsa «Procesar ofertas» → «En terminal». Se abre una ventana de gnome-terminal en la carpeta
+    del repositorio con tu agente arrancado y la orden del skill ya escrita.
+  - En esa ventana, al salir del agente, queda un shell abierto. `echo $CAI_CLIENT_NAME` dice el
+    agente; `echo ${ANTHROPIC_API_KEY-sin}` dice «sin» aunque la tuvieras exportada.
+  - Desinstala o renombra la terminal (o pon `CAI_TERMINAL=no-existe` en .env y reinicia): el
+    botón dice que no encuentra la terminal y copia la orden.
+
+C) Segundo plano: cancelar no deja procesos huérfanos
+  - Con Claude Code u OpenCode instalados en WSL, lanza «Procesar ofertas» → «En segundo plano» y,
+    mientras corre, cancélalo en la página «Agente».
+  - `ps -ef | grep -E "claude|opencode|cai-mcp" | grep -v grep` no enseña nada de esa ejecución.
+  - Repite y, en vez de cancelar, cierra `cai start` con Ctrl+C: tampoco queda nada vivo, y la
+    ejecución aparece como fallida («Se paró el worker…»).
+
+D) LibreOffice y «Abrir carpeta»
+  - Con libreoffice-writer instalado, `uv run cai doctor` lo encuentra y la demo genera PDF y DOCX.
+  - «Abrir carpeta» en «Mi perfil» abre el explorador (xdg-open) o, si no hay, enseña la ruta.
+
+E) Windows no cambia
+  - En Windows, los botones siguen abriendo Windows Terminal (o PowerShell) como antes, y
+    `CAI_TERMINAL` no cambia nada.
+
+
+26.2 · Instalador para macOS y Linux
+------------------------------------
+
+En WSL2 (Ubuntu), en la rama: crea primero una release local (sin publicar nada), desde la raíz del
+repositorio clonado en Linux y con la UI compilada (`cd frontend && pnpm install && pnpm build`):
+
+    bash install.sh --source "$PWD"         # o un candidatai.zip descargado de una release
+
+A) Prueba en seco
+  - `bash install.sh --dry-run --source "$PWD"` explica los cinco pasos y termina con «no se ha
+    cambiado nada». `ls ~/.local/share/candidatai` no existe (si no habías instalado antes).
+
+B) Instalar
+  - Sin `--dry-run`: instala uv si no lo tenías, `uv sync`, Chromium y la base de datos. Si
+    Chromium no arranca, enseña el comando de `playwright install-deps` (con sudo) sin ejecutarlo.
+  - `~/.local/share/candidatai/app` tiene la app; `…/data`, tus datos; `…/app/.env` dice
+    `CAI_DATA_DIR="…/data"`.
+  - En el menú de aplicaciones de Windows aparece «CandidatAI (Ubuntu)» con el icono (WSLg los
+    exporta). Ábrelo: se abre una terminal con `cai start` y el navegador en http://127.0.0.1:8000.
+    Ciérrala: la app se para (`ps -ef | grep cai` sin nada).
+
+C) Reinstalar no toca tus datos
+  - Siembra algo (sube un CV o `uv run --directory ~/.local/share/candidatai/app/backend cai demo
+    seed --dir ~/.local/share/candidatai/data`… o crea un fichero en `…/data`), añade una línea
+    tuya a `…/app/.env` y vuelve a instalar: los datos y tu línea siguen ahí.
+
+D) Desinstalar
+  - `bash install.sh --uninstall`: se van la app y el acceso directo; `…/data` sigue.
+  - `bash install.sh --uninstall --remove-data`: pide escribir «borrar»; con otra cosa, no borra.
+
+E) macOS (si alguien tiene un Mac)
+  - El mismo recorrido: la app en `~/Library/Application Support/CandidatAI/app` y
+    `~/Applications/CandidatAI.app` con el icono, que abre Terminal (la primera vez macOS pide
+    permiso para controlar Terminal).
+
+
+26.3 · Docker opcional
+----------------------
+
+Con Docker Desktop abierto, desde la raíz del repositorio (en la rama). Si ya tienes CandidatAI
+nativa en marcha, ciérrala antes: usan el mismo puerto.
+
+A) Arrancar
+  - `docker compose up -d --build`: la primera vez construye la imagen (unos minutos). Después,
+    `docker compose ps` dice «healthy» y http://127.0.0.1:8000 abre la app.
+  - Desde otro equipo de tu red, http://<tu IP>:8000 NO responde (el puerto es solo 127.0.0.1).
+
+B) La demo
+  - `docker compose exec candidatai cai demo seed`: «Demo creada en /data-demo», con 2 CVs en PDF
+    (Chromium).
+  - `docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d`: la app enseña la demo
+    (banner de demo, 60 ofertas). Abre uno de los CVs en PDF desde la ficha.
+  - `docker compose exec candidatai cai doctor`: sección «Docker» en verde, LibreOffice «no viene en
+    la imagen» y «Todo listo».
+
+C) Lo que no funciona dentro, y la app lo dice
+  - Un botón «en tu agente» (p. ej. «Procesar ofertas»): copia la orden con «Estás en Docker…».
+  - En la página «Agente», «En segundo plano» sale desactivado con el motivo.
+  - En una oferta en «CV listo»: «Abrir la oferta en tu navegador» (en una pestaña tuya) y «Marcar
+    como enviada»; no hay «Abrir navegador» ni «Preparar candidatura».
+
+D) Tu agente, desde fuera (con la demo abierta)
+  - `claude mcp add --scope local candidatai -- docker exec -i candidatai cai-mcp` en la raíz del
+    repositorio; en Claude Code, `/mcp` enseña `candidatai` conectado.
+  - `/process-jobs`: extrae las 3 ofertas pendientes de la demo; la UI las enseña en el triaje.
+  - Al terminar: `claude mcp remove --scope local candidatai`.
+  - Sin MCP: `docker exec -i candidatai cai status --json`.
+
+E) Parar, copia de seguridad y vuelta a tus datos
+  - `docker compose stop` termina en unos segundos (API y worker se paran limpios).
+  - La copia de la guía («Con Docker») deja `candidatai-data.tgz` en la carpeta.
+  - `docker compose up -d` vuelve a tu volumen. Para quitarlo todo: `docker compose down` y
+    `docker volume rm candidatai-data candidatai-demo` (borra lo que haya en ellos).
+
+F) WSL2 (opcional)
+  - Activa en Docker Desktop la integración con tu Ubuntu y repite A) desde el repositorio clonado
+    en Linux.
+
+
+26.4 · La guía de cero a la app
+-------------------------------
+
+En un Ubuntu de WSL2 sin nada de CandidatAI (ni ~/.local/share/candidatai ni uv, si puedes), con la
+guía (docs/GUIA.md) abierta y sin mirar nada más:
+
+A) Requisitos e instalación
+  - Sigue «Requisitos» y «En macOS y Linux: install.sh» tal cual. Apunta cualquier paso que falte,
+    sobre o no se entienda.
+  - `uv run cai paths` (desde …/app/backend) dice la carpeta de datos de la tabla de «Tus datos y tu
+    perfil».
+
+B) Abrir la app y conectar tu agente
+  - Abre «CandidatAI» desde el menú: se abre la app en el navegador.
+  - Sigue «Conectar tu agente»: tu agente ve las herramientas de `candidatai`.
+
+C) Copia de seguridad
+  - Con la app cerrada, copia la carpeta de datos como dice la guía; bórrala, restaura la copia y
+    abre la app: todo sigue ahí.
+
+D) La CI
+  - En GitHub, Actions → CI: la última ejecución de la rama (a mano) está en verde en los tres
+    sistemas, con los jobs installer y docker.
+

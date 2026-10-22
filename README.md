@@ -11,8 +11,8 @@
   <img alt="Python 3.12" src="https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white">
   <img alt="React + TypeScript" src="https://img.shields.io/badge/react-typescript-61DAFB?logo=react&logoColor=black">
   <img alt="MCP + CLI" src="https://img.shields.io/badge/agents-MCP%20%2B%20CLI-6D28D9">
-  <img alt="Windows 11" src="https://img.shields.io/badge/runs%20on-Windows%2011-0078D4?logo=windows&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-2%2C636-2E7D32">
+  <img alt="Runs on Windows, macOS and Linux" src="https://img.shields.io/badge/runs%20on-Windows%20%C2%B7%20macOS%20%C2%B7%20Linux-0078D4">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-2%2C827-2E7D32">
   <img alt="No LLM API calls" src="https://img.shields.io/badge/LLM%20API%20calls-none-555">
 </p>
 
@@ -178,9 +178,21 @@ iwr -useb https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/instal
 powershell -ExecutionPolicy Bypass -File $env:TEMP\cai-install.ps1
 ```
 
-It installs what's needed and leaves a **"CandidatAI"** shortcut on your desktop: opening it starts
-everything and opens your browser. To update, run it again; your data isn't touched.
-Add `-WhatIf` to the second line to see first what it would do.
+On **macOS or Linux**, in a terminal (no `sudo`):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/install.sh | bash
+```
+
+It installs what's needed and leaves a **"CandidatAI"** shortcut (on the desktop and Start menu on
+Windows, in Applications on macOS and in the applications menu on Linux): opening it starts
+everything and opens your browser. To update, run it again; your data isn't touched. To see first
+what it would do, add `-WhatIf` to the second Windows line or use `| bash -s -- --dry-run`. macOS
+and Linux are new (phase 26) and still being tested.
+
+Prefer not to install anything but Docker? `docker compose up -d --build` from the repository
+folder also works, with limits (your agent stays outside the container): see
+[With Docker](docs/GUIDE.md#with-docker-optional).
 
 <p align="center">
   <img src="docs/img/en/start.gif" alt="cai start starts CandidatAI and the app opens in the browser" width="80%">
@@ -261,10 +273,10 @@ language (in English or Spanish).
 | Agent | Licence | Free | Local | Status |
 |---|---|---|---|---|
 | **Claude Code** | proprietary | no (your Claude plan) | no | **Tested**: reference, with MCP and without (CLI only: 5/5 jobs extracted, assessed and with a CV passing the eval). Skills can also run **in the background** from the UI |
-| **Codex** | Apache-2.0 | with a local model | yes (`--oss`, `local` preset) | **Configured, untested** (`.codex/`). Uses your ChatGPT account or Ollama/LM Studio |
+| **Codex** | Apache-2.0 | with a local model | yes (`--oss`, `local` preset) | **Tested with one offer**: extracts, assesses and writes the CV well (`.codex/`). Uses your ChatGPT account or Ollama/LM Studio |
 | **OpenCode** | MIT | with a local or free model | yes (Ollama, LM Studio) | **Configured, untested with a model** (`opencode.json`, `.opencode/agents/`), checked against its binary. Runs `process-jobs` and `assess-fit` **in the background** with the same tool ceiling as Claude Code |
 | **Qwen Code** | Apache-2.0 | with a local or free model | yes | **Configured, untested** (`.qwen/`). Its free OAuth plan closed on 15/04/2026 |
-| **Antigravity CLI** | proprietary | yes (Google free plan) | no | **Configured, untested** (`.agents/mcp_config.json`). Replaces Gemini CLI |
+| **Antigravity CLI** | proprietary | yes (Google free plan) | no | **Partly tested**: extracts and assesses well; the free plan runs out of its weekly quota when it starts on CVs (`.agents/mcp_config.json`). Replaces Gemini CLI |
 | **Cursor, Copilot CLI, Pi, goose…** | various | depends | depends | **Compatible via `AGENTS.md`**: they work if they read `AGENTS.md` and speak MCP or run commands |
 
 How to use it without paying for tokens (Ollama on Windows, which model for your memory and what
@@ -348,7 +360,7 @@ stateDiagram-v2
 | Events as the source of truth | Full history, reliable analytics and states that don't get corrupted |
 | CV content and presentation kept apart | Changing template, photo or colour doesn't spend agent quota again |
 | LinkedIn only through alerts, your clicks or opt-in features | Respects your account; the app prepares and you finish |
-| SQLite, native on Windows | A personal app: no servers, no Docker |
+| SQLite, native on Windows | A personal app: no servers; Docker only if you want it |
 | Optional local embeddings | Better matching without sending your data anywhere |
 </details>
 

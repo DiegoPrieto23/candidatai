@@ -1,0 +1,71 @@
+{
+  "created_at": "2026-10-22T18:52:58.094416Z",
+  "agent": "codex",
+  "display_name": "Codex",
+  "open_source": true,
+  "local_models": true,
+  "model": null,
+  "preset": null,
+  "data_dir": "data-demo-compat-codex-default-1-oferta",
+  "imported": true,
+  "steps": [
+    {
+      "action": "process-jobs",
+      "mode": "manual",
+      "reason": null,
+      "runs": []
+    },
+    {
+      "action": "assess-fit",
+      "mode": "manual",
+      "reason": null,
+      "runs": []
+    },
+    {
+      "action": "generate-cv",
+      "mode": "manual",
+      "reason": null,
+      "runs": []
+    }
+  ],
+  "extraction": [
+    {
+      "case": "cv01-de-snowflake",
+      "job_id": 61,
+      "extracted": true,
+      "equal": 11,
+      "total": 11,
+      "different": []
+    }
+  ],
+  "fields_equal": 11,
+  "fields_total": 11,
+  "assessed": 1,
+  "verdicts": {
+    "strong": 1
+  },
+  "cv": {
+    "evaluated": 1,
+    "passed": 1,
+    "checks_passed": {
+      "evidence": 1,
+      "skills": 1,
+      "basic_skills": 1,
+      "one_page": 1,
+      "layout": 1,
+      "coverage": 1,
+      "language": 1,
+      "verified": 1
+    },
+    "cases": {
+      "cv01-de-snowflake": "passed"
+    }
+  },
+  "seconds": null,
+  "turns": null,
+  "tokens": null,
+  "cost_usd": null,
+  "complete": true,
+  "cases": 1,
+  "manual_steps": []
+}

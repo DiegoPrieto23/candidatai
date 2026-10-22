@@ -1,6 +1,7 @@
 """DOCX → PDF y lectura del PDF (páginas, texto y fuentes).
 
-Conversión con LibreOffice headless (`SOFFICE_PATH`, el `PATH` o las rutas típicas de Windows) y,
+Conversión con LibreOffice headless (`SOFFICE_PATH`, `soffice` o `libreoffice` en el `PATH`, o las
+rutas típicas de Windows, macOS y Linux, fase 26.1) y,
 si no está, con Microsoft Word a través de `docx2pdf` (extra opcional `word`). Cada conversión de
 LibreOffice usa un perfil temporal propio, para no chocar con un LibreOffice abierto ni dejar
 restos, y tiene un tiempo máximo: si se agota, se mata el proceso y todos sus hijos.
@@ -24,6 +25,19 @@ WINDOWS_SOFFICE_PATHS = (
     Path(r"C:\Program Files\LibreOffice\program\soffice.exe"),
     Path(r"C:\Program Files (x86)\LibreOffice\program\soffice.exe"),
 )
+MACOS_SOFFICE_PATHS = (
+    Path("/Applications/LibreOffice.app/Contents/MacOS/soffice"),
+    Path.home() / "Applications" / "LibreOffice.app" / "Contents" / "MacOS" / "soffice",
+)
+# Sin Flatpak ni Snap: su sandbox no ve el /tmp del sistema, donde se hace la conversión (y Snap
+# tampoco las carpetas ocultas de tu home, como la de datos). El PDF lo hace Chromium si no hay
+# otro LibreOffice.
+LINUX_SOFFICE_PATHS = (
+    Path("/usr/lib/libreoffice/program/soffice"),
+    Path("/opt/libreoffice/program/soffice"),
+)
+SOFFICE_NAMES = ("soffice", "libreoffice")
+SANDBOXED = ("/snap/", "/var/lib/flatpak/")  # en el `PATH`, pero no servirían (ver arriba)
 
 Converter = Callable[[Path, Path, int], None]  # (docx, pdf, timeout_s)
 
@@ -39,10 +53,20 @@ class PdfConverterUnavailableError(PdfConversionError):
 def find_soffice(configured: Path | None) -> Path | None:
     if configured is not None:
         return configured if configured.is_file() else None
-    found = shutil.which("soffice")
-    if found:
-        return Path(found)
-    return next((p for p in WINDOWS_SOFFICE_PATHS if p.is_file()), None)
+    for name in SOFFICE_NAMES:
+        found = shutil.which(name)
+        if found and not found.startswith(SANDBOXED):
+            return Path(found)
+    return next((p for p in _typical_paths() if p.is_file()), None)
+
+
+def _typical_paths() -> tuple[Path, ...]:
+    if sys.platform == "win32":
+        return WINDOWS_SOFFICE_PATHS
+    if sys.platform == "darwin":
+        return MACOS_SOFFICE_PATHS
+    # El paquete oficial de LibreOffice se instala en /opt/libreoffice<versión>.
+    return (*LINUX_SOFFICE_PATHS, *sorted(Path("/opt").glob("libreoffice*/program/soffice")))
 
 
 def _kill_tree(process: subprocess.Popen[bytes]) -> None:

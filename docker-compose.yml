@@ -1,0 +1,49 @@
+# CandidatAI con Docker (fase 26.3, ADR-042). Opcional: lo recomendado es instalarla en nativo.
+#
+#   docker compose up -d --build                      # arranca la app en http://127.0.0.1:8000
+#   docker compose exec candidatai cai demo seed      # (opcional) una búsqueda ficticia, que se
+#                                                     # abre con docker-compose.demo.yml
+#   docker compose exec candidatai cai doctor         # qué funciona y qué no dentro de Docker
+#
+# Tu agente usa la app desde fuera: ver «Con Docker» en docs/GUIA.md (docs/GUIDE.md).
+name: candidatai
+
+services:
+  candidatai:
+    build: .
+    image: candidatai:local
+    # Nombre fijo: tu agente lo usa con `docker exec -i candidatai cai-mcp`, desde cualquier carpeta.
+    container_name: candidatai
+    command: ["cai", "start", "--no-browser"]
+    init: true  # reenvía Ctrl+C y `docker compose stop` a `cai start`, que para API y worker
+    stop_grace_period: 30s
+    ports:
+      # Solo en este equipo: nunca en la red. No quites `127.0.0.1:` (la API quedaría en tu red).
+      - "127.0.0.1:8000:8000"
+    env_file:
+      - path: .env
+        required: false
+    # Van por delante de tu .env: una instalación nativa fija ahí otra carpeta de datos.
+    environment:
+      CAI_IN_DOCKER: "1"
+      CAI_DATA_DIR: /data
+    volumes:
+      - candidatai-data:/data
+      # O una carpeta de tu equipo (en Linux, tiene que poder escribirla el uid 1000):
+      # - ./data-docker:/data
+      # La de `cai demo seed`; se abre con docker-compose.demo.yml.
+      - candidatai-demo:/data-demo
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/status', timeout=4)"]
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 3
+    restart: unless-stopped
+
+# Con nombre fijo, para la copia de seguridad (`docker run -v candidatai-data:/data …`).
+volumes:
+  candidatai-data:
+    name: candidatai-data
+  candidatai-demo:
+    name: candidatai-demo

@@ -344,6 +344,10 @@ def _execute(run: AgentRun, timeout: float | None, poll: float) -> AgentRunOutco
             except queue.Empty:
                 item = None
             if item is _EOF:
+                # Fase 26.1: en macOS y Linux, `killpg` cierra la salida al momento y se llega aquí
+                # antes de ver la parada del worker.
+                if _shutdown.is_set():
+                    stop = "shutdown"
                 break
             state = parser.state
             if isinstance(item, str):
@@ -484,7 +488,7 @@ def stop_active() -> int:
 def _alive_as(pid: int, program: str) -> bool:
     """Si el proceso `pid` sigue vivo y es el programa del agente (no otro que reusa el pid)."""
     if sys.platform != "win32":
-        return False  # sin forma fiable de comprobarlo: no se toca
+        return _alive_as_posix(pid, program)
     out = subprocess.run(  # noqa: S603
         ["tasklist", "/FI", f"PID eq {pid}", "/FO", "CSV", "/NH"],  # noqa: S607
         capture_output=True,
@@ -494,6 +498,46 @@ def _alive_as(pid: int, program: str) -> bool:
     ).stdout
     image = out.split(",", 1)[0].strip().strip('"').lower()
     return bool(image) and Path(image).stem == Path(program).stem.lower()
+
+
+def _alive_as_posix(pid: int, program: str) -> bool:
+    """macOS y Linux (fase 26.1): vivo (`kill -0`), jefe de su grupo (como lo deja `_popen`, así
+    `killpg` no toca a nadie más) y con el programa del agente como programa, o como primer
+    argumento de un intérprete (`node …/codex.js`). Un `vim claude.md` con el pid reutilizado no
+    cuenta."""
+    try:
+        os.kill(pid, 0)
+        if os.getpgid(pid) != pid:
+            return False
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return False  # de otro usuario: no es nuestro
+    wanted = Path(program).stem.lower()
+    args = [Path(arg).stem.lower() for arg in _args_of(pid)[:2]]
+    if not args:
+        return False
+    return args[0] == wanted or (args[0] in INTERPRETERS and args[1:] == [wanted])
+
+
+INTERPRETERS = frozenset({"node", "nodejs", "bun", "deno", "python", "python3"})
+
+
+def _args_of(pid: int) -> list[str]:
+    """Los argumentos del proceso: exactos en Linux (`/proc`); en macOS, de `ps`, partidos por
+    espacios (una ruta con espacios no casará y el proceso no se toca)."""
+    cmdline = Path(f"/proc/{pid}/cmdline")
+    try:
+        return [arg for arg in cmdline.read_bytes().decode(errors="replace").split("\0") if arg]
+    except OSError:
+        pass
+    out = subprocess.run(  # noqa: S603
+        ["ps", "-o", "args=", "-p", str(pid)],  # noqa: S607
+        capture_output=True,
+        text=True,
+        check=False,
+    ).stdout
+    return out.split()
 
 
 def recover_interrupted() -> int:

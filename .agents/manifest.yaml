@@ -21,6 +21,10 @@ mcp_server:
   command: uv
   args: [run, --directory, backend, cai-mcp]
   env: {}
+  # Variables del entorno del agente que el servidor necesita: `CAI_DATA_DIR` elige la carpeta de
+  # datos (la demo). Casi todos los agentes pasan su entorno entero; Codex solo una lista blanca, y
+  # estas van en su `env_vars` (comprobado el 2026-10-22: sin eso, la demo abría `data/`).
+  pass_env: [CAI_DATA_DIR]
 
 # Permisos neutrales (fase 24.3). Los emisores los traducen a cada agente. `.claude/settings.json`
 # se mantiene a mano, pero `sync_agents.py --check` falla si no dice lo mismo que esto.
@@ -375,11 +379,14 @@ targets:
         macos: "Ver https://antigravity.google/docs/install?tab=cli (plan gratuito con tu cuenta de Google)"
         linux: "Ver https://antigravity.google/docs/install?tab=cli (plan gratuito con tu cuenta de Google)"
       detect: [agy, --version]
-      invoke: natural
+      invoke: "/{skill} {args}"     # comprobado el 2026-10-22: los skills salen como comandos de barra
       instructions: AGENTS.md       # y GEMINI.md, vacío a propósito
     capabilities:
       mcp: true
-      subagents: none               # sin subagentes generados: su documentación no dice cómo se llaman las MCP
+      # Lanza subagentes, también en paralelo (comprobado el 2026-10-22 con generate-cv), pero con
+      # las herramientas de la sesión: no se generan roles porque su documentación no dice cómo se
+      # llaman las MCP en la lista `tools` del subagente. Por eso sigue en el nivel C.
+      subagents: inherited
       isolation_level: C
       vision: null
       web: null

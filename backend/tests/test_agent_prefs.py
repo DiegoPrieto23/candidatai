@@ -32,9 +32,12 @@ def db() -> None:
 
 @pytest.fixture
 def opened(monkeypatch: pytest.MonkeyPatch) -> list[str]:
-    """Windows con todos los agentes instalados; devuelve lo que ejecutaría cada terminal."""
+    """Todos los agentes instalados y la terminal de Windows (PowerShell); devuelve lo que
+    ejecutaría cada terminal. Sin simular `win32` en todo el proceso: en macOS y Linux, la
+    detección de los agentes usaría opciones que solo existen en Windows (fase 26.2)."""
     commands: list[str] = []
-    monkeypatch.setattr(agent_launch.sys, "platform", "win32")
+    monkeypatch.setattr(agent_launch, "no_terminal", lambda: None)
+    monkeypatch.setattr(agent_launch, "terminal_command", agent_launch.powershell_command)
     monkeypatch.setattr(agent_launch.shutil, "which", lambda name: f"C:/bin/{name}.exe")
     monkeypatch.setattr(agent_launch, "_open_terminal", lambda t, c: commands.append(c))
     return commands

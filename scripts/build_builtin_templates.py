@@ -152,6 +152,7 @@ def _save_reproducible(doc: Any, path: Path) -> None:
             fixed = zipfile.ZipInfo(info.filename, date_time=_FIXED_ZIP_DATE)
             fixed.compress_type = zipfile.ZIP_DEFLATED
             fixed.external_attr = 0o644 << 16
+            fixed.create_system = 0  # el mismo zip en Windows, macOS y Linux (fase 26.2)
             dst.writestr(fixed, data)
     path.write_bytes(out.getvalue())
 

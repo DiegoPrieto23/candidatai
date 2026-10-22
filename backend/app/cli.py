@@ -3,6 +3,7 @@
 import io
 import json
 import logging
+import shlex
 import subprocess
 import sys
 from logging.handlers import RotatingFileHandler
@@ -177,10 +178,12 @@ def serve(
     """Levanta la API para la UI en http://127.0.0.1:<puerto>."""
     import uvicorn
 
-    from app.api.main import HOST
+    from app.services import container
 
     migrations.ensure_current()  # mejor fallar aquí que en cada petición
-    uvicorn.run("app.api.main:app", host=HOST, port=port, reload=reload)
+    # En Docker, en todas las interfaces del contenedor: el compose la publica solo en 127.0.0.1.
+    host = container.listen_host(get_settings())
+    uvicorn.run("app.api.main:app", host=host, port=port, reload=reload)
 
 
 @app.command()
@@ -205,6 +208,28 @@ def start(
 
 
 OPENAPI_OUT_OPTION = typer.Option(None, "--out", help="Fichero de salida. Por defecto, stdout.")
+
+
+@app.command()
+def paths(as_json: bool = JSON_OPTION) -> None:
+    """Carpetas de la app: la de datos en uso y la que usa la app instalada en este sistema (la
+    que fija el instalador en CAI_DATA_DIR). No crea ninguna."""
+    from app.core.config import Settings, install_dir, installed_data_dir
+
+    settings = Settings()  # sin `get_settings`: esa crea la carpeta de datos
+    found = {
+        "data_dir": str(settings.data_dir),
+        "install_dir": str(install_dir()),
+        "installed_data_dir": str(installed_data_dir()),
+        "repo_root": str(REPO_ROOT),
+    }
+    if as_json:
+        typer.echo(dump_json(found))
+        return
+    typer.echo(f"Datos en uso: {found['data_dir']}")
+    typer.echo(f"App instalada en: {found['install_dir']}")
+    typer.echo(f"Datos de la app instalada: {found['installed_data_dir']}")
+    typer.echo(f"Código: {found['repo_root']}")
 
 
 @app.command()
@@ -480,13 +505,16 @@ EVAL_PROFILE_OPTION = typer.Option(
 
 
 DEMO_DIR_OPTION = typer.Option(
-    Path("data-demo"), "--dir", help="Carpeta de la demo (relativa a la raíz del repo)."
+    None,
+    "--dir",
+    help="Carpeta de la demo (relativa a la raíz del repo). Por defecto, data-demo; en Docker, "
+    "/data-demo (su volumen).",
 )
 
 
 @demo_app.command("seed")
 def demo_seed(
-    target: Path = DEMO_DIR_OPTION,
+    target: Path | None = DEMO_DIR_OPTION,
     force: bool = typer.Option(False, "--force", help="Recrea una demo que ya existe."),
     eval_cv: bool = typer.Option(
         False,
@@ -508,9 +536,12 @@ def demo_seed(
     as_json: bool = JSON_OPTION,
 ) -> None:
     """Crea una carpeta de datos con 60 ofertas ficticias, 8 semanas de historial y 2 CVs."""
-    from app.services import demo
+    from app.services import container, demo
     from app.services.evals.cv import CvEvalFileError
 
+    docker = container.in_docker()
+    if target is None:
+        target = container.DEMO_MOUNT if docker else Path("data-demo")
     try:
         summary = demo.seed(target, force=force, eval_cv=eval_cv, compat=compat, lang=lang)
     except (demo.DemoSeedError, CvEvalFileError) as exc:
@@ -531,10 +562,23 @@ def demo_seed(
     for warning in summary.warnings:
         typer.secho(f"Aviso: {warning}", fg=typer.colors.YELLOW, err=True)
     folder = target.as_posix()
-    typer.echo("\nPara abrirla (PowerShell, desde backend/):")
-    typer.echo(f'  $env:CAI_DATA_DIR = "{folder}"; uv run cai serve')
-    typer.echo("  y en otra terminal: cd frontend; pnpm dev")
-    typer.echo(f"Con un agente, arráncalo con CAI_DATA_DIR={folder} para que el MCP use la demo.")
+    if docker:  # fase 26.3: se abre desde tu equipo, cambiando la carpeta del contenedor
+        typer.echo("\nPara abrirla, desde la carpeta del repositorio en tu equipo:")
+        typer.echo(f"  {container.DEMO_COMPOSE}")
+        typer.echo("Para volver a tus datos: docker compose up -d")
+        typer.echo("Tu agente, por MCP contra el contenedor, ve la carpeta que esté abierta.")
+    elif sys.platform == "win32":
+        typer.echo("\nPara abrirla (PowerShell, desde backend/):")
+        typer.echo(f'  $env:CAI_DATA_DIR = "{folder}"; uv run cai serve')
+        typer.echo("  y en otra terminal: cd frontend; pnpm dev")
+    else:  # fase 26.1: bash o zsh
+        typer.echo("\nPara abrirla (desde backend/):")
+        typer.echo(f"  CAI_DATA_DIR={shlex.quote(folder)} uv run cai serve")
+        typer.echo("  y en otra terminal: cd frontend && pnpm dev")
+    if not docker:
+        typer.echo(
+            f"Con un agente, arráncalo con CAI_DATA_DIR={folder} para que el MCP use la demo."
+        )
     if compat:
         typer.echo(
             "Matriz de compatibilidad: con tu agente, process-jobs, assess-fit, aprueba "
@@ -603,7 +647,13 @@ def eval_compat_command(
         False, "--import", help="No lanza nada: mide la demo en la que trabajaste a mano."
     ),
     approve_only: bool = typer.Option(
-        False, "--approve", help="Solo aprueba en la demo las 5 ofertas de la matriz (paso manual)."
+        False, "--approve", help="Solo aprueba en la demo las ofertas de la matriz (paso manual)."
+    ),
+    cases: int | None = typer.Option(
+        None,
+        "--cases",
+        min=1,
+        help="Solo las N primeras ofertas (p. ej. 1): pasada corta, con su demo y su resultado.",
     ),
     timeout: int | None = typer.Option(
         None, "--timeout", min=1, help="Minutos máximos por ejecución (por defecto, la política)."
@@ -622,17 +672,22 @@ def eval_compat_command(
 
     try:
         if approve_only:
-            target = compat.data_dir(agent, model, preset)
+            target = compat.data_dir(agent, model, preset, cases)
             notes = compat.approve(target)
             if as_json:
                 typer.echo(dump_json({"ok": True, "data_dir": target.name, "notes": notes}))
             say("Aprobadas en la demo." + (f" Ojo: {'; '.join(notes)}" if notes else ""))
             return
         if import_:
-            result = compat.import_results(agent, model, preset)
+            result = compat.import_results(agent, model, preset, cases=cases)
         else:
             result = compat.run(
-                agent, model, preset, timeout=timeout * 60 if timeout else None, progress=say
+                agent,
+                model,
+                preset,
+                timeout=timeout * 60 if timeout else None,
+                progress=say,
+                cases=cases,
             )
     except (compat.CompatError, cv_eval.CvEvalFileError, cv_eval.CvEvalNotDemoError) as exc:
         if as_json:
@@ -647,7 +702,8 @@ def eval_compat_command(
     typer.echo(
         f"\n{result.display_name} · {result.model or result.preset or 'modelo por defecto'}: "
         f"extracción {result.fields_equal}/{result.fields_total} campos, "
-        f"{result.assessed}/5 valoraciones, CVs {result.cv.passed}/{result.cv.evaluated} pasan."
+        f"{result.assessed}/{len(result.extraction)} valoraciones, "
+        f"CVs {result.cv.passed}/{result.cv.evaluated} pasan."
     )
     if result.manual_steps:
         typer.secho("\nFalta hacerlo a mano (este agente no puede en segundo plano):", bold=True)
@@ -785,21 +841,26 @@ def worker(
         for outcome in run.outcomes:
             (log.info if outcome.ok else log.warning)(_outcome_line(outcome))
 
-    log.info(f"Worker en marcha (cola cada {interval:g} s). Ctrl+C para parar.")
-    try:
-        worker_service.run_scheduler(interval, on_run, log.info)
-    except (KeyboardInterrupt, SystemExit):
-        log.info("Worker parado.")
-    finally:
-        from app.services import agent_runner
-        from app.services.applier.browser import shutdown_host
+    from app.services.launcher import stop_on_signals
 
-        if stopped := agent_runner.stop_active():  # en segundo plano (fase 19): no quedan huérfanos
-            log.info(f"Parada la ejecución en segundo plano en curso ({stopped}).")
-        shutdown_host()  # el navegador de las candidaturas (fase 11), si se abrió
-        for handler in list(log.handlers):  # en Windows, un fichero abierto no se puede borrar
-            log.removeHandler(handler)
-            handler.close()
+    log.info(f"Worker en marcha (cola cada {interval:g} s). Ctrl+C para parar.")
+    # Fase 26.1: en macOS y Linux, `cai start` lo para con SIGTERM. Con el manejador puesto
+    # también durante la limpieza, una segunda señal no la corta y no quedan huérfanos.
+    with stop_on_signals():
+        try:
+            worker_service.run_scheduler(interval, on_run, log.info)
+        except (KeyboardInterrupt, SystemExit):
+            log.info("Worker parado.")
+        finally:
+            from app.services import agent_runner
+            from app.services.applier.browser import shutdown_host
+
+            if stopped := agent_runner.stop_active():  # segundo plano (fase 19): sin huérfanos
+                log.info(f"Parada la ejecución en segundo plano en curso ({stopped}).")
+            shutdown_host()  # el navegador de las candidaturas (fase 11), si se abrió
+            for handler in list(log.handlers):  # en Windows, un fichero abierto no se puede borrar
+                log.removeHandler(handler)
+                handler.close()
 
 
 # --- Perfil: validar, importar, comparar e iniciar ----------------------------------------------
@@ -2185,8 +2246,14 @@ def agents_doctor(
         typer.echo(f"En segundo plano: {overview.background}.")
     else:
         typer.echo(f"En segundo plano: no disponible ({overview.background_reason})")
-    if sys.platform != "win32":
-        typer.echo("Los botones que abren una terminal solo funcionan en Windows de momento.")
+    if sys.platform != "win32":  # fase 26.1: qué terminal abrirían los botones
+        from app.services import terminals
+
+        found = terminals.find()
+        if isinstance(found, str):
+            typer.secho(f"Terminal para los botones: ninguna. {found}", fg="yellow")
+        else:
+            typer.echo(f"Terminal para los botones: {found.name} ({found.exe}).")
     for line in overview.agents:
         mark, color = ("OK", typer.colors.GREEN) if line.installed else ("--", None)
         found = (line.version or "instalado") if line.installed else "no instalado"

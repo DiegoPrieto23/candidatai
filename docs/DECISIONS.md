@@ -48,6 +48,8 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
 ## ADR-007 · Ejecución nativa en Windows, sin Docker de momento
 - **Decisión:** `uv` + `pnpm` en nativo. Playwright con navegador visible y LibreOffice del sistema.
 - **Consecuencias:** configuración por variables de entorno para rutas de herramientas.
+- **Matizada por la ADR-042:** Docker es una alternativa opcional, con límites; la instalación
+  nativa sigue siendo la recomendada.
 
 ## ADR-008 · Aislamiento del texto crudo (sustituido parcialmente por ADR-012)
 - **Decisión original:** el texto crudo de las ofertas solo lo ve el rol `extractor`, con
@@ -976,8 +978,11 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   - **Qwen Code sigue sin segundo plano:** sin un modelo no se puede comprobar su techo (criterio de
     la 24.5);
   - **¿Hay que revisar el ADR-001?** Solo si ningún agente con un modelo local supera la matriz en
-    las acciones cerradas (`process-jobs`, `assess-fit`). La decisión espera a la pasada del
-    usuario con OpenCode y Ollama. Hasta entonces, el ADR-001 se mantiene sin cambios.
+    las acciones cerradas (`process-jobs`, `assess-fit`).
+    **Decidido (2026-10-22): se mantiene.** En el equipo de pruebas (16 GB de RAM, sin gráfica) el
+    modelo local no llegó a ejecutar la matriz por memoria y velocidad, no por el agente. Llamarlo
+    desde la app tendría el mismo límite. Con agentes en la nube gratuitos o de pago, la app ya
+    funciona sin cambios (Claude Code, Codex y Antigravity en la matriz).
 
 ## ADR-038 · Coste por oferta y por agente, umbral antes de gastar y varias ejecuciones a la vez
 - **Contexto:** no se sabía cuánto cuesta cada oferta ni con qué agente sale más barata; el
@@ -1073,3 +1078,116 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   sitios, gana el primero en guardar y el otro recibe `conflict`. `content` es la sección entera:
   una clave que la UI no reenvíe se borra. Y `require_ui_read` frena a otras webs, no a un programa
   de tu equipo (`curl`), que de todos modos podría leer `data/profile.yaml` del disco.
+
+## ADR-040 · Botones «en tu agente» y procesos en macOS y Linux (extiende la 024 y la 032)
+- **Contexto:** la ADR-024 abría el agente solo en Windows (Windows Terminal o PowerShell) y, fuera,
+  la UI copiaba la orden. Matar el árbol de procesos de una ejecución en segundo plano, comprobar
+  si un PID huérfano era del agente y buscar LibreOffice también suponían Windows. La fase 26 quiere
+  la app igual en macOS y Linux sin empeorar nada en Windows (fase 26.1).
+- **Decisión:**
+  - **Terminales** en un módulo propio (`services/terminals.py`). En macOS, Terminal.app con
+    `osascript` (iTerm2 con `CAI_TERMINAL=iterm`). En Linux, `CAI_TERMINAL`, `$TERMINAL` o la
+    primera de `x-terminal-emulator`, `gnome-terminal`, `konsole`, `xfce4-terminal`, `kitty`,
+    `wezterm` y `alacritty`, cada una con su forma de pasar la orden; sin `DISPLAY` ni
+    `WAYLAND_DISPLAY`, ninguna. Si la elegida no está, se dice y no se cambia por otra.
+  - **La orden**, en bash o zsh (`$SHELL` si es uno de los dos), con todo en `shlex.quote`: `cd` al
+    repositorio, `unset` de `launch.unset_env` (nombres validados), `export CAI_CLIENT_NAME`, el
+    agente y, al salir, el shell abierto, como `-NoExit`. Sigue sin llevar texto de ofertas.
+  - **Sin terminal** (o si la terminal sale con error en el primer segundo), `unavailable` con la
+    orden para copiar, como antes. `CAI_TERMINAL` no se usa en Windows: allí nada cambia.
+  - **Procesos:** cada agente sin ventana y cada hijo de `cai start` en su propio grupo
+    (`start_new_session`), que se para con `killpg`. Un PID huérfano solo se mata si sigue vivo, es
+    jefe de su grupo y es el programa del agente (`/proc/<pid>/cmdline` o `ps -o args=`, para los
+    que corren con `node`: el programa o el primer argumento de un intérprete, nunca cualquier
+    argumento). `cai start` manda antes `SIGTERM` al grupo y espera hasta 10 s, para que el worker
+    pare sus ejecuciones, que van en otro grupo, y después `SIGKILL` a lo que quede del grupo.
+    `SIGTERM` y `SIGHUP` paran `cai start` y el worker como Ctrl+C, una sola vez: la segunda se
+    ignora para no cortar la limpieza. Sin `psutil`.
+  - **LibreOffice:** `SOFFICE_PATH`, `soffice` o `libreoffice` en el `PATH` y las rutas típicas de
+    cada sistema (`/Applications/LibreOffice.app`, `/usr/lib/libreoffice`, `/opt/libreoffice*`).
+    **Sin Flatpak ni Snap**, aunque el encargo los pedía: su sandbox no ve el `/tmp` del sistema,
+    donde se convierte, y Snap tampoco las carpetas ocultas del home; un `libreoffice` del `PATH`
+    que esté en `/snap/` o en Flatpak se ignora. Sin otro, el PDF lo hace Chromium.
+    «Abrir carpeta», con `open` o `xdg-open`. Los procesos que no se esperan (la terminal,
+    `xdg-open`) se recogen en un hilo para no dejar zombis.
+  - **Carpeta de datos de la app instalada**, calculada en un solo sitio
+    (`config.install_dir` e `installed_data_dir`, que imprime `cai paths --json`) para que los instaladores y la
+    app coincidan. En desarrollo sigue siendo `data/`.
+- **Consecuencias:** los botones funcionan en macOS y Linux con escritorio; en un servidor sin
+  pantalla, o en WSL sin WSLg, se copia la orden. Las formas de cada terminal están comprobadas con
+  tests, no con todas las terminales de verdad: la prueba manual va en WSL2 y macOS se cubre en la
+  CI (26.4). La primera vez, macOS pide permiso para que la app controle Terminal.
+
+## ADR-041 · `install.sh` para macOS y Linux, el mismo contrato que `install.ps1` (extiende la 035)
+- **Contexto:** `install.ps1` instala la app en Windows sin saber de Python ni de Node (ADR-035). En
+  macOS y Linux había que clonar el repositorio y montar el entorno de desarrollo (fase 26.2).
+- **Decisión:**
+  - **`install.sh` en bash**, compatible con el bash 3.2 de macOS, para `curl -fsSL … | bash`.
+    Todo va en `main`, llamado en la última línea: un script descargado a medias no ejecuta nada.
+    Siempre con LF (`.gitattributes`) y con permiso de ejecución en git; va en el zip de la release.
+  - **Las mismas reglas que `install.ps1`:** instala uv si falta, prepara la versión nueva en
+    `app.new` y solo sustituye una carpeta que sea una CandidatAI, conserva el `.env` (fija
+    `CAI_DATA_DIR`), se niega con `/`, el `HOME` y las carpetas del sistema (con la ruta
+    normalizada: `.`, `..` y `//` no las esquivan), y `--uninstall` nunca borra los datos sin
+    `--remove-data` y escribir «borrar» en la terminal (`/dev/tty`: con `curl | bash` la entrada es
+    el script; sin terminal, no borra). `--dry-run` no escribe nada. Ningún programa que lanza lee
+    de la entrada (`</dev/null`). Si se corta al cambiar de versión, vuelve la anterior.
+  - **Marca de la carpeta de instalación** (`.candidatai`, también en `install.ps1`): solo se
+    instala en una carpeta que no existe, vacía o de CandidatAI, y `--remove-data` (`-RemoveData`)
+    solo borra `data/` si la carpeta tiene la marca o una app de CandidatAI. Así, `--install-dir
+    ~/trabajo --uninstall --remove-data` nunca borra `~/trabajo/data`. La `.app` de macOS solo se
+    sustituye o se borra si lleva el identificador del instalador.
+  - **Carpetas:** las de `config.install_dir()` (`~/Library/Application Support/CandidatAI` y
+    `$XDG_DATA_HOME/candidatai`), con `app/` y `data/` dentro, como en Windows. `cai paths` y un
+    test comprueban que el instalador y la app coinciden.
+  - **Sin sudo:** si a Chromium le faltan librerías en Linux, se enseña lo que instalaría
+    `playwright install-deps` y el comando con `sudo`, sin ejecutarlo.
+  - **Acceso directo:** en Linux, un `.desktop` con `Terminal=true` (se ve la ventana que hay que
+    dejar abierta, como el `cmd` de Windows); en macOS, una `.app` mínima con el icono `.icns`
+    (generado con Pillow) que abre un `.command` en Terminal. Sin firmar: al crearla en el propio
+    equipo no lleva cuarentena. Los dos lanzan un script que, si `cai start` falla, espera a que se
+    lea el error.
+  - **`--no-setup`** se salta uv y la preparación del entorno, para los tests y la CI con una
+    release falsa (decisión del usuario).
+- **Consecuencias:** la app se instala con una línea en los tres sistemas. La ruta de instalación no
+  puede llevar comillas, `\`, `` ` ``, `$` ni `%` (se rechaza), para escribir el `.desktop` y los
+  scripts sin escapar. La `.app` y el `.desktop` dependen del escritorio: se prueban a mano.
+
+## ADR-042 · Docker opcional: la app en un contenedor, tu agente fuera (matiza la 007)
+- **Contexto:** hay quien prefiere no instalar Python, Node ni Chromium en su sistema (fase 26.3).
+  Con Docker se arranca todo con un comando, pero el agente de IA vive fuera del contenedor: sin él
+  dentro, no hay terminal que abrirle, segundo plano ni una ventana del navegador para que pulses
+  «Enviar».
+- **Decisión:**
+  - **Imagen** (`Dockerfile`, en dos etapas): Node compila la UI; la final lleva Python 3.12 con
+    uv, el backend y el Chromium sin ventana de Playwright con sus librerías (imprime los PDF del
+    motor html). Sin LibreOffice ni el extra de embeddings (traería torch). Usuario sin
+    privilegios (`cai`, uid 1000) y nada personal: `.dockerignore` deja fuera `data*`, `.env` y
+    `.git`. La caché de uv no entra en la imagen.
+  - **`docker-compose.yml`:** `cai start --no-browser`, el contenedor con nombre fijo
+    (`candidatai`), los datos en el volumen `candidatai-data` (`/data`), el `.env` como `env_file`
+    opcional (con `CAI_IN_DOCKER` y `CAI_DATA_DIR` por delante: el `.env` de una instalación nativa
+    no los cambia), el puerto **solo en `127.0.0.1:8000`** de tu equipo y un healthcheck sobre
+    `/status`. `init` reenvía las señales a `cai start`, que para API y worker.
+  - **Dónde escucha la API:** dentro del contenedor tiene que escuchar en todas sus interfaces (si
+    no, el puerto publicado no le llega). Solo lo hace con `CAI_IN_DOCKER=1` **y** una marca de
+    contenedor (`/.dockerenv`, `/run/.containerenv`): la variable copiada a tu `.env` no abre la
+    API a tu red. La comprobación de `Host` y `Origin` (ADR-035) no cambia.
+  - **El agente, desde fuera:** por MCP con `docker exec -i candidatai cai-mcp` (no necesita el
+    plugin `compose` ni la ruta del repositorio, así que funciona aunque el cliente MCP arranque el
+    servidor con un entorno mínimo); sin MCP, `docker exec -i candidatai cai … --json`. Los skills
+    y `AGENTS.md` se leen del repositorio clonado en tu equipo. La configuración generada
+    (`.mcp.json`…) sigue siendo la nativa: la guía da el bloque para Docker.
+  - **Qué no funciona dentro, y la app lo sabe** (`services/container.py`): los botones «en tu
+    agente» copian la orden con el motivo; «En segundo plano» se ofrece desactivado con el motivo
+    (y `agent_runs.start` lo rechaza); la candidatura asistida no prepara, rellena ni envía nada
+    (la API responde con el código `docker`) y la ficha ofrece abrir la oferta en tu navegador y
+    «Marcar como enviada». Nada se envía sin tu clic (regla dura 5). `cai doctor` lo resume en su
+    sección «Docker» y no avisa de LibreOffice ni de agentes, que no se pueden arreglar dentro.
+  - **La demo:** `cai demo seed` va en otro volumen (`/data-demo`) y se abre con
+    `docker-compose.demo.yml`, que solo cambia `CAI_DATA_DIR`. Tus datos no se tocan.
+- **Consecuencias:** la app arranca con `docker compose up -d` sin instalar nada más que Docker, a
+  cambio de esos límites y de una imagen de ~1,7 GB (Chromium y sus librerías son la mitad). La
+  copia de seguridad es la del volumen. La forma recomendada sigue siendo la nativa. Fuera de
+  alcance: el agente dentro del contenedor, un navegador remoto (noVNC) para la candidatura asistida
+  y publicar la imagen en un registro.

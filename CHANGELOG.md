@@ -10,6 +10,25 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Una demo con todo:** `cai demo seed` trae también lo que dejarían la candidata y su agente
+  (carta, respuestas de screening, mensajes, dosieres de empresa, plan y repaso de entrevistas,
+  oferta recibida, correos en «Respuestas», huecos en «Skills», un encargo, contexto y una muestra
+  de estilo), así que ninguna pantalla sale vacía.
+- **Instalador para macOS y Linux:** `curl -fsSL …/install.sh | bash` instala CandidatAI sin
+  `sudo`, con tus datos aparte, y crea el acceso directo (la app «CandidatAI» en macOS y una entrada
+  en el menú de aplicaciones en Linux). `--dry-run` explica lo que haría y `--uninstall` nunca
+  borra tus datos sin que lo confirmes.
+- **Botones «en tu agente» en macOS y Linux:** abren Terminal.app (o iTerm2) en macOS y la
+  terminal de tu escritorio en Linux (GNOME Terminal, Konsole, Xfce, kitty, WezTerm, Alacritty…).
+  `CAI_TERMINAL` en `.env` elige otra. Sin terminal, el botón copia la orden, como antes.
+- **`cai paths`** dice qué carpeta de datos usas y dónde va la app instalada en tu sistema.
+- **Probado en Windows, macOS y Linux:** la CI pasa la suite en los tres y prueba el instalador y
+  Docker. La guía dice dónde guarda tus datos cada sistema y cómo hacer copia de seguridad.
+- **Docker, opcional:** `docker compose up -d --build` arranca CandidatAI sin instalar Python ni
+  Chromium, solo en tu equipo (`127.0.0.1:8000`) y con tus datos en un volumen. Tu agente se queda
+  fuera y usa la app por MCP (`docker exec -i candidatai cai-mcp`) o `cai … --json`. Dentro, los
+  botones «en tu agente» copian la orden, no hay segundo plano y la candidatura asistida abre la
+  oferta en tu navegador para que la envíes tú. Lo recomendado sigue siendo el instalador.
 - **Varios agentes, a elegir desde la UI.** Además de Claude Code y Codex, configuración lista para
   OpenCode y Qwen Code (open-source) y Antigravity CLI. `cai agents list` y `cai agents doctor` dicen
   cuáles tienes y qué sabe hacer cada uno (MCP, subagentes, segundo plano, web, navegador, modelos
@@ -18,7 +37,14 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   herramientas que Claude Code.
 - **Modelos gratuitos y locales:** la guía `docs/MODELOS_GRATIS.md` (Ollama en Windows, qué modelo
   según tu memoria y qué sale de tu equipo), el diagnóstico de tu Ollama y los niveles de gasto
-  «Económico», «Equilibrado» y «Máximo», que se aplican con un clic y se deshacen.
+  «Económico», «Equilibrado» y «Máximo», que se aplican con un clic y se deshacen. Con medidas
+  reales: con 16 GB de RAM y sin gráfica, `gpt-oss:20b` no es viable y un agente con un modelo
+  local tarda 15-20 minutos en su primera respuesta, así que la guía explica cómo ahorrar memoria
+  en Ollama y cómo usar OpenCode con un modelo gratuito de OpenRouter. `cai eval compat --cases 1`
+  prueba tu agente con una sola oferta, para no gastar el cupo gratuito en la matriz entera.
+- **Codex, probado:** extrae, valora y genera el CV de la matriz de una oferta. Ahora usa la carpeta
+  de la demo (antes abría `data/`) y no pide permiso para las herramientas que Claude Code tampoco
+  pide.
 - **Esquemas para cualquier modelo:** `cai schema` y `get_schema` dan cada entrada con un ejemplo, y
   los errores dicen qué campo arreglar y cómo.
 - **`cai eval compat`** pasa la matriz de compatibilidad a cualquier agente y modelo.
@@ -56,6 +82,10 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   experiencia»**: tu agente propone, te pregunta los números que falten y solo escribe con tu OK.
 
 ### Cambiado
+- En macOS y Linux, cancelar una ejecución en segundo plano o cerrar `cai start` para también lo que
+  lanzó el agente, y al arrancar el worker se paran las que quedaron huérfanas. LibreOffice se busca
+  también en las rutas de macOS y Linux (no en Flatpak ni Snap, que no pueden convertir los
+  ficheros de la app), y «Abrir carpeta» abre el explorador de archivos.
 - Las releases de GitHub llevan como notas la sección de su versión en este `CHANGELOG`, en lugar de
   la lista de commits; la release falla si esa sección no existe.
 - Codex puede usar modelos locales con el preset `local`.
@@ -66,7 +96,11 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 - Gemini CLI deja de estar soportado: Antigravity CLI ocupa su lugar.
 
 ### Corregido
+- En macOS y Linux, archivar una candidatura a la vez desde dos sitios (el worker y la CLI) ya no
+  puede dar por archivada una carpeta vacía.
 - La plantilla `moderna-2col` deja que un ATS lea primero tu nombre.
+- En una demo, los botones «en tu agente» abren el agente sobre la demo: antes, una pestaña nueva
+  de Windows Terminal podía dejarlo sobre tus datos reales.
 
 ### Seguridad
 - Solo la UI puede escribir tu perfil, tu contexto y tus muestras, y leer tu perfil con contacto;

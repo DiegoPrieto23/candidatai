@@ -1,7 +1,10 @@
 """Iconos de CandidatAI a partir de `docs/brand/mark.svg` (fase 23.5a).
 
 Genera los PNG de la extensión (16, 32, 48 y 128 px), el favicon SVG y el `apple-touch-icon` de la
-UI, y el icono de Windows (`frontend/public/candidatai.ico`, el del acceso directo del instalador).
+UI, y los iconos de los accesos directos de los instaladores: el de Windows
+(`frontend/public/candidatai.ico`) y, desde la fase 26.2, el PNG del `.desktop` de Linux
+(`candidatai.png`) y el `.icns` de la `.app` de macOS (`candidatai.icns`, con Pillow, sin
+herramientas de Apple).
 El SVG se rasteriza con el Chromium de Playwright, que el backend ya trae.
 
 Uso (desde backend/): uv run python ../scripts/build_icons.py
@@ -19,6 +22,8 @@ MARK = ROOT / "docs" / "brand" / "mark.svg"
 PUBLIC = ROOT / "frontend" / "public"
 EXTENSION_SIZES = (16, 32, 48, 128)
 ICO_SIZES = (16, 24, 32, 48, 64, 128, 256)
+PNG_SIZE = 512  # el del `.desktop` de Linux
+ICNS_SIZE = 1024  # Pillow saca del grande los tamaños del `.icns`
 
 
 def render(svg: str, size: int, page) -> Image.Image:  # type: ignore[no-untyped-def]
@@ -43,6 +48,8 @@ def main() -> None:
             render(svg, size, page).save(ROOT / "extension" / "icons" / f"icon{size}.png")
         render(svg, 180, page).save(PUBLIC / "apple-touch-icon.png")
         ico = [render(svg, n, page) for n in ICO_SIZES]
+        render(svg, PNG_SIZE, page).save(PUBLIC / "candidatai.png")
+        render(svg, ICNS_SIZE, page).save(PUBLIC / "candidatai.icns")
         browser.close()
     ico[-1].save(PUBLIC / "candidatai.ico", sizes=[(n, n) for n in ICO_SIZES], append_images=ico[:-1])
     shutil.copyfile(MARK, PUBLIC / "favicon.svg")

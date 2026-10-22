@@ -97,6 +97,12 @@
     "step3": "If the application is completed inside {{portal}}, finish it there (the CV is in “Application package”) and click “Mark as sent”.",
     "open": "Open the job on {{portal}}"
   },
+  "docker": {
+    "intro": "You're using CandidatAI in Docker: there's no visible browser here to fill in the form and let you click “Send”. Open the job in your browser and send the application yourself (the CV is in “Application package”).",
+    "step": "Once you've sent it, click “Mark as sent”.",
+    "open": "Open the job in your browser",
+    "sectionIntro": "Open the job in your browser and send it yourself; CandidatAI records that you sent it. Nothing is sent without you."
+  },
   "done": {
     "manual": "Marked as sent by you.",
     "sent": "Sent to {{domain}}: the website confirmed it."

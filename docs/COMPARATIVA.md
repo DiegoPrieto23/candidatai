@@ -39,7 +39,7 @@ es cambiar entre ellos**. Es la base de la fase 24 (ver «Lo que nos falta»).
 | ¿La app llama a un LLM? | **Nunca** (ADR-001) | No (lo hace Claude Code) | Opcional: scripts que llaman a Gemini, a cualquier API compatible con OpenAI, a OpenRouter o a Ollama |
 | Estado de cada oferta | Eventos validados contra una tabla de transiciones | Fila de un CSV | Fila de una tabla Markdown con estados canónicos |
 | Defensas | En código: validación de esquemas, verificación determinista del CV, detección de inyección | Instrucciones + guardas de CI | Instrucciones + comprobación de hechos del PDF en código |
-| Sistema principal | Windows 11 (nativo, instalador `install.ps1`) | Cualquiera con LaTeX y Bun | Cualquiera con Node (`npx … init`, Docker, NixOS) |
+| Sistema principal | Windows 11 (nativo, instalador `install.ps1`; `install.sh` y Docker opcional, fase 26) | Cualquiera con LaTeX y Bun | Cualquiera con Node (`npx … init`, Docker, NixOS) |
 | Licencia | MIT | MIT | MIT (+ política de marca) |
 
 ## Agentes y modelos
@@ -53,10 +53,10 @@ La parte en la que más nos separa career-ops. Leyenda: ✅ lo tiene · 🟡 en 
 | Skills en el estándar Agent Skills | ✅ `.agents/skills/` (+ copia generada para Claude Code) | 🟡 solo los portales | ✅ un skill router en `.agents/skills/career-ops/` |
 | Configuración nativa generada desde una fuente | ✅ `sync_agents.py` (Claude Code, Codex, OpenCode, Qwen Code y Antigravity) | ❌ | 🟡 envoltorios y enlaces por CLI, mantenidos a mano |
 | Claude Code | ✅ referencia, probado | ✅ referencia | ✅ |
-| Codex | 🟡 configuración generada, **sin probar** | 🟡 parcial | ✅ con guía propia |
+| Codex | ✅ configuración generada y probado con la matriz de una oferta (24.6: 11/11 campos, 1/1 valoración, 1/1 CV) | 🟡 parcial | ✅ con guía propia |
 | **OpenCode** (open-source) | 🟡 configuración generada y comprobada con su binario (24.3), sin probar con un modelo | ❌ | ✅ también para el lote en paralelo (`opencode run`) |
 | **Qwen Code** (open-source) | 🟡 configuración generada (24.3), sin probar | ❌ | ✅ |
-| Antigravity CLI (sustituye a Gemini CLI) | 🟡 MCP del espacio de trabajo generado (24.3), sin probar; nivel C | 🟡 mencionado | ✅ con guía de su plan gratuito |
+| Antigravity CLI (sustituye a Gemini CLI) | 🟡 MCP del espacio de trabajo generado (24.3) y probado con la matriz (24.6: 54/55 campos, 5/5 valoraciones; el CV, cortado por el cupo semanal gratuito); nivel C | 🟡 mencionado | ✅ con guía de su plan gratuito |
 | Gemini CLI | ❌ **ya no sirve con cuentas gratuitas ni Pro** (ver nota); deshabilitado en el registro y `GEMINI.md` vacío a propósito (24.3) | 🟡 `gemini -p` en un subagente | 🟡 `GEMINI.md` vacío a propósito |
 | Pi, Grok, Kimi, Copilot CLI, Cursor, Hermes | 🟡 sin probar, valdrían si leen `AGENTS.md` | ❌ | ✅ |
 | Subagentes con herramientas limitadas | ✅ Claude Code (nivel A); Codex, OpenCode y Qwen Code en nivel B (OpenCode y Qwen generan cada rol con solo sus herramientas, pendiente de probar) | ✅ revisor con contexto limpio | 🟡 |
@@ -180,8 +180,8 @@ compatible y Antigravity CLI ocupa su sitio.
 | Lanzar el agente desde la UI (terminal o segundo plano) | ✅ | ❌ | 🟡 workers en la web alfa |
 | Cola de encargos para la próxima sesión | ✅ | ❌ | ✅ `agent-inbox` |
 | Modo demo con datos inventados | ✅ `cai demo seed` (es y en) | ❌ | ✅ `examples/` |
-| Instalación de un comando | ✅ `install.ps1` (Windows) | 🟡 `install_portal_clis.py` | ✅ `npx … init` |
-| macOS / Linux / Docker documentados | ❌ (solo Windows probado) | ✅ | ✅ |
+| Instalación de un comando | ✅ `install.ps1` (Windows) e `install.sh` (macOS y Linux, 26.2) | 🟡 `install_portal_clis.py` | ✅ `npx … init` |
+| macOS / Linux / Docker documentados | ✅ Windows, macOS y Linux en la CI (26.4), instalador para cada uno y Docker opcional con sus límites (26.3) | ✅ | ✅ |
 | Actualizar sin pisar tus datos | ✅ datos fuera del código | ✅ triaje de cambios upstream | ✅ `update` |
 | Licencia, `CONTRIBUTING`, `SECURITY` | ✅ | ✅ | ✅ |
 | `CHANGELOG` y releases | ✅ `CHANGELOG.md` (Keep a Changelog) del que salen las notas de cada release; sin él, la release falla (25.6) | ✅ | ✅ también en npm |
@@ -227,7 +227,7 @@ dudosas, coste y calidad del CV) y la 26 (macOS, Linux y Docker).
 | 9 | **Señales de oferta dudosa y banderas rojas** en `assess-fit` y `research-company` | career-ops | Evita perder tiempo con ofertas fantasma, agencias o condiciones escondidas | Bajo | 25.3 ✅ |
 | 10 | **Lote en paralelo y coste por skill y por agente** (tokens, turnos, tiempo) con un filtro previo por score | ambos | Saber qué cuesta cada oferta y gastar solo en las que pasan el umbral | Medio | 25.4 ✅ |
 | 11 | **Verificar la maquetación del PDF** (huérfanos, huecos, pie) | AI Job Search | Hoy solo se avisa de que sobra una página | Bajo | 25.5 ✅ |
-| 12 | **macOS, Linux o Docker** | ambos | Solo si se busca que lo use más gente; hoy el instalador es solo para Windows | Medio | 26 |
+| 12 | **macOS, Linux o Docker** | ambos | Solo si se busca que lo use más gente; hoy el instalador es solo para Windows | Medio | 26 ✅ |
 | 13 | **`CHANGELOG`, historia con números reales y comunidad** | career-ops | Lo que hace famoso a career-ops no son las funciones, sino la historia y la comunidad | Bajo | 25.6 ✅ (sin comunidad) |
 | 14 | Autorización de trabajo y visado como filtro duro | career-ops | Solo si se busca fuera de la UE | Bajo | Sin fecha |
 

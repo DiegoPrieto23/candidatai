@@ -125,6 +125,16 @@ def test_qwen_settings() -> None:
     assert "Read(./.env)" in settings["permissions"]["deny"]
 
 
+def test_codex_mcp_receives_the_data_dir() -> None:
+    """Codex solo pasa al servidor MCP una lista blanca del entorno: sin `env_vars`, una demo
+    (`CAI_DATA_DIR`) abriría `data/`."""
+    config = _emit("codex")[REPO_ROOT / ".codex" / "config.toml"]
+    assert 'env_vars = ["CAI_DATA_DIR"]' in config
+    # `policy.auto_allow` sin preguntar; las que no están, con la aprobación de Codex.
+    assert '[mcp_servers.candidatai.tools.get_status]\napproval_mode = "approve"' in config
+    assert "tools.add_event]" not in config
+
+
 def test_antigravity_only_gets_the_workspace_mcp() -> None:
     out = _emit("antigravity")
     assert list(out) == [REPO_ROOT / ".agents" / "mcp_config.json"]

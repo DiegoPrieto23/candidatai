@@ -261,15 +261,21 @@ def test_release_workflow_builds_the_ui_and_publishes_the_zip() -> None:
     # PyYAML lee la clave `on` como el booleano True.
     trigger = workflow.get("on", workflow.get(True))
     assert trigger["push"] == {"tags": ["v*"]}
-    # Fase 25.6: el disparo manual solo prueba las notas; publicar, solo con la etiqueta.
+    # Fase 25.6: publicar, solo con la etiqueta. Fase 26.4: el disparo manual prueba las notas y
+    # el zip, y lo deja como artefacto.
     assert set(trigger) == {"push", "workflow_dispatch"}
     assert workflow["permissions"] == {"contents": "read"}
     notes = " ".join(str(step.get("run", "")) for step in workflow["jobs"]["notes"]["steps"])
     assert "scripts/release_notes.py" in notes and "gh release" not in notes
+    # El zip se hace y se comprueba sin permiso de escritura; publicar es otro job, solo con push.
+    package = workflow["jobs"]["package"]
+    assert package["needs"] == "notes" and "permissions" not in package and "if" not in package
+    uploads = [str(step.get("uses", "")) for step in package["steps"]]
+    assert any(use.startswith("actions/upload-artifact@") for use in uploads)
     release = workflow["jobs"]["release"]
-    assert release["needs"] == "notes" and release["if"] == "github.event_name == 'push'"
+    assert release["needs"] == "package" and release["if"] == "github.event_name == 'push'"
     assert release["permissions"] == {"contents": "write"}
-    steps = " ".join(str(step.get("run", "")) for step in release["steps"])
+    steps = " ".join(str(step.get("run", "")) for step in [*package["steps"], *release["steps"]])
     assert "pnpm build" in steps and "git archive" in steps
     assert "frontend/dist" in steps and "gh release create" in steps
     assert "--notes-file release-notes.md" in steps and "--generate-notes" not in steps
@@ -277,6 +283,12 @@ def test_release_workflow_builds_the_ui_and_publishes_the_zip() -> None:
     installer = (REPO_ROOT / "install.ps1").read_text(encoding="utf-8-sig")
     assert "releases/latest/download/candidatai.zip" in installer
     assert r"backend\pyproject.toml" in installer
+    # Fase 26.2: también install.sh, con los iconos de sus accesos directos.
+    assert "candidatai/install.sh" in steps and "candidatai.icns" in steps
+    assert 'zipinfo candidatai.zip candidatai/install.sh | grep -q "^-rwx"' in steps
+    unix = (REPO_ROOT / "install.sh").read_text(encoding="utf-8")
+    assert "releases/latest/download/candidatai.zip" in unix
+    assert "backend/pyproject.toml" in unix
 
 
 @pytest.mark.skipif(sys.platform != "win32", reason="install.ps1 es para Windows")
@@ -348,3 +360,43 @@ def test_installer_never_replaces_a_folder_that_is_not_candidatai(tmp_path: Path
         # PowerShell escribe en la página de códigos de la consola: sin tildes en lo que se busca.
         assert "CandidatAI" in output and ("otra carpeta" in output or "no se borra" in output)
     assert (target / "app" / "mis-cosas.txt").exists()
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="install.ps1 es para Windows")
+def test_installer_never_removes_data_of_a_folder_that_is_not_candidatai(tmp_path: Path) -> None:
+    """Fase 26.2: -RemoveData solo borra `data` si la carpeta es de CandidatAI (marca o app)."""
+    target = tmp_path / "trabajo"
+    (target / "data").mkdir(parents=True)
+    (target / "data" / "informe.txt").write_text("mío", encoding="utf-8")
+    result = _installer("-InstallDir", str(target), "-Uninstall", "-RemoveData")
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert (target / "data" / "informe.txt").exists()
+
+
+def test_ci_tests_the_three_systems_the_installer_and_docker() -> None:
+    """Fase 26.4: backend en Windows y Linux en cada push, y macOS en `main`, etiquetas y a mano;
+    install.sh en Linux (y macOS); la imagen de Docker en Linux."""
+    import yaml
+
+    text = (REPO_ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+    workflow = yaml.safe_load(text)
+    trigger = workflow.get("on", workflow.get(True))
+    assert set(trigger) == {"push", "pull_request", "workflow_dispatch"}
+    jobs = workflow["jobs"]
+    assert set(jobs) == {"backend", "installer", "docker", "frontend", "agents"}
+    full = '["windows-latest", "ubuntu-latest", "macos-latest"]'
+    backend = jobs["backend"]["strategy"]["matrix"]["os"]
+    assert full in backend and '["windows-latest", "ubuntu-latest"]' in backend
+    assert "refs/heads/main" in backend and "workflow_dispatch" in backend
+    assert jobs["backend"]["strategy"]["fail-fast"] is False
+    runs = " ".join(str(step.get("run", "")) for step in jobs["backend"]["steps"])
+    assert "--cov-fail-under=85" in runs and "cai demo seed" in runs
+    assert "playwright install --with-deps chromium" in runs
+    uses = [step for step in jobs["backend"]["steps"] if "uses" in step]
+    caches = [step for step in uses if step["uses"].startswith("actions/cache@")]
+    assert caches and "playwright" in caches[0]["with"]["key"]
+    installer = " ".join(str(step.get("run", "")) for step in jobs["installer"]["steps"])
+    assert "shellcheck install.sh" in installer and "--dry-run" in installer
+    assert "--uninstall" in installer and "--no-setup" in installer
+    docker = " ".join(str(step.get("run", "")) for step in jobs["docker"]["steps"])
+    assert "docker compose up -d" in docker and "/status" in docker and "cai demo seed" in docker

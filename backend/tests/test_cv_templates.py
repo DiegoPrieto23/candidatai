@@ -128,7 +128,12 @@ def test_build_script_is_reproducible_and_committed_copy_is_current(tmp_path: Pa
         if template_id not in LETTER_ONLY:
             assert (REPO_ROOT / "templates" / template_id / "preview.png").is_file()
     photo = script.build_demo_photo(tmp_path / "photo.png")
-    assert photo.read_bytes() == (REPO_ROOT / "demo" / "photo.png").read_bytes()
+    # Los píxeles, no los bytes: el zlib de cada sistema comprime distinto (fase 26.2).
+    from PIL import Image
+
+    with Image.open(photo) as built, Image.open(REPO_ROOT / "demo" / "photo.png") as committed:
+        assert built.size == committed.size and built.mode == committed.mode
+        assert built.tobytes() == committed.tobytes()
 
 
 def _all_paragraphs(doc: object) -> list[object]:

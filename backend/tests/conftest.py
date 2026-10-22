@@ -22,6 +22,7 @@ def isolated_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Pa
     monkeypatch.delenv("CAI_DB_URL", raising=False)
     monkeypatch.delenv("SOFFICE_PATH", raising=False)
     monkeypatch.delenv("CAI_CLIENT_NAME", raising=False)
+    monkeypatch.setenv("CAI_IN_DOCKER", "false")  # fase 26.3: ni aunque los tests corran en Docker
     # Sin IMAP aunque el `.env` del usuario lo configure (las variables mandan sobre `.env`).
     for name in ("CAI_IMAP_HOST", "CAI_IMAP_USER", "CAI_IMAP_PASSWORD"):
         monkeypatch.setenv(name, "")

@@ -9,6 +9,9 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 - **CLI `cai` con `--json`** para agentes sin MCP o para depurar. Se ejecuta desde la raíz con
   `uv run --directory backend cai …`. Misma entrada, misma salida y mismos errores que la MCP
   (un test de paridad lo garantiza).
+- **Con Docker** (fase 26.3, ADR-042), el agente sigue fuera del contenedor: el servidor MCP es
+  `docker exec -i candidatai cai-mcp` y la CLI, `docker exec -i candidatai cai … --json`. Mismas
+  herramientas y mismas salidas.
 
 ## Reglas comunes
 
@@ -594,7 +597,7 @@ antes; `POST /agent/tiers/undo` las devuelve.
 | `cai eval matching [--profile RUTA] [--no-seed] [--no-embeddings] [--json]` | Precision, recall y F1 con el umbral actual y por umbral sobre `evals/matching/*.jsonl` (perfil de demo) y `data/evals/*.jsonl` (tu perfil). Guarda el informe en `data/evals/reports/` |
 | `cai demo seed [--dir data-demo] [--force] [--eval-cv] [--json]` | Crea una carpeta de datos ficticia (fase 12.1, ADR-020): perfil demo, 60 ofertas, 8 semanas de historial y 2 CVs. Nunca escribe en `data/`. `--eval-cv` añade los 10 casos de `evals/cv/` aprobados y sin CV (en una demo existente, solo los que falten). `--json` devuelve `data_dir`, `jobs`, `events`, `by_stage`, `by_source`, `cvs`, `pdf_engine` y `warnings`. Sin herramienta MCP: no es para el agente |
 | `cai eval cv [--agent NOMBRE] [--min-coverage 0.8] [--json]` | Comprueba los CVs guardados de los casos de `evals/cv/` (solo en la demo): evidencias, skills, skills básicas, una página, maquetación (fase 25.5: sin avisos de maquetación en el render seleccionado o, si no hay, el último; uno anterior a la 25.5 no los tiene), cobertura, idioma y verificación. Un caso sin CV es «pendiente». Guarda el informe en `evals/reports/` de la carpeta de datos (`evals/README.md`) |
-| `cai eval compat --agent NOMBRE [--model M \| --preset P] [--timeout MIN] [--import] [--approve] [--json]` | Fase 24.6: la matriz de compatibilidad sobre su propia demo (`data-demo-compat-<agente>-<modelo>/`). Lanza el agente en segundo plano para `process-jobs`, `assess-fit` y `generate-cv`, y aprueba las 5 ofertas y marca las skills ausentes solo en esa demo. Mide la extracción (11 campos), las valoraciones, `eval cv`, el tiempo, los turnos y los tokens. Guarda `evals/compat/results/<fecha>-<agente>-<modelo>.json` y regenera `evals/compat/REPORT.md`. Si un paso no tiene segundo plano, imprime los pasos manuales; `--approve` aprueba y `--import` mide lo hecho a mano. Lanza tu agente: sin herramienta MCP |
+| `cai eval compat --agent NOMBRE [--model M \| --preset P] [--timeout MIN] [--cases N] [--import] [--approve] [--json]` | Fase 24.6: la matriz de compatibilidad sobre su propia demo (`data-demo-compat-<agente>-<modelo>/`). `--cases N`: solo las N primeras ofertas, con su propia demo (`…-1-oferta`), su resultado y su columna; para comprobar con poco cupo si un agente funciona (pásalo también en `--approve` e `--import`). Lanza el agente en segundo plano para `process-jobs`, `assess-fit` y `generate-cv`, y aprueba las 5 ofertas y marca las skills ausentes solo en esa demo. Mide la extracción (11 campos), las valoraciones, `eval cv`, el tiempo, los turnos y los tokens. Guarda `evals/compat/results/<fecha>-<agente>-<modelo>.json` y regenera `evals/compat/REPORT.md`. Si un paso no tiene segundo plano, imprime los pasos manuales; `--approve` aprueba y `--import` mide lo hecho a mano. Lanza tu agente: sin herramienta MCP |
 
 ### Fuentes: empresas objetivo y portales (fase 09, solo CLI)
 

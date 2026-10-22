@@ -188,9 +188,16 @@ def emit_codex(
     lines = [header, f"[mcp_servers.{mcp['name']}]"]
     lines.append(f"command = {toml_str(mcp['command'])}")
     lines.append("args = [" + ", ".join(toml_str(a) for a in mcp["args"]) + "]")
+    if mcp.get("pass_env"):  # Codex solo pasa al servidor una lista blanca del entorno
+        lines.append("env_vars = [" + ", ".join(toml_str(v) for v in mcp["pass_env"]) + "]")
     if mcp.get("env"):
         lines.append(f"\n[mcp_servers.{mcp['name']}.env]")
         lines += [f"{k} = {toml_str(str(v))}" for k, v in mcp["env"].items()]
+    # Sesión principal: las de `auto_allow` sin preguntar; el resto, con la aprobación de Codex.
+    for tool in policy.get("auto_allow", []):
+        if tool.startswith("mcp:"):
+            lines.append(f"\n[mcp_servers.{mcp['name']}.tools.{tool[4:]}]")
+            lines.append('approval_mode = "approve"')
     out[ROOT / cfg["config_file"]] = "\n".join(lines) + "\n"
     for role in roles:
         body = [header.replace(".agents/", rel(role.source))]

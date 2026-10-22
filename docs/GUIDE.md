@@ -28,10 +28,12 @@ AI agent. To learn what it is and why it works this way, start with the [README]
 
 ## 1. Requirements
 
-CandidatAI is built and tested on **Windows 11**. It should work on macOS and Linux (everything
-uses `pathlib` and cross-platform tools), but that hasn't been tested yet.
+CandidatAI is built and tested on **Windows 11**. On macOS and Linux it has an installer and the
+buttons that open your agent work (phase 26), but they're still being tested: Linux on WSL2 and
+macOS in CI.
 
-**To use it** you only need Windows and, if you want Word CVs on top of PDFs, LibreOffice. The
+**To use it** you only need Windows, macOS or Linux and, if you want Word CVs on top of PDFs,
+LibreOffice. The
 installer takes care of the rest (uv, Python and the Chromium that renders PDFs). For the agent's
 part you also need **an AI agent** (Claude Code, Codex…; see section 5).
 
@@ -79,6 +81,109 @@ window that appears open while you use it; to close CandidatAI, close that windo
   nothing to download: install from your copy of the repository (below) with
   `.\install.ps1 -Source <repository folder>`, after building the UI (`pnpm build`).
 
+### On macOS and Linux: `install.sh`
+
+In a terminal (no `sudo` needed):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/install.sh | bash
+```
+
+It does the same as the Windows one:
+
+1. installs uv if it's missing;
+2. downloads the latest release, with the UI already built;
+3. puts it in `~/Library/Application Support/CandidatAI/app` (macOS) or
+   `~/.local/share/candidatai/app` (Linux, or `$XDG_DATA_HOME/candidatai/app`), and your data next
+   to it, in `…/data` (`uv run cai paths` tells you where);
+4. prepares the environment, the PDF Chromium and the database. On Linux, if Chromium is missing
+   system libraries, it tells you your distribution's command (it needs `sudo`: you run it);
+5. creates the **"CandidatAI"** shortcut: on macOS, `~/Applications/CandidatAI.app`, which opens
+   Terminal; on Linux, in the applications menu, which opens your terminal. Keep that window open
+   while you use it; to close CandidatAI, close it.
+
+- **Before installing:** `curl -fsSL …/install.sh | bash -s -- --dry-run` explains what it would do.
+- **Updating:** run it again with CandidatAI closed; your data and your `.env` are kept.
+- **Uninstalling:** `bash install.sh --uninstall` removes the app and the shortcut, not your data
+  (with `--remove-data`, your data too, if you confirm by typing «borrar»). It only touches folders
+  it created (they hold a `.candidatai` file).
+- **From your copy of the repository**, with the UI built: `bash install.sh --source <folder>`.
+- On macOS, the first time it may ask for permission for the app to control Terminal: allow it.
+
+### With Docker (optional)
+
+If you'd rather not install Python or Chromium on your computer, CandidatAI runs in a container.
+It's an alternative with limits: **the installer is still the recommended way**. Your AI agent
+doesn't go inside the container, so whatever needs to open a window for it doesn't work the same.
+
+You need Docker (on Windows, Docker Desktop) and a copy of the repository. From its folder:
+
+```bash
+docker compose up -d --build        # the first time takes a few minutes (it builds the image)
+```
+
+The app is at `http://127.0.0.1:8000`, on your computer only. Your data goes in the
+`candidatai-data` volume, which survives stopping, updating or removing the container. If there's
+a `.env` in the folder, the container reads it (job board keys, IMAP…): with IMAP set up, its
+worker reads your email alerts just like the native install, but stores them in the volume.
+
+- **Stop and start:** `docker compose stop` and `docker compose start`.
+- **Update:** `git pull` and `docker compose up -d --build`.
+- **Check:** `docker compose exec candidatai cai doctor`. Its «Docker» section says where your data
+  is and what doesn't work inside.
+- **The demo:** `docker compose exec candidatai cai demo seed` creates it in another volume. To open
+  it, `docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d`. To go back to your
+  data, `docker compose up -d`.
+
+**What works and what doesn't inside Docker:**
+
+| | With Docker |
+|---|---|
+| UI, jobs, triage, tracking and funnel | Yes |
+| Job sources and email alerts (the worker) | Yes |
+| CVs and cover letters in PDF | Yes, with the html templates (`moderna-2col`…). The docx ones come out in Word only: there's no LibreOffice |
+| Your agent through MCP or `cai … --json` | Yes, from outside the container (below) |
+| "In your agent" buttons | They copy the instruction for you to paste into your agent |
+| **In the background** | No: the agent isn't in the container |
+| Assisted application | The job opens in your browser, you send it and click **Mark as sent** |
+| Semantic similarity in the score | No (the image doesn't ship torch); the score works the same |
+
+**Your agent, from outside.** The agent runs on your computer, in the repository folder (it reads
+the skills and `AGENTS.md` from there), and talks to the app in the container:
+
+- **Through MCP**, with the command `docker exec -i candidatai cai-mcp`. It works from any folder.
+  - **Claude Code:** `claude mcp add --scope local candidatai -- docker exec -i candidatai cai-mcp`.
+    The local configuration takes precedence over the project one (`.mcp.json`, which is the native
+    install's); `claude mcp remove --scope local candidatai` removes it.
+  - **Codex**, in `.codex/config.toml`:
+    ```toml
+    [mcp_servers.candidatai]
+    command = "docker"
+    args = ["exec", "-i", "candidatai", "cai-mcp"]
+    ```
+  - **OpenCode**, in `opencode.json`:
+    `"candidatai": {"type": "local", "command": ["docker", "exec", "-i", "candidatai", "cai-mcp"], "enabled": true}`.
+  - In Codex and OpenCode you change a generated file: `uv run scripts/sync_agents.py` would put
+    the native command back.
+- **Without MCP**, the `cai … --json` commands go through `docker exec -i candidatai cai …`. For
+  example: `docker exec -i candidatai cai status --json`. Long inputs go with `--file`, in a file
+  inside the container: `docker cp input.json candidatai:/data/tmp/`.
+
+**Backup.** Your data lives in the volume, not in a folder on your computer. To copy it (with the
+app stopped, so the database is idle):
+
+```bash
+docker compose stop
+docker run --rm -v candidatai-data:/data -v "$PWD":/backup alpine tar czf /backup/candidatai-data.tgz -C /data .
+docker compose start
+```
+
+It works the same in PowerShell. To restore it into an empty volume:
+`docker run --rm -v candidatai-data:/data -v "$PWD":/backup alpine tar xzf /backup/candidatai-data.tgz -C /data`.
+If you'd rather keep your data in a folder on your computer, swap the volume in
+`docker-compose.yml` for that folder (the commented line); on Linux, uid 1000 must be able to
+write to it.
+
 ### To develop it: clone the repository
 
 ```powershell
@@ -102,6 +207,13 @@ The demo is a fictional candidate with 60 jobs, 8 weeks of history and 2 CVs. It
 folder and never touches your data. There are two: in English (a candidate in Dublin) and in
 Spanish (a candidate in Galicia).
 
+It also brings what she and her agent would have left, so no screen is empty: fit assessments, a
+cover letter and screening answers for one job, a LinkedIn message and a follow-up, two company
+dossiers (one with a red flag), the prep plan of one interview and the debrief of two, the details
+of the received offer, three company emails in "Replies" (two with a proposal and one
+unclassified, with text hidden for an AI), two gaps in "Skills", a pending request, the context, a
+style sample and a salary table.
+
 ```powershell
 cd backend
 uv run cai demo seed --lang en --dir data-demo-en      # --force to recreate it
@@ -109,8 +221,13 @@ $env:CAI_DATA_DIR = "data-demo-en"; uv run cai start
 ```
 
 Without `--lang en` you get the Spanish demo in `data-demo/`. Your browser opens at
-`http://127.0.0.1:8000` with a "Demo mode" banner. To try the skills on the
-demo, start your agent with `CAI_DATA_DIR` pointing at the demo folder so its MCP server uses it.
+`http://127.0.0.1:8000` with a "Demo mode" banner. The "in your agent" buttons open your agent
+already pointing at the demo. If you open it yourself, start it with `CAI_DATA_DIR` pointing at the
+demo folder so its MCP server uses it and not your data.
+
+If you cloned the repository, build the UI first (`cd frontend; pnpm install; pnpm build`) and
+again whenever you switch branches or update: `cai start` serves the built UI, and with an old one
+you won't see what was added later.
 
 ## 4. Your data and your profile
 
@@ -135,6 +252,21 @@ clearer version, asks you for any missing numbers (it never makes them up) and o
 your OK. Under STAR stories, **Propose stories from my experience** suggests stories from the
 achievements that don't have one yet. Your email and phone are edited there, but your agent still
 never sees them. Your salary minimum (`private`) is only edited in the YAML.
+
+**Where your data is and how to back it up.** `uv run cai paths` (or `cai paths` in the app
+folder) tells you which folder you're using. With the installer:
+
+| System | Data folder |
+|---|---|
+| Windows | `%LOCALAPPDATA%\CandidatAI\data` |
+| macOS | `~/Library/Application Support/CandidatAI/data` |
+| Linux | `~/.local/share/candidatai/data` (or `$XDG_DATA_HOME/candidatai/data`) |
+| Docker | the `candidatai-data` volume (see "With Docker") |
+| Cloned repository | `data/` at the root |
+
+To back it up, **close CandidatAI** (the database has to be idle) and copy that whole folder
+wherever you like: a zip, another disk or your cloud. To restore it, with the app closed, put the
+copy back in place. Keep the app's `.env` too if it holds your keys.
 
 ## 5. Connect your agent
 
@@ -277,6 +409,8 @@ says which agent it would use (“with Claude Code ▾”) and lets you use anot
 If an agent isn't suited to an action (it has no browser to search for postings, say), the button
 says so and doesn't launch it. With nothing chosen, `CAI_AGENT` from `.env` or the first installed
 agent is used.
+On macOS and Linux, the buttons open Terminal.app or your desktop's terminal; to use another one
+(iTerm2, kitty…), set `CAI_TERMINAL=iterm` (or its name or path) in `.env`.
 
 **Spending tiers.** On the same page, “Economy”, “Balanced” and “Maximum” store the agent and model
 for the main actions. “Economy” uses a local model to process, assess and classify replies, and

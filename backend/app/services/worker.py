@@ -48,6 +48,7 @@ from app.models.base import utcnow
 from app.services import (
     agent_runner,
     application_archive,
+    container,
     liveness,
     replies,
     summaries,
@@ -187,6 +188,20 @@ HANDLERS: dict[str, Handler] = {
 }
 
 
+# Las que usan el navegador visible de la candidatura asistida: en Docker no hay (fase 26.3).
+BROWSER_KINDS = frozenset(
+    {
+        "browser_open",
+        "apply_open",
+        "apply_fill",
+        "apply_fill_page",
+        "apply_rescan",
+        "apply_submit",
+        "apply_focus",
+    }
+)
+
+
 class TaskOutcome(BaseModel):
     task_id: int
     kind: str
@@ -213,6 +228,11 @@ def run_one() -> TaskOutcome | None:
         handler = HANDLERS.get(kind)
         if handler is None:
             raise ValueError(f"Tipo de tarea desconocido: «{kind}».")
+        if kind in BROWSER_KINDS and container.in_docker():
+            from app.services.applier import service as applier
+
+            attempt_id = payload.get("attempt_id")
+            applier.refuse_in_docker(int(attempt_id) if attempt_id is not None else None)
         with session_scope() as session:
             result = handler(session, payload)
     except Exception as exc:

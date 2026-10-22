@@ -227,6 +227,9 @@ def archive(session: Session, payload: dict[str, Any]) -> ArchiveResult:
         (tmp / README).write_text(readme, encoding="utf-8")
         target = root / folder_name(company_name, job.title, job_id)
         try:
+            # En macOS y Linux, `rename` sustituye sin fallar una carpeta vacía que ya exista.
+            if target.exists():
+                raise FileExistsError(target)
             tmp.rename(target)
         except OSError:
             # Otro proceso (el worker y `cai applications archive` a la vez) la archivó antes.

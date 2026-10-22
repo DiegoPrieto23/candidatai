@@ -67,13 +67,13 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 23.5a | ↳ Logo | ✅ | Logo nuevo, elegido entre propuestas, en la UI, el favicon, la extensión, el icono y el banner |
 | 23.6 | ↳ UI en inglés y español | ✅ | Toda la UI traducida, con un selector de idioma junto al del tema |
 | 23.5b | ↳ Medios y README | ✅ | Capturas en los dos idiomas, GIF y vídeo; README sin la comparativa |
-| 24 | Varios agentes: open-source, gratuitos y a elegir | ⏳ | Usar la app con OpenCode, Qwen Code, Antigravity o Codex con modelos locales, además de Claude Code, y cambiar de agente y modelo desde la UI, globalmente o por acción |
+| 24 | Varios agentes: open-source, gratuitos y a elegir | ✅ | Usar la app con OpenCode, Qwen Code, Antigravity o Codex con modelos locales, además de Claude Code, y cambiar de agente y modelo desde la UI, globalmente o por acción |
 | 24.1 | ↳ Registro de agentes y diagnóstico | ✅ | `cai agents list` y `cai agents doctor`: qué agentes hay, cuáles están instalados, qué saben hacer y si son open-source |
 | 24.2 | ↳ Esquemas y errores para cualquier modelo | ✅ | `cai schema` y `get_schema`; errores de validación con `path` y pista |
 | 24.3 | ↳ Agentes nuevos | ✅ | Configuración generada para OpenCode, Qwen Code y Antigravity; Codex con `--oss`; Gemini CLI fuera |
 | 24.4 | ↳ Elegir y cambiar de agente | ✅ | Sección «Agentes» con capacidades, agente por defecto y por acción, «con Claude Code ▾» en cada botón |
 | 24.5 | ↳ Segundo plano con varios agentes | ✅ | «En segundo plano» también con OpenCode (`process-jobs` y `assess-fit`), con el techo en una configuración propia de cada ejecución; Codex y Qwen Code, aún no |
-| 24.6 | ↳ Modelos gratuitos, niveles de gasto y matriz | 🚧 código y docs hechos; falta pasar la matriz (`docs/pruebas/fase-24.6-matriz.md`) | Guía de modelos gratis y locales, diagnóstico de Ollama, «Económico/Equilibrado/Máximo» y matriz probada por agente y modelo |
+| 24.6 | ↳ Modelos gratuitos, niveles de gasto y matriz | ✅ (matriz con Claude Code, Codex y Antigravity; la local, no viable en el equipo de pruebas) | Guía de modelos gratis y locales, diagnóstico de Ollama, «Económico/Equilibrado/Máximo» y matriz probada por agente y modelo |
 | 25 | Más fuentes, perfil más rico, ofertas dudosas, coste y calidad del CV | ✅ | Más ATS con API, `expand`, señales de oferta dudosa, coste por oferta y agente, maquetación del PDF, `CHANGELOG` y el perfil editable desde la UI |
 | 25.1 | ↳ Conectores de ATS y portales con API | ✅ | Personio, Teamtailor, Workable, SmartRecruiters y Recruitee, más Manfred y freehire.me; `cai sources discover` para todos |
 | 25.2 | ↳ Skill `expand` | ✅ | Proyectos, skills y logros propuestos desde GitHub, portfolio o Scholar, con su fuente y solo con tu OK |
@@ -84,11 +84,12 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 25.7 | ↳ Tu perfil, editable desde la UI | ✅ | Experiencia y logros, historias STAR, preferencias de búsqueda, CV y carta, contexto y muestras de estilo desde «Mi perfil», con validación, diff y «Deshacer»; «Mejorar con mi agente» opcional |
 | 25.7a | ↳↳ Escritura del perfil, contexto y muestras (backend) | ✅ | `profile_editor` por secciones (conserva comentarios, `conflict`, validación, copia y «Deshacer»), contexto y muestras de estilo por la API solo para la UI, `style_samples` en `get_context`, ADR-039 |
 | 25.7b | ↳↳ La página «Mi perfil» editable (UI) | ✅ | Formularios por bloque en es y en, diff antes de guardar, «Mejorar con mi agente» y «Proponer historias», guía, README y prueba manual |
-| 26 | macOS, Linux y Docker | ⏳ | Instalar y usar la app en los tres sistemas, botones «en tu agente» incluidos, y Docker opcional |
-| 26.1 | ↳ Núcleo multiplataforma | ⏳ | Rutas, procesos, LibreOffice y terminales en macOS y Linux (`CAI_TERMINAL`) |
-| 26.2 | ↳ Instalador para macOS y Linux | ⏳ | `install.sh` con acceso directo, datos en la carpeta de cada sistema y desinstalación |
-| 26.3 | ↳ Docker opcional | ⏳ | `docker compose up` con los datos en un volumen; el agente desde fuera por MCP; límites documentados |
-| 26.4 | ↳ CI en tres sistemas y docs | ⏳ | Backend probado en Windows, Linux y macOS, humo del instalador y de Docker, guía y README al día |
+| 26 | macOS, Linux y Docker | ✅ | Instalar y usar la app en los tres sistemas, botones «en tu agente» incluidos, y Docker opcional |
+| 26.1 | ↳ Núcleo multiplataforma | ✅ | Rutas, procesos, LibreOffice y terminales en macOS y Linux (`CAI_TERMINAL`) |
+| 26.2 | ↳ Instalador para macOS y Linux | ✅ | `install.sh` con acceso directo, datos en la carpeta de cada sistema y desinstalación |
+| 26.3 | ↳ Docker opcional | ✅ | `docker compose up` con los datos en un volumen; el agente desde fuera por MCP; límites documentados |
+| 26.4 | ↳ CI en tres sistemas y docs | ✅ | Backend probado en Windows, Linux y macOS, humo del instalador y de Docker, guía y README al día |
+| 26.5 | ↳ Demo completa | ✅ | La demo trae hecho lo de cada pantalla (cartas, dosieres, correos, entrevistas, oferta recibida, contexto…) y los botones abren el agente sobre la demo |
 
 **MVP usable:** al terminar la 08 ya puedes pegar ofertas, triarlas y sacar CVs a medida; con la
 08c, también cartas de presentación. La 08c va antes que la 08b, aunque el orden entre ambas da
@@ -2454,11 +2455,30 @@ decisiones tomadas y deuda técnica pendiente. -->
   - Qwen Code: lector `stream-json` y `headless` en la 24.6, con modelos locales.
 
 ### 24.6 · Modelos gratuitos, niveles de gasto y matriz — 2026-10-16 · Claude Code (Opus 5.5)
-- **Estado:** el código, los tests y los docs están hechos. Falta que el usuario pase la matriz real
-  (criterio de cierre: al menos un agente open-source con un modelo local). Este equipo no tiene
-  Ollama, OpenCode, Codex ni Qwen, y con 15 GB de RAM sin gráfica dedicada `gpt-oss:20b` iría justo.
-  Claude Code con MCP lo pasa el usuario (decisión suya). La 24.6 y la 24 quedan 🚧 hasta importar
-  los resultados.
+- **Estado:** ✅ cerrada el 2026-10-22, con el criterio de cierre cambiado (decisión del usuario).
+  El encargo pedía la matriz con al menos un agente open-source con un modelo local. Se intentó con
+  OpenCode y Ollama, y en el equipo de pruebas (16 GB de RAM, sin gráfica dedicada) no es viable:
+  `gpt-oss:20b` no cabe y `qwen3:8b` tarda 13-25 minutos en la primera respuesta (medidas en
+  `docs/MODELOS_GRATIS.md`; el resultado de `gpt-oss`, en `evals/compat/results/`). La 24.6 se
+  cierra con lo que el usuario quería comprobar, que la app funciona con agentes que no son Claude
+  Code. La pasada con un modelo local queda en `docs/pruebas/PENDIENTES.md`.
+- **Matriz real (2026-10-22, `evals/compat/REPORT.md` y `docs/AGENTS_COMPAT.md`):**
+  - Claude Code con MCP, en segundo plano: 53/55 campos, 5/5 valoraciones, 5/5 CVs que pasan
+    `eval cv`, 8,5 min;
+  - Codex (ChatGPT) con una oferta (`--cases 1`): 11/11 campos, 1/1 valoración y 1/1 CV;
+  - Antigravity CLI: 54/55 campos y 5/5 valoraciones; el CV se cortó por el cupo semanal gratuito;
+  - OpenCode con Ollama: no viable en ese equipo; con OpenRouter gratis, cortado por su cupo diario
+    (50 peticiones).
+- **Cierre (2026-10-22):**
+  - `cai eval compat --cases N`: pasada corta con las N primeras ofertas, con su demo y su
+    resultado, para no agotar un cupo gratuito;
+  - pasos manuales en lenguaje natural para los agentes sin sintaxis de skills;
+  - Codex: `pass_env` del manifiesto → `env_vars` (Codex solo pasa una lista blanca del entorno y
+    la demo abría `data/`), y `approval_mode = "approve"` para las herramientas de
+    `policy.auto_allow`;
+  - Antigravity: `/skill` y subagentes heredados (sigue en nivel C);
+  - `docs/MODELOS_GRATIS.md`: medidas en un portátil sin gráfica, cómo ahorrar memoria en Ollama y
+    OpenCode con OpenRouter.
 - **Resumen:**
   - **Guía `docs/MODELOS_GRATIS.md`:**
     - tres vías (local, nube gratis y suscripción) y qué sale de tu equipo en cada una;
@@ -2526,8 +2546,8 @@ decisiones tomadas y deuda técnica pendiente. -->
     - recorte de los metadatos;
     - nota de tokens en el informe y «Pendiente» en la ADR-037.
 - **Deuda:**
-  - Matriz real pendiente: Claude Code con MCP, OpenCode con Ollama, Codex y OpenCode con un modelo
-    gratuito en la nube.
+  - Sin probar con un modelo local (no viable en el equipo de pruebas) ni la matriz entera con
+    Codex (solo con una oferta).
   - Qwen Code sigue sin segundo plano y sin lector `stream-json`: sin un modelo no se puede
     comprobar el techo.
   - El diagnóstico solo conoce Ollama, no LM Studio.
@@ -2946,3 +2966,201 @@ decisiones tomadas y deuda técnica pendiente. -->
 - **Deuda:** borrar una muestra no pide confirmación; los grupos de evidencias que no son de
   experiencia se traducen con una lista fija; reordenar una lista mueve sus elementos sin sus
   comentarios (de la 25.7a); la prueba manual con un agente de verdad queda en PENDIENTES.
+
+
+### 26.1 · Núcleo multiplataforma — 2026-10-17 · Claude Code (Opus 5.5)
+- **Hecho:**
+  - `services/terminals.py`: Terminal.app (o iTerm2) con `osascript` en macOS; en Linux,
+    `CAI_TERMINAL`, `$TERMINAL` o la primera de `x-terminal-emulator` (con la forma de la terminal a
+    la que apunta), `gnome-terminal`, `konsole`, `xfce4-terminal`, `kitty`, `wezterm` y
+    `alacritty`; sin pantalla, ninguna. La orden en bash o zsh con `shlex.quote` (`cd`, `unset`
+    de `unset_env` con nombres validados, `CAI_CLIENT_NAME`, el agente y el shell abierto al
+    salir); si la terminal sale con error en el primer segundo, la UI copia la orden;
+  - `agent_launch`: `no_terminal()` sustituye a `WINDOWS_ONLY` en los botones, «Abrir en
+    terminal» y `resumable_agents`; `terminal_command` elige PowerShell o POSIX. Windows, igual;
+  - `agent_runner._alive_as` en macOS y Linux (`kill -0`, jefe de su grupo y el programa, o el
+    primer argumento de un intérprete, por `/proc` o `ps`), así que `recover_interrupted` ya para
+    huérfanos fuera de Windows;
+  - `cai start`: cada hijo en su grupo, `SIGTERM` al grupo y hasta 10 s antes de `killpg`, y
+    `SIGTERM`/`SIGHUP` paran `cai start` y el worker como Ctrl+C;
+  - LibreOffice: `libreoffice` en el `PATH` y rutas de macOS y Linux, sin Flatpak ni Snap (su
+    sandbox no ve el `/tmp` donde se convierte; ADR-040); «Abrir carpeta» con `open` o `xdg-open`; `cai demo seed` da las indicaciones en bash fuera de Windows; `cai agents
+    doctor` dice qué terminal usaría;
+  - `config.install_dir()`, `installed_data_dir()` y `cai paths --json` para que el instalador (26.2) y la app
+    coincidan; `CAI_TERMINAL` en la configuración;
+  - ADR-040, `AGENTS_COMPAT.md` y `docs/pruebas/fase-26-prueba-manual.txt` (sección 26.1).
+- **Inventario** de suposiciones de Windows: `git grep -n win32 backend/app` solo encuentra ramas
+  con su equivalente para macOS y Linux (`agent_launch`, `agent_runner`, `agent_registry`,
+  `launcher`, `pdf`, `folders`, `cli`, `core/config`). `os.startfile` y `taskkill`/`tasklist`
+  quedan solo en su rama de Windows.
+- **Tests:** `test_terminals.py` (forma de cada terminal, precedencia, sin pantalla, AppleScript,
+  entrecomillado, `soffice` por sistema, carpeta de datos, `cai paths`, `cai start` y, en macOS y
+  Linux de verdad, el shell real, `SIGTERM` y matar el árbol); los dos tests de matar el árbol de
+  `test_agent_runs.py` ya no son solo de Windows; los de «sin terminal» de `test_agent_launch.py`
+  simulan Linux sin terminal y hay uno con terminal; `test_api_context.py` con `open`/`xdg-open`.
+  2797 tests de backend: en Windows pasan todos menos 3 que se saltan (los de POSIX real); ruff y
+  `sync_agents.py --check` limpios. Sin cambios en el frontend.
+- **Decisiones:** de acuerdo con el usuario, `cai paths --json` para que el instalador coincida con
+  la app y `CAI_TERMINAL` ignorada en Windows. Mías: sin Flatpak ni Snap para LibreOffice
+  (se aparta del encargo; motivo en la ADR-040); `x-terminal-emulator` con la forma de la
+  terminal a la que apunta; `gnome-terminal` sin título; la terminal que sale con error en el
+  primer segundo cuenta como no abierta.
+- **Revisión** (rol `reviewer`), sin bloqueantes. Se aplicó: `_alive_as` compara el programa (o
+  el primer argumento de un intérprete) y no cualquier argumento, y lee `/proc` en Linux; la
+  segunda señal se ignora para no cortar la limpieza, también en el worker; `SIGKILL` a lo que
+  quede del grupo; procesos recogidos en un hilo (sin zombis); fuera Flatpak y Snap;
+  `CAI_TERMINAL` en GUIA y GUIDE; COMPARATIVA al día; comentarios en `_realpath` y `shell()`.
+- **Deuda:** los tests de POSIX se saltan en Windows hasta la CI de la 26.4 (o la prueba en WSL);
+  las formas de cada terminal salen de su documentación, no de probarlas todas (iTerm2, sin
+  probar); Terminal.app puede abrir una ventana vacía de más si no estaba abierto; un
+  `$TERMINAL` con argumentos («alacritty -e») no se usa; `.env.example` no lo puede tocar el
+  agente (en PENDIENTES).
+
+### 26.2 · Instalador para macOS y Linux — 2026-10-18 · Claude Code (Opus 5.5)
+- **Hecho:**
+  - `install.sh` (bash 3.2+, para `curl | bash`): uv si falta, release (o zip o repositorio local),
+    `app.new` y sustitución solo de una CandidatAI, `.env` conservado con `CAI_DATA_DIR`, `uv
+    sync`, Chromium (con la pista de `playwright install-deps` en Linux, sin sudo), `cai db
+    upgrade`, y acceso directo: `.desktop` con `Terminal=true` en Linux y `.app` con icono que abre
+    un `.command` en Terminal en macOS. `--dry-run`, `--uninstall`, `--remove-data` (confirmación
+    por `/dev/tty`), `--no-shortcuts` y `--no-setup` (tests y CI); se niega con `/`, `HOME` y las
+    carpetas del sistema;
+  - `config.install_dir()` (y `installed_data_dir()` pasa a ser su `data/`, como en Windows: en la
+    26.1 apuntaba a la carpeta de CandidatAI) y `install_dir` en `cai paths`;
+  - `scripts/build_icons.py` genera también `candidatai.png` (512 px) y `candidatai.icns` (Pillow);
+  - `.gitattributes` con `*.sh text eol=lf`, `install.sh` ejecutable en git y el workflow de release
+    comprueba que el zip lleva `install.sh` y el `.icns`;
+  - README y guía en los dos idiomas, ADR-041, COMPARATIVA y la sección 26.2 de la prueba manual.
+- **Corregido de la 26.1** al pasar la suite en Linux (WSL2, Ubuntu): al parar el worker, `killpg`
+  cerraba la salida del agente antes de que el runner viera la parada y la ejecución quedaba como
+  «terminó sin resultado (código -9)» en vez de «Se paró el worker»; dos tests suponían Windows
+  (`test_open_in_terminal_resumes_the_session` simulaba `win32` antes de lanzar el agente falso) o
+  partían con un separador que estaba en el texto. La suite entera en Linux sacó tres más, de antes
+  de la fase 26: el archivo de candidaturas (`application_archive`) daba por archivada una carpeta
+  vacía de otro proceso porque en macOS y Linux `rename` la sustituye sin error (ahora se comprueba
+  antes); las plantillas de `templates/` no salían idénticas fuera de Windows (el zip guarda el
+  sistema que lo creó: `create_system = 0`); y `test_agent_prefs` simulaba `win32` en todo el
+  proceso (ahora fuerza solo PowerShell y la terminal). Y la foto de la demo se compara por píxeles,
+  no por bytes (el zlib de cada sistema comprime distinto).
+- **Tests:** `test_install_sh.py` (en macOS y Linux: `--dry-run` no escribe nada y anuncia las
+  rutas de `config.install_dir`, reinstalar conserva datos y `.env` y crea el acceso directo,
+  desinstalar sin terminal no borra datos, carpetas protegidas y ajenas, repositorio local sin UI y
+  sin `data/`, `shellcheck`; en todos: bash con LF, `main "$@"` al final, `100755` en git e
+  iconos); `test_start.py` comprueba el workflow. `shellcheck` 0.11 limpio.
+  2799 tests de backend: en Windows pasan todos salvo 12 de macOS y Linux que se saltan; en
+  Ubuntu (WSL2) pasan todos salvo los de Windows, Chromium sin librerías del sistema y LibreOffice;
+  ruff y `sync_agents.py --check` limpios.
+- **Revisión** (rol `reviewer`). Un bloqueante, aplicado: `--uninstall --remove-data` con un
+  `--install-dir` ajeno borraba su `data/` (y `install.ps1` igual). Ahora la carpeta lleva una marca
+  (`.candidatai`, en los dos instaladores) y sin ella ni una app de CandidatAI no se borran datos ni
+  se instala en una carpeta con cosas. También: rutas normalizadas (`.`, `..`, `//`), comprobar
+  antes de borrar, `rm -f` para ficheros, la `.app` solo si es nuestra, volver a la versión anterior
+  si se corta el cambio, `</dev/null` en lo que se lanza, `--remove-data` sin `--uninstall` da error,
+  `chmod +x` de `install.sh` tras `python -m zipfile`, `UV_INSTALL_DIR` y `XDG_BIN_HOME`, `trim` de
+  `XDG_DATA_HOME` como en Python, y tests de carpeta ajena, rutas con `..` y espacios, `.env` con
+  espacios (dotenv) y `-RemoveData` ajeno en `install.ps1`.
+- **Decisiones (con el usuario):** `.app` con icono en macOS; `--no-setup`. Mías: bash y no `sh`
+  (arrays, `printf %q`), compatible con el 3.2 de macOS; `CAI_DATA_DIR` entre comillas en el
+  `.env` (las rutas de macOS llevan espacios); rutas sin comillas, `\`, `` ` ``, `$` ni `%`.
+- **Deuda:** la `.app` de macOS y el `.desktop` dependen del escritorio y no se pueden comprobar en
+  un test; macOS, sin probar hasta la CI de la 26.4.
+
+### 26.3 · Docker opcional — 2026-10-18 · Claude Code (Opus 5.5)
+- **Hecho:**
+  - `Dockerfile` en dos etapas (UI con Node 24 y pnpm; final con `uv:0.9.30-python3.12`, el
+    backend, la UI compilada y el Chromium sin ventana de Playwright con sus librerías), usuario
+    `cai` (uid 1000), sin LibreOffice ni torch, la caché de uv fuera de la imagen (1,7 GB);
+    `.dockerignore` deja fuera `data*`, `.env` y `.git`;
+  - `docker-compose.yml`: `cai start --no-browser`, contenedor `candidatai`, puerto solo en
+    `127.0.0.1:8000`, volúmenes con nombre fijo `candidatai-data` (`/data`) y `candidatai-demo`
+    (`/data-demo`), `.env` opcional con `CAI_IN_DOCKER` y `CAI_DATA_DIR` por delante, healthcheck
+    sobre `/status` e `init`; `docker-compose.demo.yml` abre la demo;
+  - `services/container.py`: `listen_host()` (todas las interfaces solo con `CAI_IN_DOCKER=1` y
+    marca de contenedor) y los motivos. Con `CAI_IN_DOCKER`: los botones de terminal copian la
+    orden, el segundo plano se bloquea (`no_headless`), la candidatura asistida no prepara, rellena
+    ni envía (código `docker`, también para las tareas ya encoladas en el worker) y la ficha ofrece
+    abrir la oferta en tu navegador y «Marcar como enviada»; `cai doctor` con sección «Docker» y sin
+    avisos de LibreOffice ni de agentes; `cai demo seed` va a `/data-demo`;
+  - guía «Con Docker» en los dos idiomas (tabla de qué funciona, MCP para Claude Code, Codex y
+    OpenCode, `cai … --json`, copia de seguridad del volumen), README, ADR-042 (matiza la 007),
+    AGENT_INTERFACE, COMPARATIVA, AGENTS.md y la sección 26.3 de la prueba manual.
+- **Probado con Docker Desktop (Windows):** `docker compose up -d --build`, `/status` y la UI desde
+  Windows, `cai demo seed` con 2 CVs en PDF (motor html), un cliente MCP por stdio con
+  `docker exec -i candidatai cai-mcp` (50 herramientas, los datos de la demo), `cai doctor` «Todo
+  listo», `docker compose stop` limpio (código 0) y la copia del volumen con `alpine tar`.
+- **Tests:** `test_docker.py` (dónde escucha la API, `cai serve`, botones, segundo plano por el
+  servicio y la API, candidatura asistida por la API, el servicio y el worker, diagnóstico, demo,
+  Dockerfile y compose) y un test de vitest de la ficha en Docker. 2813 tests de backend en Windows
+  (12 de macOS y Linux se saltan), frontend en verde (typecheck, lint y vitest), ruff y
+  `sync_agents.py --check` limpios.
+- **Revisión** (rol `reviewer`), sin bloqueantes. Aplicado: las tareas del navegador ya encoladas
+  fallan con el motivo en Docker; `demo._pdf_engine` solo lanza Chromium para comprobarlo en Docker
+  (Windows queda igual); `.dockerignore` con `**/data*` y `**/.env`; «Docker · límites» en OK
+  (esperados); aviso en el compose de no quitar `127.0.0.1:`; imagen de uv fijada.
+- **Decisiones:** volumen con nombre (usuario). Mías: `docker exec -i candidatai cai-mcp` en vez de
+  `docker compose exec -T` (un cliente MCP que arranca el servidor con un entorno mínimo no
+  encuentra el plugin `compose`, y no depende de la carpeta); la demo en su propio volumen; el
+  Chromium sin ventana (`--only-shell`), porque dentro no hay candidatura asistida.
+- **Deuda:** el agente procesando la demo por MCP y Docker en WSL2 quedan para la prueba manual; la
+  imagen no se publica en un registro (26.4 si se quiere); la parada tarda unos 13 s.
+
+### 26.4 · CI en tres sistemas y docs — 2026-10-18 · Claude Code (Opus 5.5)
+- **Hecho:**
+  - `ci.yml`: backend en matriz (Windows y Ubuntu en cada push; macOS en `main`, etiquetas y
+    «Run workflow», por coste: macOS se factura ×10 en un repositorio privado), con caché de uv y de
+    Chromium (`PLAYWRIGHT_BROWSERS_PATH` común, clave con la versión de Playwright), Chromium con
+    sus librerías en Linux, shellcheck en macOS, ruff, pytest con la cobertura mínima (85 %) y la
+    demo de humo en `pwsh` en los tres; job `installer` (shellcheck, `--dry-run` que no escribe
+    nada, instalar, reinstalar conservando los datos y desinstalar con `--no-setup`) en Ubuntu y
+    macOS; job `docker` (imagen con caché de Actions, `/status`, `cai demo seed` con 60 ofertas y 2
+    CVs, y la sección «Docker» de `cai doctor`). `install.ps1 -WhatIf` ya lo probaba `test_start.py`;
+  - `release.yml`: la prueba en seco compila y comprueba `candidatai.zip` (con `install.sh`
+    ejecutable, el `.icns` y la UI) y lo deja como artefacto; `package` va sin permiso de
+    escritura y `release` (publicar) solo con la etiqueta;
+  - docs: badge «Windows · macOS · Linux», carpeta de datos de cada sistema y copia de seguridad en
+    la guía (es y en), «Por sistema» en AGENTS_COMPAT, COMPARATIVA, DESARROLLO_POR_FASES.
+- **La CI en la rama** (ejecución a mano, 2026-10-18): todo en verde en los tres sistemas. Backend:
+  2814 tests en Ubuntu y macOS (13 se saltan), cobertura del 94 %; 40 min en Windows, 18 en Ubuntu
+  y 10 en macOS. Instalador en Ubuntu y macOS, Docker, frontend y agents en verde. La prueba en seco
+  de la release deja el zip (4,8 MB) sin publicar.
+- **Lo que encontró la primera CI:** `install.sh` fallaba en macOS (el `chmod` de BSD lee `--` como
+  un fichero cuando va tras el modo); `test_run_with_questions_needs_the_user` suponía un escritorio
+  (en un Linux sin `DISPLAY` no hay terminal donde reanudar); y una descarga de PyPI caída en macOS.
+- **Revisión** (rol `reviewer`), sin fallos de seguridad. Aplicado: la release en dos jobs, para que
+  el token de escritura no exista en la prueba en seco; `bash` con pipefail y `timeout-minutes` en
+  los jobs de Docker y del instalador; las afirmaciones de la COMPARATIVA y AGENTS_COMPAT, solo tras
+  la CI en verde.
+- **Decisiones:** macOS solo en `main`, etiquetas y a mano (con los números); la imagen no se
+  publica en GHCR (el repositorio es privado); la demo de humo sigue en `pwsh`.
+- **Deuda:** la guía de cero a la app abierta en WSL2 y Docker en WSL2 quedan para la prueba manual;
+  los agentes no se han probado con la app en macOS ni en Linux; `ruff` y la cobertura corren en los
+  tres sistemas (bastaría uno).
+
+### 26.5 · Demo completa — 2026-10-19 · Claude Code (Opus 5.5)
+- **Por qué:** al probar las fases 24-26 con la demo, muchas pantallas salían vacías (Respuestas,
+  dosier, carta, mensajes, plan y repaso de entrevistas, oferta recibida, Skills, encargos,
+  contexto y muestras de estilo): la demo solo traía el embudo y dos CVs.
+- **Hecho:**
+  - `services/demo_extras.py`, llamado al final de `demo.seed`, con el contenido de
+    `demo/<idioma>/seed/extras.yaml` y siempre por los servicios: valoración del encaje de las dos
+    ofertas con CV; carta (con indicaciones y verificada) y respuestas de screening de la primera;
+    mensaje de LinkedIn de la segunda; seguimiento de una candidatura enviada; dosier de las dos
+    empresas (la segunda con un ERE como bandera roja); plan de la primera entrevista programada y
+    repaso de dos ya hechas; datos de la oferta recibida (importes privados); tres correos en
+    `inbox/respuestas/` leídos con `poll_replies` (entrevista y descarte con propuesta, y un acuse
+    con texto oculto para una IA sin clasificar); «No la tengo» en Looker y Databricks; un encargo
+    «Generar CV» pendiente; el contexto (`demo/contexto/` y el nuevo `demo/en/contexto/`), una
+    muestra de estilo y `documentos/salarios.csv`;
+  - los eventos que los servicios fechan «ahora» se recolocan: la valoración, una hora antes de
+    la aprobación; la carta y las respuestas, unos minutos antes de `now`. La demo sigue siendo
+    determinista;
+  - **los botones «en tu agente» ponen `CAI_DATA_DIR` en una demo** (`launch_env`): una pestaña
+    nueva de Windows Terminal (`wt -w 0`) no hereda el entorno de `cai start`, así que el agente
+    podía escribir en `data/` en vez de en la demo;
+  - guía (es y en): qué trae la demo y compilar la UI tras cambiar de rama;
+    `docs/pruebas/fases-24-26-pruebas.md`: comprobación de la UI compilada, `CAI_DATA_DIR` en cada
+    terminal del bloque 1 y un recorrido por lo que trae la demo.
+- **Decisiones:** sin recorridos de plataformas ni ejecuciones del agente inventados: activar la
+  búsqueda con navegador es cosa del usuario y el coste tiene que ser real. La carta solo se
+  genera si hay con qué hacer el PDF, como los CVs.
+

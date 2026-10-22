@@ -58,6 +58,9 @@ if ($forbidden -contains $InstallDir.TrimEnd('\')) {
 }
 $AppDir = Join-Path $InstallDir "app"
 $DataDir = Join-Path $InstallDir "data"
+# Marca de una carpeta de instalación de CandidatAI (fase 26.2): sin ella ni una app de CandidatAI,
+# -RemoveData no borra nada.
+$Marker = Join-Path $InstallDir ".candidatai"
 $Shortcuts = @(
   (Join-Path ([Environment]::GetFolderPath("Desktop")) "CandidatAI.lnk"),
   (Join-Path ([Environment]::GetFolderPath("Programs")) "CandidatAI.lnk")
@@ -77,20 +80,27 @@ function Remove-Tree([string]$Path) {
 # --- Desinstalar ---------------------------------------------------------------------------------
 if ($Uninstall) {
   Step "Desinstalando CandidatAI de $InstallDir"
+  # Primero se comprueba; después se borra.
+  if ((Test-Path $AppDir) -and -not (Test-CandidatAIApp $AppDir)) {
+    throw "$AppDir no parece una instalación de CandidatAI: no se borra nada."
+  }
+  $owned = (Test-Path $Marker) -or (Test-CandidatAIApp $AppDir)
   foreach ($lnk in $Shortcuts) {
     if ((Test-Path $lnk) -and $PSCmdlet.ShouldProcess($lnk, "Borrar el acceso directo")) {
       Remove-Item $lnk -Force
     }
   }
   if (Test-Path $AppDir) {
-    if (-not (Test-CandidatAIApp $AppDir)) {
-      throw "$AppDir no parece una instalación de CandidatAI: no se borra."
-    }
     if ($PSCmdlet.ShouldProcess($AppDir, "Borrar la app")) { Remove-Tree $AppDir }
   }
-  if ($RemoveData -and (Test-Path $DataDir)) {
+  if ($RemoveData -and (Test-Path $DataDir) -and -not $owned) {
+    Say "$InstallDir no parece una instalación de CandidatAI: $DataDir no se borra."
+  } elseif ($RemoveData -and (Test-Path $DataDir)) {
     if ($PSCmdlet.ShouldContinue("Se borrarán tus datos de $DataDir (perfil, ofertas, CVs). No se puede deshacer.", "¿Borrar tus datos?")) {
-      if ($PSCmdlet.ShouldProcess($DataDir, "Borrar tus datos")) { Remove-Tree $DataDir }
+      if ($PSCmdlet.ShouldProcess($DataDir, "Borrar tus datos")) {
+        Remove-Tree $DataDir
+        Remove-Item $Marker -Force -ErrorAction SilentlyContinue
+      }
     }
   } elseif (Test-Path $DataDir) {
     Say "Tus datos se quedan en $DataDir (bórralos a mano o usa -Uninstall -RemoveData)."
@@ -139,6 +149,7 @@ if (($zip -or $folder) -and $PSCmdlet.ShouldProcess($AppDir, "Instalar (o sustit
     throw "$AppDir existe y no es una instalación de CandidatAI: elige otra carpeta con -InstallDir."
   }
   New-Item -ItemType Directory -Force $InstallDir | Out-Null
+  if (-not (Test-Path $Marker)) { New-Item -ItemType File $Marker | Out-Null }
   # La versión nueva se prepara aparte y solo sustituye a la anterior si está completa.
   $staging = Join-Path $InstallDir "app.new"
   $previous = Join-Path $InstallDir "app.old"

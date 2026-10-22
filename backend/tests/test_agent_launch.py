@@ -3,6 +3,7 @@ desde la UI. Ningún test abre una terminal de verdad: `_open_terminal` se susti
 
 from collections.abc import Iterator
 from datetime import timedelta
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -12,7 +13,7 @@ from app.api.main import create_app
 from app.core import migrations
 from app.core.db import session_scope
 from app.models.base import utcnow
-from app.services import agent_launch, events, process
+from app.services import agent_launch, events, process, terminals
 from app.services.agent_launch import LaunchError
 from app.services.pipeline import Stage
 from tests.replies_support import add_applied_job
@@ -106,13 +107,58 @@ def test_powershell_command_unsets_api_keys_names_the_client_and_quotes_the_prom
     )
 
 
-def test_info_without_windows_or_agent(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_in_a_demo_the_window_points_the_agent_at_the_demo_folder(
+    isolated_env: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Fase 26.5: una pestaña de Windows Terminal no hereda `CAI_DATA_DIR` de `cai start`."""
+    from app.core.config import DEMO_MARKER, get_settings
+
+    launcher = agent_launch._Launcher("claude", ["claude", "{prompt}"], [])
+    assert "CAI_DATA_DIR" not in agent_launch.powershell_command(launcher, "hola")
+    isolated_env.mkdir(parents=True, exist_ok=True)
+    (isolated_env / DEMO_MARKER).write_text("", encoding="utf-8")
+    get_settings.cache_clear()
+    folder = str(get_settings().data_dir)
+    command = agent_launch.powershell_command(launcher, "hola")
+    assert f"$env:CAI_DATA_DIR = '{folder}'; & 'claude' 'hola'" in command
+    monkeypatch.setattr(agent_launch.terminals, "shell", lambda: "/bin/bash")
+    assert "export CAI_DATA_DIR=" in agent_launch.posix_command(launcher, "hola")
+
+
+def _no_terminal(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Linux sin ninguna terminal (fase 26.1): la UI copia la orden."""
     monkeypatch.setattr(agent_launch.sys, "platform", "linux")
-    assert agent_launch.info().available is False
+    monkeypatch.setattr(agent_launch.terminals, "find", lambda: terminals.NO_DISPLAY)
+
+
+def test_info_without_terminal_or_agent(monkeypatch: pytest.MonkeyPatch) -> None:
+    _no_terminal(monkeypatch)
+    info = agent_launch.info()
+    assert info.available is False and info.reason == terminals.NO_DISPLAY
     monkeypatch.setattr(agent_launch.sys, "platform", "win32")
     monkeypatch.setattr(agent_launch.shutil, "which", lambda name: None)
     info = agent_launch.info()
     assert info.available is False and "PATH" in (info.reason or "")
+
+
+def test_linux_opens_its_terminal_with_a_posix_command(
+    opened: list[tuple[str, str]], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Fase 26.1: en macOS y Linux, la orden va en bash o zsh, sin la clave y con el agente."""
+    monkeypatch.setattr(agent_launch.sys, "platform", "linux")
+    monkeypatch.setattr(
+        agent_launch.terminals, "find", lambda: terminals.Terminal("kitty", "/usr/bin/kitty")
+    )
+    assert agent_launch.info().available is True
+    assert agent_launch.resumable_agents() >= {"claude"}
+    migrations.upgrade()
+    with session_scope() as session:
+        result = agent_launch.launch(session, "process-jobs")
+    assert result.agent == "claude"
+    title, command = opened[-1]
+    assert title.startswith("CandidatAI · ")
+    assert "unset ANTHROPIC_API_KEY; export CAI_CLIENT_NAME=claude; claude 'Usa el skill" in command
+    assert "Remove-Item" not in command
 
 
 def test_cai_agent_picks_the_agent(
@@ -214,7 +260,7 @@ def test_only_the_ui_can_launch(
 def test_unavailable_returns_the_prompt_to_copy(
     client: TestClient, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setattr(agent_launch.sys, "platform", "linux")
+    _no_terminal(monkeypatch)
     response = client.post("/agent/launch", json={"action": "process-jobs"}, headers=JSON)
     assert response.status_code == 503
     error = response.json()["error"]
@@ -335,7 +381,7 @@ def test_unavailable_interview_action_returns_the_prompt_with_its_job(
     client: TestClient, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     job_id, past = _interview(-2)
-    monkeypatch.setattr(agent_launch.sys, "platform", "linux")
+    _no_terminal(monkeypatch)
     response = client.post(
         "/agent/launch", json={"action": "debrief-interview", "milestone_id": past}, headers=JSON
     )
