@@ -67,13 +67,13 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 23.5a | ↳ Logo | ✅ | Logo nuevo, elegido entre propuestas, en la UI, el favicon, la extensión, el icono y el banner |
 | 23.6 | ↳ UI en inglés y español | ✅ | Toda la UI traducida, con un selector de idioma junto al del tema |
 | 23.5b | ↳ Medios y README | ✅ | Capturas en los dos idiomas, GIF y vídeo; README sin la comparativa |
-| 24 | Varios agentes: open-source, gratuitos y a elegir | ⏳ | Usar la app con OpenCode, Qwen Code, Antigravity o Codex con modelos locales, además de Claude Code, y cambiar de agente y modelo desde la UI, globalmente o por acción |
+| 24 | Varios agentes: open-source, gratuitos y a elegir | ✅ | Usar la app con OpenCode, Qwen Code, Antigravity o Codex con modelos locales, además de Claude Code, y cambiar de agente y modelo desde la UI, globalmente o por acción |
 | 24.1 | ↳ Registro de agentes y diagnóstico | ✅ | `cai agents list` y `cai agents doctor`: qué agentes hay, cuáles están instalados, qué saben hacer y si son open-source |
 | 24.2 | ↳ Esquemas y errores para cualquier modelo | ✅ | `cai schema` y `get_schema`; errores de validación con `path` y pista |
 | 24.3 | ↳ Agentes nuevos | ✅ | Configuración generada para OpenCode, Qwen Code y Antigravity; Codex con `--oss`; Gemini CLI fuera |
 | 24.4 | ↳ Elegir y cambiar de agente | ✅ | Sección «Agentes» con capacidades, agente por defecto y por acción, «con Claude Code ▾» en cada botón |
 | 24.5 | ↳ Segundo plano con varios agentes | ✅ | «En segundo plano» también con OpenCode (`process-jobs` y `assess-fit`), con el techo en una configuración propia de cada ejecución; Codex y Qwen Code, aún no |
-| 24.6 | ↳ Modelos gratuitos, niveles de gasto y matriz | 🚧 código y docs hechos; falta pasar la matriz (`docs/pruebas/fase-24.6-matriz.md`) | Guía de modelos gratis y locales, diagnóstico de Ollama, «Económico/Equilibrado/Máximo» y matriz probada por agente y modelo |
+| 24.6 | ↳ Modelos gratuitos, niveles de gasto y matriz | ✅ (matriz con Claude Code, Codex y Antigravity; la local, no viable en el equipo de pruebas) | Guía de modelos gratis y locales, diagnóstico de Ollama, «Económico/Equilibrado/Máximo» y matriz probada por agente y modelo |
 | 25 | Más fuentes, perfil más rico, ofertas dudosas, coste y calidad del CV | ✅ | Más ATS con API, `expand`, señales de oferta dudosa, coste por oferta y agente, maquetación del PDF, `CHANGELOG` y el perfil editable desde la UI |
 | 25.1 | ↳ Conectores de ATS y portales con API | ✅ | Personio, Teamtailor, Workable, SmartRecruiters y Recruitee, más Manfred y freehire.me; `cai sources discover` para todos |
 | 25.2 | ↳ Skill `expand` | ✅ | Proyectos, skills y logros propuestos desde GitHub, portfolio o Scholar, con su fuente y solo con tu OK |
@@ -89,6 +89,7 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 26.2 | ↳ Instalador para macOS y Linux | ✅ | `install.sh` con acceso directo, datos en la carpeta de cada sistema y desinstalación |
 | 26.3 | ↳ Docker opcional | ✅ | `docker compose up` con los datos en un volumen; el agente desde fuera por MCP; límites documentados |
 | 26.4 | ↳ CI en tres sistemas y docs | ✅ | Backend probado en Windows, Linux y macOS, humo del instalador y de Docker, guía y README al día |
+| 26.5 | ↳ Demo completa | ✅ | La demo trae hecho lo de cada pantalla (cartas, dosieres, correos, entrevistas, oferta recibida, contexto…) y los botones abren el agente sobre la demo |
 
 **MVP usable:** al terminar la 08 ya puedes pegar ofertas, triarlas y sacar CVs a medida; con la
 08c, también cartas de presentación. La 08c va antes que la 08b, aunque el orden entre ambas da
@@ -2454,11 +2455,30 @@ decisiones tomadas y deuda técnica pendiente. -->
   - Qwen Code: lector `stream-json` y `headless` en la 24.6, con modelos locales.
 
 ### 24.6 · Modelos gratuitos, niveles de gasto y matriz — 2026-10-16 · Claude Code (Opus 5.5)
-- **Estado:** el código, los tests y los docs están hechos. Falta que el usuario pase la matriz real
-  (criterio de cierre: al menos un agente open-source con un modelo local). Este equipo no tiene
-  Ollama, OpenCode, Codex ni Qwen, y con 15 GB de RAM sin gráfica dedicada `gpt-oss:20b` iría justo.
-  Claude Code con MCP lo pasa el usuario (decisión suya). La 24.6 y la 24 quedan 🚧 hasta importar
-  los resultados.
+- **Estado:** ✅ cerrada el 2026-10-22, con el criterio de cierre cambiado (decisión del usuario).
+  El encargo pedía la matriz con al menos un agente open-source con un modelo local. Se intentó con
+  OpenCode y Ollama, y en el equipo de pruebas (16 GB de RAM, sin gráfica dedicada) no es viable:
+  `gpt-oss:20b` no cabe y `qwen3:8b` tarda 13-25 minutos en la primera respuesta (medidas en
+  `docs/MODELOS_GRATIS.md`; el resultado de `gpt-oss`, en `evals/compat/results/`). La 24.6 se
+  cierra con lo que el usuario quería comprobar, que la app funciona con agentes que no son Claude
+  Code. La pasada con un modelo local queda en `docs/pruebas/PENDIENTES.md`.
+- **Matriz real (2026-10-22, `evals/compat/REPORT.md` y `docs/AGENTS_COMPAT.md`):**
+  - Claude Code con MCP, en segundo plano: 53/55 campos, 5/5 valoraciones, 5/5 CVs que pasan
+    `eval cv`, 8,5 min;
+  - Codex (ChatGPT) con una oferta (`--cases 1`): 11/11 campos, 1/1 valoración y 1/1 CV;
+  - Antigravity CLI: 54/55 campos y 5/5 valoraciones; el CV se cortó por el cupo semanal gratuito;
+  - OpenCode con Ollama: no viable en ese equipo; con OpenRouter gratis, cortado por su cupo diario
+    (50 peticiones).
+- **Cierre (2026-10-22):**
+  - `cai eval compat --cases N`: pasada corta con las N primeras ofertas, con su demo y su
+    resultado, para no agotar un cupo gratuito;
+  - pasos manuales en lenguaje natural para los agentes sin sintaxis de skills;
+  - Codex: `pass_env` del manifiesto → `env_vars` (Codex solo pasa una lista blanca del entorno y
+    la demo abría `data/`), y `approval_mode = "approve"` para las herramientas de
+    `policy.auto_allow`;
+  - Antigravity: `/skill` y subagentes heredados (sigue en nivel C);
+  - `docs/MODELOS_GRATIS.md`: medidas en un portátil sin gráfica, cómo ahorrar memoria en Ollama y
+    OpenCode con OpenRouter.
 - **Resumen:**
   - **Guía `docs/MODELOS_GRATIS.md`:**
     - tres vías (local, nube gratis y suscripción) y qué sale de tu equipo en cada una;
@@ -2526,8 +2546,8 @@ decisiones tomadas y deuda técnica pendiente. -->
     - recorte de los metadatos;
     - nota de tokens en el informe y «Pendiente» en la ADR-037.
 - **Deuda:**
-  - Matriz real pendiente: Claude Code con MCP, OpenCode con Ollama, Codex y OpenCode con un modelo
-    gratuito en la nube.
+  - Sin probar con un modelo local (no viable en el equipo de pruebas) ni la matriz entera con
+    Codex (solo con una oferta).
   - Qwen Code sigue sin segundo plano y sin lector `stream-json`: sin un modelo no se puede
     comprobar el techo.
   - El diagnóstico solo conoce Ollama, no LM Studio.
@@ -3115,4 +3135,32 @@ decisiones tomadas y deuda técnica pendiente. -->
 - **Deuda:** la guía de cero a la app abierta en WSL2 y Docker en WSL2 quedan para la prueba manual;
   los agentes no se han probado con la app en macOS ni en Linux; `ruff` y la cobertura corren en los
   tres sistemas (bastaría uno).
+
+### 26.5 · Demo completa — 2026-10-19 · Claude Code (Opus 5.5)
+- **Por qué:** al probar las fases 24-26 con la demo, muchas pantallas salían vacías (Respuestas,
+  dosier, carta, mensajes, plan y repaso de entrevistas, oferta recibida, Skills, encargos,
+  contexto y muestras de estilo): la demo solo traía el embudo y dos CVs.
+- **Hecho:**
+  - `services/demo_extras.py`, llamado al final de `demo.seed`, con el contenido de
+    `demo/<idioma>/seed/extras.yaml` y siempre por los servicios: valoración del encaje de las dos
+    ofertas con CV; carta (con indicaciones y verificada) y respuestas de screening de la primera;
+    mensaje de LinkedIn de la segunda; seguimiento de una candidatura enviada; dosier de las dos
+    empresas (la segunda con un ERE como bandera roja); plan de la primera entrevista programada y
+    repaso de dos ya hechas; datos de la oferta recibida (importes privados); tres correos en
+    `inbox/respuestas/` leídos con `poll_replies` (entrevista y descarte con propuesta, y un acuse
+    con texto oculto para una IA sin clasificar); «No la tengo» en Looker y Databricks; un encargo
+    «Generar CV» pendiente; el contexto (`demo/contexto/` y el nuevo `demo/en/contexto/`), una
+    muestra de estilo y `documentos/salarios.csv`;
+  - los eventos que los servicios fechan «ahora» se recolocan: la valoración, una hora antes de
+    la aprobación; la carta y las respuestas, unos minutos antes de `now`. La demo sigue siendo
+    determinista;
+  - **los botones «en tu agente» ponen `CAI_DATA_DIR` en una demo** (`launch_env`): una pestaña
+    nueva de Windows Terminal (`wt -w 0`) no hereda el entorno de `cai start`, así que el agente
+    podía escribir en `data/` en vez de en la demo;
+  - guía (es y en): qué trae la demo y compilar la UI tras cambiar de rama;
+    `docs/pruebas/fases-24-26-pruebas.md`: comprobación de la UI compilada, `CAI_DATA_DIR` en cada
+    terminal del bloque 1 y un recorrido por lo que trae la demo.
+- **Decisiones:** sin recorridos de plataformas ni ejecuciones del agente inventados: activar la
+  búsqueda con navegador es cosa del usuario y el coste tiene que ser real. La carta solo se
+  genera si hay con qué hacer el PDF, como los CVs.
 

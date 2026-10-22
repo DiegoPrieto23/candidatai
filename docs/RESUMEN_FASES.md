@@ -380,6 +380,13 @@ La carta es un documento propio, con sus indicaciones, su verificación y sus re
 - Para agentes y terminal: `get_received_offer` ↔ `jh received-offers show`.
 
 
+## 26.5 · Una demo con todo — 2026-10-19 · Claude Code (Opus 5.5)
+- **Ninguna pantalla vacía en la demo:** trae carta, respuestas de screening, mensajes, dosieres
+  de empresa (uno con bandera roja), plan y repaso de entrevistas, la oferta recibida, correos de
+  empresas en «Respuestas», huecos en «Skills», un encargo pendiente, contexto y una muestra de
+  estilo, en español y en inglés.
+- **Los botones «en tu agente» abren el agente sobre la demo**, no sobre tus datos.
+
 ## 26.4 · Probado en los tres sistemas — 2026-10-18 · Claude Code (Opus 5.5)
 - **La CI prueba el backend en Windows, Linux y macOS**, el instalador en Linux y macOS y la imagen
   de Docker. Ya encontró un fallo real del instalador en macOS.
@@ -502,7 +509,9 @@ La carta es un documento propio, con sus indicaciones, su verificación y sus re
   - **niveles de gasto** «Económico», «Equilibrado» y «Máximo», que se aplican con un clic y se
     deshacen;
   - **`cai eval compat`** pasa la matriz a cualquier agente y modelo y la resume en
-    `evals/compat/REPORT.md`.
+    `evals/compat/REPORT.md`; con `--cases 1`, con una sola oferta;
+  - **probado** con Claude Code, Codex y Antigravity CLI; con un modelo local, no viable en un
+    portátil de 16 GB sin gráfica.
 - **Sigue igual:** la app no llama a ningún LLM. Los modelos gratuitos se usan a través de agentes
   que ya saben hablar con ellos.
 

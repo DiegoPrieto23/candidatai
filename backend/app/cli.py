@@ -647,7 +647,13 @@ def eval_compat_command(
         False, "--import", help="No lanza nada: mide la demo en la que trabajaste a mano."
     ),
     approve_only: bool = typer.Option(
-        False, "--approve", help="Solo aprueba en la demo las 5 ofertas de la matriz (paso manual)."
+        False, "--approve", help="Solo aprueba en la demo las ofertas de la matriz (paso manual)."
+    ),
+    cases: int | None = typer.Option(
+        None,
+        "--cases",
+        min=1,
+        help="Solo las N primeras ofertas (p. ej. 1): pasada corta, con su demo y su resultado.",
     ),
     timeout: int | None = typer.Option(
         None, "--timeout", min=1, help="Minutos máximos por ejecución (por defecto, la política)."
@@ -666,17 +672,22 @@ def eval_compat_command(
 
     try:
         if approve_only:
-            target = compat.data_dir(agent, model, preset)
+            target = compat.data_dir(agent, model, preset, cases)
             notes = compat.approve(target)
             if as_json:
                 typer.echo(dump_json({"ok": True, "data_dir": target.name, "notes": notes}))
             say("Aprobadas en la demo." + (f" Ojo: {'; '.join(notes)}" if notes else ""))
             return
         if import_:
-            result = compat.import_results(agent, model, preset)
+            result = compat.import_results(agent, model, preset, cases=cases)
         else:
             result = compat.run(
-                agent, model, preset, timeout=timeout * 60 if timeout else None, progress=say
+                agent,
+                model,
+                preset,
+                timeout=timeout * 60 if timeout else None,
+                progress=say,
+                cases=cases,
             )
     except (compat.CompatError, cv_eval.CvEvalFileError, cv_eval.CvEvalNotDemoError) as exc:
         if as_json:
@@ -691,7 +702,8 @@ def eval_compat_command(
     typer.echo(
         f"\n{result.display_name} · {result.model or result.preset or 'modelo por defecto'}: "
         f"extracción {result.fields_equal}/{result.fields_total} campos, "
-        f"{result.assessed}/5 valoraciones, CVs {result.cv.passed}/{result.cv.evaluated} pasan."
+        f"{result.assessed}/{len(result.extraction)} valoraciones, "
+        f"CVs {result.cv.passed}/{result.cv.evaluated} pasan."
     )
     if result.manual_steps:
         typer.secho("\nFalta hacerlo a mano (este agente no puede en segundo plano):", bold=True)

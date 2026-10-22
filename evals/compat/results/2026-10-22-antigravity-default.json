@@ -1,0 +1,109 @@
+{
+  "created_at": "2026-10-22T15:39:02.951521Z",
+  "agent": "antigravity",
+  "display_name": "Antigravity CLI",
+  "open_source": false,
+  "local_models": false,
+  "model": null,
+  "preset": null,
+  "data_dir": "data-demo-compat-antigravity-default",
+  "imported": true,
+  "steps": [
+    {
+      "action": "process-jobs",
+      "mode": "manual",
+      "reason": null,
+      "runs": []
+    },
+    {
+      "action": "assess-fit",
+      "mode": "manual",
+      "reason": null,
+      "runs": []
+    },
+    {
+      "action": "generate-cv",
+      "mode": "manual",
+      "reason": null,
+      "runs": []
+    }
+  ],
+  "extraction": [
+    {
+      "case": "cv01-de-snowflake",
+      "job_id": 61,
+      "extracted": true,
+      "equal": 11,
+      "total": 11,
+      "different": []
+    },
+    {
+      "case": "cv03-analyst-powerbi",
+      "job_id": 62,
+      "extracted": true,
+      "equal": 11,
+      "total": 11,
+      "different": []
+    },
+    {
+      "case": "cv05-de-orquestacion",
+      "job_id": 63,
+      "extracted": true,
+      "equal": 11,
+      "total": 11,
+      "different": []
+    },
+    {
+      "case": "cv07-english",
+      "job_id": 64,
+      "extracted": true,
+      "equal": 11,
+      "total": 11,
+      "different": []
+    },
+    {
+      "case": "cv09-etl-migracion",
+      "job_id": 65,
+      "extracted": true,
+      "equal": 10,
+      "total": 11,
+      "different": [
+        "title_normalized"
+      ]
+    }
+  ],
+  "fields_equal": 54,
+  "fields_total": 55,
+  "assessed": 5,
+  "verdicts": {
+    "possible": 1,
+    "strong": 4
+  },
+  "cv": {
+    "evaluated": 1,
+    "passed": 0,
+    "checks_passed": {
+      "evidence": 1,
+      "skills": 1,
+      "basic_skills": 1,
+      "one_page": 1,
+      "layout": 1,
+      "coverage": 1,
+      "language": 1,
+      "verified": 0
+    },
+    "cases": {
+      "cv01-de-snowflake": "pending",
+      "cv03-analyst-powerbi": "failed",
+      "cv05-de-orquestacion": "pending",
+      "cv07-english": "pending",
+      "cv09-etl-migracion": "pending"
+    }
+  },
+  "seconds": null,
+  "turns": null,
+  "tokens": null,
+  "cost_usd": null,
+  "complete": false,
+  "manual_steps": []
+}

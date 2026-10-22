@@ -273,10 +273,10 @@ language (in English or Spanish).
 | Agent | Licence | Free | Local | Status |
 |---|---|---|---|---|
 | **Claude Code** | proprietary | no (your Claude plan) | no | **Tested**: reference, with MCP and without (CLI only: 5/5 jobs extracted, assessed and with a CV passing the eval). Skills can also run **in the background** from the UI |
-| **Codex** | Apache-2.0 | with a local model | yes (`--oss`, `local` preset) | **Configured, untested** (`.codex/`). Uses your ChatGPT account or Ollama/LM Studio |
+| **Codex** | Apache-2.0 | with a local model | yes (`--oss`, `local` preset) | **Tested with one offer**: extracts, assesses and writes the CV well (`.codex/`). Uses your ChatGPT account or Ollama/LM Studio |
 | **OpenCode** | MIT | with a local or free model | yes (Ollama, LM Studio) | **Configured, untested with a model** (`opencode.json`, `.opencode/agents/`), checked against its binary. Runs `process-jobs` and `assess-fit` **in the background** with the same tool ceiling as Claude Code |
 | **Qwen Code** | Apache-2.0 | with a local or free model | yes | **Configured, untested** (`.qwen/`). Its free OAuth plan closed on 15/04/2026 |
-| **Antigravity CLI** | proprietary | yes (Google free plan) | no | **Configured, untested** (`.agents/mcp_config.json`). Replaces Gemini CLI |
+| **Antigravity CLI** | proprietary | yes (Google free plan) | no | **Partly tested**: extracts and assesses well; the free plan runs out of its weekly quota when it starts on CVs (`.agents/mcp_config.json`). Replaces Gemini CLI |
 | **Cursor, Copilot CLI, Pi, goose…** | various | depends | depends | **Compatible via `AGENTS.md`**: they work if they read `AGENTS.md` and speak MCP or run commands |
 
 How to use it without paying for tokens (Ollama on Windows, which model for your memory and what

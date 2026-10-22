@@ -53,10 +53,10 @@ La parte en la que más nos separa career-ops. Leyenda: ✅ lo tiene · 🟡 en 
 | Skills en el estándar Agent Skills | ✅ `.agents/skills/` (+ copia generada para Claude Code) | 🟡 solo los portales | ✅ un skill router en `.agents/skills/career-ops/` |
 | Configuración nativa generada desde una fuente | ✅ `sync_agents.py` (Claude Code, Codex, OpenCode, Qwen Code y Antigravity) | ❌ | 🟡 envoltorios y enlaces por CLI, mantenidos a mano |
 | Claude Code | ✅ referencia, probado | ✅ referencia | ✅ |
-| Codex | 🟡 configuración generada, **sin probar** | 🟡 parcial | ✅ con guía propia |
+| Codex | ✅ configuración generada y probado con la matriz de una oferta (24.6: 11/11 campos, 1/1 valoración, 1/1 CV) | 🟡 parcial | ✅ con guía propia |
 | **OpenCode** (open-source) | 🟡 configuración generada y comprobada con su binario (24.3), sin probar con un modelo | ❌ | ✅ también para el lote en paralelo (`opencode run`) |
 | **Qwen Code** (open-source) | 🟡 configuración generada (24.3), sin probar | ❌ | ✅ |
-| Antigravity CLI (sustituye a Gemini CLI) | 🟡 MCP del espacio de trabajo generado (24.3), sin probar; nivel C | 🟡 mencionado | ✅ con guía de su plan gratuito |
+| Antigravity CLI (sustituye a Gemini CLI) | 🟡 MCP del espacio de trabajo generado (24.3) y probado con la matriz (24.6: 54/55 campos, 5/5 valoraciones; el CV, cortado por el cupo semanal gratuito); nivel C | 🟡 mencionado | ✅ con guía de su plan gratuito |
 | Gemini CLI | ❌ **ya no sirve con cuentas gratuitas ni Pro** (ver nota); deshabilitado en el registro y `GEMINI.md` vacío a propósito (24.3) | 🟡 `gemini -p` en un subagente | 🟡 `GEMINI.md` vacío a propósito |
 | Pi, Grok, Kimi, Copilot CLI, Cursor, Hermes | 🟡 sin probar, valdrían si leen `AGENTS.md` | ❌ | ✅ |
 | Subagentes con herramientas limitadas | ✅ Claude Code (nivel A); Codex, OpenCode y Qwen Code en nivel B (OpenCode y Qwen generan cada rol con solo sus herramientas, pendiente de probar) | ✅ revisor con contexto limpio | 🟡 |

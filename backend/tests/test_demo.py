@@ -7,12 +7,27 @@ from pathlib import Path
 
 import pytest
 from sqlalchemy import select
+from sqlalchemy.orm import Session
 from typer.testing import CliRunner
 
 from app import cli
 from app.core.config import DEMO_MARKER, get_settings
 from app.core.db import session_scope
-from app.models import Event, Job, Match, Source, Task
+from app.models import (
+    AgentRequest,
+    CompanyResearch,
+    Document,
+    Event,
+    Job,
+    Match,
+    MessageDraft,
+    Milestone,
+    ReceivedOffer,
+    Reply,
+    SkillGapMark,
+    Source,
+    Task,
+)
 from app.services import analytics, demo, events, network, status
 from app.services.documents import pdf
 from app.services.documents import service as cv_service
@@ -107,6 +122,9 @@ def test_seed_fills_a_demo_folder(tmp_path: Path, isolated_env: Path) -> None:
             "Analytics Engineer"
         ]
 
+        # Fase 26.5: lo que el agente y la candidata dejarían en las fichas.
+        _assert_extras(session, target)
+
     # Misma semilla, mismo contenido.
     first = _snapshot(target)
     demo.seed(target, force=True, now=NOW)
@@ -183,6 +201,36 @@ def test_cli_demo_seed(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     assert "--force" in error["message"]
 
 
+def _assert_extras(session: Session, target: Path) -> None:
+    """Cada pantalla del portal tiene algo que enseñar (fase 26.5)."""
+    inbox = session.scalars(select(Reply).order_by(Reply.id)).all()
+    assert [r.status for r in inbox] == ["proposed", "proposed", "new"]
+    assert inbox[2].risk_flags == ["hidden_text", "injection_phrase"]
+    # Cada correo, de una empresa con un solo proceso abierto: su única candidata es la suya.
+    assert all(len(r.candidates) == 1 for r in inbox)
+    assert all(r.proposal is None or r.job_id == r.candidates[0]["job_id"] for r in inbox)
+    assert sorted(d.kind for d in session.scalars(select(MessageDraft))) == ["followup", "linkedin"]
+    dossiers = session.scalars(select(CompanyResearch)).all()
+    assert len(dossiers) == 2
+    assert sum(len(d.content["red_flags"]) for d in dossiers) == 1
+    assert session.scalars(select(ReceivedOffer)).one().amounts_private
+    assert len(session.scalars(select(SkillGapMark)).all()) == 2
+    assert [r.status for r in session.scalars(select(AgentRequest))] == ["pending"]
+    milestones = session.scalars(select(Milestone)).all()
+    assert len([m for m in milestones if m.prep_plan]) == 1
+    assert len([m for m in milestones if m.debrief_notes]) == 2
+    kinds = sorted(d.kind for d in session.scalars(select(Document)))
+    assert kinds == ["answers", "cover_letter", "cv", "cv"]
+    assert {p.name for p in (target / "contexto").glob("*.md")} == {
+        "criterios.md",
+        "estilo-redaccion.md",
+        "narrativa.md",
+        "perfil-conductual.md",
+    }
+    assert (target / "documentos" / "salarios.csv").is_file()
+    assert len(list((target / "documentos" / "estilo").glob("*.txt"))) == 1
+
+
 @pytest.mark.usefixtures("fake_pdf")
 def test_seed_in_english(tmp_path: Path, isolated_env: Path) -> None:
     """La demo en inglés (fase 23.5b): misma búsqueda, con la candidata y las ofertas en inglés."""
@@ -207,6 +255,9 @@ def test_seed_in_english(tmp_path: Path, isolated_env: Path) -> None:
         )
         assert [j.title for j in jobs if j.risk_flags] == ["Analytics Engineer"]
         assert sum(network.known_counts(session, [j.id for j in jobs]).values()) > 0
+        _assert_extras(session, target)
+    criteria = (target / "contexto" / "criterios.md").read_text(encoding="utf-8")
+    assert criteria.startswith("# Criteria")
 
 
 def test_seed_rejects_an_unknown_language(tmp_path: Path) -> None:

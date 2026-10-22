@@ -138,6 +138,23 @@ def test_full_flow_with_fake_agent(agent: None, target: Path) -> None:
     assert "`cv09-etl-migracion`: title_normalized" in report
 
 
+def test_single_case_run(agent: None, tmp_path: Path) -> None:
+    """`--cases 1`: solo la primera oferta, con su demo, su resultado y su columna."""
+    target = compat.data_dir("claude", None, None, 1)
+    assert target.name == "data-demo-compat-claude-default-1-oferta"
+    result = compat.run("claude", target=tmp_path / target.name, execute=fake_execute, cases=1)
+    assert [len(s.runs) for s in result.steps] == [1, 1, 1]
+    assert [s.case for s in result.extraction] == ["cv01-de-snowflake"]
+    assert (result.fields_equal, result.fields_total, result.assessed) == (11, 11, 1)
+    assert result.cv.evaluated == 1 and result.complete and result.cases == 1
+    path = compat.save(result)
+    assert path.name.endswith("-claude-default-1-oferta.json")
+    report = compat.REPORT_PATH.read_text(encoding="utf-8")
+    assert "Claude Code · modelo por defecto · 1 oferta" in report and "| 1/1 " in report
+    with pytest.raises(compat.CompatError, match="--cases"):
+        compat.run("claude", target=tmp_path / "x", cases=9)
+
+
 def test_step_without_background_gives_manual_steps(
     agent: None, target: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -153,6 +170,14 @@ def test_step_without_background_gives_manual_steps(
     steps = "\n".join(result.manual_steps)
     assert f'CAI_DATA_DIR = "{target.name}"' in steps
     assert "/generate-cv " in steps and "--import" in steps and "--approve" not in steps
+
+    # Un agente sin sintaxis propia (`invoke: natural`) recibe una frase con las ofertas.
+    real = compat._spec("claude")
+    spec = real.model_copy(update={"info": real.info.model_copy(update={"invoke": "natural"})})
+    monkeypatch.setattr(compat, "_spec", lambda _: spec)
+    steps = "\n".join(compat.manual_steps("claude", None, None, target, 2))
+    assert "«usa el skill generate-cv con las ofertas " in steps and "natural" not in steps
+    monkeypatch.setattr(compat, "_spec", lambda _: real)
 
     # El usuario genera los CVs a mano; `--import` mide lo que hay.
     with demo.use_data_dir(target), session_scope() as session:

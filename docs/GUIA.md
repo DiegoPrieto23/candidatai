@@ -203,6 +203,13 @@ La demo es una candidata inventada con 60 ofertas, 8 semanas de historial y 2 CV
 propia carpeta y nunca toca tus datos. Hay dos: en español (una candidata en Galicia) y en inglés
 (una candidata en Dublín, con `--lang en`).
 
+Trae también lo que habrían dejado ella y su agente, para que ninguna pantalla salga vacía:
+valoración del encaje, carta y respuestas de screening de una oferta, un mensaje de LinkedIn y un
+seguimiento, dos dosieres de empresa (uno con bandera roja), el plan de una entrevista y el repaso
+de dos, los datos de la oferta recibida, tres correos de empresas en «Respuestas» (dos con
+propuesta y uno sin clasificar, con texto oculto para una IA), dos huecos en «Skills», un encargo
+pendiente, el contexto, una muestra de estilo y una tabla de salarios.
+
 ```powershell
 cd backend
 uv run cai demo seed                         # --force para recrearla
@@ -210,9 +217,13 @@ $env:CAI_DATA_DIR = "data-demo"; uv run cai start
 # en inglés: uv run cai demo seed --lang en --dir data-demo-en
 ```
 
-Se abre el navegador en `http://127.0.0.1:8000` con un banner «Modo demo». Para probar los skills
-sobre la demo, arranca tu agente con `CAI_DATA_DIR=data-demo` para que su servidor MCP use esa
-carpeta.
+Se abre el navegador en `http://127.0.0.1:8000` con un banner «Modo demo». Los botones «en tu
+agente» abren tu agente ya apuntando a la demo. Si lo abres tú, arráncalo con
+`CAI_DATA_DIR=data-demo` para que su servidor MCP use esa carpeta y no tus datos.
+
+Si clonaste el repositorio, compila antes la UI (`cd frontend; pnpm install; pnpm build`) y repítelo
+cada vez que cambies de rama o actualices: `cai start` sirve la UI compilada, y con una vieja no
+ves lo que se haya añadido después.
 
 ## 4. Tus datos y tu perfil
 

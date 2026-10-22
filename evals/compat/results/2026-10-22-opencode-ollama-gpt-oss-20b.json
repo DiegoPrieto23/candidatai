@@ -1,0 +1,132 @@
+{
+  "created_at": "2026-10-22T12:18:46.311649Z",
+  "agent": "opencode",
+  "display_name": "OpenCode",
+  "open_source": true,
+  "local_models": true,
+  "model": "ollama/gpt-oss:20b",
+  "preset": null,
+  "data_dir": "data-demo-compat-opencode-ollama-gpt-oss-20b",
+  "imported": false,
+  "steps": [
+    {
+      "action": "process-jobs",
+      "mode": "background",
+      "reason": null,
+      "runs": [
+        {
+          "run_id": 1,
+          "job_id": null,
+          "status": "needs_user",
+          "seconds": 842.4,
+          "turns": 2,
+          "input_tokens": 4197,
+          "output_tokens": 425,
+          "cost_usd": 0.0,
+          "error": null
+        }
+      ]
+    },
+    {
+      "action": "assess-fit",
+      "mode": "background",
+      "reason": null,
+      "runs": [
+        {
+          "run_id": 2,
+          "job_id": null,
+          "status": "needs_user",
+          "seconds": 991.5,
+          "turns": 2,
+          "input_tokens": 2446,
+          "output_tokens": 335,
+          "cost_usd": 0.0,
+          "error": null
+        }
+      ]
+    },
+    {
+      "action": "generate-cv",
+      "mode": "manual",
+      "reason": "El rol «writer» de «Generar CV» necesita read, que no está entre las herramientas de la acción, y este agente no puede acotarlo a lo que tiene la ejecución: usa otro agente o «En terminal».",
+      "runs": []
+    }
+  ],
+  "extraction": [
+    {
+      "case": "cv01-de-snowflake",
+      "job_id": 61,
+      "extracted": false,
+      "equal": 0,
+      "total": 11,
+      "different": []
+    },
+    {
+      "case": "cv03-analyst-powerbi",
+      "job_id": 62,
+      "extracted": false,
+      "equal": 0,
+      "total": 11,
+      "different": []
+    },
+    {
+      "case": "cv05-de-orquestacion",
+      "job_id": 63,
+      "extracted": false,
+      "equal": 0,
+      "total": 11,
+      "different": []
+    },
+    {
+      "case": "cv07-english",
+      "job_id": 64,
+      "extracted": false,
+      "equal": 0,
+      "total": 11,
+      "different": []
+    },
+    {
+      "case": "cv09-etl-migracion",
+      "job_id": 65,
+      "extracted": false,
+      "equal": 0,
+      "total": 11,
+      "different": []
+    }
+  ],
+  "fields_equal": 0,
+  "fields_total": 55,
+  "assessed": 0,
+  "verdicts": {},
+  "cv": {
+    "evaluated": 0,
+    "passed": 0,
+    "checks_passed": {
+      "evidence": 0,
+      "skills": 0,
+      "basic_skills": 0,
+      "one_page": 0,
+      "layout": 0,
+      "coverage": 0,
+      "language": 0,
+      "verified": 0
+    },
+    "cases": {
+      "cv01-de-snowflake": "pending",
+      "cv03-analyst-powerbi": "pending",
+      "cv05-de-orquestacion": "pending",
+      "cv07-english": "pending",
+      "cv09-etl-migracion": "pending"
+    }
+  },
+  "seconds": 1833.9,
+  "turns": 4,
+  "tokens": 7403,
+  "cost_usd": 0.0,
+  "complete": false,
+  "manual_steps": [
+    "En otra terminal, en la raíz del repo: $env:CAI_DATA_DIR = \"data-demo-compat-opencode-ollama-gpt-oss-20b\" y abre OpenCode con el modelo ollama/gpt-oss:20b. Comprueba con get_status que dice demo_mode: true.",
+    "Genera los CVs: natural (si pregunta por skills que faltan, contesta que no las tienes).",
+    "Mide y guarda el resultado: uv run --directory backend cai eval compat --agent opencode --model ollama/gpt-oss:20b --import"
+  ]
+}

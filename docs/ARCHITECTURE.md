@@ -212,6 +212,10 @@ API confirm_submission ─► token de un solo uso ─► tarea apply_submit ─
   solo reparte después las fechas de lo automático en las 8 semanas anteriores. La carpeta lleva
   la marca `.demo`: `Settings.demo_mode` la detecta, `get_status` devuelve `demo_mode` y la UI
   muestra un banner. El seed se niega a escribir en `data/` o en una carpeta sin la marca.
+  Desde la fase 26.5, `services/demo_extras.py` añade, también por los servicios, lo que dejarían
+  el agente y la candidata (cartas, dosieres, correos, entrevistas, oferta recibida, contexto…),
+  con el contenido de `demo/<idioma>/seed/extras.yaml`. En una demo, los botones «en tu agente»
+  ponen `CAI_DATA_DIR` en la ventana que abren.
 
 ## Despliegue futuro (fuera del alcance actual)
 

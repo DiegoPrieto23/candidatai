@@ -6,7 +6,7 @@ cada fase y lo quita cuando el usuario confirma que está hecho.
 
 Marca `[x]` lo que hagas y, si algo falla, apúntalo debajo de la línea con `→`.
 
-Última actualización: 2026-10-18 (fase 26.4).
+Última actualización: 2026-10-19 (fase 26.5).
 
 ## 1. Poner la app al día (antes de probar nada)
 
@@ -136,11 +136,11 @@ funcionando. Los roles son `writer`, `verifier`, `classifier`, `reviewer` y `ext
       «Por acción» y pulsa «Deshacer el último».
 - [ ] `uv run --directory backend cai agents doctor`: sección «Modelos locales (Ollama)» («no
       responde» si no lo tienes).
-- [ ] **La matriz** (`fase-24.6-matriz.md`): como mínimo Claude Code con MCP
-      (`cai eval compat --agent claude`, cierra el pendiente de la 12.3). Si instalas Ollama y
-      OpenCode, también OpenCode con un modelo local: es el criterio de cierre de la fase 24.
-      Después, pásame `evals/compat/REPORT.md` para completar `AGENTS_COMPAT.md`, el README y la
-      ADR-037.
+- [x] **La matriz** (`fase-24.6-matriz.md`), el 2026-10-22: Claude Code con MCP, Codex (una
+      oferta) y Antigravity, en `evals/compat/REPORT.md` y `AGENTS_COMPAT.md`.
+- [ ] **Matriz con un modelo local**, si algún día tienes un equipo con 24 GB de RAM o más, o con
+      gráfica dedicada: OpenCode con Ollama (`docs/MODELOS_GRATIS.md`). En el portátil actual no
+      es viable.
 
 ### «Mi perfil» editable (fase 25.7)
 
@@ -224,6 +224,9 @@ funcionando. Los roles son `writer`, `verifier`, `classifier`, `reviewer` y `ext
 
 ## 3. Pruebas manuales pendientes
 
+**Fases 24, 25 y 26 en un solo documento, en orden:** `fases-24-26-pruebas.md`. Sigue ese y
+marca aquí lo que acabes.
+
 - [ ] **Recorrido completo con la demo** (`guia-prueba-demo.md`): todas las funciones, página a
       página, con lo que debes ver. Sirve también para la demo en inglés (`--lang en`).
 
@@ -256,6 +259,9 @@ hiciste, márcala.
       WSL2: seguir solo la guía (requisitos, `install.sh`, abrir la app, conectar tu agente) sin
       saltarte ni añadir pasos, y apuntar lo que falte.
 - [ ] **La primera CI en `main`** tras fusionar la fase: macOS corre ahí (en la rama ya pasó a mano).
+- [ ] **Fase 26.5 · Demo completa** (`fases-24-26-pruebas.md`, sección 1.0): con la demo recreada,
+      ninguna pantalla vacía (carta, dosieres, correos, entrevistas, oferta recibida, Skills,
+      encargo, contexto) y los botones «en tu agente» abren el agente sobre `data-demo`.
 
 - [ ] **Fase 22 · LinkedIn por sus endpoints públicos** (`fase-22-prueba-manual.txt`), **solo si
       quieres usarla** (va contra las condiciones de LinkedIn y puede bloquear tu IP un tiempo):
@@ -329,8 +335,8 @@ hiciste, márcala.
 
 ## 4. Fuera de la app
 
-- [ ] **Codex**: cuando lo instales, parte 3 de la guía de la fase 04 y actualizar
-      `docs/AGENTS_COMPAT.md`.
+- [x] **Codex**: probado el 2026-10-22 con `cai eval compat --agent codex --cases 1` (11/11 campos,
+      1/1 valoración, 1/1 CV). Falta, si quieres, la matriz entera de 5 ofertas.
 - [ ] **CI en GitHub**: comprobar que pasa el paso de la fase 12 (en local solo se probó con
       LibreOffice; en CI va con Chromium). Requiere hacer push.
 - [ ] **Contraseña de aplicación de Gmail**: si la creaste para las alertas, sirve también para

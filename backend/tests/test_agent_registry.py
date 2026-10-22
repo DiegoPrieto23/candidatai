@@ -91,11 +91,13 @@ def test_real_manifest_loads() -> None:
         assert agents[name].enabled and agents[name].config == "generated", name
     assert agents["claude"].capabilities.isolation_level == "A"
     assert agents["codex"].capabilities.isolation_level == "B"
-    # Fase 24.3: A solo tras la prueba manual del aislamiento; Antigravity, sin subagentes.
+    # Fase 24.3: A solo tras la prueba manual del aislamiento. Antigravity lanza subagentes, pero
+    # con las herramientas de la sesión (sin roles generados): sigue en C.
     assert agents["opencode"].capabilities.isolation_level == "B"
     assert agents["qwen"].capabilities.isolation_level == "B"
     assert agents["antigravity"].capabilities.isolation_level == "C"
-    assert agents["antigravity"].capabilities.subagents == "none"
+    assert agents["antigravity"].capabilities.subagents == "inherited"
+    assert agents["antigravity"].info.invoke == "/{skill} {args}"
     for name in ("cursor", "copilot", "pi", "gemini", "goose"):
         spec = agents[name]
         assert not spec.enabled and spec.config == "none", name

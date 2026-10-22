@@ -8,6 +8,8 @@ companies, all made up. Same structure as the Spanish demo in `demo/` (see `demo
 | `profile.example.yaml` | The candidate's profile |
 | `seed/catalog.yaml` | Companies, places, roles, sources, contacts and the fixed texts of the history |
 | `seed/cvs.yaml` | The two jobs that arrive with a verified CV |
+| `seed/extras.yaml` | What the agent and the candidate would have left: letter, dossiers, emails, interviews, offer… |
+| `contexto/*.md` | The candidate's context (criteria, writing style, narrative, behavioural profile) |
 | `jobs/01-data-engineer.*` | A normal job with its expected extraction |
 | `jobs/02-analytics-engineer.*` | A job with an instruction aimed at an AI: it must be flagged |
 | `linkedin/Connections.csv` | A fictitious LinkedIn network |

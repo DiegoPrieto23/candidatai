@@ -978,8 +978,11 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   - **Qwen Code sigue sin segundo plano:** sin un modelo no se puede comprobar su techo (criterio de
     la 24.5);
   - **¿Hay que revisar el ADR-001?** Solo si ningún agente con un modelo local supera la matriz en
-    las acciones cerradas (`process-jobs`, `assess-fit`). La decisión espera a la pasada del
-    usuario con OpenCode y Ollama. Hasta entonces, el ADR-001 se mantiene sin cambios.
+    las acciones cerradas (`process-jobs`, `assess-fit`).
+    **Decidido (2026-10-22): se mantiene.** En el equipo de pruebas (16 GB de RAM, sin gráfica) el
+    modelo local no llegó a ejecutar la matriz por memoria y velocidad, no por el agente. Llamarlo
+    desde la app tendría el mismo límite. Con agentes en la nube gratuitos o de pago, la app ya
+    funciona sin cambios (Claude Code, Codex y Antigravity en la matriz).
 
 ## ADR-038 · Coste por oferta y por agente, umbral antes de gastar y varias ejecuciones a la vez
 - **Contexto:** no se sabía cuánto cuesta cada oferta ni con qué agente sale más barata; el

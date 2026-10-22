@@ -3,3 +3,91 @@
 [mcp_servers.candidatai]
 command = "uv"
 args = ["run", "--directory", "backend", "cai-mcp"]
+env_vars = ["CAI_DATA_DIR"]
+
+[mcp_servers.candidatai.tools.get_status]
+approval_mode = "approve"
+
+[mcp_servers.candidatai.tools.get_schema]
+approval_mode = "approve"
+
+[mcp_servers.candidatai.tools.list_jobs]
+approval_mode = "approve"
+
+[mcp_servers.candidatai.tools.get_job]
+approval_mode = "approve"
+
+[mcp_servers.candidatai.tools.check_job_open]
+approval_mode = "approve"
+
+[mcp_servers.candidatai.tools.get_search_titles]
+approval_mode = "approve"
+
+[mcp_servers.candidatai.tools.save_extraction]
+approval_mode = "approve"
+
+[mcp_servers.candidatai.tools.get_extraction]
+approval_mode = "approve"
+
+[mcp_servers.candidatai.tools.get_timeline]
+approval_mode = "approve"
+
+[mcp_servers.candidatai.tools.get_profile]
+approval_mode = "approve"
+
+[mcp_servers.candidatai.tools.get_context]
+approval_mode = "approve"
+
+[mcp_servers.candidatai.tools.get_match]
+approval_mode = "approve"
+
+[mcp_servers.candidatai.tools.get_cv_content]
+approval_mode = "approve"
+
+[mcp_servers.candidatai.tools.list_cv_templates]
+approval_mode = "approve"
+
+[mcp_servers.candidatai.tools.list_sources]
+approval_mode = "approve"
+
+[mcp_servers.candidatai.tools.list_followups_due]
+approval_mode = "approve"
+
+[mcp_servers.candidatai.tools.list_upcoming]
+approval_mode = "approve"
+
+[mcp_servers.candidatai.tools.get_funnel_stats]
+approval_mode = "approve"
+
+[mcp_servers.candidatai.tools.get_calibration]
+approval_mode = "approve"
+
+[mcp_servers.candidatai.tools.get_skill_gaps]
+approval_mode = "approve"
+
+[mcp_servers.candidatai.tools.list_replies]
+approval_mode = "approve"
+
+[mcp_servers.candidatai.tools.get_reply]
+approval_mode = "approve"
+
+[mcp_servers.candidatai.tools.save_reply_proposal]
+approval_mode = "approve"
+
+[mcp_servers.candidatai.tools.save_message_draft]
+approval_mode = "approve"
+
+[mcp_servers.candidatai.tools.get_job_contacts]
+approval_mode = "approve"
+
+[mcp_servers.candidatai.tools.get_company_research]
+approval_mode = "approve"
+
+[mcp_servers.candidatai.tools.get_received_offer]
+approval_mode = "approve"
+
+[mcp_servers.candidatai.tools.wait_user_action]
+approval_mode = "approve"
+
+[mcp_servers.candidatai.tools.list_agent_requests]
+approval_mode = "approve"

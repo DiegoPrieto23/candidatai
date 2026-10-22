@@ -397,6 +397,18 @@ def _quote(value: str) -> str:
 # Fase 24.4: el agente lanzado se identifica con esta variable, para que los eventos que haga por
 # la CLI queden a su nombre (por MCP lo dice el propio cliente).
 CLIENT_ENV = "CAI_CLIENT_NAME"
+DATA_DIR_ENV = "CAI_DATA_DIR"  # la carpeta de una demo, para que el agente no use `data/`
+
+
+def launch_env(launcher: _Launcher) -> dict[str, str]:
+    """Las variables que pone la ventana: el agente y, en una demo, su carpeta de datos. Una
+    pestaña nueva de Windows Terminal (`wt -w 0`) no hereda el entorno de `cai start`: sin
+    `CAI_DATA_DIR`, el agente escribiría en tus datos reales y no en la demo."""
+    env = {CLIENT_ENV: launcher.agent}
+    settings = get_settings()
+    if settings.demo_mode:
+        env[DATA_DIR_ENV] = str(settings.data_dir)
+    return env
 
 
 def powershell_command(
@@ -408,8 +420,8 @@ def powershell_command(
     markers = (PROMPT_PLACEHOLDER, SESSION_PLACEHOLDER)
     parts = [value if p in markers else p for p in command or launcher.command]
     unset = [f"Remove-Item Env:{name} -ErrorAction SilentlyContinue" for name in launcher.unset_env]
-    client = f"$env:{CLIENT_ENV} = {_quote(launcher.agent)}"
-    return "; ".join([*unset, client, "& " + " ".join(_quote(p) for p in parts)])
+    env = [f"$env:{name} = {_quote(value)}" for name, value in launch_env(launcher).items()]
+    return "; ".join([*unset, *env, "& " + " ".join(_quote(p) for p in parts)])
 
 
 def posix_command(launcher: _Launcher, value: str, command: Sequence[str] | None = None) -> str:
@@ -419,7 +431,7 @@ def posix_command(launcher: _Launcher, value: str, command: Sequence[str] | None
     return terminals.posix_script(
         parts,
         unset_env=launcher.unset_env,
-        env={CLIENT_ENV: launcher.agent},
+        env=launch_env(launcher),
         cwd=REPO_ROOT,
         shell_path=terminals.shell(),
     )

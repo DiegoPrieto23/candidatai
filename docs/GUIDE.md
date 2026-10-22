@@ -207,6 +207,13 @@ The demo is a fictional candidate with 60 jobs, 8 weeks of history and 2 CVs. It
 folder and never touches your data. There are two: in English (a candidate in Dublin) and in
 Spanish (a candidate in Galicia).
 
+It also brings what she and her agent would have left, so no screen is empty: fit assessments, a
+cover letter and screening answers for one job, a LinkedIn message and a follow-up, two company
+dossiers (one with a red flag), the prep plan of one interview and the debrief of two, the details
+of the received offer, three company emails in "Replies" (two with a proposal and one
+unclassified, with text hidden for an AI), two gaps in "Skills", a pending request, the context, a
+style sample and a salary table.
+
 ```powershell
 cd backend
 uv run cai demo seed --lang en --dir data-demo-en      # --force to recreate it
@@ -214,8 +221,13 @@ $env:CAI_DATA_DIR = "data-demo-en"; uv run cai start
 ```
 
 Without `--lang en` you get the Spanish demo in `data-demo/`. Your browser opens at
-`http://127.0.0.1:8000` with a "Demo mode" banner. To try the skills on the
-demo, start your agent with `CAI_DATA_DIR` pointing at the demo folder so its MCP server uses it.
+`http://127.0.0.1:8000` with a "Demo mode" banner. The "in your agent" buttons open your agent
+already pointing at the demo. If you open it yourself, start it with `CAI_DATA_DIR` pointing at the
+demo folder so its MCP server uses it and not your data.
+
+If you cloned the repository, build the UI first (`cd frontend; pnpm install; pnpm build`) and
+again whenever you switch branches or update: `cai start` serves the built UI, and with an old one
+you won't see what was added later.
 
 ## 4. Your data and your profile
 

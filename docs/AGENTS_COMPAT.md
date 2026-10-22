@@ -22,7 +22,7 @@ uv run --directory backend cai agents doctor         # cuál se usaría hoy, por
 | Agente | Licencia | En el manifiesto | Nivel | MCP | Segundo plano |
 |---|---|---|---|---|---|
 | Claude Code | propietaria | habilitado, configuración generada | A | sí | sí |
-| Codex | Apache-2.0 | habilitado, configuración generada | B | sí | no |
+| Codex | Apache-2.0 | habilitado, configuración generada, probado (24.6, 1 oferta) | B | sí | no |
 | OpenCode | MIT | habilitado, configuración generada (24.3) | B | sí | sí (24.5), salvo `generate-cv` |
 | Qwen Code | Apache-2.0 | habilitado, configuración generada (24.3) | B | sí | no |
 | Antigravity CLI | propietaria | habilitado, configuración generada (24.3) | C | sí | no |
@@ -46,12 +46,12 @@ detectar. `cai doctor` resume lo mismo en su sección «Agentes».
 
 | | Claude Code | Codex (ChatGPT) | OpenCode | Qwen Code | Antigravity CLI | Otros (Cursor, Copilot, Pi, goose…) |
 |---|---|---|---|---|---|---|
-| Estado | Referencia (se desarrolla con él). Con MCP: probado en la fase 04; matriz de la 12.3 pendiente de la prueba manual. Sin MCP: matriz de la 12.3 probada (5/5) | Configuración generada; sin probar (fuera de la matriz de la fase 12 por decisión del usuario) | Configuración generada y validada con su binario (`debug agent`, `debug skill`); sin probar con un modelo | Configuración generada; `qwen mcp list` la lee; sin probar con un modelo | Configuración generada según su documentación, sin el binario; sin probar | Sin probar |
+| Estado | Referencia (se desarrolla con él). Con MCP: probado en la fase 04; matriz de la 12.3 pendiente de la prueba manual. Sin MCP: matriz de la 12.3 probada (5/5) | Configuración generada; sin probar (fuera de la matriz de la fase 12 por decisión del usuario) | Configuración generada y validada con su binario (`debug agent`, `debug skill`); sin probar con un modelo | Configuración generada; `qwen mcp list` la lee; sin probar con un modelo | Configuración generada; probado con la matriz el 2026-10-22 (54/55 campos, 5/5 valoraciones; el CV, cortado por el cupo semanal) | Sin probar |
 | Cuenta | Plan de Claude con Claude Code | Cuenta de ChatGPT con acceso a Codex (CLI, extensión IDE o app), o un modelo local con `--oss` | La de tu proveedor: Ollama, LM Studio, OpenRouter, una API compatible con OpenAI… | Ollama, LM Studio, OpenRouter o una clave de DashScope (el plan gratuito con OAuth cerró el 15/04/2026) | Cuenta de Google (plan gratuito) | La de cada herramienta |
 | Instrucciones | `CLAUDE.md` → importa `AGENTS.md` | `AGENTS.md` | `AGENTS.md` | `AGENTS.md` (`context.fileName`) | `AGENTS.md` (`GEMINI.md` vacío a propósito) | `AGENTS.md` |
 | Skills | `.claude/skills/` (generado) | `.agents/skills/` (lo lee directamente) | `.agents/skills/` (y la copia de `.claude/skills/`, sin duplicar) | `.qwen/skills/` (generado) | `.agents/skills/` | `.agents/skills/` si la herramienta sigue el estándar Agent Skills |
-| Invocar un skill | `/generate-cv 42` | `$generate-cv 42` | Lenguaje natural: "usa el skill generate-cv con la oferta 42" | `/generate-cv 42` | Lenguaje natural | Lenguaje natural |
-| Subagentes (roles) | `.claude/agents/*.md` (generado) | `.codex/agents/*.toml` (generado) | `.opencode/agents/*.md` (generado, `mode: subagent`) | `.qwen/agents/*.md` (generado) | No: sesión aparte siguiendo `.agents/roles/<rol>.md` | Sesión aparte siguiendo `.agents/roles/<rol>.md` |
+| Invocar un skill | `/generate-cv 42` | `$generate-cv 42` | Lenguaje natural: "usa el skill generate-cv con la oferta 42" | `/generate-cv 42` | `/generate-cv 42` | Lenguaje natural |
+| Subagentes (roles) | `.claude/agents/*.md` (generado) | `.codex/agents/*.toml` (generado) | `.opencode/agents/*.md` (generado, `mode: subagent`) | `.qwen/agents/*.md` (generado) | Lanza subagentes con las herramientas de la sesión, sin roles generados; para aislar, sesión aparte siguiendo `.agents/roles/<rol>.md` | Sesión aparte siguiendo `.agents/roles/<rol>.md` |
 | Servidor MCP | `.mcp.json` (generado) | `.codex/config.toml` (generado) | `opencode.json` (generado) | `.qwen/settings.json` (generado) | `.agents/mcp_config.json` (generado) | Registra `candidatai` con el `command`/`args` del manifiesto, o usa la CLI |
 | Modelo por rol | `fast` → Haiku, `capable` → Sonnet | Hereda el de la sesión salvo que lo fijes en el manifiesto | Hereda el de la sesión (`proveedor/modelo` en el manifiesto si quieres otro) | Hereda el de la sesión | El de la sesión | El de la sesión |
 | Elegir modelo al lanzar | `--model <modelo>` | `-m <modelo>`; preset `local` = `--oss -m gpt-oss:20b` | `-m proveedor/modelo` | `-m <modelo>` | — | — |
@@ -96,14 +96,14 @@ Insignias: 🔓 open-source · 🆓 gratis · 💻 modelo local.
 
 | | Claude Code sin MCP (solo `cai … --json`) | Claude Code con MCP | Codex (ChatGPT) 🔓 | OpenCode 🔓🆓💻 + Ollama | OpenCode 🔓🆓 + modelo gratuito en la nube | Qwen Code 🔓🆓💻 o Antigravity 🆓 |
 |---|---|---|---|---|---|---|
-| Fecha | 2026-10-05 | Pendiente (`cai eval compat --agent claude`) | Pendiente | Pendiente | Pendiente | Si están instalados |
+| Fecha | 2026-10-05 | 2026-10-22, 5 ofertas | 2026-10-22, **con 1 oferta** (`--cases 1`) | 2026-10-22: **no viable con 16 GB de RAM sin gráfica** (ver abajo) | 2026-10-22: sin terminar, cortado por el cupo de OpenRouter (ver abajo) | Si están instalados |
 | Cómo | Opus 5.5; cada rol en una ejecución distinta siguiendo `.agents/roles/*.md` (nivel C: sin subagentes con herramientas propias) | En segundo plano, los tres pasos | A mano (sin segundo plano) + `--import` | `process-jobs` y `assess-fit` en segundo plano; `generate-cv` a mano + `--import` | Igual que con Ollama (no con los gratuitos de OpenCode Zen, que rechazan agentes propios) | A mano + `--import` |
-| `process-jobs` | 5/5 al primer intento; **54 de 55 campos** iguales a la extracción esperada (difiere un `title_normalized`, en español) | | | | | |
-| `assess-fit` | 5/5 valoraciones guardadas (4 `strong`, 1 `possible`) | | | | | |
-| `generate-cv` | 5/5 CVs al primer intento, 1 página, sin avisos; verificador: 5 `passed`, 0 bloqueantes, 4 avisos | | | | | |
-| `cai eval cv` | **5/5 pasan las 7 comprobaciones** | | | | | |
-| Tiempo | ~2 min extraer, ~4,5 min redactar y ~2 min verificar (más lectura); ~3,5 s por comando `cai` | | | | | |
-| Ajustes | Ver abajo | | | | | |
+| `process-jobs` | 5/5 al primer intento; **54 de 55 campos** iguales a la extracción esperada (difiere un `title_normalized`, en español) | 5/5; **53 de 55 campos** (difieren `languages_required` en `cv07` y `title_normalized` en `cv09`) | 11/11 campos iguales a la extracción esperada | | | |
+| `assess-fit` | 5/5 valoraciones guardadas (4 `strong`, 1 `possible`) | 5/5 valoraciones guardadas (4 `strong`, 1 `possible`) | 1/1 valoración guardada (`strong`) | | | |
+| `generate-cv` | 5/5 CVs al primer intento, 1 página, sin avisos; verificador: 5 `passed`, 0 bloqueantes, 4 avisos | 5/5 CVs; una de las 5 ejecuciones acabó en `needs_user`, con su CV guardado y verificado | 1/1 CV, verificado por el rol `verifier` | | | |
+| `cai eval cv` | **5/5 pasan las 7 comprobaciones** | **5/5 pasan las 7 comprobaciones** | **1/1 pasa las 7 comprobaciones** | | | |
+| Tiempo | ~2 min extraer, ~4,5 min redactar y ~2 min verificar (más lectura); ~3,5 s por comando `cai` | 8,5 min en total (38 s extraer, 1,5 min valorar, ~6,5 min los 5 CVs); 102 turnos | Sin medir (a mano) | | | |
+| Ajustes | Ver abajo | | `CAI_DATA_DIR` y aprobaciones (ver «Codex» abajo) | | | |
 
 Prueba previa (fase 12.2): dos casos con trampa (`cv04`, `cv07`), también 2/2. Informe de esta
 pasada: `docs/pruebas/fase-12.3-matriz-sin-mcp.md`. Sin subagentes, el aislamiento del rol
@@ -132,6 +132,18 @@ acepta el JSON envuelto en un bloque de código.
   «conocimientos de» no generan pregunta aunque la valoración la planteara;
 - con una oferta remota sin país («Europa»), la foto sale según la política por defecto.
 
+**OpenCode con un modelo local o gratuito (2026-10-22), en un portátil de 16 GB de RAM sin gráfica
+dedicada (Ryzen 7 5700U de 15 W):**
+- **Ollama, no viable.** `gpt-oss:20b` cargado ocupa 14 GB, Windows tira del disco y las dos
+  ejecuciones en segundo plano acabaron en `needs_user` sin hacer nada (el resultado queda en
+  `evals/compat/`). `qwen3:8b` cabe (8,1 GB con los ajustes de memoria), pero lee el prompt a
+  10-20 tokens/s: el primer turno de OpenCode, unos 15 000 tokens, tarda 13-25 minutos. Hace
+  falta una gráfica dedicada o más RAM; medidas y ajustes en `docs/MODELOS_GRATIS.md`.
+- **OpenRouter `:free`, sin terminar.** `nemotron-3-super-120b-a12b:free` daba error en su
+  proveedor y `gemma-4-31b-it:free` estaba saturado; con `nemotron-3-ultra-550b-a55b:free`,
+  `process-jobs` agotó el cupo de 50 peticiones al día sin acabar. Sin comprar créditos, la matriz
+  solo se puede pasar repartida en varios días.
+
 ## Modelos locales y niveles de gasto (fase 24.6)
 
 - **Diagnóstico de Ollama:** `cai agents doctor` (sección «Modelos locales (Ollama)») y la tarjeta
@@ -155,7 +167,7 @@ enviar nada. Encima, cada agente añade lo que permite:
 | **A** | Claude Code | El subagente solo tiene `get_job` y `save_extraction`: sin shell, ficheros ni web |
 | **B** | Codex | El subagente se declara con `sandbox_mode = "read-only"`, pero **hereda la política de la sesión padre** y los cambios en vivo del padre prevalecen. Ejecuta `process-jobs` en una sesión de solo lectura o con aprobación de comandos |
 | **B** | OpenCode, Qwen Code | El subagente se genera con solo `get_job` y `save_extraction` (OpenCode: `"*": "deny"` y esas dos; Qwen: `tools` exclusiva), pero aún **no se ha comprobado con un modelo** que no pueda usar otra. Suben a A cuando lo confirme la prueba manual (`docs/pruebas/fase-24.3-prueba-manual.txt`) |
-| **C** | Sin subagentes (Antigravity, Cursor…) | Sesión nueva dedicada solo a extraer, con los permisos más restrictivos que ofrezca la herramienta. No mezcles extracción con desarrollo en la misma sesión |
+| **C** | Sin subagentes con herramientas propias (Antigravity, Cursor…) | Sesión nueva dedicada solo a extraer, con los permisos más restrictivos que ofrezca la herramienta. No mezcles extracción con desarrollo en la misma sesión |
 
 Recomendación para todos: ejecuta `process-jobs` en su propia sesión y revisa en la UI las
 ofertas marcadas con riesgo antes de aprobarlas.
@@ -182,6 +194,15 @@ aceptas en la UI, y aceptar no tiene herramienta ni comando.
 - Si Codex no carga la configuración del proyecto (`.codex/config.toml`), revisa en su
   documentación cómo marcar el proyecto como de confianza, o copia el bloque
   `[mcp_servers.candidatai]` a tu `~/.codex/config.toml`.
+- Probado el 2026-10-22 con la matriz de una oferta (`--cases 1`): extrae, valora y genera el CV
+  bien. Se invoca con `$process-jobs`, `$generate-cv 42`…
+- **Datos de la demo:** Codex solo pasa al servidor MCP una lista blanca del entorno. El manifiesto
+  declara `pass_env: [CAI_DATA_DIR]` y `.codex/config.toml` lo lleva en `env_vars`; sin eso, una
+  demo abriría `data/`.
+- **Aprobaciones:** las herramientas de `policy.auto_allow` llevan `approval_mode = "approve"` en
+  `.codex/config.toml` y no preguntan; las demás (`save_fit_assessment`, `save_cv_content`,
+  `render_cv`…) piden permiso, como en Claude Code. «Allow for this session» evita que vuelva a
+  preguntar hasta que cierres Codex.
 - Para delegar en un rol, pídelo explícitamente: "lanza el subagente `extractor` con el job_id 42".
 - Los modelos por rol están vacíos en el manifiesto a propósito (heredan el de la sesión). Si
   quieres un modelo rápido para `extractor`, pon su nombre en `targets.codex.models.fast` y regenera.
@@ -233,15 +254,21 @@ aceptas en la UI, y aceptar no tiene herramienta ni comando.
   también vale para los subagentes, está en la prueba manual.
 - **Lanzar:** `qwen -i "<orden>"` ejecuta la orden y sigue en interactivo; `-m` elige el modelo.
 
-### Antigravity CLI (documentación consultada el 2026-10-16, sin el binario)
+### Antigravity CLI (documentación consultada el 2026-10-16; probado con la app el 2026-10-22)
 - Sustituye a Gemini CLI en las cuentas gratuitas de Google. Es de código cerrado y no está en npm:
   instálalo desde https://antigravity.google/docs/install?tab=cli.
 - Lee `AGENTS.md` y `GEMINI.md` (manda `GEMINI.md`, vacío a propósito), los skills de
   `.agents/skills/` y el MCP del espacio de trabajo, `.agents/mcp_config.json` (generado; el resto de
   `.agents/` es la fuente).
-- **Sin subagentes generados (nivel C):** admite subagentes en `.agents/agents/` con una lista
-  `tools`, pero la documentación no dice cómo se llaman las herramientas MCP, y avisa de que un
-  nombre mal escrito puede colgar el subagente. Ejecuta `process-jobs` en una sesión dedicada.
+- **Skills como comandos de barra**, igual que Claude Code: `/generate-cv 42`.
+- **Subagentes, pero sin roles generados (nivel C):** lanza subagentes, también varios en paralelo
+  (en la prueba, un `writer` por oferta), pero con las herramientas de la sesión. Admite
+  subagentes en `.agents/agents/` con una lista `tools`, pero la documentación no dice cómo se
+  llaman las herramientas MCP, y avisa de que un nombre mal escrito puede colgar el subagente: por
+  eso no se generan. Ejecuta `process-jobs` en una sesión dedicada.
+- **Probado con la matriz (2026-10-22):** extracción 54/55 campos y 5/5 valoraciones. En
+  `generate-cv`, el plan gratuito agotó su cupo **semanal** con el primer CV («Individual quota
+  reached… Resets in 167h»): con la cuenta gratuita, cuenta con pocas ofertas por semana.
 - **Sin `launch`:** la documentación no dice cómo abrirlo con una orden inicial, así que los botones
   de la UI copian la orden. Sin segundo plano: `agy -p` no imprime nada sin terminal en la 1.1.0.
 
@@ -381,7 +408,7 @@ OpenCode y generar un CV con Claude Code.
 
 | | Claude Code | OpenCode | Codex | Qwen Code | Otros |
 |---|---|---|---|---|---|
-| En segundo plano | Sí: `claude -p` con `stream-json`, `--tools Skill,Agent,Read`, `dontAsk`, `--allowedTools` con las herramientas MCP de la acción, `Skill(<su skill>)` y `Read(./docs/**)`, y `--disallowedTools` con todas las demás MCP de la app. Comprobado con `claude` 2.1.296 (ver abajo); el recorrido completo, pendiente de la prueba manual (`docs/pruebas/fase-19-prueba-manual.txt`) | Sí en `process-jobs` y `assess-fit`: `opencode run --format json --pure --agent cai-run [-m <modelo>] "<orden>"` con la configuración de la ejecución en `OPENCODE_CONFIG_CONTENT`. **No en `generate-cv`**: `writer` y `verifier` leen ficheros (`POLICIES.md`) y en OpenCode su `read` no se acota a `docs/` como en la ejecución, así que el subagente tendría más que ella. La UI propone Claude Code. Comprobado con OpenCode 1.19.3 (ver abajo); con un modelo, pendiente de la prueba manual (`docs/pruebas/fase-24.5-prueba-manual.txt`) | No: solo deja **apagar** herramientas (`--disable shell_tool`, `unified_exec`, `browser_use`…), una lista negra que cada versión puede ampliar, y sin terminal no lee los skills. Revisado con codex-cli 0.163.0 el 2026-10-16 | No, de momento: tiene `--core-tools` (lista blanca), `--allowed-mcp-server-names`, `--exclude-tools` y `-o stream-json`, pero no tiene forma de comprobar el techo sin un modelo (no tiene `debug`). Revisado con Qwen Code 0.25.2 el 2026-10-16; candidato para la 24.6, con modelos locales | No (Antigravity no imprime nada sin terminal) |
+| En segundo plano | Sí: `claude -p` con `stream-json`, `--tools Skill,Agent,Read`, `dontAsk`, `--allowedTools` con las herramientas MCP de la acción, `Skill(<su skill>)` y `Read(./docs/**)`, y `--disallowedTools` con todas las demás MCP de la app. Comprobado con `claude` 2.1.296 (ver abajo); el recorrido completo, pendiente de la prueba manual (`docs/pruebas/fase-19-prueba-manual.txt`) | Sí en `process-jobs` y `assess-fit`: `opencode run --format json --pure --agent cai-run [-m <modelo>] "<orden>"` con la configuración de la ejecución en `OPENCODE_CONFIG_CONTENT`. **No en `generate-cv`**: `writer` y `verifier` leen ficheros (`POLICIES.md`) y en OpenCode su `read` no se acota a `docs/` como en la ejecución, así que el subagente tendría más que ella. La UI propone Claude Code. Comprobado con OpenCode 1.19.3 (ver abajo); con un modelo, pendiente de la prueba manual (`docs/pruebas/fase-24.5-prueba-manual.txt`) | No: solo deja **apagar** herramientas (`--disable shell_tool`, `unified_exec`, `browser_use`…), una lista negra que cada versión puede ampliar, y sin terminal no lee los skills. Revisado con codex-cli 0.163.0 el 2026-10-16 | No, de momento: tiene `--core-tools` (lista blanca), `--allowed-mcp-server-names`, `--exclude-tools` y `-o stream-json`, pero no tiene forma de comprobar el techo sin un modelo (no tiene `debug`). Revisado con Qwen Code 0.25.2 el 2026-10-16; pendiente de comprobarlo con un modelo local | No (Antigravity no imprime nada sin terminal) |
 | Cola de encargos | Sí (`list_agent_requests`, `complete_agent_request`, skill `handle-requests`) | Sí | Sí (mismas herramientas o `cai requests … --json`) | Sí | Sí, con MCP o CLI |
 
 Comprobado con `claude` 2.1.296 (2026-10-12, modelo haiku, sin datos):

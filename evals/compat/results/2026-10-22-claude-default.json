@@ -1,0 +1,191 @@
+{
+  "created_at": "2026-10-22T11:45:15.196536Z",
+  "agent": "claude",
+  "display_name": "Claude Code",
+  "open_source": false,
+  "local_models": false,
+  "model": null,
+  "preset": null,
+  "data_dir": "data-demo-compat-claude-default",
+  "imported": false,
+  "steps": [
+    {
+      "action": "process-jobs",
+      "mode": "background",
+      "reason": null,
+      "runs": [
+        {
+          "run_id": 1,
+          "job_id": null,
+          "status": "done",
+          "seconds": 37.7,
+          "turns": 14,
+          "input_tokens": 14,
+          "output_tokens": 1728,
+          "cost_usd": 0.32421318000000005,
+          "error": null
+        }
+      ]
+    },
+    {
+      "action": "assess-fit",
+      "mode": "background",
+      "reason": null,
+      "runs": [
+        {
+          "run_id": 2,
+          "job_id": null,
+          "status": "done",
+          "seconds": 89.8,
+          "turns": 53,
+          "input_tokens": 16,
+          "output_tokens": 10206,
+          "cost_usd": 0.6904899999999999,
+          "error": null
+        }
+      ]
+    },
+    {
+      "action": "generate-cv",
+      "mode": "background",
+      "reason": null,
+      "runs": [
+        {
+          "run_id": 3,
+          "job_id": 61,
+          "status": "done",
+          "seconds": 67.7,
+          "turns": 7,
+          "input_tokens": 10,
+          "output_tokens": 1644,
+          "cost_usd": 0.5345987000000001,
+          "error": null
+        },
+        {
+          "run_id": 4,
+          "job_id": 62,
+          "status": "done",
+          "seconds": 93.5,
+          "turns": 7,
+          "input_tokens": 10,
+          "output_tokens": 1650,
+          "cost_usd": 0.41593970000000013,
+          "error": null
+        },
+        {
+          "run_id": 5,
+          "job_id": 63,
+          "status": "needs_user",
+          "seconds": 67.1,
+          "turns": 7,
+          "input_tokens": 10,
+          "output_tokens": 1749,
+          "cost_usd": 0.40011900000000006,
+          "error": null
+        },
+        {
+          "run_id": 6,
+          "job_id": 64,
+          "status": "done",
+          "seconds": 74.5,
+          "turns": 7,
+          "input_tokens": 10,
+          "output_tokens": 1736,
+          "cost_usd": 0.41414239999999997,
+          "error": null
+        },
+        {
+          "run_id": 7,
+          "job_id": 65,
+          "status": "done",
+          "seconds": 80.3,
+          "turns": 7,
+          "input_tokens": 10,
+          "output_tokens": 1633,
+          "cost_usd": 0.4198720000000001,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "extraction": [
+    {
+      "case": "cv01-de-snowflake",
+      "job_id": 61,
+      "extracted": true,
+      "equal": 11,
+      "total": 11,
+      "different": []
+    },
+    {
+      "case": "cv03-analyst-powerbi",
+      "job_id": 62,
+      "extracted": true,
+      "equal": 11,
+      "total": 11,
+      "different": []
+    },
+    {
+      "case": "cv05-de-orquestacion",
+      "job_id": 63,
+      "extracted": true,
+      "equal": 11,
+      "total": 11,
+      "different": []
+    },
+    {
+      "case": "cv07-english",
+      "job_id": 64,
+      "extracted": true,
+      "equal": 10,
+      "total": 11,
+      "different": [
+        "languages_required"
+      ]
+    },
+    {
+      "case": "cv09-etl-migracion",
+      "job_id": 65,
+      "extracted": true,
+      "equal": 10,
+      "total": 11,
+      "different": [
+        "title_normalized"
+      ]
+    }
+  ],
+  "fields_equal": 53,
+  "fields_total": 55,
+  "assessed": 5,
+  "verdicts": {
+    "possible": 1,
+    "strong": 4
+  },
+  "cv": {
+    "evaluated": 5,
+    "passed": 5,
+    "checks_passed": {
+      "evidence": 5,
+      "skills": 5,
+      "basic_skills": 5,
+      "one_page": 5,
+      "layout": 5,
+      "coverage": 5,
+      "language": 5,
+      "verified": 5
+    },
+    "cases": {
+      "cv01-de-snowflake": "passed",
+      "cv03-analyst-powerbi": "passed",
+      "cv05-de-orquestacion": "passed",
+      "cv07-english": "passed",
+      "cv09-etl-migracion": "passed"
+    }
+  },
+  "seconds": 510.6,
+  "turns": 102,
+  "tokens": 20426,
+  "cost_usd": 3.1993749800000004,
+  "complete": true,
+  "manual_steps": []
+}

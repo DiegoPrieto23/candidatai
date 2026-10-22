@@ -3,6 +3,7 @@ desde la UI. Ningún test abre una terminal de verdad: `_open_terminal` se susti
 
 from collections.abc import Iterator
 from datetime import timedelta
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -104,6 +105,24 @@ def test_powershell_command_unsets_api_keys_names_the_client_and_quotes_the_prom
         "$env:CAI_CLIENT_NAME = 'claude'; "
         "& 'claude' 'Usa ''esto''; y aquello'"
     )
+
+
+def test_in_a_demo_the_window_points_the_agent_at_the_demo_folder(
+    isolated_env: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Fase 26.5: una pestaña de Windows Terminal no hereda `CAI_DATA_DIR` de `cai start`."""
+    from app.core.config import DEMO_MARKER, get_settings
+
+    launcher = agent_launch._Launcher("claude", ["claude", "{prompt}"], [])
+    assert "CAI_DATA_DIR" not in agent_launch.powershell_command(launcher, "hola")
+    isolated_env.mkdir(parents=True, exist_ok=True)
+    (isolated_env / DEMO_MARKER).write_text("", encoding="utf-8")
+    get_settings.cache_clear()
+    folder = str(get_settings().data_dir)
+    command = agent_launch.powershell_command(launcher, "hola")
+    assert f"$env:CAI_DATA_DIR = '{folder}'; & 'claude' 'hola'" in command
+    monkeypatch.setattr(agent_launch.terminals, "shell", lambda: "/bin/bash")
+    assert "export CAI_DATA_DIR=" in agent_launch.posix_command(launcher, "hola")
 
 
 def _no_terminal(monkeypatch: pytest.MonkeyPatch) -> None:

@@ -10,6 +10,9 @@ Sobre una demo propia (`data-demo-compat-<agente>-<modelo>/`, con `cai demo seed
 4. mide: campos de la extracción iguales a los esperados (`COMPARED_FIELDS`, los 11 de la 12.3),
    valoraciones guardadas, las 7 comprobaciones de `cai eval cv`, tiempo, turnos y tokens.
 
+Con `cases=N` (`--cases N`), solo las N primeras ofertas de `jobs.txt`, en su propia demo y su
+propio resultado: para comprobar con poco cupo si un agente funciona.
+
 Guarda `evals/compat/results/<fecha>-<agente>-<modelo>.json` y regenera `evals/compat/REPORT.md`.
 Si el agente no puede hacer un paso en segundo plano (no tiene, o el techo no le cabe), para ahí y
 devuelve los pasos manuales; después, `--approve` (aprobar en la demo) y `--import` (medir lo que
@@ -133,7 +136,8 @@ class CompatResult(BaseModel):
     turns: int | None
     tokens: int | None
     cost_usd: float | None
-    complete: bool  # las 5 extraídas, valoradas y con CV medido
+    complete: bool  # todas extraídas, valoradas y con CV medido
+    cases: int | None = None  # solo las N primeras ofertas (`--cases`); `None`, todas
     manual_steps: list[str] = []
 
 
@@ -148,8 +152,20 @@ def model_slug(model: str | None, preset: str | None) -> str:
     return slug(model) if model else (f"preset-{slug(preset)}" if preset else "default")
 
 
-def data_dir(agent: str, model: str | None, preset: str | None) -> Path:
-    return REPO_ROOT / f"data-demo-compat-{slug(agent)}-{model_slug(model, preset)}"
+def cases_slug(cases: int | None) -> str:
+    return "" if cases is None else f"-{cases}-oferta{'s' if cases > 1 else ''}"
+
+
+def data_dir(agent: str, model: str | None, preset: str | None, cases: int | None = None) -> Path:
+    return REPO_ROOT / (
+        f"data-demo-compat-{slug(agent)}-{model_slug(model, preset)}{cases_slug(cases)}"
+    )
+
+
+def _check_cases(cases: int | None) -> None:
+    total = len(cv_eval.load_compat_cases())
+    if cases is not None and not 1 <= cases <= total:
+        raise CompatError(f"--cases tiene que ir de 1 a {total}.")
 
 
 def _spec(agent: str) -> agent_registry.AgentSpec:
@@ -172,11 +188,12 @@ def _check_model(spec: agent_registry.AgentSpec, model: str | None, preset: str 
 # --- Pasos -------------------------------------------------------------------------------------
 
 
-def _case_jobs(session: Session) -> dict[str, int | None]:
-    found: dict[str, int | None] = {}
+def _case_jobs(session: Session) -> dict[str, int]:
+    """Las ofertas de la matriz que hay en la demo (todas, o las N primeras con `--cases`)."""
+    found: dict[str, int] = {}
     for case in cv_eval.load_compat_cases():
-        job = cv_eval._case_job(session, case.id)
-        found[case.id] = job.id if job else None
+        if (job := cv_eval._case_job(session, case.id)) is not None:
+            found[case.id] = job.id
     return found
 
 
@@ -253,9 +270,6 @@ def approve(target: Path) -> list[str]:
         if not get_settings().demo_mode:
             raise CompatError("La carpeta no está en modo demo.")
         for case, job_id in _case_jobs(session).items():
-            if job_id is None:
-                notes.append(f"{case}: sin alta")
-                continue
             stage = events.current_stage(session, job_id)
             if stage == Stage.PENDING_TRIAGE:
                 events.add_user_event(session, job_id, EventType.APPROVED)
@@ -268,7 +282,12 @@ def approve(target: Path) -> list[str]:
 
 
 def manual_steps(
-    agent: str, model: str | None, preset: str | None, target: Path, from_step: int
+    agent: str,
+    model: str | None,
+    preset: str | None,
+    target: Path,
+    from_step: int,
+    cases: int | None = None,
 ) -> list[str]:
     """Lo que tiene que hacer el usuario desde el paso `from_step` (0, 1 o 2)."""
     spec = _spec(agent)
@@ -278,20 +297,25 @@ def manual_steps(
         command += f" --model {model}"
     elif preset:
         command += f" --preset {preset}"
+    if cases is not None:
+        command += f" --cases {cases}"
     with demo.use_data_dir(target, embeddings=False), session_scope() as session:
-        ids = " ".join(str(j) for j in _case_jobs(session).values() if j)
+        ids = " ".join(str(j) for j in _case_jobs(session).values())
     lines = [
         f'En otra terminal, en la raíz del repo: $env:CAI_DATA_DIR = "{target.name}" y abre '
         f"{spec.info.display_name}"
         + (f" con el modelo {model or preset}" if model or preset else "")
         + ". Comprueba con get_status que dice demo_mode: true.",
     ]
+    if invoke == "natural":  # sin sintaxis propia: se le pide el skill con una frase
+        invoke = "«usa el skill {skill}{args}»"
+        ids = f" con las ofertas {ids}" if ids else ""
     skill = {s: invoke.replace("{skill}", s) for s in STEPS}
     if from_step <= 0:
         lines.append(f"Procesa las ofertas: {skill['process-jobs'].replace('{args}', '').strip()}")
     if from_step <= 1:
         lines.append(f"Valora el encaje: {skill['assess-fit'].replace('{args}', '').strip()}")
-        lines.append(f"Aprueba las 5 de la matriz: {command} --approve")
+        lines.append(f"Aprueba las ofertas de la matriz: {command} --approve")
     lines.append(
         f"Genera los CVs: {skill['generate-cv'].replace('{args}', ids).strip()} (si pregunta por "
         "skills que faltan, contesta que no las tienes)."
@@ -346,23 +370,21 @@ def measure(
     preset: str | None,
     steps: list[StepResult],
     imported: bool,
+    cases: int | None = None,
 ) -> CompatResult:
     spec = _spec(agent)
-    cases = {c.id: c for c in cv_eval.load_compat_cases()}
+    expected = {c.id: c for c in cv_eval.load_compat_cases()}
     with demo.use_data_dir(target, embeddings=False), session_scope() as session:
         jobs = _case_jobs(session)
         scores: list[FieldScore] = []
         verdicts: Counter[str] = Counter()
         for case_id, job_id in jobs.items():
-            if job_id is None:
-                scores.append(FieldScore(case=case_id, job_id=None, extracted=False))
-                continue
             try:
                 got = get_extraction(session, job_id)
             except ExtractionNotFoundError:
                 scores.append(FieldScore(case=case_id, job_id=job_id, extracted=False))
             else:
-                equal, different = compare_extraction(cases[case_id].extraction, got.extraction)
+                equal, different = compare_extraction(expected[case_id].extraction, got.extraction)
                 scores.append(
                     FieldScore(
                         case=case_id,
@@ -374,7 +396,7 @@ def measure(
                 )
             if (verdict := _verdict(session, job_id)) is not None:
                 verdicts[verdict] += 1
-        report = cv_eval.evaluate(session, cases=list(cases.values()))
+        report = cv_eval.evaluate(session, cases=[expected[c] for c in jobs])
         if imported:  # lo que hizo a mano: las ejecuciones en segundo plano que haya
             rows = session.scalars(select(AgentRun).order_by(AgentRun.id)).all()
             known = {r.run_id for s in steps for r in s.runs}
@@ -420,9 +442,11 @@ def measure(
         turns=total("turns"),
         tokens=sum(tokens) if tokens else None,
         cost_usd=total("cost_usd"),
-        complete=all(s.extracted for s in scores)
+        complete=bool(scores)
+        and all(s.extracted for s in scores)
         and sum(verdicts.values()) >= len(scores)
         and report.evaluated == len(scores),
+        cases=cases,
     )
 
 
@@ -438,16 +462,19 @@ def run(
     execute: RunExecutor | None = None,
     timeout: float | None = None,
     progress: Callable[[str], None] = lambda _msg: None,
+    cases: int | None = None,
 ) -> CompatResult:
     """Recorre la matriz con el agente. `execute`: quien ejecuta la ejecución en cola (por
-    defecto, `agent_runner.run_next`); `timeout`: segundos por ejecución (si no, la política)."""
+    defecto, `agent_runner.run_next`); `timeout`: segundos por ejecución (si no, la política);
+    `cases`: solo las N primeras ofertas."""
     spec = _spec(agent)
     _check_model(spec, model, preset)
+    _check_cases(cases)
     execute = execute or agent_runner.run_next
-    target = target or data_dir(agent, model, preset)
+    target = target or data_dir(agent, model, preset, cases)
     progress(f"Demo nueva en {target.name}…")
     try:
-        demo.seed(target, force=True, compat=True)
+        demo.seed(target, force=True, compat=True, compat_cases=cases)
     except demo.DemoSeedError as exc:
         raise CompatError(str(exc)) from exc
     steps: list[StepResult] = []
@@ -464,13 +491,13 @@ def run(
             if reason is not None:
                 steps.append(StepResult(action=action, mode="manual", reason=reason))
                 steps += [StepResult(action=a, mode="not_run") for a in STEPS[index + 1 :]]
-                manual = manual_steps(agent, model, preset, target, index)
+                manual = manual_steps(agent, model, preset, target, index, cases)
                 break
             step = StepResult(action=action, mode="background")
             steps.append(step)
             if action == "generate-cv":
                 with session_scope() as session:
-                    job_ids = [j for j in _case_jobs(session).values() if j is not None]
+                    job_ids = list(_case_jobs(session).values())
             else:
                 job_ids = [None]  # type: ignore[list-item]
             for job_id in job_ids:
@@ -485,25 +512,31 @@ def run(
                     summary = RunSummary(run_id=0, job_id=job_id, status="failed", error=str(exc))
                 step.runs.append(summary)
                 progress(f"  {summary.status} en {time.monotonic() - started:.0f} s")
-    result = measure(target, agent, model, preset, steps, imported=False)
+    result = measure(target, agent, model, preset, steps, imported=False, cases=cases)
     result.manual_steps = manual
     return result
 
 
 def import_results(
-    agent: str, model: str | None = None, preset: str | None = None, *, target: Path | None = None
+    agent: str,
+    model: str | None = None,
+    preset: str | None = None,
+    *,
+    target: Path | None = None,
+    cases: int | None = None,
 ) -> CompatResult:
     """Mide una demo de la matriz en la que el agente trabajó a mano."""
     spec = _spec(agent)
     _check_model(spec, model, preset)
-    target = target or data_dir(agent, model, preset)
+    _check_cases(cases)
+    target = target or data_dir(agent, model, preset, cases)
     if not demo.is_demo_dir(target) or not (target / "candidatai.db").is_file():
         raise CompatError(
             f"No hay una demo de la matriz en «{target.name}»: lanza antes "
             f"`cai eval compat --agent {agent}` (o `cai demo seed --dir {target.name} --compat`)."
         )
     steps = [StepResult(action=a, mode="manual") for a in STEPS]
-    return measure(target, agent, model, preset, steps, imported=True)
+    return measure(target, agent, model, preset, steps, imported=True, cases=cases)
 
 
 # --- Guardar e informe -------------------------------------------------------------------------
@@ -515,7 +548,7 @@ def save(
     results_dir = results_dir or RESULTS_DIR
     report_path = report_path or REPORT_PATH
     results_dir.mkdir(parents=True, exist_ok=True)
-    model = model_slug(result.model, result.preset)
+    model = model_slug(result.model, result.preset) + cases_slug(result.cases)
     name = f"{result.created_at:%Y-%m-%d}-{slug(result.agent)}-{model}.json"
     path = results_dir / name
     path.write_text(result.model_dump_json(indent=2) + "\n", encoding="utf-8")
@@ -536,7 +569,8 @@ def load_results(results_dir: Path | None = None) -> list[CompatResult]:
 
 def _label(result: CompatResult) -> str:
     model = result.model or (f"preset {result.preset}" if result.preset else "modelo por defecto")
-    return f"{result.display_name} · {model}"
+    cases = "" if result.cases is None else f" · {result.cases} oferta{'s' * (result.cases > 1)}"
+    return f"{result.display_name} · {model}{cases}"
 
 
 def _cell(value: Any, suffix: str = "") -> str:
@@ -550,6 +584,7 @@ def to_markdown(results: list[CompatResult]) -> str:
         "Generado por `cai eval compat` (fase 24.6): las 5 ofertas de `evals/compat/jobs.txt` con",
         "`process-jobs`, `assess-fit` y `generate-cv`, medidas igual para todos. Un resultado por",
         "agente y modelo en `evals/compat/results/`. No lo edites a mano: se regenera.",
+        "Las columnas «· N oferta(s)» son pasadas cortas (`--cases N`): solo las N primeras.",
         "Los tokens no cuentan los leídos de la caché, que cada agente informa a su manera.",
         "",
     ]
@@ -557,7 +592,8 @@ def to_markdown(results: list[CompatResult]) -> str:
         return "\n".join([*lines, "Todavía no hay resultados.", ""])
     latest: dict[tuple[str, str], CompatResult] = {}
     for result in sorted(results, key=lambda r: r.created_at):
-        latest[(result.agent, model_slug(result.model, result.preset))] = result
+        key = model_slug(result.model, result.preset) + cases_slug(result.cases)
+        latest[(result.agent, key)] = result
     shown = list(latest.values())
     header = ["", *(_label(r) for r in shown)]
     lines += ["| " + " | ".join(header) + " |", "|" + "---|" * len(header)]
@@ -579,8 +615,14 @@ def to_markdown(results: list[CompatResult]) -> str:
         ],
     )
     row("Extracción (campos iguales)", [f"{r.fields_equal}/{r.fields_total}" for r in shown])
-    row("Valoraciones", [f"{r.assessed}/5 {dict(r.verdicts) or ''}".strip() for r in shown])
-    row("CVs que pasan `eval cv`", [f"{r.cv.passed}/{r.cv.evaluated} de 5" for r in shown])
+    row(
+        "Valoraciones",
+        [f"{r.assessed}/{len(r.extraction)} {dict(r.verdicts) or ''}".strip() for r in shown],
+    )
+    row(
+        "CVs que pasan `eval cv`",
+        [f"{r.cv.passed}/{r.cv.evaluated} de {len(r.extraction)}" for r in shown],
+    )
     for name, label in cv_eval.CHECKS.items():
         row(f"· {label}", [str(r.cv.checks_passed.get(name, 0)) for r in shown])
     row("Tiempo", [_cell(r.seconds and round(r.seconds / 60, 1), " min") for r in shown])

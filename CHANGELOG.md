@@ -10,6 +10,10 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Una demo con todo:** `cai demo seed` trae también lo que dejarían la candidata y su agente
+  (carta, respuestas de screening, mensajes, dosieres de empresa, plan y repaso de entrevistas,
+  oferta recibida, correos en «Respuestas», huecos en «Skills», un encargo, contexto y una muestra
+  de estilo), así que ninguna pantalla sale vacía.
 - **Instalador para macOS y Linux:** `curl -fsSL …/install.sh | bash` instala CandidatAI sin
   `sudo`, con tus datos aparte, y crea el acceso directo (la app «CandidatAI» en macOS y una entrada
   en el menú de aplicaciones en Linux). `--dry-run` explica lo que haría y `--uninstall` nunca
@@ -33,7 +37,14 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   herramientas que Claude Code.
 - **Modelos gratuitos y locales:** la guía `docs/MODELOS_GRATIS.md` (Ollama en Windows, qué modelo
   según tu memoria y qué sale de tu equipo), el diagnóstico de tu Ollama y los niveles de gasto
-  «Económico», «Equilibrado» y «Máximo», que se aplican con un clic y se deshacen.
+  «Económico», «Equilibrado» y «Máximo», que se aplican con un clic y se deshacen. Con medidas
+  reales: con 16 GB de RAM y sin gráfica, `gpt-oss:20b` no es viable y un agente con un modelo
+  local tarda 15-20 minutos en su primera respuesta, así que la guía explica cómo ahorrar memoria
+  en Ollama y cómo usar OpenCode con un modelo gratuito de OpenRouter. `cai eval compat --cases 1`
+  prueba tu agente con una sola oferta, para no gastar el cupo gratuito en la matriz entera.
+- **Codex, probado:** extrae, valora y genera el CV de la matriz de una oferta. Ahora usa la carpeta
+  de la demo (antes abría `data/`) y no pide permiso para las herramientas que Claude Code tampoco
+  pide.
 - **Esquemas para cualquier modelo:** `cai schema` y `get_schema` dan cada entrada con un ejemplo, y
   los errores dicen qué campo arreglar y cómo.
 - **`cai eval compat`** pasa la matriz de compatibilidad a cualquier agente y modelo.
@@ -88,6 +99,8 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 - En macOS y Linux, archivar una candidatura a la vez desde dos sitios (el worker y la CLI) ya no
   puede dar por archivada una carpeta vacía.
 - La plantilla `moderna-2col` deja que un ATS lea primero tu nombre.
+- En una demo, los botones «en tu agente» abren el agente sobre la demo: antes, una pestaña nueva
+  de Windows Terminal podía dejarlo sobre tus datos reales.
 
 ### Seguridad
 - Solo la UI puede escribir tu perfil, tu contexto y tus muestras, y leer tu perfil con contacto;
