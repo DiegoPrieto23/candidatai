@@ -666,6 +666,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/sources/{source_id}/website": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Set Source Website
+         * @description Pone o quita la web de una empresa objetivo, que la UI usa para su logo.
+         */
+        post: operations["set_source_website"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/sources/{source_id}/browse": {
         parameters: {
             query?: never;
@@ -677,8 +697,8 @@ export interface paths {
         put?: never;
         /**
          * Update Browse Settings
-         * @description Activa o desactiva la búsqueda con navegador de una plataforma, o cambia su prioridad o su
-         *     acceso. Activar LinkedIn exige `confirm_risk: true`.
+         * @description Activa o desactiva la búsqueda con navegador de una plataforma, o cambia su prioridad, su
+         *     acceso o cuántas ofertas abre en cada recorrido. Activar LinkedIn exige `confirm_risk: true`.
          */
         post: operations["update_browse_settings"];
         delete?: never;
@@ -3146,6 +3166,8 @@ export interface components {
             priority?: number | null;
             /** Access */
             access?: ("free" | "login" | "blocked") | null;
+            /** Max Offers */
+            max_offers?: number | null;
             /**
              * Confirm Risk
              * @default false
@@ -6575,6 +6597,11 @@ export interface components {
             /** Active */
             active: boolean;
         };
+        /** SetWebsiteBody */
+        SetWebsiteBody: {
+            /** Website */
+            website: string | null;
+        };
         /**
          * SignOff
          * @description Despedida de la carta por idioma («Un saludo,», «Kind regards,»).
@@ -6714,6 +6741,8 @@ export interface components {
              * @default []
              */
             title_keywords: string[];
+            /** Website */
+            website?: string | null;
         };
         /** SourceList */
         SourceList: {
@@ -6813,6 +6842,8 @@ export interface components {
             /** Keys Missing */
             keys_missing: boolean;
             browse?: components["schemas"]["AgentBrowseSource"] | null;
+            /** Website */
+            website?: string | null;
             /** Last Run At */
             last_run_at: string | null;
             last_run: components["schemas"]["SourceRunView"] | null;
@@ -10411,6 +10442,104 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["SetActiveBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    set_source_website: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetWebsiteBody"];
             };
         };
         responses: {

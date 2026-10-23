@@ -167,6 +167,19 @@ describe('Plataformas', () => {
     })
   })
 
+  it('cambia las ofertas que abre en cada recorrido', async () => {
+    const calls = mockApi({
+      'GET /status': status(),
+      'GET /sources': { sources: [tecno], agent_browse: LIMITS },
+      'POST /sources/1/browse': { status: 200, body: platform(1, { max_offers: 40 }) },
+    })
+    renderApp('/plataformas')
+
+    await userEvent.click(await screen.findByRole('combobox', { name: 'Ofertas por recorrido en Tecnoempleo' }))
+    await userEvent.click(screen.getByRole('option', { name: '40' }))
+    expect(calls.find((c) => c.path === '/sources/1/browse')?.body).toEqual({ confirm_risk: false, max_offers: 40 })
+  })
+
   it('sin plataformas, explica cómo configurarlas', async () => {
     mockApi({ 'GET /status': status(), 'GET /sources': { sources: [], agent_browse: LIMITS } })
     renderApp('/plataformas')

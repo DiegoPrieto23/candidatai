@@ -192,8 +192,9 @@ def save_source(session: Session, data: AgentBrowseSource) -> SaveSourceResult:
 
     config = data.model_dump(exclude={"name"})
     config["allow_agent_browsing"] = allow
-    if config["max_offers"] is None:
-        config["max_offers"] = get_policies().agent_browse.default_max_offers
+    if config["max_offers"] is None:  # sin valor, se conserva el que ya tenía (p. ej. de la UI)
+        kept_max = (existing.config or {}).get("max_offers") if existing is not None else None
+        config["max_offers"] = kept_max or get_policies().agent_browse.default_max_offers
     name = " ".join(data.name.split())
 
     if existing is None:
@@ -256,6 +257,7 @@ def update_settings(
     allow_agent_browsing: bool | None = None,
     priority: int | None = None,
     access: BrowseAccess | None = None,
+    max_offers: int | None = None,
     confirm_risk: bool = False,
 ) -> SourceView:
     """Cambios del usuario desde la UI. Activar LinkedIn exige `confirm_risk`."""
@@ -273,6 +275,8 @@ def update_settings(
         config["priority"] = priority
     if access is not None:
         config["access"] = access
+    if max_offers is not None:
+        config["max_offers"] = max_offers
     # Valida el resultado con el mismo esquema que `save_source`.
     AgentBrowseSource.model_validate({"name": source.name, **config})
     source.config = config

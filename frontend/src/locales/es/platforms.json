@@ -89,9 +89,11 @@
     "priorityAria": "Prioridad de {{name}}",
     "first": "1 (primera)",
     "access": "Acceso",
-    "accessAria": "Acceso a {{name}}"
+    "accessAria": "Acceso a {{name}}",
+    "maxOffers": "Ofertas por recorrido",
+    "maxOffersAria": "Ofertas por recorrido en {{name}}"
   },
-  "limits": "Límites en `config/policies.yaml`: como mucho {{pages}} de resultados por búsqueda, {{delay}} s de pausa entre páginas y {{offers}} ofertas por plataforma si no dice otra cosa.",
+  "limits": "Límites en `config/policies.yaml`: como mucho {{pages}} de resultados por búsqueda, {{delay}} s de pausa entre páginas y {{offers}} ofertas por recorrido en las plataformas nuevas (en cada una lo cambias con «Ofertas por recorrido»).",
   "empty": {
     "title": "Aún no hay plataformas",
     "body": "Añádelas con «Añadir plataforma» o pide a tu agente `search-jobs configurar`: te preguntará dónde buscas, te recomendará portales y guardará aquí las búsquedas."

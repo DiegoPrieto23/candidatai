@@ -10,6 +10,13 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Logo de las empresas objetivo:** en «Fuentes → Empresas objetivo» cada empresa lleva su logo,
+  como las plataformas. La app saca su web de sus ofertas si las publica en su propio dominio
+  (`careers.acme.com`); si no, la escribes al añadirla o con «Añadir su web para el logo». Los
+  portales con API llevan el suyo.
+- **Ofertas por recorrido, editables:** cada plataforma de «Fuentes → Plataformas» tiene un selector
+  «Ofertas por recorrido» (de 5 a 100) para cambiar las que abre tu agente cada vez, que antes
+  quedaban en 15. Tu agente lo respeta al volver a guardar la plataforma.
 - **Guía de entrevista en PDF:** «Preparar» (`prepare-interview`) lee todo lo que hay de la oferta,
   tu perfil y contexto, tus respuestas de screening, tu CV y tu carta, y busca en la web; te pregunta
   lo que falte y deja en la ficha, bajo la entrevista, una guía en PDF con el color de la empresa y
@@ -95,6 +102,8 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   experiencia»**: tu agente propone, te pregunta los números que falten y solo escribe con tu OK.
 
 ### Cambiado
+- **«Fuentes» abre en «Plataformas»:** ahora es la primera pestaña, y «Empresas objetivo», la
+  segunda.
 - Todos los botones que lanzan tu agente salen en verde, para distinguirlos del resto.
 - «Mi perfil»: las pestañas que no caben pasan a una segunda fila dentro de la barra («Historial»
   ya no queda pegado al contenido) y en «Experiencia» cada empresa va en su tarjeta, con cabecera

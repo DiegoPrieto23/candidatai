@@ -104,8 +104,17 @@ const KNOWN_ICONS: Record<string, string> = {
   'glassdoor.com': 'https://www.glassdoor.com/favicon.ico',
 }
 
-/** Dónde probar el icono de un portal, en orden: el conocido, `/favicon.ico` y el de iOS. */
+/**
+ * Dónde probar el icono de una web, en orden: el conocido, `/favicon.ico` y el de iOS. En un
+ * subdominio (`careers.acme.com`), también los del dominio principal.
+ */
 export function iconCandidates(home: { origin: string; host: string }): string[] {
   const known = KNOWN_ICONS[home.host]
-  return [...(known ? [known] : []), `${home.origin}/favicon.ico`, `${home.origin}/apple-touch-icon.png`]
+  const origins = [home.origin]
+  const base = home.host.split('.').slice(-2).join('.')
+  if (base !== home.host) origins.push(`${new URL(home.origin).protocol}//${base}`)
+  return [
+    ...(known ? [known] : []),
+    ...origins.flatMap((origin) => [`${origin}/favicon.ico`, `${origin}/apple-touch-icon.png`]),
+  ]
 }

@@ -87,6 +87,42 @@ def test_set_active_pauses_the_company_too(session: Session) -> None:
         service.set_active(session, 999, True)
 
 
+def test_website_given_by_the_user_is_kept_as_its_origin(session: Session) -> None:
+    view = service.add_source(
+        session, GREENHOUSE.model_copy(update={"website": "Acme-Datos.example/empleo"})
+    )
+    assert view.config["website"] == "https://acme-datos.example"
+    assert view.website == "https://acme-datos.example"
+
+    cleared = service.set_website(session, view.id, None)
+    assert "website" not in cleared.config and cleared.website is None
+    changed = service.set_website(session, view.id, "https://www.acme.example/")
+    assert changed.website == "https://www.acme.example"
+
+    with pytest.raises(ValueError, match="Web no válida"):
+        service.set_website(session, view.id, "javascript:alert(1)")
+    portal = service.add_source(session, SourceInput(kind="manfred", name="Manfred", query="data"))
+    assert portal.website == "https://www.getmanfred.com"
+    with pytest.raises(service.NotAConnectorError, match="empresas objetivo"):
+        service.set_website(session, portal.id, "acme.example")
+    with pytest.raises(ValueError, match="solo se usa en las empresas objetivo"):
+        SourceInput(kind="manfred", name="Manfred", query="data", website="acme.example")
+
+
+@respx.mock
+def test_website_comes_from_offers_outside_the_ats(session: Session, with_profile: None) -> None:
+    mock_greenhouse()
+    source = service.add_source(session, GREENHOUSE)
+    service.run_source(session, source.id)
+    assert service.get_source(session, source.id).website is None  # ofertas en greenhouse.io
+
+    job = session.scalars(select(Job).order_by(Job.id.desc())).first()
+    assert job is not None
+    job.url = "https://careers.acme-datos.example/jobs/1001-data-engineer"
+    session.flush()
+    assert service.get_source(session, source.id).website == "https://careers.acme-datos.example"
+
+
 # --- Prueba sin guardar ----------------------------------------------------------------------
 
 

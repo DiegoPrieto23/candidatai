@@ -27,7 +27,8 @@ Argumentos: `configurar`, el nombre de una plataforma o nada (todas las activas)
 4. Para cada plataforma aprobada, construye con él las `search_urls` (búsquedas ya filtradas por
    puesto y ubicación) y guárdala con `save_source`: `name`, `platform` (id corto: `infojobs`,
    `tecnoempleo`…), `search_urls`, `priority` (1 = primera), `access` (`free`, `login` o
-   `blocked`), `max_offers` (si no lo das, `default_max_offers`) y `notes`. Las `search_urls`
+   `blocked`), `max_offers` (si no lo das, se conserva el que tenga, que el usuario puede cambiar
+   en la UI; en una nueva, `default_max_offers`) y `notes`. Las `search_urls`
    deben ser del dominio de la plataforma (una plataforma por sitio). Guardar otra vez con el
    mismo `name` la actualiza. Por defecto queda con la búsqueda con navegador activada.
 5. LinkedIn queda siempre con la búsqueda desactivada: no pases `allow_agent_browsing` (con

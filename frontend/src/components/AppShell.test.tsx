@@ -96,6 +96,14 @@ describe('Barra lateral (fase 23.3)', () => {
     await userEvent.click(within(tabs).getByRole('link', { name: 'Plataformas' }))
     expect(await screen.findByRole('heading', { name: 'Plataformas' })).toBeInTheDocument()
   })
+
+  it('Fuentes abre en Plataformas, la primera pestaña', async () => {
+    mockApi({ ...routes(), 'GET /sources': { sources: [], agent_browse: { max_result_pages: 2, delay_seconds: 5, default_max_offers: 15 } } })
+    renderApp('/fuentes')
+    expect(await screen.findByRole('heading', { name: 'Plataformas' })).toBeInTheDocument()
+    const tabs = screen.getByRole('navigation', { name: 'Fuentes de ofertas' })
+    expect(within(tabs).getAllByRole('link').map((link) => link.textContent)).toEqual(['Plataformas', 'Empresas objetivo'])
+  })
 })
 
 describe('Barra lateral: detalles (fase 23.3)', () => {

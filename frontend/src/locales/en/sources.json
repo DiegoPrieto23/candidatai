@@ -43,7 +43,9 @@
     "testing": "Testing…",
     "test": "Test",
     "saving": "Saving…",
-    "add": "Add"
+    "add": "Add",
+    "website": "Company website (optional)",
+    "websiteHint": "For its logo, e.g. acme.com. If it posts its jobs on its own domain, the app takes it from there."
   },
   "row": {
     "paused": "Paused",
@@ -55,7 +57,14 @@
     "running": "Running…",
     "run": "Run now",
     "pause": "Pause",
-    "resume": "Resume"
+    "resume": "Resume",
+    "addWebsite": "Add its website for the logo",
+    "changeWebsite": "Change website",
+    "websiteLabel": "Website of {{name}}",
+    "websiteHint": "Only used for its logo. Leave it empty to remove it.",
+    "save": "Save",
+    "saving": "Saving…",
+    "cancel": "Cancel"
   },
   "empty": {
     "title": "You don't follow any company yet",

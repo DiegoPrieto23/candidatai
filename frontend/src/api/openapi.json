@@ -3997,13 +3997,136 @@
         }
       }
     },
+    "/sources/{source_id}/website": {
+      "post": {
+        "tags": [
+          "sources"
+        ],
+        "summary": "Set Source Website",
+        "description": "Pone o quita la web de una empresa objetivo, que la UI usa para su logo.",
+        "operationId": "set_source_website",
+        "parameters": [
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Source Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetWebsiteBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceView"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
     "/sources/{source_id}/browse": {
       "post": {
         "tags": [
           "sources"
         ],
         "summary": "Update Browse Settings",
-        "description": "Activa o desactiva la búsqueda con navegador de una plataforma, o cambia su prioridad o su\nacceso. Activar LinkedIn exige `confirm_risk: true`.",
+        "description": "Activa o desactiva la búsqueda con navegador de una plataforma, o cambia su prioridad, su\nacceso o cuántas ofertas abre en cada recorrido. Activar LinkedIn exige `confirm_risk: true`.",
         "operationId": "update_browse_settings",
         "parameters": [
           {
@@ -17003,6 +17126,19 @@
             ],
             "title": "Access"
           },
+          "max_offers": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 100.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Offers"
+          },
           "confirm_risk": {
             "type": "boolean",
             "title": "Confirm Risk",
@@ -27364,6 +27500,28 @@
         ],
         "title": "SetActiveBody"
       },
+      "SetWebsiteBody": {
+        "properties": {
+          "website": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Website"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "website"
+        ],
+        "title": "SetWebsiteBody"
+      },
       "SignOff": {
         "properties": {
           "es": {
@@ -27754,6 +27912,18 @@
             "maxItems": 50,
             "title": "Title Keywords",
             "default": []
+          },
+          "website": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Website"
           }
         },
         "additionalProperties": false,
@@ -28033,6 +28203,17 @@
                 "type": "null"
               }
             ]
+          },
+          "website": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Website"
           },
           "last_run_at": {
             "anyOf": [
