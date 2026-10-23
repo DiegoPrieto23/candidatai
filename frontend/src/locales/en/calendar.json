@@ -1,0 +1,31 @@
+{
+  "title": "Calendar",
+  "intro": "Your interviews, tests and deadlines, past ones included. Milestones are created on each job's page or when you update a card's status in Processes.",
+  "views": {
+    "label": "View",
+    "month": "Month",
+    "week": "Week",
+    "day": "Day",
+    "agenda": "Agenda"
+  },
+  "today": "Today",
+  "previous": "Previous",
+  "next": "Next",
+  "more_one": "{{count}} more",
+  "more_other": "{{count}} more",
+  "moreAria_one": "See {{count}} more milestone on {{day}}",
+  "moreAria_other": "See {{count}} more milestones on {{day}}",
+  "openDay": "See {{day}}",
+  "allDay": "All day",
+  "now": "Now",
+  "agendaEmpty": "Nothing in the {{count}} days from this date.",
+  "legend": "Legend",
+  "detail": {
+    "when": "When",
+    "where": "Where",
+    "status": "Status",
+    "stage": "Process",
+    "openJob": "Open the job",
+    "ics": "Add to my calendar (.ics)"
+  }
+}

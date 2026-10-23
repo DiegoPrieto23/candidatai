@@ -3,6 +3,7 @@
 CORS solo admite GET y POST: editar y borrar van por POST, como en `/sources`.
 """
 
+from datetime import date
 from typing import Annotated
 
 from fastapi import APIRouter, Query, Response, status
@@ -44,6 +45,12 @@ def list_upcoming(
 ) -> tracking.UpcomingList:
     """Entrevistas, pruebas y plazos desde hoy hasta dentro de `days` días."""
     return tracking.list_upcoming(session, days)
+
+
+@router.get("/calendar", operation_id="list_calendar")
+def list_calendar(session: SessionDep, start: date, end: date) -> tracking.CalendarRange:
+    """Página «Calendario»: todos los hitos y plazos del día `start` al `end` incluidos."""
+    return tracking.calendar_items(session, start, end)
 
 
 @router.get("/jobs/{job_id}/process", operation_id="get_job_process")

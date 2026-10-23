@@ -10,6 +10,10 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Calendario:** página nueva en «Procesos» con tus entrevistas, pruebas, plazos y otros hitos por
+  mes, semana, día o agenda, como en Google Calendar o Apple Calendar. Incluye los ya hechos o
+  cancelados y los plazos de las ofertas que aún no has enviado; al pulsar un hito ves sus datos, el
+  enlace a la oferta y su `.ics`.
 - **Una demo con todo:** `cai demo seed` trae también lo que dejarían la candidata y su agente
   (carta, respuestas de screening, mensajes, dosieres de empresa, plan y repaso de entrevistas,
   oferta recibida, correos en «Respuestas», huecos en «Skills», un encargo, contexto y una muestra
@@ -82,6 +86,8 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   experiencia»**: tu agente propone, te pregunta los números que falten y solo escribe con tu OK.
 
 ### Cambiado
+- «Procesos»: la tabla «Ofertas recibidas» solo aparece cuando tienes dos o más ofertas que
+  comparar (con una, repetía la ficha) y va al final, tras «Próximos 7 días».
 - En macOS y Linux, cancelar una ejecución en segundo plano o cerrar `cai start` para también lo que
   lanzó el agente, y al arrancar el worker se paran las que quedaron huérfanas. LibreOffice se busca
   también en las rutas de macOS y Linux (no en Flatpak ni Snap, que no pueden convertir los

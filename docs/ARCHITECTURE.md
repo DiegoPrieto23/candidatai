@@ -69,6 +69,7 @@ La app nunca llama a un modelo y no depende de ningún proveedor.
 | `GET /templates/default`, `POST /templates/{id}/default` | Plantilla por defecto del perfil vigente; fijarla edita solo esa clave de `data/profile.yaml` (con ruamel.yaml, conserva comentarios) e importa la versión nueva |
 | `GET /board` | Kanban (fase 10): tarjetas de `approved` a `closed` (las cerradas, solo las que llegaron a aprobarse; las 50 más recientes) y los movimientos posibles (eventos del usuario por etapa de origen y destino) |
 | `GET /followups`, `GET /upcoming?days=` | Seguimientos vencidos y próximos hitos (como `list_followups_due` y `list_upcoming`) |
+| `GET /calendar?start=&end=` | Página «Calendario»: todos los hitos (también hechos, cancelados y de procesos cerrados) y los plazos de las ofertas sin enviar, entre dos días incluidos. Solo para la UI: sin herramienta MCP |
 | `GET /stats/funnel?since=` | Página «Embudo» (fase 10.2): lo mismo que `get_funnel_stats` |
 | `GET /stats/calibration?since=&min_cases=` | Sección «¿Acierta el score?» del Embudo (fase 20): lo mismo que `get_calibration` |
 | `POST /jobs/{id}/check-open`, `POST /jobs/{id}/still-open` | ¿Sigue abierta? (fase 16): comprueba ahora (`{force}`; si la última es reciente, la devuelve) y «Sigue abierta» (quita el aviso). Solo desde la UI (`require_ui`); descartar va por `POST /jobs/{id}/events` con el motivo `closed` |

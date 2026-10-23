@@ -353,6 +353,8 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
 - **Procesos:** kanban por etapas. Una tarjeta solo cambia de columna registrando lo que pasó
   (respuesta, entrevista, prueba, oferta, rechazo). Entrevistas y pruebas crean un hito con fecha,
   exportable a tu calendario (`.ics`).
+- **Calendario:** todos tus hitos (entrevistas, pruebas, plazos y otros, también los pasados) por
+  mes, semana, día o agenda. Pulsa uno para ver sus datos e ir a la oferta.
 - **Seguimientos:** te avisa de las candidaturas sin respuesta; `draft-follow-up` deja los
   borradores (máximo 2 por candidatura) y el de agradecimiento tras una entrevista. Los envías tú.
 - **Respuestas:** con IMAP configurado, la app lee los correos de las empresas de tus procesos;
@@ -372,7 +374,7 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
 - `debrief-interview 42`: cuentas cómo fue; guarda notas y próximos pasos y propone historias STAR
   nuevas para tu perfil (con tu OK).
 - **Ofertas recibidas:** las anotas en la ficha y las comparas en «Procesos → Ofertas recibidas»
-  con tu mínimo y con el rango publicado. `prepare-negotiation 42` prepara argumentos y guion sin
+  (aparece con dos o más) con tu mínimo y con el rango publicado. `prepare-negotiation 42` prepara argumentos y guion sin
   proponer cifras.
 
 ## 11. El agente desde la UI

@@ -356,6 +356,8 @@ The worker runs the automatic sources every day at `connectors.daily_at`
 - **Processes:** a kanban by stage. A card only changes column by recording what
   happened (reply, interview, test, offer, rejection). Interviews and tests create a dated
   milestone you can export to your calendar (`.ics`).
+- **Calendar:** all your milestones (interviews, tests, deadlines and others, past ones included)
+  by month, week, day or agenda. Click one to see its details and open the job.
 - **Follow-ups:** it reminds you of applications without a reply; `draft-follow-up` leaves
   the drafts (max. 2 per application) and the thank-you note after an interview. You send them.
 - **Replies:** with IMAP set up, the app reads emails from the companies in your
@@ -376,7 +378,7 @@ The worker runs the automatic sources every day at `connectors.daily_at`
 - `debrief-interview 42`: you tell it how it went; it saves notes and next steps and proposes new
   STAR stories for your profile (with your OK).
 - **Received offers:** you record them on the job page and compare them in **Processes → Offers
-  received** against your minimum and the advertised range. `prepare-negotiation 42` prepares
+  received** (shown once you have two or more) against your minimum and the advertised range. `prepare-negotiation 42` prepares
   arguments and a script without proposing figures.
 
 ## 11. The agent from the UI

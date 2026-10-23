@@ -361,8 +361,6 @@ export function ProcessesPage() {
         <Board columns={board.data.columns} moves={board.data.moves} />
       )}
 
-      <ReceivedOffersComparison />
-
       <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <section className="rounded-xl border bg-card p-5 sm:p-6" aria-label={t('next7')}>
           <h2 className="mb-3 font-medium">{t('next7')}</h2>
@@ -378,6 +376,8 @@ export function ProcessesPage() {
           <CalendarHelp />
         </div>
       </div>
+
+      <ReceivedOffersComparison />
     </div>
   )
 }

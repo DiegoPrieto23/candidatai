@@ -48,6 +48,7 @@ describe('Barra lateral (fase 23.3)', () => {
       'Por revisar',
       'Alertas',
       'Procesos',
+      'Calendario',
       'Respuestas',
       'Embudo',
       'Skills',

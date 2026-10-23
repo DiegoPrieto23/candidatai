@@ -137,6 +137,19 @@ def test_followups_and_upcoming(client: TestClient) -> None:
     assert client.get("/upcoming", params={"days": 0}).status_code == 422
 
 
+def test_calendar_range(client: TestClient) -> None:
+    job_id = _job(client)
+    _event(client, job_id, type="applied_manually")
+    client.post(f"/jobs/{job_id}/milestones", json={"kind": "interview", "starts_at": _soon(1)})
+    today = datetime.now(UTC).date()
+    start, end = (today - timedelta(days=1)).isoformat(), (today + timedelta(days=5)).isoformat()
+    params = {"start": start, "end": end}
+    out = client.get("/calendar", params=params).json()
+    assert [(i["kind"], i["status"]) for i in out["items"]] == [("interview", "scheduled")]
+    assert client.get("/calendar", params={"start": end, "end": start}).status_code == 422
+    assert client.get("/calendar", params={"start": "ayer", "end": end}).status_code == 422
+
+
 def test_calendar_endpoints(client: TestClient) -> None:
     job_id = _job(client, company="Beta, S.L.")
     _event(client, job_id, type="applied_manually")

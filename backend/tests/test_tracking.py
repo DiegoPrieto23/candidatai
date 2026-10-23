@@ -229,6 +229,40 @@ def test_upcoming_window_and_application_deadlines(session: Session, job_at) -> 
         tracking.list_upcoming(session, days=0)
 
 
+def test_calendar_includes_past_done_cancelled_and_closed(session: Session, job_at) -> None:
+    applied = job_at(Stage.APPLIED)
+    past = process.create_milestone(session, applied.id, interview(starts_at=_at(-3)))
+    process.set_milestone_status(session, past.id, process.MilestoneStatusChange(status="done"))
+    cancelled = process.create_milestone(
+        session, applied.id, process.MilestoneCreate(kind="other", starts_at=_at(4))
+    )
+    process.set_milestone_status(
+        session, cancelled.id, process.MilestoneStatusChange(status="cancelled")
+    )
+    process.create_milestone(  # fuera del rango
+        session, applied.id, process.MilestoneCreate(kind="other", starts_at=_at(20))
+    )
+    closed = job_at(Stage.CLOSED)
+    closed_one = process.create_milestone(
+        session, closed.id, process.MilestoneCreate(kind="other", starts_at=_at(1))
+    )
+    approved = job_at(Stage.APPROVED)
+    _extraction(session, approved.id, date(2026, 9, 30))  # el último día del rango cuenta
+
+    out = tracking.calendar_items(session, date(2026, 9, 14), date(2026, 9, 30))
+    assert [(i.milestone_id, i.status) for i in out.items] == [
+        (past.id, "done"),
+        (closed_one.id, "scheduled"),
+        (cancelled.id, "cancelled"),
+        (None, "scheduled"),
+    ]
+    assert out.items[-1].kind == "application_deadline"
+    with pytest.raises(ValueError, match="`end`"):
+        tracking.calendar_items(session, date(2026, 9, 2), date(2026, 9, 1))
+    with pytest.raises(ValueError, match="rango"):
+        tracking.calendar_items(session, date(2026, 1, 1), date(2027, 1, 1))
+
+
 # --- Kanban ---------------------------------------------------------------------------------
 
 

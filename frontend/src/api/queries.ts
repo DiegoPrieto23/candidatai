@@ -22,6 +22,8 @@ export const keys = {
   followups: ['followups'] as const,
   upcoming: (days: number) => ['upcoming', days] as const,
   allUpcoming: ['upcoming'] as const,
+  calendar: (start: string, end: string) => ['calendar', start, end] as const,
+  allCalendar: ['calendar'] as const,
   process: (id: number) => ['process', id] as const,
   /** Bajo `cv`: lo que invalida el CV (render, selección) invalida también el paquete. */
   package: (id: number) => ['cv', id, 'package'] as const,
@@ -519,12 +521,13 @@ export function usePollAlerts() {
 
 type Client = ReturnType<typeof useQueryClient>
 
-/** Lo que cambia cuando se mueve un proceso: tablero, seguimientos, próximos y su ficha. */
+/** Lo que cambia cuando se mueve un proceso: tablero, seguimientos, próximos, calendario y su ficha. */
 function invalidateTracking(client: Client, jobId?: number) {
   return [
     client.invalidateQueries({ queryKey: keys.board }),
     client.invalidateQueries({ queryKey: keys.followups }),
     client.invalidateQueries({ queryKey: keys.allUpcoming }),
+    client.invalidateQueries({ queryKey: keys.allCalendar }),
     ...(jobId
       ? [
           client.invalidateQueries({ queryKey: keys.process(jobId) }),
@@ -550,6 +553,15 @@ export function useUpcoming(days = 7) {
   return useQuery({
     queryKey: keys.upcoming(days),
     queryFn: () => unwrap(api.GET('/upcoming', { params: { query: { days } } })),
+  })
+}
+
+/** Página «Calendario»: hitos y plazos de `start` a `end` (`YYYY-MM-DD`, incluidos). */
+export function useCalendar(start: string, end: string) {
+  return useQuery({
+    queryKey: keys.calendar(start, end),
+    queryFn: () => unwrap(api.GET('/calendar', { params: { query: { start, end } } })),
+    placeholderData: keepPreviousData,
   })
 }
 
