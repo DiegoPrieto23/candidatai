@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Query, status
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 
-from app.api.deps import EmptyBody, SessionDep, require_ui
+from app.api.deps import EmptyBody, SessionDep, require_ui, require_ui_read
 from app.services import agent_costs, events, ingest, jobs, liveness
 from app.services.matching import service as matching
 from app.services.pipeline import EventType, Stage
@@ -83,6 +83,16 @@ def get_job_costs(session: SessionDep, job_id: int) -> agent_costs.JobCost:
 def get_job_match(session: SessionDep, job_id: int) -> matching.MatchView:
     """Filtros duros, score y desglose vigentes (se recalculan si estaban desfasados)."""
     return matching.get_match(session, job_id)
+
+
+@router.get(
+    "/{job_id}/salary-gap",
+    operation_id="get_job_salary_gap",
+    dependencies=[Depends(require_ui_read)],
+)
+def get_job_salary_gap(session: SessionDep, job_id: int) -> matching.SalaryGapView:
+    """Cuánto queda el sueldo publicado por debajo de tu mínimo. Solo la UI (ADR-046)."""
+    return matching.salary_gap(session, job_id)
 
 
 @router.post("/url", operation_id="add_job_from_url", status_code=status.HTTP_201_CREATED)

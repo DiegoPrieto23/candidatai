@@ -718,6 +718,8 @@ contract_type: permanent|fixed_term|freelance|unknown | null   # temporal, por o
 hiring_entity: str | null              # quien contrata si el texto lo nombra (con agencia, el cliente)
 is_agency: bool | null                 # la publica una agencia, consultora de selección, ETT o headhunter
 mentions_ai_screening: bool | null     # IA o test automático antes de hablar con una persona
+# Fase 27.5 (opcional, como los anteriores):
+employer_kind: direct|consultancy|agency|unknown | null   # para sí, te cede a un cliente, selección/ETT
 ```
 Regla: lo que no está en el texto es `null`/`unknown`. No se infiere.
 Validación: todos los campos son obligatorios salvo `injection_excerpt` (por defecto `null`, y solo

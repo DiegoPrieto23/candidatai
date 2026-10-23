@@ -106,6 +106,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/jobs/{job_id}/salary-gap": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Job Salary Gap
+         * @description Cuánto queda el sueldo publicado por debajo de tu mínimo. Solo la UI (ADR-046).
+         */
+        get: operations["get_job_salary_gap"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/jobs/url": {
         parameters: {
             query?: never;
@@ -2076,6 +2096,30 @@ export interface paths {
          *     cambió; `referenced` si se borra lo que cita una historia STAR.
          */
         put: operations["save_profile_section"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/profile/salary-floor": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Salary Floor
+         * @description Tu sueldo mínimo (`private.salary_floor_eur`). Solo la UI: el agente nunca ve la cifra.
+         */
+        get: operations["get_salary_floor"];
+        /**
+         * Save Salary Floor
+         * @description Guarda el sueldo mínimo en `private` (sin diff), crea la versión y recalcula los filtros.
+         */
+        put: operations["save_salary_floor"];
         post?: never;
         delete?: never;
         options?: never;
@@ -4100,6 +4144,11 @@ export interface components {
             profile_version_id: number | null;
             /** Undo Available */
             undo_available: number;
+            /**
+             * Policy Discard Title Keywords
+             * @default []
+             */
+            policy_discard_title_keywords: string[];
         };
         /**
          * EffectiveAction
@@ -4283,7 +4332,7 @@ export interface components {
              * Filter
              * @enum {string}
              */
-            filter: "seniority" | "years" | "remote_mode" | "location" | "language" | "title_keyword" | "signal";
+            filter: "seniority" | "years" | "remote_mode" | "location" | "language" | "title_keyword" | "signal" | "salary" | "contract" | "employer_kind";
             /** Reason */
             reason: string;
         };
@@ -4684,6 +4733,8 @@ export interface components {
             is_agency?: boolean | null;
             /** Mentions Ai Screening */
             mentions_ai_screening?: boolean | null;
+            /** Employer Kind */
+            employer_kind?: ("direct" | "consultancy" | "agency" | "unknown") | null;
         };
         /** JobNetwork */
         JobNetwork: {
@@ -6661,6 +6712,52 @@ export interface components {
             /** Period */
             period?: ("year" | "month" | "hour") | null;
         };
+        /**
+         * SalaryFloor
+         * @description `private.salary_floor_eur` (bruto anual en euros) para la UI. Nunca sale hacia el agente.
+         */
+        SalaryFloor: {
+            /** Salary Floor Eur */
+            salary_floor_eur: number | null;
+            /** File Hash */
+            file_hash: string | null;
+        };
+        /** SalaryFloorBody */
+        SalaryFloorBody: {
+            /**
+             * File Hash
+             * @description El `file_hash` que leyó la UI.
+             */
+            file_hash: string | null;
+            /**
+             * Salary Floor Eur
+             * @description Bruto anual en euros; `null` lo quita.
+             */
+            salary_floor_eur: number | null;
+        };
+        /**
+         * SalaryFloorResult
+         * @description Sin diff: la cifra no se enseña ni en el historial (ADR-046).
+         */
+        SalaryFloorResult: {
+            /** Changed */
+            changed: boolean;
+            /** File Hash */
+            file_hash: string;
+            /** Profile Version Id */
+            profile_version_id: number | null;
+            /** Rescore Queued */
+            rescore_queued: boolean;
+        };
+        /**
+         * SalaryGapView
+         * @description Solo para la UI (ADR-046): cuánto queda el sueldo publicado por debajo de tu mínimo. No va
+         *     en `MatchView`, que lee el agente.
+         */
+        SalaryGapView: {
+            /** Gap Eur */
+            gap_eur: number | null;
+        };
         /** SalaryRangeSignal */
         SalaryRangeSignal: {
             /** Min */
@@ -7884,6 +7981,100 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MatchView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_job_salary_gap: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SalaryGapView"];
                 };
             };
             /** @description Unauthorized */
@@ -18070,6 +18261,194 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SaveResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_salary_floor: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SalaryFloor"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    save_salary_floor: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SalaryFloorBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SalaryFloorResult"];
                 };
             };
             /** @description Unauthorized */

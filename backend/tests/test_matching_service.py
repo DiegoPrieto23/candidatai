@@ -158,9 +158,10 @@ def test_get_match_computes_and_reuses() -> None:
         assert scored.payload == {"match_id": view.match_id, "score": view.score, "passed": True}
 
 
-def test_get_match_brings_doubtful_signals_without_changing_the_score() -> None:
-    # Fase 25.3: `assess-fit` las ve en `get_match` y las cita en los riesgos.
-    import_demo_profile()
+def test_get_match_brings_doubtful_signals_without_changing_the_score(tmp_path: Path) -> None:
+    # Fase 25.3: `assess-fit` las ve en `get_match` y las cita en los riesgos. Sin los filtros de
+    # contrato y tipo de empresa de la 27.5, que el perfil demo trae.
+    import_demo_profile(tmp_path, contract_types=[], excluded_employer_kinds=[])
     plain, flagged = add_job(), add_job(company="Hays")
     extract(plain)
     extract(flagged, contract_type="fixed_term")
@@ -177,7 +178,7 @@ def test_exclude_signals_in_the_profile_closes_the_job(tmp_path: Path) -> None:
     job_id = add_job()
     result = extract(job_id, contract_type="fixed_term")
     assert not result.hard_filters.passed
-    assert [f.filter for f in result.hard_filters.failures] == ["signal"]
+    assert [f.filter for f in result.hard_filters.failures] == ["contract"]
     assert "hard_filter_failed" in event_types(job_id)
 
 

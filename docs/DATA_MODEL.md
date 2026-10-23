@@ -78,7 +78,7 @@ Una fila por extracción; la vigente es la más reciente.
 | Columna | Tipo | Notas |
 |---|---|---|
 | id | int PK | |
-| data | JSON | Validado con `CandidateProfile`, importado desde `data/profile.yaml` |
+| data | JSON | Validado con `CandidateProfile`, importado desde `data/profile.yaml`. Desde la fase 27.5, `preferences` admite `min_years_required`, `discard_title_keywords`, `contract_types` (`permanent`, `fixed_term`, `freelance`), `employment_types` (`full_time`, `part_time`, `internship`) y `excluded_employer_kinds` (`consultancy`, `agency`), que vacíos no se vuelcan (mismo hash); `private.salary_floor_eur` es un entero > 0 o `null`. La extracción gana `employer_kind` (`direct`, `consultancy`, `agency`, `unknown`), opcional |
 | content_hash | str | sha256 del JSON canónico. Importar un contenido igual al de la versión vigente no crea versión; volver a uno anterior sí (índice, no único) |
 | created_at | datetime | |
 
@@ -589,7 +589,7 @@ ADR-028). `risk_flags` sigue significando solo eso. Las escribe el código, nunc
 
 Las cinco de la fase 25.3 son **señales de oferta dudosa**: no cambian el score ni los filtros
 duros, salvo `employer_hidden` y `fixed_term` si están en `preferences.exclude_signals` del perfil
-(filtro `signal`). `cai jobs signals --recompute` las recalcula todas. Sin migración: es la misma
+(filtro `signal`; `fixed_term`, desde la fase 27.5, en el filtro `contract`). `cai jobs signals --recompute` las recalcula todas. Sin migración: es la misma
 columna JSON. Las extracciones anteriores a la fase no traen los campos nuevos, así que solo
 cuentan las señales del nombre, el texto, el salario y las publicaciones.
 

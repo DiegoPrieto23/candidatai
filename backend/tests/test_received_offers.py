@@ -167,9 +167,9 @@ def test_compare_skips_what_is_not_comparable(session: Session) -> None:
     assert any("euros" in r for r in offer.remarks)
 
 
-@pytest.mark.parametrize("floor", [None, "cuarenta mil", True, -5])
-def test_invalid_floor_is_ignored(session: Session, floor: object) -> None:
-    _profile(session, floor)
+def test_null_floor_is_ignored(session: Session) -> None:
+    # Un mínimo no válido ya no llega aquí: el perfil no valida (fase 27.5, test_profile_schema).
+    _profile(session, None)
     assert received_offers.compare(session).floor_eur is None
 
 

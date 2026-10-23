@@ -1279,3 +1279,43 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   - Los errores de validación nunca repiten un campo `password` ni una entrada que lo contenga
     (`core/validation.py`, `SECRET_FIELDS`): Pydantic da la entrada sin envolver aunque el campo
     sea `SecretStr`.
+
+## ADR-046 · Sueldo mínimo y otros filtros de búsqueda en el perfil (extiende la 015 y la 028)
+- **Contexto:** «Mi perfil → Búsqueda» solo filtraba por puesto, nivel, máximo de años, modalidad,
+  zona e idioma. Faltaban un mínimo de años, el sueldo, el tipo de contrato y de jornada, el tipo
+  de empresa y las palabras que descartan (que solo existían en `config/policies.yaml`).
+  `private.salary_floor_eur` ya existía, pero solo para comparar una oferta recibida.
+- **Decisión:**
+  - **Sueldo mínimo como filtro duro y privado.** Sigue en `private.salary_floor_eur` (bruto
+    anual en euros, entero > 0). Descarta solo si la oferta **publica** un sueldo en EUR, por año
+    o por mes, y su máximo (o su mínimo, si solo da uno) queda por debajo. Un sueldo mensual se
+    pasa a anual **×12, no ×14**: es lo que hace la comparación de ofertas recibidas y no sabemos
+    cuántas pagas tiene la oferta; ×12 es la cuenta prudente (descarta menos). Sin sueldo, en
+    otra moneda o por horas, no descarta. El motivo que guarda el filtro (y que lee el agente en
+    `get_match`) es genérico, «por debajo de tu mínimo salarial», **sin cifras**: el código filtra
+    y el agente no ve la cifra. Solo la API de la UI (`require_ui_read`) devuelve la diferencia.
+    La cifra se lee y escribe en `GET`/`PUT /profile/salary-floor` (solo UI); el guardado no
+    devuelve diff y el historial sigue enseñando `private` como `<oculto>`.
+  - **Mínimo de años** (`preferences.min_years_required`): descarta si la oferta pide menos años
+    que el mínimo menos `years_tolerance`. Debe ser ≤ `max_years_required`.
+  - **Contrato y jornada** (`contract_types`, `employment_types`): los que aceptas; vacía = sin
+    filtro; `unknown` pasa. `employment_type: contract` no dice la jornada y también pasa.
+    `exclude_signals: [fixed_term]` equivale a no aceptar `fixed_term`: los dos se evalúan en el
+    filtro `contract` y la UI guarda solo la forma `contract_types`.
+  - **Tipo de empresa** (`excluded_employer_kinds`): nuevo campo opcional de la extracción,
+    `employer_kind` (`direct`, `consultancy`, `agency`, `unknown`). `is_agency: true` cuenta como
+    `agency`; `unknown` (o sin dato) no descarta.
+  - **Palabras que descartan** (`preferences.discard_title_keywords`): se suman a las de
+    `policies.yaml`, en los filtros duros y en el filtro previo de las fuentes.
+  - Los campos nuevos, vacíos, no se vuelcan: un perfil que no los usa tiene el mismo YAML, el
+    mismo hash y filtra igual.
+- **Alternativas descartadas:** ×14 pagas (descartaría ofertas válidas con 12 pagas); dar la cifra
+  al agente para que filtre él (rompe la privacidad de `private`); un campo de sueldo en
+  `preferences` (saldría por `get_profile`).
+- **Consecuencias:** el agente sabe que una oferta cayó por sueldo, pero no por cuánto. Las
+  extracciones antiguas no tienen `employer_kind` y no se filtran por tipo de empresa hasta que se
+  vuelvan a extraer. Viendo qué ofertas caen por `salary`, un agente podría acotar el mínimo por
+  sondeo: se acepta, porque nunca recibe la cifra ni la diferencia. Los descartes por
+  `exclude_signals: [fixed_term]` anteriores a la fase siguen contados como `signal` en el embudo;
+  los nuevos, como `contract`. Un `employer_kind` concreto manda sobre `is_agency` (una consultora
+  con `is_agency: true` cuenta como `consultancy`).

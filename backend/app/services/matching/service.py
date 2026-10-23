@@ -246,6 +246,20 @@ def get_match(session: Session, job_id: int) -> MatchView:
     return view.model_copy(update={"signals": notes})
 
 
+class SalaryGapView(BaseModel):
+    """Solo para la UI (ADR-046): cuánto queda el sueldo publicado por debajo de tu mínimo. No va
+    en `MatchView`, que lee el agente."""
+
+    gap_eur: int | None  # `None` si no hay mínimo, sueldo comparable o no queda por debajo
+
+
+def salary_gap(session: Session, job_id: int) -> SalaryGapView:
+    _job(session, job_id)
+    ext = JobExtraction.model_validate(_latest_extraction(session, job_id).data)
+    floor = hard_filters.salary_floor(profiles.current(session).profile)
+    return SalaryGapView(gap_eur=hard_filters.salary_gap(ext, floor))
+
+
 def save_fit_assessment(
     session: Session, job_id: int, assessment: FitAssessment, agent_name: str | None = None
 ) -> SaveAssessmentResult:

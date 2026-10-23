@@ -11,7 +11,12 @@ from dataclasses import dataclass
 
 from app.core.policies import get_policies
 from app.schemas.profile import Preferences
-from app.services.matching.hard_filters import SENIORITY_LABEL, SENIORITY_ORDER, location_matches
+from app.services.matching.hard_filters import (
+    SENIORITY_LABEL,
+    SENIORITY_ORDER,
+    discard_keywords,
+    location_matches,
+)
 from app.services.matching.scorer import role_similarity
 from app.services.normalize import (
     fold,
@@ -52,7 +57,9 @@ class Prefilter:
     def __init__(self, preferences: Preferences | None, extra_title_keywords: list[str]) -> None:
         self.preferences = preferences
         self.extra = [k for k in extra_title_keywords if fold(k)]
-        self.discard = [k for k in get_policies().hard_filters.discard_title_keywords if fold(k)]
+        # Las del perfil y las de `policies.yaml` (fase 27.5), como en los filtros duros.
+        own = preferences.discard_title_keywords if preferences is not None else []
+        self.discard = discard_keywords(own, get_policies().hard_filters)
 
     @property
     def active(self) -> bool:

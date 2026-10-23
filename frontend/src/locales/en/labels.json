@@ -141,7 +141,10 @@
     "location": "Location",
     "language": "Language",
     "title_keyword": "Title keywords",
-    "signal": "Doubtful-job signals you excluded"
+    "signal": "Doubtful-job signals you excluded",
+    "salary": "Below your salary minimum",
+    "contract": "Contract or working-time type",
+    "employer_kind": "Employer type"
   },
   "sourceKind": {
     "manual_url": "Link",

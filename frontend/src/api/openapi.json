@@ -636,6 +636,119 @@
         }
       }
     },
+    "/jobs/{job_id}/salary-gap": {
+      "get": {
+        "tags": [
+          "jobs"
+        ],
+        "summary": "Get Job Salary Gap",
+        "description": "Cuánto queda el sueldo publicado por debajo de tu mínimo. Solo la UI (ADR-046).",
+        "operationId": "get_job_salary_gap",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalaryGapView"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
     "/jobs/url": {
       "post": {
         "tags": [
@@ -12940,6 +13053,218 @@
         }
       }
     },
+    "/profile/salary-floor": {
+      "get": {
+        "tags": [
+          "profile"
+        ],
+        "summary": "Get Salary Floor",
+        "description": "Tu sueldo mínimo (`private.salary_floor_eur`). Solo la UI: el agente nunca ve la cifra.",
+        "operationId": "get_salary_floor",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalaryFloor"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "profile"
+        ],
+        "summary": "Save Salary Floor",
+        "description": "Guarda el sueldo mínimo en `private` (sin diff), crea la versión y recalcula los filtros.",
+        "operationId": "save_salary_floor",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SalaryFloorBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalaryFloorResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/profile/undo": {
       "post": {
         "tags": [
@@ -20177,6 +20502,14 @@
           "undo_available": {
             "type": "integer",
             "title": "Undo Available"
+          },
+          "policy_discard_title_keywords": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Policy Discard Title Keywords",
+            "default": []
           }
         },
         "type": "object",
@@ -20719,7 +21052,10 @@
               "location",
               "language",
               "title_keyword",
-              "signal"
+              "signal",
+              "salary",
+              "contract",
+              "employer_kind"
             ],
             "title": "Filter"
           },
@@ -21931,6 +22267,23 @@
               }
             ],
             "title": "Mentions Ai Screening"
+          },
+          "employer_kind": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "direct",
+                  "consultancy",
+                  "agency",
+                  "unknown"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Employer Kind"
           }
         },
         "additionalProperties": false,
@@ -28106,6 +28459,133 @@
         "additionalProperties": false,
         "type": "object",
         "title": "Salary"
+      },
+      "SalaryFloor": {
+        "properties": {
+          "salary_floor_eur": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Salary Floor Eur"
+          },
+          "file_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File Hash"
+          }
+        },
+        "type": "object",
+        "required": [
+          "salary_floor_eur",
+          "file_hash"
+        ],
+        "title": "SalaryFloor",
+        "description": "`private.salary_floor_eur` (bruto anual en euros) para la UI. Nunca sale hacia el agente."
+      },
+      "SalaryFloorBody": {
+        "properties": {
+          "file_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File Hash",
+            "description": "El `file_hash` que leyó la UI."
+          },
+          "salary_floor_eur": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 10000000.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Salary Floor Eur",
+            "description": "Bruto anual en euros; `null` lo quita."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "file_hash",
+          "salary_floor_eur"
+        ],
+        "title": "SalaryFloorBody"
+      },
+      "SalaryFloorResult": {
+        "properties": {
+          "changed": {
+            "type": "boolean",
+            "title": "Changed"
+          },
+          "file_hash": {
+            "type": "string",
+            "title": "File Hash"
+          },
+          "profile_version_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Version Id"
+          },
+          "rescore_queued": {
+            "type": "boolean",
+            "title": "Rescore Queued"
+          }
+        },
+        "type": "object",
+        "required": [
+          "changed",
+          "file_hash",
+          "profile_version_id",
+          "rescore_queued"
+        ],
+        "title": "SalaryFloorResult",
+        "description": "Sin diff: la cifra no se enseña ni en el historial (ADR-046)."
+      },
+      "SalaryGapView": {
+        "properties": {
+          "gap_eur": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gap Eur"
+          }
+        },
+        "type": "object",
+        "required": [
+          "gap_eur"
+        ],
+        "title": "SalaryGapView",
+        "description": "Solo para la UI (ADR-046): cuánto queda el sueldo publicado por debajo de tu mínimo. No va\nen `MatchView`, que lee el agente."
       },
       "SalaryRangeSignal": {
         "properties": {

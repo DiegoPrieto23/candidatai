@@ -246,8 +246,11 @@ photo, documents and emails. Keys go in `.env`, also outside git.
 | **Source documents** (old CVs, degrees, references) | `data/documentos/` | `update-profile` can read them, confirming before writing |
 | **What you've done in public** (repositories, portfolio, Kaggle, Scholar, verifiable certifications) | `data/profile.yaml` | The `expand` skill, or "Expand profile from my links" in "My profile". Use it **right after creating your profile**: it proposes projects, skills (with no level: you set it), achievements with the numbers the source gives and certifications, each with its link in `source`, and writes only what you accept. Public web only: no LinkedIn, nothing behind a login. Needs an agent with web search |
 
-Your salary minimum goes in the profile's `private.salary_floor_eur`: the app uses it to compare
-offers, but the agent never receives it.
+Your salary minimum goes in My profile → Search (or in the profile's `private.salary_floor_eur`):
+the app discards postings that publish a salary below it and uses it to compare the offers you
+receive, but your agent never sees the figure; it only learns that a posting fell "below your
+salary minimum". In Search you also set minimum and maximum years, words that discard a
+posting, contract and working-time types, and whether to exclude consultancies or recruiters.
 
 In My profile, every achievement and story has **Improve with my agent**: your agent proposes a
 clearer version, asks you for any missing numbers (it never makes them up) and only writes with

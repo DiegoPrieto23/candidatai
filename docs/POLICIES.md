@@ -66,11 +66,14 @@ Los aplica el código al guardar una extracción. Si alguno falla, la oferta se 
 | Filtro | Falla si… |
 |---|---|
 | Seniority | No está en `seniority_target`: la lista de todos los niveles que acepta el candidato, hacia arriba y hacia abajo (`unknown` pasa) |
-| Años | `years_experience_min` > `max_years_required` + `years_tolerance` |
+| Años | `years_experience_min` > `max_years_required` + `years_tolerance`, o < `min_years_required` − `years_tolerance` (fase 27.5) |
 | Modalidad | No está en `remote_modes` (`unknown` pasa si `unknown_remote_mode_passes`) |
 | Ubicación | No es remota y ninguna ubicación es preferida, ni permitida siendo híbrida (o desconocida con la política anterior), o está descartada. Sin `preferred` ni `allowed`, vale cualquiera no descartada. Se compara por palabras completas, sin tildes |
 | Idiomas | Pide un idioma que no está en `languages` ni en `languages_for_work`, o un nivel MCER superior al del perfil («Nativo» ≥ C2; un nivel que no se entiende no descarta) |
-| Palabras de descarte | El título contiene alguna de `discard_title_keywords` (palabra completa, sin tildes) |
+| Palabras de descarte | El título contiene alguna de `preferences.discard_title_keywords` o de `hard_filters.discard_title_keywords` de `policies.yaml` (se suman; palabra completa, sin tildes) |
+| Sueldo (`salary`) | La oferta publica un sueldo en EUR, por año o por mes (×12), y su máximo (o su mínimo, si solo da uno) queda por debajo de `private.salary_floor_eur`. Sin sueldo, en otra moneda o por horas, pasa. El motivo no lleva cifras: solo la UI ve la diferencia (ADR-046) |
+| Contrato (`contract`) | `contract_type` no está en `preferences.contract_types` (o es `fixed_term` con `exclude_signals: [fixed_term]`, que es lo mismo), o `employment_type` no está en `preferences.employment_types`. Lista vacía = sin filtro; `unknown` y `contract` (no dice la jornada) pasan |
+| Tipo de empresa (`employer_kind`) | El `employer_kind` de la extracción (o `agency` si `is_agency: true`) está en `preferences.excluded_employer_kinds` (`consultancy`, `agency`); `unknown` pasa |
 
 Al importar un perfil nuevo se recalcula todo y se cierran las ofertas en triaje que ya no pasan.
 Nunca se vuelve a cerrar por filtros una oferta que el usuario reabrió después de un
@@ -143,7 +146,7 @@ Una oferta puede encajar en el papel y aun así no merecer la pena. El código m
 
 - **Son información, no puntúan.** No cambian el score ni los filtros duros. Si quieres que
   `employer_hidden` o `fixed_term` descarten, ponlas en `preferences.exclude_signals` del perfil y
-  pasan a ser un filtro duro (`signal`).
+  pasan a ser un filtro duro (`signal`; `fixed_term`, desde la fase 27.5, en `contract`).
 - La UI las enseña en la bandeja, el triaje y la ficha, y `assess-fit` las cita en `risks`. Una
   señal que choca con un deal-breaker de `criterios.md` cuenta como ese deal-breaker (§1.5).
 - Las que dependen de la extracción (`fixed_term`, el `is_agency` de `employer_hidden`,

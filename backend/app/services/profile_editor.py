@@ -54,7 +54,7 @@ from sqlalchemy.orm import Session
 from app.core import policies
 from app.core.config import get_settings
 from app.models import Document, Job, ProfileEdit
-from app.schemas.profile import CandidateProfile
+from app.schemas.profile import SALARY_FLOOR_KEY, CandidateProfile
 from app.services import profile as profiles
 from app.services.profile import ProfileIssue, ProfileSection, ProfileValidationError
 
@@ -118,6 +118,8 @@ class EditableProfile(BaseModel):
     issues: list[ProfileIssue]  # el fichero no valida: se enseñan, pero se puede seguir editando
     profile_version_id: int | None  # la versión importada vigente
     undo_available: int  # copias en `profile-history/`
+    # Las de `config/policies.yaml`, que se suman a `preferences.discard_title_keywords`.
+    policy_discard_title_keywords: list[str] = []
 
 
 class SaveResult(BaseModel):
@@ -463,6 +465,7 @@ def get_editable(session: Session, path: Path | None = None) -> EditableProfile:
     except profiles.ProfileNotFoundError:
         version_id = None
     undo = len(_history())
+    policy_words = list(policies.get_policies().hard_filters.discard_title_keywords)
     if raw is None:
         return EditableProfile(
             exists=False,
@@ -471,6 +474,7 @@ def get_editable(session: Session, path: Path | None = None) -> EditableProfile:
             issues=[],
             profile_version_id=version_id,
             undo_available=undo,
+            policy_discard_title_keywords=policy_words,
         )
     data: Any = None
     issues: list[ProfileIssue] = []
@@ -490,6 +494,7 @@ def get_editable(session: Session, path: Path | None = None) -> EditableProfile:
         issues=issues,
         profile_version_id=version_id,
         undo_available=undo,
+        policy_discard_title_keywords=policy_words,
     )
 
 
@@ -642,4 +647,95 @@ def undo_last(session: Session, expected_hash: str | None, path: Path | None = N
         profile_version_id=imported.profile_version_id,
         version_created=imported.created,
         undo_available=len(_history()),
+    )
+
+
+# --- Sueldo mínimo (privado) -----------------------------------------------------------------
+
+
+class SalaryFloor(BaseModel):
+    """`private.salary_floor_eur` (bruto anual en euros) para la UI. Nunca sale hacia el agente."""
+
+    salary_floor_eur: int | None
+    file_hash: str | None
+
+
+class SalaryFloorResult(BaseModel):
+    """Sin diff: la cifra no se enseña ni en el historial (ADR-046)."""
+
+    changed: bool
+    file_hash: str
+    profile_version_id: int | None
+    rescore_queued: bool
+
+
+def get_salary_floor(path: Path | None = None) -> SalaryFloor:
+    path = path or profiles.default_path()
+    raw = _read(path)
+    if raw is None:
+        return SalaryFloor(salary_floor_eur=None, file_hash=None)
+    try:
+        data = pyyaml.safe_load(_text(raw))
+    except pyyaml.YAMLError:
+        data = None
+    private = data.get("private") if isinstance(data, dict) else None
+    value = private.get(SALARY_FLOOR_KEY) if isinstance(private, dict) else None
+    valid = isinstance(value, int) and not isinstance(value, bool) and value > 0
+    return SalaryFloor(salary_floor_eur=value if valid else None, file_hash=file_hash(raw))
+
+
+def save_salary_floor(
+    session: Session, value: int | None, expected_hash: str | None, path: Path | None = None
+) -> SalaryFloorResult:
+    """Escribe `private.salary_floor_eur` como un guardado de sección (conflicto, copia, versión y
+    recálculo), sin tocar el resto de `private`. `None` lo deja en `null`."""
+    path = path or profiles.default_path()
+    with _LOCK:
+        raw = _read(path)
+        if raw is None:
+            raise profiles.ProfileNotFoundError(
+                f"No existe {path}: crea tu perfil con el skill `update-profile` o `cai profile "
+                "init`."
+            )
+        current = file_hash(raw)
+        if expected_hash != current:
+            raise ProfileConflictError(current)
+        newline = "\r\n" if b"\r\n" in raw else "\n"
+        old_text = _text(raw)
+        yaml = round_trip_yaml()
+        data = yaml.load(old_text)
+        if not isinstance(data, CommentedMap):
+            raise ValueError("data/profile.yaml no es un objeto YAML: arréglalo en tu editor.")
+        private = data.get("private")
+        if not isinstance(private, CommentedMap):
+            if value is None:
+                return SalaryFloorResult(
+                    changed=False, file_hash=current, profile_version_id=None, rescore_queued=False
+                )
+            private = CommentedMap()
+            data["private"] = private
+        if value is None and SALARY_FLOOR_KEY not in private:
+            return SalaryFloorResult(
+                changed=False, file_hash=current, profile_version_id=None, rescore_queued=False
+            )
+        private[SALARY_FLOOR_KEY] = value
+        buffer = io.StringIO()
+        yaml.dump(data, buffer)
+        new_text = buffer.getvalue()
+        if new_text == old_text:
+            return SalaryFloorResult(
+                changed=False, file_hash=current, profile_version_id=None, rescore_queued=False
+            )
+        _validate(new_text, path)
+        out = new_text.replace("\n", newline)
+        atomic_write(path, out)
+        _backup(raw)
+        imported = profiles.import_profile(session, path)
+    after = file_hash(out.encode("utf-8"))
+    record_edit(session, "profile", "private", "save", current, after)
+    return SalaryFloorResult(
+        changed=True,
+        file_hash=after,
+        profile_version_id=imported.profile_version_id,
+        rescore_queued=imported.created,
     )

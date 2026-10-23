@@ -10,6 +10,14 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Más filtros de búsqueda en tu perfil:** sueldo mínimo (bruto anual en euros), años mínimos
+  que pide la oferta, palabras del título que la descartan, tipo de contrato (indefinido, temporal,
+  autónomo) y de jornada, y excluir consultoras o agencias de selección y ETT. Lo que la oferta no
+  dice no descarta. El sueldo mínimo es privado: la app descarta las ofertas que publican un sueldo
+  por debajo, pero tu agente nunca ve la cifra, solo que cayó «por debajo de tu mínimo salarial».
+  Si no usas nada de esto, todo filtra igual que antes.
+- **Tu agente distingue el tipo de empresa:** al extraer una oferta anota si contrata para sí, es
+  una consultora que te cede a un cliente o una agencia de selección o ETT.
 - **Varios buzones en Alertas:** «Añadir buzón» conecta tantas cuentas de correo como quieras
   (Gmail, Outlook, Yahoo, iCloud u otro servidor IMAP, siempre en solo lectura) o una carpeta de
   correos `.eml`. Un asistente con una pestaña por proveedor explica qué hacer en cada uno (con
@@ -123,6 +131,10 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   experiencia»**: tu agente propone, te pregunta los números que falten y solo escribe con tu OK.
 
 ### Cambiado
+- **Un sueldo mínimo mal escrito ya no se ignora en silencio:** `private.salary_floor_eur` tiene
+  que ser un número entero de euros mayor que 0 (o `null`); si no, «Mi perfil» te avisa al validar.
+- **El contrato temporal de `exclude_signals` se cuenta como «Tipo de contrato»:** sigue
+  descartando lo mismo, pero en el embudo aparece como filtro de contrato.
 - **Prioridades de plataforma sin empates:** en «Fuentes → Plataformas», cada plataforma tiene su
   propio puesto en el orden en que la recorre tu agente (1, 2, 3…), sin tope de 10. El selector
   dice qué plataforma ocupa cada puesto y, si eliges uno ocupado, las dos se intercambian («InfoJobs

@@ -242,8 +242,11 @@ documentos y correos. Las claves van en `.env`, también fuera de git.
 | **Documentos fuente** (CVs antiguos, títulos, referencias) | `data/documentos/` | `update-profile` los puede leer, confirmando antes de escribir |
 | **Lo que has hecho en público** (repositorios, portfolio, Kaggle, Scholar, certificaciones verificables) | `data/profile.yaml` | Skill `expand`, o «Ampliar perfil desde mis enlaces» en «Mi perfil». Úsalo **justo después de crear el perfil**: propone proyectos, skills (sin nivel: lo pones tú), logros con los números que da la fuente y certificaciones, cada uno con su enlace en `source`, y solo escribe lo que aceptes. Solo web pública: ni LinkedIn ni nada con login. Necesita un agente con búsqueda web |
 
-Tu mínimo salarial va en `private.salary_floor_eur` del perfil: la app lo usa para comparar
-ofertas, pero el agente nunca lo recibe.
+Tu mínimo salarial va en «Mi perfil → Búsqueda» (o en `private.salary_floor_eur` del perfil): la
+app descarta las ofertas que publican un sueldo por debajo y lo usa para comparar las ofertas
+recibidas, pero el agente nunca ve la cifra; solo sabe que una oferta cayó «por debajo de tu
+mínimo salarial». En «Búsqueda» también eliges años mínimo y máximo, palabras que descartan,
+tipo de contrato y jornada, y si excluyes consultoras o agencias de selección.
 
 **Dónde están tus datos y cómo copiarlos.** `uv run cai paths` (o `cai paths` en la carpeta de la
 app) dice qué carpeta usas. Con el instalador:

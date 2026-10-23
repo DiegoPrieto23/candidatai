@@ -26,6 +26,15 @@ class SaveSectionBody(BaseModel):
     dry_run: bool = False  # devuelve el diff sin escribir
 
 
+class SalaryFloorBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    file_hash: str | None = Field(description="El `file_hash` que leyó la UI.")
+    salary_floor_eur: int | None = Field(
+        gt=0, le=10_000_000, description="Bruto anual en euros; `null` lo quita."
+    )
+
+
 class UndoBody(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -56,6 +65,28 @@ def save_profile_section(
     return profile_editor.save_section(
         session, section, body.content, body.file_hash, dry_run=body.dry_run
     )
+
+
+@router.get(
+    "/profile/salary-floor",
+    operation_id="get_salary_floor",
+    dependencies=[Depends(require_ui_read)],
+)
+def get_salary_floor() -> profile_editor.SalaryFloor:
+    """Tu sueldo mínimo (`private.salary_floor_eur`). Solo la UI: el agente nunca ve la cifra."""
+    return profile_editor.get_salary_floor()
+
+
+@router.put(
+    "/profile/salary-floor",
+    operation_id="save_salary_floor",
+    dependencies=[Depends(require_ui)],
+)
+def save_salary_floor(
+    session: SessionDep, body: SalaryFloorBody
+) -> profile_editor.SalaryFloorResult:
+    """Guarda el sueldo mínimo en `private` (sin diff), crea la versión y recalcula los filtros."""
+    return profile_editor.save_salary_floor(session, body.salary_floor_eur, body.file_hash)
 
 
 @router.post("/profile/undo", operation_id="undo_profile", dependencies=[Depends(require_ui)])

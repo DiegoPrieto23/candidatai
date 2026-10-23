@@ -18,6 +18,12 @@ PROFILE_SCHEMA_VERSION = 1
 SkillLevel = Literal["F", "C+", "C", "B"]
 Seniority = Literal["intern", "junior", "mid", "senior", "lead"]
 RemoteMode = Literal["onsite", "hybrid", "remote"]
+# Fase 27.5: preferencias de contrato, jornada y tipo de empresa (los valores de la extracción,
+# sin `unknown`, que nunca descarta).
+ContractType = Literal["permanent", "fixed_term", "freelance"]
+EmploymentType = Literal["full_time", "part_time", "internship"]
+EmployerKind = Literal["consultancy", "agency"]
+SALARY_FLOOR_KEY = "salary_floor_eur"  # en `private`: bruto anual en euros
 
 _YEAR_MONTH = re.compile(r"^\d{4}-(0[1-9]|1[0-2])$")
 _ID = re.compile(r"^[a-z0-9][a-z0-9_-]*$")
@@ -327,6 +333,25 @@ class Preferences(_Strict):
     exclude_signals: list[Literal["employer_hidden", "fixed_term"]] = Field(
         default_factory=list, exclude_if=lambda value: not value
     )
+    # Fase 27.5 (ADR-046): más filtros duros. Vacíos no se vuelcan, como `exclude_signals`.
+    min_years_required: int | None = Field(
+        default=None, ge=0, le=40, exclude_if=lambda value: value is None
+    )
+    # Se suman a `hard_filters.discard_title_keywords` de `config/policies.yaml`.
+    discard_title_keywords: list[Text] = Field(
+        default_factory=list, exclude_if=lambda value: not value
+    )
+    # Los que aceptas; vacía = sin filtro. `fixed_term` en `exclude_signals` equivale a no
+    # aceptarlo aquí.
+    contract_types: list[ContractType] = Field(
+        default_factory=list, exclude_if=lambda value: not value
+    )
+    employment_types: list[EmploymentType] = Field(
+        default_factory=list, exclude_if=lambda value: not value
+    )
+    excluded_employer_kinds: list[EmployerKind] = Field(
+        default_factory=list, exclude_if=lambda value: not value
+    )
 
 
 class ConsistencyIssue(BaseModel):
@@ -386,10 +411,34 @@ class CandidateProfile(_Strict):
 
     @model_validator(mode="after")
     def _consistent(self) -> Self:
-        issues = [*self._duplicate_ids(), *self._undeclared_skills(), *self._broken_evidence()]
+        issues = [
+            *self._duplicate_ids(),
+            *self._undeclared_skills(),
+            *self._broken_evidence(),
+            *self._search_ranges(),
+        ]
         if issues:
             raise ProfileConsistencyError(issues)
         return self
+
+    def _search_ranges(self) -> Iterator[ConsistencyIssue]:
+        prefs = self.preferences
+        low, high = prefs.min_years_required, prefs.max_years_required
+        if low is not None and high is not None and low > high:
+            yield ConsistencyIssue(
+                loc=("preferences", "min_years_required"),
+                reason="El mínimo de años no puede ser mayor que el máximo.",
+                received=str(low),
+            )
+        floor = self.private.get(SALARY_FLOOR_KEY)
+        # `null` vale (sin mínimo). Sin `received`: la cifra es privada y el error puede llegar al
+        # agente.
+        valid = isinstance(floor, int) and not isinstance(floor, bool) and floor > 0
+        if floor is not None and not valid:
+            yield ConsistencyIssue(
+                loc=("private", SALARY_FLOOR_KEY),
+                reason="El sueldo mínimo es un número entero de euros mayor que 0.",
+            )
 
     def _duplicate_ids(self) -> Iterator[ConsistencyIssue]:
         # Los ids de primer nivel son únicos en todo el perfil (las evidencias los citan sin
