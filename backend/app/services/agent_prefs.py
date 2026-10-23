@@ -39,8 +39,7 @@ BlockedCode = Literal[
 ]
 Mode = Literal["terminal", "background"]
 
-# Lo que necesita cada acción del agente. `import-cv-template` aún no tiene botón (la página
-# Plantillas enseña la orden): queda escrito para cuando lo tenga.
+# Lo que necesita cada acción del agente. `import-cv-template` lee el PDF o la imagen del CV.
 REQUIRES: dict[str, tuple[Capability, ...]] = {
     "search-jobs": ("browser",),
     "research-company": ("web",),

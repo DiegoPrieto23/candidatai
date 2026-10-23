@@ -14754,7 +14754,8 @@
               "review-search",
               "expand",
               "improve-profile-item",
-              "propose-stories"
+              "propose-stories",
+              "import-cv-template"
             ],
             "title": "Id"
           },
@@ -14773,6 +14774,10 @@
           "needs_profile_item": {
             "type": "boolean",
             "title": "Needs Profile Item"
+          },
+          "needs_upload": {
+            "type": "boolean",
+            "title": "Needs Upload"
           },
           "prompt": {
             "anyOf": [
@@ -14817,6 +14822,7 @@
           "needs_job",
           "needs_milestone",
           "needs_profile_item",
+          "needs_upload",
           "prompt",
           "background",
           "agent",
@@ -15497,7 +15503,8 @@
               "review-search",
               "expand",
               "improve-profile-item",
-              "propose-stories"
+              "propose-stories",
+              "import-cv-template"
             ],
             "title": "Action"
           },
@@ -15647,7 +15654,8 @@
               "review-search",
               "expand",
               "improve-profile-item",
-              "propose-stories"
+              "propose-stories",
+              "import-cv-template"
             ],
             "title": "Action"
           },
@@ -19257,7 +19265,8 @@
               "review-search",
               "expand",
               "improve-profile-item",
-              "propose-stories"
+              "propose-stories",
+              "import-cv-template"
             ],
             "title": "Action"
           },
@@ -21603,7 +21612,8 @@
               "review-search",
               "expand",
               "improve-profile-item",
-              "propose-stories"
+              "propose-stories",
+              "import-cv-template"
             ],
             "title": "Action"
           },
@@ -21678,6 +21688,18 @@
               }
             ],
             "title": "Profile Item"
+          },
+          "upload": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Upload"
           }
         },
         "additionalProperties": false,
@@ -24177,7 +24199,8 @@
                 "review-search",
                 "expand",
                 "improve-profile-item",
-                "propose-stories"
+                "propose-stories",
+                "import-cv-template"
               ]
             },
             "type": "object",
@@ -26082,7 +26105,8 @@
               "review-search",
               "expand",
               "improve-profile-item",
-              "propose-stories"
+              "propose-stories",
+              "import-cv-template"
             ],
             "title": "Action"
           },
@@ -28299,7 +28323,8 @@
                 "review-search",
                 "expand",
                 "improve-profile-item",
-                "propose-stories"
+                "propose-stories",
+                "import-cv-template"
               ]
             },
             "type": "object",
@@ -28356,7 +28381,8 @@
                 "review-search",
                 "expand",
                 "improve-profile-item",
-                "propose-stories"
+                "propose-stories",
+                "import-cv-template"
               ]
             },
             "type": "object",
@@ -28421,7 +28447,8 @@
                 "review-search",
                 "expand",
                 "improve-profile-item",
-                "propose-stories"
+                "propose-stories",
+                "import-cv-template"
               ]
             },
             "type": "array",

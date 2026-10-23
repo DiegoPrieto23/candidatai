@@ -15,6 +15,7 @@ import {
   type DragStartEvent,
 } from '@dnd-kit/core'
 import {
+  ArrowRightIcon,
   ArrowsLeftRightIcon,
   BellRingingIcon,
   CalendarBlankIcon,
@@ -363,7 +364,16 @@ export function ProcessesPage() {
 
       <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <section className="rounded-xl border bg-card p-5 sm:p-6" aria-label={t('next7')}>
-          <h2 className="mb-3 font-medium">{t('next7')}</h2>
+          <div className="mb-3 flex items-baseline justify-between gap-3">
+            <h2 className="font-medium">{t('next7')}</h2>
+            <Link
+              to="/calendario"
+              className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+            >
+              {t('seeCalendar')}
+              <ArrowRightIcon className="size-3" />
+            </Link>
+          </div>
           {upcoming.isPending ? (
             <Skeleton className="h-16" />
           ) : upcoming.isError ? (

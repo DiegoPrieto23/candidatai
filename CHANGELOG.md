@@ -10,10 +10,12 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **«Convertir en plantilla»:** al subir tu CV en «Plantillas → Mi CV», un botón abre tu agente
+  con la orden ya escrita para convertirlo en plantilla. La orden para copiarla sigue debajo.
 - **Calendario:** página nueva en «Procesos» con tus entrevistas, pruebas, plazos y otros hitos por
   mes, semana, día o agenda, como en Google Calendar o Apple Calendar. Incluye los ya hechos o
   cancelados y los plazos de las ofertas que aún no has enviado; al pulsar un hito ves sus datos, el
-  enlace a la oferta y su `.ics`.
+  enlace a la oferta y su `.ics`. «Próximos 7 días», en Procesos, lleva a él.
 - **Una demo con todo:** `cai demo seed` trae también lo que dejarían la candidata y su agente
   (carta, respuestas de screening, mensajes, dosieres de empresa, plan y repaso de entrevistas,
   oferta recibida, correos en «Respuestas», huecos en «Skills», un encargo, contexto y una muestra

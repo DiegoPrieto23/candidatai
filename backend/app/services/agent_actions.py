@@ -32,6 +32,7 @@ ActionId = Literal[
     "expand",
     "improve-profile-item",
     "propose-stories",
+    "import-cv-template",
 ]
 
 # Hitos de entrevista (fase 17): `upcoming`, programada y por empezar; `past`, ya empezada y no
@@ -69,6 +70,9 @@ class Action:
     # Fase 25.7b: acción de un logro o una historia del perfil; la orden lleva su id
     # (`{profile_item}`), validado contra el perfil vigente antes de lanzar.
     profile_item: bool = False
+    # Plantillas: convertir en plantilla un CV subido; la orden lleva su ruta (`{upload}`,
+    # `data/uploads/<nombre>`), validada contra los ficheros subidos antes de lanzar.
+    upload: bool = False
 
 
 ACTIONS: dict[ActionId, Action] = {
@@ -140,6 +144,12 @@ ACTIONS: dict[ActionId, Action] = {
         "{profile_item} de mi perfil.",
         skill="update-profile",
         profile_item=True,
+    ),
+    # Plantillas (fase 08.3): pregunta y te deja comparar antes de cerrar; solo en terminal.
+    "import-cv-template": Action(
+        "Convertir en plantilla",
+        "Usa el skill import-cv-template de CandidatAI para convertir en plantilla {upload}.",
+        upload=True,
     ),
     "propose-stories": Action(
         "Proponer historias desde mi experiencia",
