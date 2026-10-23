@@ -10,6 +10,34 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Descartar desde la Bandeja:** en «Por completar» y «Por extraer» cada oferta lleva un botón
+  «Descartar» que la quita en un clic con el motivo nuevo «No me interesa (título o empresa)», sin
+  entrar en la ficha ni gastar agente. Avisa con «Deshacer»; el ▾ de al lado deja elegir otro
+  motivo. Con las casillas descartas varias de golpe. En «Por completar», «Abrir» lleva a la
+  oferta en su portal para decidir. Si tu agente estaba extrayendo una oferta que descartas, se la
+  salta y sigue con las demás.
+- **«Cerrada» con su fecha de cierre:** la Bandeja filtrada por «Cerrada» enseña cuándo se cerró
+  cada oferta (y cómo, al pasar el ratón) y ordena por esa fecha. Las ofertas ya cerradas toman su
+  fecha de su historial.
+- **Más filtros de búsqueda en tu perfil:** sueldo mínimo (bruto anual en euros), años mínimos
+  que pide la oferta, palabras del título que la descartan, tipo de contrato (indefinido, temporal,
+  autónomo) y de jornada, y excluir consultoras o agencias de selección y ETT. Lo que la oferta no
+  dice no descarta. El sueldo mínimo es privado: la app descarta las ofertas que publican un sueldo
+  por debajo, pero tu agente nunca ve la cifra, solo que cayó «por debajo de tu mínimo salarial».
+  Si no usas nada de esto, todo filtra igual que antes.
+- **Tu agente distingue el tipo de empresa:** al extraer una oferta anota si contrata para sí, es
+  una consultora que te cede a un cliente o una agencia de selección o ETT.
+- **Varios buzones en Alertas:** «Añadir buzón» conecta tantas cuentas de correo como quieras
+  (Gmail, Outlook, Yahoo, iCloud u otro servidor IMAP, siempre en solo lectura) o una carpeta de
+  correos `.eml`. Un asistente con una pestaña por proveedor explica qué hacer en cada uno (con
+  enlaces a su ayuda oficial), qué contraseña hace falta y prueba la conexión antes de guardar. El
+  panel «Buzones» enseña cuándo se leyó cada uno y su último error, con ayuda para arreglarlo, y
+  deja probarlo, desactivarlo, editarlo o quitarlo. Si una alerta te llega a dos buzones, entra una
+  vez; si un buzón falla, los demás se siguen leyendo. Tu cuenta de siempre de `.env` aparece sola
+  como «Principal», sin tocar nada.
+- **Outlook / Hotmail, explicado:** Microsoft ya no deja leer por IMAP con contraseña en cuentas de
+  trabajo y lo quitará en las personales; la guía ofrece reenviar las alertas a tu Gmail o
+  exportarlas como `.eml`.
 - **Qué hace cada botón de tu agente:** al pasar el ratón por un botón verde («Ampliar búsqueda»,
   «Generar CV», «Preparar»…) o al llegar a él con el teclado, un globo explica qué hace, qué cambia
   en la app y si te va a pedir algo. Si el botón está desactivado, dice también por qué. La misma
@@ -112,6 +140,21 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   experiencia»**: tu agente propone, te pregunta los números que falten y solo escribe con tu OK.
 
 ### Cambiado
+- **«Mi perfil → Búsqueda», en cuatro bloques:** *Puesto*, *Experiencia y sueldo*, *Dónde y cómo* y
+  *Contrato y empresa*, cada uno con su «Guardar». Los años mínimo y máximo van juntos como un
+  rango («Desde 2 hasta 5 años») y la pista dice el margen que se admite. El sueldo mínimo lleva
+  candado y se guarda aparte, sin que la cifra aparezca en el historial. Las casillas de contrato,
+  jornada y tipo de empresa usan nombres de persona («Indefinido», «Temporal», «Excluir
+  consultoras»…).
+- **Los campos con etiquetas quedan alineados:** el campo va arriba y las etiquetas debajo, así los
+  de una misma fila empiezan a la misma altura. Las ubicaciones van en dos columnas como mucho, y
+  «También, en remoto o híbrido» pasa a llamarse «Solo si no es presencial», con la regla explicada.
+- **Por qué cayó por sueldo:** en la ficha, el descarte por sueldo dice cuánto queda por debajo de
+  tu mínimo. Solo lo ves tú.
+- **Un sueldo mínimo mal escrito ya no se ignora en silencio:** `private.salary_floor_eur` tiene
+  que ser un número entero de euros mayor que 0 (o `null`); si no, «Mi perfil» te avisa al validar.
+- **El contrato temporal de `exclude_signals` se cuenta como «Tipo de contrato»:** sigue
+  descartando lo mismo, pero en el embudo aparece como filtro de contrato.
 - **Prioridades de plataforma sin empates:** en «Fuentes → Plataformas», cada plataforma tiene su
   propio puesto en el orden en que la recorre tu agente (1, 2, 3…), sin tope de 10. El selector
   dice qué plataforma ocupa cada puesto y, si eliges uno ocupado, las dos se intercambian («InfoJobs
@@ -156,6 +199,12 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   de Windows Terminal podía dejarlo sobre tus datos reales.
 
 ### Seguridad
+- **Lo privado de tu perfil no sale en la vista previa de un cambio:** al guardar un bloque de «Mi
+  perfil», el diff podía enseñar como contexto las líneas de `private` (como tu sueldo mínimo);
+  ahora salen como `<oculto>`.
+- **Las contraseñas de los buzones solo en `.env`:** la app las guarda ahí cuando las escribes y
+  no vuelven a salir ni por la UI ni hacia tu agente, que solo ve si están puestas. En Docker te
+  dice qué línea añadir. La app tampoco se conecta a servidores de tu red local salvo que lo marques.
 - Solo la UI puede escribir tu perfil, tu contexto y tus muestras, y leer tu perfil con contacto;
   tu agente sigue sin ninguna herramienta para escribir el perfil. Las muestras de estilo le llegan
   como contenido no confiable, con la detección de inyección.

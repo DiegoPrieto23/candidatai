@@ -47,6 +47,7 @@ policy:
     - mcp:get_cv_content
     - mcp:list_cv_templates
     - mcp:list_sources
+    - mcp:list_mail_sources
     - mcp:list_followups_due
     - mcp:list_upcoming
     - mcp:get_funnel_stats

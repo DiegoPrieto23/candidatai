@@ -1,7 +1,7 @@
 """Consultas de ofertas. El texto crudo (no confiable) solo sale por `get_job`, envuelto."""
 
 from datetime import datetime
-from typing import Literal
+from typing import Literal, get_args
 
 from pydantic import BaseModel
 from sqlalchemy import case, func, or_, select
@@ -144,10 +144,15 @@ class JobRow(JobSummary):
     remote_mode: RemoteMode | None  # de la extracción vigente; None si aún no hay
     salary: Salary | None  # de la extracción vigente; None si no lo indica o aún no hay
     known_contacts: int = 0  # personas de tu red de LinkedIn en la empresa (fase 18)
+    # Cuándo y con qué evento se cerró (fase 27.6); None si no está cerrada.
+    closed_at: datetime | None = None
+    closed_by: str | None = None
 
 
-# Orden de la bandeja. Las ofertas sin el dato (sin score o sin salario) van siempre al final.
-JobSort = Literal["date", "score", "salary"]
+# Orden de la bandeja. Las ofertas sin el dato (sin score, sin salario o sin cerrar) van siempre al
+# final. `closed` es la fecha de cierre: solo tiene sentido en la etapa `closed`.
+JobSort = Literal["date", "score", "salary", "closed"]
+JOB_SORTS: tuple[str, ...] = get_args(JobSort)
 SortDirection = Literal["asc", "desc"]
 
 # Para comparar salarios de distinto periodo, todo se pasa a anual (≈ 1760 horas al año).
@@ -184,15 +189,17 @@ def _annual_salary(extraction: type[JobExtractionRow]):
 
 
 def _ordering(sort: str, direction: str, salary):
-    if sort not in ("date", "score", "salary"):
-        raise InvalidQueryError(f"Orden desconocido: «{sort}». Válidos: date, score, salary.")
+    if sort not in JOB_SORTS:
+        valid = ", ".join(JOB_SORTS)
+        raise InvalidQueryError(f"Orden desconocido: «{sort}». Válidos: {valid}.")
     if direction not in ("asc", "desc"):
         raise InvalidQueryError(f"Sentido desconocido: «{direction}». Válidos: asc, desc.")
     desc = direction == "desc"
     recent = (Job.first_seen_at.desc(), Job.id.desc())
     if sort == "date":
         return recent if desc else (Job.first_seen_at.asc(), Job.id.asc())
-    column = Match.score if sort == "score" else salary
+    columns = {"score": Match.score, "salary": salary, "closed": Application.closed_at}
+    column = columns[sort]
     return ((column.desc() if desc else column.asc()).nulls_last(), *recent)
 
 
@@ -206,7 +213,7 @@ def search_jobs(
     direction: SortDirection = "desc",
 ) -> JobPage:
     """Página de ofertas para la bandeja: filtro por etapa, búsqueda en título y empresa, y orden
-    por fecha de alta, score o salario."""
+    por fecha de alta, score, salario o fecha de cierre."""
     if not 1 <= limit <= MAX_LIMIT:
         raise InvalidQueryError(f"`limit` debe estar entre 1 y {MAX_LIMIT}.")
     if offset < 0:
@@ -232,7 +239,8 @@ def search_jobs(
     base = _summary_query().where(*filters)
     total = session.scalar(select(func.count()).select_from(base.subquery())) or 0
     rows = session.execute(
-        base.outerjoin(last_extraction, last_extraction.c.job_id == Job.id)
+        base.add_columns(Application.closed_at, Application.closed_by)
+        .outerjoin(last_extraction, last_extraction.c.job_id == Job.id)
         .outerjoin(current, current.id == last_extraction.c.id)
         .order_by(*ordering)
         .limit(limit)
@@ -241,7 +249,7 @@ def search_jobs(
     latest = extractions.latest_rows(session, [job.id for job, *_ in rows])
     known = network.known_counts(session, [job.id for job, *_ in rows])
     items = []
-    for job, company, job_stage, score in rows:
+    for job, company, job_stage, score, closed_at, closed_by in rows:
         extraction = latest.get(job.id)
         items.append(
             JobRow(
@@ -259,6 +267,8 @@ def search_jobs(
                 remote_mode=extraction.data.get("remote_mode") if extraction else None,
                 salary=_row_salary(extraction.data if extraction else None),
                 known_contacts=known.get(job.id, 0),
+                closed_at=closed_at,
+                closed_by=closed_by,
             )
         )
     return JobPage(items=items, total=total, limit=limit, offset=offset)

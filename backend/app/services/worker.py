@@ -50,6 +50,7 @@ from app.services import (
     application_archive,
     container,
     liveness,
+    mail_sources,
     replies,
     summaries,
     tasks,
@@ -291,14 +292,14 @@ def enqueue_due_sources(session: Session, now: datetime | None = None) -> list[i
     return queued
 
 
-def email_alerts_enabled() -> bool:
-    """Si hay de dónde leer alertas: IMAP configurado o correos en `data/inbox/`."""
+def email_alerts_enabled(session: Session) -> bool:
+    """Si hay de dónde leer alertas: un buzón activo (fase 27.4) o correos en `data/inbox/`."""
     settings = get_settings()
-    return settings.imap_configured or has_local_mail(settings.inbox_dir)
+    return bool(mail_sources.active_sources(session)) or has_local_mail(settings.inbox_dir)
 
 
 def enqueue_email_poll(session: Session) -> bool:
-    if not email_alerts_enabled():
+    if not email_alerts_enabled(session):
         return False
     tasks.enqueue(session, "poll_email")
     return True
@@ -313,7 +314,7 @@ def enqueue_linkedin_public(session: Session) -> bool:
 
 
 def enqueue_replies_poll(session: Session) -> bool:
-    if not replies.replies_enabled() or not replies.has_open_processes(session):
+    if not replies.replies_enabled(session) or not replies.has_open_processes(session):
         return False
     tasks.enqueue(session, "poll_replies")
     return True

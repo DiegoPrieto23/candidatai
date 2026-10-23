@@ -106,6 +106,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/jobs/{job_id}/salary-gap": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Job Salary Gap
+         * @description Cuánto queda el sueldo publicado por debajo de tu mínimo. Solo la UI (ADR-046).
+         */
+        get: operations["get_job_salary_gap"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/jobs/url": {
         parameters: {
             query?: never;
@@ -742,6 +762,94 @@ export interface paths {
          * @description Lee ahora las alertas nuevas (IMAP en solo lectura y `data/inbox/`).
          */
         post: operations["poll_alerts"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/mail-sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Mail Sources
+         * @description Los buzones, su estado y si tienen contraseña (nunca cuál).
+         */
+        get: operations["list_mail_sources"];
+        put?: never;
+        /**
+         * Create Mail Source
+         * @description Añade un buzón. La contraseña se guarda en `.env` (en Docker, dice qué línea añadir).
+         */
+        post: operations["create_mail_source"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/mail-sources/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Test New Mail Source
+         * @description Prueba un buzón antes de guardarlo: login y `EXAMINE`, sin leer correos.
+         */
+        post: operations["test_new_mail_source"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/mail-sources/{source_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete Mail Source
+         * @description Quita un buzón y su línea de `.env`. Lo ya leído se queda.
+         */
+        delete: operations["delete_mail_source"];
+        options?: never;
+        head?: never;
+        /**
+         * Update Mail Source
+         * @description Cambia un buzón (también activarlo o desactivarlo). La contraseña, solo si se escribe.
+         */
+        patch: operations["update_mail_source"];
+        trace?: never;
+    };
+    "/mail-sources/{source_id}/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Test Mail Source
+         * @description Prueba un buzón guardado: login y `EXAMINE` de su carpeta, sin leer correos.
+         */
+        post: operations["test_mail_source"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1995,6 +2103,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/profile/salary-floor": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Salary Floor
+         * @description Tu sueldo mínimo (`private.salary_floor_eur`). Solo la UI: el agente nunca ve la cifra.
+         */
+        get: operations["get_salary_floor"];
+        /**
+         * Save Salary Floor
+         * @description Guarda el sueldo mínimo en `private` (sin diff), crea la versión y recalcula los filtros.
+         */
+        put: operations["save_salary_floor"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/profile/undo": {
         parameters: {
             query?: never;
@@ -2556,7 +2688,7 @@ export interface components {
              * Reason
              * @description Motivo al descartar (obligatorio en `discarded`).
              */
-            reason?: ("seniority" | "skills" | "location" | "salary" | "company" | "closed" | "other") | null;
+            reason?: ("seniority" | "skills" | "location" | "salary" | "company" | "closed" | "not_interested" | "other") | null;
             /**
              * Channel
              * @description Canal del envío (solo en `applied` y `applied_manually`).
@@ -4012,6 +4144,16 @@ export interface components {
             profile_version_id: number | null;
             /** Undo Available */
             undo_available: number;
+            /**
+             * Policy Discard Title Keywords
+             * @default []
+             */
+            policy_discard_title_keywords: string[];
+            /**
+             * Policy Years Tolerance
+             * @default 0
+             */
+            policy_years_tolerance: number;
         };
         /**
          * EffectiveAction
@@ -4195,7 +4337,7 @@ export interface components {
              * Filter
              * @enum {string}
              */
-            filter: "seniority" | "years" | "remote_mode" | "location" | "language" | "title_keyword" | "signal";
+            filter: "seniority" | "years" | "remote_mode" | "location" | "language" | "title_keyword" | "signal" | "salary" | "contract" | "employer_kind";
             /** Reason */
             reason: string;
         };
@@ -4596,6 +4738,8 @@ export interface components {
             is_agency?: boolean | null;
             /** Mentions Ai Screening */
             mentions_ai_screening?: boolean | null;
+            /** Employer Kind */
+            employer_kind?: ("direct" | "consultancy" | "agency" | "unknown") | null;
         };
         /** JobNetwork */
         JobNetwork: {
@@ -4666,6 +4810,10 @@ export interface components {
              * @default 0
              */
             known_contacts: number;
+            /** Closed At */
+            closed_at?: string | null;
+            /** Closed By */
+            closed_by?: string | null;
         };
         /** JobRunCost */
         JobRunCost: {
@@ -5122,6 +5270,190 @@ export interface components {
             model?: string | null;
             /** Action */
             action?: string | null;
+        };
+        /** MailDeleteResult */
+        MailDeleteResult: {
+            /** Message */
+            message: string;
+        };
+        /** MailError */
+        MailError: {
+            /** Code */
+            code: string;
+            /** Message */
+            message: string;
+        };
+        /** MailSaveResult */
+        MailSaveResult: {
+            source: components["schemas"]["MailSourceView"];
+            /** Message */
+            message: string;
+            /** Env Line */
+            env_line?: string | null;
+        };
+        /**
+         * MailSourceInput
+         * @description Alta de un buzón desde la UI. `password` solo entra: nunca se devuelve.
+         */
+        MailSourceInput: {
+            /** Label */
+            label: string;
+            /**
+             * Kind
+             * @default imap
+             * @enum {string}
+             */
+            kind: "imap" | "folder";
+            /** Host */
+            host?: string | null;
+            /**
+             * Port
+             * @default 993
+             */
+            port: number;
+            /**
+             * Security
+             * @default ssl
+             * @enum {string}
+             */
+            security: "ssl" | "starttls";
+            /** User */
+            user?: string | null;
+            /** Password */
+            password?: string | null;
+            /**
+             * Folder
+             * @default INBOX
+             */
+            folder: string;
+            /**
+             * Replies Folder
+             * @default INBOX
+             */
+            replies_folder: string;
+            /**
+             * Enabled
+             * @default true
+             */
+            enabled: boolean;
+            /**
+             * Read Replies
+             * @default false
+             */
+            read_replies: boolean;
+            /**
+             * Allow Private
+             * @default false
+             */
+            allow_private: boolean;
+        };
+        /** MailSourceList */
+        MailSourceList: {
+            /** Sources */
+            sources: components["schemas"]["MailSourceView"][];
+            /**
+             * Demo
+             * @description En una demo no se lee ningún buzón IMAP.
+             */
+            demo: boolean;
+            /**
+             * Can Store Passwords
+             * @description Si la app puede escribir las contraseñas en `.env` (en Docker, no).
+             */
+            can_store_passwords: boolean;
+        };
+        /**
+         * MailSourcePatch
+         * @description Cambios de un buzón. Lo que no venga, no cambia. La contraseña, solo si se escribe.
+         */
+        MailSourcePatch: {
+            /** Label */
+            label?: string | null;
+            /** Host */
+            host?: string | null;
+            /** Port */
+            port?: number | null;
+            /** Security */
+            security?: ("ssl" | "starttls") | null;
+            /** User */
+            user?: string | null;
+            /** Password */
+            password?: string | null;
+            /** Folder */
+            folder?: string | null;
+            /** Replies Folder */
+            replies_folder?: string | null;
+            /** Enabled */
+            enabled?: boolean | null;
+            /** Read Replies */
+            read_replies?: boolean | null;
+            /** Allow Private */
+            allow_private?: boolean | null;
+        };
+        /**
+         * MailSourceView
+         * @description Un buzón tal como se enseña. Nunca la contraseña: solo si está puesta y en qué variable.
+         */
+        MailSourceView: {
+            /** Id */
+            id: number;
+            /** Label */
+            label: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "imap" | "folder";
+            /** Host */
+            host: string | null;
+            /** Port */
+            port: number | null;
+            /**
+             * Security
+             * @enum {string}
+             */
+            security: "ssl" | "starttls";
+            /** User */
+            user: string | null;
+            /** Folder */
+            folder: string;
+            /** Replies Folder */
+            replies_folder: string;
+            /** Enabled */
+            enabled: boolean;
+            /** Read Replies */
+            read_replies: boolean;
+            /** Allow Private */
+            allow_private: boolean;
+            /**
+             * From Env
+             * @description La cuenta `CAI_IMAP_*` de `.env`: se cambia ahí.
+             */
+            from_env: boolean;
+            /** Has Password */
+            has_password: boolean;
+            /**
+             * Secret Ref
+             * @description Variable de `.env` con la contraseña (su nombre).
+             */
+            secret_ref: string | null;
+            /**
+             * Path
+             * @description Carpeta de los `.eml` (solo `folder`).
+             */
+            path: string | null;
+            /** Last Polled At */
+            last_polled_at: string | null;
+            last_error: components["schemas"]["MailError"] | null;
+        };
+        /** MailTestResult */
+        MailTestResult: {
+            /** Ok */
+            ok: boolean;
+            /** Code */
+            code?: string | null;
+            /** Message */
+            message: string;
         };
         /** MarkBody */
         MarkBody: {
@@ -6389,6 +6721,52 @@ export interface components {
             /** Period */
             period?: ("year" | "month" | "hour") | null;
         };
+        /**
+         * SalaryFloor
+         * @description `private.salary_floor_eur` (bruto anual en euros) para la UI. Nunca sale hacia el agente.
+         */
+        SalaryFloor: {
+            /** Salary Floor Eur */
+            salary_floor_eur: number | null;
+            /** File Hash */
+            file_hash: string | null;
+        };
+        /** SalaryFloorBody */
+        SalaryFloorBody: {
+            /**
+             * File Hash
+             * @description El `file_hash` que leyó la UI.
+             */
+            file_hash: string | null;
+            /**
+             * Salary Floor Eur
+             * @description Bruto anual en euros; `null` lo quita.
+             */
+            salary_floor_eur: number | null;
+        };
+        /**
+         * SalaryFloorResult
+         * @description Sin diff: la cifra no se enseña ni en el historial (ADR-046).
+         */
+        SalaryFloorResult: {
+            /** Changed */
+            changed: boolean;
+            /** File Hash */
+            file_hash: string;
+            /** Profile Version Id */
+            profile_version_id: number | null;
+            /** Rescore Queued */
+            rescore_queued: boolean;
+        };
+        /**
+         * SalaryGapView
+         * @description Solo para la UI (ADR-046): cuánto queda el sueldo publicado por debajo de tu mínimo. No va
+         *     en `MatchView`, que lee el agente.
+         */
+        SalaryGapView: {
+            /** Gap Eur */
+            gap_eur: number | null;
+        };
         /** SalaryRangeSignal */
         SalaryRangeSignal: {
             /** Min */
@@ -7314,7 +7692,7 @@ export interface operations {
                 q?: string | null;
                 limit?: number;
                 offset?: number;
-                sort?: "date" | "score" | "salary";
+                sort?: "date" | "score" | "salary" | "closed";
                 dir?: "asc" | "desc";
             };
             header?: never;
@@ -7612,6 +7990,100 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MatchView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_job_salary_gap: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SalaryGapView"];
                 };
             };
             /** @description Unauthorized */
@@ -10836,6 +11308,584 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EmailPollResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_mail_sources: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MailSourceList"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_mail_source: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MailSourceInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MailSaveResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    test_new_mail_source: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MailSourceInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MailTestResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_mail_source: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmptyBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MailDeleteResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    update_mail_source: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MailSourcePatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MailSaveResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    test_mail_source: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmptyBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MailTestResult"];
                 };
             };
             /** @description Unauthorized */
@@ -17220,6 +18270,194 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SaveResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_salary_floor: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SalaryFloor"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    save_salary_floor: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SalaryFloorBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SalaryFloorResult"];
                 };
             };
             /** @description Unauthorized */

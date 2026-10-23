@@ -15,10 +15,11 @@ import mailbox
 import re
 import ssl
 from collections.abc import Callable, Iterator
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date, timedelta
 from email import message_from_bytes, policy
 from pathlib import Path
+from typing import Literal
 
 from app.core.config import Settings
 
@@ -41,6 +42,36 @@ class MailboxError(Exception):
 
 
 @dataclass(frozen=True)
+class ImapAccount:
+    """Una cuenta IMAP con su contraseña ya leída de `.env` (fase 27.4). La contraseña no sale en
+    `repr` ni en ningún mensaje."""
+
+    host: str
+    port: int
+    user: str
+    password: str = field(repr=False)
+    folder: str = "INBOX"
+    security: Literal["ssl", "starttls"] = "ssl"
+
+    def with_folder(self, folder: str) -> "ImapAccount":
+        return ImapAccount(self.host, self.port, self.user, self.password, folder, self.security)
+
+
+def settings_account(settings: Settings, folder: str | None = None) -> ImapAccount | None:
+    """La cuenta `CAI_IMAP_*` de `.env`, si está configurada (nunca en una demo)."""
+    if not settings.imap_configured:
+        return None
+    assert settings.imap_host and settings.imap_user and settings.imap_password
+    return ImapAccount(
+        settings.imap_host,
+        settings.imap_port,
+        settings.imap_user,
+        settings.imap_password.get_secret_value(),
+        folder or settings.imap_folder,
+    )
+
+
+@dataclass(frozen=True)
 class RawMail:
     raw: bytes
     origin: str  # «IMAP UID 123» o el nombre del fichero; para los avisos
@@ -54,6 +85,22 @@ def tls_context() -> ssl.SSLContext:
 
 def _ssl_factory(host: str, port: int, timeout: float) -> imaplib.IMAP4:
     return imaplib.IMAP4_SSL(host, port, ssl_context=tls_context(), timeout=timeout)
+
+
+def _starttls_factory(host: str, port: int, timeout: float) -> imaplib.IMAP4:
+    """Conexión en claro que pasa a TLS antes del login (puerto 143). Si el
+    servidor no admite STARTTLS, falla: la contraseña nunca viaja sin cifrar."""
+    conn = imaplib.IMAP4(host, port, timeout=timeout)
+    try:
+        conn.starttls(ssl_context=tls_context())
+    except BaseException:
+        _logout(conn)
+        raise
+    return conn
+
+
+def default_factory(account: ImapAccount) -> ImapFactory:
+    return _starttls_factory if account.security == "starttls" else _ssl_factory
 
 
 def imap_utf7(folder: str) -> str:
@@ -112,26 +159,26 @@ def _bodies(data: list[object]) -> Iterator[tuple[str, bytes]]:
             yield match.group(1).decode(), body
 
 
-def connect_imap(
-    settings: Settings, factory: ImapFactory = _ssl_factory, folder: str | None = None
-) -> imaplib.IMAP4:
-    """Login y `EXAMINE` de la carpeta (por defecto, la de las alertas). Lanza `MailboxError` con
-    un mensaje claro."""
-    folder = folder or settings.imap_folder
-    if not settings.imap_configured:
-        raise MailboxError("imap_error", "IMAP no está configurado.")
-    assert settings.imap_host and settings.imap_user and settings.imap_password
+def connect_imap(account: ImapAccount, factory: ImapFactory | None = None) -> imaplib.IMAP4:
+    """Login y `EXAMINE` de la carpeta de la cuenta. Lanza `MailboxError` con un mensaje claro."""
+    folder = account.folder
+    factory = factory or default_factory(account)
     try:
-        conn = factory(settings.imap_host, settings.imap_port, IMAP_TIMEOUT)
+        conn = factory(account.host, account.port, IMAP_TIMEOUT)
     except (OSError, imaplib.IMAP4.error) as exc:
         raise MailboxError(
             "network",
-            f"No se pudo conectar con {settings.imap_host}:{settings.imap_port} "
-            f"({type(exc).__name__}).",
+            f"No se pudo conectar con {account.host}:{account.port} ({type(exc).__name__}).",
         ) from None
     try:
         try:
-            conn.login(settings.imap_user, settings.imap_password.get_secret_value())
+            conn.login(account.user, account.password)
+        except UnicodeEncodeError:
+            raise MailboxError(
+                "imap_auth",
+                "El usuario o la contraseña llevan caracteres que IMAP no admite (letras con "
+                "tilde, ñ…). Las contraseñas de aplicación no los llevan: genera una.",
+            ) from None
         except imaplib.IMAP4.error:
             raise MailboxError(
                 "imap_auth",
@@ -155,14 +202,14 @@ def _logout(conn: imaplib.IMAP4) -> None:
 
 
 def read_imap(
-    settings: Settings,
+    account: ImapAccount,
     is_known: Callable[[str], bool],
     since_days: int,
-    factory: ImapFactory = _ssl_factory,
+    factory: ImapFactory | None = None,
     today: date | None = None,
 ) -> Iterator[RawMail]:
     """Correos de la carpeta de los últimos `since_days` días cuyo `Message-ID` no se conoce."""
-    conn = connect_imap(settings, factory)
+    conn = connect_imap(account, factory)
     try:
         since = (today or date.today()) - timedelta(days=since_days)
         typ, data = conn.uid("SEARCH", "SINCE", _imap_date(since))
@@ -200,18 +247,18 @@ def _headers(data: list[object]) -> dict[str, bytes]:
 
 
 def read_imap_matching(
-    settings: Settings,
-    folder: str,
+    account: ImapAccount,
     since: date,
     wanted: Callable[[bytes], bool],
-    factory: ImapFactory = _ssl_factory,
+    factory: ImapFactory | None = None,
 ) -> Iterator[RawMail]:
-    """Correos de `folder` desde `since` cuyas cabeceras (`REPLY_HEADERS`) acepta `wanted`.
+    """Correos de la carpeta de la cuenta desde `since` cuyas cabeceras (`REPLY_HEADERS`) acepta
+    `wanted`.
 
     Primero se piden solo esas cabeceras y luego el cuerpo de los aceptados, siempre con
     `BODY.PEEK`. De los demás no sale nada de aquí.
     """
-    conn = connect_imap(settings, factory, folder)
+    conn = connect_imap(account, factory)
     try:
         typ, data = conn.uid("SEARCH", "SINCE", _imap_date(since))
         _ok(typ, "la búsqueda de correos")

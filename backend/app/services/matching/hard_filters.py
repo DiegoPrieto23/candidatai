@@ -1,9 +1,13 @@
 """Filtros duros: lo que descarta una oferta sin mirar el encaje técnico.
 
-Parámetros en `data/profile.yaml` → `preferences` (niveles aceptados, años, modalidad, ubicaciones e
-idiomas) y en `config/policies.yaml` → `hard_filters` (tolerancias y palabras de descarte). Lo que
-la oferta no dice (`unknown`, `null`, listas vacías) no descarta, salvo la modalidad si la política
-lo pide. Funciones puras: sin BD ni red.
+Parámetros en `data/profile.yaml` → `preferences` (niveles aceptados, años, modalidad, ubicaciones,
+idiomas, palabras de descarte, contrato, jornada y tipo de empresa), → `private.salary_floor_eur`
+(sueldo mínimo) y en `config/policies.yaml` → `hard_filters` (tolerancias y más palabras de
+descarte). Lo que la oferta no dice (`unknown`, `null`, listas vacías) no descarta, salvo la
+modalidad si la política lo pide. Funciones puras: sin BD ni red.
+
+El sueldo mínimo es privado (ADR-046): su motivo no lleva cifras, porque el agente lo lee en
+`get_match`.
 """
 
 import re
@@ -12,12 +16,21 @@ from typing import Literal
 from pydantic import BaseModel
 
 from app.core.policies import HardFilterPolicy
-from app.schemas.llm_io import JobExtraction
-from app.schemas.profile import CandidateProfile
+from app.schemas.llm_io import JobExtraction, Salary
+from app.schemas.profile import SALARY_FLOOR_KEY, CandidateProfile
 from app.services.normalize import fold
 
 FilterName = Literal[
-    "seniority", "years", "remote_mode", "location", "language", "title_keyword", "signal"
+    "seniority",
+    "years",
+    "remote_mode",
+    "location",
+    "language",
+    "title_keyword",
+    "signal",
+    "salary",
+    "contract",
+    "employer_kind",
 ]
 
 SENIORITY_ORDER = ("intern", "junior", "mid", "senior", "lead")
@@ -29,6 +42,16 @@ SENIORITY_LABEL = {
     "lead": "lead",
 }
 REMOTE_LABEL = {"onsite": "presencial", "hybrid": "híbrido", "remote": "remoto"}
+CONTRACT_LABEL = {"permanent": "indefinido", "fixed_term": "temporal", "freelance": "autónomo"}
+EMPLOYMENT_LABEL = {
+    "full_time": "jornada completa",
+    "part_time": "jornada parcial",
+    "internship": "prácticas",
+}
+EMPLOYER_LABEL = {"consultancy": "una consultora", "agency": "una agencia de selección o ETT"}
+SALARY_REASON = "El sueldo publicado está por debajo de tu mínimo salarial."
+MONTHS_PER_YEAR = 12  # un sueldo mensual se pasa a anual ×12, no ×14 (ADR-046)
+SALARY_CURRENCY = "EUR"
 
 # Nombres de idioma (ya plegados: sin tildes, en minúsculas) -> código ISO 639-1.
 LANGUAGE_NAMES: dict[str, tuple[str, ...]] = {
@@ -103,14 +126,93 @@ def _seniority(ext: JobExtraction, profile: CandidateProfile) -> str | None:
 
 
 def _years(ext: JobExtraction, profile: CandidateProfile, policy: HardFilterPolicy) -> str | None:
-    limit = profile.preferences.max_years_required
-    if ext.years_experience_min is None or limit is None:
+    asked = ext.years_experience_min
+    if asked is None:
         return None
-    if ext.years_experience_min > limit + policy.years_tolerance:
+    high, low = profile.preferences.max_years_required, profile.preferences.min_years_required
+    if high is not None and asked > high + policy.years_tolerance:
         return (
-            f"Pide {ext.years_experience_min} años de experiencia; tu máximo es {limit} "
+            f"Pide {asked} años de experiencia; tu máximo es {high} "
             f"(+{policy.years_tolerance} de tolerancia)."
         )
+    if low is not None and asked < low - policy.years_tolerance:
+        return (
+            f"Pide {asked} años de experiencia; tu mínimo es {low} "
+            f"(−{policy.years_tolerance} de tolerancia)."
+        )
+    return None
+
+
+def published_annual(salary: Salary | None) -> tuple[int | None, int | None]:
+    """Mínimo y máximo publicados, en bruto anual (mensual ×12). Por horas o sin periodo: nada."""
+    if salary is None or salary.period not in ("year", "month"):
+        return None, None
+    factor = MONTHS_PER_YEAR if salary.period == "month" else 1
+    low = salary.min * factor if salary.min is not None else None
+    high = salary.max * factor if salary.max is not None else None
+    return low, high
+
+
+def salary_floor(profile: CandidateProfile) -> int | None:
+    """`private.salary_floor_eur`, o `None` si no está (el esquema ya valida que sea > 0)."""
+    value = profile.private.get(SALARY_FLOOR_KEY)
+    return value if isinstance(value, int) and not isinstance(value, bool) else None
+
+
+def salary_gap(ext: JobExtraction, floor: int | None) -> int | None:
+    """Cuánto queda el tope publicado (anual, en EUR) por debajo del mínimo; `None` si no se puede
+    comparar o no queda por debajo. Solo para la UI: la cifra nunca sale hacia el agente."""
+    salary = ext.salary
+    if floor is None or salary is None or (salary.currency or "").upper() != SALARY_CURRENCY:
+        return None
+    low, high = published_annual(salary)
+    top = high if high is not None else low
+    if top is None or top >= floor:
+        return None
+    return floor - top
+
+
+def _salary(ext: JobExtraction, profile: CandidateProfile) -> str | None:
+    return SALARY_REASON if salary_gap(ext, salary_floor(profile)) is not None else None
+
+
+def accepted_contracts(profile: CandidateProfile) -> list[str]:
+    """`contract_types`, sin `fixed_term` si `exclude_signals` lo excluye (es lo mismo). Vacía =
+    cualquiera."""
+    prefs = profile.preferences
+    if "fixed_term" not in prefs.exclude_signals:
+        return list(prefs.contract_types)
+    return [c for c in (prefs.contract_types or CONTRACT_LABEL) if c != "fixed_term"]
+
+
+def _contract(ext: JobExtraction, profile: CandidateProfile) -> str | None:
+    problems: list[str] = []
+    contracts = accepted_contracts(profile)
+    kind = ext.contract_type
+    if contracts and kind in CONTRACT_LABEL and kind not in contracts:
+        accepted = ", ".join(CONTRACT_LABEL[c] for c in CONTRACT_LABEL if c in contracts)
+        problems.append(f"contrato {CONTRACT_LABEL[kind]} (aceptas: {accepted})")
+    shifts = profile.preferences.employment_types
+    work = ext.employment_type  # `contract` no dice la jornada: pasa, como `unknown`
+    if shifts and work in EMPLOYMENT_LABEL and work not in shifts:
+        accepted = ", ".join(EMPLOYMENT_LABEL[e] for e in EMPLOYMENT_LABEL if e in shifts)
+        problems.append(f"{EMPLOYMENT_LABEL[work]} (aceptas: {accepted})")
+    if problems:
+        return "Tipo de contrato: " + "; ".join(problems) + "."
+    return None
+
+
+def employer_kind(ext: JobExtraction) -> str | None:
+    """`employer_kind` de la extracción; `is_agency: true` cuenta como `agency`."""
+    if ext.employer_kind not in (None, "unknown"):
+        return ext.employer_kind
+    return "agency" if ext.is_agency else ext.employer_kind
+
+
+def _employer_kind(ext: JobExtraction, profile: CandidateProfile) -> str | None:
+    kind = employer_kind(ext)
+    if kind in EMPLOYER_LABEL and kind in profile.preferences.excluded_employer_kinds:
+        return f"La publica {EMPLOYER_LABEL[kind]} y las excluyes."
     return None
 
 
@@ -181,9 +283,24 @@ def _languages(
     return None
 
 
-def _title_keywords(title: str, ext: JobExtraction, policy: HardFilterPolicy) -> str | None:
+def discard_keywords(profile_keywords: list[str], policy: HardFilterPolicy) -> list[str]:
+    """Las palabras de descarte del perfil y las de `policies.yaml`, sin repetir."""
+    seen: set[str] = set()
+    out: list[str] = []
+    for keyword in (*profile_keywords, *policy.discard_title_keywords):
+        key = fold(keyword)
+        if key and key not in seen:
+            seen.add(key)
+            out.append(keyword)
+    return out
+
+
+def _title_keywords(
+    title: str, ext: JobExtraction, profile: CandidateProfile, policy: HardFilterPolicy
+) -> str | None:
     titles = f" {fold(title)} | {fold(ext.title_normalized)} "
-    hits = [k for k in policy.discard_title_keywords if fold(k) and f" {fold(k)} " in titles]
+    keywords = discard_keywords(profile.preferences.discard_title_keywords, policy)
+    hits = [k for k in keywords if f" {fold(k)} " in titles]
     if hits:
         return f"El título contiene palabras de descarte: {', '.join(hits)}."
     return None
@@ -198,8 +315,7 @@ def _signals(ext: JobExtraction, company: str | None, profile: CandidateProfile)
     hits: list[str] = []
     if "employer_hidden" in wanted and doubtful.employer_hidden(ext, company):
         hits.append("empresa oculta o agencia")
-    if "fixed_term" in wanted and doubtful.fixed_term(ext):
-        hits.append("contrato temporal")
+    # `fixed_term` lo evalúa `_contract`: equivale a no aceptar contrato temporal.
     if hits:
         return f"Excluida por tus preferencias (`exclude_signals`): {', '.join(hits)}."
     return None
@@ -220,8 +336,11 @@ def evaluate(
         ("remote_mode", _remote_mode(ext, profile, policy)),
         ("location", _location(ext, profile, policy)),
         ("language", _languages(ext, profile, policy)),
-        ("title_keyword", _title_keywords(title, ext, policy)),
+        ("title_keyword", _title_keywords(title, ext, profile, policy)),
         ("signal", _signals(ext, company, profile)),
+        ("salary", _salary(ext, profile)),
+        ("contract", _contract(ext, profile)),
+        ("employer_kind", _employer_kind(ext, profile)),
     ]
     failures = [FilterFailure(filter=name, reason=reason) for name, reason in checks if reason]
     return HardFilterResult(passed=not failures, failures=failures)

@@ -74,6 +74,7 @@
     "salary": "Salario o condiciones",
     "company": "Empresa o sector",
     "closed": "Ya no está publicada",
+    "not_interested": "No me interesa (título o empresa)",
     "other": "Otro motivo"
   },
   "component": {
@@ -141,7 +142,10 @@
     "location": "Ubicación",
     "language": "Idioma",
     "title_keyword": "Palabras del título",
-    "signal": "Señales de oferta dudosa que excluiste"
+    "signal": "Señales de oferta dudosa que excluiste",
+    "salary": "Por debajo de tu sueldo mínimo",
+    "contract": "Tipo de contrato o jornada",
+    "employer_kind": "Tipo de empresa"
   },
   "sourceKind": {
     "manual_url": "Enlace",

@@ -81,3 +81,42 @@ class EmailMessage(Base):
     received_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
     jobs_found: Mapped[int] = mapped_column(default=0)
     processed_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
+
+
+class MailSource(Base):
+    """Un buzón del que se leen alertas (fase 27.4, ADR-045). Nunca guarda la contraseña: solo el
+    nombre de la variable de `.env` que la tiene (`secret_ref`)."""
+
+    __tablename__ = "mail_sources"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    label: Mapped[str] = mapped_column(String(80), unique=True)
+    kind: Mapped[str] = mapped_column(String(16))  # `imap` o `folder` (`data/inbox/<folder>/`)
+    host: Mapped[str | None] = mapped_column(String(255))
+    port: Mapped[int | None] = mapped_column()
+    security: Mapped[str] = mapped_column(String(16), default="ssl")  # `ssl` o `starttls`
+    user: Mapped[str | None] = mapped_column(String(320))
+    folder: Mapped[str] = mapped_column(String(200), default="INBOX")
+    replies_folder: Mapped[str] = mapped_column(String(200), default="INBOX")
+    enabled: Mapped[bool] = mapped_column(default=True)
+    read_replies: Mapped[bool] = mapped_column(default=False)
+    secret_ref: Mapped[str | None] = mapped_column(String(64))
+    # La cuenta `CAI_IMAP_*` de siempre: servidor, usuario y carpetas salen de `.env`.
+    from_env: Mapped[bool] = mapped_column(default=False)
+    allow_private: Mapped[bool] = mapped_column(default=False)  # un servidor propio en tu red
+    last_polled_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
+    last_error: Mapped[dict[str, Any] | None] = mapped_column(JSON)  # `{code, message}`
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
+
+
+class MailSourceChange(Base):
+    """Auditoría de altas, cambios y bajas de buzones: qué campos, nunca sus valores."""
+
+    __tablename__ = "mail_source_changes"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    mail_source_id: Mapped[int] = mapped_column()  # sin clave foránea: sobrevive al borrado
+    label: Mapped[str] = mapped_column(String(80))
+    action: Mapped[str] = mapped_column(String(16))  # `created`, `updated`, `deleted`
+    fields: Mapped[list[str]] = mapped_column(JSON, default=list)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)

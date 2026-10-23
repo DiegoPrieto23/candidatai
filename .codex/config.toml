@@ -50,6 +50,9 @@ approval_mode = "approve"
 [mcp_servers.candidatai.tools.list_sources]
 approval_mode = "approve"
 
+[mcp_servers.candidatai.tools.list_mail_sources]
+approval_mode = "approve"
+
 [mcp_servers.candidatai.tools.list_followups_due]
 approval_mode = "approve"
 

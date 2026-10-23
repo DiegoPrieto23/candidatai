@@ -12,7 +12,7 @@ import { PRESENT } from './types'
 
 const SELECT = 'h-9 w-full rounded-md border border-input bg-background px-3 text-sm'
 
-function FieldError({ id, error }: { id: string; error?: string }) {
+export function FieldError({ id, error }: { id: string; error?: string }) {
   if (!error) return null
   return (
     <p id={id} className="flex items-start gap-1 text-xs text-destructive">
@@ -29,7 +29,16 @@ interface FieldProps {
   className?: string
 }
 
-function Field({ label, hint, error, className, children }: FieldProps & { children: (id: string, describedBy?: string) => ReactNode }) {
+/** `after`: lo que va debajo de la pista (las etiquetas de `TagsField`), para que el campo quede a
+ *  la misma altura que los de su fila tenga o no contenido. */
+function Field({
+  label,
+  hint,
+  error,
+  className,
+  after,
+  children,
+}: FieldProps & { after?: ReactNode; children: (id: string, describedBy?: string) => ReactNode }) {
   const id = useId()
   const errorId = `${id}-error`
   return (
@@ -37,6 +46,7 @@ function Field({ label, hint, error, className, children }: FieldProps & { child
       <Label htmlFor={id}>{label}</Label>
       {children(id, error ? errorId : undefined)}
       {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
+      {after}
       <FieldError id={errorId} error={error} />
     </div>
   )
@@ -158,26 +168,33 @@ export function CheckField({ label, checked, onChange }: { label: string; checke
 /** Varias casillas para una lista cerrada (modalidad, seniority…). */
 export function ChoicesField<V extends string>({
   label,
+  hint,
   value,
   options,
   onChange,
   error,
+  vertical,
 }: {
   label: string
+  hint?: ReactNode
   value: V[]
   options: { value: V; label: string }[]
   onChange: (value: V[]) => void
   error?: string
+  /** Una opción por línea (textos largos). */
+  vertical?: boolean
 }) {
   const id = useId()
+  const describedBy = [hint && `${id}-hint`, error && `${id}-error`].filter(Boolean).join(' ') || undefined
   return (
-    <fieldset className="grid gap-1.5" aria-describedby={error ? `${id}-error` : undefined}>
+    <fieldset className="grid content-start gap-1.5" aria-describedby={describedBy}>
       <legend className="mb-1 text-sm font-medium">{label}</legend>
-      <div className="flex flex-wrap gap-x-4 gap-y-1.5">
+      <div className={cn('flex gap-x-4 gap-y-1.5', vertical ? 'flex-col' : 'flex-wrap')}>
         {options.map((o) => (
-          <label key={o.value} className="flex items-center gap-1.5 text-sm">
+          <label key={o.value} className="flex items-start gap-1.5 text-sm">
             <input
               type="checkbox"
+              className="mt-0.5"
               checked={value.includes(o.value)}
               onChange={(e) => onChange(e.target.checked ? [...value, o.value] : value.filter((v) => v !== o.value))}
             />
@@ -185,12 +202,18 @@ export function ChoicesField<V extends string>({
           </label>
         ))}
       </div>
+      {hint && (
+        <p id={`${id}-hint`} className="text-xs text-muted-foreground">
+          {hint}
+        </p>
+      )}
       <FieldError id={`${id}-error`} error={error} />
     </fieldset>
   )
 }
 
-/** Una lista de textos cortos como etiquetas: se añaden con Intro y se quitan con su «×». */
+/** Una lista de textos cortos como etiquetas: se añaden con Intro y se quitan con su «×». El campo va
+ *  arriba y las etiquetas debajo (fase 27.5), así los campos de una fila empiezan a la misma altura. */
 export function TagsField({
   value,
   onChange,
@@ -206,30 +229,31 @@ export function TagsField({
     if (item && !items.some((i) => i.toLowerCase() === item.toLowerCase())) onChange([...items, item])
     setText('')
   }
+  const tags = items.length > 0 && (
+    <ul className="flex flex-wrap gap-1.5" aria-label={props.label}>
+      {items.map((item) => (
+        <li key={item} className="flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-sm">
+          {item}
+          <button
+            type="button"
+            className="rounded text-muted-foreground hover:text-foreground"
+            aria-label={t('fields.removeTag', { item })}
+            onClick={() => onChange(items.filter((i) => i !== item))}
+          >
+            <XIcon className="size-3.5" />
+          </button>
+        </li>
+      ))}
+    </ul>
+  )
   return (
-    <Field {...props}>
+    <Field {...props} after={tags}>
       {(id, describedBy) => (
         <div className="grid gap-2">
-          {items.length > 0 && (
-            <ul className="flex flex-wrap gap-1.5" aria-label={props.label}>
-              {items.map((item) => (
-                <li key={item} className="flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-sm">
-                  {item}
-                  <button
-                    type="button"
-                    className="rounded text-muted-foreground hover:text-foreground"
-                    aria-label={t('fields.removeTag', { item })}
-                    onClick={() => onChange(items.filter((i) => i !== item))}
-                  >
-                    <XIcon className="size-3.5" />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
           <div className="flex gap-2">
             <Input
               id={id}
+              className="min-w-0"
               value={text}
               list={suggestions ? listId : undefined}
               aria-describedby={describedBy}

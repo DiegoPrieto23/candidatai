@@ -109,9 +109,21 @@
       "untitled": "New story",
       "needEvidence": "Each story needs at least one piece of evidence before it can be saved."
     },
-    "search": {
-      "title": "What you're looking for",
-      "hint": "These are the hard filters and the basis of the score: when you save you'll see the change, and your open jobs will be rescored."
+    "searchRole": {
+      "title": "Role",
+      "hint": "Which roles and levels you want, and which title words discard a job. When you save you'll see the change, and your open jobs will be rescored."
+    },
+    "searchExperience": {
+      "title": "Experience and salary",
+      "hint": "The years of experience a job asks for and the minimum salary you accept."
+    },
+    "searchWhere": {
+      "title": "Where and how",
+      "hint": "Work mode, locations and the languages you would work in."
+    },
+    "searchContract": {
+      "title": "Contract and employer",
+      "hint": "Contract type, working time, type of employer and doubtful jobs. What a job doesn't say never discards it."
     },
     "cv": {
       "title": "CV preferences",
@@ -195,18 +207,16 @@
     "roles": "Roles you're looking for",
     "rolesHint": "By priority. Anything unlike them scores lower.",
     "seniority": "Levels you would apply for",
-    "maxYears": "Maximum years of experience required",
-    "maxYearsHint": "Empty: no limit.",
     "workLanguages": "Working languages",
     "workLanguagesHint": "Two-letter codes: es, en…",
     "remoteModes": "Work mode",
     "locations": {
       "preferred": "Preferred locations",
-      "preferredHint": "Where you live or want to work.",
-      "allowed": "Also, if remote or hybrid",
-      "allowedHint": "Only if the job is remote or hybrid.",
+      "preferredHint": "Always fine, on-site too.",
+      "allowed": "Only if not on-site",
+      "allowedHint": "Fine if the job is hybrid or remote; if it's on-site, it's discarded.",
       "excluded": "Excluded",
-      "excludedHint": "Dropped automatically."
+      "excludedHint": "Always discarded. With no preferred or \"only if not on-site\" ones, anywhere else is fine."
     },
     "defaultTemplate": "Default template",
     "templateAuto": "The app's",
@@ -228,7 +238,45 @@
     "formatNone": "No preference",
     "formatText": "Text",
     "letterInstructions": "What to always say",
-    "letterInstructionsHint": "Your motivation, how you got into your field… The letter may quote it as said by you, so write it in your own words."
+    "letterInstructionsHint": "Your motivation, how you got into your field… The letter may quote it as said by you, so write it in your own words.",
+    "years": "Years of experience the job asks for",
+    "minYears": "From",
+    "maxYearsShort": "To",
+    "yearsUnit": "years",
+    "yearsHint_one": "Empty: no limit. {{count}} year of leeway is allowed on each side.",
+    "yearsHint_other": "Empty: no limit. {{count}} years of leeway are allowed on each side.",
+    "yearsHintExact": "Empty: no limit.",
+    "salaryFloor": "Minimum salary",
+    "salaryUnit": "EUR gross per year",
+    "salaryHint": "Only the app sees it: your agent never sees this figure. It discards jobs that publish a lower salary (a monthly one counts ×12); if they don't publish one, it doesn't.",
+    "salarySave": "Save salary",
+    "salarySaved": "Salary saved",
+    "salaryInvalid": "Enter a whole number of euros above 0, or leave it empty.",
+    "salaryLoadError": "Your minimum salary couldn't be read: reload the page before changing it.",
+    "discardKeywords": "Words that discard a job",
+    "discardKeywordsHint": "If the title contains one (whole word, accents ignored), the job is discarded. Also before saving jobs from your sources.",
+    "policyKeywords": "The ones in config/policies.yaml also discard: {{words}}.",
+    "contractTypes": "Contract types you accept",
+    "contract": {
+      "permanent": "Permanent",
+      "fixed_term": "Temporary",
+      "freelance": "Self-employed / freelance"
+    },
+    "employmentTypes": "Working time you accept",
+    "employment": {
+      "full_time": "Full time",
+      "part_time": "Part time",
+      "internship": "Internship"
+    },
+    "noneMeansAny": "Nothing ticked: any. If the job doesn't say, it isn't discarded.",
+    "employerKinds": "Type of employer",
+    "employer": {
+      "consultancy": "Exclude consultancies (they hire you to place you with a client)",
+      "agency": "Exclude temp and recruitment agencies"
+    },
+    "employerKindsHint": "Your agent notes it when it extracts each job. If it's unknown, the job isn't discarded.",
+    "doubtful": "Doubtful jobs",
+    "employerHidden": "Discard jobs that don't say which company is hiring (hidden employer, or an agency that doesn't say who for)"
   },
   "star": {
     "situation": {

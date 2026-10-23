@@ -6,7 +6,9 @@
     "scoreDesc": "Más encaje",
     "scoreAsc": "Menos encaje",
     "salaryDesc": "Más salario",
-    "salaryAsc": "Menos salario"
+    "salaryAsc": "Menos salario",
+    "closedDesc": "Cerradas hace menos",
+    "closedAsc": "Cerradas hace más"
   },
   "risk": "Posible contenido dirigido a una IA",
   "notExtracted": "Sin extraer",
@@ -17,7 +19,9 @@
     "salary": "Salario",
     "fit": "Encaje",
     "stage": "Etapa",
-    "added": "Alta"
+    "added": "Alta",
+    "closed": "Cerrada",
+    "actions": "Acciones"
   },
   "loadingJobs": "Cargando ofertas",
   "count_one": "{{count}} oferta",
@@ -39,5 +43,27 @@
   },
   "range": "{{from}}-{{to}} de {{total}}",
   "previous": "Anteriores",
-  "next": "Siguientes"
+  "next": "Siguientes",
+  "closedWhen": "Cerrada {{when}}",
+  "quick": {
+    "select": "Seleccionar {{title}}",
+    "selectAll": "Seleccionar todas",
+    "open": "Abrir",
+    "openJob": "Abrir {{title}} en su portal",
+    "discard": "Descartar",
+    "discardJob": "Descartar {{title}}",
+    "moreReasons": "Descartar {{title}} con otro motivo",
+    "otherReason": "Descartar con otro motivo…",
+    "discarded": "Descartada:",
+    "discardedMany_one": "Descartada {{count}} oferta",
+    "discardedMany_other": "Descartadas {{count}} ofertas",
+    "undo": "Deshacer",
+    "closeNotice": "Cerrar aviso",
+    "failed": "No se pudo guardar: {{error}}",
+    "selectedCount_one": "{{count}} seleccionada",
+    "selectedCount_other": "{{count}} seleccionadas",
+    "clearSelection": "Quitar selección",
+    "discardMany_one": "Descartar {{count}}",
+    "discardMany_other": "Descartar {{count}}"
+  }
 }

@@ -109,9 +109,21 @@
       "untitled": "Historia nueva",
       "needEvidence": "Cada historia necesita al menos una evidencia para poder guardarse."
     },
-    "search": {
-      "title": "Qué buscas",
-      "hint": "Son los filtros duros y la base del score: al guardar verás el cambio y se recalcularán tus ofertas abiertas."
+    "searchRole": {
+      "title": "Puesto",
+      "hint": "Qué puestos y niveles buscas, y qué palabras del título descartan una oferta. Al guardar verás el cambio y se recalcularán tus ofertas abiertas."
+    },
+    "searchExperience": {
+      "title": "Experiencia y sueldo",
+      "hint": "Los años de experiencia que pide la oferta y el sueldo mínimo que aceptas."
+    },
+    "searchWhere": {
+      "title": "Dónde y cómo",
+      "hint": "Modalidad, ubicaciones e idiomas en los que trabajarías."
+    },
+    "searchContract": {
+      "title": "Contrato y empresa",
+      "hint": "Tipo de contrato, jornada, tipo de empresa y ofertas dudosas. Lo que la oferta no dice no la descarta."
     },
     "cv": {
       "title": "Preferencias de CV",
@@ -195,18 +207,16 @@
     "roles": "Puestos que buscas",
     "rolesHint": "Por prioridad. Lo que no se parezca se puntúa más bajo.",
     "seniority": "Niveles a los que te presentarías",
-    "maxYears": "Máximo de años de experiencia que pidan",
-    "maxYearsHint": "Vacío: sin límite.",
     "workLanguages": "Idiomas de trabajo",
     "workLanguagesHint": "Códigos de dos letras: es, en…",
     "remoteModes": "Modalidad",
     "locations": {
       "preferred": "Ubicaciones preferidas",
-      "preferredHint": "Donde vives o quieres trabajar.",
-      "allowed": "También, en remoto o híbrido",
-      "allowedHint": "Solo si la oferta es remota o híbrida.",
+      "preferredHint": "Te valen siempre, también presenciales.",
+      "allowed": "Solo si no es presencial",
+      "allowedHint": "Te valen si la oferta es híbrida o remota; si es presencial, se descarta.",
       "excluded": "Excluidas",
-      "excludedHint": "Se descartan solas."
+      "excludedHint": "Se descartan siempre. Sin preferidas ni «solo si no es presencial», vale cualquier otra."
     },
     "defaultTemplate": "Plantilla por defecto",
     "templateAuto": "La de la app",
@@ -228,7 +238,45 @@
     "formatNone": "Sin preferencia",
     "formatText": "Texto",
     "letterInstructions": "Qué contar siempre",
-    "letterInstructionsHint": "Tu motivación, cómo llegaste a tu campo… La carta puede citarlo como dicho por ti, así que escríbelo con tus palabras."
+    "letterInstructionsHint": "Tu motivación, cómo llegaste a tu campo… La carta puede citarlo como dicho por ti, así que escríbelo con tus palabras.",
+    "years": "Años de experiencia que pida la oferta",
+    "minYears": "Desde",
+    "maxYearsShort": "Hasta",
+    "yearsUnit": "años",
+    "yearsHint_one": "Vacío: sin límite. Se admite {{count}} año de margen por cada lado.",
+    "yearsHint_other": "Vacío: sin límite. Se admiten {{count}} años de margen por cada lado.",
+    "yearsHintExact": "Vacío: sin límite.",
+    "salaryFloor": "Sueldo mínimo",
+    "salaryUnit": "€ brutos al año",
+    "salaryHint": "Solo lo ve la app: tu agente nunca ve esta cifra. Descarta las ofertas que publican un sueldo menor (uno mensual cuenta ×12); si no lo publican, no.",
+    "salarySave": "Guardar sueldo",
+    "salarySaved": "Sueldo guardado",
+    "salaryInvalid": "Escribe un número entero de euros mayor que 0, o déjalo vacío.",
+    "salaryLoadError": "No se pudo leer tu sueldo mínimo: recarga la página antes de cambiarlo.",
+    "discardKeywords": "Palabras que descartan una oferta",
+    "discardKeywordsHint": "Si el título las contiene (palabra completa, sin importar tildes), la oferta se descarta. También antes de guardar las ofertas de tus fuentes.",
+    "policyKeywords": "También descartan las de config/policies.yaml: {{words}}.",
+    "contractTypes": "Tipo de contrato que aceptas",
+    "contract": {
+      "permanent": "Indefinido",
+      "fixed_term": "Temporal",
+      "freelance": "Autónomo / freelance"
+    },
+    "employmentTypes": "Jornada que aceptas",
+    "employment": {
+      "full_time": "Jornada completa",
+      "part_time": "Parcial",
+      "internship": "Prácticas"
+    },
+    "noneMeansAny": "Sin marcar nada: cualquiera. Si la oferta no lo dice, no se descarta.",
+    "employerKinds": "Tipo de empresa",
+    "employer": {
+      "consultancy": "Excluir consultoras (te contratan para cederte a un cliente)",
+      "agency": "Excluir ETT y agencias de selección"
+    },
+    "employerKindsHint": "Lo anota tu agente al extraer cada oferta. Si no se sabe, no se descarta.",
+    "doubtful": "Ofertas dudosas",
+    "employerHidden": "Descartar las que no dicen qué empresa contrata (empresa oculta o agencia que no dice para quién)"
   },
   "star": {
     "situation": {

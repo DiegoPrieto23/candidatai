@@ -125,7 +125,9 @@ docker compose up -d --build        # the first time takes a few minutes (it bui
 The app is at `http://127.0.0.1:8000`, on your computer only. Your data goes in the
 `candidatai-data` volume, which survives stopping, updating or removing the container. If there's
 a `.env` in the folder, the container reads it (job board keys, IMAP…): with IMAP set up, its
-worker reads your email alerts just like the native install, but stores them in the volume.
+worker reads your email alerts just like the native install, but stores them in the volume. When
+you add a mailbox from the UI, the app can't write your `.env`: it tells you which line to add,
+then you recreate the container (`docker compose up -d`).
 
 - **Stop and start:** `docker compose stop` and `docker compose start`.
 - **Update:** `git pull` and `docker compose up -d --build`.
@@ -244,8 +246,11 @@ photo, documents and emails. Keys go in `.env`, also outside git.
 | **Source documents** (old CVs, degrees, references) | `data/documentos/` | `update-profile` can read them, confirming before writing |
 | **What you've done in public** (repositories, portfolio, Kaggle, Scholar, verifiable certifications) | `data/profile.yaml` | The `expand` skill, or "Expand profile from my links" in "My profile". Use it **right after creating your profile**: it proposes projects, skills (with no level: you set it), achievements with the numbers the source gives and certifications, each with its link in `source`, and writes only what you accept. Public web only: no LinkedIn, nothing behind a login. Needs an agent with web search |
 
-Your salary minimum goes in the profile's `private.salary_floor_eur`: the app uses it to compare
-offers, but the agent never receives it.
+Your salary minimum goes in My profile → Search (or in the profile's `private.salary_floor_eur`):
+the app discards postings that publish a salary below it and uses it to compare the offers you
+receive, but your agent never sees the figure; it only learns that a posting fell "below your
+salary minimum". In Search you also set minimum and maximum years, words that discard a
+posting, contract and working-time types, and whether to exclude consultancies or recruiters.
 
 In My profile, every achievement and story has **Improve with my agent**: your agent proposes a
 clearer version, asks you for any missing numbers (it never makes them up) and only writes with
@@ -323,7 +328,7 @@ A typical day:
 | **Target companies** (Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters, Recruitee) | **Sources → Target companies** page or `cai sources add --kind greenhouse --name "Acme" --slug acme`. `cai sources discover --file companies.txt` finds the board of each company in a list. How to find the slug: [`FUENTES_OFERTAS.md`](FUENTES_OFERTAS.md#cómo-encontrar-el-slug) (Spanish) |
 | **InfoJobs and Adzuna** | Their keys in `.env` (`CAI_INFOJOBS_CLIENT_ID`/`_SECRET`, `CAI_ADZUNA_APP_ID`/`_KEY`) and a search with `cai sources add` |
 | **Manfred and freehire.me** | No keys: a search on the same page or with `cai sources add --kind manfred --name Manfred --query "data engineer"` (for freehire, also `--country` and `--remote-only`) |
-| **Email alerts** | Create job alerts on LinkedIn, InfoJobs, Indeed… and have them land in a label of your mailbox. Set up read-only IMAP in `.env`: step by step in [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md) (Spanish). Without IMAP, drop `.eml` files in `data/inbox/`. What comes in shows up in **Alerts** |
+| **Email alerts** | Create job alerts on LinkedIn, InfoJobs, Indeed… and have them land in a label of your mailbox. In **Alerts → Add mailbox**, connect one or more mailboxes (Gmail, Outlook, Yahoo, iCloud or other IMAP, always read-only) or a folder of `.eml` files; the wizard explains each provider and tests the connection before saving. The password is stored in your `.env` and never comes out again. Step by step in [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md) (Spanish). What comes in shows up in **Alerts** |
 | **"Send to CandidatAI" button** | Load `extension/` as an unpacked extension in Chrome or Edge and paste the token from `cai capture token` into its options. Instructions: [`extension/README.md`](../extension/README.md) (Spanish) |
 | **Your agent with your browser** | `search-jobs configurar` picks portals and searches (**Sources → Platforms** page); `search-jobs` browses them. LinkedIn stays off until you turn it on |
 | **LinkedIn's public search** | The **Public search without signing in** switch on the LinkedIn card in **Sources → Platforms**. Off by default: it goes against LinkedIn's terms and may get your IP blocked for a while |
@@ -334,7 +339,9 @@ The worker runs the automatic sources every day at `connectors.daily_at`
 
 ## 8. From job to application
 
-1. **Extract:** `process-jobs` turns each posting's text into structured data. Posting text is
+1. **Extract:** first, if a title or company doesn't interest you, remove it from the Inbox
+   (**To complete** or **To extract**) with **Discard**, one by one or selecting several: it costs
+   no agent time and can be undone. `process-jobs` turns each posting's text into structured data. Posting text is
    untrusted content: if it carries hidden text or phrases aimed at an AI, the job page warns you.
 2. **Assess:** the app computes the score and applies your hard filters; `assess-fit` adds a
    reasoned verdict.
@@ -360,7 +367,7 @@ The worker runs the automatic sources every day at `connectors.daily_at`
   by month, week, day or agenda. Click one to see its details and open the job.
 - **Follow-ups:** it reminds you of applications without a reply; `draft-follow-up` leaves
   the drafts (max. 2 per application) and the thank-you note after an interview. You send them.
-- **Replies:** with IMAP set up, the app reads emails from the companies in your
+- **Replies:** in the mailboxes where you ticked it, the app reads emails from the companies in your
   processes; `review-replies` proposes what happened and you accept it in **Replies**.
 - **Funnel:** conversion by step, source, role, week, template, cover letter and
   referral, plus "Is the score right?". `review-search` runs the weekly retrospective. At the

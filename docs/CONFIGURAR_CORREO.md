@@ -1,34 +1,51 @@
 # Configurar las alertas de empleo por correo
 
-Guía paso a paso para que CandidatAI lea las alertas de empleo que te llegan al correo (LinkedIn,
-InfoJobs, Indeed, Tecnoempleo) y dé de alta sus ofertas. Está pensada para Gmail; al final hay
-notas para otros proveedores. Los detalles técnicos están en `FUENTES_OFERTAS.md` §Alertas por
-correo.
+Guía para que CandidatAI lea las alertas de empleo que te llegan al correo (LinkedIn, InfoJobs,
+Indeed, Tecnoempleo) y dé de alta sus ofertas. Puedes conectar **uno o varios buzones** desde la
+app, en **Alertas → Añadir buzón**: el asistente tiene una pestaña por proveedor con estos mismos
+pasos. Los detalles técnicos están en `FUENTES_OFERTAS.md` §Alertas por correo y la decisión sobre
+las contraseñas, en `DECISIONS.md` (ADR-045).
 
 ## Qué hace y qué no
 
-- Se conecta por **IMAP en solo lectura** a **una sola carpeta o etiqueta** de tu correo para
-  las alertas y, desde la fase 15, a la carpeta de **respuestas** de las empresas (por defecto, la
-  bandeja de entrada; ver §Respuestas de las empresas).
+- Se conecta por **IMAP en solo lectura** a **una carpeta o etiqueta** de cada buzón para las
+  alertas y, si se lo pides, a su bandeja de entrada para las **respuestas** de las empresas (ver
+  §Respuestas de las empresas).
 - **No** marca nada como leído, **no** mueve ni borra correos y **no** envía nada.
-- De cada alerta guarda solo su `Message-ID` (para no procesarla dos veces), nunca el cuerpo.
+- De cada alerta guarda solo su `Message-ID` (para no procesarla dos veces), nunca el cuerpo. Si
+  la misma alerta te llega a dos buzones, cuenta una vez.
 - No entra en LinkedIn: sus ofertas llegan como **resumen** (título, empresa, ubicación). La
   descripción completa la traes tú con el botón «Enviar a CandidatAI» de la extensión.
-- La contraseña vive solo en el fichero `.env` de tu equipo, que no se sube a git.
+- La contraseña vive solo en el fichero `.env` de tu equipo, que no se sube a git: cuando la
+  escribes en el asistente, la app la guarda ahí (una línea `CAI_IMAP_<NOMBRE>_PASSWORD` por
+  buzón) y no vuelve a enseñarla ni a dársela a tu agente. Al quitar el buzón, quita su línea.
+- **En Docker** la app no puede escribir tu `.env`: el asistente te dice qué línea añadir; después
+  recrea el contenedor (`docker compose up -d`).
 
-## 1. Activa la verificación en dos pasos
+## Añadir un buzón
 
-Google la exige para crear contraseñas de aplicación.
+1. Pantalla **Alertas** → **Añadir buzón**.
+2. Elige la pestaña de tu proveedor y sigue sus pasos (abajo, los mismos con más detalle).
+3. Escribe tu dirección y la contraseña de aplicación y pulsa **Probar conexión**: solo inicia
+   sesión y abre la carpeta en solo lectura, sin leer ningún correo.
+4. **Guardar**. El panel **Buzones** de la misma pantalla enseña cada uno con su última lectura y
+   su último error, y deja probarlo, desactivarlo, editarlo o quitarlo.
 
-1. Entra en [myaccount.google.com](https://myaccount.google.com) → **Seguridad**.
-2. **Verificación en dos pasos** → actívala si no lo está.
+Repite para cada cuenta en la que te lleguen alertas. Si una falla, las demás se siguen leyendo.
 
-## 2. Crea una contraseña de aplicación
+## Gmail
+
+### 1. Activa la verificación en dos pasos
+
+Google la exige para crear contraseñas de aplicación: entra en
+[myaccount.google.com](https://myaccount.google.com) → **Seguridad** → **Verificación en dos
+pasos** y actívala si no lo está.
+
+### 2. Crea una contraseña de aplicación
 
 1. Ve a [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords).
 2. Ponle un nombre, por ejemplo `CandidatAI`, y pulsa **Crear**.
-3. Google enseña 16 letras **una sola vez**. Cópialas (los espacios no importan, pero mejor sin
-   ellos).
+3. Google enseña 16 letras **una sola vez**: cópialas en el asistente (los espacios no importan).
 
 **Qué permiso das:** Google no ofrece contraseñas limitadas a una etiqueta, así que con ella se
 podría leer todo el correo por IMAP. La limitación la pone la app (solo abre la carpeta que le
@@ -38,18 +55,19 @@ indicas, con `EXAMINE`). Por eso:
 - si dejas de usar la app o sospechas algo, **revócala** desde la misma página: deja de funcionar
   al momento y no afecta a tu contraseña normal.
 
-Si en esa página Google dice que la opción no está disponible: o falta la verificación en dos
-pasos, o tu cuenta es de una organización (trabajo, universidad) que lo tiene desactivado. En ese
-caso usa la alternativa sin credenciales (al final).
+Si Google dice que la opción no está disponible: o falta la verificación en dos pasos, o tu cuenta
+es de una organización (trabajo, universidad) que lo tiene desactivado, o usa la Protección
+Avanzada ([ayuda de Google](https://support.google.com/mail/answer/185833)). En ese caso usa una
+carpeta de `.eml` (§Carpeta de `.eml`).
 
-## 3. Comprueba que IMAP está disponible
+### 3. Comprueba que IMAP está disponible
 
 En Gmail: ⚙️ → **Ver todos los ajustes** → **Reenvío y correo POP/IMAP**. Las cuentas personales
 tienen IMAP siempre activo; si ves la opción **Habilitar IMAP**, márcala y guarda.
 
-## 4. Crea una etiqueta y un filtro para las alertas
+### 4. Crea una etiqueta y un filtro para las alertas
 
-Así la app solo ve las alertas y nada más de tu correo.
+Recomendado: así la app solo ve las alertas y nada más de tu correo.
 
 1. En la barra de búsqueda de Gmail escribe el remitente de tus alertas. Para LinkedIn:
    `from:(jobalerts-noreply@linkedin.com)`.
@@ -63,19 +81,87 @@ Así la app solo ve las alertas y nada más de tu correo.
 5. **Crear filtro**.
 
 Opcional: marca **Saltar Recibidos (Archivarlo)** si no quieres verlas en la bandeja de entrada.
-La app las sigue leyendo desde la etiqueta.
+La app las sigue leyendo desde la etiqueta
+([ayuda de Google sobre filtros](https://support.google.com/mail/answer/6579)).
 
-## 5. Escribe la configuración en `.env`
+### 5. Añádelo en la app
 
-El fichero `.env` va en la **raíz del proyecto** (junto a `README.md`). Ábrelo o créalo desde
-PowerShell, en esa carpeta:
+En el asistente, pestaña **Gmail**: tu dirección, las 16 letras y, en **Carpeta o etiqueta de las
+alertas**, el nombre exacto de la etiqueta, con mayúsculas, tildes y espacios. Si está anidada
+dentro de otra, se escribe con `/`: `Empleo/Alertas empleo`. Pulsa **Probar conexión** y
+**Guardar**.
 
-```
-notepad .env
-```
+## Outlook y Hotmail
 
-Si Notepad pregunta si quieres crear el fichero, di que sí. Añade estas líneas con tus datos y
-guarda:
+Microsoft ya no deja entrar por IMAP con contraseña en las **cuentas de trabajo o de un centro
+educativo** (Exchange Online), y ha anunciado que también lo quitará en las **personales**
+(Outlook.com, Hotmail, Live) sin dar fecha
+([aviso de Microsoft](https://support.microsoft.com/en-us/office/outlook-and-other-apps-are-unable-to-connect-to-outlook-com-when-using-basic-authentication-f4202ebf-89c6-4a8a-bec3-3d60cf7deaef)).
+La app no usa el inicio de sesión de Microsoft (OAuth), así que hay dos caminos que funcionan
+(comprobado el 2026-10-23):
+
+- **Reenvía las alertas a otra cuenta (recomendado).** En Outlook.com: **Configuración → Correo →
+  Reglas**, una regla para los correos de LinkedIn, InfoJobs… con **Reenviar a** tu Gmail; o
+  **Configuración → Correo → Reenvío** para reenviarlo todo
+  ([ayuda de Microsoft](https://support.microsoft.com/en-us/office/turn-on-automatic-forwarding-in-outlook-7f2670a1-7fff-4475-8a3c-5822d63b0c8e)).
+  Después añade ese Gmail (§Gmail).
+- **Exporta las alertas como `.eml`** (§Carpeta de `.eml`). En Outlook en la web, abre una alerta
+  → **⋯ → Descargar**.
+
+Si aun así quieres probar IMAP en una cuenta personal, la pestaña **Outlook / Hotmail** tiene
+plegado **Probar por IMAP igualmente** (`outlook.office365.com`, puerto 993, con una contraseña de
+aplicación y la verificación en dos pasos activada). Puede dejar de funcionar cualquier día.
+
+## Yahoo
+
+1. En la seguridad de tu cuenta de Yahoo, **Conexiones externas → Generar contraseña de
+   aplicación** ([ayuda de Yahoo](https://help.yahoo.com/kb/SLN15241.html)).
+2. En el asistente, pestaña **Yahoo**: tu dirección completa y esa contraseña. El servidor
+   (`imap.mail.yahoo.com`, puerto 993) ya viene puesto
+   ([datos IMAP de Yahoo](https://help.yahoo.com/kb/SLN4075.html)).
+
+## iCloud
+
+1. Activa la autenticación de doble factor en tu cuenta de Apple.
+2. En [account.apple.com](https://account.apple.com) → **Inicio de sesión y seguridad →
+   Contraseñas específicas de app**, genera una
+   ([ayuda de Apple](https://support.apple.com/en-us/102654)).
+3. En el asistente, pestaña **iCloud**: como usuario, lo que va antes de `@icloud.com` (si no
+   conecta, la dirección completa) y esa contraseña. El servidor (`imap.mail.me.com`, puerto 993)
+   ya viene puesto ([datos IMAP de iCloud](https://support.apple.com/en-us/102525)).
+
+## Otro proveedor (IMAP)
+
+- Busca en la ayuda de tu proveedor sus datos IMAP: servidor y puerto (casi siempre 993 con SSL;
+  el asistente admite también STARTTLS en el 143). Nunca se conecta sin cifrar y siempre
+  comprueba el certificado.
+- Si tu proveedor da contraseñas de aplicación, usa una.
+- Crea una carpeta con una regla que mueva allí las alertas y escribe su nombre en **Carpeta o
+  etiqueta de las alertas**.
+- **Un servidor en tu equipo o tu red** (una IP privada, `localhost`…): por seguridad, la app no se
+  conecta a esas direcciones salvo que marques **Servidor en mi equipo o mi red**.
+- **Proton Mail** no da IMAP directo, y su Bridge usa un certificado propio que la app no acepta:
+  exporta los correos como `.eml`.
+
+## Carpeta de `.eml`
+
+Sin contraseñas y con cualquier proveedor: exporta los correos de alertas (en Gmail, **⋮ →
+Descargar mensaje**; en Outlook en la web, **⋯ → Descargar**) y déjalos en una carpeta.
+
+- En el asistente, pestaña **Carpeta de `.eml`**: ponle un nombre y la app crea
+  `data/inbox/<nombre>/`. Puedes tener varias.
+- También sigue valiendo dejarlos directamente en `data/inbox/`.
+- Se leen `.eml` y `.mbox`, sin moverlos ni borrarlos; los ya procesados se reconocen por su
+  `Message-ID`.
+
+## La cuenta de `.env` (como antes)
+
+Si ya tenías el correo configurado en `.env`, no tienes que hacer nada: aparece sola en el panel
+**Buzones** como «Principal» (con la etiqueta «de .env») y lee también las respuestas de las
+empresas. Su servidor, usuario y carpetas se siguen cambiando en `.env`; desde la app puedes
+desactivarla, cambiarle el nombre o decidir si lee respuestas.
+
+Para configurarla a mano, el fichero `.env` va en la **raíz del proyecto** (junto a `README.md`):
 
 ```
 CAI_IMAP_HOST=imap.gmail.com
@@ -85,37 +171,33 @@ CAI_IMAP_PASSWORD=abcdefghijklmnop
 CAI_IMAP_FOLDER="Alertas empleo"
 ```
 
-- `CAI_IMAP_PASSWORD`: las 16 letras del paso 2, no tu contraseña de Google.
-- `CAI_IMAP_FOLDER`: el nombre exacto de la etiqueta, con mayúsculas, tildes y espacios. Si está
-  anidada dentro de otra, se escribe con `/`: `"Empleo/Alertas empleo"`.
-- Si ya tenías un `.env`, añade las líneas al final sin borrar lo demás.
+Reinicia la app para que lea el `.env` nuevo.
 
-## 6. Comprueba la conexión
+## Comprueba la conexión
 
-Reinicia la API y el worker para que lean el `.env` nuevo y, desde `backend/`:
-
-```
-uv run cai doctor
-```
-
-La línea de alertas por correo debe salir en verde. Solo hace login y abre la carpeta en solo
-lectura. Si falla:
+**Probar** en el panel **Buzones**, o desde `backend/`: `uv run cai mail-sources test ID` (uno) o
+`uv run cai doctor` (todos; solo hacen login y abren la carpeta en solo lectura). Si falla:
 
 | Mensaje | Qué revisar |
 |---|---|
-| «rechazó el usuario o la contraseña» | La contraseña de aplicación (las 16 letras, no tu contraseña normal) y el usuario |
-| «rechazó abrir la carpeta…» | El nombre de la etiqueta en `CAI_IMAP_FOLDER`, letra por letra |
-| «No se pudo conectar con…» | Conexión a internet, o un cortafuegos o antivirus que bloquee el puerto 993 |
-| «IMAP a medias» | Falta alguna de `CAI_IMAP_HOST`, `CAI_IMAP_USER` o `CAI_IMAP_PASSWORD` |
+| «rechazó el usuario o la contraseña» | La contraseña de aplicación (no tu contraseña normal) y el usuario (la dirección completa; en iCloud, lo que va antes de la @) |
+| «caracteres que IMAP no admite» | La contraseña o el usuario llevan tildes o ñ: las contraseñas de aplicación no, genera una |
+| «rechazó abrir la carpeta…» | El nombre de la carpeta o etiqueta, letra por letra |
+| «No se pudo conectar con…» | El servidor y el puerto, tu conexión, o un cortafuegos o antivirus que bloquee el puerto |
+| «Falta la contraseña» | Escríbela en **Editar** (o, en Docker, añade la línea que dice a tu `.env`) |
+| «dirección privada o local» | Si es tu propio servidor, marca **Servidor en mi equipo o mi red** |
+| «IMAP a medias» (`cai doctor`) | En la cuenta de `.env`, falta `CAI_IMAP_HOST`, `CAI_IMAP_USER` o `CAI_IMAP_PASSWORD` |
 
-## 7. Primera lectura
+## Primera lectura
 
 - En la UI, pantalla **Alertas** → **Revisar correo ahora**, o desde `backend/`:
   `uv run cai alerts poll`.
 - Después, el worker la repite solo cada `email_alerts.poll_minutes` minutos (60 por defecto, en
-  `config/policies.yaml`). Lee los correos de los últimos `summary_expire_days` días (21).
+  `config/policies.yaml`). Lee los correos de los últimos `summary_expire_days` días (21), buzón
+  a buzón; si en una pasada no da tiempo a todos (5 minutos), los que faltan se leen en la
+  siguiente.
 
-## 8. Qué hacer con lo que entra
+## Qué hacer con lo que entra
 
 - En **Alertas** verás cada oferta con un prefiltro según tus preferencias.
   - `O` la abre en su portal; `D` la descarta.
@@ -129,13 +211,14 @@ lectura. Si falla:
 
 ## Respuestas de las empresas (fase 15)
 
-Con la misma cuenta, la app lee también las **respuestas de las empresas** a tus candidaturas
-(entrevista, prueba, oferta, rechazo) y las deja como propuesta en la ficha de la oferta. Tú
-decides: nada cambia de etapa hasta que pulsas «Aceptar».
+En los buzones que lo tengan marcado («Leer aquí también las respuestas de las empresas»; la
+cuenta de `.env`, siempre), la app lee también las **respuestas de las empresas** a tus
+candidaturas (entrevista, prueba, oferta, rechazo) y las deja como propuesta en la ficha de la
+oferta. Tú decides: nada cambia de etapa hasta que pulsas «Aceptar».
 
-- **Carpeta:** `CAI_IMAP_REPLIES_FOLDER` en `.env`, por defecto la bandeja de entrada (`INBOX`). Si
-  prefieres limitarla, crea una etiqueta (p. ej. «Procesos») con un filtro de Gmail y pon su
-  nombre: `CAI_IMAP_REPLIES_FOLDER="Procesos"`.
+- **Carpeta:** la bandeja de entrada (`INBOX`). En la cuenta de `.env` se cambia con
+  `CAI_IMAP_REPLIES_FOLDER`: si prefieres limitarla, crea una etiqueta (p. ej. «Procesos») con un
+  filtro de Gmail y pon su nombre: `CAI_IMAP_REPLIES_FOLDER="Procesos"`.
 - **Qué lee:** solo si tienes alguna candidatura enviada abierta (`applied` o `in_process`); si no,
   ni se conecta. De cada correo desde el envío más antiguo (como mucho `replies.max_days` días,
   120) pide primero **solo las cabeceras** (remitente, fecha, asunto y `Message-ID`): de todos
@@ -171,17 +254,3 @@ decides: nada cambia de etapa hasta que pulsas «Aceptar».
   agradecimientos tras una entrevista los redacta tu agente con `draft-follow-up` como
   borradores en la ficha de la oferta; los copias, los mandas desde tu correo y pulsas «Ya lo he
   enviado».
-
-## Alternativa sin credenciales
-
-Si no quieres dar una contraseña de aplicación (o tu proveedor no lo permite): exporta los
-correos (en Gmail, **⋮ → Descargar mensaje** guarda un `.eml`) y déjalos en `data/inbox/`. El worker
-y «Revisar correo ahora» los leen igual, sin moverlos ni borrarlos.
-
-## Otros proveedores
-
-- **Outlook.com / Hotmail:** Microsoft ya no admite IMAP con contraseña (exige OAuth), así que
-  usa la alternativa sin credenciales.
-- **Otros (correo propio, Yahoo, iCloud…):** suele funcionar igual con su servidor IMAP
-  (`CAI_IMAP_HOST`), el puerto 993 y una contraseña de aplicación si el proveedor la ofrece. Crea
-  una carpeta con una regla que mueva allí las alertas y ponla en `CAI_IMAP_FOLDER`.

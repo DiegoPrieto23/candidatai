@@ -1,0 +1,133 @@
+{
+  "panel": {
+    "title": "Buzones",
+    "summary_one": "{{count}} buzón",
+    "summary_other": "{{count}} buzones",
+    "withErrors_one": "{{count}} con error",
+    "withErrors_other": "{{count}} con error",
+    "demo": "Estás en la demo: no se lee ningún buzón IMAP, solo las carpetas de .eml.",
+    "empty": "Aún no hay ningún buzón. Añade el correo donde te llegan las alertas.",
+    "loadFailed": "No se pudieron cargar los buzones: {{error}}"
+  },
+  "add": "Añadir buzón",
+  "row": {
+    "fromEnv": "de .env",
+    "folderKind": "Carpeta de .eml",
+    "readsReplies": "Lee respuestas",
+    "noPassword": "Falta la contraseña ({{ref}})",
+    "lastPolled": "Leído {{when}}",
+    "never": "Aún no se ha leído",
+    "lastError": "Último error: {{message}}",
+    "switch": "Leer {{name}}",
+    "test": "Probar",
+    "testing": "Probando…",
+    "edit": "Editar",
+    "remove": "Quitar",
+    "confirmRemove": "¿Quitar? Sí",
+    "cancelRemove": "No",
+    "fromEnvHint": "Su servidor, usuario y contraseña se cambian en .env (CAI_IMAP_*)."
+  },
+  "dialog": {
+    "addTitle": "Añadir buzón",
+    "editTitle": "Editar «{{name}}»",
+    "description": "La app solo lee: no marca nada como leído, no mueve ni borra correos y no envía nada. La contraseña se guarda en tu .env y no vuelve a salir de él.",
+    "provider": "Proveedor",
+    "guide": "Guía completa",
+    "officialLinks": "Ayuda oficial",
+    "test": "Probar conexión",
+    "testing": "Probando…",
+    "save": "Guardar",
+    "saving": "Guardando…",
+    "cancel": "Cancelar",
+    "testOk": "Conexión correcta",
+    "testFailed": "No se pudo conectar",
+    "envLine": "En Docker la app no puede guardar la contraseña: añade a tu .env la línea `{{line}}` con ella y recrea el contenedor.",
+    "advanced": "Servidor y cifrado"
+  },
+  "fields": {
+    "label": "Nombre",
+    "labelHint": "Para reconocerlo en la lista, p. ej. «Gmail personal».",
+    "user": "Usuario (tu dirección)",
+    "userIcloud": "Usuario (lo que va antes de @icloud.com)",
+    "password": "Contraseña de aplicación",
+    "passwordKeep": "Déjala vacía para no cambiarla",
+    "host": "Servidor IMAP",
+    "port": "Puerto",
+    "security": "Cifrado",
+    "ssl": "SSL/TLS (993)",
+    "starttls": "STARTTLS (143)",
+    "folder": "Carpeta o etiqueta de las alertas",
+    "folderHint": "INBOX es la bandeja de entrada. En Gmail, el nombre de la etiqueta tal cual.",
+    "folderName": "Nombre de la carpeta",
+    "folderNameHint": "Se crea en {{path}}. Deja ahí los .eml o .mbox.",
+    "readReplies": "Leer aquí también las respuestas de las empresas",
+    "readRepliesHint": "La app busca en la bandeja de entrada los correos de las empresas de tus candidaturas enviadas.",
+    "allowPrivate": "Servidor en mi equipo o mi red",
+    "allowPrivateHint": "Solo para un servidor propio: por seguridad, la app no se conecta a direcciones locales si no lo marcas."
+  },
+  "providers": {
+    "gmail": {
+      "name": "Gmail",
+      "step1": "Activa la verificación en dos pasos en tu cuenta de Google.",
+      "step2": "Crea una contraseña de aplicación y cópiala: Google solo enseña sus 16 letras una vez.",
+      "step3": "Opcional: crea una etiqueta (p. ej. «Alertas empleo») y un filtro que lleve ahí los correos de LinkedIn, InfoJobs, Indeed… Escribe ese nombre en «Carpeta».",
+      "step4": "No sirve con cuentas de trabajo o de un centro educativo, ni con la Protección Avanzada: Google no da contraseñas de aplicación ahí.",
+      "linkTwoStep": "Verificación en dos pasos",
+      "linkAppPasswords": "Contraseñas de aplicación",
+      "linkHelp": "Ayuda de Google sobre contraseñas de aplicación",
+      "linkFilters": "Crear filtros en Gmail"
+    },
+    "outlook": {
+      "name": "Outlook / Hotmail",
+      "intro": "Microsoft ya no deja entrar por IMAP con contraseña en las cuentas de trabajo o de un centro educativo, y ha anunciado que también lo quitará en las personales (Outlook.com, Hotmail, Live). La app no usa el inicio de sesión de Microsoft, así que hay dos caminos que funcionan:",
+      "forwardTitle": "Reenvía las alertas a otra cuenta (recomendado)",
+      "forwardBody": "En Outlook.com: Configuración → Correo → Reglas, una regla para los correos de LinkedIn, InfoJobs… con «Reenviar a» tu Gmail. O Configuración → Correo → Reenvío, para reenviarlo todo. Después añade aquí ese Gmail.",
+      "forwardButton": "Ir a Gmail",
+      "exportTitle": "Exporta las alertas como .eml",
+      "exportBody": "En Outlook en la web, abre una alerta → ⋯ → Descargar: se guarda como .eml. Déjalas en la carpeta de un buzón de tipo «Carpeta de .eml».",
+      "exportButton": "Ir a «Carpeta de .eml»",
+      "imapTitle": "Probar por IMAP igualmente",
+      "imapBody": "Puede que aún funcione en una cuenta personal con contraseña de aplicación (con la verificación en dos pasos activada). Si falla con «usuario o contraseña», usa uno de los dos caminos de arriba.",
+      "linkForwarding": "Reenvío en Outlook",
+      "linkBasicAuth": "Microsoft: apps que no pueden conectar con contraseña"
+    },
+    "yahoo": {
+      "name": "Yahoo",
+      "step1": "En la seguridad de tu cuenta de Yahoo, ve a «Conexiones externas» y genera una contraseña de aplicación.",
+      "step2": "Escribe aquí tu dirección completa como usuario y esa contraseña.",
+      "linkAppPasswords": "Contraseñas de aplicación de Yahoo",
+      "linkImap": "Datos IMAP de Yahoo"
+    },
+    "icloud": {
+      "name": "iCloud",
+      "step1": "Activa la autenticación de doble factor en tu cuenta de Apple.",
+      "step2": "En account.apple.com → Inicio de sesión y seguridad → Contraseñas específicas de app, genera una.",
+      "step3": "Usuario: lo que va antes de @icloud.com. Si no conecta, prueba con la dirección completa.",
+      "linkAppPasswords": "Contraseñas específicas de app",
+      "linkImap": "Datos IMAP de iCloud"
+    },
+    "imap": {
+      "name": "Otro (IMAP)",
+      "step1": "Busca en la ayuda de tu proveedor sus datos IMAP: servidor y puerto (casi siempre 993 con SSL).",
+      "step2": "Si tu proveedor da contraseñas de aplicación, usa una: no la de siempre.",
+      "step3": "Proton Mail no da IMAP directo y su Bridge usa un certificado propio que la app no acepta: exporta los correos como .eml."
+    },
+    "folder": {
+      "name": "Carpeta de .eml",
+      "step1": "Exporta los correos de alertas como .eml (o un .mbox) desde tu programa de correo.",
+      "step2": "Déjalos en la carpeta de este buzón: la app los lee sin moverlos ni borrarlos.",
+      "step3": "Sirve con cualquier proveedor, también Outlook o Proton."
+    }
+  },
+  "errors": {
+    "imap_auth": "Revisa el usuario (la dirección completa) y que la contraseña sea de aplicación, no la normal.",
+    "imap_folder": "Esa carpeta o etiqueta no existe: escribe el nombre exacto (en Gmail, el de la etiqueta).",
+    "network": "No se pudo conectar: revisa el servidor, el puerto y tu conexión.",
+    "host_not_allowed": "Es una dirección de tu equipo o tu red. Si es tu propio servidor, marca «Servidor en mi equipo o mi red».",
+    "no_password": "Escribe la contraseña de aplicación.",
+    "demo": "Estás en la demo: no se lee ningún buzón real.",
+    "inbox_error": "Revisa que la carpeta existe dentro de data/inbox/.",
+    "time_budget": "No dio tiempo en esta pasada: se leerá en la siguiente.",
+    "imap_error": "El servidor respondió con un error. Vuelve a probar más tarde."
+  }
+}

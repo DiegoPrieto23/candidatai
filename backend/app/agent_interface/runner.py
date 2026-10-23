@@ -39,6 +39,11 @@ from app.services.extractions import ExtractionNotFoundError
 from app.services.ingestion.browse import BrowsingNotAllowedError, PriorityConflictError
 from app.services.ingestion.service import SourceExistsError, SourceNotFoundError
 from app.services.interviews import InterviewNotAllowedError
+from app.services.mail_sources import (
+    MailSourceExistsError,
+    MailSourceNotAllowedError,
+    MailSourceNotFoundError,
+)
 from app.services.network import NetworkContactNotFoundError
 from app.services.pipeline import InvalidTransitionError
 from app.services.process import ContactNotFoundError, MilestoneNotFoundError
@@ -65,6 +70,9 @@ _ERROR_TYPES: tuple[tuple[type[Exception], str], ...] = (
     (ProfileReferencedError, "referenced"),
     (SourceNotFoundError, "not_found"),
     (SourceExistsError, "exists"),
+    (MailSourceNotFoundError, "not_found"),
+    (MailSourceExistsError, "exists"),
+    (MailSourceNotAllowedError, "not_allowed"),
     (PromptNotFoundError, "not_found"),
     (RequestNotFoundError, "not_found"),
     (RequestClosedError, "not_allowed"),

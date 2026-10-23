@@ -1,0 +1,133 @@
+{
+  "panel": {
+    "title": "Mailboxes",
+    "summary_one": "{{count}} mailbox",
+    "summary_other": "{{count}} mailboxes",
+    "withErrors_one": "{{count}} with an error",
+    "withErrors_other": "{{count}} with an error",
+    "demo": "You're in the demo: no IMAP mailbox is read, only .eml folders.",
+    "empty": "No mailboxes yet. Add the email account where your job alerts arrive.",
+    "loadFailed": "Couldn't load the mailboxes: {{error}}"
+  },
+  "add": "Add mailbox",
+  "row": {
+    "fromEnv": "from .env",
+    "folderKind": ".eml folder",
+    "readsReplies": "Reads replies",
+    "noPassword": "Password missing ({{ref}})",
+    "lastPolled": "Read {{when}}",
+    "never": "Not read yet",
+    "lastError": "Last error: {{message}}",
+    "switch": "Read {{name}}",
+    "test": "Test",
+    "testing": "Testing…",
+    "edit": "Edit",
+    "remove": "Remove",
+    "confirmRemove": "Remove? Yes",
+    "cancelRemove": "No",
+    "fromEnvHint": "Its server, user and password are changed in .env (CAI_IMAP_*)."
+  },
+  "dialog": {
+    "addTitle": "Add mailbox",
+    "editTitle": "Edit “{{name}}”",
+    "description": "The app only reads: it doesn't mark anything as read, move or delete emails, or send anything. The password is stored in your .env and never leaves it again.",
+    "provider": "Provider",
+    "guide": "Full guide",
+    "officialLinks": "Official help",
+    "test": "Test connection",
+    "testing": "Testing…",
+    "save": "Save",
+    "saving": "Saving…",
+    "cancel": "Cancel",
+    "testOk": "Connection works",
+    "testFailed": "Couldn't connect",
+    "envLine": "In Docker the app can't store the password: add the line `{{line}}` with it to your .env and recreate the container.",
+    "advanced": "Server and encryption"
+  },
+  "fields": {
+    "label": "Name",
+    "labelHint": "To recognise it in the list, e.g. “Personal Gmail”.",
+    "user": "User (your address)",
+    "userIcloud": "User (the part before @icloud.com)",
+    "password": "App password",
+    "passwordKeep": "Leave it empty to keep the current one",
+    "host": "IMAP server",
+    "port": "Port",
+    "security": "Encryption",
+    "ssl": "SSL/TLS (993)",
+    "starttls": "STARTTLS (143)",
+    "folder": "Folder or label with the alerts",
+    "folderHint": "INBOX is the inbox. In Gmail, the label name exactly as it is.",
+    "folderName": "Folder name",
+    "folderNameHint": "It's created in {{path}}. Put the .eml or .mbox files there.",
+    "readReplies": "Also read company replies here",
+    "readRepliesHint": "The app looks in the inbox for emails from the companies of the applications you sent.",
+    "allowPrivate": "Server on my computer or network",
+    "allowPrivateHint": "Only for your own server: for safety, the app doesn't connect to local addresses unless you tick this."
+  },
+  "providers": {
+    "gmail": {
+      "name": "Gmail",
+      "step1": "Turn on 2-Step Verification in your Google Account.",
+      "step2": "Create an app password and copy it: Google only shows its 16 letters once.",
+      "step3": "Optional: create a label (e.g. “Job alerts”) and a filter that sends emails from LinkedIn, InfoJobs, Indeed… there. Type that name in “Folder”.",
+      "step4": "It doesn't work with work or school accounts, or with Advanced Protection: Google doesn't offer app passwords there.",
+      "linkTwoStep": "2-Step Verification",
+      "linkAppPasswords": "App passwords",
+      "linkHelp": "Google's help on app passwords",
+      "linkFilters": "Create filters in Gmail"
+    },
+    "outlook": {
+      "name": "Outlook / Hotmail",
+      "intro": "Microsoft no longer allows IMAP sign-in with a password for work or school accounts, and has announced it will remove it for personal ones too (Outlook.com, Hotmail, Live). The app doesn't use Microsoft sign-in, so there are two ways that work:",
+      "forwardTitle": "Forward the alerts to another account (recommended)",
+      "forwardBody": "In Outlook.com: Settings → Mail → Rules, a rule for emails from LinkedIn, InfoJobs… with “Forward to” your Gmail. Or Settings → Mail → Forwarding, to forward everything. Then add that Gmail here.",
+      "forwardButton": "Go to Gmail",
+      "exportTitle": "Export the alerts as .eml",
+      "exportBody": "In Outlook on the web, open an alert → ⋯ → Download: it's saved as .eml. Put them in the folder of an “.eml folder” mailbox.",
+      "exportButton": "Go to “.eml folder”",
+      "imapTitle": "Try IMAP anyway",
+      "imapBody": "It may still work for a personal account with an app password (with 2-step verification on). If it fails with “user or password”, use one of the two ways above.",
+      "linkForwarding": "Forwarding in Outlook",
+      "linkBasicAuth": "Microsoft: apps that can't connect with a password"
+    },
+    "yahoo": {
+      "name": "Yahoo",
+      "step1": "In your Yahoo account security, go to “External connections” and generate an app password.",
+      "step2": "Type your full address here as the user, and that password.",
+      "linkAppPasswords": "Yahoo app passwords",
+      "linkImap": "Yahoo IMAP settings"
+    },
+    "icloud": {
+      "name": "iCloud",
+      "step1": "Turn on two-factor authentication for your Apple Account.",
+      "step2": "At account.apple.com → Sign-In and Security → App-Specific Passwords, generate one.",
+      "step3": "User: the part before @icloud.com. If it doesn't connect, try the full address.",
+      "linkAppPasswords": "App-specific passwords",
+      "linkImap": "iCloud IMAP settings"
+    },
+    "imap": {
+      "name": "Other (IMAP)",
+      "step1": "Look up your provider's IMAP settings in its help: server and port (almost always 993 with SSL).",
+      "step2": "If your provider offers app passwords, use one: not your usual password.",
+      "step3": "Proton Mail has no direct IMAP and its Bridge uses its own certificate, which the app doesn't accept: export the emails as .eml."
+    },
+    "folder": {
+      "name": ".eml folder",
+      "step1": "Export the alert emails as .eml (or one .mbox) from your email program.",
+      "step2": "Put them in this mailbox's folder: the app reads them without moving or deleting them.",
+      "step3": "Works with any provider, Outlook and Proton included."
+    }
+  },
+  "errors": {
+    "imap_auth": "Check the user (the full address) and that the password is an app password, not your usual one.",
+    "imap_folder": "That folder or label doesn't exist: type its exact name (in Gmail, the label's).",
+    "network": "Couldn't connect: check the server, the port and your connection.",
+    "host_not_allowed": "It's an address on your computer or network. If it's your own server, tick “Server on my computer or network”.",
+    "no_password": "Type the app password.",
+    "demo": "You're in the demo: no real mailbox is read.",
+    "inbox_error": "Check that the folder exists inside data/inbox/.",
+    "time_budget": "There wasn't time in this round: it will be read in the next one.",
+    "imap_error": "The server replied with an error. Try again later."
+  }
+}

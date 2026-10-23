@@ -31,6 +31,7 @@
       "mcp__candidatai__get_cv_content",
       "mcp__candidatai__list_cv_templates",
       "mcp__candidatai__list_sources",
+      "mcp__candidatai__list_mail_sources",
       "mcp__candidatai__list_followups_due",
       "mcp__candidatai__list_upcoming",
       "mcp__candidatai__get_funnel_stats",

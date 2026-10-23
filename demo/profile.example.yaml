@@ -134,6 +134,7 @@ stories:                     # historias STAR para entrevistas; cita logros como
 preferences:
   roles: [Data Engineer, Analytics Engineer, Data Analyst]   # por prioridad
   seniority_target: [junior, mid]   # todos los niveles que aceptas; los demás se descartan
+  min_years_required: 1             # opcional; descarta si piden menos años (demasiado junior)
   max_years_required: 4
   remote_modes: [remote, hybrid]
   locations:
@@ -141,6 +142,10 @@ preferences:
     allowed: [Madrid]              # solo si es híbrido o remoto
     excluded: []
   languages_for_work: [es, en]
+  discard_title_keywords: [prácticas, comercial]   # se suman a las de config/policies.yaml
+  contract_types: [permanent, freelance]   # los que aceptas; vacío = cualquiera
+  employment_types: [full_time]            # full_time, part_time, internship; vacío = cualquiera
+  excluded_employer_kinds: [agency]        # consultancy, agency
   cv:
     default_template: clasica-foto   # integrada o tuya (data/templates/<id>); ver docs/CV_TEMPLATES.md
     photo_file: photo.jpg            # dentro de data/; cualquier formato de imagen
@@ -165,4 +170,4 @@ preferences:
     default_format: text
 
 private:                     # nunca sale por la MCP ni en ningún documento
-  salary_floor_eur: null
+  salary_floor_eur: 30000   # bruto anual en euros; filtra, pero el agente nunca ve la cifra

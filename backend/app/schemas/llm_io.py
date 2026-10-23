@@ -69,6 +69,9 @@ class JobExtraction(_Strict):
     hiring_entity: str | None = _optional(max_length=200)  # quién contrata, si lo dice
     is_agency: bool | None = _optional()  # la publica una agencia, consultora de selección o ETT
     mentions_ai_screening: bool | None = _optional()  # cribado con IA o test antes de hablar
+    # Fase 27.5: quién te contrata. `direct`, para sí; `consultancy`, te cede a un cliente
+    # (consultora, outsourcing); `agency`, selección o ETT. `None` en las antiguas.
+    employer_kind: Literal["direct", "consultancy", "agency", "unknown"] | None = _optional()
 
     @model_validator(mode="after")
     def _excerpt_only_if_suspected(self) -> Self:

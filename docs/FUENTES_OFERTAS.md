@@ -96,8 +96,8 @@ empresas (abajo). Antes de guardar, «Probar» enseña cuántas ofertas tiene y 
 filtros.
 - **Filtro previo** antes de guardar (`ingestion/prefilter.py`): el título debe contener todas las
   palabras de alguno de tus `preferences.roles` (también en español, con
-  `config/title_aliases.yaml`; o una `title_keywords` de la fuente) y ninguna
-  `discard_title_keywords`; la ubicación, encajar con tus zonas o ser remota si aceptas remoto.
+  `config/title_aliases.yaml`; o una `title_keywords` de la fuente) y ninguna palabra de descarte
+  (las de `preferences.discard_title_keywords` del perfil más las de `policies.yaml`); la ubicación, encajar con tus zonas o ser remota si aceptas remoto.
   Ante la duda deja pasar (sin ubicación, sin perfil). La 09b lo reutiliza para los resúmenes.
 - **Idempotente:** lo ya visto (por id en la fuente, URL o huella) no se vuelve a crear ni a
   descargar. Lo nuevo queda en `pending_extraction` con el evento `found`.
@@ -129,18 +129,38 @@ found ─► pending_detail ─(detail_captured)─► pending_extraction ─►
 - **Qué hace:** lee los correos de alertas de empleo y da de alta cada oferta que contienen.
   Configuras las búsquedas con alerta en cada portal; la app recibe lo nuevo de todos ellos sin
   entrar en ninguno.
-- **Conexión IMAP de solo lectura** a una única carpeta o etiqueta (p. ej. una etiqueta de Gmail
-  «Alertas empleo» rellenada por un filtro). Abre la carpeta en modo solo lectura: no marca como
-  leído, no mueve, no borra. Credenciales en `.env` (`CAI_IMAP_HOST`, `CAI_IMAP_PORT` (993),
-  `CAI_IMAP_USER`, `CAI_IMAP_PASSWORD`, `CAI_IMAP_FOLDER`).
+- **Varios buzones** (fase 27.4, ADR-045), cada uno con su carpeta o etiqueta (p. ej. una
+  etiqueta de Gmail «Alertas empleo» rellenada por un filtro). Se añaden en «Alertas → Añadir
+  buzón» (tabla `mail_sources`): IMAP o una carpeta `data/inbox/<nombre>/` de `.eml`/`.mbox`. La
+  cuenta de siempre de `.env` (`CAI_IMAP_HOST`, `CAI_IMAP_PORT` (993), `CAI_IMAP_USER`,
+  `CAI_IMAP_PASSWORD`, `CAI_IMAP_FOLDER`) aparece sola como «Principal» y se sigue cambiando en
+  `.env`.
+  - **Contraseñas solo en `.env`**, una variable por buzón (`CAI_IMAP_<ALIAS>_PASSWORD`), que
+    escribe la app de forma atómica cuando la escribes en la UI. La tabla guarda el nombre de la
+    variable, nunca el valor, y la contraseña no vuelve por la API ni por MCP (solo
+    `has_password`). En Docker la app no puede guardarla: te dice qué línea añadir a tu `.env`.
+  - Se leen uno detrás de otro, con un tope de 5 minutos por pasada: el fallo de uno no frena a
+    los demás y queda en su `last_error`. El mismo aviso recibido en dos buzones cuenta una vez
+    (por `Message-ID`).
+  - El servidor se valida: solo el nombre, y ni IP privadas ni locales salvo que el buzón lo
+    permita (`allow_private`, «Servidor en mi equipo o mi red», para un servidor propio).
+    Cifrado `ssl` (993) o `starttls` (143); nunca sin cifrar, y el certificado se verifica
+    siempre (por eso Proton Bridge, con su certificado propio, no sirve: exporta `.eml`).
+  - En una demo no se lee ningún buzón IMAP (las carpetas, sí).
+  - El agente solo los ve (`list_mail_sources`); añadirlos, cambiarlos y probarlos se hace en la
+    UI. `cai mail-sources test ID` prueba uno y `cai doctor` los prueba todos.
+- **Conexión IMAP de solo lectura**: abre la carpeta en modo solo lectura: no marca como leído,
+  no mueve, no borra.
   - Solo usa `LOGIN`, `EXAMINE`, `UID SEARCH`, `UID FETCH` con `BODY.PEEK[]` y `LOGOUT`. Busca los
     correos de los últimos `summary_expire_days` días, pide primero solo sus `Message-ID` y
     descarga el cuerpo solo de los nuevos. Un test con un servidor IMAP falso que falla ante
     cualquier escritura lo comprueba.
   - Gmail: IMAP con contraseña de aplicación (requiere verificación en dos pasos). Guía para el
     usuario: `CONFIGURAR_CORREO.md`.
-  - Otros proveedores pueden exigir OAuth para IMAP (p. ej. Outlook.com). La fase lo verifica; si
-    no es viable, se usa la alternativa de abajo.
+  - Yahoo e iCloud: también con contraseña de aplicación. Outlook: Microsoft ya no admite
+    contraseña por IMAP en cuentas de trabajo y ha anunciado que la retirará en las personales;
+    la app no implementa OAuth, así que la guía recomienda reenviar las alertas a otra cuenta o
+    exportarlas como `.eml` (comprobado el 2026-10-23).
 - **Alternativa sin credenciales:** carpeta `data/inbox/` donde dejas correos exportados (`.eml`
   o `.mbox`). El worker la procesa igual. Los ficheros no se mueven ni se borran; los ya
   procesados se reconocen por su `Message-ID`. Las subcarpetas (como `samples/`) no se leen.

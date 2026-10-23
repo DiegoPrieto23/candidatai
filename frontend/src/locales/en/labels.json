@@ -74,6 +74,7 @@
     "salary": "Salary or conditions",
     "company": "Company or sector",
     "closed": "No longer posted",
+    "not_interested": "Not interested (title or company)",
     "other": "Other reason"
   },
   "component": {
@@ -141,7 +142,10 @@
     "location": "Location",
     "language": "Language",
     "title_keyword": "Title keywords",
-    "signal": "Doubtful-job signals you excluded"
+    "signal": "Doubtful-job signals you excluded",
+    "salary": "Below your salary minimum",
+    "contract": "Contract or working-time type",
+    "employer_kind": "Employer type"
   },
   "sourceKind": {
     "manual_url": "Link",

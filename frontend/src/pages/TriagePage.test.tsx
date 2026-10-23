@@ -229,6 +229,18 @@ describe('Por revisar', () => {
     expect(within(detail).getByText('dbt solo básico')).toBeInTheDocument()
   })
 
+  it('el descarte por sueldo dice cuánto queda por debajo de tu mínimo (solo la UI lo sabe)', async () => {
+    const reason = 'El sueldo publicado está por debajo de tu mínimo salarial.'
+    const item = triageItem(1, 60, {
+      match: matchView({ score: 60, hard_filters: { passed: false, failures: [{ filter: 'salary', reason }] } }),
+    })
+    mockTriage([item], { 'GET /jobs/1/salary-gap': { gap_eur: 8000 } })
+    renderApp('/por-revisar')
+    const note = within(await screen.findByRole('article')).getByRole('note', { name: 'No pasa los filtros' })
+    expect(note).toHaveTextContent(reason)
+    await waitFor(() => expect(note).toHaveTextContent(/8\.?000\s€ por debajo de tu mínimo/))
+  })
+
   it('avisa si no hay perfil y enseña la cola vacía', async () => {
     mockApi({ 'GET /status': status(), 'GET /triage': triageQueue([], { profile_missing: true }) })
     renderApp('/por-revisar')

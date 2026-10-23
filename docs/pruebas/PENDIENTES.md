@@ -6,7 +6,7 @@ cada fase y lo quita cuando el usuario confirma que está hecho.
 
 Marca `[x]` lo que hagas y, si algo falla, apúntalo debajo de la línea con `→`.
 
-Última actualización: 2026-10-23 (fase 27.3).
+Última actualización: 2026-10-23 (fase 27.6).
 
 ## 1. Poner la app al día (antes de probar nada)
 
@@ -259,6 +259,49 @@ hiciste, márcala.
       WSL2: seguir solo la guía (requisitos, `install.sh`, abrir la app, conectar tu agente) sin
       saltarte ni añadir pasos, y apuntar lo que falte.
 - [ ] **La primera CI en `main`** tras fusionar la fase: macOS corre ahí (en la rama ya pasó a mano).
+- [ ] **Fase 27.6 · Descartar desde la Bandeja** (UI compilada o `cai start --dev`):
+  - antes, copia de la BD y `uv run --directory backend cai db upgrade` (migración **0028**);
+  - «Bandeja» filtrada por «Por completar»: «Abrir» lleva a la oferta en su portal; «Descartar» la
+    quita sin entrar en la ficha y avisa «Descartada: … · No me interesa (título o empresa)»;
+    «Deshacer» la devuelve;
+  - lo mismo en «Por extraer»; el ▾ abre el diálogo con los motivos de siempre;
+  - marca varias casillas y «Descartar N»; «Deshacer» las devuelve todas;
+  - con «Por extraer» con ofertas, lanza `process-jobs` y descarta una mientras trabaja: el lote
+    la cuenta como saltada y sigue con las demás;
+  - «Cerrada»: la columna «Cerrada» tiene fecha también en las que cerraste antes de la migración
+    (pasa el ratón: sale cómo se cerró) y la cabecera ordena por ella; las demás vistas no cambian;
+  - a 375 px de ancho, los botones caben en cada fila y el selector ofrece «Cerradas hace menos /
+    más» solo en «Cerrada»; cambia la UI a inglés y repite un descarte.
+- [ ] **Fase 27.5 · Preferencias de búsqueda** (con tu perfil real, UI compilada o `cai start --dev`):
+  - «Mi perfil → Búsqueda» tiene cuatro bloques (Puesto, Experiencia y sueldo, Dónde y cómo,
+    Contrato y empresa); captura a 1400 px y a 375 px de ancho, en claro y en oscuro: los campos de
+    una misma fila empiezan a la misma altura y nada se aprieta;
+  - si tenías `exclude_signals: [fixed_term]`, «Temporal» sale sin marcar e «Indefinido» y
+    «Autónomo» marcados; guarda «Contrato y empresa» y mira que el YAML pasa a
+    `contract_types: [permanent, freelance]` sin dejar `fixed_term` en `exclude_signals`;
+  - escribe un sueldo mínimo por encima de una oferta que publique sueldo (en EUR, por año o por
+    mes) y pulsa «Guardar sueldo»: al recalcularse, la oferta pasa a descartada con «por debajo de
+    tu mínimo salarial» y, en su ficha, cuánto queda por debajo. En «Historial» la cifra sale como
+    `<oculto>`;
+  - pide a tu agente `get_match` de esa oferta: ve el motivo, pero ni la cifra ni la diferencia;
+  - añade una palabra en «Palabras que descartan una oferta» y comprueba que una oferta con ella en
+    el título se descarta (y que la próxima ingesta no la guarda);
+  - cambia la UI a inglés y recorre los cuatro bloques.
+- [ ] **Fase 27.4 · Varios buzones** (UI compilada o `cai start --dev`):
+  - antes, copia de la BD y `uv run --directory backend cai db upgrade` (migración **0027**);
+  - en «Alertas», tu cuenta de `.env` sale sola como «Principal» en el panel «Buzones» (con «de
+    .env») y «Revisar correo ahora» la sigue leyendo;
+  - «Añadir buzón» → pestaña Gmail con una segunda cuenta (o una carpeta de `.eml`): «Probar
+    conexión» con una contraseña mal dice cómo arreglarlo; con la buena, conecta; «Guardar»;
+  - mira tu `.env`: hay una línea `CAI_IMAP_<NOMBRE>_PASSWORD` nueva y el resto sigue igual; en la
+    UI no aparece la contraseña en ningún sitio;
+  - «Revisar correo ahora» lee los dos buzones; una alerta reenviada a los dos entra una vez; en
+    Gmail, **nada queda marcado como leído**;
+  - desactivar un buzón con el interruptor: deja de leerse; «Quitar»: desaparece su línea de `.env`;
+  - recorre las pestañas Outlook, Yahoo, iCloud y Otro: los enlaces oficiales abren la página
+    correcta y «Guía completa» la sección de `docs/CONFIGURAR_CORREO.md`;
+  - con el diálogo abierto, pulsar `D` o `J` no hace nada en la lista de alertas;
+  - cambia la UI a inglés y abre el asistente.
 - [ ] **Fase 27.3 · Prioridades únicas** (UI compilada o `cai start --dev`):
   - antes, copia de la BD y `uv run --directory backend cai db upgrade` (migración **0026**: numera
     tus plataformas 1…N por su prioridad y su nombre); en «Fuentes → Plataformas» no hay dos con

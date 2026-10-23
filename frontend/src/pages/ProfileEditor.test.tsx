@@ -56,7 +56,16 @@ const PROFILE = {
   },
 }
 
-const EDITABLE = { exists: true, file_hash: 'h1', profile: PROFILE, issues: [], profile_version_id: 3, undo_available: 1 }
+const EDITABLE = {
+  exists: true,
+  file_hash: 'h1',
+  profile: PROFILE,
+  issues: [],
+  profile_version_id: 3,
+  undo_available: 1,
+  policy_discard_title_keywords: ['sales'],
+  policy_years_tolerance: 1,
+}
 
 const saved = (section: string, changes: Record<string, unknown> = {}) => ({
   section,
@@ -93,6 +102,7 @@ const BASE = {
   'GET /context/narrativa': doc('narrativa', '', { exists: false, file_hash: null }),
   'GET /context/style-samples': [],
   'GET /templates': { templates: [], invalid: [], fallback_template: 'ats-simple' },
+  'GET /profile/salary-floor': { salary_floor_eur: 30000, file_hash: 'h1' },
 }
 
 async function openTab(name: string) {
@@ -358,7 +368,7 @@ describe('Mi perfil editable', () => {
     })
     renderApp('/perfil')
     await openTab('Búsqueda')
-    const block = await screen.findByRole('region', { name: 'Qué buscas' })
+    const block = await screen.findByRole('region', { name: 'Puesto' })
     await userEvent.type(within(block).getByRole('textbox', { name: 'Puestos que buscas' }), 'Analytics Engineer{Enter}')
     await userEvent.click(within(block).getByRole('button', { name: 'Guardar' }))
 
@@ -377,6 +387,128 @@ describe('Mi perfil editable', () => {
     await waitFor(() => expect(puts()).toHaveLength(2))
     expect(puts()[1].body).toMatchObject({ dry_run: false, file_hash: 'h1' })
     expect(await within(block).findByText('Guardado')).toBeInTheDocument()
+  })
+
+  it('«Búsqueda» va en cuatro bloques, cada uno con su botón de guardar', async () => {
+    mockApi(BASE)
+    renderApp('/perfil')
+    await openTab('Búsqueda')
+    for (const name of ['Puesto', 'Experiencia y sueldo', 'Dónde y cómo', 'Contrato y empresa']) {
+      const block = await screen.findByRole('region', { name })
+      expect(within(block).getByRole('button', { name: 'Guardar' })).toBeDisabled()
+    }
+    const role = screen.getByRole('region', { name: 'Puesto' })
+    expect(within(role).getByText(/También descartan las de config\/policies.yaml: sales/)).toBeInTheDocument()
+    const where = screen.getByRole('region', { name: 'Dónde y cómo' })
+    expect(within(where).getByRole('textbox', { name: 'Solo si no es presencial' })).toBeInTheDocument()
+    const years = screen.getByRole('group', { name: 'Años de experiencia que pida la oferta' })
+    expect(within(years).getByText(/Se admite 1 año de margen/)).toBeInTheDocument()
+  })
+
+  it('en una etiqueta, el campo va antes que las etiquetas: los de una fila empiezan a la misma altura', async () => {
+    mockApi(BASE)
+    renderApp('/perfil')
+    await openTab('Búsqueda')
+    const block = await screen.findByRole('region', { name: 'Dónde y cómo' })
+    const input = within(block).getByRole('textbox', { name: 'Ubicaciones preferidas' })
+    const tags = within(block).getByRole('list', { name: 'Ubicaciones preferidas' })
+    expect(input.compareDocumentPosition(tags) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it('los años mínimo y máximo se guardan como un rango', async () => {
+    const calls = mockApi({ ...BASE, 'PUT /profile/sections/preferences': saved('preferences', { dry_run: true, diff: '+  min_years_required: 2' }) })
+    renderApp('/perfil')
+    await openTab('Búsqueda')
+    const block = await screen.findByRole('region', { name: 'Experiencia y sueldo' })
+    await userEvent.type(within(block).getByRole('spinbutton', { name: 'Desde' }), '2')
+    await userEvent.type(within(block).getByRole('spinbutton', { name: 'Hasta' }), '5')
+    await userEvent.click(within(block).getByRole('button', { name: 'Guardar' }))
+    await waitFor(() => expect(calls.filter((c) => c.method === 'PUT')).toHaveLength(1))
+    expect((calls.find((c) => c.method === 'PUT')!.body as { content: unknown }).content).toMatchObject({
+      min_years_required: 2,
+      max_years_required: 5,
+      roles: ['Data Engineer'],
+    })
+  })
+
+  it('el sueldo mínimo va con candado, se guarda aparte y sin diff', async () => {
+    const calls = mockApi({
+      ...BASE,
+      'PUT /profile/salary-floor': { changed: true, file_hash: 'h2', profile_version_id: 4, rescore_queued: true },
+    })
+    renderApp('/perfil')
+    await openTab('Búsqueda')
+    const block = await screen.findByRole('region', { name: 'Experiencia y sueldo' })
+    const field = await within(block).findByRole('spinbutton', { name: 'Sueldo mínimo' })
+    await waitFor(() => expect(field).toHaveValue(30000))
+    expect(within(block).getByText(/tu agente nunca ve esta cifra/)).toBeInTheDocument()
+    const button = within(block).getByRole('button', { name: 'Guardar sueldo' })
+    expect(button).toBeDisabled()
+
+    await userEvent.clear(field)
+    await userEvent.type(field, '-3')
+    expect(within(block).getByText(/número entero de euros mayor que 0/)).toBeInTheDocument()
+    expect(button).toBeDisabled()
+
+    await userEvent.clear(field)
+    await userEvent.type(field, '35000')
+    await userEvent.click(button)
+    expect(await within(block).findByText('Sueldo guardado')).toBeInTheDocument()
+    const put = calls.find((c) => c.method === 'PUT')!
+    expect(put.path).toBe('/profile/salary-floor')
+    expect(put.body).toEqual({ file_hash: 'h1', salary_floor_eur: 35000 })
+    expect(calls.some((c) => c.path === '/profile/sections/preferences')).toBe(false)
+  })
+
+  it('si el fichero cambió, el sueldo da conflicto y ofrece «Recargar»', async () => {
+    const calls = mockApi({
+      ...BASE,
+      'PUT /profile/salary-floor': {
+        status: 409,
+        body: { ok: false, error: { type: 'conflict', message: 'El fichero ha cambiado.', details: [] } },
+      },
+    })
+    renderApp('/perfil')
+    await openTab('Búsqueda')
+    const block = await screen.findByRole('region', { name: 'Experiencia y sueldo' })
+    const field = await within(block).findByRole('spinbutton', { name: 'Sueldo mínimo' })
+    await waitFor(() => expect(field).toHaveValue(30000))
+    await userEvent.clear(field)
+    await userEvent.type(field, '35000')
+    await userEvent.click(within(block).getByRole('button', { name: 'Guardar sueldo' }))
+    expect(await within(block).findByRole('alert')).toBeInTheDocument()
+    const editableReads = () => calls.filter((c) => c.path === '/profile/editable').length
+    const before = editableReads()
+    await userEvent.click(within(block).getByRole('button', { name: 'Recargar' }))
+    await waitFor(() => expect(editableReads()).toBeGreaterThan(before))
+    expect(within(block).queryByRole('alert')).not.toBeInTheDocument()
+  })
+
+  it('contrato y empresa: casillas, y «Temporal» de exclude_signals se guarda como contract_types', async () => {
+    const calls = mockApi({ ...BASE, 'PUT /profile/sections/preferences': saved('preferences', { dry_run: true, diff: 'x' }) })
+    renderApp('/perfil')
+    await openTab('Búsqueda')
+    const block = await screen.findByRole('region', { name: 'Contrato y empresa' })
+    // `exclude_signals: [fixed_term]` es no aceptar temporal: «Temporal» sale sin marcar.
+    expect(within(block).getByRole('checkbox', { name: 'Indefinido' })).toBeChecked()
+    expect(within(block).getByRole('checkbox', { name: 'Temporal' })).not.toBeChecked()
+    expect(within(block).getByRole('checkbox', { name: 'Autónomo / freelance' })).toBeChecked()
+    expect(within(block).getByRole('checkbox', { name: 'Parcial' })).not.toBeChecked()
+    expect(within(block).getAllByText(/Sin marcar nada: cualquiera/)).toHaveLength(2)
+
+    await userEvent.click(within(block).getByRole('checkbox', { name: 'Jornada completa' }))
+    await userEvent.click(within(block).getByRole('checkbox', { name: /Excluir consultoras/ }))
+    await userEvent.click(within(block).getByRole('checkbox', { name: /Descartar las que no dicen qué empresa contrata/ }))
+    await userEvent.click(within(block).getByRole('button', { name: 'Guardar' }))
+    await waitFor(() => expect(calls.filter((c) => c.method === 'PUT')).toHaveLength(1))
+    const content = (calls.find((c) => c.method === 'PUT')!.body as { content: Record<string, unknown> }).content
+    expect(content).toMatchObject({
+      contract_types: ['permanent', 'freelance'],
+      employment_types: ['full_time'],
+      excluded_employer_kinds: ['consultancy'],
+      exclude_signals: ['employer_hidden'],
+      roles: ['Data Engineer'],
+    })
   })
 
   it('el nivel de un idioma es un desplegable que conserva el valor libre que ya tenías', async () => {

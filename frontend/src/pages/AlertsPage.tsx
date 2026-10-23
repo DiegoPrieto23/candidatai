@@ -4,6 +4,7 @@ import { Link } from 'react-router'
 import {
   ArrowSquareOutIcon,
   ArrowsClockwiseIcon,
+  PlusIcon,
   EnvelopeSimpleIcon,
   FunnelSimpleXIcon,
   ProhibitIcon,
@@ -13,6 +14,7 @@ import {
 import type { AlertJob, EmailPollResult } from '@/api/client'
 import { useAlerts, useJobEvent, usePollAlerts } from '@/api/queries'
 import { DiscardDialog, type DiscardChoice } from '@/components/DiscardDialog'
+import { MailboxDialog, MailboxesPanel, type MailboxDialogState } from '@/components/Mailboxes'
 import { Kbd } from '@/components/Kbd'
 import { EmptyState, ErrorState, InlineCode } from '@/components/States'
 import { Button } from '@/components/ui/button'
@@ -170,6 +172,7 @@ export function AlertsPage() {
   const [discarding, setDiscarding] = useState(false)
   const [done, setDone] = useState<Done | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
+  const [mailDialog, setMailDialog] = useState<MailboxDialogState>(null)
 
   const jobs = useMemo(() => (data?.jobs ?? []).filter((j) => !hidden.has(j.job_id)), [data, hidden])
   const index = Math.max(0, jobs.findIndex((j) => j.job_id === selectedId))
@@ -234,7 +237,10 @@ export function AlertsPage() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (discarding || e.metaKey || e.ctrlKey || e.altKey || isTyping(e.target)) return
+      // Con el diálogo de buzones abierto, las teclas son suyas.
+      if (discarding || mailDialog || e.metaKey || e.ctrlKey || e.altKey || isTyping(e.target)) return
+      // Ni con el foco en el panel de buzones: «Quitar» y sus botones no son de la lista.
+      if (e.target instanceof Element && e.target.closest('[data-mailboxes]')) return
       if (!current) return
       const key = e.key.toLowerCase()
       if (key === 'j' || e.key === 'ArrowDown') select(index + 1)
@@ -246,7 +252,7 @@ export function AlertsPage() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [current, discarding, index, select])
+  }, [current, discarding, mailDialog, index, select])
 
   const total = jobs.length
   const renderRow = (job: AlertJob) => (
@@ -269,16 +275,22 @@ export function AlertsPage() {
           </p>
         </div>
         <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => poll.mutate()}
-            disabled={poll.isPending}
-            className="active:translate-y-px"
-          >
-            <ArrowsClockwiseIcon className={cn(poll.isPending && 'animate-spin')} />
-            {poll.isPending ? t('reading') : t('poll')}
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" onClick={() => setMailDialog({ mode: 'add' })} className="active:translate-y-px">
+              <PlusIcon />
+              {t('addMailbox')}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => poll.mutate()}
+              disabled={poll.isPending}
+              className="active:translate-y-px"
+            >
+              <ArrowsClockwiseIcon className={cn(poll.isPending && 'animate-spin')} />
+              {poll.isPending ? t('reading') : t('poll')}
+            </Button>
+          </div>
           {total > 0 && (
             <p className="hidden items-center gap-3 text-xs text-muted-foreground md:flex" aria-label={t('shortcuts.label')}>
               <span className="flex items-center gap-1"><Kbd>J</Kbd><Kbd>K</Kbd> {t('shortcuts.move')}</span>
@@ -290,6 +302,7 @@ export function AlertsPage() {
       </div>
 
       <div className="mb-4 space-y-3 empty:hidden">
+        <MailboxesPanel onEdit={(source) => setMailDialog({ mode: 'edit', source })} />
         {poll.data && <PollResult result={poll.data} onClose={() => poll.reset()} />}
         {poll.error && (
           <p role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-2.5 text-sm">
@@ -326,6 +339,10 @@ export function AlertsPage() {
         <section className="rounded-xl border bg-card">
           <EmptyState icon={<EnvelopeSimpleIcon className="size-6" weight="duotone" />} title={t('empty.title')}>
             <InlineCode text={t('empty.body')} />
+            <Button size="sm" className="mt-3" onClick={() => setMailDialog({ mode: 'add' })}>
+              <PlusIcon />
+              {t('addMailbox')}
+            </Button>
           </EmptyState>
         </section>
       ) : (
@@ -352,6 +369,7 @@ export function AlertsPage() {
         </div>
       )}
 
+      <MailboxDialog state={mailDialog} onClose={() => setMailDialog(null)} />
       {current && (
         <DiscardDialog
           open={discarding}

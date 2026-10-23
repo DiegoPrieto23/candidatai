@@ -41,6 +41,10 @@ sources_app = typer.Typer(
     "búsqueda con navegador.",
     no_args_is_help=True,
 )
+mail_sources_app = typer.Typer(
+    help="Buzones de las alertas por correo (fase 27.4). Se añaden y cambian en la UI, en Alertas.",
+    no_args_is_help=True,
+)
 calendar_app = typer.Typer(help="Calendario .ics de los procesos.", no_args_is_help=True)
 stats_app = typer.Typer(help="Analítica de la búsqueda.", no_args_is_help=True)
 applications_app = typer.Typer(help="Paquete de candidatura.", no_args_is_help=True)
@@ -94,6 +98,7 @@ app.add_typer(cv_app, name="cv")
 app.add_typer(templates_app, name="templates")
 app.add_typer(sources_app, name="sources")
 app.add_typer(alerts_app, name="alerts")
+app.add_typer(mail_sources_app, name="mail-sources")
 app.add_typer(capture_app, name="capture")
 app.add_typer(calendar_app, name="calendar")
 app.add_typer(stats_app, name="stats")
@@ -1547,6 +1552,52 @@ def _render_source_list(result: Any) -> None:
         _render_source(source)
 
 
+def _render_mail_sources(result: Any) -> None:
+    if result.demo:
+        typer.echo("Demo: no se lee ningún buzón IMAP.")
+    if not result.sources:
+        typer.echo("No hay buzones. Añade uno en la UI: Alertas → Añadir buzón.")
+    for box in result.sources:
+        state = "activo" if box.enabled else "desactivado"
+        if box.kind == "folder":
+            where = box.path
+        else:
+            where = f"{box.user} en {box.host}:{box.port}, carpeta «{box.folder}»"
+            if not box.has_password:
+                where += f" (falta la contraseña: {box.secret_ref})"
+        origin = " (de .env)" if box.from_env else ""
+        typer.echo(f"[{box.id}] {box.label}{origin}: {where}; {state}")
+        if box.last_error:
+            typer.secho(f"      Último error: {box.last_error.message}", fg="yellow")
+
+
+@mail_sources_app.command("test")
+def mail_sources_test(
+    source_id: int = typer.Argument(..., help="Id del buzón (ver `cai mail-sources list`)."),
+    as_json: bool = JSON_OPTION,
+) -> None:
+    """Prueba un buzón: login y apertura de su carpeta en solo lectura, sin leer correos."""
+    from app.core.db import session_scope
+    from app.services import mail_sources
+
+    try:
+        with session_scope() as session:
+            result = mail_sources.probe_mail_source(session, source_id)
+    except mail_sources.MailSourceNotFoundError as exc:
+        error = ToolError("not_found", str(exc))
+        if as_json:
+            typer.echo(dump_json(error.payload()))
+        else:
+            typer.secho(f"Error: {exc}", fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=1) from None
+    if as_json:
+        typer.echo(dump_json(result))
+    else:
+        typer.secho(result.message, fg="green" if result.ok else "red")
+    if not result.ok:
+        raise typer.Exit(1)
+
+
 def _render_message(result: Any) -> None:
     typer.echo(result.message)
 
@@ -2480,6 +2531,7 @@ register_tools(
         "cv": cv_app,
         "templates": templates_app,
         "sources": sources_app,
+        "mail-sources": mail_sources_app,
         "stats": stats_app,
         "applications": applications_app,
         "letter": letter_app,
@@ -2521,6 +2573,7 @@ register_tools(
         "get_cv_content": _render_cv_view,
         "save_cv_verification": _render_cv_verification,
         "list_sources": _render_source_list,
+        "list_mail_sources": _render_mail_sources,
         "save_source": _render_message,
         "record_source_run": _render_recorded_run,
         "request_user_action": _render_prompt,

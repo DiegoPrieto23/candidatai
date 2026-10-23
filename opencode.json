@@ -30,6 +30,7 @@
     "candidatai_get_cv_content": "allow",
     "candidatai_list_cv_templates": "allow",
     "candidatai_list_sources": "allow",
+    "candidatai_list_mail_sources": "allow",
     "candidatai_list_followups_due": "allow",
     "candidatai_list_upcoming": "allow",
     "candidatai_get_funnel_stats": "allow",

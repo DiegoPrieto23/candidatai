@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from typer.testing import CliRunner
 
 from app import cli
+from app.core import migrations
 from app.core.config import DEMO_MARKER, get_settings
 from app.core.db import session_scope
 from app.models import (
@@ -28,7 +29,7 @@ from app.models import (
     Source,
     Task,
 )
-from app.services import analytics, demo, events, network, status
+from app.services import analytics, demo, events, mail_sources, network, status
 from app.services.documents import pdf
 from app.services.documents import service as cv_service
 from app.services.pipeline import Stage
@@ -281,7 +282,11 @@ def test_demo_never_uses_the_real_mailbox(tmp_path: Path, monkeypatch: pytest.Mo
         settings = get_settings()
         assert settings.demo_mode
         assert not settings.imap_configured
-        assert not worker.email_alerts_enabled()
+        migrations.upgrade()
+        with session_scope() as session:
+            # Ni se lee ni aparece como buzón «Principal» (fase 27.4).
+            assert not worker.email_alerts_enabled(session)
+            assert mail_sources.list_mail_sources(session).sources == []
         for check in (doctor.check_email_alerts(settings), doctor.check_email_replies(settings)):
             assert check.detail.startswith("demo: el IMAP de `.env` no se usa")
     get_settings.cache_clear()

@@ -4,28 +4,43 @@ import {
   ArrowDownIcon,
   ArrowLeftIcon,
   ArrowRightIcon,
+  ArrowSquareOutIcon,
   ArrowsDownUpIcon,
   ArrowUpIcon,
+  CaretDownIcon,
   MagnifyingGlassIcon,
   PlusIcon,
+  ProhibitIcon,
   TrayIcon,
   WarningIcon,
   XIcon,
 } from '@phosphor-icons/react'
 import { Trans, useTranslation } from 'react-i18next'
-import type { JobRow, Stage } from '@/api/client'
-import { type JobSort, PAGE_SIZE, type SortDirection, useJobs } from '@/api/queries'
+import type { DiscardReason, JobRow, Stage } from '@/api/client'
+import { type JobSort, PAGE_SIZE, type SortDirection, useJobEvent, useJobs } from '@/api/queries'
+import { DiscardDialog, type DiscardChoice } from '@/components/DiscardDialog'
 import { SignalBadges } from '@/components/JobSignals'
 import { KnownBadge } from '@/components/NetworkPanel'
 import { ScoreBadge } from '@/components/MatchDetails'
 import { StageBadge } from '@/components/StageBadge'
 import { EmptyState, ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { formatDate, formatRelative, formatSalary, REMOTE_LABEL, STAGE_LABEL, STAGES } from '@/lib/labels'
+import { errorMessage } from '@/lib/errors'
+import {
+  discardReasonLabel,
+  eventLabel,
+  formatDate,
+  formatRelative,
+  formatSalary,
+  REMOTE_LABEL,
+  STAGE_LABEL,
+  STAGES,
+} from '@/lib/labels'
 import { cn } from '@/lib/utils'
 
 function isStage(value: string | null): value is Stage {
@@ -37,12 +52,16 @@ interface Sort {
   dir: SortDirection
 }
 
-const SORTS: readonly JobSort[] = ['date', 'score', 'salary']
 const DEFAULT_SORT: Sort = { sort: 'date', dir: 'desc' }
 
-function parseSort(params: URLSearchParams): Sort {
+/** La fecha de cierre solo ordena en «Cerrada»; con otra etapa, un `sort=closed` se ignora. */
+function sortsFor(stage: Stage | undefined): readonly JobSort[] {
+  return stage === 'closed' ? ['date', 'score', 'salary', 'closed'] : ['date', 'score', 'salary']
+}
+
+function parseSort(params: URLSearchParams, stage: Stage | undefined): Sort {
   const sort = params.get('sort')
-  if (!sort || !(SORTS as readonly string[]).includes(sort)) return DEFAULT_SORT
+  if (!sort || !(sortsFor(stage) as readonly string[]).includes(sort)) return DEFAULT_SORT
   return { sort: sort as JobSort, dir: params.get('dir') === 'asc' ? 'asc' : 'desc' }
 }
 
@@ -54,7 +73,19 @@ const SORT_OPTIONS = [
   { value: 'score:asc', label: 'scoreAsc' },
   { value: 'salary:desc', label: 'salaryDesc' },
   { value: 'salary:asc', label: 'salaryAsc' },
+  { value: 'closed:desc', label: 'closedDesc' },
+  { value: 'closed:asc', label: 'closedAsc' },
 ] as const
+
+/** Etapas en las que se descarta desde la propia Bandeja: completar o extraer cuesta. */
+const QUICK_DISCARD: readonly Stage[] = ['pending_detail', 'pending_extraction']
+const QUICK_REASON: DiscardReason = 'not_interested'
+
+function without(set: Set<number>, ids: number[]): Set<number> {
+  const next = new Set(set)
+  for (const id of ids) next.delete(id)
+  return next
+}
 
 /** Búsqueda con retardo: no se lanza una consulta por cada tecla. */
 function useDebounced<T>(value: T, ms = 250): T {
@@ -129,15 +160,122 @@ function SortHeader({
   )
 }
 
-function JobTable({ jobs, sort, onSort }: { jobs: JobRow[]; sort: Sort; onSort: (sort: Sort) => void }) {
+/** Cuándo y cómo se cerró, con la fecha completa y el evento en el globo nativo. */
+function ClosedDate({ job }: { job: JobRow }) {
+  if (!job.closed_at) return <span className="text-muted-foreground/60">—</span>
+  const how = job.closed_by ? ` · ${eventLabel(job.closed_by)}` : ''
+  return (
+    <time dateTime={job.closed_at} title={`${formatDate(job.closed_at)}${how}`}>
+      {formatRelative(job.closed_at)}
+    </time>
+  )
+}
+
+/** Lo que hace falta para descartar desde la tabla («Por completar» y «Por extraer»). */
+interface QuickActions {
+  /** En «Por completar» se decide en el portal: «Abrir» lleva allí. */
+  openable: boolean
+  selected: Set<number>
+  onToggle: (id: number) => void
+  onToggleAll: () => void
+  onDiscard: (job: JobRow) => void
+  onDiscardWith: (job: JobRow) => void
+}
+
+function SelectBox({ job, actions }: { job: JobRow; actions: QuickActions }) {
+  const { t } = useTranslation('inbox')
+  return (
+    <input
+      type="checkbox"
+      checked={actions.selected.has(job.id)}
+      onChange={() => actions.onToggle(job.id)}
+      onClick={(e) => e.stopPropagation()}
+      aria-label={t('quick.select', { title: job.title })}
+      className="size-4 shrink-0 cursor-pointer accent-primary"
+    />
+  )
+}
+
+function RowActions({ job, actions }: { job: JobRow; actions: QuickActions }) {
+  const { t } = useTranslation('inbox')
+  return (
+    // Nada de aquí abre la ficha; los clics del menú (en un portal) también suben hasta la fila.
+    <div className="flex items-center justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
+      {actions.openable && job.url && (
+        <Button variant="ghost" size="xs" asChild>
+          <a href={job.url} target="_blank" rel="noopener noreferrer" aria-label={t('quick.openJob', { title: job.title })}>
+            <ArrowSquareOutIcon />
+            {t('quick.open')}
+          </a>
+        </Button>
+      )}
+      <div className="inline-flex">
+        <Button
+          variant="outline"
+          size="xs"
+          onClick={() => actions.onDiscard(job)}
+          aria-label={t('quick.discardJob', { title: job.title })}
+          className="rounded-r-none"
+        >
+          <ProhibitIcon />
+          {t('quick.discard')}
+        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              size="icon-xs"
+              aria-label={t('quick.moreReasons', { title: job.title })}
+              className="rounded-l-none border-l-0"
+            >
+              <CaretDownIcon />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+            <DropdownMenuItem onSelect={() => actions.onDiscardWith(job)}>{t('quick.otherReason')}</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </div>
+  )
+}
+
+function JobTable({
+  jobs,
+  sort,
+  onSort,
+  closedView,
+  actions,
+}: {
+  jobs: JobRow[]
+  sort: Sort
+  onSort: (sort: Sort) => void
+  closedView: boolean
+  actions?: QuickActions
+}) {
   const { t } = useTranslation('inbox')
   const navigate = useNavigate()
+  const picked = actions ? jobs.filter((job) => actions.selected.has(job.id)).length : 0
   return (
     <>
       {/* Escritorio: tabla */}
       <table className="hidden w-full text-sm md:table">
         <thead>
           <tr className="text-left text-xs text-muted-foreground">
+            {actions && (
+              <th className="w-0 pb-3 pl-4 font-medium" onClick={(e) => e.stopPropagation()}>
+                <input
+                  type="checkbox"
+                  checked={picked > 0 && picked === jobs.length}
+                  ref={(el) => {
+                    if (el) el.indeterminate = picked > 0 && picked < jobs.length
+                  }}
+                  onChange={actions.onToggleAll}
+                  aria-label={t('quick.selectAll')}
+                  className="size-4 cursor-pointer accent-primary"
+                />
+              </th>
+            )}
             <th className="pb-3 pl-4 font-medium">{t('columns.job')}</th>
             <th className="pb-3 font-medium">{t('columns.mode')}</th>
             <SortHeader field="salary" current={sort} onSort={onSort}>
@@ -147,9 +285,24 @@ function JobTable({ jobs, sort, onSort }: { jobs: JobRow[]; sort: Sort; onSort: 
               {t('columns.fit')}
             </SortHeader>
             <th className="pb-3 font-medium">{t('columns.stage')}</th>
-            <SortHeader field="date" current={sort} onSort={onSort} className="pr-4 text-right">
+            <SortHeader
+              field="date"
+              current={sort}
+              onSort={onSort}
+              className={cn('text-right', closedView || actions ? 'pr-6' : 'pr-4')}
+            >
               {t('columns.added')}
             </SortHeader>
+            {closedView && (
+              <SortHeader field="closed" current={sort} onSort={onSort} className="pr-4 text-right">
+                {t('columns.closed')}
+              </SortHeader>
+            )}
+            {actions && (
+              <th className="pb-3 pr-4 text-right font-medium">
+                <span className="sr-only">{t('columns.actions')}</span>
+              </th>
+            )}
           </tr>
         </thead>
         <tbody className="divide-y">
@@ -159,6 +312,11 @@ function JobTable({ jobs, sort, onSort }: { jobs: JobRow[]; sort: Sort; onSort: 
               onClick={() => navigate(`/jobs/${job.id}`)}
               className="group cursor-pointer transition-colors hover:bg-foreground/[0.025]"
             >
+              {actions && (
+                <td className="py-3.5 pl-4" onClick={(e) => e.stopPropagation()}>
+                  <SelectBox job={job} actions={actions} />
+                </td>
+              )}
               <td className="py-3.5 pl-4 pr-6">
                 <div className="flex items-center gap-2">
                   <Link
@@ -189,11 +347,26 @@ function JobTable({ jobs, sort, onSort }: { jobs: JobRow[]; sort: Sort; onSort: 
               <td className="py-3.5 pr-6">
                 <StageBadge stage={job.stage} />
               </td>
-              <td className="py-3.5 pr-4 text-right whitespace-nowrap text-muted-foreground">
+              <td
+                className={cn(
+                  'py-3.5 text-right whitespace-nowrap text-muted-foreground',
+                  closedView || actions ? 'pr-6' : 'pr-4',
+                )}
+              >
                 <time dateTime={job.first_seen_at} title={formatDate(job.first_seen_at)}>
                   {formatRelative(job.first_seen_at)}
                 </time>
               </td>
+              {closedView && (
+                <td className="py-3.5 pr-4 text-right whitespace-nowrap text-muted-foreground">
+                  <ClosedDate job={job} />
+                </td>
+              )}
+              {actions && (
+                <td className="py-3.5 pr-4">
+                  <RowActions job={job} actions={actions} />
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
@@ -202,29 +375,48 @@ function JobTable({ jobs, sort, onSort }: { jobs: JobRow[]; sort: Sort; onSort: 
       {/* Móvil: lista */}
       <ul className="divide-y md:hidden">
         {jobs.map((job) => (
-          <li key={job.id}>
-            <Link to={`/jobs/${job.id}`} className="block px-4 py-4 active:bg-foreground/[0.03]">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="flex items-center gap-1.5 font-medium">
-                    <span className="truncate">{job.title}</span>
-                    {job.risk_flags.length > 0 && (
-                      <WarningIcon className="size-4 shrink-0 text-warning-foreground" weight="fill" />
-                    )}
-                    <SignalBadges signals={job.signals} />
-                  <KnownBadge count={job.known_contacts} />
-                  </p>
-                  <p className="truncate text-sm text-muted-foreground">{job.company}</p>
-                </div>
-                <StageBadge stage={job.stage} />
+          <li key={job.id} className={cn(actions && 'flex items-start gap-3 pl-4')}>
+            {actions && (
+              <div className="pt-5">
+                <SelectBox job={job} actions={actions} />
               </div>
-              <p className="mt-2 flex gap-3 text-xs text-muted-foreground">
-                {job.score != null && <span className="tabular font-medium text-foreground">{job.score}/100</span>}
-                <RemoteMode mode={job.remote_mode} />
-                {job.salary && <Salary salary={job.salary} />}
-                <time dateTime={job.first_seen_at}>{formatRelative(job.first_seen_at)}</time>
-              </p>
-            </Link>
+            )}
+            <div className="min-w-0 flex-1">
+              <Link
+                to={`/jobs/${job.id}`}
+                className={cn('block py-4 active:bg-foreground/[0.03]', actions ? 'pr-4 pb-2' : 'px-4')}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="flex items-center gap-1.5 font-medium">
+                      <span className="truncate">{job.title}</span>
+                      {job.risk_flags.length > 0 && (
+                        <WarningIcon className="size-4 shrink-0 text-warning-foreground" weight="fill" />
+                      )}
+                      <SignalBadges signals={job.signals} />
+                    <KnownBadge count={job.known_contacts} />
+                    </p>
+                    <p className="truncate text-sm text-muted-foreground">{job.company}</p>
+                  </div>
+                  <StageBadge stage={job.stage} />
+                </div>
+                <p className="mt-2 flex gap-3 text-xs text-muted-foreground">
+                  {job.score != null && <span className="tabular font-medium text-foreground">{job.score}/100</span>}
+                  <RemoteMode mode={job.remote_mode} />
+                  {job.salary && <Salary salary={job.salary} />}
+                  {closedView && job.closed_at ? (
+                    <time dateTime={job.closed_at}>{t('closedWhen', { when: formatRelative(job.closed_at) })}</time>
+                  ) : (
+                    <time dateTime={job.first_seen_at}>{formatRelative(job.first_seen_at)}</time>
+                  )}
+                </p>
+              </Link>
+              {actions && (
+                <div className="pr-4 pb-3">
+                  <RowActions job={job} actions={actions} />
+                </div>
+              )}
+            </div>
           </li>
         ))}
       </ul>
@@ -257,7 +449,16 @@ export function InboxPage() {
   const stageParam = params.get('stage')
   const stage = isStage(stageParam) ? stageParam : undefined
   const page = Math.max(1, Number(params.get('page')) || 1)
-  const sort = parseSort(params)
+  const sort = parseSort(params, stage)
+  const quick = stage !== undefined && QUICK_DISCARD.includes(stage)
+  const event = useJobEvent()
+  // Ofertas descartadas que se ocultan ya, antes de que la API responda.
+  const [hidden, setHidden] = useState<Set<number>>(() => new Set())
+  const [selected, setSelected] = useState<Set<number>>(() => new Set())
+  // Descartes que «Deshacer» puede devolver; se acumulan si descartas otra antes de cerrar el aviso.
+  const [done, setDone] = useState<{ id: number; title: string; reason: DiscardReason }[]>([])
+  const [actionError, setActionError] = useState<string | null>(null)
+  const [dialogJob, setDialogJob] = useState<JobRow | null>(null)
   const [search, setSearch] = useState(params.get('q') ?? '')
   const q = useDebounced(search.trim())
 
@@ -297,6 +498,67 @@ export function InboxPage() {
   const from = total ? (page - 1) * PAGE_SIZE + 1 : 0
   const to = Math.min(page * PAGE_SIZE, total)
   const filtered = Boolean(stage || q)
+  const visible = (data?.items ?? []).filter((job) => !hidden.has(job.id))
+  const picked = quick ? visible.filter((job) => selected.has(job.id)) : []
+
+  /**
+   * Oculta las ofertas ya y las descarta una a una (SQLite no agradece escrituras a la vez). Las
+   * que fallan vuelven a la tabla con un aviso; las demás se pueden deshacer.
+   */
+  const discard = async (targets: JobRow[], choice: DiscardChoice) => {
+    const ids = targets.map((job) => job.id)
+    setHidden((prev) => new Set([...prev, ...ids]))
+    setSelected((prev) => without(prev, ids))
+    setActionError(null)
+    const discarded: JobRow[] = []
+    let failure: unknown = null
+    for (const job of targets) {
+      try {
+        await event.mutateAsync({
+          jobId: job.id,
+          body: { type: 'discarded', reason: choice.reason, note: choice.note },
+        })
+        discarded.push(job)
+      } catch (err) {
+        failure = err
+        setHidden((prev) => without(prev, [job.id]))
+      }
+    }
+    if (failure) setActionError(errorMessage(failure))
+    if (discarded.length) {
+      const added = discarded.map(({ id, title }) => ({ id, title, reason: choice.reason }))
+      setDone((prev) => [...prev, ...added])
+    }
+  }
+
+  /** Reabre lo descartado; las que fallan siguen en el aviso para reintentarlo. */
+  const undo = async () => {
+    const pending = done
+    setActionError(null)
+    for (const item of pending) {
+      try {
+        await event.mutateAsync({ jobId: item.id, body: { type: 'reopened' } })
+        setHidden((prev) => without(prev, [item.id]))
+        setDone((prev) => prev.filter((d) => d.id !== item.id))
+      } catch (err) {
+        setActionError(errorMessage(err))
+      }
+    }
+  }
+  const doneReasons = new Set(done.map((d) => d.reason))
+
+  const actions: QuickActions | undefined = quick
+    ? {
+        openable: stage === 'pending_detail',
+        selected,
+        onToggle: (id) =>
+          setSelected((prev) => (prev.has(id) ? without(prev, [id]) : new Set(prev).add(id))),
+        onToggleAll: () =>
+          setSelected(picked.length === visible.length ? new Set() : new Set(visible.map((job) => job.id))),
+        onDiscard: (job) => void discard([job], { reason: QUICK_REASON }),
+        onDiscardWith: setDialogJob,
+      }
+    : undefined
 
   return (
     <div className="animate-in fade-in duration-300">
@@ -349,13 +611,61 @@ export function InboxPage() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {SORT_OPTIONS.map((option) => (
+            {SORT_OPTIONS.filter((option) => sortsFor(stage).includes(option.value.split(':')[0] as JobSort)).map((option) => (
               <SelectItem key={option.value} value={option.value}>
                 {t(`sort.${option.label}`)}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
+      </div>
+
+      <div className="mb-4 space-y-3 empty:hidden">
+        {done.length > 0 && (
+          <div role="status" className="flex items-center gap-3 rounded-xl border bg-card px-4 py-2.5 text-sm animate-in fade-in slide-in-from-top-1">
+            <ProhibitIcon className="size-[18px] shrink-0 text-muted-foreground" />
+            <p className="min-w-0 flex-1 truncate">
+              {done.length === 1 ? (
+                <>
+                  {t('quick.discarded')} <span className="font-medium">{done[0].title}</span>
+                </>
+              ) : (
+                t('quick.discardedMany', { count: done.length })
+              )}
+              {doneReasons.size === 1 && (
+                <span className="text-muted-foreground"> · {discardReasonLabel(done[0].reason)}</span>
+              )}
+            </p>
+            <Button variant="ghost" size="xs" onClick={() => void undo()}>
+              {t('quick.undo')}
+            </Button>
+            <button
+              type="button"
+              onClick={() => setDone([])}
+              className="text-muted-foreground hover:text-foreground"
+              aria-label={t('quick.closeNotice')}
+            >
+              <XIcon className="size-4" />
+            </button>
+          </div>
+        )}
+        {actionError && (
+          <p role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-2.5 text-sm">
+            {t('quick.failed', { error: actionError })}
+          </p>
+        )}
+        {picked.length > 0 && (
+          <div className="flex items-center gap-3 rounded-xl border bg-card px-4 py-2 text-sm">
+            <p className="flex-1 tabular">{t('quick.selectedCount', { count: picked.length })}</p>
+            <Button variant="ghost" size="sm" onClick={() => setSelected(new Set())}>
+              {t('quick.clearSelection')}
+            </Button>
+            <Button size="sm" onClick={() => void discard(picked, { reason: QUICK_REASON })}>
+              <ProhibitIcon />
+              {t('quick.discardMany', { count: picked.length })}
+            </Button>
+          </div>
+        )}
       </div>
 
       <section
@@ -410,10 +720,26 @@ export function InboxPage() {
           )
         ) : (
           <div className="pt-3 md:pt-4">
-            <JobTable jobs={data.items} sort={sort} onSort={setSort} />
+            <JobTable
+              jobs={visible}
+              sort={sort}
+              onSort={setSort}
+              closedView={stage === 'closed'}
+              actions={actions}
+            />
           </div>
         )}
       </section>
+
+      <DiscardDialog
+        open={dialogJob !== null}
+        onOpenChange={(open) => !open && setDialogJob(null)}
+        jobTitle={dialogJob?.title ?? ''}
+        onConfirm={(choice) => {
+          if (dialogJob) void discard([dialogJob], choice)
+          setDialogJob(null)
+        }}
+      />
 
       {total > PAGE_SIZE && (
         <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">

@@ -78,7 +78,7 @@ Una fila por extracción; la vigente es la más reciente.
 | Columna | Tipo | Notas |
 |---|---|---|
 | id | int PK | |
-| data | JSON | Validado con `CandidateProfile`, importado desde `data/profile.yaml` |
+| data | JSON | Validado con `CandidateProfile`, importado desde `data/profile.yaml`. Desde la fase 27.5, `preferences` admite `min_years_required`, `discard_title_keywords`, `contract_types` (`permanent`, `fixed_term`, `freelance`), `employment_types` (`full_time`, `part_time`, `internship`) y `excluded_employer_kinds` (`consultancy`, `agency`), que vacíos no se vuelcan (mismo hash); `private.salary_floor_eur` es un entero > 0 o `null`. La extracción gana `employer_kind` (`direct`, `consultancy`, `agency`, `unknown`), opcional |
 | content_hash | str | sha256 del JSON canónico. Importar un contenido igual al de la versión vigente no crea versión; volver a uno anterior sí (índice, no único) |
 | created_at | datetime | |
 
@@ -137,7 +137,9 @@ Proyección del estado de candidatura para consultas rápidas; se recalcula desd
 | channel | str? | `ats_form`, `email`, `linkedin_manual`, `portal_manual` |
 | render_id | FK document_renders? | Render del CV enviado |
 | applied_at | datetime? | |
-| last_event_at | datetime | |
+| last_event_at | datetime | Lo mueve cualquier evento, también una nota posterior al cierre |
+| closed_at | datetime? | Fase 27.6: `occurred_at` del evento que la cerró; `NULL` si no está cerrada (lo limpia `reopened`). Una nota posterior no lo mueve |
+| closed_by | str? | Tipo de ese evento: `discarded`, `rejected`, `withdrawn`, `expired`, `accepted`, `duplicate_detected` o `hard_filter_failed` |
 
 ### `events` (fuente de verdad)
 | Columna | Tipo | Notas |
@@ -198,7 +200,7 @@ Nunca guarda texto crudo de ofertas ni datos del perfil en `args_summary`.
 | `closure_suspected` | system | sin cambio; la primera vez que una comprobación dice que la oferta puede estar cerrada (fase 16). `payload`: `reason`, `detail`. Nunca cierra la oferta |
 | `scored` / `fit_assessed` | system / agent | sin cambio; `payload`: `match_id` y `score`/`passed` o `verdict` |
 | `approved` | user | `approved` |
-| `discarded` | user | `closed`; desde la UI, `payload.reason` (`skills`, `seniority`, `location`, `salary`, `company`, `closed` (ya no está publicada, fase 16), `other`) y `note` opcional (obligatoria con `other`) |
+| `discarded` | user | `closed`; desde la UI, `payload.reason` (`skills`, `seniority`, `location`, `salary`, `company`, `closed` (ya no está publicada, fase 16), `not_interested` (descarte rápido de la Bandeja antes de completar o extraer, por el título o la empresa, fase 27.6), `other`) y `note` opcional (obligatoria con `other`) |
 | `cv_generated` | agent | sin cambio; `payload.document_id` |
 | `cv_rendered` | system / user / agent | `cv_ready` si el render no es `too_long` y su documento ya está verificado con `passed`; si no, sin cambio. `payload`: `document_id`, `render_id`, `template_id`, `too_long`. Solo lo registra el servicio de render |
 | `cv_verified` | agent | `cv_ready` si `passed` y ese documento tiene un render sin `too_long`; `payload`: `document_id`, `passed` |
@@ -359,6 +361,8 @@ envío** (`applied_at`, el primer `applied`/`applied_manually`):
 
 - **Periodo** (`since`): primer envío desde las 00:00 de ese día en Europe/Madrid (no
   `first_seen_at`, como el resto del embudo: en una retrospectiva importa cuándo enviaste).
+- Los descartes (también los rápidos de la Bandeja con `not_interested`, que no tienen score ni
+  encaje que calibrar) no entran: solo cuentan las ofertas enviadas.
 - Score, veredicto, carta, días y referencia no son independientes (las de más score suelen
   llevar carta o referencia): la calibración muestra correlaciones, no causas. Por eso es
   orientativa y nunca cambia pesos ni filtros (`evals/matching/README.md` §Calibración).
@@ -434,6 +438,46 @@ Ficheros en `data/` (gitignored), fuera de la BD:
   sufijo `_<job_id>`. Se escribe en `.tmp-<job_id>-…` y se renombra al final, así que nunca queda a
   medias. Si la carpeta ya existe no se toca: rehacer el CV o la carta después no cambia lo archivado.
   `JobView.archive_folder` (ficha de la UI) la da relativa a `data/`.
+
+## Ampliaciones de la fase 27.4 (varios buzones, ADR-045)
+
+### `mail_sources` (migración 0027)
+
+Buzones de los que se leen las alertas y, si se pide, las respuestas de las empresas. **Nunca la
+contraseña**: vive en `.env`, en la variable que nombra `secret_ref`.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | int PK | |
+| label | str único | «Principal», «Gmail personal»… |
+| kind | str | `imap` o `folder` (`data/inbox/<folder>/`) |
+| host / port | str? / int? | Solo `imap`. Sin esquema; ni IP privadas ni locales salvo `allow_private` |
+| security | str | `ssl` o `starttls` |
+| user | str? | |
+| folder | str | Carpeta IMAP de las alertas, o el nombre de la carpeta de `data/inbox/` |
+| replies_folder | str | Carpeta IMAP de las respuestas (`INBOX`) |
+| enabled | bool | |
+| read_replies | bool | Si se leen de aquí las respuestas de las empresas (la «Principal», sí) |
+| secret_ref | str? | Nombre de la variable de `.env` con la contraseña (`CAI_IMAP_<ALIAS>_PASSWORD`) |
+| from_env | bool | La cuenta `CAI_IMAP_*` de `.env`: servidor, usuario y carpetas salen de ahí |
+| allow_private | bool | «Servidor en mi equipo o mi red» (un servidor propio) |
+| last_polled_at | datetime? | Última lectura |
+| last_error | JSON? | `{code, message}` del último fallo (`MailboxError`), o `null` |
+| created_at | datetime | |
+
+### `mail_source_changes` (migración 0027)
+
+Auditoría de altas, cambios y bajas de buzones (no van en `events`, que son de una oferta): qué
+campos, nunca sus valores (la contraseña aparece solo como `password`).
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | int PK | |
+| mail_source_id | int | Sin clave foránea: sobrevive al borrado |
+| label | str | |
+| action | str | `created`, `updated` o `deleted` |
+| fields | JSON | Nombres de los campos cambiados |
+| created_at | datetime | |
 
 ## Ampliaciones de la fase 25.7 («Mi perfil» editable, ADR-039)
 
@@ -549,7 +593,7 @@ ADR-028). `risk_flags` sigue significando solo eso. Las escribe el código, nunc
 
 Las cinco de la fase 25.3 son **señales de oferta dudosa**: no cambian el score ni los filtros
 duros, salvo `employer_hidden` y `fixed_term` si están en `preferences.exclude_signals` del perfil
-(filtro `signal`). `cai jobs signals --recompute` las recalcula todas. Sin migración: es la misma
+(filtro `signal`; `fixed_term`, desde la fase 27.5, en el filtro `contract`). `cai jobs signals --recompute` las recalcula todas. Sin migración: es la misma
 columna JSON. Las extracciones anteriores a la fase no traen los campos nuevos, así que solo
 cuentan las señales del nombre, el texto, el salario y las publicaciones.
 

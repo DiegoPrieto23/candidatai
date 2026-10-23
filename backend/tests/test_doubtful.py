@@ -248,17 +248,20 @@ def test_signals_never_change_the_score() -> None:
 def test_signals_are_not_a_hard_filter_unless_you_ask() -> None:
     policy = get_policies().hard_filters
     ext = demo_extraction(contract_type="fixed_term", is_agency=True)
-    assert evaluate("Data Engineer", ext, demo_profile(), policy, "Hays").passed
+    # Sin los filtros de contrato y tipo de empresa de la fase 27.5 (el perfil demo los trae).
+    loose = {"contract_types": [], "employment_types": [], "excluded_employer_kinds": []}
+    assert evaluate("Data Engineer", ext, demo_profile(**loose), policy, "Hays").passed
 
-    strict = demo_profile(exclude_signals=["fixed_term"])
+    # Fase 27.5: `fixed_term` es «no acepto contrato temporal», en el filtro `contract`.
+    strict = demo_profile(exclude_signals=["fixed_term"], **loose)
     result = evaluate("Data Engineer", ext, strict, policy, "Hays")
-    assert [f.filter for f in result.failures] == ["signal"]
+    assert [f.filter for f in result.failures] == ["contract"]
     assert "contrato temporal" in result.failures[0].reason
-    assert "empresa oculta" not in result.failures[0].reason
 
-    both = demo_profile(exclude_signals=["employer_hidden", "fixed_term"])
-    reason = evaluate("Data Engineer", ext, both, policy, "Hays").failures[0].reason
-    assert "empresa oculta o agencia" in reason and "contrato temporal" in reason
+    both = demo_profile(exclude_signals=["employer_hidden", "fixed_term"], **loose)
+    failures = evaluate("Data Engineer", ext, both, policy, "Hays").failures
+    assert [f.filter for f in failures] == ["signal", "contract"]
+    assert "empresa oculta o agencia" in failures[0].reason
     assert evaluate("Data Engineer", demo_extraction(), both, policy, "Acme Datos").passed
 
 

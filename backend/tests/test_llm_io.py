@@ -16,8 +16,14 @@ def test_valid_extraction() -> None:
 
 def test_all_documented_fields_and_nothing_else() -> None:
     # Exactamente los campos de docs/AGENT_INTERFACE.md §JobExtraction.
-    # Los de la fase 25.3 son opcionales: las extracciones anteriores no los traen.
-    optional = ["contract_type", "hiring_entity", "is_agency", "mentions_ai_screening"]
+    # Los de las fases 25.3 y 27.5 son opcionales: las extracciones anteriores no los traen.
+    optional = [
+        "contract_type",
+        "hiring_entity",
+        "is_agency",
+        "mentions_ai_screening",
+        "employer_kind",
+    ]
     assert list(JobExtraction.model_fields) == [*EXTRACTION, *optional]
     assert all(not JobExtraction.model_fields[name].is_required() for name in optional)
 

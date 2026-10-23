@@ -23,9 +23,11 @@ from sqlalchemy.orm import Session
 from app.models import Application, Company, Job, ReceivedOffer
 from app.models.base import utcnow
 from app.schemas.llm_io import Salary
+from app.schemas.profile import SALARY_FLOOR_KEY
 from app.services import events, extractions
 from app.services import profile as profile_service
 from app.services.events import JobNotFoundError
+from app.services.matching.hard_filters import MONTHS_PER_YEAR, published_annual
 from app.services.pipeline import Actor, EventType
 from app.services.process import offer_received
 
@@ -33,8 +35,7 @@ WorkMode = Literal["remote", "hybrid", "onsite"]
 OfferPeriod = Literal["year", "month"]
 MAX_AMOUNT = 10_000_000
 # Clave del mínimo en `private` del perfil (bruto anual en euros).
-FLOOR_KEY = "salary_floor_eur"
-MONTHS_PER_YEAR = 12
+FLOOR_KEY = SALARY_FLOOR_KEY
 
 FIELD_LABELS = {
     "base_salary": "fijo",
@@ -283,15 +284,6 @@ def _annual(amount: int | None, period: str) -> int | None:
     return amount * MONTHS_PER_YEAR if period == "month" else amount
 
 
-def _published_annual(salary: Salary | None) -> tuple[int | None, int | None]:
-    if salary is None or salary.period not in ("year", "month"):
-        return None, None
-    factor = MONTHS_PER_YEAR if salary.period == "month" else 1
-    low = salary.min * factor if salary.min is not None else None
-    high = salary.max * factor if salary.max is not None else None
-    return low, high
-
-
 def _diff(value: int | None, reference: int | None) -> int | None:
     return None if value is None or reference is None else value - reference
 
@@ -322,7 +314,7 @@ def _compare_one(
     else:
         floor_base, floor_total = _diff(annual_base, floor), _diff(annual_total, floor)
 
-    pub_min, pub_max = _published_annual(published)
+    pub_min, pub_max = published_annual(published)
     diff_min = diff_max = None
     if published is None:
         remarks.append("La oferta publicada no indica salario.")

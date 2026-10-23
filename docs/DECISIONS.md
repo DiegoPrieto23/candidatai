@@ -1232,3 +1232,90 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   falta Chromium. El dosier en Markdown deja de escribirse; el campo `dossier` del plan se mantiene
   para los planes antiguos.
 
+
+## ADR-045 · Varios buzones de alertas; las contraseñas, solo en `.env` (matiza la 016)
+- **Contexto:** las alertas por correo leían una sola cuenta, configurada a mano en `.env`
+  (`CAI_IMAP_*`). Quien recibe alertas en dos cuentas no podía leer las dos, y conectar un buzón
+  obligaba a editar `.env` sin ayuda. Añadirlos desde la UI exige decidir dónde vive la contraseña.
+- **Decisión:**
+  - Tabla `mail_sources` (migración 0027): cada buzón con su etiqueta, tipo (`imap` o `folder`,
+    una carpeta `data/inbox/<nombre>/` de `.eml`/`.mbox`), servidor, puerto, cifrado (`ssl` o
+    `starttls`), usuario, carpeta, si está activo y si lee las respuestas de las empresas. La
+    cuenta `CAI_IMAP_*` de siempre aparece sola como «Principal» (`from_env`): su servidor,
+    usuario y carpeta se siguen leyendo de `.env`.
+  - **Las contraseñas viven solo en `.env`**, una variable por buzón
+    (`CAI_IMAP_<ALIAS>_PASSWORD`). La tabla guarda el **nombre** de la variable (`secret_ref`),
+    nunca el valor. Cuando la escribes en la UI, el servidor reescribe `.env` de forma atómica
+    (fichero temporal en la misma carpeta y `os.replace`; en macOS y Linux, permisos 600) sin
+    tocar las demás líneas; al quitar el buzón, quita su línea. La contraseña no vuelve nunca por
+    la API ni por MCP (ni en errores ni en logs): solo `has_password`.
+  - **En Docker** `.env` entra como variables de entorno y no como fichero, así que la app no
+    puede guardarla de forma persistente: responde con el nombre de la variable para que la añadas
+    tú a tu `.env` y recrees el contenedor.
+  - Todo sigue en **solo lectura** (`EXAMINE` y `BODY.PEEK`). El servidor se valida: un nombre,
+    sin esquema, y ni IP privadas ni de bucle local salvo que el buzón lo permita expresamente
+    (`allow_private`, para un servidor propio); se comprueba también al resolver
+    el nombre. En una demo no se lee ningún buzón IMAP.
+  - El agente solo puede **ver** los buzones y su estado (`list_mail_sources`); crearlos,
+    cambiarlos, probarlos y quitarlos es cosa de la UI (`require_ui`) o de la CLI. Altas, cambios
+    y bajas se anotan en `mail_source_changes`, sin contraseñas.
+  - **Outlook:** Microsoft ya no admite contraseña por IMAP en cuentas de trabajo y ha anunciado
+    que la retirará en las personales. La guía recomienda reenviar las alertas a otra cuenta
+    (Gmail) o exportar `.eml`; IMAP con contraseña queda como último recurso. Sin OAuth.
+- **Alternativas descartadas:** el llavero del sistema (no existe en Docker ni en algunos Linux),
+  un fichero en `data/` (las copias de seguridad de `data/` se llevarían las contraseñas) y pedir
+  siempre que pegues tú la línea (más simple, peor experiencia; queda solo para Docker).
+- **Consecuencias:** varios buzones a la vez, sin duplicar las ofertas que lleguen por dos de ellos
+  (por `Message-ID`), y el fallo de uno no frena a los demás. Un proceso con permiso para escribir
+  en la carpeta de la app puede reescribir `.env`, como ya podía editarlo a mano.
+- **Riesgos aceptados** (revisión de la fase):
+  - El servidor se comprueba resolviendo su nombre y la conexión lo vuelve a resolver: un DNS que
+    cambie de respuesta entre las dos podría llevar a una dirección privada. Solo la UI puede
+    añadir buzones y la conexión exige TLS con el certificado del nombre pedido, así que no se
+    conecta a IP fijadas.
+  - La cuenta de `.env` se da de alta como «Principal» la primera vez que se listan o leen los
+    buzones, también desde `list_mail_sources`: es la única escritura de esa herramienta y deja su
+    fila en `mail_source_changes`.
+  - Los errores de validación nunca repiten un campo `password` ni una entrada que lo contenga
+    (`core/validation.py`, `SECRET_FIELDS`): Pydantic da la entrada sin envolver aunque el campo
+    sea `SecretStr`.
+
+## ADR-046 · Sueldo mínimo y otros filtros de búsqueda en el perfil (extiende la 015 y la 028)
+- **Contexto:** «Mi perfil → Búsqueda» solo filtraba por puesto, nivel, máximo de años, modalidad,
+  zona e idioma. Faltaban un mínimo de años, el sueldo, el tipo de contrato y de jornada, el tipo
+  de empresa y las palabras que descartan (que solo existían en `config/policies.yaml`).
+  `private.salary_floor_eur` ya existía, pero solo para comparar una oferta recibida.
+- **Decisión:**
+  - **Sueldo mínimo como filtro duro y privado.** Sigue en `private.salary_floor_eur` (bruto
+    anual en euros, entero > 0). Descarta solo si la oferta **publica** un sueldo en EUR, por año
+    o por mes, y su máximo (o su mínimo, si solo da uno) queda por debajo. Un sueldo mensual se
+    pasa a anual **×12, no ×14**: es lo que hace la comparación de ofertas recibidas y no sabemos
+    cuántas pagas tiene la oferta; ×12 es la cuenta prudente (descarta menos). Sin sueldo, en
+    otra moneda o por horas, no descarta. El motivo que guarda el filtro (y que lee el agente en
+    `get_match`) es genérico, «por debajo de tu mínimo salarial», **sin cifras**: el código filtra
+    y el agente no ve la cifra. Solo la API de la UI (`require_ui_read`) devuelve la diferencia.
+    La cifra se lee y escribe en `GET`/`PUT /profile/salary-floor` (solo UI); el guardado no
+    devuelve diff y el historial sigue enseñando `private` como `<oculto>`.
+  - **Mínimo de años** (`preferences.min_years_required`): descarta si la oferta pide menos años
+    que el mínimo menos `years_tolerance`. Debe ser ≤ `max_years_required`.
+  - **Contrato y jornada** (`contract_types`, `employment_types`): los que aceptas; vacía = sin
+    filtro; `unknown` pasa. `employment_type: contract` no dice la jornada y también pasa.
+    `exclude_signals: [fixed_term]` equivale a no aceptar `fixed_term`: los dos se evalúan en el
+    filtro `contract` y la UI guarda solo la forma `contract_types`.
+  - **Tipo de empresa** (`excluded_employer_kinds`): nuevo campo opcional de la extracción,
+    `employer_kind` (`direct`, `consultancy`, `agency`, `unknown`). `is_agency: true` cuenta como
+    `agency`; `unknown` (o sin dato) no descarta.
+  - **Palabras que descartan** (`preferences.discard_title_keywords`): se suman a las de
+    `policies.yaml`, en los filtros duros y en el filtro previo de las fuentes.
+  - Los campos nuevos, vacíos, no se vuelcan: un perfil que no los usa tiene el mismo YAML, el
+    mismo hash y filtra igual.
+- **Alternativas descartadas:** ×14 pagas (descartaría ofertas válidas con 12 pagas); dar la cifra
+  al agente para que filtre él (rompe la privacidad de `private`); un campo de sueldo en
+  `preferences` (saldría por `get_profile`).
+- **Consecuencias:** el agente sabe que una oferta cayó por sueldo, pero no por cuánto. Las
+  extracciones antiguas no tienen `employer_kind` y no se filtran por tipo de empresa hasta que se
+  vuelvan a extraer. Viendo qué ofertas caen por `salary`, un agente podría acotar el mínimo por
+  sondeo: se acepta, porque nunca recibe la cifra ni la diferencia. Los descartes por
+  `exclude_signals: [fixed_term]` anteriores a la fase siguen contados como `signal` en el embudo;
+  los nuevos, como `contract`. Un `employer_kind` concreto manda sobre `is_agency` (una consultora
+  con `is_agency: true` cuenta como `consultancy`).

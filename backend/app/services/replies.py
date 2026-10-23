@@ -442,12 +442,16 @@ def _is_known(session: Session, message_id: str) -> bool:
     return session.scalars(stmt).first() is not None
 
 
-def replies_enabled() -> bool:
-    """Si hay de dónde leer respuestas: IMAP configurado o correos en `data/inbox/respuestas/`."""
+def replies_enabled(session: Session) -> bool:
+    """Si hay de dónde leer respuestas: un buzón que las lea (fase 27.4) o correos en
+    `data/inbox/respuestas/`."""
+    from app.services import mail_sources
     from app.services.ingestion.email.mailboxes import has_local_mail
 
     settings = get_settings()
-    return settings.imap_configured or has_local_mail(settings.replies_inbox_dir)
+    return bool(mail_sources.active_sources(session, "replies")) or has_local_mail(
+        settings.replies_inbox_dir
+    )
 
 
 def has_open_processes(session: Session) -> bool:
@@ -469,12 +473,16 @@ def poll_replies(
     if not processes:
         result.message = "Respuestas: no hay candidaturas enviadas abiertas; no se lee el correo."
         return result
-    own = (settings.imap_user or "").strip().lower()
+    from app.services import mail_sources
+
+    boxes = mail_sources.active_sources(session, "replies")
+    # Lo que envías tú (desde cualquiera de tus buzones) no es una respuesta.
+    own = {str(mail_sources.effective(box)["user"] or "").strip().lower() for box in boxes}
 
     def candidates_of(
         sender: str, name: str, subject: str, when: datetime | None
     ) -> list[dict[str, Any]]:
-        if not sender or sender == own:
+        if not sender or sender in own:
             return []
         return _candidates(processes, domains, sender, name, subject, when)
 
@@ -495,16 +503,16 @@ def poll_replies(
         )
 
     mails: list[tuple[RawMail, str]] = []
-    if settings.imap_configured:
-        earliest = min(p.since for p in processes).astimezone(local_zone()).date()
-        since: date = earliest - timedelta(days=1)  # SINCE va por días en la zona del servidor
+    earliest = min(p.since for p in processes).astimezone(local_zone()).date()
+    since: date = earliest - timedelta(days=1)  # SINCE va por días en la zona del servidor
+    for box in boxes:  # uno detrás de otro: el fallo de uno no frena a los demás
         try:
-            kwargs = {"factory": imap_factory} if imap_factory else {}
-            folder = settings.imap_replies_folder
-            for raw in read_imap_matching(settings, folder, since, wanted, **kwargs):
+            account = mail_sources.account_of(box, "replies")
+            for raw in read_imap_matching(account, since, wanted, imap_factory):
                 mails.append((raw, "imap"))
         except MailboxError as exc:
-            result.errors.append(Issue(code=exc.code, message=exc.message))
+            message = f"{box.label}: {exc.message}" if len(boxes) > 1 else exc.message
+            result.errors.append(Issue(code=exc.code, message=message))
     try:
         for raw in read_local(settings.replies_inbox_dir):
             result.checked += 1

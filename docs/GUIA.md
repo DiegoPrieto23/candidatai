@@ -122,7 +122,9 @@ docker compose up -d --build        # la primera vez tarda unos minutos (constru
 La app queda en `http://127.0.0.1:8000`, solo en tu equipo. Tus datos van en el volumen
 `candidatai-data`, que sobrevive a parar, actualizar o borrar el contenedor. Si hay un `.env` en
 la carpeta, el contenedor lo lee (claves de portales, IMAP…): con IMAP configurado, su worker lee
-tus alertas por correo igual que el de la instalación nativa, pero las guarda en el volumen.
+tus alertas por correo igual que el de la instalación nativa, pero las guarda en el volumen. Al
+añadir un buzón desde la UI, la app no puede escribir tu `.env`: te dice qué línea añadir y
+luego recreas el contenedor (`docker compose up -d`).
 
 - **Parar y arrancar:** `docker compose stop` y `docker compose start`.
 - **Actualizar:** `git pull` y `docker compose up -d --build`.
@@ -240,8 +242,11 @@ documentos y correos. Las claves van en `.env`, también fuera de git.
 | **Documentos fuente** (CVs antiguos, títulos, referencias) | `data/documentos/` | `update-profile` los puede leer, confirmando antes de escribir |
 | **Lo que has hecho en público** (repositorios, portfolio, Kaggle, Scholar, certificaciones verificables) | `data/profile.yaml` | Skill `expand`, o «Ampliar perfil desde mis enlaces» en «Mi perfil». Úsalo **justo después de crear el perfil**: propone proyectos, skills (sin nivel: lo pones tú), logros con los números que da la fuente y certificaciones, cada uno con su enlace en `source`, y solo escribe lo que aceptes. Solo web pública: ni LinkedIn ni nada con login. Necesita un agente con búsqueda web |
 
-Tu mínimo salarial va en `private.salary_floor_eur` del perfil: la app lo usa para comparar
-ofertas, pero el agente nunca lo recibe.
+Tu mínimo salarial va en «Mi perfil → Búsqueda» (o en `private.salary_floor_eur` del perfil): la
+app descarta las ofertas que publican un sueldo por debajo y lo usa para comparar las ofertas
+recibidas, pero el agente nunca ve la cifra; solo sabe que una oferta cayó «por debajo de tu
+mínimo salarial». En «Búsqueda» también eliges años mínimo y máximo, palabras que descartan,
+tipo de contrato y jornada, y si excluyes consultoras o agencias de selección.
 
 **Dónde están tus datos y cómo copiarlos.** `uv run cai paths` (o `cai paths` en la carpeta de la
 app) dice qué carpeta usas. Con el instalador:
@@ -319,7 +324,7 @@ Un día normal:
 | **Empresas objetivo** (Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters, Recruitee) | Página «Fuentes → Empresas objetivo» o `cai sources add --kind greenhouse --name "Acme" --slug acme`. `cai sources discover --file empresas.txt` busca el tablero de cada empresa de una lista. Cómo encontrar el slug, en [`FUENTES_OFERTAS.md`](FUENTES_OFERTAS.md#cómo-encontrar-el-slug) |
 | **InfoJobs y Adzuna** | Sus claves en `.env` (`CAI_INFOJOBS_CLIENT_ID`/`_SECRET`, `CAI_ADZUNA_APP_ID`/`_KEY`) y una búsqueda con `cai sources add` |
 | **Manfred y freehire.me** | Sin claves: una búsqueda en la misma página o con `cai sources add --kind manfred --name Manfred --query "data engineer"` (en freehire, también `--country` y `--remote-only`) |
-| **Alertas por correo** | Crea alertas en LinkedIn, InfoJobs, Indeed… y que lleguen a una etiqueta de tu correo. Configura IMAP de solo lectura en `.env`: paso a paso en [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md). Sin IMAP, deja los `.eml` en `data/inbox/`. Lo que llega aparece en «Alertas» |
+| **Alertas por correo** | Crea alertas en LinkedIn, InfoJobs, Indeed… y que lleguen a una etiqueta de tu correo. En «Alertas → Añadir buzón» conecta uno o varios buzones (Gmail, Outlook, Yahoo, iCloud u otro IMAP, siempre en solo lectura) o una carpeta de `.eml`; el asistente explica cada proveedor y prueba la conexión antes de guardar. La contraseña se guarda en tu `.env` y no vuelve a salir. Paso a paso en [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md). Lo que llega aparece en «Alertas» |
 | **Botón «Enviar a CandidatAI»** | Carga `extension/` como extensión sin empaquetar en Chrome o Edge y pega el token de `cai capture token` en sus opciones. Instrucciones: [`extension/README.md`](../extension/README.md) |
 | **Tu agente con tu navegador** | `search-jobs configurar` elige portales y búsquedas (página «Fuentes → Plataformas»); `search-jobs` los recorre. LinkedIn queda desactivado hasta que lo actives tú |
 | **Búsqueda pública de LinkedIn** | Interruptor «Búsqueda pública sin sesión» en la tarjeta de LinkedIn de «Fuentes → Plataformas». Apagado por defecto: va contra las condiciones de LinkedIn y puede bloquear tu IP un tiempo |
@@ -330,7 +335,9 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
 
 ## 8. De la oferta al envío
 
-1. **Extraer:** `process-jobs` convierte el texto de cada oferta en datos estructurados. El
+1. **Extraer:** antes, si un título o una empresa no te interesa, quítala desde la Bandeja
+   («Por completar» o «Por extraer») con «Descartar», una a una o seleccionando varias: no gasta
+   agente y se puede deshacer. `process-jobs` convierte el texto de cada oferta en datos estructurados. El
    texto de las ofertas es contenido no confiable: si trae texto oculto o frases dirigidas a una
    IA, la ficha lo avisa.
 2. **Valorar:** la app calcula el score y aplica tus filtros duros; `assess-fit` añade una
@@ -357,7 +364,7 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
   mes, semana, día o agenda. Pulsa uno para ver sus datos e ir a la oferta.
 - **Seguimientos:** te avisa de las candidaturas sin respuesta; `draft-follow-up` deja los
   borradores (máximo 2 por candidatura) y el de agradecimiento tras una entrevista. Los envías tú.
-- **Respuestas:** con IMAP configurado, la app lee los correos de las empresas de tus procesos;
+- **Respuestas:** en los buzones que lo tengan marcado, la app lee los correos de las empresas de tus procesos;
   `review-replies` propone qué ha pasado y tú lo aceptas en «Respuestas».
 - **Embudo:** conversión por paso, fuente, puesto, semana, plantilla, carta y referencia, y
   «¿Acierta el score?». `review-search` hace la retrospectiva semanal. Al final, «Tu búsqueda en

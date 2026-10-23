@@ -129,6 +129,7 @@ stories:                     # STAR stories for interviews; they cite achievemen
 preferences:
   roles: [Data Engineer, Analytics Engineer, Data Analyst]   # by priority
   seniority_target: [junior, mid]
+  min_years_required: 1             # optional; discards postings that ask for fewer years
   max_years_required: 4
   remote_modes: [remote, hybrid]
   locations:
@@ -136,6 +137,10 @@ preferences:
     allowed: [Limerick]            # only if hybrid or remote
     excluded: []
   languages_for_work: [en, es]
+  discard_title_keywords: [internship, sales]   # added to those in config/policies.yaml
+  contract_types: [permanent, freelance]   # the ones you accept; empty = any
+  employment_types: [full_time]            # full_time, part_time, internship; empty = any
+  excluded_employer_kinds: [agency]        # consultancy, agency
   cv:
     default_template: ats-simple
     photo_file: photo.jpg
@@ -157,4 +162,4 @@ preferences:
     default_format: text
 
 private:                     # never leaves through the MCP or any document
-  salary_floor_eur: null
+  salary_floor_eur: 30000   # gross per year in euros; it filters, but your agent never sees it

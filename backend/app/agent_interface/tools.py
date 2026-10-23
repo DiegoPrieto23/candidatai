@@ -30,6 +30,7 @@ from app.schemas.cv import CvContent, CvRenderOptions, CvVerification
 from app.schemas.interview_guide import InterviewGuideInput
 from app.schemas.interviews import InterviewPlanInput
 from app.schemas.llm_io import ApplicationAnswers, FitAssessment, JobExtraction
+from app.schemas.mail_sources import MailSourceList
 from app.schemas.profile import MAX_LETTER_WORDS
 from app.schemas.sources import AgentBrowseSource, SourceList, SourceRunSummary
 from app.services import (
@@ -46,6 +47,7 @@ from app.services import (
     interviews,
     jobs,
     liveness,
+    mail_sources,
     network,
     profile,
     prompts,
@@ -507,6 +509,10 @@ def _add_job_from_text(
         platform=args.platform,
         external_id=args.external_id,
     )
+
+
+def _list_mail_sources(session: Session, _args: NoInput, _ctx: CallContext) -> MailSourceList:
+    return mail_sources.list_mail_sources(session)
 
 
 def _list_sources(session: Session, args: ListSourcesInput, _ctx: CallContext) -> SourceList:
@@ -1101,6 +1107,19 @@ TOOLS: tuple[ToolSpec, ...] = (
         handler=_list_sources,
         cli=CliSpec(path=("sources", "list")),
         audit_fields=("kind",),
+    ),
+    ToolSpec(
+        name="list_mail_sources",
+        description=(
+            "Buzones de los que la app lee las alertas por correo y las respuestas de las "
+            "empresas, con su estado (última lectura, último error) y si tienen contraseña, nunca "
+            "cuál. Solo lectura: añadirlos, cambiarlos o probarlos es cosa del usuario en la UI "
+            "(Alertas → Buzones)."
+        ),
+        input_model=NoInput,
+        output_model=MailSourceList,
+        handler=_list_mail_sources,
+        cli=CliSpec(path=("mail-sources", "list")),
     ),
     ToolSpec(
         name="save_source",

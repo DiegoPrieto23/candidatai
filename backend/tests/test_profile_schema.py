@@ -41,7 +41,7 @@ def test_example_profile_is_valid() -> None:
     assert profile.personal.name == "Lucía Varela Otero"
     assert [e.id for e in profile.experience] == ["exp-norteconsulting", "exp-datagal"]
     assert profile.experience[0].end == "present"
-    assert profile.private == {"salary_floor_eur": None}
+    assert profile.private == {"salary_floor_eur": 30000}
 
 
 def test_yaml_with_bom_is_accepted(tmp_path: Path) -> None:
