@@ -6,7 +6,7 @@ cada fase y lo quita cuando el usuario confirma que está hecho.
 
 Marca `[x]` lo que hagas y, si algo falla, apúntalo debajo de la línea con `→`.
 
-Última actualización: 2026-10-23 (fase 27.6).
+Última actualización: 2026-10-23 (fase 28.1).
 
 ## 1. Poner la app al día (antes de probar nada)
 
@@ -408,6 +408,12 @@ hiciste, márcala.
 
 ## 4. Fuera de la app
 
+- [ ] **Fase 28.1 · Correo privado en GitHub:** Settings → Emails → «Keep my email addresses
+      private» y «Block command line pushes that expose my email». Este repo ya hace commits con tu
+      correo noreply de GitHub; ponlo también en otros clones o equipos (`git config user.email …`).
+- [ ] **Fase 28.1 · Release `v0.1.0` e instaladores** (`fase-28.1-prueba-manual.md`): con la
+      etiqueta publicada, instalación limpia en Windows Sandbox (apunta qué dice SmartScreen), en
+      WSL/Linux y con Docker; macOS por la CI. Rellena la tabla de resultados.
 - [x] **Codex**: probado el 2026-10-22 con `cai eval compat --agent codex --cases 1` (11/11 campos,
       1/1 valoración, 1/1 CV). Falta, si quieres, la matriz entera de 5 ofertas.
 - [ ] **CI en GitHub**: comprobar que pasa el paso de la fase 12 (en local solo se probó con

@@ -1,0 +1,27 @@
+# Dependabot (fase 28.1): avisos y PR de seguridad, y una PR semanal agrupada por ecosistema con
+# las actualizaciones normales. Las PR pasan por la CI como cualquier otra; nada se fusiona solo.
+version: 2
+updates:
+  - package-ecosystem: uv
+    directory: /backend
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      backend:
+        patterns: ["*"]
+  - package-ecosystem: npm # pnpm se gestiona con el ecosistema npm (lee pnpm-lock.yaml)
+    directory: /frontend
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      frontend:
+        patterns: ["*"]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]

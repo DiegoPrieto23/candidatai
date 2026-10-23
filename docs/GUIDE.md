@@ -62,7 +62,9 @@ powershell -ExecutionPolicy Bypass -File $env:TEMP\cai-install.ps1
 The installer:
 
 1. installs [uv](https://docs.astral.sh/uv/) if it's missing (it brings Python 3.12);
-2. downloads the latest CandidatAI release, with the UI already built (no Node needed);
+2. downloads the latest CandidatAI release, with the UI already built (no Node needed), and
+   checks its SHA-256 checksum before opening it: if it doesn't match the published one, nothing
+   is installed;
 3. puts it in `%LOCALAPPDATA%\CandidatAI\app`, and your data in `%LOCALAPPDATA%\CandidatAI\data`;
 4. prepares the environment, the PDF Chromium and the database;
 5. creates a **"CandidatAI"** shortcut on the desktop and in the Start menu.
@@ -77,9 +79,10 @@ window that appears open while you use it; to close CandidatAI, close that windo
   the app's `.env` (`…\CandidatAI\app\.env`) is kept.
 - **Uninstalling:** `.\install.ps1 -Uninstall` removes the app and the shortcuts, not your data
   (with `-RemoveData`, your data too, after confirming).
-- While the repository is private or no release has been published, the one-line command has
-  nothing to download: install from your copy of the repository (below) with
-  `.\install.ps1 -Source <repository folder>`, after building the UI (`pnpm build`).
+- **From your copy of the repository:** `.\install.ps1 -Source <repository folder>`, after
+  building the UI (`pnpm build`). With a local zip, `-Source .\candidatai.zip` checks the checksum
+  if its `candidatai.zip.sha256` sits next to it. `-SkipChecksum` doesn't check it: use it only
+  with a URL of your own that doesn't publish one.
 
 ### On macOS and Linux: `install.sh`
 
@@ -92,7 +95,7 @@ curl -fsSL https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/insta
 It does the same as the Windows one:
 
 1. installs uv if it's missing;
-2. downloads the latest release, with the UI already built;
+2. downloads the latest release, with the UI already built, and checks its SHA-256 checksum;
 3. puts it in `~/Library/Application Support/CandidatAI/app` (macOS) or
    `~/.local/share/candidatai/app` (Linux, or `$XDG_DATA_HOME/candidatai/app`), and your data next
    to it, in `…/data` (`uv run cai paths` tells you where);
@@ -108,6 +111,8 @@ It does the same as the Windows one:
   (with `--remove-data`, your data too, if you confirm by typing «borrar»). It only touches folders
   it created (they hold a `.candidatai` file).
 - **From your copy of the repository**, with the UI built: `bash install.sh --source <folder>`.
+  `--skip-checksum` doesn't check the zip's checksum: only with a URL of your own that doesn't
+  publish one.
 - On macOS, the first time it may ask for permission for the app to control Terminal: allow it.
 
 ### With Docker (optional)

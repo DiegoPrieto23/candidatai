@@ -54,11 +54,11 @@ GOOD = """# Changelog
 def test_the_changelog_has_the_expected_structure() -> None:
     assert notes.check(CHANGELOG) == []
     sections, _ = notes.parse(CHANGELOG)
-    unreleased = sections[0]
-    assert unreleased.name == "Sin publicar"
-    # Lo de las fases 24 y 25 está en «Sin publicar».
-    for phase_mark in ("OpenCode", "Personio", "expand", "cai stats story", "moderna-2col"):
-        assert phase_mark in unreleased.text(), phase_mark
+    assert sections[0].name == "Sin publicar"
+    # Fase 28.1: la primera release publicada, 0.1.0, recoge todo lo anterior (fases 01-28.1).
+    first = next(s for s in sections if s.name == "0.1.0")
+    for mark in ("OpenCode", "Personio", "expand", "cai stats story", "SHA-256", "Docker"):
+        assert mark in first.text(), mark
 
 
 def test_the_latest_version_is_the_one_in_pyproject() -> None:

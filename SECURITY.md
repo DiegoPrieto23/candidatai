@@ -4,9 +4,14 @@
 
 ## Reporting a vulnerability
 
-Please **don't open a public issue** for security problems. Use GitHub's private vulnerability
-reporting ("Security" tab → "Report a vulnerability") or contact the maintainer through their
-GitHub profile. Include the steps to reproduce it with the demo data.
+Please **don't open a public issue** for security problems. Report them privately through
+GitHub: [**Report a vulnerability**](https://github.com/DiegoPrieto23/candidatai/security/advisories/new) (or the "Security" tab → "Report a vulnerability").
+Only the maintainer sees it. Include the steps to reproduce it with the demo data.
+
+## Supported versions
+
+Fixes go into the latest release (`0.x`, see [releases](https://github.com/DiegoPrieto23/candidatai/releases)).
+Update by running the installer again: your data is kept.
 
 ## Threat model in short
 
@@ -21,6 +26,9 @@ an AI agent then reads too. Its defences live in code, so they hold whatever age
   takes a single-use token that only the UI produces after you confirm.
 - **Validation:** everything the agent returns goes through strict schemas; CV claims must cite
   evidence that exists in your profile.
+- **Verified downloads:** the installers check the release zip against its published SHA-256
+  checksum before opening it. That catches a corrupt or tampered download, not a compromised
+  release: both files come from the same GitHub release.
 - **Local only:** the API listens on `127.0.0.1`. Downloads refuse local and private addresses,
   also after redirects. Your data stays in `data/`, outside git.
 
@@ -36,9 +44,14 @@ authentication, so an agent with terminal access could call it directly.
 
 ### Avisar de una vulnerabilidad
 
-Por favor, **no abras un issue público** para un problema de seguridad. Usa el aviso privado de
-vulnerabilidades de GitHub (pestaña «Security» → «Report a vulnerability») o escribe al mantenedor
-desde su perfil de GitHub. Incluye los pasos para reproducirlo con los datos de la demo.
+Por favor, **no abras un issue público** para un problema de seguridad. Avísalo en privado por
+GitHub: [**Report a vulnerability**](https://github.com/DiegoPrieto23/candidatai/security/advisories/new) (o pestaña «Security» → «Report a vulnerability»). Solo
+lo ve el mantenedor. Incluye los pasos para reproducirlo con los datos de la demo.
+
+### Versiones con soporte
+
+Los arreglos van a la última release (`0.x`, ver [releases](https://github.com/DiegoPrieto23/candidatai/releases)).
+Para actualizar, vuelve a ejecutar el instalador: tus datos se conservan.
 
 ### El modelo de amenazas, en corto
 
@@ -53,6 +66,9 @@ agente ([ADR-012](docs/DECISIONS.md)):
   candidatura exige un token de un solo uso que solo genera la UI tras tu confirmación.
 - **Validación:** todo lo que devuelve el agente pasa por esquemas estrictos; cada afirmación del
   CV tiene que citar una evidencia que exista en tu perfil.
+- **Descargas comprobadas:** los instaladores comprueban el zip de la release contra su suma SHA-256
+  publicada antes de abrirlo. Eso detecta una descarga corrupta o alterada, no una release
+  comprometida: los dos ficheros salen de la misma release de GitHub.
 - **Solo en local:** la API escucha en `127.0.0.1`. Las descargas rechazan direcciones locales y
   privadas, también tras una redirección. Tus datos se quedan en `data/`, fuera de git.
 

@@ -59,7 +59,8 @@ powershell -ExecutionPolicy Bypass -File $env:TEMP\cai-install.ps1
 El instalador:
 
 1. instala [uv](https://docs.astral.sh/uv/) si no está (con él viene Python 3.12);
-2. descarga la última versión de CandidatAI, con la UI ya compilada (no hace falta Node);
+2. descarga la última versión de CandidatAI, con la UI ya compilada (no hace falta Node), y
+   comprueba su suma SHA-256 antes de abrirla: si no coincide con la publicada, no instala nada;
 3. la deja en `%LOCALAPPDATA%\CandidatAI\app`, y tus datos en `%LOCALAPPDATA%\CandidatAI\data`;
 4. prepara el entorno, el Chromium de los PDF y la base de datos;
 5. crea un acceso directo **«CandidatAI»** en el escritorio y en el menú Inicio.
@@ -74,9 +75,10 @@ abierta la ventana que aparece mientras la uses; para cerrar CandidatAI, cierra 
   tocan, y el `.env` de la app (`…\CandidatAI\app\.env`) se conserva.
 - **Desinstalar:** `.\install.ps1 -Uninstall` quita la app y los accesos directos, no tus datos
   (con `-RemoveData`, también tus datos, previa confirmación).
-- Mientras el repositorio sea privado o no haya ninguna versión publicada, el comando de una línea
-  no tiene qué descargar: instala desde tu copia del repositorio (abajo) con
-  `.\install.ps1 -Source <carpeta del repositorio>`, después de compilar la UI (`pnpm build`).
+- **Desde tu copia del repositorio:** `.\install.ps1 -Source <carpeta del repositorio>`, después
+  de compilar la UI (`pnpm build`). Con un zip local, `-Source .\candidatai.zip` comprueba la suma
+  si tiene al lado su `candidatai.zip.sha256`. `-SkipChecksum` no la comprueba: úsalo solo con una
+  URL tuya que no la publique.
 
 ### En macOS y Linux: `install.sh`
 
@@ -89,7 +91,7 @@ curl -fsSL https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/insta
 Hace lo mismo que el de Windows:
 
 1. instala uv si no está;
-2. descarga la última versión, con la UI ya compilada;
+2. descarga la última versión, con la UI ya compilada, y comprueba su suma SHA-256;
 3. la deja en `~/Library/Application Support/CandidatAI/app` (macOS) o en
    `~/.local/share/candidatai/app` (Linux, o `$XDG_DATA_HOME/candidatai/app`), y tus datos al
    lado, en `…/data` (`uv run cai paths` te dice dónde);
@@ -105,6 +107,7 @@ Hace lo mismo que el de Windows:
   `--remove-data`, también tus datos, si lo confirmas escribiendo «borrar»). Solo toca carpetas que
   creó él (llevan un fichero `.candidatai`).
 - **Desde tu copia del repositorio**, con la UI compilada: `bash install.sh --source <carpeta>`.
+  `--skip-checksum` no comprueba la suma del zip: solo con una URL tuya que no la publique.
 - En macOS, la primera vez puede pedirte permiso para que la app controle Terminal: acéptalo.
 
 ### Con Docker (opcional)

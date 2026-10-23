@@ -98,7 +98,7 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 27.5 | ↳ Preferencias de búsqueda | ✅ | «Mi perfil → Búsqueda» en bloques y alineada, con años mínimos, sueldo mínimo privado, palabras que descartan, contrato y tipo de empresa |
 | 27.6 | ↳ Descartar desde la Bandeja | ✅ | Botón «Descartar» con «Deshacer» en «Por completar» y «Por extraer», y «Cerrada» con su fecha de cierre, ordenable |
 | 28 | Repo público: raíz limpia, release, medios nuevos y lanzamiento | ⏳ | Primera release que instala de verdad, lo interno en `dev/`, medios y README al día con todas las funcionalidades, portada y ajustes de GitHub, y borradores de difusión |
-| 28.1 | ↳ Auditoría y primera release | ⏳ | Historial auditado, `v0.1.0` publicada con suma de verificación y los instaladores probados contra ella |
+| 28.1 | ↳ Auditoría y primera release | ⏳ (auditoría, suma y CHANGELOG hechos; falta publicar `v0.1.0` y probar los instaladores contra ella) | Historial auditado, `v0.1.0` publicada con suma de verificación y los instaladores probados contra ella |
 | 28.2 | ↳ Raíz limpia | ⏳ | Encargos, pruebas, ROADMAP y ADR a `dev/`, enlaces comprobados y la barra de lenguajes de GitHub bien |
 | 28.3 | ↳ Medios y funcionalidades | ⏳ | Capturas, GIF y vídeos nuevos (en/es), `FEATURES.md` y un script que impide funciones sin contar |
 | 28.4 | ↳ Portada y GitHub | ⏳ | Portada con gancho, «Por qué CandidatAI», guía para quien no es técnico, temas, imagen social y plantillas |
@@ -3446,3 +3446,36 @@ decisiones tomadas y deuda técnica pendiente. -->
   cabeza nueva (`test_cli_db`), corregidos y repetidos junto con los tocados tras la revisión (326 en
   verde). Frontend: 349 en verde y los 17 de la Bandeja repetidos tras la revisión. `tsc`, ruff,
   oxlint (sin avisos nuevos) y `sync_agents.py --check` limpios; OpenAPI regenerado.
+
+### 28.1 · Auditoría y primera release — 2026-10-23 · Claude Code (Opus 5.5)
+- **Por qué:** el repo ya es público, no había ninguna release (el comando de instalación del README
+  daba 404), el historial no se había escaneado y los instaladores ejecutaban lo descargado sin
+  verificarlo.
+- **Hecho:**
+  - auditoría (`docs/pruebas/fase-28.1-auditoria.md`): gitleaks y trufflehog sobre todas las
+    ramas, sin secretos (un falso positivo de un test); ningún dato personal del perfil en el árbol
+    ni en el historial; capturas, GIF y vídeos, todos de la demo;
+  - GitHub: escaneo de secretos, protección de push, alertas y actualizaciones de Dependabot y aviso
+    privado de vulnerabilidades activados por `gh api`; `.github/dependabot.yml` (uv, pnpm y
+    Actions, agrupado y semanal), `CODEOWNERS` y `SECURITY.md` con el enlace al aviso privado y el
+    alcance de la suma; commits desde ahora con el correo noreply;
+  - `release.yml` publica `candidatai.zip.sha256`; `install.ps1` e `install.sh` la descargan y la
+    comprueban antes de descomprimir (con zip local, si está al lado), con
+    `-SkipChecksum`/`--skip-checksum`. En PowerShell 5.1 la suma va con .NET: `Get-FileHash` respeta
+    `-WhatIf` y no calcula nada;
+  - `CHANGELOG.md`: la `0.1.0` (nunca publicada) y «Sin publicar» juntas en una sola `0.1.0`,
+    reescrita para quien usa la app;
+  - README: distintivos de CI y última release en lugar del fijo de tests; sin cifras de tests ni de
+    ADR; `test_readme_numbers.py` comprueba que las del eval coinciden con `evals/REPORT.md`;
+  - guías (es/en) con la comprobación de la suma.
+- **Revisión (rol `reviewer`):** sin bloqueantes. Aplicado: `SECURITY.md` explica que la suma
+  detecta descargas corruptas o alteradas, no una release comprometida; el aviso de zip local sin
+  suma dice dónde conseguirla; fuera el correo noreply de los docs.
+- **Decisiones (con el usuario):** `v0.1.0` es la primera versión publicada y recoge todo; no se
+  reescribe el historial por el correo; los ajustes de GitHub los activa el agente.
+- **Deuda:** `install.sh` se ejecuta con `curl | bash` desde `main`, sin verificar (lo habitual);
+  los patrones genéricos y la validez del escaneo de secretos requieren GitHub Advanced Security.
+- **Pendiente:** fusionar, etiquetar `v0.1.0` y la prueba manual de `fase-28.1-prueba-manual.md`
+  (Windows Sandbox, WSL, Docker; macOS por la CI). Ya probado: empaquetado local, instalación en
+  Windows desde ese zip con suma, `cai doctor`, reinstalar conservando datos y suma alterada
+  rechazada; tests de `install.sh` en un contenedor Linux.

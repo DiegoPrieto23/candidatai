@@ -4,7 +4,8 @@
 
 .DESCRIPTION
   1. Instala uv si no está (el instalador oficial de astral.sh). uv trae Python 3.12 por su cuenta.
-  2. Descarga la última release de CandidatAI (la UI ya va compilada: no hace falta Node).
+  2. Descarga la última release de CandidatAI (la UI ya va compilada: no hace falta Node) y
+     comprueba su suma SHA-256 (candidatai.zip.sha256, publicada con ella) antes de abrirla.
   3. La deja en <InstallDir>\app. Tus datos van en <InstallDir>\data y nunca se tocan al actualizar;
      tu .env de la app tampoco (solo se fija CAI_DATA_DIR).
   4. Prepara el entorno (uv sync), el Chromium de Playwright (PDF de los CVs) y la base de datos.
@@ -33,7 +34,9 @@ param(
   # Con -Uninstall, borra también tus datos (pide confirmación).
   [switch]$RemoveData,
   # No crea los accesos directos (pruebas, instalaciones desatendidas).
-  [switch]$NoShortcuts
+  [switch]$NoShortcuts,
+  # No comprueba la suma SHA-256 del zip (solo con una URL tuya que no publique <zip>.sha256).
+  [switch]$SkipChecksum
 )
 
 $ErrorActionPreference = "Stop"
@@ -65,6 +68,23 @@ $Shortcuts = @(
   (Join-Path ([Environment]::GetFolderPath("Desktop")) "CandidatAI.lnk"),
   (Join-Path ([Environment]::GetFolderPath("Programs")) "CandidatAI.lnk")
 )
+
+# Comprueba el zip contra un fichero .sha256 con el formato de `sha256sum` («<suma>  candidatai.zip»).
+function Assert-Checksum([string]$Zip, [string]$SumFile) {
+  $expected = ("$(Get-Content $SumFile -TotalCount 1)".Trim() -split '\s+')[0].ToLowerInvariant()
+  if ($expected -notmatch '^[0-9a-f]{64}$') {
+    throw "La suma de verificación ($SumFile) no tiene el formato esperado."
+  }
+  # Con .NET y no Get-FileHash: en PowerShell 5.1, Get-FileHash respeta -WhatIf y no calcula nada.
+  $sha = [Security.Cryptography.SHA256]::Create()
+  $stream = [IO.File]::OpenRead($Zip)
+  try { $actual = ([BitConverter]::ToString($sha.ComputeHash($stream)) -replace '-', '').ToLowerInvariant() }
+  finally { $stream.Dispose(); $sha.Dispose() }
+  if ($actual -ne $expected) {
+    throw "La suma SHA-256 del zip no coincide con la publicada: no se instala. Vuelve a intentarlo y, si se repite, avísanos en el repositorio."
+  }
+  Say "Suma SHA-256 comprobada."
+}
 
 function Test-CandidatAIApp([string]$Path) {
   # Una carpeta solo se sustituye o se borra si es una app de CandidatAI.
@@ -136,10 +156,34 @@ if (Test-Path $Source -PathType Container) {
 } elseif (Test-Path $Source) {
   $zip = (Resolve-Path $Source).Path
   Say "Zip local: $zip"
-} elseif ($PSCmdlet.ShouldProcess($Source, "Descargar")) {
+  if ($SkipChecksum) {
+    Say "Sin comprobar la suma (-SkipChecksum)."
+  } elseif (Test-Path "$zip.sha256") {
+    Assert-Checksum $zip "$zip.sha256"
+  } else {
+    Say "No hay $(Split-Path $zip -Leaf).sha256 al lado: no se comprueba la suma. Si lo bajaste de"
+    Say "la página de releases, descarga también su .sha256 a la misma carpeta."
+  }
+} elseif ($PSCmdlet.ShouldProcess($Source, $(if ($SkipChecksum) { "Descargar sin comprobar la suma (-SkipChecksum)" } else { "Descargar y comprobar su suma SHA-256" }))) {
   $zip = Join-Path $env:TEMP "candidatai-$([guid]::NewGuid().ToString('N')).zip"
-  Invoke-WebRequest -UseBasicParsing $Source -OutFile $zip
   $downloaded = $true
+  try {
+    Invoke-WebRequest -UseBasicParsing $Source -OutFile $zip
+    if ($SkipChecksum) {
+      Say "Sin comprobar la suma (-SkipChecksum)."
+    } else {
+      $sum = "$zip.sha256"
+      try {
+        Invoke-WebRequest -UseBasicParsing "$Source.sha256" -OutFile $sum
+      } catch {
+        throw "No se pudo descargar $Source.sha256 para comprobar el zip. Si la URL es tuya y no la publica, usa -SkipChecksum."
+      }
+      try { Assert-Checksum $zip $sum } finally { Remove-Item $sum -Force -ErrorAction SilentlyContinue }
+    }
+  } catch {
+    Remove-Item $zip -Force -ErrorAction SilentlyContinue
+    throw
+  }
 }
 
 # --- 3. Instalar la app ------------------------------------------------------------------------

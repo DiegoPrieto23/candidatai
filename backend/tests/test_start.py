@@ -286,6 +286,13 @@ def test_release_workflow_builds_the_ui_and_publishes_the_zip() -> None:
     # Fase 26.2: también install.sh, con los iconos de sus accesos directos.
     assert "candidatai/install.sh" in steps and "candidatai.icns" in steps
     assert 'zipinfo candidatai.zip candidatai/install.sh | grep -q "^-rwx"' in steps
+    # Fase 28.1: la suma se publica con el zip y los instaladores la comprueban.
+    assert "sha256sum candidatai.zip > candidatai.zip.sha256" in steps
+    assert 'gh release create "$GITHUB_REF_NAME" candidatai.zip candidatai.zip.sha256' in steps
+    artifact = next(s for s in package["steps"] if "upload-artifact" in str(s.get("uses")))
+    assert "candidatai.zip.sha256" in artifact["with"]["path"]
+    assert "SHA256]::Create()" in installer and '"$Source.sha256"' in installer
+    assert '"$SOURCE.sha256"' in (REPO_ROOT / "install.sh").read_text(encoding="utf-8")
     unix = (REPO_ROOT / "install.sh").read_text(encoding="utf-8")
     assert "releases/latest/download/candidatai.zip" in unix
     assert "backend/pyproject.toml" in unix
@@ -371,6 +378,39 @@ def test_installer_never_removes_data_of_a_folder_that_is_not_candidatai(tmp_pat
     result = _installer("-InstallDir", str(target), "-Uninstall", "-RemoveData")
     assert result.returncode == 0, result.stdout + result.stderr
     assert (target / "data" / "informe.txt").exists()
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="install.ps1 es para Windows")
+def test_installer_checks_the_zip_against_its_sha256(tmp_path: Path) -> None:
+    """Fase 28.1: con un `<zip>.sha256` al lado, una suma que no coincide no instala nada."""
+    import hashlib
+    import zipfile
+
+    release = tmp_path / "candidatai.zip"
+    with zipfile.ZipFile(release, "w") as zf:
+        zf.writestr("candidatai/backend/pyproject.toml", '[project]\nname = "candidatai"\n')
+    checksum = tmp_path / "candidatai.zip.sha256"
+    checksum.write_text(f"{'0' * 64}  candidatai.zip\n", encoding="utf-8")
+    target = tmp_path / "instalacion"
+    result = _installer("-Source", str(release), "-InstallDir", str(target), "-NoShortcuts")
+    assert result.returncode != 0 and "SHA-256" in result.stdout + result.stderr
+    assert not target.exists()
+    digest = hashlib.sha256(release.read_bytes()).hexdigest()
+    checksum.write_text(f"{digest.upper()}  candidatai.zip\r\n", encoding="utf-8")
+    result = _installer("-WhatIf", "-Source", str(release), "-InstallDir", str(target))
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "SHA-256 comprobada" in result.stdout
+    assert not target.exists()
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="install.ps1 es para Windows")
+def test_installer_downloads_its_sha256_unless_skipped() -> None:
+    """Sin red: -WhatIf anuncia la comprobación al descargar, y -SkipChecksum la quita."""
+    result = _installer("-WhatIf")
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "suma SHA-256" in result.stdout
+    result = _installer("-WhatIf", "-SkipChecksum")
+    assert result.returncode == 0 and "-SkipChecksum" in result.stdout
 
 
 def test_ci_tests_the_three_systems_the_installer_and_docker() -> None:
