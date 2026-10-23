@@ -322,7 +322,12 @@ def check_email_alerts(
     """Alertas por correo (fase 09b). Con IMAP configurado, solo login y `EXAMINE` de la carpeta
     (solo lectura): no se lee ni se toca ningún correo."""
     from app.core.policies import get_policies
-    from app.services.ingestion.email.mailboxes import MailboxError, connect_imap, has_local_mail
+    from app.services.ingestion.email.mailboxes import (
+        MailboxError,
+        connect_imap,
+        has_local_mail,
+        settings_account,
+    )
 
     name = "Alertas por correo"
     minutes = get_policies().email_alerts.poll_minutes
@@ -350,7 +355,9 @@ def check_email_alerts(
         return CheckResult(name=name, status=CheckStatus.OK, detail=detail)
     try:
         kwargs = {"factory": imap_factory} if imap_factory else {}
-        conn = connect_imap(settings, **kwargs)
+        account = settings_account(settings)
+        assert account is not None
+        conn = connect_imap(account, **kwargs)
     except MailboxError as exc:
         status = CheckStatus.WARN if exc.code == "network" else CheckStatus.ERROR
         return CheckResult(name=name, status=status, detail=exc.message)
@@ -369,7 +376,7 @@ def check_email_replies(
 ) -> CheckResult:
     """Respuestas de las empresas (fase 15): como las alertas, solo login y `EXAMINE` de su
     carpeta; no se lee ningún correo."""
-    from app.services.ingestion.email.mailboxes import MailboxError, connect_imap
+    from app.services.ingestion.email.mailboxes import MailboxError, connect_imap, settings_account
 
     name = "Respuestas por correo"
     if not settings.imap_configured:
@@ -390,7 +397,9 @@ def check_email_replies(
     folder = settings.imap_replies_folder
     try:
         kwargs = {"factory": imap_factory} if imap_factory else {}
-        conn = connect_imap(settings, folder=folder, **kwargs)
+        account = settings_account(settings, folder)
+        assert account is not None
+        conn = connect_imap(account, **kwargs)
     except MailboxError as exc:
         status = CheckStatus.WARN if exc.code == "network" else CheckStatus.ERROR
         return CheckResult(name=name, status=status, detail=exc.message)
@@ -402,6 +411,44 @@ def check_email_replies(
         detail=f"carpeta «{folder}» en solo lectura; solo se descargan los correos de las "
         "empresas de tus candidaturas enviadas",
     )
+
+
+def check_mail_sources(imap_factory: "ImapFactory | None" = None) -> CheckResult:
+    """Buzones añadidos desde la UI (fase 27.4): login y `EXAMINE` de cada uno activo, sin leer
+    correos. La cuenta de `.env` ya la prueban «Alertas por correo» y «Respuestas por correo»."""
+    from sqlalchemy.exc import SQLAlchemyError
+
+    from app.core.db import session_scope
+    from app.services import mail_sources
+
+    name = "Buzones"
+    try:
+        with session_scope() as session:
+            rows = [r for r in mail_sources.active_sources(session) if not r.from_env]
+            results = [
+                (row.label, mail_sources.probe_mail_source(session, row.id, imap_factory))
+                for row in rows
+            ]
+    except SQLAlchemyError:
+        return CheckResult(
+            name=name, status=CheckStatus.OK, detail="sin base de datos aún: ninguno añadido"
+        )
+    if not results:
+        return CheckResult(
+            name=name,
+            status=CheckStatus.OK,
+            detail="ninguno añadido desde la UI (opcional: Alertas → Añadir buzón)",
+        )
+    failed = [f"{label}: {r.message}" for label, r in results if not r.ok]
+    if failed:
+        network = all(r.code == "network" for _, r in results if not r.ok)
+        return CheckResult(
+            name=name,
+            status=CheckStatus.WARN if network else CheckStatus.ERROR,
+            detail="; ".join(failed),
+        )
+    labels = ", ".join(label for label, _ in results)
+    return CheckResult(name=name, status=CheckStatus.OK, detail=f"en solo lectura: {labels}")
 
 
 def check_capture(settings: Settings) -> CheckResult:
@@ -633,6 +680,7 @@ def run_doctor(settings: Settings) -> DoctorReport:
             check_connectors(settings),
             check_email_alerts(settings),
             check_email_replies(settings),
+            check_mail_sources(),
             check_capture(settings),
             *agents,
             *check_docker(settings),

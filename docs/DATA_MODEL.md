@@ -435,6 +435,46 @@ Ficheros en `data/` (gitignored), fuera de la BD:
   medias. Si la carpeta ya existe no se toca: rehacer el CV o la carta después no cambia lo archivado.
   `JobView.archive_folder` (ficha de la UI) la da relativa a `data/`.
 
+## Ampliaciones de la fase 27.4 (varios buzones, ADR-045)
+
+### `mail_sources` (migración 0027)
+
+Buzones de los que se leen las alertas y, si se pide, las respuestas de las empresas. **Nunca la
+contraseña**: vive en `.env`, en la variable que nombra `secret_ref`.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | int PK | |
+| label | str único | «Principal», «Gmail personal»… |
+| kind | str | `imap` o `folder` (`data/inbox/<folder>/`) |
+| host / port | str? / int? | Solo `imap`. Sin esquema; ni IP privadas ni locales salvo `allow_private` |
+| security | str | `ssl` o `starttls` |
+| user | str? | |
+| folder | str | Carpeta IMAP de las alertas, o el nombre de la carpeta de `data/inbox/` |
+| replies_folder | str | Carpeta IMAP de las respuestas (`INBOX`) |
+| enabled | bool | |
+| read_replies | bool | Si se leen de aquí las respuestas de las empresas (la «Principal», sí) |
+| secret_ref | str? | Nombre de la variable de `.env` con la contraseña (`CAI_IMAP_<ALIAS>_PASSWORD`) |
+| from_env | bool | La cuenta `CAI_IMAP_*` de `.env`: servidor, usuario y carpetas salen de ahí |
+| allow_private | bool | «Servidor en mi equipo o mi red» (un servidor propio) |
+| last_polled_at | datetime? | Última lectura |
+| last_error | JSON? | `{code, message}` del último fallo (`MailboxError`), o `null` |
+| created_at | datetime | |
+
+### `mail_source_changes` (migración 0027)
+
+Auditoría de altas, cambios y bajas de buzones (no van en `events`, que son de una oferta): qué
+campos, nunca sus valores (la contraseña aparece solo como `password`).
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | int PK | |
+| mail_source_id | int | Sin clave foránea: sobrevive al borrado |
+| label | str | |
+| action | str | `created`, `updated` o `deleted` |
+| fields | JSON | Nombres de los campos cambiados |
+| created_at | datetime | |
+
 ## Ampliaciones de la fase 25.7 («Mi perfil» editable, ADR-039)
 
 Ficheros en `data/`:

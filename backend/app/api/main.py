@@ -22,6 +22,7 @@ from app.api.routes import (
     drafts,
     jobs,
     letters,
+    mail_sources,
     network,
     process,
     profile,
@@ -68,6 +69,7 @@ def create_app() -> FastAPI:
     app.include_router(cv.router)
     app.include_router(sources.router)
     app.include_router(alerts.router)
+    app.include_router(mail_sources.router)
     app.include_router(capture.router)
     app.include_router(process.router)
     app.include_router(stats.router)

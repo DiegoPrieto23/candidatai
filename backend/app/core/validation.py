@@ -113,9 +113,23 @@ def expected_of(error: ErrorDetails) -> str | None:
             return None
 
 
+# Campos cuyo valor nunca se repite en un error (fase 27.4: la contraseña de un buzón). Pydantic
+# da la entrada sin envolver aunque el campo sea `SecretStr`, y un error de modelo trae la entrada
+# entera.
+SECRET_FIELDS = frozenset({"password"})
+
+
+def _touches_secret(error: ErrorDetails) -> bool:
+    if any(part in SECRET_FIELDS for part in error["loc"]):
+        return True
+    value = error.get("input")
+    return isinstance(value, dict) and any(key in SECRET_FIELDS for key in value)
+
+
 def describe_error(error: ErrorDetails) -> tuple[str | None, str]:
-    """(valor recibido como texto, o None si falta; motivo en español)."""
-    received = None if error["type"] == "missing" else _received(error["input"])
+    """(valor recibido como texto, o None si falta o es secreto; motivo en español)."""
+    hidden = error["type"] == "missing" or _touches_secret(error)
+    received = None if hidden else _received(error["input"])
     return received, _reason(error)
 
 

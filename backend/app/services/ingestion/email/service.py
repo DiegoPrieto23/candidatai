@@ -1,7 +1,9 @@
 """Una pasada por las alertas de correo: lee lo nuevo, da de alta sus ofertas y lo anota.
 
-1. Lee los correos nuevos (por `Message-ID`, tabla `email_messages`) del buzón IMAP, si está
-   configurado, y de `data/inbox/`.
+1. Lee los correos nuevos (por `Message-ID`, tabla `email_messages`) de cada buzón activo
+   (`mail_sources`, fase 27.4: IMAP o una carpeta `data/inbox/<nombre>/`), uno detrás de otro y
+   con un tope de tiempo, y de `data/inbox/`. El fallo de un buzón no frena a los demás: se anota
+   en su `last_error`. El mismo correo recibido en dos buzones cuenta una vez.
 2. Saca las ofertas de cada correo con el parser de su plataforma.
 3. Las que ya están (por `platform` + `external_id`) se cuentan y no se tocan. De las nuevas, si la
    plataforma permite descargar la página (`platforms.can_fetch`), se intenta el alta completa;
@@ -15,7 +17,9 @@ No se aplica el HTML del correo a esa detección: casi todas las alertas llevan 
 legítimo (el «preheader»), y marcaría `hidden_text` en todas.
 """
 
+import functools
 import logging
+import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
 
@@ -30,7 +34,7 @@ from app.core.policies import get_policies
 from app.models import EmailMessage, Source, SourceRun
 from app.models.base import utcnow
 from app.schemas.sources import Issue
-from app.services import ingest, platforms
+from app.services import ingest, mail_sources, platforms
 from app.services.ingestion.email.mailboxes import (
     ImapFactory,
     MailboxError,
@@ -43,6 +47,9 @@ from app.services.ingestion.email.parsers import parse_alert
 from app.services.ingestion.email.parsers.base import AlertItem
 
 logger = logging.getLogger(__name__)
+
+# Tope de una pasada por todos los buzones: los que no quepan se leen en la siguiente.
+POLL_BUDGET_SECONDS = 300
 
 SOURCE_KIND = "email_alerts"
 SOURCE_NAME = "Alertas por correo"
@@ -95,17 +102,39 @@ def _is_known(session: Session, message_id: str) -> bool:
 
 
 def _read_mail(
-    session: Session, imap_factory: ImapFactory | None, errors: list[Issue]
+    session: Session,
+    imap_factory: ImapFactory | None,
+    errors: list[Issue],
+    clock: Callable[[], float] = time.monotonic,
 ) -> list[RawMail]:
     settings = get_settings()
     mails: list[RawMail] = []
-    if settings.imap_configured:
-        days = get_policies().email_alerts.summary_expire_days
+    days = get_policies().email_alerts.summary_expire_days
+    deadline = clock() + POLL_BUDGET_SECONDS
+    for row in mail_sources.active_sources(session):
         try:
-            kwargs = {"factory": imap_factory} if imap_factory else {}
-            mails.extend(read_imap(settings, lambda mid: _is_known(session, mid), days, **kwargs))
+            if clock() > deadline:
+                raise MailboxError(
+                    "time_budget", "No dio tiempo en esta pasada: se leerá en la siguiente."
+                )
+            if row.kind == "folder":
+                try:
+                    mails.extend(read_local(settings.inbox_dir / row.folder))
+                except OSError as exc:
+                    raise MailboxError(
+                        "inbox_error",
+                        f"No se pudo leer data/inbox/{row.folder}/ ({type(exc).__name__}).",
+                    ) from None
+            else:
+                account = mail_sources.account_of(row)
+                known = functools.partial(_is_known, session)
+                mails.extend(read_imap(account, known, days, imap_factory))
         except MailboxError as exc:
-            errors.append(Issue(code=exc.code, message=exc.message))
+            message = f"{row.label}: {exc.message}"
+            errors.append(Issue(code=exc.code, message=message, item=row.label))
+            mail_sources.mark(row, exc)
+        else:
+            mail_sources.mark(row, None)
     try:
         mails.extend(read_local(settings.inbox_dir))
     except OSError as exc:
@@ -275,7 +304,10 @@ def poll_email(
     run.created = result.created
     run.errors = [issue.model_dump() for issue in errors]
     session.add(run)
-    if not any(issue.item is None for issue in errors):  # sin fallo del buzón entero
+    # La pasada cuenta salvo que falle `data/inbox/` o todos los buzones: uno roto no la frena.
+    boxes = {row.label for row in mail_sources.active_sources(session)}
+    failed = {issue.item for issue in errors if issue.item in boxes}
+    if not any(issue.item is None for issue in errors) and not (boxes and failed == boxes):
         source.last_run_at = run.started_at
     session.flush()
     result.run_id = run.id

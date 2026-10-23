@@ -195,6 +195,7 @@ def test_cli_doctor_json() -> None:
         "Conectores de ofertas",
         "Alertas por correo",
         "Respuestas por correo",
+        "Buzones",
         "Botón de captura",
         "Agentes",
     ]

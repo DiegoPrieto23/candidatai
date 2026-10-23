@@ -27,6 +27,11 @@ def isolated_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Pa
     for name in ("CAI_IMAP_HOST", "CAI_IMAP_USER", "CAI_IMAP_PASSWORD"):
         monkeypatch.setenv(name, "")
     monkeypatch.setenv("CAI_IMAP_FOLDER", "INBOX")
+    # Fase 27.4: las contraseñas de los buzones se escriben en un `.env` del test, nunca en el tuyo.
+    monkeypatch.setenv("CAI_ENV_FILE", str(tmp_path / ".env"))
+    for name in [n for n in os.environ if n.startswith("CAI_IMAP_") and n.endswith("_PASSWORD")]:
+        if name != "CAI_IMAP_PASSWORD":
+            monkeypatch.delenv(name)
     # Sin modelo de embeddings en los tests: nada de descargas; los que lo necesitan usan uno falso.
     monkeypatch.setenv("CAI_EMBEDDINGS", "off")
     # Sin el Ollama de quien ejecuta los tests (fase 24.6): un puerto donde no escucha nada.

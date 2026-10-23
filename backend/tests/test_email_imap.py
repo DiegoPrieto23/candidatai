@@ -12,10 +12,12 @@ from app.core.config import get_settings
 from app.models import Job
 from app.services import ingest
 from app.services.ingestion.email.mailboxes import (
+    ImapAccount,
     MailboxError,
     connect_imap,
     imap_utf7,
     read_imap,
+    settings_account,
 )
 from app.services.ingestion.email.service import poll_email
 from tests.imap_support import FOLDER, PASSWORD, USER, FakeImap, fake_imap
@@ -38,6 +40,12 @@ def _configure(monkeypatch: pytest.MonkeyPatch, server: FakeImap, **overrides: s
     for key, value in env.items():
         monkeypatch.setenv(key, value)
     get_settings.cache_clear()
+
+
+def _account() -> ImapAccount:
+    account = settings_account(get_settings())
+    assert account is not None
+    return account
 
 
 def _no_fetch(url: str) -> str:
@@ -94,7 +102,7 @@ def test_wrong_password_gives_clear_error(monkeypatch: pytest.MonkeyPatch) -> No
     with fake_imap({}) as server:
         _configure(monkeypatch, server, CAI_IMAP_PASSWORD="otra")
         with pytest.raises(MailboxError) as exc:
-            connect_imap(get_settings(), _plain)
+            connect_imap(_account(), _plain)
     assert exc.value.code == "imap_auth"
     assert "contraseña de aplicación" in exc.value.message
     assert "otra" not in exc.value.message
@@ -104,7 +112,7 @@ def test_missing_folder_gives_clear_error(monkeypatch: pytest.MonkeyPatch) -> No
     with fake_imap({}) as server:
         _configure(monkeypatch, server, CAI_IMAP_FOLDER="No existe")
         with pytest.raises(MailboxError) as exc:
-            list(read_imap(get_settings(), lambda _mid: False, 21, _plain))
+            list(read_imap(_account(), lambda _mid: False, 21, _plain))
     assert exc.value.code == "imap_folder"
 
 
@@ -130,7 +138,7 @@ def test_unreachable_server(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("CAI_IMAP_PASSWORD", PASSWORD)
     get_settings.cache_clear()
     with pytest.raises(MailboxError) as exc:
-        connect_imap(get_settings(), _plain)
+        connect_imap(_account(), _plain)
     assert exc.value.code == "network"
 
 

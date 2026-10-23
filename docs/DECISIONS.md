@@ -1232,3 +1232,50 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   falta Chromium. El dosier en Markdown deja de escribirse; el campo `dossier` del plan se mantiene
   para los planes antiguos.
 
+
+## ADR-045 · Varios buzones de alertas; las contraseñas, solo en `.env` (matiza la 016)
+- **Contexto:** las alertas por correo leían una sola cuenta, configurada a mano en `.env`
+  (`CAI_IMAP_*`). Quien recibe alertas en dos cuentas no podía leer las dos, y conectar un buzón
+  obligaba a editar `.env` sin ayuda. Añadirlos desde la UI exige decidir dónde vive la contraseña.
+- **Decisión:**
+  - Tabla `mail_sources` (migración 0027): cada buzón con su etiqueta, tipo (`imap` o `folder`,
+    una carpeta `data/inbox/<nombre>/` de `.eml`/`.mbox`), servidor, puerto, cifrado (`ssl` o
+    `starttls`), usuario, carpeta, si está activo y si lee las respuestas de las empresas. La
+    cuenta `CAI_IMAP_*` de siempre aparece sola como «Principal» (`from_env`): su servidor,
+    usuario y carpeta se siguen leyendo de `.env`.
+  - **Las contraseñas viven solo en `.env`**, una variable por buzón
+    (`CAI_IMAP_<ALIAS>_PASSWORD`). La tabla guarda el **nombre** de la variable (`secret_ref`),
+    nunca el valor. Cuando la escribes en la UI, el servidor reescribe `.env` de forma atómica
+    (fichero temporal en la misma carpeta y `os.replace`; en macOS y Linux, permisos 600) sin
+    tocar las demás líneas; al quitar el buzón, quita su línea. La contraseña no vuelve nunca por
+    la API ni por MCP (ni en errores ni en logs): solo `has_password`.
+  - **En Docker** `.env` entra como variables de entorno y no como fichero, así que la app no
+    puede guardarla de forma persistente: responde con el nombre de la variable para que la añadas
+    tú a tu `.env` y recrees el contenedor.
+  - Todo sigue en **solo lectura** (`EXAMINE` y `BODY.PEEK`). El servidor se valida: un nombre,
+    sin esquema, y ni IP privadas ni de bucle local salvo que el buzón lo permita expresamente
+    (`allow_private`, para un servidor propio); se comprueba también al resolver
+    el nombre. En una demo no se lee ningún buzón IMAP.
+  - El agente solo puede **ver** los buzones y su estado (`list_mail_sources`); crearlos,
+    cambiarlos, probarlos y quitarlos es cosa de la UI (`require_ui`) o de la CLI. Altas, cambios
+    y bajas se anotan en `mail_source_changes`, sin contraseñas.
+  - **Outlook:** Microsoft ya no admite contraseña por IMAP en cuentas de trabajo y ha anunciado
+    que la retirará en las personales. La guía recomienda reenviar las alertas a otra cuenta
+    (Gmail) o exportar `.eml`; IMAP con contraseña queda como último recurso. Sin OAuth.
+- **Alternativas descartadas:** el llavero del sistema (no existe en Docker ni en algunos Linux),
+  un fichero en `data/` (las copias de seguridad de `data/` se llevarían las contraseñas) y pedir
+  siempre que pegues tú la línea (más simple, peor experiencia; queda solo para Docker).
+- **Consecuencias:** varios buzones a la vez, sin duplicar las ofertas que lleguen por dos de ellos
+  (por `Message-ID`), y el fallo de uno no frena a los demás. Un proceso con permiso para escribir
+  en la carpeta de la app puede reescribir `.env`, como ya podía editarlo a mano.
+- **Riesgos aceptados** (revisión de la fase):
+  - El servidor se comprueba resolviendo su nombre y la conexión lo vuelve a resolver: un DNS que
+    cambie de respuesta entre las dos podría llevar a una dirección privada. Solo la UI puede
+    añadir buzones y la conexión exige TLS con el certificado del nombre pedido, así que no se
+    conecta a IP fijadas.
+  - La cuenta de `.env` se da de alta como «Principal» la primera vez que se listan o leen los
+    buzones, también desde `list_mail_sources`: es la única escritura de esa herramienta y deja su
+    fila en `mail_source_changes`.
+  - Los errores de validación nunca repiten un campo `password` ni una entrada que lo contenga
+    (`core/validation.py`, `SECRET_FIELDS`): Pydantic da la entrada sin envolver aunque el campo
+    sea `SecretStr`.

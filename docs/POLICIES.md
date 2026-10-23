@@ -239,7 +239,9 @@ Una oferta puede encajar en el papel y aun así no merecer la pena. El código m
    Las **respuestas de las empresas** que lee la app (fase 15) son contenido no confiable (§6):
    el agente propone qué significan y nada cambia de etapa hasta que lo aceptas en la UI.
 6. **Cuentas y credenciales**: las creas e introduces tú. El perfil de navegador persistente
-   vive en `data/browser-profile/` y nadie más lo lee.
+   vive en `data/browser-profile/` y nadie más lo lee. Las contraseñas de los buzones de correo
+   (fase 27.4, ADR-045) viven solo en `.env`: la UI las escribe ahí y no vuelven nunca por la API
+   ni por la interfaz para agentes, que solo ve si están puestas.
 
 ## 6. Contenido no confiable
 

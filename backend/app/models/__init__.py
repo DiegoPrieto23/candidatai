@@ -14,7 +14,13 @@ from app.models.profiles import ProfileEdit, ProfileVersion
 from app.models.prompts import UserPrompt
 from app.models.replies import MessageDraft, Reply
 from app.models.skills import SkillGapMark
-from app.models.sources import EmailMessage, Source, SourceRun
+from app.models.sources import (
+    EmailMessage,
+    MailSource,
+    MailSourceChange,
+    Source,
+    SourceRun,
+)
 
 __all__ = [
     "AgentPreference",
@@ -34,6 +40,8 @@ __all__ = [
     "Job",
     "JobExtraction",
     "JobSighting",
+    "MailSource",
+    "MailSourceChange",
     "Match",
     "McpCall",
     "MessageDraft",

@@ -371,6 +371,19 @@ def seed_platforms() -> None:
         browse.save_source(session, AgentBrowseSource.model_validate(LINKEDIN))
 
 
+def seed_mail_sources() -> None:
+    """Un buzón IMAP sin contraseña y una carpeta de `.eml` (fase 27.4)."""
+    from app.schemas.mail_sources import MailSourceInput
+    from app.services import mail_sources
+
+    with session_scope() as session:
+        for data in (
+            {"label": "Trabajo", "host": "imap.example.com", "user": "ana@example.com"},
+            {"label": "Exportados", "kind": "folder", "folder": "exportados"},
+        ):
+            mail_sources.create_mail_source(session, MailSourceInput.model_validate(data))
+
+
 def seed_linkedin_enabled() -> None:
     """LinkedIn (plataforma 2) activada por el usuario desde la UI."""
     seed_platforms()
@@ -560,6 +573,9 @@ CASES = [
                expect_error="invalid_request"),
     _text_case("text-browse-bad-platform", {"platform": "Tecno Empleo"},
                ["--platform", "Tecno Empleo"], expect_error="validation_error"),
+    Case("mail-sources", "list_mail_sources", {}, ["mail-sources", "list"],
+         seed=seed_mail_sources),
+    Case("mail-sources-empty", "list_mail_sources", {}, ["mail-sources", "list"]),
     Case("sources", "list_sources", {}, ["sources", "list"], seed=seed_platforms_and_job),
     Case("sources-kind", "list_sources", {"kind": "agent_browse"},
          ["sources", "list", "--kind", "agent_browse"], seed=seed_platforms_and_job),
