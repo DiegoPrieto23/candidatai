@@ -81,6 +81,14 @@ class AnswersView(BaseModel):
     evidence: dict[str, str]  # evidencia citada -> su texto (en la versión del perfil usada)
 
 
+class ApplicationAnswersInfo(BaseModel):
+    """Las últimas respuestas de screening de la oferta (o `null` si no hay), para no
+    contradecirlas al preparar una entrevista."""
+
+    job_id: int
+    answers: AnswersView | None
+
+
 class PackageCv(BaseModel):
     render_id: int
     document_id: int
@@ -279,6 +287,15 @@ def _answers_view(session: Session, doc: Document) -> AnswersView:
         created_at=doc.created_at,
         answers=answers,
         evidence=_resolve(answers, _profile_refs(profile)),
+    )
+
+
+def get_application_answers(session: Session, job_id: int) -> ApplicationAnswersInfo:
+    """Las respuestas de screening guardadas de la oferta (también las que editó el usuario)."""
+    events.current_stage(session, job_id)  # `JobNotFoundError` si no existe
+    doc = latest_answers(session, job_id)
+    return ApplicationAnswersInfo(
+        job_id=job_id, answers=_answers_view(session, doc) if doc else None
     )
 
 

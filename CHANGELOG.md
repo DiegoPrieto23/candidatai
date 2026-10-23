@@ -10,6 +10,13 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Guía de entrevista en PDF:** «Preparar» (`prepare-interview`) lee todo lo que hay de la oferta,
+  tu perfil y contexto, tus respuestas de screening, tu CV y tu carta, y busca en la web; te pregunta
+  lo que falte y deja en la ficha, bajo la entrevista, una guía en PDF con el color de la empresa y
+  en el idioma de la entrevista: el rol, las responsabilidades desglosadas, tu encaje y tus puntos
+  flojos, lo que ya respondiste, la empresa y el sector, conceptos a repasar (con comparativas y
+  código lado a lado), preguntas probables con idea de respuesta, preguntas que hacer, tu
+  presentación personal y el plan por días.
 - **«Convertir en plantilla»:** al subir tu CV en «Plantillas → Mi CV», un botón abre tu agente
   con la orden ya escrita para convertirlo en plantilla. La orden para copiarla sigue debajo.
 - **Calendario:** página nueva en «Procesos» con tus entrevistas, pruebas, plazos y otros hitos por

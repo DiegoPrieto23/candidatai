@@ -27,6 +27,7 @@ from app.schemas.cover_letter import (
     CoverLetterRenderOptions,
 )
 from app.schemas.cv import CvContent, CvRenderOptions, CvVerification
+from app.schemas.interview_guide import InterviewGuideInput
 from app.schemas.interviews import InterviewPlanInput
 from app.schemas.llm_io import ApplicationAnswers, FitAssessment, JobExtraction
 from app.schemas.profile import MAX_LETTER_WORDS
@@ -41,6 +42,7 @@ from app.services import (
     events,
     extractions,
     ingest,
+    interview_guide,
     interviews,
     jobs,
     liveness,
@@ -425,6 +427,10 @@ class SaveInterviewPlanInput(MilestoneIdInput):
     plan: InterviewPlanInput
 
 
+class SaveInterviewGuideInput(MilestoneIdInput):
+    guide: InterviewGuideInput
+
+
 class SaveInterviewNotesInput(MilestoneIdInput, interviews.InterviewNotesInput):
     pass
 
@@ -731,6 +737,20 @@ def _save_interview_plan(
     )
 
 
+def _get_interview_guide(
+    session: Session, args: MilestoneIdInput, _ctx: CallContext
+) -> interview_guide.InterviewGuideView:
+    return interview_guide.get_interview_guide(session, args.milestone_id)
+
+
+def _save_interview_guide(
+    session: Session, args: SaveInterviewGuideInput, ctx: CallContext
+) -> interview_guide.SaveGuideResult:
+    return interview_guide.save_interview_guide(
+        session, args.milestone_id, args.guide, agent_name=ctx.client_name
+    )
+
+
 def _save_interview_notes(
     session: Session, args: SaveInterviewNotesInput, _ctx: CallContext
 ) -> interviews.SaveNotesResult:
@@ -763,6 +783,12 @@ def _save_cover_letter_brief(
 ) -> letter.SaveBriefResult:
     brief = letter.CoverLetterBriefInput(instructions=args.instructions, max_words=args.max_words)
     return letter.save_brief(session, args.job_id, brief)
+
+
+def _get_application_answers(
+    session: Session, args: JobIdInput, _ctx: CallContext
+) -> answers.ApplicationAnswersInfo:
+    return answers.get_application_answers(session, args.job_id)
 
 
 def _get_cover_letter(
@@ -1168,6 +1194,18 @@ TOOLS: tuple[ToolSpec, ...] = (
         ),
     ),
     ToolSpec(
+        name="get_application_answers",
+        description=(
+            "Las últimas respuestas de screening guardadas de la oferta (las que redactó el "
+            "agente o editó el usuario), con la evidencia del perfil que citan. `answers: null` si "
+            "no hay. Para no contradecirlas al preparar una entrevista."
+        ),
+        input_model=JobIdInput,
+        output_model=answers.ApplicationAnswersInfo,
+        handler=_get_application_answers,
+        cli=CliSpec(path=("applications", "answers"), arguments=("job_id",)),
+    ),
+    ToolSpec(
         name="get_cover_letter",
         description=(
             "Indicaciones de la carta (las de la oferta y `preferences.cover_letter` del perfil), "
@@ -1444,6 +1482,36 @@ TOOLS: tuple[ToolSpec, ...] = (
             path=("interviews", "plan"),
             arguments=("milestone_id",),
             file_field="plan",
+            file_format="json",
+        ),
+    ),
+    ToolSpec(
+        name="get_interview_guide",
+        description=(
+            "La guía de preparación guardada de una entrevista, con su contenido (secciones, "
+            "preguntas probables con idea de respuesta…), o `guide: null` si no hay. Para el "
+            "simulacro o para actualizarla."
+        ),
+        input_model=MilestoneIdInput,
+        output_model=interview_guide.InterviewGuideView,
+        handler=_get_interview_guide,
+        cli=CliSpec(path=("interviews", "show-guide"), arguments=("milestone_id",)),
+    ),
+    ToolSpec(
+        name="save_interview_guide",
+        description=(
+            "Guarda la guía de preparación de una entrevista programada y la imprime a PDF en "
+            "data/entrevistas/ (la enlaza en la ficha). Contenido en secciones de bloques tipados "
+            "(párrafo, subtítulo, lista, tabla, preguntas con idea de respuesta, aviso, código); "
+            "sin HTML. Idioma y color de la marca de la empresa. Sustituye a la guía anterior."
+        ),
+        input_model=SaveInterviewGuideInput,
+        output_model=interview_guide.SaveGuideResult,
+        handler=_save_interview_guide,
+        cli=CliSpec(
+            path=("interviews", "guide"),
+            arguments=("milestone_id",),
+            file_field="guide",
             file_format="json",
         ),
     ),

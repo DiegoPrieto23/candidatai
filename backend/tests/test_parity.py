@@ -32,6 +32,7 @@ from app.services import (
     events,
     extractions,
     ingest,
+    interview_guide,
     network,
     process,
     profile,
@@ -292,6 +293,18 @@ PLAN: dict[str, Any] = {
     "dossier": "1-acme.md",
     "blocks": [{"date": TODAY, "minutes": 45, "topic": "Historias STAR", "detail": "s1 y s2"}],
 }
+GUIDE: dict[str, Any] = {
+    "language": "es",
+    "title": "Data Engineer",
+    "accent_color": "#0082c3",
+    "sections": [
+        {"title": "El rol", "blocks": [{"type": "paragraph", "text": "Pipelines con **dbt**."}]},
+        {"title": "Preguntas", "blocks": [{"type": "qa", "items": [
+            {"question": "¿Un pipeline en producción?", "answer": "Historia s1."}]}]},
+        {"title": "Tus preguntas", "blocks": [{"type": "bullets", "items": [{"text": "¿Stack?"}]}]},
+    ],
+    "sources": [{"title": "Web", "url": "https://example.com"}],
+}  # fmt: skip
 INTERVIEW_NOTES: dict[str, Any] = {
     "notes": "Preguntaron por dbt y por un conflicto.",
     "next_steps": "Prueba técnica la semana que viene.",
@@ -858,6 +871,18 @@ CASES = [
                {"milestone_id": 1, "plan": {**PLAN, "dossier": "../perfil.md"}},
                ["interviews", "plan", "1"], "p.json", {**PLAN, "dossier": "../perfil.md"},
                seed=seed_upcoming, expect_error="validation_error"),
+    _file_case("interview-guide", "save_interview_guide", {"milestone_id": 1, "guide": GUIDE},
+               ["interviews", "guide", "1"], "g.json", GUIDE, seed=seed_upcoming),
+    Case("interview-guide-show-none", "get_interview_guide", {"milestone_id": 1},
+         ["interviews", "show-guide", "1"], seed=seed_upcoming),
+    _file_case("interview-guide-not-interview", "save_interview_guide",
+               {"milestone_id": 2, "guide": GUIDE},
+               ["interviews", "guide", "2"], "g.json", GUIDE, seed=seed_upcoming,
+               expect_error="not_allowed"),
+    _file_case("interview-guide-html", "save_interview_guide",
+               {"milestone_id": 1, "guide": {**GUIDE, "accent_color": "red"}},
+               ["interviews", "guide", "1"], "g.json", {**GUIDE, "accent_color": "red"},
+               seed=seed_upcoming, expect_error="validation_error"),
     _file_case("interview-notes", "save_interview_notes",
                {"milestone_id": 1, **INTERVIEW_NOTES},
                ["interviews", "notes", "1"], "n.json", INTERVIEW_NOTES, seed=seed_interview_done),
@@ -920,6 +945,10 @@ CASES = [
                seed=seed_letter, expect_error="validation_error"),
     _file_case("answers", "save_application_answers", {"job_id": 1, "answers": ANSWERS},
                ["applications", "save-answers", "1"], "a.json", ANSWERS, seed=seed_approved),
+    Case("answers-show-none", "get_application_answers", {"job_id": 1},
+         ["applications", "answers", "1"], seed=seed_approved),
+    Case("answers-show-unknown", "get_application_answers", {"job_id": 9},
+         ["applications", "answers", "9"], seed=seed_approved, expect_error="not_found"),
     _file_case("answers-bad-evidence", "save_application_answers",
                {"job_id": 1, "answers": ANSWERS_BAD_EVIDENCE},
                ["applications", "save-answers", "1"], "a.json", ANSWERS_BAD_EVIDENCE,
@@ -975,6 +1004,7 @@ def _run_cli(case: Case) -> tuple[bool, dict[str, Any]]:
 @pytest.mark.parametrize("case", CASES, ids=[c.id for c in CASES])
 def test_parity(case: Case, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(pdf, "get_converter", lambda: fake_converter())  # sin LibreOffice
+    monkeypatch.setattr(interview_guide, "html_to_pdf", fake_html_to_pdf)  # sin Chromium
     html = (FIXTURES / "hidden_ai.html").read_text(encoding="utf-8")
     respx.get(URL).mock(return_value=httpx.Response(200, text=html))
 
@@ -989,6 +1019,12 @@ def test_parity(case: Case, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> 
     if case.expect_error:
         assert mcp_out["ok"] is False
         assert mcp_out["error"]["type"] == case.expect_error
+
+
+def fake_html_to_pdf(_html: str, _resolve: object, output: Path, *_a: object, **_k: object) -> Path:
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_bytes(b"%PDF-1.7 falso")
+    return output
 
 
 def test_every_tool_has_a_parity_case() -> None:

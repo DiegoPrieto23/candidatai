@@ -16,6 +16,8 @@
   "loadFailed": "Couldn't load the options: {{error}}",
   "interview": {
     "prepare": "Prepare",
+    "guide": "Preparation guide (PDF)",
+    "guideSaved": "Saved on {{date}}",
     "mock": "Mock interview",
     "debrief": "Debrief",
     "debriefAgain": "Debrief again",

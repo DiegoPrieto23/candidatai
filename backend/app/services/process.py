@@ -18,6 +18,7 @@ from sqlalchemy.orm import Session
 from app.core.policies import get_policies
 from app.models import Application, Contact, Event, Job, Milestone
 from app.models.base import utcnow
+from app.schemas.interview_guide import GuideInfo, guide_info
 from app.schemas.interviews import InterviewPlan
 from app.services import events
 from app.services.events import JobNotFoundError
@@ -133,6 +134,7 @@ class MilestoneOut(BaseModel):
     updated_at: datetime
     # Entrevistas (fase 17, `services/interviews.py`): plan de preparación y repaso posterior.
     prep_plan: InterviewPlan | None = None
+    guide: GuideInfo | None = None  # guía de preparación en PDF (ADR-044)
     debrief_notes: str | None = None
     next_steps: str | None = None
     debriefed_at: datetime | None = None
@@ -162,7 +164,9 @@ class NoteOut(BaseModel):
 
 
 def milestone_out(row: Milestone) -> MilestoneOut:
-    return MilestoneOut.model_validate(row, from_attributes=True)
+    out = MilestoneOut.model_validate(row, from_attributes=True)
+    out.guide = guide_info(row.prep_guide)
+    return out
 
 
 def contact_out(row: Contact) -> ContactOut:

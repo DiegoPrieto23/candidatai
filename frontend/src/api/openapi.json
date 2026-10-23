@@ -5539,6 +5539,115 @@
         }
       }
     },
+    "/milestones/{milestone_id}/guide.pdf": {
+      "get": {
+        "tags": [
+          "process"
+        ],
+        "summary": "Get Interview Guide Pdf",
+        "description": "La guía de preparación de la entrevista en PDF (ADR-044), para verla o descargarla.",
+        "operationId": "get_interview_guide_pdf",
+        "parameters": [
+          {
+            "name": "milestone_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Milestone Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/pdf": {}
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
     "/calendar.ics": {
       "get": {
         "tags": [
@@ -20294,6 +20403,51 @@
         ],
         "title": "GapExample"
       },
+      "GuideInfo": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "title": "File"
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "es",
+              "en"
+            ],
+            "title": "Language"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "saved_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Saved At"
+          },
+          "agent_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file",
+          "language",
+          "title",
+          "saved_at"
+        ],
+        "title": "GuideInfo",
+        "description": "Lo que enseña la ficha de la guía guardada (el contenido se queda en el hito)."
+      },
       "HardFilterResult": {
         "properties": {
           "passed": {
@@ -23305,6 +23459,16 @@
             "anyOf": [
               {
                 "$ref": "#/components/schemas/InterviewPlan"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "guide": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GuideInfo"
               },
               {
                 "type": "null"

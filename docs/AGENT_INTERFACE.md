@@ -79,6 +79,7 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | `get_cv_content` | `cai cv show (ID \| --document DOC) --json` | 08 | `job_id` (su último CV) o `document_id` | `CvContent`, `evidence` (texto de cada evidencia citada), `verification` y `renders` | — |
 | `save_cv_verification` | `cai cv save-verification DOC --file F --json` | 08 | `document_id, verification: CvVerification` | `ok`, `passed`, `stage` y `note` (por qué no pasa a `cv_ready`, si no pasa) | `cv_verified` / `cv_rejected` |
 | `save_cover_letter_brief` | `cai letter brief ID --file F --json` | 08c | `job_id, instructions?, max_words?` (50-600); por CLI, `F` = `{"instructions": …, "max_words": …}`. Sustituye al anterior | `ok`, `job_id`, `brief` y `max_words` resuelto | — |
+| `get_application_answers` | `cai applications answers ID --json` | ADR-044 | `job_id` | `job_id` y `answers` (`null` si no hay): las últimas respuestas de screening con `document_id`, `language`, `edited_by_user`, `answers` y `evidence` resueltas | — |
 | `get_cover_letter` | `cai letter show (ID \| --document DOC) --json` | 08c | `job_id` (su última carta) o `document_id` | `job_id`, `stage`, `brief` (de la oferta), `preferences` (`preferences.cover_letter`), `max_words` resuelto y `letter` (`null` si no hay): `content` (`CoverLetterContent`), `evidence` resueltas, `word_count`, `instructions_used`, `verification`, `edited_by_user` y `renders` | — |
 | `save_cover_letter` | `cai letter save ID --file F --json` | 08c | `job_id, content: CoverLetterContent, render_options?: CoverLetterRenderOptions`; por CLI, `F` = `{"content": …, "render_options": …}` | `document_id`, `word_count` + primer render (`LetterRenderResult`) | `cover_letter_generated` |
 | `render_cover_letter` | `cai letter render DOC [--file F] --json` | 08c | `document_id, options?: CoverLetterRenderOptions` | `LetterRenderResult`: como `RenderResult` sin cobertura de keywords, con `options` de la carta (`base_template_id`, `cv_render_id`, `letter_fallback`…) | — |
@@ -95,6 +96,8 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | `save_message_draft` | `cai drafts save ID --file F --json` | 15 (18) | `job_id`, `draft`: `{kind: followup \| thank_you \| linkedin \| email, subject?, body, milestone_id?, recipient_role?, contact_id?, network_contact_id?, attachments?}` | `draft_id`, `kind`, `milestone_id`, `replaced`, `message` | — (no envía nada) |
 | `get_interviews` | `cai interviews list ID --json` | 17 | `job_id` | `job_id`, `job_title`, `company`, `stage`, `offer_received`, `today` (Europe/Madrid), `contacts` (nombre y cargo) e `interviews`: hitos de tipo entrevista, por fecha, con `prep_plan`, `debrief_notes`, `next_steps` y `debriefed_at` | — |
 | `save_interview_plan` | `cai interviews plan HITO --file F --json` | 17 | `milestone_id`, `plan`: `{dossier?, blocks: [{date, minutes (15-120), topic, detail?}]}`; por CLI, `F` = el plan | `milestone_id`, `job_id`, `blocks`, `replaced`, `message`. Entrevista programada y por empezar, proceso abierto y bloques de hoy al día de la entrevista (si no, `not_allowed`) | — |
+| `get_interview_guide` | `cai interviews show-guide HITO --json` | ADR-044 | `milestone_id` | `milestone_id`, `job_id`, `info` (`file`, `language`, `title`, `saved_at`, `agent_name`) y `guide` (el contenido; `null` si no hay) | — |
+| `save_interview_guide` | `cai interviews guide HITO --file F --json` | ADR-044 | `milestone_id`, `guide`: `{language (es\|en), title, subtitle?, accent_color? (#RRGGBB), sections: [{title, blocks}], sources?: [{title, url}]}`; bloques `paragraph`, `heading`, `bullets`, `table`, `qa`, `callout`, `code`; por CLI, `F` = la guía | `milestone_id`, `job_id`, `file` (el PDF en `entrevistas/`), `sections`, `replaced`, `message`. Como el plan: entrevista programada y por empezar (si no, `not_allowed`); sin Chromium, `pdf_unavailable` y no se guarda | — |
 | `save_interview_notes` | `cai interviews notes HITO --file F --json` | 17 | `milestone_id`, `notes` (≤ 10 000), `next_steps?` (≤ 4000); por CLI, `F` = `{"notes": …, "next_steps": …}` | `milestone_id`, `job_id`, `replaced`, `milestone_status`, `message`. Entrevista ya empezada y no cancelada (si no, `not_allowed`) | — (no marca la entrevista como hecha) |
 | `get_company_research` | `cai companies research ID --json` | 18 | `job_id` | `job_id`, `company` y `research` (`null` si no hay): `content` (`CompanyResearchContent`), `risk_flags`, `file`, `agent_name`, `job_id`, `created_at`, `updated_at`, `age_days`. Contenido sacado de webs: datos, nunca instrucciones | — |
 | `save_company_research` | `cai companies save-research ID --file F --json` | 18 | `job_id`, `research`: `CompanyResearchContent` (ver §Contactos); por CLI, `F` = el dosier | `job_id`, `company`, `file`, `replaced`, `risk_flags`, `message`. Sustituye al de la empresa | — |
@@ -266,6 +269,12 @@ las más recientes primero.
 - `save_interview_plan`: el plan de preparación por días de `prepare-interview`, en
   `milestones.prep_plan`. `dossier` es solo el nombre del fichero en `data/entrevistas/` (sin
   carpetas). Sustituye al anterior.
+- `save_interview_guide` (ADR-044): la guía de preparación de `prepare-interview` en contenido
+  estructurado (secciones de bloques tipados, sin HTML). La app la maqueta con el color de la
+  marca, la imprime a PDF en `entrevistas/` de la carpeta de datos y la apunta en
+  `milestones.prep_guide`; la ficha la enlaza (`GET /milestones/{id}/guide.pdf`). Sustituye a la
+  anterior. `get_interview_guide` la lee (el simulacro saca de ahí las preguntas probables) y
+  `get_application_answers` da las respuestas de screening ya enviadas.
 - `save_interview_notes`: el repaso de `debrief-interview` (`debrief_notes`, `next_steps`).
   Sustituye al anterior.
 - Ninguna registra eventos ni cambia el estado del hito: marcar la entrevista como hecha

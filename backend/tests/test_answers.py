@@ -89,6 +89,15 @@ def test_save_stores_document_and_records_event(session: Session, approved: int)
     assert process.get_process(session, approved).documents.answers_document_id == doc.id
 
 
+def test_get_application_answers_returns_the_latest(session: Session, approved: int) -> None:
+    """ADR-044: `prepare-interview` las lee para no contradecir lo que se envió."""
+    assert answers.get_application_answers(session, approved).answers is None
+    result = answers.save_application_answers(session, approved, _answers(GOOD, SALARY))
+    info = answers.get_application_answers(session, approved)
+    assert info.answers is not None and info.answers.document_id == result.document_id
+    assert len(info.answers.answers) == 2
+
+
 def test_evidence_must_exist_and_nothing_is_saved(session: Session, approved: int) -> None:
     bad = {**GOOD, "evidence": ["exp-inventada/a9", "extraction", "user", "st-nada"]}
     with pytest.raises(answers.AnswersContentError) as info:

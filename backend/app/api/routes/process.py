@@ -7,10 +7,11 @@ from datetime import date
 from typing import Annotated
 
 from fastapi import APIRouter, Query, Response, status
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from app.api.deps import SessionDep
-from app.services import calendar_ics, process, tracking
+from app.services import calendar_ics, interview_guide, process, tracking
 
 router = APIRouter(tags=["process"])
 
@@ -100,6 +101,20 @@ def get_milestone_ics(session: SessionDep, milestone_id: int) -> Response:
         content=body.encode("utf-8"),
         media_type=ICS_MEDIA_TYPE,
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+@router.get(
+    "/milestones/{milestone_id}/guide.pdf",
+    operation_id="get_interview_guide_pdf",
+    response_class=FileResponse,
+    responses={200: {"content": {"application/pdf": {}}}},
+)
+def get_interview_guide_pdf(session: SessionDep, milestone_id: int) -> FileResponse:
+    """La guía de preparación de la entrevista en PDF (ADR-044), para verla o descargarla."""
+    path = interview_guide.guide_file(session, milestone_id)
+    return FileResponse(
+        path, media_type="application/pdf", filename=path.name, content_disposition_type="inline"
     )
 
 

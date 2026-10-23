@@ -16,6 +16,8 @@
   "loadFailed": "No se pudieron cargar las opciones: {{error}}",
   "interview": {
     "prepare": "Preparar",
+    "guide": "Guía de preparación (PDF)",
+    "guideSaved": "Guardada el {{date}}",
     "mock": "Simulacro",
     "debrief": "Repasar",
     "debriefAgain": "Repasar otra vez",
