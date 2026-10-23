@@ -34,3 +34,5 @@ class Application(Base):
     render_id: Mapped[int | None] = mapped_column(ForeignKey("document_renders.id"))
     applied_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
     last_event_at: Mapped[datetime] = mapped_column(UTCDateTime)
+    closed_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
+    closed_by: Mapped[str | None] = mapped_column(String(32))

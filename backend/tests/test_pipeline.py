@@ -240,3 +240,51 @@ def test_summary_found_goes_to_pending_detail_and_capture_completes_it() -> None
 
 def test_expired_summary_reopens_as_summary() -> None:
     assert stage_for(seq(SUMMARY, "expired", "reopened")) == PD
+
+
+# Fase 27.6: cada evento que cierra, con una secuencia que llega a él.
+CLOSING_PATHS: dict[str, list[str | Ev]] = {
+    "duplicate_detected": [SUMMARY, "duplicate_detected"],
+    "hard_filter_failed": ["found", "extracted", "hard_filter_failed"],
+    "discarded": [SUMMARY, "discarded"],
+    "rejected": PATHS[AD] + ["rejected"],
+    "withdrawn": PATHS[AP] + ["withdrawn"],
+    "expired": ["found", "expired"],
+    "accepted": PATHS[IP] + ["accepted"],
+}
+
+
+def test_closing_paths_cover_every_close() -> None:
+    from app.services.pipeline import TRANSITIONS
+
+    closing = {e.value for e, t in TRANSITIONS.items() if t.to == CL}
+    assert set(CLOSING_PATHS) == closing
+
+
+@pytest.mark.parametrize("closing", list(CLOSING_PATHS))
+def test_closed_at_is_set_by_the_closing_event(closing: str) -> None:
+    events = seq(*CLOSING_PATHS[closing], "note")
+    state = project(events)
+    assert state.stage == CL
+    assert state.closed_at == events[-2].occurred_at  # la nota posterior no lo mueve
+    assert state.closed_by == closing
+    assert state.last_event_at == events[-1].occurred_at
+
+
+def test_reopened_clears_closed_at_and_a_new_close_sets_it_again() -> None:
+    events = seq("found", "discarded", "reopened", "extracted")
+    state = project(events)
+    assert (state.closed_at, state.closed_by) == (None, None)
+    events = seq("found", "discarded", "reopened", "extracted", "expired")
+    state = project(events)
+    assert (state.closed_at, state.closed_by) == (events[-1].occurred_at, EventType.EXPIRED)
+
+
+def test_open_job_has_no_closed_at() -> None:
+    state = project(seq(*PATHS[IP]))
+    assert (state.closed_at, state.closed_by) == (None, None)
+
+
+def test_extracted_on_a_discarded_job_says_to_skip_it() -> None:
+    with pytest.raises(InvalidTransitionError, match="sáltala"):
+        stage_for(seq("found", "discarded", "extracted"))

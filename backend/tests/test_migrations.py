@@ -303,3 +303,78 @@ def test_0026_numbers_platform_priorities_without_ties(db_url: str) -> None:
         assert max(p for p in priorities().values() if isinstance(p, int)) == 10
     finally:
         engine.dispose()
+
+
+def test_0028_backfills_closed_at_from_the_closing_event(db_url: str) -> None:
+    """Fase 27.6: una oferta cerrada toma la fecha y el tipo de su último cierre (no la nota
+    posterior); una reabierta y una abierta quedan sin fecha. Repetir no cambia nada."""
+    migrations.upgrade(db_url, "0027")
+    engine = create_engine(db_url)
+    events = [
+        # 1: descartada y con una nota después.
+        (1, "found", "2026-10-01 09:00:00"),
+        (1, "discarded", "2026-10-02 09:00:00"),
+        (1, "note", "2026-10-05 09:00:00"),
+        # 2: rechazada, reabierta y abierta ahora.
+        (2, "found", "2026-10-01 09:00:00"),
+        (2, "expired", "2026-10-02 09:00:00"),
+        (2, "reopened", "2026-10-03 09:00:00"),
+        # 3: descartada, reabierta y vuelta a cerrar como duplicada.
+        (3, "found", "2026-10-01 09:00:00"),
+        (3, "discarded", "2026-10-02 09:00:00"),
+        (3, "reopened", "2026-10-03 09:00:00"),
+        (3, "duplicate_detected", "2026-10-04 09:00:00"),
+    ]
+    stages = {
+        1: ("closed", "2026-10-05 09:00:00"),
+        2: ("pending_extraction", "2026-10-03 09:00:00"),
+        3: ("closed", "2026-10-04 09:00:00"),
+    }
+    try:
+        with engine.begin() as conn:
+            conn.exec_driver_sql(
+                "INSERT INTO sources (id, kind, name, config, active) "
+                "VALUES (1, 'manual_text', 'x', '{}', 1)"
+            )
+            conn.exec_driver_sql(
+                "INSERT INTO companies (id, name, normalized_name, watchlist) "
+                "VALUES (1, 'Acme', 'acme', 0)"
+            )
+            for job_id in stages:
+                conn.exec_driver_sql(
+                    "INSERT INTO jobs (id, source_id, company_id, url, title, raw_text, "
+                    "risk_flags, fingerprint, first_seen_at) VALUES "
+                    f"({job_id}, 1, 1, '', 'T', 'x', '[]', 'f{job_id}', '2026-10-01 09:00:00')"
+                )
+            for job_id, type_, at in events:
+                conn.exec_driver_sql(
+                    "INSERT INTO events (job_id, type, actor, payload, occurred_at, recorded_at)"
+                    " VALUES (?, ?, 'user', '{}', ?, ?)",
+                    (job_id, type_, at, at),
+                )
+            for job_id, (stage, last) in stages.items():
+                conn.exec_driver_sql(
+                    "INSERT INTO applications (job_id, stage, last_event_at) VALUES (?, ?, ?)",
+                    (job_id, stage, last),
+                )
+        engine.dispose()
+
+        def closed() -> dict[int, tuple[object, object]]:
+            with engine.begin() as conn:
+                rows = conn.exec_driver_sql(
+                    "SELECT job_id, closed_at, closed_by FROM applications ORDER BY job_id"
+                ).all()
+            return {job_id: (str(at)[:19] if at else None, by) for job_id, at, by in rows}
+
+        migrations.upgrade(db_url, "0028")
+        after = closed()
+        assert after == {
+            1: ("2026-10-02 09:00:00", "discarded"),
+            2: (None, None),
+            3: ("2026-10-04 09:00:00", "duplicate_detected"),
+        }
+        migrations.downgrade(db_url, "0027")
+        migrations.upgrade(db_url, "0028")
+        assert closed() == after  # idempotente
+    finally:
+        engine.dispose()

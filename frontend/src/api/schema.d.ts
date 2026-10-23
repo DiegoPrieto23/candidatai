@@ -2688,7 +2688,7 @@ export interface components {
              * Reason
              * @description Motivo al descartar (obligatorio en `discarded`).
              */
-            reason?: ("seniority" | "skills" | "location" | "salary" | "company" | "closed" | "other") | null;
+            reason?: ("seniority" | "skills" | "location" | "salary" | "company" | "closed" | "not_interested" | "other") | null;
             /**
              * Channel
              * @description Canal del envío (solo en `applied` y `applied_manually`).
@@ -4810,6 +4810,10 @@ export interface components {
              * @default 0
              */
             known_contacts: number;
+            /** Closed At */
+            closed_at?: string | null;
+            /** Closed By */
+            closed_by?: string | null;
         };
         /** JobRunCost */
         JobRunCost: {
@@ -7688,7 +7692,7 @@ export interface operations {
                 q?: string | null;
                 limit?: number;
                 offset?: number;
-                sort?: "date" | "score" | "salary";
+                sort?: "date" | "score" | "salary" | "closed";
                 dir?: "asc" | "desc";
             };
             header?: never;

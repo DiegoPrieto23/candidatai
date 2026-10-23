@@ -213,8 +213,11 @@ class NotUserEventError(ValueError):
 
 
 # Motivos rápidos de descarte en el triaje (para la analítica del embudo). `other` exige nota.
-# `closed` (fase 16): la oferta ya no está publicada.
-DiscardReason = Literal["seniority", "skills", "location", "salary", "company", "closed", "other"]
+# `closed` (fase 16): la oferta ya no está publicada. `not_interested` (fase 27.6): el descarte
+# rápido de la Bandeja antes de completar o extraer la oferta, por el título o la empresa.
+DiscardReason = Literal[
+    "seniority", "skills", "location", "salary", "company", "closed", "not_interested", "other"
+]
 DISCARD_REASONS: tuple[str, ...] = get_args(DiscardReason)
 
 # Por dónde se envió la candidatura (`applications.channel`).

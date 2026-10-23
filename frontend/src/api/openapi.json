@@ -181,7 +181,8 @@
               "enum": [
                 "date",
                 "score",
-                "salary"
+                "salary",
+                "closed"
               ],
               "type": "string",
               "default": "date",
@@ -16306,6 +16307,7 @@
                   "salary",
                   "company",
                   "closed",
+                  "not_interested",
                   "other"
                 ]
               },
@@ -22552,6 +22554,29 @@
             "type": "integer",
             "title": "Known Contacts",
             "default": 0
+          },
+          "closed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed At"
+          },
+          "closed_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed By"
           }
         },
         "type": "object",

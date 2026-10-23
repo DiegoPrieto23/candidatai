@@ -137,7 +137,9 @@ Proyección del estado de candidatura para consultas rápidas; se recalcula desd
 | channel | str? | `ats_form`, `email`, `linkedin_manual`, `portal_manual` |
 | render_id | FK document_renders? | Render del CV enviado |
 | applied_at | datetime? | |
-| last_event_at | datetime | |
+| last_event_at | datetime | Lo mueve cualquier evento, también una nota posterior al cierre |
+| closed_at | datetime? | Fase 27.6: `occurred_at` del evento que la cerró; `NULL` si no está cerrada (lo limpia `reopened`). Una nota posterior no lo mueve |
+| closed_by | str? | Tipo de ese evento: `discarded`, `rejected`, `withdrawn`, `expired`, `accepted`, `duplicate_detected` o `hard_filter_failed` |
 
 ### `events` (fuente de verdad)
 | Columna | Tipo | Notas |
@@ -198,7 +200,7 @@ Nunca guarda texto crudo de ofertas ni datos del perfil en `args_summary`.
 | `closure_suspected` | system | sin cambio; la primera vez que una comprobación dice que la oferta puede estar cerrada (fase 16). `payload`: `reason`, `detail`. Nunca cierra la oferta |
 | `scored` / `fit_assessed` | system / agent | sin cambio; `payload`: `match_id` y `score`/`passed` o `verdict` |
 | `approved` | user | `approved` |
-| `discarded` | user | `closed`; desde la UI, `payload.reason` (`skills`, `seniority`, `location`, `salary`, `company`, `closed` (ya no está publicada, fase 16), `other`) y `note` opcional (obligatoria con `other`) |
+| `discarded` | user | `closed`; desde la UI, `payload.reason` (`skills`, `seniority`, `location`, `salary`, `company`, `closed` (ya no está publicada, fase 16), `not_interested` (descarte rápido de la Bandeja antes de completar o extraer, por el título o la empresa, fase 27.6), `other`) y `note` opcional (obligatoria con `other`) |
 | `cv_generated` | agent | sin cambio; `payload.document_id` |
 | `cv_rendered` | system / user / agent | `cv_ready` si el render no es `too_long` y su documento ya está verificado con `passed`; si no, sin cambio. `payload`: `document_id`, `render_id`, `template_id`, `too_long`. Solo lo registra el servicio de render |
 | `cv_verified` | agent | `cv_ready` si `passed` y ese documento tiene un render sin `too_long`; `payload`: `document_id`, `passed` |
@@ -359,6 +361,8 @@ envío** (`applied_at`, el primer `applied`/`applied_manually`):
 
 - **Periodo** (`since`): primer envío desde las 00:00 de ese día en Europe/Madrid (no
   `first_seen_at`, como el resto del embudo: en una retrospectiva importa cuándo enviaste).
+- Los descartes (también los rápidos de la Bandeja con `not_interested`, que no tienen score ni
+  encaje que calibrar) no entran: solo cuentan las ofertas enviadas.
 - Score, veredicto, carta, días y referencia no son independientes (las de más score suelen
   llevar carta o referencia): la calibración muestra correlaciones, no causas. Por eso es
   orientativa y nunca cambia pesos ni filtros (`evals/matching/README.md` §Calibración).

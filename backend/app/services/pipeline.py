@@ -108,7 +108,10 @@ TRANSITIONS: dict[EventType, Transition] = {
         Stage.CLOSED,
     ),
     EventType.EXTRACTED: Transition(
-        frozenset({Stage.PENDING_EXTRACTION, Stage.PENDING_TRIAGE}), Stage.PENDING_TRIAGE
+        frozenset({Stage.PENDING_EXTRACTION, Stage.PENDING_TRIAGE}),
+        Stage.PENDING_TRIAGE,
+        hint="Si la oferta ya no está pendiente de extraer (p. ej. se descartó mientras la "
+        "procesabas), sáltala: no hace falta extraerla.",
     ),
     EventType.EXTRACTION_FAILED: Transition(frozenset({Stage.PENDING_EXTRACTION}), None),
     EventType.HARD_FILTER_FAILED: Transition(frozenset({Stage.PENDING_TRIAGE}), Stage.CLOSED),
@@ -174,6 +177,10 @@ class ProjectionState:
     channel: str | None = None
     render_id: int | None = None
     applied_at: datetime | None = None
+    # Cuándo y con qué evento se cerró (fase 27.6): se fijan al cerrar y se limpian al reabrir;
+    # una nota posterior no los mueve, a diferencia de `last_event_at`.
+    closed_at: datetime | None = None
+    closed_by: EventType | None = None
     # Documentos (CV) verificados con `passed` y documentos con algún render sin `too_long`.
     verified_documents: frozenset[int] = frozenset()
     fitting_documents: frozenset[int] = frozenset()
@@ -244,7 +251,15 @@ def apply_event(state: ProjectionState | None, event: EventLike) -> ProjectionSt
     if target is None:
         return new
     if target == Stage.CLOSED:
-        return replace(new, stage=Stage.CLOSED, stage_before_close=state.stage)
+        return replace(
+            new,
+            stage=Stage.CLOSED,
+            stage_before_close=state.stage,
+            closed_at=event.occurred_at,
+            closed_by=event_type,
+        )
+    if event_type == EventType.REOPENED:
+        new = replace(new, closed_at=None, closed_by=None)
     return replace(new, stage=target)
 
 
@@ -282,6 +297,8 @@ def save_projection(session: Session, job_id: int, state: ProjectionState) -> Ap
     app.render_id = state.render_id
     app.applied_at = state.applied_at
     app.last_event_at = state.last_event_at
+    app.closed_at = state.closed_at
+    app.closed_by = state.closed_by.value if state.closed_by else None
     return app
 
 
