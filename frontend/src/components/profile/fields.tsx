@@ -49,6 +49,7 @@ export function TextField({
   rows = 3,
   placeholder,
   type = 'text',
+  autoFocus,
   ...props
 }: FieldProps & {
   value: string | null | undefined
@@ -57,6 +58,7 @@ export function TextField({
   rows?: number
   placeholder?: string
   type?: 'text' | 'number' | 'url' | 'email'
+  autoFocus?: boolean
 }) {
   return (
     <Field {...props}>
@@ -67,6 +69,7 @@ export function TextField({
             rows={rows}
             value={value ?? ''}
             placeholder={placeholder}
+            autoFocus={autoFocus}
             aria-invalid={describedBy ? true : undefined}
             aria-describedby={describedBy}
             onChange={(e) => onChange(e.target.value)}
@@ -77,6 +80,7 @@ export function TextField({
             type={type}
             value={value ?? ''}
             placeholder={placeholder}
+            autoFocus={autoFocus}
             aria-invalid={describedBy ? true : undefined}
             aria-describedby={describedBy}
             onChange={(e) => onChange(e.target.value)}

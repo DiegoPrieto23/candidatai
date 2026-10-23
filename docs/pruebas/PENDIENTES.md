@@ -6,7 +6,7 @@ cada fase y lo quita cuando el usuario confirma que está hecho.
 
 Marca `[x]` lo que hagas y, si algo falla, apúntalo debajo de la línea con `→`.
 
-Última actualización: 2026-10-23 (fase 27.1).
+Última actualización: 2026-10-23 (fase 27.2).
 
 ## 1. Poner la app al día (antes de probar nada)
 
@@ -259,6 +259,15 @@ hiciste, márcala.
       WSL2: seguir solo la guía (requisitos, `install.sh`, abrir la app, conectar tu agente) sin
       saltarte ni añadir pasos, y apuntar lo que falte.
 - [ ] **La primera CI en `main`** tras fusionar la fase: macOS corre ahí (en la rama ya pasó a mano).
+- [ ] **Fase 27.2 · «Experiencia» plegable** (con tu perfil real, UI compilada o `cai start --dev`):
+  - «Mi perfil → Experiencia» arranca con todas las empresas plegadas y se ve el recorrido entero
+    sin scroll largo; cada cabecera dice puesto, empresa, fechas, ciudad y número de logros;
+  - desplegar una no abre las otras; «Desplegar todo» y «Plegar todo» funcionan;
+  - cambiar un campo, plegar y desplegar: el cambio sigue ahí y el bloque dice «Sin guardar»
+    (luego «Descartar»);
+  - subir o bajar una empresa desplegada: sigue desplegada la misma;
+  - los logros se distinguen (número, fondo alterno, línea) en tema claro y oscuro, sin esquinas
+    redondeadas en las tarjetas, y a ancho de móvil (F12 → modo dispositivo).
 - [ ] **Fase 27.1 · Ayudas en los botones** (compila la UI con `pnpm build` o usa `cai start --dev`):
   - pasar el ratón por «Ampliar búsqueda» (Fuentes → Plataformas): sale un globo con qué hace y,
     en gris, cómo se abre tu agente; sin el globo nativo del navegador encima;

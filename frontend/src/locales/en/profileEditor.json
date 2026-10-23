@@ -61,7 +61,14 @@
       "untitled": "New company",
       "achievements": "Achievements",
       "newAchievement": "New achievement",
-      "addAchievement": "Add achievement"
+      "addAchievement": "Add achievement",
+      "achievementCount_one": "{{count}} achievement",
+      "achievementCount_other": "{{count}} achievements",
+      "achievementNumber": "Achievement {{number}}",
+      "expandAll": "Expand all",
+      "collapseAll": "Collapse all",
+      "errorsIn_one": "Check {{count}} company: it has errors.",
+      "errorsIn_other": "Check {{count}} companies: they have errors."
     },
     "projects": {
       "title": "Projects",

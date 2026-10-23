@@ -27,6 +27,18 @@ const PROFILE = {
         },
       ],
     },
+    {
+      id: 'exp-sur',
+      company: 'Sur Analytics',
+      role: 'Data Analyst',
+      city: 'Vigo',
+      start: '2022-01',
+      end: '2024-02',
+      achievements: [
+        { id: 'b1', text: 'Monté el cuadro de mando de ventas.', skills: ['Python'] },
+        { id: 'b2', text: 'Automaticé el informe semanal.', skills: ['Python'] },
+      ],
+    },
   ],
   projects: [{ id: 'prj-tfg', name: 'TFG de predicción', text: 'Modelo de demanda.' }],
   skills: [{ name: 'Python', level: 'F' }],
@@ -87,6 +99,23 @@ async function openTab(name: string) {
   await userEvent.click(await screen.findByRole('tab', { name }))
 }
 
+/** La tarjeta de una empresa de «Experiencia» y el botón de su cabecera, que la pliega y despliega. */
+async function company(name: string) {
+  const block = await screen.findByRole('region', { name: 'Experiencia' })
+  const article = await within(block).findByRole('article', { name })
+  const header = within(article)
+    .getAllByRole('button')
+    .find((b) => b.hasAttribute('aria-expanded'))!
+  return { article, header }
+}
+
+/** Despliega una empresa (arrancan plegadas, fase 27.2). */
+async function openCompany(name: string) {
+  const { article, header } = await company(name)
+  if (header.getAttribute('aria-expanded') !== 'true') await userEvent.click(header)
+  return article
+}
+
 describe('Mi perfil editable', () => {
   it('guarda un logro con el hash que leyó y enseña el error de un campo en su sitio', async () => {
     const calls = mockApi({
@@ -113,6 +142,7 @@ describe('Mi perfil editable', () => {
     })
     renderApp('/perfil')
     await openTab('Experiencia')
+    await openCompany('Norte Consulting')
     const achievement = await screen.findByRole('group', { name: 'Migré 40 procesos ETL a Python.' })
     const text = within(achievement).getByLabelText('Logro')
     await userEvent.clear(text)
@@ -144,6 +174,145 @@ describe('Mi perfil editable', () => {
     expect(within(block).getByRole('alert')).toHaveTextContent('Hay campos que revisar')
     // Escribe mucho texto con `userEvent.type`: con la batería entera en paralelo pasa de 15 s.
   }, 30_000)
+
+  describe('«Experiencia» plegable (fase 27.2)', () => {
+    it('arranca plegada y desplegar una empresa no abre las otras', async () => {
+      mockApi(BASE)
+      renderApp('/perfil')
+      await openTab('Experiencia')
+      const norte = await company('Norte Consulting')
+      const sur = await company('Sur Analytics')
+      expect(norte.header).toHaveAttribute('aria-expanded', 'false')
+      expect(sur.header).toHaveAttribute('aria-expanded', 'false')
+      expect(sur.header).toHaveTextContent('2022-01 – 2024-02 · Vigo · 2 logros')
+      expect(screen.queryByLabelText('Empresa')).not.toBeInTheDocument()
+
+      await userEvent.click(norte.header)
+      expect(norte.header).toHaveAttribute('aria-expanded', 'true')
+      expect(norte.header).toHaveAttribute('aria-controls')
+      expect(sur.header).toHaveAttribute('aria-expanded', 'false')
+      expect(within(norte.article).getByLabelText('Empresa')).toHaveValue('Norte Consulting')
+      // Subir, bajar y borrar quedan fuera del botón de la cabecera.
+      expect(within(norte.header).queryByRole('button')).not.toBeInTheDocument()
+    })
+
+    it('«Desplegar todo» y «Plegar todo»', async () => {
+      mockApi(BASE)
+      renderApp('/perfil')
+      await openTab('Experiencia')
+      const block = await screen.findByRole('region', { name: 'Experiencia' })
+      await userEvent.click(within(block).getByRole('button', { name: 'Desplegar todo' }))
+      expect((await company('Norte Consulting')).header).toHaveAttribute('aria-expanded', 'true')
+      expect((await company('Sur Analytics')).header).toHaveAttribute('aria-expanded', 'true')
+      await userEvent.click(within(block).getByRole('button', { name: 'Plegar todo' }))
+      expect(within(block).queryByLabelText('Empresa')).not.toBeInTheDocument()
+    })
+
+    it('«Añadir empresa» abre la nueva con el foco en «Empresa», y sigue abierta al bajarla', async () => {
+      mockApi(BASE)
+      renderApp('/perfil')
+      await openTab('Experiencia')
+      const block = await screen.findByRole('region', { name: 'Experiencia' })
+      await userEvent.click(within(block).getByRole('button', { name: 'Añadir empresa' }))
+      const fresh = await company('Empresa nueva')
+      expect(fresh.header).toHaveAttribute('aria-expanded', 'true')
+      expect(within(fresh.article).getByLabelText('Empresa')).toHaveFocus()
+
+      // Con una clave por índice, al bajarla se desplegaría la empresa que ocupa su sitio.
+      await userEvent.click(within(fresh.article).getByRole('button', { name: 'Bajar Empresa nueva' }))
+      expect((await company('Empresa nueva')).header).toHaveAttribute('aria-expanded', 'true')
+      expect((await company('Norte Consulting')).header).toHaveAttribute('aria-expanded', 'false')
+    })
+
+    it('reordenar mantiene desplegada la misma empresa', async () => {
+      mockApi(BASE)
+      renderApp('/perfil')
+      await openTab('Experiencia')
+      await openCompany('Sur Analytics')
+      const norte = await company('Norte Consulting')
+      await userEvent.click(within(norte.article).getByRole('button', { name: 'Bajar Norte Consulting' }))
+      const articles = within(screen.getByRole('region', { name: 'Experiencia' })).getAllByRole('article')
+      expect(articles.map((a) => a.getAttribute('aria-label'))).toEqual(['Sur Analytics', 'Norte Consulting'])
+      expect((await company('Sur Analytics')).header).toHaveAttribute('aria-expanded', 'true')
+      expect((await company('Norte Consulting')).header).toHaveAttribute('aria-expanded', 'false')
+    })
+
+    it('plegar y desplegar conserva un cambio sin guardar', async () => {
+      mockApi(BASE)
+      renderApp('/perfil')
+      await openTab('Experiencia')
+      const article = await openCompany('Norte Consulting')
+      const role = within(article).getByLabelText('Puesto')
+      await userEvent.clear(role)
+      await userEvent.type(role, 'Data Lead')
+      const { header } = await company('Norte Consulting')
+      await userEvent.click(header)
+      expect(within(article).queryByLabelText('Puesto')).not.toBeInTheDocument()
+      expect(header).toHaveTextContent('Data Lead · Norte Consulting')
+      await userEvent.click(header)
+      expect(within(article).getByLabelText('Puesto')).toHaveValue('Data Lead')
+      expect(within(screen.getByRole('region', { name: 'Experiencia' })).getByText('Sin guardar')).toBeInTheDocument()
+    })
+
+    it('un error de validación despliega su empresa y el aviso dice cuántas tienen errores', async () => {
+      mockApi({
+        ...BASE,
+        'PUT /profile/sections/experience': {
+          status: 422,
+          body: {
+            ok: false,
+            error: {
+              type: 'validation_error',
+              message: 'Perfil no válido (1 error)',
+              details: [{ field: 'experience.1.achievements.0.text', received: '', reason: 'No puede estar vacío.' }],
+            },
+          },
+        },
+      })
+      renderApp('/perfil')
+      await openTab('Experiencia')
+      const article = await openCompany('Norte Consulting')
+      await userEvent.type(within(article).getByLabelText('Ciudad'), 'Vigo')
+      const block = screen.getByRole('region', { name: 'Experiencia' })
+      await userEvent.click(within(block).getByRole('button', { name: 'Guardar' }))
+
+      const sur = await company('Sur Analytics')
+      await waitFor(() => expect(sur.header).toHaveAttribute('aria-expanded', 'true'))
+      expect(within(sur.article).getByText('No puede estar vacío.')).toBeInTheDocument()
+      expect(within(block).getByText('Revisa 1 empresa: tiene errores.')).toBeInTheDocument()
+    })
+
+    it('una empresa nueva sigue desplegada después de guardarla', async () => {
+      // Tras guardar, la app vuelve a leer el perfil: ya trae la empresa nueva, con su id.
+      let profile: Record<string, unknown> = PROFILE
+      const calls = mockApi({
+        ...BASE,
+        'GET /profile/editable': () => ({ ...EDITABLE, profile }),
+        'PUT /profile/sections/experience': (request: Request) =>
+          request
+            .clone()
+            .json()
+            .then((body: { content: Record<string, unknown>[] }) => {
+              profile = { ...PROFILE, experience: [{ ...body.content[0], id: 'exp-nueva' }, ...PROFILE.experience] }
+              return saved('experience')
+            }),
+      })
+      renderApp('/perfil')
+      await openTab('Experiencia')
+      const block = await screen.findByRole('region', { name: 'Experiencia' })
+      await userEvent.click(within(block).getByRole('button', { name: 'Añadir empresa' }))
+      const fresh = (await company('Empresa nueva')).article
+      await userEvent.type(within(fresh).getByLabelText('Empresa'), 'Atlántica')
+      await userEvent.type(within(fresh).getByLabelText('Puesto'), 'Data Engineer')
+      await userEvent.click(within(block).getByRole('button', { name: 'Guardar' }))
+
+      expect(await within(block).findByText('Guardado')).toBeInTheDocument()
+      const body = calls.find((c) => c.method === 'PUT')?.body as { content: Record<string, unknown>[] }
+      expect(body.content[0]).not.toHaveProperty('_key') // la clave local no llega al servidor
+      await waitFor(() => expect(within(block).queryByText('Sin guardar')).not.toBeInTheDocument())
+      expect((await company('Atlántica')).header).toHaveAttribute('aria-expanded', 'true')
+    })
+  })
 
   it('una historia STAR no se guarda sin evidencia y el selector las lista por su nombre', async () => {
     const calls = mockApi({ ...BASE, 'PUT /profile/sections/stories': saved('stories') })
@@ -307,6 +476,7 @@ describe('Mi perfil editable', () => {
     })
     renderApp('/perfil')
     await openTab('Experiencia')
+    await openCompany('Norte Consulting')
     const achievement = await screen.findByRole('group', { name: 'Migré 40 procesos ETL a Python.' })
     const improve = within(achievement).getByRole('button', { name: 'Mejorar con mi agente' })
     await waitFor(() => expect(improve).toBeEnabled())

@@ -14,6 +14,10 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   «Generar CV», «Preparar»…) o al llegar a él con el teclado, un globo explica qué hace, qué cambia
   en la app y si te va a pedir algo. Si el botón está desactivado, dice también por qué. La misma
   ayuda abre el desplegable ▾, para leerla sin ratón.
+- **«Mi perfil → Experiencia» se recorre de un vistazo:** las empresas arrancan plegadas (puesto,
+  empresa, fechas, ciudad y número de logros) y se despliegan una a una, o todas con «Desplegar
+  todo». Se abren solas la que acabas de añadir y las que tienen un error. Plegar no pierde lo que
+  no has guardado.
 - **Ayuda en Plataformas:** «Prioridad», «Acceso» y «Ofertas por recorrido» llevan un ⓘ que explica
   qué significan.
 - **Logo de las empresas objetivo:** en «Fuentes → Empresas objetivo» cada empresa lleva su logo,
@@ -108,6 +112,8 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   experiencia»**: tu agente propone, te pregunta los números que falten y solo escribe con tu OK.
 
 ### Cambiado
+- **Experiencia más legible:** las tarjetas de empresa van sin esquinas redondeadas y cada logro
+  lleva su número, un fondo alterno y una línea que lo separa del siguiente.
 - **«Fuentes» abre en «Plataformas»:** ahora es la primera pestaña, y «Empresas objetivo», la
   segunda.
 - Todos los botones que lanzan tu agente salen en verde, para distinguirlos del resto.

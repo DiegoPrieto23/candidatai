@@ -380,6 +380,12 @@ La carta es un documento propio, con sus indicaciones, su verificación y sus re
 - Para agentes y terminal: `get_received_offer` ↔ `jh received-offers show`.
 
 
+## 27.2 · Tu experiencia, de un vistazo — 2026-10-23 · Claude Code (Opus 5.5)
+- **Empresas plegadas:** «Mi perfil → Experiencia» enseña solo la cabecera de cada empresa (puesto,
+  fechas, ciudad, número de logros); se despliegan una a una o todas a la vez, y se abren solas la
+  nueva y las que tienen un error. Plegar no pierde cambios.
+- **Se ve dónde acaba cada cosa:** tarjetas con bordes rectos y logros numerados con fondo alterno.
+
 ## 27.1 · Cada botón dice qué hace — 2026-10-23 · Claude Code (Opus 5.5)
 - **Un globo en cada botón «en tu agente»:** al pasar el ratón o enfocarlo con el teclado dice qué
   hace el skill, qué cambia y qué te pide; si está desactivado, por qué. La ayuda está también en
