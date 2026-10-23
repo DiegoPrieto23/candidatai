@@ -267,7 +267,16 @@ class AgentBrowseSource(_Strict):
         max_length=10,
         description="Búsquedas ya filtradas por puesto y ubicación (URLs http/https).",
     )
-    priority: int = Field(default=5, ge=1, le=10, description="1 se recorre primero.")
+    priority: int | None = Field(
+        default=None,
+        ge=1,
+        description=(
+            "Puesto en el orden de recorrido, sin empates (1 se recorre primero). Sin valor: al "
+            "final si es nueva; si ya existe, conserva el suyo. Un puesto ocupado: una nueva se "
+            "inserta ahí y las siguientes bajan uno; una existente se intercambia con la que lo "
+            "tenía."
+        ),
+    )
     access: BrowseAccess = Field(
         default="free", description="`free`, `login` (inicias sesión tú) o `blocked`."
     )

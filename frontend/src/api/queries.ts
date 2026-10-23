@@ -407,7 +407,8 @@ export function useUpdateBrowseSettings() {
           body: { confirm_risk: false, ...body },
         }),
       ),
-    onSuccess: () => client.invalidateQueries({ queryKey: keys.sources }),
+    // También si falla: un 409 significa que otra pestaña cambió el orden (fase 27.3).
+    onSettled: () => client.invalidateQueries({ queryKey: keys.sources }),
   })
 }
 

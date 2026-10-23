@@ -56,8 +56,9 @@ Pregunta cuáles acepta y dónde. Sin respuesta clara, no hagas nada.
 - **Búsquedas de una plataforma**: para cada plataforma elegida, construye la URL de búsqueda
   siguiendo el patrón de sus `search_urls` actuales (mismo dominio y filtros, solo cambia el
   término del puesto). Guarda con `save_source` reenviando **toda** su configuración (`name`,
-  `platform`, `search_urls` con las anteriores más las nuevas, `priority`, `access`, `max_offers`,
-  `notes`), sin `allow_agent_browsing`. Como mucho 10 búsquedas por plataforma: si no caben,
+  `platform`, `search_urls` con las anteriores más las nuevas, `access`, `max_offers`, `notes`),
+  sin `allow_agent_browsing` ni `priority` (así conserva su puesto aunque el usuario haya cambiado
+  el orden). Como mucho 10 búsquedas por plataforma: si no caben,
   pregunta cuáles quitar.
 - Si no puedes editar ficheros ni ejecutar comandos, dale el texto exacto para pegar en
   `data/profile.yaml` y los comandos.

@@ -6,7 +6,7 @@ cada fase y lo quita cuando el usuario confirma que está hecho.
 
 Marca `[x]` lo que hagas y, si algo falla, apúntalo debajo de la línea con `→`.
 
-Última actualización: 2026-10-23 (fase 27.2).
+Última actualización: 2026-10-23 (fase 27.3).
 
 ## 1. Poner la app al día (antes de probar nada)
 
@@ -259,6 +259,18 @@ hiciste, márcala.
       WSL2: seguir solo la guía (requisitos, `install.sh`, abrir la app, conectar tu agente) sin
       saltarte ni añadir pasos, y apuntar lo que falte.
 - [ ] **La primera CI en `main`** tras fusionar la fase: macOS corre ahí (en la rama ya pasó a mano).
+- [ ] **Fase 27.3 · Prioridades únicas** (UI compilada o `cai start --dev`):
+  - antes, copia de la BD y `uv run --directory backend cai db upgrade` (migración **0026**: numera
+    tus plataformas 1…N por su prioridad y su nombre); en «Fuentes → Plataformas» no hay dos con
+    el mismo número y el orden es el que esperabas;
+  - abrir el selector de «Prioridad» de una: cada puesto dice qué plataforma lo tiene y «(pasará al
+    puesto N)»; elegir uno ocupado las intercambia y la lista se reordena;
+  - con más de 10 plataformas (añade de prueba con «Añadir plataforma», que por defecto va «la
+    última»), mover una al puesto 11 o 12; ponerla «antes de» otra la inserta y baja las siguientes;
+  - dos pestañas abiertas en Plataformas: cambia el orden en una y, sin recargar la otra, cambia
+    ahí la prioridad de la misma plataforma: sale «El orden ha cambiado…» y la lista se recarga;
+  - pedir a tu agente `search-jobs configurar` que guarde una plataforma en un puesto ocupado: su
+    respuesta dice a cuál ha movido.
 - [ ] **Fase 27.2 · «Experiencia» plegable** (con tu perfil real, UI compilada o `cai start --dev`):
   - «Mi perfil → Experiencia» arranca con todas las empresas plegadas y se ve el recorrido entero
     sin scroll largo; cada cabecera dice puesto, empresa, fechas, ciudad y número de logros;

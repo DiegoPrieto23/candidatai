@@ -36,7 +36,7 @@ from app.services.documents.uploads import InvalidUploadError, UploadTooLargeErr
 from app.services.drafts import DraftNotAllowedError, DraftNotFoundError
 from app.services.events import JobNotFoundError
 from app.services.extractions import ExtractionNotFoundError
-from app.services.ingestion.browse import BrowsingNotAllowedError
+from app.services.ingestion.browse import BrowsingNotAllowedError, PriorityConflictError
 from app.services.ingestion.service import SourceExistsError, SourceNotFoundError
 from app.services.interviews import InterviewNotAllowedError
 from app.services.network import NetworkContactNotFoundError
@@ -73,6 +73,7 @@ _ERROR_TYPES: tuple[tuple[type[Exception], str], ...] = (
     (DraftNotFoundError, "not_found"),
     (DraftNotAllowedError, "not_allowed"),
     (BrowsingNotAllowedError, "not_allowed"),
+    (PriorityConflictError, "conflict"),
     (MilestoneNotFoundError, "not_found"),
     (InterviewNotAllowedError, "not_allowed"),
     (ContactNotFoundError, "not_found"),

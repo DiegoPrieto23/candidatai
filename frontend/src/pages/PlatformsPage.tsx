@@ -32,7 +32,6 @@ import { platformHome, searchLabel } from '@/lib/searches'
 import { cn } from '@/lib/utils'
 
 const ACCESS: readonly BrowseAccess[] = ['free', 'login', 'blocked']
-const PRIORITIES = Array.from({ length: 10 }, (_, i) => i + 1)
 // Ofertas que abre el agente en cada recorrido (el servidor acepta de 1 a 100).
 const MAX_OFFERS = [5, 10, 15, 20, 25, 30, 40, 50, 75, 100]
 
@@ -445,7 +444,14 @@ function LastRun({ source }: { source: SourceView }) {
   )
 }
 
-function PlatformRow({ source }: { source: SourceView }) {
+/** Un puesto del orden de recorrido y la plataforma que lo tiene (fase 27.3: sin empates). */
+interface Slot {
+  id: number
+  name: string
+  priority: number
+}
+
+function PlatformRow({ source, order }: { source: SourceView; order: Slot[] }) {
   const { t } = useTranslation('platforms')
   const update = useUpdateBrowseSettings()
   const [confirming, setConfirming] = useState(false)
@@ -463,11 +469,13 @@ function PlatformRow({ source }: { source: SourceView }) {
   }
 
   const linkedin = browse.platform === 'linkedin'
+  const current = browse.priority ?? order.findIndex((slot) => slot.id === source.id) + 1
   const home = platformHome(browse.search_urls)
   const enabled = browse.allow_agent_browsing === true
   const change = (body: {
     allow_agent_browsing?: boolean
     priority?: number
+    expected_priority?: number
     access?: BrowseAccess
     max_offers?: number
   }) => update.mutate({ sourceId: source.id, ...body })
@@ -535,17 +543,23 @@ function PlatformRow({ source }: { source: SourceView }) {
             <Hint text={t('row.priorityHint')} label={t('row.priorityHintAria')} />
           </span>
           <Select
-            value={String(browse.priority)}
-            onValueChange={(v) => change({ priority: Number(v) })}
+            value={String(current)}
+            // Un puesto ocupado se intercambia; el servidor comprueba que `current` sigue siendo el
+            // suyo (si otra pestaña cambió el orden, responde 409 y la lista se recarga).
+            onValueChange={(v) => change({ priority: Number(v), expected_priority: current })}
             disabled={update.isPending}
           >
             <SelectTrigger className="h-8 w-32" aria-label={t('row.priorityAria', { name: source.name })}>
-              <SelectValue />
+              {/* Solo el número: quién ocupa cada puesto va en el menú. */}
+              <SelectValue>{current === 1 ? t('row.first') : current}</SelectValue>
             </SelectTrigger>
             <SelectContent>
-              {PRIORITIES.map((p) => (
-                <SelectItem key={p} value={String(p)}>
-                  {p === 1 ? t('row.first') : p}
+              {order.map((slot) => (
+                <SelectItem key={slot.id} value={String(slot.priority)}>
+                  {t('row.slot', { position: slot.priority, name: slot.name })}
+                  <span className="ml-1.5 text-xs text-muted-foreground">
+                    {slot.id === source.id ? t('row.slotCurrent') : t('row.slotSwap', { position: current })}
+                  </span>
                 </SelectItem>
               ))}
             </SelectContent>
@@ -670,10 +684,14 @@ export function PlatformsPage() {
       </EmptyState>
     )
   } else {
+    const sorted = [...platforms.data.sources].sort(byPriority)
+    const order = sorted
+      .filter((source) => source.browse)
+      .map((source, i) => ({ id: source.id, name: source.name, priority: source.browse?.priority ?? i + 1 }))
     body = (
       <ul className="divide-y rounded-xl border bg-card">
-        {[...platforms.data.sources].sort(byPriority).map((source) => (
-          <PlatformRow key={source.id} source={source} />
+        {sorted.map((source) => (
+          <PlatformRow key={source.id} source={source} order={order} />
         ))}
       </ul>
     )

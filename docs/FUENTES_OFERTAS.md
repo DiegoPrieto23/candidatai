@@ -214,6 +214,18 @@ hayas aprobado. Skill `search-jobs`.
   cada una con sus búsquedas y su último recorrido, y cambias su prioridad, su acceso, cuántas
   ofertas abre en cada recorrido (`max_offers`, de 1 a 100) y si el agente puede recorrerla. Si el
   agente vuelve a guardarla sin `max_offers`, se conserva el que tenía.
+- **Prioridad = puesto en el orden de recorrido, sin empates** (fase 27.3). Con N plataformas van
+  de 1 a N, sin huecos ni repetidos, y sin tope (antes era 1…10 y todas entraban con 5). Una
+  plataforma nueva va al final si no se dice otra cosa; en un puesto ocupado se inserta y las
+  siguientes bajan uno. Cambiar la de una existente a un puesto ocupado **intercambia** las dos
+  (la otra se queda con el puesto anterior); guardarla sin `priority` conserva el suyo. Un puesto
+  fuera de 1…N se rechaza diciendo el rango. Desactivar la búsqueda con navegador no mueve la
+  plataforma: el agente se la salta y conserva su puesto. En la UI, el selector dice qué
+  plataforma ocupa cada puesto y a cuál pasaría la otra; si otra pestaña cambió el orden entre
+  tanto, la API responde `conflict` (409) y la lista se recarga. Todos los caminos (UI, CLI, MCP,
+  alta) pasan por `browse.place`, y la base de datos rechaza un empate que llegue por otro camino
+  (`conflict`, diciendo qué plataforma tiene ya ese puesto). La migración `0026` numeró las
+  existentes por `(prioridad, nombre)`.
 - **LinkedIn** se crea siempre con `allow_agent_browsing: false`. Solo lo puedes activar tú en la
   UI, que muestra el aviso de riesgo para la cuenta y pide confirmarlo (la API exige
   `confirm_risk: true`). El agente no puede activarlo por la interfaz para agentes: `save_source`

@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { PlusIcon, WarningIcon } from '@phosphor-icons/react'
 import type { BrowseAccess } from '@/api/client'
-import { useAddPlatform } from '@/api/queries'
+import { useAddPlatform, usePlatforms } from '@/api/queries'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -45,12 +45,20 @@ function LinkedInNotice() {
 function AddPlatformForm({ onDone }: { onDone: () => void }) {
   const { t } = useTranslation('platforms', { keyPrefix: 'add' })
   const add = useAddPlatform()
+  // Fase 27.3: la prioridad es un puesto sin empates. Por defecto, la última; en otro puesto, se
+  // inserta delante de la que lo tiene y las siguientes bajan uno.
+  const platforms = usePlatforms()
+  const taken = [...(platforms.data?.sources ?? [])]
+    .flatMap((s) => (s.browse?.priority ? [{ name: s.name, priority: s.browse.priority }] : []))
+    .sort((a, b) => a.priority - b.priority)
+  const last = taken.length + 1
   const [known, setKnown] = useState('')
   const [name, setName] = useState('')
   const [platform, setPlatform] = useState('')
   const [urls, setUrls] = useState('')
   const [access, setAccess] = useState<BrowseAccess>('free')
-  const [priority, setPriority] = useState(5)
+  const [chosen, setChosen] = useState<number | null>(null) // sin elegir: la última
+  const priority = chosen ?? last
   const linkedin = platform === 'linkedin'
   const searchUrls = urls
     .split('\n')
@@ -79,7 +87,9 @@ function AddPlatformForm({ onDone }: { onDone: () => void }) {
         platform,
         search_urls: searchUrls,
         access,
-        priority,
+        // Sin elegir, no se manda: el servidor la pone al final (aunque otra pestaña haya
+        // añadido alguna entre tanto).
+        priority: chosen ?? undefined,
         // LinkedIn se crea siempre desactivada; el resto, activada (puedes desactivarla después).
         allow_agent_browsing: linkedin ? false : undefined,
       },
@@ -166,14 +176,19 @@ function AddPlatformForm({ onDone }: { onDone: () => void }) {
             </div>
             <div className="grid gap-1.5">
               <Label htmlFor="platform-priority">{t('priority')}</Label>
-              <Input
+              <select
                 id="platform-priority"
-                type="number"
-                min={1}
-                max={10}
                 value={priority}
-                onChange={(e) => setPriority(Math.min(10, Math.max(1, Number(e.target.value) || 1)))}
-              />
+                onChange={(e) => setChosen(Number(e.target.value))}
+                className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+              >
+                {taken.map((slot) => (
+                  <option key={slot.name} value={slot.priority}>
+                    {t('before', { position: slot.priority, name: slot.name })}
+                  </option>
+                ))}
+                <option value={last}>{t('last', { position: last })}</option>
+              </select>
             </div>
           </div>
         </>
