@@ -233,7 +233,7 @@ agente:
 | `generate-cv 42` | Redacta, renderiza y verifica el CV para la oferta 42 |
 | `generate-cover-letter 42` | Carta según tus indicaciones, verificada; TXT y PDF a juego con el CV |
 | `prepare-application 42` | Respuestas de screening y, si hace falta, la carta |
-| `prepare-interview 42` | Dosier de entrevista y plan por días hasta la fecha |
+| `prepare-interview 42` | Guía de entrevista en PDF (rol, encaje, conceptos, preguntas probables, tu presentación) y plan por días |
 | `mock-interview 42` | Simulacro: una pregunta cada vez, feedback y una respuesta mejor con tu perfil |
 | `debrief-interview 42` | Repaso: notas, próximos pasos, siguiente ronda probable e historias STAR nuevas |
 | `prepare-negotiation 42` | Argumentos, preguntas y guion para una oferta recibida; revisa el contrato. Nunca propone una cifra |

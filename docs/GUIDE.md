@@ -372,7 +372,11 @@ The worker runs the automatic sources every day at `connectors.daily_at`
 
 ## 10. Interviews and received offers
 
-- `prepare-interview 42`: dossier and day-by-day plan up to the date, saved on the job page.
+- `prepare-interview 42`: reads everything about the job, your profile, what you already sent and
+  the web, asks you what is missing and leaves a **PDF guide** on the job page (the role, the
+  responsibilities broken down, your fit, what you already answered, the company and the sector,
+  concepts to review, likely questions with an answer outline, questions to ask, your pitch and the
+  plan), in the company's colour and the interview's language, plus the day-by-day plan.
 - `mock-interview 42`: one question at a time, with feedback and a better version based on
   your profile.
 - `debrief-interview 42`: you tell it how it went; it saves notes and next steps and proposes new

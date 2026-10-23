@@ -57,6 +57,26 @@ describe('Entrevistas en la ficha (fase 17)', () => {
     )
   })
 
+  it('enlaza la guía de preparación en PDF (ADR-044)', async () => {
+    ficha([
+      milestone(5, {
+        starts_at: future,
+        guide: {
+          file: '1-5-bretema-guia.pdf',
+          language: 'es',
+          title: 'Data Engineer',
+          saved_at: '2026-10-20T10:00:00Z',
+          agent_name: 'codex',
+        },
+      }),
+    ])
+    renderApp('/jobs/1')
+    const section = await screen.findByRole('region', { name: 'Proceso' })
+    const link = await within(section).findByRole('link', { name: 'Guía de preparación (PDF)' })
+    expect(link.getAttribute('href')).toMatch(/\/milestones\/5\/guide\.pdf$/)
+    expect(link).toHaveAttribute('target', '_blank')
+  })
+
   it('enseña el plan por días con su dosier', async () => {
     ficha([
       milestone(7, {

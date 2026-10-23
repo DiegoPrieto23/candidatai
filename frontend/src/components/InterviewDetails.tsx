@@ -1,9 +1,10 @@
 import { useTranslation } from 'react-i18next'
-import { type MilestoneOut, type Stage } from '@/api/client'
+import { FilePdfIcon } from '@phosphor-icons/react'
+import { fileUrls, type MilestoneOut, type Stage } from '@/api/client'
 import { AgentButton } from '@/components/AgentButton'
 import { OpenFolderButton } from '@/components/OpenFolderButton'
 import { interviewPhase, planIsStale } from '@/lib/interviews'
-import { dateFormatter } from '@/lib/labels'
+import { dateFormatter, formatDateTime } from '@/lib/labels'
 
 type PrepBlock = NonNullable<MilestoneOut['prep_plan']>['blocks'][number]
 
@@ -44,14 +45,30 @@ export function InterviewActions({ milestone, stage }: { milestone: MilestoneOut
   )
 }
 
-/** Plan de preparación y repaso de una entrevista, si los hay. */
+/** Guía en PDF, plan de preparación y repaso de una entrevista, si los hay. */
 export function InterviewDetails({ milestone }: { milestone: MilestoneOut }) {
   const { t } = useTranslation('status', { keyPrefix: 'interview' })
   const plan = milestone.prep_plan
-  if (!plan && !milestone.debrief_notes) return null
+  const guide = milestone.guide
+  if (!plan && !milestone.debrief_notes && !guide) return null
   const minutes = plan ? plan.blocks.reduce((sum, b) => sum + b.minutes, 0) : 0
   return (
     <div className="mt-2 space-y-2">
+      {guide && (
+        // ADR-044: la guía que redactó tu agente y maquetó la app. Se abre en otra pestaña.
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-md border bg-muted/30 px-3 py-2 text-xs">
+          <FilePdfIcon className="size-4 shrink-0 text-primary" weight="duotone" aria-hidden />
+          <a
+            href={fileUrls.interviewGuide(milestone.id)}
+            target="_blank"
+            rel="noreferrer"
+            className="font-medium underline-offset-4 hover:underline"
+          >
+            {t('guide')}
+          </a>
+          <span className="text-muted-foreground">{t('guideSaved', { date: formatDateTime(guide.saved_at) })}</span>
+        </div>
+      )}
       {plan && (
         <details className="rounded-md border bg-muted/30 px-3 py-2 text-xs">
           <summary className="cursor-pointer font-medium">

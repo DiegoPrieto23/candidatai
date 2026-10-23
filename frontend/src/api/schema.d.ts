@@ -928,6 +928,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/milestones/{milestone_id}/guide.pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Interview Guide Pdf
+         * @description La guía de preparación de la entrevista en PDF (ADR-044), para verla o descargarla.
+         */
+        get: operations["get_interview_guide_pdf"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/calendar.ics": {
         parameters: {
             query?: never;
@@ -4311,6 +4331,28 @@ export interface components {
              */
             kind: "must_have" | "nice_to_have";
         };
+        /**
+         * GuideInfo
+         * @description Lo que enseña la ficha de la guía guardada (el contenido se queda en el hito).
+         */
+        GuideInfo: {
+            /** File */
+            file: string;
+            /**
+             * Language
+             * @enum {string}
+             */
+            language: "es" | "en";
+            /** Title */
+            title: string;
+            /**
+             * Saved At
+             * Format: date-time
+             */
+            saved_at: string;
+            /** Agent Name */
+            agent_name?: string | null;
+        };
         /** HardFilterResult */
         HardFilterResult: {
             /** Passed */
@@ -5266,6 +5308,7 @@ export interface components {
              */
             updated_at: string;
             prep_plan?: components["schemas"]["InterviewPlan"] | null;
+            guide?: components["schemas"]["GuideInfo"] | null;
             /** Debrief Notes */
             debrief_notes?: string | null;
             /** Next Steps */
@@ -11618,6 +11661,100 @@ export interface operations {
                 };
                 content: {
                     "text/calendar": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_interview_guide_pdf: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                milestone_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": unknown;
                 };
             };
             /** @description Unauthorized */

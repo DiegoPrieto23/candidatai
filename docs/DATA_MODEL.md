@@ -267,6 +267,7 @@ cambia la etapa.
 | sequence | int | `SEQUENCE` del iCalendar: sube con cada cambio |
 | created_at / updated_at | datetime | |
 | prep_plan | json? | Fase 17. Plan de preparación de una entrevista (`save_interview_plan`): `dossier?` (nombre del fichero en `data/entrevistas/`), `blocks` (`date`, `minutes`, `topic`, `detail?`), `saved_at`, `agent_name` |
+| prep_guide | json? | ADR-044. Guía de preparación en PDF (`save_interview_guide`): `file` (el PDF en `entrevistas/` de la carpeta de datos), `saved_at`, `agent_name` y `guide` (el contenido estructurado que maqueta la app) |
 | debrief_notes / next_steps | text? / text? | Fase 17. Repaso de la entrevista (`save_interview_notes`). Aparte de `notes`, que es lo que anota el usuario |
 | debriefed_at | datetime? | Cuándo se guardó el repaso |
 

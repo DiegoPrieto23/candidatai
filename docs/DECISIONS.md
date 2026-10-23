@@ -1206,3 +1206,29 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
 - **Consecuencias:** convertir tu CV en plantilla es un clic; la conversión la sigue haciendo tu
   agente, una vez, y la ves y apruebas en la terminal.
 
+## ADR-044 · Guía de entrevista en PDF: el agente redacta, la app maqueta (extiende la 029)
+- **Contexto:** `prepare-interview` dejaba un dosier en Markdown. El usuario quiere un documento
+  de estudio como el que prepararía un mentor (el rol, las responsabilidades, conceptos a repasar,
+  preguntas probables, preguntas que hacer, la presentación…), en PDF y con más contexto.
+- **Decisión:**
+  - El agente escribe la guía como **contenido estructurado** (`schemas/interview_guide.py`):
+    secciones con bloques tipados (`paragraph`, `heading`, `bullets`, `table`, `qa`, `callout`,
+    `code`), idioma (`es`/`en`), el color de la marca y las fuentes. No escribe HTML: en el texto
+    solo valen `**negrita**`, `*cursiva*` y `` `código` ``, y todo lo demás se escapa. Las únicas
+    URLs son las de las fuentes (`http`/`https`), que se enlazan después del saneado.
+  - La app la **maqueta** con un diseño fijo y el color de la empresa (oscurecido lo justo para
+    leerse sobre blanco) y la **imprime** con Chromium, como el motor html de los CVs, en
+    `entrevistas/` de la carpeta de datos. Sin Chromium, `pdf_unavailable` y no se guarda nada.
+  - Va en la entrevista (`milestones.prep_guide`, migración 0025) y solo con una programada y por
+    empezar, como el plan. La ficha la enlaza (`GET /milestones/{id}/guide.pdf`).
+  - Idioma: el que pida el usuario; si no, el de la entrevista; si no consta, en el que escribe.
+  - El skill lee todo el contexto (extracción, perfil, contexto, respuestas de screening con la
+    nueva `get_application_answers`, CV, carta, línea de tiempo, rondas anteriores, dosier de la
+    empresa y la web) y **pregunta lo que falte antes de escribir**. Lo que no se sepa va como
+    «Pendiente de confirmar». Nada sobre el candidato sale de otro sitio que su perfil, su
+    contexto, lo guardado en la app o lo que diga en la conversación (POLICIES §1).
+- **Consecuencias:** todas las guías salen igual de cuidadas, con cualquier agente, y la app
+  controla qué entra en el PDF. A cambio, el diseño no lo elige el agente (solo el color) y hace
+  falta Chromium. El dosier en Markdown deja de escribirse; el campo `dossier` del plan se mantiene
+  para los planes antiguos.
+

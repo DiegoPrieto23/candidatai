@@ -53,6 +53,7 @@ CATALOG: tuple[SchemaEntry, ...] = (
     SchemaEntry("message-draft", "save_message_draft", "Borrador de mensaje o correo"),
     SchemaEntry("company-research", "save_company_research", "Dosier de la empresa"),
     SchemaEntry("interview-plan", "save_interview_plan", "Plan de preparación de entrevista"),
+    SchemaEntry("interview-guide", "save_interview_guide", "Guía de preparación en PDF"),
     SchemaEntry("interview-notes", "save_interview_notes", "Notas del repaso de una entrevista"),
     SchemaEntry("source", "save_source", "Plataforma de búsqueda con el navegador"),
     SchemaEntry("source-run", "record_source_run", "Resultado de un recorrido por una plataforma"),

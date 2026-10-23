@@ -236,7 +236,7 @@ undone). Then ask your agent:
 | `generate-cv 42` | Writes, renders and verifies the CV for job 42 |
 | `generate-cover-letter 42` | Cover letter following your instructions, verified; TXT and PDF matching the CV |
 | `prepare-application 42` | Screening answers and, if needed, the cover letter |
-| `prepare-interview 42` | Interview dossier and a day-by-day plan up to the date |
+| `prepare-interview 42` | A PDF interview guide (role, fit, concepts, likely questions, your pitch) and a day-by-day plan |
 | `mock-interview 42` | Mock interview: one question at a time, feedback and a better answer from your profile |
 | `debrief-interview 42` | Debrief: notes, next steps, likely next round and new STAR stories |
 | `prepare-negotiation 42` | Arguments, questions and a script for a received offer; reviews the contract. Never proposes a figure |

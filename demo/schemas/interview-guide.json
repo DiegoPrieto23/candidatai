@@ -1,0 +1,50 @@
+{
+  "language": "es",
+  "title": "Data Engineer",
+  "subtitle": "Entrevista técnica con el equipo de datos",
+  "accent_color": "#0F766E",
+  "sections": [
+    {
+      "title": "La entrevista",
+      "blocks": [
+        {
+          "type": "table",
+          "headers": ["Parte", "Con quién", "Enfoque"],
+          "rows": [["1", "Responsable de datos", "Experiencia y cómo trabajas"]]
+        },
+        {"type": "callout", "tone": "note", "text": "Pendiente de confirmar: el enlace de la videollamada."}
+      ]
+    },
+    {
+      "title": "El rol en una frase",
+      "blocks": [
+        {"type": "paragraph", "text": "Llevar el dato **de la fuente al insight**: ingestar, modelar en `dbt` y dejar tablas fiables para negocio."}
+      ]
+    },
+    {
+      "title": "Posibles preguntas y cómo responderlas",
+      "blocks": [
+        {"type": "heading", "text": "Técnicas"},
+        {
+          "type": "qa",
+          "items": [
+            {
+              "question": "Cuéntame un pipeline que hayas llevado a producción.",
+              "answer": "La migración de SSIS a Python sobre Snowflake: contexto, qué hiciste tú y la mejora del tiempo de carga.",
+              "caution": "No inventes volúmenes que no tengas medidos."
+            }
+          ]
+        },
+        {
+          "type": "code",
+          "title": "Agrupar y agregar",
+          "columns": [
+            {"label": "SQL", "code": "SELECT categoria, SUM(importe)\nFROM ventas\nGROUP BY categoria;"},
+            {"label": "PySpark", "code": "df.groupBy('categoria').agg(F.sum('importe'))"}
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": [{"title": "Documentación de dbt", "url": "https://docs.getdbt.com/"}]
+}

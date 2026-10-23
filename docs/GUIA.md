@@ -368,7 +368,11 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
 
 ## 10. Entrevistas y ofertas recibidas
 
-- `prepare-interview 42`: dosier y plan por días hasta la fecha, guardados en la ficha.
+- `prepare-interview 42`: lee todo lo que hay de la oferta, tu perfil, lo que ya enviaste y la web,
+  te pregunta lo que falte y te deja en la ficha una **guía en PDF** (el rol, las responsabilidades
+  desglosadas, tu encaje, lo que ya respondiste, la empresa y el sector, conceptos a repasar,
+  preguntas probables con idea de respuesta, preguntas que hacer, tu presentación y el plan), con
+  el color de la empresa y en el idioma de la entrevista, y el plan por días.
 - `mock-interview 42`: una pregunta cada vez, con feedback y una versión mejor basada en tu
   perfil.
 - `debrief-interview 42`: cuentas cómo fue; guarda notas y próximos pasos y propone historias STAR
