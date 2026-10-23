@@ -174,9 +174,10 @@ function Editor() {
   return (
     <Tabs defaultValue="personal" className="gap-4">
       <FileIssues />
-      <TabsList className="h-auto flex-wrap justify-start">
+      {/* Con muchas pestañas salen dos filas: la altura fija de la lista las dejaba fuera. */}
+      <TabsList className="w-full flex-wrap justify-start gap-1 group-data-[orientation=horizontal]/tabs:h-auto">
         {TABS.map((tab) => (
-          <TabsTrigger key={tab} value={tab} className="flex-none px-2.5">
+          <TabsTrigger key={tab} value={tab} className="h-8 flex-none px-2.5">
             {t(`tabs.${tab}`)}
           </TabsTrigger>
         ))}
@@ -263,7 +264,7 @@ export function ProfilePage() {
         </p>
         {/* Fase 25.2: skill `expand`. Pregunta antes de escribir, así que solo en terminal. */}
         <div className="mt-4 grid gap-2">
-          <AgentButton action="expand" variant="outline">
+          <AgentButton action="expand">
             {t('expand')}
           </AgentButton>
           <p className="text-xs leading-relaxed text-muted-foreground">{t('expandHint')}</p>

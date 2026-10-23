@@ -88,6 +88,10 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   experiencia»**: tu agente propone, te pregunta los números que falten y solo escribe con tu OK.
 
 ### Cambiado
+- Todos los botones que lanzan tu agente salen en verde, para distinguirlos del resto.
+- «Mi perfil»: las pestañas que no caben pasan a una segunda fila dentro de la barra («Historial»
+  ya no queda pegado al contenido) y en «Experiencia» cada empresa va en su tarjeta, con cabecera
+  y borde de color, más separada de la siguiente.
 - «Procesos»: la tabla «Ofertas recibidas» solo aparece cuando tienes dos o más ofertas que
   comparar (con una, repetía la ficha) y va al final, tras «Próximos 7 días».
 - En macOS y Linux, cancelar una ejecución en segundo plano o cerrar `cai start` para también lo que
@@ -104,6 +108,11 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 - Gemini CLI deja de estar soportado: Antigravity CLI ocupa su lugar.
 
 ### Corregido
+- Una plantilla que tu usuario no puede leer (la crea, por ejemplo, Codex en Windows con su usuario
+  de sandbox) ya no impide cargar «Plantillas»: sale como plantilla con problemas y la guía dice
+  cómo devolverte los permisos.
+- La orden para convertir un CV en plantilla usa la carpeta de datos en uso (`data-demo/uploads/…`
+  en la demo), no siempre `data/uploads/`.
 - En macOS y Linux, archivar una candidatura a la vez desde dos sitios (el worker y la CLI) ya no
   puede dar por archivada una carpeta vacía.
 - La plantilla `moderna-2col` deja que un ATS lea primero tu nombre.

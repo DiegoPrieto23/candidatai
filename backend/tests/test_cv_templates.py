@@ -79,6 +79,36 @@ def test_broken_user_template_does_not_fall_back_to_builtin(tmp_path: Path) -> N
     assert found == [] and [i.id for i in invalid] == ["ats-simple"]
 
 
+def test_unreadable_user_template_is_listed_as_broken(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Una carpeta que creó el usuario del sandbox de un agente (Codex en Windows) sin permisos
+    para el tuyo sale como rota; no tumba la lista entera."""
+    builtin = tmp_path / "builtin"
+    write_template(builtin, "ats-simple", origin="builtin")
+    user = tmp_path / "user"
+    (user / "codex").mkdir(parents=True)
+    real_is_file = Path.is_file
+
+    def is_file(self: Path) -> bool:
+        if self.parent.name == "codex":
+            raise PermissionError(13, "Acceso denegado", str(self))
+        return real_is_file(self)
+
+    real_load = templates.load_meta
+
+    def load_meta(folder: Path) -> templates.TemplateMeta:
+        if folder.name == "codex":
+            raise PermissionError(13, "Acceso denegado", str(folder / "template.yaml"))
+        return real_load(folder)
+
+    monkeypatch.setattr(Path, "is_file", is_file)
+    monkeypatch.setattr(templates, "load_meta", load_meta)
+    found, invalid = templates.list_templates(builtin_dir=builtin, user_dir=user)
+    assert [t.id for t in found] == ["ats-simple"]
+    assert [i.id for i in invalid] == ["codex"] and "Sin permiso" in invalid[0].reason
+
+
 def test_validate_rejects_variables_outside_contract(tmp_path: Path) -> None:
     docx = docx_with(tmp_path, "{{ name }}", "{{ salario_deseado }}", "{{ contact.email }}")
     write_template(get_settings().user_templates_dir, "rara", docx=docx)

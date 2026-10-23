@@ -93,7 +93,7 @@ function Today() {
             {t('today.newJob')}
           </Link>
         </Button>
-        <AgentButton action="search-jobs" variant="default" size="default">
+        <AgentButton action="search-jobs" size="default">
           {t('today.searchJobs')}
         </AgentButton>
         {!!s?.pending_extraction && (

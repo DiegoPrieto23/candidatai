@@ -468,6 +468,7 @@ cd ..\frontend; pnpm install; pnpm build
 | «El puerto 8000 lo usa otro programa» | Cierra ese programa o usa `cai start --port 8001` |
 | No está la UI compilada | En el repositorio, `cd frontend; pnpm install; pnpm build` (con el instalador ya viene) |
 | Nada entra solo por la mañana | CandidatAI tiene que estar abierta (`cai start` arranca el worker) |
+| Una plantilla sale «Sin permiso para leer la carpeta» (o «Plantillas» da `PermissionError`) | La creó un agente con *sandbox* (Codex en Windows) sin darle permisos a tu usuario. En un PowerShell **como administrador**: `takeown /f "<carpeta>" /r /d S` y `icacls "<carpeta>" /reset /t` |
 | Las tildes salen mal en `cai --help` | Problema conocido de la consola de Windows con cp1252; la salida `--json` está bien |
 
 ## 15. Desarrollo
