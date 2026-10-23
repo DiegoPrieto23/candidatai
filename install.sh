@@ -3,7 +3,8 @@
 # (fase 26.2; el de Windows es install.ps1, y este hace lo mismo).
 #
 #   1. Instala uv si no está (el instalador oficial de astral.sh). uv trae Python 3.12 por su cuenta.
-#   2. Descarga la última release de CandidatAI (la UI ya va compilada: no hace falta Node).
+#   2. Descarga la última release de CandidatAI (la UI ya va compilada: no hace falta Node) y
+#      comprueba su suma SHA-256 (`candidatai.zip.sha256`, publicada con ella) antes de abrirla.
 #   3. La deja en <carpeta>/app. Tus datos van en <carpeta>/data y nunca se tocan al actualizar;
 #      tu .env de la app tampoco (solo se fija CAI_DATA_DIR). La carpeta, por defecto:
 #        macOS: ~/Library/Application Support/CandidatAI
@@ -49,6 +50,8 @@ Uso: install.sh [opciones]
 
   --source <zip|URL|carpeta>  Zip de la release (ruta o URL) o tu repositorio con la UI compilada.
                               Por defecto, la última release publicada.
+  --skip-checksum             No comprobar la suma SHA-256 del zip (solo con una URL tuya que no
+                              publique <zip>.sha256).
   --install-dir <carpeta>     Dónde instalar (por defecto, la carpeta de tu sistema).
   --dry-run                   Explica lo que haría, sin cambiar nada.
   --no-shortcuts              Sin acceso directo.
@@ -68,6 +71,7 @@ SHORTCUTS=1
 SETUP=1
 UNINSTALL=0
 REMOVE_DATA=0
+SKIP_CHECKSUM=0
 
 parse_args() {
   while [ $# -gt 0 ]; do
@@ -85,6 +89,7 @@ parse_args() {
       --dry-run) DRY_RUN=1; shift ;;
       --no-shortcuts) SHORTCUTS=0; shift ;;
       --no-setup) SETUP=0; shift ;;
+      --skip-checksum) SKIP_CHECKSUM=1; shift ;;
       --uninstall) UNINSTALL=1; shift ;;
       --remove-data) REMOVE_DATA=1; shift ;;
       -h | --help) usage; exit 0 ;;
@@ -300,6 +305,30 @@ step_uv() {
 ZIP=""
 FOLDER=""
 DOWNLOADED=""
+DOWNLOADED_SUM=""
+
+sha256_of() { # sha256_of <fichero>: la suma en hexadecimal
+  if command -v sha256sum >/dev/null 2>&1; then
+    sha256sum -- "$1" | cut -d' ' -f1
+  elif command -v shasum >/dev/null 2>&1; then
+    shasum -a 256 -- "$1" | cut -d' ' -f1
+  elif command -v python3 >/dev/null 2>&1; then
+    python3 -c 'import hashlib, sys; print(hashlib.sha256(open(sys.argv[1], "rb").read()).hexdigest())' "$1"
+  else
+    return 1
+  fi
+}
+
+# verify_checksum <zip> <fichero .sha256>: el formato de `sha256sum` («<suma>  candidatai.zip»).
+verify_checksum() {
+  local expected actual
+  expected="$(tr -d '\r' <"$2" | awk 'NR == 1 { print tolower($1) }')"
+  [[ "$expected" =~ ^[0-9a-f]{64}$ ]] || fail "La suma de verificación ($2) no tiene el formato esperado."
+  actual="$(sha256_of "$1")" || fail "Hace falta sha256sum, shasum o python3 para comprobar la suma."
+  [ "$actual" = "$expected" ] ||
+    fail "La suma SHA-256 del zip no coincide con la publicada: no se instala. Vuelve a intentarlo y, si se repite, avísanos en el repositorio."
+  say "Suma SHA-256 comprobada."
+}
 
 step_download() {
   step "2/5 · Descargar CandidatAI"
@@ -311,14 +340,32 @@ step_download() {
   elif [ -f "$SOURCE" ]; then
     ZIP="$(absolute "$SOURCE")"
     say "Zip local: $ZIP"
+    if [ "$SKIP_CHECKSUM" = 1 ]; then
+      say "Sin comprobar la suma (--skip-checksum)."
+    elif [ -f "$ZIP.sha256" ]; then
+      verify_checksum "$ZIP" "$ZIP.sha256"
+    else
+      say "No hay $(basename -- "$ZIP").sha256 al lado: no se comprueba la suma. Si lo bajaste de"
+      say "la página de releases, descarga también su .sha256 a la misma carpeta."
+    fi
   else
     case "$SOURCE" in
       https://*) ;;
       *) fail "--source no es un zip, una carpeta ni una URL https: $SOURCE" ;;
     esac
-    if ! would "descargar $SOURCE"; then
+    local what="descargar $SOURCE y comprobar su suma SHA-256"
+    [ "$SKIP_CHECKSUM" = 0 ] || what="descargar $SOURCE sin comprobar su suma (--skip-checksum)"
+    if ! would "$what"; then
       DOWNLOADED="$(mktemp "${TMPDIR:-/tmp}/candidatai-XXXXXX")"
       fetch "$SOURCE" "$DOWNLOADED"
+      if [ "$SKIP_CHECKSUM" = 0 ]; then
+        DOWNLOADED_SUM="$(mktemp "${TMPDIR:-/tmp}/candidatai-XXXXXX")"
+        fetch "$SOURCE.sha256" "$DOWNLOADED_SUM" ||
+          fail "No se pudo descargar $SOURCE.sha256 para comprobar el zip. Si la URL es tuya y no la publica, usa --skip-checksum."
+        verify_checksum "$DOWNLOADED" "$DOWNLOADED_SUM"
+      else
+        say "Sin comprobar la suma (--skip-checksum)."
+      fi
       ZIP="$DOWNLOADED"
     fi
   fi
@@ -347,6 +394,7 @@ cleanup() {
   [ -z "$STAGING" ] || rm -rf -- "$STAGING"
   [ -z "$UNZIPPED" ] || rm -rf -- "$UNZIPPED"
   [ -z "$DOWNLOADED" ] || rm -f -- "$DOWNLOADED"
+  [ -z "$DOWNLOADED_SUM" ] || rm -f -- "$DOWNLOADED_SUM"
 }
 
 write_env() { # Tu .env de la app se conserva; solo se fija dónde están tus datos.

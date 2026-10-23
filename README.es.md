@@ -7,12 +7,13 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/DiegoPrieto23/candidatai/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/DiegoPrieto23/candidatai/actions/workflows/ci.yml/badge.svg?branch=main"></a>
+  <a href="https://github.com/DiegoPrieto23/candidatai/releases/latest"><img alt="Última versión" src="https://img.shields.io/github/v/release/DiegoPrieto23/candidatai?color=0F6E69"></a>
   <a href="LICENSE"><img alt="Licencia: MIT" src="https://img.shields.io/badge/licencia-MIT-0F6E69"></a>
   <img alt="Python 3.12" src="https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white">
   <img alt="React + TypeScript" src="https://img.shields.io/badge/react-typescript-61DAFB?logo=react&logoColor=black">
   <img alt="MCP + CLI" src="https://img.shields.io/badge/agentes-MCP%20%2B%20CLI-6D28D9">
   <img alt="Funciona en Windows, macOS y Linux" src="https://img.shields.io/badge/funciona%20en-Windows%20%C2%B7%20macOS%20%C2%B7%20Linux-0078D4">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-2.827-2E7D32">
   <img alt="Sin llamadas a APIs de LLM" src="https://img.shields.io/badge/llamadas%20a%20LLM-ninguna-555">
 </p>
 
@@ -346,7 +347,7 @@ stateDiagram-v2
 ```
 
 <details>
-<summary><b>Decisiones clave</b> (36 ADR en <code>docs/DECISIONS.md</code>)</summary>
+<summary><b>Decisiones clave</b> (ADR en <code>docs/DECISIONS.md</code>)</summary>
 
 | Decisión | Por qué |
 |---|---|
@@ -363,9 +364,10 @@ stateDiagram-v2
 
 ## Calidad y evals
 
-- **Tests:** 2.384 de backend (pytest, cobertura mínima del 85 % en `services/`) y 252 de frontend
-  (Vitest). CI en Windows (backend) y Linux (frontend), más la comprobación de que la configuración
-  generada de agentes está al día y una siembra de la demo como prueba de humo.
+- **Tests:** de backend con pytest (cobertura mínima del 85 % en `services/`) y de frontend con
+  Vitest. La CI prueba el backend en Windows, Linux y macOS, el frontend, el instalador y la imagen
+  de Docker, más la comprobación de que la configuración generada de agentes está al día y una
+  siembra de la demo como prueba de humo. El distintivo «CI» de arriba dice si pasa.
 - **Eval de matching** (80 casos inventados, sin embeddings): precision **0,88**, recall **0,95**,
   F1 **0,92** con el umbral de triaje por defecto. Errores típicos y por qué:
   [`evals/REPORT.md`](evals/REPORT.md).

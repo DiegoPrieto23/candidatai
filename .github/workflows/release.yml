@@ -1,7 +1,8 @@
 name: Release
 
 # Al publicar una etiqueta `v*` (p. ej. `git tag v0.2.0 && git push origin v0.2.0`), compila la UI y
-# publica `candidatai.zip`: el repositorio (sin datos: `data/` no está en git) más `frontend/dist`.
+# publica `candidatai.zip`: el repositorio (sin datos: `data/` no está en git) más `frontend/dist`,
+# y su suma `candidatai.zip.sha256`, que los instaladores comprueban antes de abrirlo (fase 28.1).
 # Es lo que descargan `install.ps1` (fase 23.4) e `install.sh` (fase 26.2, va dentro con su permiso
 # de ejecución). Las notas de la release son la sección de esa versión
 # en `CHANGELOG.md` (fase 25.6): sin ella, la release falla antes de compilar nada.
@@ -65,11 +66,19 @@ jobs:
           # install.sh tiene que llegar ejecutable (`curl | bash` no lo necesita; `bash install.sh` sí
           # desde el zip descomprimido en macOS y Linux).
           zipinfo candidatai.zip candidatai/install.sh | grep -q "^-rwx"
+      # Formato de `sha256sum` («<suma>  candidatai.zip»): lo leen install.ps1 e install.sh.
+      - name: Suma SHA-256
+        run: |
+          sha256sum candidatai.zip > candidatai.zip.sha256
+          sha256sum -c candidatai.zip.sha256
+          { echo "## SHA-256"; echo; echo '```'; cat candidatai.zip.sha256; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
       - name: Deja el zip como artefacto
         uses: actions/upload-artifact@v4
         with:
           name: candidatai-zip
-          path: candidatai.zip
+          path: |
+            candidatai.zip
+            candidatai.zip.sha256
           retention-days: 7
 
   # Solo con la etiqueta: el único job con permiso de escritura, y en la prueba en seco no existe.
@@ -89,4 +98,5 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           python3 scripts/release_notes.py "$GITHUB_REF_NAME" > release-notes.md
-          gh release create "$GITHUB_REF_NAME" candidatai.zip --title "CandidatAI $GITHUB_REF_NAME" --notes-file release-notes.md
+          sha256sum -c candidatai.zip.sha256
+          gh release create "$GITHUB_REF_NAME" candidatai.zip candidatai.zip.sha256 --title "CandidatAI $GITHUB_REF_NAME" --notes-file release-notes.md

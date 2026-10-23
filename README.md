@@ -7,12 +7,13 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/DiegoPrieto23/candidatai/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/DiegoPrieto23/candidatai/actions/workflows/ci.yml/badge.svg?branch=main"></a>
+  <a href="https://github.com/DiegoPrieto23/candidatai/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/DiegoPrieto23/candidatai?color=0F6E69"></a>
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-0F6E69"></a>
   <img alt="Python 3.12" src="https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white">
   <img alt="React + TypeScript" src="https://img.shields.io/badge/react-typescript-61DAFB?logo=react&logoColor=black">
   <img alt="MCP + CLI" src="https://img.shields.io/badge/agents-MCP%20%2B%20CLI-6D28D9">
   <img alt="Runs on Windows, macOS and Linux" src="https://img.shields.io/badge/runs%20on-Windows%20%C2%B7%20macOS%20%C2%B7%20Linux-0078D4">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-2%2C827-2E7D32">
   <img alt="No LLM API calls" src="https://img.shields.io/badge/LLM%20API%20calls-none-555">
 </p>
 
@@ -349,7 +350,7 @@ stateDiagram-v2
 ```
 
 <details>
-<summary><b>Key decisions</b> (36 ADRs in <code>docs/DECISIONS.md</code>)</summary>
+<summary><b>Key decisions</b> (ADRs in <code>docs/DECISIONS.md</code>)</summary>
 
 | Decision | Why |
 |---|---|
@@ -366,9 +367,10 @@ stateDiagram-v2
 
 ## Quality and evals
 
-- **Tests:** 2,384 backend tests (pytest, ≥ 85 % coverage enforced on `services/`) and 252
-  frontend tests (Vitest). CI on Windows (backend) and Linux (frontend), plus a check that the
-  generated agent configuration is up to date and a demo seed as smoke test.
+- **Tests:** backend with pytest (≥ 85 % coverage enforced on `services/`) and frontend with
+  Vitest. CI runs the backend on Windows, Linux and macOS, the frontend, the installer and the
+  Docker image, plus a check that the generated agent configuration is up to date and a demo seed
+  as smoke test. The CI badge above shows whether it passes.
 - **Matching eval** (80 fictional cases, no embeddings): precision **0.88**, recall **0.95**,
   F1 **0.92** at the default triage threshold. Typical errors and why:
   [`evals/REPORT.md`](evals/REPORT.md).

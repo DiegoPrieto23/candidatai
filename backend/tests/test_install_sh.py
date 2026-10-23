@@ -4,6 +4,7 @@ Los que lo ejecutan necesitan bash y un sistema Unix: con un `HOME` temporal, un
 `--no-setup` (sin uv sync), nunca tocan la instalación real. Los de la release y git corren en
 todos los sistemas."""
 
+import hashlib
 import os
 import shutil
 import subprocess
@@ -197,6 +198,36 @@ def test_local_checkout_needs_the_built_ui(home: Path, tmp_path: Path) -> None:
     app = install_dir() / "app"
     assert (app / "frontend" / "dist" / "index.html").is_file()
     assert not (app / "data").exists()  # tus datos del repositorio no se copian
+
+
+@unix_only
+def test_the_zip_is_checked_against_its_sha256(home: Path, release: Path) -> None:
+    """Fase 28.1: con un `<zip>.sha256` al lado, una suma que no coincide no instala nada."""
+    checksum = release.with_name(release.name + ".sha256")
+    checksum.write_text(f"{'0' * 64}  candidatai.zip\n", encoding="utf-8")
+    result = install("--no-setup", "--no-shortcuts", "--source", str(release))
+    assert result.returncode != 0 and "no coincide" in result.stderr
+    assert not install_dir().exists()
+    skipped = install("--no-setup", "--no-shortcuts", "--skip-checksum", "--source", str(release))
+    assert skipped.returncode == 0, skipped.stdout + skipped.stderr
+    assert "--skip-checksum" in skipped.stdout
+    digest = hashlib.sha256(release.read_bytes()).hexdigest()
+    checksum.write_text(f"{digest.upper()}  candidatai.zip\r\n", encoding="utf-8")
+    result = install("--no-setup", "--no-shortcuts", "--source", str(release))
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "Suma SHA-256 comprobada" in result.stdout
+    checksum.unlink()
+    result = install("--no-setup", "--no-shortcuts", "--source", str(release))
+    assert result.returncode == 0 and "no se comprueba la suma" in result.stdout
+
+
+@unix_only
+def test_a_download_needs_its_published_sha256(home: Path) -> None:
+    """Sin red: el dry-run anuncia la comprobación, y la ayuda explica cómo saltarla."""
+    result = install("--dry-run", "--no-setup")
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "comprobar su suma SHA-256" in result.stdout
+    assert "--skip-checksum" in install("--help").stdout
 
 
 @unix_only
