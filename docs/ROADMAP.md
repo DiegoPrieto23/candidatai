@@ -92,7 +92,7 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 26.5 | ↳ Demo completa | ✅ | La demo trae hecho lo de cada pantalla (cartas, dosieres, correos, entrevistas, oferta recibida, contexto…) y los botones abren el agente sobre la demo |
 | 27 | Ayudas, prioridades, varios buzones, experiencia plegable y preferencias | ⏳ | Globos que explican cada botón de skill, prioridades de plataforma sin empates, Alertas con varios buzones, «Experiencia» que se recorre de un vistazo y «Búsqueda» con los filtros que faltan |
 | 27.1 | ↳ Ayudas en los botones de los skills | ✅ | Globo al pasar el ratón o enfocar, con qué hace, qué toca y qué necesita, en español e inglés |
-| 27.2 | ↳ «Experiencia» plegable | ⏳ | Empresas plegadas por defecto, bordes rectos y logros con fondo alterno |
+| 27.2 | ↳ «Experiencia» plegable | ✅ | Empresas plegadas por defecto, bordes rectos y logros con fondo alterno |
 | 27.3 | ↳ Prioridades únicas | ⏳ | Orden de plataformas sin empates; elegir un puesto ocupado intercambia |
 | 27.4 | ↳ Alertas con varios buzones | ⏳ | «Añadir buzón» con guía para Gmail, Outlook, Yahoo, iCloud y carpeta de `.eml` |
 | 27.5 | ↳ Preferencias de búsqueda | ⏳ | «Mi perfil → Búsqueda» en bloques y alineada, con años mínimos, sueldo mínimo privado, palabras que descartan, contrato y tipo de empresa |
@@ -3202,3 +3202,37 @@ decisiones tomadas y deuda técnica pendiente. -->
   empates» y tendrá que actualizar ese texto. El bundle sigue por encima de 500 kB (aviso ya
   conocido).
 - 318 tests de frontend en verde; `tsc` y `pnpm build` limpios; `oxlint` sin avisos nuevos.
+
+### 27.2 · «Experiencia» plegable — 2026-10-23 · Claude Code (Opus 5.5)
+- **Por qué:** cada empresa salía entera, con todos sus campos y logros, y recorrer el historial
+  obligaba a mucho scroll; dentro de una empresa no se veía dónde acababa un logro.
+- **Hecho:**
+  - `ExperienceBlock`: cada empresa es un `Collapsible` plegado por defecto. La cabecera es un
+    `<button>` (con `aria-expanded` y `aria-controls`) con puesto · empresa, fechas, ciudad y
+    «N logros»; subir, bajar y borrar quedan fuera de él y funcionan con la empresa plegada;
+  - se abren solas la empresa recién añadida (con el foco en «Empresa») y las que tienen un error
+    de validación (`experience.<i>…`), con un aviso de cuántas son;
+  - «Desplegar todo / Plegar todo» junto a «Añadir empresa»;
+  - las empresas y los logros nuevos llevan una clave local `_key` (contador) que `write` quita
+    antes de guardar: lo desplegado sigue a la empresa al reordenar. Al guardar, el servidor
+    devuelve la empresa con su id y sin `_key`; un alias id → clave local (emparejado por posición,
+    solo para ids que acaban de aparecer) evita que la tarjeta se vuelva a montar plegada;
+  - las empresas con errores se apuntan por su clave al llegar los errores (que van por posición),
+    y el aviso dice cuántas hay que revisar;
+  - tarjetas sin esquinas redondeadas (también la cabecera, el foco y el hover), con su franja de
+    color; los logros llevan número («Logro 1»), fondo alterno y una línea fina entre ellos;
+  - `TextField` admite `autoFocus`;
+  - tests: arranca plegada, desplegar una no abre otras, «Desplegar/Plegar todo», añadir abre y
+    enfoca, reordenar mantiene lo desplegado (también con una empresa nueva), plegar conserva un
+    cambio sin guardar, un error despliega su empresa y una empresa nueva sigue desplegada tras
+    guardarla (sin mandar `_key`). El perfil de prueba tiene dos empresas y los tests que escriben
+    en una la despliegan con `openCompany`;
+  - revisión (rol `reviewer`): la empresa nueva se plegaba al guardar (corregido con el alias),
+    errores desfasados al reordenar, claves estables para los logros nuevos y más contraste en el
+    fondo alterno (`bg-muted/25` y `bg-muted`).
+- **Decisiones:** sin `sessionStorage` (era opcional): al entrar, siempre plegado. Los campos y
+  botones de dentro de la tarjeta conservan sus esquinas: el encargo habla de las tarjetas.
+- **Deuda:** los errores de validación de cada campo siguen yendo por posición
+  (`experience.<i>.…`, de `useBlockEditor`): si reordenas antes de volver a guardar, un error puede
+  quedar en el campo de otra empresa hasta el siguiente guardado.
+- 325 tests de frontend en verde; `tsc` y `pnpm build` limpios; `oxlint` sin avisos nuevos.

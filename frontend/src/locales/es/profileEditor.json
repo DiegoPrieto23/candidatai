@@ -61,7 +61,14 @@
       "untitled": "Empresa nueva",
       "achievements": "Logros",
       "newAchievement": "Logro nuevo",
-      "addAchievement": "Añadir logro"
+      "addAchievement": "Añadir logro",
+      "achievementCount_one": "{{count}} logro",
+      "achievementCount_other": "{{count}} logros",
+      "achievementNumber": "Logro {{number}}",
+      "expandAll": "Desplegar todo",
+      "collapseAll": "Plegar todo",
+      "errorsIn_one": "Revisa {{count}} empresa: tiene errores.",
+      "errorsIn_other": "Revisa {{count}} empresas: tienen errores."
     },
     "projects": {
       "title": "Proyectos",
