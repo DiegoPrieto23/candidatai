@@ -1,6 +1,6 @@
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import type { AgentBrowseSource, LinkedInPublicView, SourceView } from '@/api/client'
 import { mockApi, renderApp, status } from '@/test/utils'
 
@@ -180,6 +180,69 @@ describe('Plataformas', () => {
     expect(calls.find((c) => c.path === '/sources/1/browse')?.body).toEqual({ confirm_risk: false, max_offers: 40 })
   })
 
+  it('el selector de prioridad dice quién ocupa cada puesto y avisa del intercambio (fase 27.3)', async () => {
+    const indeed = platform(3, { name: 'Indeed', platform: 'indeed', priority: 3, search_urls: ['https://es.indeed.com/jobs?q=data'] })
+    let sources = [tecno, linkedin, indeed]
+    const calls = mockApi({
+      'GET /status': status(),
+      'GET /sources': () => ({ sources, agent_browse: LIMITS }),
+      'GET /sources/linkedin-public': publicView(),
+      'POST /sources/1/browse': () => {
+        // Tecnoempleo (2) pasa a la 3 e Indeed se queda con su 2.
+        sources = [platform(1, { priority: 3 }), linkedin, platform(3, { ...indeed.browse, priority: 2 })]
+        return { status: 200, body: sources[0] }
+      },
+    })
+    renderApp('/plataformas')
+
+    await userEvent.click(await screen.findByRole('combobox', { name: 'Prioridad de Tecnoempleo' }))
+    expect(screen.getAllByRole('option').map((o) => o.textContent)).toEqual([
+      '1 · LinkedIn(pasará al puesto 2)',
+      '2 · Tecnoempleo(actual)',
+      '3 · Indeed(pasará al puesto 2)',
+    ])
+    await userEvent.click(screen.getByRole('option', { name: /3 · Indeed/ }))
+    expect(calls.find((c) => c.path === '/sources/1/browse')?.body).toEqual({
+      confirm_risk: false,
+      priority: 3,
+      expected_priority: 2,
+    })
+    // Tras guardar, la lista se vuelve a pedir y se reordena.
+    await vi.waitFor(() =>
+      expect(screen.getAllByRole('heading', { level: 3 }).map((h) => h.textContent)).toEqual([
+        'LinkedIn',
+        'Indeed',
+        'Tecnoempleo',
+      ]),
+    )
+  })
+
+  it('si otra pestaña cambió el orden (409), lo dice y vuelve a cargar la lista', async () => {
+    let gets = 0
+    mockApi({
+      'GET /status': status(),
+      'GET /sources': () => {
+        gets += 1
+        return { sources: [tecno, linkedin], agent_browse: LIMITS }
+      },
+      'GET /sources/linkedin-public': publicView(),
+      'POST /sources/1/browse': {
+        status: 409,
+        body: {
+          ok: false,
+          error: { type: 'conflict', message: 'El orden ha cambiado desde que lo cargaste.', details: [] },
+        },
+      },
+    })
+    renderApp('/plataformas')
+
+    await userEvent.click(await screen.findByRole('combobox', { name: 'Prioridad de Tecnoempleo' }))
+    const before = gets
+    await userEvent.click(screen.getByRole('option', { name: /1 · LinkedIn/ }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('El orden ha cambiado')
+    await vi.waitFor(() => expect(gets).toBeGreaterThan(before))
+  })
+
   it('prioridad, acceso y ofertas por recorrido se explican en un globo (fase 27.1)', async () => {
     mockApi({ 'GET /status': status(), 'GET /sources': { sources: [tecno], agent_browse: LIMITS } })
     renderApp('/plataformas')
@@ -341,6 +404,30 @@ describe('Añadir plataforma', () => {
     expect(call?.body).toMatchObject({ name: 'LinkedIn', platform: 'linkedin', allow_agent_browsing: false })
   })
 
+  it('la prioridad de una nueva es por defecto la última; se puede poner delante de otra (fase 27.3)', async () => {
+    const calls = mockApi({
+      ...routes(),
+      'GET /sources': { sources: [tecno, linkedin], agent_browse: LIMITS },
+      'GET /sources/linkedin-public': publicView(),
+    })
+    renderApp('/plataformas')
+    await userEvent.click(await screen.findByRole('button', { name: 'Añadir plataforma' }))
+    const dialog = await screen.findByRole('dialog')
+    await userEvent.selectOptions(within(dialog).getByLabelText('Portal'), 'indeed')
+    const priority = within(dialog).getByLabelText('Prioridad (1 = primero)')
+    expect(priority).toHaveValue('3')
+    expect(within(priority).getAllByRole('option').map((o) => o.textContent)).toEqual([
+      '1 · antes de LinkedIn',
+      '2 · antes de Tecnoempleo',
+      '3 · la última',
+    ])
+    await userEvent.selectOptions(priority, '2')
+    await userEvent.type(within(dialog).getByLabelText('Búsquedas (una URL por línea)'), 'https://es.indeed.com/jobs?q=bi')
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Añadir' }))
+    const call = calls.find((c) => c.method === 'POST' && c.path === '/sources/platforms')
+    expect(call?.body).toMatchObject({ name: 'Indeed', priority: 2 })
+  })
+
   it('otro portal: hay que escribir su id', async () => {
     const calls = mockApi(routes())
     renderApp('/plataformas')
@@ -354,5 +441,7 @@ describe('Añadir plataforma', () => {
     const call = calls.find((c) => c.method === 'POST' && c.path === '/sources/platforms')
     expect(call?.body).toMatchObject({ name: 'Mi portal', platform: 'miportal', search_urls: ['https://miportal.example/q'] })
     expect(call ? (call.body as Record<string, unknown>).allow_agent_browsing : 'sin llamada').toBeUndefined()
+    // Sin elegir prioridad no se manda: el servidor la pone al final (fase 27.3).
+    expect(call ? (call.body as Record<string, unknown>).priority : 'sin llamada').toBeUndefined()
   })
 })

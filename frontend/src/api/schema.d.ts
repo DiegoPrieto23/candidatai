@@ -697,8 +697,9 @@ export interface paths {
         put?: never;
         /**
          * Update Browse Settings
-         * @description Activa o desactiva la búsqueda con navegador de una plataforma, o cambia su prioridad, su
-         *     acceso o cuántas ofertas abre en cada recorrido. Activar LinkedIn exige `confirm_risk: true`.
+         * @description Activa o desactiva la búsqueda con navegador de una plataforma, o cambia su prioridad (un
+         *     puesto ocupado se intercambia), su acceso o cuántas ofertas abre en cada recorrido. Activar
+         *     LinkedIn exige `confirm_risk: true`.
          */
         post: operations["update_browse_settings"];
         delete?: never;
@@ -2598,10 +2599,9 @@ export interface components {
             search_urls: string[];
             /**
              * Priority
-             * @description 1 se recorre primero.
-             * @default 5
+             * @description Puesto en el orden de recorrido, sin empates (1 se recorre primero). Sin valor: al final si es nueva; si ya existe, conserva el suyo. Un puesto ocupado: una nueva se inserta ahí y las siguientes bajan uno; una existente se intercambia con la que lo tenía.
              */
-            priority: number;
+            priority?: number | null;
             /**
              * Access
              * @description `free`, `login` (inicias sesión tú) o `blocked`.
@@ -3164,6 +3164,8 @@ export interface components {
             allow_agent_browsing?: boolean | null;
             /** Priority */
             priority?: number | null;
+            /** Expected Priority */
+            expected_priority?: number | null;
             /** Access */
             access?: ("free" | "login" | "blocked") | null;
             /** Max Offers */
@@ -6499,6 +6501,8 @@ export interface components {
             created: boolean;
             /** Allow Agent Browsing */
             allow_agent_browsing: boolean;
+            /** Priority */
+            priority: number;
             /** Message */
             message: string;
         };

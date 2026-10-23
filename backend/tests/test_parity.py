@@ -335,7 +335,7 @@ TECNO: dict[str, Any] = {
     "name": "Tecnoempleo",
     "platform": "tecnoempleo",
     "search_urls": ["https://www.tecnoempleo.com/ofertas-trabajo/?te=data+engineer"],
-    "priority": 2,
+    "priority": 1,
     "max_offers": 10,
 }
 LINKEDIN: dict[str, Any] = {
@@ -348,6 +348,8 @@ LINKEDIN_DEFAULT = {k: v for k, v in LINKEDIN.items() if k != "allow_agent_brows
 LINKEDIN_ON = {**LINKEDIN, "allow_agent_browsing": True}
 LINKEDIN_DISGUISED = {**LINKEDIN_ON, "name": "Otra", "platform": "otra"}
 TECNO_UPDATE = {**TECNO, "name": "tecnoempleo ", "priority": 1}
+TECNO_SWAP = {**TECNO, "priority": 2}  # fase 27.3: la 2 es LinkedIn, que pasa a la 1
+TECNO_OUT_OF_RANGE = {**TECNO, "priority": 3}  # con 2 plataformas
 TECNO_WRONG_DOMAIN = {**TECNO, "search_urls": ["https://evil.example.com/empleos"]}
 TECNO_INVALID = {**TECNO, "search_urls": ["ftp://x"], "access": "maybe"}
 RUN: dict[str, Any] = {
@@ -565,6 +567,11 @@ CASES = [
                seed=None),
     _file_case("source-save-update", "save_source", TECNO_UPDATE, ["sources", "save"], "s.json",
                TECNO_UPDATE, seed=seed_platforms),
+    _file_case("source-save-swap", "save_source", TECNO_SWAP, ["sources", "save"], "s.json",
+               TECNO_SWAP, seed=seed_platforms),
+    _file_case("source-save-out-of-range", "save_source", TECNO_OUT_OF_RANGE,
+               ["sources", "save"], "s.json", TECNO_OUT_OF_RANGE, seed=seed_platforms,
+               expect_error="invalid_request"),
     _file_case("source-save-linkedin", "save_source", LINKEDIN_ON, ["sources", "save"], "s.json",
                LINKEDIN_ON, seed=None, expect_error="not_allowed"),
     _file_case("source-save-linkedin-default", "save_source", LINKEDIN_DEFAULT,

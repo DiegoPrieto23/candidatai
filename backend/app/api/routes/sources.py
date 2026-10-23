@@ -134,7 +134,10 @@ class BrowseSettingsBody(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     allow_agent_browsing: bool | None = None
-    priority: int | None = Field(default=None, ge=1, le=10)
+    # Puesto en el orden (1…N); uno ocupado se intercambia. `expected_priority`, el que la UI
+    # ve: si otra pestaña lo cambió, 409 y la UI recarga.
+    priority: int | None = Field(default=None, ge=1)
+    expected_priority: int | None = Field(default=None, ge=1)
     access: BrowseAccess | None = None
     max_offers: int | None = Field(default=None, ge=1, le=100)
     confirm_risk: bool = False  # obligatorio para activar LinkedIn
@@ -144,8 +147,9 @@ class BrowseSettingsBody(BaseModel):
 def update_browse_settings(
     session: SessionDep, source_id: int, body: BrowseSettingsBody
 ) -> SourceView:
-    """Activa o desactiva la búsqueda con navegador de una plataforma, o cambia su prioridad, su
-    acceso o cuántas ofertas abre en cada recorrido. Activar LinkedIn exige `confirm_risk: true`."""
+    """Activa o desactiva la búsqueda con navegador de una plataforma, o cambia su prioridad (un
+    puesto ocupado se intercambia), su acceso o cuántas ofertas abre en cada recorrido. Activar
+    LinkedIn exige `confirm_risk: true`."""
     return browse.update_settings(
         session,
         source_id,
@@ -154,4 +158,5 @@ def update_browse_settings(
         access=body.access,
         max_offers=body.max_offers,
         confirm_risk=body.confirm_risk,
+        expected_priority=body.expected_priority,
     )

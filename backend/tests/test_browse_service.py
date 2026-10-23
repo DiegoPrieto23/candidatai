@@ -50,7 +50,7 @@ def test_save_creates_with_defaults(session: Session) -> None:
     assert _config(session, result.source_id) == {
         "platform": "tecnoempleo",
         "search_urls": TECNO["search_urls"],
-        "priority": 5,
+        "priority": 1,  # la primera (y última) plataforma
         "access": "free",
         "allow_agent_browsing": True,
         "max_offers": 15,  # agent_browse.default_max_offers
@@ -155,11 +155,12 @@ def test_agent_keeps_linkedin_enabled_by_user(session: Session) -> None:
     source_id = _save(session, **LINKEDIN).source_id
     browse.update_settings(session, source_id, allow_agent_browsing=True, confirm_risk=True)
 
-    result = _save(session, **{**LINKEDIN, "priority": 3})
+    _save(session, **TECNO)
+    result = _save(session, **{**LINKEDIN, "priority": 2})
 
     assert result.allow_agent_browsing is True and "la activó el usuario" in result.message
     assert _config(session, source_id)["allow_agent_browsing"] is True
-    assert _config(session, source_id)["priority"] == 3
+    assert _config(session, source_id)["priority"] == 2
 
 
 @pytest.mark.parametrize(
@@ -184,6 +185,7 @@ def test_invalid_platform_config(changes: dict[str, Any]) -> None:
 
 def test_user_enabling_linkedin_requires_confirmation(session: Session) -> None:
     source_id = _save(session, **LINKEDIN).source_id
+    _save(session, **TECNO)
 
     with pytest.raises(browse.BrowsingNotAllowedError, match="confirm_risk"):
         browse.update_settings(session, source_id, allow_agent_browsing=True)
@@ -206,7 +208,7 @@ def test_user_sets_offers_per_run_and_the_agent_keeps_it(session: Session) -> No
         browse.update_settings(session, source_id, max_offers=101)
 
     # El agente vuelve a guardarla sin `max_offers`: no vuelve al valor por defecto.
-    _save(session, **{**TECNO, "priority": 2})
+    _save(session, **{**TECNO, "access": "login"})
     assert _config(session, source_id)["max_offers"] == 40
     _save(session, **{**TECNO, "max_offers": 20})
     assert _config(session, source_id)["max_offers"] == 20
@@ -219,6 +221,144 @@ def test_update_settings_only_on_platforms(session: Session) -> None:
         browse.update_settings(session, manual.id, priority=1)
     with pytest.raises(service.SourceNotFoundError):
         browse.update_settings(session, 99, priority=1)
+
+
+# --- Prioridad: un puesto único, 1…N (fase 27.3) ------------------------------------------------
+
+
+def _platform(session: Session, name: str, **data: Any) -> int:
+    site = name.lower().replace(" ", "")
+    urls = [f"https://www.{site}.example/ofertas?q=data"]
+    return _save(session, name=name, platform=site, search_urls=urls, **data).source_id
+
+
+def _order(session: Session) -> list[tuple[int, str]]:
+    return [(browse._priority(s) or 0, s.name) for s in browse.platforms_in_order(session)]
+
+
+def test_new_platforms_go_last_without_ties(session: Session) -> None:
+    for name in ("Uno", "Dos", "Tres"):
+        _platform(session, name)
+    assert _order(session) == [(1, "Uno"), (2, "Dos"), (3, "Tres")]
+
+
+def test_more_than_ten_platforms_keep_a_unique_order(session: Session) -> None:
+    ids = [_platform(session, f"Portal {i:02d}") for i in range(12)]
+    browse.update_settings(session, ids[0], priority=12)
+    order = _order(session)
+    assert [p for p, _ in order] == list(range(1, 13))
+    assert order[-1] == (12, "Portal 00") and order[0] == (1, "Portal 11")
+
+
+def test_new_platform_in_a_taken_place_is_inserted(session: Session) -> None:
+    for name in ("Uno", "Dos", "Tres"):
+        _platform(session, name)
+    result = _save(
+        session,
+        name="Nueva",
+        platform="nueva",
+        search_urls=["https://www.nueva.example/q"],
+        priority=2,
+    )
+    assert result.priority == 2 and "bajan un puesto" in result.message
+    assert _order(session) == [(1, "Uno"), (2, "Nueva"), (3, "Dos"), (4, "Tres")]
+
+
+def test_moving_to_a_taken_place_swaps(session: Session) -> None:
+    ids = {name: _platform(session, name) for name in ("Uno", "Dos", "Tres", "Cuatro")}
+    view = browse.update_settings(session, ids["Uno"], priority=3)
+    assert view.browse is not None and view.browse.priority == 3
+    assert _order(session) == [(1, "Tres"), (2, "Dos"), (3, "Uno"), (4, "Cuatro")]
+
+    # Por `save_source` (agente, CLI): lo mismo, y el mensaje dice a quién ha movido.
+    result = _save(
+        session,
+        name="Cuatro",
+        platform="cuatro",
+        search_urls=["https://www.cuatro.example/ofertas?q=data"],
+        priority=1,
+    )
+    assert "«Tres» pasa al puesto 4" in result.message
+    assert _order(session) == [(1, "Cuatro"), (2, "Dos"), (3, "Uno"), (4, "Tres")]
+
+
+def test_saving_without_priority_keeps_the_place(session: Session) -> None:
+    for name in ("Uno", "Dos"):
+        _platform(session, name)
+    result = _save(
+        session, name="Uno", platform="uno", search_urls=["https://www.uno.example/otra"]
+    )
+    assert result.priority == 1 and not result.created
+    assert _order(session) == [(1, "Uno"), (2, "Dos")]
+
+
+@pytest.mark.parametrize("wanted", [0, 4])
+def test_priority_out_of_range_says_the_range(session: Session, wanted: int) -> None:
+    ids = [_platform(session, name) for name in ("Uno", "Dos", "Tres")]
+    with pytest.raises(ValueError, match="entre 1 y 3"):
+        browse.place(session, session.get(Source, ids[0]), wanted, new=False)  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="entre 1 y 3"):
+        browse.update_settings(session, ids[0], priority=wanted)
+    with pytest.raises(ValueError, match="entre 1 y 4"):  # una nueva puede ir a la 4, no a la 5
+        _save(
+            session,
+            name="Nueva",
+            platform="nueva",
+            search_urls=["https://www.nueva.example/q"],
+            priority=5,
+        )
+    assert _order(session) == [(1, "Uno"), (2, "Dos"), (3, "Tres")]
+
+
+def test_disabling_browsing_keeps_the_place(session: Session) -> None:
+    ids = [_platform(session, name) for name in ("Uno", "Dos")]
+    browse.update_settings(session, ids[0], allow_agent_browsing=False)
+    assert _order(session) == [(1, "Uno"), (2, "Dos")]
+
+
+def test_stale_ui_priority_is_a_conflict(session: Session) -> None:
+    ids = [_platform(session, name) for name in ("Uno", "Dos")]
+    browse.update_settings(session, ids[0], priority=2, expected_priority=1)
+    with pytest.raises(browse.PriorityConflictError, match="Recarga"):
+        browse.update_settings(session, ids[0], priority=1, expected_priority=1)
+    assert _order(session) == [(1, "Dos"), (2, "Uno")]
+
+    # Sin prioridad guardada (dato antiguo), la UI manda su posición: no hay con qué comparar.
+    config = {**_config(session, ids[0]), "priority": None}
+    legacy = Source(kind=browse.KIND, name="Antigua", config=config)
+    session.add(legacy)
+    session.flush()
+    browse.update_settings(session, legacy.id, priority=1, expected_priority=3)
+    assert _order(session) == [(1, "Antigua"), (2, "Uno"), (3, "Dos")]
+
+
+def test_place_closes_gaps_and_sorts_old_ties_by_name(session: Session) -> None:
+    """Con huecos (p. ej. escritos a mano) o sin prioridad, el primer cambio los numera; los
+    empates (datos de antes de la 27.3) se ordenan por nombre."""
+    for name, priority in (("Zeta", 9), ("alfa", None), ("Beta", 3), ("Gamma", 7)):
+        session.add(Source(kind=browse.KIND, name=name, config={"priority": priority}))
+    session.flush()
+    beta = session.scalars(select(Source).where(Source.name == "Beta")).one()
+    browse.place(session, beta, None, new=False)
+    session.flush()
+    assert _order(session) == [(1, "Beta"), (2, "Gamma"), (3, "Zeta"), (4, "alfa")]
+    ties = [Source(kind=browse.KIND, name=n, config={"priority": 5}) for n in ("b", "A", "c")]
+    assert [s.name for s in sorted(ties, key=browse._order_key)] == ["A", "b", "c"]
+
+
+def test_tie_written_outside_place_is_rejected(session: Session) -> None:
+    """Red de seguridad: un camino que guarde `config` por su cuenta (p. ej. importar) no puede
+    dejar dos plataformas en el mismo puesto, y el error dice quién lo tiene."""
+    ids = [_platform(session, name) for name in ("Uno", "Dos")]
+    dos = session.get(Source, ids[1])
+    assert dos is not None
+    dos.config = {**dos.config, "priority": 1}
+    with pytest.raises(browse.PriorityConflictError, match="El puesto 1 ya lo tiene «Uno»"):
+        session.flush()
+    dos.config = {**dos.config, "priority": 2}
+    session.add(Source(kind=browse.KIND, name="Importada", config={"priority": 2}))
+    with pytest.raises(browse.PriorityConflictError, match="«Dos»"):
+        session.flush()
 
 
 # --- record_run -------------------------------------------------------------------------------

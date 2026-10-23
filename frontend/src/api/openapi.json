@@ -4126,7 +4126,7 @@
           "sources"
         ],
         "summary": "Update Browse Settings",
-        "description": "Activa o desactiva la búsqueda con navegador de una plataforma, o cambia su prioridad, su\nacceso o cuántas ofertas abre en cada recorrido. Activar LinkedIn exige `confirm_risk: true`.",
+        "description": "Activa o desactiva la búsqueda con navegador de una plataforma, o cambia su prioridad (un\npuesto ocupado se intercambia), su acceso o cuántas ofertas abre en cada recorrido. Activar\nLinkedIn exige `confirm_risk: true`.",
         "operationId": "update_browse_settings",
         "parameters": [
           {
@@ -15377,12 +15377,17 @@
             "description": "Búsquedas ya filtradas por puesto y ubicación (URLs http/https)."
           },
           "priority": {
-            "type": "integer",
-            "maximum": 10.0,
-            "minimum": 1.0,
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Priority",
-            "description": "1 se recorre primero.",
-            "default": 5
+            "description": "Puesto en el orden de recorrido, sin empates (1 se recorre primero). Sin valor: al final si es nueva; si ya existe, conserva el suyo. Un puesto ocupado: una nueva se inserta ahí y las siguientes bajan uno; una existente se intercambia con la que lo tenía."
           },
           "access": {
             "type": "string",
@@ -17101,7 +17106,6 @@
             "anyOf": [
               {
                 "type": "integer",
-                "maximum": 10.0,
                 "minimum": 1.0
               },
               {
@@ -17109,6 +17113,18 @@
               }
             ],
             "title": "Priority"
+          },
+          "expected_priority": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Priority"
           },
           "access": {
             "anyOf": [
@@ -27168,6 +27184,10 @@
             "type": "boolean",
             "title": "Allow Agent Browsing"
           },
+          "priority": {
+            "type": "integer",
+            "title": "Priority"
+          },
           "message": {
             "type": "string",
             "title": "Message"
@@ -27178,6 +27198,7 @@
           "source_id",
           "created",
           "allow_agent_browsing",
+          "priority",
           "message"
         ],
         "title": "SaveSourceResult"

@@ -6,8 +6,13 @@ las ofertas por `add_job_from_text` y anota cada recorrido en `source_runs`.
 
 LinkedIn es especial: el agente nunca puede activar su navegación. Solo el usuario, desde la UI y
 confirmando el riesgo para su cuenta. Estas reglas viven aquí y no en el skill (ADR-012).
+
+La prioridad es un puesto único en el orden de recorrido, 1…N sin huecos ni empates (fase 27.3).
+Todo cambio de prioridad pasa por `place`; `models.sources` rechaza un empate que llegue por otro
+camino.
 """
 
+import sys
 from typing import Any
 from urllib.parse import urlsplit
 
@@ -18,6 +23,7 @@ from sqlalchemy.orm import Session
 from app.core.policies import get_policies
 from app.models import Source, SourceRun
 from app.models.base import utcnow
+from app.models.sources import PriorityConflictError
 from app.schemas.sources import (
     AgentBrowseSource,
     BrowseAccess,
@@ -43,6 +49,7 @@ class SaveSourceResult(BaseModel):
     source_id: int
     created: bool
     allow_agent_browsing: bool  # el valor que ha quedado guardado
+    priority: int  # el puesto que ha quedado guardado
     message: str
 
 
@@ -80,6 +87,68 @@ def _find_by_name(session: Session, name: str) -> Source | None:
         if _normalized(source.name) == target:
             return source
     return None
+
+
+def _priority(source: Source) -> int | None:
+    value = (source.config or {}).get("priority")
+    return value if isinstance(value, int) and not isinstance(value, bool) else None
+
+
+def _order_key(source: Source) -> tuple[int, str, int]:
+    # Sin prioridad válida, al final; los empates (datos de antes de la 27.3), por nombre.
+    priority = _priority(source)
+    return (sys.maxsize if priority is None else priority, _normalized(source.name), source.id or 0)
+
+
+def platforms_in_order(session: Session) -> list[Source]:
+    """Las plataformas en su orden de recorrido."""
+    with session.no_autoflush:  # sin escribir a medias lo que se está colocando
+        stored = session.scalars(select(Source).where(Source.kind == KIND)).all()
+    return sorted(stored, key=_order_key)
+
+
+def place(session: Session, source: Source, wanted: int | None, *, new: bool) -> Source | None:
+    """Pone `source` en el puesto `wanted` y deja el resto numerado 1…N, sin huecos ni empates.
+
+    Si es nueva (aún sin añadir a la sesión), se inserta y las siguientes bajan uno; sin `wanted`,
+    va al final. Si ya existe, se intercambia con la que tenía ese puesto; sin `wanted`, conserva
+    el suyo. Devuelve la plataforma intercambiada, si la hay."""
+    order = platforms_in_order(session)
+    if new:
+        order = [s for s in order if s is not source]
+        size = len(order) + 1
+        target = size if wanted is None else wanted
+    else:
+        size = len(order)
+        current = order.index(source) + 1
+        target = current if wanted is None else wanted
+    if not 1 <= target <= size:
+        plural = "plataforma" if size == 1 else "plataformas"
+        raise ValueError(
+            f"Prioridad {target} fuera de rango: con {size} {plural} tiene que estar entre 1 y "
+            f"{size}."
+        )
+    swapped = None
+    if new:
+        order.insert(target - 1, source)
+    elif target != current:
+        swapped = order[target - 1]
+        order[current - 1], order[target - 1] = swapped, source
+    for position, platform in enumerate(order, start=1):
+        if _priority(platform) != position:
+            platform.config = {**(platform.config or {}), "priority": position}
+    return swapped
+
+
+def check_priority(source: Source, expected: int | None) -> None:
+    """La UI manda el puesto que ve: si otra pestaña lo ha cambiado, mejor recargar que mover a
+    ciegas."""
+    current = _priority(source)
+    if expected is not None and current is not None and current != expected:
+        raise PriorityConflictError(
+            f"El orden ha cambiado desde que lo cargaste: «{source.name}» está ahora en el puesto "
+            f"{current}. Recarga y vuelve a elegir."
+        )
 
 
 def browse_source(session: Session, source_id: int) -> Source:
@@ -192,6 +261,7 @@ def save_source(session: Session, data: AgentBrowseSource) -> SaveSourceResult:
 
     config = data.model_dump(exclude={"name"})
     config["allow_agent_browsing"] = allow
+    config["priority"] = _priority(existing) if existing is not None else None
     if config["max_offers"] is None:  # sin valor, se conserva el que ya tenía (p. ej. de la UI)
         kept_max = (existing.config or {}).get("max_offers") if existing is not None else None
         config["max_offers"] = kept_max or get_policies().agent_browse.default_max_offers
@@ -199,15 +269,23 @@ def save_source(session: Session, data: AgentBrowseSource) -> SaveSourceResult:
 
     if existing is None:
         source = Source(kind=KIND, name=name, config=config, active=True)
+        place(session, source, data.priority, new=True)
         session.add(source)
         session.flush()
-        message = f"Plataforma «{name}» guardada (id {source.id})."
+        message = f"Plataforma «{name}» guardada (id {source.id}), prioridad {_priority(source)}."
+        if _priority(source) != len(platforms_in_order(session)):
+            message += " Las siguientes bajan un puesto."
     else:
         source = existing
         source.name = name
         source.config = config
+        swapped = place(session, source, data.priority, new=False)
         session.flush()
-        message = f"Plataforma «{name}» actualizada (id {source.id})."
+        message = (
+            f"Plataforma «{name}» actualizada (id {source.id}), prioridad {_priority(source)}."
+        )
+        if swapped is not None:
+            message += f" «{swapped.name}» pasa al puesto {_priority(swapped)}."
     if kept:
         message += " La búsqueda con navegador sigue activada: la activó el usuario."
     elif linkedin:
@@ -216,7 +294,11 @@ def save_source(session: Session, data: AgentBrowseSource) -> SaveSourceResult:
             "la pantalla Plataformas."
         )
     return SaveSourceResult(
-        source_id=source.id, created=existing is None, allow_agent_browsing=allow, message=message
+        source_id=source.id,
+        created=existing is None,
+        allow_agent_browsing=allow,
+        priority=_priority(source) or 0,
+        message=message,
     )
 
 
@@ -259,9 +341,12 @@ def update_settings(
     access: BrowseAccess | None = None,
     max_offers: int | None = None,
     confirm_risk: bool = False,
+    expected_priority: int | None = None,
 ) -> SourceView:
-    """Cambios del usuario desde la UI. Activar LinkedIn exige `confirm_risk`."""
+    """Cambios del usuario desde la UI. Activar LinkedIn exige `confirm_risk`. Una prioridad
+    ocupada se intercambia (`place`); `expected_priority` es la que la UI cree que tiene."""
     source = browse_source(session, source_id)
+    check_priority(source, expected_priority)
     config = dict(source.config or {})
     enabling = allow_agent_browsing and not config.get("allow_agent_browsing")
     if enabling and is_linkedin(config) and not confirm_risk:
@@ -271,8 +356,6 @@ def update_settings(
         )
     if allow_agent_browsing is not None:
         config["allow_agent_browsing"] = allow_agent_browsing
-    if priority is not None:
-        config["priority"] = priority
     if access is not None:
         config["access"] = access
     if max_offers is not None:
@@ -280,5 +363,7 @@ def update_settings(
     # Valida el resultado con el mismo esquema que `save_source`.
     AgentBrowseSource.model_validate({"name": source.name, **config})
     source.config = config
+    if priority is not None:
+        place(session, source, priority, new=False)
     session.flush()
     return get_source(session, source.id)

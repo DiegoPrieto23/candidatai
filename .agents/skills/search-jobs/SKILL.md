@@ -22,7 +22,9 @@ Argumentos: `configurar`, el nombre de una plataforma o nada (todas las activas)
    perfil; si no puedes comprobarlo, dilo. Avisa si alguna es de pago.
 4. Para cada plataforma aprobada, construye con él las `search_urls` (búsquedas ya filtradas por
    puesto y ubicación) y guárdala con `save_source`: `name`, `platform` (id corto: `infojobs`,
-   `tecnoempleo`…), `search_urls`, `priority` (1 = primera), `access` (`free`, `login` o
+   `tecnoempleo`…), `search_urls`, `priority` (puesto en el orden, sin empates: 1 = primera; sin
+   ella, una nueva va al final y una existente conserva el suyo; un puesto ocupado intercambia
+   las dos o, en una nueva, la inserta ahí y baja las siguientes), `access` (`free`, `login` o
    `blocked`), `max_offers` (si no lo das, se conserva el que tenga, que el usuario puede cambiar
    en la UI; en una nueva, `default_max_offers`) y `notes`. Las `search_urls`
    deben ser del dominio de la plataforma (una plataforma por sitio). Guardar otra vez con el
@@ -39,7 +41,7 @@ Argumentos: `configurar`, el nombre de una plataforma o nada (todas las activas)
 1. `get_profile()` y `list_sources(kind="agent_browse")`. Cada fuente trae su configuración en
    `browse` y la respuesta trae los límites en `agent_browse` (`max_result_pages`,
    `delay_seconds`). Trabaja solo con las que tengan `browse.allow_agent_browsing: true`, por orden
-   de `priority` (o la indicada en los argumentos).
+   de `priority`, que no tiene empates (o la indicada en los argumentos).
 2. Para cada plataforma:
    - `access: login`: pide al usuario que inicie sesión en su navegador y espera su confirmación.
      `access: blocked`: sáltala y dilo.

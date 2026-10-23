@@ -112,6 +112,14 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   experiencia»**: tu agente propone, te pregunta los números que falten y solo escribe con tu OK.
 
 ### Cambiado
+- **Prioridades de plataforma sin empates:** en «Fuentes → Plataformas», cada plataforma tiene su
+  propio puesto en el orden en que la recorre tu agente (1, 2, 3…), sin tope de 10. El selector
+  dice qué plataforma ocupa cada puesto y, si eliges uno ocupado, las dos se intercambian («InfoJobs
+  (pasará al puesto 5)»). Las nuevas van al final salvo que elijas ponerlas delante de otra. Al
+  actualizar, las que tenías se numeran por su prioridad y su nombre (antes todas entraban con 5).
+  Si cambias el orden en otra pestaña, la lista se recarga en vez de mover a ciegas. Para tu
+  agente, `save_source` sin `priority` conserva el puesto (o pone la nueva al final) y un puesto
+  fuera de 1…N se rechaza diciendo el rango.
 - **Experiencia más legible:** las tarjetas de empresa van sin esquinas redondeadas y cada logro
   lleva su número, un fondo alterno y una línea que lo separa del siguiente.
 - **«Fuentes» abre en «Plataformas»:** ahora es la primera pestaña, y «Empresas objetivo», la

@@ -93,7 +93,7 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 27 | Ayudas, prioridades, varios buzones, experiencia plegable y preferencias | ⏳ | Globos que explican cada botón de skill, prioridades de plataforma sin empates, Alertas con varios buzones, «Experiencia» que se recorre de un vistazo y «Búsqueda» con los filtros que faltan |
 | 27.1 | ↳ Ayudas en los botones de los skills | ✅ | Globo al pasar el ratón o enfocar, con qué hace, qué toca y qué necesita, en español e inglés |
 | 27.2 | ↳ «Experiencia» plegable | ✅ | Empresas plegadas por defecto, bordes rectos y logros con fondo alterno |
-| 27.3 | ↳ Prioridades únicas | ⏳ | Orden de plataformas sin empates; elegir un puesto ocupado intercambia |
+| 27.3 | ↳ Prioridades únicas | ✅ | Orden de plataformas sin empates; elegir un puesto ocupado intercambia |
 | 27.4 | ↳ Alertas con varios buzones | ⏳ | «Añadir buzón» con guía para Gmail, Outlook, Yahoo, iCloud y carpeta de `.eml` |
 | 27.5 | ↳ Preferencias de búsqueda | ⏳ | «Mi perfil → Búsqueda» en bloques y alineada, con años mínimos, sueldo mínimo privado, palabras que descartan, contrato y tipo de empresa |
 
@@ -3236,3 +3236,53 @@ decisiones tomadas y deuda técnica pendiente. -->
   (`experience.<i>.…`, de `useBlockEditor`): si reordenas antes de volver a guardar, un error puede
   quedar en el campo de otra empresa hasta el siguiente guardado.
 - 325 tests de frontend en verde; `tsc` y `pnpm build` limpios; `oxlint` sin avisos nuevos.
+
+### 27.3 · Prioridades únicas — 2026-10-23 · Claude Code (Opus 5.5)
+- **Por qué:** todas las plataformas entraban con prioridad 5 y el selector dejaba elegir un número
+  ya ocupado; con empates, el orden de recorrido lo decidía el nombre. Con más de 10 plataformas,
+  la unicidad era imposible.
+- **Hecho:**
+  - `AgentBrowseSource.priority`: `int | None` (≥ 1, sin tope). Sin valor, una nueva va al final y
+    una existente conserva su puesto;
+  - `browse.place`: la única función que coloca una plataforma. Una nueva en un puesto ocupado se
+    inserta (las siguientes bajan uno), una existente se intercambia, fuera de 1…N da un error con
+    el rango, y siempre renumera 1…N. Pasan por ella `save_source` (MCP y `cai sources save`),
+    `add_platform` (UI y demo) y `update_settings` (UI). `SaveSourceResult` devuelve `priority` y
+    el mensaje dice a quién ha movido;
+  - red de seguridad: un `before_flush` en `models/sources.py` rechaza dos `agent_browse` con la
+    misma prioridad (`PriorityConflictError` → `conflict`, 409) y nombra la que ya tenía el puesto;
+  - `POST /sources/{id}/browse` acepta `expected_priority` (lo manda la UI): si otra pestaña cambió
+    el orden, 409, y la UI recarga la lista (`onSettled`);
+  - migración de datos `0026`: numera las plataformas por `(prioridad, nombre)`; sin eventos. El
+    `downgrade` deja las prioridades en 1…10;
+  - UI: el selector ofrece 1…N con quién ocupa cada puesto («3 · InfoJobs (pasará al puesto 5)»).
+    «Añadir plataforma» ofrece «antes de X» o «la última» (por defecto), y sin elegir no manda
+    `priority`. La ayuda ⓘ de «Prioridad» (deuda de la 27.1) explica el intercambio;
+  - docs: `FUENTES_OFERTAS.md`, `AGENT_INTERFACE.md` y `DATA_MODEL.md`. En los skills,
+    `search-jobs` explica la regla y `broaden-search` ya no reenvía `priority`, para no deshacer
+    el orden del usuario;
+  - tests:
+    - servicio: alta al final, más de 10, inserción, intercambio, conservar sin `priority`, fuera
+      de rango, desactivar conserva el puesto, conflicto por pestaña desfasada, huecos y datos
+      antiguos, red de seguridad;
+    - migración 0026;
+    - API: intercambio, 409 y 422;
+    - paridad: `source-save-swap` y `source-save-out-of-range`;
+    - frontend: ocupantes, aviso, reordenar, 409 que recarga, y el alta por defecto «la última»;
+  - revisión (rol `reviewer`): el alta ya no manda «la última» calculada en la UI, `check_priority`
+    no compara si el servidor no tiene prioridad, el listener ignora `bool` y las borradas, y la
+    migración y el servicio ordenan igual lo que no tiene prioridad.
+- **Decisiones (confirmadas por el usuario):**
+  - intercambio en vez de rechazo; el servidor solo rechaza un empate como red de seguridad;
+  - puesto 1…N sin tope;
+  - desactivar la búsqueda con navegador **conserva** el puesto. Las plataformas no se pueden
+    borrar: si algún día se puede, `place` cierra el hueco al renumerar.
+- **Deuda:**
+  - `expected_priority` solo protege a la plataforma que se mueve. Si otra pestaña cambió a la
+    que ocupaba el puesto, el intercambio se hace con la que esté ahí ahora. El orden sigue sin
+    empates, y la lista recargada lo enseña;
+  - un agente con skills antiguos que mande `priority: 5` con menos de 5 plataformas recibe
+    `invalid_request` con el rango.
+- 2877 tests de backend (en Windows se saltan 12 de macOS y Linux) y 329 de frontend en verde;
+  ruff, `tsc`, `pnpm build` y `sync_agents.py --check` limpios; `oxlint` sin avisos nuevos;
+  OpenAPI regenerado.

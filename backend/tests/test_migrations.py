@@ -1,5 +1,6 @@
 """La migración crea exactamente el esquema de los modelos y se deshace limpia."""
 
+import json
 from pathlib import Path
 
 import pytest
@@ -256,5 +257,49 @@ def test_0021_translates_skill_names_in_queued_work_and_back(db_url: str) -> Non
             run = conn.exec_driver_sql("SELECT command FROM agent_runs").one()
         assert tuple(req) == ("procesar-ofertas", prompt) and other[0] == "dudas-oferta"
         assert "Skill(generar-cv)" in run[0] and "Agent(verificador)" in run[0]
+    finally:
+        engine.dispose()
+
+
+def test_0026_numbers_platform_priorities_without_ties(db_url: str) -> None:
+    """Fase 27.3: las plataformas con prioridades repetidas (todas entraban con 5) quedan
+    numeradas 1…N por `(prioridad, nombre)`; otras fuentes no se tocan y repetir no cambia nada."""
+    migrations.upgrade(db_url, "0025")
+    engine = create_engine(db_url)
+    rows = [
+        (1, "agent_browse", "Tecnoempleo", '{"priority": 5, "platform": "tecnoempleo"}'),
+        (2, "agent_browse", "indeed", '{"priority": 5, "platform": "indeed"}'),
+        (3, "agent_browse", "LinkedIn", '{"priority": 2, "platform": "linkedin"}'),
+        (4, "agent_browse", "Sin prioridad", '{"platform": "otra"}'),
+        (5, "greenhouse", "Acme", '{"slug": "acme"}'),
+    ] + [
+        (10 + i, "agent_browse", f"Portal {i:02d}", '{"priority": 9, "platform": "p"}')
+        for i in range(9)
+    ]
+    try:
+        with engine.begin() as conn:
+            for row in rows:
+                conn.exec_driver_sql(
+                    "INSERT INTO sources (id, kind, name, config, active) VALUES (?, ?, ?, ?, 1)",
+                    row,
+                )
+        engine.dispose()
+
+        def priorities() -> dict[str, object]:
+            with engine.begin() as conn:
+                found = conn.exec_driver_sql("SELECT name, config FROM sources").all()
+            return {name: json.loads(config).get("priority") for name, config in found}
+
+        migrations.upgrade(db_url, "0026")
+        after = priorities()
+        expected = ["LinkedIn", "indeed", "Tecnoempleo"] + [f"Portal {i:02d}" for i in range(9)]
+        assert [after[name] for name in [*expected, "Sin prioridad"]] == list(range(1, 14))
+        assert after["Acme"] is None
+
+        migrations.downgrade(db_url, "0025")
+        migrations.upgrade(db_url, "0026")
+        assert priorities() == after  # idempotente
+        migrations.downgrade(db_url, "0025")
+        assert max(p for p in priorities().values() if isinstance(p, int)) == 10
     finally:
         engine.dispose()

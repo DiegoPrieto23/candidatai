@@ -1,8 +1,8 @@
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import JSON, ForeignKey, String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import JSON, ForeignKey, String, event, select
+from sqlalchemy.orm import Mapped, Session, mapped_column
 
 from app.models.base import Base, UTCDateTime, utcnow
 
@@ -18,6 +18,39 @@ class Source(Base):
     config: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
     active: Mapped[bool] = mapped_column(default=True)
     last_run_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
+
+
+class PriorityConflictError(ValueError):
+    """Dos plataformas con el mismo puesto en el orden de recorrido (fase 27.3)."""
+
+
+@event.listens_for(Session, "before_flush")
+def _unique_platform_priority(session: Session, _context: object, _instances: object) -> None:
+    """Red de seguridad (fase 27.3): ningún flush deja dos plataformas `agent_browse` con la misma
+    prioridad. El orden se mantiene en `browse.place`; esto solo para un camino que escriba
+    `config` por fuera de él. Es una restricción que SQLite no puede expresar sobre un JSON."""
+    touched = [
+        obj
+        for obj in (*session.new, *session.dirty)
+        if isinstance(obj, Source) and obj.kind == "agent_browse"
+    ]
+    if not touched:
+        return
+    with session.no_autoflush:
+        stored = session.scalars(select(Source).where(Source.kind == "agent_browse")).all()
+    # Primero las que no cambian: el error nombra a la que ya tenía el puesto.
+    ordered = [s for s in stored if s not in touched and s not in session.deleted] + touched
+    holders: dict[int, Source] = {}
+    for source in ordered:
+        priority = (source.config or {}).get("priority")
+        if not isinstance(priority, int) or isinstance(priority, bool):
+            continue
+        if (holder := holders.get(priority)) is not None and holder is not source:
+            raise PriorityConflictError(
+                f"El puesto {priority} ya lo tiene «{holder.name}»: «{source.name}» no puede "
+                "tener la misma prioridad."
+            )
+        holders[priority] = source
 
 
 class SourceRun(Base):

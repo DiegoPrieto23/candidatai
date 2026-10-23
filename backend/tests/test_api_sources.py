@@ -163,7 +163,7 @@ PLATFORM = {
     "platform": "miportal",
     "search_urls": ["https://www.miportal.example/empleo?q=data"],
     "access": "login",
-    "priority": 2,
+    "priority": 1,
 }
 
 
@@ -174,7 +174,7 @@ def test_add_platform_from_the_ui(client: TestClient) -> None:
     assert body["created"] is True and body["allow_agent_browsing"] is True
     listed = client.get("/sources", params={"kind": "agent_browse"}).json()["sources"]
     assert [(s["name"], s["browse"]["access"], s["browse"]["priority"]) for s in listed] == [
-        ("Mi portal", "login", 2)
+        ("Mi portal", "login", 1)
     ]
     again = client.post("/sources/platforms", json={**PLATFORM, "name": " mi  portal "})
     assert again.status_code == 409 and again.json()["error"]["type"] == "exists"
@@ -182,6 +182,42 @@ def test_add_platform_from_the_ui(client: TestClient) -> None:
         "/sources/platforms", json={**PLATFORM, "name": "Otro", "search_urls": ["ftp://x"]}
     )
     assert other.status_code == 422
+
+
+def test_platform_priority_swaps_and_stale_ui_is_a_conflict(client: TestClient) -> None:
+    """Fase 27.3: un puesto ocupado se intercambia; si la UI ve un puesto que ya no es, 409."""
+    first = client.post("/sources/platforms", json=PLATFORM).json()["source_id"]
+    second = client.post(
+        "/sources/platforms",
+        json={
+            **PLATFORM,
+            "name": "Otro",
+            "priority": None,
+            "search_urls": ["https://www.miportal.example/empleo?q=bi"],
+        },
+    ).json()
+    assert second["priority"] == 2
+
+    url = f"/sources/{first}/browse"
+    moved = client.post(url, json={"priority": 2, "expected_priority": 1})
+    assert moved.status_code == 200 and moved.json()["browse"]["priority"] == 2
+    listed = client.get("/sources", params={"kind": "agent_browse"}).json()["sources"]
+    assert {s["name"]: s["browse"]["priority"] for s in listed} == {"Mi portal": 2, "Otro": 1}
+
+    stale = client.post(url, json={"priority": 1, "expected_priority": 1})
+    assert stale.status_code == 409 and stale.json()["error"]["type"] == "conflict"
+    out = client.post(url, json={"priority": 3})
+    assert out.status_code == 422 and "entre 1 y 2" in out.json()["error"]["message"]
+    inserted = client.post(
+        "/sources/platforms",
+        json={
+            **PLATFORM,
+            "name": "Tercero",
+            "priority": 5,
+            "search_urls": ["https://www.miportal.example/empleo?q=ml"],
+        },
+    )
+    assert inserted.status_code == 422 and "entre 1 y 3" in inserted.json()["error"]["message"]
 
 
 def test_add_linkedin_platform_is_always_created_disabled(client: TestClient) -> None:
