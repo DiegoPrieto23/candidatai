@@ -9,8 +9,10 @@ Cada ejecución queda en `source_runs`, también si la fuente falla: así el err
 """
 
 import logging
+from urllib.parse import urlsplit
 
 import httpx
+from pydantic import TypeAdapter
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
@@ -34,6 +36,7 @@ from app.schemas.sources import (
     SourceRunView,
     SourceTestResult,
     SourceView,
+    Website,
     parse_config,
 )
 from app.services import ingest, reposts
@@ -93,6 +96,28 @@ MANUAL_LABELS = {
 }
 
 
+# Dominios de los propios ATS: una oferta publicada en ellos no dice cuál es la web de la empresa.
+_ATS_DOMAINS = (
+    "greenhouse.io",
+    "lever.co",
+    "ashbyhq.com",
+    "personio.de",
+    "personio.com",
+    "teamtailor.com",
+    "workable.com",
+    "smartrecruiters.com",
+    "recruitee.com",
+)
+# Web de cada portal con API, para su logo.
+_PORTAL_SITES = {
+    "infojobs": "https://www.infojobs.net",
+    "adzuna": "https://www.adzuna.es",
+    "manfred": "https://www.getmanfred.com",
+    "freehire": "https://freehire.me",
+}
+_WEBSITE: TypeAdapter[str | None] = TypeAdapter(Website | None)
+
+
 class SourceNotFoundError(LookupError):
     pass
 
@@ -149,6 +174,28 @@ def _browse(source: Source) -> AgentBrowseSource | None:
         return None
 
 
+def _website(session: Session, source: Source) -> str | None:
+    """Web para el logo: la del portal, la que puso el usuario o la de sus ofertas más recientes
+    si no están en el dominio del ATS (Teamtailor, p. ej., las publica en `careers.acme.com`)."""
+    if source.kind in _PORTAL_SITES:
+        return _PORTAL_SITES[source.kind]
+    if source.kind not in ATS_KINDS:
+        return None
+    if website := (source.config or {}).get("website"):
+        return str(website)
+    urls = session.scalars(
+        select(Job.url).where(Job.source_id == source.id).order_by(Job.id.desc()).limit(10)
+    )
+    for url in urls:
+        parts = urlsplit(url)
+        host = (parts.hostname or "").lower()
+        if parts.scheme not in {"http", "https"} or "." not in host:
+            continue
+        if not any(host == d or host.endswith(f".{d}") for d in _ATS_DOMAINS):
+            return f"{parts.scheme}://{host}"
+    return None
+
+
 def _view(session: Session, source: Source) -> SourceView:
     last = _last_run(session, source.id)
     return SourceView(
@@ -160,6 +207,7 @@ def _view(session: Session, source: Source) -> SourceView:
         config=dict(source.config or {}),
         keys_missing=keys_missing(source.kind),
         browse=_browse(source),
+        website=_website(session, source),
         last_run_at=source.last_run_at,
         last_run=_run_view(last) if last else None,
     )
@@ -219,8 +267,9 @@ def add_source(session: Session, data: SourceInput) -> SourceView:
     if data.kind in ATS_KINDS and not normalize_company(name):
         raise ValueError(f"Nombre de empresa no válido: «{name}».")
     stored = config.model_dump()
-    if "language" in stored and stored["language"] is None:  # solo Personio lo usa
-        del stored["language"]
+    for optional in ("language", "website"):  # el idioma solo lo usa Personio
+        if optional in stored and stored[optional] is None:
+            del stored[optional]
     source = Source(kind=data.kind, name=name, config=stored, active=True)
     session.add(source)
     if data.kind in ATS_KINDS:
@@ -254,6 +303,23 @@ def set_active(session: Session, source_id: int, active: bool) -> SourceView:
         company.watchlist = any(
             normalize_company(s.name) == company.normalized_name for s in siblings
         )
+    session.flush()
+    return _view(session, source)
+
+
+def set_website(session: Session, source_id: int, website: str | None) -> SourceView:
+    """Pone o quita la web de una empresa objetivo, que la UI usa para su logo."""
+    source = _source(session, source_id)
+    if source.kind not in ATS_KINDS:
+        raise NotAConnectorError("Solo las empresas objetivo (ATS) tienen web.")
+    config = dict(source.config or {})
+    value = _WEBSITE.validate_python(website.strip() if website and website.strip() else None)
+    if value is None:
+        config.pop("website", None)
+    else:
+        config["website"] = value
+    parse_config(source.kind, config)
+    source.config = config
     session.flush()
     return _view(session, source)
 

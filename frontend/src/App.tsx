@@ -71,7 +71,7 @@ export function AppRoutes() {
         <Route path="plantillas" element={<TemplatesPage />} />
         <Route path="perfil" element={<ProfilePage />} />
         <Route path="fuentes" element={<SourcesHubPage />}>
-          <Route index element={<Navigate to="/fuentes/empresas" replace />} />
+          <Route index element={<Navigate to="/fuentes/plataformas" replace />} />
           <Route path="empresas" element={<SourcesPage />} />
           <Route path="plataformas" element={<PlatformsPage />} />
         </Route>

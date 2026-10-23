@@ -80,6 +80,22 @@ class _Strict(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+def _website(value: str) -> str:
+    """Web de una empresa, reducida a su origen (`https://acme.com`): solo sirve para su logo."""
+    value = value.strip()
+    if "://" not in value:
+        value = f"https://{value}"
+    try:
+        parts = urlsplit(value)
+    except ValueError as exc:
+        raise ValueError(f"Web no válida: «{value}».") from exc
+    host = (parts.hostname or "").lower()
+    if parts.scheme not in {"http", "https"} or "." not in host:
+        raise ValueError(f"Web no válida: «{value}». Escríbela como `acme.com`.")
+    return f"{parts.scheme}://{host}"
+
+
+Website = Annotated[str, Field(max_length=200), AfterValidator(_website)]
 Language = Annotated[str, Field(pattern=r"^[a-z]{2}$")]
 
 
@@ -90,6 +106,7 @@ class AtsConfig(_Strict):
     # prueba `es` y, si no trae ninguna, `en`.
     language: Language | None = None
     title_keywords: Keywords = []  # palabras extra que dejan pasar un título en el filtro previo
+    website: Website | None = None  # web de la empresa, para su logo en la UI
 
 
 class InfoJobsConfig(_Strict):
@@ -153,6 +170,7 @@ class SourceInput(_Strict):
     lang: Literal["ES", "EN"] = "ES"  # Manfred: idioma de las ofertas
     remote_only: bool = False  # freehire: solo remotas
     title_keywords: Keywords = []
+    website: Website | None = None  # ATS: web de la empresa, para su logo
 
     @model_validator(mode="after")
     def _fields_for_kind(self) -> Self:
@@ -165,6 +183,8 @@ class SourceInput(_Strict):
             raise ValueError("El idioma de las ofertas (`lang`) solo se usa en Manfred.")
         if self.remote_only and self.kind != "freehire":
             raise ValueError("«Solo remotas» (`remote_only`) solo se usa en freehire.")
+        if self.website and self.kind not in ATS_KINDS:
+            raise ValueError("La web (`website`) solo se usa en las empresas objetivo.")
         if self.kind in ATS_KINDS:
             if not self.slug:
                 raise ValueError(f"Falta el slug del tablero de {KIND_LABELS[self.kind]}.")
@@ -177,6 +197,7 @@ class SourceInput(_Strict):
                 region=self.region,
                 language=self.language,
                 title_keywords=keywords,
+                website=self.website,
             )
         if not self.query or not self.query.strip():
             raise ValueError(f"Falta la búsqueda (`query`) para {KIND_LABELS[self.kind]}.")
@@ -335,6 +356,9 @@ class SourceView(BaseModel):
     config: dict[str, Any]  # nunca lleva secretos: las claves de los portales van en `.env`
     keys_missing: bool  # portal opcional sin claves en `.env`: se omite al ejecutar
     browse: AgentBrowseSource | None = None  # solo en plataformas `agent_browse`
+    # Web de la empresa o del portal, para su logo: la que puso el usuario o, si no, la de sus
+    # ofertas cuando no están en el dominio del ATS.
+    website: str | None = None
     last_run_at: datetime | None
     last_run: SourceRunView | None
 

@@ -2,6 +2,7 @@ import { useState, type FormEvent, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import {
+  ArrowSquareOutIcon,
   BuildingsIcon,
   CheckCircleIcon,
   ClockIcon,
@@ -23,8 +24,10 @@ import {
   usePreviewSource,
   useRunSource,
   useSetSourceActive,
+  useSetSourceWebsite,
   useSources,
 } from '@/api/queries'
+import { SiteIcon } from '@/components/SiteIcon'
 import { EmptyState, ErrorState, InlineCode } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -34,6 +37,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { errorMessage } from '@/lib/errors'
 import { i18n } from '@/lib/i18n'
 import { dateFormatter, SOURCE_KIND_LABEL } from '@/lib/labels'
+import { platformHome } from '@/lib/searches'
 import { cn } from '@/lib/utils'
 
 type Portal = 'infojobs' | 'adzuna' | 'manfred' | 'freehire'
@@ -227,8 +231,9 @@ const EMPTY = {
   lang: 'ES' as 'ES' | 'EN',
   country: 'es',
   remoteOnly: false,
+  website: '',
 }
-type TextKey = 'name' | 'slug' | 'query' | 'where' | 'province' | 'language' | 'country'
+type TextKey = 'name' | 'slug' | 'query' | 'where' | 'province' | 'language' | 'country' | 'website'
 
 function AddSourceForm() {
   const { t } = useTranslation('sources', { keyPrefix: 'form' })
@@ -258,6 +263,7 @@ function AddSourceForm() {
     lang: form.kind === 'manfred' ? form.lang : 'ES',
     remote_only: form.kind === 'freehire' && form.remoteOnly,
     title_keywords: [],
+    website: isAts ? form.website.trim() || null : null,
   })
 
   const test = () => {
@@ -316,6 +322,16 @@ function AddSourceForm() {
               }
             >
               <Input id="source-slug" value={form.slug} onChange={set('slug')} spellCheck={false} className="h-10 bg-background font-mono" />
+            </Field>
+            <Field id="source-website" label={t('website')} error={errors.website} hint={t('websiteHint')}>
+              <Input
+                id="source-website"
+                value={form.website}
+                onChange={set('website')}
+                placeholder="acme.com"
+                spellCheck={false}
+                className="h-10 bg-background"
+              />
             </Field>
             {form.kind === 'personio' && (
               <Field id="source-language" label={t('language')} error={errors.language} hint={t('languageHint')}>
@@ -408,6 +424,71 @@ function AddSourceForm() {
 
 // --- Lista de fuentes ----------------------------------------------------------------------------
 
+/** La web de una empresa objetivo, para su logo: enlace y, al pulsar «Cambiar», un campo. */
+function Website({ source }: { source: SourceView }) {
+  const { t } = useTranslation('sources', { keyPrefix: 'row' })
+  const save = useSetSourceWebsite()
+  const [editing, setEditing] = useState(false)
+  const [value, setValue] = useState('')
+  const home = source.website ? platformHome([source.website]) : null
+  const editable = ATS.includes(source.kind as ConnectorKind)
+
+  if (editing) {
+    const submit = (e: FormEvent) => {
+      e.preventDefault()
+      save.mutate({ sourceId: source.id, website: value.trim() || null }, { onSuccess: () => setEditing(false) })
+    }
+    return (
+      <form onSubmit={submit} className="mt-1.5 grid gap-1.5" aria-label={t('websiteLabel', { name: source.name })}>
+        <div className="flex flex-wrap items-center gap-1.5">
+          <Input
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            placeholder="acme.com"
+            spellCheck={false}
+            autoFocus
+            aria-label={t('websiteLabel', { name: source.name })}
+            className="h-8 w-56 bg-background text-sm"
+          />
+          <Button type="submit" size="sm" disabled={save.isPending}>
+            {save.isPending ? t('saving') : t('save')}
+          </Button>
+          <Button type="button" size="sm" variant="ghost" onClick={() => setEditing(false)}>
+            {t('cancel')}
+          </Button>
+        </div>
+        <p className="text-xs text-muted-foreground">{t('websiteHint')}</p>
+        {save.error && <p className="text-xs text-destructive">{errorMessage(save.error)}</p>}
+      </form>
+    )
+  }
+  const edit = () => {
+    setValue(home?.host ?? '')
+    save.reset()
+    setEditing(true)
+  }
+  return (
+    <p className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
+      {home && (
+        <a
+          href={home.origin}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 text-foreground/80 underline-offset-2 hover:text-foreground hover:underline"
+        >
+          {home.host}
+          <ArrowSquareOutIcon className="size-3" aria-hidden />
+        </a>
+      )}
+      {editable && (
+        <button type="button" onClick={edit} className="underline-offset-2 hover:text-foreground hover:underline">
+          {home ? t('changeWebsite') : t('addWebsite')}
+        </button>
+      )}
+    </p>
+  )
+}
+
 function SourceRow({ source }: { source: SourceView }) {
   const { t } = useTranslation('sources', { keyPrefix: 'row' })
   const preview = usePreviewSource()
@@ -421,6 +502,11 @@ function SourceRow({ source }: { source: SourceView }) {
   return (
     <li className={cn('grid gap-3 px-4 py-4 sm:px-5', !source.active && 'opacity-70')}>
       <div className="flex flex-wrap items-start gap-x-4 gap-y-2">
+        <SiteIcon
+          key={source.website ?? ''}
+          name={source.name}
+          home={source.website ? platformHome([source.website]) : null}
+        />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="font-medium">{source.name}</h3>
@@ -435,6 +521,7 @@ function SourceRow({ source }: { source: SourceView }) {
             )}
           </div>
           <p className="mt-0.5 font-mono text-xs text-muted-foreground">{target}</p>
+          <Website source={source} />
           <p className="mt-1.5 flex items-center gap-1.5 text-xs text-muted-foreground">
             <ClockIcon className="size-3.5" />
             {last ? (

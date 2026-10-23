@@ -11,6 +11,7 @@ import {
 } from '@/api/queries'
 import { AddPlatformButton } from '@/components/AddPlatformDialog'
 import { AgentButton } from '@/components/AgentButton'
+import { SiteIcon } from '@/components/SiteIcon'
 import { EmptyState, ErrorState, InlineCode } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import {
@@ -26,11 +27,13 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { errorMessage } from '@/lib/errors'
 import { i18n } from '@/lib/i18n'
 import { dateFormatter } from '@/lib/labels'
-import { iconCandidates, platformHome, searchLabel } from '@/lib/searches'
+import { platformHome, searchLabel } from '@/lib/searches'
 import { cn } from '@/lib/utils'
 
 const ACCESS: readonly BrowseAccess[] = ['free', 'login', 'blocked']
 const PRIORITIES = Array.from({ length: 10 }, (_, i) => i + 1)
+// Ofertas que abre el agente en cada recorrido (el servidor acepta de 1 a 100).
+const MAX_OFFERS = [5, 10, 15, 20, 25, 30, 40, 50, 75, 100]
 
 function formatWhen(iso: string): string {
   return dateFormatter({ day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(iso))
@@ -81,38 +84,6 @@ function Searches({ urls, name }: { urls: string[]; name: string }) {
         </ul>
       )}
     </div>
-  )
-}
-
-/**
- * Icono del portal, que tu navegador carga del propio portal (sin referer): prueba las rutas de
- * `iconCandidates` en orden y, si ninguna carga, pone la inicial del nombre.
- */
-function PlatformIcon({ name, home }: { name: string; home: { origin: string; host: string } | null }) {
-  const [attempt, setAttempt] = useState(0)
-  const candidates = home ? iconCandidates(home) : []
-  const box = 'grid size-9 shrink-0 place-items-center rounded-lg border bg-white dark:bg-white/95'
-  if (attempt >= candidates.length) {
-    return (
-      <span className={cn(box, 'bg-muted font-semibold text-muted-foreground dark:bg-muted')} aria-hidden>
-        {name.trim().charAt(0).toUpperCase()}
-      </span>
-    )
-  }
-  return (
-    <span className={box} aria-hidden>
-      <img
-        key={candidates[attempt]}
-        src={candidates[attempt]}
-        alt=""
-        width={20}
-        height={20}
-        loading="lazy"
-        referrerPolicy="no-referrer"
-        onError={() => setAttempt((n) => n + 1)}
-        className="size-5 object-contain"
-      />
-    </span>
   )
 }
 
@@ -493,8 +464,16 @@ function PlatformRow({ source }: { source: SourceView }) {
   const linkedin = browse.platform === 'linkedin'
   const home = platformHome(browse.search_urls)
   const enabled = browse.allow_agent_browsing === true
-  const change = (body: { allow_agent_browsing?: boolean; priority?: number; access?: BrowseAccess }) =>
-    update.mutate({ sourceId: source.id, ...body })
+  const change = (body: {
+    allow_agent_browsing?: boolean
+    priority?: number
+    access?: BrowseAccess
+    max_offers?: number
+  }) => update.mutate({ sourceId: source.id, ...body })
+  const maxOffers = browse.max_offers ?? 0
+  const maxOffersOptions = MAX_OFFERS.includes(maxOffers)
+    ? MAX_OFFERS
+    : [...MAX_OFFERS, maxOffers].filter((n) => n > 0).sort((a, b) => a - b)
 
   const onToggle = (next: boolean) => {
     if (next && linkedin) setConfirming(true)
@@ -504,7 +483,7 @@ function PlatformRow({ source }: { source: SourceView }) {
   return (
     <li className={cn('grid gap-3 px-4 py-4 sm:px-5', !enabled && 'bg-muted/30')}>
       <div className="flex flex-wrap items-start gap-x-4 gap-y-2">
-        <PlatformIcon name={source.name} home={home} />
+        <SiteIcon name={source.name} home={home} />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="font-medium">{source.name}</h3>
@@ -532,7 +511,7 @@ function PlatformRow({ source }: { source: SourceView }) {
                 <span aria-hidden>·</span>
               </>
             )}
-            {t('row.upTo', { offers: plural('offers', browse.max_offers ?? 0) })}
+            {t('row.upTo', { offers: plural('offers', maxOffers) })}
           </p>
         </div>
         <label className="flex items-center gap-2.5 text-sm">
@@ -584,6 +563,25 @@ function PlatformRow({ source }: { source: SourceView }) {
                 <SelectItem key={a} value={a}>
                   {t(`access.${a}`)}
                   <span className="ml-1.5 text-xs text-muted-foreground">{t(`access.${a}Hint`)}</span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="grid gap-1">
+          <span className="text-xs text-muted-foreground">{t('row.maxOffers')}</span>
+          <Select
+            value={String(maxOffers)}
+            onValueChange={(v) => change({ max_offers: Number(v) })}
+            disabled={update.isPending}
+          >
+            <SelectTrigger className="h-8 w-28" aria-label={t('row.maxOffersAria', { name: source.name })}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {maxOffersOptions.map((n) => (
+                <SelectItem key={n} value={String(n)}>
+                  {n}
                 </SelectItem>
               ))}
             </SelectContent>

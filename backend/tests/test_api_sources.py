@@ -142,6 +142,20 @@ def test_browse_settings_validation(client: TestClient) -> None:
     assert client.post(f"/sources/{source_id}/browse", json={"priority": 0}).status_code == 422
     assert client.post(f"/sources/{source_id}/browse", json={"x": 1}).status_code == 422
     assert client.post("/sources/99/browse", json={"priority": 1}).status_code == 404
+    assert client.post(f"/sources/{source_id}/browse", json={"max_offers": 0}).status_code == 422
+    changed = client.post(f"/sources/{source_id}/browse", json={"max_offers": 30}).json()
+    assert changed["browse"]["max_offers"] == 30
+
+
+def test_set_website(client: TestClient) -> None:
+    source_id = client.post("/sources", json=BODY).json()["id"]
+    url = f"/sources/{source_id}/website"
+
+    saved = client.post(url, json={"website": "acmedatos.example"})
+    assert saved.status_code == 200 and saved.json()["website"] == "https://acmedatos.example"
+    assert client.post(url, json={"website": "nada"}).status_code == 422
+    assert client.post(url, json={"website": None}).json()["website"] is None
+    assert client.post("/sources/99/website", json={"website": None}).status_code == 404
 
 
 PLATFORM = {

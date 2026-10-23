@@ -85,7 +85,13 @@ de una oferta:
 | `acme.recruitee.com/o/…` | Recruitee | `acme` |
 
 Si la página de empleo tiene dominio propio (`careers.acme.com`), busca en su código o en el
-enlace de «Aplicar» uno de esos dominios. `cai sources discover` lo prueba solo para una lista de
+enlace de «Aplicar» uno de esos dominios.
+
+**Logo de la empresa.** La UI lo carga de la web de la empresa (`website` en la configuración, solo
+el origen: `https://acme.com`). La pones al añadirla (`--website acme.com`) o después en su fila
+(`POST /sources/{id}/website`). Sin ella, la app usa la de sus ofertas más recientes si no están en
+el dominio del ATS (Teamtailor, p. ej., las publica en el dominio de la empresa); si tampoco, pone
+la inicial. `cai sources discover` lo prueba solo para una lista de
 empresas (abajo). Antes de guardar, «Probar» enseña cuántas ofertas tiene y cuántas pasan tus
 filtros.
 - **Filtro previo** antes de guardar (`ingestion/prefilter.py`): el título debe contener todas las
@@ -205,8 +211,9 @@ hayas aprobado. Skill `search-jobs`.
   `{name, platform, search_urls[], priority (1 = primera), access: free|login|blocked,
   allow_agent_browsing, max_offers, notes}`. Las da de alta el agente con
   `search-jobs configurar` (como la etapa 1 del original); en la página «Fuentes → Plataformas» ves
-  cada una con sus búsquedas y su último recorrido, y cambias su prioridad, su acceso y si el
-  agente puede recorrerla.
+  cada una con sus búsquedas y su último recorrido, y cambias su prioridad, su acceso, cuántas
+  ofertas abre en cada recorrido (`max_offers`, de 1 a 100) y si el agente puede recorrerla. Si el
+  agente vuelve a guardarla sin `max_offers`, se conserva el que tenía.
 - **LinkedIn** se crea siempre con `allow_agent_browsing: false`. Solo lo puedes activar tú en la
   UI, que muestra el aviso de riesgo para la cuenta y pide confirmarlo (la API exige
   `confirm_risk: true`). El agente no puede activarlo por la interfaz para agentes: `save_source`

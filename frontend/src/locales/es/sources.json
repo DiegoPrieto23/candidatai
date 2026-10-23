@@ -43,7 +43,9 @@
     "testing": "Probando…",
     "test": "Probar",
     "saving": "Guardando…",
-    "add": "Añadir"
+    "add": "Añadir",
+    "website": "Web de la empresa (opcional)",
+    "websiteHint": "Para su logo, p. ej. acme.com. Si publica sus ofertas en su propio dominio, la app la saca de ahí."
   },
   "row": {
     "paused": "Pausada",
@@ -55,7 +57,14 @@
     "running": "Ejecutando…",
     "run": "Ejecutar ahora",
     "pause": "Pausar",
-    "resume": "Reactivar"
+    "resume": "Reactivar",
+    "addWebsite": "Añadir su web para el logo",
+    "changeWebsite": "Cambiar web",
+    "websiteLabel": "Web de {{name}}",
+    "websiteHint": "Solo sirve para su logo. Déjala vacía para quitarla.",
+    "save": "Guardar",
+    "saving": "Guardando…",
+    "cancel": "Cancelar"
   },
   "empty": {
     "title": "Aún no sigues ninguna empresa",

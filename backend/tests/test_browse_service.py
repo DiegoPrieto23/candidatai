@@ -197,6 +197,21 @@ def test_user_enabling_linkedin_requires_confirmation(session: Session) -> None:
     assert view.browse is not None and view.browse.allow_agent_browsing is False
 
 
+def test_user_sets_offers_per_run_and_the_agent_keeps_it(session: Session) -> None:
+    source_id = _save(session, **TECNO).source_id
+
+    view = browse.update_settings(session, source_id, max_offers=40)
+    assert view.browse is not None and view.browse.max_offers == 40
+    with pytest.raises(ValidationError):
+        browse.update_settings(session, source_id, max_offers=101)
+
+    # El agente vuelve a guardarla sin `max_offers`: no vuelve al valor por defecto.
+    _save(session, **{**TECNO, "priority": 2})
+    assert _config(session, source_id)["max_offers"] == 40
+    _save(session, **{**TECNO, "max_offers": 20})
+    assert _config(session, source_id)["max_offers"] == 20
+
+
 def test_update_settings_only_on_platforms(session: Session) -> None:
     ingest.add_from_text(session, "Data Engineer", "Acme", POSTING_TEXT)
     manual = session.scalars(select(Source)).one()

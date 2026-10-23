@@ -4,13 +4,13 @@ import { BuildingsIcon, CompassIcon } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
 
 const TABS = [
-  { to: '/fuentes/empresas', label: 'companies', icon: BuildingsIcon },
   { to: '/fuentes/plataformas', label: 'platforms', icon: CompassIcon },
+  { to: '/fuentes/empresas', label: 'companies', icon: BuildingsIcon },
 ] as const
 
 /**
- * «Fuentes» (fase 23.3): de dónde salen tus ofertas. Une las empresas objetivo (APIs de ATS y
- * portales) y las plataformas que recorre tu agente, cada una en su pestaña con su propia URL.
+ * «Fuentes» (fase 23.3): de dónde salen tus ofertas. Une las plataformas que recorre tu agente y
+ * las empresas objetivo (APIs de ATS y portales), cada una en su pestaña con su propia URL.
  */
 export function SourcesHubPage() {
   const { t } = useTranslation('platforms', { keyPrefix: 'hub' })

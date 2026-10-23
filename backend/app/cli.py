@@ -1399,6 +1399,9 @@ LANGUAGE_OPTION = typer.Option(
 )
 LANG_OPTION = typer.Option("ES", "--lang", help="Manfred: idioma de las ofertas (`ES` o `EN`).")
 REMOTE_ONLY_OPTION = typer.Option(False, "--remote-only", help="freehire: solo ofertas remotas.")
+WEBSITE_OPTION = typer.Option(
+    None, "--website", help="ATS: web de la empresa (p. ej. `acme.com`), para su logo en la UI."
+)
 KEYWORDS_OPTION = typer.Option(
     None, "--keywords", help="Palabras extra que dejan pasar un título, separadas por comas."
 )
@@ -1418,6 +1421,7 @@ def _source_input(
     language: str | None = None,
     lang: str = "ES",
     remote_only: bool = False,
+    website: str | None = None,
 ) -> Any:
     from app.schemas.sources import SourceInput
 
@@ -1435,6 +1439,7 @@ def _source_input(
             "lang": lang,
             "remote_only": remote_only,
             "title_keywords": _csv(keywords) or [],
+            "website": website,
         }
     )
 
@@ -1501,6 +1506,7 @@ def sources_add(
     language: str | None = LANGUAGE_OPTION,
     lang: str = LANG_OPTION,
     remote_only: bool = REMOTE_ONLY_OPTION,
+    website: str | None = WEBSITE_OPTION,
     as_json: bool = JSON_OPTION,
 ) -> None:
     """Añade una empresa objetivo (ATS + slug) o una búsqueda en un portal con API."""
@@ -1521,6 +1527,7 @@ def sources_add(
             language,
             lang,
             remote_only,
+            website,
         )
         with session_scope() as session:
             view = sources.add_source(session, data)

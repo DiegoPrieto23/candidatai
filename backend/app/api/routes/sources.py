@@ -12,6 +12,7 @@ from app.schemas.sources import (
     SourceRunResult,
     SourceTestResult,
     SourceView,
+    Website,
 )
 from app.services.ingestion import browse, linkedin_public
 from app.services.ingestion import service as sources
@@ -23,6 +24,12 @@ class SetActiveBody(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     active: bool
+
+
+class SetWebsiteBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    website: Website | None  # `null` la quita
 
 
 @router.get("", operation_id="list_sources")
@@ -115,6 +122,12 @@ def set_source_active(session: SessionDep, source_id: int, body: SetActiveBody) 
     return sources.set_active(session, source_id, body.active)
 
 
+@router.post("/{source_id}/website", operation_id="set_source_website")
+def set_source_website(session: SessionDep, source_id: int, body: SetWebsiteBody) -> SourceView:
+    """Pone o quita la web de una empresa objetivo, que la UI usa para su logo."""
+    return sources.set_website(session, source_id, body.website)
+
+
 class BrowseSettingsBody(BaseModel):
     """Cambios del usuario en una plataforma de búsqueda con navegador."""
 
@@ -123,6 +136,7 @@ class BrowseSettingsBody(BaseModel):
     allow_agent_browsing: bool | None = None
     priority: int | None = Field(default=None, ge=1, le=10)
     access: BrowseAccess | None = None
+    max_offers: int | None = Field(default=None, ge=1, le=100)
     confirm_risk: bool = False  # obligatorio para activar LinkedIn
 
 
@@ -130,13 +144,14 @@ class BrowseSettingsBody(BaseModel):
 def update_browse_settings(
     session: SessionDep, source_id: int, body: BrowseSettingsBody
 ) -> SourceView:
-    """Activa o desactiva la búsqueda con navegador de una plataforma, o cambia su prioridad o su
-    acceso. Activar LinkedIn exige `confirm_risk: true`."""
+    """Activa o desactiva la búsqueda con navegador de una plataforma, o cambia su prioridad, su
+    acceso o cuántas ofertas abre en cada recorrido. Activar LinkedIn exige `confirm_risk: true`."""
     return browse.update_settings(
         session,
         source_id,
         allow_agent_browsing=body.allow_agent_browsing,
         priority=body.priority,
         access=body.access,
+        max_offers=body.max_offers,
         confirm_risk=body.confirm_risk,
     )

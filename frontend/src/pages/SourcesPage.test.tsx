@@ -151,6 +151,34 @@ describe('Empresas objetivo', () => {
     expect(calls.find((c) => c.path === '/sources/1/active')?.body).toEqual({ active: false })
   })
 
+  it('enseña el logo de la web de la empresa y deja cambiarla', async () => {
+    const calls = mockApi({
+      'GET /status': status(),
+      'GET /sources': { sources: [source({ website: 'https://careers.acmedatos.example' })] },
+      'POST /sources/1/website': { status: 200, body: source({ website: 'https://acmedatos.example' }) },
+    })
+    const { container } = renderApp('/empresas')
+    expect(await screen.findByRole('link', { name: /careers\.acmedatos\.example/ })).toHaveAttribute(
+      'href',
+      'https://careers.acmedatos.example',
+    )
+    expect(container.querySelector('img')).toHaveAttribute('src', 'https://careers.acmedatos.example/favicon.ico')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Cambiar web' }))
+    const input = screen.getByRole('textbox', { name: 'Web de Acme Datos' })
+    await userEvent.clear(input)
+    await userEvent.type(input, 'acmedatos.example')
+    await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+    expect(calls.find((c) => c.path === '/sources/1/website')?.body).toEqual({ website: 'acmedatos.example' })
+  })
+
+  it('sin web, pone la inicial y ofrece añadirla', async () => {
+    mockApi({ 'GET /status': status(), 'GET /sources': { sources: [source({ website: null })] } })
+    renderApp('/empresas')
+    expect(await screen.findByRole('button', { name: 'Añadir su web para el logo' })).toBeInTheDocument()
+    expect(screen.getByText('A')).toBeInTheDocument()
+  })
+
   it('ofrece los ATS nuevos con su ejemplo de slug y su idioma en Personio', async () => {
     const calls = mockApi({
       'GET /status': status(),

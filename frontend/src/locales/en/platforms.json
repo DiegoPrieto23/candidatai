@@ -89,9 +89,11 @@
     "priorityAria": "Priority of {{name}}",
     "first": "1 (first)",
     "access": "Access",
-    "accessAria": "Access to {{name}}"
+    "accessAria": "Access to {{name}}",
+    "maxOffers": "Jobs per run",
+    "maxOffersAria": "Jobs per run on {{name}}"
   },
-  "limits": "Limits in `config/policies.yaml`: at most {{pages}} of results per search, a {{delay}} s pause between pages and {{offers}} jobs per platform unless it says otherwise.",
+  "limits": "Limits in `config/policies.yaml`: at most {{pages}} of results per search, a {{delay}} s pause between pages and {{offers}} jobs per run on new platforms (change it on each one with “Jobs per run”).",
   "empty": {
     "title": "No platforms yet",
     "body": "Add them with “Add platform” or ask your agent for `search-jobs configurar`: it'll ask where you search, recommend job boards and save the searches here."
