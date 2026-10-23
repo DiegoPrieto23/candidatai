@@ -380,6 +380,12 @@ La carta es un documento propio, con sus indicaciones, su verificación y sus re
 - Para agentes y terminal: `get_received_offer` ↔ `jh received-offers show`.
 
 
+## 27.1 · Cada botón dice qué hace — 2026-10-23 · Claude Code (Opus 5.5)
+- **Un globo en cada botón «en tu agente»:** al pasar el ratón o enfocarlo con el teclado dice qué
+  hace el skill, qué cambia y qué te pide; si está desactivado, por qué. La ayuda está también en
+  el desplegable ▾ y para lectores de pantalla.
+- **Plataformas explicadas:** «Prioridad», «Acceso» y «Ofertas por recorrido» con su ⓘ.
+
 ## 26.5 · Una demo con todo — 2026-10-19 · Claude Code (Opus 5.5)
 - **Ninguna pantalla vacía en la demo:** trae carta, respuestas de screening, mensajes, dosieres
   de empresa (uno con bandera roja), plan y repaso de entrevistas, la oferta recibida, correos de

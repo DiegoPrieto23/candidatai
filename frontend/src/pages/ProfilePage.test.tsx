@@ -138,9 +138,9 @@ describe('Mi perfil', () => {
     renderApp('/perfil')
     const blocked = await screen.findByRole('button', { name: 'Ampliar perfil desde mis enlaces' })
     await waitFor(() => expect(blocked).toBeDisabled())
-    expect(blocked).toHaveAttribute('title', noWeb)
+    expect(blocked).toHaveAccessibleDescription(new RegExp(noWeb))
     // Sin segundo plano: pregunta antes de escribir en el perfil.
-    await userEvent.click(within(blocked.parentElement!).getByRole('button', { name: /con Codex/ }))
+    await userEvent.click(within(blocked.closest<HTMLElement>('[data-slot="agent-button"]')!).getByRole('button', { name: /con Codex/ }))
     expect(screen.queryByRole('menuitem', { name: /En segundo plano/ })).not.toBeInTheDocument()
   })
 

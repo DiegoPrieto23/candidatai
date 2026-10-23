@@ -313,7 +313,7 @@ describe('Mi perfil editable', () => {
     await userEvent.click(improve)
     await waitFor(() => expect(calls.some((c) => c.path === '/agent/launch')).toBe(true))
     expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ action: 'improve-profile-item', profile_item: 'exp-norte/a1' })
-    await userEvent.click(within(improve.parentElement!).getByRole('button', { name: /con Claude Code/ }))
+    await userEvent.click(within(improve.closest<HTMLElement>('[data-slot="agent-button"]')!).getByRole('button', { name: /con Claude Code/ }))
     expect(screen.queryByRole('menuitem', { name: /Dejar para mi próxima sesión/ })).not.toBeInTheDocument()
   })
 

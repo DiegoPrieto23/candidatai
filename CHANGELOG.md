@@ -10,6 +10,12 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Qué hace cada botón de tu agente:** al pasar el ratón por un botón verde («Ampliar búsqueda»,
+  «Generar CV», «Preparar»…) o al llegar a él con el teclado, un globo explica qué hace, qué cambia
+  en la app y si te va a pedir algo. Si el botón está desactivado, dice también por qué. La misma
+  ayuda abre el desplegable ▾, para leerla sin ratón.
+- **Ayuda en Plataformas:** «Prioridad», «Acceso» y «Ofertas por recorrido» llevan un ⓘ que explica
+  qué significan.
 - **Logo de las empresas objetivo:** en «Fuentes → Empresas objetivo» cada empresa lleva su logo,
   como las plataformas. La app saca su web de sus ofertas si las publica en su propio dominio
   (`careers.acme.com`); si no, la escribes al añadirla o con «Añadir su web para el logo». Los

@@ -87,11 +87,17 @@
     "switch": "Browser search on {{name}}",
     "priority": "Priority",
     "priorityAria": "Priority of {{name}}",
+    "priorityHint": "The order in which your agent goes through the job boards when you ask it to search for jobs: number 1 first, then 2…",
+    "priorityHintAria": "What priority means",
     "first": "1 (first)",
     "access": "Access",
     "accessAria": "Access to {{name}}",
+    "accessHint": "How the agent gets in. Open: without signing in. Signed in: you need to be signed in to your browser yourself (it never types your password). Blocked: the agent skips it.",
+    "accessHintAria": "What access means",
     "maxOffers": "Jobs per run",
-    "maxOffersAria": "Jobs per run on {{name}}"
+    "maxOffersAria": "Jobs per run on {{name}}",
+    "maxOffersHint": "The maximum number of new jobs the agent adds each time it goes through this job board. Lower it if you get too many to review.",
+    "maxOffersHintAria": "What jobs per run means"
   },
   "limits": "Limits in `config/policies.yaml`: at most {{pages}} of results per search, a {{delay}} s pause between pages and {{offers}} jobs per run on new platforms (change it on each one with “Jobs per run”).",
   "empty": {

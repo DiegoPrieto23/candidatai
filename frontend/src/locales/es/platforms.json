@@ -87,11 +87,17 @@
     "switch": "Búsqueda con navegador en {{name}}",
     "priority": "Prioridad",
     "priorityAria": "Prioridad de {{name}}",
+    "priorityHint": "El orden en que tu agente recorre las plataformas cuando le pides buscar ofertas: primero la 1, luego la 2…",
+    "priorityHintAria": "Qué es la prioridad",
     "first": "1 (primera)",
     "access": "Acceso",
     "accessAria": "Acceso a {{name}}",
+    "accessHint": "Cómo entra el agente. Libre: sin iniciar sesión. Con sesión: necesita que hayas iniciado sesión tú en tu navegador (nunca escribe tu contraseña). Bloqueada: el agente la salta.",
+    "accessHintAria": "Qué es el acceso",
     "maxOffers": "Ofertas por recorrido",
-    "maxOffersAria": "Ofertas por recorrido en {{name}}"
+    "maxOffersAria": "Ofertas por recorrido en {{name}}",
+    "maxOffersHint": "Cuántas ofertas nuevas da de alta el agente, como mucho, cada vez que recorre esta plataforma. Bájalo si te llegan demasiadas para revisar.",
+    "maxOffersHintAria": "Qué son las ofertas por recorrido"
   },
   "limits": "Límites en `config/policies.yaml`: como mucho {{pages}} de resultados por búsqueda, {{delay}} s de pausa entre páginas y {{offers}} ofertas por recorrido en las plataformas nuevas (en cada una lo cambias con «Ofertas por recorrido»).",
   "empty": {

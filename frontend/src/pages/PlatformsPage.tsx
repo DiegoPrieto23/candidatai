@@ -11,6 +11,7 @@ import {
 } from '@/api/queries'
 import { AddPlatformButton } from '@/components/AddPlatformDialog'
 import { AgentButton } from '@/components/AgentButton'
+import { Hint } from '@/components/Hint'
 import { SiteIcon } from '@/components/SiteIcon'
 import { EmptyState, ErrorState, InlineCode } from '@/components/States'
 import { Button } from '@/components/ui/button'
@@ -529,7 +530,10 @@ function PlatformRow({ source }: { source: SourceView }) {
 
       <div className="flex flex-wrap gap-3">
         <div className="grid gap-1">
-          <span className="text-xs text-muted-foreground">{t('row.priority')}</span>
+          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+            {t('row.priority')}
+            <Hint text={t('row.priorityHint')} label={t('row.priorityHintAria')} />
+          </span>
           <Select
             value={String(browse.priority)}
             onValueChange={(v) => change({ priority: Number(v) })}
@@ -548,7 +552,10 @@ function PlatformRow({ source }: { source: SourceView }) {
           </Select>
         </div>
         <div className="grid gap-1">
-          <span className="text-xs text-muted-foreground">{t('row.access')}</span>
+          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+            {t('row.access')}
+            <Hint text={t('row.accessHint')} label={t('row.accessHintAria')} />
+          </span>
           <Select
             value={browse.access}
             onValueChange={(v) => change({ access: v as BrowseAccess })}
@@ -569,7 +576,10 @@ function PlatformRow({ source }: { source: SourceView }) {
           </Select>
         </div>
         <div className="grid gap-1">
-          <span className="text-xs text-muted-foreground">{t('row.maxOffers')}</span>
+          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+            {t('row.maxOffers')}
+            <Hint text={t('row.maxOffersHint')} label={t('row.maxOffersHintAria')} />
+          </span>
           <Select
             value={String(maxOffers)}
             onValueChange={(v) => change({ max_offers: Number(v) })}

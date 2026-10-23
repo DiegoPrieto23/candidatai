@@ -2,6 +2,7 @@
 // Una línea por fichero de `src/locales/es/`.
 import 'i18next'
 import type agent from '@/locales/es/agent.json'
+import type agentActions from '@/locales/es/agentActions.json'
 import type agentButton from '@/locales/es/agentButton.json'
 import type agents from '@/locales/es/agents.json'
 import type alerts from '@/locales/es/alerts.json'
@@ -43,6 +44,7 @@ declare module 'i18next' {
     defaultNS: 'common'
     resources: {
       agent: typeof agent
+      agentActions: typeof agentActions
       agentButton: typeof agentButton
       agents: typeof agents
       alerts: typeof alerts
