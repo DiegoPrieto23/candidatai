@@ -11,6 +11,7 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import { useLanguage } from '@/lib/i18n'
 import { AgentPage } from '@/pages/AgentPage'
 import { AlertsPage } from '@/pages/AlertsPage'
+import { CalendarPage } from '@/pages/CalendarPage'
 import { HomePage } from '@/pages/HomePage'
 import { InboxPage } from '@/pages/InboxPage'
 import { JobPage } from '@/pages/JobPage'
@@ -55,6 +56,7 @@ export function AppRoutes() {
         {/* Antes «Triaje»: los enlaces guardados siguen funcionando. */}
         <Route path="triaje" element={<Navigate to="/por-revisar" replace />} />
         <Route path="procesos" element={<ProcessesPage />} />
+        <Route path="calendario" element={<CalendarPage />} />
         <Route path="respuestas" element={<RepliesPage />} />
         <Route
           path="embudo"

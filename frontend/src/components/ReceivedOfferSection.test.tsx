@@ -134,12 +134,12 @@ describe('Ofertas recibidas en Procesos (fase 21)', () => {
     expect(within(section).getByText('Sin fijo anotado.')).toBeInTheDocument()
   })
 
-  it('no aparece sin ofertas recibidas', async () => {
+  it.each([[[]], [[comparison()]]])('no aparece con menos de dos ofertas recibidas (%#)', async (offers) => {
     mockApi({
       'GET /status': status(),
       'GET /board': board([]),
       'GET /upcoming': { days: 7, items: [] },
-      'GET /received-offers': { floor_eur: null, offers: [] },
+      'GET /received-offers': { floor_eur: null, offers },
     })
     renderApp('/procesos')
     await screen.findByRole('heading', { name: 'Procesos' })

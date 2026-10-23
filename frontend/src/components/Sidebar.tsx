@@ -2,6 +2,7 @@ import { useEffect, useState, type ComponentType } from 'react'
 import { Link, useLocation } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import {
+  CalendarDotsIcon,
   ChatsCircleIcon,
   DesktopIcon,
   FileTextIcon,
@@ -90,6 +91,7 @@ type EntryKey =
   | 'triage'
   | 'alerts'
   | 'processes'
+  | 'calendar'
   | 'replies'
   | 'funnel'
   | 'skills'
@@ -127,6 +129,7 @@ const NAV_GROUPS: { title: GroupKey | null; entries: Entry[] }[] = [
     title: 'processes',
     entries: [
       { to: '/procesos', label: 'processes', icon: KanbanIcon },
+      { to: '/calendario', label: 'calendar', icon: CalendarDotsIcon },
       { to: '/respuestas', label: 'replies', icon: ChatsCircleIcon, useCount: useRepliesCount },
     ],
   },

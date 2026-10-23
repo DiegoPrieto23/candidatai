@@ -2,7 +2,7 @@
 
 from collections import defaultdict
 from collections.abc import Iterable
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from typing import Literal
 
 from pydantic import BaseModel
@@ -244,6 +244,61 @@ def upcoming_items(session: Session, start: datetime, end: datetime | None) -> l
     items.extend(_application_deadlines(session, start, end))
     items.sort(key=lambda i: (i.starts_at, i.job_id, i.milestone_id or 0))
     return items
+
+
+MilestoneStatus = Literal["scheduled", "done", "cancelled"]
+
+
+class CalendarItem(UpcomingItem):
+    status: MilestoneStatus  # el plazo de la oferta siempre es `scheduled`
+
+
+class CalendarRange(BaseModel):
+    start: date
+    end: date  # incluido
+    items: list[CalendarItem]
+
+
+def calendar_items(session: Session, start: date, end: date) -> CalendarRange:
+    """Página «Calendario»: todos los hitos (programados, hechos y cancelados, también de procesos
+    cerrados) y los plazos de las ofertas sin enviar, del día `start` al `end` incluidos, en hora
+    de Madrid."""
+    if end < start:
+        raise ValueError("`end` no puede ser anterior a `start`.")
+    if (end - start).days >= MAX_DAYS:
+        raise ValueError(f"El rango no puede pasar de {MAX_DAYS} días.")
+    first = start_of_local_day(start)
+    after = start_of_local_day(end + timedelta(days=1))
+    rows = session.execute(
+        select(Milestone, Job.title, Company.name, Application.stage)
+        .join(Job, Job.id == Milestone.job_id)
+        .join(Company, Company.id == Job.company_id)
+        .join(Application, Application.job_id == Job.id)
+        .where(Milestone.starts_at >= first, Milestone.starts_at < after)
+    ).all()
+    items = [
+        CalendarItem(
+            kind=m.kind,  # type: ignore[arg-type]
+            job_id=m.job_id,
+            job_title=job_title,
+            company=company,
+            stage=Stage(stage),
+            milestone_id=m.id,
+            title=m.title,
+            starts_at=m.starts_at,
+            ends_at=m.ends_at,
+            all_day=m.all_day,
+            location=m.location,
+            status=m.status,  # type: ignore[arg-type]
+        )
+        for m, job_title, company, stage in rows
+    ]
+    items.extend(
+        CalendarItem(**i.model_dump(), status="scheduled")
+        for i in _application_deadlines(session, first, after)
+    )
+    items.sort(key=lambda i: (i.starts_at, i.job_id, i.milestone_id or 0))
+    return CalendarRange(start=start, end=end, items=items)
 
 
 def _application_deadlines(

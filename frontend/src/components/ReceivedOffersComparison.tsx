@@ -33,13 +33,14 @@ type Row = { label: string; cell: (o: OfferComparison) => ReactNode }
  * Procesos (fase 21): las ofertas recibidas lado a lado, con la diferencia con tu mínimo
  * (`private.salary_floor_eur` del perfil) y con el rango publicado. Se calcula en la API y solo lo
  * ves tú: tu agente nunca recibe el mínimo ni estas diferencias. No recomienda ninguna cifra.
+ * Solo sale con dos o más: con una, repite la sección «Oferta recibida» de su ficha.
  */
 export function ReceivedOffersComparison() {
   const { t } = useTranslation('offers', { keyPrefix: 'comparison' })
   const { data, isPending, isError, error, refetch } = useReceivedOffers()
   if (isPending) return null
   if (isError) return <ErrorState error={error} onRetry={() => refetch()} />
-  if (data.offers.length === 0) return null
+  if (data.offers.length < 2) return null
   const floor = data.floor_eur
   const rows: Row[] = [
     { label: t('rows.annualBase'), cell: (o) => money(o.annual_base, o.offer.currency, o.approximate) },

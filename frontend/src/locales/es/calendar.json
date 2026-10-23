@@ -1,0 +1,31 @@
+{
+  "title": "Calendario",
+  "intro": "Tus entrevistas, pruebas y plazos, también los ya pasados. Los hitos se crean en la ficha de cada oferta o al actualizar el estado de una tarjeta en Procesos.",
+  "views": {
+    "label": "Vista",
+    "month": "Mes",
+    "week": "Semana",
+    "day": "Día",
+    "agenda": "Agenda"
+  },
+  "today": "Hoy",
+  "previous": "Anterior",
+  "next": "Siguiente",
+  "more_one": "{{count}} más",
+  "more_other": "{{count}} más",
+  "moreAria_one": "Ver {{count}} hito más del {{day}}",
+  "moreAria_other": "Ver {{count}} hitos más del {{day}}",
+  "openDay": "Ver el día {{day}}",
+  "allDay": "Todo el día",
+  "now": "Ahora",
+  "agendaEmpty": "Nada en los {{count}} días a partir de esta fecha.",
+  "legend": "Leyenda",
+  "detail": {
+    "when": "Cuándo",
+    "where": "Dónde",
+    "status": "Estado",
+    "stage": "Proceso",
+    "openJob": "Ver la oferta",
+    "ics": "Añadir a mi calendario (.ics)"
+  }
+}

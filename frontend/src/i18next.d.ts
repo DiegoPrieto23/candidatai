@@ -6,6 +6,7 @@ import type agentButton from '@/locales/es/agentButton.json'
 import type agents from '@/locales/es/agents.json'
 import type alerts from '@/locales/es/alerts.json'
 import type apply from '@/locales/es/apply.json'
+import type calendar from '@/locales/es/calendar.json'
 import type common from '@/locales/es/common.json'
 import type cv from '@/locales/es/cv.json'
 import type drafts from '@/locales/es/drafts.json'
@@ -46,6 +47,7 @@ declare module 'i18next' {
       agents: typeof agents
       alerts: typeof alerts
       apply: typeof apply
+      calendar: typeof calendar
       common: typeof common
       cv: typeof cv
       drafts: typeof drafts
