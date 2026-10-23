@@ -62,6 +62,7 @@ export function AgentButton({
   jobId,
   milestoneId,
   profileItem,
+  upload,
   children,
   variant = 'outline',
   size = 'sm',
@@ -73,6 +74,8 @@ export function AgentButton({
   milestoneId?: number
   /** «Mi perfil» (fase 25.7b): el id de un logro o una historia. Solo en terminal. */
   profileItem?: string
+  /** Plantillas: el nombre de un CV subido (`data/uploads/<nombre>`). Solo en terminal. */
+  upload?: string
   children: ReactNode
   variant?: 'default' | 'outline' | 'secondary' | 'ghost'
   size?: 'sm' | 'default'
@@ -92,7 +95,7 @@ export function AgentButton({
     clearTimeout(timer.current)
     timer.current = setTimeout(() => setFeedback(null), 8000)
   }
-  const target = { action, job_id: jobId, milestone_id: milestoneId, profile_item: profileItem }
+  const target = { action, job_id: jobId, milestone_id: milestoneId, profile_item: profileItem, upload }
   const failed = (error: unknown, fallback: string) =>
     show({ tone: 'error', text: error instanceof Error ? errorMessage(error) : fallback })
 
@@ -236,8 +239,8 @@ export function AgentButton({
                 <DropdownMenuSeparator />
               </>
             )}
-            {/* La cola de encargos no guarda el id de un elemento del perfil. */}
-            {action !== 'handle-requests' && !profileItem && (
+            {/* La cola de encargos no guarda el id de un elemento del perfil ni el CV subido. */}
+            {action !== 'handle-requests' && !profileItem && !upload && (
               <DropdownMenuItem onSelect={leaveForLater}>
                 <ClockCountdownIcon weight="duotone" />
                 <span>

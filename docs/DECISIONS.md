@@ -1191,3 +1191,18 @@ una antigua; si una decisión cambia, la nueva la marca como sustituida.
   copia de seguridad es la del volumen. La forma recomendada sigue siendo la nativa. Fuera de
   alcance: el agente dentro del contenedor, un navegador remoto (noVNC) para la candidatura asistida
   y publicar la imagen en un registro.
+
+## ADR-043 · «Convertir en plantilla» desde Plantillas (matiza la 024)
+- **Contexto:** al subir un CV en «Plantillas → Mi CV», la UI solo enseñaba la orden
+  `import-cv-template data/uploads/<fichero>` para copiarla en el agente. Era el único skill de la
+  UI sin botón «en tu agente».
+- **Decisión:** acción `import-cv-template` («Convertir en plantilla»), solo en terminal porque el
+  skill pregunta y te deja comparar antes de cerrar. Como «Mejorar» (ADR-039), la orden lleva un
+  texto: la ruta del CV (`upload`). Solo vale el nombre exacto de un fichero que ya está en
+  `data/uploads/` (`uploads.list_uploads`); lo demás es `not_found` y no se abre nada. La cola de
+  encargos y el segundo plano no guardan ese nombre, así que no se ofrecen. Pide un agente con
+  visión (`agent_prefs.REQUIRES`), como ya estaba previsto. La orden para copiar se sigue enseñando
+  debajo del botón.
+- **Consecuencias:** convertir tu CV en plantilla es un clic; la conversión la sigue haciendo tu
+  agente, una vez, y la ves y apruebas en la terminal.
+

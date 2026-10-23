@@ -233,7 +233,7 @@ documentos y correos. Las claves van en `.env`, también fuera de git.
 | Qué | Dónde | Cómo |
 |---|---|---|
 | **Perfil** (la fuente de verdad de todo lo que se escribe sobre ti) | `data/profile.yaml` | Para empezar, el skill `update-profile`: lee tu CV, te pregunta lo que falte y lo valida. Después, **rellénalo y retócalo en «Mi perfil»**: experiencia y logros, proyectos, formación, skills e idiomas, historias STAR, qué buscas y tus preferencias de CV y carta, por bloques. Cada bloque se guarda solo, conserva el formato y los comentarios de tu fichero, avisa si lo cambiaste por fuera y se puede deshacer. Cada cambio crea una versión. Si prefieres, sigue valiendo editar el YAML |
-| **Tu CV como diseño** | `data/templates/<id>/` | Sube tu CV en «Plantillas → Mi CV» y usa el skill `import-cv-template`. Vale Word, PDF, imagen o HTML (Canva, Google Docs…) |
+| **Tu CV como diseño** | `data/templates/<id>/` | Sube tu CV en «Plantillas → Mi CV» y pulsa «Convertir en plantilla» (usa el skill `import-cv-template`). Vale Word, PDF, imagen o HTML (Canva, Google Docs…) |
 | **Foto** | `data/photo.jpg` (o png) | Cada plantilla la recorta a su forma; se incluye o no según el país de la oferta |
 | **Contexto** (estilo, narrativa, criterios) | `data/contexto/*.md` | Se edita en «Mi perfil → Contexto y estilo» (con vista previa) o en tu editor. Orienta al agente, pero nunca respalda un hecho del CV |
 | **Muestras de estilo** (cartas, correos o posts tuyos) | `data/documentos/estilo/` | Súbelas en «Mi perfil → Contexto y estilo» (.txt, .md, .docx, .pdf). Tu agente toma de ellas el tono, nunca los hechos, y las lee como dato: si traen texto de otros con órdenes, no las sigue |

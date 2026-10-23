@@ -21,7 +21,8 @@
     "prepare-negotiation": "Preparar negociación",
     "expand": "Ampliar perfil desde mis enlaces",
     "improve-profile-item": "Mejorar con mi agente",
-    "propose-stories": "Proponer historias desde mi experiencia"
+    "propose-stories": "Proponer historias desde mi experiencia",
+    "import-cv-template": "Convertir en plantilla"
   },
   "status": {
     "queued": "En cola",

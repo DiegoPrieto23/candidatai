@@ -18,6 +18,7 @@ import {
   useUploadCv,
   useUploads,
 } from '@/api/queries'
+import { AgentButton } from '@/components/AgentButton'
 import { InlineCode } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -99,9 +100,12 @@ function PendingUpload({ upload }: { upload: UploadInfo }) {
   const recreated = upload.format !== 'docx'
   return (
     <div className="space-y-2">
-      <p className="text-sm text-foreground/80">
-        {t('askAgent')}
-      </p>
+      <p className="text-sm text-foreground/80">{t('askAgent')}</p>
+      {/* Se abre en una terminal: ves lo que hace el agente y lo apruebas tú. */}
+      <AgentButton action="import-cv-template" upload={upload.name} variant="default">
+        {t('convert')}
+      </AgentButton>
+      <p className="text-xs text-muted-foreground">{t('orCopy')}</p>
       <CopyCommand command={upload.agent_command} />
       {recreated && (
         <p className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">

@@ -68,6 +68,7 @@ from app.services.agent_registry import (
     TOOLS_PLACEHOLDER,
     RunConfigSpec,
 )
+from app.services.documents import uploads
 
 logger = logging.getLogger(__name__)
 
@@ -133,6 +134,7 @@ def prompt_for(
     job_id: int | None = None,
     milestone_id: int | None = None,
     profile_item: str | None = None,
+    upload: str | None = None,
 ) -> str:
     """La orden que se le da al agente (la misma que copia la UI si no puede lanzarlo)."""
     spec = ACTIONS[action]
@@ -142,7 +144,11 @@ def prompt_for(
         raise LaunchError("invalid_request", f"«{spec.label}» necesita una entrevista.")
     if spec.profile_item and profile_item is None:
         raise LaunchError("invalid_request", f"«{spec.label}» necesita un logro o una historia.")
-    return spec.prompt.format(job_id=job_id, milestone_id=milestone_id, profile_item=profile_item)
+    if spec.upload and upload is None:
+        raise LaunchError("invalid_request", f"«{spec.label}» necesita un CV subido.")
+    return spec.prompt.format(
+        job_id=job_id, milestone_id=milestone_id, profile_item=profile_item, upload=upload
+    )
 
 
 # Un logro (`exp-acme/a2`) o una historia (`st-x`): el formato de los ids del perfil.
@@ -167,6 +173,17 @@ def _check_profile_item(session: Session, profile_item: str | None) -> str:
             "not_found", f"«{profile_item}» no es un logro ni una historia de tu perfil vigente."
         )
     return profile_item
+
+
+def _check_upload(upload: str | None) -> str:
+    """La ruta (`data/uploads/<nombre>`) de un CV subido desde Plantillas. Como `profile_item`:
+    es texto, pero solo vale el nombre exacto de un fichero que ya está en `data/uploads/`."""
+    if upload is None:
+        raise LaunchError("invalid_request", "Esta acción necesita un CV subido.")
+    found = next((u for u in uploads.list_uploads() if u.name == upload), None)
+    if found is None:
+        raise LaunchError("not_found", f"«{upload}» no es un CV subido en Plantillas.")
+    return found.path
 
 
 def _manifest_problem() -> str | None:
@@ -496,11 +513,13 @@ def check_target(
     job_id: int | None = None,
     milestone_id: int | None = None,
     profile_item: str | None = None,
+    upload: str | None = None,
 ) -> tuple[str, int | None, int | None]:
     """Comprueba que la acción se puede lanzar para esa oferta o hito y devuelve su orden, con la
     oferta y el hito que le corresponden (`None` si la acción no los usa)."""
     spec = ACTIONS[action]
     item = _check_profile_item(session, profile_item) if spec.profile_item else None
+    path = _check_upload(upload) if spec.upload else None
     if spec.milestone:
         job_id = _check_milestone(session, spec.milestone, milestone_id, job_id)
     elif spec.needs_job:
@@ -516,7 +535,7 @@ def check_target(
             raise LaunchError("invalid_request", "Esta oferta no tiene una propuesta recibida.")
     job_id = job_id if spec.needs_job else None
     milestone_id = milestone_id if spec.milestone else None
-    return prompt_for(action, job_id, milestone_id, item), job_id, milestone_id
+    return prompt_for(action, job_id, milestone_id, item, path), job_id, milestone_id
 
 
 def launch(
@@ -529,11 +548,12 @@ def launch(
     model: str | None = None,
     preset: str | None = None,
     profile_item: str | None = None,
+    upload: str | None = None,
 ) -> LaunchResult:
     """Abre el agente en una terminal con la orden de `action`. No espera a que termine. `agent`,
     `model` y `preset`: la elección puntual del botón (si no, las preferencias)."""
     spec = ACTIONS[action]
-    prompt, _, _ = check_target(session, action, job_id, milestone_id, profile_item)
+    prompt, _, _ = check_target(session, action, job_id, milestone_id, profile_item, upload)
     picked = pick(session, action, prompt, agent=agent, model=model, preset=preset)
     return _open(spec.label, prompt, picked, picked.command, prompt)
 

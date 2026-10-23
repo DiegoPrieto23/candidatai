@@ -148,6 +148,26 @@ describe('Galería de plantillas', () => {
       expect(screen.queryByText(/08b/)).not.toBeInTheDocument()
     })
 
+    it('«Convertir en plantilla» abre el agente con el CV subido', async () => {
+      const calls = mockApi({
+        'GET /status': status(),
+        'GET /templates': templateList(),
+        'GET /uploads': [pending],
+        'GET /templates/default': { template_id: null },
+        'GET /agent': { available: true, agent: 'claude', reason: null, actions: [] },
+        'POST /agent/launch': { ok: true, agent: 'claude', prompt: 'Usa el skill import-cv-template…', message: 'ok' },
+      })
+      renderApp('/plantillas')
+      const card = await screen.findByRole('listitem', { name: 'mi-cv.docx' })
+      await userEvent.click(within(card).getByRole('button', { name: 'Convertir en plantilla' }))
+      await waitFor(() =>
+        expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({
+          action: 'import-cv-template',
+          upload: 'mi-cv.docx',
+        }),
+      )
+    })
+
     it('un CV importado desde PDF muestra original y recreación y avisa de que solo da PDF', async () => {
       const canva = templateInfo({
         id: 'canva',
