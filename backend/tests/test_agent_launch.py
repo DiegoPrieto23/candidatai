@@ -462,7 +462,7 @@ def test_convert_carries_the_path_of_an_uploaded_cv(
     response = _convert(client, saved.name)
     assert response.status_code == 202, response.text
     [(_title, command)] = opened
-    assert f"convertir en plantilla data/uploads/{saved.name}." in command
+    assert f"convertir en plantilla {saved.path}." in command
 
 
 @pytest.mark.parametrize(

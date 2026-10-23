@@ -102,7 +102,7 @@ function PendingUpload({ upload }: { upload: UploadInfo }) {
     <div className="space-y-2">
       <p className="text-sm text-foreground/80">{t('askAgent')}</p>
       {/* Se abre en una terminal: ves lo que hace el agente y lo apruebas tú. */}
-      <AgentButton action="import-cv-template" upload={upload.name} variant="default">
+      <AgentButton action="import-cv-template" upload={upload.name}>
         {t('convert')}
       </AgentButton>
       <p className="text-xs text-muted-foreground">{t('orCopy')}</p>

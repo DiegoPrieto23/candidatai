@@ -93,7 +93,7 @@ export function StoriesBlock() {
               )}
             </fieldset>
             {story.id && savedIds.has(story.id) && (
-              <AgentButton action="improve-profile-item" profileItem={story.id} variant="ghost" className="justify-self-start">
+              <AgentButton action="improve-profile-item" profileItem={story.id} className="justify-self-start">
                 {t('agent.improve')}
               </AgentButton>
             )}

@@ -312,7 +312,7 @@ export function SkillsPage() {
               {t('addHave', { count: marked('have') })}
             </AgentButton>
           )}
-          <AgentButton action="training-plan" variant={marked('gap') > 0 ? 'default' : 'outline'}>
+          <AgentButton action="training-plan">
             {t('training')}
           </AgentButton>
         </div>

@@ -1,4 +1,4 @@
-import { PlusIcon } from '@phosphor-icons/react'
+import { BuildingsIcon, PlusIcon } from '@phosphor-icons/react'
 import { useTranslation } from 'react-i18next'
 import { AgentButton } from '@/components/AgentButton'
 import { Button } from '@/components/ui/button'
@@ -41,14 +41,21 @@ export function ExperienceBlock() {
       }
     >
       {list.length === 0 && <p className="text-sm text-muted-foreground">{t('blocks.experience.empty')}</p>}
+      {/* Cada empresa, en su tarjeta con borde de color y separada de la siguiente. */}
+      <div className="grid gap-6">
       {list.map((exp, i) => {
         const name = exp.company || t('blocks.experience.untitled')
         const path = `experience.${i}`
         return (
-          <article key={exp.id ?? `new-${i}`} aria-label={name} className="grid gap-3 rounded-lg border p-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <h3 className="text-sm font-medium">
-                {exp.role ? `${exp.role} · ${name}` : name}
+          <article
+            key={exp.id ?? `new-${i}`}
+            aria-label={name}
+            className="grid gap-4 rounded-xl border border-l-4 border-l-primary/70 bg-background/60 p-4 shadow-xs"
+          >
+            <div className="-mx-4 -mt-4 flex flex-wrap items-center justify-between gap-2 rounded-tr-xl border-b bg-primary/[0.06] px-4 py-2.5">
+              <h3 className="flex min-w-0 items-center gap-2 font-semibold">
+                <BuildingsIcon className="size-[18px] shrink-0 text-primary" weight="duotone" aria-hidden />
+                <span className="truncate">{exp.role ? `${exp.role} · ${name}` : name}</span>
               </h3>
               <ItemControls
                 label={name}
@@ -131,7 +138,7 @@ export function ExperienceBlock() {
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <CheckField label={t('fields.nda')} checked={Boolean(ach.nda)} onChange={(v) => setAchievement(i, j, { nda: v })} />
                       {saved.has(ref) && (
-                        <AgentButton action="improve-profile-item" profileItem={ref} variant="ghost">
+                        <AgentButton action="improve-profile-item" profileItem={ref}>
                           {t('agent.improve')}
                         </AgentButton>
                       )}
@@ -152,6 +159,7 @@ export function ExperienceBlock() {
           </article>
         )
       })}
+      </div>
       <BlockActions block={block} />
     </Block>
   )

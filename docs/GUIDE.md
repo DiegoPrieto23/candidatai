@@ -471,6 +471,7 @@ cd ..\frontend; pnpm install; pnpm build
 | "Port 8000 is used by another program" | Close that program or use `cai start --port 8001` |
 | The built UI is missing | In the repository, `cd frontend; pnpm install; pnpm build` (the installer ships it) |
 | Nothing comes in by itself in the morning | CandidatAI must be open (`cai start` runs the worker) |
+| A template says it has no permission to read its folder (or **Templates** shows `PermissionError`) | A sandboxed agent (Codex on Windows) created it without giving your user access. In PowerShell **as administrator**: `takeown /f "<folder>" /r /d Y` and `icacls "<folder>" /reset /t` (on a Spanish Windows, `/d S`) |
 | Accents look wrong in `cai --help` | Known Windows console (cp1252) issue; `--json` output is fine |
 
 ## 15. Development

@@ -56,6 +56,8 @@ async function copy(text: string): Promise<boolean> {
  * Fase 24.4: el desplegable dice con qué agente iría («con Claude Code ▾», según tus preferencias)
  * y deja abrirlo con otro solo esta vez. Si el agente no sirve para la acción (le falta una
  * capacidad, p. ej.), el botón se deshabilita y el desplegable dice por qué.
+ *
+ * Siempre en verde (el color primario): así se distingue de un vistazo lo que lanza tu agente.
  */
 export function AgentButton({
   action,
@@ -64,7 +66,6 @@ export function AgentButton({
   profileItem,
   upload,
   children,
-  variant = 'outline',
   size = 'sm',
   className,
 }: {
@@ -77,7 +78,6 @@ export function AgentButton({
   /** Plantillas: el nombre de un CV subido (`data/uploads/<nombre>`). Solo en terminal. */
   upload?: string
   children: ReactNode
-  variant?: 'default' | 'outline' | 'secondary' | 'ghost'
   size?: 'sm' | 'default'
   className?: string
 }) {
@@ -154,7 +154,7 @@ export function AgentButton({
       <span className="inline-flex">
         <Button
           type="button"
-          variant={variant}
+          variant="default"
           size={size}
           onClick={() => run()}
           disabled={busy || blocked !== null}
@@ -168,11 +168,11 @@ export function AgentButton({
           <DropdownMenuTrigger asChild>
             <Button
               type="button"
-              variant={variant}
+              variant="default"
               size={size}
               disabled={busy}
               aria-label={shownAgent ? t('moreWith', { agent: shownAgent }) : t('more')}
-              className={cn('rounded-l-none border-l px-2', variant === 'default' && 'border-l-primary-foreground/25')}
+              className="rounded-l-none border-l border-l-primary-foreground/25 px-2"
             >
               {shownAgent && (
                 <span className="hidden max-w-32 truncate text-xs font-normal sm:inline">

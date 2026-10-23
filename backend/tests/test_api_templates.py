@@ -59,12 +59,22 @@ def test_upload_saves_with_safe_name_and_never_overwrites(
     first = _upload(client, "Mi CV (versión 2).docx", data)
     assert first["status"] == 201
     assert first["name"] == "mi-cv-version-2.docx"
-    assert first["path"] == "data/uploads/mi-cv-version-2.docx"
+    # La carpeta de datos de los tests queda fuera del repo: la ruta va absoluta.
+    expected = str((uploads.paths.uploads_dir() / "mi-cv-version-2.docx").resolve())
+    assert first["path"] == expected
     assert first["supported"] and first["template_id"] is None
-    assert first["agent_command"] == "import-cv-template data/uploads/mi-cv-version-2.docx"
+    assert first["agent_command"] == f"import-cv-template {expected}"
     second = _upload(client, "Mi CV (versión 2).docx", data)
     assert second["name"] == "mi-cv-version-2-2.docx"
     assert (uploads.paths.uploads_dir() / "mi-cv-version-2.docx").read_bytes() == data
+
+
+def test_upload_path_is_relative_inside_the_repo() -> None:
+    """Con la carpeta de datos en el repo (`data/`, `data-demo/`), la orden usa la de verdad."""
+    from app.core.config import REPO_ROOT
+
+    path = REPO_ROOT / "data-demo" / "uploads" / "mi-cv.docx"
+    assert uploads._agent_path(path) == "data-demo/uploads/mi-cv.docx"
 
 
 def test_upload_rejects_format_size_and_path_tricks(

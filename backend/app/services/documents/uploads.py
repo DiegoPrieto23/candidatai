@@ -13,7 +13,7 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
-from app.core.config import get_settings
+from app.core.config import REPO_ROOT, get_settings
 from app.services.documents import templates
 from app.services.documents.importer import paths
 
@@ -43,7 +43,7 @@ class InvalidUploadError(ValueError):
 
 class UploadInfo(BaseModel):
     name: str
-    path: str  # como se le pasa al agente: `data/uploads/<nombre>`
+    path: str  # como se le pasa al agente: `data/uploads/<nombre>` (o la carpeta de datos en uso)
     size: int
     format: str
     supported: bool  # se puede importar (todos los formatos admitidos desde la 08b)
@@ -83,16 +83,26 @@ def _sources_by_hash() -> dict[str, str]:
     return result
 
 
+def _agent_path(path: Path) -> str:
+    """La ruta para el agente: relativa al repo si la carpeta de datos está dentro (`data/…`,
+    `data-demo/…`); si no (instalación en AppData), absoluta."""
+    try:
+        return path.resolve().relative_to(REPO_ROOT.resolve()).as_posix()
+    except ValueError:
+        return str(path.resolve())
+
+
 def _info(path: Path, sources: dict[str, str]) -> UploadInfo:
     stat = path.stat()
+    agent_path = _agent_path(path)
     return UploadInfo(
         name=path.name,
-        path=f"data/uploads/{path.name}",
+        path=agent_path,
         size=stat.st_size,
         format=path.suffix.lstrip(".").casefold(),
         supported=path.suffix.casefold() in SUPPORTED_NOW,
         template_id=sources.get(_digest(path)),
-        agent_command=f"import-cv-template data/uploads/{path.name}",
+        agent_command=f"import-cv-template {agent_path}",
         uploaded_at=datetime.fromtimestamp(stat.st_mtime, tz=UTC),
     )
 

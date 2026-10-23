@@ -205,8 +205,8 @@ function RunCard({ run }: { run: AgentRunView }) {
           </Button>
         )}
         {!active && (
+          // Abre tu agente: verde, como todos los botones «en tu agente».
           <Button
-            variant={run.status === 'needs_user' ? 'default' : 'outline'}
             size="sm"
             onClick={() => open.mutate(run.id)}
             disabled={open.isPending}
@@ -318,7 +318,7 @@ function Requests() {
               <RequestRow key={r.id} request={r} />
             ))}
           </ul>
-          <AgentButton action="handle-requests" variant="default">
+          <AgentButton action="handle-requests">
             {t('handle')}
           </AgentButton>
         </>

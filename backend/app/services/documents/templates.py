@@ -220,6 +220,15 @@ def load_meta(folder: Path) -> TemplateMeta:
     return meta
 
 
+def _has_meta(folder: Path) -> bool:
+    """Si la carpeta tiene `template.yaml`. Una que no se puede leer (p. ej. la creó el usuario del
+    sandbox de un agente sin darle permisos al tuyo) cuenta como plantilla, para que salga rota."""
+    try:
+        return (folder / META_FILE).is_file()
+    except PermissionError:
+        return True
+
+
 def _scan(
     builtin_dir: Path | None, user_dir: Path | None
 ) -> tuple[dict[str, Template], dict[str, InvalidTemplate]]:
@@ -228,12 +237,18 @@ def _scan(
     for root in _roots(builtin_dir, user_dir):
         if not root.is_dir():
             continue
-        for folder in sorted(p for p in root.iterdir() if (p / META_FILE).is_file()):
+        for folder in sorted(p for p in root.iterdir() if _has_meta(p)):
             try:
                 meta = load_meta(folder)
-            except TemplateInvalidError as exc:
+            except (TemplateInvalidError, PermissionError) as exc:
+                reason = (
+                    "Sin permiso para leer la carpeta: dale permisos a tu usuario "
+                    "(docs/GUIA.md, «Problemas frecuentes»)."
+                    if isinstance(exc, PermissionError)
+                    else str(exc)
+                )
                 invalid[folder.name] = InvalidTemplate(
-                    id=folder.name, path=str(folder), reason=str(exc)
+                    id=folder.name, path=str(folder), reason=reason
                 )
                 # Una del usuario rota no deja pasar en silencio la integrada del mismo id.
                 found.pop(folder.name, None)

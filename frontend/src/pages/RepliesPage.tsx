@@ -208,7 +208,7 @@ export function RepliesPage() {
         </div>
         <div className="flex shrink-0 flex-wrap items-start gap-2">
           {unclassified > 0 && (
-            <AgentButton action="review-replies" variant="default">
+            <AgentButton action="review-replies">
               {t('review')}
             </AgentButton>
           )}
