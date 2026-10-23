@@ -216,11 +216,15 @@ propuesta y uno sin clasificar, con texto oculto para una IA), dos huecos en «S
 pendiente, el contexto, una muestra de estilo y una tabla de salarios.
 
 ```powershell
-cd backend
+cd backend                                   # instalada: cd $env:LOCALAPPDATA\CandidatAI\app\backend
 uv run cai demo seed                         # --force para recrearla
 $env:CAI_DATA_DIR = "data-demo"; uv run cai start
 # en inglés: uv run cai demo seed --lang en --dir data-demo-en
 ```
+
+Con la app instalada, cierra antes CandidatAI. La demo se guarda junto a tus datos (por ejemplo,
+`%LOCALAPPDATA%\CandidatAI\data-demo`), así que actualizar no la borra. Para volver a tus datos,
+cierra la ventana y abre CandidatAI como siempre.
 
 Se abre el navegador en `http://127.0.0.1:8000` con un banner «Modo demo». Los botones «en tu
 agente» abren tu agente ya apuntando a la demo. Si lo abres tú, arráncalo con

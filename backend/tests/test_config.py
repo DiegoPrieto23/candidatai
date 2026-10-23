@@ -2,7 +2,8 @@ from pathlib import Path
 
 import pytest
 
-from app.core.config import REPO_ROOT, Settings, get_settings
+from app.core import config
+from app.core.config import INSTALL_MARKER, REPO_ROOT, Settings, data_root, get_settings
 
 
 def test_repo_root_is_detected() -> None:
@@ -23,6 +24,28 @@ def test_relative_data_dir_resolves_from_repo_root(
     monkeypatch.setenv("CAI_DATA_DIR", "data-demo")
     settings = Settings(_env_file=None)
     assert settings.data_dir == (REPO_ROOT / "data-demo").resolve()
+
+
+def test_data_root_is_the_install_folder_only_for_an_installed_app(tmp_path: Path) -> None:
+    """Fase 28.1: instalada, `app/` se sustituye al actualizar; lo relativo va junto a `data/`."""
+    app = tmp_path / "CandidatAI" / "app"
+    app.mkdir(parents=True)
+    assert data_root(app) == app  # sin la marca del instalador, como un repositorio
+    (app.parent / INSTALL_MARKER).touch()
+    assert data_root(app) == app.parent
+    repo = tmp_path / "repo-clonado"
+    repo.mkdir()
+    (tmp_path / INSTALL_MARKER).touch()
+    assert data_root(repo) == repo  # un repo clonado nunca se toma por instalado
+    assert data_root() == REPO_ROOT
+
+
+def test_relative_data_dir_of_an_installed_app_sits_next_to_data(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.setattr(config, "data_root", lambda: tmp_path)
+    monkeypatch.setenv("CAI_DATA_DIR", "data-demo")
+    assert Settings(_env_file=None).data_dir == (tmp_path / "data-demo").resolve()
 
 
 def test_db_url_is_derived_from_data_dir(isolated_env: Path) -> None:

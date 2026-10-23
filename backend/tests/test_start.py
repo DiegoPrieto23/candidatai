@@ -413,6 +413,22 @@ def test_installer_downloads_its_sha256_unless_skipped() -> None:
     assert result.returncode == 0 and "-SkipChecksum" in result.stdout
 
 
+def test_installers_prepare_your_database_even_with_the_demo_open() -> None:
+    """Fase 28.1: un `CAI_DATA_DIR` de la terminal (la demo) no desvía `cai db upgrade`, y en
+    Windows la variable vuelve a quedar como estaba."""
+    windows = (REPO_ROOT / "install.ps1").read_text(encoding="utf-8-sig")
+    unix = (REPO_ROOT / "install.sh").read_text(encoding="utf-8")
+    names = ("CAI_DATA_DIR", "JH_DATA_DIR", "CAI_DB_URL", "JH_DB_URL")
+    clear = windows.index('foreach ($name in "CAI_DATA_DIR"')
+    assert all(f'"{name}"' in windows[clear : clear + 120] for name in names)
+    assert (
+        clear
+        < windows.index("cai db upgrade")
+        < windows.index("SetEnvironmentVariable($name, $saved")
+    )
+    assert unix.index("unset " + " ".join(names)) < unix.index("cai db upgrade </dev/null")
+
+
 def test_ci_tests_the_three_systems_the_installer_and_docker() -> None:
     """Fase 26.4: backend en Windows y Linux en cada push, y macOS en `main`, etiquetas y a mano;
     install.sh en Linux (y macOS); la imagen de Docker en Linux."""

@@ -32,7 +32,7 @@ from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
 from app.core import migrations
-from app.core.config import DEMO_MARKER, REPO_ROOT, get_settings
+from app.core.config import DEMO_MARKER, REPO_ROOT, data_root, get_settings
 from app.core.db import get_engine, session_scope
 from app.core.policies import get_policies
 from app.models import Event, Job, Match, Source, Task
@@ -113,12 +113,12 @@ def is_demo_dir(path: Path) -> bool:
 def prepare_dir(target: Path, force: bool) -> None:
     """Deja `target` vacía con la marca de demo. Nunca toca una carpeta sin la marca."""
     target = target.resolve()
-    data = (REPO_ROOT / "data").resolve()
-    if target.is_relative_to(data) or data.is_relative_to(target):
-        raise DemoSeedError(
-            "La demo nunca se crea en `data/`, dentro de ella ni en una carpeta que la contenga: "
-            "ahí van tus datos reales."
-        )
+    for data in {(REPO_ROOT / "data").resolve(), (data_root() / "data").resolve()}:
+        if target.is_relative_to(data) or data.is_relative_to(target):
+            raise DemoSeedError(
+                "La demo nunca se crea en `data/`, dentro de ella ni en una carpeta que la "
+                "contenga: ahí van tus datos reales."
+            )
     if target.exists():
         if not target.is_dir():
             raise DemoSeedError(f"«{target}» existe y no es una carpeta.")
@@ -686,7 +686,7 @@ def seed(
     solo con su texto (`compat_cases`: solo las N primeras). Si la demo ya existe, solo añade los
     casos que falten (sin `--force`).
     """
-    target = (target if target.is_absolute() else REPO_ROOT / target).resolve()
+    target = (target if target.is_absolute() else data_root() / target).resolve()
     extra = eval_cv or compat
     if extra and not force and is_demo_dir(target) and (target / "candidatai.db").is_file():
         return add_eval_cases(target, eval_cv=eval_cv, compat=compat, compat_cases=compat_cases)

@@ -17,7 +17,7 @@ from app.agent_interface.cli import dump_json, register_tools
 from app.agent_interface.errors import ErrorDetail, ToolError
 from app.agent_interface.runner import to_tool_error
 from app.core import migrations
-from app.core.config import REPO_ROOT, get_settings
+from app.core.config import REPO_ROOT, data_root, get_settings
 from app.core.db import session_scope
 from app.services import profile
 from app.services.doctor import CheckStatus, run_doctor
@@ -512,8 +512,8 @@ EVAL_PROFILE_OPTION = typer.Option(
 DEMO_DIR_OPTION = typer.Option(
     None,
     "--dir",
-    help="Carpeta de la demo (relativa a la raíz del repo). Por defecto, data-demo; en Docker, "
-    "/data-demo (su volumen).",
+    help="Carpeta de la demo (relativa a la raíz del repo o, instalada, a la carpeta de "
+    "instalación). Por defecto, data-demo; en Docker, /data-demo (su volumen).",
 )
 
 
@@ -572,6 +572,13 @@ def demo_seed(
         typer.echo(f"  {container.DEMO_COMPOSE}")
         typer.echo("Para volver a tus datos: docker compose up -d")
         typer.echo("Tu agente, por MCP contra el contenedor, ve la carpeta que esté abierta.")
+    elif data_root() != REPO_ROOT:  # fase 28.1: app instalada, con la UI ya compilada
+        typer.echo("\nPara abrirla, cierra CandidatAI y, desde app/backend/:")
+        if sys.platform == "win32":
+            typer.echo(f'  $env:CAI_DATA_DIR = "{folder}"; uv run cai start')
+        else:
+            typer.echo(f"  CAI_DATA_DIR={shlex.quote(folder)} uv run cai start")
+        typer.echo("Para volver a tus datos, ciérrala y abre CandidatAI como siempre.")
     elif sys.platform == "win32":
         typer.echo("\nPara abrirla (PowerShell, desde backend/):")
         typer.echo(f'  $env:CAI_DATA_DIR = "{folder}"; uv run cai serve')
