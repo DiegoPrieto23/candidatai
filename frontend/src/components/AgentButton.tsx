@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import {
   ArrowsLeftRightIcon,
@@ -16,6 +16,7 @@ import {
   useStartAgentRun,
   type AgentAction,
 } from '@/api/queries'
+import { Hint } from '@/components/Hint'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -57,6 +58,11 @@ async function copy(text: string): Promise<boolean> {
  * y deja abrirlo con otro solo esta vez. Si el agente no sirve para la acción (le falta una
  * capacidad, p. ej.), el botón se deshabilita y el desplegable dice por qué.
  *
+ * Fase 27.1: un globo dice qué hace el skill (`agentActions.json`), por qué está bloqueado y cómo se
+ * abre. El disparador es el `<span>` que envuelve el botón, porque un `<button disabled>` no dispara
+ * eventos; sin ratón, la ayuda va también en el desplegable y, para lectores de pantalla, en
+ * `aria-describedby`.
+ *
  * Siempre en verde (el color primario): así se distingue de un vistazo lo que lanza tu agente.
  */
 export function AgentButton({
@@ -82,6 +88,10 @@ export function AgentButton({
   className?: string
 }) {
   const { t } = useTranslation('agentButton')
+  const { t: tAgent } = useTranslation('agent')
+  const { t: tHint } = useTranslation('agentActions')
+  const buttonId = useId()
+  const hintId = useId()
   const launcher = useAgentLauncher()
   const launch = useLaunchAgent()
   const startRun = useStartAgentRun()
@@ -149,21 +159,49 @@ export function AgentButton({
   const blocked = effective?.blocked && !COPY_PROMPT_CODES.has(effective.blocked_code ?? '') ? blockedText(effective) : null
   const alternatives = spec?.alternatives ?? []
   const busy = launch.isPending || startRun.isPending || leave.isPending
+  const hint = tHint(action)
+  const mechanism = agent ? t('titleAgent', { agent: shownAgent ?? agent }) : t('titleCopy')
   return (
-    <span className={cn('inline-flex flex-col items-start gap-1.5', className)}>
+    <span data-slot="agent-button" className={cn('inline-flex flex-col items-start gap-1.5', className)}>
       <span className="inline-flex">
-        <Button
-          type="button"
-          variant="default"
-          size={size}
-          onClick={() => run()}
-          disabled={busy || blocked !== null}
-          className="rounded-r-none"
-          title={blocked ?? (agent ? t('titleAgent', { agent: shownAgent ?? agent }) : t('titleCopy'))}
+        <Hint
+          text={
+            <span className="grid gap-1.5">
+              <span className="font-semibold">{tAgent(`actions.${action}`)}</span>
+              <span>{hint}</span>
+              {blocked ? (
+                <span className="rounded-sm border border-warning-border bg-warning px-1.5 py-1 text-warning-foreground">
+                  {blocked}
+                </span>
+              ) : (
+                <span className="text-background/70">{mechanism}</span>
+              )}
+            </span>
+          }
         >
-          <TerminalWindowIcon weight="duotone" />
-          {children}
-        </Button>
+          {/* Bloqueado, el botón no recibe el foco: lo recibe el envoltorio (con el nombre del botón) para que el globo salga con el teclado. */}
+          <span
+            className="inline-flex"
+            {...(blocked ? { tabIndex: 0, role: 'group', 'aria-labelledby': buttonId } : {})}
+          >
+            <Button
+              id={buttonId}
+              type="button"
+              variant="default"
+              size={size}
+              onClick={() => run()}
+              disabled={busy || blocked !== null}
+              className="rounded-r-none"
+              aria-describedby={hintId}
+            >
+              <TerminalWindowIcon weight="duotone" />
+              {children}
+            </Button>
+          </span>
+        </Hint>
+        <span id={hintId} className="sr-only">
+          {`${hint} ${blocked ?? mechanism}`}
+        </span>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -183,6 +221,9 @@ export function AgentButton({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-72">
+            {/* Sin ratón no hay globo: la ayuda abre el menú. */}
+            <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">{hint}</DropdownMenuLabel>
+            <DropdownMenuSeparator />
             <DropdownMenuItem onSelect={() => run()} disabled={blocked !== null}>
               <TerminalWindowIcon weight="duotone" />
               <span>

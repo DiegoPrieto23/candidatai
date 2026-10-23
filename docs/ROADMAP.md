@@ -90,6 +90,12 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 26.3 | ↳ Docker opcional | ✅ | `docker compose up` con los datos en un volumen; el agente desde fuera por MCP; límites documentados |
 | 26.4 | ↳ CI en tres sistemas y docs | ✅ | Backend probado en Windows, Linux y macOS, humo del instalador y de Docker, guía y README al día |
 | 26.5 | ↳ Demo completa | ✅ | La demo trae hecho lo de cada pantalla (cartas, dosieres, correos, entrevistas, oferta recibida, contexto…) y los botones abren el agente sobre la demo |
+| 27 | Ayudas, prioridades, varios buzones, experiencia plegable y preferencias | ⏳ | Globos que explican cada botón de skill, prioridades de plataforma sin empates, Alertas con varios buzones, «Experiencia» que se recorre de un vistazo y «Búsqueda» con los filtros que faltan |
+| 27.1 | ↳ Ayudas en los botones de los skills | ✅ | Globo al pasar el ratón o enfocar, con qué hace, qué toca y qué necesita, en español e inglés |
+| 27.2 | ↳ «Experiencia» plegable | ⏳ | Empresas plegadas por defecto, bordes rectos y logros con fondo alterno |
+| 27.3 | ↳ Prioridades únicas | ⏳ | Orden de plataformas sin empates; elegir un puesto ocupado intercambia |
+| 27.4 | ↳ Alertas con varios buzones | ⏳ | «Añadir buzón» con guía para Gmail, Outlook, Yahoo, iCloud y carpeta de `.eml` |
+| 27.5 | ↳ Preferencias de búsqueda | ⏳ | «Mi perfil → Búsqueda» en bloques y alineada, con años mínimos, sueldo mínimo privado, palabras que descartan, contrato y tipo de empresa |
 
 **MVP usable:** al terminar la 08 ya puedes pegar ofertas, triarlas y sacar CVs a medida; con la
 08c, también cartas de presentación. La 08c va antes que la 08b, aunque el orden entre ambas da
@@ -3164,3 +3170,35 @@ decisiones tomadas y deuda técnica pendiente. -->
   búsqueda con navegador es cosa del usuario y el coste tiene que ser real. La carta solo se
   genera si hay con qué hacer el PDF, como los CVs.
 
+### 27.1 · Ayudas en los botones de los skills — 2026-10-23 · Claude Code (Opus 5.5)
+- **Por qué:** «Ampliar búsqueda» no decía qué hacía; el único texto al pasar el ratón era el
+  `title` nativo, que explicaba cómo se abre el agente y no para qué sirve el skill.
+- **Hecho:**
+  - `locales/{es,en}/agentActions.json` (namespace nuevo): la ayuda de las 23 acciones de
+    `ACTIONS` (qué hace, qué cambia en la app y qué te pide), redactada desde cada `SKILL.md`; el
+    nombre sale de `agent.json` (`actions.*`), que ya existía, para no tener dos;
+  - `components/Hint.tsx`: globo sobre el `Tooltip` de shadcn, con un disparador propio o con un
+    icono ⓘ enfocable;
+  - `AgentButton`: el globo (nombre, ayuda, motivo del bloqueo en color de aviso o, si no, cómo se
+    abre en una línea atenuada) sustituye al `title`. El disparador es un `<span>` alrededor del
+    botón porque un `<button disabled>` no dispara eventos; si está bloqueado, ese `<span>` recibe
+    el foco (`role="group"` con el nombre del botón). La ayuda y el motivo o el mecanismo van
+    también en `aria-describedby` (`sr-only`), y la ayuda abre el desplegable ▾, para quien no
+    tiene ratón;
+  - Fuentes → Plataformas: ⓘ con su explicación junto a «Prioridad», «Acceso» y «Ofertas por
+    recorrido»;
+  - tests: completitud de `agentActions` contra el enum `LaunchBody.action` del OpenAPI (en los dos
+    idiomas, sin que falte ni sobre ninguna), el globo con el teclado y con el botón bloqueado, la
+    ayuda en el desplegable y los globos de Plataformas. Los tests que buscaban el `title` miran
+    ahora la descripción accesible, y los que buscaban el ▾ por `parentElement` usan
+    `[data-slot="agent-button"]`;
+  - revisión (rol `reviewer`): nombres unificados con `agent.json`, «Por revisar» en vez de
+    «Triaje», `handle-requests` pregunta qué encargos hacer, sin nombres de skill en las ayudas de
+    Plataformas y el mecanismo de vuelta para lectores de pantalla.
+- **Decisiones:** cuando el botón está bloqueado, el globo enseña el motivo y no el mecanismo
+  («Abre Claude Code…»), que entonces no ocurriría. Los textos de las acciones viven en la UI y no
+  en la API: `label` de `ACTIONS` sigue en español para la CLI y los encargos.
+- **Deuda:** la ayuda de «Prioridad» describe el orden actual; la 27.3 la cambia a «puesto sin
+  empates» y tendrá que actualizar ese texto. El bundle sigue por encima de 500 kB (aviso ya
+  conocido).
+- 318 tests de frontend en verde; `tsc` y `pnpm build` limpios; `oxlint` sin avisos nuevos.

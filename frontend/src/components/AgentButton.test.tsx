@@ -16,6 +16,9 @@ const launcher = {
   ],
 }
 
+/** El botón y su desplegable ▾. */
+const group = (main: HTMLElement) => main.closest<HTMLElement>('[data-slot="agent-button"]')!
+
 function home(extra: Record<string, unknown>) {
   return mockApi({
     'GET /status': status(),
@@ -60,6 +63,27 @@ describe('Botones «en tu agente»', () => {
     expect(await screen.findByText(/He copiado la orden: pégala en tu agente\./)).toBeInTheDocument()
   })
 
+  it('al enfocarlo con el teclado, un globo dice qué hace y cómo se abre (fase 27.1)', async () => {
+    home({})
+    renderApp('/')
+    const main = await screen.findByRole('button', { name: 'Buscar ofertas' })
+    expect(main).not.toHaveAttribute('title')
+    expect(main).toHaveAccessibleDescription(/Tu agente recorre con tu navegador los portales/)
+    main.focus()
+    const tooltip = await screen.findByRole('tooltip')
+    expect(tooltip).toHaveTextContent(/Tu agente recorre con tu navegador los portales/)
+    expect(tooltip).toHaveTextContent('Abre claude en una terminal con la orden ya escrita')
+  })
+
+  it('el desplegable empieza por la ayuda, para leerla sin ratón (fase 27.1)', async () => {
+    home({})
+    renderApp('/')
+    await screen.findByRole('button', { name: 'Buscar ofertas' })
+    await userEvent.click(screen.getAllByRole('button', { name: 'Más formas de lanzarlo' })[0]!)
+    const menu = await screen.findByRole('menu')
+    expect(menu.firstElementChild).toHaveTextContent(/Tu agente recorre con tu navegador los portales/)
+  })
+
   it('en Inicio, «Procesar» y «Evaluar» solo salen si hay ofertas para ellos', async () => {
     home({ 'GET /status': status(2, 0) })
     renderApp('/')
@@ -74,7 +98,7 @@ describe('Botones «en tu agente»', () => {
     })
     renderApp('/')
     const main = await screen.findByRole('button', { name: 'Procesar ofertas' })
-    await userEvent.click(within(main.parentElement!).getByRole('button', { name: 'Más formas de lanzarlo' }))
+    await userEvent.click(within(group(main)).getByRole('button', { name: 'Más formas de lanzarlo' }))
     await userEvent.click(await screen.findByRole('menuitem', { name: /En segundo plano/ }))
     expect(await screen.findByText('En cola en segundo plano.', { exact: false })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Ver en «Agente»' })).toHaveAttribute('href', '/agente')
@@ -85,7 +109,7 @@ describe('Botones «en tu agente»', () => {
     const calls = home({ 'POST /agent/requests': { id: 3, status: 'pending' } })
     renderApp('/')
     const main = await screen.findByRole('button', { name: 'Buscar ofertas' })
-    await userEvent.click(within(main.parentElement!).getByRole('button', { name: 'Más formas de lanzarlo' }))
+    await userEvent.click(within(group(main)).getByRole('button', { name: 'Más formas de lanzarlo' }))
     expect(await screen.findByRole('menuitem', { name: /En terminal/ })).toBeInTheDocument()
     expect(screen.queryByRole('menuitem', { name: /En segundo plano/ })).not.toBeInTheDocument()
     await userEvent.click(screen.getByRole('menuitem', { name: /Dejar para mi próxima sesión/ }))
@@ -127,7 +151,7 @@ describe('Botones «en tu agente»', () => {
       })
       renderApp('/')
       const main = await screen.findByRole('button', { name: 'Buscar ofertas' })
-      const more = await within(main.parentElement!).findByRole('button', {
+      const more = await within(group(main)).findByRole('button', {
         name: 'Más formas de lanzarlo (con Claude Code)',
       })
       expect(more).toHaveTextContent('con Claude Code')
@@ -151,8 +175,17 @@ describe('Botones «en tu agente»', () => {
       renderApp('/')
       const main = await screen.findByRole('button', { name: 'Buscar ofertas' })
       await waitFor(() => expect(main).toBeDisabled())
-      expect(main).toHaveAttribute('title', 'Codex no tiene navegador, y esta acción lo necesita.')
-      await userEvent.click(within(main.parentElement!).getByRole('button', { name: /con Codex/ }))
+      expect(main).not.toHaveAttribute('title')
+      expect(main).toHaveAccessibleDescription(/Codex no tiene navegador, y esta acción lo necesita\./)
+      // Deshabilitado no recibe el foco: lo recibe su envoltorio y el globo sale igual.
+      const wrapper = screen.getByRole('group', { name: 'Buscar ofertas' })
+      expect(wrapper).toHaveAttribute('tabindex', '0')
+      wrapper.focus()
+      const tooltip = await screen.findByRole('tooltip')
+      expect(tooltip).toHaveTextContent('Codex no tiene navegador, y esta acción lo necesita.')
+      expect(tooltip).toHaveTextContent(/Tu agente recorre con tu navegador los portales/)
+      await userEvent.keyboard('{Escape}')
+      await userEvent.click(within(group(main)).getByRole('button', { name: /con Codex/ }))
       expect(await screen.findByRole('menuitem', { name: /En terminal/ })).toHaveAttribute('aria-disabled', 'true')
       expect(screen.getByRole('menuitem', { name: /Abrir con Claude Code/ })).not.toHaveAttribute('aria-disabled')
     })
@@ -177,7 +210,7 @@ describe('Botones «en tu agente»', () => {
       })
       renderApp('/')
       const main = await screen.findByRole('button', { name: 'Procesar ofertas' })
-      await userEvent.click(await within(main.parentElement!).findByRole('button', { name: /con OpenCode/ }))
+      await userEvent.click(await within(group(main)).findByRole('button', { name: /con OpenCode/ }))
       const own = await screen.findByRole('menuitem', { name: new RegExp(`En segundo plano.*${reason}`) })
       expect(own).toHaveAttribute('aria-disabled', 'true')
       await userEvent.click(screen.getByRole('menuitem', { name: /En segundo plano con Claude Code/ }))
@@ -196,7 +229,7 @@ describe('Botones «en tu agente»', () => {
       })
       renderApp('/')
       const main = await screen.findByRole('button', { name: 'Buscar ofertas' })
-      await userEvent.click(await within(main.parentElement!).findByRole('button', { name: /con Claude Code/ }))
+      await userEvent.click(await within(group(main)).findByRole('button', { name: /con Claude Code/ }))
       expect(await screen.findByRole('menuitem', { name: new RegExp(warning) })).toBeInTheDocument()
       await userEvent.keyboard('{Escape}')
       await userEvent.click(main)

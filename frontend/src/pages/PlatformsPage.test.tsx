@@ -180,6 +180,20 @@ describe('Plataformas', () => {
     expect(calls.find((c) => c.path === '/sources/1/browse')?.body).toEqual({ confirm_risk: false, max_offers: 40 })
   })
 
+  it('prioridad, acceso y ofertas por recorrido se explican en un globo (fase 27.1)', async () => {
+    mockApi({ 'GET /status': status(), 'GET /sources': { sources: [tecno], agent_browse: LIMITS } })
+    renderApp('/plataformas')
+
+    ;(await screen.findByRole('button', { name: 'Qué es la prioridad' })).focus()
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(/El orden en que tu agente recorre las plataformas/)
+    await userEvent.keyboard('{Escape}')
+    screen.getByRole('button', { name: 'Qué es el acceso' }).focus()
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(/Cómo entra el agente/)
+    await userEvent.keyboard('{Escape}')
+    screen.getByRole('button', { name: 'Qué son las ofertas por recorrido' }).focus()
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(/Cuántas ofertas nuevas da de alta/)
+  })
+
   it('sin plataformas, explica cómo configurarlas', async () => {
     mockApi({ 'GET /status': status(), 'GET /sources': { sources: [], agent_browse: LIMITS } })
     renderApp('/plataformas')

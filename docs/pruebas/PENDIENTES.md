@@ -6,7 +6,7 @@ cada fase y lo quita cuando el usuario confirma que está hecho.
 
 Marca `[x]` lo que hagas y, si algo falla, apúntalo debajo de la línea con `→`.
 
-Última actualización: 2026-10-19 (fase 26.5).
+Última actualización: 2026-10-23 (fase 27.1).
 
 ## 1. Poner la app al día (antes de probar nada)
 
@@ -259,6 +259,15 @@ hiciste, márcala.
       WSL2: seguir solo la guía (requisitos, `install.sh`, abrir la app, conectar tu agente) sin
       saltarte ni añadir pasos, y apuntar lo que falte.
 - [ ] **La primera CI en `main`** tras fusionar la fase: macOS corre ahí (en la rama ya pasó a mano).
+- [ ] **Fase 27.1 · Ayudas en los botones** (compila la UI con `pnpm build` o usa `cai start --dev`):
+  - pasar el ratón por «Ampliar búsqueda» (Fuentes → Plataformas): sale un globo con qué hace y,
+    en gris, cómo se abre tu agente; sin el globo nativo del navegador encima;
+  - con la tecla Tab, llegar a un botón verde: el globo sale igual;
+  - un botón desactivado (p. ej. en «Agente → Agentes», elige para «Buscar ofertas» un agente sin navegador):
+    el globo sale y dice el motivo en amarillo;
+  - abrir el desplegable ▾ de un botón: la primera línea es la ayuda y el globo no lo tapa;
+  - en Plataformas, los ⓘ de «Prioridad», «Acceso» y «Ofertas por recorrido»;
+  - cambiar la UI a inglés y repetir uno.
 - [ ] **Fase 26.5 · Demo completa** (`fases-24-26-pruebas.md`, sección 2.0): con la demo recreada,
       ninguna pantalla vacía (carta, dosieres, correos, entrevistas, oferta recibida, Skills,
       encargo, contexto) y los botones «en tu agente» abren el agente sobre `data-demo`.
