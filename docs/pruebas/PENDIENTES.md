@@ -6,7 +6,7 @@ cada fase y lo quita cuando el usuario confirma que está hecho.
 
 Marca `[x]` lo que hagas y, si algo falla, apúntalo debajo de la línea con `→`.
 
-Última actualización: 2026-10-23 (fase 27.3).
+Última actualización: 2026-10-23 (fase 27.4).
 
 ## 1. Poner la app al día (antes de probar nada)
 
@@ -259,6 +259,21 @@ hiciste, márcala.
       WSL2: seguir solo la guía (requisitos, `install.sh`, abrir la app, conectar tu agente) sin
       saltarte ni añadir pasos, y apuntar lo que falte.
 - [ ] **La primera CI en `main`** tras fusionar la fase: macOS corre ahí (en la rama ya pasó a mano).
+- [ ] **Fase 27.4 · Varios buzones** (UI compilada o `cai start --dev`):
+  - antes, copia de la BD y `uv run --directory backend cai db upgrade` (migración **0027**);
+  - en «Alertas», tu cuenta de `.env` sale sola como «Principal» en el panel «Buzones» (con «de
+    .env») y «Revisar correo ahora» la sigue leyendo;
+  - «Añadir buzón» → pestaña Gmail con una segunda cuenta (o una carpeta de `.eml`): «Probar
+    conexión» con una contraseña mal dice cómo arreglarlo; con la buena, conecta; «Guardar»;
+  - mira tu `.env`: hay una línea `CAI_IMAP_<NOMBRE>_PASSWORD` nueva y el resto sigue igual; en la
+    UI no aparece la contraseña en ningún sitio;
+  - «Revisar correo ahora» lee los dos buzones; una alerta reenviada a los dos entra una vez; en
+    Gmail, **nada queda marcado como leído**;
+  - desactivar un buzón con el interruptor: deja de leerse; «Quitar»: desaparece su línea de `.env`;
+  - recorre las pestañas Outlook, Yahoo, iCloud y Otro: los enlaces oficiales abren la página
+    correcta y «Guía completa» la sección de `docs/CONFIGURAR_CORREO.md`;
+  - con el diálogo abierto, pulsar `D` o `J` no hace nada en la lista de alertas;
+  - cambia la UI a inglés y abre el asistente.
 - [ ] **Fase 27.3 · Prioridades únicas** (UI compilada o `cai start --dev`):
   - antes, copia de la BD y `uv run --directory backend cai db upgrade` (migración **0026**: numera
     tus plataformas 1…N por su prioridad y su nombre); en «Fuentes → Plataformas» no hay dos con

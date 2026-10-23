@@ -10,6 +10,7 @@
   "summary_other": "{{count}} summary jobs from your email alerts. Open them on their job board and send them with the “Send to CandidatAI” button to complete them, or discard them.",
   "reading": "Reading email…",
   "poll": "Check email now",
+  "addMailbox": "Add mailbox",
   "shortcuts": {
     "label": "Keyboard shortcuts",
     "move": "move",
@@ -22,7 +23,7 @@
   "saveFailed": "Couldn't save: {{error}}",
   "empty": {
     "title": "No pending alerts",
-    "body": "Jobs from your LinkedIn and other job board alerts show up here. Set up IMAP in `.env` or drop `.eml` emails in `data/inbox/`."
+    "body": "Jobs from your LinkedIn, InfoJobs and other job alerts show up here. Add the mailbox where they arrive (Gmail, Outlook, Yahoo, iCloud…) or a folder of `.eml` emails."
   },
   "passing": "Match your preferences",
   "failing": "Don't pass the pre-filter",

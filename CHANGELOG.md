@@ -10,6 +10,17 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Varios buzones en Alertas:** «Añadir buzón» conecta tantas cuentas de correo como quieras
+  (Gmail, Outlook, Yahoo, iCloud u otro servidor IMAP, siempre en solo lectura) o una carpeta de
+  correos `.eml`. Un asistente con una pestaña por proveedor explica qué hacer en cada uno (con
+  enlaces a su ayuda oficial), qué contraseña hace falta y prueba la conexión antes de guardar. El
+  panel «Buzones» enseña cuándo se leyó cada uno y su último error, con ayuda para arreglarlo, y
+  deja probarlo, desactivarlo, editarlo o quitarlo. Si una alerta te llega a dos buzones, entra una
+  vez; si un buzón falla, los demás se siguen leyendo. Tu cuenta de siempre de `.env` aparece sola
+  como «Principal», sin tocar nada.
+- **Outlook / Hotmail, explicado:** Microsoft ya no deja leer por IMAP con contraseña en cuentas de
+  trabajo y lo quitará en las personales; la guía ofrece reenviar las alertas a tu Gmail o
+  exportarlas como `.eml`.
 - **Qué hace cada botón de tu agente:** al pasar el ratón por un botón verde («Ampliar búsqueda»,
   «Generar CV», «Preparar»…) o al llegar a él con el teclado, un globo explica qué hace, qué cambia
   en la app y si te va a pedir algo. Si el botón está desactivado, dice también por qué. La misma
@@ -156,6 +167,9 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   de Windows Terminal podía dejarlo sobre tus datos reales.
 
 ### Seguridad
+- **Las contraseñas de los buzones solo en `.env`:** la app las guarda ahí cuando las escribes y
+  no vuelven a salir ni por la UI ni hacia tu agente, que solo ve si están puestas. En Docker te
+  dice qué línea añadir. La app tampoco se conecta a servidores de tu red local salvo que lo marques.
 - Solo la UI puede escribir tu perfil, tu contexto y tus muestras, y leer tu perfil con contacto;
   tu agente sigue sin ninguna herramienta para escribir el perfil. Las muestras de estilo le llegan
   como contenido no confiable, con la detección de inyección.

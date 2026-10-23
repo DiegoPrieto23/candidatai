@@ -94,8 +94,9 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 27.1 | ↳ Ayudas en los botones de los skills | ✅ | Globo al pasar el ratón o enfocar, con qué hace, qué toca y qué necesita, en español e inglés |
 | 27.2 | ↳ «Experiencia» plegable | ✅ | Empresas plegadas por defecto, bordes rectos y logros con fondo alterno |
 | 27.3 | ↳ Prioridades únicas | ✅ | Orden de plataformas sin empates; elegir un puesto ocupado intercambia |
-| 27.4 | ↳ Alertas con varios buzones | ⏳ | «Añadir buzón» con guía para Gmail, Outlook, Yahoo, iCloud y carpeta de `.eml` |
+| 27.4 | ↳ Alertas con varios buzones | ✅ | «Añadir buzón» con guía para Gmail, Outlook, Yahoo, iCloud y carpeta de `.eml` |
 | 27.5 | ↳ Preferencias de búsqueda | ⏳ | «Mi perfil → Búsqueda» en bloques y alineada, con años mínimos, sueldo mínimo privado, palabras que descartan, contrato y tipo de empresa |
+| 27.6 | ↳ Descartar desde la Bandeja | ⏳ | Botón «Descartar» con «Deshacer» en «Por completar» y «Por extraer», y «Cerrada» con su fecha de cierre, ordenable |
 
 **MVP usable:** al terminar la 08 ya puedes pegar ofertas, triarlas y sacar CVs a medida; con la
 08c, también cartas de presentación. La 08c va antes que la 08b, aunque el orden entre ambas da
@@ -3286,3 +3287,71 @@ decisiones tomadas y deuda técnica pendiente. -->
 - 2877 tests de backend (en Windows se saltan 12 de macOS y Linux) y 329 de frontend en verde;
   ruff, `tsc`, `pnpm build` y `sync_agents.py --check` limpios; `oxlint` sin avisos nuevos;
   OpenAPI regenerado.
+
+### 27.4 · Alertas con varios buzones — 2026-10-23 · Claude Code (Opus 5.5)
+- **Por qué:** solo se podía leer una cuenta de correo, configurada a mano en `.env`, y la pantalla
+  vacía de Alertas mandaba a editar `.env` sin más ayuda.
+- **Hecho (27.4a, backend):**
+  - ADR-045. Tablas `mail_sources` y `mail_source_changes` (migración 0027). La cuenta
+    `CAI_IMAP_*` aparece sola como «Principal» (`from_env`, lee respuestas) y sus datos siguen en
+    `.env`;
+  - `core/env_file.py`: contraseñas solo en `.env`, una variable por buzón
+    (`CAI_IMAP_<ALIAS>_PASSWORD`, sin pisar una que ya exista), escritas de forma atómica, con un
+    candado y permisos 600 fuera de Windows. Las lee sin expandir `${…}`. En Docker no se escriben:
+    la respuesta dice qué línea añadir. En los tests, `CAI_ENV_FILE` apunta a una carpeta
+    temporal;
+  - `services/mail_sources.py`:
+    - altas, cambios (validando el buzón entero) y bajas, que quitan su línea de `.env`;
+    - prueba de conexión antes y después de guardar (login y `EXAMINE`);
+    - servidor sin esquema; ni IP privadas ni locales salvo `allow_private`, también tras resolver
+      el nombre;
+    - en una demo, ningún IMAP;
+  - `mailboxes.py`:
+    - recibe una `ImapAccount` (con la contraseña fuera del `repr`);
+    - STARTTLS con el certificado verificado;
+    - usuario o contraseña con tildes o ñ: error claro (antes, excepción sin capturar);
+  - `poll_email` lee todos los buzones activos uno detrás de otro: el fallo de uno queda en su
+    `last_error` y no frena a los demás, con un tope de 5 minutos por pasada y sin duplicar por
+    `Message-ID`. `replies` solo lee los que tienen `read_replies`. `cai doctor` gana «Buzones»;
+  - API `/mail-sources` (`require_ui`) y la herramienta MCP de solo lectura `list_mail_sources`
+    (con `cai mail-sources list` y, solo en la CLI, `cai mail-sources test`), en el `auto_allow`
+    del manifiesto;
+  - los errores de validación nunca repiten un campo `password` ni una entrada que lo contenga
+    (`core/validation.py`);
+  - docs: `FUENTES_OFERTAS`, `DATA_MODEL`, `AGENT_INTERFACE` y `POLICIES`.
+- **Hecho (27.4b, UI y guías):**
+  - Alertas:
+    - «Añadir buzón» y panel plegable «Buzones» con última lectura, último error y su ayuda,
+      interruptor, «Probar», «Editar» y «Quitar» (con confirmación);
+    - el panel se abre solo si hay un error;
+    - la pantalla vacía lleva al botón;
+    - los atajos J/K/O/D no actúan con el diálogo abierto ni con el foco en el panel;
+  - asistente con pestañas Gmail · Outlook/Hotmail · Yahoo · iCloud · Otro (IMAP) · Carpeta de
+    `.eml`:
+    - servidor ya puesto, pasos y enlaces oficiales (comprobados el 2026-10-23) y la sección de la
+      guía;
+    - «Probar conexión» antes de guardar;
+    - Outlook propone reenviar a Gmail o exportar `.eml`, con IMAP plegado como último recurso;
+  - `Switch` pasa a ser un componente común (Plataformas y Alertas). Namespace `mailboxes` en es y
+    en;
+  - `docs/CONFIGURAR_CORREO.md` reescrita con una sección por proveedor y la cuenta de `.env`;
+    `GUIA.md` y `GUIDE.md` a la vez.
+- **Revisión (rol `reviewer`):**
+  - la contraseña salía en el 422 (bloqueante, corregido);
+  - separadores Unicode que partían `.env`;
+  - `last_run_at` frenado por un buzón roto;
+  - variable de `.env` ya existente;
+  - atajos con el foco en el panel;
+  - etiqueta en blanco y nombres de carpeta reservados de Windows;
+  - dos riesgos aceptados en el ADR.
+- **Decisiones (confirmadas por el usuario):** contraseñas en `.env`, con el aviso en Docker.
+  Outlook, con reenvío o `.eml` e IMAP como último recurso. Proton Bridge no se ofrece: su
+  certificado propio no pasa la verificación de TLS.
+- **Deuda:**
+  - sin OAuth (Gmail y Outlook);
+  - la comprobación del servidor y la conexión resuelven el nombre por separado (riesgo aceptado
+    en el ADR);
+  - la «Principal» se da de alta al listar.
+- 2912 tests de backend (12 de macOS y Linux se saltan en Windows) y 335 de
+  frontend en verde; `tsc`, ruff, `pnpm build`, `sync_agents.py --check` y `check_links.py`
+  limpios; OpenAPI regenerado.

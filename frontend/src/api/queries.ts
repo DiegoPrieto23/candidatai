@@ -18,6 +18,8 @@ export const keys = {
   defaultTemplate: ['templates', 'default'] as const,
   sources: ['sources'] as const,
   alerts: ['alerts'] as const,
+  // Fase 27.4: buzones de las alertas. Leer el correo cambia su estado (último error).
+  mailSources: ['mailSources'] as const,
   board: ['board'] as const,
   followups: ['followups'] as const,
   upcoming: (days: number) => ['upcoming', days] as const,
@@ -528,6 +530,7 @@ export function usePollAlerts() {
         client.invalidateQueries({ queryKey: keys.alerts }),
         client.invalidateQueries({ queryKey: keys.status }),
         client.invalidateQueries({ queryKey: keys.allJobs }),
+        client.invalidateQueries({ queryKey: keys.mailSources }),
       ]),
   })
 }
@@ -1466,5 +1469,55 @@ export function useReceivedOffers() {
   return useQuery({
     queryKey: keys.receivedOffers,
     queryFn: () => unwrap(api.GET('/received-offers')),
+  })
+}
+
+// --- Buzones de las alertas (fase 27.4, ADR-045) ----------------------------------------------
+
+export function useMailSources() {
+  return useQuery({
+    queryKey: keys.mailSources,
+    queryFn: () => unwrap(api.GET('/mail-sources')),
+  })
+}
+
+export function useCreateMailSource() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (body: Schemas['MailSourceInput']) => unwrap(api.POST('/mail-sources', { body })),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.mailSources }),
+  })
+}
+
+export function useUpdateMailSource() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: ({ sourceId, ...body }: { sourceId: number } & Schemas['MailSourcePatch']) =>
+      unwrap(api.PATCH('/mail-sources/{source_id}', { params: { path: { source_id: sourceId } }, body })),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.mailSources }),
+  })
+}
+
+export function useDeleteMailSource() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (sourceId: number) =>
+      unwrap(api.DELETE('/mail-sources/{source_id}', { params: { path: { source_id: sourceId } }, body: {} })),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.mailSources }),
+  })
+}
+
+/** Prueba un buzón guardado: login y apertura de su carpeta en solo lectura. */
+export function useTestMailSource() {
+  return useMutation({
+    mutationFn: (sourceId: number) =>
+      unwrap(api.POST('/mail-sources/{source_id}/test', { params: { path: { source_id: sourceId } }, body: {} })),
+  })
+}
+
+/** La misma prueba antes de guardarlo, con la contraseña que se acaba de escribir. */
+export function useTestNewMailSource() {
+  return useMutation({
+    mutationFn: (body: Schemas['MailSourceInput']) => unwrap(api.POST('/mail-sources/test', { body })),
   })
 }

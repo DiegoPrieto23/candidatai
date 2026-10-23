@@ -4,6 +4,9 @@ import type { components, paths } from './schema'
 
 export type Schemas = components['schemas']
 export type Stage = Schemas['Stage']
+export type MailSourceView = Schemas['MailSourceView']
+export type MailSourceInput = Schemas['MailSourceInput']
+export type MailTestResult = Schemas['MailTestResult']
 export type JobRow = Schemas['JobRow']
 export type JobView = Schemas['JobView']
 export type JobSignals = Schemas['JobSignals']

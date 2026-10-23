@@ -125,7 +125,9 @@ docker compose up -d --build        # the first time takes a few minutes (it bui
 The app is at `http://127.0.0.1:8000`, on your computer only. Your data goes in the
 `candidatai-data` volume, which survives stopping, updating or removing the container. If there's
 a `.env` in the folder, the container reads it (job board keys, IMAP…): with IMAP set up, its
-worker reads your email alerts just like the native install, but stores them in the volume.
+worker reads your email alerts just like the native install, but stores them in the volume. When
+you add a mailbox from the UI, the app can't write your `.env`: it tells you which line to add,
+then you recreate the container (`docker compose up -d`).
 
 - **Stop and start:** `docker compose stop` and `docker compose start`.
 - **Update:** `git pull` and `docker compose up -d --build`.
@@ -323,7 +325,7 @@ A typical day:
 | **Target companies** (Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters, Recruitee) | **Sources → Target companies** page or `cai sources add --kind greenhouse --name "Acme" --slug acme`. `cai sources discover --file companies.txt` finds the board of each company in a list. How to find the slug: [`FUENTES_OFERTAS.md`](FUENTES_OFERTAS.md#cómo-encontrar-el-slug) (Spanish) |
 | **InfoJobs and Adzuna** | Their keys in `.env` (`CAI_INFOJOBS_CLIENT_ID`/`_SECRET`, `CAI_ADZUNA_APP_ID`/`_KEY`) and a search with `cai sources add` |
 | **Manfred and freehire.me** | No keys: a search on the same page or with `cai sources add --kind manfred --name Manfred --query "data engineer"` (for freehire, also `--country` and `--remote-only`) |
-| **Email alerts** | Create job alerts on LinkedIn, InfoJobs, Indeed… and have them land in a label of your mailbox. Set up read-only IMAP in `.env`: step by step in [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md) (Spanish). Without IMAP, drop `.eml` files in `data/inbox/`. What comes in shows up in **Alerts** |
+| **Email alerts** | Create job alerts on LinkedIn, InfoJobs, Indeed… and have them land in a label of your mailbox. In **Alerts → Add mailbox**, connect one or more mailboxes (Gmail, Outlook, Yahoo, iCloud or other IMAP, always read-only) or a folder of `.eml` files; the wizard explains each provider and tests the connection before saving. The password is stored in your `.env` and never comes out again. Step by step in [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md) (Spanish). What comes in shows up in **Alerts** |
 | **"Send to CandidatAI" button** | Load `extension/` as an unpacked extension in Chrome or Edge and paste the token from `cai capture token` into its options. Instructions: [`extension/README.md`](../extension/README.md) (Spanish) |
 | **Your agent with your browser** | `search-jobs configurar` picks portals and searches (**Sources → Platforms** page); `search-jobs` browses them. LinkedIn stays off until you turn it on |
 | **LinkedIn's public search** | The **Public search without signing in** switch on the LinkedIn card in **Sources → Platforms**. Off by default: it goes against LinkedIn's terms and may get your IP blocked for a while |
@@ -360,7 +362,7 @@ The worker runs the automatic sources every day at `connectors.daily_at`
   by month, week, day or agenda. Click one to see its details and open the job.
 - **Follow-ups:** it reminds you of applications without a reply; `draft-follow-up` leaves
   the drafts (max. 2 per application) and the thank-you note after an interview. You send them.
-- **Replies:** with IMAP set up, the app reads emails from the companies in your
+- **Replies:** in the mailboxes where you ticked it, the app reads emails from the companies in your
   processes; `review-replies` proposes what happened and you accept it in **Replies**.
 - **Funnel:** conversion by step, source, role, week, template, cover letter and
   referral, plus "Is the score right?". `review-search` runs the weekly retrospective. At the

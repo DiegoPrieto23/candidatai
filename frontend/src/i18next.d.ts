@@ -17,6 +17,7 @@ import type inbox from '@/locales/es/inbox.json'
 import type job from '@/locales/es/job.json'
 import type labels from '@/locales/es/labels.json'
 import type letter from '@/locales/es/letter.json'
+import type mailboxes from '@/locales/es/mailboxes.json'
 import type match from '@/locales/es/match.json'
 import type move from '@/locales/es/move.json'
 import type nav from '@/locales/es/nav.json'
@@ -59,6 +60,7 @@ declare module 'i18next' {
       job: typeof job
       labels: typeof labels
       letter: typeof letter
+      mailboxes: typeof mailboxes
       match: typeof match
       move: typeof move
       nav: typeof nav
