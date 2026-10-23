@@ -333,6 +333,7 @@ def test_editable_profile_shows_the_policy_keywords(
     monkeypatch.setattr(get_policies().hard_filters, "discard_title_keywords", ["sales"])
     state = client.get("/profile/editable").json()
     assert state["policy_discard_title_keywords"] == ["sales"]
+    assert state["policy_years_tolerance"] == get_policies().hard_filters.years_tolerance
     assert "private" not in state["profile"]
 
 
@@ -355,3 +356,39 @@ def test_saving_preferences_rescores_open_jobs(client: TestClient, isolated_env:
 
 def test_salary_floor_without_profile_file(isolated_env: Path) -> None:
     assert profile_editor.get_salary_floor(isolated_env / "nada.yaml").salary_floor_eur is None
+
+
+def test_section_diff_never_shows_the_salary(client: TestClient, isolated_env: Path) -> None:
+    # Una clave nueva de `preferences` va al final, justo antes de `private`: el diff la rodea de
+    # contexto. Se quita y se vuelve a añadir.
+    state = _floor(client)
+    body = {"file_hash": state["file_hash"], "salary_floor_eur": FLOOR}
+    assert client.put("/profile/salary-floor", json=body, headers=JSON).status_code == 200
+    editable = client.get("/profile/editable").json()
+    prefs = editable["profile"]["preferences"]
+    prefs.pop("excluded_employer_kinds")
+    body = {"file_hash": editable["file_hash"], "content": prefs}
+    assert client.put("/profile/sections/preferences", json=body, headers=JSON).status_code == 200
+    editable = client.get("/profile/editable").json()
+    prefs = editable["profile"]["preferences"]
+    prefs["excluded_employer_kinds"] = ["agency", "consultancy"]
+    body = {"file_hash": editable["file_hash"], "content": prefs, "dry_run": True}
+    preview = client.put("/profile/sections/preferences", json=body, headers=JSON)
+    assert preview.status_code == 200, preview.text
+    diff = preview.json()["diff"]
+    assert "consultancy" in diff
+    assert str(FLOOR) not in diff
+    assert "<oculto>" in diff  # la línea de contexto, con el valor oculto
+
+
+def test_mask_private_keeps_everything_else() -> None:
+    text = (
+        "preferences:\n  roles: [Data Engineer]\nprivate:   # nunca sale\n"
+        "  salary_floor_eur: 30000   # bruto\n  nota: algo\n  vacio:\nschema_version: 1\n"
+    )
+    masked = profile_editor._mask_private(text)
+    assert "30000" not in masked and "algo" not in masked
+    assert "  roles: [Data Engineer]" in masked and "schema_version: 1" in masked
+    assert "  vacio:\n" in masked
+    inline = profile_editor._mask_private("private: {salary_floor_eur: 30000}\n")
+    assert inline == "private: <oculto>\n"

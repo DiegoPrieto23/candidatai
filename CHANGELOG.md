@@ -131,6 +131,17 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   experiencia»**: tu agente propone, te pregunta los números que falten y solo escribe con tu OK.
 
 ### Cambiado
+- **«Mi perfil → Búsqueda», en cuatro bloques:** *Puesto*, *Experiencia y sueldo*, *Dónde y cómo* y
+  *Contrato y empresa*, cada uno con su «Guardar». Los años mínimo y máximo van juntos como un
+  rango («Desde 2 hasta 5 años») y la pista dice el margen que se admite. El sueldo mínimo lleva
+  candado y se guarda aparte, sin que la cifra aparezca en el historial. Las casillas de contrato,
+  jornada y tipo de empresa usan nombres de persona («Indefinido», «Temporal», «Excluir
+  consultoras»…).
+- **Los campos con etiquetas quedan alineados:** el campo va arriba y las etiquetas debajo, así los
+  de una misma fila empiezan a la misma altura. Las ubicaciones van en dos columnas como mucho, y
+  «También, en remoto o híbrido» pasa a llamarse «Solo si no es presencial», con la regla explicada.
+- **Por qué cayó por sueldo:** en la ficha, el descarte por sueldo dice cuánto queda por debajo de
+  tu mínimo. Solo lo ves tú.
 - **Un sueldo mínimo mal escrito ya no se ignora en silencio:** `private.salary_floor_eur` tiene
   que ser un número entero de euros mayor que 0 (o `null`); si no, «Mi perfil» te avisa al validar.
 - **El contrato temporal de `exclude_signals` se cuenta como «Tipo de contrato»:** sigue
@@ -179,6 +190,9 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   de Windows Terminal podía dejarlo sobre tus datos reales.
 
 ### Seguridad
+- **Lo privado de tu perfil no sale en la vista previa de un cambio:** al guardar un bloque de «Mi
+  perfil», el diff podía enseñar como contexto las líneas de `private` (como tu sueldo mínimo);
+  ahora salen como `<oculto>`.
 - **Las contraseñas de los buzones solo en `.env`:** la app las guarda ahí cuando las escribes y
   no vuelven a salir ni por la UI ni hacia tu agente, que solo ve si están puestas. En Docker te
   dice qué línea añadir. La app tampoco se conecta a servidores de tu red local salvo que lo marques.

@@ -13,7 +13,14 @@ import { ExperienceBlock } from '@/components/profile/ExperienceBlock'
 import { HistoryBlock } from '@/components/profile/HistoryBlock'
 import { CertificationsBlock, EducationBlock, ExtraSectionsBlock, ProjectsBlock } from '@/components/profile/ItemsBlocks'
 import { PersonalBlock } from '@/components/profile/PersonalBlock'
-import { CvPreferencesBlock, LetterPreferencesBlock, SearchPreferencesBlock } from '@/components/profile/PreferencesBlocks'
+import {
+  CvPreferencesBlock,
+  LetterPreferencesBlock,
+  SearchContractBlock,
+  SearchExperienceBlock,
+  SearchRoleBlock,
+  SearchWhereBlock,
+} from '@/components/profile/PreferencesBlocks'
 import { SkillsBlock } from '@/components/profile/SkillsBlock'
 import { StoriesBlock } from '@/components/profile/StoriesBlock'
 import { dateFormatter, formatNumber } from '@/lib/labels'
@@ -202,7 +209,10 @@ function Editor() {
         <StoriesBlock />
       </TabsContent>
       <TabsContent value="search" forceMount className={cn('grid gap-6', hidden)}>
-        <SearchPreferencesBlock />
+        <SearchRoleBlock />
+        <SearchExperienceBlock />
+        <SearchWhereBlock />
+        <SearchContractBlock />
       </TabsContent>
       <TabsContent value="documents" forceMount className={cn('grid gap-6', hidden)}>
         <CvPreferencesBlock />

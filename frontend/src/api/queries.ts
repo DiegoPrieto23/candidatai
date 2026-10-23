@@ -40,6 +40,9 @@ export const keys = {
   profile: ['profile'] as const,
   editableProfile: ['profile', 'editable'] as const,
   profileDiff: ['profile', 'diff'] as const,
+  // Fase 27.5: el sueldo mínimo (`private`), solo para la UI. Bajo `profile`: guardar lo refresca.
+  salaryFloor: ['profile', 'salary-floor'] as const,
+  salaryGap: (id: number) => ['profile', 'salary-gap', id] as const,
   contextDocument: (section: string) => ['context', 'document', section] as const,
   styleSamples: ['context', 'style-samples'] as const,
   styleSampleText: (name: string) => ['context', 'style-samples', name] as const,
@@ -1115,6 +1118,35 @@ export function useSaveProfileSection() {
       void client.invalidateQueries({ queryKey: keys.profile })
       void client.invalidateQueries({ queryKey: keys.defaultTemplate })
     },
+  })
+}
+
+/** Tu sueldo mínimo (`private.salary_floor_eur`). Solo la UI: el agente nunca ve la cifra. */
+export function useSalaryFloor() {
+  return useQuery({ queryKey: keys.salaryFloor, queryFn: () => unwrap(api.GET('/profile/salary-floor')) })
+}
+
+/** Guarda el sueldo mínimo (sin diff: es privado). Refresca el perfil y los scores. */
+export function useSaveSalaryFloor() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (body: { file_hash: string | null; salary_floor_eur: number | null }) =>
+      unwrap(api.PUT('/profile/salary-floor', { body })),
+    onSuccess: (result, body) => {
+      if (!result.changed) return
+      // La cifra nueva ya, sin esperar a la recarga (si no, el campo enseña un momento la vieja).
+      client.setQueryData(keys.salaryFloor, { salary_floor_eur: body.salary_floor_eur, file_hash: result.file_hash })
+      void client.invalidateQueries({ queryKey: keys.profile })
+    },
+  })
+}
+
+/** Cuánto queda el sueldo publicado de una oferta por debajo de tu mínimo (solo la UI). */
+export function useSalaryGap(jobId: number, enabled: boolean) {
+  return useQuery({
+    queryKey: keys.salaryGap(jobId),
+    queryFn: () => unwrap(api.GET('/jobs/{job_id}/salary-gap', { params: { path: { job_id: jobId } } })),
+    enabled,
   })
 }
 

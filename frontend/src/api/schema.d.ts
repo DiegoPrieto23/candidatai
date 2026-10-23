@@ -4149,6 +4149,11 @@ export interface components {
              * @default []
              */
             policy_discard_title_keywords: string[];
+            /**
+             * Policy Years Tolerance
+             * @default 0
+             */
+            policy_years_tolerance: number;
         };
         /**
          * EffectiveAction

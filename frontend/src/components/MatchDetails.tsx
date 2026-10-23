@@ -5,7 +5,8 @@ import type { MatchView, Schemas } from '@/api/client'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { serverText } from '@/lib/i18n'
 import { scoreNote } from '@/lib/scoreNotes'
-import { COMPONENT_LABEL, HARD_FILTER_LABEL, LEVEL_LABEL, VERDICT_LABEL } from '@/lib/labels'
+import { useSalaryGap } from '@/api/queries'
+import { COMPONENT_LABEL, HARD_FILTER_LABEL, LEVEL_LABEL, VERDICT_LABEL, formatMoney } from '@/lib/labels'
 import { cn } from '@/lib/utils'
 
 /** Score 0-100: número tabular con una barra fina. Por debajo del umbral, atenuado. */
@@ -187,8 +188,12 @@ function Assessment({ match, assessMinScore }: { match: MatchView; assessMinScor
   )
 }
 
-export function FilterFailures({ failures }: { failures: Schemas['FilterFailure'][] }) {
+/** Con `jobId`, el fallo por sueldo dice cuánto queda por debajo de tu mínimo: solo la UI lo sabe
+ *  (ADR-046); el motivo que guarda el servidor no lleva cifras. */
+export function FilterFailures({ failures, jobId }: { failures: Schemas['FilterFailure'][]; jobId?: number }) {
   const { t } = useTranslation('match')
+  const bySalary = jobId != null && failures.some((f) => f.filter === 'salary')
+  const gap = useSalaryGap(jobId ?? 0, bySalary).data?.gap_eur
   if (!failures.length) return null
   return (
     <div role="note" aria-label={t('failsFilters')} className="rounded-lg border border-foreground/15 bg-muted/60 p-3">
@@ -198,7 +203,10 @@ export function FilterFailures({ failures }: { failures: Schemas['FilterFailure'
       </p>
       <ul className="space-y-1 pl-5.5 text-sm text-foreground/85">
         {failures.map((f) => (
-          <li key={f.filter}>{serverText(HARD_FILTER_LABEL[f.filter], f.reason)}</li>
+          <li key={f.filter}>
+            {serverText(HARD_FILTER_LABEL[f.filter], f.reason)}
+            {f.filter === 'salary' && gap != null && <span className="text-muted-foreground"> {t('salaryGap', { amount: formatMoney(gap) })}</span>}
+          </li>
         ))}
       </ul>
     </div>
@@ -213,7 +221,7 @@ export function MatchDetails({ match, assessMinScore }: { match: MatchView; asse
   const b = match.breakdown
   return (
     <div className="space-y-6">
-      <FilterFailures failures={match.hard_filters.failures} />
+      <FilterFailures failures={match.hard_filters.failures} jobId={match.job_id} />
       <Section title={t('sections.breakdown')}>
         <Components components={b.components} />
       </Section>

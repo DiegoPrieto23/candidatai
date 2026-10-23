@@ -141,6 +141,14 @@ export interface CoverLetterPreferences {
   [key: string]: unknown
 }
 
+export const CONTRACT_TYPES = ['permanent', 'fixed_term', 'freelance'] as const
+export type ContractType = (typeof CONTRACT_TYPES)[number]
+export const EMPLOYMENT_TYPES = ['full_time', 'part_time', 'internship'] as const
+export type EmploymentType = (typeof EMPLOYMENT_TYPES)[number]
+export const EMPLOYER_KINDS = ['consultancy', 'agency'] as const
+export type EmployerKind = (typeof EMPLOYER_KINDS)[number]
+export type ExcludeSignal = 'employer_hidden' | 'fixed_term'
+
 export interface Preferences {
   roles: string[]
   seniority_target: Seniority[]
@@ -148,6 +156,13 @@ export interface Preferences {
   remote_modes: RemoteMode[]
   locations?: { preferred?: string[]; allowed?: string[]; excluded?: string[]; [key: string]: unknown }
   languages_for_work: string[]
+  // Fase 27.5: más filtros duros (vacíos = sin filtro).
+  min_years_required?: number | null
+  discard_title_keywords?: string[]
+  contract_types?: ContractType[]
+  employment_types?: EmploymentType[]
+  excluded_employer_kinds?: EmployerKind[]
+  exclude_signals?: ExcludeSignal[]
   cv: CvPreferences
   cover_letter?: CoverLetterPreferences | null
   [key: string]: unknown

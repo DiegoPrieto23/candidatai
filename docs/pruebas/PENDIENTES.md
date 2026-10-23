@@ -6,7 +6,7 @@ cada fase y lo quita cuando el usuario confirma que está hecho.
 
 Marca `[x]` lo que hagas y, si algo falla, apúntalo debajo de la línea con `→`.
 
-Última actualización: 2026-10-23 (fase 27.4).
+Última actualización: 2026-10-23 (fase 27.5).
 
 ## 1. Poner la app al día (antes de probar nada)
 
@@ -259,6 +259,21 @@ hiciste, márcala.
       WSL2: seguir solo la guía (requisitos, `install.sh`, abrir la app, conectar tu agente) sin
       saltarte ni añadir pasos, y apuntar lo que falte.
 - [ ] **La primera CI en `main`** tras fusionar la fase: macOS corre ahí (en la rama ya pasó a mano).
+- [ ] **Fase 27.5 · Preferencias de búsqueda** (con tu perfil real, UI compilada o `cai start --dev`):
+  - «Mi perfil → Búsqueda» tiene cuatro bloques (Puesto, Experiencia y sueldo, Dónde y cómo,
+    Contrato y empresa); captura a 1400 px y a 375 px de ancho, en claro y en oscuro: los campos de
+    una misma fila empiezan a la misma altura y nada se aprieta;
+  - si tenías `exclude_signals: [fixed_term]`, «Temporal» sale sin marcar e «Indefinido» y
+    «Autónomo» marcados; guarda «Contrato y empresa» y mira que el YAML pasa a
+    `contract_types: [permanent, freelance]` sin dejar `fixed_term` en `exclude_signals`;
+  - escribe un sueldo mínimo por encima de una oferta que publique sueldo (en EUR, por año o por
+    mes) y pulsa «Guardar sueldo»: al recalcularse, la oferta pasa a descartada con «por debajo de
+    tu mínimo salarial» y, en su ficha, cuánto queda por debajo. En «Historial» la cifra sale como
+    `<oculto>`;
+  - pide a tu agente `get_match` de esa oferta: ve el motivo, pero ni la cifra ni la diferencia;
+  - añade una palabra en «Palabras que descartan una oferta» y comprueba que una oferta con ella en
+    el título se descarta (y que la próxima ingesta no la guarda);
+  - cambia la UI a inglés y recorre los cuatro bloques.
 - [ ] **Fase 27.4 · Varios buzones** (UI compilada o `cai start --dev`):
   - antes, copia de la BD y `uv run --directory backend cai db upgrade` (migración **0027**);
   - en «Alertas», tu cuenta de `.env` sale sola como «Principal» en el panel «Buzones» (con «de

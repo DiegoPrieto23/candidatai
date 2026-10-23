@@ -120,6 +120,7 @@ class EditableProfile(BaseModel):
     undo_available: int  # copias en `profile-history/`
     # Las de `config/policies.yaml`, que se suman a `preferences.discard_title_keywords`.
     policy_discard_title_keywords: list[str] = []
+    policy_years_tolerance: int = 0  # `hard_filters.years_tolerance`, para la pista de los años
 
 
 class SaveResult(BaseModel):
@@ -465,7 +466,9 @@ def get_editable(session: Session, path: Path | None = None) -> EditableProfile:
     except profiles.ProfileNotFoundError:
         version_id = None
     undo = len(_history())
-    policy_words = list(policies.get_policies().hard_filters.discard_title_keywords)
+    hard_filters = policies.get_policies().hard_filters
+    policy_words = list(hard_filters.discard_title_keywords)
+    tolerance = hard_filters.years_tolerance
     if raw is None:
         return EditableProfile(
             exists=False,
@@ -475,6 +478,7 @@ def get_editable(session: Session, path: Path | None = None) -> EditableProfile:
             profile_version_id=version_id,
             undo_available=undo,
             policy_discard_title_keywords=policy_words,
+            policy_years_tolerance=tolerance,
         )
     data: Any = None
     issues: list[ProfileIssue] = []
@@ -495,6 +499,7 @@ def get_editable(session: Session, path: Path | None = None) -> EditableProfile:
         profile_version_id=version_id,
         undo_available=undo,
         policy_discard_title_keywords=policy_words,
+        policy_years_tolerance=tolerance,
     )
 
 
@@ -528,10 +533,36 @@ def _backup(raw: bytes) -> None:
         old.unlink(missing_ok=True)
 
 
+_PRIVATE_LINE = re.compile(r"^private:(.*)$")
+_PRIVATE_VALUE = re.compile(r"^(\s+[^:#\s][^:#]*:)[ \t]*(\S.*)$")
+
+
+def _mask_private(text: str) -> str:
+    """Oculta los valores de `private` (el sueldo mínimo, fase 27.5): el diff de una sección los
+    tendría como líneas de contexto si la sección va justo antes."""
+    out: list[str] = []
+    inside = False
+    for line in text.splitlines(keepends=True):
+        end = "\n" if line.endswith("\n") else ""
+        body = line.rstrip("\r\n")
+        if match := _PRIVATE_LINE.match(body):
+            inside = True
+            rest = match.group(1).split("#", 1)[0].strip()
+            out.append(f"private: {profiles.HIDDEN}{end}" if rest else line)
+            continue
+        if inside and body and not body[0].isspace() and not body.startswith("#"):
+            inside = False
+        if inside and (value := _PRIVATE_VALUE.match(body)):
+            out.append(f"{value.group(1)} {profiles.HIDDEN}{end}")
+            continue
+        out.append(line)
+    return "".join(out)
+
+
 def _diff(old: str, new: str) -> str:
     lines = difflib.unified_diff(
-        old.splitlines(keepends=True),
-        new.splitlines(keepends=True),
+        _mask_private(old).splitlines(keepends=True),
+        _mask_private(new).splitlines(keepends=True),
         fromfile="profile.yaml (ahora)",
         tofile="profile.yaml (con tu cambio)",
     )

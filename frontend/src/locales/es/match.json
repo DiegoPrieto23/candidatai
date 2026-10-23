@@ -26,5 +26,6 @@
     "noMust": "La oferta no lista skills obligatorias: la cobertura obligatoria no cuenta.",
     "noNice": "La oferta no lista skills deseables: la cobertura deseable no cuenta."
   },
-  "belowAssessThreshold": "Sin valorar en segundo plano: su score ({{score}}) está por debajo del umbral ({{threshold}}). Cámbialo en la página «Agente» o valórala «En terminal»."
+  "belowAssessThreshold": "Sin valorar en segundo plano: su score ({{score}}) está por debajo del umbral ({{threshold}}). Cámbialo en la página «Agente» o valórala «En terminal».",
+  "salaryGap": "{{amount}} por debajo de tu mínimo (solo lo ves tú)."
 }
