@@ -3475,6 +3475,15 @@ decisiones tomadas y deuda técnica pendiente. -->
   reescribe el historial por el correo; los ajustes de GitHub los activa el agente.
 - **Deuda:** `install.sh` se ejecuta con `curl | bash` desde `main`, sin verificar (lo habitual);
   los patrones genéricos y la validez del escaneo de secretos requieren GitHub Advanced Security.
+- **Demo de una app instalada (2026-10-24):** se guardaba en `app/data-demo`, y `app/` se sustituye
+  entera al actualizar, así que se perdía. `config.data_root()`: en una app instalada (`app/` con la
+  marca `.candidatai` de los instaladores en la carpeta de arriba), una carpeta de datos relativa
+  (`CAI_DATA_DIR=data-demo`, `cai demo seed --dir`) se resuelve junto a `data/`; en el repositorio,
+  como siempre. `cai demo seed` dice cómo abrirla con `cai start` y la guía lo explica. Probado con
+  una instalación de verdad: la demo sobrevive a la actualización. Decisión del usuario: la demo se
+  mantiene para quien usa la app (no solo para desarrollo).
+  Además, los instaladores ignoran un `CAI_DATA_DIR`/`CAI_DB_URL` de la terminal (la demo abierta
+  en la misma ventana) al preparar la base de datos, y en Windows la variable vuelve como estaba.
 - **Pendiente:** fusionar, etiquetar `v0.1.0` y la prueba manual de `fase-28.1-prueba-manual.md`
   (Windows Sandbox, WSL, Docker; macOS por la CI). Ya probado: empaquetado local, instalación en
   Windows desde ese zip con suma, `cai doctor`, reinstalar conservando datos y suma alterada

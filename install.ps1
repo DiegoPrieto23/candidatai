@@ -256,8 +256,20 @@ if ($PSCmdlet.ShouldProcess($backend, "uv sync, Chromium de Playwright y base de
   if ($LASTEXITCODE -ne 0) { throw "uv sync ha fallado ($LASTEXITCODE)." }
   & uv run --directory $backend playwright install chromium
   if ($LASTEXITCODE -ne 0) { throw "No se pudo instalar Chromium ($LASTEXITCODE)." }
-  & uv run --directory $backend cai db upgrade
-  if ($LASTEXITCODE -ne 0) { throw "No se pudo preparar la base de datos ($LASTEXITCODE)." }
+  # La base de datos que se prepara es la de tus datos (la del .env de la app), aunque en esta
+  # terminal hayas abierto la demo con $env:CAI_DATA_DIR. Al terminar, tu terminal queda como
+  # estaba (fase 28.1).
+  $saved = @{}
+  foreach ($name in "CAI_DATA_DIR", "JH_DATA_DIR", "CAI_DB_URL", "JH_DB_URL") {
+    $saved[$name] = [Environment]::GetEnvironmentVariable($name, "Process")
+    [Environment]::SetEnvironmentVariable($name, $null, "Process")
+  }
+  try {
+    & uv run --directory $backend cai db upgrade
+    if ($LASTEXITCODE -ne 0) { throw "No se pudo preparar la base de datos ($LASTEXITCODE)." }
+  } finally {
+    foreach ($name in $saved.Keys) { [Environment]::SetEnvironmentVariable($name, $saved[$name], "Process") }
+  }
 }
 
 # --- 5. Accesos directos -----------------------------------------------------------------------

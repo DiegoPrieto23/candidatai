@@ -152,6 +152,24 @@ def test_seed_refuses_the_real_data_folder_and_its_parents(where: str) -> None:
         demo.prepare_dir(demo.REPO_ROOT / where, force=True)
 
 
+def test_an_installed_app_seeds_next_to_data_and_never_in_it(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Fase 28.1: instalada, la demo va junto a `data/` (fuera de `app/`, que se sustituye al
+    actualizar) y nunca dentro de los datos de la instalación."""
+    monkeypatch.setattr(demo, "data_root", lambda: tmp_path)
+    for where in ("data", "data/demo"):
+        with pytest.raises(demo.DemoSeedError, match="data/"):
+            demo.prepare_dir(tmp_path / where, force=True)
+    # Una ruta relativa se resuelve desde la carpeta de instalación (aquí, una que no es demo).
+    (tmp_path / "otra").mkdir()
+    (tmp_path / "otra" / "candidatai.db").write_text("no tocar", encoding="utf-8")
+    with pytest.raises(demo.DemoSeedError, match="no es una demo"):
+        demo.seed(Path("otra"))
+    demo.prepare_dir(tmp_path / "data-demo", force=False)
+    assert demo.is_demo_dir(tmp_path / "data-demo")
+
+
 def test_use_data_dir_restores_the_environment_after_an_error(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, isolated_env: Path
 ) -> None:

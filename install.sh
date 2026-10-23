@@ -478,6 +478,9 @@ step_setup() {
 with s() as p: p.chromium.launch().close()' </dev/null >/dev/null 2>&1; then
     chromium_hint "$backend"
   fi
+  # La base de datos que se prepara es la de tus datos (la del .env de la app), aunque en esta
+  # terminal hayas abierto la demo con CAI_DATA_DIR (fase 28.1). Solo en el proceso del instalador.
+  unset CAI_DATA_DIR JH_DATA_DIR CAI_DB_URL JH_DB_URL
   "$UV" run --directory "$backend" cai db upgrade </dev/null ||
     fail "No se pudo preparar la base de datos."
 }

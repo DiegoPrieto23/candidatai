@@ -222,10 +222,14 @@ unclassified, with text hidden for an AI), two gaps in "Skills", a pending reque
 style sample and a salary table.
 
 ```powershell
-cd backend
+cd backend          # installed: cd $env:LOCALAPPDATA\CandidatAI\app\backend
 uv run cai demo seed --lang en --dir data-demo-en      # --force to recreate it
 $env:CAI_DATA_DIR = "data-demo-en"; uv run cai start
 ```
+
+With the installed app, close CandidatAI first. The demo is saved next to your data (for example,
+`%LOCALAPPDATA%\CandidatAI\data-demo-en`), so updating doesn't delete it. To go back to your data,
+close the window and open CandidatAI as usual.
 
 Without `--lang en` you get the Spanish demo in `data-demo/`. Your browser opens at
 `http://127.0.0.1:8000` with a "Demo mode" banner. The "in your agent" buttons open your agent

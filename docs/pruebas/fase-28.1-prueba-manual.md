@@ -14,6 +14,8 @@ suma SHA-256 e instalan desde cero en Windows, Linux y macOS, y que Docker arran
 - [x] Con una suma alterada: «no coincide con la publicada», sale con error y la app instalada
   queda como estaba.
 - [x] Tests de `install.sh` en Linux (contenedor): suma buena, mala, sin suma y `--skip-checksum`.
+- [x] (2026-10-24) La demo de una app instalada se crea en `CandidatAI\data-demo` y sobrevive a una
+  actualización (antes iba en `app\data-demo` y se perdía).
 
 ## Por hacer (con la release publicada)
 
@@ -56,9 +58,10 @@ tener uno (o lo hace quien lo pruebe primero).
 
 ### 5. Actualizar sin perder datos
 
-Para no publicar una `v0.1.1` de prueba: con la `v0.1.0` instalada y la demo sembrada, haz un zip
-con la prueba en seco del workflow (artefacto `candidatai-zip`, que trae su `.sha256`) y
-reinstala con `-Source <ruta>\candidatai.zip` / `--source`. Los datos tienen que seguir ahí.
+Para no publicar una `v0.1.1` de prueba: con la `v0.1.0` instalada, una oferta tuya dada de alta y
+la demo sembrada, haz un zip con la prueba en seco del workflow (artefacto `candidatai-zip`, que
+trae su `.sha256`) y reinstala con `-Source <ruta>\candidatai.zip` / `--source`. Tu oferta y la
+demo (en `CandidatAI\data-demo`, junto a `data`) tienen que seguir ahí.
 
 ## Resultados
 

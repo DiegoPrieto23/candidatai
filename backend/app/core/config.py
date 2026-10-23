@@ -31,6 +31,8 @@ def _env(name: str) -> AliasChoices:
 
 # Fichero marca de una carpeta de datos creada por `cai demo seed` (fase 12.1).
 DEMO_MARKER = ".demo"
+# Fichero marca de una carpeta de instalación (la crean install.ps1 e install.sh, fase 26.2).
+INSTALL_MARKER = ".candidatai"
 
 
 def install_dir(platform: str | None = None) -> Path:
@@ -58,6 +60,16 @@ def installed_data_dir(platform: str | None = None) -> Path:
     """Carpeta de datos de la app instalada, la que fija el instalador en `CAI_DATA_DIR`. En
     desarrollo no se usa: sin `CAI_DATA_DIR`, los datos van en `data/` del repositorio."""
     return install_dir(platform) / "data"
+
+
+def data_root(repo_root: Path = REPO_ROOT) -> Path:
+    """Desde dónde se resuelve una carpeta de datos relativa (`CAI_DATA_DIR=data-demo`,
+    `cai demo seed --dir`). En el repositorio, su raíz. En una app instalada, la carpeta de
+    instalación, junto a `data/`: `app/` se sustituye entera al actualizar y una demo dentro se
+    perdería (fase 28.1)."""
+    if repo_root.name == "app" and (repo_root.parent / INSTALL_MARKER).is_file():
+        return repo_root.parent
+    return repo_root
 
 
 class Settings(BaseSettings):
@@ -130,10 +142,11 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def _resolve_paths(self) -> "Settings":
-        # Una ruta relativa (p. ej. CAI_DATA_DIR=data-demo) se resuelve desde la raíz del repo,
-        # no desde el directorio de trabajo, para que `cai` funcione igual desde cualquier sitio.
+        # Una ruta relativa (p. ej. CAI_DATA_DIR=data-demo) se resuelve desde la raíz del repo
+        # (o, instalada, junto a `data/`), no desde el directorio de trabajo, para que `cai`
+        # funcione igual desde cualquier sitio.
         if not self.data_dir.is_absolute():
-            self.data_dir = REPO_ROOT / self.data_dir
+            self.data_dir = data_root() / self.data_dir
         self.data_dir = self.data_dir.resolve()
         if self.db_url is None:
             self.db_url = f"sqlite:///{self.default_db_path.as_posix()}"
