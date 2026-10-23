@@ -10,6 +10,15 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Descartar desde la Bandeja:** en «Por completar» y «Por extraer» cada oferta lleva un botón
+  «Descartar» que la quita en un clic con el motivo nuevo «No me interesa (título o empresa)», sin
+  entrar en la ficha ni gastar agente. Avisa con «Deshacer»; el ▾ de al lado deja elegir otro
+  motivo. Con las casillas descartas varias de golpe. En «Por completar», «Abrir» lleva a la
+  oferta en su portal para decidir. Si tu agente estaba extrayendo una oferta que descartas, se la
+  salta y sigue con las demás.
+- **«Cerrada» con su fecha de cierre:** la Bandeja filtrada por «Cerrada» enseña cuándo se cerró
+  cada oferta (y cómo, al pasar el ratón) y ordena por esa fecha. Las ofertas ya cerradas toman su
+  fecha de su historial.
 - **Más filtros de búsqueda en tu perfil:** sueldo mínimo (bruto anual en euros), años mínimos
   que pide la oferta, palabras del título que la descartan, tipo de contrato (indefinido, temporal,
   autónomo) y de jornada, y excluir consultoras o agencias de selección y ETT. Lo que la oferta no

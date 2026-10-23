@@ -1,7 +1,7 @@
 # Fase 27 · Ayudas en los botones, prioridades únicas, varios buzones, experiencia plegable y preferencias de búsqueda
 
-Rama `fase/27-mejoras-ui`. Cinco subfases, cada una con su encargo y su commit (o sus commits) en la
-misma rama, en este orden: 27.1 → 27.2 → 27.3 → 27.4 → 27.5. **Una subfase por sesión.** Va después
+Rama `fase/27-mejoras-ui`. Seis subfases, cada una con su encargo y su commit (o sus commits) en la
+misma rama, en este orden: 27.1 → 27.2 → 27.3 → 27.4 → 27.5 → 27.6. **Una subfase por sesión.** Va después
 de la 26. Petición del usuario (2026-10-23), tras usar la app en real.
 
 ## Antes de empezar
@@ -34,6 +34,7 @@ Cuatro mejoras de uso que salen de trabajar con la app a diario:
 | 27.3 | `prompts/27.3-prioridades-unicas.md` | Las plataformas tienen un orden sin empates; elegir una prioridad ocupada las intercambia |
 | 27.4 | `prompts/27.4-alertas-varios-buzones.md` | Botón «Añadir buzón» en Alertas, con guía integrada para Gmail, Outlook, Yahoo, iCloud y otros |
 | 27.5 | `prompts/27.5-preferencias-busqueda.md` | «Búsqueda» en bloques y con los campos alineados, con años mínimo y máximo, sueldo mínimo (privado), palabras que descartan, tipo de contrato y de empresa y ofertas dudosas |
+| 27.6 | `prompts/27.6-descartar-desde-bandeja.md` | Botón para descartar en «Por completar» y «Por extraer», con «Deshacer», y «Cerrada» con su fecha de cierre ordenable |
 
 El orden va de menos a más riesgo: 27.1 y 27.2 son solo frontend; 27.3 toca el esquema de fuentes;
 27.4 toca la lectura de correo y la seguridad de las credenciales; 27.5 toca el perfil, la

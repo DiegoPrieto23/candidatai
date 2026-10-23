@@ -339,7 +339,9 @@ The worker runs the automatic sources every day at `connectors.daily_at`
 
 ## 8. From job to application
 
-1. **Extract:** `process-jobs` turns each posting's text into structured data. Posting text is
+1. **Extract:** first, if a title or company doesn't interest you, remove it from the Inbox
+   (**To complete** or **To extract**) with **Discard**, one by one or selecting several: it costs
+   no agent time and can be undone. `process-jobs` turns each posting's text into structured data. Posting text is
    untrusted content: if it carries hidden text or phrases aimed at an AI, the job page warns you.
 2. **Assess:** the app computes the score and applies your hard filters; `assess-fit` adds a
    reasoned verdict.

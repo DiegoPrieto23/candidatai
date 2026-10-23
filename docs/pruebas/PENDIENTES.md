@@ -6,7 +6,7 @@ cada fase y lo quita cuando el usuario confirma que está hecho.
 
 Marca `[x]` lo que hagas y, si algo falla, apúntalo debajo de la línea con `→`.
 
-Última actualización: 2026-10-23 (fase 27.5).
+Última actualización: 2026-10-23 (fase 27.6).
 
 ## 1. Poner la app al día (antes de probar nada)
 
@@ -259,6 +259,19 @@ hiciste, márcala.
       WSL2: seguir solo la guía (requisitos, `install.sh`, abrir la app, conectar tu agente) sin
       saltarte ni añadir pasos, y apuntar lo que falte.
 - [ ] **La primera CI en `main`** tras fusionar la fase: macOS corre ahí (en la rama ya pasó a mano).
+- [ ] **Fase 27.6 · Descartar desde la Bandeja** (UI compilada o `cai start --dev`):
+  - antes, copia de la BD y `uv run --directory backend cai db upgrade` (migración **0028**);
+  - «Bandeja» filtrada por «Por completar»: «Abrir» lleva a la oferta en su portal; «Descartar» la
+    quita sin entrar en la ficha y avisa «Descartada: … · No me interesa (título o empresa)»;
+    «Deshacer» la devuelve;
+  - lo mismo en «Por extraer»; el ▾ abre el diálogo con los motivos de siempre;
+  - marca varias casillas y «Descartar N»; «Deshacer» las devuelve todas;
+  - con «Por extraer» con ofertas, lanza `process-jobs` y descarta una mientras trabaja: el lote
+    la cuenta como saltada y sigue con las demás;
+  - «Cerrada»: la columna «Cerrada» tiene fecha también en las que cerraste antes de la migración
+    (pasa el ratón: sale cómo se cerró) y la cabecera ordena por ella; las demás vistas no cambian;
+  - a 375 px de ancho, los botones caben en cada fila y el selector ofrece «Cerradas hace menos /
+    más» solo en «Cerrada»; cambia la UI a inglés y repite un descarte.
 - [ ] **Fase 27.5 · Preferencias de búsqueda** (con tu perfil real, UI compilada o `cai start --dev`):
   - «Mi perfil → Búsqueda» tiene cuatro bloques (Puesto, Experiencia y sueldo, Dónde y cómo,
     Contrato y empresa); captura a 1400 px y a 375 px de ancho, en claro y en oscuro: los campos de

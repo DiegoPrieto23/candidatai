@@ -6,7 +6,9 @@
     "scoreDesc": "Best fit",
     "scoreAsc": "Worst fit",
     "salaryDesc": "Highest salary",
-    "salaryAsc": "Lowest salary"
+    "salaryAsc": "Lowest salary",
+    "closedDesc": "Closed most recently",
+    "closedAsc": "Closed longest ago"
   },
   "risk": "Possible content aimed at an AI",
   "notExtracted": "Not extracted",
@@ -17,7 +19,9 @@
     "salary": "Salary",
     "fit": "Fit",
     "stage": "Stage",
-    "added": "Added"
+    "added": "Added",
+    "closed": "Closed",
+    "actions": "Actions"
   },
   "loadingJobs": "Loading jobs",
   "count_one": "{{count}} job",
@@ -39,5 +43,27 @@
   },
   "range": "{{from}}-{{to}} of {{total}}",
   "previous": "Previous",
-  "next": "Next"
+  "next": "Next",
+  "closedWhen": "Closed {{when}}",
+  "quick": {
+    "select": "Select {{title}}",
+    "selectAll": "Select all",
+    "open": "Open",
+    "openJob": "Open {{title}} on its site",
+    "discard": "Discard",
+    "discardJob": "Discard {{title}}",
+    "moreReasons": "Discard {{title}} with another reason",
+    "otherReason": "Discard with another reason…",
+    "discarded": "Discarded:",
+    "discardedMany_one": "Discarded {{count}} job",
+    "discardedMany_other": "Discarded {{count}} jobs",
+    "undo": "Undo",
+    "closeNotice": "Close notice",
+    "failed": "Could not save: {{error}}",
+    "selectedCount_one": "{{count}} selected",
+    "selectedCount_other": "{{count}} selected",
+    "clearSelection": "Clear selection",
+    "discardMany_one": "Discard {{count}}",
+    "discardMany_other": "Discard {{count}}"
+  }
 }

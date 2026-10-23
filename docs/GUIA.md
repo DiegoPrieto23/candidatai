@@ -335,7 +335,9 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
 
 ## 8. De la oferta al envío
 
-1. **Extraer:** `process-jobs` convierte el texto de cada oferta en datos estructurados. El
+1. **Extraer:** antes, si un título o una empresa no te interesa, quítala desde la Bandeja
+   («Por completar» o «Por extraer») con «Descartar», una a una o seleccionando varias: no gasta
+   agente y se puede deshacer. `process-jobs` convierte el texto de cada oferta en datos estructurados. El
    texto de las ofertas es contenido no confiable: si trae texto oculto o frases dirigidas a una
    IA, la ficha lo avisa.
 2. **Valorar:** la app calcula el score y aplica tus filtros duros; `assess-fit` añade una

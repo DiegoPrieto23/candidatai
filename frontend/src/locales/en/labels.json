@@ -74,6 +74,7 @@
     "salary": "Salary or conditions",
     "company": "Company or sector",
     "closed": "No longer posted",
+    "not_interested": "Not interested (title or company)",
     "other": "Other reason"
   },
   "component": {

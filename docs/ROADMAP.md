@@ -90,13 +90,19 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 26.3 | ↳ Docker opcional | ✅ | `docker compose up` con los datos en un volumen; el agente desde fuera por MCP; límites documentados |
 | 26.4 | ↳ CI en tres sistemas y docs | ✅ | Backend probado en Windows, Linux y macOS, humo del instalador y de Docker, guía y README al día |
 | 26.5 | ↳ Demo completa | ✅ | La demo trae hecho lo de cada pantalla (cartas, dosieres, correos, entrevistas, oferta recibida, contexto…) y los botones abren el agente sobre la demo |
-| 27 | Ayudas, prioridades, varios buzones, experiencia plegable y preferencias | ⏳ | Globos que explican cada botón de skill, prioridades de plataforma sin empates, Alertas con varios buzones, «Experiencia» que se recorre de un vistazo y «Búsqueda» con los filtros que faltan |
+| 27 | Ayudas, prioridades, varios buzones, experiencia plegable y preferencias | ✅ | Globos que explican cada botón de skill, prioridades de plataforma sin empates, Alertas con varios buzones, «Experiencia» que se recorre de un vistazo y «Búsqueda» con los filtros que faltan |
 | 27.1 | ↳ Ayudas en los botones de los skills | ✅ | Globo al pasar el ratón o enfocar, con qué hace, qué toca y qué necesita, en español e inglés |
 | 27.2 | ↳ «Experiencia» plegable | ✅ | Empresas plegadas por defecto, bordes rectos y logros con fondo alterno |
 | 27.3 | ↳ Prioridades únicas | ✅ | Orden de plataformas sin empates; elegir un puesto ocupado intercambia |
 | 27.4 | ↳ Alertas con varios buzones | ✅ | «Añadir buzón» con guía para Gmail, Outlook, Yahoo, iCloud y carpeta de `.eml` |
-| 27.5 | ↳ Preferencias de búsqueda | ⏳ | «Mi perfil → Búsqueda» en bloques y alineada, con años mínimos, sueldo mínimo privado, palabras que descartan, contrato y tipo de empresa |
-| 27.6 | ↳ Descartar desde la Bandeja | ⏳ | Botón «Descartar» con «Deshacer» en «Por completar» y «Por extraer», y «Cerrada» con su fecha de cierre, ordenable |
+| 27.5 | ↳ Preferencias de búsqueda | ✅ | «Mi perfil → Búsqueda» en bloques y alineada, con años mínimos, sueldo mínimo privado, palabras que descartan, contrato y tipo de empresa |
+| 27.6 | ↳ Descartar desde la Bandeja | ✅ | Botón «Descartar» con «Deshacer» en «Por completar» y «Por extraer», y «Cerrada» con su fecha de cierre, ordenable |
+| 28 | Repo público: raíz limpia, release, medios nuevos y lanzamiento | ⏳ | Primera release que instala de verdad, lo interno en `dev/`, medios y README al día con todas las funcionalidades, portada y ajustes de GitHub, y borradores de difusión |
+| 28.1 | ↳ Auditoría y primera release | ⏳ | Historial auditado, `v0.1.0` publicada con suma de verificación y los instaladores probados contra ella |
+| 28.2 | ↳ Raíz limpia | ⏳ | Encargos, pruebas, ROADMAP y ADR a `dev/`, enlaces comprobados y la barra de lenguajes de GitHub bien |
+| 28.3 | ↳ Medios y funcionalidades | ⏳ | Capturas, GIF y vídeos nuevos (en/es), `FEATURES.md` y un script que impide funciones sin contar |
+| 28.4 | ↳ Portada y GitHub | ⏳ | Portada con gancho, «Por qué CandidatAI», guía para quien no es técnico, temas, imagen social y plantillas |
+| 28.5 | ↳ Lanzamiento | ⏳ | Borradores por canal, listas «awesome», preguntas esperables y plan de dos semanas |
 
 **MVP usable:** al terminar la 08 ya puedes pegar ofertas, triarlas y sacar CVs a medida; con la
 08c, también cartas de presentación. La 08c va antes que la 08b, aunque el orden entre ambas da
@@ -3355,3 +3361,88 @@ decisiones tomadas y deuda técnica pendiente. -->
 - 2912 tests de backend (12 de macOS y Linux se saltan en Windows) y 335 de
   frontend en verde; `tsc`, ruff, `pnpm build`, `sync_agents.py --check` y `check_links.py`
   limpios; OpenAPI regenerado.
+
+### 27.5 · Preferencias de búsqueda — 2026-10-23 · Claude Code (Opus 5.5)
+- **Por qué:** «Mi perfil → Búsqueda» era un solo bloque descuadrado (las etiquetas iban encima del
+  campo) y faltaban filtros: años mínimos, sueldo, palabras que descartan (solo en
+  `policies.yaml`), contrato, jornada y tipo de empresa. Las ofertas dudosas no se veían.
+- **Hecho (27.5a, backend):**
+  - ADR-046. Perfil: `min_years_required`, `discard_title_keywords`, `contract_types`,
+    `employment_types` y `excluded_employer_kinds`, que vacíos no se vuelcan (mismo YAML y hash);
+    coherencia mínimo ≤ máximo y `private.salary_floor_eur` entero > 0 o `null` (sin repetir la
+    cifra en el error);
+  - filtros duros `salary` (EUR por año o mes ×12; el motivo no lleva cifras), `contract` (con
+    `exclude_signals: [fixed_term]` como «no acepto temporal») y `employer_kind` (`is_agency`
+    cuenta como `agency`); años con mínimo y la misma tolerancia; palabras del perfil más las de
+    `policies.yaml`, también en el filtro previo de las fuentes;
+  - extracción: `employer_kind` opcional y el rol `extractor` con cómo distinguirlo;
+  - API solo para la UI: `GET`/`PUT /profile/salary-floor` (sin diff) y
+    `GET /jobs/{id}/salary-gap`; `GET /profile/editable` trae las palabras y la tolerancia de
+    `policies.yaml`;
+  - demo con valores para todo; docs `POLICIES`, `DATA_MODEL`, `FUENTES_OFERTAS`,
+    `AGENT_INTERFACE`, `GUIA` y `GUIDE`.
+- **Hecho (27.5b, la pantalla):**
+  - «Búsqueda» en cuatro bloques con su «Guardar»: Puesto, Experiencia y sueldo, Dónde y cómo, y
+    Contrato y empresa;
+  - `TagsField` con el campo arriba y las etiquetas debajo; ubicaciones en dos columnas como mucho
+    y «Solo si no es presencial» con la regla de `Locations.allowed`;
+  - años como un rango con la tolerancia en la pista; sueldo con candado y su propio botón;
+    casillas de contrato, jornada, tipo de empresa y empresa oculta; «Temporal» es una sola casilla
+    y guardar escribe solo `contract_types`;
+  - en la ficha, el descarte por sueldo dice cuánto queda por debajo (solo la UI);
+  - comprobado con Playwright a 1400 y 375 px, en claro y oscuro, contra una API de demo aparte.
+- **Revisión (rol `reviewer`):**
+  - 27.5a: un test roto por los valores nuevos de la demo (corregido), `employer_kind` concreto
+    frente a `is_agency` (probado) y dos notas en el ADR (el agente podría acotar el mínimo por
+    sondeo; los descartes antiguos por temporal siguen como `signal`);
+  - 27.5b: el diff de vista previa de una sección enseñaba como contexto las líneas de `private`
+    (bloqueante, ya pasaba antes de la fase): ahora `_mask_private` las oculta, con test;
+    «Recargar» en el conflicto del sueldo, sin parpadeo al guardarlo, aviso si no se pudo leer,
+    unidad asociada al campo y la casilla de empresa oculta sin borrar otras señales.
+- **Decisiones (confirmadas por el usuario):** el sueldo mínimo filtra y sigue en `private`;
+  ×12 y no ×14; si la oferta solo publica el mínimo, ese cuenta; `employment_type: contract` no
+  dice la jornada y pasa.
+- **Deuda:** las extracciones antiguas no tienen `employer_kind` hasta que se vuelvan a extraer; sin
+  conversión de moneda ni sueldo por horas.
+- 27.5a: 2952 tests de backend en tres tandas (los 2 que fallaron, corregidos y repetidos con
+  los ficheros tocados: 707 en verde). 27.5b: los de perfil y editor del backend (120) y los 342 de
+  frontend en verde; `tsc`, ruff, build y `sync_agents.py --check` limpios; OpenAPI regenerado.
+
+### 27.6 · Descartar desde la Bandeja — 2026-10-23 · Claude Code (Opus 5.5)
+- **Por qué:** completar un resumen (abrirlo en LinkedIn y usar la extensión) o extraer una oferta
+  cuesta, y no había forma de quitarla desde la Bandeja si el título o la empresa ya no gustaban.
+  «Cerrada» solo enseñaba y ordenaba por la fecha de alta.
+- **Hecho (27.6a, backend):**
+  - `ProjectionState.closed_at`/`closed_by` y sus columnas en `applications` (migración 0028): el
+    `occurred_at` y el tipo del evento que cierra; `reopened` los limpia y una nota posterior no los
+    mueve. El relleno de la migración va en SQL (el último evento de cierre de cada oferta cerrada)
+    y no con `rebuild_projection`, para no depender del código de mañana; sin eventos nuevos;
+  - `JobSort` gana `closed` (sin fecha, al final; desempate por fecha de alta) y `JobRow` trae
+    `closed_at` y `closed_by`; OpenAPI y `schema.d.ts` regenerados;
+  - motivo `not_interested` en `DiscardReason`; el embudo lo cuenta y la calibración no lo ve (solo
+    mira enviadas), con test;
+  - lote del agente: cada `save_extraction` es una llamada aparte, así que una oferta descartada a
+    mitad falla sola con `invalid_transition` (sin extracción a medias) y el resto sigue. La
+    transición `extracted` lleva una pista para saltarla y `process-jobs` la cuenta como saltada;
+  - `DATA_MODEL`, `GUIA`/`GUIDE` y `CHANGELOG`.
+- **Hecho (27.6b, Bandeja):**
+  - en «Por completar» y «Por extraer» (solo con ese filtro), «Descartar» por fila en un clic con
+    `not_interested`, que oculta la fila ya, avisa con «Deshacer» y la devuelve si la API falla;
+    el ▾ abre el diálogo de siempre para otro motivo; nombre accesible con el título;
+  - casillas y «Descartar N» (uno a uno en serie, con un «Deshacer» para todas); los descartes
+    seguidos se acumulan en el mismo aviso; «Abrir» en el portal en «Por completar»;
+  - con `stage=closed`, columna «Cerrada» (relativa, con fecha y evento en el `title`) y las dos
+    cabeceras ordenan; en el móvil, «Cerradas hace menos / más». Un `sort=closed` con otra etapa
+    se ignora. El orden por defecto sigue siendo «Alta».
+- **Revisión (rol `reviewer`):** sin bloqueantes. Aplicado: los descartes seguidos ya no pisan el
+  «Deshacer» anterior, un `reopened` que falla se queda en el aviso para reintentarlo, la celda de
+  la casilla no abre la ficha y la pista de `extracted` no da por hecho que esté cerrada.
+- **Decisiones (confirmadas por el usuario):** descarte en un clic con ▾ para otro motivo; motivo
+  nuevo `not_interested` en lugar de `company` u `other`; con selección múltiple.
+- **Deuda:** `tracking.py` recalcula cómo se cerró cada oferta releyendo eventos; podría leer
+  `applications.closed_by`. Una oferta oculta que se reabre desde la CLI con la Bandeja abierta no
+  reaparece hasta cambiar de vista. Sin atajos de teclado en la Bandeja (los de Alertas siguen allí).
+- Backend: 2971 tests en verde, 12 saltados (los de macOS y Linux) y 2 rotos por la revisión
+  cabeza nueva (`test_cli_db`), corregidos y repetidos junto con los tocados tras la revisión (326 en
+  verde). Frontend: 349 en verde y los 17 de la Bandeja repetidos tras la revisión. `tsc`, ruff,
+  oxlint (sin avisos nuevos) y `sync_agents.py --check` limpios; OpenAPI regenerado.
