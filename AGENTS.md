@@ -7,7 +7,7 @@ React, servidor MCP y CLI `cai`.
 **El código de la app no llama a ningún LLM.** El razonamiento (extraer ofertas, valorar encaje,
 redactar CVs) lo hace el agente de IA que use cada persona (Claude Code, Codex, OpenCode, Qwen
 Code, Antigravity CLI…), a través de la interfaz para agentes de la app: herramientas MCP o comandos
-`cai` equivalentes. Ver `docs/DECISIONS.md`, ADR-001 y ADR-010.
+`cai` equivalentes. Ver `dev/DECISIONS.md`, ADR-001 y ADR-010.
 
 Este fichero es la fuente de instrucciones para **cualquier** agente. `CLAUDE.md` solo apunta
 aquí; `GEMINI.md` está vacío a propósito (Antigravity lee los dos y ese manda).
@@ -17,8 +17,10 @@ aquí; `GEMINI.md` está vacío a propósito (Antigravity lee los dos y ese mand
 | Necesitas… | Lee |
 |---|---|
 | Instalar y usar la app (para personas) | `docs/GUIA.md` (en inglés, `docs/GUIDE.md`) |
+| Todo lo que hace la app, página a página y skill a skill | `docs/FUNCIONALIDADES.md` (en inglés, `docs/FEATURES.md`) |
 | Comparativa con AI Job Search y career-ops | `docs/COMPARATIVA.md` |
-| Índice de todos los documentos | `docs/README.md` |
+| Índice de los documentos para quien usa o contribuye | `docs/README.md` |
+| Índice de lo interno (fases, encargos, ADR, pruebas) | `dev/README.md` |
 | Visión de conjunto, capas, flujo | `docs/ARCHITECTURE.md` |
 | Tablas, eventos, estados | `docs/DATA_MODEL.md` |
 | Herramientas MCP, comandos CLI y esquemas | `docs/AGENT_INTERFACE.md` |
@@ -27,10 +29,10 @@ aquí; `GEMINI.md` está vacío a propósito (Antigravity lee los dos y ese mand
 | Fuentes de ofertas (alertas, captura, búsqueda con navegador) | `docs/FUENTES_OFERTAS.md` |
 | Guía para configurar las alertas por correo (Gmail, IMAP) | `docs/CONFIGURAR_CORREO.md` |
 | Qué agentes están soportados y con qué garantías | `docs/AGENTS_COMPAT.md` |
-| Qué fase toca y su estado | `docs/ROADMAP.md` |
-| Qué aporta cada fase hecha, en resumen | `docs/RESUMEN_FASES.md` |
-| Por qué se decidió algo | `docs/DECISIONS.md` |
-| Encargo de una fase | `prompts/NN-*.md` |
+| Qué fase toca y su estado | `dev/ROADMAP.md` |
+| Qué aporta cada fase hecha, en resumen | `dev/RESUMEN_FASES.md` |
+| Por qué se decidió algo | `dev/DECISIONS.md` |
+| Encargo de una fase | `dev/prompts/NN-*.md` |
 
 ## Estructura
 
@@ -49,6 +51,10 @@ templates/        plantillas de CV integradas (sin datos personales)
 extension/        extensión «Enviar a CandidatAI» (fase 09b)
 config/           policies.yaml y listas genéricas (sin datos personales)
 demo/             candidato y ofertas ficticios
+docs/             documentación para quien usa la app o contribuye
+dev/              lo interno del desarrollo: ROADMAP, ADR (DECISIONS.md), encargos (prompts/),
+                  pruebas manuales (pruebas/) y resúmenes de fase
+evals/            eval de matching (lo lee `cai eval`)
 install.ps1       instalador para Windows: descarga la release, prepara todo y crea el acceso directo
 install.sh        el mismo instalador para macOS y Linux (ADR-041)
 Dockerfile, docker-compose*.yml   Docker opcional: la app en un contenedor, tu agente fuera (ADR-042)
@@ -87,8 +93,10 @@ uv run scripts/sync_agents.py --check   # CI: falla si lo generado no está al d
 - Tests con pytest sobre SQLite temporal. Sin red en los tests: usa fixtures y `respx`.
 - Código e identificadores en inglés; docs y mensajes al usuario en español; la UI, en español e
   inglés (ver «Textos de la UI»). Excepción: el
-  README y la guía de uso existen en inglés (`README.md`, `docs/GUIDE.md`) y en español
-  (`README.es.md`, `docs/GUIA.md`); un cambio en uno va también al otro.
+  README, la guía de uso y la lista de funcionalidades existen en inglés (`README.md`,
+  `docs/GUIDE.md`, `docs/FEATURES.md`) y en español (`README.es.md`, `docs/GUIA.md`,
+  `docs/FUNCIONALIDADES.md`); un cambio en uno va también al otro. Una página o un skill nuevos van
+  a las dos listas: `scripts/check_readme_coverage.py` (en la CI) lo comprueba.
 - Windows 11 es el entorno principal: `pathlib` siempre, nada de comandos solo-Unix en código,
   rutas de herramientas externas configurables por variable de entorno (`SOFFICE_PATH`).
 - Frontend: TypeScript estricto, cliente de API generado desde el OpenAPI de FastAPI, TanStack
@@ -107,7 +115,7 @@ uv run scripts/sync_agents.py --check   # CI: falla si lo generado no está al d
 
 - La rama principal es `main`. No se trabaja directamente sobre ella.
 - Cada fase se implementa en su propia rama, creada desde `main` al día, con el nombre del
-  encargo: `fase/NN-<slug>` (p. ej. `fase/04-interfaz-agentes` para `prompts/04-interfaz-agentes.md`).
+  encargo: `fase/NN-<slug>` (p. ej. `fase/04-interfaz-agentes` para `dev/prompts/04-interfaz-agentes.md`).
 - Los commits de la fase van a esa rama. Fusionar en `main`, hacer push o borrar la rama solo
   cuando el usuario lo pida.
 
@@ -127,7 +135,7 @@ uv run scripts/sync_agents.py --check   # CI: falla si lo generado no está al d
    solo si el usuario la ha activado en la UI (ADR-033); el agente no puede activarla.
 7. No inventar datos del candidato. Todo lo que se escriba en un CV sale de `data/profile.yaml`.
 8. Al cerrar una fase: tests en verde, ruff limpio, `sync_agents.py --check` en verde,
-   `docs/ROADMAP.md` actualizado y lo que note quien usa la app en la sección «Sin publicar» de
+   `dev/ROADMAP.md` actualizado y lo que note quien usa la app en la sección «Sin publicar» de
    `CHANGELOG.md`. No hagas commit ni push sin que el usuario lo pida.
 
 ## Operar la app desde cualquier agente

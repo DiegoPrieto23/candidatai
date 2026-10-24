@@ -249,7 +249,7 @@ Detalle y motivos en `docs/FUENTES_OFERTAS.md` §Modelo de datos.
 
 ## Ampliaciones de la fase 10
 
-Migración `0008`. Detalle del seguimiento en `prompts/10.1-seguimiento.md`.
+Migración `0008`. Detalle del seguimiento en `dev/prompts/10.1-seguimiento.md`.
 
 ### `milestones`
 Hitos con fecha de un proceso. Las entrevistas y las pruebas registran su evento; el resto no

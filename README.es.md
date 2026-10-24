@@ -108,6 +108,11 @@ comprueba y automatiza. Un día normal:
 | 🤝 **Red y mensajes** | Tus contactos de LinkedIn (exportación CSV) cruzados con tus ofertas («conoces a 2 personas aquí»), mensajes de LinkedIn (≤ 300 caracteres) y correos de candidatura como borradores que envías tú |
 | 🧭 **Estrategia de búsqueda** | Huecos de skills agregados con plan de formación, títulos cercanos para ampliar la búsqueda, retrospectiva semanal y revisión de tu perfil de LinkedIn |
 
+**Cada funcionalidad, página a página y skill a skill:** [`docs/FUNCIONALIDADES.md`](docs/FUNCIONALIDADES.md).
+Incluye lo que este resumen deja fuera: el calendario, las respuestas de las empresas, las alertas de
+varios buzones, «Mi perfil» editable desde la UI con tus preferencias de búsqueda, las prioridades
+de las plataformas, descartar desde la Bandeja con Deshacer y la ayuda de cada botón de agente.
+
 | Inicio | Por revisar |
 |---|---|
 | <picture><source media="(prefers-color-scheme: dark)" srcset="docs/img/es/dark/home.png"><img src="docs/img/es/home.png" alt="Inicio"></picture> | <picture><source media="(prefers-color-scheme: dark)" srcset="docs/img/es/dark/triage.png"><img src="docs/img/es/triage.png" alt="Por revisar"></picture> |
@@ -212,7 +217,7 @@ $env:CAI_DATA_DIR = "data-demo"; uv run cai start    # http://127.0.0.1:8000
 candidata inventada en Galicia; con `--lang en`, una en Dublín y en inglés) es determinista y nunca
 toca `data/` ni tu buzón. Para probar los skills sobre la demo, arranca tu agente con
 `CAI_DATA_DIR=data-demo`. Para recorrer todas las funciones con ella:
-[guía de prueba con la demo](docs/pruebas/guia-prueba-demo.md).
+[guía de prueba con la demo](dev/pruebas/guia-prueba-demo.md).
 
 Paso a paso, con tu propio perfil, tu agente, las alertas por correo y la extensión del navegador:
 **[Guía de uso](docs/GUIA.md)**.
@@ -347,7 +352,7 @@ stateDiagram-v2
 ```
 
 <details>
-<summary><b>Decisiones clave</b> (ADR en <code>docs/DECISIONS.md</code>)</summary>
+<summary><b>Decisiones clave</b> (ADR en <code>dev/DECISIONS.md</code>)</summary>
 
 | Decisión | Por qué |
 |---|---|
@@ -380,6 +385,7 @@ stateDiagram-v2
 | Quiero… | Lee |
 |---|---|
 | Instalarlo y usarlo en el día a día | [Guía de uso](docs/GUIA.md) · [User guide](docs/GUIDE.md) |
+| Ver todo lo que hace | [`docs/FUNCIONALIDADES.md`](docs/FUNCIONALIDADES.md) |
 | Ver cómo se compara con proyectos parecidos | [`docs/COMPARATIVA.md`](docs/COMPARATIVA.md) |
 | Entender la arquitectura y el modelo de datos | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/DATA_MODEL.md`](docs/DATA_MODEL.md) |
 | Conocer las reglas (veracidad, privacidad, candidaturas) | [`docs/POLICIES.md`](docs/POLICIES.md) |
@@ -393,11 +399,11 @@ Todos los documentos, agrupados: [`docs/README.md`](docs/README.md).
 
 ## Cómo se construyó
 
-En 23 fases (con subfases), cada una con su encargo en `prompts/`, implementadas con un agente de
+En 23 fases (con subfases), cada una con su encargo en `dev/prompts/`, implementadas con un agente de
 IA (Claude Code) sobre una especificación escrita antes del código: plan, rama por fase, tests,
 revisión por un rol `reviewer` y registro de decisiones y deuda. El registro de cada fase está en
-[`docs/ROADMAP.md`](docs/ROADMAP.md), su resumen en [`docs/RESUMEN_FASES.md`](docs/RESUMEN_FASES.md)
-y el método en [`docs/DESARROLLO_POR_FASES.md`](docs/DESARROLLO_POR_FASES.md).
+[`dev/ROADMAP.md`](dev/ROADMAP.md), su resumen en [`dev/RESUMEN_FASES.md`](dev/RESUMEN_FASES.md)
+y el método en [`dev/DESARROLLO_POR_FASES.md`](dev/DESARROLLO_POR_FASES.md).
 
 ## Licencia y créditos
 

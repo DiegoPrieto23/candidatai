@@ -37,7 +37,7 @@ These come from [`AGENTS.md`](AGENTS.md) and are checked in review:
   README and the user guide exist in both languages: update both.
 
 Larger changes follow the phase method in
-[`docs/DESARROLLO_POR_FASES.md`](docs/DESARROLLO_POR_FASES.md): a written brief, a plan, a branch,
+[`dev/DESARROLLO_POR_FASES.md`](dev/DESARROLLO_POR_FASES.md): a written brief, a plan, a branch,
 tests and a review.
 
 ## Changelog, versions and releases
@@ -102,7 +102,7 @@ Salen de [`AGENTS.md`](AGENTS.md) y se comprueban en la revisión:
   guía de uso existen en los dos idiomas: actualiza los dos.
 
 Los cambios grandes siguen el método por fases de
-[`docs/DESARROLLO_POR_FASES.md`](docs/DESARROLLO_POR_FASES.md): encargo escrito, plan, rama, tests
+[`dev/DESARROLLO_POR_FASES.md`](dev/DESARROLLO_POR_FASES.md): encargo escrito, plan, rama, tests
 y revisión.
 
 ## Changelog, versiones y releases

@@ -111,6 +111,11 @@ checks and automates. A typical day:
 | 🤝 **Network and messages** | Your LinkedIn connections (CSV export) matched to your jobs ("you know 2 people here"), LinkedIn messages (≤ 300 characters) and application emails as drafts you send yourself |
 | 🧭 **Search strategy** | Aggregated skill gaps with a training plan, adjacent job titles to widen the search, a weekly retrospective and a review of your LinkedIn profile |
 
+**Every feature, page by page and skill by skill:** [`docs/FEATURES.md`](docs/FEATURES.md). It
+includes what this summary leaves out: the calendar, company replies, alerts from several mailboxes,
+"My profile" editable from the UI with your search preferences, platform priorities, discarding
+from the Inbox with Undo and the help on every agent button.
+
 | Home | To review (triage) |
 |---|---|
 | <picture><source media="(prefers-color-scheme: dark)" srcset="docs/img/en/dark/home.png"><img src="docs/img/en/home.png" alt="Home"></picture> | <picture><source media="(prefers-color-scheme: dark)" srcset="docs/img/en/dark/triage.png"><img src="docs/img/en/triage.png" alt="To review"></picture> |
@@ -215,7 +220,7 @@ browser; `--dev` adds Vite with hot reload. The UI shows a "Demo mode" banner: t
 fictional candidate in Dublin; without `--lang en`, one in Spain) is deterministic and never
 touches `data/` or your mailbox. To try the skills on it, start your agent with
 `CAI_DATA_DIR=data-demo-en`. A walk-through of every feature with the demo:
-[demo test guide](docs/pruebas/guia-prueba-demo.md) (Spanish).
+[demo test guide](dev/pruebas/guia-prueba-demo.md) (Spanish).
 
 Step by step, including your own profile, your agent, email alerts and the browser extension:
 **[User guide](docs/GUIDE.md)**.
@@ -350,7 +355,7 @@ stateDiagram-v2
 ```
 
 <details>
-<summary><b>Key decisions</b> (ADRs in <code>docs/DECISIONS.md</code>)</summary>
+<summary><b>Key decisions</b> (ADRs in <code>dev/DECISIONS.md</code>)</summary>
 
 | Decision | Why |
 |---|---|
@@ -383,6 +388,7 @@ stateDiagram-v2
 | I want to… | Read |
 |---|---|
 | Install it and use it day to day | [User guide](docs/GUIDE.md) · [Guía de uso](docs/GUIA.md) |
+| See everything it does | [`docs/FEATURES.md`](docs/FEATURES.md) |
 | See how it compares with similar projects | [`docs/COMPARATIVA.md`](docs/COMPARATIVA.md) |
 | Understand the architecture and the data model | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/DATA_MODEL.md`](docs/DATA_MODEL.md) |
 | Know the rules (truthfulness, privacy, applying) | [`docs/POLICIES.md`](docs/POLICIES.md) |
@@ -396,11 +402,11 @@ All documents, grouped: [`docs/README.md`](docs/README.md). Technical docs are i
 
 ## How it was built
 
-In 23 phases (with sub-phases), each with its brief in `prompts/`, implemented with an AI agent
+In 23 phases (with sub-phases), each with its brief in `dev/prompts/`, implemented with an AI agent
 (Claude Code) against a specification written before the code: a plan, a branch per phase, tests,
 a review by a `reviewer` role, and a log of decisions and debt. The phase log is in
-[`docs/ROADMAP.md`](docs/ROADMAP.md) and the method in
-[`docs/DESARROLLO_POR_FASES.md`](docs/DESARROLLO_POR_FASES.md).
+[`dev/ROADMAP.md`](dev/ROADMAP.md) and the method in
+[`dev/DESARROLLO_POR_FASES.md`](dev/DESARROLLO_POR_FASES.md).
 
 ## License and credits
 

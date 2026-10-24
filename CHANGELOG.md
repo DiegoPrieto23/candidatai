@@ -9,7 +9,7 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 
 ## [Sin publicar]
 
-## [0.1.0] - 2026-10-23
+## [0.1.0] - 2026-10-24
 
 Primera versión publicada de CandidatAI: una app local para llevar tu búsqueda de empleo de
 principio a fin (ofertas, triaje, CV a medida, candidatura, seguimiento y análisis) con el agente de
@@ -24,6 +24,9 @@ IA que ya usas. La app no llama a ningún modelo: el razonamiento lo pone tu age
 - **Una UI en español e inglés,** con tema claro y oscuro, barra lateral y móvil, y `cai start`
   para arrancarlo todo. **Modo demo** (`cai demo seed`) con una búsqueda ficticia completa para
   probarlo sin tus datos.
+- **Todo lo que hace, en una lista:** `docs/FEATURES.md` (en inglés) y `docs/FUNCIONALIDADES.md`
+  recorren cada funcionalidad en el orden en que la usas, con su página o su skill y su captura.
+  Los README la enlazan.
 - **Funciona con tu agente:** Claude Code, Codex, OpenCode, Qwen Code y Antigravity CLI, con
   servidor MCP o con la CLI `cai … --json` (mismas herramientas). Eliges el agente por defecto y uno
   por acción desde la UI; `cai agents doctor` dice cuáles tienes. Guía de modelos gratuitos y
