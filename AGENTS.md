@@ -17,6 +17,7 @@ aquí; `GEMINI.md` está vacío a propósito (Antigravity lee los dos y ese mand
 | Necesitas… | Lee |
 |---|---|
 | Instalar y usar la app (para personas) | `docs/GUIA.md` (en inglés, `docs/GUIDE.md`) |
+| Todo lo que hace la app, página a página y skill a skill | `docs/FUNCIONALIDADES.md` (en inglés, `docs/FEATURES.md`) |
 | Comparativa con AI Job Search y career-ops | `docs/COMPARATIVA.md` |
 | Índice de los documentos para quien usa o contribuye | `docs/README.md` |
 | Índice de lo interno (fases, encargos, ADR, pruebas) | `dev/README.md` |
@@ -92,8 +93,10 @@ uv run scripts/sync_agents.py --check   # CI: falla si lo generado no está al d
 - Tests con pytest sobre SQLite temporal. Sin red en los tests: usa fixtures y `respx`.
 - Código e identificadores en inglés; docs y mensajes al usuario en español; la UI, en español e
   inglés (ver «Textos de la UI»). Excepción: el
-  README y la guía de uso existen en inglés (`README.md`, `docs/GUIDE.md`) y en español
-  (`README.es.md`, `docs/GUIA.md`); un cambio en uno va también al otro.
+  README, la guía de uso y la lista de funcionalidades existen en inglés (`README.md`,
+  `docs/GUIDE.md`, `docs/FEATURES.md`) y en español (`README.es.md`, `docs/GUIA.md`,
+  `docs/FUNCIONALIDADES.md`); un cambio en uno va también al otro. Una página o un skill nuevos van
+  a las dos listas: `scripts/check_readme_coverage.py` (en la CI) lo comprueba.
 - Windows 11 es el entorno principal: `pathlib` siempre, nada de comandos solo-Unix en código,
   rutas de herramientas externas configurables por variable de entorno (`SOFFICE_PATH`).
 - Frontend: TypeScript estricto, cliente de API generado desde el OpenAPI de FastAPI, TanStack

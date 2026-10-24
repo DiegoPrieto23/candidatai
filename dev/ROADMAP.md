@@ -100,7 +100,7 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 28 | Repo público: raíz limpia, release, medios nuevos y lanzamiento | ⏳ | Primera release que instala de verdad, lo interno en `dev/`, medios y README al día con todas las funcionalidades, portada y ajustes de GitHub, y borradores de difusión |
 | 28.1 | ↳ Auditoría y primera release | ⏳ (auditoría, suma y CHANGELOG hechos; falta publicar `v0.1.0` y probar los instaladores contra ella) | Historial auditado, `v0.1.0` publicada con suma de verificación y los instaladores probados contra ella |
 | 28.2 | ↳ Raíz limpia | ✅ (falta comprobar en GitHub la barra de lenguajes tras el push) | Encargos, pruebas, ROADMAP y ADR a `dev/`, enlaces comprobados y la barra de lenguajes de GitHub bien |
-| 28.3 | ↳ Medios y funcionalidades | ⏳ | Capturas, GIF y vídeos nuevos (en/es), `FEATURES.md` y un script que impide funciones sin contar |
+| 28.3 | ↳ Medios y funcionalidades | ⏳ (28.3a ✅: lista de funcionalidades y comprobación; falta la 28.3b, medios) | Capturas, GIF y vídeos nuevos (en/es), `FEATURES.md` y un script que impide funciones sin contar |
 | 28.4 | ↳ Portada y GitHub | ⏳ | Portada con gancho, «Por qué CandidatAI», guía para quien no es técnico, temas, imagen social y plantillas |
 | 28.5 | ↳ Lanzamiento | ⏳ | Borradores por canal, listas «awesome», preguntas esperables y plan de dos semanas |
 
@@ -3517,3 +3517,37 @@ decisiones tomadas y deuda técnica pendiente. -->
 - **Deuda:** `check_links.py` revisa el árbol, no el zip. La barra de lenguajes solo se ve tras el
   push.
 - **Pendiente:** comprobar en GitHub la portada y la barra de lenguajes (`PENDIENTES.md`).
+
+### 28.3a · Lista de funcionalidades y comprobación — 2026-10-24 · Claude Code (Opus 5.5)
+- **Por qué:** el README se había quedado atrás (Calendario, Respuestas, varios buzones, «Mi perfil»
+  y «Búsqueda», prioridades de plataformas, descartar desde la Bandeja, ayudas de los botones…) y
+  nada impedía que volviera a pasar.
+- **Hecho:**
+  - `docs/FEATURES.md` y `docs/FUNCIONALIDADES.md`: cada funcionalidad en una frase, en el orden
+    del recorrido (conseguir ofertas → triar → CV y carta → candidatar → seguimiento y respuestas →
+    entrevistas y ofertas → estrategia y perfil → ajustes y agentes), con su página (ruta) o su
+    skill y la captura que ya existe. Sacadas de las rutas de `App.tsx`, los skills, el resumen
+    de fases y el CHANGELOG;
+  - los dos README enlazan a su lista tras «Qué hace» (con lo que el resumen deja fuera) y en
+    «Documentación»; `docs/README.md` también;
+  - `scripts/check_readme_coverage.py`, en la CI: falla si una página de `App.tsx` (sin
+    redirecciones ni la ruta que solo agrupa las pestañas de Fuentes) o un skill falta en alguna de
+    las dos listas, si un README no enlaza a la suya, si se cita un nombre con guiones que no es un
+    skill (excepciones explicadas: plantillas y el nombre antiguo `generar-cv`) o si los dos README
+    no tienen las mismas secciones ni los mismos desplegables. `implement-phase` no cuenta (es de
+    desarrollo);
+  - `test_readme_coverage.py`: el repo pasa y cada forma de romperlo se detecta, sobre una copia.
+- **Revisión (rol `reviewer`):** sin bloqueantes. Aplicado: las dos listas tienen que coincidir
+  fila a fila (mismas filas por sección y lo mismo en «Dónde»); el análisis de rutas ignora `<Routes>`
+  y los comentarios JSX, acepta `Component=` y `lazy=` y avisa si las etiquetas no cuadran; tests
+  con un `App.tsx` sintético, redirecciones y excepciones; `AGENTS.md` cita las listas y las suma
+  a la regla bilingüe; la mención al script en las listas pasa a un comentario. Sin aplicar:
+  comparar también tablas e imágenes de los README (bastan encabezados y desplegables).
+- **Mejoras de UI que salen del inventario** (no caben en una frase o no tienen pantalla):
+  - la página «Agente» mezcla dos cosas: ajustes (agente por acción, niveles de gasto, umbral) y el
+    seguimiento de las ejecuciones;
+  - «Ofertas recibidas» vive dentro de Procesos, sin entrada propia en la barra lateral;
+  - `cai sources discover` (encontrar el tablero de tus empresas) solo existe en la terminal.
+- **Deuda:** la columna de capturas está a medias hasta la 28.3b (páginas sin captura: Alertas,
+  Calendario, Respuestas, Mi perfil, alta de oferta). La 28.3b puede hacer que el script exija una
+  captura por página.

@@ -111,6 +111,11 @@ checks and automates. A typical day:
 | 🤝 **Network and messages** | Your LinkedIn connections (CSV export) matched to your jobs ("you know 2 people here"), LinkedIn messages (≤ 300 characters) and application emails as drafts you send yourself |
 | 🧭 **Search strategy** | Aggregated skill gaps with a training plan, adjacent job titles to widen the search, a weekly retrospective and a review of your LinkedIn profile |
 
+**Every feature, page by page and skill by skill:** [`docs/FEATURES.md`](docs/FEATURES.md). It
+includes what this summary leaves out: the calendar, company replies, alerts from several mailboxes,
+"My profile" editable from the UI with your search preferences, platform priorities, discarding
+from the Inbox with Undo and the help on every agent button.
+
 | Home | To review (triage) |
 |---|---|
 | <picture><source media="(prefers-color-scheme: dark)" srcset="docs/img/en/dark/home.png"><img src="docs/img/en/home.png" alt="Home"></picture> | <picture><source media="(prefers-color-scheme: dark)" srcset="docs/img/en/dark/triage.png"><img src="docs/img/en/triage.png" alt="To review"></picture> |
@@ -383,6 +388,7 @@ stateDiagram-v2
 | I want to… | Read |
 |---|---|
 | Install it and use it day to day | [User guide](docs/GUIDE.md) · [Guía de uso](docs/GUIA.md) |
+| See everything it does | [`docs/FEATURES.md`](docs/FEATURES.md) |
 | See how it compares with similar projects | [`docs/COMPARATIVA.md`](docs/COMPARATIVA.md) |
 | Understand the architecture and the data model | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/DATA_MODEL.md`](docs/DATA_MODEL.md) |
 | Know the rules (truthfulness, privacy, applying) | [`docs/POLICIES.md`](docs/POLICIES.md) |

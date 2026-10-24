@@ -9,6 +9,11 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 
 ## [Sin publicar]
 
+### Añadido
+- **Todo lo que hace, en una lista:** `docs/FEATURES.md` (en inglés) y `docs/FUNCIONALIDADES.md`
+  recorren cada funcionalidad en el orden en que la usas, con su página o su skill y su captura.
+  Los README la enlazan.
+
 ### Cambiado
 - **Repositorio más claro:** lo interno del desarrollo (los encargos de cada fase, el ROADMAP, las
   decisiones de arquitectura y las pruebas manuales) vive ahora en `dev/` y ya no va en el zip de

@@ -11,6 +11,7 @@ the rest are in Spanish only.
 | Documento | Qué cuenta |
 |---|---|
 | 🌐 [Guía de uso](GUIA.md) · [User guide](GUIDE.md) | Instalar, probar la demo, conectar tu agente y el día a día |
+| 🌐 [Funcionalidades](FUNCIONALIDADES.md) · [Features](FEATURES.md) | Todo lo que hace, en el orden en que lo usas, con su página o su skill |
 | [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md) | Alertas de empleo y respuestas por correo (Gmail, IMAP), paso a paso |
 | [`FUENTES_OFERTAS.md`](FUENTES_OFERTAS.md) | De dónde salen las ofertas: APIs, alertas, botón, navegador, LinkedIn |
 | [`CV_TEMPLATES.md`](CV_TEMPLATES.md) | Plantillas de CV, motores (Word y HTML) e importar tu propio diseño |

@@ -108,6 +108,11 @@ comprueba y automatiza. Un día normal:
 | 🤝 **Red y mensajes** | Tus contactos de LinkedIn (exportación CSV) cruzados con tus ofertas («conoces a 2 personas aquí»), mensajes de LinkedIn (≤ 300 caracteres) y correos de candidatura como borradores que envías tú |
 | 🧭 **Estrategia de búsqueda** | Huecos de skills agregados con plan de formación, títulos cercanos para ampliar la búsqueda, retrospectiva semanal y revisión de tu perfil de LinkedIn |
 
+**Cada funcionalidad, página a página y skill a skill:** [`docs/FUNCIONALIDADES.md`](docs/FUNCIONALIDADES.md).
+Incluye lo que este resumen deja fuera: el calendario, las respuestas de las empresas, las alertas de
+varios buzones, «Mi perfil» editable desde la UI con tus preferencias de búsqueda, las prioridades
+de las plataformas, descartar desde la Bandeja con Deshacer y la ayuda de cada botón de agente.
+
 | Inicio | Por revisar |
 |---|---|
 | <picture><source media="(prefers-color-scheme: dark)" srcset="docs/img/es/dark/home.png"><img src="docs/img/es/home.png" alt="Inicio"></picture> | <picture><source media="(prefers-color-scheme: dark)" srcset="docs/img/es/dark/triage.png"><img src="docs/img/es/triage.png" alt="Por revisar"></picture> |
@@ -380,6 +385,7 @@ stateDiagram-v2
 | Quiero… | Lee |
 |---|---|
 | Instalarlo y usarlo en el día a día | [Guía de uso](docs/GUIA.md) · [User guide](docs/GUIDE.md) |
+| Ver todo lo que hace | [`docs/FUNCIONALIDADES.md`](docs/FUNCIONALIDADES.md) |
 | Ver cómo se compara con proyectos parecidos | [`docs/COMPARATIVA.md`](docs/COMPARATIVA.md) |
 | Entender la arquitectura y el modelo de datos | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/DATA_MODEL.md`](docs/DATA_MODEL.md) |
 | Conocer las reglas (veracidad, privacidad, candidaturas) | [`docs/POLICIES.md`](docs/POLICIES.md) |
