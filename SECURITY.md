@@ -17,7 +17,7 @@ Update by running the installer again: your data is kept.
 
 CandidatAI runs locally and reads untrusted text all the time (job postings, emails, websites) that
 an AI agent then reads too. Its defences live in code, so they hold whatever agent you use
-([ADR-012](docs/DECISIONS.md)):
+([ADR-012](dev/DECISIONS.md)):
 
 - **Prompt injection:** hidden text and phrases aimed at an AI are detected when a job is stored
   and flagged in the UI; the agent receives postings wrapped and marked as untrusted, and the role
@@ -57,7 +57,7 @@ Para actualizar, vuelve a ejecutar el instalador: tus datos se conservan.
 
 CandidatAI se ejecuta en local y lee continuamente texto no confiable (ofertas, correos, webs) que
 luego también lee un agente de IA. Sus defensas están en el código, así que valen con cualquier
-agente ([ADR-012](docs/DECISIONS.md)):
+agente ([ADR-012](dev/DECISIONS.md)):
 
 - **Inyección de instrucciones:** el texto oculto y las frases dirigidas a una IA se detectan al
   guardar la oferta y se avisan en la UI; el agente recibe las ofertas envueltas y marcadas como no

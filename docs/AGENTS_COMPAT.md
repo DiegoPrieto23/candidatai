@@ -90,7 +90,7 @@ uv run --directory backend cai eval compat --agent codex --preset local      # p
 
 Cada pasada deja un JSON en `evals/compat/results/` y regenera
 [`evals/compat/REPORT.md`](../evals/compat/REPORT.md), que tiene una columna por agente y modelo.
-Cómo pasarla con cada agente: `docs/pruebas/fase-24.6-matriz.md`.
+Cómo pasarla con cada agente: `dev/pruebas/fase-24.6-matriz.md`.
 
 Insignias: 🔓 open-source · 🆓 gratis · 💻 modelo local.
 
@@ -106,7 +106,7 @@ Insignias: 🔓 open-source · 🆓 gratis · 💻 modelo local.
 | Ajustes | Ver abajo | | `CAI_DATA_DIR` y aprobaciones (ver «Codex» abajo) | | | |
 
 Prueba previa (fase 12.2): dos casos con trampa (`cv04`, `cv07`), también 2/2. Informe de esta
-pasada: `docs/pruebas/fase-12.3-matriz-sin-mcp.md`. Sin subagentes, el aislamiento del rol
+pasada: `dev/pruebas/fase-12.3-matriz-sin-mcp.md`. Sin subagentes, el aislamiento del rol
 `extractor` es el del nivel C (ejecución dedicada), no el del A.
 
 **Lo que hubo que ajustar para trabajar sin MCP** (ya corregido en `.agents/roles/` y los docs):
@@ -166,7 +166,7 @@ enviar nada. Encima, cada agente añade lo que permite:
 |---|---|---|
 | **A** | Claude Code | El subagente solo tiene `get_job` y `save_extraction`: sin shell, ficheros ni web |
 | **B** | Codex | El subagente se declara con `sandbox_mode = "read-only"`, pero **hereda la política de la sesión padre** y los cambios en vivo del padre prevalecen. Ejecuta `process-jobs` en una sesión de solo lectura o con aprobación de comandos |
-| **B** | OpenCode, Qwen Code | El subagente se genera con solo `get_job` y `save_extraction` (OpenCode: `"*": "deny"` y esas dos; Qwen: `tools` exclusiva), pero aún **no se ha comprobado con un modelo** que no pueda usar otra. Suben a A cuando lo confirme la prueba manual (`docs/pruebas/fase-24.3-prueba-manual.txt`) |
+| **B** | OpenCode, Qwen Code | El subagente se genera con solo `get_job` y `save_extraction` (OpenCode: `"*": "deny"` y esas dos; Qwen: `tools` exclusiva), pero aún **no se ha comprobado con un modelo** que no pueda usar otra. Suben a A cuando lo confirme la prueba manual (`dev/pruebas/fase-24.3-prueba-manual.txt`) |
 | **C** | Sin subagentes con herramientas propias (Antigravity, Cursor…) | Sesión nueva dedicada solo a extraer, con los permisos más restrictivos que ofrezca la herramienta. No mezcles extracción con desarrollo en la misma sesión |
 
 Recomendación para todos: ejecuta `process-jobs` en su propia sesión y revisa en la UI las
@@ -330,7 +330,7 @@ también funciona mejor si el agente puede leer PDFs; si no, basta con pegar el 
 a él (en Claude Code, Claude in Chrome). Estado a la 09b.3: la interfaz (`list_sources`,
 `save_source`, `record_source_run` y `add_job_from_text` con `source_id`) está probada por MCP y
 CLI en los tests. Falta la prueba manual de un recorrido real con Claude Code y Claude in Chrome
-sobre una plataforma de acceso libre (`docs/pruebas/fase-09b.3-prueba-manual.txt`). En Codex y
+sobre una plataforma de acceso libre (`dev/pruebas/fase-09b.3-prueba-manual.txt`). En Codex y
 otros, sin probar. Si tu agente no puede, las alertas por correo y el botón «Enviar a CandidatAI»
 cubren lo mismo sin agente.
 
@@ -408,7 +408,7 @@ OpenCode y generar un CV con Claude Code.
 
 | | Claude Code | OpenCode | Codex | Qwen Code | Otros |
 |---|---|---|---|---|---|
-| En segundo plano | Sí: `claude -p` con `stream-json`, `--tools Skill,Agent,Read`, `dontAsk`, `--allowedTools` con las herramientas MCP de la acción, `Skill(<su skill>)` y `Read(./docs/**)`, y `--disallowedTools` con todas las demás MCP de la app. Comprobado con `claude` 2.1.296 (ver abajo); el recorrido completo, pendiente de la prueba manual (`docs/pruebas/fase-19-prueba-manual.txt`) | Sí en `process-jobs` y `assess-fit`: `opencode run --format json --pure --agent cai-run [-m <modelo>] "<orden>"` con la configuración de la ejecución en `OPENCODE_CONFIG_CONTENT`. **No en `generate-cv`**: `writer` y `verifier` leen ficheros (`POLICIES.md`) y en OpenCode su `read` no se acota a `docs/` como en la ejecución, así que el subagente tendría más que ella. La UI propone Claude Code. Comprobado con OpenCode 1.19.3 (ver abajo); con un modelo, pendiente de la prueba manual (`docs/pruebas/fase-24.5-prueba-manual.txt`) | No: solo deja **apagar** herramientas (`--disable shell_tool`, `unified_exec`, `browser_use`…), una lista negra que cada versión puede ampliar, y sin terminal no lee los skills. Revisado con codex-cli 0.163.0 el 2026-10-16 | No, de momento: tiene `--core-tools` (lista blanca), `--allowed-mcp-server-names`, `--exclude-tools` y `-o stream-json`, pero no tiene forma de comprobar el techo sin un modelo (no tiene `debug`). Revisado con Qwen Code 0.25.2 el 2026-10-16; pendiente de comprobarlo con un modelo local | No (Antigravity no imprime nada sin terminal) |
+| En segundo plano | Sí: `claude -p` con `stream-json`, `--tools Skill,Agent,Read`, `dontAsk`, `--allowedTools` con las herramientas MCP de la acción, `Skill(<su skill>)` y `Read(./docs/**)`, y `--disallowedTools` con todas las demás MCP de la app. Comprobado con `claude` 2.1.296 (ver abajo); el recorrido completo, pendiente de la prueba manual (`dev/pruebas/fase-19-prueba-manual.txt`) | Sí en `process-jobs` y `assess-fit`: `opencode run --format json --pure --agent cai-run [-m <modelo>] "<orden>"` con la configuración de la ejecución en `OPENCODE_CONFIG_CONTENT`. **No en `generate-cv`**: `writer` y `verifier` leen ficheros (`POLICIES.md`) y en OpenCode su `read` no se acota a `docs/` como en la ejecución, así que el subagente tendría más que ella. La UI propone Claude Code. Comprobado con OpenCode 1.19.3 (ver abajo); con un modelo, pendiente de la prueba manual (`dev/pruebas/fase-24.5-prueba-manual.txt`) | No: solo deja **apagar** herramientas (`--disable shell_tool`, `unified_exec`, `browser_use`…), una lista negra que cada versión puede ampliar, y sin terminal no lee los skills. Revisado con codex-cli 0.163.0 el 2026-10-16 | No, de momento: tiene `--core-tools` (lista blanca), `--allowed-mcp-server-names`, `--exclude-tools` y `-o stream-json`, pero no tiene forma de comprobar el techo sin un modelo (no tiene `debug`). Revisado con Qwen Code 0.25.2 el 2026-10-16; pendiente de comprobarlo con un modelo local | No (Antigravity no imprime nada sin terminal) |
 | Cola de encargos | Sí (`list_agent_requests`, `complete_agent_request`, skill `handle-requests`) | Sí | Sí (mismas herramientas o `cai requests … --json`) | Sí | Sí, con MCP o CLI |
 
 Comprobado con `claude` 2.1.296 (2026-10-12, modelo haiku, sin datos):

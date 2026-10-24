@@ -4,7 +4,7 @@ Guía para que CandidatAI lea las alertas de empleo que te llegan al correo (Lin
 Indeed, Tecnoempleo) y dé de alta sus ofertas. Puedes conectar **uno o varios buzones** desde la
 app, en **Alertas → Añadir buzón**: el asistente tiene una pestaña por proveedor con estos mismos
 pasos. Los detalles técnicos están en `FUENTES_OFERTAS.md` §Alertas por correo y la decisión sobre
-las contraseñas, en `DECISIONS.md` (ADR-045).
+las contraseñas, en `dev/DECISIONS.md` (ADR-045).
 
 ## Qué hace y qué no
 

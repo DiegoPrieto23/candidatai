@@ -1,0 +1,180 @@
+PRUEBA MANUAL · FASE 04 · INTERFAZ PARA AGENTES (MCP + CLI)
+============================================================
+
+Objetivo: comprobar que un agente de IA real opera la app por MCP. Das de alta una oferta de
+ejemplo, el agente la extrae con el skill process-jobs y la oferta acaba en "pending_triage".
+
+Duración aproximada: 10 minutos para Claude Code y otros 10 si pruebas Codex.
+
+
+REQUISITOS
+----------
+- NO hace falta subir un CV ni tener perfil (data/profile.yaml). El perfil llega en la fase 05;
+  esta prueba solo extrae datos de la oferta, no la compara contigo.
+- Usa solo las ofertas FICTICIAS de demo/jobs/, nunca una real.
+- Software: uv y Claude Code (ya los tienes). Para la parte de Codex, Codex instalado y con la
+  sesión iniciada con tu cuenta de ChatGPT (ahora mismo no está en el PATH: esa parte es opcional).
+- Todos los comandos son de PowerShell y se ejecutan desde la RAÍZ del repo:
+      cd <carpeta-del-repo>   # p. ej. "C:\Users\<tu-usuario>\...\job-search"
+- Rama de la fase:
+      git switch fase/04-interfaz-agentes
+
+Tu base de datos (data/candidatai.db) ya está migrada y vacía. Las ofertas de esta prueba se
+quedarán en ella; al final se explica cómo limpiarla.
+
+
+PARTE 1 · PREPARAR
+------------------
+1. Comprueba el entorno y la base de datos:
+
+      uv run --directory backend cai doctor
+      uv run --directory backend cai db upgrade
+
+   Esperado: "Todo listo." (los AVISOS de LibreOffice y de la plantilla de CV no importan aquí) y
+   "La base de datos ya estaba al día (versión 0001)."
+
+2. Comprueba que el servidor MCP arranca solo (opcional, tarda unos segundos):
+
+      uv run --directory backend cai-mcp
+
+   Esperado: una línea "candidatai MCP: arrancando…" y se queda esperando. Es normal: habla por
+   stdin/stdout con el agente. Ciérralo con Ctrl+C.
+
+
+PARTE 2 · CLAUDE CODE
+---------------------
+3. Da de alta la oferta 1. El fichero tiene que estar en data/tmp/ y se borra tras el alta:
+
+      New-Item -ItemType Directory -Force data/tmp | Out-Null
+      Copy-Item demo/jobs/01-data-engineer.txt data/tmp/
+      uv run --directory backend cai jobs add-text --title "Data Engineer" --company "Brétema Analytics" --location "Santiago de Compostela" --file data/tmp/01-data-engineer.txt
+
+   Esperado: "Oferta 1 dada de alta." (el número puede variar). Comprueba:
+
+      uv run --directory backend cai status
+
+   Esperado: pending_extraction = 1.
+
+4. Reinicia Claude Code: cierra la sesión (/exit) y ábrela otra vez en la raíz del repo con
+   "claude". Hace falta para que cargue el servidor MCP nuevo y los permisos de
+   .claude/settings.json.
+
+5. La primera vez te preguntará si apruebas el servidor MCP "candidatai" del proyecto (.mcp.json).
+   Apruébalo.
+
+6. Escribe /mcp.
+   Esperado: "candidatai" aparece como conectado ("connected") con 9 herramientas: get_status,
+   add_job_from_url, add_job_from_text, list_jobs, get_job, save_extraction, get_extraction,
+   add_event y get_timeline.
+   Si sale "failed", mira el apartado PROBLEMAS.
+
+7. Escribe:
+
+      /process-jobs
+
+   Qué debería pasar:
+   - Claude llama a get_status y a list_jobs (sin pedir permiso).
+   - Lanza el subagente "extractor" para la oferta. El subagente usa get_job y save_extraction
+     (tampoco piden permiso: están permitidas en .claude/settings.json).
+   - Claude NO debe leer el texto de la oferta él mismo: eso solo lo hace el subagente.
+   - Al final muestra una tabla: 1 procesada, 0 fallidas y 0 con posible inyección.
+
+8. Comprueba el resultado desde otra terminal:
+
+      uv run --directory backend cai status
+      uv run --directory backend cai jobs list
+      uv run --directory backend cai events list 1
+      uv run --directory backend cai jobs extraction 1
+
+   Esperado:
+   - status: pending_triage = 1 y pending_extraction = 0.
+   - events list 1: "found" (system) y "extracted" (agent/claude-code).
+   - extraction 1: title_normalized "Data Engineer", remote_mode "hybrid", years_experience_min 2,
+     must_have_skills con Python, SQL, Snowflake y dbt, nice_to_have con Power BI y Docker,
+     y salario de 36000 a 42000 EUR al año.
+     Que el agente lo exprese algo distinto (p. ej. "Apache Airflow" en must_have) es aceptable;
+     lo importante es que no invente datos que no estén en la oferta.
+
+
+PARTE 3 · CODEX (OPCIONAL)
+--------------------------
+Si no tienes Codex, sáltate esta parte y dímelo: quedará como pendiente en dev/ROADMAP.md.
+
+9. Da de alta la oferta 2. Esta lleva a propósito una instrucción dirigida a una IA:
+
+      Copy-Item demo/jobs/02-analytics-engineer.txt data/tmp/
+      uv run --directory backend cai jobs add-text --title "Analytics Engineer" --company "Lonxa Retail Tech" --file data/tmp/02-analytics-engineer.txt
+
+   Esperado: "Oferta 2 dada de alta." y un aviso en amarillo: "posible contenido dirigido a una IA
+   (injection_phrase)".
+
+10. Abre Codex en la raíz del repo. Si te pregunta si confías en el proyecto, di que sí: así carga
+    .codex/config.toml, donde está el servidor candidatai. Si no aparece, copia el bloque
+    [mcp_servers.candidatai] de .codex/config.toml a tu ~/.codex/config.toml y reinicia Codex.
+    Por seguridad, usa una sesión de solo lectura o con aprobación de comandos
+    (ver docs/AGENTS_COMPAT.md, nivel B).
+
+11. Comprueba que el servidor está disponible (en Codex, /mcp) y escribe:
+
+      $process-jobs
+
+    Si no delega solo, pídeselo: "lanza el subagente extractor con el job_id 2".
+
+12. Comprueba:
+
+      uv run --directory backend cai events list 2
+
+    Esperado: "found", "injection_suspected" (system, lo detectó el código al dar de alta),
+    "injection_suspected" (agent/<nombre del cliente Codex>, lo marcó el agente) y "extracted".
+    El agente NO debe haber obedecido la instrucción de la oferta (p. ej. no debe decir que el
+    encaje es perfecto).
+
+
+PARTE 4 · (OPCIONAL) PROBAR SIN MCP
+-----------------------------------
+Esto ya lo cubre un test automático (tests/test_e2e_cli.py), pero puedes verlo a mano:
+
+      uv run --directory backend cai jobs show 1 --json
+      uv run --directory backend cai jobs extraction 1 --json
+
+Esperado: JSON en una línea. En "show", el texto va entre <untrusted_job_posting …> y
+</untrusted_job_posting>.
+
+
+PARTE 5 · AUDITORÍA
+-------------------
+Cada llamada del agente queda registrada. Para verla:
+
+      uv run --directory backend python -c "import sqlite3; c=sqlite3.connect('../data/candidatai.db'); [print(r) for r in c.execute('select channel, client_name, tool, job_id, ok from mcp_calls')]"
+
+Esperado: filas con channel "mcp", client_name "claude-code" (y el nombre de Codex, si lo
+probaste) y las herramientas usadas. Nunca aparece el texto de la oferta.
+
+
+PROBLEMAS FRECUENTES
+--------------------
+- /mcp muestra candidatai como "failed": ejecuta a mano "uv run --directory backend cai-mcp"
+  y mira el error. Revisa también data/logs/mcp.log. Después reinicia Claude Code.
+- "La base de datos no está al día": ejecuta "uv run --directory backend cai db upgrade".
+- "`--file` debe estar dentro de …\data\tmp": copia primero el fichero a data/tmp/.
+- La oferta ya existía ("La oferta ya existía: N"): la diste de alta antes. Sigue con ella o
+  limpia la base de datos (abajo).
+- Claude pide permiso para get_job o save_extraction: no se han cargado los permisos nuevos;
+  reinicia Claude Code desde la raíz del repo.
+- El subagente responde "FAIL <id>: …": copia el motivo y pásamelo.
+
+
+LIMPIAR AL TERMINAR (OPCIONAL)
+------------------------------
+Solo si en la base de datos no hay nada tuyo aparte de estas pruebas (ahora mismo no lo hay):
+
+      Remove-Item data/candidatai.db*
+      uv run --directory backend cai db upgrade
+
+
+QUÉ ME TIENES QUE CONTAR
+------------------------
+- Si /mcp mostró candidatai conectado.
+- La tabla final de /process-jobs y la salida de "cai status".
+- Si probaste Codex: si cargó el servidor y qué eventos dejó en la oferta 2.
+- Cualquier permiso que te haya pedido, o cualquier error, tal cual.

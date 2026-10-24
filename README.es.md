@@ -212,7 +212,7 @@ $env:CAI_DATA_DIR = "data-demo"; uv run cai start    # http://127.0.0.1:8000
 candidata inventada en Galicia; con `--lang en`, una en Dublín y en inglés) es determinista y nunca
 toca `data/` ni tu buzón. Para probar los skills sobre la demo, arranca tu agente con
 `CAI_DATA_DIR=data-demo`. Para recorrer todas las funciones con ella:
-[guía de prueba con la demo](docs/pruebas/guia-prueba-demo.md).
+[guía de prueba con la demo](dev/pruebas/guia-prueba-demo.md).
 
 Paso a paso, con tu propio perfil, tu agente, las alertas por correo y la extensión del navegador:
 **[Guía de uso](docs/GUIA.md)**.
@@ -347,7 +347,7 @@ stateDiagram-v2
 ```
 
 <details>
-<summary><b>Decisiones clave</b> (ADR en <code>docs/DECISIONS.md</code>)</summary>
+<summary><b>Decisiones clave</b> (ADR en <code>dev/DECISIONS.md</code>)</summary>
 
 | Decisión | Por qué |
 |---|---|
@@ -393,11 +393,11 @@ Todos los documentos, agrupados: [`docs/README.md`](docs/README.md).
 
 ## Cómo se construyó
 
-En 23 fases (con subfases), cada una con su encargo en `prompts/`, implementadas con un agente de
+En 23 fases (con subfases), cada una con su encargo en `dev/prompts/`, implementadas con un agente de
 IA (Claude Code) sobre una especificación escrita antes del código: plan, rama por fase, tests,
 revisión por un rol `reviewer` y registro de decisiones y deuda. El registro de cada fase está en
-[`docs/ROADMAP.md`](docs/ROADMAP.md), su resumen en [`docs/RESUMEN_FASES.md`](docs/RESUMEN_FASES.md)
-y el método en [`docs/DESARROLLO_POR_FASES.md`](docs/DESARROLLO_POR_FASES.md).
+[`dev/ROADMAP.md`](dev/ROADMAP.md), su resumen en [`dev/RESUMEN_FASES.md`](dev/RESUMEN_FASES.md)
+y el método en [`dev/DESARROLLO_POR_FASES.md`](dev/DESARROLLO_POR_FASES.md).
 
 ## Licencia y créditos
 

@@ -9,6 +9,11 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 
 ## [Sin publicar]
 
+### Cambiado
+- **Repositorio más claro:** lo interno del desarrollo (los encargos de cada fase, el ROADMAP, las
+  decisiones de arquitectura y las pruebas manuales) vive ahora en `dev/` y ya no va en el zip de
+  la release; `docs/` se queda con lo que necesitas para usar la app o contribuir.
+
 ## [0.1.0] - 2026-10-23
 
 Primera versión publicada de CandidatAI: una app local para llevar tu búsqueda de empleo de

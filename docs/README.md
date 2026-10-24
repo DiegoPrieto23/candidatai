@@ -33,7 +33,6 @@ the rest are in Spanish only.
 | [`AGENT_INTERFACE.md`](AGENT_INTERFACE.md) | Herramientas MCP y comandos `cai` con sus esquemas |
 | [`AGENTS_COMPAT.md`](AGENTS_COMPAT.md) | Agentes soportados, con qué garantías y cómo añadir uno |
 | [`MODELOS_GRATIS.md`](MODELOS_GRATIS.md) | Usarla sin pagar por tokens: modelos locales (Ollama) y gratuitos, privacidad por vía y niveles de gasto |
-| [`DECISIONS.md`](DECISIONS.md) | Las 34 decisiones de arquitectura (ADR), con contexto y consecuencias |
 | [`../evals/REPORT.md`](../evals/REPORT.md) | Resultados del eval de matching |
 
 ## Desarrollo · Development
@@ -43,9 +42,5 @@ the rest are in Spanish only.
 | [`../AGENTS.md`](../AGENTS.md) | Instrucciones para cualquier agente que trabaje en el repositorio: estructura, comandos, convenciones y reglas duras |
 | 🌐 [`../CONTRIBUTING.md`](../CONTRIBUTING.md) | Cómo contribuir |
 | 🌐 [`../CHANGELOG.md`](../CHANGELOG.md) | Qué cambia en cada versión (de ahí salen las notas de cada release) |
-| [`DESARROLLO_POR_FASES.md`](DESARROLLO_POR_FASES.md) | El método: encargo, plan, rama, tests, revisión y registro |
-| [`ROADMAP.md`](ROADMAP.md) | Estado de cada fase y su registro (decisiones y deuda) |
-| [`RESUMEN_FASES.md`](RESUMEN_FASES.md) | Qué aporta cada fase, en corto |
-| [`pruebas/`](pruebas/) | Guías de prueba manual por fase y pendientes del usuario |
-| [`../prompts/`](../prompts/) | El encargo de cada fase |
+| [`../dev/`](../dev/README.md) | Cómo se construye por fases: el método, los encargos, el ROADMAP, las decisiones de arquitectura (ADR) y las pruebas manuales. Solo en el repositorio, no en el zip de la release |
 | [`../scripts/readme_media/`](../scripts/readme_media/) | Cómo se generan las capturas, los GIF, el vídeo y las ilustraciones del README |

@@ -215,7 +215,7 @@ browser; `--dev` adds Vite with hot reload. The UI shows a "Demo mode" banner: t
 fictional candidate in Dublin; without `--lang en`, one in Spain) is deterministic and never
 touches `data/` or your mailbox. To try the skills on it, start your agent with
 `CAI_DATA_DIR=data-demo-en`. A walk-through of every feature with the demo:
-[demo test guide](docs/pruebas/guia-prueba-demo.md) (Spanish).
+[demo test guide](dev/pruebas/guia-prueba-demo.md) (Spanish).
 
 Step by step, including your own profile, your agent, email alerts and the browser extension:
 **[User guide](docs/GUIDE.md)**.
@@ -350,7 +350,7 @@ stateDiagram-v2
 ```
 
 <details>
-<summary><b>Key decisions</b> (ADRs in <code>docs/DECISIONS.md</code>)</summary>
+<summary><b>Key decisions</b> (ADRs in <code>dev/DECISIONS.md</code>)</summary>
 
 | Decision | Why |
 |---|---|
@@ -396,11 +396,11 @@ All documents, grouped: [`docs/README.md`](docs/README.md). Technical docs are i
 
 ## How it was built
 
-In 23 phases (with sub-phases), each with its brief in `prompts/`, implemented with an AI agent
+In 23 phases (with sub-phases), each with its brief in `dev/prompts/`, implemented with an AI agent
 (Claude Code) against a specification written before the code: a plan, a branch per phase, tests,
 a review by a `reviewer` role, and a log of decisions and debt. The phase log is in
-[`docs/ROADMAP.md`](docs/ROADMAP.md) and the method in
-[`docs/DESARROLLO_POR_FASES.md`](docs/DESARROLLO_POR_FASES.md).
+[`dev/ROADMAP.md`](dev/ROADMAP.md) and the method in
+[`dev/DESARROLLO_POR_FASES.md`](dev/DESARROLLO_POR_FASES.md).
 
 ## License and credits
 

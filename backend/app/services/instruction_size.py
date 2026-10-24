@@ -15,7 +15,7 @@ from pydantic import BaseModel
 from app.core.config import REPO_ROOT
 
 CHARS_PER_TOKEN = 4
-SKILL_LIMIT = 6000  # tokens: por encima, deuda en docs/ROADMAP.md
+SKILL_LIMIT = 6000  # tokens: por encima, deuda en dev/ROADMAP.md
 
 Kind = Literal["instructions", "skill", "role"]
 
