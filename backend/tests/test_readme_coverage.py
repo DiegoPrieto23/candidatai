@@ -114,7 +114,7 @@ def test_exceptions_are_exempt(repo: Path) -> None:
     # `implement-phase` existe y no está en las listas; `ats-simple` se cita y no es un skill.
     assert (repo / ".agents/skills/implement-phase/SKILL.md").exists()
     assert "implement-phase" not in (repo / "docs/FEATURES.md").read_text(encoding="utf-8")
-    assert "`ats-simple`" in (repo / "README.md").read_text(encoding="utf-8")
+    _replace(repo / "README.md", "## Guarantees", "Templates: `ats-simple`.\n\n## Guarantees")
     assert coverage.check(repo) == []
 
 
@@ -165,10 +165,10 @@ def test_skill_missing_in_one_language_fails(repo: Path) -> None:
 
 
 def test_removed_skill_still_cited_fails(repo: Path) -> None:
-    shutil.rmtree(repo / ".agents/skills/review-linkedin")
+    shutil.rmtree(repo / ".agents/skills/generate-cv")
     errors = coverage.check(repo)
-    assert any(e.startswith("README.md: cita `review-linkedin`") for e in errors)
-    assert any(e.startswith("docs/FEATURES.md: cita `review-linkedin`") for e in errors)
+    assert any(e.startswith("README.md: cita `generate-cv`") for e in errors)
+    assert any(e.startswith("docs/FEATURES.md: cita `generate-cv`") for e in errors)
 
 
 def test_readme_must_link_its_feature_list(repo: Path) -> None:

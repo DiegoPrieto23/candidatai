@@ -35,7 +35,6 @@ NOT_SKILLS = {
     "clasica-foto": "plantilla de CV integrada",
     "moderna-2col": "plantilla de CV integrada",
     "carta-simple": "plantilla de carta integrada",
-    "generar-cv": "nombre de generate-cv hasta la fase 23; el README en español lo cuenta",
 }
 
 FENCE = re.compile(r"```.*?```", re.S)

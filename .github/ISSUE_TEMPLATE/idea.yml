@@ -1,0 +1,46 @@
+name: Idea or improvement
+description: Something CandidatAI could do, or do better.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before writing, have a look at [what it already does](https://github.com/DiegoPrieto23/candidatai/blob/main/docs/FEATURES.md)
+        and at the ground rules in [CONTRIBUTING.md](https://github.com/DiegoPrieto23/candidatai/blob/main/CONTRIBUTING.md):
+        the app never calls an LLM, never sends anything without your confirmation and never applies on
+        LinkedIn by itself. Open questions fit better in [Discussions](https://github.com/DiegoPrieto23/candidatai/discussions).
+        Puedes escribir en español.
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What part of your job search is slow, missing or annoying today?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+      description: What you'd like it to do. A sketch or an example from another tool helps.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Getting jobs (sources, alerts, connectors)
+        - Triage and score
+        - CV and cover letter
+        - Applying
+        - Tracking, replies and funnel
+        - Interviews and offers
+        - Agents and skills
+        - Installation and docs
+        - Other
+  - type: checkboxes
+    id: help
+    attributes:
+      label: Can you help?
+      options:
+        - label: I'd like to work on it myself.

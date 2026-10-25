@@ -1,0 +1,70 @@
+name: Works with my agent
+description: Report how CandidatAI works with an agent and a model (compatibility matrix).
+title: "[compat] <agent> · <model>"
+labels: ["agent-compat"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks: these reports are how the [compatibility matrix](https://github.com/DiegoPrieto23/candidatai/blob/main/evals/compat/REPORT.md)
+        grows beyond the agents the maintainer can test. How to measure it is in
+        [CONTRIBUTING.md → Test an agent](https://github.com/DiegoPrieto23/candidatai/blob/main/CONTRIBUTING.md#test-an-agent):
+
+        ```
+        uv run --directory backend cai eval compat --agent <agent> --model <model>
+        ```
+
+        It runs on five fictional jobs in its own demo folder: no personal data is involved.
+  - type: input
+    id: agent
+    attributes:
+      label: Agent and version
+      placeholder: "OpenCode 1.2.3"
+    validations:
+      required: true
+  - type: input
+    id: model
+    attributes:
+      label: Model and where it runs
+      placeholder: "a 30B model on Ollama with 32k context · or · the agent's default model on a paid plan"
+    validations:
+      required: true
+  - type: input
+    id: machine
+    attributes:
+      label: System and hardware (for local models)
+      placeholder: "Windows 11, 32 GB RAM, 12 GB graphics card"
+  - type: dropdown
+    id: how
+    attributes:
+      label: How you ran it
+      options:
+        - cai eval compat (launched by the app)
+        - cai eval compat --import (skills done by hand in the demo)
+        - Only tried it by hand, without the eval
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: Result
+      description: |
+        Paste the matrix column that `cai eval compat` prints, and attach the JSON file it saved in
+        `evals/compat/results/` (drag it here).
+      render: text
+    validations:
+      required: true
+  - type: checkboxes
+    id: skills
+    attributes:
+      label: What worked
+      options:
+        - label: process-jobs (extraction)
+        - label: assess-fit (assessments)
+        - label: generate-cv (CVs that pass `cai eval cv`)
+        - label: Background runs from the UI
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else
+      description: Setup steps you needed, errors, how long it took, limits of a free plan…

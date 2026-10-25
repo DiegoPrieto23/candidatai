@@ -4,6 +4,8 @@
 
 How to install CandidatAI, try it with the demo and use it every day with your own data and your
 AI agent. To learn what it is and why it works this way, start with the [README](../README.md).
+New to all this? [Start here](START_HERE.md) first: what you need, in plain words, and your first
+steps.
 
 > The user interface is in English and Spanish: switch with the globe button at the bottom of the
 > sidebar (see [Language](#language)). This guide quotes the English names.

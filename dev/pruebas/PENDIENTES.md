@@ -6,7 +6,7 @@ cada fase y lo quita cuando el usuario confirma que está hecho.
 
 Marca `[x]` lo que hagas y, si algo falla, apúntalo debajo de la línea con `→`.
 
-Última actualización: 2026-10-24 (fase 28.2).
+Última actualización: 2026-10-25 (fase 28.4).
 
 ## 1. Poner la app al día (antes de probar nada)
 
@@ -415,9 +415,16 @@ hiciste, márcala.
       ver qué dice SmartScreen (`maquina-virtual-windows.md`).
 - [x] **Fase 28.3b · Medios nuevos** (`fase-28.3b-prueba-manual.md`): generados y revisados por
       ti (2026-10-25).
-- [ ] **Fase 28.4 · Imagen social en GitHub:** Settings → General → Social preview → «Edit» →
-      `docs/img/social-en.png`. Tras el push de la 28.3b, mira también los dos README en github.com
-      (capturas, animaciones y modo oscuro).
+- [ ] **Fase 28.4 · Prueba manual** (`fase-28.4-prueba-manual.md`): leer la portada y la guía
+      antes del commit, instalar siguiendo solo `EMPEZAR.md` y ver el README de la rama en GitHub.
+- [ ] **Fase 28.4 · Ajustes de GitHub** (`fase-28.4-github.md`), tras el push a `main`:
+      descripción, sitio web y temas; imagen social (`docs/img/social-en.png`); etiquetas;
+      Discussions con sus categorías; las 10 primeras incidencias; y cómo se ve desde fuera (sesión
+      cerrada, móvil, vista previa en LinkedIn, X y Slack). Mira también los dos README en
+      github.com (capturas, animaciones y modo oscuro).
+- [ ] **Fase 28.4 · Prueba con un lector no técnico** (`fase-28.4-github.md`, §8): instala solo
+      con el README y `docs/START_HERE.md`, cronometrado y con los atascos apuntados. Hasta que lo
+      consiga sin ayuda, la 28.4 no se cierra.
 - [ ] **Fase 28.2 · Raíz limpia en GitHub:** tras el push a `main`, la portada del repo ya no
       muestra `prompts/` y la barra de lenguajes enseña Python y TypeScript (GitHub la recalcula a
       los pocos minutos); la CI pasa el paso nuevo de enlaces en los tres sistemas. Si cambiaste a

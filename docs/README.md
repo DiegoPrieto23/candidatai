@@ -10,6 +10,7 @@ the rest are in Spanish only.
 
 | Documento | Qué cuenta |
 |---|---|
+| 🌐 [Empieza aquí](EMPEZAR.md) · [Start here](START_HERE.md) | Para quien no es técnico: qué necesitas (incluido el agente y lo que cuesta), instalar, la demo, tu perfil, tu primera búsqueda y preguntas frecuentes |
 | 🌐 [Guía de uso](GUIA.md) · [User guide](GUIDE.md) | Instalar, probar la demo, conectar tu agente y el día a día |
 | 🌐 [Funcionalidades](FUNCIONALIDADES.md) · [Features](FEATURES.md) | Todo lo que hace, en el orden en que lo usas, con su página o su skill |
 | [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md) | Alertas de empleo y respuestas por correo (Gmail, IMAP), paso a paso |
@@ -41,7 +42,8 @@ the rest are in Spanish only.
 | Documento | Qué cuenta |
 |---|---|
 | [`../AGENTS.md`](../AGENTS.md) | Instrucciones para cualquier agente que trabaje en el repositorio: estructura, comandos, convenciones y reglas duras |
-| 🌐 [`../CONTRIBUTING.md`](../CONTRIBUTING.md) | Cómo contribuir |
+| [`../CONTRIBUTING.md`](../CONTRIBUTING.md) | Cómo contribuir (en inglés): reglas, preparar el entorno y tres caminos fáciles (un conector de ATS, un idioma de la UI, probar un agente) |
+| [`../CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md) | Código de conducta (Contributor Covenant 2.1, en inglés) |
 | 🌐 [`../CHANGELOG.md`](../CHANGELOG.md) | Qué cambia en cada versión (de ahí salen las notas de cada release) |
 | [`../dev/`](../dev/README.md) | Cómo se construye por fases: el método, los encargos, el ROADMAP, las decisiones de arquitectura (ADR) y las pruebas manuales. Solo en el repositorio, no en el zip de la release |
 | [`../scripts/readme_media/`](../scripts/readme_media/) | Cómo se generan las capturas, los GIF, el vídeo y las ilustraciones del README |

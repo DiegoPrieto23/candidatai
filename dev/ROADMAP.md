@@ -101,7 +101,7 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 28.1 | ↳ Auditoría y primera release | ⏳ (`v0.1.0` publicada el 2026-10-24 y probada en un Windows 11 limpio; faltan Linux/WSL, Docker y actualizar sin perder datos) | Historial auditado, `v0.1.0` publicada con suma de verificación y los instaladores probados contra ella |
 | 28.2 | ↳ Raíz limpia | ✅ (falta comprobar en GitHub la barra de lenguajes tras el push) | Encargos, pruebas, ROADMAP y ADR a `dev/`, enlaces comprobados y la barra de lenguajes de GitHub bien |
 | 28.3 | ↳ Medios y funcionalidades | ✅ | Capturas y animaciones nuevas (en/es, sin vídeos), `FEATURES.md` y un script que impide funciones sin contar |
-| 28.4 | ↳ Portada y GitHub | ⏳ | Portada con gancho, «Por qué CandidatAI», guía para quien no es técnico, temas, imagen social y plantillas |
+| 28.4 | ↳ Portada y GitHub | ⏳ (hechos README, guía «Empieza aquí», CONTRIBUTING y plantillas; faltan los ajustes en la web de GitHub y la prueba con un lector, `dev/pruebas/fase-28.4-github.md`) | Portada con gancho, «Por qué CandidatAI», guía para quien no es técnico, temas, imagen social y plantillas |
 | 28.5 | ↳ Lanzamiento | ⏳ | Borradores por canal, listas «awesome», preguntas esperables y plan de dos semanas |
 
 **MVP usable:** al terminar la 08 ya puedes pegar ofertas, triarlas y sacar CVs a medida; con la
@@ -3577,3 +3577,48 @@ decisiones tomadas y deuda técnica pendiente. -->
 - 2999 tests de backend en verde en cuatro tandas (14 saltados, los de macOS y Linux); uno que
   esperaba la demo de 60 ofertas, corregido. Sin cambios en el frontend. Ruff, `sync_agents.py
   --check`, `check_links.py`, `check_readme_coverage.py` y `release_notes.py --check` en verde.
+
+### 28.4 · Portada y GitHub — 2026-10-25 · Claude Code (Opus 5.5)
+- **Por qué:** la primera pantalla del README enseñaba un banner, ocho distintivos y arquitectura
+  antes que la app; el comando de instalación iba a la mitad; no decía por qué elegirla ni que hace
+  falta un agente de IA, la mayor fricción para quien no es técnico.
+- **Hecho (28.4a):**
+  - `README.md` y `README.es.md` de unas 420 a 215 líneas, con las mismas secciones: promesa,
+    animación del triaje y tres botones (Windows, macOS/Linux, Docker) en la primera pantalla;
+    distintivos solo dinámicos (versión, CI, licencia); nota «En qué punto está» con lo probado de
+    verdad; «Lo que necesitas» (el agente incluido); «Por qué CandidatAI», tabla corta con fecha y
+    fuentes frente a AI Job Search y career-ops (vueltos a mirar con `gh` el 25-10) y lo que ellos
+    hacen mejor; instalar, garantías, cómo funciona y la línea del eval. Las tablas de skills,
+    fuentes y agentes, los diagramas y las decisiones salen del README (están en las listas de
+    funcionalidades, `docs/` y `dev/DECISIONS.md`);
+  - `docs/START_HERE.md` y `docs/EMPEZAR.md`: qué necesitas, con una tabla de agentes (coste,
+    adónde van tus datos, qué tal funciona aquí; precios de Claude Pro y ChatGPT Plus comprobados
+    hoy), instalación paso a paso (SmartScreen: con el comando no sale; «Desbloquear» si el `.ps1`
+    se baja con el navegador), la suma a mano, la página «Agente» para instalar el tuyo, la demo,
+    crear el perfil con `update-profile`, la primera búsqueda y preguntas frecuentes;
+  - enlaces desde `docs/README.md` y las dos guías de uso; `AGENTS.md` suma las guías nuevas a la
+    regla bilingüe y deja `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md` y `.github/` solo en inglés;
+  - `test_readme_coverage.py` adaptado al README corto y fuera la excepción `generar-cv`, que ya
+    no se cita.
+- **Hecho (28.4b):** `CONTRIBUTING.md` en inglés (una línea en español) con el entorno y tres
+  caminos fáciles: conector de ATS, idioma de la UI y probar un agente con `cai eval compat`;
+  `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1, avisos por el formulario privado de GitHub);
+  `.github/ISSUE_TEMPLATE/` (fallo, idea, «Works with my agent» y `config.yml` sin incidencias en
+  blanco) y `PULL_REQUEST_TEMPLATE.md`; `dev/pruebas/fase-28.4-github.md` con los ajustes de la web
+  (descripción, sitio, temas, imagen social, etiquetas, Discussions y categorías), 10 incidencias
+  redactadas, la decisión sobre Pages y la prueba con un lector.
+- **Revisión (rol `reviewer`):** sin bloqueantes. Aplicado: OpenCode sí se probó (con un 20B local
+  que no terminó), dicho así en la portada y las guías; aviso de `--force` si la demo ya existe; la
+  interfaz real del conector (`FetchResult`, `complete()`, `_ATS_DOMAINS`) y las claves de
+  referencia (`es/`) en `CONTRIBUTING.md`; el aviso privado activado en la 28.1, anotado.
+- **Decisiones (del usuario):** los ajustes públicos de GitHub los hace el usuario con la lista; «Mi
+  búsqueda en números» se queda en hueco (cifras reales del 9 al 24-10: 2 candidaturas, aún poco
+  para gancho); `CONTRIBUTING.md` solo en inglés; conducta por el aviso privado de GitHub. GitHub
+  Pages: recomendado no por ahora (decide el usuario).
+- **Deuda:** las capturas de la guía son de la app, no del instalador en la terminal; los enlaces a
+  Discussions dan 404 hasta activarlas; la tabla «Por qué» caduca: revisarla con la comparativa.
+- **Pendiente:** los ajustes de la web y la prueba con un lector no técnico (cierra la subfase).
+- Sin cambios de código de la app. Tests de README, CHANGELOG, `sync_agents` y configuración (89)
+  en verde; ruff, `sync_agents.py --check`, `check_links.py`, `check_readme_coverage.py` y
+  `release_notes.py --check` limpios. La suite completa no se ha ejecutado (solo cambian docs, un
+  test y una excepción del script).
