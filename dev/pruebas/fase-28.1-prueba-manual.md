@@ -26,8 +26,9 @@ y el mismo enlace con `.sha256` descargan.
 ### 1. Windows 11 limpio (Windows Sandbox)
 
 Windows Sandbox: «Activar o desactivar características de Windows» → «Espacio aislado de
-Windows» (necesita Windows Pro; en Home, una máquina virtual de Hyper-V o VirtualBox). Dentro no hay
-Python, Node ni uv.
+Windows» (necesita Windows Pro; en Home, una máquina virtual con VirtualBox: paso a paso en
+[`maquina-virtual-windows.md`](maquina-virtual-windows.md), que trae también los comandos exactos de
+esta prueba). Dentro no hay Python, Node ni uv.
 
 1. Abre PowerShell y pega la línea de instalación del README.
 2. Apunta qué dice **SmartScreen / Defender** (captura si sale un aviso: la 28.4 lo explica en la
@@ -37,6 +38,39 @@ Python, Node ni uv.
 5. Siembra la demo (`uv run --directory "$env:LOCALAPPDATA\CandidatAI\app\backend" cai demo seed`)
    y recorre Inicio, Bandeja y una ficha con CV.
 6. `cai doctor` desde la misma carpeta.
+
+**Resultado (2026-10-25, hecho por el agente en VirtualBox):** ✅ con la release `v0.1.0` real, en
+Windows 11 Home 10.0.26300 recién instalado (es-ES), usuario sin uv, Python ni Node. El agente lanzó
+las dos líneas del README en una ventana de PowerShell del escritorio del usuario y leyó la salida.
+
+- [x] SmartScreen / Defender (protección en tiempo real activa, firmas al día): **ningún aviso**.
+  Con `iwr` el script no lleva la marca «descargado de internet»; queda por ver el caso de
+  descargarlo con el navegador (opcional en `maquina-virtual-windows.md`).
+- [x] «Suma SHA-256 comprobada.» y «Listo.» (código de salida 0), con red solo IPv4 (ver abajo).
+- [x] El acceso directo abre la ventana «CandidatAI en marcha: http://127.0.0.1:8000» y Edge en esa
+  dirección.
+- [x] `cai demo seed` crea la demo en `CandidatAI\data-demo` (60 ofertas, 281 eventos, 2 CVs en PDF
+  con Chromium); con la línea que imprime, la app arranca en modo demo. Inicio, Bandeja y la ficha
+  #1 (CV listo) se ven bien; el PDF del CV se sirve (`/renders/1/pdf`, 80 KB).
+- [x] `cai doctor` → «Todo listo», con los avisos esperables: sin LibreOffice, sin agentes, sin el
+  extra de embeddings.
+
+Encontrado por el camino (para la 28.4 o una fase de arreglos):
+
+- **Con IPv6 roto, el paso 4 falla:** «No se pudo instalar Chromium (1).» y no llega a «Listo».
+  La red NAT de VirtualBox anuncia IPv6 pero no lo enruta; la descarga de Playwright
+  (`cdn.playwright.dev` → `storage.googleapis.com`) se queda esperando por IPv6 y agota sus 30 s
+  (PyPI, GitHub y uv sí funcionan). Forzar IPv4 en Node no lo arregla. Raro en un PC real, pero el
+  mensaje no da ninguna pista: el instalador podría decir que es un problema de red y que basta
+  con volver a ejecutarlo, o reintentar.
+- **`cai doctor` se contradice:** «Conversión a PDF: sin LibreOffice ni Word: no se pueden generar
+  los PDF de los CVs» como aviso, cuando dos líneas más abajo «Motor html (Chromium)» genera el PDF
+  y la demo ya trae 2 CVs en PDF. Solo afecta a las plantillas `.docx`; el aviso debería decirlo.
+- **El instalador de uv habla en inglés** («To add C:\Users\…\.local\bin to your PATH, either
+  restart your shell…»). El nuestro ya se ocupa del PATH; la guía puede decir que se ignore.
+- **`uv sync` instala también el grupo `dev`** (ruff y lo de los tests) en la app de quien la usa:
+  `uv sync --no-dev` en los instaladores ahorraría descarga y espacio.
+- Edge sale la primera vez con su bienvenida encima de la página (gris); es de Edge, no de la app.
 
 ### 2. Linux (WSL2 Ubuntu o máquina virtual)
 
@@ -68,7 +102,7 @@ demo (en `CandidatAI\data-demo`, junto a `data`) tienen que seguir ahí.
 | Sistema | Instala | Suma | Primera apertura | Demo | `cai doctor` | Actualizar | Notas |
 |---|---|---|---|---|---|---|---|
 | Windows (local, zip de prueba) | ✅ | ✅ | — | — | ✅ | ✅ | sin accesos directos |
-| Windows Sandbox (release) | | | | | | | SmartScreen: |
+| Windows 11 limpio en VirtualBox (release) | ✅ | ✅ | ✅ | ✅ | ✅ | — | SmartScreen: ningún aviso (con `iwr`); con IPv6 roto falla Chromium |
 | Linux / WSL (release) | | | | | | | |
 | macOS (CI) | | | | | | | |
 | Docker | | | | | | | |
