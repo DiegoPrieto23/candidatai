@@ -75,7 +75,7 @@ Los aplica el código al guardar una extracción. Si alguno falla, la oferta se 
 | Contrato (`contract`) | `contract_type` no está en `preferences.contract_types` (o es `fixed_term` con `exclude_signals: [fixed_term]`, que es lo mismo), o `employment_type` no está en `preferences.employment_types`. Lista vacía = sin filtro; `unknown` y `contract` (no dice la jornada) pasan |
 | Tipo de empresa (`employer_kind`) | El `employer_kind` de la extracción (o `agency` si `is_agency: true`) está en `preferences.excluded_employer_kinds` (`consultancy`, `agency`); `unknown` pasa |
 
-Al importar un perfil nuevo se recalcula todo y se cierran las ofertas en triaje que ya no pasan.
+Al importar un perfil nuevo se recalcula todo y se cierran las ofertas por revisar que ya no pasan.
 Nunca se vuelve a cerrar por filtros una oferta que el usuario reabrió después de un
 `hard_filter_failed`: decidió él.
 
@@ -99,8 +99,8 @@ Combinación ponderada (`scoring.weights`) de cuatro componentes entre 0 y 1:
 
 Un componente que no se puede calcular (la oferta no lista skills de ese tipo o no hay modelo de
 embeddings) no cuenta, y su peso se reparte entre los demás. El desglose lo dice. Los filtros
-duros no cambian el score. Por debajo de `triage_threshold`, la oferta se ve atenuada en el
-triaje. Los pesos y el umbral se ajustan con `cai eval matching` (`evals/matching/README.md`).
+duros no cambian el score. Por debajo de `triage_threshold`, la oferta se ve atenuada en
+«Por revisar». Los pesos y el umbral se ajustan con `cai eval matching` (`evals/matching/README.md`).
 
 ### Sinónimos y huecos de skills (fase 14)
 
@@ -147,7 +147,7 @@ Una oferta puede encajar en el papel y aun así no merecer la pena. El código m
 - **Son información, no puntúan.** No cambian el score ni los filtros duros. Si quieres que
   `employer_hidden` o `fixed_term` descarten, ponlas en `preferences.exclude_signals` del perfil y
   pasan a ser un filtro duro (`signal`; `fixed_term`, desde la fase 27.5, en `contract`).
-- La UI las enseña en la bandeja, el triaje y la ficha, y `assess-fit` las cita en `risks`. Una
+- La UI las enseña en la bandeja, «Por revisar» y la ficha, y `assess-fit` las cita en `risks`. Una
   señal que choca con un deal-breaker de `criterios.md` cuenta como ese deal-breaker (§1.5).
 - Las que dependen de la extracción (`fixed_term`, el `is_agency` de `employer_hidden`,
   `mentions_ai_screening`) solo existen en las ofertas extraídas desde esta fase.
@@ -275,7 +275,7 @@ Una oferta puede encajar en el papel y aun así no merecer la pena. El código m
 - **Varias a la vez y umbral** (fase 25.4, ADR-038): hasta `background_runs.max_parallel`
   ejecuciones a la vez (1 por defecto), nunca dos de la misma oferta ni dos lotes de la misma
   acción, cada una con su techo de herramientas. «Evaluar encaje» en segundo plano solo valora las
-  ofertas con score ≥ el umbral de la página «Agente» (por defecto, el de triaje menos 10).
+  ofertas con score ≥ el umbral de la página «Agente» (por defecto, el umbral de score menos 10).
   `max_parallel` y `per_agent` se leen al arrancar: tras cambiarlos, reinicia `cai worker`.
 
 ## 7. Estilo de redacción

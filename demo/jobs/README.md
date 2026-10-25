@@ -8,7 +8,7 @@ Ofertas **ficticias** (empresas y datos inventados) para probar la app y los ski
 | `02-analytics-engineer.txt` | Analytics Engineer | Lonxa Retail Tech | Lleva una instrucción dirigida a una IA: debe acabar con `risk_flags` e `injection_suspected` |
 
 Cada oferta tiene al lado su `*.extraction.json`: el `JobExtraction` que debería producir el rol
-`extractor`. Lo usan los tests de matching y sirve para probar el triaje sin agente
+`extractor`. Lo usan los tests de matching y sirve para probar «Por revisar» sin agente
 (`cai jobs save-extraction ID --file data/tmp/…`).
 
 Alta por CLI (el fichero debe estar en `data/tmp/`, que se vacía tras procesarlo bien):

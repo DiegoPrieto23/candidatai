@@ -52,7 +52,7 @@ corta el filtro de ubicación.
 ### Umbral elegido: 55 (sin cambios)
 
 55 y 60 empatan en F1. Se mantiene 55 porque el umbral no descarta nada: solo atenúa la oferta
-en el triaje. Perder una oferta buena cuesta más que revisar una mala, así que se prima el recall.
+en «Por revisar». Perder una oferta buena cuesta más que revisar una mala, así que se prima el recall.
 Por encima de 60 el recall cae rápido: a 65 se pierden tres ofertas buenas (Data Engineer con
 Azure, con Spark y Power BI Developer), que son justo los saltos razonables de stack.
 

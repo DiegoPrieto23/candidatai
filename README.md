@@ -9,8 +9,8 @@
 <h3 align="center">Your whole job search in one app: you decide, your AI reads and writes, and nothing is sent without you.</h3>
 
 <p align="center">
-  <img src="docs/img/en/anim/triage.webp" alt="Triage with the keyboard: J/K to move, A to approve" width="88%">
-  <br><sub>Triage with the keyboard. Everything you see is the <b>demo</b>: a fictional candidate, companies and jobs.</sub>
+  <img src="docs/img/en/anim/tour.webp" alt="A tour of the app: approving and discarding jobs, a verified CV in another design, the application form filled in and waiting for confirmation, processes and the funnel" width="100%">
+  <br><sub>From a new job to the application, in 50 seconds. Everything you see is the <b>demo</b>: a fictional candidate, companies and jobs.</sub>
 </p>
 
 <p align="center">
@@ -52,14 +52,14 @@
 
 ## What it does
 
-Jobs come in from several sources, you triage them with an explained score, each one gets a
+Jobs come in from several sources, you review them with an explained score, each one gets a
 **tailored, verified CV and cover letter**, the app fills the application form and **waits for you
 to press Send**, and then it tracks the process all the way to the offer.
 
 | | |
 |---|---|
 | 📥 **Jobs from many sources** | Paste a URL or text; public ATS APIs (Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters, Recruitee); InfoJobs, Adzuna, Manfred and freehire.me; **job alerts by email**; a browser button; your agent browsing portals; and, opt-in, LinkedIn's public search. Deduplicated, with **detection of text aimed at an AI** |
-| 🎯 **Triage with an explained score** | Hard filters and a 0-100 score from skill coverage and your preferences; your agent adds a reasoned verdict, and "Is the score right?" checks it against real outcomes |
+| 🎯 **Review with an explained score** | Hard filters and a 0-100 score from skill coverage and your preferences; your agent adds a reasoned verdict, and "Is the score right?" checks it against real outcomes |
 | 📄 **Tailored CV and cover letter** | The agent cites **evidence from your profile for every line**; the code checks it, renders it with your template, photo and colour, and a separate role verifies it. **Import your own CV design** as a template |
 | 📝 **Assisted applications** | Fills Greenhouse, Lever, Ashby or generic forms, stops at captchas and logins, and **only submits after you confirm** |
 | 📊 **Tracking and analytics** | A kanban that only moves through recorded events, a calendar, follow-up reminders, company replies classified for you, and a funnel by source, role, template and referral |
@@ -107,7 +107,7 @@ inspired this one. Checked on **25 October 2026** in their repositories
 |---|---|---|---|
 | What it is | An **app** with a web UI, a database and a background worker | Instructions and commands for Claude Code over files | An agent with many modes and Node scripts over files, a terminal dashboard and a web UI in alpha |
 | Installing | One command, a desktop shortcut, nothing installed beforehand | Fork, then Claude Code, Python, Bun and LaTeX | `npx … init` with Node installed |
-| Without the agent open | Triage, kanban, calendar, funnel, profile, re-render CVs | Nothing | Scanning, the dashboard and the web UI |
+| Without the agent open | Reviewing jobs, kanban, calendar, funnel, profile, re-render CVs | Nothing | Scanning, the dashboard and the web UI |
 | Rules | **Enforced by code**: a CV line without evidence in your profile is rejected; sending needs your click | Instructions, plus an injection filter in code | Instructions, plus a fact check of the PDF in code |
 | Agents | 5 configured; Claude Code fully tested | Claude Code | 12 CLIs, free and local models |
 | Community | Just released, one maintainer | ~65k stars, ~90 contributors, the author's real search | ~77k stars, ~460 contributors, Discord, many success stories |
@@ -169,7 +169,7 @@ These are rules enforced by code, whichever agent you use:
 ## How it works
 
 <p align="center">
-  <img src="docs/img/how-it-works-en.svg" alt="How it works: jobs come in, the agent extracts and assesses, you triage, the agent writes the CV, the app verifies and renders it, the app fills the form and you send it, the app tracks the process" width="100%">
+  <img src="docs/img/how-it-works-en.svg" alt="How it works: jobs come in, the agent extracts and assesses, you approve or discard, the agent writes the CV, the app verifies and renders it, the app fills the form and you send it, the app tracks the process" width="100%">
 </p>
 
 Each colour is who does the step: **you** decide, **your agent** reasons, **the app** stores,
@@ -182,7 +182,7 @@ and the measured matrix in [`evals/compat/REPORT.md`](evals/compat/REPORT.md); a
 
 **Quality:** backend tests on Windows, Linux and macOS and frontend tests in CI. The matching eval
 (80 fictional cases, no embeddings): precision **0.88**, recall **0.95**,
-F1 **0.92** at the default triage threshold ([`evals/REPORT.md`](evals/REPORT.md)).
+F1 **0.92** at the default score threshold ([`evals/REPORT.md`](evals/REPORT.md)).
 
 ## Documentation
 
@@ -197,13 +197,6 @@ F1 **0.92** at the default triage threshold ([`evals/REPORT.md`](evals/REPORT.md
 
 All documents, grouped: [`docs/README.md`](docs/README.md). Technical docs are in Spanish; this
 README, the guides and the code are in English.
-
-## How it was built
-
-In phases, each with a written brief in `dev/prompts/`, implemented with an AI agent (Claude Code)
-against a specification written before the code: a plan, a branch, tests, a review by a `reviewer`
-role and a log of decisions and debt ([`dev/ROADMAP.md`](dev/ROADMAP.md),
-[`dev/DESARROLLO_POR_FASES.md`](dev/DESARROLLO_POR_FASES.md)).
 
 ## License and credits
 

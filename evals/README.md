@@ -5,7 +5,7 @@ Tres evaluaciones con datos **inventados** contra el perfil de `demo/`. Resultad
 
 | Eval | Qué mide | Casos | Comando (desde `backend/`) |
 |---|---|---|---|
-| Matching | Si la app separa las ofertas que encajan de las que no (filtros duros + score frente al umbral de triaje) | `matching/seed.jsonl` (80) | `uv run cai eval matching [--no-embeddings]` |
+| Matching | Si la app separa las ofertas que encajan de las que no (filtros duros + score frente al umbral de score) | `matching/seed.jsonl` (80) | `uv run cai eval matching [--no-embeddings]` |
 | CV | Los CVs que deja el agente con `generate-cv` | `cv/cases.jsonl` (10) | `uv run cai eval cv [--agent NOMBRE]` |
 | Compatibilidad | Un agente y un modelo recorren `process-jobs`, `assess-fit` y `generate-cv` sobre 5 ofertas, en su propia demo | `compat/jobs.txt` (5 de `cv/`) | `uv run cai eval compat --agent NOMBRE [--model M]` |
 

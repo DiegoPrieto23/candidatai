@@ -3622,3 +3622,16 @@ decisiones tomadas y deuda técnica pendiente. -->
   en verde; ruff, `sync_agents.py --check`, `check_links.py`, `check_readme_coverage.py` y
   `release_notes.py --check` limpios. La suite completa no se ha ejecutado (solo cambian docs, un
   test y una excepción del script).
+- **Ajustes tras la revisión del usuario (mismo día):**
+  - «triaje» sale de los docs, los skills y los 3 textos de la UI que quedaban: se dice «revisar»,
+    «umbral de score» y, en el Embudo, «Pasan filtros» (antes «Triadas»). Los identificadores
+    (`pending_triage`, `triage_threshold`) no cambian; `dev/` tampoco (es historia).
+  - Banner: ocho pasos en dos filas («Buscar ofertas en portales → Valorar encaje → Aprobar o
+    descartar → …») y sin el recuadro de `cai status`.
+  - Fuera la sección «Cómo se construyó» de los README: enlazaba a `dev/`, que no irá en el repo
+    final. Sacar `dev/` del repo queda para otra tarea.
+  - Portada: la animación de «Por revisar» deja paso a un recorrido de unos 50 s (escena `tour`):
+    Inicio, aprobar y descartar, el CV verificado con otra plantilla, la candidatura rellenada y
+    parada en la confirmación, Procesos y Embudo. Va a 1280 px, 10 fps y calidad 70, y `mpdecimate`
+    quita los fotogramas repetidos de todas las escenas. Pesa unos 3 MB por idioma: el presupuesto
+    de `docs/img/` pasa de 8 a 15 MB. `all.py` admite `--sin-capturas`.

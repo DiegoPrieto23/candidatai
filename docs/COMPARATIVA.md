@@ -57,7 +57,7 @@ Lo que hay que hacer para tener cada uno funcionando desde un equipo sin nada.
 | Qué hace el instalador | Instala uv (que trae Python 3.12), descarga la release, **comprueba su SHA-256**, instala dependencias, Chromium y la base de datos, y crea el acceso directo | Ejecuta `bun install` en cada CLI de portal | Clona la última release en `./career-ops` e instala las dependencias |
 | Cómo se arranca | **Icono «CandidatAI»** en el escritorio y el menú Inicio (Aplicaciones en macOS, menú en Linux): abre la app en el navegador. También `cai start` | `claude` en la carpeta, y `/setup` | `claude` (o `codex`, `opencode`, `agy`, `grok`…) en la carpeta; la TUI con `npm run serve:dashboard`; la web con `npm run ui` o `cd web && npm ci && npm run build && npm start` |
 | Primera configuración | Página «Mi perfil» o skill `update-profile`; demo con `cai demo seed` | `/setup`: lee tu carpeta `documents/`, un CV pegado o una entrevista | En el chat la primera vez: CV, perfil y puestos |
-| Sin agente, ¿qué puedes hacer? | Mucho: ver y triar ofertas, fuentes, alertas, kanban, calendario, embudo, cambiar plantilla o foto del CV, editar el perfil | Nada (todo pasa por Claude Code) | Escanear (sin tokens), la TUI y la web |
+| Sin agente, ¿qué puedes hacer? | Mucho: ver, aprobar y descartar ofertas, fuentes, alertas, kanban, calendario, embudo, cambiar plantilla o foto del CV, editar el perfil | Nada (todo pasa por Claude Code) | Escanear (sin tokens), la TUI y la web |
 | Dónde quedan tus datos | `%LOCALAPPDATA%\CandidatAI\data` (o `~/.local/share/…`), fuera del código | En ficheros del repositorio, algunos versionados | `data/`, `reports/` y `output/` fuera de git, o una carpeta aparte con `CAREER_OPS_DATA_DIR` |
 | Actualizar | Volver a ejecutar el instalador; tus datos no se tocan | Fusionar una etiqueta de `upstream`, con `check_upstream_updates.py` y `upstream_triage.py` para ver qué toca | Modo `update` con diff y comprobación de compatibilidad |
 | Desinstalar | `install.ps1 -Uninstall` / `install.sh --uninstall` (deja tus datos) | Borrar la carpeta | Borrar la carpeta |
@@ -145,7 +145,7 @@ tres proyectos han llegado a lo mismo: `GEMINI.md` vacío o de paso, y Antigravi
 | Score explicado | ✅ 0-100 por componentes | ✅ 5 dimensiones | ✅ 1-5 con pesos y su origen |
 | Similitud semántica local (embeddings) | ✅ opcional | ❌ | ❌ |
 | Valoración razonada del agente | ✅ `assess-fit` | ✅ | ✅ informe A-H con veredicto |
-| Triaje rápido con teclado | ✅ J/K, A, D, deshacer; descartar también desde la Bandeja | ❌ | 🟡 en la TUI |
+| Revisar ofertas rápido con el teclado | ✅ J/K, A, D, deshacer; descartar también desde la Bandeja | ❌ | 🟡 en la TUI |
 | Señales de oferta dudosa | 🟡 rango ancho, empresa oculta o agencia, temporal, antigua y cribado con IA, sin puntuar | ❌ | ✅ 18 señales (también tasas que paga el candidato, prácticas sin pagar o identidad del recruiter) |
 | Autorización de trabajo / patrocinio de visado | ❌ | ❌ | ✅ |
 | Estrategia de nivel y arquetipo del puesto | 🟡 | ❌ | ✅ |
@@ -187,7 +187,7 @@ tres proyectos han llegado a lo mismo: `GEMINI.md` vacío o de paso, y Antigravi
 | Calendario `.ics` | ✅ un `.ics` por hito y feed para Google Calendar | ❌ | 🟡 lee el `.ics` de una invitación |
 | Seguimientos (máx. 2) y agradecimientos | ✅ borradores | ✅ borradores | ✅ con cadencia, desactivables |
 | Clasificar las respuestas de las empresas | ✅ IMAP, propuesta que aceptas | ✅ Gmail, propuesta que aceptas | ✅ `reply-watch` |
-| Tu red de LinkedIn cruzada con las ofertas | ✅ «Conoces a N» en bandeja, triaje y ficha | ❌ | ✅ `linkedin-join` (script) |
+| Tu red de LinkedIn cruzada con las ofertas | ✅ «Conoces a N» en bandeja, «Por revisar» y ficha | ❌ | ✅ `linkedin-join` (script) |
 | Mensaje a un recruiter o compañero (≤ 300 caracteres) | ✅ | ❌ | ✅ |
 | Correo de candidatura | ✅ | ❌ | ✅ |
 | Dosier de empresa con fuentes | ✅ | ✅ dentro de `/apply` | ✅ `deep` |
@@ -228,7 +228,7 @@ tres proyectos han llegado a lo mismo: `GEMINI.md` vacío o de paso, y Antigravi
 
 - **Se instala como un programa**: un comando sin nada previo, la suma SHA-256 comprobada, un icono
   en el escritorio y la app abierta en el navegador. Probado en un Windows 11 recién instalado.
-- **Sirve sin agente** para lo de cada día: bandeja, triaje, fuentes, alertas, kanban, calendario,
+- **Sirve sin agente** para lo de cada día: bandeja, «Por revisar», fuentes, alertas, kanban, calendario,
   embudo, perfil y cambios de plantilla. El agente solo entra para razonar.
 - Una **UI web completa** y bilingüe, que no es una vista sobre ficheros sino la app misma.
 - **MCP + CLI con paridad comprobada por test**: un agente sin MCP hace exactamente lo mismo.
@@ -289,7 +289,7 @@ ya no son funciones sino **que la gente lo conozca y lo pruebe**: es justo lo qu
 
 ## Conclusión
 
-En funciones, CandidatAI ya cubre el ciclo entero (ofertas, triaje, CV, carta, candidatura,
+En funciones, CandidatAI ya cubre el ciclo entero (ofertas, revisión, CV, carta, candidatura,
 seguimiento, entrevistas, ofertas recibidas) y casi todos los extras de los otros dos. Va por
 delante en lo que necesita una app: instalación de un clic, UI, estado fiable, comprobaciones en
 código y candidatura asistida. La distancia con career-ops en agentes, que era la gran carencia de

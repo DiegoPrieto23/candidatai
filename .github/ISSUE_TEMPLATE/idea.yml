@@ -30,7 +30,7 @@ body:
       label: Area
       options:
         - Getting jobs (sources, alerts, connectors)
-        - Triage and score
+        - Review and score
         - CV and cover letter
         - Applying
         - Tracking, replies and funnel

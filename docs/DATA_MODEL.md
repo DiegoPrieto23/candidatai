@@ -163,7 +163,7 @@ Cola de trabajo del worker (sin Redis).
 | `run_source` `{source_id}` | `cai worker` a la hora de `connectors.daily_at`, y al arrancar para las fuentes que no corrieron desde la última hora programada | Ejecuta el conector (`ingestion/service.run_source`). Un fallo de red, 5xx, 429 o interno queda en `source_runs` y la tarea se reintenta; un 404 o un formato inesperado no. Los portales sin claves no se encolan. Al arrancar, las tareas que quedaron `running` vuelven a la cola |
 | `poll_email` `{}` | `cai worker` cada `email_alerts.poll_minutes`, y al arrancar, si hay IMAP configurado o correos en `data/inbox/` | Lee las alertas nuevas (`ingestion/email/service.poll_email`). Si el buzón falla por la red, queda en `source_runs` y se reintenta |
 | `expire_summaries` `{}` | `cai worker` cada día con la ingesta y al arrancar | Cierra con `expired` los resúmenes más antiguos que `summary_expire_days` |
-| `rescore_all` `{}` | `cai profile import` con versión nueva | Recalcula los matches desfasados de las ofertas abiertas con extracción y cierra las de triaje que ya no pasan los filtros (lo mismo que `cai match rescore`, sin cola) |
+| `rescore_all` `{}` | `cai profile import` con versión nueva | Recalcula los matches desfasados de las ofertas abiertas con extracción y cierra las de «Por revisar» que ya no pasan los filtros (lo mismo que `cai match rescore`, sin cola) |
 | `browser_open` `{}` | «Abrir navegador» (fase 11) | Abre el navegador persistente (`data/browser-profile/`), con una página de inicio para que inicies sesión en tus portales |
 | `apply_fill` `{attempt_id}` | `prepare` (fase 11) | Rellena el formulario y para antes de enviar (`services/applier/service.run_fill`) |
 | `apply_open` `{attempt_id}` | `prepare` en LinkedIn o en un portal de empleo | Solo abre la URL |
@@ -309,13 +309,13 @@ Fase 18 (migración 0017):
 Lo calcula `services/analytics.py` con consultas agregadas sobre `events` (sin tablas nuevas ni
 índices: con 1 000 ofertas responde en unos 0,2 s). Cada oferta cuenta **una vez** por paso,
 aunque se reabra, y el embudo es **acumulado**: una oferta que llega a un paso cuenta también en
-los anteriores (un `applied_manually` sin aprobar antes cuenta como aprobada y triada), así que la
+los anteriores (un `applied_manually` sin aprobar antes cuenta como aprobada y como que pasó los filtros), así que la
 conversión nunca pasa del 100 %.
 
 | Paso | La oferta tiene… |
 |---|---|
 | Encontradas (`found`) | cualquier oferta del periodo, salvo las cerradas por `duplicate_detected` sin `reopened` posterior (se cuentan aparte en `duplicates_excluded`) |
-| Triadas (`triaged`) | `extracted` y ningún `hard_filter_failed`, o un `reopened` después del último (después en el orden de la proyección: `occurred_at` y, a igual fecha, `id`; lo mismo con `duplicate_detected`) |
+| Pasan filtros (`triaged`) | `extracted` y ningún `hard_filter_failed`, o un `reopened` después del último (después en el orden de la proyección: `occurred_at` y, a igual fecha, `id`; lo mismo con `duplicate_detected`) |
 | Aprobadas (`approved`) | `approved` |
 | Enviadas (`applied`) | `applied` o `applied_manually` |
 | Con respuesta (`replied`) | `reply_received`, `interview_scheduled`, `test_assigned`, `offer_received` o `rejected` con `occurred_at` igual o posterior al primer envío |
@@ -643,7 +643,7 @@ nunca el agente.
   iguales sin espacios); `probable` si una es el principio de la otra palabra a palabra
   («bretema» ↔ «bretema analytics»), salvo que la corta sea una sola palabra de menos de 5 letras
   o genérica («banco», «grupo», «data»…). `JobRow.known_contacts` lleva el recuento a la bandeja y
-  al triaje.
+  a «Por revisar».
 
 ### `message_drafts` (fase 18, migración 0018)
 Mensajes a personas de la empresa: `linkedin` (≤ 300 caracteres, sin asunto ni adjuntos) y `email`

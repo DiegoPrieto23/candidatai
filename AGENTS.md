@@ -1,6 +1,6 @@
 # CandidatAI
 
-App local para gestionar una búsqueda de empleo: ingesta de ofertas, triaje, CV a medida,
+App local para gestionar una búsqueda de empleo: ingesta de ofertas, revisión con score, CV a medida,
 candidaturas asistidas, seguimiento y analítica del embudo. Backend FastAPI + SQLite, frontend
 React, servidor MCP y CLI `cai`.
 

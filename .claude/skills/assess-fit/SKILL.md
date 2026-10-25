@@ -1,6 +1,6 @@
 ---
 name: assess-fit
-description: Valora el encaje de las ofertas pendientes de triaje en CandidatAI y guarda una valoración explicada para cada una. Úsalo cuando se pida evaluar, priorizar o revisar ofertas nuevas. Antes se llamaba evaluar-encaje.
+description: Valora el encaje de las ofertas por revisar en CandidatAI y guarda una valoración explicada para cada una. Úsalo cuando se pida evaluar, priorizar o revisar ofertas nuevas. Antes se llamaba evaluar-encaje.
 allowed-tools: mcp__candidatai__list_jobs mcp__candidatai__get_match mcp__candidatai__get_extraction mcp__candidatai__get_profile mcp__candidatai__get_context
 ---
 

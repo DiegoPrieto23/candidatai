@@ -1,8 +1,8 @@
 """Todos los medios de un idioma, de principio a fin (fase 28.3b).
 
-Uso (desde backend/): uv run --with imageio-ffmpeg python ../scripts/readme_media/all.py IDIOMA [ESCENAS]
+Uso (desde backend/): uv run --with imageio-ffmpeg python ../scripts/readme_media/all.py IDIOMA [ESCENAS] [--sin-capturas]
   IDIOMA: en o es. ESCENAS: las de recordings.py separadas por comas (por defecto, todas salvo
-  `start`, que necesita su propio `cai start`; ver README.md).
+  `start`, que necesita su propio `cai start`; ver README.md). `--sin-capturas`: solo las escenas.
 
 1. Siembra una demo solo para esto (`data-demo-shots` o `data-demo-en-shots`, con `--force`).
 2. Apunta la primera oferta con CV al formulario de `apply-form.html`, servido en 127.0.0.1:8030.
@@ -28,10 +28,12 @@ ROOT = HERE.parents[1]
 BACKEND = ROOT / "backend"
 LANG = sys.argv[1]
 assert LANG in ("en", "es"), "IDIOMA: en o es"
+ARGS = [arg for arg in sys.argv[2:] if not arg.startswith("--")]
+SHOTS = "--sin-capturas" not in sys.argv
 SCENES = (
-    sys.argv[2].split(",")
-    if len(sys.argv) > 2
-    else ["profile", "discard", "mailbox", "cv", "apply", "triage"]
+    ARGS[0].split(",")
+    if ARGS
+    else ["tour", "profile", "discard", "mailbox", "cv", "apply", "triage"]
 )
 DEMO = "data-demo-en-shots" if LANG == "en" else "data-demo-shots"
 OUT = ROOT / "docs" / "img" / LANG
@@ -83,8 +85,9 @@ def main() -> None:
     try:
         wait_for("http://127.0.0.1:8010/status")
         wait_for(FORM)
-        run(str(HERE / "screenshots.py"), str(OUT), LANG, "light")
-        run(str(HERE / "screenshots.py"), str(OUT / "dark"), LANG, "dark")
+        if SHOTS:
+            run(str(HERE / "screenshots.py"), str(OUT), LANG, "light")
+            run(str(HERE / "screenshots.py"), str(OUT / "dark"), LANG, "dark")
         for scene in SCENES:
             run(str(HERE / "recordings.py"), str(OUT / "anim"), scene, LANG)
     finally:

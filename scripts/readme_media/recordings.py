@@ -1,16 +1,18 @@
 """Animaciones cortas de la demo para el README (fase 28.3b): WebP animado con leyenda.
 
 Uso (desde backend/, con ffmpeg): uv run --with imageio-ffmpeg python recordings.py OUT_DIR ESCENA IDIOMA
-  ESCENA: triage, discard, mailbox, cv, profile, apply o start. IDIOMA: en o es.
+  ESCENA: tour, triage, discard, mailbox, cv, profile, apply o start. IDIOMA: en o es.
 UI en 5181 y API en 8010; la app real sigue en 5173/8000 sin tocarse.
 
-Cada escena dura menos de 20 s y lleva una leyenda abajo (`CAPTIONS`): sirve de subtítulo para
+Cada escena dura menos de 20 s, salvo `tour` (el recorrido de la portada, unos 50 s y más nítido:
+`SHARP`), y lleva una leyenda abajo (`CAPTIONS`): sirve de subtítulo para
 quien lo ve sin sonido. Graba un `.webm` con Playwright y lo convierte a `OUT_DIR/<escena>.webp`
 con ffmpeg (`FFMPEG`, el de `imageio-ffmpeg` o el del PATH). Los textos con los que se busca un
 botón salen de `frontend/src/locales/<idioma>/`.
 
 Escenas que cambian la demo: `triage` aprueba una oferta, `discard` descarta una (y la devuelve),
-`mailbox` añade un buzón y `cv` renderiza otro CV. Usa una demo solo para esto.
+`mailbox` añade un buzón, `cv` renderiza otro CV y `tour` aprueba una, descarta otra, renderiza
+otro CV y deja preparada la candidatura de `CV_JOB` (sin enviarla). Usa una demo solo para esto.
 
 `apply` necesita un formulario que el worker pueda rellenar sin salir a internet: el de prueba de
 Greenhouse de los tests, servido en 127.0.0.1:8030, con la oferta `CV_JOB` apuntando a él y el
@@ -29,7 +31,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-from playwright.sync_api import Page, sync_playwright
+from playwright.sync_api import Browser, BrowserContext, Locator, Page, sync_playwright
 
 UI = "http://127.0.0.1:5181"
 API = "http://127.0.0.1:8010"
@@ -43,6 +45,8 @@ CV_JOB = 1
 SIZE = {"width": 1600, "height": 1000}
 # Ancho, fotogramas por segundo y calidad del WebP: unos 300 KB por escena.
 WIDTH, FPS, QUALITY = 900, 6, 50
+# El recorrido de la portada (fase 28.4), más nítido: unos 3 MB.
+SHARP = {"tour": (1280, 10, 70)}
 OUT.mkdir(parents=True, exist_ok=True)
 assert LANG in ("en", "es"), "IDIOMA: en o es"
 
@@ -80,6 +84,18 @@ CAPTIONS = {
             "Solo se envía si escribes el nombre de la empresa",
         ],
         "start": ["Una orden arranca la app y abre el navegador"],
+        "tour": [
+            "Inicio: lo que te espera hoy",
+            "Por revisar: cada oferta con su score explicado",
+            "A aprueba la oferta",
+            "D la descarta, con su motivo",
+            "Aprobada: tu agente redacta el CV y la app comprueba cada línea",
+            "Otra plantilla y otro color, en segundos",
+            "La app rellena el formulario y te enseña de dónde sale cada respuesta",
+            "Solo se envía cuando confirmas tú",
+            "Procesos: cada candidatura, de enviada a oferta",
+            "Embudo: qué fuentes, puestos y plantillas funcionan",
+        ],
     },
     "en": {
         "triage": [
@@ -114,6 +130,18 @@ CAPTIONS = {
             "It only sends once you type the company name",
         ],
         "start": ["One command starts the app and opens the browser"],
+        "tour": [
+            "Home: what's waiting for you today",
+            "To review: every job with its explained score",
+            "A approves the job",
+            "D discards it, with a reason",
+            "Approved: your agent writes the CV and the app checks every line",
+            "Another template and colour, in seconds",
+            "The app fills the form and shows where each answer comes from",
+            "Nothing is sent until you confirm",
+            "Processes: every application, from sent to offer",
+            "Funnel: which sources, roles and templates work",
+        ],
     },
 }
 
@@ -264,6 +292,13 @@ def scene_profile(page: Page) -> None:
     pause(page, 2400)
 
 
+def type_company(dialog: Locator) -> None:
+    """Escribe, para confirmar el envío, la empresa que nombra el título del diálogo."""
+    prefix = text("apply:submit.title", company="")
+    company = dialog.get_by_role("heading").first.inner_text().removeprefix(prefix).strip()
+    dialog.get_by_role("textbox").first.press_sequentially(company.split()[0], delay=90)
+
+
 def scene_apply(page: Page) -> None:
     goto(page, f"/jobs/{CV_JOB}", 1200)
     smooth_scroll(page, top_of(page, "#candidatura"))
@@ -284,8 +319,109 @@ def scene_apply(page: Page) -> None:
     send.click()
     pause(page, 1000)
     dialog = page.get_by_role("dialog")
-    dialog.get_by_role("textbox").first.press_sequentially("Brétema", delay=90)
+    type_company(dialog)
     pause(page, 2400)
+
+
+def prepare_application(page: Page) -> None:
+    """Rellena antes de grabar el formulario de `CV_JOB`: así el vídeo no espera al worker."""
+    goto(page, f"/jobs/{CV_JOB}", 800)
+    section = page.locator("#candidatura")
+    send = section.get_by_role("button", name=text("apply:review.send"), exact=True)
+    if send.count():
+        return
+    prepare = section.get_by_role("button", name=text("apply:prepare.prepare"))
+    again = section.get_by_role("button", name=text("apply:prepare.again"))
+    prepare.or_(again).first.click()
+    send.wait_for(timeout=180_000)
+
+
+def nav(page: Page, entry: str) -> None:
+    """Va a otra página con el menú lateral: sin recargar, y sin un fotograma en blanco."""
+    menu = page.get_by_role("navigation")
+    menu.get_by_role("link", name=text(f"nav:entries.{entry}")).first.click()
+    loaded(page)
+
+
+def loaded(page: Page) -> None:
+    page.wait_for_load_state("networkidle")
+    page.wait_for_function("() => !document.querySelector('[data-slot=skeleton]')", timeout=30_000)
+    pause(page, 600)
+
+
+def scene_tour(page: Page) -> None:
+    """El recorrido de la portada: de la oferta nueva a la candidatura y el seguimiento."""
+    goto(page, "/", 800)
+    loaded(page)
+    caption(page, 0)
+    pause(page, 2600)
+
+    nav(page, "triage")
+    caption(page, 1)
+    pause(page, 1800)
+    for key in ("j", "j"):
+        page.keyboard.press(key)
+        pause(page, 800)
+    caption(page, 2)
+    pause(page, 700)
+    page.keyboard.press("a")
+    pause(page, 1800)
+    caption(page, 3)
+    page.keyboard.press("d")
+    dialog = page.get_by_role("dialog")
+    dialog.wait_for()
+    pause(page, 900)
+    page.keyboard.press("2")
+    pause(page, 900)
+    page.keyboard.press("Enter")
+    pause(page, 1800)
+
+    # La ficha de una oferta con CV, sin recargar: el router de la UI escucha `popstate`.
+    page.evaluate(f"history.pushState({{}}, '', '/jobs/{CV_JOB}');"
+                  " dispatchEvent(new PopStateEvent('popstate'))")
+    loaded(page)
+    top = top_of(page, "#cv")
+    smooth_scroll(page, top)
+    caption(page, 4)
+    pause(page, 2800)
+    caption(page, 5)
+    form = page.locator("#cv form:has(input[name=template])")
+    form.locator("label:has(input[value='moderna-2col'])").click()
+    pause(page, 700)
+    form.locator("input[name=accent]").nth(1).check(force=True)
+    pause(page, 700)
+    form.locator("button[type=submit]").click()
+    page.wait_for_function(
+        "() => !document.querySelector('#cv form button[type=submit]').disabled", timeout=120_000
+    )
+    smooth_scroll(page, top + 650)
+    pause(page, 2000)
+
+    section = page.locator("#candidatura")
+    smooth_scroll(page, top_of(page, "#candidatura") + 380)
+    caption(page, 6)
+    pause(page, 3000)
+    caption(page, 7)
+    send = section.get_by_role("button", name=text("apply:review.send"), exact=True)
+    send.scroll_into_view_if_needed()
+    send.click()
+    pause(page, 900)
+    type_company(page.get_by_role("dialog"))
+    pause(page, 2000)
+
+    page.keyboard.press("Escape")
+    pause(page, 400)
+    nav(page, "processes")
+    caption(page, 8)
+    pause(page, 3000)
+    nav(page, "funnel")
+    page.get_by_text(text("funnel:steps.triaged")).first.wait_for(timeout=30_000)
+    pause(page, 500)
+    caption(page, 9)
+    pause(page, 3200)
+
+
+SETUP = {"tour": prepare_application}
 
 
 TERMINAL = """<!doctype html><meta charset="utf-8"><style>
@@ -335,13 +471,16 @@ def ffmpeg() -> str:
         return found
 
 
-def to_webp(webm: Path, target: Path) -> None:
-    """El `.webm` a WebP animado: sin el primer fotograma en blanco, en bucle."""
+def to_webp(webm: Path, target: Path, width: int, fps: int, quality: int) -> None:
+    """El `.webm` a WebP animado: sin el primer fotograma en blanco, en bucle.
+
+    `mpdecimate` quita los fotogramas repetidos (las pausas), que es lo que más pesa.
+    """
     subprocess.run(
         [
             ffmpeg(), "-y", "-loglevel", "error", "-ss", "1.2", "-i", str(webm),
-            "-vf", f"fps={FPS},scale={WIDTH}:-1:flags=lanczos",
-            "-c:v", "libwebp_anim", "-lossless", "0", "-q:v", str(QUALITY),
+            "-vf", f"fps={fps},scale={width}:-1:flags=lanczos,mpdecimate", "-fps_mode", "vfr",
+            "-c:v", "libwebp_anim", "-lossless", "0", "-q:v", str(quality),
             "-compression_level", "6", "-loop", "0", str(target),
         ],
         check=True,
@@ -356,29 +495,39 @@ SCENES = {
     "profile": scene_profile,
     "apply": scene_apply,
     "start": scene_start,
+    "tour": scene_tour,
 }
+
+
+def new_context(browser: Browser, video_dir: Path | None) -> BrowserContext:
+    ctx = browser.new_context(
+        viewport=SIZE,
+        locale="en-GB" if LANG == "en" else "es-ES",
+        record_video_dir=str(video_dir) if video_dir else None,
+        record_video_size=SIZE if video_dir else None,
+    )
+    ctx.add_init_script(
+        f"try {{ localStorage.setItem('cai-language', '{LANG}');"
+        " localStorage.setItem('cai-theme', 'light') } catch {}"
+    )
+    ctx.route(
+        f"{API}/**",
+        lambda route: route.continue_(
+            headers={**route.request.headers, "origin": "http://127.0.0.1:5173"}
+        ),
+    )
+    return ctx
 
 
 def main() -> None:
     raw = Path(tempfile.mkdtemp(prefix="cai-rec-"))
     with sync_playwright() as p:
         browser = p.chromium.launch(args=["--disable-web-security"])
-        ctx = browser.new_context(
-            viewport=SIZE,
-            locale="en-GB" if LANG == "en" else "es-ES",
-            record_video_dir=str(raw),
-            record_video_size=SIZE,
-        )
-        ctx.add_init_script(
-            f"try {{ localStorage.setItem('cai-language', '{LANG}');"
-            " localStorage.setItem('cai-theme', 'light') } catch {}"
-        )
-        ctx.route(
-            f"{API}/**",
-            lambda route: route.continue_(
-                headers={**route.request.headers, "origin": "http://127.0.0.1:5173"}
-            ),
-        )
+        if SCENE in SETUP:
+            ctx = new_context(browser, None)
+            SETUP[SCENE](ctx.new_page())
+            ctx.close()
+        ctx = new_context(browser, raw)
         page = ctx.new_page()
         SCENES[SCENE](page)
         video = page.video
@@ -388,7 +537,7 @@ def main() -> None:
         shutil.move(video.path(), webm)
         browser.close()
     target = OUT / f"{SCENE}.webp"
-    to_webp(webm, target)
+    to_webp(webm, target, *SHARP.get(SCENE, (WIDTH, FPS, QUALITY)))
     print("ok", target, f"{target.stat().st_size // 1024} KB", "· webm:", webm)
 
 

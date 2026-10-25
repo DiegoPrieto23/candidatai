@@ -72,7 +72,13 @@ instantánea limpia), siguiendo **solo** `docs/EMPEZAR.md` en el navegador, sin 
 Al hacer push de `fase/28-lanzamiento-repo`, GitHub ya enseña el README de la rama en
 `https://github.com/DiegoPrieto23/candidatai/tree/fase/28-lanzamiento-repo`. Míralo ahí:
 
-- [ ] En un portátil, la frase, la animación y los tres botones se ven sin hacer scroll.
+- [ ] En un portátil, la frase y el principio del recorrido animado se ven sin hacer scroll; los tres
+  botones, justo debajo.
+- [ ] El recorrido (unos 50 s) se ve nítido y se entiende sin sonido: aprobar y descartar, el CV,
+  la candidatura parada antes de enviar, Procesos y Embudo. Ningún fotograma en blanco ni cargando.
+- [ ] El banner tiene los ocho pasos en dos filas y ya no tiene el recuadro de `cai status`.
+- [ ] Ni los README ni `docs/` dicen «triaje» o «triage» como palabra (el código y `dev/` sí, en
+  nombres como `pending_triage`).
 - [ ] Cada botón lleva a su sección («Windows», «macOS and Linux», «Docker»), en los dos README.
 - [ ] Los tres distintivos (versión, CI y licencia) enseñan datos, no «invalid» ni «not found».
 - [ ] La nota de madurez sale como un recuadro azul («Note»).

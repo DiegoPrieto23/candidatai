@@ -377,7 +377,7 @@ Cuándo se comprueba:
 
 Si puede estar cerrada, la ficha lo dice con el motivo y la fecha y ofrece **«Descartar»** (con el
 motivo nuevo «Ya no está publicada», `closed`), **«Sigue abierta»** (quita el aviso y ese mismo
-motivo ya no vuelve a avisar, hasta que una comprobación la vea abierta) y «Comprobar otra vez». La bandeja y el triaje la marcan «¿Cerrada?».
+motivo ya no vuelve a avisar, hasta que una comprobación la vea abierta) y «Comprobar otra vez». La bandeja y «Por revisar» la marcan «¿Cerrada?».
 La primera vez se registra el evento `closure_suspected`, que no cambia la etapa.
 
 ### Republicadas
@@ -392,7 +392,7 @@ y la misma ubicación en al menos `reposts.min_count` días distintos (2):
 - varias publicaciones el mismo día suelen ser varias ubicaciones: no cuentan;
 - la misma oferta en varios portales (InfoJobs e Indeed) no es republicar: no cuenta.
 
-La bandeja y el triaje muestran «Republicada ×N» (las fechas, al pasar el ratón) y la ficha una
+La bandeja y «Por revisar» muestran «Republicada ×N» (las fechas, al pasar el ratón) y la ficha una
 nota. Puede ser una oferta difícil de cubrir o una que el portal renueva sola: decides tú.
 
 ## Búsqueda ampliada (fase 16)

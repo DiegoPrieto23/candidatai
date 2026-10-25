@@ -22,7 +22,7 @@ primer vistazo con la demo, tu perfil y tu primera búsqueda. Para todo lo demá
 |---|---|---|
 | 💻 | **Un ordenador** con Windows 11, macOS o Linux, y conexión a internet | Windows es lo más probado; macOS y Linux son nuevos |
 | 📦 | **La app** (este proyecto, gratis) | Guarda tus ofertas, tu perfil, tus CVs y tus procesos, aplica las reglas y hace el trabajo automático |
-| 🤖 | **Un agente de IA** | Lee las ofertas, valora el encaje y redacta tus CVs y cartas. **La app nunca llama a una IA por su cuenta**, así que sin agente puedes triar y hacer el seguimiento, pero no redactar |
+| 🤖 | **Un agente de IA** | Lee las ofertas, valora el encaje y redacta tus CVs y cartas. **La app nunca llama a una IA por su cuenta**, así que sin agente puedes revisar ofertas y hacer el seguimiento, pero no redactar |
 
 Un **agente de IA** es un programa que habla con un modelo de IA y puede usar herramientas: aquí,
 las de CandidatAI. Funciona en una ventana de terminal, y los botones de CandidatAI te lo abren con
@@ -234,7 +234,7 @@ o su búsqueda pública sin tu cuenta) solo pasa si lo activas, y es bajo tu res
 [sección 1](#1-lo-que-necesitas)): nada con un modelo gratuito o local, unos 20 US$ al mes con
 Claude Pro o ChatGPT Plus.
 
-**¿Puedo usarla sin agente?** En parte: puedes añadir y triar ofertas, seguir tus procesos, ver el
+**¿Puedo usarla sin agente?** En parte: puedes añadir, aprobar y descartar ofertas, seguir tus procesos, ver el
 calendario y el embudo, editar tu perfil y volver a renderizar un CV con otro diseño. Leer ofertas y
 redactar CVs necesita el agente.
 
