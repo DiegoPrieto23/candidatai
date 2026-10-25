@@ -10,6 +10,7 @@ Falla (código 1) si:
   (p. ej. un skill renombrado o borrado), salvo las excepciones de `NOT_SKILLS`;
 - `FEATURES.md` y `FUNCIONALIDADES.md` no tienen las mismas filas, sección a sección, con lo mismo
   en la columna «Dónde»;
+- una página no tiene ninguna fila con captura (una imagen en la columna «Captura») en cada lista;
 - `README.md` y `README.es.md` no tienen las mismas secciones (niveles de encabezado en el mismo
   orden) ni el mismo número de bloques desplegables.
 """
@@ -111,6 +112,16 @@ def _rows(text: str) -> list[tuple[int, int, tuple[str, ...]]]:
     return rows
 
 
+def _captured(text: str) -> set[str]:
+    """Las páginas (`/ruta` en «Dónde») con alguna fila que enlaza una imagen en «Captura»."""
+    found: set[str] = set()
+    for match in ROW.finditer(text):
+        cells = match.group(1).split("|")
+        if len(cells) > 2 and "img/" in cells[2]:
+            found.update(t for t in re.findall(r"`([^`]+)`", cells[1]) if t.startswith("/"))
+    return found
+
+
 def check(root: Path = ROOT) -> list[str]:
     errors: list[str] = []
     all_skills = skills(root)
@@ -129,6 +140,9 @@ def check(root: Path = ROOT) -> list[str]:
                 f"fila {en_row[1] + 1}: {en_row[2]} frente a {es_row[2]} (columna «Dónde»)"
             )
             break
+    for rel in LISTS.values():
+        shown = _captured(_read(root, rel))
+        errors += [f"{rel}: la página `{p}` no tiene captura" for p in pages(root) if p not in shown]
     for lang, rel in READMES.items():
         if LISTS[lang] not in _read(root, rel):
             errors.append(f"{rel}: no enlaza a {LISTS[lang]}")

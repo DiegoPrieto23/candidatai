@@ -1,4 +1,9 @@
-"""Genera los SVG del README (banner y «cómo funciona») en inglés y español."""
+"""Genera los SVG del README (banner y «cómo funciona») en inglés y español, y la imagen social.
+
+Uso (desde backend/, que tiene Playwright): python illustrations.py OUT_DIR
+La imagen social (`social-en.png`, 1280×640) es la que GitHub enseña al compartir el enlace del
+repositorio: se sube a mano en Settings → Social preview.
+"""
 
 import sys
 from pathlib import Path
@@ -12,35 +17,37 @@ TEXT = {
     "en": {
         "tagline": "Your job search, end to end, on your own machine.",
         "sub": "Your AI agent does the thinking. The app keeps the state, the rules and the checks.",
-        "steps": ["Find", "Triage", "Tailor CV", "Apply", "Follow up", "Offer"],
+        "steps": ["Find", "Triage", "Tailor CV", "Apply", "Follow up", "Interview", "Offer"],
         "how_title": "How it works",
         "lanes": ["You", "Your AI agent", "CandidatAI"],
         "cards": [
             # (paso, quién: 0 tú, 1 agente, 2 app, título, detalle)
-            ("1", 2, "Jobs come in", "ATS APIs, email alerts,\nbrowser button, portals"),
+            ("1", 2, "Jobs come in", "ATS APIs, alerts from your\nmailboxes, button, portals"),
             ("2", 1, "Extract & assess", "structured data and a\nreasoned fit verdict"),
             ("3", 0, "Triage", "approve or discard with\nan explained 0-100 score"),
             ("4", 1, "Write the CV", "every line cites evidence\nfrom your profile"),
             ("5", 2, "Verify & render", "independent check, your\ntemplate, PDF in seconds"),
             ("6", 0, "Apply", "the app fills the form;\nonly you press Send"),
-            ("7", 2, "Track", "kanban, follow-ups,\ninterviews, funnel"),
+            ("7", 2, "Track", "kanban, company replies,\nfollow-ups, funnel"),
+            ("8", 1, "Interviews", "prep plan, mock interview,\nnegotiation script"),
         ],
         "foot": "The app never calls an LLM · nothing leaves without your confirmation · your data stays in data/",
     },
     "es": {
         "tagline": "Tu búsqueda de empleo, de principio a fin, en tu equipo.",
         "sub": "Tu agente de IA pone el criterio. La app guarda el estado, las reglas y las comprobaciones.",
-        "steps": ["Buscar", "Triar", "CV a medida", "Postular", "Seguir", "Oferta"],
+        "steps": ["Buscar", "Triar", "CV a medida", "Postular", "Seguir", "Entrevista", "Oferta"],
         "how_title": "Cómo funciona",
         "lanes": ["Tú", "Tu agente de IA", "CandidatAI"],
         "cards": [
-            ("1", 2, "Entran ofertas", "APIs de ATS, alertas por\ncorreo, botón, portales"),
+            ("1", 2, "Entran ofertas", "APIs de ATS, alertas de tus\nbuzones, botón, portales"),
             ("2", 1, "Extrae y valora", "datos estructurados y\nuna valoración razonada"),
             ("3", 0, "Triaje", "apruebas o descartas con\nun score 0-100 explicado"),
             ("4", 1, "Redacta el CV", "cada línea cita su\nevidencia de tu perfil"),
             ("5", 2, "Verifica y renderiza", "comprobación independiente,\ntu plantilla, PDF en segundos"),
             ("6", 0, "Candidatura", "la app rellena el formulario;\nsolo tú pulsas Enviar"),
-            ("7", 2, "Seguimiento", "kanban, seguimientos,\nentrevistas, embudo"),
+            ("7", 2, "Seguimiento", "kanban, respuestas,\nseguimientos, embudo"),
+            ("8", 1, "Entrevistas", "plan, simulacro y\nguion de negociación"),
         ],
         "foot": "La app nunca llama a un LLM · nada sale sin tu confirmación · tus datos se quedan en data/",
     },
@@ -115,7 +122,7 @@ LANE_ICONS = [
 
 def how(lang: str) -> str:
     t = TEXT[lang]
-    w, h = 1400, 520
+    w, h = 1560, 520
     lane_y = [96, 226, 356]
     lane_h = 112
     parts = [
@@ -187,9 +194,34 @@ def how(lang: str) -> str:
     return "\n".join(parts)
 
 
+def social() -> str:
+    """El banner en inglés con el formato de la imagen social de GitHub (1280×640)."""
+    inner = banner("en").split(">", 1)[1].rsplit("</svg>", 1)[0]
+    return (
+        '<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640">'
+        f'<rect width="1280" height="640" fill="{TEAL}"/>'
+        f'<g transform="translate(0,140)">{inner}</g>'
+        f'<text x="96" y="560" font-family="{FONT}" font-size="22" fill="#D7F2EE">'
+        "Open source · MIT · works with Claude Code, Codex, OpenCode, Qwen Code…</text>"
+        "</svg>"
+    )
+
+
+def render_png(svg: str, target: Path) -> None:
+    from playwright.sync_api import sync_playwright  # noqa: PLC0415
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page(viewport={"width": 1280, "height": 640})
+        page.set_content(f"<body style='margin:0'>{svg}</body>")
+        page.screenshot(path=str(target))
+        browser.close()
+
+
 OUT.mkdir(parents=True, exist_ok=True)
 for lang in ("en", "es"):
     (OUT / f"banner-{lang}.svg").write_text(banner(lang), encoding="utf-8")
     name = "how-it-works" if lang == "en" else "como-funciona"
     (OUT / f"{name}-{lang}.svg").write_text(how(lang), encoding="utf-8")
+render_png(social(), OUT / "social-en.png")
 print("ok")

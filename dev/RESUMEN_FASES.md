@@ -380,6 +380,18 @@ La carta es un documento propio, con sus indicaciones, su verificación y sus re
 - Para agentes y terminal: `get_received_offer` ↔ `jh received-offers show`.
 
 
+## 28.3 · El README, al día con la app — 2026-10-25 · Claude Code (Opus 5.5)
+- **Todo lo que hace, en una lista:** `docs/FEATURES.md` y `docs/FUNCIONALIDADES.md` recorren cada
+  página y cada skill con su captura; un script en la CI falla si una página o un skill no está, o
+  si una página no tiene captura.
+- **Medios nuevos en los dos idiomas:** capturas de cada página en claro (y las principales en
+  oscuro) y seis animaciones cortas con leyenda (triaje, descartar, añadir un buzón, CV, Mi perfil y
+  candidatura asistida), todas en WebP y sacadas de la demo. Banner, diagrama e imagen social
+  rehechos. Sin vídeos en el repositorio.
+- **La demo trae alertas:** 65 ofertas, 5 de ellas de dos buzones de alertas, para que «Alertas» no
+  salga vacía.
+- Para regenerarlos: `scripts/readme_media/all.py` (ver su `README.md`).
+
 ## 27.2 · Tu experiencia, de un vistazo — 2026-10-23 · Claude Code (Opus 5.5)
 - **Empresas plegadas:** «Mi perfil → Experiencia» enseña solo la cabecera de cada empresa (puesto,
   fechas, ciudad, número de logros); se despliegan una a una o todas a la vez, y se abren solas la

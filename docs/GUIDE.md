@@ -210,9 +210,9 @@ Without it the score works the same, minus that component.
 
 ## 3. Try the demo
 
-The demo is a fictional candidate with 60 jobs, 8 weeks of history and 2 CVs. It lives in its own
-folder and never touches your data. There are two: in English (a candidate in Dublin) and in
-Spanish (a candidate in Galicia).
+The demo is a fictional candidate with 65 jobs (5 of them from two job-alert mailboxes), 8 weeks
+of history and 2 CVs. It lives in its own folder and never touches your data. There are two: in
+English (a candidate in Dublin) and in Spanish (a candidate in Galicia).
 
 It also brings what she and her agent would have left, so no screen is empty: fit assessments, a
 cover letter and screening answers for one job, a LinkedIn message and a follow-up, two company

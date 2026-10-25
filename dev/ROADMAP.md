@@ -98,9 +98,9 @@ Estados: ⏳ pendiente · 🚧 en curso · ✅ hecha.
 | 27.5 | ↳ Preferencias de búsqueda | ✅ | «Mi perfil → Búsqueda» en bloques y alineada, con años mínimos, sueldo mínimo privado, palabras que descartan, contrato y tipo de empresa |
 | 27.6 | ↳ Descartar desde la Bandeja | ✅ | Botón «Descartar» con «Deshacer» en «Por completar» y «Por extraer», y «Cerrada» con su fecha de cierre, ordenable |
 | 28 | Repo público: raíz limpia, release, medios nuevos y lanzamiento | ⏳ | Primera release que instala de verdad, lo interno en `dev/`, medios y README al día con todas las funcionalidades, portada y ajustes de GitHub, y borradores de difusión |
-| 28.1 | ↳ Auditoría y primera release | ⏳ (auditoría, suma y CHANGELOG hechos; falta publicar `v0.1.0` y probar los instaladores contra ella) | Historial auditado, `v0.1.0` publicada con suma de verificación y los instaladores probados contra ella |
+| 28.1 | ↳ Auditoría y primera release | ⏳ (`v0.1.0` publicada el 2026-10-24 y probada en un Windows 11 limpio; faltan Linux/WSL, Docker y actualizar sin perder datos) | Historial auditado, `v0.1.0` publicada con suma de verificación y los instaladores probados contra ella |
 | 28.2 | ↳ Raíz limpia | ✅ (falta comprobar en GitHub la barra de lenguajes tras el push) | Encargos, pruebas, ROADMAP y ADR a `dev/`, enlaces comprobados y la barra de lenguajes de GitHub bien |
-| 28.3 | ↳ Medios y funcionalidades | ⏳ (28.3a ✅: lista de funcionalidades y comprobación; falta la 28.3b, medios) | Capturas, GIF y vídeos nuevos (en/es), `FEATURES.md` y un script que impide funciones sin contar |
+| 28.3 | ↳ Medios y funcionalidades | ✅ | Capturas y animaciones nuevas (en/es, sin vídeos), `FEATURES.md` y un script que impide funciones sin contar |
 | 28.4 | ↳ Portada y GitHub | ⏳ | Portada con gancho, «Por qué CandidatAI», guía para quien no es técnico, temas, imagen social y plantillas |
 | 28.5 | ↳ Lanzamiento | ⏳ | Borradores por canal, listas «awesome», preguntas esperables y plan de dos semanas |
 
@@ -3551,3 +3551,29 @@ decisiones tomadas y deuda técnica pendiente. -->
 - **Deuda:** la columna de capturas está a medias hasta la 28.3b (páginas sin captura: Alertas,
   Calendario, Respuestas, Mi perfil, alta de oferta). La 28.3b puede hacer que el script exija una
   captura por página.
+
+### 28.3b · Medios nuevos — 2026-10-25 · Claude Code (Opus 5.5)
+- **Por qué:** las capturas, los GIF y el vídeo eran de la fase 23 y no enseñaban media app
+  (Alertas con buzones, Calendario, Respuestas, Mi perfil, descartar desde la Bandeja…).
+- **Hecho:**
+  - `scripts/readme_media/`: `screenshots.py` (24 capturas por idioma a 1600×1000 en WebP, 5 en
+    oscuro), `recordings.py` (seis escenas de menos de 20 s con leyenda: `triage`, `discard`,
+    `mailbox`, `cv`, `profile` y `apply`, en WebP animado), `all.py` (todo un idioma de una vez,
+    con su demo, API y worker) y `apply-form.html` (formulario local para `apply`, con
+    `CAI_APPLIER_ALLOW_LOOPBACK=1` solo en esa demo). Su `README.md`, reescrito;
+  - banner, diagrama «cómo funciona» e imagen social (`social-en.png`, 1280×640) rehechos;
+  - los dos README y las dos listas apuntan a los medios nuevos, con `alt` en cada imagen; los
+    README suman «Candidatura asistida», «Alertas y respuestas» y «Mi perfil», y pierden el vídeo
+    y `start.gif`. Borrados los PNG, GIF y MP4 viejos (el historial no se reescribe);
+  - `check_readme_coverage.py` exige una captura por página en cada lista;
+  - la demo trae 5 ofertas de alertas en dos buzones (65 en total), para que «Alertas» no salga
+    vacía.
+- **Decisiones (del usuario):** nada de vídeos ni YouTube; al final, tampoco tour. Medios
+  generados y revisados por el usuario fuera de Claude Code.
+- **Revisión (rol `reviewer`):** sin bloqueantes. Aplicado: quitar de `PENDIENTES.md` el punto del
+  vídeo. Sin aplicar: la entrada de la 23.5b sigue nombrando los medios viejos (es historia).
+- **Deuda:** `docs/img` pesa 7,98 MB, al límite de los 8 MB del presupuesto: una captura más pide
+  comprimir las animaciones. La escena `start` sigue en `recordings.py` pero no se usa.
+- 2999 tests de backend en verde en cuatro tandas (14 saltados, los de macOS y Linux); uno que
+  esperaba la demo de 60 ofertas, corregido. Sin cambios en el frontend. Ruff, `sync_agents.py
+  --check`, `check_links.py`, `check_readme_coverage.py` y `release_notes.py --check` en verde.

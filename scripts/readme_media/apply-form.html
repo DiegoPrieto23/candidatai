@@ -1,0 +1,38 @@
+<!doctype html>
+<!-- Formulario ficticio para la escena `apply` de recordings.py (fase 28.3b): todo lo obligatorio
+     sale del perfil y del paquete, así que «Enviar» queda activo. Nunca se envía: no hay servidor. -->
+<html lang="en"><head><meta charset="utf-8"><title>Data Engineer · Application (fictitious)</title>
+<style>body{font:15px system-ui,sans-serif;max-width:640px;margin:40px auto}label,.label{display:block;margin-top:14px}</style>
+</head>
+<body>
+<h1>Data Engineer</h1>
+<p>Fictitious company. Apply below.</p>
+<form id="application-form" action="/submit" method="post" enctype="multipart/form-data">
+  <label for="first_name">First Name*</label>
+  <input id="first_name" name="first_name" required>
+  <label for="last_name">Last Name*</label>
+  <input id="last_name" name="last_name" required>
+  <label for="email">Email*</label>
+  <input id="email" name="email" type="text" required>
+  <label for="phone">Phone</label>
+  <input id="phone" name="phone" type="tel">
+  <div class="file-upload">
+    <div class="label" id="resume-label">Resume/CV*</div>
+    <input type="file" id="resume" name="resume" aria-labelledby="resume-label" required>
+  </div>
+  <div class="file-upload">
+    <div class="label" id="cover-label">Cover Letter</div>
+    <input type="file" id="cover_letter" name="cover_letter" aria-labelledby="cover-label">
+  </div>
+  <label for="q_linkedin">LinkedIn Profile</label>
+  <input id="q_linkedin" name="q_linkedin">
+  <label for="gender">Gender</label>
+  <select id="gender" name="gender">
+    <option value="">Select...</option><option>Female</option><option>Male</option>
+    <option>Decline to self-identify</option>
+  </select>
+  <p><input type="checkbox" id="privacy" name="privacy" required>
+  <label for="privacy" style="display:inline">I agree to the privacy policy*</label></p>
+  <button type="submit">Submit Application</button>
+</form>
+</body></html>

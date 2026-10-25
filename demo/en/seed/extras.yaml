@@ -195,3 +195,39 @@ style_sample:
 
     Best,
     Aoife
+
+# Job alerts (phase 28.3b): two folder mailboxes (`inbox/<folder>/`) with one alert each; their jobs
+# come in as summaries in "Alerts". Made-up companies, links that are never opened.
+alert_mailboxes:
+  - label: LinkedIn alerts
+    folder: alerts-linkedin
+    sender: LinkedIn Job Alerts <jobalerts-noreply@linkedin.com>
+    subject: "\"Data Engineer\": 3 new jobs in Ireland"
+    card: linkedin
+    jobs:
+      - title: Data Engineer
+        company: Liffey Data Works
+        location: Dublin, County Dublin, Ireland (Hybrid)
+        url: https://www.linkedin.com/comm/jobs/view/4100000001/
+      - title: Analytics Engineer (dbt)
+        company: Claddagh Software
+        location: Galway, County Galway, Ireland
+        url: https://www.linkedin.com/comm/jobs/view/4100000002/
+      - title: Junior Data Engineer
+        company: Shannon Insurance
+        location: Limerick, County Limerick, Ireland (Remote)
+        url: https://www.linkedin.com/comm/jobs/view/4100000003/
+  - label: Indeed alerts
+    folder: alerts-indeed
+    sender: Indeed <alert@indeed.com>
+    subject: New jobs for your search "data engineer"
+    card: generic
+    jobs:
+      - title: Data Engineer (Python/Airflow)
+        company: Burren Consulting
+        location: Cork
+        url: https://ie.indeed.com/viewjob?jk=1a2b3c4d5e6f7081
+      - title: BI Developer (Power BI)
+        company: Boyne Logistics
+        location: Dublin
+        url: https://ie.indeed.com/viewjob?jk=2b3c4d5e6f708192

@@ -74,7 +74,7 @@ def test_seed_fills_a_demo_folder(tmp_path: Path, isolated_env: Path) -> None:
     target = tmp_path / "data-demo"
     summary = demo.seed(target, now=NOW)
 
-    assert summary.jobs == 60
+    assert summary.jobs == 65  # 60 de la historia y 5 de las alertas por correo
     assert summary.cvs == 2
     assert summary.warnings == []
     assert (target / DEMO_MARKER).is_file()
@@ -89,6 +89,14 @@ def test_seed_fills_a_demo_folder(tmp_path: Path, isolated_env: Path) -> None:
     with demo.use_data_dir(target), session_scope() as session:
         assert get_settings().demo_mode
         assert status.get_status(session).demo_mode
+        # «Alertas» con dos buzones de carpeta y sus ofertas como resumen (fase 28.3b).
+        boxes = mail_sources.list_mail_sources(session).sources
+        assert [(box.label, box.kind) for box in boxes] == [
+            ("Alertas de LinkedIn", "folder"),
+            ("Alertas de InfoJobs", "folder"),
+        ]
+        summaries = session.scalars(select(Job).where(Job.detail_level == "summary")).all()
+        assert len(summaries) == 5
         # Historial dentro de las 8 semanas; solo los CVs (hechos al sembrar) llevan la hora real.
         oldest = NOW - timedelta(weeks=demo.WEEKS)
         story = session.scalars(select(Event.occurred_at).where(Event.type.not_like("cv_%"))).all()
@@ -210,7 +218,7 @@ def test_cli_demo_seed(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     target = tmp_path / "data-demo"
     result = runner.invoke(cli.app, ["demo", "seed", "--dir", str(target)])
     assert result.exit_code == 0, result.output
-    assert "60 ofertas" in result.stdout
+    assert "65 ofertas" in result.stdout
     assert "CAI_DATA_DIR" in result.stdout
 
     again = runner.invoke(cli.app, ["demo", "seed", "--dir", str(target), "--json"])
@@ -256,13 +264,15 @@ def test_seed_in_english(tmp_path: Path, isolated_env: Path) -> None:
     target = tmp_path / "data-demo-en"
     summary = demo.seed(target, now=NOW, lang="en")
 
-    assert summary.jobs == 60
+    assert summary.jobs == 65  # 60 de la historia y 5 de las alertas por correo
     assert summary.cvs == 2
     assert summary.warnings == []
     assert "Aoife Brennan" in (target / "profile.yaml").read_text(encoding="utf-8")
     with demo.use_data_dir(target), session_scope() as session:
         jobs = session.scalars(select(Job)).all()
-        assert all("fictitious company" in job.raw_text for job in jobs[3:])  # salvo las fijas
+        # Salvo las fijas y las de las alertas, que solo traen título, empresa y ubicación.
+        full = [job for job in jobs[3:] if job.detail_level == "full"]
+        assert all("fictitious company" in job.raw_text for job in full)
         names = {s.kind: s.name for s in session.scalars(select(Source))}
         assert names["manual_url"] == "Added by URL"
         assert names["email_alerts"] == "Email alerts"

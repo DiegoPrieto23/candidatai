@@ -540,7 +540,7 @@ def demo_seed(
     ),
     as_json: bool = JSON_OPTION,
 ) -> None:
-    """Crea una carpeta de datos con 60 ofertas ficticias, 8 semanas de historial y 2 CVs."""
+    """Crea una carpeta de datos con 65 ofertas ficticias, 8 semanas de historial y 2 CVs."""
     from app.services import container, demo
     from app.services.evals.cv import CvEvalFileError
 
