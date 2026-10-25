@@ -12,7 +12,7 @@ allowed-tools: mcp__candidatai__get_status mcp__candidatai__list_followups_due m
    - **Hoy y mañana**: entrevistas, pruebas y plazos, con hora (Europe/Madrid);
    - **Seguimientos vencidos**: empresa, puesto y días sin respuesta; ofrece redactar el mensaje de seguimiento;
    - **Por procesar**: cuántas en `pending_extraction` (sugiere el skill `process-jobs`) y las
-     5 mejores de triaje por score;
+     5 mejores por revisar, por score;
    - **Encargos**: si `get_status` trae `agent_requests` > 0, cuántos te dejó el usuario en la UI
      (sugiere el skill `handle-requests`);
    - **Semana**: nada si no hay novedades.

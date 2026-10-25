@@ -148,7 +148,7 @@ then you recreate the container (`docker compose up -d`).
 
 | | With Docker |
 |---|---|
-| UI, jobs, triage, tracking and funnel | Yes |
+| UI, jobs, review, tracking and funnel | Yes |
 | Job sources and email alerts (the worker) | Yes |
 | CVs and cover letters in PDF | Yes, with the html templates (`moderna-2col`…). The docx ones come out in Word only: there's no LibreOffice |
 | Your agent through MCP or `cai … --json` | Yes, from outside the container (below) |
@@ -325,9 +325,9 @@ memory it may close what it started.
 
 A typical day:
 
-1. Open **Home**: it tells you what's waiting (jobs to triage, CVs ready, overdue follow-ups).
+1. Open **Home**: it tells you what's waiting (jobs to review, CVs ready, overdue follow-ups).
 2. Ask your agent for `process-jobs` and `assess-fit`, or press their buttons in the UI.
-3. Triage in **To review**.
+3. Approve or discard in **To review**.
 4. `generate-cv` for the approved ones and, when you're ready, apply from the job page.
 5. `daily-summary` sums all of that up in one answer.
 
@@ -356,7 +356,7 @@ The worker runs the automatic sources every day at `connectors.daily_at`
    untrusted content: if it carries hidden text or phrases aimed at an AI, the job page warns you.
 2. **Assess:** the app computes the score and applies your hard filters; `assess-fit` adds a
    reasoned verdict.
-3. **Triage:** in **To review**, `J`/`K` to move, `A` to approve, `D` to discard (with a reason)
+3. **Review:** in **To review**, `J`/`K` to move, `A` to approve, `D` to discard (with a reason)
    and `O` to open the job page. It can be undone.
 4. **CV:** `generate-cv 42` writes the content, the code validates and renders it, and the
    `verifier` role reviews it. On the job page you change template, photo, colour and sections
@@ -417,7 +417,7 @@ Many pages have buttons that open your agent with the instruction already writte
     weighs; the job page shows what was spent on that job and the funnel, per sent application and
     per interview. What you do in a terminal doesn't count: there the agent doesn't report usage.
   - **Threshold before spending:** `assess-fit` in the background only assesses jobs with a
-    minimum score (by default, the triage threshold minus 10; change it under **Cost**). Triage
+    minimum score (by default, the score threshold minus 10; change it under **Cost**). **To review**
     says why a job below it stays unassessed.
   - **Several at once:** one at a time by default. With `background_runs.max_parallel` (up to 4)
     in `config/policies.yaml` several run at once, never two for the same job; with
@@ -447,7 +447,7 @@ one” puts your preferences back as they were.
   IMAP (`CAI_IMAP_HOST`, `CAI_IMAP_PORT`, `CAI_IMAP_USER`, `CAI_IMAP_PASSWORD`, `CAI_IMAP_FOLDER`,
   `CAI_IMAP_REPLIES_FOLDER`), `CAI_BROWSER_CHANNEL` (`chrome` or `msedge` for assisted
   applications), `CAI_EMBEDDINGS=off`. Nothing is required.
-- **`config/policies.yaml`:** triage threshold, score weights, daily ingestion time, email polling,
+- **`config/policies.yaml`:** score threshold, score weights, daily ingestion time, email polling,
   limits for browser search and for LinkedIn's public search, "job closed" phrases… After changing
   the score, `cai match rescore` recalculates and `cai eval matching` measures the effect.
 - **Your profile:** preferences (roles, level, remote mode, locations, languages), default template,

@@ -11,20 +11,22 @@ from xml.sax.saxutils import escape
 
 OUT = Path(sys.argv[1])
 FONT = "'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
-MONO = "'Cascadia Code', Consolas, 'SF Mono', monospace"
 
 TEXT = {
     "en": {
         "tagline": "Your job search, end to end, on your own machine.",
         "sub": "Your AI agent does the thinking. The app keeps the state, the rules and the checks.",
-        "steps": ["Find", "Triage", "Tailor CV", "Apply", "Follow up", "Interview", "Offer"],
+        "steps": [
+            "Search job boards", "Assess fit", "Approve or discard", "Tailor CV",
+            "Apply", "Follow up", "Interview", "Offer",
+        ],
         "how_title": "How it works",
         "lanes": ["You", "Your AI agent", "CandidatAI"],
         "cards": [
             # (paso, quién: 0 tú, 1 agente, 2 app, título, detalle)
             ("1", 2, "Jobs come in", "ATS APIs, alerts from your\nmailboxes, button, portals"),
             ("2", 1, "Extract & assess", "structured data and a\nreasoned fit verdict"),
-            ("3", 0, "Triage", "approve or discard with\nan explained 0-100 score"),
+            ("3", 0, "Review","approve or discard with\nan explained 0-100 score"),
             ("4", 1, "Write the CV", "every line cites evidence\nfrom your profile"),
             ("5", 2, "Verify & render", "independent check, your\ntemplate, PDF in seconds"),
             ("6", 0, "Apply", "the app fills the form;\nonly you press Send"),
@@ -36,13 +38,16 @@ TEXT = {
     "es": {
         "tagline": "Tu búsqueda de empleo, de principio a fin, en tu equipo.",
         "sub": "Tu agente de IA pone el criterio. La app guarda el estado, las reglas y las comprobaciones.",
-        "steps": ["Buscar", "Triar", "CV a medida", "Postular", "Seguir", "Entrevista", "Oferta"],
+        "steps": [
+            "Buscar ofertas en portales", "Valorar encaje", "Aprobar o descartar", "CV a medida",
+            "Postular", "Seguir", "Entrevista", "Oferta",
+        ],
         "how_title": "Cómo funciona",
         "lanes": ["Tú", "Tu agente de IA", "CandidatAI"],
         "cards": [
             ("1", 2, "Entran ofertas", "APIs de ATS, alertas de tus\nbuzones, botón, portales"),
             ("2", 1, "Extrae y valora", "datos estructurados y\nuna valoración razonada"),
-            ("3", 0, "Triaje", "apruebas o descartas con\nun score 0-100 explicado"),
+            ("3", 0, "Revisar","apruebas o descartas con\nun score 0-100 explicado"),
             ("4", 1, "Redacta el CV", "cada línea cita su\nevidencia de tu perfil"),
             ("5", 2, "Verifica y renderiza", "comprobación independiente,\ntu plantilla, PDF en segundos"),
             ("6", 0, "Candidatura", "la app rellena el formulario;\nsolo tú pulsas Enviar"),
@@ -59,25 +64,29 @@ TEAL_LIGHT = "#5EEAD4"
 
 def banner(lang: str) -> str:
     t = TEXT[lang]
-    w, h = 1280, 360
+    w, h = 1280, 400
     chips = []
-    x = 96
+    # Dos filas de cuatro (fase 28.4): ocho pasos, algunos largos, no caben en una.
+    per_row = (len(t["steps"]) + 1) // 2
+    x, y = 96, 262
     for i, step in enumerate(t["steps"]):
         width = 34 + 10.5 * len(step)
+        if i and i % per_row == 0:
+            x, y = 62, y + 54  # la segunda fila empieza con la flecha que sigue a la primera
+        if i:
+            chips.append(
+                f'<path d="M{x + 8:.0f} {y + 20} h18 m-6 -6 l6 6 l-6 6" stroke="{TEAL_LIGHT}" '
+                f'stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'
+            )
+            x += 34
         chips.append(
-            f'<g transform="translate({x:.0f},262)">'
+            f'<g transform="translate({x:.0f},{y})">'
             f'<rect width="{width:.0f}" height="40" rx="20" fill="#ffffff" fill-opacity="0.12" '
             f'stroke="#ffffff" stroke-opacity="0.35"/>'
             f'<text x="{width / 2:.0f}" y="26" text-anchor="middle" font-size="17" '
             f'font-weight="600" fill="#ffffff">{escape(step)}</text></g>'
         )
         x += width
-        if i < len(t["steps"]) - 1:
-            chips.append(
-                f'<path d="M{x + 8:.0f} 282 h18 m-6 -6 l6 6 l-6 6" stroke="{TEAL_LIGHT}" '
-                f'stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'
-            )
-            x += 34
     return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img" aria-label="CandidatAI — {escape(t['tagline'])}">
   <rect width="{w}" height="{h}" rx="20" fill="{TEAL}"/>
   <g font-family="{FONT}">
@@ -91,13 +100,6 @@ def banner(lang: str) -> str:
     <text x="96" y="194" font-size="28" font-weight="600" fill="#ffffff">{escape(t['tagline'])}</text>
     <text x="96" y="230" font-size="19" fill="#D7F2EE">{escape(t['sub'])}</text>
     {''.join(chips)}
-  </g>
-  <g transform="translate(1010,110)" font-family="{MONO}" font-size="15" fill="#D7F2EE" fill-opacity="0.9">
-    <rect x="-24" y="-34" width="230" height="132" rx="12" fill="#06201E" fill-opacity="0.55" stroke="#ffffff" stroke-opacity="0.15"/>
-    <text y="0"><tspan fill="{TEAL_LIGHT}">$</tspan> cai status</text>
-    <text y="26">pending_triage  <tspan fill="#ffffff">8</tspan></text>
-    <text y="50">cv_ready        <tspan fill="#ffffff">2</tspan></text>
-    <text y="74">in_process      <tspan fill="#ffffff">6</tspan></text>
   </g>
 </svg>
 """
@@ -200,8 +202,8 @@ def social() -> str:
     return (
         '<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640">'
         f'<rect width="1280" height="640" fill="{TEAL}"/>'
-        f'<g transform="translate(0,140)">{inner}</g>'
-        f'<text x="96" y="560" font-family="{FONT}" font-size="22" fill="#D7F2EE">'
+        f'<g transform="translate(0,90)">{inner}</g>'
+        f'<text x="96" y="570"font-family="{FONT}" font-size="22" fill="#D7F2EE">'
         "Open source · MIT · works with Claude Code, Codex, OpenCode, Qwen Code…</text>"
         "</svg>"
     )

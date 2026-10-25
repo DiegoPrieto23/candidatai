@@ -141,7 +141,7 @@ def after_extraction(session: Session, job_id: int) -> HardFilterResult | None:
 
 def scoring_key() -> str:
     """Huella de la configuración con que se puntúa: versión del scorer, políticas de puntuación y
-    filtros (salvo el umbral de triaje, que no cambia el score), alias de skills y de puestos y
+    filtros (salvo el umbral de score, que no cambia el score), alias de skills y de puestos y
     modelo de embeddings (o ninguno). Instalar el extra `matching` o editar `policies.yaml` la
     cambia."""
     policies = get_policies()

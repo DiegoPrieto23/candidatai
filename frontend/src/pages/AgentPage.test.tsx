@@ -255,7 +255,7 @@ describe('Página «Agente» (fase 19)', () => {
       renderApp('/agente')
       const input = await screen.findByRole('spinbutton', { name: 'Score mínimo' })
       expect(input).toHaveValue(45)
-      expect(screen.getByText(/el umbral de triaje menos 10/)).toBeInTheDocument()
+      expect(screen.getByText(/el umbral de score menos 10/)).toBeInTheDocument()
       await userEvent.clear(input)
       await userEvent.type(input, '60')
       await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))

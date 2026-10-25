@@ -21,7 +21,7 @@ the demo, your profile and your first search. For everything else, the [user gui
 |---|---|---|
 | 💻 | **A computer** with Windows 11, macOS or Linux, and an internet connection | Windows is the most tested; macOS and Linux are new |
 | 📦 | **The app** (this project, free) | It keeps your jobs, profile, CVs and processes, applies the rules and does the automatic work |
-| 🤖 | **An AI agent** | It reads the postings, judges the fit and writes your CV and letters. **The app never calls an AI itself**, so without an agent you can triage and track, but not write |
+| 🤖 | **An AI agent** | It reads the postings, judges the fit and writes your CV and letters. **The app never calls an AI itself**, so without an agent you can review jobs and track, but not write |
 
 An **AI agent** is a program that talks to an AI model and can use tools: here, CandidatAI's. It runs
 in a terminal window, and CandidatAI's buttons open it for you with the right instructions. You
@@ -234,7 +234,7 @@ without your account) only happens if you turn it on, and it's at your own risk.
 [section 1](#1-what-you-need)): nothing with a free or local model, around US$20 a month with Claude
 Pro or ChatGPT Plus.
 
-**Can I use it without an agent?** In part: you can add and triage jobs, follow your processes, see
+**Can I use it without an agent?** In part: you can add, approve and discard jobs, follow your processes, see
 the calendar and the funnel, edit your profile and re-render a CV with another design. Reading
 postings and writing CVs needs the agent.
 

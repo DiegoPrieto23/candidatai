@@ -17,7 +17,7 @@ scoring:
     preferences_fit: 0.15          # tipo de puesto, modalidad y zona según prioridad
     nice_to_have_coverage: 0.10
   level_weights: {F: 1.0, "C+": 0.8, C: 0.5, B: 0.2}
-  triage_threshold: 55             # por debajo, la oferta se muestra atenuada en triaje
+  triage_threshold: 55             # por debajo, la oferta se muestra atenuada en «Por revisar»
   semantic:                        # embeddings locales (extra `matching`; ADR-006)
     model: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
     similarity_floor: 0.15         # similitud coseno que cuenta como 0
@@ -199,4 +199,4 @@ background_runs:                # fase 19: «En segundo plano» (el agente sin v
   max_progress_lines: 200         # líneas de progreso que se guardan (las últimas)
   max_parallel: 1                 # fase 25.4: ejecuciones a la vez (1-4); nunca dos de la misma oferta ni dos lotes de la misma acción
   per_agent: {}                   # tope por agente, p. ej. {opencode: 1} si usas un modelo local de Ollama
-  assess_min_score: null          # «Evaluar encaje» en segundo plano solo valora desde este score (null: el de triaje menos 10; la página «Agente» lo cambia)
+  assess_min_score: null          # «Evaluar encaje» en segundo plano solo valora desde este score (null: triage_threshold menos 10; la página «Agente» lo cambia)

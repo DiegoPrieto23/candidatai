@@ -1314,10 +1314,10 @@ TOOLS: tuple[ToolSpec, ...] = (
     ToolSpec(
         name="get_funnel_stats",
         description=(
-            "Embudo de la búsqueda (encontradas → triadas → aprobadas → enviadas → con respuesta "
-            "→ entrevista → oferta → aceptadas) con su conversión; el mismo embudo resumido por "
-            "fuente, tipo de puesto y semana; tiempo hasta la primera respuesta y motivos de "
-            "descarte. `since` filtra por la fecha en que se vio la oferta."
+            "Embudo de la búsqueda (encontradas → pasan filtros → aprobadas → enviadas → "
+            "con respuesta → entrevista → oferta → aceptadas) con su conversión; el mismo embudo "
+            "resumido por fuente, tipo de puesto y semana; tiempo hasta la primera respuesta y "
+            "motivos de descarte. `since` filtra por la fecha en que se vio la oferta."
         ),
         input_model=FunnelStatsInput,
         output_model=analytics.FunnelStats,

@@ -3,7 +3,7 @@
 Casos en JSONL, uno por línea: `{"id", "job_fixture": {"title", "extraction"}, "label", "note"?}`
 con `label` ∈ {`encaja`, `no_encaja`}. La semilla (`evals/matching/*.jsonl`, casos inventados) se
 evalúa contra el perfil de `demo/`; los casos propios (`data/evals/*.jsonl`) contra tu perfil.
-La app predice «encaja» si la oferta pasa los filtros duros y su score llega al umbral de triaje.
+La app predice «encaja» si la oferta pasa los filtros duros y su score llega al umbral de score.
 """
 
 import json
@@ -207,7 +207,7 @@ def to_markdown(report: EvalReport) -> str:
         "# Evaluación del matching",
         "",
         f"- Fecha: {report.created_at:%Y-%m-%d %H:%M} UTC",
-        f"- Umbral de triaje: {report.threshold}",
+        f"- Umbral de score: {report.threshold}",
         f"- Modelo semántico: {model}",
         *(f"- Casos: {s.cases} de `{s.path}` contra {s.profile}" for s in report.sources),
         "",

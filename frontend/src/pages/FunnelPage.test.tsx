@@ -15,7 +15,7 @@ const summary = (found: number, approved: number, applied: number, replied: numb
 
 const STEPS: [FunnelStats['steps'][number]['step'], string, number][] = [
   ['found', 'Encontradas', 10],
-  ['triaged', 'Triadas', 8],
+  ['triaged', 'Pasan filtros', 8],
   ['approved', 'Aprobadas', 6],
   ['applied', 'Enviadas', 5],
   ['replied', 'Con respuesta', 3],
@@ -109,7 +109,7 @@ describe('Embudo', () => {
     const text = (el: HTMLElement) => el.textContent?.replace(/ /g, ' ')
     expect(rows.map(text)).toEqual([
       'Encontradas10',
-      'Triadas8 · 80 %',
+      'Pasan filtros8 · 80 %',
       'Aprobadas6 · 75 %',
       'Enviadas5 · 83 %',
       'Con respuesta3 · 60 %',

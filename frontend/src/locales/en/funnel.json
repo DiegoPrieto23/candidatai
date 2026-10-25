@@ -11,7 +11,7 @@
   "since": "Since",
   "steps": {
     "found": "Found",
-    "triaged": "Triaged",
+    "triaged": "Passed filters",
     "approved": "Approved",
     "applied": "Applied",
     "replied": "Replied",

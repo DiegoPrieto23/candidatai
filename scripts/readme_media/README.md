@@ -8,13 +8,14 @@ las listas de funcionalidades y las guías. Todo sale de la **demo** (datos inve
 |---|---|---|
 | `illustrations.py` | Banner, diagrama «cómo funciona» (SVG, con modo oscuro en el diagrama) e imagen social (PNG 1280×640) | `docs/img/*.svg`, `docs/img/social-en.png` |
 | `screenshots.py` | Capturas de la UI a 1600×1000 (×1,5) en WebP, en un idioma; las de `DARK`, también en oscuro | `docs/img/<idioma>/` y `docs/img/<idioma>/dark/` |
-| `recordings.py` | Animaciones cortas (< 20 s, WebP animado con leyenda abajo) de una escena: `triage`, `discard`, `mailbox`, `cv`, `profile`, `apply` o `start` | `docs/img/<idioma>/anim/` |
+| `recordings.py` | Animaciones (WebP animado con leyenda abajo) de una escena: `tour` (el recorrido de la portada, unos 50 s y más nítido) o una corta (< 20 s): `triage`, `discard`, `mailbox`, `cv`, `profile`, `apply` o `start` | `docs/img/<idioma>/anim/` |
 | `all.py` | Todo lo de un idioma de una vez: siembra su demo, arranca API y worker, hace capturas y escenas y lo para | lo de las dos filas anteriores |
 | `apply-form.html` | El formulario de prueba que rellena la escena `apply`, servido en 127.0.0.1:8030 | — |
 
 Los medios van por idioma: `docs/img/en/` para `README.md` y `docs/img/es/` para `README.es.md`.
 **No hay vídeos en el repositorio** (decisión de la fase 28.3): solo capturas y animaciones cortas,
-con un presupuesto de 8 MB para todo `docs/img/`.
+con un presupuesto de 15 MB para todo `docs/img/` (el recorrido de la portada, unos 3 MB por idioma,
+es lo que más pesa).
 
 ## Pasos
 
@@ -40,7 +41,7 @@ Chromium, y Claude Code mata sus tareas cuando falta memoria.
    ```
 
    Con un segundo argumento solo hace esas escenas (`all.py es apply,triage`); las capturas las
-   repite siempre. `all.py` siembra su propia demo (`data-demo-shots` o `data-demo-en-shots`, en
+   repite salvo con `--sin-capturas` (`all.py es tour --sin-capturas`). `all.py` siembra su propia demo (`data-demo-shots` o `data-demo-en-shots`, en
    `.gitignore`), apunta la primera oferta con CV al formulario de prueba y arranca el worker con
    `CAI_APPLIER_ALLOW_LOOPBACK=1`, que es lo único que le deja abrir un formulario local. Durante
    `apply` se abre un Chromium aparte: no lo cierres; se para antes de enviar.

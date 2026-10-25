@@ -17,24 +17,27 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   LinkedIn, cuánto cuesta).
 
 ### Cambiado
-- **Portada nueva:** el README se lee en dos minutos. Arriba, la promesa, la animación y los botones
-  para instalar en Windows, macOS/Linux o con Docker; una nota con lo probado de verdad y lo que aún
+- **Portada nueva:** el README se lee en dos minutos. Arriba, la promesa, un recorrido animado de
+  50 segundos (aprobar y descartar ofertas, el CV verificado, la candidatura que espera tu
+  confirmación, los procesos y el embudo) y los botones para instalar en Windows, macOS/Linux o con Docker; una nota con lo probado de verdad y lo que aún
   no; qué necesitas antes de empezar; y «Por qué CandidatAI», una comparación corta y con fecha con
   AI Job Search y career-ops que dice también lo que ellos hacen mejor. El detalle (skills, fuentes,
   agentes, arquitectura) queda en la lista de funcionalidades y en `docs/`.
+- **Adiós a «triaje»:** la UI y la documentación dicen «revisar» (como la página «Por revisar»), el
+  umbral se llama «umbral de score» y en el Embudo el paso «Triadas» pasa a «Pasan filtros».
 - **Capturas y animaciones nuevas** en los README y en las listas de funcionalidades, en español
   e inglés: cada página tiene la suya, las principales también en modo oscuro, y seis animaciones
-  cortas enseñan el triaje, descartar desde la Bandeja, añadir un buzón, cambiar el CV, «Mi perfil»
-  y la candidatura asistida. Pesan mucho menos (WebP) y ya no hay vídeo.
+  cortas enseñan «Por revisar», descartar desde la Bandeja, añadir un buzón, cambiar el CV,
+  «Mi perfil» y la candidatura asistida. Pesan mucho menos (WebP) y ya no hay vídeo.
 - **La demo trae alertas por correo:** 65 ofertas, 5 de ellas de dos buzones de alertas, así que la
   página «Alertas» ya no sale vacía.
 
 ## [0.1.0] - 2026-10-24
 
 Primera versión publicada de CandidatAI: una app local para llevar tu búsqueda de empleo de
-principio a fin (ofertas, triaje, CV a medida, candidatura, seguimiento y análisis) con el agente de
-IA que ya usas. La app no llama a ningún modelo: el razonamiento lo pone tu agente y las reglas
-(qué se envía, qué se inventa, qué ve tu agente) las aplica el código.
+principio a fin (ofertas, revisión con score, CV a medida, candidatura, seguimiento y análisis)
+con el agente de IA que ya usas. La app no llama a ningún modelo: el razonamiento lo pone tu agente
+y las reglas (qué se envía, qué se inventa, qué ve tu agente) las aplica el código.
 
 ### Añadido
 - **Instalación sin preparar nada:** `install.ps1` en Windows e `install.sh` en macOS y Linux
@@ -61,7 +64,7 @@ IA que ya usas. La app no llama a ningún modelo: el razonamiento lo pone tu age
   (Gmail, Outlook, Yahoo, iCloud o una carpeta de `.eml`, siempre en solo lectura); la extensión
   «Enviar a CandidatAI» para Chrome y Edge; y tu agente recorriendo portales con tu navegador. La
   búsqueda pública de LinkedIn, sin sesión, es opcional y está apagada.
-- **Triaje que se explica:** filtros de lo que no quieres (ubicación, sueldo mínimo privado, años,
+- **Revisión con un score que se explica:** filtros de lo que no quieres (ubicación, sueldo mínimo privado, años,
   contrato, consultoras…), score 0-100 con su porqué, valoración de tu agente, ofertas cerradas o
   republicadas, señales de oferta dudosa y descartar en un clic con «Deshacer».
 - **CV a medida verificado:** cada línea cita su evidencia en tu perfil y un verificador

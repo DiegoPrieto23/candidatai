@@ -143,7 +143,7 @@ luego recreas el contenedor (`docker compose up -d`).
 
 | | Con Docker |
 |---|---|
-| UI, ofertas, triaje, seguimiento y embudo | Sí |
+| UI, ofertas, revisión, seguimiento y embudo | Sí |
 | Fuentes de ofertas y alertas por correo (el worker) | Sí |
 | CVs y cartas en PDF | Sí, con las plantillas html (`moderna-2col`…). Las docx salen solo en Word: no hay LibreOffice |
 | Tu agente por MCP o `cai … --json` | Sí, desde fuera del contenedor (abajo) |
@@ -321,7 +321,7 @@ Un día normal:
 
 1. Abre **Inicio**: te dice qué tienes (ofertas por revisar, CVs listos, seguimientos vencidos).
 2. Pide a tu agente `process-jobs` y `assess-fit`, o pulsa sus botones en la UI.
-3. Triaga en **Por revisar**.
+3. Aprueba o descarta en **Por revisar**.
 4. `generate-cv` para las aprobadas y, cuando quieras, envía desde la ficha.
 5. `daily-summary` resume todo eso en una respuesta.
 
@@ -351,7 +351,7 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
    IA, la ficha lo avisa.
 2. **Valorar:** la app calcula el score y aplica tus filtros duros; `assess-fit` añade una
    valoración razonada.
-3. **Triar:** en «Por revisar», `J`/`K` para moverte, `A` para aprobar, `D` para descartar (con
+3. **Revisar:** en «Por revisar», `J`/`K` para moverte, `A` para aprobar, `D` para descartar (con
    motivo) y `O` para abrir la ficha. Se puede deshacer.
 4. **CV:** `generate-cv 42` redacta el contenido, el código lo valida y renderiza y el rol
    `verifier` lo revisa. En la ficha cambias plantilla, foto, color y secciones sin gastar
@@ -411,7 +411,7 @@ Muchas pantallas tienen botones que abren tu agente con la orden ya escrita:
     gastado en esa oferta y el embudo, por candidatura enviada y por entrevista. Lo que hagas en una
     terminal no cuenta: ahí el agente no devuelve su uso.
   - **Umbral antes de gastar:** `assess-fit` en segundo plano solo valora las ofertas con un score
-    mínimo (por defecto, el de triaje menos 10; lo cambias en «Coste»). El triaje dice por qué se
+    mínimo (por defecto, el umbral de score menos 10; lo cambias en «Coste»). «Por revisar» dice por qué se
     queda sin valorar una oferta por debajo.
   - **Varias a la vez:** por defecto, de una en una. Con `background_runs.max_parallel` (hasta 4)
     en `config/policies.yaml` van varias a la vez, nunca dos de la misma oferta; con
@@ -440,7 +440,7 @@ clasificar respuestas, y tu agente más capaz para el CV. Rellénalos una vez y 
   Adzuna, IMAP (`CAI_IMAP_HOST`, `CAI_IMAP_PORT`, `CAI_IMAP_USER`, `CAI_IMAP_PASSWORD`,
   `CAI_IMAP_FOLDER`, `CAI_IMAP_REPLIES_FOLDER`), `CAI_BROWSER_CHANNEL` (`chrome` o `msedge` para la
   candidatura asistida), `CAI_EMBEDDINGS=off`. Nada es obligatorio.
-- **`config/policies.yaml`:** umbral de triaje, pesos del score, hora de la ingesta diaria,
+- **`config/policies.yaml`:** umbral de score, pesos del score, hora de la ingesta diaria,
   frecuencia del correo, límites de la búsqueda con navegador y de la búsqueda pública de
   LinkedIn, frases de oferta cerrada… Tras cambiar el score, `cai match rescore` recalcula y
   `cai eval matching` mide el efecto.

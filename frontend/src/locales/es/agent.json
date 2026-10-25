@@ -90,14 +90,14 @@
     "empty": "Ninguna ejecución en este periodo.",
     "terminal": "Solo cuenta lo que se ejecuta en segundo plano: en una terminal, el agente no devuelve su uso a la app. «Tokens del skill» es lo que pesan sus instrucciones, para saber dónde recortar.",
     "threshold": "Umbral antes de gastar",
-    "thresholdIntro": "«Evaluar encaje» en segundo plano solo valora las ofertas con este score o más; las demás se quedan sin valorar y el triaje dice por qué. El umbral de triaje es {{triage}} y el de por defecto, {{default}}. En una terminal, el skill valora lo que le pidas.",
+    "thresholdIntro": "«Evaluar encaje» en segundo plano solo valora las ofertas con este score o más; las demás se quedan sin valorar y «Por revisar» dice por qué. El umbral de score es {{triage}} y el de por defecto, {{default}}. En una terminal, el skill valora lo que le pidas.",
     "thresholdLabel": "Score mínimo",
     "thresholdSave": "Guardar",
     "thresholdReset": "Volver a {{value}}",
     "thresholdSource": {
       "ui": "Lo has cambiado aquí.",
       "policies": "Sale de config/policies.yaml (background_runs.assess_min_score).",
-      "default": "Por defecto: el umbral de triaje menos 10."
+      "default": "Por defecto: el umbral de score menos 10."
     }
   },
   "jobCost": {

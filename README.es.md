@@ -9,8 +9,8 @@
 <h3 align="center">Tu búsqueda de empleo entera, en una app: tú decides, tu IA lee y escribe, y no se envía nada sin ti.</h3>
 
 <p align="center">
-  <img src="docs/img/es/anim/triage.webp" alt="Triaje con el teclado: J/K para moverse, A para aprobar" width="88%">
-  <br><sub>Triaje con el teclado. Todo lo que se ve es la <b>demo</b>: una candidata, empresas y ofertas inventadas.</sub>
+  <img src="docs/img/es/anim/tour.webp" alt="Un recorrido por la app: aprobar y descartar ofertas, un CV verificado con otro diseño, el formulario de la candidatura rellenado y esperando tu confirmación, los procesos y el embudo" width="100%">
+  <br><sub>De la oferta nueva a la candidatura, en 50 segundos. Todo lo que se ve es la <b>demo</b>: una candidata, empresas y ofertas inventadas.</sub>
 </p>
 
 <p align="center">
@@ -52,14 +52,14 @@
 
 ## Qué hace
 
-Entran ofertas de varias fuentes, las triagas con un score explicado, cada una recibe un **CV y una
+Entran ofertas de varias fuentes, las revisas con un score explicado, cada una recibe un **CV y una
 carta a medida y verificados**, la app rellena el formulario de la candidatura y **espera a que tú
 pulses Enviar**, y después sigue el proceso hasta la oferta.
 
 | | |
 |---|---|
 | 📥 **Ofertas de muchas fuentes** | Pega una URL o el texto; APIs públicas de ATS (Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters, Recruitee); InfoJobs, Adzuna, Manfred y freehire.me; **alertas de empleo por correo**; un botón en el navegador; tu agente recorriendo portales; y, si lo activas, la búsqueda pública de LinkedIn. Sin duplicados y con **detección de texto dirigido a una IA** |
-| 🎯 **Triaje con score explicado** | Filtros duros y un score de 0 a 100 por cobertura de skills y tus preferencias; tu agente añade un veredicto razonado, y «¿Acierta el score?» lo contrasta con lo que pasó de verdad |
+| 🎯 **Revisión con score explicado** | Filtros duros y un score de 0 a 100 por cobertura de skills y tus preferencias; tu agente añade un veredicto razonado, y «¿Acierta el score?» lo contrasta con lo que pasó de verdad |
 | 📄 **CV y carta a medida** | El agente cita **una evidencia de tu perfil para cada línea**; el código la comprueba, lo renderiza con tu plantilla, foto y color, y un rol aparte lo verifica. **Importa el diseño de tu propio CV** como plantilla |
 | 📝 **Candidatura asistida** | Rellena formularios de Greenhouse, Lever, Ashby o genéricos, se para ante captchas e inicios de sesión y **solo envía cuando tú confirmas** |
 | 📊 **Seguimiento y analítica** | Un kanban que solo se mueve con eventos registrados, un calendario, recordatorios de seguimiento, las respuestas de las empresas clasificadas y un embudo por fuente, puesto, plantilla y referencia |
@@ -107,7 +107,7 @@ han inspirado este. Comprobado el **25 de octubre de 2026** en sus repositorios
 |---|---|---|---|
 | Qué es | Una **app** con interfaz web, base de datos y tareas en segundo plano | Instrucciones y comandos para Claude Code sobre ficheros | Un agente con muchos modos y scripts de Node sobre ficheros, un panel de terminal y una web en alfa |
 | Instalar | Un comando, un acceso directo y nada instalado antes | Fork, y luego Claude Code, Python, Bun y LaTeX | `npx … init` con Node instalado |
-| Sin el agente abierto | Triaje, kanban, calendario, embudo, perfil, volver a renderizar CVs | Nada | Escanear, el panel y la web |
+| Sin el agente abierto | Revisar ofertas, kanban, calendario, embudo, perfil, volver a renderizar CVs | Nada | Escanear, el panel y la web |
 | Reglas | **Aplicadas por el código**: una línea del CV sin evidencia en tu perfil se rechaza; enviar necesita tu clic | Instrucciones, más un filtro de inyección en código | Instrucciones, más una comprobación de hechos del PDF en código |
 | Agentes | 5 configurados; Claude Code probado del todo | Claude Code | 12 CLIs, modelos gratuitos y locales |
 | Comunidad | Recién publicado, un mantenedor | ~65 000 estrellas, ~90 contribuidores, la búsqueda real del autor | ~77 000 estrellas, ~460 contribuidores, Discord, muchas historias de contratación |
@@ -169,7 +169,7 @@ Son reglas que aplica el código, uses el agente que uses:
 ## Cómo funciona
 
 <p align="center">
-  <img src="docs/img/como-funciona-es.svg" alt="Cómo funciona: entran ofertas, el agente las extrae y valora, tú triagas, el agente redacta el CV, la app lo verifica y lo renderiza, la app rellena el formulario y tú lo envías, la app sigue el proceso" width="100%">
+  <img src="docs/img/como-funciona-es.svg" alt="Cómo funciona: entran ofertas, el agente las extrae y valora, tú las apruebas o descartas, el agente redacta el CV, la app lo verifica y lo renderiza, la app rellena el formulario y tú lo envías, la app sigue el proceso" width="100%">
 </p>
 
 Cada color es quién hace el paso: **tú** decides, **tu agente** razona y **la app** guarda,
@@ -183,7 +183,7 @@ Todos los skills y las fuentes: [`docs/FUNCIONALIDADES.md`](docs/FUNCIONALIDADES
 
 **Calidad:** tests de backend en Windows, Linux y macOS y de frontend en la CI. El eval de matching
 (80 casos inventados, sin embeddings): precision **0,88**, recall **0,95**,
-F1 **0,92** con el umbral de triaje por defecto ([`evals/REPORT.md`](evals/REPORT.md)).
+F1 **0,92** con el umbral de score por defecto ([`evals/REPORT.md`](evals/REPORT.md)).
 
 ## Documentación
 
@@ -197,13 +197,6 @@ F1 **0,92** con el umbral de triaje por defecto ([`evals/REPORT.md`](evals/REPOR
 | Ver qué ha cambiado | [`CHANGELOG.md`](CHANGELOG.md) |
 
 Todos los documentos, agrupados: [`docs/README.md`](docs/README.md).
-
-## Cómo se construyó
-
-Por fases, cada una con su encargo escrito en `dev/prompts/`, implementadas con un agente de IA
-(Claude Code) contra una especificación escrita antes que el código: un plan, una rama, tests, una
-revisión de un rol `reviewer` y un registro de decisiones y deuda ([`dev/ROADMAP.md`](dev/ROADMAP.md),
-[`dev/DESARROLLO_POR_FASES.md`](dev/DESARROLLO_POR_FASES.md)).
 
 ## Licencia y créditos
 

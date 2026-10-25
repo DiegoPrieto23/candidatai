@@ -1,6 +1,6 @@
 # Features
 
-Everything CandidatAI does, in the order you use it: get jobs → triage → CV and cover letter →
+Everything CandidatAI does, in the order you use it: get jobs → review → CV and cover letter →
 apply → tracking and replies → interviews and offers → strategy and profile → settings and agents.
 Spanish version: [`FUNCIONALIDADES.md`](FUNCIONALIDADES.md).
 
@@ -30,13 +30,13 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 | **Still open? and reposts**: the app checks whether a job is still published (never closes it by itself) and marks "Reposted ×N" | `/jobs/:id` | |
 | **Dubious jobs in sight**: very wide salary range, hidden company or agency, temporary contract, old posting and AI screening, each explained; they don't change the score | `/bandeja` | |
 
-## 2. Triage
+## 2. Review
 
 | Feature | Where | Screenshot |
 |---|---|---|
 | **Home**: what's waiting today (jobs to process or assess, replies, follow-ups), the best fits, ready to send and the next milestones | `/` | [Home](img/en/home.webp) |
 | **Hard filters and an explained 0-100 score**: level, years, remote mode, location, languages and words that discard; skill coverage weighted by your level, preferences and optional local semantic similarity | `/por-revisar` | [To review](img/en/triage.webp) |
-| **Triage with the keyboard**: `J`/`K` to move, `A` approve, `D` discard with a reason, `O` open, and Undo | `/por-revisar` | [▶ Keyboard](img/en/anim/triage.webp) |
+| **Review with the keyboard**: `J`/`K` to move, `A` approve, `D` discard with a reason, `O` open, and Undo | `/por-revisar` | [▶ Keyboard](img/en/anim/triage.webp) |
 | **Your agent's verdict**: fit with risks and questions, citing your deal-breakers; in the background it skips low-score jobs | `assess-fit` | |
 | **"You know N people here"**: your LinkedIn connections (official CSV export) matched to each company | `/jobs/:id` | |
 | **The job page**: extraction, fit breakdown, signals, history, notes, cost in agent time, and every section below | `/jobs/:id` | [Job](img/en/job.webp) |

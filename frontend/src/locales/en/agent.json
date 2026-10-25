@@ -90,14 +90,14 @@
     "empty": "No runs in this period.",
     "terminal": "Only background runs count: in a terminal, the agent doesn't report its usage back to the app. \"Skill tokens\" is how much its instructions weigh, so you know where to trim.",
     "threshold": "Threshold before spending",
-    "thresholdIntro": "\"Assess fit\" in the background only assesses jobs with this score or more; the rest stay unassessed and triage says why. The triage threshold is {{triage}} and the default, {{default}}. In a terminal, the skill assesses whatever you ask.",
+    "thresholdIntro": "\"Assess fit\" in the background only assesses jobs with this score or more; the rest stay unassessed and \"To review\" says why. The score threshold is {{triage}} and the default, {{default}}. In a terminal, the skill assesses whatever you ask.",
     "thresholdLabel": "Minimum score",
     "thresholdSave": "Save",
     "thresholdReset": "Back to {{value}}",
     "thresholdSource": {
       "ui": "You changed it here.",
       "policies": "From config/policies.yaml (background_runs.assess_min_score).",
-      "default": "Default: the triage threshold minus 10."
+      "default": "Default: the score threshold minus 10."
     }
   },
   "jobCost": {

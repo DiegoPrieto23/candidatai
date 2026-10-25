@@ -176,7 +176,7 @@ def test_steps_are_cumulative_and_count_each_job_once(session: Session, history:
     assert [s.rate_from_start for s in stats.steps] == [
         1.0, 0.8, 0.6, 0.5, 0.3, 0.1, 0.1, 0.1,
     ]  # fmt: skip
-    assert stats.steps[1].label == "Triadas"
+    assert stats.steps[1].label == "Pasan filtros"
 
 
 def test_by_source(session: Session, history: History) -> None:

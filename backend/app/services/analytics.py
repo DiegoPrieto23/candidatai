@@ -77,7 +77,7 @@ FunnelStepName = Literal[
 ]
 STEPS: tuple[tuple[FunnelStepName, str], ...] = (
     ("found", "Encontradas"),
-    ("triaged", "Triadas"),
+    ("triaged", "Pasan filtros"),
     ("approved", "Aprobadas"),
     ("applied", "Enviadas"),
     ("replied", "Con respuesta"),
