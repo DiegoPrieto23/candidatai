@@ -137,7 +137,7 @@ jobs:
       - name: La demo se siembra dentro
         run: |
           docker compose exec -T candidatai cai demo seed --json | tee demo.json
-          python3 -c "import json; s = json.load(open('demo.json')); assert s['jobs'] == 60 and s['cvs'] == 2, s"
+          python3 -c "import json; s = json.load(open('demo.json')); assert s['jobs'] == 65 and s['cvs'] == 2, s"
       - name: El diagnóstico tiene su sección Docker
         run: docker compose exec -T candidatai cai doctor | tee doctor.txt; grep -q "Docker · API" doctor.txt
       - if: always()
