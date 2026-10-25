@@ -17,6 +17,7 @@ afterEach(() => {
   document.documentElement.classList.remove('dark')
   try {
     localStorage.clear()
+    sessionStorage.clear()
   } catch {
     // jsdom sin almacenamiento
   }

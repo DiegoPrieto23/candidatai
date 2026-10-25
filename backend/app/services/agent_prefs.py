@@ -1,4 +1,4 @@
-"""Qué agente y qué modelo usa cada acción (fase 24.4, ADR-037).
+"""Qué agente y qué modelo usa cada acción (fase 24.4).
 
 Las preferencias de la persona viven en la base de datos (`agent_preferences`, en `data/`), nunca
 en el repositorio: agente por defecto, modelo o preset de cada agente y agente (y modelo) de cada

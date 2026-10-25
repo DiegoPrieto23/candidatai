@@ -137,7 +137,7 @@ body {
 .item { margin-bottom: 3.2mm; break-inside: avoid; }
 .item-head { display: flex; justify-content: space-between; gap: 4mm; align-items: baseline; }
 .role { font-weight: 700; }
-/* Los enlaces los pone el código (ADR-023): se ven como el texto que los rodea. */
+/* Los enlaces los pone el código: se ven como el texto que los rodea. */
 a { color: inherit; text-decoration: none; }
 .dates { color: var(--muted); font-size: 8.6pt; white-space: nowrap; }
 .org { color: var(--muted); font-style: italic; margin-bottom: 0.8mm; }

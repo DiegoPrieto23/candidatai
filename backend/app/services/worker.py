@@ -22,7 +22,7 @@ Candidatura asistida (fase 11): el worker es el único dueño del navegador pers
 (`services/applier/browser.py`). Sus tareas no se reintentan y, si el worker se cierra a medias,
 quedan `failed` al arrancar, nunca vuelven a la cola.
 
-Búsqueda pública de LinkedIn (fase 22, ADR-033): solo si el usuario la activó en la UI, con la
+Búsqueda pública de LinkedIn (fase 22): solo si el usuario la activó en la UI, con la
 ingesta diaria y al arrancar se encola `run_linkedin_public` si le toca (una vez al día y, tras un
 bloqueo, unos días después). Nunca se reintenta.
 

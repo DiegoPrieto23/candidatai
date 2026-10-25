@@ -505,6 +505,6 @@ cd ..
 uv run scripts/sync_agents.py                   # regenera la configuración de agentes desde .agents/
 ```
 
-Reglas del proyecto, arquitectura y forma de trabajar por fases: [`AGENTS.md`](../AGENTS.md),
-[`ARCHITECTURE.md`](ARCHITECTURE.md) y [`DESARROLLO_POR_FASES.md`](../dev/DESARROLLO_POR_FASES.md).
+Reglas del proyecto y arquitectura: [`AGENTS.md`](../AGENTS.md) y
+[`ARCHITECTURE.md`](ARCHITECTURE.md).
 Contribuir: [`CONTRIBUTING.md`](../CONTRIBUTING.md).

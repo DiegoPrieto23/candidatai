@@ -2,7 +2,7 @@
 
 El contexto es texto libre que escribe el usuario: cómo escribe, cómo trabaja, qué busca y qué no
 acepta, y su historia. Orienta a los skills (tono, riesgos, entrevistas) pero **nunca respalda un
-hecho**: lo que dice un CV o una carta sale de `data/profile.yaml` (`docs/POLICIES.md` §1, ADR-025).
+hecho**: lo que dice un CV o una carta sale de `data/profile.yaml` (`docs/POLICIES.md` §1).
 
 Las plantillas son las de la candidata demo (`demo/contexto/`): `init` copia de ellas solo los
 encabezados y los comentarios-guía, sin su contenido.

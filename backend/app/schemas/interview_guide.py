@@ -1,4 +1,4 @@
-"""Guía de preparación de una entrevista (ADR-044). La redacta el agente con `prepare-interview`
+"""Guía de preparación de una entrevista. La redacta el agente con `prepare-interview`
 como contenido estructurado; la app la maqueta y la imprime a PDF (`services/interview_guide.py`).
 
 El agente no escribe HTML: solo texto en bloques tipados. En el texto valen `**negrita**`,

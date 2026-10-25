@@ -1,4 +1,4 @@
-"""Esquemas de la carta de presentación (fase 08c, ADR-018).
+"""Esquemas de la carta de presentación (fase 08c).
 
 El agente redacta `CoverLetterContent` (saludo, párrafos con evidencias y despedida) según las
 indicaciones del usuario; el código pone el contacto, la fecha, el lugar y el nombre, y la
@@ -12,7 +12,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from app.schemas.cv import CvLanguage, HexColor, PageSize, PhotoMode
 from app.schemas.profile import MAX_LETTER_WORDS, Id
 
-# Evidencias de un párrafo que no son ids del perfil (POLICIES §1, ADR-018).
+# Evidencias de un párrafo que no son ids del perfil (POLICIES §1).
 EVIDENCE_EXTRACTION = "extraction"  # lo dice la oferta
 EVIDENCE_USER = "user"  # lo dicen las indicaciones del usuario (las de la oferta o del perfil)
 

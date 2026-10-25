@@ -8,7 +8,7 @@ from app.models.base import Base, UTCDateTime, utcnow
 
 
 class AgentRun(Base):
-    """Una ejecución del agente en segundo plano (fase 19, ADR-032), lanzada desde la UI.
+    """Una ejecución del agente en segundo plano (fase 19), lanzada desde la UI.
 
     Es su propia cola: el worker las ejecuta de una en una. `command` es lo que se lanza (para
     auditar qué herramientas tenía); `progress`, líneas cortas con las herramientas que usó, nunca
@@ -70,7 +70,7 @@ class AgentRequest(Base):
 
 
 class AgentPreference(Base):
-    """Preferencias de agente y modelo de la persona (fase 24.4, ADR-037). Datos de uso: viven en
+    """Preferencias de agente y modelo de la persona (fase 24.4). Datos de uso: viven en
     `data/`, nunca en el repositorio ni en la configuración generada.
 
     `scope`: `default` (`key` vacía: el agente por defecto), `agent` (`key` = agente: su modelo o

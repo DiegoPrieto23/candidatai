@@ -1,7 +1,7 @@
-"""Ejecuta las `agent_runs` en cola (fase 19, ADR-032): lanza el agente sin ventana, lee su salida
+"""Ejecuta las `agent_runs` en cola (fase 19): lanza el agente sin ventana, lee su salida
 en streaming y guarda progreso, resultado y errores. Lo llama el worker, en un hilo propio.
 
-- Hasta `background_runs.max_parallel` a la vez (fase 25.4, ADR-038; 1 por defecto), también entre
+- Hasta `background_runs.max_parallel` a la vez (fase 25.4; 1 por defecto), también entre
   procesos: reclamar es un único `UPDATE` condicionado a que haya hueco, a que el agente no haya
   llegado a su tope (`per_agent`) y a que ninguna en curso trabaje la misma oferta o, si es de lote
   (sin oferta), la misma acción. Cada ejecución sigue con el techo de herramientas de su acción.

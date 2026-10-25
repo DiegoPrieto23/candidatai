@@ -27,7 +27,7 @@ todo instrucciones que el agente debería seguir (cada vez con más comprobacion
 filtro de inyección de AI Job Search, la comprobación de hechos del PDF de career-ops). En
 CandidatAI el agente solo puede rellenar esquemas que el código valida, y las reglas importantes (no
 inventar, no enviar nada, no seguir instrucciones de una oferta) se comprueban en código, sea cual
-sea el agente (ADR-012).
+sea el agente.
 
 Donde los otros dos van claramente por delante es en **comunidad y alcance**: decenas de miles de
 estrellas, cientos de contribuidores e historias reales de gente contratada. Y career-ops, además, en
@@ -76,7 +76,7 @@ chat del agente. career-ops lo compensa con `npx … init`, que es un solo coman
 | Dónde viven los datos | SQLite con eventos (`data/`, fuera de git) | CSV, Markdown y JSON en el repo (aviso: un fork es público) | Markdown, YAML y TSV (`data/`, fuera de git, o una carpeta externa) |
 | Interfaz para el usuario | **UI web completa** en español e inglés | Chat con el agente + informe HTML + vista en Notion opcional | Chat + dashboard de terminal + web en alfa (pipeline, exploración, escaneos programados, rellenado de formularios, hoy, analítica, CV) |
 | Interfaz para el agente | **MCP (casi 60 herramientas) + CLI `cai --json` con paridad comprobada** | Comandos `/…` y ficheros | Un router `/career-ops <modo>` y scripts |
-| ¿La app llama a un LLM? | **Nunca** (ADR-001) | No (lo hace Claude Code) | Opcional: scripts que llaman a Gemini, a cualquier API compatible con OpenAI, a OpenRouter o a Ollama |
+| ¿La app llama a un LLM? | **Nunca** | No (lo hace Claude Code) | Opcional: scripts que llaman a Gemini, a cualquier API compatible con OpenAI, a OpenRouter o a Ollama |
 | Estado de cada oferta | Eventos validados contra una tabla de transiciones | Fila de un CSV | Fila de una tabla Markdown con estados canónicos |
 | Defensas | En código: validación de esquemas, verificación determinista del CV, detección de inyección, techo de herramientas en segundo plano | Instrucciones + filtro determinista de la oferta (`posting_guard.py`: texto oculto, caracteres invisibles, líneas con forma de instrucción) + guardas de CI | Instrucciones + comprobación de hechos del PDF y de títulos del CV en código + el agente del CV en la web sin herramientas de escritura (en Claude Code) |
 | Sistema principal | Windows 11 nativo; macOS, Linux y Docker también | Cualquiera con LaTeX y Bun | Cualquiera con Node (Windows con Git Bash) |
@@ -120,14 +120,14 @@ tres proyectos han llegado a lo mismo: `GEMINI.md` vacío o de paso, y Antigravi
 | Alta por URL o texto pegado | ✅ | ✅ | ✅ |
 | APIs públicas de ATS (Greenhouse, Lever, Ashby) | ✅ diaria | ❌ | ✅ |
 | Otros ATS con API (Personio, Teamtailor, Workable, SmartRecruiters, Recruitee…) | ✅ diaria y en `cai sources discover` | ❌ | ✅ |
-| ATS que solo dan HTML (Workday, SuccessFactors, Zoho, Dover…) | 🚫 (ADR-016); se cubren con alertas, la extensión o el navegador del agente | ❌ | ✅ dentro de sus 55+ proveedores |
+| ATS que solo dan HTML (Workday, SuccessFactors, Zoho, Dover…) | 🚫; se cubren con alertas, la extensión o el navegador del agente | ❌ | ✅ dentro de sus 55+ proveedores |
 | Portales con API (InfoJobs, Adzuna, Manfred) | ✅ InfoJobs y Adzuna con claves; Manfred sin claves | ❌ | 🟡 otros feeds (Manfred, Remotive, WWR, HN «Who's hiring», Platsbanken en Suecia, Kalibrr, Computrabajo…) |
-| Scrapers HTML de portales locales | 🚫 (ADR-016) | ✅ daneses + generador `/add-portal` | ✅ |
+| Scrapers HTML de portales locales | 🚫 | ✅ daneses + generador `/add-portal` | ✅ |
 | Agregador con API pública (freehire.me) | ✅ | ✅ | ❌ |
 | Alertas de empleo por correo (IMAP de solo lectura) | ✅ **varios buzones** | ❌ | ❌ |
 | Botón de extensión del navegador para la página que ves | ✅ | ❌ | ❌ |
 | El agente recorre portales con tu navegador | ✅ opcional | ❌ | 🟡 descubrimiento asistido en la web |
-| LinkedIn por la búsqueda pública sin sesión | ✅ opcional y apagado (ADR-033) | ✅ | ❌ |
+| LinkedIn por la búsqueda pública sin sesión | ✅ opcional y apagado | ✅ | ❌ |
 | Descubrir el tablero de ATS de tus empresas | ✅ `cai sources discover` | ❌ | ✅ `discover` |
 | Lista de empresas objetivo preconfigurada | ❌ | ❌ | ✅ 100+ (laboratorios de IA, voz, plataformas, Europa, LatAm…) |
 | Escaneos programados | ✅ el worker revisa cada fuente a diario | ❌ | ✅ en la web, con una tarea del sistema cada 15 min |
@@ -242,7 +242,7 @@ tres proyectos han llegado a lo mismo: `GEMINI.md` vacío o de paso, y Antigravi
   extensión, InfoJobs y Adzuna.
 - **Privacidad del salario**: el agente nunca ve tu mínimo.
 - **Segundo plano con techo de herramientas comprobado**: la ejecución sin ventana solo tiene las
-  herramientas MCP de su acción (ADR-032).
+  herramientas MCP de su acción.
 - **Matriz de agentes medida y publicada** (`cai eval compat`), en vez de compatibilidad declarada.
 - **Revisión del perfil de LinkedIn** frente a las ofertas que apruebas.
 
@@ -256,7 +256,7 @@ ya no son funciones sino **que la gente lo conozca y lo pruebe**: es justo lo qu
 |---|---|---|---|---|---|
 | 1 | **Portada, historia y lanzamiento** (README con gancho, la historia con números reales, publicarlo en listas y canales) | ambos | Lo que hace famosos a los otros dos no son las funciones, sino la historia y la comunidad | Medio | 28.4 y 28.5 |
 | 2 | **Comunidad** (Discussions o Discord, muro de contratados, plantillas de issues) | career-ops | Sin ella, todo el mantenimiento depende de una persona | Bajo para empezar | 28.4 (plantillas) |
-| 3 | **Instalador más robusto con red mala** (avisar de que es la red y reintentar Chromium) y sin las herramientas de desarrollo (`uv sync --no-dev`) | — | Lo encontró la prueba en el Windows limpio (ver `dev/pruebas/fase-28.1-prueba-manual.md`) | Bajo | Sin fecha |
+| 3 | **Instalador más robusto con red mala** (avisar de que es la red y reintentar Chromium) y sin las herramientas de desarrollo (`uv sync --no-dev`) | — | Lo encontró la prueba en un Windows limpio | Bajo | Sin fecha |
 | 4 | **Probar más agentes de verdad**: OpenCode y Qwen Code con un modelo en la nube, y Pi, Grok Build, Copilot CLI y Cursor | career-ops | Hoy solo Claude Code, Codex y Antigravity están medidos | Medio | Sin fecha |
 | 5 | **Exportar ofertas y candidaturas a CSV** | ambos | Para quien quiere su hoja de cálculo o irse con sus datos | Bajo | Sin fecha |
 | 6 | **Lista de empresas objetivo de ejemplo**, con su ATS ya resuelto | career-ops | Arrancar con fuentes sin buscar a mano | Bajo | Sin fecha |
@@ -271,18 +271,18 @@ ya no son funciones sino **que la gente lo conozca y lo pruebe**: es justo lo qu
 
 | Qué | Lo tiene | Por qué no | Regla |
 |---|---|---|---|
-| Que la app llame a un LLM (Gemini, OpenRouter, Ollama desde el código) | career-ops | El razonamiento lo pone tu agente; la app no tiene claves ni SDKs. Los modelos gratuitos o locales se usan **a través de agentes open-source** | Regla dura 1, ADR-001 |
+| Que la app llame a un LLM (Gemini, OpenRouter, Ollama desde el código) | career-ops | El razonamiento lo pone tu agente; la app no tiene claves ni SDKs. Los modelos gratuitos o locales se usan **a través de agentes open-source** | Regla dura 1 |
 | Enviar candidaturas sin tu confirmación, o en lote | — (ninguno lo hace) | Nada sale sin tu clic, oferta a oferta | Regla dura 5, POLICIES §5 |
 | Enviar correos o mensajes | — | Solo borradores que copias tú | Regla dura 5 |
-| Candidaturas automáticas en LinkedIn, o usar tu sesión o cookies para leerlo | — | Riesgo para tu cuenta y contra sus condiciones | Regla dura 6, ADR-009 |
-| Resolver o esquivar captchas, proxies para evitar bloqueos | career-ops (proxy) | Un bloqueo se respeta: se para y se avisa | Regla dura 6, ADR-033 |
-| Scrapers HTML de portales y ATS sin API | ambos | Se cubren con alertas, captura y el navegador del agente | ADR-016 |
+| Candidaturas automáticas en LinkedIn, o usar tu sesión o cookies para leerlo | — | Riesgo para tu cuenta y contra sus condiciones | Regla dura 6 |
+| Resolver o esquivar captchas, proxies para evitar bloqueos | career-ops (proxy) | Un bloqueo se respeta: se para y se avisa | Regla dura 6 |
+| Scrapers HTML de portales y ATS sin API | ambos | Se cubren con alertas, captura y el navegador del agente | Regla dura 6 |
 | Sincronizar con Notion o subir tu pipeline a terceros | ambos | Tus datos no salen de tu equipo | Reglas 3 y 5, decisión del plan 13-22 |
 | Plugins de scraping de pago (Apify…) | career-ops | Scraping de terceros y datos fuera | Reglas 1, 5 y 6 |
 | Descubrir empresas financiadas desde feeds externos | career-ops | Fuera del foco | Decisión del plan 13-22 |
 | CVs en LaTeX | ambos | Ya hay dos motores (Word y HTML) e importación de cualquier diseño, sin instalar LaTeX | Decisión del plan 13-22 |
 | Lógica específica de un agente en el producto | — | Todo lo específico va en `.agents/manifest.yaml` y en lo que genera `sync_agents.py` | Regla dura 2 |
-| Segundo plano con un agente que no pueda limitar sus herramientas | — | La garantía del segundo plano es justo ese techo | ADR-032 |
+| Segundo plano con un agente que no pueda limitar sus herramientas | — | La garantía del segundo plano es justo ese techo | Regla dura 5 |
 | Inventar o «mejorar» datos del candidato | — | Todo sale de `data/profile.yaml` y se verifica | Regla dura 7 |
 | Datos personales en el repositorio (fork público con tus datos) | riesgo en AI Job Search | Tus datos solo en `data/` y `.env`, fuera de git | Regla dura 3 |
 | Proponer o deducir una cifra salarial | — | La cifra la pones tú; el agente no ve tu mínimo | POLICIES §4, fase 21 |

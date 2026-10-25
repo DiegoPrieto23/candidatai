@@ -1,4 +1,4 @@
-"""Registro de agentes (fase 24.1, ADR-037): el único lector de `.agents/manifest.yaml` en el
+"""Registro de agentes (fase 24.1): el único lector de `.agents/manifest.yaml` en el
 backend. Lo usan los botones «en tu agente» (`agent_launch`), el segundo plano (`agent_runner`),
 `cai agents` y el doctor.
 
@@ -158,7 +158,7 @@ class RunConfigSpec(_Strict):
 
 
 class HeadlessSpec(_Strict):
-    """`launch.headless`: cómo se lanza sin ventana (fase 19, ADR-032).
+    """`launch.headless`: cómo se lanza sin ventana (fase 19).
 
     `ceiling` (fase 24.5) es cómo se pone el techo de herramientas: `args`, en la orden
     (`{allowed_tools}` y `{denied_tools}`); `config`, en una configuración propia de la ejecución
@@ -199,7 +199,7 @@ class HeadlessSpec(_Strict):
 
 
 class LaunchSpec(_Strict):
-    """`launch`: los botones «en tu agente» de la UI (ADR-024)."""
+    """`launch`: los botones «en tu agente» de la UI."""
 
     command: list[str] = []  # con `{prompt}`
     unset_env: list[str] = []

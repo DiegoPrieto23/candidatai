@@ -1,6 +1,6 @@
 """varios buzones de alertas
 
-Fase 27.4 (ADR-045): `mail_sources`, un buzón por fila (IMAP o una carpeta de `.eml`), con el
+Fase 27.4: `mail_sources`, un buzón por fila (IMAP o una carpeta de `.eml`), con el
 nombre de la variable de `.env` que guarda su contraseña y nunca la contraseña; y
 `mail_source_changes`, la auditoría de altas, cambios y bajas (qué campos, sin valores). La cuenta
 `CAI_IMAP_*` de siempre la crea la app al arrancar, como «Principal».

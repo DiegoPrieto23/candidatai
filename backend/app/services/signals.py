@@ -1,4 +1,4 @@
-"""Observaciones del código sobre una oferta que no son riesgo de inyección (fase 16, ADR-028).
+"""Observaciones del código sobre una oferta que no son riesgo de inyección (fase 16).
 
 Viven en `jobs.signals` (JSON), separadas de `risk_flags`, que sigue significando solo «posible
 inyección» (aviso en la ficha, `<untrusted_job_posting risk_flags=…>`). Claves:

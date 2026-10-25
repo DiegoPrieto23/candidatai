@@ -2,7 +2,7 @@
 
 Se usa el `Server` de bajo nivel del SDK oficial, no `MCPServer` (antes FastMCP): así el esquema de
 cada herramienta sale de nuestros modelos Pydantic y la validación la hace `runner.call_tool`, con
-los mismos errores que la CLI (ADR-013). stdout es solo del protocolo: los logs van a stderr y a
+los mismos errores que la CLI. stdout es solo del protocolo: los logs van a stderr y a
 `data/logs/mcp.log`.
 """
 

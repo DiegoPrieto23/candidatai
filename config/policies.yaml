@@ -18,7 +18,7 @@ scoring:
     nice_to_have_coverage: 0.10
   level_weights: {F: 1.0, "C+": 0.8, C: 0.5, B: 0.2}
   triage_threshold: 55             # por debajo, la oferta se muestra atenuada en «Por revisar»
-  semantic:                        # embeddings locales (extra `matching`; ADR-006)
+  semantic:                        # embeddings locales (extra `matching`)
     model: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
     similarity_floor: 0.15         # similitud coseno que cuenta como 0
     similarity_ceiling: 0.75       # similitud coseno que cuenta como 1
@@ -116,7 +116,7 @@ agent_browse:                   # fase 09b, skill search-jobs
   delay_seconds: 5
   default_max_offers: 15
 
-linkedin_public:                # fase 22, ADR-033: búsqueda pública de LinkedIn sin sesión, apagada por defecto
+linkedin_public:                # fase 22: búsqueda pública de LinkedIn sin sesión, apagada por defecto
   max_searches_per_run: 5         # búsquedas (search_urls de la plataforma LinkedIn) por ejecución
   max_pages_per_search: 2         # páginas de resultados por búsqueda (unas 10 ofertas cada una)
   delay_seconds: 10               # pausa entre dos peticiones cualesquiera; no se admite menos de 10

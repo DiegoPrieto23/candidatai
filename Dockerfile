@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-# CandidatAI en Docker (fase 26.3, ADR-042). Opcional: la forma recomendada es la instalación
+# CandidatAI en Docker (fase 26.3). Opcional: la forma recomendada es la instalación
 # nativa (install.ps1, install.sh). Tu agente de IA vive fuera del contenedor y usa la app por MCP
 # (`docker exec -i candidatai cai-mcp`) o por `cai … --json`. Ver «Con Docker» en la guía.
 #

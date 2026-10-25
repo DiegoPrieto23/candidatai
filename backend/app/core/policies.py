@@ -125,7 +125,7 @@ class AgentBrowsePolicy(BaseModel):
 
 
 class LinkedInPublicPolicy(BaseModel):
-    """Búsqueda pública de LinkedIn sin sesión (fase 22, ADR-033). Límites estrictos: el mínimo de
+    """Búsqueda pública de LinkedIn sin sesión (fase 22). Límites estrictos: el mínimo de
     la pausa está en el esquema para que no se pueda bajar editando el YAML."""
 
     max_searches_per_run: int = Field(default=5, ge=1, le=10)

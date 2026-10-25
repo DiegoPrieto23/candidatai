@@ -1,5 +1,5 @@
-"""Botones «en tu agente» (ADR-024): qué agente abrirían y abrirlo con la orden de un skill, y
-desde la fase 19 (ADR-032) lanzarlo en segundo plano y seguir sus ejecuciones.
+"""Botones «en tu agente»: qué agente abrirían y abrirlo con la orden de un skill, y
+desde la fase 19 lanzarlo en segundo plano y seguir sus ejecuciones.
 
 Capa fina sobre `services/agent_launch.py`. Solo para la UI: no hay herramienta MCP ni comando
 `--json` equivalente, a propósito (un agente no se lanza a sí mismo).
@@ -148,7 +148,7 @@ def list_agents(session: SessionDep) -> agent_launch.AgentsOverview:
 @router.get("/local-models", operation_id="get_local_models")
 def get_local_models(session: SessionDep) -> local_models.LocalModelsStatus:
     """Si Ollama responde en este equipo, qué modelos tiene y con qué contexto (fase 24.6). Solo
-    lee sus metadatos: la app no hace inferencia (ADR-001)."""
+    lee sus metadatos: la app no hace inferencia."""
     return local_models.diagnose_for(session)
 
 

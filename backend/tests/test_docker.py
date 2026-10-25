@@ -1,4 +1,4 @@
-"""Docker opcional (fase 26.3, ADR-042): con `CAI_IN_DOCKER=1`, la app sabe que tu agente está fuera
+"""Docker opcional (fase 26.3): con `CAI_IN_DOCKER=1`, la app sabe que tu agente está fuera
 del contenedor. Ningún test arranca Docker: se prueban la configuración y el comportamiento."""
 
 from collections.abc import Iterator

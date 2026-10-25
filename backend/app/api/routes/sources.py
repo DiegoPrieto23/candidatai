@@ -51,7 +51,7 @@ def add_platform(session: SessionDep, body: AgentBrowseSource) -> browse.SaveSou
     return browse.add_platform(session, body)
 
 
-# --- Búsqueda pública de LinkedIn (fase 22, ADR-033). Antes de las rutas `/{source_id}`. ---------
+# --- Búsqueda pública de LinkedIn (fase 22). Antes de las rutas `/{source_id}`. ---------
 
 
 class LinkedInPublicSettingsBody(BaseModel):

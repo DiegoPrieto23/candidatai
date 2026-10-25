@@ -1,4 +1,4 @@
-"""Buzones de los que se leen alertas y respuestas (fase 27.4, ADR-045).
+"""Buzones de los que se leen alertas y respuestas (fase 27.4).
 
 Un buzón es IMAP (siempre en solo lectura, ver `mailboxes.py`) o una carpeta `data/inbox/<nombre>/`
 de `.eml`/`.mbox`. La cuenta `CAI_IMAP_*` de `.env` aparece sola como «Principal» (`from_env`):

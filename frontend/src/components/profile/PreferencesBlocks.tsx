@@ -289,7 +289,7 @@ export function SearchWhereBlock() {
 
 type Contract = Required<Pick<Preferences, 'contract_types' | 'employment_types' | 'excluded_employer_kinds' | 'exclude_signals'>>
 
-/** `exclude_signals: [fixed_term]` es lo mismo que no aceptar `fixed_term` (ADR-046): la pantalla
+/** `exclude_signals: [fixed_term]` es lo mismo que no aceptar `fixed_term`: la pantalla
  *  lo enseña como la casilla «Temporal» sin marcar y al guardar escribe solo `contract_types`. */
 export const readContract = (p: ProfileData): Contract => {
   const pr = prefs(p)

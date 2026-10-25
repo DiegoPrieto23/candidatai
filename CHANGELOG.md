@@ -15,6 +15,10 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   datos), la instalación paso a paso con la suma de verificación, la demo, crear tu perfil, tu
   primera búsqueda y preguntas frecuentes (qué sale de tu equipo, si envía solo, el correo,
   LinkedIn, cuánto cuesta).
+- **Los avisos de arriba se pueden ocultar:** «Hay N ofertas por extraer» y el de seguimientos
+  pendientes tienen una X que los oculta hasta que cierras la pestaña.
+- **«Cómo iniciarla» en el README:** dónde queda el acceso directo en Windows, macOS y Linux, y
+  cómo arrancarla desde la terminal (`cai start`) o con Docker.
 
 ### Cambiado
 - **Portada nueva:** el README se lee en dos minutos. Arriba, la promesa, un recorrido animado de

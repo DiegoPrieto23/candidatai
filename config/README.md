@@ -11,7 +11,7 @@ repositorio.
 | `skill_aliases.yaml` | Sinónimos de skills → nombre canónico, para que «PySpark» cuente como «Apache Spark» en el matching y en las comprobaciones del CV | Tú, a mano, o la página **Skills** con «Es lo mismo que…» (fase 14) |
 | `title_aliases.yaml` | Puestos escritos de otra forma (sobre todo en español) → su nombre en inglés, para comparar títulos con `preferences.roles` | Tú, a mano |
 | `countries.yaml` | País de una oferta a partir de su ubicación (reglas de plantilla y política de foto) | Tú, a mano |
-| `injection_patterns.yaml` | Frases de posible inyección de instrucciones en ofertas (ADR-012) | Tú, a mano |
+| `injection_patterns.yaml` | Frases de posible inyección de instrucciones en ofertas | Tú, a mano |
 | `doubtful_patterns.yaml` | Agencias, nombres que ocultan la empresa y frases de cribado con IA para las señales de oferta dudosa (fase 25.3). No cambian el score; tras editarlo, `cai jobs signals --recompute` | Tú, a mano |
 
 ## `skill_aliases.yaml`
@@ -19,7 +19,7 @@ repositorio.
 Formato: `Nombre canónico: [sinónimo, otro sinónimo]`. Se compara sin tildes, mayúsculas ni signos
 (salvo `+` y `#`, por C++ y C#). Un sinónimo solo puede apuntar a un canónico.
 
-**Desde la UI** (página «Skills», ADR-026): cuando una skill que piden tus ofertas es otra forma de
+**Desde la UI** (página «Skills»): cuando una skill que piden tus ofertas es otra forma de
 llamar a una de tu perfil, «Es lo mismo que…» la añade como sinónimo:
 
 - en la entrada de esa skill si ya existe (también si tu perfil la llama por un sinónimo: si tienes

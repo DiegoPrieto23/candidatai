@@ -115,7 +115,7 @@ export interface paths {
         };
         /**
          * Get Job Salary Gap
-         * @description Cuánto queda el sueldo publicado por debajo de tu mínimo. Solo la UI (ADR-046).
+         * @description Cuánto queda el sueldo publicado por debajo de tu mínimo. Solo la UI.
          */
         get: operations["get_job_salary_gap"];
         put?: never;
@@ -1066,7 +1066,7 @@ export interface paths {
         };
         /**
          * Get Interview Guide Pdf
-         * @description La guía de preparación de la entrevista en PDF (ADR-044), para verla o descargarla.
+         * @description La guía de preparación de la entrevista en PDF, para verla o descargarla.
          */
         get: operations["get_interview_guide_pdf"];
         put?: never;
@@ -1615,7 +1615,7 @@ export interface paths {
         /**
          * Get Local Models
          * @description Si Ollama responde en este equipo, qué modelos tiene y con qué contexto (fase 24.6). Solo
-         *     lee sus metadatos: la app no hace inferencia (ADR-001).
+         *     lee sus metadatos: la app no hace inferencia.
          */
         get: operations["get_local_models"];
         put?: never;
@@ -6746,7 +6746,7 @@ export interface components {
         };
         /**
          * SalaryFloorResult
-         * @description Sin diff: la cifra no se enseña ni en el historial (ADR-046).
+         * @description Sin diff: la cifra no se enseña ni en el historial.
          */
         SalaryFloorResult: {
             /** Changed */
@@ -6760,7 +6760,7 @@ export interface components {
         };
         /**
          * SalaryGapView
-         * @description Solo para la UI (ADR-046): cuánto queda el sueldo publicado por debajo de tu mínimo. No va
+         * @description Solo para la UI: cuánto queda el sueldo publicado por debajo de tu mínimo. No va
          *     en `MatchView`, que lee el agente.
          */
         SalaryGapView: {

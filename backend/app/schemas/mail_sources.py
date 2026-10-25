@@ -1,4 +1,4 @@
-"""Buzones de los que se leen alertas (fase 27.4, ADR-045). La contraseña solo entra, nunca sale."""
+"""Buzones de los que se leen alertas (fase 27.4). La contraseña solo entra, nunca sale."""
 
 import ipaddress
 import re

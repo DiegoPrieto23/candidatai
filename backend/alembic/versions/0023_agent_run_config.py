@@ -1,6 +1,6 @@
 """configuración propia de cada ejecución en segundo plano
 
-Fase 24.5 (ADR-032): `agent_runs.run_config`, cómo se escribe la configuración que pone el techo
+Fase 24.5: `agent_runs.run_config`, cómo se escribe la configuración que pone el techo
 de herramientas de los agentes que lo limitan por configuración (OpenCode). `NULL`: el techo va en
 la orden (Claude Code).
 

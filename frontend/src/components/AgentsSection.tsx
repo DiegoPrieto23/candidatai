@@ -22,7 +22,7 @@ import { i18n, SOURCE_LANGUAGE } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
 /**
- * Sección «Agentes» de la página «Agente» (fase 24.4, ADR-037): qué agentes hay y qué sabe hacer
+ * Sección «Agentes» de la página «Agente» (fase 24.4): qué agentes hay y qué sabe hacer
  * cada uno, el agente por defecto, el modelo de cada agente y el agente y el modelo de cada acción.
  * Las preferencias se guardan enteras (`PUT /agent/preferences`) en la base de datos de `data/`.
  * Fase 24.6: niveles de gasto y, en los agentes con modelos locales, el Ollama de este equipo.

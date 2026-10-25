@@ -1,7 +1,7 @@
 """Página «Skills» (fase 14): huecos agregados, «es lo mismo que…» y marcas.
 
 Añadir un alias escribe `config/skill_aliases.yaml`, así que, como `POST /agent/launch`
-(ADR-024), solo lo puede pedir la UI. Las marcas también: son decisiones del usuario.
+, solo lo puede pedir la UI. Las marcas también: son decisiones del usuario.
 """
 
 from fastapi import APIRouter, Depends, Query

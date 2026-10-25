@@ -1,5 +1,5 @@
-"""«En segundo plano» (fase 19, ADR-032): el agente sin ventana, desde el worker, para los skills
-que no preguntan. Sin coste de API (ADR-001): es el mismo agente de los botones, con tu suscripción.
+"""«En segundo plano» (fase 19): el agente sin ventana, desde el worker, para los skills
+que no preguntan. Sin coste de API: es el mismo agente de los botones, con tu suscripción.
 
 - Solo las acciones con `background` en `agent_launch.ACTIONS` (procesar ofertas, evaluar encaje y
   generar el CV) y solo con un agente que tenga `launch.headless` en el manifiesto.

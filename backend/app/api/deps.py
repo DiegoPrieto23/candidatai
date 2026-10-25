@@ -11,7 +11,7 @@ from app.agent_interface.errors import ToolError
 from app.core import migrations
 from app.core.db import session_scope
 
-# Origen de la UI en desarrollo (`pnpm dev`): el único que admite CORS (ADR-024). Desde la fase 23.4
+# Origen de la UI en desarrollo (`pnpm dev`): el único que admite CORS. Desde la fase 23.4
 # la API sirve también la UI compilada en su propio origen (`cai start`): ver `is_ui_origin`.
 UI_ORIGIN = "http://127.0.0.1:5173"
 _LOCAL_HOSTS = ("127.0.0.1", "localhost")

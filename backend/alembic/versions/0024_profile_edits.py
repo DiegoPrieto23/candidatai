@@ -1,6 +1,6 @@
 """auditoría de lo que se edita desde «Mi perfil»
 
-Fase 25.7 (ADR-039): `profile_edits`, una fila por guardado del perfil, del contexto o de una
+Fase 25.7: `profile_edits`, una fila por guardado del perfil, del contexto o de una
 muestra de estilo desde la UI, con la sección y el sha256 del fichero antes y después (sin el
 texto). No va en `events`: esos son de una oferta.
 

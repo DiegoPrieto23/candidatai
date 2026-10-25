@@ -1,4 +1,4 @@
-"""Terminales de macOS y Linux para los botones «en tu agente» (fase 26.1, ADR-024 y ADR-040).
+"""Terminales de macOS y Linux para los botones «en tu agente» (fase 26.1).
 
 En Windows los abre `agent_launch` como siempre (Windows Terminal o PowerShell). Aquí:
 

@@ -1,4 +1,4 @@
-"""Detección de riesgo en el contenido no confiable de una oferta, al guardarla (ADR-012).
+"""Detección de riesgo en el contenido no confiable de una oferta, al guardarla.
 
 Dos señales, ambas deterministas y sin red:
 

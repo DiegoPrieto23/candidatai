@@ -57,7 +57,7 @@ describe('Entrevistas en la ficha (fase 17)', () => {
     )
   })
 
-  it('enlaza la guía de preparación en PDF (ADR-044)', async () => {
+  it('enlaza la guía de preparación en PDF', async () => {
     ficha([
       milestone(5, {
         starts_at: future,

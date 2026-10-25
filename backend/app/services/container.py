@@ -1,4 +1,4 @@
-"""CandidatAI dentro de Docker (fase 26.3, ADR-042).
+"""CandidatAI dentro de Docker (fase 26.3).
 
 La imagen pone `CAI_IN_DOCKER=1`. Tu agente de IA vive fuera del contenedor, así que dentro no se
 abren terminales, no se lanza el segundo plano y no hay navegador visible para la candidatura

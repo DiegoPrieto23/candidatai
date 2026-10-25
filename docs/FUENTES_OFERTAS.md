@@ -20,12 +20,12 @@ solo para socios aprobados y no admite nuevos. Las «APIs de LinkedIn Jobs» de 
 scrapers de pago que incumplen sus condiciones, y LinkedIn demanda a quien lo hace a escala. Por
 eso aquí LinkedIn entra por tres vías que no dependen de eso: sus propias alertas por correo, tu
 clic en el botón mientras ves una oferta y, solo si tú lo activas, la búsqueda con el navegador
-del agente (ADR-016) o la búsqueda pública sin sesión que hace la propia app (ADR-033, abajo).
+del agente o la búsqueda pública sin sesión que hace la propia app (abajo).
 
 ## APIs de ATS y portales (fases 09 y 25.1)
 
 - **Empresas objetivo:** nombre + ATS + slug del tablero, en la página «Fuentes → Empresas objetivo» o con
-  `cai sources add`. Solo APIs y feeds públicos, sin autenticación ni scraping de HTML (ADR-016).
+  `cai sources add`. Solo APIs y feeds públicos, sin autenticación ni scraping de HTML.
   La tabla de abajo dice qué usa cada uno.
 - **Portales con API:** búsquedas por palabras clave, no por empresa. InfoJobs y Adzuna necesitan
   claves en `.env` (sin ellas, esas fuentes se omiten con un aviso); Manfred y freehire, no.
@@ -49,7 +49,7 @@ Notas:
 
 - **Documentación.** Greenhouse, Lever, Ashby, Personio (feed XML), Teamtailor (RSS), Recruitee
   (Careers Site API), SmartRecruiters (Posting API), InfoJobs, Adzuna y freehire documentan sus
-  endpoints. Dos excepciones aceptadas en la fase 25.1 (ADR-016) porque son JSON público, no HTML,
+  endpoints. Dos excepciones aceptadas en la fase 25.1 porque son JSON público, no HTML,
   y no piden sesión: el **detalle de Workable** (el JSON que usa su propia página de empleo; el
   widget documentado no trae la descripción y su variante con detalles redirige a un dominio que
   bloquea las peticiones sin navegador) y la **API de Manfred**, que no está documentada.
@@ -129,7 +129,7 @@ found ─► pending_detail ─(detail_captured)─► pending_extraction ─►
 - **Qué hace:** lee los correos de alertas de empleo y da de alta cada oferta que contienen.
   Configuras las búsquedas con alerta en cada portal; la app recibe lo nuevo de todos ellos sin
   entrar en ninguno.
-- **Varios buzones** (fase 27.4, ADR-045), cada uno con su carpeta o etiqueta (p. ej. una
+- **Varios buzones** (fase 27.4), cada uno con su carpeta o etiqueta (p. ej. una
   etiqueta de Gmail «Alertas empleo» rellenada por un filtro). Se añaden en «Alertas → Añadir
   buzón» (tabla `mail_sources`): IMAP o una carpeta `data/inbox/<nombre>/` de `.eml`/`.mbox`. La
   cuenta de siempre de `.env` (`CAI_IMAP_HOST`, `CAI_IMAP_PORT` (993), `CAI_IMAP_USER`,
@@ -291,7 +291,7 @@ LinkedIn sirve su búsqueda de empleo a quien no ha iniciado sesión desde unos 
 (`jobs-guest`). La app puede consultarlos una vez al día, **sin tu cuenta ni cookies**, para tener
 ofertas de LinkedIn sin depender del correo. Es **contrario a las condiciones de uso de LinkedIn**
 (prohíben el acceso automatizado) y puede hacer que bloquee tu IP un tiempo: por eso está
-**apagada por defecto**, es para uso personal y solo la activas tú (ADR-033).
+**apagada por defecto**, es para uso personal y solo la activas tú.
 
 - **Dónde:** tarjeta de LinkedIn en «Fuentes → Plataformas» → «Búsqueda pública sin sesión». Es un interruptor
   distinto de «El agente la recorre». Encenderlo abre un aviso de riesgo que hay que aceptar (la API
@@ -333,7 +333,7 @@ ofertas de LinkedIn sin depender del correo. Es **contrario a las condiciones de
 ## ¿Sigue abierta? y republicadas (fase 16)
 
 Para no gastar tiempo ni cuota del agente en ofertas cerradas o que se publican una y otra vez.
-Las dos cosas van a `jobs.signals` (no a `risk_flags`, que es solo riesgo de inyección; ADR-028) y
+Las dos cosas van a `jobs.signals` (no a `risk_flags`, que es solo riesgo de inyección) y
 son **observaciones, no veredictos**: la app nunca cierra una oferta por ellas.
 
 ### ¿Sigue abierta?
@@ -364,7 +364,7 @@ son **observaciones, no veredictos**: la app nunca cierra una oferta por ellas.
 - En la práctica (comprobado en octubre de 2026): los ATS y Tecnoempleo responden bien; InfoJobs
   sirve un control anti-bot e Indeed responde 401 a peticiones sin navegador, así que sus ofertas
   suelen quedar en `unknown`. No se intenta esquivar: el aviso solo sale cuando hay evidencia.
-- **LinkedIn nunca** (ADR-016; la búsqueda pública de la fase 22 no cambia esto): `skipped`.
+- **LinkedIn nunca** (la búsqueda pública de la fase 22 no cambia esto): `skipped`.
 
 Cuándo se comprueba:
 

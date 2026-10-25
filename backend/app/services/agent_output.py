@@ -1,4 +1,4 @@
-"""Lectores de la salida de cada agente en segundo plano (fase 19, ADR-032), por el `output` de
+"""Lectores de la salida de cada agente en segundo plano (fase 19), por el `output` de
 `launch.headless` del manifiesto. Es el único código que conoce el formato de un agente concreto
 (como los emisores de `scripts/sync_agents.py`): el runner solo usa `StreamState`.
 

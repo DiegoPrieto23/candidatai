@@ -885,7 +885,7 @@ export function useMarkApplicationSent(jobId: number) {
   })
 }
 
-// --- Botones «en tu agente» (ADR-024) -----------------------------------------------------------
+// --- Botones «en tu agente» -----------------------------------------------------------
 
 export type AgentAction = Schemas['LaunchBody']['action']
 
@@ -1504,7 +1504,7 @@ export function useReceivedOffers() {
   })
 }
 
-// --- Buzones de las alertas (fase 27.4, ADR-045) ----------------------------------------------
+// --- Buzones de las alertas (fase 27.4) ----------------------------------------------
 
 export function useMailSources() {
   return useQuery({

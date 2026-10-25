@@ -52,6 +52,7 @@
     "processNow": "Process now",
     "followups_one": "{{count}} application has had no reply for {{days}} days or more.",
     "followups_other": "{{count}} applications have had no reply for {{days}} days or more.",
+    "dismiss": "Hide this notice until you close the tab",
     "followupsLink": "Review the follow-ups in Processes",
     "running": "Your agent is working in the background",
     "queued": "Queued in the background",

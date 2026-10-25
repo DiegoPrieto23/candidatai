@@ -1,9 +1,9 @@
-"""Motor docx: contexto del contrato → docxtpl → DOCX (ADR-004, ADR-014).
+"""Motor docx: contexto del contrato → docxtpl → DOCX.
 
 docxtpl usa Jinja2. El texto del contexto viene del perfil y del agente: docxtpl lo escapa para XML
 (`autoescape`), así que un `<` o un `&` en un logro no rompen el documento.
 
-Después del render, los enlaces del perfil (`context.links`) pasan a ser hipervínculos (ADR-023).
+Después del render, los enlaces del perfil (`context.links`) pasan a ser hipervínculos.
 """
 
 import copy

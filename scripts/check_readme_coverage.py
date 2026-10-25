@@ -25,10 +25,6 @@ ROOT = Path(__file__).resolve().parents[1]
 LISTS = {"en": "docs/FEATURES.md", "es": "docs/FUNCIONALIDADES.md"}
 READMES = {"en": "README.md", "es": "README.es.md"}
 
-# Skills que no son de quien usa la app.
-SKIP_SKILLS = {
-    "implement-phase": "sirve para desarrollar la app por fases (dev/), no para usarla",
-}
 # Nombres con guiones que se citan a propósito y no son skills.
 NOT_SKILLS = {
     "ats-simple": "plantilla de CV integrada",
@@ -125,7 +121,7 @@ def check(root: Path = ROOT) -> list[str]:
     errors: list[str] = []
     all_skills = skills(root)
     wanted = [f"`{p}`" for p in pages(root)]
-    wanted += [f"`{s}`" for s in all_skills if s not in SKIP_SKILLS]
+    wanted += [f"`{s}`" for s in all_skills]
     for rel in LISTS.values():
         text = _read(root, rel)
         errors += [f"{rel}: falta {item}" for item in wanted if item not in text]

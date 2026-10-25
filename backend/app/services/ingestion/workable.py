@@ -6,7 +6,7 @@ documenta para montar páginas de empleo propias; responde 404 si la cuenta no e
 descripción (con `?details=true` redirige a otro dominio, que bloquea las peticiones sin
 navegador), así que se pide el detalle solo de las ofertas que pasan el filtro previo. El detalle
 es el JSON que usa la propia página de empleo de Workable (`apply.workable.com/{cuenta}`): no
-está documentado, pero es JSON público, no HTML (ADR-016). Documentación del widget:
+está documentado, pero es JSON público, no HTML. Documentación del widget:
 https://help.workable.com/hc/en-us/articles/115012771647
 """
 

@@ -1,4 +1,4 @@
-"""Guía de preparación de una entrevista en PDF (ADR-044): contenido estructurado del agente,
+"""Guía de preparación de una entrevista en PDF: contenido estructurado del agente,
 maquetado y escapado por la app, guardado en el hito y servido a la ficha."""
 
 from datetime import UTC, date, datetime, timedelta

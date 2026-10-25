@@ -41,7 +41,7 @@ class Job(Base):
     duplicate_of: Mapped[int | None] = mapped_column(ForeignKey("jobs.id"))
     posted_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
     first_seen_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
-    # Observaciones del código que no son riesgo de inyección (fase 16, ADR-028):
+    # Observaciones del código que no son riesgo de inyección (fase 16):
     # `possibly_closed`, `liveness`, `open_confirmed` y `reposted`. Ver `services/liveness.py`.
     signals: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, server_default=text("'{}'"))
 

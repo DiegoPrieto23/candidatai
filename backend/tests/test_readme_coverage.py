@@ -111,9 +111,7 @@ def test_new_redirect_needs_no_mention(repo: Path) -> None:
 
 
 def test_exceptions_are_exempt(repo: Path) -> None:
-    # `implement-phase` existe y no está en las listas; `ats-simple` se cita y no es un skill.
-    assert (repo / ".agents/skills/implement-phase/SKILL.md").exists()
-    assert "implement-phase" not in (repo / "docs/FEATURES.md").read_text(encoding="utf-8")
+    # `ats-simple` se cita y no es un skill.
     _replace(repo / "README.md", "## Guarantees", "Templates: `ats-simple`.\n\n## Guarantees")
     assert coverage.check(repo) == []
 

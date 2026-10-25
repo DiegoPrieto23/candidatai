@@ -1,4 +1,4 @@
-"""«Mi perfil» editable (fase 25.7, ADR-039): leer y guardar `data/profile.yaml` por secciones.
+"""«Mi perfil» editable (fase 25.7): leer y guardar `data/profile.yaml` por secciones.
 
 Solo la UI: quien pulsa «Guardar» es el usuario. Escribir lleva `require_ui` y leer el perfil
 completo (con email y teléfono), `require_ui_read`. El agente no tiene nada equivalente: escribe el

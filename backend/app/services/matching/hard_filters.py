@@ -6,7 +6,7 @@ idiomas, palabras de descarte, contrato, jornada y tipo de empresa), → `privat
 descarte). Lo que la oferta no dice (`unknown`, `null`, listas vacías) no descarta, salvo la
 modalidad si la política lo pide. Funciones puras: sin BD ni red.
 
-El sueldo mínimo es privado (ADR-046): su motivo no lleva cifras, porque el agente lo lee en
+El sueldo mínimo es privado: su motivo no lleva cifras, porque el agente lo lee en
 `get_match`.
 """
 
@@ -50,7 +50,7 @@ EMPLOYMENT_LABEL = {
 }
 EMPLOYER_LABEL = {"consultancy": "una consultora", "agency": "una agencia de selección o ETT"}
 SALARY_REASON = "El sueldo publicado está por debajo de tu mínimo salarial."
-MONTHS_PER_YEAR = 12  # un sueldo mensual se pasa a anual ×12, no ×14 (ADR-046)
+MONTHS_PER_YEAR = 12  # un sueldo mensual se pasa a anual ×12, no ×14
 SALARY_CURRENCY = "EUR"
 
 # Nombres de idioma (ya plegados: sin tildes, en minúsculas) -> código ISO 639-1.

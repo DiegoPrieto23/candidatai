@@ -2,7 +2,7 @@
 `GET getmanfred.com/api/v2/public/offers/{id}?lang=ES`.
 
 Portal de tecnología en España. Su API pública da JSON sin claves, pero no está documentada: se
-acepta porque no es HTML ni pide sesión (ADR-016, nota de la fase 25.1). No busca por palabras:
+acepta porque no es HTML ni pide sesión (nota de la fase 25.1). No busca por palabras:
 devuelve todas las ofertas activas (unas decenas) y aquí se quedan las que casan con la búsqueda
 por el título. El listado no trae la descripción: se pide el detalle solo de las ofertas que
 pasan el filtro previo. El detalle trae datos del «scout» de Manfred (nombre y correo), que nunca

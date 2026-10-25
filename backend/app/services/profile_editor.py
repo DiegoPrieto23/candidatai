@@ -1,4 +1,4 @@
-"""«Mi perfil» editable (fase 25.7, ADR-039): guardar una sección de `data/profile.yaml` desde
+"""«Mi perfil» editable (fase 25.7): guardar una sección de `data/profile.yaml` desde
 la UI.
 
 Solo la UI escribe por aquí (las rutas llevan `require_ui`); el agente sigue escribiendo el perfil
@@ -692,7 +692,7 @@ class SalaryFloor(BaseModel):
 
 
 class SalaryFloorResult(BaseModel):
-    """Sin diff: la cifra no se enseña ni en el historial (ADR-046)."""
+    """Sin diff: la cifra no se enseña ni en el historial."""
 
     changed: bool
     file_hash: str

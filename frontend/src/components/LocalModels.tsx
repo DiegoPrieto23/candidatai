@@ -5,7 +5,7 @@ import type { LocalModelsStatus } from '@/api/client'
 /**
  * Bloque «Modelos locales» de la tarjeta de un agente que los admite (fase 24.6): si Ollama responde
  * en este equipo, qué modelos tiene y con qué contexto. La app solo lee sus metadatos; no hace
- * inferencia (ADR-001). Los avisos llegan con un código y se traducen aquí.
+ * inferencia. Los avisos llegan con un código y se traducen aquí.
  */
 
 type Warning = LocalModelsStatus['warnings'][number]

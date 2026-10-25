@@ -1,4 +1,4 @@
-"""Catálogo cerrado de acciones «en tu agente» (ADR-024): la orden de cada una, dónde se puede
+"""Catálogo cerrado de acciones «en tu agente»: la orden de cada una, dónde se puede
 lanzar y con qué herramientas en segundo plano. Lo usan `agent_launch`, `agent_runs`,
 `agent_requests` y `agent_prefs` (fase 24.4), que lo importan de aquí para no depender unos de
 otros.

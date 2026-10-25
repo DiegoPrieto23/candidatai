@@ -1,9 +1,9 @@
 """Comprueba que existen los enlaces e imágenes relativos de los Markdown del repositorio.
 
 Uso (desde la raíz): uv run --no-project python scripts/check_links.py
-Revisa los `.md` de la raíz, `docs/`, `dev/`, `demo/`, `extension/`, `scripts/` y `.agents/`:
-enlaces `[…](ruta)`, `src="…"`, `srcset="…"` y `href="…"`. Ignora URLs externas, anclas sueltas,
-el código y los encargos de `dev/prompts/`, que citan rutas futuras. Sale con código 1 si falta
+Revisa los `.md` de la raíz, `docs/`, `demo/`, `extension/`, `scripts/` y `.agents/`:
+enlaces `[…](ruta)`, `src="…"`, `srcset="…"` y `href="…"`. Ignora URLs externas, anclas sueltas
+y el código. Sale con código 1 si falta
 alguno.
 """
 
@@ -12,9 +12,8 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-FOLDERS = ("docs", "dev", "demo", "extension", "scripts", ".agents")
+FOLDERS = ("docs", "demo", "extension", "scripts", ".agents")
 SKIP = ("node_modules",)
-PROMPTS = ROOT / "dev" / "prompts"
 LINK = re.compile(r"\[[^\]]*\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)")
 ATTR = re.compile(r"\b(?:src|srcset|href)=\"([^\"]+)\"")
 FENCE = re.compile(r"```.*?```", re.S)
@@ -37,7 +36,7 @@ def main() -> int:
         files += sorted((ROOT / folder).rglob("*.md"))
     missing: list[str] = []
     for md in files:
-        if any(part in SKIP for part in md.parts) or md.is_relative_to(PROMPTS):
+        if any(part in SKIP for part in md.parts):
             continue
         for target in targets(md.read_text(encoding="utf-8")):
             if not is_local(target):

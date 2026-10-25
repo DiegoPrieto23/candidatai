@@ -1,7 +1,7 @@
 """ejecuciones en segundo plano y cola de encargos
 
 Tabla `agent_runs`: las ejecuciones del agente sin ventana que lanza la UI y ejecuta el worker
-(fase 19, ADR-032). Tabla `agent_requests`: los encargos para la próxima sesión interactiva.
+(fase 19). Tabla `agent_requests`: los encargos para la próxima sesión interactiva.
 
 Revision ID: 0019
 Revises: 0018

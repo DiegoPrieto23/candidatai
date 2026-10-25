@@ -1,4 +1,4 @@
-"""Niveles de gasto (fase 24.6, ADR-037): «Económico», «Equilibrado» y «Máximo».
+"""Niveles de gasto (fase 24.6): «Económico», «Equilibrado» y «Máximo».
 
 Cada nivel es un conjunto de preferencias por acción (agente y modelo, las de la 24.4) para las
 acciones de `TIER_ACTIONS`. La persona lo rellena una vez y lo aplica con un clic; aplicar guarda

@@ -189,7 +189,7 @@ function Assessment({ match, assessMinScore }: { match: MatchView; assessMinScor
 }
 
 /** Con `jobId`, el fallo por sueldo dice cuánto queda por debajo de tu mínimo: solo la UI lo sabe
- *  (ADR-046); el motivo que guarda el servidor no lleva cifras. */
+ * ; el motivo que guarda el servidor no lleva cifras. */
 export function FilterFailures({ failures, jobId }: { failures: Schemas['FilterFailure'][]; jobId?: number }) {
   const { t } = useTranslation('match')
   const bySalary = jobId != null && failures.some((f) => f.filter === 'salary')

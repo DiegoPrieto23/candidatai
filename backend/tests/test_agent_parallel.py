@@ -1,4 +1,4 @@
-"""Lote en paralelo (fase 25.4, ADR-038): hasta N ejecuciones a la vez, nunca dos de la misma oferta
+"""Lote en paralelo (fase 25.4): hasta N ejecuciones a la vez, nunca dos de la misma oferta
 ni dos lotes de la misma acción, con tope por agente y reintentos si SQLite está bloqueado."""
 
 import threading

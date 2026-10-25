@@ -1,4 +1,4 @@
-"""Señales de oferta dudosa (fase 25.3, ADR-028): observaciones deterministas, no veredictos.
+"""Señales de oferta dudosa (fase 25.3): observaciones deterministas, no veredictos.
 
 Viven en `jobs.signals` junto a las de la fase 16 y **no cambian el score ni los filtros duros**;
 solo filtran si el usuario lo pide en `preferences.exclude_signals` (`employer_hidden`,

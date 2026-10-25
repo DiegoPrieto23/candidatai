@@ -55,7 +55,7 @@ export function InterviewDetails({ milestone }: { milestone: MilestoneOut }) {
   return (
     <div className="mt-2 space-y-2">
       {guide && (
-        // ADR-044: la guía que redactó tu agente y maquetó la app. Se abre en otra pestaña.
+        // La guía que redactó tu agente y maquetó la app. Se abre en otra pestaña.
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-md border bg-muted/30 px-3 py-2 text-xs">
           <FilePdfIcon className="size-4 shrink-0 text-primary" weight="duotone" aria-hidden />
           <a

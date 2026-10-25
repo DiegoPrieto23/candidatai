@@ -90,7 +90,7 @@ def test_save_stores_document_and_records_event(session: Session, approved: int)
 
 
 def test_get_application_answers_returns_the_latest(session: Session, approved: int) -> None:
-    """ADR-044: `prepare-interview` las lee para no contradecir lo que se envió."""
+    """`prepare-interview` las lee para no contradecir lo que se envió."""
     assert answers.get_application_answers(session, approved).answers is None
     result = answers.save_application_answers(session, approved, _answers(GOOD, SALARY))
     info = answers.get_application_answers(session, approved)

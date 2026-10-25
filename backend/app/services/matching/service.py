@@ -247,7 +247,7 @@ def get_match(session: Session, job_id: int) -> MatchView:
 
 
 class SalaryGapView(BaseModel):
-    """Solo para la UI (ADR-046): cuánto queda el sueldo publicado por debajo de tu mínimo. No va
+    """Solo para la UI: cuánto queda el sueldo publicado por debajo de tu mínimo. No va
     en `MatchView`, que lee el agente."""
 
     gap_eur: int | None  # `None` si no hay mínimo, sueldo comparable o no queda por debajo

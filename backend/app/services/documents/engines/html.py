@@ -1,10 +1,10 @@
-"""Motor html: contexto del contrato → Jinja2 → HTML saneado → PDF con Chromium (ADR-014).
+"""Motor html: contexto del contrato → Jinja2 → HTML saneado → PDF con Chromium.
 
 - Jinja2 en un `SandboxedEnvironment` con autoescape: el texto del perfil y del agente no puede
   inyectar etiquetas, y la plantilla (que puede venir de un CV ajeno) no llega a atributos
   internos de Python.
 - El HTML generado pasa por `sanitize.clean_html` antes de imprimirse. Después, y solo entonces,
-  los enlaces del perfil (`context.links`) pasan a ser `<a href>` (ADR-023): la plantilla no puede
+  los enlaces del perfil (`context.links`) pasan a ser `<a href>`: la plantilla no puede
   poner enlaces externos, el código sí.
 - Chromium (Playwright) imprime sin JavaScript y sin red: la página se carga desde un origen
   virtual (`http://cai.local/`) y cada petición se sirve solo desde la carpeta de la plantilla, sus

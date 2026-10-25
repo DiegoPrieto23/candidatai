@@ -1,4 +1,4 @@
-"""Cartas de presentación de una oferta (fase 08c, ADR-018).
+"""Cartas de presentación de una oferta (fase 08c).
 
 - `save_brief`: las indicaciones de la carta para una oferta (las de la UI o las que dicta el
   usuario al agente). Mandan sobre `preferences.cover_letter` del perfil.

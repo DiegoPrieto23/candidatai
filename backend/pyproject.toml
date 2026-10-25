@@ -30,7 +30,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# Similitud semántica del matching (ADR-006). Trae torch: `uv sync --extra matching`.
+# Similitud semántica del matching. Trae torch: `uv sync --extra matching`.
 matching = ["sentence-transformers>=3"]
 # Conversión a PDF con Microsoft Word si no hay LibreOffice (solo Windows): `uv sync --extra word`.
 word = ["docx2pdf>=0.1.8; sys_platform == 'win32'"]

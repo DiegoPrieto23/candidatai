@@ -1,4 +1,4 @@
-"""Varios buzones de alertas (fase 27.4, ADR-045): contraseñas solo en `.env`, lectura de todos
+"""Varios buzones de alertas (fase 27.4): contraseñas solo en `.env`, lectura de todos
 los buzones activos en solo lectura y la cuenta `CAI_IMAP_*` de siempre como «Principal»."""
 
 import imaplib

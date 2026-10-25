@@ -643,7 +643,7 @@
           "jobs"
         ],
         "summary": "Get Job Salary Gap",
-        "description": "Cuánto queda el sueldo publicado por debajo de tu mínimo. Solo la UI (ADR-046).",
+        "description": "Cuánto queda el sueldo publicado por debajo de tu mínimo. Solo la UI.",
         "operationId": "get_job_salary_gap",
         "parameters": [
           {
@@ -6473,7 +6473,7 @@
           "process"
         ],
         "summary": "Get Interview Guide Pdf",
-        "description": "La guía de preparación de la entrevista en PDF (ADR-044), para verla o descargarla.",
+        "description": "La guía de preparación de la entrevista en PDF, para verla o descargarla.",
         "operationId": "get_interview_guide_pdf",
         "parameters": [
           {
@@ -9701,7 +9701,7 @@
           "agent"
         ],
         "summary": "Get Local Models",
-        "description": "Si Ollama responde en este equipo, qué modelos tiene y con qué contexto (fase 24.6). Solo\nlee sus metadatos: la app no hace inferencia (ADR-001).",
+        "description": "Si Ollama responde en este equipo, qué modelos tiene y con qué contexto (fase 24.6). Solo\nlee sus metadatos: la app no hace inferencia.",
         "operationId": "get_local_models",
         "responses": {
           "200": {
@@ -28594,7 +28594,7 @@
           "rescore_queued"
         ],
         "title": "SalaryFloorResult",
-        "description": "Sin diff: la cifra no se enseña ni en el historial (ADR-046)."
+        "description": "Sin diff: la cifra no se enseña ni en el historial."
       },
       "SalaryGapView": {
         "properties": {
@@ -28615,7 +28615,7 @@
           "gap_eur"
         ],
         "title": "SalaryGapView",
-        "description": "Solo para la UI (ADR-046): cuánto queda el sueldo publicado por debajo de tu mínimo. No va\nen `MatchView`, que lee el agente."
+        "description": "Solo para la UI: cuánto queda el sueldo publicado por debajo de tu mínimo. No va\nen `MatchView`, que lee el agente."
       },
       "SalaryRangeSignal": {
         "properties": {

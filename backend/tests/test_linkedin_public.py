@@ -1,4 +1,4 @@
-"""Búsqueda pública de LinkedIn sin sesión (fase 22, ADR-033): apagada por defecto, límites y
+"""Búsqueda pública de LinkedIn sin sesión (fase 22): apagada por defecto, límites y
 corte ante bloqueo. HTML inventado en `fixtures/linkedin_public/`; sin red."""
 
 from collections.abc import Callable, Iterator

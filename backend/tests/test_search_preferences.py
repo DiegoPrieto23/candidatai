@@ -1,4 +1,4 @@
-"""Fase 27.5 (ADR-046): preferencias de búsqueda nuevas en el perfil y sus filtros duros.
+"""Fase 27.5: preferencias de búsqueda nuevas en el perfil y sus filtros duros.
 
 Años mínimos, sueldo mínimo privado (`private.salary_floor_eur`), palabras que descartan del
 perfil, contrato y jornada, tipo de empresa (`employer_kind`) y la equivalencia de

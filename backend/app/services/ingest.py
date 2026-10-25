@@ -214,11 +214,11 @@ def parse_page(html: str) -> ParsedPage:
 
 
 def _check_host(host: str) -> None:
-    """Rechaza LinkedIn (ADR-009) y destinos locales o de red privada (la URL puede venir de
+    """Rechaza LinkedIn y destinos locales o de red privada (la URL puede venir de
     contenido no confiable). Solo se comprueban IPs literales y `localhost`; no se resuelve DNS."""
     host = host.lower().rstrip(".")
     if any(host == blocked or host.endswith(f".{blocked}") for blocked in _BLOCKED_HOSTS):
-        raise IngestError(f"Las ofertas de LinkedIn no se descargan (ADR-009). {_SUGGEST_TEXT}")
+        raise IngestError(f"Las ofertas de LinkedIn no se descargan. {_SUGGEST_TEXT}")
     if host == "localhost" or host.endswith(".localhost"):
         raise IngestError("No se descargan direcciones locales.")
     try:

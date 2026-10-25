@@ -1,4 +1,4 @@
-# Nada personal en la imagen: tus datos van en el volumen /data (ADR-042).
+# Nada personal en la imagen: tus datos van en el volumen /data.
 data
 data-*
 **/data

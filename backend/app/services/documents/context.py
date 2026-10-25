@@ -247,7 +247,7 @@ def href(text: str) -> str:
 
 
 def links(context: dict[str, Any]) -> dict[str, str]:
-    """Textos del documento que se convierten en enlace → su URL (ADR-023).
+    """Textos del documento que se convierten en enlace → su URL.
 
     Solo los enlaces del perfil (LinkedIn, GitHub y el de cada proyecto): los pone el código al
     renderizar, nunca la plantilla, que puede venir de un CV ajeno.

@@ -1,9 +1,9 @@
 """«Mi perfil» (fases 13 y 25.7): contexto, muestras de estilo y abrir sus carpetas.
 
-Desde la fase 25.7 el texto del contexto también se edita en la UI (ADR-039, matiza la 025), con la
+Desde la fase 25.7 el texto del contexto también se edita en la UI (matiza la 025), con la
 misma concurrencia optimista que el perfil, y se suben las muestras de estilo. Escribir solo lo
 puede pedir la UI (`require_ui`). Abrir una carpeta lanza el explorador de archivos, así que, como
-`POST /agent/launch` (ADR-024), también solo la UI y para una lista cerrada de carpetas.
+`POST /agent/launch`, también solo la UI y para una lista cerrada de carpetas.
 """
 
 import base64

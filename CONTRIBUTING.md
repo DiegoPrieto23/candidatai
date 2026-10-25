@@ -14,7 +14,7 @@ By taking part you agree to the [Code of Conduct](CODE_OF_CONDUCT.md).
 These come from [`AGENTS.md`](AGENTS.md) and are checked in review:
 
 1. **No LLM SDKs or API calls in the app** (anthropic, openai, langchain, litellm…). The reasoning
-   belongs to the user's agent (ADR-001).
+   belongs to the user's agent.
 2. **Nothing agent-specific in the product logic, docs or canonical skills.** Agent-specific
    configuration goes in `.agents/manifest.yaml` and is generated with `scripts/sync_agents.py`.
 3. **No personal data** in issues, tests, fixtures, docs or commits. Use the fictional data in
@@ -122,9 +122,8 @@ the command can't launch, do the three skills by hand in the demo and use `--imp
   list exist in English and Spanish: update both. Technical docs are in Spanish; writing them in
   English is fine, and the maintainer will translate.
 
-Larger changes follow the phase method in
-[`dev/DESARROLLO_POR_FASES.md`](dev/DESARROLLO_POR_FASES.md): a written brief, a plan, a branch,
-tests and a review. Open an issue first to agree on the approach.
+For larger changes, open an issue first to agree on the approach: then a short plan, a branch,
+tests and a review.
 
 ## Changelog, versions and releases
 

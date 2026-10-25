@@ -1,4 +1,4 @@
-"""Contraseñas de los buzones en `.env` (fase 27.4, ADR-045).
+"""Contraseñas de los buzones en `.env` (fase 27.4).
 
 Solo se tocan las líneas de las variables que se piden; el resto del fichero queda igual. Se
 escribe de forma atómica (fichero temporal en la misma carpeta y `os.replace`) y, en macOS y

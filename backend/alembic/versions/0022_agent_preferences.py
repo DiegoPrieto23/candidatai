@@ -1,6 +1,6 @@
 """preferencias de agente y modelo
 
-Fase 24.4 (ADR-037): tabla `agent_preferences` (agente por defecto, modelo o preset por agente y
+Fase 24.4: tabla `agent_preferences` (agente por defecto, modelo o preset por agente y
 agente por acción) y el modelo o preset con que se lanzó cada ejecución en `agent_runs`.
 
 Revision ID: 0022
