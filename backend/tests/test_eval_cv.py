@@ -227,7 +227,7 @@ def test_adding_eval_cases_again_keeps_what_the_agent_did(demo_dir: Path) -> Non
         before = len(events.get_timeline(session, job_id).events)
 
     summary = demo.seed(demo_dir, eval_cv=True)  # sin --force: solo añade lo que falte
-    assert summary.jobs == 70
+    assert summary.jobs == 75
 
     with demo.use_data_dir(demo_dir), session_scope() as session:
         assert events.current_stage(session, job_id) == Stage.CV_READY

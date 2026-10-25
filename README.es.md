@@ -39,13 +39,12 @@ experiencia ni enviar nada por su cuenta.
 -->
 
 <p align="center">
-  <img src="docs/img/es/triage.gif" alt="Triaje con el teclado: J/K para moverse, A para aprobar" width="88%">
+  <img src="docs/img/es/anim/triage.webp" alt="Triaje con el teclado: J/K para moverse, A para aprobar" width="88%">
   <br><sub>Triaje con el teclado. Todo lo que se ve es la <b>demo</b>: una candidata, empresas y ofertas inventadas.</sub>
 </p>
 
 > [!NOTE]
-> La interfaz está en **español e inglés** (se cambia desde la barra lateral). Mira el
-> **[recorrido en vídeo](docs/video/tour-es.mp4)**.
+> La interfaz está en **español e inglés** (se cambia desde la barra lateral).
 
 ## Índice
 
@@ -115,16 +114,18 @@ de las plataformas, descartar desde la Bandeja con Deshacer y la ayuda de cada b
 
 | Inicio | Por revisar |
 |---|---|
-| <picture><source media="(prefers-color-scheme: dark)" srcset="docs/img/es/dark/home.png"><img src="docs/img/es/home.png" alt="Inicio"></picture> | <picture><source media="(prefers-color-scheme: dark)" srcset="docs/img/es/dark/triage.png"><img src="docs/img/es/triage.png" alt="Por revisar"></picture> |
+| <picture><source media="(prefers-color-scheme: dark)" srcset="docs/img/es/dark/home.webp"><img src="docs/img/es/home.webp" alt="Inicio"></picture> | <picture><source media="(prefers-color-scheme: dark)" srcset="docs/img/es/dark/triage.webp"><img src="docs/img/es/triage.webp" alt="Por revisar"></picture> |
 | **Procesos (kanban)** | **Embudo** |
-| <img src="docs/img/es/processes.png" alt="Procesos"> | <img src="docs/img/es/funnel.png" alt="Embudo"> |
+| <picture><source media="(prefers-color-scheme: dark)" srcset="docs/img/es/dark/processes.webp"><img src="docs/img/es/processes.webp" alt="Procesos"></picture> | <img src="docs/img/es/funnel.webp" alt="Embudo"> |
+| **Bandeja: descartar con Deshacer** | **Calendario** |
+| <img src="docs/img/es/anim/discard.webp" alt="Descartar ofertas desde la Bandeja y deshacerlo"> | <img src="docs/img/es/calendar.webp" alt="Calendario con entrevistas, pruebas técnicas y plazos"> |
 
 ## Más de cerca
 
 <details open>
 <summary><b>CV a medida: el mismo contenido verificado, cualquier diseño, en segundos</b></summary>
 <br>
-<p align="center"><img src="docs/img/es/cv.gif" alt="Cambiar la plantilla y el color del CV y volver a renderizarlo" width="88%"></p>
+<p align="center"><img src="docs/img/es/anim/cv.webp" alt="Cambiar la plantilla y el color del CV y volver a renderizarlo" width="88%"></p>
 
 El agente redacta el contenido del CV una sola vez. En la ficha de la oferta eliges plantilla, foto
 (automática según el país, con o sin), color de acento y secciones ocultas, y pulsas «Renderizar»:
@@ -136,40 +137,64 @@ en Workday o en el Reino Unido).
 <details>
 <summary><b>La ficha</b>: extracción, desglose del encaje, CV, carta, paquete de candidatura y proceso</summary>
 <br>
-<img src="docs/img/es/job.png" alt="Ficha con la extracción y el encaje">
-<picture><source media="(prefers-color-scheme: dark)" srcset="docs/img/es/dark/job-cv.png"><img src="docs/img/es/job-cv.png" alt="Sección del CV en la ficha"></picture>
-<img src="docs/img/es/job-process.png" alt="Una oferta en proceso: qué ha pasado, hitos y contactos">
+<img src="docs/img/es/job.webp" alt="Ficha con la extracción y el encaje">
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/img/es/dark/job-cv.webp"><img src="docs/img/es/job-cv.webp" alt="Sección del CV en la ficha"></picture>
+<img src="docs/img/es/job-letter.webp" alt="Sección de la carta de presentación en la ficha">
+<img src="docs/img/es/job-package.webp" alt="Paquete de candidatura: CV, carta y respuestas listos para enviar">
+<img src="docs/img/es/job-interview.webp" alt="Una oferta en proceso: entrevista con su plan de preparación por días">
+<img src="docs/img/es/job-research.webp" alt="Dosier de la empresa con fuentes">
+</details>
+
+<details>
+<summary><b>Candidatura asistida</b>: la app rellena el formulario, tú revisas cada campo y lo envías</summary>
+<br>
+<p align="center"><img src="docs/img/es/anim/apply.webp" alt="La app rellena un formulario de prueba, enseña de dónde sale cada respuesta y se para en la confirmación con el nombre de la empresa" width="88%"></p>
+</details>
+
+<details>
+<summary><b>Alertas y respuestas</b>: alertas de empleo de varios buzones y respuestas de las empresas ya clasificadas</summary>
+<br>
+<img src="docs/img/es/alerts.webp" alt="Página Alertas con dos buzones">
+<p align="center"><img src="docs/img/es/anim/mailbox.webp" alt="Añadir un buzón para las alertas de empleo" width="88%"></p>
+<img src="docs/img/es/replies.webp" alt="Respuestas de las empresas con el evento propuesto para aceptar">
+</details>
+
+<details>
+<summary><b>Mi perfil</b>: tu experiencia y tus preferencias de búsqueda, editables sin YAML</summary>
+<br>
+<p align="center"><img src="docs/img/es/anim/profile.webp" alt="Plegar y editar una experiencia en Mi perfil" width="88%"></p>
+<img src="docs/img/es/profile-search.webp" alt="Preferencias de búsqueda en Mi perfil">
 </details>
 
 <details>
 <summary><b>Plantillas de CV</b>: las integradas y las tuyas, importadas de cualquier diseño</summary>
 <br>
-<img src="docs/img/es/templates.png" alt="Plantillas de CV">
+<img src="docs/img/es/templates.webp" alt="Plantillas de CV">
 </details>
 
 <details>
 <summary><b>Skills</b>: lo que piden las ofertas y no tienes, y alias «es lo mismo que…»</summary>
 <br>
-<img src="docs/img/es/skills.png" alt="Página Skills">
+<img src="docs/img/es/skills.webp" alt="Página Skills">
 </details>
 
 <details>
 <summary><b>Fuentes</b>: empresas objetivo y portales que recorre tu agente, en dos pestañas</summary>
 <br>
-<img src="docs/img/es/sources-companies.png" alt="Empresas objetivo">
-<img src="docs/img/es/sources-platforms.png" alt="Plataformas">
+<img src="docs/img/es/sources-companies.webp" alt="Empresas objetivo">
+<img src="docs/img/es/sources-platforms.webp" alt="Plataformas">
 </details>
 
 <details>
 <summary><b>Agente</b>: lanza skills desde la UI, en una terminal o en segundo plano</summary>
 <br>
-<img src="docs/img/es/agent.png" alt="Página Agente">
+<img src="docs/img/es/agent.webp" alt="Página Agente">
 </details>
 
 <details>
 <summary><b>Barra lateral</b>: páginas agrupadas con lo que te espera, plegable, y el idioma y el tema abajo</summary>
 <br>
-<img src="docs/img/es/sidebar-collapsed.png" alt="Barra lateral plegada">
+<img src="docs/img/es/sidebar-collapsed.webp" alt="Barra lateral plegada">
 </details>
 
 ## Pruébalo en 5 minutos
@@ -197,10 +222,6 @@ macOS y Linux son nuevos (fase 26) y aún se están probando.
 repositorio también sirve, con límites (tu agente se queda fuera del contenedor): ver
 [Con Docker](docs/GUIA.md#con-docker-opcional).
 
-<p align="center">
-  <img src="docs/img/es/start.gif" alt="cai start arranca CandidatAI y la app se abre en el navegador" width="80%">
-</p>
-
 **Para desarrollar**, con [uv](https://docs.astral.sh/uv/), Node LTS y pnpm, y la demo:
 
 ```powershell
@@ -208,7 +229,7 @@ git clone https://github.com/DiegoPrieto23/candidatai.git candidatai; cd candida
 cd frontend; pnpm install; pnpm build; cd ..\backend
 uv sync
 uv run playwright install chromium     # PDF sin LibreOffice
-uv run cai demo seed                   # data-demo/: 60 ofertas, 8 semanas de historial, 2 CVs
+uv run cai demo seed                   # data-demo/: 65 ofertas, 8 semanas de historial, 2 CVs
 $env:CAI_DATA_DIR = "data-demo"; uv run cai start    # http://127.0.0.1:8000
 ```
 

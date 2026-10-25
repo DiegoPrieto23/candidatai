@@ -67,7 +67,7 @@ jobs:
           $out = uv run cai demo seed --dir "$env:RUNNER_TEMP/data-demo" --compat --eval-cv --json
           if ($LASTEXITCODE -ne 0) { throw "cai demo seed falló: $out" }
           $summary = ($out -join "`n") | ConvertFrom-Json
-          if ($summary.jobs -ne 70 -or $summary.cvs -ne 2) { throw "Demo incompleta: $out" }
+          if ($summary.jobs -ne 75 -or $summary.cvs -ne 2) { throw "Demo incompleta: $out" }
 
   installer:
     # install.sh (fase 26.2) en macOS y Linux. install.ps1 -WhatIf lo prueba test_start.py en Windows.

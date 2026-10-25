@@ -32,7 +32,7 @@ Dublín). Esta guía sigue la española; con la inglesa todo es igual, con otros
   uv run cai demo seed --lang en --dir data-demo-en --force   # inglesa (opcional)
   ```
 
-  Debe decir «60 ofertas», un reparto por etapas y «CVs verificados: 2».
+  Debe decir «65 ofertas», un reparto por etapas y «CVs verificados: 2».
 
 - [ ] **Arrancar la app con la demo** en una ventana propia:
 

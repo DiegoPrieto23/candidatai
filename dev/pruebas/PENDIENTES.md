@@ -86,9 +86,7 @@ funcionando. Los roles son `writer`, `verifier`, `classifier`, `reviewer` y `ext
 
 - [ ] Cuando hagas push, abre el repositorio en github.com y mira los dos README: capturas, GIF y
       el modo oscuro (cambia el tema de GitHub). Guía: `fase-23-prueba-manual.txt`, parte 1.
-- [ ] Opcional: para que el vídeo se vea dentro del README, edítalo en github.com y arrastra
-      `docs/video/tour-en.mp4` (y `tour-es.mp4` en `README.es.md`); ver
-      `scripts/readme_media/README.md`.
+- [x] ~~Opcional: incrustar el vídeo del tour en el README.~~ Ya no hay vídeo (fase 28.3b).
 - [ ] Si tenías una demo creada antes de hoy y la arrancaste con `cai start`, puede tener tus
       correos reales dentro (ya no pasa): bórrala y vuelve a sembrarla con `cai demo seed --force`.
 
@@ -411,9 +409,15 @@ hiciste, márcala.
 - [ ] **Fase 28.1 · Correo privado en GitHub:** Settings → Emails → «Keep my email addresses
       private» y «Block command line pushes that expose my email». Este repo ya hace commits con tu
       correo noreply de GitHub; ponlo también en otros clones o equipos (`git config user.email …`).
-- [ ] **Fase 28.1 · Release `v0.1.0` e instaladores** (`fase-28.1-prueba-manual.md`): con la
-      etiqueta publicada, instalación limpia en Windows Sandbox (apunta qué dice SmartScreen), en
-      WSL/Linux y con Docker; macOS por la CI. Rellena la tabla de resultados.
+- [ ] **Fase 28.1 · Release `v0.1.0` e instaladores** (`fase-28.1-prueba-manual.md`): Windows 11
+      limpio ya probado por el agente en VirtualBox (2026-10-25, ✅). Faltan WSL/Linux, Docker y
+      actualizar sin perder datos; macOS por la CI. Opcional: descargar `install.ps1` con Edge para
+      ver qué dice SmartScreen (`maquina-virtual-windows.md`).
+- [x] **Fase 28.3b · Medios nuevos** (`fase-28.3b-prueba-manual.md`): generados y revisados por
+      ti (2026-10-25).
+- [ ] **Fase 28.4 · Imagen social en GitHub:** Settings → General → Social preview → «Edit» →
+      `docs/img/social-en.png`. Tras el push de la 28.3b, mira también los dos README en github.com
+      (capturas, animaciones y modo oscuro).
 - [ ] **Fase 28.2 · Raíz limpia en GitHub:** tras el push a `main`, la portada del repo ya no
       muestra `prompts/` y la barra de lenguajes enseña Python y TypeScript (GitHub la recalcula a
       los pocos minutos); la CI pasa el paso nuevo de enlaces en los tres sistemas. Si cambiaste a

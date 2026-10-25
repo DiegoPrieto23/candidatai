@@ -4,7 +4,8 @@
 y la candidata en las fichas, para que cada pantalla del portal tenga algo que enseñar: valoración
 del encaje, carta, respuestas de screening, mensajes, dosieres de empresa (uno con bandera roja),
 plan y repaso de entrevistas, oferta recibida, correos de empresas (con propuesta y sin ella),
-huecos de skills, un encargo pendiente, contexto, una muestra de estilo y la tabla de salarios.
+huecos de skills, un encargo pendiente, contexto, una muestra de estilo, la tabla de salarios y
+dos buzones con alertas de empleo (fase 28.3b).
 
 Todo pasa por los servicios de siempre, con el contenido de `demo/<idioma>/seed/extras.yaml`.
 Lo que esos servicios fechan «ahora» se lleva después al momento que le toca en la historia.
@@ -19,22 +20,25 @@ from pathlib import Path
 from typing import Any
 
 import yaml
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
 from app.core.config import REPO_ROOT, get_settings
-from app.models import Application, Event, Milestone, Reply
+from app.models import Application, Event, Job, Milestone, Reply
 from app.schemas.cover_letter import CoverLetterBriefInput, CoverLetterContent
 from app.schemas.cv import CvVerification
 from app.schemas.interviews import InterviewPlanInput, PrepBlock
 from app.schemas.llm_io import ApplicationAnswers, FitAssessment
+from app.schemas.mail_sources import MailSourceInput
 from app.services import (
     agent_requests,
     answers,
     company_research,
     context,
     drafts,
+    ingest,
     interviews,
+    mail_sources,
     pipeline,
     process,
     received_offers,
@@ -43,6 +47,7 @@ from app.services import (
     style_samples,
 )
 from app.services.documents import cover_letter as letter
+from app.services.ingestion.email import service as email_service
 from app.services.matching import service as matching
 from app.services.normalize import normalize_company
 from app.services.pipeline import EventType
@@ -51,6 +56,12 @@ from app.services.pipeline import EventType
 OPEN_FATES = ("applied", "replied", "interview_scheduled", "offer")
 # Formato de la tabla que cita `prepare-negotiation`; el mismo en los dos idiomas.
 SALARIES = REPO_ROOT / "demo" / "salarios.example.csv"
+# Una oferta en una alerta, con el formato de cada portal (el que entienden sus lectores).
+ALERT_CARDS = {
+    "linkedin": '<table><tr><td><a href="{url}">{title}</a><p>{company} · {location}</p></td></tr>'
+    "</table>",
+    "generic": '<div><a href="{url}">{title}</a><div>{company}</div><div>{location}</div></div>',
+}
 
 
 class DemoExtrasError(ValueError):
@@ -139,6 +150,7 @@ def populate(
     _interviews(session, by_fate, extras, now, agent_name)
     _received_offer(session, by_fate["offer"][0].job_id, extras["received_offer"], now)
     _retime(session, first_event, now)
+    _alerts(session, extras["alert_mailboxes"], now)
 
 
 def _files(demo_dir: Path, extras: dict[str, Any]) -> None:
@@ -269,6 +281,47 @@ def _replies(
             ),
             agent_name=agent_name,
         )
+
+
+def _offline(url: str) -> str:
+    raise ingest.IngestError(f"La demo no abre la página de {url}.")
+
+
+def _alerts(session: Session, boxes: list[dict[str, Any]], now: datetime) -> None:
+    """Un buzón de carpeta (`inbox/<carpeta>/`) por cada uno de `extras.yaml`, con una alerta de
+    empleo: sus ofertas entran como resumen en «Alertas», como las de un buzón real, sin red."""
+    inbox = get_settings().inbox_dir
+    expected = 0
+    for n, box in enumerate(boxes, start=1):
+        folder = inbox / box["folder"]
+        folder.mkdir(parents=True, exist_ok=True)
+        cards = "".join(ALERT_CARDS[box["card"]].format(**job) for job in box["jobs"])
+        message = EmailMessage()
+        message["From"] = box["sender"]
+        message["To"] = "candidata@demo.invalid"
+        message["Subject"] = box["subject"]
+        message["Date"] = format_datetime(now - timedelta(hours=2 * n))
+        message["Message-ID"] = f"<demo-alerta-{n}@demo.invalid>"
+        message.set_content(f"<html><body><h1>{box['subject']}</h1>{cards}</body></html>", "html")
+        (folder / "alerta-01.eml").write_bytes(bytes(message))
+        mail_sources.create_mail_source(
+            session, MailSourceInput(label=box["label"], kind="folder", folder=box["folder"])
+        )
+        expected += len(box["jobs"])
+    result = email_service.poll_email(session, actor="demo", fetch=_offline)
+    if result.summaries != expected:
+        raise DemoExtrasError(
+            f"Se esperaban {expected} ofertas de las alertas y entraron {result.summaries}: "
+            f"{result.message}"
+        )
+    # Entran con la hora real: a la de su correo, dentro de la historia de la demo.
+    for job_id in result.job_ids:
+        when = now - timedelta(hours=1)
+        session.execute(
+            update(Event).where(Event.job_id == job_id).values(occurred_at=when, recorded_at=when)
+        )
+        session.execute(update(Job).where(Job.id == job_id).values(first_seen_at=when))
+        pipeline.rebuild_projection(session, job_id)
 
 
 def _mail_domain(company: str) -> str:

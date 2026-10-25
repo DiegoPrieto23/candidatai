@@ -39,7 +39,7 @@ own.
 -->
 
 <p align="center">
-  <img src="docs/img/en/triage.gif" alt="Triage with the keyboard: J/K to move, A to approve" width="88%">
+  <img src="docs/img/en/anim/triage.webp" alt="Triage with the keyboard: J/K to move, A to approve" width="88%">
   <br><sub>Triage with the keyboard. Everything you see is the <b>demo</b>: a fictional candidate, companies and jobs.</sub>
 </p>
 
@@ -47,7 +47,6 @@ own.
 > The user interface is in **English and Spanish** (switch from the sidebar). Most technical docs
 > are in Spanish (it started as a personal project in Spain); this README, the
 > [user guide](docs/GUIDE.md) and the code are in English.
-> Watch the **[short video tour](docs/video/tour-en.mp4)**.
 
 ## Contents
 
@@ -118,16 +117,18 @@ from the Inbox with Undo and the help on every agent button.
 
 | Home | To review (triage) |
 |---|---|
-| <picture><source media="(prefers-color-scheme: dark)" srcset="docs/img/en/dark/home.png"><img src="docs/img/en/home.png" alt="Home"></picture> | <picture><source media="(prefers-color-scheme: dark)" srcset="docs/img/en/dark/triage.png"><img src="docs/img/en/triage.png" alt="To review"></picture> |
+| <picture><source media="(prefers-color-scheme: dark)" srcset="docs/img/en/dark/home.webp"><img src="docs/img/en/home.webp" alt="Home"></picture> | <picture><source media="(prefers-color-scheme: dark)" srcset="docs/img/en/dark/triage.webp"><img src="docs/img/en/triage.webp" alt="To review"></picture> |
 | **Processes (kanban)** | **Funnel** |
-| <img src="docs/img/en/processes.png" alt="Processes"> | <img src="docs/img/en/funnel.png" alt="Funnel"> |
+| <picture><source media="(prefers-color-scheme: dark)" srcset="docs/img/en/dark/processes.webp"><img src="docs/img/en/processes.webp" alt="Processes"></picture> | <img src="docs/img/en/funnel.webp" alt="Funnel"> |
+| **Inbox: discard with Undo** | **Calendar** |
+| <img src="docs/img/en/anim/discard.webp" alt="Discarding jobs from the Inbox and undoing it"> | <img src="docs/img/en/calendar.webp" alt="Calendar with interviews, take-home tests and deadlines"> |
 
 ## A closer look
 
 <details open>
 <summary><b>Tailored CV: same verified content, any design, in seconds</b></summary>
 <br>
-<p align="center"><img src="docs/img/en/cv.gif" alt="Changing the CV template and colour and rendering it again" width="88%"></p>
+<p align="center"><img src="docs/img/en/anim/cv.webp" alt="Changing the CV template and colour and rendering it again" width="88%"></p>
 
 The agent writes the CV content once. In the job page you choose the template, photo (automatic
 by country, with or without), accent colour and hidden sections, and press "Render": it takes
@@ -139,40 +140,64 @@ Workday jobs or UK companies).
 <details>
 <summary><b>The job page</b>: extraction, fit breakdown, CV, cover letter, application package and process</summary>
 <br>
-<img src="docs/img/en/job.png" alt="Job page with extraction and fit">
-<picture><source media="(prefers-color-scheme: dark)" srcset="docs/img/en/dark/job-cv.png"><img src="docs/img/en/job-cv.png" alt="CV section of a job page"></picture>
-<img src="docs/img/en/job-process.png" alt="A job in process: what happened, milestones and contacts">
+<img src="docs/img/en/job.webp" alt="Job page with extraction and fit">
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/img/en/dark/job-cv.webp"><img src="docs/img/en/job-cv.webp" alt="CV section of a job page"></picture>
+<img src="docs/img/en/job-letter.webp" alt="Cover letter section of a job page">
+<img src="docs/img/en/job-package.webp" alt="Application package: CV, cover letter and screening answers ready to send">
+<img src="docs/img/en/job-interview.webp" alt="A job in process: interview with its day-by-day prep plan">
+<img src="docs/img/en/job-research.webp" alt="Company research with sources">
+</details>
+
+<details>
+<summary><b>Assisted application</b>: the app fills the form, you check every field and send it</summary>
+<br>
+<p align="center"><img src="docs/img/en/anim/apply.webp" alt="The app fills a test application form, shows where each answer comes from and stops at the confirmation dialog with the company name" width="88%"></p>
+</details>
+
+<details>
+<summary><b>Alerts and replies</b>: job alerts from several mailboxes and company replies classified for you</summary>
+<br>
+<img src="docs/img/en/alerts.webp" alt="Alerts page with two mailboxes">
+<p align="center"><img src="docs/img/en/anim/mailbox.webp" alt="Adding a mailbox for job alerts" width="88%"></p>
+<img src="docs/img/en/replies.webp" alt="Company replies with the proposed event to accept">
+</details>
+
+<details>
+<summary><b>My profile</b>: your experience and search preferences, editable without YAML</summary>
+<br>
+<p align="center"><img src="docs/img/en/anim/profile.webp" alt="Folding and editing an experience in My profile" width="88%"></p>
+<img src="docs/img/en/profile-search.webp" alt="Search preferences in My profile">
 </details>
 
 <details>
 <summary><b>CV templates</b>: built-in ones and yours, imported from any design</summary>
 <br>
-<img src="docs/img/en/templates.png" alt="CV templates">
+<img src="docs/img/en/templates.webp" alt="CV templates">
 </details>
 
 <details>
 <summary><b>Skills</b>: what jobs ask for that you lack, and "it's the same as…" aliases</summary>
 <br>
-<img src="docs/img/en/skills.png" alt="Skills page">
+<img src="docs/img/en/skills.webp" alt="Skills page">
 </details>
 
 <details>
 <summary><b>Sources</b>: target companies and portals your agent browses, in two tabs</summary>
 <br>
-<img src="docs/img/en/sources-companies.png" alt="Target companies">
-<img src="docs/img/en/sources-platforms.png" alt="Platforms">
+<img src="docs/img/en/sources-companies.webp" alt="Target companies">
+<img src="docs/img/en/sources-platforms.webp" alt="Platforms">
 </details>
 
 <details>
 <summary><b>Agent</b>: launch skills from the UI, in a terminal or in the background</summary>
 <br>
-<img src="docs/img/en/agent.png" alt="Agent page">
+<img src="docs/img/en/agent.webp" alt="Agent page">
 </details>
 
 <details>
 <summary><b>Sidebar</b>: grouped pages with what's waiting, collapsible, and language and theme at the bottom</summary>
 <br>
-<img src="docs/img/en/sidebar-collapsed.png" alt="Collapsed sidebar">
+<img src="docs/img/en/sidebar-collapsed.webp" alt="Collapsed sidebar">
 </details>
 
 ## Try it in 5 minutes
@@ -200,10 +225,6 @@ Prefer not to install anything but Docker? `docker compose up -d --build` from t
 folder also works, with limits (your agent stays outside the container): see
 [With Docker](docs/GUIDE.md#with-docker-optional).
 
-<p align="center">
-  <img src="docs/img/en/start.gif" alt="cai start starts CandidatAI and the app opens in the browser" width="80%">
-</p>
-
 **To develop it**, with [uv](https://docs.astral.sh/uv/), Node LTS and pnpm, and the demo:
 
 ```powershell
@@ -211,7 +232,7 @@ git clone https://github.com/DiegoPrieto23/candidatai.git candidatai; cd candida
 cd frontend; pnpm install; pnpm build; cd ..\backend
 uv sync
 uv run playwright install chromium     # PDFs without LibreOffice
-uv run cai demo seed --lang en --dir data-demo-en   # 60 jobs, 8 weeks of history, 2 CVs
+uv run cai demo seed --lang en --dir data-demo-en   # 65 jobs, 8 weeks of history, 2 CVs
 $env:CAI_DATA_DIR = "data-demo-en"; uv run cai start  # http://127.0.0.1:8000
 ```
 

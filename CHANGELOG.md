@@ -9,6 +9,14 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 
 ## [Sin publicar]
 
+### Cambiado
+- **Capturas y animaciones nuevas** en los README y en las listas de funcionalidades, en español
+  e inglés: cada página tiene la suya, las principales también en modo oscuro, y seis animaciones
+  cortas enseñan el triaje, descartar desde la Bandeja, añadir un buzón, cambiar el CV, «Mi perfil»
+  y la candidatura asistida. Pesan mucho menos (WebP) y ya no hay vídeo.
+- **La demo trae alertas por correo:** 65 ofertas, 5 de ellas de dos buzones de alertas, así que la
+  página «Alertas» ya no sale vacía.
+
 ## [0.1.0] - 2026-10-24
 
 Primera versión publicada de CandidatAI: una app local para llevar tu búsqueda de empleo de

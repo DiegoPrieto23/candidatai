@@ -1,83 +1,92 @@
 # Medios del README
 
-Cómo se generan las capturas, los GIF, el vídeo y las ilustraciones de `README.md`, `README.es.md`
-y las guías. Todo sale de la **demo** (datos inventados), nunca de `data/`.
+Cómo se generan las capturas, las animaciones y las ilustraciones de `README.md`, `README.es.md`,
+las listas de funcionalidades y las guías. Todo sale de la **demo** (datos inventados), nunca de
+`data/`.
 
 | Fichero | Genera | Destino |
 |---|---|---|
-| `illustrations.py` | Banner y diagrama «cómo funciona», en inglés y español (SVG, con modo oscuro en el diagrama) | `docs/img/*.svg` |
-| `screenshots.py` | Capturas de la UI a 1600×1000 (×1,5), en un idioma | `docs/img/<idioma>/*.png` y, con `dark`, `docs/img/<idioma>/dark/` |
-| `recordings.py` | Grabaciones en `.webm` de cuatro escenas: `tour`, `cv`, `triage` y `start` | Carpeta temporal; luego ffmpeg (abajo) |
+| `illustrations.py` | Banner, diagrama «cómo funciona» (SVG, con modo oscuro en el diagrama) e imagen social (PNG 1280×640) | `docs/img/*.svg`, `docs/img/social-en.png` |
+| `screenshots.py` | Capturas de la UI a 1600×1000 (×1,5) en WebP, en un idioma; las de `DARK`, también en oscuro | `docs/img/<idioma>/` y `docs/img/<idioma>/dark/` |
+| `recordings.py` | Animaciones cortas (< 20 s, WebP animado con leyenda abajo) de una escena: `triage`, `discard`, `mailbox`, `cv`, `profile`, `apply` o `start` | `docs/img/<idioma>/anim/` |
+| `all.py` | Todo lo de un idioma de una vez: siembra su demo, arranca API y worker, hace capturas y escenas y lo para | lo de las dos filas anteriores |
+| `apply-form.html` | El formulario de prueba que rellena la escena `apply`, servido en 127.0.0.1:8030 | — |
 
 Los medios van por idioma: `docs/img/en/` para `README.md` y `docs/img/es/` para `README.es.md`.
-Los pasos 2 a 5 se repiten con cada idioma, cada uno con su demo.
+**No hay vídeos en el repositorio** (decisión de la fase 28.3): solo capturas y animaciones cortas,
+con un presupuesto de 8 MB para todo `docs/img/`.
 
 ## Pasos
 
-1. Demo aparte, para no tocar la tuya (`data-demo*/` está en `.gitignore`):
+Hazlo **fuera de Claude Code**, en tus propias ventanas: abre la API, el worker, la UI y varios
+Chromium, y Claude Code mata sus tareas cuando falta memoria.
+
+1. **Ventana 1**, la UI de las capturas en otro puerto (tu app sigue en 8000/5173). Déjala abierta
+   hasta el final:
+
+   ```powershell
+   cd frontend
+   $env:VITE_API_URL = "http://127.0.0.1:8010"
+   pnpm exec vite --port 5181 --strictPort
+   ```
+
+2. **Ventana 2**, todo un idioma (desde `backend/`; `imageio-ffmpeg` trae ffmpeg sin tocar las
+   dependencias del proyecto):
 
    ```powershell
    cd backend
-   uv run cai demo seed --dir data-demo-shots --force                # español (README.es.md)
-   uv run cai demo seed --lang en --dir data-demo-en-shots --force   # inglés (README.md)
+   uv run --with imageio-ffmpeg python ../scripts/readme_media/all.py en
+   uv run --with imageio-ffmpeg python ../scripts/readme_media/all.py es
    ```
 
-   Cada README lleva capturas de su demo con la UI en su idioma (`cai-language` en el navegador).
+   Con un segundo argumento solo hace esas escenas (`all.py es apply,triage`); las capturas las
+   repite siempre. `all.py` siembra su propia demo (`data-demo-shots` o `data-demo-en-shots`, en
+   `.gitignore`), apunta la primera oferta con CV al formulario de prueba y arranca el worker con
+   `CAI_APPLIER_ALLOW_LOOPBACK=1`, que es lo único que le deja abrir un formulario local. Durante
+   `apply` se abre un Chromium aparte: no lo cierres; se para antes de enviar.
 
-2. API y UI de la demo en **otros puertos**, para no chocar con tu app en 8000/5173:
-
-   ```powershell
-   $env:CAI_DATA_DIR = "data-demo-shots"; uv run cai serve --port 8010   # o data-demo-en-shots
-   # en otra terminal
-   cd frontend; $env:VITE_API_URL = "http://127.0.0.1:8010"; pnpm exec vite --port 5181 --strictPort
-   ```
-
-   La API solo acepta el origen `http://127.0.0.1:5173`. Los scripts lanzan Chromium con
-   `--disable-web-security` y reescriben el `Origin` de cada petición a la API. Es solo para
-   capturar en local; no cambia nada de la app.
-
-3. Capturas e ilustraciones (desde `backend/`, que tiene Playwright). Los argumentos son la
-   carpeta, el idioma (`en` o `es`), el tema y, si quieres, solo algunas capturas por nombre (`home`,
-   `inbox`, `triage`, `job`, `job-cv`, `job-process`, `processes`, `funnel`, `skills`, `templates`,
-   `sources-companies`, `sources-platforms`, `agent`, `sidebar-collapsed`):
+3. **Ilustraciones** (no dependen de la demo):
 
    ```powershell
    uv run python ../scripts/readme_media/illustrations.py ../docs/img
-   uv run python ../scripts/readme_media/screenshots.py ../docs/img/en en light
-   uv run python ../scripts/readme_media/screenshots.py ../docs/img/en/dark en dark "home,triage,job-cv"
    ```
 
-4. Grabaciones (carpeta, escena, idioma). Graba `triage` la última, porque aprueba una oferta de
-   la demo. La escena `start` reproduce la salida real de `cai start`: arráncalo antes sobre la
-   misma demo en otro puerto y pásale su salida y su URL:
+4. **Revisa a ojo** cada imagen (arrastra el `.webp` a una pestaña del navegador para verlo
+   animado): nada real, nada cortado, modo oscuro legible y animaciones que se entienden sin
+   sonido. La lista completa está en `dev/pruebas/fase-28.3b-prueba-manual.md`.
+
+5. Comprueba que los README y las listas enlazan bien y que cada página tiene captura:
 
    ```powershell
-   uv run python ../scripts/readme_media/recordings.py $env:TEMP\cai-rec tour en
-   uv run python ../scripts/readme_media/recordings.py $env:TEMP\cai-rec cv en
-   # en otra terminal, con CAI_DATA_DIR de la demo:
-   #   uv run cai start --port 8020 --no-browser > $env:TEMP\cai-rec\start.log
-   $env:START_LOG = "$env:TEMP\cai-rec\start.log"; $env:START_URL = "http://127.0.0.1:8020"
-   uv run python ../scripts/readme_media/recordings.py $env:TEMP\cai-rec start en
-   uv run python ../scripts/readme_media/recordings.py $env:TEMP\cai-rec triage en
+   uv run python ../scripts/check_links.py
+   uv run python ../scripts/check_readme_coverage.py
    ```
 
-   En la escena inglesa, la salida de `cai start` sale en español: la CLI aún no está traducida.
+## Una sola captura o escena
 
-5. Conversión con ffmpeg. Si no lo tienes, el paquete `imageio-ffmpeg` trae uno, sin tocar las
-   dependencias del proyecto:
-   `uv run --no-project --with imageio-ffmpeg python -c "import imageio_ffmpeg; print(imageio_ffmpeg.get_ffmpeg_exe())"`.
+Con la API de una demo en 8010 y la UI en 5181 (pasos 1 y 2 de arriba, o `cai serve --port 8010`
+con `CAI_DATA_DIR` de la demo):
 
-   ```powershell
-   # vídeo
-   ffmpeg -ss 0.8 -i tour.webm -vf "scale=1280:-2" -c:v libx264 -crf 26 -preset slow -pix_fmt yuv420p -movflags +faststart ..\docs\video\tour-en.mp4
-   # GIF (triage, cv y start, con el mismo nombre)
-   ffmpeg -ss 0.8 -i triage.webm -vf "fps=8,scale=880:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=64:stats_mode=diff[p];[b][p]paletteuse=dither=none:diff_mode=rectangle" ..\docs\img\en\triage.gif
-   ```
+```powershell
+uv run python ../scripts/readme_media/screenshots.py ../docs/img/en en light "home,inbox"
+uv run python ../scripts/readme_media/screenshots.py ../docs/img/en/dark en dark "home"
+uv run --with imageio-ffmpeg python ../scripts/readme_media/recordings.py ../docs/img/en/anim cv en
+```
 
-   Los GIF deben quedar por debajo de ~3 MB para que GitHub los cargue rápido.
+Los nombres de las capturas están en `SHOTS`, al principio de `screenshots.py`. Las escenas
+`triage`, `discard`, `mailbox` y `cv` cambian la demo: usa una solo para esto y graba `triage` la
+última, porque aprueba una oferta.
 
-## El vídeo en GitHub
+La escena `start` (la salida de `cai start` en un terminal) no la hace `all.py`: necesita un
+`cai start` aparte sobre la misma demo, con su salida en `START_LOG` y su URL en `START_URL`
+(por defecto `http://127.0.0.1:8020`). Hoy no se usa en el README: la app se abre con el acceso
+directo.
 
-GitHub no reproduce un `.mp4` del repositorio dentro del README: el enlace abre el fichero. Para
-que se vea incrustado, edita el README en github.com, arrastra `docs/video/tour-en.mp4` (o `tour-es.mp4`) al
-editor y deja la URL `https://github.com/user-attachments/assets/…` que genera en su propia línea.
+## Por qué así
+
+- La API solo acepta el origen `http://127.0.0.1:5173`. Los scripts lanzan Chromium con
+  `--disable-web-security` y reescriben el `Origin` de cada petición. Es solo para capturar en
+  local; no cambia nada de la app.
+- Los textos con los que se busca un botón, una pestaña o un título salen de
+  `frontend/src/locales/<idioma>/`, así que los mismos scripts sirven para los dos idiomas.
+- WebP en vez de PNG y GIF: pesa varias veces menos y GitHub lo muestra (también animado).

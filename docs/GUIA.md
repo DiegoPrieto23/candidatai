@@ -204,9 +204,9 @@ ella el score funciona igual, sin ese componente.
 
 ## 3. Probar la demo
 
-La demo es una candidata inventada con 60 ofertas, 8 semanas de historial y 2 CVs. Vive en su
-propia carpeta y nunca toca tus datos. Hay dos: en español (una candidata en Galicia) y en inglés
-(una candidata en Dublín, con `--lang en`).
+La demo es una candidata inventada con 65 ofertas (5 de ellas, de dos buzones de alertas), 8
+semanas de historial y 2 CVs. Vive en su propia carpeta y nunca toca tus datos. Hay dos: en
+español (una candidata en Galicia) y en inglés (una candidata en Dublín, con `--lang en`).
 
 Trae también lo que habrían dejado ella y su agente, para que ninguna pantalla salga vacía:
 valoración del encaje, carta y respuestas de screening de una oferta, un mensaje de LinkedIn y un

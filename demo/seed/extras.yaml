@@ -198,3 +198,39 @@ style_sample:
 
     Un saludo,
     Lucía
+
+# Alertas de empleo (fase 28.3b): dos buzones de carpeta (`inbox/<carpeta>/`) con una alerta cada
+# uno; sus ofertas entran como resumen en «Alertas». Empresas inventadas, enlaces que no se abren.
+alert_mailboxes:
+  - label: Alertas de LinkedIn
+    folder: alertas-linkedin
+    sender: LinkedIn Job Alerts <jobalerts-noreply@linkedin.com>
+    subject: "«Data Engineer»: 3 empleos nuevos en Galicia"
+    card: linkedin
+    jobs:
+      - title: Data Engineer
+        company: Carballo Datos
+        location: Vigo, Galicia, España (Híbrido)
+        url: https://www.linkedin.com/comm/jobs/view/4100000001/
+      - title: Analytics Engineer (dbt)
+        company: Muíño Software
+        location: A Coruña, Galicia, España
+        url: https://www.linkedin.com/comm/jobs/view/4100000002/
+      - title: Ingeniero/a de Datos Junior
+        company: Lareira Seguros
+        location: Santiago de Compostela, Galicia, España (Remoto)
+        url: https://www.linkedin.com/comm/jobs/view/4100000003/
+  - label: Alertas de InfoJobs
+    folder: alertas-infojobs
+    sender: InfoJobs <alertas@mail.infojobs.net>
+    subject: Nuevas ofertas para tu alerta «data engineer»
+    card: generic
+    jobs:
+      - title: Data Engineer (Python/Airflow)
+        company: Sargo Consultoría
+        location: Vigo (Pontevedra)
+        url: https://www.infojobs.net/vigo/data-engineer/of-i1a2b3c4d5e6f708192a3b4c5d6e7f80
+      - title: Desarrollador/a BI (Power BI)
+        company: Fiadeiro Logística
+        location: Ourense
+        url: https://www.infojobs.net/ourense/desarrollador-bi/of-i2b3c4d5e6f708192a3b4c5d6e7f801
