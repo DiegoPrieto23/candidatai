@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions and help
+    url: https://github.com/DiegoPrieto23/candidatai/discussions
+    about: How to install it, set up a source or connect your agent. Preguntas en español, también.
+  - name: Security problem
+    url: https://github.com/DiegoPrieto23/candidatai/security/advisories/new
+    about: Report it privately. Please don't open a public issue.
+  - name: Start here
+    url: https://github.com/DiegoPrieto23/candidatai/blob/main/docs/START_HERE.md
+    about: What you need, step-by-step installation and frequent questions.

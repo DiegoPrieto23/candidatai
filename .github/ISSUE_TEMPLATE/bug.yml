@@ -1,0 +1,70 @@
+name: Bug report
+description: Something doesn't work as it should.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting it. **Use the demo data** (`cai demo seed`), never your own: no CVs, emails,
+        salaries or real postings you applied to. Security problems go through
+        [SECURITY.md](https://github.com/DiegoPrieto23/candidatai/blob/main/SECURITY.md), not here.
+        Puedes escribir en español.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected and what happened instead.
+      placeholder: "In To review, I pressed A on a job and…"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. `cai demo seed --lang en --dir data-demo-en`
+        2. Open the job "…"
+        3. …
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: CandidatAI version
+      description: The release you installed, from the release page or `CHANGELOG.md` in the app folder.
+      placeholder: v0.1.0
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: System
+      options:
+        - Windows 11
+        - Windows 10
+        - macOS
+        - Linux
+        - Linux on WSL
+    validations:
+      required: true
+  - type: dropdown
+    id: install
+    attributes:
+      label: How you installed it
+      options:
+        - Installer (install.ps1 / install.sh)
+        - Cloned repository
+        - Docker
+    validations:
+      required: true
+  - type: input
+    id: agent
+    attributes:
+      label: Agent and model, if it involves the agent
+      placeholder: "Claude Code, default model"
+  - type: textarea
+    id: logs
+    attributes:
+      label: Output of `cai doctor` or the error
+      description: From the app's `backend` folder, `uv run cai doctor`. Remove any path or name that is personal.
+      render: text
