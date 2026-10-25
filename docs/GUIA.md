@@ -4,6 +4,8 @@
 
 Cómo instalar CandidatAI, probarlo con la demo y usarlo cada día con tus datos y tu agente de IA.
 Para saber qué es y por qué funciona así, empieza por el [README](../README.es.md).
+¿Es la primera vez? Lee antes [Empieza aquí](EMPEZAR.md): lo que necesitas, dicho claro, y los
+primeros pasos.
 
 ## Índice
 

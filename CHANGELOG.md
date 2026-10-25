@@ -9,7 +9,19 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 
 ## [Sin publicar]
 
+### Añadido
+- **Guía «Empieza aquí»** (`docs/EMPEZAR.md`, en inglés `docs/START_HERE.md`) para quien no es
+  técnico: qué necesitas (incluido un agente de IA, con lo que cuesta cada opción y adónde van tus
+  datos), la instalación paso a paso con la suma de verificación, la demo, crear tu perfil, tu
+  primera búsqueda y preguntas frecuentes (qué sale de tu equipo, si envía solo, el correo,
+  LinkedIn, cuánto cuesta).
+
 ### Cambiado
+- **Portada nueva:** el README se lee en dos minutos. Arriba, la promesa, la animación y los botones
+  para instalar en Windows, macOS/Linux o con Docker; una nota con lo probado de verdad y lo que aún
+  no; qué necesitas antes de empezar; y «Por qué CandidatAI», una comparación corta y con fecha con
+  AI Job Search y career-ops que dice también lo que ellos hacen mejor. El detalle (skills, fuentes,
+  agentes, arquitectura) queda en la lista de funcionalidades y en `docs/`.
 - **Capturas y animaciones nuevas** en los README y en las listas de funcionalidades, en español
   e inglés: cada página tiene la suya, las principales también en modo oscuro, y seis animaciones
   cortas enseñan el triaje, descartar desde la Bandeja, añadir un buzón, cambiar el CV, «Mi perfil»
