@@ -21,6 +21,12 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   cómo arrancarla desde la terminal (`cai start`) o con Docker.
 
 ### Cambiado
+- **«Tengo entrevista» sin fecha obligatoria:** la fecha y la hora van en campos separados y las dos
+  son opcionales. Sin hora, la entrevista cuenta todo el día; sin fecha, se registra solo que la
+  tienes. Lo mismo con la fecha de entrega de una prueba.
+- **Bandeja de ofertas:** la Bandeja se llama así, las etapas ya no quedan pegadas a su barra de
+  desplazamiento y, al marcar ofertas para descartarlas, la barra con «Descartar N» flota abajo en
+  vez de empujar la lista hacia abajo.
 - **Una interfaz más fácil de entender:**
   - **Sin jerga:** los textos ya no hablan de skills, comandos, rutas ni ficheros. Dicen qué botón
     pulsar («Procesar ofertas», «Generar CV») o qué pedirle a tu agente.

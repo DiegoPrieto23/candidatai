@@ -30,7 +30,7 @@ describe('Selector de idioma (fase 23.6)', () => {
   it('cambia la UI al momento, lo recuerda y actualiza <html lang>', async () => {
     mockApi({ 'GET /status': status(0, 3), 'GET /jobs': emptyPage })
     renderApp('/bandeja')
-    expect(await screen.findByRole('heading', { level: 1, name: 'Bandeja' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Bandeja de ofertas' })).toBeInTheDocument()
     expect(document.documentElement.lang).toBe('es')
 
     const sidebar = screen.getByRole('complementary', { name: 'Barra lateral' })
@@ -39,7 +39,7 @@ describe('Selector de idioma (fase 23.6)', () => {
     expect(within(menu).getByRole('menuitemradio', { name: 'Español' })).toHaveAttribute('aria-checked', 'true')
     await userEvent.click(within(menu).getByRole('menuitemradio', { name: 'English' }))
 
-    expect(await screen.findByRole('heading', { level: 1, name: 'Inbox' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Job inbox' })).toBeInTheDocument()
     expect(screen.getByRole('navigation', { name: 'Main navigation' })).toBeInTheDocument()
     expect(await screen.findByRole('link', { name: 'To review (3 to review)' })).toBeInTheDocument()
     expect(document.documentElement.lang).toBe('en')

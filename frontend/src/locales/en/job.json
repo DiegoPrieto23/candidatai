@@ -77,7 +77,7 @@
     "history": "History & notes"
   },
   "loading": "Loading job",
-  "back": "Inbox",
+  "back": "Job inbox",
   "invalidId": "That job ID isn't valid.",
   "viewOriginal": "View original",
   "addedOn": "Added on {{date}}",

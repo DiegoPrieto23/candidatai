@@ -77,7 +77,7 @@
     "history": "Historial y notas"
   },
   "loading": "Cargando oferta",
-  "back": "Bandeja",
+  "back": "Bandeja de ofertas",
   "invalidId": "Ese identificador de oferta no es válido.",
   "viewOriginal": "Ver original",
   "addedOn": "Alta el {{date}}",

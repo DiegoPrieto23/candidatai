@@ -442,7 +442,7 @@ function StageFilter({ stage, onChange }: { stage: Stage | undefined; onChange: 
     ...STAGES.map((s) => ({ key: s, label: STAGE_LABEL[s], count: data?.by_stage[s] })),
   ]
   return (
-    <nav aria-label={t('filterStage')} className="-mx-4 mb-3 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+    <nav aria-label={t('filterStage')} className="-mx-4 mb-3 overflow-x-auto px-4 pb-3 sm:mx-0 sm:px-0">
       <ul className="flex min-w-max gap-1.5">
         {items.map(({ key, label, count }) => {
           const selected = stage === key
@@ -687,18 +687,6 @@ export function InboxPage() {
             {t('quick.failed', { error: actionError })}
           </p>
         )}
-        {picked.length > 0 && (
-          <div className="flex items-center gap-3 rounded-xl border bg-card px-4 py-2 text-sm">
-            <p className="flex-1 tabular">{t('quick.selectedCount', { count: picked.length })}</p>
-            <Button variant="ghost" size="sm" onClick={() => setSelected(new Set())}>
-              {t('quick.clearSelection')}
-            </Button>
-            <Button size="sm" onClick={() => void discard(picked, { reason: QUICK_REASON })}>
-              <ProhibitIcon />
-              {t('quick.discardMany', { count: picked.length })}
-            </Button>
-          </div>
-        )}
       </div>
 
       <section
@@ -763,6 +751,24 @@ export function InboxPage() {
           </div>
         )}
       </section>
+
+      {/* Flota sobre la lista (alto 0): marcar ofertas no mueve la cabecera ni la tabla. */}
+      {picked.length > 0 && (
+        <div className="pointer-events-none sticky bottom-6 z-30 h-0">
+          <div className="absolute inset-x-0 bottom-0 flex justify-center">
+            <div className="pointer-events-auto flex items-center gap-3 rounded-full border bg-card py-1.5 pl-5 pr-1.5 text-sm shadow-lg animate-in fade-in slide-in-from-bottom-2">
+              <p className="tabular">{t('quick.selectedCount', { count: picked.length })}</p>
+              <Button variant="ghost" size="sm" className="rounded-full" onClick={() => setSelected(new Set())}>
+                {t('quick.clearSelection')}
+              </Button>
+              <Button size="sm" className="rounded-full" onClick={() => void discard(picked, { reason: QUICK_REASON })}>
+                <ProhibitIcon />
+                {t('quick.discardMany', { count: picked.length })}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <DiscardDialog
         open={dialogJob !== null}

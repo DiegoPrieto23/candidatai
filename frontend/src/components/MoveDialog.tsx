@@ -49,7 +49,8 @@ function MoveForm({ card, options, onDone }: { card: BoardCard; options: MoveOpt
   const [note, setNote] = useState('')
   const [reason, setReason] = useState<DiscardReason | null>(null)
   const [channel, setChannel] = useState<ApplicationChannel | ''>('')
-  const [startsAt, setStartsAt] = useState('')
+  const [startsDate, setStartsDate] = useState('')
+  const [startsTime, setStartsTime] = useState('')
   const [location, setLocation] = useState('')
   const event = useJobEvent()
   const milestone = useCreateMilestone()
@@ -58,12 +59,13 @@ function MoveForm({ card, options, onDone }: { card: BoardCard; options: MoveOpt
 
   const milestoneKind = choice ? MILESTONE_EVENTS[choice.event] : undefined
   const occurred = fromLocalInput(occurredAt)
-  const starts = startsAt ? fromLocalInput(startsAt) : null
+  // La fecha es opcional: sin ella se registra solo el evento; sin hora, cuenta todo el día.
+  const starts = startsDate ? fromLocalInput(startsTime ? `${startsDate}T${startsTime}` : startsDate) : null
   const missing =
     !choice ||
     !occurred ||
     (choice.event === 'discarded' && (!reason || (reason === 'other' && !note.trim()))) ||
-    (milestoneKind !== undefined && !starts)
+    (startsDate !== '' && !starts)
 
   const submit = (e: FormEvent) => {
     e.preventDefault()
@@ -76,7 +78,7 @@ function MoveForm({ card, options, onDone }: { card: BoardCard; options: MoveOpt
           body: {
             kind: milestoneKind,
             starts_at: starts,
-            all_day: false,
+            all_day: !startsTime,
             occurred_at: occurred,
             location: location.trim() || undefined,
             notes: trimmed,
@@ -183,23 +185,35 @@ function MoveForm({ card, options, onDone }: { card: BoardCard; options: MoveOpt
       )}
 
       {milestoneKind && (
-        <div className="grid gap-3 rounded-lg border border-dashed p-3 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="move-starts">
-              {milestoneKind === 'interview' ? t('interviewAt') : t('dueAt')}
-            </Label>
-            <Input
-              id="move-starts"
-              type="datetime-local"
-              required
-              value={startsAt}
-              onChange={(e) => setStartsAt(e.target.value)}
-            />
+        <div className="grid gap-3 rounded-lg border border-dashed p-3">
+          <div className="grid gap-3 sm:grid-cols-[1fr_8rem]">
+            <div className="space-y-2">
+              <Label htmlFor="move-starts">
+                {milestoneKind === 'interview' ? t('interviewDate') : t('dueDate')}
+              </Label>
+              <Input id="move-starts" type="date" value={startsDate} onChange={(e) => setStartsDate(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="move-starts-time">{t('time')}</Label>
+              <Input
+                id="move-starts-time"
+                type="time"
+                step={300}
+                disabled={!startsDate}
+                value={startsTime}
+                onChange={(e) => setStartsTime(e.target.value)}
+              />
+            </div>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="move-location">{t('location')}</Label>
-            <Input id="move-location" value={location} onChange={(e) => setLocation(e.target.value)} maxLength={500} />
-          </div>
+          <p className="-mt-1 text-xs text-muted-foreground">
+            {milestoneKind === 'interview' ? t('dateHintInterview') : t('dateHintTest')}
+          </p>
+          {startsDate && (
+            <div className="space-y-2">
+              <Label htmlFor="move-location">{t('location')}</Label>
+              <Input id="move-location" value={location} onChange={(e) => setLocation(e.target.value)} maxLength={500} />
+            </div>
+          )}
         </div>
       )}
 

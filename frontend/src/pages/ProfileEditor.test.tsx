@@ -640,7 +640,7 @@ describe('Mi perfil editable', () => {
     renderApp('/perfil')
     const block = await screen.findByRole('region', { name: 'Datos y resumen' })
     await userEvent.type(within(block).getByLabelText('Titular'), ' senior')
-    await userEvent.click(screen.getAllByRole('link', { name: 'Bandeja' })[0])
+    await userEvent.click(screen.getAllByRole('link', { name: 'Bandeja de ofertas' })[0])
     expect(confirm).toHaveBeenCalledWith(expect.stringContaining('cambios sin guardar'))
     expect(screen.getByRole('heading', { level: 1, name: 'Mi perfil' })).toBeInTheDocument()
     confirm.mockRestore()
