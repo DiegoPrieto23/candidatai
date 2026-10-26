@@ -161,7 +161,9 @@ def test_stale_repost_by_count(session: Session) -> None:
 
 def test_stale_repost_by_span_even_outside_the_repost_window(session: Session) -> None:
     first = _add(session, _infojobs(1))
-    _age(session, 200)  # fuera de `reposts.window_days`
+    # 201 días, fuera de `reposts.window_days`. En fechas locales, un cambio de hora cerca de la
+    # medianoche puede restar un día al intervalo: por eso se envejece uno de más.
+    _age(session, 201)
     _add(session, _infojobs(2))
     job = session.get(Job, first)
     assert job is not None
