@@ -26,6 +26,7 @@ import {
 import {
   useCreateMilestone,
   useDeleteContact,
+  useDeleteMilestone,
   useJobEvent,
   useJobProcess,
   useMilestoneStatus,
@@ -38,6 +39,14 @@ import { AgentButton } from '@/components/AgentButton'
 import { InterviewActions, InterviewDetails } from '@/components/InterviewDetails'
 import { ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -239,9 +248,70 @@ function MilestoneForm({
   )
 }
 
+/** Confirma antes de borrar un hito: dice qué se pierde (eventos, guía, plan, repaso). */
+function DeleteMilestoneDialog({
+  milestone,
+  open,
+  onOpenChange,
+}: {
+  milestone: MilestoneOut
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}) {
+  const { t } = useTranslation('process', { keyPrefix: 'deleteMilestone' })
+  const remove = useDeleteMilestone(milestone.job_id)
+  const lost = [
+    milestone.guide && t('guide'),
+    milestone.prep_plan && t('plan'),
+    milestone.debrief_notes && t('debrief'),
+    milestone.prep_instructions && t('instructions'),
+  ].filter(Boolean) as string[]
+  const withEvents = milestone.kind === 'interview' || milestone.kind === 'test'
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{t('title', { title: milestone.title })}</DialogTitle>
+          <DialogDescription>{withEvents ? t('withEvents') : t('plain')}</DialogDescription>
+        </DialogHeader>
+        {lost.length > 0 && (
+          <div className="text-sm">
+            <p>{t('lost')}</p>
+            <ul className="mt-1 list-disc pl-5 text-muted-foreground">
+              {lost.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {remove.error && (
+          <p role="alert" className="text-sm text-destructive">
+            {errorMessage(remove.error)}
+          </p>
+        )}
+        <DialogFooter className="gap-2">
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            {t('keep')}
+          </Button>
+          <Button
+            type="button"
+            variant="destructive"
+            disabled={remove.isPending}
+            onClick={() => remove.mutate(milestone.id, { onSuccess: () => onOpenChange(false) })}
+          >
+            <TrashIcon />
+            {remove.isPending ? t('deleting') : t('confirm')}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 function MilestoneRow({ milestone, stage }: { milestone: MilestoneOut; stage: Stage | null }) {
   const { t } = useTranslation('process', { keyPrefix: 'milestone' })
   const [editing, setEditing] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const update = useUpdateMilestone(milestone.job_id)
   const status = useMilestoneStatus(milestone.job_id)
   const scheduled = milestone.status === 'scheduled'
@@ -353,6 +423,16 @@ function MilestoneRow({ milestone, stage }: { milestone: MilestoneOut; stage: St
             </Button>
           </>
         )}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-8"
+          aria-label={t('delete', { title: milestone.title })}
+          onClick={() => setDeleting(true)}
+        >
+          <TrashIcon />
+        </Button>
+        <DeleteMilestoneDialog milestone={milestone} open={deleting} onOpenChange={setDeleting} />
       </div>
     </li>
   )

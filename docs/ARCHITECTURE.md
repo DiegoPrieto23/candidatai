@@ -121,7 +121,9 @@ found ─► pending_extraction ─► pending_triage ─► approved ─► cv_
 
 - Las etapas marcadas [agente] se quedan en cola hasta que ejecutas el skill correspondiente en tu
   agente, o hasta que una tarea programada de tu agente lo hace por ti, si tu herramienta lo permite.
-- La etapa actual de cada oferta se calcula a partir de sus eventos (`docs/DATA_MODEL.md`).
+- La etapa actual de cada oferta se calcula a partir de sus eventos (`docs/DATA_MODEL.md`). Los
+  eventos solo se añaden, salvo al borrar un hito anotado por error: se van los suyos y la etapa
+  se recalcula.
 
 ## Qué hace el agente y qué hace el código
 

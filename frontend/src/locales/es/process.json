@@ -19,7 +19,21 @@
     "ics": "Añadir «{{title}}» a mi calendario",
     "edit": "Editar «{{title}}»",
     "done": "Marcar «{{title}}» como hecho",
-    "cancel": "Cancelar «{{title}}»"
+    "cancel": "Cancelar «{{title}}»",
+    "delete": "Borrar «{{title}}»"
+  },
+  "deleteMilestone": {
+    "title": "¿Borrar «{{title}}»?",
+    "withEvents": "Para lo que anotaste por error: desaparece también del historial y del embudo, y la etapa de la oferta se recalcula. Si se canceló de verdad, usa la X para cancelarla.",
+    "plain": "Desaparece de la ficha y del calendario.",
+    "lost": "Se borra también:",
+    "guide": "la guía de preparación (también el PDF)",
+    "plan": "el plan de preparación",
+    "debrief": "el repaso",
+    "instructions": "tus indicaciones para preparar y ensayar",
+    "keep": "No borrar",
+    "deleting": "Borrando…",
+    "confirm": "Borrar"
   },
   "milestones": {
     "title": "Hitos",

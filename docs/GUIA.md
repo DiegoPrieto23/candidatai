@@ -393,6 +393,9 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
   preparar y ensayar» guarda lo que quieres que tengan en cuenta «Preparar» y «Simulacro» («más peso
   a SQL», «me han dicho que habrá un caso de negocio», «feedback más duro»…). Son de esa entrevista
   y se quedan guardadas hasta que las cambies.
+- **Corregir una entrevista:** el lápiz la edita mientras está programada; la X la cancela (se
+  queda en la ficha). Si la anotaste por error, la papelera la **borra** del todo, también del
+  historial y del embudo, y la etapa de la oferta se recalcula. Vale para cualquier hito.
 - `prepare-interview 42`: lee todo lo que hay de la oferta, tu perfil, lo que ya enviaste y la web,
   te pregunta lo que falte y te deja en la ficha una **guía en PDF** (el rol, las responsabilidades
   desglosadas, tu encaje, lo que ya respondiste, la empresa y el sector, conceptos a repasar,

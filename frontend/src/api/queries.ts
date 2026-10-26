@@ -632,6 +632,16 @@ export function useUpdateMilestone(jobId: number) {
   })
 }
 
+/** Borra un hito anotado por error con sus eventos; la etapa de la oferta se recalcula. */
+export function useDeleteMilestone(jobId: number) {
+  const invalidate = useInvalidateProcess()
+  return useMutation({
+    mutationFn: (milestoneId: number) =>
+      unwrap(api.POST('/milestones/{milestone_id}/delete', { params: { path: { milestone_id: milestoneId } } })),
+    onSuccess: () => invalidate(jobId),
+  })
+}
+
 /** Indicaciones de una entrevista para «Preparar» y «Simulacro». */
 export function useSavePrepInstructions(jobId: number) {
   const invalidate = useInvalidateProcess()

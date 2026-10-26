@@ -10,6 +10,10 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Borrar un hito anotado por error:** cada entrevista, prueba, plazo u otro hito tiene una
+  papelera. Tras confirmar (te dice si se pierden la guía, el plan o el repaso), desaparece de
+  la ficha, del historial y del embudo, y la etapa de la oferta se recalcula. Para lo que sí
+  pasó y se canceló, sigue la X.
 - **Indicaciones para preparar una entrevista:** en cada entrevista programada, una caja para
   decir qué quieres que tengan en cuenta la guía en PDF y el simulacro («más peso a SQL», «habrá
   un caso de negocio»…). Se quedan guardadas en esa entrevista y las usan «Preparar» y
