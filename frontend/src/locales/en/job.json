@@ -68,9 +68,12 @@
     "approve": "Approve",
     "discard": "Discard"
   },
-  "earlier": {
-    "label": "Before sending",
-    "hint": " · assisted application, package, CV, letter and posting text"
+  "tabs": {
+    "overview": "Posting",
+    "application": "Application",
+    "process": "Process",
+    "company": "Company",
+    "history": "History & notes"
   },
   "loading": "Loading job",
   "back": "Inbox",

@@ -26,7 +26,9 @@
     "failed": "El verificador encontró problemas",
     "notVerified": "Sin verificar",
     "blocker": "Bloqueante",
-    "warning": "Aviso"
+    "warning": "Aviso",
+    "showWarnings_one": "Ver {{count}} aviso del verificador",
+    "showWarnings_other": "Ver {{count}} avisos del verificador"
   },
   "editor": {
     "label": "Editar la carta",
@@ -56,7 +58,9 @@
     "downloadPdf": "Descargar PDF",
     "useAria": "Usar el render {{id}} de la carta para enviar",
     "use": "Usar esta para enviar",
-    "renders": "Renders ({{count}})"
+    "changeDesign": "Cambiar diseño",
+    "otherRenders_one": "Ver {{count}} versión más",
+    "otherRenders_other": "Ver {{count}} versiones más"
   },
   "none": {
     "title": "Aún sin carta",

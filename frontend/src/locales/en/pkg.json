@@ -37,7 +37,6 @@
   },
   "letter": {
     "title": "Cover letter",
-    "none": "No letter. If the job asks for one or you want it, run `generate-cover-letter {{id}}` in your agent.",
     "editedByYou": "Edited by you",
     "verified": "Verified",
     "notVerified": "Not verified",

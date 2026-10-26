@@ -1,6 +1,6 @@
 {
   "title": "Assisted application",
-  "intro": "CandidatAI opens the job in its own browser, fills in the application form and stops before sending. Nothing is sent without your confirmation. Sign in to your job boards with “Open browser”.",
+  "intro": "Fills in the form in the CandidatAI browser and stops before sending: nothing goes out without your confirmation.",
   "fieldStatus": {
     "filled": "Filled",
     "empty": "Empty",

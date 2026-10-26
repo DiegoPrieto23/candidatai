@@ -1,6 +1,6 @@
 {
   "title": "Candidatura asistida",
-  "intro": "CandidatAI abre la oferta en su propio navegador, rellena el formulario de candidatura y se para antes de enviar. Nada se envía sin tu confirmación. Inicia sesión en tus portales con «Abrir navegador».",
+  "intro": "Rellena el formulario en el navegador de CandidatAI y se para antes de enviar: nada sale sin tu confirmación.",
   "fieldStatus": {
     "filled": "Rellenado",
     "empty": "Vacío",

@@ -37,7 +37,7 @@ function mockJob(drafts: MessageDraftOut[], sent = 0, extra: Record<string, unkn
 describe('Borradores de la ficha', () => {
   it('enseña el borrador para copiarlo y ofrece redactar con tu agente', async () => {
     mockJob([draft(5)], 1)
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=process')
 
     const section = await screen.findByRole('region', { name: 'Borradores' })
     expect(await within(section).findByText('Candidatura a Data Engineer')).toBeInTheDocument()
@@ -52,7 +52,7 @@ describe('Borradores de la ficha', () => {
       'POST /drafts/5/sent': { ok: true, draft_id: 5, status: 'sent', event_id: 40, stage: 'applied', message: 'Anotado.' },
       'POST /drafts/6/discard': { ok: true, draft_id: 6, status: 'discarded', event_id: null, stage: 'applied', message: 'Descartado.' },
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=process')
 
     const section = await screen.findByRole('region', { name: 'Borradores' })
     const [first, second] = await within(section).findAllByRole('listitem')
@@ -66,7 +66,7 @@ describe('Borradores de la ficha', () => {
 
   it('con el tope de seguimientos lo dice y sin borradores lo explica', async () => {
     mockJob([], 2)
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=process')
     const section = await screen.findByRole('region', { name: 'Borradores' })
     expect(await within(section).findByText(/2 de 2 seguimientos enviados: no conviene insistir más/)).toBeInTheDocument()
     expect(within(section).getByText(/Sin borradores/)).toBeInTheDocument()
@@ -74,7 +74,7 @@ describe('Borradores de la ficha', () => {
 
   it('no aparece antes de enviar la candidatura', async () => {
     mockApi({ 'GET /status': status(), 'GET /jobs/1': jobView() })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=process')
     expect(await screen.findByRole('heading', { level: 1, name: 'Data Engineer' })).toBeInTheDocument()
     expect(screen.queryByRole('region', { name: 'Borradores' })).not.toBeInTheDocument()
   })

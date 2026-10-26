@@ -21,6 +21,14 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   cómo arrancarla desde la terminal (`cai start`) o con Docker.
 
 ### Cambiado
+- **La ficha de la oferta, más ligera:** en vez de apilar todas las secciones con una columna
+  lateral, va en pestañas (Oferta, Candidatura, Proceso, Empresa, Historial y notas) y se abre en
+  la que toca: la oferta mientras la revisas, la candidatura al aprobarla y el proceso al enviarla.
+  El score se ve siempre en la cabecera y los avisos importantes, encima de las pestañas. Dentro,
+  lo secundario va plegado: las opciones de diseño del CV y de la carta, sus versiones anteriores,
+  los avisos del verificador cuando el documento está verificado, las indicaciones de una carta ya
+  escrita y el detalle del dosier de la empresa. La extracción ya no repite las skills que enseña
+  el encaje.
 - **Portada nueva:** el README se lee en dos minutos. Arriba, la promesa, un recorrido animado de
   50 segundos (aprobar y descartar ofertas, el CV verificado, la candidatura que espera tu
   confirmación, los procesos y el embudo) y los botones para instalar en Windows, macOS/Linux o con Docker; una nota con lo probado de verdad y lo que aún

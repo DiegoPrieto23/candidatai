@@ -22,18 +22,18 @@ describe('Paquete de candidatura en la ficha', () => {
       'GET /jobs/1': jobView({ stage: 'approved' }),
       'GET /jobs/1/package': jobPackage({ stage: 'approved', cv: null, answers: null }),
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     await screen.findByRole('heading', { level: 1, name: 'Data Engineer' })
     await waitFor(() => expect(screen.queryByRole('region', { name: NAME })).not.toBeInTheDocument())
   })
 
-  it('muestra el CV elegido, el aviso de datos pendientes y el hueco de la carta', async () => {
+  it('muestra el CV elegido y el aviso de datos pendientes; sin carta no hay hueco', async () => {
     mockApi({
       'GET /status': status(),
       'GET /jobs/1': jobView({ stage: 'cv_ready' }),
       'GET /jobs/1/package': jobPackage(),
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     const section = await screen.findByRole('region', { name: NAME })
     expect(await within(section).findByRole('link', { name: 'Abrir PDF' })).toHaveAttribute(
       'href',
@@ -42,7 +42,7 @@ describe('Paquete de candidatura en la ficha', () => {
     expect(within(section).getByText('1 respuesta espera un dato tuyo (salario, disponibilidad…).')).toBeInTheDocument()
     expect(within(section).getByText(/Falta un dato tuyo/)).toBeInTheDocument()
     expect(within(section).getByRole('button', { name: 'Copiar la respuesta 2' })).toBeDisabled()
-    expect(within(section).getByText('generate-cover-letter 1')).toBeInTheDocument()
+    expect(within(section).queryByText('Carta de presentación')).not.toBeInTheDocument()
     // Ningún botón envía nada.
     expect(within(section).queryByRole('button', { name: /enviar/i })).not.toBeInTheDocument()
   })
@@ -53,7 +53,7 @@ describe('Paquete de candidatura en la ficha', () => {
       'GET /jobs/1': jobView({ stage: 'cv_ready' }),
       'GET /jobs/1/package': jobPackage(),
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     const section = await screen.findByRole('region', { name: NAME })
     const writeText = withClipboard()
     await userEvent.click(await within(section).findByRole('button', { name: 'Copiar la respuesta 1' }))
@@ -68,7 +68,7 @@ describe('Paquete de candidatura en la ficha', () => {
       'GET /jobs/1/package': jobPackage(),
       'POST /jobs/1/answers': { ok: true, job_id: 1, document_id: 8, needs_user_input: 0 },
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     const section = await screen.findByRole('region', { name: NAME })
     await userEvent.click(await within(section).findByRole('button', { name: 'Editar la respuesta 2' }))
     await userEvent.type(within(section).getByLabelText('Respuesta'), '45.000 € brutos al año')
@@ -99,7 +99,7 @@ describe('Paquete de candidatura en la ficha', () => {
         },
       }),
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     const section = await screen.findByRole('region', { name: NAME })
     expect(await within(section).findByText('6 palabras · Verificada')).toBeInTheDocument()
     const writeText = withClipboard()
@@ -120,9 +120,8 @@ describe('Paquete de candidatura en la ficha', () => {
         answers: { ...SCREENING!, edited_by_user: true },
       }),
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     // Ya enviada: lo de antes de enviar está plegado.
-    await userEvent.click(await screen.findByRole('button', { name: /Antes de enviar/ }))
     const section = await screen.findByRole('region', { name: NAME })
     expect(await within(section).findByText('Editadas por ti')).toBeInTheDocument()
     expect(within(section).getByText(/El que enviaste/)).toBeInTheDocument()

@@ -68,9 +68,12 @@
     "approve": "Aprobar",
     "discard": "Descartar"
   },
-  "earlier": {
-    "label": "Antes de enviar",
-    "hint": " · candidatura asistida, paquete, CV, carta y texto de la oferta"
+  "tabs": {
+    "overview": "Oferta",
+    "application": "Candidatura",
+    "process": "Proceso",
+    "company": "Empresa",
+    "history": "Historial y notas"
   },
   "loading": "Cargando oferta",
   "back": "Bandeja",

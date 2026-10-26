@@ -39,7 +39,7 @@ FEATURES.md dejan de coincidir fila a fila. -->
 | **Revisar con el teclado**: `J`/`K` para moverte, `A` aprobar, `D` descartar con motivo, `O` abrir, y Deshacer | `/por-revisar` | [▶ Teclado](img/es/anim/triage.webp) |
 | **El veredicto de tu agente**: encaje con riesgos y preguntas, citando tus deal-breakers; en segundo plano se salta las de poco score | `assess-fit` | |
 | **«Conoces a N personas aquí»**: tus contactos de LinkedIn (exportación oficial en CSV) cruzados con cada empresa | `/jobs/:id` | |
-| **La ficha de la oferta**: extracción, desglose del encaje, señales, historial, notas, coste en tiempo de agente y todas las secciones de abajo | `/jobs/:id` | [Ficha](img/es/job.webp) |
+| **La ficha de la oferta**, en pestañas (Oferta, Candidatura, Proceso, Empresa, Historial y notas) que se abren en la que toca según la fase: extracción, desglose del encaje, señales, historial, notas, coste en tiempo de agente y todas las secciones de abajo | `/jobs/:id` | [Ficha](img/es/job.webp) |
 
 ## 3. CV y carta
 

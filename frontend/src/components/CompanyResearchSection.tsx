@@ -5,6 +5,7 @@ import type { CompanyResearchContent, JobView, Stage } from '@/api/client'
 import { useCompanyResearch } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
 import { OpenFolderButton } from '@/components/OpenFolderButton'
+import { Reveal } from '@/components/Reveal'
 import { formatDate } from '@/lib/labels'
 import { errorMessage } from '@/lib/errors'
 
@@ -100,18 +101,6 @@ export function CompanyResearchSection({ job }: { job: JobView }) {
             <p className="leading-relaxed whitespace-pre-line">
               <Cited text={content.summary} sources={content.sources} />
             </p>
-            {SECTIONS.map((key) => {
-              const text = content[key]
-              if (typeof text !== 'string' || !text) return null
-              return (
-                <div key={key}>
-                  <h3 className="mb-1 text-xs font-medium tracking-wide text-muted-foreground uppercase">{t(`sections.${key}`)}</h3>
-                  <p className="leading-relaxed whitespace-pre-line">
-                    <Cited text={text} sources={content.sources} />
-                  </p>
-                </div>
-              )
-            })}
             {content.red_flags && content.red_flags.length > 0 && (
               <div>
                 <h3 className="mb-1 flex items-center gap-1.5 text-xs font-medium tracking-wide text-muted-foreground uppercase">
@@ -130,49 +119,65 @@ export function CompanyResearchSection({ job }: { job: JobView }) {
                 <p className="mt-1 text-xs text-muted-foreground">{t('redFlagsHint')}</p>
               </div>
             )}
-            {content.stack && content.stack.length > 0 && (
-              <div>
-                <h3 className="mb-1.5 text-xs font-medium tracking-wide text-muted-foreground uppercase">{t('stack')}</h3>
-                <ul className="flex flex-wrap gap-1.5" aria-label={t('stack')}>
-                  {content.stack.map((tech) => (
-                    <li key={tech} className="rounded-full border px-2 py-0.5 text-xs">
-                      {tech}
-                    </li>
-                  ))}
-                </ul>
+            <Reveal label={t('more')}>
+              <div className="space-y-4">
+                {SECTIONS.map((key) => {
+                  const text = content[key]
+                  if (typeof text !== 'string' || !text) return null
+                  return (
+                    <div key={key}>
+                      <h3 className="mb-1 text-xs font-medium tracking-wide text-muted-foreground uppercase">{t(`sections.${key}`)}</h3>
+                      <p className="leading-relaxed whitespace-pre-line">
+                        <Cited text={text} sources={content.sources} />
+                      </p>
+                    </div>
+                  )
+                })}
+                {content.stack && content.stack.length > 0 && (
+                  <div>
+                    <h3 className="mb-1.5 text-xs font-medium tracking-wide text-muted-foreground uppercase">{t('stack')}</h3>
+                    <ul className="flex flex-wrap gap-1.5" aria-label={t('stack')}>
+                      {content.stack.map((tech) => (
+                        <li key={tech} className="rounded-full border px-2 py-0.5 text-xs">
+                          {tech}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                <div>
+                  <h3 className="mb-1.5 text-xs font-medium tracking-wide text-muted-foreground uppercase">{t('sources')}</h3>
+                  <ol className="list-decimal space-y-1 pl-5" aria-label={t('sources')}>
+                    {content.sources.map((source, i) => (
+                      <li key={i}>
+                        {isUrl(source.url) ? (
+                          <a
+                            href={source.url}
+                            target="_blank"
+                            rel="noopener noreferrer nofollow"
+                            className="inline-flex items-center gap-1 underline-offset-4 hover:underline"
+                          >
+                            {source.title}
+                            <ArrowSquareOutIcon className="size-3.5 text-muted-foreground" />
+                          </a>
+                        ) : (
+                          source.title
+                        )}
+                        {source.accessed_on && (
+                          <span className="text-xs text-muted-foreground"> · {formatDate(source.accessed_on)}</span>
+                        )}
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+                <div className="flex flex-wrap items-center gap-3 border-t pt-3">
+                  <OpenFolderButton folder="empresas" label={t('openFolder')} />
+                  <p className="text-xs text-muted-foreground">
+                    {t('letterHint')}
+                  </p>
+                </div>
               </div>
-            )}
-            <div>
-              <h3 className="mb-1.5 text-xs font-medium tracking-wide text-muted-foreground uppercase">{t('sources')}</h3>
-              <ol className="list-decimal space-y-1 pl-5" aria-label={t('sources')}>
-                {content.sources.map((source, i) => (
-                  <li key={i}>
-                    {isUrl(source.url) ? (
-                      <a
-                        href={source.url}
-                        target="_blank"
-                        rel="noopener noreferrer nofollow"
-                        className="inline-flex items-center gap-1 underline-offset-4 hover:underline"
-                      >
-                        {source.title}
-                        <ArrowSquareOutIcon className="size-3.5 text-muted-foreground" />
-                      </a>
-                    ) : (
-                      source.title
-                    )}
-                    {source.accessed_on && (
-                      <span className="text-xs text-muted-foreground"> · {formatDate(source.accessed_on)}</span>
-                    )}
-                  </li>
-                ))}
-              </ol>
-            </div>
-            <div className="flex flex-wrap items-center gap-3 border-t pt-3">
-              <OpenFolderButton folder="empresas" label={t('openFolder')} />
-              <p className="text-xs text-muted-foreground">
-                {t('letterHint')}
-              </p>
-            </div>
+            </Reveal>
           </div>
         )
       )}

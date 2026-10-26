@@ -13,7 +13,7 @@ describe('Candidatura archivada en la ficha', () => {
       'GET /jobs/1': jobView({ stage: 'applied', archive_folder: FOLDER }),
       'POST /folders/open': { status: 200, body: { path: `C:/cai/data/${FOLDER}`, opened: true } },
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     const section = await screen.findByRole('region', { name: NAME })
     expect(within(section).getByText(`data/${FOLDER}`)).toBeInTheDocument()
     await userEvent.click(
@@ -28,7 +28,7 @@ describe('Candidatura archivada en la ficha', () => {
       'GET /status': status(),
       'GET /jobs/1': jobView({ stage: 'applied', archive_folder: null }),
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     expect(await screen.findByText(/Aún sin copia de lo enviado/)).toBeInTheDocument()
     expect(screen.queryByRole('region', { name: NAME })).not.toBeInTheDocument()
   })
@@ -39,7 +39,7 @@ describe('Candidatura archivada en la ficha', () => {
       'GET /jobs/1': jobView({ stage: 'cv_ready' }),
       'GET /jobs/1/package': jobPackage(),
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     await screen.findByRole('region', { name: 'Paquete de candidatura' })
     expect(screen.queryByRole('region', { name: NAME })).not.toBeInTheDocument()
     expect(screen.queryByText(/Aún sin copia/)).not.toBeInTheDocument()
@@ -53,7 +53,7 @@ describe('Recién enviada', () => {
       'GET /status': status(),
       'GET /jobs/1': () => jobView({ stage: 'applied', archive_folder: archived ? FOLDER : null }),
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     expect(await screen.findByText(/Aún sin copia de lo enviado/)).toBeInTheDocument()
     archived = true
     expect(await screen.findByRole('region', { name: NAME }, { timeout: 7000 })).toBeInTheDocument()

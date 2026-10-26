@@ -37,7 +37,6 @@
   },
   "letter": {
     "title": "Carta de presentación",
-    "none": "Sin carta. Si la oferta la pide o la quieres, ejecuta `generate-cover-letter {{id}}` en tu agente.",
     "editedByYou": "Editada por ti",
     "verified": "Verificada",
     "notVerified": "Sin verificar",

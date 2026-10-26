@@ -10,6 +10,7 @@
   "by": " · de {{agent}}",
   "fromWeb": ". Sacado de webs públicas: compruébalo en la fuente.",
   "intro": "Tu agente investiga la empresa en la web pública y deja aquí un dosier con fuentes.",
+  "more": "Ver el dosier completo",
   "update": "Actualizar dosier",
   "research": "Investigar empresa",
   "loadFailed": "No se pudo cargar el dosier: {{error}}",

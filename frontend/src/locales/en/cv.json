@@ -5,7 +5,9 @@
     "passed": "Verified: nothing made up or exaggerated",
     "failed": "The verifier found problems",
     "blocker": "Blocker",
-    "warning": "Warning"
+    "warning": "Warning",
+    "showWarnings_one": "Show {{count}} verifier note",
+    "showWarnings_other": "Show {{count}} verifier notes"
   },
   "template": {
     "legend": "Template",
@@ -47,7 +49,9 @@
   "sideBySide": "Side by side",
   "closeComparison": "Close comparison",
   "pdfOf": "PDF of render {{id}}",
-  "renders": "Renders",
+  "changeDesign": "Change design",
+  "otherRenders_one": "Show {{count}} more version",
+  "otherRenders_other": "Show {{count}} more versions",
   "pickAnother": "Tick another render to see them side by side.",
   "none": {
     "title": "No CV yet",

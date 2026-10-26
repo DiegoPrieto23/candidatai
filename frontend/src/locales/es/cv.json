@@ -5,7 +5,9 @@
     "passed": "Verificado: nada inventado ni exagerado",
     "failed": "El verificador encontró problemas",
     "blocker": "Bloqueante",
-    "warning": "Aviso"
+    "warning": "Aviso",
+    "showWarnings_one": "Ver {{count}} aviso del verificador",
+    "showWarnings_other": "Ver {{count}} avisos del verificador"
   },
   "template": {
     "legend": "Plantilla",
@@ -47,7 +49,9 @@
   "sideBySide": "Lado a lado",
   "closeComparison": "Cerrar comparación",
   "pdfOf": "PDF del render {{id}}",
-  "renders": "Renders",
+  "changeDesign": "Cambiar diseño",
+  "otherRenders_one": "Ver {{count}} versión más",
+  "otherRenders_other": "Ver {{count}} versiones más",
   "pickAnother": "Marca otro render para verlos lado a lado.",
   "none": {
     "title": "Aún sin CV",

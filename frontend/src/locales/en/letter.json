@@ -26,7 +26,9 @@
     "failed": "The verifier found problems",
     "notVerified": "Not verified",
     "blocker": "Blocker",
-    "warning": "Warning"
+    "warning": "Warning",
+    "showWarnings_one": "Show {{count}} verifier note",
+    "showWarnings_other": "Show {{count}} verifier notes"
   },
   "editor": {
     "label": "Edit the letter",
@@ -56,7 +58,9 @@
     "downloadPdf": "Download PDF",
     "useAria": "Use letter render {{id}} to send",
     "use": "Use this one to send",
-    "renders": "Renders ({{count}})"
+    "changeDesign": "Change design",
+    "otherRenders_one": "Show {{count}} more version",
+    "otherRenders_other": "Show {{count}} more versions"
   },
   "none": {
     "title": "No letter yet",

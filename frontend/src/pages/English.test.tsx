@@ -102,9 +102,10 @@ describe('Páginas en inglés', () => {
     renderApp('/jobs/1')
     expect(await screen.findByRole('heading', { level: 1, name: 'Data Engineer' })).toBeInTheDocument()
     expect(screen.getByText('Mid-level')).toBeInTheDocument()
+    expect(screen.getByText(/€38,000 - €46,000 \/ year/)).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('tab', { name: 'History & notes' }))
     expect(screen.getByText('Extraction saved')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'History' })).toBeInTheDocument()
-    expect(screen.getByText(/€38,000 - €46,000 \/ year/)).toBeInTheDocument()
   })
 
   it('Procesos', async () => {
