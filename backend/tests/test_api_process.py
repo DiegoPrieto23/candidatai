@@ -173,6 +173,80 @@ def test_interview_type_and_prep_instructions(client: TestClient) -> None:
     assert late.status_code == 422
 
 
+def _milestone_events(job_id: int) -> list[str]:
+    from sqlalchemy import select
+
+    from app.models import Event
+
+    with session_scope() as session:
+        rows = session.scalars(select(Event).where(Event.job_id == job_id)).all()
+        return [e.type for e in rows if "milestone_id" in (e.payload or {})]
+
+
+def test_delete_milestone_removes_its_events_and_recalculates_stage(client: TestClient) -> None:
+    from app.models import MessageDraft, Milestone
+    from app.services.interview_guide import guide_path
+
+    job_id = _job(client)
+    _event(client, job_id, type="applied_manually")
+    wrong = client.post(
+        f"/jobs/{job_id}/milestones", json={"kind": "interview", "starts_at": _soon()}
+    ).json()
+    client.post(f"/milestones/{wrong['id']}", json={"starts_at": _soon(3)})  # deja una nota
+    right = client.post(
+        f"/jobs/{job_id}/milestones", json={"kind": "interview", "starts_at": _soon(4)}
+    ).json()
+    guide = guide_path(f"{job_id}-{wrong['id']}-acme-guia.pdf")
+    guide.parent.mkdir(parents=True, exist_ok=True)
+    guide.write_bytes(b"%PDF")
+    with session_scope() as session:
+        session.get(Milestone, wrong["id"]).prep_guide = {"file": guide.name}
+        draft = MessageDraft(job_id=job_id, kind="thank_you", milestone_id=wrong["id"], body="x")
+        session.add(draft)
+        session.flush()
+        draft_id = draft.id
+    assert _milestone_events(job_id).count("interview_scheduled") == 2
+
+    # La anotada por error se va con su evento y su nota; la otra entrevista sigue.
+    deleted = client.post(f"/milestones/{wrong['id']}/delete")
+    assert deleted.status_code == 200, deleted.text
+    assert deleted.json()["deleted_events"] == 2 and deleted.json()["stage"] == "in_process"
+    assert _milestone_events(job_id) == ["interview_scheduled"]
+    assert not guide.exists()
+    with session_scope() as session:
+        assert session.get(MessageDraft, draft_id).milestone_id is None  # el borrador se queda
+    sheet = client.get(f"/jobs/{job_id}/process").json()
+    assert [m["id"] for m in sheet["milestones"]] == [right["id"]]
+    assert not any("reprogramada" in n["text"] for n in sheet["notes"])
+
+    # Sin entrevistas, la oferta vuelve a «Enviada».
+    assert client.post(f"/milestones/{right['id']}/delete").json()["stage"] == "applied"
+    assert client.post(f"/milestones/{right['id']}/delete").status_code == 404
+
+
+def test_delete_milestone_refuses_when_later_events_depend_on_it(client: TestClient) -> None:
+    job_id = _job(client)
+    _event(client, job_id, type="applied_manually")
+    interview = client.post(
+        f"/jobs/{job_id}/milestones", json={"kind": "interview", "starts_at": _soon()}
+    ).json()
+    _event(client, job_id, type="accepted")  # solo vale «En proceso», que da la entrevista
+    refused = client.post(f"/milestones/{interview['id']}/delete")
+    assert refused.status_code == 409, refused.text
+    assert "cancélalo" in refused.json()["error"]["message"]
+    assert _milestone_events(job_id) == ["interview_scheduled"]  # no se ha tocado nada
+    sheet = client.get(f"/jobs/{job_id}/process").json()
+    assert [m["id"] for m in sheet["milestones"]] == [interview["id"]]
+    assert sheet["stage"] == "closed"
+
+    # Un plazo no tiene eventos: se borra sin más.
+    deadline = client.post(
+        f"/jobs/{job_id}/milestones", json={"kind": "deadline", "starts_at": _soon()}
+    ).json()
+    gone = client.post(f"/milestones/{deadline['id']}/delete").json()
+    assert gone["deleted_events"] == 0 and gone["stage"] == "closed"
+
+
 def test_followups_and_upcoming(client: TestClient) -> None:
     job_id = _job(client)
     _event(client, job_id, type="applied_manually")

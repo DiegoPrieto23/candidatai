@@ -19,7 +19,21 @@
     "ics": "Add “{{title}}” to my calendar",
     "edit": "Edit “{{title}}”",
     "done": "Mark “{{title}}” as done",
-    "cancel": "Cancel “{{title}}”"
+    "cancel": "Cancel “{{title}}”",
+    "delete": "Delete “{{title}}”"
+  },
+  "deleteMilestone": {
+    "title": "Delete “{{title}}”?",
+    "withEvents": "For something you added by mistake: it also disappears from the history and the funnel, and the job's stage is recalculated. If it was really cancelled, use the X to cancel it.",
+    "plain": "It disappears from the job page and the calendar.",
+    "lost": "This also deletes:",
+    "guide": "the prep guide (including the PDF)",
+    "plan": "the prep plan",
+    "debrief": "the debrief",
+    "instructions": "your instructions for prep and practice",
+    "keep": "Keep it",
+    "deleting": "Deleting…",
+    "confirm": "Delete"
   },
   "milestones": {
     "title": "Milestones",

@@ -65,7 +65,7 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 | Feature | Where | Screenshot |
 |---|---|---|
 | **Processes**: a kanban that only moves through recorded events (mouse, keyboard or touch), received offers side by side and follow-up reminders | `/procesos` | [Processes](img/en/processes.webp) |
-| **Process page**: milestones with date and time, contacts and referrals, drafts and what happened | `/jobs/:id` | [Process](img/en/job-interview.webp) |
+| **Process page**: milestones with date and time (edit, cancel or, if added by mistake, delete them), contacts and referrals, drafts and what happened | `/jobs/:id` | [Process](img/en/job-interview.webp) |
 | **Calendar**: interviews, tests and deadlines, with an `.ics` per milestone and a feed for Google Calendar | `/calendario` | [Calendar](img/en/calendar.webp) |
 | **Company replies**: the app reads your email read-only and keeps only messages from companies you applied to | `/respuestas` | [Replies](img/en/replies.webp) |
 | **Classify replies**: your agent proposes interview (with its date), test, offer, rejection or nothing; nothing changes stage until you accept | `review-replies` | |

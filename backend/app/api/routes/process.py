@@ -80,6 +80,12 @@ def update_milestone(
     return process.update_milestone(session, milestone_id, body)
 
 
+@router.post("/milestones/{milestone_id}/delete", operation_id="delete_milestone")
+def delete_milestone(session: SessionDep, milestone_id: int) -> process.MilestoneDeleted:
+    """Borra un hito anotado por error con sus eventos y recalcula la etapa de la oferta."""
+    return process.delete_milestone(session, milestone_id)
+
+
 @router.post("/milestones/{milestone_id}/prep-instructions", operation_id="set_prep_instructions")
 def set_prep_instructions(
     session: SessionDep, milestone_id: int, body: process.PrepInstructionsInput

@@ -399,6 +399,9 @@ The worker runs the automatic sources every day at `connectors.daily_at`
   practice** box keeps what you want **Prepare** and **Mock interview** to take into account
   ("more weight on SQL", "they said there will be a business case", "tougher feedback"…). They
   belong to that interview and stay saved until you change them.
+- **Fixing an interview:** the pencil edits it while it's scheduled; the X cancels it (it stays
+  on the job page). If you added it by mistake, the bin **deletes** it completely, also from
+  the history and the funnel, and the job's stage is recalculated. It works for any milestone.
 - `prepare-interview 42`: reads everything about the job, your profile, what you already sent and
   the web, asks you what is missing and leaves a **PDF guide** on the job page (the role, the
   responsibilities broken down, your fit, what you already answered, the company and the sector,

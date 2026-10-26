@@ -119,6 +119,42 @@ describe('Sección Proceso de la ficha', () => {
     )
   })
 
+  it('borra un hito tras confirmar y avisa de lo que se pierde', async () => {
+    const calls = mockApi({
+      'GET /status': status(),
+      'GET /jobs/1': jobView({ stage: 'in_process' }),
+      'GET /jobs/1/process': processView({
+        stage: 'in_process',
+        milestones: [
+          milestone(5, {
+            kind: 'interview',
+            status: 'cancelled',
+            prep_plan: { blocks: [], saved_at: '2026-10-20T10:00:00Z', agent_name: null, dossier: null },
+            prep_instructions: 'En inglés',
+          }),
+        ],
+      }),
+      'POST /milestones/5/delete': { ok: true, milestone_id: 5, job_id: 1, deleted_events: 2, stage: 'applied' },
+    })
+    renderApp('/jobs/1?tab=process')
+    const section = await screen.findByRole('region', { name: 'Proceso' })
+    // También una cancelada (ya no se edita) se puede borrar.
+    await userEvent.click(await within(section).findByRole('button', { name: 'Borrar «Entrevista»' }))
+    const dialog = await screen.findByRole('dialog')
+    expect(dialog).toHaveTextContent('desaparece también del historial y del embudo')
+    expect(dialog).toHaveTextContent('el plan de preparación')
+    expect(dialog).toHaveTextContent('tus indicaciones para preparar y ensayar')
+    expect(dialog).not.toHaveTextContent('el repaso')
+
+    await userEvent.click(within(dialog).getByRole('button', { name: 'No borrar' }))
+    expect(calls.some((c) => c.path === '/milestones/5/delete')).toBe(false)
+
+    await userEvent.click(within(section).getByRole('button', { name: 'Borrar «Entrevista»' }))
+    await userEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Borrar' }))
+    await waitFor(() => expect(calls.some((c) => c.path === '/milestones/5/delete')).toBe(true))
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+  })
+
   it('anota un seguimiento enviado', async () => {
     const calls = mockApi({
       'GET /status': status(),

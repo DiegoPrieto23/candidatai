@@ -65,7 +65,7 @@ FEATURES.md dejan de coincidir fila a fila. -->
 | Funcionalidad | Dónde | Captura |
 |---|---|---|
 | **Procesos**: un kanban que solo se mueve con eventos registrados (ratón, teclado o táctil), las ofertas recibidas lado a lado y los avisos de seguimiento | `/procesos` | [Procesos](img/es/processes.webp) |
-| **Ficha del proceso**: hitos con fecha y hora, contactos y referencias, borradores y lo que ha pasado | `/jobs/:id` | [Proceso](img/es/job-interview.webp) |
+| **Ficha del proceso**: hitos con fecha y hora (se editan, se cancelan o, si los anotaste por error, se borran), contactos y referencias, borradores y lo que ha pasado | `/jobs/:id` | [Proceso](img/es/job-interview.webp) |
 | **Calendario**: entrevistas, pruebas y plazos, con un `.ics` por hito y un feed para Google Calendar | `/calendario` | [Calendario](img/es/calendar.webp) |
 | **Respuestas de las empresas**: la app lee tu correo en solo lectura y guarda solo los de las empresas a las que te has presentado | `/respuestas` | [Respuestas](img/es/replies.webp) |
 | **Clasificar las respuestas**: tu agente propone entrevista (con su fecha), prueba, oferta, rechazo o nada; nada cambia de etapa hasta que aceptas | `review-replies` | |

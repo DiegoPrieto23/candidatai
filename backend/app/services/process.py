@@ -5,6 +5,9 @@ Los hitos que mueven la oferta registran su evento: crear una entrevista registr
 `interview_done`. Reprogramar o cancelar una entrevista o una prueba deja una `note`. Los plazos
 y los hitos `other` no registran eventos: no cambian la etapa. Todos los eventos llevan
 `payload.milestone_id`.
+
+Borrar un hito anotado por error es la única excepción a que los eventos solo se añaden: se borran
+también los suyos y la etapa se recalcula, como si nunca se hubiera anotado.
 """
 
 from datetime import date, datetime, time, timedelta
@@ -12,17 +15,33 @@ from typing import Any, Literal, Self
 from zoneinfo import ZoneInfo
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, model_validator
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
 from app.core.policies import get_policies
-from app.models import Application, Contact, Event, Job, Milestone
+from app.models import (
+    AgentRequest,
+    AgentRun,
+    Application,
+    Contact,
+    Event,
+    Job,
+    MessageDraft,
+    Milestone,
+    Reply,
+)
 from app.models.base import utcnow
 from app.schemas.interview_guide import GuideInfo, guide_info
 from app.schemas.interviews import InterviewPlan
 from app.services import events
 from app.services.events import JobNotFoundError
-from app.services.pipeline import Actor, EventType, Stage
+from app.services.pipeline import (
+    Actor,
+    EventType,
+    InvalidTransitionError,
+    Stage,
+    rebuild_projection,
+)
 
 MilestoneKind = Literal["interview", "test", "deadline", "other"]
 # Papel de un contacto en el proceso (fase 18) y referencia pedida o dada.
@@ -363,6 +382,67 @@ def set_milestone_status(
     row.updated_at = utcnow()
     session.flush()
     return milestone_out(row)
+
+
+class MilestoneDeleted(BaseModel):
+    ok: bool = True
+    milestone_id: int
+    job_id: int
+    deleted_events: int
+    stage: Stage | None  # la etapa recalculada
+
+
+def delete_milestone(session: Session, milestone_id: int) -> MilestoneDeleted:
+    """Borra un hito anotado por error con sus eventos (el que registró al crearse, el de hecha y
+    las notas de reprogramar o cancelar) y recalcula la etapa: no cuenta en el historial ni en el
+    embudo. Con él se van su plan, su guía (también el PDF), su repaso y sus indicaciones.
+
+    Si lo que pasó después en la oferta depende de él (p. ej. una oferta recibida tras la única
+    entrevista), no se borra nada y se lanza `InvalidTransitionError`: se cancela en su lugar.
+    """
+    from app.services.interview_guide import guide_path  # evita la importación circular
+
+    row = milestone_row(session, milestone_id)
+    job_id, title = row.job_id, row.title
+    guide = (row.prep_guide or {}).get("file")
+    own = [
+        e
+        for e in session.scalars(select(Event).where(Event.job_id == job_id))
+        if e.id == row.event_id or (e.payload or {}).get("milestone_id") == row.id
+    ]
+    event_ids = [e.id for e in own]
+    try:
+        with session.begin_nested():
+            # Lo que apunta al hito o a sus eventos se queda, sin el enlace.
+            for model in (AgentRun, AgentRequest, MessageDraft):
+                session.execute(
+                    update(model).where(model.milestone_id == row.id).values(milestone_id=None)
+                )
+            if event_ids:
+                for model in (Reply, MessageDraft):
+                    session.execute(
+                        update(model).where(model.event_id.in_(event_ids)).values(event_id=None)
+                    )
+            session.delete(row)
+            session.flush()
+            for event in own:
+                session.delete(event)
+            session.flush()
+            rebuild_projection(session, job_id)
+    except InvalidTransitionError as exc:
+        raise InvalidTransitionError(
+            f"No se puede borrar «{title}»: lo que pasó después en la oferta depende de "
+            f"este hito ({exc}). Si no llegó a celebrarse, cancélalo."
+        ) from exc
+    if guide:
+        guide_path(guide).unlink(missing_ok=True)
+    app = session.get(Application, job_id)
+    return MilestoneDeleted(
+        milestone_id=milestone_id,
+        job_id=job_id,
+        deleted_events=len(own),
+        stage=Stage(app.stage) if app else None,
+    )
 
 
 def get_milestone(session: Session, milestone_id: int) -> MilestoneOut:

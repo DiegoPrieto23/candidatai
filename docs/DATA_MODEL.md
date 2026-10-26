@@ -277,6 +277,13 @@ cambia la etapa.
 
 Ni el plan, ni el repaso, ni el tipo, ni las indicaciones registran eventos ni cambian `status`.
 
+Un hito anotado por error se borra (`POST /milestones/{id}/delete`, solo desde la UI) con todos sus
+eventos (los que llevan su `payload.milestone_id`), su plan, su guía (también el PDF) y su repaso,
+y la etapa de la oferta se recalcula con los eventos que quedan. Es la única vía por la que se
+borran eventos. Si lo que pasó después deja de ser válido sin ellos (p. ej. `accepted` tras la
+única entrevista), no se borra nada (409). Lo que apuntaba al hito o a sus eventos (borradores,
+encargos y ejecuciones del agente, correos aceptados) se queda sin el enlace.
+
 Si el evento no es válido en la etapa (p. ej. una entrevista antes de enviar), no se guarda el hito.
 Editar la fecha de una entrevista o una prueba deja una `note` («reprogramada para el…»).
 
