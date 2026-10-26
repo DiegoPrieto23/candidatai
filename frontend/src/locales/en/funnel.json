@@ -82,11 +82,12 @@
   },
   "byTitle": {
     "title": "By role type",
-    "hint": "Normalized title from the extraction; the least frequent go into “Others”.",
+    "hint": "By job title; the less frequent ones go under “Others”.",
     "caption": "Funnel by role type",
     "head": "Role",
     "others": "Others",
-    "not_extracted": "Not extracted"
+    "notExtracted_one": "{{count}} job still needs processing: it doesn't count here until it's processed.",
+    "notExtracted_other": "{{count}} jobs still need processing: they don't count here until they're processed."
   },
   "byReferral": {
     "title": "By referral",
@@ -217,7 +218,7 @@
   "story": {
     "title": "Your search in numbers",
     "hint": "Since the first posting, whatever the period above. Numbers only: no companies, roles or amounts.",
-    "note": "To share in your README or wherever you like if it works. The app never publishes it: you copy it, if you want.",
+    "note": "In case you want to tell people how it's going. The app never publishes it: you copy it, if you want.",
     "period": "From {{start}} to {{end}}",
     "evaluated": "Evaluated",
     "applied": "Applications",
@@ -226,6 +227,7 @@
     "offers": "Offers received",
     "copyEs": "Copy in Spanish",
     "copyEn": "Copy in English",
-    "lineLabel": "Line for the README"
-  }
+    "lineLabel": "To share"
+  },
+  "more": "More analysis"
 }

@@ -375,10 +375,11 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
   borradores (máximo 2 por candidatura) y el de agradecimiento tras una entrevista. Los envías tú.
 - **Respuestas:** en los buzones que lo tengan marcado, la app lee los correos de las empresas de tus procesos;
   `review-replies` propone qué ha pasado y tú lo aceptas en «Respuestas».
-- **Embudo:** conversión por paso, fuente, puesto, semana, plantilla, carta y referencia, y
-  «¿Acierta el score?». `review-search` hace la retrospectiva semanal. Al final, «Tu búsqueda en
-  números» (o `cai stats story`): tus cifras desde el principio, sin empresas, y una línea para
-  contarlo en un README si quieres.
+- **Embudo:** conversión por paso, fuente, semana y referencia, y los motivos de descarte. En «Más
+  análisis», plegado al final: «¿Acierta el score?» (por score, veredicto, plantilla, carta…), por
+  tipo de puesto, el coste del agente y «Tu búsqueda en números» (o `cai stats story`): tus cifras
+  desde el principio, sin empresas, con una línea para compartir si quieres. `review-search` hace
+  la retrospectiva semanal.
 - **Red:** importa tus contactos de LinkedIn (exportación CSV) con `cai contacts import-linkedin`
   y verás «Conoces a N» en las ofertas de sus empresas; `draft-message` prepara el mensaje.
 

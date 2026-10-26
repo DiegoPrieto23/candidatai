@@ -1,6 +1,6 @@
 {
   "title": "Calendar",
-  "intro": "Your interviews, tests and deadlines, past ones included. Milestones are created on each job's page or when you update a card's status in Processes.",
+  "intro": "Your interviews, tests and deadlines, past ones too. They're added from each job's page or when you move a card in Processes.",
   "views": {
     "label": "View",
     "month": "Month",
@@ -26,6 +26,6 @@
     "status": "Status",
     "stage": "Process",
     "openJob": "Open the job",
-    "ics": "Add to my calendar (.ics)"
+    "ics": "Add to my calendar"
   }
 }

@@ -6,7 +6,7 @@
     "noPreview": "Sin vista",
     "askAgent": "Tu agente lo convierte en plantilla una sola vez (después no gasta cuota). Se abre en una terminal, donde ves y apruebas lo que hace.",
     "convert": "Convertir en plantilla",
-    "orCopy": "¿Prefieres pedírselo tú? Copia la orden:",
+    "orCopy": "¿Prefieres pedírselo tú a tu agente?",
     "recreated": "Desde {{format}} el agente recrea el diseño: se parecerá mucho, pero no será exacto, y solo dará PDF. Necesita un agente que vea imágenes. Si tienes el Word, súbelo: se conserva tal cual.",
     "original": "Original",
     "noOriginal": "Sin vista del original",
@@ -28,7 +28,8 @@
     "uploading": "Subiendo…",
     "upload": "Subir mi CV",
     "none": "Aún no has subido tu CV",
-    "noneHint": "Mejor en Word (.docx): el diseño se conserva exacto. Máximo 10 MB."
+    "noneHint": "Mejor en Word (.docx): el diseño se conserva exacto. Máximo 10 MB.",
+    "noRealPreview": "No se ha podido hacer la vista con tu perfil. Comprueba que lo tienes creado en «Mi perfil»."
   },
   "recreation": "Recreación",
   "template": "Plantilla",
@@ -44,16 +45,16 @@
   "notAts": "No apta para ATS",
   "withPhoto": "Con foto",
   "noPhoto": "Sin foto",
-  "engine": "Motor {{engine}}",
   "pdfOnly": "Solo PDF",
   "colors": "{{count}} colores",
   "yourCv": "Tu CV",
-  "builtin": "Integrada",
+  "builtin": "De la app",
   "yours": "Tuya",
   "title": "Plantillas de CV",
   "intro": "El contenido de cada CV lo redacta tu agente; la plantilla solo decide cómo se ve. Puedes cambiarla en la ficha de cada oferta sin volver a usar IA.",
   "all": "Todas las plantillas",
   "loading": "Cargando plantillas",
   "invalidLabel": "Plantillas con problemas",
-  "invalidTitle": "Plantillas que no se pueden usar"
+  "invalidTitle": "Plantillas que no se pueden usar",
+  "pdfAndWord": "PDF y Word"
 }

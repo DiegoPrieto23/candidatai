@@ -87,7 +87,6 @@ function TemplateCard({ template }: { template: TemplateInfo }) {
       <div className="flex flex-1 flex-col gap-3 p-4">
         <div>
           <h2 className="font-semibold tracking-tight">{template.name}</h2>
-          <p className="font-mono text-xs text-muted-foreground">{template.id}</p>
         </div>
         {template.description && (
           <p className="text-sm leading-relaxed text-foreground/80">{template.description}</p>
@@ -96,8 +95,7 @@ function TemplateCard({ template }: { template: TemplateInfo }) {
           <Tag strong={template.ats_friendly}>{template.ats_friendly ? t('ats') : t('notAts')}</Tag>
           <Tag>{template.photo_supported ? t('withPhoto') : t('noPhoto')}</Tag>
           <Tag>{columns}</Tag>
-          <Tag>{t('engine', { engine: template.engine })}</Tag>
-          {template.engine === 'html' && <Tag>{t('pdfOnly')}</Tag>}
+          <Tag>{template.engine === 'html' ? t('pdfOnly') : t('pdfAndWord')}</Tag>
           {template.accent_colors && <Tag>{t('colors', { count: template.accent_colors.choices.length })}</Tag>}
           <Tag>{template.from_user_cv ? t('yourCv') : template.origin === 'builtin' ? t('builtin') : t('yours')}</Tag>
         </ul>
@@ -149,7 +147,7 @@ export function TemplatesPage() {
               <ul className="mt-3 space-y-2 text-sm">
                 {data.invalid.map((item) => (
                   <li key={item.id}>
-                    <span className="font-mono font-medium">{item.id}</span>: {item.reason}
+                    <span className="font-medium">{item.id}</span>: {item.reason}
                   </li>
                 ))}
               </ul>

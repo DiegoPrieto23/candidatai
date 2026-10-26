@@ -1,6 +1,6 @@
 {
   "title": "Calendario",
-  "intro": "Tus entrevistas, pruebas y plazos, también los ya pasados. Los hitos se crean en la ficha de cada oferta o al actualizar el estado de una tarjeta en Procesos.",
+  "intro": "Tus entrevistas, pruebas y plazos, también los pasados. Se añaden desde la ficha de cada oferta o al mover una tarjeta en Procesos.",
   "views": {
     "label": "Vista",
     "month": "Mes",
@@ -26,6 +26,6 @@
     "status": "Estado",
     "stage": "Proceso",
     "openJob": "Ver la oferta",
-    "ics": "Añadir a mi calendario (.ics)"
+    "ics": "Añadir a mi calendario"
   }
 }

@@ -113,7 +113,7 @@ SHOTS = {
     "job-cv": (f"/jobs/{CV_JOB}", False, [anchor("#cv")]),
     "job-letter": (f"/jobs/{CV_JOB}", False, [anchor("#carta")]),
     "job-package": (f"/jobs/{CV_JOB}", False, [anchor("#paquete")]),
-    "job-research": (f"/jobs/{CV_JOB}", False, [heading("research:title")]),
+    "job-research": (f"/jobs/{CV_JOB}", False, [tab("job:tabs.company"), heading("research:title")]),
     "job-interview": (f"/jobs/{INTERVIEW_JOB}", False, [open_details, heading("process:title")]),
     "job-offer": (f"/jobs/{OFFER_JOB}", False, [heading("offers:received.title")]),
     "sidebar-collapsed": ("/por-revisar", True, []),

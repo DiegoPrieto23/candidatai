@@ -92,6 +92,11 @@ const EMPTY = stats({
   hard_filter_failures: [],
 })
 
+/** Abre «Más análisis», donde van la calibración, por tipo de puesto, el coste y los números. */
+async function openMore() {
+  await userEvent.click(await screen.findByRole('button', { name: 'Más análisis' }))
+}
+
 describe('Embudo', () => {
   // La ruta carga la página en diferido (Recharts): se precarga para no depender de lo que tarde
   // la importación con toda la batería en paralelo.
@@ -129,9 +134,6 @@ describe('Embudo', () => {
     expect(within(greenhouse).getAllByRole('cell').map(text)).toEqual(['5', '3', '3', '2', '1', '67 %', '0,5000 USD'])
     expect(within(sources).getByText('Alertas por correo')).toBeInTheDocument()
 
-    const titles = screen.getByRole('table', { name: 'Embudo por tipo de puesto' })
-    expect(within(titles).getByRole('rowheader', { name: 'Otros' })).toBeInTheDocument()
-    expect(within(titles).getByRole('rowheader', { name: 'Sin extraer' })).toBeInTheDocument()
 
     expect(screen.getByRole('table', { name: 'Ofertas por semana' })).toHaveTextContent('14 sept (2026-W38)')
 
@@ -145,11 +147,20 @@ describe('Embudo', () => {
     expect(within(discards).getByRole('rowheader', { name: 'Sin motivo' })).toBeInTheDocument()
     const filters = screen.getByRole('table', { name: 'Cierres por filtro duro' })
     expect(within(filters).getByRole('rowheader', { name: 'Ubicación' })).toBeInTheDocument()
+
+    // Lo de vez en cuando va plegado: por tipo de puesto, sin «Sin extraer» como si fuera un puesto.
+    expect(screen.queryByRole('table', { name: 'Embudo por tipo de puesto' })).not.toBeInTheDocument()
+    await openMore()
+    const titles = screen.getByRole('table', { name: 'Embudo por tipo de puesto' })
+    expect(within(titles).getByRole('rowheader', { name: 'Otros' })).toBeInTheDocument()
+    expect(within(titles).queryByRole('rowheader', { name: 'Sin extraer' })).not.toBeInTheDocument()
+    expect(screen.getByText('Falta procesar 1 oferta: no cuenta aquí hasta que se procese.')).toBeInTheDocument()
   })
 
   it('enseña el coste del agente por candidatura y por entrevista, y por fuente (fase 25.4)', async () => {
     mockApi({ 'GET /status': status(), 'GET /stats/funnel': stats(), 'GET /stats/calibration': calibration(), 'GET /agent': AGENT })
     renderApp('/embudo')
+    await openMore()
     const panel = await screen.findByRole('region', { name: 'Coste del agente' })
     expect(within(panel).getByText('Por candidatura enviada').nextSibling).toHaveTextContent(/0[.,]3000 USD/)
     expect(within(panel).getByText('Por entrevista').nextSibling).toHaveTextContent(/1[.,]50 USD/)
@@ -185,6 +196,7 @@ describe('Embudo', () => {
     mockApi({ 'GET /status': status(), 'GET /stats/funnel': stats(), 'GET /stats/story': story })
     renderApp('/embudo')
 
+    await openMore()
     const panel = await screen.findByRole('region', { name: 'Tu búsqueda en números' })
     expect(within(panel).getByText('Evaluadas').nextSibling).toHaveTextContent('62')
     expect(within(panel).getByText('Ofertas recibidas').nextSibling).toHaveTextContent('1')
@@ -295,6 +307,7 @@ describe('¿Acierta el score?', () => {
     })
     renderApp('/embudo')
 
+    await openMore()
     const panel = await screen.findByRole('region', { name: '¿Acierta el score?' })
     expect(within(panel).getByText(/Orientativo/)).toBeInTheDocument()
     expect(within(panel).getByRole('button', { name: 'Revisar mi búsqueda' })).toBeInTheDocument()
@@ -324,6 +337,7 @@ describe('¿Acierta el score?', () => {
       'GET /agent': AGENT,
     })
     renderApp('/embudo')
+    await openMore()
     const panel = await screen.findByRole('region', { name: '¿Acierta el score?' })
     await userEvent.click(await within(panel).findByRole('tab', { name: 'Señal' }))
     const table = await within(panel).findByRole('table', { name: 'Calibración por señal' })
@@ -340,6 +354,7 @@ describe('¿Acierta el score?', () => {
       'GET /agent': AGENT,
     })
     renderApp('/embudo')
+    await openMore()
     await screen.findByRole('table', { name: 'Calibración por score' })
     const calibrationCalls = () => calls.filter((c) => c.path === '/stats/calibration')
     expect(calibrationCalls()[0].search.get('since')).toBeNull()
@@ -374,6 +389,7 @@ describe('¿Acierta el score?', () => {
       'GET /agent': AGENT,
     })
     renderApp('/embudo')
+    await openMore()
     const panel = await screen.findByRole('region', { name: '¿Acierta el score?' })
     expect(await within(panel).findByText(/Aún no has enviado ninguna candidatura/)).toBeInTheDocument()
     expect(within(panel).queryByRole('table')).not.toBeInTheDocument()

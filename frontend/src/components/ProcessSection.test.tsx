@@ -45,7 +45,7 @@ describe('Sección Proceso de la ficha', () => {
       'http://127.0.0.1:8000/renders/3/pdf',
     )
     expect(within(section).getByText(/7 oct · 10:30/)).toBeInTheDocument()
-    expect(within(section).getByRole('link', { name: 'Descargar .ics de «Entrevista»' })).toHaveAttribute(
+    expect(within(section).getByRole('link', { name: 'Añadir «Entrevista» a mi calendario' })).toHaveAttribute(
       'href',
       'http://127.0.0.1:8000/milestones/5/ics',
     )

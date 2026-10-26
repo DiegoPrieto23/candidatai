@@ -47,6 +47,18 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
     escribirla, también en la cuenta configurada al instalar. Las variables, solo en «Detalles
     técnicos».
   - **«Generar»** en vez de «Renderizar» en el CV y la carta, y «versión» en vez de «render».
+  - **Skills:** de 25 en 25, con «obligatoria en 2, deseable en 1» en vez de abreviaturas y el
+    peso explicado en su ayuda (ⓘ). En el móvil, cada skill es una ficha con sus botones debajo.
+  - **Embudo:** primero las cifras, el embudo, por fuente, por semana y los motivos de descarte.
+    «¿Acierta el score?», por tipo de puesto, el coste y «Tu búsqueda en números» van plegados en
+    «Más análisis». Las ofertas sin procesar ya no salen como un puesto más, sino en una nota, y
+    la línea para compartir ya no habla de README.
+  - **Plantillas:** sin «Motor docx» ni identificadores; cada una dice si da «PDF y Word» o
+    «Solo PDF» y si viene «De la app». La orden para tu agente va plegada.
+  - **Respuestas, Nueva oferta, Calendario y la ficha:** textos más claros («Enlace de la oferta»,
+    «Añadir a mi calendario», «Importar mis contactos», «Tecnologías»…). Sin respuestas, un botón
+    lleva a conectar el correo. En la pestaña Proceso, «Anotar oferta» ya no compite con «¿Qué ha
+    pasado?». Las notas del score se explican en lenguaje llano.
 - **La ficha de la oferta, más ligera:** en vez de apilar todas las secciones con una columna
   lateral, va en pestañas (Oferta, Candidatura, Proceso, Empresa, Historial y notas) y se abre en
   la que toca: la oferta mientras la revisas, la candidatura al aprobarla y el proceso al enviarla.
@@ -72,7 +84,11 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 
 ### Corregido
 - **El Calendario carga al recargar la página** o al entrar por un enlace; antes daba «Not Found».
-- **La página Agente ya no se sale de la pantalla en el móvil.**
+- **La página Agente ya no se sale de la pantalla en el móvil,** ni el Embudo ni Skills.
+- **«Con tu perfil» en Plantillas** ya no enseña una imagen rota si no se puede hacer la vista:
+  dice qué comprobar.
+- **«Sin mínimo en tu perfil»** al comparar ofertas recibidas ya no enseña el nombre interno del
+  campo: dice dónde ponerlo (Mi perfil → Búsqueda).
 
 ## [0.1.0] - 2026-10-24
 

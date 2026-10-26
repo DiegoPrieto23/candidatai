@@ -18,6 +18,7 @@ import type { Calibration, CalibrationGroup, FunnelStats, Schemas } from '@/api/
 import { useCalibration, useFunnelStats, useSearchStory } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
 import { CopyButton } from '@/components/CopyButton'
+import { Reveal } from '@/components/Reveal'
 import { EmptyState, ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -146,28 +147,33 @@ const TOOLTIP_PROPS = {
   itemStyle: { color: 'var(--popover-foreground)' },
 } as const
 
-/** Tabla accesible con los mismos datos que la gráfica (lectores de pantalla). */
+/**
+ * Tabla accesible con los mismos datos que la gráfica (lectores de pantalla). Va dentro de un
+ * `div` oculto: una tabla no encoge a 1 px y ensancharía la página en el móvil.
+ */
 function SrTable({ caption, head, rows }: { caption: string; head: string[]; rows: (string | number)[][] }) {
   return (
-    <table className="sr-only">
-      <caption>{caption}</caption>
-      <thead>
-        <tr>
-          {head.map((h) => (
-            <th key={h} scope="col">
-              {h}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((row) => (
-          <tr key={String(row[0])}>
-            {row.map((cell, i) => (i === 0 ? <th key={i} scope="row">{cell}</th> : <td key={i}>{cell}</td>))}
+    <div className="sr-only">
+      <table>
+        <caption>{caption}</caption>
+        <thead>
+          <tr>
+            {head.map((h) => (
+              <th key={h} scope="col">
+                {h}
+              </th>
+            ))}
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={String(row[0])}>
+              {row.map((cell, i) => (i === 0 ? <th key={i} scope="row">{cell}</th> : <td key={i}>{cell}</td>))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   )
 }
 
@@ -476,12 +482,10 @@ function Dashboard({ stats, since }: { stats: FunnelStats; since: string | null 
         />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <FunnelChart stats={stats} />
         <ResponseTimePanel rt={stats.response_time} />
       </div>
-
-      {stats.by_week.length > 0 && <WeekChart weeks={stats.by_week} />}
 
       <Panel title={t('bySource.title')} hint={t('bySource.hint')}>
         <BreakdownTable
@@ -501,20 +505,7 @@ function Dashboard({ stats, since }: { stats: FunnelStats; since: string | null 
         />
       </Panel>
 
-      <CostPanel cost={stats.agent_cost} />
-
-      <Panel title={t('byTitle.title')} hint={t('byTitle.hint')}>
-        <BreakdownTable
-          caption={t('byTitle.caption')}
-          firstHead={t('byTitle.head')}
-          rows={stats.by_title.map((row) => ({
-            key: `${row.group}-${row.title}`,
-            name: row.group === 'title' ? row.title : t(`byTitle.${row.group}`),
-            summary: row,
-            muted: row.group !== 'title',
-          }))}
-        />
-      </Panel>
+      {stats.by_week.length > 0 && <WeekChart weeks={stats.by_week} />}
 
       {stats.by_referral.some((r) => r.group !== 'none' && r.found > 0) && (
         <Panel
@@ -534,12 +525,40 @@ function Dashboard({ stats, since }: { stats: FunnelStats; since: string | null 
         </Panel>
       )}
 
-      <CalibrationPanel since={since} />
-
       <ReasonsPanel stats={stats} />
 
-      <StoryPanel />
+      {/* Lo que se mira de vez en cuando, plegado. */}
+      <Reveal label={t('more')} className="space-y-6">
+        <CalibrationPanel since={since} />
+        <TitlePanel rows={stats.by_title} />
+        <CostPanel cost={stats.agent_cost} />
+        <StoryPanel />
+      </Reveal>
     </div>
+  )
+}
+
+function TitlePanel({ rows }: { rows: FunnelStats['by_title'] }) {
+  const { t } = useTranslation('funnel', { keyPrefix: 'byTitle' })
+  const pending = rows.find((row) => row.group === 'not_extracted')
+  return (
+    <Panel title={t('title')} hint={t('hint')}>
+      <BreakdownTable
+        caption={t('caption')}
+        firstHead={t('head')}
+        rows={rows
+          .filter((row) => row.group !== 'not_extracted')
+          .map((row) => ({
+            key: `${row.group}-${row.title}`,
+            name: row.group === 'title' ? row.title : t('others'),
+            summary: row,
+            muted: row.group !== 'title',
+          }))}
+      />
+      {pending && pending.found > 0 && (
+        <p className="mt-3 text-xs text-muted-foreground">{t('notExtracted', { count: pending.found })}</p>
+      )}
+    </Panel>
   )
 }
 
@@ -669,7 +688,11 @@ function CalibrationPanel({ since }: { since: string | null }) {
         </AgentButton>
       </div>
       {calibration.isPending ? (
-        <Skeleton className="h-48 rounded-lg" />
+        <div className="space-y-2" aria-busy="true">
+          {[0, 1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-6" />
+          ))}
+        </div>
       ) : calibration.isError ? (
         <ErrorState error={calibration.error} onRetry={() => calibration.refetch()} />
       ) : !data || data.total.applied === 0 ? (
@@ -730,7 +753,7 @@ function StoryPanel() {
   const { t, i18n: { language } } = useTranslation('funnel', { keyPrefix: 'story' })
   const story = useSearchStory()
   const data = story.data
-  if (story.isPending) return <Skeleton className="h-40 rounded-xl" />
+  if (story.isPending) return null
   if (story.isError) return <ErrorState error={story.error} onRetry={() => story.refetch()} />
   if (!data || data.found === 0) return null
   const line = language.startsWith('en') ? data.markdown.en : data.markdown.es

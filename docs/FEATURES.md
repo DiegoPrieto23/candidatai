@@ -87,10 +87,10 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 | Feature | Where | Screenshot |
 |---|---|---|
 | **Funnel**: conversion step by step, by source, role, week, template, cover letter and referral, time to first reply and discard reasons | `/embudo` | [Funnel](img/en/funnel.webp) |
-| **"Is the score right?"**: reply and interview rates by score, verdict, source, template, letter and referral, with 95 % intervals | `/embudo` | |
-| **Your search in numbers**, ready for your README (figures only, never companies), at the end of the Funnel | `/embudo` · `cai stats story` | |
+| **"Is the score right?"**: reply and interview rates by score, verdict, source, template, letter and referral, with 95 % intervals, under "More analysis" in the Funnel | `/embudo` | |
+| **Your search in numbers**, ready to share (figures only, never companies), under "More analysis" in the Funnel | `/embudo` · `cai stats story` | |
 | **Weekly retrospective**: what's working and what to change, without touching weights or filters | `review-search` | |
-| **Skills**: what your jobs ask for that your profile lacks; "it's the same as…" aliases, "I have it" and "I don't" | `/skills` | [Skills](img/en/skills.webp) |
+| **Skills**: what your jobs ask for that your profile lacks; "it's the same as…" aliases, "I have it" and "I don't have it", 25 at a time | `/skills` | [Skills](img/en/skills.webp) |
 | **Training plan** with verified resources for your real gaps, and an assessment of a course or project | `training-plan` | |
 | **Widen the search** with adjacent job titles from what you approve and discard | `broaden-search` | |
 | **My profile, editable**: collapsible experience and achievements, projects, education, skills, STAR stories, **Search** preferences (years, private minimum salary, words that discard, contract, company type), CV and letter preferences, context and style samples; keeps your file's comments, with Undo | `/perfil` | [Experience](img/en/profile-experience.webp) · [Search](img/en/profile-search.webp) · [▶ Collapsible](img/en/anim/profile.webp) |

@@ -8,7 +8,7 @@
   "import": {
     "hint": "Importa tus contactos de LinkedIn para ver a quién conoces en cada empresa. En LinkedIn: Ajustes → Privacidad de los datos → Obtener una copia de tus datos → Contactos. Deja el fichero en <code>data/{{file}}</code>.",
     "importing": "Importando…",
-    "button": "Importar Connections.csv",
+    "button": "Importar mis contactos",
     "missing": "Aún no está el fichero en esa carpeta."
   },
   "title": "Tu red",

@@ -6,7 +6,7 @@ import type { RepliesPollResult, ReplyInboxItem } from '@/api/client'
 import { usePollReplies, useReplies, useReply, type ReplyStatus } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
 import { ReplyProposalCard } from '@/components/ReplyDecision'
-import { EmptyState, ErrorState, InlineCode } from '@/components/States'
+import { EmptyState, ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatList, i18n } from '@/lib/i18n'
@@ -266,12 +266,22 @@ export function RepliesPage() {
         <ListSkeleton />
       ) : isError ? (
         <ErrorState error={error} onRetry={() => void refetch()} />
-      ) : items.length === 0 ? (
+      ) : data.replies.length === 0 ? (
         <section className="rounded-xl border bg-card">
-          <EmptyState icon={<EnvelopeSimpleIcon className="size-6" weight="duotone" />} title={t('noneTitle')}>
-            <InlineCode text={t('noneBody')} />
+          <EmptyState
+            icon={<EnvelopeSimpleIcon className="size-6" weight="duotone" />}
+            title={t('noneTitle')}
+            action={
+              <Button asChild>
+                <Link to="/alertas">{t('connect')}</Link>
+              </Button>
+            }
+          >
+            {t('noneBody')}
           </EmptyState>
         </section>
+      ) : items.length === 0 ? (
+        <p className="rounded-xl border bg-card px-4 py-8 text-center text-sm text-muted-foreground">{t('noneFiltered')}</p>
       ) : (
         <div className="grid items-start gap-6 lg:grid-cols-[22rem_minmax(0,1fr)]">
           <section className="overflow-hidden rounded-xl border bg-card">

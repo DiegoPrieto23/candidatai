@@ -380,10 +380,11 @@ The worker runs the automatic sources every day at `connectors.daily_at`
   the drafts (max. 2 per application) and the thank-you note after an interview. You send them.
 - **Replies:** in the mailboxes where you ticked it, the app reads emails from the companies in your
   processes; `review-replies` proposes what happened and you accept it in **Replies**.
-- **Funnel:** conversion by step, source, role, week, template, cover letter and
-  referral, plus "Is the score right?". `review-search` runs the weekly retrospective. At the
-  end, **Your search in numbers** (or `cai stats story`): your figures since the start, with no
-  company names, and a line to share in a README if you want to.
+- **Funnel:** conversion by step, source, week and referral, and the discard reasons. Under
+  **More analysis**, folded at the end: "Is the score right?" (by score, verdict, template, cover
+  letter…), by role, the agent's cost and **Your search in numbers** (or `cai stats story`): your
+  figures since the start, with no company names, with a line to share if you want to.
+  `review-search` runs the weekly retrospective.
 - **Network:** import your LinkedIn connections (CSV export) with `cai contacts import-linkedin` and
   you'll see “You know N” on jobs at their companies; `draft-message` drafts the
   message.

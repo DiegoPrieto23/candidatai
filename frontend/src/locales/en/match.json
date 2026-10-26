@@ -19,12 +19,12 @@
     "assessment": "Agent's assessment"
   },
   "notes": {
-    "off": "Semantic similarity turned off.",
+    "off": "Meaning-based comparison is turned off: the score only matches skills by name.",
     "notInstalled": "Meaning-based comparison isn't on: it's optional and the guide explains how to turn it on.",
-    "unavailable": "Semantic similarity unavailable.",
-    "failed": "Couldn't calculate the semantic similarity ({{error}}).",
-    "noMust": "The job lists no must-have skills: must-have coverage doesn't count.",
-    "noNice": "The job lists no nice-to-have skills: nice-to-have coverage doesn't count."
+    "unavailable": "Meaning-based comparison isn't available right now: the score only matches skills by name.",
+    "failed": "Couldn't run the meaning-based comparison ({{error}}): the score only matches skills by name.",
+    "noMust": "The job doesn't say which skills are required, so that part doesn't count in the score.",
+    "noNice": "The job doesn't say which skills are nice-to-have, so that part doesn't count in the score."
   },
   "belowAssessThreshold": "Not assessed in the background: its score ({{score}}) is below the threshold ({{threshold}}). Change it on the \"Agent\" page or assess it \"In a terminal\".",
   "salaryGap": "{{amount}} below your minimum (only you see this)."

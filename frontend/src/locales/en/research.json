@@ -16,7 +16,7 @@
   "loadFailed": "Couldn't load the dossier: {{error}}",
   "risk": "The dossier contains phrases aimed at an AI (they came from some website). Review it before using it.",
   "old": "It's {{count}} days old: it may be out of date.",
-  "stack": "Stack",
+  "stack": "Technologies",
   "sources": "Sources",
   "openFolder": "Open dossiers folder",
   "letterHint": "The letter doesn't use it: if you want it to mention something, copy it into its instructions.",

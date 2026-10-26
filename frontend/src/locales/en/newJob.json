@@ -2,7 +2,7 @@
   "failed": "Couldn't add it.",
   "optional": "(optional)",
   "url": {
-    "label": "Job URL",
+    "label": "Job link",
     "hint": "A public page (Greenhouse, Lever, the company's website…). Not LinkedIn: for those jobs, <paste>paste the text</paste>.",
     "downloading": "Downloading…",
     "submit": "Add job"
@@ -11,14 +11,14 @@
     "title": "Role",
     "company": "Company",
     "location": "Location",
-    "url": "URL",
+    "url": "Link",
     "text": "Job text",
     "hint": "Paste the whole posting: requirements, conditions and salary if it says.",
     "saving": "Saving…",
     "submit": "Add job"
   },
   "title": "New job",
-  "intro": "It's saved, deduplicated and checked for text aimed at an AI. Your agent does the extraction afterwards.",
+  "intro": "Paste a job's link or text. If you already had it, it isn't added twice; then your agent reads it and pulls out its details.",
   "byUrl": "By URL",
   "pasteText": "Paste text"
 }

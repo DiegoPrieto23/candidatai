@@ -19,7 +19,7 @@
     "min": "min.",
     "max": "max.",
     "floor": "Your minimum: {{amount}} gross per year. ",
-    "noFloor": "No minimum in your profile (private.salary_floor_eur): no comparison with it. ",
+    "noFloor": "You haven't set your minimum salary (My profile → Search): no comparison with it. ",
     "private": "Only you see this: your agent doesn't get your minimum or these differences. They're numbers, not a recommendation."
   },
   "received": {

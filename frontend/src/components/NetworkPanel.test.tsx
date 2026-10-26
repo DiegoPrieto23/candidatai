@@ -111,7 +111,7 @@ describe('Tu red en la ficha', () => {
     renderApp('/jobs/1?tab=company')
     const panel = await screen.findByRole('region', { name: 'Tu red' })
     expect(await within(panel).findByText('data/documentos/linkedin/Connections.csv')).toBeInTheDocument()
-    const button = within(panel).getByRole('button', { name: 'Importar Connections.csv' })
+    const button = within(panel).getByRole('button', { name: 'Importar mis contactos' })
     await waitFor(() => expect(button).toBeEnabled())
     await userEvent.click(button)
     await waitFor(() => expect(calls.some((c) => c.path === '/network/import')).toBe(true))

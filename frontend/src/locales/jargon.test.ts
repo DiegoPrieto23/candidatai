@@ -16,6 +16,10 @@ const FORBIDDEN: [string, RegExp][] = [
   ['comando', /(^|[\s`«“"(])(cai|uv|pnpm|npm|git|ollama) [a-z-]/],
   ['fichero de configuración', /\.(env|ya?ml)\b/],
   ['variable de entorno', /\b[A-Z][A-Z0-9]*_[A-Z0-9_]+\b/],
+  ['nombre interno', /\b[a-z]+_[a-z0-9_]+\b/],
+  ['fichero', /\.(ics|csv|json|html)\b/],
+  // «.docx» sí: es el tipo de fichero que se sube. «docx» suelto es el motor de una plantilla.
+  ['motor de plantilla', /(?<!\.)\bdocx\b/i],
   ['ruta de datos', /(^|[^\w/.-])data\//],
   ['documento del repositorio', /(^|[^\w/.-])docs\/|\b[A-Z][A-Z_]+\.md\b/],
   ['palabra de desarrollador', /\b(worker|API|endpoint|slug|backend|frontend|prefiltro|prefilter|renderiz\w*|render\w*|JSON|MCP|CLI|HTML)\b/i],
