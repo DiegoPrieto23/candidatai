@@ -94,9 +94,11 @@ describe('Procesos (kanban)', () => {
     const dialog = await screen.findByRole('dialog')
     await userEvent.click(within(dialog).getByRole('radio', { name: /Entrevista programada/ }))
     const register = within(dialog).getByRole('button', { name: 'Registrar' })
-    expect(register).toBeDisabled() // falta la fecha de la entrevista
-    await userEvent.type(within(dialog).getByLabelText('Fecha y hora de la entrevista'), '2026-10-07T10:30')
+    expect(within(dialog).getByLabelText('Hora (opcional)')).toBeDisabled() // sin fecha, no hay hora
+    await userEvent.type(within(dialog).getByLabelText('Fecha de la entrevista (opcional)'), '2026-10-07')
+    await userEvent.type(within(dialog).getByLabelText('Hora (opcional)'), '10:30')
     await userEvent.type(within(dialog).getByLabelText('Lugar o enlace (opcional)'), 'https://meet.example/x')
+    await userEvent.selectOptions(within(dialog).getByLabelText('Tipo de entrevista'), 'hr')
     await userEvent.click(register)
 
     await waitFor(() => expect(calls.some((c) => c.path === '/jobs/2/milestones')).toBe(true))
@@ -106,8 +108,40 @@ describe('Procesos (kanban)', () => {
       starts_at: '2026-10-07T10:30:00+02:00',
       location: 'https://meet.example/x',
       all_day: false,
+      interview_type: 'hr',
     })
     expect(calls.some((c) => c.path === '/jobs/2/events')).toBe(false)
+  })
+
+  it('una entrevista con fecha y sin hora cuenta todo el día', async () => {
+    const calls = mockApi(routes({ 'POST /jobs/2/milestones': { id: 8 } }))
+    renderApp('/procesos')
+    await userEvent.click(await screen.findByRole('button', { name: 'Actualizar estado de «Oferta 2»' }))
+    const dialog = await screen.findByRole('dialog')
+    await userEvent.click(within(dialog).getByRole('radio', { name: /Entrevista programada/ }))
+    await userEvent.type(within(dialog).getByLabelText('Fecha de la entrevista (opcional)'), '2026-10-07')
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Registrar' }))
+
+    await waitFor(() => expect(calls.some((c) => c.path === '/jobs/2/milestones')).toBe(true))
+    expect(calls.find((c) => c.path === '/jobs/2/milestones')?.body).toMatchObject({
+      kind: 'interview',
+      starts_at: '2026-10-07T00:00:00+02:00',
+      all_day: true,
+    })
+  })
+
+  it('una entrevista sin fecha registra solo el evento', async () => {
+    const calls = mockApi(routes({ 'POST /jobs/2/events': { ok: true, event_id: 9, stage: 'in_process' } }))
+    renderApp('/procesos')
+    await userEvent.click(await screen.findByRole('button', { name: 'Actualizar estado de «Oferta 2»' }))
+    const dialog = await screen.findByRole('dialog')
+    await userEvent.click(within(dialog).getByRole('radio', { name: /Entrevista programada/ }))
+    expect(within(dialog).queryByLabelText('Lugar o enlace (opcional)')).not.toBeInTheDocument()
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Registrar' }))
+
+    await waitFor(() => expect(calls.some((c) => c.path === '/jobs/2/events')).toBe(true))
+    expect(calls.find((c) => c.path === '/jobs/2/events')?.body).toMatchObject({ type: 'interview_scheduled' })
+    expect(calls.some((c) => c.path === '/jobs/2/milestones')).toBe(false)
   })
 
   it('una oferta cerrada solo ofrece reabrirla', async () => {

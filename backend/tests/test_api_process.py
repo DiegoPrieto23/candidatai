@@ -118,6 +118,61 @@ def test_process_sheet_contacts_and_milestone_lifecycle(client: TestClient) -> N
     assert client.get(f"/jobs/{job_id}/process").json()["contacts"] == []
 
 
+def test_interview_type_and_prep_instructions(client: TestClient) -> None:
+    job_id = _job(client)
+    _event(client, job_id, type="applied_manually")
+    hr = client.post(
+        f"/jobs/{job_id}/milestones",
+        json={"kind": "interview", "starts_at": _soon(), "interview_type": "hr"},
+    ).json()
+    technical = client.post(
+        f"/jobs/{job_id}/milestones",
+        json={"kind": "interview", "starts_at": _soon(5), "interview_type": "technical"},
+    ).json()
+    assert (hr["interview_type"], technical["interview_type"]) == ("hr", "technical")
+    assert hr["prep_instructions"] is None
+
+    # Editar sin mandar el tipo no lo borra; mandarlo vacío, sí.
+    kept = client.post(f"/milestones/{hr['id']}", json={"starts_at": _soon(), "title": "RR. HH."})
+    assert kept.json()["interview_type"] == "hr"
+    changed = client.post(
+        f"/milestones/{hr['id']}", json={"starts_at": _soon(), "interview_type": "case"}
+    )
+    assert changed.json()["interview_type"] == "case"
+
+    # Las indicaciones son de cada entrevista y no registran evento.
+    before = len(client.get(f"/jobs/{job_id}/process").json()["notes"])
+    saved = client.post(
+        f"/milestones/{technical['id']}/prep-instructions",
+        json={"instructions": "  Más peso a SQL y a modelado de datos.  "},
+    )
+    assert saved.status_code == 200, saved.text
+    assert saved.json()["prep_instructions"] == "Más peso a SQL y a modelado de datos."
+    sheet = client.get(f"/jobs/{job_id}/process").json()
+    by_id = {m["id"]: m for m in sheet["milestones"]}
+    assert by_id[hr["id"]]["prep_instructions"] is None
+    assert by_id[technical["id"]]["prep_instructions"].startswith("Más peso")
+    assert len(sheet["notes"]) == before
+    cleared = client.post(
+        f"/milestones/{technical['id']}/prep-instructions", json={"instructions": ""}
+    )
+    assert cleared.json()["prep_instructions"] is None
+
+    # Solo en entrevistas programadas, y el tipo solo se guarda en entrevistas.
+    deadline = client.post(
+        f"/jobs/{job_id}/milestones",
+        json={"kind": "deadline", "starts_at": _soon(), "interview_type": "hr"},
+    ).json()
+    assert deadline["interview_type"] is None
+    refused = client.post(
+        f"/milestones/{deadline['id']}/prep-instructions", json={"instructions": "x"}
+    )
+    assert refused.status_code == 422
+    client.post(f"/milestones/{hr['id']}/status", json={"status": "cancelled"})
+    late = client.post(f"/milestones/{hr['id']}/prep-instructions", json={"instructions": "x"})
+    assert late.status_code == 422
+
+
 def test_followups_and_upcoming(client: TestClient) -> None:
     job_id = _job(client)
     _event(client, job_id, type="applied_manually")

@@ -44,7 +44,7 @@ describe('Barra lateral (fase 23.3)', () => {
       .map((link) => link.textContent?.replace(/\d.*$/, '').trim())
     expect(names).toEqual([
       'Inicio',
-      'Bandeja',
+      'Bandeja de ofertas',
       'Por revisar',
       'Alertas',
       'Procesos',
@@ -60,7 +60,7 @@ describe('Barra lateral (fase 23.3)', () => {
     expect(await within(nav).findByRole('link', { name: 'Por revisar (3 por revisar)' })).toBeInTheDocument()
     expect(within(nav).getByRole('link', { name: 'Alertas (2 por completar)' })).toBeInTheDocument()
     expect(await within(nav).findByRole('link', { name: 'Respuestas (1 por revisar)' })).toBeInTheDocument()
-    expect(within(nav).getByRole('link', { name: 'Bandeja' })).toHaveAttribute('aria-current', 'page')
+    expect(within(nav).getByRole('link', { name: 'Bandeja de ofertas' })).toHaveAttribute('aria-current', 'page')
   })
 
   it('se pliega a solo iconos y lo recuerda', async () => {
@@ -111,7 +111,7 @@ describe('Barra lateral: detalles (fase 23.3)', () => {
     mockApi({ 'GET /status': status(), 'GET /jobs': emptyPage, 'GET /jobs/7': { status: 404, body: {} } })
     renderApp('/jobs/7')
     const nav = screen.getByRole('navigation', { name: 'Navegación principal' })
-    expect(within(nav).getByRole('link', { name: 'Bandeja' })).toHaveAttribute('aria-current', 'page')
+    expect(within(nav).getByRole('link', { name: 'Bandeja de ofertas' })).toHaveAttribute('aria-current', 'page')
 
     await userEvent.click(screen.getByRole('button', { name: 'Abrir el menú' }))
     const drawer = await screen.findByRole('dialog')

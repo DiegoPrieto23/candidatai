@@ -272,8 +272,10 @@ cambia la etapa.
 | prep_guide | json? | Guía de preparación en PDF (`save_interview_guide`): `file` (el PDF en `entrevistas/` de la carpeta de datos), `saved_at`, `agent_name` y `guide` (el contenido estructurado que maqueta la app) |
 | debrief_notes / next_steps | text? / text? | Fase 17. Repaso de la entrevista (`save_interview_notes`). Aparte de `notes`, que es lo que anota el usuario |
 | debriefed_at | datetime? | Cuándo se guardó el repaso |
+| interview_type | str? | Solo en entrevistas: qué ronda es (`hr`: RR. HH. o encaje cultural, `technical`, `case`, `final`, `other`). Lo elige el usuario al crearla o editarla |
+| prep_instructions | text? | Solo en entrevistas programadas: lo que el usuario quiere que tengan en cuenta la guía y el simulacro (`POST /milestones/{id}/prep-instructions`). Solo se escribe desde la UI; los skills lo leen con `get_interviews` |
 
-Ni el plan ni el repaso registran eventos ni cambian `status`.
+Ni el plan, ni el repaso, ni el tipo, ni las indicaciones registran eventos ni cambian `status`.
 
 Si el evento no es válido en la etapa (p. ej. una entrevista antes de enviar), no se guarda el hito.
 Editar la fecha de una entrevista o una prueba deja una `note` («reprogramada para el…»).

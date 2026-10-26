@@ -1017,6 +1017,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/milestones/{milestone_id}/prep-instructions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Set Prep Instructions
+         * @description Indicaciones de una entrevista para la guía y el simulacro que prepara tu agente.
+         */
+        post: operations["set_prep_instructions"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/milestones/{milestone_id}/status": {
         parameters: {
             query?: never;
@@ -5581,6 +5601,11 @@ export interface components {
             /** Notes */
             notes?: string | null;
             /**
+             * Interview Type
+             * @description Solo en entrevistas: qué ronda es. Si no se manda al editar, no cambia.
+             */
+            interview_type?: ("hr" | "technical" | "case" | "final" | "other") | null;
+            /**
              * Kind
              * @enum {string}
              */
@@ -5619,6 +5644,11 @@ export interface components {
             location?: string | null;
             /** Notes */
             notes?: string | null;
+            /**
+             * Interview Type
+             * @description Solo en entrevistas: qué ronda es. Si no se manda al editar, no cambia.
+             */
+            interview_type?: ("hr" | "technical" | "case" | "final" | "other") | null;
         };
         /** MilestoneOut */
         MilestoneOut: {
@@ -5671,6 +5701,10 @@ export interface components {
             next_steps?: string | null;
             /** Debriefed At */
             debriefed_at?: string | null;
+            /** Interview Type */
+            interview_type?: ("hr" | "technical" | "case" | "final" | "other") | null;
+            /** Prep Instructions */
+            prep_instructions?: string | null;
         };
         /** MilestoneStatusChange */
         MilestoneStatusChange: {
@@ -5982,6 +6016,14 @@ export interface components {
              * @description Cómo: qué repasar, qué historia ensayar…
              */
             detail?: string | null;
+        };
+        /** PrepInstructionsInput */
+        PrepInstructionsInput: {
+            /**
+             * Instructions
+             * @description Lo que quieres que tengan en cuenta la guía y el simulacro. Vacío las borra.
+             */
+            instructions?: string | null;
         };
         /** PrepareBody */
         PrepareBody: {
@@ -12642,6 +12684,104 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["MilestoneFields"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MilestoneOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    set_prep_instructions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                milestone_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PrepInstructionsInput"];
             };
         };
         responses: {

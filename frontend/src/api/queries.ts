@@ -632,6 +632,21 @@ export function useUpdateMilestone(jobId: number) {
   })
 }
 
+/** Indicaciones de una entrevista para «Preparar» y «Simulacro». */
+export function useSavePrepInstructions(jobId: number) {
+  const invalidate = useInvalidateProcess()
+  return useMutation({
+    mutationFn: ({ milestoneId, instructions }: { milestoneId: number; instructions: string }) =>
+      unwrap(
+        api.POST('/milestones/{milestone_id}/prep-instructions', {
+          params: { path: { milestone_id: milestoneId } },
+          body: { instructions },
+        }),
+      ),
+    onSuccess: () => invalidate(jobId),
+  })
+}
+
 export function useMilestoneStatus(jobId: number) {
   const invalidate = useInvalidateProcess()
   return useMutation({

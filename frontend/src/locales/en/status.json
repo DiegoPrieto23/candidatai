@@ -15,6 +15,14 @@
   "hint": "It's in “{{stage}}”. Log each step: the job changes stage on its own and it stays in its history.",
   "loadFailed": "Couldn't load the options: {{error}}",
   "interview": {
+    "instructions": {
+      "label": "Instructions for prep and practice (optional)",
+      "placeholder": "E.g.: more weight on SQL and data modelling; they said there will be a business case; tougher feedback in the mock interview.",
+      "hint": "Prepare and Mock interview take them into account for this interview. They stay saved.",
+      "save": "Save instructions",
+      "saving": "Saving…",
+      "saved": "Saved"
+    },
     "prepare": "Prepare",
     "guide": "Preparation guide (PDF)",
     "guideSaved": "Saved on {{date}}",

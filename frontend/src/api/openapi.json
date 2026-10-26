@@ -6235,6 +6235,129 @@
         }
       }
     },
+    "/milestones/{milestone_id}/prep-instructions": {
+      "post": {
+        "tags": [
+          "process"
+        ],
+        "summary": "Set Prep Instructions",
+        "description": "Indicaciones de una entrevista para la guía y el simulacro que prepara tu agente.",
+        "operationId": "set_prep_instructions",
+        "parameters": [
+          {
+            "name": "milestone_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Milestone Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrepInstructionsInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MilestoneOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
     "/milestones/{milestone_id}/status": {
       "post": {
         "tags": [
@@ -25014,6 +25137,25 @@
             ],
             "title": "Notes"
           },
+          "interview_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "hr",
+                  "technical",
+                  "case",
+                  "final",
+                  "other"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interview Type",
+            "description": "Solo en entrevistas: qué ronda es. Si no se manda al editar, no cambia."
+          },
           "kind": {
             "type": "string",
             "enum": [
@@ -25109,6 +25251,25 @@
               }
             ],
             "title": "Notes"
+          },
+          "interview_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "hr",
+                  "technical",
+                  "case",
+                  "final",
+                  "other"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interview Type",
+            "description": "Solo en entrevistas: qué ronda es. Si no se manda al editar, no cambia."
           }
         },
         "additionalProperties": false,
@@ -25268,6 +25429,35 @@
               }
             ],
             "title": "Debriefed At"
+          },
+          "interview_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "hr",
+                  "technical",
+                  "case",
+                  "final",
+                  "other"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interview Type"
+          },
+          "prep_instructions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prep Instructions"
           }
         },
         "type": "object",
@@ -26220,6 +26410,26 @@
           "topic"
         ],
         "title": "PrepBlock"
+      },
+      "PrepInstructionsInput": {
+        "properties": {
+          "instructions": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instructions",
+            "description": "Lo que quieres que tengan en cuenta la guía y el simulacro. Vacío las borra."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "PrepInstructionsInput"
       },
       "PrepareBody": {
         "properties": {

@@ -10,6 +10,13 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Indicaciones para preparar una entrevista:** en cada entrevista programada, una caja para
+  decir qué quieres que tengan en cuenta la guía en PDF y el simulacro («más peso a SQL», «habrá
+  un caso de negocio»…). Se quedan guardadas en esa entrevista y las usan «Preparar» y
+  «Simulacro» cada vez que los pulsas.
+- **Tipo de entrevista:** al anotar o editar una entrevista eliges qué ronda es (RR. HH. o encaje
+  cultural, técnica, caso práctico, final u otra). Se ve en la ficha y la guía y el simulacro se
+  adaptan a él sin tener que adivinarlo por el título.
 - **Guía «Empieza aquí»** (`docs/EMPEZAR.md`, en inglés `docs/START_HERE.md`) para quien no es
   técnico: qué necesitas (incluido un agente de IA, con lo que cuesta cada opción y adónde van tus
   datos), la instalación paso a paso con la suma de verificación, la demo, crear tu perfil, tu
@@ -21,6 +28,12 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   cómo arrancarla desde la terminal (`cai start`) o con Docker.
 
 ### Cambiado
+- **«Tengo entrevista» sin fecha obligatoria:** la fecha y la hora van en campos separados y las dos
+  son opcionales. Sin hora, la entrevista cuenta todo el día; sin fecha, se registra solo que la
+  tienes. Lo mismo con la fecha de entrega de una prueba.
+- **Bandeja de ofertas:** la Bandeja se llama así, las etapas ya no quedan pegadas a su barra de
+  desplazamiento y, al marcar ofertas para descartarlas, la barra con «Descartar N» flota abajo en
+  vez de empujar la lista hacia abajo.
 - **Una interfaz más fácil de entender:**
   - **Sin jerga:** los textos ya no hablan de skills, comandos, rutas ni ficheros. Dicen qué botón
     pulsar («Procesar ofertas», «Generar CV») o qué pedirle a tu agente.

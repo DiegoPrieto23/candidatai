@@ -34,6 +34,45 @@ describe('Entrevistas en la ficha (fase 17)', () => {
     expect(within(section).queryByRole('button', { name: 'Repasar' })).not.toBeInTheDocument()
   })
 
+  it('guarda las indicaciones de cada entrevista para «Preparar» y «Simulacro»', async () => {
+    const calls = mockApi({
+      'GET /status': status(),
+      'GET /jobs/1': jobView({ stage: 'in_process' }),
+      'GET /jobs/1/process': processView({
+        stage: 'in_process',
+        milestones: [
+          milestone(5, { starts_at: future, interview_type: 'technical', prep_instructions: 'Repasar dbt.' }),
+          milestone(7, { starts_at: future, title: 'Entrevista final' }),
+        ],
+      }),
+      'GET /agent': launcher,
+      'POST /agent/launch': launched,
+      'POST /milestones/7/prep-instructions': milestone(7, { prep_instructions: 'Más peso a SQL.' }),
+    })
+    renderApp('/jobs/1')
+    const section = await screen.findByRole('region', { name: 'Proceso' })
+    const boxes = await within(section).findAllByLabelText('Indicaciones para preparar y ensayar (opcional)')
+    expect(boxes).toHaveLength(2)
+    expect(boxes[0]).toHaveValue('Repasar dbt.')
+    expect(within(section).getByText('Técnica')).toBeInTheDocument()
+
+    // Sin guardar a mano: salir de la caja (p. ej. al pulsar «Preparar») ya la guarda.
+    await userEvent.type(boxes[1], 'Más peso a SQL.')
+    await userEvent.click(within(section).getAllByRole('button', { name: 'Preparar' })[1])
+    await waitFor(() =>
+      expect(calls.find((c) => c.path === '/milestones/7/prep-instructions')?.body).toEqual({
+        instructions: 'Más peso a SQL.',
+      }),
+    )
+    expect(calls.filter((c) => c.path.endsWith('/prep-instructions'))).toHaveLength(1)
+    await waitFor(() =>
+      expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({
+        action: 'prepare-interview',
+        milestone_id: 7,
+      }),
+    )
+  })
+
   it('una entrevista pasada tiene «Repasar» y enseña el repaso guardado', async () => {
     const calls = ficha([
       milestone(6, {

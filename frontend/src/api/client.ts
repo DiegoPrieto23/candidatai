@@ -57,6 +57,7 @@ export type LetterRenderResult = Schemas['LetterRenderResult']
 export type LetterTemplateInfo = Schemas['LetterTemplateInfo']
 export type MilestoneOut = Schemas['MilestoneOut']
 export type MilestoneKind = Schemas['MilestoneCreate']['kind']
+export type InterviewType = NonNullable<Schemas['MilestoneOut']['interview_type']>
 export type ContactOut = Schemas['ContactOut']
 export type UpcomingItem = Schemas['UpcomingItem']
 export type CalendarItem = Schemas['CalendarItem']

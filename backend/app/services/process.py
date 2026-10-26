@@ -29,6 +29,9 @@ MilestoneKind = Literal["interview", "test", "deadline", "other"]
 ContactRelation = Literal["referral", "recruiter", "hiring_manager"]
 ReferralStatus = Literal["requested", "given"]
 MilestoneStatus = Literal["scheduled", "done", "cancelled"]
+# Qué ronda es una entrevista: RR. HH. o encaje cultural, técnica, caso práctico, final u otra.
+InterviewType = Literal["hr", "technical", "case", "final", "other"]
+MAX_PREP_INSTRUCTIONS = 4000
 
 DEFAULT_TITLES: dict[str, str] = {
     "interview": "Entrevista",
@@ -75,6 +78,10 @@ class MilestoneFields(_Input):
     all_day: bool = Field(default=False, description="Todo el día: cuenta solo la fecha.")
     location: str | None = Field(default=None, max_length=500, description="Lugar o enlace.")
     notes: str | None = Field(default=None, max_length=4000)
+    interview_type: InterviewType | None = Field(
+        default=None,
+        description="Solo en entrevistas: qué ronda es. Si no se manda al editar, no cambia.",
+    )
 
     @model_validator(mode="after")
     def _ends_after_start(self) -> Self:
@@ -88,6 +95,14 @@ class MilestoneCreate(MilestoneFields):
     occurred_at: AwareDatetime | None = Field(
         default=None,
         description="Cuándo te lo comunicaron (fecha del evento). Por defecto, ahora.",
+    )
+
+
+class PrepInstructionsInput(_Input):
+    instructions: str | None = Field(
+        default=None,
+        max_length=MAX_PREP_INSTRUCTIONS,
+        description="Lo que quieres que tengan en cuenta la guía y el simulacro. Vacío las borra.",
     )
 
 
@@ -138,6 +153,9 @@ class MilestoneOut(BaseModel):
     debrief_notes: str | None = None
     next_steps: str | None = None
     debriefed_at: datetime | None = None
+    interview_type: InterviewType | None = None
+    # Indicaciones del usuario para «Preparar» y «Simulacro» (solo se escriben desde la UI).
+    prep_instructions: str | None = None
 
 
 class ContactOut(BaseModel):
@@ -233,6 +251,7 @@ def create_milestone(
         all_day=data.all_day,
         location=data.location or None,
         notes=data.notes or None,
+        interview_type=data.interview_type if data.kind == "interview" else None,
         status="scheduled",
         sequence=0,
         created_at=now,
@@ -281,7 +300,25 @@ def update_milestone(session: Session, milestone_id: int, data: MilestoneFields)
     row.all_day = data.all_day
     row.location = data.location or None
     row.notes = data.notes or None
+    if row.kind == "interview" and "interview_type" in data.model_fields_set:
+        row.interview_type = data.interview_type
     row.sequence += 1
+    row.updated_at = utcnow()
+    session.flush()
+    return milestone_out(row)
+
+
+def set_prep_instructions(
+    session: Session, milestone_id: int, data: PrepInstructionsInput
+) -> MilestoneOut:
+    """Guarda lo que el usuario quiere que tengan en cuenta «Preparar» y «Simulacro» en una
+    entrevista programada. No es un cambio de estado de la oferta: no registra evento."""
+    row = milestone_row(session, milestone_id)
+    if row.kind != "interview":
+        raise ValueError("Las indicaciones de preparación solo van en una entrevista.")
+    if row.status != "scheduled":
+        raise ValueError("Solo se preparan las entrevistas programadas.")
+    row.prep_instructions = data.instructions or None
     row.updated_at = utcnow()
     session.flush()
     return milestone_out(row)
