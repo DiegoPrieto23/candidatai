@@ -154,7 +154,7 @@ toca tus datos.
    `CAI_DATA_DIR=data-demo uv run cai start`.
 3. Se abre el navegador con un aviso de **«Modo demo»**. Prueba **Por revisar** (muévete con
    `J`/`K`, aprueba con `A`, descarta con `D`), abre una oferta, cambia la plantilla del CV y pulsa
-   **Renderizar**, y mira **Procesos** y **Embudo**.
+   **Generar**, y mira **Procesos** y **Embudo**.
 
 Para volver a tus datos, cierra esa ventana y abre CandidatAI como siempre.
 
@@ -199,7 +199,7 @@ Después:
    explica cuánto encaja contigo.
 2. En **Por revisar**, aprueba o descarta cada oferta.
 3. En una oferta aprobada, ábrela y pulsa **Generar CV**. Después eliges el diseño y pulsas
-   **Renderizar**, y la app comprueba que cada línea sale de tu perfil.
+   **Generar**, y la app comprueba que cada línea sale de tu perfil.
 4. Al candidatar, la app puede rellenar el formulario y **se para antes de enviar**: lo revisas y
    pulsas Enviar tú.
 

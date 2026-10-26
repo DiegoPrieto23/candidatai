@@ -152,7 +152,7 @@ data.
    `cd ~/.local/share/candidatai/app/backend`, and the last line is
    `CAI_DATA_DIR=data-demo-en uv run cai start`.
 3. Your browser opens with a **"Demo mode"** banner. Try **To review** (move with `J`/`K`, approve
-   with `A`, discard with `D`), open a job, change the CV template and press **Render**, and look at
+   with `A`, discard with `D`), open a job, change the CV template and press **Generate**, and look at
    **Processes** and **Funnel**.
 
 To go back to your own data, close that window and open CandidatAI as usual.
@@ -199,7 +199,7 @@ Then:
    explains how well it fits you.
 2. In **To review**, approve or discard each job.
 3. For an approved job, open it and press **Generate CV**. Then you choose the design and press
-   **Render**, and the app checks that every line comes from your profile.
+   **Generate**, and the app checks that every line comes from your profile.
 4. When you apply, the app can fill the form and **stops before sending**: you check it and press
    Send yourself.
 

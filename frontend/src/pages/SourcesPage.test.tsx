@@ -59,9 +59,16 @@ describe('Empresas objetivo', () => {
     expect(await screen.findByRole('heading', { name: 'Acme Datos' })).toBeInTheDocument()
     expect(screen.getByText(/12 encontradas, 3 tras filtros,\s+2 nuevas/)).toBeInTheDocument()
     expect(screen.queryByText('Manual')).not.toBeInTheDocument()
-    expect(screen.getByText('Sin claves en .env')).toBeInTheDocument()
+    expect(screen.getByText('Faltan sus claves de acceso')).toBeInTheDocument()
     expect(screen.getByText('Pausada')).toBeInTheDocument()
-    expect(screen.getByText('Aún no se ha ejecutado')).toBeInTheDocument()
+    expect(screen.getByText('Aún no se ha revisado')).toBeInTheDocument()
+    // Lo de dentro del ATS no se enseña; la búsqueda de un portal, sí.
+    expect(screen.queryByText('acmedatos')).not.toBeInTheDocument()
+    expect(screen.getByText('«data»')).toBeInTheDocument()
+    // Con empresas, el alta va tras su botón.
+    expect(screen.queryByRole('form', { name: 'Añadir fuente' })).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Añadir empresa' }))
+    expect(screen.getByRole('form', { name: 'Añadir fuente' })).toBeInTheDocument()
   })
 
   it('prueba una empresa antes de guardarla y luego la añade', async () => {
@@ -72,11 +79,12 @@ describe('Empresas objetivo', () => {
       'POST /sources': source({ id: 5, name: 'Brétema' }),
     })
     renderApp('/empresas')
+    // Sin ninguna, lo explica y el formulario sale abierto de entrada.
     expect(await screen.findByText('Aún no sigues ninguna empresa')).toBeInTheDocument()
-
+    expect(screen.queryByRole('button', { name: 'Añadir empresa' })).not.toBeInTheDocument()
     const form = screen.getByRole('form', { name: 'Añadir fuente' })
     await userEvent.type(within(form).getByLabelText('Empresa'), 'Brétema')
-    await userEvent.type(within(form).getByLabelText('Slug del tablero'), 'bretema')
+    await userEvent.type(within(form).getByLabelText('Nombre en la dirección'), 'bretema')
     await userEvent.click(within(form).getByRole('button', { name: 'Probar' }))
 
     expect(await within(form).findByText('12 ofertas encontradas, 3 tras filtros')).toBeInTheDocument()
@@ -96,10 +104,10 @@ describe('Empresas objetivo', () => {
     mockApi({ 'GET /status': status(), 'GET /sources': { sources: [] } })
     renderApp('/empresas')
     const form = await screen.findByRole('form', { name: 'Añadir fuente' })
-    await userEvent.click(within(form).getByRole('combobox', { name: 'Origen' }))
+    await userEvent.click(within(form).getByRole('combobox', { name: 'Web de empleo que usa' }))
     await userEvent.click(await screen.findByRole('option', { name: 'Adzuna (búsqueda)' }))
     expect(within(form).getByLabelText('Palabras de búsqueda')).toBeInTheDocument()
-    expect(within(form).queryByLabelText('Slug del tablero')).not.toBeInTheDocument()
+    expect(within(form).queryByLabelText('Nombre en la dirección')).not.toBeInTheDocument()
     expect(within(form).getByLabelText('Ubicación (opcional)')).toBeInTheDocument()
   })
 
@@ -115,7 +123,7 @@ describe('Empresas objetivo', () => {
     renderApp('/empresas')
     const form = await screen.findByRole('form', { name: 'Añadir fuente' })
     await userEvent.type(within(form).getByLabelText('Empresa'), 'X')
-    await userEvent.type(within(form).getByLabelText('Slug del tablero'), 'a/b')
+    await userEvent.type(within(form).getByLabelText('Nombre en la dirección'), 'a/b')
     await userEvent.click(within(form).getByRole('button', { name: 'Añadir' }))
     expect(await within(form).findByText('Slug no válido.')).toBeInTheDocument()
   })
@@ -143,7 +151,7 @@ describe('Empresas objetivo', () => {
       'POST /sources/1/active': { status: 200, body: source({ active: false }) },
     })
     renderApp('/empresas')
-    await userEvent.click(await screen.findByRole('button', { name: /Ejecutar ahora/ }))
+    await userEvent.click(await screen.findByRole('button', { name: /Buscar ahora/ }))
     expect(await screen.findByText(/2 nuevas, 1 ya estaba/)).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Verlas' })).toHaveAttribute('href', '/bandeja?stage=pending_extraction')
 
@@ -187,18 +195,18 @@ describe('Empresas objetivo', () => {
     })
     renderApp('/empresas')
     const form = await screen.findByRole('form', { name: 'Añadir fuente' })
-    await userEvent.click(within(form).getByRole('combobox', { name: 'Origen' }))
+    await userEvent.click(within(form).getByRole('combobox', { name: 'Web de empleo que usa' }))
     for (const name of ['Teamtailor', 'Workable', 'SmartRecruiters', 'Recruitee', 'Manfred (búsqueda)', 'freehire (búsqueda)']) {
       expect(await screen.findByRole('option', { name })).toBeInTheDocument()
     }
     await userEvent.click(screen.getByRole('option', { name: 'Personio' }))
-    expect(within(form).getByText('<slug>.jobs.personio.de')).toBeInTheDocument()
+    expect(within(form).getByText('<nombre>.jobs.personio.de')).toBeInTheDocument()
     expect(within(form).getByRole('link', { name: 'Cómo encontrarlo' })).toHaveAttribute(
       'href',
       expect.stringContaining('docs/FUENTES_OFERTAS.md'),
     )
     await userEvent.type(within(form).getByLabelText('Empresa'), 'Brétema')
-    await userEvent.type(within(form).getByLabelText('Slug del tablero'), 'bretema')
+    await userEvent.type(within(form).getByLabelText('Nombre en la dirección'), 'bretema')
     await userEvent.type(within(form).getByLabelText('Idioma de la descripción (opcional)'), 'EN')
     await userEvent.click(within(form).getByRole('button', { name: 'Añadir' }))
     expect(await within(form).findByText(/«Brétema» añadida/)).toBeInTheDocument()
@@ -218,9 +226,9 @@ describe('Empresas objetivo', () => {
     })
     renderApp('/empresas')
     const form = await screen.findByRole('form', { name: 'Añadir fuente' })
-    await userEvent.click(within(form).getByRole('combobox', { name: 'Origen' }))
+    await userEvent.click(within(form).getByRole('combobox', { name: 'Web de empleo que usa' }))
     await userEvent.click(await screen.findByRole('option', { name: 'freehire (búsqueda)' }))
-    expect(within(form).queryByLabelText('Slug del tablero')).not.toBeInTheDocument()
+    expect(within(form).queryByLabelText('Nombre en la dirección')).not.toBeInTheDocument()
     expect(within(form).getByText('Sin claves. Busca en el título de las ofertas.')).toBeInTheDocument()
     await userEvent.type(within(form).getByLabelText('Nombre de la búsqueda'), 'Datos remoto')
     await userEvent.type(within(form).getByLabelText('Palabras de búsqueda'), 'data engineer')

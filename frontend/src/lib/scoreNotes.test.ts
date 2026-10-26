@@ -7,16 +7,15 @@ describe('notas del score (fase 23.5b)', () => {
     await i18n.changeLanguage('es')
   })
 
-  it('en español se quedan tal cual', () => {
-    expect(scoreNote('Similitud semántica desactivada (CAI_EMBEDDINGS=off).')).toBe(
-      'Similitud semántica desactivada (CAI_EMBEDDINGS=off).',
-    )
+  it('en español también pasan por los textos: así no enseñan la variable de entorno', () => {
+    expect(scoreNote('Similitud semántica desactivada (CAI_EMBEDDINGS=off).')).toBe('Similitud semántica desactivada.')
+    expect(scoreNote('Otra nota cualquiera.')).toBe('Otra nota cualquiera.')
   })
 
   it('en inglés se traducen las conocidas y las demás se quedan como llegan', async () => {
     await i18n.changeLanguage('en')
     expect(scoreNote('Similitud semántica desactivada (CAI_EMBEDDINGS=off).')).toBe(
-      'Semantic similarity turned off (CAI_EMBEDDINGS=off).',
+      'Semantic similarity turned off.',
     )
     expect(scoreNote('No se pudo calcular la similitud semántica (OSError: sin red).')).toBe(
       "Couldn't calculate the semantic similarity (OSError: sin red).",

@@ -103,7 +103,7 @@ SHOTS = {
     "funnel": ("/embudo", False, []),
     "skills": ("/skills", False, []),
     "templates": ("/plantillas", False, []),
-    "profile-experience": ("/perfil", False, [tab("profileEditor:tabs.experience"), anchor("[role=tablist]", 30)]),
+    "profile-experience": ("/perfil", False, [tab("profileEditor:tabs.career"), anchor("[role=tablist]", 30)]),
     "profile-search": ("/perfil", False, [tab("profileEditor:tabs.search"), anchor("[role=tablist]", 30)]),
     "sources-companies": ("/fuentes/empresas", False, []),
     "sources-platforms": ("/fuentes/plataformas", False, []),

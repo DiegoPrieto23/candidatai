@@ -1,19 +1,19 @@
 {
   "title": "Agents",
-  "intro": "The AI agents the app can open, what each one can do and which one each action uses. Your choices are saved in your database, not in the repository.",
+  "intro": "The AI agents the app can open, what each one can do and which one each action uses.",
   "defaultAgent": "Default agent",
-  "defaultAuto": "Automatic (CAI_AGENT or the first one installed)",
+  "defaultAuto": "Automatic (the first one installed)",
   "notInstalled": "Not installed",
   "installWith": "Install it with:",
   "copy": "Copy",
   "copied": "Copied",
-  "onlyCompatible": "Only compatible via AGENTS.md: no generated configuration and no button.",
+  "onlyCompatible": "Compatible, but the app has no button for it: open it yourself and ask it for what you need.",
   "notLaunchable": "Configured, but the app can't open it with a command: use it yourself from its terminal.",
   "badges": {
     "openSource": "Open source",
     "localModels": "Local models",
-    "mcp": "MCP",
-    "isolation": "Isolated subagents (level {{level}})",
+    "mcp": "Connects to the app",
+    "isolation": "Delegates safely (level {{level}})",
     "headless": "Background",
     "vision": "Vision",
     "web": "Web",
@@ -27,8 +27,8 @@
   "modelHelp": "Free text: it isn't checked online.",
   "modelExample": "e.g. {{example}}",
   "noModelChoice": "This agent can't pick the model when it's launched.",
-  "subagentsInherit": "Subagents (roles) inherit the session's model.",
-  "subagentsFixed": "Subagents (roles) use {{models}}, from the generated configuration.",
+  "subagentsInherit": "The tasks it delegates (e.g. extracting a job) use this same model.",
+  "subagentsFixed": "The tasks it delegates use {{models}}.",
   "save": "Save",
   "saved": "Saved.",
   "byAction": "By action",
@@ -43,7 +43,7 @@
     "explicit": "chosen for this run",
     "action": "chosen for this action",
     "default": "your default agent",
-    "env": "from CAI_AGENT",
+    "env": "chosen in the settings",
     "first_installed": "the first one installed",
     "none": "none available"
   },
@@ -56,7 +56,7 @@
     "untrusted": "Level C with untrusted content: terminal only.",
     "model": "The chosen model isn't valid for this agent."
   },
-  "warning": "Check before launching it: see docs/AGENTS_COMPAT.md.",
+  "warning": "Check before launching it: the agents guide explains why.",
   "loadFailed": "Couldn't read the agents.",
   "local": {
     "title": "Local models (Ollama)",
@@ -69,7 +69,7 @@
     "contextLow": "{{model}}: {{tokens}}-token context. Agents need at least {{min}}: set OLLAMA_CONTEXT_LENGTH={{min}} and restart Ollama.",
     "smallModel": "{{model}} is chosen for “{{action}}”: models of about 8B or less tend to fail the CV schemas.",
     "noModels": "Ollama is running but has no models: download one with “ollama pull”.",
-    "guide": "How to set it up: docs/MODELOS_GRATIS.md. The app only reads which models exist; it never asks them anything."
+    "guide": "How to set it up: see the free models guide. The app only reads which models exist; it never asks them anything."
   },
   "tiers": {
     "title": "Spending tiers",
@@ -100,5 +100,8 @@
       "needs_local_model": "Set the local model under “Edit” (e.g. your Ollama one) to be able to apply it.",
       "no_agent": "No agent can be opened from the app."
     }
-  }
+  },
+  "others_one": "Another compatible agent ({{count}})",
+  "others_other": "Other compatible agents ({{count}})",
+  "fineTune": "Choose agent and model per action"
 }

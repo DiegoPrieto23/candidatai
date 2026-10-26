@@ -60,7 +60,7 @@
   "handle": "Handle requests",
   "recentlyClosed": "Recently closed",
   "title": "Agent",
-  "intro": "What your agent does in the background and what you've left for your next session. It uses your agent subscription: you don't pay extra per run.",
+  "intro": "Your agents, what you've left for their next session and what they do in the background. They use your subscription: you don't pay extra per run.",
   "background": "In the background",
   "nextSession": "For your next session",
   "withAgent": "With {{agent}}",
@@ -71,7 +71,7 @@
   "usageCost": "{{cost}} USD estimated",
   "costs": {
     "title": "Cost",
-    "intro": "What background runs have used, as each agent reports it: tokens, turns, time and, if it says so, money. Nothing is estimated.",
+    "intro": "What background runs have used, as each agent reports it. Tokens are the unit agents use to measure the text they read and write: more tokens, more use of your subscription.",
     "window": "Period",
     "days_one": "Last day",
     "days_other": "Last {{count}} days",
@@ -90,7 +90,7 @@
     "empty": "No runs in this period.",
     "terminal": "Only background runs count: what you do in a terminal doesn't reach the app. “Instructions size” is how heavy each action's instructions are, so you know where to trim.",
     "threshold": "Threshold before spending",
-    "thresholdIntro": "“Assess fit” in the background only assesses jobs with this score or higher; the rest stay unassessed and “To review” says why. The score threshold is {{triage}} and the default, {{default}}. If you open it in a terminal, it assesses whatever you ask.",
+    "thresholdIntro": "In the background, “Assess fit” only assesses jobs with this score or higher, so it doesn't spend on those that almost surely don't fit; “To review” says why each one was left unassessed. The score threshold (from which a job goes to “To review”) is {{triage}}; by default, this one is {{default}}.",
     "thresholdLabel": "Minimum score",
     "thresholdSave": "Save",
     "thresholdReset": "Back to {{value}}",
@@ -98,7 +98,8 @@
       "ui": "You changed it here.",
       "policies": "It comes from the app's default settings.",
       "default": "Default: the score threshold minus 10."
-    }
+    },
+    "settings": "Threshold and cost"
   },
   "jobCost": {
     "title": "Agent cost",

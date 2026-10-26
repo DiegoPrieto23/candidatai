@@ -1,19 +1,19 @@
 {
   "title": "Agentes",
-  "intro": "Los agentes de IA que puede abrir la app, qué sabe hacer cada uno y cuál usa cada acción. Tus elecciones se guardan en tu base de datos, no en el repositorio.",
+  "intro": "Los agentes de IA que puede abrir la app, qué sabe hacer cada uno y cuál usa cada acción.",
   "defaultAgent": "Agente por defecto",
-  "defaultAuto": "Automático (CAI_AGENT o el primero instalado)",
+  "defaultAuto": "Automático (el primero instalado)",
   "notInstalled": "No instalado",
   "installWith": "Instálalo con:",
   "copy": "Copiar",
   "copied": "Copiado",
-  "onlyCompatible": "Solo compatible vía AGENTS.md: sin configuración generada ni botón.",
+  "onlyCompatible": "Compatible, pero la app no tiene botón para él: ábrelo tú y pídele lo que necesites.",
   "notLaunchable": "Configurado, pero la app no sabe abrirlo con una orden: úsalo tú desde su terminal.",
   "badges": {
     "openSource": "Open-source",
     "localModels": "Modelos locales",
-    "mcp": "MCP",
-    "isolation": "Subagentes aislados (nivel {{level}})",
+    "mcp": "Conecta con la app",
+    "isolation": "Delega con seguridad (nivel {{level}})",
     "headless": "Segundo plano",
     "vision": "Visión",
     "web": "Web",
@@ -27,8 +27,8 @@
   "modelHelp": "Texto libre: no se comprueba con la red.",
   "modelExample": "p. ej. {{example}}",
   "noModelChoice": "Este agente no admite elegir el modelo al lanzarlo.",
-  "subagentsInherit": "Los subagentes (roles) heredan el modelo de la sesión.",
-  "subagentsFixed": "Los subagentes (roles) usan {{models}}, de la configuración generada.",
+  "subagentsInherit": "Las tareas que delega (p. ej. extraer una oferta) usan este mismo modelo.",
+  "subagentsFixed": "Las tareas que delega usan {{models}}.",
   "save": "Guardar",
   "saved": "Guardado.",
   "byAction": "Por acción",
@@ -43,7 +43,7 @@
     "explicit": "elegido para esta ejecución",
     "action": "elegido para esta acción",
     "default": "tu agente por defecto",
-    "env": "por CAI_AGENT",
+    "env": "elegido en la configuración",
     "first_installed": "el primero instalado",
     "none": "ninguno disponible"
   },
@@ -56,7 +56,7 @@
     "untrusted": "Nivel C con contenido no confiable: solo en terminal.",
     "model": "El modelo elegido no vale para este agente."
   },
-  "warning": "Revisa antes de lanzarlo: ver docs/AGENTS_COMPAT.md.",
+  "warning": "Revisa antes de lanzarlo: la guía de agentes explica por qué.",
   "loadFailed": "No se pudieron leer los agentes.",
   "local": {
     "title": "Modelos locales (Ollama)",
@@ -69,7 +69,7 @@
     "contextLow": "{{model}}: contexto de {{tokens}} tokens. Los agentes necesitan al menos {{min}}: pon OLLAMA_CONTEXT_LENGTH={{min}} y reinicia Ollama.",
     "smallModel": "{{model}} está elegido para «{{action}}»: los modelos de unos 8B o menos suelen fallar con los esquemas del CV.",
     "noModels": "Ollama responde, pero no tiene ningún modelo: descarga uno con «ollama pull».",
-    "guide": "Cómo montarlo: docs/MODELOS_GRATIS.md. La app solo lee qué modelos hay; nunca les pide nada."
+    "guide": "Cómo montarlo: mira la guía de modelos gratis. La app solo lee qué modelos hay; nunca les pide nada."
   },
   "tiers": {
     "title": "Niveles de gasto",
@@ -100,5 +100,8 @@
       "needs_local_model": "Pon el modelo local en «Editar» (p. ej. el de Ollama) para poder aplicarlo.",
       "no_agent": "No hay ningún agente que se pueda abrir desde la app."
     }
-  }
+  },
+  "others_one": "Otro agente compatible ({{count}})",
+  "others_other": "Otros agentes compatibles ({{count}})",
+  "fineTune": "Elegir agente y modelo por acción"
 }

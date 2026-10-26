@@ -2,7 +2,7 @@
   "kinds": {
     "infojobs": "InfoJobs (search)",
     "adzuna": "Adzuna (search)",
-    "keysHint": "Needs keys in .env",
+    "keysHint": "Needs free access keys: the job sources guide explains how to get them.",
     "manfred": "Manfred (search)",
     "freehire": "freehire (search)",
     "manfredHint": "No keys. Matches the title; several searches, separated by commas.",
@@ -11,18 +11,18 @@
   "more": "… and {{count}} more.",
   "pass": "Passes",
   "filtered": "Filtered",
-  "nonePass": "None passes the pre-filter.",
+  "nonePass": "None match your filters.",
   "onlyPassing": "Show only the ones that pass",
   "alsoFiltered": "Also show the {{count}} filtered",
   "runHint": "They go to “To extract”: press “Process jobs”.",
   "see": "See them",
   "form": {
     "label": "Add source",
-    "origin": "Source",
+    "origin": "Job site it uses",
     "company": "Company",
     "searchName": "Search name",
-    "slug": "Board slug",
-    "slugHint": "What goes in the URL:",
+    "slug": "Name in the address",
+    "slugHint": "What goes in the address of its job site:",
     "slugHelp": "How to find it (in Spanish)",
     "region": "Lever region",
     "global": "Global (jobs.lever.co)",
@@ -39,23 +39,24 @@
     "country": "Country",
     "countryHint": "2-letter code, e.g. es",
     "remoteOnly": "Remote jobs only",
-    "added": "“{{name}}” added. It'll be part of the daily intake; you can also run it now.",
+    "added": "“{{name}}” added. It's checked every day; you can also search now.",
     "testing": "Testing…",
     "test": "Test",
     "saving": "Saving…",
     "add": "Add",
     "website": "Company website (optional)",
-    "websiteHint": "For its logo, e.g. acme.com. If it posts its jobs on its own domain, the app takes it from there."
+    "websiteHint": "For its logo, e.g. acme.com. If it posts its jobs on its own domain, the app takes it from there.",
+    "slugPart": "name"
   },
   "row": {
     "paused": "Paused",
-    "noKeys": "No keys in .env",
+    "noKeys": "Its access keys are missing",
     "last": "{{when}}: {{found}} found, {{after}} after filters, {{created}} new",
-    "notRun": "It hasn't run yet",
+    "notRun": "Not checked yet",
     "testing": "Testing…",
     "test": "Test",
-    "running": "Running…",
-    "run": "Run now",
+    "running": "Searching…",
+    "run": "Search now",
     "pause": "Pause",
     "resume": "Resume",
     "addWebsite": "Add its website for the logo",
@@ -68,10 +69,12 @@
   },
   "empty": {
     "title": "You don't follow any company yet",
-    "body": "Add one with its ATS and its slug. Test it before saving it to see how many jobs it has and how many pass your filters."
+    "body": "Pick the job site it uses and test it before saving: you'll see how many jobs it has and how many match your filters.",
+    "add": "Add company"
   },
   "title": "Target companies",
-  "intro": "Their jobs arrive on their own every day while CandidatAI is open, from each company's careers site. Only those matching your preferences by title and location are kept, and they go to “To extract” for your agent.",
+  "intro": "While it's open, the app checks these companies' job sites every day. What matches your preferences goes to “To extract”.",
   "addTitle": "Add company or search",
-  "following": "Following"
+  "following": "Following",
+  "closeAdd": "Close"
 }

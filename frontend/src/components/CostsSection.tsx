@@ -82,8 +82,10 @@ function GroupTable({ caption, groups, withInstructions }: { caption: string; gr
 
 function CostWindowView({ data }: { data: CostWindow }) {
   const { t } = useTranslation('agent', { keyPrefix: 'costs' })
+  // Sin ejecuciones, las tres tablas dirían lo mismo: una sola frase.
+  if (data.total.runs === 0) return <p className="py-2 text-sm text-muted-foreground">{t('empty')}</p>
   return (
-    <div className="grid gap-5">
+    <div className="grid min-w-0 gap-5">
       <Totals total={data.total} />
       <GroupTable caption={t('byAction')} groups={data.by_action} withInstructions />
       <GroupTable caption={t('byAgent')} groups={data.by_agent} />
@@ -104,7 +106,7 @@ function Threshold() {
   const valid = value.trim() !== '' && Number.isInteger(parsed) && parsed >= 0 && parsed <= 100
   return (
     <div className="rounded-xl border bg-card p-4">
-      <h3 className="font-medium">{t('threshold')}</h3>
+      <h2 className="font-medium">{t('threshold')}</h2>
       <p className="mt-1 text-sm text-muted-foreground">
         {t('thresholdIntro', { triage: data.triage_threshold, default: data.default })}
       </p>
@@ -147,10 +149,16 @@ export function CostsSection() {
   const { t } = useTranslation('agent', { keyPrefix: 'costs' })
   const { data, isPending, isError, error, refetch } = useAgentCosts()
   return (
-    <div className="grid gap-5">
-      <p className="max-w-prose text-sm text-muted-foreground">{t('intro')}</p>
+    <div className="grid min-w-0 gap-5">
+      <Threshold />
+      <h2 className="font-medium">{t('title')}</h2>
+      <p className="-mt-3 max-w-prose text-sm text-muted-foreground">{t('intro')}</p>
       {isPending ? (
-        <Skeleton className="h-48" />
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {[0, 1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-14" />
+          ))}
+        </div>
       ) : isError ? (
         <ErrorState error={error} onRetry={() => refetch()} />
       ) : (
@@ -163,14 +171,13 @@ export function CostsSection() {
             ))}
           </TabsList>
           {data.windows.map((w) => (
-            <TabsContent key={w.days} value={String(w.days)}>
+            <TabsContent key={w.days} value={String(w.days)} className="min-w-0">
               <CostWindowView data={w} />
             </TabsContent>
           ))}
           <p className="text-xs text-muted-foreground">{t('terminal')}</p>
         </Tabs>
       )}
-      <Threshold />
     </div>
   )
 }

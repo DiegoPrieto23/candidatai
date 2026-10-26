@@ -182,13 +182,22 @@ function lastPut(calls: ReturnType<typeof mockApi>) {
   return calls.filter((c) => c.method === 'PUT' && c.path === '/agent/preferences').at(-1)?.body
 }
 
+/** Los agentes sin instalar y el ajuste por acción van plegados. */
+async function openOthers() {
+  await userEvent.click(await screen.findByRole('button', { name: /^Otros? agentes? compatibles? \(/ }))
+}
+
+async function openFineTune() {
+  await userEvent.click(await screen.findByRole('button', { name: 'Elegir agente y modelo por acción' }))
+}
+
 describe('Sección «Agentes» (fase 24.4)', () => {
   it('enseña una tarjeta por agente con insignias, instalación y subagentes', async () => {
     page()
     renderApp('/agente')
     const claude = await screen.findByRole('listitem', { name: 'Claude Code' })
     expect(within(claude).getByText('claude 1.0')).toBeInTheDocument()
-    expect(within(claude).getByText('Subagentes aislados (nivel A)')).toBeInTheDocument()
+    expect(within(claude).getByText('Delega con seguridad (nivel A)')).toBeInTheDocument()
     expect(within(claude).getByText('Segundo plano')).toBeInTheDocument()
     expect(within(claude).queryByText('Open-source')).not.toBeInTheDocument()
     expect(within(claude).getByText(/usan haiku \/ sonnet/)).toBeInTheDocument()
@@ -196,15 +205,18 @@ describe('Sección «Agentes» (fase 24.4)', () => {
     const codex = screen.getByRole('listitem', { name: 'Codex' })
     expect(within(codex).getByText('Open-source')).toBeInTheDocument()
     expect(within(codex).getByText('Modelos locales')).toBeInTheDocument()
-    expect(within(codex).getByText(/heredan el modelo de la sesión/)).toBeInTheDocument()
+    expect(within(codex).getByText(/usan este mismo modelo/)).toBeInTheDocument()
 
+    // Sin instalar, plegado.
+    expect(screen.queryByRole('listitem', { name: 'OpenCode' })).not.toBeInTheDocument()
+    await openOthers()
     const opencode = screen.getByRole('listitem', { name: 'OpenCode' })
     expect(within(opencode).getByText('No instalado')).toBeInTheDocument()
     expect(within(opencode).getByText('npm i -g opencode')).toBeInTheDocument()
     expect(within(opencode).getByPlaceholderText('p. ej. ollama/qwen3:8b')).toBeInTheDocument()
 
     const cursor = screen.getByRole('listitem', { name: 'Cursor CLI' })
-    expect(within(cursor).getByText(/Solo compatible vía AGENTS\.md/)).toBeInTheDocument()
+    expect(within(cursor).getByText(/la app no tiene botón para él/)).toBeInTheDocument()
     expect(within(cursor).queryByLabelText('Modelo')).not.toBeInTheDocument()
   })
 
@@ -235,6 +247,7 @@ describe('Sección «Agentes» (fase 24.4)', () => {
   it('la tabla «Por acción» anula el agente y enseña el efectivo con su motivo', async () => {
     const calls = page()
     renderApp('/agente')
+    await openFineTune()
     const table = await screen.findByRole('table')
     const search = within(table).getByRole('row', { name: /Buscar ofertas/ })
     expect(within(search).getByText(/elegido para esta acción/)).toBeInTheDocument()
@@ -258,6 +271,7 @@ describe('Sección «Agentes» (fase 24.4)', () => {
     })
     const calls = page(data)
     renderApp('/agente')
+    await openFineTune()
     const row = within(await screen.findByRole('table')).getByRole('row', { name: /Evaluar encaje/ })
     await userEvent.type(within(row).getByLabelText('Modelo'), 'o4{Enter}')
     await waitFor(() =>
@@ -265,6 +279,15 @@ describe('Sección «Agentes» (fase 24.4)', () => {
     )
     await userEvent.selectOptions(within(row).getByLabelText('Agente'), '')
     await waitFor(() => expect(lastPut(calls)).toMatchObject({ actions: {} }))
+  })
+
+  it('sin ningún agente instalado, los compatibles salen a la vista con cómo instalarlos', async () => {
+    const data = overview()
+    page({ ...data, agents: data.agents.map((a) => ({ ...a, installed: false, version: null })) })
+    renderApp('/agente')
+    const claude = await screen.findByRole('listitem', { name: 'Claude Code' })
+    expect(within(claude).getByText('npm i -g claude')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /compatibles? \(/ })).not.toBeInTheDocument()
   })
 
   it('dice por qué no se pudo guardar', async () => {
@@ -290,6 +313,7 @@ describe('Sección «Agentes» (fase 24.4)', () => {
       },
     })
     renderApp('/agente')
+    await openOthers()
     const opencode = await screen.findByRole('listitem', { name: 'OpenCode' })
     await userEvent.type(within(opencode).getByLabelText('Modelo'), 'qwen3{Enter}')
     expect(await screen.findByRole('alert')).toHaveTextContent('no tiene el formato de OpenCode')
@@ -304,6 +328,7 @@ describe('Niveles de gasto y modelos locales (fase 24.6)', () => {
     })
     const calls = page(overview(), { 'POST /agent/tiers/balanced/apply': applied })
     renderApp('/agente')
+    await openFineTune()
     const economy = await screen.findByRole('listitem', { name: 'Económico' })
     expect(within(economy).getAllByText('OpenCode')).toHaveLength(3)
     expect(within(economy).getByText(/Pon el modelo local/)).toBeInTheDocument()
@@ -321,6 +346,7 @@ describe('Niveles de gasto y modelos locales (fase 24.6)', () => {
       'POST /agent/tiers/undo': tiers(),
     })
     renderApp('/agente')
+    await openFineTune()
     await userEvent.click(await screen.findByRole('button', { name: 'Deshacer el último' }))
     await waitFor(() => expect(calls.some((c) => c.path === '/agent/tiers/undo')).toBe(true))
   })
@@ -328,6 +354,7 @@ describe('Niveles de gasto y modelos locales (fase 24.6)', () => {
   it('edita un nivel y guarda el modelo local', async () => {
     const calls = page(overview(), { 'PUT /agent/tiers/economy': tiers() })
     renderApp('/agente')
+    await openFineTune()
     const economy = await screen.findByRole('listitem', { name: 'Económico' })
     await userEvent.click(within(economy).getByRole('button', { name: 'Editar' }))
     await userEvent.type(within(economy).getByLabelText('Modelo para Procesar ofertas'), 'ollama/gpt-oss:20b')

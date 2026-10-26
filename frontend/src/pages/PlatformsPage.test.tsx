@@ -86,6 +86,13 @@ function publicView(overrides: Partial<LinkedInPublicView> = {}): LinkedInPublic
   }
 }
 
+/** Los ajustes, las búsquedas y el registro de cada plataforma van plegados. */
+async function openSettings() {
+  for (const button of await screen.findAllByRole('button', { name: 'Ajustes y registro' })) {
+    if (button.getAttribute('aria-expanded') === 'false') await userEvent.click(button)
+  }
+}
+
 describe('Plataformas', () => {
   it('lista por prioridad con búsquedas, límites y resultados', async () => {
     const calls = mockApi({
@@ -98,7 +105,14 @@ describe('Plataformas', () => {
     const headings = await screen.findAllByRole('heading', { level: 3 })
     expect(headings.map((h) => h.textContent)).toEqual(['LinkedIn', 'Tecnoempleo'])
     expect(calls.find((c) => c.path === '/sources')?.search.get('kind')).toBe('agent_browse')
-    expect(screen.getByText(/2 páginas de resultados por búsqueda, 5 s/)).toBeInTheDocument()
+    // Cada una, en una línea: su último recorrido; lo demás, plegado.
+    expect(screen.getByText(/12 encontradas,\s+3 nuevas$/)).toBeInTheDocument()
+    expect(screen.getByText(/· 1 incidente/)).toBeInTheDocument()
+    // Con incidentes, sus ajustes y su registro salen abiertos: el incidente se ve sin buscarlo.
+    expect(screen.getByText('Captcha en la página 2: se para.')).toBeVisible()
+    expect(screen.queryByRole('combobox', { name: 'Prioridad de LinkedIn' })).not.toBeInTheDocument()
+    await openSettings()
+    expect(screen.getAllByText(/2 páginas de resultados por búsqueda, 5 s/)[0]).toBeInTheDocument()
     const search = screen
       .getAllByRole('link', { name: 'data' })
       .find((link) => link.getAttribute('href') === tecno.browse!.search_urls[0])
@@ -175,6 +189,7 @@ describe('Plataformas', () => {
     })
     renderApp('/plataformas')
 
+    await openSettings()
     await userEvent.click(await screen.findByRole('combobox', { name: 'Ofertas por recorrido en Tecnoempleo' }))
     await userEvent.click(screen.getByRole('option', { name: '40' }))
     expect(calls.find((c) => c.path === '/sources/1/browse')?.body).toEqual({ confirm_risk: false, max_offers: 40 })
@@ -195,6 +210,7 @@ describe('Plataformas', () => {
     })
     renderApp('/plataformas')
 
+    await openSettings()
     await userEvent.click(await screen.findByRole('combobox', { name: 'Prioridad de Tecnoempleo' }))
     expect(screen.getAllByRole('option').map((o) => o.textContent)).toEqual([
       '1 · LinkedIn(pasará al puesto 2)',
@@ -236,6 +252,7 @@ describe('Plataformas', () => {
     })
     renderApp('/plataformas')
 
+    await openSettings()
     await userEvent.click(await screen.findByRole('combobox', { name: 'Prioridad de Tecnoempleo' }))
     const before = gets
     await userEvent.click(screen.getByRole('option', { name: /1 · LinkedIn/ }))
@@ -247,6 +264,7 @@ describe('Plataformas', () => {
     mockApi({ 'GET /status': status(), 'GET /sources': { sources: [tecno], agent_browse: LIMITS } })
     renderApp('/plataformas')
 
+    await openSettings()
     ;(await screen.findByRole('button', { name: 'Qué es la prioridad' })).focus()
     expect(await screen.findByRole('tooltip')).toHaveTextContent(/El orden en que tu agente recorre las plataformas/)
     await userEvent.keyboard('{Escape}')
@@ -261,6 +279,9 @@ describe('Plataformas', () => {
     mockApi({ 'GET /status': status(), 'GET /sources': { sources: [], agent_browse: LIMITS } })
     renderApp('/plataformas')
     expect(await screen.findByText('Aún no hay plataformas')).toBeInTheDocument()
+    // Sin plataformas, lo destacado es añadir la primera; buscar no tiene sentido aún.
+    expect(screen.getByRole('button', { name: 'Añadir plataforma' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Buscar ofertas' })).not.toBeInTheDocument()
     expect(screen.getByText(/pide a tu agente que configure tu búsqueda/)).toBeInTheDocument()
   })
 })
@@ -277,6 +298,9 @@ describe('Búsqueda pública de LinkedIn', () => {
     })
     renderApp('/plataformas')
 
+    // Apagada, va plegada con los ajustes de LinkedIn.
+    expect(screen.queryByRole('switch', { name: SWITCH })).not.toBeInTheDocument()
+    await openSettings()
     const toggle = await screen.findByRole('switch', { name: SWITCH })
     expect(toggle).toHaveAttribute('aria-checked', 'false')
     expect(screen.getByText('Qué consultará')).toBeInTheDocument()

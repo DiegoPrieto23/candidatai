@@ -144,7 +144,7 @@ describe('Galería de plantillas', () => {
       expect(within(card).queryByText(/recrea el diseño/)).not.toBeInTheDocument()
       const pdf = screen.getByRole('listitem', { name: 'canva.pdf' })
       expect(within(pdf).getByText('import-cv-template data/uploads/canva.pdf')).toBeInTheDocument()
-      expect(within(pdf).getByText(/recrea el diseño en HTML/)).toBeInTheDocument()
+      expect(within(pdf).getByText(/el agente recrea el diseño:/)).toBeInTheDocument()
       expect(screen.queryByText(/08b/)).not.toBeInTheDocument()
     })
 
@@ -190,7 +190,7 @@ describe('Galería de plantillas', () => {
         'src',
         'http://127.0.0.1:8000/templates/canva/preview-real.png',
       )
-      expect(within(card).getByText(/solo PDF/)).toBeInTheDocument()
+      expect(within(card).getByText(/solo da PDF/)).toBeInTheDocument()
 
       const gallery = screen.getByRole('article', { name: 'Canva' })
       const pair = within(gallery).getByLabelText('Original y recreación')

@@ -212,12 +212,13 @@ function AddPlatformForm({ onDone }: { onDone: () => void }) {
 }
 
 /** Botón y diálogo «Añadir plataforma». */
-export function AddPlatformButton() {
+/** `primary`: relleno, si es la acción destacada de la pantalla; si no, con borde. */
+export function AddPlatformButton({ primary = false }: { primary?: boolean }) {
   const { t } = useTranslation('platforms', { keyPrefix: 'add' })
   const [open, setOpen] = useState(false)
   return (
     <>
-      <Button type="button" size="sm" onClick={() => setOpen(true)}>
+      <Button type="button" size="sm" variant={primary ? 'default' : 'outline'} onClick={() => setOpen(true)}>
         <PlusIcon />
         {t('button')}
       </Button>

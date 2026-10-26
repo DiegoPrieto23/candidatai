@@ -51,7 +51,7 @@ describe('Sección CV de la ficha', () => {
     const section = await screen.findByRole('region', { name: 'CV' })
     expect(await within(section).findByText('Aún sin CV')).toBeInTheDocument()
     expect(within(section).getByRole('button', { name: 'Generar CV' })).toBeInTheDocument()
-    expect(within(section).queryByRole('button', { name: 'Renderizar' })).not.toBeInTheDocument()
+    expect(within(section).queryByRole('button', { name: 'Generar' })).not.toBeInTheDocument()
   })
 
   it('los avisos de maquetación dicen la página y cómo arreglarlo (fase 25.5)', async () => {
@@ -72,7 +72,7 @@ describe('Sección CV de la ficha', () => {
     })
     renderApp('/jobs/1?tab=application')
     const section = await screen.findByRole('region', { name: 'CV' })
-    const render = await within(section).findByRole('listitem', { name: 'Render 1' })
+    const render = await within(section).findByRole('listitem', { name: 'Versión 1' })
     expect(within(render).getByText('Página 1 · Prueba otra plantilla abajo, sin agente.')).toBeInTheDocument()
     expect(within(render).getByText(/Página 1 · Hay que recortar contenido/)).toBeInTheDocument()
     expect(within(render).getAllByText(/^Página \d/)).toHaveLength(2) // `pdf_only` no lleva página
@@ -99,7 +99,7 @@ describe('Sección CV de la ficha', () => {
     const section = await screen.findByRole('region', { name: 'CV' })
     expect(await within(section).findByText('Verificado: nada inventado ni exagerado')).toBeInTheDocument()
 
-    const first = within(section).getByRole('listitem', { name: 'Render 1' })
+    const first = within(section).getByRole('listitem', { name: 'Versión 1' })
     expect(within(first).getByText('Clásica con foto')).toBeInTheDocument()
     expect(within(first).getByText('Para enviar')).toBeInTheDocument()
     expect(within(first).getByText('2 de 3')).toBeInTheDocument()
@@ -111,16 +111,16 @@ describe('Sección CV de la ficha', () => {
     )
 
     // A la vista, solo el que se envía; los demás, plegados.
-    expect(within(section).queryByRole('listitem', { name: 'Render 2' })).not.toBeInTheDocument()
+    expect(within(section).queryByRole('listitem', { name: 'Versión 2' })).not.toBeInTheDocument()
     await userEvent.click(within(section).getByRole('button', { name: 'Ver 1 versión más' }))
-    const second = within(section).getByRole('listitem', { name: 'Render 2' })
+    const second = within(section).getByRole('listitem', { name: 'Versión 2' })
     expect(within(second).getByText('ATS sencilla')).toBeInTheDocument()
     expect(within(second).getByText('2/1')).toBeInTheDocument()
     expect(within(second).getByText('El CV ocupa 2 páginas y el máximo es 1.')).toBeInTheDocument()
     expect(within(second).getByText('Plantilla cambiada')).toBeInTheDocument()
     expect(within(second).getByText(/sin proyectos/)).toBeInTheDocument()
-    const items = within(section).getAllByRole('listitem', { name: /^Render/ })
-    expect(items.map((i) => i.getAttribute('aria-label'))).toEqual(['Render 1', 'Render 2'])
+    const items = within(section).getAllByRole('listitem', { name: /^Versión/ })
+    expect(items.map((i) => i.getAttribute('aria-label'))).toEqual(['Versión 1', 'Versión 2'])
   })
 
   it('renderiza con otra plantilla, sin foto, otro color y secciones ocultas', async () => {
@@ -139,9 +139,9 @@ describe('Sección CV de la ficha', () => {
     renderApp('/jobs/1?tab=application')
     // Las opciones de diseño van plegadas.
     expect(await screen.findByRole('button', { name: 'Cambiar diseño' })).toBeInTheDocument()
-    expect(screen.queryByRole('form', { name: 'Renderizar el CV' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('form', { name: 'Generar el CV' })).not.toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Cambiar diseño' }))
-    const form = await screen.findByRole('form', { name: 'Renderizar el CV' })
+    const form = await screen.findByRole('form', { name: 'Generar el CV' })
 
     // Parte de la plantilla del render seleccionado: ats-simple no lleva foto ni color.
     expect(within(form).getByRole('radio', { name: /ATS sencilla/ })).toBeChecked()
@@ -153,7 +153,7 @@ describe('Sección CV de la ficha', () => {
     await userEvent.click(within(form).getByRole('radio', { name: 'Granate' }))
     await userEvent.click(within(form).getByRole('radio', { name: 'Sin foto' }))
     await userEvent.click(within(form).getByRole('checkbox', { name: 'Proyectos' }))
-    await userEvent.click(within(form).getByRole('button', { name: 'Renderizar' }))
+    await userEvent.click(within(form).getByRole('button', { name: 'Generar' }))
 
     await waitFor(() => expect(calls.some(isUserPost)).toBe(true))
     const post = calls.find(isUserPost)
@@ -185,7 +185,7 @@ describe('Sección CV de la ficha', () => {
     })
     renderApp('/jobs/1?tab=application')
     await userEvent.click(await screen.findByRole('button', { name: 'Cambiar diseño' }))
-    await userEvent.click(await screen.findByRole('button', { name: 'Renderizar' }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Generar' }))
     expect(await screen.findByRole('alert')).toHaveTextContent('No hay LibreOffice ni Word.')
   })
 
@@ -204,15 +204,15 @@ describe('Sección CV de la ficha', () => {
     })
     renderApp('/jobs/1?tab=application')
     await userEvent.click(await screen.findByRole('button', { name: 'Ver 1 versión más' }))
-    const second = screen.getByRole('listitem', { name: 'Render 2' })
+    const second = screen.getByRole('listitem', { name: 'Versión 2' })
     await userEvent.click(within(second).getByRole('button', { name: /Usar este para enviar/ }))
 
     // El elegido pasa arriba.
     await waitFor(() =>
-      expect(within(screen.getByRole('listitem', { name: 'Render 2' })).getByText('Para enviar')).toBeInTheDocument(),
+      expect(within(screen.getByRole('listitem', { name: 'Versión 2' })).getByText('Para enviar')).toBeInTheDocument(),
     )
     expect(calls.filter(isUserPost).map((c) => c.path)).toEqual(['/renders/2/select'])
-    const first = screen.getByRole('listitem', { name: 'Render 1' })
+    const first = screen.getByRole('listitem', { name: 'Versión 1' })
     expect(within(first).getByRole('button', { name: /Usar este para enviar/ })).toBeInTheDocument()
   })
 
@@ -225,27 +225,27 @@ describe('Sección CV de la ficha', () => {
     })
     renderApp('/jobs/1?tab=application')
     const box = (id: number) =>
-      within(screen.getByRole('listitem', { name: `Render ${id}` })).getByRole('checkbox', { name: 'Comparar' })
+      within(screen.getByRole('listitem', { name: `Versión ${id}` })).getByRole('checkbox', { name: 'Comparar' })
 
-    await screen.findByRole('listitem', { name: 'Render 1' })
+    await screen.findByRole('listitem', { name: 'Versión 1' })
     await userEvent.click(screen.getByRole('button', { name: 'Ver 2 versiones más' }))
     await userEvent.click(box(1))
-    expect(screen.getByText('Marca otro render para verlos lado a lado.')).toBeInTheDocument()
+    expect(screen.getByText('Marca otra versión para verlas lado a lado.')).toBeInTheDocument()
     await userEvent.click(box(3))
-    const compare = screen.getByRole('region', { name: 'Comparación de renders' })
-    expect(within(compare).getByTitle('PDF del render 1')).toHaveAttribute(
+    const compare = screen.getByRole('region', { name: 'Comparar versiones' })
+    expect(within(compare).getByTitle('PDF de la versión 1')).toHaveAttribute(
       'src',
       'http://127.0.0.1:8000/renders/1/pdf#view=FitH',
     )
-    expect(within(compare).getByTitle('PDF del render 3')).toBeInTheDocument()
+    expect(within(compare).getByTitle('PDF de la versión 3')).toBeInTheDocument()
 
     // Un tercero sustituye al más antiguo de la comparación.
     await userEvent.click(box(2))
-    expect(within(compare).queryByTitle('PDF del render 1')).not.toBeInTheDocument()
-    expect(within(compare).getByTitle('PDF del render 2')).toBeInTheDocument()
+    expect(within(compare).queryByTitle('PDF de la versión 1')).not.toBeInTheDocument()
+    expect(within(compare).getByTitle('PDF de la versión 2')).toBeInTheDocument()
 
     await userEvent.click(within(compare).getByRole('button', { name: 'Cerrar comparación' }))
-    expect(screen.queryByRole('region', { name: 'Comparación de renders' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('region', { name: 'Comparar versiones' })).not.toBeInTheDocument()
   })
 
   it('muestra los problemas del verificador', async () => {

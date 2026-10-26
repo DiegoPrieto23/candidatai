@@ -60,7 +60,7 @@
   "handle": "Atender encargos",
   "recentlyClosed": "Cerrados recientemente",
   "title": "Agente",
-  "intro": "Lo que tu agente hace en segundo plano y lo que le has dejado para tu próxima sesión. Usa tu suscripción al agente: no pagas aparte por cada ejecución.",
+  "intro": "Tus agentes, lo que les has dejado para su próxima sesión y lo que hacen en segundo plano. Usan tu suscripción: no pagas aparte por cada ejecución.",
   "background": "En segundo plano",
   "nextSession": "Para tu próxima sesión",
   "withAgent": "Con {{agent}}",
@@ -71,7 +71,7 @@
   "usageCost": "{{cost}} USD estimados",
   "costs": {
     "title": "Coste",
-    "intro": "Lo que han gastado las ejecuciones en segundo plano, según lo que dice cada agente: tokens, turnos, tiempo y, si lo da, dinero. Nada se estima.",
+    "intro": "Lo que han gastado las ejecuciones en segundo plano, según lo que dice cada agente. Los tokens son la unidad en que los agentes miden el texto que leen y escriben: más tokens, más uso de tu suscripción.",
     "window": "Periodo",
     "days_one": "Último día",
     "days_other": "Últimos {{count}} días",
@@ -90,7 +90,7 @@
     "empty": "Ninguna ejecución en este periodo.",
     "terminal": "Solo cuenta lo que se ejecuta en segundo plano: lo que haces en una terminal no llega a la app. «Tamaño de las instrucciones» es lo que pesan las de cada acción, para saber dónde recortar.",
     "threshold": "Umbral antes de gastar",
-    "thresholdIntro": "«Evaluar encaje» en segundo plano solo valora las ofertas con este score o más; las demás se quedan sin valorar y «Por revisar» dice por qué. El umbral de score es {{triage}} y el de por defecto, {{default}}. Si lo abres en una terminal, valora lo que le pidas.",
+    "thresholdIntro": "«Evaluar encaje» en segundo plano solo valora las ofertas con este score o más, para no gastar en las que casi seguro no encajan; «Por revisar» dice por qué se quedó sin valorar cada una. El umbral de score (desde el que una oferta pasa a «Por revisar») es {{triage}}; por defecto, este es {{default}}.",
     "thresholdLabel": "Score mínimo",
     "thresholdSave": "Guardar",
     "thresholdReset": "Volver a {{value}}",
@@ -98,7 +98,8 @@
       "ui": "Lo has cambiado aquí.",
       "policies": "Viene de la configuración por defecto de la app.",
       "default": "Por defecto: el umbral de score menos 10."
-    }
+    },
+    "settings": "Umbral y coste"
   },
   "jobCost": {
     "title": "Coste del agente",

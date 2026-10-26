@@ -19,7 +19,7 @@
     "assessment": "Valoración del agente"
   },
   "notes": {
-    "off": "Similitud semántica desactivada (CAI_EMBEDDINGS=off).",
+    "off": "Similitud semántica desactivada.",
     "notInstalled": "Comparación por significado sin activar: es opcional y la guía explica cómo activarla.",
     "unavailable": "Similitud semántica no disponible.",
     "failed": "No se pudo calcular la similitud semántica ({{error}}).",

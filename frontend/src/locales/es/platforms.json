@@ -69,7 +69,7 @@
     "detail": "Descargar también la descripción",
     "detailHint": "Hasta {{offers}} por ejecución; más peticiones, más riesgo",
     "what": "Qué consultará",
-    "noSearch": "Ninguna búsqueda sirve: añade a esta plataforma una URL de `linkedin.com/jobs/search` con palabras clave o ubicación.",
+    "noSearch": "Ninguna búsqueda sirve: añade a esta plataforma una búsqueda de LinkedIn Empleos con palabras clave o ubicación (copia la dirección de la página de resultados).",
     "ignored_one": "Una búsqueda no se usa: {{list}}",
     "ignored_other": "{{count}} búsquedas no se usan: {{list}}",
     "blocked": "LinkedIn cortó la última búsqueda (límite de peticiones, inicio de sesión o captcha). No se vuelve a intentar hasta el {{date}}.",
@@ -81,7 +81,6 @@
     "notRun": "El agente aún no la ha recorrido",
     "invalid": "Su configuración no es válida. Pide a tu agente que la vuelva a configurar («configura mis plataformas de búsqueda»).",
     "risk": "Riesgo para tu cuenta",
-    "upTo": "Hasta {{offers}} por recorrido",
     "browsing": "El agente la recorre",
     "disabled": "Desactivada",
     "switch": "Búsqueda con navegador en {{name}}",
@@ -100,7 +99,9 @@
     "maxOffers": "Ofertas por recorrido",
     "maxOffersAria": "Ofertas por recorrido en {{name}}",
     "maxOffersHint": "Cuántas ofertas nuevas da de alta el agente, como mucho, cada vez que recorre esta plataforma. Bájalo si te llegan demasiadas para revisar.",
-    "maxOffersHintAria": "Qué son las ofertas por recorrido"
+    "maxOffersHintAria": "Qué son las ofertas por recorrido",
+    "settings": "Ajustes y registro",
+    "log": "Último recorrido"
   },
   "limits": "Límites de la app: como mucho {{pages}} de resultados por búsqueda, {{delay}} s de pausa entre páginas y {{offers}} ofertas por recorrido en las plataformas nuevas (en cada una lo cambias con «Ofertas por recorrido»).",
   "empty": {
@@ -109,13 +110,13 @@
   },
   "title": "Plataformas",
   "broaden": "Ampliar búsqueda",
-  "intro": "Portales que tu agente recorre con tu navegador cuando pulsas «Buscar ofertas», por orden de prioridad. Solo lee: no se postula, no guarda ofertas en el portal ni resuelve captchas. Lo que encuentra queda en «Por extraer».",
+  "intro": "Portales que tu agente recorre con tu navegador, en este orden, cuando pulsas «Buscar ofertas». Solo lee: nunca se postula por ti.",
   "add": {
     "linkedinTitle": "Se guarda con la búsqueda desactivada, y es lo recomendable.",
     "linkedinP1": "Las condiciones de LinkedIn prohíben recorrer su web con herramientas automáticas y puede restringir o cerrar tu cuenta si lo detecta, aunque el agente use tu navegador y solo lea. Lo seguro es recibir sus ofertas por las alertas por correo (pantalla «Alertas») o con el botón «Enviar a CandidatAI».",
     "linkedinP2": "Si aun así quieres que el agente la recorra, actívala después con su interruptor, bajo tu responsabilidad.",
     "title": "Añadir plataforma",
-    "description": "Un portal donde tu agente busca ofertas con tu navegador cuando le pides «search-jobs».",
+    "description": "Un portal donde tu agente busca ofertas con tu navegador cuando pulsas «Buscar ofertas».",
     "portal": "Portal",
     "pick": "Elige un portal…",
     "other": "Otro portal",
@@ -136,5 +137,6 @@
     "saving": "Guardando…",
     "submit": "Añadir",
     "button": "Añadir plataforma"
-  }
+  },
+  "search": "Buscar ofertas"
 }

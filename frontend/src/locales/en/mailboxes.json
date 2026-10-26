@@ -5,19 +5,18 @@
     "summary_other": "{{count}} mailboxes",
     "withErrors_one": "{{count}} with an error",
     "withErrors_other": "{{count}} with an error",
-    "demo": "You're in the demo: no IMAP mailbox is read, only .eml folders.",
+    "demo": "You're in the demo: no real email is read, only a few samples.",
     "empty": "No mailboxes yet. Add the email account where your job alerts arrive.",
     "loadFailed": "Couldn't load the mailboxes: {{error}}"
   },
   "add": "Add mailbox",
   "row": {
-    "fromEnv": "from .env",
-    "folderKind": ".eml folder",
+    "folderKind": "Emails saved in a folder",
     "readsReplies": "Reads replies",
-    "noPassword": "Password missing ({{ref}})",
+    "noPassword": "Your email's app password is missing: without it the alerts can't be read.",
     "lastPolled": "Read {{when}}",
     "never": "Not read yet",
-    "lastError": "Last error: {{message}}",
+    "lastError": "It couldn't be read last time.",
     "switch": "Read {{name}}",
     "test": "Test",
     "testing": "Testing…",
@@ -25,12 +24,15 @@
     "remove": "Remove",
     "confirmRemove": "Remove? Yes",
     "cancelRemove": "No",
-    "fromEnvHint": "Its server, user and password are changed in .env (CAI_IMAP_*)."
+    "fromEnvHint": "This is the account set up at install time: its server and user are changed in the .env file (CAI_IMAP_*).",
+    "writePassword": "Enter the password",
+    "serverSaid": "The server replied: {{message}}",
+    "secretRef": "The password is stored in the {{ref}} variable."
   },
   "dialog": {
     "addTitle": "Add mailbox",
     "editTitle": "Edit “{{name}}”",
-    "description": "The app only reads: it doesn't mark anything as read, move or delete emails, or send anything. The password is stored in your .env and never leaves it again.",
+    "description": "The app only reads: it doesn't mark anything as read, move or delete emails, or send anything. The password stays on your computer.",
     "provider": "Provider",
     "guide": "Full guide",
     "officialLinks": "Official help",
@@ -84,8 +86,8 @@
       "forwardBody": "In Outlook.com: Settings → Mail → Rules, a rule for emails from LinkedIn, InfoJobs… with “Forward to” your Gmail. Or Settings → Mail → Forwarding, to forward everything. Then add that Gmail here.",
       "forwardButton": "Go to Gmail",
       "exportTitle": "Export the alerts as .eml",
-      "exportBody": "In Outlook on the web, open an alert → ⋯ → Download: it's saved as .eml. Put them in the folder of an “.eml folder” mailbox.",
-      "exportButton": "Go to “.eml folder”",
+      "exportBody": "In Outlook on the web, open an alert → ⋯ → Download: it's saved as .eml. Put them in the folder of an “Email folder” mailbox.",
+      "exportButton": "Go to “Email folder”",
       "imapTitle": "Try IMAP anyway",
       "imapBody": "It may still work for a personal account with an app password (with 2-step verification on). If it fails with “user or password”, use one of the two ways above.",
       "linkForwarding": "Forwarding in Outlook",
@@ -113,7 +115,7 @@
       "step3": "Proton Mail has no direct IMAP and its Bridge uses its own certificate, which the app doesn't accept: export the emails as .eml."
     },
     "folder": {
-      "name": ".eml folder",
+      "name": "Email folder",
       "step1": "Export the alert emails as .eml (or one .mbox) from your email program.",
       "step2": "Put them in this mailbox's folder: the app reads them without moving or deleting them.",
       "step3": "Works with any provider, Outlook and Proton included."
@@ -124,9 +126,9 @@
     "imap_folder": "That folder or label doesn't exist: type its exact name (in Gmail, the label's).",
     "network": "Couldn't connect: check the server, the port and your connection.",
     "host_not_allowed": "It's an address on your computer or network. If it's your own server, tick “Server on my computer or network”.",
-    "no_password": "Type the app password.",
+    "no_password": "Enter your email's app password.",
     "demo": "You're in the demo: no real mailbox is read.",
-    "inbox_error": "Check that the folder exists inside data/inbox/.",
+    "inbox_error": "That folder no longer exists: create it again with «Edit» or remove the mailbox.",
     "time_budget": "There wasn't time in this round: it will be read in the next one.",
     "imap_error": "The server replied with an error. Try again later."
   }

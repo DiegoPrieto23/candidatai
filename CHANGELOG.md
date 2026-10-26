@@ -34,6 +34,19 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   - **Listas de 25 en 25:** la Bandeja y Alertas se paginan. En Alertas, las ofertas que no encajan
     con tus filtros van plegadas.
   - **Procesos** explica el tablero en una frase y las tarjetas llevan un botón más discreto.
+  - **Mi perfil**, en cinco pestañas en vez de nueve: Sobre ti, Experiencia y formación, Búsqueda,
+    Documentos (preferencias de CV y carta, y el contexto) e Historial.
+  - **Plataformas:** cada portal en una línea con su último recorrido; la prioridad, el acceso,
+    las búsquedas y el registro van en «Ajustes y registro». «Buscar ofertas» está arriba.
+  - **Empresas objetivo:** primero las que sigues; para añadir una, «Añadir empresa». Ya no se
+    habla de «slug», sino del nombre de la empresa en la dirección de su web de empleo.
+  - **Agente:** arriba tus agentes y los encargos para tu próxima sesión; después lo que corre en
+    segundo plano, y el umbral y el coste, plegados en «Umbral y coste». Los agentes que no tienes
+    instalados y el ajuste por acción también van plegados.
+  - **Buzones:** si a uno le falta la contraseña de aplicación, lo dice así y lleva un botón para
+    escribirla, también en la cuenta configurada al instalar. Las variables, solo en «Detalles
+    técnicos».
+  - **«Generar»** en vez de «Renderizar» en el CV y la carta, y «versión» en vez de «render».
 - **La ficha de la oferta, más ligera:** en vez de apilar todas las secciones con una columna
   lateral, va en pestañas (Oferta, Candidatura, Proceso, Empresa, Historial y notas) y se abre en
   la que toca: la oferta mientras la revisas, la candidatura al aprobarla y el proceso al enviarla.
@@ -56,6 +69,10 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   «Mi perfil» y la candidatura asistida. Pesan mucho menos (WebP) y ya no hay vídeo.
 - **La demo trae alertas por correo:** 65 ofertas, 5 de ellas de dos buzones de alertas, así que la
   página «Alertas» ya no sale vacía.
+
+### Corregido
+- **El Calendario carga al recargar la página** o al entrar por un enlace; antes daba «Not Found».
+- **La página Agente ya no se sale de la pantalla en el móvil.**
 
 ## [0.1.0] - 2026-10-24
 

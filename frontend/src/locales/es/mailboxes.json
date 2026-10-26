@@ -5,19 +5,18 @@
     "summary_other": "{{count}} buzones",
     "withErrors_one": "{{count}} con error",
     "withErrors_other": "{{count}} con error",
-    "demo": "Estás en la demo: no se lee ningún buzón IMAP, solo las carpetas de .eml.",
+    "demo": "Estás en la demo: no se lee ningún correo de verdad, solo unos de ejemplo.",
     "empty": "Aún no hay ningún buzón. Añade el correo donde te llegan las alertas.",
     "loadFailed": "No se pudieron cargar los buzones: {{error}}"
   },
   "add": "Añadir buzón",
   "row": {
-    "fromEnv": "de .env",
-    "folderKind": "Carpeta de .eml",
+    "folderKind": "Correos guardados en una carpeta",
     "readsReplies": "Lee respuestas",
-    "noPassword": "Falta la contraseña ({{ref}})",
+    "noPassword": "Falta la contraseña de aplicación de tu correo: sin ella no se pueden leer las alertas.",
     "lastPolled": "Leído {{when}}",
     "never": "Aún no se ha leído",
-    "lastError": "Último error: {{message}}",
+    "lastError": "No se pudo leer la última vez.",
     "switch": "Leer {{name}}",
     "test": "Probar",
     "testing": "Probando…",
@@ -25,12 +24,15 @@
     "remove": "Quitar",
     "confirmRemove": "¿Quitar? Sí",
     "cancelRemove": "No",
-    "fromEnvHint": "Su servidor, usuario y contraseña se cambian en .env (CAI_IMAP_*)."
+    "fromEnvHint": "Es la cuenta configurada al instalar: su servidor y su usuario se cambian en el fichero .env (CAI_IMAP_*).",
+    "writePassword": "Escribir la contraseña",
+    "serverSaid": "El servidor respondió: {{message}}",
+    "secretRef": "La contraseña se guarda en la variable {{ref}}."
   },
   "dialog": {
     "addTitle": "Añadir buzón",
     "editTitle": "Editar «{{name}}»",
-    "description": "La app solo lee: no marca nada como leído, no mueve ni borra correos y no envía nada. La contraseña se guarda en tu .env y no vuelve a salir de él.",
+    "description": "La app solo lee: no marca nada como leído, no mueve ni borra correos y no envía nada. La contraseña se queda en tu equipo.",
     "provider": "Proveedor",
     "guide": "Guía completa",
     "officialLinks": "Ayuda oficial",
@@ -84,8 +86,8 @@
       "forwardBody": "En Outlook.com: Configuración → Correo → Reglas, una regla para los correos de LinkedIn, InfoJobs… con «Reenviar a» tu Gmail. O Configuración → Correo → Reenvío, para reenviarlo todo. Después añade aquí ese Gmail.",
       "forwardButton": "Ir a Gmail",
       "exportTitle": "Exporta las alertas como .eml",
-      "exportBody": "En Outlook en la web, abre una alerta → ⋯ → Descargar: se guarda como .eml. Déjalas en la carpeta de un buzón de tipo «Carpeta de .eml».",
-      "exportButton": "Ir a «Carpeta de .eml»",
+      "exportBody": "En Outlook en la web, abre una alerta → ⋯ → Descargar: se guarda como .eml. Déjalas en la carpeta de un buzón de tipo «Carpeta de correos».",
+      "exportButton": "Ir a «Carpeta de correos»",
       "imapTitle": "Probar por IMAP igualmente",
       "imapBody": "Puede que aún funcione en una cuenta personal con contraseña de aplicación (con la verificación en dos pasos activada). Si falla con «usuario o contraseña», usa uno de los dos caminos de arriba.",
       "linkForwarding": "Reenvío en Outlook",
@@ -113,7 +115,7 @@
       "step3": "Proton Mail no da IMAP directo y su Bridge usa un certificado propio que la app no acepta: exporta los correos como .eml."
     },
     "folder": {
-      "name": "Carpeta de .eml",
+      "name": "Carpeta de correos",
       "step1": "Exporta los correos de alertas como .eml (o un .mbox) desde tu programa de correo.",
       "step2": "Déjalos en la carpeta de este buzón: la app los lee sin moverlos ni borrarlos.",
       "step3": "Sirve con cualquier proveedor, también Outlook o Proton."
@@ -124,9 +126,9 @@
     "imap_folder": "Esa carpeta o etiqueta no existe: escribe el nombre exacto (en Gmail, el de la etiqueta).",
     "network": "No se pudo conectar: revisa el servidor, el puerto y tu conexión.",
     "host_not_allowed": "Es una dirección de tu equipo o tu red. Si es tu propio servidor, marca «Servidor en mi equipo o mi red».",
-    "no_password": "Escribe la contraseña de aplicación.",
+    "no_password": "Escribe la contraseña de aplicación de tu correo.",
     "demo": "Estás en la demo: no se lee ningún buzón real.",
-    "inbox_error": "Revisa que la carpeta existe dentro de data/inbox/.",
+    "inbox_error": "Esa carpeta ya no existe: vuelve a crearla con «Editar» o quita el buzón.",
     "time_budget": "No dio tiempo en esta pasada: se leerá en la siguiente.",
     "imap_error": "El servidor respondió con un error. Vuelve a probar más tarde."
   }

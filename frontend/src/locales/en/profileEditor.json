@@ -1,13 +1,9 @@
 {
   "tabs": {
-    "personal": "Details",
-    "experience": "Experience",
-    "background": "Projects and education",
-    "skills": "Skills and languages",
-    "stories": "STAR stories",
+    "about": "About you",
+    "career": "Experience and education",
     "search": "Search",
-    "documents": "CV and letter",
-    "context": "Context and style",
+    "documents": "Documents",
     "history": "History"
   },
   "noProfile": {
