@@ -5,7 +5,6 @@ import {
   ChatCircleDotsIcon,
   CircleNotchIcon,
   ClockCountdownIcon,
-  CoinsIcon,
   RobotIcon,
   TerminalWindowIcon,
   XIcon,
@@ -22,6 +21,7 @@ import {
 import { AgentButton } from '@/components/AgentButton'
 import { AgentsSection } from '@/components/AgentsSection'
 import { CostsSection } from '@/components/CostsSection'
+import { Reveal } from '@/components/Reveal'
 import { ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -279,7 +279,10 @@ function RequestRow({ request }: { request: AgentRequestView }) {
           <span className="text-xs text-muted-foreground tabular">{formatWhen(request.created_at)}</span>
         </p>
         {pending ? (
-          <p className="mt-0.5 text-sm text-muted-foreground">{request.prompt}</p>
+          // La orden que recibe el agente es técnica (nombra el skill): plegada.
+          <Reveal label={t('technicalDetails', { ns: 'common' })} className="mt-1 space-y-1">
+            <p className="text-xs text-muted-foreground">{request.prompt}</p>
+          </Reveal>
         ) : (
           <p className="mt-0.5 text-sm text-muted-foreground">
             {request.status === 'done' ? (request.summary ?? t('done')) : t('cancelled')}
@@ -342,6 +345,8 @@ function Requests() {
 export function AgentPage() {
   const { t } = useTranslation('agent')
   const { t: tAgents } = useTranslation('agents')
+  // Arriba lo que más se usa (tus agentes y lo que les has dejado); después, lo que corre solo, y el
+  // coste y el umbral, plegados al final como ajustes.
   return (
     <div className="animate-in fade-in duration-300">
       <div className="mb-6">
@@ -350,15 +355,15 @@ export function AgentPage() {
           {t('intro')}
         </p>
       </div>
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-        <section aria-labelledby="runs-title">
-          <h2 id="runs-title" className="mb-3 flex items-center gap-2 text-lg font-semibold tracking-tight">
-            <CircleNotchIcon className="size-5 text-muted-foreground" weight="duotone" />
-            {t('background')}
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+        <section aria-labelledby="agents-title" className="min-w-0">
+          <h2 id="agents-title" className="mb-3 flex items-center gap-2 text-lg font-semibold tracking-tight">
+            <RobotIcon className="size-5 text-muted-foreground" weight="duotone" />
+            {tAgents('title')}
           </h2>
-          <Runs />
+          <AgentsSection />
         </section>
-        <section aria-labelledby="requests-title">
+        <section aria-labelledby="requests-title" className="min-w-0">
           <h2 id="requests-title" className="mb-3 flex items-center gap-2 text-lg font-semibold tracking-tight">
             <ClockCountdownIcon className="size-5 text-muted-foreground" weight="duotone" />
             {t('nextSession')}
@@ -366,20 +371,16 @@ export function AgentPage() {
           <Requests />
         </section>
       </div>
-      <section aria-labelledby="costs-title" className="mt-10">
-        <h2 id="costs-title" className="mb-3 flex items-center gap-2 text-lg font-semibold tracking-tight">
-          <CoinsIcon className="size-5 text-muted-foreground" weight="duotone" />
-          {t('costs.title')}
+      <section aria-labelledby="runs-title" className="mt-10 min-w-0">
+        <h2 id="runs-title" className="mb-3 flex items-center gap-2 text-lg font-semibold tracking-tight">
+          <CircleNotchIcon className="size-5 text-muted-foreground" weight="duotone" />
+          {t('background')}
         </h2>
+        <Runs />
+      </section>
+      <Reveal label={t('costs.settings')} className="mt-10 min-w-0">
         <CostsSection />
-      </section>
-      <section aria-labelledby="agents-title" className="mt-10">
-        <h2 id="agents-title" className="mb-3 flex items-center gap-2 text-lg font-semibold tracking-tight">
-          <RobotIcon className="size-5 text-muted-foreground" weight="duotone" />
-          {tAgents('title')}
-        </h2>
-        <AgentsSection />
-      </section>
+      </Reveal>
     </div>
   )
 }

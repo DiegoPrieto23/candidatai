@@ -39,7 +39,6 @@
   "documentsIntro": "Your source documents. Your agent can read them to create or expand your profile, always asking you before writing.",
   "openDocuments": "Open the documents folder",
   "expand": "Expand profile from my links",
-  "expandHint": "Your agent reads your public links (GitHub, portfolio, Kaggle, Scholar) and proposes projects, skills, achievements and certifications, each with its source. It only writes to your profile what you accept. Best right after creating it.",
   "title": "My profile",
-  "intro": "Your profile is the only thing a CV, a letter or an answer can claim. Fill it in here block by block: each one saves on its own and can be undone. You can also ask your agent."
+  "intro": "Everything a CV, letter or answer says comes from here. Each block is saved separately and can be undone."
 }

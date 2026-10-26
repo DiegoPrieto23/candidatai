@@ -63,13 +63,13 @@ function kindLabel(kind: (typeof KINDS)[number]): string {
 }
 
 function kindHint(kind: (typeof KINDS)[number]): string {
-  if (kind.hint) return kind.hint
+  if (kind.hint) return kind.hint.replace('<slug>', `<${i18n.t('sources:form.slugPart')}>`)
   if (kind.value === 'manfred') return i18n.t('sources:kinds.manfredHint')
   if (kind.value === 'freehire') return i18n.t('sources:kinds.freehireHint')
   return i18n.t('sources:kinds.keysHint')
 }
 const ATS: ConnectorKind[] = KINDS.filter((k) => k.label !== null).map((k) => k.value)
-/** Cómo encontrar el slug de cada ATS (`docs/FUENTES_OFERTAS.md`). */
+/** Cómo encontrar el nombre de la empresa en la dirección de cada ATS (`docs/FUENTES_OFERTAS.md`). */
 const SLUG_HELP_URL = 'https://github.com/DiegoPrieto23/candidatai/blob/main/docs/FUENTES_OFERTAS.md#cómo-encontrar-el-slug'
 const CONNECTOR_KINDS = new Set<string>(KINDS.map((k) => k.value))
 
@@ -235,7 +235,7 @@ const EMPTY = {
 }
 type TextKey = 'name' | 'slug' | 'query' | 'where' | 'province' | 'language' | 'country' | 'website'
 
-function AddSourceForm() {
+function AddSourceForm({ onAdded }: { onAdded?: () => void }) {
   const { t } = useTranslation('sources', { keyPrefix: 'form' })
   const [form, setForm] = useState(EMPTY)
   const preview = usePreviewSource()
@@ -276,6 +276,7 @@ function AddSourceForm() {
       onSuccess: () => {
         setForm(EMPTY)
         preview.reset()
+        onAdded?.()
       },
     })
   }
@@ -494,7 +495,8 @@ function SourceRow({ source }: { source: SourceView }) {
   const preview = usePreviewSource()
   const run = useRunSource()
   const toggle = useSetSourceActive()
-  const target = String(source.config.slug ?? source.config.query ?? '')
+  // El nombre de la empresa en su ATS ya está en el título; de un portal, se enseña qué busca.
+  const query = source.config.query ? String(source.config.query) : null
   const last = source.last_run
   const busy = preview.isPending || run.isPending
   const error = preview.error ?? run.error ?? toggle.error
@@ -520,7 +522,7 @@ function SourceRow({ source }: { source: SourceView }) {
               </span>
             )}
           </div>
-          <p className="mt-0.5 font-mono text-xs text-muted-foreground">{target}</p>
+          {query && <p className="mt-0.5 text-xs text-muted-foreground">«{query}»</p>}
           <Website source={source} />
           <p className="mt-1.5 flex items-center gap-1.5 text-xs text-muted-foreground">
             <ClockIcon className="size-3.5" />
@@ -572,7 +574,6 @@ function SourceRow({ source }: { source: SourceView }) {
 }
 
 function SourceList() {
-  const { t } = useTranslation('sources', { keyPrefix: 'empty' })
   const sources = useSources()
   if (sources.isPending) {
     return (
@@ -584,13 +585,6 @@ function SourceList() {
   }
   if (sources.isError) return <ErrorState error={sources.error} onRetry={() => sources.refetch()} />
   const items = sources.data.sources.filter((s) => CONNECTOR_KINDS.has(s.kind))
-  if (items.length === 0) {
-    return (
-      <EmptyState icon={<BuildingsIcon className="size-6" weight="duotone" />} title={t('title')}>
-        {t('body')}
-      </EmptyState>
-    )
-  }
   return (
     <ul className="divide-y rounded-xl border bg-card">
       {items.map((source) => (
@@ -600,24 +594,46 @@ function SourceList() {
   )
 }
 
+/** Lo habitual es repasar las que ya sigues: el alta, tras un botón (la acción destacada). */
 export function SourcesPage() {
   const { t } = useTranslation('sources')
+  const sources = useSources()
+  const [adding, setAdding] = useState(false)
+  const none = sources.isSuccess && !sources.data.sources.some((s) => CONNECTOR_KINDS.has(s.kind))
   return (
     <div className="mx-auto max-w-3xl animate-in fade-in duration-300">
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
-        <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-          <InlineCode text={t('intro')} />
-        </p>
+      <div className="mb-8 flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
+          <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+            <InlineCode text={t('intro')} />
+          </p>
+        </div>
+        {sources.isSuccess && !none && (
+          <Button variant={adding ? 'outline' : 'default'} onClick={() => setAdding(!adding)} aria-expanded={adding}>
+            {adding ? t('closeAdd') : t('empty.add')}
+          </Button>
+        )}
       </div>
-      <section className="mb-10 rounded-xl border bg-card p-5 sm:p-6">
-        <h2 className="mb-4 font-medium">{t('addTitle')}</h2>
-        <AddSourceForm />
-      </section>
-      <section>
-        <h2 className="mb-3 font-medium">{t('following')}</h2>
-        <SourceList />
-      </section>
+      {none && (
+        <div className="mb-6">
+          <EmptyState icon={<BuildingsIcon className="size-6" weight="duotone" />} title={t('empty.title')}>
+            {t('empty.body')}
+          </EmptyState>
+        </div>
+      )}
+      {(adding || none) && (
+        <section className="mb-10 rounded-xl border bg-card p-5 sm:p-6">
+          <h2 className="mb-4 font-medium">{t('addTitle')}</h2>
+          <AddSourceForm onAdded={() => setAdding(false)} />
+        </section>
+      )}
+      {!none && (
+        <section>
+          <h2 className="mb-3 font-medium">{t('following')}</h2>
+          <SourceList />
+        </section>
+      )}
     </div>
   )
 }

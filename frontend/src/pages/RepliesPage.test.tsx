@@ -129,6 +129,13 @@ describe('Respuestas', () => {
     expect(calls.some((c) => c.path.endsWith('/accept'))).toBe(false)
   })
 
+  it('sin ninguna respuesta, lleva a conectar el correo', async () => {
+    mockApi({ 'GET /status': status(), 'GET /replies': { replies: [], counts: {} } })
+    renderApp('/respuestas')
+    expect(await screen.findByText('Aún no hay respuestas')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Conectar tu correo' })).toHaveAttribute('href', '/alertas')
+  })
+
   it('con correos sin clasificar ofrece abrir tu agente y avisa del riesgo', async () => {
     mockReplies([
       reply(2, {

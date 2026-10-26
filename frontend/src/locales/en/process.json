@@ -14,7 +14,7 @@
     "save": "Save milestone"
   },
   "milestone": {
-    "ics": "Download .ics for “{{title}}”",
+    "ics": "Add “{{title}}” to my calendar",
     "edit": "Edit “{{title}}”",
     "done": "Mark “{{title}}” as done",
     "cancel": "Cancel “{{title}}”"

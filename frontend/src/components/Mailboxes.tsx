@@ -16,6 +16,7 @@ import {
   useTestNewMailSource,
   useUpdateMailSource,
 } from '@/api/queries'
+import { Reveal } from '@/components/Reveal'
 import { InlineCode } from '@/components/States'
 import { Switch } from '@/components/Switch'
 import { Button } from '@/components/ui/button'
@@ -142,6 +143,7 @@ function MailboxRow({ source, onEdit }: { source: MailSourceView; onEdit: () => 
     source.kind === 'folder' ? source.path : `${source.user ?? ''} · ${source.host ?? ''} · ${source.folder}`
   const error = source.last_error
   const help = errorHelp(error?.code)
+  const missingPassword = source.kind === 'imap' && !source.has_password
 
   return (
     <li className={cn('grid gap-2 px-4 py-3', !source.enabled && 'bg-muted/30')}>
@@ -154,11 +156,6 @@ function MailboxRow({ source, onEdit }: { source: MailSourceView; onEdit: () => 
         <div className="min-w-0 flex-1">
           <p className="flex flex-wrap items-center gap-2 text-sm font-medium">
             {source.label}
-            {source.from_env && (
-              <span className="rounded-md border px-1.5 py-0.5 font-mono text-xs font-normal text-muted-foreground">
-                {t('row.fromEnv')}
-              </span>
-            )}
             {source.kind === 'folder' && (
               <span className="text-xs font-normal text-muted-foreground">{t('row.folderKind')}</span>
             )}
@@ -178,19 +175,21 @@ function MailboxRow({ source, onEdit }: { source: MailSourceView; onEdit: () => 
       <p className="text-xs text-muted-foreground">
         {source.last_polled_at ? t('row.lastPolled', { when: formatRelative(source.last_polled_at) }) : t('row.never')}
       </p>
-      {source.kind === 'imap' && !source.has_password && (
-        <p className="flex items-center gap-1.5 text-xs text-warning-foreground">
+      {missingPassword && (
+        <div className="flex flex-wrap items-center gap-2 rounded-md border border-warning-border bg-warning px-2.5 py-1.5 text-xs text-warning-foreground">
           <WarningIcon className="size-3.5 shrink-0" weight="fill" />
-          {t('row.noPassword', { ref: source.secret_ref ?? '' })}
-        </p>
+          <span className="flex-1">{t('row.noPassword')}</span>
+          <Button size="xs" onClick={onEdit}>
+            {t('row.writePassword')}
+          </Button>
+        </div>
       )}
       {error && (
         <div className="rounded-md bg-destructive/5 px-2.5 py-1.5 text-xs">
-          <p>{t('row.lastError', { message: error.message })}</p>
-          {help && <p className="text-muted-foreground">{help}</p>}
+          <p className="font-medium">{t('row.lastError')}</p>
+          <p className="text-muted-foreground">{help ?? error.message}</p>
         </div>
       )}
-      {source.from_env && <p className="text-xs text-muted-foreground">{t('row.fromEnvHint')}</p>}
       <div className="flex flex-wrap items-center gap-2">
         <Button variant="outline" size="xs" onClick={() => test.mutate(source.id)} disabled={test.isPending}>
           {test.isPending ? t('row.testing') : t('row.test')}
@@ -220,6 +219,13 @@ function MailboxRow({ source, onEdit }: { source: MailSourceView; onEdit: () => 
           ))}
       </div>
       {test.data && <TestOutcome result={test.data} />}
+      {(source.from_env || source.secret_ref || (error && help)) && (
+        <Reveal label={t('technicalDetails', { ns: 'common' })} className="space-y-1.5 text-xs text-muted-foreground">
+          {error && help && <p>{t('row.serverSaid', { message: error.message })}</p>}
+          {source.secret_ref && <p>{t('row.secretRef', { ref: source.secret_ref })}</p>}
+          {source.from_env && <p>{t('row.fromEnvHint')}</p>}
+        </Reveal>
+      )}
       {(update.error ?? remove.error ?? test.error) && (
         <p role="alert" className="text-xs text-destructive">
           {errorMessage(update.error ?? remove.error ?? test.error)}
@@ -229,12 +235,13 @@ function MailboxRow({ source, onEdit }: { source: MailSourceView; onEdit: () => 
   )
 }
 
-/** Panel plegable «Buzones», con el estado de cada uno. Se abre solo si alguno tiene un error. */
+/** Panel plegable «Buzones», con el estado de cada uno. Se abre solo si alguno tiene un error o le falta la contraseña. */
 export function MailboxesPanel({ onEdit }: { onEdit: (source: MailSourceView) => void }) {
   const { t } = useTranslation('mailboxes')
   const query = useMailSources()
   const sources = query.data?.sources ?? []
   const failing = sources.filter((s) => s.enabled && s.last_error).length
+  const needsPassword = sources.some((s) => s.enabled && s.kind === 'imap' && !s.has_password)
   const [open, setOpen] = useState<boolean | null>(null)
   if (query.isPending) return null
   if (query.isError) {
@@ -245,7 +252,7 @@ export function MailboxesPanel({ onEdit }: { onEdit: (source: MailSourceView) =>
     )
   }
   if (sources.length === 0) return null
-  const expanded = open ?? failing > 0
+  const expanded = open ?? (failing > 0 || needsPassword)
   return (
     <Collapsible open={expanded} onOpenChange={setOpen} className="rounded-xl border bg-card" data-mailboxes>
       <CollapsibleTrigger className="group flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm outline-none hover:bg-foreground/[0.03] focus-visible:ring-[3px] focus-visible:ring-ring/50">
@@ -377,22 +384,27 @@ function ImapFields({
   const { t } = useTranslation('mailboxes')
   const fromEnv = editing?.from_env === true
   const custom = provider === 'imap' || (editing !== undefined && !fromEnv)
+  // Sin contraseña guardada, no hay nada que conservar: el campo pide escribirla.
+  const passwordField = (
+    <Field id="mailbox-password" label={t('fields.password')} hint={editing?.has_password ? t('fields.passwordKeep') : undefined}>
+      <Input
+        id="mailbox-password"
+        type="password"
+        autoComplete="new-password"
+        value={form.password}
+        onChange={(e) => set({ password: e.target.value })}
+      />
+    </Field>
+  )
   return (
     <div className="grid gap-3">
+      {fromEnv && passwordField}
       {!fromEnv && (
         <>
           <Field id="mailbox-user" label={provider === 'icloud' ? t('fields.userIcloud') : t('fields.user')}>
             <Input id="mailbox-user" autoComplete="off" value={form.user} onChange={(e) => set({ user: e.target.value })} />
           </Field>
-          <Field id="mailbox-password" label={t('fields.password')} hint={editing ? t('fields.passwordKeep') : undefined}>
-            <Input
-              id="mailbox-password"
-              type="password"
-              autoComplete="new-password"
-              value={form.password}
-              onChange={(e) => set({ password: e.target.value })}
-            />
-          </Field>
+          {passwordField}
           <Field id="mailbox-folder" label={t('fields.folder')} hint={t('fields.folderHint')}>
             <Input id="mailbox-folder" value={form.folder} onChange={(e) => set({ folder: e.target.value })} />
           </Field>
@@ -516,7 +528,7 @@ function MailboxForm({
       return
     }
     const body = editing.from_env
-      ? { label: form.label.trim(), read_replies: form.readReplies }
+      ? { label: form.label.trim(), read_replies: form.readReplies, ...(form.password ? { password: form.password } : {}) }
       : editing.kind === 'folder'
         ? { label: form.label.trim(), folder: form.folderName.trim() }
         : (({ kind: _kind, password, ...rest }) => ({ ...rest, ...(password ? { password } : {}) }))(bodyOf('imap', form))

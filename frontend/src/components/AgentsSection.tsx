@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Reveal } from '@/components/Reveal'
 import { blockedText, modelText, reasonText, warningText } from '@/lib/agentText'
 import { errorMessage } from '@/lib/errors'
 import { i18n, SOURCE_LANGUAGE } from '@/lib/i18n'
@@ -209,7 +210,7 @@ function AgentCard({
   const platform = navigator.userAgent.includes('Mac') ? 'macos' : navigator.userAgent.includes('Linux') ? 'linux' : 'windows'
   const install = entry.info.install[platform]
   return (
-    <li className="rounded-xl border bg-card p-4" aria-label={entry.info.display_name}>
+    <li className="min-w-0 rounded-xl border bg-card p-4" aria-label={entry.info.display_name}>
       <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
         <h3 className="font-medium">{entry.info.display_name}</h3>
         <span className={cn('text-xs tabular', entry.installed ? 'text-muted-foreground' : 'text-destructive')}>
@@ -330,7 +331,15 @@ export function AgentsSection() {
   const { data, isPending, isError, error, refetch } = useAgentsOverview()
   const mutation = useSaveAgentPreferences()
   const local = useLocalModels(Boolean(data?.agents.some((a) => a.enabled && a.capabilities.local_models)))
-  if (isPending) return <Skeleton className="h-48" />
+  if (isPending) {
+    return (
+      <div className="space-y-3" aria-busy="true">
+        {[0, 1, 2].map((i) => (
+          <Skeleton key={i} className="h-16 rounded-xl" />
+        ))}
+      </div>
+    )
+  }
   if (isError) return <ErrorState error={error} onRetry={() => void refetch()} />
 
   const save: Save = (change) => {
@@ -340,6 +349,8 @@ export function AgentsSection() {
   }
   const launchable = new Set(data.launchable)
   const names = new Map(data.agents.map((a) => [a.name, a]))
+  const installed = data.agents.filter((a) => a.installed)
+  const others = data.agents.filter((a) => !a.installed)
   return (
     <div className="space-y-6">
       <p className="max-w-prose text-sm text-muted-foreground">{t('intro')}</p>
@@ -375,56 +386,70 @@ export function AgentsSection() {
         </p>
       )}
 
-      <ul className="grid gap-3 md:grid-cols-2">
-        {data.agents.map((entry) => (
-          <AgentCard
-            key={`${entry.name}-${JSON.stringify(data.preferences.agents?.[entry.name] ?? {})}`}
-            entry={entry}
-            launchable={launchable.has(entry.name)}
-            prefs={data.preferences}
-            save={save}
-            busy={mutation.isPending}
-            local={local.data}
-          />
-        ))}
-      </ul>
-
-      <SpendTiers overview={data} />
-
-      <section aria-labelledby="by-action-title">
-        <h3 id="by-action-title" className="text-base font-semibold tracking-tight">
-          {t('byAction')}
-        </h3>
-        <p className="mb-2 text-sm text-muted-foreground">{t('byActionIntro')}</p>
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[36rem]">
-            <thead>
-              <tr className="text-left text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                <th scope="col" className="pb-1">
-                  {t('action')}
-                </th>
-                <th scope="col" className="pb-1">
-                  {t('agent')}
-                </th>
-                <th scope="col" className="pb-1">
-                  {t('effective')}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.effective.map((row) => (
-                <ActionRow
-                  key={`${row.action}-${JSON.stringify(data.preferences.actions?.[row.action] ?? {})}`}
-                  row={row}
-                  overview={data}
+      {/* A la vista, los que tienes instalados; los demás compatibles y el ajuste fino, plegados. */}
+      {[installed, others].map((group, i) =>
+        group.length === 0 ? null : (
+          <Wrap key={i} label={i === 0 || installed.length === 0 ? null : t('others', { count: group.length })}>
+            <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              {group.map((entry) => (
+                <AgentCard
+                  key={`${entry.name}-${JSON.stringify(data.preferences.agents?.[entry.name] ?? {})}`}
+                  entry={entry}
+                  launchable={launchable.has(entry.name)}
+                  prefs={data.preferences}
                   save={save}
                   busy={mutation.isPending}
+                  local={local.data}
                 />
               ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+            </ul>
+          </Wrap>
+        ),
+      )}
+
+      <Reveal label={t('fineTune')} className="space-y-6">
+        <SpendTiers overview={data} />
+
+        <section aria-labelledby="by-action-title">
+          <h3 id="by-action-title" className="text-base font-semibold tracking-tight">
+            {t('byAction')}
+          </h3>
+          <p className="mb-2 text-sm text-muted-foreground">{t('byActionIntro')}</p>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[36rem]">
+              <thead>
+                <tr className="text-left text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                  <th scope="col" className="pb-1">
+                    {t('action')}
+                  </th>
+                  <th scope="col" className="pb-1">
+                    {t('agent')}
+                  </th>
+                  <th scope="col" className="pb-1">
+                    {t('effective')}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.effective.map((row) => (
+                  <ActionRow
+                    key={`${row.action}-${JSON.stringify(data.preferences.actions?.[row.action] ?? {})}`}
+                    row={row}
+                    overview={data}
+                    save={save}
+                    busy={mutation.isPending}
+                  />
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </Reveal>
     </div>
   )
+}
+
+/** Sin `label`, el contenido tal cual; con él, plegado tras ese botón. */
+function Wrap({ label, children }: { label: string | null; children: ReactNode }) {
+  return label ? <Reveal label={label}>{children}</Reveal> : <>{children}</>
 }

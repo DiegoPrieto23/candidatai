@@ -100,12 +100,14 @@
     "reading": "Leyendo el correo…",
     "poll": "Revisar correo ahora",
     "pollFailed": "No se pudo leer el correo: {{error}}",
-    "unclassified_one": "{{count}} correo sin clasificar: «Revisar respuestas» abre tu agente para que proponga qué es cada uno.",
-    "unclassified_other": "{{count}} correos sin clasificar: «Revisar respuestas» abre tu agente para que proponga qué es cada uno.",
+    "unclassified_one": "{{count}} correo sin clasificar.",
+    "unclassified_other": "{{count}} correos sin clasificar.",
     "filterAria": "Filtrar por estado",
-    "noneTitle": "Sin respuestas aquí",
-    "noneBody": "Los correos de las empresas a tus candidaturas enviadas aparecen aquí cuando conectas el correo donde te llegan.",
+    "noneTitle": "Aún no hay respuestas",
+    "noneBody": "Aquí llegan los correos de las empresas sobre tus candidaturas, si conectas el correo donde te llegan.",
     "list": "Respuestas",
-    "byReason": "({{stage}}; por {{reason}})"
+    "byReason": "({{stage}}; por {{reason}})",
+    "connect": "Conectar tu correo",
+    "noneFiltered": "Nada aquí con este filtro."
   }
 }

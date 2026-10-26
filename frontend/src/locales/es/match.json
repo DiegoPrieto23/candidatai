@@ -19,12 +19,12 @@
     "assessment": "Valoración del agente"
   },
   "notes": {
-    "off": "Similitud semántica desactivada (CAI_EMBEDDINGS=off).",
+    "off": "La comparación por significado está desactivada: el score solo cuenta las skills por su nombre.",
     "notInstalled": "Comparación por significado sin activar: es opcional y la guía explica cómo activarla.",
-    "unavailable": "Similitud semántica no disponible.",
-    "failed": "No se pudo calcular la similitud semántica ({{error}}).",
-    "noMust": "La oferta no lista skills obligatorias: la cobertura obligatoria no cuenta.",
-    "noNice": "La oferta no lista skills deseables: la cobertura deseable no cuenta."
+    "unavailable": "La comparación por significado no está disponible ahora: el score solo cuenta las skills por su nombre.",
+    "failed": "No se pudo hacer la comparación por significado ({{error}}): el score solo cuenta las skills por su nombre.",
+    "noMust": "La oferta no dice qué skills son obligatorias, así que esa parte no cuenta en el score.",
+    "noNice": "La oferta no dice qué skills son deseables, así que esa parte no cuenta en el score."
   },
   "belowAssessThreshold": "Sin valorar en segundo plano: su score ({{score}}) está por debajo del umbral ({{threshold}}). Cámbialo en la página «Agente» o valórala «En terminal».",
   "salaryGap": "{{amount}} por debajo de tu mínimo (solo lo ves tú)."

@@ -12,7 +12,7 @@ describe('Alta de ofertas', () => {
     })
     renderApp('/nueva')
 
-    await userEvent.type(screen.getByLabelText('URL de la oferta'), 'https://example.com/jobs/7')
+    await userEvent.type(screen.getByLabelText('Enlace de la oferta'), 'https://example.com/jobs/7')
     await userEvent.click(screen.getByRole('button', { name: 'Dar de alta' }))
 
     expect(await screen.findByText(/Oferta dada de alta/)).toBeInTheDocument()
@@ -28,7 +28,7 @@ describe('Alta de ofertas', () => {
       },
     })
     renderApp('/nueva')
-    await userEvent.type(screen.getByLabelText('URL de la oferta'), 'https://www.linkedin.com/jobs/view/1')
+    await userEvent.type(screen.getByLabelText('Enlace de la oferta'), 'https://www.linkedin.com/jobs/view/1')
     await userEvent.click(screen.getByRole('button', { name: 'Dar de alta' }))
     expect(await screen.findByRole('alert')).toHaveTextContent('LinkedIn no se descarga: pega el texto.')
   })

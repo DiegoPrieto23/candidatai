@@ -100,12 +100,14 @@
     "reading": "Reading email…",
     "poll": "Check email now",
     "pollFailed": "Couldn't read the email: {{error}}",
-    "unclassified_one": "{{count}} unclassified email: “Review replies” opens your agent so it proposes what each one is.",
-    "unclassified_other": "{{count}} unclassified emails: “Review replies” opens your agent so it proposes what each one is.",
+    "unclassified_one": "{{count}} unclassified email.",
+    "unclassified_other": "{{count}} unclassified emails.",
     "filterAria": "Filter by status",
-    "noneTitle": "No replies here",
-    "noneBody": "Emails from companies about your sent applications show up here once you connect the mailbox where they arrive.",
+    "noneTitle": "No replies yet",
+    "noneBody": "Companies' emails about your applications arrive here, if you connect the inbox where you get them.",
     "list": "Replies",
-    "byReason": "({{stage}}; by {{reason}})"
+    "byReason": "({{stage}}; by {{reason}})",
+    "connect": "Connect your email",
+    "noneFiltered": "Nothing here with this filter."
   }
 }

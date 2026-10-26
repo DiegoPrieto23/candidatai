@@ -280,7 +280,7 @@ def scene_profile(page: Page) -> None:
     goto(page, "/perfil")
     caption(page, 0)
     pause(page, 1500)
-    page.get_by_role("tab", name=text("profileEditor:tabs.experience"), exact=True).click()
+    page.get_by_role("tab", name=text("profileEditor:tabs.career"), exact=True).click()
     pause(page, 900)
     smooth_scroll(page, top_of(page, "[role=tablist]", 30))
     caption(page, 1)

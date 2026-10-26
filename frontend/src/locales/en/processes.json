@@ -29,7 +29,7 @@
     "toggle": "Bring the milestones into your calendar",
     "google": "<strong>Google Calendar:</strong> download the file and import it (Settings → Import & export). Google can't subscribe to an address on your computer, so import it again when your milestones change: events are updated, not duplicated.",
     "others": "<strong>Outlook, Apple Calendar or Thunderbird:</strong> subscribe to this address (it updates itself while CandidatAI is open):",
-    "download": "Download .ics",
+    "download": "Download the file",
     "copy": "Copy address"
   },
   "title": "Processes",

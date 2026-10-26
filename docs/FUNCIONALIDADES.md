@@ -87,10 +87,10 @@ FEATURES.md dejan de coincidir fila a fila. -->
 | Funcionalidad | Dónde | Captura |
 |---|---|---|
 | **Embudo**: conversión paso a paso, por fuente, puesto, semana, plantilla, carta y referencia, tiempo hasta la primera respuesta y motivos de descarte | `/embudo` | [Embudo](img/es/funnel.webp) |
-| **«¿Acierta el score?»**: tasas de respuesta y de entrevista por score, veredicto, fuente, plantilla, carta y referencia, con intervalos al 95 % | `/embudo` | |
-| **Tu búsqueda en números**, lista para tu README (solo cifras, nunca empresas), al final del Embudo | `/embudo` · `cai stats story` | |
+| **«¿Acierta el score?»**: tasas de respuesta y de entrevista por score, veredicto, fuente, plantilla, carta y referencia, con intervalos al 95 %, en «Más análisis» del Embudo | `/embudo` | |
+| **Tu búsqueda en números**, lista para compartir (solo cifras, nunca empresas), en «Más análisis» del Embudo | `/embudo` · `cai stats story` | |
 | **Retrospectiva semanal**: qué funciona y qué cambiar, sin tocar pesos ni filtros | `review-search` | |
-| **Skills**: lo que piden tus ofertas y tu perfil no cubre; sinónimos «Es lo mismo que…», «La tengo» y «No la tengo» | `/skills` | [Skills](img/es/skills.webp) |
+| **Skills**: lo que piden tus ofertas y tu perfil no cubre; sinónimos «Es lo mismo que…», «La tengo» y «No la tengo», de 25 en 25 | `/skills` | [Skills](img/es/skills.webp) |
 | **Plan de formación** con recursos verificados para tus huecos reales, y valoración de un curso o proyecto | `training-plan` | |
 | **Ampliar la búsqueda** con títulos de puesto cercanos a lo que apruebas y descartas | `broaden-search` | |
 | **Mi perfil, editable**: experiencia plegable y logros, proyectos, formación, skills, historias STAR, preferencias de **Búsqueda** (años, sueldo mínimo privado, palabras que descartan, contrato, tipo de empresa), preferencias de CV y carta, contexto y muestras de estilo; conserva los comentarios de tu fichero, con Deshacer | `/perfil` | [Experiencia](img/es/profile-experience.webp) · [Búsqueda](img/es/profile-search.webp) · [▶ Plegable](img/es/anim/profile.webp) |

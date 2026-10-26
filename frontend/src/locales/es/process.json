@@ -14,7 +14,7 @@
     "save": "Guardar hito"
   },
   "milestone": {
-    "ics": "Descargar .ics de «{{title}}»",
+    "ics": "Añadir «{{title}}» a mi calendario",
     "edit": "Editar «{{title}}»",
     "done": "Marcar «{{title}}» como hecho",
     "cancel": "Cancelar «{{title}}»"

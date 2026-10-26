@@ -39,7 +39,6 @@
   "documentsIntro": "Tus documentos fuente. Tu agente puede leerlos para crear o ampliar tu perfil, siempre preguntándote antes de escribir.",
   "openDocuments": "Abrir la carpeta de documentos",
   "expand": "Ampliar perfil desde mis enlaces",
-  "expandHint": "Tu agente lee tus enlaces públicos (GitHub, portfolio, Kaggle, Scholar) y te propone proyectos, skills, logros y certificaciones, cada uno con su fuente. Solo escribe en tu perfil lo que aceptes. Mejor justo después de crearlo.",
   "title": "Mi perfil",
-  "intro": "Tu perfil es lo único que puede afirmar un CV, una carta o una respuesta. Rellénalo aquí por bloques: cada uno se guarda solo y se puede deshacer. También puedes pedírselo a tu agente."
+  "intro": "Todo lo que diga un CV, una carta o una respuesta sale de aquí. Cada bloque se guarda por separado y se puede deshacer."
 }

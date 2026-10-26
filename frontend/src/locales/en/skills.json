@@ -25,7 +25,7 @@
   "removeMark": "Remove the mark",
   "row": {
     "gone": "No job in the period asks for it any more",
-    "split": "{{must}} must · {{nice}} nice",
+    "split": "required in {{must}}, nice-to-have in {{nice}}",
     "actions": "Actions for {{skill}}",
     "same": "Same as…",
     "have": "I have it",
@@ -36,7 +36,7 @@
     "body": "Gaps are worked out against your profile. Create it in “My profile” or ask your agent."
   },
   "title": "Skills",
-  "intro": "What your jobs ask for and your profile doesn't cover. Often it's vocabulary: if it's the same as one of your skills, say so and the score is recalculated. If you have it, add it to your profile; if not, it goes to your training plan.",
+  "intro": "What your jobs ask for that isn't in your profile. If it's the same as one of your skills, say so; if you have it, mark it to add it; if not, it goes to your training plan.",
   "addHave": "Add the ones I have to my profile ({{count}})",
   "training": "Training plan",
   "period": "Period",
@@ -48,7 +48,7 @@
     "body": "No missing skills across {{jobs}} jobs (open, and approved or sent in the last {{days}} days)."
   },
   "missing": "Missing skills",
-  "summary": "{{count}} missing skills across {{jobs}} jobs: the open ones and those approved or sent in the last {{days}} days. The weight adds 1 per job that requires it and 0.5 per job that lists it as nice-to-have, times the job's score.",
+  "summary": "{{count}} skills not in your profile, across {{jobs}} jobs from the last {{days}} days.",
   "tableLabel": "Missing skills by frequency",
   "cols": {
     "skill": "Skill",
@@ -57,5 +57,7 @@
     "examples": "Examples",
     "actions": "Actions"
   },
-  "noneFiltered": "None with this filter."
+  "noneFiltered": "None with this filter.",
+  "weightHint": "How much it counts in your jobs: 1 for each job that requires it and 0.5 if it's nice-to-have, times the job's score.",
+  "weightHelp": "What the weight is"
 }

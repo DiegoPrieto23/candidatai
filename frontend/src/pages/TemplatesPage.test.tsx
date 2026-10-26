@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react'
+import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { mockApi, renderApp, status, templateInfo, templateList } from '@/test/utils'
@@ -30,7 +30,7 @@ describe('Galería de plantillas', () => {
       'http://127.0.0.1:8000/templates/ats-simple/preview.png',
     )
     const atsTags = within(within(ats).getByRole('list', { name: 'Características' })).getAllByRole('listitem')
-    expect(atsTags.map((t) => t.textContent)).toEqual(['Apta para ATS', 'Sin foto', '1 columna', 'Motor docx', 'Integrada'])
+    expect(atsTags.map((t) => t.textContent)).toEqual(['Apta para ATS', 'Sin foto', '1 columna', 'PDF y Word', 'De la app'])
 
     const classic = screen.getByRole('article', { name: 'Clásica con foto' })
     expect(within(classic).getByText('No apta para ATS')).toBeInTheDocument()
@@ -140,11 +140,13 @@ describe('Galería de plantillas', () => {
       renderApp('/plantillas')
       const card = await screen.findByRole('listitem', { name: 'mi-cv.docx' })
       expect(within(card).getByText('Pendiente de importar')).toBeInTheDocument()
+      // La orden para copiar, plegada: lo normal es el botón que abre el agente.
+      expect(within(card).queryByText('import-cv-template data/uploads/mi-cv.docx')).not.toBeInTheDocument()
+      await userEvent.click(within(card).getByRole('button', { name: '¿Prefieres pedírselo tú a tu agente?' }))
       expect(within(card).getByText('import-cv-template data/uploads/mi-cv.docx')).toBeInTheDocument()
       expect(within(card).queryByText(/recrea el diseño/)).not.toBeInTheDocument()
       const pdf = screen.getByRole('listitem', { name: 'canva.pdf' })
-      expect(within(pdf).getByText('import-cv-template data/uploads/canva.pdf')).toBeInTheDocument()
-      expect(within(pdf).getByText(/recrea el diseño en HTML/)).toBeInTheDocument()
+      expect(within(pdf).getByText(/el agente recrea el diseño:/)).toBeInTheDocument()
       expect(screen.queryByText(/08b/)).not.toBeInTheDocument()
     })
 
@@ -190,7 +192,7 @@ describe('Galería de plantillas', () => {
         'src',
         'http://127.0.0.1:8000/templates/canva/preview-real.png',
       )
-      expect(within(card).getByText(/solo PDF/)).toBeInTheDocument()
+      expect(within(card).getByText(/solo da PDF/)).toBeInTheDocument()
 
       const gallery = screen.getByRole('article', { name: 'Canva' })
       const pair = within(gallery).getByLabelText('Original y recreación')
@@ -238,6 +240,20 @@ describe('Galería de plantillas', () => {
 
       const gallery = screen.getByRole('article', { name: 'Mi CV' })
       expect(within(gallery).getByText('Tu CV')).toBeInTheDocument()
+    })
+
+    it('si no se puede hacer la vista con tu perfil, lo dice en vez de enseñar una imagen rota', async () => {
+      mockApi({
+        'GET /status': status(),
+        'GET /templates': templateList({ templates: [templateInfo(), mine] }),
+        'GET /uploads': [{ ...pending, template_id: 'mi-cv' }],
+        'GET /templates/default': { template_id: null },
+      })
+      renderApp('/plantillas')
+      const card = await screen.findByRole('listitem', { name: 'mi-cv.docx' })
+      fireEvent.error(within(card).getByRole('img', { name: 'Con tu perfil' }))
+      expect(within(card).queryByRole('img', { name: 'Con tu perfil' })).not.toBeInTheDocument()
+      expect(within(card).getByText(/No se ha podido hacer la vista con tu perfil/)).toBeInTheDocument()
     })
   })
 })

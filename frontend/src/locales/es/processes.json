@@ -29,7 +29,7 @@
     "toggle": "Llevar los hitos a tu calendario",
     "google": "<strong>Google Calendar:</strong> descarga el fichero e impórtalo (Configuración → Importar y exportar). Google no puede suscribirse a una dirección de tu equipo, así que vuelve a importarlo cuando cambien tus hitos: los eventos se actualizan, no se duplican.",
     "others": "<strong>Outlook, Apple Calendar o Thunderbird:</strong> suscríbete a esta dirección (se actualiza sola mientras CandidatAI esté abierta):",
-    "download": "Descargar .ics",
+    "download": "Descargar el fichero",
     "copy": "Copiar dirección"
   },
   "title": "Procesos",

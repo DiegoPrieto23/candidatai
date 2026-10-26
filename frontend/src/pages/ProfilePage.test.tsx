@@ -58,7 +58,7 @@ describe('Mi perfil', () => {
     expect(within(contexto).getByText(/Nunca respalda un hecho/)).toBeInTheDocument()
 
     const documentos = screen.getByRole('region', { name: 'Documentos' })
-    expect(within(documentos).getByText('cv/')).toBeInTheDocument()
+    expect(within(documentos).getByText('cv')).toBeInTheDocument()
     expect(within(documentos).getByText('2 ficheros')).toBeInTheDocument()
     expect(within(documentos).getByText('1 fichero')).toBeInTheDocument()
     // Sin editor: el texto se edita fuera de la app.

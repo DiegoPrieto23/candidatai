@@ -19,6 +19,7 @@ import {
   useUploads,
 } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
+import { Reveal } from '@/components/Reveal'
 import { InlineCode } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -74,13 +75,21 @@ function CopyCommand({ command }: { command: string }) {
 
 function Page({ src, alt, note }: { src: string | null; alt: string; note?: string }) {
   const { t } = useTranslation('templates', { keyPrefix: 'myCv' })
+  // Si la imagen no se puede hacer (p. ej. sin perfil), su aviso en vez del icono de imagen rota.
+  const [failed, setFailed] = useState(false)
   return (
     <figure className="min-w-0">
       <figcaption className="mb-1.5 text-xs font-medium text-muted-foreground">{alt}</figcaption>
       <div className="aspect-[210/297] overflow-hidden rounded-md border bg-white">
-        {src ? (
+        {src && !failed ? (
           <a href={src} target="_blank" rel="noopener noreferrer">
-            <img src={src} alt={alt} loading="lazy" className="size-full object-cover object-top" />
+            <img
+              src={src}
+              alt={alt}
+              loading="lazy"
+              onError={() => setFailed(true)}
+              className="size-full object-cover object-top"
+            />
           </a>
         ) : (
           <span className="grid size-full place-items-center px-3 text-center text-xs text-muted-foreground">
@@ -105,8 +114,9 @@ function PendingUpload({ upload }: { upload: UploadInfo }) {
       <AgentButton action="import-cv-template" upload={upload.name}>
         {t('convert')}
       </AgentButton>
-      <p className="text-xs text-muted-foreground">{t('orCopy')}</p>
-      <CopyCommand command={upload.agent_command} />
+      <Reveal label={t('orCopy')} className="space-y-2">
+        <CopyCommand command={upload.agent_command} />
+      </Reveal>
       {recreated && (
         <p className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
           <WarningIcon className="mt-0.5 size-3.5 shrink-0" weight="duotone" />
@@ -132,8 +142,10 @@ function ImportedUpload({ template, isDefault }: { template: TemplateInfo; isDef
           note={t('noOriginal')}
         />
         <Page
+          key={fileUrls.templateRealPreview(template.id)}
           src={fileUrls.templateRealPreview(template.id)}
           alt={template.engine === 'html' ? t('recreation') : t('withProfile')}
+          note={t('noRealPreview')}
         />
       </div>
       {template.engine === 'html' && (

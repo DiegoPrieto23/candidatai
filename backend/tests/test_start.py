@@ -75,14 +75,21 @@ def test_without_a_built_ui_nothing_is_served(
 
 def test_every_ui_route_is_known_to_the_api() -> None:
     """Las rutas de `App.tsx` llegan a `index.html` al recargar la página."""
-    paths = re.findall(r'path="([^"]+)"', APP_TSX.read_text(encoding="utf-8"))
-    assert paths
-    for path in paths:
-        if path == "*":
-            continue
-        url = "/" + path.replace(":id", "7")
-        nested = "/fuentes" + url
-        assert UI_ROUTES.match(url) or UI_ROUTES.match(nested), path
+    source = APP_TSX.read_text(encoding="utf-8")
+    # Las rutas anidadas (las de «Fuentes») cuelgan de su madre; el resto va solo en la raíz:
+    # probar cada ruta también bajo `/fuentes` dejaba pasar `/calendario` sin estar en la lista.
+    parents = re.findall(
+        r'<Route path="([^"]+)" element=\{<\w+ />\}>(.*?)</Route>', source, flags=re.DOTALL
+    )
+    assert parents
+    urls = []
+    for parent, children in parents:
+        urls += [f"/{parent}/{child}" for child in re.findall(r'path="([^"]+)"', children)]
+        source = source.replace(children, "")
+    urls += ["/" + path for path in re.findall(r'path="([^"]+)"', source) if path != "*"]
+    assert {"/calendario", "/fuentes/empresas", "/fuentes/plataformas"} <= set(urls)
+    for url in urls:
+        assert UI_ROUTES.match(url.replace(":id", "7")), url
 
 
 # --- require_ui: también el mismo origen, solo en local ---------------------------------------

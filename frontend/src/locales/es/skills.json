@@ -25,7 +25,7 @@
   "removeMark": "Quitar la marca",
   "row": {
     "gone": "Ya no la pide ninguna oferta del periodo",
-    "split": "{{must}} oblig. · {{nice}} des.",
+    "split": "obligatoria en {{must}}, deseable en {{nice}}",
     "actions": "Acciones para {{skill}}",
     "same": "Es lo mismo que…",
     "have": "La tengo",
@@ -36,7 +36,7 @@
     "body": "Los huecos se calculan frente a tu perfil. Créalo en «Mi perfil» o pídeselo a tu agente."
   },
   "title": "Skills",
-  "intro": "Lo que piden tus ofertas y tu perfil no cubre. Muchas veces es vocabulario: si es lo mismo que una skill tuya, dilo y el score se recalcula. Si la tienes, añádela al perfil; si no, va a tu plan de formación.",
+  "intro": "Lo que piden tus ofertas y no está en tu perfil. Si es lo mismo que una skill tuya, dilo; si la tienes, márcala para añadirla; si no, irá a tu plan de formación.",
   "addHave": "Añadir al perfil las que tengo ({{count}})",
   "training": "Plan de formación",
   "period": "Periodo",
@@ -48,7 +48,7 @@
     "body": "Sin skills ausentes en {{jobs}} ofertas (abiertas y aprobadas o enviadas en los últimos {{days}} días)."
   },
   "missing": "Skills ausentes",
-  "summary": "{{count}} skills ausentes en {{jobs}} ofertas: las abiertas y las aprobadas o enviadas en los últimos {{days}} días. El peso suma 1 por oferta que la pide como obligatoria y 0,5 como deseable, por el score de la oferta.",
+  "summary": "{{count}} skills que no están en tu perfil, en {{jobs}} ofertas de los últimos {{days}} días.",
   "tableLabel": "Skills ausentes por frecuencia",
   "cols": {
     "skill": "Skill",
@@ -57,5 +57,7 @@
     "examples": "Ejemplos",
     "actions": "Acciones"
   },
-  "noneFiltered": "Ninguna con este filtro."
+  "noneFiltered": "Ninguna con este filtro.",
+  "weightHint": "Cuánto pesa en tus ofertas: suma 1 por cada oferta que la pide como obligatoria y 0,5 si es deseable, multiplicado por el score de la oferta.",
+  "weightHelp": "Qué es el peso"
 }

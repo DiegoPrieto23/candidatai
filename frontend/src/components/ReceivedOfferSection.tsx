@@ -228,7 +228,7 @@ export function ReceivedOfferSection({ job }: { job: JobView }) {
         <div className="space-y-4">
           {offer && <OfferSummary offer={offer} />}
           <div className="flex flex-wrap gap-2">
-            <Button variant={offer ? 'outline' : 'default'} size="sm" onClick={() => setEditing(true)}>
+            <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
               {offer ? t('edit') : t('add')}
             </Button>
             {offer && job.stage === 'in_process' && (

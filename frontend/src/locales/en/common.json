@@ -24,7 +24,7 @@
     "offlineTitle": "CandidatAI isn't responding",
     "loadFailed": "Couldn't load",
     "generic": "Something went wrong.",
-    "offline": "Can't reach the app. Open it from its shortcut (or with `cai start`) and reload this page.",
+    "offline": "Can't reach the app. Open it from its shortcut and reload this page.",
     "unexpected": "Something went wrong in the app ({{status}}). Try again.",
     "types": {
       "unauthorized": "Unauthorized",
@@ -53,5 +53,6 @@
     "range": "{{from}}-{{to}} of {{total}}",
     "previous": "Previous",
     "next": "Next"
-  }
+  },
+  "technicalDetails": "Technical details"
 }

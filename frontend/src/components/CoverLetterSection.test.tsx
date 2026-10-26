@@ -76,12 +76,12 @@ describe('Sección Carta de presentación', () => {
     )
     // A la vista, el que se envía; los demás, plegados.
     await userEvent.click(within(section).getByRole('button', { name: 'Ver 1 versión más' }))
-    const second = within(section).getByRole('listitem', { name: 'Render de carta 2' })
+    const second = within(section).getByRole('listitem', { name: 'Versión 2 de la carta' })
     expect(within(second).getByRole('link', { name: /Descargar PDF/ })).toHaveAttribute(
       'href',
       'http://127.0.0.1:8000/renders/2/pdf',
     )
-    await userEvent.click(within(second).getByRole('button', { name: /Usar el render 2 de la carta/ }))
+    await userEvent.click(within(second).getByRole('button', { name: /Usar la versión 2 de la carta/ }))
     await waitFor(() => expect(calls.some((c) => c.method === 'POST' && c.path === '/renders/2/select')).toBe(true))
   })
 
@@ -121,12 +121,12 @@ describe('Sección Carta de presentación', () => {
     renderApp('/jobs/1?tab=application')
     const section = await screen.findByRole('region', { name: NAME })
     await userEvent.click(await within(section).findByRole('button', { name: 'Cambiar diseño' }))
-    const form = within(section).getByRole('form', { name: 'Renderizar la carta' })
+    const form = within(section).getByRole('form', { name: 'Generar la carta' })
     expect(within(form).getByRole('option', { name: 'A juego con el CV (Clásica con foto)' })).toBeInTheDocument()
     await userEvent.selectOptions(within(form).getByLabelText('Diseño'), 'carta-simple')
     expect(within(form).getByLabelText('Foto')).toBeDisabled()
     await userEvent.selectOptions(within(form).getByLabelText('Color'), '#2E5E4E')
-    await userEvent.click(within(form).getByRole('button', { name: 'Renderizar' }))
+    await userEvent.click(within(form).getByRole('button', { name: 'Generar' }))
     await waitFor(() => expect(calls.some((c) => c.path === '/cover-letters/9/renders')).toBe(true))
     expect(calls.find((c) => c.path === '/cover-letters/9/renders')?.body).toEqual({
       template_id: 'carta-simple',
@@ -173,6 +173,6 @@ describe('Sección Carta de presentación', () => {
     expect(await within(section).findByText('Editada por ti')).toBeInTheDocument()
     expect(within(section).getByRole('button', { name: 'Copiar texto' })).toBeEnabled()
     expect(within(section).queryByRole('button', { name: /Editar|Añadir/ })).not.toBeInTheDocument()
-    expect(within(section).queryByRole('form', { name: 'Renderizar la carta' })).not.toBeInTheDocument()
+    expect(within(section).queryByRole('form', { name: 'Generar la carta' })).not.toBeInTheDocument()
   })
 })

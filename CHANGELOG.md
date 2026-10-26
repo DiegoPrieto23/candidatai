@@ -34,6 +34,31 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   - **Listas de 25 en 25:** la Bandeja y Alertas se paginan. En Alertas, las ofertas que no encajan
     con tus filtros van plegadas.
   - **Procesos** explica el tablero en una frase y las tarjetas llevan un botón más discreto.
+  - **Mi perfil**, en cinco pestañas en vez de nueve: Sobre ti, Experiencia y formación, Búsqueda,
+    Documentos (preferencias de CV y carta, y el contexto) e Historial.
+  - **Plataformas:** cada portal en una línea con su último recorrido; la prioridad, el acceso,
+    las búsquedas y el registro van en «Ajustes y registro». «Buscar ofertas» está arriba.
+  - **Empresas objetivo:** primero las que sigues; para añadir una, «Añadir empresa». Ya no se
+    habla de «slug», sino del nombre de la empresa en la dirección de su web de empleo.
+  - **Agente:** arriba tus agentes y los encargos para tu próxima sesión; después lo que corre en
+    segundo plano, y el umbral y el coste, plegados en «Umbral y coste». Los agentes que no tienes
+    instalados y el ajuste por acción también van plegados.
+  - **Buzones:** si a uno le falta la contraseña de aplicación, lo dice así y lleva un botón para
+    escribirla, también en la cuenta configurada al instalar. Las variables, solo en «Detalles
+    técnicos».
+  - **«Generar»** en vez de «Renderizar» en el CV y la carta, y «versión» en vez de «render».
+  - **Skills:** de 25 en 25, con «obligatoria en 2, deseable en 1» en vez de abreviaturas y el
+    peso explicado en su ayuda (ⓘ). En el móvil, cada skill es una ficha con sus botones debajo.
+  - **Embudo:** primero las cifras, el embudo, por fuente, por semana y los motivos de descarte.
+    «¿Acierta el score?», por tipo de puesto, el coste y «Tu búsqueda en números» van plegados en
+    «Más análisis». Las ofertas sin procesar ya no salen como un puesto más, sino en una nota, y
+    la línea para compartir ya no habla de README.
+  - **Plantillas:** sin «Motor docx» ni identificadores; cada una dice si da «PDF y Word» o
+    «Solo PDF» y si viene «De la app». La orden para tu agente va plegada.
+  - **Respuestas, Nueva oferta, Calendario y la ficha:** textos más claros («Enlace de la oferta»,
+    «Añadir a mi calendario», «Importar mis contactos», «Tecnologías»…). Sin respuestas, un botón
+    lleva a conectar el correo. En la pestaña Proceso, «Anotar oferta» ya no compite con «¿Qué ha
+    pasado?». Las notas del score se explican en lenguaje llano.
 - **La ficha de la oferta, más ligera:** en vez de apilar todas las secciones con una columna
   lateral, va en pestañas (Oferta, Candidatura, Proceso, Empresa, Historial y notas) y se abre en
   la que toca: la oferta mientras la revisas, la candidatura al aprobarla y el proceso al enviarla.
@@ -56,6 +81,14 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   «Mi perfil» y la candidatura asistida. Pesan mucho menos (WebP) y ya no hay vídeo.
 - **La demo trae alertas por correo:** 65 ofertas, 5 de ellas de dos buzones de alertas, así que la
   página «Alertas» ya no sale vacía.
+
+### Corregido
+- **El Calendario carga al recargar la página** o al entrar por un enlace; antes daba «Not Found».
+- **La página Agente ya no se sale de la pantalla en el móvil,** ni el Embudo ni Skills.
+- **«Con tu perfil» en Plantillas** ya no enseña una imagen rota si no se puede hacer la vista:
+  dice qué comprobar.
+- **«Sin mínimo en tu perfil»** al comparar ofertas recibidas ya no enseña el nombre interno del
+  campo: dice dónde ponerlo (Mi perfil → Búsqueda).
 
 ## [0.1.0] - 2026-10-24
 

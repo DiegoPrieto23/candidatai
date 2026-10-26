@@ -71,9 +71,9 @@ describe('Empresa en la ficha', () => {
     expect(await within(section).findByText(/Consultora de datos/)).toBeInTheDocument()
     expect(within(section).getByRole('link', { name: '[1]' })).toHaveAttribute('href', 'https://bretema.example.com/about')
     // El detalle va plegado tras el resumen.
-    expect(within(section).queryByRole('list', { name: 'Stack' })).not.toBeInTheDocument()
+    expect(within(section).queryByRole('list', { name: 'Tecnologías' })).not.toBeInTheDocument()
     await userEvent.click(within(section).getByRole('button', { name: 'Ver el dosier completo' }))
-    expect(within(section).getByRole('list', { name: 'Stack' })).toHaveTextContent('Pythondbt')
+    expect(within(section).getByRole('list', { name: 'Tecnologías' })).toHaveTextContent('Pythondbt')
     const sources = within(section).getByRole('list', { name: 'Fuentes' })
     expect(within(sources).getByRole('link', { name: /Nota de prensa/ })).toHaveAttribute('href', 'https://prensa.example.com/x')
     expect(within(section).getByText('Preguntar por las guardias.')).toBeInTheDocument()

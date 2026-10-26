@@ -12,6 +12,7 @@ import {
 import { AddPlatformButton } from '@/components/AddPlatformDialog'
 import { AgentButton } from '@/components/AgentButton'
 import { Hint } from '@/components/Hint'
+import { Reveal } from '@/components/Reveal'
 import { SiteIcon } from '@/components/SiteIcon'
 import { Switch } from '@/components/Switch'
 import { EmptyState, ErrorState, InlineCode } from '@/components/States'
@@ -370,37 +371,47 @@ function LinkedInPublicPanel() {
 
 // --- Una plataforma ------------------------------------------------------------------------------
 
+/** El último recorrido en una línea («11 oct · 34 encontradas, 15 nuevas · 2 incidentes»). */
 function LastRun({ source }: { source: SourceView }) {
   const { t } = useTranslation('platforms', { keyPrefix: 'row' })
   const last = source.last_run
   if (!last) {
     return (
       <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <ClockIcon className="size-3.5" />
+        <ClockIcon className="size-3.5 shrink-0" />
         {t('notRun')}
       </p>
     )
   }
+  return (
+    <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+      <ClockIcon className="size-3.5 shrink-0" />
+      <span>
+        {formatWhen(last.finished_at ?? last.started_at)} · {plural('found', last.found)}, {plural('new', last.created)}
+        {last.errors.length > 0 && (
+          <span className="text-amber-700 dark:text-amber-400"> · {plural('issues', last.errors.length)}</span>
+        )}
+      </span>
+    </p>
+  )
+}
+
+/** El registro del último recorrido: cuántas ya conocía y sus incidentes. */
+function RunLog({ source }: { source: SourceView }) {
+  const { t } = useTranslation('platforms', { keyPrefix: 'row' })
+  const last = source.last_run
+  if (!last) return null
   const existing = Math.max(0, last.after_filters - last.created)
   return (
-    <div className="text-xs text-muted-foreground">
-      <p className="flex items-center gap-1.5">
-        <ClockIcon className="size-3.5" />
-        <span>
-          {formatWhen(last.finished_at ?? last.started_at)}: {plural('found', last.found)}, {plural('new', last.created)},{' '}
-          {plural('known', existing)}
-          {last.errors.length > 0 && (
-            <span className="text-amber-700 dark:text-amber-400">
-              {' '}
-              · {plural('issues', last.errors.length)}
-            </span>
-          )}
-        </span>
+    <div className="grid gap-1 text-xs text-muted-foreground">
+      <span>{t('log')}</span>
+      <p className="text-foreground/80">
+        {plural('found', last.found)}, {plural('new', last.created)}, {plural('known', existing)}
       </p>
       {last.errors.length > 0 && (
-        <ul className="mt-1 space-y-0.5 pl-5">
-          {last.errors.slice(0, 3).map((issue, i) => (
-            <li key={i}>
+        <ul className="space-y-0.5 pl-4">
+          {last.errors.map((issue, i) => (
+            <li key={i} className="list-disc">
               <InlineCode text={issue.message} />
             </li>
           ))}
@@ -417,9 +428,10 @@ interface Slot {
   priority: number
 }
 
-function PlatformRow({ source, order }: { source: SourceView; order: Slot[] }) {
+function PlatformRow({ source, order, limits }: { source: SourceView; order: Slot[]; limits: AgentBrowseLimits }) {
   const { t } = useTranslation('platforms')
   const update = useUpdateBrowseSettings()
+  const linkedinPublic = useLinkedInPublic()
   const [confirming, setConfirming] = useState(false)
   const browse = source.browse
 
@@ -435,6 +447,7 @@ function PlatformRow({ source, order }: { source: SourceView; order: Slot[] }) {
   }
 
   const linkedin = browse.platform === 'linkedin'
+  const publicEnabled = linkedinPublic.data?.enabled === true
   const current = browse.priority ?? order.findIndex((slot) => slot.id === source.id) + 1
   const home = platformHome(browse.search_urls)
   const enabled = browse.allow_agent_browsing === true
@@ -462,32 +475,26 @@ function PlatformRow({ source, order }: { source: SourceView; order: Slot[] }) {
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="font-medium">{source.name}</h3>
-            <span className="rounded-md border px-1.5 py-0.5 font-mono text-xs text-muted-foreground">
-              {browse.platform}
-            </span>
             {linkedin && (
               <span className="rounded-md bg-amber-500/10 px-1.5 py-0.5 text-xs text-amber-700 dark:text-amber-400">
                 {t('row.risk')}
               </span>
             )}
           </div>
-          <p className="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
-            {home && (
-              <>
-                <a
-                  href={home.origin}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-foreground/80 underline-offset-2 hover:text-foreground hover:underline"
-                >
-                  {home.host}
-                  <ArrowSquareOutIcon className="size-3" aria-hidden />
-                </a>
-                <span aria-hidden>·</span>
-              </>
-            )}
-            {t('row.upTo', { offers: plural('offers', maxOffers) })}
-          </p>
+          {home && (
+            <a
+              href={home.origin}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-0.5 inline-flex items-center gap-1 text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+            >
+              {home.host}
+              <ArrowSquareOutIcon className="size-3" aria-hidden />
+            </a>
+          )}
+          <div className="mt-1">
+            <LastRun source={source} />
+          </div>
         </div>
         <label className="flex items-center gap-2.5 text-sm">
           <span className={cn(!enabled && 'text-muted-foreground')}>
@@ -502,87 +509,92 @@ function PlatformRow({ source, order }: { source: SourceView; order: Slot[] }) {
         </label>
       </div>
 
-      <div className="flex flex-wrap gap-3">
-        <div className="grid gap-1">
-          <span className="flex items-center gap-1 text-xs text-muted-foreground">
-            {t('row.priority')}
-            <Hint text={t('row.priorityHint')} label={t('row.priorityHintAria')} />
-          </span>
-          <Select
-            value={String(current)}
-            // Un puesto ocupado se intercambia; el servidor comprueba que `current` sigue siendo el
-            // suyo (si otra pestaña cambió el orden, responde 409 y la lista se recarga).
-            onValueChange={(v) => change({ priority: Number(v), expected_priority: current })}
-            disabled={update.isPending}
-          >
-            <SelectTrigger className="h-8 w-32" aria-label={t('row.priorityAria', { name: source.name })}>
-              {/* Solo el número: quién ocupa cada puesto va en el menú. */}
-              <SelectValue>{current === 1 ? t('row.first') : current}</SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {order.map((slot) => (
-                <SelectItem key={slot.id} value={String(slot.priority)}>
-                  {t('row.slot', { position: slot.priority, name: slot.name })}
-                  <span className="ml-1.5 text-xs text-muted-foreground">
-                    {slot.id === source.id ? t('row.slotCurrent') : t('row.slotSwap', { position: current })}
-                  </span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      {/* La búsqueda pública de LinkedIn, a la vista solo si está activada: es otra forma de buscar. */}
+      {linkedin && publicEnabled && <LinkedInPublicPanel />}
+      <Reveal label={t('row.settings')} className="space-y-3" defaultOpen={(source.last_run?.errors.length ?? 0) > 0}>
+        <div className="flex flex-wrap gap-3">
+          <div className="grid gap-1">
+            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+              {t('row.priority')}
+              <Hint text={t('row.priorityHint')} label={t('row.priorityHintAria')} />
+            </span>
+            <Select
+              value={String(current)}
+              // Un puesto ocupado se intercambia; el servidor comprueba que `current` sigue siendo el
+              // suyo (si otra pestaña cambió el orden, responde 409 y la lista se recarga).
+              onValueChange={(v) => change({ priority: Number(v), expected_priority: current })}
+              disabled={update.isPending}
+            >
+              <SelectTrigger className="h-8 w-32" aria-label={t('row.priorityAria', { name: source.name })}>
+                {/* Solo el número: quién ocupa cada puesto va en el menú. */}
+                <SelectValue>{current === 1 ? t('row.first') : current}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {order.map((slot) => (
+                  <SelectItem key={slot.id} value={String(slot.priority)}>
+                    {t('row.slot', { position: slot.priority, name: slot.name })}
+                    <span className="ml-1.5 text-xs text-muted-foreground">
+                      {slot.id === source.id ? t('row.slotCurrent') : t('row.slotSwap', { position: current })}
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid gap-1">
+            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+              {t('row.access')}
+              <Hint text={t('row.accessHint')} label={t('row.accessHintAria')} />
+            </span>
+            <Select
+              value={browse.access}
+              onValueChange={(v) => change({ access: v as BrowseAccess })}
+              disabled={update.isPending}
+            >
+              <SelectTrigger className="h-8 w-36" aria-label={t('row.accessAria', { name: source.name })}>
+                {/* Solo el nombre: la pista de cada opción va en el menú. */}
+                <SelectValue>{t(`access.${browse.access}`)}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {ACCESS.map((a) => (
+                  <SelectItem key={a} value={a}>
+                    {t(`access.${a}`)}
+                    <span className="ml-1.5 text-xs text-muted-foreground">{t(`access.${a}Hint`)}</span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid gap-1">
+            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+              {t('row.maxOffers')}
+              <Hint text={t('row.maxOffersHint')} label={t('row.maxOffersHintAria')} />
+            </span>
+            <Select
+              value={String(maxOffers)}
+              onValueChange={(v) => change({ max_offers: Number(v) })}
+              disabled={update.isPending}
+            >
+              <SelectTrigger className="h-8 w-28" aria-label={t('row.maxOffersAria', { name: source.name })}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {maxOffersOptions.map((n) => (
+                  <SelectItem key={n} value={String(n)}>
+                    {n}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-        <div className="grid gap-1">
-          <span className="flex items-center gap-1 text-xs text-muted-foreground">
-            {t('row.access')}
-            <Hint text={t('row.accessHint')} label={t('row.accessHintAria')} />
-          </span>
-          <Select
-            value={browse.access}
-            onValueChange={(v) => change({ access: v as BrowseAccess })}
-            disabled={update.isPending}
-          >
-            <SelectTrigger className="h-8 w-36" aria-label={t('row.accessAria', { name: source.name })}>
-              {/* Solo el nombre: la pista de cada opción va en el menú. */}
-              <SelectValue>{t(`access.${browse.access}`)}</SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {ACCESS.map((a) => (
-                <SelectItem key={a} value={a}>
-                  {t(`access.${a}`)}
-                  <span className="ml-1.5 text-xs text-muted-foreground">{t(`access.${a}Hint`)}</span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="grid gap-1">
-          <span className="flex items-center gap-1 text-xs text-muted-foreground">
-            {t('row.maxOffers')}
-            <Hint text={t('row.maxOffersHint')} label={t('row.maxOffersHintAria')} />
-          </span>
-          <Select
-            value={String(maxOffers)}
-            onValueChange={(v) => change({ max_offers: Number(v) })}
-            disabled={update.isPending}
-          >
-            <SelectTrigger className="h-8 w-28" aria-label={t('row.maxOffersAria', { name: source.name })}>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {maxOffersOptions.map((n) => (
-                <SelectItem key={n} value={String(n)}>
-                  {n}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
 
-      <Searches urls={browse.search_urls} name={source.name} />
-      {browse.notes && <p className="text-sm text-muted-foreground">{browse.notes}</p>}
-      <LastRun source={source} />
-      {linkedin && <LinkedInPublicPanel />}
+        <Searches urls={browse.search_urls} name={source.name} />
+        {browse.notes && <p className="text-sm text-muted-foreground">{browse.notes}</p>}
+        <RunLog source={source} />
+        {linkedin && !publicEnabled && <LinkedInPublicPanel />}
+        <Limits limits={limits} />
+      </Reveal>
       {update.error && (
         <p role="alert" className="text-sm text-destructive">
           {errorMessage(update.error)}
@@ -611,7 +623,7 @@ function PlatformRow({ source, order }: { source: SourceView; order: Slot[] }) {
 function Limits({ limits }: { limits: AgentBrowseLimits }) {
   const { t } = useTranslation('platforms')
   return (
-    <p className="mt-2 text-xs text-muted-foreground">
+    <p className="text-xs text-muted-foreground">
       <InlineCode
         text={t('limits', {
           pages: plural('pages', limits.max_result_pages),
@@ -645,7 +657,11 @@ export function PlatformsPage() {
     body = <ErrorState error={platforms.error} onRetry={() => platforms.refetch()} />
   } else if (platforms.data.sources.length === 0) {
     body = (
-      <EmptyState icon={<CompassIcon className="size-6" weight="duotone" />} title={t('empty.title')}>
+      <EmptyState
+        icon={<CompassIcon className="size-6" weight="duotone" />}
+        title={t('empty.title')}
+        action={<AddPlatformButton primary />}
+      >
         <InlineCode text={t('empty.body')} />
       </EmptyState>
     )
@@ -657,26 +673,32 @@ export function PlatformsPage() {
     body = (
       <ul className="divide-y rounded-xl border bg-card">
         {sorted.map((source) => (
-          <PlatformRow key={source.id} source={source} order={order} />
+          <PlatformRow key={source.id} source={source} order={order} limits={platforms.data.agent_browse} />
         ))}
       </ul>
     )
   }
 
+  // Con plataformas, lo destacado es buscar; sin ninguna, añadir la primera (en el estado vacío).
+  const any = (platforms.data?.sources.length ?? 0) > 0
   return (
     <div className="mx-auto max-w-3xl animate-in fade-in duration-300">
       <div className="mb-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
-          <div className="flex flex-wrap gap-2">
-            <AgentButton action="broaden-search">{t('broaden')}</AgentButton>
-            <AddPlatformButton />
-          </div>
+          {any && (
+            <div className="flex flex-wrap gap-2">
+              <AddPlatformButton />
+              <AgentButton action="broaden-search">{t('broaden')}</AgentButton>
+              <AgentButton action="search-jobs" primary>
+                {t('search')}
+              </AgentButton>
+            </div>
+          )}
         </div>
         <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
           <InlineCode text={t('intro')} />
         </p>
-        {platforms.data && <Limits limits={platforms.data.agent_browse} />}
       </div>
       {body}
     </div>

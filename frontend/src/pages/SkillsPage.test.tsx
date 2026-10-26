@@ -51,12 +51,28 @@ describe('Skills', () => {
 
     await screen.findByRole('table', { name: 'Skills ausentes por frecuencia' })
     expect(skillNames()).toEqual(['Data Warehousing', 'Kafka', 'Terraform'])
-    expect(screen.getByText('2 oblig. · 1 des.')).toBeInTheDocument()
+    expect(screen.getByText('obligatoria en 2, deseable en 1')).toBeInTheDocument()
     expect(screen.getAllByRole('link', { name: /Data Engineer · Brétema Analytics/ })[0]).toHaveAttribute('href', '/jobs/7')
     expect(calls.find((c) => c.path === '/skills/gaps')?.search.get('days')).toBe('60')
     // Hay una marcada «La tengo»: aparece el botón para añadirlas al perfil.
     expect(screen.getByRole('button', { name: /Añadir al perfil las que tengo \(1\)/ })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Plan de formación/ })).toBeInTheDocument()
+  })
+
+  it('van de 25 en 25 y un filtro vuelve a la primera página', async () => {
+    const many = Array.from({ length: 30 }, (_, i) =>
+      gap({ skill: `Skill ${i + 1}`, key: `skill ${i + 1}`, jobs_count: 40 - i, must_have_count: 40 - i }),
+    )
+    mockApi({ 'GET /status': status(), 'GET /skills/gaps': view({ gaps: many }), 'GET /agent': AGENT })
+    renderApp('/skills')
+    await screen.findByRole('table', { name: 'Skills ausentes por frecuencia' })
+    expect(skillNames()).toHaveLength(25)
+    expect(screen.getByText('1-25 de 30')).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: /Siguientes/ }))
+    expect(skillNames()).toEqual(['Skill 26', 'Skill 27', 'Skill 28', 'Skill 29', 'Skill 30'])
+    await userEvent.click(screen.getByRole('button', { name: 'Obligatorias' }))
+    expect(skillNames()[0]).toBe('Skill 1')
   })
 
   it('ordena por peso y filtra por tipo, marca y periodo', async () => {

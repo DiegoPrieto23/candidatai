@@ -109,14 +109,14 @@ describe('Buzones de las alertas (fase 27.4)', () => {
     await userEvent.click(within(dialog).getByRole('button', { name: 'Ir a Gmail' }))
     expect(within(dialog).getByRole('tab', { name: 'Gmail', selected: true })).toBeInTheDocument()
     await userEvent.click(within(dialog).getByRole('tab', { name: 'Outlook / Hotmail' }))
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Ir a «Carpeta de .eml»' }))
-    expect(within(dialog).getByRole('tab', { name: 'Carpeta de .eml', selected: true })).toBeInTheDocument()
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Ir a «Carpeta de correos»' }))
+    expect(within(dialog).getByRole('tab', { name: 'Carpeta de correos', selected: true })).toBeInTheDocument()
     expect(within(dialog).queryByRole('button', { name: 'Probar conexión' })).not.toBeInTheDocument()
     expect(within(dialog).getByText(/data\/inbox\/alertas\//)).toBeInTheDocument()
 
     await userEvent.click(within(dialog).getByRole('button', { name: 'Guardar' }))
     expect(calls.find((c) => c.method === 'POST' && c.path === '/mail-sources')?.body).toMatchObject({
-      label: 'Carpeta de .eml',
+      label: 'Carpeta de correos',
       kind: 'folder',
       folder: 'alertas',
     })
@@ -160,9 +160,14 @@ describe('Buzones de las alertas (fase 27.4)', () => {
     // Abierto de entrada porque uno tiene un error.
     expect(await screen.findByText(/2 buzones/)).toBeInTheDocument()
     expect(screen.getByText(/1 con error/)).toBeInTheDocument()
-    expect(screen.getByText('Falta la contraseña (CAI_IMAP_BUZON_2_PASSWORD)')).toBeInTheDocument()
+    expect(screen.getByText(/Falta la contraseña de aplicación de tu correo/)).toBeInTheDocument()
     expect(screen.getByText(/escribe el nombre exacto/)).toBeInTheDocument()
-    expect(screen.getByText('de .env')).toBeInTheDocument()
+    // Las variables y el mensaje del servidor, solo en «Detalles técnicos».
+    expect(screen.queryByText(/CAI_IMAP|\.env/)).not.toBeInTheDocument()
+    const details = screen.getAllByRole('button', { name: 'Detalles técnicos' })
+    await userEvent.click(details[details.length - 1])
+    expect(screen.getByText(/CAI_IMAP_BUZON_2_PASSWORD/)).toBeInTheDocument()
+    expect(screen.getByText(/rechazó abrir la carpeta/)).toBeInTheDocument()
     // La cuenta de .env no se quita desde aquí.
     expect(screen.queryByRole('button', { name: 'Quitar Principal' })).not.toBeInTheDocument()
 
@@ -180,7 +185,26 @@ describe('Buzones de las alertas (fase 27.4)', () => {
     expect(calls.some((c) => c.method === 'DELETE' && c.path === '/mail-sources/2')).toBe(true)
   })
 
-  it('editar la cuenta de .env solo deja cambiar el nombre y si lee respuestas', async () => {
+  it('editar la cuenta de .env solo deja cambiar el nombre, la contraseña y si lee respuestas', async () => {
+    const principal = mailbox(1, { label: 'Principal', from_env: true, has_password: false, secret_ref: 'CAI_IMAP_PASSWORD' })
+    const calls = mockApi(
+      routes([principal], {
+        'PATCH /mail-sources/1': { status: 200, body: { source: principal, message: 'ok', env_line: null } },
+      }),
+    )
+    renderApp('/alertas')
+    // Sin contraseña, el panel se abre solo y el aviso lleva directo a escribirla.
+    await userEvent.click(await screen.findByRole('button', { name: 'Escribir la contraseña' }))
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).queryByLabelText('Servidor IMAP')).not.toBeInTheDocument()
+    expect(within(dialog).queryByLabelText('Usuario (tu dirección)')).not.toBeInTheDocument()
+    await userEvent.type(within(dialog).getByLabelText('Contraseña de aplicación'), 'abcd')
+    await userEvent.click(within(dialog).getByLabelText('Leer aquí también las respuestas de las empresas'))
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Guardar' }))
+    expect(calls.find((c) => c.method === 'PATCH')?.body).toEqual({ label: 'Principal', read_replies: true, password: 'abcd' })
+  })
+
+  it('con la contraseña ya guardada, editar la cuenta de .env sin escribirla no la toca', async () => {
     const principal = mailbox(1, { label: 'Principal', from_env: true, secret_ref: 'CAI_IMAP_PASSWORD' })
     const calls = mockApi(
       routes([principal], {
@@ -189,13 +213,12 @@ describe('Buzones de las alertas (fase 27.4)', () => {
     )
     renderApp('/alertas')
     await userEvent.click(await screen.findByText(/1 buzón/))
+    expect(screen.queryByRole('button', { name: 'Escribir la contraseña' })).not.toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Editar Principal' }))
     const dialog = await screen.findByRole('dialog')
-    expect(within(dialog).queryByLabelText('Contraseña de aplicación')).not.toBeInTheDocument()
-    expect(within(dialog).queryByLabelText('Servidor IMAP')).not.toBeInTheDocument()
-    await userEvent.click(within(dialog).getByLabelText('Leer aquí también las respuestas de las empresas'))
+    expect(within(dialog).getByText('Déjala vacía para no cambiarla')).toBeInTheDocument()
     await userEvent.click(within(dialog).getByRole('button', { name: 'Guardar' }))
-    expect(calls.find((c) => c.method === 'PATCH')?.body).toEqual({ label: 'Principal', read_replies: true })
+    expect(calls.find((c) => c.method === 'PATCH')?.body).toEqual({ label: 'Principal', read_replies: false })
   })
 
   it('la pantalla vacía lleva a «Añadir buzón» y con el diálogo abierto las teclas no descartan', async () => {

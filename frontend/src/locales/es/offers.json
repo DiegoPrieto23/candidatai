@@ -19,7 +19,7 @@
     "min": "mín.",
     "max": "máx.",
     "floor": "Tu mínimo: {{amount}} brutos al año. ",
-    "noFloor": "Sin mínimo en tu perfil (private.salary_floor_eur): no se compara con él. ",
+    "noFloor": "No has puesto tu sueldo mínimo (Mi perfil → Búsqueda): no se compara con él. ",
     "private": "Solo lo ves tú: tu agente no recibe tu mínimo ni estas diferencias. Son cuentas, no una recomendación."
   },
   "received": {

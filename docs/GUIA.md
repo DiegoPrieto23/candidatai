@@ -246,8 +246,8 @@ documentos y correos. Las claves van en `.env`, también fuera de git.
 | **Perfil** (la fuente de verdad de todo lo que se escribe sobre ti) | `data/profile.yaml` | Para empezar, el skill `update-profile`: lee tu CV, te pregunta lo que falte y lo valida. Después, **rellénalo y retócalo en «Mi perfil»**: experiencia y logros, proyectos, formación, skills e idiomas, historias STAR, qué buscas y tus preferencias de CV y carta, por bloques. Cada bloque se guarda solo, conserva el formato y los comentarios de tu fichero, avisa si lo cambiaste por fuera y se puede deshacer. Cada cambio crea una versión. Si prefieres, sigue valiendo editar el YAML |
 | **Tu CV como diseño** | `data/templates/<id>/` | Sube tu CV en «Plantillas → Mi CV» y pulsa «Convertir en plantilla» (usa el skill `import-cv-template`). Vale Word, PDF, imagen o HTML (Canva, Google Docs…) |
 | **Foto** | `data/photo.jpg` (o png) | Cada plantilla la recorta a su forma; se incluye o no según el país de la oferta |
-| **Contexto** (estilo, narrativa, criterios) | `data/contexto/*.md` | Se edita en «Mi perfil → Contexto y estilo» (con vista previa) o en tu editor. Orienta al agente, pero nunca respalda un hecho del CV |
-| **Muestras de estilo** (cartas, correos o posts tuyos) | `data/documentos/estilo/` | Súbelas en «Mi perfil → Contexto y estilo» (.txt, .md, .docx, .pdf). Tu agente toma de ellas el tono, nunca los hechos, y las lee como dato: si traen texto de otros con órdenes, no las sigue |
+| **Contexto** (estilo, narrativa, criterios) | `data/contexto/*.md` | Se edita en «Mi perfil → Documentos» (con vista previa) o en tu editor. Orienta al agente, pero nunca respalda un hecho del CV |
+| **Muestras de estilo** (cartas, correos o posts tuyos) | `data/documentos/estilo/` | Súbelas en «Mi perfil → Documentos» (.txt, .md, .docx, .pdf). Tu agente toma de ellas el tono, nunca los hechos, y las lee como dato: si traen texto de otros con órdenes, no las sigue |
 | **Documentos fuente** (CVs antiguos, títulos, referencias) | `data/documentos/` | `update-profile` los puede leer, confirmando antes de escribir |
 | **Lo que has hecho en público** (repositorios, portfolio, Kaggle, Scholar, certificaciones verificables) | `data/profile.yaml` | Skill `expand`, o «Ampliar perfil desde mis enlaces» en «Mi perfil». Úsalo **justo después de crear el perfil**: propone proyectos, skills (sin nivel: lo pones tú), logros con los números que da la fuente y certificaciones, cada uno con su enlace en `source`, y solo escribe lo que aceptes. Solo web pública: ni LinkedIn ni nada con login. Necesita un agente con búsqueda web |
 
@@ -375,10 +375,11 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
   borradores (máximo 2 por candidatura) y el de agradecimiento tras una entrevista. Los envías tú.
 - **Respuestas:** en los buzones que lo tengan marcado, la app lee los correos de las empresas de tus procesos;
   `review-replies` propone qué ha pasado y tú lo aceptas en «Respuestas».
-- **Embudo:** conversión por paso, fuente, puesto, semana, plantilla, carta y referencia, y
-  «¿Acierta el score?». `review-search` hace la retrospectiva semanal. Al final, «Tu búsqueda en
-  números» (o `cai stats story`): tus cifras desde el principio, sin empresas, y una línea para
-  contarlo en un README si quieres.
+- **Embudo:** conversión por paso, fuente, semana y referencia, y los motivos de descarte. En «Más
+  análisis», plegado al final: «¿Acierta el score?» (por score, veredicto, plantilla, carta…), por
+  tipo de puesto, el coste del agente y «Tu búsqueda en números» (o `cai stats story`): tus cifras
+  desde el principio, sin empresas, con una línea para compartir si quieres. `review-search` hace
+  la retrospectiva semanal.
 - **Red:** importa tus contactos de LinkedIn (exportación CSV) con `cai contacts import-linkedin`
   y verás «Conoces a N» en las ofertas de sus empresas; `draft-message` prepara el mensaje.
 

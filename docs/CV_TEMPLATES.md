@@ -352,7 +352,7 @@ aviso, nunca sobra).
 
 Cada render guarda sus opciones resueltas, sus ficheros en `data/cvs/<job_id>/<document_id>/<render_id>/`
 y el hash de la plantilla. En la ficha de la oferta, sección «CV», eliges plantilla (con su
-miniatura), foto, color y secciones ocultas y pulsas «Renderizar»: crea un render nuevo con el
+miniatura), foto, color y secciones ocultas y pulsas «Generar»: crea un render nuevo con el
 mismo contenido verificado, sin agente. Puedes ver dos renders lado a lado y marcar con «Usar este
 para enviar» el que irá en la candidatura (uno por CV). Si los ficheros de una plantilla cambian
 después de un render, la UI lo marca como «Plantilla cambiada».

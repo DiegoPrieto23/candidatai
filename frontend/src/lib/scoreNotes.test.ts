@@ -7,25 +7,26 @@ describe('notas del score (fase 23.5b)', () => {
     await i18n.changeLanguage('es')
   })
 
-  it('en español se quedan tal cual', () => {
+  it('en español también pasan por los textos: así no enseñan la variable de entorno', () => {
     expect(scoreNote('Similitud semántica desactivada (CAI_EMBEDDINGS=off).')).toBe(
-      'Similitud semántica desactivada (CAI_EMBEDDINGS=off).',
+      'La comparación por significado está desactivada: el score solo cuenta las skills por su nombre.',
     )
+    expect(scoreNote('Otra nota cualquiera.')).toBe('Otra nota cualquiera.')
   })
 
   it('en inglés se traducen las conocidas y las demás se quedan como llegan', async () => {
     await i18n.changeLanguage('en')
     expect(scoreNote('Similitud semántica desactivada (CAI_EMBEDDINGS=off).')).toBe(
-      'Semantic similarity turned off (CAI_EMBEDDINGS=off).',
+      'Meaning-based comparison is turned off: the score only matches skills by name.',
     )
     expect(scoreNote('No se pudo calcular la similitud semántica (OSError: sin red).')).toBe(
-      "Couldn't calculate the semantic similarity (OSError: sin red).",
+      "Couldn't run the meaning-based comparison (OSError: sin red): the score only matches skills by name.",
     )
     expect(scoreNote('La oferta no lista skills deseables: la cobertura deseable no cuenta.')).toBe(
-      "The job lists no nice-to-have skills: nice-to-have coverage doesn't count.",
+      "The job doesn't say which skills are nice-to-have, so that part doesn't count in the score.",
     )
     expect(scoreNote('No se pudo calcular la similitud semántica (línea 1\nlínea 2).')).toBe(
-      "Couldn't calculate the semantic similarity (línea 1\nlínea 2).",
+      "Couldn't run the meaning-based comparison (línea 1\nlínea 2): the score only matches skills by name.",
     )
     expect(scoreNote('Otra nota cualquiera.')).toBe('Otra nota cualquiera.')
   })

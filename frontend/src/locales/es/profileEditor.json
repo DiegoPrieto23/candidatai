@@ -1,13 +1,9 @@
 {
   "tabs": {
-    "personal": "Datos",
-    "experience": "Experiencia",
-    "background": "Proyectos y formación",
-    "skills": "Skills e idiomas",
-    "stories": "Historias STAR",
+    "about": "Sobre ti",
+    "career": "Experiencia y formación",
     "search": "Búsqueda",
-    "documents": "CV y carta",
-    "context": "Contexto y estilo",
+    "documents": "Documentos",
     "history": "Historial"
   },
   "noProfile": {

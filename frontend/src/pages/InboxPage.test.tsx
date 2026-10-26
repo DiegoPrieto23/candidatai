@@ -96,7 +96,7 @@ describe('Bandeja', () => {
     globalThis.fetch = () => Promise.reject(new TypeError('Failed to fetch'))
     renderApp('/bandeja')
     expect(await screen.findByText('CandidatAI no responde')).toBeInTheDocument()
-    expect(screen.getByText('cai start')).toBeInTheDocument()
+    expect(screen.getByText(/Ábrela desde su acceso directo/)).toBeInTheDocument()
   })
 })
 

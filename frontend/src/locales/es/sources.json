@@ -2,7 +2,7 @@
   "kinds": {
     "infojobs": "InfoJobs (búsqueda)",
     "adzuna": "Adzuna (búsqueda)",
-    "keysHint": "Necesita claves en .env",
+    "keysHint": "Necesita unas claves de acceso gratuitas: la guía de fuentes explica cómo pedirlas.",
     "manfred": "Manfred (búsqueda)",
     "freehire": "freehire (búsqueda)",
     "manfredHint": "Sin claves. Casa por el título; varias búsquedas, separadas por comas.",
@@ -11,18 +11,18 @@
   "more": "… y {{count}} más.",
   "pass": "Pasa",
   "filtered": "Filtrada",
-  "nonePass": "Ninguna pasa el filtro previo.",
+  "nonePass": "Ninguna encaja con tus filtros.",
   "onlyPassing": "Ver solo las que pasan",
   "alsoFiltered": "Ver también las {{count}} filtradas",
   "runHint": "Quedan en «Por extraer»: pulsa «Procesar ofertas».",
   "see": "Verlas",
   "form": {
     "label": "Añadir fuente",
-    "origin": "Origen",
+    "origin": "Web de empleo que usa",
     "company": "Empresa",
     "searchName": "Nombre de la búsqueda",
-    "slug": "Slug del tablero",
-    "slugHint": "Lo que va en la URL:",
+    "slug": "Nombre en la dirección",
+    "slugHint": "Lo que va en la dirección de su web de empleo:",
     "slugHelp": "Cómo encontrarlo",
     "region": "Región de Lever",
     "global": "Global (jobs.lever.co)",
@@ -39,23 +39,24 @@
     "country": "País",
     "countryHint": "Código de 2 letras, p. ej. es",
     "remoteOnly": "Solo ofertas en remoto",
-    "added": "«{{name}}» añadida. Entrará en la ingesta diaria; también puedes ejecutarla ahora.",
+    "added": "«{{name}}» añadida. Se revisa cada día; también puedes buscar ahora.",
     "testing": "Probando…",
     "test": "Probar",
     "saving": "Guardando…",
     "add": "Añadir",
     "website": "Web de la empresa (opcional)",
-    "websiteHint": "Para su logo, p. ej. acme.com. Si publica sus ofertas en su propio dominio, la app la saca de ahí."
+    "websiteHint": "Para su logo, p. ej. acme.com. Si publica sus ofertas en su propio dominio, la app la saca de ahí.",
+    "slugPart": "nombre"
   },
   "row": {
     "paused": "Pausada",
-    "noKeys": "Sin claves en .env",
+    "noKeys": "Faltan sus claves de acceso",
     "last": "{{when}}: {{found}} encontradas, {{after}} tras filtros, {{created}} nuevas",
-    "notRun": "Aún no se ha ejecutado",
+    "notRun": "Aún no se ha revisado",
     "testing": "Probando…",
     "test": "Probar",
-    "running": "Ejecutando…",
-    "run": "Ejecutar ahora",
+    "running": "Buscando…",
+    "run": "Buscar ahora",
     "pause": "Pausar",
     "resume": "Reactivar",
     "addWebsite": "Añadir su web para el logo",
@@ -68,10 +69,12 @@
   },
   "empty": {
     "title": "Aún no sigues ninguna empresa",
-    "body": "Añade una con su ATS y su slug. Pruébala antes de guardarla para ver cuántas ofertas tiene y cuántas pasan tus filtros."
+    "body": "Elige la web de empleo que usa y pruébala antes de guardarla: verás cuántas ofertas tiene y cuántas encajan con tus filtros.",
+    "add": "Añadir empresa"
   },
   "title": "Empresas objetivo",
-  "intro": "Sus ofertas llegan solas cada día mientras CandidatAI está abierta, desde la web de empleo de cada empresa. Solo se guardan las que encajan por título y ubicación con tus preferencias, y quedan en «Por extraer» para tu agente.",
+  "intro": "La app revisa cada día la web de empleo de estas empresas mientras está abierta. Lo que encaja con tus preferencias llega a «Por extraer».",
   "addTitle": "Añadir empresa o búsqueda",
-  "following": "Seguidas"
+  "following": "Seguidas",
+  "closeAdd": "Cerrar"
 }

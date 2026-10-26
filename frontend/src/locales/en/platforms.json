@@ -69,7 +69,7 @@
     "detail": "Download the description too",
     "detailHint": "Up to {{offers}} per run; more requests, more risk",
     "what": "What it will query",
-    "noSearch": "No search is usable: add to this platform a `linkedin.com/jobs/search` URL with keywords or a location.",
+    "noSearch": "No search can be used: add to this platform a LinkedIn Jobs search with keywords or a location (copy the address of the results page).",
     "ignored_one": "One search isn't used: {{list}}",
     "ignored_other": "{{count}} searches aren't used: {{list}}",
     "blocked": "LinkedIn cut off the last search (request limit, sign-in or captcha). It won't try again until {{date}}.",
@@ -81,7 +81,6 @@
     "notRun": "The agent hasn't browsed it yet",
     "invalid": "Its settings aren't valid. Ask your agent to set it up again (“set up my job search platforms”).",
     "risk": "Risk to your account",
-    "upTo": "Up to {{offers}} per run",
     "browsing": "The agent browses it",
     "disabled": "Off",
     "switch": "Browser search on {{name}}",
@@ -100,7 +99,9 @@
     "maxOffers": "Jobs per run",
     "maxOffersAria": "Jobs per run on {{name}}",
     "maxOffersHint": "The maximum number of new jobs the agent adds each time it goes through this job board. Lower it if you get too many to review.",
-    "maxOffersHintAria": "What jobs per run means"
+    "maxOffersHintAria": "What jobs per run means",
+    "settings": "Settings and log",
+    "log": "Last run"
   },
   "limits": "App limits: at most {{pages}} of results per search, {{delay}} s pause between pages and {{offers}} jobs per run on new platforms (change it on each one with “Jobs per run”).",
   "empty": {
@@ -109,13 +110,13 @@
   },
   "title": "Platforms",
   "broaden": "Broaden search",
-  "intro": "Job boards your agent browses with your browser when you press “Search jobs”, in priority order. It only reads: it doesn't apply, save jobs on the board or solve captchas. What it finds goes to “To extract”.",
+  "intro": "Job boards your agent browses with your browser, in this order, when you press “Search jobs”. It only reads: it never applies for you.",
   "add": {
     "linkedinTitle": "It's saved with searching turned off, and that's what we recommend.",
     "linkedinP1": "LinkedIn's terms forbid browsing its website with automated tools, and it may restrict or close your account if it detects it, even if the agent uses your browser and only reads. The safe way is to get its jobs through email alerts (the “Alerts” screen) or with the “Send to CandidatAI” button.",
     "linkedinP2": "If you still want the agent to browse it, turn it on afterwards with its switch, at your own risk.",
     "title": "Add platform",
-    "description": "A job board where your agent searches for jobs with your browser when you ask for “search-jobs”.",
+    "description": "A job board where your agent searches for jobs with your browser when you press “Search jobs”.",
     "portal": "Job board",
     "pick": "Pick a job board…",
     "other": "Other job board",
@@ -136,5 +137,6 @@
     "saving": "Saving…",
     "submit": "Add",
     "button": "Add platform"
-  }
+  },
+  "search": "Search jobs"
 }

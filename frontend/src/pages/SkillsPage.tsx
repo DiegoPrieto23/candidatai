@@ -5,6 +5,8 @@ import { CheckCircleIcon, EqualsIcon, ProhibitIcon, PuzzlePieceIcon, UserCircleI
 import { ApiError } from '@/api/client'
 import { useAddSkillAlias, useSetSkillMark, useSkillGaps, type SkillGap, type SkillMark } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
+import { Hint } from '@/components/Hint'
+import { Pager } from '@/components/Pager'
 import { EmptyState, ErrorState, InlineCode } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import {
@@ -19,6 +21,7 @@ import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatNumber, LEVEL_LABEL } from '@/lib/labels'
 import { errorMessage } from '@/lib/errors'
+import { LIST_PAGE_SIZE, pageOf } from '@/lib/paging'
 import { cn } from '@/lib/utils'
 
 type Kind = 'all' | 'must' | 'nice'
@@ -43,7 +46,7 @@ function Segmented<T extends string | number>({
   onChange: (id: T) => void
 }) {
   return (
-    <div role="group" aria-label={label} className="inline-flex rounded-lg border bg-card p-0.5">
+    <div role="group" aria-label={label} className="inline-flex max-w-full flex-wrap rounded-lg border bg-card p-0.5">
       {options.map((o) => (
         <Button
           key={o.id}
@@ -215,14 +218,14 @@ function MarkButton({
 function GapRow({ gap, kind, onAlias }: { gap: SkillGap; kind: Kind; onAlias: (gap: SkillGap) => void }) {
   const { t } = useTranslation('skills', { keyPrefix: 'row' })
   return (
-    <tr className="border-t align-top">
-      <th scope="row" className="py-3 pr-4 text-left font-medium">
+    <tr className="border-t align-top max-sm:grid max-sm:grid-cols-[minmax(0,1fr)_auto] max-sm:gap-x-4 max-sm:py-3">
+      <th scope="row" className="py-3 pr-4 text-left font-medium max-sm:py-0">
         {gap.skill}
         {gap.jobs_count === 0 && (
           <span className="block text-xs font-normal text-muted-foreground">{t('gone')}</span>
         )}
       </th>
-      <td className="tabular py-3 pr-4 whitespace-nowrap">
+      <td className="tabular py-3 pr-4 whitespace-nowrap max-sm:py-0 max-sm:pr-0 max-sm:text-right">
         <span className="font-medium">{countFor(gap, kind)}</span>
         {kind === 'all' && gap.jobs_count > 0 && (
           <span className="block text-xs text-muted-foreground">
@@ -230,7 +233,7 @@ function GapRow({ gap, kind, onAlias }: { gap: SkillGap; kind: Kind; onAlias: (g
           </span>
         )}
       </td>
-      <td className="tabular py-3 pr-4">{weightFmt.format(gap.weight)}</td>
+      <td className="tabular py-3 pr-4 max-sm:hidden">{weightFmt.format(gap.weight)}</td>
       <td className="hidden py-3 pr-4 md:table-cell">
         <ul className="space-y-0.5 text-xs text-muted-foreground">
           {gap.examples.map((e) => (
@@ -243,7 +246,7 @@ function GapRow({ gap, kind, onAlias }: { gap: SkillGap; kind: Kind; onAlias: (g
           ))}
         </ul>
       </td>
-      <td className="py-2.5">
+      <td className="py-2.5 max-sm:col-span-2 max-sm:pt-2 max-sm:pb-0">
         <div className="flex flex-wrap gap-1" role="group" aria-label={t('actions', { skill: gap.skill })}>
           <Button type="button" size="sm" variant="outline" className="h-7 px-2" onClick={() => onAlias(gap)}>
             <EqualsIcon />
@@ -271,6 +274,7 @@ export function SkillsPage() {
   const [sort, setSort] = useState<Sort>('jobs')
   const [aliasFor, setAliasFor] = useState<SkillGap | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  const [page, setPage] = useState(1)
   const { data, isPending, error, refetch } = useSkillGaps(days)
 
   const rows = useMemo(() => {
@@ -286,6 +290,17 @@ export function SkillsPage() {
         : countFor(b, kind) - countFor(a, kind) || b.weight - a.weight,
     )
   }, [data, kind, markFilter, sort])
+  // Al cambiar un filtro o el orden, de vuelta a la primera página.
+  const fromStart =
+    <T,>(set: (value: T) => void) =>
+    (value: T) => {
+      set(value)
+      setPage(1)
+    }
+  // Si la lista encoge (p. ej. al marcar una con un filtro de marca), la página no se queda fuera.
+  const at = Math.min(page, Math.max(1, Math.ceil(rows.length / LIST_PAGE_SIZE)))
+  const shown = useMemo(() => pageOf(rows, at), [rows, at])
+  const sortBy = fromStart(setSort)
 
   const marked = (status: SkillMark) => data?.gaps.filter((g) => g.mark === status).length ?? 0
 
@@ -308,11 +323,11 @@ export function SkillsPage() {
         </div>
         <div className="flex flex-wrap items-start gap-2">
           {marked('have') > 0 && (
-            <AgentButton action="add-skills">
+            <AgentButton action="add-skills" primary>
               {t('addHave', { count: marked('have') })}
             </AgentButton>
           )}
-          <AgentButton action="training-plan">
+          <AgentButton action="training-plan" primary={marked('have') === 0}>
             {t('training')}
           </AgentButton>
         </div>
@@ -323,19 +338,19 @@ export function SkillsPage() {
           label={t('period')}
           options={PERIODS.map((d) => ({ id: d, label: t('days', { count: d }) }))}
           value={days}
-          onChange={setDays}
+          onChange={fromStart(setDays)}
         />
         <Segmented
           label={t('kind')}
           options={KINDS.map((id) => ({ id, label: t(`kinds.${id}`) }))}
           value={kind}
-          onChange={setKind}
+          onChange={fromStart(setKind)}
         />
         <Segmented
           label={t('mark')}
           options={MARK_FILTERS.map((id) => ({ id, label: t(`marks.${id}`) }))}
           value={markFilter}
-          onChange={setMarkFilter}
+          onChange={fromStart(setMarkFilter)}
         />
       </div>
 
@@ -359,40 +374,45 @@ export function SkillsPage() {
             {t('summary', { count: data.gaps.length, jobs: data.jobs_considered, days: data.days })}
           </p>
           <div className="mt-4 overflow-x-auto">
-            <table className="w-full min-w-[36rem] text-sm" aria-label={t('tableLabel')}>
+            <table className="w-full text-sm sm:min-w-[36rem]" aria-label={t('tableLabel')}>
+              {/* En el móvil solo quedan los dos órdenes, en una línea. */}
               <thead>
-                <tr className="text-left text-xs text-muted-foreground">
-                  <th scope="col" className="pb-2 pr-4 font-medium">
+                <tr className="text-left text-xs text-muted-foreground max-sm:flex max-sm:gap-4">
+                  <th scope="col" className="pb-2 pr-4 font-medium max-sm:hidden">
                     {t('cols.skill')}
                   </th>
                   <th scope="col" className="pb-2 pr-4 font-medium" aria-sort={sort === 'jobs' ? 'descending' : 'none'}>
-                    <button type="button" className="hover:text-foreground" onClick={() => setSort('jobs')}>
+                    <button type="button" className="hover:text-foreground" onClick={() => sortBy('jobs')}>
                       {t('cols.jobs')}
                       {sort === 'jobs' && ' ↓'}
                     </button>
                   </th>
                   <th scope="col" className="pb-2 pr-4 font-medium" aria-sort={sort === 'weight' ? 'descending' : 'none'}>
-                    <button type="button" className="hover:text-foreground" onClick={() => setSort('weight')}>
-                      {t('cols.weight')}
-                      {sort === 'weight' && ' ↓'}
-                    </button>
+                    <span className="inline-flex items-center gap-1">
+                      <button type="button" className="hover:text-foreground" onClick={() => sortBy('weight')}>
+                        {t('cols.weight')}
+                        {sort === 'weight' && ' ↓'}
+                      </button>
+                      <Hint text={t('weightHint')} label={t('weightHelp')} />
+                    </span>
                   </th>
                   <th scope="col" className="hidden pb-2 pr-4 font-medium md:table-cell">
                     {t('cols.examples')}
                   </th>
-                  <th scope="col" className="pb-2 font-medium">
+                  <th scope="col" className="pb-2 font-medium max-sm:hidden">
                     <span className="sr-only">{t('cols.actions')}</span>
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {rows.map((gap) => (
+                {shown.map((gap) => (
                   <GapRow key={gap.key} gap={gap} kind={kind} onAlias={setAliasFor} />
                 ))}
               </tbody>
             </table>
             {rows.length === 0 && <p className="py-6 text-center text-sm text-muted-foreground">{t('noneFiltered')}</p>}
           </div>
+          <Pager page={at} total={rows.length} onPage={setPage} className="mt-4 border-t pt-4" />
         </section>
       )}
 

@@ -151,7 +151,7 @@ describe('Mi perfil editable', () => {
           ),
     })
     renderApp('/perfil')
-    await openTab('Experiencia')
+    await openTab('Experiencia y formación')
     await openCompany('Norte Consulting')
     const achievement = await screen.findByRole('group', { name: 'Migré 40 procesos ETL a Python.' })
     const text = within(achievement).getByLabelText('Logro')
@@ -189,7 +189,7 @@ describe('Mi perfil editable', () => {
     it('arranca plegada y desplegar una empresa no abre las otras', async () => {
       mockApi(BASE)
       renderApp('/perfil')
-      await openTab('Experiencia')
+      await openTab('Experiencia y formación')
       const norte = await company('Norte Consulting')
       const sur = await company('Sur Analytics')
       expect(norte.header).toHaveAttribute('aria-expanded', 'false')
@@ -209,7 +209,7 @@ describe('Mi perfil editable', () => {
     it('«Desplegar todo» y «Plegar todo»', async () => {
       mockApi(BASE)
       renderApp('/perfil')
-      await openTab('Experiencia')
+      await openTab('Experiencia y formación')
       const block = await screen.findByRole('region', { name: 'Experiencia' })
       await userEvent.click(within(block).getByRole('button', { name: 'Desplegar todo' }))
       expect((await company('Norte Consulting')).header).toHaveAttribute('aria-expanded', 'true')
@@ -221,7 +221,7 @@ describe('Mi perfil editable', () => {
     it('«Añadir empresa» abre la nueva con el foco en «Empresa», y sigue abierta al bajarla', async () => {
       mockApi(BASE)
       renderApp('/perfil')
-      await openTab('Experiencia')
+      await openTab('Experiencia y formación')
       const block = await screen.findByRole('region', { name: 'Experiencia' })
       await userEvent.click(within(block).getByRole('button', { name: 'Añadir empresa' }))
       const fresh = await company('Empresa nueva')
@@ -237,7 +237,7 @@ describe('Mi perfil editable', () => {
     it('reordenar mantiene desplegada la misma empresa', async () => {
       mockApi(BASE)
       renderApp('/perfil')
-      await openTab('Experiencia')
+      await openTab('Experiencia y formación')
       await openCompany('Sur Analytics')
       const norte = await company('Norte Consulting')
       await userEvent.click(within(norte.article).getByRole('button', { name: 'Bajar Norte Consulting' }))
@@ -250,7 +250,7 @@ describe('Mi perfil editable', () => {
     it('plegar y desplegar conserva un cambio sin guardar', async () => {
       mockApi(BASE)
       renderApp('/perfil')
-      await openTab('Experiencia')
+      await openTab('Experiencia y formación')
       const article = await openCompany('Norte Consulting')
       const role = within(article).getByLabelText('Puesto')
       await userEvent.clear(role)
@@ -280,7 +280,7 @@ describe('Mi perfil editable', () => {
         },
       })
       renderApp('/perfil')
-      await openTab('Experiencia')
+      await openTab('Experiencia y formación')
       const article = await openCompany('Norte Consulting')
       await userEvent.type(within(article).getByLabelText('Ciudad'), 'Vigo')
       const block = screen.getByRole('region', { name: 'Experiencia' })
@@ -308,7 +308,7 @@ describe('Mi perfil editable', () => {
             }),
       })
       renderApp('/perfil')
-      await openTab('Experiencia')
+      await openTab('Experiencia y formación')
       const block = await screen.findByRole('region', { name: 'Experiencia' })
       await userEvent.click(within(block).getByRole('button', { name: 'Añadir empresa' }))
       const fresh = (await company('Empresa nueva')).article
@@ -327,7 +327,7 @@ describe('Mi perfil editable', () => {
   it('una historia STAR no se guarda sin evidencia y el selector las lista por su nombre', async () => {
     const calls = mockApi({ ...BASE, 'PUT /profile/sections/stories': saved('stories') })
     renderApp('/perfil')
-    await openTab('Historias STAR')
+    await openTab('Experiencia y formación')
     const block = await screen.findByRole('region', { name: 'Historias STAR' })
     await userEvent.click(within(block).getByRole('button', { name: 'Añadir historia' }))
     const story = within(block).getByRole('article', { name: 'Historia nueva' })
@@ -514,7 +514,7 @@ describe('Mi perfil editable', () => {
   it('el nivel de un idioma es un desplegable que conserva el valor libre que ya tenías', async () => {
     mockApi(BASE)
     renderApp('/perfil')
-    await openTab('Skills e idiomas')
+    await openTab('Experiencia y formación')
     const language = await screen.findByRole('group', { name: 'Inglés' })
     expect(within(language).getByRole('combobox', { name: 'Nivel' })).toHaveValue('__other__')
     expect(within(language).getByLabelText('Nivel (texto libre)')).toHaveValue('C1 (Cambridge)')
@@ -533,7 +533,7 @@ describe('Mi perfil editable', () => {
       'PUT /context/criterios': doc('criterios', '# Criterios\n<!-- Qué no aceptas -->\nSin guardias.\nNada de viajes.\n', { file_hash: 'nuevo' }),
     })
     renderApp('/perfil')
-    await openTab('Contexto y estilo')
+    await openTab('Documentos')
     const block = await screen.findByRole('region', { name: 'Criterios' })
     const editor = await within(block).findByLabelText('Texto de Criterios')
     expect(editor).toHaveValue('# Criterios\n<!-- Qué no aceptas -->\nSin guardias.\n')
@@ -584,12 +584,12 @@ describe('Mi perfil editable', () => {
     })
     mockApi(BASE)
     renderApp('/perfil')
-    await openTab('STAR stories')
+    await openTab('Experience and education')
     const block = await screen.findByRole('region', { name: 'STAR stories' })
     await userEvent.click(within(block).getByRole('button', { name: 'Add story' }))
     expect(within(block).getByText('Pick at least one piece of evidence.')).toBeInTheDocument()
     expect(within(block).getByRole('button', { name: 'Save' })).toBeDisabled()
-    expect(screen.getByRole('tab', { name: 'Context and style' })).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: 'Documents' })).toBeInTheDocument()
   })
 
   it('«Mejorar con mi agente» lleva el id del logro y no se puede dejar para luego', async () => {
@@ -607,7 +607,7 @@ describe('Mi perfil editable', () => {
       'POST /agent/launch': { ok: true, agent: 'claude', prompt: 'Usa el skill update-profile…', message: 'ok' },
     })
     renderApp('/perfil')
-    await openTab('Experiencia')
+    await openTab('Experiencia y formación')
     await openCompany('Norte Consulting')
     const achievement = await screen.findByRole('group', { name: 'Migré 40 procesos ETL a Python.' })
     const improve = within(achievement).getByRole('button', { name: 'Mejorar con mi agente' })
@@ -625,7 +625,7 @@ describe('Mi perfil editable', () => {
       'GET /context/criterios': doc('criterios', '# Criterios\n<script>alert(1)</script>\n<img src=x onerror=alert(1)> **Sin guardias**\n'),
     })
     renderApp('/perfil')
-    await openTab('Contexto y estilo')
+    await openTab('Documentos')
     const block = await screen.findByRole('region', { name: 'Criterios' })
     await userEvent.click(await within(block).findByRole('tab', { name: 'Vista previa' }))
     const preview = within(block).getByTestId('markdown-preview')

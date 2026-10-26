@@ -8,7 +8,7 @@
   "import": {
     "hint": "Import your LinkedIn connections to see who you know at each company. On LinkedIn: Settings → Data privacy → Get a copy of your data → Connections. Put the file in <code>data/{{file}}</code>.",
     "importing": "Importing…",
-    "button": "Import Connections.csv",
+    "button": "Import my connections",
     "missing": "The file isn't in that folder yet."
   },
   "title": "Your network",

@@ -158,6 +158,9 @@ describe('Página «Agente» (fase 19)', () => {
     })
     renderApp('/agente')
     const pending = await screen.findByRole('list', { name: 'Encargos pendientes' })
+    // La orden técnica que recibe el agente, solo al desplegar.
+    expect(within(pending).queryByText(/Usa el skill/)).not.toBeInTheDocument()
+    await userEvent.click(within(pending).getByRole('button', { name: 'Detalles técnicos' }))
     expect(within(pending).getByText('Usa el skill generate-cv de CandidatAI para la oferta 42.')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Atender encargos' })).toBeInTheDocument()
     expect(screen.getByText(/Aún no has lanzado nada en segundo plano/)).toBeInTheDocument()
@@ -237,6 +240,7 @@ describe('Página «Agente» (fase 19)', () => {
     it('suma por acción, agente y modelo, con lo que pesa cada skill', async () => {
       page()
       renderApp('/agente')
+      await userEvent.click(await screen.findByRole('button', { name: 'Umbral y coste' }))
       const actions = await screen.findByRole('table', { name: 'Por acción' })
       const row = within(actions).getByRole('row', { name: /Procesar ofertas/ })
       const cells = within(row).getAllByRole('cell').map((c) => c.textContent)
@@ -250,9 +254,19 @@ describe('Página «Agente» (fase 19)', () => {
       expect(screen.getByText(/lo que haces en una terminal no llega a la app/)).toBeInTheDocument()
     })
 
+    it('sin ejecuciones lo dice una sola vez, sin cifras ni tablas vacías', async () => {
+      const empty = { days: 7, since: '2026-10-01T00:00:00Z', total: totals(0, 0, null), by_action: [], by_agent: [], by_model: [] }
+      page({ 'GET /agent/costs': { windows: [empty], terminal_note: '…' } })
+      renderApp('/agente')
+      await userEvent.click(await screen.findByRole('button', { name: 'Umbral y coste' }))
+      expect(await screen.findAllByText('Ninguna ejecución en este periodo.')).toHaveLength(1)
+      expect(screen.queryByRole('table')).not.toBeInTheDocument()
+    })
+
     it('cambia el umbral de «Evaluar encaje»', async () => {
       const calls = page({ 'PUT /agent/assess-threshold': { ...threshold, value: 60, source: 'ui' } })
       renderApp('/agente')
+      await userEvent.click(await screen.findByRole('button', { name: 'Umbral y coste' }))
       const input = await screen.findByRole('spinbutton', { name: 'Score mínimo' })
       expect(input).toHaveValue(45)
       expect(screen.getByText(/el umbral de score menos 10/)).toBeInTheDocument()

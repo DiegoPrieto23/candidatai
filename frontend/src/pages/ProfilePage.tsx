@@ -58,16 +58,12 @@ function ContextFiles({ files }: { files: ContextFileInfo[] }) {
             <FileState file={file} />
           </div>
           <p className="text-sm text-muted-foreground">{t(`sections.${file.section}.hint`)}</p>
-          <p className="font-mono text-xs text-muted-foreground">
-            data/{file.path}
-            {file.exists && (
-              <>
-                {' · '}
-                {formatSize(file.size_bytes)}
-                {file.modified_at && ` · ${formatWhen(file.modified_at)}`}
-              </>
-            )}
-          </p>
+          {file.exists && (
+            <p className="text-xs text-muted-foreground">
+              {formatSize(file.size_bytes)}
+              {file.modified_at && ` · ${formatWhen(file.modified_at)}`}
+            </p>
+          )}
           {file.warnings.map((warning) => (
             <p key={warning} className="flex items-start gap-1.5 text-xs text-amber-700 dark:text-amber-400">
               <WarningIcon className="mt-0.5 size-3.5 shrink-0" aria-hidden />
@@ -87,9 +83,9 @@ function DocumentFolders({ folders }: { folders: ContextStatus['folders'] }) {
       {folders.map((folder) => (
         <li key={folder.name} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
           <span className="grid gap-0.5">
-            <span className="flex items-center gap-2 font-mono text-sm">
+            <span className="flex items-center gap-2 text-sm font-medium">
               <FolderIcon className="size-4 text-muted-foreground" aria-hidden />
-              {folder.name}/
+              {folder.name}
             </span>
             <span className="text-sm text-muted-foreground">{t(`folders.${folder.name}`)}</span>
           </span>
@@ -146,7 +142,8 @@ function FilesOverview() {
   )
 }
 
-const TABS = ['personal', 'experience', 'background', 'skills', 'stories', 'search', 'documents', 'context', 'history'] as const
+/** Cinco pestañas en una fila: lo del CV junto, la búsqueda, lo que orienta al agente y el historial. */
+const TABS = ['about', 'career', 'search', 'documents', 'history'] as const
 
 /** El fichero no valida: se enseñan sus problemas, pero se puede seguir editando para arreglarlos. */
 function FileIssues() {
@@ -179,10 +176,10 @@ function Editor() {
   const { t } = useTranslation('profileEditor')
   const hidden = 'data-[state=inactive]:hidden'
   return (
-    <Tabs defaultValue="personal" className="gap-4">
+    <Tabs defaultValue="about" className="gap-4">
       <FileIssues />
-      {/* Con muchas pestañas salen dos filas: la altura fija de la lista las dejaba fuera. */}
-      <TabsList className="w-full flex-wrap justify-start gap-1 group-data-[orientation=horizontal]/tabs:h-auto">
+      {/* En móvil, la fila se desplaza en vez de partirse en dos. */}
+      <TabsList className="w-full justify-start gap-1 overflow-x-auto">
         {TABS.map((tab) => (
           <TabsTrigger key={tab} value={tab} className="h-8 flex-none px-2.5">
             {t(`tabs.${tab}`)}
@@ -190,22 +187,16 @@ function Editor() {
         ))}
       </TabsList>
       {/* `forceMount`: cambiar de pestaña no pierde lo que no se ha guardado. */}
-      <TabsContent value="personal" forceMount className={hidden}>
+      <TabsContent value="about" forceMount className={hidden}>
         <PersonalBlock />
       </TabsContent>
-      <TabsContent value="experience" forceMount className={hidden}>
+      <TabsContent value="career" forceMount className={cn('grid gap-6', hidden)}>
         <ExperienceBlock />
-      </TabsContent>
-      <TabsContent value="background" forceMount className={cn('grid gap-6', hidden)}>
         <ProjectsBlock />
         <EducationBlock />
         <CertificationsBlock />
         <ExtraSectionsBlock />
-      </TabsContent>
-      <TabsContent value="skills" forceMount className={hidden}>
         <SkillsBlock />
-      </TabsContent>
-      <TabsContent value="stories" forceMount className={hidden}>
         <StoriesBlock />
       </TabsContent>
       <TabsContent value="search" forceMount className={cn('grid gap-6', hidden)}>
@@ -217,8 +208,6 @@ function Editor() {
       <TabsContent value="documents" forceMount className={cn('grid gap-6', hidden)}>
         <CvPreferencesBlock />
         <LetterPreferencesBlock />
-      </TabsContent>
-      <TabsContent value="context" forceMount className={cn('grid gap-6', hidden)}>
         {CONTEXT_SECTIONS.map((section) => (
           <ContextFileEditor key={section} section={section} />
         ))}
@@ -273,11 +262,10 @@ export function ProfilePage() {
           <Trans t={t} i18nKey="intro" components={{ code }} />
         </p>
         {/* Fase 25.2: skill `expand`. Pregunta antes de escribir, así que solo en terminal. */}
-        <div className="mt-4 grid gap-2">
+        <div className="mt-4">
           <AgentButton action="expand">
             {t('expand')}
           </AgentButton>
-          <p className="text-xs leading-relaxed text-muted-foreground">{t('expandHint')}</p>
         </div>
       </div>
       {body}
