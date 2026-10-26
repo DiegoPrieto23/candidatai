@@ -1,4 +1,4 @@
-"""«En segundo plano» (fase 19, ADR-032): comando con solo las herramientas de la acción, cola de
+"""«En segundo plano» (fase 19): comando con solo las herramientas de la acción, cola de
 una en una y el runner con un agente falso que imita `stream-json` (sin red ni LLM)."""
 
 import json
@@ -139,7 +139,7 @@ def test_manifest_command_allows_only_the_action_tools(action: str) -> None:
     launchers = {launcher.agent: launcher for launcher in agent_launch._launchers()}
     claude = launchers["claude"]
     assert claude.headless is not None and claude.headless.output == "claude-stream-json"
-    assert launchers["codex"].headless is None  # Codex: sin segundo plano (ADR-032)
+    assert launchers["codex"].headless is None  # Codex: sin segundo plano
     spec = ACTIONS[action]
     command = agent_launch.headless_command(claude, "ORDEN", action)
 

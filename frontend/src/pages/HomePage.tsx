@@ -85,7 +85,7 @@ function Today() {
       {agent.length > 0 && (
         <p className="mt-4 text-base text-muted-foreground">{t('today.forAgent', { list: formatList(agent) })}</p>
       )}
-      {/* Abren tu agente en una terminal con la orden escrita (ADR-024): lo que haga lo ves y lo apruebas tú. */}
+      {/* Abren tu agente en una terminal con la orden escrita: lo que haga lo ves y lo apruebas tú. */}
       <div className="mt-6 flex flex-wrap items-start gap-2">
         <Button asChild variant="outline" className="active:translate-y-px">
           <Link to="/nueva">

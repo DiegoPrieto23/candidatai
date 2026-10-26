@@ -1,7 +1,7 @@
-"""Diagnóstico de los modelos locales (fase 24.6, ADR-037): si Ollama responde en este equipo, qué
+"""Diagnóstico de los modelos locales (fase 24.6): si Ollama responde en este equipo, qué
 modelos tiene y con qué contexto los serviría.
 
-La app no hace inferencia (regla dura 1, ADR-001): de Ollama solo se leen **metadatos**, con
+La app no hace inferencia (regla dura 1): de Ollama solo se leen **metadatos**, con
 `GET /api/version`, `GET /api/tags` y `POST /api/show`. Cualquier otra ruta (`/api/generate`,
 `/api/chat`, `/v1/*`…) se rechaza antes de salir (`ALLOWED`, también en un `event_hook` del
 cliente), y un test lo comprueba. Solo se consulta una dirección de este equipo (`CAI_OLLAMA_URL`).
@@ -93,7 +93,7 @@ def _check_request(request: httpx.Request) -> None:
     if (request.method, request.url.path) not in ALLOWED:
         raise LocalModelError(
             f"Ruta de Ollama no permitida: {request.method} {request.url.path}. La app solo lee "
-            "metadatos (ADR-001)."
+            "metadatos."
         )
     if request.url.host not in LOOPBACK:
         raise LocalModelError("Ollama solo se consulta en este equipo.")

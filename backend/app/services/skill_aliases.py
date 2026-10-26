@@ -7,7 +7,7 @@ al fichero y se sustituye de una vez, para no dejarlo a medias. Cambiar los alia
 caché de alias depende de la fecha del fichero: el worker ve el cambio sin reiniciarse).
 
 Nunca se propone un alias solo: lo decide el usuario en la UI (fuera de alcance, fase 14). Ver
-`docs/POLICIES.md` §2 y ADR-026.
+`docs/POLICIES.md` §2.
 """
 
 import io

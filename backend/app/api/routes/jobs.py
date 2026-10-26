@@ -91,7 +91,7 @@ def get_job_match(session: SessionDep, job_id: int) -> matching.MatchView:
     dependencies=[Depends(require_ui_read)],
 )
 def get_job_salary_gap(session: SessionDep, job_id: int) -> matching.SalaryGapView:
-    """Cuánto queda el sueldo publicado por debajo de tu mínimo. Solo la UI (ADR-046)."""
+    """Cuánto queda el sueldo publicado por debajo de tu mínimo. Solo la UI."""
     return matching.salary_gap(session, job_id)
 
 

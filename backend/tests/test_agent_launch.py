@@ -1,4 +1,4 @@
-"""Botones «en tu agente» (ADR-024): órdenes cerradas, comando desde el manifiesto, y la API solo
+"""Botones «en tu agente»: órdenes cerradas, comando desde el manifiesto, y la API solo
 desde la UI. Ningún test abre una terminal de verdad: `_open_terminal` se sustituye."""
 
 from collections.abc import Iterator

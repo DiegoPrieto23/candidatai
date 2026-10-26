@@ -1,4 +1,4 @@
-"""Elegir agente y modelo (fase 24.4, ADR-037): precedencia, comprobaciones por capacidad y por
+"""Elegir agente y modelo (fase 24.4): precedencia, comprobaciones por capacidad y por
 nivel, el modelo en el comando de cada agente, `CAI_CLIENT_NAME` y la API de extremo a extremo con
 agentes falsos. Ningún test abre una terminal ni lanza un agente de verdad."""
 

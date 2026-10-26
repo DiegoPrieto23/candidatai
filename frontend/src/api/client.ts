@@ -123,7 +123,7 @@ export const fileUrls = {
     `${API_URL}/templates/${encodeURIComponent(templateId)}/preview-real.png${version ? `?v=${version}` : ''}`,
   /** Un hito como `.ics` para importarlo en el calendario. */
   milestoneIcs: (milestoneId: number) => `${API_URL}/milestones/${milestoneId}/ics`,
-  /** La guía de preparación de una entrevista en PDF (ADR-044). */
+  /** La guía de preparación de una entrevista en PDF. */
   interviewGuide: (milestoneId: number) => `${API_URL}/milestones/${milestoneId}/guide.pdf`,
   /** Feed con todos los hitos futuros (para suscribirse) y su versión para descargar. */
   calendarFeed: `${API_URL}/calendar.ics`,

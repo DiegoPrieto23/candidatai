@@ -510,6 +510,5 @@ cd ..
 uv run scripts/sync_agents.py                   # regenerates agent configuration from .agents/
 ```
 
-Project rules, architecture and the phase-based workflow: [`AGENTS.md`](../AGENTS.md),
-[`ARCHITECTURE.md`](ARCHITECTURE.md) and [`DESARROLLO_POR_FASES.md`](../dev/DESARROLLO_POR_FASES.md)
-(Spanish). Contributing: [`CONTRIBUTING.md`](../CONTRIBUTING.md).
+Project rules and architecture: [`AGENTS.md`](../AGENTS.md) and
+[`ARCHITECTURE.md`](ARCHITECTURE.md) (Spanish). Contributing: [`CONTRIBUTING.md`](../CONTRIBUTING.md).

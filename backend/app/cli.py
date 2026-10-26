@@ -1834,7 +1834,7 @@ def sources_disable(source_id: int = SOURCE_ID_ARG, as_json: bool = JSON_OPTION)
     _set_active(source_id, False, as_json)
 
 
-# --- Búsqueda pública de LinkedIn (fase 22, ADR-033) -----------------------------------------
+# --- Búsqueda pública de LinkedIn (fase 22) -----------------------------------------
 
 linkedin_public_app = typer.Typer(
     help="Búsqueda pública de LinkedIn sin sesión. Se activa solo en la UI (Plataformas).",

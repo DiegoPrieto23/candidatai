@@ -1,4 +1,4 @@
-# CandidatAI con Docker (fase 26.3, ADR-042). Opcional: lo recomendado es instalarla en nativo.
+# CandidatAI con Docker (fase 26.3). Opcional: lo recomendado es instalarla en nativo.
 #
 #   docker compose up -d --build                      # arranca la app en http://127.0.0.1:8000
 #   docker compose exec candidatai cai demo seed      # (opcional) una búsqueda ficticia, que se

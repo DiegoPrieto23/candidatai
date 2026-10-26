@@ -143,9 +143,36 @@ Desde una copia del repositorio, `docker compose up -d --build`. Tu agente se qu
 contenedor, con algunos límites: ver [Con Docker](docs/GUIA.md#con-docker-opcional).
 
 Los instaladores descargan la [última release](https://github.com/DiegoPrieto23/candidatai/releases/latest),
-**comprueban su suma SHA-256** y dejan un acceso directo **«CandidatAI»** que abre la app en tu
-navegador. Para actualizar, vuelve a ejecutarlos: tus datos no se tocan. Para ver antes qué harían,
-añade `-WhatIf` a la segunda línea de Windows o usa `| bash -s -- --dry-run`.
+**comprueban su suma SHA-256** y crean el acceso directo de la sección siguiente. Para actualizar,
+vuelve a ejecutarlos: tus datos no se tocan. Para ver antes qué harían, añade `-WhatIf` a la segunda
+línea de Windows o usa `| bash -s -- --dry-run`.
+
+## Cómo iniciarla
+
+Los instaladores crean un acceso directo **«CandidatAI»**, como el de cualquier otra app:
+
+| Sistema | Dónde está |
+|---|---|
+| Windows | En el escritorio y en el menú Inicio |
+| macOS | En la carpeta Aplicaciones de tu usuario (`~/Applications`); también la encuentras con Spotlight |
+| Linux | En el menú de aplicaciones de tu escritorio |
+
+Al abrirlo, una ventana de terminal arranca la app y enseguida se abre tu navegador en
+`http://127.0.0.1:8000`, que es tu propio equipo. Deja esa ventana abierta mientras la uses: al
+cerrarla, la app se para.
+
+**Desde la terminal** es lo mismo: `uv run cai start` en la carpeta `backend` de la app.
+
+```bash
+cd $env:LOCALAPPDATA\CandidatAI\app\backend               # Windows (PowerShell)
+cd ~/"Library/Application Support/CandidatAI/app/backend"   # macOS
+cd ~/.local/share/candidatai/app/backend                    # Linux
+uv run cai start
+```
+
+`uv run cai --help` lista el resto de comandos: `cai doctor` comprueba que no falta nada y
+`cai status` resume tu búsqueda. Con **Docker**, la app arranca con el contenedor
+(`docker compose up -d`) y la abres en esa misma dirección.
 
 Después, prueba la demo (`cai demo seed`), crea tu perfil a partir de tu CV y conecta tu agente:
 **[Empieza aquí](docs/EMPEZAR.md)** paso a paso, o la **[guía de uso](docs/GUIA.md)** completa. Para

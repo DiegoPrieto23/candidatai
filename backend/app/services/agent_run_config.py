@@ -1,4 +1,4 @@
-"""Configuración propia de cada ejecución en segundo plano (fase 24.5, ADR-032): el techo de
+"""Configuración propia de cada ejecución en segundo plano (fase 24.5): el techo de
 herramientas de los agentes que lo ponen por configuración (`ceiling: config` en
 `launch.headless`), no por argumentos como Claude Code.
 

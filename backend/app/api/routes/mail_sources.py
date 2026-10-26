@@ -1,4 +1,4 @@
-"""Buzones de las alertas (fase 27.4, ADR-045). Solo la UI: la contraseña entra por aquí y no
+"""Buzones de las alertas (fase 27.4). Solo la UI: la contraseña entra por aquí y no
 vuelve nunca. El agente solo los ve (`list_mail_sources`)."""
 
 from fastapi import APIRouter, Depends, status

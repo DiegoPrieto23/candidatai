@@ -35,7 +35,7 @@ from app.services.process import local_zone
 from app.services.untrusted import RiskFlag, find_injection_phrases
 
 MAX_SECTION = 3000
-# Sin LinkedIn (regla dura 6, ADR-016): el dosier sale solo de la web pública.
+# Sin LinkedIn (regla dura 6): el dosier sale solo de la web pública.
 BLOCKED_HOSTS = ("linkedin.com", "lnkd.in")
 _CITATION = re.compile(r"\[(\d{1,2})\]")
 SECTIONS: tuple[tuple[str, str], ...] = (

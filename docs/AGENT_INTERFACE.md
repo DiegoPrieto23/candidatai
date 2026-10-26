@@ -3,13 +3,13 @@
 La app expone la misma interfaz de dos formas equivalentes, para que funcione con cualquier agente:
 
 - **Servidor MCP `candidatai`** (local, stdio, SDK oficial de Python `mcp`, con su `Server` de bajo
-  nivel: ADR-013). Es la vía preferida: la mayoría de agentes lo soportan y la configuración se genera desde
+  nivel). Es la vía preferida: la mayoría de agentes lo soportan y la configuración se genera desde
   `.agents/manifest.yaml`. Cada agente pone su propio prefijo a los nombres (en Claude Code,
   `mcp__candidatai__get_status`); los skills usan el nombre corto.
 - **CLI `cai` con `--json`** para agentes sin MCP o para depurar. Se ejecuta desde la raíz con
   `uv run --directory backend cai …`. Misma entrada, misma salida y mismos errores que la MCP
   (un test de paridad lo garantiza).
-- **Con Docker** (fase 26.3, ADR-042), el agente sigue fuera del contenedor: el servidor MCP es
+- **Con Docker** (fase 26.3), el agente sigue fuera del contenedor: el servidor MCP es
   `docker exec -i candidatai cai-mcp` y la CLI, `docker exec -i candidatai cai … --json`. Mismas
   herramientas y mismas salidas.
 
@@ -35,7 +35,7 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
   envía y, con `example`, un ejemplo mínimo válido (`demo/schemas/`, con los ids del perfil demo).
   Sin nombre, o con `list`, el catálogo. Un test comprueba que toda herramienta con `--file` JSON
   tiene esquema y que cada ejemplo valida. `get_schema` no está en el techo de ninguna acción en segundo
-  plano (ADR-032), a propósito: con MCP el esquema ya llega con la herramienta. Sin `--json`, la
+  plano, a propósito: con MCP el esquema ya llega con la herramienta. Sin `--json`, la
   CLI enseña también `esperado:` y `pista:` de cada error.
 - Las salidas son JSON compacto, idéntico por los dos canales (por MCP, además, en
   `structuredContent`). Nada de volcar tablas enteras: siempre `limit`.
@@ -63,7 +63,7 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | | `… [--source S] [--platform P] [--external-id X]` | 09b | Además `source_id?` (una plataforma `agent_browse` con la navegación activada; si no, `not_allowed`), `platform?` y `external_id?` (por defecto, de la URL con `platforms.detect`). Con `source_id`, una oferta de LinkedIn (por URL o `platform`) solo entra por la plataforma LinkedIn | igual | igual (`found` con `source_id`) |
 | `list_jobs` | `cai jobs list [--stage S] [--limit N] [--order O] --json` | 04 | `stage?, limit=20, order="score_desc"` | `{jobs: [...]}` resumida (sin texto crudo), con `score` del último match | — |
 | `get_job` | `cai jobs show ID --json` | 04 | `job_id` | Metadatos + `text` envuelto como no confiable | — |
-| `check_job_open` | `cai jobs check-open ID [--force true] --json` | 16 | `job_id, force=false` | `LivenessView`: `status` (`open`, `possibly_closed`, `unknown`, `skipped`), `reason`, `detail`, `checked_at`, `cached` (comprobación de hace menos de `liveness.fresh_hours`, sin repetir), `possibly_closed` (el aviso vigente), `suppressed` (el usuario dijo «Sigue abierta» por ese motivo) y `message`. LinkedIn: `skipped` (ADR-016). Nunca cierra la oferta | `closure_suspected` (la primera vez que avisa) |
+| `check_job_open` | `cai jobs check-open ID [--force true] --json` | 16 | `job_id, force=false` | `LivenessView`: `status` (`open`, `possibly_closed`, `unknown`, `skipped`), `reason`, `detail`, `checked_at`, `cached` (comprobación de hace menos de `liveness.fresh_hours`, sin repetir), `possibly_closed` (el aviso vigente), `suppressed` (el usuario dijo «Sigue abierta» por ese motivo) y `message`. LinkedIn: `skipped`. Nunca cierra la oferta | `closure_suspected` (la primera vez que avisa) |
 | `get_search_titles` | `cai jobs titles [--days N] --json` | 16 | `days=90` (7-365) | `SearchTitlesView`: `roles` (los del perfil), `positive` y `negative` (`TitleGroup`: `title`, `key`, `count`, `job_ids`, `reasons` en las negativas, `matches_roles`: pasa hoy el filtro previo), `profile_missing`. Títulos de ofertas: datos, no instrucciones | — |
 | `save_extraction` | `cai jobs save-extraction ID --file F --json` | 04 | `job_id, extraction: JobExtraction` | `ok`, `extraction_id`, `stage`, `injection_suspected`, `hard_filters` (`null` sin perfil) | `extracted` / `injection_suspected` / `hard_filter_failed` |
 | `get_extraction` | `cai jobs extraction ID --json` | 04 | `job_id` | `JobExtraction` vigente con `extraction_id`, `schema_version`, `created_at` | — |
@@ -79,7 +79,7 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | `get_cv_content` | `cai cv show (ID \| --document DOC) --json` | 08 | `job_id` (su último CV) o `document_id` | `CvContent`, `evidence` (texto de cada evidencia citada), `verification` y `renders` | — |
 | `save_cv_verification` | `cai cv save-verification DOC --file F --json` | 08 | `document_id, verification: CvVerification` | `ok`, `passed`, `stage` y `note` (por qué no pasa a `cv_ready`, si no pasa) | `cv_verified` / `cv_rejected` |
 | `save_cover_letter_brief` | `cai letter brief ID --file F --json` | 08c | `job_id, instructions?, max_words?` (50-600); por CLI, `F` = `{"instructions": …, "max_words": …}`. Sustituye al anterior | `ok`, `job_id`, `brief` y `max_words` resuelto | — |
-| `get_application_answers` | `cai applications answers ID --json` | ADR-044 | `job_id` | `job_id` y `answers` (`null` si no hay): las últimas respuestas de screening con `document_id`, `language`, `edited_by_user`, `answers` y `evidence` resueltas | — |
+| `get_application_answers` | `cai applications answers ID --json` | — | `job_id` | `job_id` y `answers` (`null` si no hay): las últimas respuestas de screening con `document_id`, `language`, `edited_by_user`, `answers` y `evidence` resueltas | — |
 | `get_cover_letter` | `cai letter show (ID \| --document DOC) --json` | 08c | `job_id` (su última carta) o `document_id` | `job_id`, `stage`, `brief` (de la oferta), `preferences` (`preferences.cover_letter`), `max_words` resuelto y `letter` (`null` si no hay): `content` (`CoverLetterContent`), `evidence` resueltas, `word_count`, `instructions_used`, `verification`, `edited_by_user` y `renders` | — |
 | `save_cover_letter` | `cai letter save ID --file F --json` | 08c | `job_id, content: CoverLetterContent, render_options?: CoverLetterRenderOptions`; por CLI, `F` = `{"content": …, "render_options": …}` | `document_id`, `word_count` + primer render (`LetterRenderResult`) | `cover_letter_generated` |
 | `render_cover_letter` | `cai letter render DOC [--file F] --json` | 08c | `document_id, options?: CoverLetterRenderOptions` | `LetterRenderResult`: como `RenderResult` sin cobertura de keywords, con `options` de la carta (`base_template_id`, `cv_render_id`, `letter_fallback`…) | — |
@@ -96,8 +96,8 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | `save_message_draft` | `cai drafts save ID --file F --json` | 15 (18) | `job_id`, `draft`: `{kind: followup \| thank_you \| linkedin \| email, subject?, body, milestone_id?, recipient_role?, contact_id?, network_contact_id?, attachments?}` | `draft_id`, `kind`, `milestone_id`, `replaced`, `message` | — (no envía nada) |
 | `get_interviews` | `cai interviews list ID --json` | 17 | `job_id` | `job_id`, `job_title`, `company`, `stage`, `offer_received`, `today` (Europe/Madrid), `contacts` (nombre y cargo) e `interviews`: hitos de tipo entrevista, por fecha, con `prep_plan`, `debrief_notes`, `next_steps` y `debriefed_at` | — |
 | `save_interview_plan` | `cai interviews plan HITO --file F --json` | 17 | `milestone_id`, `plan`: `{dossier?, blocks: [{date, minutes (15-120), topic, detail?}]}`; por CLI, `F` = el plan | `milestone_id`, `job_id`, `blocks`, `replaced`, `message`. Entrevista programada y por empezar, proceso abierto y bloques de hoy al día de la entrevista (si no, `not_allowed`) | — |
-| `get_interview_guide` | `cai interviews show-guide HITO --json` | ADR-044 | `milestone_id` | `milestone_id`, `job_id`, `info` (`file`, `language`, `title`, `saved_at`, `agent_name`) y `guide` (el contenido; `null` si no hay) | — |
-| `save_interview_guide` | `cai interviews guide HITO --file F --json` | ADR-044 | `milestone_id`, `guide`: `{language (es\|en), title, subtitle?, accent_color? (#RRGGBB), sections: [{title, blocks}], sources?: [{title, url}]}`; bloques `paragraph`, `heading`, `bullets`, `table`, `qa`, `callout`, `code`; por CLI, `F` = la guía | `milestone_id`, `job_id`, `file` (el PDF en `entrevistas/`), `sections`, `replaced`, `message`. Como el plan: entrevista programada y por empezar (si no, `not_allowed`); sin Chromium, `pdf_unavailable` y no se guarda | — |
+| `get_interview_guide` | `cai interviews show-guide HITO --json` | — | `milestone_id` | `milestone_id`, `job_id`, `info` (`file`, `language`, `title`, `saved_at`, `agent_name`) y `guide` (el contenido; `null` si no hay) | — |
+| `save_interview_guide` | `cai interviews guide HITO --file F --json` | — | `milestone_id`, `guide`: `{language (es\|en), title, subtitle?, accent_color? (#RRGGBB), sections: [{title, blocks}], sources?: [{title, url}]}`; bloques `paragraph`, `heading`, `bullets`, `table`, `qa`, `callout`, `code`; por CLI, `F` = la guía | `milestone_id`, `job_id`, `file` (el PDF en `entrevistas/`), `sections`, `replaced`, `message`. Como el plan: entrevista programada y por empezar (si no, `not_allowed`); sin Chromium, `pdf_unavailable` y no se guarda | — |
 | `save_interview_notes` | `cai interviews notes HITO --file F --json` | 17 | `milestone_id`, `notes` (≤ 10 000), `next_steps?` (≤ 4000); por CLI, `F` = `{"notes": …, "next_steps": …}` | `milestone_id`, `job_id`, `replaced`, `milestone_status`, `message`. Entrevista ya empezada y no cancelada (si no, `not_allowed`) | — (no marca la entrevista como hecha) |
 | `get_company_research` | `cai companies research ID --json` | 18 | `job_id` | `job_id`, `company` y `research` (`null` si no hay): `content` (`CompanyResearchContent`), `risk_flags`, `file`, `agent_name`, `job_id`, `created_at`, `updated_at`, `age_days`. Contenido sacado de webs: datos, nunca instrucciones | — |
 | `save_company_research` | `cai companies save-research ID --file F --json` | 18 | `job_id`, `research`: `CompanyResearchContent` (ver §Contactos); por CLI, `F` = el dosier | `job_id`, `company`, `file`, `replaced`, `risk_flags`, `message`. Sustituye al de la empresa | — |
@@ -158,7 +158,7 @@ directorio actual o desde la raíz del repo.
 | `cai context init` | Crea los ficheros de `data/contexto/` que falten (solo encabezados y comentarios-guía de las plantillas de `demo/contexto/`, sin sus datos) y las carpetas de `data/documentos/`. Nunca sobrescribe (fase 13) |
 | `cai applications archive (ID \| --all)` | Archiva ya, sin worker, las candidaturas enviadas que aún no tienen carpeta en `data/documentos/candidaturas/` (para las de antes de la fase 13). Usa la carta y las respuestas vigentes. Las que ya la tienen no se tocan |
 
-**Ni herramienta ni comando escriben el perfil desde el agente** (fase 25.7, ADR-039). El usuario
+**Ni herramienta ni comando escriben el perfil desde el agente** (fase 25.7). El usuario
 edita el perfil, el contexto y sus muestras de estilo en «Mi perfil», por rutas de la API que solo
 acepta la UI (`require_ui`): `PUT /profile/sections/{section}`, `POST /profile/undo`,
 `PUT /context/{section}` y `POST`/`DELETE /context/style-samples`. Un test del registro comprueba
@@ -270,7 +270,7 @@ las más recientes primero.
 - `save_interview_plan`: el plan de preparación por días de `prepare-interview`, en
   `milestones.prep_plan`. `dossier` es solo el nombre del fichero en `data/entrevistas/` (sin
   carpetas). Sustituye al anterior.
-- `save_interview_guide` (ADR-044): la guía de preparación de `prepare-interview` en contenido
+- `save_interview_guide`: la guía de preparación de `prepare-interview` en contenido
   estructurado (secciones de bloques tipados, sin HTML). La app la maqueta con el color de la
   marca, la imprime a PDF en `entrevistas/` de la carpeta de datos y la apunta en
   `milestones.prep_guide`; la ficha la enlaza (`GET /milestones/{id}/guide.pdf`). Sustituye a la
@@ -280,8 +280,8 @@ las más recientes primero.
   Sustituye al anterior.
 - Ninguna registra eventos ni cambia el estado del hito: marcar la entrevista como hecha
   (`interview_done`) lo hace el usuario en la ficha. Tampoco tocan el perfil: una historia STAR
-  nueva entra solo con `update-profile` y la confirmación del usuario (ADR-029).
-- Botones de la ficha (ADR-024): «Preparar» y «Simulacro» en una entrevista programada por
+  nueva entra solo con `update-profile` y la confirmación del usuario.
+- Botones de la ficha: «Preparar» y «Simulacro» en una entrevista programada por
   empezar, «Repasar» en una que ya ha empezado y «Dudas antes de aceptar» con un `offer_received`.
   `POST /agent/launch` acepta `milestone_id` (entero) para las tres primeras.
 
@@ -476,7 +476,7 @@ nuevo se nota al momento). La API sirve lo mismo en `GET /skills/gaps?days=`.
   nombre de más de 80 caracteres no se cuenta.
 - Sin perfil importado: `not_found`. Solo lectura: no registra eventos.
 - Marcar y añadir alias es solo de la UI (`POST /skills/marks`, `POST /skills/aliases`): el
-  agente no decide qué skills tiene el usuario ni qué nombres son lo mismo (ADR-026).
+  agente no decide qué skills tiene el usuario ni qué nombres son lo mismo.
 
 ### Respuestas de las empresas (fase 15)
 
@@ -542,8 +542,8 @@ Hola: …
 
 ### Segundo plano y cola de encargos (fase 19)
 
-Los botones de la UI (ADR-024) tienen un desplegable con **«En segundo plano»** y **«Dejar para mi
-próxima sesión»** (ADR-032). Ninguno de los dos tiene herramienta para lanzarlo: un agente no se
+Los botones de la UI tienen un desplegable con **«En segundo plano»** y **«Dejar para mi
+próxima sesión»**. Ninguno de los dos tiene herramienta para lanzarlo: un agente no se
 lanza a sí mismo.
 
 - **En segundo plano** (`POST /agent/runs`, solo la UI): `process-jobs`, `assess-fit` y
@@ -567,7 +567,7 @@ lanza a sí mismo.
 
 ### Agentes (fase 24.1, solo CLI y API)
 
-Sin herramienta MCP, a propósito: son para la persona y la UI, no para el agente (ADR-037).
+Sin herramienta MCP, a propósito: son para la persona y la UI, no para el agente.
 
 | Comando | Qué hace |
 |---|---|
@@ -600,12 +600,12 @@ antes; `POST /agent/tiers/undo` las devuelve.
 
 | Comando | Qué hace |
 |---|---|
-| `cai worker [--once] [--interval S] [--json]` | Ejecuta la cola de tareas (`score_job`, `rescore_all`, `run_source`, `poll_email`, `expire_summaries`, `check_open`…) y, en primer plano, la ingesta diaria de las fuentes a la hora de `connectors.daily_at` (al arrancar, también las que no corrieron desde la última hora programada), la caducidad diaria de los resúmenes y la lectura de alertas cada `email_alerts.poll_minutes` (si hay IMAP o correos en `data/inbox/`). Desde la fase 19, en un hilo aparte, las ejecuciones en segundo plano de `agent_runs`: de una en una o, desde la 25.4, hasta `background_runs.max_parallel` a la vez (ADR-038). Log legible en consola y en `data/logs/worker.log`. `--once` vacía la cola (también las de `agent_runs`, en `agent_runs` del JSON) y termina (código 1 si alguna falla) |
+| `cai worker [--once] [--interval S] [--json]` | Ejecuta la cola de tareas (`score_job`, `rescore_all`, `run_source`, `poll_email`, `expire_summaries`, `check_open`…) y, en primer plano, la ingesta diaria de las fuentes a la hora de `connectors.daily_at` (al arrancar, también las que no corrieron desde la última hora programada), la caducidad diaria de los resúmenes y la lectura de alertas cada `email_alerts.poll_minutes` (si hay IMAP o correos en `data/inbox/`). Desde la fase 19, en un hilo aparte, las ejecuciones en segundo plano de `agent_runs`: de una en una o, desde la 25.4, hasta `background_runs.max_parallel` a la vez. Log legible en consola y en `data/logs/worker.log`. `--once` vacía la cola (también las de `agent_runs`, en `agent_runs` del JSON) y termina (código 1 si alguna falla) |
 | `GET /agent/costs`, `GET`/`PUT /agent/assess-threshold`, `GET /jobs/{id}/costs` (API de la UI) | Fase 25.4: coste por acción, agente y modelo (7 y 30 días), umbral de «Evaluar encaje» en segundo plano y coste de una oferta. Sin herramienta MCP ni comando: son para la UI, como `POST /agent/runs` |
 | `cai jobs signals --recompute [--json]` | Fase 25.3: recalcula las señales de oferta dudosa de todas las ofertas (tras editar `config/doubtful_patterns.yaml` o `doubtful` de `config/policies.yaml`). Devuelve `jobs`, `with_signals` y `counts` por señal. No cambia el score. Sin herramienta MCP: se calculan solas al extraer |
 | `cai match rescore [--json]` | Recalcula ya los matches desfasados de las ofertas abiertas (tras instalar el extra `matching` o editar `config/policies.yaml`) y cierra las de «Por revisar» que no pasan los filtros. Devuelve `scored` y `closed` |
 | `cai eval matching [--profile RUTA] [--no-seed] [--no-embeddings] [--json]` | Precision, recall y F1 con el umbral actual y por umbral sobre `evals/matching/*.jsonl` (perfil de demo) y `data/evals/*.jsonl` (tu perfil). Guarda el informe en `data/evals/reports/` |
-| `cai demo seed [--dir data-demo] [--force] [--eval-cv] [--json]` | Crea una carpeta de datos ficticia (fase 12.1, ADR-020): perfil demo, 65 ofertas (5 de alertas por correo, en dos buzones), 8 semanas de historial y 2 CVs. Nunca escribe en `data/`. `--eval-cv` añade los 10 casos de `evals/cv/` aprobados y sin CV (en una demo existente, solo los que falten). `--json` devuelve `data_dir`, `jobs`, `events`, `by_stage`, `by_source`, `cvs`, `pdf_engine` y `warnings`. Sin herramienta MCP: no es para el agente |
+| `cai demo seed [--dir data-demo] [--force] [--eval-cv] [--json]` | Crea una carpeta de datos ficticia (fase 12.1): perfil demo, 65 ofertas (5 de alertas por correo, en dos buzones), 8 semanas de historial y 2 CVs. Nunca escribe en `data/`. `--eval-cv` añade los 10 casos de `evals/cv/` aprobados y sin CV (en una demo existente, solo los que falten). `--json` devuelve `data_dir`, `jobs`, `events`, `by_stage`, `by_source`, `cvs`, `pdf_engine` y `warnings`. Sin herramienta MCP: no es para el agente |
 | `cai eval cv [--agent NOMBRE] [--min-coverage 0.8] [--json]` | Comprueba los CVs guardados de los casos de `evals/cv/` (solo en la demo): evidencias, skills, skills básicas, una página, maquetación (fase 25.5: sin avisos de maquetación en el render seleccionado o, si no hay, el último; uno anterior a la 25.5 no los tiene), cobertura, idioma y verificación. Un caso sin CV es «pendiente». Guarda el informe en `evals/reports/` de la carpeta de datos (`evals/README.md`) |
 | `cai eval compat --agent NOMBRE [--model M \| --preset P] [--timeout MIN] [--cases N] [--import] [--approve] [--json]` | Fase 24.6: la matriz de compatibilidad sobre su propia demo (`data-demo-compat-<agente>-<modelo>/`). `--cases N`: solo las N primeras ofertas, con su propia demo (`…-1-oferta`), su resultado y su columna; para comprobar con poco cupo si un agente funciona (pásalo también en `--approve` e `--import`). Lanza el agente en segundo plano para `process-jobs`, `assess-fit` y `generate-cv`, y aprueba las 5 ofertas y marca las skills ausentes solo en esa demo. Mide la extracción (11 campos), las valoraciones, `eval cv`, el tiempo, los turnos y los tokens. Guarda `evals/compat/results/<fecha>-<agente>-<modelo>.json` y regenera `evals/compat/REPORT.md`. Si un paso no tiene segundo plano, imprime los pasos manuales; `--approve` aprueba y `--import` mide lo hecho a mano. Lanza tu agente: sin herramienta MCP |
 
@@ -627,7 +627,7 @@ la página «Fuentes → Plataformas».
 | `cai sources run [ID] [--json]` | Ejecuta ya una fuente (o todas las activas) y guarda lo nuevo en `pending_extraction`. `{runs: [SourceRunResult]}` con `created`, `existing`, `duplicates`, `job_ids` y `errors` |
 | `cai sources enable ID` / `disable ID` | Activa o pausa una fuente en la ingesta diaria |
 | `cai sources discover --file F [--add] [--json]` | Fase 16 (y 25.1): busca el tablero de Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters o Recruitee de cada empresa del fichero (una por línea; `Nombre \| slug` fuerza un slug) por sus APIs públicas. `DiscoverResult`: por empresa, `tried`, `hits` (`kind`, `slug`, `region`, `board_name`, `jobs_count`, `sample_titles`, `confidence`: `confirmed`/`probable`/`doubtful`, `existing_source_id`, `add_command`), `errors` y `added_source_ids`. Con `--add`, da de alta las `confirmed` y `probable` que faltan. Sin herramienta MCP |
-| `cai sources linkedin-public status [--json]` | Fase 22 (ADR-033): estado de la búsqueda pública de LinkedIn sin sesión. `LinkedInPublicView`: `enabled`, `fetch_detail`, búsquedas que lanzará (`searches`) e ignoradas (`ignored`), `blocked_at`, `next_run_at`, `last_run` y `limits` |
+| `cai sources linkedin-public status [--json]` | Fase 22: estado de la búsqueda pública de LinkedIn sin sesión. `LinkedInPublicView`: `enabled`, `fetch_detail`, búsquedas que lanzará (`searches`) e ignoradas (`ignored`), `blocked_at`, `next_run_at`, `last_run` y `limits` |
 | `cai sources linkedin-public run [--json]` | La ejecuta ya si está activada y le toca (una vez al día; días sin ejecutar tras un bloqueo). `LinkedInPublicRunResult` con `skipped`, `blocked`, `requests`, `found`, `after_filters`, `created`, `summaries`, `existing`, `job_ids` y `errors`. Apagada: `not_allowed`. Código 1 si LinkedIn la bloquea |
 
 La búsqueda pública de LinkedIn **no se activa por la interfaz para agentes**: no hay herramienta

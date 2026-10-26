@@ -33,7 +33,7 @@ Las reglas con valores ajustables tienen su parámetro en `config/policies.yaml`
    el tono, la longitud de las frases, cómo abre y cierra y sus palabras, nunca un hecho ni frases
    enteras. Como pueden traer texto de otros (una oferta pegada, una respuesta), pasan por la
    detección de inyección y llegan al agente envueltas como contenido no confiable (§6).
-   El perfil y el contexto también se editan en «Mi perfil» de la UI (ADR-039). Ahí escribe el
+   El perfil y el contexto también se editan en «Mi perfil» de la UI. Ahí escribe el
    usuario, que es quien pulsa «Guardar»; el agente sigue sin herramientas para escribir el
    perfil.
 6. **Entrevistas** (fase 17). Los esquemas de respuesta del dosier y la «versión mejor» del
@@ -71,7 +71,7 @@ Los aplica el código al guardar una extracción. Si alguno falla, la oferta se 
 | Ubicación | No es remota y ninguna ubicación es preferida, ni permitida siendo híbrida (o desconocida con la política anterior), o está descartada. Sin `preferred` ni `allowed`, vale cualquiera no descartada. Se compara por palabras completas, sin tildes |
 | Idiomas | Pide un idioma que no está en `languages` ni en `languages_for_work`, o un nivel MCER superior al del perfil («Nativo» ≥ C2; un nivel que no se entiende no descarta) |
 | Palabras de descarte | El título contiene alguna de `preferences.discard_title_keywords` o de `hard_filters.discard_title_keywords` de `policies.yaml` (se suman; palabra completa, sin tildes) |
-| Sueldo (`salary`) | La oferta publica un sueldo en EUR, por año o por mes (×12), y su máximo (o su mínimo, si solo da uno) queda por debajo de `private.salary_floor_eur`. Sin sueldo, en otra moneda o por horas, pasa. El motivo no lleva cifras: solo la UI ve la diferencia (ADR-046) |
+| Sueldo (`salary`) | La oferta publica un sueldo en EUR, por año o por mes (×12), y su máximo (o su mínimo, si solo da uno) queda por debajo de `private.salary_floor_eur`. Sin sueldo, en otra moneda o por horas, pasa. El motivo no lleva cifras: solo la UI ve la diferencia |
 | Contrato (`contract`) | `contract_type` no está en `preferences.contract_types` (o es `fixed_term` con `exclude_signals: [fixed_term]`, que es lo mismo), o `employment_type` no está en `preferences.employment_types`. Lista vacía = sin filtro; `unknown` y `contract` (no dice la jornada) pasan |
 | Tipo de empresa (`employer_kind`) | El `employer_kind` de la extracción (o `agency` si `is_agency: true`) está en `preferences.excluded_employer_kinds` (`consultancy`, `agency`); `unknown` pasa |
 
@@ -87,7 +87,7 @@ Combinación ponderada (`scoring.weights`) de cuatro componentes entre 0 y 1:
   su nivel en el perfil (`level_weights`: F 1,0 · C+ 0,8 · C 0,5 · B 0,2; `basic_skills` cuenta
   como B). Los nombres se comparan sin tildes ni mayúsculas y con los sinónimos de
   `config/skill_aliases.yaml`.
-- **Similitud semántica**: embeddings locales (ADR-006) entre resumen + titular + logros del perfil
+- **Similitud semántica**: embeddings locales entre resumen + titular + logros del perfil
   y título + responsabilidades + skills + sector de la oferta, reescalada entre
   `similarity_floor` y `similarity_ceiling`.
 - **Preferencias**: media de puesto (parecido con `preferences.roles`, según su orden; todas las
@@ -112,7 +112,7 @@ y para cada una el usuario decide:
   añade como sinónimo en `config/skill_aliases.yaml` (en la entrada de esa skill o en una nueva).
   Cambia el `scoring_key` y el worker recalcula las ofertas abiertas. Se rechaza si el nombre ya
   es sinónimo de otra skill o si el perfil ya lo cubre: eso se cambia a mano en el fichero. Solo
-  lo decide el usuario: ni la app ni el agente proponen o añaden alias por su cuenta (ADR-026).
+  lo decide el usuario: ni la app ni el agente proponen o añaden alias por su cuenta.
 - **«La tengo»**: queda marcada y «Añadir al perfil las que tengo» abre `update-profile`, que
   pregunta nivel y dónde la usó (§1.4). Hasta que esté en el perfil no cuenta.
 - **«No la tengo»**: hueco real. El skill `training-plan` los convierte en un plan con recursos
@@ -126,7 +126,7 @@ Los pesos del score no cambian con esto; solo qué nombres casan.
 - **«¿Sigue abierta?» avisa, no decide.** Ni la app ni el agente cierran o descartan una oferta
   porque parezca cerrada: el usuario la descarta (motivo «Ya no está publicada») o dice «Sigue
   abierta» en la UI. Antes de redactar un CV, `generate-cv` comprueba y, si puede estar cerrada,
-  pregunta. LinkedIn no se comprueba desde la app (§8, ADR-016).
+  pregunta. LinkedIn no se comprueba desde la app (§8).
 - **«Republicada ×N» es una observación**, no un motivo de descarte ni un dato para el score: puede
   ser una vacante difícil de cubrir, un portal que renueva la publicación o una oferta fantasma.
 
@@ -223,10 +223,10 @@ Una oferta puede encajar en el papel y aun así no merecer la pena. El código m
    tú los aplicas a mano. Las mismas reglas de veracidad (§1) y privacidad (§4) que en el CV.
 3. **Captchas o anti-bot**: se para y se te pasa la pestaña. No se esquivan. Te avisa un pop-up
    (y una notificación del sistema, si la activas) y se espera hasta 5 minutos a que lo
-   resuelvas tú; si no, se sigue sin ello (ADR-022).
+   resuelvas tú; si no, se sigue sin ello.
    **Portales de empleo** (InfoJobs, Tecnoempleo, Indeed, Glassdoor, Manfred): la app nunca rellena
    una página del portal. La oferta se abre en tu navegador, con tu sesión; pulsas tú «Solicitar»
-   y, si te lleva al formulario de la empresa, pegas su enlace y la app lo rellena (ADR-021).
+   y, si te lleva al formulario de la empresa, pegas su enlace y la app lo rellena.
 4. **Sin reintentos** automáticos de un envío fallido: se registra y decides tú.
 5. **Mensajes a recruiters**: el agente solo redacta borradores. Los envías tú.
    Seguimientos y agradecimientos (fase 15, skill `draft-follow-up`): la app los guarda
@@ -243,7 +243,7 @@ Una oferta puede encajar en el papel y aun así no merecer la pena. El código m
    el agente propone qué significan y nada cambia de etapa hasta que lo aceptas en la UI.
 6. **Cuentas y credenciales**: las creas e introduces tú. El perfil de navegador persistente
    vive en `data/browser-profile/` y nadie más lo lee. Las contraseñas de los buzones de correo
-   (fase 27.4, ADR-045) viven solo en `.env`: la UI las escribe ahí y no vuelven nunca por la API
+   (fase 27.4) viven solo en `.env`: la UI las escribe ahí y no vuelven nunca por la API
    ni por la interfaz para agentes, que solo ve si están puestas.
 
 ## 6. Contenido no confiable
@@ -265,14 +265,14 @@ Una oferta puede encajar en el papel y aun así no merecer la pena. El código m
   igual de no confiables que el texto de una oferta y pasan por la misma detección.
 - Las ofertas con `risk_flags` o `injection_suspected` se muestran con aviso en la UI; que haya
   texto oculto para IAs también dice algo de cómo filtra esa empresa.
-- **En segundo plano** (fase 19, ADR-032) nadie mira mientras el agente lee ofertas, así que la
+- **En segundo plano** (fase 19) nadie mira mientras el agente lee ofertas, así que la
   ejecución solo puede usar las herramientas MCP de su acción (procesar ofertas: `get_status`,
   `list_jobs`, `get_job`, `save_extraction`) y su skill: todas las demás de la app se le deniegan
   explícitamente, aunque tu configuración del agente las permita. Sin terminal ni web y leyendo
   solo `docs/`. Lo que intente fuera de eso queda en el progreso como «denegada». Solo se lanzan
   así los skills que no preguntan; si uno necesita al usuario, para y deja la pregunta en la UI.
   Tiempo máximo: `background_runs.timeout_minutes` de `config/policies.yaml`.
-- **Varias a la vez y umbral** (fase 25.4, ADR-038): hasta `background_runs.max_parallel`
+- **Varias a la vez y umbral** (fase 25.4): hasta `background_runs.max_parallel`
   ejecuciones a la vez (1 por defecto), nunca dos de la misma oferta ni dos lotes de la misma
   acción, cada una con su techo de herramientas. «Evaluar encaje» en segundo plano solo valora las
   ofertas con score ≥ el umbral de la página «Agente» (por defecto, el umbral de score menos 10).
@@ -308,7 +308,7 @@ Cuando el agente recorre portales con tu navegador (skill `search-jobs`, detalle
   activarlo. La API local no tiene autenticación, así que un agente con terminal podría
   llamarla directamente (riesgo residual, `docs/FUENTES_OFERTAS.md`).
 
-### Búsqueda pública de LinkedIn sin sesión (fase 22, ADR-033)
+### Búsqueda pública de LinkedIn sin sesión (fase 22)
 
 Distinta de la búsqueda con navegador: la hace el código, no el agente, y no usa tu navegador.
 

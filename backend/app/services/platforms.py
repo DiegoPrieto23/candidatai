@@ -22,9 +22,9 @@ PLATFORM_LABELS: dict[str, str] = {
 }
 
 # Plataformas cuya página de oferta no se descarga con el alta por URL, las alertas ni «¿sigue
-# abierta?» (ADR-016): sus ofertas entran como resumen y se completan con el botón de captura. La
+# abierta?»: sus ofertas entran como resumen y se completan con el botón de captura. La
 # única excepción es la búsqueda pública de LinkedIn sin sesión, apagada por defecto y con sus
-# propios límites (`ingestion/linkedin_public.py`, ADR-033).
+# propios límites (`ingestion/linkedin_public.py`).
 _NO_FETCH = frozenset({"linkedin"})
 
 _LINKEDIN_VIEW = re.compile(r"/jobs/view/(?:[^/]*?-)?(\d{6,20})(?:/|$)")

@@ -1,4 +1,4 @@
-"""Compatibilidades del nombre anterior (Job Hunter → CandidatAI, fase 23.1, ADR-034): las
+"""Compatibilidades del nombre anterior (Job Hunter → CandidatAI, fase 23.1): las
 variables `JH_*` se siguen leyendo, la BD `jobhunter.db` se sigue usando y `cai doctor` lo avisa."""
 
 from pathlib import Path

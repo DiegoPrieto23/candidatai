@@ -84,7 +84,7 @@ class EmailMessage(Base):
 
 
 class MailSource(Base):
-    """Un buzón del que se leen alertas (fase 27.4, ADR-045). Nunca guarda la contraseña: solo el
+    """Un buzón del que se leen alertas (fase 27.4). Nunca guarda la contraseña: solo el
     nombre de la variable de `.env` que la tiene (`secret_ref`)."""
 
     __tablename__ = "mail_sources"

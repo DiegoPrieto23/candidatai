@@ -54,7 +54,7 @@ Chromium, y Claude Code mata sus tareas cuando falta memoria.
 
 4. **Revisa a ojo** cada imagen (arrastra el `.webp` a una pestaña del navegador para verlo
    animado): nada real, nada cortado, modo oscuro legible y animaciones que se entienden sin
-   sonido. La lista completa está en `dev/pruebas/fase-28.3b-prueba-manual.md`.
+   sonido.
 
 5. Comprueba que los README y las listas enlazan bien y que cada página tiene captura:
 

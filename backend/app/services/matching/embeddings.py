@@ -1,4 +1,4 @@
-"""Similitud semántica entre el perfil y una oferta con embeddings locales (ADR-006).
+"""Similitud semántica entre el perfil y una oferta con embeddings locales.
 
 sentence-transformers es un extra opcional (`uv sync --extra matching`): trae torch. Sin él, o con
 `CAI_EMBEDDINGS=off`, el score se calcula sin este componente y su peso se reparte entre los demás.

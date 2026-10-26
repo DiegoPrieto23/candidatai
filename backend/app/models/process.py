@@ -35,7 +35,7 @@ class Milestone(Base):
     # Entrevistas (fase 17): plan de preparación (`services/interviews.py`) y repaso posterior.
     # `notes` es lo que anota el usuario en el formulario; el repaso va aparte.
     prep_plan: Mapped[dict[str, Any] | None] = mapped_column(JSON)
-    # Guía de preparación en PDF (ADR-044, `services/interview_guide.py`).
+    # Guía de preparación en PDF (`services/interview_guide.py`).
     prep_guide: Mapped[dict[str, Any] | None] = mapped_column(JSON)
     debrief_notes: Mapped[str | None] = mapped_column(Text)
     next_steps: Mapped[str | None] = mapped_column(Text)

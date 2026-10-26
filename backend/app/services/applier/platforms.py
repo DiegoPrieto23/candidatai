@@ -5,7 +5,7 @@ Tecnoempleo, Indeed, Glassdoor, Manfred). Cualquier otra web se mira en la pági
 iframe de un ATS conocido lleva a su URL; un formulario de candidatura (adjunto, o correo y nombre)
 es `generic`; si no, `unknown`.
 
-LinkedIn, los portales y `unknown` solo se abren (ADR-009, ADR-021): en un portal la ficha de la
+LinkedIn, los portales y `unknown` solo se abren: en un portal la ficha de la
 oferta no es el formulario. Desde ahí llegas tú al formulario de la empresa y la app rellena esa
 pestaña («Rellenar esta página»), nunca una página del propio portal.
 """
@@ -96,7 +96,7 @@ def portal_problem(url: str) -> str | None:
     """Si la URL es de LinkedIn o de un portal de empleo, por qué no se rellena; si no, `None`."""
     platform = detect(url)
     if platform == "linkedin":
-        return "Esta pestaña es de LinkedIn: ahí no se rellena nada automáticamente (ADR-009)."
+        return "Esta pestaña es de LinkedIn: ahí no se rellena nada automáticamente."
     if platform == "board":
         label = BOARD_LABELS[job_board(url) or ""]
         return (

@@ -1,4 +1,4 @@
-"""Guía de preparación de una entrevista en PDF (ADR-044).
+"""Guía de preparación de una entrevista en PDF.
 
 El agente la redacta con `prepare-interview` como contenido estructurado
 (`schemas/interview_guide.py`) y la guarda con `save_interview_guide`; aquí se maqueta con un diseño

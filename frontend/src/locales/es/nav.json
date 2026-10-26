@@ -53,6 +53,7 @@
     "followups_one": "{{count}} candidatura lleva {{days}} días o más sin respuesta.",
     "followups_other": "{{count}} candidaturas llevan {{days}} días o más sin respuesta.",
     "followupsLink": "Revisa los seguimientos en Procesos",
+    "dismiss": "Ocultar este aviso hasta cerrar la pestaña",
     "running": "Tu agente trabaja en segundo plano",
     "queued": "En cola en segundo plano",
     "seeProgress": "Ver el progreso"

@@ -51,7 +51,7 @@ Una fila por ejecución de una fuente; la usan los conectores y, desde la 09b, a
 | location_raw | str? | Tal cual |
 | raw_text | text | Texto limpio de la oferta. **No confiable** |
 | risk_flags | JSON | Riesgo de inyección detectado por el código: `hidden_text`, `injection_phrase`… |
-| signals | JSON | Observaciones que no son riesgo (fase 16, ADR-028): `possibly_closed`, `liveness`, `open_confirmed`, `reposted`; y de oferta dudosa (fase 25.3): `salary_range_wide`, `employer_hidden`, `fixed_term`, `stale_repost`, `ai_screening`. Ver §Fase 16 |
+| signals | JSON | Observaciones que no son riesgo (fase 16): `possibly_closed`, `liveness`, `open_confirmed`, `reposted`; y de oferta dudosa (fase 25.3): `salary_range_wide`, `employer_hidden`, `fixed_term`, `stale_repost`, `ai_screening`. Ver §Fase 16 |
 | fingerprint | str UNIQUE | Ver abajo |
 | duplicate_of | FK jobs? | Si se detecta como duplicado difuso |
 | posted_at | datetime? | |
@@ -167,7 +167,7 @@ Cola de trabajo del worker (sin Redis).
 | `browser_open` `{}` | «Abrir navegador» (fase 11) | Abre el navegador persistente (`data/browser-profile/`), con una página de inicio para que inicies sesión en tus portales |
 | `apply_fill` `{attempt_id}` | `prepare` (fase 11) | Rellena el formulario y para antes de enviar (`services/applier/service.run_fill`) |
 | `apply_open` `{attempt_id}` | `prepare` en LinkedIn o en un portal de empleo | Solo abre la URL |
-| `apply_fill_page` `{attempt_id, previous}` | «Rellenar esta página» (ADR-021) | Rellena la pestaña que tienes delante (el formulario de la empresa al que te llevó el portal) y para antes de enviar. Si es una página del portal o de LinkedIn, no toca nada y el intento vuelve a `previous` con el motivo |
+| `apply_fill_page` `{attempt_id, previous}` | «Rellenar esta página» | Rellena la pestaña que tienes delante (el formulario de la empresa al que te llevó el portal) y para antes de enviar. Si es una página del portal o de LinkedIn, no toca nada y el intento vuelve a `previous` con el motivo |
 | `apply_rescan` `{attempt_id}` | «Volver a revisar» | Vuelve a leer los campos y a capturar, sin rellenar nada |
 | `apply_submit` `{attempt_id, token, consents}` | `confirm_submission` (solo la UI) | Consume el token, pulsa el envío, captura la confirmación y registra `applied` |
 | `apply_focus` `{attempt_id}` | «Lo termino yo» | Trae la pestaña al frente y retira el bloqueo del envío |
@@ -249,7 +249,7 @@ Detalle y motivos en `docs/FUENTES_OFERTAS.md` §Modelo de datos.
 
 ## Ampliaciones de la fase 10
 
-Migración `0008`. Detalle del seguimiento en `dev/prompts/10.1-seguimiento.md`.
+Migración `0008`.
 
 ### `milestones`
 Hitos con fecha de un proceso. Las entrevistas y las pruebas registran su evento; el resto no
@@ -269,11 +269,11 @@ cambia la etapa.
 | sequence | int | `SEQUENCE` del iCalendar: sube con cada cambio |
 | created_at / updated_at | datetime | |
 | prep_plan | json? | Fase 17. Plan de preparación de una entrevista (`save_interview_plan`): `dossier?` (nombre del fichero en `data/entrevistas/`), `blocks` (`date`, `minutes`, `topic`, `detail?`), `saved_at`, `agent_name` |
-| prep_guide | json? | ADR-044. Guía de preparación en PDF (`save_interview_guide`): `file` (el PDF en `entrevistas/` de la carpeta de datos), `saved_at`, `agent_name` y `guide` (el contenido estructurado que maqueta la app) |
+| prep_guide | json? | Guía de preparación en PDF (`save_interview_guide`): `file` (el PDF en `entrevistas/` de la carpeta de datos), `saved_at`, `agent_name` y `guide` (el contenido estructurado que maqueta la app) |
 | debrief_notes / next_steps | text? / text? | Fase 17. Repaso de la entrevista (`save_interview_notes`). Aparte de `notes`, que es lo que anota el usuario |
 | debriefed_at | datetime? | Cuándo se guardó el repaso |
 
-Ni el plan ni el repaso registran eventos ni cambian `status` (ADR-029).
+Ni el plan ni el repaso registran eventos ni cambian `status`.
 
 Si el evento no es válido en la etapa (p. ej. una entrevista antes de enviar), no se guarda el hito.
 Editar la fecha de una entrevista o una prueba deja una `note` («reprogramada para el…»).
@@ -336,7 +336,7 @@ conversión nunca pasa del 100 %.
   tiene fecha de corte: cuenta aunque se pusiera después del envío.
 - **Motivos**: ofertas con `discarded` por `payload.reason` (`unspecified` si falta) y con
   `hard_filter_failed` por cada `payload.failures[].filter` (`json_each`).
-- `cai_iso_week` y `json_each` son de SQLite: pasar a Postgres (ADR-002) exigiría reescribir esas dos
+- `cai_iso_week` y `json_each` son de SQLite: pasar a Postgres exigiría reescribir esas dos
   expresiones.
 
 ### Calibración (fase 20)
@@ -439,7 +439,7 @@ Ficheros en `data/` (gitignored), fuera de la BD:
   medias. Si la carpeta ya existe no se toca: rehacer el CV o la carta después no cambia lo archivado.
   `JobView.archive_folder` (ficha de la UI) la da relativa a `data/`.
 
-## Ampliaciones de la fase 27.4 (varios buzones, ADR-045)
+## Ampliaciones de la fase 27.4 (varios buzones)
 
 ### `mail_sources` (migración 0027)
 
@@ -479,7 +479,7 @@ campos, nunca sus valores (la contraseña aparece solo como `password`).
 | fields | JSON | Nombres de los campos cambiados |
 | created_at | datetime | |
 
-## Ampliaciones de la fase 25.7 («Mi perfil» editable, ADR-039)
+## Ampliaciones de la fase 25.7 («Mi perfil» editable)
 
 Ficheros en `data/`:
 
@@ -527,7 +527,7 @@ cubre (migración 0013). No es estado de una oferta: no lleva evento.
 - Los huecos no se guardan: `services/skill_gaps.py` los calcula al pedirlos con las extracciones
   vigentes, el perfil vigente y los alias de ahora (ver `get_skill_gaps` en
   `AGENT_INTERFACE.md`).
-- Ficheros: «Es lo mismo que…» escribe `config/skill_aliases.yaml`, fuera de `data/` (ADR-026).
+- Ficheros: «Es lo mismo que…» escribe `config/skill_aliases.yaml`, fuera de `data/`.
   El skill `training-plan` escribe `data/documentos/training-plan.md` (y guarda la versión
   anterior como `plan-formacion-<AAAA-MM-DD>.md` al sustituirlo).
 
@@ -576,8 +576,7 @@ eventos `followup_sent`.
 ## Ampliaciones de la fase 16
 
 ### `jobs.signals`
-Observaciones del código sobre la oferta que **no** son riesgo de inyección (migración 0015,
-ADR-028). `risk_flags` sigue significando solo eso. Las escribe el código, nunca el agente.
+Observaciones del código sobre la oferta que **no** son riesgo de inyección (migración 0015). `risk_flags` sigue significando solo eso. Las escribe el código, nunca el agente.
 
 | Clave | Contenido | Quién |
 |---|---|---|
@@ -683,8 +682,8 @@ Migración 0019. Ninguna de las dos tablas lleva eventos: no son estado de una o
 el agente sí los registra, por sus herramientas, como siempre).
 
 ### `agent_runs`
-Ejecuciones del agente en segundo plano (ADR-032). Es su propia cola: la llena la UI
-(`POST /agent/runs`) y la vacía el worker en un hilo aparte, de una en una o, desde la fase 25.4, hasta `background_runs.max_parallel` a la vez (ADR-038).
+Ejecuciones del agente en segundo plano. Es su propia cola: la llena la UI
+(`POST /agent/runs`) y la vacía el worker en un hilo aparte, de una en una o, desde la fase 25.4, hasta `background_runs.max_parallel` a la vez.
 
 | Columna | Tipo | Notas |
 |---|---|---|
@@ -733,7 +732,7 @@ Mismo encargo pendiente (acción, oferta e hito) no se duplica. `get_status` cue
 en `agent_requests`.
 
 ### `agent_preferences`
-Qué agente y qué modelo usa cada acción (fase 24.4, ADR-037, migración 0022). Son datos de uso de
+Qué agente y qué modelo usa cada acción (fase 24.4, migración 0022). Son datos de uso de
 la persona: viven en la base de datos de `data/`, nunca en el repositorio ni en la configuración
 generada. Las escribe la página «Agente» (`PUT /agent/preferences`, que las sustituye todas) y las
 lee `services/agent_prefs.py`.

@@ -6,8 +6,8 @@ y en el embudo. Solo lo que dice cada agente (`agent_usage`): nada se estima ni 
 - **Por oferta**: una ejecución con `job_id` (generar el CV) es entera de su oferta. Una de lote
   (procesar ofertas, evaluar encaje) se reparte a partes iguales entre las ofertas en que escribió:
   las llamadas de escritura de su acción en `mcp_calls` entre su inicio y su fin. Si a la vez haces
-  lo mismo en una terminal, o lo hace otro agente, esas ofertas también cuentan (deuda en
-  `dev/ROADMAP.md`): `mcp_calls.client_name` es el nombre que da el cliente MCP, no el agente.
+  lo mismo en una terminal, o lo hace otro agente, esas ofertas también cuentan (deuda
+  conocida): `mcp_calls.client_name` es el nombre que da el cliente MCP, no el agente.
 - Las ejecuciones en terminal no tienen uso: el agente no lo devuelve a la app.
 """
 

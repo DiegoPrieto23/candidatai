@@ -28,3 +28,7 @@ Thumbs.db
 
 # Claude Code: ajustes locales del usuario
 .claude/settings.local.json
+
+# Desarrollo interno: solo en el equipo del mantenedor
+dev/
+CLAUDE.local.md

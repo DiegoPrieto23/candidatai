@@ -1,6 +1,6 @@
 # Plantillas de CV
 
-El CV se genera en dos pasos independientes (ADR-014):
+El CV se genera en dos pasos independientes:
 
 1. **Contenido** (`CvContent`): lo redacta el agente para cada oferta a partir de tu perfil. No
    sabe nada de colores, columnas ni fotos.
@@ -122,7 +122,7 @@ Las fechas llegan ya formateadas en el idioma del CV: `start` = «mar. 2024» / 
 `end` = «actualidad» / «Present» si sigue. El contacto lo pone el código desde el perfil (el
 agente no lo ve). `education[].detail` va vacío de momento: el perfil no tiene ese campo.
 
-**Enlaces (ADR-023):** `contact.linkedin`, `contact.github` y `projects[].url` se pintan como
+**Enlaces:** `contact.linkedin`, `contact.github` y `projects[].url` se pintan como
 texto; al renderizar, el código los convierte en enlaces que se pueden pulsar en el PDF, con el
 formato que les dé la plantilla. La plantilla no pone `href` externos (en html los quita el
 saneado); en html conviene `a { color: inherit; text-decoration: none; }` para que no cambie

@@ -453,7 +453,7 @@ function FormUrl({ state }: { state: AssistedApplication }) {
 }
 
 /**
- * Oferta de un portal de empleo (ADR-021). Los portales bloquean los navegadores automatizados
+ * Oferta de un portal de empleo. Los portales bloquean los navegadores automatizados
  * (Cloudflare…) y eso no se esquiva: la oferta se abre en tu navegador, con tu sesión. Desde ahí
  * pegas el enlace al formulario de la empresa y CandidatAI lo rellena en el suyo.
  */

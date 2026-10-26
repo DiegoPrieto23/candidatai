@@ -1,8 +1,8 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, Outlet, useLocation, useSearchParams } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { BellRingingIcon, CircleNotchIcon, FlaskIcon, PlusIcon, TerminalWindowIcon } from '@phosphor-icons/react'
+import { BellRingingIcon, CircleNotchIcon, FlaskIcon, PlusIcon, TerminalWindowIcon, XIcon } from '@phosphor-icons/react'
 import type { Stage } from '@/api/client'
 import { keys, useAgentRuns, useFollowups, useStatus } from '@/api/queries'
 import { Button } from '@/components/ui/button'
@@ -64,11 +64,53 @@ function StageCounts() {
   )
 }
 
+/**
+ * Un aviso que se cierra con su X y no vuelve hasta que se cierre la pestaña (`sessionStorage`).
+ * Sin almacenamiento (modo privado estricto), se cierra igual, solo hasta recargar.
+ */
+function useDismissed(name: string): [boolean, () => void] {
+  const key = `cai-dismissed-${name}`
+  const [dismissed, setDismissed] = useState(() => {
+    try {
+      return sessionStorage.getItem(key) === '1'
+    } catch {
+      return false
+    }
+  })
+  const dismiss = () => {
+    setDismissed(true)
+    try {
+      sessionStorage.setItem(key, '1')
+    } catch {
+      // sin almacenamiento: solo en esta carga
+    }
+  }
+  return [dismissed, dismiss]
+}
+
+function DismissButton({ onClick }: { onClick: () => void }) {
+  const { t } = useTranslation('nav')
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="icon"
+      onClick={onClick}
+      aria-label={t('reminders.dismiss')}
+      title={t('reminders.dismiss')}
+      className="-my-1 -mr-2 size-7 shrink-0 text-accent-foreground/70 hover:text-accent-foreground"
+    >
+      <XIcon weight="bold" />
+    </Button>
+  )
+}
+
 function ExtractionReminder() {
   const { t } = useTranslation('nav')
   const { data } = useStatus()
+  const [dismissed, dismiss] = useDismissed('extraction')
   const pending = data?.by_stage.pending_extraction ?? 0
-  if (!pending) return null
+  if (!pending || dismissed) return null
   return (
     <div
       role="status"
@@ -83,6 +125,7 @@ function ExtractionReminder() {
         </p>
         <AgentButton action="process-jobs">{t('reminders.processNow')}</AgentButton>
       </div>
+      <DismissButton onClick={dismiss} />
     </div>
   )
 }
@@ -91,15 +134,16 @@ function FollowupReminder() {
   const { t } = useTranslation('nav')
   const { data } = useFollowups()
   const { pathname } = useLocation()
+  const [dismissed, dismiss] = useDismissed('followups')
   const due = data?.followups.length ?? 0
-  if (!due || pathname === '/procesos') return null
+  if (!due || dismissed || pathname === '/procesos') return null
   return (
     <div
       role="status"
       className="flex items-start gap-3 rounded-xl border border-primary/20 bg-accent/60 px-4 py-3 text-sm text-accent-foreground animate-in fade-in slide-in-from-top-1"
     >
       <BellRingingIcon className="mt-0.5 size-[18px] shrink-0" weight="duotone" />
-      <p>
+      <p className="flex-1">
         <span className="font-medium">
           {t('reminders.followups', { count: due, days: data?.days_without_reply })}
         </span>{' '}
@@ -108,6 +152,7 @@ function FollowupReminder() {
         </Link>
         .
       </p>
+      <DismissButton onClick={dismiss} />
     </div>
   )
 }

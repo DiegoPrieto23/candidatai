@@ -18,7 +18,7 @@ Si el agente no puede hacer un paso en segundo plano (no tiene, o el techo no le
 devuelve los pasos manuales; después, `--approve` (aprobar en la demo) y `--import` (medir lo que
 hizo el agente) completan el resultado.
 
-La app no llama a ningún modelo (ADR-001): lanza el agente de la persona, como los botones.
+La app no llama a ningún modelo: lanza el agente de la persona, como los botones.
 """
 
 import json

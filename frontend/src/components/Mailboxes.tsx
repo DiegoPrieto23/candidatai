@@ -1,5 +1,5 @@
 /**
- * Buzones de las alertas (fase 27.4, ADR-045): el panel con el estado de cada uno y el asistente
+ * Buzones de las alertas (fase 27.4): el panel con el estado de cada uno y el asistente
  * para añadirlos, con una pestaña por proveedor. La contraseña solo va hacia el servidor: la API
  * nunca la devuelve, solo si está puesta.
  */

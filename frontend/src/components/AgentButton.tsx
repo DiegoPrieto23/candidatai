@@ -47,7 +47,7 @@ async function copy(text: string): Promise<boolean> {
 }
 
 /**
- * Botón que abre tu agente en una terminal con la orden de un skill ya escrita (ADR-024). Lo que
+ * Botón que abre tu agente en una terminal con la orden de un skill ya escrita. Lo que
  * haga el agente lo ves y lo apruebas tú en esa terminal. Si no se puede abrir (otro sistema,
  * agente no instalado), copia la orden para que la pegues en tu agente.
  *

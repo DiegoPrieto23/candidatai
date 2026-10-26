@@ -143,9 +143,36 @@ From a copy of the repository, `docker compose up -d --build`. Your agent stays 
 container, with some limits: see [With Docker](docs/GUIDE.md#with-docker-optional).
 
 The installers download the [latest release](https://github.com/DiegoPrieto23/candidatai/releases/latest),
-**check its SHA-256 checksum** and leave a **"CandidatAI"** shortcut that opens the app in your
-browser. To update, run them again: your data isn't touched. To see first what they'd do, add
-`-WhatIf` to the second Windows line or use `| bash -s -- --dry-run`.
+**check its SHA-256 checksum** and create the shortcut described in the next section. To update,
+run them again: your data isn't touched. To see first what they'd do, add `-WhatIf` to the second
+Windows line or use `| bash -s -- --dry-run`.
+
+## How to start it
+
+The installers create a **"CandidatAI"** shortcut, like any other app:
+
+| System | Where it is |
+|---|---|
+| Windows | On the desktop and in the Start menu |
+| macOS | In your user's Applications folder (`~/Applications`); Spotlight finds it too |
+| Linux | In your desktop's applications menu |
+
+When you open it, a terminal window starts the app and your browser opens at
+`http://127.0.0.1:8000`, which is your own computer. Keep that window open while you use it:
+closing it stops the app.
+
+**From a terminal** it's the same: `uv run cai start` in the app's `backend` folder.
+
+```bash
+cd $env:LOCALAPPDATA\CandidatAI\app\backend               # Windows (PowerShell)
+cd ~/"Library/Application Support/CandidatAI/app/backend"   # macOS
+cd ~/.local/share/candidatai/app/backend                    # Linux
+uv run cai start
+```
+
+`uv run cai --help` lists the other commands: `cai doctor` checks that nothing is missing and
+`cai status` sums up your search. With **Docker**, the app starts with the container
+(`docker compose up -d`) and you open it at that same address.
 
 Then try the demo (`cai demo seed`), create your profile from your CV and connect your agent:
 **[Start here](docs/START_HERE.md)** step by step, or the full **[user guide](docs/GUIDE.md)**.

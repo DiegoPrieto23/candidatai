@@ -4,7 +4,7 @@ Al registrar `applied` o `applied_manually` se encola `archive_application` con 
 está seleccionado en ese momento (el CV enviado, la carta vigente con su render y las respuestas).
 El worker copia esos ficheros a `data/documentos/candidaturas/<empresa>_<puesto>_<job_id>/` con un
 `README.md`. Es idempotente: si la carpeta ya existe no se toca, aunque el CV o la carta se rehagan
-después. Ver ADR-025.
+después.
 """
 
 import json

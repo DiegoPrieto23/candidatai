@@ -1,4 +1,4 @@
-# Patrones de posible inyección de instrucciones en ofertas (detección al guardar, ADR-012).
+# Patrones de posible inyección de instrucciones en ofertas (detección al guardar).
 # Se comparan sobre texto normalizado: minúsculas, sin acentos y con espacios simples.
 # Es una red de seguridad, no un filtro perfecto: amplíala cuando veas casos nuevos.
 phrases:

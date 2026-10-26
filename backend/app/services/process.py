@@ -134,7 +134,7 @@ class MilestoneOut(BaseModel):
     updated_at: datetime
     # Entrevistas (fase 17, `services/interviews.py`): plan de preparación y repaso posterior.
     prep_plan: InterviewPlan | None = None
-    guide: GuideInfo | None = None  # guía de preparación en PDF (ADR-044)
+    guide: GuideInfo | None = None  # guía de preparación en PDF
     debrief_notes: str | None = None
     next_steps: str | None = None
     debriefed_at: datetime | None = None

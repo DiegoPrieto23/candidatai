@@ -1,7 +1,7 @@
 """guía de preparación de una entrevista en PDF
 
 `milestones.prep_guide`: la guía que guarda `prepare-interview` con `save_interview_guide` (el
-contenido estructurado, el fichero PDF que maqueta la app y cuándo se guardó). Ver ADR-044.
+contenido estructurado, el fichero PDF que maqueta la app y cuándo se guardó).
 
 Revision ID: 0025
 Revises: 0024

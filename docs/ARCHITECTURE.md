@@ -34,8 +34,8 @@ La app nunca llama a un modelo y no depende de ningún proveedor.
 | `app/services/platforms.py`, `summaries.py` | Identidad de oferta por plataforma (`platform` + `external_id`) y ofertas resumen en `pending_detail`: bandeja «Alertas» y caducidad (09b) | Sin red ni agente |
 | `app/services/process.py`, `tracking.py`, `calendar_ics.py` | Ficha de proceso (hitos con su evento, contactos, notas, documentos usados), seguimientos vencidos, próximos hitos, kanban y calendario iCalendar escrito a mano (fase 10) | Nada cambia de etapa sin evento; el calendario no sale de `127.0.0.1` |
 | `app/services/skill_gaps.py`, `skill_aliases.py` | Huecos de skills agregados de las ofertas, marcas del usuario y alias añadidos desde la UI (fase 14) | Recalcula la cobertura sin escribir; el único que escribe `config/skill_aliases.yaml` (ruamel.yaml, conserva comentarios) |
-| `app/services/liveness.py`, `reposts.py`, `signals.py`, `search_titles.py`, `ingestion/discover.py` | ¿Sigue abierta? (URL o API del ATS), republicadas (`job_sightings`), señales en `jobs.signals`, títulos para `broaden-search` y descubrimiento de tableros de ATS (fase 16) | Nunca cierran una oferta ni añaden fuentes sin el usuario; LinkedIn no se comprueba (ADR-016, ADR-028) |
-| `app/services/agent_launch.py`, `agent_runs.py`, `agent_runner.py`, `agent_requests.py` | Botones «en tu agente» (ADR-024): terminal; en segundo plano desde el worker con solo las herramientas de la acción, de una en una o varias a la vez (25.4, ADR-038), y cola de encargos (fase 19, ADR-032). `agent_costs.py` y `assess_threshold.py`: coste por acción, agente, modelo y oferta, y umbral antes de valorar (25.4) | Lanzan el agente que ya usas, nunca un modelo; las órdenes son una lista cerrada; solo la UI lanza |
+| `app/services/liveness.py`, `reposts.py`, `signals.py`, `search_titles.py`, `ingestion/discover.py` | ¿Sigue abierta? (URL o API del ATS), republicadas (`job_sightings`), señales en `jobs.signals`, títulos para `broaden-search` y descubrimiento de tableros de ATS (fase 16) | Nunca cierran una oferta ni añaden fuentes sin el usuario; LinkedIn no se comprueba |
+| `app/services/agent_launch.py`, `agent_runs.py`, `agent_runner.py`, `agent_requests.py` | Botones «en tu agente»: terminal; en segundo plano desde el worker con solo las herramientas de la acción, de una en una o varias a la vez (25.4), y cola de encargos (fase 19). `agent_costs.py` y `assess_threshold.py`: coste por acción, agente, modelo y oferta, y umbral antes de valorar (25.4) | Lanzan el agente que ya usas, nunca un modelo; las órdenes son una lista cerrada; solo la UI lanza |
 | `frontend/` | UI | Solo habla con la API |
 | `.agents/` | Skills, roles y manifiesto, sin nada específico de un proveedor | Fuente única; lo nativo se genera |
 
@@ -87,7 +87,7 @@ La app nunca llama a un modelo y no depende de ningún proveedor.
 | `POST /agent/runs`, `GET /agent/runs[/{id}]`, `POST /agent/runs/{id}/cancel`, `POST /agent/runs/{id}/open` | En segundo plano (fase 19): encolar (202), seguir, cancelar y «Abrir en terminal» (retoma la sesión). Los POST, solo desde la UI |
 | `GET /agent/agents`, `PUT /agent/preferences` | Agentes, preferencias y agente efectivo por acción; guardar las preferencias (fase 24.4, solo desde la UI) |
 | `GET /agent/requests`, `POST /agent/requests`, `POST /agent/requests/{id}/cancel` | Cola de encargos para tu próxima sesión (fase 19). Los POST, solo desde la UI |
-| `POST /apply/{id}/fill-page` | «Rellenar esta página» (ADR-021): rellena la pestaña que tienes delante, nunca una del portal ni de LinkedIn (202). Nada envía |
+| `POST /apply/{id}/fill-page` | «Rellenar esta página»: rellena la pestaña que tienes delante, nunca una del portal ni de LinkedIn (202). Nada envía |
 | `POST /apply/{id}/submit` | **La única puerta al envío**: `{company_confirmation, reviewed_at}`; comprueba el nombre de la empresa, la versión revisada y que no falta nada, emite la confirmación de un solo uso y encola el envío (202). El token nunca sale por la API |
 | `GET /apply/{id}/screenshot/{review\|confirmation}`, `POST /browser/open` | Capturas del intento (desde `data/applications/`) y «Abrir navegador» |
 
@@ -194,7 +194,7 @@ API confirm_submission ─► token de un solo uso ─► tarea apply_submit ─
   un hilo propio (`applier/browser.py`).
 - Sin reintentos: las tareas del navegador fallan una vez y quedan registradas; si el worker se
   cierra a medias, no se repiten.
-- LinkedIn y webs sin formulario reconocible: solo se abren (ADR-009) y el paquete se copia desde
+- LinkedIn y webs sin formulario reconocible: solo se abren y el paquete se copia desde
   la ficha.
 - No hay herramienta MCP ni comando `--json` para esto, a propósito.
 
@@ -208,7 +208,7 @@ API confirm_submission ─► token de un solo uso ─► tarea apply_submit ─
   visible de las candidaturas (`CAI_BROWSER_CHANNEL=chrome|msedge` usa el navegador instalado).
 - Cada agente arranca el servidor MCP solo, según su configuración generada (`.mcp.json` para
   Claude Code, `.codex/config.toml` para Codex…).
-- **Modo demo (fase 12.1, ADR-020):** `cai demo seed` (`services/demo.py`) crea `data-demo/` con datos
+- **Modo demo (fase 12.1):** `cai demo seed` (`services/demo.py`) crea `data-demo/` con datos
   ficticios usando los mismos servicios (alta, extracción, filtros, score, eventos, hitos, CVs);
   solo reparte después las fechas de lo automático en las 8 semanas anteriores. La carpeta lleva
   la marca `.demo`: `Settings.demo_mode` la detecta, `get_status` devuelve `demo_mode` y la UI

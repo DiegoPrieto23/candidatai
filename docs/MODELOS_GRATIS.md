@@ -1,6 +1,6 @@
 # Modelos gratuitos y locales
 
-CandidatAI no llama a ningún modelo (ADR-001): el razonamiento lo hace tu agente. Esta guía explica
+CandidatAI no llama a ningún modelo: el razonamiento lo hace tu agente. Esta guía explica
 cómo usar la app **sin pagar por tokens**: con un modelo en tu equipo, con un modelo gratuito en la
 nube o con la suscripción que ya tengas. Qué funciona con cada agente y modelo no sale de opiniones:
 sale de la matriz medida con `cai eval compat` (ver «Comprobar que tu modelo da la talla» y

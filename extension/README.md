@@ -74,8 +74,7 @@ intente desde tu navegador. No compartas el token; si se filtra, genera otro.
 
 Las condiciones de LinkedIn prohíben las extensiones que copian su contenido. Esta solo actúa
 cuando la pulsas, oferta a oferta, y equivale a copiar y pegar: no recorre páginas, no busca por
-su cuenta ni envía candidaturas. El riesgo es bajo, pero no es cero. Ver ADR-016 en
-`dev/DECISIONS.md`.
+su cuenta ni envía candidaturas. El riesgo es bajo, pero no es cero.
 
 ## Desarrollo
 

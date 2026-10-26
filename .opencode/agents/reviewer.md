@@ -37,7 +37,7 @@ Comprueba, por orden de gravedad:
    generado (`.claude/skills`, `.claude/agents`, `.codex/`, `.mcp.json`), es un error.
 5. **Calidad**: tests para la lógica nueva, casos de error cubiertos, tipos, nombres claros,
    compatibilidad con Windows (pathlib, sin comandos Unix).
-6. **Coherencia con docs**: si el código se aparta de `docs/`, ¿falta actualizar el doc o un ADR?
+6. **Coherencia con docs**: si el código se aparta de `docs/`, ¿falta actualizar el doc?
 
 Devuelve una lista priorizada (`bloqueante` / `mejora` / `menor`) con fichero, línea y cambio
 concreto propuesto. Si no hay nada bloqueante, dilo claramente.

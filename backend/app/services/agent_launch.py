@@ -1,5 +1,5 @@
-"""Botones «en tu agente» de la UI (ADR-024): abren tu agente en una terminal visible con la orden
-de un skill ya escrita. La app no llama a ningún modelo (ADR-001): lanza el agente que ya usas,
+"""Botones «en tu agente» de la UI: abren tu agente en una terminal visible con la orden
+de un skill ya escrita. La app no llama a ningún modelo: lanza el agente que ya usas,
 con tu suscripción, y tú ves, contestas y apruebas lo que haga.
 
 - Las órdenes son una lista cerrada (`ACTIONS`) que construye la app. Lo único variable son el
@@ -15,7 +15,7 @@ con tu suscripción, y tú ves, contestas y apruebas lo que haga.
 - En Windows, Windows Terminal o, si no está, una ventana de PowerShell. En macOS y Linux (fase
   26.1), la terminal que elige `terminals` (`CAI_TERMINAL` para cambiarla). Sin terminal, o sin
   agente instalado, la UI copia la orden para que la pegues tú.
-- «En segundo plano» (fase 19, ADR-032): las acciones con `background` también se pueden lanzar
+- «En segundo plano» (fase 19): las acciones con `background` también se pueden lanzar
   sin ventana desde el worker (`services/agent_runs.py`), con `launch.headless` del manifiesto y
   solo las herramientas MCP que declara la acción: en la orden (`ceiling: args`) o, desde la fase
   24.5, en una configuración propia de la ejecución (`ceiling: config`, `agent_run_config`).
@@ -156,7 +156,7 @@ PROFILE_ITEM = re.compile(r"^[a-z0-9][a-z0-9_-]*(?:/[a-z0-9][a-z0-9_-]*)?$")
 
 
 def _check_profile_item(session: Session, profile_item: str | None) -> str:
-    """El id de un logro o una historia del perfil vigente (fase 25.7b, matiz a la ADR-024: es
+    """El id de un logro o una historia del perfil vigente (fase 25.7b: es
     texto, pero solo con el formato de un id y solo si existe)."""
     if profile_item is None:
         raise LaunchError("invalid_request", "Esta acción necesita un logro o una historia.")

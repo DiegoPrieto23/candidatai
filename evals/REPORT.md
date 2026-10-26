@@ -72,7 +72,7 @@ cobertura de skills los deja por debajo de 55 o los cortan los filtros.
 
 - Repetir con embeddings (`uv sync --extra matching` en `backend/`) y comparar el informe: el
   30 % del peso semántico debería bajar los falsos positivos de oficio (preventa, docencia) y
-  servir para elegir el modelo (ADR-006).
+  servir para elegir el modelo.
 - Casos reales: los tuyos van en `data/evals/*.jsonl` (no se versionan) y se evalúan contra tu
   perfil.
 

@@ -1,11 +1,11 @@
-"""Plataformas para la búsqueda con el navegador del agente (fase 09b, ADR-016).
+"""Plataformas para la búsqueda con el navegador del agente (fase 09b).
 
 Una plataforma es una fuente `agent_browse`: búsquedas ya filtradas que el agente recorre con el
 navegador del usuario (skill `search-jobs`). La app no navega: guarda la configuración, recibe
 las ofertas por `add_job_from_text` y anota cada recorrido en `source_runs`.
 
 LinkedIn es especial: el agente nunca puede activar su navegación. Solo el usuario, desde la UI y
-confirmando el riesgo para su cuenta. Estas reglas viven aquí y no en el skill (ADR-012).
+confirmando el riesgo para su cuenta. Estas reglas viven aquí y no en el skill.
 
 La prioridad es un puesto único en el orden de recorrido, 1…N sin huecos ni empates (fase 27.3).
 Todo cambio de prioridad pasa por `place`; `models.sources` rechaza un empate que llegue por otro
@@ -222,7 +222,7 @@ def _check_domains(data: AgentBrowseSource) -> None:
 def add_platform(session: Session, data: AgentBrowseSource) -> SaveSourceResult:
     """Alta desde la UI («Añadir plataforma»). A diferencia de `save_source`, no actualiza una
     existente con el mismo nombre. LinkedIn queda siempre desactivada: se activa después en la
-    misma pantalla, aceptando el riesgo para la cuenta (ADR-016)."""
+    misma pantalla, aceptando el riesgo para la cuenta."""
     from app.services.ingestion.service import SourceExistsError
 
     if (existing := _find_by_name(session, data.name)) is not None:

@@ -312,7 +312,7 @@ def _touch(attempt: ApplicationAttempt, status: str | None = None) -> None:
 
 
 def _mode(platform: str | None) -> Literal["fill", "open"]:
-    """En LinkedIn y en los portales de empleo solo se abre la oferta (ADR-009, ADR-021)."""
+    """En LinkedIn y en los portales de empleo solo se abre la oferta."""
     return "open" if platform in ("linkedin", "board") else "fill"
 
 

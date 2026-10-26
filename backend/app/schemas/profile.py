@@ -333,7 +333,7 @@ class Preferences(_Strict):
     exclude_signals: list[Literal["employer_hidden", "fixed_term"]] = Field(
         default_factory=list, exclude_if=lambda value: not value
     )
-    # Fase 27.5 (ADR-046): más filtros duros. Vacíos no se vuelcan, como `exclude_signals`.
+    # Fase 27.5: más filtros duros. Vacíos no se vuelcan, como `exclude_signals`.
     min_years_required: int | None = Field(
         default=None, ge=0, le=40, exclude_if=lambda value: value is None
     )

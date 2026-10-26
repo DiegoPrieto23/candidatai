@@ -29,7 +29,7 @@ uv run cai eval matching --no-seed         # solo tus casos
 ```
 
 Imprime precision, recall y F1 con el umbral actual y la curva por umbral, y guarda el informe en
-`data/evals/reports/` (JSON y Markdown). Para elegir el modelo de embeddings (ADR-006), cambia
+`data/evals/reports/` (JSON y Markdown). Para elegir el modelo de embeddings, cambia
 `scoring.semantic.model` y compara los informes.
 
 ## Calibración con tus candidaturas (fase 20)

@@ -17,7 +17,7 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_EXTENSION_ID = "hnaofhehllbkghfehnehamjbkcmdjmle"
 
 # Prefijo de las variables de entorno. Hasta la fase 23 era `JH_` (Job Hunter): se sigue leyendo
-# como respaldo, para que un `.env` antiguo funcione sin tocarlo (ADR-034).
+# como respaldo, para que un `.env` antiguo funcione sin tocarlo.
 ENV_PREFIX = "CAI_"
 LEGACY_ENV_PREFIX = "JH_"
 DB_FILENAME = "candidatai.db"
@@ -84,10 +84,10 @@ class Settings(BaseSettings):
     soffice_path: Path | None = Field(default=None, validation_alias="SOFFICE_PATH")
     # Qué agente usa la CLI (`claude-code`, `codex`…), para auditar. Por MCP lo dice el cliente.
     client_name: str | None = Field(default=None, validation_alias=_env("CLIENT_NAME"))
-    # Qué agente abren los botones de la UI (ADR-024), por su nombre en `.agents/manifest.yaml`.
+    # Qué agente abren los botones de la UI, por su nombre en `.agents/manifest.yaml`.
     # Sin valor, el primero con `launch` que esté instalado.
     agent: str | None = Field(default=None, validation_alias=_env("AGENT"))
-    # La pone la imagen de Docker (fase 26.3, ADR-042): la app sabe que tu agente está fuera del
+    # La pone la imagen de Docker (fase 26.3): la app sabe que tu agente está fuera del
     # contenedor y no intenta abrir terminales, el segundo plano ni un navegador visible.
     in_docker: bool = Field(default=False, validation_alias=_env("IN_DOCKER"))
     # Qué terminal abren esos botones en macOS y Linux (fase 26.1): `iterm`, `kitty`, una ruta…

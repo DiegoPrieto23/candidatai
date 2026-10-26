@@ -8,7 +8,7 @@
   Cuenta como posible cierre: HTTP 404/410, una redirección que pierde la oferta (vuelve a una
   lista o a la portada), una frase de `liveness.closed_phrases` o un `validThrough` ya pasado.
 - 401/403/429/5xx, fallos de red o una página de login dan `unknown`: no avisan.
-- **LinkedIn nunca** (ADR-016): `skipped`.
+- **LinkedIn nunca**: `skipped`.
 
 El resultado va a `jobs.signals` (`services/signals.py`). Nunca cierra la oferta: la primera vez
 que la detecta registra `closure_suspected` (no cambia la etapa) y la UI propone descartarla. Si el
@@ -348,9 +348,7 @@ def check_target(job: Job, source: Source | None, now: datetime | None = None) -
     url = (job.url or "").strip()
     host = (urlsplit(url).hostname or "") if url else ""
     if job.platform == "linkedin" or platforms.platform_of_host(host) == "linkedin":
-        return LivenessResult(
-            status="skipped", detail="LinkedIn no se comprueba desde la app (ADR-016)"
-        )
+        return LivenessResult(status="skipped", detail="LinkedIn no se comprueba desde la app")
     target = ats_target(
         url, source.kind if source else None, source.config if source else None, job.external_id
     )

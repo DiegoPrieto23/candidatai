@@ -1,4 +1,4 @@
-"""Cola de encargos (fase 19, ADR-032): lo que la UI deja para la próxima sesión interactiva del
+"""Cola de encargos (fase 19): lo que la UI deja para la próxima sesión interactiva del
 agente («Dejar para mi próxima sesión»). Inspirada en `agent-inbox` de career-ops.
 
 - La orden la compone la app con la lista cerrada de `agent_launch.ACTIONS`, como los botones:

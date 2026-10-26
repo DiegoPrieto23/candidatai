@@ -111,7 +111,7 @@ def get_milestone_ics(session: SessionDep, milestone_id: int) -> Response:
     responses={200: {"content": {"application/pdf": {}}}},
 )
 def get_interview_guide_pdf(session: SessionDep, milestone_id: int) -> FileResponse:
-    """La guía de preparación de la entrevista en PDF (ADR-044), para verla o descargarla."""
+    """La guía de preparación de la entrevista en PDF, para verla o descargarla."""
     path = interview_guide.guide_file(session, milestone_id)
     return FileResponse(
         path, media_type="application/pdf", filename=path.name, content_disposition_type="inline"

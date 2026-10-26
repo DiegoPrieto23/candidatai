@@ -420,7 +420,7 @@ class SourceRunBatch(BaseModel):
     runs: list[SourceRunResult]
 
 
-# --- Búsqueda pública de LinkedIn sin sesión (fase 22, ADR-033) --------------------------------
+# --- Búsqueda pública de LinkedIn sin sesión (fase 22) --------------------------------
 
 
 class LinkedInSearch(BaseModel):

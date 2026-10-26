@@ -114,6 +114,19 @@ describe('Cabecera', () => {
     expect(screen.getByRole('button', { name: 'Procesar ahora' })).toBeInTheDocument()
   })
 
+  it('el recordatorio se oculta con su X y no vuelve en la misma sesión', async () => {
+    mockApi({ 'GET /status': status(3, 2), 'GET /jobs': page() })
+    const { unmount } = renderApp('/bandeja')
+    await screen.findByText(/Hay 3 ofertas por extraer\./)
+    await userEvent.click(screen.getByRole('button', { name: 'Ocultar este aviso hasta cerrar la pestaña' }))
+    expect(screen.queryByText(/por extraer\./)).not.toBeInTheDocument()
+
+    unmount()
+    renderApp('/bandeja')
+    await screen.findByRole('link', { name: /Por revisar\s*2/ })
+    expect(screen.queryByText(/por extraer\./)).not.toBeInTheDocument()
+  })
+
   it('no muestra el recordatorio si no hay nada por extraer', async () => {
     mockApi({ 'GET /status': status(0, 2), 'GET /jobs': page() })
     renderApp('/bandeja')

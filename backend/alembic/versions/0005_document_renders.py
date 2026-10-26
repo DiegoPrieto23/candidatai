@@ -1,4 +1,4 @@
-"""document_renders: contenido y presentación separados (ADR-014)
+"""document_renders: contenido y presentación separados
 
 `documents` guarda solo el contenido; cada combinación de plantilla y opciones es un
 `document_render` con sus ficheros, páginas, cobertura y avisos. `applications.document_id` pasa a

@@ -2,7 +2,7 @@
 
 CandidatAI funciona con cualquier agente de IA que pueda **leer y escribir ficheros** y, además,
 **hablar MCP o ejecutar comandos**. La configuración nativa de cada agente se genera desde
-`.agents/` con `uv run scripts/sync_agents.py` (ADR-011).
+`.agents/` con `uv run scripts/sync_agents.py`.
 
 Las rutas y formatos de cada herramienta cambian con frecuencia. Si algo de esta tabla deja de
 funcionar, corrige el bloque del agente en `.agents/manifest.yaml` (o su emisor en el script),
@@ -11,7 +11,7 @@ regenera y actualiza esta página.
 ## Registro de agentes (fase 24.1)
 
 Qué agentes conoce la app, qué sabe hacer cada uno y si los tienes instalados sale de
-`.agents/manifest.yaml`, que el backend lee solo con `app/services/agent_registry.py` (ADR-037):
+`.agents/manifest.yaml`, que el backend lee solo con `app/services/agent_registry.py`:
 
 ```
 uv run --directory backend cai agents list           # todos, con capacidades y detección
@@ -71,7 +71,7 @@ documentación; lo comprobado aquí:
 | Codex, OpenCode, Qwen Code, Antigravity CLI | Lo de la matriz de abajo | Sin probar con la app | Sin probar con la app | Igual que Claude Code: el bloque de cada uno, en «Con Docker» de la guía |
 | Sin MCP (`cai … --json`) | Probado (12.3) | La CI pasa la suite de la CLI en macOS (en `main`, etiquetas y a mano; primera vez el 2026-10-18) | La CI pasa la suite de la CLI en Linux en cada push | `docker exec -i candidatai cai … --json` |
 
-Con Docker no hay terminal que abrir ni segundo plano: tu agente vive fuera del contenedor (ADR-042).
+Con Docker no hay terminal que abrir ni segundo plano: tu agente vive fuera del contenedor.
 
 ## Matriz probada (fases 12.3 y 24.6)
 
@@ -90,7 +90,6 @@ uv run --directory backend cai eval compat --agent codex --preset local      # p
 
 Cada pasada deja un JSON en `evals/compat/results/` y regenera
 [`evals/compat/REPORT.md`](../evals/compat/REPORT.md), que tiene una columna por agente y modelo.
-Cómo pasarla con cada agente: `dev/pruebas/fase-24.6-matriz.md`.
 
 Insignias: 🔓 open-source · 🆓 gratis · 💻 modelo local.
 
@@ -105,8 +104,7 @@ Insignias: 🔓 open-source · 🆓 gratis · 💻 modelo local.
 | Tiempo | ~2 min extraer, ~4,5 min redactar y ~2 min verificar (más lectura); ~3,5 s por comando `cai` | 8,5 min en total (38 s extraer, 1,5 min valorar, ~6,5 min los 5 CVs); 102 turnos | Sin medir (a mano) | | | |
 | Ajustes | Ver abajo | | `CAI_DATA_DIR` y aprobaciones (ver «Codex» abajo) | | | |
 
-Prueba previa (fase 12.2): dos casos con trampa (`cv04`, `cv07`), también 2/2. Informe de esta
-pasada: `dev/pruebas/fase-12.3-matriz-sin-mcp.md`. Sin subagentes, el aislamiento del rol
+Prueba previa (fase 12.2): dos casos con trampa (`cv04`, `cv07`), también 2/2. Sin subagentes, el aislamiento del rol
 `extractor` es el del nivel C (ejecución dedicada), no el del A.
 
 **Lo que hubo que ajustar para trabajar sin MCP** (ya corregido en `.agents/roles/` y los docs):
@@ -150,7 +148,7 @@ dedicada (Ryzen 7 5700U de 15 W):**
   de cada agente que admite modelos locales dicen si Ollama responde en `127.0.0.1:11434`
   (`CAI_OLLAMA_URL`), qué modelos tiene y con qué contexto. Avisa con menos de 32 768 tokens o con
   un modelo de unos 8B o menos elegido para `generate-cv`. Solo usa `/api/version`, `/api/tags` y
-  `/api/show`: la app no hace inferencia (ADR-001).
+  `/api/show`: la app no hace inferencia.
 - **Niveles de gasto:** «Económico», «Equilibrado» y «Máximo», en la página «Agente», con la
   propuesta sacada del manifiesto y de lo instalado. Aplicar cambia las preferencias por acción y
   se puede deshacer.
@@ -158,7 +156,7 @@ dedicada (Ryzen 7 5700U de 15 W):**
 
 ## Garantías de seguridad por nivel
 
-Todas las opciones tienen las defensas del código (ADR-012): detección de texto oculto e
+Todas las opciones tienen las defensas del código: detección de texto oculto e
 inyección al guardar, `risk_flags` visibles, validación estricta y una interfaz que no puede
 enviar nada. Encima, cada agente añade lo que permite:
 
@@ -166,7 +164,7 @@ enviar nada. Encima, cada agente añade lo que permite:
 |---|---|---|
 | **A** | Claude Code | El subagente solo tiene `get_job` y `save_extraction`: sin shell, ficheros ni web |
 | **B** | Codex | El subagente se declara con `sandbox_mode = "read-only"`, pero **hereda la política de la sesión padre** y los cambios en vivo del padre prevalecen. Ejecuta `process-jobs` en una sesión de solo lectura o con aprobación de comandos |
-| **B** | OpenCode, Qwen Code | El subagente se genera con solo `get_job` y `save_extraction` (OpenCode: `"*": "deny"` y esas dos; Qwen: `tools` exclusiva), pero aún **no se ha comprobado con un modelo** que no pueda usar otra. Suben a A cuando lo confirme la prueba manual (`dev/pruebas/fase-24.3-prueba-manual.txt`) |
+| **B** | OpenCode, Qwen Code | El subagente se genera con solo `get_job` y `save_extraction` (OpenCode: `"*": "deny"` y esas dos; Qwen: `tools` exclusiva), pero aún **no se ha comprobado con un modelo** que no pueda usar otra. Suben a Acuando lo confirme una prueba manual |
 | **C** | Sin subagentes con herramientas propias (Antigravity, Cursor…) | Sesión nueva dedicada solo a extraer, con los permisos más restrictivos que ofrezca la herramienta. No mezcles extracción con desarrollo en la misma sesión |
 
 Recomendación para todos: ejecuta `process-jobs` en su propia sesión y revisa en la UI las
@@ -302,7 +300,7 @@ deshabilitado con ese motivo. Con una cuenta gratuita, usa Antigravity CLI.
 ### Extracción automática cada mañana (fase 09)
 
 `cai worker` trae las ofertas nuevas a la hora de `connectors.daily_at` y las deja en
-`pending_extraction`. La extracción necesita al agente (ADR-001), así que la app no la hace sola.
+`pending_extraction`. La extracción necesita al agente, así que la app no la hace sola.
 Opciones, de más a menos cómoda:
 
 | Agente | Cómo | Notas |
@@ -330,11 +328,11 @@ también funciona mejor si el agente puede leer PDFs; si no, basta con pegar el 
 a él (en Claude Code, Claude in Chrome). Estado a la 09b.3: la interfaz (`list_sources`,
 `save_source`, `record_source_run` y `add_job_from_text` con `source_id`) está probada por MCP y
 CLI en los tests. Falta la prueba manual de un recorrido real con Claude Code y Claude in Chrome
-sobre una plataforma de acceso libre (`dev/pruebas/fase-09b.3-prueba-manual.txt`). En Codex y
+sobre una plataforma de acceso libre. En Codex y
 otros, sin probar. Si tu agente no puede, las alertas por correo y el botón «Enviar a CandidatAI»
 cubren lo mismo sin agente.
 
-Las reglas que más importan no dependen del agente (ADR-012): ningún agente puede activar la
+Las reglas que más importan no dependen del agente: ningún agente puede activar la
 navegación en LinkedIn, y la app rechaza las ofertas y los recorridos de una plataforma
 desactivada.
 
@@ -362,7 +360,7 @@ además necesita web (lectura de páginas): el botón «Ampliar perfil desde mis
 se deshabilita con un agente sin `web`. Lee READMEs de terceros, así que con un agente de nivel C
 avisa de usar una sesión dedicada solo a eso.
 
-### Botones «en tu agente» de la UI (ADR-024)
+### Botones «en tu agente» de la UI
 «Buscar ofertas», «Procesar ofertas», «Evaluar encaje», «Generar CV», en la página Skills
 (fase 14) «Añadir al perfil las que tengo» (`update-profile`) y «Plan de formación», y desde
 la fase 15 «Revisar respuestas» (Inicio y «Respuestas»), «Redactar borradores» (Procesos) y
@@ -380,11 +378,11 @@ capacidad que el agente no tiene (navegador, web) no se lanza con él; las que l
 confiable (`process-jobs`, `review-replies`, `search-jobs`) con un agente de nivel C se abren en
 terminal con un aviso y nunca en segundo plano. El agente lanzado lleva `CAI_CLIENT_NAME` con su
 nombre, para que lo que haga por la CLI quede a su nombre. En Windows se abre Windows Terminal o
-PowerShell; en macOS, Terminal.app (o iTerm2), y en Linux, la terminal del escritorio (fase 26.1,
-ADR-040; `CAI_TERMINAL` elige otra). Sin terminal, o sin el agente en el `PATH`, el botón copia
+PowerShell; en macOS, Terminal.app (o iTerm2), y en Linux, la terminal del escritorio (fase 26.1;
+`CAI_TERMINAL` elige otra). Sin terminal, o sin el agente en el `PATH`, el botón copia
 la orden para que la pegues tú. Probado con Claude Code; Codex, sin probar.
 
-### En segundo plano y cola de encargos (fase 19, ADR-032; varios agentes en la 24.5)
+### En segundo plano y cola de encargos (fase 19; varios agentes en la 24.5)
 El desplegable de cada botón ofrece **«En segundo plano»** en `process-jobs`, `assess-fit`
 y `generate-cv`: el worker lanza tu agente sin ventana y la página «Agente» enseña el progreso, el
 resultado, el uso (turnos, tokens y coste si el agente lo da) y, si el skill necesita algo, sus
@@ -408,7 +406,7 @@ OpenCode y generar un CV con Claude Code.
 
 | | Claude Code | OpenCode | Codex | Qwen Code | Otros |
 |---|---|---|---|---|---|
-| En segundo plano | Sí: `claude -p` con `stream-json`, `--tools Skill,Agent,Read`, `dontAsk`, `--allowedTools` con las herramientas MCP de la acción, `Skill(<su skill>)` y `Read(./docs/**)`, y `--disallowedTools` con todas las demás MCP de la app. Comprobado con `claude` 2.1.296 (ver abajo); el recorrido completo, pendiente de la prueba manual (`dev/pruebas/fase-19-prueba-manual.txt`) | Sí en `process-jobs` y `assess-fit`: `opencode run --format json --pure --agent cai-run [-m <modelo>] "<orden>"` con la configuración de la ejecución en `OPENCODE_CONFIG_CONTENT`. **No en `generate-cv`**: `writer` y `verifier` leen ficheros (`POLICIES.md`) y en OpenCode su `read` no se acota a `docs/` como en la ejecución, así que el subagente tendría más que ella. La UI propone Claude Code. Comprobado con OpenCode 1.19.3 (ver abajo); con un modelo, pendiente de la prueba manual (`dev/pruebas/fase-24.5-prueba-manual.txt`) | No: solo deja **apagar** herramientas (`--disable shell_tool`, `unified_exec`, `browser_use`…), una lista negra que cada versión puede ampliar, y sin terminal no lee los skills. Revisado con codex-cli 0.163.0 el 2026-10-16 | No, de momento: tiene `--core-tools` (lista blanca), `--allowed-mcp-server-names`, `--exclude-tools` y `-o stream-json`, pero no tiene forma de comprobar el techo sin un modelo (no tiene `debug`). Revisado con Qwen Code 0.25.2 el 2026-10-16; pendiente de comprobarlo con un modelo local | No (Antigravity no imprime nada sin terminal) |
+| En segundo plano | Sí: `claude -p` con `stream-json`, `--tools Skill,Agent,Read`, `dontAsk`, `--allowedTools` con las herramientas MCP de la acción, `Skill(<su skill>)` y `Read(./docs/**)`, y `--disallowedTools` con todas las demás MCP de la app. Comprobado con `claude` 2.1.296 (ver abajo); el recorrido completo, pendiente de una prueba manual | Sí en `process-jobs` y `assess-fit`: `opencode run --format json --pure --agent cai-run [-m <modelo>] "<orden>"` con la configuración de la ejecución en `OPENCODE_CONFIG_CONTENT`. **No en `generate-cv`**: `writer` y `verifier` leen ficheros (`POLICIES.md`) y en OpenCode su `read` no se acota a `docs/` como en la ejecución, así que el subagente tendría más que ella. La UI propone Claude Code. Comprobado con OpenCode 1.19.3 (ver abajo); con un modelo, pendiente de una prueba manual | No: solo deja **apagar** herramientas (`--disable shell_tool`, `unified_exec`, `browser_use`…), una lista negra que cada versión puede ampliar, y sin terminal no lee los skills. Revisado con codex-cli 0.163.0 el 2026-10-16 | No, de momento: tiene `--core-tools` (lista blanca), `--allowed-mcp-server-names`, `--exclude-tools` y `-o stream-json`, pero no tiene forma de comprobar el techo sin un modelo (no tiene `debug`). Revisado con Qwen Code 0.25.2 el 2026-10-16; pendiente de comprobarlo con un modelo local | No (Antigravity no imprime nada sin terminal) |
 | Cola de encargos | Sí (`list_agent_requests`, `complete_agent_request`, skill `handle-requests`) | Sí | Sí (mismas herramientas o `cai requests … --json`) | Sí | Sí, con MCP o CLI |
 
 Comprobado con `claude` 2.1.296 (2026-10-12, modelo haiku, sin datos):

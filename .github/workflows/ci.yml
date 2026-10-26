@@ -53,7 +53,7 @@ jobs:
         run: brew install shellcheck
       - run: uv run ruff check
       - run: uv run ruff format --check
-      # Enlaces relativos de los Markdown (fase 28.2: lo interno vive en dev/ y docs/ lo enlaza).
+      # Enlaces relativos de los Markdown.
       - run: uv run --no-project python ../scripts/check_links.py
       # Cada página y cada skill, contados en FEATURES/FUNCIONALIDADES y los README al par (28.3a).
       - run: uv run --no-project python ../scripts/check_readme_coverage.py

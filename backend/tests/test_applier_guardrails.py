@@ -73,7 +73,7 @@ def test_fillers_only_click_through_the_safe_helpers() -> None:
             continue
         for owner, method in calls_in(source, risky):
             # `open_form_click`: solo el botón que abre el formulario, fuera de cualquier
-            # formulario y nunca un control de envío (ADR-021).
+            # formulario y nunca un control de envío.
             assert method == "click" and owner in ("safe_click", "check_box", "open_form_click"), (
                 path,
                 owner,

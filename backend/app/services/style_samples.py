@@ -1,4 +1,4 @@
-"""Muestras de estilo (fase 25.7, ADR-039): textos tuyos que enseñan al agente cómo escribes.
+"""Muestras de estilo (fase 25.7): textos tuyos que enseñan al agente cómo escribes.
 
 Cartas antiguas, correos, posts… en `data/documentos/estilo/`, subidos desde «Mi perfil». El texto
 se extrae al subirlo (`.txt`, `.md`, `.docx`, `.pdf`) y se guarda junto al original, en

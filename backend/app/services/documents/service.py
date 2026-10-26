@@ -1,4 +1,4 @@
-"""CVs de una oferta: guardar el contenido, renderizarlo, verlo y verificarlo (ADR-014).
+"""CVs de una oferta: guardar el contenido, renderizarlo, verlo y verificarlo.
 
 - `save_content`: valida el `CvContent` del agente, lo guarda (`document`) y hace el primer render.
 - `render`: combina un documento con una plantilla y unas opciones; crea un `document_render` sin

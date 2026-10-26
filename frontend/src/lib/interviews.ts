@@ -11,7 +11,7 @@ export function hasStarted(milestone: MilestoneOut, now: Date = new Date()): boo
 }
 
 /**
- * Qué se puede hacer con el agente en una entrevista (fase 17, ADR-024): prepararla y ensayarla
+ * Qué se puede hacer con el agente en una entrevista (fase 17): prepararla y ensayarla
  * mientras está programada y por empezar; repasarla en cuanto empieza, si no se canceló.
  */
 export function interviewPhase(

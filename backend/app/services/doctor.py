@@ -116,7 +116,7 @@ def check_soffice(configured: Path | None) -> CheckResult:
 
 
 def check_cv_templates(builtin_dir: Path, user_dir: Path) -> CheckResult:
-    """Plantillas de CV integradas (`templates/`) y del usuario (`data/templates/`). ADR-014."""
+    """Plantillas de CV integradas (`templates/`) y del usuario (`data/templates/`)."""
     from app.core.policies import get_policies
     from app.services.documents import templates
 
@@ -603,7 +603,7 @@ def check_agents(settings: Settings) -> CheckResult:
 def check_docker(
     settings: Settings, is_mount: Callable[[Path], bool] = os.path.ismount
 ) -> list[CheckResult]:
-    """Sección «Docker» (fase 26.3, ADR-042): solo con `CAI_IN_DOCKER=1`. Dónde escucha la API,
+    """Sección «Docker» (fase 26.3): solo con `CAI_IN_DOCKER=1`. Dónde escucha la API,
     dónde quedan tus datos, cómo llega tu agente y qué no funciona dentro."""
     from app.services import container
 
