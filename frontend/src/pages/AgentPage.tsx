@@ -318,7 +318,7 @@ function Requests() {
               <RequestRow key={r.id} request={r} />
             ))}
           </ul>
-          <AgentButton action="handle-requests">
+          <AgentButton action="handle-requests" primary>
             {t('handle')}
           </AgentButton>
         </>

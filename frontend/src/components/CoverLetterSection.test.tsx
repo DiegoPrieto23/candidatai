@@ -18,7 +18,7 @@ afterEach(() => {
 describe('Sección Carta de presentación', () => {
   it('no aparece antes de aprobar la oferta', async () => {
     const calls = mockApi({ 'GET /status': status(), 'GET /jobs/1': jobView() })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     await screen.findByRole('heading', { level: 1, name: 'Data Engineer' })
     expect(screen.queryByRole('region', { name: NAME })).not.toBeInTheDocument()
     expect(calls.some((c) => c.path === '/jobs/1/cover-letter')).toBe(false)
@@ -30,7 +30,7 @@ describe('Sección Carta de presentación', () => {
       'GET /jobs/1': jobView({ stage: 'closed' }),
       'GET /jobs/1/cover-letter': jobCoverLetter({ can_edit: false }, null),
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     await screen.findByRole('heading', { level: 1, name: 'Data Engineer' })
     await waitFor(() => expect(screen.queryByRole('region', { name: NAME })).not.toBeInTheDocument())
   })
@@ -41,10 +41,10 @@ describe('Sección Carta de presentación', () => {
       'GET /jobs/1': jobView({ stage: 'approved' }),
       'GET /jobs/1/cover-letter': jobCoverLetter({}, null),
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     const section = await screen.findByRole('region', { name: NAME })
     expect(await within(section).findByText('Aún sin carta')).toBeInTheDocument()
-    expect(within(section).getByText('generate-cover-letter 1')).toBeInTheDocument()
+    expect(within(section).getByText(/escribe la carta de la oferta 1/)).toBeInTheDocument()
     expect(within(section).getByText('Menciona que uso su producto desde 2023.')).toBeInTheDocument()
     expect(within(section).getByText(/Límite: 150 palabras/)).toBeInTheDocument()
   })
@@ -59,7 +59,7 @@ describe('Sección Carta de presentación', () => {
       ),
       'POST /renders/2/select': letterRender(2, { selected: true }),
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     const section = await screen.findByRole('region', { name: NAME })
     expect(await within(section).findByText('Hola, equipo de Acme:')).toBeInTheDocument()
     expect(within(section).getByText('15 de 150 palabras')).toBeInTheDocument()
@@ -74,6 +74,8 @@ describe('Sección Carta de presentación', () => {
       'href',
       'http://127.0.0.1:8000/cover-letters/9/text',
     )
+    // A la vista, el que se envía; los demás, plegados.
+    await userEvent.click(within(section).getByRole('button', { name: 'Ver 1 versión más' }))
     const second = within(section).getByRole('listitem', { name: 'Render de carta 2' })
     expect(within(second).getByRole('link', { name: /Descargar PDF/ })).toHaveAttribute(
       'href',
@@ -90,9 +92,11 @@ describe('Sección Carta de presentación', () => {
       'GET /jobs/1/cover-letter': jobCoverLetter(),
       'POST /jobs/1/cover-letter/brief': { ok: true, job_id: 1, brief: {}, max_words: 120 },
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     const section = await screen.findByRole('region', { name: NAME })
-    await userEvent.click(await within(section).findByRole('button', { name: 'Editar indicaciones' }))
+    // Con carta, las indicaciones van plegadas.
+    await userEvent.click(await within(section).findByRole('button', { name: 'Indicaciones' }))
+    await userEvent.click(within(section).getByRole('button', { name: 'Editar indicaciones' }))
     const textarea = within(section).getByLabelText('Para esta oferta')
     await userEvent.clear(textarea)
     await userEvent.type(textarea, 'Más formal.')
@@ -114,9 +118,10 @@ describe('Sección Carta de presentación', () => {
       'GET /jobs/1/cover-letter': jobCoverLetter(),
       'POST /cover-letters/9/renders': letterRender(3),
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     const section = await screen.findByRole('region', { name: NAME })
-    const form = await within(section).findByRole('form', { name: 'Renderizar la carta' })
+    await userEvent.click(await within(section).findByRole('button', { name: 'Cambiar diseño' }))
+    const form = within(section).getByRole('form', { name: 'Renderizar la carta' })
     expect(within(form).getByRole('option', { name: 'A juego con el CV (Clásica con foto)' })).toBeInTheDocument()
     await userEvent.selectOptions(within(form).getByLabelText('Diseño'), 'carta-simple')
     expect(within(form).getByLabelText('Foto')).toBeDisabled()
@@ -137,7 +142,7 @@ describe('Sección Carta de presentación', () => {
       'GET /jobs/1/cover-letter': jobCoverLetter(),
       'POST /jobs/1/cover-letter': { ok: true, job_id: 1, document_id: 10, word_count: 12, render: letterRender(4) },
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     const section = await screen.findByRole('region', { name: NAME })
     await userEvent.click(await within(section).findByRole('button', { name: 'Editar' }))
     expect(within(section).getByRole('button', { name: 'Guardar' })).toBeDisabled()
@@ -162,9 +167,8 @@ describe('Sección Carta de presentación', () => {
       'GET /jobs/1': jobView({ stage: 'applied' }),
       'GET /jobs/1/cover-letter': jobCoverLetter({ can_edit: false }, { edited_by_user: true, verification: null }),
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     // Ya enviada: lo de antes de enviar está plegado.
-    await userEvent.click(await screen.findByRole('button', { name: /Antes de enviar/ }))
     const section = await screen.findByRole('region', { name: NAME })
     expect(await within(section).findByText('Editada por ti')).toBeInTheDocument()
     expect(within(section).getByRole('button', { name: 'Copiar texto' })).toBeEnabled()

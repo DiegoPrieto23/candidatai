@@ -6,7 +6,7 @@ import { isUserPost, jobView, milestone, mockApi, processView, renderApp, status
 describe('Sección Proceso de la ficha', () => {
   it('no aparece antes de aprobar la oferta', async () => {
     const calls = mockApi({ 'GET /status': status(), 'GET /jobs/1': jobView() })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=process')
     await screen.findByRole('heading', { level: 1, name: 'Data Engineer' })
     expect(screen.queryByRole('region', { name: 'Proceso' })).not.toBeInTheDocument()
     expect(calls.some((c) => c.path === '/jobs/1/process')).toBe(false)
@@ -37,7 +37,7 @@ describe('Sección Proceso de la ficha', () => {
         documents: { cv_render_id: 3, cv_sent: true, answers_document_id: null, cover_letter_document_id: null },
       }),
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=process')
     const section = await screen.findByRole('region', { name: 'Proceso' })
     expect(await within(section).findByText(/Enviada el/)).toHaveTextContent('Correo')
     expect(within(section).getByRole('link', { name: 'CV enviado' })).toHaveAttribute(
@@ -62,7 +62,7 @@ describe('Sección Proceso de la ficha', () => {
       'GET /jobs/1/process': processView({ stage: 'approved' }),
       'POST /jobs/1/milestones': milestone(6, { kind: 'deadline', all_day: true }),
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=process')
     const section = await screen.findByRole('region', { name: 'Proceso' })
     const [addMilestone] = await within(section).findAllByRole('button', { name: 'Añadir' }) // hitos, primero
     await userEvent.click(addMilestone)
@@ -93,7 +93,7 @@ describe('Sección Proceso de la ficha', () => {
       }),
       'POST /jobs/1/events': { ok: true, event_id: 9, stage: 'applied' },
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=process')
     const section = await screen.findByRole('region', { name: 'Proceso' })
     expect(await within(section).findByText(/12 días sin respuesta/)).toBeInTheDocument()
     await userEvent.click(within(section).getByRole('button', { name: 'Seguimiento enviado' }))

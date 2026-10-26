@@ -12,8 +12,8 @@
   },
   "noProfile": {
     "title": "You don't have a profile yet",
-    "body": "Create it with your agent (<code>update-profile</code>, from your CV) or copy the example with <code>cai profile init</code> and fill it in here.",
-    "unreadable": "Your <code>data/profile.yaml</code> can't be read as YAML. Fix it in your editor (<code>cai profile validate</code> tells you where) or ask your agent for help with <code>update-profile</code>."
+    "body": "Ask your agent to build it from your CV (“create my profile from my CV”). If you'd rather start from scratch, the guide explains how.",
+    "unreadable": "Your profile file has an error and can't be read. Ask your agent to fix it (“check and fix my profile”)."
   },
   "issues": {
     "title": "Your profile has errors. You can fix them here: until then, no block can be saved."
@@ -39,7 +39,7 @@
   "preview": {
     "title": "This is how your profile will change",
     "rescore": "Saving recalculates the scores of your open jobs.",
-    "diff": "Changes in profile.yaml",
+    "diff": "Changes to your profile",
     "confirm": "Save these changes",
     "cancel": "Back to editing",
     "noChanges": "No changes in the file."
@@ -128,8 +128,8 @@
     "cv": {
       "title": "CV preferences",
       "hint": "Template, length, photo and instructions for all your CVs. Instructions for one job are given when you generate it.",
-      "rules_one": "You have {{count}} template rule (by ATS or country): it stays. To change it, edit the YAML or ask your agent.",
-      "rules_other": "You have {{count}} template rules (by ATS or country): they stay. To change them, edit the YAML or ask your agent."
+      "rules_one": "You have {{count}} template rule (by ATS or country): it's kept. To change it, ask your agent.",
+      "rules_other": "You have {{count}} template rules (by ATS or country): they're kept. To change them, ask your agent."
     },
     "letter": {
       "title": "Cover letter preferences",
@@ -255,7 +255,7 @@
     "salaryLoadError": "Your minimum salary couldn't be read: reload the page before changing it.",
     "discardKeywords": "Words that discard a job",
     "discardKeywordsHint": "If the title contains one (whole word, accents ignored), the job is discarded. Also before saving jobs from your sources.",
-    "policyKeywords": "The ones in config/policies.yaml also discard: {{words}}.",
+    "policyKeywords": "The app's settings also rule out: {{words}}.",
     "contractTypes": "Contract types you accept",
     "contract": {
       "permanent": "Permanent",
@@ -345,7 +345,7 @@
   },
   "history": {
     "title": "History",
-    "hint": "Every save leaves a copy of your profile in data/profile-history/.",
+    "hint": "Every save keeps a copy of your profile: you can always go back.",
     "showDiff": "Show changes",
     "hideDiff": "Hide changes",
     "diffLabel": "Changes between the last two versions",

@@ -1,5 +1,5 @@
 import { Fragment, useState, type FormEvent, type ReactNode } from 'react'
-import { Link, useLocation, useParams } from 'react-router'
+import { Link, useLocation, useParams, useSearchParams } from 'react-router'
 import {
   ArrowCounterClockwiseIcon,
   ArrowLeftIcon,
@@ -18,6 +18,7 @@ import { Trans, useTranslation } from 'react-i18next'
 import { SafeTrans } from '@/components/SafeTrans'
 import type { AddJobResult, EventOut, JobView, Schemas } from '@/api/client'
 import { useAddNote, useAssessThreshold, useJob, useJobEvent, useJobMatch, type UserEventBody } from '@/api/queries'
+import { AgentButton } from '@/components/AgentButton'
 import { JobCostPanel } from '@/components/JobCostPanel'
 import { ApplySection } from '@/components/ApplySection'
 import { ArchivedApplication } from '@/components/ArchivedApplication'
@@ -40,6 +41,7 @@ import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { errorMessage } from '@/lib/errors'
 import { i18n, serverText } from '@/lib/i18n'
@@ -183,7 +185,8 @@ function SkillList({ skills, strong }: { skills: string[]; strong?: boolean }) {
   )
 }
 
-function ExtractionPanel({ extraction }: { extraction: Schemas['ExtractionView'] }) {
+/** `showSkills`: con el encaje calculado, las skills ya salen allí con lo que tienes y lo que no. */
+function ExtractionPanel({ extraction, showSkills }: { extraction: Schemas['ExtractionView']; showSkills: boolean }) {
   const { t } = useTranslation('job', { keyPrefix: 'extraction' })
   const data = extraction.data
   const salary = formatSalary(data.salary)
@@ -214,16 +217,18 @@ function ExtractionPanel({ extraction }: { extraction: Schemas['ExtractionView']
         )}
       </dl>
 
-      <div className="grid gap-6 sm:grid-cols-2">
-        <div className="space-y-2.5">
-          <h3 className="text-sm font-semibold">{t('mustHave')}</h3>
-          <SkillList skills={data.must_have_skills} strong />
+      {showSkills && (
+        <div className="grid gap-6 sm:grid-cols-2">
+          <div className="space-y-2.5">
+            <h3 className="text-sm font-semibold">{t('mustHave')}</h3>
+            <SkillList skills={data.must_have_skills} strong />
+          </div>
+          <div className="space-y-2.5">
+            <h3 className="text-sm font-semibold">{t('niceToHave')}</h3>
+            <SkillList skills={data.nice_to_have_skills} />
+          </div>
         </div>
-        <div className="space-y-2.5">
-          <h3 className="text-sm font-semibold">{t('niceToHave')}</h3>
-          <SkillList skills={data.nice_to_have_skills} />
-        </div>
-      </div>
+      )}
 
       {data.responsibilities.length > 0 && (
         <div className="space-y-2.5">
@@ -444,12 +449,10 @@ function MatchPanel({ job }: { job: JobView }) {
   // Fase 25.4: solo en triaje importa el umbral de «Evaluar encaje» en segundo plano.
   const assessThreshold = useAssessThreshold(job.stage === 'pending_triage')
   if (!job.extraction) return null
+  // El score va en la cabecera de la ficha: aquí, solo su porqué.
   return (
     <section className="rounded-xl border bg-card p-5 sm:p-6" aria-label={t('title')}>
-      <div className="mb-5 flex items-start justify-between gap-4">
-        <h2 className="text-base font-semibold tracking-tight">{t('title')}</h2>
-        {match && <ScoreBadge score={match.score} threshold={match.triage_threshold} size="lg" />}
-      </div>
+      <h2 className="mb-5 text-base font-semibold tracking-tight">{t('title')}</h2>
       {isPending ? (
         <Skeleton className="h-40" />
       ) : isError ? (
@@ -518,18 +521,25 @@ function Decision({ job }: { job: JobView }) {
   )
 }
 
-/** Ya enviada: lo que importa es qué pasa ahora; lo de etapas anteriores queda plegado. */
+/** Ya enviada: lo que importa es qué pasa ahora. */
 function wasSent(job: JobView): boolean {
   if (job.stage === 'applied' || job.stage === 'in_process') return true
   return job.stage === 'closed' && job.events.some((e) => e.type === 'applied' || e.type === 'applied_manually')
 }
 
+/** Se aprobó en algún momento: tiene candidatura y proceso aunque ahora esté cerrada. */
+function wasApproved(job: JobView): boolean {
+  if (job.stage === 'approved' || job.stage === 'cv_ready' || wasSent(job)) return true
+  return job.stage === 'closed' && job.events.some((e) => e.type === 'approved')
+}
+
 function ExtractionBlock({ job }: { job: JobView }) {
   const { t } = useTranslation('job', { keyPrefix: 'extraction' })
+  const match = useJobMatch(job.id, job.extraction !== null)
   if (job.extraction) {
     return (
       <Panel title={t('title')}>
-        <ExtractionPanel extraction={job.extraction} />
+        <ExtractionPanel extraction={job.extraction} showSkills={match.data === null || match.isError} />
       </Panel>
     )
   }
@@ -538,38 +548,110 @@ function ExtractionBlock({ job }: { job: JobView }) {
       <HourglassMediumIcon className="mt-0.5 size-6 shrink-0 text-primary" weight="duotone" />
       <div>
         <h2 className="font-semibold">{t('pendingTitle')}</h2>
-        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-          <Trans
-            t={t}
-            i18nKey="pendingBody"
-            components={{ code: <code className="rounded bg-muted px-1 py-0.5 font-mono text-[0.85em] text-foreground" /> }}
-          />
-        </p>
+        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{t('pendingBody')}</p>
+        {job.stage === 'pending_extraction' && (
+          <AgentButton action="process-jobs" primary className="mt-3">
+            {t('process')}
+          </AgentButton>
+        )}
       </div>
     </section>
   )
 }
 
-/** Lo de antes de enviar (candidatura asistida, paquete, CV, carta y texto), plegado. Se carga al abrirlo. */
-function EarlierStages({ children }: { children: ReactNode }) {
-  const { t } = useTranslation('job', { keyPrefix: 'earlier' })
-  const [open, setOpen] = useState(false)
+/** Score en la cabecera: se ve desde cualquier pestaña. */
+function HeaderScore({ job }: { job: JobView }) {
+  const { data: match } = useJobMatch(job.id, job.extraction !== null)
+  if (!match) return null
+  return <ScoreBadge score={match.score} threshold={match.triage_threshold} className="mt-0.5" />
+}
+
+type JobTab = 'overview' | 'application' | 'process' | 'company' | 'history'
+
+/** Las pestañas que tienen algo que enseñar en esta etapa. */
+function availableTabs(job: JobView): JobTab[] {
+  const tabs: JobTab[] = ['overview']
+  if (wasApproved(job)) tabs.push('application', 'process')
+  if (job.stage !== 'pending_detail') tabs.push('company')
+  tabs.push('history')
+  return tabs
+}
+
+/** La que toca según la etapa: revisar la oferta, preparar la candidatura o seguir el proceso. */
+function defaultTab(job: JobView): JobTab {
+  if (wasSent(job)) return 'process'
+  if (job.stage === 'approved' || job.stage === 'cv_ready') return 'application'
+  return 'overview'
+}
+
+/**
+ * Una pestaña por tema; solo se ve una a la vez y lo de las demás no se carga hasta abrirlas. La
+ * elegida va en la URL (`?tab=`): sobrevive a recargar y se puede enlazar.
+ */
+function JobTabs({ job }: { job: JobView }) {
+  const { t } = useTranslation('job')
+  const [params, setParams] = useSearchParams()
+  const tabs = availableTabs(job)
+  const asked = params.get('tab') as JobTab | null
+  const current = asked && tabs.includes(asked) ? asked : defaultTab(job)
+  const sent = wasSent(job)
+  const choose = (value: string) =>
+    setParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        next.set('tab', value)
+        return next
+      },
+      { replace: true, preventScrollReset: true },
+    )
   return (
-    <section aria-label={t('label')} className="rounded-xl border border-dashed">
-      <button
-        type="button"
-        aria-expanded={open}
-        onClick={() => setOpen(!open)}
-        className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left text-sm sm:px-6"
-      >
-        <span>
-          <span className="font-medium">{t('label')}</span>
-          <span className="text-muted-foreground">{t('hint')}</span>
-        </span>
-        <CaretDownIcon className={cn('size-4 shrink-0 transition-transform', open && 'rotate-180')} />
-      </button>
-      {open && <div className="space-y-6 border-t p-4 sm:p-5">{children}</div>}
-    </section>
+    <Tabs value={current} onValueChange={choose} className="gap-6">
+      <div className="-mx-4 overflow-x-auto border-b px-4 sm:mx-0 sm:px-0">
+        <TabsList variant="line" className="h-10 gap-5">
+          {tabs.map((tab) => (
+            <TabsTrigger key={tab} value={tab} className="flex-none px-0.5">
+              {t(`tabs.${tab}`)}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </div>
+
+      <TabsContent value="overview" className="space-y-6">
+        <MatchPanel job={job} />
+        <ExtractionBlock job={job} />
+        <OriginalText text={job.raw_text} />
+      </TabsContent>
+
+      <TabsContent value="application" className="space-y-6">
+        {sent && <ArchivedApplication job={job} />}
+        <PackageSection job={job} />
+        <ApplySection job={job} />
+        <CvSection job={job} />
+        <CoverLetterSection job={job} />
+      </TabsContent>
+
+      <TabsContent value="process" className="space-y-6">
+        {sent && <StatusUpdate job={job} />}
+        <ProcessSection job={job} />
+        <ReceivedOfferSection job={job} />
+        <DraftsSection job={job} />
+      </TabsContent>
+
+      <TabsContent value="company" className="space-y-6">
+        <CompanyResearchSection job={job} />
+        <NetworkPanel job={job} />
+      </TabsContent>
+
+      <TabsContent value="history" className="space-y-6">
+        <section className="rounded-xl border bg-card p-5 sm:p-6">
+          <NoteForm jobId={job.id} />
+        </section>
+        <Panel title={t('timeline.title')}>
+          <Timeline events={job.events} />
+        </Panel>
+        <JobCostPanel jobId={job.id} />
+      </TabsContent>
+    </Tabs>
   )
 }
 
@@ -581,10 +663,8 @@ function JobSkeleton() {
         <Skeleton className="h-8 w-[min(28rem,80%)]" />
         <Skeleton className="h-4 w-56" />
       </div>
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
-        <Skeleton className="h-80 rounded-xl" />
-        <Skeleton className="h-64 rounded-xl" />
-      </div>
+      <Skeleton className="h-10 w-full max-w-md" />
+      <Skeleton className="h-80 rounded-xl" />
     </div>
   )
 }
@@ -595,10 +675,9 @@ export function JobPage() {
   const location = useLocation()
   const added = (location.state as AddedState | null)?.added
   const { data: job, isPending, isError, error, refetch } = useJob(id)
-  const sent = job ? wasSent(job) : false
 
   return (
-    <div className="animate-in fade-in duration-300">
+    <div className="mx-auto max-w-4xl animate-in fade-in duration-300">
       <Link
         to="/bandeja"
         className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
@@ -617,7 +696,7 @@ export function JobPage() {
         <ErrorState error={error} onRetry={() => refetch()} />
       ) : (
         <>
-          <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
               <h1 className="text-2xl leading-tight font-semibold tracking-tight text-balance sm:text-3xl">
                 {job.title}
@@ -626,8 +705,13 @@ export function JobPage() {
                 <span className="text-foreground/90">{job.company}</span>
                 {job.location && <>, {job.location}</>}
               </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {t('addedOn', { date: formatDate(job.first_seen_at) })}
+                {job.posted_at && t('postedOn', { date: formatDate(job.posted_at) })}
+              </p>
             </div>
             <div className="flex shrink-0 flex-wrap items-start gap-3">
+              <HeaderScore job={job} />
               <StageBadge stage={job.stage} className="mt-1" />
               <Decision job={job} />
               {job.url && (
@@ -641,66 +725,16 @@ export function JobPage() {
             </div>
           </header>
 
-          {sent && (
-            <div className="mb-6 space-y-6">
-              <JobReplyNotice jobId={job.id} />
-              <StatusUpdate job={job} />
-            </div>
-          )}
-
-          <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
-            <div className="space-y-6">
-              {job.injection && <InjectionAlert injection={job.injection} />}
-              <ClosedNotice job={job} />
-              <RepostNote job={job} />
-              <DoubtfulNote job={job} />
-              {sent ? (
-                <>
-                  <ProcessSection job={job} />
-                  <ReceivedOfferSection job={job} />
-                  <DraftsSection job={job} />
-                  <CompanyResearchSection job={job} />
-                  <ArchivedApplication job={job} />
-                  <ExtractionBlock job={job} />
-                  <EarlierStages>
-                    <ApplySection job={job} />
-                    <PackageSection job={job} />
-                    <CvSection job={job} />
-                    <CoverLetterSection job={job} />
-                    <OriginalText text={job.raw_text} />
-                  </EarlierStages>
-                </>
-              ) : (
-                <>
-                  <ExtractionBlock job={job} />
-                  <ProcessSection job={job} />
-                  <DraftsSection job={job} />
-                  <CompanyResearchSection job={job} />
-                  <PackageSection job={job} />
-                  <ApplySection job={job} />
-                  <CvSection job={job} />
-                  <CoverLetterSection job={job} />
-                  <OriginalText text={job.raw_text} />
-                </>
-              )}
-            </div>
-
-            <aside className="space-y-6">
-              <MatchPanel job={job} />
-              {job.stage !== 'pending_detail' && <NetworkPanel job={job} />}
-              <JobCostPanel jobId={job.id} />
-              <Panel title={t('timeline.title')}>
-                <Timeline events={job.events} />
-              </Panel>
-              <section className="rounded-xl border bg-card p-5 sm:p-6">
-                <NoteForm jobId={job.id} />
-              </section>
-              <p className="px-1 text-xs text-muted-foreground">
-                {t('addedOn', { date: formatDate(job.first_seen_at) })}
-                {job.posted_at && t('postedOn', { date: formatDate(job.posted_at) })}.
-              </p>
-            </aside>
+          {/* Avisos que piden atención: encima de las pestañas, se vea la que se vea. */}
+          <div className="mb-6 space-y-4 empty:hidden">
+            {job.injection && <InjectionAlert injection={job.injection} />}
+            {wasSent(job) && <JobReplyNotice jobId={job.id} />}
+            <ClosedNotice job={job} />
+            <RepostNote job={job} />
+            <DoubtfulNote job={job} />
           </div>
+
+          <JobTabs job={job} />
         </>
       )}
     </div>

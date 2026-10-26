@@ -423,7 +423,7 @@ Muchas pantallas tienen botones que abren tu agente con la orden ya escrita:
 qué sabe hacer cada uno y cómo instalar los que faltan. Ahí eliges el agente por defecto, el modelo
 de cada agente y, en la tabla «Por acción», otro agente o modelo para una acción concreta (p. ej.
 OpenCode con un modelo local para procesar ofertas y Claude Code para el CV). El desplegable de cada
-botón dice con qué agente iría («con Claude Code ▾») y te deja usar otro solo esa vez. Si un agente
+botón (la flecha ▾) dice con qué agente se abre y te deja usar otro solo esa vez. Si un agente
 no sirve para una acción (le falta el navegador para buscar ofertas, p. ej.), el botón lo dice y no
 lo lanza. Sin nada elegido, se usa `CAI_AGENT` del `.env` o el primero instalado.
 En macOS y Linux, los botones abren Terminal.app o la terminal de tu escritorio; para usar otra

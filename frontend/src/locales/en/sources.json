@@ -14,7 +14,7 @@
   "nonePass": "None passes the pre-filter.",
   "onlyPassing": "Show only the ones that pass",
   "alsoFiltered": "Also show the {{count}} filtered",
-  "runHint": "They're in “To extract”: run `process-jobs` in your agent.",
+  "runHint": "They go to “To extract”: press “Process jobs”.",
   "see": "See them",
   "form": {
     "label": "Add source",
@@ -71,7 +71,7 @@
     "body": "Add one with its ATS and its slug. Test it before saving it to see how many jobs it has and how many pass your filters."
   },
   "title": "Target companies",
-  "intro": "Their jobs arrive on their own every day with `cai worker`, from their ATS's public APIs. Only the ones that match your preferences by title and location are kept, and they wait in “To extract” for your agent.",
+  "intro": "Their jobs arrive on their own every day while CandidatAI is open, from each company's careers site. Only those matching your preferences by title and location are kept, and they go to “To extract” for your agent.",
   "addTitle": "Add company or search",
   "following": "Following"
 }

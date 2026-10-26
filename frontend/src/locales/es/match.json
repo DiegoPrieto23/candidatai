@@ -7,7 +7,7 @@
   "inProfile": "En tu perfil: {{skill}}. ",
   "notInProfile": "No está en tu perfil",
   "missing": "Falta: ",
-  "notAssessed": "Sin valorar. Ejecuta el skill <code>assess-fit</code> en tu agente.",
+  "notAssessed": "Sin valorar todavía. Pulsa «Evaluar encaje» para que tu agente la valore.",
   "stale": "De un cálculo anterior: el perfil o la oferta cambiaron.",
   "questions": "Preguntas para ti",
   "failsFilters": "No pasa los filtros",
@@ -20,7 +20,7 @@
   },
   "notes": {
     "off": "Similitud semántica desactivada (CAI_EMBEDDINGS=off).",
-    "notInstalled": "Similitud semántica no disponible: instala el extra con `uv sync --extra matching` (en backend/).",
+    "notInstalled": "Comparación por significado sin activar: es opcional y la guía explica cómo activarla.",
     "unavailable": "Similitud semántica no disponible.",
     "failed": "No se pudo calcular la similitud semántica ({{error}}).",
     "noMust": "La oferta no lista skills obligatorias: la cobertura obligatoria no cuenta.",

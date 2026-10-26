@@ -10,6 +10,7 @@
   "by": " · by {{agent}}",
   "fromWeb": ". Taken from public websites: check it at the source.",
   "intro": "Your agent researches the company on the public web and leaves a dossier with sources here.",
+  "more": "Show the full dossier",
   "update": "Update dossier",
   "research": "Research company",
   "loadFailed": "Couldn't load the dossier: {{error}}",

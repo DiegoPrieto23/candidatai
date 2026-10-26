@@ -29,6 +29,7 @@ import {
 } from '@/api/queries'
 import { CopyButton } from '@/components/CopyButton'
 import { RenderWarnings } from '@/components/RenderWarnings'
+import { Reveal } from '@/components/Reveal'
 import { ErrorState, InlineCode } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -52,11 +53,11 @@ function Code({ children }: { children?: ReactNode }) {
   )
 }
 
-function Block({ title, action, children }: { title: string; action?: ReactNode; children: ReactNode }) {
+function Block({ title, action, children }: { title?: string; action?: ReactNode; children: ReactNode }) {
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h3 className="text-sm font-medium">{title}</h3>
+      <div className="flex flex-wrap items-center justify-between gap-3 empty:hidden">
+        {title && <h3 className="text-sm font-medium">{title}</h3>}
         {action}
       </div>
       {children}
@@ -66,7 +67,8 @@ function Block({ title, action, children }: { title: string; action?: ReactNode;
 
 // --- Indicaciones -------------------------------------------------------------------------------
 
-function Instructions({ data, jobId }: { data: JobCoverLetter; jobId: number }) {
+/** `untitled`: dentro de un plegable que ya lleva el título. */
+function Instructions({ data, jobId, untitled = false }: { data: JobCoverLetter; jobId: number; untitled?: boolean }) {
   const { t } = useTranslation('letter', { keyPrefix: 'instructions' })
   const { brief, preferences, max_words } = data.info
   const save = useSaveLetterBrief(jobId)
@@ -89,7 +91,7 @@ function Instructions({ data, jobId }: { data: JobCoverLetter; jobId: number }) 
 
   return (
     <Block
-      title={t('title')}
+      title={untitled ? undefined : t('title')}
       action={
         data.can_edit &&
         !editing && (
@@ -201,19 +203,34 @@ function LetterStatus({ letter, maxWords }: { letter: CoverLetterView; maxWords:
         )}
       </p>
       {verification && !letter.edited_by_user && verification.issues.length > 0 && (
-        <ul className="space-y-1.5">
-          {verification.issues.map((issue, i) => (
-            <li key={i} className="rounded-md bg-muted/70 px-3 py-2">
-              <span className={cn('font-medium', issue.severity === 'blocker' && 'text-destructive')}>
-                {issue.severity === 'blocker' ? t('blocker') : t('warning')} · {issue.location}
-              </span>
-              <span className="block text-foreground/85">{issue.problem}</span>
-            </li>
-          ))}
-        </ul>
+        <LetterIssues issues={verification.issues} passed={verification.passed} />
       )}
     </div>
   )
+}
+
+/** Con la carta verificada, los avisos son retoques opcionales: van plegados. */
+function LetterIssues({
+  issues,
+  passed,
+}: {
+  issues: NonNullable<CoverLetterView['verification']>['issues']
+  passed: boolean
+}) {
+  const { t } = useTranslation('letter', { keyPrefix: 'status' })
+  const list = (
+    <ul className="space-y-1.5">
+      {issues.map((issue, i) => (
+        <li key={i} className="rounded-md bg-muted/70 px-3 py-2">
+          <span className={cn('font-medium', issue.severity === 'blocker' && 'text-destructive')}>
+            {issue.severity === 'blocker' ? t('blocker') : t('warning')} · {issue.location}
+          </span>
+          <span className="block text-foreground/85">{issue.problem}</span>
+        </li>
+      ))}
+    </ul>
+  )
+  return passed ? <Reveal label={t('showWarnings', { count: issues.length })}>{list}</Reveal> : list
 }
 
 function LetterText({ content }: { content: CoverLetterContent }) {
@@ -486,6 +503,12 @@ function Letter({ data, jobId }: { data: JobCoverLetter; jobId: number }) {
     )
   }
   const names = new Map(data.templates.map((tpl) => [tpl.id, tpl.name]))
+  const newest = [...letter.renders].reverse()
+  const main = newest.find((r) => r.selected) ?? newest[0]
+  const others = newest.filter((r) => r !== main)
+  const card = (render: LetterRenderResult) => (
+    <RenderCard key={render.render_id} render={render} name={names.get(render.template_id) ?? render.template_id} jobId={jobId} />
+  )
   return (
     <div className="space-y-6">
       <LetterStatus letter={letter} maxWords={data.info.max_words} />
@@ -515,19 +538,17 @@ function Letter({ data, jobId }: { data: JobCoverLetter; jobId: number }) {
           </div>
         </>
       )}
-      {data.can_edit && <RenderForm key={letter.document_id} data={data} letter={letter} jobId={jobId} />}
-      <Block title={t('render.renders', { count: letter.renders.length })}>
-        <ul className="space-y-3">
-          {[...letter.renders].reverse().map((render) => (
-            <RenderCard
-              key={render.render_id}
-              render={render}
-              name={names.get(render.template_id) ?? render.template_id}
-              jobId={jobId}
-            />
-          ))}
-        </ul>
-      </Block>
+      {main && <ul className="space-y-3">{card(main)}</ul>}
+      {others.length > 0 && (
+        <Reveal label={t('render.otherRenders', { count: others.length })}>
+          <ul className="space-y-3">{others.map(card)}</ul>
+        </Reveal>
+      )}
+      {data.can_edit && (
+        <Reveal label={t('render.changeDesign')}>
+          <RenderForm key={letter.document_id} data={data} letter={letter} jobId={jobId} />
+        </Reveal>
+      )}
     </div>
   )
 }
@@ -551,8 +572,20 @@ export function CoverLetterSection({ job }: { job: JobView }) {
         <ErrorState error={error} onRetry={() => refetch()} className="border-0 p-0" />
       ) : (
         <div className="space-y-8">
-          <Instructions key={data.info.brief?.updated_at ?? 'none'} data={data} jobId={job.id} />
-          <Letter data={data} jobId={job.id} />
+          {data.info.letter ? (
+            // Con carta, las indicaciones ya cumplieron: quedan plegadas para retocarlas y rehacerla.
+            <>
+              <Letter data={data} jobId={job.id} />
+              <Reveal label={t('instructions.title')}>
+                <Instructions key={data.info.brief?.updated_at ?? 'none'} data={data} jobId={job.id} untitled />
+              </Reveal>
+            </>
+          ) : (
+            <>
+              <Instructions key={data.info.brief?.updated_at ?? 'none'} data={data} jobId={job.id} />
+              <Letter data={data} jobId={job.id} />
+            </>
+          )}
         </div>
       )}
     </section>

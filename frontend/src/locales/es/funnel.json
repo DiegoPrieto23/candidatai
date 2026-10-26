@@ -102,7 +102,7 @@
   "calibration": {
     "title": "¿Acierta el score?",
     "hint": "Respuesta y entrevista de tus candidaturas enviadas (en el periodo elegido, por fecha de envío) según lo que sabías al enviarlas.",
-    "note": "Orientativo. Entre paréntesis, el intervalo al 95 %: si los de dos grupos se solapan, no hay una diferencia clara. Los pesos y filtros no cambian solos: tu agente propone y tú decides, comprobándolo con <code>cai eval matching</code>.",
+    "note": "Orientativo. Entre paréntesis, el intervalo al 95 %: si los de dos grupos se solapan, no hay una diferencia clara. Los pesos y filtros no cambian solos: tu agente propone y tú decides.",
     "review": "Revisar mi búsqueda",
     "none": "Aún no has enviado ninguna candidatura en este periodo. Tiene sentido a partir de unas {{min}}-30 enviadas.",
     "summary": "<strong>{{applied}}</strong> enviadas · respuesta <strong>{{reply}}</strong> · entrevista <strong>{{interview}}</strong>",
@@ -217,7 +217,7 @@
   "story": {
     "title": "Tu búsqueda en números",
     "hint": "Desde la primera oferta, sea cual sea el periodo de arriba. Solo cifras: ni empresas, ni puestos, ni importes.",
-    "note": "Para contar en tu README o donde quieras si funciona. La app no lo publica nunca: lo copias tú, si quieres. También con <code>cai stats story</code>.",
+    "note": "Para contar en tu README o donde quieras si funciona. La app no lo publica nunca: lo copias tú, si quieres.",
     "period": "Del {{start}} al {{end}}",
     "evaluated": "Evaluadas",
     "applied": "Candidaturas",

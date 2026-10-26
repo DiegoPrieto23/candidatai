@@ -39,7 +39,7 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 | **Review with the keyboard**: `J`/`K` to move, `A` approve, `D` discard with a reason, `O` open, and Undo | `/por-revisar` | [▶ Keyboard](img/en/anim/triage.webp) |
 | **Your agent's verdict**: fit with risks and questions, citing your deal-breakers; in the background it skips low-score jobs | `assess-fit` | |
 | **"You know N people here"**: your LinkedIn connections (official CSV export) matched to each company | `/jobs/:id` | |
-| **The job page**: extraction, fit breakdown, signals, history, notes, cost in agent time, and every section below | `/jobs/:id` | [Job](img/en/job.webp) |
+| **The job page**, in tabs (Posting, Application, Process, Company, History & notes) that open on the one that fits the stage: extraction, fit breakdown, signals, history, notes, cost in agent time, and every section below | `/jobs/:id` | [Job](img/en/job.webp) |
 
 ## 3. CV and cover letter
 

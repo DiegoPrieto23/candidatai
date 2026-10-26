@@ -7,7 +7,7 @@
   "approve": "Aprobar",
   "discard": "Descartar",
   "detail": "Ficha",
-  "noScore": "Sin score: importa tu perfil con <code>cai profile import</code>.",
+  "noScore": "Sin score: primero crea tu perfil en «Mi perfil».",
   "done": {
     "approved": "Aprobada",
     "discarded": "Descartada",
@@ -25,11 +25,11 @@
     "discard": "descartar",
     "detail": "ficha"
   },
-  "profileMissing": "<strong>Sin perfil importado no hay score.</strong> Crea tu perfil con el skill <code>update-profile</code> o ejecuta <code>cai profile import</code>.",
+  "profileMissing": "<strong>Sin perfil no hay score.</strong> Créalo en «Mi perfil» o pídeselo a tu agente a partir de tu CV.",
   "saveFailed": "No se pudo guardar: {{error}}",
   "empty": {
     "title": "Nada por revisar",
-    "body": "Cuando tu agente extraiga ofertas nuevas con <code>process-jobs</code>, aparecerán aquí ordenadas por encaje."
+    "body": "Cuando tu agente lea ofertas nuevas («Procesar ofertas»), aparecerán aquí ordenadas por encaje."
   },
   "queue": "Ofertas por revisar",
   "discardDialog": {

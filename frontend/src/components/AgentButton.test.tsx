@@ -154,8 +154,9 @@ describe('Botones «en tu agente»', () => {
       const more = await within(group(main)).findByRole('button', {
         name: 'Más formas de lanzarlo (con Claude Code)',
       })
-      expect(more).toHaveTextContent('con Claude Code')
       await userEvent.click(more)
+      // El agente ya no ocupa sitio en el botón: va dentro del desplegable.
+      expect(await screen.findByText('Se abre con Claude Code')).toBeInTheDocument()
       expect(await screen.findByText('Solo esta vez, con:')).toBeInTheDocument()
       expect(screen.getByRole('menuitem', { name: /Abrir con Qwen Code/ })).toHaveAttribute('aria-disabled', 'true')
       expect(screen.getByText('Qwen Code no está instalado.')).toBeInTheDocument()

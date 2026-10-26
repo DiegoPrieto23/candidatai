@@ -1,6 +1,6 @@
 {
   "title": "Assisted application",
-  "intro": "CandidatAI opens the job in its own browser, fills in the application form and stops before sending. Nothing is sent without your confirmation. Sign in to your job boards with “Open browser”.",
+  "intro": "Fills in the form in the CandidatAI browser and stops before sending: nothing goes out without your confirmation.",
   "fieldStatus": {
     "filled": "Filled",
     "empty": "Empty",
@@ -34,11 +34,11 @@
     "unexpected_format": "Unexpected format",
     "no_answers": "No answers"
   },
-  "workerHint": "The worker hasn't picked it up yet. Is it running? Start it with `uv run cai worker` in backend/.",
+  "workerHint": "It hasn't started yet. Is CandidatAI fully open? Close it and open it again from its shortcut.",
   "busy": {
     "submitting": "Sending… Don't close CandidatAI's browser.",
     "filling": "Filling in the {{domain}} form in the browser…",
-    "queued": "Queued for the worker…"
+    "queued": "Queued…"
   },
   "fields": {
     "caption": "Form fields",

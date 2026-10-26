@@ -165,7 +165,7 @@ describe('Señales de la oferta', () => {
       expect(within(note).getByText(/122 días/)).toBeInTheDocument()
       expect(within(note).getByText(/«hirevue»/)).toBeInTheDocument()
       expect(within(note).getByText(/No cambian el score/)).toBeInTheDocument()
-      expect(within(note).getByText('preferences.exclude_signals')).toBeInTheDocument()
+      expect(within(note).getByText(/pídeselo a tu agente/)).toBeInTheDocument()
     })
 
     it('sin señales no hay nota', async () => {

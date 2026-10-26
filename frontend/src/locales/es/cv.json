@@ -1,11 +1,13 @@
 {
   "title": "CV",
   "verification": {
-    "pending": "Sin verificar todavía: el skill <code>generate-cv</code> lo verifica tras redactarlo.",
+    "pending": "Sin verificar todavía: «Generar CV» lo verifica tras redactarlo.",
     "passed": "Verificado: nada inventado ni exagerado",
     "failed": "El verificador encontró problemas",
     "blocker": "Bloqueante",
-    "warning": "Aviso"
+    "warning": "Aviso",
+    "showWarnings_one": "Ver {{count}} aviso del verificador",
+    "showWarnings_other": "Ver {{count}} avisos del verificador"
   },
   "template": {
     "legend": "Plantilla",
@@ -17,7 +19,7 @@
   },
   "photo": {
     "legend": "Foto",
-    "autoHint": "Automática: según el país de la oferta y tu photo_policy, si tienes data/photo.*.",
+    "autoHint": "Automática: según el país de la oferta y tus preferencias de foto, si has añadido una.",
     "unsupported": "Esta plantilla no lleva foto."
   },
   "accent": "Color de acento",
@@ -47,11 +49,13 @@
   "sideBySide": "Lado a lado",
   "closeComparison": "Cerrar comparación",
   "pdfOf": "PDF del render {{id}}",
-  "renders": "Renders",
+  "changeDesign": "Cambiar diseño",
+  "otherRenders_one": "Ver {{count}} versión más",
+  "otherRenders_other": "Ver {{count}} versiones más",
   "pickAnother": "Marca otro render para verlos lado a lado.",
   "none": {
     "title": "Aún sin CV",
-    "hint": "Tu agente redacta el contenido desde tu perfil, lo verifica y lo renderiza (skill <code>generate-cv {{id}}</code>). Después podrás cambiar plantilla, foto y color aquí, sin IA.",
+    "hint": "Tu agente redacta el CV desde tu perfil, lo verifica y le da formato. Después podrás cambiar plantilla, foto y color aquí, sin IA.",
     "generate": "Generar CV",
     "never": "Esta oferta no llegó a tener CV."
   },

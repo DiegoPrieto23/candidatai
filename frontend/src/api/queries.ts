@@ -2,7 +2,8 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import { ApiError, api, unwrap, type CvRenderOptions, type ReferralStatus, type Schemas, type Stage } from './client'
 import type { operations } from './schema'
 
-export const PAGE_SIZE = 50
+/** Ofertas por página en la Bandeja: 25, como el resto de listas largas. */
+export const PAGE_SIZE = 25
 
 export const keys = {
   status: ['status'] as const,

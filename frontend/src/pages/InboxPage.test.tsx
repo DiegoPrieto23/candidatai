@@ -95,42 +95,24 @@ describe('Bandeja', () => {
     mockApi({})
     globalThis.fetch = () => Promise.reject(new TypeError('Failed to fetch'))
     renderApp('/bandeja')
-    expect(await screen.findByText('La API no responde')).toBeInTheDocument()
-    expect(screen.getByText('uv run cai serve')).toBeInTheDocument()
+    expect(await screen.findByText('CandidatAI no responde')).toBeInTheDocument()
+    expect(screen.getByText('cai start')).toBeInTheDocument()
   })
 })
 
 describe('Cabecera', () => {
-  it('muestra los recuentos por etapa y el recordatorio de extracción', async () => {
-    mockApi({ 'GET /status': status(3, 2), 'GET /jobs': page() })
+  it('las etapas son filtros de la Bandeja, con su recuento', async () => {
+    const calls = mockApi({ 'GET /status': status(3, 2), 'GET /jobs': page() })
     renderApp('/bandeja')
 
-    const nav = await screen.findByRole('navigation', { name: 'Ofertas por etapa' })
-    await waitFor(() => expect(within(nav).getByRole('link', { name: /Por extraer\s*3/ })).toBeInTheDocument())
-    expect(within(nav).getByRole('link', { name: /Todas\s*5/ })).toHaveAttribute('aria-current', 'page')
-    expect(screen.getAllByRole('status')[0]).toHaveTextContent(
-      'Hay 3 ofertas por extraer. Las extrae tu agente con el skill process-jobs.',
-    )
-    expect(screen.getByRole('button', { name: 'Procesar ahora' })).toBeInTheDocument()
-  })
-
-  it('el recordatorio se oculta con su X y no vuelve en la misma sesión', async () => {
-    mockApi({ 'GET /status': status(3, 2), 'GET /jobs': page() })
-    const { unmount } = renderApp('/bandeja')
-    await screen.findByText(/Hay 3 ofertas por extraer\./)
-    await userEvent.click(screen.getByRole('button', { name: 'Ocultar este aviso hasta cerrar la pestaña' }))
-    expect(screen.queryByText(/por extraer\./)).not.toBeInTheDocument()
-
-    unmount()
-    renderApp('/bandeja')
-    await screen.findByRole('link', { name: /Por revisar\s*2/ })
-    expect(screen.queryByText(/por extraer\./)).not.toBeInTheDocument()
-  })
-
-  it('no muestra el recordatorio si no hay nada por extraer', async () => {
-    mockApi({ 'GET /status': status(0, 2), 'GET /jobs': page() })
-    renderApp('/bandeja')
-    await screen.findByRole('link', { name: /Por revisar\s*2/ })
+    const filters = await screen.findByRole('navigation', { name: 'Filtrar por etapa' })
+    await waitFor(() => expect(within(filters).getByRole('button', { name: /Por extraer\s*3/ })).toBeInTheDocument())
+    expect(within(filters).getByRole('button', { name: /Todas\s*5/ })).toHaveAttribute('aria-pressed', 'true')
+    await userEvent.click(within(filters).getByRole('button', { name: /Por revisar\s*2/ }))
+    await waitFor(() => expect(calls.some((c) => c.path === '/jobs' && c.search.get('stage') === 'pending_triage')).toBe(true))
+    // De 25 en 25.
+    expect(calls.find((c) => c.path === '/jobs')?.search.get('limit')).toBe('25')
+    // Sin avisos fijos arriba: lo que espera se cuenta en Inicio y en la barra lateral.
     expect(screen.queryByText(/por extraer\./)).not.toBeInTheDocument()
   })
 

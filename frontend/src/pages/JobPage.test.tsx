@@ -12,8 +12,10 @@ describe('Ficha de oferta', () => {
     expect(screen.getByText('Intermedio')).toBeInTheDocument()
     expect(screen.getByText('38.000 € - 46.000 € / año')).toBeInTheDocument()
     expect(screen.getByText('Inglés B2')).toBeInTheDocument()
-    expect(screen.getByText('Python')).toBeInTheDocument()
+    // Sin encaje (el perfil no da score), las skills salen en la extracción.
+    expect(await screen.findByText('Python')).toBeInTheDocument()
     expect(screen.getByText('Terraform')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('tab', { name: 'Historial y notas' }))
     expect(screen.getByText('Extracción guardada')).toBeInTheDocument()
     expect(screen.getByText(/Agente claude-code/)).toBeInTheDocument()
     expect(screen.queryByRole('region', { name: 'Aviso de posible inyección' })).not.toBeInTheDocument()
@@ -70,7 +72,7 @@ describe('Ficha de oferta', () => {
         return { ok: true, event_id: 3, stage: 'pending_triage' }
       },
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=history')
 
     const button = await screen.findByRole('button', { name: /Guardar nota/ })
     expect(button).toBeDisabled()
@@ -89,13 +91,16 @@ describe('Ficha de oferta', () => {
     expect(await screen.findByText('Sin simular: GET /jobs/99')).toBeInTheDocument()
   })
 
-  it('enseña el encaje con el score y el desglose', async () => {
+  it('enseña el score en la cabecera y el desglose en el encaje, sin repetir las skills', async () => {
     mockApi({ 'GET /status': status(), 'GET /jobs/1': jobView(), 'GET /jobs/1/match': matchView() })
     renderApp('/jobs/1')
-    const panel = await screen.findByRole('region', { name: 'Encaje' })
-    expect(await within(panel).findByLabelText('Score 78 de 100')).toBeInTheDocument()
+    const header = (await screen.findByRole('heading', { level: 1, name: 'Data Engineer' })).closest('header')!
+    expect(await within(header).findByLabelText('Score 78 de 100')).toBeInTheDocument()
+    const panel = screen.getByRole('region', { name: 'Encaje' })
     expect(within(panel).getByText('Kafka')).toBeInTheDocument()
     expect(within(panel).getByText('Obligatorias')).toBeInTheDocument()
+    // Con el encaje, la extracción no vuelve a listar las skills.
+    expect(screen.getAllByText('Obligatorias')).toHaveLength(1)
   })
 
   it('sin perfil, el encaje explica cómo conseguir el score', async () => {
@@ -158,8 +163,9 @@ describe('Ficha de oferta', () => {
       'GET /jobs/1/match': matchView(),
       'POST /jobs/1/events': { ok: true, event_id: 4, stage: 'pending_triage' },
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=history')
     expect(await screen.findByText('Pide 8 años de experiencia.')).toBeInTheDocument()
+    expect(screen.queryByRole('tab', { name: 'Candidatura' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Aprobar/ })).not.toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: /Reabrir/ }))
     await waitFor(() =>
@@ -168,8 +174,23 @@ describe('Ficha de oferta', () => {
   })
 })
 
-describe('Ficha de una oferta ya enviada', () => {
-  it('«¿Qué ha pasado?» va lo primero y lo de antes de enviar queda plegado', async () => {
+describe('Pestañas de la ficha', () => {
+  it('antes de aprobar se abre en la oferta y no hay candidatura ni proceso', async () => {
+    mockApi({ 'GET /status': status(), 'GET /jobs/1': jobView() })
+    renderApp('/jobs/1')
+    expect(await screen.findByRole('tab', { name: 'Oferta', selected: true })).toBeInTheDocument()
+    expect(screen.queryByRole('tab', { name: 'Candidatura' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('tab', { name: 'Proceso' })).not.toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: 'Empresa' })).toBeInTheDocument()
+  })
+
+  it('aprobada, se abre en la candidatura', async () => {
+    mockApi({ 'GET /status': status(), 'GET /jobs/1': jobView({ stage: 'approved' }) })
+    renderApp('/jobs/1')
+    expect(await screen.findByRole('tab', { name: 'Candidatura', selected: true })).toBeInTheDocument()
+  })
+
+  it('enviada, se abre en el proceso con «¿Qué ha pasado?» y lo demás no se carga hasta abrirlo', async () => {
     const calls = mockApi({
       'GET /status': status(),
       'GET /jobs/1': jobView({ stage: 'applied' }),
@@ -177,15 +198,20 @@ describe('Ficha de una oferta ya enviada', () => {
       'GET /board': board([]),
     })
     renderApp('/jobs/1')
-    const update = await screen.findByRole('region', { name: '¿Qué ha pasado?' })
-    const earlier = screen.getByRole('region', { name: 'Antes de enviar' })
-    // Antes que el resto en el documento.
-    expect(update.compareDocumentPosition(earlier) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-    // Extracción y encaje siguen a la vista; el resto, plegado y sin cargar.
-    expect(screen.getByRole('heading', { name: 'Extracción' })).toBeInTheDocument()
+    expect(await screen.findByRole('region', { name: '¿Qué ha pasado?' })).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: 'Proceso', selected: true })).toBeInTheDocument()
     expect(calls.some((c) => c.path === '/jobs/1/package')).toBe(false)
-    await userEvent.click(within(earlier).getByRole('button', { name: /Antes de enviar/ }))
+    await userEvent.click(screen.getByRole('tab', { name: 'Candidatura' }))
     await waitFor(() => expect(calls.some((c) => c.path === '/jobs/1/package')).toBe(true))
+  })
+
+  it('la pestaña va en la URL y una que no toca se ignora', async () => {
+    mockApi({ 'GET /status': status(), 'GET /jobs/1': jobView() })
+    renderApp('/jobs/1?tab=process')
+    expect(await screen.findByRole('tab', { name: 'Oferta', selected: true })).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('tab', { name: 'Historial y notas' }))
+    expect(screen.getByRole('tab', { name: 'Historial y notas', selected: true })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Historial' })).toBeInTheDocument()
   })
 })
 
@@ -197,7 +223,7 @@ describe('Historial compacto', () => {
       id: i + 1, type, actor: 'system', agent_name: null, payload: {}, occurred_at: now, recorded_at: now,
     }))
     mockApi({ 'GET /status': status(), 'GET /jobs/1': jobView({ stage: 'cv_ready', events }) })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=history')
     const more = await screen.findByRole('button', { name: 'Ver 3 eventos más' })
     const history = more.closest('ol')!
     expect(within(history).getAllByRole('listitem')).toHaveLength(6) // 4 últimos + botón + alta

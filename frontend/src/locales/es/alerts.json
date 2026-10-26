@@ -23,9 +23,9 @@
   "saveFailed": "No se pudo guardar: {{error}}",
   "empty": {
     "title": "Sin alertas pendientes",
-    "body": "Las ofertas de tus alertas de LinkedIn, InfoJobs y otros portales aparecen aquí. Añade el buzón donde te llegan (Gmail, Outlook, Yahoo, iCloud…) o una carpeta de correos `.eml`."
+    "body": "Las ofertas de tus alertas de LinkedIn, InfoJobs y otros portales aparecen aquí. Añade el buzón donde te llegan (Gmail, Outlook, Yahoo, iCloud…) o una carpeta con correos guardados (.eml)."
   },
   "passing": "Encajan con tus preferencias",
-  "failing": "No pasan el prefiltro",
-  "failingCount": "No pasan el prefiltro ({{count}})"
+  "failing": "No encajan con tus filtros",
+  "failingCount": "No encajan con tus filtros ({{count}})"
 }

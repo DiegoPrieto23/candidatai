@@ -66,10 +66,13 @@ describe('Empresa en la ficha', () => {
       'GET /jobs/1': jobView(),
       'GET /jobs/1/company-research': research(),
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=company')
     const section = await screen.findByRole('region', { name: 'Empresa' })
     expect(await within(section).findByText(/Consultora de datos/)).toBeInTheDocument()
     expect(within(section).getByRole('link', { name: '[1]' })).toHaveAttribute('href', 'https://bretema.example.com/about')
+    // El detalle va plegado tras el resumen.
+    expect(within(section).queryByRole('list', { name: 'Stack' })).not.toBeInTheDocument()
+    await userEvent.click(within(section).getByRole('button', { name: 'Ver el dosier completo' }))
     expect(within(section).getByRole('list', { name: 'Stack' })).toHaveTextContent('Pythondbt')
     const sources = within(section).getByRole('list', { name: 'Fuentes' })
     expect(within(sources).getByRole('link', { name: /Nota de prensa/ })).toHaveAttribute('href', 'https://prensa.example.com/x')
@@ -91,7 +94,7 @@ describe('Empresa en la ficha', () => {
         },
       }),
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=company')
     const section = await screen.findByRole('region', { name: 'Empresa' })
     const flags = await within(section).findByRole('list', { name: 'Banderas rojas' })
     expect(flags).toHaveTextContent(/Despidos o ERE/)
@@ -107,7 +110,7 @@ describe('Empresa en la ficha', () => {
       'GET /jobs/1': jobView(),
       'GET /jobs/1/company-research': research(),
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=company')
     const section = await screen.findByRole('region', { name: 'Empresa' })
     await within(section).findByText(/Consultora de datos/)
     expect(within(section).queryByRole('list', { name: 'Banderas rojas' })).not.toBeInTheDocument()
@@ -122,7 +125,7 @@ describe('Empresa en la ficha', () => {
       'GET /jobs/1/drafts': { job_id: 1, followups_sent: 0, max_followups: 2, drafts: [] },
       'GET /jobs/1/company-research': { job_id: 1, company: 'Brétema Analytics', research: null },
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=company')
     const section = await screen.findByRole('region', { name: 'Empresa' })
     expect(await within(section).findByRole('button', { name: /Investigar empresa/ })).toBeInTheDocument()
   })
@@ -134,7 +137,7 @@ describe('Empresa en la ficha', () => {
       'GET /jobs/1': jobView(),
       'GET /jobs/1/company-research': research({ risk_flags: ['injection_phrase'], age_days: 45 }),
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=company')
     const section = await screen.findByRole('region', { name: 'Empresa' })
     expect(await within(section).findByText(/frases dirigidas a una IA/)).toBeInTheDocument()
     expect(within(section).getByText(/Tiene 45 días/)).toBeInTheDocument()
@@ -146,7 +149,7 @@ describe('Empresa en la ficha', () => {
       'GET /jobs/1': jobView({ stage: 'closed' }),
       'GET /jobs/1/company-research': { job_id: 1, company: 'Brétema Analytics', research: null },
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=company')
     await screen.findByRole('heading', { level: 1, name: 'Data Engineer' })
     await waitFor(() => expect(screen.queryByRole('region', { name: 'Empresa' })).not.toBeInTheDocument())
   })
@@ -179,7 +182,7 @@ describe('Mensajes en Borradores', () => {
       },
       'POST /drafts/5/sent': { ok: true, draft_id: 5, status: 'sent', event_id: null, stage: 'approved', message: 'Anotado.' },
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=process')
     const section = await screen.findByRole('region', { name: 'Borradores' })
     await within(section).findByText('Candidatura: Data Engineer')
     // Las tarjetas (no los adjuntos, que también son `listitem`).

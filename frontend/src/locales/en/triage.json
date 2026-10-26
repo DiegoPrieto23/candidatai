@@ -7,7 +7,7 @@
   "approve": "Approve",
   "discard": "Discard",
   "detail": "Details",
-  "noScore": "No score: import your profile with <code>cai profile import</code>.",
+  "noScore": "No score: create your profile in “My profile” first.",
   "done": {
     "approved": "Approved",
     "discarded": "Discarded",
@@ -25,11 +25,11 @@
     "discard": "discard",
     "detail": "details"
   },
-  "profileMissing": "<strong>No score without an imported profile.</strong> Create your profile with the skill <code>update-profile</code> or run <code>cai profile import</code>.",
+  "profileMissing": "<strong>No profile, no score.</strong> Create it in “My profile” or ask your agent to build it from your CV.",
   "saveFailed": "Couldn't save: {{error}}",
   "empty": {
     "title": "Nothing to review",
-    "body": "When your agent extracts new jobs with <code>process-jobs</code>, they'll show up here sorted by fit."
+    "body": "When your agent reads new jobs (“Process jobs”), they'll show up here sorted by fit."
   },
   "queue": "Jobs to review",
   "discardDialog": {

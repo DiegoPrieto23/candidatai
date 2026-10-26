@@ -1,7 +1,6 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-  EnvelopeSimpleIcon,
   FilePdfIcon,
   PencilSimpleIcon,
   PlusIcon,
@@ -306,21 +305,8 @@ function ChosenCv({ pkg }: { pkg: JobPackage }) {
 function CoverLetterSlot({ pkg }: { pkg: JobPackage }) {
   const { t } = useTranslation('pkg', { keyPrefix: 'letter' })
   const letter = pkg.cover_letter
-  if (!letter) {
-    return (
-      <div className="flex items-start gap-3 rounded-lg border border-dashed p-4">
-        <EnvelopeSimpleIcon className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
-        <div>
-          <h3 className="text-sm font-medium">{t('title')}</h3>
-          <p className="mt-0.5 text-sm text-muted-foreground">
-            <InlineCode
-              text={t('none', { id: pkg.job_id })}
-            />
-          </p>
-        </div>
-      </div>
-    )
-  }
+  // Sin carta, el hueco ya lo explica la sección Carta, justo debajo.
+  if (!letter) return null
   const state = letter.edited_by_user ? t('editedByYou') : letter.verified ? t('verified') : t('notVerified')
   return (
     <div className="space-y-2">

@@ -12,8 +12,8 @@
   },
   "noProfile": {
     "title": "Aún no tienes perfil",
-    "body": "Créalo con tu agente (<code>update-profile</code>, a partir de tu CV) o copia el de ejemplo con <code>cai profile init</code> y rellénalo aquí.",
-    "unreadable": "Tu <code>data/profile.yaml</code> no se puede leer como YAML. Arréglalo en tu editor (<code>cai profile validate</code> dice dónde) o pide ayuda a tu agente con <code>update-profile</code>."
+    "body": "Pídeselo a tu agente a partir de tu CV («crea mi perfil desde mi CV»). Si prefieres empezar de cero, la guía explica cómo.",
+    "unreadable": "Tu fichero de perfil tiene un error y no se puede leer. Pide a tu agente que lo arregle («revisa y arregla mi perfil»)."
   },
   "issues": {
     "title": "Tu perfil tiene errores. Puedes arreglarlos aquí: hasta entonces, ningún bloque se guarda."
@@ -39,7 +39,7 @@
   "preview": {
     "title": "Así cambiará tu perfil",
     "rescore": "Al guardar se recalculan los scores de tus ofertas abiertas.",
-    "diff": "Cambios en profile.yaml",
+    "diff": "Cambios en tu perfil",
     "confirm": "Guardar estos cambios",
     "cancel": "Volver a editar",
     "noChanges": "Sin cambios en el fichero."
@@ -128,8 +128,8 @@
     "cv": {
       "title": "Preferencias de CV",
       "hint": "Plantilla, extensión, foto e indicaciones para todos tus CVs. Las de una oferta se dan al generarlo.",
-      "rules_one": "Tienes {{count}} regla de plantilla (por ATS o país): se mantiene. Para cambiarla, edita el YAML o pídeselo a tu agente.",
-      "rules_other": "Tienes {{count}} reglas de plantilla (por ATS o país): se mantienen. Para cambiarlas, edita el YAML o pídeselo a tu agente."
+      "rules_one": "Tienes {{count}} regla de plantilla (por ATS o país): se mantiene. Para cambiarla, pídeselo a tu agente.",
+      "rules_other": "Tienes {{count}} reglas de plantilla (por ATS o país): se mantienen. Para cambiarlas, pídeselo a tu agente."
     },
     "letter": {
       "title": "Preferencias de carta",
@@ -255,7 +255,7 @@
     "salaryLoadError": "No se pudo leer tu sueldo mínimo: recarga la página antes de cambiarlo.",
     "discardKeywords": "Palabras que descartan una oferta",
     "discardKeywordsHint": "Si el título las contiene (palabra completa, sin importar tildes), la oferta se descarta. También antes de guardar las ofertas de tus fuentes.",
-    "policyKeywords": "También descartan las de config/policies.yaml: {{words}}.",
+    "policyKeywords": "También descartan las de la configuración de la app: {{words}}.",
     "contractTypes": "Tipo de contrato que aceptas",
     "contract": {
       "permanent": "Indefinido",
@@ -345,7 +345,7 @@
   },
   "history": {
     "title": "Historial",
-    "hint": "Cada guardado deja una copia de tu perfil en data/profile-history/.",
+    "hint": "Cada guardado deja una copia de tu perfil: siempre puedes volver atrás.",
     "showDiff": "Ver cambios",
     "hideDiff": "Ocultar cambios",
     "diffLabel": "Cambios entre las dos últimas versiones",

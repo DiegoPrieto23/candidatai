@@ -27,6 +27,7 @@ import { useJobCv, useRenderCv, useSelectRender, useTemplates } from '@/api/quer
 import { AgentButton } from '@/components/AgentButton'
 import { ClosedHint } from '@/components/JobSignals'
 import { RenderWarnings } from '@/components/RenderWarnings'
+import { Reveal } from '@/components/Reveal'
 import { ErrorState, InlineCode } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -91,20 +92,33 @@ function Verification({ cv }: { cv: CvView }) {
         )}
         {verification.passed ? t('passed') : t('failed')}
       </p>
-      {verification.issues.length > 0 && (
-        <ul className="space-y-1.5 text-sm">
-          {verification.issues.map((issue, i) => (
-            <li key={i} className="rounded-md bg-muted/70 px-3 py-2">
-              <span className={cn('font-medium', issue.severity === 'blocker' && 'text-destructive')}>
-                {issue.severity === 'blocker' ? t('blocker') : t('warning')} · {issue.location}
-              </span>
-              <span className="block text-foreground/85">{issue.problem}</span>
-              {issue.suggestion && <span className="block text-muted-foreground">{issue.suggestion}</span>}
-            </li>
-          ))}
-        </ul>
-      )}
+      {verification.issues.length > 0 &&
+        (verification.passed ? (
+          // Verificado: los avisos son retoques opcionales, plegados.
+          <Reveal label={t('showWarnings', { count: verification.issues.length })}>
+            <Issues issues={verification.issues} />
+          </Reveal>
+        ) : (
+          <Issues issues={verification.issues} />
+        ))}
     </div>
+  )
+}
+
+function Issues({ issues }: { issues: NonNullable<CvView['verification']>['issues'] }) {
+  const { t } = useTranslation('cv', { keyPrefix: 'verification' })
+  return (
+    <ul className="space-y-1.5 text-sm">
+      {issues.map((issue, i) => (
+        <li key={i} className="rounded-md bg-muted/70 px-3 py-2">
+          <span className={cn('font-medium', issue.severity === 'blocker' && 'text-destructive')}>
+            {issue.severity === 'blocker' ? t('blocker') : t('warning')} · {issue.location}
+          </span>
+          <span className="block text-foreground/85">{issue.problem}</span>
+          {issue.suggestion && <span className="block text-muted-foreground">{issue.suggestion}</span>}
+        </li>
+      ))}
+    </ul>
   )
 }
 
@@ -376,12 +390,14 @@ function RenderCard({
   templateName,
   comparing,
   onCompare,
+  canCompare,
   jobId,
 }: {
   render: RenderResult
   templateName: string
   comparing: boolean
   onCompare: (on: boolean) => void
+  canCompare: boolean
   jobId: number
 }) {
   const { t } = useTranslation('cv')
@@ -450,15 +466,17 @@ function RenderCard({
             </a>
           </Button>
         )}
-        <label className="flex cursor-pointer items-center gap-1.5 px-1 text-xs text-muted-foreground">
-          <input
-            type="checkbox"
-            checked={comparing}
-            onChange={(e) => onCompare(e.target.checked)}
-            className="size-3.5 accent-[var(--primary)]"
-          />
-          {t('compare')}
-        </label>
+        {canCompare && (
+          <label className="flex cursor-pointer items-center gap-1.5 px-1 text-xs text-muted-foreground">
+            <input
+              type="checkbox"
+              checked={comparing}
+              onChange={(e) => onCompare(e.target.checked)}
+              className="size-3.5 accent-[var(--primary)]"
+            />
+            {t('compare')}
+          </label>
+        )}
         {!render.selected && (
           <Button
             size="xs"
@@ -510,37 +528,43 @@ function Compare({ renders, names, onClose }: { renders: RenderResult[]; names: 
   )
 }
 
+/** A la vista, el render que se enviará (o el último); los demás, plegados. */
 function Renders({ cv, jobId, names }: { cv: CvView; jobId: number; names: Map<string, string> }) {
   const { t } = useTranslation('cv')
   const [compare, setCompare] = useState<number[]>([])
   const newest = [...cv.renders].reverse()
+  const main = newest.find((r) => r.selected) ?? newest[0]
+  const others = newest.filter((r) => r !== main)
   const toggle = (id: number, on: boolean) =>
     setCompare((current) => (on ? [...current.filter((c) => c !== id), id].slice(-2) : current.filter((c) => c !== id)))
   const compared = compare
     .map((id) => cv.renders.find((r) => r.render_id === id))
     .filter((r): r is RenderResult => r !== undefined)
+  const card = (render: RenderResult) => (
+    <RenderCard
+      key={render.render_id}
+      render={render}
+      templateName={names.get(render.template_id) ?? render.template_id}
+      comparing={compare.includes(render.render_id)}
+      onCompare={(on) => toggle(render.render_id, on)}
+      canCompare={others.length > 0}
+      jobId={jobId}
+    />
+  )
+  if (!main) return null
 
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-semibold">
-        {t('renders')} <span className="tabular font-normal text-muted-foreground">({cv.renders.length})</span>
-      </h3>
       {compared.length === 2 && <Compare renders={compared} names={names} onClose={() => setCompare([])} />}
       {compared.length === 1 && (
         <p className="text-xs text-muted-foreground">{t('pickAnother')}</p>
       )}
-      <ul className="space-y-3">
-        {newest.map((render) => (
-          <RenderCard
-            key={render.render_id}
-            render={render}
-            templateName={names.get(render.template_id) ?? render.template_id}
-            comparing={compare.includes(render.render_id)}
-            onCompare={(on) => toggle(render.render_id, on)}
-            jobId={jobId}
-          />
-        ))}
-      </ul>
+      <ul className="space-y-3">{card(main)}</ul>
+      {others.length > 0 && (
+        <Reveal label={t('otherRenders', { count: others.length })}>
+          <ul className="space-y-3">{others.map(card)}</ul>
+        </Reveal>
+      )}
     </div>
   )
 }
@@ -570,7 +594,7 @@ function CvBody({
               <p className="mt-1 text-muted-foreground">
                 <Trans t={t} i18nKey="none.hint" values={{ id: jobId }} components={{ code: <Code /> }} />
               </p>
-              <AgentButton action="generate-cv" jobId={jobId} className="mt-3">
+              <AgentButton action="generate-cv" jobId={jobId} className="mt-3" primary>
                 {t('none.generate')}
               </AgentButton>
               <ClosedHint signals={signals} />
@@ -585,22 +609,25 @@ function CvBody({
   const templates = templatesQuery.data?.templates ?? []
   const names = new Map(templates.map((tpl) => [tpl.id, tpl.name]))
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <Verification cv={data.cv} />
-      {data.can_render && (
-        <AgentButton action="generate-cv" jobId={jobId}>
-          {t('rewrite')}
-        </AgentButton>
-      )}
-      {data.can_render &&
-        (templatesQuery.isPending ? (
-          <Skeleton className="h-40" />
-        ) : templatesQuery.isError ? (
-          <ErrorState error={templatesQuery.error} onRetry={() => templatesQuery.refetch()} className="border-0 p-0" />
-        ) : (
-          <RenderForm key={data.cv.document_id} cv={data.cv} jobId={jobId} templates={templates} />
-        ))}
       <Renders cv={data.cv} jobId={jobId} names={names} />
+      {data.can_render && (
+        <div className="flex flex-col items-start gap-4">
+          <Reveal label={t('changeDesign')} className="w-full">
+            {templatesQuery.isPending ? (
+              <Skeleton className="h-40" />
+            ) : templatesQuery.isError ? (
+              <ErrorState error={templatesQuery.error} onRetry={() => templatesQuery.refetch()} className="border-0 p-0" />
+            ) : (
+              <RenderForm key={data.cv.document_id} cv={data.cv} jobId={jobId} templates={templates} />
+            )}
+          </Reveal>
+          <AgentButton action="generate-cv" jobId={jobId}>
+            {t('rewrite')}
+          </AgentButton>
+        </div>
+      )}
     </div>
   )
 }

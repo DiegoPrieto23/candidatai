@@ -32,7 +32,7 @@ describe('Candidatura asistida en la ficha', () => {
       'GET /jobs/1/apply': assistedApplication(),
       'POST /jobs/1/apply/prepare': { status: 202, body: attemptView({ status: 'queued' }) },
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     const region = await section()
     expect(await within(region).findByText(/Se abrirá boards\.greenhouse\.io/)).toBeInTheDocument()
     await userEvent.click(within(region).getByRole('button', { name: 'Preparar candidatura' }))
@@ -42,7 +42,7 @@ describe('Candidatura asistida en la ficha', () => {
 
   it('en «approved» sin intento ni LinkedIn no aparece', async () => {
     mockApi({ ...base('approved'), 'GET /jobs/1/apply': assistedApplication({ can_prepare: false }) })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     await screen.findByRole('heading', { level: 1, name: 'Data Engineer' })
     await waitFor(() => expect(screen.queryByRole('region', { name: NAME })).not.toBeInTheDocument())
   })
@@ -52,7 +52,7 @@ describe('Candidatura asistida en la ficha', () => {
       ...base('approved'),
       'GET /jobs/1/apply': assistedApplication({ mode: 'open', domain: 'www.linkedin.com' }),
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     const region = await section()
     expect(await within(region).findByRole('button', { name: 'Abrir y preparar' })).toBeInTheDocument()
     expect(within(region).getByText(/LinkedIn no se automatiza/)).toBeInTheDocument()
@@ -60,7 +60,7 @@ describe('Candidatura asistida en la ficha', () => {
 
   it('enseña la revisión: captura, campos y avisos', async () => {
     mockApi({ ...base(), 'GET /jobs/1/apply': assistedApplication({ attempt: attemptView() }) })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     const region = await section()
     expect(await within(region).findByText('Listo para revisar')).toBeInTheDocument()
     const shot = within(region).getByRole('img', { name: 'Captura del formulario rellenado' })
@@ -80,7 +80,7 @@ describe('Candidatura asistida en la ficha', () => {
       'GET /jobs/1/apply': assistedApplication({ attempt: attemptView() }),
       'POST /apply/5/submit': { status: 202, body: attemptView({ pending_task: { kind: 'apply_submit', status: 'queued', waiting_seconds: 0 } }) },
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     const region = await section()
     await userEvent.click(await within(region).findByRole('button', { name: 'Enviar' }))
     const dialog = await screen.findByRole('dialog')
@@ -116,7 +116,7 @@ describe('Candidatura asistida en la ficha', () => {
         },
       },
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     const region = await section()
     await userEvent.click(await within(region).findByRole('button', { name: 'Enviar' }))
     const dialog = await screen.findByRole('dialog')
@@ -148,7 +148,7 @@ describe('Candidatura asistida en la ficha', () => {
       'GET /jobs/1/apply': assistedApplication({ attempt: missing }),
       'POST /apply/5/rescan': { status: 202, body: missing },
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     const region = await section()
     expect(await within(region).findByRole('button', { name: 'Enviar' })).toBeDisabled()
     expect(within(region).getByText(/Falta 1 campo obligatorio/)).toBeInTheDocument()
@@ -164,10 +164,10 @@ describe('Candidatura asistida en la ficha', () => {
       pending_task: { kind: 'apply_fill', status: 'queued', waiting_seconds: 40 },
     })
     mockApi({ ...base(), 'GET /jobs/1/apply': assistedApplication({ attempt: queued }) })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     const region = await section()
-    expect(await within(region).findByText('En cola para el worker…')).toBeInTheDocument()
-    expect(within(region).getByText('uv run cai worker')).toBeInTheDocument()
+    expect(await within(region).findByText('En cola…')).toBeInTheDocument()
+    expect(within(region).getByText(/¿Está CandidatAI abierta entera\?/)).toBeInTheDocument()
   })
 
   it('«Lo termino yo» y «Marcar como enviada»', async () => {
@@ -178,7 +178,7 @@ describe('Candidatura asistida en la ficha', () => {
       'POST /apply/5/focus': { status: 202, body: manual },
       'POST /jobs/1/apply/manual-done': { status: 200, body: { ok: true, event_id: 9, stage: 'applied' } },
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     const region = await section()
     expect(within(region).queryByRole('button', { name: 'Enviar' })).not.toBeInTheDocument()
     await userEvent.click(await within(region).findByRole('button', { name: 'Lo termino yo' }))
@@ -193,9 +193,8 @@ describe('Candidatura asistida en la ficha', () => {
       ...base('applied'),
       'GET /jobs/1/apply': assistedApplication({ attempt: sent, can_prepare: false }),
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     // Ya enviada: lo de antes de enviar está plegado.
-    await userEvent.click(await screen.findByRole('button', { name: /Antes de enviar/ }))
     const region = await section()
     expect(await within(region).findByText(/la web confirmó el envío/)).toBeInTheDocument()
     expect(within(region).getByRole('img', { name: 'Captura después de enviar' })).toBeInTheDocument()
@@ -212,7 +211,7 @@ describe('Candidatura asistida en la ficha', () => {
       }),
       'POST /jobs/1/apply/manual-done': { status: 200, body: { ok: true } },
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     const region = await section()
     expect(await within(region).findByText(/Estás usando CandidatAI en Docker/)).toBeInTheDocument()
     const link = within(region).getByRole('link', { name: 'Abrir la oferta en tu navegador' })
@@ -232,7 +231,7 @@ describe('Candidatura asistida en la ficha', () => {
       ...base(),
       'GET /jobs/1/apply': assistedApplication({ mode: 'open', domain: 'www.glassdoor.es', url, portal: 'Glassdoor' }),
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     const region = await section()
     expect(await within(region).findByText(/bloquea los navegadores automatizados/)).toBeInTheDocument()
     const link = within(region).getByRole('link', { name: 'Abrir la oferta en Glassdoor' })
@@ -248,7 +247,7 @@ describe('Candidatura asistida en la ficha', () => {
       'GET /jobs/1/apply': assistedApplication({ mode: 'open', domain: 'www.glassdoor.es', portal: 'Glassdoor' }),
       'POST /jobs/1/apply/prepare': { status: 202, body: attemptView({ status: 'queued' }) },
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     const region = await section()
     const button = await within(region).findByRole('button', { name: 'Rellenar ese formulario' })
     expect(button).toBeDisabled()
@@ -281,7 +280,7 @@ describe('Candidatura asistida en la ficha', () => {
       'GET /jobs/1/apply': assistedApplication({ attempt: opened, mode: 'open', portal: 'Glassdoor' }),
       'POST /apply/5/fill-page': { status: 202, body: { ...opened, status: 'queued' } },
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     const region = await section()
     await userEvent.click(await within(region).findByRole('button', { name: 'Rellenar esta página' }))
     await waitFor(() => expect(calls.some((c) => c.path === '/apply/5/fill-page')).toBe(true))
@@ -293,7 +292,7 @@ describe('Candidatura asistida en la ficha', () => {
       'GET /jobs/1/apply': assistedApplication(),
       'POST /browser/open': { status: 202, body: { ok: true, message: 'El navegador se abrirá en unos segundos.' } },
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     const region = await section()
     await within(region).findByRole('button', { name: 'Preparar candidatura' })
     await userEvent.click(within(region).getByRole('button', { name: 'Abrir navegador' }))
@@ -303,7 +302,7 @@ describe('Candidatura asistida en la ficha', () => {
 
   it('«Cancelar» deja el diálogo vacío y Intro no envía', async () => {
     const calls = mockApi({ ...base(), 'GET /jobs/1/apply': assistedApplication({ attempt: attemptView() }) })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     const region = await section()
     await userEvent.click(await within(region).findByRole('button', { name: 'Enviar' }))
     let dialog = await screen.findByRole('dialog')
@@ -325,7 +324,7 @@ describe('Candidatura asistida en la ficha', () => {
       error: 'No se ha reconocido la página de confirmación.',
     })
     mockApi({ ...base(), 'GET /jobs/1/apply': assistedApplication({ attempt: unconfirmed }) })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     const region = await section()
     expect(await within(region).findByText('Envío sin confirmar')).toBeInTheDocument()
     expect(within(region).queryByRole('button', { name: 'Enviar' })).not.toBeInTheDocument()
@@ -342,7 +341,7 @@ describe('Candidatura asistida en la ficha', () => {
       error: 'Enviada, pero no se pudo registrar «applied»: márcala como enviada a mano.',
     })
     mockApi({ ...base(), 'GET /jobs/1/apply': assistedApplication({ attempt: sent, can_prepare: false }) })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     const region = await section()
     expect(await within(region).findByText(/no se pudo registrar/)).toBeInTheDocument()
     expect(within(region).getByRole('button', { name: 'Marcar como enviada' })).toBeInTheDocument()
@@ -358,7 +357,7 @@ describe('Candidatura asistida en la ficha', () => {
         return assistedApplication({ attempt: attemptView({ status, can_submit: false }) })
       },
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     const region = await section()
     expect(await within(region).findByText(/Enviando/)).toBeInTheDocument()
     expect(await within(region).findByText(/la web confirmó el envío/, {}, { timeout: 5000 })).toBeInTheDocument()

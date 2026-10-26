@@ -104,7 +104,7 @@
     "unclassified_other": "{{count}} correos sin clasificar: «Revisar respuestas» abre tu agente para que proponga qué es cada uno.",
     "filterAria": "Filtrar por estado",
     "noneTitle": "Sin respuestas aquí",
-    "noneBody": "Los correos de las empresas a tus candidaturas enviadas aparecen aquí. Se leen por IMAP (`CAI_IMAP_REPLIES_FOLDER`) o de `data/inbox/respuestas/`.",
+    "noneBody": "Los correos de las empresas a tus candidaturas enviadas aparecen aquí cuando conectas el correo donde te llegan.",
     "list": "Respuestas",
     "byReason": "({{stage}}; por {{reason}})"
   }

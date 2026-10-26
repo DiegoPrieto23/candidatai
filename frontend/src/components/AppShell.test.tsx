@@ -121,7 +121,7 @@ describe('Barra lateral: detalles (fase 23.3)', () => {
 })
 
 describe('«Nueva oferta»', () => {
-  it('en Inicio va con las acciones de la página; en el resto, arriba en la cabecera', async () => {
+  it('va siempre en la barra lateral, en Inicio y en el resto', async () => {
     mockApi({
       'GET /status': status(),
       'GET /jobs': emptyPage,
@@ -129,11 +129,11 @@ describe('«Nueva oferta»', () => {
       'GET /upcoming': { days: 7, items: [] },
     })
     const { unmount } = renderApp('/')
-    const main = await screen.findByRole('main')
-    expect(await within(main).findByRole('link', { name: 'Nueva oferta' })).toHaveAttribute('href', '/nueva')
-    expect(within(screen.getByRole('banner')).queryByRole('link', { name: 'Nueva oferta' })).not.toBeInTheDocument()
+    const sidebar = await screen.findByRole('complementary', { name: 'Barra lateral' })
+    expect(within(sidebar).getByRole('link', { name: 'Nueva oferta' })).toHaveAttribute('href', '/nueva')
     unmount()
     renderApp('/bandeja')
-    expect(await within(screen.getByRole('banner')).findByRole('link', { name: 'Nueva oferta' })).toBeInTheDocument()
+    const again = await screen.findByRole('complementary', { name: 'Barra lateral' })
+    expect(within(again).getByRole('link', { name: 'Nueva oferta' })).toHaveAttribute('href', '/nueva')
   })
 })

@@ -22,7 +22,7 @@ const cvReady = jobView({ stage: 'cv_ready' })
 describe('Sección CV de la ficha', () => {
   it('no aparece ni se pide antes de aprobar la oferta', async () => {
     const calls = mockApi({ 'GET /status': status(), 'GET /jobs/1': jobView(), 'GET /templates': templateList() })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     await screen.findByRole('heading', { level: 1, name: 'Data Engineer' })
     expect(screen.queryByRole('region', { name: 'CV' })).not.toBeInTheDocument()
     expect(calls.some((c) => c.path === '/jobs/1/cv')).toBe(false)
@@ -35,7 +35,7 @@ describe('Sección CV de la ficha', () => {
       'GET /jobs/1/cv': { job_id: 1, stage: 'closed', can_render: false, cv: null },
       'GET /templates': templateList(),
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     await screen.findByRole('heading', { level: 1, name: 'Data Engineer' })
     await waitFor(() => expect(screen.queryByRole('region', { name: 'CV' })).not.toBeInTheDocument())
   })
@@ -47,10 +47,9 @@ describe('Sección CV de la ficha', () => {
       'GET /jobs/1/cv': { job_id: 1, stage: 'approved', can_render: true, cv: null },
       'GET /templates': templateList(),
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     const section = await screen.findByRole('region', { name: 'CV' })
     expect(await within(section).findByText('Aún sin CV')).toBeInTheDocument()
-    expect(within(section).getByText('generate-cv 1')).toBeInTheDocument()
     expect(within(section).getByRole('button', { name: 'Generar CV' })).toBeInTheDocument()
     expect(within(section).queryByRole('button', { name: 'Renderizar' })).not.toBeInTheDocument()
   })
@@ -71,7 +70,7 @@ describe('Sección CV de la ficha', () => {
       ]),
       'GET /templates': templateList(),
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     const section = await screen.findByRole('region', { name: 'CV' })
     const render = await within(section).findByRole('listitem', { name: 'Render 1' })
     expect(within(render).getByText('Página 1 · Prueba otra plantilla abajo, sin agente.')).toBeInTheDocument()
@@ -96,7 +95,7 @@ describe('Sección CV de la ficha', () => {
       ]),
       'GET /templates': templateList(),
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     const section = await screen.findByRole('region', { name: 'CV' })
     expect(await within(section).findByText('Verificado: nada inventado ni exagerado')).toBeInTheDocument()
 
@@ -111,15 +110,17 @@ describe('Sección CV de la ficha', () => {
       'http://127.0.0.1:8000/renders/1/pdf',
     )
 
+    // A la vista, solo el que se envía; los demás, plegados.
+    expect(within(section).queryByRole('listitem', { name: 'Render 2' })).not.toBeInTheDocument()
+    await userEvent.click(within(section).getByRole('button', { name: 'Ver 1 versión más' }))
     const second = within(section).getByRole('listitem', { name: 'Render 2' })
     expect(within(second).getByText('ATS sencilla')).toBeInTheDocument()
     expect(within(second).getByText('2/1')).toBeInTheDocument()
     expect(within(second).getByText('El CV ocupa 2 páginas y el máximo es 1.')).toBeInTheDocument()
     expect(within(second).getByText('Plantilla cambiada')).toBeInTheDocument()
     expect(within(second).getByText(/sin proyectos/)).toBeInTheDocument()
-    // Lo más reciente, arriba.
     const items = within(section).getAllByRole('listitem', { name: /^Render/ })
-    expect(items.map((i) => i.getAttribute('aria-label'))).toEqual(['Render 2', 'Render 1'])
+    expect(items.map((i) => i.getAttribute('aria-label'))).toEqual(['Render 1', 'Render 2'])
   })
 
   it('renderiza con otra plantilla, sin foto, otro color y secciones ocultas', async () => {
@@ -135,7 +136,11 @@ describe('Sección CV de la ficha', () => {
         return created
       },
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
+    // Las opciones de diseño van plegadas.
+    expect(await screen.findByRole('button', { name: 'Cambiar diseño' })).toBeInTheDocument()
+    expect(screen.queryByRole('form', { name: 'Renderizar el CV' })).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Cambiar diseño' }))
     const form = await screen.findByRole('form', { name: 'Renderizar el CV' })
 
     // Parte de la plantilla del render seleccionado: ats-simple no lleva foto ni color.
@@ -159,7 +164,8 @@ describe('Sección CV de la ficha', () => {
       accent_color: '#7A2E39',
       hidden_sections: ['projects'],
     })
-    expect(await screen.findByRole('listitem', { name: 'Render 2' })).toBeInTheDocument()
+    // El nuevo no se envía hasta que lo eliges: queda con los demás, plegado.
+    expect(await screen.findByRole('button', { name: 'Ver 1 versión más' })).toBeInTheDocument()
   })
 
   it('enseña el error de la API al renderizar', async () => {
@@ -177,7 +183,8 @@ describe('Sección CV de la ficha', () => {
         body: { ok: false, error: { type: 'pdf_unavailable', message: 'No hay LibreOffice ni Word.', details: [] } },
       },
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
+    await userEvent.click(await screen.findByRole('button', { name: 'Cambiar diseño' }))
     await userEvent.click(await screen.findByRole('button', { name: 'Renderizar' }))
     expect(await screen.findByRole('alert')).toHaveTextContent('No hay LibreOffice ni Word.')
   })
@@ -195,11 +202,15 @@ describe('Sección CV de la ficha', () => {
         return { status: 200, body: renderResult(2, { selected: true }) }
       },
     })
-    renderApp('/jobs/1')
-    const second = await screen.findByRole('listitem', { name: 'Render 2' })
+    renderApp('/jobs/1?tab=application')
+    await userEvent.click(await screen.findByRole('button', { name: 'Ver 1 versión más' }))
+    const second = screen.getByRole('listitem', { name: 'Render 2' })
     await userEvent.click(within(second).getByRole('button', { name: /Usar este para enviar/ }))
 
-    await waitFor(() => expect(within(second).getByText('Para enviar')).toBeInTheDocument())
+    // El elegido pasa arriba.
+    await waitFor(() =>
+      expect(within(screen.getByRole('listitem', { name: 'Render 2' })).getByText('Para enviar')).toBeInTheDocument(),
+    )
     expect(calls.filter(isUserPost).map((c) => c.path)).toEqual(['/renders/2/select'])
     const first = screen.getByRole('listitem', { name: 'Render 1' })
     expect(within(first).getByRole('button', { name: /Usar este para enviar/ })).toBeInTheDocument()
@@ -212,11 +223,12 @@ describe('Sección CV de la ficha', () => {
       'GET /jobs/1/cv': jobCv([renderResult(1, { selected: true }), renderResult(2), renderResult(3)]),
       'GET /templates': templateList(),
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     const box = (id: number) =>
       within(screen.getByRole('listitem', { name: `Render ${id}` })).getByRole('checkbox', { name: 'Comparar' })
 
     await screen.findByRole('listitem', { name: 'Render 1' })
+    await userEvent.click(screen.getByRole('button', { name: 'Ver 2 versiones más' }))
     await userEvent.click(box(1))
     expect(screen.getByText('Marca otro render para verlos lado a lado.')).toBeInTheDocument()
     await userEvent.click(box(3))
@@ -250,7 +262,7 @@ describe('Sección CV de la ficha', () => {
       }),
       'GET /templates': templateList(),
     })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=application')
     const section = await screen.findByRole('region', { name: 'CV' })
     expect(await within(section).findByText('El verificador encontró problemas')).toBeInTheDocument()
     expect(within(section).getByText('Bloqueante · experience[0].bullets[1]')).toBeInTheDocument()

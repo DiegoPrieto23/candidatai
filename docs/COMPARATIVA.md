@@ -250,11 +250,11 @@ tres proyectos han llegado a lo mismo: `GEMINI.md` vacío o de paso, y Antigravi
 
 Reordenado el 2026-10-25, con todo lo de la revisión anterior (fases 24 a 26) ya hecho. Lo primero
 ya no son funciones sino **que la gente lo conozca y lo pruebe**: es justo lo que preparan las fases
-28.4 y 28.5.
+28.4 y 28.6.
 
 | # | Qué | Lo tiene | Por qué merece la pena | Esfuerzo | Dónde |
 |---|---|---|---|---|---|
-| 1 | **Portada, historia y lanzamiento** (README con gancho, la historia con números reales, publicarlo en listas y canales) | ambos | Lo que hace famosos a los otros dos no son las funciones, sino la historia y la comunidad | Medio | 28.4 y 28.5 |
+| 1 | **Portada, historia y lanzamiento** (README con gancho, la historia con números reales, publicarlo en listas y canales) | ambos | Lo que hace famosos a los otros dos no son las funciones, sino la historia y la comunidad | Medio | 28.4 y 28.6 |
 | 2 | **Comunidad** (Discussions o Discord, muro de contratados, plantillas de issues) | career-ops | Sin ella, todo el mantenimiento depende de una persona | Bajo para empezar | 28.4 (plantillas) |
 | 3 | **Instalador más robusto con red mala** (avisar de que es la red y reintentar Chromium) y sin las herramientas de desarrollo (`uv sync --no-dev`) | — | Lo encontró la prueba en un Windows limpio | Bajo | Sin fecha |
 | 4 | **Probar más agentes de verdad**: OpenCode y Qwen Code con un modelo en la nube, y Pi, Grok Build, Copilot CLI y Cursor | career-ops | Hoy solo Claude Code, Codex y Antigravity están medidos | Medio | Sin fecha |
@@ -299,4 +299,4 @@ modelos y niveles de gasto, matriz medida).
 Donde se queda atrás ahora es en **alcance**: career-ops cubre más fuentes, más países y más señales,
 y los dos tienen una comunidad, historias reales y decenas de miles de estrellas, mientras que
 CandidatAI acaba de publicar su primera versión. Lo que más rinde a partir de aquí no es otra
-función, sino la portada, la historia y el lanzamiento (28.4 y 28.5).
+función, sino la portada, la historia y el lanzamiento (28.4 y 28.6).

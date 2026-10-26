@@ -23,9 +23,9 @@
   "saveFailed": "Couldn't save: {{error}}",
   "empty": {
     "title": "No pending alerts",
-    "body": "Jobs from your LinkedIn, InfoJobs and other job alerts show up here. Add the mailbox where they arrive (Gmail, Outlook, Yahoo, iCloud…) or a folder of `.eml` emails."
+    "body": "Jobs from your LinkedIn, InfoJobs and other job board alerts show up here. Add the mailbox where they arrive (Gmail, Outlook, Yahoo, iCloud…) or a folder of saved emails (.eml)."
   },
   "passing": "Match your preferences",
-  "failing": "Don't pass the pre-filter",
-  "failingCount": "Don't pass the pre-filter ({{count}})"
+  "failing": "Don’t match your filters",
+  "failingCount": "Don’t match your filters ({{count}})"
 }

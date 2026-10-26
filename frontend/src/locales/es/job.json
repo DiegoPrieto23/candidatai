@@ -2,7 +2,7 @@
   "added": {
     "exists": "Esta oferta ya estaba dada de alta. No se ha cambiado nada.",
     "duplicate": "Dada de alta, pero parece un duplicado de la <to>oferta {{id}}</to>, así que queda cerrada.",
-    "created": "Oferta dada de alta. Tu agente la extraerá con el skill process-jobs.",
+    "created": "Oferta dada de alta. Tu agente la leerá cuando pulses «Procesar ofertas».",
     "close": "Cerrar"
   },
   "injection": {
@@ -35,7 +35,8 @@
     "redFlags": "A tener en cuenta",
     "extractedAt": "Extraída el {{date}}",
     "pendingTitle": "Aún sin extraer",
-    "pendingBody": "Ejecuta el skill <code>process-jobs</code> en tu agente. Cuando termine, aquí verás seniority, modalidad, skills y salario."
+    "pendingBody": "Tu agente aún no la ha leído. Cuando lo haga, aquí verás seniority, modalidad, skills y salario.",
+    "process": "Procesar ofertas"
   },
   "original": {
     "title": "Texto original",
@@ -61,16 +62,19 @@
   },
   "match": {
     "title": "Encaje",
-    "noScore": "Sin score: importa tu perfil con <code>cai profile import</code>."
+    "noScore": "Sin score: primero crea tu perfil en «Mi perfil»."
   },
   "decision": {
     "reopen": "Reabrir",
     "approve": "Aprobar",
     "discard": "Descartar"
   },
-  "earlier": {
-    "label": "Antes de enviar",
-    "hint": " · candidatura asistida, paquete, CV, carta y texto de la oferta"
+  "tabs": {
+    "overview": "Oferta",
+    "application": "Candidatura",
+    "process": "Proceso",
+    "company": "Empresa",
+    "history": "Historial y notas"
   },
   "loading": "Cargando oferta",
   "back": "Bandeja",
@@ -79,7 +83,7 @@
   "addedOn": "Alta el {{date}}",
   "postedOn": ". Publicada el {{date}}",
   "archive": {
-    "pending": "Aún sin copia de lo enviado: la guarda el worker al marcarla como enviada. Para las de antes, `cai applications archive --all`.",
+    "pending": "Aún sin copia de lo enviado: se guarda sola unos segundos después de marcarla como enviada.",
     "label": "Candidatura archivada",
     "title": "Copia de lo que enviaste",
     "open": "Abrir carpeta",

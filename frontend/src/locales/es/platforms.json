@@ -79,7 +79,7 @@
   },
   "row": {
     "notRun": "El agente aún no la ha recorrido",
-    "invalid": "Su configuración no es válida. Pide a tu agente que la vuelva a guardar con `search-jobs configurar`.",
+    "invalid": "Su configuración no es válida. Pide a tu agente que la vuelva a configurar («configura mis plataformas de búsqueda»).",
     "risk": "Riesgo para tu cuenta",
     "upTo": "Hasta {{offers}} por recorrido",
     "browsing": "El agente la recorre",
@@ -102,14 +102,14 @@
     "maxOffersHint": "Cuántas ofertas nuevas da de alta el agente, como mucho, cada vez que recorre esta plataforma. Bájalo si te llegan demasiadas para revisar.",
     "maxOffersHintAria": "Qué son las ofertas por recorrido"
   },
-  "limits": "Límites en `config/policies.yaml`: como mucho {{pages}} de resultados por búsqueda, {{delay}} s de pausa entre páginas y {{offers}} ofertas por recorrido en las plataformas nuevas (en cada una lo cambias con «Ofertas por recorrido»).",
+  "limits": "Límites de la app: como mucho {{pages}} de resultados por búsqueda, {{delay}} s de pausa entre páginas y {{offers}} ofertas por recorrido en las plataformas nuevas (en cada una lo cambias con «Ofertas por recorrido»).",
   "empty": {
     "title": "Aún no hay plataformas",
-    "body": "Añádelas con «Añadir plataforma» o pide a tu agente `search-jobs configurar`: te preguntará dónde buscas, te recomendará portales y guardará aquí las búsquedas."
+    "body": "Añádelas con «Añadir plataforma» o pide a tu agente que configure tu búsqueda: te preguntará dónde buscas, te recomendará portales y guardará aquí las búsquedas."
   },
   "title": "Plataformas",
   "broaden": "Ampliar búsqueda",
-  "intro": "Portales que tu agente recorre con tu navegador cuando le pides `search-jobs`, por orden de prioridad. Solo lee: no se postula, no guarda ofertas en el portal ni resuelve captchas. Lo que encuentra queda en «Por extraer». «Ampliar búsqueda» propone puestos cercanos a los que apruebas; tú decides cuáles añadir.",
+  "intro": "Portales que tu agente recorre con tu navegador cuando pulsas «Buscar ofertas», por orden de prioridad. Solo lee: no se postula, no guarda ofertas en el portal ni resuelve captchas. Lo que encuentra queda en «Por extraer».",
   "add": {
     "linkedinTitle": "Se guarda con la búsqueda desactivada, y es lo recomendable.",
     "linkedinP1": "Las condiciones de LinkedIn prohíben recorrer su web con herramientas automáticas y puede restringir o cerrar tu cuenta si lo detecta, aunque el agente use tu navegador y solo lea. Lo seguro es recibir sus ofertas por las alertas por correo (pantalla «Alertas») o con el botón «Enviar a CandidatAI».",

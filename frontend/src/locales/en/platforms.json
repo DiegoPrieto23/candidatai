@@ -79,7 +79,7 @@
   },
   "row": {
     "notRun": "The agent hasn't browsed it yet",
-    "invalid": "Its settings aren't valid. Ask your agent to save them again with `search-jobs configurar`.",
+    "invalid": "Its settings aren't valid. Ask your agent to set it up again (“set up my job search platforms”).",
     "risk": "Risk to your account",
     "upTo": "Up to {{offers}} per run",
     "browsing": "The agent browses it",
@@ -102,14 +102,14 @@
     "maxOffersHint": "The maximum number of new jobs the agent adds each time it goes through this job board. Lower it if you get too many to review.",
     "maxOffersHintAria": "What jobs per run means"
   },
-  "limits": "Limits in `config/policies.yaml`: at most {{pages}} of results per search, a {{delay}} s pause between pages and {{offers}} jobs per run on new platforms (change it on each one with “Jobs per run”).",
+  "limits": "App limits: at most {{pages}} of results per search, {{delay}} s pause between pages and {{offers}} jobs per run on new platforms (change it on each one with “Jobs per run”).",
   "empty": {
     "title": "No platforms yet",
-    "body": "Add them with “Add platform” or ask your agent for `search-jobs configurar`: it'll ask where you search, recommend job boards and save the searches here."
+    "body": "Add them with “Add platform” or ask your agent to set up your search: it'll ask where you look, recommend job boards and save the searches here."
   },
   "title": "Platforms",
   "broaden": "Broaden search",
-  "intro": "Job boards your agent browses with your browser when you ask for `search-jobs`, in priority order. It only reads: it doesn't apply, save jobs on the board or solve captchas. What it finds goes to “To extract”. “Broaden search” suggests roles close to the ones you approve; you decide which to add.",
+  "intro": "Job boards your agent browses with your browser when you press “Search jobs”, in priority order. It only reads: it doesn't apply, save jobs on the board or solve captchas. What it finds goes to “To extract”.",
   "add": {
     "linkedinTitle": "It's saved with searching turned off, and that's what we recommend.",
     "linkedinP1": "LinkedIn's terms forbid browsing its website with automated tools, and it may restrict or close your account if it detects it, even if the agent uses your browser and only reads. The safe way is to get its jobs through email alerts (the “Alerts” screen) or with the “Send to CandidatAI” button.",

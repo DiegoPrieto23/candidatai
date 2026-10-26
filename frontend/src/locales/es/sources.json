@@ -14,7 +14,7 @@
   "nonePass": "Ninguna pasa el filtro previo.",
   "onlyPassing": "Ver solo las que pasan",
   "alsoFiltered": "Ver también las {{count}} filtradas",
-  "runHint": "Quedan en «Por extraer»: ejecuta `process-jobs` en tu agente.",
+  "runHint": "Quedan en «Por extraer»: pulsa «Procesar ofertas».",
   "see": "Verlas",
   "form": {
     "label": "Añadir fuente",
@@ -71,7 +71,7 @@
     "body": "Añade una con su ATS y su slug. Pruébala antes de guardarla para ver cuántas ofertas tiene y cuántas pasan tus filtros."
   },
   "title": "Empresas objetivo",
-  "intro": "Sus ofertas llegan solas cada día con `cai worker`, desde las APIs públicas de su ATS. Solo se guardan las que encajan por título y ubicación con tus preferencias, y quedan en «Por extraer» para tu agente.",
+  "intro": "Sus ofertas llegan solas cada día mientras CandidatAI está abierta, desde la web de empleo de cada empresa. Solo se guardan las que encajan por título y ubicación con tus preferencias, y quedan en «Por extraer» para tu agente.",
   "addTitle": "Añadir empresa o búsqueda",
   "following": "Seguidas"
 }

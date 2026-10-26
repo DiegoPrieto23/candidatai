@@ -37,6 +37,6 @@
     },
     "label": "Signs of a doubtful job",
     "title": "Before you spend time on it",
-    "intro": "They don't change the score or discard the job: they're observations so you can decide. If you want them to discard, add them to <code>preferences.exclude_signals</code> in your profile (hidden employer and fixed-term)."
+    "intro": "They don't change the score or discard the job: they're notes for you to decide. If you want them to discard, ask your agent (“discard jobs from undisclosed companies”)."
   }
 }

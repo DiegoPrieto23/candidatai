@@ -4,6 +4,7 @@ import { Link } from 'react-router'
 import {
   ArrowSquareOutIcon,
   ArrowsClockwiseIcon,
+  CaretDownIcon,
   PlusIcon,
   EnvelopeSimpleIcon,
   FunnelSimpleXIcon,
@@ -16,11 +17,13 @@ import { useAlerts, useJobEvent, usePollAlerts } from '@/api/queries'
 import { DiscardDialog, type DiscardChoice } from '@/components/DiscardDialog'
 import { MailboxDialog, MailboxesPanel, type MailboxDialogState } from '@/components/Mailboxes'
 import { Kbd } from '@/components/Kbd'
+import { Pager } from '@/components/Pager'
 import { EmptyState, ErrorState, InlineCode } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { isActivatable, isTyping } from '@/lib/keyboard'
 import { discardReasonLabel, formatRelative } from '@/lib/labels'
+import { LIST_PAGE_SIZE, pageOf } from '@/lib/paging'
 import { errorMessage } from '@/lib/errors'
 import { cn } from '@/lib/utils'
 
@@ -174,11 +177,24 @@ export function AlertsPage() {
   const [actionError, setActionError] = useState<string | null>(null)
   const [mailDialog, setMailDialog] = useState<MailboxDialogState>(null)
 
-  const jobs = useMemo(() => (data?.jobs ?? []).filter((j) => !hidden.has(j.job_id)), [data, hidden])
+  // Las que no pasan tus filtros van plegadas: las teclas solo recorren lo que se ve.
+  const [showFailing, setShowFailing] = useState(false)
+  const all = useMemo(() => (data?.jobs ?? []).filter((j) => !hidden.has(j.job_id)), [data, hidden])
+  const passing = useMemo(() => all.filter((j) => j.prefilter_passed), [all])
+  const failing = useMemo(() => all.filter((j) => !j.prefilter_passed), [all])
+  // De 25 en 25. Al descartar la última de una página, se queda en la anterior.
+  const [passingPage, setPassingPage] = useState(1)
+  const [failingPage, setFailingPage] = useState(1)
+  const passingAt = Math.min(passingPage, Math.max(1, Math.ceil(passing.length / LIST_PAGE_SIZE)))
+  const failingAt = Math.min(failingPage, Math.max(1, Math.ceil(failing.length / LIST_PAGE_SIZE)))
+  const passingShown = useMemo(() => pageOf(passing, passingAt), [passing, passingAt])
+  const failingShown = useMemo(() => pageOf(failing, failingAt), [failing, failingAt])
+  const jobs = useMemo(
+    () => (showFailing ? [...passingShown, ...failingShown] : passingShown),
+    [showFailing, passingShown, failingShown],
+  )
   const index = Math.max(0, jobs.findIndex((j) => j.job_id === selectedId))
   const current = jobs[index] as AlertJob | undefined
-  const passing = jobs.filter((j) => j.prefilter_passed)
-  const failing = jobs.filter((j) => !j.prefilter_passed)
 
   const select = useCallback(
     (i: number) => {
@@ -254,7 +270,7 @@ export function AlertsPage() {
     return () => window.removeEventListener('keydown', onKey)
   }, [current, discarding, mailDialog, index, select])
 
-  const total = jobs.length
+  const total = all.length
   const renderRow = (job: AlertJob) => (
     <AlertRow
       key={job.job_id}
@@ -350,20 +366,32 @@ export function AlertsPage() {
           {passing.length > 0 && (
             <section className="overflow-hidden rounded-xl border bg-card">
               <ul role="listbox" aria-label={t('passing')} className="divide-y">
-                {passing.map(renderRow)}
+                {passingShown.map(renderRow)}
               </ul>
+              <Pager page={passingAt} total={passing.length} onPage={setPassingPage} className="border-t px-4 py-2.5" />
             </section>
           )}
           {failing.length > 0 && (
             <section>
-              <h2 className="mb-2 px-1 text-sm font-medium text-muted-foreground">
-                {t('failingCount', { count: failing.length })}
+              <h2 className="mb-2 px-1">
+                <button
+                  type="button"
+                  aria-expanded={showFailing}
+                  onClick={() => setShowFailing(!showFailing)}
+                  className="inline-flex items-center gap-1.5 rounded-sm text-sm font-medium text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  {t('failingCount', { count: failing.length })}
+                  <CaretDownIcon className={cn('size-3.5 transition-transform', showFailing && 'rotate-180')} />
+                </button>
               </h2>
-              <div className="overflow-hidden rounded-xl border bg-card">
-                <ul role="listbox" aria-label={t('failing')} className="divide-y">
-                  {failing.map(renderRow)}
-                </ul>
-              </div>
+              {showFailing && (
+                <div className="overflow-hidden rounded-xl border bg-card">
+                  <ul role="listbox" aria-label={t('failing')} className="divide-y">
+                    {failingShown.map(renderRow)}
+                  </ul>
+                  <Pager page={failingAt} total={failing.length} onPage={setFailingPage} className="border-t px-4 py-2.5" />
+                </div>
+              )}
             </section>
           )}
         </div>

@@ -51,7 +51,7 @@ function cost(changes: Partial<JobCost> = {}): JobCost {
 describe('Coste del agente en la ficha (fase 25.4)', () => {
   it('suma lo gastado en la oferta y dice qué ejecuciones se reparten', async () => {
     mockApi({ 'GET /status': status(), 'GET /jobs/1': jobView(), 'GET /jobs/1/costs': cost() })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=history')
     const panel = await screen.findByRole('region', { name: 'Coste del agente' })
     expect(panel).toHaveTextContent(/3.?000 tokens · 0[.,]0500 USD en 2 ejecuciones en segundo plano/)
     const runs = within(panel).getByRole('list', { name: 'Ejecuciones' })
@@ -62,7 +62,7 @@ describe('Coste del agente en la ficha (fase 25.4)', () => {
 
   it('sin ejecuciones no se enseña', async () => {
     mockApi({ 'GET /status': status(), 'GET /jobs/1': jobView(), 'GET /jobs/1/costs': cost({ runs: [] }) })
-    renderApp('/jobs/1')
+    renderApp('/jobs/1?tab=history')
     await screen.findByRole('heading', { level: 1 })
     expect(screen.queryByRole('region', { name: 'Coste del agente' })).not.toBeInTheDocument()
   })

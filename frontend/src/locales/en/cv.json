@@ -1,11 +1,13 @@
 {
   "title": "CV",
   "verification": {
-    "pending": "Not verified yet: the skill <code>generate-cv</code> verifies it after writing it.",
+    "pending": "Not verified yet: “Generate CV” checks it after writing it.",
     "passed": "Verified: nothing made up or exaggerated",
     "failed": "The verifier found problems",
     "blocker": "Blocker",
-    "warning": "Warning"
+    "warning": "Warning",
+    "showWarnings_one": "Show {{count}} verifier note",
+    "showWarnings_other": "Show {{count}} verifier notes"
   },
   "template": {
     "legend": "Template",
@@ -17,7 +19,7 @@
   },
   "photo": {
     "legend": "Photo",
-    "autoHint": "Automatic: based on the job's country and your photo_policy, if you have data/photo.*.",
+    "autoHint": "Automatic: based on the job's country and your photo preferences, if you've added one.",
     "unsupported": "This template has no photo."
   },
   "accent": "Accent color",
@@ -47,11 +49,13 @@
   "sideBySide": "Side by side",
   "closeComparison": "Close comparison",
   "pdfOf": "PDF of render {{id}}",
-  "renders": "Renders",
+  "changeDesign": "Change design",
+  "otherRenders_one": "Show {{count}} more version",
+  "otherRenders_other": "Show {{count}} more versions",
   "pickAnother": "Tick another render to see them side by side.",
   "none": {
     "title": "No CV yet",
-    "hint": "Your agent writes the content from your profile, verifies it and renders it (skill <code>generate-cv {{id}}</code>). Then you can change template, photo and color here, without AI.",
+    "hint": "Your agent writes the CV from your profile, checks it and formats it. Then you can change template, photo and colour here, without AI.",
     "generate": "Generate CV",
     "never": "This job never had a CV."
   },

@@ -21,11 +21,11 @@
   },
   "noStage": "No stage",
   "errors": {
-    "offlineTitle": "The API isn't responding",
+    "offlineTitle": "CandidatAI isn't responding",
     "loadFailed": "Couldn't load",
     "generic": "Something went wrong.",
-    "offline": "No connection to the API. Start it with `uv run cai serve` in backend/.",
-    "unexpected": "Unexpected API error ({{status}}).",
+    "offline": "Can't reach the app. Open it from its shortcut (or with `cai start`) and reload this page.",
+    "unexpected": "Something went wrong in the app ({{status}}). Try again.",
     "types": {
       "unauthorized": "Unauthorized",
       "forbidden": "Not allowed",
@@ -47,5 +47,11 @@
       "referenced": "Something else in the profile cites it"
     }
   },
-  "close": "Close"
+  "close": "Close",
+  "pager": {
+    "label": "Pages",
+    "range": "{{from}}-{{to}} of {{total}}",
+    "previous": "Previous",
+    "next": "Next"
+  }
 }

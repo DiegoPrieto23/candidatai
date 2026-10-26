@@ -15,6 +15,7 @@ import {
   ListChecksIcon,
   ListIcon,
   MoonIcon,
+  PlusIcon,
   PlugsConnectedIcon,
   RobotIcon,
   SidebarSimpleIcon,
@@ -26,7 +27,7 @@ import {
 } from '@phosphor-icons/react'
 import { Dialog as DialogPrimitive } from 'radix-ui'
 import type { Stage } from '@/api/client'
-import { useAgentRuns, useReplies, useStatus } from '@/api/queries'
+import { useAgentRuns, useFollowups, useReplies, useStatus } from '@/api/queries'
 import { LanguageFlag } from '@/components/LanguageFlag'
 import { Button } from '@/components/ui/button'
 import {
@@ -45,12 +46,18 @@ import { cn } from '@/lib/utils'
 // --- Recuentos --------------------------------------------------------------------------------
 
 /** Lo que espera algo de ti en cada página. `strong`: te toca a ti; si no, es informativo. */
-type CountLabel = 'toReview' | 'toComplete' | 'agent'
+type CountLabel = 'toReview' | 'toComplete' | 'agent' | 'followUp'
 type Count = { value: number; strong: boolean; label: CountLabel | null }
 
 function useStageCount(stage: Stage, label: CountLabel, strong = true): Count {
   const { data } = useStatus()
   return { value: data?.by_stage[stage] ?? 0, strong, label }
+}
+
+/** Candidaturas que llevan días sin respuesta: toca un seguimiento. */
+function useFollowupsCount(): Count {
+  const { data } = useFollowups()
+  return { value: data?.followups.length ?? 0, strong: true, label: 'followUp' }
 }
 
 function useRepliesCount(): Count {
@@ -128,7 +135,7 @@ const NAV_GROUPS: { title: GroupKey | null; entries: Entry[] }[] = [
   {
     title: 'processes',
     entries: [
-      { to: '/procesos', label: 'processes', icon: KanbanIcon },
+      { to: '/procesos', label: 'processes', icon: KanbanIcon, useCount: useFollowupsCount },
       { to: '/calendario', label: 'calendar', icon: CalendarDotsIcon },
       { to: '/respuestas', label: 'replies', icon: ChatsCircleIcon, useCount: useRepliesCount },
     ],
@@ -395,6 +402,7 @@ export function Sidebar() {
       <div className={cn('flex h-14 shrink-0 items-center', collapsed ? 'justify-center' : 'px-1.5')}>
         <Brand compact={collapsed} />
       </div>
+      <NewJobButton collapsed={collapsed} />
       <div className="-mx-1 flex-1 overflow-y-auto px-1 py-2">
         <NavLinks collapsed={collapsed} />
       </div>
@@ -404,6 +412,27 @@ export function Sidebar() {
         <SidebarButton collapsed={collapsed} onClick={toggle} />
       </div>
     </aside>
+  )
+}
+
+/** La acción de crear, siempre a mano y en el mismo sitio. */
+function NewJobButton({ collapsed }: { collapsed: boolean }) {
+  const { t } = useTranslation('nav')
+  const label = t('header.newJob')
+  const button = (
+    <Button asChild size={collapsed ? 'icon' : 'sm'} className={cn('mb-2 shrink-0', !collapsed && 'w-full')}>
+      <Link to="/nueva" aria-label={collapsed ? label : undefined}>
+        <PlusIcon weight="bold" />
+        {!collapsed && label}
+      </Link>
+    </Button>
+  )
+  if (!collapsed) return button
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{button}</TooltipTrigger>
+      <TooltipContent side="right">{label}</TooltipContent>
+    </Tooltip>
   )
 }
 
