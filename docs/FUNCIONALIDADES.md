@@ -76,7 +76,7 @@ FEATURES.md dejan de coincidir fila a fila. -->
 | Funcionalidad | Dónde | Captura |
 |---|---|---|
 | **Investigar la empresa** con fuentes: producto, noticias, cultura de ingeniería, stack y banderas rojas | `research-company` | [Dosier](img/es/job-research.webp) |
-| **Preparar la entrevista**: una guía en PDF y un plan por días, que se ven bajo la entrevista | `prepare-interview` | [Plan](img/es/job-interview.webp) |
+| **Preparar la entrevista**: una guía en PDF y un plan por días, que se ven bajo la entrevista; cada ronda con su tipo (RR. HH., técnica, caso, final) y tus indicaciones, que también usa el simulacro | `prepare-interview` | [Plan](img/es/job-interview.webp) |
 | **Simulacro de entrevista**: una pregunta cada vez, feedback concreto y una respuesta mejor solo con tu perfil | `mock-interview` | |
 | **Repaso**: notas y próximos pasos, la siguiente ronda predicha y historias STAR nuevas propuestas; con una oferta recibida, qué aclarar antes de aceptar | `debrief-interview` | |
 | **Ofertas recibidas** comparadas con tu mínimo y con el rango publicado, **sin que tu agente vea nunca tu mínimo** | `/procesos` | [Oferta recibida](img/es/job-offer.webp) |

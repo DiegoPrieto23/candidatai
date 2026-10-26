@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { ApplicationChannel, BoardCard, DiscardReason, EventType } from '@/api/client'
+import type { ApplicationChannel, BoardCard, DiscardReason, EventType, InterviewType } from '@/api/client'
 import { useCreateMilestone, useJobEvent } from '@/api/queries'
 import { Button } from '@/components/ui/button'
 import {
@@ -14,7 +14,14 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { CHANNEL_LABEL, DISCARD_REASONS, eventLabel, MOVE_HINT, STAGE_LABEL } from '@/lib/labels'
+import {
+  CHANNEL_LABEL,
+  DISCARD_REASONS,
+  eventLabel,
+  INTERVIEW_TYPE_LABEL,
+  MOVE_HINT,
+  STAGE_LABEL,
+} from '@/lib/labels'
 import { fromLocalInput, toLocalInput } from '@/lib/time'
 import type { MoveOption } from '@/lib/moves'
 import { errorMessage } from '@/lib/errors'
@@ -52,6 +59,7 @@ function MoveForm({ card, options, onDone }: { card: BoardCard; options: MoveOpt
   const [startsDate, setStartsDate] = useState('')
   const [startsTime, setStartsTime] = useState('')
   const [location, setLocation] = useState('')
+  const [interviewType, setInterviewType] = useState<InterviewType | ''>('')
   const event = useJobEvent()
   const milestone = useCreateMilestone()
   const pending = event.isPending || milestone.isPending
@@ -82,6 +90,7 @@ function MoveForm({ card, options, onDone }: { card: BoardCard; options: MoveOpt
             occurred_at: occurred,
             location: location.trim() || undefined,
             notes: trimmed,
+            interview_type: (milestoneKind === 'interview' && interviewType) || undefined,
           },
         },
         { onSuccess: onDone },
@@ -208,6 +217,24 @@ function MoveForm({ card, options, onDone }: { card: BoardCard; options: MoveOpt
           <p className="-mt-1 text-xs text-muted-foreground">
             {milestoneKind === 'interview' ? t('dateHintInterview') : t('dateHintTest')}
           </p>
+          {startsDate && milestoneKind === 'interview' && (
+            <div className="space-y-2">
+              <Label htmlFor="move-interview-type">{t('interviewType')}</Label>
+              <select
+                id="move-interview-type"
+                value={interviewType}
+                onChange={(e) => setInterviewType(e.target.value as InterviewType | '')}
+                className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+              >
+                <option value="">{t('noInterviewType')}</option>
+                {Object.entries(INTERVIEW_TYPE_LABEL).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
           {startsDate && (
             <div className="space-y-2">
               <Label htmlFor="move-location">{t('location')}</Label>

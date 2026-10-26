@@ -385,6 +385,14 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
 
 ## 10. Entrevistas y ofertas recibidas
 
+- **Varias rondas:** cada entrevista es un hito propio en la ficha (sección «Proceso»), con su
+  **tipo** (RR. HH. o encaje cultural, técnica, caso práctico, final u otra), su guía, su plan y su
+  repaso. La guía y el simulacro se adaptan al tipo y tienen en cuenta el repaso de las rondas
+  anteriores.
+- **Indicaciones para prepararla:** en una entrevista programada, la caja «Indicaciones para
+  preparar y ensayar» guarda lo que quieres que tengan en cuenta «Preparar» y «Simulacro» («más peso
+  a SQL», «me han dicho que habrá un caso de negocio», «feedback más duro»…). Son de esa entrevista
+  y se quedan guardadas hasta que las cambies.
 - `prepare-interview 42`: lee todo lo que hay de la oferta, tu perfil, lo que ya enviaste y la web,
   te pregunta lo que falte y te deja en la ficha una **guía en PDF** (el rol, las responsabilidades
   desglosadas, tu encaje, lo que ya respondiste, la empresa y el sector, conceptos a repasar,

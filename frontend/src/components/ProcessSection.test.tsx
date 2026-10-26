@@ -84,6 +84,41 @@ describe('Sección Proceso de la ficha', () => {
     })
   })
 
+  it('una entrevista lleva su tipo; editarla lo puede quitar', async () => {
+    const calls = mockApi({
+      'GET /status': status(),
+      'GET /jobs/1': jobView({ stage: 'in_process' }),
+      'GET /jobs/1/process': processView({
+        stage: 'in_process',
+        milestones: [milestone(5, { kind: 'interview', interview_type: 'hr' })],
+      }),
+      'POST /jobs/1/milestones': milestone(6, { kind: 'interview', interview_type: 'technical' }),
+      'POST /milestones/5': milestone(5, { kind: 'interview' }),
+    })
+    renderApp('/jobs/1?tab=process')
+    const section = await screen.findByRole('region', { name: 'Proceso' })
+    expect(await within(section).findByText('RR. HH. o encaje cultural')).toBeInTheDocument()
+
+    const [addMilestone] = within(section).getAllByRole('button', { name: 'Añadir' })
+    await userEvent.click(addMilestone)
+    await userEvent.selectOptions(within(section).getByLabelText('Tipo de entrevista'), 'technical')
+    await userEvent.type(within(section).getByLabelText('Fecha y hora (Madrid)'), '2026-10-07T10:30')
+    await userEvent.click(within(section).getByRole('button', { name: 'Guardar hito' }))
+    await waitFor(() => expect(calls.some((c) => c.path === '/jobs/1/milestones')).toBe(true))
+    expect(calls.find((c) => c.path === '/jobs/1/milestones')?.body).toMatchObject({
+      kind: 'interview',
+      interview_type: 'technical',
+    })
+
+    await userEvent.click(within(section).getByRole('button', { name: /^Editar «/ }))
+    expect(within(section).getByLabelText('Tipo de entrevista')).toHaveValue('hr')
+    await userEvent.selectOptions(within(section).getByLabelText('Tipo de entrevista'), '')
+    await userEvent.click(within(section).getByRole('button', { name: 'Guardar hito' }))
+    await waitFor(() =>
+      expect(calls.find((c) => c.path === '/milestones/5')?.body).toMatchObject({ interview_type: null }),
+    )
+  })
+
   it('anota un seguimiento enviado', async () => {
     const calls = mockApi({
       'GET /status': status(),

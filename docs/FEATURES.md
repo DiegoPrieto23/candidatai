@@ -76,7 +76,7 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 | Feature | Where | Screenshot |
 |---|---|---|
 | **Company research** with sources: product, news, engineering culture, stack and red flags | `research-company` | [Dossier](img/en/job-research.webp) |
-| **Interview prep**: a PDF guide and a day-by-day plan, shown under the interview | `prepare-interview` | [Plan](img/en/job-interview.webp) |
+| **Interview prep**: a PDF guide and a day-by-day plan, shown under the interview; each round with its type (HR, technical, case, final) and your instructions, which the mock interview uses too | `prepare-interview` | [Plan](img/en/job-interview.webp) |
 | **Mock interview**: one question at a time, concrete feedback and a better answer from your profile only | `mock-interview` | |
 | **Debrief**: notes and next steps, the next round predicted and new STAR stories proposed; with a received offer, what to clarify before accepting | `debrief-interview` | |
 | **Received offers** compared against your minimum and the posted range, **without your agent ever seeing your minimum** | `/procesos` | [Received offer](img/en/job-offer.webp) |

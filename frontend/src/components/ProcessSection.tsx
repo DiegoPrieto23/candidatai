@@ -15,6 +15,7 @@ import {
   fileUrls,
   type ContactOut,
   type ContactRelation,
+  type InterviewType,
   type JobView,
   type MilestoneKind,
   type MilestoneOut,
@@ -45,6 +46,7 @@ import {
   channelLabel,
   CONTACT_RELATION_LABEL,
   formatDate,
+  INTERVIEW_TYPE_LABEL,
   MILESTONE_KIND_LABEL,
   MILESTONE_STATUS_LABEL,
   REFERRAL_LABEL,
@@ -83,10 +85,11 @@ interface MilestoneDraft {
   allDay: boolean
   location: string
   notes: string
+  interviewType: InterviewType | ''
 }
 
 function draftFrom(m?: MilestoneOut): MilestoneDraft {
-  if (!m) return { kind: 'interview', title: '', date: '', allDay: false, location: '', notes: '' }
+  if (!m) return { kind: 'interview', title: '', date: '', allDay: false, location: '', notes: '', interviewType: '' }
   return {
     kind: m.kind,
     title: m.title,
@@ -94,6 +97,7 @@ function draftFrom(m?: MilestoneOut): MilestoneDraft {
     allDay: m.all_day,
     location: m.location ?? '',
     notes: m.notes ?? '',
+    interviewType: m.interview_type ?? '',
   }
 }
 
@@ -137,6 +141,24 @@ function MilestoneForm({
               className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
             >
               {Object.entries(MILESTONE_KIND_LABEL).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+        {draft.kind === 'interview' && (
+          <div className="space-y-1.5">
+            <Label htmlFor="ms-interview-type">{t('interviewType')}</Label>
+            <select
+              id="ms-interview-type"
+              value={draft.interviewType}
+              onChange={(e) => set({ interviewType: e.target.value as InterviewType | '' })}
+              className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+            >
+              <option value="">{t('noInterviewType')}</option>
+              {Object.entries(INTERVIEW_TYPE_LABEL).map(([value, label]) => (
                 <option key={value} value={value}>
                   {label}
                 </option>
@@ -243,6 +265,7 @@ function MilestoneRow({ milestone, stage }: { milestone: MilestoneOut; stage: St
                   all_day: draft.allDay,
                   location: draft.location.trim() || undefined,
                   notes: draft.notes.trim() || undefined,
+                  ...(milestone.kind === 'interview' && { interview_type: draft.interviewType || null }),
                 },
               },
               { onSuccess: () => setEditing(false) },
@@ -259,6 +282,11 @@ function MilestoneRow({ milestone, stage }: { milestone: MilestoneOut; stage: St
       <div className="min-w-0 flex-1 text-sm">
         <p>
           <span className="font-medium">{milestone.title}</span>
+          {milestone.interview_type && (
+            <span className="ml-2 rounded bg-muted px-1.5 py-0.5 text-xs">
+              {INTERVIEW_TYPE_LABEL[milestone.interview_type]}
+            </span>
+          )}
           <span className="text-muted-foreground"> · {formatWhen(milestone.starts_at, milestone.all_day)}</span>
           {!scheduled && (
             <span className="ml-2 rounded bg-muted px-1.5 py-0.5 text-xs">
@@ -363,6 +391,7 @@ function Milestones({ process }: { process: ProcessView }) {
                   all_day: draft.allDay,
                   location: draft.location.trim() || undefined,
                   notes: draft.notes.trim() || undefined,
+                  interview_type: (draft.kind === 'interview' && draft.interviewType) || undefined,
                 },
               },
               { onSuccess: () => setAdding(false) },

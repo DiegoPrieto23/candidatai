@@ -40,6 +40,10 @@ class Milestone(Base):
     debrief_notes: Mapped[str | None] = mapped_column(Text)
     next_steps: Mapped[str | None] = mapped_column(Text)
     debriefed_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
+    # Qué ronda es (hr | technical | case | final | other) y lo que el usuario quiere que tengan en
+    # cuenta la guía y el simulacro. Las indicaciones solo se escriben desde la UI.
+    interview_type: Mapped[str | None] = mapped_column(String(16))
+    prep_instructions: Mapped[str | None] = mapped_column(Text)
 
 
 class Contact(Base):

@@ -98,6 +98,7 @@ describe('Procesos (kanban)', () => {
     await userEvent.type(within(dialog).getByLabelText('Fecha de la entrevista (opcional)'), '2026-10-07')
     await userEvent.type(within(dialog).getByLabelText('Hora (opcional)'), '10:30')
     await userEvent.type(within(dialog).getByLabelText('Lugar o enlace (opcional)'), 'https://meet.example/x')
+    await userEvent.selectOptions(within(dialog).getByLabelText('Tipo de entrevista'), 'hr')
     await userEvent.click(register)
 
     await waitFor(() => expect(calls.some((c) => c.path === '/jobs/2/milestones')).toBe(true))
@@ -107,6 +108,7 @@ describe('Procesos (kanban)', () => {
       starts_at: '2026-10-07T10:30:00+02:00',
       location: 'https://meet.example/x',
       all_day: false,
+      interview_type: 'hr',
     })
     expect(calls.some((c) => c.path === '/jobs/2/events')).toBe(false)
   })

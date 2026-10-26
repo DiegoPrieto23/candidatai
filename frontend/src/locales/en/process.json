@@ -1,6 +1,8 @@
 {
   "title": "Process",
   "milestoneForm": {
+    "interviewType": "Interview type",
+    "noInterviewType": "Not specified",
     "kind": "Type",
     "title": "Title (optional)",
     "day": "Day",

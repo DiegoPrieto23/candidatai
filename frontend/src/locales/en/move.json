@@ -10,6 +10,8 @@
   "time": "Time (optional)",
   "dateHintInterview": "Leave it blank if you don't know it yet. Without a time, it counts as all day.",
   "dateHintTest": "Leave it blank if there's no date. Without a time, it counts as all day.",
+  "interviewType": "Interview type",
+  "noInterviewType": "Not specified",
   "location": "Place or link (optional)",
   "when": "When it happened",
   "note": "Note",

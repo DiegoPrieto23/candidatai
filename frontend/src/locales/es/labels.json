@@ -136,6 +136,13 @@
     "deadline": "Plazo",
     "other": "Otro hito"
   },
+  "interviewType": {
+    "hr": "RR. HH. o encaje cultural",
+    "technical": "Técnica",
+    "case": "Caso práctico",
+    "final": "Final",
+    "other": "Otra"
+  },
   "upcomingKind": {
     "interview": "Entrevista",
     "test": "Prueba técnica",

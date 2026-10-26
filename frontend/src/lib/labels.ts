@@ -4,6 +4,7 @@ import type {
   CvRenderOptions,
   DiscardReason,
   EventType,
+  InterviewType,
   MilestoneKind,
   ReferralStatus,
   Schemas,
@@ -216,6 +217,8 @@ export function colorLabel(hex: string): string {
 // --- Seguimiento (fase 10) ------------------------------------------------------------------------
 
 export const MILESTONE_KIND_LABEL = translated<MilestoneKind>('milestoneKind')
+
+export const INTERVIEW_TYPE_LABEL = translated<InterviewType>('interviewType')
 
 export const UPCOMING_KIND_LABEL = translated<Schemas['UpcomingItem']['kind']>('upcomingKind')
 

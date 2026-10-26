@@ -15,6 +15,14 @@
   "hint": "Está en «{{stage}}». Registra cada paso: la oferta cambia de etapa sola y queda en su historial.",
   "loadFailed": "No se pudieron cargar las opciones: {{error}}",
   "interview": {
+    "instructions": {
+      "label": "Indicaciones para preparar y ensayar (opcional)",
+      "placeholder": "P. ej.: más peso a SQL y modelado de datos; me han dicho que habrá un caso de negocio; feedback más duro en el simulacro.",
+      "hint": "Las tienen en cuenta «Preparar» y «Simulacro» de esta entrevista. Se quedan guardadas.",
+      "save": "Guardar indicaciones",
+      "saving": "Guardando…",
+      "saved": "Guardadas"
+    },
     "prepare": "Preparar",
     "guide": "Guía de preparación (PDF)",
     "guideSaved": "Guardada el {{date}}",

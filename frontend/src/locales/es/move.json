@@ -10,6 +10,8 @@
   "time": "Hora (opcional)",
   "dateHintInterview": "Si aún no la sabes, déjala en blanco. Sin hora, cuenta todo el día.",
   "dateHintTest": "Si no tiene fecha, déjala en blanco. Sin hora, cuenta todo el día.",
+  "interviewType": "Tipo de entrevista",
+  "noInterviewType": "Sin indicar",
   "location": "Lugar o enlace (opcional)",
   "when": "Cuándo pasó",
   "note": "Nota",

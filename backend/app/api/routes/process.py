@@ -80,6 +80,14 @@ def update_milestone(
     return process.update_milestone(session, milestone_id, body)
 
 
+@router.post("/milestones/{milestone_id}/prep-instructions", operation_id="set_prep_instructions")
+def set_prep_instructions(
+    session: SessionDep, milestone_id: int, body: process.PrepInstructionsInput
+) -> process.MilestoneOut:
+    """Indicaciones de una entrevista para la guía y el simulacro que prepara tu agente."""
+    return process.set_prep_instructions(session, milestone_id, body)
+
+
 @router.post("/milestones/{milestone_id}/status", operation_id="set_milestone_status")
 def set_milestone_status(
     session: SessionDep, milestone_id: int, body: process.MilestoneStatusChange

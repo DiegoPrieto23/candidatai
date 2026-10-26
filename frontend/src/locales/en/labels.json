@@ -136,6 +136,13 @@
     "deadline": "Deadline",
     "other": "Other milestone"
   },
+  "interviewType": {
+    "hr": "HR or culture fit",
+    "technical": "Technical",
+    "case": "Case study",
+    "final": "Final",
+    "other": "Other"
+  },
   "upcomingKind": {
     "interview": "Interview",
     "test": "Technical test",

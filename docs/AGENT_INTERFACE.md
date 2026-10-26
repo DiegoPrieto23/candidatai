@@ -94,7 +94,7 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | `get_reply` | `cai replies show ID --json` | 15 | `reply_id` | El correo en `<untrusted_email>`, `candidates` (oferta, etapa, envío, próximos hitos), `timezone` y `proposal` | — |
 | `save_reply_proposal` | `cai replies propose ID --file F --json` | 15 | `reply_id`, `proposal` (ver §Respuestas) | `status: proposed`, `stage`, `valid_now`, `message` | — (la acepta el usuario en la UI) |
 | `save_message_draft` | `cai drafts save ID --file F --json` | 15 (18) | `job_id`, `draft`: `{kind: followup \| thank_you \| linkedin \| email, subject?, body, milestone_id?, recipient_role?, contact_id?, network_contact_id?, attachments?}` | `draft_id`, `kind`, `milestone_id`, `replaced`, `message` | — (no envía nada) |
-| `get_interviews` | `cai interviews list ID --json` | 17 | `job_id` | `job_id`, `job_title`, `company`, `stage`, `offer_received`, `today` (Europe/Madrid), `contacts` (nombre y cargo) e `interviews`: hitos de tipo entrevista, por fecha, con `prep_plan`, `debrief_notes`, `next_steps` y `debriefed_at` | — |
+| `get_interviews` | `cai interviews list ID --json` | 17 | `job_id` | `job_id`, `job_title`, `company`, `stage`, `offer_received`, `today` (Europe/Madrid), `contacts` (nombre y cargo) e `interviews`: hitos de tipo entrevista, por fecha, con `interview_type`, `prep_instructions` (las indicaciones del usuario, que siguen la guía y el simulacro), `prep_plan`, `debrief_notes`, `next_steps` y `debriefed_at` | — |
 | `save_interview_plan` | `cai interviews plan HITO --file F --json` | 17 | `milestone_id`, `plan`: `{dossier?, blocks: [{date, minutes (15-120), topic, detail?}]}`; por CLI, `F` = el plan | `milestone_id`, `job_id`, `blocks`, `replaced`, `message`. Entrevista programada y por empezar, proceso abierto y bloques de hoy al día de la entrevista (si no, `not_allowed`) | — |
 | `get_interview_guide` | `cai interviews show-guide HITO --json` | — | `milestone_id` | `milestone_id`, `job_id`, `info` (`file`, `language`, `title`, `saved_at`, `agent_name`) y `guide` (el contenido; `null` si no hay) | — |
 | `save_interview_guide` | `cai interviews guide HITO --file F --json` | — | `milestone_id`, `guide`: `{language (es\|en), title, subtitle?, accent_color? (#RRGGBB), sections: [{title, blocks}], sources?: [{title, url}]}`; bloques `paragraph`, `heading`, `bullets`, `table`, `qa`, `callout`, `code`; por CLI, `F` = la guía | `milestone_id`, `job_id`, `file` (el PDF en `entrevistas/`), `sections`, `replaced`, `message`. Como el plan: entrevista programada y por empezar (si no, `not_allowed`); sin Chromium, `pdf_unavailable` y no se guarda | — |
@@ -283,7 +283,9 @@ las más recientes primero.
   nueva entra solo con `update-profile` y la confirmación del usuario.
 - Botones de la ficha: «Preparar» y «Simulacro» en una entrevista programada por
   empezar, «Repasar» en una que ya ha empezado y «Dudas antes de aceptar» con un `offer_received`.
-  `POST /agent/launch` acepta `milestone_id` (entero) para las tres primeras.
+  `POST /agent/launch` acepta `milestone_id` (entero) para las tres primeras. Las indicaciones de
+  la entrevista no van en la orden (solo lleva ids): se guardan en el hito desde la UI y el skill
+  las lee con `get_interviews`. Ninguna herramienta las escribe.
 
 ### Contactos, mensajes y dosier de empresa (fase 18)
 
