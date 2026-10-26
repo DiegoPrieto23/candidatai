@@ -102,7 +102,7 @@
   "calibration": {
     "title": "Is the score right?",
     "hint": "Reply and interview rates of the applications you sent (in the chosen period, by sending date) based on what you knew when you sent them.",
-    "note": "Indicative. In brackets, the 95% interval: if two groups' intervals overlap, there's no clear difference. Weights and filters don't change on their own: your agent proposes and you decide, checking with <code>cai eval matching</code>.",
+    "note": "A rough guide. In brackets, the 95 % interval: if two groups overlap, there's no clear difference. Weights and filters never change on their own: your agent proposes and you decide.",
     "review": "Review my search",
     "none": "You haven't sent any application in this period yet. It makes sense from about {{min}}-30 sent.",
     "summary": "<strong>{{applied}}</strong> sent · reply <strong>{{reply}}</strong> · interview <strong>{{interview}}</strong>",
@@ -217,7 +217,7 @@
   "story": {
     "title": "Your search in numbers",
     "hint": "Since the first posting, whatever the period above. Numbers only: no companies, roles or amounts.",
-    "note": "To show in your README, or anywhere, whether it works. The app never publishes it: you copy it if you want to. Also with <code>cai stats story</code>.",
+    "note": "To share in your README or wherever you like if it works. The app never publishes it: you copy it, if you want.",
     "period": "From {{start}} to {{end}}",
     "evaluated": "Evaluated",
     "applied": "Applications",

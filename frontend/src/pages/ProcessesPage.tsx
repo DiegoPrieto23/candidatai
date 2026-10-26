@@ -84,7 +84,7 @@ function CardBody({ card, onMove }: { card: BoardCard; onMove?: () => void }) {
           type="button"
           onClick={onMove}
           onPointerDown={(e) => e.stopPropagation()}
-          className="mt-2.5 inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-2.5 py-1 text-xs font-medium hover:bg-accent hover:text-accent-foreground"
+          className="-ml-1 mt-2 inline-flex items-center gap-1.5 rounded-md px-1 py-0.5 text-xs font-medium text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
           aria-label={t('updateAria', { title: card.title })}
         >
           <ArrowsLeftRightIcon className="size-3.5" />

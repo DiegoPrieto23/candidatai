@@ -37,6 +37,6 @@
     },
     "label": "Señales de oferta dudosa",
     "title": "Antes de dedicarle tiempo",
-    "intro": "No cambian el score ni descartan la oferta: son observaciones para que decidas tú. Si quieres que descarten, añádelas a <code>preferences.exclude_signals</code> de tu perfil (empresa oculta y temporal)."
+    "intro": "No cambian el score ni descartan la oferta: son observaciones para que decidas tú. Si quieres que descarten, pídeselo a tu agente («descarta las ofertas de empresa oculta»)."
   }
 }

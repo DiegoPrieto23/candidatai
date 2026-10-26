@@ -2,8 +2,6 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import {
   ArrowDownIcon,
-  ArrowLeftIcon,
-  ArrowRightIcon,
   ArrowSquareOutIcon,
   ArrowsDownUpIcon,
   ArrowUpIcon,
@@ -17,10 +15,11 @@ import {
 } from '@phosphor-icons/react'
 import { Trans, useTranslation } from 'react-i18next'
 import type { DiscardReason, JobRow, Stage } from '@/api/client'
-import { type JobSort, PAGE_SIZE, type SortDirection, useJobEvent, useJobs } from '@/api/queries'
+import { type JobSort, PAGE_SIZE, type SortDirection, useJobEvent, useJobs, useStatus } from '@/api/queries'
 import { DiscardDialog, type DiscardChoice } from '@/components/DiscardDialog'
 import { SignalBadges } from '@/components/JobSignals'
 import { KnownBadge } from '@/components/NetworkPanel'
+import { Pager } from '@/components/Pager'
 import { ScoreBadge } from '@/components/MatchDetails'
 import { StageBadge } from '@/components/StageBadge'
 import { EmptyState, ErrorState } from '@/components/States'
@@ -111,16 +110,26 @@ function RiskMark() {
   )
 }
 
+/** Un dato que falta: un guion discreto, con el porqué para el lector de pantalla y el ratón. */
+function Missing({ label }: { label: string }) {
+  return (
+    <span className="text-muted-foreground/50" title={label}>
+      <span aria-hidden>—</span>
+      <span className="sr-only">{label}</span>
+    </span>
+  )
+}
+
 function RemoteMode({ mode }: { mode: JobRow['remote_mode'] }) {
   const { t } = useTranslation('inbox')
-  if (!mode) return <span className="text-muted-foreground/60">{t('notExtracted')}</span>
+  if (!mode) return <Missing label={t('notExtracted')} />
   return <span className={cn(mode === 'unknown' && 'text-muted-foreground')}>{REMOTE_LABEL[mode]}</span>
 }
 
 function Salary({ salary }: { salary: JobRow['salary'] }) {
   const { t } = useTranslation('inbox')
   const text = formatSalary(salary)
-  if (!text) return <span className="text-muted-foreground/60">{t('noSalary')}</span>
+  if (!text) return <Missing label={t('noSalary')} />
   return <span className="tabular">{text}</span>
 }
 
@@ -277,8 +286,8 @@ function JobTable({
               </th>
             )}
             <th className="pb-3 pl-4 font-medium">{t('columns.job')}</th>
-            <th className="pb-3 font-medium">{t('columns.mode')}</th>
-            <SortHeader field="salary" current={sort} onSort={onSort}>
+            <th className="pb-3 pr-6 font-medium">{t('columns.mode')}</th>
+            <SortHeader field="salary" current={sort} onSort={onSort} className="pr-6">
               {t('columns.salary')}
             </SortHeader>
             <SortHeader field="score" current={sort} onSort={onSort} className="pr-6 text-right">
@@ -342,7 +351,7 @@ function JobTable({
                 <Salary salary={job.salary} />
               </td>
               <td className="py-3.5 pr-6 text-right">
-                <ScoreBadge score={job.score} />
+                {job.score == null ? <Missing label={t('noScore')} /> : <ScoreBadge score={job.score} />}
               </td>
               <td className="py-3.5 pr-6">
                 <StageBadge stage={job.stage} />
@@ -424,6 +433,46 @@ function JobTable({
   )
 }
 
+/** Las etapas como filtros, con cuántas hay en cada una. Las vacías se ven, atenuadas. */
+function StageFilter({ stage, onChange }: { stage: Stage | undefined; onChange: (stage: Stage | undefined) => void }) {
+  const { t } = useTranslation('inbox')
+  const { data } = useStatus()
+  const items: { key: Stage | undefined; label: string; count?: number }[] = [
+    { key: undefined, label: t('allStages'), count: data?.total },
+    ...STAGES.map((s) => ({ key: s, label: STAGE_LABEL[s], count: data?.by_stage[s] })),
+  ]
+  return (
+    <nav aria-label={t('filterStage')} className="-mx-4 mb-3 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+      <ul className="flex min-w-max gap-1.5">
+        {items.map(({ key, label, count }) => {
+          const selected = stage === key
+          return (
+            <li key={key ?? 'all'}>
+              <button
+                type="button"
+                aria-pressed={selected}
+                onClick={() => onChange(key)}
+                className={cn(
+                  'flex items-baseline gap-1.5 rounded-full border px-3 py-1 text-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  selected
+                    ? 'border-foreground bg-foreground text-background'
+                    : 'bg-card text-foreground/80 hover:border-foreground/30',
+                  !selected && !count && 'text-muted-foreground/60',
+                )}
+              >
+                {label}
+                <span className={cn('tabular text-xs', selected ? 'text-background/70' : 'text-muted-foreground')}>
+                  {count ?? 0}
+                </span>
+              </button>
+            </li>
+          )
+        })}
+      </ul>
+    </nav>
+  )
+}
+
 function TableSkeleton() {
   const { t } = useTranslation('inbox')
   return (
@@ -495,8 +544,6 @@ export function InboxPage() {
   }
 
   const total = data?.total ?? 0
-  const from = total ? (page - 1) * PAGE_SIZE + 1 : 0
-  const to = Math.min(page * PAGE_SIZE, total)
   const filtered = Boolean(stage || q)
   const visible = (data?.items ?? []).filter((job) => !hidden.has(job.id))
   const picked = quick ? visible.filter((job) => selected.has(job.id)) : []
@@ -572,6 +619,8 @@ export function InboxPage() {
         </p>
       </div>
 
+      <StageFilter stage={stage} onChange={(next) => update({ stage: next ?? null, page: null })} />
+
       <div className="mb-4 flex flex-col gap-2 sm:flex-row">
         <div className="relative flex-1">
           <MagnifyingGlassIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -584,22 +633,6 @@ export function InboxPage() {
             className="h-10 bg-card pl-9"
           />
         </div>
-        <Select
-          value={stage ?? 'all'}
-          onValueChange={(value) => update({ stage: value === 'all' ? null : value, page: null })}
-        >
-          <SelectTrigger aria-label={t('filterStage')} className="h-10 w-full bg-card data-[size=default]:h-10 sm:w-48">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('allStages')}</SelectItem>
-            {STAGES.map((s) => (
-              <SelectItem key={s} value={s}>
-                {STAGE_LABEL[s]}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
         <Select
           value={`${sort.sort}:${sort.dir}`}
           onValueChange={(value) => {
@@ -741,33 +774,13 @@ export function InboxPage() {
         }}
       />
 
-      {total > PAGE_SIZE && (
-        <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
-          <span className="tabular">
-            {t('range', { from, to, total })}
-          </span>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page <= 1}
-              onClick={() => update({ page: page > 2 ? String(page - 1) : null })}
-            >
-              <ArrowLeftIcon />
-              {t('previous')}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={to >= total}
-              onClick={() => update({ page: String(page + 1) })}
-            >
-              {t('next')}
-              <ArrowRightIcon />
-            </Button>
-          </div>
-        </div>
-      )}
+      <Pager
+        page={page}
+        total={total}
+        pageSize={PAGE_SIZE}
+        onPage={(next) => update({ page: next > 1 ? String(next) : null })}
+        className="mt-4"
+      />
     </div>
   )
 }

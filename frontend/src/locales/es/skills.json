@@ -14,7 +14,7 @@
     "added": "«{{skill}}» cuenta ya como «{{profile}}». El score de las ofertas se recalcula en segundo plano.",
     "existed": "«{{skill}}» ya contaba como «{{profile}}».",
     "title": "«{{skill}}» es lo mismo que…",
-    "description": "Elige la skill de tu perfil que significa lo mismo. Se añade como sinónimo en <code>config/skill_aliases.yaml</code> y se recalcula el score de tus ofertas.",
+    "description": "Elige la skill de tu perfil que significa lo mismo. Se guarda como sinónimo y se recalcula el score de tus ofertas.",
     "search": "Buscar en tu perfil",
     "list": "Skills de tu perfil",
     "none": "Ninguna skill de tu perfil coincide.",
@@ -33,7 +33,7 @@
   },
   "noProfile": {
     "title": "Aún no tienes perfil",
-    "body": "Los huecos se calculan frente a tu perfil. Créalo con el skill `update-profile`."
+    "body": "Los huecos se calculan frente a tu perfil. Créalo en «Mi perfil» o pídeselo a tu agente."
   },
   "title": "Skills",
   "intro": "Lo que piden tus ofertas y tu perfil no cubre. Muchas veces es vocabulario: si es lo mismo que una skill tuya, dilo y el score se recalcula. Si la tienes, añádela al perfil; si no, va a tu plan de formación.",

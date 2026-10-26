@@ -166,8 +166,8 @@ describe('Candidatura asistida en la ficha', () => {
     mockApi({ ...base(), 'GET /jobs/1/apply': assistedApplication({ attempt: queued }) })
     renderApp('/jobs/1?tab=application')
     const region = await section()
-    expect(await within(region).findByText('En cola para el worker…')).toBeInTheDocument()
-    expect(within(region).getByText('uv run cai worker')).toBeInTheDocument()
+    expect(await within(region).findByText('En cola…')).toBeInTheDocument()
+    expect(within(region).getByText(/¿Está CandidatAI abierta entera\?/)).toBeInTheDocument()
   })
 
   it('«Lo termino yo» y «Marcar como enviada»', async () => {

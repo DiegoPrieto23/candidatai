@@ -14,7 +14,7 @@
     "added": "“{{skill}}” now counts as “{{profile}}”. Job scores are recalculated in the background.",
     "existed": "“{{skill}}” already counted as “{{profile}}”.",
     "title": "“{{skill}}” is the same as…",
-    "description": "Pick the skill from your profile that means the same. It's added as a synonym in <code>config/skill_aliases.yaml</code> and your jobs' scores are recalculated.",
+    "description": "Pick the skill in your profile that means the same. It's saved as a synonym and your jobs' scores are recalculated.",
     "search": "Search your profile",
     "list": "Skills in your profile",
     "none": "No skill in your profile matches.",
@@ -33,7 +33,7 @@
   },
   "noProfile": {
     "title": "You don't have a profile yet",
-    "body": "Gaps are calculated against your profile. Create it with the skill `update-profile`."
+    "body": "Gaps are worked out against your profile. Create it in “My profile” or ask your agent."
   },
   "title": "Skills",
   "intro": "What your jobs ask for and your profile doesn't cover. Often it's vocabulary: if it's the same as one of your skills, say so and the score is recalculated. If you have it, add it to your profile; if not, it goes to your training plan.",

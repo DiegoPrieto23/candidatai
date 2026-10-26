@@ -12,6 +12,7 @@
   },
   "risk": "Possible content aimed at an AI",
   "notExtracted": "Not extracted",
+  "noScore": "No score",
   "noSalary": "Not stated",
   "columns": {
     "job": "Job",
@@ -29,7 +30,7 @@
   "matching": " matching “{{q}}”",
   "search": "Search by title or company",
   "filterStage": "Filter by stage",
-  "allStages": "All stages",
+  "allStages": "All",
   "sortLabel": "Sort",
   "noResults": {
     "title": "Nothing here",
@@ -39,11 +40,8 @@
   "empty": {
     "title": "Your inbox is empty",
     "addFirst": "Add the first one",
-    "body": "Add a job from its URL or by pasting the text. Then your agent extracts it with the skill <code>process-jobs</code>."
+    "body": "Add a job from its URL or by pasting the text. Then “Process jobs” reads it and pulls out its details."
   },
-  "range": "{{from}}-{{to}} of {{total}}",
-  "previous": "Previous",
-  "next": "Next",
   "closedWhen": "Closed {{when}}",
   "quick": {
     "select": "Select {{title}}",

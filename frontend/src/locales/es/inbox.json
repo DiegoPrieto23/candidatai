@@ -12,6 +12,7 @@
   },
   "risk": "Posible contenido dirigido a una IA",
   "notExtracted": "Sin extraer",
+  "noScore": "Sin score",
   "noSalary": "No lo indica",
   "columns": {
     "job": "Oferta",
@@ -29,7 +30,7 @@
   "matching": " que coinciden con «{{q}}»",
   "search": "Buscar por título o empresa",
   "filterStage": "Filtrar por etapa",
-  "allStages": "Todas las etapas",
+  "allStages": "Todas",
   "sortLabel": "Ordenar",
   "noResults": {
     "title": "Nada por aquí",
@@ -39,11 +40,8 @@
   "empty": {
     "title": "Tu bandeja está vacía",
     "addFirst": "Añadir la primera",
-    "body": "Da de alta una oferta desde su URL o pegando el texto. Después, tu agente la extrae con el skill <code>process-jobs</code>."
+    "body": "Da de alta una oferta desde su URL o pegando el texto. Después, «Procesar ofertas» la lee y saca sus datos."
   },
-  "range": "{{from}}-{{to}} de {{total}}",
-  "previous": "Anteriores",
-  "next": "Siguientes",
   "closedWhen": "Cerrada {{when}}",
   "quick": {
     "select": "Seleccionar {{title}}",

@@ -261,7 +261,7 @@ describe('Plataformas', () => {
     mockApi({ 'GET /status': status(), 'GET /sources': { sources: [], agent_browse: LIMITS } })
     renderApp('/plataformas')
     expect(await screen.findByText('Aún no hay plataformas')).toBeInTheDocument()
-    expect(screen.getByText(/search-jobs configurar/)).toBeInTheDocument()
+    expect(screen.getByText(/pide a tu agente que configure tu búsqueda/)).toBeInTheDocument()
   })
 })
 

@@ -13,7 +13,7 @@
     "forJobLabel": "For this job: ",
     "none": "none",
     "general": "General (your profile): ",
-    "generalNone": "none. You can add them with the skill <code>update-profile</code>.",
+    "generalNone": "none. You can add them in “My profile” → CV and letter.",
     "limit": "Limit: {{count}} words (the job's take precedence).",
     "prefMaxWords": "maximum {{count}} words",
     "prefTone": "{{tone}} tone",
@@ -64,7 +64,7 @@
   },
   "none": {
     "title": "No letter yet",
-    "hint": "Run <code>generate-cover-letter {{id}}</code> in your agent: it writes it with your instructions, verifies it and matches it to your CV. Then you can copy it, tweak it and change the design here, without AI.",
+    "hint": "Ask your agent for it (“write the cover letter for job {{id}}”): it writes it following your instructions, checks it and matches it to your CV. Then you can copy it, tweak it and change the design here, without AI.",
     "never": "This job never had a letter."
   },
   "copyText": "Copy text",

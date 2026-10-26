@@ -21,11 +21,11 @@
   },
   "noStage": "Sin etapa",
   "errors": {
-    "offlineTitle": "La API no responde",
+    "offlineTitle": "CandidatAI no responde",
     "loadFailed": "No se ha podido cargar",
     "generic": "Algo ha fallado.",
-    "offline": "No hay conexión con la API. Arráncala con `uv run cai serve` en backend/.",
-    "unexpected": "Error inesperado de la API ({{status}}).",
+    "offline": "No hay conexión con la app. Ábrela desde su acceso directo (o con `cai start`) y recarga esta página.",
+    "unexpected": "Algo ha fallado en la app ({{status}}). Vuelve a intentarlo.",
     "types": {
       "unauthorized": "No autorizado",
       "forbidden": "No permitido",
@@ -47,5 +47,11 @@
       "referenced": "Lo cita otra parte del perfil"
     }
   },
-  "close": "Cerrar"
+  "close": "Cerrar",
+  "pager": {
+    "label": "Páginas",
+    "range": "{{from}}-{{to}} de {{total}}",
+    "previous": "Anteriores",
+    "next": "Siguientes"
+  }
 }

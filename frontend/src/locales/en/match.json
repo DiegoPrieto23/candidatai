@@ -7,7 +7,7 @@
   "inProfile": "In your profile: {{skill}}. ",
   "notInProfile": "Not in your profile",
   "missing": "Missing: ",
-  "notAssessed": "Not assessed. Run the skill <code>assess-fit</code> in your agent.",
+  "notAssessed": "Not assessed yet. Press “Assess fit” so your agent assesses it.",
   "stale": "From an earlier calculation: the profile or the job changed.",
   "questions": "Questions for you",
   "failsFilters": "Fails the filters",
@@ -20,7 +20,7 @@
   },
   "notes": {
     "off": "Semantic similarity turned off (CAI_EMBEDDINGS=off).",
-    "notInstalled": "Semantic similarity unavailable: install the extra with `uv sync --extra matching` (in backend/).",
+    "notInstalled": "Meaning-based comparison isn't on: it's optional and the guide explains how to turn it on.",
     "unavailable": "Semantic similarity unavailable.",
     "failed": "Couldn't calculate the semantic similarity ({{error}}).",
     "noMust": "The job lists no must-have skills: must-have coverage doesn't count.",

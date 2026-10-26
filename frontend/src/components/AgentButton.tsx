@@ -5,6 +5,7 @@ import {
   CaretDownIcon,
   ClockCountdownIcon,
   GearSixIcon,
+  SparkleIcon,
   TerminalWindowIcon,
 } from '@phosphor-icons/react'
 import { useTranslation } from 'react-i18next'
@@ -63,7 +64,9 @@ async function copy(text: string): Promise<boolean> {
  * eventos; sin ratón, la ayuda va también en el desplegable y, para lectores de pantalla, en
  * `aria-describedby`.
  *
- * Siempre en verde (el color primario): así se distingue de un vistazo lo que lanza tu agente.
+ * Lo que lanza tu agente se reconoce por el icono de destellos. Solo la acción principal de cada
+ * pantalla va rellena (`primary`); las demás, con borde, para que no compitan entre sí. El agente
+ * con el que se abre no ocupa sitio en el botón: va en el globo y en el desplegable.
  */
 export function AgentButton({
   action,
@@ -73,6 +76,7 @@ export function AgentButton({
   upload,
   children,
   size = 'sm',
+  primary = false,
   className,
 }: {
   action: AgentAction
@@ -85,6 +89,8 @@ export function AgentButton({
   upload?: string
   children: ReactNode
   size?: 'sm' | 'default'
+  /** La acción principal de la pantalla: rellena. Una como mucho por pantalla. */
+  primary?: boolean
   className?: string
 }) {
   const { t } = useTranslation('agentButton')
@@ -161,6 +167,7 @@ export function AgentButton({
   const busy = launch.isPending || startRun.isPending || leave.isPending
   const hint = tHint(action)
   const mechanism = agent ? t('titleAgent', { agent: shownAgent ?? agent }) : t('titleCopy')
+  const variant = primary ? 'default' : 'outline'
   return (
     <span data-slot="agent-button" className={cn('inline-flex flex-col items-start gap-1.5', className)}>
       <span className="inline-flex">
@@ -187,14 +194,14 @@ export function AgentButton({
             <Button
               id={buttonId}
               type="button"
-              variant="default"
+              variant={variant}
               size={size}
               onClick={() => run()}
               disabled={busy || blocked !== null}
               className="rounded-r-none"
               aria-describedby={hintId}
             >
-              <TerminalWindowIcon weight="duotone" />
+              <SparkleIcon weight="duotone" className={cn(!primary && 'text-primary')} />
               {children}
             </Button>
           </span>
@@ -206,23 +213,24 @@ export function AgentButton({
           <DropdownMenuTrigger asChild>
             <Button
               type="button"
-              variant="default"
+              variant={variant}
               size={size}
               disabled={busy}
               aria-label={shownAgent ? t('moreWith', { agent: shownAgent }) : t('more')}
-              className="rounded-l-none border-l border-l-primary-foreground/25 px-2"
-            >
-              {shownAgent && (
-                <span className="hidden max-w-32 truncate text-xs font-normal sm:inline">
-                  {t('with', { agent: shownAgent })}
-                </span>
+              className={cn(
+                'rounded-l-none px-2',
+                primary ? 'border-l border-l-primary-foreground/25' : '-ml-px',
               )}
+            >
               <CaretDownIcon weight="bold" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-72">
             {/* Sin ratón no hay globo: la ayuda abre el menú. */}
-            <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">{hint}</DropdownMenuLabel>
+            <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+              {hint}
+              {shownAgent && <span className="mt-1 block font-medium text-foreground/80">{t('with', { agent: shownAgent })}</span>}
+            </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onSelect={() => run()} disabled={blocked !== null}>
               <TerminalWindowIcon weight="duotone" />

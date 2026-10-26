@@ -594,7 +594,7 @@ function CvBody({
               <p className="mt-1 text-muted-foreground">
                 <Trans t={t} i18nKey="none.hint" values={{ id: jobId }} components={{ code: <Code /> }} />
               </p>
-              <AgentButton action="generate-cv" jobId={jobId} className="mt-3">
+              <AgentButton action="generate-cv" jobId={jobId} className="mt-3" primary>
                 {t('none.generate')}
               </AgentButton>
               <ClosedHint signals={signals} />

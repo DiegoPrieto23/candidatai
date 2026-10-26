@@ -18,6 +18,7 @@ import { Trans, useTranslation } from 'react-i18next'
 import { SafeTrans } from '@/components/SafeTrans'
 import type { AddJobResult, EventOut, JobView, Schemas } from '@/api/client'
 import { useAddNote, useAssessThreshold, useJob, useJobEvent, useJobMatch, type UserEventBody } from '@/api/queries'
+import { AgentButton } from '@/components/AgentButton'
 import { JobCostPanel } from '@/components/JobCostPanel'
 import { ApplySection } from '@/components/ApplySection'
 import { ArchivedApplication } from '@/components/ArchivedApplication'
@@ -547,13 +548,12 @@ function ExtractionBlock({ job }: { job: JobView }) {
       <HourglassMediumIcon className="mt-0.5 size-6 shrink-0 text-primary" weight="duotone" />
       <div>
         <h2 className="font-semibold">{t('pendingTitle')}</h2>
-        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-          <Trans
-            t={t}
-            i18nKey="pendingBody"
-            components={{ code: <code className="rounded bg-muted px-1 py-0.5 font-mono text-[0.85em] text-foreground" /> }}
-          />
-        </p>
+        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{t('pendingBody')}</p>
+        {job.stage === 'pending_extraction' && (
+          <AgentButton action="process-jobs" primary className="mt-3">
+            {t('process')}
+          </AgentButton>
+        )}
       </div>
     </section>
   )

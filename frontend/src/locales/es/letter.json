@@ -13,7 +13,7 @@
     "forJobLabel": "Para esta oferta: ",
     "none": "ninguna",
     "general": "Generales (tu perfil): ",
-    "generalNone": "ninguna. Puedes añadirlas con el skill <code>update-profile</code>.",
+    "generalNone": "ninguna. Puedes añadirlas en «Mi perfil» → CV y carta.",
     "limit": "Límite: {{count}} palabras (mandan las de la oferta).",
     "prefMaxWords": "máximo {{count}} palabras",
     "prefTone": "tono {{tone}}",
@@ -64,7 +64,7 @@
   },
   "none": {
     "title": "Aún sin carta",
-    "hint": "Ejecuta <code>generate-cover-letter {{id}}</code> en tu agente: la redacta con tus indicaciones, la verifica y la deja a juego con tu CV. Después podrás copiarla, retocarla y cambiar el diseño aquí, sin IA.",
+    "hint": "Pídesela a tu agente («escribe la carta de la oferta {{id}}»): la redacta con tus indicaciones, la verifica y la deja a juego con tu CV. Después podrás copiarla, retocarla y cambiar el diseño aquí, sin IA.",
     "never": "Esta oferta no llegó a tener carta."
   },
   "copyText": "Copiar texto",

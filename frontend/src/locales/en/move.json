@@ -17,7 +17,7 @@
   "saving": "Saving…",
   "register": "Log it",
   "noMove": {
-    "cvReady": "A job reaches “CV ready” when its CV is verified (skill generate-cv), not by hand.",
+    "cvReady": "A job reaches “CV ready” when its CV is verified (with “Generate CV”), not by hand.",
     "approved": "To go back to “Approved” you have to reopen it from its detail page.",
     "reopenTo": "Reopening it takes it back to “{{stage}}”.",
     "cannotReopen": "This job can't be reopened from the board.",

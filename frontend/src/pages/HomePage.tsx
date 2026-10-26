@@ -1,13 +1,12 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
-import { ArrowRightIcon, PlusIcon } from '@phosphor-icons/react'
+import { ArrowRightIcon } from '@phosphor-icons/react'
 import { Trans, useTranslation } from 'react-i18next'
 import type { JobRow, Stage, UpcomingItem } from '@/api/client'
 import { useFollowups, useJobs, useReplies, useStatus, useUpcoming } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
 import { ScoreBadge } from '@/components/MatchDetails'
 import { ErrorState } from '@/components/States'
-import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatList, joinNodes } from '@/lib/i18n'
 import { dateFormatter, STAGE_LABEL, UPCOMING_KIND_LABEL } from '@/lib/labels'
@@ -70,6 +69,15 @@ function Today() {
   if (s?.approved) agent.push(t('today.agentApproved', { count: s.approved }))
   if (unclassified) agent.push(t('today.agentUnclassified', { count: unclassified }))
 
+  // Solo una acción destacada: la que más desbloquea ahora. Las demás, con borde.
+  const primary = s?.pending_extraction
+    ? 'process-jobs'
+    : unclassified
+      ? 'review-replies'
+      : s?.pending_triage
+        ? 'assess-fit'
+        : 'search-jobs'
+
   return (
     <section aria-labelledby="hoy" className="max-w-3xl">
       <p className="text-sm text-muted-foreground first-letter:uppercase">{dateFormatter(TODAY).format(new Date())}</p>
@@ -87,27 +95,21 @@ function Today() {
       )}
       {/* Abren tu agente en una terminal con la orden escrita: lo que haga lo ves y lo apruebas tú. */}
       <div className="mt-6 flex flex-wrap items-start gap-2">
-        <Button asChild variant="outline" className="active:translate-y-px">
-          <Link to="/nueva">
-            <PlusIcon weight="bold" />
-            {t('today.newJob')}
-          </Link>
-        </Button>
-        <AgentButton action="search-jobs" size="default">
+        <AgentButton action="search-jobs" size="default" primary={primary === 'search-jobs'}>
           {t('today.searchJobs')}
         </AgentButton>
         {!!s?.pending_extraction && (
-          <AgentButton action="process-jobs" size="default">
+          <AgentButton action="process-jobs" size="default" primary={primary === 'process-jobs'}>
             {t('today.processJobs')}
           </AgentButton>
         )}
         {!!s?.pending_triage && (
-          <AgentButton action="assess-fit" size="default">
+          <AgentButton action="assess-fit" size="default" primary={primary === 'assess-fit'}>
             {t('today.assessFit')}
           </AgentButton>
         )}
         {unclassified > 0 && (
-          <AgentButton action="review-replies" size="default">
+          <AgentButton action="review-replies" size="default" primary={primary === 'review-replies'}>
             {t('today.reviewReplies')}
           </AgentButton>
         )}

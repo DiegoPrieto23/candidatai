@@ -188,7 +188,7 @@ describe('Página «Agente» (fase 19)', () => {
       'GET /agent/requests': { pending: 0, requests: [] },
     })
     renderApp('/agente')
-    expect(await screen.findByText(/ninguna en curso/)).toHaveTextContent('¿está cai worker en marcha?')
+    expect(await screen.findByText(/ninguna en curso/)).toHaveTextContent('¿Está CandidatAI abierta entera?')
     expect(await screen.findByText(/no tiene `launch.headless`/)).toBeInTheDocument()
   })
 
@@ -247,7 +247,7 @@ describe('Página «Agente» (fase 19)', () => {
       expect(within(assess).getAllByRole('cell')[3]).toHaveTextContent('—')  // sin coste: no se estima
       expect(screen.getByRole('table', { name: 'Por agente' })).toHaveTextContent('opencode')
       expect(screen.getByRole('tab', { name: 'Últimos 30 días' })).toBeInTheDocument()
-      expect(screen.getByText(/en una terminal, el agente no devuelve su uso/)).toBeInTheDocument()
+      expect(screen.getByText(/lo que haces en una terminal no llega a la app/)).toBeInTheDocument()
     })
 
     it('cambia el umbral de «Evaluar encaje»', async () => {

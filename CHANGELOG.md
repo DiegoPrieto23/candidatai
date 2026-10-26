@@ -21,6 +21,19 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   cómo arrancarla desde la terminal (`cai start`) o con Docker.
 
 ### Cambiado
+- **Una interfaz más fácil de entender:**
+  - **Sin jerga:** los textos ya no hablan de skills, comandos, rutas ni ficheros. Dicen qué botón
+    pulsar («Procesar ofertas», «Generar CV») o qué pedirle a tu agente.
+  - **Una sola acción destacada por pantalla:** la que más desbloquea ahora va en verde; los demás
+    botones del agente van con borde. El agente con el que se abren se ve en su desplegable (▾).
+  - **«Nueva oferta»** está siempre en la barra lateral.
+  - **Fuera los avisos fijos de arriba:** lo que espera ya se cuenta en Inicio y en la barra
+    lateral, donde «Procesos» enseña los seguimientos pendientes.
+  - **Fuera la fila de etapas de la cabecera:** en la Bandeja, las etapas son filtros con su
+    recuento, y los datos que faltan se ven como un guion discreto.
+  - **Listas de 25 en 25:** la Bandeja y Alertas se paginan. En Alertas, las ofertas que no encajan
+    con tus filtros van plegadas.
+  - **Procesos** explica el tablero en una frase y las tarjetas llevan un botón más discreto.
 - **La ficha de la oferta, más ligera:** en vez de apilar todas las secciones con una columna
   lateral, va en pestañas (Oferta, Candidatura, Proceso, Empresa, Historial y notas) y se abre en
   la que toca: la oferta mientras la revisas, la candidatura al aprobarla y el proceso al enviarla.

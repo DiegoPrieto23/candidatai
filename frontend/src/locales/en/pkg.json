@@ -22,7 +22,7 @@
     "add": "Add question",
     "pending_one": "{{count}} answer needs your input (salary, availability…).",
     "pending_other": "{{count}} answers need your input (salary, availability…).",
-    "none": "No answers yet. Paste the form's questions to your agent with the skill `prepare-application`, or add them yourself."
+    "none": "No answers yet. Paste the form's questions to your agent and ask it to prepare the application, or add them yourself."
   },
   "cv": {
     "title": "CV",

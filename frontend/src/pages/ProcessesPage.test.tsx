@@ -121,7 +121,7 @@ describe('Procesos (kanban)', () => {
     expect(options[0]).toHaveTextContent('→ Enviada')
   })
 
-  it('avisa en la cabecera de los seguimientos vencidos', async () => {
+  it('los seguimientos vencidos se cuentan en «Procesos» de la barra lateral', async () => {
     mockApi({
       'GET /status': status(),
       'GET /jobs/1': jobView(),
@@ -142,11 +142,7 @@ describe('Procesos (kanban)', () => {
       },
     })
     renderApp('/jobs/1')
-    expect(await screen.findByText('1 candidatura lleva 10 días o más sin respuesta.')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Revisa los seguimientos en Procesos' })).toHaveAttribute(
-      'href',
-      '/procesos',
-    )
+    expect(await screen.findByRole('link', { name: 'Procesos (1 sin respuesta)' })).toHaveAttribute('href', '/procesos')
   })
 
   it('ofrece redactar los borradores con tu agente si hay seguimientos o agradecimientos', async () => {

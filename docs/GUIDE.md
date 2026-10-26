@@ -429,7 +429,7 @@ Many pages have buttons that open your agent with the instruction already writte
 each one can do and how to install the missing ones. There you pick the default agent, each
 agent's model and, in the “By action” table, a different agent or model for a specific action (e.g.
 OpenCode with a local model to process postings and Claude Code for the CV). Each button's dropdown
-says which agent it would use (“with Claude Code ▾”) and lets you use another one just this once.
+(the ▾ arrow) says which agent it opens with and lets you use another one just this once.
 If an agent isn't suited to an action (it has no browser to search for postings, say), the button
 says so and doesn't launch it. With nothing chosen, `CAI_AGENT` from `.env` or the first installed
 agent is used.

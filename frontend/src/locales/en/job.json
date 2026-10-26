@@ -2,7 +2,7 @@
   "added": {
     "exists": "This job was already added. Nothing has changed.",
     "duplicate": "Added, but it looks like a duplicate of <to>job {{id}}</to>, so it stays closed.",
-    "created": "Job added. Your agent will extract it with the skill process-jobs.",
+    "created": "Job added. Your agent will read it when you press “Process jobs”.",
     "close": "Close"
   },
   "injection": {
@@ -35,7 +35,8 @@
     "redFlags": "Worth noting",
     "extractedAt": "Extracted on {{date}}",
     "pendingTitle": "Not extracted yet",
-    "pendingBody": "Run the skill <code>process-jobs</code> in your agent. When it's done, you'll see seniority, work mode, skills and salary here."
+    "pendingBody": "Your agent hasn't read it yet. When it does, you'll see seniority, work mode, skills and salary here.",
+    "process": "Process jobs"
   },
   "original": {
     "title": "Original text",
@@ -61,7 +62,7 @@
   },
   "match": {
     "title": "Fit",
-    "noScore": "No score: import your profile with <code>cai profile import</code>."
+    "noScore": "No score: create your profile in “My profile” first."
   },
   "decision": {
     "reopen": "Reopen",
@@ -82,7 +83,7 @@
   "addedOn": "Added on {{date}}",
   "postedOn": ". Posted on {{date}}",
   "archive": {
-    "pending": "No copy of what was sent yet: the worker saves it when it's marked as sent. For older ones, `cai applications archive --all`.",
+    "pending": "No copy of what you sent yet: it's saved automatically a few seconds after you mark it as sent.",
     "label": "Archived application",
     "title": "Copy of what you sent",
     "open": "Open folder",

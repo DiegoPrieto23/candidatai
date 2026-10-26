@@ -28,12 +28,12 @@
   "calendar": {
     "toggle": "Bring the milestones into your calendar",
     "google": "<strong>Google Calendar:</strong> download the file and import it (Settings → Import & export). Google can't subscribe to an address on your computer, so import it again when your milestones change: events are updated, not duplicated.",
-    "others": "<strong>Outlook, Apple Calendar or Thunderbird:</strong> subscribe to this address (it updates on its own while <code>cai serve</code> is running):",
+    "others": "<strong>Outlook, Apple Calendar or Thunderbird:</strong> subscribe to this address (it updates itself while CandidatAI is open):",
     "download": "Download .ics",
     "copy": "Copy address"
   },
   "title": "Processes",
-  "intro": "Click “Update status” on a card (or drag it to another column) to log what happened: a reply, an interview, a rejection… Nothing changes column without its event. Interviews and tests create their milestone with a date.",
+  "intro": "Drag a card or press “Update status” to record what happened: a reply, an interview, a rejection…",
   "followups_one": "{{count}} follow-up due",
   "followups_other": "{{count}} follow-ups due",
   "thanks_one": "{{count}} interview to thank for",

@@ -372,7 +372,7 @@ describe('Mi perfil editable', () => {
     await userEvent.type(within(block).getByRole('textbox', { name: 'Puestos que buscas' }), 'Analytics Engineer{Enter}')
     await userEvent.click(within(block).getByRole('button', { name: 'Guardar' }))
 
-    expect(await within(block).findByLabelText('Cambios en profile.yaml')).toHaveTextContent('Analytics Engineer')
+    expect(await within(block).findByLabelText('Cambios en tu perfil')).toHaveTextContent('Analytics Engineer')
     expect(within(block).getByText(/se recalculan los scores/)).toBeInTheDocument()
     const puts = () => calls.filter((c) => c.method === 'PUT')
     expect(puts()).toHaveLength(1)
@@ -398,7 +398,7 @@ describe('Mi perfil editable', () => {
       expect(within(block).getByRole('button', { name: 'Guardar' })).toBeDisabled()
     }
     const role = screen.getByRole('region', { name: 'Puesto' })
-    expect(within(role).getByText(/También descartan las de config\/policies.yaml: sales/)).toBeInTheDocument()
+    expect(within(role).getByText(/También descartan las de la configuración de la app: sales/)).toBeInTheDocument()
     const where = screen.getByRole('region', { name: 'Dónde y cómo' })
     expect(within(where).getByRole('textbox', { name: 'Solo si no es presencial' })).toBeInTheDocument()
     const years = screen.getByRole('group', { name: 'Años de experiencia que pida la oferta' })

@@ -104,7 +104,7 @@
     "unclassified_other": "{{count}} unclassified emails: “Review replies” opens your agent so it proposes what each one is.",
     "filterAria": "Filter by status",
     "noneTitle": "No replies here",
-    "noneBody": "Emails from companies about the applications you've sent show up here. They're read over IMAP (`CAI_IMAP_REPLIES_FOLDER`) or from `data/inbox/respuestas/`.",
+    "noneBody": "Emails from companies about your sent applications show up here once you connect the mailbox where they arrive.",
     "list": "Replies",
     "byReason": "({{stage}}; by {{reason}})"
   }

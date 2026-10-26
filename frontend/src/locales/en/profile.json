@@ -33,13 +33,13 @@
   "files_one": "{{count}} file",
   "files_other": "{{count}} files",
   "context": "Context",
-  "contextIntro": "It guides your agent: the tone of your CVs and letters, the risks of a job and interview prep. <strong>It never backs a fact</strong>: whatever a CV or letter says must be in your profile. Edit these files above, in your editor or with your agent (<code>update-profile</code>).",
+  "contextIntro": "Guides your agent: the tone of your CVs and letters, a job's risks and interview prep. <strong>It never backs a fact</strong>: whatever a CV or letter says must be in your profile. Edit them above or ask your agent.",
   "openContext": "Open the context folder",
   "documents": "Documents",
-  "documentsIntro": "Your source documents. <code>update-profile</code> can read them to create or extend your profile, always asking you before writing.",
+  "documentsIntro": "Your source documents. Your agent can read them to create or expand your profile, always asking you before writing.",
   "openDocuments": "Open the documents folder",
   "expand": "Expand profile from my links",
   "expandHint": "Your agent reads your public links (GitHub, portfolio, Kaggle, Scholar) and proposes projects, skills, achievements and certifications, each with its source. It only writes to your profile what you accept. Best right after creating it.",
   "title": "My profile",
-  "intro": "Your profile (<code>data/profile.yaml</code>) is the only thing a CV, letter or answer can claim. Fill it in here block by block: each one saves on its own, keeps your file's formatting and can be undone. You can still edit the YAML or ask your agent if you prefer."
+  "intro": "Your profile is the only thing a CV, a letter or an answer can claim. Fill it in here block by block: each one saves on its own and can be undone. You can also ask your agent."
 }

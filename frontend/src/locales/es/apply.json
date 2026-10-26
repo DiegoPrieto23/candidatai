@@ -34,11 +34,11 @@
     "unexpected_format": "Formato inesperado",
     "no_answers": "Sin respuestas"
   },
-  "workerHint": "El worker aún no lo ha recogido. ¿Está en marcha? Arráncalo con `uv run cai worker` en backend/.",
+  "workerHint": "Aún no ha empezado. ¿Está CandidatAI abierta entera? Ciérrala y vuelve a abrirla desde su acceso directo.",
   "busy": {
     "submitting": "Enviando… No cierres el navegador de CandidatAI.",
     "filling": "Rellenando el formulario de {{domain}} en el navegador…",
-    "queued": "En cola para el worker…"
+    "queued": "En cola…"
   },
   "fields": {
     "caption": "Campos del formulario",

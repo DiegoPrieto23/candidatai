@@ -1,161 +1,13 @@
-import { useEffect, useRef, useState } from 'react'
-import { Link, Outlet, useLocation, useSearchParams } from 'react-router'
+import { useEffect, useRef } from 'react'
+import { Link, Outlet, useLocation } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { BellRingingIcon, CircleNotchIcon, FlaskIcon, PlusIcon, TerminalWindowIcon, XIcon } from '@phosphor-icons/react'
-import type { Stage } from '@/api/client'
-import { keys, useAgentRuns, useFollowups, useStatus } from '@/api/queries'
+import { CircleNotchIcon, FlaskIcon, PlusIcon } from '@phosphor-icons/react'
+import { keys, useAgentRuns, useStatus } from '@/api/queries'
 import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
-import { STAGE_LABEL, STAGES } from '@/lib/labels'
 import { cn } from '@/lib/utils'
 import { UserPrompts } from '@/components/UserPrompts'
-import { AgentButton } from '@/components/AgentButton'
 import { Brand, MobileNav, Sidebar } from '@/components/Sidebar'
-
-function StageCounts() {
-  const { t } = useTranslation('nav')
-  const { data, isPending, isError } = useStatus()
-  const [params] = useSearchParams()
-  const { pathname } = useLocation()
-  const active = pathname === '/bandeja' ? (params.get('stage') ?? 'all') : null
-
-  if (isError) return null
-  const items: { key: Stage | 'all'; label: string; count?: number }[] = [
-    { key: 'all', label: t('header.all'), count: data?.total },
-    ...STAGES.map((stage) => ({ key: stage, label: STAGE_LABEL[stage], count: data?.by_stage[stage] })),
-  ]
-  return (
-    <nav aria-label={t('header.byStage')} className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
-      <ul className="flex min-w-max gap-1">
-        {items.map(({ key, label, count }) => {
-          const selected = active === key
-          return (
-            <li key={key}>
-              <Link
-                to={key === 'all' ? '/bandeja' : `/bandeja?stage=${key}`}
-                aria-current={selected ? 'page' : undefined}
-                className={cn(
-                  'group flex items-baseline gap-2 rounded-md px-3 py-2 text-sm transition-colors',
-                  selected
-                    ? 'bg-foreground/[0.06] text-foreground dark:bg-foreground/10'
-                    : 'text-muted-foreground hover:bg-foreground/[0.04] hover:text-foreground',
-                )}
-              >
-                <span>{label}</span>
-                {isPending ? (
-                  <Skeleton className="h-3.5 w-4" />
-                ) : (
-                  <span
-                    className={cn(
-                      'tabular text-xs font-medium',
-                      count ? (selected ? 'text-primary' : 'text-foreground/70') : 'text-muted-foreground/60',
-                    )}
-                  >
-                    {count ?? 0}
-                  </span>
-                )}
-              </Link>
-            </li>
-          )
-        })}
-      </ul>
-    </nav>
-  )
-}
-
-/**
- * Un aviso que se cierra con su X y no vuelve hasta que se cierre la pestaña (`sessionStorage`).
- * Sin almacenamiento (modo privado estricto), se cierra igual, solo hasta recargar.
- */
-function useDismissed(name: string): [boolean, () => void] {
-  const key = `cai-dismissed-${name}`
-  const [dismissed, setDismissed] = useState(() => {
-    try {
-      return sessionStorage.getItem(key) === '1'
-    } catch {
-      return false
-    }
-  })
-  const dismiss = () => {
-    setDismissed(true)
-    try {
-      sessionStorage.setItem(key, '1')
-    } catch {
-      // sin almacenamiento: solo en esta carga
-    }
-  }
-  return [dismissed, dismiss]
-}
-
-function DismissButton({ onClick }: { onClick: () => void }) {
-  const { t } = useTranslation('nav')
-  return (
-    <Button
-      type="button"
-      variant="ghost"
-      size="icon"
-      onClick={onClick}
-      aria-label={t('reminders.dismiss')}
-      title={t('reminders.dismiss')}
-      className="-my-1 -mr-2 size-7 shrink-0 text-accent-foreground/70 hover:text-accent-foreground"
-    >
-      <XIcon weight="bold" />
-    </Button>
-  )
-}
-
-function ExtractionReminder() {
-  const { t } = useTranslation('nav')
-  const { data } = useStatus()
-  const [dismissed, dismiss] = useDismissed('extraction')
-  const pending = data?.by_stage.pending_extraction ?? 0
-  if (!pending || dismissed) return null
-  return (
-    <div
-      role="status"
-      className="flex items-start gap-3 rounded-xl border border-primary/20 bg-accent/60 px-4 py-3 text-sm text-accent-foreground animate-in fade-in slide-in-from-top-1"
-    >
-      <TerminalWindowIcon className="mt-0.5 size-[18px] shrink-0" weight="duotone" />
-      <div className="flex flex-1 flex-wrap items-center justify-between gap-x-4 gap-y-2">
-        <p>
-          <span className="font-medium">{t('reminders.toExtract', { count: pending })}</span>{' '}
-          {t('reminders.extractHint')}{' '}
-          <code className="rounded bg-background/70 px-1.5 py-0.5 font-mono text-[0.85em]">process-jobs</code>.
-        </p>
-        <AgentButton action="process-jobs">{t('reminders.processNow')}</AgentButton>
-      </div>
-      <DismissButton onClick={dismiss} />
-    </div>
-  )
-}
-
-function FollowupReminder() {
-  const { t } = useTranslation('nav')
-  const { data } = useFollowups()
-  const { pathname } = useLocation()
-  const [dismissed, dismiss] = useDismissed('followups')
-  const due = data?.followups.length ?? 0
-  if (!due || dismissed || pathname === '/procesos') return null
-  return (
-    <div
-      role="status"
-      className="flex items-start gap-3 rounded-xl border border-primary/20 bg-accent/60 px-4 py-3 text-sm text-accent-foreground animate-in fade-in slide-in-from-top-1"
-    >
-      <BellRingingIcon className="mt-0.5 size-[18px] shrink-0" weight="duotone" />
-      <p className="flex-1">
-        <span className="font-medium">
-          {t('reminders.followups', { count: due, days: data?.days_without_reply })}
-        </span>{' '}
-        <Link to="/procesos" className="underline underline-offset-4">
-          {t('reminders.followupsLink')}
-        </Link>
-        .
-      </p>
-      <DismissButton onClick={dismiss} />
-    </div>
-  )
-}
 
 /**
  * En segundo plano (fase 19): aviso mientras tu agente trabaja sin ventana. Cuando termina una
@@ -225,47 +77,27 @@ function DemoBanner() {
 
 export function AppShell() {
   const { t } = useTranslation('nav')
-  // En Inicio el recorrido ya enseña las etapas: sin la fila de recuentos.
-  const { pathname } = useLocation()
-  const home = pathname === '/'
   return (
     <div className="flex min-h-[100dvh]">
       <Sidebar />
       <div className="min-w-0 flex-1">
-        <header className="sticky top-0 z-20 border-b bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/65">
+        {/* En escritorio la navegación y «Nueva oferta» van en la barra lateral: arriba, solo el aviso de demo. */}
+        <header className="sticky top-0 z-20 border-b bg-background/80 backdrop-blur-md empty:hidden supports-[backdrop-filter]:bg-background/65 lg:static lg:border-b-0 lg:bg-transparent lg:backdrop-blur-none">
           <DemoBanner />
-          {/* Una sola fila en escritorio; en móvil los recuentos bajan a una segunda línea. */}
-          {/* En Inicio, «Nueva oferta» va con las acciones de la página: en escritorio, sin esta fila. */}
-          <div
-            className={cn(
-              'mx-auto flex max-w-6xl flex-wrap items-center lg:flex-nowrap gap-x-3 gap-y-1 px-4 py-2 sm:px-6',
-              home && 'lg:hidden',
-            )}
-          >
+          <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-2 sm:px-6 lg:hidden">
             <MobileNav />
-            <div className="lg:hidden">
-              <Brand />
-            </div>
-            {!home && (
-              <div className="order-last min-w-0 basis-full lg:order-none lg:basis-auto lg:flex-1">
-                <StageCounts />
-              </div>
-            )}
-            {!home && (
-              <Button asChild size="sm" className="ml-auto shrink-0 active:translate-y-px">
-                <Link to="/nueva">
-                  <PlusIcon weight="bold" />
-                  <span className="sr-only sm:not-sr-only">{t('header.newJob')}</span>
-                </Link>
-              </Button>
-            )}
+            <Brand />
+            <Button asChild size="sm" className="ml-auto shrink-0 active:translate-y-px">
+              <Link to="/nueva">
+                <PlusIcon weight="bold" />
+                <span className="sr-only sm:not-sr-only">{t('header.newJob')}</span>
+              </Link>
+            </Button>
           </div>
         </header>
         <main className="mx-auto max-w-6xl px-4 pb-24 pt-6 sm:px-6 sm:pt-8">
-          <div className="mb-6 space-y-3 empty:hidden">
+          <div className="mb-6 empty:hidden">
             <BackgroundRunReminder />
-            <ExtractionReminder />
-            <FollowupReminder />
           </div>
           <Outlet />
         </main>

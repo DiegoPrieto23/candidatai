@@ -244,7 +244,7 @@ describe('Por revisar', () => {
   it('avisa si no hay perfil y enseña la cola vacía', async () => {
     mockApi({ 'GET /status': status(), 'GET /triage': triageQueue([], { profile_missing: true }) })
     renderApp('/por-revisar')
-    expect(await screen.findByText('Sin perfil importado no hay score.')).toBeInTheDocument()
+    expect(await screen.findByText('Sin perfil no hay score.')).toBeInTheDocument()
     expect(screen.getByText('Nada por revisar')).toBeInTheDocument()
   })
 
