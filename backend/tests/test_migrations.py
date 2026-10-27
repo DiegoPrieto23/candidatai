@@ -378,3 +378,65 @@ def test_0028_backfills_closed_at_from_the_closing_event(db_url: str) -> None:
         assert closed() == after  # idempotente
     finally:
         engine.dispose()
+
+
+def test_0030_adds_indexes_on_a_db_with_data_and_back(db_url: str) -> None:
+    """Fase 29.3: solo índices. Arriba y abajo sobre una base con ofertas, sin tocar un dato."""
+    migrations.upgrade(db_url, "0029")
+    engine = create_engine(db_url)
+
+    def snapshot() -> dict[str, list[tuple[object, ...]]]:
+        with engine.connect() as conn:
+            return {
+                table: conn.exec_driver_sql(f"SELECT * FROM {table} ORDER BY 1").all()
+                for table in ("jobs", "events", "applications")
+            }
+
+    def indexes(table: str) -> set[str]:
+        return {i["name"] for i in inspect(engine).get_indexes(table)}
+
+    try:
+        with engine.begin() as conn:
+            conn.exec_driver_sql(
+                "INSERT INTO sources (id, kind, name, config, active) "
+                "VALUES (1, 'manual_text', 'x', '{}', 1)"
+            )
+            conn.exec_driver_sql(
+                "INSERT INTO companies (id, name, normalized_name, watchlist) "
+                "VALUES (1, 'Acme', 'acme', 0)"
+            )
+            for job_id in (1, 2, 3):
+                at = f"2026-10-0{job_id} 09:00:00"
+                conn.exec_driver_sql(
+                    "INSERT INTO jobs (id, source_id, company_id, url, title, raw_text, "
+                    "risk_flags, fingerprint, first_seen_at) "
+                    "VALUES (?, 1, 1, '', 'T', 'x', '[]', ?, ?)",
+                    (job_id, f"f{job_id}", at),
+                )
+                conn.exec_driver_sql(
+                    "INSERT INTO events (job_id, type, actor, payload, occurred_at, recorded_at)"
+                    " VALUES (?, 'found', 'system', '{}', ?, ?)",
+                    (job_id, at, at),
+                )
+                conn.exec_driver_sql(
+                    "INSERT INTO applications (job_id, stage, last_event_at) "
+                    "VALUES (?, 'pending_extraction', ?)",
+                    (job_id, at),
+                )
+        before = snapshot()
+        engine.dispose()
+
+        migrations.upgrade(db_url)
+        assert {"ix_jobs_company_id_first_seen_at", "ix_jobs_first_seen_at"} <= indexes("jobs")
+        assert "ix_jobs_company_id" not in indexes("jobs")
+        assert "ix_events_type_job_id_occurred_at" in indexes("events")
+        assert snapshot() == before
+        engine.dispose()
+
+        migrations.downgrade(db_url, "0029")
+        assert "ix_jobs_company_id" in indexes("jobs")
+        assert not {"ix_jobs_company_id_first_seen_at", "ix_jobs_first_seen_at"} & indexes("jobs")
+        assert "ix_events_type_job_id_occurred_at" not in indexes("events")
+        assert snapshot() == before
+    finally:
+        engine.dispose()

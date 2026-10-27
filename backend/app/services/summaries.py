@@ -5,9 +5,11 @@ listar, no se guarda: así no se desfasa al cambiar el perfil. No se llama al ag
 """
 
 from datetime import datetime, timedelta
+from typing import Any
 
 from pydantic import BaseModel
 from sqlalchemy import select
+from sqlalchemy.engine import Row
 from sqlalchemy.orm import Session
 
 from app.core.policies import get_policies
@@ -55,14 +57,25 @@ def _prefilter(session: Session) -> Prefilter:
     return Prefilter(preferences, [])
 
 
-def _pending_detail(session: Session) -> list[tuple[Job, str]]:
+def _pending_detail(session: Session) -> list[Row[Any]]:
+    """Las ofertas resumen, con lo que enseña la lista (columnas sueltas, sin cargar objetos del
+    ORM: puede haber miles)."""
     stmt = (
-        select(Job, Company.name)
+        select(
+            Job.id,
+            Job.title,
+            Job.location_raw,
+            Job.platform,
+            Job.url,
+            Job.first_seen_at,
+            Job.risk_flags,
+            Company.name.label("company"),
+        )
         .join(Application, Application.job_id == Job.id)
         .join(Company, Company.id == Job.company_id)
         .where(Application.stage == Stage.PENDING_DETAIL.value)
     )
-    return [(job, company) for job, company in session.execute(stmt).all()]
+    return list(session.execute(stmt).all())
 
 
 def list_alerts(session: Session) -> AlertList:
@@ -71,13 +84,13 @@ def list_alerts(session: Session) -> AlertList:
     prefilter = _prefilter(session)
     days = get_policies().email_alerts.summary_expire_days
     jobs = []
-    for job, company in _pending_detail(session):
+    for job in _pending_detail(session):
         verdict = prefilter.check_summary(job.title, job.location_raw)
         jobs.append(
             AlertJob(
                 job_id=job.id,
                 title=job.title,
-                company=company,
+                company=job.company,
                 location=job.location_raw,
                 platform=job.platform,
                 platform_label=platforms.PLATFORM_LABELS.get(job.platform or ""),
@@ -104,7 +117,7 @@ def expire_summaries(session: Session, now: datetime | None = None) -> ExpireRes
     days = get_policies().email_alerts.summary_expire_days
     limit = now - timedelta(days=days)
     expired = []
-    for job, _company in _pending_detail(session):
+    for job in _pending_detail(session):
         if job.first_seen_at < limit:
             record(
                 session,

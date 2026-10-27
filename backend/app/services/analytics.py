@@ -36,24 +36,35 @@ se mide **en el momento del primer envío**:
 
 import math
 import statistics
+from collections.abc import Iterator
+from contextlib import contextmanager
 from datetime import date, datetime, timedelta
 from typing import Any, Literal
 
 from pydantic import BaseModel
 from sqlalchemy import (
+    Column,
     ColumnElement,
+    Float,
+    Integer,
+    MetaData,
+    Select,
+    Table,
     and_,
     case,
     exists,
     func,
+    insert,
     literal_column,
     or_,
     select,
     true,
     tuple_,
+    type_coerce,
 )
 from sqlalchemy.orm import Session, aliased
-from sqlalchemy.sql.expression import CTE
+from sqlalchemy.sql.expression import FromClause
+from sqlalchemy.types import NullType
 
 from app.models import (
     Application,
@@ -94,6 +105,17 @@ RESPONSE_TYPES = (
     EventType.TEST_ASSIGNED,
     EventType.OFFER_RECEIVED,
     EventType.REJECTED,
+)
+# Los eventos que mira `_job_events`: el resto (notas, scores…) ni se leen.
+FUNNEL_TYPES = (
+    *APPLIED_TYPES,
+    EventType.EXTRACTED,
+    EventType.HARD_FILTER_FAILED,
+    EventType.DUPLICATE_DETECTED,
+    EventType.APPROVED,
+    EventType.INTERVIEW_SCHEDULED,
+    EventType.OFFER_RECEIVED,
+    EventType.ACCEPTED,
 )
 
 # --- Salida ---------------------------------------------------------------------------------
@@ -194,10 +216,35 @@ class FunnelStats(BaseModel):
 # --- Consultas ------------------------------------------------------------------------------
 
 
-def _event_agg(agg: Any, *types: str) -> Any:
-    """Subconsulta correlacionada con `Job`: `agg(occurred_at)` de los eventos de esos tipos."""
-    query = select(agg(Event.occurred_at)).where(Event.job_id == Job.id, Event.type.in_(types))
-    return query.correlate(Job).scalar_subquery()
+def _first(*types: str) -> Any:
+    """Agregado: fecha del primer evento de esos tipos (NULL si no hay)."""
+    return func.min(case((Event.type.in_(types), Event.occurred_at)))
+
+
+def _has(*types: str) -> Any:
+    """Agregado: 1 si hay algún evento de esos tipos, 0 si no."""
+    return func.max(case((Event.type.in_(types), 1), else_=0))
+
+
+def _job_events() -> Select[Any]:
+    """Una fila por oferta con lo que el embudo necesita de sus eventos, en una sola pasada por
+    `events` agrupada por oferta (con 5000 ofertas, una subconsulta por oferta y paso tardaba
+    segundos). Solo salen las ofertas con alguno de `FUNNEL_TYPES`: se une con `outerjoin`."""
+    return (
+        select(
+            Event.job_id.label("job_id"),
+            _first(*APPLIED_TYPES).label("applied_at"),
+            _has(EventType.EXTRACTED).label("extracted"),
+            _has(EventType.HARD_FILTER_FAILED).label("filtered"),
+            _has(EventType.DUPLICATE_DETECTED).label("duplicated"),
+            _has(EventType.APPROVED).label("approved"),
+            _has(EventType.INTERVIEW_SCHEDULED).label("interview"),
+            _has(EventType.OFFER_RECEIVED).label("offer"),
+            _has(EventType.ACCEPTED).label("accepted"),
+        )
+        .where(Event.type.in_(FUNNEL_TYPES))
+        .group_by(Event.job_id)
+    )
 
 
 def _still_closed_by(event_type: EventType) -> ColumnElement[bool]:
@@ -232,49 +279,120 @@ def _rate(part: int, whole: int) -> float | None:
     return round(part / whole, 4) if whole else None
 
 
-def _per_job(session: Session, since: date | None) -> tuple[CTE, int]:
-    """CTE con una fila por oferta del periodo y sus pasos (0/1, acumulados) y fechas de envío y
-    primera respuesta. Devuelve también cuántas se excluyen por duplicadas."""
+@contextmanager
+def _materialized(session: Session, name: str, query: Select[Any]) -> Iterator[Table]:
+    """El resultado de `query` en una tabla temporal de SQLite mientras dura el bloque.
+
+    El embudo y la calibración hacen una decena de agregados (`GROUP BY`) sobre las mismas filas
+    por oferta; como subconsulta, SQLite las recalculaba en cada uno. La tabla es de la conexión
+    (no se ve desde otras ni toca los datos) y se borra al salir. El nombre es fijo: no se anidan
+    dos llamadas de analítica sobre la misma sesión.
+    """
+    columns = []
+    for column in query.selected_columns:
+        if isinstance(column.type, NullType):
+            raise TypeError(f"Columna sin tipo en «{name}»: {column.name}.")
+        # Una fila por oferta en todas: `job_id` es la clave (y su índice, para los `JOIN`).
+        columns.append(Column(column.name, column.type, primary_key=column.name == "job_id"))
+    table = Table(name, MetaData(), *columns, prefixes=["TEMPORARY"])
+    connection = session.connection()
+    # pysqlite confirma el `CREATE` por su cuenta y abre la transacción en el `INSERT`: el `DROP`
+    # quedaría dentro y un rollback (lo normal en una lectura) lo desharía, dejando la tabla en la
+    # conexión del pool. Con la transacción abierta antes, crear y borrar van juntos.
+    if not connection.connection.driver_connection.in_transaction:  # type: ignore[union-attr]
+        connection.exec_driver_sql("BEGIN")
+    drop = f'DROP TABLE IF EXISTS temp."{name}"'
+    connection.exec_driver_sql(drop)  # por si una llamada anterior no llegó a borrarla
+    table.create(connection)
+    try:
+        session.execute(insert(table).from_select([c.name for c in columns], query))
+        yield table
+    finally:
+        connection.exec_driver_sql(drop)
+
+
+@contextmanager
+def _per_job(session: Session, since: date | None) -> Iterator[tuple[Table, int]]:
+    """Tabla con una fila por oferta del periodo y sus pasos (0/1, acumulados) y fechas de envío y
+    primera respuesta. Da también cuántas se excluyen por duplicadas."""
     scope = []
     if since is not None:
         scope.append(Job.first_seen_at >= start_of_local_day(since))
-    duplicate = _still_closed_by(EventType.DUPLICATE_DETECTED)
-    duplicates = session.scalar(select(func.count()).select_from(Job).where(*scope, duplicate))
+    # Por pasos, cada uno en su tabla temporal: así cada subconsulta por oferta (la primera
+    # respuesta, si sigue cerrada) se evalúa una vez y no en cada columna que la usa.
+    with _materialized(session, "cai_job_events", _job_events()) as flags:
+        query, duplicates = _raw_query(session, flags, scope)
+        with (
+            _materialized(session, "cai_raw", query) as raw,
+            _materialized(session, "cai_per_job", _cumulative(raw)) as per_job,
+        ):
+            yield per_job, duplicates
 
-    applied_at = _event_agg(func.min, *APPLIED_TYPES)
-    raw = (
+
+def _raw_query(
+    session: Session, flags: FromClause, scope: list[ColumnElement[bool]]
+) -> tuple[Select[Any], int]:
+    """Las ofertas del periodo (sin duplicadas) con sus pasos sin acumular y la primera respuesta.
+    Da también cuántas duplicadas se excluyen."""
+
+    def still_closed_by(has: Any, event_type: EventType) -> ColumnElement[bool]:
+        # La subconsulta (por oferta) solo se evalúa en las que tienen ese evento: `CASE` en
+        # SQLite no calcula las ramas que no tocan.
+        return case((has == 1, _still_closed_by(event_type)), else_=False)
+
+    duplicate = still_closed_by(flags.c.duplicated, EventType.DUPLICATE_DETECTED)
+    duplicates = session.scalar(
+        select(func.count())
+        .select_from(Job)
+        .join(flags, flags.c.job_id == Job.id)
+        .where(*scope, duplicate)
+    )
+
+    def flag_of(column: Any) -> ColumnElement[bool]:
+        return func.coalesce(column, 0) == 1
+
+    first_reply = case(
+        (
+            flags.c.applied_at.is_not(None),
+            select(func.min(Event.occurred_at))
+            .where(
+                Event.job_id == Job.id,
+                Event.type.in_(RESPONSE_TYPES),
+                Event.occurred_at >= flags.c.applied_at,
+            )
+            .correlate(Job, flags)
+            .scalar_subquery(),
+        ),
+    )
+    query = (
         select(
             Job.id.label("job_id"),
             Job.source_id,
             Job.first_seen_at,
-            applied_at.label("applied_at"),
+            flags.c.applied_at,
+            type_coerce(first_reply, Event.occurred_at.type).label("reply_at"),
             and_(
-                _event_agg(func.min, EventType.EXTRACTED).is_not(None),
-                ~_still_closed_by(EventType.HARD_FILTER_FAILED),
+                flag_of(flags.c.extracted),
+                ~still_closed_by(flags.c.filtered, EventType.HARD_FILTER_FAILED),
             ).label("triaged"),
-            _event_agg(func.min, EventType.APPROVED).is_not(None).label("approved"),
-            _event_agg(func.min, EventType.INTERVIEW_SCHEDULED).is_not(None).label("interview"),
-            _event_agg(func.min, EventType.OFFER_RECEIVED).is_not(None).label("offer"),
-            _event_agg(func.min, EventType.ACCEPTED).is_not(None).label("accepted"),
+            flag_of(flags.c.approved).label("approved"),
+            flag_of(flags.c.interview).label("interview"),
+            flag_of(flags.c.offer).label("offer"),
+            flag_of(flags.c.accepted).label("accepted"),
         )
+        .outerjoin(flags, flags.c.job_id == Job.id)
         .where(*scope, ~duplicate)
-        .cte("raw")
     )
-    first_reply = (
-        select(func.min(Event.occurred_at))
-        .where(
-            Event.job_id == raw.c.job_id,
-            Event.type.in_(RESPONSE_TYPES),
-            Event.occurred_at >= raw.c.applied_at,
-        )
-        .correlate(raw)
-        .scalar_subquery()
-    )
+    return query, duplicates or 0
+
+
+def _cumulative(raw: FromClause) -> Select[Any]:
+    """Los pasos de cada oferta, acumulados."""
     # Acumulado: cada paso incluye a las que llegaron a uno posterior.
     accepted = raw.c.accepted
     offer = or_(raw.c.offer, accepted)
     interview = or_(raw.c.interview, offer)
-    replied = or_(first_reply.is_not(None), interview)
+    replied = or_(raw.c.reply_at.is_not(None), interview)
     applied = or_(raw.c.applied_at.is_not(None), replied)
     approved = or_(raw.c.approved, applied)
     triaged = or_(raw.c.triaged, approved)
@@ -282,13 +400,13 @@ def _per_job(session: Session, since: date | None) -> tuple[CTE, int]:
     def flag(condition: ColumnElement[bool], name: str) -> Any:
         return case((condition, 1), else_=0).label(name)
 
-    per_job = select(
+    return select(
         raw.c.job_id,
         raw.c.source_id,
         raw.c.first_seen_at,
         raw.c.applied_at,
-        first_reply.label("reply_at"),
-        literal_column("1").label("found"),
+        raw.c.reply_at,
+        literal_column("1", Integer).label("found"),
         flag(triaged, "triaged"),
         flag(approved, "approved"),
         flag(applied, "applied"),
@@ -296,11 +414,10 @@ def _per_job(session: Session, since: date | None) -> tuple[CTE, int]:
         flag(interview, "interview"),
         flag(offer, "offer"),
         flag(accepted, "accepted"),
-    ).cte("per_job")
-    return per_job, duplicates or 0
+    )
 
 
-def _sums(per_job: CTE, steps: tuple[str, ...]) -> list[Any]:
+def _sums(per_job: FromClause, steps: tuple[str, ...]) -> list[Any]:
     return [func.coalesce(func.sum(per_job.c[s]), 0).label(s) for s in steps]
 
 
@@ -309,7 +426,7 @@ def _summary(row: Any) -> dict[str, Any]:
     return values | {"reply_rate": _rate(values["replied"], values["applied"])}
 
 
-def _steps(session: Session, per_job: CTE) -> list[FunnelStep]:
+def _steps(session: Session, per_job: FromClause) -> list[FunnelStep]:
     row = session.execute(select(*_sums(per_job, tuple(s for s, _ in STEPS)))).one()
     counts = [int(getattr(row, s)) for s, _ in STEPS]
     return [
@@ -352,17 +469,25 @@ def _per(value: float | None, count: int, digits: int) -> float | None:
     return round(value / count, digits) if value is not None and count else None
 
 
+def _spent(spend: dict[int, _Spend], sources_of: dict[int, int]) -> list[int]:
+    """Las ofertas del periodo con gasto en segundo plano, por id: solo ellas suman algo."""
+    return sorted(job_id for job_id in spend if job_id in sources_of)
+
+
 def _agent_cost(
-    session: Session, per_job: CTE, spend: dict[int, _Spend], job_runs: dict[int, set[int]]
+    session: Session,
+    per_job: FromClause,
+    spend: dict[int, _Spend],
+    job_runs: dict[int, set[int]],
+    sources_of: dict[int, int],
 ) -> FunnelCost:
-    rows = session.execute(select(per_job.c.job_id, per_job.c.applied, per_job.c.interview)).all()
+    row = session.execute(select(*_sums(per_job, ("applied", "interview")))).one()
     total: _Spend = (0, None)
     runs: set[int] = set()
-    for row in rows:
-        total = _add_spend(total, spend.get(row.job_id, (0, None)))
-        runs |= job_runs.get(row.job_id, set())
-    applied = sum(int(r.applied) for r in rows)
-    interview = sum(int(r.interview) for r in rows)
+    for job_id in _spent(spend, sources_of):
+        total = _add_spend(total, spend[job_id])
+        runs |= job_runs.get(job_id, set())
+    applied, interview = int(row.applied), int(row.interview)
     tokens, cost = total
     return FunnelCost(
         runs=len(runs),
@@ -378,7 +503,7 @@ def _agent_cost(
 
 
 def _by_source(
-    session: Session, per_job: CTE, spend: dict[int, _Spend] | None = None
+    session: Session, per_job: FromClause, spend: dict[int, _Spend], sources_of: dict[int, int]
 ) -> list[SourceFunnel]:
     rows = session.execute(
         select(Source.id, Source.kind, Source.name, *_sums(per_job, SUMMARY_STEPS))
@@ -387,10 +512,9 @@ def _by_source(
         .order_by(func.sum(per_job.c.found).desc(), Source.id)
     ).all()
     by_source: dict[int, _Spend] = {}
-    for job_id, source_id in session.execute(select(per_job.c.job_id, per_job.c.source_id)):
-        by_source[source_id] = _add_spend(
-            by_source.get(source_id, (0, None)), (spend or {}).get(job_id, (0, None))
-        )
+    for job_id in _spent(spend, sources_of):
+        source_id = sources_of[job_id]
+        by_source[source_id] = _add_spend(by_source.get(source_id, (0, None)), spend[job_id])
     out = []
     for r in rows:
         tokens, cost = by_source.get(r.id, (0, None))
@@ -407,7 +531,7 @@ def _by_source(
     return out
 
 
-def _by_title(session: Session, per_job: CTE, top: int) -> list[TitleFunnel]:
+def _by_title(session: Session, per_job: FromClause, top: int) -> list[TitleFunnel]:
     latest = (
         select(JobExtraction.job_id, func.max(JobExtraction.id).label("extraction_id"))
         .group_by(JobExtraction.job_id)
@@ -447,7 +571,7 @@ def _week_start(week: str) -> date:
     return date.fromisocalendar(int(week[:4]), int(week[6:]), 1)
 
 
-def _by_week(session: Session, per_job: CTE) -> list[WeekFunnel]:
+def _by_week(session: Session, per_job: FromClause) -> list[WeekFunnel]:
     week = func.cai_iso_week(per_job.c.first_seen_at)
     rows = {
         r.week: r
@@ -471,7 +595,7 @@ def _by_week(session: Session, per_job: CTE) -> list[WeekFunnel]:
     return out
 
 
-def _referral_group(per_job: CTE) -> Any:
+def _referral_group(per_job: FromClause) -> Any:
     """`given`, `requested` o `none` según la marca de referencia de los contactos del proceso."""
 
     def marked(status: str) -> ColumnElement[bool]:
@@ -484,7 +608,7 @@ def _referral_group(per_job: CTE) -> Any:
     return case((marked("given"), "given"), (marked("requested"), "requested"), else_="none")
 
 
-def _by_referral(session: Session, per_job: CTE) -> list[ReferralFunnel]:
+def _by_referral(session: Session, per_job: FromClause) -> list[ReferralFunnel]:
     group = _referral_group(per_job)
     rows = {
         r.group: r
@@ -499,7 +623,7 @@ def _by_referral(session: Session, per_job: CTE) -> list[ReferralFunnel]:
     ]
 
 
-def _response_time(session: Session, per_job: CTE) -> ResponseTime:
+def _response_time(session: Session, per_job: FromClause) -> ResponseTime:
     sent = per_job.c.applied_at.is_not(None)
     no_reply = and_(sent, per_job.c.reply_at.is_(None))
     stage = Application.stage
@@ -528,7 +652,7 @@ def _response_time(session: Session, per_job: CTE) -> ResponseTime:
     )
 
 
-def _discard_reasons(session: Session, per_job: CTE) -> list[ReasonCount]:
+def _discard_reasons(session: Session, per_job: FromClause) -> list[ReasonCount]:
     reason = func.coalesce(Event.payload["reason"].as_string(), "unspecified")
     count = func.count(Event.job_id.distinct())
     rows = session.execute(
@@ -541,7 +665,7 @@ def _discard_reasons(session: Session, per_job: CTE) -> list[ReasonCount]:
     return [ReasonCount(reason=r.reason, count=r.count) for r in rows]
 
 
-def _hard_filter_failures(session: Session, per_job: CTE) -> list[FilterCount]:
+def _hard_filter_failures(session: Session, per_job: FromClause) -> list[FilterCount]:
     failures = func.json_each(Event.payload, "$.failures").table_valued("value")
     name = func.json_extract(failures.c.value, "$.filter")
     count = func.count(Event.job_id.distinct())
@@ -562,21 +686,23 @@ def get_funnel_stats(
 ) -> FunnelStats:
     """Embudo, desglose por fuente, puesto y semana, tiempo hasta la primera respuesta y motivos
     de descarte de las ofertas vistas desde `since` (todas si es `None`)."""
-    per_job, duplicates = _per_job(session, since)
     spend, job_runs = _job_spend(session)
-    return FunnelStats(
-        since=since,
-        duplicates_excluded=duplicates,
-        steps=_steps(session, per_job),
-        by_source=_by_source(session, per_job, spend),
-        by_title=_by_title(session, per_job, top_titles),
-        by_week=_by_week(session, per_job),
-        by_referral=_by_referral(session, per_job),
-        response_time=_response_time(session, per_job),
-        discard_reasons=_discard_reasons(session, per_job),
-        hard_filter_failures=_hard_filter_failures(session, per_job),
-        agent_cost=_agent_cost(session, per_job, spend, job_runs),
-    )
+    with _per_job(session, since) as (per_job, duplicates):
+        rows = session.execute(select(per_job.c.job_id, per_job.c.source_id))
+        sources_of = {job_id: source_id for job_id, source_id in rows}
+        return FunnelStats(
+            since=since,
+            duplicates_excluded=duplicates,
+            steps=_steps(session, per_job),
+            by_source=_by_source(session, per_job, spend, sources_of),
+            by_title=_by_title(session, per_job, top_titles),
+            by_week=_by_week(session, per_job),
+            by_referral=_by_referral(session, per_job),
+            response_time=_response_time(session, per_job),
+            discard_reasons=_discard_reasons(session, per_job),
+            hard_filter_failures=_hard_filter_failures(session, per_job),
+            agent_cost=_agent_cost(session, per_job, spend, job_runs, sources_of),
+        )
 
 
 # --- Calibración (fase 20) -------------------------------------------------------------------
@@ -673,9 +799,8 @@ def wilson_interval(successes: int, n: int, z: float = _Z) -> RateInterval:
     return RateInterval(rate=round(p, 4), low=round(low, 4), high=round(high, 4))
 
 
-def _calibration_rows(session: Session, since: date | None) -> CTE:
+def _calibration_rows(per_job: FromClause, since: date | None) -> Select[Any]:
     """Una fila por oferta enviada con su resultado y lo que se sabía al enviarla."""
-    per_job, _ = _per_job(session, None)
     applied_at, job_id = per_job.c.applied_at, per_job.c.job_id
 
     def nearest_score(before: bool) -> Any:
@@ -742,7 +867,9 @@ def _calibration_rows(session: Session, since: date | None) -> CTE:
             func.coalesce(template, NO_TEMPLATE).label("template"),
             case((letter, "with"), else_="without").label("letter"),
             _referral_group(per_job).label("referral"),
-            (func.julianday(applied_at) - func.julianday(per_job.c.first_seen_at)).label("days"),
+            type_coerce(
+                func.julianday(applied_at) - func.julianday(per_job.c.first_seen_at), Float
+            ).label("days"),
             *(
                 case((func.json_extract(Job.signals, f"$.{code}").is_not(None), 1), else_=0).label(
                     f"signal_{code}"
@@ -754,7 +881,6 @@ def _calibration_rows(session: Session, since: date | None) -> CTE:
         .join(Job, Job.id == job_id)
         .outerjoin(Application, Application.job_id == job_id)
         .where(*scope)
-        .cte("calibration")
     )
 
 
@@ -777,7 +903,7 @@ def _group(key: str, label: str, row: Any | None, min_cases: int) -> Calibration
     )
 
 
-def _counts(session: Session, cal: CTE, key: Any = None) -> list[Any]:
+def _counts(session: Session, cal: FromClause, key: Any = None) -> list[Any]:
     """Enviadas, con respuesta, con entrevista y esperando; agrupadas por `key` si se da."""
     sums = [
         func.count().label("applied"),
@@ -790,7 +916,7 @@ def _counts(session: Session, cal: CTE, key: Any = None) -> list[Any]:
     return list(session.execute(select(key.label("key"), *sums).group_by(key)).all())
 
 
-def _by_signal(session: Session, cal: CTE, min_cases: int) -> list[CalibrationGroup]:
+def _by_signal(session: Session, cal: FromClause, min_cases: int) -> list[CalibrationGroup]:
     """Un grupo por señal (una oferta puede estar en varios) y «Sin señales»."""
     columns = [cal.c[f"signal_{code}"] for code, _ in SIGNAL_LABELS[:-1]]
     sums = [
@@ -808,7 +934,7 @@ def _by_signal(session: Session, cal: CTE, min_cases: int) -> list[CalibrationGr
 
 
 def _fixed(
-    session: Session, cal: CTE, key: Any, groups: tuple[tuple[str, str], ...], min_cases: int
+    session: Session, cal: FromClause, key: Any, groups: tuple[tuple[str, str], ...], min_cases: int
 ) -> list[CalibrationGroup]:
     """Siempre los mismos grupos y en ese orden, a cero si no tienen envíos."""
     rows = {r.key: r for r in _counts(session, cal, key)}
@@ -816,7 +942,7 @@ def _fixed(
 
 
 def _open(
-    session: Session, cal: CTE, key: Any, labels: dict[str, str], min_cases: int
+    session: Session, cal: FromClause, key: Any, labels: dict[str, str], min_cases: int
 ) -> list[CalibrationGroup]:
     """Los grupos que salen de los datos, de más a menos envíos y por etiqueta."""
     out = [
@@ -832,7 +958,16 @@ def get_calibration(
     """Tasa de respuesta y de entrevista de las candidaturas enviadas desde `since` (todas si es
     `None`) por tramo de score, veredicto, fuente, portal, plantilla, carta, referencia y días
     entre el alta y el envío. Orientativa: con pocos casos, el intervalo lo dice."""
-    cal = _calibration_rows(session, since)
+    with (
+        _per_job(session, None) as (per_job, _),
+        _materialized(session, "cai_calibration", _calibration_rows(per_job, since)) as cal,
+    ):
+        return _calibration(session, cal, since, min_cases)
+
+
+def _calibration(
+    session: Session, cal: FromClause, since: date | None, min_cases: int
+) -> Calibration:
     score = cal.c.score
     band = case(
         (score.is_(None), "none"),
@@ -962,7 +1097,11 @@ def _story_markdown(story: SearchStory, lang: Literal["es", "en"]) -> str:
 
 def get_search_story(session: Session) -> SearchStory:
     """La búsqueda entera, desde la primera oferta, en números agregados (sin duplicadas)."""
-    per_job, _ = _per_job(session, None)
+    with _per_job(session, None) as (per_job, _):
+        return _search_story(session, per_job)
+
+
+def _search_story(session: Session, per_job: FromClause) -> SearchStory:
     steps = ("found", "approved", "applied", "replied", "interview", "offer", "accepted")
     row = session.execute(
         select(

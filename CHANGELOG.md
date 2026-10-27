@@ -39,6 +39,11 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   al entrar en ella, o antes, al pasar el ratón por su enlace, y solo el idioma que usas) y las
   respuestas viajan comprimidas. Al volver a abrirla, lo que no ha cambiado sale de la caché del
   navegador sin preguntar al servidor.
+- **Rápida también con miles de ofertas:** con 5000 ofertas, el Embudo pasa de 2,5 segundos a
+  0,15, la Calibración de 2 a 0,12, la historia de tu búsqueda de 0,8 a 0,08, Por revisar de 0,7 a
+  0,1 y Alertas de 0,4 a 0,09. La Bandeja responde en 0,03-0,06 s en cualquier orden y la ficha,
+  Procesos y la página de inicio, en menos de 0,1. Al actualizar se añaden unos índices a tu base
+  de datos, sin tocar ningún dato.
 - **«Tengo entrevista» sin fecha obligatoria:** la fecha y la hora van en campos separados y las dos
   son opcionales. Sin hora, la entrevista cuenta todo el día; sin fecha, se registra solo que la
   tienes. Lo mismo con la fecha de entrega de una prueba.

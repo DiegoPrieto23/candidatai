@@ -46,6 +46,11 @@ pnpm typecheck && pnpm test
 uv run scripts/sync_agents.py --check   # from the repository root
 ```
 
+If your change touches a list, the funnel or a query, measure it from `backend/` with
+`uv run python -m tests.perf.profile_backend`: it builds a synthetic database with 5,000 fictional
+postings in a temporary folder and prints the median, the p95 and the SQL queries of each endpoint.
+`tests/test_query_counts.py` fails if a list makes more queries with 100 postings than with 10.
+
 The CI also audits both lockfiles for known vulnerabilities, on every push and once a week. If that
 check fails on your pull request, upgrade the affected library to its fixed version
 (`uv lock --upgrade-package <name>` in `backend/`, `pnpm update <name>` in `frontend/`). A new

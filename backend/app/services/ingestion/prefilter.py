@@ -46,9 +46,9 @@ class Verdict:
 PASS = Verdict(True)
 
 
-def _has_words(text: str, phrase: str) -> bool:
-    folded = fold(phrase)
-    return bool(folded) and f" {folded} " in f" {fold(text)} "
+def _folded(phrases: list[str]) -> list[tuple[str, str]]:
+    """Cada frase con su forma plegada (las que se quedan vacías no cuentan)."""
+    return [(phrase, folded) for phrase in phrases if (folded := fold(phrase))]
 
 
 class Prefilter:
@@ -60,6 +60,14 @@ class Prefilter:
         # Las del perfil y las de `policies.yaml` (fase 27.5), como en los filtros duros.
         own = preferences.discard_title_keywords if preferences is not None else []
         self.discard = discard_keywords(own, get_policies().hard_filters)
+        # Lo del perfil, normalizado una vez: las alertas pasan miles de títulos por aquí.
+        self._discard = _folded(self.discard)
+        self._extra = _folded(self.extra)
+        self._roles = [normalize_title(r) for r in preferences.roles] if preferences else []
+        # Veredictos ya calculados: el del título solo depende del título, y el de la ubicación,
+        # de la ubicación (en las alertas se repiten mucho).
+        self._titles: dict[str, Verdict] = {}
+        self._locations: dict[tuple[str | None, bool | None], Verdict] = {}
 
     @property
     def active(self) -> bool:
@@ -68,8 +76,14 @@ class Prefilter:
     def check(self, title: str, location: str | None, remote: bool | None) -> Verdict:
         if self.preferences is None:
             return PASS
-        verdict = self._title(title)
-        return verdict if not verdict.passed else self._location(location, remote)
+        if title not in self._titles:
+            self._titles[title] = self._title(title)
+        verdict = self._titles[title]
+        if not verdict.passed:
+            return verdict
+        if (location, remote) not in self._locations:
+            self._locations[(location, remote)] = self._location(location, remote)
+        return self._locations[(location, remote)]
 
     def check_summary(self, title: str, location: str | None) -> Verdict:
         """Prefiltro de una oferta resumen: lo de `check` y, además, los filtros duros que se
@@ -88,10 +102,11 @@ class Prefilter:
 
     def _title(self, title: str) -> Verdict:
         assert self.preferences is not None
-        hits = [k for k in self.discard if _has_words(title, k)]
+        words = f" {fold(title)} "
+        hits = [k for k, folded in self._discard if f" {folded} " in words]
         if hits:
             return Verdict(False, f"El título contiene palabras de descarte: {', '.join(hits)}.")
-        if any(_has_words(title, k) for k in self.extra):
+        if any(f" {folded} " in words for _, folded in self._extra):
             return PASS
         # También en inglés: «Ingeniero de Datos» cuenta como «Data Engineer» (title_aliases.yaml).
         segments = {
@@ -101,8 +116,7 @@ class Prefilter:
         } - {""}
         # Todas las palabras de algún puesto buscado deben estar en el título (con margen para
         # variantes como «engineering»); el parecido fino lo calcula el score.
-        for role in self.preferences.roles:
-            wanted = normalize_title(role)
+        for wanted in self._roles:
             if any(role_similarity(segment, wanted) > 0 for segment in segments):
                 return PASS
         return Verdict(False, "El título no encaja con tus puestos (`preferences.roles`).")
