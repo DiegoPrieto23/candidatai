@@ -126,6 +126,7 @@ export const fileUrls = {
   milestoneIcs: (milestoneId: number) => `${API_URL}/milestones/${milestoneId}/ics`,
   /** La guía de preparación de una entrevista en PDF. */
   interviewGuide: (milestoneId: number) => `${API_URL}/milestones/${milestoneId}/guide.pdf`,
+  interviewGuideCover: (milestoneId: number) => `${API_URL}/milestones/${milestoneId}/guide.png`,
   /** Feed con todos los hitos futuros (para suscribirse) y su versión para descargar. */
   calendarFeed: `${API_URL}/calendar.ics`,
   calendarDownload: `${API_URL}/calendar.ics?download=true`,

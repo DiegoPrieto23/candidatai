@@ -449,10 +449,13 @@ function MatchPanel({ job }: { job: JobView }) {
   // Fase 25.4: solo en triaje importa el umbral de «Evaluar encaje» en segundo plano.
   const assessThreshold = useAssessThreshold(job.stage === 'pending_triage')
   if (!job.extraction) return null
-  // El score va en la cabecera de la ficha: aquí, solo su porqué.
+  // El score, junto a su porqué (el desglose).
   return (
     <section className="rounded-xl border bg-card p-5 sm:p-6" aria-label={t('title')}>
-      <h2 className="mb-5 text-base font-semibold tracking-tight">{t('title')}</h2>
+      <div className="mb-5 flex items-start justify-between gap-4">
+        <h2 className="text-base font-semibold tracking-tight">{t('title')}</h2>
+        {match && <ScoreBadge score={match.score} threshold={match.triage_threshold} size="lg" />}
+      </div>
       {isPending ? (
         <Skeleton className="h-40" />
       ) : isError ? (
@@ -557,13 +560,6 @@ function ExtractionBlock({ job }: { job: JobView }) {
       </div>
     </section>
   )
-}
-
-/** Score en la cabecera: se ve desde cualquier pestaña. */
-function HeaderScore({ job }: { job: JobView }) {
-  const { data: match } = useJobMatch(job.id, job.extraction !== null)
-  if (!match) return null
-  return <ScoreBadge score={match.score} threshold={match.triage_threshold} className="mt-0.5" />
 }
 
 type JobTab = 'overview' | 'application' | 'process' | 'company' | 'history'
@@ -711,7 +707,6 @@ export function JobPage() {
               </p>
             </div>
             <div className="flex shrink-0 flex-wrap items-start gap-3">
-              <HeaderScore job={job} />
               <StageBadge stage={job.stage} className="mt-1" />
               <Decision job={job} />
               {job.url && (

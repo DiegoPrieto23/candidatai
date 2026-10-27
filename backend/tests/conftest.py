@@ -34,6 +34,8 @@ def isolated_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Pa
             monkeypatch.delenv(name)
     # Sin modelo de embeddings en los tests: nada de descargas; los que lo necesitan usan uno falso.
     monkeypatch.setenv("CAI_EMBEDDINGS", "off")
+    # Mensajes de `cai start` en español, sea cual sea el idioma del equipo que pasa los tests.
+    monkeypatch.setenv("CAI_LANG", "es")
     # Sin el Ollama de quien ejecuta los tests (fase 24.6): un puerto donde no escucha nada.
     monkeypatch.setenv("CAI_OLLAMA_URL", "http://127.0.0.1:9")
     monkeypatch.delenv("OLLAMA_CONTEXT_LENGTH", raising=False)

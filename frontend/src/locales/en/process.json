@@ -19,6 +19,7 @@
     "ics": "Add “{{title}}” to my calendar",
     "edit": "Edit “{{title}}”",
     "done": "Mark “{{title}}” as done",
+    "doneLater": "You can mark it as done from the day of the interview",
     "cancel": "Cancel “{{title}}”",
     "delete": "Delete “{{title}}”"
   },

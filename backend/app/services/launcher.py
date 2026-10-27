@@ -12,6 +12,7 @@ que lance, y `SIGTERM` o `SIGHUP` (cerrar la terminal) paran todo como Ctrl+C.
 """
 
 import contextlib
+import locale
 import os
 import shutil
 import signal
@@ -30,7 +31,7 @@ from typing import IO, Any, Literal
 import httpx
 
 from app.core import migrations
-from app.core.config import REPO_ROOT, Settings
+from app.core.config import REPO_ROOT, Settings, get_settings
 from app.services.agent_runner import _kill_tree
 
 HOST = "127.0.0.1"
@@ -38,6 +39,66 @@ DEV_UI_URL = "http://127.0.0.1:5173"
 READY_TIMEOUT = 60.0  # la primera vez la API puede tardar (importa mucho)
 
 PortState = Literal["free", "candidatai", "other"]
+
+
+# Lo que se ve en la terminal, en español o en inglés (`console_language`).
+Lang = Literal["es", "en"]
+MESSAGES: dict[str, dict[Lang, str]] = {
+    "already_running": {
+        "es": "CandidatAI ya está en marcha en {url}: abro el navegador.",
+        "en": "CandidatAI is already running at {url}: opening the browser.",
+    },
+    "port_busy": {
+        "es": "El puerto {port} lo usa otro programa. Ciérralo o usa `cai start --port <otro>`.",
+        "en": "Port {port} is used by another program. Close it or use `cai start --port <other>`.",
+    },
+    "starting": {"es": "Arrancando CandidatAI…", "en": "Starting CandidatAI…"},
+    "running": {"es": "CandidatAI en marcha: {url}", "en": "CandidatAI is running: {url}"},
+    "keep_open": {
+        "es": "Deja esta ventana abierta mientras la uses. "
+        "Para cerrar: Ctrl+C o cierra la ventana.",
+        "en": "Keep this window open while you use it. To quit: Ctrl+C or close the window.",
+    },
+    "child_ended": {
+        "es": "«{name}» se ha cerrado: paro el resto. Detalles en data/logs/start-{name}.log.",
+        "en": "“{name}” has stopped: stopping the rest. Details in data/logs/start-{name}.log.",
+    },
+    "closing": {"es": "Cerrando CandidatAI…", "en": "Closing CandidatAI…"},
+    "no_ui": {
+        "es": "No está la UI compilada en {ui_dir}. Si has clonado el repositorio, compílala una "
+        "vez: `cd frontend; pnpm install; pnpm build` (o usa `cai start --dev`). Con el "
+        "instalador ya viene compilada.",
+        "en": "The built UI is not in {ui_dir}. If you cloned the repository, build it once: "
+        "`cd frontend; pnpm install; pnpm build` (or use `cai start --dev`). The installer "
+        "already includes it.",
+    },
+    "no_pnpm": {
+        "es": "`--dev` necesita pnpm (y Node) para arrancar Vite.",
+        "en": "`--dev` needs pnpm (and Node) to run Vite.",
+    },
+    "child_died": {
+        "es": "«{name}» se ha cerrado al arrancar (código {code}). "
+        "Mira data/logs/start-{name}.log.",
+        "en": "“{name}” stopped while starting (code {code}). See data/logs/start-{name}.log.",
+    },
+    "timeout": {
+        "es": "La API no respondió en {seconds:g} s. Mira data/logs/start-api.log.",
+        "en": "The API did not answer within {seconds:g} s. See data/logs/start-api.log.",
+    },
+}
+
+
+def console_language() -> Lang:
+    """`CAI_LANG` si está; si no, español con el sistema en español e inglés con cualquier otro."""
+    chosen = get_settings().lang
+    if chosen is not None:
+        return chosen
+    system = (locale.getlocale()[0] or "").lower()
+    return "es" if system.startswith(("es", "spanish")) else "en"
+
+
+def message(key: str, **values: Any) -> str:
+    return MESSAGES[key][console_language()].format(**values)
 
 
 class LaunchError(RuntimeError):
@@ -112,11 +173,7 @@ def plan(settings: Settings, port: int, *, dev: bool = False) -> Launch:
     """Qué se va a arrancar (sin arrancar nada)."""
     backend = REPO_ROOT / "backend"
     if not dev and not ui_built(settings):
-        raise LaunchError(
-            f"No está la UI compilada en {settings.ui_dir}. Si has clonado el repositorio, "
-            "compílala una vez: `cd frontend; pnpm install; pnpm build` (o usa `cai start --dev`). "
-            "Con el instalador ya viene compilada."
-        )
+        raise LaunchError(message("no_ui", ui_dir=settings.ui_dir))
     children = [
         Child("api", _python_command("serve", "--port", str(port)), backend),
         Child("worker", _python_command("worker"), backend),
@@ -125,7 +182,7 @@ def plan(settings: Settings, port: int, *, dev: bool = False) -> Launch:
     if dev:
         pnpm = shutil.which("pnpm")
         if pnpm is None:
-            raise LaunchError("`--dev` necesita pnpm (y Node) para arrancar Vite.")
+            raise LaunchError(message("no_pnpm"))
         children.append(Child("ui", [pnpm, "dev"], REPO_ROOT / "frontend"))
         url = DEV_UI_URL
     return Launch(url=url, children=children)
@@ -227,17 +284,15 @@ def wait_ready(
         while time.monotonic() < deadline:
             for child in launch.children:
                 if child.process is not None and child.process.poll() is not None:
-                    raise LaunchError(
-                        f"«{child.name}» se ha cerrado al arrancar (código "
-                        f"{child.process.returncode}). Mira data/logs/start-{child.name}.log."
-                    )
+                    code = child.process.returncode
+                    raise LaunchError(message("child_died", name=child.name, code=code))
             try:
                 if client.get(f"{url}/status").status_code == 200:
                     return
             except httpx.HTTPError:
                 pass
             sleep(0.5)
-    raise LaunchError(f"La API no respondió en {timeout:g} s. Mira data/logs/start-api.log.")
+    raise LaunchError(message("timeout", seconds=timeout))
 
 
 def supervise(launch: Launch, sleep: Callable[[float], None] = time.sleep) -> str:
@@ -261,32 +316,27 @@ def start(
     """Arranca todo y bloquea hasta Ctrl+C o hasta que un hijo se caiga."""
     state = probe(port)
     if state == "candidatai":
-        say(f"CandidatAI ya está en marcha en http://{HOST}:{port}: abro el navegador.")
+        say(message("already_running", url=f"http://{HOST}:{port}"))
         if open_browser:
             browser(f"http://{HOST}:{port}")
         return
     if state == "other":
-        raise LaunchError(
-            f"El puerto {port} lo usa otro programa. Ciérralo o usa `cai start --port <otro>`."
-        )
+        raise LaunchError(message("port_busy", port=port))
     launch = plan(settings, port, dev=dev)
     migrations.upgrade()
-    say("Arrancando CandidatAI…")
+    say(message("starting"))
     with stop_on_signals():
         try:
             for child in launch.children:
                 _spawn(child, settings.logs_dir)
             wait_ready(f"http://{HOST}:{port}", launch)
-            say(f"CandidatAI en marcha: {launch.url}")
-            say(
-                "Deja esta ventana abierta mientras la uses. "
-                "Para cerrar: Ctrl+C o cierra la ventana."
-            )
+            say(message("running", url=launch.url))
+            say(message("keep_open"))
             if open_browser:
                 browser(launch.url)
             ended = supervise(launch)
-            say(f"«{ended}» se ha cerrado: paro el resto. Detalles en data/logs/start-{ended}.log.")
+            say(message("child_ended", name=ended))
         except KeyboardInterrupt:
-            say("Cerrando CandidatAI…")
+            say(message("closing"))
         finally:
             stop(launch)

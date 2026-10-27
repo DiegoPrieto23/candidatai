@@ -8,6 +8,7 @@ de la oferta si la pide la UI con `fetch`; y un PDF abierto en una pestaña (`/r
 una ruta de la UI, así que llega a la API aunque el navegador acepte HTML.
 """
 
+import mimetypes
 import re
 from collections.abc import Callable
 from pathlib import Path
@@ -31,6 +32,18 @@ _NO_CACHE = {"Cache-Control": "no-cache"}
 # Lo de `/assets` lleva un hash en el nombre (lo pone Vite): un fichero nunca cambia y el navegador
 # lo guarda para siempre, sin volver a preguntar. Una UI nueva trae nombres nuevos en `index.html`.
 IMMUTABLE = "public, max-age=31536000, immutable"
+
+# En Windows, `mimetypes` toma los tipos del registro, y en algunos equipos `.js` sale como
+# `text/plain`: el navegador se niega entonces a ejecutar los módulos y la UI queda en blanco. Los
+# de lo que sirve la UI, fijos (`install_ui`).
+UI_TYPES = {
+    ".js": "text/javascript",
+    ".mjs": "text/javascript",
+    ".css": "text/css",
+    ".json": "application/json",
+    ".svg": "image/svg+xml",
+    ".woff2": "font/woff2",
+}
 
 
 class _HashedAssets(StaticFiles):
@@ -77,6 +90,8 @@ def _file_endpoint(path: Path) -> Callable[[], FileResponse]:
 def install_ui(app: FastAPI, ui_dir: Path) -> bool:
     """Sirve la UI de `ui_dir` si está construida. Devuelve si la ha montado."""
     index = ui_dir / "index.html"
+    for extension, media_type in UI_TYPES.items():
+        mimetypes.add_type(media_type, extension)
     if not index.is_file():
         return False
     if (ui_dir / "assets").is_dir():

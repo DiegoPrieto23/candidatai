@@ -133,6 +133,18 @@ def get_interview_guide_pdf(session: SessionDep, milestone_id: int) -> FileRespo
 
 
 @router.get(
+    "/milestones/{milestone_id}/guide.png",
+    operation_id="get_interview_guide_cover",
+    response_class=FileResponse,
+    responses={200: {"content": {"image/png": {}}}},
+)
+def get_interview_guide_cover(session: SessionDep, milestone_id: int) -> FileResponse:
+    """La portada de la guía de preparación, en pequeño (la miniatura de la ficha)."""
+    cover = interview_guide.guide_thumbnail(session, milestone_id)
+    return FileResponse(cover, media_type="image/png")
+
+
+@router.get(
     "/calendar.ics",
     operation_id="get_calendar_feed",
     response_class=Response,

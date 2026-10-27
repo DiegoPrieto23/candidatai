@@ -367,6 +367,23 @@ def guide_file(session: Session, milestone_id: int) -> Path:
     return path
 
 
+GUIDE_THUMBNAIL_PX = 240  # la miniatura de la ficha se ve a ~80 px: nítida en pantallas 2x y 3x
+
+
+def guide_thumbnail(session: Session, milestone_id: int) -> Path:
+    """La portada de la guía en PNG, para la miniatura de la ficha. Se guarda en la caché de vistas
+    previas con la fecha y el tamaño del PDF en el nombre: si se vuelve a preparar, se rehace."""
+    from app.services.documents.authoring import previews_dir
+    from app.services.documents.preview import pdf_to_png
+
+    pdf = guide_file(session, milestone_id)
+    stat = pdf.stat()
+    png = previews_dir() / f"guide-{milestone_id}-{stat.st_mtime_ns}-{stat.st_size}.png"
+    if not png.is_file():
+        pdf_to_png(pdf, png, width_px=GUIDE_THUMBNAIL_PX)
+    return png
+
+
 def save_interview_guide(
     session: Session,
     milestone_id: int,

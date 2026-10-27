@@ -115,6 +115,37 @@ export function InterviewActions({ milestone, stage }: { milestone: MilestoneOut
   )
 }
 
+/** La guía que redactó tu agente y maquetó la app, con la miniatura de su portada. Se abre en otra
+ *  pestaña. Si la portada no llega (PDF borrado), queda el icono. */
+function GuideCard({ milestoneId, savedAt }: { milestoneId: number; savedAt: string }) {
+  const { t } = useTranslation('status', { keyPrefix: 'interview' })
+  const [coverFailed, setCoverFailed] = useState(false)
+  const href = fileUrls.interviewGuide(milestoneId)
+  return (
+    <div className="flex items-center gap-3 rounded-md border bg-muted/30 px-3 py-2 text-xs">
+      <a href={href} target="_blank" rel="noreferrer" tabIndex={-1} aria-hidden className="shrink-0">
+        {coverFailed ? (
+          <FilePdfIcon className="size-8 text-primary" weight="duotone" />
+        ) : (
+          <img
+            src={fileUrls.interviewGuideCover(milestoneId)}
+            alt=""
+            loading="lazy"
+            onError={() => setCoverFailed(true)}
+            className="aspect-[1/1.414] w-14 rounded-sm border bg-white object-cover object-top shadow-sm transition-shadow hover:shadow-md"
+          />
+        )}
+      </a>
+      <div className="min-w-0 space-y-0.5">
+        <a href={href} target="_blank" rel="noreferrer" className="font-medium underline-offset-4 hover:underline">
+          {t('guide')}
+        </a>
+        <p className="text-muted-foreground">{t('guideSaved', { date: formatDateTime(savedAt) })}</p>
+      </div>
+    </div>
+  )
+}
+
 /** Guía en PDF, plan de preparación y repaso de una entrevista, si los hay. */
 export function InterviewDetails({ milestone }: { milestone: MilestoneOut }) {
   const { t } = useTranslation('status', { keyPrefix: 'interview' })
@@ -124,21 +155,7 @@ export function InterviewDetails({ milestone }: { milestone: MilestoneOut }) {
   const minutes = plan ? plan.blocks.reduce((sum, b) => sum + b.minutes, 0) : 0
   return (
     <div className="mt-2 space-y-2">
-      {guide && (
-        // La guía que redactó tu agente y maquetó la app. Se abre en otra pestaña.
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-md border bg-muted/30 px-3 py-2 text-xs">
-          <FilePdfIcon className="size-4 shrink-0 text-primary" weight="duotone" aria-hidden />
-          <a
-            href={fileUrls.interviewGuide(milestone.id)}
-            target="_blank"
-            rel="noreferrer"
-            className="font-medium underline-offset-4 hover:underline"
-          >
-            {t('guide')}
-          </a>
-          <span className="text-muted-foreground">{t('guideSaved', { date: formatDateTime(guide.saved_at) })}</span>
-        </div>
-      )}
+      {guide && <GuideCard milestoneId={milestone.id} savedAt={guide.saved_at} />}
       {plan && (
         <details className="rounded-md border bg-muted/30 px-3 py-2 text-xs">
           <summary className="cursor-pointer font-medium">
