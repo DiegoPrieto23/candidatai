@@ -1,0 +1,60 @@
+name: Audit
+
+# Vulnerabilidades conocidas en las librerías de `backend/uv.lock` y `frontend/pnpm-lock.yaml`.
+# Corre dentro de la CI en cada push (lo llama ci.yml), antes de publicar una release (release.yml,
+# que no se publica si falla) y, además, cada lunes por su cuenta: una vulnerabilidad nueva en una
+# librería que no cambia se ve sin esperar a un push. Solo audita; el resto de la CI no corre en el
+# calendario.
+#
+# Si falla: sube la librería afectada a su versión arreglada (`uv lock --upgrade-package <nombre>`
+# o `pnpm update <nombre>`). Una vulnerabilidad sin parche publicado se ignora por id
+# (`--ignore-vuln <id>` en pip-audit, `--ignore <GHSA>` en pnpm audit) con un comentario al lado
+# con el motivo y la fecha en que revisarla.
+on:
+  workflow_call:
+  schedule:
+    - cron: "23 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      # Todas las versiones del lock, extras incluidos (torch y lo suyo llegan por `matching`), sin
+      # sus marcadores: pip-audit los evalúa contra el runner y en Linux se saltaría lo que solo se
+      # instala en Windows o macOS. Con `--disable-pip --no-deps` consulta esas versiones tal cual,
+      # sin resolver ni descargar nada. pip-audit no filtra por severidad: falla con cualquier
+      # vulnerabilidad conocida (en Python casi siempre hay parche). Su versión, fijada: se sube a
+      # mano de vez en cuando.
+      - name: Librerías del lock
+        run: |
+          uv export --frozen --no-hashes --no-emit-project --all-extras -o "$RUNNER_TEMP/lock.txt"
+          sed 's/ *;.*//' "$RUNNER_TEMP/lock.txt" > "$RUNNER_TEMP/requirements-audit.txt"
+      - run: uvx pip-audit==2.10.1 -r "$RUNNER_TEMP/requirements-audit.txt" --strict --disable-pip --no-deps
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: frontend/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      # Lee solo el lockfile. El primero enseña todas, sin fallar; el segundo falla con las altas o
+      # críticas (`--audit-level` decide qué se detalla y con qué falla).
+      - name: Todas (solo informa)
+        run: pnpm audit || true
+      - run: pnpm audit --audit-level high

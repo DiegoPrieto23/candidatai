@@ -276,7 +276,10 @@ def test_release_workflow_builds_the_ui_and_publishes_the_zip() -> None:
     assert "scripts/release_notes.py" in notes and "gh release" not in notes
     # El zip se hace y se comprueba sin permiso de escritura; publicar es otro job, solo con push.
     package = workflow["jobs"]["package"]
-    assert package["needs"] == "notes" and "permissions" not in package and "if" not in package
+    assert package["needs"] == ["notes", "audit"]
+    assert "permissions" not in package and "if" not in package
+    # Fase 29.1: no se publica con una vulnerabilidad conocida en las librerías del lock.
+    assert workflow["jobs"]["audit"] == {"uses": "./.github/workflows/audit.yml"}
     uploads = [str(step.get("uses", "")) for step in package["steps"]]
     assert any(use.startswith("actions/upload-artifact@") for use in uploads)
     release = workflow["jobs"]["release"]
@@ -436,6 +439,29 @@ def test_installers_prepare_your_database_even_with_the_demo_open() -> None:
     assert unix.index("unset " + " ".join(names)) < unix.index("cai db upgrade </dev/null")
 
 
+def test_audit_workflow_checks_both_lockfiles_every_week() -> None:
+    """Fase 29.1: vulnerabilidades de los dos lockfiles, en la CI, en la release y cada semana."""
+    import yaml
+
+    workflow = yaml.safe_load(
+        (REPO_ROOT / ".github" / "workflows" / "audit.yml").read_text(encoding="utf-8")
+    )
+    trigger = workflow.get("on", workflow.get(True))
+    assert set(trigger) == {"workflow_call", "schedule", "workflow_dispatch"}
+    assert len(trigger["schedule"]) == 1
+    assert workflow["permissions"] == {"contents": "read"}
+    jobs = workflow["jobs"]
+    assert set(jobs) == {"python", "frontend"}
+    python = " ".join(str(step.get("run", "")) for step in jobs["python"]["steps"])
+    # Todo el lock, extras incluidos y sin marcadores, para no saltarse lo de Windows y macOS.
+    assert "uv export --frozen" in python and "--all-extras" in python
+    assert "sed 's/ *;.*//'" in python
+    assert re.search(r"uvx pip-audit==\d+\.\d+\.\d+ ", python)
+    assert "--strict --disable-pip --no-deps" in python
+    frontend = [str(step.get("run", "")) for step in jobs["frontend"]["steps"]]
+    assert frontend[-1] == "pnpm audit --audit-level high"
+
+
 def test_ci_tests_the_three_systems_the_installer_and_docker() -> None:
     """Fase 26.4: backend en Windows y Linux en cada push, y macOS en `main`, etiquetas y a mano;
     install.sh en Linux (y macOS); la imagen de Docker en Linux."""
@@ -446,7 +472,8 @@ def test_ci_tests_the_three_systems_the_installer_and_docker() -> None:
     trigger = workflow.get("on", workflow.get(True))
     assert set(trigger) == {"push", "pull_request", "workflow_dispatch"}
     jobs = workflow["jobs"]
-    assert set(jobs) == {"backend", "installer", "docker", "frontend", "agents"}
+    assert set(jobs) == {"backend", "installer", "docker", "frontend", "audit", "agents"}
+    assert jobs["audit"] == {"uses": "./.github/workflows/audit.yml"}
     full = '["windows-latest", "ubuntu-latest", "macos-latest"]'
     backend = jobs["backend"]["strategy"]["matrix"]["os"]
     assert full in backend and '["windows-latest", "ubuntu-latest"]' in backend

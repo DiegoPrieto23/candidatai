@@ -46,6 +46,12 @@ pnpm typecheck && pnpm test
 uv run scripts/sync_agents.py --check   # from the repository root
 ```
 
+The CI also audits both lockfiles for known vulnerabilities, on every push and once a week. If that
+check fails on your pull request, upgrade the affected library to its fixed version
+(`uv lock --upgrade-package <name>` in `backend/`, `pnpm update <name>` in `frontend/`). A new
+advisory can make it fail on a library your change doesn't touch: say so in the pull request and it
+will be fixed on `main`.
+
 ## Three easy ways to start
 
 Issues labelled [`good first issue`](https://github.com/DiegoPrieto23/candidatai/labels/good%20first%20issue)

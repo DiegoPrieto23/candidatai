@@ -110,6 +110,12 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 - **«Sin mínimo en tu perfil»** al comparar ofertas recibidas ya no enseña el nombre interno del
   campo: dice dónde ponerlo (Mi perfil → Búsqueda).
 
+### Seguridad
+- **Librerías sin vulnerabilidades conocidas:** Pillow 13 (la foto del CV, las miniaturas y las
+  plantillas importadas desde imagen), pypdf, filelock, setuptools, opentelemetry y Vite pasan a sus
+  versiones arregladas, y el resto de librerías a sus últimos parches. Al actualizar con el
+  instalador se instalan solas; no cambia nada de cómo se usa.
+
 ## [0.1.0] - 2026-10-24
 
 Primera versión publicada de CandidatAI: una app local para llevar tu búsqueda de empleo de

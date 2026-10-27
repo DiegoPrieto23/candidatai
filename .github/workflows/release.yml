@@ -35,9 +35,14 @@ jobs:
           python3 scripts/release_notes.py "$TAG" > release-notes.md
           { echo "## Notas de $TAG"; echo; cat release-notes.md; } >> "$GITHUB_STEP_SUMMARY"
 
+  # El zip lleva `uv.lock`, con el que los instaladores preparan el entorno: no se publica una
+  # release con una vulnerabilidad conocida en sus librerías.
+  audit:
+    uses: ./.github/workflows/audit.yml
+
   # Empaqueta y comprueba el zip con permisos de solo lectura; lo deja como artefacto (fase 26.4).
   package:
-    needs: notes
+    needs: [notes, audit]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
