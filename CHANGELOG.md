@@ -35,6 +35,10 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   cómo arrancarla desde la terminal (`cai start`) o con Docker.
 
 ### Cambiado
+- **La app abre antes:** al arrancar descarga menos de un tercio que antes (cada página se descarga
+  al entrar en ella, o antes, al pasar el ratón por su enlace, y solo el idioma que usas) y las
+  respuestas viajan comprimidas. Al volver a abrirla, lo que no ha cambiado sale de la caché del
+  navegador sin preguntar al servidor.
 - **«Tengo entrevista» sin fecha obligatoria:** la fecha y la hora van en campos separados y las dos
   son opcionales. Sin hora, la entrevista cuenta todo el día; sin fecha, se registra solo que la
   tienes. Lo mismo con la fecha de entrega de una prueba.

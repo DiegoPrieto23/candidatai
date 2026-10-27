@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.routing import APIRoute
+from starlette.middleware.gzip import DEFAULT_EXCLUDED_CONTENT_TYPES, GZipMiddleware
 
 from app.api.deps import UI_ORIGIN
 from app.api.errors import ERROR_RESPONSES, install_error_handlers
@@ -39,6 +40,12 @@ from app.api.ui import install_ui
 from app.core.config import get_settings
 
 HOST = "127.0.0.1"
+# Ya van comprimidos por dentro: volver a comprimirlos gasta CPU y no ahorra nada.
+COMPRESSED_DOCUMENTS = (
+    "application/pdf",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "image/*",
+)
 __all__ = ["HOST", "UI_ORIGIN", "create_app", "openapi_json"]
 
 
@@ -86,6 +93,18 @@ def create_app() -> FastAPI:
     app.include_router(network.router)
     app.include_router(companies.router)
     app.include_router(received_offers.router)
+    # Las respuestas de más de 1 kB van comprimidas si el navegador lo admite: el JavaScript de la
+    # UI y los JSON grandes (la bandeja con miles de ofertas). En el momento y no precomprimiendo
+    # `dist/`, porque así también se comprime la API. Nada de lo que ya va comprimido: PDF, DOCX,
+    # imágenes y fuentes (las de Starlette más las nuestras); tampoco los streams de eventos. Va
+    # por dentro del de la UI, que pasa las respuestas por trozos: así ve su tamaño entero (el
+    # `index.html` que devuelve ese middleware, de medio kB, sale sin comprimir).
+    app.add_middleware(
+        GZipMiddleware,
+        minimum_size=1024,
+        compresslevel=6,
+        exclude_content_types=(*DEFAULT_EXCLUDED_CONTENT_TYPES, *COMPRESSED_DOCUMENTS),
+    )
     # Al final: la UI compilada (si está) no puede tapar ninguna ruta de la API.
     install_ui(app, get_settings().ui_dir)
     # Contra DNS rebinding también en las lecturas: una web que apunte su dominio a 127.0.0.1 llega

@@ -1,9 +1,31 @@
 /// <reference types="vitest/config" />
+import { readFileSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { gzipSync } from 'node:zlib'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { visualizer } from 'rollup-plugin-visualizer'
-import { defineConfig, searchForWorkspaceRoot } from 'vite'
+import { defineConfig, searchForWorkspaceRoot, type Plugin } from 'vite'
+
+/**
+ * Junto a cada fichero de texto de `dist/assets`, su versión `.gz`: la API la sirve tal cual a quien
+ * admite gzip, sin gastar CPU en comprimir en cada petición (en local, eso tardaba más que lo que
+ * ahorraba).
+ */
+function precompress(): Plugin {
+  return {
+    name: 'candidatai-precompress',
+    apply: 'build',
+    writeBundle(options, bundle) {
+      for (const fileName of Object.keys(bundle)) {
+        if (!/^assets\/.+\.(js|css|svg|json)$/.test(fileName)) continue
+        const path = join(options.dir ?? 'dist', fileName)
+        writeFileSync(`${path}.gz`, gzipSync(readFileSync(path), { level: 9 }))
+      }
+    },
+  }
+}
 
 // Qué pesa cada chunk: `ANALYZE=1 pnpm build` deja `stats.html` (y `stats.json` con
 // `ANALYZE=json`) junto a `dist/`.
@@ -27,6 +49,7 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
+    precompress(),
     !!analyze &&
       visualizer({
         filename: analyze === 'json' ? 'stats.json' : 'stats.html',

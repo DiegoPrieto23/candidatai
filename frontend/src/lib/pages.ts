@@ -72,8 +72,11 @@ export function preloadAllPages(): Promise<unknown> {
   return Promise.all(Object.values(pages).map((page) => page.preload()))
 }
 
-/** Empieza a descargar la página de `to` (un enlace de la app) sin esperar al clic. */
-export function preloadRoute(to: string): void {
+/**
+ * Empieza a descargar la página de `to` (un enlace de la app) sin esperar al clic. La promesa no
+ * falla nunca: si no llega, la página lo intentará otra vez al pintarse.
+ */
+export function preloadRoute(to: string): Promise<unknown> {
   const keys = ROUTES.find(([prefix]) => to.startsWith(prefix))?.[1] ?? []
-  for (const key of keys) void pages[key].preload().catch(() => undefined)
+  return Promise.all(keys.map((key) => pages[key].preload().catch(() => undefined)))
 }

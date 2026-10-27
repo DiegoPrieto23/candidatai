@@ -1,15 +1,17 @@
 """Fase 23.4: la API sirve la UI compilada, `require_ui` acepta su mismo origen local y `cai start`
 arranca y para sus procesos."""
 
+import gzip
 import re
 import subprocess
 import sys
-from collections.abc import Iterator
+from collections.abc import AsyncIterator, Iterator
 from pathlib import Path
 
 import httpx
 import pytest
 import respx
+from fastapi.responses import StreamingResponse
 from fastapi.testclient import TestClient
 
 from app.api.deps import UI_ORIGIN
@@ -60,6 +62,79 @@ def test_ui_pages_get_index_and_the_api_still_answers(client: TestClient) -> Non
     assert client.get("/favicon.svg").text == "<svg/>"
     # Un fichero suelto no admite elegir otro por parámetro.
     assert client.get("/favicon.svg", params={"file": str(Path(__file__))}).text == "<svg/>"
+
+
+def test_hashed_assets_are_cached_forever_and_index_is_not(client: TestClient) -> None:
+    """Fase 29.2: lo de `/assets` (nombre con hash) no se vuelve a pedir; `index.html` sí."""
+    asset = client.get("/assets/app.js")
+    assert asset.headers["cache-control"] == "public, max-age=31536000, immutable"
+    # También la respuesta «sin cambios» a una petición condicional.
+    again = client.get("/assets/app.js", headers={"If-None-Match": asset.headers["etag"]})
+    assert again.status_code == 304
+    assert again.headers["cache-control"] == "public, max-age=31536000, immutable"
+    for path in ("/", "/jobs/7"):
+        assert client.get(path, headers=HTML).headers["cache-control"] == "no-cache"
+    assert client.get("/assets/no-existe.js").status_code == 404
+
+
+def test_assets_are_served_precompressed_when_the_build_left_a_gz(ui_dir: Path) -> None:
+    """Fase 29.2: el `.gz` que deja el build, tal cual y con el tipo del original; sin gzip, o si no
+    hay `.gz`, el fichero normal."""
+    source = "console.log('precomprimido');\n" * 100
+    (ui_dir / "assets" / "page.js").write_bytes(source.encode())
+    (ui_dir / "assets" / "page.js.gz").write_bytes(gzip.compress(source.encode()))
+    migrations.upgrade()
+    with TestClient(create_app(), base_url="http://127.0.0.1:8000") as client:
+        packed = client.get("/assets/page.js", headers={"Accept-Encoding": "gzip, br"})
+        assert packed.headers["content-encoding"] == "gzip"
+        assert packed.headers["content-type"].startswith("text/javascript")
+        assert packed.headers["cache-control"] == "public, max-age=31536000, immutable"
+        assert "Accept-Encoding" in packed.headers["vary"]
+        assert packed.text == source
+        plain = client.get("/assets/page.js", headers={"Accept-Encoding": "identity"})
+        assert "content-encoding" not in plain.headers and plain.text == source
+        assert "Accept-Encoding" in plain.headers["vary"]
+        # Sin `.gz` al lado: el fichero tal cual (pequeño, el middleware tampoco lo comprime).
+        assert client.get("/assets/app.js", headers={"Accept-Encoding": "gzip"}).text == (
+            "console.log(1)"
+        )
+
+
+def test_large_responses_are_gzipped_and_compressed_files_are_not(ui_dir: Path) -> None:
+    """Fase 29.2: JSON y JavaScript grandes, comprimidos si se pide; lo pequeño, los PDF y los
+    streams de eventos, tal cual."""
+    (ui_dir / "assets" / "big.js").write_text("console.log(1);\n" * 200, encoding="utf-8")
+    (ui_dir / "cv.pdf").write_bytes(b"%PDF-1.7\n" + b"0" * 4000)
+    migrations.upgrade()
+    app = create_app()
+
+    async def events() -> AsyncIterator[str]:
+        yield "data: " + "x" * 2000 + "\n\n"
+
+    app.add_api_route(
+        "/test-events", lambda: StreamingResponse(events(), media_type="text/event-stream")
+    )
+    gzip = {"Accept-Encoding": "gzip"}
+    with TestClient(app, base_url="http://127.0.0.1:8000") as client:
+        spec = client.get("/openapi.json", headers=gzip)
+        assert spec.headers["content-encoding"] == "gzip" and spec.json()["info"]["title"]
+        script = client.get("/assets/big.js", headers=gzip)
+        assert script.headers["content-encoding"] == "gzip"
+        assert script.text.startswith("console.log")
+        # Sin pedirlo, sin comprimir.
+        plain = client.get("/openapi.json", headers={"Accept-Encoding": "identity"})
+        assert "content-encoding" not in plain.headers
+        # Un JSON de menos de 1 kB: no compensa. (Los ficheros van por trozos y el middleware no
+        # sabe su tamaño: uno pequeño de `dist/` sale comprimido igual, sin daño.)
+        small = client.get("/prompts/pending", headers=gzip)
+        assert small.status_code == 200 and len(small.content) < 1024
+        assert "content-encoding" not in small.headers
+        pdf = client.get("/cv.pdf", headers=gzip)
+        assert pdf.headers["content-type"] == "application/pdf"
+        assert "content-encoding" not in pdf.headers
+        stream = client.get("/test-events", headers=gzip)
+        assert stream.headers["content-type"].startswith("text/event-stream")
+        assert "content-encoding" not in stream.headers
 
 
 def test_without_a_built_ui_nothing_is_served(

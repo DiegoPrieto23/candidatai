@@ -1,5 +1,10 @@
 {
   "loadingPage": "Cargando la página…",
+  "pageError": {
+    "title": "No se ha podido abrir esta página",
+    "body": "Puede que la app se haya actualizado o que se haya parado. Comprueba que sigue abierta y recarga.",
+    "reload": "Recargar"
+  },
   "groups": {
     "search": "Búsqueda",
     "processes": "Procesos",

@@ -7,6 +7,7 @@ import { keys, useAgentRuns, useStatus } from '@/api/queries'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
+import { PageErrorBoundary } from '@/components/PageErrorBoundary'
 import { ReadyNotices } from '@/components/ReadyNotices'
 import { UserPrompts } from '@/components/UserPrompts'
 import { Brand, MobileNav, Sidebar } from '@/components/Sidebar'
@@ -91,6 +92,7 @@ function PageFallback() {
 
 export function AppShell() {
   const { t } = useTranslation('nav')
+  const { pathname } = useLocation()
   return (
     <div className="flex min-h-[100dvh]">
       <Sidebar />
@@ -113,9 +115,11 @@ export function AppShell() {
           <div className="mb-6 empty:hidden">
             <BackgroundRunReminder />
           </div>
-          <Suspense fallback={<PageFallback />}>
-            <Outlet />
-          </Suspense>
+          <PageErrorBoundary path={pathname}>
+            <Suspense fallback={<PageFallback />}>
+              <Outlet />
+            </Suspense>
+          </PageErrorBoundary>
         </main>
       </div>
       <UserPrompts />

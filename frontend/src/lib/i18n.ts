@@ -38,6 +38,8 @@ void i18n.use(initReactI18next).init({
   resources: {}, // los textos llegan con `loadLanguage`
   partialBundledLanguages: true,
   lng: detectLanguage(),
+  // Solo cuenta si su idioma ya se ha descargado: no se pide aparte, porque un test exige que todos
+  // los idiomas tengan las mismas claves que el español.
   fallbackLng: SOURCE_LANGUAGE,
   supportedLngs: [...LANGUAGES],
   ns: [...NAMESPACES],
@@ -78,14 +80,25 @@ function applyLanguage(language: string) {
 applyLanguage(i18n.language)
 i18n.on('languageChanged', applyLanguage)
 
+let requested: Language = i18n.language
+
 /** Cambia el idioma (tras descargar sus textos) y lo recuerda. */
 export function setLanguage(language: Language): void {
-  try {
-    localStorage.setItem(STORAGE_KEY, language)
-  } catch {
-    // Sin almacenamiento (ventana privada): el idioma dura lo que la pestaña.
-  }
-  void loadLanguage(language).then(() => i18n.changeLanguage(language))
+  requested = language
+  loadLanguage(language)
+    .then(() => {
+      // Si mientras tanto se eligió otro, manda el último.
+      if (requested !== language) return
+      try {
+        localStorage.setItem(STORAGE_KEY, language)
+      } catch {
+        // Sin almacenamiento (ventana privada): el idioma dura lo que la pestaña.
+      }
+      return i18n.changeLanguage(language)
+    })
+    .catch(() => {
+      // Sin red (la app parada): se queda el idioma de ahora.
+    })
 }
 
 function subscribe(notify: () => void): () => void {
