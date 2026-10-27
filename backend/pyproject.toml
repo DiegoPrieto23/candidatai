@@ -18,8 +18,8 @@ dependencies = [
     "lxml>=6.1.3",
     "mcp>=2.2,<3",
     "docxtpl>=0.20.2",
-    "pypdf>=6.19.0",
-    "pillow>=12.3.0",
+    "pypdf>=6.21.2",
+    "pillow>=13.0.0",
     "pypdfium2>=5.13.0",
     "python-multipart>=0.0.20",
     "ruamel.yaml>=0.18",
@@ -45,6 +45,16 @@ dev = [
     "pytest-cov",
     "ruff",
     "respx",
+]
+
+[tool.uv]
+# Dependencias indirectas fijadas por debajo de su siguiente versión mayor: las mayores sin
+# vulnerabilidad se suben aparte, probándolas, no al poner el lock al día. Revísalas al subir la
+# librería que las trae.
+constraint-dependencies = [
+    "huggingface-hub<2",  # la trae sentence-transformers (extra matching)
+    "pyee<14",  # la trae playwright
+    "python-dateutil<3",  # la traen trafilatura y htmldate
 ]
 
 [build-system]
