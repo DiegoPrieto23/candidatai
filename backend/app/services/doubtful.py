@@ -188,7 +188,7 @@ def recompute_all(session: Session) -> RecomputeResult:
     # De una vez: la extracción vigente y el nombre de la empresa de todas (no una consulta por
     # oferta). `stale_repost` sí va por grupo.
     exts = _latest_extractions(session, [job.id for job in jobs])
-    names = dict(session.execute(select(Company.id, Company.name)).tuples().all())
+    names = dict(session.execute(select(Company.id, Company.name)).all())
     patterns = get_doubtful_patterns()
     counts = dict.fromkeys(DOUBTFUL_CODES, 0)
     flagged = 0

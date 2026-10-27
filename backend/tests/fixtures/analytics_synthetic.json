@@ -1,0 +1,2691 @@
+{
+ "calibration": {
+  "by_cover_letter": [
+   {
+    "applied": 15,
+    "awaiting": 4,
+    "interview": 2,
+    "interview_rate": {
+     "high": 0.3788,
+     "low": 0.0374,
+     "rate": 0.1333
+    },
+    "key": "with",
+    "label": "Con carta",
+    "low_data": false,
+    "replied": 11,
+    "reply_rate": {
+     "high": 0.891,
+     "low": 0.4805,
+     "rate": 0.7333
+    }
+   },
+   {
+    "applied": 61,
+    "awaiting": 20,
+    "interview": 19,
+    "interview_rate": {
+     "high": 0.4359,
+     "low": 0.2094,
+     "rate": 0.3115
+    },
+    "key": "without",
+    "label": "Sin carta",
+    "low_data": false,
+    "replied": 41,
+    "reply_rate": {
+     "high": 0.7766,
+     "low": 0.5472,
+     "rate": 0.6721
+    }
+   }
+  ],
+  "by_days_to_apply": [
+   {
+    "applied": 0,
+    "awaiting": 0,
+    "interview": 0,
+    "interview_rate": {
+     "high": null,
+     "low": null,
+     "rate": null
+    },
+    "key": "0_1",
+    "label": "0-1 días",
+    "low_data": true,
+    "replied": 0,
+    "reply_rate": {
+     "high": null,
+     "low": null,
+     "rate": null
+    }
+   },
+   {
+    "applied": 2,
+    "awaiting": 1,
+    "interview": 1,
+    "interview_rate": {
+     "high": 0.9055,
+     "low": 0.0945,
+     "rate": 0.5
+    },
+    "key": "2_3",
+    "label": "2-3 días",
+    "low_data": true,
+    "replied": 1,
+    "reply_rate": {
+     "high": 0.9055,
+     "low": 0.0945,
+     "rate": 0.5
+    }
+   },
+   {
+    "applied": 10,
+    "awaiting": 1,
+    "interview": 2,
+    "interview_rate": {
+     "high": 0.5098,
+     "low": 0.0567,
+     "rate": 0.2
+    },
+    "key": "4_7",
+    "label": "4-7 días",
+    "low_data": false,
+    "replied": 9,
+    "reply_rate": {
+     "high": 0.9821,
+     "low": 0.5958,
+     "rate": 0.9
+    }
+   },
+   {
+    "applied": 64,
+    "awaiting": 22,
+    "interview": 18,
+    "interview_rate": {
+     "high": 0.4013,
+     "low": 0.1859,
+     "rate": 0.2812
+    },
+    "key": "8_plus",
+    "label": "8 días o más",
+    "low_data": false,
+    "replied": 42,
+    "reply_rate": {
+     "high": 0.7608,
+     "low": 0.534,
+     "rate": 0.6562
+    }
+   }
+  ],
+  "by_platform": [
+   {
+    "applied": 66,
+    "awaiting": 22,
+    "interview": 17,
+    "interview_rate": {
+     "high": 0.3743,
+     "low": 0.1675,
+     "rate": 0.2576
+    },
+    "key": "none",
+    "label": "Sin portal",
+    "low_data": false,
+    "replied": 44,
+    "reply_rate": {
+     "high": 0.7684,
+     "low": 0.5466,
+     "rate": 0.6667
+    }
+   },
+   {
+    "applied": 4,
+    "awaiting": 1,
+    "interview": 2,
+    "interview_rate": {
+     "high": 0.85,
+     "low": 0.15,
+     "rate": 0.5
+    },
+    "key": "linkedin",
+    "label": "linkedin",
+    "low_data": true,
+    "replied": 3,
+    "reply_rate": {
+     "high": 0.9544,
+     "low": 0.3006,
+     "rate": 0.75
+    }
+   },
+   {
+    "applied": 2,
+    "awaiting": 1,
+    "interview": 0,
+    "interview_rate": {
+     "high": 0.6576,
+     "low": 0.0,
+     "rate": 0.0
+    },
+    "key": "glassdoor",
+    "label": "glassdoor",
+    "low_data": true,
+    "replied": 1,
+    "reply_rate": {
+     "high": 0.9055,
+     "low": 0.0945,
+     "rate": 0.5
+    }
+   },
+   {
+    "applied": 2,
+    "awaiting": 0,
+    "interview": 1,
+    "interview_rate": {
+     "high": 0.9055,
+     "low": 0.0945,
+     "rate": 0.5
+    },
+    "key": "indeed",
+    "label": "indeed",
+    "low_data": true,
+    "replied": 2,
+    "reply_rate": {
+     "high": 1.0,
+     "low": 0.3424,
+     "rate": 1.0
+    }
+   },
+   {
+    "applied": 1,
+    "awaiting": 0,
+    "interview": 1,
+    "interview_rate": {
+     "high": 1.0,
+     "low": 0.2065,
+     "rate": 1.0
+    },
+    "key": "infojobs",
+    "label": "infojobs",
+    "low_data": true,
+    "replied": 1,
+    "reply_rate": {
+     "high": 1.0,
+     "low": 0.2065,
+     "rate": 1.0
+    }
+   },
+   {
+    "applied": 1,
+    "awaiting": 0,
+    "interview": 0,
+    "interview_rate": {
+     "high": 0.7935,
+     "low": 0.0,
+     "rate": 0.0
+    },
+    "key": "tecnoempleo",
+    "label": "tecnoempleo",
+    "low_data": true,
+    "replied": 1,
+    "reply_rate": {
+     "high": 1.0,
+     "low": 0.2065,
+     "rate": 1.0
+    }
+   }
+  ],
+  "by_referral": [
+   {
+    "applied": 8,
+    "awaiting": 2,
+    "interview": 2,
+    "interview_rate": {
+     "high": 0.5907,
+     "low": 0.0715,
+     "rate": 0.25
+    },
+    "key": "given",
+    "label": "Con referencia",
+    "low_data": true,
+    "replied": 6,
+    "reply_rate": {
+     "high": 0.9285,
+     "low": 0.4093,
+     "rate": 0.75
+    }
+   },
+   {
+    "applied": 6,
+    "awaiting": 1,
+    "interview": 0,
+    "interview_rate": {
+     "high": 0.3903,
+     "low": 0.0,
+     "rate": 0.0
+    },
+    "key": "requested",
+    "label": "Referencia pedida",
+    "low_data": true,
+    "replied": 5,
+    "reply_rate": {
+     "high": 0.9699,
+     "low": 0.4365,
+     "rate": 0.8333
+    }
+   },
+   {
+    "applied": 62,
+    "awaiting": 21,
+    "interview": 19,
+    "interview_rate": {
+     "high": 0.4297,
+     "low": 0.2058,
+     "rate": 0.3065
+    },
+    "key": "none",
+    "label": "Sin referencia",
+    "low_data": false,
+    "replied": 41,
+    "reply_rate": {
+     "high": 0.7666,
+     "low": 0.5372,
+     "rate": 0.6613
+    }
+   }
+  ],
+  "by_score": [
+   {
+    "applied": 36,
+    "awaiting": 12,
+    "interview": 8,
+    "interview_rate": {
+     "high": 0.3808,
+     "low": 0.1172,
+     "rate": 0.2222
+    },
+    "key": "lt60",
+    "label": "< 60",
+    "low_data": false,
+    "replied": 24,
+    "reply_rate": {
+     "high": 0.7979,
+     "low": 0.5033,
+     "rate": 0.6667
+    }
+   },
+   {
+    "applied": 18,
+    "awaiting": 5,
+    "interview": 9,
+    "interview_rate": {
+     "high": 0.7097,
+     "low": 0.2903,
+     "rate": 0.5
+    },
+    "key": "60_74",
+    "label": "60-74",
+    "low_data": false,
+    "replied": 13,
+    "reply_rate": {
+     "high": 0.875,
+     "low": 0.4913,
+     "rate": 0.7222
+    }
+   },
+   {
+    "applied": 12,
+    "awaiting": 4,
+    "interview": 2,
+    "interview_rate": {
+     "high": 0.448,
+     "low": 0.047,
+     "rate": 0.1667
+    },
+    "key": "75_84",
+    "label": "75-84",
+    "low_data": false,
+    "replied": 8,
+    "reply_rate": {
+     "high": 0.8619,
+     "low": 0.3906,
+     "rate": 0.6667
+    }
+   },
+   {
+    "applied": 10,
+    "awaiting": 3,
+    "interview": 2,
+    "interview_rate": {
+     "high": 0.5098,
+     "low": 0.0567,
+     "rate": 0.2
+    },
+    "key": "gte85",
+    "label": "≥ 85",
+    "low_data": false,
+    "replied": 7,
+    "reply_rate": {
+     "high": 0.8922,
+     "low": 0.3968,
+     "rate": 0.7
+    }
+   },
+   {
+    "applied": 0,
+    "awaiting": 0,
+    "interview": 0,
+    "interview_rate": {
+     "high": null,
+     "low": null,
+     "rate": null
+    },
+    "key": "none",
+    "label": "Sin score",
+    "low_data": true,
+    "replied": 0,
+    "reply_rate": {
+     "high": null,
+     "low": null,
+     "rate": null
+    }
+   }
+  ],
+  "by_signal": [
+   {
+    "applied": 0,
+    "awaiting": 0,
+    "interview": 0,
+    "interview_rate": {
+     "high": null,
+     "low": null,
+     "rate": null
+    },
+    "key": "salary_range_wide",
+    "label": "Rango salarial muy amplio",
+    "low_data": true,
+    "replied": 0,
+    "reply_rate": {
+     "high": null,
+     "low": null,
+     "rate": null
+    }
+   },
+   {
+    "applied": 0,
+    "awaiting": 0,
+    "interview": 0,
+    "interview_rate": {
+     "high": null,
+     "low": null,
+     "rate": null
+    },
+    "key": "employer_hidden",
+    "label": "Empresa oculta o agencia",
+    "low_data": true,
+    "replied": 0,
+    "reply_rate": {
+     "high": null,
+     "low": null,
+     "rate": null
+    }
+   },
+   {
+    "applied": 7,
+    "awaiting": 3,
+    "interview": 2,
+    "interview_rate": {
+     "high": 0.6411,
+     "low": 0.0822,
+     "rate": 0.2857
+    },
+    "key": "fixed_term",
+    "label": "Temporal",
+    "low_data": true,
+    "replied": 4,
+    "reply_rate": {
+     "high": 0.8418,
+     "low": 0.2505,
+     "rate": 0.5714
+    }
+   },
+   {
+    "applied": 0,
+    "awaiting": 0,
+    "interview": 0,
+    "interview_rate": {
+     "high": null,
+     "low": null,
+     "rate": null
+    },
+    "key": "stale_repost",
+    "label": "Publicada hace meses",
+    "low_data": true,
+    "replied": 0,
+    "reply_rate": {
+     "high": null,
+     "low": null,
+     "rate": null
+    }
+   },
+   {
+    "applied": 3,
+    "awaiting": 1,
+    "interview": 0,
+    "interview_rate": {
+     "high": 0.5615,
+     "low": 0.0,
+     "rate": 0.0
+    },
+    "key": "ai_screening",
+    "label": "Cribado con IA",
+    "low_data": true,
+    "replied": 2,
+    "reply_rate": {
+     "high": 0.9385,
+     "low": 0.2077,
+     "rate": 0.6667
+    }
+   },
+   {
+    "applied": 66,
+    "awaiting": 20,
+    "interview": 19,
+    "interview_rate": {
+     "high": 0.4064,
+     "low": 0.1927,
+     "rate": 0.2879
+    },
+    "key": "none",
+    "label": "Sin señales",
+    "low_data": false,
+    "replied": 46,
+    "reply_rate": {
+     "high": 0.7945,
+     "low": 0.5778,
+     "rate": 0.697
+    }
+   }
+  ],
+  "by_source": [
+   {
+    "applied": 15,
+    "awaiting": 3,
+    "interview": 4,
+    "interview_rate": {
+     "high": 0.5195,
+     "low": 0.109,
+     "rate": 0.2667
+    },
+    "key": "4",
+    "label": "Captura del navegador",
+    "low_data": false,
+    "replied": 12,
+    "reply_rate": {
+     "high": 0.9295,
+     "low": 0.5481,
+     "rate": 0.8
+    }
+   },
+   {
+    "applied": 14,
+    "awaiting": 7,
+    "interview": 4,
+    "interview_rate": {
+     "high": 0.5465,
+     "low": 0.1172,
+     "rate": 0.2857
+    },
+    "key": "2",
+    "label": "Alta manual por texto",
+    "low_data": false,
+    "replied": 7,
+    "reply_rate": {
+     "high": 0.732,
+     "low": 0.268,
+     "rate": 0.5
+    }
+   },
+   {
+    "applied": 13,
+    "awaiting": 4,
+    "interview": 3,
+    "interview_rate": {
+     "high": 0.5026,
+     "low": 0.0818,
+     "rate": 0.2308
+    },
+    "key": "1",
+    "label": "Alta manual por URL",
+    "low_data": false,
+    "replied": 9,
+    "reply_rate": {
+     "high": 0.8732,
+     "low": 0.4237,
+     "rate": 0.6923
+    }
+   },
+   {
+    "applied": 10,
+    "awaiting": 2,
+    "interview": 4,
+    "interview_rate": {
+     "high": 0.6873,
+     "low": 0.1682,
+     "rate": 0.4
+    },
+    "key": "5",
+    "label": "Búsqueda con navegador",
+    "low_data": false,
+    "replied": 8,
+    "reply_rate": {
+     "high": 0.9433,
+     "low": 0.4902,
+     "rate": 0.8
+    }
+   },
+   {
+    "applied": 9,
+    "awaiting": 5,
+    "interview": 0,
+    "interview_rate": {
+     "high": 0.2991,
+     "low": 0.0,
+     "rate": 0.0
+    },
+    "key": "3",
+    "label": "Alertas por correo",
+    "low_data": true,
+    "replied": 4,
+    "reply_rate": {
+     "high": 0.7333,
+     "low": 0.1888,
+     "rate": 0.4444
+    }
+   },
+   {
+    "applied": 8,
+    "awaiting": 2,
+    "interview": 4,
+    "interview_rate": {
+     "high": 0.7848,
+     "low": 0.2152,
+     "rate": 0.5
+    },
+    "key": "7",
+    "label": "Lever",
+    "low_data": true,
+    "replied": 6,
+    "reply_rate": {
+     "high": 0.9285,
+     "low": 0.4093,
+     "rate": 0.75
+    }
+   },
+   {
+    "applied": 7,
+    "awaiting": 1,
+    "interview": 2,
+    "interview_rate": {
+     "high": 0.6411,
+     "low": 0.0822,
+     "rate": 0.2857
+    },
+    "key": "6",
+    "label": "Greenhouse",
+    "low_data": true,
+    "replied": 6,
+    "reply_rate": {
+     "high": 0.9743,
+     "low": 0.4869,
+     "rate": 0.8571
+    }
+   }
+  ],
+  "by_template": [
+   {
+    "applied": 22,
+    "awaiting": 9,
+    "interview": 7,
+    "interview_rate": {
+     "high": 0.5268,
+     "low": 0.1636,
+     "rate": 0.3182
+    },
+    "key": "clasica",
+    "label": "clasica",
+    "low_data": false,
+    "replied": 13,
+    "reply_rate": {
+     "high": 0.7674,
+     "low": 0.3873,
+     "rate": 0.5909
+    }
+   },
+   {
+    "applied": 21,
+    "awaiting": 7,
+    "interview": 7,
+    "interview_rate": {
+     "high": 0.5463,
+     "low": 0.1719,
+     "rate": 0.3333
+    },
+    "key": "moderna",
+    "label": "moderna",
+    "low_data": false,
+    "replied": 14,
+    "reply_rate": {
+     "high": 0.8281,
+     "low": 0.4537,
+     "rate": 0.6667
+    }
+   },
+   {
+    "applied": 18,
+    "awaiting": 4,
+    "interview": 4,
+    "interview_rate": {
+     "high": 0.4521,
+     "low": 0.09,
+     "rate": 0.2222
+    },
+    "key": "none",
+    "label": "Sin CV de la app",
+    "low_data": false,
+    "replied": 14,
+    "reply_rate": {
+     "high": 0.91,
+     "low": 0.5479,
+     "rate": 0.7778
+    }
+   },
+   {
+    "applied": 15,
+    "awaiting": 4,
+    "interview": 3,
+    "interview_rate": {
+     "high": 0.4519,
+     "low": 0.0705,
+     "rate": 0.2
+    },
+    "key": "ats-simple",
+    "label": "ats-simple",
+    "low_data": false,
+    "replied": 11,
+    "reply_rate": {
+     "high": 0.891,
+     "low": 0.4805,
+     "rate": 0.7333
+    }
+   }
+  ],
+  "by_verdict": [
+   {
+    "applied": 9,
+    "awaiting": 4,
+    "interview": 3,
+    "interview_rate": {
+     "high": 0.6458,
+     "low": 0.1206,
+     "rate": 0.3333
+    },
+    "key": "strong",
+    "label": "Fuerte",
+    "low_data": true,
+    "replied": 5,
+    "reply_rate": {
+     "high": 0.8112,
+     "low": 0.2667,
+     "rate": 0.5556
+    }
+   },
+   {
+    "applied": 11,
+    "awaiting": 2,
+    "interview": 1,
+    "interview_rate": {
+     "high": 0.3774,
+     "low": 0.0162,
+     "rate": 0.0909
+    },
+    "key": "possible",
+    "label": "Posible",
+    "low_data": false,
+    "replied": 9,
+    "reply_rate": {
+     "high": 0.9486,
+     "low": 0.523,
+     "rate": 0.8182
+    }
+   },
+   {
+    "applied": 8,
+    "awaiting": 1,
+    "interview": 4,
+    "interview_rate": {
+     "high": 0.7848,
+     "low": 0.2152,
+     "rate": 0.5
+    },
+    "key": "weak",
+    "label": "Débil",
+    "low_data": true,
+    "replied": 7,
+    "reply_rate": {
+     "high": 0.9776,
+     "low": 0.5291,
+     "rate": 0.875
+    }
+   },
+   {
+    "applied": 48,
+    "awaiting": 17,
+    "interview": 13,
+    "interview_rate": {
+     "high": 0.41,
+     "low": 0.1657,
+     "rate": 0.2708
+    },
+    "key": "none",
+    "label": "Sin valorar",
+    "low_data": false,
+    "replied": 31,
+    "reply_rate": {
+     "high": 0.7657,
+     "low": 0.5044,
+     "rate": 0.6458
+    }
+   }
+  ],
+  "confidence": 0.95,
+  "min_cases": 10,
+  "since": null,
+  "total": {
+   "applied": 76,
+   "awaiting": 24,
+   "interview": 21,
+   "interview_rate": {
+    "high": 0.3858,
+    "low": 0.1884,
+    "rate": 0.2763
+   },
+   "key": "total",
+   "label": "Total",
+   "low_data": false,
+   "replied": 52,
+   "reply_rate": {
+    "high": 0.7777,
+    "low": 0.573,
+    "rate": 0.6842
+   }
+  }
+ },
+ "calibration_since": {
+  "by_cover_letter": [
+   {
+    "applied": 5,
+    "awaiting": 2,
+    "interview": 1,
+    "interview_rate": {
+     "high": 0.6245,
+     "low": 0.0362,
+     "rate": 0.2
+    },
+    "key": "with",
+    "label": "Con carta",
+    "low_data": false,
+    "replied": 3,
+    "reply_rate": {
+     "high": 0.8824,
+     "low": 0.2307,
+     "rate": 0.6
+    }
+   },
+   {
+    "applied": 24,
+    "awaiting": 6,
+    "interview": 6,
+    "interview_rate": {
+     "high": 0.449,
+     "low": 0.12,
+     "rate": 0.25
+    },
+    "key": "without",
+    "label": "Sin carta",
+    "low_data": false,
+    "replied": 18,
+    "reply_rate": {
+     "high": 0.88,
+     "low": 0.551,
+     "rate": 0.75
+    }
+   }
+  ],
+  "by_days_to_apply": [
+   {
+    "applied": 0,
+    "awaiting": 0,
+    "interview": 0,
+    "interview_rate": {
+     "high": null,
+     "low": null,
+     "rate": null
+    },
+    "key": "0_1",
+    "label": "0-1 días",
+    "low_data": true,
+    "replied": 0,
+    "reply_rate": {
+     "high": null,
+     "low": null,
+     "rate": null
+    }
+   },
+   {
+    "applied": 2,
+    "awaiting": 1,
+    "interview": 1,
+    "interview_rate": {
+     "high": 0.9055,
+     "low": 0.0945,
+     "rate": 0.5
+    },
+    "key": "2_3",
+    "label": "2-3 días",
+    "low_data": true,
+    "replied": 1,
+    "reply_rate": {
+     "high": 0.9055,
+     "low": 0.0945,
+     "rate": 0.5
+    }
+   },
+   {
+    "applied": 6,
+    "awaiting": 0,
+    "interview": 1,
+    "interview_rate": {
+     "high": 0.5635,
+     "low": 0.0301,
+     "rate": 0.1667
+    },
+    "key": "4_7",
+    "label": "4-7 días",
+    "low_data": false,
+    "replied": 6,
+    "reply_rate": {
+     "high": 1.0,
+     "low": 0.6097,
+     "rate": 1.0
+    }
+   },
+   {
+    "applied": 21,
+    "awaiting": 7,
+    "interview": 5,
+    "interview_rate": {
+     "high": 0.4509,
+     "low": 0.1063,
+     "rate": 0.2381
+    },
+    "key": "8_plus",
+    "label": "8 días o más",
+    "low_data": false,
+    "replied": 14,
+    "reply_rate": {
+     "high": 0.8281,
+     "low": 0.4537,
+     "rate": 0.6667
+    }
+   }
+  ],
+  "by_platform": [
+   {
+    "applied": 24,
+    "awaiting": 6,
+    "interview": 6,
+    "interview_rate": {
+     "high": 0.449,
+     "low": 0.12,
+     "rate": 0.25
+    },
+    "key": "none",
+    "label": "Sin portal",
+    "low_data": false,
+    "replied": 18,
+    "reply_rate": {
+     "high": 0.88,
+     "low": 0.551,
+     "rate": 0.75
+    }
+   },
+   {
+    "applied": 3,
+    "awaiting": 1,
+    "interview": 1,
+    "interview_rate": {
+     "high": 0.7923,
+     "low": 0.0615,
+     "rate": 0.3333
+    },
+    "key": "linkedin",
+    "label": "linkedin",
+    "low_data": true,
+    "replied": 2,
+    "reply_rate": {
+     "high": 0.9385,
+     "low": 0.2077,
+     "rate": 0.6667
+    }
+   },
+   {
+    "applied": 1,
+    "awaiting": 1,
+    "interview": 0,
+    "interview_rate": {
+     "high": 0.7935,
+     "low": 0.0,
+     "rate": 0.0
+    },
+    "key": "glassdoor",
+    "label": "glassdoor",
+    "low_data": true,
+    "replied": 0,
+    "reply_rate": {
+     "high": 0.7935,
+     "low": 0.0,
+     "rate": 0.0
+    }
+   },
+   {
+    "applied": 1,
+    "awaiting": 0,
+    "interview": 0,
+    "interview_rate": {
+     "high": 0.7935,
+     "low": 0.0,
+     "rate": 0.0
+    },
+    "key": "indeed",
+    "label": "indeed",
+    "low_data": true,
+    "replied": 1,
+    "reply_rate": {
+     "high": 1.0,
+     "low": 0.2065,
+     "rate": 1.0
+    }
+   }
+  ],
+  "by_referral": [
+   {
+    "applied": 2,
+    "awaiting": 1,
+    "interview": 1,
+    "interview_rate": {
+     "high": 0.9055,
+     "low": 0.0945,
+     "rate": 0.5
+    },
+    "key": "given",
+    "label": "Con referencia",
+    "low_data": true,
+    "replied": 1,
+    "reply_rate": {
+     "high": 0.9055,
+     "low": 0.0945,
+     "rate": 0.5
+    }
+   },
+   {
+    "applied": 2,
+    "awaiting": 1,
+    "interview": 0,
+    "interview_rate": {
+     "high": 0.6576,
+     "low": 0.0,
+     "rate": 0.0
+    },
+    "key": "requested",
+    "label": "Referencia pedida",
+    "low_data": true,
+    "replied": 1,
+    "reply_rate": {
+     "high": 0.9055,
+     "low": 0.0945,
+     "rate": 0.5
+    }
+   },
+   {
+    "applied": 25,
+    "awaiting": 6,
+    "interview": 6,
+    "interview_rate": {
+     "high": 0.4343,
+     "low": 0.115,
+     "rate": 0.24
+    },
+    "key": "none",
+    "label": "Sin referencia",
+    "low_data": false,
+    "replied": 19,
+    "reply_rate": {
+     "high": 0.885,
+     "low": 0.5657,
+     "rate": 0.76
+    }
+   }
+  ],
+  "by_score": [
+   {
+    "applied": 14,
+    "awaiting": 5,
+    "interview": 2,
+    "interview_rate": {
+     "high": 0.3994,
+     "low": 0.0401,
+     "rate": 0.1429
+    },
+    "key": "lt60",
+    "label": "< 60",
+    "low_data": false,
+    "replied": 9,
+    "reply_rate": {
+     "high": 0.8366,
+     "low": 0.3876,
+     "rate": 0.6429
+    }
+   },
+   {
+    "applied": 8,
+    "awaiting": 2,
+    "interview": 3,
+    "interview_rate": {
+     "high": 0.6943,
+     "low": 0.1368,
+     "rate": 0.375
+    },
+    "key": "60_74",
+    "label": "60-74",
+    "low_data": false,
+    "replied": 6,
+    "reply_rate": {
+     "high": 0.9285,
+     "low": 0.4093,
+     "rate": 0.75
+    }
+   },
+   {
+    "applied": 2,
+    "awaiting": 0,
+    "interview": 0,
+    "interview_rate": {
+     "high": 0.6576,
+     "low": 0.0,
+     "rate": 0.0
+    },
+    "key": "75_84",
+    "label": "75-84",
+    "low_data": true,
+    "replied": 2,
+    "reply_rate": {
+     "high": 1.0,
+     "low": 0.3424,
+     "rate": 1.0
+    }
+   },
+   {
+    "applied": 5,
+    "awaiting": 1,
+    "interview": 2,
+    "interview_rate": {
+     "high": 0.7693,
+     "low": 0.1176,
+     "rate": 0.4
+    },
+    "key": "gte85",
+    "label": "≥ 85",
+    "low_data": false,
+    "replied": 4,
+    "reply_rate": {
+     "high": 0.9638,
+     "low": 0.3755,
+     "rate": 0.8
+    }
+   },
+   {
+    "applied": 0,
+    "awaiting": 0,
+    "interview": 0,
+    "interview_rate": {
+     "high": null,
+     "low": null,
+     "rate": null
+    },
+    "key": "none",
+    "label": "Sin score",
+    "low_data": true,
+    "replied": 0,
+    "reply_rate": {
+     "high": null,
+     "low": null,
+     "rate": null
+    }
+   }
+  ],
+  "by_signal": [
+   {
+    "applied": 0,
+    "awaiting": 0,
+    "interview": 0,
+    "interview_rate": {
+     "high": null,
+     "low": null,
+     "rate": null
+    },
+    "key": "salary_range_wide",
+    "label": "Rango salarial muy amplio",
+    "low_data": true,
+    "replied": 0,
+    "reply_rate": {
+     "high": null,
+     "low": null,
+     "rate": null
+    }
+   },
+   {
+    "applied": 0,
+    "awaiting": 0,
+    "interview": 0,
+    "interview_rate": {
+     "high": null,
+     "low": null,
+     "rate": null
+    },
+    "key": "employer_hidden",
+    "label": "Empresa oculta o agencia",
+    "low_data": true,
+    "replied": 0,
+    "reply_rate": {
+     "high": null,
+     "low": null,
+     "rate": null
+    }
+   },
+   {
+    "applied": 3,
+    "awaiting": 1,
+    "interview": 1,
+    "interview_rate": {
+     "high": 0.7923,
+     "low": 0.0615,
+     "rate": 0.3333
+    },
+    "key": "fixed_term",
+    "label": "Temporal",
+    "low_data": true,
+    "replied": 2,
+    "reply_rate": {
+     "high": 0.9385,
+     "low": 0.2077,
+     "rate": 0.6667
+    }
+   },
+   {
+    "applied": 0,
+    "awaiting": 0,
+    "interview": 0,
+    "interview_rate": {
+     "high": null,
+     "low": null,
+     "rate": null
+    },
+    "key": "stale_repost",
+    "label": "Publicada hace meses",
+    "low_data": true,
+    "replied": 0,
+    "reply_rate": {
+     "high": null,
+     "low": null,
+     "rate": null
+    }
+   },
+   {
+    "applied": 1,
+    "awaiting": 0,
+    "interview": 0,
+    "interview_rate": {
+     "high": 0.7935,
+     "low": 0.0,
+     "rate": 0.0
+    },
+    "key": "ai_screening",
+    "label": "Cribado con IA",
+    "low_data": true,
+    "replied": 1,
+    "reply_rate": {
+     "high": 1.0,
+     "low": 0.2065,
+     "rate": 1.0
+    }
+   },
+   {
+    "applied": 25,
+    "awaiting": 7,
+    "interview": 6,
+    "interview_rate": {
+     "high": 0.4343,
+     "low": 0.115,
+     "rate": 0.24
+    },
+    "key": "none",
+    "label": "Sin señales",
+    "low_data": false,
+    "replied": 18,
+    "reply_rate": {
+     "high": 0.8572,
+     "low": 0.5242,
+     "rate": 0.72
+    }
+   }
+  ],
+  "by_source": [
+   {
+    "applied": 7,
+    "awaiting": 0,
+    "interview": 2,
+    "interview_rate": {
+     "high": 0.6411,
+     "low": 0.0822,
+     "rate": 0.2857
+    },
+    "key": "4",
+    "label": "Captura del navegador",
+    "low_data": false,
+    "replied": 7,
+    "reply_rate": {
+     "high": 1.0,
+     "low": 0.6457,
+     "rate": 1.0
+    }
+   },
+   {
+    "applied": 5,
+    "awaiting": 3,
+    "interview": 0,
+    "interview_rate": {
+     "high": 0.4345,
+     "low": 0.0,
+     "rate": 0.0
+    },
+    "key": "3",
+    "label": "Alertas por correo",
+    "low_data": false,
+    "replied": 2,
+    "reply_rate": {
+     "high": 0.7693,
+     "low": 0.1176,
+     "rate": 0.4
+    }
+   },
+   {
+    "applied": 5,
+    "awaiting": 2,
+    "interview": 1,
+    "interview_rate": {
+     "high": 0.6245,
+     "low": 0.0362,
+     "rate": 0.2
+    },
+    "key": "5",
+    "label": "Búsqueda con navegador",
+    "low_data": false,
+    "replied": 3,
+    "reply_rate": {
+     "high": 0.8824,
+     "low": 0.2307,
+     "rate": 0.6
+    }
+   },
+   {
+    "applied": 4,
+    "awaiting": 1,
+    "interview": 2,
+    "interview_rate": {
+     "high": 0.85,
+     "low": 0.15,
+     "rate": 0.5
+    },
+    "key": "1",
+    "label": "Alta manual por URL",
+    "low_data": true,
+    "replied": 3,
+    "reply_rate": {
+     "high": 0.9544,
+     "low": 0.3006,
+     "rate": 0.75
+    }
+   },
+   {
+    "applied": 3,
+    "awaiting": 2,
+    "interview": 1,
+    "interview_rate": {
+     "high": 0.7923,
+     "low": 0.0615,
+     "rate": 0.3333
+    },
+    "key": "2",
+    "label": "Alta manual por texto",
+    "low_data": true,
+    "replied": 1,
+    "reply_rate": {
+     "high": 0.7923,
+     "low": 0.0615,
+     "rate": 0.3333
+    }
+   },
+   {
+    "applied": 3,
+    "awaiting": 0,
+    "interview": 1,
+    "interview_rate": {
+     "high": 0.7923,
+     "low": 0.0615,
+     "rate": 0.3333
+    },
+    "key": "7",
+    "label": "Lever",
+    "low_data": true,
+    "replied": 3,
+    "reply_rate": {
+     "high": 1.0,
+     "low": 0.4385,
+     "rate": 1.0
+    }
+   },
+   {
+    "applied": 2,
+    "awaiting": 0,
+    "interview": 0,
+    "interview_rate": {
+     "high": 0.6576,
+     "low": 0.0,
+     "rate": 0.0
+    },
+    "key": "6",
+    "label": "Greenhouse",
+    "low_data": true,
+    "replied": 2,
+    "reply_rate": {
+     "high": 1.0,
+     "low": 0.3424,
+     "rate": 1.0
+    }
+   }
+  ],
+  "by_template": [
+   {
+    "applied": 10,
+    "awaiting": 3,
+    "interview": 2,
+    "interview_rate": {
+     "high": 0.5098,
+     "low": 0.0567,
+     "rate": 0.2
+    },
+    "key": "none",
+    "label": "Sin CV de la app",
+    "low_data": false,
+    "replied": 7,
+    "reply_rate": {
+     "high": 0.8922,
+     "low": 0.3968,
+     "rate": 0.7
+    }
+   },
+   {
+    "applied": 7,
+    "awaiting": 0,
+    "interview": 2,
+    "interview_rate": {
+     "high": 0.6411,
+     "low": 0.0822,
+     "rate": 0.2857
+    },
+    "key": "ats-simple",
+    "label": "ats-simple",
+    "low_data": false,
+    "replied": 7,
+    "reply_rate": {
+     "high": 1.0,
+     "low": 0.6457,
+     "rate": 1.0
+    }
+   },
+   {
+    "applied": 7,
+    "awaiting": 3,
+    "interview": 2,
+    "interview_rate": {
+     "high": 0.6411,
+     "low": 0.0822,
+     "rate": 0.2857
+    },
+    "key": "moderna",
+    "label": "moderna",
+    "low_data": false,
+    "replied": 4,
+    "reply_rate": {
+     "high": 0.8418,
+     "low": 0.2505,
+     "rate": 0.5714
+    }
+   },
+   {
+    "applied": 5,
+    "awaiting": 2,
+    "interview": 1,
+    "interview_rate": {
+     "high": 0.6245,
+     "low": 0.0362,
+     "rate": 0.2
+    },
+    "key": "clasica",
+    "label": "clasica",
+    "low_data": false,
+    "replied": 3,
+    "reply_rate": {
+     "high": 0.8824,
+     "low": 0.2307,
+     "rate": 0.6
+    }
+   }
+  ],
+  "by_verdict": [
+   {
+    "applied": 6,
+    "awaiting": 3,
+    "interview": 1,
+    "interview_rate": {
+     "high": 0.5635,
+     "low": 0.0301,
+     "rate": 0.1667
+    },
+    "key": "strong",
+    "label": "Fuerte",
+    "low_data": false,
+    "replied": 3,
+    "reply_rate": {
+     "high": 0.8124,
+     "low": 0.1876,
+     "rate": 0.5
+    }
+   },
+   {
+    "applied": 3,
+    "awaiting": 1,
+    "interview": 0,
+    "interview_rate": {
+     "high": 0.5615,
+     "low": 0.0,
+     "rate": 0.0
+    },
+    "key": "possible",
+    "label": "Posible",
+    "low_data": true,
+    "replied": 2,
+    "reply_rate": {
+     "high": 0.9385,
+     "low": 0.2077,
+     "rate": 0.6667
+    }
+   },
+   {
+    "applied": 4,
+    "awaiting": 1,
+    "interview": 2,
+    "interview_rate": {
+     "high": 0.85,
+     "low": 0.15,
+     "rate": 0.5
+    },
+    "key": "weak",
+    "label": "Débil",
+    "low_data": true,
+    "replied": 3,
+    "reply_rate": {
+     "high": 0.9544,
+     "low": 0.3006,
+     "rate": 0.75
+    }
+   },
+   {
+    "applied": 16,
+    "awaiting": 3,
+    "interview": 4,
+    "interview_rate": {
+     "high": 0.495,
+     "low": 0.1018,
+     "rate": 0.25
+    },
+    "key": "none",
+    "label": "Sin valorar",
+    "low_data": false,
+    "replied": 13,
+    "reply_rate": {
+     "high": 0.9341,
+     "low": 0.5699,
+     "rate": 0.8125
+    }
+   }
+  ],
+  "confidence": 0.95,
+  "min_cases": 5,
+  "since": "2026-08-01",
+  "total": {
+   "applied": 29,
+   "awaiting": 8,
+   "interview": 7,
+   "interview_rate": {
+    "high": 0.4211,
+    "low": 0.1222,
+    "rate": 0.2414
+   },
+   "key": "total",
+   "label": "Total",
+   "low_data": false,
+   "replied": 21,
+   "reply_rate": {
+    "high": 0.853,
+    "low": 0.5428,
+    "rate": 0.7241
+   }
+  }
+ },
+ "funnel": {
+  "agent_cost": {
+   "applied": 76,
+   "cost_per_applied_usd": null,
+   "cost_per_interview_usd": null,
+   "cost_usd": null,
+   "interview": 21,
+   "runs": 0,
+   "tokens": 0,
+   "tokens_per_applied": 0.0,
+   "tokens_per_interview": 0.0
+  },
+  "by_referral": [
+   {
+    "applied": 8,
+    "approved": 8,
+    "found": 8,
+    "group": "given",
+    "interview": 2,
+    "replied": 6,
+    "reply_rate": 0.75
+   },
+   {
+    "applied": 6,
+    "approved": 6,
+    "found": 6,
+    "group": "requested",
+    "interview": 0,
+    "replied": 5,
+    "reply_rate": 0.8333
+   },
+   {
+    "applied": 62,
+    "approved": 82,
+    "found": 377,
+    "group": "none",
+    "interview": 19,
+    "replied": 41,
+    "reply_rate": 0.6613
+   }
+  ],
+  "by_source": [
+   {
+    "applied": 9,
+    "approved": 11,
+    "cost_usd": null,
+    "found": 182,
+    "interview": 0,
+    "kind": "email_alerts",
+    "name": "Alertas por correo",
+    "replied": 4,
+    "reply_rate": 0.4444,
+    "source_id": 3,
+    "tokens": 0
+   },
+   {
+    "applied": 14,
+    "approved": 18,
+    "cost_usd": null,
+    "found": 43,
+    "interview": 4,
+    "kind": "manual_text",
+    "name": "Alta manual por texto",
+    "replied": 7,
+    "reply_rate": 0.5,
+    "source_id": 2,
+    "tokens": 0
+   },
+   {
+    "applied": 15,
+    "approved": 19,
+    "cost_usd": null,
+    "found": 38,
+    "interview": 4,
+    "kind": "browser_capture",
+    "name": "Captura del navegador",
+    "replied": 12,
+    "reply_rate": 0.8,
+    "source_id": 4,
+    "tokens": 0
+   },
+   {
+    "applied": 10,
+    "approved": 13,
+    "cost_usd": null,
+    "found": 35,
+    "interview": 4,
+    "kind": "agent_browse",
+    "name": "Búsqueda con navegador",
+    "replied": 8,
+    "reply_rate": 0.8,
+    "source_id": 5,
+    "tokens": 0
+   },
+   {
+    "applied": 8,
+    "approved": 13,
+    "cost_usd": null,
+    "found": 34,
+    "interview": 4,
+    "kind": "lever",
+    "name": "Lever",
+    "replied": 6,
+    "reply_rate": 0.75,
+    "source_id": 7,
+    "tokens": 0
+   },
+   {
+    "applied": 13,
+    "approved": 14,
+    "cost_usd": null,
+    "found": 31,
+    "interview": 3,
+    "kind": "manual_url",
+    "name": "Alta manual por URL",
+    "replied": 9,
+    "reply_rate": 0.6923,
+    "source_id": 1,
+    "tokens": 0
+   },
+   {
+    "applied": 7,
+    "approved": 8,
+    "cost_usd": null,
+    "found": 28,
+    "interview": 2,
+    "kind": "greenhouse",
+    "name": "Greenhouse",
+    "replied": 6,
+    "reply_rate": 0.8571,
+    "source_id": 6,
+    "tokens": 0
+   }
+  ],
+  "by_title": [
+   {
+    "applied": 16,
+    "approved": 19,
+    "found": 30,
+    "group": "title",
+    "interview": 1,
+    "replied": 12,
+    "reply_rate": 0.75,
+    "title": "Data Platform Engineer"
+   },
+   {
+    "applied": 8,
+    "approved": 12,
+    "found": 29,
+    "group": "title",
+    "interview": 1,
+    "replied": 5,
+    "reply_rate": 0.625,
+    "title": "Machine Learning Engineer"
+   },
+   {
+    "applied": 9,
+    "approved": 11,
+    "found": 27,
+    "group": "title",
+    "interview": 4,
+    "replied": 5,
+    "reply_rate": 0.5556,
+    "title": "Analytics Engineer"
+   },
+   {
+    "applied": 9,
+    "approved": 10,
+    "found": 24,
+    "group": "title",
+    "interview": 1,
+    "replied": 5,
+    "reply_rate": 0.5556,
+    "title": "Data Scientist"
+   },
+   {
+    "applied": 5,
+    "approved": 6,
+    "found": 21,
+    "group": "title",
+    "interview": 1,
+    "replied": 4,
+    "reply_rate": 0.8,
+    "title": "Backend Engineer"
+   },
+   {
+    "applied": 7,
+    "approved": 10,
+    "found": 21,
+    "group": "title",
+    "interview": 6,
+    "replied": 7,
+    "reply_rate": 1.0,
+    "title": "Cloud Data Architect"
+   },
+   {
+    "applied": 8,
+    "approved": 10,
+    "found": 21,
+    "group": "title",
+    "interview": 4,
+    "replied": 4,
+    "reply_rate": 0.5,
+    "title": "Data Analyst"
+   },
+   {
+    "applied": 6,
+    "approved": 8,
+    "found": 20,
+    "group": "title",
+    "interview": 1,
+    "replied": 4,
+    "reply_rate": 0.6667,
+    "title": "Data Engineer"
+   },
+   {
+    "applied": 8,
+    "approved": 10,
+    "found": 34,
+    "group": "others",
+    "interview": 2,
+    "replied": 6,
+    "reply_rate": 0.75,
+    "title": "Otros"
+   },
+   {
+    "applied": 0,
+    "approved": 0,
+    "found": 164,
+    "group": "not_extracted",
+    "interview": 0,
+    "replied": 0,
+    "reply_rate": null,
+    "title": "Sin extraer"
+   }
+  ],
+  "by_week": [
+   {
+    "applied": 0,
+    "approved": 1,
+    "found": 4,
+    "interview": 0,
+    "replied": 0,
+    "reply_rate": null,
+    "week": "2026-W14",
+    "week_start": "2026-03-30"
+   },
+   {
+    "applied": 0,
+    "approved": 2,
+    "found": 6,
+    "interview": 0,
+    "replied": 0,
+    "reply_rate": null,
+    "week": "2026-W15",
+    "week_start": "2026-04-06"
+   },
+   {
+    "applied": 4,
+    "approved": 6,
+    "found": 13,
+    "interview": 0,
+    "replied": 3,
+    "reply_rate": 0.75,
+    "week": "2026-W16",
+    "week_start": "2026-04-13"
+   },
+   {
+    "applied": 3,
+    "approved": 3,
+    "found": 7,
+    "interview": 1,
+    "replied": 1,
+    "reply_rate": 0.3333,
+    "week": "2026-W17",
+    "week_start": "2026-04-20"
+   },
+   {
+    "applied": 1,
+    "approved": 2,
+    "found": 6,
+    "interview": 0,
+    "replied": 1,
+    "reply_rate": 1.0,
+    "week": "2026-W18",
+    "week_start": "2026-04-27"
+   },
+   {
+    "applied": 6,
+    "approved": 7,
+    "found": 17,
+    "interview": 0,
+    "replied": 3,
+    "reply_rate": 0.5,
+    "week": "2026-W19",
+    "week_start": "2026-05-04"
+   },
+   {
+    "applied": 3,
+    "approved": 3,
+    "found": 8,
+    "interview": 2,
+    "replied": 2,
+    "reply_rate": 0.6667,
+    "week": "2026-W20",
+    "week_start": "2026-05-11"
+   },
+   {
+    "applied": 0,
+    "approved": 1,
+    "found": 6,
+    "interview": 0,
+    "replied": 0,
+    "reply_rate": null,
+    "week": "2026-W21",
+    "week_start": "2026-05-18"
+   },
+   {
+    "applied": 5,
+    "approved": 6,
+    "found": 16,
+    "interview": 2,
+    "replied": 3,
+    "reply_rate": 0.6,
+    "week": "2026-W22",
+    "week_start": "2026-05-25"
+   },
+   {
+    "applied": 2,
+    "approved": 3,
+    "found": 8,
+    "interview": 1,
+    "replied": 1,
+    "reply_rate": 0.5,
+    "week": "2026-W23",
+    "week_start": "2026-06-01"
+   },
+   {
+    "applied": 3,
+    "approved": 4,
+    "found": 10,
+    "interview": 0,
+    "replied": 2,
+    "reply_rate": 0.6667,
+    "week": "2026-W24",
+    "week_start": "2026-06-08"
+   },
+   {
+    "applied": 4,
+    "approved": 5,
+    "found": 11,
+    "interview": 2,
+    "replied": 3,
+    "reply_rate": 0.75,
+    "week": "2026-W25",
+    "week_start": "2026-06-15"
+   },
+   {
+    "applied": 2,
+    "approved": 2,
+    "found": 8,
+    "interview": 0,
+    "replied": 2,
+    "reply_rate": 1.0,
+    "week": "2026-W26",
+    "week_start": "2026-06-22"
+   },
+   {
+    "applied": 7,
+    "approved": 7,
+    "found": 14,
+    "interview": 4,
+    "replied": 6,
+    "reply_rate": 0.8571,
+    "week": "2026-W27",
+    "week_start": "2026-06-29"
+   },
+   {
+    "applied": 5,
+    "approved": 5,
+    "found": 12,
+    "interview": 1,
+    "replied": 3,
+    "reply_rate": 0.6,
+    "week": "2026-W28",
+    "week_start": "2026-07-06"
+   },
+   {
+    "applied": 3,
+    "approved": 4,
+    "found": 9,
+    "interview": 1,
+    "replied": 2,
+    "reply_rate": 0.6667,
+    "week": "2026-W29",
+    "week_start": "2026-07-13"
+   },
+   {
+    "applied": 4,
+    "approved": 4,
+    "found": 9,
+    "interview": 2,
+    "replied": 3,
+    "reply_rate": 0.75,
+    "week": "2026-W30",
+    "week_start": "2026-07-20"
+   },
+   {
+    "applied": 2,
+    "approved": 2,
+    "found": 4,
+    "interview": 0,
+    "replied": 1,
+    "reply_rate": 0.5,
+    "week": "2026-W31",
+    "week_start": "2026-07-27"
+   },
+   {
+    "applied": 1,
+    "approved": 2,
+    "found": 6,
+    "interview": 1,
+    "replied": 1,
+    "reply_rate": 1.0,
+    "week": "2026-W32",
+    "week_start": "2026-08-03"
+   },
+   {
+    "applied": 4,
+    "approved": 4,
+    "found": 10,
+    "interview": 0,
+    "replied": 2,
+    "reply_rate": 0.5,
+    "week": "2026-W33",
+    "week_start": "2026-08-10"
+   },
+   {
+    "applied": 6,
+    "approved": 8,
+    "found": 16,
+    "interview": 1,
+    "replied": 4,
+    "reply_rate": 0.6667,
+    "week": "2026-W34",
+    "week_start": "2026-08-17"
+   },
+   {
+    "applied": 2,
+    "approved": 2,
+    "found": 8,
+    "interview": 1,
+    "replied": 2,
+    "reply_rate": 1.0,
+    "week": "2026-W35",
+    "week_start": "2026-08-24"
+   },
+   {
+    "applied": 3,
+    "approved": 5,
+    "found": 10,
+    "interview": 1,
+    "replied": 3,
+    "reply_rate": 1.0,
+    "week": "2026-W36",
+    "week_start": "2026-08-31"
+   },
+   {
+    "applied": 2,
+    "approved": 3,
+    "found": 50,
+    "interview": 1,
+    "replied": 2,
+    "reply_rate": 1.0,
+    "week": "2026-W37",
+    "week_start": "2026-09-07"
+   },
+   {
+    "applied": 1,
+    "approved": 2,
+    "found": 45,
+    "interview": 0,
+    "replied": 0,
+    "reply_rate": 0.0,
+    "week": "2026-W38",
+    "week_start": "2026-09-14"
+   },
+   {
+    "applied": 2,
+    "approved": 2,
+    "found": 55,
+    "interview": 0,
+    "replied": 2,
+    "reply_rate": 1.0,
+    "week": "2026-W39",
+    "week_start": "2026-09-21"
+   },
+   {
+    "applied": 1,
+    "approved": 1,
+    "found": 23,
+    "interview": 0,
+    "replied": 0,
+    "reply_rate": 0.0,
+    "week": "2026-W40",
+    "week_start": "2026-09-28"
+   }
+  ],
+  "discard_reasons": [
+   {
+    "count": 17,
+    "reason": "location"
+   },
+   {
+    "count": 14,
+    "reason": "other"
+   },
+   {
+    "count": 14,
+    "reason": "salary"
+   },
+   {
+    "count": 11,
+    "reason": "skills"
+   },
+   {
+    "count": 6,
+    "reason": "company"
+   }
+  ],
+  "duplicates_excluded": 9,
+  "hard_filter_failures": [
+   {
+    "count": 11,
+    "filter": "seniority"
+   },
+   {
+    "count": 8,
+    "filter": "location"
+   },
+   {
+    "count": 6,
+    "filter": "language"
+   },
+   {
+    "count": 5,
+    "filter": "salary"
+   }
+  ],
+  "response_time": {
+   "applied": 76,
+   "awaiting_reply": 24,
+   "closed_without_reply": 0,
+   "mean_days": 0.9,
+   "median_days": 0.8,
+   "replied": 52
+  },
+  "since": null,
+  "steps": [
+   {
+    "count": 391,
+    "label": "Encontradas",
+    "rate_from_previous": null,
+    "rate_from_start": 1.0,
+    "step": "found"
+   },
+   {
+    "count": 203,
+    "label": "Pasan filtros",
+    "rate_from_previous": 0.5192,
+    "rate_from_start": 0.5192,
+    "step": "triaged"
+   },
+   {
+    "count": 96,
+    "label": "Aprobadas",
+    "rate_from_previous": 0.4729,
+    "rate_from_start": 0.2455,
+    "step": "approved"
+   },
+   {
+    "count": 76,
+    "label": "Enviadas",
+    "rate_from_previous": 0.7917,
+    "rate_from_start": 0.1944,
+    "step": "applied"
+   },
+   {
+    "count": 52,
+    "label": "Con respuesta",
+    "rate_from_previous": 0.6842,
+    "rate_from_start": 0.133,
+    "step": "replied"
+   },
+   {
+    "count": 21,
+    "label": "Entrevista",
+    "rate_from_previous": 0.4038,
+    "rate_from_start": 0.0537,
+    "step": "interview"
+   },
+   {
+    "count": 4,
+    "label": "Oferta",
+    "rate_from_previous": 0.1905,
+    "rate_from_start": 0.0102,
+    "step": "offer"
+   },
+   {
+    "count": 2,
+    "label": "Aceptadas",
+    "rate_from_previous": 0.5,
+    "rate_from_start": 0.0051,
+    "step": "accepted"
+   }
+  ]
+ },
+ "funnel_since": {
+  "agent_cost": {
+   "applied": 22,
+   "cost_per_applied_usd": null,
+   "cost_per_interview_usd": null,
+   "cost_usd": null,
+   "interview": 5,
+   "runs": 0,
+   "tokens": 0,
+   "tokens_per_applied": 0.0,
+   "tokens_per_interview": 0.0
+  },
+  "by_referral": [
+   {
+    "applied": 2,
+    "approved": 2,
+    "found": 2,
+    "group": "given",
+    "interview": 1,
+    "replied": 1,
+    "reply_rate": 0.5
+   },
+   {
+    "applied": 2,
+    "approved": 2,
+    "found": 2,
+    "group": "requested",
+    "interview": 0,
+    "replied": 1,
+    "reply_rate": 0.5
+   },
+   {
+    "applied": 18,
+    "approved": 25,
+    "found": 220,
+    "group": "none",
+    "interview": 4,
+    "replied": 14,
+    "reply_rate": 0.7778
+   }
+  ],
+  "by_source": [
+   {
+    "applied": 3,
+    "approved": 4,
+    "cost_usd": null,
+    "found": 164,
+    "interview": 0,
+    "kind": "email_alerts",
+    "name": "Alertas por correo",
+    "replied": 2,
+    "reply_rate": 0.6667,
+    "source_id": 3,
+    "tokens": 0
+   },
+   {
+    "applied": 2,
+    "approved": 3,
+    "cost_usd": null,
+    "found": 13,
+    "interview": 0,
+    "kind": "manual_text",
+    "name": "Alta manual por texto",
+    "replied": 0,
+    "reply_rate": 0.0,
+    "source_id": 2,
+    "tokens": 0
+   },
+   {
+    "applied": 5,
+    "approved": 7,
+    "cost_usd": null,
+    "found": 13,
+    "interview": 1,
+    "kind": "agent_browse",
+    "name": "Búsqueda con navegador",
+    "replied": 3,
+    "reply_rate": 0.6,
+    "source_id": 5,
+    "tokens": 0
+   },
+   {
+    "applied": 3,
+    "approved": 3,
+    "cost_usd": null,
+    "found": 10,
+    "interview": 2,
+    "kind": "manual_url",
+    "name": "Alta manual por URL",
+    "replied": 2,
+    "reply_rate": 0.6667,
+    "source_id": 1,
+    "tokens": 0
+   },
+   {
+    "applied": 5,
+    "approved": 5,
+    "cost_usd": null,
+    "found": 9,
+    "interview": 1,
+    "kind": "browser_capture",
+    "name": "Captura del navegador",
+    "replied": 5,
+    "reply_rate": 1.0,
+    "source_id": 4,
+    "tokens": 0
+   },
+   {
+    "applied": 3,
+    "approved": 6,
+    "cost_usd": null,
+    "found": 9,
+    "interview": 1,
+    "kind": "lever",
+    "name": "Lever",
+    "replied": 3,
+    "reply_rate": 1.0,
+    "source_id": 7,
+    "tokens": 0
+   },
+   {
+    "applied": 1,
+    "approved": 1,
+    "cost_usd": null,
+    "found": 6,
+    "interview": 0,
+    "kind": "greenhouse",
+    "name": "Greenhouse",
+    "replied": 1,
+    "reply_rate": 1.0,
+    "source_id": 6,
+    "tokens": 0
+   }
+  ],
+  "by_title": [
+   {
+    "applied": 5,
+    "approved": 7,
+    "found": 14,
+    "group": "title",
+    "interview": 0,
+    "replied": 4,
+    "reply_rate": 0.8,
+    "title": "Data Platform Engineer"
+   },
+   {
+    "applied": 2,
+    "approved": 4,
+    "found": 14,
+    "group": "title",
+    "interview": 0,
+    "replied": 1,
+    "reply_rate": 0.5,
+    "title": "Machine Learning Engineer"
+   },
+   {
+    "applied": 3,
+    "approved": 4,
+    "found": 8,
+    "group": "title",
+    "interview": 3,
+    "replied": 3,
+    "reply_rate": 1.0,
+    "title": "Cloud Data Architect"
+   },
+   {
+    "applied": 2,
+    "approved": 2,
+    "found": 6,
+    "group": "title",
+    "interview": 0,
+    "replied": 1,
+    "reply_rate": 0.5,
+    "title": "Analytics Engineer"
+   },
+   {
+    "applied": 1,
+    "approved": 2,
+    "found": 6,
+    "group": "title",
+    "interview": 0,
+    "replied": 0,
+    "reply_rate": 0.0,
+    "title": "BI Developer"
+   },
+   {
+    "applied": 1,
+    "approved": 1,
+    "found": 5,
+    "group": "title",
+    "interview": 1,
+    "replied": 1,
+    "reply_rate": 1.0,
+    "title": "Backend Engineer"
+   },
+   {
+    "applied": 2,
+    "approved": 2,
+    "found": 4,
+    "group": "title",
+    "interview": 1,
+    "replied": 1,
+    "reply_rate": 0.5,
+    "title": "Data Analyst"
+   },
+   {
+    "applied": 2,
+    "approved": 3,
+    "found": 4,
+    "group": "title",
+    "interview": 0,
+    "replied": 2,
+    "reply_rate": 1.0,
+    "title": "Data Engineer"
+   },
+   {
+    "applied": 4,
+    "approved": 4,
+    "found": 8,
+    "group": "others",
+    "interview": 0,
+    "replied": 3,
+    "reply_rate": 0.75,
+    "title": "Otros"
+   },
+   {
+    "applied": 0,
+    "approved": 0,
+    "found": 155,
+    "group": "not_extracted",
+    "interview": 0,
+    "replied": 0,
+    "reply_rate": null,
+    "title": "Sin extraer"
+   }
+  ],
+  "by_week": [
+   {
+    "applied": 0,
+    "approved": 0,
+    "found": 1,
+    "interview": 0,
+    "replied": 0,
+    "reply_rate": null,
+    "week": "2026-W31",
+    "week_start": "2026-07-27"
+   },
+   {
+    "applied": 1,
+    "approved": 2,
+    "found": 6,
+    "interview": 1,
+    "replied": 1,
+    "reply_rate": 1.0,
+    "week": "2026-W32",
+    "week_start": "2026-08-03"
+   },
+   {
+    "applied": 4,
+    "approved": 4,
+    "found": 10,
+    "interview": 0,
+    "replied": 2,
+    "reply_rate": 0.5,
+    "week": "2026-W33",
+    "week_start": "2026-08-10"
+   },
+   {
+    "applied": 6,
+    "approved": 8,
+    "found": 16,
+    "interview": 1,
+    "replied": 4,
+    "reply_rate": 0.6667,
+    "week": "2026-W34",
+    "week_start": "2026-08-17"
+   },
+   {
+    "applied": 2,
+    "approved": 2,
+    "found": 8,
+    "interview": 1,
+    "replied": 2,
+    "reply_rate": 1.0,
+    "week": "2026-W35",
+    "week_start": "2026-08-24"
+   },
+   {
+    "applied": 3,
+    "approved": 5,
+    "found": 10,
+    "interview": 1,
+    "replied": 3,
+    "reply_rate": 1.0,
+    "week": "2026-W36",
+    "week_start": "2026-08-31"
+   },
+   {
+    "applied": 2,
+    "approved": 3,
+    "found": 50,
+    "interview": 1,
+    "replied": 2,
+    "reply_rate": 1.0,
+    "week": "2026-W37",
+    "week_start": "2026-09-07"
+   },
+   {
+    "applied": 1,
+    "approved": 2,
+    "found": 45,
+    "interview": 0,
+    "replied": 0,
+    "reply_rate": 0.0,
+    "week": "2026-W38",
+    "week_start": "2026-09-14"
+   },
+   {
+    "applied": 2,
+    "approved": 2,
+    "found": 55,
+    "interview": 0,
+    "replied": 2,
+    "reply_rate": 1.0,
+    "week": "2026-W39",
+    "week_start": "2026-09-21"
+   },
+   {
+    "applied": 1,
+    "approved": 1,
+    "found": 23,
+    "interview": 0,
+    "replied": 0,
+    "reply_rate": 0.0,
+    "week": "2026-W40",
+    "week_start": "2026-09-28"
+   }
+  ],
+  "discard_reasons": [
+   {
+    "count": 7,
+    "reason": "other"
+   },
+   {
+    "count": 5,
+    "reason": "location"
+   },
+   {
+    "count": 3,
+    "reason": "salary"
+   },
+   {
+    "count": 2,
+    "reason": "company"
+   },
+   {
+    "count": 2,
+    "reason": "skills"
+   }
+  ],
+  "duplicates_excluded": 3,
+  "hard_filter_failures": [
+   {
+    "count": 4,
+    "filter": "seniority"
+   },
+   {
+    "count": 2,
+    "filter": "language"
+   },
+   {
+    "count": 1,
+    "filter": "location"
+   },
+   {
+    "count": 1,
+    "filter": "salary"
+   }
+  ],
+  "response_time": {
+   "applied": 22,
+   "awaiting_reply": 6,
+   "closed_without_reply": 0,
+   "mean_days": 1.0,
+   "median_days": 0.9,
+   "replied": 16
+  },
+  "since": "2026-08-01",
+  "steps": [
+   {
+    "count": 224,
+    "label": "Encontradas",
+    "rate_from_previous": null,
+    "rate_from_start": 1.0,
+    "step": "found"
+   },
+   {
+    "count": 63,
+    "label": "Pasan filtros",
+    "rate_from_previous": 0.2812,
+    "rate_from_start": 0.2812,
+    "step": "triaged"
+   },
+   {
+    "count": 29,
+    "label": "Aprobadas",
+    "rate_from_previous": 0.4603,
+    "rate_from_start": 0.1295,
+    "step": "approved"
+   },
+   {
+    "count": 22,
+    "label": "Enviadas",
+    "rate_from_previous": 0.7586,
+    "rate_from_start": 0.0982,
+    "step": "applied"
+   },
+   {
+    "count": 16,
+    "label": "Con respuesta",
+    "rate_from_previous": 0.7273,
+    "rate_from_start": 0.0714,
+    "step": "replied"
+   },
+   {
+    "count": 5,
+    "label": "Entrevista",
+    "rate_from_previous": 0.3125,
+    "rate_from_start": 0.0223,
+    "step": "interview"
+   },
+   {
+    "count": 1,
+    "label": "Oferta",
+    "rate_from_previous": 0.2,
+    "rate_from_start": 0.0045,
+    "step": "offer"
+   },
+   {
+    "count": 1,
+    "label": "Aceptadas",
+    "rate_from_previous": 1.0,
+    "rate_from_start": 0.0045,
+    "step": "accepted"
+   }
+  ]
+ },
+ "story": {
+  "accepted": 2,
+  "applied": 76,
+  "approved": 96,
+  "evaluated": 227,
+  "first_applied_on": "2026-04-25",
+  "found": 391,
+  "interview_rate": 0.2763,
+  "interviews": 21,
+  "last_activity_on": "2026-10-23",
+  "markdown": {
+   "en": "**My search with CandidatAI** (4 Apr 2026 → 23 Oct 2026, 29 weeks): 227 postings evaluated, 96 approved, 76 applications, 52 replies, 21 interviews, 4 offers.",
+   "es": "**Mi búsqueda con CandidatAI** (4 abr 2026 → 23 oct 2026, 29 semanas): 227 ofertas evaluadas, 96 aprobadas, 76 candidaturas, 52 respuestas, 21 entrevistas y 4 ofertas."
+  },
+  "median_days_to_reply": 0.8,
+  "offers": 4,
+  "replied": 52,
+  "reply_rate": 0.6842,
+  "started_on": "2026-04-04",
+  "weeks": 29
+ }
+}

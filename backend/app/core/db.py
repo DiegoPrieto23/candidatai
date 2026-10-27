@@ -32,6 +32,14 @@ def _set_sqlite_pragmas(dbapi_connection: Any, _connection_record: Any) -> None:
     cursor = dbapi_connection.cursor()
     cursor.execute("PRAGMA journal_mode=WAL")
     cursor.execute("PRAGMA foreign_keys=ON")
+    # Con WAL, `NORMAL` es lo que recomienda SQLite: la base no se corrompe nunca; si se va la luz
+    # (no si se cierra la app), puede perderse la última transacción. Cada escritura, más rápida.
+    cursor.execute("PRAGMA synchronous=NORMAL")
+    # Las tablas temporales del embudo y las ordenaciones, en memoria y no en un fichero.
+    cursor.execute("PRAGMA temp_store=MEMORY")
+    # Hasta 16 MB de caché de páginas por conexión (por defecto, 2 MB; solo crece si se usa): con
+    # miles de ofertas, lo que leen las listas y el embudo se queda en memoria.
+    cursor.execute("PRAGMA cache_size=-16000")
     cursor.close()
     dbapi_connection.create_function("cai_iso_week", 1, iso_week, deterministic=True)
 

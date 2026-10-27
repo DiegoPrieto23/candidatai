@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { LANGUAGES, SOURCE_LANGUAGE, resources } from '@/locales'
+import { LANGUAGES, SOURCE_LANGUAGE, loadAllTexts } from '@/locales'
+
+const resources = await loadAllTexts()
 
 /** Todas las claves de un fichero de textos, aplanadas («a.b.c»). Los plurales cuentan por su base. */
 function keys(texts: unknown, prefix = ''): string[] {

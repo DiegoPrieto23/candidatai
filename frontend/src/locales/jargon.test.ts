@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { LANGUAGES, resources } from '@/locales'
+import { LANGUAGES, loadAllTexts } from '@/locales'
+
+const resources = await loadAllTexts()
 
 /**
  * La UI es para cualquiera, no solo para quien programa: nada de nombres de skills, comandos, rutas,

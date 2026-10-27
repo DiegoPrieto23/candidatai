@@ -16,6 +16,9 @@ def test_sqlite_pragmas(engine: Engine) -> None:
     with engine.connect() as conn:
         assert conn.execute(text("PRAGMA journal_mode")).scalar() == "wal"
         assert conn.execute(text("PRAGMA foreign_keys")).scalar() == 1
+        assert conn.execute(text("PRAGMA synchronous")).scalar() == 1  # NORMAL
+        assert conn.execute(text("PRAGMA temp_store")).scalar() == 2  # MEMORY
+        assert conn.execute(text("PRAGMA cache_size")).scalar() == -16000
 
 
 def test_get_engine_uses_settings(isolated_env: Path) -> None:

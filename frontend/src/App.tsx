@@ -1,4 +1,3 @@
-import { lazy, Suspense } from 'react'
 import { type QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Link, Navigate, Route, Routes } from 'react-router'
 import { useTranslation } from 'react-i18next'
@@ -6,28 +5,30 @@ import { CompassIcon } from '@phosphor-icons/react'
 import { AppShell } from '@/components/AppShell'
 import { EmptyState } from '@/components/States'
 import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { useLanguage } from '@/lib/i18n'
-import { AgentPage } from '@/pages/AgentPage'
-import { AlertsPage } from '@/pages/AlertsPage'
-import { CalendarPage } from '@/pages/CalendarPage'
+import { pages } from '@/lib/pages'
+// «Hoy» es la entrada más común: va en el chunk inicial, sin esperar a otro.
 import { HomePage } from '@/pages/HomePage'
-import { InboxPage } from '@/pages/InboxPage'
-import { JobPage } from '@/pages/JobPage'
-import { NewJobPage } from '@/pages/NewJobPage'
-import { PlatformsPage } from '@/pages/PlatformsPage'
-import { ProfilePage } from '@/pages/ProfilePage'
-import { ProcessesPage } from '@/pages/ProcessesPage'
-import { RepliesPage } from '@/pages/RepliesPage'
-import { SkillsPage } from '@/pages/SkillsPage'
-import { SourcesHubPage } from '@/pages/SourcesHubPage'
-import { SourcesPage } from '@/pages/SourcesPage'
-import { TemplatesPage } from '@/pages/TemplatesPage'
-import { TriagePage } from '@/pages/TriagePage'
 
-// Recharts pesa: la página del embudo se descarga solo al abrirla.
-const FunnelPage = lazy(() => import('@/pages/FunnelPage').then((m) => ({ default: m.FunnelPage })))
+const {
+  agent: { Page: AgentPage },
+  alerts: { Page: AlertsPage },
+  calendar: { Page: CalendarPage },
+  funnel: { Page: FunnelPage },
+  inbox: { Page: InboxPage },
+  job: { Page: JobPage },
+  newJob: { Page: NewJobPage },
+  platforms: { Page: PlatformsPage },
+  processes: { Page: ProcessesPage },
+  profile: { Page: ProfilePage },
+  replies: { Page: RepliesPage },
+  skills: { Page: SkillsPage },
+  sources: { Page: SourcesPage },
+  sourcesHub: { Page: SourcesHubPage },
+  templates: { Page: TemplatesPage },
+  triage: { Page: TriagePage },
+} = pages
 
 function NotFound() {
   const { t } = useTranslation()
@@ -58,14 +59,7 @@ export function AppRoutes() {
         <Route path="procesos" element={<ProcessesPage />} />
         <Route path="calendario" element={<CalendarPage />} />
         <Route path="respuestas" element={<RepliesPage />} />
-        <Route
-          path="embudo"
-          element={
-            <Suspense fallback={<Skeleton className="h-80 rounded-xl" />}>
-              <FunnelPage />
-            </Suspense>
-          }
-        />
+        <Route path="embudo" element={<FunnelPage />} />
         <Route path="skills" element={<SkillsPage />} />
         <Route path="alertas" element={<AlertsPage />} />
         <Route path="plantillas" element={<TemplatesPage />} />

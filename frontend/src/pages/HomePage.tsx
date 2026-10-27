@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import { ArrowRightIcon } from '@phosphor-icons/react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -33,6 +33,8 @@ function Today() {
   const status = useStatus()
   const followups = useFollowups()
   const replies = useReplies()
+  // La fecha del encabezado, la de cuando se abre la página.
+  const [now] = useState(() => new Date())
   const s = status.data?.by_stage
   const due = followups.data?.followups.length ?? 0
   const proposed = replies.data?.counts.proposed ?? 0
@@ -80,7 +82,7 @@ function Today() {
 
   return (
     <section aria-labelledby="hoy" className="max-w-3xl">
-      <p className="text-sm text-muted-foreground first-letter:uppercase">{dateFormatter(TODAY).format(new Date())}</p>
+      <p className="text-sm text-muted-foreground first-letter:uppercase">{dateFormatter(TODAY).format(now)}</p>
       <h1 id="hoy" className="mt-3 text-3xl leading-[1.2] font-semibold tracking-tight text-balance sm:text-[2.6rem]">
         {status.isPending ? (
           <Skeleton className="h-12 w-full max-w-xl" />

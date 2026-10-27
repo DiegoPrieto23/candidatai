@@ -1,4 +1,10 @@
 {
+  "loadingPage": "Loading the page…",
+  "pageError": {
+    "title": "This page couldn't be opened",
+    "body": "The app may have been updated or stopped. Check that it's still running and reload.",
+    "reload": "Reload"
+  },
   "groups": {
     "search": "Search",
     "processes": "Processes",

@@ -3,7 +3,7 @@
 from collections import defaultdict
 from collections.abc import Iterable
 from datetime import date, datetime, timedelta
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel
 from sqlalchemy import exists, func, select
@@ -507,8 +507,15 @@ def _next_milestones(
 ) -> dict[int, NextMilestone]:
     if not job_ids:
         return {}
-    rows = session.scalars(
-        select(Milestone)
+    rows = session.execute(
+        select(
+            Milestone.job_id,
+            Milestone.id,
+            Milestone.kind,
+            Milestone.title,
+            Milestone.starts_at,
+            Milestone.all_day,
+        )
         .where(
             Milestone.job_id.in_(job_ids),
             Milestone.status == "scheduled",
@@ -529,13 +536,14 @@ def _closings(session: Session, job_ids: list[int]) -> dict[int, tuple[str | Non
     """Evento que cerró cada oferta y etapa a la que volvería al reabrirla (una sola consulta)."""
     if not job_ids:
         return {}
-    by_job: dict[int, list[Event]] = defaultdict(list)
+    # Solo lo que lee la proyección: sin cargar los eventos como objetos del ORM.
+    by_job: dict[int, list[Any]] = defaultdict(list)
     stmt = (
-        select(Event)
+        select(Event.job_id, Event.type, Event.payload, Event.occurred_at)
         .where(Event.job_id.in_(job_ids))
         .order_by(Event.job_id, Event.occurred_at, Event.id)
     )
-    for event in session.scalars(stmt):
+    for event in session.execute(stmt):
         by_job[event.job_id].append(event)
     result: dict[int, tuple[str | None, Stage | None]] = {}
     for job_id, events in by_job.items():

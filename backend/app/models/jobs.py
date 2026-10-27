@@ -22,11 +22,15 @@ class Job(Base):
             unique=True,
             sqlite_where=text("platform IS NOT NULL AND external_id IS NOT NULL"),
         ),
+        # Las filas de `jobs` son largas (el texto de la oferta): estos índices dan lo que piden
+        # las listas y el embudo sin leerlas. El primero sirve también para buscar por empresa.
+        Index("ix_jobs_company_id_first_seen_at", "company_id", "first_seen_at", "source_id"),
+        Index("ix_jobs_first_seen_at", "first_seen_at"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     source_id: Mapped[int] = mapped_column(ForeignKey("sources.id"), index=True)
-    company_id: Mapped[int] = mapped_column(ForeignKey("companies.id"), index=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("companies.id"))
     external_id: Mapped[str | None] = mapped_column(String(200))
     # Portal donde se publica (`linkedin`, `infojobs`…), si se reconoce por la URL.
     platform: Mapped[str | None] = mapped_column(String(32))

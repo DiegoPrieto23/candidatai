@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import openapi from '@/api/openapi.json'
-import { LANGUAGES, resources } from '@/locales'
+import { LANGUAGES, loadAllTexts } from '@/locales'
+
+const resources = await loadAllTexts()
 
 /**
  * Las acciones que lanzan un skill, tal como las publica la API (`ACTIONS` del backend). El nombre

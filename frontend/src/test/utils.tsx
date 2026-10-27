@@ -28,6 +28,7 @@ import type {
 } from '@/api/client'
 import { AppRoutes } from '@/App'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { preloadAllPages } from '@/lib/pages'
 
 type Handler = (request: Request, url: URL) => unknown | Promise<unknown>
 
@@ -83,6 +84,10 @@ export function mockApi(routes: Record<string, Handler | unknown>): Call[] {
 export function isUserPost(call: Call): boolean {
   return call.method === 'POST' && !call.path.endsWith('/check-open')
 }
+
+// Las páginas, ya descargadas: `renderApp` las pinta sin esperar a su chunk, como la app tras la
+// primera visita.
+await preloadAllPages()
 
 export function renderApp(path: string) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })

@@ -11,7 +11,11 @@ class Event(Base):
     """Fuente de verdad del estado de una oferta. Se escribe solo con `services.events.record()`."""
 
     __tablename__ = "events"
-    __table_args__ = (Index("ix_events_job_id_occurred_at", "job_id", "occurred_at"),)
+    __table_args__ = (
+        Index("ix_events_job_id_occurred_at", "job_id", "occurred_at"),
+        # Los eventos de un tipo (los del embudo, los cierres) y de un tipo en una oferta.
+        Index("ix_events_type_job_id_occurred_at", "type", "job_id", "occurred_at"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     job_id: Mapped[int] = mapped_column(ForeignKey("jobs.id"))

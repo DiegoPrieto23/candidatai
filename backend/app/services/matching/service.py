@@ -15,7 +15,7 @@ from datetime import datetime
 
 from pydantic import BaseModel
 from sqlalchemy import func, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, load_only
 
 from app.core.policies import get_policies, get_skill_aliases, get_title_aliases
 from app.models import Application, Company, Job, Match
@@ -282,15 +282,32 @@ def match_views(session: Session, job_ids: Sequence[int]) -> dict[int, MatchView
     """El match vigente de varias ofertas (calcula los que falten). Omite las que no tienen
     extracción; sin perfil importado devuelve `{}`."""
     try:
-        profiles.current(session)
+        profile_version_id = profiles.current(session).profile_version_id
     except profiles.ProfileNotFoundError:
         return {}
+    # Como `get_match` en cada una, pero con una consulta por tabla para toda la lista.
+    latest = extractions.latest_rows(session, list(job_ids))
+    ids = [job_id for job_id in dict.fromkeys(job_ids) if job_id in latest]
+    if not ids:
+        return {}
+    histories: dict[int, list[Match]] = {}
+    stmt = select(Match).where(Match.job_id.in_(ids)).order_by(Match.id.desc())
+    for match in session.scalars(stmt):
+        histories.setdefault(match.job_id, []).append(match)
+    key = scoring_key()
+    for job_id in ids:
+        history = histories.get(job_id, [])
+        if not history or not _is_fresh(history[0], latest[job_id].id, profile_version_id, key):
+            # Desfasado: como `current_match`. Antes de cargar las señales con `load_only`, para
+            # que `compute_match` no encuentre en la sesión una oferta a medio cargar.
+            histories[job_id] = [compute_match(session, job_id), *history]
+    only_signals = select(Job).options(load_only(Job.id, Job.signals)).where(Job.id.in_(ids))
+    jobs = {job.id: job for job in session.scalars(only_signals)}
     views: dict[int, MatchView] = {}
-    for job_id in job_ids:
-        try:
-            views[job_id] = get_match(session, job_id)
-        except ExtractionNotFoundError:
-            continue
+    for job_id in ids:
+        history = histories[job_id]
+        notes = doubtful.notes(read_signals(jobs[job_id]))
+        views[job_id] = _view(history[0], history).model_copy(update={"signals": notes})
     return views
 
 

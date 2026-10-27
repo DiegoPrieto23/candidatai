@@ -5,7 +5,7 @@ from typing import Literal, get_args
 
 from pydantic import BaseModel
 from sqlalchemy import case, func, or_, select
-from sqlalchemy.orm import Session, aliased
+from sqlalchemy.orm import Session, aliased, defer
 
 from app.models import Application, Company, Job, Match
 from app.models import JobExtraction as JobExtractionRow
@@ -52,8 +52,13 @@ def last_match_subquery():
     )
 
 
-def _summary_query():
-    """Oferta, empresa, etapa y score del último match (outer joins: puede no haber)."""
+def _summary_query(with_text: bool = True):
+    """Oferta, empresa, etapa y score del último match (outer joins: puede no haber).
+
+    Las listas no enseñan el texto de la oferta (`with_text=False`): sin él, SQLite ordena filas
+    pequeñas y no miles de descripciones completas. Esas ofertas quedan en la sesión sin el texto:
+    leer `raw_text` de ellas haría una consulta por oferta.
+    """
     last = last_match_subquery()
     return (
         select(Job, Company.name, Application.stage, Match.score)
@@ -61,6 +66,7 @@ def _summary_query():
         .outerjoin(Application, Application.job_id == Job.id)
         .outerjoin(last, last.c.job_id == Job.id)
         .outerjoin(Match, Match.id == last.c.match_id)
+        .options(*(() if with_text else (defer(Job.raw_text),)))
     )
 
 
@@ -85,7 +91,7 @@ def list_jobs(
         raise InvalidQueryError(f"`limit` debe estar entre 1 y {MAX_LIMIT}.")
     recent = (Job.first_seen_at.desc(), Job.id.desc())
     ordering = (Match.score.desc().nulls_last(), *recent) if order == "score_desc" else recent
-    query = _summary_query().order_by(*ordering).limit(limit)
+    query = _summary_query(with_text=False).order_by(*ordering).limit(limit)
     if stage is not None:
         query = query.where(Application.stage == parse_stage(stage).value)
     return [
@@ -228,7 +234,8 @@ def search_jobs(
     filters = []
     if stage is not None:
         filters.append(Application.stage == parse_stage(stage).value)
-    if q is not None and q.strip():
+    searching = q is not None and bool(q.strip())
+    if q is not None and searching:
         pattern = f"%{_escape_like(q.strip())}%"
         filters.append(
             or_(
@@ -236,16 +243,35 @@ def search_jobs(
                 Company.name.ilike(pattern, escape="!"),
             )
         )
-    base = _summary_query().where(*filters)
+    base = _summary_query(with_text=False).where(*filters)
     total = session.scalar(select(func.count()).select_from(base.subquery())) or 0
-    rows = session.execute(
-        base.add_columns(Application.closed_at, Application.closed_by)
-        .outerjoin(last_extraction, last_extraction.c.job_id == Job.id)
-        .outerjoin(current, current.id == last_extraction.c.id)
-        .order_by(*ordering)
-        .limit(limit)
-        .offset(offset)
+    # Dos pasos: primero los ids de la página, con columnas cortas (un índice de `jobs` basta y
+    # no se leen las filas, largas por el texto de la oferta); después, esas filas enteras. En el
+    # primero, solo lo que filtra u ordena: toda oferta tiene empresa (clave foránea), y unir
+    # `companies` sin necesidad hace que SQLite recorra `jobs` por otro índice.
+    last = last_match_subquery()
+    ids = (
+        select(Job.id)
+        .outerjoin(Application, Application.job_id == Job.id)
+        .outerjoin(last, last.c.job_id == Job.id)
+        .outerjoin(Match, Match.id == last.c.match_id)
+    )
+    if searching:
+        ids = ids.join(Company, Company.id == Job.company_id)
+    if sort == "salary":
+        ids = ids.outerjoin(last_extraction, last_extraction.c.job_id == Job.id).outerjoin(
+            current, current.id == last_extraction.c.id
+        )
+    page = session.scalars(
+        ids.where(*filters).order_by(*ordering).limit(limit).offset(offset)
     ).all()
+    by_id = {
+        row[0].id: row
+        for row in session.execute(
+            base.add_columns(Application.closed_at, Application.closed_by).where(Job.id.in_(page))
+        )
+    }
+    rows = [by_id[job_id] for job_id in page if job_id in by_id]
     latest = extractions.latest_rows(session, [job.id for job, *_ in rows])
     known = network.known_counts(session, [job.id for job, *_ in rows])
     items = []

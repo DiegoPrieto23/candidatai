@@ -35,6 +35,15 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   cómo arrancarla desde la terminal (`cai start`) o con Docker.
 
 ### Cambiado
+- **La app abre antes:** al arrancar descarga menos de un tercio que antes (cada página se descarga
+  al entrar en ella, o antes, al pasar el ratón por su enlace, y solo el idioma que usas) y las
+  respuestas viajan comprimidas. Al volver a abrirla, lo que no ha cambiado sale de la caché del
+  navegador sin preguntar al servidor.
+- **Rápida también con miles de ofertas:** con 5000 ofertas, el Embudo pasa de 2,5 segundos a
+  0,15, la Calibración de 2 a 0,12, la historia de tu búsqueda de 0,8 a 0,08, Por revisar de 0,7 a
+  0,1 y Alertas de 0,4 a 0,09. La Bandeja responde en 0,03-0,06 s en cualquier orden y la ficha,
+  Procesos y la página de inicio, en menos de 0,1. Al actualizar se añaden unos índices a tu base
+  de datos, sin tocar ningún dato.
 - **«Tengo entrevista» sin fecha obligatoria:** la fecha y la hora van en campos separados y las dos
   son opcionales. Sin hora, la entrevista cuenta todo el día; sin fecha, se registra solo que la
   tienes. Lo mismo con la fecha de entrega de una prueba.
@@ -109,6 +118,12 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   dice qué comprobar.
 - **«Sin mínimo en tu perfil»** al comparar ofertas recibidas ya no enseña el nombre interno del
   campo: dice dónde ponerlo (Mi perfil → Búsqueda).
+
+### Seguridad
+- **Librerías sin vulnerabilidades conocidas:** Pillow 13 (la foto del CV, las miniaturas y las
+  plantillas importadas desde imagen), pypdf, filelock, setuptools, opentelemetry y Vite pasan a sus
+  versiones arregladas, y el resto de librerías a sus últimos parches. Al actualizar con el
+  instalador se instalan solas; no cambia nada de cómo se usa.
 
 ## [0.1.0] - 2026-10-24
 

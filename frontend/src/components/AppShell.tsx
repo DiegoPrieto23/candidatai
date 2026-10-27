@@ -1,11 +1,13 @@
-import { useEffect, useRef } from 'react'
+import { Suspense, useEffect, useRef } from 'react'
 import { Link, Outlet, useLocation } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { CircleNotchIcon, FlaskIcon, PlusIcon } from '@phosphor-icons/react'
 import { keys, useAgentRuns, useStatus } from '@/api/queries'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
+import { PageErrorBoundary } from '@/components/PageErrorBoundary'
 import { ReadyNotices } from '@/components/ReadyNotices'
 import { UserPrompts } from '@/components/UserPrompts'
 import { Brand, MobileNav, Sidebar } from '@/components/Sidebar'
@@ -76,8 +78,21 @@ function DemoBanner() {
   )
 }
 
+/** Mientras llega el chunk de una página: el hueco de su título, su entradilla y su contenido. */
+function PageFallback() {
+  const { t } = useTranslation('nav')
+  return (
+    <div role="status" aria-label={t('loadingPage')} className="grid gap-3">
+      <Skeleton className="h-8 w-56" />
+      <Skeleton className="h-4 w-full max-w-md" />
+      <Skeleton className="mt-3 h-64 w-full rounded-xl" />
+    </div>
+  )
+}
+
 export function AppShell() {
   const { t } = useTranslation('nav')
+  const { pathname } = useLocation()
   return (
     <div className="flex min-h-[100dvh]">
       <Sidebar />
@@ -100,7 +115,11 @@ export function AppShell() {
           <div className="mb-6 empty:hidden">
             <BackgroundRunReminder />
           </div>
-          <Outlet />
+          <PageErrorBoundary path={pathname}>
+            <Suspense fallback={<PageFallback />}>
+              <Outlet />
+            </Suspense>
+          </PageErrorBoundary>
         </main>
       </div>
       <UserPrompts />

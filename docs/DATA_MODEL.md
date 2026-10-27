@@ -3,6 +3,10 @@
 SQLite en `data/candidatai.db`, modo WAL. SQLAlchemy 2.0 + Alembic. Todas las fechas en UTC
 (`datetime` con zona); la UI convierte a Europe/Madrid.
 
+Cada conexión activa las claves foráneas, `synchronous=NORMAL` (con WAL la base no se corrompe; si
+se va la luz puede perderse la última transacción), `temp_store=MEMORY` y una caché de páginas de
+hasta 16 MB.
+
 ## Tablas
 
 ### `sources`
@@ -56,6 +60,10 @@ Una fila por ejecución de una fuente; la usan los conectores y, desde la 09b, a
 | duplicate_of | FK jobs? | Si se detecta como duplicado difuso |
 | posted_at | datetime? | |
 | first_seen_at | datetime | |
+
+Índices para las listas y el embudo (migración `0030`): (`company_id`, `first_seen_at`,
+`source_id`) y (`first_seen_at`). Las filas son largas por `raw_text`, y estas columnas van detrás
+de él: con los índices, la Bandeja y el embudo no tienen que leerlas de la fila.
 
 **Huella:** `sha256(normalized_company | normalized_title | normalized_location)`, donde
 `normalized_title` quita seniority genérica entre paréntesis, emojis, dobles espacios y pasa a
@@ -152,6 +160,9 @@ Proyección del estado de candidatura para consultas rápidas; se recalcula desd
 | payload | JSON | Datos del evento |
 | occurred_at | datetime | Cuándo pasó (puede ser pasado) |
 | recorded_at | datetime | Cuándo se registró |
+
+Índices: (`job_id`, `occurred_at`), el historial de una oferta, y (`type`, `job_id`,
+`occurred_at`), los eventos de un tipo en todas las ofertas o en una (embudo, kanban).
 
 ### `tasks`
 Cola de trabajo del worker (sin Redis).
@@ -315,8 +326,10 @@ Fase 18 (migración 0017):
 
 ### Embudo (fase 10.2)
 
-Lo calcula `services/analytics.py` con consultas agregadas sobre `events` (sin tablas nuevas ni
-índices: con 1 000 ofertas responde en unos 0,2 s). Cada oferta cuenta **una vez** por paso,
+Lo calcula `services/analytics.py` con consultas agregadas sobre `events`. Los pasos de cada oferta
+se calculan una vez por petición, en tablas temporales de SQLite (de la conexión, se borran al
+terminar), y los desgloses son `GROUP BY` sobre ellas: con 5 000 ofertas y 75 000 eventos responde
+en unos 0,15 s. Cada oferta cuenta **una vez** por paso,
 aunque se reabra, y el embudo es **acumulado**: una oferta que llega a un paso cuenta también en
 los anteriores (un `applied_manually` sin aprobar antes cuenta como aprobada y como que pasó los filtros), así que la
 conversión nunca pasa del 100 %.

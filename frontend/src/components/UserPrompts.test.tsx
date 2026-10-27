@@ -1,6 +1,6 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { PromptView } from '@/api/client'
 import { mockApi, renderApp, status } from '@/test/utils'
 
@@ -33,6 +33,10 @@ function routes(prompts: PromptView[]) {
 }
 
 describe('Avisos al usuario (captcha)', () => {
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   it('sin avisos no aparece nada', async () => {
     const calls = mockApi(routes([]))
     renderApp('/')
@@ -42,6 +46,9 @@ describe('Avisos al usuario (captcha)', () => {
 
   it('pop-up con el aviso, la cuenta atrás y «Ya está»', async () => {
     const calls = mockApi(routes([prompt()]))
+    // El reloj, quieto: con la suite cargada, entre la respuesta y la comprobación puede pasar un
+    // segundo y la cuenta atrás ya diría 4:49.
+    vi.useFakeTimers({ toFake: ['Date'] })
     renderApp('/')
     const dialog = await screen.findByRole('dialog')
     expect(within(dialog).getByRole('heading', { name: /Completa el captcha/ })).toBeInTheDocument()
