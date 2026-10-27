@@ -11,6 +11,9 @@ node_modules
 dist
 dist-ssr
 *.local
+# `ANALYZE=1 pnpm build` (vite.config.ts)
+stats.html
+stats.json
 
 # Editor directories and files
 .vscode/*

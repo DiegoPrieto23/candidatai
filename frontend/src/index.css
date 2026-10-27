@@ -1,7 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "@fontsource-variable/geist";
-@import "@fontsource-variable/geist-mono";
+@import "./fonts.css";
 
 /* Tema: la clase `dark` en <html> la pone `lib/theme.ts` (sistema por defecto, o elección guardada). */
 @custom-variant dark (&:is(.dark *));

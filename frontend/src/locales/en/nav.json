@@ -1,4 +1,5 @@
 {
+  "loadingPage": "Loading the page…",
   "groups": {
     "search": "Search",
     "processes": "Processes",

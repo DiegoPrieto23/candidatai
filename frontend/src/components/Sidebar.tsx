@@ -39,6 +39,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useLanguage } from '@/lib/i18n'
+import { preloadRoute } from '@/lib/pages'
 import { useTheme, type ThemeChoice } from '@/lib/theme'
 import { languageName } from '@/locales'
 import { cn } from '@/lib/utils'
@@ -173,6 +174,9 @@ function NavEntry({ entry, collapsed, onNavigate }: { entry: Entry; collapsed: b
     <Link
       to={entry.to}
       onClick={onNavigate}
+      // Al acercarse al enlace ya se descarga la página: el clic no espera a la red.
+      onMouseEnter={() => preloadRoute(entry.to)}
+      onFocus={() => preloadRoute(entry.to)}
       // El nombre completo, con lo que te espera: «Por revisar (3 por revisar)».
       aria-label={
         count.value && count.label
@@ -421,7 +425,12 @@ function NewJobButton({ collapsed }: { collapsed: boolean }) {
   const label = t('header.newJob')
   const button = (
     <Button asChild size={collapsed ? 'icon' : 'sm'} className={cn('mb-2 shrink-0', !collapsed && 'w-full')}>
-      <Link to="/nueva" aria-label={collapsed ? label : undefined}>
+      <Link
+        to="/nueva"
+        aria-label={collapsed ? label : undefined}
+        onMouseEnter={() => preloadRoute('/nueva')}
+        onFocus={() => preloadRoute('/nueva')}
+      >
         <PlusIcon weight="bold" />
         {!collapsed && label}
       </Link>

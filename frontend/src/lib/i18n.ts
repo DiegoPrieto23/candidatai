@@ -6,7 +6,7 @@
 import { useCallback, useSyncExternalStore, type ReactNode } from 'react'
 import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
-import { LANGUAGES, NAMESPACES, SOURCE_LANGUAGE, resources } from '@/locales'
+import { LANGUAGES, NAMESPACES, SOURCE_LANGUAGE, loadTexts } from '@/locales'
 
 export type Language = string
 
@@ -35,7 +35,8 @@ export function detectLanguage(): Language {
 }
 
 void i18n.use(initReactI18next).init({
-  resources,
+  resources: {}, // los textos llegan con `loadLanguage`
+  partialBundledLanguages: true,
   lng: detectLanguage(),
   fallbackLng: SOURCE_LANGUAGE,
   supportedLngs: [...LANGUAGES],
@@ -43,8 +44,33 @@ void i18n.use(initReactI18next).init({
   defaultNS: 'common',
   interpolation: { escapeValue: false }, // React ya escapa
   returnNull: false,
-  initAsync: false, // los textos van empaquetados: listo antes del primer render
+  initAsync: false,
 })
+
+const loading = new Map<Language, Promise<void>>()
+
+/** Descarga los textos de un idioma, una sola vez (si falla, el siguiente intento lo repite). */
+export function loadLanguage(language: Language): Promise<void> {
+  let pending = loading.get(language)
+  if (!pending) {
+    pending = loadTexts(language).then(
+      (texts) => {
+        for (const [namespace, bundle] of Object.entries(texts)) {
+          i18n.addResourceBundle(language, namespace, bundle, true, true)
+        }
+      },
+      (error: unknown) => {
+        loading.delete(language)
+        throw error
+      },
+    )
+    loading.set(language, pending)
+  }
+  return pending
+}
+
+/** Los textos del idioma con el que arranca: `main.tsx` espera a tenerlos antes de pintar. */
+export const i18nReady = loadLanguage(i18n.language)
 
 function applyLanguage(language: string) {
   if (typeof document !== 'undefined') document.documentElement.lang = language
@@ -52,14 +78,14 @@ function applyLanguage(language: string) {
 applyLanguage(i18n.language)
 i18n.on('languageChanged', applyLanguage)
 
-/** Cambia el idioma y lo recuerda. */
+/** Cambia el idioma (tras descargar sus textos) y lo recuerda. */
 export function setLanguage(language: Language): void {
   try {
     localStorage.setItem(STORAGE_KEY, language)
   } catch {
     // Sin almacenamiento (ventana privada): el idioma dura lo que la pestaña.
   }
-  void i18n.changeLanguage(language)
+  void loadLanguage(language).then(() => i18n.changeLanguage(language))
 }
 
 function subscribe(notify: () => void): () => void {

@@ -1,7 +1,11 @@
 import '@testing-library/jest-dom/vitest'
 import { cleanup, configure } from '@testing-library/react'
 import { afterEach, beforeEach, vi } from 'vitest'
-import { i18n } from '@/lib/i18n'
+import { i18n, loadLanguage } from '@/lib/i18n'
+import { LANGUAGES } from '@/locales'
+
+// Los textos de todos los idiomas, ya cargados: los tests cambian de idioma sin esperar a la red.
+await Promise.all(LANGUAGES.map(loadLanguage))
 
 // `findBy…` espera 1 s por defecto: poco con toda la suite en paralelo.
 configure({ asyncUtilTimeout: 4000 })
