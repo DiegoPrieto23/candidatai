@@ -77,6 +77,26 @@ def test_hashed_assets_are_cached_forever_and_index_is_not(client: TestClient) -
     assert client.get("/assets/no-existe.js").status_code == 404
 
 
+def test_assets_keep_their_type_with_a_wrong_windows_registry(
+    ui_dir: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """En algunos Windows el registro da `.js` como `text/plain` y `mimetypes` lo hereda: el
+    navegador no ejecutaría la UI. Se sirve como JavaScript igual, con y sin `.gz`."""
+    import mimetypes
+
+    db = mimetypes.MimeTypes()
+    db.add_type("text/plain", ".js")
+    monkeypatch.setattr(mimetypes, "_db", db)
+    source = b"console.log(1);\n" * 100
+    (ui_dir / "assets" / "page.js").write_bytes(source)
+    (ui_dir / "assets" / "page.js.gz").write_bytes(gzip.compress(source))
+    migrations.upgrade()
+    with TestClient(create_app(), base_url="http://127.0.0.1:8000") as client:
+        for encoding in ("gzip", "identity"):
+            response = client.get("/assets/page.js", headers={"Accept-Encoding": encoding})
+            assert response.headers["content-type"].startswith("text/javascript"), encoding
+
+
 def test_assets_are_served_precompressed_when_the_build_left_a_gz(ui_dir: Path) -> None:
     """Fase 29.2: el `.gz` que deja el build, tal cual y con el tipo del original; sin gzip, o si no
     hay `.gz`, el fichero normal."""
@@ -295,6 +315,34 @@ def test_start_when_already_running_just_opens_the_browser(
     lines: list[str] = []
     launcher.start(get_settings(), 8000, say=lines.append, browser=opened.append)
     assert opened == ["http://127.0.0.1:8000"] and "ya está en marcha" in lines[0]
+
+
+def test_start_speaks_the_system_language_or_cai_lang(
+    ui_dir: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Los mensajes de la terminal, en español con el sistema en español y en inglés con cualquier
+    otro; `CAI_LANG` manda sobre el sistema."""
+    monkeypatch.setattr(launcher, "probe", lambda _port: "candidatai")
+
+    def first_line() -> str:
+        get_settings.cache_clear()
+        lines: list[str] = []
+        launcher.start(get_settings(), 8000, say=lines.append, browser=lambda _url: None)
+        return lines[0]
+
+    monkeypatch.delenv("CAI_LANG")
+    for system, expected in (
+        (("es_ES", "UTF-8"), "ya está en marcha"),
+        (("Spanish_Spain", "1252"), "ya está en marcha"),
+        (("en_US", "UTF-8"), "is already running"),
+        (("de_DE", "UTF-8"), "is already running"),
+        ((None, None), "is already running"),
+    ):
+        monkeypatch.setattr(launcher.locale, "getlocale", lambda system=system: system)
+        assert expected in first_line(), system
+    monkeypatch.setenv("CAI_LANG", "en")
+    monkeypatch.setattr(launcher.locale, "getlocale", lambda: ("es_ES", "UTF-8"))
+    assert "is already running" in first_line()
 
 
 def test_start_refuses_a_port_used_by_something_else(

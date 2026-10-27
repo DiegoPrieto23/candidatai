@@ -457,7 +457,8 @@ clasificar respuestas, y tu agente más capaz para el CV. Rellénalos una vez y 
 - **`.env`** (en la raíz, fuera de git): `CAI_DATA_DIR`, `SOFFICE_PATH`, claves de InfoJobs y
   Adzuna, IMAP (`CAI_IMAP_HOST`, `CAI_IMAP_PORT`, `CAI_IMAP_USER`, `CAI_IMAP_PASSWORD`,
   `CAI_IMAP_FOLDER`, `CAI_IMAP_REPLIES_FOLDER`), `CAI_BROWSER_CHANNEL` (`chrome` o `msedge` para la
-  candidatura asistida), `CAI_EMBEDDINGS=off`. Nada es obligatorio.
+  candidatura asistida), `CAI_EMBEDDINGS=off`, `CAI_LANG` (`es` o `en`: idioma de los mensajes de
+  `cai start` en la terminal; sin ella, el del sistema). Nada es obligatorio.
 - **`config/policies.yaml`:** umbral de score, pesos del score, hora de la ingesta diaria,
   frecuencia del correo, límites de la búsqueda con navegador y de la búsqueda pública de
   LinkedIn, frases de oferta cerrada… Tras cambiar el score, `cai match rescore` recalcula y

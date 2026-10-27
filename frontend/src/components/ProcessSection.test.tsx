@@ -155,6 +155,27 @@ describe('Sección Proceso de la ficha', () => {
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
   })
 
+  it('no deja dar por hecha una entrevista antes de su día; una pasada, sí', async () => {
+    mockApi({
+      'GET /status': status(),
+      'GET /jobs/1': jobView({ stage: 'in_process' }),
+      'GET /jobs/1/process': processView({
+        stage: 'in_process',
+        milestones: [
+          milestone(5, { kind: 'interview', title: 'Técnica', starts_at: '2099-01-15T10:00:00Z' }),
+          milestone(6, { kind: 'interview', title: 'RR. HH.', starts_at: '2020-01-15T10:00:00Z' }),
+        ],
+      }),
+    })
+    renderApp('/jobs/1?tab=process')
+    const section = await screen.findByRole('region', { name: 'Proceso' })
+    const later = await within(section).findByRole('button', {
+      name: 'Podrás marcarla como hecha a partir del día de la entrevista',
+    })
+    expect(later).toBeDisabled()
+    expect(within(section).getByRole('button', { name: 'Marcar «RR. HH.» como hecho' })).toBeEnabled()
+  })
+
   it('anota un seguimiento enviado', async () => {
     const calls = mockApi({
       'GET /status': status(),

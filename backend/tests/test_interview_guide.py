@@ -212,3 +212,36 @@ def test_api_serves_the_pdf_inline(fake_pdf: list[str]) -> None:
         assert response.headers["content-type"] == "application/pdf"
         assert response.headers["content-disposition"].startswith("inline")
         assert client.get("/milestones/999/guide.pdf").status_code == 404
+
+
+def test_api_serves_the_cover_and_redoes_it_when_the_guide_changes(fake_pdf: list[str]) -> None:
+    """La miniatura de la ficha: la portada en PNG, en caché, y nueva si se vuelve a preparar."""
+    import pypdfium2
+
+    from app.api.main import create_app
+    from app.core import migrations
+    from app.core.db import session_scope
+
+    def real_pdf(path: Path, width: float) -> None:
+        document = pypdfium2.PdfDocument.new()
+        document.new_page(width, 842)
+        document.save(path)
+        document.close()
+
+    migrations.upgrade()
+    with session_scope() as session:
+        job = add_applied_job(session, "Brétema Analytics")
+        milestone_id = _interview(session, job, datetime.now(UTC) + timedelta(days=3))
+        interview_guide.save_interview_guide(session, milestone_id, _guide())
+        pdf = interview_guide.guide_file(session, milestone_id)
+    real_pdf(pdf, 595)
+    with TestClient(create_app()) as client:
+        response = client.get(f"/milestones/{milestone_id}/guide.png")
+        assert response.status_code == 200
+        assert response.headers["content-type"] == "image/png"
+        assert response.content.startswith(b"\x89PNG")
+        first = client.get(f"/milestones/{milestone_id}/guide.png").content
+        assert first == response.content  # de la caché
+        real_pdf(pdf, 842)  # otra guía (apaisada): otra portada
+        assert client.get(f"/milestones/{milestone_id}/guide.png").content != first
+        assert client.get("/milestones/999/guide.png").status_code == 404

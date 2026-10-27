@@ -91,12 +91,13 @@ describe('Ficha de oferta', () => {
     expect(await screen.findByText('Sin simular: GET /jobs/99')).toBeInTheDocument()
   })
 
-  it('enseña el score en la cabecera y el desglose en el encaje, sin repetir las skills', async () => {
+  it('enseña el score junto al desglose del encaje, sin repetir las skills', async () => {
     mockApi({ 'GET /status': status(), 'GET /jobs/1': jobView(), 'GET /jobs/1/match': matchView() })
     renderApp('/jobs/1')
     const header = (await screen.findByRole('heading', { level: 1, name: 'Data Engineer' })).closest('header')!
-    expect(await within(header).findByLabelText('Score 78 de 100')).toBeInTheDocument()
     const panel = screen.getByRole('region', { name: 'Encaje' })
+    expect(await within(panel).findByLabelText('Score 78 de 100')).toBeInTheDocument()
+    expect(within(header).queryByLabelText('Score 78 de 100')).not.toBeInTheDocument()
     expect(within(panel).getByText('Kafka')).toBeInTheDocument()
     expect(within(panel).getByText('Obligatorias')).toBeInTheDocument()
     // Con el encaje, la extracción no vuelve a listar las skills.

@@ -123,6 +123,30 @@ def test_interview_done_records_event(session: Session, job_at) -> None:
     assert types[-1] == "interview_done"
 
 
+def test_interview_is_not_done_before_its_day(session: Session, job_at) -> None:
+    """Un clic de más en «Hecho» la sacaba de los próximos hitos. El mismo día sí se puede, y una
+    prueba se puede entregar antes del plazo."""
+    job = job_at(Stage.APPLIED)
+    later = process.create_milestone(session, job.id, interview(starts_at=_at(2)))
+    with pytest.raises(ValueError, match="a partir de ese día"):
+        process.set_milestone_status(
+            session, later.id, process.MilestoneStatusChange(status="done"), now=NOW
+        )
+    assert session.get(Milestone, later.id).status == "scheduled"
+    today = process.create_milestone(session, job.id, interview(starts_at=NOW + timedelta(hours=8)))
+    done = process.set_milestone_status(
+        session, today.id, process.MilestoneStatusChange(status="done"), now=NOW
+    )
+    assert done.status == "done"
+    test = process.create_milestone(
+        session, job.id, process.MilestoneCreate(kind="test", starts_at=_at(5))
+    )
+    early = process.set_milestone_status(
+        session, test.id, process.MilestoneStatusChange(status="done"), now=NOW
+    )
+    assert early.status == "done"
+
+
 def test_milestone_end_must_follow_start() -> None:
     with pytest.raises(ValueError, match="posterior"):
         interview(ends_at=_at(1))

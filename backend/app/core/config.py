@@ -97,6 +97,8 @@ class Settings(BaseSettings):
     ollama_url: str = Field(default="http://127.0.0.1:11434", validation_alias=_env("OLLAMA_URL"))
     # `off` desactiva la similitud semántica aunque esté instalado el extra `matching` (tests, CI).
     embeddings: Literal["auto", "off"] = Field(default="auto", validation_alias=_env("EMBEDDINGS"))
+    # Idioma de los mensajes de `cai start` en la terminal; sin él, el del sistema.
+    lang: Literal["es", "en"] | None = Field(default=None, validation_alias=_env("LANG"))
     # Conectores opcionales de portales (fase 09). Sin claves, esas fuentes se omiten con un aviso.
     infojobs_client_id: str | None = Field(
         default=None, validation_alias=_env("INFOJOBS_CLIENT_ID")

@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react'
+import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { type MilestoneOut } from '@/api/client'
@@ -114,6 +114,13 @@ describe('Entrevistas en la ficha (fase 17)', () => {
     const link = await within(section).findByRole('link', { name: 'Guía de preparación (PDF)' })
     expect(link.getAttribute('href')).toMatch(/\/milestones\/5\/guide\.pdf$/)
     expect(link).toHaveAttribute('target', '_blank')
+    // Con la miniatura de su portada; si no llega, queda el icono.
+    const cover = section.querySelector('img')!
+    expect(cover.getAttribute('src')).toMatch(/\/milestones\/5\/guide\.png$/)
+    expect(cover.closest('a')?.getAttribute('href')).toMatch(/\/milestones\/5\/guide\.pdf$/)
+    fireEvent.error(cover)
+    await waitFor(() => expect(section.querySelector('img')).toBeNull())
+    expect(within(section).getByRole('link', { name: 'Guía de preparación (PDF)' })).toBeInTheDocument()
   })
 
   it('enseña el plan por días con su dosier', async () => {

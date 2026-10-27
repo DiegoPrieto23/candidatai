@@ -344,16 +344,30 @@ def set_prep_instructions(
 
 
 def set_milestone_status(
-    session: Session, milestone_id: int, change: MilestoneStatusChange
+    session: Session,
+    milestone_id: int,
+    change: MilestoneStatusChange,
+    now: datetime | None = None,
 ) -> MilestoneOut:
     """Marca un hito como hecho o cancelado.
 
     Entrevista hecha: `interview_done`. Cancelar una entrevista o una prueba: `note`. El resto no
-    registra eventos. Un hito hecho o cancelado no vuelve atrás: se crea otro.
+    registra eventos. Un hito hecho o cancelado no vuelve atrás: se crea otro. Una entrevista no
+    se da por hecha antes de su día (una prueba sí: se puede entregar antes del plazo).
     """
     row = milestone_row(session, milestone_id)
     if row.status != "scheduled":
         raise ValueError(f"El hito ya está «{row.status}»; si hay una fecha nueva, crea otro hito.")
+    today = (now or utcnow()).astimezone(local_zone()).date()
+    if (
+        change.status == "done"
+        and row.kind == "interview"
+        and row.starts_at.astimezone(local_zone()).date() > today
+    ):
+        raise ValueError(
+            f"La entrevista es el {_when(row.starts_at, row.all_day)}: se marca como hecha a "
+            "partir de ese día. Si se ha adelantado, cambia antes su fecha."
+        )
     payload: dict[str, Any] = {"milestone_id": row.id}
     if change.note:
         payload["note"] = change.note

@@ -10,6 +10,10 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Miniatura de la guía de preparación:** en cada entrevista, la portada del PDF junto a su enlace,
+  para reconocerla de un vistazo. Pulsarla abre la guía.
+- **`cai start` en inglés:** los mensajes de la terminal salen en el idioma de tu sistema (español
+  o inglés). Para elegirlo, `CAI_LANG=es` o `CAI_LANG=en` en el `.env`.
 - **Aviso cuando el CV o la guía están listos:** tras «Generar CV» o «Preparar» una entrevista,
   la ficha se pone al día sola en cuanto tu agente los deja y sale un aviso con «Abrir PDF»
   (y una notificación del sistema si estás en otra ventana y la tienes permitida). Sin F5.
@@ -35,6 +39,8 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   cómo arrancarla desde la terminal (`cai start`) o con Docker.
 
 ### Cambiado
+- **El score de una oferta, junto a su desglose:** en la ficha ya no va en la cabecera sino en
+  «Encaje», al lado de lo que lo explica.
 - **La app abre antes:** al arrancar descarga menos de un tercio que antes (cada página se descarga
   al entrar en ella, o antes, al pasar el ratón por su enlace, y solo el idioma que usas) y las
   respuestas viajan comprimidas. Al volver a abrirla, lo que no ha cambiado sale de la caché del
@@ -112,6 +118,11 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   página «Alertas» ya no sale vacía.
 
 ### Corregido
+- **Una entrevista ya no se puede dar por hecha antes de su día:** el ✓ de una entrevista futura está
+  desactivado (te dice desde cuándo podrás). Un clic de más la sacaba de «Próximos 7 días» en Inicio.
+- **La app ya no puede salir en blanco en algunos Windows:** si el registro de Windows tenía mal el
+  tipo de los ficheros `.js`, el navegador se negaba a ejecutar la interfaz. Ahora se sirven
+  siempre con el tipo correcto.
 - **El Calendario carga al recargar la página** o al entrar por un enlace; antes daba «Not Found».
 - **La página Agente ya no se sale de la pantalla en el móvil,** ni el Embudo ni Skills.
 - **«Con tu perfil» en Plantillas** ya no enseña una imagen rota si no se puede hacer la vista:

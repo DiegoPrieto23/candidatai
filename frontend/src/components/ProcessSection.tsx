@@ -315,6 +315,9 @@ function MilestoneRow({ milestone, stage }: { milestone: MilestoneOut; stage: St
   const update = useUpdateMilestone(milestone.job_id)
   const status = useMilestoneStatus(milestone.job_id)
   const scheduled = milestone.status === 'scheduled'
+  // Una entrevista no se da por hecha antes de su día (el servidor tampoco lo acepta).
+  const notYet =
+    milestone.kind === 'interview' && toLocalDateInput(milestone.starts_at) > toLocalDateInput(new Date())
 
   if (editing) {
     return (
@@ -401,16 +404,18 @@ function MilestoneRow({ milestone, stage }: { milestone: MilestoneOut; stage: St
             >
               <PencilSimpleIcon />
             </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-8"
-              aria-label={t('done', { title: milestone.title })}
-              disabled={status.isPending}
-              onClick={() => status.mutate({ milestoneId: milestone.id, body: { status: 'done' } })}
-            >
-              <CheckIcon />
-            </Button>
+            <span title={notYet ? t('doneLater') : undefined}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8"
+                aria-label={notYet ? t('doneLater') : t('done', { title: milestone.title })}
+                disabled={status.isPending || notYet}
+                onClick={() => status.mutate({ milestoneId: milestone.id, body: { status: 'done' } })}
+              >
+                <CheckIcon />
+              </Button>
+            </span>
             <Button
               variant="ghost"
               size="icon"

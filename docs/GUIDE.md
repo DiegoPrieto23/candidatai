@@ -464,7 +464,8 @@ one” puts your preferences back as they were.
 - **`.env`** (at the root, outside git): `CAI_DATA_DIR`, `SOFFICE_PATH`, InfoJobs and Adzuna keys,
   IMAP (`CAI_IMAP_HOST`, `CAI_IMAP_PORT`, `CAI_IMAP_USER`, `CAI_IMAP_PASSWORD`, `CAI_IMAP_FOLDER`,
   `CAI_IMAP_REPLIES_FOLDER`), `CAI_BROWSER_CHANNEL` (`chrome` or `msedge` for assisted
-  applications), `CAI_EMBEDDINGS=off`. Nothing is required.
+  applications), `CAI_EMBEDDINGS=off`, `CAI_LANG` (`es` or `en`: language of the `cai start`
+  messages in the terminal; without it, your system's). Nothing is required.
 - **`config/policies.yaml`:** score threshold, score weights, daily ingestion time, email polling,
   limits for browser search and for LinkedIn's public search, "job closed" phrases… After changing
   the score, `cai match rescore` recalculates and `cai eval matching` measures the effect.
