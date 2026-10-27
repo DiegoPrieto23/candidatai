@@ -1,6 +1,7 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
+  ArrowCounterClockwiseIcon,
   BellRingingIcon,
   CalendarBlankIcon,
   CheckIcon,
@@ -427,6 +428,20 @@ function MilestoneRow({ milestone, stage }: { milestone: MilestoneOut; stage: St
               <XIcon />
             </Button>
           </>
+        )}
+        {milestone.status === 'done' && notYet && (
+          // Marcada como hecha antes de su día (antes de que la app lo impidiera): se deshace.
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8"
+            title={t('undoDone', { title: milestone.title })}
+            aria-label={t('undoDone', { title: milestone.title })}
+            disabled={status.isPending}
+            onClick={() => status.mutate({ milestoneId: milestone.id, body: { status: 'scheduled' } })}
+          >
+            <ArrowCounterClockwiseIcon />
+          </Button>
         )}
         <Button
           variant="ghost"

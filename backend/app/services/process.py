@@ -6,8 +6,9 @@ Los hitos que mueven la oferta registran su evento: crear una entrevista registr
 y los hitos `other` no registran eventos: no cambian la etapa. Todos los eventos llevan
 `payload.milestone_id`.
 
-Borrar un hito anotado por error es la única excepción a que los eventos solo se añaden: se borran
-también los suyos y la etapa se recalcula, como si nunca se hubiera anotado.
+Borrar un hito anotado por error es una excepción a que los eventos solo se añaden: se borran
+también los suyos y la etapa se recalcula, como si nunca se hubiera anotado. La otra es deshacer
+«hecha» en una entrevista cuyo día aún no ha llegado: se borra su `interview_done`.
 """
 
 from datetime import date, datetime, time, timedelta
@@ -126,7 +127,9 @@ class PrepInstructionsInput(_Input):
 
 
 class MilestoneStatusChange(_Input):
-    status: Literal["done", "cancelled"]
+    status: Literal["done", "cancelled", "scheduled"] = Field(
+        description="`scheduled` deshace «hecha» en una entrevista cuyo día aún no ha llegado."
+    )
     occurred_at: AwareDatetime | None = None
     note: str | None = Field(default=None, max_length=2000)
 
@@ -353,12 +356,15 @@ def set_milestone_status(
 
     Entrevista hecha: `interview_done`. Cancelar una entrevista o una prueba: `note`. El resto no
     registra eventos. Un hito hecho o cancelado no vuelve atrás: se crea otro. Una entrevista no
-    se da por hecha antes de su día (una prueba sí: se puede entregar antes del plazo).
+    se da por hecha antes de su día (una prueba sí: se puede entregar antes del plazo). La única
+    vuelta atrás, `scheduled`: una entrevista marcada como hecha antes de su día.
     """
     row = milestone_row(session, milestone_id)
+    today = (now or utcnow()).astimezone(local_zone()).date()
+    if change.status == "scheduled":
+        return _undo_interview_done(session, row, today)
     if row.status != "scheduled":
         raise ValueError(f"El hito ya está «{row.status}»; si hay una fecha nueva, crea otro hito.")
-    today = (now or utcnow()).astimezone(local_zone()).date()
     if (
         change.status == "done"
         and row.kind == "interview"
@@ -395,6 +401,51 @@ def set_milestone_status(
     row.sequence += 1
     row.updated_at = utcnow()
     session.flush()
+    return milestone_out(row)
+
+
+def _undo_interview_done(session: Session, row: Milestone, today: date) -> MilestoneOut:
+    """Devuelve a «programada» una entrevista marcada como hecha antes de su día (un clic de más):
+    borra su `interview_done` y recalcula la etapa, como si nunca se hubiera marcado. Una que ya
+    llegó a su día no: si no se celebró, se cancela o se borra."""
+    if row.kind != "interview" or row.status != "done":
+        raise ValueError("Solo se puede deshacer «hecha» en una entrevista marcada como hecha.")
+    if row.starts_at.astimezone(local_zone()).date() <= today:
+        raise ValueError(
+            f"La entrevista fue el {_when(row.starts_at, row.all_day)}: ya no se puede deshacer "
+            "«hecha». Si no llegó a celebrarse, bórrala."
+        )
+    done = [
+        e
+        for e in session.scalars(
+            select(Event).where(
+                Event.job_id == row.job_id, Event.type == EventType.INTERVIEW_DONE.value
+            )
+        )
+        if (e.payload or {}).get("milestone_id") == row.id
+    ]
+    event_ids = [e.id for e in done]
+    try:
+        with session.begin_nested():
+            if event_ids:
+                # Lo que apunta a esos eventos (un borrador de agradecimiento) se queda, sin enlace.
+                for model in (Reply, MessageDraft):
+                    session.execute(
+                        update(model).where(model.event_id.in_(event_ids)).values(event_id=None)
+                    )
+            for event in done:
+                session.delete(event)
+            row.status = "scheduled"
+            row.sequence += 1
+            row.updated_at = utcnow()
+            session.flush()
+            rebuild_projection(session, row.job_id)
+    except InvalidTransitionError as exc:
+        raise InvalidTransitionError(
+            f"No se puede deshacer «hecha» en «{row.title}»: lo que pasó después en la oferta "
+            f"depende de ella ({exc})."
+        ) from exc
+    session.refresh(row)
     return milestone_out(row)
 
 
