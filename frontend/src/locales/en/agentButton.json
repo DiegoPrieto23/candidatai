@@ -24,5 +24,15 @@
   "moreWith": "More ways to launch it (with {{agent}})",
   "onceWith": "Just this once, with:",
   "openWith": "Open with {{agent}}",
-  "warning": "Heads up: {{warning}}"
+  "warning": "Heads up: {{warning}}",
+  "ready": {
+    "cv": "Your CV is ready",
+    "guide": "Your interview guide is ready",
+    "open": "Open PDF",
+    "show": "Show on the job page",
+    "close": "Close notice",
+    "job": "Job {{id}}",
+    "notification": "Open it from CandidatAI.",
+    "watching": "I'll let you know here as soon as it's ready."
+  }
 }

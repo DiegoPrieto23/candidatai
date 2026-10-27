@@ -23366,6 +23366,17 @@
               }
             ],
             "title": "Warning"
+          },
+          "job_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Job Id"
           }
         },
         "type": "object",

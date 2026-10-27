@@ -6,6 +6,7 @@ import { CircleNotchIcon, FlaskIcon, PlusIcon } from '@phosphor-icons/react'
 import { keys, useAgentRuns, useStatus } from '@/api/queries'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { ReadyNotices } from '@/components/ReadyNotices'
 import { UserPrompts } from '@/components/UserPrompts'
 import { Brand, MobileNav, Sidebar } from '@/components/Sidebar'
 
@@ -103,6 +104,7 @@ export function AppShell() {
         </main>
       </div>
       <UserPrompts />
+      <ReadyNotices />
     </div>
   )
 }

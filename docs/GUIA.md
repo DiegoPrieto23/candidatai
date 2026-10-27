@@ -414,6 +414,12 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
 Muchas pantallas tienen botones que abren tu agente con la orden ya escrita:
 
 - **En terminal:** abre una ventana con tu agente; tú ves y apruebas lo que hace.
+- **Aviso de «listo»:** tras «Generar CV» o «Preparar» (de una entrevista), en terminal o en
+  segundo plano, la app comprueba cada 5 segundos, durante 30 minutos, si ya está el CV o la guía.
+  En cuanto está, la ficha se pone al día sola y sale un aviso abajo a la derecha con **Abrir PDF**;
+  si diste permiso de notificaciones y estás en otra ventana, también una notificación del
+  sistema. El PDF no se abre solo: el navegador no deja abrir pestañas sin un clic tuyo. El CV
+  queda además en `data/cvs/` y la guía en `data/entrevistas/`.
 - **En segundo plano** (Claude Code; OpenCode en `process-jobs` y `assess-fit`): para los skills
   que no preguntan (`process-jobs`, `assess-fit`, `generate-cv`). Corre sin ventana, solo con las
   herramientas de la app que necesita, y ves el progreso y el uso en la página «Agente». Si tu

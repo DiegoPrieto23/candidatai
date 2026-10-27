@@ -283,7 +283,8 @@ las más recientes primero.
   nueva entra solo con `update-profile` y la confirmación del usuario.
 - Botones de la ficha: «Preparar» y «Simulacro» en una entrevista programada por
   empezar, «Repasar» en una que ya ha empezado y «Dudas antes de aceptar» con un `offer_received`.
-  `POST /agent/launch` acepta `milestone_id` (entero) para las tres primeras. Las indicaciones de
+  `POST /agent/launch` acepta `milestone_id` (entero) para las tres primeras y devuelve `job_id`
+  (la oferta del hito), donde la UI vigila si ya está la guía para avisar. Las indicaciones de
   la entrevista no van en la orden (solo lleva ids): se guardan en el hito desde la UI y el skill
   las lee con `get_interviews`. Ninguna herramienta las escribe.
 

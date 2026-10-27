@@ -4986,6 +4986,8 @@ export interface components {
             message: string;
             /** Warning */
             warning?: string | null;
+            /** Job Id */
+            job_id?: number | null;
         };
         /** LetterParagraph */
         LetterParagraph: {

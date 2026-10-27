@@ -100,6 +100,9 @@ class LaunchResult(BaseModel):
     prompt: str
     message: str
     warning: str | None = None  # p. ej. un agente de nivel C con contenido no confiable
+    # La oferta de la orden (con una entrevista, la del hito): la UI vigila ahí lo que deje el
+    # agente (el CV, la carta, la guía) para avisar en cuanto esté.
+    job_id: int | None = None
 
 
 @dataclass(frozen=True)
@@ -553,9 +556,11 @@ def launch(
     """Abre el agente en una terminal con la orden de `action`. No espera a que termine. `agent`,
     `model` y `preset`: la elección puntual del botón (si no, las preferencias)."""
     spec = ACTIONS[action]
-    prompt, _, _ = check_target(session, action, job_id, milestone_id, profile_item, upload)
+    prompt, job_id, _ = check_target(session, action, job_id, milestone_id, profile_item, upload)
     picked = pick(session, action, prompt, agent=agent, model=model, preset=preset)
-    return _open(spec.label, prompt, picked, picked.command, prompt)
+    result = _open(spec.label, prompt, picked, picked.command, prompt)
+    result.job_id = job_id
+    return result
 
 
 def model_label(model: str | None, preset: str | None) -> str | None:

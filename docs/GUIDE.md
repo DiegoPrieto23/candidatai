@@ -420,6 +420,12 @@ The worker runs the automatic sources every day at `connectors.daily_at`
 Many pages have buttons that open your agent with the instruction already written:
 
 - **In a terminal:** opens a window with your agent; you see and approve what it does.
+- **"Ready" notice:** after **Generate CV** or **Prepare** (on an interview), in a terminal or in
+  the background, the app checks every 5 seconds, for 30 minutes, whether the CV or the guide is
+  there. As soon as it is, the job page updates by itself and a notice appears at the bottom right
+  with **Open PDF**; if you allowed notifications and are in another window, a system notification
+  too. The PDF doesn't open by itself: browsers don't open tabs without a click from you. The CV
+  is also saved in `data/cvs/` and the guide in `data/entrevistas/`.
 - **In the background** (Claude Code; OpenCode for `process-jobs` and `assess-fit`): for skills
   that don't ask questions (`process-jobs`, `assess-fit`, `generate-cv`). It runs without a
   window, only with the app tools it needs, and you follow its progress and usage on the **Agent**
