@@ -10,6 +10,9 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Aviso cuando el CV o la guía están listos:** tras «Generar CV» o «Preparar» una entrevista,
+  la ficha se pone al día sola en cuanto tu agente los deja y sale un aviso con «Abrir PDF»
+  (y una notificación del sistema si estás en otra ventana y la tienes permitida). Sin F5.
 - **Borrar un hito anotado por error:** cada entrevista, prueba, plazo u otro hito tiene una
   papelera. Tras confirmar (te dice si se pierden la guía, el plan o el repaso), desaparece de
   la ficha, del historial y del embudo, y la etapa de la oferta se recalcula. Para lo que sí

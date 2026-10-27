@@ -29,6 +29,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { blockedText, COPY_PROMPT_CODES, warningText } from '@/lib/agentText'
 import { errorMessage } from '@/lib/errors'
+import { WATCHED_ACTIONS, watchFor } from '@/lib/readyWatch'
 import { cn } from '@/lib/utils'
 
 type Feedback = {
@@ -120,7 +121,9 @@ export function AgentButton({
       onSuccess: (result) => {
         const opened = t('opened', { agent: result.agent })
         const warning = result.warning ? warningText(result) : null
-        show({ tone: 'ok', text: warning ? `${opened} ${t('warning', { warning })}` : opened })
+        const watched = WATCHED_ACTIONS[action] ? ` ${t('ready.watching')}` : ''
+        show({ tone: 'ok', text: (warning ? `${opened} ${t('warning', { warning })}` : opened) + watched })
+        watchFor(action, result.job_id ?? jobId, milestoneId)
       },
       onError: async (error) => {
         const prompt = error instanceof ApiError ? error.details.find((d) => d.field === 'prompt')?.received : null
@@ -140,12 +143,14 @@ export function AgentButton({
 
   const runInBackground = (agentName?: string) =>
     startRun.mutate(agentName ? { ...target, agent: agentName } : target, {
-      onSuccess: (result) =>
+      onSuccess: (result) => {
         show({
           tone: 'ok',
           text: result.status === 'running' ? t('alreadyRunning') : t('queued'),
           link: true,
-        }),
+        })
+        watchFor(action, result.job_id ?? jobId, milestoneId)
+      },
       onError: (error) => failed(error, t('backgroundFailed')),
     })
 

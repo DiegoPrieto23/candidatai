@@ -240,12 +240,15 @@ export function useConfirmJobOpen() {
   })
 }
 
-/** CV vigente de la oferta (contenido, verificación y renders); `cv: null` si aún no tiene. */
-export function useJobCv(jobId: number, enabled = true) {
+/** CV vigente de la oferta (contenido, verificación y renders); `cv: null` si aún no tiene.
+ * `poll`: cada cuántos ms volver a pedirlo, también con la pestaña en segundo plano (avisos). */
+export function useJobCv(jobId: number, enabled = true, poll?: number) {
   return useQuery({
     queryKey: keys.cv(jobId),
     queryFn: () => unwrap(api.GET('/jobs/{job_id}/cv', { params: { path: { job_id: jobId } } })),
     enabled: enabled && Number.isInteger(jobId) && jobId > 0,
+    refetchInterval: poll,
+    refetchIntervalInBackground: poll !== undefined,
   })
 }
 
@@ -587,12 +590,14 @@ export function useCalendar(start: string, end: string) {
   })
 }
 
-export function useJobProcess(jobId: number, enabled = true) {
+export function useJobProcess(jobId: number, enabled = true, poll?: number) {
   return useQuery({
     queryKey: keys.process(jobId),
     queryFn: () =>
       unwrap(api.GET('/jobs/{job_id}/process', { params: { path: { job_id: jobId } } })),
     enabled: enabled && Number.isInteger(jobId) && jobId > 0,
+    refetchInterval: poll,
+    refetchIntervalInBackground: poll !== undefined,
   })
 }
 

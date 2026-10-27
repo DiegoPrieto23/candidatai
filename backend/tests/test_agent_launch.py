@@ -324,6 +324,7 @@ def test_prepare_and_mock_need_an_upcoming_interview(
     )
     assert response.status_code == 202
     assert opened[-1][1].endswith(f"entrevista {upcoming} de la oferta {job_id}.'")
+    assert response.json()["job_id"] == job_id  # la UI vigila ahí la guía
 
     response = client.post(
         "/agent/launch", json={"action": action, "milestone_id": past}, headers=JSON

@@ -45,7 +45,7 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 
 | Feature | Where | Screenshot |
 |---|---|---|
-| **Tailored CV**: your agent writes it citing evidence from your profile for every line; the code rejects what isn't there and a separate role verifies it | `generate-cv` | |
+| **Tailored CV**: your agent writes it citing evidence from your profile for every line; the code rejects what isn't there and a separate role verifies it; the job page shows a notice with the PDF as soon as it's ready | `generate-cv` | |
 | **Same content, any design**: template, photo, colour and sections in the job page, rendered in seconds without the agent; compare renders and mark the one you send; the PDF layout is checked | `/jobs/:id` | [CV](img/en/job-cv.webp) · [▶ Another design](img/en/anim/cv.webp) |
 | **Cover letter** following your general and per-job instructions, verified, as TXT and PDF matching the CV design; edit it by hand if you want | `generate-cover-letter` | [Letter](img/en/job-letter.webp) |
 | **CV templates**: built-in (Word and HTML) and yours; "My CV" side by side with your profile | `/plantillas` | [Templates](img/en/templates.webp) |
