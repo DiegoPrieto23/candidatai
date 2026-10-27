@@ -120,6 +120,8 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ### Corregido
 - **Una entrevista ya no se puede dar por hecha antes de su día:** el ✓ de una entrevista futura está
   desactivado (te dice desde cuándo podrás). Un clic de más la sacaba de «Próximos 7 días» en Inicio.
+  Si ya marcaste alguna antes de su día, la flecha ↺ junto a ella la devuelve a programada, sin
+  perder su guía ni su plan.
 - **La app ya no puede salir en blanco en algunos Windows:** si el registro de Windows tenía mal el
   tipo de los ficheros `.js`, el navegador se negaba a ejecutar la interfaz. Ahora se sirven
   siempre con el tipo correcto.

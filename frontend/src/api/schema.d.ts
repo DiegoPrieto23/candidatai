@@ -5767,9 +5767,10 @@ export interface components {
         MilestoneStatusChange: {
             /**
              * Status
+             * @description `scheduled` deshace «hecha» en una entrevista cuyo día aún no ha llegado.
              * @enum {string}
              */
-            status: "done" | "cancelled";
+            status: "done" | "cancelled" | "scheduled";
             /** Occurred At */
             occurred_at?: string | null;
             /** Note */

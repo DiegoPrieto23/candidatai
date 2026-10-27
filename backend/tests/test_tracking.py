@@ -147,6 +147,41 @@ def test_interview_is_not_done_before_its_day(session: Session, job_at) -> None:
     assert early.status == "done"
 
 
+def test_undo_done_on_an_interview_before_its_day(session: Session, job_at) -> None:
+    """Las marcadas como hechas antes de su día (de antes de esa regla) vuelven a «programada» y se
+    borra su `interview_done`; una que ya llegó a su día, no, y lo que no es una entrevista
+    hecha, tampoco."""
+    job = job_at(Stage.APPLIED)
+    later = process.create_milestone(session, job.id, interview(starts_at=_at(2)))
+    # Marcada como hecha el día de la entrevista, se deshace dos días antes.
+    process.set_milestone_status(
+        session, later.id, process.MilestoneStatusChange(status="done"), now=_at(2)
+    )
+    undone = process.set_milestone_status(
+        session, later.id, process.MilestoneStatusChange(status="scheduled"), now=NOW
+    )
+    assert undone.status == "scheduled"
+    done_events = session.scalars(
+        select(Event).where(Event.job_id == job.id, Event.type == "interview_done")
+    ).all()
+    assert done_events == []
+    upcoming = tracking.list_upcoming(session, days=7, now=NOW).items
+    assert [i.milestone_id for i in upcoming if i.kind == "interview"] == [later.id]
+
+    with pytest.raises(ValueError, match="marcada como hecha"):
+        process.set_milestone_status(
+            session, later.id, process.MilestoneStatusChange(status="scheduled"), now=NOW
+        )
+    today = process.create_milestone(session, job.id, interview(starts_at=NOW + timedelta(hours=8)))
+    process.set_milestone_status(
+        session, today.id, process.MilestoneStatusChange(status="done"), now=NOW
+    )
+    with pytest.raises(ValueError, match="ya no se puede"):
+        process.set_milestone_status(
+            session, today.id, process.MilestoneStatusChange(status="scheduled"), now=NOW
+        )
+
+
 def test_milestone_end_must_follow_start() -> None:
     with pytest.raises(ValueError, match="posterior"):
         interview(ends_at=_at(1))

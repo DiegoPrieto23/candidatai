@@ -176,6 +176,31 @@ describe('Sección Proceso de la ficha', () => {
     expect(within(section).getByRole('button', { name: 'Marcar «RR. HH.» como hecho' })).toBeEnabled()
   })
 
+  it('deshace «hecha» en una entrevista marcada antes de su día', async () => {
+    const calls = mockApi({
+      'GET /status': status(),
+      'GET /jobs/1': jobView({ stage: 'in_process' }),
+      'GET /jobs/1/process': processView({
+        stage: 'in_process',
+        milestones: [
+          milestone(5, { kind: 'interview', title: 'Técnica', status: 'done', starts_at: '2099-01-15T10:00:00Z' }),
+          milestone(6, { kind: 'interview', title: 'RR. HH.', status: 'done', starts_at: '2020-01-15T10:00:00Z' }),
+        ],
+      }),
+      'POST /milestones/5/status': milestone(5, { kind: 'interview', title: 'Técnica' }),
+    })
+    renderApp('/jobs/1?tab=process')
+    const section = await screen.findByRole('region', { name: 'Proceso' })
+    const undo = await within(section).findByRole('button', {
+      name: 'Deshacer «hecha» en «Técnica»: aún no ha llegado su día',
+    })
+    expect(within(section).queryByRole('button', { name: /Deshacer «hecha» en «RR\. HH\.»/ })).toBeNull()
+    await userEvent.click(undo)
+    await waitFor(() =>
+      expect(calls.find((c) => c.path === '/milestones/5/status')?.body).toEqual({ status: 'scheduled' }),
+    )
+  })
+
   it('anota un seguimiento enviado', async () => {
     const calls = mockApi({
       'GET /status': status(),

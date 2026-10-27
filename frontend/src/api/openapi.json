@@ -25756,9 +25756,11 @@
             "type": "string",
             "enum": [
               "done",
-              "cancelled"
+              "cancelled",
+              "scheduled"
             ],
-            "title": "Status"
+            "title": "Status",
+            "description": "`scheduled` deshace «hecha» en una entrevista cuyo día aún no ha llegado."
           },
           "occurred_at": {
             "anyOf": [

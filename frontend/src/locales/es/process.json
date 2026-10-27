@@ -20,6 +20,7 @@
     "edit": "Editar «{{title}}»",
     "done": "Marcar «{{title}}» como hecho",
     "doneLater": "Podrás marcarla como hecha a partir del día de la entrevista",
+    "undoDone": "Deshacer «hecha» en «{{title}}»: aún no ha llegado su día",
     "cancel": "Cancelar «{{title}}»",
     "delete": "Borrar «{{title}}»"
   },
