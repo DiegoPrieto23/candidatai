@@ -415,7 +415,7 @@ export function AgentsSection() {
             {t('byAction')}
           </h3>
           <p className="mb-2 text-sm text-muted-foreground">{t('byActionIntro')}</p>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto overflow-y-hidden">
             <table className="w-full min-w-[36rem]">
               <thead>
                 <tr className="text-left text-xs font-medium tracking-wide text-muted-foreground uppercase">

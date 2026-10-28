@@ -373,7 +373,7 @@ export function SkillsPage() {
           <p className="text-sm text-muted-foreground">
             {t('summary', { count: data.gaps.length, jobs: data.jobs_considered, days: data.days })}
           </p>
-          <div className="mt-4 overflow-x-auto">
+          <div className="mt-4 overflow-x-auto overflow-y-hidden">
             <table className="w-full text-sm sm:min-w-[36rem]" aria-label={t('tableLabel')}>
               {/* En el móvil solo quedan los dos órdenes, en una línea. */}
               <thead>

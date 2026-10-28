@@ -123,7 +123,7 @@ function FieldsTable({ fields }: { fields: FieldReport[] }) {
   const { t } = useTranslation('apply')
   if (fields.length === 0) return null
   return (
-    <div className="overflow-x-auto rounded-lg border">
+    <div className="overflow-x-auto overflow-y-hidden rounded-lg border">
       <table className="w-full text-left text-sm">
         <caption className="sr-only">{t('fields.caption')}</caption>
         <thead className="bg-muted/50 text-xs text-muted-foreground">

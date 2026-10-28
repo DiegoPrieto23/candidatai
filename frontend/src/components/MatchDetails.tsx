@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { serverText } from '@/lib/i18n'
 import { isSemanticNotInstalled, scoreNote } from '@/lib/scoreNotes'
 import { AgentButton } from '@/components/AgentButton'
-import { SemanticMatchingNote } from '@/components/SemanticMatching'
+import { SemanticScoreHint } from '@/components/SemanticMatching'
 import { useSalaryGap } from '@/api/queries'
 import { COMPONENT_LABEL, HARD_FILTER_LABEL, LEVEL_LABEL, VERDICT_LABEL, formatMoney } from '@/lib/labels'
 import { cn } from '@/lib/utils'
@@ -240,6 +240,7 @@ export function MatchDetails({ match, assessMinScore }: { match: MatchView; asse
   const b = match.breakdown
   return (
     <div className="space-y-6">
+      <SemanticScoreHint match={match} />
       <FilterFailures failures={match.hard_filters.failures} jobId={match.job_id} />
       <Section title={t('sections.breakdown')}>
         <Components components={b.components} />
@@ -250,11 +251,14 @@ export function MatchDetails({ match, assessMinScore }: { match: MatchView; asse
       <Section title={t('sections.niceToHave')}>
         <SkillCoverage coverage={b.nice_to_have} />
       </Section>
-      {b.notes.length > 0 && (
+      {/* «Sin instalar» ya sale arriba, junto al score (`SemanticScoreHint`). */}
+      {b.notes.some((note) => !isSemanticNotInstalled(note)) && (
         <ul className="space-y-1 text-xs text-muted-foreground">
-          {b.notes.map((note) => (
-            <li key={note}>{isSemanticNotInstalled(note) ? <SemanticMatchingNote /> : scoreNote(note)}</li>
-          ))}
+          {b.notes
+            .filter((note) => !isSemanticNotInstalled(note))
+            .map((note) => (
+              <li key={note}>{scoreNote(note)}</li>
+            ))}
         </ul>
       )}
       <Section title={t('sections.assessment')}>

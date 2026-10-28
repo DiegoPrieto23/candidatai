@@ -301,7 +301,7 @@ function BreakdownTable({
   const { t } = useTranslation('funnel', { keyPrefix: 'cols' })
   const withCost = rows.some((r) => r.spend !== undefined)
   return (
-    <div className="-mx-1 overflow-x-auto">
+    <div className="-mx-1 overflow-x-auto overflow-y-hidden">
       <table className="w-full min-w-[34rem] text-sm">
         <caption className="sr-only">{caption}</caption>
         <thead>
@@ -624,7 +624,7 @@ function IntervalBar({ interval }: { interval: CalibrationGroup['reply_rate'] })
 function CalibrationTable({ caption, tab, groups }: { caption: string; tab: CalibrationTab; groups: CalibrationGroup[] }) {
   const { t } = useTranslation('funnel', { keyPrefix: 'calibration' })
   return (
-    <div className="-mx-1 overflow-x-auto">
+    <div className="-mx-1 overflow-x-auto overflow-y-hidden">
       <table className="w-full min-w-[36rem] text-sm">
         <caption className="sr-only">{caption}</caption>
         <thead>

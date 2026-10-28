@@ -78,7 +78,7 @@ export function ReceivedOffersComparison() {
         {floor != null ? t('floor', { amount: formatMoney(floor) }) : t('noFloor')}
         {t('private')}
       </p>
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto overflow-y-hidden">
         <table className="w-full min-w-[32rem] text-sm">
           <thead>
             <tr className="border-b text-left">

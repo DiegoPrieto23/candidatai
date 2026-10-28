@@ -442,7 +442,7 @@ function StageFilter({ stage, onChange }: { stage: Stage | undefined; onChange: 
     ...STAGES.map((s) => ({ key: s, label: STAGE_LABEL[s], count: data?.by_stage[s] })),
   ]
   return (
-    <nav aria-label={t('filterStage')} className="-mx-4 mb-3 overflow-x-auto px-4 pb-3 sm:mx-0 sm:px-0">
+    <nav aria-label={t('filterStage')} className="scroll-row -mx-4 mb-3 px-4 pb-3 sm:mx-0 sm:px-0">
       <ul className="flex min-w-max gap-1.5">
         {items.map(({ key, label, count }) => {
           const selected = stage === key

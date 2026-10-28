@@ -217,7 +217,7 @@ function Board({ columns, moves }: { columns: { stage: Stage; cards: BoardCard[]
           },
         }}
       >
-        <div className="-mx-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0">
+        <div className="-mx-4 overflow-x-auto overflow-y-hidden px-4 pb-2 sm:mx-0 sm:px-0">
           <div className="flex min-w-max gap-3 lg:grid lg:min-w-0 lg:grid-cols-5">
             {columns.map((column) => (
               <Column key={column.stage} stage={column.stage} total={column.total} empty={column.cards.length === 0}>

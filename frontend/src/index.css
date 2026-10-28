@@ -139,6 +139,16 @@
   .tabular {
     font-variant-numeric: tabular-nums;
   }
+  /* Fila que se desplaza en horizontal (pestañas, filtros) sin barra: con zoom, una fracción de
+     píxel de más en vertical hacía que Windows pintara una barra con flechas que no sirve. */
+  .scroll-row {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+  }
+  .scroll-row::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

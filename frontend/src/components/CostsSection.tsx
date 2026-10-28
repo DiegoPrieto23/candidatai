@@ -40,7 +40,7 @@ function GroupTable({ caption, groups, withInstructions }: { caption: string; gr
   const heads = [t('runs'), t('avgTokens'), t('avgDuration'), t('cost'), t('avgCost')]
   if (withInstructions) heads.push(t('instructions'))
   return (
-    <div className="-mx-1 overflow-x-auto">
+    <div className="-mx-1 overflow-x-auto overflow-y-hidden">
       <table className="w-full min-w-[36rem] text-sm">
         <caption className="sr-only">{caption}</caption>
         <thead>
