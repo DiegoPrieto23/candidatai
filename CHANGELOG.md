@@ -9,6 +9,8 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 
 ## [Sin publicar]
 
+## [0.3.0] - 2026-10-28
+
 ### Añadido
 - **Primeros pasos en Inicio:** con la app recién instalada, Inicio te propone los dos pasos para
   empezar, con su botón: subir tu CV para que tu agente cree tu perfil y elegir dónde buscar con tu
@@ -269,6 +271,7 @@ y las reglas (qué se envía, qué se inventa, qué ve tu agente) las aplica el 
   solo se guardan en `.env`), y no tiene herramientas para escribir tu perfil.
 - Los instaladores no instalan una release cuya suma SHA-256 no coincide con la publicada.
 
-[Sin publicar]: https://github.com/DiegoPrieto23/candidatai/compare/v0.2.0...HEAD
+[Sin publicar]: https://github.com/DiegoPrieto23/candidatai/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/DiegoPrieto23/candidatai/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/DiegoPrieto23/candidatai/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/DiegoPrieto23/candidatai/releases/tag/v0.1.0
