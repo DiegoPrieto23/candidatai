@@ -72,6 +72,17 @@
         "title": "Meaning-based comparison: not available",
         "body": "It cannot be installed in Docker: the image does not include it. The score works the same without it."
       }
+    },
+    "score": {
+      "active": "With meaning-based comparison: your profile (headline, summary and achievements) and this job are {{pct}}% alike. It counts in the breakdown's “Similarity”.",
+      "off": {
+        "title": "Score without meaning-based comparison",
+        "body": "Right now it only counts your skills by name. Install it and the score also compares the meaning of your profile with the job, for a finer fit."
+      },
+      "failed": {
+        "title": "Score without meaning-based comparison",
+        "body": "The installation failed, so the score only counts your skills by name. See the error and try again for a finer fit."
+      }
     }
   },
   "assessAgain": "Assess again"

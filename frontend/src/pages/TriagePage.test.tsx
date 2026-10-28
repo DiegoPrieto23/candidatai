@@ -311,7 +311,26 @@ describe('Comparación por significado', () => {
     mockTriage([item], { 'GET /matching/semantic': { ...extraStatus, in_docker: true } })
     renderApp('/por-revisar')
     const detail = await screen.findByRole('article')
-    expect(await within(detail).findByText('Comparación por significado: no disponible')).toBeInTheDocument()
+    await within(detail).findByText('Desglose')
+    expect(within(detail).queryByText('Score sin comparación por significado')).not.toBeInTheDocument()
     expect(within(detail).queryByRole('button', { name: 'Qué aporta y cómo activarla' })).not.toBeInTheDocument()
+  })
+
+  it('junto al score avisa de que sin ella el encaje es menos fino y, con ella, dice cuánto se parecen', async () => {
+    const without = triageItem(1, 60, {
+      match: matchView({ score: 60, breakdown: { ...matchView().breakdown, notes: [notInstalled] } }),
+    })
+    const semantic = { model: 'paraphrase-multilingual-MiniLM-L12-v2', cosine: 0.61, value: 0.72 }
+    const withIt = triageItem(2, 55, { match: matchView({ score: 55, breakdown: { ...matchView().breakdown, semantic } }) })
+    mockTriage([without, withIt], { 'GET /matching/semantic': extraStatus })
+    renderApp('/por-revisar')
+    let detail = await screen.findByRole('article')
+    expect(await within(detail).findByText('Score sin comparación por significado')).toBeInTheDocument()
+    expect(within(detail).getByText(/el encaje sale más fino/)).toBeInTheDocument()
+    expect(within(detail).queryAllByText(/instala el extra/)).toHaveLength(0) // la nota técnica ya no sale
+    await userEvent.keyboard('j')
+    await waitFor(() => expect(within(screen.getByRole('article')).getByText(/se parecen un 72 %/)).toBeInTheDocument())
+    detail = screen.getByRole('article')
+    expect(within(detail).queryByText('Score sin comparación por significado')).not.toBeInTheDocument()
   })
 })

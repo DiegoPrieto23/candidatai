@@ -49,6 +49,12 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   cómo arrancarla desde la terminal (`cai start`) o con Docker.
 
 ### Cambiado
+- **Comparación por significado junto al score:** si no está instalada, debajo del score de cada
+  oferta sale el aviso de que instalándola el encaje sale más fino, con el botón para hacerlo. Si
+  está activa, dice cuánto se parecen tu perfil y la oferta: así se ve que funciona.
+- **Sin flechas de scroll en las pestañas:** la fila de pestañas de la ficha y de «Mi perfil» y los
+  filtros de la Bandeja ya no enseñan una barra con flechas que no servía (salía con zoom en
+  Windows). Las tablas tampoco.
 - **Botones de icono con explicación:** al pasar el ratón (o enfocar con el teclado) por los
   botones de un hito (descargar para el calendario, editar, hecho, cancelar, deshacer «hecha»,
   borrar), de un contacto y de anterior/siguiente en el calendario, sale qué hace cada uno.

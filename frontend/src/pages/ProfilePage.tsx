@@ -179,7 +179,7 @@ function Editor() {
     <Tabs defaultValue="about" className="gap-4">
       <FileIssues />
       {/* En móvil, la fila se desplaza en vez de partirse en dos. */}
-      <TabsList className="w-full justify-start gap-1 overflow-x-auto">
+      <TabsList className="scroll-row w-full justify-start gap-1">
         {TABS.map((tab) => (
           <TabsTrigger key={tab} value={tab} className="h-8 flex-none px-2.5">
             {t(`tabs.${tab}`)}

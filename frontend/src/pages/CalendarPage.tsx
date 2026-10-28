@@ -355,7 +355,7 @@ function TimeGrid({ days, items, onOpen }: { days: Day[]; items: CalendarItem[];
     dateFormatter({ timeZone: 'UTC', hour: '2-digit', minute: '2-digit' }).format(new Date(Date.UTC(2026, 0, 1, h)))
 
   return (
-    <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+    <div className="-mx-4 overflow-x-auto overflow-y-hidden px-4 sm:mx-0 sm:px-0">
       <div className={cn('overflow-hidden rounded-xl border bg-card', days.length > 1 && 'min-w-[44rem]')}>
         <div className="grid border-b bg-muted/40" style={cols}>
           <div />

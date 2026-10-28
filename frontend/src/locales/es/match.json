@@ -72,6 +72,17 @@
         "title": "Comparación por significado: no disponible",
         "body": "En Docker no se puede instalar: la imagen no la trae. El score funciona igual sin ella."
       }
+    },
+    "score": {
+      "active": "Con comparación por significado: tu perfil (titular, resumen y logros) y esta oferta se parecen un {{pct}} %. Cuenta en la «Similitud» del desglose.",
+      "off": {
+        "title": "Score sin comparación por significado",
+        "body": "Ahora solo cuenta tus skills por su nombre. Si la instalas, el score también compara el sentido de tu perfil con el de la oferta y el encaje sale más fino."
+      },
+      "failed": {
+        "title": "Score sin comparación por significado",
+        "body": "La instalación falló, así que el score solo cuenta tus skills por su nombre. Mira el error y vuelve a intentarlo para lograr un encaje más fino."
+      }
     }
   },
   "assessAgain": "Volver a valorar"

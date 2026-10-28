@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CheckCircleIcon, CircleNotchIcon, SparkleIcon, WarningCircleIcon } from '@phosphor-icons/react'
+import type { MatchView } from '@/api/client'
 import { useInstallSemanticMatching, useSemanticMatching } from '@/api/queries'
 import { Button } from '@/components/ui/button'
 import {
@@ -32,7 +33,7 @@ function useSemanticState(): State | undefined {
  * Lo que está pasando, bien a la vista: instalándose (con el aviso de que tarda y se puede seguir
  * usando la app), instalada, fallida o sin activar. Con el botón para ver qué aporta e instalarla.
  */
-function SemanticStatus({ state, compact }: { state: State; compact?: boolean }) {
+function SemanticStatus({ state, compact, prefix = 'semantic.state' }: { state: State; compact?: boolean; prefix?: string }) {
   const { t } = useTranslation('match')
   const [open, setOpen] = useState(false)
   const tone = {
@@ -60,8 +61,8 @@ function SemanticStatus({ state, compact }: { state: State; compact?: boolean })
     >
       {icon}
       <div className="min-w-0 flex-1 space-y-1">
-        <p className="font-medium text-foreground">{t(`semantic.state.${state}.title`)}</p>
-        <p className="text-muted-foreground">{t(`semantic.state.${state}.body`)}</p>
+        <p className="font-medium text-foreground">{t(`${prefix}.${state}.title` as never)}</p>
+        <p className="text-muted-foreground">{t(`${prefix}.${state}.body` as never)}</p>
         {action && (
           <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => setOpen(true)}>
             <SparkleIcon weight="duotone" className="text-primary" />
@@ -74,11 +75,26 @@ function SemanticStatus({ state, compact }: { state: State; compact?: boolean })
   )
 }
 
-/** En el desglose del score, en lugar de la nota «sin instalar». */
-export function SemanticMatchingNote() {
+/**
+ * Junto al score de una oferta: si se calculó con la comparación por significado, cuánto se
+ * parecen tu perfil y la oferta (así se ve que está activa y leyendo tu perfil); si no, el aviso
+ * de que instalándola el encaje sale más fino, o que se está instalando.
+ */
+export function SemanticScoreHint({ match }: { match: MatchView }) {
+  const { t } = useTranslation('match')
   const state = useSemanticState()
-  if (!state) return null
-  return <SemanticStatus state={state} compact />
+  const semantic = match.breakdown.semantic
+  if (semantic) {
+    return (
+      <p className="flex items-start gap-2 text-sm text-muted-foreground">
+        <SparkleIcon className="mt-0.5 size-4 shrink-0 text-primary" weight="duotone" aria-hidden />
+        <span>{t('semantic.score.active', { pct: Math.round(semantic.value * 100) })}</span>
+      </p>
+    )
+  }
+  if (state === 'off' || state === 'failed') return <SemanticStatus state={state} compact prefix="semantic.score" />
+  if (state === 'installing') return <SemanticStatus state={state} compact />
+  return null
 }
 
 /** En la página «Agente»: la opción siempre a mano, esté como esté. */

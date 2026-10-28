@@ -602,7 +602,7 @@ function JobTabs({ job }: { job: JobView }) {
     )
   return (
     <Tabs value={current} onValueChange={choose} className="gap-6">
-      <div className="-mx-4 overflow-x-auto border-b px-4 sm:mx-0 sm:px-0">
+      <div className="scroll-row -mx-4 border-b px-4 sm:mx-0 sm:px-0">
         <TabsList variant="line" className="h-10 gap-5">
           {tabs.map((tab) => (
             <TabsTrigger key={tab} value={tab} className="flex-none px-0.5">

@@ -202,8 +202,8 @@ pnpm build                             # la UI compilada que sirve `cai start`
 ```
 
 Opcional: la similitud semántica local («comparación por significado»: trae torch, 1-2 GB). Se
-instala desde la UI: en la página **Agente**, sección «Comparación por significado» (o en el desglose
-del score de cualquier oferta), «Qué aporta y cómo activarla» → «Instalar». Mientras se instala, ahí
+instala desde la UI: en la página **Agente**, sección «Comparación por significado» (o junto al score
+de cualquier oferta, donde avisa si falta), «Qué aporta y cómo activarla» → «Instalar». Mientras se instala, ahí
 mismo lo pone. La elección se guarda en tus datos: se usa en todas las ofertas desde entonces y, si
 actualizas la app (o haces `uv sync` sin el extra), el worker la vuelve a instalar al arrancar. A
 mano: `uv sync --extra matching`. Sin ella el score funciona igual, sin ese componente.
