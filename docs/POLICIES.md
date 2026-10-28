@@ -276,6 +276,9 @@ Una oferta puede encajar en el papel y aun así no merecer la pena. El código m
   ejecuciones a la vez (1 por defecto), nunca dos de la misma oferta ni dos lotes de la misma
   acción, cada una con su techo de herramientas. «Evaluar encaje» en segundo plano solo valora las
   ofertas con score ≥ el umbral de la página «Agente» (por defecto, el umbral de score menos 10).
+  «Valorar encaje» de una sola oferta (desde su ficha) no mira el umbral: lo pide el usuario para
+  esa oferta. La UI solo lo ofrece si no tiene valoración o la tiene desfasada; con una vigente y
+  los mismos datos, repetirla solo gasta y el veredicto variaría al azar.
   `max_parallel` y `per_agent` se leen al arrancar: tras cambiarlos, reinicia `cai worker`.
 
 ## 7. Estilo de redacción

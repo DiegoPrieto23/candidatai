@@ -10,6 +10,10 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Valorar el encaje de una oferta desde su ficha:** en «Valoración del agente», «Valorar encaje»
+  si aún no tiene valoración (p. ej. su score quedó por debajo del umbral del segundo plano) y
+  «Volver a valorar» si la tiene desfasada (cambió tu perfil, la oferta o el score). Con una
+  valoración al día no sale: con los mismos datos solo gastaría y el veredicto variaría al azar.
 - **Comparación por significado desde la UI:** en el desglose del score, «Qué aporta y cómo
   activarla» explica qué mejora (sinónimos, ofertas en otro idioma, el 30 % del score que es la
   «Similitud») y la instala con un botón, en segundo plano. Es permanente: se usa en todas las

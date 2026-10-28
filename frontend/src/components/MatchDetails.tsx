@@ -5,6 +5,7 @@ import type { MatchView, Schemas } from '@/api/client'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { serverText } from '@/lib/i18n'
 import { isSemanticNotInstalled, scoreNote } from '@/lib/scoreNotes'
+import { AgentButton } from '@/components/AgentButton'
 import { SemanticMatchingNote } from '@/components/SemanticMatching'
 import { useSalaryGap } from '@/api/queries'
 import { COMPONENT_LABEL, HARD_FILTER_LABEL, LEVEL_LABEL, VERDICT_LABEL, formatMoney } from '@/lib/labels'
@@ -120,6 +121,7 @@ function SkillCoverage({ coverage }: { coverage: Schemas['SkillCoverage'] }) {
 
 function Assessment({ match, assessMinScore }: { match: MatchView; assessMinScore?: number }) {
   const { t } = useTranslation('match')
+  const { t: tAgent } = useTranslation('agent')
   const a = match.assessment
   if (!a) {
     // Fase 25.4: por debajo del umbral, «Evaluar encaje» en segundo plano no la valora.
@@ -141,6 +143,11 @@ function Assessment({ match, assessMinScore }: { match: MatchView; assessMinScor
             {t('belowAssessThreshold', { score: match.score, threshold: assessMinScore })}
           </p>
         )}
+        <div className="pl-6">
+          <AgentButton action="assess-fit-job" jobId={match.job_id}>
+            {tAgent('actions.assess-fit-job')}
+          </AgentButton>
+        </div>
       </div>
     )
   }
@@ -166,6 +173,12 @@ function Assessment({ match, assessMinScore }: { match: MatchView; assessMinScor
           </span>
         )}
       </p>
+      {/* Solo desfasada: con los mismos datos, volver a valorar gasta y el veredicto varía al azar. */}
+      {match.assessment_stale && (
+        <AgentButton action="assess-fit-job" jobId={match.job_id}>
+          {t('assessAgain')}
+        </AgentButton>
+      )}
       <p className="text-sm leading-relaxed text-foreground/90">{a.rationale}</p>
       {a.risks.length > 0 && (
         <ul className="space-y-1 text-sm text-foreground/85">

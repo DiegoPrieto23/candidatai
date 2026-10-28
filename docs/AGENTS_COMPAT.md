@@ -361,9 +361,9 @@ se deshabilita con un agente sin `web`. Lee READMEs de terceros, así que con un
 avisa de usar una sesión dedicada solo a eso.
 
 ### Botones «en tu agente» de la UI
-«Buscar ofertas», «Procesar ofertas», «Evaluar encaje», «Generar CV», en la página Skills
-(fase 14) «Añadir al perfil las que tengo» (`update-profile`) y «Plan de formación», y desde
-la fase 15 «Revisar respuestas» (Inicio y «Respuestas»), «Redactar borradores» (Procesos) y
+«Buscar ofertas», «Procesar ofertas», «Evaluar encaje» (y «Valorar encaje» de una oferta),
+«Generar CV», en la página Skills (fase 14) «Añadir al perfil las que tengo» (`update-profile`)
+y «Plan de formación», y desde la fase 15 «Revisar respuestas» (Inicio y «Respuestas»), «Redactar borradores» (Procesos) y
 «Redactar seguimiento» (ficha de una candidatura enviada), desde la fase 16 «Ampliar búsqueda»
 (Plataformas), desde la 17 los de las entrevistas y desde la 18 «Redactar mensaje» e «Investigar
 empresa» (ficha) y desde la 25.2 «Ampliar perfil desde mis enlaces» («Mi perfil»), abren tu

@@ -38,7 +38,12 @@ TIER_LABELS: dict[Tier, str] = {
 }
 # Las que leen y guardan algo cerrado (una extracción, una valoración, una propuesta): un modelo
 # local o pequeño puede con ellas, y el esquema estricto lo comprueba.
-CLOSED_ACTIONS: tuple[ActionId, ...] = ("process-jobs", "assess-fit", "review-replies")
+CLOSED_ACTIONS: tuple[ActionId, ...] = (
+    "process-jobs",
+    "assess-fit",
+    "assess-fit-job",
+    "review-replies",
+)
 WRITING_ACTIONS: tuple[ActionId, ...] = ("generate-cv",)  # la carta, cuando tenga botón
 TIER_ACTIONS: tuple[ActionId, ...] = CLOSED_ACTIONS + WRITING_ACTIONS
 UNDO_MARK = "@"  # fila de `tier_undo` que dice que hay algo que deshacer

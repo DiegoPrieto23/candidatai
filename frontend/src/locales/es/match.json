@@ -7,7 +7,7 @@
   "inProfile": "En tu perfil: {{skill}}. ",
   "notInProfile": "No está en tu perfil",
   "missing": "Falta: ",
-  "notAssessed": "Sin valorar todavía. Pulsa «Evaluar encaje» para que tu agente la valore.",
+  "notAssessed": "Sin valorar todavía. Pulsa «Valorar encaje» para que tu agente la valore.",
   "stale": "De un cálculo anterior: el perfil o la oferta cambiaron.",
   "staleScore": "Valorada con un score de {{was}}; ahora es {{score}} porque el perfil o la oferta cambiaron.",
   "questions": "Preguntas para ti",
@@ -73,5 +73,6 @@
         "body": "En Docker no se puede instalar: la imagen no la trae. El score funciona igual sin ella."
       }
     }
-  }
+  },
+  "assessAgain": "Volver a valorar"
 }

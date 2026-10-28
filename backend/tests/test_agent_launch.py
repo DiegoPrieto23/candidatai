@@ -74,6 +74,12 @@ def test_followup_prompts() -> None:
     )
     assert agent_launch.ACTIONS["draft-follow-up"].stages == agent_launch.SENT_STAGES
     assert "draft-follow-up" in agent_launch.prompt_for("draft-follow-ups")
+    # Valorar una sola oferta (desde su ficha): el mismo skill, y revalora si ya estaba valorada.
+    assert agent_launch.prompt_for("assess-fit-job", 7).startswith(
+        "Usa el skill assess-fit de CandidatAI para la oferta 7."
+    )
+    assert "vuelve a valorarla" in agent_launch.prompt_for("assess-fit-job", 7)
+    assert agent_launch.ACTIONS["assess-fit-job"].stages == agent_launch.RESEARCH_STAGES
 
 
 def test_outreach_and_research_prompts() -> None:
@@ -185,6 +191,7 @@ def test_get_lists_agent_and_actions(client: TestClient, opened: list[tuple[str,
         "search-jobs",
         "process-jobs",
         "assess-fit",
+        "assess-fit-job",
         "generate-cv",
         "add-skills",
         "training-plan",

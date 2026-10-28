@@ -13,6 +13,7 @@ ActionId = Literal[
     "search-jobs",
     "process-jobs",
     "assess-fit",
+    "assess-fit-job",
     "generate-cv",
     "add-skills",
     "training-plan",
@@ -100,6 +101,24 @@ ACTIONS: dict[ActionId, Action] = {
             "get_extraction",
             "save_fit_assessment",
         ),
+    ),
+    # La misma valoración para una sola oferta, desde su ficha: la UI solo la ofrece sin valoración
+    # o con la valoración desfasada (con los mismos datos, repetirla solo gasta y varía al azar).
+    "assess-fit-job": Action(
+        "Valorar encaje",
+        "Usa el skill assess-fit de CandidatAI para la oferta {job_id}. Si ya tiene una "
+        "valoración, vuelve a valorarla.",
+        needs_job=True,
+        stages=RESEARCH_STAGES,
+        wrong_stage="Solo se valora una oferta abierta.",
+        background=(
+            "get_profile",
+            "get_context",
+            "get_match",
+            "get_extraction",
+            "save_fit_assessment",
+        ),
+        skill="assess-fit",
     ),
     "generate-cv": Action(
         "Generar CV",

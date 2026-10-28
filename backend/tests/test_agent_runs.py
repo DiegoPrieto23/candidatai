@@ -108,10 +108,11 @@ def run_now(**kwargs: float) -> agent_runner.AgentRunOutcome:
 # --- Comando y herramientas --------------------------------------------------------------------
 
 
-def test_only_three_actions_run_in_background() -> None:
+def test_only_these_actions_run_in_background() -> None:
     assert {a for a, spec in ACTIONS.items() if spec.background} == {
         "process-jobs",
         "assess-fit",
+        "assess-fit-job",
         "generate-cv",
     }
 
@@ -129,10 +130,11 @@ def test_background_tools_exist_and_are_minimal() -> None:
     }
     # Solo process-jobs (su subagente extractor) lee el texto de las ofertas.
     assert "get_job" not in ACTIONS["assess-fit"].background
+    assert "get_job" not in ACTIONS["assess-fit-job"].background
     assert "get_job" not in ACTIONS["generate-cv"].background
 
 
-@pytest.mark.parametrize("action", ["process-jobs", "assess-fit", "generate-cv"])
+@pytest.mark.parametrize("action", ["process-jobs", "assess-fit", "assess-fit-job", "generate-cv"])
 def test_manifest_command_allows_only_the_action_tools(action: str) -> None:
     """El comando real de Claude Code (manifiesto): sin terminal ni web, solo el skill de la acción
     y todas las demás herramientas MCP denegadas (un deny gana a los allow de `settings.json`)."""
@@ -154,7 +156,7 @@ def test_manifest_command_allows_only_the_action_tools(action: str) -> None:
     assert allowed == [
         "Agent",
         "Read(./docs/**)",
-        f"Skill({action})",  # solo su skill, no cualquiera de los instalados
+        f"Skill({spec.skill or action})",  # solo su skill, no cualquiera de los instalados
         *(PREFIX + t for t in spec.background),
     ]
     assert [tool for tool in allowed if "*" in tool] == ["Read(./docs/**)"]
