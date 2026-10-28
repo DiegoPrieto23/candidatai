@@ -160,7 +160,16 @@ Para volver a tus datos, cierra esa ventana y abre CandidatAI como siempre.
 
 ## 5. Crear tu perfil
 
-Tu **perfil** es la única fuente de verdad: en un CV no entra nada que no esté en él.
+Tu **perfil** es la única fuente de verdad: en un CV no entra nada que no esté en él. No hace falta
+rellenarlo a mano: tu agente lo crea a partir de tu CV.
+
+Lo más fácil es desde la app. Abre **Mi perfil**: mientras no tengas perfil, te propone empezar por
+tu CV. Pulsa **Subir mi CV** (PDF o Word) y luego **Crear mi perfil desde mi CV**, que abre tu
+agente en una terminal con la orden ya escrita. Lee tu CV, te pregunta lo que no dice (el nivel de
+tus skills, las cifras de tus logros, qué buscas) y no guarda nada sin tu OK. Cuando termina, tu
+perfil aparece solo en **Mi perfil**: sigue en el paso 3.
+
+Si prefieres hacerlo desde tu agente:
 
 1. Abre tu agente en la carpeta de la app. En Windows, en PowerShell (con Claude Code; con otro
    agente, su comando en lugar de `claude`):

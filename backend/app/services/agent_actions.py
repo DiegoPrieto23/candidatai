@@ -31,6 +31,7 @@ ActionId = Literal[
     "handle-requests",
     "review-search",
     "expand",
+    "create-profile",
     "improve-profile-item",
     "propose-stories",
     "import-cv-template",
@@ -154,6 +155,14 @@ ACTIONS: dict[ActionId, Action] = {
         "Ampliar perfil desde mis enlaces",
         "Usa el skill expand de CandidatAI para proponerme proyectos, skills, logros y "
         "certificaciones a partir de los enlaces públicos de mi perfil.",
+    ),
+    # «Mi perfil» sin perfil: crearlo desde el CV que se sube ahí (`data/documentos/cv/`).
+    # Pregunta lo que el CV no dice y antes de escribir, así que solo en terminal.
+    "create-profile": Action(
+        "Crear mi perfil desde mi CV",
+        "Usa el skill update-profile de CandidatAI para crear mi perfil a partir del CV que he "
+        "subido a data/documentos/cv/.",
+        skill="update-profile",
     ),
     # «Mi perfil» (fase 25.7b): mejorar un logro o una historia, o proponer historias. Preguntan
     # antes de escribir, así que solo en terminal; «Mejorar» lleva el id del elemento.

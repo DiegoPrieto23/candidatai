@@ -159,7 +159,17 @@ To go back to your own data, close that window and open CandidatAI as usual.
 
 ## 5. Create your profile
 
-Your **profile** is the single source of truth: nothing goes into a CV that isn't in it.
+Your **profile** is the single source of truth: nothing goes into a CV that isn't in it. You don't
+have to fill it in by hand: your agent builds it from your CV.
+
+The easiest way is from the app. Open **My profile**: while you have no profile, it suggests
+starting with your CV. Click **Upload my CV** (PDF or Word) and then **Create my profile from my
+CV**, which opens your agent in a terminal with the request already written. It reads your CV,
+asks about what it doesn't say (your skill levels, the figures behind your achievements, what
+you're looking for) and saves nothing without your OK. When it's done, your profile shows up on its
+own in **My profile**: carry on with step 3.
+
+If you'd rather do it from your agent:
 
 1. Open your agent in the app folder. On Windows, in PowerShell (with Claude Code; for another
    agent, its command instead of `claude`):

@@ -25,6 +25,15 @@
     "candidaturas": "What you sent in each application (fills up on its own)",
     "estilo": "Samples of how you write (letters, emails, posts): the agent takes your tone from them, never facts."
   },
+  "upload": {
+    "cv": "Upload CV",
+    "linkedin": "Upload export",
+    "uploading": "Uploading…",
+    "fileLabel": {
+      "cv": "Your CV (PDF, Word or text)",
+      "linkedin": "Your LinkedIn export (the compressed file LinkedIn sends you, or your profile as PDF)"
+    }
+  },
   "state": {
     "missing": "Doesn't exist",
     "empty": "Empty",

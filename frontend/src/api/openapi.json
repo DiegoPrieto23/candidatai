@@ -13015,6 +13015,252 @@
         }
       }
     },
+    "/context/documents/{folder}": {
+      "get": {
+        "tags": [
+          "context"
+        ],
+        "summary": "List Source Documents",
+        "description": "Ficheros de `data/documentos/cv/` o `data/documentos/linkedin/`, del más reciente.",
+        "operationId": "list_source_documents",
+        "parameters": [
+          {
+            "name": "folder",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "cv",
+                "linkedin"
+              ],
+              "type": "string",
+              "title": "Folder"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SourceDocumentInfo"
+                  },
+                  "title": "Response List Source Documents"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "context"
+        ],
+        "summary": "Upload Source Document",
+        "description": "Guarda tu CV (.pdf, .docx, .txt, .md) o tu exportación de LinkedIn (.pdf, .zip, .csv),\nmáximo 10 MB, para que tu agente cree o amplíe tu perfil a partir de ellos.",
+        "operationId": "upload_source_document",
+        "parameters": [
+          {
+            "name": "folder",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "cv",
+                "linkedin"
+              ],
+              "type": "string",
+              "title": "Folder"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadSampleBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceDocumentInfo"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
     "/context/{section}": {
       "get": {
         "tags": [
@@ -16562,6 +16808,7 @@
               "handle-requests",
               "review-search",
               "expand",
+              "create-profile",
               "improve-profile-item",
               "propose-stories",
               "import-cv-template"
@@ -17318,6 +17565,7 @@
               "handle-requests",
               "review-search",
               "expand",
+              "create-profile",
               "improve-profile-item",
               "propose-stories",
               "import-cv-template"
@@ -17470,6 +17718,7 @@
               "handle-requests",
               "review-search",
               "expand",
+              "create-profile",
               "improve-profile-item",
               "propose-stories",
               "import-cv-template"
@@ -21119,6 +21368,7 @@
               "handle-requests",
               "review-search",
               "expand",
+              "create-profile",
               "improve-profile-item",
               "propose-stories",
               "import-cv-template"
@@ -23555,6 +23805,7 @@
               "handle-requests",
               "review-search",
               "expand",
+              "create-profile",
               "improve-profile-item",
               "propose-stories",
               "import-cv-template"
@@ -26863,6 +27114,7 @@
                 "handle-requests",
                 "review-search",
                 "expand",
+                "create-profile",
                 "improve-profile-item",
                 "propose-stories",
                 "import-cv-template"
@@ -28790,6 +29042,7 @@
               "handle-requests",
               "review-search",
               "expand",
+              "create-profile",
               "improve-profile-item",
               "propose-stories",
               "import-cv-template"
@@ -30229,6 +30482,39 @@
         ],
         "title": "SkillGapsView"
       },
+      "SourceDocumentInfo": {
+        "properties": {
+          "folder": {
+            "type": "string",
+            "enum": [
+              "cv",
+              "linkedin"
+            ],
+            "title": "Folder"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "title": "Size Bytes"
+          },
+          "uploaded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Uploaded At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "folder",
+          "name",
+          "size_bytes",
+          "uploaded_at"
+        ],
+        "title": "SourceDocumentInfo"
+      },
       "SourceFunnel": {
         "properties": {
           "found": {
@@ -31186,6 +31472,7 @@
                 "handle-requests",
                 "review-search",
                 "expand",
+                "create-profile",
                 "improve-profile-item",
                 "propose-stories",
                 "import-cv-template"
@@ -31245,6 +31532,7 @@
                 "handle-requests",
                 "review-search",
                 "expand",
+                "create-profile",
                 "improve-profile-item",
                 "propose-stories",
                 "import-cv-template"
@@ -31312,6 +31600,7 @@
                 "handle-requests",
                 "review-search",
                 "expand",
+                "create-profile",
                 "improve-profile-item",
                 "propose-stories",
                 "import-cv-template"

@@ -1,4 +1,5 @@
-"""«Mi perfil» (fases 13 y 25.7): contexto, muestras de estilo y abrir sus carpetas.
+"""«Mi perfil» (fases 13 y 25.7): contexto, muestras de estilo, documentos fuente y abrir sus
+carpetas.
 
 Desde la fase 25.7 el texto del contexto también se edita en la UI (matiza la 025), con la
 misma concurrencia optimista que el perfil, y se suben las muestras de estilo. Escribir solo lo
@@ -13,9 +14,10 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.api.deps import EmptyBody, SessionDep, require_ui, require_ui_read
-from app.services import context, folders, profile_editor, style_samples
+from app.services import context, folders, profile_editor, source_documents, style_samples
 from app.services.context import ContextSection
 from app.services.documents.uploads import InvalidUploadError
+from app.services.source_documents import UploadFolder
 
 router = APIRouter(tags=["context"])
 
@@ -27,7 +29,7 @@ def get_context_status() -> context.ContextStatus:
     return context.get_status()
 
 
-# --- Muestras de estilo (antes de `/context/{section}`) --------------------------------------
+# --- Muestras de estilo y documentos fuente (antes de `/context/{section}`) ---------------
 
 
 class UploadSampleBody(BaseModel):
@@ -40,6 +42,13 @@ class UploadSampleBody(BaseModel):
 class SampleText(BaseModel):
     name: str
     text: str
+
+
+def _decode(content_base64: str) -> bytes:
+    try:
+        return base64.b64decode(content_base64, validate=True)
+    except (binascii.Error, ValueError) as exc:
+        raise InvalidUploadError("El fichero no llegó bien (base64 no válido).") from exc
 
 
 @router.get(
@@ -73,10 +82,7 @@ def upload_style_sample(
     session: SessionDep, body: UploadSampleBody
 ) -> style_samples.StyleSampleInfo:
     """Sube una muestra (.txt, .md, .docx o .pdf) y extrae su texto."""
-    try:
-        data = base64.b64decode(body.content_base64, validate=True)
-    except (binascii.Error, ValueError) as exc:
-        raise InvalidUploadError("El fichero no llegó bien (base64 no válido).") from exc
+    data = _decode(body.content_base64)
     info = style_samples.save_sample(body.filename, data)
     digest = profile_editor.file_hash(data)
     profile_editor.record_edit(session, "style_sample", info.name, "upload", None, digest)
@@ -92,6 +98,37 @@ def delete_style_sample(session: SessionDep, name: str, body: EmptyBody) -> Empt
     style_samples.delete_sample(name)
     profile_editor.record_edit(session, "style_sample", name, "delete", None, None)
     return EmptyBody()
+
+
+# --- Documentos fuente: tu CV y tu exportación de LinkedIn ----------------------------------
+
+
+@router.get(
+    "/context/documents/{folder}",
+    operation_id="list_source_documents",
+    dependencies=[Depends(require_ui_read)],
+)
+def list_source_documents(folder: UploadFolder) -> list[source_documents.SourceDocumentInfo]:
+    """Ficheros de `data/documentos/cv/` o `data/documentos/linkedin/`, del más reciente."""
+    return source_documents.list_documents(folder)
+
+
+@router.post(
+    "/context/documents/{folder}",
+    operation_id="upload_source_document",
+    status_code=201,
+    dependencies=[Depends(require_ui)],
+)
+def upload_source_document(
+    session: SessionDep, folder: UploadFolder, body: UploadSampleBody
+) -> source_documents.SourceDocumentInfo:
+    """Guarda tu CV (.pdf, .docx, .txt, .md) o tu exportación de LinkedIn (.pdf, .zip, .csv),
+    máximo 10 MB, para que tu agente cree o amplíe tu perfil a partir de ellos."""
+    data = _decode(body.content_base64)
+    info = source_documents.save_document(folder, body.filename, data)
+    digest = profile_editor.file_hash(data)
+    profile_editor.record_edit(session, "document", f"{folder}/{info.name}", "upload", None, digest)
+    return info
 
 
 # --- Ficheros de contexto ------------------------------------------------------------------

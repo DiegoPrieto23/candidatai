@@ -9,7 +9,10 @@ Los comandos se ejecutan desde la raíz del repo.
 **Si `data/profile.yaml` no existe:**
 1. Ejecuta `uv run --directory backend cai profile init`.
 2. Pide el CV. Mira antes en `data/documentos/` (ver «Documentos fuente»): si ya está ahí, propón
-   usarlo. Si no, lo más cómodo es en PDF (si tu agente puede leerlo) o como texto pegado.
+   usarlo. El botón «Crear mi perfil desde mi CV» de «Mi perfil» deja el CV en
+   `data/documentos/cv/`: si hay uno solo, úsalo sin preguntar; si hay varios, propón el más
+   reciente. Si no hay ninguno, lo más cómodo es en PDF (si tu agente puede leerlo) o como texto
+   pegado.
 3. Rellena el perfil sección a sección. Pregunta en bloques cortos lo que el CV no dice: niveles
    F/C+/C/B de cada skill, métricas de los logros, NDAs, preferencias de búsqueda, política de
    foto e historias STAR (al menos 4).
