@@ -5559,6 +5559,8 @@ export interface components {
             assessment: components["schemas"]["FitAssessment"] | null;
             /** Assessment Stale */
             assessment_stale: boolean;
+            /** Assessment Score */
+            assessment_score: number | null;
             /**
              * Created At
              * Format: date-time

@@ -9,6 +9,7 @@
   "missing": "Missing: ",
   "notAssessed": "Not assessed yet. Press “Assess fit” so your agent assesses it.",
   "stale": "From an earlier calculation: the profile or the job changed.",
+  "staleScore": "Assessed with a score of {{was}}; it is now {{score}} because the profile or the job changed.",
   "questions": "Questions for you",
   "failsFilters": "Fails the filters",
   "failsHardFilters": "Fails the hard filters",

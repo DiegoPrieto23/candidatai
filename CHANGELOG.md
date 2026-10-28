@@ -39,6 +39,11 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   cómo arrancarla desde la terminal (`cai start`) o con Docker.
 
 ### Cambiado
+- **Inicio:** «Próximos 7 días» sube a la esquina superior derecha, junto a lo que tienes
+  pendiente hoy.
+- **Valoración antigua del agente:** si el score ha cambiado desde que tu agente valoró la oferta,
+  la ficha dice con qué score la valoró y cuál tiene ahora, en vez de solo «De un cálculo
+  anterior».
 - **El score de una oferta, junto a su desglose:** en la ficha ya no va en la cabecera sino en
   «Encaje», al lado de lo que lo explica.
 - **La app abre antes:** al arrancar descarga menos de un tercio que antes (cada página se descarga
@@ -118,6 +123,8 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   página «Alertas» ya no sale vacía.
 
 ### Corregido
+- **«Mover proceso» sin scroll lateral:** con un título de oferta largo, el diálogo ya no se sale
+  por la derecha (tampoco los de descartar ni el de aceptar una respuesta).
 - **Una entrevista ya no se puede dar por hecha antes de su día:** el ✓ de una entrevista futura está
   desactivado (te dice desde cuándo podrás). Un clic de más la sacaba de «Próximos 7 días» en Inicio.
   Si ya marcaste alguna antes de su día, la flecha ↺ junto a ella la devuelve a programada, sin

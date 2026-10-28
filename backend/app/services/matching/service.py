@@ -45,6 +45,7 @@ class MatchView(BaseModel):
     breakdown: ScoreBreakdown
     assessment: FitAssessment | None  # la última valoración del agente, aunque sea de otro cálculo
     assessment_stale: bool  # la valoración es de un match anterior (perfil, oferta o puntuación)
+    assessment_score: int | None  # el score del match valorado; distinto de `score` si es antigua
     created_at: datetime
     # Fase 25.3: señales de oferta dudosa activas, para los riesgos de `assess-fit`. No cuentan en
     # el score. Solo las rellena `get_match` (en las listas va vacía).
@@ -233,6 +234,7 @@ def _view(match: Match, history: Sequence[Match]) -> MatchView:
         breakdown=ScoreBreakdown.model_validate(match.breakdown),
         assessment=FitAssessment.model_validate(assessed.assessment) if assessed else None,
         assessment_stale=assessed is not None and assessed.id != match.id,
+        assessment_score=assessed.score if assessed else None,
         created_at=match.created_at,
         signals=[],
     )

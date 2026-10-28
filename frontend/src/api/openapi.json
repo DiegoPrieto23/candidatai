@@ -25108,6 +25108,17 @@
             "type": "boolean",
             "title": "Assessment Stale"
           },
+          "assessment_score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assessment Score"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -25134,6 +25145,7 @@
           "breakdown",
           "assessment",
           "assessment_stale",
+          "assessment_score",
           "created_at",
           "signals"
         ],

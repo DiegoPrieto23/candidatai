@@ -42,7 +42,7 @@ interface Props {
 export function MoveDialog({ card, options, onOpenChange }: Props) {
   return (
     <Dialog open={card !== null} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90dvh] overflow-y-auto">
+      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-xl">
         {card && <MoveForm card={card} options={options} onDone={() => onOpenChange(false)} />}
       </DialogContent>
     </Dialog>

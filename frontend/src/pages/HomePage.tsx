@@ -348,7 +348,13 @@ export function HomePage() {
   const { t } = useTranslation('home')
   return (
     <div className="space-y-12 animate-in fade-in duration-300 sm:space-y-14">
-      <Today />
+      {/* Lo más inmediato, arriba: lo pendiente a la izquierda y la agenda a la derecha. */}
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        <Today />
+        <Panel title={t('panels.next7')} more={{ to: '/procesos', label: t('panels.calendar') }}>
+          <Upcoming />
+        </Panel>
+      </div>
       <Track />
       <div className="grid items-start gap-6 lg:grid-cols-5">
         <Panel
@@ -365,9 +371,6 @@ export function HomePage() {
         <div className="grid min-w-0 gap-6 lg:col-span-2">
           <Panel title={t('panels.readyToSend')} more={{ to: '/bandeja?stage=cv_ready', label: t('panels.all') }}>
             <JobList stage="cv_ready" limit={4} empty={t('panels.readyEmpty')} />
-          </Panel>
-          <Panel title={t('panels.next7')} more={{ to: '/procesos', label: t('panels.calendar') }}>
-            <Upcoming />
           </Panel>
           <Followups />
         </div>

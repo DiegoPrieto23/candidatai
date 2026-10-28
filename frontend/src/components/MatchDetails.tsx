@@ -157,7 +157,12 @@ function Assessment({ match, assessMinScore }: { match: MatchView; assessMinScor
           {VERDICT_LABEL[a.verdict]}
         </span>
         {match.assessment_stale && (
-          <span className="text-xs text-muted-foreground">{t('stale')}</span>
+          <span className="text-xs text-muted-foreground">
+            {/* El texto del agente puede citar el score de entonces: se dice cuál era. */}
+            {match.assessment_score != null && match.assessment_score !== match.score
+              ? t('staleScore', { was: match.assessment_score, score: match.score })
+              : t('stale')}
+          </span>
         )}
       </p>
       <p className="text-sm leading-relaxed text-foreground/90">{a.rationale}</p>
