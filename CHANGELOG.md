@@ -43,6 +43,9 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   cómo arrancarla desde la terminal (`cai start`) o con Docker.
 
 ### Cambiado
+- **Botones de icono con explicación:** al pasar el ratón (o enfocar con el teclado) por los
+  botones de un hito (descargar para el calendario, editar, hecho, cancelar, deshacer «hecha»,
+  borrar), de un contacto y de anterior/siguiente en el calendario, sale qué hace cada uno.
 - **Inicio:** «Próximos 7 días» sube a la esquina superior derecha, junto a lo que tienes
   pendiente hoy.
 - **Valoración antigua del agente:** si el score ha cambiado desde que tu agente valoró la oferta,
@@ -127,6 +130,9 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   página «Alertas» ya no sale vacía.
 
 ### Corregido
+- **Entrevistas futuras que se quedaron como «Hecho»:** las que se marcaron como hechas antes de su
+  día (antes de que la app lo impidiera) vuelven solas a «Programado» al actualizar, y salen otra
+  vez en «Próximos 7 días».
 - **«Mover proceso» sin scroll lateral:** con un título de oferta largo, el diálogo ya no se sale
   por la derecha (tampoco los de descartar ni el de aceptar una respuesta).
 - **Una entrevista ya no se puede dar por hecha antes de su día:** el ✓ de una entrevista futura está

@@ -1,6 +1,7 @@
 """La migración crea exactamente el esquema de los modelos y se deshace limpia."""
 
 import json
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
@@ -438,5 +439,73 @@ def test_0030_adds_indexes_on_a_db_with_data_and_back(db_url: str) -> None:
         assert not {"ix_jobs_company_id_first_seen_at", "ix_jobs_first_seen_at"} & indexes("jobs")
         assert "ix_events_type_job_id_occurred_at" not in indexes("events")
         assert snapshot() == before
+    finally:
+        engine.dispose()
+
+
+def test_0031_undoes_interviews_marked_done_before_their_day(db_url: str) -> None:
+    """Una entrevista futura marcada como hecha vuelve a programada; una pasada no se toca."""
+    migrations.upgrade(db_url, "0030")
+    engine = create_engine(db_url)
+    future = (datetime.now(UTC) + timedelta(days=10)).strftime("%Y-%m-%d 10:00:00")
+    try:
+        with engine.begin() as conn:
+            conn.exec_driver_sql(
+                "INSERT INTO sources (id, kind, name, config, active) "
+                "VALUES (1, 'manual_text', 'x', '{}', 1)"
+            )
+            conn.exec_driver_sql(
+                "INSERT INTO companies (id, name, normalized_name, watchlist) "
+                "VALUES (1, 'Acme', 'acme', 0)"
+            )
+            for job_id, starts_at in ((1, future), (2, "2026-01-10 10:00:00")):
+                conn.exec_driver_sql(
+                    "INSERT INTO jobs (id, source_id, company_id, url, title, raw_text, "
+                    "risk_flags, fingerprint, first_seen_at) "
+                    "VALUES (?, 1, 1, '', 'T', 'x', '[]', ?, '2026-01-01 09:00:00')",
+                    (job_id, f"f{job_id}"),
+                )
+                for event_id, kind, at in (
+                    (job_id * 10, "found", "2026-01-01 09:00:00"),
+                    (job_id * 10 + 1, "applied_manually", "2026-01-02 09:00:00"),
+                    (job_id * 10 + 2, "interview_scheduled", "2026-01-03 09:00:00"),
+                    (job_id * 10 + 3, "interview_done", "2026-01-04 09:00:00"),
+                ):
+                    payload = json.dumps({"milestone_id": job_id}) if "interview" in kind else "{}"
+                    conn.exec_driver_sql(
+                        "INSERT INTO events (id, job_id, type, actor, payload, occurred_at, "
+                        "recorded_at) VALUES (?, ?, ?, 'user', ?, ?, ?)",
+                        (event_id, job_id, kind, payload, at, at),
+                    )
+                conn.exec_driver_sql(
+                    "INSERT INTO milestones (id, job_id, kind, title, starts_at, all_day, "
+                    "status, event_id, sequence, created_at, updated_at) VALUES "
+                    "(?, ?, 'interview', 'Entrevista', ?, 0, 'done', ?, 1, "
+                    "'2026-01-03 09:00:00', '2026-01-04 09:00:00')",
+                    (job_id, job_id, starts_at, job_id * 10 + 2),
+                )
+                conn.exec_driver_sql(
+                    "INSERT INTO applications (job_id, stage, last_event_at) "
+                    "VALUES (?, 'in_process', '2026-01-04 09:00:00')",
+                    (job_id,),
+                )
+        engine.dispose()
+
+        migrations.upgrade(db_url)
+        with engine.connect() as conn:
+            milestones = conn.exec_driver_sql(
+                "SELECT id, status, sequence FROM milestones ORDER BY id"
+            ).all()
+            done = conn.exec_driver_sql(
+                "SELECT job_id FROM events WHERE type = 'interview_done' ORDER BY job_id"
+            ).all()
+            last = conn.exec_driver_sql(
+                "SELECT job_id, stage, last_event_at FROM applications ORDER BY job_id"
+            ).all()
+        assert milestones == [(1, "scheduled", 2), (2, "done", 1)]
+        assert done == [(2,)]
+        assert [tuple(row[:2]) for row in last] == [(1, "in_process"), (2, "in_process")]
+        assert str(last[0][2]).startswith("2026-01-03 09:00:00")
+        assert str(last[1][2]).startswith("2026-01-04 09:00:00")
     finally:
         engine.dispose()

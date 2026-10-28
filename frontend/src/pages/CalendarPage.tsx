@@ -5,6 +5,7 @@ import { CaretLeftIcon, CaretRightIcon, DownloadSimpleIcon } from '@phosphor-ico
 import { fileUrls, type CalendarItem } from '@/api/client'
 import { useCalendar } from '@/api/queries'
 import { ErrorState } from '@/components/States'
+import { Hint } from '@/components/Hint'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -520,12 +521,16 @@ export function CalendarPage() {
           {t('today')}
         </Button>
         <div className="flex">
-          <Button variant="ghost" size="icon" className="size-8" aria-label={t('previous')} onClick={() => go({ date: shift(view, day, -1) })}>
-            <CaretLeftIcon />
-          </Button>
-          <Button variant="ghost" size="icon" className="size-8" aria-label={t('next')} onClick={() => go({ date: shift(view, day, 1) })}>
-            <CaretRightIcon />
-          </Button>
+          <Hint text={t('previous')}>
+            <Button variant="ghost" size="icon" className="size-8" aria-label={t('previous')} onClick={() => go({ date: shift(view, day, -1) })}>
+              <CaretLeftIcon />
+            </Button>
+          </Hint>
+          <Hint text={t('next')}>
+            <Button variant="ghost" size="icon" className="size-8" aria-label={t('next')} onClick={() => go({ date: shift(view, day, 1) })}>
+              <CaretRightIcon />
+            </Button>
+          </Hint>
         </div>
         <h2 className="min-w-0 text-lg font-medium first-letter:uppercase" aria-live="polite">
           {rangeLabel(view, day)}

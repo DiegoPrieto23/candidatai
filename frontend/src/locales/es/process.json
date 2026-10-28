@@ -16,7 +16,7 @@
     "save": "Guardar hito"
   },
   "milestone": {
-    "ics": "Añadir «{{title}}» a mi calendario",
+    "ics": "Descargar «{{title}}» para tu calendario",
     "edit": "Editar «{{title}}»",
     "done": "Marcar «{{title}}» como hecho",
     "doneLater": "Podrás marcarla como hecha a partir del día de la entrevista",

@@ -39,6 +39,7 @@ import {
 import { AgentButton } from '@/components/AgentButton'
 import { InterviewActions, InterviewDetails } from '@/components/InterviewDetails'
 import { ErrorState } from '@/components/States'
+import { Hint } from '@/components/Hint'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -389,69 +390,81 @@ function MilestoneRow({ milestone, stage }: { milestone: MilestoneOut; stage: St
         )}
       </div>
       <div className="flex shrink-0 items-center gap-0.5">
-        <Button asChild variant="ghost" size="icon" className="size-8" aria-label={t('ics', { title: milestone.title })}>
-          <a href={fileUrls.milestoneIcs(milestone.id)} download>
-            <DownloadSimpleIcon />
-          </a>
-        </Button>
+        <Hint text={t('ics', { title: milestone.title })}>
+          <Button asChild variant="ghost" size="icon" className="size-8" aria-label={t('ics', { title: milestone.title })}>
+            <a href={fileUrls.milestoneIcs(milestone.id)} download>
+              <DownloadSimpleIcon />
+            </a>
+          </Button>
+        </Hint>
         {scheduled && (
           <>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-8"
-              aria-label={t('edit', { title: milestone.title })}
-              onClick={() => setEditing(true)}
-            >
-              <PencilSimpleIcon />
-            </Button>
-            <span title={notYet ? t('doneLater') : undefined}>
+            <Hint text={t('edit', { title: milestone.title })}>
               <Button
                 variant="ghost"
                 size="icon"
                 className="size-8"
-                aria-label={notYet ? t('doneLater') : t('done', { title: milestone.title })}
-                disabled={status.isPending || notYet}
-                onClick={() => status.mutate({ milestoneId: milestone.id, body: { status: 'done' } })}
+                aria-label={t('edit', { title: milestone.title })}
+                onClick={() => setEditing(true)}
               >
-                <CheckIcon />
+                <PencilSimpleIcon />
               </Button>
-            </span>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-8"
-              aria-label={t('cancel', { title: milestone.title })}
-              disabled={status.isPending}
-              onClick={() => status.mutate({ milestoneId: milestone.id, body: { status: 'cancelled' } })}
-            >
-              <XIcon />
-            </Button>
+            </Hint>
+            {/* El `<span>` dispara el globo aunque el botón esté desactivado. */}
+            <Hint text={notYet ? t('doneLater') : t('done', { title: milestone.title })}>
+              <span className="inline-flex">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-8"
+                  aria-label={notYet ? t('doneLater') : t('done', { title: milestone.title })}
+                  disabled={status.isPending || notYet}
+                  onClick={() => status.mutate({ milestoneId: milestone.id, body: { status: 'done' } })}
+                >
+                  <CheckIcon />
+                </Button>
+              </span>
+            </Hint>
+            <Hint text={t('cancel', { title: milestone.title })}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8"
+                aria-label={t('cancel', { title: milestone.title })}
+                disabled={status.isPending}
+                onClick={() => status.mutate({ milestoneId: milestone.id, body: { status: 'cancelled' } })}
+              >
+                <XIcon />
+              </Button>
+            </Hint>
           </>
         )}
         {milestone.status === 'done' && notYet && (
           // Marcada como hecha antes de su día (antes de que la app lo impidiera): se deshace.
+          <Hint text={t('undoDone', { title: milestone.title })}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8"
+              aria-label={t('undoDone', { title: milestone.title })}
+              disabled={status.isPending}
+              onClick={() => status.mutate({ milestoneId: milestone.id, body: { status: 'scheduled' } })}
+            >
+              <ArrowCounterClockwiseIcon />
+            </Button>
+          </Hint>
+        )}
+        <Hint text={t('delete', { title: milestone.title })}>
           <Button
             variant="ghost"
             size="icon"
             className="size-8"
-            title={t('undoDone', { title: milestone.title })}
-            aria-label={t('undoDone', { title: milestone.title })}
-            disabled={status.isPending}
-            onClick={() => status.mutate({ milestoneId: milestone.id, body: { status: 'scheduled' } })}
+            aria-label={t('delete', { title: milestone.title })}
+            onClick={() => setDeleting(true)}
           >
-            <ArrowCounterClockwiseIcon />
+            <TrashIcon />
           </Button>
-        )}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-8"
-          aria-label={t('delete', { title: milestone.title })}
-          onClick={() => setDeleting(true)}
-        >
-          <TrashIcon />
-        </Button>
+        </Hint>
         <DeleteMilestoneDialog milestone={milestone} open={deleting} onOpenChange={setDeleting} />
       </div>
     </li>
@@ -684,19 +697,23 @@ function ContactRow({ contact }: { contact: ContactOut }) {
           <ReferralSelect contact={contact} />
         </div>
       </div>
-      <Button variant="ghost" size="icon" className="size-8" aria-label={t('edit', { name: contact.name })} onClick={() => setEditing(true)}>
-        <PencilSimpleIcon />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="size-8"
-        aria-label={t('remove', { name: contact.name })}
-        disabled={remove.isPending}
-        onClick={() => remove.mutate(contact.id)}
-      >
-        <TrashIcon />
-      </Button>
+      <Hint text={t('edit', { name: contact.name })}>
+        <Button variant="ghost" size="icon" className="size-8" aria-label={t('edit', { name: contact.name })} onClick={() => setEditing(true)}>
+          <PencilSimpleIcon />
+        </Button>
+      </Hint>
+      <Hint text={t('remove', { name: contact.name })}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-8"
+          aria-label={t('remove', { name: contact.name })}
+          disabled={remove.isPending}
+          onClick={() => remove.mutate(contact.id)}
+        >
+          <TrashIcon />
+        </Button>
+      </Hint>
     </li>
   )
 }
