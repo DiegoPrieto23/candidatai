@@ -19,7 +19,8 @@ Sigue `docs/POLICIES.md` §1 y §2.
      (`breakdown.must_have.covered[].level`) y pasa los filtros duros (`hard_filters.passed`);
      `weak` si faltan requisitos centrales (`breakdown.must_have.missing`); si no, `possible`;
    - `rationale`: 2-3 frases que citen datos concretos del desglose y del perfil, sin adjetivos
-     vacíos. El score lo calcula el código: explícalo, no lo corrijas;
+     vacíos. El score lo calcula el código: explícalo, no lo corrijas, y no escribas su número
+     (la UI ya lo muestra y cambia si se recalcula);
    - `risks`: requisitos no cubiertos o dudosos, y los filtros duros que no pasa si el usuario
      reabrió la oferta. Si la extracción choca con algo de `criterios.md`, añádelo citándolo
      («criterios.md: «Guardias de fin de semana fijas» — la oferta pide guardias rotativas»). Solo

@@ -217,6 +217,7 @@ describe('Por revisar', () => {
           questions_for_user: ['¿Has usado Kafka?'],
         },
         assessment_stale: true,
+        assessment_score: 64,
       }),
     })
     mockTriage([item])
@@ -224,7 +225,7 @@ describe('Por revisar', () => {
     const detail = await screen.findByRole('article')
     expect(within(detail).getByRole('note', { name: 'No pasa los filtros' })).toHaveTextContent('Pide 6 años de experiencia.')
     expect(within(detail).getByText('Encaje posible')).toBeInTheDocument()
-    expect(within(detail).getByText(/De un cálculo anterior/)).toBeInTheDocument()
+    expect(within(detail).getByText('Valorada con un score de 64; ahora es 60 porque el perfil o la oferta cambiaron.')).toBeInTheDocument()
     expect(within(detail).getByText('¿Has usado Kafka?')).toBeInTheDocument()
     expect(within(detail).getByText('dbt solo básico')).toBeInTheDocument()
   })

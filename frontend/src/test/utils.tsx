@@ -213,6 +213,7 @@ export function matchView(changes: Partial<MatchView> = {}): MatchView {
     },
     assessment: null,
     assessment_stale: false,
+    assessment_score: null,
     created_at: now,
     ...changes,
   }

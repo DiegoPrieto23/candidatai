@@ -9,6 +9,7 @@
   "missing": "Falta: ",
   "notAssessed": "Sin valorar todavía. Pulsa «Evaluar encaje» para que tu agente la valore.",
   "stale": "De un cálculo anterior: el perfil o la oferta cambiaron.",
+  "staleScore": "Valorada con un score de {{was}}; ahora es {{score}} porque el perfil o la oferta cambiaron.",
   "questions": "Preguntas para ti",
   "failsFilters": "No pasa los filtros",
   "failsHardFilters": "No pasa los filtros duros",

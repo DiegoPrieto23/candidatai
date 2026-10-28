@@ -150,6 +150,7 @@ def test_get_match_computes_and_reuses() -> None:
     assert view.triage_threshold == 55
     assert view.below_threshold is (view.score < 55)
     assert view.assessment is None and not view.assessment_stale
+    assert view.assessment_score is None
     assert [c.name for c in view.breakdown.components][0] == "must_have_coverage"
     assert view.breakdown.must_have.ratio == pytest.approx(0.8)
     assert event_types(job_id) == ["found", "extracted", "scored"]
@@ -212,6 +213,7 @@ def test_get_match_recomputes_when_scoring_changes(monkeypatch: pytest.MonkeyPat
     assert second.match_id != first.match_id and again.match_id == second.match_id
     assert second.breakdown.semantic is not None
     assert second.assessment == ASSESSMENT and second.assessment_stale
+    assert second.assessment_score == first.score
     # También una versión nueva del scorer.
     monkeypatch.setattr(matching.scorer, "SCORER_VERSION", matching.scorer.SCORER_VERSION + 1)
     with session_scope() as session:
