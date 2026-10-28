@@ -57,7 +57,7 @@ def _operation_id(route: APIRoute) -> str:
 def create_app() -> FastAPI:
     app = FastAPI(
         title="CandidatAI",
-        version="0.2.0",
+        version="0.3.0",
         description="API local de CandidatAI para la UI.",
         generate_unique_id_function=_operation_id,
         responses=ERROR_RESPONSES,
