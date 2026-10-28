@@ -5,6 +5,7 @@ import { Trans, useTranslation } from 'react-i18next'
 import type { JobRow, Stage, UpcomingItem } from '@/api/client'
 import { useFollowups, useJobs, useReplies, useStatus, useUpcoming } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
+import { FirstSteps } from '@/components/FirstSteps'
 import { ScoreBadge } from '@/components/MatchDetails'
 import { ErrorState } from '@/components/States'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -348,6 +349,8 @@ export function HomePage() {
   const { t } = useTranslation('home')
   return (
     <div className="space-y-12 animate-in fade-in duration-300 sm:space-y-14">
+      {/* Con la app recién instalada: perfil y dónde buscar. Se va sola con los dos hechos. */}
+      <FirstSteps />
       {/* Lo más inmediato, arriba: lo pendiente a la izquierda y la agenda a la derecha. */}
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <Today />

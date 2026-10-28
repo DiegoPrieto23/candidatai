@@ -24,7 +24,7 @@ del agente o la búsqueda pública sin sesión que hace la propia app (abajo).
 
 ## APIs de ATS y portales (fases 09 y 25.1)
 
-- **Empresas objetivo:** nombre + ATS + slug del tablero, en la página «Fuentes → Empresas objetivo» o con
+- **Empresas objetivo:** nombre + ATS + slug del tablero, en la página «Dónde buscar → Empresas objetivo» o con
   `cai sources add`. Solo APIs y feeds públicos, sin autenticación ni scraping de HTML.
   La tabla de abajo dice qué usa cada uno.
 - **Portales con API:** búsquedas por palabras clave, no por empresa. InfoJobs y Adzuna necesitan
@@ -230,9 +230,14 @@ hayas aprobado. Skill `search-jobs`.
 - **Plataformas** = fuentes de tipo `agent_browse`:
   `{name, platform, search_urls[], priority (1 = primera), access: free|login|blocked,
   allow_agent_browsing, max_offers, notes}`. Las da de alta el agente con
-  `search-jobs configurar` (como la etapa 1 del original); en la página «Fuentes → Plataformas» ves
-  cada una con sus búsquedas y su último recorrido, y cambias su prioridad, su acceso, cuántas
-  ofertas abre en cada recorrido (`max_offers`, de 1 a 100) y si el agente puede recorrerla. Si el
+  `search-jobs configurar` (botón «Configurar con mi agente»; como la etapa 1 del original) o el
+  usuario con «Añadir portal»: en InfoJobs, Tecnoempleo, Indeed y LinkedIn la UI genera las
+  `search_urls` con los puestos (`preferences.roles`), las dos primeras ubicaciones preferidas y,
+  si acepta remoto, una búsqueda en remoto, hasta 10 (Glassdoor y Manfred usan ids que no se
+  sacan de un nombre). En la página «Dónde buscar → Portales de empleo» ves cada una con sus
+  búsquedas y su último recorrido, editas su nombre y sus búsquedas (de su mismo sitio), y cambias
+  su prioridad, su acceso, cuántas ofertas abre en cada recorrido (`max_offers`, de 1 a 100) y si
+  el agente puede recorrerla. Si el
   agente vuelve a guardarla sin `max_offers`, se conserva el que tenía.
 - **Prioridad = puesto en el orden de recorrido, sin empates** (fase 27.3). Con N plataformas van
   de 1 a N, sin huecos ni repetidos, y sin tope (antes era 1…10 y todas entraban con 5). Una
@@ -293,7 +298,7 @@ ofertas de LinkedIn sin depender del correo. Es **contrario a las condiciones de
 (prohíben el acceso automatizado) y puede hacer que bloquee tu IP un tiempo: por eso está
 **apagada por defecto**, es para uso personal y solo la activas tú.
 
-- **Dónde:** tarjeta de LinkedIn en «Fuentes → Plataformas» → «Búsqueda pública sin sesión». Es un interruptor
+- **Dónde:** tarjeta de LinkedIn en «Dónde buscar → Portales de empleo» → «Búsqueda pública sin sesión». Es un interruptor
   distinto de «El agente la recorre». Encenderlo abre un aviso de riesgo que hay que aceptar (la API
   exige `confirm_risk: true` y solo la acepta desde la UI). El agente no puede activarla: no hay
   herramienta MCP ni comando para eso, y `save_source` no la toca.
@@ -405,7 +410,7 @@ Marca con `matches_roles: false` los puestos que te interesan y que el filtro pr
 alertas deja fuera. El skill `broaden-search` propone, con esa base, hasta 8 títulos cercanos
 («Data Platform Engineer», «Analytics Engineer», «BI Engineer»…) con su porqué y su riesgo y, solo
 con tu OK a cada uno, los añade a `preferences.roles` (editando `data/profile.yaml` y reimportándolo)
-o a las `search_urls` de tus plataformas (`save_source`). Botón «Ampliar búsqueda» en Plataformas.
+o a las `search_urls` de tus plataformas (`save_source`). Botón «Ampliar búsqueda» en «Dónde buscar → Portales de empleo».
 
 ### Descubrir empresas: `cai sources discover`
 

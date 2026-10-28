@@ -444,7 +444,8 @@ class LinkedInPublicLimits(BaseModel):
 
 
 class LinkedInPublicView(BaseModel):
-    """Estado de la búsqueda pública para la tarjeta de LinkedIn en Plataformas."""
+    """Estado de la búsqueda pública para la tarjeta de LinkedIn en «Dónde buscar → Portales de
+    empleo»."""
 
     source_id: int | None  # `None` hasta que se activa por primera vez
     enabled: bool

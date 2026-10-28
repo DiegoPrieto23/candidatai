@@ -46,6 +46,17 @@ class DocumentRender(Base):
     created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
 
 
+class CvBrief(Base):
+    """Indicaciones del usuario para el CV de una oferta («destaca el proyecto X», «en inglés»…),
+    que escribe en la ficha. Las usa `generate-cv` cada vez que redacta o rehace ese CV."""
+
+    __tablename__ = "cv_briefs"
+
+    job_id: Mapped[int] = mapped_column(ForeignKey("jobs.id"), primary_key=True)
+    instructions: Mapped[str] = mapped_column(Text, default="")
+    updated_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
+
+
 class CoverLetterBrief(Base):
     """Indicaciones de la carta para una oferta (fase 08c). Sin historial: el documento copia las
     que usó al guardarse."""

@@ -400,7 +400,7 @@ def run_scheduler(
             return
         on_message(f"Ingesta diaria: {len(queued)} fuentes en cola.")
         if linkedin:
-            on_message("Búsqueda pública de LinkedIn en cola (la activaste en Plataformas).")
+            on_message("Búsqueda pública de LinkedIn en cola (la activaste en «Dónde buscar»).")
         if checks:
             on_message(f"¿Siguen abiertas?: {checks} ofertas aprobadas o con CV en cola.")
         process()
@@ -471,7 +471,7 @@ def run_scheduler(
     if checks:
         on_message(f"¿Siguen abiertas?: {checks} ofertas aprobadas o con CV en cola.")
     if linkedin:
-        on_message("Búsqueda pública de LinkedIn en cola (la activaste en Plataformas).")
+        on_message("Búsqueda pública de LinkedIn en cola (la activaste en «Dónde buscar»).")
     if email:
         on_message(f"Correo (alertas y respuestas): se lee al arrancar y cada {poll_minutes} min.")
     process()

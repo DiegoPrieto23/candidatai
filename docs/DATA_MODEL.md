@@ -240,6 +240,9 @@ se rechaza con error claro.
 - Tabla `cover_letter_briefs` (migración 0010): `job_id` (PK/FK), `instructions` (texto), `max_words` (int?),
   `updated_at`. Las indicaciones de la carta para esa oferta; no guarda historial (el documento
   copia las que usó).
+- Tabla `cv_briefs` (migración 0032): `job_id` (PK/FK), `instructions` (texto) y `updated_at`. Las
+  indicaciones del usuario para el CV de esa oferta, que escribe en la ficha y lee `generate-cv`
+  con `get_cv_brief`. Sin historial ni evento: no cambian la etapa de la oferta.
 
 ## Ampliaciones de la fase 09b
 

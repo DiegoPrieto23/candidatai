@@ -1,8 +1,8 @@
 """Búsqueda pública de LinkedIn sin sesión (fase 22). Apagada por defecto.
 
 Consulta los endpoints públicos `jobs-guest` de LinkedIn, los mismos que sirven la búsqueda a quien
-no ha iniciado sesión, con las búsquedas de la plataforma LinkedIn de «Fuentes → Plataformas»
-(sus `search_urls`). Reglas que viven aquí y no en la UI ni en un skill:
+no ha iniciado sesión, con las búsquedas de la plataforma LinkedIn de «Dónde buscar → Portales de
+empleo» (sus `search_urls`). Reglas que viven aquí y no en la UI ni en un skill:
 
 - solo si el usuario la ha activado desde la UI, aceptando el riesgo. El agente no puede: no hay
   herramienta MCP ni comando que la active, y `save_source` no toca esta fuente;
@@ -681,7 +681,7 @@ def run(
     if not is_enabled(source):
         raise BrowsingNotAllowedError(
             "La búsqueda pública de LinkedIn está desactivada. Solo el usuario puede activarla, "
-            "en la tarjeta de LinkedIn de «Fuentes → Plataformas»."
+            "en la tarjeta de LinkedIn de «Dónde buscar → Portales de empleo»."
         )
     assert source is not None
     policy = get_policies().linkedin_public

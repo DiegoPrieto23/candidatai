@@ -52,7 +52,7 @@ describe('Barra lateral (fase 23.3)', () => {
       'Respuestas',
       'Embudo',
       'Skills',
-      'Fuentes',
+      'Dónde buscar',
       'Plantillas',
       'Mi perfil',
       'Agente',
@@ -87,22 +87,22 @@ describe('Barra lateral (fase 23.3)', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 
-  it('las rutas antiguas de Empresas y Plataformas llevan a Fuentes', async () => {
+  it('las rutas antiguas de Empresas y Plataformas llevan a «Dónde buscar»', async () => {
     mockApi({ ...routes(), 'GET /sources': { sources: [], agent_browse: { max_result_pages: 2, delay_seconds: 5, default_max_offers: 15 } } })
     renderApp('/empresas')
     expect(await screen.findByRole('heading', { name: 'Empresas objetivo' })).toBeInTheDocument()
-    const tabs = screen.getByRole('navigation', { name: 'Fuentes de ofertas' })
+    const tabs = screen.getByRole('navigation', { name: 'Dónde buscar' })
     expect(within(tabs).getByRole('link', { name: 'Empresas objetivo' })).toHaveAttribute('aria-current', 'page')
-    await userEvent.click(within(tabs).getByRole('link', { name: 'Plataformas' }))
-    expect(await screen.findByRole('heading', { name: 'Plataformas' })).toBeInTheDocument()
+    await userEvent.click(within(tabs).getByRole('link', { name: 'Portales de empleo' }))
+    expect(await screen.findByRole('heading', { name: 'Portales de empleo' })).toBeInTheDocument()
   })
 
-  it('Fuentes abre en Plataformas, la primera pestaña', async () => {
+  it('«Dónde buscar» abre en «Portales de empleo», la primera pestaña', async () => {
     mockApi({ ...routes(), 'GET /sources': { sources: [], agent_browse: { max_result_pages: 2, delay_seconds: 5, default_max_offers: 15 } } })
     renderApp('/fuentes')
-    expect(await screen.findByRole('heading', { name: 'Plataformas' })).toBeInTheDocument()
-    const tabs = screen.getByRole('navigation', { name: 'Fuentes de ofertas' })
-    expect(within(tabs).getAllByRole('link').map((link) => link.textContent)).toEqual(['Plataformas', 'Empresas objetivo'])
+    expect(await screen.findByRole('heading', { name: 'Portales de empleo' })).toBeInTheDocument()
+    const tabs = screen.getByRole('navigation', { name: 'Dónde buscar' })
+    expect(within(tabs).getAllByRole('link').map((link) => link.textContent)).toEqual(['Portales de empleo', 'Empresas objetivo'])
   })
 })
 

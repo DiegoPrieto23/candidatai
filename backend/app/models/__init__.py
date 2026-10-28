@@ -4,7 +4,7 @@ from app.models.agents import AgentPreference, AgentRequest, AgentRun
 from app.models.applier import ApplicationAttempt
 from app.models.base import Base
 from app.models.companies import Company, CompanyResearch
-from app.models.documents import CoverLetterBrief, Document, DocumentRender
+from app.models.documents import CoverLetterBrief, CvBrief, Document, DocumentRender
 from app.models.events import Application, Event
 from app.models.jobs import Job, JobExtraction, JobSighting
 from app.models.matches import Match
@@ -33,6 +33,7 @@ __all__ = [
     "CompanyResearch",
     "Contact",
     "CoverLetterBrief",
+    "CvBrief",
     "Document",
     "DocumentRender",
     "EmailMessage",

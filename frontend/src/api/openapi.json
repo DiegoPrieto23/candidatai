@@ -3,7 +3,7 @@
   "info": {
     "title": "CandidatAI",
     "description": "API local de CandidatAI para la UI.",
-    "version": "0.1.0"
+    "version": "0.2.0"
   },
   "paths": {
     "/status": {
@@ -2623,6 +2623,240 @@
         }
       }
     },
+    "/jobs/{job_id}/cv/brief": {
+      "get": {
+        "tags": [
+          "cv"
+        ],
+        "summary": "Get Cv Brief",
+        "description": "Indicaciones del CV de esta oferta (vacías si no hay).",
+        "operationId": "get_cv_brief",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CvBriefView"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "cv"
+        ],
+        "summary": "Save Cv Brief",
+        "description": "Indicaciones del CV de esta oferta; sustituyen a las anteriores (vacías: borrar).",
+        "operationId": "save_cv_brief",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CvBriefInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CvBriefView"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
     "/jobs/{job_id}/cv": {
       "get": {
         "tags": [
@@ -4350,6 +4584,129 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/SetWebsiteBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceView"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/sources/{source_id}/platform": {
+      "put": {
+        "tags": [
+          "sources"
+        ],
+        "summary": "Edit Platform",
+        "description": "Cambia el nombre y las búsquedas de una plataforma. Las búsquedas tienen que ser de su\nportal, como al añadirla.",
+        "operationId": "edit_platform",
+        "parameters": [
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Source Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditPlatformBody"
               }
             }
           }
@@ -16788,6 +17145,7 @@
             "type": "string",
             "enum": [
               "search-jobs",
+              "configure-platforms",
               "process-jobs",
               "assess-fit",
               "assess-fit-job",
@@ -17545,6 +17903,7 @@
             "type": "string",
             "enum": [
               "search-jobs",
+              "configure-platforms",
               "process-jobs",
               "assess-fit",
               "assess-fit-job",
@@ -17698,6 +18057,7 @@
             "type": "string",
             "enum": [
               "search-jobs",
+              "configure-platforms",
               "process-jobs",
               "assess-fit",
               "assess-fit-job",
@@ -20656,6 +21016,50 @@
         ],
         "title": "CoveredSkill"
       },
+      "CvBriefInput": {
+        "properties": {
+          "instructions": {
+            "type": "string",
+            "maxLength": 4000,
+            "title": "Instructions",
+            "default": ""
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "CvBriefInput"
+      },
+      "CvBriefView": {
+        "properties": {
+          "job_id": {
+            "type": "integer",
+            "title": "Job Id"
+          },
+          "instructions": {
+            "type": "string",
+            "title": "Instructions"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "instructions",
+          "updated_at"
+        ],
+        "title": "CvBriefView"
+      },
       "CvBullet": {
         "properties": {
           "text": {
@@ -21265,6 +21669,32 @@
         "type": "object",
         "title": "DraftSentBody"
       },
+      "EditPlatformBody": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "search_urls": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 10,
+            "minItems": 1,
+            "title": "Search Urls"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "search_urls"
+        ],
+        "title": "EditPlatformBody"
+      },
       "EditableProfile": {
         "properties": {
           "exists": {
@@ -21348,6 +21778,7 @@
             "type": "string",
             "enum": [
               "search-jobs",
+              "configure-platforms",
               "process-jobs",
               "assess-fit",
               "assess-fit-job",
@@ -23785,6 +24216,7 @@
             "type": "string",
             "enum": [
               "search-jobs",
+              "configure-platforms",
               "process-jobs",
               "assess-fit",
               "assess-fit-job",
@@ -24497,7 +24929,7 @@
           "limits"
         ],
         "title": "LinkedInPublicView",
-        "description": "Estado de la búsqueda pública para la tarjeta de LinkedIn en Plataformas."
+        "description": "Estado de la búsqueda pública para la tarjeta de LinkedIn en «Dónde buscar → Portales de\nempleo»."
       },
       "LinkedInSearch": {
         "properties": {
@@ -27094,6 +27526,7 @@
             "propertyNames": {
               "enum": [
                 "search-jobs",
+                "configure-platforms",
                 "process-jobs",
                 "assess-fit",
                 "assess-fit-job",
@@ -29022,6 +29455,7 @@
             "type": "string",
             "enum": [
               "search-jobs",
+              "configure-platforms",
               "process-jobs",
               "assess-fit",
               "assess-fit-job",
@@ -31452,6 +31886,7 @@
             "propertyNames": {
               "enum": [
                 "search-jobs",
+                "configure-platforms",
                 "process-jobs",
                 "assess-fit",
                 "assess-fit-job",
@@ -31512,6 +31947,7 @@
             "propertyNames": {
               "enum": [
                 "search-jobs",
+                "configure-platforms",
                 "process-jobs",
                 "assess-fit",
                 "assess-fit-job",
@@ -31580,6 +32016,7 @@
               "type": "string",
               "enum": [
                 "search-jobs",
+                "configure-platforms",
                 "process-jobs",
                 "assess-fit",
                 "assess-fit-job",

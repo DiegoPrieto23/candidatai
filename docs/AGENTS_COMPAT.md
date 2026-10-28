@@ -365,7 +365,7 @@ avisa de usar una sesión dedicada solo a eso.
 «Generar CV», en la página Skills (fase 14) «Añadir al perfil las que tengo» (`update-profile`)
 y «Plan de formación», y desde la fase 15 «Revisar respuestas» (Inicio y «Respuestas»), «Redactar borradores» (Procesos) y
 «Redactar seguimiento» (ficha de una candidatura enviada), desde la fase 16 «Ampliar búsqueda»
-(Plataformas), desde la 17 los de las entrevistas y desde la 18 «Redactar mensaje» e «Investigar
+(«Dónde buscar»), desde la 17 los de las entrevistas y desde la 18 «Redactar mensaje» e «Investigar
 empresa» (ficha), desde la 25.2 «Ampliar perfil desde mis enlaces» y «Crear mi perfil desde mi CV»
 («Mi perfil», sin perfil todavía), abren tu
 agente en una terminal (Windows Terminal o PowerShell) con la orden del skill ya escrita; tú

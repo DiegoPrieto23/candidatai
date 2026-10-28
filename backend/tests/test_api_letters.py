@@ -8,6 +8,7 @@ import pytest
 import yaml
 from fastapi.testclient import TestClient
 
+from app.agent_interface.tools import TOOLS_BY_NAME, JobIdInput
 from app.api.main import create_app
 from app.core import migrations
 from app.core.db import session_scope
@@ -75,6 +76,21 @@ def test_brief_and_errors(client: TestClient) -> None:
     bad = client.post(f"/jobs/{job_id}/cover-letter/brief", json={"max_words": 5})
     assert bad.status_code == 422
     assert client.get("/jobs/999/cover-letter").status_code == 404
+
+
+def test_cv_brief_is_saved_per_job_and_read_by_the_agent(client: TestClient) -> None:
+    """Las indicaciones del CV de la ficha: sustituyen a las anteriores y las lee el agente."""
+    job_id = approved_job(client)
+    assert client.get(f"/jobs/{job_id}/cv/brief").json()["instructions"] == ""
+    saved = client.post(f"/jobs/{job_id}/cv/brief", json={"instructions": "  Destaca Airflow. "})
+    assert saved.status_code == 200 and saved.json()["instructions"] == "Destaca Airflow."
+    with session_scope() as session:
+        view = TOOLS_BY_NAME["get_cv_brief"].handler(session, JobIdInput(job_id=job_id), None)
+    assert view.instructions == "Destaca Airflow."  # type: ignore[attr-defined]
+    assert client.post(f"/jobs/{job_id}/cv/brief", json={}).json()["instructions"] == ""
+    too_long = client.post(f"/jobs/{job_id}/cv/brief", json={"instructions": "x" * 4001})
+    assert too_long.status_code == 422
+    assert client.get("/jobs/999/cv/brief").status_code == 404
 
 
 def test_render_select_and_files(client: TestClient) -> None:

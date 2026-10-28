@@ -54,6 +54,24 @@ describe('Sección CV de la ficha', () => {
     expect(within(section).queryByRole('button', { name: 'Generar' })).not.toBeInTheDocument()
   })
 
+  it('junto a «Generar CV», indicaciones para ese CV que se guardan al salir de la caja', async () => {
+    const calls = mockApi({
+      'GET /status': status(),
+      'GET /jobs/1': approved,
+      'GET /jobs/1/cv': { job_id: 1, stage: 'approved', can_render: true, cv: null },
+      'GET /jobs/1/cv/brief': { job_id: 1, instructions: '', updated_at: null },
+      'POST /jobs/1/cv/brief': { status: 200, body: { job_id: 1, instructions: 'Destaca Airflow.', updated_at: '2026-10-28T10:00:00Z' } },
+      'GET /templates': templateList(),
+    })
+    renderApp('/jobs/1?tab=application')
+    const section = await screen.findByRole('region', { name: 'CV' })
+    const box = await within(section).findByLabelText('Indicaciones para este CV (opcional)')
+    await userEvent.type(box, 'Destaca Airflow.')
+    await userEvent.tab()
+    expect(await within(section).findByText(/Guardadas: tu agente las usará/)).toBeInTheDocument()
+    expect(calls.find((c) => c.method === 'POST' && c.path === '/jobs/1/cv/brief')?.body).toEqual({ instructions: 'Destaca Airflow.' })
+  })
+
   it('los avisos de maquetación dicen la página y cómo arreglarlo (fase 25.5)', async () => {
     mockApi({
       'GET /status': status(),

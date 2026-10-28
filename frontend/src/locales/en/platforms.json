@@ -1,8 +1,8 @@
 {
   "hub": {
-    "label": "Job sources",
+    "label": "Where to search",
     "companies": "Target companies",
-    "platforms": "Platforms"
+    "platforms": "Job boards"
   },
   "access": {
     "free": "Open",
@@ -105,17 +105,17 @@
   },
   "limits": "App limits: at most {{pages}} of results per search, {{delay}} s pause between pages and {{offers}} jobs per run on new platforms (change it on each one with “Jobs per run”).",
   "empty": {
-    "title": "No platforms yet",
-    "body": "Add them with “Add platform” or ask your agent to set up your search: it'll ask where you look, recommend job boards and save the searches here."
+    "title": "You're not searching any job board yet",
+    "body": "Ask your agent to set it up: it asks where you search, recommends job boards and prepares their searches with the roles in your profile. Or add one yourself: on known job boards, the searches come from your profile."
   },
-  "title": "Platforms",
+  "title": "Job boards",
   "broaden": "Broaden search",
   "intro": "Job boards your agent browses with your browser, in this order, when you press “Search jobs”. It only reads: it never applies for you.",
   "add": {
     "linkedinTitle": "It's saved with searching turned off, and that's what we recommend.",
     "linkedinP1": "LinkedIn's terms forbid browsing its website with automated tools, and it may restrict or close your account if it detects it, even if the agent uses your browser and only reads. The safe way is to get its jobs through email alerts (the “Alerts” screen) or with the “Send to CandidatAI” button.",
     "linkedinP2": "If you still want the agent to browse it, turn it on afterwards with its switch, at your own risk.",
-    "title": "Add platform",
+    "title": "Add job board",
     "description": "A job board where your agent searches for jobs with your browser when you press “Search jobs”.",
     "portal": "Job board",
     "pick": "Pick a job board…",
@@ -136,7 +136,17 @@
     "cancel": "Cancel",
     "saving": "Saving…",
     "submit": "Add",
-    "button": "Add platform"
+    "button": "Add job board",
+    "fromProfile": "Fill in from my profile",
+    "urlsHintGenerated": "They come from the roles and locations in your profile (“My profile → Search”). You can remove or add lines: one address per search.",
+    "urlsHintNoRoles": "Add the roles you're looking for in “My profile → Search” and they fill in by themselves. Or run the search on the job board and paste the results address here.",
+    "willSearch": "It will search:"
+  },
+  "edit": {
+    "button": "Edit {{name}}",
+    "title": "Edit {{name}}",
+    "description": "Change the name or the searches. The order, the access and whether your agent browses it are changed in its row.",
+    "submit": "Save"
   },
   "search": "Search jobs"
 }

@@ -67,8 +67,9 @@ El instalador:
 4. prepara el entorno, el Chromium de los PDF y la base de datos;
 5. crea un acceso directo **«CandidatAI»** en el escritorio y en el menú Inicio.
 
-Al abrir el acceso directo se arranca todo y se abre el navegador en `http://127.0.0.1:8000`. Deja
-abierta la ventana que aparece mientras la uses; para cerrar CandidatAI, cierra esa ventana.
+Al abrir el acceso directo se abre enseguida el navegador con «Arrancando CandidatAI…», y en
+cuanto la app responde pasa sola a `http://127.0.0.1:8000`. Deja abierta la ventana que aparece
+mientras la uses; para cerrar CandidatAI, cierra esa ventana.
 
 - **Antes de instalar**, `-WhatIf` (al final de la segunda línea) explica lo que haría sin cambiar
   nada. En los ejemplos de abajo, si PowerShell no deja ejecutar scripts, usa
@@ -334,13 +335,13 @@ Un día normal:
 | Fuente | Cómo se configura |
 |---|---|
 | **Alta manual** | «Nueva oferta» en la UI (URL o texto pegado) |
-| **Empresas objetivo** (Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters, Recruitee) | Página «Fuentes → Empresas objetivo» o `cai sources add --kind greenhouse --name "Acme" --slug acme`. `cai sources discover --file empresas.txt` busca el tablero de cada empresa de una lista. Cómo encontrar el slug, en [`FUENTES_OFERTAS.md`](FUENTES_OFERTAS.md#cómo-encontrar-el-slug) |
+| **Empresas objetivo** (Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters, Recruitee) | Página «Dónde buscar → Empresas objetivo» o `cai sources add --kind greenhouse --name "Acme" --slug acme`. `cai sources discover --file empresas.txt` busca el tablero de cada empresa de una lista. Cómo encontrar el slug, en [`FUENTES_OFERTAS.md`](FUENTES_OFERTAS.md#cómo-encontrar-el-slug) |
 | **InfoJobs y Adzuna** | Sus claves en `.env` (`CAI_INFOJOBS_CLIENT_ID`/`_SECRET`, `CAI_ADZUNA_APP_ID`/`_KEY`) y una búsqueda con `cai sources add` |
 | **Manfred y freehire.me** | Sin claves: una búsqueda en la misma página o con `cai sources add --kind manfred --name Manfred --query "data engineer"` (en freehire, también `--country` y `--remote-only`) |
 | **Alertas por correo** | Crea alertas en LinkedIn, InfoJobs, Indeed… y que lleguen a una etiqueta de tu correo. En «Alertas → Añadir buzón» conecta uno o varios buzones (Gmail, Outlook, Yahoo, iCloud u otro IMAP, siempre en solo lectura) o una carpeta de `.eml`; el asistente explica cada proveedor y prueba la conexión antes de guardar. La contraseña se guarda en tu `.env` y no vuelve a salir. Paso a paso en [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md). Lo que llega aparece en «Alertas» |
 | **Botón «Enviar a CandidatAI»** | Carga `extension/` como extensión sin empaquetar en Chrome o Edge y pega el token de `cai capture token` en sus opciones. Instrucciones: [`extension/README.md`](../extension/README.md) |
-| **Tu agente con tu navegador** | `search-jobs configurar` elige portales y búsquedas (página «Fuentes → Plataformas»); `search-jobs` los recorre. LinkedIn queda desactivado hasta que lo actives tú |
-| **Búsqueda pública de LinkedIn** | Interruptor «Búsqueda pública sin sesión» en la tarjeta de LinkedIn de «Fuentes → Plataformas». Apagado por defecto: va contra las condiciones de LinkedIn y puede bloquear tu IP un tiempo |
+| **Tu agente con tu navegador** | En «Dónde buscar → Portales de empleo», «Configurar con mi agente» (`search-jobs configurar`) elige portales y búsquedas; o añádelos tú: en InfoJobs, Tecnoempleo, Indeed y LinkedIn las búsquedas salen solas de los puestos y las ubicaciones de tu perfil, y cada portal se edita con su lápiz; `search-jobs` los recorre. LinkedIn queda desactivado hasta que lo actives tú |
+| **Búsqueda pública de LinkedIn** | Interruptor «Búsqueda pública sin sesión» en la tarjeta de LinkedIn de «Dónde buscar → Portales de empleo». Apagado por defecto: va contra las condiciones de LinkedIn y puede bloquear tu IP un tiempo |
 
 El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.daily_at`
 (`config/policies.yaml`) y al arrancar si se perdió alguna. Detalle de cada vía:

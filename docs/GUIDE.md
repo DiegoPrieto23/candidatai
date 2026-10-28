@@ -71,8 +71,9 @@ The installer:
 4. prepares the environment, the PDF Chromium and the database;
 5. creates a **"CandidatAI"** shortcut on the desktop and in the Start menu.
 
-Opening the shortcut starts everything and opens your browser at `http://127.0.0.1:8000`. Keep the
-window that appears open while you use it; to close CandidatAI, close that window.
+Opening the shortcut opens your browser straight away with "Starting CandidatAI…", and as soon as
+the app answers it moves on to `http://127.0.0.1:8000` by itself. Keep the window that appears open
+while you use it; to close CandidatAI, close that window.
 
 - **Before installing**, `-WhatIf` (at the end of the second line) explains what it would do
   without changing anything. In the examples below, if PowerShell refuses to run scripts, use
@@ -340,13 +341,13 @@ A typical day:
 | Source | How to set it up |
 |---|---|
 | **Manual** | **New job** in the UI: a URL or pasted text |
-| **Target companies** (Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters, Recruitee) | **Sources → Target companies** page or `cai sources add --kind greenhouse --name "Acme" --slug acme`. `cai sources discover --file companies.txt` finds the board of each company in a list. How to find the slug: [`FUENTES_OFERTAS.md`](FUENTES_OFERTAS.md#cómo-encontrar-el-slug) (Spanish) |
+| **Target companies** (Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters, Recruitee) | **Where to search → Target companies** page or `cai sources add --kind greenhouse --name "Acme" --slug acme`. `cai sources discover --file companies.txt` finds the board of each company in a list. How to find the slug: [`FUENTES_OFERTAS.md`](FUENTES_OFERTAS.md#cómo-encontrar-el-slug) (Spanish) |
 | **InfoJobs and Adzuna** | Their keys in `.env` (`CAI_INFOJOBS_CLIENT_ID`/`_SECRET`, `CAI_ADZUNA_APP_ID`/`_KEY`) and a search with `cai sources add` |
 | **Manfred and freehire.me** | No keys: a search on the same page or with `cai sources add --kind manfred --name Manfred --query "data engineer"` (for freehire, also `--country` and `--remote-only`) |
 | **Email alerts** | Create job alerts on LinkedIn, InfoJobs, Indeed… and have them land in a label of your mailbox. In **Alerts → Add mailbox**, connect one or more mailboxes (Gmail, Outlook, Yahoo, iCloud or other IMAP, always read-only) or a folder of `.eml` files; the wizard explains each provider and tests the connection before saving. The password is stored in your `.env` and never comes out again. Step by step in [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md) (Spanish). What comes in shows up in **Alerts** |
 | **"Send to CandidatAI" button** | Load `extension/` as an unpacked extension in Chrome or Edge and paste the token from `cai capture token` into its options. Instructions: [`extension/README.md`](../extension/README.md) (Spanish) |
-| **Your agent with your browser** | `search-jobs configurar` picks portals and searches (**Sources → Platforms** page); `search-jobs` browses them. LinkedIn stays off until you turn it on |
-| **LinkedIn's public search** | The **Public search without signing in** switch on the LinkedIn card in **Sources → Platforms**. Off by default: it goes against LinkedIn's terms and may get your IP blocked for a while |
+| **Your agent with your browser** | In **Where to search → Job boards**, **Set up with my agent** (`search-jobs configurar`) picks job boards and searches; or add them yourself: on InfoJobs, Tecnoempleo, Indeed and LinkedIn the searches come from the roles and locations in your profile, and each job board is edited with its pencil; `search-jobs` browses them. LinkedIn stays off until you turn it on |
+| **LinkedIn's public search** | The **Public search without signing in** switch on the LinkedIn card in **Where to search → Job boards**. Off by default: it goes against LinkedIn's terms and may get your IP blocked for a while |
 
 The worker runs the automatic sources every day at `connectors.daily_at`
 (`config/policies.yaml`), and on start-up if one was missed. Detail of each source:

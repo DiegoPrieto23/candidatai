@@ -9,7 +9,7 @@ import {
   useUpdateBrowseSettings,
   useUpdateLinkedInPublic,
 } from '@/api/queries'
-import { AddPlatformButton } from '@/components/AddPlatformDialog'
+import { AddPlatformButton, EditPlatformButton } from '@/components/AddPlatformDialog'
 import { AgentButton } from '@/components/AgentButton'
 import { Hint } from '@/components/Hint'
 import { Reveal } from '@/components/Reveal'
@@ -496,17 +496,20 @@ function PlatformRow({ source, order, limits }: { source: SourceView; order: Slo
             <LastRun source={source} />
           </div>
         </div>
-        <label className="flex items-center gap-2.5 text-sm">
-          <span className={cn(!enabled && 'text-muted-foreground')}>
-            {enabled ? t('row.browsing') : t('row.disabled')}
-          </span>
-          <Switch
-            checked={enabled}
-            disabled={update.isPending}
-            label={t('row.switch', { name: source.name })}
-            onChange={onToggle}
-          />
-        </label>
+        <div className="flex items-center gap-3">
+          <EditPlatformButton source={source} />
+          <label className="flex items-center gap-2.5 text-sm">
+            <span className={cn(!enabled && 'text-muted-foreground')}>
+              {enabled ? t('row.browsing') : t('row.disabled')}
+            </span>
+            <Switch
+              checked={enabled}
+              disabled={update.isPending}
+              label={t('row.switch', { name: source.name })}
+              onChange={onToggle}
+            />
+          </label>
+        </div>
       </div>
 
       {/* La búsqueda pública de LinkedIn, a la vista solo si está activada: es otra forma de buscar. */}
@@ -643,6 +646,7 @@ function byPriority(a: SourceView, b: SourceView): number {
 
 export function PlatformsPage() {
   const { t } = useTranslation('platforms')
+  const { t: tAgent } = useTranslation('agent')
   const platforms = usePlatforms()
 
   let body
@@ -660,7 +664,14 @@ export function PlatformsPage() {
       <EmptyState
         icon={<CompassIcon className="size-6" weight="duotone" />}
         title={t('empty.title')}
-        action={<AddPlatformButton primary />}
+        action={
+          <div className="flex flex-wrap justify-center gap-2">
+            <AgentButton action="configure-platforms" primary>
+              {tAgent('actions.configure-platforms')}
+            </AgentButton>
+            <AddPlatformButton />
+          </div>
+        }
       >
         <InlineCode text={t('empty.body')} />
       </EmptyState>
@@ -689,6 +700,7 @@ export function PlatformsPage() {
           {any && (
             <div className="flex flex-wrap gap-2">
               <AddPlatformButton />
+              <AgentButton action="configure-platforms">{tAgent('actions.configure-platforms')}</AgentButton>
               <AgentButton action="broaden-search">{t('broaden')}</AgentButton>
               <AgentButton action="search-jobs" primary>
                 {t('search')}

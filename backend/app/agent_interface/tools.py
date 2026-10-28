@@ -59,6 +59,7 @@ from app.services import (
     tracking,
 )
 from app.services.documents import cover_letter as letter
+from app.services.documents import cv_brief
 from app.services.documents import service as cv
 from app.services.ingestion import browse
 from app.services.ingestion import service as sources
@@ -645,6 +646,10 @@ def _get_cv_content(session: Session, args: GetCvContentInput, _ctx: CallContext
     return cv.get_content(session, job_id=args.job_id, document_id=args.document_id)
 
 
+def _get_cv_brief(session: Session, args: JobIdInput, _ctx: CallContext) -> cv_brief.CvBriefView:
+    return cv_brief.get_brief(session, args.job_id)
+
+
 def _save_cv_verification(
     session: Session, args: SaveCvVerificationInput, ctx: CallContext
 ) -> cv.SaveVerificationResult:
@@ -1077,6 +1082,17 @@ TOOLS: tuple[ToolSpec, ...] = (
         cli=CliSpec(
             path=("cv", "show"), arguments=("job_id",), option_names={"document_id": "--document"}
         ),
+    ),
+    ToolSpec(
+        name="get_cv_brief",
+        description=(
+            "Las indicaciones del usuario para el CV de una oferta (qué destacar, el idioma…), "
+            "escritas en la ficha. Vacías si no hay. Orientan la redacción; no son hechos."
+        ),
+        input_model=JobIdInput,
+        output_model=cv_brief.CvBriefView,
+        handler=_get_cv_brief,
+        cli=CliSpec(path=("cv", "brief"), arguments=("job_id",)),
     ),
     ToolSpec(
         name="save_cv_verification",

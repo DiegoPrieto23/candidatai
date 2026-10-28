@@ -45,6 +45,7 @@ policy:
     - mcp:get_context
     - mcp:get_match
     - mcp:get_cv_content
+    - mcp:get_cv_brief
     - mcp:list_cv_templates
     - mcp:list_sources
     - mcp:list_mail_sources

@@ -118,3 +118,75 @@ export function iconCandidates(home: { origin: string; host: string }): string[]
     ...origins.flatMap((origin) => [`${origin}/favicon.ico`, `${origin}/apple-touch-icon.png`]),
   ]
 }
+
+// --- Búsquedas desde tu perfil ------------------------------------------------------------------
+
+/** Lo que usa del perfil: `preferences.roles`, `locations` y `remote_modes`. */
+export type SearchPreferences = {
+  roles?: string[]
+  locations?: { preferred?: string[]; allowed?: string[] }
+  remote_modes?: string[]
+}
+
+const MAX_SEARCHES = 10 // el máximo que admite una plataforma
+const MAX_PLACES = 2
+
+function slug(text: string): string {
+  return text
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+}
+
+/**
+ * Cómo se busca en cada portal conocido: un puesto, en un sitio (o en cualquiera) y, si se puede
+ * pedir, solo en remoto. Glassdoor y Manfred no están: sus búsquedas llevan ids que no se pueden
+ * sacar de un nombre de ciudad.
+ */
+// Lo que entienden los portales por «en toda España» y «en remoto». Ya codificados: son
+// parámetros de su búsqueda, no textos de la UI.
+const ANYWHERE = 'Espa%C3%B1a'
+const REMOTE = 'Remoto'
+
+const BUILDERS: Record<string, (role: string, place: string | null, remote: boolean) => string | null> = {
+  infojobs: (role, place, remote) =>
+    remote
+      ? null
+      : `https://www.infojobs.net/ofertas-trabajo${place ? `/${slug(place)}` : ''}?keyword=${encodeURIComponent(role)}`,
+  tecnoempleo: (role, place, remote) =>
+    place ? null : `https://www.tecnoempleo.com/ofertas-trabajo/?te=${encodeURIComponent(role)}${remote ? '&en_remoto=1' : ''}`,
+  indeed: (role, place, remote) =>
+    `https://es.indeed.com/jobs?q=${encodeURIComponent(role)}&l=${remote ? REMOTE : place ? encodeURIComponent(place) : ANYWHERE}`,
+  linkedin: (role, place, remote) =>
+    `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(role)}&location=${place ? encodeURIComponent(place) : ANYWHERE}${remote ? '&f_WT=2' : ''}`,
+}
+
+export function canBuildSearches(platform: string): boolean {
+  return platform in BUILDERS
+}
+
+/**
+ * Las búsquedas de un portal conocido a partir de tu perfil: cada puesto que buscas, en tus
+ * ubicaciones preferidas (las dos primeras) y, si aceptas remoto, en remoto. Como mucho 10, por
+ * orden de prioridad de los puestos. Vacío si el portal no se conoce o no hay puestos.
+ */
+export function buildSearches(platform: string, prefs: SearchPreferences | null | undefined): string[] {
+  const build = BUILDERS[platform]
+  const roles = (prefs?.roles ?? []).map((r) => r.trim()).filter(Boolean)
+  if (!build || roles.length === 0) return []
+  const preferred = prefs?.locations?.preferred ?? []
+  const places = (preferred.length ? preferred : (prefs?.locations?.allowed ?? [])).slice(0, MAX_PLACES)
+  const remote = (prefs?.remote_modes ?? []).includes('remote')
+  const urls: string[] = []
+  for (const role of roles) {
+    const variants: [string | null, boolean][] = [...(places.length ? places : [null]).map((p): [string | null, boolean] => [p, false])]
+    if (remote) variants.push([null, true])
+    for (const [place, isRemote] of variants) {
+      const url = build(role, place, isRemote)
+      if (url && !urls.includes(url)) urls.push(url)
+    }
+  }
+  return urls.slice(0, MAX_SEARCHES)
+}

@@ -82,5 +82,12 @@
       "template": "Prueba otra plantilla abajo, sin agente.",
       "content": "Hay que recortar contenido: «Generar CV» con tu agente recorta lo menos relevante para la oferta."
     }
+  },
+  "brief": {
+    "label": "Indicaciones para este CV (opcional)",
+    "placeholder": "Qué quieres que tenga en cuenta: qué proyecto o logro destacar, el idioma, qué dejar fuera…",
+    "hint": "Se guardan solas y tu agente las usa cada vez que redacta este CV. Solo orientan: lo que diga el CV sale de tu perfil.",
+    "saving": "Guardando…",
+    "saved": "Guardadas: tu agente las usará al redactar este CV."
   }
 }

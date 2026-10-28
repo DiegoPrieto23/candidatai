@@ -11,6 +11,7 @@ from app.services.pipeline import Stage
 
 ActionId = Literal[
     "search-jobs",
+    "configure-platforms",
     "process-jobs",
     "assess-fit",
     "assess-fit-job",
@@ -82,6 +83,15 @@ ACTIONS: dict[ActionId, Action] = {
         "Buscar ofertas",
         "Usa el skill search-jobs de CandidatAI para buscar ofertas en las plataformas activas.",
     ),
+    # «Dónde buscar»: el modo configurar del mismo skill. Pregunta dónde buscas y te recomienda
+    # portales antes de guardar nada, así que solo en terminal.
+    "configure-platforms": Action(
+        "Configurar con mi agente",
+        "Usa el skill search-jobs de CandidatAI en modo configurar: ayúdame a elegir en qué "
+        "portales de empleo buscar y prepara sus búsquedas a partir de los puestos y las "
+        "ubicaciones de mi perfil.",
+        skill="search-jobs",
+    ),
     # Las tres que admiten segundo plano (fase 19). Cada lista es lo mínimo que usan el skill y
     # sus roles: con un comodín, una oferta con una inyección podría llamar a herramientas que
     # escriben (`add_event`, `save_source`…).
@@ -131,6 +141,7 @@ ACTIONS: dict[ActionId, Action] = {
         background=(
             "list_jobs",
             "check_job_open",
+            "get_cv_brief",
             "get_match",
             "get_extraction",
             "get_profile",

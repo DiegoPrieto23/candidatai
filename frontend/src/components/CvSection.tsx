@@ -25,6 +25,7 @@ import {
 } from '@/api/client'
 import { useJobCv, useRenderCv, useSelectRender, useTemplates } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
+import { CvBrief } from '@/components/CvBrief'
 import { ClosedHint } from '@/components/JobSignals'
 import { RenderWarnings } from '@/components/RenderWarnings'
 import { Reveal } from '@/components/Reveal'
@@ -594,6 +595,9 @@ function CvBody({
               <p className="mt-1 text-muted-foreground">
                 <Trans t={t} i18nKey="none.hint" values={{ id: jobId }} components={{ code: <Code /> }} />
               </p>
+              <div className="mt-3 max-w-xl">
+                <CvBrief jobId={jobId} />
+              </div>
               <AgentButton action="generate-cv" jobId={jobId} className="mt-3" primary>
                 {t('none.generate')}
               </AgentButton>
@@ -622,6 +626,10 @@ function CvBody({
             ) : (
               <RenderForm key={data.cv.document_id} cv={data.cv} jobId={jobId} templates={templates} />
             )}
+          </Reveal>
+          {/* Rehacer el CV con otras indicaciones: plegadas, que el CV ya está hecho. */}
+          <Reveal label={t('brief.label')} className="w-full max-w-xl">
+            <CvBrief jobId={jobId} />
           </Reveal>
           <AgentButton action="generate-cv" jobId={jobId}>
             {t('rewrite')}

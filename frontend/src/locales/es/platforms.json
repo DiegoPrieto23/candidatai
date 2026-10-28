@@ -1,8 +1,8 @@
 {
   "hub": {
-    "label": "Fuentes de ofertas",
+    "label": "Dónde buscar",
     "companies": "Empresas objetivo",
-    "platforms": "Plataformas"
+    "platforms": "Portales de empleo"
   },
   "access": {
     "free": "Libre",
@@ -105,17 +105,17 @@
   },
   "limits": "Límites de la app: como mucho {{pages}} de resultados por búsqueda, {{delay}} s de pausa entre páginas y {{offers}} ofertas por recorrido en las plataformas nuevas (en cada una lo cambias con «Ofertas por recorrido»).",
   "empty": {
-    "title": "Aún no hay plataformas",
-    "body": "Añádelas con «Añadir plataforma» o pide a tu agente que configure tu búsqueda: te preguntará dónde buscas, te recomendará portales y guardará aquí las búsquedas."
+    "title": "Aún no buscas en ningún portal",
+    "body": "Pide a tu agente que lo configure: te pregunta dónde buscas, te recomienda portales y prepara sus búsquedas con los puestos de tu perfil. O añade uno tú: en los portales conocidos, las búsquedas salen solas de tu perfil."
   },
-  "title": "Plataformas",
+  "title": "Portales de empleo",
   "broaden": "Ampliar búsqueda",
   "intro": "Portales que tu agente recorre con tu navegador, en este orden, cuando pulsas «Buscar ofertas». Solo lee: nunca se postula por ti.",
   "add": {
     "linkedinTitle": "Se guarda con la búsqueda desactivada, y es lo recomendable.",
     "linkedinP1": "Las condiciones de LinkedIn prohíben recorrer su web con herramientas automáticas y puede restringir o cerrar tu cuenta si lo detecta, aunque el agente use tu navegador y solo lea. Lo seguro es recibir sus ofertas por las alertas por correo (pantalla «Alertas») o con el botón «Enviar a CandidatAI».",
     "linkedinP2": "Si aun así quieres que el agente la recorra, actívala después con su interruptor, bajo tu responsabilidad.",
-    "title": "Añadir plataforma",
+    "title": "Añadir portal",
     "description": "Un portal donde tu agente busca ofertas con tu navegador cuando pulsas «Buscar ofertas».",
     "portal": "Portal",
     "pick": "Elige un portal…",
@@ -136,7 +136,17 @@
     "cancel": "Cancelar",
     "saving": "Guardando…",
     "submit": "Añadir",
-    "button": "Añadir plataforma"
+    "button": "Añadir portal",
+    "fromProfile": "Rellenar desde mi perfil",
+    "urlsHintGenerated": "Salen de los puestos y las ubicaciones de tu perfil («Mi perfil → Búsqueda»). Puedes quitar o añadir líneas: una dirección por búsqueda.",
+    "urlsHintNoRoles": "Añade en «Mi perfil → Búsqueda» los puestos que buscas y se rellenan solas. O haz la búsqueda en el portal y copia aquí la dirección de los resultados.",
+    "willSearch": "Buscará:"
+  },
+  "edit": {
+    "button": "Editar {{name}}",
+    "title": "Editar {{name}}",
+    "description": "Cambia el nombre o las búsquedas. El orden, el acceso y si la recorre tu agente se cambian en su fila.",
+    "submit": "Guardar"
   },
   "search": "Buscar ofertas"
 }

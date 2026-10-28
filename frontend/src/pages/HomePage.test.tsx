@@ -87,3 +87,40 @@ describe('Inicio', () => {
     expect(screen.getByRole('button', { name: /Revisar respuestas/ })).toBeInTheDocument()
   })
 })
+
+describe('Primeros pasos (app recién instalada)', () => {
+  const base = { 'GET /status': status(), 'GET /followups': noFollowups, 'GET /upcoming': noUpcoming, 'GET /jobs': page([]) }
+  const noProfile = { exists: false, file_hash: null, profile: null, issues: [], profile_version_id: null, undo_available: 0 }
+  const withProfile = { ...noProfile, exists: true, file_hash: 'h', profile: {}, profile_version_id: 1 }
+  const limits = { max_result_pages: 2, delay_seconds: 5, default_max_offers: 15 }
+
+  it('sin perfil ni portales: subir el CV y configurar dónde buscar con tu agente', async () => {
+    mockApi({
+      ...base,
+      'GET /profile/editable': noProfile,
+      'GET /sources': { sources: [], agent_browse: limits },
+      'GET /context/documents/cv': [],
+    })
+    renderApp('/')
+    const steps = await screen.findByRole('region', { name: 'Primeros pasos' })
+    expect(within(steps).getByRole('button', { name: 'Subir mi CV' })).toBeInTheDocument()
+    expect(within(steps).getByRole('button', { name: 'Crear mi perfil desde mi CV' })).toBeInTheDocument()
+    expect(within(steps).getByRole('button', { name: 'Configurar con mi agente' })).toBeInTheDocument()
+    expect(within(steps).getByRole('link', { name: 'o añade un portal tú' })).toHaveAttribute('href', '/fuentes/plataformas')
+  })
+
+  it('con el perfil hecho, ese paso queda marcado; con los dos, desaparece', async () => {
+    mockApi({ ...base, 'GET /profile/editable': withProfile, 'GET /sources': { sources: [], agent_browse: limits } })
+    const view = renderApp('/')
+    const steps = await screen.findByRole('region', { name: 'Primeros pasos' })
+    expect(within(steps).getByRole('link', { name: /Perfil creado/ })).toHaveAttribute('href', '/perfil')
+    expect(within(steps).queryByRole('button', { name: 'Subir mi CV' })).not.toBeInTheDocument()
+    view.unmount()
+
+    const source = { id: 1, kind: 'agent_browse', name: 'InfoJobs' }
+    mockApi({ ...base, 'GET /profile/editable': withProfile, 'GET /sources': { sources: [source], agent_browse: limits } })
+    renderApp('/')
+    expect(await screen.findByRole('heading', { level: 1 })).toBeInTheDocument()
+    expect(screen.queryByRole('region', { name: 'Primeros pasos' })).not.toBeInTheDocument()
+  })
+})

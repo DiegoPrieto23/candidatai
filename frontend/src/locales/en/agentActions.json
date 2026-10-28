@@ -1,5 +1,6 @@
 {
-  "search-jobs": "Your agent goes through the job boards you have enabled in Sources using your browser and adds the jobs it finds. You'll see them in «To review».",
+  "search-jobs": "Your agent goes through the job boards you have enabled in “Where to search” using your browser and adds the jobs it finds. You'll see them in «To review».",
+  "configure-platforms": "It asks which job boards you use, recommends others for your profile and prepares their searches with your roles and locations. It saves nothing without your OK.",
   "process-jobs": "Reads the new jobs and extracts their details (role, requirements, salary, work mode…) so they can be filtered and assessed. Needs nothing from you.",
   "assess-fit": "Compares each processed job with your profile and leaves an explained assessment on its page. You decide whether to approve or discard it in «To review».",
   "assess-fit-job": "Compares this job with your profile and leaves an explained assessment here. If it had an outdated one, it replaces it.",

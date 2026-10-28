@@ -82,5 +82,12 @@
       "template": "Try another template below, no agent needed.",
       "content": "Content needs trimming: \"Generate CV\" with your agent trims what matters least for the job."
     }
+  },
+  "brief": {
+    "label": "Instructions for this CV (optional)",
+    "placeholder": "What you want it to keep in mind: which project or achievement to highlight, the language, what to leave out…",
+    "hint": "They save on their own and your agent uses them every time it writes this CV. They only guide it: what the CV says comes from your profile.",
+    "saving": "Saving…",
+    "saved": "Saved: your agent will use them when writing this CV."
   }
 }

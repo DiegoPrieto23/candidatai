@@ -1,4 +1,4 @@
-"""API de fuentes (`/sources`) para la página «Fuentes → Empresas objetivo» de la UI."""
+"""API de fuentes (`/sources`) para la página «Dónde buscar → Empresas objetivo» de la UI."""
 
 from collections.abc import Iterator
 
@@ -182,6 +182,39 @@ def test_add_platform_from_the_ui(client: TestClient) -> None:
         "/sources/platforms", json={**PLATFORM, "name": "Otro", "search_urls": ["ftp://x"]}
     )
     assert other.status_code == 422
+
+
+def test_edit_a_platform_name_and_searches(client: TestClient) -> None:
+    """«Editar» cambia el nombre y las búsquedas y conserva lo demás (acceso, prioridad…)."""
+    first = client.post("/sources/platforms", json=PLATFORM).json()["source_id"]
+    client.post(
+        "/sources/platforms",
+        json={
+            **PLATFORM,
+            "name": "InfoJobs",
+            "platform": "infojobs",
+            "priority": None,
+            "search_urls": ["https://www.infojobs.net/ofertas-trabajo?keyword=data"],
+        },
+    )
+    url = f"/sources/{first}/platform"
+    searches = ["https://www.miportal.example/empleo?q=bi", "https://miportal.example/x?q=ml"]
+    edited = client.put(url, json={"name": " Mi portal  nuevo ", "search_urls": searches})
+    assert edited.status_code == 200, edited.text
+    body = edited.json()
+    assert body["name"] == "Mi portal nuevo" and body["browse"]["search_urls"] == searches
+    assert (body["browse"]["access"], body["browse"]["priority"]) == ("login", 1)
+
+    clash = client.put(url, json={"name": "infojobs", "search_urls": searches})
+    assert clash.status_code == 409 and clash.json()["error"]["type"] == "exists"
+    other_site = client.put(
+        url, json={"name": "Mi portal", "search_urls": ["https://otro.example/q"]}
+    )
+    assert other_site.status_code == 422
+    assert (
+        client.put("/sources/999/platform", json={"name": "X", "search_urls": searches}).status_code
+        == 404
+    )
 
 
 def test_platform_priority_swaps_and_stale_ui_is_a_conflict(client: TestClient) -> None:
