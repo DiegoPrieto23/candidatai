@@ -16,7 +16,7 @@
     "save": "Save milestone"
   },
   "milestone": {
-    "ics": "Add “{{title}}” to my calendar",
+    "ics": "Download “{{title}}” for your calendar",
     "edit": "Edit “{{title}}”",
     "done": "Mark “{{title}}” as done",
     "doneLater": "You can mark it as done from the day of the interview",
