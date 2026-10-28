@@ -73,5 +73,6 @@
         "body": "It cannot be installed in Docker: the image does not include it. The score works the same without it."
       }
     }
-  }
+  },
+  "assessAgain": "Assess again"
 }

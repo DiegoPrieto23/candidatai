@@ -2,6 +2,7 @@
   "search-jobs": "Tu agente recorre con tu navegador los portales que tienes activos en Fuentes y da de alta las ofertas que encuentra. Las verás en «Por revisar».",
   "process-jobs": "Lee las ofertas nuevas y saca sus datos (puesto, requisitos, sueldo, modalidad…) para poder filtrarlas y valorarlas. No necesita nada tuyo.",
   "assess-fit": "Compara cada oferta procesada con tu perfil y deja una valoración explicada en su ficha. Aprobar o descartar lo decides tú en «Por revisar».",
+  "assess-fit-job": "Compara esta oferta con tu perfil y deja una valoración explicada aquí. Si ya tenía una desfasada, la sustituye.",
   "generate-cv": "Redacta un CV a medida para esta oferta, solo con datos de tu perfil, y lo verifica para que no lleve nada inventado. Quedan el Word y el PDF en la ficha.",
   "add-skills": "Añade a tu perfil las skills que marcaste como «La tengo». Te enseña los cambios y te pregunta antes de guardar.",
   "training-plan": "Convierte las skills que marcaste como «No la tengo» en un plan de estudio con recursos comprobados, tiempo estimado y orden.",

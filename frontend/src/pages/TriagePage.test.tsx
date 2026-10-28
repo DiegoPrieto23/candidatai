@@ -90,7 +90,7 @@ describe('Por revisar', () => {
 
     await userEvent.keyboard('a')
     expect(within(selected()).getByText('Oferta 2')).toBeInTheDocument()
-    expect(await screen.findByRole('status')).toHaveTextContent('Aprobada Oferta 1')
+    await waitFor(() => expect(screen.getAllByRole('status').some((e) => e.textContent?.includes('Aprobada Oferta 1'))).toBe(true))
     expect(eventCalls(calls)).toEqual([{ path: '/jobs/1/events', body: { type: 'approved' } }])
   })
 
@@ -115,7 +115,9 @@ describe('Por revisar', () => {
     expect(eventCalls(calls)).toEqual([
       { path: '/jobs/1/events', body: { type: 'discarded', reason: 'seniority' } },
     ])
-    expect(await screen.findByRole('status')).toHaveTextContent('Descartada Oferta 1 · Seniority o años')
+    await waitFor(() =>
+      expect(screen.getAllByRole('status').some((e) => e.textContent?.includes('Descartada Oferta 1 · Seniority o años'))).toBe(true),
+    )
   })
 
   it('«Otro motivo» exige nota; las teclas dentro de la nota no disparan atajos', async () => {
@@ -228,6 +230,24 @@ describe('Por revisar', () => {
     expect(within(detail).getByText('Valorada con un score de 64; ahora es 60 porque el perfil o la oferta cambiaron.')).toBeInTheDocument()
     expect(within(detail).getByText('¿Has usado Kafka?')).toBeInTheDocument()
     expect(within(detail).getByText('dbt solo básico')).toBeInTheDocument()
+    // Desfasada: se puede volver a valorar esa oferta sola.
+    expect(within(detail).getByRole('button', { name: 'Volver a valorar' })).toBeInTheDocument()
+  })
+
+  it('valorar el encaje de una oferta: sin valoración o desfasada, nunca con una vigente', async () => {
+    const assessment = { verdict: 'strong' as const, rationale: 'Cubre lo obligatorio.', risks: [], questions_for_user: [] }
+    const items = [
+      triageItem(1, 70, { match: matchView({ score: 70, assessment: null }) }),
+      triageItem(2, 60, { match: matchView({ score: 60, assessment, assessment_stale: false }) }),
+    ]
+    mockTriage(items)
+    renderApp('/por-revisar')
+    let detail = await screen.findByRole('article')
+    expect(within(detail).getByRole('button', { name: 'Valorar encaje' })).toBeInTheDocument()
+    await userEvent.keyboard('j')
+    await waitFor(() => expect(within(screen.getByRole('article')).getByText('Encaje fuerte')).toBeInTheDocument())
+    detail = screen.getByRole('article')
+    expect(within(detail).queryByRole('button', { name: /valorar/i })).not.toBeInTheDocument()
   })
 
   it('el descarte por sueldo dice cuánto queda por debajo de tu mínimo (solo la UI lo sabe)', async () => {
@@ -281,7 +301,7 @@ describe('Comparación por significado', () => {
     await userEvent.click(within(dialog).getByRole('button', { name: 'Instalar' }))
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
     expect(calls.some((c: Call) => c.method === 'POST' && c.path === '/matching/semantic/install')).toBe(true)
-    expect(await within(detail).findByRole('status')).toHaveTextContent(/Instalando la comparación por significado/)
+    expect(await within(detail).findByText('Instalando la comparación por significado…')).toBeInTheDocument()
   })
 
   it('en Docker no ofrece instalarla', async () => {

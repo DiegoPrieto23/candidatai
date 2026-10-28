@@ -2,6 +2,7 @@
   "search-jobs": "Your agent goes through the job boards you have enabled in Sources using your browser and adds the jobs it finds. You'll see them in «To review».",
   "process-jobs": "Reads the new jobs and extracts their details (role, requirements, salary, work mode…) so they can be filtered and assessed. Needs nothing from you.",
   "assess-fit": "Compares each processed job with your profile and leaves an explained assessment on its page. You decide whether to approve or discard it in «To review».",
+  "assess-fit-job": "Compares this job with your profile and leaves an explained assessment here. If it had an outdated one, it replaces it.",
   "generate-cv": "Writes a CV tailored to this job, using only your profile, and checks that nothing is made up. The Word and PDF files are left on the job page.",
   "add-skills": "Adds to your profile the skills you marked as «I have it». It shows you the changes and asks before saving.",
   "training-plan": "Turns the skills you marked as «I don't have it» into a study plan with verified resources, estimated time and order.",
