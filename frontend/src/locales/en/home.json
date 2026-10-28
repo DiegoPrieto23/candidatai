@@ -47,5 +47,20 @@
     "readyEmpty": "No CV ready. Approve jobs and ask your agent for the CV.",
     "next7": "Next 7 days",
     "calendar": "Calendar"
+  },
+  "firstSteps": {
+    "title": "Getting started",
+    "intro": "Two steps and your agent starts searching for you. No need to fill anything in by hand.",
+    "profile": {
+      "title": "Create your profile from your CV",
+      "body": "Upload your CV (PDF or Word) and your agent fills in your profile: it asks about what the CV doesn't say and saves nothing without your OK.",
+      "done": "Profile created: review it in “My profile”"
+    },
+    "search": {
+      "title": "Choose where to search",
+      "body": "Your agent asks which job boards you use, recommends others and prepares the searches with the roles in your profile.",
+      "manual": "or add a job board yourself",
+      "done": "Job boards set up: see them in “Where to search”"
+    }
   }
 }

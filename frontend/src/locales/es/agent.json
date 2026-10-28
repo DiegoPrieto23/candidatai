@@ -1,6 +1,7 @@
 {
   "actions": {
     "search-jobs": "Buscar ofertas",
+    "configure-platforms": "Configurar con mi agente",
     "process-jobs": "Procesar ofertas",
     "assess-fit": "Evaluar encaje",
     "assess-fit-job": "Valorar encaje",

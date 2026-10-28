@@ -28,6 +28,16 @@ def _tables(url: str) -> set[str]:
         engine.dispose()
 
 
+def test_upgrade_at_head_skips_alembic(db_url: str, monkeypatch: pytest.MonkeyPatch) -> None:
+    """`cai start` migra en cada arranque: ya al día, no carga el entorno de Alembic."""
+    from alembic import command
+
+    migrations.upgrade(db_url)
+    monkeypatch.setattr(command, "upgrade", lambda *_a: pytest.fail("no debía migrar"))
+    migrations.upgrade(db_url)
+    assert migrations.current_revision(db_url) == migrations.head_revision()
+
+
 def test_upgrade_creates_all_tables_and_downgrade_empties(db_url: str) -> None:
     migrations.upgrade(db_url)
     assert _tables(db_url) == set(Base.metadata.tables) | {"alembic_version"}

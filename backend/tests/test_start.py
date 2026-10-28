@@ -345,6 +345,90 @@ def test_start_speaks_the_system_language_or_cai_lang(
     assert "is already running" in first_line()
 
 
+def _record_start(
+    monkeypatch: pytest.MonkeyPatch, port: int = 8000, opened: object = None
+) -> list[str]:
+    """Arranca con todo simulado y devuelve qué pasó, en orden."""
+    steps: list[str] = []
+    monkeypatch.setattr(launcher, "probe", lambda _port: "free")
+    monkeypatch.setattr(launcher.migrations, "upgrade", lambda: steps.append("upgrade"))
+    monkeypatch.setattr(
+        launcher, "_spawn", lambda child, _logs: steps.append(f"spawn {child.name}")
+    )
+    monkeypatch.setattr(launcher, "wait_ready", lambda _url, _launch: steps.append("ready"))
+    monkeypatch.setattr(launcher, "supervise", lambda _launch: "api")
+    monkeypatch.setattr(launcher, "stop", lambda _launch: None)
+
+    def browser(url: str) -> object:
+        steps.append(f"open {url}")
+        return opened
+
+    launcher.start(
+        get_settings(), port, say=lambda line: steps.append(f"say {line}"), browser=browser
+    )
+    return steps
+
+
+def test_start_shows_the_starting_page_at_once_and_the_worker_waits_for_the_api(
+    ui_dir: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """La página «Arrancando…» se abre antes de nada (y solo ella: pasa sola a la app), y el worker
+    arranca cuando la API ya responde, para no quitarle CPU mientras carga."""
+    (ui_dir / "starting.html").write_text("<!doctype html>", encoding="utf-8")
+    steps = [s for s in _record_start(monkeypatch) if not s.startswith("say")]
+    assert steps == [
+        f"open {(ui_dir / 'starting.html').resolve().as_uri()}",
+        "upgrade",
+        "spawn api",
+        "ready",
+        "spawn worker",
+    ]
+
+
+def test_without_the_starting_page_the_app_opens_when_it_answers(
+    ui_dir: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Con otro puerto (la página pregunta al de siempre) o sin la página, como antes."""
+    (ui_dir / "starting.html").write_text("<!doctype html>", encoding="utf-8")
+    steps = [s for s in _record_start(monkeypatch, port=8123) if not s.startswith("say")]
+    assert steps == ["upgrade", "spawn api", "ready", "spawn worker", "open http://127.0.0.1:8123"]
+    (ui_dir / "starting.html").unlink()
+    assert "open http://127.0.0.1:8000" in _record_start(monkeypatch)
+
+
+def test_start_says_where_to_go_when_no_browser_opens(
+    ui_dir: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    (ui_dir / "starting.html").write_text("<!doctype html>", encoding="utf-8")
+    steps = _record_start(monkeypatch, opened=False)
+    assert any("abre http://127.0.0.1:8000 en el tuyo" in s for s in steps)
+
+
+def test_the_starting_page_asks_the_app_and_opens_it() -> None:
+    """La página que se abre desde el disco: va en la UI compilada, sin nada externo, pregunta a la
+    app de siempre y pasa a ella; si no responde, dice dónde mirar."""
+    page = (REPO_ROOT / "frontend" / "public" / "starting.html").read_text(encoding="utf-8")
+    assert "var target = 'http://127.0.0.1:8000/'" in page
+    assert launcher.DEFAULT_PORT == 8000
+    assert "fetch(target + 'status" in page and "location.replace(target)" in page
+    assert not re.search(r"""(src|href)=["']https?://(?!127\.0\.0\.1)""", page)
+    assert "Arrancando CandidatAI" in page and "Starting CandidatAI" in page
+
+
+@pytest.mark.parametrize("script", ["install.ps1", "install.sh"])
+def test_installers_compile_the_app_so_the_first_start_is_not_slow(script: str) -> None:
+    text = (REPO_ROOT / script).read_text(encoding="utf-8-sig")
+    assert "sync --directory" in text and "--compile-bytecode" in text
+    assert "python -m compileall -q app" in text
+
+
+def test_the_windows_shortcut_opens_the_starting_page_before_python_loads() -> None:
+    windows = (REPO_ROOT / "install.ps1").read_text(encoding="utf-8-sig")
+    line = next(x for x in windows.splitlines() if "$shortcut.Arguments" in x)
+    assert line.index('start `"`" `"$starting`"') < line.index("cai start --no-browser")
+    assert r'Join-Path $AppDir "frontend\dist\starting.html"' in windows
+
+
 def test_start_refuses_a_port_used_by_something_else(
     ui_dir: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

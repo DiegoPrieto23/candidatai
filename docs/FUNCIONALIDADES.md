@@ -20,7 +20,7 @@ FEATURES.md dejan de coincidir fila a fila. -->
 | **Alta de una oferta** pegando su URL o su texto; los duplicados se detectan y apuntan a la original | `/nueva` | [Alta](img/es/new-job.webp) |
 | **Bandeja**: todas las ofertas con filtros, búsqueda, señales y etapa; las que están por completar o por extraer se quitan con **Descartar** y **Deshacer**; «Cerrada» con su fecha, ordenable | `/bandeja` | [Bandeja](img/es/inbox.webp) · [▶ Descartar](img/es/anim/discard.webp) |
 | **Empresas objetivo**: sus ofertas llegan cada día desde Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters y Recruitee (APIs públicas, sin scraping); «Probar» dice cuántas pasan tus filtros | `/fuentes/empresas` | [Empresas](img/es/sources-companies.webp) |
-| **Plataformas**: los portales que recorre tu agente, cada uno con su prioridad (sin empates), su acceso y sus ofertas por recorrido, explicados con su ⓘ; InfoJobs y Adzuna con claves, Manfred y freehire.me sin ellas | `/fuentes/plataformas` | [Plataformas](img/es/sources-platforms.webp) |
+| **Portales de empleo** (en «Dónde buscar»): «Configurar con mi agente» te recomienda portales y prepara sus búsquedas; al añadir uno conocido (InfoJobs, Tecnoempleo, Indeed, LinkedIn), las búsquedas salen solas de los puestos y las ubicaciones de tu perfil, y cada portal se puede editar. Los que recorre tu agente, cada uno con su prioridad (sin empates), su acceso y sus ofertas por recorrido, explicados con su ⓘ; InfoJobs y Adzuna con claves, Manfred y freehire.me sin ellas | `/fuentes/plataformas` | [Plataformas](img/es/sources-platforms.webp) |
 | **Buscar en portales con tu navegador**: tu agente recorre tus búsquedas, con límites de páginas y pausas, da de alta lo que encaja y para ante captchas | `search-jobs` | |
 | **Alertas de empleo por correo**: las de LinkedIn, InfoJobs, Indeed… entran solas, por IMAP en solo lectura o desde ficheros `.eml`; **varios buzones**, con guía paso a paso para Gmail, Outlook, Yahoo e iCloud; las ofertas resumen caducan a los 21 días | `/alertas` | [Alertas](img/es/alerts.webp) · [▶ Añadir buzón](img/es/anim/mailbox.webp) |
 | **Botón «Enviar a CandidatAI»**: extensión de Chrome/Edge que manda la oferta que estás viendo (LinkedIn incluido) o completa el resumen de una alerta | [`extension/`](../extension/README.md) | |
@@ -34,7 +34,7 @@ FEATURES.md dejan de coincidir fila a fila. -->
 
 | Funcionalidad | Dónde | Captura |
 |---|---|---|
-| **Inicio**: lo que te espera hoy (ofertas por procesar o valorar, respuestas, seguimientos), las que mejor encajan, las listas para enviar y los próximos hitos | `/` | [Inicio](img/es/home.webp) |
+| **Inicio**: con la app recién instalada, «Primeros pasos» (sube tu CV para crear tu perfil y elige dónde buscar con tu agente); luego, lo que te espera hoy (ofertas por procesar o valorar, respuestas, seguimientos), las que mejor encajan, las listas para enviar y los próximos hitos | `/` | [Inicio](img/es/home.webp) |
 | **Filtros duros y un score 0-100 explicado**: nivel, años, modalidad, zona, idiomas y palabras de descarte; cobertura de skills ponderada por tu nivel, preferencias y similitud semántica local opcional | `/por-revisar` | [Por revisar](img/es/triage.webp) |
 | **Revisar con el teclado**: `J`/`K` para moverte, `A` aprobar, `D` descartar con motivo, `O` abrir, y Deshacer | `/por-revisar` | [▶ Teclado](img/es/anim/triage.webp) |
 | **El veredicto de tu agente**: encaje con riesgos y preguntas, citando tus deal-breakers; en segundo plano se salta las de poco score. En cada oferta, «Valorar encaje» si no tiene valoración o la tiene desfasada | `assess-fit` | |
@@ -45,7 +45,7 @@ FEATURES.md dejan de coincidir fila a fila. -->
 
 | Funcionalidad | Dónde | Captura |
 |---|---|---|
-| **CV a medida**: tu agente lo redacta citando la evidencia de tu perfil de cada línea; el código rechaza lo que no está y otro rol lo verifica; la ficha avisa con el PDF en cuanto está | `generate-cv` | |
+| **CV a medida**: con tus indicaciones para esa oferta, si quieres (qué destacar, el idioma…); tu agente lo redacta citando la evidencia de tu perfil de cada línea; el código rechaza lo que no está y otro rol lo verifica; la ficha avisa con el PDF en cuanto está | `generate-cv` | |
 | **El mismo contenido, cualquier diseño**: plantilla, foto, color y secciones en la ficha, renderizado en segundos sin agente; comparas renders y marcas el que envías; la maquetación del PDF se revisa | `/jobs/:id` | [CV](img/es/job-cv.webp) · [▶ Otro diseño](img/es/anim/cv.webp) |
 | **Carta de presentación** según tus indicaciones generales y las de cada oferta, verificada, en TXT y PDF a juego con el CV; la puedes retocar a mano | `generate-cover-letter` | [Carta](img/es/job-letter.webp) |
 | **Plantillas de CV**: integradas (Word y HTML) y las tuyas; «Mi CV» al lado de tu perfil | `/plantillas` | [Plantillas](img/es/templates.webp) |

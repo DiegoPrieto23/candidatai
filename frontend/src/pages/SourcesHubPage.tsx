@@ -9,7 +9,7 @@ const TABS = [
 ] as const
 
 /**
- * «Fuentes» (fase 23.3): de dónde salen tus ofertas. Une las plataformas que recorre tu agente y
+ * «Dónde buscar» (fase 23.3; antes «Fuentes»): de dónde salen tus ofertas. Une las plataformas que recorre tu agente y
  * las empresas objetivo (APIs de ATS y portales), cada una en su pestaña con su propia URL.
  */
 export function SourcesHubPage() {

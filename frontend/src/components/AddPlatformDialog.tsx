@@ -1,8 +1,9 @@
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { PlusIcon, WarningIcon } from '@phosphor-icons/react'
-import type { BrowseAccess } from '@/api/client'
-import { useAddPlatform, usePlatforms } from '@/api/queries'
+import { PencilSimpleIcon, PlusIcon, SparkleIcon, WarningIcon } from '@phosphor-icons/react'
+import type { BrowseAccess, SourceView } from '@/api/client'
+import { useAddPlatform, useEditableProfile, useEditPlatform, usePlatforms } from '@/api/queries'
+import { Hint } from '@/components/Hint'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -16,6 +17,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { errorMessage } from '@/lib/errors'
+import { buildSearches, canBuildSearches, searchLabel, type SearchPreferences } from '@/lib/searches'
 
 /** Portales conocidos: rellenan el id y una búsqueda de ejemplo. «Otra» deja escribir el id. */
 const KNOWN: { id: string; name: string; example: string }[] = [
@@ -42,6 +44,68 @@ function LinkedInNotice() {
   )
 }
 
+/** `preferences` de tu perfil, para generar las búsquedas sin IA. */
+function useSearchPreferences(): SearchPreferences | null {
+  const profile = useEditableProfile()
+  const prefs = (profile.data?.profile as { preferences?: SearchPreferences } | null | undefined)?.preferences
+  return prefs ?? null
+}
+
+const toLines = (urls: string) =>
+  urls
+    .split('\n')
+    .map((u) => u.trim())
+    .filter(Boolean)
+
+/**
+ * Las búsquedas de la plataforma: en un portal conocido salen solas de tu perfil (los puestos que
+ * buscas, en tus ubicaciones y en remoto) y se pueden retocar; debajo, cómo se leen.
+ */
+function SearchesField({
+  platform,
+  urls,
+  setUrls,
+  example,
+}: {
+  platform: string
+  urls: string
+  setUrls: (value: string) => void
+  example: string
+}) {
+  const { t } = useTranslation('platforms', { keyPrefix: 'add' })
+  const prefs = useSearchPreferences()
+  const generated = buildSearches(platform, prefs)
+  const lines = toLines(urls)
+  const hint = !canBuildSearches(platform) ? 'urlsHint' : generated.length > 0 ? 'urlsHintGenerated' : 'urlsHintNoRoles'
+  return (
+    <div className="grid gap-1.5">
+      <div className="flex flex-wrap items-end justify-between gap-2">
+        <Label htmlFor="platform-urls">{t('urls')}</Label>
+        {generated.length > 0 && (
+          <Button type="button" size="sm" variant="ghost" className="h-7 px-2" onClick={() => setUrls(generated.join('\n'))}>
+            <SparkleIcon weight="duotone" className="text-primary" />
+            {t('fromProfile')}
+          </Button>
+        )}
+      </div>
+      <Textarea id="platform-urls" value={urls} onChange={(e) => setUrls(e.target.value)} placeholder={example} rows={4} />
+      <p className="text-xs text-muted-foreground">{t(hint)}</p>
+      {lines.length > 0 && (
+        <div className="text-xs">
+          <p className="font-medium">{t('willSearch')}</p>
+          <ul className="mt-1 flex flex-wrap gap-1.5">
+            {lines.map((url) => (
+              <li key={url} className="rounded-md border bg-muted/40 px-2 py-0.5">
+                {searchLabel(url)}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function AddPlatformForm({ onDone }: { onDone: () => void }) {
   const { t } = useTranslation('platforms', { keyPrefix: 'add' })
   const add = useAddPlatform()
@@ -55,15 +119,15 @@ function AddPlatformForm({ onDone }: { onDone: () => void }) {
   const [known, setKnown] = useState('')
   const [name, setName] = useState('')
   const [platform, setPlatform] = useState('')
-  const [urls, setUrls] = useState('')
+  // Lo que escribes; sin tocarlo, en un portal conocido, las búsquedas que salen de tu perfil.
+  const [ownUrls, setUrls] = useState<string | null>(null)
   const [access, setAccess] = useState<BrowseAccess>('free')
   const [chosen, setChosen] = useState<number | null>(null) // sin elegir: la última
   const priority = chosen ?? last
   const linkedin = platform === 'linkedin'
-  const searchUrls = urls
-    .split('\n')
-    .map((u) => u.trim())
-    .filter(Boolean)
+  const prefs = useSearchPreferences()
+  const urls = ownUrls ?? buildSearches(platform, prefs).join('\n')
+  const searchUrls = toLines(urls)
   const ready = name.trim() !== '' && /^[a-z0-9][a-z0-9_-]{0,39}$/.test(platform) && searchUrls.length > 0
 
   const pick = (value: string) => {
@@ -147,19 +211,7 @@ function AddPlatformForm({ onDone }: { onDone: () => void }) {
             </div>
           </div>
           {linkedin && <LinkedInNotice />}
-          <div className="grid gap-1.5">
-            <Label htmlFor="platform-urls">{t('urls')}</Label>
-            <Textarea
-              id="platform-urls"
-              value={urls}
-              onChange={(e) => setUrls(e.target.value)}
-              placeholder={example}
-              rows={3}
-            />
-            <p className="text-xs text-muted-foreground">
-              {t('urlsHint')}
-            </p>
-          </div>
+          <SearchesField platform={platform} urls={urls} setUrls={setUrls} example={example} />
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="grid gap-1.5">
               <Label htmlFor="platform-access">{t('access')}</Label>
@@ -208,6 +260,70 @@ function AddPlatformForm({ onDone }: { onDone: () => void }) {
         </Button>
       </DialogFooter>
     </form>
+  )
+}
+
+/** «Editar»: el nombre y las búsquedas. El portal no cambia (las búsquedas son de su sitio). */
+function EditPlatformForm({ source, onDone }: { source: SourceView; onDone: () => void }) {
+  const { t } = useTranslation('platforms', { keyPrefix: 'add' })
+  const { t: te } = useTranslation('platforms', { keyPrefix: 'edit' })
+  const edit = useEditPlatform()
+  const platform = source.browse?.platform ?? ''
+  const [name, setName] = useState(source.name)
+  const [urls, setUrls] = useState((source.browse?.search_urls ?? []).join('\n'))
+  const searchUrls = toLines(urls)
+  const ready = name.trim() !== '' && searchUrls.length > 0
+  const example = KNOWN.find((k) => k.id === platform)?.example ?? t('examplePlaceholder')
+  const submit = (e: FormEvent) => {
+    e.preventDefault()
+    if (ready) edit.mutate({ id: source.id, name: name.trim(), search_urls: searchUrls }, { onSuccess: onDone })
+  }
+  return (
+    <form onSubmit={submit} className="grid gap-4">
+      <DialogHeader>
+        <DialogTitle>{te('title', { name: source.name })}</DialogTitle>
+        <DialogDescription>{te('description')}</DialogDescription>
+      </DialogHeader>
+      <div className="grid gap-1.5">
+        <Label htmlFor="platform-name">{t('name')}</Label>
+        <Input id="platform-name" value={name} onChange={(e) => setName(e.target.value)} maxLength={120} />
+      </div>
+      <SearchesField platform={platform} urls={urls} setUrls={setUrls} example={example} />
+      {edit.error && (
+        <p role="alert" className="text-sm text-destructive">
+          {errorMessage(edit.error)}
+        </p>
+      )}
+      <DialogFooter>
+        <Button type="button" variant="outline" onClick={onDone}>
+          {t('cancel')}
+        </Button>
+        <Button type="submit" disabled={!ready || edit.isPending}>
+          {edit.isPending ? t('saving') : te('submit')}
+        </Button>
+      </DialogFooter>
+    </form>
+  )
+}
+
+/** Botón de icono y diálogo «Editar» de una plataforma. */
+export function EditPlatformButton({ source }: { source: SourceView }) {
+  const { t } = useTranslation('platforms', { keyPrefix: 'edit' })
+  const [open, setOpen] = useState(false)
+  const label = t('button', { name: source.name })
+  return (
+    <>
+      <Hint text={label}>
+        <Button type="button" size="icon" variant="ghost" className="size-8" aria-label={label} onClick={() => setOpen(true)}>
+          <PencilSimpleIcon />
+        </Button>
+      </Hint>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-h-[90dvh] overflow-y-auto">
+          {open && <EditPlatformForm source={source} onDone={() => setOpen(false)} />}
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
 

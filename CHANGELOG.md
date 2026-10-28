@@ -9,6 +9,31 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 
 ## [Sin publicar]
 
+### Añadido
+- **Primeros pasos en Inicio:** con la app recién instalada, Inicio te propone los dos pasos para
+  empezar, con su botón: subir tu CV para que tu agente cree tu perfil y elegir dónde buscar con tu
+  agente. Cada paso se marca al hacerlo y la tarjeta desaparece cuando están los dos.
+- **Configurar los portales con tu agente:** en «Dónde buscar → Portales de empleo», «Configurar
+  con mi agente» te pregunta en qué portales buscas, te recomienda otros según tu perfil y prepara
+  sus búsquedas con tus puestos y ubicaciones. No guarda nada sin tu OK.
+- **Búsquedas desde tu perfil, sin escribir URLs:** al añadir InfoJobs, Tecnoempleo, Indeed o
+  LinkedIn, las búsquedas salen solas de los puestos que buscas y tus ubicaciones («Mi perfil →
+  Búsqueda»), en remoto si lo aceptas. Debajo se ve qué buscará cada una («Data Engineer · Vigo») y
+  se pueden retocar; «Rellenar desde mi perfil» las vuelve a generar.
+- **Editar un portal:** el lápiz de cada portal cambia su nombre y sus búsquedas.
+- **Indicaciones para el CV de una oferta:** junto a «Generar CV», una caja para decir qué quieres
+  que tenga en cuenta (qué proyecto destacar, el idioma, qué dejar fuera). Se guardan solas y tu
+  agente las usa cada vez que redacta o rehace ese CV.
+
+### Cambiado
+- **«Fuentes» pasa a llamarse «Dónde buscar»**, y su pestaña «Plataformas», «Portales de empleo».
+- **CandidatAI arranca antes y se ve desde el primer momento:** al pulsar el acceso directo se
+  abre enseguida el navegador con «Arrancando CandidatAI…», que pasa solo a la app en cuanto
+  responde (si no responde, dice dónde mirar). Además arranca más rápido: el instalador deja la
+  app precompilada (la primera vez tras instalar o actualizar ya no tarda el triple), no se
+  vuelven a revisar las migraciones si están al día y las tareas en segundo plano arrancan
+  cuando la app ya responde. Si el navegador no se puede abrir, la ventana dice la dirección.
+
 ## [0.2.0] - 2026-10-28
 
 ### Añadido

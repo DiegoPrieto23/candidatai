@@ -18,13 +18,64 @@ function Step({ n, children }: { n: number; children: ReactNode }) {
   )
 }
 
-export function StartFromCv() {
+/**
+ * Subir el CV (a tus documentos, `cv/`) y, debajo, el último subido. Lo usan «Mi perfil» sin perfil
+ * e Inicio («Primeros pasos»).
+ */
+export function UploadCv() {
   const { t } = useTranslation('profileEditor', { keyPrefix: 'noProfile.start' })
-  const { t: tAgent } = useTranslation('agent')
   const cvs = useSourceDocuments('cv')
   const upload = useUploadSourceDocument('cv')
   const input = useRef<HTMLInputElement>(null)
   const [error, setError] = useState<string | null>(null)
+  const latest = cvs.data?.[0]
+  return (
+    <div className="space-y-2">
+      <input
+        ref={input}
+        type="file"
+        accept=".pdf,.docx,.txt,.md"
+        className="sr-only"
+        aria-label={t('fileLabel')}
+        onChange={(e) => {
+          const file = e.target.files?.[0]
+          e.target.value = ''
+          if (!file) return
+          setError(null)
+          upload.mutate(file, { onError: (err) => setError(errorMessage(err)) })
+        }}
+      />
+      <div className="flex flex-wrap items-center gap-3">
+        <Button
+          type="button"
+          size="sm"
+          variant={latest ? 'outline' : 'default'}
+          disabled={upload.isPending}
+          onClick={() => input.current?.click()}
+        >
+          <UploadSimpleIcon />
+          {upload.isPending ? t('uploading') : latest ? t('uploadAnother') : t('uploadButton')}
+        </Button>
+        {latest && (
+          <span role="status" className="flex items-center gap-1.5 text-sm text-emerald-700 dark:text-emerald-400">
+            <CheckCircleIcon className="size-4" weight="duotone" aria-hidden />
+            {t('uploaded', { name: latest.name })}
+          </span>
+        )}
+      </div>
+      {error && (
+        <p role="alert" className="text-sm text-destructive">
+          {error}
+        </p>
+      )}
+    </div>
+  )
+}
+
+export function StartFromCv() {
+  const { t } = useTranslation('profileEditor', { keyPrefix: 'noProfile.start' })
+  const { t: tAgent } = useTranslation('agent')
+  const cvs = useSourceDocuments('cv')
   const latest = cvs.data?.[0]
 
   return (
@@ -41,43 +92,7 @@ export function StartFromCv() {
       <ol className="grid gap-5 text-sm">
         <Step n={1}>
           <p>{t('upload')}</p>
-          <input
-            ref={input}
-            type="file"
-            accept=".pdf,.docx,.txt,.md"
-            className="sr-only"
-            aria-label={t('fileLabel')}
-            onChange={(e) => {
-              const file = e.target.files?.[0]
-              e.target.value = ''
-              if (!file) return
-              setError(null)
-              upload.mutate(file, { onError: (err) => setError(errorMessage(err)) })
-            }}
-          />
-          <div className="flex flex-wrap items-center gap-3">
-            <Button
-              type="button"
-              size="sm"
-              variant={latest ? 'outline' : 'default'}
-              disabled={upload.isPending}
-              onClick={() => input.current?.click()}
-            >
-              <UploadSimpleIcon />
-              {upload.isPending ? t('uploading') : latest ? t('uploadAnother') : t('uploadButton')}
-            </Button>
-            {latest && (
-              <span role="status" className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400">
-                <CheckCircleIcon className="size-4" weight="duotone" aria-hidden />
-                {t('uploaded', { name: latest.name })}
-              </span>
-            )}
-          </div>
-          {error && (
-            <p role="alert" className="text-destructive">
-              {error}
-            </p>
-          )}
+          <UploadCv />
         </Step>
         <Step n={2}>
           <p>{t('agent')}</p>

@@ -254,6 +254,23 @@ export function useJobCv(jobId: number, enabled = true, poll?: number) {
   })
 }
 
+/** Indicaciones del CV de una oferta, que lee tu agente al redactarlo. */
+export function useCvBrief(jobId: number) {
+  return useQuery({
+    queryKey: [...keys.cv(jobId), 'brief'] as const,
+    queryFn: () => unwrap(api.GET('/jobs/{job_id}/cv/brief', { params: { path: { job_id: jobId } } })),
+  })
+}
+
+export function useSaveCvBrief(jobId: number) {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (instructions: string) =>
+      unwrap(api.POST('/jobs/{job_id}/cv/brief', { params: { path: { job_id: jobId } }, body: { instructions } })),
+    onSuccess: (brief) => client.setQueryData([...keys.cv(jobId), 'brief'], brief),
+  })
+}
+
 export function useTemplates() {
   return useQuery({
     queryKey: keys.templates,
@@ -460,6 +477,16 @@ export function useAddPlatform() {
   const client = useQueryClient()
   return useMutation({
     mutationFn: (body: Schemas['AgentBrowseSource']) => unwrap(api.POST('/sources/platforms', { body })),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.sources }),
+  })
+}
+
+/** «Editar» una plataforma: su nombre y sus búsquedas. */
+export function useEditPlatform() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, ...body }: { id: number; name: string; search_urls: string[] }) =>
+      unwrap(api.PUT('/sources/{source_id}/platform', { params: { path: { source_id: id } }, body })),
     onSuccess: () => client.invalidateQueries({ queryKey: keys.sources }),
   })
 }

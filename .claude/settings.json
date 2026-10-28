@@ -29,6 +29,7 @@
       "mcp__candidatai__get_context",
       "mcp__candidatai__get_match",
       "mcp__candidatai__get_cv_content",
+      "mcp__candidatai__get_cv_brief",
       "mcp__candidatai__list_cv_templates",
       "mcp__candidatai__list_sources",
       "mcp__candidatai__list_mail_sources",

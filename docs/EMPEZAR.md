@@ -197,7 +197,7 @@ pero **tu agente nunca ve la cifra**.
 Las ofertas pueden entrar de varias formas; empieza con una o dos:
 
 - **Pega una oferta** que hayas visto: **Nueva oferta**, pega su enlace o su texto.
-- **Empresas en las que te gustaría trabajar**: **Fuentes → Empresas objetivo**. Si usan
+- **Empresas en las que te gustaría trabajar**: **Dónde buscar → Empresas objetivo**. Si usan
   Greenhouse, Lever, Ashby y similares, sus ofertas nuevas llegan solas cada día.
 - **Alertas de empleo por correo** (LinkedIn, InfoJobs, Indeed…): **Alertas**, añade tu buzón paso
   a paso. La app solo lee; nunca envía ni borra correos.

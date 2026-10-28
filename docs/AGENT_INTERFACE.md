@@ -77,6 +77,7 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | `save_cv_content` | `cai cv save ID --file F --json` | 08 | `job_id, content: CvContent, render_options?: CvRenderOptions`; por CLI, `F` = `{"content": …, "render_options": …}` | `document_id` + primer render (`RenderResult`) | `cv_generated`, `cv_rendered` |
 | `render_cv` | `cai cv render DOC [--file F] --json` | 08 | `document_id, options?: CvRenderOptions` (por defecto, todo `auto`); por CLI, `F` = las opciones | `RenderResult` (sus `warnings`, desde la 25.5, con los de maquetación: `page` y `fix`; con `fix: content` se recorta como con `too_long`) | `cv_rendered` |
 | `get_cv_content` | `cai cv show (ID \| --document DOC) --json` | 08 | `job_id` (su último CV) o `document_id` | `CvContent`, `evidence` (texto de cada evidencia citada), `verification` y `renders` | — |
+| `get_cv_brief` | `cai cv brief ID --json` | 0.2.1 | `job_id` | `job_id`, `instructions` (las indicaciones del usuario para el CV de esa oferta, escritas en la ficha; vacías si no hay) y `updated_at` | — |
 | `save_cv_verification` | `cai cv save-verification DOC --file F --json` | 08 | `document_id, verification: CvVerification` | `ok`, `passed`, `stage` y `note` (por qué no pasa a `cv_ready`, si no pasa) | `cv_verified` / `cv_rejected` |
 | `save_cover_letter_brief` | `cai letter brief ID --file F --json` | 08c | `job_id, instructions?, max_words?` (50-600); por CLI, `F` = `{"instructions": …, "max_words": …}`. Sustituye al anterior | `ok`, `job_id`, `brief` y `max_words` resuelto | — |
 | `get_application_answers` | `cai applications answers ID --json` | — | `job_id` | `job_id` y `answers` (`null` si no hay): las últimas respuestas de screening con `document_id`, `language`, `edited_by_user`, `answers` y `evidence` resueltas | — |
@@ -614,9 +615,9 @@ antes; `POST /agent/tiers/undo` las devuelve.
 
 ### Fuentes: empresas objetivo y portales (fase 09, solo CLI)
 
-Las usa la persona (CLI o página «Fuentes → Empresas objetivo» de la UI). `cai sources list` es desde la 09b la
+Las usa la persona (CLI o página «Dónde buscar → Empresas objetivo» de la UI). `cai sources list` es desde la 09b la
 herramienta `list_sources` (tabla de arriba); las plataformas `agent_browse` se ven y se activan en
-la página «Fuentes → Plataformas».
+la página «Dónde buscar → Portales de empleo».
 
 | Comando | Qué hace |
 |---|---|

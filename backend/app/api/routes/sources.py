@@ -143,6 +143,20 @@ class BrowseSettingsBody(BaseModel):
     confirm_risk: bool = False  # obligatorio para activar LinkedIn
 
 
+class EditPlatformBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(min_length=1, max_length=200)
+    search_urls: list[str] = Field(min_length=1, max_length=10)
+
+
+@router.put("/{source_id}/platform", operation_id="edit_platform")
+def edit_platform(session: SessionDep, source_id: int, body: EditPlatformBody) -> SourceView:
+    """Cambia el nombre y las búsquedas de una plataforma. Las búsquedas tienen que ser de su
+    portal, como al añadirla."""
+    return browse.edit_platform(session, source_id, name=body.name, search_urls=body.search_urls)
+
+
 @router.post("/{source_id}/browse", operation_id="update_browse_settings")
 def update_browse_settings(
     session: SessionDep, source_id: int, body: BrowseSettingsBody

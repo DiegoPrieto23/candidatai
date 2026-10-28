@@ -198,7 +198,7 @@ sees the figure**.
 Jobs can come in several ways; start with one or two:
 
 - **Paste a job** you've seen: **New job**, paste its link or its text.
-- **Companies you'd like to work for**: **Sources → Target companies**. If they use Greenhouse, Lever,
+- **Companies you'd like to work for**: **Where to search → Target companies**. If they use Greenhouse, Lever,
   Ashby and the like, their new jobs arrive every day by themselves.
 - **Job alerts by email** (LinkedIn, InfoJobs, Indeed…): **Alerts**, add your mailbox step by step.
   The app only reads; it never sends or deletes email.

@@ -47,5 +47,20 @@
     "readyEmpty": "Ningún CV listo. Aprueba ofertas y pide el CV a tu agente.",
     "next7": "Próximos 7 días",
     "calendar": "Calendario"
+  },
+  "firstSteps": {
+    "title": "Primeros pasos",
+    "intro": "Dos pasos y tu agente empieza a buscar por ti. No hace falta rellenar nada a mano.",
+    "profile": {
+      "title": "Crea tu perfil desde tu CV",
+      "body": "Sube tu CV (PDF o Word) y tu agente rellena tu perfil: te pregunta lo que el CV no dice y no guarda nada sin tu OK.",
+      "done": "Perfil creado: revísalo en «Mi perfil»"
+    },
+    "search": {
+      "title": "Elige dónde buscar",
+      "body": "Tu agente te pregunta en qué portales de empleo buscas, te recomienda otros y prepara las búsquedas con los puestos de tu perfil.",
+      "manual": "o añade un portal tú",
+      "done": "Portales configurados: míralos en «Dónde buscar»"
+    }
   }
 }

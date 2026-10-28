@@ -470,7 +470,10 @@ step_setup() {
     return 0
   fi
   would "uv sync, Chromium de Playwright y base de datos en $backend" && return 0
-  "$UV" sync --directory "$backend" </dev/null || fail "uv sync ha fallado."
+  # Compilado al instalar: si no, Python lo compila al arrancar y la primera vez tarda el triple.
+  "$UV" sync --directory "$backend" --compile-bytecode </dev/null || fail "uv sync ha fallado."
+  "$UV" run --directory "$backend" python -m compileall -q app </dev/null ||
+    fail "No se pudo compilar la app."
   "$UV" run --directory "$backend" playwright install chromium </dev/null ||
     fail "No se pudo instalar Chromium."
   if [ "$OS" = linux ] && ! "$UV" run --directory "$backend" python -c \

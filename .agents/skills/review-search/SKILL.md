@@ -47,7 +47,7 @@ para la ventana reciente.
    confianza (alta solo si los intervalos no se solapan y ningún grupo tiene `low_data`) y el
    cambio concreto:
    - de hábito: priorizar una fuente, pedir referencia, enviar antes, usar carta o una plantilla;
-   - de búsqueda: un portal que no rinde (se pausa en «Fuentes → Plataformas»), títulos nuevos
+   - de búsqueda: un portal que no rinde (se pausa en «Dónde buscar → Portales de empleo»), títulos nuevos
      (`broaden-search`);
    - de configuración: el valor exacto en `config/policies.yaml` (`triage_threshold`, un peso de
      `scoring.weights`, una palabra de `hard_filters.discard_title_keywords`) y por qué. Recuerda

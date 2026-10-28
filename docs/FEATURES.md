@@ -20,7 +20,7 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 | **Add a job** by pasting its URL or its text; duplicates are detected and linked to the original | `/nueva` | [New job](img/en/new-job.webp) |
 | **Inbox**: every job with filters, search, signals and stage; drop the ones to complete or to extract with **Discard** and **Undo**; "Closed" with its date, sortable | `/bandeja` | [Inbox](img/en/inbox.webp) · [▶ Discard](img/en/anim/discard.webp) |
 | **Target companies**: their jobs come in every day from Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters and Recruitee (public APIs, no scraping); "Test" shows how many pass your filters | `/fuentes/empresas` | [Companies](img/en/sources-companies.webp) |
-| **Platforms**: the portals your agent browses, with a unique priority each, access type and jobs per run, each explained with its ⓘ; InfoJobs and Adzuna with keys, Manfred and freehire.me without | `/fuentes/plataformas` | [Platforms](img/en/sources-platforms.webp) |
+| **Job boards** (in “Where to search”): **Set up with my agent** recommends job boards and prepares their searches; when you add a known one (InfoJobs, Tecnoempleo, Indeed, LinkedIn), the searches come from the roles and locations in your profile, and each job board can be edited. The ones your agent browses, with a unique priority each, access type and jobs per run, each explained with its ⓘ; InfoJobs and Adzuna with keys, Manfred and freehire.me without | `/fuentes/plataformas` | [Platforms](img/en/sources-platforms.webp) |
 | **Search portals with your browser**: your agent walks your saved searches, with page limits and pauses, adds what fits and stops at captchas | `search-jobs` | |
 | **Job alerts by email**: LinkedIn, InfoJobs, Indeed… alerts come in by themselves, read-only over IMAP or from `.eml` files; **several mailboxes**, with a step-by-step guide for Gmail, Outlook, Yahoo and iCloud; summary jobs expire after 21 days | `/alertas` | [Alerts](img/en/alerts.webp) · [▶ Add a mailbox](img/en/anim/mailbox.webp) |
 | **"Send to CandidatAI" button**: a Chrome/Edge extension that sends the job you're viewing (LinkedIn included) or completes an alert summary | [`extension/`](../extension/README.md) | |
@@ -34,7 +34,7 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 
 | Feature | Where | Screenshot |
 |---|---|---|
-| **Home**: what's waiting today (jobs to process or assess, replies, follow-ups), the best fits, ready to send and the next milestones | `/` | [Home](img/en/home.webp) |
+| **Home**: on a fresh install, “Getting started” (upload your CV to create your profile and choose where to search with your agent); then what's waiting today (jobs to process or assess, replies, follow-ups), the best fits, ready to send and the next milestones | `/` | [Home](img/en/home.webp) |
 | **Hard filters and an explained 0-100 score**: level, years, remote mode, location, languages and words that discard; skill coverage weighted by your level, preferences and optional local semantic similarity | `/por-revisar` | [To review](img/en/triage.webp) |
 | **Review with the keyboard**: `J`/`K` to move, `A` approve, `D` discard with a reason, `O` open, and Undo | `/por-revisar` | [▶ Keyboard](img/en/anim/triage.webp) |
 | **Your agent's verdict**: fit with risks and questions, citing your deal-breakers; in the background it skips low-score jobs. On each job, “Assess this job” when it has no assessment or an outdated one | `assess-fit` | |
@@ -45,7 +45,7 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 
 | Feature | Where | Screenshot |
 |---|---|---|
-| **Tailored CV**: your agent writes it citing evidence from your profile for every line; the code rejects what isn't there and a separate role verifies it; the job page shows a notice with the PDF as soon as it's ready | `generate-cv` | |
+| **Tailored CV**: with your instructions for that job if you want (what to highlight, the language…); your agent writes it citing evidence from your profile for every line; the code rejects what isn't there and a separate role verifies it; the job page shows a notice with the PDF as soon as it's ready | `generate-cv` | |
 | **Same content, any design**: template, photo, colour and sections in the job page, rendered in seconds without the agent; compare renders and mark the one you send; the PDF layout is checked | `/jobs/:id` | [CV](img/en/job-cv.webp) · [▶ Another design](img/en/anim/cv.webp) |
 | **Cover letter** following your general and per-job instructions, verified, as TXT and PDF matching the CV design; edit it by hand if you want | `generate-cover-letter` | [Letter](img/en/job-letter.webp) |
 | **CV templates**: built-in (Word and HTML) and yours; "My CV" side by side with your profile | `/plantillas` | [Templates](img/en/templates.webp) |

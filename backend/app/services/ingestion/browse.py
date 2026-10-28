@@ -170,7 +170,7 @@ def require_browsing(source: Source) -> None:
         where = "LinkedIn" if is_linkedin(source.config or {}) else f"«{source.name}»"
         raise BrowsingNotAllowedError(
             f"La búsqueda con navegador no está activada en {where}. Solo el usuario puede "
-            "activarla, en «Fuentes → Plataformas»."
+            "activarla, en «Dónde buscar → Portales de empleo»."
         )
 
 
@@ -241,8 +241,8 @@ def save_source(session: Session, data: AgentBrowseSource) -> SaveSourceResult:
     if linkedin and data.allow_agent_browsing:
         raise BrowsingNotAllowedError(
             "El agente no puede activar la búsqueda con navegador en LinkedIn: guárdala con "
-            "`allow_agent_browsing: false`. Solo el usuario puede activarla, en la pantalla "
-            "Plataformas, asumiendo el riesgo para su cuenta."
+            "`allow_agent_browsing: false`. Solo el usuario puede activarla, en «Dónde buscar → "
+            "Portales de empleo», asumiendo el riesgo para su cuenta."
         )
     if linkedin and data.platform != LINKEDIN:
         data = data.model_copy(update={"platform": LINKEDIN})
@@ -291,7 +291,7 @@ def save_source(session: Session, data: AgentBrowseSource) -> SaveSourceResult:
     elif linkedin:
         message += (
             " La búsqueda con navegador queda desactivada: solo el usuario puede activarla en "
-            "la pantalla Plataformas."
+            "«Dónde buscar → Portales de empleo»."
         )
     return SaveSourceResult(
         source_id=source.id,
@@ -365,5 +365,35 @@ def update_settings(
     source.config = config
     if priority is not None:
         place(session, source, priority, new=False)
+    session.flush()
+    return get_source(session, source.id)
+
+
+def edit_platform(
+    session: Session, source_id: int, *, name: str, search_urls: list[str]
+) -> SourceView:
+    """«Editar» desde la UI: el nombre y las búsquedas. El portal (`platform`) no cambia, porque
+    las búsquedas tienen que ser de su sitio; para otro portal, se añade otra plataforma. Lo demás
+    (prioridad, acceso, si el agente la recorre) se cambia con sus propios controles."""
+    from app.services.ingestion.service import SourceExistsError
+
+    source = browse_source(session, source_id)
+    clash = _find_by_name(session, name)
+    if clash is not None and clash.id != source.id:
+        raise SourceExistsError(f"Ya hay una plataforma «{clash.name}»: elige otro nombre.")
+    config = dict(source.config or {})
+    data = AgentBrowseSource.model_validate({**config, "name": name, "search_urls": search_urls})
+    _check_domains(data)
+    # Un portal que la app no conoce se reconoce por su sitio: sigue siendo el mismo.
+    before = {_bare_host(url) for url in config.get("search_urls") or []}
+    after = {_bare_host(url) for url in data.search_urls}
+    if data.platform not in platforms.PLATFORM_LABELS and before and after != before:
+        raise ValueError(
+            f"Las búsquedas tienen que seguir siendo de {', '.join(sorted(before))}: para otro "
+            "sitio, añade otra plataforma."
+        )
+    config["search_urls"] = data.search_urls
+    source.name = " ".join(data.name.split())
+    source.config = config
     session.flush()
     return get_source(session, source.id)

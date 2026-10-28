@@ -13,7 +13,14 @@ from pydantic import BaseModel
 from app.api.deps import SessionDep
 from app.schemas.cv import CvRenderOptions
 from app.services import profile as profile_service
-from app.services.documents import authoring, cover_letter, default_template, service, uploads
+from app.services.documents import (
+    authoring,
+    cover_letter,
+    cv_brief,
+    default_template,
+    service,
+    uploads,
+)
 from app.services.documents.service import FileNotAvailableError
 from app.services.pipeline import Actor
 
@@ -107,6 +114,20 @@ async def upload_cv(file: UploadFile = File(...)) -> uploads.UploadInfo:  # noqa
 def delete_upload(name: str) -> Response:
     uploads.delete_upload(name)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.get("/jobs/{job_id}/cv/brief", operation_id="get_cv_brief")
+def get_cv_brief(session: SessionDep, job_id: int) -> cv_brief.CvBriefView:
+    """Indicaciones del CV de esta oferta (vacías si no hay)."""
+    return cv_brief.get_brief(session, job_id)
+
+
+@router.post("/jobs/{job_id}/cv/brief", operation_id="save_cv_brief")
+def save_cv_brief(
+    session: SessionDep, job_id: int, body: cv_brief.CvBriefInput
+) -> cv_brief.CvBriefView:
+    """Indicaciones del CV de esta oferta; sustituyen a las anteriores (vacías: borrar)."""
+    return cv_brief.save_brief(session, job_id, body)
 
 
 @router.get("/jobs/{job_id}/cv", operation_id="get_job_cv")

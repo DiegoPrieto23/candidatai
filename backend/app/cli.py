@@ -1837,14 +1837,14 @@ def sources_disable(source_id: int = SOURCE_ID_ARG, as_json: bool = JSON_OPTION)
 # --- Búsqueda pública de LinkedIn (fase 22) -----------------------------------------
 
 linkedin_public_app = typer.Typer(
-    help="Búsqueda pública de LinkedIn sin sesión. Se activa solo en la UI (Plataformas).",
+    help="Búsqueda pública de LinkedIn sin sesión. Se activa solo en la UI («Dónde buscar»).",
     no_args_is_help=True,
 )
 sources_app.add_typer(linkedin_public_app, name="linkedin-public")
 
 
 def _render_linkedin_public(view: Any) -> None:
-    state = "activada" if view.enabled else "desactivada (se activa en la UI, en Plataformas)"
+    state = "activada" if view.enabled else "desactivada (se activa en la UI, en «Dónde buscar»)"
     typer.echo(f"Búsqueda pública de LinkedIn: {state}")
     if view.enabled:
         detail = "sí" if view.fetch_detail else "no (entran como resumen)"

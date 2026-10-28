@@ -1,5 +1,6 @@
 {
-  "search-jobs": "Tu agente recorre con tu navegador los portales que tienes activos en Fuentes y da de alta las ofertas que encuentra. Las verás en «Por revisar».",
+  "search-jobs": "Tu agente recorre con tu navegador los portales que tienes activos en «Dónde buscar» y da de alta las ofertas que encuentra. Las verás en «Por revisar».",
+  "configure-platforms": "Te pregunta en qué portales buscas, te recomienda otros según tu perfil y prepara sus búsquedas con tus puestos y ubicaciones. No guarda nada sin tu OK.",
   "process-jobs": "Lee las ofertas nuevas y saca sus datos (puesto, requisitos, sueldo, modalidad…) para poder filtrarlas y valorarlas. No necesita nada tuyo.",
   "assess-fit": "Compara cada oferta procesada con tu perfil y deja una valoración explicada en su ficha. Aprobar o descartar lo decides tú en «Por revisar».",
   "assess-fit-job": "Compara esta oferta con tu perfil y deja una valoración explicada aquí. Si ya tenía una desfasada, la sustituye.",

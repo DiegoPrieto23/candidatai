@@ -1,6 +1,7 @@
 {
   "actions": {
     "search-jobs": "Search jobs",
+    "configure-platforms": "Set up with my agent",
     "process-jobs": "Process jobs",
     "assess-fit": "Assess fit",
     "assess-fit-job": "Assess this job",

@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import type { AgentBrowseSource, LinkedInPublicView, SourceView } from '@/api/client'
@@ -275,14 +275,15 @@ describe('Plataformas', () => {
     expect(await screen.findByRole('tooltip')).toHaveTextContent(/Cuántas ofertas nuevas da de alta/)
   })
 
-  it('sin plataformas, explica cómo configurarlas', async () => {
+  it('sin plataformas, propone configurarlas con tu agente o añadir una', async () => {
     mockApi({ 'GET /status': status(), 'GET /sources': { sources: [], agent_browse: LIMITS } })
     renderApp('/plataformas')
-    expect(await screen.findByText('Aún no hay plataformas')).toBeInTheDocument()
-    // Sin plataformas, lo destacado es añadir la primera; buscar no tiene sentido aún.
-    expect(screen.getByRole('button', { name: 'Añadir plataforma' })).toBeInTheDocument()
+    expect(await screen.findByText('Aún no buscas en ningún portal')).toBeInTheDocument()
+    // Sin plataformas, lo destacado es configurarlas; buscar no tiene sentido aún.
+    expect(screen.getByRole('button', { name: 'Configurar con mi agente' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Añadir portal' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Buscar ofertas' })).not.toBeInTheDocument()
-    expect(screen.getByText(/pide a tu agente que configure tu búsqueda/)).toBeInTheDocument()
+    expect(screen.getByText(/Pide a tu agente que lo configure/)).toBeInTheDocument()
   })
 })
 
@@ -398,7 +399,7 @@ describe('Búsqueda pública de LinkedIn', () => {
   })
 })
 
-describe('Añadir plataforma', () => {
+describe('Añadir portal', () => {
   function routes() {
     return {
       'GET /status': status(),
@@ -413,7 +414,7 @@ describe('Añadir plataforma', () => {
   it('LinkedIn: avisa de por qué conviene dejarla desactivada y la crea desactivada', async () => {
     const calls = mockApi(routes())
     renderApp('/plataformas')
-    await userEvent.click(await screen.findByRole('button', { name: 'Añadir plataforma' }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Añadir portal' }))
     const dialog = await screen.findByRole('dialog')
     await userEvent.selectOptions(within(dialog).getByLabelText('Portal'), 'linkedin')
     expect(within(dialog).getByRole('note')).toHaveTextContent('puede restringir o cerrar tu cuenta')
@@ -435,7 +436,7 @@ describe('Añadir plataforma', () => {
       'GET /sources/linkedin-public': publicView(),
     })
     renderApp('/plataformas')
-    await userEvent.click(await screen.findByRole('button', { name: 'Añadir plataforma' }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Añadir portal' }))
     const dialog = await screen.findByRole('dialog')
     await userEvent.selectOptions(within(dialog).getByLabelText('Portal'), 'indeed')
     const priority = within(dialog).getByLabelText('Prioridad (1 = primero)')
@@ -452,10 +453,60 @@ describe('Añadir plataforma', () => {
     expect(call?.body).toMatchObject({ name: 'Indeed', priority: 2 })
   })
 
+  it('en un portal conocido, las búsquedas salen solas de los puestos y las ubicaciones de tu perfil', async () => {
+    const calls = mockApi({
+      ...routes(),
+      'GET /profile/editable': {
+        exists: true,
+        file_hash: 'h',
+        profile: { preferences: { roles: ['Data Engineer'], locations: { preferred: ['Vigo'] }, remote_modes: ['remote'] } },
+        issues: [],
+        profile_version_id: 1,
+        undo_available: 0,
+      },
+    })
+    renderApp('/plataformas')
+    await userEvent.click(await screen.findByRole('button', { name: 'Añadir portal' }))
+    const dialog = await screen.findByRole('dialog')
+    await userEvent.selectOptions(within(dialog).getByLabelText('Portal'), 'indeed')
+    const searches = within(dialog).getByLabelText('Búsquedas (una URL por línea)')
+    await waitFor(() =>
+      expect(searches).toHaveValue('https://es.indeed.com/jobs?q=Data%20Engineer&l=Vigo\nhttps://es.indeed.com/jobs?q=Data%20Engineer&l=Remoto'),
+    )
+    expect(within(dialog).getByText('Data Engineer · Vigo')).toBeInTheDocument()
+    expect(within(dialog).getByText('Data Engineer · Remoto')).toBeInTheDocument()
+    // Retocadas a mano, «Rellenar desde mi perfil» las vuelve a poner.
+    await userEvent.clear(searches)
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Rellenar desde mi perfil' }))
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Añadir' }))
+    const call = calls.find((c) => c.method === 'POST' && c.path === '/sources/platforms')
+    expect((call?.body as { search_urls: string[] }).search_urls).toHaveLength(2)
+  })
+
+  it('una plataforma ya creada se edita: nombre y búsquedas', async () => {
+    const calls = mockApi({
+      ...routes(),
+      'PUT /sources/1/platform': { ...tecno, name: 'Tecnoempleo España' },
+    })
+    renderApp('/plataformas')
+    await userEvent.click(await screen.findByRole('button', { name: 'Editar Tecnoempleo' }))
+    const dialog = await screen.findByRole('dialog')
+    const name = within(dialog).getByLabelText('Nombre')
+    await userEvent.clear(name)
+    await userEvent.type(name, 'Tecnoempleo España')
+    const searches = within(dialog).getByLabelText('Búsquedas (una URL por línea)')
+    await userEvent.clear(searches)
+    await userEvent.type(searches, 'https://www.tecnoempleo.com/ofertas-trabajo/?te=bi')
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Guardar' }))
+    const call = calls.find((c) => c.method === 'PUT')
+    expect(call?.path).toBe('/sources/1/platform')
+    expect(call?.body).toEqual({ name: 'Tecnoempleo España', search_urls: ['https://www.tecnoempleo.com/ofertas-trabajo/?te=bi'] })
+  })
+
   it('otro portal: hay que escribir su id', async () => {
     const calls = mockApi(routes())
     renderApp('/plataformas')
-    await userEvent.click(await screen.findByRole('button', { name: 'Añadir plataforma' }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Añadir portal' }))
     const dialog = await screen.findByRole('dialog')
     await userEvent.selectOptions(within(dialog).getByLabelText('Portal'), 'otra')
     await userEvent.type(within(dialog).getByLabelText('Nombre'), 'Mi portal')
