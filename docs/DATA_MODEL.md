@@ -510,6 +510,7 @@ Ficheros en `data/`:
 | `profile-history/<AAAAMMDDTHHMMSSffffffZ>.yaml` | Copia de `profile.yaml` antes de cada guardado desde la UI (las `profile_editing.history_keep` últimas, 20 por defecto). «Deshacer» escribe la más reciente y la quita |
 | `documentos/estilo/<nombre>` | Muestras de estilo (`.txt`, `.md`, `.docx`, `.pdf`), subidas desde «Mi perfil» (límites en `profile_editing`) |
 | `documentos/estilo/.texto/<nombre>.txt` | Su texto, extraído al subirlas: es lo que lee el agente (`get_context.style_samples`) |
+| `documentos/cv/<nombre>`, `documentos/linkedin/<nombre>` | Tu CV (`.pdf`, `.docx`, `.txt`, `.md`) y tu exportación de LinkedIn (`.pdf`, `.zip`, `.csv`), subidos tal cual desde «Mi perfil» (máximo 10 MB, nunca se sobrescriben). Los lee `update-profile` |
 
 ### `profile_edits` (migración 0024)
 
@@ -519,8 +520,8 @@ Sin el contenido: solo qué, cuándo y el sha256 del fichero.
 | Columna | Tipo | Notas |
 |---|---|---|
 | id | int PK | |
-| target | str | `profile`, `context` o `style_sample` |
-| section | str? | La sección del perfil, el fichero de contexto o el nombre de la muestra; `null` al deshacer |
+| target | str | `profile`, `context`, `style_sample` o `document` (CV o exportación de LinkedIn) |
+| section | str? | La sección del perfil, el fichero de contexto, el nombre de la muestra o `<carpeta>/<nombre>` del documento; `null` al deshacer |
 | action | str | `save`, `undo`, `upload` o `delete` |
 | hash_before / hash_after | str? | sha256 de los bytes del fichero antes y después (`null` si no existía) |
 | created_at | datetime | |

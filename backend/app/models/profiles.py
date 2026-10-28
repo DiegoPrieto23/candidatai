@@ -20,7 +20,8 @@ class ProfileEdit(Base):
     """Auditoría de lo que el usuario guarda desde la UI (fase 25.7): qué y cuándo, sin el texto.
 
     `target`: `profile` (una sección de `data/profile.yaml`), `context` (un fichero de
-    `data/contexto/`) o `style_sample` (una muestra de `data/documentos/estilo/`).
+    `data/contexto/`), `style_sample` (una muestra de `data/documentos/estilo/`) o `document` (tu CV
+    o tu exportación de LinkedIn, en `data/documentos/cv/` o `linkedin/`).
     """
 
     __tablename__ = "profile_edits"

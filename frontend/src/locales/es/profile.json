@@ -25,6 +25,15 @@
     "candidaturas": "Lo que enviaste en cada candidatura (se llena solo)",
     "estilo": "Muestras de cómo escribes (cartas, correos, posts): el agente toma de ellas el tono, nunca los hechos."
   },
+  "upload": {
+    "cv": "Subir CV",
+    "linkedin": "Subir exportación",
+    "uploading": "Subiendo…",
+    "fileLabel": {
+      "cv": "Tu CV (PDF, Word o texto)",
+      "linkedin": "Tu exportación de LinkedIn (el archivo comprimido que te envía LinkedIn, o tu perfil en PDF)"
+    }
+  },
   "state": {
     "missing": "No existe",
     "empty": "Vacío",

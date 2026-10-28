@@ -8,8 +8,20 @@
   },
   "noProfile": {
     "title": "You don't have a profile yet",
-    "body": "Ask your agent to build it from your CV (“create my profile from my CV”). If you'd rather start from scratch, the guide explains how.",
-    "unreadable": "Your profile file has an error and can't be read. Ask your agent to fix it (“check and fix my profile”)."
+    "unreadable": "Your profile file has an error and can't be read. Ask your agent to fix it (“check and fix my profile”).",
+    "start": {
+      "title": "Start with your CV",
+      "intro": "You don't have a profile yet, and there's no need to fill it in by hand: your agent builds it from your CV.",
+      "upload": "Upload your CV, as PDF or Word. It stays on your computer, with your documents.",
+      "agent": "Your agent reads it and fills in your profile section by section. It asks about what the CV doesn't say (your skill levels, the figures behind your achievements, what you're looking for) and saves nothing without your OK.",
+      "review": "When it's done, your profile shows up here on its own, ready to review block by block.",
+      "uploadButton": "Upload my CV",
+      "uploadAnother": "Upload another CV",
+      "uploading": "Uploading…",
+      "fileLabel": "Your CV",
+      "uploaded": "CV uploaded: {{name}}",
+      "manual": "Rather not use your CV? Ask your agent to “create my profile” and it will ask you as it goes."
+    }
   },
   "issues": {
     "title": "Your profile has errors. You can fix them here: until then, no block can be saved."

@@ -19,6 +19,7 @@
   "research-company": "Busca en la web pública qué hace la empresa, su producto, noticias y cultura de ingeniería, y guarda un dosier con fuentes en la ficha.",
   "handle-requests": "Te enseña los encargos que dejaste con «Dejar para mi próxima sesión», hace los que elijas y los cierra al terminar.",
   "review-search": "Retrospectiva: mira si el score acierta y qué fuentes, plantillas y hábitos funcionan, y propone qué cambiar. No toca pesos ni filtros: eso lo decides tú.",
+  "create-profile": "Lee el CV que has subido y rellena tu perfil sección a sección. Te pregunta lo que el CV no dice y no guarda nada sin tu OK.",
   "expand": "Lee tus enlaces públicos (GitHub, portfolio, certificaciones…) y propone proyectos, skills y logros con su fuente. Solo escribe en tu perfil con tu OK.",
   "improve-profile-item": "Propone una versión más clara y concreta de este elemento de tu perfil, sin inventar nada. Te enseña el cambio y te pregunta antes de guardarlo.",
   "propose-stories": "Propone historias para entrevistas (situación, tarea, acción, resultado) a partir de tu experiencia y tus logros. Las añade a tu perfil solo con tu OK.",

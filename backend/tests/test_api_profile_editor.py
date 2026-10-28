@@ -23,7 +23,7 @@ from app.core import migrations
 from app.core.config import REPO_ROOT
 from app.core.db import session_scope
 from app.models import ProfileEdit
-from app.services import context, profile, style_samples
+from app.services import context, profile, source_documents, style_samples
 
 JSON = {"Origin": UI_ORIGIN, "Content-Type": "application/json"}
 LOCAL = "http://127.0.0.1:8000"
@@ -111,6 +111,7 @@ def test_dry_run_shows_the_diff(client: TestClient) -> None:
         ("PUT", "/context/criterios", {"file_hash": None, "text": "# Criterios\n"}),
         ("POST", "/context/style-samples", {"filename": "a.txt", "content_base64": "YQ=="}),
         ("DELETE", "/context/style-samples/a.txt", {}),
+        ("POST", "/context/documents/cv", {"filename": "a.txt", "content_base64": "YQ=="}),
     ],
 )
 def test_writes_are_only_for_the_ui(client: TestClient, method: str, url: str, body: dict) -> None:
@@ -129,6 +130,7 @@ def test_writes_are_only_for_the_ui(client: TestClient, method: str, url: str, b
         "/context/criterios",
         "/context/style-samples",
         "/context/style-samples/a.txt/text",
+        "/context/documents/cv",
     ],
 )
 def test_reads_with_contact_are_only_for_the_ui(client: TestClient, url: str) -> None:
@@ -263,3 +265,54 @@ def test_a_sample_cannot_close_its_wrapper(client: TestClient) -> None:
     assert wrapped.endswith("</untrusted_style_sample>")
     assert "&lt;/untrusted_style_sample>" in wrapped
     assert "&lt;/untrusted style sample>" in wrapped
+
+
+def _upload_document(client: TestClient, folder: str, name: str, data: bytes) -> dict:
+    body = {"filename": name, "content_base64": base64.b64encode(data).decode()}
+    response = client.post(f"/context/documents/{folder}", json=body, headers=JSON)
+    assert response.status_code == 201, response.text
+    return response.json()
+
+
+def test_upload_your_cv_and_linkedin_export(client: TestClient) -> None:
+    """Lo que se sube queda tal cual en `documentos/cv/` y `linkedin/`, donde lo busca
+    `update-profile`; nunca se sobrescribe otro y se apunta en la auditoría, sin el contenido."""
+    pdf = b"%PDF-1.7\n%demo\n"
+    first = _upload_document(client, "cv", "Mi CV 2026.pdf", pdf)
+    second = _upload_document(client, "cv", "mi-cv-2026.pdf", pdf)
+    assert (first["name"], second["name"]) == ("mi-cv-2026.pdf", "mi-cv-2026-2.pdf")
+    assert (source_documents.folder_path("cv") / "mi-cv-2026.pdf").read_bytes() == pdf
+    _upload_document(client, "linkedin", "Basic_LinkedInDataExport.zip", b"PK\x03\x04demo")
+
+    listed = client.get("/context/documents/cv").json()
+    assert sorted(d["name"] for d in listed) == ["mi-cv-2026-2.pdf", "mi-cv-2026.pdf"]
+    folders = {f["name"]: f["files"] for f in client.get("/context").json()["folders"]}
+    assert folders["cv"] == 2 and folders["linkedin"] == 1
+    with session_scope() as session:
+        edits = [(e.target, e.section) for e in session.scalars(select(ProfileEdit))]
+    assert ("document", "linkedin/basic_linkedindataexport.zip") in edits
+
+
+@pytest.mark.parametrize(
+    ("folder", "name", "data", "reason"),
+    [
+        ("cv", "cv.exe", b"MZ", "Formato no admitido"),
+        ("linkedin", "perfil.docx", b"PK\x03\x04", "Formato no admitido"),
+        ("cv", "cv.pdf", b"no soy un pdf", "no parece un .pdf"),
+        ("cv", "cv.txt", b"", "vacío"),
+    ],
+)
+def test_a_wrong_source_document_is_refused(
+    client: TestClient, folder: str, name: str, data: bytes, reason: str
+) -> None:
+    body = {"filename": name, "content_base64": base64.b64encode(data).decode()}
+    response = client.post(f"/context/documents/{folder}", json=body, headers=JSON)
+    assert response.status_code == 422, response.text
+    assert response.json()["error"]["type"] == "invalid_file"
+    assert reason in response.json()["error"]["message"]
+    assert source_documents.list_documents(folder) == []  # type: ignore[arg-type]
+
+
+def test_only_cv_and_linkedin_take_uploads(client: TestClient) -> None:
+    body = {"filename": "a.pdf", "content_base64": "JVBERg=="}
+    assert client.post("/context/documents/referencias", json=body, headers=JSON).status_code == 422

@@ -47,6 +47,7 @@ export const keys = {
   salaryGap: (id: number) => ['profile', 'salary-gap', id] as const,
   contextDocument: (section: string) => ['context', 'document', section] as const,
   styleSamples: ['context', 'style-samples'] as const,
+  sourceDocuments: (folder: SourceDocumentFolder) => ['context', 'documents', folder] as const,
   styleSampleText: (name: string) => ['context', 'style-samples', name] as const,
   apply: (id: number) => ['apply', id] as const,
   agent: ['agent'] as const,
@@ -1150,6 +1151,8 @@ export type ProfileSaveResult = Schemas['SaveResult']
 export type ContextSectionName = Schemas['ContextDocument']['section']
 export type ContextDocument = Schemas['ContextDocument']
 export type StyleSample = Schemas['StyleSampleInfo']
+export type SourceDocument = Schemas['SourceDocumentInfo']
+export type SourceDocumentFolder = SourceDocument['folder']
 
 /** El perfil del fichero tal cual (con contacto, sin `private`) y su `file_hash`. */
 export function useEditableProfile() {
@@ -1157,6 +1160,9 @@ export function useEditableProfile() {
     queryKey: keys.editableProfile,
     queryFn: () => unwrap(api.GET('/profile/editable')),
     refetchOnWindowFocus: false, // un formulario a medias no debe saltar al volver a la ventana
+    // Mientras tu agente lo crea (aún sin fichero o sin importar), se ve en cuanto lo guarda. Los
+    // bloques con cambios sin guardar los conservan.
+    refetchInterval: (query) => (query.state.data && query.state.data.profile_version_id === null ? 5_000 : false),
   })
 }
 
@@ -1261,16 +1267,20 @@ export function useStyleSampleText(name: string, enabled: boolean) {
   })
 }
 
-/** Sube una muestra de estilo. Va en JSON (base64) para que la API compruebe que viene de la UI. */
+/** El fichero en base64: las subidas van en JSON para que la API compruebe que vienen de la UI. */
+async function toBase64(file: File): Promise<string> {
+  const bytes = new Uint8Array(await file.arrayBuffer())
+  let binary = ''
+  for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000))
+  return btoa(binary)
+}
+
+/** Sube una muestra de estilo. */
 export function useUploadStyleSample() {
   const client = useQueryClient()
   return useMutation({
-    mutationFn: async (file: File) => {
-      const bytes = new Uint8Array(await file.arrayBuffer())
-      let binary = ''
-      for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000))
-      return unwrap(api.POST('/context/style-samples', { body: { filename: file.name, content_base64: btoa(binary) } }))
-    },
+    mutationFn: async (file: File) =>
+      unwrap(api.POST('/context/style-samples', { body: { filename: file.name, content_base64: await toBase64(file) } })),
     onSuccess: () => {
       void client.invalidateQueries({ queryKey: keys.styleSamples })
       void client.invalidateQueries({ queryKey: keys.context, exact: true })
@@ -1285,6 +1295,31 @@ export function useDeleteStyleSample() {
       unwrap(api.DELETE('/context/style-samples/{name}', { params: { path: { name } }, body: {} })),
     onSuccess: () => {
       void client.invalidateQueries({ queryKey: keys.styleSamples })
+      void client.invalidateQueries({ queryKey: keys.context, exact: true })
+    },
+  })
+}
+
+/** Tu CV o tu exportación de LinkedIn en `data/documentos/`, para que tu agente cree o amplíe tu perfil. */
+export function useSourceDocuments(folder: SourceDocumentFolder) {
+  return useQuery({
+    queryKey: keys.sourceDocuments(folder),
+    queryFn: () => unwrap(api.GET('/context/documents/{folder}', { params: { path: { folder } } })),
+  })
+}
+
+export function useUploadSourceDocument(folder: SourceDocumentFolder) {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: async (file: File) =>
+      unwrap(
+        api.POST('/context/documents/{folder}', {
+          params: { path: { folder } },
+          body: { filename: file.name, content_base64: await toBase64(file) },
+        }),
+      ),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: keys.sourceDocuments(folder) })
       void client.invalidateQueries({ queryKey: keys.context, exact: true })
     },
   })

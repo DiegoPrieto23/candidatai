@@ -8,8 +8,20 @@
   },
   "noProfile": {
     "title": "Aún no tienes perfil",
-    "body": "Pídeselo a tu agente a partir de tu CV («crea mi perfil desde mi CV»). Si prefieres empezar de cero, la guía explica cómo.",
-    "unreadable": "Tu fichero de perfil tiene un error y no se puede leer. Pide a tu agente que lo arregle («revisa y arregla mi perfil»)."
+    "unreadable": "Tu fichero de perfil tiene un error y no se puede leer. Pide a tu agente que lo arregle («revisa y arregla mi perfil»).",
+    "start": {
+      "title": "Empieza por tu CV",
+      "intro": "Aún no tienes perfil, y no hace falta rellenarlo a mano: tu agente lo crea a partir de tu CV.",
+      "upload": "Sube tu CV, en PDF o Word. Se guarda en tu equipo, con tus documentos.",
+      "agent": "Tu agente lo lee y rellena tu perfil sección a sección. Te pregunta lo que el CV no dice (el nivel de tus skills, las cifras de tus logros, qué buscas) y no guarda nada sin tu OK.",
+      "review": "Cuando termine, tu perfil aparece aquí solo, para que lo revises bloque a bloque.",
+      "uploadButton": "Subir mi CV",
+      "uploadAnother": "Subir otro CV",
+      "uploading": "Subiendo…",
+      "fileLabel": "Tu CV",
+      "uploaded": "CV subido: {{name}}",
+      "manual": "¿Prefieres no usar tu CV? Pídele a tu agente «crea mi perfil» y te lo irá preguntando."
+    }
   },
   "issues": {
     "title": "Tu perfil tiene errores. Puedes arreglarlos aquí: hasta entonces, ningún bloque se guarda."

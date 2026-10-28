@@ -19,6 +19,7 @@
   "research-company": "Searches the public web for what the company does, its product, news and engineering culture, and saves a dossier with sources on the job page.",
   "handle-requests": "Shows you the tasks you left with «Leave for my next session», does the ones you choose and closes each one when done.",
   "review-search": "Retrospective: checks whether the score is right and which sources, templates and habits work, and suggests what to change. It doesn't touch weights or filters: that's your call.",
+  "create-profile": "Reads the CV you uploaded and fills in your profile section by section. It asks about what the CV doesn't say and saves nothing without your OK.",
   "expand": "Reads your public links (GitHub, portfolio, certifications…) and suggests projects, skills and achievements with their source. Writes to your profile only with your OK.",
   "improve-profile-item": "Suggests a clearer, more concrete version of this item of your profile, without making anything up. It shows you the change and asks before saving it.",
   "propose-stories": "Suggests interview stories (situation, task, action, result) from your experience and achievements. Adds them to your profile only with your OK.",

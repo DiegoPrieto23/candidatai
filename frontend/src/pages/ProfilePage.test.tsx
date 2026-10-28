@@ -41,6 +41,7 @@ function contextStatus(changes: Partial<ContextStatus> = {}): ContextStatus {
 
 /** Sin `data/profile.yaml`: la página enseña cómo crearlo y el estado del contexto (fase 13). */
 const NO_PROFILE = { exists: false, file_hash: null, profile: null, issues: [], profile_version_id: null, undo_available: 0 }
+const UNREADABLE = { ...NO_PROFILE, exists: true, file_hash: 'h1', profile_version_id: 1 }
 
 describe('Mi perfil', () => {
   it('enseña el estado de cada fichero de contexto y las carpetas de documentos', async () => {
@@ -113,10 +114,12 @@ describe('Mi perfil', () => {
       background: { available: true, agent: 'claude', reason: null },
       actions: [{ ...expand, agent, alternatives: [] }],
     })
+    // Con perfil (aquí, uno que no se puede leer, para no montar el editor): sin perfil, lo primero
+    // es crearlo desde el CV y el botón no sale.
     const calls = mockApi({
       'GET /status': status(),
       'GET /context': contextStatus(),
-      'GET /profile/editable': NO_PROFILE,
+      'GET /profile/editable': UNREADABLE,
       'GET /agent': launcher(claude),
       'POST /agent/launch': { ok: true, agent: 'claude', prompt: 'Usa el skill expand…', message: 'ok' },
     })
@@ -132,7 +135,7 @@ describe('Mi perfil', () => {
     mockApi({
       'GET /status': status(),
       'GET /context': contextStatus(),
-      'GET /profile/editable': NO_PROFILE,
+      'GET /profile/editable': UNREADABLE,
       'GET /agent': launcher({ ...claude, agent: 'codex', display_name: 'Codex', blocked: noWeb, blocked_code: 'capability' }),
     })
     renderApp('/perfil')

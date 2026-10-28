@@ -1,10 +1,12 @@
-import { FileTextIcon, FolderIcon, UserCircleIcon, WarningIcon } from '@phosphor-icons/react'
+import { useRef, useState } from 'react'
+import { FileTextIcon, FolderIcon, UploadSimpleIcon, UserCircleIcon, WarningIcon } from '@phosphor-icons/react'
 import { Trans, useTranslation } from 'react-i18next'
 import type { ContextFileInfo, ContextStatus } from '@/api/client'
-import { useContextStatus, useEditableProfile } from '@/api/queries'
+import { useContextStatus, useEditableProfile, useUploadSourceDocument, type SourceDocumentFolder } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
 import { OpenFolderButton } from '@/components/OpenFolderButton'
 import { EmptyState, ErrorState } from '@/components/States'
+import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CONTEXT_SECTIONS, ContextFileEditor, StyleSamplesBlock } from '@/components/profile/ContextBlocks'
@@ -22,7 +24,9 @@ import {
   SearchWhereBlock,
 } from '@/components/profile/PreferencesBlocks'
 import { SkillsBlock } from '@/components/profile/SkillsBlock'
+import { StartFromCv } from '@/components/profile/StartFromCv'
 import { StoriesBlock } from '@/components/profile/StoriesBlock'
+import { errorMessage } from '@/lib/errors'
 import { dateFormatter, formatNumber } from '@/lib/labels'
 import { cn } from '@/lib/utils'
 
@@ -76,6 +80,42 @@ function ContextFiles({ files }: { files: ContextFileInfo[] }) {
   )
 }
 
+const UPLOADS: Record<SourceDocumentFolder, string> = { cv: '.pdf,.docx,.txt,.md', linkedin: '.pdf,.zip,.csv' }
+
+/** Tu CV y tu exportación de LinkedIn se suben desde aquí, a su carpeta, para que tu agente los lea. */
+function UploadDocument({ folder }: { folder: SourceDocumentFolder }) {
+  const { t } = useTranslation('profile')
+  const upload = useUploadSourceDocument(folder)
+  const input = useRef<HTMLInputElement>(null)
+  const [error, setError] = useState<string | null>(null)
+  return (
+    <>
+      <input
+        ref={input}
+        type="file"
+        accept={UPLOADS[folder]}
+        className="sr-only"
+        aria-label={t(`upload.fileLabel.${folder}`)}
+        onChange={(e) => {
+          const file = e.target.files?.[0]
+          e.target.value = ''
+          if (!file) return
+          setError(null)
+          upload.mutate(file, { onError: (err) => setError(errorMessage(err)) })
+        }}
+      />
+      <Button type="button" size="sm" variant="outline" disabled={upload.isPending} onClick={() => input.current?.click()}>
+        <UploadSimpleIcon /> {upload.isPending ? t('upload.uploading') : t(`upload.${folder}`)}
+      </Button>
+      {error && (
+        <p role="alert" className="basis-full text-sm text-destructive">
+          {error}
+        </p>
+      )}
+    </>
+  )
+}
+
 function DocumentFolders({ folders }: { folders: ContextStatus['folders'] }) {
   const { t } = useTranslation('profile')
   return (
@@ -89,7 +129,10 @@ function DocumentFolders({ folders }: { folders: ContextStatus['folders'] }) {
             </span>
             <span className="text-sm text-muted-foreground">{t(`folders.${folder.name}`)}</span>
           </span>
-          <span className="text-xs text-muted-foreground">{t('files', { count: folder.files })}</span>
+          <span className="flex flex-wrap items-center gap-3">
+            <span className="text-xs text-muted-foreground">{t('files', { count: folder.files })}</span>
+            {(folder.name === 'cv' || folder.name === 'linkedin') && <UploadDocument folder={folder.name} />}
+          </span>
         </li>
       ))}
     </ul>
@@ -237,11 +280,18 @@ export function ProfilePage() {
     )
   } else if (editable.isError) {
     body = <ErrorState error={editable.error} onRetry={() => editable.refetch()} />
-  } else if (!editable.data.exists || editable.data.profile === null) {
+  } else if (!editable.data.exists) {
+    body = (
+      <div className="grid gap-10">
+        <StartFromCv />
+        <FilesOverview />
+      </div>
+    )
+  } else if (editable.data.profile === null) {
     body = (
       <div className="grid gap-10">
         <EmptyState icon={<UserCircleIcon className="size-7" weight="duotone" />} title={te('noProfile.title')}>
-          <Trans t={te} i18nKey={editable.data.exists ? 'noProfile.unreadable' : 'noProfile.body'} components={{ code }} />
+          <Trans t={te} i18nKey="noProfile.unreadable" components={{ code }} />
         </EmptyState>
         <FilesOverview />
       </div>
@@ -261,12 +311,15 @@ export function ProfilePage() {
         <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
           <Trans t={t} i18nKey="intro" components={{ code }} />
         </p>
-        {/* Fase 25.2: skill `expand`. Pregunta antes de escribir, así que solo en terminal. */}
-        <div className="mt-4">
-          <AgentButton action="expand">
-            {t('expand')}
-          </AgentButton>
-        </div>
+        {/* Fase 25.2: skill `expand`. Pregunta antes de escribir, así que solo en terminal. Sin
+            perfil todavía, lo primero es crearlo desde el CV. */}
+        {editable.data?.exists && (
+          <div className="mt-4">
+            <AgentButton action="expand">
+              {t('expand')}
+            </AgentButton>
+          </div>
+        )}
       </div>
       {body}
     </div>

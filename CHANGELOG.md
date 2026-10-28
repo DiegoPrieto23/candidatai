@@ -10,6 +10,10 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Crear tu perfil desde tu CV, sin salir de la app:** en «Mi perfil», mientras no tengas perfil,
+  subes tu CV (PDF o Word) y pulsas «Crear mi perfil desde mi CV». Tu agente lo lee, te pregunta lo
+  que el CV no dice y no guarda nada sin tu OK; al terminar, el perfil aparece solo para revisarlo.
+  En «Mi perfil → Documentos» también puedes subir más CVs y tu exportación de LinkedIn.
 - **Valorar el encaje de una oferta desde su ficha:** en «Valoración del agente», «Valorar encaje»
   si aún no tiene valoración (p. ej. su score quedó por debajo del umbral del segundo plano) y
   «Volver a valorar» si la tiene desfasada (cambió tu perfil, la oferta o el score). Con una

@@ -209,6 +209,7 @@ def test_get_lists_agent_and_actions(client: TestClient, opened: list[tuple[str,
         "handle-requests",
         "review-search",
         "expand",
+        "create-profile",
         "improve-profile-item",
         "propose-stories",
         "import-cv-template",
@@ -218,6 +219,7 @@ def test_get_lists_agent_and_actions(client: TestClient, opened: list[tuple[str,
     assert actions["improve-profile-item"]["needs_profile_item"] is True
     assert actions["improve-profile-item"]["prompt"] is None
     assert "Proponer historias" in actions["propose-stories"]["prompt"]
+    assert "data/documentos/cv/" in actions["create-profile"]["prompt"]
     assert actions["generate-cv"]["needs_job"] is True and actions["generate-cv"]["prompt"] is None
     assert actions["debrief-interview"]["needs_milestone"] is True
     assert actions["offer-questions"]["needs_milestone"] is False

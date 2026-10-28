@@ -619,6 +619,58 @@ describe('Mi perfil editable', () => {
     expect(screen.queryByRole('menuitem', { name: /Dejar para mi próxima sesión/ })).not.toBeInTheDocument()
   })
 
+  it('sin perfil, se sube el CV y tu agente lo crea a partir de él', async () => {
+    const agent = { agent: 'claude', display_name: 'Claude Code', model: null, preset: null, reason: 'default', reason_text: 'tu agente por defecto', blocked: null, blocked_code: null, warning: null }
+    const action = (id: string) => ({ id, label: id, needs_job: false, needs_milestone: false, needs_profile_item: false, prompt: null, background: false, agent, alternatives: [], background_agent: null })
+    const uploaded: unknown[] = []
+    const calls = mockApi({
+      ...BASE,
+      'GET /profile/editable': { ...EDITABLE, exists: false, file_hash: null, profile: null, profile_version_id: null, undo_available: 0 },
+      'GET /context': {
+        context_dir: 'C:/d/contexto',
+        documents_dir: 'C:/d/documentos',
+        files: [],
+        folders: [
+          { name: 'cv', exists: true, files: 0 },
+          { name: 'referencias', exists: true, files: 0 },
+        ],
+      },
+      'GET /context/documents/cv': () => uploaded,
+      'POST /context/documents/cv': () => {
+        const info = { folder: 'cv', name: 'cv-lucia.pdf', size_bytes: 9, uploaded_at: '2026-10-28T10:00:00Z' }
+        uploaded.push(info)
+        return { status: 201, body: info }
+      },
+      'GET /agent': {
+        available: true,
+        agent: 'claude',
+        reason: null,
+        background: { available: true, agent: 'claude', reason: null },
+        actions: [action('create-profile'), action('expand')],
+      },
+      'POST /agent/launch': { ok: true, agent: 'claude', prompt: 'Usa el skill update-profile…', message: 'ok' },
+    })
+    renderApp('/perfil')
+    expect(await screen.findByRole('heading', { name: 'Empieza por tu CV' })).toBeInTheDocument()
+    // Sin perfil, «Ampliar perfil desde mis enlaces» todavía no toca.
+    expect(screen.queryByRole('button', { name: 'Ampliar perfil desde mis enlaces' })).not.toBeInTheDocument()
+    // Solo se suben el CV y LinkedIn; el resto de carpetas se rellenan a mano.
+    const folders = await screen.findByRole('region', { name: 'Documentos' })
+    expect(within(folders).getAllByRole('button', { name: /^Subir/ })).toHaveLength(1)
+
+    await userEvent.upload(screen.getByLabelText('Tu CV'), new File(['%PDF-1.7'], 'CV Lucía.pdf', { type: 'application/pdf' }))
+    expect(await screen.findByText('CV subido: cv-lucia.pdf')).toBeInTheDocument()
+    const post = calls.find((c) => c.method === 'POST' && c.path === '/context/documents/cv')
+    expect(post?.body).toEqual({ filename: 'CV Lucía.pdf', content_base64: btoa('%PDF-1.7') })
+    expect(screen.getByRole('button', { name: 'Subir otro CV' })).toBeInTheDocument()
+
+    const create = screen.getByRole('button', { name: 'Crear mi perfil desde mi CV' })
+    await waitFor(() => expect(create).toBeEnabled())
+    await userEvent.click(create)
+    await waitFor(() => expect(calls.some((c) => c.path === '/agent/launch')).toBe(true))
+    expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ action: 'create-profile' })
+  })
+
   it('la vista previa del contexto no interpreta HTML', async () => {
     mockApi({
       ...BASE,
