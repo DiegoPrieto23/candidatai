@@ -10,6 +10,10 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Comparación por significado desde la UI:** en el desglose del score, «Qué aporta y cómo
+  activarla» explica qué mejora (sinónimos, ofertas en otro idioma, el 30 % del score que es la
+  «Similitud») y la instala con un botón, en segundo plano. Es permanente: se usa en todas las
+  ofertas desde entonces, las abiertas se recalculan solas y, si actualizas la app, se reinstala.
 - **Miniatura de la guía de preparación:** en cada entrevista, la portada del PDF junto a su enlace,
   para reconocerla de un vistazo. Pulsarla abre la guía.
 - **`cai start` en inglés:** los mensajes de la terminal salen en el idioma de tu sistema (español

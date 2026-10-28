@@ -14,6 +14,11 @@ const KNOWN: readonly [RegExp, string][] = [
   [/^La oferta no lista skills deseables:/, 'noNice'],
 ]
 
+/** La nota de «similitud semántica sin instalar»: la UI ofrece instalarla en su lugar. */
+export function isSemanticNotInstalled(note: string): boolean {
+  return KNOWN[1][0].test(note)
+}
+
 export function scoreNote(note: string): string {
   for (const [pattern, key] of KNOWN) {
     const match = pattern.exec(note)
