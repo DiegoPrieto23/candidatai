@@ -152,7 +152,7 @@ def _semantic(
         return embeddings.similarity(profile, ext, embedder, policy.semantic)
     except Exception as exc:  # p. ej. sin red la primera vez que se descarga el modelo
         logger.warning("No se pudo calcular la similitud semántica", exc_info=True)
-        notes.append(f"No se pudo calcular la similitud semántica ({type(exc).__name__}: {exc}).")
+        notes.append(f"{embeddings.FAILED_NOTE} ({type(exc).__name__}: {exc}).")
         return None
 
 

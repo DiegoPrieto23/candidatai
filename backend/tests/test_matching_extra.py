@@ -18,6 +18,7 @@ from app.services import container, worker
 from app.services.matching import embeddings, extra
 
 UI = {"Origin": "http://127.0.0.1:5173"}
+REAL_IS_INSTALLED = embeddings.is_installed
 
 
 @pytest.fixture(autouse=True)
@@ -108,3 +109,44 @@ def test_reinstalled_on_start_if_wanted_and_missing(monkeypatch: pytest.MonkeyPa
     monkeypatch.setattr(embeddings, "is_installed", lambda: True)
     with session_scope() as session:
         assert not extra.ensure_installed(session)
+
+
+def test_not_installed_while_installing(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Mientras uv copia los paquetes, el score se calcula como sin el extra: importarlo a medias
+    dejaría el proceso con un `transformers` roto."""
+    monkeypatch.setattr(embeddings, "is_installed", REAL_IS_INSTALLED)
+    on_disk = {"sentence_transformers": False}
+    monkeypatch.setattr(embeddings, "find_spec", lambda name: object() if on_disk[name] else None)
+    seen: list[bool] = []
+
+    def fake_run(command: list[str], **_: Any) -> subprocess.CompletedProcess[str]:
+        on_disk["sentence_transformers"] = True  # la carpeta ya está, sus dependencias aún no
+        seen.append(embeddings.is_installed())
+        return subprocess.CompletedProcess(command, 0, "", "")
+
+    monkeypatch.setattr(extra.subprocess, "run", fake_run)
+    with session_scope() as session:
+        extra.install(session)
+    assert seen == [False]
+    assert embeddings.is_installed() and not embeddings.installing_marker().exists()
+
+
+def test_half_imported_package_is_imported_again(monkeypatch: pytest.MonkeyPatch) -> None:
+    import sys
+    import types
+
+    broken = types.ModuleType("sentence_transformers")  # sin `SentenceTransformer`: a medias
+    model = object()
+    complete = types.ModuleType("sentence_transformers")
+    complete.SentenceTransformer = lambda *_a, **_k: model  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "sentence_transformers", broken)
+    monkeypatch.setitem(sys.modules, "transformers", types.ModuleType("transformers"))
+
+    def forget() -> None:
+        del sys.modules["transformers"]
+        sys.modules["sentence_transformers"] = complete
+
+    monkeypatch.setattr(embeddings, "_forget_partial_imports", forget)
+    embedder = embeddings.SentenceTransformerEmbedder("m", Path("unused"))
+    monkeypatch.setattr(Path, "mkdir", lambda *_a, **_k: None)
+    assert embedder._load() is model

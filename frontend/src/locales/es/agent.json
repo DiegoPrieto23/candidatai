@@ -109,5 +109,6 @@
     "shared_one": "repartida entre {{count}} oferta",
     "shared_other": "repartida entre {{count}} ofertas",
     "terminal": "No cuenta lo que hagas en una terminal: ahí el agente no devuelve su uso."
-  }
+  },
+  "semantic": "Comparación por significado"
 }

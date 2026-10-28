@@ -14,6 +14,8 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   activarla» explica qué mejora (sinónimos, ofertas en otro idioma, el 30 % del score que es la
   «Similitud») y la instala con un botón, en segundo plano. Es permanente: se usa en todas las
   ofertas desde entonces, las abiertas se recalculan solas y, si actualizas la app, se reinstala.
+  También está en la página **Agente**, sección «Comparación por significado», con su estado
+  bien a la vista (sin activar, instalándose, activada o con error).
 - **Miniatura de la guía de preparación:** en cada entrevista, la portada del PDF junto a su enlace,
   para reconocerla de un vistazo. Pulsarla abre la guía.
 - **`cai start` en inglés:** los mensajes de la terminal salen en el idioma de tu sistema (español
@@ -130,6 +132,11 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   página «Alertas» ya no sale vacía.
 
 ### Corregido
+- **Error de `transformers` tras instalar la comparación por significado:** si el score de una
+  oferta se calculaba mientras se instalaba, salía «No se pudo hacer la comparación por
+  significado (ImportError…)» y no se arreglaba solo. Ahora, mientras se instala, el score se
+  calcula como antes; el error ya no se queda pegado y las ofertas con el score así se recalculan
+  solas al arrancar la app.
 - **Entrevistas futuras que se quedaron como «Hecho»:** las que se marcaron como hechas antes de su
   día (antes de que la app lo impidiera) vuelven solas a «Programado» al actualizar, y salen otra
   vez en «Próximos 7 días».

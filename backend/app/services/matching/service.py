@@ -12,6 +12,7 @@ import hashlib
 import json
 from collections.abc import Sequence
 from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel
 from sqlalchemy import func, select
@@ -208,15 +209,36 @@ def _is_fresh(match: Match, extraction_id: int, profile_version_id: int, key: st
     )
 
 
-def current_match(session: Session, job_id: int) -> Match:
-    """El match vigente de la oferta; lo calcula si no hay o si está desfasado."""
+def semantic_failed(breakdown: dict[str, Any] | None) -> bool:
+    """La similitud semántica falló al calcular este match (p. ej. sin red al bajar el modelo)."""
+    notes = (breakdown or {}).get("notes") or []
+    return any(str(n).startswith(embeddings.FAILED_NOTE) for n in notes)
+
+
+def current_match(session: Session, job_id: int, retry_semantic: bool = False) -> Match:
+    """El match vigente de la oferta; lo calcula si no hay o si está desfasado. Con
+    `retry_semantic`, también si la similitud semántica falló y ahora está disponible."""
     _job(session, job_id)
     ext_row = _latest_extraction(session, job_id)
     profile_version_id = profiles.current(session).profile_version_id
     history = _matches(session, job_id)
     if history and _is_fresh(history[0], ext_row.id, profile_version_id, scoring_key()):
-        return history[0]
+        failed = retry_semantic and semantic_failed(history[0].breakdown)
+        if not (failed and embeddings.get_embedder()):
+            return history[0]
     return compute_match(session, job_id)
+
+
+def has_semantic_failures(session: Session) -> bool:
+    """Alguna oferta abierta tiene su último match con la similitud semántica fallida."""
+    last = (
+        select(func.max(Match.id))
+        .join(Application, Application.job_id == Match.job_id)
+        .where(Application.stage.in_([s.value for s in WORKING_STAGES]))
+        .group_by(Match.job_id)
+    )
+    breakdowns = session.scalars(select(Match.breakdown).where(Match.id.in_(last)))
+    return any(semantic_failed(b) for b in breakdowns)
 
 
 def _view(match: Match, history: Sequence[Match]) -> MatchView:
@@ -329,7 +351,8 @@ def latest_scores(session: Session, job_ids: Sequence[int]) -> dict[int, int]:
 
 def rescore_open_jobs(session: Session) -> RescoreResult:
     """Recalcula las ofertas abiertas con extracción cuyo match esté desfasado (perfil nuevo,
-    puntuación cambiada…) y cierra las de `pending_triage` que no pasan los filtros.
+    puntuación cambiada…) o con la similitud semántica fallida, y cierra las de `pending_triage`
+    que no pasan los filtros.
 
     Sin perfil importado lanza `ProfileNotFoundError`: no hay con qué puntuar."""
     profiles.current(session)
@@ -343,7 +366,7 @@ def rescore_open_jobs(session: Session) -> RescoreResult:
     for job_id in job_ids:
         if job_id not in latest:
             continue
-        match = current_match(session, job_id)
+        match = current_match(session, job_id, retry_semantic=True)
         scored += 1
         result = HardFilterResult.model_validate(match.hard_filters)
         if _close_if_filtered(session, job_id, result):

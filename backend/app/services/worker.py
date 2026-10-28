@@ -59,6 +59,7 @@ from app.services.ingestion import linkedin_public
 from app.services.ingestion import service as sources
 from app.services.ingestion.email import service as email_alerts
 from app.services.ingestion.email.mailboxes import has_local_mail
+from app.services.matching import embeddings
 from app.services.matching import extra as matching_extra
 from app.services.matching import service as matching
 
@@ -459,6 +460,10 @@ def run_scheduler(
         tasks.enqueue(session, "expire_summaries")
         checks = enqueue_liveness_checks(session)
         reinstall = matching_extra.ensure_installed(session)
+        # Ofertas cuya similitud semántica falló (sin red, o calculadas a mitad de instalarla):
+        # se reintentan al arrancar.
+        if embeddings.get_embedder() is not None and matching.has_semantic_failures(session):
+            tasks.enqueue(session, "rescore_all")
     if reinstall:
         on_message("Similitud semántica: la activaste y falta en este entorno; se reinstala.")
     if queued:

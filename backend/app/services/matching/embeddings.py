@@ -5,7 +5,10 @@ sentence-transformers es un extra opcional (`uv sync --extra matching`): trae to
 El modelo se carga la primera vez que hace falta, en CPU, y se guarda en `data/models/`.
 """
 
+import importlib
 import math
+import sys
+import time
 from collections import OrderedDict
 from collections.abc import Sequence
 from functools import lru_cache
@@ -21,7 +24,16 @@ from app.schemas.llm_io import JobExtraction
 from app.schemas.profile import CandidateProfile
 
 EXTRA_HINT = "instala el extra con `uv sync --extra matching` (en backend/)"
+# Empieza así la nota del desglose cuando el cálculo falla (la reconoce `matching.service`).
+FAILED_NOTE = "No se pudo calcular la similitud semántica"
 _CACHE_SIZE = 512
+# Mientras se instala desde la UI, el fichero existe: sentence-transformers ya aparece en el entorno
+# pero sus dependencias aún se están copiando, e importarlo a medias deja el proceso con un
+# `transformers` roto. Uno más viejo que esto es de una instalación que se cortó.
+_INSTALLING_MAX_AGE = 60 * 60
+# Lo que una importación a medias puede dejar roto en `sys.modules` (código Python puro: se puede
+# volver a importar; torch no, y no se toca).
+_RELOADABLE = ("sentence_transformers", "transformers", "tokenizers", "huggingface_hub")
 
 
 class Embedder(Protocol):
@@ -41,7 +53,13 @@ class SentenceTransformerEmbedder:
 
     def _load(self) -> Any:
         if self._model is None:
-            from sentence_transformers import SentenceTransformer
+            try:
+                from sentence_transformers import SentenceTransformer
+            except ImportError:
+                # Un intento anterior lo importó a medias (durante la instalación): se olvida y
+                # se vuelve a importar, ya completo, sin reiniciar la app.
+                _forget_partial_imports()
+                from sentence_transformers import SentenceTransformer
 
             self._cache_dir.mkdir(parents=True, exist_ok=True)
             self._model = SentenceTransformer(
@@ -65,8 +83,29 @@ class SentenceTransformerEmbedder:
         return [found[t] for t in texts]
 
 
+def _forget_partial_imports() -> None:
+    for name in list(sys.modules):
+        if name.split(".", 1)[0] in _RELOADABLE:
+            del sys.modules[name]
+    importlib.invalidate_caches()
+
+
+def installing_marker() -> Path:
+    """El fichero que marca una instalación desde la UI en marcha (`matching.extra`)."""
+    return get_settings().tmp_dir / "installing-matching"
+
+
+def _installing() -> bool:
+    try:
+        age = time.time() - installing_marker().stat().st_mtime
+    except OSError:
+        return False
+    return age < _INSTALLING_MAX_AGE
+
+
 def is_installed() -> bool:
-    return find_spec("sentence_transformers") is not None
+    """sentence-transformers está en el entorno y no se está instalando ahora mismo."""
+    return find_spec("sentence_transformers") is not None and not _installing()
 
 
 @lru_cache

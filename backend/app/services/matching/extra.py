@@ -127,6 +127,10 @@ def install(session: Session) -> dict[str, object]:
         "--no-install-project",
         "--no-dev",
     ]
+    # Mientras dura, el score se calcula como sin el extra (ver `embeddings.is_installed`).
+    marker = embeddings.installing_marker()
+    marker.parent.mkdir(parents=True, exist_ok=True)
+    marker.touch()
     try:
         result = subprocess.run(  # noqa: S603
             command,
@@ -141,6 +145,8 @@ def install(session: Session) -> dict[str, object]:
         raise MatchingInstallError(
             f"La instalación tardó más de {TIMEOUT_SECONDS // 60} minutos y se ha parado."
         ) from exc
+    finally:
+        marker.unlink(missing_ok=True)
     if result.returncode != 0:
         tail = (result.stderr or result.stdout or "").strip()[-_OUTPUT_TAIL:]
         raise MatchingInstallError(f"uv sync ha fallado ({result.returncode}): {tail}")

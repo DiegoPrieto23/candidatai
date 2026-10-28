@@ -277,4 +277,23 @@ describe('Página «Agente» (fase 19)', () => {
       expect(calls.find((c) => c.method === 'PUT' && c.path === '/agent/assess-threshold')?.body).toEqual({ value: 60 })
     })
   })
+  it('la comparación por significado se activa también desde aquí y se ve cuando se instala', async () => {
+    const extra = { installed: false, wanted: false, disabled: false, in_docker: false, installing: false, error: null }
+    const calls = mockApi({
+      'GET /status': status(),
+      'GET /agent': launcher,
+      'GET /agent/runs': { active: 0, runs: [] },
+      'GET /agent/requests': { pending: 0, requests: [] },
+      'GET /matching/semantic': extra,
+      'POST /matching/semantic/install': { ...extra, wanted: true, installing: true },
+    })
+    renderApp('/agente')
+    const section = await screen.findByRole('region', { name: 'Comparación por significado' })
+    expect(await within(section).findByText('Comparación por significado: sin activar')).toBeInTheDocument()
+    await userEvent.click(within(section).getByRole('button', { name: 'Qué aporta y cómo activarla' }))
+    await userEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Instalar' }))
+    expect(calls.some((c) => c.method === 'POST' && c.path === '/matching/semantic/install')).toBe(true)
+    expect(await within(section).findByText('Instalando la comparación por significado…')).toBeInTheDocument()
+    expect(within(section).getByText(/puedes seguir usando la app/)).toBeInTheDocument()
+  })
 })

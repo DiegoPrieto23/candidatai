@@ -30,10 +30,7 @@
   "belowAssessThreshold": "Sin valorar en segundo plano: su score ({{score}}) está por debajo del umbral ({{threshold}}). Cámbialo en la página «Agente» o valórala «En terminal».",
   "salaryGap": "{{amount}} por debajo de tu mínimo (solo lo ves tú).",
   "semantic": {
-    "off": "Comparación por significado sin activar: el score solo cuenta las skills por su nombre.",
     "learnMore": "Qué aporta y cómo activarla",
-    "installing": "Instalando la comparación por significado en segundo plano (puede tardar unos minutos). Al terminar, los scores se recalculan solos.",
-    "failed": "No se pudo instalar la comparación por significado.",
     "retry": "Ver el error y reintentar",
     "title": "Comparación por significado",
     "intro": "Ahora el score compara tus skills con las de la oferta solo por su nombre. Con esta opción, además, compara el sentido de tu perfil (titular, resumen y logros) con el de la oferta (puesto, responsabilidades, skills y sector), aunque usen palabras distintas.",
@@ -49,6 +46,32 @@
     "docker": "En Docker no está disponible: la imagen no la trae. El score funciona igual sin ella.",
     "notNow": "Ahora no",
     "install": "Instalar",
-    "starting": "Empezando…"
+    "starting": "Empezando…",
+    "state": {
+      "off": {
+        "title": "Comparación por significado: sin activar",
+        "body": "Ahora el score solo cuenta tus skills por su nombre. Actívala para que compare también el sentido de tu perfil con el de cada oferta."
+      },
+      "installing": {
+        "title": "Instalando la comparación por significado…",
+        "body": "Se está descargando e instalando en segundo plano: tarda unos minutos y puedes seguir usando la app. Al terminar, los scores de las ofertas abiertas se recalculan solos."
+      },
+      "failed": {
+        "title": "No se pudo instalar la comparación por significado",
+        "body": "El score sigue funcionando, solo por el nombre de las skills. Mira el error y vuelve a intentarlo."
+      },
+      "installed": {
+        "title": "Comparación por significado: activada",
+        "body": "El score compara también el sentido de tu perfil con el de cada oferta, aunque usen palabras distintas."
+      },
+      "disabled": {
+        "title": "Comparación por significado: desactivada",
+        "body": "Está instalada, pero desactivada en tu configuración."
+      },
+      "docker": {
+        "title": "Comparación por significado: no disponible",
+        "body": "En Docker no se puede instalar: la imagen no la trae. El score funciona igual sin ella."
+      }
+    }
   }
 }

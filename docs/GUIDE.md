@@ -208,8 +208,9 @@ pnpm build                             # the built UI that `cai start` serves
 ```
 
 Optional: local semantic similarity ("meaning-based comparison": brings torch, 1-2 GB). Install it
-from the UI: in the score breakdown of any job, "What it adds and how to turn it on" → "Install".
-The choice is saved in your data: it is used for every job from then on and, if you update the app
+from the UI: on the **Agent** page, "Meaning-based comparison" section (or in the score breakdown
+of any job), "What it adds and how to turn it on" → "Install". While it installs, it says so right
+there. The choice is saved in your data: it is used for every job from then on and, if you update the app
 (or run `uv sync` without the extra), the worker reinstalls it on start. By hand:
 `uv sync --extra matching`. Without it the score works the same, minus that component.
 
