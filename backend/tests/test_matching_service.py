@@ -20,7 +20,7 @@ from app.services.extractions import ExtractionNotFoundError
 from app.services.matching import embeddings
 from app.services.matching import service as matching
 from app.services.pipeline import Stage
-from tests.matching_support import FakeEmbedder, demo_extraction_data
+from tests.matching_support import BrokenEmbedder, FakeEmbedder, demo_extraction_data
 
 ASSESSMENT = FitAssessment(
     verdict="strong",
@@ -442,3 +442,26 @@ def test_status_counts_queued_tasks() -> None:
     with session_scope() as session:
         assert status.get_status(session).pending_tasks == 1
         assert session.scalar(select(func.count()).select_from(Event)) == 0
+
+
+def test_rescore_retries_failed_semantic(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Un match con la similitud fallida (sin red, o a mitad de instalarla) se rehace al recalcular
+    en el worker en cuanto funciona; leerlo no lo rehace en cada visita."""
+    broken: Any = BrokenEmbedder()
+    broken.model_name = "fake-bow"  # misma huella que el bueno: solo cambia que ahora funciona
+    monkeypatch.setattr(embeddings, "get_embedder", lambda: broken)
+    import_demo_profile()
+    job_id = add_job()
+    extract(job_id)
+    with session_scope() as session:
+        first = matching.current_match(session, job_id)
+        assert matching.semantic_failed(first.breakdown)
+        assert matching.has_semantic_failures(session)
+        assert matching.current_match(session, job_id).id == first.id
+    monkeypatch.setattr(embeddings, "get_embedder", lambda: FakeEmbedder())
+    with session_scope() as session:
+        assert matching.current_match(session, job_id).id == first.id
+        matching.rescore_open_jobs(session)
+        again = matching.current_match(session, job_id)
+        assert again.id != first.id and not matching.semantic_failed(again.breakdown)
+        assert not matching.has_semantic_failures(session)

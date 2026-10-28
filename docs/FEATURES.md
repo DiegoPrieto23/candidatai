@@ -102,7 +102,7 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 
 | Feature | Where | Screenshot |
 |---|---|---|
-| **Agent**: default agent and one per action, background runs with progress, questions and Cancel, cost by action and model, and spending levels | `/agente` | [Agent](img/en/agent.webp) |
+| **Agent**: default agent and one per action, background runs with progress, questions and Cancel, cost by action and model, spending levels and the score's meaning-based comparison | `/agente` | [Agent](img/en/agent.webp) |
 | **Every agent button explains itself**: what the skill does, what it changes and what it needs, on hover or keyboard focus | Every page | |
 | **Leave it for your next session**: any button saves the order for your agent | `handle-requests` | |
 | **Daily summary**: pending jobs, overdue follow-ups and next milestones | `daily-summary` | |

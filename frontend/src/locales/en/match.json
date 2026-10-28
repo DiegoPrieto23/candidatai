@@ -30,10 +30,7 @@
   "belowAssessThreshold": "Not assessed in the background: its score ({{score}}) is below the threshold ({{threshold}}). Change it on the \"Agent\" page or assess it \"In a terminal\".",
   "salaryGap": "{{amount}} below your minimum (only you see this).",
   "semantic": {
-    "off": "Meaning-based comparison is off: the score only counts skills by their name.",
     "learnMore": "What it adds and how to turn it on",
-    "installing": "Installing meaning-based comparison in the background (it may take a few minutes). When it finishes, scores are recalculated on their own.",
-    "failed": "Meaning-based comparison could not be installed.",
     "retry": "See the error and retry",
     "title": "Meaning-based comparison",
     "intro": "Right now the score compares your skills with the job's by name only. With this option it also compares the meaning of your profile (headline, summary and achievements) with the job (title, responsibilities, skills and sector), even when they use different words.",
@@ -49,6 +46,32 @@
     "docker": "Not available in Docker: the image does not include it. The score works the same without it.",
     "notNow": "Not now",
     "install": "Install",
-    "starting": "Starting…"
+    "starting": "Starting…",
+    "state": {
+      "off": {
+        "title": "Meaning-based comparison: off",
+        "body": "Right now the score only counts your skills by their name. Turn it on so it also compares the meaning of your profile with each job."
+      },
+      "installing": {
+        "title": "Installing meaning-based comparison…",
+        "body": "It is being downloaded and installed in the background: it takes a few minutes and you can keep using the app. When it finishes, the scores of open jobs are recalculated on their own."
+      },
+      "failed": {
+        "title": "Meaning-based comparison could not be installed",
+        "body": "The score still works, by skill names only. See the error and try again."
+      },
+      "installed": {
+        "title": "Meaning-based comparison: on",
+        "body": "The score also compares the meaning of your profile with each job, even when they use different words."
+      },
+      "disabled": {
+        "title": "Meaning-based comparison: turned off",
+        "body": "It is installed, but turned off in your settings."
+      },
+      "docker": {
+        "title": "Meaning-based comparison: not available",
+        "body": "It cannot be installed in Docker: the image does not include it. The score works the same without it."
+      }
+    }
   }
 }

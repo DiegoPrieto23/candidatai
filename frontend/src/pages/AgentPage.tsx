@@ -6,6 +6,7 @@ import {
   CircleNotchIcon,
   ClockCountdownIcon,
   RobotIcon,
+  SparkleIcon,
   TerminalWindowIcon,
   XIcon,
 } from '@phosphor-icons/react'
@@ -22,6 +23,7 @@ import { AgentButton } from '@/components/AgentButton'
 import { AgentsSection } from '@/components/AgentsSection'
 import { CostsSection } from '@/components/CostsSection'
 import { Reveal } from '@/components/Reveal'
+import { SemanticMatchingCard } from '@/components/SemanticMatching'
 import { ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -345,8 +347,8 @@ function Requests() {
 export function AgentPage() {
   const { t } = useTranslation('agent')
   const { t: tAgents } = useTranslation('agents')
-  // Arriba lo que más se usa (tus agentes y lo que les has dejado); después, lo que corre solo, y el
-  // coste y el umbral, plegados al final como ajustes.
+  // Arriba lo que más se usa (tus agentes y lo que les has dejado); después, lo que corre solo, la
+  // comparación por significado del score, y el coste y el umbral, plegados al final como ajustes.
   return (
     <div className="animate-in fade-in duration-300">
       <div className="mb-6">
@@ -377,6 +379,13 @@ export function AgentPage() {
           {t('background')}
         </h2>
         <Runs />
+      </section>
+      <section aria-labelledby="semantic-title" className="mt-10 min-w-0 max-w-3xl">
+        <h2 id="semantic-title" className="mb-3 flex items-center gap-2 text-lg font-semibold tracking-tight">
+          <SparkleIcon className="size-5 text-primary" weight="duotone" />
+          {t('semantic')}
+        </h2>
+        <SemanticMatchingCard />
       </section>
       <Reveal label={t('costs.settings')} className="mt-10 min-w-0">
         <CostsSection />
