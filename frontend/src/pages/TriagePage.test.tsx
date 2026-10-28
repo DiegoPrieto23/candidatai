@@ -259,3 +259,41 @@ describe('Por revisar', () => {
     expect(await screen.findByRole('heading', { level: 1, name: 'Por revisar' })).toBeInTheDocument()
   })
 })
+
+describe('Comparación por significado', () => {
+  const notInstalled = 'Similitud semántica no disponible: instala el extra con `uv sync --extra matching` (en backend/).'
+  const extraStatus = { installed: false, wanted: false, disabled: false, in_docker: false, installing: false, error: null }
+
+  it('explica qué aporta y la instala en segundo plano desde la UI', async () => {
+    const item = triageItem(1, 60, {
+      match: matchView({ score: 60, breakdown: { ...matchView().breakdown, notes: [notInstalled] } }),
+    })
+    const calls = mockTriage([item], {
+      'GET /matching/semantic': extraStatus,
+      'POST /matching/semantic/install': { ...extraStatus, wanted: true, installing: true },
+    })
+    renderApp('/por-revisar')
+    const detail = await screen.findByRole('article')
+    await userEvent.click(await within(detail).findByRole('button', { name: 'Qué aporta y cómo activarla' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Comparación por significado' })
+    expect(within(dialog).getByText(/vale el 30 % del score/)).toBeInTheDocument()
+    expect(within(dialog).getByText(/Es permanente/)).toBeInTheDocument()
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Instalar' }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    expect(calls.some((c: Call) => c.method === 'POST' && c.path === '/matching/semantic/install')).toBe(true)
+    expect(await within(detail).findByRole('status')).toHaveTextContent(/Instalando la comparación por significado/)
+  })
+
+  it('en Docker no ofrece instalarla', async () => {
+    const item = triageItem(1, 60, {
+      match: matchView({ score: 60, breakdown: { ...matchView().breakdown, notes: [notInstalled] } }),
+    })
+    mockTriage([item], { 'GET /matching/semantic': { ...extraStatus, in_docker: true } })
+    renderApp('/por-revisar')
+    const detail = await screen.findByRole('article')
+    await userEvent.click(await within(detail).findByRole('button', { name: 'Qué aporta y cómo activarla' }))
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getByText(/En Docker no está disponible/)).toBeInTheDocument()
+    expect(within(dialog).queryByRole('button', { name: 'Instalar' })).not.toBeInTheDocument()
+  })
+})

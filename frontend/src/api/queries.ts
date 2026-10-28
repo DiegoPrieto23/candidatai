@@ -7,6 +7,7 @@ export const PAGE_SIZE = 25
 
 export const keys = {
   status: ['status'] as const,
+  semanticMatching: ['semantic-matching'] as const,
   prompts: ['prompts'] as const,
   jobs: (params: JobsParams) => ['jobs', params] as const,
   allJobs: ['jobs'] as const,
@@ -1025,6 +1026,32 @@ export function useSaveAssessThreshold() {
       client.setQueryData(keys.assessThreshold, data)
       void client.invalidateQueries({ queryKey: keys.triage })
     },
+  })
+}
+
+/** Similitud semántica del score: si está instalada o instalándose (entonces, cada 5 s). */
+export function useSemanticMatching(enabled = true) {
+  const client = useQueryClient()
+  return useQuery({
+    queryKey: keys.semanticMatching,
+    queryFn: async () => {
+      const previous = client.getQueryData<Schemas['MatchingExtraStatus']>(keys.semanticMatching)
+      const data = await unwrap(api.GET('/matching/semantic'))
+      // Recién instalada: los scores se recalculan con similitud; todo lo que los muestra, al día.
+      if (previous?.installing && data.installed) void client.invalidateQueries()
+      return data
+    },
+    enabled,
+    refetchInterval: (query) => (query.state.data?.installing ? 5_000 : false),
+  })
+}
+
+/** Guarda que quieres la similitud semántica y la instala en segundo plano. */
+export function useInstallSemanticMatching() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: () => unwrap(api.POST('/matching/semantic/install', { body: {} })),
+    onSuccess: (data) => client.setQueryData(keys.semanticMatching, data),
   })
 }
 

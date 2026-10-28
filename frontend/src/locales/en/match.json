@@ -28,5 +28,27 @@
     "noNice": "The job doesn't say which skills are nice-to-have, so that part doesn't count in the score."
   },
   "belowAssessThreshold": "Not assessed in the background: its score ({{score}}) is below the threshold ({{threshold}}). Change it on the \"Agent\" page or assess it \"In a terminal\".",
-  "salaryGap": "{{amount}} below your minimum (only you see this)."
+  "salaryGap": "{{amount}} below your minimum (only you see this).",
+  "semantic": {
+    "off": "Meaning-based comparison is off: the score only counts skills by their name.",
+    "learnMore": "What it adds and how to turn it on",
+    "installing": "Installing meaning-based comparison in the background (it may take a few minutes). When it finishes, scores are recalculated on their own.",
+    "failed": "Meaning-based comparison could not be installed.",
+    "retry": "See the error and retry",
+    "title": "Meaning-based comparison",
+    "intro": "Right now the score compares your skills with the job's by name only. With this option it also compares the meaning of your profile (headline, summary and achievements) with the job (title, responsibilities, skills and sector), even when they use different words.",
+    "benefits": {
+      "synonyms": "Spots the fit even when the words differ: “data pipelines” and “ETL”, “reporting dashboards” and “Power BI”.",
+      "languages": "Works across languages: compares a job in English with your profile in Spanish.",
+      "fewSkills": "Scores better the jobs that list few skills or unusual names, where comparing names falls short.",
+      "weight": "Fills in the “Similarity” part of the breakdown, worth 30% of the score. Without it, that weight is spread across the other parts."
+    },
+    "local": "It runs on your computer: your profile never leaves it. Only the model is downloaded, once.",
+    "permanent": "It is permanent: it is used for every job from the moment it is installed. Open jobs are recalculated when it finishes (their scores may shift a few points) and closed ones when you open them. If you update the app, it reinstalls itself.",
+    "size": "It downloads a few hundred MB (much more on Linux) and takes 1-2 GB of disk. It takes a few minutes; you can keep using the app meanwhile.",
+    "docker": "Not available in Docker: the image does not include it. The score works the same without it.",
+    "notNow": "Not now",
+    "install": "Install",
+    "starting": "Starting…"
+  }
 }

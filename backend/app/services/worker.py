@@ -59,6 +59,7 @@ from app.services.ingestion import linkedin_public
 from app.services.ingestion import service as sources
 from app.services.ingestion.email import service as email_alerts
 from app.services.ingestion.email.mailboxes import has_local_mail
+from app.services.matching import extra as matching_extra
 from app.services.matching import service as matching
 
 logger = logging.getLogger(__name__)
@@ -165,6 +166,10 @@ def _apply_focus(_session: Session, payload: dict[str, Any]) -> dict[str, Any]:
     return applier.run_focus(int(payload["attempt_id"]))
 
 
+def _install_matching(session: Session, _payload: dict[str, Any]) -> dict[str, Any]:
+    return matching_extra.install(session)
+
+
 def _archive_application(session: Session, payload: dict[str, Any]) -> dict[str, Any]:
     return application_archive.archive(session, payload).model_dump()
 
@@ -186,6 +191,7 @@ HANDLERS: dict[str, Handler] = {
     "apply_focus": _apply_focus,
     "archive_application": _archive_application,
     "check_open": _check_open,
+    "install_matching": _install_matching,
 }
 
 
@@ -349,6 +355,8 @@ def describe(outcome: TaskOutcome) -> str:
         return f"Candidatura de la oferta {result.get('job_id')} {verb} data/{result['folder']}"
     if outcome.kind == "check_open" and result.get("message"):
         return f"Oferta {result.get('job_id')}: {result['message']}"
+    if outcome.kind == "install_matching":
+        return "Similitud semántica instalada: se recalculan las ofertas abiertas"
     if outcome.kind == "rescore_all":
         scored, closed = result.get("scored", 0), len(result.get("closed") or [])
         return f"Recálculo de matches: {scored} ofertas, {closed} cerradas por filtros"
@@ -450,6 +458,9 @@ def run_scheduler(
         email = enqueue_replies_poll(session) or email
         tasks.enqueue(session, "expire_summaries")
         checks = enqueue_liveness_checks(session)
+        reinstall = matching_extra.ensure_installed(session)
+    if reinstall:
+        on_message("Similitud semántica: la activaste y falta en este entorno; se reinstala.")
     if queued:
         on_message(f"Fuentes pendientes desde la última ingesta: {len(queued)} en cola.")
     if checks:

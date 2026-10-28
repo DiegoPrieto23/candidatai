@@ -207,8 +207,11 @@ pnpm install
 pnpm build                             # the built UI that `cai start` serves
 ```
 
-Optional: `uv sync --extra matching` installs local semantic similarity (brings torch, ~1 GB).
-Without it the score works the same, minus that component.
+Optional: local semantic similarity ("meaning-based comparison": brings torch, 1-2 GB). Install it
+from the UI: in the score breakdown of any job, "What it adds and how to turn it on" → "Install".
+The choice is saved in your data: it is used for every job from then on and, if you update the app
+(or run `uv sync` without the extra), the worker reinstalls it on start. By hand:
+`uv sync --extra matching`. Without it the score works the same, minus that component.
 
 ## 3. Try the demo
 
@@ -464,8 +467,9 @@ one” puts your preferences back as they were.
 - **`.env`** (at the root, outside git): `CAI_DATA_DIR`, `SOFFICE_PATH`, InfoJobs and Adzuna keys,
   IMAP (`CAI_IMAP_HOST`, `CAI_IMAP_PORT`, `CAI_IMAP_USER`, `CAI_IMAP_PASSWORD`, `CAI_IMAP_FOLDER`,
   `CAI_IMAP_REPLIES_FOLDER`), `CAI_BROWSER_CHANNEL` (`chrome` or `msedge` for assisted
-  applications), `CAI_EMBEDDINGS=off`, `CAI_LANG` (`es` or `en`: language of the `cai start`
-  messages in the terminal; without it, your system's). Nothing is required.
+  applications), `CAI_EMBEDDINGS=off`, `UV_PATH` (uv outside the PATH), `CAI_LANG` (`es` or
+  `en`: language of the `cai start` messages in the terminal; without it, your system's). Nothing
+  is required.
 - **`config/policies.yaml`:** score threshold, score weights, daily ingestion time, email polling,
   limits for browser search and for LinkedIn's public search, "job closed" phrases… After changing
   the score, `cai match rescore` recalculates and `cai eval matching` measures the effect.
