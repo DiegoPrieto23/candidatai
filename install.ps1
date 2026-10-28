@@ -252,8 +252,11 @@ Step "4/5 · Preparar el entorno (puede tardar unos minutos la primera vez)"
 $backend = Join-Path $AppDir "backend"
 if ($PSCmdlet.ShouldProcess($backend, "uv sync, Chromium de Playwright y base de datos")) {
   # uv escribe su progreso en stderr: no es un error. Lo que cuenta es el código de salida.
-  & uv sync --directory $backend
+  # Compilado al instalar: si no, Python lo compila al arrancar y la primera vez tarda el triple.
+  & uv sync --directory $backend --compile-bytecode
   if ($LASTEXITCODE -ne 0) { throw "uv sync ha fallado ($LASTEXITCODE)." }
+  & uv run --directory $backend python -m compileall -q app
+  if ($LASTEXITCODE -ne 0) { throw "No se pudo compilar la app ($LASTEXITCODE)." }
   & uv run --directory $backend playwright install chromium
   if ($LASTEXITCODE -ne 0) { throw "No se pudo instalar Chromium ($LASTEXITCODE)." }
   # La base de datos que se prepara es la de tus datos (la del .env de la app), aunque en esta
@@ -281,9 +284,12 @@ if ($NoShortcuts) {
     if ($PSCmdlet.ShouldProcess($lnk, "Crear el acceso directo «CandidatAI»")) {
       $shell = New-Object -ComObject WScript.Shell
       $shortcut = $shell.CreateShortcut($lnk)
-      # Con cmd: si `cai start` falla, la ventana se queda abierta y enseña el error.
+      # Con cmd: si `cai start` falla, la ventana se queda abierta y enseña el error. Antes abre la
+      # página «Arrancando CandidatAI…», que pasa sola a la app cuando responde: así se ve algo
+      # nada más pulsar, sin esperar a que cargue Python (por eso `--no-browser`).
+      $starting = Join-Path $AppDir "frontend\dist\starting.html"
       $shortcut.TargetPath = Join-Path $env:SystemRoot "System32\cmd.exe"
-      $shortcut.Arguments = "/c `"`"$((Get-Command uv).Source)`" run --directory `"$backend`" cai start || pause`""
+      $shortcut.Arguments = "/c `"start `"`" `"$starting`" & `"$((Get-Command uv).Source)`" run --directory `"$backend`" cai start --no-browser || pause`""
       $shortcut.WorkingDirectory = $backend
       $shortcut.IconLocation = Join-Path $AppDir "frontend\public\candidatai.ico"
       $shortcut.Description = "Abre CandidatAI (cierra la ventana para pararla)"

@@ -1,0 +1,125 @@
+<!doctype html>
+<!--
+  Lo primero que ves al abrir CandidatAI: el acceso directo (y `cai start`) abren esta página nada
+  más pulsarlo, desde el disco, mientras la app arranca. Pregunta a la app cada medio segundo y,
+  en cuanto responde, pasa a ella. Sin nada externo: tiene que funcionar sin la app en marcha.
+-->
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CandidatAI</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #fafafa;
+        --card: #ffffff;
+        --fg: #18181b;
+        --muted: #71717a;
+        --border: #e4e4e7;
+        --primary: #4f46e5;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #09090b;
+          --card: #18181b;
+          --fg: #fafafa;
+          --muted: #a1a1aa;
+          --border: #27272a;
+          --primary: #818cf8;
+        }
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        display: grid;
+        place-items: center;
+        padding: 16px;
+        background: var(--bg);
+        color: var(--fg);
+        font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      }
+      main {
+        width: min(420px, 100%);
+        padding: 32px 28px;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        background: var(--card);
+        text-align: center;
+      }
+      .spinner {
+        width: 36px;
+        height: 36px;
+        margin: 0 auto 20px;
+        border: 3px solid var(--border);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.9s linear infinite;
+      }
+      .slow .spinner { animation-duration: 1.6s; }
+      .failed .spinner { display: none; }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 3s; } }
+      h1 { margin: 0 0 6px; font-size: 18px; font-weight: 600; }
+      p { margin: 0; color: var(--muted); }
+      #note { margin-top: 14px; font-size: 13px; }
+      a { color: var(--primary); }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="spinner" aria-hidden="true"></div>
+      <h1 id="title">Arrancando CandidatAI…</h1>
+      <p id="body" role="status">En unos segundos se abre aquí. La primera vez tras instalar o actualizar tarda algo más.</p>
+      <p id="note"><a id="link" href="http://127.0.0.1:8000/">Abrir CandidatAI</a></p>
+    </main>
+    <script>
+      var target = 'http://127.0.0.1:8000/' // la de siempre: con otro puerto, `cai start` no abre esta página
+      var en = !/^es\b/i.test(navigator.language || '')
+      var text = en
+        ? {
+            title: 'Starting CandidatAI…',
+            body: 'It opens here in a few seconds. The first time after installing or updating takes a bit longer.',
+            slow: 'Still starting: on a slow computer, or the first time after an update, it can take up to a minute.',
+            failedTitle: 'CandidatAI isn’t answering',
+            failed: 'Look at the CandidatAI window: if it shows an error, it says what to do. When it’s running, use the link below.',
+            link: 'Open CandidatAI',
+          }
+        : {
+            title: 'Arrancando CandidatAI…',
+            body: 'En unos segundos se abre aquí. La primera vez tras instalar o actualizar tarda algo más.',
+            slow: 'Sigue arrancando: en un equipo lento, o la primera vez tras actualizar, puede tardar hasta un minuto.',
+            failedTitle: 'CandidatAI no responde',
+            failed: 'Mira la ventana de CandidatAI: si muestra un error, dice qué hacer. Cuando esté en marcha, usa el enlace de abajo.',
+            link: 'Abrir CandidatAI',
+          }
+      document.documentElement.lang = en ? 'en' : 'es'
+      document.getElementById('title').textContent = text.title
+      document.getElementById('body').textContent = text.body
+      var link = document.getElementById('link')
+      link.textContent = text.link
+      link.href = target
+
+      var started = Date.now()
+      function check() {
+        var seconds = (Date.now() - started) / 1000
+        if (seconds > 120) {
+          document.body.className = 'failed'
+          document.getElementById('title').textContent = text.failedTitle
+          document.getElementById('body').textContent = text.failed
+          return
+        }
+        if (seconds > 20) {
+          document.body.className = 'slow'
+          document.getElementById('body').textContent = text.slow
+        }
+        // `no-cors`: no hace falta leer la respuesta, basta con que la app conteste.
+        fetch(target + 'status?_=' + Date.now(), { mode: 'no-cors', cache: 'no-store' })
+          .then(function () { location.replace(target) })
+          .catch(function () { setTimeout(check, 500) })
+      }
+      check()
+    </script>
+  </body>
+</html>

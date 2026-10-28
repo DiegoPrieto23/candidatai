@@ -32,6 +32,10 @@ def alembic_config(url: str | None = None) -> "Config":
 
 
 def upgrade(url: str | None = None, revision: str = "head") -> None:
+    # Ya al día (lo normal al arrancar): sin cargar el entorno de Alembic, que cuesta en cada
+    # `cai start` y es lo que tarda en un equipo lento.
+    if revision == "head" and current_revision(url) == head_revision():
+        return
     from alembic import command
 
     command.upgrade(alembic_config(url), revision)

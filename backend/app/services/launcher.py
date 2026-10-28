@@ -1,8 +1,11 @@
 """`cai start` (fase 23.4): la app entera con un solo comando.
 
-Aplica las migraciones, arranca la API (que sirve también la UI compilada) y el worker como dos
-procesos hijos, espera a que la API responda y abre el navegador. Ctrl+C (o cerrar la ventana)
-para los dos. Si uno de los dos se cae, se para el otro: mejor nada que media app.
+Abre enseguida en el navegador la página «Arrancando CandidatAI…» (`starting.html` de la UI
+compilada), que pasa sola a la app cuando responde: así se ve algo desde el primer momento. Luego
+aplica las migraciones, arranca la API (que sirve también la UI compilada) y, cuando ya responde,
+el worker, como dos procesos hijos: el worker no hace falta para abrir la app y en un equipo con
+pocos núcleos le quitaría CPU a la API mientras arranca. Ctrl+C (o cerrar la ventana) para los
+dos. Si uno de los dos se cae, se para el otro: mejor nada que media app.
 
 La salida de cada hijo va a `data/logs/start-<nombre>.log`; en la consola solo se ven unas líneas
 de estado. `--dev` arranca además Vite (`pnpm dev`) para desarrollar con recarga en caliente.
@@ -35,6 +38,7 @@ from app.core.config import REPO_ROOT, Settings, get_settings
 from app.services.agent_runner import _kill_tree
 
 HOST = "127.0.0.1"
+DEFAULT_PORT = 8000  # el de `starting.html` y el acceso directo
 DEV_UI_URL = "http://127.0.0.1:5173"
 READY_TIMEOUT = 60.0  # la primera vez la API puede tardar (importa mucho)
 
@@ -64,6 +68,10 @@ MESSAGES: dict[str, dict[Lang, str]] = {
         "en": "“{name}” has stopped: stopping the rest. Details in data/logs/start-{name}.log.",
     },
     "closing": {"es": "Cerrando CandidatAI…", "en": "Closing CandidatAI…"},
+    "no_browser": {
+        "es": "No he podido abrir el navegador: abre {url} en el tuyo.",
+        "en": "Couldn't open the browser: open {url} in yours.",
+    },
     "no_ui": {
         "es": "No está la UI compilada en {ui_dir}. Si has clonado el repositorio, compílala una "
         "vez: `cd frontend; pnpm install; pnpm build` (o usa `cai start --dev`). Con el "
@@ -167,6 +175,24 @@ def probe(
 def _python_command(*args: str) -> list[str]:
     # El mismo intérprete que ejecuta `cai`: el del entorno del backend.
     return [sys.executable, "-m", "app", *args]
+
+
+def starting_page(settings: Settings, port: int, *, dev: bool = False) -> str | None:
+    """La página «Arrancando…» (`file://`), si se puede usar: solo con la UI compilada y el puerto
+    de siempre, que es al que pregunta (con otro, o con Vite, se abre la app cuando responde)."""
+    page = settings.ui_dir / "starting.html"
+    if dev or port != DEFAULT_PORT or not page.is_file():
+        return None
+    return page.resolve().as_uri()
+
+
+def _open(
+    browser: Callable[[str], object], url: str, say: Callable[[str], None], app_url: str
+) -> None:
+    """Abre `url`; si el sistema no tiene con qué (`webbrowser` devuelve False), dice la dirección
+    de la app para abrirla a mano."""
+    if browser(url) is False:
+        say(message("no_browser", url=app_url))
 
 
 def plan(settings: Settings, port: int, *, dev: bool = False) -> Launch:
@@ -318,22 +344,30 @@ def start(
     if state == "candidatai":
         say(message("already_running", url=f"http://{HOST}:{port}"))
         if open_browser:
-            browser(f"http://{HOST}:{port}")
+            url = f"http://{HOST}:{port}"
+            _open(browser, url, say, url)
         return
     if state == "other":
         raise LaunchError(message("port_busy", port=port))
     launch = plan(settings, port, dev=dev)
-    migrations.upgrade()
     say(message("starting"))
+    waiting_page = starting_page(settings, port, dev=dev) if open_browser else None
+    if waiting_page is not None:
+        _open(browser, waiting_page, say, launch.url)
+    migrations.upgrade()
     with stop_on_signals():
         try:
+            later = [c for c in launch.children if c.name == "worker"]
             for child in launch.children:
-                _spawn(child, settings.logs_dir)
+                if child not in later:
+                    _spawn(child, settings.logs_dir)
             wait_ready(f"http://{HOST}:{port}", launch)
+            for child in later:
+                _spawn(child, settings.logs_dir)
             say(message("running", url=launch.url))
             say(message("keep_open"))
-            if open_browser:
-                browser(launch.url)
+            if open_browser and waiting_page is None:
+                _open(browser, launch.url, say, launch.url)
             ended = supervise(launch)
             say(message("child_ended", name=ended))
         except KeyboardInterrupt:
