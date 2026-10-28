@@ -9,6 +9,8 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 
 ## [Sin publicar]
 
+## [0.2.0] - 2026-10-28
+
 ### Añadido
 - **Crear tu perfil desde tu CV, sin salir de la app:** en «Mi perfil», mientras no tengas perfil,
   subes tu CV (PDF o Word) y pulsas «Crear mi perfil desde mi CV». Tu agente lo lee, te pregunta lo
@@ -242,5 +244,6 @@ y las reglas (qué se envía, qué se inventa, qué ve tu agente) las aplica el 
   solo se guardan en `.env`), y no tiene herramientas para escribir tu perfil.
 - Los instaladores no instalan una release cuya suma SHA-256 no coincide con la publicada.
 
-[Sin publicar]: https://github.com/DiegoPrieto23/candidatai/compare/v0.1.0...HEAD
+[Sin publicar]: https://github.com/DiegoPrieto23/candidatai/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/DiegoPrieto23/candidatai/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/DiegoPrieto23/candidatai/releases/tag/v0.1.0
