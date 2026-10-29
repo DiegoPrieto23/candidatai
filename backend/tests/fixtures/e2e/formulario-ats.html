@@ -1,0 +1,22 @@
+<!doctype html>
+<!-- Formulario inventado para las E2E: imita el de un ATS (texto, desplegable, CV y una pregunta). -->
+<html lang="es"><head><meta charset="utf-8"><title>Candidatura · Lumbre Datos (ficticia)</title></head>
+<body>
+<h1>Analytics Engineer · Lumbre Datos</h1>
+<form action="/formulario/enviar" method="post" enctype="multipart/form-data">
+  <label for="n">Nombre *</label><input id="n" name="nombre" required>
+  <label for="a">Apellidos *</label><input id="a" name="apellidos" required>
+  <label for="e">Correo electrónico *</label><input id="e" name="correo" type="email" required>
+  <label for="t">Teléfono</label><input id="t" name="telefono">
+  <label for="cv">Adjunta tu CV *</label><input type="file" id="cv" name="cv" required>
+  <label for="dim">¿Has trabajado con modelado dimensional? *</label>
+  <select id="dim" name="dimensional" required>
+    <option value="">Selecciona una opción</option>
+    <option value="si">Sí</option>
+    <option value="no">No</option>
+  </select>
+  <label for="py">¿Cuántos años de experiencia tienes con Python? *</label>
+  <textarea id="py" name="python" required></textarea>
+  <button type="submit">Enviar candidatura</button>
+</form>
+</body></html>
