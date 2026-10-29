@@ -7,15 +7,22 @@ El agente se simula con los comandos `cai … --json` (`tests/e2e/agent.py`). La
 """
 
 import re
-import sqlite3
 from collections.abc import Iterator
 
 import httpx
 import pytest
 from playwright.sync_api import Locator, Page, expect
 
-from app.services.documents import pdf
 from tests.e2e.agent import api, cai, demo_cv_content, demo_extras, extraction, find_job, text_of
+from tests.e2e.flows import (
+    application_tab,
+    days_ago,
+    job_ready_to_apply,
+    new_job_by_text,
+    templates,
+    timeline,
+    wait_for_stage,
+)
 from tests.e2e.harness import AppServer, t
 from tests.e2e.sites import SUBMIT_PATH, Sites
 
@@ -33,25 +40,13 @@ def app_extra_env(sites: Sites) -> dict[str, str]:
     return sites.app_env()
 
 
-def _new_job_by_text(page: Page, title: str, company: str, text: str, url: str = "") -> None:
-    page.goto("/nueva")
-    page.get_by_role("tab", name=t("newJob.pasteText")).click()
-    page.get_by_label(t("newJob.text.title")).fill(title)
-    page.get_by_label(t("newJob.text.company")).fill(company)
-    if url:
-        page.get_by_label(t("newJob.text.url")).fill(url)
-    page.get_by_label(t("newJob.text.text")).fill(text)
-    page.get_by_role("button", name=t("newJob.text.submit")).click()
-    expect(page.get_by_text(t("job.added.created"))).to_be_visible()
-
-
 # --- Alta -------------------------------------------------------------------------------------
 
 
 def test_a_pasted_job_waits_for_extraction_with_its_risk_flag(
     page: Page, demo_app: AppServer
 ) -> None:
-    _new_job_by_text(page, "Data Platform Engineer", "Ría Analítica", text_of("oferta-texto.txt"))
+    new_job_by_text(page, "Data Platform Engineer", "Ría Analítica", text_of("oferta-texto.txt"))
     job = find_job(demo_app, "Ría Analítica")
     assert job["stage"] == "pending_extraction"
     assert "injection_phrase" in job["risk_flags"]
@@ -162,12 +157,6 @@ def _total(server: AppServer, **params: str) -> int:
     return int(api(server, "/jobs", limit=1, **params)["total"])
 
 
-def _timeline(page: Page, job_id: int):  # noqa: ANN202 - Locator
-    page.goto(f"/jobs/{job_id}")
-    page.get_by_role("tab", name=t("job.tabs.history")).click()
-    return page.get_by_role("tabpanel")
-
-
 def _selected_job_id(page: Page) -> int:
     selected = page.get_by_role("article", name=t("triage.selected"))
     href = selected.get_by_role("link", name=t("triage.detail")).get_attribute("href")
@@ -206,7 +195,7 @@ def test_triage_approves_discards_with_reason_and_undoes(
     notice.get_by_role("button", name=t("triage.done.undo")).click()
     expect(count).to_be_visible()
     assert api(server, f"/jobs/{discarded_id}")["stage"] == "pending_triage"
-    history = _timeline(page, discarded_id)
+    history = timeline(page, discarded_id)
     expect(history.get_by_text(t("labels.event.discarded"), exact=True)).to_be_visible()
     reason = t("job.events.reason", reason=t("labels.discardReason.salary"))
     expect(history.get_by_text(reason)).to_be_visible()
@@ -228,7 +217,7 @@ def test_triage_approves_discards_with_reason_and_undoes(
     expect(notice).to_be_visible()
     expect(page.get_by_text(t("triage.count_other", count=pending - 2))).to_be_visible()
     assert api(server, f"/jobs/{approved_id}")["stage"] == "approved"
-    history = _timeline(page, approved_id)
+    history = timeline(page, approved_id)
     expect(history.get_by_text(t("labels.event.approved"), exact=True)).to_be_visible()
 
 
@@ -282,19 +271,6 @@ def test_inbox_filters_searches_pages_and_discards(page: Page, fresh_demo_app: A
 # --- CV y carta -------------------------------------------------------------------------------
 
 
-def _templates() -> tuple[str, str | None]:
-    """La plantilla del CV y otra a la que cambiar. Como la demo: Word si hay con qué pasarlo a
-    PDF (LibreOffice o Word); si no (la CI), la HTML, que lo hace Chromium, y no hay otra."""
-    if pdf.converter_name() is not None:
-        return "ats-simple", "clasica-foto"
-    return "moderna-2col", None
-
-
-def _application_tab(page: Page, job_id: int) -> None:
-    page.goto(f"/jobs/{job_id}")
-    page.get_by_role("tab", name=t("job.tabs.application")).click()
-
-
 def _check_pdf(page: Page, link: Locator) -> None:
     href = link.get_attribute("href")
     assert href is not None
@@ -314,7 +290,7 @@ def test_pasted_approved_and_cv_ready_to_download(page: Page, fresh_demo_app: Ap
     """El recorrido corto del humo: pegar una oferta, que tu agente la lea, aprobarla y descargar
     el CV que redacta."""
     server = fresh_demo_app
-    _new_job_by_text(page, "Data Platform Engineer", "Ría Analítica", text_of("oferta-texto.txt"))
+    new_job_by_text(page, "Data Platform Engineer", "Ría Analítica", text_of("oferta-texto.txt"))
     job_id = find_job(server, "Ría Analítica")["id"]
     cai(server, "jobs", "save-extraction", str(job_id), payload=extraction())
 
@@ -323,13 +299,13 @@ def test_pasted_approved_and_cv_ready_to_download(page: Page, fresh_demo_app: Ap
     expect(page.get_by_role("tab", name=t("job.tabs.application"))).to_be_visible()
     assert api(server, f"/jobs/{job_id}")["stage"] == "approved"
 
-    template, _ = _templates()
+    template, _ = templates()
     saved = cai(
         server,
         "cv", "save", str(job_id),
         payload={"content": demo_cv_content(), "render_options": {"template_id": template}},
     )  # fmt: skip
-    _application_tab(page, job_id)
+    application_tab(page, job_id)
     cv = page.get_by_role("region", name=t("cv.title"), exact=True)
     expect(cv.get_by_text(t("cv.verification.pending"))).to_be_visible()
     cai(server, "cv", "save-verification", str(saved["document_id"]), payload={"passed": True})
@@ -345,8 +321,8 @@ def test_cv_changes_template_and_the_letter_is_verified_and_downloads(
     page: Page, demo_app: AppServer
 ) -> None:
     job = api(demo_app, "/jobs", stage="cv_ready", limit=1)["items"][0]
-    template, other = _templates()
-    _application_tab(page, job["id"])
+    template, other = templates()
+    application_tab(page, job["id"])
     cv = page.get_by_role("region", name=t("cv.title"), exact=True)
     expect(cv.get_by_text(t("cv.verification.passed"))).to_be_visible()
 
@@ -383,73 +359,15 @@ def test_cv_changes_template_and_the_letter_is_verified_and_downloads(
 FORM_COMPANY = "Lumbre Datos"
 
 
-def _job_ready_to_apply(server: AppServer, sites: Sites) -> int:
-    """Una oferta con CV listo cuyo formulario es el local, como la dejaría el agente."""
-    tmp = server.data_dir / "tmp"
-    tmp.mkdir(parents=True, exist_ok=True)
-    posting = tmp / "e2e-oferta.txt"
-    posting.write_text(text_of("oferta-texto.txt"), encoding="utf-8")
-    added = cai(
-        server,
-        "jobs", "add-text", "--title", "Analytics Engineer", "--company", FORM_COMPANY,
-        "--url", sites.form_url, "--file", str(posting),
-    )  # fmt: skip
-    job_id = int(added["job_id"])
-    cai(server, "jobs", "save-extraction", str(job_id), payload=extraction())
-    approved = httpx.post(
-        f"{server.url}/jobs/{job_id}/events", json={"type": "approved"}, trust_env=False
-    )
-    approved.raise_for_status()
-    template, _ = _templates()
-    saved = cai(
-        server,
-        "cv", "save", str(job_id),
-        payload={"content": demo_cv_content(), "render_options": {"template_id": template}},
-    )  # fmt: skip
-    cai(server, "cv", "save-verification", str(saved["document_id"]), payload={"passed": True})
-    answers = {"answers": demo_extras()["application_answers"]}
-    cai(server, "applications", "save-answers", str(job_id), payload=answers)
-    assert api(server, f"/jobs/{job_id}")["stage"] == "cv_ready"
-    return job_id
-
-
-def _days_ago(server: AppServer, job_id: int, days: int) -> None:
-    """Atrasa la candidatura `days` días en la base temporal (sus eventos y su proyección): el
-    seguimiento vence sin esperar ni tocar el reloj del equipo."""
-    shift = f"-{days} days"
-    with sqlite3.connect(server.data_dir / "candidatai.db", timeout=30) as db:
-        db.execute(
-            "UPDATE events SET occurred_at = strftime('%Y-%m-%d %H:%M:%f', occurred_at, ?) "
-            "WHERE job_id = ?",
-            (shift, job_id),
-        )
-        db.execute(
-            "UPDATE applications SET "
-            "applied_at = strftime('%Y-%m-%d %H:%M:%f', applied_at, ?), "
-            "last_event_at = strftime('%Y-%m-%d %H:%M:%f', last_event_at, ?) WHERE job_id = ?",
-            (shift, shift, job_id),
-        )
-
-
-def _wait_for_stage(page: Page, server: AppServer, job_id: int, stage: str) -> None:
-    """La etapa la cambia el worker: se espera a que llegue, sin `sleep` (con el reloj de la
-    página, que no bloquea el navegador)."""
-    for _ in range(120):
-        if api(server, f"/jobs/{job_id}")["stage"] == stage:
-            return
-        page.wait_for_timeout(500)
-    raise AssertionError(f"la oferta {job_id} no llegó a «{stage}»")
-
-
 def test_assisted_application_sends_only_after_confirming_and_then_follow_up(
     page: Page, fresh_demo_app: AppServer, sites: Sites
 ) -> None:
     server = fresh_demo_app
-    job_id = _job_ready_to_apply(server, sites)
+    job_id = job_ready_to_apply(server, FORM_COMPANY, sites.form_url)
     posts_before = len(sites.posts)
 
     # Preparar: rellena en el navegador de la app y se para antes de enviar.
-    _application_tab(page, job_id)
+    application_tab(page, job_id)
     apply = page.get_by_role("region", name=t("apply.title"), exact=True)
     apply.get_by_role("button", name=t("apply.prepare.prepare")).click()
     expect(apply.get_by_text(t("apply.attemptStatus.ready"))).to_be_visible(timeout=120_000)
@@ -479,9 +397,9 @@ def test_assisted_application_sends_only_after_confirming_and_then_follow_up(
     dialog.get_by_label(t("apply.submit.typeCompany")).fill(FORM_COMPANY)
     send.click()
     expect(page.get_by_role("tab", name=t("job.tabs.process"))).to_be_visible(timeout=120_000)
-    _wait_for_stage(page, server, job_id, "applied")
+    wait_for_stage(page, server, job_id, "applied")
     assert sites.posts[posts_before:] == [SUBMIT_PATH]
-    history = _timeline(page, job_id)
+    history = timeline(page, job_id)
     expect(history.get_by_text(t("labels.event.applied"), exact=True)).to_be_visible()
 
     # En Procesos, esperando respuesta y aún sin seguimiento.
@@ -493,7 +411,7 @@ def test_assisted_application_sends_only_after_confirming_and_then_follow_up(
     expect(card.get_by_text(followup)).to_have_count(0)
 
     # Diez días después, toca el seguimiento; marcarlo hecho lo quita.
-    _days_ago(server, job_id, 10)
+    days_ago(server, job_id, 10)
     page.reload()
     expect(card.get_by_text(t("processes.card.followup", count=10))).to_be_visible()
     page.goto(f"/jobs/{job_id}")
@@ -505,5 +423,5 @@ def test_assisted_application_sends_only_after_confirming_and_then_follow_up(
     page.goto("/procesos")
     expect(card).to_be_visible()
     expect(card.get_by_text(t("processes.card.followup", count=10))).to_have_count(0)
-    history = _timeline(page, job_id)
+    history = timeline(page, job_id)
     expect(history.get_by_text(t("labels.event.followup_sent"), exact=True)).to_be_visible()
