@@ -26,6 +26,10 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   y puedes elegir su modelo (`agy models` los lista). Probado con Antigravity CLI 1.4.5.
 
 ### Corregido
+- **Generar un CV o una carta con LibreOffice ya no cierra la app:** mientras se convertía a PDF,
+  el resto de la app no podía escribir en tu base y, si la conversión pasaba de 5 segundos, el
+  proceso de segundo plano se caía y con él toda la app. Ahora, si la base está ocupada, cada
+  escritura espera hasta 90 segundos, más que lo que se deja tardar a una conversión.
 - **Desinstalar ya no se lleva los accesos directos de otra instalación:** `install.ps1 -Uninstall`
   (e `install.sh --uninstall`) solo borra el acceso del escritorio y del menú Inicio (o el de
   Aplicaciones en macOS y Linux) si abre la instalación que se está quitando. Antes, desinstalar
