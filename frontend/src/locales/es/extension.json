@@ -1,0 +1,39 @@
+{
+  "title": "Botón «Enviar a CandidatAI»",
+  "intro": "Una extensión del navegador para guardar en CandidatAI la oferta que estás viendo (en LinkedIn, InfoJobs, Indeed, Tecnoempleo o cualquier web) con un clic. Es lo que completa las ofertas de LinkedIn que llegan como resumen. Se instala una vez, en unos minutos; esta página te guía y avanza sola.",
+  "notChromium": "La extensión funciona en Chrome, Edge o Brave. Abre CandidatAI en uno de ellos para instalarla y conectarla.",
+  "outdated": "Tienes una versión antigua de la extensión (<strong>{{installed}}</strong>; la de esta app es la <strong>{{current}}</strong>). En la página de extensiones del navegador, pulsa el botón de recargar (⟳) de su tarjeta.",
+  "installed": "Instalada (versión {{version}}).",
+  "steps": {
+    "install": "Cárgala en tu navegador",
+    "connect": "Conéctala con CandidatAI",
+    "use": "Fíjala en la barra y úsala"
+  },
+  "install": {
+    "folder": "Abre la carpeta de la extensión: es la que vas a elegir en el paso 4.",
+    "openFolder": "Abrir la carpeta de la extensión",
+    "noFolder": "No encuentro la carpeta de la extensión en esta instalación. Vuelve a instalar CandidatAI.",
+    "page": "En una pestaña nueva, pega esta dirección y pulsa Intro:",
+    "devMode": "Activa el <strong>Modo de desarrollador</strong> (arriba a la derecha).",
+    "devModeEdge": "Activa el <strong>Modo de desarrollador</strong> (en el panel de la izquierda).",
+    "load": "Pulsa <strong>Cargar descomprimida</strong> y elige la carpeta que abriste en el paso 1.",
+    "update": "Si ya la tenías cargada, no la cargues otra vez: pulsa el botón de recargar (<strong>⟳</strong>) de su tarjeta.",
+    "waiting": "Esperando a que la cargues. Cuando lo hagas, esta página pasa sola al paso siguiente."
+  },
+  "connect": {
+    "body": "Un clic y listo: CandidatAI le da a la extensión una clave que solo vale en este equipo. No tienes que copiar nada.",
+    "button": "Conectar",
+    "connecting": "Conectando…",
+    "done": "Conectada: la extensión ya puede guardar ofertas en CandidatAI.",
+    "again": "Conectar de nuevo",
+    "againHint": "Solo hace falta si cambias de navegador: conectar otra vez desconecta el anterior.",
+    "noAnswer": "La extensión no ha respondido. Recárgala (⟳) en la página de extensiones y vuelve a pulsar «Conectar».",
+    "rejected": "La extensión no ha podido conectarse. Vuelve a pulsar «Conectar»."
+  },
+  "use": {
+    "pin": "Pulsa el icono del puzle de la barra del navegador y la <strong>chincheta</strong> junto a «Enviar a CandidatAI», para tenerla siempre a mano.",
+    "send": "Abre una oferta (por ejemplo, en LinkedIn con tu sesión iniciada) y pulsa el botón. Te dice si es <strong>nueva</strong>, si ha <strong>completado</strong> un resumen o si <strong>ya estaba</strong>, con un enlace a su ficha.",
+    "selection": "Si no encuentra la descripción, selecciona con el ratón el texto de la oferta, con la empresa, y vuelve a pulsar."
+  },
+  "privacy": "Solo actúa cuando pulsas su botón, en la pestaña que tienes delante: no lee cookies, no recorre páginas y solo habla con CandidatAI en tu equipo. Las condiciones de LinkedIn prohíben las extensiones que copian su contenido; esta equivale a copiar y pegar una oferta, así que el riesgo es bajo, pero no es cero."
+}

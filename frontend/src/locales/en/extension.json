@@ -1,0 +1,39 @@
+{
+  "title": "“Send to CandidatAI” button",
+  "intro": "A browser extension that saves the job you're looking at (on LinkedIn, InfoJobs, Indeed, Tecnoempleo or any website) to CandidatAI in one click. It's what completes the LinkedIn jobs that arrive as a summary. You install it once, in a few minutes; this page guides you and moves on by itself.",
+  "notChromium": "The extension works in Chrome, Edge or Brave. Open CandidatAI in one of them to install and connect it.",
+  "outdated": "You have an old version of the extension (<strong>{{installed}}</strong>; this app's is <strong>{{current}}</strong>). On the browser's extensions page, press the reload button (⟳) on its card.",
+  "installed": "Installed (version {{version}}).",
+  "steps": {
+    "install": "Load it in your browser",
+    "connect": "Connect it to CandidatAI",
+    "use": "Pin it to the toolbar and use it"
+  },
+  "install": {
+    "folder": "Open the extension's folder: it's the one you'll choose in step 4.",
+    "openFolder": "Open the extension folder",
+    "noFolder": "I can't find the extension folder in this installation. Reinstall CandidatAI.",
+    "page": "In a new tab, paste this address and press Enter:",
+    "devMode": "Turn on <strong>Developer mode</strong> (top right).",
+    "devModeEdge": "Turn on <strong>Developer mode</strong> (in the left panel).",
+    "load": "Press <strong>Load unpacked</strong> and choose the folder you opened in step 1.",
+    "update": "If you already had it loaded, don't load it again: press the reload button (<strong>⟳</strong>) on its card.",
+    "waiting": "Waiting for you to load it. When you do, this page moves on to the next step by itself."
+  },
+  "connect": {
+    "body": "One click and you're done: CandidatAI gives the extension a key that only works on this computer. You don't have to copy anything.",
+    "button": "Connect",
+    "connecting": "Connecting…",
+    "done": "Connected: the extension can now save jobs to CandidatAI.",
+    "again": "Connect again",
+    "againHint": "Only needed if you switch browsers: connecting again disconnects the previous one.",
+    "noAnswer": "The extension didn't answer. Reload it (⟳) on the extensions page and press “Connect” again.",
+    "rejected": "The extension couldn't connect. Press “Connect” again."
+  },
+  "use": {
+    "pin": "Press the puzzle icon in the browser toolbar and the <strong>pin</strong> next to “Enviar a CandidatAI” (its name in the browser, in Spanish), so it's always at hand.",
+    "send": "Open a job (for example, on LinkedIn while signed in) and press the button. It tells you whether it's <strong>new</strong>, whether it <strong>completed</strong> a summary or whether you <strong>already had it</strong>, with a link to its page.",
+    "selection": "If it can't find the description, select the job's text with the mouse, company included, and press again."
+  },
+  "privacy": "It only acts when you press its button, on the tab in front of you: it doesn't read cookies, doesn't crawl pages and only talks to CandidatAI on your computer. LinkedIn's terms forbid extensions that copy its content; this one is the same as copying and pasting a job, so the risk is low, but not zero."
+}

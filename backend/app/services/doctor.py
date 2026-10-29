@@ -460,8 +460,7 @@ def check_capture(settings: Settings) -> CheckResult:
         return CheckResult(
             name=name,
             status=CheckStatus.OK,
-            detail="sin configurar (opcional): carga extension/ en el navegador y ejecuta "
-            "`cai capture token`",
+            detail="sin configurar (opcional): en la UI, «Dónde buscar → Extensión» te guía",
         )
     return CheckResult(
         name=name,

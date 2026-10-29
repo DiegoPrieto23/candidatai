@@ -1,63 +1,71 @@
-/* Opciones: el token (solo en `chrome.storage.local` de este navegador) y la dirección de la UI. */
+/*
+ * Opciones: si está conectada con CandidatAI y el botón para conectarla (abre la página de la app
+ * que lo hace). En «Avanzado», el token a mano (solo en `chrome.storage.local` de este navegador)
+ * y la dirección de la app.
+ */
 ;(function () {
   'use strict'
 
   var token = document.getElementById('token')
   var uiUrl = document.getElementById('uiUrl')
   var status = document.getElementById('status')
+  var state = document.getElementById('state')
 
-  function say(text, ok) {
-    status.textContent = text
-    status.className = 'message ' + (ok ? 'ok' : 'error')
+  function say(node, text, ok) {
+    node.textContent = text
+    node.className = 'message ' + (ok ? 'ok' : 'error')
+  }
+
+  function check() {
+    state.className = 'message'
+    state.textContent = 'Comprobando la conexión…'
+    chrome.storage.local.get(['token'], function (stored) {
+      if (!stored.token) {
+        say(state, 'Sin conectar con CandidatAI.', false)
+        return
+      }
+      CAI.probe(stored.token).then(function (result) {
+        say(state, result.ok ? 'Conectada con CandidatAI.' : result.message, result.ok)
+      })
+    })
   }
 
   chrome.storage.local.get(['token', 'uiUrl'], function (stored) {
     token.value = stored.token || ''
     uiUrl.value = stored.uiUrl || CAI.DEFAULT_UI_URL
   })
+  check()
+
+  document.getElementById('recheck').addEventListener('click', check)
+  document.getElementById('connect').addEventListener('click', function () {
+    chrome.storage.local.get(['uiUrl'], function (stored) {
+      chrome.tabs.create({ url: CAI.connectUrl(stored.uiUrl) })
+    })
+  })
 
   document.getElementById('form').addEventListener('submit', function (event) {
     event.preventDefault()
     var url = uiUrl.value.trim() || CAI.DEFAULT_UI_URL
     if (!/^https?:\/\//.test(url)) {
-      say('La dirección de la UI debe empezar por http:// o https://.', false)
+      say(status, 'La dirección debe empezar por http:// o https://.', false)
       return
     }
     chrome.storage.local.set({ token: token.value.trim(), uiUrl: url }, function () {
-      say('Guardado.', true)
+      say(status, 'Guardado.', true)
+      check()
     })
   })
 
-  // Prueba la app y el token sin crear nada: un cuerpo vacío. La app comprueba origen y token antes
-  // que el cuerpo, así que un 422 (cuerpo no válido) significa que el token vale.
   document.getElementById('test').addEventListener('click', function () {
     var value = token.value.trim()
     if (!value) {
-      say('Pega primero el token.', false)
+      say(status, 'Pega primero el token.', false)
       return
     }
-    say('Probando…', true)
-    fetch(CAI.API_URL + '/capture', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + value },
-      body: '{}',
+    say(status, 'Probando…', true)
+    CAI.probe(value).then(function (result) {
+      if (result.ok) say(status, 'Todo listo: la app responde y acepta este token. Guarda si aún no lo has hecho.', true)
+      else say(status, result.message, false)
     })
-      .then(function (response) {
-        if (response.status === 422) {
-          say('Todo listo: la app responde y acepta este token. Guarda si aún no lo has hecho.', true)
-          return
-        }
-        return response.json().then(
-          function (body) {
-            say(CAI.describe(response.status, body).message, false)
-          },
-          function () {
-            say('La app respondió con un error (' + response.status + ').', false)
-          },
-        )
-      })
-      .catch(function () {
-        say('La app no responde en ' + CAI.API_URL + '. ¿Está «cai serve» en marcha?', false)
-      })
   })
 })()

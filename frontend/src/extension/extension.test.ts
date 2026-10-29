@@ -39,6 +39,10 @@ const extractor = new Function(`${extractorsSource}\n;return jhExtract`)() as {
 const CAI = new Function(`${coreSource}\n;return CAI`)() as {
   describe: (status: number, body: unknown, uiUrl?: string) => Outcome
   failure: (kind: string, message: string) => Outcome
+  connectUrl: (uiUrl?: string) => string
+  isAppOrigin: (origin: unknown) => boolean
+  NEEDS_CONNECT: string[]
+  DEFAULT_UI_URL: string
 }
 
 function page(html: string): Document {
@@ -182,9 +186,36 @@ describe('resultado', () => {
   it('errores de la API con qué hacer', () => {
     const bad = CAI.describe(401, { ok: false, error: { type: 'unauthorized', message: 'x' } })
     expect(bad).toMatchObject({ ok: false, badge: { text: '!' } })
-    expect(bad.message).toContain('cai capture token')
+    expect(bad.message).toContain('Conectar con CandidatAI')
     const missing = CAI.describe(422, { ok: false, error: { type: 'validation_error', message: 'Selecciona su texto' } })
     expect(missing.message).toBe('Selecciona su texto')
     expect(CAI.describe(500, null).message).toContain('500')
+  })
+})
+
+describe('conexión con la app', () => {
+  it('solo acepta la app de este equipo, en cualquier puerto', () => {
+    for (const origin of ['http://127.0.0.1:8000', 'http://localhost:5173', 'http://127.0.0.1']) {
+      expect(CAI.isAppOrigin(origin)).toBe(true)
+    }
+    for (const origin of [
+      'https://127.0.0.1:8000',
+      'http://127.0.0.1.evil.demo.invalid',
+      'http://evil.demo.invalid',
+      'http://localhost:8000/x',
+      'chrome-extension://otra',
+      undefined,
+    ]) {
+      expect(CAI.isAppOrigin(origin)).toBe(false)
+    }
+  })
+
+  it('«Conectar con CandidatAI» abre la guía de la app, por defecto la de `cai start`', () => {
+    expect(CAI.DEFAULT_UI_URL).toBe('http://127.0.0.1:8000')
+    expect(CAI.connectUrl()).toBe('http://127.0.0.1:8000/fuentes/extension')
+    expect(CAI.connectUrl('http://127.0.0.1:5173/')).toBe('http://127.0.0.1:5173/fuentes/extension')
+    const missing = CAI.describe(503, { ok: false, error: { type: 'capture_not_configured', message: 'x' } })
+    expect(CAI.NEEDS_CONNECT).toContain(missing.kind)
+    expect(missing.message).toContain('Conectar con CandidatAI')
   })
 })

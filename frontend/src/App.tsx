@@ -15,6 +15,7 @@ const {
   agent: { Page: AgentPage },
   alerts: { Page: AlertsPage },
   calendar: { Page: CalendarPage },
+  extension: { Page: ExtensionPage },
   funnel: { Page: FunnelPage },
   inbox: { Page: InboxPage },
   job: { Page: JobPage },
@@ -68,6 +69,7 @@ export function AppRoutes() {
           <Route index element={<Navigate to="/fuentes/plataformas" replace />} />
           <Route path="empresas" element={<SourcesPage />} />
           <Route path="plataformas" element={<PlatformsPage />} />
+          <Route path="extension" element={<ExtensionPage />} />
         </Route>
         {/* Antes de la fase 23.3 eran páginas sueltas: los enlaces guardados siguen funcionando. */}
         <Route path="empresas" element={<Navigate to="/fuentes/empresas" replace />} />

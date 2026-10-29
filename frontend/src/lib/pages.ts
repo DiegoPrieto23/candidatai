@@ -43,6 +43,7 @@ export const pages = {
   sourcesHub: lazyPage(() => import('@/pages/SourcesHubPage').then((m) => m.SourcesHubPage)),
   sources: lazyPage(() => import('@/pages/SourcesPage').then((m) => m.SourcesPage)),
   platforms: lazyPage(() => import('@/pages/PlatformsPage').then((m) => m.PlatformsPage)),
+  extension: lazyPage(() => import('@/pages/ExtensionPage').then((m) => m.ExtensionPage)),
   agent: lazyPage(() => import('@/pages/AgentPage').then((m) => m.AgentPage)),
 }
 
@@ -63,6 +64,7 @@ const ROUTES: [prefix: string, keys: PageKey[]][] = [
   ['/plantillas', ['templates']],
   ['/perfil', ['profile']],
   ['/fuentes/empresas', ['sourcesHub', 'sources']],
+  ['/fuentes/extension', ['sourcesHub', 'extension']],
   ['/fuentes', ['sourcesHub', 'platforms']],
   ['/agente', ['agent']],
 ]

@@ -1,7 +1,8 @@
 """Abrir una carpeta de datos en el explorador de archivos (botones «Abrir carpeta» de la UI).
 
-Lista cerrada: el contexto, los documentos, los dosieres de entrevista y de empresa y la carpeta
-archivada de una candidatura. Nunca una ruta que llegue de fuera. En Windows con `os.startfile`;
+Lista cerrada: el contexto, los documentos, los dosieres de entrevista y de empresa, la carpeta
+archivada de una candidatura y la de la extensión «Enviar a CandidatAI» (para cargarla en el
+navegador). Nunca una ruta que llegue de fuera. En Windows con `os.startfile`;
 en macOS con `open` y en Linux con `xdg-open` (fase 26.1). Si no se puede, o si falla, se devuelve
 la ruta para que la UI la copie.
 """
@@ -14,9 +15,18 @@ from typing import Literal
 
 from pydantic import BaseModel
 
-from app.services import application_archive, company_research, context, interviews, terminals
+from app.services import (
+    application_archive,
+    capture,
+    company_research,
+    context,
+    interviews,
+    terminals,
+)
 
-FolderKind = Literal["contexto", "documentos", "estilo", "entrevistas", "empresas", "candidatura"]
+FolderKind = Literal[
+    "contexto", "documentos", "estilo", "entrevistas", "empresas", "candidatura", "extension"
+]
 
 
 class FolderNotFoundError(FileNotFoundError):
@@ -35,6 +45,12 @@ def resolve(kind: FolderKind, job_id: int | None = None) -> str:
         path = context.documents_dir()
     elif kind == "estilo":  # muestras de estilo (fase 25.7)
         path = context.documents_dir() / "estilo"
+    elif kind == "extension":
+        if not capture.EXTENSION_DIR.is_dir():
+            raise FolderNotFoundError(
+                f"No está la carpeta de la extensión: {capture.EXTENSION_DIR}"
+            )
+        return str(capture.EXTENSION_DIR)
     elif kind in ("entrevistas", "empresas"):  # dosieres de las fases 17 y 18
         path = (
             interviews.interviews_dir()

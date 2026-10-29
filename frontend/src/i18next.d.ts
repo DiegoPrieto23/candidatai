@@ -11,6 +11,7 @@ import type calendar from '@/locales/es/calendar.json'
 import type common from '@/locales/es/common.json'
 import type cv from '@/locales/es/cv.json'
 import type drafts from '@/locales/es/drafts.json'
+import type extension from '@/locales/es/extension.json'
 import type funnel from '@/locales/es/funnel.json'
 import type home from '@/locales/es/home.json'
 import type inbox from '@/locales/es/inbox.json'
@@ -54,6 +55,7 @@ declare module 'i18next' {
       common: typeof common
       cv: typeof cv
       drafts: typeof drafts
+      extension: typeof extension
       funnel: typeof funnel
       home: typeof home
       inbox: typeof inbox

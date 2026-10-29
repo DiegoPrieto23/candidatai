@@ -3,6 +3,10 @@
  * cuando pulsas el botón: lee la pestaña activa (permiso `activeTab`), manda los datos a la API
  * local con el token y deja el resultado en el badge de esa pestaña. No lee cookies, no recorre
  * páginas y no tiene scripts permanentes en ninguna web.
+ *
+ * Además atiende a la app (solo `http://127.0.0.1` y `localhost`, por `externally_connectable`):
+ * le dice su versión y si está conectada, y guarda el token que le pasa al pulsar «Conectar»,
+ * después de comprobar que la app lo acepta.
  */
 importScripts('core.js')
 
@@ -22,7 +26,7 @@ async function captureTab(tabId) {
 
   var stored = await chrome.storage.local.get(['token', 'uiUrl'])
   if (!stored.token) {
-    return CAI.failure('no_token', 'Falta el token: genera uno con «cai capture token» y pégalo en las opciones.')
+    return CAI.failure('no_token', 'Falta conectar la extensión con CandidatAI.')
   }
 
   var data
@@ -47,7 +51,7 @@ async function captureTab(tabId) {
       body: JSON.stringify(data),
     })
   } catch {
-    var offline = CAI.failure('offline', 'La app no responde. ¿Está «cai serve» en marcha?')
+    var offline = CAI.failure('offline', 'CandidatAI no responde. Ábrelo y vuelve a pulsar el botón.')
     await setBadge(tab.id, offline)
     return offline
   }
@@ -71,6 +75,35 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
   // El popup dice qué pestaña es: desde el service worker, «la ventana actual» es ambigua.
   captureTab(message.tabId).then(sendResponse, function (error) {
     sendResponse(CAI.failure('error', 'Error inesperado: ' + (error && error.message)))
+  })
+  return true
+})
+
+// La app (página «Dónde buscar → Extensión»). Nada de otra web: `externally_connectable` solo deja
+// llegar a `127.0.0.1` y `localhost`, y aquí se vuelve a comprobar el origen.
+async function answerApp(message, origin) {
+  var stored = await chrome.storage.local.get(['token'])
+  var version = chrome.runtime.getManifest().version
+  if (message.type === 'ping') {
+    var state = stored.token ? await CAI.probe(stored.token) : CAI.failure('no_token', '')
+    return { version: version, connected: state.ok, kind: state.kind, message: state.message }
+  }
+  if (message.type === 'pair') {
+    if (typeof message.token !== 'string' || message.token.length < 20 || message.token.length > 200) {
+      return { version: version, connected: false, kind: 'error', message: 'Token no válido.' }
+    }
+    // Solo se guarda si la app lo acepta: otra página local no puede desconectarla con uno falso.
+    var checked = await CAI.probe(message.token)
+    if (checked.ok) await chrome.storage.local.set({ token: message.token, uiUrl: origin })
+    return { version: version, connected: checked.ok, kind: checked.kind, message: checked.message }
+  }
+  return null
+}
+
+chrome.runtime.onMessageExternal.addListener(function (message, sender, sendResponse) {
+  if (!message || !CAI.isAppOrigin(sender.origin)) return false
+  answerApp(message, sender.origin).then(sendResponse, function (error) {
+    sendResponse({ connected: false, kind: 'error', message: 'Error inesperado: ' + (error && error.message) })
   })
   return true
 })

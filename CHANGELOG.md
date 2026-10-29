@@ -9,6 +9,18 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 
 ## [Sin publicar]
 
+### Añadido
+- **Instalar el botón «Enviar a CandidatAI» sin terminal:** nueva pestaña **Dónde buscar → Botón
+  del navegador**. Detecta la extensión sola, te guía para cargarla en Chrome, Edge o Brave (con
+  un botón que abre su carpeta), avisa si tienes una versión antigua y la conecta con un clic: ya
+  no hace falta generar un token y pegarlo en sus opciones.
+
+### Cambiado
+- **Extensión 0.2.0:** si no está conectada, su botón ofrece «Conectar con CandidatAI», que abre
+  esa página de la app; sus avisos ya no piden comandos. «Abrir ficha» usa la dirección de
+  `cai start` (antes, la del modo desarrollo). Si ya la tenías, pulsa ⟳ en su tarjeta en
+  `chrome://extensions` para actualizarla.
+
 ## [0.3.0] - 2026-10-28
 
 ### Añadido

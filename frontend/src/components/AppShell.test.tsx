@@ -102,7 +102,11 @@ describe('Barra lateral (fase 23.3)', () => {
     renderApp('/fuentes')
     expect(await screen.findByRole('heading', { name: 'Portales de empleo' })).toBeInTheDocument()
     const tabs = screen.getByRole('navigation', { name: 'Dónde buscar' })
-    expect(within(tabs).getAllByRole('link').map((link) => link.textContent)).toEqual(['Portales de empleo', 'Empresas objetivo'])
+    expect(within(tabs).getAllByRole('link').map((link) => link.textContent)).toEqual([
+      'Portales de empleo',
+      'Empresas objetivo',
+      'Botón del navegador',
+    ])
   })
 })
 

@@ -74,6 +74,16 @@ def test_open_interviews_folder_creates_it(client: TestClient, opened: list[str]
     assert opened == [str(path)] and path.is_dir()
 
 
+def test_open_extension_folder(client: TestClient, opened: list[str]) -> None:
+    """La carpeta de la extensión, para cargarla en el navegador: la que trae la app."""
+    from app.services import capture
+
+    response = client.post("/folders/open", json={"folder": "extension"}, headers=JSON)
+    assert response.json() == {"path": str(capture.EXTENSION_DIR), "opened": True}
+    assert opened == [str(capture.EXTENSION_DIR)]
+    assert (capture.EXTENSION_DIR / "manifest.json").is_file()
+
+
 def test_open_application_folder(client: TestClient, opened: list[str]) -> None:
     body = {"folder": "candidatura", "job_id": 4}
     missing = client.post("/folders/open", json=body, headers=JSON)
