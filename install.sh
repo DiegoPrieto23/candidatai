@@ -186,6 +186,18 @@ is_our_mac_app() {
   [ -f "$1/Contents/Info.plist" ] && grep -q "<string>$BUNDLE_ID</string>" "$1/Contents/Info.plist"
 }
 
+# Un acceso es de esta instalación si abre su lanzador: desinstalar otra carpeta (una copia de
+# prueba, otra instalación) no borra los accesos de la tuya.
+mac_app_opens_launcher() {
+  local launcher
+  printf -v launcher '%q' "$LAUNCHER"
+  grep -qxF -- "exec open -a Terminal $launcher" "$1/Contents/MacOS/CandidatAI" 2>/dev/null
+}
+
+desktop_file_opens_launcher() {
+  grep -qxF -- "Exec=\"$LAUNCHER\"" "$1" 2>/dev/null
+}
+
 # Con --dry-run, `would "texto"` lo dice y devuelve 0 (no se hace); si no, devuelve 1 (se hace).
 would() {
   if [ "$DRY_RUN" = 1 ]; then
@@ -222,13 +234,19 @@ uninstall() {
     fail "$APP_DIR no parece una instalación de CandidatAI: no se borra nada."
   fi
   if [ -n "$DESKTOP_FILE" ] && [ -f "$DESKTOP_FILE" ]; then
-    would "borrar $DESKTOP_FILE" || rm -f -- "$DESKTOP_FILE"
+    if desktop_file_opens_launcher "$DESKTOP_FILE"; then
+      would "borrar $DESKTOP_FILE" || rm -f -- "$DESKTOP_FILE"
+    else
+      say "$DESKTOP_FILE abre otra instalación de CandidatAI: no se borra."
+    fi
   fi
   if [ -n "$MAC_APP" ] && [ -d "$MAC_APP" ]; then
-    if is_our_mac_app "$MAC_APP"; then
-      would "borrar $MAC_APP" || rm -rf -- "$MAC_APP"
-    else
+    if ! is_our_mac_app "$MAC_APP"; then
       say "$MAC_APP no la creó este instalador: no se borra."
+    elif ! mac_app_opens_launcher "$MAC_APP"; then
+      say "$MAC_APP abre otra instalación de CandidatAI: no se borra."
+    else
+      would "borrar $MAC_APP" || rm -rf -- "$MAC_APP"
     fi
   fi
   if [ -f "$LAUNCHER" ]; then
