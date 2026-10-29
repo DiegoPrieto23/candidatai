@@ -92,6 +92,15 @@ function Test-CandidatAIApp([string]$Path) {
   return (Test-Path $pyproject) -and ((Get-Content $pyproject -Raw) -match 'name\s*=\s*"candidatai"')
 }
 
+function Test-OwnShortcut([string]$Path) {
+  # Un acceso directo es de esta instalación si arranca desde su backend: desinstalar otra carpeta
+  # (una copia de prueba, otra instalación) no borra los accesos de la tuya.
+  $workingDir = (New-Object -ComObject WScript.Shell).CreateShortcut($Path).WorkingDirectory
+  if ([string]::IsNullOrWhiteSpace($workingDir)) { return $false }
+  $backend = Join-Path $AppDir "backend"
+  return [IO.Path]::GetFullPath($workingDir).TrimEnd('\') -eq [IO.Path]::GetFullPath($backend).TrimEnd('\')
+}
+
 function Remove-Tree([string]$Path) {
   # Rutas largas (.venv) sin el límite de 260 caracteres.
   if (Test-Path $Path) { Remove-Item -LiteralPath "\\?\$Path" -Recurse -Force }
@@ -106,7 +115,10 @@ if ($Uninstall) {
   }
   $owned = (Test-Path $Marker) -or (Test-CandidatAIApp $AppDir)
   foreach ($lnk in $Shortcuts) {
-    if ((Test-Path $lnk) -and $PSCmdlet.ShouldProcess($lnk, "Borrar el acceso directo")) {
+    if (-not (Test-Path $lnk)) { continue }
+    if (-not (Test-OwnShortcut $lnk)) {
+      Say "$lnk abre otra instalación de CandidatAI: no se borra."
+    } elseif ($PSCmdlet.ShouldProcess($lnk, "Borrar el acceso directo")) {
       Remove-Item $lnk -Force
     }
   }

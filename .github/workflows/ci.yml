@@ -100,13 +100,21 @@ jobs:
           home="$RUNNER_TEMP/home2"
           dir="$RUNNER_TEMP/cai"
           mkdir -p "$home"
+          export XDG_DATA_HOME="$home/.local/share"
+          case "$RUNNER_OS" in
+            macOS) shortcut="$home/Applications/CandidatAI.app" ;;
+            *) shortcut="$XDG_DATA_HOME/applications/candidatai.desktop" ;;
+          esac
           HOME="$home" bash install.sh --source "$PWD" --install-dir "$dir" --no-setup
-          test -f "$dir/app/install.sh" && test -f "$dir/.candidatai"
+          test -f "$dir/app/install.sh" && test -f "$dir/.candidatai" && test -e "$shortcut"
           echo mio > "$dir/data/mio.txt"
           HOME="$home" bash install.sh --source "$PWD" --install-dir "$dir" --no-setup
           test "$(cat "$dir/data/mio.txt")" = mio
+          # Desinstalar otra carpeta no borra el acceso de esta instalación.
+          HOME="$home" bash install.sh --install-dir "$RUNNER_TEMP/otra" --uninstall </dev/null
+          test -e "$shortcut"
           HOME="$home" bash install.sh --install-dir "$dir" --uninstall </dev/null
-          test ! -e "$dir/app" && test -f "$dir/data/mio.txt"
+          test ! -e "$dir/app" && test -f "$dir/data/mio.txt" && test ! -e "$shortcut"
 
   docker:
     # Docker opcional (fase 26.3): la imagen se construye, la API responde y la demo se siembra.

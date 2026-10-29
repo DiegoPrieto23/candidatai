@@ -25,6 +25,13 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   botones ya lo abren en una terminal con la orden escrita (`agy -i`), como con Claude Code y Codex,
   y puedes elegir su modelo (`agy models` los lista). Probado con Antigravity CLI 1.4.5.
 
+### Corregido
+- **Desinstalar ya no se lleva los accesos directos de otra instalación:** `install.ps1 -Uninstall`
+  (e `install.sh --uninstall`) solo borra el acceso del escritorio y del menú Inicio (o el de
+  Aplicaciones en macOS y Linux) si abre la instalación que se está quitando. Antes, desinstalar
+  cualquier otra carpeta borraba también los de tu instalación, y CandidatAI desaparecía de la
+  búsqueda de Windows.
+
 ## [0.3.0] - 2026-10-28
 
 ### Añadido

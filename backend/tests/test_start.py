@@ -598,6 +598,54 @@ def test_installer_never_removes_data_of_a_folder_that_is_not_candidatai(tmp_pat
 
 
 @pytest.mark.skipif(sys.platform != "win32", reason="install.ps1 es para Windows")
+def test_installer_uninstall_only_removes_its_own_shortcuts(tmp_path: Path) -> None:
+    """Desinstalar una carpeta (p. ej. la de un test) no borra los accesos de otra instalación."""
+    import shutil
+    import subprocess
+
+    powershell = shutil.which("powershell")
+    if powershell is None:
+        pytest.skip("sin PowerShell")
+    target = tmp_path / "instalacion"
+    other = tmp_path / "otra"
+    # Se carga solo la función, sin ejecutar el instalador: los accesos se crean en tmp_path.
+    script = f"""
+$ErrorActionPreference = 'Stop'
+$installer = '{REPO_ROOT / "install.ps1"}'
+$ast = [Management.Automation.Language.Parser]::ParseFile($installer, [ref]$null, [ref]$null)
+$fn = $ast.FindAll({{
+  param($n)
+  $n -is [Management.Automation.Language.FunctionDefinitionAst] -and $n.Name -eq 'Test-OwnShortcut'
+}}, $true)
+Invoke-Expression $fn[0].Extent.Text
+$AppDir = '{target / "app"}'
+$shell = New-Object -ComObject WScript.Shell
+$cases = @(
+  @('propio', '{target / "app" / "backend"}\\'),
+  @('ajeno', '{other / "app" / "backend"}'),
+  @('vacio', '')
+)
+foreach ($case in $cases) {{
+  $lnk = Join-Path '{tmp_path}' "$($case[0]).lnk"
+  $s = $shell.CreateShortcut($lnk)
+  $s.TargetPath = Join-Path $env:SystemRoot 'System32\\cmd.exe'
+  $s.WorkingDirectory = $case[1]
+  $s.Save()
+  Write-Output "$($case[0])=$(Test-OwnShortcut $lnk)"
+}}
+"""
+    result = subprocess.run(  # noqa: S603
+        [powershell, "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", script],
+        capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=120,
+    )  # fmt: skip
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert result.stdout.split() == ["propio=True", "ajeno=False", "vacio=False"]
+    # Y la desinstalación lo usa antes de borrar cada acceso.
+    installer = (REPO_ROOT / "install.ps1").read_text(encoding="utf-8-sig")
+    assert "if (-not (Test-OwnShortcut $lnk))" in installer
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="install.ps1 es para Windows")
 def test_installer_checks_the_zip_against_its_sha256(tmp_path: Path) -> None:
     """Fase 28.1: con un `<zip>.sha256` al lado, una suma que no coincide no instala nada."""
     import hashlib
