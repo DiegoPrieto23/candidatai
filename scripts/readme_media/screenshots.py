@@ -107,6 +107,8 @@ SHOTS = {
     "profile-search": ("/perfil", False, [tab("profileEditor:tabs.search"), anchor("[role=tablist]", 30)]),
     "sources-companies": ("/fuentes/empresas", False, []),
     "sources-platforms": ("/fuentes/plataformas", False, []),
+    # Sin la extensión instalada en este Chromium: la guía en el paso 1.
+    "sources-extension": ("/fuentes/extension", False, []),
     "agent": ("/agente", False, []),
     "new-job": ("/nueva", False, []),
     "job": (f"/jobs/{CV_JOB}", False, []),

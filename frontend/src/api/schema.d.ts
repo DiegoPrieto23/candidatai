@@ -962,6 +962,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/capture/extension": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Extension Status
+         * @description Para la guía de la UI: si hay token, el id de la extensión, su versión y su carpeta.
+         */
+        get: operations["get_extension_status"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/capture/pair": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Pair Extension
+         * @description «Conectar»: un token nuevo que la UI pasa a la extensión. Solo desde la UI.
+         */
+        post: operations["pair_extension"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/board": {
         parameters: {
             query?: never;
@@ -4474,6 +4514,20 @@ export interface components {
          * @enum {string}
          */
         EventType: "found" | "detail_captured" | "duplicate_detected" | "extracted" | "hard_filter_failed" | "extraction_failed" | "injection_suspected" | "closure_suspected" | "scored" | "fit_assessed" | "approved" | "discarded" | "cv_generated" | "cv_rendered" | "cv_verified" | "cv_rejected" | "cover_letter_generated" | "cover_letter_verified" | "application_prepared" | "application_filled" | "applied" | "applied_manually" | "reply_received" | "interview_scheduled" | "interview_done" | "test_assigned" | "followup_sent" | "offer_received" | "rejected" | "withdrawn" | "expired" | "accepted" | "reopened" | "note";
+        /**
+         * ExtensionStatus
+         * @description Lo que la UI necesita para guiar la instalación de la extensión.
+         */
+        ExtensionStatus: {
+            /** Configured */
+            configured: boolean;
+            /** Extension Id */
+            extension_id: string;
+            /** Version */
+            version: string | null;
+            /** Folder */
+            folder: string;
+        };
         /** ExtractionView */
         ExtractionView: {
             /** Extraction Id */
@@ -6106,7 +6160,7 @@ export interface components {
              * Folder
              * @enum {string}
              */
-            folder: "contexto" | "documentos" | "estilo" | "entrevistas" | "empresas" | "candidatura";
+            folder: "contexto" | "documentos" | "estilo" | "entrevistas" | "empresas" | "candidatura" | "extension";
             /** Job Id */
             job_id?: number | null;
         };
@@ -6153,6 +6207,13 @@ export interface components {
             sent: boolean;
             /** Verified */
             verified: boolean;
+        };
+        /** Pairing */
+        Pairing: {
+            /** Token */
+            token: string;
+            /** Extension Id */
+            extension_id: string;
         };
         /** PendingPrompts */
         PendingPrompts: {
@@ -12732,6 +12793,194 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CaptureResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_extension_status: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExtensionStatus"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    pair_extension: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmptyBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Pairing"];
                 };
             };
             /** @description Unauthorized */

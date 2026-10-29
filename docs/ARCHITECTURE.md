@@ -65,6 +65,7 @@ La app nunca llama a un modelo y no depende de ningún proveedor.
 | `POST /sources/test`, `POST /sources/{id}/test` | Prueba una fuente nueva o guardada sin guardar nada: «12 ofertas encontradas, 3 tras filtros». Un fallo de la fuente es 200 con `errors` |
 | `POST /sources/{id}/run`, `POST /sources/{id}/active` | Ejecuta ya la fuente (lo nuevo, a `pending_extraction`) o la activa/pausa en la ingesta diaria |
 | `GET /alerts`, `POST /alerts/poll` | Pantalla «Alertas»: ofertas resumen (`pending_detail`) con su prefiltro, primero las que pasan; leer ya el correo (como `cai alerts poll`). Descartar va por `POST /jobs/{id}/events` |
+| `GET /capture/extension`, `POST /capture/pair` | «Dónde buscar → Botón del navegador»: id, versión y carpeta de la extensión y si hay token; «Conectar» crea un token nuevo que la UI pasa a la extensión (solo la UI) |
 | `POST /capture` | Botón «Enviar a CandidatAI» (la extensión, no la UI): exige el origen de la extensión (403) y su token (401; 503 si no hay); completa un resumen, reconoce una oferta ya guardada o da de alta una nueva (`services/capture.py`) |
 | `GET /templates/default`, `POST /templates/{id}/default` | Plantilla por defecto del perfil vigente; fijarla edita solo esa clave de `data/profile.yaml` (con ruamel.yaml, conserva comentarios) e importa la versión nueva |
 | `GET /board` | Kanban (fase 10): tarjetas de `approved` a `closed` (las cerradas, solo las que llegaron a aprobarse; las 50 más recientes) y los movimientos posibles (eventos del usuario por etapa de origen y destino) |

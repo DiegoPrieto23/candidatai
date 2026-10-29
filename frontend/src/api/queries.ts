@@ -19,6 +19,7 @@ export const keys = {
   uploads: ['uploads'] as const,
   defaultTemplate: ['templates', 'default'] as const,
   sources: ['sources'] as const,
+  extension: ['extension'] as const,
   alerts: ['alerts'] as const,
   // Fase 27.4: buzones de las alertas. Leer el correo cambia su estado (último error).
   mailSources: ['mailSources'] as const,
@@ -1360,6 +1361,27 @@ export function useOpenFolder() {
       unwrap(api.POST('/folders/open', { body })),
     // Abrir el contexto o los documentos crea lo que falte.
     onSuccess: () => client.invalidateQueries({ queryKey: keys.context }),
+  })
+}
+
+// --- Extensión «Enviar a CandidatAI» ----------------------------------------------------------
+
+export type ExtensionStatus = Schemas['ExtensionStatus']
+
+/** Lo que la guía de la extensión necesita de la app: su id, su versión, su carpeta y si hay token. */
+export function useExtensionStatus() {
+  return useQuery({
+    queryKey: keys.extension,
+    queryFn: () => unwrap(api.GET('/capture/extension')),
+  })
+}
+
+/** «Conectar»: un token nuevo para pasárselo a la extensión (el anterior deja de valer). */
+export function usePairExtension() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: () => unwrap(api.POST('/capture/pair', { body: {} })),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.extension }),
   })
 }
 

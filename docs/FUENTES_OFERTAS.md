@@ -193,9 +193,14 @@ found ─► pending_detail ─(detail_captured)─► pending_extraction ─►
   `scripting`). Lee de esa página: URL, título, el texto seleccionado si lo hay y, si no, la
   descripción de la oferta con extractores por sitio (LinkedIn, InfoJobs, Indeed, Tecnoempleo;
   JSON-LD `JobPosting` si existe; `main` como último recurso).
-- Envía los datos desde su *service worker* a `http://127.0.0.1:8000/capture` con un token
-  (`cai capture token` lo genera y lo muestra una vez; en `data/capture_token` solo queda su
-  sha256; se pega una vez en las opciones de la extensión). La API rechaza peticiones sin token
+- **Se instala y se conecta desde la app**, en «Dónde buscar → Botón del navegador» (`/fuentes/extension`):
+  la página detecta la extensión, guía la carga sin empaquetar, avisa si es de una versión antigua
+  y la conecta con un clic. Al pulsar «Conectar», la app crea un token (`POST /capture/pair`, solo
+  desde la UI) y se lo pasa a la extensión por `externally_connectable` (solo páginas de
+  `127.0.0.1` y `localhost`); la extensión lo prueba y solo lo guarda si la app lo acepta. A mano
+  sigue valiendo `cai capture token`, que lo muestra una vez para pegarlo en sus opciones.
+- Envía los datos desde su *service worker* a `http://127.0.0.1:8000/capture` con ese token (en
+  `data/capture_token` solo queda su sha256). La API rechaza peticiones sin token
   (401) y solo acepta el origen `chrome-extension://<CAI_CAPTURE_EXTENSION_ID>` (403). El id es
   fijo (`hnaofhehllbkghfehnehamjbkcmdjmle`): lo da la clave pública de `manifest.json`, igual en
   Chrome, Edge y cualquier equipo, y es el valor por defecto de `CAI_CAPTURE_EXTENSION_ID`.

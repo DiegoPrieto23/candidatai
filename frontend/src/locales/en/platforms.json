@@ -2,7 +2,8 @@
   "hub": {
     "label": "Where to search",
     "companies": "Target companies",
-    "platforms": "Job boards"
+    "platforms": "Job boards",
+    "extension": "Browser button"
   },
   "access": {
     "free": "Open",

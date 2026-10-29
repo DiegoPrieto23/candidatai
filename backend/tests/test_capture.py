@@ -248,7 +248,66 @@ def test_api_without_token_configured(client: tuple[TestClient, str]) -> None:
     get_settings().capture_token_path.unlink()
     response = _post(api, token)
     assert response.status_code == 503
-    assert "cai capture token" in response.json()["error"]["message"]
+    assert "pulsa «Conectar»" in response.json()["error"]["message"]
+
+
+UI = {"Origin": "http://127.0.0.1:5173", "Content-Type": "application/json"}
+LOCAL = "http://127.0.0.1"  # las lecturas de la UI solo responden en 127.0.0.1 o localhost
+
+
+def test_extension_status_for_the_ui_guide(client: tuple[TestClient, str]) -> None:
+    api, _ = client
+    status = api.get(f"{LOCAL}/capture/extension", headers={"Origin": UI["Origin"]}).json()
+    manifest = json.loads((capture.EXTENSION_DIR / "manifest.json").read_text(encoding="utf-8"))
+    assert status == {
+        "configured": True,
+        "extension_id": DEFAULT_EXTENSION_ID,
+        "version": manifest["version"],
+        "folder": str(capture.EXTENSION_DIR),
+    }
+    get_settings().capture_token_path.unlink()
+    assert api.get(f"{LOCAL}/capture/extension").json()["configured"] is False
+    # Otra web no lo lee.
+    other = api.get(f"{LOCAL}/capture/extension", headers={"Origin": "https://evil.demo.invalid"})
+    assert other.status_code == 403
+
+
+def test_pairing_from_the_ui_gives_a_token_the_extension_can_use(
+    client: tuple[TestClient, str],
+) -> None:
+    api, old = client
+    paired = api.post("/capture/pair", json={}, headers=UI)
+    assert paired.status_code == 200, paired.text
+    body = paired.json()
+    assert body["extension_id"] == DEFAULT_EXTENSION_ID
+    # La extensión lo prueba con un cuerpo vacío: 422 quiere decir que la acepta.
+    probe = api.post(
+        "/capture",
+        content="{}",
+        headers={
+            "Origin": ORIGIN,
+            "Authorization": f"Bearer {body['token']}",
+            "Content-Type": "application/json",
+        },
+    )
+    assert probe.status_code == 422
+    assert _post(api, body["token"]).status_code == 200
+    assert _post(api, old).status_code == 401  # conectar de nuevo invalida el anterior
+
+
+@pytest.mark.parametrize(
+    "headers",
+    [
+        {"Origin": "https://evil.demo.invalid", "Content-Type": "application/json"},
+        {"Origin": ORIGIN, "Content-Type": "application/json"},  # ni la propia extensión
+        {"Origin": "http://127.0.0.1:5173", "Content-Type": "text/plain"},
+    ],
+)
+def test_only_the_ui_can_pair(client: tuple[TestClient, str], headers: dict[str, str]) -> None:
+    api, token = client
+    response = api.post("/capture/pair", content="{}", headers=headers)
+    assert response.status_code == 403
+    assert _post(api, token).status_code == 200  # el token vigente sigue valiendo
 
 
 def test_api_missing_description_is_422(client: tuple[TestClient, str]) -> None:

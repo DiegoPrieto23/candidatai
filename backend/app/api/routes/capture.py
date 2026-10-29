@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Header
 
 from app.agent_interface.errors import ToolError
-from app.api.deps import SessionDep
+from app.api.deps import EmptyBody, SessionDep, require_ui, require_ui_read
 from app.core.config import get_settings
 from app.services import capture as capture_service
 
@@ -35,7 +35,7 @@ def require_capture_auth(
     if not valid:
         raise ToolError(
             "unauthorized",
-            "Token no válido: pega en las opciones de la extensión el que da `cai capture token`.",
+            "Token no válido: en CandidatAI, «Dónde buscar → Extensión», pulsa «Conectar».",
         )
 
 
@@ -46,3 +46,17 @@ def capture_job(
     """Botón «Enviar a CandidatAI»: completa un resumen, reconoce una oferta ya guardada o da de
     alta una nueva. Solo desde la extensión configurada y con su token."""
     return capture_service.capture(session, body)
+
+
+@router.get(
+    "/extension", operation_id="get_extension_status", dependencies=[Depends(require_ui_read)]
+)
+def extension_status() -> capture_service.ExtensionStatus:
+    """Para la guía de la UI: si hay token, el id de la extensión, su versión y su carpeta."""
+    return capture_service.extension_status(get_settings())
+
+
+@router.post("/pair", operation_id="pair_extension", dependencies=[Depends(require_ui)])
+def pair_extension(_: EmptyBody) -> capture_service.Pairing:
+    """«Conectar»: un token nuevo que la UI pasa a la extensión. Solo desde la UI."""
+    return capture_service.pair(get_settings())

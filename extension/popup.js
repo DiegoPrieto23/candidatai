@@ -38,13 +38,16 @@
         window.close()
       })
       root.appendChild(open)
-    } else if (outcome.kind === 'no_token' || outcome.kind === 'unauthorized') {
-      var options = el('button', 'primary', 'Abrir opciones')
-      options.type = 'button'
-      options.addEventListener('click', function () {
-        chrome.runtime.openOptionsPage()
+    } else if (CAI.NEEDS_CONNECT.indexOf(outcome.kind) >= 0) {
+      var connect = el('button', 'primary', 'Conectar con CandidatAI')
+      connect.type = 'button'
+      connect.addEventListener('click', function () {
+        chrome.storage.local.get(['uiUrl'], function (stored) {
+          chrome.tabs.create({ url: CAI.connectUrl(stored.uiUrl) })
+          window.close()
+        })
       })
-      root.appendChild(options)
+      root.appendChild(connect)
     }
   }
 

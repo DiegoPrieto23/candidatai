@@ -1,16 +1,17 @@
 import { NavLink, Outlet } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { BuildingsIcon, CompassIcon } from '@phosphor-icons/react'
+import { BuildingsIcon, CompassIcon, PuzzlePieceIcon } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
 
 const TABS = [
   { to: '/fuentes/plataformas', label: 'platforms', icon: CompassIcon },
   { to: '/fuentes/empresas', label: 'companies', icon: BuildingsIcon },
+  { to: '/fuentes/extension', label: 'extension', icon: PuzzlePieceIcon },
 ] as const
 
 /**
- * «Dónde buscar» (fase 23.3; antes «Fuentes»): de dónde salen tus ofertas. Une las plataformas que recorre tu agente y
- * las empresas objetivo (APIs de ATS y portales), cada una en su pestaña con su propia URL.
+ * «Dónde buscar» (fase 23.3; antes «Fuentes»): de dónde salen tus ofertas. Une las plataformas que recorre tu agente,
+ * las empresas objetivo (APIs de ATS y portales) y el botón del navegador, cada uno en su pestaña con su propia URL.
  */
 export function SourcesHubPage() {
   const { t } = useTranslation('platforms', { keyPrefix: 'hub' })

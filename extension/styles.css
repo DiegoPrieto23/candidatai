@@ -192,3 +192,14 @@ code {
     animation: none;
   }
 }
+
+details {
+  margin-top: 20px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+
+summary {
+  cursor: pointer;
+  color: var(--muted);
+}

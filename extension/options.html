@@ -10,24 +10,40 @@
       <img class="mark" src="icons/icon48.png" alt="" />
       <span>Enviar a CandidatAI · Opciones</span>
     </header>
-    <form id="form">
-      <label for="token">Token</label>
-      <input id="token" type="password" autocomplete="off" spellcheck="false" placeholder="Pega aquí el token" />
+
+    <section>
+      <p id="state" class="message" aria-live="polite">Comprobando la conexión…</p>
       <p class="muted small">
-        Genéralo con <code>uv run cai capture token</code> en <code>backend/</code>. Se guarda solo en este
-        navegador. Generar otro invalida el anterior.
+        Para conectarla, abre CandidatAI en «Dónde buscar → Extensión» y pulsa «Conectar». No hace falta copiar
+        nada.
       </p>
-
-      <label for="uiUrl">Dirección de la UI</label>
-      <input id="uiUrl" type="url" spellcheck="false" />
-      <p class="muted small">Para el botón «Abrir ficha». Por defecto, <code>http://127.0.0.1:5173</code>.</p>
-
       <div class="actions">
-        <button type="submit" class="primary">Guardar</button>
-        <button type="button" id="test">Probar conexión</button>
+        <button type="button" id="connect" class="primary">Conectar con CandidatAI</button>
+        <button type="button" id="recheck">Volver a comprobar</button>
       </div>
-      <p id="status" class="message" aria-live="polite"></p>
-    </form>
+    </section>
+
+    <details>
+      <summary>Avanzado: pegar el token a mano</summary>
+      <form id="form">
+        <label for="token">Token</label>
+        <input id="token" type="password" autocomplete="off" spellcheck="false" placeholder="Pega aquí el token" />
+        <p class="muted small">
+          Lo da <code>uv run cai capture token</code> en <code>backend/</code>. Se guarda solo en este navegador.
+          Generar otro, o conectar desde la app, invalida el anterior.
+        </p>
+
+        <label for="uiUrl">Dirección de CandidatAI</label>
+        <input id="uiUrl" type="url" spellcheck="false" />
+        <p class="muted small">Para «Abrir ficha». Por defecto, <code>http://127.0.0.1:8000</code>.</p>
+
+        <div class="actions">
+          <button type="submit" class="primary">Guardar</button>
+          <button type="button" id="test">Probar conexión</button>
+        </div>
+        <p id="status" class="message" aria-live="polite"></p>
+      </form>
+    </details>
     <script src="core.js"></script>
     <script src="options.js"></script>
   </body>

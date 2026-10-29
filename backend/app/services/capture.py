@@ -12,11 +12,13 @@ seleccionado) a `POST /capture`. Aquí:
 Todo lo capturado es contenido no confiable: pasa por la detección de riesgo, también el HTML del
 bloque de la descripción (texto oculto).
 
-El token se genera con `cai capture token` y solo se guarda su sha256 en `data/capture_token`.
+El token se crea al pulsar «Conectar» en «Dónde buscar → Extensión», que se lo pasa a la extensión
+sin enseñarlo, o con `cai capture token`. Solo se guarda su sha256 en `data/capture_token`.
 """
 
 import hashlib
 import hmac
+import json
 import secrets
 from pathlib import Path
 from typing import Literal
@@ -26,13 +28,16 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.core.config import Settings
+from app.core.config import REPO_ROOT, Settings
 from app.models import Application, Company, Job, Source
 from app.services import ingest, platforms
 from app.services.events import record
 from app.services.pipeline import Actor, EventType, Stage
 from app.services.untrusted import assess
 
+# La extensión que trae la app (va en el zip de la release): la carpeta que se carga en el
+# navegador.
+EXTENSION_DIR = REPO_ROOT / "extension"
 SOURCE_KIND = "browser_capture"
 SOURCE_NAME = "Botón «Enviar a CandidatAI»"
 MIN_CAPTURE_CHARS = 200  # una selección corta vale, pero no un título suelto
@@ -44,7 +49,7 @@ CaptureStatus = Literal["new", "completed", "existing"]
 
 
 class CaptureNotConfiguredError(Exception):
-    """No hay token creado: falta `cai capture token`."""
+    """No hay token creado: falta conectar la extensión desde la UI (o `cai capture token`)."""
 
 
 class CaptureInput(BaseModel):
@@ -108,11 +113,49 @@ def check_token(settings: Settings, token: str | None) -> bool:
     """`True` si el token es el vigente. Lanza `CaptureNotConfiguredError` si no hay ninguno."""
     if not token_configured(settings):
         raise CaptureNotConfiguredError(
-            "La captura no está configurada: ejecuta `cai capture token` y pega el token en las "
-            "opciones de la extensión."
+            "La extensión no está conectada: en CandidatAI, «Dónde buscar → Extensión», pulsa "
+            "«Conectar»."
         )
     stored = settings.capture_token_path.read_text(encoding="utf-8").strip()
     return bool(token) and hmac.compare_digest(_digest(token or ""), stored)
+
+
+class ExtensionStatus(BaseModel):
+    """Lo que la UI necesita para guiar la instalación de la extensión."""
+
+    configured: bool  # hay un token creado (no dice si la extensión lo tiene: eso lo dice ella)
+    extension_id: str  # con el que la UI habla con la extensión
+    version: str | None  # la de `extension/manifest.json`; `None` si falta la carpeta
+    folder: str  # la carpeta que se carga en el navegador
+
+
+class Pairing(BaseModel):
+    token: str  # para la extensión: la UI se lo pasa sin enseñarlo
+    extension_id: str
+
+
+def extension_version(folder: Path = EXTENSION_DIR) -> str | None:
+    try:
+        manifest = json.loads((folder / "manifest.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    version = manifest.get("version") if isinstance(manifest, dict) else None
+    return version if isinstance(version, str) else None
+
+
+def extension_status(settings: Settings) -> ExtensionStatus:
+    return ExtensionStatus(
+        configured=token_configured(settings),
+        extension_id=settings.capture_extension_id,
+        version=extension_version(),
+        folder=str(EXTENSION_DIR),
+    )
+
+
+def pair(settings: Settings) -> Pairing:
+    """«Conectar» en la UI: un token nuevo (el anterior deja de valer) para pasárselo a la
+    extensión. Solo la UI puede pedirlo; la extensión lo comprueba antes de guardarlo."""
+    return Pairing(token=rotate_token(settings), extension_id=settings.capture_extension_id)
 
 
 # --- Captura ---------------------------------------------------------------------------------

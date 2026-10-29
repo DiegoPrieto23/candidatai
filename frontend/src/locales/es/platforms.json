@@ -2,7 +2,8 @@
   "hub": {
     "label": "Dónde buscar",
     "companies": "Empresas objetivo",
-    "platforms": "Portales de empleo"
+    "platforms": "Portales de empleo",
+    "extension": "Botón del navegador"
   },
   "access": {
     "free": "Libre",
