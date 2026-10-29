@@ -32,12 +32,13 @@ la orden ya escrita. Tú eliges cuál, y eso decide cuánto cuesta y adónde van
 |---|---|---|---|
 | **Claude Code** | Incluido en Claude Pro, unos 20 US$ al mes, o planes superiores | A Anthropic | **La referencia**: probado de principio a fin |
 | **Codex** | Incluido en ChatGPT Plus, unos 20 US$ al mes, o planes superiores | A OpenAI | Probado con una oferta |
-| **Antigravity CLI** | Gratis con una cuenta de Google, con un cupo semanal | A Google | Extrae y valora bien; el cupo gratuito se acaba al empezar con los CVs |
+| **Antigravity CLI** | Incluido en Google AI Pro, unos 20 US$ al mes, o en Google AI Ultra; también gratis con una cuenta de Google, con un cupo semanal | A Google | Extrae y valora bien. Con el plan gratuito, el cupo se acaba al empezar con los CVs; con Google AI Pro, aún sin medir |
 | **OpenCode** o **Qwen Code** con un modelo gratuito en la nube (OpenRouter `:free`) | Gratis, unas 50 peticiones al día | Al proveedor del modelo | Configurado, aún sin medir con un modelo en la nube |
 | **Un modelo local** (Ollama o LM Studio) con OpenCode, Codex o Qwen Code | Gratis | **A ningún sitio**: se queda en tu equipo | Pide un ordenador potente: medido con un modelo de 20B en 16 GB de memoria y sin tarjeta gráfica, no terminó la prueba |
 
-Los precios cambian: mira [claude.com/pricing](https://claude.com/pricing) y
-[chatgpt.com/pricing](https://chatgpt.com/pricing) antes de suscribirte. Si no lo tienes claro,
+Los precios cambian: mira [claude.com/pricing](https://claude.com/pricing),
+[chatgpt.com/pricing](https://chatgpt.com/pricing) y
+[gemini.google/subscriptions](https://gemini.google/subscriptions/) antes de suscribirte. Si no lo tienes claro,
 empieza con **Claude Code**: es el más probado con CandidatAI. Modelos gratuitos y locales, paso a
 paso: [`MODELOS_GRATIS.md`](MODELOS_GRATIS.md). Lo que hace cada agente, medido:
 [`evals/compat/REPORT.md`](../evals/compat/REPORT.md).

@@ -46,8 +46,9 @@
 1. **Un ordenador** con Windows, macOS o Linux. Sin Python, Node ni permisos de administrador: el
    instalador trae lo que hace falta.
 2. **La app**, que guarda tus ofertas, tu perfil, tus CVs y tus procesos en tu equipo.
-3. **Un agente de IA** que lea y escriba: Claude Code o Codex con la suscripción que quizá ya
-   pagas, Antigravity CLI con una cuenta gratuita de Google, o un modelo local. **La app nunca llama
+3. **Un agente de IA** que lea y escriba: Claude Code, Codex o Antigravity CLI con la suscripción
+   que quizá ya pagas (Claude, ChatGPT o Google AI Pro), Antigravity CLI también con una cuenta
+   gratuita de Google, o un modelo local. **La app nunca llama
    a una IA por su cuenta.** Cuál elegir y cuánto cuesta cada uno: **[Empieza aquí](docs/EMPEZAR.md)**.
 
 ## Qué hace

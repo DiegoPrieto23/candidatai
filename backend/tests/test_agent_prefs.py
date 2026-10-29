@@ -212,6 +212,13 @@ def test_launch_command_carries_the_model_with_each_agent_flag(db: None, opened:
             "{prompt}",
         ],
         ("qwen", "qwen3-coder", None): ["qwen", "-m", "qwen3-coder", "-i", "{prompt}"],
+        ("antigravity", "gemini-3.8-flash-high", None): [
+            "agy",
+            "--model",
+            "gemini-3.8-flash-high",
+            "-i",
+            "{prompt}",
+        ],
         ("claude", None, None): ["claude", "{prompt}"],
     }
     with session_scope() as session:
@@ -249,7 +256,7 @@ def test_save_validates_and_round_trips(db: None) -> None:
 
     bad = [
         (Preferences(default_agent="gemini"), "default_agent"),
-        (Preferences(default_agent="antigravity"), "default_agent"),  # sin `launch`
+        (Preferences(default_agent="antigravity"), "default_agent"),  # no está en LAUNCHABLE
         (Preferences(default_agent="nadie"), "default_agent"),
         (Preferences(agents={"opencode": ModelPref(model="qwen3")}), "agents.opencode"),
         (
@@ -290,7 +297,12 @@ def test_default_and_action_preferences_are_used_by_the_next_launch(
 
     effective = _effective(client, "assess-fit")
     assert effective["agent"]["agent"] == "codex" and effective["agent"]["reason"] == "default"
-    assert {a["agent"] for a in effective["alternatives"]} == {"claude", "opencode", "qwen"}
+    assert {a["agent"] for a in effective["alternatives"]} == {
+        "claude",
+        "antigravity",
+        "opencode",
+        "qwen",
+    }
 
     launched = client.post("/agent/launch", json={"action": "assess-fit"}, headers=JSON)
     assert launched.status_code == 202 and launched.json()["model"] == "preset local"

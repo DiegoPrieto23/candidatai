@@ -9,6 +9,12 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 
 ## [Sin publicar]
 
+### Cambiado
+- **Antigravity CLI, tercera opción de pago:** con Google AI Pro o Ultra (o su plan gratuito)
+  aparece justo detrás de Claude Code y Codex en «Agente», en los desplegables y en la guía. Los
+  botones ya lo abren en una terminal con la orden escrita (`agy -i`), como con Claude Code y Codex,
+  y puedes elegir su modelo (`agy models` los lista). Probado con Antigravity CLI 1.4.5.
+
 ## [0.3.0] - 2026-10-28
 
 ### Añadido

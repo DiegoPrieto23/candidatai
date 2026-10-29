@@ -260,8 +260,50 @@ targets:
     # Codex no permite limitar herramientas por subagente: se aplica sandbox_mode del rol.
     # Los subagentes heredan la política de la sesión padre (ver docs/AGENTS_COMPAT.md, nivel B).
 
+  # Fase 24.3; tercera opción de pago, tras Claude Code y Codex: con Google AI Pro o Ultra (o el plan
+  # gratuito, con su cupo semanal). Comprobado con agy 1.4.5 el 2026-10-29.
+  antigravity:                    # Antigravity CLI (`agy`): sustituye a Gemini CLI
+    enabled: true
+    config: generated
+    info:
+      display_name: Antigravity CLI
+      vendor: Google
+      open_source: false
+      license: propietaria
+      homepage: https://antigravity.google/docs/cli/
+      install:
+        windows: "Ver https://antigravity.google/docs/install?tab=cli (con tu cuenta de Google: Google AI Pro o Ultra, o el plan gratuito)"
+        macos: "Ver https://antigravity.google/docs/install?tab=cli (con tu cuenta de Google: Google AI Pro o Ultra, o el plan gratuito)"
+        linux: "Ver https://antigravity.google/docs/install?tab=cli (con tu cuenta de Google: Google AI Pro o Ultra, o el plan gratuito)"
+      detect: [agy, --version]
+      invoke: "/{skill} {args}"     # comprobado el 2026-10-22: los skills salen como comandos de barra
+      instructions: AGENTS.md       # y GEMINI.md, vacío a propósito
+    capabilities:
+      mcp: true
+      # Lanza subagentes, también en paralelo (comprobado el 2026-10-22 con generate-cv), pero con
+      # las herramientas de la sesión: no se generan roles porque su documentación no dice cómo se
+      # llaman las MCP en la lista `tools` del subagente. Por eso sigue en el nivel C.
+      subagents: inherited
+      isolation_level: C
+      vision: null
+      web: true                     # search_web (comprobado con agy 1.4.5)
+      browser: null
+      local_models: false
+    skills_dir: null              # lee .agents/skills
+    mcp_file: .agents/mcp_config.json
+    models:                       # null = hereda el de la sesión; los nombres, con `agy models`
+      fast: null
+      capable: null
+      flag: [--model, "{model}"]
+      example: gemini-3.8-flash-high
+    launch:                       # botones «en tu agente» de la UI: sesión interactiva
+      command: [agy, -i, "{prompt}"]   # -i: ejecuta la orden y sigue en interactivo
+    # Sin segundo plano: `agy -p` ya imprime sin terminal, pero no tiene cómo limitar las
+    # herramientas a las de la acción (ni lista blanca ni configuración por ejecución), y sin ese
+    # techo la app no lanza nada sin ventana.
+
   # Fase 24.3. Formatos comprobados el 2026-10-16 con OpenCode 1.19.3 y Qwen Code 0.25.2 (binario y
-  # documentación oficial) y con la documentación de Antigravity CLI (sin el binario).
+  # documentación oficial).
   opencode:                       # OpenCode (anomalyco/opencode, antes sst/opencode)
     enabled: true
     config: generated
@@ -365,39 +407,6 @@ targets:
       # subagente, y fallar daría de más. El `reviewer` en Qwen lee el diff que le pegues.
       git_read: []
       web: [web_fetch, web_search]
-
-  antigravity:                    # Antigravity CLI (`agy`): sustituye a Gemini CLI en cuentas gratuitas
-    enabled: true
-    config: generated
-    info:
-      display_name: Antigravity CLI
-      vendor: Google
-      open_source: false
-      license: propietaria
-      homepage: https://antigravity.google/docs/cli/
-      install:
-        windows: "Ver https://antigravity.google/docs/install?tab=cli (plan gratuito con tu cuenta de Google)"
-        macos: "Ver https://antigravity.google/docs/install?tab=cli (plan gratuito con tu cuenta de Google)"
-        linux: "Ver https://antigravity.google/docs/install?tab=cli (plan gratuito con tu cuenta de Google)"
-      detect: [agy, --version]
-      invoke: "/{skill} {args}"     # comprobado el 2026-10-22: los skills salen como comandos de barra
-      instructions: AGENTS.md       # y GEMINI.md, vacío a propósito
-    capabilities:
-      mcp: true
-      # Lanza subagentes, también en paralelo (comprobado el 2026-10-22 con generate-cv), pero con
-      # las herramientas de la sesión: no se generan roles porque su documentación no dice cómo se
-      # llaman las MCP en la lista `tools` del subagente. Por eso sigue en el nivel C.
-      subagents: inherited
-      isolation_level: C
-      vision: null
-      web: null
-      browser: null
-      local_models: false
-    skills_dir: null              # lee .agents/skills
-    mcp_file: .agents/mcp_config.json
-    # Sin `launch`: su documentación no dice cómo abrirlo con una orden inicial (pendiente de la
-    # prueba manual), así que los botones copian la orden. Sin segundo plano: `agy -p` no imprime
-    # nada sin terminal en la 1.1.0.
 
   # Solo compatibles vía AGENTS.md (fase 24.1): sin configuración generada ni botones de la UI. Están
   # para que la detección y la UI los conozcan. Datos comprobados en sus webs el 2026-10-16.

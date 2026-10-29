@@ -46,8 +46,9 @@
 1. **A computer** with Windows, macOS or Linux. No Python, Node or admin rights: the installer
    brings what it needs.
 2. **The app**, which keeps your jobs, profile, CVs and processes on your machine.
-3. **An AI agent** to do the reading and writing: Claude Code or Codex with the subscription you may
-   already pay, Antigravity CLI with a free Google account, or a local model. **The app never calls an
+3. **An AI agent** to do the reading and writing: Claude Code, Codex or Antigravity CLI with the
+   subscription you may already pay (Claude, ChatGPT or Google AI Pro), Antigravity CLI also with a
+   free Google account, or a local model. **The app never calls an
    AI itself.** Which one to pick and what each costs: **[Start here](docs/START_HERE.md)**.
 
 ## What it does
