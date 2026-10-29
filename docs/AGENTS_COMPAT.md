@@ -23,9 +23,9 @@ uv run --directory backend cai agents doctor         # cuál se usaría hoy, por
 |---|---|---|---|---|---|
 | Claude Code | propietaria | habilitado, configuración generada | A | sí | sí |
 | Codex | Apache-2.0 | habilitado, configuración generada, probado (24.6, 1 oferta) | B | sí | no |
+| Antigravity CLI | propietaria | habilitado, configuración generada (24.3) | C | sí | no |
 | OpenCode | MIT | habilitado, configuración generada (24.3) | B | sí | sí (24.5), salvo `generate-cv` |
 | Qwen Code | Apache-2.0 | habilitado, configuración generada (24.3) | B | sí | no |
-| Antigravity CLI | propietaria | habilitado, configuración generada (24.3) | C | sí | no |
 | Cursor CLI | propietaria | solo compatible vía `AGENTS.md` | C | sí | no |
 | GitHub Copilot CLI | propietaria | solo compatible vía `AGENTS.md` | C | sí | no |
 | Pi | MIT | solo compatible vía `AGENTS.md` | C | sí | no |
@@ -44,18 +44,18 @@ detectar. `cai doctor` resume lo mismo en su sección «Agentes».
 
 ## Matriz
 
-| | Claude Code | Codex (ChatGPT) | OpenCode | Qwen Code | Antigravity CLI | Otros (Cursor, Copilot, Pi, goose…) |
+| | Claude Code | Codex (ChatGPT) | Antigravity CLI | OpenCode | Qwen Code | Otros (Cursor, Copilot, Pi, goose…) |
 |---|---|---|---|---|---|---|
-| Estado | Referencia (se desarrolla con él). Con MCP: probado en la fase 04; matriz de la 12.3 pendiente de la prueba manual. Sin MCP: matriz de la 12.3 probada (5/5) | Configuración generada; sin probar (fuera de la matriz de la fase 12 por decisión del usuario) | Configuración generada y validada con su binario (`debug agent`, `debug skill`); sin probar con un modelo | Configuración generada; `qwen mcp list` la lee; sin probar con un modelo | Configuración generada; probado con la matriz el 2026-10-22 (54/55 campos, 5/5 valoraciones; el CV, cortado por el cupo semanal) | Sin probar |
-| Cuenta | Plan de Claude con Claude Code | Cuenta de ChatGPT con acceso a Codex (CLI, extensión IDE o app), o un modelo local con `--oss` | La de tu proveedor: Ollama, LM Studio, OpenRouter, una API compatible con OpenAI… | Ollama, LM Studio, OpenRouter o una clave de DashScope (el plan gratuito con OAuth cerró el 15/04/2026) | Cuenta de Google (plan gratuito) | La de cada herramienta |
-| Instrucciones | `CLAUDE.md` → importa `AGENTS.md` | `AGENTS.md` | `AGENTS.md` | `AGENTS.md` (`context.fileName`) | `AGENTS.md` (`GEMINI.md` vacío a propósito) | `AGENTS.md` |
-| Skills | `.claude/skills/` (generado) | `.agents/skills/` (lo lee directamente) | `.agents/skills/` (y la copia de `.claude/skills/`, sin duplicar) | `.qwen/skills/` (generado) | `.agents/skills/` | `.agents/skills/` si la herramienta sigue el estándar Agent Skills |
-| Invocar un skill | `/generate-cv 42` | `$generate-cv 42` | Lenguaje natural: "usa el skill generate-cv con la oferta 42" | `/generate-cv 42` | `/generate-cv 42` | Lenguaje natural |
-| Subagentes (roles) | `.claude/agents/*.md` (generado) | `.codex/agents/*.toml` (generado) | `.opencode/agents/*.md` (generado, `mode: subagent`) | `.qwen/agents/*.md` (generado) | Lanza subagentes con las herramientas de la sesión, sin roles generados; para aislar, sesión aparte siguiendo `.agents/roles/<rol>.md` | Sesión aparte siguiendo `.agents/roles/<rol>.md` |
-| Servidor MCP | `.mcp.json` (generado) | `.codex/config.toml` (generado) | `opencode.json` (generado) | `.qwen/settings.json` (generado) | `.agents/mcp_config.json` (generado) | Registra `candidatai` con el `command`/`args` del manifiesto, o usa la CLI |
-| Modelo por rol | `fast` → Haiku, `capable` → Sonnet | Hereda el de la sesión salvo que lo fijes en el manifiesto | Hereda el de la sesión (`proveedor/modelo` en el manifiesto si quieres otro) | Hereda el de la sesión | El de la sesión | El de la sesión |
-| Elegir modelo al lanzar | `--model <modelo>` | `-m <modelo>`; preset `local` = `--oss -m gpt-oss:20b` | `-m proveedor/modelo` | `-m <modelo>` | — | — |
-| Permisos | `.claude/settings.json` (a mano, igual que `policy`) | Sandbox y aprobaciones de Codex | `permission` de `opencode.json`, desde `policy` | `permissions` de `.qwen/settings.json`, desde `policy` | Los suyos | Los de cada herramienta |
+| Estado | Referencia (se desarrolla con él). Con MCP: probado en la fase 04; matriz de la 12.3 pendiente de la prueba manual. Sin MCP: matriz de la 12.3 probada (5/5) | Configuración generada; sin probar (fuera de la matriz de la fase 12 por decisión del usuario) | Configuración generada; probado con la matriz el 2026-10-22 (54/55 campos, 5/5 valoraciones; el CV, cortado por el cupo semanal) | Configuración generada y validada con su binario (`debug agent`, `debug skill`); sin probar con un modelo | Configuración generada; `qwen mcp list` la lee; sin probar con un modelo | Sin probar |
+| Cuenta | Plan de Claude con Claude Code | Cuenta de ChatGPT con acceso a Codex (CLI, extensión IDE o app), o un modelo local con `--oss` | Cuenta de Google: Google AI Pro o Ultra, o el plan gratuito (cupo semanal) | La de tu proveedor: Ollama, LM Studio, OpenRouter, una API compatible con OpenAI… | Ollama, LM Studio, OpenRouter o una clave de DashScope (el plan gratuito con OAuth cerró el 15/04/2026) | La de cada herramienta |
+| Instrucciones | `CLAUDE.md` → importa `AGENTS.md` | `AGENTS.md` | `AGENTS.md` (`GEMINI.md` vacío a propósito) | `AGENTS.md` | `AGENTS.md` (`context.fileName`) | `AGENTS.md` |
+| Skills | `.claude/skills/` (generado) | `.agents/skills/` (lo lee directamente) | `.agents/skills/` | `.agents/skills/` (y la copia de `.claude/skills/`, sin duplicar) | `.qwen/skills/` (generado) | `.agents/skills/` si la herramienta sigue el estándar Agent Skills |
+| Invocar un skill | `/generate-cv 42` | `$generate-cv 42` | `/generate-cv 42` | Lenguaje natural: "usa el skill generate-cv con la oferta 42" | `/generate-cv 42` | Lenguaje natural |
+| Subagentes (roles) | `.claude/agents/*.md` (generado) | `.codex/agents/*.toml` (generado) | Lanza subagentes con las herramientas de la sesión, sin roles generados; para aislar, sesión aparte siguiendo `.agents/roles/<rol>.md` | `.opencode/agents/*.md` (generado, `mode: subagent`) | `.qwen/agents/*.md` (generado) | Sesión aparte siguiendo `.agents/roles/<rol>.md` |
+| Servidor MCP | `.mcp.json` (generado) | `.codex/config.toml` (generado) | `.agents/mcp_config.json` (generado) | `opencode.json` (generado) | `.qwen/settings.json` (generado) | Registra `candidatai` con el `command`/`args` del manifiesto, o usa la CLI |
+| Modelo por rol | `fast` → Haiku, `capable` → Sonnet | Hereda el de la sesión salvo que lo fijes en el manifiesto | El de la sesión | Hereda el de la sesión (`proveedor/modelo` en el manifiesto si quieres otro) | Hereda el de la sesión | El de la sesión |
+| Elegir modelo al lanzar | `--model <modelo>` | `-m <modelo>`; preset `local` = `--oss -m gpt-oss:20b` | `--model <modelo>` (`agy models` los lista) | `-m proveedor/modelo` | `-m <modelo>` | — |
+| Permisos | `.claude/settings.json` (a mano, igual que `policy`) | Sandbox y aprobaciones de Codex | Los suyos | `permission` de `opencode.json`, desde `policy` | `permissions` de `.qwen/settings.json`, desde `policy` | Los de cada herramienta |
 
 ## Por sistema (fase 26)
 
@@ -68,7 +68,7 @@ documentación; lo comprobado aquí:
 | | Windows | macOS | Linux | Docker |
 |---|---|---|---|---|
 | Claude Code | Probado (fases 04, 12.3 y 24.6) | Sin probar con la app | Sin probar con la app | Fuera del contenedor, por `docker exec -i candidatai cai-mcp` (fase 26.3; el MCP probado con un cliente, el agente pendiente de la prueba manual) |
-| Codex, OpenCode, Qwen Code, Antigravity CLI | Lo de la matriz de abajo | Sin probar con la app | Sin probar con la app | Igual que Claude Code: el bloque de cada uno, en «Con Docker» de la guía |
+| Codex, Antigravity CLI, OpenCode, Qwen Code | Lo de la matriz de abajo | Sin probar con la app | Sin probar con la app | Igual que Claude Code: el bloque de cada uno, en «Con Docker» de la guía |
 | Sin MCP (`cai … --json`) | Probado (12.3) | La CI pasa la suite de la CLI en macOS (en `main`, etiquetas y a mano; primera vez el 2026-10-18) | La CI pasa la suite de la CLI en Linux en cada push | `docker exec -i candidatai cai … --json` |
 
 Con Docker no hay terminal que abrir ni segundo plano: tu agente vive fuera del contenedor.
@@ -252,8 +252,10 @@ aceptas en la UI, y aceptar no tiene herramienta ni comando.
   también vale para los subagentes, está en la prueba manual.
 - **Lanzar:** `qwen -i "<orden>"` ejecuta la orden y sigue en interactivo; `-m` elige el modelo.
 
-### Antigravity CLI (documentación consultada el 2026-10-16; probado con la app el 2026-10-22)
-- Sustituye a Gemini CLI en las cuentas gratuitas de Google. Es de código cerrado y no está en npm:
+### Antigravity CLI (documentación consultada el 2026-10-16; probado con la app el 2026-10-22; `agy` 1.4.5 el 2026-10-29)
+- La tercera opción de pago, tras Claude Code y Codex: entra con la cuenta de Google de tu
+  suscripción (Google AI Pro o Ultra) o con el plan gratuito. Sustituye a Gemini CLI, que ya no
+  admite esas cuentas. Es de código cerrado y no está en npm:
   instálalo desde https://antigravity.google/docs/install?tab=cli.
 - Lee `AGENTS.md` y `GEMINI.md` (manda `GEMINI.md`, vacío a propósito), los skills de
   `.agents/skills/` y el MCP del espacio de trabajo, `.agents/mcp_config.json` (generado; el resto de
@@ -267,8 +269,13 @@ aceptas en la UI, y aceptar no tiene herramienta ni comando.
 - **Probado con la matriz (2026-10-22):** extracción 54/55 campos y 5/5 valoraciones. En
   `generate-cv`, el plan gratuito agotó su cupo **semanal** con el primer CV («Individual quota
   reached… Resets in 167h»): con la cuenta gratuita, cuenta con pocas ofertas por semana.
-- **Sin `launch`:** la documentación no dice cómo abrirlo con una orden inicial, así que los botones
-  de la UI copian la orden. Sin segundo plano: `agy -p` no imprime nada sin terminal en la 1.1.0.
+- **Lanzar:** `agy -i "<orden>"` ejecuta la orden y sigue en interactivo (desde la 1.4.5; en la
+  1.1.0 no estaba documentado y los botones copiaban la orden). `--model` elige el modelo; `agy
+  models` lista los de tu cuenta.
+- **Web:** tiene `search_web`.
+- **Sin segundo plano:** `agy -p` ya imprime sin terminal en la 1.4.5, pero no tiene cómo limitar
+  las herramientas a las de la acción (ni lista blanca ni configuración por ejecución), y sin ese
+  techo la app no lanza nada sin ventana.
 
 ### Gemini CLI (fuera desde la 24.3)
 Desde el 18/06/2026 solo funciona con una clave de pago de la API de Gemini o con una licencia de

@@ -78,9 +78,9 @@ def test_real_manifest_loads() -> None:
     assert list(agents) == [
         "claude",
         "codex",
+        "antigravity",
         "opencode",
         "qwen",
-        "antigravity",
         "cursor",
         "copilot",
         "pi",
@@ -98,6 +98,8 @@ def test_real_manifest_loads() -> None:
     assert agents["antigravity"].capabilities.isolation_level == "C"
     assert agents["antigravity"].capabilities.subagents == "inherited"
     assert agents["antigravity"].info.invoke == "/{skill} {args}"
+    # Tercera opción de pago: se abre con la orden, como Claude Code y Codex; sin segundo plano.
+    assert agents["antigravity"].launchable and agents["antigravity"].headless is None
     for name in ("cursor", "copilot", "pi", "gemini", "goose"):
         spec = agents[name]
         assert not spec.enabled and spec.config == "none", name
@@ -300,8 +302,9 @@ def test_cli_agents_doctor(fake_detect: list[str], monkeypatch: pytest.MonkeyPat
     assert "falta instalarlo: npm install -g @openai/codex" in result.output
     assert "sin configuración generada" in result.output
     assert "no se recomienda: Desde el 18/06/2026" in result.output
-    # Antigravity no tiene `launch` (no se sabe abrirlo con una orden): los botones la copian.
-    assert "los botones de la UI copian la orden" in result.output
+    # Antigravity se abre con la orden (`agy -i`, desde la 1.4.5), pero sin segundo plano.
+    antigravity = result.output.split("Antigravity CLI (antigravity)")[1].split("\n\n")[0]
+    assert "copian la orden" not in antigravity and "sin «En segundo plano»" in antigravity
 
 
 def test_overview_follows_cai_agent(

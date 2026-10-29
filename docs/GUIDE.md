@@ -37,7 +37,7 @@ macOS in CI.
 **To use it** you only need Windows, macOS or Linux and, if you want Word CVs on top of PDFs,
 LibreOffice. The
 installer takes care of the rest (uv, Python and the Chromium that renders PDFs). For the agent's
-part you also need **an AI agent** (Claude Code, Codex…; see section 5).
+part you also need **an AI agent** (Claude Code, Codex, Antigravity CLI…; see section 5).
 
 **To develop it** (clone the repository and change the code):
 
@@ -297,6 +297,9 @@ Open your agent **at the repository root**: that's where it finds the instructio
 - **Claude Code:** `claude` at the root. Check with `/mcp` that the `candidatai` server is
   connected. Skills are invoked as `/generate-cv 42`.
 - **Codex:** uses `.codex/` (generated). Skills are invoked as `$generate-cv 42`.
+- **Antigravity CLI:** `agy` at the root. It reads `AGENTS.md`, the skills in `.agents/skills/` and
+  the MCP server in `.agents/mcp_config.json` (generated). Skills are invoked as `/generate-cv 42`.
+  It works with Google AI Pro or Ultra and with the free plan, which has a weekly quota.
 - **Other agents:** if they read `AGENTS.md` and speak MCP, register the `candidatai` server with the
   command in `.mcp.json`. If they don't speak MCP, every tool has its
   `uv run --directory backend cai … --json` command (table in

@@ -109,4 +109,4 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 | **Sidebar** grouped and collapsible with what's waiting, light and dark theme, English and Spanish | `/` | [Sidebar](img/en/sidebar-collapsed.webp) |
 | **Demo mode** with a fictitious search where every page has something | `cai demo seed` | |
 | **Install** with one line on Windows, macOS and Linux, or with Docker; `cai doctor` checks everything | [Guide](GUIDE.md) | |
-| **Five agents**: Claude Code, Codex, OpenCode, Qwen Code and Antigravity CLI, over MCP or with `cai … --json`; free and local models | [`AGENTS_COMPAT.md`](AGENTS_COMPAT.md) | |
+| **Five agents**: Claude Code, Codex, Antigravity CLI, OpenCode and Qwen Code, over MCP or with `cai … --json`; free and local models | [`AGENTS_COMPAT.md`](AGENTS_COMPAT.md) | |

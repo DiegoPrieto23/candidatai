@@ -109,4 +109,4 @@ FEATURES.md dejan de coincidir fila a fila. -->
 | **Barra lateral** agrupada y plegable con lo que te espera, tema claro y oscuro, español e inglés | `/` | [Barra lateral](img/es/sidebar-collapsed.webp) |
 | **Modo demo** con una búsqueda ficticia en la que cada página tiene algo | `cai demo seed` | |
 | **Instalación** con una línea en Windows, macOS y Linux, o con Docker; `cai doctor` lo revisa todo | [Guía](GUIA.md) | |
-| **Cinco agentes**: Claude Code, Codex, OpenCode, Qwen Code y Antigravity CLI, por MCP o con `cai … --json`; modelos gratuitos y locales | [`AGENTS_COMPAT.md`](AGENTS_COMPAT.md) | |
+| **Cinco agentes**: Claude Code, Codex, Antigravity CLI, OpenCode y Qwen Code, por MCP o con `cai … --json`; modelos gratuitos y locales | [`AGENTS_COMPAT.md`](AGENTS_COMPAT.md) | |
