@@ -69,6 +69,55 @@ jobs:
           $summary = ($out -join "`n") | ConvertFrom-Json
           if ($summary.jobs -ne 75 -or $summary.cvs -ne 2) { throw "Demo incompleta: $out" }
 
+  e2e:
+    # De extremo a extremo (fase 30): la app compilada con `cai start` sobre una demo temporal,
+    # recorrida en Chromium. El humo (`smoke`) en cada push; todas, con la regla de macOS de arriba.
+    runs-on: ubuntu-latest
+    timeout-minutes: 20  # medido: el humo, ~1 min en Windows; la instalación, unos minutos más
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/../ms-playwright
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: frontend/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+        working-directory: frontend
+      - run: pnpm build
+        working-directory: frontend
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync --locked
+        working-directory: backend
+      - name: Versión de Playwright (clave de la caché)
+        id: playwright
+        working-directory: backend
+        run: echo "version=$(uv run python -c 'from importlib.metadata import version; print(version("playwright"))')" >> "$GITHUB_OUTPUT"
+      # La misma caché que el job `backend`.
+      - uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/../ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+      - run: uv run playwright install --with-deps chromium
+        working-directory: backend
+      - name: E2E
+        working-directory: backend
+        run: uv run pytest -m "${{ (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch') && 'e2e' || 'e2e and smoke' }}"
+      # Captura, HTML, consola, log de la app y traza de Playwright de cada test que falla.
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-diagnostico
+          path: backend/.e2e-artifacts/
+          include-hidden-files: true  # la carpeta empieza por punto: sin esto, no sube nada
+          if-no-files-found: warn
+
   installer:
     # install.sh (fase 26.2) en macOS y Linux. install.ps1 -WhatIf lo prueba test_start.py en Windows.
     timeout-minutes: 20

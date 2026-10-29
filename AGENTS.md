@@ -61,6 +61,8 @@ data/             GITIGNORED: candidatai.db, profile.yaml, contexto/, documentos
 ```
 cd backend
 uv run pytest                      # tests
+uv run pytest -m e2e               # E2E en Chromium sobre una demo temporal (antes, `pnpm build`)
+uv run pytest -m "e2e and smoke"   # solo el humo de las E2E, el de cada push
 uv run ruff check --fix && uv run ruff format
 uv run alembic upgrade head        # migraciones
 uv run cai --help                  # CLI
