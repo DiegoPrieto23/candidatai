@@ -12,14 +12,14 @@ from app.core.db import get_engine, make_engine
 from app.models import Base, Company, Job, Source
 
 E2E_DIR = Path(__file__).resolve().parent / "e2e"
-# `e2e` como marcador pedido, no negado (`-m "not e2e"` no las quiere).
-_E2E_WANTED = re.compile(r"(?<!not )\be2e\b")
+# `e2e` (o `e2e_install`) como marcador pedido, no negado (`-m "not e2e"` no las quiere).
+_E2E_WANTED = re.compile(r"(?<!not )\be2e(_install)?\b")
 
 
 def _wants_e2e(config: pytest.Config) -> bool:
     """Las E2E (`tests/e2e/`) arrancan la app entera y un navegador: solo con `-m` que las nombre
-    (`-m e2e`, `-m "e2e and smoke"`) o pidiendo su carpeta. Con `addopts = -m "not e2e"` un `-m`
-    cualquiera (`-m layout`) las volvería a meter."""
+    (`-m e2e`, `-m "e2e and smoke"`, `-m e2e_install`) o pidiendo su carpeta. Con
+    `addopts = -m "not e2e"` un `-m` cualquiera (`-m layout`) las volvería a meter."""
     if _E2E_WANTED.search(str(config.getoption("markexpr") or "")):
         return True
     return any(Path(arg.split("::")[0]).resolve().is_relative_to(E2E_DIR) for arg in config.args)

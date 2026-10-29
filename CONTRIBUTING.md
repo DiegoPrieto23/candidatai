@@ -49,7 +49,10 @@ uv run scripts/sync_agents.py --check   # from the repository root
 The end-to-end tests (`backend/tests/e2e/`) start the built app with `cai start` on a temporary
 copy of the demo and drive it in headless Chromium. A plain `uv run pytest` skips them. Run them
 from `backend/` after `pnpm build` in `frontend/`: `uv run pytest -m "e2e and smoke"` (about a
-minute, also on every push) or `uv run pytest -m e2e` (all of them, on `main`). When one fails,
+minute and a half, also on every push) or `uv run pytest -m e2e` (all of them, about five
+minutes, on `main`). On Windows, `uv run pytest -m e2e_install` also runs the real `install.ps1`
+into a temporary folder, with no shortcuts and offline (`UV_OFFLINE`), starts the installed app and
+uninstalls it; it is left out of `-m e2e`. When one fails,
 `backend/.e2e-artifacts/` keeps a screenshot, the HTML, the console, the app log and a Playwright
 trace (`uv run playwright show-trace <trace.zip>`). They refuse to start on `data/` or on your
 installed app's data folder.

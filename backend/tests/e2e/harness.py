@@ -125,23 +125,29 @@ def app_env(data_dir: Path, base: Mapping[str, str] | None = None) -> dict[str, 
     return env
 
 
-def _cai(*args: str) -> list[str]:
-    return [sys.executable, "-m", "app", *args]
+def _cai(*args: str, python: str = sys.executable) -> list[str]:
+    return [python, "-m", "app", *args]
 
 
-def seed_demo(data_dir: Path) -> dict[str, Any]:
-    """`cai demo seed --dir` en la carpeta (que se comprueba antes)."""
+def run_cai(data_dir: Path, *args: str, timeout: float = 300) -> "subprocess.CompletedProcess[str]":
+    """Un comando `cai` sobre la carpeta (que se comprueba antes), sin lanzar si falla."""
     data_dir = check_data_dir(data_dir)
-    result = subprocess.run(  # noqa: S603
-        _cai("demo", "seed", "--dir", str(data_dir), "--json"),
+    return subprocess.run(  # noqa: S603
+        _cai(*args),
         cwd=BACKEND,
         env=app_env(data_dir),
         capture_output=True,
         text=True,
         encoding="utf-8",
-        timeout=300,
+        timeout=timeout,
         check=False,
     )
+
+
+def seed_demo(data_dir: Path) -> dict[str, Any]:
+    """`cai demo seed --dir` en la carpeta (que se comprueba antes)."""
+    data_dir = check_data_dir(data_dir)
+    result = run_cai(data_dir, "demo", "seed", "--dir", str(data_dir), "--json")
     if result.returncode != 0:
         raise RuntimeError(f"cai demo seed falló:\n{result.stdout}\n{result.stderr}")
     summary: dict[str, Any] = json.loads(result.stdout)
@@ -287,17 +293,25 @@ def start_app(
     *,
     popen: Callable[..., "subprocess.Popen[bytes]"] = subprocess.Popen,
     timeout: float = READY_TIMEOUT,
+    python: str = sys.executable,
+    cwd: Path = BACKEND,
+    extra_env: Mapping[str, str] | None = None,
 ) -> AppServer:
-    """Arranca `cai start --no-browser` en un puerto libre y espera a que `/status` responda."""
+    """Arranca `cai start --no-browser` en un puerto libre y espera a que `/status` responda.
+
+    `python` y `cwd`, para arrancar otra copia de la app (la instalada); `extra_env`, para lo que
+    necesite un test (un proxy local, la candidatura asistida contra 127.0.0.1)."""
     data_dir = check_data_dir(data_dir)  # antes de crear nada
     data_dir.mkdir(parents=True, exist_ok=True)
     port = free_port()
     started = time.monotonic()
+    env = app_env(data_dir)
+    env.update(extra_env or {})
     process, job = spawn(
-        _cai("start", "--port", str(port), "--no-browser"),
-        env=app_env(data_dir),
+        _cai("start", "--port", str(port), "--no-browser", python=python),
+        env=env,
         popen=popen,
-        cwd=BACKEND,
+        cwd=cwd,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
         stdin=subprocess.DEVNULL,

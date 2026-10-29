@@ -255,6 +255,8 @@ class _Config:
         ("layout", ("tests",), False),
         ("e2e", ("tests",), True),
         ("e2e and smoke", ("tests",), True),
+        ("e2e_install", ("tests",), True),
+        ("not e2e_install", ("tests",), False),
         ("", ("tests/e2e/test_smoke.py::test_page_opens",), True),
     ],
 )

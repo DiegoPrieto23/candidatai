@@ -7,9 +7,10 @@ cambia datos no ensucia a los demás. Si un test necesita datos solo suyos, que 
 
 import os
 import re
-from collections.abc import Callable, Iterator
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any, Protocol
 
 import pytest
 from playwright.sync_api import Browser, ConsoleMessage, Page, Playwright, Response, sync_playwright
@@ -27,9 +28,11 @@ EXTERNAL_LOAD_FAILED = re.compile(r"^Failed to load resource: net::ERR_")
 
 
 def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
-    # Todo lo de esta carpeta es E2E, aunque un módulo olvide el marcador.
+    # Todo lo de esta carpeta es E2E, aunque un módulo olvide el marcador. Salvo el instalador
+    # (`e2e_install`), que tarda minutos: solo con `-m e2e_install`.
     for item in items:
-        if Path(str(item.fspath)).is_relative_to(Path(__file__).parent):
+        in_folder = Path(str(item.fspath)).is_relative_to(Path(__file__).parent)
+        if in_folder and item.get_closest_marker("e2e_install") is None:
             item.add_marker(pytest.mark.e2e)
 
 
@@ -61,7 +64,8 @@ def demo_seed(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Path]:
     harness.remove_dir(root)
 
 
-AppFactory = Callable[[Path | None], harness.AppServer]
+class AppFactory(Protocol):
+    def __call__(self, seed: Path | None, **kwargs: Any) -> harness.AppServer: ...
 
 
 @pytest.fixture(scope="session")
@@ -70,13 +74,13 @@ def _start_app(tmp_path_factory: pytest.TempPathFactory) -> Iterator[AppFactory]
     borra al cerrar el ámbito que la pidió (ver `_scoped_app`)."""
     started: list[tuple[harness.AppServer, Path]] = []
 
-    def start(seed: Path | None) -> harness.AppServer:
+    def start(seed: Path | None, **kwargs: Any) -> harness.AppServer:
         root = tmp_path_factory.mktemp("e2e-app")
         data_dir = root / "data"
         try:
             if seed is not None:
                 harness.copy_data(seed, data_dir)
-            server = harness.start_app(data_dir)
+            server = harness.start_app(data_dir, **kwargs)
         except BaseException:
             harness.remove_dir(root)
             raise
@@ -89,8 +93,8 @@ def _start_app(tmp_path_factory: pytest.TempPathFactory) -> Iterator[AppFactory]
         harness.remove_dir(root)
 
 
-def _scoped_app(start: AppFactory, seed: Path | None) -> Iterator[harness.AppServer]:
-    server = start(seed)
+def _scoped_app(start: AppFactory, seed: Path | None, **kwargs: Any) -> Iterator[harness.AppServer]:
+    server = start(seed, **kwargs)
     try:
         yield server
     finally:
@@ -99,21 +103,40 @@ def _scoped_app(start: AppFactory, seed: Path | None) -> Iterator[harness.AppSer
 
 
 @pytest.fixture(scope="module")
-def demo_app(_start_app: AppFactory, demo_seed: Path) -> Iterator[harness.AppServer]:
+def app_extra_env() -> dict[str, str]:
+    """Variables de más para las apps de un módulo: el módulo la redefine si las necesita (un
+    servidor local de la fixture, p. ej.)."""
+    return {}
+
+
+@pytest.fixture(scope="module")
+def demo_app(
+    _start_app: AppFactory, demo_seed: Path, app_extra_env: dict[str, str]
+) -> Iterator[harness.AppServer]:
     """La app con la demo, compartida por los tests de un módulo."""
-    yield from _scoped_app(_start_app, demo_seed)
+    yield from _scoped_app(_start_app, demo_seed, extra_env=app_extra_env)
 
 
 @pytest.fixture
-def fresh_demo_app(_start_app: AppFactory, demo_seed: Path) -> Iterator[harness.AppServer]:
+def fresh_demo_app(
+    _start_app: AppFactory, demo_seed: Path, app_extra_env: dict[str, str]
+) -> Iterator[harness.AppServer]:
     """La app con la demo, solo para este test (para los que cambian datos)."""
-    yield from _scoped_app(_start_app, demo_seed)
+    yield from _scoped_app(_start_app, demo_seed, extra_env=app_extra_env)
 
 
 @pytest.fixture
-def empty_app(_start_app: AppFactory) -> Iterator[harness.AppServer]:
+def empty_app(_start_app: AppFactory, app_extra_env: dict[str, str]) -> Iterator[harness.AppServer]:
     """La app en una carpeta vacía: el primer arranque, sin perfil ni ofertas."""
-    yield from _scoped_app(_start_app, None)
+    yield from _scoped_app(_start_app, None, extra_env=app_extra_env)
+
+
+@pytest.fixture(scope="module")
+def empty_shared_app(
+    _start_app: AppFactory, app_extra_env: dict[str, str]
+) -> Iterator[harness.AppServer]:
+    """La app vacía compartida por los tests de un módulo que solo miran (estados vacíos)."""
+    yield from _scoped_app(_start_app, None, extra_env=app_extra_env)
 
 
 # --- Navegador ----------------------------------------------------------------------------------
@@ -195,14 +218,15 @@ def page(
     request: pytest.FixtureRequest, browser: Browser, lang: str, page_errors: PageErrors
 ) -> Iterator[Page]:
     """Una pestaña en un contexto nuevo, sin ventana, en escritorio y en `lang`. Para la app del
-    test (`demo_app`, `fresh_demo_app` o `empty_app`), `base_url` apunta a ella: `page.goto("/")`.
+    test (`demo_app`, `fresh_demo_app`, `empty_app` o `empty_shared_app`), `base_url` apunta a
+    ella: `page.goto("/")`.
 
     Al cerrar, falla si hubo errores invisibles; si el test falló, deja en `.e2e-artifacts/` la
     captura, el HTML, la consola y la traza de Playwright (`playwright show-trace traza.zip`)."""
     server = next(
         (
             request.getfixturevalue(name)
-            for name in ("fresh_demo_app", "empty_app", "demo_app")
+            for name in ("fresh_demo_app", "empty_app", "empty_shared_app", "demo_app")
             if name in request.fixturenames
         ),
         None,
@@ -224,7 +248,9 @@ def page(
     finally:
         problems = page_errors.problems()
         report = getattr(request.node, "report_call", None)
-        if problems or (report is not None and report.failed):
+        # Un `xfail` que falla como se esperaba también deja sus pruebas, y no se cuenta dos veces.
+        failed = report is not None and (report.failed or hasattr(report, "wasxfail"))
+        if problems or failed:
             folder = _artifact_dir(request.node)
             try:
                 tab.screenshot(path=folder / "captura.png", full_page=True)
@@ -239,6 +265,6 @@ def page(
         else:
             context.tracing.stop()
         context.close()
-    # Si el test ya falló, sus problemas van en `consola.txt`: no se cuenta dos veces.
-    if problems and not (report is not None and report.failed):
+    # Si el test ya falló, sus problemas van en `consola.txt`.
+    if problems and not failed:
         pytest.fail("Errores que no se ven en la página:\n" + "\n".join(problems), pytrace=False)
