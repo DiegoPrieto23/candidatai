@@ -13,7 +13,13 @@ from typing import TYPE_CHECKING, Literal
 
 from pydantic import BaseModel
 
-from app.core.config import LEGACY_DB_FILENAME, LEGACY_ENV_PREFIX, REPO_ROOT, Settings
+from app.core.config import (
+    LEGACY_DB_FILENAME,
+    LEGACY_ENV_PREFIX,
+    REPO_ROOT,
+    Settings,
+    env_file_path,
+)
 from app.services.documents import pdf
 
 if TYPE_CHECKING:
@@ -77,7 +83,7 @@ def legacy_env_names(env_file: Path | None = None) -> list[str]:
     from dotenv import dotenv_values
 
     names = {n.upper() for n in os.environ if n.upper().startswith(LEGACY_ENV_PREFIX)}
-    env_file = env_file or REPO_ROOT / ".env"
+    env_file = env_file or env_file_path()
     if env_file.is_file():
         names |= {
             n.upper() for n in dotenv_values(env_file) if n.upper().startswith(LEGACY_ENV_PREFIX)

@@ -4,7 +4,7 @@ import os
 import sys
 from functools import lru_cache
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import AliasChoices, Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -22,6 +22,13 @@ ENV_PREFIX = "CAI_"
 LEGACY_ENV_PREFIX = "JH_"
 DB_FILENAME = "candidatai.db"
 LEGACY_DB_FILENAME = "jobhunter.db"
+
+
+def env_file_path() -> Path:
+    """El `.env` de la app: el de la raíz del repo, salvo que `CAI_ENV_FILE` diga otro (los tests
+    lo llevan a una carpeta temporal). Se lee aquí y se escriben en él las contraseñas de los
+    buzones (`core/env_file.py`): siempre el mismo fichero."""
+    return Path(os.environ.get("CAI_ENV_FILE") or REPO_ROOT / ".env")
 
 
 def _env(name: str) -> AliasChoices:
@@ -78,6 +85,11 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         extra="ignore",
     )
+
+    def __init__(self, **values: Any) -> None:
+        # `CAI_ENV_FILE` se mira al crearla, no al importar el módulo.
+        values.setdefault("_env_file", env_file_path())
+        super().__init__(**values)
 
     data_dir: Path = Field(default=REPO_ROOT / "data", validation_alias=_env("DATA_DIR"))
     db_url: str | None = Field(default=None, validation_alias=_env("DB_URL"))

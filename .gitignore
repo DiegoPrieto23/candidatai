@@ -13,6 +13,8 @@ __pycache__/
 .ruff_cache/
 .coverage
 htmlcov/
+# Diagnóstico de las E2E que fallan (capturas, HTML, consola y trazas)
+backend/.e2e-artifacts/
 
 # Node
 node_modules/

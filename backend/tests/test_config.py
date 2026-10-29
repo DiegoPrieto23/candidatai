@@ -69,3 +69,20 @@ def test_get_settings_creates_data_dir(isolated_env: Path) -> None:
     settings = get_settings()
     assert settings.data_dir.is_dir()
     assert settings.user_templates_dir == settings.data_dir / "templates"
+
+
+def test_settings_read_the_env_file_of_cai_env_file(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """El `.env` que se lee es el mismo en el que se guardan las contraseñas: con `CAI_ENV_FILE`,
+    el de la raíz del repo (con los datos de quien pasa los tests) no se lee."""
+    env = tmp_path / "otro.env"
+    env.write_text("CAI_ADZUNA_APP_ID=del-fichero\n", encoding="utf-8")
+    monkeypatch.delenv("CAI_ADZUNA_APP_ID", raising=False)
+    monkeypatch.setenv("CAI_ENV_FILE", str(env))
+    assert config.env_file_path() == env
+    assert Settings().adzuna_app_id == "del-fichero"
+    monkeypatch.setenv("CAI_ENV_FILE", str(tmp_path / "no-existe.env"))
+    assert Settings().adzuna_app_id is None
+    monkeypatch.delenv("CAI_ENV_FILE")
+    assert config.env_file_path() == REPO_ROOT / ".env"

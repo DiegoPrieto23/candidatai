@@ -17,7 +17,7 @@ from pathlib import Path
 
 from dotenv import dotenv_values
 
-from app.core.config import REPO_ROOT, get_settings
+from app.core.config import env_file_path, get_settings
 
 _NAME = re.compile(r"^[A-Z][A-Z0-9_]{0,63}$")
 # Solo estos parten una línea de `.env` (`str.splitlines` partiría también por `\x85`,
@@ -38,7 +38,7 @@ class SecretNotWritableError(Exception):
 
 
 def env_path() -> Path:
-    return Path(os.environ.get("CAI_ENV_FILE") or REPO_ROOT / ".env")
+    return env_file_path()
 
 
 def can_write() -> bool:
