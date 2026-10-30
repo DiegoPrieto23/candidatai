@@ -29,7 +29,33 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 - **Generar un CV o una carta con LibreOffice ya no cierra la app:** mientras se convertía a PDF,
   el resto de la app no podía escribir en tu base y, si la conversión pasaba de 5 segundos, el
   proceso de segundo plano se caía y con él toda la app. Ahora, si la base está ocupada, cada
-  escritura espera hasta 90 segundos, más que lo que se deja tardar a una conversión.
+  escritura espera hasta 90 segundos, más que lo que se deja tardar a una conversión. Además, el
+  PDF se prepara antes de tocar la base, así que mientras convierte ya no bloquea nada, y un
+  bloqueo pasajero al arrancar ya no tumba la app.
+- **Sin LibreOffice ni Word, «Generar CV» ya no falla y pierde el CV:** si la plantilla que tocaba
+  es de Word («ATS sencilla», «Clásica con foto» o una tuya importada de Word), se usa «Moderna a
+  dos columnas» y la ficha te lo avisa. Lo mismo con la carta. Si la plantilla de Word la eliges
+  tú, te dice que instales LibreOffice. `cai doctor` y la guía lo explican.
+- **No se proponen seguimientos a quien ya te ha contestado:** si un correo de la empresa está por
+  revisar en «Respuestas» (un rechazo, una entrevista…), esa candidatura deja de salir como
+  «seguimiento pendiente» en Inicio, en Procesos y en la ficha, y tu agente no le redacta uno.
+- **Una oferta cuya página no se puede abrir** (sin red, con inicio de sesión o con una web que lo
+  bloquea) ya no enseña el error técnico de Windows ni manda escribir un comando: lo explica y
+  ofrece «Pegar el texto», con el enlace ya puesto.
+- **Un paso registrado justo después de otro** («Me han respondido» en el mismo minuto en que la
+  marcaste enviada) ya no se rechaza: queda detrás del anterior.
+- **«Skills» sin perfil** conserva su título y ya no deja un error en la consola del navegador.
+- **Con la UI en inglés, las plantillas integradas** salen con su nombre y su descripción en inglés.
+- **La carta, verificada contra la empresa correcta:** la verificación ya ve a qué empresa y a qué
+  puesto va, y no avisa de un saludo que está bien. Para los agentes, `get_cover_letter` (y
+  `cai letter show`) devuelve también `company` y `job_title`.
+- **El perfil de la demo** ya no da a Snowflake los años de toda su experiencia: los CVs que se
+  generan con ella dicen desde cuándo.
+- **Textos que no cuadraban:** `cai doctor` y los avisos de la extensión llaman a la pestaña por su
+  nombre («Dónde buscar → Botón del navegador»); el README dice «Generar», como el botón; la guía
+  ya no dice que el sueldo mínimo solo se edita en el YAML ni que aprobar se deshace en el aviso
+  (se reabre en la ficha), y «¿Qué datos salen de mi equipo?» cuenta que tu navegador pide el
+  icono de cada portal y empresa a su web.
 - **Desinstalar ya no se lleva los accesos directos de otra instalación:** `install.ps1 -Uninstall`
   (e `install.sh --uninstall`) solo borra el acceso del escritorio y del menú Inicio (o el de
   Aplicaciones en macOS y Linux) si abre la instalación que se está quitando. Antes, desinstalar
