@@ -26,8 +26,8 @@ jobs:
       run:
         working-directory: backend
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
       # Todas las versiones del lock, extras incluidos (torch y lo suyo llegan por `matching`), sin
       # sus marcadores: pip-audit los evalúa contra el runner y en Linux se saltaría lo que solo se
       # instala en Windows o macOS. Con `--disable-pip --no-deps` consulta esas versiones tal cual,
@@ -46,11 +46,11 @@ jobs:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
         with:
           package_json_file: frontend/package.json
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: lts/*
       # Lee solo el lockfile. El primero enseña todas, sin fallar; el segundo falla con las altas o
