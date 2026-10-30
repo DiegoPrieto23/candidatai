@@ -144,8 +144,9 @@ function Connect({
 }
 
 /**
- * «Dónde buscar → Extensión»: instalar y conectar el botón «Enviar a CandidatAI» sin terminal. La
- * página detecta la extensión sola, la conecta con un clic y avisa si es de una versión antigua.
+ * «Dónde buscar → Botón del navegador»: instalar y conectar el botón «Enviar a CandidatAI» sin
+ * terminal. La página detecta la extensión sola, la conecta con un clic y avisa si es de una
+ * versión antigua.
  */
 export function ExtensionPage() {
   const { t } = useTranslation('extension')

@@ -221,7 +221,8 @@ Cada página y lo que puedes hacer en ella: [`FUNCIONALIDADES.md`](FUNCIONALIDAD
 carpeta de tu equipo (`cai paths` te dice cuál). Lo que sí sale es lo que lee tu agente (las ofertas
 y tu perfil, sin tu correo, tu teléfono ni tu mínimo salarial), y va a la empresa del modelo de tu
 agente, salvo que uses un modelo local. La app, además, lee las páginas públicas de las ofertas y
-las APIs de los portales que configures.
+las APIs de los portales que configures. Y en «Dónde buscar», tu navegador pide el icono de cada
+portal y de cada empresa a su web: esa web ve una visita desde tu conexión, sin nada tuyo.
 
 **¿Envía candidaturas sola?** No. Rellena formularios y se para; enviar requiere tu clic,
 candidatura a candidatura. Los mensajes y correos son borradores que copias y envías tú.

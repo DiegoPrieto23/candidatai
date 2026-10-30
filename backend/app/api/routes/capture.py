@@ -35,7 +35,8 @@ def require_capture_auth(
     if not valid:
         raise ToolError(
             "unauthorized",
-            "Token no válido: en CandidatAI, «Dónde buscar → Extensión», pulsa «Conectar».",
+            "Token no válido: en CandidatAI, «Dónde buscar → Botón del navegador», pulsa "
+            "«Conectar».",
         )
 
 

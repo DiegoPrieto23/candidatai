@@ -6,13 +6,14 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
+import yaml
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from typer.testing import CliRunner
 
 from app import cli
 from app.core import migrations
-from app.core.config import DEMO_MARKER, get_settings
+from app.core.config import DEMO_MARKER, REPO_ROOT, get_settings
 from app.core.db import session_scope
 from app.models import (
     AgentRequest,
@@ -319,3 +320,19 @@ def test_demo_never_uses_the_real_mailbox(tmp_path: Path, monkeypatch: pytest.Mo
             assert check.detail.startswith("demo: el IMAP de `.env` no se usa")
     get_settings.cache_clear()
     assert get_settings().imap_configured  # fuera de la demo, sí
+
+
+@pytest.mark.parametrize("folder", ["", "en"])
+def test_the_demo_summary_dates_snowflake_from_when_the_experience_shows_it(folder: str) -> None:
+    """El perfil de ejemplo enseña la veracidad: su resumen no puede dar a Snowflake los años de
+    toda la experiencia (decía «tres años… sobre Snowflake» y solo sale desde 2024)."""
+    data = yaml.safe_load((REPO_ROOT / "demo" / folder / "profile.example.yaml").read_text("utf-8"))
+    starts = [
+        str(exp["start"])[:4]
+        for exp in data["experience"]
+        if any("Snowflake" in a.get("skills", []) for a in exp["achievements"])
+    ]
+    first = min(starts)
+    for text in data["summary"].values():
+        if "Snowflake" in text:
+            assert first in text, text

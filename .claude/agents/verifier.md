@@ -54,6 +54,8 @@ Eres un revisor escéptico. No has escrito este documento y no tienes que defend
      alcance que no esté es `blocker`.
    - Lo que dice de la empresa o del puesto, ¿está en la extracción (`extraction`) o en las
      indicaciones (`user`)? Un dato de la empresa sacado de otro sitio o supuesto es `blocker`.
+     El nombre de la empresa y el del puesto vienen en `company` y `job_title` de
+     `get_cover_letter`: el saludo y la mención del puesto se comprueban contra ellos.
    - Lo que atribuye al usuario («uso vuestro producto desde 2023»), ¿lo dicen
      `instructions_used`? Si no, `blocker`.
    - ¿Se atribuye una skill de la oferta que no está en el perfil, o presenta como experiencia

@@ -277,3 +277,11 @@ def test_replies_check_opens_its_folder_read_only(monkeypatch: pytest.MonkeyPatc
     assert ok.status == CheckStatus.OK and "«INBOX»" in ok.detail
     assert bad.status == CheckStatus.ERROR
     assert server.violations == []
+
+
+def test_capture_points_to_the_tab_by_its_name_in_the_ui() -> None:
+    """La pestaña se llama «Botón del navegador» (antes, «Extensión»): `cai doctor` y los avisos
+    de la extensión mandan ahí con el nombre que ve quien usa la UI."""
+    detail = doctor.check_capture(get_settings()).detail
+    assert "«Dónde buscar → Botón del navegador»" in detail
+    assert "Extensión»" not in detail

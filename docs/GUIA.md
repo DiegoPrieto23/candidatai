@@ -28,11 +28,12 @@ primeros pasos.
 ## 1. Requisitos
 
 CandidatAI se desarrolla y se prueba en **Windows 11**. En macOS y Linux tiene instalador y los
-botones que abren tu agente funcionan (fase 26), pero se están probando todavía: Linux en WSL2 y
+botones que abren tu agente funcionan, pero se están probando todavía: Linux en WSL2 y
 macOS en la CI.
 
-**Para usarla** solo hace falta Windows, macOS o Linux y, si quieres CVs en Word además de en PDF,
-LibreOffice. El
+**Para usarla** solo hace falta Windows, macOS o Linux y, si quieres las plantillas de Word («ATS
+sencilla», «Clásica con foto» o un diseño tuyo importado de Word), LibreOffice. Sin él, los CVs y
+las cartas salen igual en PDF con la plantilla «Moderna a dos columnas», y la app te avisa. El
 instalador se encarga del resto (uv, Python y el Chromium que genera los PDF). Para que el agente
 haga su parte necesitas también **un agente de IA** (Claude Code, Codex, Antigravity CLI…; ver la sección 5).
 
@@ -146,7 +147,7 @@ luego recreas el contenedor (`docker compose up -d`).
 |---|---|
 | UI, ofertas, revisión, seguimiento y embudo | Sí |
 | Fuentes de ofertas y alertas por correo (el worker) | Sí |
-| CVs y cartas en PDF | Sí, con las plantillas html (`moderna-2col`…). Las docx salen solo en Word: no hay LibreOffice |
+| CVs y cartas en PDF | Sí, con las plantillas html (`moderna-2col`…). Las docx no, porque no hay LibreOffice: si te toca una, se usa `moderna-2col` y la app te avisa |
 | Tu agente por MCP o `cai … --json` | Sí, desde fuera del contenedor (abajo) |
 | Botones «en tu agente» | Copian la orden para que la pegues en tu agente |
 | «En segundo plano» | No: el agente no está en el contenedor |
@@ -281,7 +282,7 @@ En «Mi perfil», cada logro y cada historia tienen **«Mejorar con mi agente»*
 una versión más clara, te pregunta los números que falten (nunca los inventa) y solo escribe con tu
 OK. En «Historias STAR», **«Proponer historias desde mi experiencia»** te sugiere historias a partir
 de los logros que aún no tienen. Tu correo y tu teléfono se editan ahí, pero tu agente sigue sin
-verlos. Tu mínimo salarial (`private`) solo se edita en el YAML.
+verlos. Lo mismo tu mínimo salarial (`private`), en «Búsqueda».
 
 ## 5. Conectar tu agente
 
@@ -360,7 +361,8 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
 2. **Valorar:** la app calcula el score y aplica tus filtros duros; `assess-fit` añade una
    valoración razonada.
 3. **Revisar:** en «Por revisar», `J`/`K` para moverte, `A` para aprobar, `D` para descartar (con
-   motivo) y `O` para abrir la ficha. Se puede deshacer.
+   motivo) y `O` para abrir la ficha. Un descarte se deshace en el aviso; una aprobación, con
+   «Reabrir» en la ficha.
 4. **CV:** `generate-cv 42` redacta el contenido, el código lo valida y renderiza y el rol
    `verifier` lo revisa. En la ficha cambias plantilla, foto, color y secciones sin gastar
    agente, comparas renders y marcas cuál envías.

@@ -79,7 +79,7 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
   return true
 })
 
-// La app (página «Dónde buscar → Extensión»). Nada de otra web: `externally_connectable` solo deja
+// La app (página «Dónde buscar → Botón del navegador»). Nada de otra web: `externally_connectable` solo deja
 // llegar a `127.0.0.1` y `localhost`, y aquí se vuelve a comprobar el origen.
 async function answerApp(message, origin) {
   var stored = await chrome.storage.local.get(['token'])

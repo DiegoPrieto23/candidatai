@@ -117,7 +117,10 @@ def check_soffice(configured: Path | None) -> CheckResult:
     if configured is not None:
         detail = f"SOFFICE_PATH apunta a {configured}, que no existe"
     else:
-        detail = "no encontrado; instálalo o define SOFFICE_PATH (necesario para los PDF)"
+        detail = (
+            "no encontrado; instálalo o define SOFFICE_PATH para usar las plantillas de Word "
+            "(sin él, los PDF salen con la plantilla HTML de reserva)"
+        )
     return CheckResult(name=name, status=CheckStatus.WARN, detail=detail)
 
 
@@ -165,7 +168,8 @@ def check_pdf_conversion() -> CheckResult:
         return CheckResult(
             name=name,
             status=CheckStatus.WARN,
-            detail="sin LibreOffice ni Word: no se pueden generar los PDF de los CVs",
+            detail="sin LibreOffice ni Word: las plantillas de Word no sacan PDF y se usa la "
+            f"HTML de reserva ({get_policies().cv.html_fallback_template}), con Chromium",
         )
     fallback = get_policies().cv.fallback_template
     try:
@@ -466,7 +470,8 @@ def check_capture(settings: Settings) -> CheckResult:
         return CheckResult(
             name=name,
             status=CheckStatus.OK,
-            detail="sin configurar (opcional): en la UI, «Dónde buscar → Extensión» te guía",
+            detail="sin configurar (opcional): en la UI, «Dónde buscar → Botón del navegador» "
+            "te guía",
         )
     return CheckResult(
         name=name,

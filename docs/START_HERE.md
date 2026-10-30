@@ -222,7 +222,9 @@ Every page and what you can do in it: [`FEATURES.md`](FEATURES.md).
 on your computer (`cai paths` tells you which). What does leave is what your agent reads (the
 postings and your profile, without your email, phone or salary minimum), and it goes to the company
 behind your agent's model, unless you use a local model. The app also reads public job pages and
-the APIs of the job boards you set up.
+the APIs of the job boards you set up. And in **Where to search**, your browser fetches each job
+board's and company's icon from its website: that site sees a visit from your connection, with
+nothing of yours.
 
 **Does it send applications by itself?** No. It fills in forms and stops; sending takes your click,
 one application at a time. Messages and emails are drafts that you copy and send.

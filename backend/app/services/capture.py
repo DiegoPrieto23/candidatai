@@ -12,8 +12,9 @@ seleccionado) a `POST /capture`. Aquí:
 Todo lo capturado es contenido no confiable: pasa por la detección de riesgo, también el HTML del
 bloque de la descripción (texto oculto).
 
-El token se crea al pulsar «Conectar» en «Dónde buscar → Extensión», que se lo pasa a la extensión
-sin enseñarlo, o con `cai capture token`. Solo se guarda su sha256 en `data/capture_token`.
+El token se crea al pulsar «Conectar» en «Dónde buscar → Botón del navegador», que se lo pasa a la
+extensión sin enseñarlo, o con `cai capture token`. Solo se guarda su sha256 en
+`data/capture_token`.
 """
 
 import hashlib
@@ -113,8 +114,8 @@ def check_token(settings: Settings, token: str | None) -> bool:
     """`True` si el token es el vigente. Lanza `CaptureNotConfiguredError` si no hay ninguno."""
     if not token_configured(settings):
         raise CaptureNotConfiguredError(
-            "La extensión no está conectada: en CandidatAI, «Dónde buscar → Extensión», pulsa "
-            "«Conectar»."
+            "La extensión no está conectada: en CandidatAI, «Dónde buscar → Botón del navegador», "
+            "pulsa «Conectar»."
         )
     stored = settings.capture_token_path.read_text(encoding="utf-8").strip()
     return bool(token) and hmac.compare_digest(_digest(token or ""), stored)

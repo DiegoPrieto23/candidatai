@@ -50,7 +50,9 @@ cover_letter:
 # Respuestas de screening de la primera oferta (una espera un dato de la candidata).
 application_answers:
   - question: ¿Cuántos años de experiencia tienes con Python?
-    answer: Más de tres años en proyectos de datos, sobre todo pipelines ETL sobre Snowflake.
+    answer: >-
+      Más de tres años en proyectos de datos con Python, con pipelines ETL sobre Snowflake desde
+      2024.
     evidence: [exp-norteconsulting/a1, exp-datagal/a2]
     needs_user_input: false
   - question: ¿Has trabajado con modelado dimensional?

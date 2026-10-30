@@ -46,8 +46,8 @@ DEMO_CONTENT: dict[str, Any] = {
     "language": "es",
     "subtitle": "Data Engineer · Python · SQL · Snowflake",
     "summary": (
-        "Data Engineer con tres años construyendo pipelines ETL y modelos analíticos sobre "
-        "Snowflake para clientes de retail y banca."
+        "Data Engineer con más de tres años construyendo pipelines ETL y, desde 2024, modelos "
+        "analíticos sobre Snowflake para clientes de retail y banca."
     ),
     "experience": [
         {
