@@ -88,6 +88,28 @@ def test_backdated_event_is_placed_in_order(session: Session, make_job: MakeJob)
         record(session, job.id, "discarded", "user", occurred_at=T0 + timedelta(minutes=30))
 
 
+def test_a_step_in_the_same_minute_goes_after_the_last_event(
+    session: Session, make_job: MakeJob
+) -> None:
+    """La UI pide la hora sin segundos: «Me han respondido» a las 10:00, registrado segundos
+    después del envío de las 10:00:40, es ahora mismo y va detrás (antes se rechazaba)."""
+    job = make_job()
+    minute = T0.replace(second=0, microsecond=0)
+    record(session, job.id, "found", "system", occurred_at=minute + timedelta(seconds=30))
+    record(session, job.id, "extracted", "agent", occurred_at=minute + timedelta(seconds=35))
+    sent = record(
+        session, job.id, "applied_manually", "user", occurred_at=minute + timedelta(seconds=40)
+    )
+
+    reply = record(session, job.id, "reply_received", "user", occurred_at=minute)
+    assert reply.occurred_at == sent.occurred_at
+    assert events.current_stage(session, job.id) == Stage.IN_PROCESS
+
+    # Con segundos, o de un minuto anterior, la hora es la que dices: si rompe el orden, se rechaza.
+    with pytest.raises(InvalidTransitionError):
+        record(session, job.id, "approved", "user", occurred_at=minute - timedelta(minutes=1))
+
+
 # Guiones de eventos (tipo, payload) que recorren el catálogo.
 SCRIPTS: list[list[tuple[str, dict[str, object] | None]]] = [
     [("found", None), ("duplicate_detected", {"duplicate_of": 1})],

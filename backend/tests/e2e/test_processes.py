@@ -26,7 +26,6 @@ from tests.e2e.flows import (
     projected_stage,
     record_event,
     save_verified_cv,
-    shift_job,
     stage_badge,
     timeline,
 )
@@ -63,16 +62,8 @@ def _move(page: Page, button: Locator, event: str) -> None:
     expect(dialog).to_be_hidden()
 
 
-def _a_minute_later(server: AppServer, job_id: int) -> None:
-    """El diálogo de mover propone «ahora» en minutos: lo registrado en el mismo minuto, con sus
-    segundos, quedaría después. Se atrasa la oferta un par de minutos, como si lo anterior hubiera
-    pasado antes (el fallo de fondo lo fija `test_a_step_in_the_same_minute_as_the_last_event`)."""
-    shift_job(server, job_id, minutes=2)
-
-
 def _status_step(page: Page, server: AppServer, job_id: int, step: str) -> None:
     """Registra un paso desde «¿Qué ha pasado con esta candidatura?» de la ficha."""
-    _a_minute_later(server, job_id)
     panel = job_tab(page, job_id, "process")
     status = panel.get_by_role("region", name=t("status.label"))
     _move(page, status.get_by_role("button", name=t(f"status.steps.{step}")), step)
@@ -395,7 +386,6 @@ def test_a_received_offer_is_noted_compared_and_closes_the_process(
     assert shown["base_salary"] is None and shown["variable"] is None
     assert not any("floor" in key or "minimum" in key for key in shown)
 
-    _a_minute_later(server, job_id)
     # En Procesos, al lado de la de la demo. Ninguna cifra que no hayas puesto tú o que no salga
     # de restar: la app no propone ninguna.
     page.goto("/procesos")
@@ -437,11 +427,6 @@ def test_a_received_offer_is_noted_compared_and_closes_the_process(
     )
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="«Cuándo pasó» propone la hora sin segundos: un paso registrado en el mismo minuto que "
-    "el último evento queda antes que él y la app lo rechaza",
-)
 def test_a_step_in_the_same_minute_as_the_last_event(page: Page, fresh_demo_app: AppServer) -> None:
     """Pegas una oferta a la que ya te presentaste, la marcas enviada y enseguida te responden (o
     anotas la respuesta que ya tenías): todo en el mismo minuto."""
@@ -674,7 +659,6 @@ def test_the_stage_shown_follows_the_projection_from_new_to_accepted(
     check(job_id, "cv_ready")
 
     # Enviada por tu cuenta, desde Procesos.
-    _a_minute_later(server, job_id)
     page.goto("/procesos")
     column = page.get_by_role("region", name=_stage_label("cv_ready"), exact=True)
     card = column.locator("li").filter(has_text=COMPANY)
@@ -700,7 +684,6 @@ def test_the_stage_shown_follows_the_projection_from_new_to_accepted(
 
     # En «En proceso», la oferta se anota en su bloque: «¿Qué ha pasado?» solo ofrece lo que
     # cambia de etapa.
-    _a_minute_later(server, job_id)
     _note_offer(page, job_id, base="40000", variable="0", benefits="Formación")
     check(job_id, "in_process")
     _status_step(page, server, job_id, "accepted")

@@ -7,7 +7,7 @@ import pytest
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models import Event, Job, JobExtraction, Milestone
+from app.models import Event, Job, JobExtraction, Milestone, Reply
 from app.services import calendar_ics, events, process, tracking
 from app.services.pipeline import InvalidTransitionError, Stage
 
@@ -243,6 +243,38 @@ def test_followups_due_from_last_followup(session: Session, job_at) -> None:
     custom = tracking.list_followups_due(session, days_without_reply=3, now=NOW)
     assert [f.job_id for f in custom.followups] == [old.id, chased.id, recent.id]
     assert custom.followups[1].last_followup_at == _at(-4)
+
+
+def test_no_followup_when_the_company_already_replied(session: Session, job_at) -> None:
+    """Un correo de la empresa por revisar (un rechazo, una entrevista…) quita el aviso: sería
+    pedirle noticias a quien ya te las ha dado. Ignorado o aceptado, vuelve a contar el plazo."""
+    rejected = job_at(Stage.APPLIED, applied_days_ago=15)
+    unread = job_at(Stage.APPLIED, applied_days_ago=15)
+    waiting = job_at(Stage.APPLIED, applied_days_ago=15)
+    ignored = job_at(Stage.APPLIED, applied_days_ago=15)
+    for n, (status, job_id, candidates) in enumerate(
+        [
+            ("proposed", rejected.id, [rejected.id]),
+            ("new", None, [unread.id]),
+            ("ignored", ignored.id, [ignored.id]),
+        ]
+    ):
+        session.add(
+            Reply(
+                message_id=f"<{n}@empresa.example>",
+                origin="local",
+                sender="rrhh@empresa.example",
+                status=status,
+                job_id=job_id,
+                candidates=[{"job_id": c, "reason": "sender_domain"} for c in candidates],
+            )
+        )
+    session.flush()
+
+    due = tracking.list_followups_due(session, now=NOW)
+    assert sorted(f.job_id for f in due.followups) == sorted([waiting.id, ignored.id])
+    view = process.get_process(session, rejected.id, now=NOW)
+    assert view.followup is not None and not view.followup.due
 
 
 # --- Próximos -------------------------------------------------------------------------------

@@ -81,12 +81,12 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | `save_cv_verification` | `cai cv save-verification DOC --file F --json` | 08 | `document_id, verification: CvVerification` | `ok`, `passed`, `stage` y `note` (por qué no pasa a `cv_ready`, si no pasa) | `cv_verified` / `cv_rejected` |
 | `save_cover_letter_brief` | `cai letter brief ID --file F --json` | 08c | `job_id, instructions?, max_words?` (50-600); por CLI, `F` = `{"instructions": …, "max_words": …}`. Sustituye al anterior | `ok`, `job_id`, `brief` y `max_words` resuelto | — |
 | `get_application_answers` | `cai applications answers ID --json` | — | `job_id` | `job_id` y `answers` (`null` si no hay): las últimas respuestas de screening con `document_id`, `language`, `edited_by_user`, `answers` y `evidence` resueltas | — |
-| `get_cover_letter` | `cai letter show (ID \| --document DOC) --json` | 08c | `job_id` (su última carta) o `document_id` | `job_id`, `stage`, `brief` (de la oferta), `preferences` (`preferences.cover_letter`), `max_words` resuelto y `letter` (`null` si no hay): `content` (`CoverLetterContent`), `evidence` resueltas, `word_count`, `instructions_used`, `verification`, `edited_by_user` y `renders` | — |
+| `get_cover_letter` | `cai letter show (ID \| --document DOC) --json` | 08c | `job_id` (su última carta) o `document_id` | `job_id`, `company` y `job_title` (a quién va), `stage`, `brief` (de la oferta), `preferences` (`preferences.cover_letter`), `max_words` resuelto y `letter` (`null` si no hay): `content` (`CoverLetterContent`), `evidence` resueltas, `word_count`, `instructions_used`, `verification`, `edited_by_user` y `renders` | — |
 | `save_cover_letter` | `cai letter save ID --file F --json` | 08c | `job_id, content: CoverLetterContent, render_options?: CoverLetterRenderOptions`; por CLI, `F` = `{"content": …, "render_options": …}` | `document_id`, `word_count` + primer render (`LetterRenderResult`) | `cover_letter_generated` |
 | `render_cover_letter` | `cai letter render DOC [--file F] --json` | 08c | `document_id, options?: CoverLetterRenderOptions` | `LetterRenderResult`: como `RenderResult` sin cobertura de keywords, con `options` de la carta (`base_template_id`, `cv_render_id`, `letter_fallback`…) | — |
 | `save_cover_letter_verification` | `cai letter save-verification DOC --file F --json` | 08c | `document_id, verification: CvVerification` | `ok`, `passed` | `cover_letter_verified` |
 | `save_application_answers` | `cai applications save-answers ID --file F --json` | 10 | `job_id, answers: ApplicationAnswers`; por CLI, `F` = `{"answers": [...]}`. Solo en `approved` o `cv_ready` (si no, `invalid_transition`) | `ok`, `job_id`, `document_id`, `needs_user_input` (cuántas esperan un dato del usuario) | `application_prepared` |
-| `list_followups_due` | `cai followups [--days N] --json` | 10 (15) | `days_without_reply?` (por defecto, `followups.days_without_reply` = 10) | `days_without_reply` usado, `max_followups` y `followups`: `job_id`, `title`, `company`, `url`, `channel`, `applied_at`, `last_followup_at`, `days_waiting`, `followups_sent`, `contacts` (nombres, sin datos de contacto) y `draft_id`; la que más espera, primero, sin las que ya tienen `max_followups`. `thank_you_days` y `thanks_due`: entrevistas hechas en esos días sin agradecimiento (`milestone_id`, `interview_title`, `interview_at`, `contacts`, `draft_id`) | — |
+| `list_followups_due` | `cai followups [--days N] --json` | 10 (15) | `days_without_reply?` (por defecto, `followups.days_without_reply` = 10) | `days_without_reply` usado, `max_followups` y `followups`: `job_id`, `title`, `company`, `url`, `channel`, `applied_at`, `last_followup_at`, `days_waiting`, `followups_sent`, `contacts` (nombres, sin datos de contacto) y `draft_id`; la que más espera, primero, sin las que ya tienen `max_followups` ni las que tienen un correo de la empresa por revisar. `thank_you_days` y `thanks_due`: entrevistas hechas en esos días sin agradecimiento (`milestone_id`, `interview_title`, `interview_at`, `contacts`, `draft_id`) | — |
 | `list_upcoming` | `cai upcoming [--days N] --json` | 10 | `days=7` (1-365) | `days` e `items`: `kind` (`interview`, `test`, `deadline`, `other`, `application_deadline`), `job_id`, `job_title`, `company`, `stage`, `milestone_id` (`null` en el plazo de la oferta), `title`, `starts_at`, `ends_at`, `all_day`, `location`; por fecha | — |
 | `get_funnel_stats` | `cai stats funnel [--since AAAA-MM-DD] --json` | 10 | `since?` (fecha; ofertas vistas desde las 00:00 de ese día en Europe/Madrid) | `FunnelStats` (ver §Analítica) | — |
 | `get_calibration` | `cai stats calibration [--since AAAA-MM-DD] [--min-cases N] --json` | 20 | `since?` (fecha; candidaturas **enviadas** desde las 00:00 de ese día en Europe/Madrid), `min_cases=10` (1-1000) | `Calibration` (ver §Calibración) | — |
@@ -234,8 +234,10 @@ las más recientes primero.
 
 - `list_followups_due`: ofertas en `applied` (sin respuesta) con N días o más desde el envío o el
   último `followup_sent`. Lo que pasa a `in_process` deja de contar, y también las que ya llevan
-  `followups.max_followups` (2) seguimientos. Desde la fase 15 trae `thanks_due` (entrevistas
-  hechas en los últimos `followups.thank_you_days` días sin agradecimiento enviado). Lo usan
+  `followups.max_followups` (2) seguimientos y las que tienen un correo de la empresa por revisar
+  en «Respuestas» (nuevo o con propuesta): ya contestó, aunque aún no lo hayas aceptado. Desde la
+  fase 15 trae `thanks_due` (entrevistas hechas en los últimos `followups.thank_you_days` días sin
+  agradecimiento enviado). Lo usan
   `daily-summary` y `draft-follow-up`; registrar que se envió (`followup_sent`) es cosa del
   usuario.
 - `save_message_draft` (fase 15): guarda un borrador de seguimiento (`followup`) o de
@@ -684,6 +686,7 @@ el agente (los roles: solo los campos de `field`, como mucho dos veces); la app 
 | `not_found` | No existe la oferta, aún no tiene extracción, no hay perfil importado, no existe el CV o la plantilla |
 | `invalid_transition` | El evento no es válido en la etapa actual de la oferta |
 | `invalid_request` | El servicio rechaza la petición (URL de LinkedIn, evento reservado…) |
+| `page_unavailable` | `add_job_from_url` no pudo abrir la página (sin red, login, bloqueo o JavaScript): da de alta su texto con `add_job_from_text` |
 | `not_allowed` | La búsqueda con navegador no está permitida ahí: activar LinkedIn desde el agente, o anotar ofertas o recorridos de una plataforma desactivada (403 en la API) |
 | `database_not_ready` | Falta `cai db upgrade` |
 | `pdf_unavailable` | No hay LibreOffice ni Word para convertir a PDF (`cai doctor`) |
