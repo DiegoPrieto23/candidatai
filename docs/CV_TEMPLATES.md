@@ -136,7 +136,12 @@ el diseño.
   funcionar. Usa el skill `import-cv-template`, que marca la plantilla con
   `cai templates build-docx`: el código fusiona los fragmentos de cada párrafo e inserta cada
   marcador de una pieza.
-- Genera DOCX y PDF (con LibreOffice o Word).
+- Genera DOCX y PDF (con LibreOffice o Word). Sin ninguno de los dos, una plantilla docx que
+  eligieron las reglas o el valor por defecto se cambia por la HTML de reserva, con el aviso
+  `docx_converter_missing`, en lugar de fallar: `cv.html_fallback_template` para el CV y
+  `cover_letter.html_fallback_template` para la carta (las dos, `moderna-2col`, en
+  `config/policies.yaml`). Si la elegiste tú, falla con `pdf_unavailable` y no se guarda nada. Si
+  la oferta es de un ATS, sale además `not_ats_friendly`: la de reserva tiene dos columnas.
 
 ### Importar desde Word (fase 08.3)
 

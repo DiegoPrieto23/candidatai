@@ -4021,6 +4021,10 @@ export interface components {
         CoverLetterInfo: {
             /** Job Id */
             job_id: number;
+            /** Company */
+            company: string;
+            /** Job Title */
+            job_title: string;
             stage: components["schemas"]["Stage"];
             brief: components["schemas"]["BriefView"] | null;
             preferences: components["schemas"]["CoverLetterPreferences"] | null;

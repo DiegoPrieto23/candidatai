@@ -13,6 +13,7 @@ Solo en ofertas `approved` o `cv_ready`. Los ficheros van con los del CV, en
 """
 
 import re
+import shutil
 from datetime import date, datetime
 from typing import Any, Literal
 from zoneinfo import ZoneInfo
@@ -22,7 +23,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.policies import get_policies
-from app.models import CoverLetterBrief, Document, DocumentRender
+from app.models import Company, CoverLetterBrief, Document, DocumentRender, Job
 from app.models.base import utcnow
 from app.schemas.cover_letter import (
     EVIDENCE_EXTRACTION,
@@ -36,7 +37,7 @@ from app.schemas.llm_io import JobExtraction
 from app.schemas.profile import CandidateProfile, CoverLetterPreferences
 from app.services import events
 from app.services import profile as profile_service
-from app.services.documents import checks, context, layout, options, pdf, photo, service, templates
+from app.services.documents import checks, context, options, pdf, photo, service, templates
 from app.services.documents.checks import ContentIssue
 from app.services.documents.options import (
     InvalidRenderOptionsError,
@@ -150,6 +151,9 @@ class CoverLetterInfo(BaseModel):
     """Lo que devuelve `get_cover_letter`: indicaciones vigentes y la carta, si la hay."""
 
     job_id: int
+    # A quién va la carta: para el saludo y para que el rol `verifier` pueda comprobarlo.
+    company: str
+    job_title: str
     stage: Stage
     brief: BriefView | None
     preferences: CoverLetterPreferences | None
@@ -431,12 +435,15 @@ def resolve_letter(
     opts: CoverLetterRenderOptions,
     offer: OfferContext,
     photo_available: bool,
+    docx_converter: bool = True,
 ) -> LetterResolvedOptions:
     """Opciones de la carta: a juego con el render seleccionado del CV salvo que se pidan otras.
 
     1. plantilla base: la opción > la del render seleccionado del CV > las reglas del perfil;
     2. si la base no tiene diseño de carta: `carta-simple` y aviso `letter_fallback`;
-    3. color y foto (`auto`): los del CV; tamaño de página: el del CV o el de la plantilla.
+    3. sin LibreOffice ni Word (`docx_converter=False`), un diseño de Word que nadie eligió a mano
+       se cambia por el HTML de reserva, con aviso `docx_converter_missing`;
+    4. color y foto (`auto`): los del CV; tamaño de página: el del CV o el de la plantilla.
     """
     warnings: list[RenderWarning] = []
     cv_render = _selected_cv_render(session, job_id)
@@ -468,6 +475,8 @@ def resolve_letter(
                 f"«{template.id}» con su color.",
             )
         )
+    if not docx_converter and opts.template_id is None:
+        template = options.without_docx_converter(template, "letter", warnings)
     meta = template.meta
 
     accent_option = meta.options.accent_color
@@ -560,76 +569,131 @@ def _subtitle(session: Session, job_id: int, profile: CandidateProfile) -> str:
     return profile.headline
 
 
+class _PreparedLetter(BaseModel):
+    resolved: LetterResolvedOptions
+    template_id: str
+    template_hash: str
+    files: service.PreparedFiles
+
+
+def _prepare_letter(
+    session: Session,
+    job: Job,
+    content: CoverLetterContent,
+    profile: CandidateProfile,
+    render_options: CoverLetterRenderOptions,
+) -> _PreparedLetter:
+    """Elige el diseño y convierte, sin escribir en la base (como el CV)."""
+    extraction = service._extraction(session, job.id)
+    offer = options.offer_context(job.url, job.location_raw, extraction, content.language)
+    photo_source = photo.find_photo(profile)
+    subtitle = _subtitle(session, job.id, profile)
+
+    def attempt(docx_converter: bool) -> _PreparedLetter:
+        resolved = resolve_letter(
+            session,
+            job.id,
+            profile,
+            render_options,
+            offer,
+            photo_available=photo_source is not None,
+            docx_converter=docx_converter,
+        )
+        template = templates.get(resolved.template_id, kind="letter")
+        assert template.letter_file is not None
+        ctx = context.build_letter_context(
+            content, profile, subtitle, resolved.accent_color, _today()
+        )
+        files = service.prepare_files(
+            template,
+            ctx,
+            service.file_stem(profile.personal.name, FILE_PREFIX),
+            resolved.page_size,
+            service.prepared_photo(template, resolved.photo, photo_source),
+            file=template.letter_file,
+        )
+        return _PreparedLetter(
+            resolved=resolved,
+            template_id=template.id,
+            template_hash=template.file_hash("letter"),
+            files=files,
+        )
+
+    try:
+        return attempt(docx_converter=True)
+    except pdf.PdfConverterUnavailableError:
+        if render_options.template_id is not None:
+            raise
+        return attempt(docx_converter=False)
+
+
+def _store_render(
+    session: Session, doc: Document, job: Job, prepared: _PreparedLetter
+) -> LetterRenderResult:
+    resolved, files = prepared.resolved, prepared.files
+    try:
+        template = templates.get(prepared.template_id, kind="letter")
+        row = DocumentRender(
+            document_id=doc.id,
+            template_id=prepared.template_id,
+            template_hash=prepared.template_hash,
+            options=resolved.model_dump(mode="json"),
+            pages=0,
+            keyword_coverage={},
+            warnings=[],
+            selected=False,
+        )
+        session.add(row)
+        session.flush()
+    except BaseException:
+        service.discard(files)
+        raise
+
+    out_dir = service.render_dir(job.id, doc.id, row.id)
+    try:
+        docx_file, pdf_file = service.place_files(files, out_dir)
+        warnings = list(resolved.warnings)
+        if files.pages > LETTER_MAX_PAGES:
+            warnings.append(
+                RenderWarning(
+                    code="too_long",
+                    message=f"La carta ocupa {files.pages} páginas y el máximo es una. Recórtala.",
+                )
+            )
+        missing = pdf.missing_fonts(template.meta.fonts, files.fonts)
+        if missing:
+            warnings.append(
+                RenderWarning(
+                    code="font_substituted",
+                    message="Falta la fuente "
+                    + ", ".join(missing)
+                    + " y el PDF usa otra: instálala para que se vea como la plantilla.",
+                )
+            )
+        # Fase 25.5: las mismas comprobaciones de maquetación que el CV (sin títulos de sección).
+        warnings += files.layout_warnings
+        service.store_files(session, row, docx_file, pdf_file, files.pages, warnings)
+    except BaseException:
+        service.discard(files)
+        shutil.rmtree(out_dir, ignore_errors=True)
+        raise
+    return _to_result(row, job.id)
+
+
 def render_cover_letter(
     session: Session, document_id: int, render_options: CoverLetterRenderOptions
 ) -> LetterRenderResult:
     """Renderiza una carta. No registra evento: un render no cambia nada del proceso.
 
-    Si falla, borra los ficheros del render y relanza (como el render del CV).
+    Convierte antes de escribir nada en la base. Si falla, borra los ficheros del render y
+    relanza (como el render del CV).
     """
     doc = _letter_doc(session, document_id)
     _require_stage(session, doc.job_id)
     job = service._job(session, doc.job_id)
-    content = _content(doc)
     profile = profile_service.get_version(session, doc.profile_version_id).profile
-    extraction = service._extraction(session, job.id)
-
-    offer = options.offer_context(job.url, job.location_raw, extraction, content.language)
-    photo_source = photo.find_photo(profile)
-    resolved = resolve_letter(
-        session, job.id, profile, render_options, offer, photo_available=photo_source is not None
-    )
-    template = templates.get(resolved.template_id, kind="letter")
-    assert template.letter_file is not None
-
-    row = DocumentRender(
-        document_id=doc.id,
-        template_id=template.id,
-        template_hash=template.file_hash("letter"),
-        options=resolved.model_dump(mode="json"),
-        pages=0,
-        keyword_coverage={},
-        warnings=[],
-        selected=False,
-    )
-    session.add(row)
-    session.flush()
-
-    ctx = context.build_letter_context(
-        content, profile, _subtitle(session, job.id, profile), resolved.accent_color, _today()
-    )
-    docx_file, pdf_file, info = service.write_files(
-        template,
-        ctx,
-        service.render_dir(job.id, doc.id, row.id),
-        service.file_stem(profile.personal.name, FILE_PREFIX),
-        resolved.page_size,
-        service.prepared_photo(template, resolved.photo, photo_source),
-        file=template.letter_file,
-    )
-
-    warnings = list(resolved.warnings)
-    if info.pages > LETTER_MAX_PAGES:
-        warnings.append(
-            RenderWarning(
-                code="too_long",
-                message=f"La carta ocupa {info.pages} páginas y el máximo es una. Recórtala.",
-            )
-        )
-    missing = pdf.missing_fonts(template.meta.fonts, info.fonts)
-    if missing:
-        warnings.append(
-            RenderWarning(
-                code="font_substituted",
-                message="Falta la fuente "
-                + ", ".join(missing)
-                + " y el PDF usa otra: instálala para que se vea como la plantilla.",
-            )
-        )
-    # Fase 25.5: las mismas comprobaciones de maquetación que el CV (sin títulos de sección).
-    warnings += layout.analyze(pdf_file, layout.expected_from_context(ctx))
-    service.store_files(session, row, docx_file, pdf_file, info.pages, warnings)
-    return _to_result(row, job.id)
+    prepared = _prepare_letter(session, job, _content(doc), profile, render_options)
+    return _store_render(session, doc, job, prepared)
 
 
 def select_render(session: Session, render_id: int) -> LetterRenderResult:
@@ -647,14 +711,10 @@ def select_render(session: Session, render_id: int) -> LetterRenderResult:
 # --- Contenido ------------------------------------------------------------------------------
 
 
-def _store(
-    session: Session,
-    job_id: int,
-    content: CoverLetterContent,
-    actor: Actor,
-    agent_name: str | None,
-    edited_by_user: bool,
-) -> Document:
+def _check(
+    session: Session, job_id: int, content: CoverLetterContent, actor: Actor
+) -> tuple[profile_service.StoredProfile, InstructionsUsed]:
+    """Las comprobaciones del código sobre la carta, con las indicaciones vigentes."""
     stored = profile_service.current(session)
     brief = _brief(session, job_id)
     prefs = _preferences(stored.profile)
@@ -669,29 +729,51 @@ def _store(
     )
     if issues:
         raise CoverLetterContentError(issues)
+    return stored, used
 
-    doc = Document(
-        job_id=job_id,
-        profile_version_id=stored.profile_version_id,
-        kind=LETTER_KIND,
-        language=content.language,
-        content={
-            "letter": content.model_dump(mode="json"),
-            "instructions": used.model_dump(mode="json"),
-        },
-        edited_by_user=edited_by_user,
+
+def _save(
+    session: Session,
+    job_id: int,
+    content: CoverLetterContent,
+    render_options: CoverLetterRenderOptions,
+    actor: Actor,
+    agent_name: str | None,
+    edited_by_user: bool,
+) -> SaveLetterResult:
+    """Valida, convierte (sin escribir en la base) y guarda el documento con su primer render."""
+    stored, used = _check(session, job_id, content, actor)
+    job = service._job(session, job_id)
+    prepared = _prepare_letter(session, job, content, stored.profile, render_options)
+    try:
+        doc = Document(
+            job_id=job_id,
+            profile_version_id=stored.profile_version_id,
+            kind=LETTER_KIND,
+            language=content.language,
+            content={
+                "letter": content.model_dump(mode="json"),
+                "instructions": used.model_dump(mode="json"),
+            },
+            edited_by_user=edited_by_user,
+        )
+        session.add(doc)
+        session.flush()
+        events.record(
+            session,
+            job_id,
+            EventType.COVER_LETTER_GENERATED,
+            actor,
+            payload={"document_id": doc.id, "edited_by_user": edited_by_user},
+            agent_name=agent_name,
+        )
+    except BaseException:
+        service.discard(prepared.files)
+        raise
+    render = _store_render(session, doc, job, prepared)
+    return SaveLetterResult(
+        ok=True, job_id=job_id, document_id=doc.id, word_count=word_count(content), render=render
     )
-    session.add(doc)
-    session.flush()
-    events.record(
-        session,
-        job_id,
-        EventType.COVER_LETTER_GENERATED,
-        actor,
-        payload={"document_id": doc.id, "edited_by_user": edited_by_user},
-        agent_name=agent_name,
-    )
-    return doc
 
 
 def save_cover_letter(
@@ -703,10 +785,14 @@ def save_cover_letter(
 ) -> SaveLetterResult:
     """Valida y guarda la carta del agente con las indicaciones vigentes y hace su primer render."""
     _require_stage(session, job_id)
-    doc = _store(session, job_id, content, Actor.AGENT, agent_name, edited_by_user=False)
-    render = render_cover_letter(session, doc.id, render_options or CoverLetterRenderOptions())
-    return SaveLetterResult(
-        ok=True, job_id=job_id, document_id=doc.id, word_count=word_count(content), render=render
+    return _save(
+        session,
+        job_id,
+        content,
+        render_options or CoverLetterRenderOptions(),
+        Actor.AGENT,
+        agent_name,
+        edited_by_user=False,
     )
 
 
@@ -748,11 +834,7 @@ def save_user_letter(
                 accent_color=prev.accent_color,
                 page_size=prev.page_size,
             )
-    doc = _store(session, job_id, content, Actor.USER, None, edited_by_user=True)
-    render = render_cover_letter(session, doc.id, render_options)
-    return SaveLetterResult(
-        ok=True, job_id=job_id, document_id=doc.id, word_count=word_count(content), render=render
-    )
+    return _save(session, job_id, content, render_options, Actor.USER, None, edited_by_user=True)
 
 
 def _view(session: Session, doc: Document) -> CoverLetterView:
@@ -796,8 +878,12 @@ def get_cover_letter(
     except profile_service.ProfileNotFoundError:
         prefs = None
     brief = _brief(session, job_id)
+    job = service._job(session, job_id)
+    company = session.get(Company, job.company_id)
     return CoverLetterInfo(
         job_id=job_id,
+        company=company.name if company else "",
+        job_title=job.title,
         stage=events.current_stage(session, job_id),
         brief=brief,
         preferences=prefs,

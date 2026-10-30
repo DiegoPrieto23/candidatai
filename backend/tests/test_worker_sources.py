@@ -229,3 +229,37 @@ def test_orphan_running_tasks_go_back_to_the_queue(db: None) -> None:
     with session_scope() as session:
         assert tasks.requeue_running(session) == 1
     assert _queued() == [("rescore_all", {})]
+
+
+def test_a_brief_database_lock_does_not_bring_the_worker_down() -> None:
+    """Un bloqueo pasajero al arrancar se reintenta (antes, el worker caía y `cai start` paraba la
+    API); si no es un bloqueo, o dura más que los reintentos, el error sigue saliendo."""
+    from sqlalchemy.exc import OperationalError
+
+    locked = OperationalError("INSERT …", {}, Exception("database is locked"))
+    calls: list[int] = []
+    waits: list[float] = []
+    messages: list[str] = []
+
+    def flaky() -> str:
+        calls.append(1)
+        if len(calls) < worker.LOCK_RETRIES:
+            raise locked
+        return "hecho"
+
+    assert worker.retry_if_locked(flaky, messages.append, waits.append) == "hecho"
+    assert len(waits) == worker.LOCK_RETRIES - 1 and "ocupada" in messages[0]
+
+    def always_locked() -> None:
+        raise locked
+
+    with pytest.raises(OperationalError):
+        worker.retry_if_locked(always_locked, messages.append, waits.append)
+
+    def other_error() -> None:
+        raise OperationalError("SELECT …", {}, Exception("no such table: jobs"))
+
+    waits.clear()
+    with pytest.raises(OperationalError):
+        worker.retry_if_locked(other_error, messages.append, waits.append)
+    assert waits == []

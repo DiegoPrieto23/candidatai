@@ -39,6 +39,7 @@ from typing import Any
 from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
@@ -364,6 +365,60 @@ def describe(outcome: TaskOutcome) -> str:
     return f"Tarea {outcome.task_id} ({outcome.kind}) hecha"
 
 
+LOCK_RETRIES = 3
+LOCK_RETRY_WAIT_SECONDS = 5.0
+
+
+def retry_if_locked[T](
+    action: Callable[[], T],
+    on_message: Callable[[str], None],
+    sleep: Callable[[float], None] = time.sleep,
+) -> T:
+    """Reintenta `action` si la base está bloqueada un momento (otra escritura larga, p. ej. un
+    render antiguo o un `cai` del agente). Así el arranque del worker no cae por un bloqueo
+    pasajero y no se lleva `cai start` por delante. Cada intento ya espera el `busy_timeout` de
+    SQLite (90 s): en el peor caso, unos 4,5 min antes de rendirse."""
+    for attempt in range(1, LOCK_RETRIES + 1):
+        try:
+            return action()
+        except OperationalError as exc:
+            if "locked" not in str(exc).lower() or attempt == LOCK_RETRIES:
+                raise
+            on_message(
+                f"La base está ocupada; se reintenta en {LOCK_RETRY_WAIT_SECONDS:.0f} s "
+                f"({attempt}/{LOCK_RETRIES - 1})."
+            )
+            sleep(LOCK_RETRY_WAIT_SECONDS)
+    raise AssertionError("inalcanzable")
+
+
+def _startup_queue(on_message: Callable[[str], None]) -> tuple[bool, list[int], int, bool, bool]:
+    """Lo que el worker deja en cola al arrancar. Devuelve qué contar en el log."""
+    with session_scope() as session:
+        if interrupted := tasks.fail_interrupted(session):
+            from app.services.applier import service as applier
+
+            ids = [int(t.payload["attempt_id"]) for t in interrupted if "attempt_id" in t.payload]
+            applier.recover_interrupted(session, ids)
+            on_message(
+                f"Tareas del navegador que quedaron a medias (no se repiten): {len(interrupted)}."
+            )
+        if stuck := tasks.requeue_running(session):
+            on_message(f"Tareas que quedaron a medias, de vuelta a la cola: {stuck}.")
+        queued = enqueue_due_sources(session)
+        linkedin = enqueue_linkedin_public(session)
+        email = enqueue_email_poll(session)
+        email = enqueue_replies_poll(session) or email
+        tasks.enqueue(session, "expire_summaries")
+        checks = enqueue_liveness_checks(session)
+        reinstall = matching_extra.ensure_installed(session)
+        # Ofertas cuya similitud semántica falló (sin red, o calculadas a mitad de instalarla):
+        # se reintentan al arrancar.
+        if embeddings.get_embedder() is not None and matching.has_semantic_failures(session):
+            tasks.enqueue(session, "rescore_all")
+    return reinstall, queued, checks, linkedin, email
+
+
 def run_scheduler(
     interval: float,
     on_run: Callable[[WorkerRun], None],
@@ -442,28 +497,13 @@ def run_scheduler(
 
     if broken := agent_runner.recover_interrupted():
         on_message(f"En segundo plano, quedaron a medias (no se repiten): {broken}.")
-    with session_scope() as session:
-        if interrupted := tasks.fail_interrupted(session):
-            from app.services.applier import service as applier
+    from app.services.documents.service import sweep_stale_renders
 
-            ids = [int(t.payload["attempt_id"]) for t in interrupted if "attempt_id" in t.payload]
-            applier.recover_interrupted(session, ids)
-            on_message(
-                f"Tareas del navegador que quedaron a medias (no se repiten): {len(interrupted)}."
-            )
-        if stuck := tasks.requeue_running(session):
-            on_message(f"Tareas que quedaron a medias, de vuelta a la cola: {stuck}.")
-        queued = enqueue_due_sources(session)
-        linkedin = enqueue_linkedin_public(session)
-        email = enqueue_email_poll(session)
-        email = enqueue_replies_poll(session) or email
-        tasks.enqueue(session, "expire_summaries")
-        checks = enqueue_liveness_checks(session)
-        reinstall = matching_extra.ensure_installed(session)
-        # Ofertas cuya similitud semántica falló (sin red, o calculadas a mitad de instalarla):
-        # se reintentan al arrancar.
-        if embeddings.get_embedder() is not None and matching.has_semantic_failures(session):
-            tasks.enqueue(session, "rescore_all")
+    if swept := sweep_stale_renders():
+        on_message(f"Renders de CV a medias borrados de data/tmp: {swept}.")
+    reinstall, queued, checks, linkedin, email = retry_if_locked(
+        lambda: _startup_queue(on_message), on_message
+    )
     if reinstall:
         on_message("Similitud semántica: la activaste y falta en este entorno; se reinstala.")
     if queued:

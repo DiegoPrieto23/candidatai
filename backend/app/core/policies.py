@@ -78,6 +78,8 @@ class ScoringPolicy(BaseModel):
 
 class CvPolicy(BaseModel):
     fallback_template: str
+    # Sin LibreOffice ni Word, las plantillas de Word no sacan PDF: se usa esta (HTML, Chromium).
+    html_fallback_template: str = Field(default="moderna-2col", min_length=1)
     # ATS -> dominios de sus URLs (se compara el dominio de la oferta y sus subdominios).
     ats_platforms: dict[str, list[str]]
     pdf_timeout_seconds: int = Field(gt=0)
@@ -88,6 +90,7 @@ class CoverLetterPolicy(BaseModel):
 
     max_words: int = Field(gt=0)
     fallback_template: str = Field(min_length=1)  # diseño si la plantilla del CV no tiene carta
+    html_fallback_template: str = Field(default="moderna-2col", min_length=1)  # sin LibreOffice
 
 
 class ConnectorsPolicy(BaseModel):

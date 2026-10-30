@@ -159,14 +159,49 @@ def photo_allowed_by_policy(profile: CandidateProfile, countries: list[str]) -> 
     return all(policy.by_country.get(code, policy.default) for code in countries)
 
 
+def without_docx_converter(
+    template: templates.Template, kind: Literal["cv", "letter"], warnings: list[RenderWarning]
+) -> templates.Template:
+    """Sin LibreOffice ni Word, una plantilla Word no saca PDF: se cambia por la HTML de reserva
+    (Chromium, que el instalador sí prepara) y se avisa. Solo si nadie la eligió a mano."""
+    if template.meta.engine != "docx":
+        return template
+    policies = get_policies()
+    fallback_id = (
+        policies.cv.html_fallback_template
+        if kind == "cv"
+        else policies.cover_letter.html_fallback_template
+    )
+    fallback = templates.get(fallback_id, kind=kind)
+    warnings.append(
+        RenderWarning(
+            code="docx_converter_missing",
+            message=f"«{template.meta.name}» es una plantilla de Word y no hay LibreOffice ni Word "
+            f"para pasarla a PDF: se usa «{fallback.meta.name}». Instala LibreOffice para usar "
+            "las de Word (`cai doctor` dice cómo).",
+        )
+    )
+    return fallback
+
+
 def _choose_template(
     profile: CandidateProfile,
     options: CvRenderOptions,
     offer: OfferContext,
     warnings: list[RenderWarning],
+    docx_converter: bool = True,
 ) -> tuple[templates.Template, TemplateSource, int | None]:
     if options.template_id is not None:
         return templates.get(options.template_id), "option", None
+    template, source, rule_index = _choose_automatic(profile, offer, warnings)
+    if not docx_converter:
+        template = without_docx_converter(template, "cv", warnings)
+    return template, source, rule_index
+
+
+def _choose_automatic(
+    profile: CandidateProfile, offer: OfferContext, warnings: list[RenderWarning]
+) -> tuple[templates.Template, TemplateSource, int | None]:
 
     def lookup(template_id: str, origin: str) -> templates.Template | None:
         try:
@@ -200,10 +235,16 @@ def resolve(
     options: CvRenderOptions,
     offer: OfferContext,
     photo_available: bool,
+    docx_converter: bool = True,
 ) -> ResolvedOptions:
-    """Opciones definitivas de un render. Lanza `InvalidRenderOptionsError` si no son válidas."""
+    """Opciones definitivas de un render. Lanza `InvalidRenderOptionsError` si no son válidas.
+
+    Con `docx_converter=False` (no hay LibreOffice ni Word), una plantilla de Word elegida sola
+    se cambia por la HTML de reserva, con aviso."""
     warnings: list[RenderWarning] = []
-    template, source, rule_index = _choose_template(profile, options, offer, warnings)
+    template, source, rule_index = _choose_template(
+        profile, options, offer, warnings, docx_converter
+    )
     meta = template.meta
 
     accent_option = meta.options.accent_color
