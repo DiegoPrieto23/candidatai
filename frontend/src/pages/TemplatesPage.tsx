@@ -7,6 +7,7 @@ import { MyCv } from '@/components/MyCv'
 import { ErrorState } from '@/components/States'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
+import { useTemplateText } from '@/lib/templateText'
 
 function Tag({ children, strong }: { children: ReactNode; strong?: boolean }) {
   return (
@@ -34,6 +35,7 @@ function Thumbnail({ src, alt }: { src: string; alt: string }) {
 /** Plantilla creada desde un CV: el original y cómo queda la plantilla, uno al lado del otro. */
 function OriginalAndTemplate({ template }: { template: TemplateInfo }) {
   const { t } = useTranslation('templates')
+  const text = useTemplateText()
   const recreated = template.engine === 'html' ? t('recreation') : t('template')
   return (
     <div className="grid size-full grid-cols-2 gap-px bg-border" aria-label={t('originalAndRecreation')}>
@@ -43,7 +45,7 @@ function OriginalAndTemplate({ template }: { template: TemplateInfo }) {
       ].map(({ label, src }) => (
         <figure key={label} className="relative min-w-0 bg-white">
           {src ? (
-            <Thumbnail src={src} alt={t('ofName', { label, name: template.name })} />
+            <Thumbnail src={src} alt={t('ofName', { label, name: text.name(template) })} />
           ) : (
             <span className="grid size-full place-items-center text-muted-foreground">
               <ImageIcon className="size-5" />
@@ -60,9 +62,10 @@ function OriginalAndTemplate({ template }: { template: TemplateInfo }) {
 
 function TemplateCard({ template }: { template: TemplateInfo }) {
   const { t } = useTranslation('templates')
+  const text = useTemplateText()
   const columns = t('columns', { count: template.columns })
   return (
-    <article aria-label={template.name} className="flex flex-col overflow-hidden rounded-xl border bg-card">
+    <article aria-label={text.name(template)} className="flex flex-col overflow-hidden rounded-xl border bg-card">
       <div className="aspect-[210/297] border-b bg-white">
         {template.has_source_preview ? (
           <OriginalAndTemplate template={template} />
@@ -70,7 +73,7 @@ function TemplateCard({ template }: { template: TemplateInfo }) {
           <a href={fileUrls.templatePreview(template.id)} target="_blank" rel="noopener noreferrer">
             <img
               src={fileUrls.templatePreview(template.id)}
-              alt={t('previewOf', { name: template.name })}
+              alt={t('previewOf', { name: text.name(template) })}
               loading="lazy"
               className="size-full object-cover object-top"
             />
@@ -86,10 +89,10 @@ function TemplateCard({ template }: { template: TemplateInfo }) {
       </div>
       <div className="flex flex-1 flex-col gap-3 p-4">
         <div>
-          <h2 className="font-semibold tracking-tight">{template.name}</h2>
+          <h2 className="font-semibold tracking-tight">{text.name(template)}</h2>
         </div>
         {template.description && (
-          <p className="text-sm leading-relaxed text-foreground/80">{template.description}</p>
+          <p className="text-sm leading-relaxed text-foreground/80">{text.description(template)}</p>
         )}
         <ul className="mt-auto flex flex-wrap gap-1.5" aria-label={t('features')}>
           <Tag strong={template.ats_friendly}>{template.ats_friendly ? t('ats') : t('notAts')}</Tag>

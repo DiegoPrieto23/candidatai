@@ -27,6 +27,7 @@ import {
   type Preferences,
   type ProfileData,
 } from './types'
+import { useTemplateText } from '@/lib/templateText'
 
 const prefs = (p: ProfileData): Preferences =>
   p.preferences ?? { roles: [], seniority_target: [], remote_modes: [], languages_for_work: [], cv: { photo_policy: { default: true } } }
@@ -365,6 +366,7 @@ const writeCv = (d: CvPreferences, p: ProfileData) => ({ preferences: { ...prefs
 /** Plantilla por defecto, páginas, foto por país, indicaciones y lo que no quieres que diga. */
 export function CvPreferencesBlock() {
   const { t } = useTranslation('profileEditor')
+  const text = useTemplateText()
   const templates = useTemplates()
   const block = useBlockEditor('cv', readCv, writeCv)
   const d = block.draft
@@ -373,7 +375,7 @@ export function CvPreferencesBlock() {
   const byCountry = d.photo_policy.by_country ?? {}
   const options = [
     { value: '', label: t('fields.templateAuto') },
-    ...(templates.data?.templates ?? []).map((tpl) => ({ value: tpl.id, label: tpl.name })),
+    ...(templates.data?.templates ?? []).map((tpl) => ({ value: tpl.id, label: text.name(tpl) })),
   ]
   if (d.default_template && !options.some((o) => o.value === d.default_template)) {
     options.push({ value: d.default_template, label: d.default_template })

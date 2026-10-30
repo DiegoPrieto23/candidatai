@@ -5,7 +5,9 @@
     "label": "Enlace de la oferta",
     "hint": "Una página pública (Greenhouse, Lever, la web de la empresa…). LinkedIn no: para esas ofertas, <paste>pega el texto</paste>.",
     "downloading": "Descargando…",
-    "submit": "Dar de alta"
+    "submit": "Dar de alta",
+    "unavailable": "No he podido abrir esa página: puede que no responda, que pida iniciar sesión o que cargue la oferta con JavaScript. Copia el texto de la oferta y pégalo.",
+    "usePaste": "Pegar el texto"
   },
   "text": {
     "title": "Puesto",

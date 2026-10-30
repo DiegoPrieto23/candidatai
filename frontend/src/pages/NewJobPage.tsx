@@ -80,7 +80,30 @@ function Field({
   )
 }
 
-function UrlForm({ onUsePaste }: { onUsePaste: () => void }) {
+/** La API no pudo abrir la página (`page_unavailable`): se explica sin el error técnico y con
+ * la pestaña «Pegar texto» a un clic. */
+function PageUnavailable({ onUsePaste }: { onUsePaste: () => void }) {
+  const { t } = useTranslation('newJob', { keyPrefix: 'url' })
+  return (
+    <div
+      role="alert"
+      className="flex items-start gap-2.5 rounded-lg border border-destructive/30 bg-destructive/5 px-3.5 py-3 text-sm"
+    >
+      <WarningCircleIcon className="mt-0.5 size-4 shrink-0 text-destructive" weight="fill" />
+      <div className="grid gap-2">
+        <p>{t('unavailable')}</p>
+        <div>
+          <Button type="button" variant="outline" size="sm" onClick={onUsePaste}>
+            <ClipboardTextIcon />
+            {t('usePaste')}
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function UrlForm({ onUsePaste }: { onUsePaste: (url?: string) => void }) {
   const { t } = useTranslation('newJob', { keyPrefix: 'url' })
   const [url, setUrl] = useState('')
   const add = useAddFromUrl()
@@ -106,7 +129,7 @@ function UrlForm({ onUsePaste }: { onUsePaste: () => void }) {
               paste: (
                 <button
                   type="button"
-                  onClick={onUsePaste}
+                  onClick={() => onUsePaste()}
                   className="font-medium text-primary underline-offset-4 hover:underline"
                 />
               ),
@@ -127,7 +150,11 @@ function UrlForm({ onUsePaste }: { onUsePaste: () => void }) {
           className="h-10 bg-background"
         />
       </Field>
-      <FormError error={add.error && !errors.url ? add.error : null} />
+      {add.error instanceof ApiError && add.error.type === 'page_unavailable' ? (
+        <PageUnavailable onUsePaste={() => onUsePaste(url.trim())} />
+      ) : (
+        <FormError error={add.error && !errors.url ? add.error : null} />
+      )}
       <div className="flex justify-end">
         <Button type="submit" disabled={!url.trim() || add.isPending} className="h-10 px-5 active:translate-y-px">
           {add.isPending ? t('downloading') : t('submit')}
@@ -137,9 +164,9 @@ function UrlForm({ onUsePaste }: { onUsePaste: () => void }) {
   )
 }
 
-function TextForm() {
+function TextForm({ initialUrl = '' }: { initialUrl?: string }) {
   const { t } = useTranslation('newJob', { keyPrefix: 'text' })
-  const [form, setForm] = useState({ title: '', company: '', location: '', url: '', text: '' })
+  const [form, setForm] = useState({ title: '', company: '', location: '', url: initialUrl, text: '' })
   const add = useAddFromText()
   const goToJob = useGoToJob()
   const errors = fieldErrors(add.error)
@@ -214,6 +241,12 @@ function TextForm() {
 export function NewJobPage() {
   const { t } = useTranslation('newJob')
   const [tab, setTab] = useState('url')
+  // La URL que no se pudo abrir pasa al formulario de texto (la `key` lo rehace con ella).
+  const [pastedUrl, setPastedUrl] = useState('')
+  const usePaste = (url?: string) => {
+    if (url) setPastedUrl(url)
+    setTab('text')
+  }
   return (
     <div className="mx-auto max-w-2xl animate-in fade-in duration-300">
       <div className="mb-8">
@@ -235,10 +268,10 @@ export function NewJobPage() {
         </TabsList>
         <div className="rounded-xl border bg-card p-5 sm:p-6">
           <TabsContent value="url">
-            <UrlForm onUsePaste={() => setTab('text')} />
+            <UrlForm onUsePaste={usePaste} />
           </TabsContent>
           <TabsContent value="text">
-            <TextForm />
+            <TextForm key={pastedUrl} initialUrl={pastedUrl} />
           </TabsContent>
         </div>
       </Tabs>

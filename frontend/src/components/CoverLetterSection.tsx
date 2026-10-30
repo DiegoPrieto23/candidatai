@@ -40,6 +40,7 @@ import { errorMessage } from '@/lib/errors'
 import { colorLabel, formatDateTime, PHOTO_MODE_LABEL } from '@/lib/labels'
 import { countWords } from '@/lib/letters'
 import { cn } from '@/lib/utils'
+import { useTemplateText } from '@/lib/templateText'
 
 /** Desde la aprobación; en «closed», solo si hubo carta. */
 const LETTER_STAGES = new Set<Stage>(['approved', 'cv_ready', 'applied', 'in_process', 'closed'])
@@ -332,11 +333,12 @@ const MATCH_CV = ''
 
 function RenderForm({ data, letter, jobId }: { data: JobCoverLetter; letter: CoverLetterView; jobId: number }) {
   const { t } = useTranslation('letter', { keyPrefix: 'render' })
+  const text = useTemplateText()
   const [templateId, setTemplateId] = useState(MATCH_CV)
   const [photo, setPhoto] = useState<PhotoMode>('auto')
   const [accent, setAccent] = useState<string | null>(null)
   const render = useRenderLetter(jobId)
-  const names = new Map(data.templates.map((tpl) => [tpl.id, tpl.name]))
+  const names = new Map(data.templates.map((tpl) => [tpl.id, text.name(tpl)]))
   const template = data.templates.find((tpl) => tpl.id === templateId)
   const colors = template?.accent_colors ?? null
   const cvName = data.cv_template_id ? (names.get(data.cv_template_id) ?? data.cv_template_id) : null
@@ -369,7 +371,7 @@ function RenderForm({ data, letter, jobId }: { data: JobCoverLetter; letter: Cov
           <option value={MATCH_CV}>{t('matchCv')}{cvName ? ` (${cvName})` : ''}</option>
           {data.templates.map((tpl) => (
             <option key={tpl.id} value={tpl.id}>
-              {tpl.name}
+              {text.name(tpl)}
             </option>
           ))}
         </select>
@@ -483,6 +485,7 @@ function RenderCard({ render, name, jobId }: { render: LetterRenderResult; name:
 
 function Letter({ data, jobId }: { data: JobCoverLetter; jobId: number }) {
   const { t } = useTranslation('letter')
+  const text = useTemplateText()
   const letter = data.info.letter
   const [editing, setEditing] = useState(false)
   if (!letter) {
@@ -502,7 +505,7 @@ function Letter({ data, jobId }: { data: JobCoverLetter; jobId: number }) {
       </div>
     )
   }
-  const names = new Map(data.templates.map((tpl) => [tpl.id, tpl.name]))
+  const names = new Map(data.templates.map((tpl) => [tpl.id, text.name(tpl)]))
   const newest = [...letter.renders].reverse()
   const main = newest.find((r) => r.selected) ?? newest[0]
   const others = newest.filter((r) => r !== main)

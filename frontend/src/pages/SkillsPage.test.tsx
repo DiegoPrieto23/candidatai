@@ -181,6 +181,18 @@ describe('Skills', () => {
     ])
   })
 
+  it('sin perfil no pide los huecos (sin 404 en la consola) y conserva el título', async () => {
+    const calls = mockApi({
+      'GET /status': status(),
+      'GET /agent': AGENT,
+      'GET /profile/editable': { exists: false, file_hash: null, profile: null, issues: [], profile_version_id: null, undo_available: 0 },
+    })
+    renderApp('/skills')
+    expect(await screen.findByText('Aún no tienes perfil')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'Skills' })).toBeInTheDocument()
+    expect(calls.some((c) => c.path.startsWith('/skills/gaps'))).toBe(false)
+  })
+
   it('sin perfil explica cómo crearlo y sin huecos lo celebra', async () => {
     mockApi({
       'GET /status': status(),

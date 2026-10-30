@@ -33,6 +33,28 @@ describe('Alta de ofertas', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('LinkedIn no se descarga: pega el texto.')
   })
 
+  it('si no puede abrir la página, lo explica sin el error técnico y lleva a pegar el texto', async () => {
+    mockApi({
+      'GET /status': status(),
+      'POST /jobs/url': {
+        status: 422,
+        body: {
+          ok: false,
+          error: { type: 'page_unavailable', message: 'No se pudo descargar https://example.com/jobs/9: [WinError 10061] …', details: [] },
+        },
+      },
+    })
+    renderApp('/nueva')
+    await userEvent.type(screen.getByLabelText('Enlace de la oferta'), 'https://example.com/jobs/9')
+    await userEvent.click(screen.getByRole('button', { name: 'Dar de alta' }))
+
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent('No he podido abrir esa página')
+    expect(alert).not.toHaveTextContent('WinError')
+    await userEvent.click(screen.getByRole('button', { name: 'Pegar el texto' }))
+    expect(await screen.findByLabelText(/^Enlace(?! de)/)).toHaveValue('https://example.com/jobs/9')
+  })
+
   it('da de alta pegando el texto y avisa si era un duplicado', async () => {
     const calls = mockApi({
       'GET /status': status(),

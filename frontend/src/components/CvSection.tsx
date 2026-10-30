@@ -36,6 +36,7 @@ import { errorMessage } from '@/lib/errors'
 import { i18n } from '@/lib/i18n'
 import { colorLabel, formatDateTime, PHOTO_MODE_LABEL, SECTION_LABEL } from '@/lib/labels'
 import { cn } from '@/lib/utils'
+import { useTemplateText } from '@/lib/templateText'
 
 type PhotoMode = NonNullable<CvRenderOptions['photo']>
 const PHOTO_MODES: PhotoMode[] = ['auto', 'include', 'exclude']
@@ -135,6 +136,7 @@ function TemplatePicker({
   onChange: (id: string) => void
 }) {
   const { t } = useTranslation('cv', { keyPrefix: 'template' })
+  const text = useTemplateText()
   return (
     <fieldset>
       <legend className="mb-2 text-sm font-medium">{t('legend')}</legend>
@@ -172,7 +174,7 @@ function TemplatePicker({
                 )}
               </span>
               <span className="mt-2 flex items-center gap-1.5 text-sm font-medium">
-                <span className="truncate">{template.name}</span>
+                <span className="truncate">{text.name(template)}</span>
                 {template.from_user_cv && <Chip>{t('yourCv')}</Chip>}
               </span>
               <span className="block truncate text-xs text-muted-foreground">
@@ -584,6 +586,7 @@ function CvBody({
   templatesQuery: ReturnType<typeof useTemplates>
 }) {
   const { t } = useTranslation('cv')
+  const text = useTemplateText()
   if (!data.cv) {
     return (
       <div className="flex items-start gap-4 rounded-lg border border-dashed p-5">
@@ -611,7 +614,7 @@ function CvBody({
     )
   }
   const templates = templatesQuery.data?.templates ?? []
-  const names = new Map(templates.map((tpl) => [tpl.id, tpl.name]))
+  const names = new Map(templates.map((tpl) => [tpl.id, text.name(tpl)]))
   return (
     <div className="space-y-6">
       <Verification cv={data.cv} />

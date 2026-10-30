@@ -56,5 +56,23 @@
   "loading": "Cargando plantillas",
   "invalidLabel": "Plantillas con problemas",
   "invalidTitle": "Plantillas que no se pueden usar",
-  "pdfAndWord": "PDF y Word"
+  "pdfAndWord": "PDF y Word",
+  "builtinText": {
+    "ats-simple": {
+      "name": "ATS sencilla",
+      "description": "Una columna, sin foto ni tablas, con los datos de contacto en el cuerpo y tipografía estándar. La opción segura para portales con ATS."
+    },
+    "carta-simple": {
+      "name": "Carta sencilla",
+      "description": "Carta de presentación de una columna, sin foto, con el color de acento del CV. Se usa cuando la plantilla del CV no trae su propio diseño de carta."
+    },
+    "clasica-foto": {
+      "name": "Clásica con foto",
+      "description": "Una columna, cabecera con foto circular y color de acento en el nombre y los títulos. Sobria, para enviar por email o a empresas sin ATS."
+    },
+    "moderna-2col": {
+      "name": "Moderna a dos columnas",
+      "description": "Dos columnas con barra lateral de color (foto circular, contacto, habilidades, idiomas y certificaciones) y la experiencia en la columna principal. Solo PDF. No apta para ATS (dos columnas)."
+    }
+  }
 }

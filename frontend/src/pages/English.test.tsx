@@ -9,6 +9,8 @@ import {
   mockApi,
   renderApp,
   status,
+  templateInfo,
+  templateList,
   triageItem,
   triageQueue,
 } from '@/test/utils'
@@ -121,5 +123,21 @@ describe('Páginas en inglés', () => {
     expect(within(applied).getByText(/Follow-up · 12 days/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Update status of “Oferta 1”' })).toBeInTheDocument()
     expect(screen.getByText('1 follow-up due')).toBeInTheDocument()
+  })
+
+  it('Plantillas: las integradas, en inglés; las tuyas, como las llamaste', async () => {
+    mockApi({
+      'GET /status': status(),
+      'GET /templates': templateList({ templates: [
+        templateInfo(),
+        templateInfo({ id: 'mi-diseno', name: 'Mi diseño azul', origin: 'user', description: 'Mi CV de 2024.' }),
+      ] }),
+    })
+    await english()
+    renderApp('/plantillas')
+    expect(await screen.findByRole('heading', { level: 2, name: 'Simple ATS' })).toBeInTheDocument()
+    expect(screen.getByText(/The safe choice for job portals with an ATS/)).toBeInTheDocument()
+    expect(screen.queryByText('ATS sencilla')).not.toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 2, name: 'Mi diseño azul' })).toBeInTheDocument()
   })
 })

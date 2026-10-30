@@ -111,9 +111,7 @@ EMPTY_STATES = {
 
 
 # Lo que hoy falla (`xfail` estricto: al arreglarlo, el test lo avisa y hay que quitarlo de aquí).
-KNOWN_FAILURES = {
-    "/skills": "sin perfil, «Skills» pierde su título y deja un 404 en la consola",
-}
+KNOWN_FAILURES: dict[str, str] = {}
 
 
 def _route_param(route: Route) -> object:

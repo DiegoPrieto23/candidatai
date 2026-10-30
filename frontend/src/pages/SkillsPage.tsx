@@ -3,7 +3,14 @@ import { Trans, useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { CheckCircleIcon, EqualsIcon, ProhibitIcon, PuzzlePieceIcon, UserCircleIcon } from '@phosphor-icons/react'
 import { ApiError } from '@/api/client'
-import { useAddSkillAlias, useSetSkillMark, useSkillGaps, type SkillGap, type SkillMark } from '@/api/queries'
+import {
+  useAddSkillAlias,
+  useEditableProfile,
+  useSetSkillMark,
+  useSkillGaps,
+  type SkillGap,
+  type SkillMark,
+} from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
 import { Hint } from '@/components/Hint'
 import { Pager } from '@/components/Pager'
@@ -275,7 +282,11 @@ export function SkillsPage() {
   const [aliasFor, setAliasFor] = useState<SkillGap | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const [page, setPage] = useState(1)
-  const { data, isPending, error, refetch } = useSkillGaps(days)
+  // Sin perfil no hay huecos que calcular: ni se piden (la API daría 404 y el navegador lo
+  // apuntaría como error). Si no se sabe si hay perfil, se piden igual.
+  const profile = useEditableProfile()
+  const noProfile = profile.data?.exists === false
+  const { data, isPending, error, refetch } = useSkillGaps(days, profile.isSuccess ? !noProfile : profile.isError)
 
   const rows = useMemo(() => {
     const gaps = (data?.gaps ?? []).filter((g) => {
@@ -304,11 +315,14 @@ export function SkillsPage() {
 
   const marked = (status: SkillMark) => data?.gaps.filter((g) => g.mark === status).length ?? 0
 
-  if (error instanceof ApiError && error.type === 'not_found') {
+  if (noProfile || (error instanceof ApiError && error.type === 'not_found')) {
     return (
-      <EmptyState icon={<UserCircleIcon className="size-6" weight="duotone" />} title={t('noProfile.title')}>
-        <InlineCode text={t('noProfile.body')} />
-      </EmptyState>
+      <div className="space-y-6">
+        <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
+        <EmptyState icon={<UserCircleIcon className="size-6" weight="duotone" />} title={t('noProfile.title')}>
+          <InlineCode text={t('noProfile.body')} />
+        </EmptyState>
+      </div>
     )
   }
 
