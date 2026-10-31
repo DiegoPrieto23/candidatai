@@ -109,3 +109,19 @@ def test_the_browser_cannot_reach_the_internet(page: Page, demo_app: AppServer) 
         "fetch('https://example.com/').then(() => 'salió', (e) => 'cortado: ' + e.name)"
     )
     assert outcome.startswith("cortado"), outcome
+
+
+@pytest.mark.parametrize("path", ["/fuentes/plataformas", "/fuentes/empresas"])
+def test_where_to_search_asks_nothing_outside_the_app(
+    page: Page, demo_app: AppServer, path: str
+) -> None:
+    """Los iconos de portales y empresas los sirve la app: abrir «Dónde buscar» no hace que tu
+    navegador visite cada web (y cada empresa no ve una visita tuya)."""
+    requested: list[str] = []
+    page.on("request", lambda request: requested.append(request.url))
+    page.goto(path)
+    expect(_heading(page)).to_have_text(re.compile(r"\S"))
+    page.wait_for_load_state("networkidle")
+    outside = [url for url in requested if not url.startswith((demo_app.url, "data:", "blob:"))]
+    assert outside == []
+    assert any("/sources/" in url and "/icon" in url for url in requested)

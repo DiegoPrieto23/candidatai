@@ -236,10 +236,10 @@ Every page and what you can do in it: [`FEATURES.md`](FEATURES.md).
 **What data leaves my computer?** CandidatAI itself sends nothing anywhere: your data is in a folder
 on your computer (`cai paths` tells you which). What does leave is what your agent reads (the
 postings and your profile, without your email, phone or salary minimum), and it goes to the company
-behind your agent's model, unless you use a local model. The app also reads public job pages and
-the APIs of the job boards you set up. And in **Where to search**, your browser fetches each job
-board's and company's icon from its website: that site sees a visit from your connection, with
-nothing of yours.
+behind your agent's model, unless you use a local model. The app also reads public job pages, the
+APIs of the job boards you set up and, once per website, the icon of each job board and company in
+**Where to search**. That site sees a visit from your connection, with nothing of yours. The icon
+is saved in your data folder, so opening the page doesn't notify anyone again.
 
 **Does it send applications by itself?** No. It fills in forms and stops; sending takes your click,
 one application at a time. Messages and emails are drafts that you copy and send.

@@ -232,6 +232,11 @@ class Settings(BaseSettings):
         return self.data_dir / "logs"
 
     @property
+    def icons_dir(self) -> Path:
+        """Iconos de los portales y empresas de «Dónde buscar», descargados una vez por la app."""
+        return self.data_dir / "icons"
+
+    @property
     def ui_dir(self) -> Path:
         """UI compilada (`pnpm build`, o la que trae la release) que sirve la API (fase 23.4)."""
         return self.ui_dir_override or REPO_ROOT / "frontend" / "dist"

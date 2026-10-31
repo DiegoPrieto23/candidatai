@@ -2,19 +2,25 @@
 
 Abre enseguida en el navegador la página «Arrancando CandidatAI…» (`starting.html` de la UI
 compilada), que pasa sola a la app cuando responde: así se ve algo desde el primer momento. Luego
-aplica las migraciones, arranca la API (que sirve también la UI compilada) y, cuando ya responde,
-el worker, como dos procesos hijos: el worker no hace falta para abrir la app y en un equipo con
-pocos núcleos le quitaría CPU a la API mientras arranca. Ctrl+C (o cerrar la ventana) para los
-dos. Si uno de los dos se cae, se para el otro: mejor nada que media app.
+arranca la API (que sirve también la UI compilada y aplica las migraciones al arrancar) y, cuando
+ya responde, el worker, como dos procesos hijos: el worker no hace falta para abrir la app y en un
+equipo con pocos núcleos le quitaría CPU a la API mientras arranca. Ctrl+C (o cerrar la ventana)
+para los dos. Si uno de los dos se cae, se para el otro: mejor nada que media app.
 
 La salida de cada hijo va a `data/logs/start-<nombre>.log`; en la consola solo se ven unas líneas
 de estado. `--dev` arranca además Vite (`pnpm dev`) para desarrollar con recarga en caliente.
+
+Este proceso solo arranca y vigila: no importa nada de la app salvo la configuración (ni httpx, ni
+SQLAlchemy, ni Alembic). Las migraciones las aplica la API, que ya los carga; así no se pagan dos
+veces, y el worker, que arranca cuando la API responde, encuentra la base al día.
 
 En macOS y Linux (fase 26.1) cada hijo va en su propio grupo de procesos, para pararlo con todo lo
 que lance, y `SIGTERM` o `SIGHUP` (cerrar la terminal) paran todo como Ctrl+C.
 """
 
 import contextlib
+import http.client
+import json
 import locale
 import os
 import shutil
@@ -23,6 +29,8 @@ import socket
 import subprocess
 import sys
 import time
+import urllib.error
+import urllib.request
 import webbrowser
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
@@ -31,11 +39,8 @@ from pathlib import Path
 from types import FrameType
 from typing import IO, Any, Literal
 
-import httpx
-
-from app.core import migrations
 from app.core.config import REPO_ROOT, Settings, get_settings
-from app.services.agent_runner import _kill_tree
+from app.core.processes import kill_tree as _kill_tree
 
 HOST = "127.0.0.1"
 DEFAULT_PORT = 8000  # el de `starting.html` y el acceso directo
@@ -146,29 +151,42 @@ def port_free(port: int) -> bool:
         return sock.connect_ex((HOST, port)) != 0
 
 
-def probe(
-    port: int,
-    client: httpx.Client | None = None,
-    is_free: Callable[[int], bool] = port_free,
-) -> PortState:
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, *_args: Any, **_kwargs: Any) -> None:
+        return None  # el 3xx llega como respuesta: un programa ajeno no nos manda a otra web
+
+
+# Sin proxies del sistema (son peticiones a esta misma máquina) y sin seguir redirecciones.
+_LOCAL = urllib.request.build_opener(urllib.request.ProxyHandler({}), _NoRedirect())
+# Lo que puede fallar al preguntar: sin conexión, tiempo agotado o algo que no habla HTTP.
+FETCH_ERRORS = (OSError, http.client.HTTPException)
+
+Fetch = Callable[[str, float], tuple[int, bytes]]
+
+
+def fetch(url: str, timeout: float) -> tuple[int, bytes]:
+    """`GET` local: código y cuerpo. Con urllib y no httpx: el supervisor no carga nada que no
+    use (cada módulo son megas y décimas de segundo en un proceso que solo vigila)."""
+    try:
+        with _LOCAL.open(url, timeout=timeout) as response:
+            return response.status, response.read()
+    except urllib.error.HTTPError as exc:
+        return exc.code, exc.read()
+
+
+def probe(port: int, get: Fetch = fetch, is_free: Callable[[int], bool] = port_free) -> PortState:
     """Qué hay en el puerto: nada, una CandidatAI (su `/status` responde) u otra cosa."""
     if is_free(port):
         return "free"
-    owned = client is None
-    # Sin proxies del sistema: es una petición a esta misma máquina.
-    client = client or httpx.Client(timeout=5.0, trust_env=False)
     try:
-        response = client.get(f"http://{HOST}:{port}/status")
-    except httpx.HTTPError:
+        status, body = get(f"http://{HOST}:{port}/status", 5.0)
+    except FETCH_ERRORS:
         return "other"
-    finally:
-        if owned:
-            client.close()
     try:
-        data = response.json()
+        data = json.loads(body)
     except ValueError:
         return "other"
-    is_ours = response.status_code == 200 and isinstance(data, dict) and "by_stage" in data
+    is_ours = status == 200 and isinstance(data, dict) and "by_stage" in data
     return "candidatai" if is_ours else "other"
 
 
@@ -201,7 +219,7 @@ def plan(settings: Settings, port: int, *, dev: bool = False) -> Launch:
     if not dev and not ui_built(settings):
         raise LaunchError(message("no_ui", ui_dir=settings.ui_dir))
     children = [
-        Child("api", _python_command("serve", "--port", str(port)), backend),
+        Child("api", _python_command("serve", "--port", str(port), "--migrate"), backend),
         Child("worker", _python_command("worker"), backend),
     ]
     url = f"http://{HOST}:{port}"
@@ -306,18 +324,17 @@ def wait_ready(
 ) -> None:
     """Espera a que la API responda. Si un hijo muere antes, falla con su nombre."""
     deadline = time.monotonic() + timeout
-    with httpx.Client(timeout=2.0, trust_env=False) as client:
-        while time.monotonic() < deadline:
-            for child in launch.children:
-                if child.process is not None and child.process.poll() is not None:
-                    code = child.process.returncode
-                    raise LaunchError(message("child_died", name=child.name, code=code))
-            try:
-                if client.get(f"{url}/status").status_code == 200:
-                    return
-            except httpx.HTTPError:
-                pass
-            sleep(0.5)
+    while time.monotonic() < deadline:
+        for child in launch.children:
+            if child.process is not None and child.process.poll() is not None:
+                code = child.process.returncode
+                raise LaunchError(message("child_died", name=child.name, code=code))
+        try:
+            if fetch(f"{url}/status", 2.0)[0] == 200:
+                return
+        except FETCH_ERRORS:
+            pass
+        sleep(0.25)
     raise LaunchError(message("timeout", seconds=timeout))
 
 
@@ -354,7 +371,6 @@ def start(
     waiting_page = starting_page(settings, port, dev=dev) if open_browser else None
     if waiting_page is not None:
         _open(browser, waiting_page, say, launch.url)
-    migrations.upgrade()
     with stop_on_signals():
         try:
             later = [c for c in launch.children if c.name == "worker"]

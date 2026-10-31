@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Response, status
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.api.deps import EmptyBody, SessionDep, require_ui
@@ -14,6 +14,7 @@ from app.schemas.sources import (
     SourceView,
     Website,
 )
+from app.services import site_icons
 from app.services.ingestion import browse, linkedin_public
 from app.services.ingestion import service as sources
 
@@ -126,6 +127,31 @@ def set_source_active(session: SessionDep, source_id: int, body: SetActiveBody) 
 def set_source_website(session: SessionDep, source_id: int, body: SetWebsiteBody) -> SourceView:
     """Pone o quita la web de una empresa objetivo, que la UI usa para su logo."""
     return sources.set_website(session, source_id, body.website)
+
+
+@router.get(
+    "/{source_id}/icon",
+    operation_id="get_source_icon",
+    response_class=Response,
+    responses={
+        200: {"content": {"image/png": {}, "image/x-icon": {}}},
+        204: {"description": "Sin icono: la UI pone la inicial."},
+    },
+)
+def get_source_icon(session: SessionDep, source_id: int) -> Response:
+    """Icono del portal o de la empresa, descargado una vez por la app y guardado en `data/`: así
+    tu navegador no visita cada web al abrir «Dónde buscar». `v` en la URL solo sirve para que el
+    navegador no use el de antes al cambiar la web. Sin icono, 204 y no 404: la imagen falla igual
+    (la UI pone la inicial) sin un error en la consola del navegador por cada empresa."""
+    home = sources.icon_home(session, source_id)
+    icon = site_icons.get_icon(home) if home else None
+    if icon is None:
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+    return Response(
+        icon.content,
+        media_type=icon.media_type,
+        headers={"Cache-Control": "private, max-age=86400", "X-Content-Type-Options": "nosniff"},
+    )
 
 
 class BrowseSettingsBody(BaseModel):

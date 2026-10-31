@@ -90,6 +90,13 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 - **Aviso honesto si una página falla:** distingue «La app no responde» (con «Recargar») de «Esta
   página ha fallado», que ya no culpa a una actualización: ofrece volver a Inicio y dice dónde ver
   el detalle y dónde avisar.
+- **CandidatAI arranca antes:** `cai start` ya no carga la app entera solo para vigilar a la API y
+  al worker, y las migraciones se comprueban una sola vez. La API responde unos segundos antes, el
+  proceso que se queda en la ventana ocupa mucha menos memoria y `cai --help` sale al momento.
+- **Los iconos de «Dónde buscar» los sirve la app:** los descarga una vez y los guarda en tu
+  carpeta de datos, así que tu navegador ya no visita la web de cada portal y de cada empresa al
+  abrir la página. Si una web no tiene icono, o no hay red, se ve la inicial, como antes. LinkedIn
+  se queda siempre con la inicial: la app no consulta LinkedIn por su cuenta.
 
 ### Corregido
 - **Generar un CV o una carta con LibreOffice ya no cierra la app:** mientras se convertía a PDF,

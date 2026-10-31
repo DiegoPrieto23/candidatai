@@ -36,7 +36,7 @@ aquí; `GEMINI.md` está vacío a propósito (Antigravity lee los dos y ese mand
 backend/          pyproject.toml, app/, alembic/, tests/
   app/services/   lógica de negocio (única fuente de verdad)
   app/api/        FastAPI (capa fina)
-  app/cli.py      CLI `cai` con Typer (capa fina)
+  app/cli.py      CLI `cai` con Typer (capa fina): la raíz, ligera; los comandos, en cli_commands.py
   app/mcp/        servidor MCP (capa fina)
 frontend/         Vite + React + TypeScript
 .agents/          FUENTE ÚNICA de skills, roles (subagentes) y manifiesto para agentes

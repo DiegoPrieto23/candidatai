@@ -133,6 +133,9 @@ export const fileUrls = {
   /** Captura de un intento de candidatura asistida; `version` evita la caché al cambiar. */
   applicationScreenshot: (attemptId: number, kind: 'review' | 'confirmation', version: string) =>
     `${API_URL}/apply/${attemptId}/screenshot/${kind}?v=${encodeURIComponent(version)}`,
+  /** Icono de un portal o una empresa, servido por la app; `host`, para no ver el de otra web. */
+  sourceIcon: (sourceId: number, host: string) =>
+    `${API_URL}/sources/${sourceId}/icon?v=${encodeURIComponent(host)}`,
 }
 
 export const api = createClient<paths>({

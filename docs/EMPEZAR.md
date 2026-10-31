@@ -235,9 +235,10 @@ Cada página y lo que puedes hacer en ella: [`FUNCIONALIDADES.md`](FUNCIONALIDAD
 **¿Qué datos salen de mi equipo?** CandidatAI no envía nada a ningún sitio: tus datos están en una
 carpeta de tu equipo (`cai paths` te dice cuál). Lo que sí sale es lo que lee tu agente (las ofertas
 y tu perfil, sin tu correo, tu teléfono ni tu mínimo salarial), y va a la empresa del modelo de tu
-agente, salvo que uses un modelo local. La app, además, lee las páginas públicas de las ofertas y
-las APIs de los portales que configures. Y en «Dónde buscar», tu navegador pide el icono de cada
-portal y de cada empresa a su web: esa web ve una visita desde tu conexión, sin nada tuyo.
+agente, salvo que uses un modelo local. La app, además, lee las páginas públicas de las ofertas,
+las APIs de los portales que configures y, una vez por web, el icono de cada portal y de cada
+empresa de «Dónde buscar». Esa web ve una visita desde tu conexión, sin nada tuyo. El icono se
+guarda en tu carpeta de datos, así que abrir la página no vuelve a avisar a nadie.
 
 **¿Envía candidaturas sola?** No. Rellena formularios y se para; enviar requiere tu clic,
 candidatura a candidatura. Los mensajes y correos son borradores que copias y envías tú.

@@ -120,5 +120,5 @@ def test_no_agent_tool_or_cli_command_applies() -> None:
     forbidden = ("applier.service", "applier import service", "applier.tokens", "applier.submit",
                  "applier import submit", "applier import tokens")  # fmt: skip
     for path, source in sources().items():
-        if path == "cli.py" or path.startswith(("mcp/", "agent_interface/")):
+        if path in {"cli.py", "cli_commands.py"} or path.startswith(("mcp/", "agent_interface/")):
             assert not any(f in source for f in forbidden), path

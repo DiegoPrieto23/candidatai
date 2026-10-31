@@ -279,7 +279,7 @@ def test_wilson_without_cases() -> None:
 def test_cli_text_output(
     session: Session, history: Sent, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    from app.cli import _render_calibration
+    from app.cli_commands import _render_calibration
 
     _render_calibration(analytics.get_calibration(session, min_cases=2))
     out = capsys.readouterr().out

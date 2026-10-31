@@ -206,6 +206,11 @@ Una oferta puede encajar en el papel y aun así no merecer la pena. El código m
   herramientas para agentes solo dan nombre y cargo de las personas de la empresa de **una**
   oferta (`get_job_contacts`), nunca la red entera ni sus URLs. Añadirlas al proceso y marcar
   referencias lo haces tú en la UI.
+- **Iconos de «Dónde buscar»** (fase 35): los descarga la app, no tu navegador, una vez por web, y
+  los guarda en `data/icons/` (caducan a los 30 días; si una web no tiene, se vuelve a probar al
+  día siguiente). Es una lectura pública, como «¿Sigue abierta?» (`check_job_open`): sin cookies ni
+  nada tuyo, y nunca a la red local ni a LinkedIn (§8), que se queda con la inicial. Así, abrir la
+  página no avisa a cada empresa que sigues de una visita desde tu navegador.
 
 ## 5. Candidaturas
 

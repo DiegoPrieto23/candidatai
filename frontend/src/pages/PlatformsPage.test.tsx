@@ -128,6 +128,21 @@ describe('Plataformas', () => {
     expect(screen.getByText('El agente aún no la ha recorrido')).toBeInTheDocument()
   })
 
+  it('los iconos los sirve la app: el navegador no pide nada a los portales', async () => {
+    mockApi({
+      'GET /status': status(),
+      'GET /sources': { sources: [tecno, linkedin], agent_browse: LIMITS },
+      'GET /sources/linkedin-public': publicView(),
+    })
+    const { container } = renderApp('/plataformas')
+    await screen.findAllByRole('heading', { level: 3 })
+    const icons = [...container.querySelectorAll('img')].map((img) => img.getAttribute('src'))
+    expect(icons).toEqual([
+      `http://127.0.0.1:8000/sources/${linkedin.id}/icon?v=linkedin.com`,
+      `http://127.0.0.1:8000/sources/${tecno.id}/icon?v=tecnoempleo.com`,
+    ])
+  })
+
   it('«Ampliar búsqueda» abre el agente con su skill', async () => {
     const calls = mockApi({
       'GET /status': status(),

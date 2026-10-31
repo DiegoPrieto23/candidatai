@@ -196,6 +196,19 @@ def _website(session: Session, source: Source) -> str | None:
     return None
 
 
+def icon_home(session: Session, source_id: int) -> str | None:
+    """Web de la que sale el icono de una fuente en «Dónde buscar»: en una plataforma, la de su
+    primera búsqueda; si no, la de `_website`."""
+    source = _source(session, source_id)
+    if source.kind != "agent_browse":
+        return _website(session, source)
+    for url in (source.config or {}).get("search_urls") or []:
+        parts = urlsplit(str(url))
+        if parts.scheme in {"http", "https"} and parts.hostname:
+            return f"{parts.scheme}://{parts.hostname.lower()}"
+    return None
+
+
 def _view(session: Session, source: Source) -> SourceView:
     last = _last_run(session, source.id)
     return SourceView(
