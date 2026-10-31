@@ -9,7 +9,7 @@ import { ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { errorMessage } from '@/lib/errors'
-import { askExtension, compareVersions, isChromium, isEdge, type ExtensionReply } from '@/lib/extension'
+import { askExtension, compareVersions, desktopOs, isChromium, isEdge, type ExtensionReply } from '@/lib/extension'
 import { cn } from '@/lib/utils'
 
 const strong = { strong: <strong className="font-medium text-foreground" /> }
@@ -70,8 +70,20 @@ function Install({ status }: { status: ExtensionStatus }) {
       <li>
         <Trans t={t} i18nKey={isEdge() ? 'devModeEdge' : 'devMode'} components={strong} />
       </li>
-      <li>
-        <Trans t={t} i18nKey="load" components={strong} />
+      {/* La ventana de elegir carpeta no recuerda la del paso 1: se pega la ruta, que es lo que lía. */}
+      <li className="space-y-2">
+        <p>
+          <Trans t={t} i18nKey={`load.${desktopOs()}`} components={strong} />
+        </p>
+        {status.folder && (
+          <div className="flex flex-wrap items-center gap-2">
+            <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs break-all text-foreground">{status.folder}</code>
+            <CopyButton text={status.folder} ariaLabel={t('copyFolder')} />
+          </div>
+        )}
+        <p className="text-xs">
+          <Trans t={t} i18nKey="load.whole" components={strong} />
+        </p>
       </li>
       <li>
         <Trans t={t} i18nKey="update" components={strong} />

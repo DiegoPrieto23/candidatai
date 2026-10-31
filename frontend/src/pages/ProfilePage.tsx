@@ -2,7 +2,13 @@ import { useRef, useState } from 'react'
 import { FileTextIcon, FolderIcon, UploadSimpleIcon, UserCircleIcon, WarningIcon } from '@phosphor-icons/react'
 import { Trans, useTranslation } from 'react-i18next'
 import type { ContextFileInfo, ContextStatus } from '@/api/client'
-import { useContextStatus, useEditableProfile, useUploadSourceDocument, type SourceDocumentFolder } from '@/api/queries'
+import {
+  useContextStatus,
+  useEditableProfile,
+  useUploadSourceDocument,
+  type ContextSectionName,
+  type SourceDocumentFolder,
+} from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
 import { OpenFolderButton } from '@/components/OpenFolderButton'
 import { EmptyState, ErrorState } from '@/components/States'
@@ -13,6 +19,7 @@ import { CONTEXT_SECTIONS, ContextFileEditor, StyleSamplesBlock } from '@/compon
 import { ProfileEditorProvider, useProfileState } from '@/components/profile/editor'
 import { ExperienceBlock } from '@/components/profile/ExperienceBlock'
 import { HistoryBlock } from '@/components/profile/HistoryBlock'
+import { blockAnchor } from '@/components/profile/editor'
 import { CertificationsBlock, EducationBlock, ExtraSectionsBlock, ProjectsBlock } from '@/components/profile/ItemsBlocks'
 import { PersonalBlock } from '@/components/profile/PersonalBlock'
 import {
@@ -23,7 +30,7 @@ import {
   SearchRoleBlock,
   SearchWhereBlock,
 } from '@/components/profile/PreferencesBlocks'
-import { SkillsBlock } from '@/components/profile/SkillsBlock'
+import { LanguagesBlock, SkillsBlock } from '@/components/profile/SkillsBlock'
 import { StartFromCv } from '@/components/profile/StartFromCv'
 import { StoriesBlock } from '@/components/profile/StoriesBlock'
 import { errorMessage } from '@/lib/errors'
@@ -187,11 +194,74 @@ function FilesOverview() {
 
 /** Cinco pestañas en una fila: lo del CV junto, la búsqueda, lo que orienta al agente y el historial. */
 const TABS = ['about', 'career', 'search', 'documents', 'history'] as const
+type Tab = (typeof TABS)[number]
+
+/** Dónde está un bloque: su pestaña, el bloque de la página que lo contiene y su nombre. */
+interface BlockPlace {
+  id: string
+  tab: Tab
+  anchor: string
+  title: string
+}
+
+/** Los bloques que se guardan solos, por el id con el que avisan de que tienen cambios. */
+const PLACES: Record<string, { tab: Tab; anchor?: string; title: string }> = {
+  personal: { tab: 'about', title: 'blocks.personal.title' },
+  skills: { tab: 'career', title: 'blocks.skills.title' },
+  languages: { tab: 'career', title: 'blocks.languages.title' },
+  experience: { tab: 'career', title: 'blocks.experience.title' },
+  projects: { tab: 'career', title: 'blocks.projects.title' },
+  education: { tab: 'career', title: 'blocks.education.title' },
+  certifications: { tab: 'career', title: 'blocks.certifications.title' },
+  extra_sections: { tab: 'career', title: 'blocks.extra.title' },
+  stories: { tab: 'career', title: 'blocks.stories.title' },
+  'search-role': { tab: 'search', title: 'blocks.searchRole.title' },
+  'search-experience': { tab: 'search', title: 'blocks.searchExperience.title' },
+  'salary-floor': { tab: 'search', anchor: 'search-experience', title: 'fields.salaryFloor' },
+  'search-where': { tab: 'search', title: 'blocks.searchWhere.title' },
+  'search-contract': { tab: 'search', title: 'blocks.searchContract.title' },
+  cv: { tab: 'documents', title: 'blocks.cv.title' },
+  letter: { tab: 'documents', title: 'blocks.letter.title' },
+}
+
+/** Los apartados de «Experiencia y formación», en el orden en que salen. */
+const CAREER_BLOCKS = ['skills', 'languages', 'experience', 'projects', 'education', 'certifications', 'extra_sections', 'stories'] as const
+
+function usePlace() {
+  const { t } = useTranslation('profileEditor')
+  const { t: tp } = useTranslation('profile')
+  return (id: string): BlockPlace | null => {
+    const known = PLACES[id]
+    if (known) return { id, tab: known.tab, anchor: known.anchor ?? id, title: t(known.title as never) }
+    if (id.startsWith('context-')) {
+      const section = id.slice('context-'.length) as ContextSectionName
+      return { id, tab: 'documents', anchor: id, title: tp(`sections.${section}.title`) }
+    }
+    return null
+  }
+}
+
+/** Lleva hasta un bloque: cambia de pestaña si hace falta y baja hasta él, con el foco en él. */
+function useGoTo(setTab: (tab: Tab) => void) {
+  return (place: Pick<BlockPlace, 'tab' | 'anchor'>) => {
+    setTab(place.tab)
+    // Tras pintar la pestaña: antes, el bloque está oculto y no se puede bajar hasta él.
+    requestAnimationFrame(() => {
+      const target = document.getElementById(blockAnchor(place.anchor))
+      if (!target) return
+      const smooth = !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+      target.scrollIntoView?.({ behavior: smooth ? 'smooth' : 'auto', block: 'start' })
+      target.focus({ preventScroll: true })
+    })
+  }
+}
 
 /** El fichero no valida: se enseñan sus problemas, pero se puede seguir editando para arreglarlos. */
-function FileIssues() {
+function FileIssues({ onGo }: { onGo: (place: BlockPlace) => void }) {
   const { t } = useTranslation('profileEditor')
-  const { state, dirtyCount } = useProfileState()
+  const { state, dirtyBlocks } = useProfileState()
+  const place = usePlace()
+  const unsaved = [...dirtyBlocks].flatMap((id) => place(id) ?? [])
   return (
     <>
       {state.issues.length > 0 && (
@@ -206,26 +276,80 @@ function FileIssues() {
           </ul>
         </div>
       )}
-      {dirtyCount > 0 && (
-        <p role="status" className="mb-4 text-sm text-amber-700 dark:text-amber-400">
-          {t('unsaved.page', { count: dirtyCount })}
-        </p>
+      {/* Cada bloque se guarda con su botón: se nombran para ir a guardarlos sin buscar qué cambió. */}
+      {unsaved.length > 0 && (
+        <div
+          role="status"
+          className="mb-4 flex flex-wrap items-center gap-x-2 gap-y-1.5 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300"
+        >
+          <span className="font-medium">{t('unsaved.list')}</span>
+          {unsaved.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => onGo(item)}
+              aria-label={t('unsaved.goTo', { block: item.title, tab: t(`tabs.${item.tab}`) })}
+              className="rounded-full border border-amber-400/70 bg-background px-2.5 py-0.5 text-xs font-medium text-foreground outline-none hover:border-amber-600 focus-visible:ring-[3px] focus-visible:ring-ring/50"
+            >
+              {item.title}
+            </button>
+          ))}
+          <span className="text-xs text-amber-800/80 dark:text-amber-300/80">{t('unsaved.hint')}</span>
+        </div>
       )}
     </>
   )
 }
 
+/** El índice de «Experiencia y formación»: un enlace por apartado, con cuántos hay y si falta guardar. */
+function SectionNav({ onGo }: { onGo: (place: BlockPlace) => void }) {
+  const { t } = useTranslation('profileEditor')
+  const { profile, dirtyBlocks } = useProfileState()
+  const place = usePlace()
+  return (
+    <nav aria-label={t('sectionNav.label')}>
+      <ul className="flex flex-wrap gap-1.5">
+        {CAREER_BLOCKS.map((id) => {
+          const item = place(id)!
+          const count = profile[id]?.length ?? 0
+          const dirty = dirtyBlocks.has(id)
+          return (
+            <li key={id}>
+              <a
+                href={`#${blockAnchor(id)}`}
+                onClick={(event) => {
+                  event.preventDefault()
+                  onGo(item)
+                }}
+                className="flex items-baseline gap-1.5 rounded-full border bg-card px-3 py-1 text-sm text-foreground/80 transition-colors outline-none hover:border-foreground/30 focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                {item.title}
+                <span className="tabular text-xs text-muted-foreground">{count}</span>
+                {dirty && (
+                  <span className="size-1.5 self-center rounded-full bg-amber-500" role="img" aria-label={t('sectionNav.unsaved')} />
+                )}
+              </a>
+            </li>
+          )
+        })}
+      </ul>
+    </nav>
+  )
+}
+
 function Editor() {
   const { t } = useTranslation('profileEditor')
+  const [tab, setTab] = useState<Tab>('about')
+  const goTo = useGoTo(setTab)
   const hidden = 'data-[state=inactive]:hidden'
   return (
-    <Tabs defaultValue="about" className="gap-4">
-      <FileIssues />
+    <Tabs value={tab} onValueChange={(value) => setTab(value as Tab)} className="gap-4">
+      <FileIssues onGo={goTo} />
       {/* En móvil, la fila se desplaza en vez de partirse en dos. */}
       <TabsList className="scroll-row w-full justify-start gap-1">
-        {TABS.map((tab) => (
-          <TabsTrigger key={tab} value={tab} className="h-8 flex-none px-2.5">
-            {t(`tabs.${tab}`)}
+        {TABS.map((name) => (
+          <TabsTrigger key={name} value={name} className="h-8 flex-none px-2.5">
+            {t(`tabs.${name}`)}
           </TabsTrigger>
         ))}
       </TabsList>
@@ -234,12 +358,14 @@ function Editor() {
         <PersonalBlock />
       </TabsContent>
       <TabsContent value="career" forceMount className={cn('grid gap-6', hidden)}>
+        <SectionNav onGo={goTo} />
+        <SkillsBlock />
+        <LanguagesBlock />
         <ExperienceBlock />
         <ProjectsBlock />
         <EducationBlock />
         <CertificationsBlock />
         <ExtraSectionsBlock />
-        <SkillsBlock />
         <StoriesBlock />
       </TabsContent>
       <TabsContent value="search" forceMount className={cn('grid gap-6', hidden)}>

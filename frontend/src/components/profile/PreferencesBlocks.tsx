@@ -54,7 +54,7 @@ export function SearchRoleBlock() {
   const set = (change: Partial<Role>) => block.update((current) => ({ ...current, ...change }))
   const policyWords = state.policy_discard_title_keywords ?? []
   return (
-    <Block title={t('blocks.searchRole.title')} hint={t('blocks.searchRole.hint')}>
+    <Block id="search-role" title={t('blocks.searchRole.title')} hint={t('blocks.searchRole.hint')}>
       <TagsField label={t('fields.roles')} hint={t('fields.rolesHint')} value={d.roles} error={err('roles')} onChange={(v) => set({ roles: v })} />
       <ChoicesField
         label={t('fields.seniority')}
@@ -98,7 +98,7 @@ export function SearchExperienceBlock() {
   const minError = block.errors.get('preferences.min_years_required')
   const maxError = block.errors.get('preferences.max_years_required')
   return (
-    <Block title={t('blocks.searchExperience.title')} hint={t('blocks.searchExperience.hint')}>
+    <Block id="search-experience" title={t('blocks.searchExperience.title')} hint={t('blocks.searchExperience.hint')}>
       <fieldset className="grid content-start gap-1.5" aria-describedby={`${id}-hint`}>
         <legend className="mb-1 text-sm font-medium">{t('fields.years')}</legend>
         <div className="flex flex-wrap items-center gap-2">
@@ -255,7 +255,7 @@ export function SearchWhereBlock() {
   const set = (change: Partial<Where>) => block.update((current) => ({ ...current, ...change }))
   const locations = d.locations ?? {}
   return (
-    <Block title={t('blocks.searchWhere.title')} hint={t('blocks.searchWhere.hint')}>
+    <Block id="search-where" title={t('blocks.searchWhere.title')} hint={t('blocks.searchWhere.hint')}>
       <ChoicesField
         label={t('fields.remoteModes')}
         value={d.remote_modes}
@@ -315,7 +315,7 @@ export function SearchContractBlock() {
   const err = (path: string) => [...block.errors].find(([k]) => k.startsWith(`preferences.${path}`))?.[1]
   const set = (change: Partial<Contract>) => block.update((current) => ({ ...current, ...change }))
   return (
-    <Block title={t('blocks.searchContract.title')} hint={t('blocks.searchContract.hint')}>
+    <Block id="search-contract" title={t('blocks.searchContract.title')} hint={t('blocks.searchContract.hint')}>
       <div className="grid gap-4 sm:grid-cols-2">
         <ChoicesField
           label={t('fields.contractTypes')}
@@ -381,7 +381,7 @@ export function CvPreferencesBlock() {
     options.push({ value: d.default_template, label: d.default_template })
   }
   return (
-    <Block title={t('blocks.cv.title')} hint={t('blocks.cv.hint')}>
+    <Block id="cv" title={t('blocks.cv.title')} hint={t('blocks.cv.hint')}>
       <div className="grid gap-4 sm:grid-cols-2">
         <SelectField
           label={t('fields.defaultTemplate')}
@@ -443,7 +443,7 @@ export function LetterPreferencesBlock() {
   const set = (change: Partial<CoverLetterPreferences>) => block.update((current) => ({ ...current, ...change }))
   const signOff = d.sign_off ?? {}
   return (
-    <Block title={t('blocks.letter.title')} hint={t('blocks.letter.hint')}>
+    <Block id="letter" title={t('blocks.letter.title')} hint={t('blocks.letter.hint')}>
       <div className="grid gap-4 sm:grid-cols-2">
         <TextField label={t('fields.tone')} value={d.tone} onChange={(v) => set({ tone: v })} />
         <TextField

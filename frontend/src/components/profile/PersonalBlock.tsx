@@ -32,7 +32,7 @@ export function PersonalBlock() {
   const err = (path: string) => block.errors.get(path)
   const setPersonal = (key: string, value: string) => block.update((d) => ({ ...d, personal: { ...d.personal, [key]: value } }))
   return (
-    <Block title={t('blocks.personal.title')} hint={t('blocks.personal.hint')}>
+    <Block id="personal" title={t('blocks.personal.title')} hint={t('blocks.personal.hint')}>
       <div className="grid gap-4 sm:grid-cols-2">
         <TextField label={t('fields.name')} value={personal.name} error={err('personal.name')} onChange={(v) => setPersonal('name', v)} />
         <TextField

@@ -9,13 +9,15 @@ import { move, removeAt, replaceAt, useBlockEditor } from './editor'
 import { LANGUAGE_LEVELS, SKILL_LEVELS, type Language, type ProfileData, type Skill } from './types'
 
 interface Draft {
-  languages: Language[]
   skills: Skill[]
   basic_skills: string[]
 }
 
-const read = (p: ProfileData): Draft => ({ languages: p.languages ?? [], skills: p.skills ?? [], basic_skills: p.basic_skills ?? [] })
-const write = (d: Draft) => ({ languages: d.languages, skills: d.skills, basic_skills: d.basic_skills })
+const read = (p: ProfileData): Draft => ({ skills: p.skills ?? [], basic_skills: p.basic_skills ?? [] })
+const write = (d: Draft) => ({ skills: d.skills, basic_skills: d.basic_skills })
+
+const readLanguages = (p: ProfileData): Language[] => p.languages ?? []
+const writeLanguages = (d: Language[]) => ({ languages: d })
 
 const OTHER = '__other__'
 
@@ -55,20 +57,17 @@ function LanguageLevel({ value, onChange, error }: { value: string; onChange: (v
   )
 }
 
-/** Idiomas, skills con su nivel privado y skills básicas. Cambiar skills recalcula los scores. */
-export function SkillsBlock() {
+/** Idiomas con su nivel. Pueden cambiar el encaje con las ofertas que piden uno, así que se ve el diff. */
+export function LanguagesBlock() {
   const { t } = useTranslation('profileEditor')
-  const block = useBlockEditor('skills', read, write, { preview: true })
-  const { languages, skills, basic_skills } = block.draft
+  const block = useBlockEditor('languages', readLanguages, writeLanguages, { preview: true })
+  const languages = block.draft
   const err = (path: string) => block.errors.get(path)
   const setLanguage = (i: number, change: Partial<Language>) =>
-    block.update((d) => ({ ...d, languages: replaceAt(d.languages, i, { ...d.languages[i], ...change }) }))
-  const setSkill = (i: number, change: Partial<Skill>) =>
-    block.update((d) => ({ ...d, skills: replaceAt(d.skills, i, { ...d.skills[i], ...change }) }))
+    block.update((d) => replaceAt(d, i, { ...d[i], ...change }))
   return (
-    <Block title={t('blocks.skills.title')} hint={t('blocks.skills.hint')}>
+    <Block id="languages" title={t('blocks.languages.title')} hint={t('blocks.languages.hint')}>
       <div className="grid gap-2">
-        <h3 className="text-sm font-medium">{t('blocks.skills.languages')}</h3>
         {languages.map((lang, i) => (
           <div key={`${i}-${lang.language}`} role="group" aria-label={lang.language || t('fields.language')} className="grid gap-3 rounded-md bg-muted/40 p-3 sm:grid-cols-[1fr_12rem_1fr_auto]">
             <TextField label={t('fields.language')} value={lang.language} error={err(`languages.${i}.language`)} onChange={(v) => setLanguage(i, { language: v })} />
@@ -78,8 +77,8 @@ export function SkillsBlock() {
               label={lang.language || t('fields.language')}
               index={i}
               count={languages.length}
-              onMove={(delta) => block.update((d) => ({ ...d, languages: move(d.languages, i, delta) }))}
-              onRemove={() => block.update((d) => ({ ...d, languages: removeAt(d.languages, i) }))}
+              onMove={(delta) => block.update((d) => move(d, i, delta))}
+              onRemove={() => block.update((d) => removeAt(d, i))}
             />
           </div>
         ))}
@@ -88,13 +87,27 @@ export function SkillsBlock() {
           size="sm"
           variant="ghost"
           className="justify-self-start"
-          onClick={() => block.update((d) => ({ ...d, languages: [...d.languages, { language: '', level: '' }] }))}
+          onClick={() => block.update((d) => [...d, { language: '', level: '' }])}
         >
-          <PlusIcon /> {t('blocks.skills.addLanguage')}
+          <PlusIcon /> {t('blocks.languages.add')}
         </Button>
       </div>
+      <BlockActions block={block} />
+    </Block>
+  )
+}
+
+/** Skills con su nivel privado y skills básicas. Cambiarlas recalcula los scores. */
+export function SkillsBlock() {
+  const { t } = useTranslation('profileEditor')
+  const block = useBlockEditor('skills', read, write, { preview: true })
+  const { skills, basic_skills } = block.draft
+  const err = (path: string) => block.errors.get(path)
+  const setSkill = (i: number, change: Partial<Skill>) =>
+    block.update((d) => ({ ...d, skills: replaceAt(d.skills, i, { ...d.skills[i], ...change }) }))
+  return (
+    <Block id="skills" title={t('blocks.skills.title')} hint={t('blocks.skills.hint')}>
       <div className="grid gap-2">
-        <h3 className="text-sm font-medium">{t('blocks.skills.skills')}</h3>
         <p className="text-xs text-muted-foreground">{t('blocks.skills.levels')}</p>
         {skills.map((skill, i) => (
           <div key={`${i}-${skill.name}`} role="group" aria-label={skill.name || t('fields.skill')} className="grid gap-3 rounded-md bg-muted/40 p-3 sm:grid-cols-[1fr_8rem_1fr_auto]">

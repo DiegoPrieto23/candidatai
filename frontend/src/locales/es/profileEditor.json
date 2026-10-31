@@ -28,9 +28,22 @@
   },
   "unsaved": {
     "badge": "Sin guardar",
-    "page_one": "Tienes {{count}} bloque sin guardar.",
-    "page_other": "Tienes {{count}} bloques sin guardar.",
-    "confirm": "Tienes cambios sin guardar en «Mi perfil». ¿Salir sin guardarlos?"
+    "confirm": "Tienes cambios sin guardar en «Mi perfil». ¿Salir sin guardarlos?",
+    "list": "Sin guardar:",
+    "goTo": "Ir a «{{block}}» ({{tab}}) para guardarlo",
+    "hint": "Pulsa uno para ir hasta él y guardarlo."
+  },
+  "fold": {
+    "expandAll": "Desplegar todo",
+    "collapseAll": "Plegar todo",
+    "items_one": "{{count}} elemento",
+    "items_other": "{{count}} elementos",
+    "evidence_one": "{{count}} evidencia",
+    "evidence_other": "{{count}} evidencias"
+  },
+  "sectionNav": {
+    "label": "Ir a un apartado",
+    "unsaved": "sin guardar"
   },
   "actions": {
     "save": "Guardar",
@@ -73,8 +86,6 @@
       "achievementCount_one": "{{count}} logro",
       "achievementCount_other": "{{count}} logros",
       "achievementNumber": "Logro {{number}}",
-      "expandAll": "Desplegar todo",
-      "collapseAll": "Plegar todo",
       "errorsIn_one": "Revisa {{count}} empresa: tiene errores.",
       "errorsIn_other": "Revisa {{count}} empresas: tienen errores."
     },
@@ -101,12 +112,14 @@
       "untitled": "Sección nueva",
       "addItem": "Añadir elemento"
     },
+    "languages": {
+      "title": "Idiomas",
+      "hint": "Con tu nivel real. Salen en tus CVs y deciden qué ofertas pasan tus filtros cuando piden un idioma.",
+      "add": "Añadir idioma"
+    },
     "skills": {
-      "title": "Skills e idiomas",
+      "title": "Skills",
       "hint": "Los niveles son privados: deciden qué puede afirmar un CV, pero nunca salen en él. Al guardar se recalculan los scores.",
-      "languages": "Idiomas",
-      "addLanguage": "Añadir idioma",
-      "skills": "Skills",
       "levels": "F: fuerte, la usas a diario · C+: la has usado en proyectos reales · C: la conoces · B: básica, solo como «conocimientos de».",
       "addSkill": "Añadir skill"
     },

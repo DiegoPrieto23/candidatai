@@ -93,5 +93,14 @@
     "label": "Respuesta de la empresa por revisar",
     "from": "Correo de {{sender}}",
     "see": "Ver el correo"
+  },
+  "missingDetail": {
+    "title": "Falta el texto de la oferta",
+    "body": "Llegó como resumen desde una alerta por correo y trae poco más que el título y la empresa. Por seguridad tu agente no entra en LinkedIn, así que la completas tú con el botón «Enviar a CandidatAI» del navegador. Después tu agente ya puede leerla.",
+    "open": "Abre la oferta en su portal (en LinkedIn, con tu sesión iniciada).",
+    "openNoUrl": "Busca la oferta en su portal: no tiene enlace guardado.",
+    "openButton": "Abrir la oferta",
+    "send": "En esa pestaña, pulsa el botón <strong>Enviar a CandidatAI</strong> de la barra del navegador. La descripción se guarda aquí y la oferta pasa a «Por extraer».",
+    "install": "¿Aún no tienes el botón? <guide>Instálalo en unos minutos</guide>."
   }
 }

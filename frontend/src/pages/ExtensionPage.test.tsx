@@ -47,6 +47,10 @@ describe('«Dónde buscar → Botón del navegador»', () => {
 
     expect(await screen.findByRole('heading', { name: 'Cárgala en tu navegador' })).toBeInTheDocument()
     expect(screen.getByText('chrome://extensions')).toBeInTheDocument()
+    // La ventana de elegir carpeta no recuerda la del paso 1: la ruta, a la vista y para copiar.
+    expect(screen.getByText(STATUS.folder)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Copiar la ruta de la carpeta de la extensión' })).toBeInTheDocument()
+    expect(screen.getByText(/pega esta ruta/)).toBeInTheDocument()
     expect(screen.getByText(/Esperando a que la cargues/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Conectar' })).toBeDisabled()
     expect(screen.queryByText(/funciona en Chrome, Edge o Brave/)).not.toBeInTheDocument()

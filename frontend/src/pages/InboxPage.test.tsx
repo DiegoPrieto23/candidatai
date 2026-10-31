@@ -128,6 +128,41 @@ describe('Cabecera', () => {
   })
 })
 
+describe('Qué es cada etapa y cómo avanzar', () => {
+  const guide = () => screen.findByRole('region', { name: 'Qué es esta etapa y cómo avanzar' })
+
+  it('en «Todas», el recorrido entero', async () => {
+    mockApi({ 'GET /status': status(), 'GET /jobs': page() })
+    renderApp('/bandeja')
+    expect(await guide()).toHaveTextContent('Por completar → Por extraer → Por revisar')
+  })
+
+  it('en «Por completar», los pasos con la extensión y el enlace a su guía', async () => {
+    mockApi({ 'GET /status': status(0, 1), 'GET /jobs': page() })
+    renderApp('/bandeja?stage=pending_detail')
+    const box = await guide()
+    expect(box).toHaveTextContent('tu agente no entra en LinkedIn')
+    expect(within(box).getAllByRole('listitem')).toHaveLength(3)
+    expect(within(box).getByRole('link', { name: 'Instálalo en unos minutos' })).toHaveAttribute('href', '/fuentes/extension')
+    expect(within(box).getByRole('link', { name: 'Alertas' })).toHaveAttribute('href', '/alertas')
+  })
+
+  it('en «Por extraer» ofrece «Procesar ofertas» y en «Por revisar», ir a revisarlas o «Evaluar encaje»', async () => {
+    mockApi({ 'GET /status': status(0, 1), 'GET /jobs': page() })
+    const { unmount } = renderApp('/bandeja?stage=pending_extraction')
+    let box = await guide()
+    expect(within(box).getByRole('button', { name: 'Procesar ofertas' })).toBeInTheDocument()
+    expect(box).toHaveTextContent('calcula su score')
+    unmount()
+
+    renderApp('/bandeja?stage=pending_triage')
+    box = await guide()
+    expect(within(box).getByRole('link', { name: 'Ir a «Por revisar»' })).toHaveAttribute('href', '/por-revisar')
+    expect(within(box).getByRole('button', { name: 'Evaluar encaje' })).toBeInTheDocument()
+    expect(box).toHaveTextContent('No cambia la etapa')
+  })
+})
+
 describe('Descartar desde la Bandeja (fase 27.6)', () => {
   const summaries = () =>
     page([

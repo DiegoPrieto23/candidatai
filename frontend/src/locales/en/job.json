@@ -93,5 +93,14 @@
     "label": "Company reply to review",
     "from": "Email from {{sender}}",
     "see": "See the email"
+  },
+  "missingDetail": {
+    "title": "The job description is missing",
+    "body": "It came as a summary from an email alert and carries little more than the title and company. For safety your agent doesn't go into LinkedIn, so you complete it yourself with the browser's “Send to CandidatAI” button. Then your agent can read it.",
+    "open": "Open the job on its job board (on LinkedIn, signed in).",
+    "openNoUrl": "Look the job up on its job board: no link was saved.",
+    "openButton": "Open the job",
+    "send": "In that tab, click the <strong>Send to CandidatAI</strong> button in the browser toolbar. The description is saved here and the job moves to “To extract”.",
+    "install": "Don't have the button yet? <guide>Install it in a few minutes</guide>."
   }
 }

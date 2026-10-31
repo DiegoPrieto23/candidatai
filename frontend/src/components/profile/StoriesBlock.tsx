@@ -1,9 +1,11 @@
-import { PlusIcon } from '@phosphor-icons/react'
+import { ChatTextIcon, PlusIcon } from '@phosphor-icons/react'
 import { useTranslation } from 'react-i18next'
 import { AgentButton } from '@/components/AgentButton'
 import { Button } from '@/components/ui/button'
 import { Block, BlockActions, ItemControls, TextField } from './fields'
 import { move, removeAt, replaceAt, useBlockEditor, useProfileState } from './editor'
+import { FoldAllButton, FoldItem } from './fold'
+import { useListFolding } from './folding'
 import { evidenceOptions, type ProfileData, type Story } from './types'
 
 const read = (p: ProfileData): Story[] => p.stories ?? []
@@ -17,6 +19,7 @@ export function StoriesBlock() {
   const { t } = useTranslation('profileEditor')
   const { profile } = useProfileState()
   const block = useBlockEditor('stories', read, write)
+  const folding = useListFolding(block, 'stories')
   const options = evidenceOptions(profile)
   const savedIds = new Set((profile.stories ?? []).map((s) => s.id))
   const missingEvidence = block.draft.some((s) => s.evidence.length === 0)
@@ -24,12 +27,22 @@ export function StoriesBlock() {
   const set = (i: number, change: Partial<Story>) => block.update((d) => replaceAt(d, i, { ...d[i], ...change }))
   return (
     <Block
+      id="stories"
       title={t('blocks.stories.title')}
       hint={t('blocks.stories.hint')}
       actions={
         <div className="flex flex-wrap gap-2">
           <AgentButton action="propose-stories">{t('agent.propose')}</AgentButton>
-          <Button type="button" size="sm" variant="outline" onClick={() => block.update((d) => [...d, { ...EMPTY }])}>
+          {block.draft.length > 0 && <FoldAllButton allOpen={folding.allOpen} onClick={folding.toggleAll} />}
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              folding.openNew(block.draft.length)
+              block.update((d) => [...d, { ...EMPTY }])
+            }}
+          >
             <PlusIcon /> {t('blocks.stories.add')}
           </Button>
         </div>
@@ -39,9 +52,15 @@ export function StoriesBlock() {
         const label = story.title || t('blocks.stories.untitled')
         const path = `stories.${i}`
         return (
-          <article key={story.id ?? `new-${i}`} aria-label={label} className="grid gap-3 rounded-lg border p-3">
-            <div className="flex items-center justify-between gap-2">
-              <TextField className="flex-1" label={t('fields.storyTitle')} value={story.title} error={err(`${path}.title`)} onChange={(v) => set(i, { title: v })} />
+          <FoldItem
+            key={folding.keyOf(story, i)}
+            label={label}
+            title={label}
+            summary={t('fold.evidence', { count: story.evidence.length })}
+            icon={<ChatTextIcon weight="duotone" />}
+            open={folding.isOpen(story, i)}
+            onOpenChange={(open) => folding.setOpen(story, i, open)}
+            controls={
               <ItemControls
                 label={label}
                 index={i}
@@ -49,7 +68,9 @@ export function StoriesBlock() {
                 onMove={(delta) => block.update((d) => move(d, i, delta))}
                 onRemove={() => block.update((d) => removeAt(d, i))}
               />
-            </div>
+            }
+          >
+            <TextField label={t('fields.storyTitle')} value={story.title} error={err(`${path}.title`)} onChange={(v) => set(i, { title: v })} />
             <div className="grid gap-3 sm:grid-cols-2">
               {STAR.map((part) => (
                 <TextField
@@ -97,7 +118,7 @@ export function StoriesBlock() {
                 {t('agent.improve')}
               </AgentButton>
             )}
-          </article>
+          </FoldItem>
         )
       })}
       {missingEvidence && <p className="text-sm text-muted-foreground">{t('blocks.stories.needEvidence')}</p>}

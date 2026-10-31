@@ -10,15 +10,21 @@
     "use": "Fíjala en la barra y úsala"
   },
   "install": {
-    "folder": "Abre la carpeta de la extensión: es la que vas a elegir en el paso 4.",
+    "folder": "Abre la carpeta de la extensión para ver dónde está. Es la que vas a elegir en el paso 4 (allí tienes su ruta para copiarla).",
     "openFolder": "Abrir la carpeta de la extensión",
     "noFolder": "No encuentro la carpeta de la extensión en esta instalación. Vuelve a instalar CandidatAI.",
     "page": "En una pestaña nueva, pega esta dirección y pulsa Intro:",
     "devMode": "Activa el <strong>Modo de desarrollador</strong> (arriba a la derecha).",
     "devModeEdge": "Activa el <strong>Modo de desarrollador</strong> (en el panel de la izquierda).",
-    "load": "Pulsa <strong>Cargar descomprimida</strong> y elige la carpeta que abriste en el paso 1.",
+    "load": {
+      "windows": "Pulsa <strong>Cargar descomprimida</strong>. Se abre una ventana para elegir una carpeta: haz clic en la barra de direcciones de arriba, pega esta ruta, pulsa Intro y después <strong>Seleccionar carpeta</strong>.",
+      "mac": "Pulsa <strong>Cargar descomprimida</strong>. Se abre una ventana para elegir una carpeta: pulsa <strong>Cmd+Mayús+G</strong>, pega esta ruta, pulsa Intro y después <strong>Seleccionar</strong>.",
+      "linux": "Pulsa <strong>Cargar descomprimida</strong>. Se abre una ventana para elegir una carpeta: pulsa <strong>Ctrl+L</strong>, pega esta ruta, pulsa Intro y después <strong>Seleccionar</strong>.",
+      "whole": "Se elige la carpeta <strong>extension</strong> entera, sin entrar en ella ni abrir ningún fichero de dentro."
+    },
     "update": "Si ya la tenías cargada, no la cargues otra vez: pulsa el botón de recargar (<strong>⟳</strong>) de su tarjeta.",
-    "waiting": "Esperando a que la cargues. Cuando lo hagas, esta página pasa sola al paso siguiente."
+    "waiting": "Esperando a que la cargues. Cuando lo hagas, esta página pasa sola al paso siguiente.",
+    "copyFolder": "Copiar la ruta de la carpeta de la extensión"
   },
   "connect": {
     "body": "Un clic y listo: CandidatAI le da a la extensión una clave que solo vale en este equipo. No tienes que copiar nada.",

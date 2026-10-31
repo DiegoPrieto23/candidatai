@@ -10,12 +10,31 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Cada etapa de la Bandeja explica qué es y cómo avanzar:** al elegir «Por completar», «Por
+  extraer», «Por revisar»… sale qué falta y quién lo hace, con el botón que lo hace («Procesar
+  ofertas», «Evaluar encaje», «Ir a Por revisar»). Así se ve la diferencia: «Procesar ofertas» lee
+  las ofertas nuevas y les da score; «Evaluar encaje» añade la opinión de tu agente a las que ya lo
+  tienen.
+- **Las ofertas «Por completar» dicen qué les falta:** en su ficha, un aviso explica que falta la
+  descripción, abre la oferta en su portal y te dice que pulses «Enviar a CandidatAI», con un
+  enlace a la guía para instalar el botón. En la Bandeja, los mismos pasos.
+- **Índice en «Mi perfil → Experiencia y formación»:** una fila de enlaces lleva a cada apartado
+  (Skills, Idiomas, Experiencia, Proyectos…), con cuántos tiene y un punto si falta guardar.
 - **Instalar el botón «Enviar a CandidatAI» sin terminal:** nueva pestaña **Dónde buscar → Botón
   del navegador**. Detecta la extensión sola, te guía para cargarla en Chrome, Edge o Brave (con
   un botón que abre su carpeta), avisa si tienes una versión antigua y la conecta con un clic: ya
   no hace falta generar un token y pegarlo en sus opciones.
 
 ### Cambiado
+- **Instalar la extensión, más claro:** el paso «Cargar descomprimida» enseña la ruta de su carpeta
+  con un botón para copiarla y dice dónde pegarla en la ventana de elegir carpeta (en Windows,
+  macOS y Linux).
+- **«Mi perfil», más fácil de recorrer:** proyectos, formación, certificaciones, otras secciones e
+  historias STAR arrancan plegados, como las empresas, con «Desplegar todo». Skills e Idiomas van
+  arriba, cada uno en su bloque con su botón de guardar. El aviso de cambios sin guardar nombra
+  los bloques («Sin guardar: Idiomas, Puesto») y, al pulsar uno, te lleva hasta él.
+- **«Ajustes y registro» de cada plataforma, plegado siempre:** los incidentes del último
+  recorrido ya se cuentan en su línea.
 - **Extensión 0.2.0:** si no está conectada, su botón ofrece «Conectar con CandidatAI», que abre
   esa página de la app; sus avisos ya no piden comandos. «Abrir ficha» usa la dirección de
   `cai start` (antes, la del modo desarrollo). Si ya la tenías, pulsa ⟳ en su tarjeta en

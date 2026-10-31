@@ -10,15 +10,21 @@
     "use": "Pin it to the toolbar and use it"
   },
   "install": {
-    "folder": "Open the extension's folder: it's the one you'll choose in step 4.",
+    "folder": "Open the extension folder to see where it is. It's the one you'll pick in step 4 (its path is there, ready to copy).",
     "openFolder": "Open the extension folder",
     "noFolder": "I can't find the extension folder in this installation. Reinstall CandidatAI.",
     "page": "In a new tab, paste this address and press Enter:",
     "devMode": "Turn on <strong>Developer mode</strong> (top right).",
     "devModeEdge": "Turn on <strong>Developer mode</strong> (in the left panel).",
-    "load": "Press <strong>Load unpacked</strong> and choose the folder you opened in step 1.",
+    "load": {
+      "windows": "Click <strong>Load unpacked</strong>. A window to pick a folder opens: click the address bar at the top, paste this path, press Enter and then <strong>Select Folder</strong>.",
+      "mac": "Click <strong>Load unpacked</strong>. A window to pick a folder opens: press <strong>Cmd+Shift+G</strong>, paste this path, press Enter and then <strong>Select</strong>.",
+      "linux": "Click <strong>Load unpacked</strong>. A window to pick a folder opens: press <strong>Ctrl+L</strong>, paste this path, press Enter and then <strong>Select</strong>.",
+      "whole": "Pick the whole <strong>extension</strong> folder, without going into it or opening any file inside."
+    },
     "update": "If you already had it loaded, don't load it again: press the reload button (<strong>⟳</strong>) on its card.",
-    "waiting": "Waiting for you to load it. When you do, this page moves on to the next step by itself."
+    "waiting": "Waiting for you to load it. When you do, this page moves on to the next step by itself.",
+    "copyFolder": "Copy the extension folder path"
   },
   "connect": {
     "body": "One click and you're done: CandidatAI gives the extension a key that only works on this computer. You don't have to copy anything.",

@@ -63,5 +63,53 @@
     "clearSelection": "Clear selection",
     "discardMany_one": "Discard {{count}}",
     "discardMany_other": "Discard {{count}}"
+  },
+  "guide": {
+    "label": "What this stage is and how to move on",
+    "nextLabel": "To move on:",
+    "processJobs": "Process jobs",
+    "assessFit": "Assess fit",
+    "openTriage": "Go to “To review”",
+    "all": {
+      "what": "All your jobs, whatever their stage. Each job moves along: To complete → To extract → To review → Approved → CV ready → Applied → In process.",
+      "next": "pick a stage in the row below to see only its jobs and what to do with them."
+    },
+    "pending_detail": {
+      "what": "Jobs that reached you as a summary, usually from LinkedIn email alerts: their description is missing. For safety your agent doesn't go into LinkedIn, so you do this step yourself with the browser's “Send to CandidatAI” button.",
+      "steps": {
+        "open": "Click <strong>Open</strong> on a job: it opens on its job board (on LinkedIn, signed in).",
+        "send": "In that tab, click the <strong>Send to CandidatAI</strong> button in the browser toolbar. It saves the description and the job moves to “To extract”.",
+        "discard": "If the title already tells you it's not for you, discard it right here, without opening it."
+      },
+      "extension": "Don't have the button yet? <extension>Install it in a few minutes</extension>. You can also go through them one by one, with keyboard shortcuts, in <alerts>Alerts</alerts>."
+    },
+    "pending_extraction": {
+      "what": "Jobs with their full description that your agent hasn't read yet.",
+      "next": "click “Process jobs”. Your agent pulls out the role, skills, work mode and salary of each one, and the app scores it (0 to 100) against your profile. Those that don't pass your filters (work mode, location…) close by themselves; the rest move to “To review”."
+    },
+    "pending_triage": {
+      "what": "Jobs already read and scored, waiting for your decision.",
+      "next": "go through them in <triage>To review</triage> and approve or discard them. If you'd like an opinion first, “Assess fit” has your agent compare each one with your profile and write why it fits or not. It doesn't change the stage: you decide."
+    },
+    "approved": {
+      "what": "Jobs you approved. They still need their tailored CV.",
+      "next": "open each one and, in the “Application” tab, click “Generate CV”. Your agent writes it using only your profile and checks it; once it's there, the job moves to “CV ready”."
+    },
+    "cv_ready": {
+      "what": "Jobs with their tailored CV ready, not sent yet.",
+      "next": "in each job's “Application” tab, review the CV, prepare the cover letter or the answers if asked, and send the application yourself on the job board. Then click “Mark as sent” and it moves to “Applied”."
+    },
+    "applied": {
+      "what": "Applications sent, waiting for the company to answer.",
+      "next": "when they invite you to an interview or a test, note it in the job's “Process” tab, or accept the proposal in <replies>Replies</replies> if the app read the email, and it moves to “In process”. If they take long to answer, the app reminds you to follow up."
+    },
+    "in_process": {
+      "what": "Processes with interviews or tests under way.",
+      "next": "follow them in <processes>Processes</processes>: note each interview, prepare it with your agent and record how it ends, with an offer or a closure."
+    },
+    "closed": {
+      "what": "The end of the road: jobs discarded, rejected, expired, duplicated or that didn't pass your filters.",
+      "next": "nothing to do. If you closed one by mistake, open it and click “Reopen”."
+    }
   }
 }

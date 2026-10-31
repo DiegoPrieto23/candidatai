@@ -514,7 +514,8 @@ function PlatformRow({ source, order, limits }: { source: SourceView; order: Slo
 
       {/* La búsqueda pública de LinkedIn, a la vista solo si está activada: es otra forma de buscar. */}
       {linkedin && publicEnabled && <LinkedInPublicPanel />}
-      <Reveal label={t('row.settings')} className="space-y-3" defaultOpen={(source.last_run?.errors.length ?? 0) > 0}>
+      {/* Plegado siempre: los incidentes ya se cuentan en la línea del último recorrido. */}
+      <Reveal label={t('row.settings')} className="space-y-3">
         <div className="flex flex-wrap gap-3">
           <div className="grid gap-1">
             <span className="flex items-center gap-1 text-xs text-muted-foreground">

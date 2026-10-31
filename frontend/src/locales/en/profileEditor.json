@@ -28,9 +28,22 @@
   },
   "unsaved": {
     "badge": "Not saved",
-    "page_one": "You have {{count}} block not saved.",
-    "page_other": "You have {{count}} blocks not saved.",
-    "confirm": "You have unsaved changes in My profile. Leave without saving them?"
+    "confirm": "You have unsaved changes in My profile. Leave without saving them?",
+    "list": "Not saved:",
+    "goTo": "Go to “{{block}}” ({{tab}}) to save it",
+    "hint": "Click one to go to it and save it."
+  },
+  "fold": {
+    "expandAll": "Expand all",
+    "collapseAll": "Collapse all",
+    "items_one": "{{count}} item",
+    "items_other": "{{count}} items",
+    "evidence_one": "{{count}} piece of evidence",
+    "evidence_other": "{{count}} pieces of evidence"
+  },
+  "sectionNav": {
+    "label": "Go to a section",
+    "unsaved": "not saved"
   },
   "actions": {
     "save": "Save",
@@ -73,8 +86,6 @@
       "achievementCount_one": "{{count}} achievement",
       "achievementCount_other": "{{count}} achievements",
       "achievementNumber": "Achievement {{number}}",
-      "expandAll": "Expand all",
-      "collapseAll": "Collapse all",
       "errorsIn_one": "Check {{count}} company: it has errors.",
       "errorsIn_other": "Check {{count}} companies: they have errors."
     },
@@ -101,12 +112,14 @@
       "untitled": "New section",
       "addItem": "Add item"
     },
+    "languages": {
+      "title": "Languages",
+      "hint": "At your real level. They appear in your CVs and decide which jobs pass your filters when they ask for a language.",
+      "add": "Add language"
+    },
     "skills": {
-      "title": "Skills and languages",
+      "title": "Skills",
       "hint": "Levels are private: they decide what a CV may claim, but never appear in it. Saving recalculates the scores.",
-      "languages": "Languages",
-      "addLanguage": "Add language",
-      "skills": "Skills",
       "levels": "F: strong, you use it daily · C+: used in real projects · C: you know it · B: basic, only as \"knowledge of\".",
       "addSkill": "Add skill"
     },
