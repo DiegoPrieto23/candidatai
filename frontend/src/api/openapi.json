@@ -14292,6 +14292,118 @@
         }
       }
     },
+    "/profile": {
+      "post": {
+        "tags": [
+          "profile"
+        ],
+        "summary": "Create Profile",
+        "description": "«Empezar a mano»: crea tu perfil mínimo sin agente. `conflict` si ya existe el fichero.",
+        "operationId": "create_profile",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MinimalProfile"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/profile/sections/{section}": {
       "put": {
         "tags": [
@@ -18521,13 +18633,18 @@
           },
           "background": {
             "$ref": "#/components/schemas/BackgroundInfo"
+          },
+          "no_agent_installed": {
+            "type": "boolean",
+            "title": "No Agent Installed"
           }
         },
         "type": "object",
         "required": [
           "available",
           "actions",
-          "background"
+          "background",
+          "no_agent_installed"
         ],
         "title": "AgentStatus"
       },
@@ -21239,6 +21356,24 @@
           "weight"
         ],
         "title": "CoveredSkill"
+      },
+      "CreateResult": {
+        "properties": {
+          "file_hash": {
+            "type": "string",
+            "title": "File Hash"
+          },
+          "profile_version_id": {
+            "type": "integer",
+            "title": "Profile Version Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file_hash",
+          "profile_version_id"
+        ],
+        "title": "CreateResult"
       },
       "CvBriefInput": {
         "properties": {
@@ -27012,6 +27147,77 @@
           "status"
         ],
         "title": "MilestoneStatusChange"
+      },
+      "MinimalProfile": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "headline": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Headline"
+          },
+          "role": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Role",
+            "description": "El puesto que buscas."
+          },
+          "seniority": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "intern",
+                "junior",
+                "mid",
+                "senior",
+                "lead"
+              ]
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Seniority",
+            "description": "Los niveles que aceptas."
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "es",
+              "en"
+            ],
+            "title": "Language",
+            "description": "El idioma del resumen y el de trabajo.",
+            "default": "es"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "headline",
+          "role",
+          "seniority"
+        ],
+        "title": "MinimalProfile",
+        "description": "Lo justo para empezar sin agente («Empezar a mano» en «Mi perfil»).\n\nLo que dice de ti lo escribes tú; las preferencias de búsqueda (modalidad, foto) arrancan con\nvalores amplios que cambias después en el editor. Nada se inventa: sin resumen, el resumen es tu\ntitular."
       },
       "ModelChoice": {
         "properties": {

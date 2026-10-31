@@ -11,7 +11,7 @@
     "unreadable": "Your profile file has an error and can't be read. Ask your agent to fix it (“check and fix my profile”).",
     "start": {
       "title": "Start with your CV",
-      "intro": "You don't have a profile yet, and there's no need to fill it in by hand: your agent builds it from your CV.",
+      "intro": "The quickest way: your agent builds it from your CV, with nothing for you to fill in. No CV or no agent? Start by hand, below.",
       "upload": "Upload your CV, as PDF or Word. It stays on your computer, with your documents.",
       "agent": "Your agent reads it and fills in your profile section by section. It asks about what the CV doesn't say (your skill levels, the figures behind your achievements, what you're looking for) and saves nothing without your OK.",
       "review": "When it's done, your profile shows up here on its own, ready to review block by block.",
@@ -19,8 +19,24 @@
       "uploadAnother": "Upload another CV",
       "uploading": "Uploading…",
       "fileLabel": "Your CV",
-      "uploaded": "CV uploaded: {{name}}",
-      "manual": "Rather not use your CV? Ask your agent to “create my profile” and it will ask you as it goes."
+      "uploaded": "CV uploaded: {{name}}"
+    },
+    "byHand": {
+      "title": "Start by hand",
+      "intro": "No CV or no agent? Write the basics and fill in the rest block by block, right here.",
+      "open": "Start by hand",
+      "headlineHint": "What you'd put under your name on a CV, e.g. “Data Analyst · SQL · Power BI”.",
+      "role": "Role you're looking for",
+      "roleHint": "One to start with; add more later in “Search”.",
+      "summary": "Summary (optional)",
+      "summaryHint": "Two or three sentences about you. Left empty, your headline is used.",
+      "defaults": "Everything else (work mode, locations, photo on the CV…) starts open to anything and you change it in “Search” and “Documents”. Your experience and skills go in “Experience and education”.",
+      "required": "Needed to create your profile.",
+      "pickOne": "Pick at least one.",
+      "create": "Create my profile",
+      "creating": "Creating…",
+      "cancel": "Cancel",
+      "exists": "You already have a profile: your agent just created it, or it was created in another tab. Opening it now."
     }
   },
   "issues": {

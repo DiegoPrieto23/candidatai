@@ -7,6 +7,7 @@ import {
   GearSixIcon,
   SparkleIcon,
   TerminalWindowIcon,
+  XIcon,
 } from '@phosphor-icons/react'
 import { useTranslation } from 'react-i18next'
 import { ApiError } from '@/api/client'
@@ -17,6 +18,7 @@ import {
   useStartAgentRun,
   type AgentAction,
 } from '@/api/queries'
+import { CommandBox } from '@/components/CommandBox'
 import { Hint } from '@/components/Hint'
 import { Button } from '@/components/ui/button'
 import {
@@ -38,20 +40,11 @@ type Feedback = {
   link?: boolean
 } | null
 
-async function copy(text: string): Promise<boolean> {
-  if (!navigator.clipboard) return false
-  try {
-    await navigator.clipboard.writeText(text)
-    return true
-  } catch {
-    return false
-  }
-}
-
 /**
  * Botón que abre tu agente en una terminal con la orden de un skill ya escrita. Lo que
  * haga el agente lo ves y lo apruebas tú en esa terminal. Si no se puede abrir (otro sistema,
- * agente no instalado), copia la orden para que la pegues en tu agente.
+ * agente no instalado), enseña la orden entera, con «Copiar», y dónde pegarla; sin ningún agente
+ * instalado, enlaza a cómo instalar uno. Ese recuadro no se va solo: se cierra con su botón.
  *
  * El desplegable de al lado (fase 19) ofrece «En segundo plano» (sin ventana, desde el worker, solo
  * en los skills que no preguntan) y «Dejar para mi próxima sesión» (cola de encargos).
@@ -104,10 +97,13 @@ export function AgentButton({
   const startRun = useStartAgentRun()
   const leave = useCreateAgentRequest()
   const [feedback, setFeedback] = useState<Feedback>(null)
+  // La orden que no se pudo abrir: se queda a la vista hasta cerrarla.
+  const [prompt, setPrompt] = useState<string | null>(null)
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
   useEffect(() => () => clearTimeout(timer.current), [])
 
   const show = (next: Feedback) => {
+    setPrompt(null)
     setFeedback(next)
     clearTimeout(timer.current)
     timer.current = setTimeout(() => setFeedback(null), 8000)
@@ -125,16 +121,12 @@ export function AgentButton({
         show({ tone: 'ok', text: (warning ? `${opened} ${t('warning', { warning })}` : opened) + watched })
         watchFor(action, result.job_id ?? jobId, milestoneId)
       },
-      onError: async (error) => {
-        const prompt = error instanceof ApiError ? error.details.find((d) => d.field === 'prompt')?.received : null
-        if (prompt) {
-          const copied = await copy(prompt)
-          show({
-            tone: 'info',
-            text: copied
-              ? t('copiedPrompt', { error: errorMessage(error) })
-              : t('pastePrompt', { prompt }),
-          })
+      onError: (error) => {
+        const order = error instanceof ApiError ? error.details.find((d) => d.field === 'prompt')?.received : null
+        if (order) {
+          clearTimeout(timer.current)
+          setFeedback(null)
+          setPrompt(order)
         } else {
           failed(error, t('openFailed'))
         }
@@ -308,6 +300,23 @@ export function AgentButton({
           </DropdownMenuContent>
         </DropdownMenu>
       </span>
+      {prompt && (
+        <span role="group" aria-labelledby={`${hintId}-prompt`} className="grid w-full max-w-md gap-2 rounded-lg border border-warning-border bg-warning/40 p-3 text-sm">
+          <span className="flex items-start justify-between gap-2">
+            <span id={`${hintId}-prompt`} aria-live="polite" className="font-medium">{launcher.data?.no_agent_installed ? t('noAgent') : t('cantOpen')}</span>
+            <Button type="button" size="icon-sm" variant="ghost" className="-mt-1 -mr-1" aria-label={t('closePrompt')} onClick={() => setPrompt(null)}>
+              <XIcon />
+            </Button>
+          </span>
+          <span className="text-muted-foreground">{t('pasteWhere')}</span>
+          <CommandBox text={prompt} label={t('promptLabel')} />
+          {launcher.data?.no_agent_installed && (
+            <Link to="/agente" className="text-primary underline underline-offset-4">
+              {t('howToInstall')}
+            </Link>
+          )}
+        </span>
+      )}
       <span
         role="status"
         className={cn(

@@ -103,5 +103,21 @@
   },
   "others_one": "Another compatible agent ({{count}})",
   "others_other": "Other compatible agents ({{count}})",
-  "fineTune": "Choose agent and model per action"
+  "fineTune": "Choose agent and model per action",
+  "getAgent": {
+    "title": "You need an AI agent",
+    "why": "CandidatAI keeps your search in order, but <strong>it doesn't read jobs or write CVs on its own</strong>: an AI agent does that, a program you install on your computer that uses your subscription. It isn't the Claude chat app or claude.ai: it's a separate program, like <strong>Claude Code</strong>, included in Claude Pro.",
+    "step1": "<strong>Pick one.</strong> If you're not sure, Claude Code: it's the most tested with CandidatAI and comes with Claude Pro. If you already pay for ChatGPT Plus, Codex.",
+    "step2": {
+      "windows": "<strong>Install it.</strong> Open PowerShell (press the Windows key, type “PowerShell” and press Enter), paste this command with a right click and press Enter:",
+      "mac": "<strong>Install it.</strong> Open Terminal (press Cmd and the space bar, type “Terminal” and press Enter), paste this command and press Enter:",
+      "linux": "<strong>Install it.</strong> Open a terminal, paste this command and press Enter:"
+    },
+    "step3": "<strong>Sign in.</strong> When it's done, open another window like that one, type “claude”, press Enter and follow the steps to sign in with your Claude account.",
+    "step4": "Close CandidatAI and open it again from its shortcut: the buttons with sparkles will open your agent with the command already written.",
+    "commandLabel": "Command to install Claude Code",
+    "guide": "The step-by-step guide",
+    "otherAgents": "Other agents, in “Agent”"
+  },
+  "details": "Your agents in detail: versions, models and which one opens what"
 }

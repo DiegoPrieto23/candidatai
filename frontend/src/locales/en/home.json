@@ -19,7 +19,9 @@
     "searchJobs": "Search jobs",
     "processJobs": "Process jobs",
     "assessFit": "Assess fit",
-    "reviewReplies": "Review replies"
+    "reviewReplies": "Review replies",
+    "firstSteps_one": "One first step left to get started.",
+    "firstSteps_other": "{{count}} first steps left to get started."
   },
   "track": {
     "title": "Your jobs' journey",
@@ -50,17 +52,20 @@
   },
   "firstSteps": {
     "title": "Getting started",
-    "intro": "Two steps and your agent starts searching for you. No need to fill anything in by hand.",
+    "intro": "Two steps to get started:",
     "profile": {
       "title": "Create your profile from your CV",
-      "body": "Upload your CV (PDF or Word) and your agent fills in your profile: it asks about what the CV doesn't say and saves nothing without your OK.",
-      "done": "Profile created: review it in “My profile”"
+      "body": "Upload your CV (PDF or Word) and press “Create my profile from my CV”: your agent reads it, asks you what the CV doesn't say and saves nothing without your OK.",
+      "done": "Profile created: review it in “My profile”",
+      "byHand": "No CV or no agent? Start by hand in “My profile”"
     },
     "search": {
       "title": "Choose where to search",
       "body": "Your agent asks which job boards you use, recommends others and prepares the searches with the roles in your profile.",
       "manual": "or add a job board yourself",
       "done": "Job boards set up: see them in “Where to search”"
-    }
+    },
+    "whatItDoes": "CandidatAI keeps your job search in order: it stores the jobs you're interested in, tells you which ones fit you and prepares a CV for each one.",
+    "whatIsTheAgent": "The part that needs AI (reading the jobs, assessing them, writing your CVs) is done by your agent: the AI program you have installed on your computer, like Claude Code or Codex. The app alone doesn't read jobs or write CVs. <agent>What it is and how to install it, in “Agent”</agent>."
   }
 }

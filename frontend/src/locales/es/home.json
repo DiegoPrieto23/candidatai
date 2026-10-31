@@ -19,7 +19,9 @@
     "searchJobs": "Buscar ofertas",
     "processJobs": "Procesar ofertas",
     "assessFit": "Evaluar encaje",
-    "reviewReplies": "Revisar respuestas"
+    "reviewReplies": "Revisar respuestas",
+    "firstSteps_one": "Te queda un primer paso para empezar.",
+    "firstSteps_other": "Te quedan {{count}} primeros pasos para empezar."
   },
   "track": {
     "title": "Recorrido de tus ofertas",
@@ -50,17 +52,20 @@
   },
   "firstSteps": {
     "title": "Primeros pasos",
-    "intro": "Dos pasos y tu agente empieza a buscar por ti. No hace falta rellenar nada a mano.",
+    "intro": "Dos pasos para empezar:",
     "profile": {
       "title": "Crea tu perfil desde tu CV",
-      "body": "Sube tu CV (PDF o Word) y tu agente rellena tu perfil: te pregunta lo que el CV no dice y no guarda nada sin tu OK.",
-      "done": "Perfil creado: revísalo en «Mi perfil»"
+      "body": "Sube tu CV (PDF o Word) y pulsa «Crear mi perfil desde mi CV»: tu agente lo lee, te pregunta lo que el CV no dice y no guarda nada sin tu OK.",
+      "done": "Perfil creado: revísalo en «Mi perfil»",
+      "byHand": "¿Sin CV o sin agente? Empieza a mano en «Mi perfil»"
     },
     "search": {
       "title": "Elige dónde buscar",
       "body": "Tu agente te pregunta en qué portales de empleo buscas, te recomienda otros y prepara las búsquedas con los puestos de tu perfil.",
       "manual": "o añade un portal tú",
       "done": "Portales configurados: míralos en «Dónde buscar»"
-    }
+    },
+    "whatItDoes": "CandidatAI ordena tu búsqueda de empleo: guarda las ofertas que te interesan, te dice cuáles encajan contigo y prepara un CV para cada una.",
+    "whatIsTheAgent": "La parte que necesita IA (leer las ofertas, valorarlas, escribir tus CVs) la hace tu agente: el programa de IA que tienes instalado en tu equipo, como Claude Code o Codex. La app sola no lee ofertas ni escribe CVs. <agent>Qué es y cómo se instala, en «Agente»</agent>."
   }
 }

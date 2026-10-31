@@ -182,6 +182,11 @@ function lastPut(calls: ReturnType<typeof mockApi>) {
   return calls.filter((c) => c.method === 'PUT' && c.path === '/agent/preferences').at(-1)?.body
 }
 
+/** En «Agente», el detalle de los agentes va plegado bajo el resumen (fase 31). */
+async function openAgents() {
+  await userEvent.click(await screen.findByRole('button', { name: /^Tus agentes en detalle/ }))
+}
+
 /** Los agentes sin instalar y el ajuste por acción van plegados. */
 async function openOthers() {
   await userEvent.click(await screen.findByRole('button', { name: /^Otros? agentes? compatibles? \(/ }))
@@ -195,6 +200,7 @@ describe('Sección «Agentes» (fase 24.4)', () => {
   it('enseña una tarjeta por agente con insignias, instalación y subagentes', async () => {
     page()
     renderApp('/agente')
+    await openAgents()
     const claude = await screen.findByRole('listitem', { name: 'Claude Code' })
     expect(within(claude).getByText('claude 1.0')).toBeInTheDocument()
     expect(within(claude).getByText('Delega con seguridad (nivel A)')).toBeInTheDocument()
@@ -223,6 +229,7 @@ describe('Sección «Agentes» (fase 24.4)', () => {
   it('el selector cambia el agente por defecto', async () => {
     const calls = page()
     renderApp('/agente')
+    await openAgents()
     const select = await screen.findByLabelText('Agente por defecto')
     expect(within(select).getByRole('option', { name: 'OpenCode (No instalado)' })).toBeInTheDocument()
     await userEvent.selectOptions(select, 'codex')
@@ -232,6 +239,7 @@ describe('Sección «Agentes» (fase 24.4)', () => {
   it('guarda el modelo o el preset de un agente', async () => {
     const calls = page()
     renderApp('/agente')
+    await openAgents()
     const claude = await screen.findByRole('listitem', { name: 'Claude Code' })
     await userEvent.type(within(claude).getByLabelText('Modelo'), 'sonnet{Enter}')
     await waitFor(() =>
@@ -247,6 +255,7 @@ describe('Sección «Agentes» (fase 24.4)', () => {
   it('la tabla «Por acción» anula el agente y enseña el efectivo con su motivo', async () => {
     const calls = page()
     renderApp('/agente')
+    await openAgents()
     await openFineTune()
     const table = await screen.findByRole('table')
     const search = within(table).getByRole('row', { name: /Buscar ofertas/ })
@@ -271,6 +280,7 @@ describe('Sección «Agentes» (fase 24.4)', () => {
     })
     const calls = page(data)
     renderApp('/agente')
+    await openAgents()
     await openFineTune()
     const row = within(await screen.findByRole('table')).getByRole('row', { name: /Evaluar encaje/ })
     await userEvent.type(within(row).getByLabelText('Modelo'), 'o4{Enter}')
@@ -283,7 +293,10 @@ describe('Sección «Agentes» (fase 24.4)', () => {
 
   it('sin ningún agente instalado, los compatibles salen a la vista con cómo instalarlos', async () => {
     const data = overview()
-    page({ ...data, agents: data.agents.map((a) => ({ ...a, installed: false, version: null })) })
+    page(
+      { ...data, agents: data.agents.map((a) => ({ ...a, installed: false, version: null })) },
+      { 'GET /agent': { ...launcher, available: false, no_agent_installed: true } },
+    )
     renderApp('/agente')
     const claude = await screen.findByRole('listitem', { name: 'Claude Code' })
     expect(within(claude).getByText('npm i -g claude')).toBeInTheDocument()
@@ -313,6 +326,7 @@ describe('Sección «Agentes» (fase 24.4)', () => {
       },
     })
     renderApp('/agente')
+    await openAgents()
     await openOthers()
     const opencode = await screen.findByRole('listitem', { name: 'OpenCode' })
     await userEvent.type(within(opencode).getByLabelText('Modelo'), 'qwen3{Enter}')
@@ -328,6 +342,7 @@ describe('Niveles de gasto y modelos locales (fase 24.6)', () => {
     })
     const calls = page(overview(), { 'POST /agent/tiers/balanced/apply': applied })
     renderApp('/agente')
+    await openAgents()
     await openFineTune()
     const economy = await screen.findByRole('listitem', { name: 'Económico' })
     expect(within(economy).getAllByText('OpenCode')).toHaveLength(3)
@@ -346,6 +361,7 @@ describe('Niveles de gasto y modelos locales (fase 24.6)', () => {
       'POST /agent/tiers/undo': tiers(),
     })
     renderApp('/agente')
+    await openAgents()
     await openFineTune()
     await userEvent.click(await screen.findByRole('button', { name: 'Deshacer el último' }))
     await waitFor(() => expect(calls.some((c) => c.path === '/agent/tiers/undo')).toBe(true))
@@ -354,6 +370,7 @@ describe('Niveles de gasto y modelos locales (fase 24.6)', () => {
   it('edita un nivel y guarda el modelo local', async () => {
     const calls = page(overview(), { 'PUT /agent/tiers/economy': tiers() })
     renderApp('/agente')
+    await openAgents()
     await openFineTune()
     const economy = await screen.findByRole('listitem', { name: 'Económico' })
     await userEvent.click(within(economy).getByRole('button', { name: 'Editar' }))
@@ -370,6 +387,7 @@ describe('Niveles de gasto y modelos locales (fase 24.6)', () => {
   it('la tarjeta de un agente con modelos locales enseña Ollama y avisa del contexto', async () => {
     page()
     renderApp('/agente')
+    await openAgents()
     const codex = await screen.findByRole('listitem', { name: 'Codex' })
     const local = await within(codex).findByLabelText('Modelos locales (Ollama)')
     expect(within(local).getByText('gpt-oss:20b')).toBeInTheDocument()
@@ -385,6 +403,7 @@ describe('Niveles de gasto y modelos locales (fase 24.6)', () => {
       'GET /agent/local-models': localModels({ running: false, version: null, models: [], warnings: [], error: 'x' }),
     })
     renderApp('/agente')
+    await openAgents()
     const codex = await screen.findByRole('listitem', { name: 'Codex' })
     expect(await within(codex).findByText(/Ollama no responde en http:\/\/127\.0\.0\.1:11434/)).toBeInTheDocument()
   })

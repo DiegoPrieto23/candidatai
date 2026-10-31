@@ -161,8 +161,10 @@ directorio actual o desde la raíz del repo.
 
 **Ni herramienta ni comando escriben el perfil desde el agente** (fase 25.7). El usuario
 edita el perfil, el contexto y sus muestras de estilo en «Mi perfil», por rutas de la API que solo
-acepta la UI (`require_ui`): `PUT /profile/sections/{section}`, `POST /profile/undo`,
-`PUT /context/{section}` y `POST`/`DELETE /context/style-samples`. Un test del registro comprueba
+acepta la UI (`require_ui`): `POST /profile` («Empezar a mano»: crea el perfil mínimo con el
+mismo servicio que `cai profile init`, con tus datos en vez del ejemplo), `PUT
+/profile/sections/{section}`, `POST /profile/undo`, `PUT /context/{section}` y
+`POST`/`DELETE /context/style-samples`. Un test del registro comprueba
 que no hay ninguna herramienta MCP de escritura del perfil. Para el agente, el perfil se escribe
 con `update-profile` o `expand`, que preguntan antes, y `get_profile` sigue sin email ni teléfono.
 
@@ -564,7 +566,9 @@ lanza a sí mismo.
   de la ejecución (`services/agent_run_config.py`) que solo enciende esas herramientas, el skill y
   los roles de la acción. `generate-cv` no va en segundo plano con OpenCode (sus roles leen
   ficheros). Si el agente de la acción no puede, `GET /agent` propone otro en
-  `background_agent.suggested` y `suggested_name`. Cada ejecución guarda su agente, su formato de
+  `background_agent.suggested` y `suggested_name`. `GET /agent` dice también
+  `no_agent_installed` (ningún agente del manifiesto en el `PATH`; en Docker, siempre `false`), con
+  el que Inicio y «Agente» explican cómo instalar uno. Cada ejecución guarda su agente, su formato de
   salida, `run_config` y el uso que informe el agente (`usage`: desde la fase 25.4, `input_tokens`, `output_tokens`, `cached_tokens`, `turns`, `duration_ms` y `cost_usd`, todas opcionales).
 - **Cola de encargos** (`POST /agent/requests`, solo la UI): guarda la orden de cualquier acción.
   Tu próxima sesión la ve en `get_status` (`agent_requests`) y con el skill `handle-requests`

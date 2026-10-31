@@ -118,17 +118,26 @@ nothing is online.
 
 ## 3. Install your agent
 
-In CandidatAI, open **Agent** in the sidebar. It lists the agents the app knows, marks the ones you
-don't have as **Not installed** and gives you the command to install each one, ready to copy.
+An agent isn't the Claude chat app or claude.ai: it's a separate program you install on your
+computer, with the same account and subscription (Claude Code, in Claude's case). While you have
+none, **Home** and **Agent** warn you with "You need an AI agent" and the steps to install Claude
+Code: open PowerShell (or Terminal on macOS), paste the command they give you with **Copy**, sign in
+by typing `claude` and open CandidatAI again.
+
+For another agent, expand **Your agents in detail**, in **Agent**: it lists the agents the app
+knows, marks the ones you don't have as **Not installed** and gives you the command to install each
+one, ready to copy.
 Their official pages: [Claude Code](https://code.claude.com/docs/en/setup),
 [Codex](https://developers.openai.com/codex/cli),
 [Antigravity CLI](https://antigravity.google/docs/install?tab=cli),
 [OpenCode](https://opencode.ai) and [Qwen Code](https://qwenlm.github.io/qwen-code-docs/). Sign in
 with your account the first time you open it.
 
-Back in **Agent**, choose yours as the default agent. From then on, buttons such as **Process
-jobs**, **Assess fit** or **Generate CV** open it in a terminal with the instruction already
-typed: you watch what it does and approve it. Their small arrow also offers **In the background**
+Back in **Agent**, the top says "Your agent: Claude Code, ready". If you have several, choose yours
+as the default agent in **Your agents in detail**. From then on, buttons such as **Process jobs**,
+**Assess fit** or **Generate CV** open it in a separate window with the instruction already typed:
+you watch what it does and approve it. If it can't be opened, the button shows you the whole
+instruction, with **Copy**, so you can paste it into your agent. Their small arrow also offers **In the background**
 (no window; you follow it in "Agent") and **Leave for my next session**.
 
 <img src="img/en/agent.webp" alt="Agent page: default agent, one per action and background runs" width="88%">
@@ -161,7 +170,8 @@ To go back to your own data, close that window and open CandidatAI as usual.
 ## 5. Create your profile
 
 Your **profile** is the single source of truth: nothing goes into a CV that isn't in it. You don't
-have to fill it in by hand: your agent builds it from your CV.
+have to fill it in by hand: your agent builds it from your CV. With no CV or no agent, you can also
+start it by hand.
 
 The easiest way is from the app. Open **My profile**: while you have no profile, it suggests
 starting with your CV. Click **Upload my CV** (PDF or Word) and then **Create my profile from my
@@ -169,6 +179,11 @@ CV**, which opens your agent in a terminal with the request already written. It 
 asks about what it doesn't say (your skill levels, the figures behind your achievements, what
 you're looking for) and saves nothing without your OK. When it's done, your profile shows up on its
 own in **My profile**: carry on with step 3.
+
+With no agent (or no CV), click **Start by hand** in **My profile**: write your name, your headline,
+the role you're looking for and the levels you accept, and click **Create my profile**. The editor
+opens so you can carry on block by block; what it didn't ask (work mode, locations, photo on the CV)
+starts open to anything and you change it in **Search** and **Documents**.
 
 If you'd rather do it from your agent:
 

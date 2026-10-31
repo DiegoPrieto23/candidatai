@@ -1,17 +1,15 @@
 {
-  "opened": "Opened in {{agent}}: carry on in the terminal.",
-  "copiedPrompt": "I can't open your agent from here ({{error}}). I've copied the command: paste it into your agent.",
-  "pastePrompt": "I can't open your agent from here. Paste it this command: “{{prompt}}”",
+  "opened": "Opened in {{agent}}: carry on in the window that just opened.",
   "openFailed": "Couldn't open your agent.",
   "alreadyRunning": "Already running in the background.",
   "queued": "Queued in the background.",
   "backgroundFailed": "Couldn't start it in the background.",
   "requestSaved": "Request saved: your agent will see it in your next session.",
   "requestFailed": "Couldn't save the request.",
-  "titleAgent": "Opens {{agent}} in a terminal with the command already typed",
-  "titleCopy": "Copies the command for your agent",
+  "titleAgent": "Opens your agent ({{agent}}) in a separate window with the command already written: there you see what it does and approve it.",
+  "titleCopy": "I can't open your agent from here: I'll show you the command to paste into it.",
   "more": "More ways to launch it",
-  "terminal": "In a terminal",
+  "terminal": "In a separate window",
   "terminalHint": "You see it, answer and approve.",
   "background": "In the background",
   "backgroundHint": "No window and only with the app's tools. Follow it in “Agent”.",
@@ -34,5 +32,11 @@
     "job": "Job {{id}}",
     "notification": "Open it from CandidatAI.",
     "watching": "I'll let you know here as soon as it's ready."
-  }
+  },
+  "cantOpen": "I can't open your agent from here",
+  "noAgent": "You don't have any AI agent installed",
+  "pasteWhere": "Copy this command and paste it into your agent (Claude Code, Codex…), in the window where you use it, opened in the CandidatAI folder.",
+  "promptLabel": "Command for your agent",
+  "howToInstall": "How to install one, in “Agent”",
+  "closePrompt": "Close"
 }

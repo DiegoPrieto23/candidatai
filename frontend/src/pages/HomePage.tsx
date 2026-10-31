@@ -3,12 +3,14 @@ import { Link } from 'react-router'
 import { ArrowRightIcon } from '@phosphor-icons/react'
 import { Trans, useTranslation } from 'react-i18next'
 import type { JobRow, Stage, UpcomingItem } from '@/api/client'
-import { useFollowups, useJobs, useReplies, useStatus, useUpcoming } from '@/api/queries'
+import { useAgentLauncher, useFollowups, useJobs, useReplies, useStatus, useUpcoming } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
 import { FirstSteps } from '@/components/FirstSteps'
+import { GetAnAgent } from '@/components/GetAnAgent'
 import { ScoreBadge } from '@/components/MatchDetails'
 import { ErrorState } from '@/components/States'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useFirstStepsLeft } from '@/lib/firstSteps'
 import { formatList, joinNodes } from '@/lib/i18n'
 import { dateFormatter, STAGE_LABEL, UPCOMING_KIND_LABEL } from '@/lib/labels'
 import { APP_TIME_ZONE, formatWhen } from '@/lib/time'
@@ -34,6 +36,9 @@ function Today() {
   const status = useStatus()
   const followups = useFollowups()
   const replies = useReplies()
+  // Con los primeros pasos sin hacer, lo que toca es eso: el titular lo dice y la acción principal
+  // es la del paso, en «Primeros pasos».
+  const stepsLeft = useFirstStepsLeft()
   // La fecha del encabezado, la de cuando se abre la página.
   const [now] = useState(() => new Date())
   const s = status.data?.by_stage
@@ -73,13 +78,16 @@ function Today() {
   if (unclassified) agent.push(t('today.agentUnclassified', { count: unclassified }))
 
   // Solo una acción destacada: la que más desbloquea ahora. Las demás, con borde.
-  const primary = s?.pending_extraction
-    ? 'process-jobs'
-    : unclassified
-      ? 'review-replies'
-      : s?.pending_triage
-        ? 'assess-fit'
-        : 'search-jobs'
+  // Mientras no se sabe (`null`), ninguna: así no parpadea la destacada.
+  const primary = stepsLeft !== 0
+    ? null
+    : s?.pending_extraction
+      ? 'process-jobs'
+      : unclassified
+        ? 'review-replies'
+        : s?.pending_triage
+          ? 'assess-fit'
+          : 'search-jobs'
 
   return (
     <section aria-labelledby="hoy" className="max-w-3xl">
@@ -87,6 +95,8 @@ function Today() {
       <h1 id="hoy" className="mt-3 text-3xl leading-[1.2] font-semibold tracking-tight text-balance sm:text-[2.6rem]">
         {status.isPending ? (
           <Skeleton className="h-12 w-full max-w-xl" />
+        ) : stepsLeft ? (
+          t('today.firstSteps', { count: stepsLeft })
         ) : yours.length ? (
           <Trans t={t} i18nKey="today.youHave" components={{ list: <>{joinNodes(yours)}</> }} />
         ) : (
@@ -347,8 +357,11 @@ function Followups() {
 
 export function HomePage() {
   const { t } = useTranslation('home')
+  const launcher = useAgentLauncher()
   return (
     <div className="space-y-12 animate-in fade-in duration-300 sm:space-y-14">
+      {/* Sin ningún agente instalado, lo primero: sin él la app no lee ofertas ni escribe CVs. */}
+      {launcher.data?.no_agent_installed && <GetAnAgent />}
       {/* Con la app recién instalada: perfil y dónde buscar. Se va sola con los dos hechos. */}
       <FirstSteps />
       {/* Lo más inmediato, arriba: lo pendiente a la izquierda y la agenda a la derecha. */}

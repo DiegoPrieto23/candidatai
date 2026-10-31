@@ -1,17 +1,15 @@
 {
-  "opened": "Abierto en {{agent}}: sigue en la terminal.",
-  "copiedPrompt": "No puedo abrir tu agente desde aquí ({{error}}). He copiado la orden: pégala en tu agente.",
-  "pastePrompt": "No puedo abrir tu agente desde aquí. Pégale esta orden: «{{prompt}}»",
+  "opened": "Abierto en {{agent}}: sigue en la ventana que se acaba de abrir.",
   "openFailed": "No se pudo abrir tu agente.",
   "alreadyRunning": "Ya se está ejecutando en segundo plano.",
   "queued": "En cola en segundo plano.",
   "backgroundFailed": "No se pudo lanzar en segundo plano.",
   "requestSaved": "Encargo guardado: tu agente lo verá en tu próxima sesión.",
   "requestFailed": "No se pudo guardar el encargo.",
-  "titleAgent": "Abre {{agent}} en una terminal con la orden ya escrita",
-  "titleCopy": "Copia la orden para tu agente",
+  "titleAgent": "Abre tu agente ({{agent}}) en una ventana aparte con la orden ya escrita: ahí ves lo que hace y lo apruebas.",
+  "titleCopy": "No puedo abrir tu agente desde aquí: te enseño la orden para que la pegues en él.",
   "more": "Más formas de lanzarlo",
-  "terminal": "En terminal",
+  "terminal": "En una ventana aparte",
   "terminalHint": "Lo ves, contestas y apruebas tú.",
   "background": "En segundo plano",
   "backgroundHint": "Sin ventana y solo con las herramientas de la app. Síguelo en «Agente».",
@@ -34,5 +32,11 @@
     "job": "Oferta {{id}}",
     "notification": "Ábrelo desde CandidatAI.",
     "watching": "Te aviso aquí en cuanto esté."
-  }
+  },
+  "cantOpen": "No puedo abrir tu agente desde aquí",
+  "noAgent": "No tienes ningún agente de IA instalado",
+  "pasteWhere": "Copia esta orden y pégala en tu agente (Claude Code, Codex…), en la ventana donde lo usas, abierto en la carpeta de CandidatAI.",
+  "promptLabel": "Orden para tu agente",
+  "howToInstall": "Así se instala uno, en «Agente»",
+  "closePrompt": "Cerrar"
 }

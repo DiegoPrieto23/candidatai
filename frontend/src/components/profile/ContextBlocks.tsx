@@ -23,16 +23,19 @@ import { formatNumber } from '@/lib/labels'
 import { cn } from '@/lib/utils'
 import { Block } from './fields'
 import { MarkdownPreview } from './MarkdownPreview'
-import { useProfileState } from './editor'
+import { useOptionalProfileState } from './editor'
 
 export const CONTEXT_SECTIONS: ContextSectionName[] = ['estilo-redaccion', 'perfil-conductual', 'criterios', 'narrativa']
+
+const noop = () => {}
 
 const kb = (bytes: number) => formatNumber(bytes / 1024, { minimumFractionDigits: 1, maximumFractionDigits: 1 })
 
 export function ContextFileEditor({ section }: { section: ContextSectionName }) {
   const { t } = useTranslation('profileEditor')
   const { t: tp } = useTranslation('profile')
-  const { setDirty } = useProfileState()
+  // Sin perfil también se editan (desde «Contexto»): entonces no hay aviso de «Sin guardar».
+  const setDirty = useOptionalProfileState()?.setDirty ?? noop
   const document = useContextDocument(section)
   const save = useSaveContextDocument()
   const [text, setText] = useState<string | null>(null)

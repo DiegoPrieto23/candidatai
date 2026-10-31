@@ -236,6 +236,42 @@ def test_init_copies_example_once(isolated_env: Path) -> None:
     assert dest.read_text(encoding="utf-8") == "mío"
 
 
+def test_init_with_a_minimal_profile_writes_only_what_you_gave(isolated_env: Path) -> None:
+    minimal = profile.MinimalProfile(
+        name="  Demo Persona ",
+        headline="Analista de datos",
+        role="Data Analyst",
+        seniority=["junior", "mid", "junior"],
+        language="en",
+    )
+    dest = profile.init_profile(minimal=minimal)
+    text = dest.read_text(encoding="utf-8")
+    assert text.startswith("# Tu perfil")
+    loaded = profile.load_from_yaml(dest)
+    assert loaded.personal.name == "Demo Persona"
+    assert loaded.personal.email is None
+    # Sin resumen, el resumen es el titular: nada inventado, ni rastro del ejemplo.
+    assert loaded.summary.en == "Analista de datos" and loaded.summary.es is None
+    assert loaded.preferences.roles == ["Data Analyst"]
+    assert loaded.preferences.seniority_target == ["junior", "mid"]
+    assert loaded.preferences.remote_modes == ["onsite", "hybrid", "remote"]
+    assert loaded.preferences.languages_for_work == ["en"]
+    assert loaded.experience == [] and loaded.skills == []
+    assert "Lucía" not in text
+    with pytest.raises(FileExistsError):
+        profile.init_profile(minimal=minimal)
+
+
+@pytest.mark.parametrize(
+    "change",
+    [{"name": " "}, {"headline": ""}, {"role": ""}, {"seniority": []}, {"language": "fr"}],
+)
+def test_a_minimal_profile_needs_its_fields(change: dict[str, Any]) -> None:
+    base = {"name": "Demo", "headline": "Analista", "role": "Data Analyst", "seniority": ["mid"]}
+    with pytest.raises(ValueError):
+        profile.MinimalProfile.model_validate({**base, **change})
+
+
 # --- resolve_evidence ---------------------------------------------------------------------------
 
 

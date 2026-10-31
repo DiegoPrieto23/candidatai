@@ -3,6 +3,7 @@ import { Trans, useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import {
   ChatCircleDotsIcon,
+  CheckCircleIcon,
   CircleNotchIcon,
   ClockCountdownIcon,
   RobotIcon,
@@ -13,6 +14,7 @@ import {
 import type { AgentRequestView, AgentRunView } from '@/api/client'
 import {
   useAgentLauncher,
+  useAgentsOverview,
   useAgentRequests,
   useAgentRuns,
   useCancelAgentRequest,
@@ -22,6 +24,7 @@ import {
 import { AgentButton } from '@/components/AgentButton'
 import { AgentsSection } from '@/components/AgentsSection'
 import { CostsSection } from '@/components/CostsSection'
+import { GetAnAgent } from '@/components/GetAnAgent'
 import { Reveal } from '@/components/Reveal'
 import { SemanticMatchingCard } from '@/components/SemanticMatching'
 import { ErrorState } from '@/components/States'
@@ -344,9 +347,48 @@ function Requests() {
   )
 }
 
+/**
+ * Lo primero de «Agente»: si tienes un agente listo, si no puedo abrirlo desde aquí o, sin ninguno,
+ * cómo instalar uno. Y qué distingue a Claude (el chat) de Claude Code (el agente).
+ */
+function AgentSummary() {
+  const { t } = useTranslation('agent', { keyPrefix: 'summary' })
+  const launcher = useAgentLauncher()
+  const overview = useAgentsOverview()
+  if (launcher.isPending) return <Skeleton className="h-24 rounded-xl" />
+  if (launcher.isError) return <ErrorState error={launcher.error} onRetry={() => void launcher.refetch()} />
+  if (launcher.data.no_agent_installed) return <GetAnAgent linkToAgentPage={false} />
+  const { available, agent, reason } = launcher.data
+  const name = overview.data?.agents.find((a) => a.name === agent)?.info.display_name ?? agent
+  return (
+    <section aria-labelledby="your-agent" className="rounded-xl border bg-card p-5 text-sm sm:p-6">
+      <h2 id="your-agent" className="flex flex-wrap items-center gap-2 text-lg font-semibold tracking-tight">
+        {available ? (
+          <>
+            <CheckCircleIcon className="size-6 text-emerald-600 dark:text-emerald-400" weight="fill" aria-hidden />
+            {t('ready', { agent: name })}
+          </>
+        ) : (
+          <>
+            <TerminalWindowIcon className="size-6 text-muted-foreground" weight="duotone" aria-hidden />
+            {t('cantOpen')}
+          </>
+        )}
+      </h2>
+      <p className="mt-2 max-w-prose text-muted-foreground">
+        {available ? t('readyHint') : t('cantOpenHint', { reason: reason ?? '' })}
+      </p>
+      <p className="mt-3 max-w-prose text-muted-foreground">
+        <Trans t={t} i18nKey="notTheChat" components={{ strong: <strong className="font-medium text-foreground" /> }} />
+      </p>
+    </section>
+  )
+}
+
 export function AgentPage() {
   const { t } = useTranslation('agent')
   const { t: tAgents } = useTranslation('agents')
+  const launcher = useAgentLauncher()
   // Arriba lo que más se usa (tus agentes y lo que les has dejado); después, lo que corre solo, la
   // comparación por significado del score, y el coste y el umbral, plegados al final como ajustes.
   return (
@@ -357,13 +399,21 @@ export function AgentPage() {
           {t('intro')}
         </p>
       </div>
+      <div className="mb-8 max-w-3xl">
+        <AgentSummary />
+      </div>
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <section aria-labelledby="agents-title" className="min-w-0">
           <h2 id="agents-title" className="mb-3 flex items-center gap-2 text-lg font-semibold tracking-tight">
             <RobotIcon className="size-5 text-muted-foreground" weight="duotone" />
             {tAgents('title')}
           </h2>
-          <AgentsSection />
+          {/* Versiones, licencias, niveles y modelos: plegado salvo si aún no tienes ninguno (las
+              tarjetas dicen cómo instalar cada uno). */}
+          {/* La `key` vuelve a montarlo cuando se sabe si hay agente, para abrirlo de entrada si no. */}
+          <Reveal key={String(launcher.data?.no_agent_installed)} label={tAgents('details')} defaultOpen={launcher.data?.no_agent_installed ?? false}>
+            <AgentsSection />
+          </Reveal>
         </section>
         <section aria-labelledby="requests-title" className="min-w-0">
           <h2 id="requests-title" className="mb-3 flex items-center gap-2 text-lg font-semibold tracking-tight">

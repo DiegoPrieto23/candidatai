@@ -42,12 +42,29 @@
   "files_one": "{{count}} file",
   "files_other": "{{count}} files",
   "context": "Context",
-  "contextIntro": "Guides your agent: the tone of your CVs and letters, a job's risks and interview prep. <strong>It never backs a fact</strong>: whatever a CV or letter says must be in your profile. Edit them above or ask your agent.",
+  "contextIntro": "Guides your agent: the tone of your CVs and letters, a job's risks and interview prep. <strong>It never backs a fact</strong>: whatever a CV or letter says must be in your profile. Edit them in their blocks, above, or ask your agent.",
   "openContext": "Open the context folder",
   "documents": "Documents",
   "documentsIntro": "Your source documents. Your agent can read them to create or expand your profile, always asking you before writing.",
   "openDocuments": "Open the documents folder",
   "expand": "Expand profile from my links",
   "title": "My profile",
-  "intro": "Everything a CV, letter or answer says comes from here. Each block is saved separately and can be undone."
+  "intro": "Everything a CV, letter or answer says comes from here. Each block is saved separately and can be undone.",
+  "contextIntroHere": "Guides your agent: the tone of your CVs and letters, a job's risks and interview prep. <strong>It never backs a fact</strong>: whatever a CV or letter says must be in your profile. Create and edit them right here (each comes with a few guiding questions) or ask your agent.",
+  "contextFile": {
+    "create": "Create",
+    "edit": "Edit",
+    "close": "Close",
+    "createNamed": "Create “{{name}}”",
+    "editNamed": "Edit “{{name}}”",
+    "closeNamed": "Close “{{name}}”"
+  },
+  "folderNames": {
+    "cv": "CV",
+    "linkedin": "LinkedIn",
+    "titulos": "Degrees",
+    "referencias": "References",
+    "candidaturas": "Applications",
+    "estilo": "Writing style"
+  }
 }

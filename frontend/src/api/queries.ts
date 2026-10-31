@@ -1194,6 +1194,21 @@ export function useEditableProfile() {
   })
 }
 
+export type MinimalProfile = Schemas['MinimalProfile']
+
+/** «Empezar a mano»: crea tu perfil mínimo sin agente. Al refrescar, «Mi perfil» abre el editor. */
+export function useCreateProfile() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (body: MinimalProfile) => unwrap(api.POST('/profile', { body })),
+    onSuccess: () => void client.invalidateQueries({ queryKey: keys.profile }),
+    // Ya existe (lo creó tu agente u otra pestaña): se recarga y «Mi perfil» pasa al editor.
+    onError: (error) => {
+      if (error instanceof ApiError && error.type === 'conflict') void client.invalidateQueries({ queryKey: keys.profile })
+    },
+  })
+}
+
 /** Guarda una sección. Con `dry_run`, solo el diff. Refresca el perfil, el contexto y los scores. */
 export function useSaveProfileSection() {
   const client = useQueryClient()

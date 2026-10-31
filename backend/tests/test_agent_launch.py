@@ -183,9 +183,18 @@ def test_cai_agent_picks_the_agent(
 # --- API ---------------------------------------------------------------------------------------
 
 
+def test_no_agent_installed(monkeypatch: pytest.MonkeyPatch, client: TestClient) -> None:
+    """Sin ningún agente en el `PATH`, la UI lo sabe; en Docker no se puede saber y no se avisa."""
+    monkeypatch.setattr(agent_launch.shutil, "which", lambda name: None)
+    assert client.get("/agent").json()["no_agent_installed"] is True
+    monkeypatch.setattr(agent_launch.container, "in_docker", lambda: True)
+    assert client.get("/agent").json()["no_agent_installed"] is False
+
+
 def test_get_lists_agent_and_actions(client: TestClient, opened: list[tuple[str, str]]) -> None:
     body = client.get("/agent").json()
     assert body["available"] is True and body["agent"] == "claude"
+    assert body["no_agent_installed"] is False
     actions = {a["id"]: a for a in body["actions"]}
     assert set(actions) == {
         "search-jobs",

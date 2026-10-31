@@ -107,6 +107,65 @@ describe('Primeros pasos (app recién instalada)', () => {
     expect(within(steps).getByRole('button', { name: 'Crear mi perfil desde mi CV' })).toBeInTheDocument()
     expect(within(steps).getByRole('button', { name: 'Configurar con mi agente' })).toBeInTheDocument()
     expect(within(steps).getByRole('link', { name: 'o añade un portal tú' })).toHaveAttribute('href', '/fuentes/plataformas')
+    // Qué hace la app y qué es tu agente, con un enlace a «Agente»; y el perfil sin agente.
+    expect(within(steps).getByText(/ordena tu búsqueda de empleo/)).toBeInTheDocument()
+    expect(within(steps).getByRole('link', { name: 'Qué es y cómo se instala, en «Agente»' })).toHaveAttribute('href', '/agente')
+    expect(within(steps).getByRole('link', { name: /Empieza a mano en «Mi perfil»/ })).toHaveAttribute('href', '/perfil')
+  })
+
+  it('sin perfil, el titular cuenta los primeros pasos y la única acción rellena es la del paso', async () => {
+    mockApi({
+      ...base,
+      'GET /status': withStages({ pending_extraction: 1 }),
+      'GET /profile/editable': noProfile,
+      'GET /sources': { sources: [], agent_browse: limits },
+      'GET /context/documents/cv': [],
+    })
+    renderApp('/')
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Te quedan 2 primeros pasos para empezar.' }),
+    ).toBeInTheDocument()
+    await screen.findByRole('region', { name: 'Primeros pasos' })
+    const filled = screen.getAllByRole('button').filter((b) => b.getAttribute('data-variant') === 'default')
+    expect(filled.map((b) => b.textContent)).toEqual(['Subir mi CV'])
+    expect(screen.getByRole('button', { name: 'Buscar ofertas' })).toHaveAttribute('data-variant', 'outline')
+    expect(screen.getByRole('button', { name: 'Procesar ofertas' })).toHaveAttribute('data-variant', 'outline')
+  })
+
+  it('sin ningún agente instalado, avisa y explica cómo instalar uno', async () => {
+    const claude = { name: 'claude', installed: false, info: { display_name: 'Claude Code', install: { windows: 'irm https://claude.ai/install.ps1 | iex' } } }
+    mockApi({
+      ...base,
+      'GET /agent': { available: false, agent: null, reason: 'No hay ningún agente instalado.', actions: [], background: { available: false, agent: null, reason: null }, no_agent_installed: true },
+      'GET /agent/agents': { agents: [claude], launchable: [], preferences: { default_agent: null, agents: {}, actions: {} }, effective: [] },
+      'GET /profile/editable': noProfile,
+      'GET /sources': { sources: [], agent_browse: limits },
+      'GET /context/documents/cv': [],
+    })
+    renderApp('/')
+    const notice = await screen.findByRole('region', { name: 'Necesitas un agente de IA' })
+    expect(within(notice).getByText(/No es la app de chat de Claude ni claude\.ai/)).toBeInTheDocument()
+    expect(await within(notice).findByLabelText('Orden para instalar Claude Code')).toHaveTextContent(
+      'irm https://claude.ai/install.ps1 | iex',
+    )
+    expect(within(notice).getByRole('link', { name: 'La guía paso a paso' })).toHaveAttribute(
+      'href',
+      expect.stringContaining('EMPEZAR.md#3-instalar-tu-agente'),
+    )
+    expect(within(notice).getByRole('link', { name: 'Otros agentes, en «Agente»' })).toHaveAttribute('href', '/agente')
+  })
+
+  it('con un agente instalado, no hay aviso', async () => {
+    mockApi({
+      ...base,
+      'GET /agent': { available: true, agent: 'claude', reason: null, actions: [], background: { available: true, agent: 'claude', reason: null }, no_agent_installed: false },
+      'GET /profile/editable': noProfile,
+      'GET /sources': { sources: [], agent_browse: limits },
+      'GET /context/documents/cv': [],
+    })
+    renderApp('/')
+    await screen.findByRole('region', { name: 'Primeros pasos' })
+    expect(screen.queryByRole('region', { name: 'Necesitas un agente de IA' })).not.toBeInTheDocument()
   })
 
   it('con el perfil hecho, ese paso queda marcado; con los dos, desaparece', async () => {
