@@ -81,3 +81,36 @@ def test_without_profile_and_old_jobs(session: Session) -> None:
     assert view.profile_missing and view.roles == []
     assert [g.key for g in view.positive] == ["data engineer"]
     assert view.positive[0].matches_roles is None
+
+
+def test_candidates_say_what_adding_a_role_would_let_in(session: Session) -> None:
+    profile.import_profile(session, profile.EXAMPLE_PATH)  # Data Engineer, Analytics…, Data Analyst
+    for title, company in (("BI Analyst", "Una"), ("Analista BI", "Dos")):
+        _approve(session, _job(session, title, company=company))
+    _discard(session, _job(session, "BI Sales Analyst", company="Tres"), "skills")
+    _discard(session, _job(session, "Data Analyst Sr", company="Cuatro"), "salary")
+
+    view = search_titles.search_titles(
+        session, candidates=["Analista BI", "Senior Data Engineer", " ", "Analista BI"]
+    )
+
+    assert view.aliases["data engineer"][0] == "ingeniero de datos"
+    bi, senior = view.candidates  # sin vacíos ni repetidos, en su orden
+    assert bi.title == "Analista BI" and bi.compared_as == ["analista bi", "bi analyst"]
+    assert bi.covered_by == []  # «Data Analyst» pide «data»
+    assert len(bi.lets_in) == 1  # un solo grupo: «Analista BI» se lee como «BI Analyst»
+    # Lo que colaría: el descartado que hoy no pasa. «Data Analyst Sr» ya pasa: no cuenta.
+    assert bi.also_lets_in == ["BI Sales Analyst"]
+    assert senior.compared_as == ["data engineer"]
+    assert senior.covered_by == ["Data Engineer"] and senior.lets_in == []
+
+
+def test_candidate_the_prefilter_cannot_read(session: Session) -> None:
+    profile.import_profile(session, profile.EXAMPLE_PATH)
+    (check,) = search_titles.search_titles(session, candidates=["Senior (m/f/d)"]).candidates
+    assert check.compared_as == [] and check.covered_by == [] and check.lets_in == []
+
+
+def test_candidates_need_a_profile(session: Session) -> None:
+    view = search_titles.search_titles(session, candidates=["BI Analyst"])
+    assert view.profile_missing and view.candidates == []

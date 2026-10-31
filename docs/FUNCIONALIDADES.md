@@ -37,7 +37,7 @@ FEATURES.md dejan de coincidir fila a fila. -->
 | **Inicio**: con la app recién instalada, qué hace la app y qué es tu agente, y «Primeros pasos» (sube tu CV para crear tu perfil, o empiézalo a mano, y elige dónde buscar con tu agente); sin ningún agente instalado, «Necesitas un agente de IA» con los pasos para instalar Claude Code; luego, lo que te espera hoy (ofertas por procesar o valorar, respuestas, seguimientos), las que mejor encajan, las listas para enviar y los próximos hitos | `/` | [Inicio](img/es/home.webp) |
 | **Filtros duros y un encaje 0-100 explicado** («buen encaje», «encaje posible» o «encaje bajo», y al pasar el ratón qué mide cada parte; sin encaje, la ficha dice qué falta): nivel, años, modalidad, zona, idiomas y palabras de descarte; cobertura de skills ponderada por tu nivel, preferencias y similitud semántica local opcional | `/por-revisar` | [Por revisar](img/es/triage.webp) |
 | **Revisar con el teclado**: `J`/`K` para moverte, `A` aprobar, `D` descartar con motivo, `O` abrir, y Deshacer | `/por-revisar` | [▶ Teclado](img/es/anim/triage.webp) |
-| **El veredicto de tu agente**: encaje con riesgos y preguntas, citando tus deal-breakers; en segundo plano se salta las de poco encaje. En cada oferta, «Valorar esta oferta»; para todas, «Valorar las pendientes» si no tiene valoración o la tiene desfasada | `assess-fit` | |
+| **El veredicto de tu agente**: encaje con riesgos y preguntas, citando tus deal-breakers; en segundo plano se salta las de poco encaje. Avisa siempre de las ofertas con posible texto dirigido a una IA, que nunca salen como encaje fuerte. En cada oferta, «Valorar esta oferta»; para todas, «Valorar las pendientes» si no tiene valoración o la tiene desfasada | `assess-fit` | |
 | **«Conoces a N personas aquí»**: tus contactos de LinkedIn (exportación oficial en CSV) cruzados con cada empresa | `/jobs/:id` | |
 | **La ficha de la oferta**, en pestañas (Oferta, Candidatura, Proceso, Empresa, Historial y notas) que se abren en la que toca según la fase: extracción, desglose del encaje, señales, historial, notas, coste en tiempo de agente y todas las secciones de abajo | `/jobs/:id` | [Ficha](img/es/job.webp) |
 
@@ -105,7 +105,7 @@ FEATURES.md dejan de coincidir fila a fila. -->
 | **Agente**: arriba, si tu agente está listo o cómo instalar uno, y qué distingue a Claude (el chat) de Claude Code; plegados, agente por defecto y uno por acción, ejecuciones en segundo plano con progreso, preguntas y Cancelar, coste por acción y modelo, niveles de gasto y la comparación por significado del score | `/agente` | [Agente](img/es/agent.webp) |
 | **Cada botón de agente se explica**: qué hace el skill, qué cambia y qué necesita, al pasar el ratón o con el foco del teclado | Todas las páginas | |
 | **Dejar para tu próxima sesión**: cualquier botón guarda la orden para tu agente | `handle-requests` | |
-| **Resumen del día**: ofertas pendientes, seguimientos vencidos y próximos hitos | `daily-summary` | |
+| **Resumen del día**: ofertas pendientes (con aviso si alguna lleva texto dirigido a una IA), seguimientos vencidos, próximos hitos y respuestas de empresas por revisar | `daily-summary` | |
 | **Barra lateral** agrupada y plegable con lo que te espera, tema claro y oscuro, español e inglés | `/` | [Barra lateral](img/es/sidebar-collapsed.webp) |
 | **Modo demo** con una búsqueda ficticia en la que cada página tiene algo | `cai demo seed` | |
 | **Instalación** con una línea en Windows, macOS y Linux, o con Docker; `cai doctor` lo revisa todo | [Guía](GUIA.md) | |

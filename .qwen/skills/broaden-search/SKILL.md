@@ -16,6 +16,9 @@ Argumentos: nada (últimos 90 días) o un número de días.
 - Solo puestos que el usuario puede hacer según su perfil y sus aprobadas: no amplíes hacia
   seniorities o especialidades que descarta. Nada de inventar experiencia (§1).
 - No cambies `allow_agent_browsing` de ninguna plataforma (LinkedIn solo lo activa él en la UI).
+- Trabaja solo con las herramientas de la app: no leas el código ni la configuración de
+  `backend/` ni `config/` para saber cómo casan los títulos. Para eso está la comprobación del
+  punto 2.
 
 ## 1. Reunir
 1. `get_search_titles(days)`: grupos de títulos **positivos** (aprobó o envió) y **negativos**
@@ -26,6 +29,13 @@ Argumentos: nada (últimos 90 días) o un número de días.
 3. `list_sources(kind="agent_browse")`: sus plataformas con sus `search_urls`.
 
 ## 2. Analizar
+**Cómo casa un título con los puestos buscados** (el filtro previo de conectores y alertas):
+normaliza el título (minúsculas, sin tildes, signos, «(m/f/d)» ni palabras de seniority), lo parte
+por paréntesis y guiones, traduce cada parte al inglés con `aliases` («analista de datos» →
+«data analyst») y lo deja pasar si **todas** las palabras de algún puesto buscado están en una
+parte, con margen para variantes («engineering» ≈ «engineer»). Así, «Data Analyst» no cubre «BI
+Analyst» (le falta «data»), y «Data Engineer» sí cubre «Senior Big Data Engineer (m/f)».
+
 - **Fugas del filtro previo**: grupos positivos con `matches_roles: false`. Son puestos que le
   interesan y que los conectores y las alertas descartan antes de guardarlos. Es lo primero que
   hay que proponer.
@@ -35,12 +45,20 @@ Argumentos: nada (últimos 90 días) o un número de días.
   Engineer»). Que sean títulos que se usan de verdad en ofertas, no inventos.
 - **Lo que evitar**: si los negativos se repiten en un tipo de puesto o con un motivo
   (`seniority`, `skills`), no propongas títulos que caerían ahí.
+- **Comprueba antes de proponer**: vuelve a llamar a `get_search_titles(days, candidates=[…])`
+  con tus títulos (hasta 10; por CLI, `--candidates "T1,T2"`). Para cada uno:
+  - `covered_by` no vacío: ya lo cubre un puesto buscado y añadirlo a `preferences.roles` no
+    cambia nada; propónlo solo para las búsquedas de plataformas;
+  - `lets_in`: los títulos aprobados que hoy se quedan fuera y entrarían; es su mejor argumento;
+  - `also_lets_in`: los descartados que también entrarían; es su riesgo.
+  Si dos formas del mismo título dan lo mismo, propón la más corta.
 
 ## 3. Proponer (un solo mensaje)
 Como mucho 8 propuestas, de más a menos prometedora. Para cada una:
 - el título (y su variante en el otro idioma si se usa);
-- por qué: qué ofertas aprobadas lo respaldan (por título y número) o de qué puesto es vecino;
-- el riesgo: qué tipo de ofertas que no quiere puede colar;
+- por qué: qué ofertas aprobadas lo respaldan (por título y número, con `lets_in`) o de qué
+  puesto es vecino;
+- el riesgo: qué tipo de ofertas que no quiere puede colar (`also_lets_in`);
 - dónde iría: **puestos buscados** (`preferences.roles`: afecta al filtro previo de conectores y
   alertas y al score) y/o **búsquedas de sus plataformas** (`search_urls`, para `search-jobs`).
 

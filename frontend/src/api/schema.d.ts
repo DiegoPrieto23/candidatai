@@ -5101,6 +5101,8 @@ export interface components {
             first_seen_at: string;
             /** Score */
             score: number | null;
+            /** Injection Suspected */
+            injection_suspected: boolean;
             /** @default {} */
             signals: components["schemas"]["JobSignals"];
             /** Remote Mode */
@@ -5175,6 +5177,8 @@ export interface components {
             first_seen_at: string;
             /** Score */
             score: number | null;
+            /** Injection Suspected */
+            injection_suspected: boolean;
             /** @default {} */
             signals: components["schemas"]["JobSignals"];
             /** Posted At */
@@ -7682,6 +7686,10 @@ export interface components {
             pending_tasks: number;
             /** Agent Requests */
             agent_requests: number;
+            /** Replies New */
+            replies_new: number;
+            /** Replies Proposed */
+            replies_proposed: number;
             /** Demo Mode */
             demo_mode: boolean;
         };

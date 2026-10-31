@@ -37,7 +37,7 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 | **Home**: on a fresh install, what the app does and what your agent is, and “Getting started” (upload your CV to create your profile, or start it by hand, and choose where to search with your agent); with no agent installed, “You need an AI agent” with the steps to install Claude Code; then what's waiting today (jobs to process or assess, replies, follow-ups), the best fits, ready to send and the next milestones | `/` | [Home](img/en/home.webp) |
 | **Hard filters and an explained 0-100 fit** (“good fit”, “possible fit” or “low fit”, and on hover what each part measures; without a fit, the job page says what's missing): level, years, remote mode, location, languages and words that discard; skill coverage weighted by your level, preferences and optional local semantic similarity | `/por-revisar` | [To review](img/en/triage.webp) |
 | **Review with the keyboard**: `J`/`K` to move, `A` approve, `D` discard with a reason, `O` open, and Undo | `/por-revisar` | [▶ Keyboard](img/en/anim/triage.webp) |
-| **Your agent's verdict**: fit with risks and questions, citing your deal-breakers; in the background it skips low-fit jobs. On each job, “Assess this job”; for all of them, “Assess pending jobs” when it has no assessment or an outdated one | `assess-fit` | |
+| **Your agent's verdict**: fit with risks and questions, citing your deal-breakers; in the background it skips low-fit jobs. It always flags jobs with possible text aimed at an AI, which never come out as a strong fit. On each job, “Assess this job”; for all of them, “Assess pending jobs” when it has no assessment or an outdated one | `assess-fit` | |
 | **"You know N people here"**: your LinkedIn connections (official CSV export) matched to each company | `/jobs/:id` | |
 | **The job page**, in tabs (Posting, Application, Process, Company, History & notes) that open on the one that fits the stage: extraction, fit breakdown, signals, history, notes, cost in agent time, and every section below | `/jobs/:id` | [Job](img/en/job.webp) |
 
@@ -105,7 +105,7 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 | **Agent**: at the top, whether your agent is ready or how to install one, and what sets Claude (the chat) apart from Claude Code; folded away, default agent and one per action, background runs with progress, questions and Cancel, cost by action and model, spending levels and the score's meaning-based comparison | `/agente` | [Agent](img/en/agent.webp) |
 | **Every agent button explains itself**: what the skill does, what it changes and what it needs, on hover or keyboard focus | Every page | |
 | **Leave it for your next session**: any button saves the order for your agent | `handle-requests` | |
-| **Daily summary**: pending jobs, overdue follow-ups and next milestones | `daily-summary` | |
+| **Daily summary**: pending jobs (flagging any with text aimed at an AI), overdue follow-ups, next milestones and company replies to review | `daily-summary` | |
 | **Sidebar** grouped and collapsible with what's waiting, light and dark theme, English and Spanish | `/` | [Sidebar](img/en/sidebar-collapsed.webp) |
 | **Demo mode** with a fictitious search where every page has something | `cai demo seed` | |
 | **Install** with one line on Windows, macOS and Linux, or with Docker; `cai doctor` checks everything | [Guide](GUIDE.md) | |

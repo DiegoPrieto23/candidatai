@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.models import Contact, Event, Job, Reply
-from app.services import events, replies
+from app.services import events, replies, status
 from app.services.pipeline import Stage
 from tests.imap_support import PASSWORD, USER, FakeImap, fake_imap
 from tests.replies_support import (
@@ -380,6 +380,8 @@ def test_saving_a_proposal_changes_no_stage(session: Session, applied_job) -> No
     reply, jobs = _one_reply(session, applied_job)
     job_id = jobs["Brétema Analytics"].id
     before = session.scalars(select(Event).where(Event.job_id == job_id)).all()
+    report = status.get_status(session)
+    assert (report.replies_new, report.replies_proposed) == (1, 0)
 
     result = replies.save_reply_proposal(session, reply.id, _proposal(job_id), "claude-code")
 
@@ -391,6 +393,9 @@ def test_saving_a_proposal_changes_no_stage(session: Session, applied_job) -> No
     listed = replies.list_replies(session, "proposed")
     assert [r.proposal_event for r in listed.replies] == ["interview_scheduled"]
     assert listed.counts == {"new": 0, "proposed": 1, "accepted": 0, "ignored": 0}
+    # `get_status` las cuenta igual que Inicio, para el resumen del día.
+    report = status.get_status(session)
+    assert (report.replies_new, report.replies_proposed) == (0, 1)
 
 
 def test_proposal_rejects_other_jobs_and_resolved_replies(session: Session, applied_job) -> None:

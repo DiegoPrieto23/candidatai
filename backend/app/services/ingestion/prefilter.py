@@ -108,12 +108,7 @@ class Prefilter:
             return Verdict(False, f"El título contiene palabras de descarte: {', '.join(hits)}.")
         if any(f" {folded} " in words for _, folded in self._extra):
             return PASS
-        # También en inglés: «Ingeniero de Datos» cuenta como «Data Engineer» (title_aliases.yaml).
-        segments = {
-            " ".join(w for w in variant.split() if w not in _SENIORITY_WORDS)
-            for s in title_segments(title)
-            for variant in (s, translate_title(s))
-        } - {""}
+        segments = title_forms(title)
         # Todas las palabras de algún puesto buscado deben estar en el título (con margen para
         # variantes como «engineering»); el parecido fino lo calcula el score.
         for wanted in self._roles:
@@ -136,6 +131,17 @@ class Prefilter:
         if location_matches(location, zones.preferred) or location_matches(location, zones.allowed):
             return PASS
         return Verdict(False, f"Fuera de zona: {location}.")
+
+
+def title_forms(title: str) -> set[str]:
+    """Cómo se compara un título con los puestos buscados: cada segmento (lo de fuera y lo de
+    dentro de los paréntesis…) normalizado, sin seniority, y también traducido al inglés:
+    «Ingeniero de Datos» cuenta como «Data Engineer» (`config/title_aliases.yaml`)."""
+    return {
+        " ".join(w for w in variant.split() if w not in _SENIORITY_WORDS)
+        for s in title_segments(title)
+        for variant in (s, translate_title(s))
+    } - {""}
 
 
 def title_seniority(title: str) -> str | None:
