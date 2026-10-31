@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { errorMessage } from '@/lib/errors'
+import { formatList } from '@/lib/i18n'
 import type { AddedState } from './JobPage'
 
 function useGoToJob() {
@@ -48,6 +49,7 @@ function Field({
   hint,
   error,
   optional,
+  required,
   children,
 }: {
   id: string
@@ -55,6 +57,7 @@ function Field({
   hint?: ReactNode
   error?: string
   optional?: boolean
+  required?: boolean
   children: ReactNode
 }) {
   const { t } = useTranslation('newJob')
@@ -63,6 +66,7 @@ function Field({
       <Label htmlFor={id} className="gap-1.5">
         {label}
         {optional && <span className="font-normal text-muted-foreground">{t('optional')}</span>}
+        {required && <span className="font-normal text-muted-foreground">{t('required')}</span>}
       </Label>
       {children}
       {error ? (
@@ -172,7 +176,9 @@ function TextForm({ initialUrl = '' }: { initialUrl?: string }) {
   const errors = fieldErrors(add.error)
   const set = (key: keyof typeof form) => (e: { target: { value: string } }) =>
     setForm((prev) => ({ ...prev, [key]: e.target.value }))
-  const ready = form.title.trim() && form.company.trim() && form.text.trim()
+  // Puesto y empresa identifican la oferta (y sus duplicados): sin ellos no se puede dar de alta.
+  const missing = (['title', 'company', 'text'] as const).filter((key) => !form[key].trim())
+  const ready = missing.length === 0
 
   const submit = (e: FormEvent) => {
     e.preventDefault()
@@ -192,10 +198,10 @@ function TextForm({ initialUrl = '' }: { initialUrl?: string }) {
   return (
     <form onSubmit={submit} className="grid gap-5" noValidate>
       <div className="grid gap-5 sm:grid-cols-2">
-        <Field id="title" label={t('title')} error={errors.title}>
+        <Field id="title" label={t('title')} required error={errors.title}>
           <Input id="title" required value={form.title} onChange={set('title')} className="h-10 bg-background" />
         </Field>
-        <Field id="company" label={t('company')} error={errors.company}>
+        <Field id="company" label={t('company')} required error={errors.company}>
           <Input id="company" required value={form.company} onChange={set('company')} className="h-10 bg-background" />
         </Field>
         <Field id="location" label={t('location')} optional error={errors.location}>
@@ -216,6 +222,7 @@ function TextForm({ initialUrl = '' }: { initialUrl?: string }) {
       <Field
         id="text"
         label={t('text')}
+        required
         error={errors.text}
         hint={t('hint')}
       >
@@ -229,8 +236,18 @@ function TextForm({ initialUrl = '' }: { initialUrl?: string }) {
         />
       </Field>
       <FormError error={add.error && !hasFieldError ? add.error : null} />
-      <div className="flex justify-end">
-        <Button type="submit" disabled={!ready || add.isPending} className="h-10 px-5 active:translate-y-px">
+      <div className="flex flex-wrap items-center justify-end gap-x-4 gap-y-2">
+        {!ready && (
+          <p id="text-missing" className="text-sm text-muted-foreground">
+            {t('missing', { fields: formatList(missing.map((key) => t(`missingField.${key}`))) })}
+          </p>
+        )}
+        <Button
+          type="submit"
+          disabled={!ready || add.isPending}
+          aria-describedby={ready ? undefined : 'text-missing'}
+          className="h-10 px-5 active:translate-y-px"
+        >
           {add.isPending ? t('saving') : t('submit')}
         </Button>
       </div>

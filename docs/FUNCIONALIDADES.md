@@ -17,7 +17,7 @@ FEATURES.md dejan de coincidir fila a fila. -->
 
 | Funcionalidad | Dónde | Captura |
 |---|---|---|
-| **Alta de una oferta** pegando su URL o su texto; los duplicados se detectan y apuntan a la original | `/nueva` | [Alta](img/es/new-job.webp) |
+| **Alta de una oferta** pegando su URL o su texto (con puesto y empresa, y el botón dice qué falta); los duplicados se detectan y apuntan a la original | `/nueva` | [Alta](img/es/new-job.webp) |
 | **Bandeja**: todas las ofertas con filtros, búsqueda, señales y etapa; cada etapa explica qué es y qué hacer para avanzar, con su botón; las que están por completar o por leer se quitan con **Descartar** y **Deshacer**; «Cerrada» con su fecha, ordenable | `/bandeja` | [Bandeja](img/es/inbox.webp) · [▶ Descartar](img/es/anim/discard.webp) |
 | **Empresas objetivo**: sus ofertas llegan cada día desde Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters y Recruitee (APIs públicas, sin scraping); «Probar» dice cuántas pasan tus filtros | `/fuentes/empresas` | [Empresas](img/es/sources-companies.webp) |
 | **Portales de empleo** (en «Dónde buscar»): «Configurar con mi agente» te recomienda portales y prepara sus búsquedas; al añadir uno conocido (InfoJobs, Tecnoempleo, Indeed, LinkedIn), las búsquedas salen solas de los puestos y las ubicaciones de tu perfil, y cada portal se puede editar. Los que recorre tu agente, cada uno con su prioridad (sin empates), su acceso y sus ofertas por recorrido, explicados con su ⓘ; InfoJobs y Adzuna con claves, Manfred y freehire.me sin ellas | `/fuentes/plataformas` | [Plataformas](img/es/sources-platforms.webp) |
@@ -47,7 +47,7 @@ FEATURES.md dejan de coincidir fila a fila. -->
 |---|---|---|
 | **CV a medida**: con tus indicaciones para esa oferta, si quieres (qué destacar, el idioma…); tu agente lo redacta citando la evidencia de tu perfil de cada línea; el código rechaza lo que no está y otro rol lo verifica; la ficha avisa con el PDF en cuanto está | `generate-cv` | |
 | **El mismo contenido, cualquier diseño**: plantilla, foto, color y secciones en la ficha, renderizado en segundos sin agente; comparas renders y marcas el que envías; la maquetación del PDF se revisa | `/jobs/:id` | [CV](img/es/job-cv.webp) · [▶ Otro diseño](img/es/anim/cv.webp) |
-| **Carta de presentación** según tus indicaciones generales y las de cada oferta, verificada, en TXT y PDF a juego con el CV; la puedes retocar a mano | `generate-cover-letter` | [Carta](img/es/job-letter.webp) |
+| **Carta de presentación** según tus indicaciones generales y las de cada oferta, verificada, en TXT y PDF a juego con el CV; la puedes retocar a mano. En la ficha, «Escribir carta» la pide como «Generar CV»: en terminal, en segundo plano o para tu próxima sesión | `generate-cover-letter` | [Carta](img/es/job-letter.webp) |
 | **Plantillas de CV**: integradas (Word y HTML) y las tuyas; «Mi CV» al lado de tu perfil | `/plantillas` | [Plantillas](img/es/templates.webp) |
 | **Importar tu propio diseño de CV** desde Word, PDF, una imagen, HTML, Canva o Google Docs como plantilla | `import-cv-template` | |
 
@@ -65,9 +65,9 @@ FEATURES.md dejan de coincidir fila a fila. -->
 | Funcionalidad | Dónde | Captura |
 |---|---|---|
 | **Procesos**: un kanban que solo se mueve con eventos registrados (ratón, teclado o táctil), las ofertas recibidas lado a lado y los avisos de seguimiento | `/procesos` | [Procesos](img/es/processes.webp) |
-| **Ficha del proceso**: hitos con fecha y hora (se editan, se cancelan o, si los anotaste por error, se borran), contactos y referencias, borradores y lo que ha pasado | `/jobs/:id` | [Proceso](img/es/job-interview.webp) |
+| **Ficha del proceso**: hitos con fecha y hora (se editan, se cancelan o, si los anotaste por error, se borran), contactos y referencias, borradores y «¿Qué ha pasado?», que ya en proceso registra otra entrevista, una prueba o la oferta, y solo deja aceptar cuando hay una oferta | `/jobs/:id` | [Proceso](img/es/job-interview.webp) |
 | **Calendario**: entrevistas, pruebas y plazos, con un `.ics` por hito y un feed para Google Calendar | `/calendario` | [Calendario](img/es/calendar.webp) |
-| **Respuestas de las empresas**: la app lee tu correo en solo lectura y guarda solo los de las empresas a las que te has presentado | `/respuestas` | [Respuestas](img/es/replies.webp) |
+| **Respuestas de las empresas**: la app lee tu correo en solo lectura y guarda solo los de las empresas a las que te has presentado. Al aceptar o ignorar, un aviso dice en qué oferta ha quedado; «Ignorar» se deshace desde él | `/respuestas` | [Respuestas](img/es/replies.webp) |
 | **Clasificar las respuestas**: tu agente propone entrevista (con su fecha), prueba, oferta, rechazo o nada; nada cambia de etapa hasta que aceptas | `review-replies` | |
 | **Seguimientos y agradecimientos** como borradores (como mucho 2 seguimientos por candidatura) | `draft-follow-up` | |
 

@@ -16,6 +16,7 @@ ActionId = Literal[
     "assess-fit",
     "assess-fit-job",
     "generate-cv",
+    "generate-cover-letter",
     "add-skills",
     "training-plan",
     "review-replies",
@@ -152,6 +153,26 @@ ACTIONS: dict[ActionId, Action] = {
             "save_cv_verification",
         ),
         roles=("writer", "verifier"),
+    ),
+    # Sin indicaciones, el skill pregunta una vez qué destacar; en segundo plano sigue con las de
+    # por defecto (su sección «En segundo plano»). La verificación la hace el rol `verifier`.
+    "generate-cover-letter": Action(
+        "Escribir carta",
+        "Usa el skill generate-cover-letter de CandidatAI para la oferta {job_id}.",
+        needs_job=True,
+        stages=CV_STAGES,
+        wrong_stage="Solo se escribe la carta de una oferta aprobada.",
+        background=(
+            "get_cover_letter",
+            "save_cover_letter_brief",
+            "get_extraction",
+            "get_profile",
+            "get_cv_content",
+            "get_context",
+            "save_cover_letter",
+            "save_cover_letter_verification",
+        ),
+        roles=("verifier",),
     ),
     # Página «Skills» (fase 14). Los nombres de las skills salen de las ofertas, así que no van en
     # la orden: el agente los lee de las marcas con `get_skill_gaps`.

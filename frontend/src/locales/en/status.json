@@ -4,7 +4,7 @@
     "interview_scheduled": "I have an interview",
     "interview_done": "Interview done",
     "test_assigned": "Technical test",
-    "offer_received": "Offer received",
+    "offer_received": "I got an offer",
     "accepted": "I accept the offer",
     "rejected": "They turned me down",
     "withdrawn": "I'm withdrawing",
@@ -13,6 +13,7 @@
   "label": "What happened?",
   "title": "What happened with this application?",
   "hint": "It's in “{{stage}}”. Log each step: the job changes stage on its own and it stays in its history.",
+  "details": "An offer's details (salary, reply-by date…) go in <offer>Log offer</offer>, and the date of an interview or a test in <milestones>Milestones → Add</milestones>.",
   "loadFailed": "Couldn't load the options: {{error}}",
   "interview": {
     "instructions": {

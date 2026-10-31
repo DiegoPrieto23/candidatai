@@ -1,9 +1,17 @@
 {
   "loadingPage": "Loading the page…",
   "pageError": {
-    "title": "This page couldn't be opened",
-    "body": "The app may have been updated or stopped. Check that it's still running and reload.",
-    "reload": "Reload"
+    "reload": "Reload",
+    "down": {
+      "title": "The app isn't responding",
+      "body": "It isn't answering: its window may have been closed or it may have stopped. Open it again with its shortcut and reload this page."
+    },
+    "broken": {
+      "title": "This page has failed",
+      "body": "It's a bug in the app, not a problem with your data: the other pages still work.",
+      "home": "Back to Home",
+      "report": "If it keeps happening, tell us on <issues>GitHub</issues> what you were doing. The error details are in the browser console: press <kbd>F12</kbd> and open “Console”."
+    }
   },
   "groups": {
     "search": "Search",

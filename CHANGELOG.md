@@ -36,6 +36,13 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   del navegador**. Detecta la extensión sola, te guía para cargarla en Chrome, Edge o Brave (con
   un botón que abre su carpeta), avisa si tienes una versión antigua y la conecta con un clic: ya
   no hace falta generar un token y pegarlo en sus opciones.
+- **«Escribir carta» en la ficha:** la carta de presentación tiene su botón, con el mismo
+  desplegable que «Generar CV»: abrir tu agente, en segundo plano o dejarla para tu próxima sesión.
+  En segundo plano no pregunta: si no hay indicaciones, usa las de por defecto. Con carta, «Volver
+  a redactar».
+- **Aviso al aceptar o ignorar una respuesta:** en «Respuestas», antes de pasar al siguiente
+  correo, un aviso dice en qué oferta ha quedado registrada, con su enlace. «Ignorar» se puede
+  deshacer desde el aviso.
 
 ### Cambiado
 - **Lenguaje claro en el encaje y las etapas:** el número de cada oferta se llama ahora «encaje» y
@@ -75,6 +82,14 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   aparece justo detrás de Claude Code y Codex en «Agente», en los desplegables y en la guía. Los
   botones ya lo abren en una terminal con la orden escrita (`agy -i`), como con Claude Code y Codex,
   y puedes elegir su modelo (`agy models` los lista). Probado con Antigravity CLI 1.4.5.
+- **«¿Qué ha pasado?» completo en «En proceso»:** ya deja anotar otra respuesta, otra entrevista,
+  una prueba o la oferta recibida sin cambiar de etapa, y enlaza a «Anotar oferta» y a «Hitos» para
+  los detalles. «Acepto la oferta» solo sale cuando hay una oferta registrada.
+- **«Dar de alta» dice qué falta:** al pegar el texto de una oferta, «Puesto» y «Empresa» se marcan
+  como obligatorios y, mientras el botón está desactivado, una línea dice qué falta.
+- **Aviso honesto si una página falla:** distingue «La app no responde» (con «Recargar») de «Esta
+  página ha fallado», que ya no culpa a una actualización: ofrece volver a Inicio y dice dónde ver
+  el detalle y dónde avisar.
 
 ### Corregido
 - **Generar un CV o una carta con LibreOffice ya no cierra la app:** mientras se convertía a PDF,
@@ -112,6 +127,8 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   Aplicaciones en macOS y Linux) si abre la instalación que se está quitando. Antes, desinstalar
   cualquier otra carpeta borraba también los de tu instalación, y CandidatAI desaparecía de la
   búsqueda de Windows.
+- En «Nueva oferta», el menú ya no marca «Bandeja de ofertas»: el activo es el botón «Nueva
+  oferta».
 
 ## [0.3.0] - 2026-10-28
 

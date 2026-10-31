@@ -30,6 +30,7 @@ import {
 import { CopyButton } from '@/components/CopyButton'
 import { RenderWarnings } from '@/components/RenderWarnings'
 import { Reveal } from '@/components/Reveal'
+import { AgentButton } from '@/components/AgentButton'
 import { ErrorState, InlineCode } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -495,9 +496,12 @@ function Letter({ data, jobId }: { data: JobCoverLetter; jobId: number }) {
         <div className="text-sm leading-relaxed">
           <p className="font-semibold">{t('none.title')}</p>
           {data.can_edit ? (
-            <p className="mt-1 text-muted-foreground">
-              <Trans t={t} i18nKey="none.hint" values={{ id: jobId }} components={{ code: <Code /> }} />
-            </p>
+            <>
+              <p className="mt-1 text-muted-foreground">{t('none.hint')}</p>
+              <AgentButton action="generate-cover-letter" jobId={jobId} className="mt-3" primary>
+                {t('none.write')}
+              </AgentButton>
+            </>
           ) : (
             <p className="mt-1 text-muted-foreground">{t('none.never')}</p>
           )}
@@ -582,6 +586,11 @@ export function CoverLetterSection({ job }: { job: JobView }) {
               <Reveal label={t('instructions.title')}>
                 <Instructions key={data.info.brief?.updated_at ?? 'none'} data={data} jobId={job.id} untitled />
               </Reveal>
+              {data.can_edit && (
+                <AgentButton action="generate-cover-letter" jobId={job.id}>
+                  {t('rewrite')}
+                </AgentButton>
+              )}
             </>
           ) : (
             <>

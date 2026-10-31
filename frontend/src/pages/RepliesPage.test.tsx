@@ -129,6 +129,51 @@ describe('Respuestas', () => {
     expect(calls.some((c) => c.path.endsWith('/accept'))).toBe(false)
   })
 
+  it('tras aceptar avisa de dónde ha quedado registrada antes de pasar al siguiente (H-008)', async () => {
+    let first = reply(1)
+    const second = reply(2, { subject: 'Otra cosa de Brétema' })
+    mockReplies([first, second], {
+      'GET /replies': () => inbox([first, second]),
+      'POST /replies/1/accept': () => {
+        first = { ...first, status: 'accepted' }
+        return decided('accepted')
+      },
+    })
+    renderApp('/respuestas')
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Aceptar' }))
+    const notice = (await screen.findByText(/Aceptada: registrada en/)).closest('[role="status"]') as HTMLElement
+    expect(notice).toHaveTextContent('Aceptada: registrada en Data Engineer · Brétema Analytics')
+    expect(within(notice).getByRole('link', { name: 'Data Engineer · Brétema Analytics' })).toHaveAttribute('href', '/jobs/1')
+    // Ya se ve el siguiente pendiente.
+    expect(await screen.findByRole('heading', { name: 'Otra cosa de Brétema' })).toBeInTheDocument()
+  })
+
+  it('tras ignorar avisa y deja deshacerlo (H-008)', async () => {
+    let first = reply(1)
+    const calls = mockReplies([first], {
+      'GET /replies': () => inbox([first]),
+      'POST /replies/1/ignore': () => {
+        first = { ...first, status: 'ignored' }
+        return decided('ignored')
+      },
+      'POST /replies/1/unignore': () => {
+        first = { ...first, status: 'proposed' }
+        return { ...decided('ignored'), status: 'proposed' }
+      },
+    })
+    renderApp('/respuestas')
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Ignorar' }))
+    const text = await screen.findByText('Ignorada: no se ha registrado nada.')
+    const notice = text.closest('[role="status"]') as HTMLElement
+    await userEvent.click(within(notice).getByRole('button', { name: 'Deshacer' }))
+
+    await waitFor(() => expect(calls.find((c) => c.path === '/replies/1/unignore')?.body).toEqual({}))
+    expect(await screen.findByRole('button', { name: 'Aceptar' })).toBeInTheDocument()
+    expect(screen.queryByText('Ignorada: no se ha registrado nada.')).not.toBeInTheDocument()
+  })
+
   it('sin ninguna respuesta, lleva a conectar el correo', async () => {
     mockApi({ 'GET /status': status(), 'GET /replies': { replies: [], counts: {} } })
     renderApp('/respuestas')

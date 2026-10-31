@@ -535,6 +535,9 @@ Hola: …
   que exigen el origen de la UI y cuerpo JSON (`require_ui`). Aceptar registra el evento como
   `user` con `payload.reply_id` y, si hay hito, lo crea; con `none` archiva sin evento. El usuario
   puede aceptar la propuesta tal cual o cambiar la oferta, el tipo, la fecha o añadir una nota.
+  «Deshacer» tras ignorar (`POST /replies/{id}/unignore`, también solo la UI) la devuelve a
+  `proposed` si tenía propuesta o a `new`; aceptar no se deshace, porque el evento ya está en el
+  historial.
 
 ### Ofertas vivas y republicadas (fase 16)
 
@@ -554,18 +557,20 @@ Los botones de la UI tienen un desplegable con **«En segundo plano»** y **«De
 próxima sesión»**. Ninguno de los dos tiene herramienta para lanzarlo: un agente no se
 lanza a sí mismo.
 
-- **En segundo plano** (`POST /agent/runs`, solo la UI): `process-jobs`, `assess-fit` y
-  `generate-cv`. El worker lanza `launch.headless` del manifiesto con la orden y **solo las
+- **En segundo plano** (`POST /agent/runs`, solo la UI): `process-jobs`, `assess-fit`,
+  `generate-cv` y `generate-cover-letter`. El worker lanza `launch.headless` del manifiesto con la orden y **solo las
   herramientas MCP de la acción** (`agent_launch.ACTIONS[...].background`), su skill, los
   subagentes y la lectura de `docs/`; el resto de herramientas de esta tabla se le **deniegan**
   explícitamente. La orden añade: «no preguntes; si necesitas al usuario, termina con líneas
   `PREGUNTA:`»; esas líneas dejan la ejecución en `needs_user` y la UI ofrece «Contestar en
   terminal» (en las demás, «Abrir en terminal»), que retoma la misma sesión. `generate-cv` solo va en segundo
   plano si a la oferta no le faltan obligatorias o si todas están marcadas «No la tengo».
+  `generate-cover-letter` (botón «Escribir carta») no pregunta en segundo plano: sin indicaciones,
+  sigue con las de POLICIES §7.
   Fase 24.5: con Claude Code, el techo va en la orden; con OpenCode, en una configuración propia
   de la ejecución (`services/agent_run_config.py`) que solo enciende esas herramientas, el skill y
-  los roles de la acción. `generate-cv` no va en segundo plano con OpenCode (sus roles leen
-  ficheros). Si el agente de la acción no puede, `GET /agent` propone otro en
+  los roles de la acción. `generate-cv` y `generate-cover-letter` no van en segundo plano con OpenCode
+  (sus roles leen ficheros). Si el agente de la acción no puede, `GET /agent` propone otro en
   `background_agent.suggested` y `suggested_name`. `GET /agent` dice también
   `no_agent_installed` (ningún agente del manifiesto en el `PATH`; en Docker, siempre `false`), con
   el que Inicio y «Agente» explican cómo instalar uno. Cada ejecución guarda su agente, su formato de

@@ -140,7 +140,8 @@ def test_accept_or_ignore_outside_the_ui_is_forbidden(
     content = json.dumps(_decision(job_id, INTERVIEW))
     accepted = client.post(f"/replies/{reply_id}/accept", content=content, headers=headers)
     ignored = client.post(f"/replies/{reply_id}/ignore", content="{}", headers=headers)
-    assert accepted.status_code == 403 and ignored.status_code == 403
+    undone = client.post(f"/replies/{reply_id}/unignore", content="{}", headers=headers)
+    assert accepted.status_code == 403 and ignored.status_code == 403 and undone.status_code == 403
     assert accepted.json()["error"]["type"] == "forbidden"
     assert _stage(job_id) == Stage.APPLIED
     with session_scope() as session:
@@ -220,6 +221,29 @@ def test_ignore_records_nothing(client: TestClient, mail: dict[str, tuple[int, i
     assert response.json()["status"] == "ignored"
     assert len(_events(job_id)) == before and _stage(job_id) == Stage.APPLIED
     assert client.get("/replies", params={"status": "ignored"}).json()["counts"]["ignored"] == 1
+
+
+def test_undo_ignore_brings_back_the_proposal(
+    client: TestClient, mail: dict[str, tuple[int, int]]
+) -> None:
+    reply_id, job_id = mail["laura.pazos@bretema.example"]
+    _propose(reply_id, job_id, INTERVIEW)
+    before = len(_events(job_id))
+    assert client.post(f"/replies/{reply_id}/ignore", json={}, headers=JSON).status_code == 200
+    response = client.post(f"/replies/{reply_id}/unignore", json={}, headers=JSON)
+    assert response.status_code == 200, response.text
+    assert response.json()["status"] == "proposed"
+    view = client.get(f"/replies/{reply_id}").json()
+    assert view["proposal"] is not None and view["resolved_at"] is None
+    assert len(_events(job_id)) == before
+
+    # Sin propuesta vuelve a «nueva»; lo que no está ignorado no se «deshace».
+    other_id, _ = mail["marta.lois@riassoftware.example"]
+    client.post(f"/replies/{other_id}/ignore", json={}, headers=JSON)
+    undone = client.post(f"/replies/{other_id}/unignore", json={}, headers=JSON)
+    assert undone.json()["status"] == "new"
+    again = client.post(f"/replies/{other_id}/unignore", json={}, headers=JSON)
+    assert again.status_code == 403 and again.json()["error"]["type"] == "not_allowed"
 
 
 def test_invalid_decisions(client: TestClient, mail: dict[str, tuple[int, int]]) -> None:

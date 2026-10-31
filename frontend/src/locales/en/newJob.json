@@ -1,6 +1,7 @@
 {
   "failed": "Couldn't add it.",
   "optional": "(optional)",
+  "required": "(required)",
   "url": {
     "label": "Job link",
     "hint": "A public page (Greenhouse, Lever, the company's website…). Not LinkedIn: for those jobs, <paste>paste the text</paste>.",
@@ -17,7 +18,13 @@
     "text": "Job text",
     "hint": "Paste the whole posting: requirements, conditions and salary if it says.",
     "saving": "Saving…",
-    "submit": "Add job"
+    "submit": "Add job",
+    "missing": "To add it, fill in {{fields}}.",
+    "missingField": {
+      "title": "the role",
+      "company": "the company",
+      "text": "the job text"
+    }
   },
   "title": "New job",
   "intro": "Paste a job's link or text. If you already had it, it isn't added twice; then your agent reads it and pulls out its details.",

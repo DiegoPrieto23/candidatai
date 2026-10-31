@@ -1510,6 +1510,20 @@ export function useIgnoreReply() {
   })
 }
 
+/** «Deshacer» tras ignorar: la respuesta vuelve a pendiente. */
+export function useUnignoreReply() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (replyId: number) =>
+      unwrap(api.POST('/replies/{reply_id}/unignore', { params: { path: { reply_id: replyId } }, body: {} })),
+    onSuccess: (_r, replyId) =>
+      Promise.all([
+        client.invalidateQueries({ queryKey: keys.allReplies }),
+        client.invalidateQueries({ queryKey: keys.reply(replyId) }),
+      ]),
+  })
+}
+
 // --- Borradores de seguimiento y agradecimiento (fase 15) --------------------------------------
 
 /** Borradores vigentes de la oferta y cuántos seguimientos llevas enviados. */

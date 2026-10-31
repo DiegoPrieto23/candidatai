@@ -65,15 +65,16 @@ import {
 import { formatWhen, fromLocalInput, toLocalDateInput, toLocalInput } from '@/lib/time'
 import { errorMessage } from '@/lib/errors'
 import { cn } from '@/lib/utils'
+import { MILESTONES_ID } from '@/components/StatusUpdate'
 
 /** Etapas con ficha de proceso: desde que se aprueba la oferta. */
 const PROCESS_STAGES = new Set<Stage>(['approved', 'cv_ready', 'applied', 'in_process', 'closed'])
 /** Entrevistas y pruebas registran su evento: solo tras enviar la candidatura. */
 const AFTER_APPLIED = new Set<Stage>(['applied', 'in_process'])
 
-function Block({ title, action, children }: { title: string; action?: ReactNode; children: ReactNode }) {
+function Block({ id, title, action, children }: { id?: string; title: string; action?: ReactNode; children: ReactNode }) {
   return (
-    <div className="space-y-3">
+    <div id={id} className="scroll-mt-6 space-y-3">
       <div className="flex items-center justify-between gap-3">
         <h3 className="text-sm font-medium">{title}</h3>
         {action}
@@ -477,6 +478,7 @@ function Milestones({ process }: { process: ProcessView }) {
   const create = useCreateMilestone()
   return (
     <Block
+      id={MILESTONES_ID}
       title={t('title')}
       action={
         !adding && (

@@ -290,7 +290,8 @@ Una oferta puede encajar en el papel y aun así no merecer la pena. El código m
   empresa y este puesto, qué aportas con evidencias, cierre simple). **Tus indicaciones mandan
   sobre estos valores por defecto**: las generales de `preferences.cover_letter` en el perfil
   (extensión, tono, despedida, qué decir o evitar siempre) y, por encima, las de cada oferta. Lo
-  que nunca cambian son §1 y §4: ni hechos inventados ni salario.
+  que nunca cambian son §1 y §4: ni hechos inventados ni salario. Pedida en segundo plano
+  («Escribir carta»), nadie puede contestar: sin indicaciones, sigue con estos valores por defecto.
 - **De la empresa, la carta solo usa la extracción y tus indicaciones.** El dosier de
   `research-company` (fase 18) no entra en la carta salvo lo que tú copies a las indicaciones de
   esa oferta: sale de webs y no lo has revisado frase a frase. Los mensajes y la preparación de

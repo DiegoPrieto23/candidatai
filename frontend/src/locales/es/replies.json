@@ -108,6 +108,14 @@
     "list": "Respuestas",
     "byReason": "({{stage}}; por {{reason}})",
     "connect": "Conectar tu correo",
-    "noneFiltered": "Nada aquí con este filtro."
+    "noneFiltered": "Nada aquí con este filtro.",
+    "resolved": {
+      "accepted": "Aceptada: registrada en <job>{{job}}</job>.",
+      "archived": "Archivada sin registrar nada en <job>{{job}}</job>.",
+      "acceptedNoJob": "Aceptada: registrada en la oferta.",
+      "ignored": "Ignorada: no se ha registrado nada.",
+      "undo": "Deshacer",
+      "undoFailed": "No se pudo deshacer: {{error}}"
+    }
   }
 }

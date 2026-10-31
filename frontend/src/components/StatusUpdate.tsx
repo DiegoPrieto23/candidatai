@@ -9,14 +9,14 @@ import {
   SignOutIcon,
   XCircleIcon,
 } from '@phosphor-icons/react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import type { BoardCard, EventType, JobView } from '@/api/client'
 import { useBoard } from '@/api/queries'
 import { MoveDialog } from '@/components/MoveDialog'
 import { Button } from '@/components/ui/button'
 import { errorMessage } from '@/lib/errors'
 import { eventLabel, STAGE_LABEL } from '@/lib/labels'
-import { moveOptions, type MoveOption } from '@/lib/moves'
+import { stepOptions, type MoveOption } from '@/lib/moves'
 import { cn } from '@/lib/utils'
 
 /** Etapas en las que se registra lo que va pasando con la candidatura. */
@@ -37,10 +37,21 @@ const STEPS: { event: Step; icon: ReactNode; tone?: 'good' | 'bad' }[] = [
   { event: 'expired', icon: <HourglassLowIcon /> },
 ]
 
+/** Ids de los bloques de la pestaña «Proceso» a los que lleva el aviso del final. */
+export const MILESTONES_ID = 'job-milestones'
+export const RECEIVED_OFFER_ID = 'job-received-offer'
+
+function goTo(id: string) {
+  const target = document.getElementById(id)
+  target?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  target?.querySelector<HTMLElement>('button')?.focus({ preventScroll: true })
+}
+
 /**
  * «¿Qué ha pasado?»: botones para registrar cada paso de una candidatura enviada (respuesta,
  * entrevista, rechazo…). Cada uno abre el mismo diálogo que el tablero de Procesos, registra su
- * evento con fecha y nota, y la oferta cambia de etapa sola.
+ * evento con fecha y nota, y la oferta cambia de etapa sola si toca. «Acepto la oferta» solo sale
+ * con una oferta registrada; los detalles de la oferta y las fechas van en sus bloques.
  */
 export function StatusUpdate({ job }: { job: JobView }) {
   const { t } = useTranslation('status')
@@ -55,7 +66,10 @@ export function StatusUpdate({ job }: { job: JobView }) {
     stage: job.stage,
     reopen_to: null,
   } as unknown as BoardCard
-  const options = board.data ? moveOptions(card, board.data.moves) : []
+  const hasOffer = job.events.some((e) => e.type === 'offer_received')
+  const options = (board.data ? stepOptions(card, board.data.moves) : []).filter(
+    (o) => o.event !== 'accepted' || hasOffer,
+  )
   const byEvent = new Map(options.map((o) => [o.event, o]))
   const steps = STEPS.filter((s) => byEvent.has(s.event))
   const known = new Set<EventType>(STEPS.map((s) => s.event))
@@ -97,7 +111,25 @@ export function StatusUpdate({ job }: { job: JobView }) {
           ))}
         </div>
       )}
+      <p className="mt-3 text-xs text-muted-foreground">
+        <Trans
+          t={t}
+          i18nKey="details"
+          components={{
+            offer: <JumpLink id={RECEIVED_OFFER_ID} />,
+            milestones: <JumpLink id={MILESTONES_ID} />,
+          }}
+        />
+      </p>
       <MoveDialog card={chosen ? card : null} options={chosen ?? []} onOpenChange={(open) => !open && setChosen(null)} />
     </section>
+  )
+}
+
+function JumpLink({ id, children }: { id: string; children?: ReactNode }) {
+  return (
+    <button type="button" onClick={() => goTo(id)} className="font-medium text-primary underline-offset-4 hover:underline">
+      {children}
+    </button>
   )
 }

@@ -1,9 +1,17 @@
 {
   "loadingPage": "Cargando la página…",
   "pageError": {
-    "title": "No se ha podido abrir esta página",
-    "body": "Puede que la app se haya actualizado o que se haya parado. Comprueba que sigue abierta y recarga.",
-    "reload": "Recargar"
+    "reload": "Recargar",
+    "down": {
+      "title": "La app no responde",
+      "body": "No contesta: puede que se haya cerrado su ventana o que se haya parado. Ábrela otra vez con su acceso directo y recarga esta página."
+    },
+    "broken": {
+      "title": "Esta página ha fallado",
+      "body": "Es un fallo de la app, no de tus datos: el resto de páginas sigue funcionando.",
+      "home": "Volver a Inicio",
+      "report": "Si se repite, avísanos en <issues>GitHub</issues> con lo que estabas haciendo. El detalle del error está en la consola del navegador: pulsa <kbd>F12</kbd> y abre «Consola»."
+    }
   },
   "groups": {
     "search": "Búsqueda",

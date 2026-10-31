@@ -64,9 +64,11 @@
   },
   "none": {
     "title": "Aún sin carta",
-    "hint": "Pídesela a tu agente («escribe la carta de la oferta {{id}}»): la redacta con tus indicaciones, la verifica y la deja a juego con tu CV. Después podrás copiarla, retocarla y cambiar el diseño aquí, sin IA.",
+    "hint": "Tu agente la redacta con tus indicaciones, la verifica y la deja a juego con tu CV. Después podrás copiarla, retocarla y cambiar el diseño aquí, sin IA.",
+    "write": "Escribir carta",
     "never": "Esta oferta no llegó a tener carta."
   },
+  "rewrite": "Volver a redactar",
   "copyText": "Copiar texto",
   "downloadTxt": "Descargar TXT",
   "edit": "Editar"

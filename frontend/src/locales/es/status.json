@@ -4,7 +4,7 @@
     "interview_scheduled": "Tengo entrevista",
     "interview_done": "Entrevista hecha",
     "test_assigned": "Prueba técnica",
-    "offer_received": "Oferta recibida",
+    "offer_received": "Me han hecho una oferta",
     "accepted": "Acepto la oferta",
     "rejected": "Me han rechazado",
     "withdrawn": "Me retiro",
@@ -13,6 +13,7 @@
   "label": "¿Qué ha pasado?",
   "title": "¿Qué ha pasado con esta candidatura?",
   "hint": "Está en «{{stage}}». Registra cada paso: la oferta cambia de etapa sola y queda en su historial.",
+  "details": "Los detalles de una oferta (salario, fecha para responder…) se guardan en <offer>Anotar oferta</offer>, y la fecha de una entrevista o una prueba, en <milestones>Hitos → Añadir</milestones>.",
   "loadFailed": "No se pudieron cargar las opciones: {{error}}",
   "interview": {
     "instructions": {

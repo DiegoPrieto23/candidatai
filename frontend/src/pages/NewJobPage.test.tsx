@@ -66,9 +66,9 @@ describe('Alta de ofertas', () => {
     await userEvent.click(screen.getByRole('tab', { name: /Pegar texto/ }))
     const submit = screen.getByRole('button', { name: 'Dar de alta' })
     expect(submit).toBeDisabled()
-    await userEvent.type(screen.getByLabelText('Puesto'), 'Data Engineer')
-    await userEvent.type(screen.getByLabelText('Empresa'), 'Brétema Analytics')
-    await userEvent.type(screen.getByLabelText('Texto de la oferta'), 'Buscamos Data Engineer.')
+    await userEvent.type(screen.getByLabelText(/^Puesto/), 'Data Engineer')
+    await userEvent.type(screen.getByLabelText(/^Empresa/), 'Brétema Analytics')
+    await userEvent.type(screen.getByLabelText(/^Texto de la oferta/), 'Buscamos Data Engineer.')
     await userEvent.click(submit)
 
     expect(await screen.findByRole('link', { name: 'oferta 3' })).toHaveAttribute('href', '/jobs/3')
@@ -79,6 +79,24 @@ describe('Alta de ofertas', () => {
       location: null,
       url: null,
     })
+  })
+
+  it('marca lo obligatorio y dice qué falta mientras «Dar de alta» está desactivado (H-012)', async () => {
+    mockApi({ 'GET /status': status() })
+    renderApp('/nueva')
+
+    await userEvent.click(screen.getByRole('tab', { name: /Pegar texto/ }))
+    expect(screen.getByLabelText(/^Puesto\s*\(obligatorio\)$/)).toBeInTheDocument()
+    expect(screen.getByLabelText(/^Empresa\s*\(obligatorio\)$/)).toBeInTheDocument()
+    const submit = screen.getByRole('button', { name: 'Dar de alta' })
+    await userEvent.type(screen.getByLabelText(/^Texto de la oferta/), 'Data Engineer en Brétema.')
+    expect(submit).toBeDisabled()
+    expect(submit).toHaveAccessibleDescription('Para darla de alta, falta el puesto y la empresa.')
+    await userEvent.type(screen.getByLabelText(/^Puesto/), 'Data Engineer')
+    expect(submit).toHaveAccessibleDescription('Para darla de alta, falta la empresa.')
+    await userEvent.type(screen.getByLabelText(/^Empresa/), 'Brétema')
+    expect(submit).toBeEnabled()
+    expect(screen.queryByText(/Para darla de alta/)).not.toBeInTheDocument()
   })
 
   it('marca el campo con error de validación', async () => {
@@ -94,9 +112,9 @@ describe('Alta de ofertas', () => {
     })
     renderApp('/nueva')
     await userEvent.click(screen.getByRole('tab', { name: /Pegar texto/ }))
-    await userEvent.type(screen.getByLabelText('Puesto'), 'x')
-    await userEvent.type(screen.getByLabelText('Empresa'), 'y')
-    await userEvent.type(screen.getByLabelText('Texto de la oferta'), 'z')
+    await userEvent.type(screen.getByLabelText(/^Puesto/), 'x')
+    await userEvent.type(screen.getByLabelText(/^Empresa/), 'y')
+    await userEvent.type(screen.getByLabelText(/^Texto de la oferta/), 'z')
     await userEvent.click(screen.getByRole('button', { name: 'Dar de alta' }))
     expect(await screen.findByText('No puede estar vacío.')).toBeInTheDocument()
   })

@@ -1,6 +1,7 @@
 {
   "failed": "No se ha podido dar de alta.",
   "optional": "(opcional)",
+  "required": "(obligatorio)",
   "url": {
     "label": "Enlace de la oferta",
     "hint": "Una página pública (Greenhouse, Lever, la web de la empresa…). LinkedIn no: para esas ofertas, <paste>pega el texto</paste>.",
@@ -17,7 +18,13 @@
     "text": "Texto de la oferta",
     "hint": "Pega la oferta completa: requisitos, condiciones y salario si lo indica.",
     "saving": "Guardando…",
-    "submit": "Dar de alta"
+    "submit": "Dar de alta",
+    "missing": "Para darla de alta, falta {{fields}}.",
+    "missingField": {
+      "title": "el puesto",
+      "company": "la empresa",
+      "text": "el texto de la oferta"
+    }
   },
   "title": "Nueva oferta",
   "intro": "Pega el enlace o el texto de una oferta. Si ya la tenías, no se duplica; después tu agente la lee y saca sus datos.",

@@ -1,7 +1,8 @@
 """«Respuestas» (fase 15): correos de las empresas y sus propuestas.
 
-Aceptar o ignorar solo lo puede pedir la UI (`require_ui`): una propuesta la guarda un agente a
-partir de un correo no confiable, y solo el usuario, en la UI, la convierte en un evento.
+Aceptar, ignorar o deshacer un «Ignorar» solo lo puede pedir la UI (`require_ui`): una propuesta
+la guarda un agente a partir de un correo no confiable, y solo el usuario, en la UI, la convierte
+en un evento.
 """
 
 from typing import Annotated
@@ -51,3 +52,13 @@ def ignore_reply(
 ) -> replies.ReplyDecisionResult:
     """Deja la respuesta sin registrar nada. Cuerpo `{}` (JSON: solo puede pedirlo la UI)."""
     return replies.ignore_reply(session, reply_id)
+
+
+@router.post(
+    "/{reply_id}/unignore", operation_id="unignore_reply", dependencies=[Depends(require_ui)]
+)
+def unignore_reply(
+    session: SessionDep, reply_id: int, body: EmptyBody
+) -> replies.ReplyDecisionResult:
+    """Deshace «Ignorar»: la respuesta vuelve a pendiente. Cuerpo `{}`, como `ignore`."""
+    return replies.unignore_reply(session, reply_id)
