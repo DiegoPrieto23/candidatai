@@ -11147,7 +11147,7 @@
           "agent"
         ],
         "summary": "Get Assess Threshold",
-        "description": "El score mínimo con que «Evaluar encaje» valora en segundo plano.",
+        "description": "El score mínimo con que «Valorar las pendientes» valora en segundo plano.",
         "operationId": "get_assess_threshold",
         "responses": {
           "200": {

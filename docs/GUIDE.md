@@ -210,11 +210,11 @@ pnpm build                             # the built UI that `cai start` serves
 ```
 
 Optional: local semantic similarity ("meaning-based comparison": brings torch, 1-2 GB). Install it
-from the UI: on the **Agent** page, "Meaning-based comparison" section (or next to the score
+from the UI: on the **Agent** page, "Meaning-based comparison" section (or next to the fit
 of any job, which warns when it is missing), "What it adds and how to turn it on" → "Install". While it installs, it says so right
 there. The choice is saved in your data: it is used for every job from then on and, if you update the app
 (or run `uv sync` without the extra), the worker reinstalls it on start. By hand:
-`uv sync --extra matching`. Without it the score works the same, minus that component.
+`uv sync --extra matching`. Without it the fit is calculated the same, minus that component.
 
 ## 3. Try the demo
 
@@ -360,11 +360,13 @@ The worker runs the automatic sources every day at `connectors.daily_at`
 ## 8. From job to application
 
 1. **Extract:** first, if a title or company doesn't interest you, remove it from the Inbox
-   (**To complete** or **To extract**) with **Discard**, one by one or selecting several: it costs
+   (**To complete** or **To read**) with **Discard**, one by one or selecting several: it costs
    no agent time and can be undone. `process-jobs` turns each posting's text into structured data. Posting text is
    untrusted content: if it carries hidden text or phrases aimed at an AI, the job page warns you.
-2. **Assess:** the app computes the score and applies your hard filters; `assess-fit` adds a
-   reasoned verdict.
+2. **Assess:** the app computes the fit (0 to 100: "good fit", "possible fit" or "low fit", and on
+   hover, where it comes from) and applies your hard filters; `assess-fit` adds a reasoned
+   verdict: "Assess this job" on its page or "Assess pending jobs" for all of them. If a job has
+   no fit, its page says what's missing: your profile, your agent reading it, or both.
 3. **Review:** in **To review**, `J`/`K` to move, `A` to approve, `D` to discard (with a reason)
    and `O` to open the job page. A discard can be undone from the notice; an approval, with
    **Reopen** on the job page.
@@ -391,7 +393,7 @@ The worker runs the automatic sources every day at `connectors.daily_at`
 - **Replies:** in the mailboxes where you ticked it, the app reads emails from the companies in your
   processes; `review-replies` proposes what happened and you accept it in **Replies**.
 - **Funnel:** conversion by step, source, week and referral, and the discard reasons. Under
-  **More analysis**, folded at the end: "Is the score right?" (by score, verdict, template, cover
+  **More analysis**, folded at the end: "Is the fit right?" (by fit, verdict, template, cover
   letter…), by role, the agent's cost and **Your search in numbers** (or `cai stats story`): your
   figures since the start, with no company names, with a line to share if you want to.
   `review-search` runs the weekly retrospective.
@@ -445,7 +447,7 @@ Many pages have buttons that open your agent with the instruction already writte
     weighs; the job page shows what was spent on that job and the funnel, per sent application and
     per interview. What you do in a terminal doesn't count: there the agent doesn't report usage.
   - **Threshold before spending:** `assess-fit` in the background only assesses jobs with a
-    minimum score (by default, the score threshold minus 10; change it under **Cost**). **To review**
+    minimum fit (by default, the “To review” minimum minus 10; change it under **Cost**). **To review**
     says why a job below it stays unassessed.
   - **Several at once:** one at a time by default. With `background_runs.max_parallel` (up to 4)
     in `config/policies.yaml` several run at once, never two for the same job; with

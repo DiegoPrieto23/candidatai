@@ -11,10 +11,10 @@
     "have": "La tengo"
   },
   "alias": {
-    "added": "«{{skill}}» cuenta ya como «{{profile}}». El score de las ofertas se recalcula en segundo plano.",
+    "added": "«{{skill}}» cuenta ya como «{{profile}}». El encaje de las ofertas se recalcula en segundo plano.",
     "existed": "«{{skill}}» ya contaba como «{{profile}}».",
     "title": "«{{skill}}» es lo mismo que…",
-    "description": "Elige la skill de tu perfil que significa lo mismo. Se guarda como sinónimo y se recalcula el score de tus ofertas.",
+    "description": "Elige la skill de tu perfil que significa lo mismo. Se guarda como sinónimo y se recalcula el encaje de tus ofertas.",
     "search": "Buscar en tu perfil",
     "list": "Skills de tu perfil",
     "none": "Ninguna skill de tu perfil coincide.",
@@ -58,6 +58,6 @@
     "actions": "Acciones"
   },
   "noneFiltered": "Ninguna con este filtro.",
-  "weightHint": "Cuánto pesa en tus ofertas: suma 1 por cada oferta que la pide como obligatoria y 0,5 si es deseable, multiplicado por el score de la oferta.",
+  "weightHint": "Cuánto pesa en tus ofertas: suma 1 por cada oferta que la pide como obligatoria y 0,5 si es deseable, multiplicado por el encaje de la oferta.",
   "weightHelp": "Qué es el peso"
 }

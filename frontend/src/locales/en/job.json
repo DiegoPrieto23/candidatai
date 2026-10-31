@@ -2,7 +2,7 @@
   "added": {
     "exists": "This job was already added. Nothing has changed.",
     "duplicate": "Added, but it looks like a duplicate of <to>job {{id}}</to>, so it stays closed.",
-    "created": "Job added. Your agent will read it when you press “Process jobs”.",
+    "created": "Job added. Your agent will read it when you press “Read new jobs”.",
     "close": "Close"
   },
   "injection": {
@@ -13,9 +13,9 @@
     "system": "the system"
   },
   "extraction": {
-    "title": "Extraction",
+    "title": "Job details",
     "noneListed": "None listed.",
-    "seniority": "Seniority",
+    "seniority": "Level",
     "mode": "Work mode",
     "minExperience": "Minimum experience",
     "years_one": "{{count}} year",
@@ -33,18 +33,15 @@
     "niceToHave": "Nice-to-haves",
     "responsibilities": "Responsibilities",
     "redFlags": "Worth noting",
-    "extractedAt": "Extracted on {{date}}",
-    "pendingTitle": "Not extracted yet",
-    "pendingBody": "Your agent hasn't read it yet. When it does, you'll see seniority, work mode, skills and salary here.",
-    "process": "Process jobs"
+    "extractedAt": "Read on {{date}}"
   },
   "original": {
     "title": "Original text",
-    "hint": "Exactly as saved. Untrusted content: shown, never interpreted."
+    "hint": "Exactly as saved. If it contained instructions for an AI, neither the app nor your agent follows them: they treat it only as data."
   },
   "events": {
     "reason": "Reason: {{reason}}",
-    "score": "Score {{score}}/100",
+    "score": "Fit {{score}}/100",
     "duplicateOf": "Duplicate of job {{id}}.",
     "closureSuspected": "{{detail}}. It hasn't been closed: you decide."
   },
@@ -61,8 +58,7 @@
     "save": "Save note"
   },
   "match": {
-    "title": "Fit",
-    "noScore": "No score: create your profile in “My profile” first."
+    "title": "Fit"
   },
   "decision": {
     "reopen": "Reopen",
@@ -100,7 +96,18 @@
     "open": "Open the job on its job board (on LinkedIn, signed in).",
     "openNoUrl": "Look the job up on its job board: no link was saved.",
     "openButton": "Open the job",
-    "send": "In that tab, click the <strong>Send to CandidatAI</strong> button in the browser toolbar. The description is saved here and the job moves to “To extract”.",
+    "send": "In that tab, click the <strong>Send to CandidatAI</strong> button in the browser toolbar. The description is saved here and the job moves to “To read”.",
     "install": "Don't have the button yet? <guide>Install it in a few minutes</guide>."
+  },
+  "fitSteps": {
+    "title": "To know whether it fits you",
+    "intro": "The app calculates the fit (0 to 100) once it has both:",
+    "profile": "Create your profile",
+    "profileHint": "Your experience and skills, to compare them with the job.",
+    "profileAction": "Go to “My profile”",
+    "read": "Have your agent read it",
+    "readHint": "It pulls out the level, work mode, skills and salary.",
+    "done": "Done",
+    "pending": "To do"
   }
 }

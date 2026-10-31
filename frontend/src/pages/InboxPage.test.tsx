@@ -23,17 +23,38 @@ describe('Bandeja', () => {
     expect(within(rows[1]).getByText('Híbrido')).toBeInTheDocument()
     expect(within(rows[1]).getByText('Por revisar')).toBeInTheDocument()
     expect(within(rows[1]).getByText('hoy')).toBeInTheDocument()
-    expect(within(rows[2]).getByText('Sin extraer')).toBeInTheDocument()
+    expect(within(rows[2]).getByText('Sin leer')).toBeInTheDocument()
     expect(within(rows[2]).getByLabelText('Posible contenido dirigido a una IA')).toBeInTheDocument()
     expect(within(rows[1]).getByRole('link', { name: 'Data Engineer' })).toHaveAttribute('href', '/jobs/1')
-    expect(within(rows[1]).getByText('Sin score')).toBeInTheDocument()
+    expect(within(rows[1]).getByText('Sin encaje')).toBeInTheDocument()
   })
 
   it('enseña el score del último match', async () => {
     mockApi({ 'GET /status': status(0, 1), 'GET /jobs': page([jobRow({ score: 81 })]) })
     renderApp('/bandeja')
     const table = await screen.findByRole('table')
-    expect(within(table).getByLabelText('Score 81 de 100')).toBeInTheDocument()
+    expect(within(table).getByLabelText(/Encaje de 81 sobre 100/)).toBeInTheDocument()
+  })
+
+  it('«Sin encaje» dice por qué al pasar el ratón: sin perfil o sin leer', async () => {
+    const noProfile = { exists: false, file_hash: null, profile: null, issues: [], profile_version_id: null, undo_available: 0 }
+    const rows = page([
+      jobRow({ score: null }),
+      jobRow({ id: 2, title: 'BI Developer', stage: 'pending_extraction', remote_mode: null, score: null }),
+    ])
+    mockApi({ 'GET /status': status(1, 1), 'GET /jobs': rows, 'GET /profile/editable': { ...noProfile, exists: true } })
+    const { unmount } = renderApp('/bandeja')
+    let table = await screen.findByRole('table')
+    const unread = within(table).getAllByRole('row')[2]
+    expect(within(unread).getByText('Sin encaje calculado: tu agente aún no ha leído la oferta.')).toBeInTheDocument()
+    await userEvent.hover(within(unread).getByText('Sin encaje'))
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('tu agente aún no ha leído la oferta')
+    unmount()
+
+    mockApi({ 'GET /status': status(1, 1), 'GET /jobs': rows, 'GET /profile/editable': noProfile })
+    renderApp('/bandeja')
+    table = await screen.findByRole('table')
+    expect(await within(table).findAllByText('Sin encaje calculado: falta tu perfil. Créalo en «Mi perfil».')).toHaveLength(2)
   })
 
   it('filtra por la etapa de la URL y busca con retardo', async () => {
@@ -106,14 +127,14 @@ describe('Cabecera', () => {
     renderApp('/bandeja')
 
     const filters = await screen.findByRole('navigation', { name: 'Filtrar por etapa' })
-    await waitFor(() => expect(within(filters).getByRole('button', { name: /Por extraer\s*3/ })).toBeInTheDocument())
+    await waitFor(() => expect(within(filters).getByRole('button', { name: /Por leer\s*3/ })).toBeInTheDocument())
     expect(within(filters).getByRole('button', { name: /Todas\s*5/ })).toHaveAttribute('aria-pressed', 'true')
     await userEvent.click(within(filters).getByRole('button', { name: /Por revisar\s*2/ }))
     await waitFor(() => expect(calls.some((c) => c.path === '/jobs' && c.search.get('stage') === 'pending_triage')).toBe(true))
     // De 25 en 25.
     expect(calls.find((c) => c.path === '/jobs')?.search.get('limit')).toBe('25')
     // Sin avisos fijos arriba: lo que espera se cuenta en Inicio y en la barra lateral.
-    expect(screen.queryByText(/por extraer\./)).not.toBeInTheDocument()
+    expect(screen.queryByText(/por leer\./)).not.toBeInTheDocument()
   })
 
   it('cambia entre tema del sistema, claro y oscuro', async () => {
@@ -134,7 +155,7 @@ describe('Qué es cada etapa y cómo avanzar', () => {
   it('en «Todas», el recorrido entero', async () => {
     mockApi({ 'GET /status': status(), 'GET /jobs': page() })
     renderApp('/bandeja')
-    expect(await guide()).toHaveTextContent('Por completar → Por extraer → Por revisar')
+    expect(await guide()).toHaveTextContent('Por completar → Por leer → Por revisar')
   })
 
   it('en «Por completar», los pasos con la extensión y el enlace a su guía', async () => {
@@ -147,18 +168,18 @@ describe('Qué es cada etapa y cómo avanzar', () => {
     expect(within(box).getByRole('link', { name: 'Alertas' })).toHaveAttribute('href', '/alertas')
   })
 
-  it('en «Por extraer» ofrece «Procesar ofertas» y en «Por revisar», ir a revisarlas o «Evaluar encaje»', async () => {
+  it('en «Por leer» ofrece «Leer las ofertas nuevas» y en «Por revisar», ir a revisarlas o «Valorar las pendientes»', async () => {
     mockApi({ 'GET /status': status(0, 1), 'GET /jobs': page() })
     const { unmount } = renderApp('/bandeja?stage=pending_extraction')
     let box = await guide()
-    expect(within(box).getByRole('button', { name: 'Procesar ofertas' })).toBeInTheDocument()
-    expect(box).toHaveTextContent('calcula su score')
+    expect(within(box).getByRole('button', { name: 'Leer las ofertas nuevas' })).toBeInTheDocument()
+    expect(box).toHaveTextContent('calcula su encaje (de 0 a 100)')
     unmount()
 
     renderApp('/bandeja?stage=pending_triage')
     box = await guide()
     expect(within(box).getByRole('link', { name: 'Ir a «Por revisar»' })).toHaveAttribute('href', '/por-revisar')
-    expect(within(box).getByRole('button', { name: 'Evaluar encaje' })).toBeInTheDocument()
+    expect(within(box).getByRole('button', { name: 'Valorar las pendientes' })).toBeInTheDocument()
     expect(box).toHaveTextContent('No cambia la etapa')
   })
 })
@@ -171,7 +192,7 @@ describe('Descartar desde la Bandeja (fase 27.6)', () => {
     ])
   const ok = { ok: true, event_id: 9, stage: 'closed' }
 
-  it('solo enseña «Descartar» en «Por completar» y «Por extraer»', async () => {
+  it('solo enseña «Descartar» en «Por completar» y «Por leer»', async () => {
     mockApi({ 'GET /status': status(0, 1), 'GET /jobs': page() })
     renderApp('/bandeja?stage=pending_triage')
     const table = await screen.findByRole('table')

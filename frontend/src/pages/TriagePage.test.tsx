@@ -44,13 +44,13 @@ describe('Por revisar', () => {
 
     const detail = await screen.findByRole('article', { name: 'Oferta seleccionada' })
     expect(within(detail).getByRole('heading', { name: 'Oferta 1' })).toBeInTheDocument()
-    expect(within(detail).getByLabelText('Score 82 de 100')).toBeInTheDocument()
+    expect(within(detail).getByLabelText(/Encaje de 82 sobre 100/)).toBeInTheDocument()
     expect(within(detail).getByText('Python')).toBeInTheDocument()
     expect(within(detail).getByText('Kafka')).toBeInTheDocument()
     expect(within(detail).getByText(/Sin valorar/)).toBeInTheDocument()
     const options = screen.getAllByRole('option')
     expect(options.map((o) => within(o).getByText(/^Oferta/).textContent)).toEqual(['Oferta 1', 'Oferta 2'])
-    expect(within(options[1]).getByLabelText('Score 40 de 100, por debajo del umbral')).toBeInTheDocument()
+    expect(within(options[1]).getByLabelText('Encaje de 40 sobre 100, encaje bajo')).toBeInTheDocument()
     expect(screen.getByText('2 ofertas por revisar, de más a menos encaje')).toBeInTheDocument()
   })
 
@@ -62,7 +62,7 @@ describe('Por revisar', () => {
     await userEvent.keyboard('j')
     await waitFor(() => expect(within(screen.getByRole('article', { name: 'Oferta seleccionada' })).getByRole('heading', { name: 'Oferta 2' })).toBeInTheDocument())
     const note = within(screen.getByRole('article', { name: 'Oferta seleccionada' })).getByRole('note')
-    expect(note).toHaveTextContent('Sin valorar en segundo plano: su score (40) está por debajo del umbral (45).')
+    expect(note).toHaveTextContent('Tu agente no la valora en segundo plano: su encaje (40) está por debajo del mínimo (45).')
   })
 
   it('se mueve con J/K y flechas, y abre la ficha con O', async () => {
@@ -107,7 +107,7 @@ describe('Por revisar', () => {
     expect(eventCalls(calls)).toEqual([])
 
     await userEvent.keyboard('2')
-    expect(within(dialog).getByRole('radio', { name: /Seniority o años/ })).toHaveAttribute('aria-checked', 'true')
+    expect(within(dialog).getByRole('radio', { name: /Nivel o años/ })).toHaveAttribute('aria-checked', 'true')
     await userEvent.keyboard('{Enter}')
 
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
@@ -116,7 +116,7 @@ describe('Por revisar', () => {
       { path: '/jobs/1/events', body: { type: 'discarded', reason: 'seniority' } },
     ])
     await waitFor(() =>
-      expect(screen.getAllByRole('status').some((e) => e.textContent?.includes('Descartada Oferta 1 · Seniority o años'))).toBe(true),
+      expect(screen.getAllByRole('status').some((e) => e.textContent?.includes('Descartada Oferta 1 · Nivel o años'))).toBe(true),
     )
   })
 
@@ -227,7 +227,7 @@ describe('Por revisar', () => {
     const detail = await screen.findByRole('article')
     expect(within(detail).getByRole('note', { name: 'No pasa los filtros' })).toHaveTextContent('Pide 6 años de experiencia.')
     expect(within(detail).getByText('Encaje posible')).toBeInTheDocument()
-    expect(within(detail).getByText('Valorada con un score de 64; ahora es 60 porque el perfil o la oferta cambiaron.')).toBeInTheDocument()
+    expect(within(detail).getByText('Valorada con un encaje de 64; ahora es 60 porque el perfil o la oferta cambiaron.')).toBeInTheDocument()
     expect(within(detail).getByText('¿Has usado Kafka?')).toBeInTheDocument()
     expect(within(detail).getByText('dbt solo básico')).toBeInTheDocument()
     // Desfasada: se puede volver a valorar esa oferta sola.
@@ -243,7 +243,7 @@ describe('Por revisar', () => {
     mockTriage(items)
     renderApp('/por-revisar')
     let detail = await screen.findByRole('article')
-    expect(within(detail).getByRole('button', { name: 'Valorar encaje' })).toBeInTheDocument()
+    expect(within(detail).getByRole('button', { name: 'Valorar esta oferta' })).toBeInTheDocument()
     await userEvent.keyboard('j')
     await waitFor(() => expect(within(screen.getByRole('article')).getByText('Encaje fuerte')).toBeInTheDocument())
     detail = screen.getByRole('article')
@@ -265,7 +265,7 @@ describe('Por revisar', () => {
   it('avisa si no hay perfil y enseña la cola vacía', async () => {
     mockApi({ 'GET /status': status(), 'GET /triage': triageQueue([], { profile_missing: true }) })
     renderApp('/por-revisar')
-    expect(await screen.findByText('Sin perfil no hay score.')).toBeInTheDocument()
+    expect(await screen.findByText('Sin perfil no se puede calcular el encaje.')).toBeInTheDocument()
     expect(screen.getByText('Nada por revisar')).toBeInTheDocument()
   })
 
@@ -296,7 +296,7 @@ describe('Comparación por significado', () => {
     const detail = await screen.findByRole('article')
     await userEvent.click(await within(detail).findByRole('button', { name: 'Qué aporta y cómo activarla' }))
     const dialog = await screen.findByRole('dialog', { name: 'Comparación por significado' })
-    expect(within(dialog).getByText(/vale el 30 % del score/)).toBeInTheDocument()
+    expect(within(dialog).getByText(/vale el 30 % del encaje/)).toBeInTheDocument()
     expect(within(dialog).getByText(/Es permanente/)).toBeInTheDocument()
     await userEvent.click(within(dialog).getByRole('button', { name: 'Instalar' }))
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
@@ -311,8 +311,8 @@ describe('Comparación por significado', () => {
     mockTriage([item], { 'GET /matching/semantic': { ...extraStatus, in_docker: true } })
     renderApp('/por-revisar')
     const detail = await screen.findByRole('article')
-    await within(detail).findByText('Desglose')
-    expect(within(detail).queryByText('Score sin comparación por significado')).not.toBeInTheDocument()
+    await within(detail).findByText('De dónde sale el número')
+    expect(within(detail).queryByText('Encaje sin comparación por significado')).not.toBeInTheDocument()
     expect(within(detail).queryByRole('button', { name: 'Qué aporta y cómo activarla' })).not.toBeInTheDocument()
   })
 
@@ -325,12 +325,12 @@ describe('Comparación por significado', () => {
     mockTriage([without, withIt], { 'GET /matching/semantic': extraStatus })
     renderApp('/por-revisar')
     let detail = await screen.findByRole('article')
-    expect(await within(detail).findByText('Score sin comparación por significado')).toBeInTheDocument()
+    expect(await within(detail).findByText('Encaje sin comparación por significado')).toBeInTheDocument()
     expect(within(detail).getByText(/el encaje sale más fino/)).toBeInTheDocument()
     expect(within(detail).queryAllByText(/instala el extra/)).toHaveLength(0) // la nota técnica ya no sale
     await userEvent.keyboard('j')
     await waitFor(() => expect(within(screen.getByRole('article')).getByText(/se parecen un 72 %/)).toBeInTheDocument())
     detail = screen.getByRole('article')
-    expect(within(detail).queryByText('Score sin comparación por significado')).not.toBeInTheDocument()
+    expect(within(detail).queryByText('Encaje sin comparación por significado')).not.toBeInTheDocument()
   })
 })

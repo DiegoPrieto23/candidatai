@@ -15,8 +15,9 @@ import {
 } from '@phosphor-icons/react'
 import { Trans, useTranslation } from 'react-i18next'
 import type { DiscardReason, JobRow, Stage } from '@/api/client'
-import { type JobSort, PAGE_SIZE, type SortDirection, useJobEvent, useJobs, useStatus } from '@/api/queries'
+import { type JobSort, PAGE_SIZE, type SortDirection, useEditableProfile, useJobEvent, useJobs, useStatus } from '@/api/queries'
 import { DiscardDialog, type DiscardChoice } from '@/components/DiscardDialog'
+import { Hint } from '@/components/Hint'
 import { SignalBadges } from '@/components/JobSignals'
 import { KnownBadge } from '@/components/NetworkPanel'
 import { Pager } from '@/components/Pager'
@@ -121,6 +122,22 @@ function Missing({ label }: { label: string }) {
   )
 }
 
+/** Sin encaje: el porqué al pasar el ratón (falta tu perfil o que tu agente la lea); en el texto
+ * oculto, para el lector de pantalla. Sin parada de tabulador: serían una por fila. */
+function NoScore({ job, profileMissing }: { job: JobRow; profileMissing: boolean }) {
+  const { t } = useTranslation('inbox')
+  const why = profileMissing ? 'profile' : job.remote_mode == null ? 'unread' : 'other'
+  const label = t(`noScoreWhy.${why}`)
+  return (
+    <Hint text={label}>
+      <span className="text-xs text-muted-foreground/70">
+        <span aria-hidden>{t('noScore')}</span>
+        <span className="sr-only">{label}</span>
+      </span>
+    </Hint>
+  )
+}
+
 function RemoteMode({ mode }: { mode: JobRow['remote_mode'] }) {
   const { t } = useTranslation('inbox')
   if (!mode) return <Missing label={t('notExtracted')} />
@@ -181,7 +198,7 @@ function ClosedDate({ job }: { job: JobRow }) {
   )
 }
 
-/** Lo que hace falta para descartar desde la tabla («Por completar» y «Por extraer»). */
+/** Lo que hace falta para descartar desde la tabla («Por completar» y «Por leer»). */
 interface QuickActions {
   /** En «Por completar» se decide en el portal: «Abrir» lleva allí. */
   openable: boolean
@@ -265,6 +282,7 @@ function JobTable({
 }) {
   const { t } = useTranslation('inbox')
   const navigate = useNavigate()
+  const profileMissing = useEditableProfile().data?.exists === false
   const picked = actions ? jobs.filter((job) => actions.selected.has(job.id)).length : 0
   return (
     <>
@@ -352,7 +370,7 @@ function JobTable({
                 <Salary salary={job.salary} />
               </td>
               <td className="py-3.5 pr-6 text-right">
-                {job.score == null ? <Missing label={t('noScore')} /> : <ScoreBadge score={job.score} />}
+                {job.score == null ? <NoScore job={job} profileMissing={profileMissing} /> : <ScoreBadge score={job.score} />}
               </td>
               <td className="py-3.5 pr-6">
                 <StageBadge stage={job.stage} />

@@ -151,7 +151,7 @@ tres proyectos han llegado a lo mismo: `GEMINI.md` vacío o de paso, y Antigravi
 | Estrategia de nivel y arquetipo del puesto | 🟡 | ❌ | ✅ |
 | Calibración por región (p. ej. ingeniería en Europa) | ❌ | ❌ | ✅ `eu-swe` |
 | Eval publicado del matching | ✅ 80 casos, precision 0,88 / recall 0,95 | ❌ | 🟡 `eval-golden` |
-| ¿Acierta el score? (calibración con resultados) | ✅ | ✅ `/setup` recalibra con lo que llegó a entrevista | ✅ `calibrate` |
+| ¿Acierta el encaje? (calibración con resultados) | ✅ | ✅ `/setup` recalibra con lo que llegó a entrevista | ✅ `calibrate` |
 | Aprender reglas de las sesiones | 🟡 `review-search` propone cambios, sin tocar nada | ❌ | ✅ `retro` propone reglas que `learn.mjs` aplica con tu OK |
 | Huecos de skills agregados y plan de formación | ✅ | ✅ `/upskill` | ✅ |
 | Valorar un curso o un proyecto | ✅ `training-plan` | ❌ | ✅ |

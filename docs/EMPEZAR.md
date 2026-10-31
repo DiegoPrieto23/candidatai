@@ -136,7 +136,7 @@ vez que lo abras, entra con tu cuenta.
 
 De vuelta en **Agente**, arriba dice «Tu agente: Claude Code, listo». Si tienes varios, elige el
 tuyo como agente por defecto en **Tus agentes en detalle**. Desde ese momento, botones como
-**Procesar ofertas**, **Evaluar encaje** o **Generar CV** lo abren en una ventana aparte con la orden
+**Leer las ofertas nuevas**, **Valorar las pendientes** o **Generar CV** lo abren en una ventana aparte con la orden
 ya escrita: ves lo que hace y lo apruebas. Si no puede abrirlo, el botón te enseña la orden entera,
 con **Copiar**, para que la pegues en tu agente. Su flechita ofrece además **En segundo plano** (sin ventana;
 lo sigues en «Agente») y **Dejar para mi próxima sesión**.
@@ -220,8 +220,8 @@ Las ofertas pueden entrar de varias formas; empieza con una o dos:
 
 Después:
 
-1. En **Inicio**, pulsa **Procesar ofertas** y luego **Evaluar encaje**: tu agente lee cada oferta y
-   explica cuánto encaja contigo.
+1. En **Inicio**, pulsa **Leer las ofertas nuevas** y luego **Valorar las pendientes**: tu agente lee
+   cada oferta, la app le pone un encaje de 0 a 100 y tu agente explica por qué encaja contigo o no.
 2. En **Por revisar**, aprueba o descarta cada oferta.
 3. En una oferta aprobada, ábrela y pulsa **Generar CV**. Después eliges el diseño y pulsas
    **Generar**, y la app comprueba que cada línea sale de tu perfil.

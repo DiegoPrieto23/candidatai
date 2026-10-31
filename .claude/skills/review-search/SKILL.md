@@ -35,7 +35,7 @@ para la ventana reciente.
 3. Lee `config/policies.yaml` (`scoring` y `hard_filters`) para saber qué hay hoy.
 
 ## 2. Analizar
-- **¿Acierta el score?** Mira `by_score`: si la tasa de respuesta sube con el tramo, el score
+- **¿Acierta el encaje?** Mira `by_score`: si la tasa de respuesta sube con el tramo, el score
   ordena bien. Si un tramo bajo responde igual o más que uno alto (con intervalos que no se
   solapan), el score infravalora algo: busca qué tienen en común esas ofertas (fuente, puesto).
 - **¿Acierta el veredicto?** `by_verdict`, igual. Si «Débil» responde como «Fuerte», la valoración

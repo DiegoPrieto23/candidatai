@@ -71,7 +71,8 @@ def claude_launcher() -> _Launcher:
 @pytest.fixture
 def db(monkeypatch: pytest.MonkeyPatch) -> None:
     migrations.upgrade()
-    # Sin ofertas, «Evaluar encaje» no se lanzaría (umbral de la fase 25.4): aquí da igual cuáles.
+    # Sin ofertas, «Valorar las pendientes» no se lanzaría (umbral de la fase 25.4): aquí da igual
+    # cuáles.
     monkeypatch.setattr(agent_runs, "_assess_prompt", lambda *_a: "Usa el skill assess-fit con 1.")
 
 

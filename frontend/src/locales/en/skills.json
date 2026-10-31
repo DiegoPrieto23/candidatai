@@ -11,10 +11,10 @@
     "have": "I have it"
   },
   "alias": {
-    "added": "“{{skill}}” now counts as “{{profile}}”. Job scores are recalculated in the background.",
+    "added": "“{{skill}}” now counts as “{{profile}}”. The fit of your jobs is recalculated in the background.",
     "existed": "“{{skill}}” already counted as “{{profile}}”.",
     "title": "“{{skill}}” is the same as…",
-    "description": "Pick the skill in your profile that means the same. It's saved as a synonym and your jobs' scores are recalculated.",
+    "description": "Pick the skill in your profile that means the same. It's saved as a synonym and the fit of your jobs is recalculated.",
     "search": "Search your profile",
     "list": "Skills in your profile",
     "none": "No skill in your profile matches.",
@@ -58,6 +58,6 @@
     "actions": "Actions"
   },
   "noneFiltered": "None with this filter.",
-  "weightHint": "How much it counts in your jobs: 1 for each job that requires it and 0.5 if it's nice-to-have, times the job's score.",
+  "weightHint": "How much it counts in your jobs: 1 for each job that requires it and 0.5 if it's nice-to-have, times the job's fit.",
   "weightHelp": "What the weight is"
 }

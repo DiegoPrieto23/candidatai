@@ -1,7 +1,7 @@
 {
   "stage": {
     "pending_detail": "Por completar",
-    "pending_extraction": "Por extraer",
+    "pending_extraction": "Por leer",
     "pending_triage": "Por revisar",
     "approved": "Aprobada",
     "cv_ready": "CV listo",
@@ -13,12 +13,12 @@
     "found": "Dada de alta",
     "detail_captured": "Descripción capturada",
     "duplicate_detected": "Duplicado detectado",
-    "extracted": "Extracción guardada",
+    "extracted": "Leída por tu agente",
     "hard_filter_failed": "No pasa los filtros",
-    "extraction_failed": "Extracción fallida",
+    "extraction_failed": "Tu agente no pudo leerla",
     "injection_suspected": "Posible contenido dirigido a una IA",
     "closure_suspected": "Puede que ya no esté publicada",
-    "scored": "Puntuada",
+    "scored": "Encaje calculado",
     "fit_assessed": "Encaje valorado",
     "approved": "Aprobada",
     "discarded": "Descartada",
@@ -83,7 +83,7 @@
   },
   "discardReason": {
     "skills": "No encaja el stack",
-    "seniority": "Seniority o años",
+    "seniority": "Nivel o años",
     "location": "Ubicación o modalidad",
     "salary": "Salario o condiciones",
     "company": "Empresa o sector",
@@ -186,7 +186,7 @@
     "reopened": "Vuelve a la etapa en la que estaba al cerrarse."
   },
   "hardFilter": {
-    "seniority": "Seniority",
+    "seniority": "Nivel",
     "years": "Años de experiencia",
     "remote_mode": "Modalidad",
     "location": "Ubicación",

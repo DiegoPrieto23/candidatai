@@ -1,68 +1,67 @@
 {
-  "noScore": "Sin score",
-  "scoreAria": "Score {{score}} de 100",
-  "belowThreshold": ", por debajo del umbral",
+  "noScore": "Sin encaje calculado",
+  "scoreAria": "Encaje de {{score}} sobre 100",
   "noSkills": "La oferta no indica ninguna.",
   "basicShort": "bás.",
   "inProfile": "En tu perfil: {{skill}}. ",
   "notInProfile": "No está en tu perfil",
   "missing": "Falta: ",
-  "notAssessed": "Sin valorar todavía. Pulsa «Valorar encaje» para que tu agente la valore.",
+  "notAssessed": "Sin valorar todavía. Pulsa «Valorar esta oferta» para que tu agente la valore.",
   "stale": "De un cálculo anterior: el perfil o la oferta cambiaron.",
-  "staleScore": "Valorada con un score de {{was}}; ahora es {{score}} porque el perfil o la oferta cambiaron.",
+  "staleScore": "Valorada con un encaje de {{was}}; ahora es {{score}} porque el perfil o la oferta cambiaron.",
   "questions": "Preguntas para ti",
   "failsFilters": "No pasa los filtros",
   "failsHardFilters": "No pasa los filtros duros",
   "sections": {
-    "breakdown": "Desglose",
+    "breakdown": "De dónde sale el número",
     "mustHave": "Skills obligatorias",
     "niceToHave": "Skills deseables",
     "assessment": "Valoración del agente"
   },
   "notes": {
-    "off": "La comparación por significado está desactivada: el score solo cuenta las skills por su nombre.",
+    "off": "La app solo reconoce tus skills si se llaman igual que en la oferta: no ve sinónimos ni frases parecidas, como «ETL» y «pipelines de datos».",
     "notInstalled": "Comparación por significado sin activar: es opcional y la guía explica cómo activarla.",
-    "unavailable": "La comparación por significado no está disponible ahora: el score solo cuenta las skills por su nombre.",
-    "failed": "No se pudo hacer la comparación por significado ({{error}}): el score solo cuenta las skills por su nombre.",
-    "noMust": "La oferta no dice qué skills son obligatorias, así que esa parte no cuenta en el score.",
-    "noNice": "La oferta no dice qué skills son deseables, así que esa parte no cuenta en el score."
+    "unavailable": "Ahora mismo la app solo reconoce tus skills si se llaman igual que en la oferta: no ve sinónimos ni frases parecidas.",
+    "failed": "No se pudieron comparar los sinónimos ({{error}}): la app solo reconoce tus skills si se llaman igual que en la oferta.",
+    "noMust": "La oferta no dice qué skills son obligatorias, así que esa parte no cuenta en el encaje.",
+    "noNice": "La oferta no dice qué skills son deseables, así que esa parte no cuenta en el encaje."
   },
-  "belowAssessThreshold": "Sin valorar en segundo plano: su score ({{score}}) está por debajo del umbral ({{threshold}}). Cámbialo en la página «Agente» o valórala «En terminal».",
+  "belowAssessThreshold": "Tu agente no la valora en segundo plano: su encaje ({{score}}) está por debajo del mínimo ({{threshold}}). Cámbialo en la página «Agente» o valórala «En terminal».",
   "salaryGap": "{{amount}} por debajo de tu mínimo (solo lo ves tú).",
   "semantic": {
     "learnMore": "Qué aporta y cómo activarla",
     "retry": "Ver el error y reintentar",
     "title": "Comparación por significado",
-    "intro": "Ahora el score compara tus skills con las de la oferta solo por su nombre. Con esta opción, además, compara el sentido de tu perfil (titular, resumen y logros) con el de la oferta (puesto, responsabilidades, skills y sector), aunque usen palabras distintas.",
+    "intro": "Ahora el encaje compara tus skills con las de la oferta solo por su nombre. Con esta opción, además, compara el sentido de tu perfil (titular, resumen y logros) con el de la oferta (puesto, responsabilidades, skills y sector), aunque usen palabras distintas.",
     "benefits": {
       "synonyms": "Ve el encaje aunque cambien las palabras: «pipelines de datos» y «ETL», «cuadros de mando» y «Power BI».",
       "languages": "Funciona entre idiomas: compara una oferta en inglés con tu perfil en español.",
       "fewSkills": "Puntúa mejor las ofertas que listan pocas skills o con nombres poco habituales, donde comparar nombres se queda corto.",
-      "weight": "Rellena la parte «Similitud» del desglose, que vale el 30 % del score. Sin ella, ese peso se reparte entre las demás partes."
+      "weight": "Rellena la parte «Similitud» de «De dónde sale el número», que vale el 30 % del encaje. Sin ella, ese peso se reparte entre las demás partes."
     },
     "local": "Se calcula en tu equipo: tu perfil no sale de él. Solo se descarga el modelo, una vez.",
-    "permanent": "Es permanente: se usa en todas las ofertas desde que se instala. Las abiertas se recalculan solas al terminar (sus scores pueden cambiar unos puntos) y las cerradas, al abrirlas. Si actualizas la app, se vuelve a instalar sola.",
+    "permanent": "Es permanente: se usa en todas las ofertas desde que se instala. Las abiertas se recalculan solas al terminar (su encaje puede cambiar unos puntos) y las cerradas, al abrirlas. Si actualizas la app, se vuelve a instalar sola.",
     "size": "Descarga unos cientos de MB (bastante más en Linux) y ocupa 1-2 GB en disco. Tarda unos minutos; puedes seguir usando la app mientras.",
-    "docker": "En Docker no está disponible: la imagen no la trae. El score funciona igual sin ella.",
+    "docker": "En Docker no está disponible: la imagen no la trae. El encaje se calcula igual sin ella.",
     "notNow": "Ahora no",
     "install": "Instalar",
     "starting": "Empezando…",
     "state": {
       "off": {
         "title": "Comparación por significado: sin activar",
-        "body": "Ahora el score solo cuenta tus skills por su nombre. Actívala para que compare también el sentido de tu perfil con el de cada oferta."
+        "body": "Ahora el encaje solo cuenta tus skills por su nombre. Actívala para que compare también el sentido de tu perfil con el de cada oferta."
       },
       "installing": {
         "title": "Instalando la comparación por significado…",
-        "body": "Se está descargando e instalando en segundo plano: tarda unos minutos y puedes seguir usando la app. Al terminar, los scores de las ofertas abiertas se recalculan solos."
+        "body": "Se está descargando e instalando en segundo plano: tarda unos minutos y puedes seguir usando la app. Al terminar, el encaje de las ofertas abiertas se recalcula solo."
       },
       "failed": {
         "title": "No se pudo instalar la comparación por significado",
-        "body": "El score sigue funcionando, solo por el nombre de las skills. Mira el error y vuelve a intentarlo."
+        "body": "El encaje se sigue calculando, solo por el nombre de las skills. Mira el error y vuelve a intentarlo."
       },
       "installed": {
         "title": "Comparación por significado: activada",
-        "body": "El score compara también el sentido de tu perfil con el de cada oferta, aunque usen palabras distintas."
+        "body": "El encaje compara también el sentido de tu perfil con el de cada oferta, aunque usen palabras distintas."
       },
       "disabled": {
         "title": "Comparación por significado: desactivada",
@@ -70,20 +69,38 @@
       },
       "docker": {
         "title": "Comparación por significado: no disponible",
-        "body": "En Docker no se puede instalar: la imagen no la trae. El score funciona igual sin ella."
+        "body": "En Docker no se puede instalar: la imagen no la trae. El encaje se calcula igual sin ella."
       }
     },
     "score": {
       "active": "Con comparación por significado: tu perfil (titular, resumen y logros) y esta oferta se parecen un {{pct}} %. Cuenta en la «Similitud» del desglose.",
       "off": {
-        "title": "Score sin comparación por significado",
-        "body": "Ahora solo cuenta tus skills por su nombre. Si la instalas, el score también compara el sentido de tu perfil con el de la oferta y el encaje sale más fino."
+        "title": "Encaje sin comparación por significado",
+        "body": "Ahora solo cuenta tus skills por su nombre. Si la instalas, también compara el sentido de tu perfil con el de la oferta y el encaje sale más fino."
       },
       "failed": {
-        "title": "Score sin comparación por significado",
-        "body": "La instalación falló, así que el score solo cuenta tus skills por su nombre. Mira el error y vuelve a intentarlo para lograr un encaje más fino."
+        "title": "Encaje sin comparación por significado",
+        "body": "La instalación falló, así que el encaje solo cuenta tus skills por su nombre. Mira el error y vuelve a intentarlo para lograr un encaje más fino."
       }
     }
   },
-  "assessAgain": "Volver a valorar"
+  "assessAgain": "Volver a valorar",
+  "tier": {
+    "high": "buen encaje",
+    "mid": "encaje posible",
+    "low": "encaje bajo"
+  },
+  "scoreHint": "De 0 a 100, cuánto se parece la oferta a tu perfil, sobre todo en las skills obligatorias. Desde {{threshold}} es un encaje posible; desde {{high}}, un buen encaje. Por debajo de {{threshold}}, «Por revisar» la muestra atenuada.",
+  "scoreHintPlain": "De 0 a 100, cuánto se parece la oferta a tu perfil, sobre todo en las skills obligatorias.",
+  "scoreHintLabel": "Qué significa este número",
+  "component": {
+    "must_have_coverage": "Cuántas de las skills obligatorias de la oferta tienes en tu perfil, y con qué nivel. Es lo que más pesa.",
+    "semantic_similarity": "Cuánto se parecen lo que cuenta tu perfil y lo que pide la oferta, aunque usen palabras distintas.",
+    "preferences_fit": "Si el tipo de puesto, la modalidad y la zona son los de tus preferencias.",
+    "nice_to_have_coverage": "Cuántas de las skills deseables de la oferta tienes."
+  },
+  "componentPoints": "Aquí suma {{points}} de los {{max}} puntos que puede dar.",
+  "componentOff": "No cuenta: hace falta la comparación por significado. Sus puntos se reparten entre las demás partes.",
+  "componentHintLabel": "Qué mide «{{name}}»",
+  "levelLegend": "Tu nivel en cada skill:"
 }

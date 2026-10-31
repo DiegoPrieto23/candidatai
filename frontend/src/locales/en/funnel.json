@@ -86,8 +86,8 @@
     "caption": "Funnel by role type",
     "head": "Role",
     "others": "Others",
-    "notExtracted_one": "{{count}} job still needs processing: it doesn't count here until it's processed.",
-    "notExtracted_other": "{{count}} jobs still need processing: they don't count here until they're processed."
+    "notExtracted_one": "Your agent still has to read {{count}} job: it doesn't count here until then.",
+    "notExtracted_other": "Your agent still has to read {{count}} jobs: they don't count here until then."
   },
   "byReferral": {
     "title": "By referral",
@@ -101,7 +101,7 @@
     }
   },
   "calibration": {
-    "title": "Is the score right?",
+    "title": "Is the fit right?",
     "hint": "Reply and interview rates of the applications you sent (in the chosen period, by sending date) based on what you knew when you sent them.",
     "note": "A rough guide. In brackets, the 95 % interval: if two groups overlap, there's no clear difference. Weights and filters never change on their own: your agent proposes and you decide.",
     "review": "Review my search",
@@ -120,8 +120,8 @@
     },
     "tabs": {
       "score": {
-        "label": "Score",
-        "hint": "The job's score when you sent it."
+        "label": "Fit",
+        "hint": "The job's fit when you sent it."
       },
       "verdict": {
         "label": "Verdict",
@@ -158,7 +158,7 @@
     },
     "groups": {
       "score": {
-        "none": "No score"
+        "none": "No fit"
       },
       "verdict": {
         "strong": "Strong",

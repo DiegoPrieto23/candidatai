@@ -18,7 +18,7 @@ FEATURES.md dejan de coincidir fila a fila. -->
 | Funcionalidad | Dónde | Captura |
 |---|---|---|
 | **Alta de una oferta** pegando su URL o su texto; los duplicados se detectan y apuntan a la original | `/nueva` | [Alta](img/es/new-job.webp) |
-| **Bandeja**: todas las ofertas con filtros, búsqueda, señales y etapa; cada etapa explica qué es y qué hacer para avanzar, con su botón; las que están por completar o por extraer se quitan con **Descartar** y **Deshacer**; «Cerrada» con su fecha, ordenable | `/bandeja` | [Bandeja](img/es/inbox.webp) · [▶ Descartar](img/es/anim/discard.webp) |
+| **Bandeja**: todas las ofertas con filtros, búsqueda, señales y etapa; cada etapa explica qué es y qué hacer para avanzar, con su botón; las que están por completar o por leer se quitan con **Descartar** y **Deshacer**; «Cerrada» con su fecha, ordenable | `/bandeja` | [Bandeja](img/es/inbox.webp) · [▶ Descartar](img/es/anim/discard.webp) |
 | **Empresas objetivo**: sus ofertas llegan cada día desde Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters y Recruitee (APIs públicas, sin scraping); «Probar» dice cuántas pasan tus filtros | `/fuentes/empresas` | [Empresas](img/es/sources-companies.webp) |
 | **Portales de empleo** (en «Dónde buscar»): «Configurar con mi agente» te recomienda portales y prepara sus búsquedas; al añadir uno conocido (InfoJobs, Tecnoempleo, Indeed, LinkedIn), las búsquedas salen solas de los puestos y las ubicaciones de tu perfil, y cada portal se puede editar. Los que recorre tu agente, cada uno con su prioridad (sin empates), su acceso y sus ofertas por recorrido, explicados con su ⓘ; InfoJobs y Adzuna con claves, Manfred y freehire.me sin ellas | `/fuentes/plataformas` | [Plataformas](img/es/sources-platforms.webp) |
 | **Buscar en portales con tu navegador**: tu agente recorre tus búsquedas, con límites de páginas y pausas, da de alta lo que encaja y para ante captchas | `search-jobs` | |
@@ -28,16 +28,16 @@ FEATURES.md dejan de coincidir fila a fila. -->
 | **Encontrar el tablero de empleo de tus empresas** a partir de una lista de nombres | `cai sources discover` | |
 | **Extraer cada oferta** a datos estructurados con un subagente aislado que solo ve esa oferta; el texto dirigido a una IA se marca y nunca se obedece | `process-jobs` | |
 | **¿Sigue abierta? y republicadas**: la app comprueba si una oferta sigue publicada (nunca la cierra sola) y marca «Republicada ×N» | `/jobs/:id` | |
-| **Ofertas dudosas a la vista**: rango salarial muy amplio, empresa oculta o agencia, contrato temporal, publicada hace meses y cribado con IA, cada una explicada; no cambian el score | `/bandeja` | |
+| **Ofertas dudosas a la vista**: rango salarial muy amplio, empresa oculta o agencia, contrato temporal, publicada hace meses y cribado con IA, cada una explicada; no cambian el encaje | `/bandeja` | |
 
 ## 2. Revisar
 
 | Funcionalidad | Dónde | Captura |
 |---|---|---|
 | **Inicio**: con la app recién instalada, qué hace la app y qué es tu agente, y «Primeros pasos» (sube tu CV para crear tu perfil, o empiézalo a mano, y elige dónde buscar con tu agente); sin ningún agente instalado, «Necesitas un agente de IA» con los pasos para instalar Claude Code; luego, lo que te espera hoy (ofertas por procesar o valorar, respuestas, seguimientos), las que mejor encajan, las listas para enviar y los próximos hitos | `/` | [Inicio](img/es/home.webp) |
-| **Filtros duros y un score 0-100 explicado**: nivel, años, modalidad, zona, idiomas y palabras de descarte; cobertura de skills ponderada por tu nivel, preferencias y similitud semántica local opcional | `/por-revisar` | [Por revisar](img/es/triage.webp) |
+| **Filtros duros y un encaje 0-100 explicado** («buen encaje», «encaje posible» o «encaje bajo», y al pasar el ratón qué mide cada parte; sin encaje, la ficha dice qué falta): nivel, años, modalidad, zona, idiomas y palabras de descarte; cobertura de skills ponderada por tu nivel, preferencias y similitud semántica local opcional | `/por-revisar` | [Por revisar](img/es/triage.webp) |
 | **Revisar con el teclado**: `J`/`K` para moverte, `A` aprobar, `D` descartar con motivo, `O` abrir, y Deshacer | `/por-revisar` | [▶ Teclado](img/es/anim/triage.webp) |
-| **El veredicto de tu agente**: encaje con riesgos y preguntas, citando tus deal-breakers; en segundo plano se salta las de poco score. En cada oferta, «Valorar encaje» si no tiene valoración o la tiene desfasada | `assess-fit` | |
+| **El veredicto de tu agente**: encaje con riesgos y preguntas, citando tus deal-breakers; en segundo plano se salta las de poco encaje. En cada oferta, «Valorar esta oferta»; para todas, «Valorar las pendientes» si no tiene valoración o la tiene desfasada | `assess-fit` | |
 | **«Conoces a N personas aquí»**: tus contactos de LinkedIn (exportación oficial en CSV) cruzados con cada empresa | `/jobs/:id` | |
 | **La ficha de la oferta**, en pestañas (Oferta, Candidatura, Proceso, Empresa, Historial y notas) que se abren en la que toca según la fase: extracción, desglose del encaje, señales, historial, notas, coste en tiempo de agente y todas las secciones de abajo | `/jobs/:id` | [Ficha](img/es/job.webp) |
 
@@ -87,7 +87,7 @@ FEATURES.md dejan de coincidir fila a fila. -->
 | Funcionalidad | Dónde | Captura |
 |---|---|---|
 | **Embudo**: conversión paso a paso, por fuente, puesto, semana, plantilla, carta y referencia, tiempo hasta la primera respuesta y motivos de descarte | `/embudo` | [Embudo](img/es/funnel.webp) |
-| **«¿Acierta el score?»**: tasas de respuesta y de entrevista por score, veredicto, fuente, plantilla, carta y referencia, con intervalos al 95 %, en «Más análisis» del Embudo | `/embudo` | |
+| **«¿Acierta el encaje?»**: tasas de respuesta y de entrevista por encaje, veredicto, fuente, plantilla, carta y referencia, con intervalos al 95 %, en «Más análisis» del Embudo | `/embudo` | |
 | **Tu búsqueda en números**, lista para compartir (solo cifras, nunca empresas), en «Más análisis» del Embudo | `/embudo` · `cai stats story` | |
 | **Retrospectiva semanal**: qué funciona y qué cambiar, sin tocar pesos ni filtros | `review-search` | |
 | **Skills**: lo que piden tus ofertas y tu perfil no cubre; sinónimos «Es lo mismo que…», «La tengo» y «No la tengo», de 25 en 25 | `/skills` | [Skills](img/es/skills.webp) |

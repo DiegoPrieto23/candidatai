@@ -366,7 +366,7 @@ conversión nunca pasa del 100 %.
 
 ### Calibración (fase 20)
 
-«¿Acierta el score?»: `services/analytics.py` (`get_calibration`), sin tablas nuevas. Cuenta las
+«¿Acierta el encaje?»: `services/analytics.py` (`get_calibration`), sin tablas nuevas. Cuenta las
 ofertas con `applied` o `applied_manually` (sin las cerradas por `duplicate_detected`) y, para
 cada grupo, cuántas tuvieron respuesta y entrevista (los pasos del embudo), cuántas esperan
 (`awaiting`: sin el paso «Con respuesta» y aún en `applied`), las dos tasas con su **intervalo de Wilson al 95 %**

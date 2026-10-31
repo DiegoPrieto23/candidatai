@@ -75,7 +75,7 @@
   },
   "preview": {
     "title": "This is how your profile will change",
-    "rescore": "Saving recalculates the scores of your open jobs.",
+    "rescore": "Saving recalculates the fit of your open jobs.",
     "diff": "Changes to your profile",
     "confirm": "Save these changes",
     "cancel": "Back to editing",
@@ -135,7 +135,7 @@
     },
     "skills": {
       "title": "Skills",
-      "hint": "Levels are private: they decide what a CV may claim, but never appear in it. Saving recalculates the scores.",
+      "hint": "Levels are private: they decide what a CV may claim, but never appear in it. Saving recalculates the fit of your jobs.",
       "levels": "F: strong, you use it daily · C+: used in real projects · C: you know it · B: basic, only as \"knowledge of\".",
       "addSkill": "Add skill"
     },
@@ -148,7 +148,7 @@
     },
     "searchRole": {
       "title": "Role",
-      "hint": "Which roles and levels you want, and which title words discard a job. When you save you'll see the change, and your open jobs will be rescored."
+      "hint": "Which roles and levels you want, and which title words discard a job. When you save you'll see the change, and the fit of your open jobs will be recalculated."
     },
     "searchExperience": {
       "title": "Experience and salary",
@@ -242,7 +242,7 @@
     "evidenceRequired": "Pick at least one piece of evidence.",
     "noEvidence": "No achievements or projects to cite yet: add them first under Experience or Projects.",
     "roles": "Roles you're looking for",
-    "rolesHint": "By priority. Anything unlike them scores lower.",
+    "rolesHint": "By priority. Anything unlike them gets a lower fit.",
     "seniority": "Levels you would apply for",
     "workLanguages": "Working languages",
     "workLanguagesHint": "Two-letter codes: es, en…",

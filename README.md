@@ -60,7 +60,7 @@ to press Send**, and then it tracks the process all the way to the offer.
 | | |
 |---|---|
 | 📥 **Jobs from many sources** | Paste a URL or text; public ATS APIs (Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters, Recruitee); InfoJobs, Adzuna, Manfred and freehire.me; **job alerts by email**; a browser button; your agent browsing portals; and, opt-in, LinkedIn's public search. Deduplicated, with **detection of text aimed at an AI** |
-| 🎯 **Review with an explained score** | Hard filters and a 0-100 score from skill coverage and your preferences; your agent adds a reasoned verdict, and "Is the score right?" checks it against real outcomes |
+| 🎯 **Review with an explained score** | Hard filters and a 0-100 score from skill coverage and your preferences; your agent adds a reasoned verdict, and "Is the fit right?" checks it against real outcomes |
 | 📄 **Tailored CV and cover letter** | The agent cites **evidence from your profile for every line**; the code checks it, renders it with your template, photo and colour, and a separate role verifies it. **Import your own CV design** as a template |
 | 📝 **Assisted applications** | Fills Greenhouse, Lever, Ashby or generic forms, stops at captchas and logins, and **only submits after you confirm** |
 | 📊 **Tracking and analytics** | A kanban that only moves through recorded events, a calendar, follow-up reminders, company replies classified for you, and a funnel by source, role, template and referral |

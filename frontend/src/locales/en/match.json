@@ -1,68 +1,67 @@
 {
-  "noScore": "No score",
-  "scoreAria": "Score {{score}} out of 100",
-  "belowThreshold": ", below the threshold",
+  "noScore": "Fit not calculated",
+  "scoreAria": "Fit of {{score}} out of 100",
   "noSkills": "The posting doesn't list any.",
   "basicShort": "bas.",
   "inProfile": "In your profile: {{skill}}. ",
   "notInProfile": "Not in your profile",
   "missing": "Missing: ",
-  "notAssessed": "Not assessed yet. Press “Assess fit” so your agent assesses it.",
+  "notAssessed": "Not assessed yet. Press “Assess this job” so your agent assesses it.",
   "stale": "From an earlier calculation: the profile or the job changed.",
-  "staleScore": "Assessed with a score of {{was}}; it is now {{score}} because the profile or the job changed.",
+  "staleScore": "Assessed with a fit of {{was}}; it is now {{score}} because the profile or the job changed.",
   "questions": "Questions for you",
   "failsFilters": "Fails the filters",
   "failsHardFilters": "Fails the hard filters",
   "sections": {
-    "breakdown": "Breakdown",
+    "breakdown": "Where the number comes from",
     "mustHave": "Must-have skills",
     "niceToHave": "Nice-to-have skills",
     "assessment": "Agent's assessment"
   },
   "notes": {
-    "off": "Meaning-based comparison is turned off: the score only matches skills by name.",
+    "off": "The app only recognises your skills when they're named as in the job: it misses synonyms and similar phrases, like “ETL” and “data pipelines”.",
     "notInstalled": "Meaning-based comparison isn't on: it's optional and the guide explains how to turn it on.",
-    "unavailable": "Meaning-based comparison isn't available right now: the score only matches skills by name.",
-    "failed": "Couldn't run the meaning-based comparison ({{error}}): the score only matches skills by name.",
-    "noMust": "The job doesn't say which skills are required, so that part doesn't count in the score.",
-    "noNice": "The job doesn't say which skills are nice-to-have, so that part doesn't count in the score."
+    "unavailable": "Right now the app only recognises your skills when they're named as in the job: it misses synonyms and similar phrases.",
+    "failed": "Couldn't compare synonyms ({{error}}): the app only recognises your skills when they're named as in the job.",
+    "noMust": "The job doesn't say which skills are required, so that part doesn't count in the fit.",
+    "noNice": "The job doesn't say which skills are nice-to-have, so that part doesn't count in the fit."
   },
-  "belowAssessThreshold": "Not assessed in the background: its score ({{score}}) is below the threshold ({{threshold}}). Change it on the \"Agent\" page or assess it \"In a terminal\".",
+  "belowAssessThreshold": "Your agent doesn't assess it in the background: its fit ({{score}}) is below the minimum ({{threshold}}). Change it on the “Agent” page or assess it “In a terminal”.",
   "salaryGap": "{{amount}} below your minimum (only you see this).",
   "semantic": {
     "learnMore": "What it adds and how to turn it on",
     "retry": "See the error and retry",
     "title": "Meaning-based comparison",
-    "intro": "Right now the score compares your skills with the job's by name only. With this option it also compares the meaning of your profile (headline, summary and achievements) with the job (title, responsibilities, skills and sector), even when they use different words.",
+    "intro": "Right now the fit compares your skills with the job's by name only. With this option it also compares the meaning of your profile (headline, summary and achievements) with the job (title, responsibilities, skills and sector), even when they use different words.",
     "benefits": {
       "synonyms": "Spots the fit even when the words differ: “data pipelines” and “ETL”, “reporting dashboards” and “Power BI”.",
       "languages": "Works across languages: compares a job in English with your profile in Spanish.",
       "fewSkills": "Scores better the jobs that list few skills or unusual names, where comparing names falls short.",
-      "weight": "Fills in the “Similarity” part of the breakdown, worth 30% of the score. Without it, that weight is spread across the other parts."
+      "weight": "Fills in the “Similarity” part of “Where the number comes from”, worth 30% of the fit. Without it, that weight is spread across the other parts."
     },
     "local": "It runs on your computer: your profile never leaves it. Only the model is downloaded, once.",
-    "permanent": "It is permanent: it is used for every job from the moment it is installed. Open jobs are recalculated when it finishes (their scores may shift a few points) and closed ones when you open them. If you update the app, it reinstalls itself.",
+    "permanent": "It is permanent: it is used for every job from the moment it is installed. Open jobs are recalculated when it finishes (their fit may shift a few points) and closed ones when you open them. If you update the app, it reinstalls itself.",
     "size": "It downloads a few hundred MB (much more on Linux) and takes 1-2 GB of disk. It takes a few minutes; you can keep using the app meanwhile.",
-    "docker": "Not available in Docker: the image does not include it. The score works the same without it.",
+    "docker": "Not available in Docker: the image does not include it. The fit is calculated the same without it.",
     "notNow": "Not now",
     "install": "Install",
     "starting": "Starting…",
     "state": {
       "off": {
         "title": "Meaning-based comparison: off",
-        "body": "Right now the score only counts your skills by their name. Turn it on so it also compares the meaning of your profile with each job."
+        "body": "Right now the fit only counts your skills by their name. Turn it on so it also compares the meaning of your profile with each job."
       },
       "installing": {
         "title": "Installing meaning-based comparison…",
-        "body": "It is being downloaded and installed in the background: it takes a few minutes and you can keep using the app. When it finishes, the scores of open jobs are recalculated on their own."
+        "body": "It is being downloaded and installed in the background: it takes a few minutes and you can keep using the app. When it finishes, the fit of open jobs is recalculated on its own."
       },
       "failed": {
         "title": "Meaning-based comparison could not be installed",
-        "body": "The score still works, by skill names only. See the error and try again."
+        "body": "The fit is still calculated, by skill names only. See the error and try again."
       },
       "installed": {
         "title": "Meaning-based comparison: on",
-        "body": "The score also compares the meaning of your profile with each job, even when they use different words."
+        "body": "The fit also compares the meaning of your profile with each job, even when they use different words."
       },
       "disabled": {
         "title": "Meaning-based comparison: turned off",
@@ -70,20 +69,38 @@
       },
       "docker": {
         "title": "Meaning-based comparison: not available",
-        "body": "It cannot be installed in Docker: the image does not include it. The score works the same without it."
+        "body": "It cannot be installed in Docker: the image does not include it. The fit is calculated the same without it."
       }
     },
     "score": {
       "active": "With meaning-based comparison: your profile (headline, summary and achievements) and this job are {{pct}}% alike. It counts in the breakdown's “Similarity”.",
       "off": {
-        "title": "Score without meaning-based comparison",
-        "body": "Right now it only counts your skills by name. Install it and the score also compares the meaning of your profile with the job, for a finer fit."
+        "title": "Fit without meaning-based comparison",
+        "body": "Right now it only counts your skills by name. Install it and the fit also compares the meaning of your profile with the job, for a finer fit."
       },
       "failed": {
-        "title": "Score without meaning-based comparison",
-        "body": "The installation failed, so the score only counts your skills by name. See the error and try again for a finer fit."
+        "title": "Fit without meaning-based comparison",
+        "body": "The installation failed, so the fit only counts your skills by name. See the error and try again for a finer fit."
       }
     }
   },
-  "assessAgain": "Assess again"
+  "assessAgain": "Assess again",
+  "tier": {
+    "high": "good fit",
+    "mid": "possible fit",
+    "low": "low fit"
+  },
+  "scoreHint": "From 0 to 100, how close the job is to your profile, above all in the required skills. From {{threshold}} it is a possible fit; from {{high}}, a good fit. Below {{threshold}}, “To review” shows it dimmed.",
+  "scoreHintPlain": "From 0 to 100, how close the job is to your profile, above all in the required skills.",
+  "scoreHintLabel": "What this number means",
+  "component": {
+    "must_have_coverage": "How many of the job's required skills are in your profile, and at what level. It weighs the most.",
+    "semantic_similarity": "How close what your profile says is to what the job asks for, even in different words.",
+    "preferences_fit": "Whether the kind of role, work mode and area match your preferences.",
+    "nice_to_have_coverage": "How many of the job's nice-to-have skills you have."
+  },
+  "componentPoints": "Here it adds {{points}} of the {{max}} points it can give.",
+  "componentOff": "It doesn't count: it needs meaning-based comparison. Its points are spread across the other parts.",
+  "componentHintLabel": "What “{{name}}” measures",
+  "levelLegend": "Your level in each skill:"
 }

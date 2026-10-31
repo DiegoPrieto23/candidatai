@@ -96,13 +96,13 @@ ACTIONS: dict[ActionId, Action] = {
     # sus roles: con un comodín, una oferta con una inyección podría llamar a herramientas que
     # escriben (`add_event`, `save_source`…).
     "process-jobs": Action(
-        "Procesar ofertas",
+        "Leer las ofertas nuevas",
         "Usa el skill process-jobs de CandidatAI con las ofertas pendientes de extraer.",
         background=("get_status", "list_jobs", "get_job", "save_extraction"),
         roles=("extractor",),
     ),
     "assess-fit": Action(
-        "Evaluar encaje",
+        "Valorar las pendientes",
         "Usa el skill assess-fit de CandidatAI con las ofertas pendientes de revisar.",
         background=(
             "list_jobs",
@@ -116,7 +116,7 @@ ACTIONS: dict[ActionId, Action] = {
     # La misma valoración para una sola oferta, desde su ficha: la UI solo la ofrece sin valoración
     # o con la valoración desfasada (con los mismos datos, repetirla solo gasta y varía al azar).
     "assess-fit-job": Action(
-        "Valorar encaje",
+        "Valorar esta oferta",
         "Usa el skill assess-fit de CandidatAI para la oferta {job_id}. Si ya tiene una "
         "valoración, vuelve a valorarla.",
         needs_job=True,

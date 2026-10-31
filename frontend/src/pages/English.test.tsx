@@ -92,7 +92,7 @@ describe('Páginas en inglés', () => {
     await english()
     renderApp('/por-revisar')
     const detail = await screen.findByRole('article', { name: 'Selected job' })
-    expect(within(detail).getByLabelText('Score 82 out of 100')).toBeInTheDocument()
+    expect(within(detail).getByLabelText(/Fit of 82 out of 100/)).toBeInTheDocument()
     expect(within(detail).getByRole('button', { name: /Approve/ })).toBeInTheDocument()
     expect(within(detail).getByText('Must-have skills')).toBeInTheDocument()
     expect(screen.getByText('2 jobs to review, best fit first')).toBeInTheDocument()
@@ -106,7 +106,7 @@ describe('Páginas en inglés', () => {
     expect(screen.getByText('Mid-level')).toBeInTheDocument()
     expect(screen.getByText(/€38,000 - €46,000 \/ year/)).toBeInTheDocument()
     await userEvent.click(screen.getByRole('tab', { name: 'History & notes' }))
-    expect(screen.getByText('Extraction saved')).toBeInTheDocument()
+    expect(screen.getByText('Read by your agent')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'History' })).toBeInTheDocument()
   })
 

@@ -1046,7 +1046,7 @@ export function useAssessThreshold(enabled = true) {
   })
 }
 
-/** Cambia el umbral de «Evaluar encaje» en segundo plano (`null`: el de `policies.yaml`). */
+/** Cambia el umbral de «Valorar las pendientes» en segundo plano (`null`: el de `policies.yaml`). */
 export function useSaveAssessThreshold() {
   const client = useQueryClient()
   return useMutation({

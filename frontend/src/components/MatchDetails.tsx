@@ -6,12 +6,28 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { serverText } from '@/lib/i18n'
 import { isSemanticNotInstalled, scoreNote } from '@/lib/scoreNotes'
 import { AgentButton } from '@/components/AgentButton'
+import { Hint } from '@/components/Hint'
 import { SemanticScoreHint } from '@/components/SemanticMatching'
-import { useSalaryGap } from '@/api/queries'
+import { useAssessThreshold, useSalaryGap } from '@/api/queries'
 import { COMPONENT_LABEL, HARD_FILTER_LABEL, LEVEL_LABEL, VERDICT_LABEL, formatMoney } from '@/lib/labels'
 import { cn } from '@/lib/utils'
 
-/** Score 0-100: número tabular con una barra fina. Por debajo del umbral, atenuado. */
+/** Puntos por encima del mínimo de «Por revisar» desde los que el encaje es bueno. */
+const HIGH_FIT_MARGIN = 15
+
+type ScoreTier = 'high' | 'mid' | 'low'
+
+/** En palabras: por debajo del mínimo de «Por revisar», bajo; 15 puntos por encima, bueno. */
+function scoreTier(score: number, threshold: number): ScoreTier {
+  if (score < threshold) return 'low'
+  return score >= threshold + HIGH_FIT_MARGIN ? 'high' : 'mid'
+}
+
+/**
+ * Encaje 0-100: número tabular sobre 100, una barra fina y, si se sabe el mínimo de «Por revisar»,
+ * qué tal es en palabras. Por debajo de ese mínimo, atenuado. Al pasar el ratón explica qué mide;
+ * en grande, además, con un ⓘ que se alcanza con el teclado.
+ */
 export function ScoreBadge({
   score,
   threshold,
@@ -24,14 +40,22 @@ export function ScoreBadge({
   className?: string
 }) {
   const { t } = useTranslation('match')
+  // Sin umbral (Bandeja, Inicio), el de la configuración: la misma consulta que la página «Agente».
+  const known = useAssessThreshold(score != null && threshold == null).data?.triage_threshold
   if (score == null) {
     return <span className={cn('text-xs text-muted-foreground/70', className)}>{t('noScore')}</span>
   }
-  const low = threshold != null && score < threshold
-  return (
+  const limit = threshold ?? known
+  const tier = limit != null ? scoreTier(score, limit) : null
+  const low = tier === 'low'
+  const hint =
+    limit != null
+      ? t('scoreHint', { threshold: limit, high: limit + HIGH_FIT_MARGIN })
+      : t('scoreHintPlain')
+  const badge = (
     <span
-      className={cn('inline-flex flex-col items-end gap-1', className)}
-      aria-label={t('scoreAria', { score }) + (low ? t('belowThreshold') : '')}
+      className={cn('inline-flex flex-col items-end gap-1', size === 'md' && className)}
+      aria-label={t('scoreAria', { score }) + (tier ? `, ${t(`tier.${tier}`)}` : '')}
     >
       <span
         className={cn(
@@ -41,6 +65,9 @@ export function ScoreBadge({
         )}
       >
         {score}
+        <span className={cn('font-normal text-muted-foreground', size === 'lg' ? 'text-base' : 'text-[0.7rem]')}>
+          /100
+        </span>
       </span>
       <span className={cn('h-1 overflow-hidden rounded-full bg-foreground/[0.07]', size === 'lg' ? 'w-16' : 'w-9')}>
         <span
@@ -48,6 +75,18 @@ export function ScoreBadge({
           style={{ width: `${score}%` }}
         />
       </span>
+      {tier && (
+        <span className={cn('leading-none whitespace-nowrap text-muted-foreground', size === 'lg' ? 'text-xs' : 'text-[0.7rem]')}>
+          {t(`tier.${tier}`)}
+        </span>
+      )}
+    </span>
+  )
+  if (size === 'md') return <Hint text={hint}>{badge}</Hint>
+  return (
+    <span className={cn('inline-flex items-start gap-1.5', className)}>
+      {badge}
+      <Hint text={hint} label={t('scoreHintLabel')} />
     </span>
   )
 }
@@ -61,12 +100,30 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   )
 }
 
+/** Cada parte del encaje, con qué mide y cuántos puntos suma de los que puede dar. */
 function Components({ components }: { components: Schemas['ScoreComponent'][] }) {
+  const { t } = useTranslation('match')
   return (
     <dl className="space-y-2">
       {components.map((c) => (
-        <div key={c.name} className="grid grid-cols-[7.5rem_minmax(0,1fr)_2.5rem] items-center gap-3 text-sm">
-          <dt className={cn(c.value == null && 'text-muted-foreground')}>{COMPONENT_LABEL[c.name]}</dt>
+        <div key={c.name} className="grid grid-cols-[8.5rem_minmax(0,1fr)_2.5rem] items-center gap-3 text-sm">
+          <dt className={cn('flex items-center gap-1.5', c.value == null && 'text-muted-foreground')}>
+            {COMPONENT_LABEL[c.name]}
+            <Hint
+              label={t('componentHintLabel', { name: COMPONENT_LABEL[c.name] })}
+              text={
+                <>
+                  {t(`component.${c.name}`)}{' '}
+                  {c.value == null
+                    ? t('componentOff')
+                    : t('componentPoints', {
+                        points: Math.round(c.points),
+                        max: Math.round(c.effective_weight * 100),
+                      })}
+                </>
+              }
+            />
+          </dt>
           <dd className="h-1.5 overflow-hidden rounded-full bg-foreground/[0.06]">
             {c.value != null && (
               <span className="block h-full rounded-full bg-primary/70" style={{ width: `${c.value * 100}%` }} />
@@ -119,12 +176,31 @@ function SkillCoverage({ coverage }: { coverage: Schemas['SkillCoverage'] }) {
   )
 }
 
+/** Qué significan las letras de nivel de las skills que salen, en el orden de `LEVEL_LABEL`. */
+function LevelLegend({ breakdown }: { breakdown: MatchView['breakdown'] }) {
+  const { t } = useTranslation('match')
+  const present = new Set([...breakdown.must_have.covered, ...breakdown.nice_to_have.covered].map((c) => c.level))
+  const levels = (Object.keys(LEVEL_LABEL) as (keyof typeof LEVEL_LABEL)[]).filter((level) => present.has(level))
+  if (!levels.length) return null
+  return (
+    <p className="text-xs text-muted-foreground">
+      {t('levelLegend')}{' '}
+      {levels.map((level, i) => (
+        <span key={level}>
+          {i > 0 && ' · '}
+          <span className="font-mono">{level === 'basic' ? t('basicShort') : level}</span> {LEVEL_LABEL[level].toLowerCase()}
+        </span>
+      ))}
+    </p>
+  )
+}
+
 function Assessment({ match, assessMinScore }: { match: MatchView; assessMinScore?: number }) {
   const { t } = useTranslation('match')
   const { t: tAgent } = useTranslation('agent')
   const a = match.assessment
   if (!a) {
-    // Fase 25.4: por debajo del umbral, «Evaluar encaje» en segundo plano no la valora.
+    // Fase 25.4: por debajo del umbral, «Valorar las pendientes» en segundo plano no la valora.
     const below = assessMinScore != null && match.score < assessMinScore
     return (
       <div className="space-y-1.5">
@@ -233,7 +309,7 @@ export function FilterFailures({ failures, jobId }: { failures: Schemas['FilterF
 }
 
 /** Desglose completo de un match: filtros, componentes, skills, notas y valoración del agente. */
-/** `assessMinScore`: el umbral de «Evaluar encaje» en segundo plano (fase 25.4), para decir por qué
+/** `assessMinScore`: el umbral de «Valorar las pendientes» en segundo plano (fase 25.4), para decir por qué
  *  una oferta se queda sin valorar. */
 export function MatchDetails({ match, assessMinScore }: { match: MatchView; assessMinScore?: number }) {
   const { t } = useTranslation('match')
@@ -251,6 +327,7 @@ export function MatchDetails({ match, assessMinScore }: { match: MatchView; asse
       <Section title={t('sections.niceToHave')}>
         <SkillCoverage coverage={b.nice_to_have} />
       </Section>
+      <LevelLegend breakdown={b} />
       {/* «Sin instalar» ya sale arriba, junto al score (`SemanticScoreHint`). */}
       {b.notes.some((note) => !isSemanticNotInstalled(note)) && (
         <ul className="space-y-1 text-xs text-muted-foreground">

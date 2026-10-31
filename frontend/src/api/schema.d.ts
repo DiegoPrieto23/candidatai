@@ -1861,7 +1861,7 @@ export interface paths {
         };
         /**
          * Get Assess Threshold
-         * @description El score mínimo con que «Evaluar encaje» valora en segundo plano.
+         * @description El score mínimo con que «Valorar las pendientes» valora en segundo plano.
          */
         get: operations["get_assess_threshold"];
         /**

@@ -315,7 +315,7 @@ Opciones, de más a menos cómoda:
 | Claude Code Desktop | Una **tarea programada local**, diaria y después de la ingesta (p. ej. 08:00), en la carpeta del proyecto, con el prompt `/process-jobs` | Corre en tu equipo, con el MCP `candidatai` y tus datos. Las herramientas que usa (`get_status`, `list_jobs`, `get_job`, `save_extraction`) ya están permitidas en `.claude/settings.json`, así que no se queda esperando un permiso. El equipo y la app de escritorio tienen que estar encendidos |
 | Claude Code (CLI) | El Programador de tareas de Windows lanzando `claude -p "/process-jobs"` en la raíz del repo | Mismo requisito de permisos que arriba. Las rutinas en la nube (`/schedule`) **no sirven**: corren fuera de tu equipo y no ven `data/` ni el MCP local |
 | Codex | Si tu versión ofrece tareas programadas locales, el prompt `$process-jobs`; si no, el Programador de tareas con `codex exec "$process-jobs"` en una sesión de solo lectura | Sin probar. Revisa el nivel B de la tabla de garantías: ejecútalo con sandbox de solo lectura |
-| Cualquier otro | `daily-summary` (manual o programado) te recuerda cuántas hay por extraer | Sin programación, basta con lanzar `process-jobs` al empezar el día |
+| Cualquier otro | `daily-summary` (manual o programado) te recuerda cuántas hay por leer | Sin programación, basta con lanzar `process-jobs` al empezar el día |
 
 Seguridad: una ejecución desatendida procesa texto no confiable sin que mires. El aislamiento del
 rol `extractor` (solo `get_job` y `save_extraction`) es lo que la hace razonable; no amplíes sus
@@ -368,7 +368,7 @@ se deshabilita con un agente sin `web`. Lee READMEs de terceros, así que con un
 avisa de usar una sesión dedicada solo a eso.
 
 ### Botones «en tu agente» de la UI
-«Buscar ofertas», «Procesar ofertas», «Evaluar encaje» (y «Valorar encaje» de una oferta),
+«Buscar ofertas», «Leer las ofertas nuevas», «Valorar las pendientes» (y «Valorar esta oferta» de una oferta),
 «Generar CV», en la página Skills (fase 14) «Añadir al perfil las que tengo» (`update-profile`)
 y «Plan de formación», y desde la fase 15 «Revisar respuestas» (Inicio y «Respuestas»), «Redactar borradores» (Procesos) y
 «Redactar seguimiento» (ficha de una candidatura enviada), desde la fase 16 «Ampliar búsqueda»
