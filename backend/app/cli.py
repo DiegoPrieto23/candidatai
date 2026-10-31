@@ -531,7 +531,7 @@ def demo_seed(
         False,
         "--compat",
         help="Añade las 5 ofertas de la matriz de compatibilidad (evals/compat/), solo con su "
-        "texto: por extraer.",
+        "texto: por leer.",
     ),
     lang: str = typer.Option(
         "es",

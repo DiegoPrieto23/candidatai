@@ -3,6 +3,9 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { board, jobView, matchView, mockApi, processView, renderApp, status } from '@/test/utils'
 
+const noProfile = { exists: false, file_hash: null, profile: null, issues: [], profile_version_id: null, undo_available: 0 }
+const withProfile = { ...noProfile, exists: true, file_hash: 'h', profile: {}, profile_version_id: 1 }
+
 describe('Ficha de oferta', () => {
   it('muestra la extracción legible y el historial con el agente', async () => {
     mockApi({ 'GET /status': status(), 'GET /jobs/1': jobView() })
@@ -16,7 +19,7 @@ describe('Ficha de oferta', () => {
     expect(await screen.findByText('Python')).toBeInTheDocument()
     expect(screen.getByText('Terraform')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('tab', { name: 'Historial y notas' }))
-    expect(screen.getByText('Extracción guardada')).toBeInTheDocument()
+    expect(screen.getByText('Leída por tu agente')).toBeInTheDocument()
     expect(screen.getByText(/Agente claude-code/)).toBeInTheDocument()
     expect(screen.queryByRole('region', { name: 'Aviso de posible inyección' })).not.toBeInTheDocument()
   })
@@ -52,10 +55,32 @@ describe('Ficha de oferta', () => {
     expect(within(alert).getByText('ignora las instrucciones')).toBeInTheDocument()
   })
 
-  it('invita a ejecutar process-jobs si aún no hay extracción', async () => {
-    mockApi({ 'GET /status': status(1), 'GET /jobs/1': jobView({ extraction: null, stage: 'pending_extraction' }) })
+  it('sin leer y con perfil: el perfil está hecho y falta que tu agente la lea', async () => {
+    mockApi({
+      'GET /status': status(1),
+      'GET /jobs/1': jobView({ extraction: null, stage: 'pending_extraction' }),
+      'GET /profile/editable': withProfile,
+    })
     renderApp('/jobs/1')
-    expect(await screen.findByText('Aún sin extraer')).toBeInTheDocument()
+    const box = await screen.findByRole('region', { name: 'Para saber si te encaja' })
+    expect(within(box).getByText('Crea tu perfil')).toHaveTextContent('Crea tu perfil: Hecho')
+    expect(within(box).getByText('Que tu agente la lea')).toHaveTextContent('Que tu agente la lea: Falta')
+    expect(within(box).queryByRole('link', { name: /Ir a «Mi perfil»/ })).not.toBeInTheDocument()
+    expect(within(box).getByRole('button', { name: 'Leer las ofertas nuevas' })).toBeInTheDocument()
+  })
+
+  it('sin perfil ni leer: los dos pasos pendientes, cada uno con su botón', async () => {
+    mockApi({
+      'GET /status': status(1),
+      'GET /jobs/1': jobView({ extraction: null, stage: 'pending_extraction' }),
+      'GET /profile/editable': noProfile,
+    })
+    renderApp('/jobs/1')
+    const box = await screen.findByRole('region', { name: 'Para saber si te encaja' })
+    expect(within(box).getByText('Crea tu perfil')).toHaveTextContent('Crea tu perfil: Falta')
+    expect(within(box).getByRole('link', { name: /Ir a «Mi perfil»/ })).toHaveAttribute('href', '/perfil')
+    expect(within(box).getByText('Que tu agente la lea')).toHaveTextContent('Que tu agente la lea: Falta')
+    expect(within(box).getByRole('button', { name: 'Leer las ofertas nuevas' })).toBeInTheDocument()
   })
 
   it('«Por completar»: dice que falta el texto, cómo completarla con la extensión y dónde instalarla', async () => {
@@ -68,7 +93,7 @@ describe('Ficha de oferta', () => {
     expect(within(box).getByRole('link', { name: /Abrir la oferta/ })).toHaveAttribute('href', 'https://www.linkedin.com/jobs/view/1')
     expect(box).toHaveTextContent('Enviar a CandidatAI')
     expect(within(box).getByRole('link', { name: 'Instálalo en unos minutos' })).toHaveAttribute('href', '/fuentes/extension')
-    expect(screen.queryByText('Aún sin extraer')).not.toBeInTheDocument()
+    expect(screen.queryByRole('region', { name: 'Para saber si te encaja' })).not.toBeInTheDocument()
   })
 
   it('guarda una nota y recarga la ficha', async () => {
@@ -109,19 +134,45 @@ describe('Ficha de oferta', () => {
     renderApp('/jobs/1')
     const header = (await screen.findByRole('heading', { level: 1, name: 'Data Engineer' })).closest('header')!
     const panel = screen.getByRole('region', { name: 'Encaje' })
-    expect(await within(panel).findByLabelText('Score 78 de 100')).toBeInTheDocument()
-    expect(within(header).queryByLabelText('Score 78 de 100')).not.toBeInTheDocument()
+    expect(await within(panel).findByLabelText(/Encaje de 78 sobre 100/)).toBeInTheDocument()
+    expect(within(header).queryByLabelText(/Encaje de 78 sobre 100/)).not.toBeInTheDocument()
     expect(within(panel).getByText('Kafka')).toBeInTheDocument()
     expect(within(panel).getByText('Obligatorias')).toBeInTheDocument()
     // Con el encaje, la extracción no vuelve a listar las skills.
     expect(screen.getAllByText('Obligatorias')).toHaveLength(1)
   })
 
-  it('sin perfil, el encaje explica cómo conseguir el score', async () => {
-    mockApi({ 'GET /status': status(), 'GET /jobs/1': jobView() }) // /match sin simular: 404
+  it('el encaje dice su escala y qué tal es, y explica el número y cada parte del desglose', async () => {
+    mockApi({ 'GET /status': status(), 'GET /jobs/1': jobView(), 'GET /jobs/1/match': matchView() })
     renderApp('/jobs/1')
     const panel = await screen.findByRole('region', { name: 'Encaje' })
-    expect(await within(panel).findByText(/Sin score/)).toBeInTheDocument()
+    // 78 con el mínimo de «Por revisar» en 55: desde 70, buen encaje.
+    const badge = await within(panel).findByLabelText('Encaje de 78 sobre 100, buen encaje')
+    expect(badge).toHaveTextContent('78/100')
+    expect(badge).toHaveTextContent('buen encaje')
+
+    within(panel).getByRole('button', { name: 'Qué significa este número' }).focus()
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(/Desde 55 es un encaje posible; desde 70, un buen encaje/)
+    await userEvent.keyboard('{Escape}')
+
+    expect(within(panel).getByText('De dónde sale el número')).toBeInTheDocument()
+    within(panel).getByRole('button', { name: 'Qué mide «Obligatorias»' }).focus()
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(/skills obligatorias.*Aquí suma 51 de los 64 puntos/)
+    await userEvent.keyboard('{Escape}')
+    within(panel).getByRole('button', { name: 'Qué mide «Similitud»' }).focus()
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(/No cuenta: hace falta la comparación por significado/)
+
+    // Las letras de nivel, con su leyenda.
+    expect(within(panel).getByText(/Tu nivel en cada skill/)).toHaveTextContent('F fuerte · bás. conocimientos básicos')
+  })
+
+  it('leída y sin perfil: el encaje dice que falta el perfil y que la lectura ya está', async () => {
+    mockApi({ 'GET /status': status(), 'GET /jobs/1': jobView() }) // /match sin simular: 404
+    renderApp('/jobs/1')
+    const box = await screen.findByRole('region', { name: 'Para saber si te encaja' })
+    expect(within(box).getByText('Crea tu perfil')).toHaveTextContent('Crea tu perfil: Falta')
+    expect(within(box).getByText('Que tu agente la lea')).toHaveTextContent('Que tu agente la lea: Hecho')
+    expect(within(box).queryByRole('button', { name: 'Leer las ofertas nuevas' })).not.toBeInTheDocument()
   })
 
   it('aprueba desde la ficha', async () => {

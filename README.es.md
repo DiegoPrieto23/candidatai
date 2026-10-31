@@ -60,7 +60,7 @@ pulses Enviar**, y después sigue el proceso hasta la oferta.
 | | |
 |---|---|
 | 📥 **Ofertas de muchas fuentes** | Pega una URL o el texto; APIs públicas de ATS (Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters, Recruitee); InfoJobs, Adzuna, Manfred y freehire.me; **alertas de empleo por correo**; un botón en el navegador; tu agente recorriendo portales; y, si lo activas, la búsqueda pública de LinkedIn. Sin duplicados y con **detección de texto dirigido a una IA** |
-| 🎯 **Revisión con score explicado** | Filtros duros y un score de 0 a 100 por cobertura de skills y tus preferencias; tu agente añade un veredicto razonado, y «¿Acierta el score?» lo contrasta con lo que pasó de verdad |
+| 🎯 **Revisión con score explicado** | Filtros duros y un score de 0 a 100 por cobertura de skills y tus preferencias; tu agente añade un veredicto razonado, y «¿Acierta el encaje?» lo contrasta con lo que pasó de verdad |
 | 📄 **CV y carta a medida** | El agente cita **una evidencia de tu perfil para cada línea**; el código la comprueba, lo renderiza con tu plantilla, foto y color, y un rol aparte lo verifica. **Importa el diseño de tu propio CV** como plantilla |
 | 📝 **Candidatura asistida** | Rellena formularios de Greenhouse, Lever, Ashby o genéricos, se para ante captchas e inicios de sesión y **solo envía cuando tú confirmas** |
 | 📊 **Seguimiento y analítica** | Un kanban que solo se mueve con eventos registrados, un calendario, recordatorios de seguimiento, las respuestas de las empresas clasificadas y un embudo por fuente, puesto, plantilla y referencia |

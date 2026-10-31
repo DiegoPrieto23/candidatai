@@ -8,7 +8,6 @@ import {
   CheckCircleIcon,
   CheckIcon,
   CopyIcon,
-  HourglassMediumIcon,
   InfoIcon,
   NotePencilIcon,
   PuzzlePieceIcon,
@@ -19,7 +18,6 @@ import { Trans, useTranslation } from 'react-i18next'
 import { SafeTrans } from '@/components/SafeTrans'
 import type { AddJobResult, EventOut, JobView, Schemas } from '@/api/client'
 import { useAddNote, useAssessThreshold, useJob, useJobEvent, useJobMatch, type UserEventBody } from '@/api/queries'
-import { AgentButton } from '@/components/AgentButton'
 import { JobCostPanel } from '@/components/JobCostPanel'
 import { ApplySection } from '@/components/ApplySection'
 import { ArchivedApplication } from '@/components/ArchivedApplication'
@@ -30,6 +28,7 @@ import { JobReplyNotice } from '@/components/JobReplyNotice'
 import { ClosedNotice, DoubtfulNote, RepostNote } from '@/components/JobSignals'
 import { DiscardDialog } from '@/components/DiscardDialog'
 import { DraftsSection } from '@/components/DraftsSection'
+import { FitSteps } from '@/components/FitSteps'
 import { MatchDetails, ScoreBadge } from '@/components/MatchDetails'
 import { NetworkPanel } from '@/components/NetworkPanel'
 import { PackageSection } from '@/components/PackageSection'
@@ -447,10 +446,12 @@ function NoteForm({ jobId }: { jobId: number }) {
 function MatchPanel({ job }: { job: JobView }) {
   const { t } = useTranslation('job', { keyPrefix: 'match' })
   const { data: match, isPending, isError, error, refetch } = useJobMatch(job.id, job.extraction !== null)
-  // Fase 25.4: solo en triaje importa el umbral de «Evaluar encaje» en segundo plano.
+  // Fase 25.4: solo en triaje importa el umbral de «Valorar las pendientes» en segundo plano.
   const assessThreshold = useAssessThreshold(job.stage === 'pending_triage')
   if (!job.extraction) return null
-  // El score, junto a su porqué (el desglose).
+  // Sin encaje (falta tu perfil): qué falta para tenerlo.
+  if (match === null) return <FitSteps job={job} profileMissing />
+  // El encaje, junto a su porqué (el desglose).
   return (
     <section className="rounded-xl border bg-card p-5 sm:p-6" aria-label={t('title')}>
       <div className="mb-5 flex items-start justify-between gap-4">
@@ -461,19 +462,13 @@ function MatchPanel({ job }: { job: JobView }) {
         <Skeleton className="h-40" />
       ) : isError ? (
         <ErrorState error={error} onRetry={() => refetch()} className="border-0 p-0" />
-      ) : match ? (
-        <MatchDetails
-          match={match}
-          assessMinScore={job.stage === 'pending_triage' ? assessThreshold.data?.value : undefined}
-        />
       ) : (
-        <p className="text-sm text-muted-foreground">
-          <Trans
-            t={t}
-            i18nKey="noScore"
-            components={{ code: <code className="rounded bg-muted px-1 py-0.5 font-mono text-[0.85em] text-foreground" /> }}
+        match && (
+          <MatchDetails
+            match={match}
+            assessMinScore={job.stage === 'pending_triage' ? assessThreshold.data?.value : undefined}
           />
-        </p>
+        )
       )}
     </section>
   )
@@ -599,20 +594,8 @@ function ExtractionBlock({ job }: { job: JobView }) {
   }
   // Sin descripción no hay nada que extraer: lo que falta lo explica `MissingDetail`.
   if (job.stage === 'pending_detail') return null
-  return (
-    <section className="flex items-start gap-4 rounded-xl border border-dashed p-6">
-      <HourglassMediumIcon className="mt-0.5 size-6 shrink-0 text-primary" weight="duotone" />
-      <div>
-        <h2 className="font-semibold">{t('pendingTitle')}</h2>
-        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{t('pendingBody')}</p>
-        {job.stage === 'pending_extraction' && (
-          <AgentButton action="process-jobs" primary className="mt-3">
-            {t('process')}
-          </AgentButton>
-        )}
-      </div>
-    </section>
-  )
+  // Sin leer: qué falta para saber si encaja (tu perfil y que tu agente la lea).
+  return <FitSteps job={job} />
 }
 
 type JobTab = 'overview' | 'application' | 'process' | 'company' | 'history'

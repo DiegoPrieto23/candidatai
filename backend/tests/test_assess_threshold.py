@@ -1,5 +1,5 @@
-"""Umbral antes de gastar (fase 25.4): «Evaluar encaje» en segundo plano solo con las ofertas que
-llegan al score; las demás no entran en la orden y la UI sabe por qué."""
+"""Umbral antes de gastar (fase 25.4): «Valorar las pendientes» en segundo plano solo con las
+ofertas que llegan al score; las demás no entran en la orden y la UI sabe por qué."""
 
 from collections.abc import Iterator
 from pathlib import Path

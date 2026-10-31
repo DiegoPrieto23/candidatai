@@ -11,8 +11,8 @@
     "closedAsc": "Cerradas hace más"
   },
   "risk": "Posible contenido dirigido a una IA",
-  "notExtracted": "Sin extraer",
-  "noScore": "Sin score",
+  "notExtracted": "Sin leer",
+  "noScore": "Sin encaje",
   "noSalary": "No lo indica",
   "columns": {
     "job": "Oferta",
@@ -40,7 +40,7 @@
   "empty": {
     "title": "Tu bandeja está vacía",
     "addFirst": "Añadir la primera",
-    "body": "Da de alta una oferta desde su URL o pegando el texto. Después, «Procesar ofertas» la lee y saca sus datos."
+    "body": "Da de alta una oferta desde su URL o pegando el texto. Después, «Leer las ofertas nuevas» la lee y saca sus datos."
   },
   "closedWhen": "Cerrada {{when}}",
   "quick": {
@@ -67,29 +67,29 @@
   "guide": {
     "label": "Qué es esta etapa y cómo avanzar",
     "nextLabel": "Para avanzar:",
-    "processJobs": "Procesar ofertas",
-    "assessFit": "Evaluar encaje",
+    "processJobs": "Leer las ofertas nuevas",
+    "assessFit": "Valorar las pendientes",
     "openTriage": "Ir a «Por revisar»",
     "all": {
-      "what": "Todas tus ofertas, estén en la etapa que estén. Cada oferta avanza así: Por completar → Por extraer → Por revisar → Aprobada → CV listo → Enviada → En proceso.",
+      "what": "Todas tus ofertas, estén en la etapa que estén. Cada oferta avanza así: Por completar → Por leer → Por revisar → Aprobada → CV listo → Enviada → En proceso.",
       "next": "elige una etapa en la fila de abajo para ver solo sus ofertas y qué hay que hacer con ellas."
     },
     "pending_detail": {
       "what": "Ofertas que te llegaron como resumen, casi siempre de las alertas de LinkedIn por correo: les falta la descripción. Por seguridad tu agente no entra en LinkedIn, así que este paso lo haces tú con el botón «Enviar a CandidatAI» del navegador.",
       "steps": {
         "open": "Pulsa <strong>Abrir</strong> en una oferta: se abre en su portal (en LinkedIn, con tu sesión iniciada).",
-        "send": "En esa pestaña, pulsa el botón <strong>Enviar a CandidatAI</strong> de la barra del navegador. Guarda la descripción y la oferta pasa a «Por extraer».",
+        "send": "En esa pestaña, pulsa el botón <strong>Enviar a CandidatAI</strong> de la barra del navegador. Guarda la descripción y la oferta pasa a «Por leer».",
         "discard": "Si por el título ya ves que no te interesa, descártala aquí mismo, sin abrirla."
       },
       "extension": "¿Aún no tienes el botón? <extension>Instálalo en unos minutos</extension>. También puedes repasarlas una a una, con atajos de teclado, en <alerts>Alertas</alerts>."
     },
     "pending_extraction": {
       "what": "Ofertas con la descripción completa que tu agente aún no ha leído.",
-      "next": "pulsa «Procesar ofertas». Tu agente saca de cada una el puesto, las skills, la modalidad y el salario, y la app calcula su score (de 0 a 100) frente a tu perfil. Las que no pasan tus filtros (modalidad, ubicación…) se cierran solas; las demás pasan a «Por revisar»."
+      "next": "pulsa «Leer las ofertas nuevas». Tu agente saca de cada una el puesto, las skills, la modalidad y el salario, y la app calcula su encaje (de 0 a 100) frente a tu perfil. Las que no pasan tus filtros (modalidad, ubicación…) se cierran solas; las demás pasan a «Por revisar»."
     },
     "pending_triage": {
-      "what": "Ofertas ya leídas y con score, a la espera de que decidas.",
-      "next": "revísalas en <triage>Por revisar</triage> y apruébalas o descártalas. Si antes quieres una opinión, «Evaluar encaje» hace que tu agente compare cada una con tu perfil y escriba por qué encaja o no. No cambia la etapa: decides tú."
+      "what": "Ofertas ya leídas y con su encaje calculado, a la espera de que decidas.",
+      "next": "revísalas en <triage>Por revisar</triage> y apruébalas o descártalas. Si antes quieres una opinión, «Valorar las pendientes» hace que tu agente compare cada una con tu perfil y escriba por qué encaja o no. No cambia la etapa: decides tú."
     },
     "approved": {
       "what": "Ofertas que has aprobado. Les falta el CV a medida.",
@@ -111,5 +111,10 @@
       "what": "El final del recorrido: ofertas descartadas, rechazadas, caducadas, duplicadas o que no pasaron tus filtros.",
       "next": "no hay nada que hacer. Si cerraste una por error, ábrela y pulsa «Reabrir»."
     }
+  },
+  "noScoreWhy": {
+    "profile": "Sin encaje calculado: falta tu perfil. Créalo en «Mi perfil».",
+    "unread": "Sin encaje calculado: tu agente aún no ha leído la oferta.",
+    "other": "Sin encaje calculado todavía."
   }
 }

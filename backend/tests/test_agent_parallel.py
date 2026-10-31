@@ -62,7 +62,7 @@ def _cancel_queued() -> None:
 @pytest.mark.usefixtures("db", "fake")
 def test_claim_rules() -> None:
     template = start("process-jobs")
-    _set(template, "running")  # un lote de «Procesar ofertas» en curso
+    _set(template, "running")  # un lote de «Leer las ofertas nuevas» en curso
     one, two = _job(1), _job(2)
     batch = _clone(template, "process-jobs", None)
     cv_one = _clone(template, "generate-cv", one)

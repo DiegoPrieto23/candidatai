@@ -373,7 +373,7 @@ describe('Mi perfil editable', () => {
     await userEvent.click(within(block).getByRole('button', { name: 'Guardar' }))
 
     expect(await within(block).findByLabelText('Cambios en tu perfil')).toHaveTextContent('Analytics Engineer')
-    expect(within(block).getByText(/se recalculan los scores/)).toBeInTheDocument()
+    expect(within(block).getByText(/se recalcula el encaje/)).toBeInTheDocument()
     const puts = () => calls.filter((c) => c.method === 'PUT')
     expect(puts()).toHaveLength(1)
     expect(puts()[0].body).toMatchObject({ dry_run: true })

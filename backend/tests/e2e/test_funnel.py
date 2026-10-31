@@ -61,7 +61,7 @@ def test_a_pasted_job_waits_for_extraction_with_its_risk_flag(
     page.goto(f"/jobs/{job['id']}")
     expect(page.get_by_role("heading", level=1)).to_have_text("Data Platform Engineer")
     expect(page.get_by_text(t("job.injection.title"))).to_be_visible()
-    expect(page.get_by_text(t("job.extraction.pendingTitle"))).to_be_visible()
+    expect(page.get_by_role("heading", name=t("job.fitSteps.title"))).to_be_visible()
 
 
 def test_a_job_by_url_is_downloaded_once_and_not_duplicated(

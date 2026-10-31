@@ -11,8 +11,8 @@
     "closedAsc": "Closed longest ago"
   },
   "risk": "Possible content aimed at an AI",
-  "notExtracted": "Not extracted",
-  "noScore": "No score",
+  "notExtracted": "Not read",
+  "noScore": "No fit",
   "noSalary": "Not stated",
   "columns": {
     "job": "Job",
@@ -40,7 +40,7 @@
   "empty": {
     "title": "Your inbox is empty",
     "addFirst": "Add the first one",
-    "body": "Add a job from its URL or by pasting the text. Then “Process jobs” reads it and pulls out its details."
+    "body": "Add a job from its URL or by pasting the text. Then “Read new jobs” reads it and pulls out its details."
   },
   "closedWhen": "Closed {{when}}",
   "quick": {
@@ -67,29 +67,29 @@
   "guide": {
     "label": "What this stage is and how to move on",
     "nextLabel": "To move on:",
-    "processJobs": "Process jobs",
-    "assessFit": "Assess fit",
+    "processJobs": "Read new jobs",
+    "assessFit": "Assess pending jobs",
     "openTriage": "Go to “To review”",
     "all": {
-      "what": "All your jobs, whatever their stage. Each job moves along: To complete → To extract → To review → Approved → CV ready → Applied → In process.",
+      "what": "All your jobs, whatever their stage. Each job moves along: To complete → To read → To review → Approved → CV ready → Applied → In process.",
       "next": "pick a stage in the row below to see only its jobs and what to do with them."
     },
     "pending_detail": {
       "what": "Jobs that reached you as a summary, usually from LinkedIn email alerts: their description is missing. For safety your agent doesn't go into LinkedIn, so you do this step yourself with the browser's “Send to CandidatAI” button.",
       "steps": {
         "open": "Click <strong>Open</strong> on a job: it opens on its job board (on LinkedIn, signed in).",
-        "send": "In that tab, click the <strong>Send to CandidatAI</strong> button in the browser toolbar. It saves the description and the job moves to “To extract”.",
+        "send": "In that tab, click the <strong>Send to CandidatAI</strong> button in the browser toolbar. It saves the description and the job moves to “To read”.",
         "discard": "If the title already tells you it's not for you, discard it right here, without opening it."
       },
       "extension": "Don't have the button yet? <extension>Install it in a few minutes</extension>. You can also go through them one by one, with keyboard shortcuts, in <alerts>Alerts</alerts>."
     },
     "pending_extraction": {
       "what": "Jobs with their full description that your agent hasn't read yet.",
-      "next": "click “Process jobs”. Your agent pulls out the role, skills, work mode and salary of each one, and the app scores it (0 to 100) against your profile. Those that don't pass your filters (work mode, location…) close by themselves; the rest move to “To review”."
+      "next": "click “Read new jobs”. Your agent pulls out the role, skills, work mode and salary of each one, and the app calculates its fit (0 to 100) against your profile. Those that don't pass your filters (work mode, location…) close by themselves; the rest move to “To review”."
     },
     "pending_triage": {
-      "what": "Jobs already read and scored, waiting for your decision.",
-      "next": "go through them in <triage>To review</triage> and approve or discard them. If you'd like an opinion first, “Assess fit” has your agent compare each one with your profile and write why it fits or not. It doesn't change the stage: you decide."
+      "what": "Jobs already read and with their fit calculated, waiting for your decision.",
+      "next": "go through them in <triage>To review</triage> and approve or discard them. If you'd like an opinion first, “Assess pending jobs” has your agent compare each one with your profile and write why it fits or not. It doesn't change the stage: you decide."
     },
     "approved": {
       "what": "Jobs you approved. They still need their tailored CV.",
@@ -111,5 +111,10 @@
       "what": "The end of the road: jobs discarded, rejected, expired, duplicated or that didn't pass your filters.",
       "next": "nothing to do. If you closed one by mistake, open it and click “Reopen”."
     }
+  },
+  "noScoreWhy": {
+    "profile": "Fit not calculated: your profile is missing. Create it in “My profile”.",
+    "unread": "Fit not calculated: your agent hasn't read the job yet.",
+    "other": "Fit not calculated yet."
   }
 }

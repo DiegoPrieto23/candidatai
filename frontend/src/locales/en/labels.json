@@ -1,7 +1,7 @@
 {
   "stage": {
     "pending_detail": "To complete",
-    "pending_extraction": "To extract",
+    "pending_extraction": "To read",
     "pending_triage": "To review",
     "approved": "Approved",
     "cv_ready": "CV ready",
@@ -13,12 +13,12 @@
     "found": "Added",
     "detail_captured": "Description captured",
     "duplicate_detected": "Duplicate detected",
-    "extracted": "Extraction saved",
+    "extracted": "Read by your agent",
     "hard_filter_failed": "Fails the filters",
-    "extraction_failed": "Extraction failed",
+    "extraction_failed": "Your agent couldn't read it",
     "injection_suspected": "Possible content aimed at an AI",
     "closure_suspected": "May no longer be posted",
-    "scored": "Scored",
+    "scored": "Fit calculated",
     "fit_assessed": "Fit assessed",
     "approved": "Approved",
     "discarded": "Discarded",
@@ -83,7 +83,7 @@
   },
   "discardReason": {
     "skills": "Stack doesn't fit",
-    "seniority": "Seniority or years",
+    "seniority": "Level or years",
     "location": "Location or work mode",
     "salary": "Salary or conditions",
     "company": "Company or sector",
@@ -186,7 +186,7 @@
     "reopened": "It goes back to the stage it was in when it closed."
   },
   "hardFilter": {
-    "seniority": "Seniority",
+    "seniority": "Level",
     "years": "Years of experience",
     "remote_mode": "Work mode",
     "location": "Location",

@@ -23,7 +23,7 @@ nube gratis (OpenRouter) es la vía práctica.
 | **Tu suscripción**: Claude, ChatGPT | Lo que ya pagas | Las ofertas y tu perfil van a Anthropic u OpenAI | Los de tu plan | Claude Code, Codex |
 
 Los **niveles de gasto** de la página «Agente» combinan las tres vías. En «Económico», las acciones
-cerradas (procesar ofertas, valorar el encaje, clasificar respuestas) usan un modelo local y el CV
+cerradas (leer las ofertas nuevas, valorar el encaje, clasificar respuestas) usan un modelo local y el CV
 usa tu agente más capaz. Ver «Niveles de gasto» más abajo.
 
 ## Qué sale de tu equipo
@@ -93,7 +93,7 @@ https://ollama.com/library:
 | Memoria disponible | Modelo | Tamaño | Para qué |
 |---|---|---|---|
 | 8 GB | `qwen3:8b` | 5,2 GB | Solo para probar. **Los modelos de unos 8B o menos suelen fallar con los esquemas estrictos** (extracción, CV): campos inventados, JSON roto, herramientas sin llamar |
-| 16 GB | `qwen3:14b` | 9,3 GB | Procesar ofertas y valorar el encaje, con 40K de contexto |
+| 16 GB | `qwen3:14b` | 9,3 GB | Leer las ofertas nuevas y valorar el encaje, con 40K de contexto |
 | 16 GB de vídeo, o 24 GB de RAM o más | `gpt-oss:20b` | 14 GB | Lo mismo, con 128K de contexto. **Con 16 GB de RAM no es viable**: cargado ocupa 14 GB, quedan menos de 1 GB libres, Windows tira del disco y el agente se queda minutos sin responder |
 | 24 GB | `devstral:24b` | 14 GB | Agente de código con herramientas, 128K de contexto |
 | 24 GB o más | `qwen3-coder:30b` | 19 GB | Lo más capaz de esta lista para agentes, 256K de contexto |
@@ -220,7 +220,7 @@ depender de eso:
 ## Niveles de gasto
 
 En la página «Agente», «Niveles de gasto» trae tres conjuntos de agente y modelo para las acciones
-principales (procesar ofertas, valorar el encaje, clasificar respuestas y generar el CV):
+principales (leer las ofertas nuevas, valorar el encaje, clasificar respuestas y generar el CV):
 
 - **Económico**: las cerradas con un modelo local (el primer agente instalado que los admite; si
   no tiene un preset local, escribe el modelo en «Editar»), y el CV con tu agente más capaz;

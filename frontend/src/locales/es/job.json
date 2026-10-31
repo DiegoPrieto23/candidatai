@@ -2,7 +2,7 @@
   "added": {
     "exists": "Esta oferta ya estaba dada de alta. No se ha cambiado nada.",
     "duplicate": "Dada de alta, pero parece un duplicado de la <to>oferta {{id}}</to>, así que queda cerrada.",
-    "created": "Oferta dada de alta. Tu agente la leerá cuando pulses «Procesar ofertas».",
+    "created": "Oferta dada de alta. Tu agente la leerá cuando pulses «Leer las ofertas nuevas».",
     "close": "Cerrar"
   },
   "injection": {
@@ -13,9 +13,9 @@
     "system": "el sistema"
   },
   "extraction": {
-    "title": "Extracción",
+    "title": "Datos de la oferta",
     "noneListed": "Ninguna indicada.",
-    "seniority": "Seniority",
+    "seniority": "Nivel",
     "mode": "Modalidad",
     "minExperience": "Experiencia mínima",
     "years_one": "{{count}} año",
@@ -33,18 +33,15 @@
     "niceToHave": "Deseables",
     "responsibilities": "Responsabilidades",
     "redFlags": "A tener en cuenta",
-    "extractedAt": "Extraída el {{date}}",
-    "pendingTitle": "Aún sin extraer",
-    "pendingBody": "Tu agente aún no la ha leído. Cuando lo haga, aquí verás seniority, modalidad, skills y salario.",
-    "process": "Procesar ofertas"
+    "extractedAt": "Leída el {{date}}"
   },
   "original": {
     "title": "Texto original",
-    "hint": "Tal cual se guardó. Contenido no confiable: se muestra, nunca se interpreta."
+    "hint": "Tal cual se guardó. Si dentro hubiera instrucciones para una IA, ni la app ni tu agente las siguen: lo tratan solo como datos."
   },
   "events": {
     "reason": "Motivo: {{reason}}",
-    "score": "Score {{score}}/100",
+    "score": "Encaje {{score}}/100",
     "duplicateOf": "Duplicado de la oferta {{id}}.",
     "closureSuspected": "{{detail}}. No se ha cerrado: decides tú."
   },
@@ -61,8 +58,7 @@
     "save": "Guardar nota"
   },
   "match": {
-    "title": "Encaje",
-    "noScore": "Sin score: primero crea tu perfil en «Mi perfil»."
+    "title": "Encaje"
   },
   "decision": {
     "reopen": "Reabrir",
@@ -100,7 +96,18 @@
     "open": "Abre la oferta en su portal (en LinkedIn, con tu sesión iniciada).",
     "openNoUrl": "Busca la oferta en su portal: no tiene enlace guardado.",
     "openButton": "Abrir la oferta",
-    "send": "En esa pestaña, pulsa el botón <strong>Enviar a CandidatAI</strong> de la barra del navegador. La descripción se guarda aquí y la oferta pasa a «Por extraer».",
+    "send": "En esa pestaña, pulsa el botón <strong>Enviar a CandidatAI</strong> de la barra del navegador. La descripción se guarda aquí y la oferta pasa a «Por leer».",
     "install": "¿Aún no tienes el botón? <guide>Instálalo en unos minutos</guide>."
+  },
+  "fitSteps": {
+    "title": "Para saber si te encaja",
+    "intro": "La app calcula el encaje (de 0 a 100) cuando tiene las dos cosas:",
+    "profile": "Crea tu perfil",
+    "profileHint": "Tu experiencia y tus skills, para compararlas con la oferta.",
+    "profileAction": "Ir a «Mi perfil»",
+    "read": "Que tu agente la lea",
+    "readHint": "Saca el nivel, la modalidad, las skills y el salario.",
+    "done": "Hecho",
+    "pending": "Falta"
   }
 }

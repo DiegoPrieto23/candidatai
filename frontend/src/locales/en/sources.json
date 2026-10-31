@@ -14,7 +14,7 @@
   "nonePass": "None match your filters.",
   "onlyPassing": "Show only the ones that pass",
   "alsoFiltered": "Also show the {{count}} filtered",
-  "runHint": "They go to “To extract”: press “Process jobs”.",
+  "runHint": "They go to “To read”: press “Read new jobs”.",
   "see": "See them",
   "form": {
     "label": "Add source",
@@ -73,7 +73,7 @@
     "add": "Add company"
   },
   "title": "Target companies",
-  "intro": "While it's open, the app checks these companies' job sites every day. What matches your preferences goes to “To extract”.",
+  "intro": "While it's open, the app checks these companies' job sites every day. What matches your preferences goes to “To read”.",
   "addTitle": "Add company or search",
   "following": "Following",
   "closeAdd": "Close"

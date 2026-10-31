@@ -2,9 +2,9 @@
   "actions": {
     "search-jobs": "Buscar ofertas",
     "configure-platforms": "Configurar con mi agente",
-    "process-jobs": "Procesar ofertas",
-    "assess-fit": "Evaluar encaje",
-    "assess-fit-job": "Valorar encaje",
+    "process-jobs": "Leer las ofertas nuevas",
+    "assess-fit": "Valorar las pendientes",
+    "assess-fit-job": "Valorar esta oferta",
     "generate-cv": "Generar CV",
     "add-skills": "Añadir al perfil las que tengo",
     "training-plan": "Plan de formación",
@@ -54,7 +54,7 @@
   "open": "Abrir en terminal",
   "backgroundUnavailable": "En segundo plano no está disponible: {{reason}}",
   "stuck": "Hay ejecuciones en cola desde hace rato y ninguna en curso. ¿Está CandidatAI abierta entera? Ciérrala y vuelve a abrirla desde su acceso directo.",
-  "noRuns": "Aún no has lanzado nada en segundo plano. En los botones de «Procesar ofertas», «Evaluar encaje» y «Generar CV», el desplegable ofrece «En segundo plano».",
+  "noRuns": "Aún no has lanzado nada en segundo plano. En los botones de «Leer las ofertas nuevas», «Valorar las pendientes» y «Generar CV», el desplegable ofrece «En segundo plano».",
   "done": "Hecho.",
   "cancelled": "Cancelado.",
   "remove": "Quitar",
@@ -93,14 +93,14 @@
     "empty": "Ninguna ejecución en este periodo.",
     "terminal": "Solo cuenta lo que se ejecuta en segundo plano: lo que haces en una terminal no llega a la app. «Tamaño de las instrucciones» es lo que pesan las de cada acción, para saber dónde recortar.",
     "threshold": "Umbral antes de gastar",
-    "thresholdIntro": "«Evaluar encaje» en segundo plano solo valora las ofertas con este score o más, para no gastar en las que casi seguro no encajan; «Por revisar» dice por qué se quedó sin valorar cada una. El umbral de score (desde el que una oferta pasa a «Por revisar») es {{triage}}; por defecto, este es {{default}}.",
-    "thresholdLabel": "Score mínimo",
+    "thresholdIntro": "«Valorar las pendientes» en segundo plano solo valora las ofertas con este encaje o más, para no gastar en las que casi seguro no encajan; «Por revisar» dice por qué se quedó sin valorar cada una. El mínimo para pasar a «Por revisar» es {{triage}}; por defecto, este es {{default}}.",
+    "thresholdLabel": "Encaje mínimo",
     "thresholdSave": "Guardar",
     "thresholdReset": "Volver a {{value}}",
     "thresholdSource": {
       "ui": "Lo has cambiado aquí.",
       "policies": "Viene de la configuración por defecto de la app.",
-      "default": "Por defecto: el umbral de score menos 10."
+      "default": "Por defecto: el mínimo de «Por revisar» menos 10."
     },
     "settings": "Umbral y coste"
   },

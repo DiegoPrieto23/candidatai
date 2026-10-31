@@ -10,7 +10,7 @@
     },
     "criterios": {
       "title": "Criteria",
-      "hint": "Deal-breakers and preferences in free text. The fit assessment cites them as risks."
+      "hint": "Deal-breakers (what you would never accept, such as on-call duty or weekly travel) and preferences in free text. The fit assessment cites them as risks."
     },
     "narrativa": {
       "title": "Narrative",

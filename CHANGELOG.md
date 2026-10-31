@@ -20,10 +20,13 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   aún no existe tiene su botón **Crear**, que abre su plantilla con las preguntas que te guían,
   aunque todavía no tengas perfil.
 - **Cada etapa de la Bandeja explica qué es y cómo avanzar:** al elegir «Por completar», «Por
-  extraer», «Por revisar»… sale qué falta y quién lo hace, con el botón que lo hace («Procesar
-  ofertas», «Evaluar encaje», «Ir a Por revisar»). Así se ve la diferencia: «Procesar ofertas» lee
-  las ofertas nuevas y les da score; «Evaluar encaje» añade la opinión de tu agente a las que ya lo
-  tienen.
+  leer», «Por revisar»… sale qué falta y quién lo hace, con el botón que lo hace («Leer las ofertas
+  nuevas», «Valorar las pendientes», «Ir a Por revisar»). Así se ve la diferencia: «Leer las
+  ofertas nuevas» saca sus datos y les calcula el encaje; «Valorar las pendientes» añade la opinión
+  de tu agente a las que ya lo tienen.
+- **Desde una oferta se ve qué falta para saber si te encaja:** si no tiene encaje, su ficha dice
+  «Para saber si te encaja: 1. crea tu perfil, 2. que tu agente la lea», con lo ya hecho marcado y
+  el botón de lo que falta. En la Bandeja, «Sin encaje» dice el porqué al pasar el ratón.
 - **Las ofertas «Por completar» dicen qué les falta:** en su ficha, un aviso explica que falta la
   descripción, abre la oferta en su portal y te dice que pulses «Enviar a CandidatAI», con un
   enlace a la guía para instalar el botón. En la Bandeja, los mismos pasos.
@@ -35,6 +38,15 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   no hace falta generar un token y pegarlo en sus opciones.
 
 ### Cambiado
+- **Lenguaje claro en el encaje y las etapas:** el número de cada oferta se llama ahora «encaje» y
+  dice su escala y qué tal es («74/100 · buen encaje»); al pasar el ratón explica qué mide. El
+  desglose («De dónde sale el número») explica cada parte y cuántos puntos suma, las letras de
+  nivel de las skills (F, C, bás.) llevan leyenda y el aviso de la comparación por significado va
+  en llano. En la ficha, «Seniority» pasa a «Nivel» y el texto original explica qué se hace con
+  las instrucciones que pudiera traer; en «Mi perfil», «Deal-breakers» se explica.
+- **Nombres nuevos:** la etapa «Por extraer» pasa a **«Por leer»**; el botón «Procesar ofertas», a
+  **«Leer las ofertas nuevas»**; «Evaluar encaje» (todas), a **«Valorar las pendientes»**, y
+  «Valorar encaje» (una), a **«Valorar esta oferta»**, para que no se confundan.
 - **Inicio explica qué hace la app y qué es tu agente:** el programa de IA que tienes instalado
   (Claude Code, Codex…) y que lee las ofertas y escribe tus CVs, con un enlace a «Agente». Mientras
   faltan los primeros pasos, el titular lo dice («Te quedan 2 primeros pasos para empezar») y la

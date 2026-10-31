@@ -42,7 +42,7 @@ function stats(overrides: Partial<FunnelStats> = {}): FunnelStats {
     by_title: [
       { title: 'data engineer', group: 'title', ...summary(3, 3, 3, 3, 1) },
       { title: 'Otros', group: 'others', ...summary(3, 1, 0, 0, 0) },
-      { title: 'Sin extraer', group: 'not_extracted', ...summary(1, 0, 0, 0, 0) },
+      { title: 'Sin leer', group: 'not_extracted', ...summary(1, 0, 0, 0, 0) },
     ],
     by_week: [
       { week: '2026-W38', week_start: '2026-09-14', ...summary(2, 2, 2, 2, 1) },
@@ -148,13 +148,13 @@ describe('Embudo', () => {
     const filters = screen.getByRole('table', { name: 'Cierres por filtro duro' })
     expect(within(filters).getByRole('rowheader', { name: 'Ubicación' })).toBeInTheDocument()
 
-    // Lo de vez en cuando va plegado: por tipo de puesto, sin «Sin extraer» como si fuera un puesto.
+    // Lo de vez en cuando va plegado: por tipo de puesto, sin «Sin leer» como si fuera un puesto.
     expect(screen.queryByRole('table', { name: 'Embudo por tipo de puesto' })).not.toBeInTheDocument()
     await openMore()
     const titles = screen.getByRole('table', { name: 'Embudo por tipo de puesto' })
     expect(within(titles).getByRole('rowheader', { name: 'Otros' })).toBeInTheDocument()
-    expect(within(titles).queryByRole('rowheader', { name: 'Sin extraer' })).not.toBeInTheDocument()
-    expect(screen.getByText('Falta procesar 1 oferta: no cuenta aquí hasta que se procese.')).toBeInTheDocument()
+    expect(within(titles).queryByRole('rowheader', { name: 'Sin leer' })).not.toBeInTheDocument()
+    expect(screen.getByText('Falta que tu agente lea 1 oferta: no cuenta aquí hasta entonces.')).toBeInTheDocument()
   })
 
   it('enseña el coste del agente por candidatura y por entrevista, y por fuente (fase 25.4)', async () => {
@@ -241,7 +241,7 @@ describe('Embudo', () => {
   })
 })
 
-// --- ¿Acierta el score? (fase 20) -------------------------------------------------------------
+// --- ¿Acierta el encaje? (fase 20) -------------------------------------------------------------
 
 const AGENT = { available: true, agent: 'claude', reason: null, actions: [] }
 
@@ -290,7 +290,7 @@ function calibration(overrides: Partial<Calibration> = {}): Calibration {
   }
 }
 
-describe('¿Acierta el score?', () => {
+describe('¿Acierta el encaje?', () => {
   beforeAll(async () => {
     await import('@/pages/FunnelPage')
   }, 30_000)
@@ -308,10 +308,10 @@ describe('¿Acierta el score?', () => {
     renderApp('/embudo')
 
     await openMore()
-    const panel = await screen.findByRole('region', { name: '¿Acierta el score?' })
+    const panel = await screen.findByRole('region', { name: '¿Acierta el encaje?' })
     expect(within(panel).getByText(/Orientativo/)).toBeInTheDocument()
     expect(within(panel).getByRole('button', { name: 'Revisar mi búsqueda' })).toBeInTheDocument()
-    const table = await within(panel).findByRole('table', { name: 'Calibración por score' })
+    const table = await within(panel).findByRole('table', { name: 'Calibración por encaje' })
     const summary = within(panel).getByText((_, el) => el?.tagName === 'P' && /enviadas · respuesta/.test(el.textContent ?? ''))
     expect(text(summary)).toBe('24 enviadas · respuesta 38 % · entrevista 17 %')
     const top = within(table).getByRole('row', { name: /≥ 85/ })
@@ -338,7 +338,7 @@ describe('¿Acierta el score?', () => {
     })
     renderApp('/embudo')
     await openMore()
-    const panel = await screen.findByRole('region', { name: '¿Acierta el score?' })
+    const panel = await screen.findByRole('region', { name: '¿Acierta el encaje?' })
     await userEvent.click(await within(panel).findByRole('tab', { name: 'Señal' }))
     const table = await within(panel).findByRole('table', { name: 'Calibración por señal' })
     expect(within(table).getByRole('row', { name: /Empresa oculta o agencia/ })).toBeInTheDocument()
@@ -355,7 +355,7 @@ describe('¿Acierta el score?', () => {
     })
     renderApp('/embudo')
     await openMore()
-    await screen.findByRole('table', { name: 'Calibración por score' })
+    await screen.findByRole('table', { name: 'Calibración por encaje' })
     const calibrationCalls = () => calls.filter((c) => c.path === '/stats/calibration')
     expect(calibrationCalls()[0].search.get('since')).toBeNull()
 
@@ -372,12 +372,12 @@ describe('¿Acierta el score?', () => {
     })
     renderApp('/embudo')
     expect(await screen.findByText('Aún no hay datos')).toBeInTheDocument()
-    expect(screen.queryByRole('region', { name: '¿Acierta el score?' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('region', { name: '¿Acierta el encaje?' })).not.toBeInTheDocument()
 
     await userEvent.click(screen.getByRole('button', { name: '30 días' }))
     expect(await screen.findByText('No hay ofertas en este periodo')).toBeInTheDocument()
-    const panel = await screen.findByRole('region', { name: '¿Acierta el score?' })
-    expect(await within(panel).findByRole('table', { name: 'Calibración por score' })).toBeInTheDocument()
+    const panel = await screen.findByRole('region', { name: '¿Acierta el encaje?' })
+    expect(await within(panel).findByRole('table', { name: 'Calibración por encaje' })).toBeInTheDocument()
   })
 
   it('sin candidaturas enviadas lo dice', async () => {
@@ -390,7 +390,7 @@ describe('¿Acierta el score?', () => {
     })
     renderApp('/embudo')
     await openMore()
-    const panel = await screen.findByRole('region', { name: '¿Acierta el score?' })
+    const panel = await screen.findByRole('region', { name: '¿Acierta el encaje?' })
     expect(await within(panel).findByText(/Aún no has enviado ninguna candidatura/)).toBeInTheDocument()
     expect(within(panel).queryByRole('table')).not.toBeInTheDocument()
   })

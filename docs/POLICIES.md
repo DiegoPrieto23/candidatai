@@ -266,7 +266,7 @@ Una oferta puede encajar en el papel y aun así no merecer la pena. El código m
 - Las ofertas con `risk_flags` o `injection_suspected` se muestran con aviso en la UI; que haya
   texto oculto para IAs también dice algo de cómo filtra esa empresa.
 - **En segundo plano** (fase 19) nadie mira mientras el agente lee ofertas, así que la
-  ejecución solo puede usar las herramientas MCP de su acción (procesar ofertas: `get_status`,
+  ejecución solo puede usar las herramientas MCP de su acción (leer las ofertas nuevas: `get_status`,
   `list_jobs`, `get_job`, `save_extraction`) y su skill: todas las demás de la app se le deniegan
   explícitamente, aunque tu configuración del agente las permita. Sin terminal ni web y leyendo
   solo `docs/`. Lo que intente fuera de eso queda en el progreso como «denegada». Solo se lanzan
@@ -274,9 +274,9 @@ Una oferta puede encajar en el papel y aun así no merecer la pena. El código m
   Tiempo máximo: `background_runs.timeout_minutes` de `config/policies.yaml`.
 - **Varias a la vez y umbral** (fase 25.4): hasta `background_runs.max_parallel`
   ejecuciones a la vez (1 por defecto), nunca dos de la misma oferta ni dos lotes de la misma
-  acción, cada una con su techo de herramientas. «Evaluar encaje» en segundo plano solo valora las
-  ofertas con score ≥ el umbral de la página «Agente» (por defecto, el umbral de score menos 10).
-  «Valorar encaje» de una sola oferta (desde su ficha) no mira el umbral: lo pide el usuario para
+  acción, cada una con su techo de herramientas. «Valorar las pendientes» en segundo plano solo valora
+  las ofertas con score ≥ el umbral de la página «Agente» (por defecto, el umbral de score menos 10).
+  «Valorar esta oferta» (una sola, desde su ficha) no mira el umbral: lo pide el usuario para
   esa oferta. La UI solo lo ofrece si no tiene valoración o la tiene desfasada; con una vigente y
   los mismos datos, repetirla solo gasta y el veredicto variaría al azar.
   `max_parallel` y `per_agent` se leen al arrancar: tras cambiarlos, reinicia `cai worker`.

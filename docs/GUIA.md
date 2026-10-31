@@ -204,11 +204,11 @@ pnpm build                             # la UI compilada que sirve `cai start`
 ```
 
 Opcional: la similitud semántica local («comparación por significado»: trae torch, 1-2 GB). Se
-instala desde la UI: en la página **Agente**, sección «Comparación por significado» (o junto al score
+instala desde la UI: en la página **Agente**, sección «Comparación por significado» (o junto al encaje
 de cualquier oferta, donde avisa si falta), «Qué aporta y cómo activarla» → «Instalar». Mientras se instala, ahí
 mismo lo pone. La elección se guarda en tus datos: se usa en todas las ofertas desde entonces y, si
 actualizas la app (o haces `uv sync` sin el extra), el worker la vuelve a instalar al arrancar. A
-mano: `uv sync --extra matching`. Sin ella el score funciona igual, sin ese componente.
+mano: `uv sync --extra matching`. Sin ella el encaje se calcula igual, sin ese componente.
 
 ## 3. Probar la demo
 
@@ -354,12 +354,14 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
 ## 8. De la oferta al envío
 
 1. **Extraer:** antes, si un título o una empresa no te interesa, quítala desde la Bandeja
-   («Por completar» o «Por extraer») con «Descartar», una a una o seleccionando varias: no gasta
+   («Por completar» o «Por leer») con «Descartar», una a una o seleccionando varias: no gasta
    agente y se puede deshacer. `process-jobs` convierte el texto de cada oferta en datos estructurados. El
    texto de las ofertas es contenido no confiable: si trae texto oculto o frases dirigidas a una
    IA, la ficha lo avisa.
-2. **Valorar:** la app calcula el score y aplica tus filtros duros; `assess-fit` añade una
-   valoración razonada.
+2. **Valorar:** la app calcula el encaje (de 0 a 100: «buen encaje», «encaje posible» o «encaje
+   bajo», y al pasar el ratón, de dónde sale) y aplica tus filtros duros; `assess-fit` añade una
+   valoración razonada: «Valorar esta oferta» en su ficha o «Valorar las pendientes» para todas.
+   Si una oferta no tiene encaje, su ficha dice qué falta: tu perfil, que tu agente la lea o las dos cosas.
 3. **Revisar:** en «Por revisar», `J`/`K` para moverte, `A` para aprobar, `D` para descartar (con
    motivo) y `O` para abrir la ficha. Un descarte se deshace en el aviso; una aprobación, con
    «Reabrir» en la ficha.
@@ -386,7 +388,7 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
 - **Respuestas:** en los buzones que lo tengan marcado, la app lee los correos de las empresas de tus procesos;
   `review-replies` propone qué ha pasado y tú lo aceptas en «Respuestas».
 - **Embudo:** conversión por paso, fuente, semana y referencia, y los motivos de descarte. En «Más
-  análisis», plegado al final: «¿Acierta el score?» (por score, veredicto, plantilla, carta…), por
+  análisis», plegado al final: «¿Acierta el encaje?» (por encaje, veredicto, plantilla, carta…), por
   tipo de puesto, el coste del agente y «Tu búsqueda en números» (o `cai stats story`): tus cifras
   desde el principio, sin empresas, con una línea para compartir si quieres. `review-search` hace
   la retrospectiva semanal.
@@ -438,8 +440,8 @@ Muchas pantallas tienen botones que abren tu agente con la orden ya escrita:
     dinero, por acción, agente y modelo (7 y 30 días), con lo que pesa cada skill; la ficha dice lo
     gastado en esa oferta y el embudo, por candidatura enviada y por entrevista. Lo que hagas en una
     terminal no cuenta: ahí el agente no devuelve su uso.
-  - **Umbral antes de gastar:** `assess-fit` en segundo plano solo valora las ofertas con un score
-    mínimo (por defecto, el umbral de score menos 10; lo cambias en «Coste»). «Por revisar» dice por qué se
+  - **Umbral antes de gastar:** `assess-fit` en segundo plano solo valora las ofertas con un encaje
+    mínimo (por defecto, el mínimo de «Por revisar» menos 10; lo cambias en «Coste»). «Por revisar» dice por qué se
     queda sin valorar una oferta por debajo.
   - **Varias a la vez:** por defecto, de una en una. Con `background_runs.max_parallel` (hasta 4)
     en `config/policies.yaml` van varias a la vez, nunca dos de la misma oferta; con

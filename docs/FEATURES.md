@@ -18,7 +18,7 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 | Feature | Where | Screenshot |
 |---|---|---|
 | **Add a job** by pasting its URL or its text; duplicates are detected and linked to the original | `/nueva` | [New job](img/en/new-job.webp) |
-| **Inbox**: every job with filters, search, signals and stage; each stage explains what it is and what to do to move on, with its button; drop the ones to complete or to extract with **Discard** and **Undo**; "Closed" with its date, sortable | `/bandeja` | [Inbox](img/en/inbox.webp) · [▶ Discard](img/en/anim/discard.webp) |
+| **Inbox**: every job with filters, search, signals and stage; each stage explains what it is and what to do to move on, with its button; drop the ones to complete or to read with **Discard** and **Undo**; "Closed" with its date, sortable | `/bandeja` | [Inbox](img/en/inbox.webp) · [▶ Discard](img/en/anim/discard.webp) |
 | **Target companies**: their jobs come in every day from Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters and Recruitee (public APIs, no scraping); "Test" shows how many pass your filters | `/fuentes/empresas` | [Companies](img/en/sources-companies.webp) |
 | **Job boards** (in “Where to search”): **Set up with my agent** recommends job boards and prepares their searches; when you add a known one (InfoJobs, Tecnoempleo, Indeed, LinkedIn), the searches come from the roles and locations in your profile, and each job board can be edited. The ones your agent browses, with a unique priority each, access type and jobs per run, each explained with its ⓘ; InfoJobs and Adzuna with keys, Manfred and freehire.me without | `/fuentes/plataformas` | [Platforms](img/en/sources-platforms.webp) |
 | **Search portals with your browser**: your agent walks your saved searches, with page limits and pauses, adds what fits and stops at captchas | `search-jobs` | |
@@ -28,16 +28,16 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 | **Find your companies' job boards** from a list of names | `cai sources discover` | |
 | **Extract each job** into structured data with an isolated subagent that only sees that job; text aimed at an AI is flagged, never obeyed | `process-jobs` | |
 | **Still open? and reposts**: the app checks whether a job is still published (never closes it by itself) and marks "Reposted ×N" | `/jobs/:id` | |
-| **Dubious jobs in sight**: very wide salary range, hidden company or agency, temporary contract, old posting and AI screening, each explained; they don't change the score | `/bandeja` | |
+| **Dubious jobs in sight**: very wide salary range, hidden company or agency, temporary contract, old posting and AI screening, each explained; they don't change the fit | `/bandeja` | |
 
 ## 2. Review
 
 | Feature | Where | Screenshot |
 |---|---|---|
 | **Home**: on a fresh install, what the app does and what your agent is, and “Getting started” (upload your CV to create your profile, or start it by hand, and choose where to search with your agent); with no agent installed, “You need an AI agent” with the steps to install Claude Code; then what's waiting today (jobs to process or assess, replies, follow-ups), the best fits, ready to send and the next milestones | `/` | [Home](img/en/home.webp) |
-| **Hard filters and an explained 0-100 score**: level, years, remote mode, location, languages and words that discard; skill coverage weighted by your level, preferences and optional local semantic similarity | `/por-revisar` | [To review](img/en/triage.webp) |
+| **Hard filters and an explained 0-100 fit** (“good fit”, “possible fit” or “low fit”, and on hover what each part measures; without a fit, the job page says what's missing): level, years, remote mode, location, languages and words that discard; skill coverage weighted by your level, preferences and optional local semantic similarity | `/por-revisar` | [To review](img/en/triage.webp) |
 | **Review with the keyboard**: `J`/`K` to move, `A` approve, `D` discard with a reason, `O` open, and Undo | `/por-revisar` | [▶ Keyboard](img/en/anim/triage.webp) |
-| **Your agent's verdict**: fit with risks and questions, citing your deal-breakers; in the background it skips low-score jobs. On each job, “Assess this job” when it has no assessment or an outdated one | `assess-fit` | |
+| **Your agent's verdict**: fit with risks and questions, citing your deal-breakers; in the background it skips low-fit jobs. On each job, “Assess this job”; for all of them, “Assess pending jobs” when it has no assessment or an outdated one | `assess-fit` | |
 | **"You know N people here"**: your LinkedIn connections (official CSV export) matched to each company | `/jobs/:id` | |
 | **The job page**, in tabs (Posting, Application, Process, Company, History & notes) that open on the one that fits the stage: extraction, fit breakdown, signals, history, notes, cost in agent time, and every section below | `/jobs/:id` | [Job](img/en/job.webp) |
 
@@ -87,7 +87,7 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 | Feature | Where | Screenshot |
 |---|---|---|
 | **Funnel**: conversion step by step, by source, role, week, template, cover letter and referral, time to first reply and discard reasons | `/embudo` | [Funnel](img/en/funnel.webp) |
-| **"Is the score right?"**: reply and interview rates by score, verdict, source, template, letter and referral, with 95 % intervals, under "More analysis" in the Funnel | `/embudo` | |
+| **"Is the fit right?"**: reply and interview rates by fit, verdict, source, template, letter and referral, with 95 % intervals, under "More analysis" in the Funnel | `/embudo` | |
 | **Your search in numbers**, ready to share (figures only, never companies), under "More analysis" in the Funnel | `/embudo` · `cai stats story` | |
 | **Weekly retrospective**: what's working and what to change, without touching weights or filters | `review-search` | |
 | **Skills**: what your jobs ask for that your profile lacks; "it's the same as…" aliases, "I have it" and "I don't have it", 25 at a time | `/skills` | [Skills](img/en/skills.webp) |

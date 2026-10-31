@@ -94,7 +94,7 @@ function CostWindowView({ data }: { data: CostWindow }) {
   )
 }
 
-/** Umbral de «Evaluar encaje» en segundo plano: por debajo, la oferta se queda sin valorar. */
+/** Umbral de «Valorar las pendientes» en segundo plano: por debajo, la oferta se queda sin valorar. */
 function Threshold() {
   const { t } = useTranslation('agent', { keyPrefix: 'costs' })
   const { data } = useAssessThreshold()

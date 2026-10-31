@@ -350,7 +350,7 @@ def test_cancel_queued_and_finished(db: None, fake: Path) -> None:
 
 
 def test_one_run_at_a_time(db: None, fake: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    # Sin ofertas, «Evaluar encaje» no se lanzaría (fase 25.4): aquí da igual con cuáles.
+    # Sin ofertas, «Valorar las pendientes» no se lanzaría (fase 25.4): aquí da igual con cuáles.
     monkeypatch.setattr(agent_runs, "_assess_prompt", lambda *_a: "Usa el skill assess-fit con 1.")
     first = start("process-jobs")
     second = start("assess-fit")
@@ -383,7 +383,7 @@ def test_open_in_terminal_resumes_the_session(
         result = agent_runs.open_in_terminal(session, run_id)
     assert "misma sesión" in result.message
     [(title, command)] = opened
-    assert title == "CandidatAI · Procesar ofertas"
+    assert title == "CandidatAI · Leer las ofertas nuevas"
     assert command.endswith("& 'claude' '--resume' '0f7c2d1e-aaaa-bbbb-cccc-123456789abc'")
     assert "Remove-Item Env:ANTHROPIC_API_KEY" in command
 
@@ -418,7 +418,7 @@ def test_api_start_list_get_and_cancel(client: TestClient, fake: Path) -> None:
     response = client.post("/agent/runs", json={"action": "process-jobs"}, headers=JSON)
     assert response.status_code == 202
     run = response.json()
-    assert run["status"] == "queued" and run["label"] == "Procesar ofertas"
+    assert run["status"] == "queued" and run["label"] == "Leer las ofertas nuevas"
     assert run["allowed_tools"] == list(ACTIONS["process-jobs"].background)
 
     listed = client.get("/agent/runs").json()

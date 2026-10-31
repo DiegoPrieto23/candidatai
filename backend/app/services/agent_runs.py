@@ -124,8 +124,8 @@ def _cv_gaps_note(session: Session, job_id: int) -> str:
 
 
 def _assess_prompt(session: Session, min_score: int | None = None) -> str:
-    """«Evaluar encaje» en segundo plano solo con las ofertas que llegan al umbral; si no queda
-    ninguna, no se lanza y dice por qué."""
+    """«Valorar las pendientes» en segundo plano solo con las ofertas que llegan al umbral; si no
+    queda ninguna, no se lanza y dice por qué."""
     plan = assess_threshold.plan(session, min_score)
     if not plan.eligible:
         below = len(plan.skipped)

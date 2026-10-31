@@ -90,7 +90,7 @@ function overview(changes: Partial<AgentsOverview> = {}): AgentsOverview {
     launchable: ['claude', 'codex', 'opencode'],
     preferences: { default_agent: null, agents: {}, actions: {} },
     effective: [
-      { action: 'assess-fit', label: 'Evaluar encaje', terminal: resolution(), background: resolution() },
+      { action: 'assess-fit', label: 'Valorar las pendientes', terminal: resolution(), background: resolution() },
       {
         action: 'search-jobs',
         label: 'Buscar ofertas',
@@ -262,7 +262,7 @@ describe('Sección «Agentes» (fase 24.4)', () => {
     expect(within(search).getByText(/elegido para esta acción/)).toBeInTheDocument()
     expect(within(search).getByText('Codex no tiene navegador, y esta acción lo necesita.')).toBeInTheDocument()
 
-    const assess = within(table).getByRole('row', { name: /Evaluar encaje/ })
+    const assess = within(table).getByRole('row', { name: /Valorar las pendientes/ })
     expect(within(assess).getByText(/el primero instalado/)).toBeInTheDocument()
     await userEvent.selectOptions(within(assess).getByLabelText('Agente'), 'opencode')
     await waitFor(() =>
@@ -282,7 +282,7 @@ describe('Sección «Agentes» (fase 24.4)', () => {
     renderApp('/agente')
     await openAgents()
     await openFineTune()
-    const row = within(await screen.findByRole('table')).getByRole('row', { name: /Evaluar encaje/ })
+    const row = within(await screen.findByRole('table')).getByRole('row', { name: /Valorar las pendientes/ })
     await userEvent.type(within(row).getByLabelText('Modelo'), 'o4{Enter}')
     await waitFor(() =>
       expect(lastPut(calls)).toMatchObject({ actions: { 'assess-fit': { agent: 'codex', model: 'o4' } } }),
@@ -374,7 +374,7 @@ describe('Niveles de gasto y modelos locales (fase 24.6)', () => {
     await openFineTune()
     const economy = await screen.findByRole('listitem', { name: 'Económico' })
     await userEvent.click(within(economy).getByRole('button', { name: 'Editar' }))
-    await userEvent.type(within(economy).getByLabelText('Modelo para Procesar ofertas'), 'ollama/gpt-oss:20b')
+    await userEvent.type(within(economy).getByLabelText('Modelo para Leer las ofertas nuevas'), 'ollama/gpt-oss:20b')
     await userEvent.click(within(economy).getByRole('button', { name: 'Guardar' }))
     await waitFor(() => {
       const put = calls.find((c) => c.method === 'PUT' && c.path === '/agent/tiers/economy')

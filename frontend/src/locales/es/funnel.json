@@ -86,8 +86,8 @@
     "caption": "Embudo por tipo de puesto",
     "head": "Puesto",
     "others": "Otros",
-    "notExtracted_one": "Falta procesar {{count}} oferta: no cuenta aquí hasta que se procese.",
-    "notExtracted_other": "Faltan por procesar {{count}} ofertas: no cuentan aquí hasta que se procesen."
+    "notExtracted_one": "Falta que tu agente lea {{count}} oferta: no cuenta aquí hasta entonces.",
+    "notExtracted_other": "Falta que tu agente lea {{count}} ofertas: no cuentan aquí hasta entonces."
   },
   "byReferral": {
     "title": "Por referencia",
@@ -101,7 +101,7 @@
     }
   },
   "calibration": {
-    "title": "¿Acierta el score?",
+    "title": "¿Acierta el encaje?",
     "hint": "Respuesta y entrevista de tus candidaturas enviadas (en el periodo elegido, por fecha de envío) según lo que sabías al enviarlas.",
     "note": "Orientativo. Entre paréntesis, el intervalo al 95 %: si los de dos grupos se solapan, no hay una diferencia clara. Los pesos y filtros no cambian solos: tu agente propone y tú decides.",
     "review": "Revisar mi búsqueda",
@@ -120,8 +120,8 @@
     },
     "tabs": {
       "score": {
-        "label": "Score",
-        "hint": "Score de la oferta al enviarla."
+        "label": "Encaje",
+        "hint": "Encaje de la oferta al enviarla."
       },
       "verdict": {
         "label": "Veredicto",
@@ -158,7 +158,7 @@
     },
     "groups": {
       "score": {
-        "none": "Sin score"
+        "none": "Sin encaje"
       },
       "verdict": {
         "strong": "Fuerte",

@@ -75,7 +75,7 @@
   },
   "preview": {
     "title": "Así cambiará tu perfil",
-    "rescore": "Al guardar se recalculan los scores de tus ofertas abiertas.",
+    "rescore": "Al guardar se recalcula el encaje de tus ofertas abiertas.",
     "diff": "Cambios en tu perfil",
     "confirm": "Guardar estos cambios",
     "cancel": "Volver a editar",
@@ -135,7 +135,7 @@
     },
     "skills": {
       "title": "Skills",
-      "hint": "Los niveles son privados: deciden qué puede afirmar un CV, pero nunca salen en él. Al guardar se recalculan los scores.",
+      "hint": "Los niveles son privados: deciden qué puede afirmar un CV, pero nunca salen en él. Al guardar se recalcula el encaje de tus ofertas.",
       "levels": "F: fuerte, la usas a diario · C+: la has usado en proyectos reales · C: la conoces · B: básica, solo como «conocimientos de».",
       "addSkill": "Añadir skill"
     },
