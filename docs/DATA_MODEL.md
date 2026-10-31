@@ -573,12 +573,12 @@ candidatura enviada; de los demás no queda nada. Contenido no confiable.
 | body_text | text | Texto visible (sin lo oculto del HTML), hasta `replies.max_body_chars` |
 | risk_flags, risk_excerpt | JSON, str? | `injection_phrase` (visible u oculta) y `hidden_text` si la frase estaba oculta |
 | candidates | JSON | `[{job_id, reason}]`, de la coincidencia más fiable a la menos: `contact`, `domain`, `ats`, `company_name` |
-| status | str | `new` → `proposed` (agente) → `accepted` / `ignored` (usuario) |
+| status | str | `new` → `proposed` (agente) → `accepted` / `ignored` (usuario); «Deshacer» devuelve una `ignored` a `proposed` o `new` |
 | proposal | JSON? | `ReplyProposal` (`AGENT_INTERFACE.md` §Respuestas) |
 | proposed_at, proposed_by | datetime?, str? | Cliente del agente |
 | job_id | FK? | La oferta de la propuesta (o la que eligió el usuario al aceptar) |
 | event_id | FK? | Evento registrado al aceptar |
-| resolved_at | datetime? | Al aceptar o ignorar |
+| resolved_at | datetime? | Al aceptar o ignorar (`null` otra vez al deshacer) |
 | created_at | datetime | |
 
 ### `message_drafts`

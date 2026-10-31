@@ -71,6 +71,20 @@ def test_board_moves_only_with_events(client: TestClient) -> None:
     assert _event(client, job_id, type="reopened")["stage"] == "in_process"
 
 
+def test_events_into_in_process_are_also_valid_from_it(client: TestClient) -> None:
+    """«¿Qué ha pasado?» ofrece en «En proceso» los eventos que llevan a esa etapa (otra
+    entrevista, una prueba, una oferta…): el tablero no los lista desde ahí, pero se admiten."""
+    job_id = _job(client)
+    _event(client, job_id, type="applied_manually")
+    _event(client, job_id, type="reply_received")
+    moves = client.get("/board").json()["moves"]
+    into = [m["event"] for m in moves if m["to"] == "in_process"]
+    assert set(into) >= {"interview_scheduled", "test_assigned", "offer_received"}
+    for event in into:
+        assert _event(client, job_id, type=event)["stage"] == "in_process"
+    assert _event(client, job_id, type="accepted")["stage"] == "closed"
+
+
 def test_milestone_errors(client: TestClient) -> None:
     job_id = _job(client)
     early = client.post(

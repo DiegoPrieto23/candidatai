@@ -992,3 +992,23 @@ def ignore_reply(session: Session, reply_id: int) -> ReplyDecisionResult:
         stage=None,
         message="Ignorada: no se registra nada.",
     )
+
+
+def unignore_reply(session: Session, reply_id: int) -> ReplyDecisionResult:
+    """«Deshacer» tras ignorar: la respuesta vuelve a pendiente, con su propuesta si la tenía.
+    Aceptar no se deshace así: registra un evento, y el historial no se borra."""
+    row = _reply(session, reply_id)
+    if row.status != "ignored":
+        raise ReplyResolvedError("Solo se puede deshacer una respuesta ignorada.")
+    row.status = "proposed" if row.proposal else "new"
+    row.resolved_at = None
+    session.flush()
+    return ReplyDecisionResult(
+        reply_id=row.id,
+        status=row.status,
+        job_id=row.job_id,
+        event_id=None,
+        milestone_id=None,
+        stage=None,
+        message="Vuelve a estar pendiente.",
+    )

@@ -64,9 +64,11 @@
   },
   "none": {
     "title": "No letter yet",
-    "hint": "Ask your agent for it (“write the cover letter for job {{id}}”): it writes it following your instructions, checks it and matches it to your CV. Then you can copy it, tweak it and change the design here, without AI.",
+    "hint": "Your agent writes it following your instructions, checks it and matches it to your CV. Then you can copy it, tweak it and change the design here, without AI.",
+    "write": "Write letter",
     "never": "This job never had a letter."
   },
+  "rewrite": "Rewrite",
   "copyText": "Copy text",
   "downloadTxt": "Download TXT",
   "edit": "Edit"

@@ -128,7 +128,7 @@ const NAV_GROUPS: { title: GroupKey | null; entries: Entry[] }[] = [
   {
     title: 'search',
     entries: [
-      { to: '/bandeja', label: 'inbox', icon: TrayIcon, alsoActive: ['/jobs/', '/nueva'] },
+      { to: '/bandeja', label: 'inbox', icon: TrayIcon, alsoActive: ['/jobs/'] },
       { to: '/por-revisar', label: 'triage', icon: ListChecksIcon, useCount: usePendingTriage },
       { to: '/alertas', label: 'alerts', icon: LightningIcon, useCount: usePendingDetail },
     ],
@@ -423,10 +423,17 @@ export function Sidebar() {
 function NewJobButton({ collapsed }: { collapsed: boolean }) {
   const { t } = useTranslation('nav')
   const label = t('header.newJob')
+  // En «Nueva oferta», el activo es este botón y no la Bandeja.
+  const here = useLocation().pathname === '/nueva'
   const button = (
-    <Button asChild size={collapsed ? 'icon' : 'sm'} className={cn('mb-2 shrink-0', !collapsed && 'w-full')}>
+    <Button
+      asChild
+      size={collapsed ? 'icon' : 'sm'}
+      className={cn('mb-2 shrink-0', !collapsed && 'w-full', here && 'ring-2 ring-ring/60 ring-offset-2 ring-offset-sidebar')}
+    >
       <Link
         to="/nueva"
+        aria-current={here ? 'page' : undefined}
         aria-label={collapsed ? label : undefined}
         onMouseEnter={() => preloadRoute('/nueva')}
         onFocus={() => preloadRoute('/nueva')}

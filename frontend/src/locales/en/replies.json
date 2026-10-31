@@ -108,6 +108,14 @@
     "list": "Replies",
     "byReason": "({{stage}}; by {{reason}})",
     "connect": "Connect your email",
-    "noneFiltered": "Nothing here with this filter."
+    "noneFiltered": "Nothing here with this filter.",
+    "resolved": {
+      "accepted": "Accepted: logged on <job>{{job}}</job>.",
+      "archived": "Archived without logging anything on <job>{{job}}</job>.",
+      "acceptedNoJob": "Accepted: logged on the job.",
+      "ignored": "Ignored: nothing was logged.",
+      "undo": "Undo",
+      "undoFailed": "Couldn't undo: {{error}}"
+    }
   }
 }

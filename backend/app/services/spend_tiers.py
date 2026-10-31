@@ -44,7 +44,7 @@ CLOSED_ACTIONS: tuple[ActionId, ...] = (
     "assess-fit-job",
     "review-replies",
 )
-WRITING_ACTIONS: tuple[ActionId, ...] = ("generate-cv",)  # la carta, cuando tenga botón
+WRITING_ACTIONS: tuple[ActionId, ...] = ("generate-cv", "generate-cover-letter")
 TIER_ACTIONS: tuple[ActionId, ...] = CLOSED_ACTIONS + WRITING_ACTIONS
 UNDO_MARK = "@"  # fila de `tier_undo` que dice que hay algo que deshacer
 

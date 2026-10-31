@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router'
-import { ArrowsClockwiseIcon, EnvelopeSimpleIcon, ShieldWarningIcon, XIcon } from '@phosphor-icons/react'
+import { ArrowsClockwiseIcon, CheckCircleIcon, EnvelopeSimpleIcon, ShieldWarningIcon, XIcon } from '@phosphor-icons/react'
 import type { RepliesPollResult, ReplyInboxItem } from '@/api/client'
-import { usePollReplies, useReplies, useReply, type ReplyStatus } from '@/api/queries'
+import { usePollReplies, useReplies, useReply, useUnignoreReply, type ReplyStatus } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
-import { ReplyProposalCard } from '@/components/ReplyDecision'
+import { ReplyProposalCard, type ReplyResolved } from '@/components/ReplyDecision'
 import { EmptyState, ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -108,7 +108,75 @@ function ReplyRow({ item, selected, onSelect }: { item: ReplyInboxItem; selected
   )
 }
 
-function ReplyDetail({ item }: { item: ReplyInboxItem }) {
+/**
+ * Lo que se acaba de aceptar o ignorar, antes de pasar al siguiente correo: sin él, el correo
+ * desaparece de «Pendientes» y no se ve que haya quedado registrado. «Ignorar» se puede deshacer;
+ * aceptar no, porque registra un evento en la oferta.
+ */
+function ResolvedNotice({
+  resolved,
+  onUndone,
+  onClose,
+}: {
+  resolved: ReplyResolved
+  onUndone: () => void
+  onClose: () => void
+}) {
+  const { t } = useTranslation('replies', { keyPrefix: 'page.resolved' })
+  const { t: tPage } = useTranslation('replies', { keyPrefix: 'page' })
+  const undo = useUnignoreReply()
+  const { job, outcome } = resolved
+  return (
+    <div
+      role="status"
+      className="flex items-start gap-3 rounded-xl border bg-card px-4 py-2.5 text-sm animate-in fade-in slide-in-from-top-1"
+    >
+      {outcome === 'ignored' ? (
+        <XIcon className="mt-0.5 size-[18px] shrink-0 text-muted-foreground" />
+      ) : (
+        <CheckCircleIcon className="mt-0.5 size-[18px] shrink-0 text-primary" weight="fill" />
+      )}
+      <div className="min-w-0 flex-1">
+        <p>
+          {outcome === 'ignored' || !job ? (
+            t(outcome === 'ignored' ? 'ignored' : 'acceptedNoJob')
+          ) : (
+            <Trans
+              t={t}
+              i18nKey={outcome}
+              values={{ job: `${job.title} · ${job.company}` }}
+              components={{
+                job: <Link to={`/jobs/${job.job_id}`} className="font-medium underline-offset-4 hover:underline" />,
+              }}
+            />
+          )}
+        </p>
+        {undo.error && (
+          <p role="alert" className="mt-1 text-destructive">
+            {t('undoFailed', { error: errorMessage(undo.error) })}
+          </p>
+        )}
+      </div>
+      {outcome === 'ignored' && (
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          className="h-7"
+          disabled={undo.isPending}
+          onClick={() => undo.mutate(resolved.replyId, { onSuccess: onUndone })}
+        >
+          {t('undo')}
+        </Button>
+      )}
+      <button type="button" onClick={onClose} className="text-muted-foreground hover:text-foreground" aria-label={tPage('closeNotice')}>
+        <XIcon className="size-4" />
+      </button>
+    </div>
+  )
+}
+
+function ReplyDetail({ item, onResolved }: { item: ReplyInboxItem; onResolved: (resolved: ReplyResolved) => void }) {
   const { t } = useTranslation('replies', { keyPrefix: 'page' })
   const { data, isPending, isError, error, refetch } = useReply(item.reply_id)
   return (
@@ -138,7 +206,7 @@ function ReplyDetail({ item }: { item: ReplyInboxItem }) {
       </header>
 
       <section aria-label={t('proposal')} className="rounded-lg border border-primary/30 bg-primary/[0.03] p-4">
-        <ReplyProposalCard item={item} />
+        <ReplyProposalCard item={item} onResolved={onResolved} />
       </section>
 
       {item.risk_flags.length > 0 && (
@@ -186,6 +254,7 @@ export function RepliesPage() {
   const [params] = useSearchParams()
   // `?correo=ID`: el enlace «Ver el correo» de la ficha de la oferta.
   const [selectedId, setSelectedId] = useState<number | null>(() => Number(params.get('correo')) || null)
+  const [resolved, setResolved] = useState<ReplyResolved | null>(null)
 
   const statuses = FILTERS.find((f) => f.value === filter)!.statuses
   const items = useMemo(
@@ -226,6 +295,17 @@ export function RepliesPage() {
       </div>
 
       <div className="mb-4 space-y-3 empty:hidden">
+        {resolved && (
+          <ResolvedNotice
+            key={resolved.replyId}
+            resolved={resolved}
+            onClose={() => setResolved(null)}
+            onUndone={() => {
+              setSelectedId(resolved.replyId)
+              setResolved(null)
+            }}
+          />
+        )}
         {poll.data && <PollResult result={poll.data} onClose={() => poll.reset()} />}
         {poll.error && (
           <p role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-2.5 text-sm">
@@ -248,6 +328,7 @@ export function RepliesPage() {
             onClick={() => {
               setFilter(f.value)
               setSelectedId(null)
+              setResolved(null)
             }}
             className={cn(
               'flex items-baseline gap-2 rounded-md px-3 py-1.5 text-sm transition-colors',
@@ -296,7 +377,7 @@ export function RepliesPage() {
               ))}
             </ul>
           </section>
-          {selected && <ReplyDetail key={selected.reply_id} item={selected} />}
+          {selected && <ReplyDetail key={selected.reply_id} item={selected} onResolved={setResolved} />}
         </div>
       )}
     </div>

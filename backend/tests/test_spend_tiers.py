@@ -54,7 +54,9 @@ def test_proposal(client: TestClient) -> None:
     economy = tiers["economy"]["actions"]
     for action in spend_tiers.CLOSED_ACTIONS:
         assert economy[action] == _pref("opencode")  # local, con segundo plano; sin modelo
-    assert economy["generate-cv"] == _pref("claude")
+    # Redactar (el CV y la carta) va siempre con el mejor agente, también en «Económico».
+    for action in ("generate-cv", "generate-cover-letter"):
+        assert economy[action] == _pref("claude")
     assert tiers["economy"]["notes"] == ["needs_local_model"]
     # Equilibrado: el modelo rápido del manifiesto, no un nombre escrito en el código.
     assert tiers["balanced"]["actions"]["process-jobs"] == _pref("claude", "haiku")

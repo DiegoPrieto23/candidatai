@@ -344,7 +344,7 @@ A typical day:
 
 | Source | How to set it up |
 |---|---|
-| **Manual** | **New job** in the UI: a URL or pasted text |
+| **Manual** | **New job** in the UI: a URL or pasted text (with text, the role and company are required because they're how duplicates are spotted, and the button says what's missing) |
 | **Target companies** (Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters, Recruitee) | **Where to search → Target companies** page or `cai sources add --kind greenhouse --name "Acme" --slug acme`. `cai sources discover --file companies.txt` finds the board of each company in a list. How to find the slug: [`FUENTES_OFERTAS.md`](FUENTES_OFERTAS.md#cómo-encontrar-el-slug) (Spanish) |
 | **InfoJobs and Adzuna** | Their keys in `.env` (`CAI_INFOJOBS_CLIENT_ID`/`_SECRET`, `CAI_ADZUNA_APP_ID`/`_KEY`) and a search with `cai sources add` |
 | **Manfred and freehire.me** | No keys: a search on the same page or with `cai sources add --kind manfred --name Manfred --query "data engineer"` (for freehire, also `--country` and `--remote-only`) |
@@ -373,8 +373,9 @@ The worker runs the automatic sources every day at `connectors.daily_at`
 4. **CV:** `generate-cv 42` writes the content, the code validates and renders it, and the
    `verifier` role reviews it. On the job page you change template, photo, colour and sections
    without spending agent time, compare renders and mark the one to send.
-5. **Cover letter:** `generate-cover-letter 42`, with your general instructions (profile) and the job's
-   (job page). It matches the CV.
+5. **Cover letter:** **Write letter** on the job page (or `generate-cover-letter 42`), with the same
+   drop-down as **Generate CV**. It follows your general instructions (profile) and the job's (job
+   page); in the background, if there are none, it uses the defaults. It matches the CV.
 6. **Application:** `prepare-application 42` prepares the screening answers. On the job page,
    **Prepare application** opens a dedicated browser (profile in
    `data/browser-profile/`), fills in the form and stops. You review it, and it only submits if you
@@ -385,13 +386,18 @@ The worker runs the automatic sources every day at `connectors.daily_at`
 
 - **Processes:** a kanban by stage. A card only changes column by recording what
   happened (reply, interview, test, offer, rejection). Interviews and tests create a dated
-  milestone you can export to your calendar (`.ics`).
+  milestone you can export to your calendar (`.ics`). On the job page, **What happened?** also
+  records what doesn't change the stage (another reply, another interview, a test, the offer) and
+  links to **Log offer** and **Milestones** for the details; **I accept the offer** shows up once
+  there's an offer.
 - **Calendar:** all your milestones (interviews, tests, deadlines and others, past ones included)
   by month, week, day or agenda. Click one to see its details and open the job.
 - **Follow-ups:** it reminds you of applications without a reply; `draft-follow-up` leaves
   the drafts (max. 2 per application) and the thank-you note after an interview. You send them.
 - **Replies:** in the mailboxes where you ticked it, the app reads emails from the companies in your
-  processes; `review-replies` proposes what happened and you accept it in **Replies**.
+  processes; `review-replies` proposes what happened and you accept it in **Replies**. When you
+  accept or ignore one, a notice says which job it was logged on, with a link; **Ignore** can be
+  undone from it.
 - **Funnel:** conversion by step, source, week and referral, and the discard reasons. Under
   **More analysis**, folded at the end: "Is the fit right?" (by fit, verdict, template, cover
   letter…), by role, the agent's cost and **Your search in numbers** (or `cai stats story`): your
@@ -439,7 +445,8 @@ Many pages have buttons that open your agent with the instruction already writte
   too. The PDF doesn't open by itself: browsers don't open tabs without a click from you. The CV
   is also saved in `data/cvs/` and the guide in `data/entrevistas/`.
 - **In the background** (Claude Code; OpenCode for `process-jobs` and `assess-fit`): for skills
-  that don't ask questions (`process-jobs`, `assess-fit`, `generate-cv`). It runs without a
+  that don't ask questions (`process-jobs`, `assess-fit`, `generate-cv`,
+  `generate-cover-letter`). It runs without a
   window, only with the app tools it needs, and you follow its progress and usage on the **Agent**
   page. If your agent can't, the menu suggests one that can. Requires `cai worker`.
   - **Cost:** the **Cost** section of the **Agent** page adds up tokens, time and, if the agent

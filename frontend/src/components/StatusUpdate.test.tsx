@@ -40,10 +40,48 @@ describe('«¿Qué ha pasado?» en la ficha', () => {
     })
   })
 
-  it('en proceso también deja aceptar la oferta', async () => {
-    mockApi(routes('in_process'))
+  it('en proceso deja anotar otra entrevista, una prueba o una oferta sin cambiar de etapa (H-007)', async () => {
+    const calls = mockApi({
+      ...routes('in_process'),
+      'POST /jobs/1/events': { status: 201, body: { ok: true, event_id: 9, stage: 'in_process' } },
+    })
+    renderApp('/jobs/1')
+    const region = await screen.findByRole('region', { name: '¿Qué ha pasado?' })
+    for (const name of ['Me han respondido', 'Tengo entrevista', 'Entrevista hecha', 'Prueba técnica']) {
+      expect(await within(region).findByRole('button', { name })).toBeInTheDocument()
+    }
+    // Sin oferta registrada no se puede aceptar: primero, la oferta.
+    expect(within(region).queryByRole('button', { name: 'Acepto la oferta' })).not.toBeInTheDocument()
+    await userEvent.click(within(region).getByRole('button', { name: 'Me han hecho una oferta' }))
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getByRole('radio', { checked: true })).toHaveTextContent('→ En proceso')
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Registrar' }))
+    await waitFor(() => {
+      const call = calls.find((c) => c.method === 'POST' && c.path === '/jobs/1/events')
+      expect(call?.body).toMatchObject({ type: 'offer_received' })
+    })
+  })
+
+  it('con una oferta registrada, deja aceptarla', async () => {
+    const now = new Date().toISOString()
+    const offer = { id: 3, type: 'offer_received', actor: 'user', agent_name: null, payload: {}, occurred_at: now, recorded_at: now }
+    const base = jobView({ stage: 'in_process' })
+    mockApi({ ...routes('in_process'), 'GET /jobs/1': { ...base, events: [...base.events, offer] } })
     renderApp('/jobs/1')
     const region = await screen.findByRole('region', { name: '¿Qué ha pasado?' })
     expect(await within(region).findByRole('button', { name: 'Acepto la oferta' })).toBeInTheDocument()
+  })
+
+  it('lleva a «Anotar oferta» y a «Hitos» para los detalles', async () => {
+    mockApi({ ...routes('in_process'), 'GET /jobs/1/received-offer': null })
+    renderApp('/jobs/1')
+    const region = await screen.findByRole('region', { name: '¿Qué ha pasado?' })
+    expect(within(region).getByRole('button', { name: 'Anotar oferta' })).toBeInTheDocument()
+    await userEvent.click(within(region).getByRole('button', { name: 'Hitos → Añadir' }))
+    await waitFor(() => {
+      const focused = document.activeElement
+      expect(focused).toHaveAccessibleName('Añadir')
+      expect(focused?.closest('#job-milestones')).not.toBeNull()
+    })
   })
 })

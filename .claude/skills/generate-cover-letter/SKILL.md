@@ -23,6 +23,11 @@ Argumentos: `job_id` y, opcionalmente, indicaciones para esta carta («máximo 1
    quiere dar ninguna, sigue con los valores por defecto de §7. Si el perfil no tiene
    `preferences.cover_letter`, propón al final guardarlas con `update-profile`.
 
+**En segundo plano** (la orden dice que nadie puede contestarte) no preguntes:
+- sin indicaciones en ningún sitio, sigue con los valores por defecto de §7;
+- de `narrativa` no propongas nada, ni guardar preferencias con `update-profile`;
+- en el resumen, di que no había indicaciones y que puede añadirlas en la ficha y pedir otra.
+
 ## 2. Redactar
 1. `get_extraction(job_id)`, `get_profile()` y, si hay CV, `get_cv_content(job_id)` para no
    contradecirlo y reforzar sus mismos logros.
@@ -62,7 +67,7 @@ Argumentos: `job_id` y, opcionalmente, indicaciones para esta carta («máximo 1
    (máximo 3 veces).
 
 ## 3. Verificar
-Delega en el rol `verifier` con el `document_id` de la carta. Tiene que ser una ejecución
+Para verificarla, delega en el rol `verifier` con el `document_id` de la carta. Tiene que ser una ejecución
 distinta de la tuya. Si falla, corrige los `blocker` y vuelve a guardar; máximo 2 vueltas, después
 para y enseña los problemas.
 

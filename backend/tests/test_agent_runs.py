@@ -114,6 +114,7 @@ def test_only_these_actions_run_in_background() -> None:
         "assess-fit",
         "assess-fit-job",
         "generate-cv",
+        "generate-cover-letter",
     }
 
 
@@ -132,9 +133,13 @@ def test_background_tools_exist_and_are_minimal() -> None:
     assert "get_job" not in ACTIONS["assess-fit"].background
     assert "get_job" not in ACTIONS["assess-fit-job"].background
     assert "get_job" not in ACTIONS["generate-cv"].background
+    assert "get_job" not in ACTIONS["generate-cover-letter"].background
 
 
-@pytest.mark.parametrize("action", ["process-jobs", "assess-fit", "assess-fit-job", "generate-cv"])
+BACKGROUND = sorted(a for a, spec in ACTIONS.items() if spec.background)  # la lista, arriba
+
+
+@pytest.mark.parametrize("action", BACKGROUND)
 def test_manifest_command_allows_only_the_action_tools(action: str) -> None:
     """El comando real de Claude Code (manifiesto): sin terminal ni web, solo el skill de la acción
     y todas las demás herramientas MCP denegadas (un deny gana a los allow de `settings.json`)."""
@@ -232,6 +237,26 @@ def test_generate_cv_needs_an_approved_job(db: None, fake: Path) -> None:
     job_id = add_extracted("Data Engineer", "Acme")
     with session_scope() as session, pytest.raises(LaunchError, match="aprobada"):
         agent_runs.start(session, "generate-cv", job_id)
+
+
+def test_cover_letter_in_background_writes_saves_and_verifies(db: None, fake: Path) -> None:
+    """«Escribir carta» en segundo plano: su skill, la oferta en la orden y solo las herramientas
+    para leer las indicaciones, redactar, guardar y verificar (con el rol `verifier`)."""
+    job_id = _approved_job()
+    row = run_row(start("generate-cover-letter", job_id))
+    assert row.prompt.startswith("Usa el skill generate-cover-letter")
+    assert f"oferta {job_id}" in row.prompt and "PREGUNTA:" in row.prompt
+    spec = ACTIONS["generate-cover-letter"]
+    assert {"save_cover_letter", "save_cover_letter_verification"} <= set(spec.background)
+    assert row.command[-len(spec.background) :] == [f"{PREFIX}{t}" for t in spec.background]
+    assert spec.roles == ("verifier",)
+
+
+def test_cover_letter_needs_an_approved_job(db: None, fake: Path) -> None:
+    import_profile()
+    job_id = add_extracted("Data Engineer", "Acme")
+    with session_scope() as session, pytest.raises(LaunchError, match="aprobada"):
+        agent_runs.start(session, "generate-cover-letter", job_id)
 
 
 # --- Runner con el agente falso ----------------------------------------------------------------

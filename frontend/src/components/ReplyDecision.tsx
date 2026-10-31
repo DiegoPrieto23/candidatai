@@ -42,11 +42,35 @@ function asIs(item: ReplyInboxItem): ReplyDecision | null {
   return { job_id: p.job_id, event_type: p.event_type, occurred_at: p.occurred_at, milestone: p.milestone }
 }
 
+/** Lo que se acaba de decidir sobre un correo, para el aviso de «Respuestas». */
+export interface ReplyResolved {
+  replyId: number
+  outcome: 'accepted' | 'archived' | 'ignored'
+  job: ReplyInboxItem['candidates'][number] | undefined
+}
+
+function resolvedBy(item: ReplyInboxItem, decision: ReplyDecision): ReplyResolved {
+  return {
+    replyId: item.reply_id,
+    outcome: decision.event_type === 'none' ? 'archived' : 'accepted',
+    job: item.candidates.find((c) => c.job_id === decision.job_id),
+  }
+}
+
 /**
  * La propuesta del agente para un correo, con Aceptar / Cambiar / Ignorar. Nada se registra hasta
  * que el usuario pulsa uno de ellos (fase 15). Sin propuesta, el usuario puede decidir él.
  */
-export function ReplyProposalCard({ item, showJob = false }: { item: ReplyInboxItem; showJob?: boolean }) {
+export function ReplyProposalCard({
+  item,
+  showJob = false,
+  onResolved,
+}: {
+  item: ReplyInboxItem
+  showJob?: boolean
+  /** Tras aceptar o ignorar (la página lo avisa antes de pasar al siguiente). */
+  onResolved?: (resolved: ReplyResolved) => void
+}) {
   const { t } = useTranslation('replies', { keyPrefix: 'card' })
   const accept = useAcceptReply()
   const ignore = useIgnoreReply()
@@ -113,7 +137,13 @@ export function ReplyProposalCard({ item, showJob = false }: { item: ReplyInboxI
             type="button"
             size="sm"
             disabled={pending}
-            onClick={() => accept.mutate({ replyId: item.reply_id, body: decision })}
+            onClick={() =>
+              // `mutateAsync`: la tarjeta se desmonta al salir el correo de la lista, y los
+              // callbacks de `mutate` ya no llegarían.
+              accept
+                .mutateAsync({ replyId: item.reply_id, body: decision })
+                .then(() => onResolved?.(resolvedBy(item, decision)), () => undefined)
+            }
             className="active:translate-y-px"
           >
             <CheckIcon weight="bold" />
@@ -136,7 +166,11 @@ export function ReplyProposalCard({ item, showJob = false }: { item: ReplyInboxI
           size="sm"
           variant="ghost"
           disabled={pending}
-          onClick={() => ignore.mutate(item.reply_id)}
+          onClick={() =>
+            ignore
+              .mutateAsync(item.reply_id)
+              .then(() => onResolved?.({ replyId: item.reply_id, outcome: 'ignored', job }), () => undefined)
+          }
           className="active:translate-y-px"
         >
           <XIcon weight="bold" />
@@ -148,7 +182,7 @@ export function ReplyProposalCard({ item, showJob = false }: { item: ReplyInboxI
           {t('saveFailed', { error: errorMessage(error) })}
         </p>
       )}
-      <ReplyDecisionDialog item={item} open={editing} onOpenChange={setEditing} />
+      <ReplyDecisionDialog item={item} open={editing} onOpenChange={setEditing} onResolved={onResolved} />
     </div>
   )
 }
@@ -158,21 +192,31 @@ export function ReplyDecisionDialog({
   item,
   open,
   onOpenChange,
+  onResolved,
 }: {
   item: ReplyInboxItem
   open: boolean
   onOpenChange: (open: boolean) => void
+  onResolved?: (resolved: ReplyResolved) => void
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90dvh] overflow-y-auto">
-        {open && <DecisionForm item={item} onDone={() => onOpenChange(false)} />}
+        {open && (
+          <DecisionForm
+            item={item}
+            onDone={(decision) => {
+              onOpenChange(false)
+              if (decision) onResolved?.(resolvedBy(item, decision))
+            }}
+          />
+        )}
       </DialogContent>
     </Dialog>
   )
 }
 
-function DecisionForm({ item, onDone }: { item: ReplyInboxItem; onDone: () => void }) {
+function DecisionForm({ item, onDone }: { item: ReplyInboxItem; onDone: (decision?: ReplyDecision) => void }) {
   const { t } = useTranslation('replies', { keyPrefix: 'decision' })
   const proposal = item.proposal
   const milestone = proposal?.milestone
@@ -214,7 +258,7 @@ function DecisionForm({ item, onDone }: { item: ReplyInboxItem; onDone: () => vo
           }
         : null,
     }
-    accept.mutate({ replyId: item.reply_id, body }, { onSuccess: onDone })
+    accept.mutateAsync({ replyId: item.reply_id, body }).then(() => onDone(body), () => undefined)
   }
 
   return (
@@ -328,7 +372,7 @@ function DecisionForm({ item, onDone }: { item: ReplyInboxItem; onDone: () => vo
       )}
 
       <DialogFooter>
-        <Button type="button" variant="outline" onClick={onDone}>
+        <Button type="button" variant="outline" onClick={() => onDone()}>
           {t('cancel')}
         </Button>
         <Button type="submit" disabled={invalid || accept.isPending}>

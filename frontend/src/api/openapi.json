@@ -15934,6 +15934,129 @@
         }
       }
     },
+    "/replies/{reply_id}/unignore": {
+      "post": {
+        "tags": [
+          "replies"
+        ],
+        "summary": "Unignore Reply",
+        "description": "Deshace «Ignorar»: la respuesta vuelve a pendiente. Cuerpo `{}`, como `ignore`.",
+        "operationId": "unignore_reply",
+        "parameters": [
+          {
+            "name": "reply_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Reply Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmptyBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReplyDecisionResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
     "/jobs/{job_id}/drafts": {
       "get": {
         "tags": [
@@ -17476,6 +17599,7 @@
               "assess-fit",
               "assess-fit-job",
               "generate-cv",
+              "generate-cover-letter",
               "add-skills",
               "training-plan",
               "review-replies",
@@ -18234,6 +18358,7 @@
               "assess-fit",
               "assess-fit-job",
               "generate-cv",
+              "generate-cover-letter",
               "add-skills",
               "training-plan",
               "review-replies",
@@ -18388,6 +18513,7 @@
               "assess-fit",
               "assess-fit-job",
               "generate-cv",
+              "generate-cover-letter",
               "add-skills",
               "training-plan",
               "review-replies",
@@ -22142,6 +22268,7 @@
               "assess-fit",
               "assess-fit-job",
               "generate-cv",
+              "generate-cover-letter",
               "add-skills",
               "training-plan",
               "review-replies",
@@ -24616,6 +24743,7 @@
               "assess-fit",
               "assess-fit-job",
               "generate-cv",
+              "generate-cover-letter",
               "add-skills",
               "training-plan",
               "review-replies",
@@ -28016,6 +28144,7 @@
                 "assess-fit",
                 "assess-fit-job",
                 "generate-cv",
+                "generate-cover-letter",
                 "add-skills",
                 "training-plan",
                 "review-replies",
@@ -29945,6 +30074,7 @@
               "assess-fit",
               "assess-fit-job",
               "generate-cv",
+              "generate-cover-letter",
               "add-skills",
               "training-plan",
               "review-replies",
@@ -32376,6 +32506,7 @@
                 "assess-fit",
                 "assess-fit-job",
                 "generate-cv",
+                "generate-cover-letter",
                 "add-skills",
                 "training-plan",
                 "review-replies",
@@ -32437,6 +32568,7 @@
                 "assess-fit",
                 "assess-fit-job",
                 "generate-cv",
+                "generate-cover-letter",
                 "add-skills",
                 "training-plan",
                 "review-replies",
@@ -32506,6 +32638,7 @@
                 "assess-fit",
                 "assess-fit-job",
                 "generate-cv",
+                "generate-cover-letter",
                 "add-skills",
                 "training-plan",
                 "review-replies",

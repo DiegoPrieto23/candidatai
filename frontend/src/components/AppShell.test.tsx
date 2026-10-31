@@ -140,4 +140,13 @@ describe('«Nueva oferta»', () => {
     const again = await screen.findByRole('complementary', { name: 'Barra lateral' })
     expect(within(again).getByRole('link', { name: 'Nueva oferta' })).toHaveAttribute('href', '/nueva')
   })
+
+  it('en su página, el activo es el botón y no la Bandeja (H-013)', async () => {
+    mockApi({ 'GET /status': status() })
+    renderApp('/nueva')
+    const sidebar = await screen.findByRole('complementary', { name: 'Barra lateral' })
+    expect(within(sidebar).getByRole('link', { name: 'Nueva oferta' })).toHaveAttribute('aria-current', 'page')
+    const nav = within(sidebar).getByRole('navigation', { name: 'Navegación principal' })
+    expect(within(nav).getByRole('link', { name: 'Bandeja de ofertas' })).not.toHaveAttribute('aria-current')
+  })
 })

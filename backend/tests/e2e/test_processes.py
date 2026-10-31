@@ -177,7 +177,11 @@ def test_replies_are_proposed_by_the_agent_and_decided_by_you(
     proposal = email.get_by_role("region", name=t("replies.page.proposal"))
     expect(proposal.get_by_text("Te invitan a una primera entrevista")).to_be_visible()
     proposal.get_by_role("button", name=t("replies.card.accept")).click()
-    # Sale de «Pendientes» y queda en «Aceptadas».
+    # Un aviso dice dónde ha quedado, con enlace a la oferta; el correo sale de «Pendientes».
+    notice = page.get_by_role("status").filter(has_text=f"Analytics Engineer · {COMPANY}")
+    expect(notice.get_by_role("link", name=f"Analytics Engineer · {COMPANY}")).to_have_attribute(
+        "href", f"/jobs/{job_id}"
+    )
     expect(replies.get_by_role("button").filter(has_text="primera entrevista")).to_have_count(0)
     filters = page.get_by_role("group", name=t("replies.page.filterAria"))
     filters.get_by_role("button", name=re.compile(t("replies.page.filters.accepted"))).click()
@@ -192,6 +196,12 @@ def test_replies_are_proposed_by_the_agent_and_decided_by_you(
     # Ignorar la otra no cambia nada.
     page.goto("/respuestas")
     replies.get_by_role("button").filter(has_text="Novedades de tu candidatura").click()
+    proposal.get_by_role("button", name=t("replies.card.ignore")).click()
+    expect(replies.get_by_role("button").filter(has_text="Novedades")).to_have_count(0)
+    # «Deshacer» la devuelve a pendientes; se vuelve a ignorar.
+    ignored = page.get_by_role("status").filter(has_text=t("replies.page.resolved.ignored"))
+    ignored.get_by_role("button", name=t("replies.page.resolved.undo")).click()
+    expect(replies.get_by_role("button").filter(has_text="Novedades")).to_have_count(1)
     proposal.get_by_role("button", name=t("replies.card.ignore")).click()
     expect(replies.get_by_role("button").filter(has_text="Novedades")).to_have_count(0)
     filters.get_by_role("button", name=re.compile(t("replies.page.filters.ignored"))).click()
@@ -682,9 +692,13 @@ def test_the_stage_shown_follows_the_projection_from_new_to_accepted(
     expect(section.get_by_text(t("labels.milestoneStatus.done"))).to_be_visible()
     check(job_id, "in_process")
 
-    # En «En proceso», la oferta se anota en su bloque: «¿Qué ha pasado?» solo ofrece lo que
-    # cambia de etapa.
-    _note_offer(page, job_id, base="40000", variable="0", benefits="Formación")
+    # En «En proceso», «¿Qué ha pasado?» también registra lo que no cambia de etapa: otra
+    # prueba y la oferta. «Acepto la oferta» solo sale con una oferta registrada.
+    status = job_tab(page, job_id, "process").get_by_role("region", name=t("status.label"))
+    expect(status.get_by_role("button", name=t("status.steps.accepted"))).to_have_count(0)
+    _status_step(page, server, job_id, "test_assigned")
+    check(job_id, "in_process")
+    _status_step(page, server, job_id, "offer_received")
     check(job_id, "in_process")
     _status_step(page, server, job_id, "accepted")
     check(job_id, "closed")
@@ -692,6 +706,6 @@ def test_the_stage_shown_follows_the_projection_from_new_to_accepted(
     events = [e["type"] for e in cai(server, "events", "list", str(job_id))["events"]]
     for event in (
         "found", "extracted", "approved", "cv_verified", "applied_manually", "reply_received",
-        "interview_scheduled", "interview_done", "offer_received", "accepted",
+        "interview_scheduled", "interview_done", "test_assigned", "offer_received", "accepted",
     ):  # fmt: skip
         assert event in events, events

@@ -21,6 +21,20 @@ export function moveOptions(card: BoardCard, moves: BoardMove[], target?: Stage)
   return options
 }
 
+/**
+ * Los pasos de «¿Qué ha pasado?» en la ficha: los movimientos y, en «En proceso», lo que pasa sin
+ * cambiar de etapa (otra respuesta, otra entrevista, una prueba, una oferta). El servidor los
+ * admite desde ahí; el tablero no los lista porque no mueven la tarjeta.
+ */
+export function stepOptions(card: BoardCard, moves: BoardMove[]): MoveOption[] {
+  const options = moveOptions(card, moves)
+  if (card.stage !== 'in_process') return options
+  for (const move of moves) {
+    if (move.to === 'in_process') options.push({ event: move.event, to: 'in_process' })
+  }
+  return options
+}
+
 /** Por qué no se puede soltar una tarjeta en una columna. */
 export function noMoveReason(card: BoardCard, target: Stage): string {
   const t = i18n.getFixedT(null, 'move', 'noMove')

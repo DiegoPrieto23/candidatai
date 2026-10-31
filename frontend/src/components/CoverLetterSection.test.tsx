@@ -35,18 +35,38 @@ describe('Sección Carta de presentación', () => {
     await waitFor(() => expect(screen.queryByRole('region', { name: NAME })).not.toBeInTheDocument())
   })
 
-  it('sin carta, recuerda qué pedir al agente', async () => {
-    mockApi({
+  it('sin carta, «Escribir carta» con el mismo desplegable que «Generar CV» (H-016)', async () => {
+    const calls = mockApi({
       'GET /status': status(),
       'GET /jobs/1': jobView({ stage: 'approved' }),
       'GET /jobs/1/cover-letter': jobCoverLetter({}, null),
+      'GET /agent': {
+        available: true,
+        agent: 'claude',
+        reason: null,
+        background: { available: true, agent: 'claude', reason: null },
+        actions: [
+          { id: 'generate-cover-letter', label: 'Escribir carta', needs_job: true, prompt: null, background: true },
+        ],
+      },
+      'POST /agent/runs': { status: 202, body: { id: 1, status: 'queued' } },
     })
     renderApp('/jobs/1?tab=application')
     const section = await screen.findByRole('region', { name: NAME })
     expect(await within(section).findByText('Aún sin carta')).toBeInTheDocument()
-    expect(within(section).getByText(/escribe la carta de la oferta 1/)).toBeInTheDocument()
     expect(within(section).getByText('Menciona que uso su producto desde 2023.')).toBeInTheDocument()
     expect(within(section).getByText(/Límite: 150 palabras/)).toBeInTheDocument()
+    const main = within(section).getByRole('button', { name: 'Escribir carta' })
+    const group = main.closest<HTMLElement>('[data-slot="agent-button"]')!
+    await userEvent.click(within(group).getByRole('button', { name: 'Más formas de lanzarlo' }))
+    expect(await screen.findByRole('menuitem', { name: /Dejar para mi próxima sesión/ })).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('menuitem', { name: /En segundo plano/ }))
+    await waitFor(() =>
+      expect(calls.find((c) => c.method === 'POST' && c.path === '/agent/runs')?.body).toEqual({
+        action: 'generate-cover-letter',
+        job_id: 1,
+      }),
+    )
   })
 
   it('enseña la carta, la copia, descarga el TXT y marca otro render para enviar', async () => {
@@ -64,6 +84,7 @@ describe('Sección Carta de presentación', () => {
     expect(await within(section).findByText('Hola, equipo de Acme:')).toBeInTheDocument()
     expect(within(section).getByText('15 de 150 palabras')).toBeInTheDocument()
     expect(within(section).getByText('Verificada')).toBeInTheDocument()
+    expect(within(section).getByRole('button', { name: 'Volver a redactar' })).toBeInTheDocument()
 
     const writeText = withClipboard()
     await userEvent.click(within(section).getByRole('button', { name: 'Copiar texto' }))
@@ -173,6 +194,7 @@ describe('Sección Carta de presentación', () => {
     expect(await within(section).findByText('Editada por ti')).toBeInTheDocument()
     expect(within(section).getByRole('button', { name: 'Copiar texto' })).toBeEnabled()
     expect(within(section).queryByRole('button', { name: /Editar|Añadir/ })).not.toBeInTheDocument()
+    expect(within(section).queryByRole('button', { name: 'Volver a redactar' })).not.toBeInTheDocument()
     expect(within(section).queryByRole('form', { name: 'Generar la carta' })).not.toBeInTheDocument()
   })
 })

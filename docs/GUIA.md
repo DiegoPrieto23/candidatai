@@ -338,7 +338,7 @@ Un día normal:
 
 | Fuente | Cómo se configura |
 |---|---|
-| **Alta manual** | «Nueva oferta» en la UI (URL o texto pegado) |
+| **Alta manual** | «Nueva oferta» en la UI (URL o texto pegado; con texto, el puesto y la empresa son obligatorios porque con ellos se detectan duplicados, y el botón dice qué falta) |
 | **Empresas objetivo** (Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters, Recruitee) | Página «Dónde buscar → Empresas objetivo» o `cai sources add --kind greenhouse --name "Acme" --slug acme`. `cai sources discover --file empresas.txt` busca el tablero de cada empresa de una lista. Cómo encontrar el slug, en [`FUENTES_OFERTAS.md`](FUENTES_OFERTAS.md#cómo-encontrar-el-slug) |
 | **InfoJobs y Adzuna** | Sus claves en `.env` (`CAI_INFOJOBS_CLIENT_ID`/`_SECRET`, `CAI_ADZUNA_APP_ID`/`_KEY`) y una búsqueda con `cai sources add` |
 | **Manfred y freehire.me** | Sin claves: una búsqueda en la misma página o con `cai sources add --kind manfred --name Manfred --query "data engineer"` (en freehire, también `--country` y `--remote-only`) |
@@ -368,8 +368,9 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
 4. **CV:** `generate-cv 42` redacta el contenido, el código lo valida y renderiza y el rol
    `verifier` lo revisa. En la ficha cambias plantilla, foto, color y secciones sin gastar
    agente, comparas renders y marcas cuál envías.
-5. **Carta:** `generate-cover-letter 42`, con tus indicaciones generales (perfil) y las de la oferta
-   (ficha). Sale a juego con el CV.
+5. **Carta:** «Escribir carta» en la ficha (o `generate-cover-letter 42`), con el mismo desplegable
+   que «Generar CV». Sigue tus indicaciones generales (perfil) y las de la oferta (ficha); en segundo
+   plano, si no hay ninguna, usa las de por defecto. Sale a juego con el CV.
 6. **Candidatura:** `prepare-application 42` prepara las respuestas de screening. En la ficha,
    «Preparar candidatura» abre un navegador propio (perfil en `data/browser-profile/`), rellena el
    formulario y se para. Revisas, y solo si escribes el nombre de la empresa, envía. Ante un
@@ -380,13 +381,16 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
 
 - **Procesos:** kanban por etapas. Una tarjeta solo cambia de columna registrando lo que pasó
   (respuesta, entrevista, prueba, oferta, rechazo). Entrevistas y pruebas crean un hito con fecha,
-  exportable a tu calendario (`.ics`).
+  exportable a tu calendario (`.ics`). En la ficha, «¿Qué ha pasado?» registra también lo que no
+  cambia de etapa (otra respuesta, otra entrevista, una prueba, la oferta) y enlaza a «Anotar
+  oferta» y a «Hitos» para los detalles; «Acepto la oferta» sale cuando ya hay una oferta.
 - **Calendario:** todos tus hitos (entrevistas, pruebas, plazos y otros, también los pasados) por
   mes, semana, día o agenda. Pulsa uno para ver sus datos e ir a la oferta.
 - **Seguimientos:** te avisa de las candidaturas sin respuesta; `draft-follow-up` deja los
   borradores (máximo 2 por candidatura) y el de agradecimiento tras una entrevista. Los envías tú.
 - **Respuestas:** en los buzones que lo tengan marcado, la app lee los correos de las empresas de tus procesos;
-  `review-replies` propone qué ha pasado y tú lo aceptas en «Respuestas».
+  `review-replies` propone qué ha pasado y tú lo aceptas en «Respuestas». Al aceptar o ignorar,
+  un aviso dice en qué oferta ha quedado, con su enlace; «Ignorar» se puede deshacer desde él.
 - **Embudo:** conversión por paso, fuente, semana y referencia, y los motivos de descarte. En «Más
   análisis», plegado al final: «¿Acierta el encaje?» (por encaje, veredicto, plantilla, carta…), por
   tipo de puesto, el coste del agente y «Tu búsqueda en números» (o `cai stats story`): tus cifras
@@ -433,7 +437,8 @@ Muchas pantallas tienen botones que abren tu agente con la orden ya escrita:
   sistema. El PDF no se abre solo: el navegador no deja abrir pestañas sin un clic tuyo. El CV
   queda además en `data/cvs/` y la guía en `data/entrevistas/`.
 - **En segundo plano** (Claude Code; OpenCode en `process-jobs` y `assess-fit`): para los skills
-  que no preguntan (`process-jobs`, `assess-fit`, `generate-cv`). Corre sin ventana, solo con las
+  que no preguntan (`process-jobs`, `assess-fit`, `generate-cv`,
+  `generate-cover-letter`). Corre sin ventana, solo con las
   herramientas de la app que necesita, y ves el progreso y el uso en la página «Agente». Si tu
   agente no puede, el desplegable propone uno que sí. Necesita `cai worker` en marcha.
   - **Coste:** la sección «Coste» de la página «Agente» suma tokens, tiempo y, si el agente lo da,

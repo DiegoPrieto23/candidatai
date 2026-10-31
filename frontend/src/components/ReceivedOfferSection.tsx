@@ -4,6 +4,7 @@ import { HandshakeIcon, LockSimpleIcon } from '@phosphor-icons/react'
 import type { JobView, ReceivedOffer, ReceivedOfferFields, Stage } from '@/api/client'
 import { useDeleteReceivedOffer, useReceivedOffer, useSaveReceivedOffer } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
+import { RECEIVED_OFFER_ID } from '@/components/StatusUpdate'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -202,7 +203,7 @@ export function ReceivedOfferSection({ job }: { job: JobView }) {
   const [editing, setEditing] = useState(false)
   if (isPending || (!offer && !canHave)) return null
   return (
-    <section aria-label={t('title')} className="rounded-xl border bg-card p-5 sm:p-6">
+    <section id={RECEIVED_OFFER_ID} aria-label={t('title')} className="scroll-mt-6 rounded-xl border bg-card p-5 sm:p-6">
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="flex items-center gap-2 font-semibold">
