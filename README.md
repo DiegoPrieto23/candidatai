@@ -32,7 +32,7 @@
 > with a small local model, which didn't finish the test, and Qwen Code is configured but untested. The UI is in English and Spanish.
 
 <!--
-  Your search in numbers (phase 25.6). `cai stats story` or the "Your search in numbers" card in
+  Your search in numbers. `cai stats story` or the "Your search in numbers" card in
   the Funnel gives you this line with your real figures: aggregated counts only, no companies.
   To publish it, paste it below, write what worked in one line and remove this comment.
 
@@ -80,7 +80,7 @@ to press Send**, and then it tracks the process all the way to the offer.
 <p align="center"><img src="docs/img/en/anim/cv.webp" alt="Changing the CV template and colour and rendering it again" width="88%"></p>
 
 The agent writes the content once. You choose the template, photo, colour and hidden sections and
-press "Render": it takes seconds and **uses no agent quota**.
+press "Generate": it takes seconds and **uses no agent quota**.
 </details>
 
 <details>

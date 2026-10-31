@@ -44,9 +44,16 @@ def _set_sqlite_pragmas(dbapi_connection: Any, _connection_record: Any) -> None:
     dbapi_connection.create_function("cai_iso_week", 1, iso_week, deterministic=True)
 
 
+# Lo que espera una escritura si otra tiene la base: generar un PDF con LibreOffice tarda más que
+# los 5 s de SQLite por defecto, y el worker no puede quedarse sin escribir (ni caerse) mientras.
+# Por encima del tope de la conversión (`cv.pdf_timeout_seconds`, 60 s en la política).
+SQLITE_BUSY_TIMEOUT = 90.0
+
+
 def make_engine(url: str) -> Engine:
     """Crea un engine; en SQLite activa WAL y `foreign_keys` en cada conexión."""
-    engine = create_engine(url)
+    sqlite = url.startswith("sqlite")
+    engine = create_engine(url, connect_args={"timeout": SQLITE_BUSY_TIMEOUT} if sqlite else {})
     if engine.dialect.name == "sqlite":
         event.listen(engine, "connect", _set_sqlite_pragmas)
     return engine

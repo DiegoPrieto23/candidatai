@@ -22,7 +22,9 @@ buscar → Botón del navegador**. La página detecta la extensión sola y avanz
 1. **«Abrir la carpeta de la extensión»** te abre esta carpeta, `extension/`, la que trae la app.
 2. Abre `chrome://extensions` (en Edge, `edge://extensions`) y activa el **Modo de desarrollador**
    (arriba a la derecha en Chrome; a la izquierda en Edge).
-3. Pulsa **Cargar descomprimida** y elige la carpeta. Si ya la tenías cargada, pulsa el botón de
+3. Pulsa **Cargar descomprimida** y elige la carpeta `extension/` entera. La guía de la app te da
+   su ruta con un botón para copiarla: en la ventana de elegir carpeta, pégala en la barra de
+   direcciones (en macOS, Cmd+Mayús+G; en Linux, Ctrl+L). Si ya la tenías cargada, pulsa el botón de
    recargar (⟳) de su tarjeta en vez de cargarla otra vez: la página avisa si tienes una versión
    antigua.
 4. De vuelta en la app, pulsa **Conectar**. La app crea una clave y se la pasa a la extensión, que

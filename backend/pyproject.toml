@@ -82,4 +82,9 @@ known-third-party = ["alembic"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra"
-markers = ["layout: con la comprobación de maquetación del PDF encendida (fase 25.5)"]
+markers = [
+    "layout: con la comprobación de maquetación del PDF encendida (fase 25.5)",
+    "e2e: de extremo a extremo, la app compilada en Chromium (`-m e2e`; necesita `pnpm build`)",
+    "smoke: el subconjunto rápido de las E2E que corre en cada push",
+    "e2e_install: el instalador de Windows de verdad en una carpeta temporal (`-m e2e_install`; tarda)",
+]

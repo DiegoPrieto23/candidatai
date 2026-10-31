@@ -1,0 +1,10 @@
+From: Boletín de ofertas <boletin@noticias-ejemplo.test>
+To: candidata@ejemplo.test
+Subject: Las 10 ofertas de datos de esta semana
+Date: {date}
+Message-ID: <e2e-ajeno@noticias-ejemplo.test>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+Esta semana, diez ofertas de datos en Galicia. Nordés Datos busca Analytics Engineer.

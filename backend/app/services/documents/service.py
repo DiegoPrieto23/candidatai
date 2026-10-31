@@ -13,7 +13,9 @@ Los ficheros van en `data/cvs/<job_id>/<document_id>/<render_id>/` y en la BD se
 
 import re
 import shutil
+import time
 import unicodedata
+import uuid
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Literal
@@ -26,6 +28,7 @@ from app.core.config import get_settings
 from app.models import Document, DocumentRender, Job
 from app.schemas.cv import CvContent, CvRenderOptions, CvVerification, PageSize, SectionName
 from app.schemas.llm_io import JobExtraction
+from app.schemas.profile import CandidateProfile
 from app.services import events, extractions
 from app.services import profile as profile_service
 from app.services.documents import checks, context, layout, options, pdf, photo, templates
@@ -252,6 +255,204 @@ def is_too_long(warnings: list[RenderWarning] | list[dict[str, Any]]) -> bool:
 # --- Render ---------------------------------------------------------------------------------
 
 
+class PreparedFiles(BaseModel):
+    """Un render ya convertido en una carpeta temporal, antes de tocar la base."""
+
+    staging: Path
+    docx_file: Path | None
+    pdf_file: Path
+    pages: int
+    text: str
+    fonts: list[str]
+    layout_warnings: list[RenderWarning]
+
+
+def prepare_files(
+    template: templates.Template,
+    ctx: dict[str, Any],
+    stem: str,
+    page_size: PageSize,
+    photo_file: Path | None,
+    file: Path | None = None,
+) -> PreparedFiles:
+    """Renderiza y convierte en `data/tmp/renders/<id>/` sin escribir en la base.
+
+    La conversión a PDF tarda segundos: así la base no queda bloqueada mientras tanto. Lanza
+    `PdfConverterUnavailableError` si la plantilla es de Word y no hay con qué convertirla."""
+    staging = get_settings().tmp_dir / "renders" / uuid.uuid4().hex
+    docx_file, pdf_file, info = write_files(
+        template, ctx, staging, stem, page_size, photo_file, file=file
+    )
+    try:
+        # Fase 25.5: maquetación del PDF (avisos con su página y cómo arreglarlo; no bloquean).
+        layout_warnings = layout.analyze(pdf_file, layout.expected_from_context(ctx))
+    except BaseException:
+        shutil.rmtree(staging, ignore_errors=True)
+        raise
+    return PreparedFiles(
+        staging=staging,
+        docx_file=docx_file,
+        pdf_file=pdf_file,
+        pages=info.pages,
+        text=info.text,
+        fonts=info.fonts,
+        layout_warnings=layout_warnings,
+    )
+
+
+def place_files(prepared: PreparedFiles, out_dir: Path) -> tuple[Path | None, Path]:
+    """Mueve los ficheros preparados a su carpeta definitiva (misma unidad: es un renombrado)."""
+    out_dir.parent.mkdir(parents=True, exist_ok=True)
+    shutil.rmtree(out_dir, ignore_errors=True)
+    shutil.move(prepared.staging, out_dir)
+    docx_file = out_dir / prepared.docx_file.name if prepared.docx_file else None
+    return docx_file, out_dir / prepared.pdf_file.name
+
+
+def discard(prepared: PreparedFiles) -> None:
+    shutil.rmtree(prepared.staging, ignore_errors=True)
+
+
+STALE_RENDER_HOURS = 24
+
+
+def sweep_stale_renders(now: float | None = None) -> int:
+    """Borra los renders a medias de `data/tmp/renders/` con más de un día (la app se cerró entre
+    convertir y guardar). Llevan el CV con tus datos: no deben quedarse ahí. Devuelve cuántos."""
+    root = get_settings().tmp_dir / "renders"
+    if not root.is_dir():
+        return 0
+    limit = (now if now is not None else time.time()) - STALE_RENDER_HOURS * 3600
+    stale = [d for d in root.iterdir() if d.is_dir() and d.stat().st_mtime < limit]
+    for folder in stale:
+        shutil.rmtree(folder, ignore_errors=True)
+    return len(stale)
+
+
+class _PreparedRender(BaseModel):
+    resolved: options.ResolvedOptions
+    template_id: str
+    template_hash: str
+    files: PreparedFiles
+
+
+def _prepare_render(
+    job: Job,
+    content: CvContent,
+    profile: CandidateProfile,
+    extraction: JobExtraction | None,
+    render_options: CvRenderOptions,
+) -> _PreparedRender:
+    """Elige plantilla y opciones, y convierte. Solo lee: nada de escrituras en la base.
+
+    Sin LibreOffice ni Word, una plantilla de Word que nadie eligió a mano se cambia por la HTML
+    de reserva (aviso `docx_converter_missing`) en lugar de fallar y perder el CV."""
+    offer = options.offer_context(job.url, job.location_raw, extraction, content.language)
+    photo_source = photo.find_photo(profile)
+
+    def attempt(resolved: options.ResolvedOptions) -> _PreparedRender:
+        template = templates.get(resolved.template_id)
+        ctx = context.build_context(
+            content, profile, resolved.hidden_sections, resolved.accent_color
+        )
+        files = prepare_files(
+            template,
+            ctx,
+            file_stem(profile.personal.name),
+            resolved.page_size,
+            prepared_photo(template, resolved.photo, photo_source),
+        )
+        return _PreparedRender(
+            resolved=resolved,
+            template_id=template.id,
+            template_hash=template.file_hash(),
+            files=files,
+        )
+
+    resolved = options.resolve(
+        profile, render_options, offer, photo_available=photo_source is not None
+    )
+    try:
+        return attempt(resolved)
+    except pdf.PdfConverterUnavailableError:
+        if resolved.template_source == "option":
+            raise
+        fallback = options.resolve(
+            profile,
+            render_options,
+            offer,
+            photo_available=photo_source is not None,
+            docx_converter=False,
+        )
+        if fallback.template_id == resolved.template_id:
+            raise
+        return attempt(fallback)
+
+
+def _store_render(
+    session: Session,
+    doc: Document,
+    job: Job,
+    content: CvContent,
+    extraction: JobExtraction | None,
+    prepared: _PreparedRender,
+    actor: Actor,
+    agent_name: str | None,
+) -> RenderResult:
+    """Guarda en la base un render ya preparado y registra `cv_rendered`."""
+    resolved, files = prepared.resolved, prepared.files
+    try:
+        template = templates.get(prepared.template_id)
+        row = DocumentRender(
+            document_id=doc.id,
+            template_id=prepared.template_id,
+            template_hash=prepared.template_hash,
+            options=resolved.model_dump(mode="json"),
+            pages=0,
+            keyword_coverage={},
+            warnings=[],
+            selected=False,
+        )
+        session.add(row)
+        session.flush()
+    except BaseException:
+        discard(files)
+        raise
+
+    out_dir = render_dir(job.id, doc.id, row.id)
+    try:
+        docx_file, pdf_file = place_files(files, out_dir)
+        warnings = checks.render_warnings(
+            content,
+            template,
+            resolved,
+            files.pages,
+            pdf.missing_fonts(template.meta.fonts, files.fonts),
+        )
+        warnings += files.layout_warnings
+        coverage = checks.keyword_coverage(files.text, extraction)
+        row.keyword_coverage = coverage.model_dump(mode="json")
+        too_long = store_files(session, row, docx_file, pdf_file, files.pages, warnings)
+        events.record(
+            session,
+            job.id,
+            EventType.CV_RENDERED,
+            actor,
+            payload={
+                "document_id": doc.id,
+                "render_id": row.id,
+                "template_id": template.id,
+                "too_long": too_long,
+            },
+            agent_name=agent_name,
+        )
+    except BaseException:
+        discard(files)
+        shutil.rmtree(out_dir, ignore_errors=True)
+        raise
+    return _to_result(row, job.id)
+
+
 def render(
     session: Session,
     document_id: int,
@@ -261,9 +462,10 @@ def render(
 ) -> RenderResult:
     """Renderiza un CV con una plantilla y unas opciones, y registra `cv_rendered`.
 
-    Si falla, borra los ficheros del render y relanza: la fila ya volcada en la sesión
-    desaparece con el rollback de quien la gestiona (`session_scope` o la petición de la API).
-    No reutilices la sesión tras un error sin hacer rollback.
+    Convierte antes de escribir nada en la base. Si falla, borra los ficheros del render y
+    relanza: la fila ya volcada en la sesión desaparece con el rollback de quien la gestiona
+    (`session_scope` o la petición de la API). No reutilices la sesión tras un error sin hacer
+    rollback.
     """
     doc = _document(session, document_id)
     _require_cv_stage(session, doc.job_id)
@@ -271,60 +473,8 @@ def render(
     content = CvContent.model_validate(doc.content)
     profile = profile_service.get_version(session, doc.profile_version_id).profile
     extraction = _extraction(session, job.id)
-
-    offer = options.offer_context(job.url, job.location_raw, extraction, content.language)
-    photo_source = photo.find_photo(profile)
-    resolved = options.resolve(
-        profile, render_options, offer, photo_available=photo_source is not None
-    )
-    template = templates.get(resolved.template_id)
-
-    row = DocumentRender(
-        document_id=doc.id,
-        template_id=template.id,
-        template_hash=template.file_hash(),
-        options=resolved.model_dump(mode="json"),
-        pages=0,
-        keyword_coverage={},
-        warnings=[],
-        selected=False,
-    )
-    session.add(row)
-    session.flush()
-
-    out_dir = render_dir(job.id, doc.id, row.id)
-    ctx = context.build_context(content, profile, resolved.hidden_sections, resolved.accent_color)
-    docx_file, pdf_file, info = write_files(
-        template,
-        ctx,
-        out_dir,
-        file_stem(profile.personal.name),
-        resolved.page_size,
-        prepared_photo(template, resolved.photo, photo_source),
-    )
-
-    warnings = checks.render_warnings(
-        content, template, resolved, info.pages, pdf.missing_fonts(template.meta.fonts, info.fonts)
-    )
-    # Fase 25.5: maquetación del PDF (avisos con su página y cómo arreglarlo; no bloquean).
-    warnings += layout.analyze(pdf_file, layout.expected_from_context(ctx))
-    row.keyword_coverage = checks.keyword_coverage(info.text, extraction).model_dump(mode="json")
-    too_long = store_files(session, row, docx_file, pdf_file, info.pages, warnings)
-
-    events.record(
-        session,
-        job.id,
-        EventType.CV_RENDERED,
-        actor,
-        payload={
-            "document_id": doc.id,
-            "render_id": row.id,
-            "template_id": template.id,
-            "too_long": too_long,
-        },
-        agent_name=agent_name,
-    )
-    return _to_result(row, job.id)
+    prepared = _prepare_render(job, content, profile, extraction, render_options)
+    return _store_render(session, doc, job, content, extraction, prepared, actor, agent_name)
 
 
 def select_render(session: Session, render_id: int) -> RenderResult:
@@ -422,10 +572,15 @@ def save_content(
     agent_name: str | None = None,
 ) -> SaveContentResult:
     """Valida y guarda el contenido de un CV y hace su primer render."""
-    _job(session, job_id)
+    job = _job(session, job_id)
     _require_cv_stage(session, job_id)
     stored = profile_service.current(session)
-    checks.validate_content(content, stored.profile, _extraction(session, job_id))
+    extraction = _extraction(session, job_id)
+    checks.validate_content(content, stored.profile, extraction)
+    # Primero el PDF, sin escribir en la base (la conversión tarda); luego el documento y su render.
+    prepared = _prepare_render(
+        job, content, stored.profile, extraction, render_options or CvRenderOptions()
+    )
 
     doc = Document(
         job_id=job_id,
@@ -434,17 +589,23 @@ def save_content(
         language=content.language,
         content=content.model_dump(mode="json"),
     )
-    session.add(doc)
-    session.flush()
-    events.record(
-        session,
-        job_id,
-        EventType.CV_GENERATED,
-        Actor.AGENT,
-        payload={"document_id": doc.id},
-        agent_name=agent_name,
+    try:
+        session.add(doc)
+        session.flush()
+        events.record(
+            session,
+            job_id,
+            EventType.CV_GENERATED,
+            Actor.AGENT,
+            payload={"document_id": doc.id},
+            agent_name=agent_name,
+        )
+    except BaseException:
+        discard(prepared.files)
+        raise
+    result = _store_render(
+        session, doc, job, content, extraction, prepared, Actor.AGENT, agent_name
     )
-    result = render(session, doc.id, render_options or CvRenderOptions(), Actor.AGENT, agent_name)
     return SaveContentResult(ok=True, job_id=job_id, document_id=doc.id, render=result)
 
 

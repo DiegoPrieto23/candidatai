@@ -727,7 +727,7 @@ def test_ci_tests_the_three_systems_the_installer_and_docker() -> None:
     trigger = workflow.get("on", workflow.get(True))
     assert set(trigger) == {"push", "pull_request", "workflow_dispatch"}
     jobs = workflow["jobs"]
-    assert set(jobs) == {"backend", "installer", "docker", "frontend", "audit", "agents"}
+    assert set(jobs) == {"backend", "e2e", "installer", "docker", "frontend", "audit", "agents"}
     assert jobs["audit"] == {"uses": "./.github/workflows/audit.yml"}
     full = '["windows-latest", "ubuntu-latest", "macos-latest"]'
     backend = jobs["backend"]["strategy"]["matrix"]["os"]
@@ -745,3 +745,31 @@ def test_ci_tests_the_three_systems_the_installer_and_docker() -> None:
     assert "--uninstall" in installer and "--no-setup" in installer
     docker = " ".join(str(step.get("run", "")) for step in jobs["docker"]["steps"])
     assert "docker compose up -d" in docker and "/status" in docker and "cai demo seed" in docker
+
+
+def test_ci_runs_the_smoke_on_every_push_and_every_e2e_on_main() -> None:
+    """Fase 30.1: el job `e2e` compila la UI, usa la caché de Chromium del job `backend`, pasa el
+    humo en cada push y todas las E2E con la regla de macOS, y sube el diagnóstico si falla."""
+    import yaml
+
+    text = (REPO_ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+    job = yaml.safe_load(text)["jobs"]["e2e"]
+    assert job["runs-on"] == "ubuntu-latest" and job["timeout-minutes"] <= 30
+    runs = [str(step.get("run", "")) for step in job["steps"]]
+    joined = " ".join(runs)
+    assert "pnpm install --frozen-lockfile" in joined and "pnpm build" in joined
+    assert "uv sync --locked" in joined and "playwright install --with-deps chromium" in joined
+    assert joined.index("pnpm build") < joined.index("uv run pytest -m")
+    e2e = next(run for run in runs if "pytest -m" in run)
+    assert "refs/heads/main" in e2e and "refs/tags/" in e2e and "workflow_dispatch" in e2e
+    assert "'e2e and smoke'" in e2e and "&& 'e2e' ||" in e2e
+    caches = [s for s in job["steps"] if str(s.get("uses", "")).startswith("actions/cache@")]
+    backend = [
+        s
+        for s in yaml.safe_load(text)["jobs"]["backend"]["steps"]
+        if str(s.get("uses", "")).startswith("actions/cache@")
+    ]
+    assert caches and caches[0]["with"] == backend[0]["with"]
+    upload = next(s for s in job["steps"] if str(s.get("uses", "")).startswith("actions/upload"))
+    assert upload["if"] == "failure()" and upload["with"]["path"] == "backend/.e2e-artifacts/"
+    assert upload["with"]["include-hidden-files"] is True

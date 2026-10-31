@@ -1,6 +1,6 @@
 """Registro de eventos: la única forma de cambiar el estado de una oferta."""
 
-from datetime import datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any, Literal, get_args
 
 from pydantic import BaseModel
@@ -48,6 +48,22 @@ def parse_actor(value: str) -> Actor:
         raise UnknownActorError(f"Actor desconocido: «{value}». Válidos: {valid}.") from None
 
 
+def _after_same_minute(occurred_at: datetime, previous: list[Event]) -> datetime:
+    """Una hora en minuto exacto (la UI la pide sin segundos) en el mismo minuto que el último
+    evento, pero antes que él, es «ahora mismo»: va justo detrás, no antes. Sin esto, «Me han
+    respondido» registrado segundos después del envío quedaba antes del envío (o del alta) y se
+    rechazaba. Si de verdad fue a las 10:00 en punto y lo último es de las 10:00:30, queda a las
+    10:00:30: la diferencia es de segundos y el orden es el que importa."""
+    if not previous or occurred_at.second or occurred_at.microsecond:
+        return occurred_at
+    last = max(e.occurred_at for e in previous)
+    if last.tzinfo is None:  # SQLite devuelve UTC sin zona
+        last = last.replace(tzinfo=UTC)
+    if occurred_at < last < occurred_at + timedelta(minutes=1):
+        return last
+    return occurred_at
+
+
 def record(
     session: Session,
     job_id: int,
@@ -69,6 +85,9 @@ def record(
         raise JobNotFoundError(f"No existe la oferta {job_id}.")
     if occurred_at is not None and occurred_at.tzinfo is None:
         raise ValueError("`occurred_at` debe llevar zona horaria.")
+    previous = job_events(session, job_id)
+    if occurred_at is not None:
+        occurred_at = _after_same_minute(occurred_at, previous)
 
     event = Event(
         job_id=job_id,
@@ -80,7 +99,7 @@ def record(
         recorded_at=utcnow(),
     )
     # Valida contra la secuencia completa antes de persistir: si falla, no se escribe nada.
-    state = project([*job_events(session, job_id), event])
+    state = project([*previous, event])
     session.add(event)
     save_projection(session, job_id, state)
     session.flush()

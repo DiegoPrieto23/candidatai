@@ -19,6 +19,17 @@ def test_sqlite_pragmas(engine: Engine) -> None:
         assert conn.execute(text("PRAGMA synchronous")).scalar() == 1  # NORMAL
         assert conn.execute(text("PRAGMA temp_store")).scalar() == 2  # MEMORY
         assert conn.execute(text("PRAGMA cache_size")).scalar() == -16000
+        # Una escritura espera a otra que tarde (un PDF con LibreOffice) en vez de fallar a los 5 s
+        # con «database is locked», que tumbaba el worker y con él la app. Más que el tope de la
+        # conversión a PDF de la política.
+        assert conn.execute(text("PRAGMA busy_timeout")).scalar() == 90_000
+
+
+def test_the_busy_timeout_outlasts_the_pdf_conversion() -> None:
+    from app.core.db import SQLITE_BUSY_TIMEOUT
+    from app.core.policies import get_policies
+
+    assert get_policies().cv.pdf_timeout_seconds < SQLITE_BUSY_TIMEOUT
 
 
 def test_get_engine_uses_settings(isolated_env: Path) -> None:

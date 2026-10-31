@@ -41,7 +41,10 @@ USER_AGENT = (
 )
 _BLOCKED_HOSTS = ("linkedin.com", "lnkd.in")
 _LOGIN_PATH_WORDS = ("login", "signin", "sign-in", "sign_in", "auth", "sso", "iniciar-sesion")
-_SUGGEST_TEXT = "Copia el texto de la oferta y usa `cai jobs add-text`."
+_SUGGEST_TEXT = (
+    "Copia el texto de la oferta y dalo de alta como texto (`add_job_from_text`, "
+    "`cai jobs add-text` o «Pegar texto» en la UI)."
+)
 
 DetailLevel = Literal["summary", "full"]
 
@@ -50,6 +53,13 @@ SOURCE_NAMES = {"manual_url": "Alta manual por URL", "manual_text": "Alta manual
 
 class IngestError(ValueError):
     """La oferta no se puede dar de alta; el mensaje dice por qué y qué hacer."""
+
+
+class PageUnavailableError(IngestError):
+    """No se pudo abrir la página de la oferta (sin red, login, bloqueo, JavaScript).
+
+    Error `page_unavailable`. La solución es siempre la misma, pegar su texto, y la UI la ofrece
+    con su propio aviso."""
 
 
 class AddJobResult(BaseModel):
@@ -274,22 +284,24 @@ def fetch_page(url: str) -> str:
                 for chunk in response.iter_bytes():
                     content += chunk
                     if len(content) > MAX_DOWNLOAD_BYTES:
-                        raise IngestError(
+                        raise PageUnavailableError(
                             f"La página ocupa más de {MAX_DOWNLOAD_BYTES // 1_000_000} MB. "
                             f"{_SUGGEST_TEXT}"
                         )
             encoding = response.encoding or "utf-8"
     except httpx.HTTPError as exc:
-        raise IngestError(f"No se pudo descargar {url}: {exc}. {_SUGGEST_TEXT}") from exc
+        raise PageUnavailableError(f"No se pudo descargar {url}: {exc}. {_SUGGEST_TEXT}") from exc
     if status in {401, 403}:
-        raise IngestError(
+        raise PageUnavailableError(
             f"La página exige iniciar sesión o bloquea el acceso (HTTP {status}). {_SUGGEST_TEXT}"
         )
     if status >= 400:
-        raise IngestError(f"La página respondió con HTTP {status}. {_SUGGEST_TEXT}")
+        raise PageUnavailableError(f"La página respondió con HTTP {status}. {_SUGGEST_TEXT}")
     html = content.decode(encoding, errors="replace")
     if looks_like_login(final_url, html):
-        raise IngestError(f"La página pide iniciar sesión para ver la oferta. {_SUGGEST_TEXT}")
+        raise PageUnavailableError(
+            f"La página pide iniciar sesión para ver la oferta. {_SUGGEST_TEXT}"
+        )
     return html
 
 
@@ -473,15 +485,16 @@ def add_from_url(session: Session, url: str) -> AddJobResult:
     html = fetch_page(url)
     page = parse_page(html)
     if len(page.text) < MIN_TEXT_CHARS:
-        raise IngestError(
+        raise PageUnavailableError(
             f"La página apenas tiene texto ({len(page.text)} caracteres): puede que se cargue "
             f"con JavaScript o que pida iniciar sesión. {_SUGGEST_TEXT}"
         )
     if not page.title or not page.company:
         missing = "el título" if not page.title else "la empresa"
-        raise IngestError(
-            f"No se encontró {missing} en la página. Usa `cai jobs add-text` indicando "
-            "--title y --company."
+        raise PageUnavailableError(
+            f"No se encontró {missing} en la página. Da de alta su texto indicando el puesto y la "
+            "empresa (`add_job_from_text`, `cai jobs add-text --title … --company …` o «Pegar "
+            "texto» en la UI)."
         )
     return store_job(
         session,

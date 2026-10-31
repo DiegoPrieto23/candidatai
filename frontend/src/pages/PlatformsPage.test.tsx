@@ -108,8 +108,8 @@ describe('Plataformas', () => {
     // Cada una, en una línea: su último recorrido; lo demás, plegado.
     expect(screen.getByText(/12 encontradas,\s+3 nuevas$/)).toBeInTheDocument()
     expect(screen.getByText(/· 1 incidente/)).toBeInTheDocument()
-    // Con incidentes, sus ajustes y su registro salen abiertos: el incidente se ve sin buscarlo.
-    expect(screen.getByText('Captcha en la página 2: se para.')).toBeVisible()
+    // Plegados aunque haya incidentes: la línea del recorrido ya los cuenta.
+    expect(screen.queryByText('Captcha en la página 2: se para.')).not.toBeInTheDocument()
     expect(screen.queryByRole('combobox', { name: 'Prioridad de LinkedIn' })).not.toBeInTheDocument()
     await openSettings()
     expect(screen.getAllByText(/2 páginas de resultados por búsqueda, 5 s/)[0]).toBeInTheDocument()

@@ -92,6 +92,19 @@ def test_add_from_url_rejects_linkedin(client: TestClient) -> None:
     assert response.json()["error"]["type"] == "invalid_request"
 
 
+def test_add_from_url_that_cannot_be_opened_says_page_unavailable(client: TestClient) -> None:
+    """Sin red, con login o con una web que bloquea: un código estable para que la UI lo explique
+    y ofrezca pegar el texto, y un mensaje que no manda a quien usa la UI a escribir comandos."""
+    url = "https://careers.example.com/jobs/8"
+    with respx.mock(assert_all_called=True) as mock:
+        mock.get(url).mock(side_effect=httpx.ConnectError("[WinError 10061] denegada"))
+        response = client.post("/jobs/url", json={"url": url})
+    assert response.status_code == 422
+    error = response.json()["error"]
+    assert error["type"] == "page_unavailable"
+    assert "Pegar texto" in error["message"]
+
+
 # --- Bandeja -----------------------------------------------------------------------------------
 
 

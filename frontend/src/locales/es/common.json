@@ -44,7 +44,8 @@
       "database_not_ready": "Base de datos sin preparar",
       "internal_error": "Error interno",
       "conflict": "El fichero ha cambiado",
-      "referenced": "Lo cita otra parte del perfil"
+      "referenced": "Lo cita otra parte del perfil",
+      "page_unavailable": "Página no disponible"
     }
   },
   "close": "Cerrar",

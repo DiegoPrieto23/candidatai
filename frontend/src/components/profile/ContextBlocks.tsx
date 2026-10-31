@@ -70,7 +70,7 @@ export function ContextFileEditor({ section }: { section: ContextSectionName }) 
     )
   }
   return (
-    <Block title={tp(`sections.${section}.title`)} hint={tp(`sections.${section}.hint`)}>
+    <Block id={id} title={tp(`sections.${section}.title`)} hint={tp(`sections.${section}.hint`)}>
       <div className="flex gap-1" role="tablist" aria-label={t('context.mode')}>
         {(['edit', 'preview'] as const).map((mode) => (
           <Button key={mode} type="button" size="sm" role="tab" aria-selected={tab === mode} variant={tab === mode ? 'secondary' : 'ghost'} onClick={() => setTab(mode)}>

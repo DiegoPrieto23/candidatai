@@ -21,6 +21,7 @@ STATUS_BY_TYPE = {
     "not_found": 404,
     "validation_error": 422,
     "invalid_request": 422,
+    "page_unavailable": 422,
     "invalid_transition": 409,
     "exists": 409,
     "conflict": 409,  # fase 25.7: el fichero cambió desde que la UI lo leyó

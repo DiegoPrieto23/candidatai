@@ -58,6 +58,19 @@ describe('Ficha de oferta', () => {
     expect(await screen.findByText('Aún sin extraer')).toBeInTheDocument()
   })
 
+  it('«Por completar»: dice que falta el texto, cómo completarla con la extensión y dónde instalarla', async () => {
+    mockApi({
+      'GET /status': status(0, 1),
+      'GET /jobs/1': jobView({ extraction: null, stage: 'pending_detail', url: 'https://www.linkedin.com/jobs/view/1' }),
+    })
+    renderApp('/jobs/1')
+    const box = await screen.findByRole('region', { name: 'Falta el texto de la oferta' })
+    expect(within(box).getByRole('link', { name: /Abrir la oferta/ })).toHaveAttribute('href', 'https://www.linkedin.com/jobs/view/1')
+    expect(box).toHaveTextContent('Enviar a CandidatAI')
+    expect(within(box).getByRole('link', { name: 'Instálalo en unos minutos' })).toHaveAttribute('href', '/fuentes/extension')
+    expect(screen.queryByText('Aún sin extraer')).not.toBeInTheDocument()
+  })
+
   it('guarda una nota y recarga la ficha', async () => {
     let view = jobView()
     const calls = mockApi({

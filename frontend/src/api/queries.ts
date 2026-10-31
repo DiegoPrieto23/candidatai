@@ -1390,11 +1390,13 @@ export function usePairExtension() {
 export type SkillGap = Schemas['SkillGap']
 export type SkillMark = NonNullable<Schemas['MarkBody']['status']>
 
-export function useSkillGaps(days: number) {
+/** Sin perfil, la API responde 404: quien sepa que no hay perfil pasa `enabled: false`. */
+export function useSkillGaps(days: number, enabled = true) {
   return useQuery({
     queryKey: keys.skillGaps(days),
     queryFn: () => unwrap(api.GET('/skills/gaps', { params: { query: { days } } })),
     placeholderData: keepPreviousData,
+    enabled,
   })
 }
 

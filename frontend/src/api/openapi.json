@@ -20949,6 +20949,14 @@
             "type": "integer",
             "title": "Job Id"
           },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "job_title": {
+            "type": "string",
+            "title": "Job Title"
+          },
           "stage": {
             "$ref": "#/components/schemas/Stage"
           },
@@ -20990,6 +20998,8 @@
         "type": "object",
         "required": [
           "job_id",
+          "company",
+          "job_title",
           "stage",
           "brief",
           "preferences",

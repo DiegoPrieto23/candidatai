@@ -61,6 +61,9 @@ data/             GITIGNORED: candidatai.db, profile.yaml, contexto/, documentos
 ```
 cd backend
 uv run pytest                      # tests
+uv run pytest -m e2e               # E2E en Chromium sobre una demo temporal (antes, `pnpm build`)
+uv run pytest -m "e2e and smoke"   # solo el humo de las E2E, el de cada push
+uv run pytest -m e2e_install       # el instalador de Windows de verdad, en una carpeta temporal
 uv run ruff check --fix && uv run ruff format
 uv run alembic upgrade head        # migraciones
 uv run cai --help                  # CLI
@@ -148,5 +151,7 @@ Los skills de `.agents/skills/` siguen `docs/POLICIES.md` y usan estas convencio
      importante por seguridad: ver `docs/AGENTS_COMPAT.md`.
 - **Argumentos**: cuando un skill habla de "los argumentos", son los que el usuario escribió al
   invocarlo (un `job_id`, una plantilla…).
+- **Idioma**: habla con el usuario en el idioma en que te escribe, aunque el skill, los documentos
+  o los mensajes de la app estén en otro.
 - **Invocación**: cada agente tiene su sintaxis (`/generate-cv 42` en Claude Code,
   `$generate-cv 42` en Codex); también basta con pedirlo en lenguaje natural.

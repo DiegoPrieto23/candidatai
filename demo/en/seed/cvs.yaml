@@ -11,8 +11,8 @@
     language: en
     subtitle: Data Engineer · Python · SQL · Snowflake
     summary: >-
-      Data Engineer with three years building ETL pipelines and analytical models on Snowflake for
-      retail and banking clients, between engineering and the business.
+      Data Engineer with over three years building ETL pipelines and, since 2024, analytical models
+      on Snowflake for retail and banking clients, between engineering and the business.
     experience:
       - experience_id: exp-northgate
         bullets:
@@ -91,7 +91,7 @@
     language: en
     subtitle: Analytics Engineer · SQL · Snowflake · Power BI
     summary: >-
-      Data Engineer with three years modelling retail data in Snowflake and publishing Power BI
+      Data Engineer modelling retail data in Snowflake since 2024 and publishing Power BI
       dashboards, comfortable between engineering and the business.
     experience:
       - experience_id: exp-northgate

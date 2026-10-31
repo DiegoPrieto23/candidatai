@@ -10,12 +10,31 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Cada etapa de la Bandeja explica qué es y cómo avanzar:** al elegir «Por completar», «Por
+  extraer», «Por revisar»… sale qué falta y quién lo hace, con el botón que lo hace («Procesar
+  ofertas», «Evaluar encaje», «Ir a Por revisar»). Así se ve la diferencia: «Procesar ofertas» lee
+  las ofertas nuevas y les da score; «Evaluar encaje» añade la opinión de tu agente a las que ya lo
+  tienen.
+- **Las ofertas «Por completar» dicen qué les falta:** en su ficha, un aviso explica que falta la
+  descripción, abre la oferta en su portal y te dice que pulses «Enviar a CandidatAI», con un
+  enlace a la guía para instalar el botón. En la Bandeja, los mismos pasos.
+- **Índice en «Mi perfil → Experiencia y formación»:** una fila de enlaces lleva a cada apartado
+  (Skills, Idiomas, Experiencia, Proyectos…), con cuántos tiene y un punto si falta guardar.
 - **Instalar el botón «Enviar a CandidatAI» sin terminal:** nueva pestaña **Dónde buscar → Botón
   del navegador**. Detecta la extensión sola, te guía para cargarla en Chrome, Edge o Brave (con
   un botón que abre su carpeta), avisa si tienes una versión antigua y la conecta con un clic: ya
   no hace falta generar un token y pegarlo en sus opciones.
 
 ### Cambiado
+- **Instalar la extensión, más claro:** el paso «Cargar descomprimida» enseña la ruta de su carpeta
+  con un botón para copiarla y dice dónde pegarla en la ventana de elegir carpeta (en Windows,
+  macOS y Linux).
+- **«Mi perfil», más fácil de recorrer:** proyectos, formación, certificaciones, otras secciones e
+  historias STAR arrancan plegados, como las empresas, con «Desplegar todo». Skills e Idiomas van
+  arriba, cada uno en su bloque con su botón de guardar. El aviso de cambios sin guardar nombra
+  los bloques («Sin guardar: Idiomas, Puesto») y, al pulsar uno, te lleva hasta él.
+- **«Ajustes y registro» de cada plataforma, plegado siempre:** los incidentes del último
+  recorrido ya se cuentan en su línea.
 - **Extensión 0.2.0:** si no está conectada, su botón ofrece «Conectar con CandidatAI», que abre
   esa página de la app; sus avisos ya no piden comandos. «Abrir ficha» usa la dirección de
   `cai start` (antes, la del modo desarrollo). Si ya la tenías, pulsa ⟳ en su tarjeta en
@@ -26,6 +45,36 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   y puedes elegir su modelo (`agy models` los lista). Probado con Antigravity CLI 1.4.5.
 
 ### Corregido
+- **Generar un CV o una carta con LibreOffice ya no cierra la app:** mientras se convertía a PDF,
+  el resto de la app no podía escribir en tu base y, si la conversión pasaba de 5 segundos, el
+  proceso de segundo plano se caía y con él toda la app. Ahora, si la base está ocupada, cada
+  escritura espera hasta 90 segundos, más que lo que se deja tardar a una conversión. Además, el
+  PDF se prepara antes de tocar la base, así que mientras convierte ya no bloquea nada, y un
+  bloqueo pasajero al arrancar ya no tumba la app.
+- **Sin LibreOffice ni Word, «Generar CV» ya no falla y pierde el CV:** si la plantilla que tocaba
+  es de Word («ATS sencilla», «Clásica con foto» o una tuya importada de Word), se usa «Moderna a
+  dos columnas» y la ficha te lo avisa. Lo mismo con la carta. Si la plantilla de Word la eliges
+  tú, te dice que instales LibreOffice. `cai doctor` y la guía lo explican.
+- **No se proponen seguimientos a quien ya te ha contestado:** si un correo de la empresa está por
+  revisar en «Respuestas» (un rechazo, una entrevista…), esa candidatura deja de salir como
+  «seguimiento pendiente» en Inicio, en Procesos y en la ficha, y tu agente no le redacta uno.
+- **Una oferta cuya página no se puede abrir** (sin red, con inicio de sesión o con una web que lo
+  bloquea) ya no enseña el error técnico de Windows ni manda escribir un comando: lo explica y
+  ofrece «Pegar el texto», con el enlace ya puesto.
+- **Un paso registrado justo después de otro** («Me han respondido» en el mismo minuto en que la
+  marcaste enviada) ya no se rechaza: queda detrás del anterior.
+- **«Skills» sin perfil** conserva su título y ya no deja un error en la consola del navegador.
+- **Con la UI en inglés, las plantillas integradas** salen con su nombre y su descripción en inglés.
+- **La carta, verificada contra la empresa correcta:** la verificación ya ve a qué empresa y a qué
+  puesto va, y no avisa de un saludo que está bien. Para los agentes, `get_cover_letter` (y
+  `cai letter show`) devuelve también `company` y `job_title`.
+- **El perfil de la demo** ya no da a Snowflake los años de toda su experiencia: los CVs que se
+  generan con ella dicen desde cuándo.
+- **Textos que no cuadraban:** `cai doctor` y los avisos de la extensión llaman a la pestaña por su
+  nombre («Dónde buscar → Botón del navegador»); el README dice «Generar», como el botón; la guía
+  ya no dice que el sueldo mínimo solo se edita en el YAML ni que aprobar se deshace en el aviso
+  (se reabre en la ficha), y «¿Qué datos salen de mi equipo?» cuenta que tu navegador pide el
+  icono de cada portal y empresa a su web.
 - **Desinstalar ya no se lleva los accesos directos de otra instalación:** `install.ps1 -Uninstall`
   (e `install.sh --uninstall`) solo borra el acceso del escritorio y del menú Inicio (o el de
   Aplicaciones en macOS y Linux) si abre la instalación que se está quitando. Antes, desinstalar

@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
-import type { BlockEditor } from './editor'
+import { blockAnchor, type BlockEditor } from './editor'
 import { PRESENT } from './types'
 
 const SELECT = 'h-9 w-full rounded-md border border-input bg-background px-3 text-sm'
@@ -375,9 +375,27 @@ export function BlockActions<T>({ block, blocked = false }: { block: BlockEditor
   )
 }
 
-export function Block({ title, hint, actions, children }: { title: string; hint?: ReactNode; actions?: ReactNode; children: ReactNode }) {
+/** `id`: el del bloque (`skills`, `projects`…); con él, el índice de la pestaña y el aviso de «sin guardar» llevan hasta aquí. */
+export function Block({
+  id,
+  title,
+  hint,
+  actions,
+  children,
+}: {
+  id?: string
+  title: string
+  hint?: ReactNode
+  actions?: ReactNode
+  children: ReactNode
+}) {
   return (
-    <section aria-label={title} className="grid gap-4 rounded-xl border bg-card p-4 sm:p-5">
+    <section
+      id={id && blockAnchor(id)}
+      tabIndex={id ? -1 : undefined}
+      aria-label={title}
+      className="grid scroll-mt-20 gap-4 rounded-xl border bg-card p-4 outline-none sm:p-5 lg:scroll-mt-6"
+    >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <h2 className="font-medium">{title}</h2>

@@ -96,8 +96,8 @@ def test_aliases_file_loads() -> None:
 
 def test_texts_use_posting_language() -> None:
     profile = demo_profile()
-    assert "Data Engineer with three years" in embeddings.profile_text(profile, "en")
-    assert "Data Engineer con tres años" in embeddings.profile_text(profile, "es")
+    assert "Data Engineer with over three years" in embeddings.profile_text(profile, "en")
+    assert "Data Engineer con más de tres años" in embeddings.profile_text(profile, "es")
     assert "Migré 40 procesos ETL" in embeddings.profile_text(profile, "es")
     text = embeddings.job_text(demo_extraction())
     assert "Orquestar cargas diarias" in text and "Snowflake" in text and "retail" in text

@@ -22,6 +22,7 @@ import { KnownBadge } from '@/components/NetworkPanel'
 import { Pager } from '@/components/Pager'
 import { ScoreBadge } from '@/components/MatchDetails'
 import { StageBadge } from '@/components/StageBadge'
+import { StageGuide } from '@/components/StageGuide'
 import { EmptyState, ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
@@ -609,7 +610,7 @@ export function InboxPage() {
 
   return (
     <div className="animate-in fade-in duration-300">
-      <div className="mb-6 flex flex-col gap-1">
+      <div className="mb-4 flex flex-col gap-1">
         <h1 className="text-2xl font-semibold tracking-tight">
           {stage ? STAGE_LABEL[stage] : t('title')}
         </h1>
@@ -618,6 +619,8 @@ export function InboxPage() {
           {q && t('matching', { q })}
         </p>
       </div>
+
+      <StageGuide stage={stage} />
 
       <StageFilter stage={stage} onChange={(next) => update({ stage: next ?? null, page: null })} />
 

@@ -13,7 +13,13 @@ from typing import TYPE_CHECKING, Literal
 
 from pydantic import BaseModel
 
-from app.core.config import LEGACY_DB_FILENAME, LEGACY_ENV_PREFIX, REPO_ROOT, Settings
+from app.core.config import (
+    LEGACY_DB_FILENAME,
+    LEGACY_ENV_PREFIX,
+    REPO_ROOT,
+    Settings,
+    env_file_path,
+)
 from app.services.documents import pdf
 
 if TYPE_CHECKING:
@@ -77,7 +83,7 @@ def legacy_env_names(env_file: Path | None = None) -> list[str]:
     from dotenv import dotenv_values
 
     names = {n.upper() for n in os.environ if n.upper().startswith(LEGACY_ENV_PREFIX)}
-    env_file = env_file or REPO_ROOT / ".env"
+    env_file = env_file or env_file_path()
     if env_file.is_file():
         names |= {
             n.upper() for n in dotenv_values(env_file) if n.upper().startswith(LEGACY_ENV_PREFIX)
@@ -111,7 +117,10 @@ def check_soffice(configured: Path | None) -> CheckResult:
     if configured is not None:
         detail = f"SOFFICE_PATH apunta a {configured}, que no existe"
     else:
-        detail = "no encontrado; instálalo o define SOFFICE_PATH (necesario para los PDF)"
+        detail = (
+            "no encontrado; instálalo o define SOFFICE_PATH para usar las plantillas de Word "
+            "(sin él, los PDF salen con la plantilla HTML de reserva)"
+        )
     return CheckResult(name=name, status=CheckStatus.WARN, detail=detail)
 
 
@@ -159,7 +168,8 @@ def check_pdf_conversion() -> CheckResult:
         return CheckResult(
             name=name,
             status=CheckStatus.WARN,
-            detail="sin LibreOffice ni Word: no se pueden generar los PDF de los CVs",
+            detail="sin LibreOffice ni Word: las plantillas de Word no sacan PDF y se usa la "
+            f"HTML de reserva ({get_policies().cv.html_fallback_template}), con Chromium",
         )
     fallback = get_policies().cv.fallback_template
     try:
@@ -460,7 +470,8 @@ def check_capture(settings: Settings) -> CheckResult:
         return CheckResult(
             name=name,
             status=CheckStatus.OK,
-            detail="sin configurar (opcional): en la UI, «Dónde buscar → Extensión» te guía",
+            detail="sin configurar (opcional): en la UI, «Dónde buscar → Botón del navegador» "
+            "te guía",
         )
     return CheckResult(
         name=name,

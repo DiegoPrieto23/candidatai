@@ -546,6 +546,8 @@ export function jobCoverLetter(
   return {
     info: {
       job_id: 1,
+      company: 'Brétema Analytics',
+      job_title: 'Data Engineer',
       stage: 'cv_ready',
       brief: { instructions: 'Menciona que uso su producto desde 2023.', max_words: 150, updated_at: '2026-10-03T09:00:00Z' },
       preferences: {

@@ -1308,8 +1308,10 @@ TOOLS: tuple[ToolSpec, ...] = (
         description=(
             "Candidaturas enviadas (etapa `applied`) sin respuesta desde hace N días o más, "
             "contando desde el envío o el último `followup_sent`, la que más espera primero, sin "
-            "las que ya tienen 2 seguimientos; y `thanks_due`: entrevistas hechas en los últimos "
-            "días sin agradecimiento. Con los nombres de los contactos y el borrador vigente."
+            "las que ya tienen 2 seguimientos ni las que tienen un correo de la empresa por "
+            "revisar (ya contestó: mira `list_replies`); y `thanks_due`: entrevistas hechas en "
+            "los últimos días sin agradecimiento. Con los nombres de los contactos y el borrador "
+            "vigente."
         ),
         input_model=ListFollowupsInput,
         output_model=tracking.FollowupList,

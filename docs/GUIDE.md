@@ -31,12 +31,13 @@ steps.
 ## 1. Requirements
 
 CandidatAI is built and tested on **Windows 11**. On macOS and Linux it has an installer and the
-buttons that open your agent work (phase 26), but they're still being tested: Linux on WSL2 and
+buttons that open your agent work, but they're still being tested: Linux on WSL2 and
 macOS in CI.
 
-**To use it** you only need Windows, macOS or Linux and, if you want Word CVs on top of PDFs,
-LibreOffice. The
-installer takes care of the rest (uv, Python and the Chromium that renders PDFs). For the agent's
+**To use it** you only need Windows, macOS or Linux and, if you want the Word templates ("Simple
+ATS", "Classic with photo" or a design of yours imported from Word), LibreOffice. Without it, CVs
+and cover letters still come out as PDFs with the "Modern two-column" template, and the app tells
+you so. The installer takes care of the rest (uv, Python and the Chromium that renders PDFs). For the agent's
 part you also need **an AI agent** (Claude Code, Codex, Antigravity CLI…; see section 5).
 
 **To develop it** (clone the repository and change the code):
@@ -151,7 +152,7 @@ then you recreate the container (`docker compose up -d`).
 |---|---|
 | UI, jobs, review, tracking and funnel | Yes |
 | Job sources and email alerts (the worker) | Yes |
-| CVs and cover letters in PDF | Yes, with the html templates (`moderna-2col`…). The docx ones come out in Word only: there's no LibreOffice |
+| CVs and cover letters in PDF | Yes, with the html templates (`moderna-2col`…). Not the docx ones, because there's no LibreOffice: if one would be used, `moderna-2col` takes its place and the app tells you |
 | Your agent through MCP or `cai … --json` | Yes, from outside the container (below) |
 | "In your agent" buttons | They copy the instruction for you to paste into your agent |
 | **In the background** | No: the agent isn't in the container |
@@ -272,7 +273,7 @@ In My profile, every achievement and story has **Improve with my agent**: your a
 clearer version, asks you for any missing numbers (it never makes them up) and only writes with
 your OK. Under STAR stories, **Propose stories from my experience** suggests stories from the
 achievements that don't have one yet. Your email and phone are edited there, but your agent still
-never sees them. Your salary minimum (`private`) is only edited in the YAML.
+never sees them. The same goes for your salary minimum (`private`), under **Search**.
 
 **Where your data is and how to back it up.** `uv run cai paths` (or `cai paths` in the app
 folder) tells you which folder you're using. With the installer:
@@ -365,7 +366,8 @@ The worker runs the automatic sources every day at `connectors.daily_at`
 2. **Assess:** the app computes the score and applies your hard filters; `assess-fit` adds a
    reasoned verdict.
 3. **Review:** in **To review**, `J`/`K` to move, `A` to approve, `D` to discard (with a reason)
-   and `O` to open the job page. It can be undone.
+   and `O` to open the job page. A discard can be undone from the notice; an approval, with
+   **Reopen** on the job page.
 4. **CV:** `generate-cv 42` writes the content, the code validates and renders it, and the
    `verifier` role reviews it. On the job page you change template, photo, colour and sections
    without spending agent time, compare renders and mark the one to send.

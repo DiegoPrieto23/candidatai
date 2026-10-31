@@ -63,5 +63,53 @@
     "clearSelection": "Quitar selección",
     "discardMany_one": "Descartar {{count}}",
     "discardMany_other": "Descartar {{count}}"
+  },
+  "guide": {
+    "label": "Qué es esta etapa y cómo avanzar",
+    "nextLabel": "Para avanzar:",
+    "processJobs": "Procesar ofertas",
+    "assessFit": "Evaluar encaje",
+    "openTriage": "Ir a «Por revisar»",
+    "all": {
+      "what": "Todas tus ofertas, estén en la etapa que estén. Cada oferta avanza así: Por completar → Por extraer → Por revisar → Aprobada → CV listo → Enviada → En proceso.",
+      "next": "elige una etapa en la fila de abajo para ver solo sus ofertas y qué hay que hacer con ellas."
+    },
+    "pending_detail": {
+      "what": "Ofertas que te llegaron como resumen, casi siempre de las alertas de LinkedIn por correo: les falta la descripción. Por seguridad tu agente no entra en LinkedIn, así que este paso lo haces tú con el botón «Enviar a CandidatAI» del navegador.",
+      "steps": {
+        "open": "Pulsa <strong>Abrir</strong> en una oferta: se abre en su portal (en LinkedIn, con tu sesión iniciada).",
+        "send": "En esa pestaña, pulsa el botón <strong>Enviar a CandidatAI</strong> de la barra del navegador. Guarda la descripción y la oferta pasa a «Por extraer».",
+        "discard": "Si por el título ya ves que no te interesa, descártala aquí mismo, sin abrirla."
+      },
+      "extension": "¿Aún no tienes el botón? <extension>Instálalo en unos minutos</extension>. También puedes repasarlas una a una, con atajos de teclado, en <alerts>Alertas</alerts>."
+    },
+    "pending_extraction": {
+      "what": "Ofertas con la descripción completa que tu agente aún no ha leído.",
+      "next": "pulsa «Procesar ofertas». Tu agente saca de cada una el puesto, las skills, la modalidad y el salario, y la app calcula su score (de 0 a 100) frente a tu perfil. Las que no pasan tus filtros (modalidad, ubicación…) se cierran solas; las demás pasan a «Por revisar»."
+    },
+    "pending_triage": {
+      "what": "Ofertas ya leídas y con score, a la espera de que decidas.",
+      "next": "revísalas en <triage>Por revisar</triage> y apruébalas o descártalas. Si antes quieres una opinión, «Evaluar encaje» hace que tu agente compare cada una con tu perfil y escriba por qué encaja o no. No cambia la etapa: decides tú."
+    },
+    "approved": {
+      "what": "Ofertas que has aprobado. Les falta el CV a medida.",
+      "next": "abre cada una y, en la pestaña «Candidatura», pulsa «Generar CV». Tu agente lo redacta solo con datos de tu perfil y lo verifica; cuando está, la oferta pasa a «CV listo»."
+    },
+    "cv_ready": {
+      "what": "Ofertas con su CV a medida listo, sin enviar todavía.",
+      "next": "en la pestaña «Candidatura» de cada una, revisa el CV, prepara la carta o las respuestas si las piden y envía la candidatura tú desde el portal. Después pulsa «Marcar como enviada» y pasa a «Enviada»."
+    },
+    "applied": {
+      "what": "Candidaturas enviadas, a la espera de que la empresa conteste.",
+      "next": "cuando te llamen para una entrevista o una prueba, anótalo en la pestaña «Proceso» de la oferta, o acepta la propuesta en <replies>Respuestas</replies> si la app leyó el correo, y pasa a «En proceso». Si tardan en contestar, la app te recuerda hacer un seguimiento."
+    },
+    "in_process": {
+      "what": "Procesos con entrevistas o pruebas en marcha.",
+      "next": "síguelos en <processes>Procesos</processes>: anota cada entrevista, prepárala con tu agente y registra cómo acaba, con una oferta o con el cierre."
+    },
+    "closed": {
+      "what": "El final del recorrido: ofertas descartadas, rechazadas, caducadas, duplicadas o que no pasaron tus filtros.",
+      "next": "no hay nada que hacer. Si cerraste una por error, ábrela y pulsa «Reabrir»."
+    }
   }
 }

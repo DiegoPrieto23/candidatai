@@ -50,7 +50,8 @@ cover_letter:
 # Screening answers for the first job (one waits for the candidate).
 application_answers:
   - question: How many years of experience do you have with Python?
-    answer: Over three years in data projects, mostly ETL pipelines on Snowflake.
+    answer: >-
+      Over three years in data projects with Python, with ETL pipelines on Snowflake since 2024.
     evidence: [exp-northgate/a1, exp-datawest/a2]
     needs_user_input: false
   - question: Have you worked with dimensional modelling?

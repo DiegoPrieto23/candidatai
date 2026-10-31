@@ -5,7 +5,9 @@
     "label": "Job link",
     "hint": "A public page (Greenhouse, Lever, the company's website…). Not LinkedIn: for those jobs, <paste>paste the text</paste>.",
     "downloading": "Downloading…",
-    "submit": "Add job"
+    "submit": "Add job",
+    "unavailable": "I couldn't open that page: it may not be responding, ask you to sign in or load the job with JavaScript. Copy the job's text and paste it.",
+    "usePaste": "Paste the text"
   },
   "text": {
     "title": "Role",

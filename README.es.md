@@ -32,7 +32,7 @@
 > probado con un modelo local pequeño, que no terminó la prueba, y Qwen Code está configurado, pero sin probar. La interfaz está en español e inglés.
 
 <!--
-  Tu búsqueda en números (fase 25.6). `cai stats story` o la tarjeta «Tu búsqueda en números» del
+  Tu búsqueda en números. `cai stats story` o la tarjeta «Tu búsqueda en números» del
   Embudo te dan esta línea con tus cifras reales: solo recuentos agregados, sin empresas.
   Para publicarla, pégala aquí abajo, cuenta en una línea qué funcionó y quita este comentario.
 
@@ -80,7 +80,7 @@ pulses Enviar**, y después sigue el proceso hasta la oferta.
 <p align="center"><img src="docs/img/es/anim/cv.webp" alt="Cambiar la plantilla y el color del CV y renderizarlo otra vez" width="88%"></p>
 
 El agente redacta el contenido una vez. Tú eliges plantilla, foto, color y secciones ocultas y
-pulsas «Renderizar»: tarda segundos y **no gasta cupo del agente**.
+pulsas «Generar»: tarda segundos y **no gasta cupo del agente**.
 </details>
 
 <details>

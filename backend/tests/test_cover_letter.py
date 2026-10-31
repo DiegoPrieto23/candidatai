@@ -19,7 +19,7 @@ from app.services.documents import cover_letter as letter
 from app.services.documents import pdf, service, templates
 from app.services.documents.options import InvalidRenderOptionsError
 from app.services.pipeline import InvalidTransitionError, Stage
-from tests.cv_support import LETTER, demo_content, fake_converter, write_template
+from tests.cv_support import LETTER, demo_content, fake_converter, requires_chromium, write_template
 from tests.matching_support import demo_extraction
 
 PASSED = CvVerification(passed=True, issues=[])
@@ -294,6 +294,24 @@ def test_select_render(session: Session, approved_job: Job) -> None:
     assert [r.selected for r in rows] == [False, True]
 
 
+@requires_chromium
+def test_without_libreoffice_the_letter_uses_the_html_design(
+    session: Session, approved_job: Job, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Sin LibreOffice ni Word, el diseño de carta de Word se cambia por el HTML de reserva y se
+    avisa: la carta se guarda igual."""
+
+    def unavailable() -> pdf.Converter:
+        raise pdf.PdfConverterUnavailableError("No hay con qué convertir a PDF.")
+
+    monkeypatch.setattr(pdf, "get_converter", unavailable)
+    result = letter.save_cover_letter(session, approved_job.id, content())
+
+    assert result.render.template_id == "moderna-2col"
+    assert "docx_converter_missing" in [w.code for w in result.render.warnings]
+    assert letter.latest_letter(session, approved_job.id) is not None
+
+
 def test_carta_simple_is_not_a_cv_template() -> None:
     cv_ids = [t.id for t in templates.list_templates()[0]]
     assert "carta-simple" not in cv_ids
@@ -314,6 +332,8 @@ def test_get_cover_letter_resolves_evidence(session: Session, approved_job: Job)
     saved = letter.save_cover_letter(session, approved_job.id, content())
     info = letter.get_cover_letter(session, document_id=saved.document_id)
     assert info.job_id == approved_job.id and info.letter is not None
+    # A quién va: el `verifier` comprueba el saludo con esto (antes no lo veía).
+    assert info.company == "Acme 1" and info.job_title == "Data Engineer"
     view = info.letter
     assert view.evidence["extraction"] == "La oferta (su extracción)"
     assert view.evidence["user"] == "Tus indicaciones para la carta"

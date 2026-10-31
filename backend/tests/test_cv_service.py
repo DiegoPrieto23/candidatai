@@ -425,6 +425,93 @@ def test_failed_conversion_leaves_no_files(
     assert not cvs.exists() or not any(p.is_file() for p in cvs.rglob("*"))
 
 
+def no_docx_converter(monkeypatch: pytest.MonkeyPatch) -> None:
+    def unavailable() -> pdf.Converter:
+        raise pdf.PdfConverterUnavailableError("No hay con qué convertir a PDF.")
+
+    monkeypatch.setattr(pdf, "get_converter", unavailable)
+
+
+@requires_chromium
+def test_without_libreoffice_the_cv_is_saved_with_the_html_fallback(
+    session: Session, approved_job: Job, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Sin LibreOffice ni Word, la plantilla de Word que tocaba se cambia por la HTML de reserva
+    y se avisa, en lugar de fallar y perder lo que redactó el agente."""
+    no_docx_converter(monkeypatch)
+    # Una oferta de un ATS: la de reserva (dos columnas) no es apta, y también se avisa.
+    approved_job.url = "https://boards.greenhouse.io/acme/jobs/1"
+    result = service.save_content(session, approved_job.id, demo_content())
+
+    render = result.render
+    assert render.template_id == "moderna-2col"
+    assert render.docx_path is None and data_file(render.pdf_path).is_file()
+    codes = [w.code for w in render.warnings]
+    assert "docx_converter_missing" in codes and "not_ats_friendly" in codes
+    latest = service.latest_document(session, approved_job.id)
+    assert latest is not None and latest.id == result.document_id
+
+
+def test_without_libreoffice_a_chosen_word_template_still_fails_and_saves_nothing(
+    session: Session, approved_job: Job, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Si la plantilla de Word la elegiste tú, no se cambia a escondidas: falla y lo explica."""
+    no_docx_converter(monkeypatch)
+    with pytest.raises(pdf.PdfConverterUnavailableError):
+        service.save_content(
+            session, approved_job.id, demo_content(), CvRenderOptions(template_id="ats-simple")
+        )
+    assert session.scalar(select(func.count()).select_from(Document)) == 0
+
+
+def test_the_pdf_is_converted_before_writing_to_the_database(
+    session: Session, approved_job: Job, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """La conversión tarda segundos: mientras, otra conexión (la UI, el worker) puede escribir."""
+    session.commit()
+    db_file = session.get_bind().url.database
+    assert db_file
+    fake = fake_converter()
+    writes: list[str] = []
+
+    def convert_while_someone_writes(docx: Path, pdf_file: Path, timeout: int) -> None:
+        import sqlite3
+
+        other = sqlite3.connect(db_file, timeout=0)
+        try:
+            other.execute("CREATE TABLE IF NOT EXISTS probe (x INTEGER)")
+            other.execute("INSERT INTO probe VALUES (1)")
+            other.commit()
+            writes.append("ok")
+        finally:
+            other.close()
+        fake(docx, pdf_file, timeout)
+
+    use_converter(monkeypatch, convert_while_someone_writes)
+    saved = service.save_content(session, approved_job.id, demo_content())
+    session.commit()  # cada guardado y cada render van en su propia transacción
+    service.render(session, saved.document_id, CvRenderOptions(template_id="ats-simple"))
+    assert writes == ["ok", "ok"]
+
+
+def test_half_done_renders_older_than_a_day_are_swept() -> None:
+    """Si la app se cierra entre convertir y guardar, el render queda en `data/tmp/renders/`:
+    el worker lo borra al arrancar pasado un día (lleva tus datos)."""
+    import os
+    import time
+
+    root = get_settings().tmp_dir / "renders"
+    old, recent = root / "viejo", root / "reciente"
+    for folder in (old, recent):
+        folder.mkdir(parents=True)
+        (folder / "CV.pdf").write_bytes(b"%PDF")
+    two_days_ago = time.time() - 2 * 86400
+    os.utime(old, (two_days_ago, two_days_ago))
+
+    assert service.sweep_stale_renders() == 1
+    assert not old.exists() and recent.is_dir()
+
+
 def test_no_converter_explains_what_to_install(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(pdf, "find_soffice", lambda _configured: None)
     monkeypatch.setattr(pdf, "word_converter", lambda: None)
@@ -624,6 +711,28 @@ def test_get_content_errors(session: Session, approved_job: Job) -> None:
         service.get_content(session, document_id=999)
     with pytest.raises(ValueError, match="uno de los dos"):
         service.get_content(session)
+
+
+def test_ui_names_of_builtin_templates_match_their_template_yaml() -> None:
+    """La UI traduce las plantillas integradas por su `id` (`templates.builtinText`): el texto en
+    español tiene que ser el de `template.yaml`, y cada integrada tiene su texto en los dos."""
+    import json
+
+    locales = REPO_ROOT / "frontend" / "src" / "locales"
+    texts = {
+        lang: json.loads((locales / lang / "templates.json").read_text(encoding="utf-8"))[
+            "builtinText"
+        ]
+        for lang in ("es", "en")
+    }
+    builtin = sorted(p.parent.name for p in (REPO_ROOT / "templates").glob("*/template.yaml"))
+    assert sorted(texts["es"]) == sorted(texts["en"]) == builtin
+    for template_id in builtin:
+        meta = yaml.safe_load(
+            (REPO_ROOT / "templates" / template_id / "template.yaml").read_text(encoding="utf-8")
+        )
+        expected = {"name": meta["name"], "description": meta["description"]}
+        assert texts["es"][template_id] == expected
 
 
 def test_list_cv_templates_includes_builtin_and_invalid() -> None:

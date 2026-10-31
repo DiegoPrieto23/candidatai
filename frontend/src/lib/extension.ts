@@ -32,6 +32,14 @@ export function isEdge(): boolean {
   return typeof navigator !== 'undefined' && /\bEdg\//.test(navigator.userAgent)
 }
 
+/** El sistema del equipo: cambia cómo se escribe una ruta en la ventana de elegir carpeta. */
+export function desktopOs(): 'windows' | 'mac' | 'linux' {
+  const agent = typeof navigator === 'undefined' ? '' : navigator.userAgent
+  if (/Mac OS X|Macintosh/.test(agent)) return 'mac'
+  if (/Linux|X11|CrOS/.test(agent) && !/Windows/.test(agent)) return 'linux'
+  return 'windows'
+}
+
 function isReply(value: unknown): value is ExtensionReply {
   return (
     typeof value === 'object' &&

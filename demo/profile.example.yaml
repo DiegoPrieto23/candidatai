@@ -17,13 +17,14 @@ headline: Data Engineer · Python · SQL · Snowflake · Power BI
 
 summary:
   es: >
-    Data Engineer con tres años construyendo pipelines ETL y modelos analíticos sobre Snowflake
-    para clientes de retail y banca. Me muevo cómodo entre la ingeniería (Python, SQL, orquestación)
-    y el negocio (Power BI, definición de KPIs), y últimamente aplico LLMs a problemas de datos.
+    Data Engineer con más de tres años construyendo pipelines ETL y, desde 2024, modelos analíticos
+    sobre Snowflake para clientes de retail y banca. Me muevo cómodo entre la ingeniería (Python,
+    SQL, orquestación) y el negocio (Power BI, definición de KPIs), y últimamente aplico LLMs a
+    problemas de datos.
   en: >
-    Data Engineer with three years building ETL pipelines and analytical models on Snowflake for
-    retail and banking clients, comfortable between engineering (Python, SQL, orchestration) and
-    business (Power BI, KPI design), recently applying LLMs to data problems.
+    Data Engineer with over three years building ETL pipelines and, since 2024, analytical models on
+    Snowflake for retail and banking clients, comfortable between engineering (Python, SQL,
+    orchestration) and business (Power BI, KPI design), recently applying LLMs to data problems.
 
 experience:
   - id: exp-norteconsulting

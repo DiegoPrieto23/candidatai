@@ -56,5 +56,23 @@
   "loading": "Loading templates",
   "invalidLabel": "Templates with problems",
   "invalidTitle": "Templates that can't be used",
-  "pdfAndWord": "PDF and Word"
+  "pdfAndWord": "PDF and Word",
+  "builtinText": {
+    "ats-simple": {
+      "name": "Simple ATS",
+      "description": "One column, no photo or tables, with the contact details in the body and a standard typeface. The safe choice for job portals with an ATS."
+    },
+    "carta-simple": {
+      "name": "Simple letter",
+      "description": "One-column cover letter, no photo, in the CV's accent colour. Used when the CV template has no cover-letter design of its own."
+    },
+    "clasica-foto": {
+      "name": "Classic with photo",
+      "description": "One column, header with a round photo and the accent colour on the name and headings. Understated, for sending by email or to companies without an ATS."
+    },
+    "moderna-2col": {
+      "name": "Modern two-column",
+      "description": "Two columns with a coloured sidebar (round photo, contact, skills, languages and certifications) and the experience in the main column. PDF only. Not ATS-friendly (two columns)."
+    }
+  }
 }

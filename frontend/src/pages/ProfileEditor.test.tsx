@@ -686,6 +686,67 @@ describe('Mi perfil editable', () => {
     expect(within(preview).getByText('Sin guardias').tagName).toBe('STRONG')
   })
 
+  it('«Experiencia y formación» abre con un índice de apartados: Skills e Idiomas primero, cada uno en su bloque', async () => {
+    mockApi(BASE)
+    renderApp('/perfil')
+    await openTab('Experiencia y formación')
+    const nav = await screen.findByRole('navigation', { name: 'Ir a un apartado' })
+    expect(within(nav).getAllByRole('link').map((link) => link.textContent)).toEqual([
+      'Skills1',
+      'Idiomas1',
+      'Experiencia2',
+      'Proyectos1',
+      'Formación0',
+      'Certificaciones0',
+      'Otras secciones0',
+      'Historias STAR0',
+    ])
+    expect(screen.getByRole('region', { name: 'Skills' })).toBeInTheDocument()
+    expect(within(screen.getByRole('region', { name: 'Idiomas' })).getByRole('group', { name: 'Inglés' })).toBeInTheDocument()
+
+    await userEvent.click(within(nav).getByRole('link', { name: /^Proyectos/ }))
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByRole('region', { name: 'Proyectos' })))
+  })
+
+  it('cada proyecto arranca plegado, como las empresas, y el que añades se abre', async () => {
+    mockApi(BASE)
+    renderApp('/perfil')
+    await openTab('Experiencia y formación')
+    const block = await screen.findByRole('region', { name: 'Proyectos' })
+    const project = within(block).getByRole('article', { name: 'TFG de predicción' })
+    const header = within(project)
+      .getAllByRole('button')
+      .find((b) => b.hasAttribute('aria-expanded'))!
+    expect(header).toHaveAttribute('aria-expanded', 'false')
+    expect(within(project).queryByLabelText('Nombre')).not.toBeInTheDocument()
+    await userEvent.click(header)
+    expect(within(project).getByLabelText('Nombre')).toHaveValue('TFG de predicción')
+
+    await userEvent.click(within(block).getByRole('button', { name: 'Añadir proyecto' }))
+    const added = within(block).getByRole('article', { name: 'Proyecto nuevo' })
+    expect(within(added).getByLabelText('Nombre')).toHaveValue('')
+    expect(within(block).getByRole('button', { name: 'Plegar todo' })).toBeInTheDocument()
+  })
+
+  it('el aviso de cambios sin guardar nombra cada bloque y lleva hasta él', async () => {
+    mockApi(BASE)
+    renderApp('/perfil')
+    const personal = await screen.findByRole('region', { name: 'Datos y resumen' })
+    await userEvent.type(within(personal).getByLabelText('Titular'), ' senior')
+    await openTab('Experiencia y formación')
+    const language = await screen.findByRole('group', { name: 'Inglés' })
+    await userEvent.selectOptions(within(language).getByRole('combobox', { name: 'Nivel' }), 'B2')
+
+    const notice = screen.getByText('Sin guardar:').parentElement!
+    expect(within(notice).getAllByRole('button').map((b) => b.textContent)).toEqual(['Datos y resumen', 'Idiomas'])
+    const nav = screen.getByRole('navigation', { name: 'Ir a un apartado' })
+    expect(within(nav).getByRole('link', { name: /^Idiomas.*sin guardar/ })).toBeInTheDocument()
+
+    await userEvent.click(within(notice).getByRole('button', { name: 'Ir a «Datos y resumen» (Sobre ti) para guardarlo' }))
+    expect(screen.getByRole('tab', { name: 'Sobre ti' })).toHaveAttribute('aria-selected', 'true')
+    await waitFor(() => expect(document.activeElement).toBe(personal))
+  })
+
   it('avisa antes de salir con cambios sin guardar', async () => {
     const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false)
     mockApi(BASE)

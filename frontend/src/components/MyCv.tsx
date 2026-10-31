@@ -26,6 +26,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { formatDateTime } from '@/lib/labels'
 import { errorMessage } from '@/lib/errors'
 import { cn } from '@/lib/utils'
+import { useTemplateText } from '@/lib/templateText'
 
 const ACCEPT = '.docx,.pdf,.png,.jpg,.jpeg,.html'
 
@@ -200,13 +201,14 @@ function UploadCard({
   isDefault: boolean
 }) {
   const { t } = useTranslation('templates', { keyPrefix: 'myCv' })
+  const text = useTemplateText()
   const remove = useDeleteUpload()
   return (
     <li aria-label={upload.name} className="rounded-xl border bg-card p-4">
       <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="flex flex-wrap items-center gap-2 font-medium">
-            <span className="truncate">{template ? template.name : upload.name}</span>
+            <span className="truncate">{template ? text.name(template) : upload.name}</span>
             {template ? <Chip>{t('yourCv')}</Chip> : <Chip tone="warning">{t('pending')}</Chip>}
           </p>
           <p className="mt-0.5 text-xs text-muted-foreground">

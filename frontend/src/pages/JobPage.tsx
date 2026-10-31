@@ -11,6 +11,7 @@ import {
   HourglassMediumIcon,
   InfoIcon,
   NotePencilIcon,
+  PuzzlePieceIcon,
   ShieldWarningIcon,
   XIcon,
 } from '@phosphor-icons/react'
@@ -536,6 +537,56 @@ function wasApproved(job: JobView): boolean {
   return job.stage === 'closed' && job.events.some((e) => e.type === 'approved')
 }
 
+/**
+ * «Por completar»: la oferta llegó como resumen (casi siempre de una alerta de LinkedIn) y le falta
+ * la descripción. El agente no entra en LinkedIn, así que se completa con la extensión.
+ */
+function MissingDetail({ job }: { job: JobView }) {
+  const { t } = useTranslation('job', { keyPrefix: 'missingDetail' })
+  const strong = <strong className="font-medium text-foreground" />
+  return (
+    <section
+      aria-labelledby="missing-detail"
+      className="flex items-start gap-4 rounded-xl border border-primary/30 bg-primary/[0.04] p-5 sm:p-6"
+    >
+      <PuzzlePieceIcon className="mt-0.5 size-6 shrink-0 text-primary" weight="duotone" aria-hidden />
+      <div className="min-w-0 space-y-3 text-sm leading-relaxed text-muted-foreground">
+        <div>
+          <h2 id="missing-detail" className="text-base font-semibold text-foreground">
+            {t('title')}
+          </h2>
+          <p className="mt-1">{t('body')}</p>
+        </div>
+        <ol className="grid list-decimal gap-2 pl-5">
+          <li className="space-y-2">
+            <p>{job.url ? t('open') : t('openNoUrl')}</p>
+            {job.url && (
+              <Button asChild size="sm">
+                <a href={job.url} target="_blank" rel="noopener noreferrer nofollow">
+                  {t('openButton')}
+                  <ArrowSquareOutIcon />
+                </a>
+              </Button>
+            )}
+          </li>
+          <li>
+            <Trans t={t} i18nKey="send" components={{ strong }} />
+          </li>
+        </ol>
+        <p>
+          <Trans
+            t={t}
+            i18nKey="install"
+            components={{
+              guide: <Link to="/fuentes/extension" className="font-medium text-foreground underline underline-offset-2 hover:text-primary" />,
+            }}
+          />
+        </p>
+      </div>
+    </section>
+  )
+}
+
 function ExtractionBlock({ job }: { job: JobView }) {
   const { t } = useTranslation('job', { keyPrefix: 'extraction' })
   const match = useJobMatch(job.id, job.extraction !== null)
@@ -546,6 +597,8 @@ function ExtractionBlock({ job }: { job: JobView }) {
       </Panel>
     )
   }
+  // Sin descripción no hay nada que extraer: lo que falta lo explica `MissingDetail`.
+  if (job.stage === 'pending_detail') return null
   return (
     <section className="flex items-start gap-4 rounded-xl border border-dashed p-6">
       <HourglassMediumIcon className="mt-0.5 size-6 shrink-0 text-primary" weight="duotone" />
@@ -722,6 +775,7 @@ export function JobPage() {
 
           {/* Avisos que piden atención: encima de las pestañas, se vea la que se vea. */}
           <div className="mb-6 space-y-4 empty:hidden">
+            {job.stage === 'pending_detail' && <MissingDetail job={job} />}
             {job.injection && <InjectionAlert injection={job.injection} />}
             {wasSent(job) && <JobReplyNotice jobId={job.id} />}
             <ClosedNotice job={job} />

@@ -18,7 +18,8 @@ interface EditorState {
   state: EditableProfile
   profile: ProfileData
   setDirty: (block: string, dirty: boolean) => void
-  dirtyCount: number
+  /** Los bloques con cambios sin guardar, por su id (`experience`, `search-role`, `context-criterios`…). */
+  dirtyBlocks: ReadonlySet<string>
   reload: () => void
 }
 
@@ -71,8 +72,8 @@ export function ProfileEditorProvider({ state, reload, children }: { state: Edit
   }, [])
   useUnsavedGuard(dirty.size > 0, t('unsaved.confirm'))
   const value = useMemo(
-    () => ({ state, profile: (state.profile ?? {}) as ProfileData, setDirty, dirtyCount: dirty.size, reload }),
-    [state, setDirty, dirty.size, reload],
+    () => ({ state, profile: (state.profile ?? {}) as ProfileData, setDirty, dirtyBlocks: dirty, reload }),
+    [state, setDirty, dirty, reload],
   )
   return <EditorContext.Provider value={value}>{children}</EditorContext.Provider>
 }
@@ -240,4 +241,9 @@ export function move<T>(list: T[], index: number, delta: number): T[] {
   const next = [...list]
   ;[next[index], next[target]] = [next[target], next[index]]
   return next
+}
+
+/** El id en la página del bloque `id`. */
+export function blockAnchor(id: string): string {
+  return `profile-${id}`
 }

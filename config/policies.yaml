@@ -76,6 +76,7 @@ applier:                        # fase 11: candidatura asistida (rellena y esper
 
 cv:
   fallback_template: ats-simple
+  html_fallback_template: moderna-2col   # sin LibreOffice ni Word, en lugar de una plantilla de Word
   # ATS reconocidos por la URL de la oferta. Se usan en template_rules y para el aviso
   # not_ats_friendly. Amplía la lista cuando veas otros.
   ats_platforms:
@@ -94,6 +95,7 @@ cv:
 cover_letter:                   # fase 08c; manda preferences.cover_letter del perfil y, encima, la oferta
   max_words: 180
   fallback_template: carta-simple
+  html_fallback_template: moderna-2col   # sin LibreOffice ni Word
 
 connectors:                     # fase 09: APIs de ATS (Greenhouse, Lever, Ashby) y portales
   daily_at: "07:30"               # hora local a la que `cai worker` ejecuta las fuentes activas

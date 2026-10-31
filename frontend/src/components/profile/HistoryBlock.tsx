@@ -10,7 +10,8 @@ import { useProfileState } from './editor'
 /** «Ver cambios» (diff de las dos últimas versiones) y «Deshacer el último cambio». */
 export function HistoryBlock() {
   const { t } = useTranslation('profileEditor')
-  const { state, dirtyCount } = useProfileState()
+  const { state, dirtyBlocks } = useProfileState()
+  const dirtyCount = dirtyBlocks.size
   const [showDiff, setShowDiff] = useState(false)
   const diff = useProfileDiff(showDiff)
   const undo = useUndoProfile()

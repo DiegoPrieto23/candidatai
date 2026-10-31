@@ -171,3 +171,45 @@ def test_server_startup_skips_heavy_imports() -> None:
         [sys.executable, "-c", code], capture_output=True, text=True, check=True
     )
     assert result.stdout.strip() == ""
+
+
+# Lo que tarda el servidor en contestar al `initialize` (medido en la QA: 3,4 s en caliente y
+# 6,9 s en frío en un portátil). Algunos agentes lo dan por caído a los 30 s; aquí, con margen
+# para la CI.
+MCP_INITIALIZE_BUDGET_S = 15.0
+
+
+def test_server_answers_initialize_within_budget(isolated_env: Path) -> None:
+    """Arranca el servidor de verdad (como lo lanza el agente) y mide hasta su respuesta."""
+    import time
+
+    request = {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "initialize",
+        "params": {
+            "protocolVersion": "2025-06-18",
+            "capabilities": {},
+            "clientInfo": {"name": "test", "version": "0"},
+        },
+    }
+    start = time.monotonic()
+    process = subprocess.Popen(
+        [sys.executable, "-c", "from app.mcp.server import main; main()"],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        text=True,
+        encoding="utf-8",
+    )
+    try:
+        assert process.stdin is not None and process.stdout is not None
+        process.stdin.write(json.dumps(request) + "\n")
+        process.stdin.flush()
+        answer = json.loads(process.stdout.readline())
+        elapsed = time.monotonic() - start
+    finally:
+        process.kill()
+        process.wait()
+    assert answer["id"] == 1 and answer["result"]["serverInfo"]["name"] == "candidatai"
+    assert elapsed < MCP_INITIALIZE_BUDGET_S, f"initialize en {elapsed:.1f} s"

@@ -1,12 +1,12 @@
 import { useRef, useState } from 'react'
-import { BuildingsIcon, CaretRightIcon, PlusIcon } from '@phosphor-icons/react'
+import { BuildingsIcon, PlusIcon } from '@phosphor-icons/react'
 import { useTranslation } from 'react-i18next'
 import { AgentButton } from '@/components/AgentButton'
 import { Button } from '@/components/ui/button'
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { cn } from '@/lib/utils'
 import { Block, BlockActions, CheckField, ItemControls, MonthField, TagsField, TextField } from './fields'
 import { move, removeAt, replaceAt, useBlockEditor, useProfileState } from './editor'
+import { FoldAllButton, FoldItem } from './fold'
 import { PRESENT, skillNames, type Achievement, type Experience, type ProfileData } from './types'
 
 /**
@@ -117,22 +117,19 @@ export function ExperienceBlock() {
 
   return (
     <Block
+      id="experience"
       title={t('blocks.experience.title')}
       hint={t('blocks.experience.hint')}
       actions={
         <div className="flex flex-wrap gap-2">
           {list.length > 0 && (
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
+            <FoldAllButton
+              allOpen={allOpen}
               onClick={() => {
                 setFocusKey(null)
                 setExpanded(allOpen ? new Set() : new Set(list.map(keyOf)))
               }}
-            >
-              {allOpen ? t('blocks.experience.collapseAll') : t('blocks.experience.expandAll')}
-            </Button>
+            />
           )}
           <Button type="button" size="sm" variant="outline" onClick={add}>
             <PlusIcon /> {t('blocks.experience.add')}
@@ -154,147 +151,134 @@ export function ExperienceBlock() {
           .filter(Boolean)
           .join(' · ')
         return (
-          <Collapsible key={key} open={open} onOpenChange={(value) => toggle(key, value)} asChild>
-            <article
-              aria-label={name}
-              className="grid rounded-none border border-l-4 border-l-primary/70 bg-background/60 shadow-xs"
-            >
-              <div className="flex items-center justify-between gap-2 bg-primary/[0.06] pr-2">
-                <h3 className="min-w-0 flex-1">
-                  <CollapsibleTrigger className="group flex w-full min-w-0 items-center gap-2 rounded-none px-4 py-2.5 text-left outline-none hover:bg-primary/[0.05] focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:ring-inset">
-                    <CaretRightIcon
-                      className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]:rotate-90"
-                      weight="bold"
-                      aria-hidden
-                    />
-                    <BuildingsIcon className="size-[18px] shrink-0 text-primary" weight="duotone" aria-hidden />
-                    <span className="grid min-w-0">
-                      <span className="truncate font-semibold">{exp.role ? `${exp.role} · ${name}` : name}</span>
-                      <span className="truncate text-xs font-normal text-muted-foreground">{summary}</span>
-                    </span>
-                  </CollapsibleTrigger>
-                </h3>
-                <ItemControls
-                  label={name}
-                  index={i}
-                  count={list.length}
-                  onMove={(delta) => block.update((d) => move(d, i, delta))}
-                  onRemove={() => block.update((d) => removeAt(d, i))}
-                />
+          <FoldItem
+            key={key}
+            label={name}
+            title={exp.role ? `${exp.role} · ${name}` : name}
+            summary={summary}
+            icon={<BuildingsIcon weight="duotone" />}
+            open={open}
+            onOpenChange={(value) => toggle(key, value)}
+            controls={
+              <ItemControls
+                label={name}
+                index={i}
+                count={list.length}
+                onMove={(delta) => block.update((d) => move(d, i, delta))}
+                onRemove={() => block.update((d) => removeAt(d, i))}
+              />
+            }
+          >
+            <div className="grid gap-3 sm:grid-cols-2">
+              <TextField
+                label={t('fields.company')}
+                value={exp.company}
+                autoFocus={focusKey === key}
+                error={err(`${path}.company`)}
+                onChange={(v) => setItem(i, { company: v })}
+              />
+              <TextField label={t('fields.role')} value={exp.role} error={err(`${path}.role`)} onChange={(v) => setItem(i, { role: v })} />
+              <TextField label={t('fields.city')} value={exp.city} error={err(`${path}.city`)} onChange={(v) => setItem(i, { city: v })} />
+              <div className="grid grid-cols-2 gap-3">
+                <MonthField label={t('fields.start')} value={exp.start} error={err(`${path}.start`) ?? err(path)} onChange={(v) => setItem(i, { start: v })} />
+                <MonthField label={t('fields.end')} allowPresent value={exp.end} error={err(`${path}.end`)} onChange={(v) => setItem(i, { end: v })} />
               </div>
-              <CollapsibleContent className="grid gap-4 border-t p-4">
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <TextField
-                    label={t('fields.company')}
-                    value={exp.company}
-                    autoFocus={focusKey === key}
-                    error={err(`${path}.company`)}
-                    onChange={(v) => setItem(i, { company: v })}
-                  />
-                  <TextField label={t('fields.role')} value={exp.role} error={err(`${path}.role`)} onChange={(v) => setItem(i, { role: v })} />
-                  <TextField label={t('fields.city')} value={exp.city} error={err(`${path}.city`)} onChange={(v) => setItem(i, { city: v })} />
-                  <div className="grid grid-cols-2 gap-3">
-                    <MonthField label={t('fields.start')} value={exp.start} error={err(`${path}.start`) ?? err(path)} onChange={(v) => setItem(i, { start: v })} />
-                    <MonthField label={t('fields.end')} allowPresent value={exp.end} error={err(`${path}.end`)} onChange={(v) => setItem(i, { end: v })} />
-                  </div>
-                  <TextField
-                    className="sm:col-span-2"
-                    multiline
-                    rows={2}
-                    label={t('fields.context')}
-                    hint={t('fields.contextHint')}
-                    value={exp.context}
-                    onChange={(v) => setItem(i, { context: v })}
-                  />
+              <TextField
+                className="sm:col-span-2"
+                multiline
+                rows={2}
+                label={t('fields.context')}
+                hint={t('fields.contextHint')}
+                value={exp.context}
+                onChange={(v) => setItem(i, { context: v })}
+              />
+            </div>
+            <div className="grid gap-2">
+              <h4 className="text-sm font-medium">{t('blocks.experience.achievements')}</h4>
+              {achievements.length > 0 && (
+                // Logros separados por una línea fina, con su número y el fondo alterno.
+                <div className="divide-y border">
+                  {achievements.map((ach, j) => {
+                    const apath = `${path}.achievements.${j}`
+                    const ref = `${exp.id}/${ach.id}`
+                    const label = ach.text || t('blocks.experience.newAchievement')
+                    return (
+                      <div
+                        key={(ach._key as string | undefined) ?? ach.id ?? `index-${j}`}
+                        role="group"
+                        aria-label={label}
+                        className={cn('grid gap-3 p-3', j % 2 === 0 ? 'bg-muted/25' : 'bg-muted')}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-medium text-muted-foreground">
+                            {t('blocks.experience.achievementNumber', { number: j + 1 })}
+                          </span>
+                          <ItemControls
+                            label={label}
+                            index={j}
+                            count={achievements.length}
+                            onMove={(delta) => setItem(i, { achievements: move(achievements, j, delta) })}
+                            onRemove={() => setItem(i, { achievements: removeAt(achievements, j) })}
+                          />
+                        </div>
+                        <TextField
+                          multiline
+                          rows={2}
+                          label={t('fields.achievement')}
+                          hint={t('fields.achievementHint')}
+                          value={ach.text}
+                          error={err(`${apath}.text`)}
+                          onChange={(v) => setAchievement(i, j, { text: v })}
+                        />
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <TextField
+                            label={t('fields.metrics')}
+                            hint={t('fields.metricsHint')}
+                            value={ach.metrics}
+                            onChange={(v) => setAchievement(i, j, { metrics: v })}
+                          />
+                          <TextField
+                            label={t('fields.source')}
+                            hint={t('fields.sourceHint')}
+                            type="url"
+                            value={ach.source}
+                            error={err(`${apath}.source`)}
+                            onChange={(v) => setAchievement(i, j, { source: v })}
+                          />
+                          <TagsField
+                            className="sm:col-span-2"
+                            label={t('fields.skills')}
+                            hint={t('fields.skillsHint')}
+                            value={ach.skills}
+                            suggestions={suggestions}
+                            error={[...block.errors].find(([k]) => k.startsWith(`${apath}.skills`))?.[1]}
+                            onChange={(v) => setAchievement(i, j, { skills: v })}
+                          />
+                        </div>
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <CheckField label={t('fields.nda')} checked={Boolean(ach.nda)} onChange={(v) => setAchievement(i, j, { nda: v })} />
+                          {saved.has(ref) && (
+                            <AgentButton action="improve-profile-item" profileItem={ref}>
+                              {t('agent.improve')}
+                            </AgentButton>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
                 </div>
-                <div className="grid gap-2">
-                  <h4 className="text-sm font-medium">{t('blocks.experience.achievements')}</h4>
-                  {achievements.length > 0 && (
-                    // Logros separados por una línea fina, con su número y el fondo alterno.
-                    <div className="divide-y border">
-                      {achievements.map((ach, j) => {
-                        const apath = `${path}.achievements.${j}`
-                        const ref = `${exp.id}/${ach.id}`
-                        const label = ach.text || t('blocks.experience.newAchievement')
-                        return (
-                          <div
-                            key={(ach._key as string | undefined) ?? ach.id ?? `index-${j}`}
-                            role="group"
-                            aria-label={label}
-                            className={cn('grid gap-3 p-3', j % 2 === 0 ? 'bg-muted/25' : 'bg-muted')}
-                          >
-                            <div className="flex items-center justify-between gap-2">
-                              <span className="text-xs font-medium text-muted-foreground">
-                                {t('blocks.experience.achievementNumber', { number: j + 1 })}
-                              </span>
-                              <ItemControls
-                                label={label}
-                                index={j}
-                                count={achievements.length}
-                                onMove={(delta) => setItem(i, { achievements: move(achievements, j, delta) })}
-                                onRemove={() => setItem(i, { achievements: removeAt(achievements, j) })}
-                              />
-                            </div>
-                            <TextField
-                              multiline
-                              rows={2}
-                              label={t('fields.achievement')}
-                              hint={t('fields.achievementHint')}
-                              value={ach.text}
-                              error={err(`${apath}.text`)}
-                              onChange={(v) => setAchievement(i, j, { text: v })}
-                            />
-                            <div className="grid gap-3 sm:grid-cols-2">
-                              <TextField
-                                label={t('fields.metrics')}
-                                hint={t('fields.metricsHint')}
-                                value={ach.metrics}
-                                onChange={(v) => setAchievement(i, j, { metrics: v })}
-                              />
-                              <TextField
-                                label={t('fields.source')}
-                                hint={t('fields.sourceHint')}
-                                type="url"
-                                value={ach.source}
-                                error={err(`${apath}.source`)}
-                                onChange={(v) => setAchievement(i, j, { source: v })}
-                              />
-                              <TagsField
-                                className="sm:col-span-2"
-                                label={t('fields.skills')}
-                                hint={t('fields.skillsHint')}
-                                value={ach.skills}
-                                suggestions={suggestions}
-                                error={[...block.errors].find(([k]) => k.startsWith(`${apath}.skills`))?.[1]}
-                                onChange={(v) => setAchievement(i, j, { skills: v })}
-                              />
-                            </div>
-                            <div className="flex flex-wrap items-center justify-between gap-2">
-                              <CheckField label={t('fields.nda')} checked={Boolean(ach.nda)} onChange={(v) => setAchievement(i, j, { nda: v })} />
-                              {saved.has(ref) && (
-                                <AgentButton action="improve-profile-item" profileItem={ref}>
-                                  {t('agent.improve')}
-                                </AgentButton>
-                              )}
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  )}
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    className="justify-self-start"
-                    onClick={() => setItem(i, { achievements: [...achievements, { ...EMPTY_ACHIEVEMENT, _key: nextKey() }] })}
-                  >
-                    <PlusIcon /> {t('blocks.experience.addAchievement')}
-                  </Button>
-                </div>
-              </CollapsibleContent>
-            </article>
-          </Collapsible>
+              )}
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                className="justify-self-start"
+                onClick={() => setItem(i, { achievements: [...achievements, { ...EMPTY_ACHIEVEMENT, _key: nextKey() }] })}
+              >
+                <PlusIcon /> {t('blocks.experience.addAchievement')}
+              </Button>
+            </div>
+          </FoldItem>
         )
       })}
       </div>
