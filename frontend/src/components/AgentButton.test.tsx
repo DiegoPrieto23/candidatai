@@ -37,11 +37,11 @@ describe('Botones «en tu agente»', () => {
     })
     renderApp('/')
     await userEvent.click(await screen.findByRole('button', { name: 'Buscar ofertas' }))
-    expect(await screen.findByText('Abierto en claude: sigue en la terminal.')).toBeInTheDocument()
+    expect(await screen.findByText('Abierto en claude: sigue en la ventana que se acaba de abrir.')).toBeInTheDocument()
     expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ action: 'search-jobs' })
   })
 
-  it('si no puede abrir el agente, copia la orden', async () => {
+  it('si no puede abrir el agente, enseña la orden entera para copiarla y dónde pegarla', async () => {
     const writeText = vi.fn().mockResolvedValue(undefined)
     Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
     home({
@@ -59,8 +59,37 @@ describe('Botones «en tu agente»', () => {
     })
     renderApp('/')
     await userEvent.click(await screen.findByRole('button', { name: 'Buscar ofertas' }))
+    expect(await screen.findByText('No puedo abrir tu agente desde aquí')).toBeInTheDocument()
+    expect(screen.getByText(/pégala en tu agente \(Claude Code, Codex…\), en la ventana donde lo usas/)).toBeInTheDocument()
+    expect(screen.getByLabelText('Orden para tu agente')).toHaveTextContent('Usa el skill search-jobs de CandidatAI.')
+    await userEvent.click(screen.getByRole('button', { name: 'Copiar: Orden para tu agente' }))
     await waitFor(() => expect(writeText).toHaveBeenCalledWith('Usa el skill search-jobs de CandidatAI.'))
-    expect(await screen.findByText(/He copiado la orden: pégala en tu agente\./)).toBeInTheDocument()
+    // No se va sola: se cierra con su botón.
+    await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+    expect(screen.queryByLabelText('Orden para tu agente')).not.toBeInTheDocument()
+  })
+
+  it('sin ningún agente instalado, la orden lleva a cómo instalar uno', async () => {
+    home({
+      'GET /agent': { ...launcher, available: false, no_agent_installed: true },
+      'GET /agent/agents': { agents: [], launchable: [], preferences: { default_agent: null, agents: {}, actions: {} }, effective: [] },
+      'POST /agent/launch': {
+        status: 503,
+        body: {
+          ok: false,
+          error: {
+            type: 'agent_unavailable',
+            message: 'No hay ningún agente instalado.',
+            details: [{ field: 'prompt', received: 'Usa el skill search-jobs de CandidatAI.', reason: '…' }],
+          },
+        },
+      },
+    })
+    renderApp('/')
+    expect(await screen.findByRole('heading', { name: 'Necesitas un agente de IA' })).toBeInTheDocument()
+    await userEvent.click(await screen.findByRole('button', { name: 'Buscar ofertas' }))
+    expect(await screen.findByText('No tienes ningún agente de IA instalado')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Así se instala uno, en «Agente»' })).toHaveAttribute('href', '/agente')
   })
 
   it('al enfocarlo con el teclado, un globo dice qué hace y cómo se abre (fase 27.1)', async () => {
@@ -72,7 +101,7 @@ describe('Botones «en tu agente»', () => {
     main.focus()
     const tooltip = await screen.findByRole('tooltip')
     expect(tooltip).toHaveTextContent(/Tu agente recorre con tu navegador los portales/)
-    expect(tooltip).toHaveTextContent('Abre claude en una terminal con la orden ya escrita')
+    expect(tooltip).toHaveTextContent('Abre tu agente (claude) en una ventana aparte con la orden ya escrita')
   })
 
   it('el desplegable empieza por la ayuda, para leerla sin ratón (fase 27.1)', async () => {
@@ -110,7 +139,7 @@ describe('Botones «en tu agente»', () => {
     renderApp('/')
     const main = await screen.findByRole('button', { name: 'Buscar ofertas' })
     await userEvent.click(within(group(main)).getByRole('button', { name: 'Más formas de lanzarlo' }))
-    expect(await screen.findByRole('menuitem', { name: /En terminal/ })).toBeInTheDocument()
+    expect(await screen.findByRole('menuitem', { name: /En una ventana aparte/ })).toBeInTheDocument()
     expect(screen.queryByRole('menuitem', { name: /En segundo plano/ })).not.toBeInTheDocument()
     await userEvent.click(screen.getByRole('menuitem', { name: /Dejar para mi próxima sesión/ }))
     expect(await screen.findByText(/Encargo guardado/)).toBeInTheDocument()
@@ -161,7 +190,7 @@ describe('Botones «en tu agente»', () => {
       expect(screen.getByRole('menuitem', { name: /Abrir con Qwen Code/ })).toHaveAttribute('aria-disabled', 'true')
       expect(screen.getByText('Qwen Code no está instalado.')).toBeInTheDocument()
       await userEvent.click(screen.getByRole('menuitem', { name: /Abrir con Codex/ }))
-      expect(await screen.findByText('Abierto en codex: sigue en la terminal.')).toBeInTheDocument()
+      expect(await screen.findByText('Abierto en codex: sigue en la ventana que se acaba de abrir.')).toBeInTheDocument()
       expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ action: 'search-jobs', agent: 'codex' })
     })
 
@@ -187,7 +216,7 @@ describe('Botones «en tu agente»', () => {
       expect(tooltip).toHaveTextContent(/Tu agente recorre con tu navegador los portales/)
       await userEvent.keyboard('{Escape}')
       await userEvent.click(within(group(main)).getByRole('button', { name: /con Codex/ }))
-      expect(await screen.findByRole('menuitem', { name: /En terminal/ })).toHaveAttribute('aria-disabled', 'true')
+      expect(await screen.findByRole('menuitem', { name: /En una ventana aparte/ })).toHaveAttribute('aria-disabled', 'true')
       expect(screen.getByRole('menuitem', { name: /Abrir con Claude Code/ })).not.toHaveAttribute('aria-disabled')
     })
 
@@ -234,7 +263,7 @@ describe('Botones «en tu agente»', () => {
       expect(await screen.findByRole('menuitem', { name: new RegExp(warning) })).toBeInTheDocument()
       await userEvent.keyboard('{Escape}')
       await userEvent.click(main)
-      expect(await screen.findByText(`Abierto en qwen: sigue en la terminal. Ojo: ${warning}`)).toBeInTheDocument()
+      expect(await screen.findByText(`Abierto en qwen: sigue en la ventana que se acaba de abrir. Ojo: ${warning}`)).toBeInTheDocument()
     })
   })
 })

@@ -111,7 +111,8 @@ def test_install_first_start_and_uninstall(browser: Browser, install_dir: Path) 
         try:
             page: Page = context.new_page()
             page.goto("/")
-            expect(page.get_by_role("region", name=t("home.firstSteps.title"))).to_be_visible()
+            steps = page.get_by_role("region", name=t("home.firstSteps.title"), exact=True)
+            expect(steps).to_be_visible()
             page.goto("/bandeja")
             expect(page.get_by_text(t("inbox.empty.title"))).to_be_visible()
         finally:

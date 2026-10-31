@@ -2291,6 +2291,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create Profile
+         * @description «Empezar a mano»: crea tu perfil mínimo sin agente. `conflict` si ya existe el fichero.
+         */
+        post: operations["create_profile"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/profile/sections/{section}": {
         parameters: {
             query?: never;
@@ -3162,6 +3182,8 @@ export interface components {
             /** Actions */
             actions: components["schemas"]["Action"][];
             background: components["schemas"]["BackgroundInfo"];
+            /** No Agent Installed */
+            no_agent_installed: boolean;
         };
         /**
          * AgentsOverview
@@ -4109,6 +4131,13 @@ export interface components {
             level: "F" | "C+" | "C" | "B" | "basic";
             /** Weight */
             weight: number;
+        };
+        /** CreateResult */
+        CreateResult: {
+            /** File Hash */
+            file_hash: string;
+            /** Profile Version Id */
+            profile_version_id: number;
         };
         /** CvBriefInput */
         CvBriefInput: {
@@ -5985,6 +6014,39 @@ export interface components {
             occurred_at?: string | null;
             /** Note */
             note?: string | null;
+        };
+        /**
+         * MinimalProfile
+         * @description Lo justo para empezar sin agente («Empezar a mano» en «Mi perfil»).
+         *
+         *     Lo que dice de ti lo escribes tú; las preferencias de búsqueda (modalidad, foto) arrancan con
+         *     valores amplios que cambias después en el editor. Nada se inventa: sin resumen, el resumen es tu
+         *     titular.
+         */
+        MinimalProfile: {
+            /** Name */
+            name: string;
+            /** Headline */
+            headline: string;
+            /**
+             * Role
+             * @description El puesto que buscas.
+             */
+            role: string;
+            /**
+             * Seniority
+             * @description Los niveles que aceptas.
+             */
+            seniority: ("intern" | "junior" | "mid" | "senior" | "lead")[];
+            /** Summary */
+            summary?: string | null;
+            /**
+             * Language
+             * @description El idioma del resumen y el de trabajo.
+             * @default es
+             * @enum {string}
+             */
+            language: "es" | "en";
         };
         /**
          * ModelChoice
@@ -19650,6 +19712,102 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EditableProfile"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_profile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MinimalProfile"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreateResult"];
                 };
             };
             /** @description Unauthorized */

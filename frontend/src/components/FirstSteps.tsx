@@ -1,11 +1,12 @@
 /**
- * Inicio con la app recién instalada: los dos pasos para empezar, con su botón. Tu perfil (sube tu
- * CV y tu agente lo crea) y dónde buscar (tu agente configura los portales con los puestos de tu
- * perfil). Cada paso se marca al hacerlo y la tarjeta desaparece con los dos hechos.
+ * Inicio con la app recién instalada: qué hace la app y qué es tu agente, y los dos pasos para
+ * empezar, con su botón. Tu perfil (sube tu CV y tu agente lo crea, o empiézalo a mano en «Mi
+ * perfil») y dónde buscar (tu agente configura los portales con los puestos de tu perfil). Cada paso
+ * se marca al hacerlo y la tarjeta desaparece con los dos hechos.
  */
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { CheckCircleIcon } from '@phosphor-icons/react'
 import { useEditableProfile, usePlatforms, useSourceDocuments } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
@@ -44,13 +45,18 @@ export function FirstSteps() {
   const hasPlatforms = platforms.data.sources.length > 0
   if (hasProfile && hasPlatforms) return null
   const hasCv = (cvs.data?.length ?? 0) > 0
+  const agentLink = <Link to="/agente" className={LINK} />
 
   return (
     <section aria-labelledby="first-steps" className="rounded-xl border bg-card p-5 sm:p-6">
       <h2 id="first-steps" className="text-lg font-semibold tracking-tight">
         {t('title')}
       </h2>
-      <p className="mt-1 text-sm text-muted-foreground">{t('intro')}</p>
+      <p className="mt-2 max-w-prose text-sm text-muted-foreground">{t('whatItDoes')}</p>
+      <p className="mt-2 max-w-prose text-sm text-muted-foreground">
+        <Trans t={t} i18nKey="whatIsTheAgent" components={{ agent: agentLink }} />
+      </p>
+      <p className="mt-4 text-sm font-medium">{t('intro')}</p>
       <ol className="mt-5 grid gap-6 text-sm">
         <Step n={1} done={hasProfile} title={t('profile.title')}>
           {hasProfile ? (
@@ -64,6 +70,11 @@ export function FirstSteps() {
               <AgentButton action="create-profile" primary={hasCv}>
                 {tAgent('actions.create-profile')}
               </AgentButton>
+              <p>
+                <Link to="/perfil" className={LINK}>
+                  {t('profile.byHand')}
+                </Link>
+              </p>
             </>
           )}
         </Step>

@@ -652,6 +652,33 @@ def save_section(
     )
 
 
+class CreateResult(BaseModel):
+    file_hash: str
+    profile_version_id: int
+
+
+def create_profile(
+    session: Session, minimal: profiles.MinimalProfile, path: Path | None = None
+) -> CreateResult:
+    """«Empezar a mano»: crea tu perfil mínimo (el mismo servicio que `cai profile init`) e importa
+    su versión. `conflict` si ya hay un fichero: no se sobrescribe."""
+    path = path or profiles.default_path()
+    with _LOCK:
+        try:
+            profiles.init_profile(path, minimal)
+        except FileExistsError:
+            raw = _read(path)
+            raise ProfileConflictError(file_hash(raw) if raw is not None else None) from None
+        try:
+            imported = profiles.import_profile(session, path)
+        except Exception:
+            path.unlink(missing_ok=True)  # sin versión importada, mejor sin fichero: se reintenta
+            raise
+        after = file_hash(path.read_bytes())
+    record_edit(session, "profile", None, "create", None, after)
+    return CreateResult(file_hash=after, profile_version_id=imported.profile_version_id)
+
+
 def undo_last(session: Session, expected_hash: str | None, path: Path | None = None) -> UndoResult:
     """Vuelve a la copia más reciente de `profile-history/` (validada, versión y rescore)."""
     path = path or profiles.default_path()

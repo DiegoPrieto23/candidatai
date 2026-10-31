@@ -1,8 +1,8 @@
-"""Primer arranque, con la carpeta de datos vacía: «Primeros pasos» en Inicio, el perfil retocado y
-guardado desde «Mi perfil» y lo que dice cada página principal cuando aún no hay nada.
+"""Primer arranque, con la carpeta de datos vacía: «Primeros pasos» en Inicio, el perfil creado a
+mano y guardado desde «Mi perfil» y lo que dice cada página principal cuando aún no hay nada.
 
-Sin perfil, la app no lo crea desde la UI: lo crea tu agente a partir de tu CV (`FUNCIONALIDADES`,
-«Mi perfil»). Aquí el agente se simula con `cai profile init`, que deja el perfil de ejemplo.
+Sin agente, el perfil se empieza a mano en «Mi perfil» («Empezar a mano»): lo justo para que valide
+y, después, bloque a bloque en el editor. Con agente, lo crea a partir de tu CV (no se prueba aquí).
 """
 
 import json
@@ -21,13 +21,20 @@ pytestmark = pytest.mark.e2e
 CV = FIXTURES.parent / "cv-ficticio.pdf"
 
 
-def _agent_creates_the_profile(server: AppServer) -> None:
-    result = run_cai(server.data_dir, "profile", "init", "--json")
-    assert result.returncode == 0, result.stdout + result.stderr
+def _start_by_hand(page: Page) -> None:
+    """En «Mi perfil» sin perfil: «Empezar a mano», lo mínimo y «Crear mi perfil» abre el editor."""
+    page.get_by_role("button", name=t("profileEditor.noProfile.byHand.open")).click()
+    form = page.get_by_role("region", name=t("profileEditor.noProfile.byHand.title"))
+    form.get_by_label(t("profileEditor.fields.name"), exact=True).fill("Candidata Prueba E2E")
+    form.get_by_label(t("profileEditor.fields.headline"), exact=True).fill("Analista de datos")
+    form.get_by_label(t("profileEditor.noProfile.byHand.role"), exact=True).fill("Data Analyst")
+    form.get_by_role("checkbox", name=t("profileEditor.seniority.mid")).check()
+    form.get_by_role("button", name=t("profileEditor.noProfile.byHand.create")).click()
+    expect(page.get_by_role("tab", name=t("profileEditor.tabs.about"))).to_be_visible()
 
 
 def _first_steps(page: Page):  # noqa: ANN202 - Locator
-    return page.get_by_role("region", name=t("home.firstSteps.title"))
+    return page.get_by_role("region", name=t("home.firstSteps.title"), exact=True)
 
 
 def test_first_steps_lead_where_they_say_and_tick_off(page: Page, empty_app: AppServer) -> None:
@@ -39,12 +46,14 @@ def test_first_steps_lead_where_they_say_and_tick_off(page: Page, empty_app: App
         [t("home.firstSteps.profile.title"), t("home.firstSteps.search.title")]
     )
 
-    # Paso 1: subir el CV para que tu agente cree el perfil.
+    # Paso 1: el CV se sube para tu agente; sin agente, el perfil se empieza a mano.
     steps.get_by_label(t("profileEditor.noProfile.start.fileLabel")).set_input_files(CV)
     uploaded = t("profileEditor.noProfile.start.uploaded", name=CV.name)
     expect(steps.get_by_text(uploaded)).to_be_visible()
-    _agent_creates_the_profile(empty_app)
-    page.reload()
+    steps.get_by_role("link", name=t("home.firstSteps.profile.byHand")).click()
+    expect(page).to_have_url(f"{empty_app.url}/perfil")
+    _start_by_hand(page)
+    page.goto("/")
     done = steps.get_by_role("link", name=t("home.firstSteps.profile.done"))
     expect(done).to_be_visible()
     done.click()
@@ -73,25 +82,26 @@ def test_first_steps_lead_where_they_say_and_tick_off(page: Page, empty_app: App
 
 
 def test_the_profile_saved_from_the_ui_stays_and_is_valid(page: Page, empty_app: AppServer) -> None:
-    _agent_creates_the_profile(empty_app)
     page.goto("/perfil")
+    _start_by_hand(page)
     block = page.get_by_role("region", name=t("profileEditor.blocks.personal.title"))
     name = block.get_by_label(t("profileEditor.fields.name"), exact=True)
     headline = block.get_by_label(t("profileEditor.fields.headline"), exact=True)
-    expect(name).not_to_have_value("")
-    name.fill("Candidata Prueba E2E")
+    expect(name).to_have_value("Candidata Prueba E2E")
+    expect(headline).to_have_value("Analista de datos")
+    name.fill("Candidata Prueba E2E Editada")
     headline.fill("Data Engineer · Python · SQL")
     expect(block.get_by_text(t("profileEditor.unsaved.badge"))).to_be_visible()
     block.get_by_role("button", name=t("profileEditor.actions.save"), exact=True).click()
     expect(block.get_by_role("status")).to_have_text(t("profileEditor.actions.saved"))
 
     page.reload()
-    expect(name).to_have_value("Candidata Prueba E2E")
+    expect(name).to_have_value("Candidata Prueba E2E Editada")
     expect(headline).to_have_value("Data Engineer · Python · SQL")
 
     profile_file = empty_app.data_dir / "profile.yaml"
     data = yaml.safe_load(profile_file.read_text(encoding="utf-8"))
-    assert data["personal"]["name"] == "Candidata Prueba E2E"
+    assert data["personal"]["name"] == "Candidata Prueba E2E Editada"
     result = run_cai(empty_app.data_dir, "profile", "validate", "--json")
     assert result.returncode == 0, result.stdout + result.stderr
     assert json.loads(result.stdout)["ok"] is True

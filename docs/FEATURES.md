@@ -34,7 +34,7 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 
 | Feature | Where | Screenshot |
 |---|---|---|
-| **Home**: on a fresh install, “Getting started” (upload your CV to create your profile and choose where to search with your agent); then what's waiting today (jobs to process or assess, replies, follow-ups), the best fits, ready to send and the next milestones | `/` | [Home](img/en/home.webp) |
+| **Home**: on a fresh install, what the app does and what your agent is, and “Getting started” (upload your CV to create your profile, or start it by hand, and choose where to search with your agent); with no agent installed, “You need an AI agent” with the steps to install Claude Code; then what's waiting today (jobs to process or assess, replies, follow-ups), the best fits, ready to send and the next milestones | `/` | [Home](img/en/home.webp) |
 | **Hard filters and an explained 0-100 score**: level, years, remote mode, location, languages and words that discard; skill coverage weighted by your level, preferences and optional local semantic similarity | `/por-revisar` | [To review](img/en/triage.webp) |
 | **Review with the keyboard**: `J`/`K` to move, `A` approve, `D` discard with a reason, `O` open, and Undo | `/por-revisar` | [▶ Keyboard](img/en/anim/triage.webp) |
 | **Your agent's verdict**: fit with risks and questions, citing your deal-breakers; in the background it skips low-score jobs. On each job, “Assess this job” when it has no assessment or an outdated one | `assess-fit` | |
@@ -93,7 +93,7 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 | **Skills**: what your jobs ask for that your profile lacks; "it's the same as…" aliases, "I have it" and "I don't have it", 25 at a time | `/skills` | [Skills](img/en/skills.webp) |
 | **Training plan** with verified resources for your real gaps, and an assessment of a course or project | `training-plan` | |
 | **Widen the search** with adjacent job titles from what you approve and discard | `broaden-search` | |
-| **My profile, editable**: with no profile yet, you upload your CV and your agent builds it from it; an index to jump to each section; skills and languages at the top; collapsible experience, projects, education, certifications and STAR stories; **Search** preferences (years, private minimum salary, words that discard, contract, company type), CV and letter preferences, context and style samples; the unsaved-changes notice names the blocks and takes you to them; keeps your file's comments, with Undo | `/perfil` | [Experience](img/en/profile-experience.webp) · [Search](img/en/profile-search.webp) · [▶ Collapsible](img/en/anim/profile.webp) |
+| **My profile, editable**: with no profile yet, you upload your CV and your agent builds it from it, or you start it by hand (name, headline, role and levels); context files are created from their template even before you have a profile; an index to jump to each section; skills and languages at the top; collapsible experience, projects, education, certifications and STAR stories; **Search** preferences (years, private minimum salary, words that discard, contract, company type), CV and letter preferences, context and style samples; the unsaved-changes notice names the blocks and takes you to them; keeps your file's comments, with Undo | `/perfil` | [Experience](img/en/profile-experience.webp) · [Search](img/en/profile-search.webp) · [▶ Collapsible](img/en/anim/profile.webp) |
 | **Create or update your profile** from your CV or what you tell your agent | `update-profile` | |
 | **Expand your profile** from your public GitHub, portfolio, Kaggle or Scholar, each item with its source and only with your OK | `expand` | |
 | **LinkedIn profile review** against your profile and the jobs you approve | `review-linkedin` | |
@@ -102,7 +102,7 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 
 | Feature | Where | Screenshot |
 |---|---|---|
-| **Agent**: default agent and one per action, background runs with progress, questions and Cancel, cost by action and model, spending levels and the score's meaning-based comparison | `/agente` | [Agent](img/en/agent.webp) |
+| **Agent**: at the top, whether your agent is ready or how to install one, and what sets Claude (the chat) apart from Claude Code; folded away, default agent and one per action, background runs with progress, questions and Cancel, cost by action and model, spending levels and the score's meaning-based comparison | `/agente` | [Agent](img/en/agent.webp) |
 | **Every agent button explains itself**: what the skill does, what it changes and what it needs, on hover or keyboard focus | Every page | |
 | **Leave it for your next session**: any button saves the order for your agent | `handle-requests` | |
 | **Daily summary**: pending jobs, overdue follow-ups and next milestones | `daily-summary` | |

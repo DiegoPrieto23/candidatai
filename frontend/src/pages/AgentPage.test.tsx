@@ -58,6 +58,52 @@ function request(changes: Partial<AgentRequestView> = {}): AgentRequestView {
   }
 }
 
+describe('Lo primero de «Agente» (fase 31)', () => {
+  const quiet = {
+    'GET /status': status(),
+    'GET /agent/runs': { active: 0, runs: [] },
+    'GET /agent/requests': { pending: 0, requests: [] },
+  }
+  const entry = (name: string, display: string, installed: boolean) => ({
+    name,
+    installed,
+    enabled: true,
+    config: 'generated',
+    version: installed ? '1.0' : null,
+    info: { display_name: display, vendor: 'Anthropic', license: 'propietaria', open_source: false, install: { windows: `instala ${name}` } },
+    capabilities: { mcp: true, subagents: 'isolated', isolation_level: 'A', vision: null, web: true, browser: null, local_models: false, headless: true },
+    models: { by_name: false, presets: [], fast: null, capable: null, example: null },
+  })
+
+  it('con un agente listo, lo dice arriba y pliega el detalle', async () => {
+    mockApi({
+      ...quiet,
+      'GET /agent': { ...launcher, no_agent_installed: false },
+      'GET /agent/agents': { agents: [entry('claude', 'Claude Code', true)], launchable: ['claude'], preferences: {}, effective: [] },
+    })
+    renderApp('/agente')
+    expect(await screen.findByRole('heading', { name: 'Tu agente: Claude Code, listo' })).toBeInTheDocument()
+    expect(screen.getByText(/Claude no es lo mismo que Claude Code/)).toBeInTheDocument()
+    const details = screen.getByRole('button', { name: /^Tus agentes en detalle/ })
+    expect(details).toHaveAttribute('aria-expanded', 'false')
+    expect(screen.queryByLabelText('Agente por defecto')).not.toBeInTheDocument()
+  })
+
+  it('sin ninguno, explica cómo instalar uno y deja a la vista los agentes', async () => {
+    mockApi({
+      ...quiet,
+      'GET /agent': { ...launcher, available: false, agent: null, reason: 'Sin agente.', no_agent_installed: true },
+      'GET /agent/agents': { agents: [entry('claude', 'Claude Code', false)], launchable: ['claude'], preferences: {}, effective: [] },
+    })
+    renderApp('/agente')
+    const notice = await screen.findByRole('region', { name: 'Necesitas un agente de IA' })
+    expect(await within(notice).findByLabelText('Orden para instalar Claude Code')).toHaveTextContent('instala claude')
+    // Ya está en «Agente»: no se enlaza a sí misma.
+    expect(within(notice).queryByRole('link', { name: /Otros agentes/ })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^Tus agentes en detalle/ })).toHaveAttribute('aria-expanded', 'true')
+  })
+})
+
 describe('Página «Agente» (fase 19)', () => {
   it('cada ejecución dice con qué agente y modelo se lanzó (fase 24.4)', async () => {
     mockApi({

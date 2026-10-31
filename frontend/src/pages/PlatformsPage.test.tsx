@@ -137,7 +137,7 @@ describe('Plataformas', () => {
     })
     renderApp('/plataformas')
     await userEvent.click(await screen.findByRole('button', { name: 'Ampliar búsqueda' }))
-    expect(await screen.findByText('Abierto en claude: sigue en la terminal.')).toBeInTheDocument()
+    expect(await screen.findByText('Abierto en claude: sigue en la ventana que se acaba de abrir.')).toBeInTheDocument()
     expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ action: 'broaden-search' })
   })
 

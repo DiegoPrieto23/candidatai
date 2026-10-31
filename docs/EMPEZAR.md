@@ -119,17 +119,26 @@ propio ordenador: no hay nada en internet.
 
 ## 3. Instalar tu agente
 
-En CandidatAI, abre **Agente** en la barra lateral. Lista los agentes que conoce la app, marca los
-que no tienes como **No instalado** y te da el comando para instalar cada uno, listo para copiar.
+Un agente no es la app de chat de Claude ni claude.ai: es un programa aparte que instalas en tu
+equipo, con tu misma cuenta y tu misma suscripción (Claude Code, en el caso de Claude). Mientras no
+tengas ninguno, **Inicio** y **Agente** te avisan con «Necesitas un agente de IA» y los pasos para
+instalar Claude Code: abrir PowerShell (o Terminal en macOS), pegar la orden que te dan con
+**Copiar**, entrar con tu cuenta escribiendo `claude` y volver a abrir CandidatAI.
+
+Para otro agente, despliega **Tus agentes en detalle**, en **Agente**: lista los que conoce la app,
+marca los que no tienes como **No instalado** y te da el comando para instalar cada uno, listo para
+copiar.
 Sus páginas oficiales: [Claude Code](https://code.claude.com/docs/en/setup),
 [Codex](https://developers.openai.com/codex/cli),
 [Antigravity CLI](https://antigravity.google/docs/install?tab=cli),
 [OpenCode](https://opencode.ai) y [Qwen Code](https://qwenlm.github.io/qwen-code-docs/). La primera
 vez que lo abras, entra con tu cuenta.
 
-De vuelta en **Agente**, elige el tuyo como agente por defecto. Desde ese momento, botones como
-**Procesar ofertas**, **Evaluar encaje** o **Generar CV** lo abren en una terminal con la orden ya
-escrita: ves lo que hace y lo apruebas. Su flechita ofrece además **En segundo plano** (sin ventana;
+De vuelta en **Agente**, arriba dice «Tu agente: Claude Code, listo». Si tienes varios, elige el
+tuyo como agente por defecto en **Tus agentes en detalle**. Desde ese momento, botones como
+**Procesar ofertas**, **Evaluar encaje** o **Generar CV** lo abren en una ventana aparte con la orden
+ya escrita: ves lo que hace y lo apruebas. Si no puede abrirlo, el botón te enseña la orden entera,
+con **Copiar**, para que la pegues en tu agente. Su flechita ofrece además **En segundo plano** (sin ventana;
 lo sigues en «Agente») y **Dejar para mi próxima sesión**.
 
 <img src="img/es/agent.webp" alt="Página Agente: agente por defecto, uno por acción y ejecuciones en segundo plano" width="88%">
@@ -162,13 +171,19 @@ Para volver a tus datos, cierra esa ventana y abre CandidatAI como siempre.
 ## 5. Crear tu perfil
 
 Tu **perfil** es la única fuente de verdad: en un CV no entra nada que no esté en él. No hace falta
-rellenarlo a mano: tu agente lo crea a partir de tu CV.
+rellenarlo a mano: tu agente lo crea a partir de tu CV. Sin CV o sin agente, también puedes
+empezarlo a mano.
 
 Lo más fácil es desde la app. Abre **Mi perfil**: mientras no tengas perfil, te propone empezar por
 tu CV. Pulsa **Subir mi CV** (PDF o Word) y luego **Crear mi perfil desde mi CV**, que abre tu
 agente en una terminal con la orden ya escrita. Lee tu CV, te pregunta lo que no dice (el nivel de
 tus skills, las cifras de tus logros, qué buscas) y no guarda nada sin tu OK. Cuando termina, tu
 perfil aparece solo en **Mi perfil**: sigue en el paso 3.
+
+Sin agente (o sin CV), pulsa **Empezar a mano** en **Mi perfil**: escribe tu nombre, tu titular, el
+puesto que buscas y los niveles que aceptas, y pulsa **Crear mi perfil**. Se abre el editor para que
+sigas bloque a bloque; lo que no te ha preguntado (modalidad, ubicaciones, foto en el CV) empieza
+abierto a todo y lo cambias en **Búsqueda** y **Documentos**.
 
 Si prefieres hacerlo desde tu agente:
 

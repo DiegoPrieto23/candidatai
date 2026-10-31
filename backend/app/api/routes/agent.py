@@ -55,6 +55,7 @@ class Action(BaseModel):
 class AgentStatus(agent_launch.AgentInfo):
     actions: list[Action]
     background: agent_launch.BackgroundInfo
+    no_agent_installed: bool  # ninguno en el `PATH` (en Docker, siempre `false`)
 
 
 class RequestBody(BaseModel):
@@ -131,6 +132,7 @@ def get_agent_launcher(session: SessionDep) -> AgentStatus:
         **agent_launch.info(session).model_dump(),
         actions=actions,
         background=agent_launch.background_info(session),
+        no_agent_installed=agent_launch.no_agent_installed(),
     )
 
 

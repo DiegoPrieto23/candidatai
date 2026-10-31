@@ -10,6 +10,15 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Crear tu perfil sin agente:** en «Mi perfil», **Empezar a mano** pide tu nombre, tu titular, el
+  puesto que buscas y los niveles que aceptas, crea el perfil y abre el editor para seguir bloque a
+  bloque. Nada sale del perfil de ejemplo.
+- **«Necesitas un agente de IA»:** si no tienes ningún agente instalado, Inicio y «Agente» lo dicen
+  y explican cómo instalar Claude Code paso a paso (dónde pegar la orden, con «Copiar», y cómo
+  entrar con tu cuenta), con un enlace a la guía.
+- **Los ficheros de contexto se crean desde la app:** en «Mi perfil → Contexto», cada fichero que
+  aún no existe tiene su botón **Crear**, que abre su plantilla con las preguntas que te guían,
+  aunque todavía no tengas perfil.
 - **Cada etapa de la Bandeja explica qué es y cómo avanzar:** al elegir «Por completar», «Por
   extraer», «Por revisar»… sale qué falta y quién lo hace, con el botón que lo hace («Procesar
   ofertas», «Evaluar encaje», «Ir a Por revisar»). Así se ve la diferencia: «Procesar ofertas» lee
@@ -26,6 +35,17 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   no hace falta generar un token y pegarlo en sus opciones.
 
 ### Cambiado
+- **Inicio explica qué hace la app y qué es tu agente:** el programa de IA que tienes instalado
+  (Claude Code, Codex…) y que lee las ofertas y escribe tus CVs, con un enlace a «Agente». Mientras
+  faltan los primeros pasos, el titular lo dice («Te quedan 2 primeros pasos para empezar») y la
+  única acción destacada es la del paso que toca.
+- **«Agente» empieza por lo que importa:** arriba, «Tu agente: Claude Code, listo» (o cómo instalar
+  uno) y qué distingue a Claude, la app de chat, de Claude Code; versiones, licencias, niveles y
+  modelos, plegados en «Tus agentes en detalle».
+- **Cuando un botón no puede abrir tu agente,** enseña la orden entera en un recuadro con «Copiar» y
+  dice dónde pegarla. Ya no desaparece a los pocos segundos ni va en letra pequeña.
+- **Las carpetas de «Documentos»** salen con su nombre («Títulos», «Referencias»…), no con el de la
+  carpeta en disco.
 - **Instalar la extensión, más claro:** el paso «Cargar descomprimida» enseña la ruta de su carpeta
   con un botón para copiarla y dice dónde pegarla en la ventana de elegir carpeta (en Windows,
   macOS y Linux).

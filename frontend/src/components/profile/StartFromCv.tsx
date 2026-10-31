@@ -1,4 +1,5 @@
-/** «Mi perfil» sin perfil: subir el CV y que tu agente lo rellene, sin escribir nada a mano. */
+/** «Mi perfil» sin perfil: subir el CV y que tu agente lo rellene, sin escribir nada a mano (sin
+ * agente, «Empezar a mano», en `StartByHand`). */
 import { useRef, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CheckCircleIcon, UploadSimpleIcon, UserCircleIcon } from '@phosphor-icons/react'
@@ -104,7 +105,6 @@ export function StartFromCv() {
           <p>{t('review')}</p>
         </Step>
       </ol>
-      <p className="mt-6 border-t pt-4 text-xs text-muted-foreground">{t('manual')}</p>
     </section>
   )
 }

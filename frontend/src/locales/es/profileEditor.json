@@ -11,7 +11,7 @@
     "unreadable": "Tu fichero de perfil tiene un error y no se puede leer. Pide a tu agente que lo arregle («revisa y arregla mi perfil»).",
     "start": {
       "title": "Empieza por tu CV",
-      "intro": "Aún no tienes perfil, y no hace falta rellenarlo a mano: tu agente lo crea a partir de tu CV.",
+      "intro": "Lo más rápido: tu agente lo crea a partir de tu CV, sin que rellenes nada. Sin CV o sin agente, empieza a mano, más abajo.",
       "upload": "Sube tu CV, en PDF o Word. Se guarda en tu equipo, con tus documentos.",
       "agent": "Tu agente lo lee y rellena tu perfil sección a sección. Te pregunta lo que el CV no dice (el nivel de tus skills, las cifras de tus logros, qué buscas) y no guarda nada sin tu OK.",
       "review": "Cuando termine, tu perfil aparece aquí solo, para que lo revises bloque a bloque.",
@@ -19,8 +19,24 @@
       "uploadAnother": "Subir otro CV",
       "uploading": "Subiendo…",
       "fileLabel": "Tu CV",
-      "uploaded": "CV subido: {{name}}",
-      "manual": "¿Prefieres no usar tu CV? Pídele a tu agente «crea mi perfil» y te lo irá preguntando."
+      "uploaded": "CV subido: {{name}}"
+    },
+    "byHand": {
+      "title": "Empezar a mano",
+      "intro": "Sin CV o sin agente: escribe lo básico y completa el resto bloque a bloque, aquí mismo.",
+      "open": "Empezar a mano",
+      "headlineHint": "Lo que pondrías bajo tu nombre en un CV, p. ej. «Analista de datos · SQL · Power BI».",
+      "role": "Puesto que buscas",
+      "roleHint": "Uno para empezar; luego añades más en «Búsqueda».",
+      "summary": "Resumen (opcional)",
+      "summaryHint": "Dos o tres frases sobre ti. Si lo dejas vacío, se usa tu titular.",
+      "defaults": "Lo demás (modalidad, ubicaciones, foto en el CV…) empieza abierto a todo y lo cambias en «Búsqueda» y «Documentos». Tu experiencia y tus skills, en «Experiencia y formación».",
+      "required": "Hace falta para crear tu perfil.",
+      "pickOne": "Elige al menos uno.",
+      "create": "Crear mi perfil",
+      "creating": "Creando…",
+      "cancel": "Cancelar",
+      "exists": "Ya tienes un perfil: lo acaba de crear tu agente o se creó en otra pestaña. Ahora lo abro."
     }
   },
   "issues": {

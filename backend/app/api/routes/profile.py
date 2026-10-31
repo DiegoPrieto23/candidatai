@@ -51,6 +51,14 @@ def get_editable_profile(session: SessionDep) -> profile_editor.EditableProfile:
     return profile_editor.get_editable(session)
 
 
+@router.post("/profile", operation_id="create_profile", dependencies=[Depends(require_ui)])
+def create_profile(
+    session: SessionDep, body: profiles.MinimalProfile
+) -> profile_editor.CreateResult:
+    """«Empezar a mano»: crea tu perfil mínimo sin agente. `conflict` si ya existe el fichero."""
+    return profile_editor.create_profile(session, body)
+
+
 @router.put(
     "/profile/sections/{section}",
     operation_id="save_profile_section",

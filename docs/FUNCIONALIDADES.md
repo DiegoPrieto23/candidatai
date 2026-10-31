@@ -34,7 +34,7 @@ FEATURES.md dejan de coincidir fila a fila. -->
 
 | Funcionalidad | Dónde | Captura |
 |---|---|---|
-| **Inicio**: con la app recién instalada, «Primeros pasos» (sube tu CV para crear tu perfil y elige dónde buscar con tu agente); luego, lo que te espera hoy (ofertas por procesar o valorar, respuestas, seguimientos), las que mejor encajan, las listas para enviar y los próximos hitos | `/` | [Inicio](img/es/home.webp) |
+| **Inicio**: con la app recién instalada, qué hace la app y qué es tu agente, y «Primeros pasos» (sube tu CV para crear tu perfil, o empiézalo a mano, y elige dónde buscar con tu agente); sin ningún agente instalado, «Necesitas un agente de IA» con los pasos para instalar Claude Code; luego, lo que te espera hoy (ofertas por procesar o valorar, respuestas, seguimientos), las que mejor encajan, las listas para enviar y los próximos hitos | `/` | [Inicio](img/es/home.webp) |
 | **Filtros duros y un score 0-100 explicado**: nivel, años, modalidad, zona, idiomas y palabras de descarte; cobertura de skills ponderada por tu nivel, preferencias y similitud semántica local opcional | `/por-revisar` | [Por revisar](img/es/triage.webp) |
 | **Revisar con el teclado**: `J`/`K` para moverte, `A` aprobar, `D` descartar con motivo, `O` abrir, y Deshacer | `/por-revisar` | [▶ Teclado](img/es/anim/triage.webp) |
 | **El veredicto de tu agente**: encaje con riesgos y preguntas, citando tus deal-breakers; en segundo plano se salta las de poco score. En cada oferta, «Valorar encaje» si no tiene valoración o la tiene desfasada | `assess-fit` | |
@@ -93,7 +93,7 @@ FEATURES.md dejan de coincidir fila a fila. -->
 | **Skills**: lo que piden tus ofertas y tu perfil no cubre; sinónimos «Es lo mismo que…», «La tengo» y «No la tengo», de 25 en 25 | `/skills` | [Skills](img/es/skills.webp) |
 | **Plan de formación** con recursos verificados para tus huecos reales, y valoración de un curso o proyecto | `training-plan` | |
 | **Ampliar la búsqueda** con títulos de puesto cercanos a lo que apruebas y descartas | `broaden-search` | |
-| **Mi perfil, editable**: sin perfil, subes tu CV y tu agente lo crea a partir de él; un índice para saltar a cada apartado; skills e idiomas arriba; experiencia, proyectos, formación, certificaciones e historias STAR plegables; preferencias de **Búsqueda** (años, sueldo mínimo privado, palabras que descartan, contrato, tipo de empresa), preferencias de CV y carta, contexto y muestras de estilo; el aviso de cambios sin guardar dice qué bloques y lleva hasta ellos; conserva los comentarios de tu fichero, con Deshacer | `/perfil` | [Experiencia](img/es/profile-experience.webp) · [Búsqueda](img/es/profile-search.webp) · [▶ Plegable](img/es/anim/profile.webp) |
+| **Mi perfil, editable**: sin perfil, subes tu CV y tu agente lo crea a partir de él, o lo empiezas a mano (nombre, titular, puesto y niveles); los ficheros de contexto se crean desde su plantilla aunque aún no tengas perfil; un índice para saltar a cada apartado; skills e idiomas arriba; experiencia, proyectos, formación, certificaciones e historias STAR plegables; preferencias de **Búsqueda** (años, sueldo mínimo privado, palabras que descartan, contrato, tipo de empresa), preferencias de CV y carta, contexto y muestras de estilo; el aviso de cambios sin guardar dice qué bloques y lleva hasta ellos; conserva los comentarios de tu fichero, con Deshacer | `/perfil` | [Experiencia](img/es/profile-experience.webp) · [Búsqueda](img/es/profile-search.webp) · [▶ Plegable](img/es/anim/profile.webp) |
 | **Crear o actualizar tu perfil** desde tu CV o lo que le cuentes a tu agente | `update-profile` | |
 | **Ampliar tu perfil** desde tu GitHub, portfolio, Kaggle o Scholar públicos, cada cosa con su fuente y solo con tu OK | `expand` | |
 | **Revisión de tu perfil de LinkedIn** frente a tu perfil y a las ofertas que apruebas | `review-linkedin` | |
@@ -102,7 +102,7 @@ FEATURES.md dejan de coincidir fila a fila. -->
 
 | Funcionalidad | Dónde | Captura |
 |---|---|---|
-| **Agente**: agente por defecto y uno por acción, ejecuciones en segundo plano con progreso, preguntas y Cancelar, coste por acción y modelo, niveles de gasto y la comparación por significado del score | `/agente` | [Agente](img/es/agent.webp) |
+| **Agente**: arriba, si tu agente está listo o cómo instalar uno, y qué distingue a Claude (el chat) de Claude Code; plegados, agente por defecto y uno por acción, ejecuciones en segundo plano con progreso, preguntas y Cancelar, coste por acción y modelo, niveles de gasto y la comparación por significado del score | `/agente` | [Agente](img/es/agent.webp) |
 | **Cada botón de agente se explica**: qué hace el skill, qué cambia y qué necesita, al pasar el ratón o con el foco del teclado | Todas las páginas | |
 | **Dejar para tu próxima sesión**: cualquier botón guarda la orden para tu agente | `handle-requests` | |
 | **Resumen del día**: ofertas pendientes, seguimientos vencidos y próximos hitos | `daily-summary` | |

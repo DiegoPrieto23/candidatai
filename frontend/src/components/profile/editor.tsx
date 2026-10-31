@@ -31,6 +31,11 @@ export function useProfileState(): EditorState {
   return value
 }
 
+/** Como `useProfileState`, pero `null` fuera del editor (los ficheros de contexto, sin perfil). */
+export function useOptionalProfileState(): EditorState | null {
+  return useContext(EditorContext)
+}
+
 /** Avisa de los cambios sin guardar: al cerrar la pestaña y al pulsar un enlace de la app. */
 function useUnsavedGuard(dirty: boolean, message: string) {
   useEffect(() => {

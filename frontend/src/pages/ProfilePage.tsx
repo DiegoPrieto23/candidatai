@@ -31,6 +31,7 @@ import {
   SearchWhereBlock,
 } from '@/components/profile/PreferencesBlocks'
 import { LanguagesBlock, SkillsBlock } from '@/components/profile/SkillsBlock'
+import { StartByHand } from '@/components/profile/StartByHand'
 import { StartFromCv } from '@/components/profile/StartFromCv'
 import { StoriesBlock } from '@/components/profile/StoriesBlock'
 import { errorMessage } from '@/lib/errors'
@@ -55,34 +56,69 @@ function FileState({ file }: { file: ContextFileInfo }) {
   return <span className={cn('text-xs font-medium', tone)}>{label}</span>
 }
 
-function ContextFiles({ files }: { files: ContextFileInfo[] }) {
+/** Lleva al bloque del fichero (en «Documentos», con perfil) y le da el foco. */
+function goToEditor(section: ContextSectionName) {
+  const block = document.getElementById(blockAnchor(`context-${section}`))
+  block?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  block?.focus({ preventScroll: true })
+}
+
+/**
+ * Los cuatro ficheros de contexto. Con perfil, sus editores están más arriba y cada fila lleva hasta
+ * el suyo; sin perfil, se crean y se editan aquí mismo, desplegados bajo su fila.
+ */
+function ContextFiles({ files, editorsAbove }: { files: ContextFileInfo[]; editorsAbove: boolean }) {
   const { t } = useTranslation('profile')
+  const [open, setOpen] = useState<ContextSectionName | null>(null)
   return (
     <ul className="divide-y rounded-xl border bg-card">
-      {files.map((file) => (
-        <li key={file.section} className="grid gap-1 px-4 py-3">
-          <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-            <span className="flex items-center gap-2 font-medium">
-              <FileTextIcon className="size-4 text-muted-foreground" aria-hidden />
-              {t(`sections.${file.section}.title`)}
-            </span>
-            <FileState file={file} />
-          </div>
-          <p className="text-sm text-muted-foreground">{t(`sections.${file.section}.hint`)}</p>
-          {file.exists && (
-            <p className="text-xs text-muted-foreground">
-              {formatSize(file.size_bytes)}
-              {file.modified_at && ` · ${formatWhen(file.modified_at)}`}
-            </p>
-          )}
-          {file.warnings.map((warning) => (
-            <p key={warning} className="flex items-start gap-1.5 text-xs text-amber-700 dark:text-amber-400">
-              <WarningIcon className="mt-0.5 size-3.5 shrink-0" aria-hidden />
-              {warning.replace(/^[a-z_]+: /, '')}
-            </p>
-          ))}
-        </li>
-      ))}
+      {files.map((file) => {
+        const name = t(`sections.${file.section}.title`)
+        const expanded = open === file.section
+        // Sin perfil, se crea o se edita aquí; con perfil, lleva a su bloque.
+        const action = expanded ? 'close' : editorsAbove || file.exists ? 'edit' : 'create'
+        return (
+          <li key={file.section} className="grid gap-1 px-4 py-3">
+            <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+              <span className="flex items-center gap-2 font-medium">
+                <FileTextIcon className="size-4 text-muted-foreground" aria-hidden />
+                {name}
+              </span>
+              <span className="flex items-center gap-3">
+                <FileState file={file} />
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={editorsAbove ? 'ghost' : 'outline'}
+                  aria-label={t(`contextFile.${action}Named`, { name })}
+                  aria-expanded={editorsAbove ? undefined : expanded}
+                  onClick={() => (editorsAbove ? goToEditor(file.section) : setOpen(expanded ? null : file.section))}
+                >
+                  {t(`contextFile.${action}`)}
+                </Button>
+              </span>
+            </div>
+            <p className="text-sm text-muted-foreground">{t(`sections.${file.section}.hint`)}</p>
+            {file.exists && (
+              <p className="text-xs text-muted-foreground">
+                {formatSize(file.size_bytes)}
+                {file.modified_at && ` · ${formatWhen(file.modified_at)}`}
+              </p>
+            )}
+            {file.warnings.map((warning) => (
+              <p key={warning} className="flex items-start gap-1.5 text-xs text-amber-700 dark:text-amber-400">
+                <WarningIcon className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+                {warning.replace(/^[a-z_]+: /, '')}
+              </p>
+            ))}
+            {!editorsAbove && expanded && (
+              <div className="mt-2">
+                <ContextFileEditor section={file.section} />
+              </div>
+            )}
+          </li>
+        )
+      })}
     </ul>
   )
 }
@@ -132,7 +168,7 @@ function DocumentFolders({ folders }: { folders: ContextStatus['folders'] }) {
           <span className="grid gap-0.5">
             <span className="flex items-center gap-2 text-sm font-medium">
               <FolderIcon className="size-4 text-muted-foreground" aria-hidden />
-              {folder.name}
+              {t(`folderNames.${folder.name}`)}
             </span>
             <span className="text-sm text-muted-foreground">{t(`folders.${folder.name}`)}</span>
           </span>
@@ -151,8 +187,9 @@ function InlineCodeTag({ children }: { children?: React.ReactNode }) {
   return <code className="rounded bg-muted px-1 py-0.5 font-mono text-[0.85em] text-foreground">{children}</code>
 }
 
-/** Estado de los ficheros de contexto y de las carpetas de documentos (fase 13). */
-function FilesOverview() {
+/** Estado de los ficheros de contexto y de las carpetas de documentos (fase 13). `editorsAbove`:
+ * con perfil, los editores de contexto van en sus bloques, más arriba. */
+function FilesOverview({ editorsAbove = false }: { editorsAbove?: boolean }) {
   const { t } = useTranslation('profile')
   const status = useContextStatus()
   const code = <InlineCodeTag />
@@ -167,12 +204,12 @@ function FilesOverview() {
               {t('context')}
             </h2>
             <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-              <Trans t={t} i18nKey="contextIntro" components={{ strong: <strong className="font-medium text-foreground" />, code }} />
+              <Trans t={t} i18nKey={editorsAbove ? 'contextIntro' : 'contextIntroHere'} components={{ strong: <strong className="font-medium text-foreground" />, code }} />
             </p>
           </div>
           <OpenFolderButton folder="contexto" ariaLabel={t('openContext')} />
         </div>
-        <ContextFiles files={status.data.files} />
+        <ContextFiles files={status.data.files} editorsAbove={editorsAbove} />
       </section>
       <section aria-labelledby="documentos" className="grid gap-3">
         <div className="flex flex-wrap items-end justify-between gap-3">
@@ -381,7 +418,7 @@ function Editor() {
           <ContextFileEditor key={section} section={section} />
         ))}
         <StyleSamplesBlock />
-        <FilesOverview />
+        <FilesOverview editorsAbove />
       </TabsContent>
       <TabsContent value="history" forceMount className={hidden}>
         <HistoryBlock />
@@ -409,7 +446,10 @@ export function ProfilePage() {
   } else if (!editable.data.exists) {
     body = (
       <div className="grid gap-10">
-        <StartFromCv />
+        <div className="grid gap-4">
+          <StartFromCv />
+          <StartByHand />
+        </div>
         <FilesOverview />
       </div>
     )

@@ -13,14 +13,14 @@ from pathlib import Path
 from typing import Any, Literal, get_args
 
 import yaml
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.config import REPO_ROOT, get_settings
 from app.core.validation import describe_error
 from app.models import ProfileVersion
-from app.schemas.profile import CandidateProfile, ProfileConsistencyError
+from app.schemas.profile import CandidateProfile, ProfileConsistencyError, RemoteMode, Seniority
 from app.services import tasks
 
 EXAMPLE_PATH = REPO_ROOT / "demo" / "profile.example.yaml"
@@ -268,13 +268,64 @@ def diff_last_two(session: Session) -> ProfileDiff:
     return ProfileDiff(from_version=old.id, to_version=new.id, diff="".join(diff))
 
 
-def init_profile(dest: Path | None = None) -> Path:
-    """Copia el perfil de ejemplo a `data/profile.yaml`. Nunca sobrescribe uno existente."""
+class MinimalProfile(BaseModel):
+    """Lo justo para empezar sin agente («Empezar a mano» en «Mi perfil»).
+
+    Lo que dice de ti lo escribes tú; las preferencias de búsqueda (modalidad, foto) arrancan con
+    valores amplios que cambias después en el editor. Nada se inventa: sin resumen, el resumen es tu
+    titular.
+    """
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    name: str = Field(min_length=1, max_length=120)
+    headline: str = Field(min_length=1, max_length=200)
+    role: str = Field(min_length=1, max_length=120, description="El puesto que buscas.")
+    seniority: list[Seniority] = Field(min_length=1, description="Los niveles que aceptas.")
+    summary: str | None = Field(default=None, max_length=2000)
+    language: Literal["es", "en"] = Field(
+        default="es", description="El idioma del resumen y el de trabajo."
+    )
+
+    def to_data(self) -> dict[str, Any]:
+        remote_modes: list[RemoteMode] = ["onsite", "hybrid", "remote"]
+        return {
+            "schema_version": 1,
+            "personal": {"name": self.name},
+            "headline": self.headline,
+            "summary": {self.language: self.summary or self.headline},
+            "preferences": {
+                "roles": [self.role],
+                "seniority_target": list(dict.fromkeys(self.seniority)),
+                "remote_modes": remote_modes,
+                "languages_for_work": [self.language],
+                "cv": {"photo_policy": {"default": False}},
+            },
+        }
+
+
+MINIMAL_HEADER = (
+    "# Tu perfil: la fuente de verdad de tus CVs, cartas y respuestas. Creado desde «Mi perfil»\n"
+    "# («Empezar a mano»); complétalo allí o con tu agente (skill `update-profile`).\n"
+)
+
+
+def init_profile(dest: Path | None = None, minimal: MinimalProfile | None = None) -> Path:
+    """Crea `data/profile.yaml`: con `minimal`, tu perfil mínimo (validado); sin él, una copia del
+    perfil de ejemplo (candidata ficticia). Nunca sobrescribe uno existente (`FileExistsError`)."""
     dest = dest or default_path()
     if dest.exists():
         raise FileExistsError(f"Ya existe {dest}: no se sobrescribe.")
     dest.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(EXAMPLE_PATH, dest)
+    if minimal is None:
+        shutil.copyfile(EXAMPLE_PATH, dest)
+        return dest
+    data = minimal.to_data()
+    CandidateProfile.model_validate(data)  # los valores amplios de `to_data` siempre validan
+    text = MINIMAL_HEADER + yaml.safe_dump(data, allow_unicode=True, sort_keys=False)
+    # `x`: si otro lo crea a la vez, `FileExistsError` en vez de pisarlo.
+    with dest.open("x", encoding="utf-8", newline="\n") as handle:
+        handle.write(text)
     return dest
 
 

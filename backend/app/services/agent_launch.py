@@ -401,6 +401,14 @@ def info(session: Session | None = None) -> AgentInfo:
     return AgentInfo(available=True, agent=picked.agent)
 
 
+def no_agent_installed() -> bool:
+    """Ningún agente del manifiesto está en el `PATH`: Inicio y «Agente» explican cómo instalar uno.
+    En Docker no se sabe (tu agente está fuera del contenedor), así que no se avisa."""
+    if container.in_docker():
+        return False
+    return not any(shutil.which(spec.info.detect[0]) for spec in agent_registry.load().values())
+
+
 def selection(session: Session | None = None) -> AgentInfo:
     """Como `info`, sin exigir una terminal: el agente que se usaría hoy (`cai agents doctor`)."""
     picked = _pick_any(session)

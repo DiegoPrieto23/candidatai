@@ -29,7 +29,7 @@ class ProfileEdit(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     target: Mapped[str] = mapped_column(String(16))
     section: Mapped[str | None] = mapped_column(String(128))  # sección, fichero o muestra
-    action: Mapped[str] = mapped_column(String(16))  # save, undo, upload, delete
+    action: Mapped[str] = mapped_column(String(16))  # create, save, undo, upload, delete
     hash_before: Mapped[str | None] = mapped_column(String(64))  # sha256 del fichero
     hash_after: Mapped[str | None] = mapped_column(String(64))
     created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)

@@ -39,6 +39,43 @@ def client(isolated_env: Path) -> Iterator[TestClient]:
         yield client
 
 
+MINIMAL = {
+    "name": "Demo Persona",
+    "headline": "Analista",
+    "role": "Data Analyst",
+    "seniority": ["mid"],
+}
+
+
+def test_start_by_hand_creates_a_minimal_profile(isolated_env: Path) -> None:
+    """«Empezar a mano»: sin perfil, la UI lo crea, queda importado y el editor ya lo abre."""
+    migrations.upgrade()
+    with TestClient(create_app(), base_url=LOCAL) as client:
+        assert not _editable(client)["exists"]
+        response = client.post("/profile", json=MINIMAL, headers=JSON)
+        assert response.status_code == 200, response.text
+        created = response.json()
+        state = _editable(client)
+        assert state["exists"] and state["issues"] == []
+        assert state["file_hash"] == created["file_hash"]
+        assert state["profile"]["personal"]["name"] == "Demo Persona"
+        assert state["profile_version_id"] == created["profile_version_id"]
+        # Ya se puede guardar por bloques.
+        body = {"file_hash": state["file_hash"], "content": "Analista de datos"}
+        assert client.put("/profile/sections/headline", json=body, headers=JSON).status_code == 200
+
+        # Con el fichero ya creado: `conflict` y no se toca.
+        before = (isolated_env / "profile.yaml").read_bytes()
+        again = client.post("/profile", json=MINIMAL, headers=JSON)
+        assert again.status_code == 409 and again.json()["error"]["type"] == "conflict"
+        assert (isolated_env / "profile.yaml").read_bytes() == before
+        missing = client.post("/profile", json={**MINIMAL, "role": ""}, headers=JSON)
+        assert missing.status_code == 422
+    with session_scope() as session:
+        actions = session.scalars(select(ProfileEdit.action)).all()
+    assert actions == ["create", "save"]
+
+
 def _editable(client: TestClient) -> dict:
     response = client.get("/profile/editable")
     assert response.status_code == 200, response.text
@@ -108,6 +145,7 @@ def test_dry_run_shows_the_diff(client: TestClient) -> None:
     [
         ("PUT", "/profile/sections/headline", {"file_hash": None, "content": "X"}),
         ("POST", "/profile/undo", {"file_hash": None}),
+        ("POST", "/profile", MINIMAL),
         ("PUT", "/context/criterios", {"file_hash": None, "text": "# Criterios\n"}),
         ("POST", "/context/style-samples", {"filename": "a.txt", "content_base64": "YQ=="}),
         ("DELETE", "/context/style-samples/a.txt", {}),
