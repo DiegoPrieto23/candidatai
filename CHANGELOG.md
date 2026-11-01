@@ -10,6 +10,9 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **«Cómo funciona»:** una página nueva en el menú, debajo de Inicio, que cuenta quién hace qué (tú,
+  tu agente y la app) y el recorrido completo en cinco pasos, de preparar tu búsqueda a seguir tus
+  procesos, con un enlace a cada pantalla y a las guías. «Primeros pasos» enlaza a ella.
 - **Crear tu perfil sin agente:** en «Mi perfil», **Empezar a mano** pide tu nombre, tu titular, el
   puesto que buscas y los niveles que aceptas, crea el perfil y abre el editor para seguir bloque a
   bloque. Nada sale del perfil de ejemplo.

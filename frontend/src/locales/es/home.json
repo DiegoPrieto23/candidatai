@@ -53,6 +53,7 @@
   "firstSteps": {
     "title": "Primeros pasos",
     "intro": "Dos pasos para empezar:",
+    "howItWorks": "Todo el recorrido, paso a paso, en «Cómo funciona»",
     "profile": {
       "title": "Crea tu perfil desde tu CV",
       "body": "Sube tu CV (PDF o Word) y pulsa «Crear mi perfil desde mi CV»: tu agente lo lee, te pregunta lo que el CV no dice y no guarda nada sin tu OK.",

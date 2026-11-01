@@ -23,7 +23,7 @@ from starlette.types import ASGIApp, Receive, Scope, Send
 
 # Rutas de la UI (`frontend/src/App.tsx`). Un test comprueba que no falta ninguna.
 UI_ROUTES = re.compile(
-    r"^/(|bandeja|jobs/\d+|nueva|por-revisar|triaje|procesos|calendario|respuestas|embudo|skills|alertas"
+    r"^/(|como-funciona|bandeja|jobs/\d+|nueva|por-revisar|triaje|procesos|calendario|respuestas|embudo|skills|alertas"
     r"|plantillas|perfil|fuentes(/[a-z-]+)?|empresas|plataformas|agente)/?$"
 )
 # `index.html` no se guarda en caché: tras actualizar, la UI nueva carga a la primera.

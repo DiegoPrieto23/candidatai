@@ -326,6 +326,8 @@ Guía completa, con los modelos recomendados según tu memoria y qué sale de tu
 Arranca CandidatAI **fuera de tu agente** (una ventana propia o el acceso directo): si el agente se
 queda sin memoria, puede cerrar lo que haya lanzado él.
 
+Si es tu primera vez, **Cómo funciona**, en el menú, cuenta el recorrido completo y quién hace qué.
+
 Un día normal:
 
 1. Abre **Inicio**: te dice qué tienes (ofertas por revisar, CVs listos, seguimientos vencidos).

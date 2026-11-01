@@ -60,6 +60,7 @@ describe('Barra lateral (fase 23.3)', () => {
       .map((link) => link.textContent?.replace(/\d.*$/, '').trim())
     expect(names).toEqual([
       'Inicio',
+      'Cómo funciona',
       'Bandeja de ofertas',
       'Por revisar',
       'Alertas',

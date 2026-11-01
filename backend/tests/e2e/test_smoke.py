@@ -27,6 +27,7 @@ class Route:
 
 ROUTES = [
     Route("/", None),  # «Hoy»: el `h1` es una frase con lo que tienes pendiente
+    Route("/como-funciona", "howItWorks.title"),
     Route("/bandeja", "inbox.title"),
     Route("/jobs/:id", None),  # el título de la oferta: lo prueba `test_job_page_survives_reload`
     Route("/nueva", "newJob.title"),
