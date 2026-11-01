@@ -116,6 +116,12 @@
       "ignored": "Ignored: nothing was logged.",
       "undo": "Undo",
       "undoFailed": "Couldn't undo: {{error}}"
+    },
+    "shortcuts": {
+      "label": "Keyboard shortcuts",
+      "move": "move",
+      "accept": "accept",
+      "ignore": "ignore"
     }
   }
 }

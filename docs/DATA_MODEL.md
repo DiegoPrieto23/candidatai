@@ -80,6 +80,7 @@ Una fila por extracción; la vigente es la más reciente.
 | job_id | FK jobs | |
 | schema_version | int | Versión del esquema `JobExtraction` |
 | data | JSON | Validado con `JobExtraction` (ver `AGENT_INTERFACE.md`) |
+| title_normalized | text? | Copia de `data.title_normalized`, que el modelo rellena solo: el embudo agrupa por puesto sin leer el JSON |
 | created_at | datetime | |
 
 ### `profile_versions`
@@ -349,10 +350,11 @@ conversión nunca pasa del 100 %.
 | Aceptadas (`accepted`) | `accepted` |
 
 - **Periodo** (`since`): `jobs.first_seen_at` desde las 00:00 de ese día en Europe/Madrid.
-- **Por fuente**: `jobs.source_id` (con `sources.kind` y `name`). **Por puesto**: `title_normalized`
-  de la extracción vigente (la de mayor `id`); los 8 más frecuentes, «Otros» y «Sin extraer».
-  **Por semana**: semana ISO de `first_seen_at` en Europe/Madrid (función SQLite `cai_iso_week`,
-  registrada en `app/core/db.py`).
+- **Por fuente**: `jobs.source_id` (con `sources.kind` y `name`). **Por puesto**:
+  `job_extractions.title_normalized` (copia del de `data`, para no leer el JSON) de la extracción
+  vigente (la de mayor `id`); los 8 más frecuentes, «Otros» y «Sin extraer».
+  **Por semana**: semana ISO de `first_seen_at` en Europe/Madrid. La consulta compara con el
+  instante UTC en que empieza cada lunes, cambio de hora incluido.
 - **Tiempo hasta la primera respuesta**: días entre el primer envío y la primera respuesta (mediana
   y media, 1 decimal), sobre las ofertas con `applied`/`applied_manually` (las transiciones impiden
   responder sin enviar, así que coincide con el paso «Enviadas»). Sin respuesta: `awaiting_reply` (aún en `applied`) y `closed_without_reply`.
@@ -361,8 +363,7 @@ conversión nunca pasa del 100 %.
   tiene fecha de corte: cuenta aunque se pusiera después del envío.
 - **Motivos**: ofertas con `discarded` por `payload.reason` (`unspecified` si falta) y con
   `hard_filter_failed` por cada `payload.failures[].filter` (`json_each`).
-- `cai_iso_week` y `json_each` son de SQLite: pasar a Postgres exigiría reescribir esas dos
-  expresiones.
+- `json_each` es de SQLite: pasar a Postgres exigiría reescribir esa expresión.
 
 ### Calibración (fase 20)
 

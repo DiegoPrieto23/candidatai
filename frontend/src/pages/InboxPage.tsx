@@ -19,7 +19,7 @@ import { type JobSort, PAGE_SIZE, type SortDirection, useEditableProfile, useJob
 import { DiscardDialog, type DiscardChoice } from '@/components/DiscardDialog'
 import { Hint } from '@/components/Hint'
 import { SignalBadges } from '@/components/JobSignals'
-import { KnownBadge } from '@/components/NetworkPanel'
+import { KnownBadge } from '@/components/KnownBadge'
 import { Pager } from '@/components/Pager'
 import { ScoreBadge } from '@/components/MatchDetails'
 import { StageBadge } from '@/components/StageBadge'
@@ -42,6 +42,7 @@ import {
   STAGE_LABEL,
   STAGES,
 } from '@/lib/labels'
+import { useRadioGroup } from '@/lib/radioGroup'
 import { cn } from '@/lib/utils'
 
 function isStage(value: string | null): value is Stage {
@@ -453,42 +454,52 @@ function JobTable({
 }
 
 /** Las etapas como filtros, con cuántas hay en cada una. Las vacías se ven, atenuadas. */
-function StageFilter({ stage, onChange }: { stage: Stage | undefined; onChange: (stage: Stage | undefined) => void }) {
+function StageFilter({
+  stage,
+  onChange,
+}: {
+  stage: Stage | undefined
+  onChange: (stage: Stage | undefined, byKeys: boolean) => void
+}) {
   const { t } = useTranslation('inbox')
   const { data } = useStatus()
   const items: { key: Stage | undefined; label: string; count?: number }[] = [
     { key: undefined, label: t('allStages'), count: data?.total },
     ...STAGES.map((s) => ({ key: s, label: STAGE_LABEL[s], count: data?.by_stage[s] })),
   ]
+  // Un solo Tab para las nueve: las flechas pasan de una a otra.
+  const radios = useRadioGroup(
+    items.map((i) => i.key),
+    stage,
+    onChange,
+  )
   return (
-    <nav aria-label={t('filterStage')} className="scroll-row -mx-4 mb-3 px-4 pb-3 sm:mx-0 sm:px-0">
-      <ul className="flex min-w-max gap-1.5">
-        {items.map(({ key, label, count }) => {
+    <div className="scroll-row -mx-4 mb-3 px-4 pb-3 sm:mx-0 sm:px-0">
+      <div {...radios.group} aria-label={t('filterStage')} className="flex min-w-max gap-1.5">
+        {items.map(({ key, label, count }, index) => {
           const selected = stage === key
           return (
-            <li key={key ?? 'all'}>
-              <button
-                type="button"
-                aria-pressed={selected}
-                onClick={() => onChange(key)}
-                className={cn(
-                  'flex items-baseline gap-1.5 rounded-full border px-3 py-1 text-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                  selected
-                    ? 'border-foreground bg-foreground text-background'
-                    : 'bg-card text-foreground/80 hover:border-foreground/30',
-                  !selected && !count && 'text-muted-foreground/60',
-                )}
-              >
-                {label}
-                <span className={cn('tabular text-xs', selected ? 'text-background/70' : 'text-muted-foreground')}>
-                  {count ?? 0}
-                </span>
-              </button>
-            </li>
+            <button
+              key={key ?? 'all'}
+              type="button"
+              {...radios.item(key, index)}
+              className={cn(
+                'flex items-baseline gap-1.5 rounded-full border px-3 py-1 text-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                selected
+                  ? 'border-foreground bg-foreground text-background'
+                  : 'bg-card text-foreground/80 hover:border-foreground/30',
+                !selected && !count && 'text-muted-foreground/60',
+              )}
+            >
+              {label}
+              <span className={cn('tabular text-xs', selected ? 'text-background/70' : 'text-muted-foreground')}>
+                {count ?? 0}
+              </span>
+            </button>
           )
         })}
-      </ul>
-    </nav>
+      </div>
+    </div>
   )
 }
 
@@ -547,13 +558,13 @@ export function InboxPage() {
 
   const { data, isPending, isError, error, refetch, isPlaceholderData } = useJobs({ stage, q, page, ...sort })
 
-  const update = (changes: Record<string, string | null>) => {
+  const update = (changes: Record<string, string | null>, replace = false) => {
     const next = new URLSearchParams(params)
     for (const [key, value] of Object.entries(changes)) {
       if (value) next.set(key, value)
       else next.delete(key)
     }
-    setParams(next)
+    setParams(next, { replace })
   }
 
   // El orden vive en la URL, como el filtro; el de por defecto no se escribe.
@@ -640,7 +651,7 @@ export function InboxPage() {
 
       <StageGuide stage={stage} />
 
-      <StageFilter stage={stage} onChange={(next) => update({ stage: next ?? null, page: null })} />
+      <StageFilter stage={stage} onChange={(next, byKeys) => update({ stage: next ?? null, page: null }, byKeys)} />
 
       <div className="mb-4 flex flex-col gap-2 sm:flex-row">
         <div className="relative flex-1">

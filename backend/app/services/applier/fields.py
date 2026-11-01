@@ -14,18 +14,22 @@
    devuelve el informe de la pantalla de revisión.
 """
 
+from __future__ import annotations
+
 import contextlib
 import re
 import unicodedata
 from pathlib import Path
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
-from playwright.sync_api import Locator, Page
 from pydantic import BaseModel
 from rapidfuzz import fuzz
 
 from app.services.applier import guard
 from app.services.applier.log import AttemptLog
+
+if TYPE_CHECKING:
+    from playwright.sync_api import Locator, Page
 
 Control = Literal["text", "textarea", "select", "file", "checkbox", "checkboxes", "radio",
                   "buttons", "combobox"]  # fmt: skip

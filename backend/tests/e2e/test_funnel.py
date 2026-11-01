@@ -238,14 +238,14 @@ def test_inbox_filters_searches_pages_and_discards(page: Page, fresh_demo_app: A
 
     # Filtro por etapa.
     approved = _total(server, stage="approved")
-    stages = page.get_by_role("navigation", name=t("inbox.filterStage"))
-    stages.get_by_role("button", name=t("labels.stage.approved")).click()
+    stages = page.get_by_role("radiogroup", name=t("inbox.filterStage"))
+    stages.get_by_role("radio", name=t("labels.stage.approved")).click()
     expect(page.get_by_text(t("inbox.count_other", count=approved))).to_be_visible()
-    stages.get_by_role("button", name=t("inbox.allStages")).click()
+    stages.get_by_role("radio", name=t("inbox.allStages")).click()
 
     # Las que están por extraer se quitan desde la fila (con otro motivo) y se deshace.
     job = api(server, "/jobs", stage="pending_extraction", limit=1)["items"][0]
-    stages.get_by_role("button", name=t("labels.stage.pending_extraction")).click()
+    stages.get_by_role("radio", name=t("labels.stage.pending_extraction")).click()
     page.get_by_role("searchbox", name=t("inbox.search")).fill(job["company"])
     row = table.get_by_role("row").filter(has_text=job["title"])
     expect(row).to_have_count(1)

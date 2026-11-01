@@ -18,12 +18,10 @@ import concurrent.futures
 import mimetypes
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from urllib.parse import unquote, urlsplit
 
 import lxml.html
-from jinja2 import FileSystemLoader, StrictUndefined, select_autoescape
-from jinja2.sandbox import SandboxedEnvironment
 
 from app.core.config import get_settings
 from app.schemas.cv import PageSize
@@ -31,6 +29,9 @@ from app.services.documents import sanitize
 from app.services.documents.context import links, split_links
 from app.services.documents.pdf import PdfConversionError, PdfConverterUnavailableError
 from app.services.documents.templates import Template
+
+if TYPE_CHECKING:
+    from jinja2.sandbox import SandboxedEnvironment
 
 ORIGIN = "http://cai.local"
 PAGE_URL = f"{ORIGIN}/index.html"
@@ -62,7 +63,11 @@ class ChromiumUnavailableError(PdfConverterUnavailableError):
     """Falta Chromium: `pdf_unavailable` (`cai doctor` dice cómo instalarlo)."""
 
 
-def environment(folder: Path) -> SandboxedEnvironment:
+def environment(folder: Path) -> "SandboxedEnvironment":
+    # Jinja2 al renderizar: la API arranca sin cargarlo.
+    from jinja2 import FileSystemLoader, StrictUndefined, select_autoescape
+    from jinja2.sandbox import SandboxedEnvironment
+
     return SandboxedEnvironment(
         loader=FileSystemLoader(folder),
         autoescape=select_autoescape(default=True, default_for_string=True),

@@ -1,10 +1,11 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router'
 import { ArrowsClockwiseIcon, CheckCircleIcon, EnvelopeSimpleIcon, ShieldWarningIcon, XIcon } from '@phosphor-icons/react'
 import type { RepliesPollResult, ReplyInboxItem } from '@/api/client'
 import { usePollReplies, useReplies, useReply, useUnignoreReply, type ReplyStatus } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
+import { Kbd } from '@/components/Kbd'
 import { ReplyProposalCard, type ReplyResolved } from '@/components/ReplyDecision'
 import { EmptyState, ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
@@ -14,6 +15,8 @@ import { formatRelative, STAGE_LABEL } from '@/lib/labels'
 import { MATCH_REASON_LABEL, REPLY_EVENT_LABEL } from '@/lib/replies'
 import { formatWhen } from '@/lib/time'
 import { errorMessage } from '@/lib/errors'
+import { isTyping } from '@/lib/keyboard'
+import { useRadioGroup } from '@/lib/radioGroup'
 import { cn } from '@/lib/utils'
 
 type Filter = 'pending' | 'accepted' | 'ignored' | 'all'
@@ -207,7 +210,7 @@ function ReplyDetail({ item, onResolved }: { item: ReplyInboxItem; onResolved: (
       </header>
 
       <section aria-label={t('proposal')} className="rounded-lg border border-primary/30 bg-primary/[0.03] p-4">
-        <ReplyProposalCard item={item} onResolved={onResolved} />
+        <ReplyProposalCard item={item} onResolved={onResolved} shortcuts />
       </section>
 
       {item.risk_flags.length > 0 && (
@@ -266,6 +269,34 @@ export function RepliesPage() {
   const counts = data?.counts ?? {}
   const unclassified = counts.new ?? 0
   const countFor = (f: (typeof FILTERS)[number]) => f.statuses.reduce((n, s) => n + (counts[s] ?? 0), 0)
+  const chooseFilter = (value: Filter) => {
+    setFilter(value)
+    setSelectedId(null)
+    setResolved(null)
+  }
+  const filters = useRadioGroup(
+    FILTERS.map((f) => f.value),
+    filter,
+    chooseFilter,
+  )
+
+  // J/K, de un correo a otro (A e I, en la propuesta), como en «Por revisar». Las flechas no: aquí
+  // desplazan el texto del correo.
+  const index = selected ? items.indexOf(selected) : -1
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey || isTyping(e.target) || index < 0) return
+      if (document.querySelector('[role="dialog"]')) return // las teclas son del diálogo
+      const key = e.key.toLowerCase()
+      const step = key === 'j' ? 1 : key === 'k' ? -1 : 0
+      const next = items[index + step]
+      if (!step || !next) return
+      e.preventDefault()
+      setSelectedId(next.reply_id)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [index, items])
 
   return (
     <div className="animate-in fade-in duration-300">
@@ -320,28 +351,32 @@ export function RepliesPage() {
         )}
       </div>
 
-      <div role="group" aria-label={t('filterAria')} className="mb-4 flex flex-wrap gap-1">
-        {FILTERS.map((f) => (
-          <button
-            key={f.value}
-            type="button"
-            aria-pressed={filter === f.value}
-            onClick={() => {
-              setFilter(f.value)
-              setSelectedId(null)
-              setResolved(null)
-            }}
-            className={cn(
-              'flex items-baseline gap-2 rounded-md px-3 py-1.5 text-sm transition-colors',
-              filter === f.value
-                ? 'bg-foreground/[0.06] text-foreground dark:bg-foreground/10'
-                : 'text-muted-foreground hover:bg-foreground/[0.04] hover:text-foreground',
-            )}
-          >
-            {t(`filters.${f.value}`)}
-            <span className="tabular text-xs font-medium">{countFor(f)}</span>
-          </button>
-        ))}
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div {...filters.group} aria-label={t('filterAria')} className="flex flex-wrap gap-1">
+          {FILTERS.map((f, i) => (
+            <button
+              key={f.value}
+              type="button"
+              {...filters.item(f.value, i)}
+              className={cn(
+                'flex items-baseline gap-2 rounded-md px-3 py-1.5 text-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                filter === f.value
+                  ? 'bg-foreground/[0.06] text-foreground dark:bg-foreground/10'
+                  : 'text-muted-foreground hover:bg-foreground/[0.04] hover:text-foreground',
+              )}
+            >
+              {t(`filters.${f.value}`)}
+              <span className="tabular text-xs font-medium">{countFor(f)}</span>
+            </button>
+          ))}
+        </div>
+        {items.length > 0 && (
+          <p role="group" className="hidden items-center gap-3 text-xs text-muted-foreground md:flex" aria-label={t('shortcuts.label')}>
+            <span className="flex items-center gap-1"><Kbd>J</Kbd><Kbd>K</Kbd> {t('shortcuts.move')}</span>
+            <span className="flex items-center gap-1"><Kbd>A</Kbd> {t('shortcuts.accept')}</span>
+            <span className="flex items-center gap-1"><Kbd>I</Kbd> {t('shortcuts.ignore')}</span>
+          </p>
+        )}
       </div>
 
       {isPending ? (

@@ -1,4 +1,5 @@
-"""`cai --help`, el supervisor de `cai start` y la API no cargan los comandos pesados de la CLI."""
+"""`cai --help`, el supervisor de `cai start` y la API no cargan los comandos pesados de la CLI, y
+la API arranca sin lo que solo hace falta al generar documentos o abrir el navegador."""
 
 import subprocess
 import sys
@@ -14,11 +15,23 @@ from app.core.config import REPO_ROOT
 
 # Lo que cuesta décimas de segundo y decenas de MB, y el supervisor no usa.
 HEAVY = ("sqlalchemy", "httpx", "docx", "alembic", "fastapi", "rapidfuzz", "app.cli_commands")
+# Lo que la API no necesita para arrancar, responder a `/status` ni servir la UI: el render y la
+# importación de plantillas (python-docx, Jinja2, Pillow, numpy) y el navegador de «Aplicar».
+API_HEAVY = (
+    "docx",
+    "docxtpl",
+    "jinja2",
+    "PIL",
+    "numpy",
+    "playwright",
+    "app.services.documents.authoring",
+    "app.services.documents.importer.build",
+)
 
 
-def loaded_after(code: str) -> list[str]:
-    """Qué módulos de `HEAVY` quedan cargados tras ejecutar `code` en un Python limpio."""
-    check = f"{code}\nimport sys\nprint([m for m in {HEAVY!r} if m in sys.modules])"
+def loaded_after(code: str, heavy: tuple[str, ...] = HEAVY) -> list[str]:
+    """Qué módulos de `heavy` quedan cargados tras ejecutar `code` en un Python limpio."""
+    check = f"{code}\nimport sys\nprint([m for m in {heavy!r} if m in sys.modules])"
     result = subprocess.run(  # noqa: S603
         [sys.executable, "-c", check],
         cwd=REPO_ROOT / "backend",
@@ -43,6 +56,11 @@ def loaded_after(code: str) -> list[str]:
 )
 def test_the_cli_root_and_the_supervisor_stay_light(code: str) -> None:
     assert loaded_after(code) == []
+
+
+def test_the_api_starts_without_documents_or_the_browser() -> None:
+    """Se cargan al generar un CV, importar una plantilla o aplicar: la API arranca antes."""
+    assert loaded_after("import app.api.main", API_HEAVY) == []
 
 
 def test_the_help_table_matches_the_real_commands() -> None:

@@ -27,3 +27,28 @@ def test_skip_to_content_from_home(page: Page, demo_app: AppServer) -> None:
     page.keyboard.press("Tab")
     assert page.evaluate("document.querySelector('main').contains(document.activeElement)")
     expect(page).to_have_url(f"{demo_app.url}/")
+
+
+def test_inbox_stage_filters_are_one_tab_stop_with_arrows(page: Page, demo_app: AppServer) -> None:
+    """Los nueve filtros de etapa de la Bandeja: un Tab entra (en el elegido), las flechas eligen
+    otro y el siguiente Tab sale al buscador."""
+    page.goto("/bandeja")
+    stages = page.get_by_role("radiogroup", name=t("inbox.filterStage"))
+    all_stages = stages.get_by_role("radio", name=t("inbox.allStages"))
+    expect(all_stages).to_have_attribute("aria-checked", "true")
+    expect(page.get_by_role("main").get_by_role("row").nth(1)).to_be_visible()
+
+    all_stages.focus()
+    page.keyboard.press("ArrowRight")
+    first = stages.get_by_role("radio").nth(1)
+    expect(first).to_be_focused()
+    expect(first).to_have_attribute("aria-checked", "true")
+    expect(page).to_have_url(re.compile(r"[?&]stage=pending_detail"))
+    page.keyboard.press("End")
+    expect(stages.get_by_role("radio").last).to_have_attribute("aria-checked", "true")
+    page.keyboard.press("Home")
+    expect(all_stages).to_be_focused()
+    expect(all_stages).to_have_attribute("aria-checked", "true")
+
+    page.keyboard.press("Tab")
+    expect(page.get_by_role("searchbox", name=t("inbox.search"))).to_be_focused()

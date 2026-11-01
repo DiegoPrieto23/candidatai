@@ -397,7 +397,7 @@ The worker runs the automatic sources every day at `connectors.daily_at`
 - **Replies:** in the mailboxes where you ticked it, the app reads emails from the companies in your
   processes; `review-replies` proposes what happened and you accept it in **Replies**. When you
   accept or ignore one, a notice says which job it was logged on, with a link; **Ignore** can be
-  undone from it.
+  undone from it. With the keyboard: `J`/`K` to move between emails, `A` to accept, `I` to ignore.
 - **Funnel:** conversion by step, source, week and referral, and the discard reasons. Under
   **More analysis**, folded at the end: "Is the fit right?" (by fit, verdict, template, cover
   letter…), by role, the agent's cost and **Your search in numbers** (or `cai stats story`): your

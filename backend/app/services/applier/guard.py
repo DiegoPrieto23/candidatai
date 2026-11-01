@@ -15,11 +15,15 @@ Solo `submit.py` lo retira, justo antes de pulsar el envío confirmado, y «Lo t
 página podría cambiar la marca de `window`.
 """
 
-import re
-from typing import Literal
+from __future__ import annotations
 
-from playwright.sync_api import Page, Response
+import re
+from typing import TYPE_CHECKING, Literal
+
 from pydantic import BaseModel
+
+if TYPE_CHECKING:
+    from playwright.sync_api import Page, Response
 
 BlockerKind = Literal["captcha", "antibot", "login", "no_form"]
 

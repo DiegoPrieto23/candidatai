@@ -67,7 +67,7 @@ FEATURES.md dejan de coincidir fila a fila. -->
 | **Procesos**: un kanban que solo se mueve con eventos registrados (ratón, teclado o táctil), las ofertas recibidas lado a lado y los avisos de seguimiento | `/procesos` | [Procesos](img/es/processes.webp) |
 | **Ficha del proceso**: hitos con fecha y hora (se editan, se cancelan o, si los anotaste por error, se borran), contactos y referencias, borradores y «¿Qué ha pasado?», que ya en proceso registra otra entrevista, una prueba o la oferta, y solo deja aceptar cuando hay una oferta | `/jobs/:id` | [Proceso](img/es/job-interview.webp) |
 | **Calendario**: entrevistas, pruebas y plazos, con un `.ics` por hito y un feed para Google Calendar | `/calendario` | [Calendario](img/es/calendar.webp) |
-| **Respuestas de las empresas**: la app lee tu correo en solo lectura y guarda solo los de las empresas a las que te has presentado. Al aceptar o ignorar, un aviso dice en qué oferta ha quedado; «Ignorar» se deshace desde él | `/respuestas` | [Respuestas](img/es/replies.webp) |
+| **Respuestas de las empresas**: la app lee tu correo en solo lectura y guarda solo los de las empresas a las que te has presentado. Al aceptar o ignorar, un aviso dice en qué oferta ha quedado; «Ignorar» se deshace desde él. Con el teclado: `J`/`K` para moverte, `A` aceptar, `I` ignorar | `/respuestas` | [Respuestas](img/es/replies.webp) |
 | **Clasificar las respuestas**: tu agente propone entrevista (con su fecha), prueba, oferta, rechazo o nada; nada cambia de etapa hasta que aceptas | `review-replies` | |
 | **Seguimientos y agradecimientos** como borradores (como mucho 2 seguimientos por candidatura) | `draft-follow-up` | |
 
@@ -104,7 +104,7 @@ FEATURES.md dejan de coincidir fila a fila. -->
 |---|---|---|
 | **Agente**: arriba, si tu agente está listo o cómo instalar uno, y qué distingue a Claude (el chat) de Claude Code; plegados, agente por defecto y uno por acción, ejecuciones en segundo plano con progreso, preguntas y Cancelar, coste por acción y modelo, niveles de gasto y la comparación por significado del score | `/agente` | [Agente](img/es/agent.webp) |
 | **Cada botón de agente se explica**: qué hace el skill, qué cambia y qué necesita, al pasar el ratón o con el foco del teclado | Todas las páginas | |
-| **Navegar con teclado**: el primer Tab enseña «Saltar al contenido», que se salta el menú, y el foco se ve siempre, también en claro y en oscuro | Todas las páginas | |
+| **Navegar con teclado**: el primer Tab enseña «Saltar al contenido», que se salta el menú, y el foco se ve siempre, también en claro y en oscuro. Una fila de filtros (las etapas de la Bandeja, las respuestas) es una sola parada de Tab, y se recorre con las flechas | Todas las páginas | |
 | **Dejar para tu próxima sesión**: cualquier botón guarda la orden para tu agente | `handle-requests` | |
 | **Resumen del día**: ofertas pendientes (con aviso si alguna lleva texto dirigido a una IA), seguimientos vencidos, próximos hitos y respuestas de empresas por revisar | `daily-summary` | |
 | **Barra lateral** agrupada y plegable con lo que te espera, tema claro y oscuro, español e inglés | `/` | [Barra lateral](img/es/sidebar-collapsed.webp) |

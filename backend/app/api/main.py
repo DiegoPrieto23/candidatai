@@ -99,8 +99,7 @@ def create_app() -> FastAPI:
     # UI y los JSON grandes (la bandeja con miles de ofertas). En el momento y no precomprimiendo
     # `dist/`, porque así también se comprime la API. Nada de lo que ya va comprimido: PDF, DOCX,
     # imágenes y fuentes (las de Starlette más las nuestras); tampoco los streams de eventos. Va
-    # por dentro del de la UI, que pasa las respuestas por trozos: así ve su tamaño entero (el
-    # `index.html` que devuelve ese middleware, de medio kB, sale sin comprimir).
+    # por dentro del de la UI: el `index.html` que devuelve ese, de medio kB, sale sin comprimir.
     app.add_middleware(
         GZipMiddleware,
         minimum_size=1024,

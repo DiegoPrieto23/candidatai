@@ -6,7 +6,6 @@ from typing import Any
 import pytest
 from sqlalchemy.orm import Session
 
-from app.core.db import iso_week
 from app.models import Company, Job, JobExtraction, Source
 from app.services import analytics, events
 
@@ -295,8 +294,27 @@ def test_empty_database(session: Session) -> None:
     assert stats.discard_reasons == stats.hard_filter_failures == []
 
 
-def test_iso_week_in_madrid() -> None:
-    assert iso_week("2026-09-20 21:59:00") == "2026-W38"  # domingo 23:59 en Madrid
-    assert iso_week("2026-09-20 22:00:00.000000") == "2026-W39"
-    assert iso_week("2027-01-03 23:30:00") == "2027-W01"  # lunes 4 en Madrid
-    assert iso_week(None) is None
+def test_by_week_cuts_at_madrid_midnight_across_the_clock_change(session: Session) -> None:
+    """Cada semana empieza el lunes a las 00:00 en Madrid, también la del cambio de hora."""
+    h = History(session)
+    for seen in (
+        datetime(2026, 9, 20, 21, 59, tzinfo=UTC),  # domingo 23:59 en Madrid (UTC+2): W38
+        datetime(2026, 9, 20, 22, 0, tzinfo=UTC),  # lunes 00:00: W39
+        datetime(2026, 10, 25, 22, 59, tzinfo=UTC),  # domingo 23:59 tras el cambio (UTC+1): W43
+        datetime(2026, 10, 25, 23, 0, tzinfo=UTC),  # lunes 26, 00:00: W44
+        datetime(2027, 1, 3, 23, 30, tzinfo=UTC),  # lunes 4 de enero: 2027-W01
+    ):
+        h.job(h.ats, seen, None)
+    weeks = {w.week: w.found for w in analytics.get_funnel_stats(session).by_week}
+    assert {week: n for week, n in weeks.items() if n} == {
+        "2026-W38": 1, "2026-W39": 1, "2026-W43": 1, "2026-W44": 1, "2027-W01": 1,
+    }  # fmt: skip
+    assert len(weeks) == 17  # de la 38 a la 53 de 2026 y la 1 de 2027, sin huecos
+
+
+def test_extraction_copies_its_title_to_its_column() -> None:
+    assert JobExtraction(data={"title_normalized": "data engineer"}).title_normalized == (
+        "data engineer"
+    )
+    assert JobExtraction(data={"title_normalized": 7}).title_normalized is None
+    assert JobExtraction(data={}).title_normalized is None

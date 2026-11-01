@@ -67,7 +67,7 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 | **Processes**: a kanban that only moves through recorded events (mouse, keyboard or touch), received offers side by side and follow-up reminders | `/procesos` | [Processes](img/en/processes.webp) |
 | **Process page**: milestones with date and time (edit, cancel or, if added by mistake, delete them), contacts and referrals, drafts and **What happened?**, which once in process records another interview, a test or the offer, and only lets you accept once there's an offer | `/jobs/:id` | [Process](img/en/job-interview.webp) |
 | **Calendar**: interviews, tests and deadlines, with an `.ics` per milestone and a feed for Google Calendar | `/calendario` | [Calendar](img/en/calendar.webp) |
-| **Company replies**: the app reads your email read-only and keeps only messages from companies you applied to. When you accept or ignore one, a notice says which job it was logged on; **Ignore** can be undone from it | `/respuestas` | [Replies](img/en/replies.webp) |
+| **Company replies**: the app reads your email read-only and keeps only messages from companies you applied to. When you accept or ignore one, a notice says which job it was logged on; **Ignore** can be undone from it. With the keyboard: `J`/`K` to move, `A` accept, `I` ignore | `/respuestas` | [Replies](img/en/replies.webp) |
 | **Classify replies**: your agent proposes interview (with its date), test, offer, rejection or nothing; nothing changes stage until you accept | `review-replies` | |
 | **Follow-ups and thank-you notes** as drafts (at most 2 follow-ups per application) | `draft-follow-up` | |
 
@@ -104,7 +104,7 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 |---|---|---|
 | **Agent**: at the top, whether your agent is ready or how to install one, and what sets Claude (the chat) apart from Claude Code; folded away, default agent and one per action, background runs with progress, questions and Cancel, cost by action and model, spending levels and the score's meaning-based comparison | `/agente` | [Agent](img/en/agent.webp) |
 | **Every agent button explains itself**: what the skill does, what it changes and what it needs, on hover or keyboard focus | Every page | |
-| **Keyboard navigation**: the first Tab shows “Skip to content”, which skips the menu, and focus is always visible, in light and dark | Every page | |
+| **Keyboard navigation**: the first Tab shows “Skip to content”, which skips the menu, and focus is always visible, in light and dark. A row of filters (the Inbox stages, the replies) is a single Tab stop, moved through with the arrows | Every page | |
 | **Leave it for your next session**: any button saves the order for your agent | `handle-requests` | |
 | **Daily summary**: pending jobs (flagging any with text aimed at an AI), overdue follow-ups, next milestones and company replies to review | `daily-summary` | |
 | **Sidebar** grouped and collapsible with what's waiting, light and dark theme, English and Spanish | `/` | [Sidebar](img/en/sidebar-collapsed.webp) |

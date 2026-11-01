@@ -391,6 +391,7 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
 - **Respuestas:** en los buzones que lo tengan marcado, la app lee los correos de las empresas de tus procesos;
   `review-replies` propone qué ha pasado y tú lo aceptas en «Respuestas». Al aceptar o ignorar,
   un aviso dice en qué oferta ha quedado, con su enlace; «Ignorar» se puede deshacer desde él.
+  Con el teclado: `J`/`K` para pasar de un correo a otro, `A` para aceptar, `I` para ignorar.
 - **Embudo:** conversión por paso, fuente, semana y referencia, y los motivos de descarte. En «Más
   análisis», plegado al final: «¿Acierta el encaje?» (por encaje, veredicto, plantilla, carta…), por
   tipo de puesto, el coste del agente y «Tu búsqueda en números» (o `cai stats story`): tus cifras

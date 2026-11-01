@@ -22,8 +22,7 @@ from app.services.audit import record_call, summarize_args
 from app.services.context import ContextTooLargeError
 from app.services.documents.checks import CvContentError
 from app.services.documents.cover_letter import CoverLetterContentError, LetterNotFoundError
-from app.services.documents.importer import TemplateImportError
-from app.services.documents.importer.build import TemplateExistsError
+from app.services.documents.importer import TemplateExistsError, TemplateImportError
 from app.services.documents.importer.paths import OutsideDataError
 from app.services.documents.pdf import PdfConversionError, PdfConverterUnavailableError
 from app.services.documents.service import (

@@ -15,8 +15,7 @@ Todo sale de `events` con consultas agregadas en la BD. Definiciones (también e
   si no, `requested` si se pidió; si no, `none`. La marca no lleva fecha de corte: cuenta aunque
   se diera después del envío.
 
-Solo SQLite: la semana usa `cai_iso_week` (registrada en `app/core/db.py`) y los filtros duros,
-`json_each`.
+Solo SQLite: los filtros duros usan `json_each`.
 
 **Calibración** (fase 20, `get_calibration`): ¿predicen el score y el veredicto las respuestas?
 Sobre las ofertas **enviadas** (con `applied` o `applied_manually`), tasa de respuesta y de
@@ -55,6 +54,7 @@ from sqlalchemy import (
     exists,
     func,
     insert,
+    literal,
     literal_column,
     or_,
     select,
@@ -77,6 +77,7 @@ from app.models import (
     Match,
     Source,
 )
+from app.models.base import UTCDateTime
 from app.services.documents.cover_letter import LETTER_KIND
 from app.services.pipeline import EventType, Stage
 from app.services.process import local_zone, start_of_local_day
@@ -537,7 +538,7 @@ def _by_title(session: Session, per_job: FromClause, top: int) -> list[TitleFunn
         .group_by(JobExtraction.job_id)
         .subquery()
     )
-    title = JobExtraction.data["title_normalized"].as_string()
+    title = JobExtraction.title_normalized
     rows = session.execute(
         select(title.label("title"), *_sums(per_job, SUMMARY_STEPS))
         .select_from(per_job)
@@ -567,31 +568,52 @@ def _by_title(session: Session, per_job: FromClause, top: int) -> list[TitleFunn
     return out
 
 
-def _week_start(week: str) -> date:
-    return date.fromisocalendar(int(week[:4]), int(week[6:]), 1)
+def _mondays(session: Session, per_job: FromClause) -> list[date]:
+    """Los lunes (en la zona de la UI) de las semanas entre la primera y la última oferta, seguidas:
+    las vacías también, para que la gráfica no salte huecos."""
+    first, last = session.execute(
+        select(func.min(per_job.c.first_seen_at), func.max(per_job.c.first_seen_at))
+    ).one()
+    if first is None:
+        return []
+    zone = local_zone()
+    start, end = (moment.astimezone(zone).date() for moment in (first, last))
+    monday = start - timedelta(days=start.weekday())
+    return [monday + timedelta(days=7 * i) for i in range((end - monday).days // 7 + 1)]
+
+
+def _week_index(moment: Any, ends: list[datetime], lo: int, hi: int) -> ColumnElement[int]:
+    """La semana (`lo` a `hi - 1`) de `moment`, sabiendo dónde acaba cada una: un `CASE` anidado
+    que parte el intervalo por la mitad, unas pocas comparaciones por oferta."""
+    if hi - lo == 1:
+        return literal(lo, Integer)
+    mid = (lo + hi) // 2
+    return case(
+        (moment < literal(ends[mid - 1], UTCDateTime()), _week_index(moment, ends, lo, mid)),
+        else_=_week_index(moment, ends, mid, hi),
+    )
 
 
 def _by_week(session: Session, per_job: FromClause) -> list[WeekFunnel]:
-    week = func.cai_iso_week(per_job.c.first_seen_at)
+    mondays = _mondays(session, per_job)
+    if not mondays:
+        return []
+    # Cada semana acaba el lunes siguiente a las 00:00 en la zona de la UI (con el cambio de hora
+    # en medio): SQLite compara con esas fechas UTC sin llamar a una función de Python por oferta.
+    ends = [start_of_local_day(monday + timedelta(days=7)) for monday in mondays]
+    week = _week_index(per_job.c.first_seen_at, ends, 0, len(mondays))
     rows = {
         r.week: r
         for r in session.execute(
             select(week.label("week"), *_sums(per_job, SUMMARY_STEPS)).group_by(week)
         ).all()
     }
-    if not rows:
-        return []
-    # Semanas seguidas, con las vacías a cero, para que la gráfica no salte huecos.
-    first, last = min(map(_week_start, rows)), max(map(_week_start, rows))
     out: list[WeekFunnel] = []
-    monday = first
-    while monday <= last:
+    for i, monday in enumerate(mondays):
         year, number, _ = monday.isocalendar()
-        key = f"{year}-W{number:02d}"
-        row = rows.get(key)
-        values = _summary(row) if row else dict.fromkeys(SUMMARY_STEPS, 0) | {"reply_rate": None}
-        out.append(WeekFunnel(week=key, week_start=monday, **values))
-        monday += timedelta(days=7)
+        row = rows.get(i)
+        counts = _summary(row) if row else dict.fromkeys(SUMMARY_STEPS, 0) | {"reply_rate": None}
+        out.append(WeekFunnel(week=f"{year}-W{number:02d}", week_start=monday, **counts))
     return out
 
 

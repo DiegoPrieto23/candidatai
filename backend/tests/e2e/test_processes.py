@@ -183,8 +183,8 @@ def test_replies_are_proposed_by_the_agent_and_decided_by_you(
         "href", f"/jobs/{job_id}"
     )
     expect(replies.get_by_role("button").filter(has_text="primera entrevista")).to_have_count(0)
-    filters = page.get_by_role("group", name=t("replies.page.filterAria"))
-    filters.get_by_role("button", name=re.compile(t("replies.page.filters.accepted"))).click()
+    filters = page.get_by_role("radiogroup", name=t("replies.page.filterAria"))
+    filters.get_by_role("radio", name=re.compile(t("replies.page.filters.accepted"))).click()
     replies.get_by_role("button").filter(has_text="primera entrevista").click()
     expect(proposal.get_by_text(t("replies.card.accepted"))).to_be_visible()
     assert api(server, f"/jobs/{job_id}")["stage"] == "in_process"
@@ -204,7 +204,7 @@ def test_replies_are_proposed_by_the_agent_and_decided_by_you(
     expect(replies.get_by_role("button").filter(has_text="Novedades")).to_have_count(1)
     proposal.get_by_role("button", name=t("replies.card.ignore")).click()
     expect(replies.get_by_role("button").filter(has_text="Novedades")).to_have_count(0)
-    filters.get_by_role("button", name=re.compile(t("replies.page.filters.ignored"))).click()
+    filters.get_by_role("radio", name=re.compile(t("replies.page.filters.ignored"))).click()
     replies.get_by_role("button").filter(has_text="Novedades de tu candidatura").click()
     expect(proposal.get_by_text(t("replies.card.ignored"))).to_be_visible()
     after = [e["type"] for e in cai(server, "events", "list", str(job_id))["events"]]

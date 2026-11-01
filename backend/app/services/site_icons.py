@@ -10,11 +10,18 @@ sirve desde su API:
 - Un icono vale `ICON_TTL`. Si una web no tiene ninguno, no se vuelve a preguntar hasta pasado
   `MISS_TTL`. Sin red no se apunta «sin icono»: se reintenta en la siguiente visita. Si había uno
   caducado, se sigue sirviendo y no se reintenta hasta pasado `MISS_TTL`.
+- La API no espera a la descarga (`icon_now`): responde con lo que haya en disco y lo descarga en un
+  hilo aparte, como mucho `MAX_DOWNLOADS` a la vez y una sola vez cada web. Sin red, una descarga
+  tarda segundos, y cada petición que esperase ocuparía uno de los hilos con los que la API
+  atiende a la UI.
 """
 
 import contextlib
+import logging
 import os
+import queue
 import re
+import threading
 import time
 import uuid
 from collections.abc import Callable
@@ -31,6 +38,9 @@ ICON_TTL = 30 * 24 * 3600.0
 MISS_TTL = 24 * 3600.0
 MAX_ICON_BYTES = 256_000
 TIMEOUT = httpx.Timeout(5.0, connect=3.0)
+MAX_DOWNLOADS = 4
+
+log = logging.getLogger(__name__)
 
 # Portales que no sirven su icono en `/favicon.ico`.
 KNOWN_ICONS: dict[str, str] = {
@@ -196,3 +206,64 @@ def get_icon(home: str, *, fetch: Download = download, now: float | None = None)
     if answered:
         _write(miss, b"")
     return None
+
+
+# --- Sin esperar a la red (la API) ------------------------------------------------------------
+
+# Las webs por descargar, en cola, y como mucho `MAX_DOWNLOADS` hilos que la vacían: cien empresas
+# sin icono no son cien hilos. Son `daemon`: cerrar la app no espera a una web lenta (se escribe con
+# `_write`, sin dejar nada a medias).
+_queue: "queue.Queue[tuple[str, str, Download, float]]" = queue.Queue()
+_changed = threading.Condition()
+_pending: set[str] = set()  # en cola o descargándose: no se pide dos veces la misma web a la vez
+_workers: list[threading.Thread] = []
+
+
+def _work() -> None:
+    while True:
+        key, home, fetch, now = _queue.get()
+        try:
+            get_icon(home, fetch=fetch, now=now)
+        except Exception:  # un fallo raro no puede dejar la web marcada como pendiente
+            log.exception("No se pudo descargar el icono de %s", key)
+        finally:
+            with _changed:
+                _pending.discard(key)
+                _changed.notify_all()
+
+
+def _download_in_background(key: str, home: str, fetch: Download, now: float) -> None:
+    with _changed:
+        if key in _pending:
+            return
+        _pending.add(key)
+        _queue.put((key, home, fetch, now))
+        if len(_workers) < min(MAX_DOWNLOADS, len(_pending)):
+            worker = threading.Thread(target=_work, name="cai-icons", daemon=True)
+            worker.start()
+            _workers.append(worker)
+
+
+def wait_downloads(timeout: float = 10.0) -> None:
+    """Espera a las descargas en cola o en curso (los tests, para ver el resultado)."""
+    with _changed:
+        _changed.wait_for(lambda: not _pending, timeout)
+
+
+def icon_now(home: str, *, fetch: Download = download, now: float | None = None) -> Icon | None:
+    """Como `get_icon`, pero sin esperar a la red: el icono de disco (aunque haya caducado) o
+    `None`, y si hace falta uno nuevo, lo descarga aparte para la siguiente petición."""
+    key = site_key(home)
+    if key is None:
+        return None
+    now = time.time() if now is None else now
+    folder = get_settings().icons_dir
+    cached = _cached(folder, key)
+    icon = _icon(cached) if cached is not None else None
+    if icon is not None and cached is not None and _age(cached, now) < ICON_TTL:
+        return icon
+    miss = folder / f"{key}.miss"
+    if cached is None and miss.is_file() and _age(miss, now) < MISS_TTL:
+        return None
+    _download_in_background(key, home, fetch, now)
+    return icon

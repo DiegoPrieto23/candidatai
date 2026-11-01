@@ -10,16 +10,19 @@ oferta no es el formulario. Desde ahí llegas tú al formulario de la empresa y 
 pestaña («Rellenar esta página»), nunca una página del propio portal.
 """
 
+from __future__ import annotations
+
 import contextlib
 import ipaddress
 import re
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 from urllib.parse import urlsplit, urlunsplit
-
-from playwright.sync_api import Page
 
 from app.core.config import get_settings
 from app.services import platforms as job_platforms
+
+if TYPE_CHECKING:
+    from playwright.sync_api import Page
 
 Platform = Literal["greenhouse", "lever", "ashby", "generic", "linkedin", "board", "unknown"]
 PLATFORMS: tuple[Platform, ...] = (

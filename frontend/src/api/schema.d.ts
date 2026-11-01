@@ -783,6 +783,9 @@ export interface paths {
          *     tu navegador no visita cada web al abrir «Dónde buscar». `v` en la URL solo sirve para que el
          *     navegador no use el de antes al cambiar la web. Sin icono, 204 y no 404: la imagen falla igual
          *     (la UI pone la inicial) sin un error en la consola del navegador por cada empresa.
+         *
+         *     No espera a descargarlo: si aún no está, 204 enseguida y se descarga aparte (la UI vuelve a
+         *     pedirlo una vez, al rato). El 204 no se guarda en caché, para que ese reintento llegue.
          */
         get: operations["get_source_icon"];
         put?: never;

@@ -22,6 +22,7 @@ from app.schemas.cv import TemplateCapacity, TemplateMeta
 from app.services.documents import pdf, templates
 from app.services.documents.importer import (
     ImportIssue,
+    TemplateExistsError,
     TemplateImportError,
     docx_xml,
     inspect,
@@ -32,10 +33,6 @@ SOURCE_DOCX = "source.docx"
 SOURCE_PDF = "source.pdf"
 SOURCE_PNG = "source.png"
 _SYMBOL_FONTS = {"symbol", "wingdings", "wingdings 2", "wingdings 3", "webdings"}
-
-
-class TemplateExistsError(ValueError):
-    pass
 
 
 class BuildResult(BaseModel):

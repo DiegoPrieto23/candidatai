@@ -105,6 +105,17 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   carpeta de datos, así que tu navegador ya no visita la web de cada portal y de cada empresa al
   abrir la página. Si una web no tiene icono, o no hay red, se ve la inicial, como antes. LinkedIn
   se queda siempre con la inicial: la app no consulta LinkedIn por su cuenta.
+- **La app arranca algo antes y no se frena con los iconos:** la API ya no carga al arrancar lo
+  que solo hace falta para generar documentos, importar plantillas o aplicar con el navegador.
+  Un icono que tarda en descargarse ya no ocupa la app mientras tanto: sale la inicial y el icono
+  aparece unos segundos después.
+- **Menos Tab en la Bandeja y en «Respuestas»:** los filtros de etapa (y los de «Respuestas») son
+  una sola parada de Tab y se recorren con las flechas. En «Respuestas», `J`/`K` pasan de un
+  correo a otro, `A` acepta la propuesta e `I` la ignora, como en «Por revisar».
+- **La app carga antes la primera vez:** los textos de tu idioma se descargan a la vez que el
+  resto, y los iconos pesan un tercio menos. Con una conexión lenta, Inicio se ve un 20 % antes.
+- **El embudo va más rápido con muchas ofertas:** «Por semana» y «Por puesto» se calculan sin
+  leer cada oferta una a una.
 
 ### Corregido
 - **El foco de teclado se ve siempre:** en «Respuestas», el correo con el foco lleva un anillo y

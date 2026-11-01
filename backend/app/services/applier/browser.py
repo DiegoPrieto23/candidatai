@@ -12,6 +12,8 @@
 Sin trucos anti-detección: si una web pide demostrar que eres humano, se te pasa la pestaña.
 """
 
+from __future__ import annotations
+
 import atexit
 import contextlib
 import queue
@@ -21,12 +23,13 @@ from concurrent.futures import Future
 from concurrent.futures import TimeoutError as FutureTimeout
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, TypeVar
-
-from playwright.sync_api import BrowserContext, Page, Playwright, sync_playwright
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from app.core.config import get_settings
 from app.core.policies import get_policies
+
+if TYPE_CHECKING:
+    from playwright.sync_api import BrowserContext, Page, Playwright
 
 T = TypeVar("T")
 
@@ -162,6 +165,8 @@ class BrowserHost:
                     item[1].set_exception(error)
 
     def _serve(self) -> None:
+        from playwright.sync_api import sync_playwright  # al abrir el navegador, no al arrancar
+
         timeout_ms = get_policies().applier.step_timeout_seconds * 1000
         with sync_playwright() as pw:
             state = BrowserState(
