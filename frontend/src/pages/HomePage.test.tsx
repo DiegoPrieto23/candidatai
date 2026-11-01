@@ -111,6 +111,7 @@ describe('Primeros pasos (app recién instalada)', () => {
     expect(within(steps).getByText(/ordena tu búsqueda de empleo/)).toBeInTheDocument()
     expect(within(steps).getByRole('link', { name: 'Qué es y cómo se instala, en «Agente»' })).toHaveAttribute('href', '/agente')
     expect(within(steps).getByRole('link', { name: /Empieza a mano en «Mi perfil»/ })).toHaveAttribute('href', '/perfil')
+    expect(within(steps).getByRole('link', { name: /en «Cómo funciona»/ })).toHaveAttribute('href', '/como-funciona')
   })
 
   it('sin perfil, el titular cuenta los primeros pasos y la única acción rellena es la del paso', async () => {

@@ -17,6 +17,7 @@ const {
   calendar: { Page: CalendarPage },
   extension: { Page: ExtensionPage },
   funnel: { Page: FunnelPage },
+  howItWorks: { Page: HowItWorksPage },
   inbox: { Page: InboxPage },
   job: { Page: JobPage },
   newJob: { Page: NewJobPage },
@@ -51,6 +52,7 @@ export function AppRoutes() {
     <Routes>
       <Route element={<AppShell />}>
         <Route index element={<HomePage />} />
+        <Route path="como-funciona" element={<HowItWorksPage />} />
         <Route path="bandeja" element={<InboxPage />} />
         <Route path="jobs/:id" element={<JobPage />} />
         <Route path="nueva" element={<NewJobPage />} />

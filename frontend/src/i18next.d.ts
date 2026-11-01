@@ -14,6 +14,7 @@ import type drafts from '@/locales/es/drafts.json'
 import type extension from '@/locales/es/extension.json'
 import type funnel from '@/locales/es/funnel.json'
 import type home from '@/locales/es/home.json'
+import type howItWorks from '@/locales/es/howItWorks.json'
 import type inbox from '@/locales/es/inbox.json'
 import type job from '@/locales/es/job.json'
 import type labels from '@/locales/es/labels.json'
@@ -58,6 +59,7 @@ declare module 'i18next' {
       extension: typeof extension
       funnel: typeof funnel
       home: typeof home
+      howItWorks: typeof howItWorks
       inbox: typeof inbox
       job: typeof job
       labels: typeof labels

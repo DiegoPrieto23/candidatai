@@ -332,6 +332,8 @@ recommended models by memory and what leaves your computer in each case:
 Start CandidatAI **outside your agent** (its own window or the shortcut): if the agent runs out of
 memory it may close what it started.
 
+If it's your first time, **How it works**, in the menu, covers the whole journey and who does what.
+
 A typical day:
 
 1. Open **Home**: it tells you what's waiting (jobs to review, CVs ready, overdue follow-ups).

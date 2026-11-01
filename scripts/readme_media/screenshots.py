@@ -94,6 +94,7 @@ def open_details(page: Page) -> None:
 # nombre: (ruta, barra plegada, pasos antes de capturar)
 SHOTS = {
     "home": ("/", False, []),
+    "how-it-works": ("/como-funciona", False, []),
     "inbox": ("/bandeja", False, []),
     "triage": ("/por-revisar", False, []),
     "alerts": ("/alertas", False, [button("mailboxes:panel.title")]),

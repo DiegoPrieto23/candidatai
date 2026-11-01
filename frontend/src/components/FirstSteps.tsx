@@ -56,6 +56,11 @@ export function FirstSteps() {
       <p className="mt-2 max-w-prose text-sm text-muted-foreground">
         <Trans t={t} i18nKey="whatIsTheAgent" components={{ agent: agentLink }} />
       </p>
+      <p className="mt-2">
+        <Link to="/como-funciona" className={LINK}>
+          {t('howItWorks')}
+        </Link>
+      </p>
       <p className="mt-4 text-sm font-medium">{t('intro')}</p>
       <ol className="mt-5 grid gap-6 text-sm">
         <Step n={1} done={hasProfile} title={t('profile.title')}>

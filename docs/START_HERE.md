@@ -229,6 +229,7 @@ Then:
 4. When you apply, the app can fill the form and **stops before sending**: you check it and press
    Send yourself.
 
+This journey is also in the app: **How it works**, in the menu, with a link to each screen.
 Every page and what you can do in it: [`FEATURES.md`](FEATURES.md).
 
 ## 7. Questions

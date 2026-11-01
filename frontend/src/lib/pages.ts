@@ -27,6 +27,7 @@ function lazyPage(load: Loader) {
 }
 
 export const pages = {
+  howItWorks: lazyPage(() => import('@/pages/HowItWorksPage').then((m) => m.HowItWorksPage)),
   inbox: lazyPage(() => import('@/pages/InboxPage').then((m) => m.InboxPage)),
   job: lazyPage(() => import('@/pages/JobPage').then((m) => m.JobPage)),
   newJob: lazyPage(() => import('@/pages/NewJobPage').then((m) => m.NewJobPage)),
@@ -51,6 +52,7 @@ type PageKey = keyof typeof pages
 
 /** Las páginas que pinta cada ruta (`/fuentes` abre la de plataformas dentro de la suya). */
 const ROUTES: [prefix: string, keys: PageKey[]][] = [
+  ['/como-funciona', ['howItWorks']],
   ['/bandeja', ['inbox']],
   ['/jobs/', ['job']],
   ['/nueva', ['newJob']],

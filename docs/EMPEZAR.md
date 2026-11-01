@@ -228,6 +228,7 @@ Después:
 4. Al candidatar, la app puede rellenar el formulario y **se para antes de enviar**: lo revisas y
    pulsas Enviar tú.
 
+Este recorrido también está en la app: **Cómo funciona**, en el menú, con un enlace a cada pantalla.
 Cada página y lo que puedes hacer en ella: [`FUNCIONALIDADES.md`](FUNCIONALIDADES.md).
 
 ## 7. Preguntas

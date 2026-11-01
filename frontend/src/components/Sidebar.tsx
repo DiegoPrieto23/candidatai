@@ -17,6 +17,7 @@ import {
   MoonIcon,
   PlusIcon,
   PlugsConnectedIcon,
+  QuestionIcon,
   RobotIcon,
   SidebarSimpleIcon,
   SunIcon,
@@ -95,6 +96,7 @@ function CountBadge({ count }: { count: Count }) {
 
 type EntryKey =
   | 'home'
+  | 'howItWorks'
   | 'inbox'
   | 'triage'
   | 'alerts'
@@ -124,7 +126,13 @@ const usePendingDetail = () => useStageCount('pending_detail', 'toComplete', fal
 type GroupKey = 'search' | 'processes' | 'analysis' | 'configure'
 
 const NAV_GROUPS: { title: GroupKey | null; entries: Entry[] }[] = [
-  { title: null, entries: [{ to: '/', label: 'home', icon: HouseIcon, end: true }] },
+  {
+    title: null,
+    entries: [
+      { to: '/', label: 'home', icon: HouseIcon, end: true },
+      { to: '/como-funciona', label: 'howItWorks', icon: QuestionIcon },
+    ],
+  },
   {
     title: 'search',
     entries: [
