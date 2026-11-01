@@ -81,7 +81,7 @@ def test_serve_uses_the_listen_host(monkeypatch: pytest.MonkeyPatch) -> None:
 
     calls: list[dict[str, Any]] = []
     monkeypatch.setattr(uvicorn, "run", lambda *a, **kw: calls.append(kw))
-    monkeypatch.setattr(cli.migrations, "ensure_current", lambda: None)
+    monkeypatch.setattr(migrations, "ensure_current", lambda: None)
     monkeypatch.setattr(container, "listen_host", lambda settings=None: "0.0.0.0")
     result = CliRunner().invoke(cli.app, ["serve", "--port", "8123"])
     assert result.exit_code == 0, result.output

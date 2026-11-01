@@ -507,7 +507,8 @@ function SourceRow({ source }: { source: SourceView }) {
         <SiteIcon
           key={source.website ?? ''}
           name={source.name}
-          home={source.website ? platformHome([source.website]) : null}
+          sourceId={source.id}
+          host={source.website ? (platformHome([source.website])?.host ?? null) : null}
         />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">

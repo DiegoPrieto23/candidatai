@@ -170,7 +170,11 @@ describe('Empresas objetivo', () => {
       'href',
       'https://careers.acmedatos.example',
     )
-    expect(container.querySelector('img')).toHaveAttribute('src', 'https://careers.acmedatos.example/favicon.ico')
+    // El icono lo sirve la app: tu navegador no visita la web de la empresa.
+    expect(container.querySelector('img')).toHaveAttribute(
+      'src',
+      'http://127.0.0.1:8000/sources/1/icon?v=careers.acmedatos.example',
+    )
 
     await userEvent.click(screen.getByRole('button', { name: 'Cambiar web' }))
     const input = screen.getByRole('textbox', { name: 'Web de Acme Datos' })

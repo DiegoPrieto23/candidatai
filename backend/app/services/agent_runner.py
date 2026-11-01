@@ -24,7 +24,6 @@ import os
 import queue
 import re
 import shutil
-import signal
 import subprocess
 import sys
 import threading
@@ -40,6 +39,7 @@ from sqlalchemy import and_, exists, func, select, update
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import aliased
 
+from app.core import processes
 from app.core.config import REPO_ROOT
 from app.core.db import session_scope
 from app.core.policies import get_policies
@@ -117,29 +117,12 @@ def _popen(
 
 
 def _kill_pid_tree(pid: int) -> None:
-    if sys.platform == "win32":
-        subprocess.run(  # noqa: S603
-            ["taskkill", "/PID", str(pid), "/T", "/F"],  # noqa: S607
-            capture_output=True,
-            check=False,
-            creationflags=subprocess.CREATE_NO_WINDOW,
-        )
-    else:
-        os.killpg(pid, signal.SIGKILL)
+    processes.kill_pid_tree(pid)
 
 
 def _kill_tree(proc: subprocess.Popen[str]) -> None:
     """Para el agente y lo que haya lanzado (el servidor MCP)."""
-    if proc.poll() is not None:
-        return
-    try:
-        _kill_pid_tree(proc.pid)
-    except OSError:
-        logger.warning("No se pudo parar el árbol de procesos %s", proc.pid, exc_info=True)
-    try:
-        proc.wait(timeout=10)
-    except subprocess.TimeoutExpired:
-        proc.kill()
+    processes.kill_tree(proc, kill=_kill_pid_tree)
 
 
 _EOF = object()

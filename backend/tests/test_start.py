@@ -8,9 +8,7 @@ import sys
 from collections.abc import AsyncIterator, Iterator
 from pathlib import Path
 
-import httpx
 import pytest
-import respx
 from fastapi.responses import StreamingResponse
 from fastapi.testclient import TestClient
 
@@ -232,17 +230,83 @@ def test_reads_from_another_host_are_refused(ui_dir: Path) -> None:
 # --- cai start ---------------------------------------------------------------------------------
 
 
-@respx.mock
 def test_probe_tells_ours_from_others() -> None:
-    url = "http://127.0.0.1:8000/status"
     busy = lambda _port: False  # noqa: E731
-    respx.get(url).mock(return_value=httpx.Response(200, json={"total": 0, "by_stage": {}}))
-    assert launcher.probe(8000, is_free=busy) == "candidatai"
-    respx.get(url).mock(return_value=httpx.Response(200, text="<html>otra cosa</html>"))
-    assert launcher.probe(8000, is_free=busy) == "other"
-    respx.get(url).mock(side_effect=httpx.ConnectTimeout("no responde"))
-    assert launcher.probe(8000, is_free=busy) == "other"
-    assert launcher.probe(8000, is_free=lambda _port: True) == "free"
+
+    def answer(status: int, body: bytes) -> launcher.Fetch:
+        return lambda url, _timeout: (status, body) if url.endswith(":8000/status") else (404, b"")
+
+    def unreachable(_url: str, _timeout: float) -> tuple[int, bytes]:
+        raise TimeoutError("no responde")
+
+    ours = answer(200, b'{"total": 0, "by_stage": {}}')
+    assert launcher.probe(8000, get=ours, is_free=busy) == "candidatai"
+    assert launcher.probe(8000, get=answer(200, b"<html>otra cosa</html>"), is_free=busy) == "other"
+    assert launcher.probe(8000, get=answer(500, b'{"by_stage": {}}'), is_free=busy) == "other"
+    assert launcher.probe(8000, get=unreachable, is_free=busy) == "other"
+    assert launcher.probe(8000, get=ours, is_free=lambda _port: True) == "free"
+
+
+def test_fetch_reads_status_and_body_even_on_errors() -> None:
+    """`fetch` (urllib, sin proxies) contra un servidor local de verdad."""
+    import threading
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_GET(self) -> None:
+            code = 200 if self.path == "/status" else 404
+            self.send_response(code)
+            self.end_headers()
+            self.wfile.write(b"ok" if code == 200 else b"no")
+
+        def log_message(self, *_args: object) -> None:
+            pass
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        base = f"http://127.0.0.1:{server.server_address[1]}"
+        assert launcher.fetch(f"{base}/status", 2.0) == (200, b"ok")
+        assert launcher.fetch(f"{base}/otra", 2.0) == (404, b"no")
+    finally:
+        server.shutdown()
+        server.server_close()
+    with pytest.raises(OSError):
+        launcher.fetch(f"{base}/status", 0.5)  # ya no escucha nadie
+
+
+def test_probe_says_other_when_the_port_does_not_speak_http() -> None:
+    """Otro programa en el puerto que contesta cualquier cosa (o redirige a otra web): «other»,
+    sin traza y sin seguir la redirección."""
+    import socket
+    import threading
+
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.bind(("127.0.0.1", 0))
+    server.listen()
+    port = server.getsockname()[1]
+    end = b"\r\n"
+    replies = [
+        b"esto no es HTTP" + end * 2,
+        b"HTTP/1.1 302 Found" + end + b"Location: https://example.com/" + end * 2,
+    ]
+
+    def answer() -> None:
+        for reply in replies:
+            conn, _addr = server.accept()
+            with conn:
+                conn.recv(1024)
+                conn.sendall(reply)
+
+    thread = threading.Thread(target=answer, daemon=True)
+    thread.start()
+    try:
+        busy = lambda _port: False  # noqa: E731
+        assert launcher.probe(port, is_free=busy) == "other"
+        assert launcher.fetch(f"http://127.0.0.1:{port}/status", 2.0)[0] == 302
+    finally:
+        thread.join(timeout=5)
+        server.close()
 
 
 def test_port_free_detects_a_listening_socket() -> None:
@@ -267,7 +331,8 @@ def test_plan_runs_api_and_worker_with_the_same_python(ui_dir: Path) -> None:
     launch = launcher.plan(get_settings(), 8123)
     assert launch.url == "http://127.0.0.1:8123"
     assert [c.name for c in launch.children] == ["api", "worker"]
-    assert launch.children[0].command == [sys.executable, "-m", "app", "serve", "--port", "8123"]
+    api = [sys.executable, "-m", "app", "serve", "--port", "8123", "--migrate"]
+    assert launch.children[0].command == api  # la API migra: el supervisor no carga SQLAlchemy
     assert launch.children[1].command == [sys.executable, "-m", "app", "worker"]
 
 
@@ -351,7 +416,6 @@ def _record_start(
     """Arranca con todo simulado y devuelve qué pasó, en orden."""
     steps: list[str] = []
     monkeypatch.setattr(launcher, "probe", lambda _port: "free")
-    monkeypatch.setattr(launcher.migrations, "upgrade", lambda: steps.append("upgrade"))
     monkeypatch.setattr(
         launcher, "_spawn", lambda child, _logs: steps.append(f"spawn {child.name}")
     )
@@ -378,7 +442,6 @@ def test_start_shows_the_starting_page_at_once_and_the_worker_waits_for_the_api(
     steps = [s for s in _record_start(monkeypatch) if not s.startswith("say")]
     assert steps == [
         f"open {(ui_dir / 'starting.html').resolve().as_uri()}",
-        "upgrade",
         "spawn api",
         "ready",
         "spawn worker",
@@ -391,7 +454,7 @@ def test_without_the_starting_page_the_app_opens_when_it_answers(
     """Con otro puerto (la página pregunta al de siempre) o sin la página, como antes."""
     (ui_dir / "starting.html").write_text("<!doctype html>", encoding="utf-8")
     steps = [s for s in _record_start(monkeypatch, port=8123) if not s.startswith("say")]
-    assert steps == ["upgrade", "spawn api", "ready", "spawn worker", "open http://127.0.0.1:8123"]
+    assert steps == ["spawn api", "ready", "spawn worker", "open http://127.0.0.1:8123"]
     (ui_dir / "starting.html").unlink()
     assert "open http://127.0.0.1:8000" in _record_start(monkeypatch)
 

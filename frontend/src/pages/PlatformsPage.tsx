@@ -471,7 +471,7 @@ function PlatformRow({ source, order, limits }: { source: SourceView; order: Slo
   return (
     <li className={cn('grid gap-3 px-4 py-4 sm:px-5', !enabled && 'bg-muted/30')}>
       <div className="flex flex-wrap items-start gap-x-4 gap-y-2">
-        <SiteIcon name={source.name} home={home} />
+        <SiteIcon key={home?.host ?? ''} name={source.name} sourceId={source.id} host={home?.host ?? null} />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="font-medium">{source.name}</h3>

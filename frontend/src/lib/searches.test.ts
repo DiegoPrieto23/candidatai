@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildSearches, canBuildSearches, describeSearch, iconCandidates, platformHome, searchLabel } from '@/lib/searches'
+import { buildSearches, canBuildSearches, describeSearch, platformHome, searchLabel } from '@/lib/searches'
 
 describe('searchLabel', () => {
   it.each([
@@ -38,25 +38,6 @@ describe('platformHome', () => {
       host: 'infojobs.net',
     })
     expect(platformHome([])).toBeNull()
-  })
-})
-
-describe('iconCandidates', () => {
-  it('prueba primero el icono conocido y después las rutas habituales', () => {
-    expect(iconCandidates({ origin: 'https://www.tecnoempleo.com', host: 'tecnoempleo.com' })[0]).toBe(
-      'https://www.tecnoempleo.com/graficos/logo_te_192.png',
-    )
-    expect(iconCandidates({ origin: 'https://www.infojobs.net', host: 'infojobs.net' })).toEqual([
-      'https://www.infojobs.net/favicon.ico',
-      'https://www.infojobs.net/apple-touch-icon.png',
-    ])
-    // En un subdominio, también los del dominio principal.
-    expect(iconCandidates({ origin: 'https://careers.acme.com', host: 'careers.acme.com' })).toEqual([
-      'https://careers.acme.com/favicon.ico',
-      'https://careers.acme.com/apple-touch-icon.png',
-      'https://acme.com/favicon.ico',
-      'https://acme.com/apple-touch-icon.png',
-    ])
   })
 })
 

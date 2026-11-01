@@ -97,28 +97,6 @@ export function platformHome(urls: string[]): { origin: string; host: string } |
   return null
 }
 
-// Portales que no sirven su icono en `/favicon.ico` (o no dejan cargarlo desde otra web).
-const KNOWN_ICONS: Record<string, string> = {
-  'tecnoempleo.com': 'https://www.tecnoempleo.com/graficos/logo_te_192.png',
-  'glassdoor.es': 'https://www.glassdoor.com/favicon.ico',
-  'glassdoor.com': 'https://www.glassdoor.com/favicon.ico',
-}
-
-/**
- * Dónde probar el icono de una web, en orden: el conocido, `/favicon.ico` y el de iOS. En un
- * subdominio (`careers.acme.com`), también los del dominio principal.
- */
-export function iconCandidates(home: { origin: string; host: string }): string[] {
-  const known = KNOWN_ICONS[home.host]
-  const origins = [home.origin]
-  const base = home.host.split('.').slice(-2).join('.')
-  if (base !== home.host) origins.push(`${new URL(home.origin).protocol}//${base}`)
-  return [
-    ...(known ? [known] : []),
-    ...origins.flatMap((origin) => [`${origin}/favicon.ico`, `${origin}/apple-touch-icon.png`]),
-  ]
-}
-
 // --- Búsquedas desde tu perfil ------------------------------------------------------------------
 
 /** Lo que usa del perfil: `preferences.roles`, `locations` y `remote_modes`. */
@@ -151,12 +129,16 @@ const ANYWHERE = 'Espa%C3%B1a'
 const REMOTE = 'Remoto'
 
 const BUILDERS: Record<string, (role: string, place: string | null, remote: boolean) => string | null> = {
-  infojobs: (role, place, remote) =>
-    remote
-      ? null
-      : `https://www.infojobs.net/ofertas-trabajo${place ? `/${slug(place)}` : ''}?keyword=${encodeURIComponent(role)}`,
-  tecnoempleo: (role, place, remote) =>
-    place ? null : `https://www.tecnoempleo.com/ofertas-trabajo/?te=${encodeURIComponent(role)}${remote ? '&en_remoto=1' : ''}`,
+  infojobs: (role, place, remote) => {
+    if (remote) return null
+    const where = place ? `/${slug(place)}` : ''
+    return `https://www.infojobs.net/ofertas-trabajo${where}?keyword=${encodeURIComponent(role)}`
+  },
+  tecnoempleo: (role, place, remote) => {
+    if (place) return null
+    const onlyRemote = remote ? '&en_remoto=1' : ''
+    return `https://www.tecnoempleo.com/ofertas-trabajo/?te=${encodeURIComponent(role)}${onlyRemote}`
+  },
   indeed: (role, place, remote) =>
     `https://es.indeed.com/jobs?q=${encodeURIComponent(role)}&l=${remote ? REMOTE : place ? encodeURIComponent(place) : ANYWHERE}`,
   linkedin: (role, place, remote) =>

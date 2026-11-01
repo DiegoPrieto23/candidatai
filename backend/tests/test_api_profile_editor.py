@@ -18,7 +18,7 @@ from sqlalchemy import select
 from app.agent_interface.tools import TOOLS
 from app.api.deps import UI_ORIGIN
 from app.api.main import create_app
-from app.cli import app as cli_app
+from app.cli_commands import app as cli_app
 from app.core import migrations
 from app.core.config import REPO_ROOT
 from app.core.db import session_scope

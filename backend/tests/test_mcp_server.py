@@ -150,7 +150,7 @@ def test_agents_check_delegates_to_sync_script(monkeypatch: pytest.MonkeyPatch) 
         assert cwd == REPO_ROOT
         return subprocess.CompletedProcess(argv, 3)
 
-    monkeypatch.setattr(cli.subprocess, "run", fake_run)
+    monkeypatch.setattr(subprocess, "run", fake_run)
     assert runner.invoke(cli.app, ["agents", "check"]).exit_code == 3
     assert runner.invoke(cli.app, ["agents", "sync"]).exit_code == 3
     script = str(REPO_ROOT / "scripts" / "sync_agents.py")

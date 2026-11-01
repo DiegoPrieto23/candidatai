@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 from typer.testing import CliRunner
 
-from app import cli
+from app import cli, cli_commands
 from app.core.config import get_settings
 from app.services import doctor
 from app.services.doctor import CheckStatus, run_doctor
@@ -202,9 +202,9 @@ def test_cli_doctor_json() -> None:
 
 
 def test_cli_doctor_fails_on_error(monkeypatch: pytest.MonkeyPatch) -> None:
-    # Se parchea `cli.run_doctor` (no `doctor.run_doctor`) porque cli.py importa el nombre.
+    # Se parchea `cli_commands.run_doctor` (no `doctor.run_doctor`) porque importa el nombre.
     monkeypatch.setattr(
-        cli,
+        cli_commands,
         "run_doctor",
         lambda _s: doctor.DoctorReport(
             checks=[doctor.CheckResult(name="X", status=CheckStatus.ERROR, detail="mal")]
