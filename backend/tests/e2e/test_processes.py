@@ -572,9 +572,16 @@ def _check_against_agent_interface(page: Page, server: AppServer, since: str | N
         has=page.locator("caption", has_text=t("funnel.funnel.caption"))
     )
     expect(funnel.locator("tbody tr")).to_have_count(len(stats["steps"]))
-    expect(funnel.locator("tbody td")).to_have_text(
+    expect(funnel.locator("tbody td:first-of-type")).to_have_text(
         [re.compile(rf"^{s['count']}(\D|$)") for s in stats["steps"]]
     )
+    # El gráfico de embudo: una franja visible por etapa, también las que están a 0.
+    strips = page.locator(".recharts-funnel-trapezoid")
+    expect(strips).to_have_count(len(stats["steps"]))
+    for strip in strips.all():
+        box = strip.bounding_box()
+        assert box is not None
+        assert box["width"] > 0
     steps = _table(page, t("funnel.funnel.caption"))
     assert [row[0] for row in steps] == [t(f"funnel.steps.{s['step']}") for s in stats["steps"]]
     assert [_numbers(row[1])[0] for row in steps] == [s["count"] for s in stats["steps"]]

@@ -21,10 +21,13 @@
   },
   "funnel": {
     "title": "Embudo",
-    "hint": "Cada oferta cuenta una vez en cada paso al que llegó (y en los anteriores). El porcentaje es la conversión desde el paso anterior.",
+    "hint": "Cada oferta cuenta una vez en cada paso al que llegó (y en los anteriores). Cada fila dice qué parte pasó desde el paso anterior y qué parte del total llegó hasta ahí.",
     "duplicates": " Sin contar {{count}} duplicadas.",
     "caption": "Ofertas por paso del embudo",
-    "valueHead": "Ofertas (conversión)"
+    "rates": "{{previous}} del anterior · {{start}} del total",
+    "countHead": "Ofertas",
+    "fromPreviousHead": "% sobre el paso anterior",
+    "fromStartHead": "% sobre el total"
   },
   "week": {
     "title": "Por semana",

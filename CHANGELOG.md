@@ -53,6 +53,9 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   vez de 23).
 
 ### Cambiado
+- **El Embudo ya tiene forma de embudo:** una franja por etapa y, al lado, su cifra, el porcentaje
+  sobre la etapa anterior y el porcentaje sobre el total. Las etapas a 0 también se ven, en gris y
+  con su cifra real. Con lector de pantalla, los mismos datos llegan como tabla.
 - **Lenguaje claro en el encaje y las etapas:** el número de cada oferta se llama ahora «encaje» y
   dice su escala y qué tal es («74/100 · buen encaje»); al pasar el ratón explica qué mide. El
   desglose («De dónde sale el número») explica cada parte y cuántos puntos suma, las letras de
