@@ -45,6 +45,7 @@ from app.services.mail_sources import (
     MailSourceNotAllowedError,
     MailSourceNotFoundError,
 )
+from app.services.matching.service import AssessmentContentError
 from app.services.network import NetworkContactNotFoundError
 from app.services.pipeline import InvalidTransitionError
 from app.services.process import ContactNotFoundError, MilestoneNotFoundError
@@ -120,7 +121,11 @@ def to_tool_error(exc: Exception, spec: ToolSpec | None = None) -> ToolError:
         return from_validation_error(exc, spec.input_model, schema_for_tool(spec.name))
     if isinstance(
         exc,
-        CvContentError | AnswersContentError | CoverLetterContentError | TemplateImportError,
+        CvContentError
+        | AnswersContentError
+        | CoverLetterContentError
+        | TemplateImportError
+        | AssessmentContentError,
     ):
         # Desde una herramienta, el path empieza en su entrada (`content.…`); la API recibe el
         # contenido sin envolver.

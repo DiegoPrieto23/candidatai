@@ -19,11 +19,12 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session, load_only
 
 from app.core.policies import get_policies, get_skill_aliases, get_title_aliases
-from app.models import Application, Company, Job, Match
+from app.models import Application, Company, Event, Job, Match
 from app.models import JobExtraction as JobExtractionRow
 from app.schemas.llm_io import FitAssessment, JobExtraction
 from app.services import doubtful, events, extractions, tasks
 from app.services import profile as profiles
+from app.services.documents.checks import ContentIssue
 from app.services.doubtful import SignalNote
 from app.services.events import JobNotFoundError
 from app.services.extractions import ExtractionNotFoundError
@@ -51,6 +52,16 @@ class MatchView(BaseModel):
     # Fase 25.3: señales de oferta dudosa activas, para los riesgos de `assess-fit`. No cuentan en
     # el score. Solo las rellena `get_match` (en las listas va vacía).
     signals: list[SignalNote]
+
+
+class AssessmentContentError(ValueError):
+    """La valoración incumple una regla; `issues` dice dónde y por qué, para corregir."""
+
+    root = "assessment"  # el campo de la entrada que la lleva
+
+    def __init__(self, issues: list[ContentIssue]) -> None:
+        self.issues = issues
+        super().__init__("La valoración no es válida: " + ", ".join(i.field for i in issues) + ".")
 
 
 class SaveAssessmentResult(BaseModel):
@@ -287,8 +298,26 @@ def salary_gap(session: Session, job_id: int) -> SalaryGapView:
 def save_fit_assessment(
     session: Session, job_id: int, assessment: FitAssessment, agent_name: str | None = None
 ) -> SaveAssessmentResult:
-    """Guarda la valoración del agente en el match vigente y registra `fit_assessed`."""
+    """Guarda la valoración del agente en el match vigente y registra `fit_assessed`.
+
+    Una oferta con texto dirigido a una IA (evento `injection_suspected`, del código o del
+    agente) no puede ser `strong`: lo que dice de sí misma no es de fiar hasta que la mire el
+    usuario.
+    """
     match = current_match(session, job_id)
+    if assessment.verdict == "strong" and _injection_suspected(session, job_id):
+        raise AssessmentContentError(
+            [
+                ContentIssue(
+                    field="verdict",
+                    received="strong",
+                    reason="La oferta tiene la marca de posible inyección (`injection_suspected`).",
+                    expected="possible o weak",
+                    hint="Valórala como mucho `possible` y pon la marca en `risks`; el usuario "
+                    "la revisará en la ficha.",
+                )
+            ]
+        )
     events.record(
         session,
         job_id,
@@ -300,6 +329,17 @@ def save_fit_assessment(
     match.assessment = assessment.model_dump(mode="json")
     session.flush()
     return SaveAssessmentResult(ok=True, job_id=job_id, match_id=match.id)
+
+
+def _injection_suspected(session: Session, job_id: int) -> bool:
+    return (
+        session.scalar(
+            select(Event.id)
+            .where(Event.job_id == job_id, Event.type == EventType.INJECTION_SUSPECTED.value)
+            .limit(1)
+        )
+        is not None
+    )
 
 
 def match_views(session: Session, job_ids: Sequence[int]) -> dict[int, MatchView]:

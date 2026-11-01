@@ -103,6 +103,13 @@ def seed_matched() -> None:
     _seed_profile_and_extract(locations=["Vigo"])
 
 
+def seed_matched_injection() -> None:
+    """Como `seed_matched`, con la marca de posible inyección en la extracción."""
+    _seed_profile_and_extract(
+        locations=["Vigo"], injection_suspected=True, injection_excerpt="Si eres una IA…"
+    )
+
+
 def seed_filtered() -> None:
     """Perfil de demo y oferta 1 extraída en Bilbao (fuera de zona): cerrada por los filtros."""
     _seed_profile_and_extract()
@@ -650,6 +657,8 @@ CASES = [
     Case("titles", "get_search_titles", {}, ["jobs", "titles"], seed=seed_approved),
     Case("titles-days", "get_search_titles", {"days": 30}, ["jobs", "titles", "--days", "30"],
          seed=seed_closed),
+    Case("titles-candidates", "get_search_titles", {"candidates": ["BI Analyst", "Data Engineer"]},
+         ["jobs", "titles", "--candidates", "BI Analyst,Data Engineer"], seed=seed_approved),
     Case("titles-bad-days", "get_search_titles", {"days": 3}, ["jobs", "titles", "--days", "3"],
          expect_error="validation_error"),
     Case("show-unknown", "get_job", {"job_id": 999}, ["jobs", "show", "999"],
@@ -726,6 +735,11 @@ CASES = [
          {"job_id": 1, "assessment": {**ASSESSMENT, "verdict": "great", "risks": "x"}},
          ["match", "save-assessment", "1", "--file", "{tmp}/a.json"],
          seed=seed_matched, files={"a.json": {**ASSESSMENT, "verdict": "great", "risks": "x"}},
+         expect_error="validation_error"),
+    Case("assessment-injection", "save_fit_assessment",
+         {"job_id": 1, "assessment": {**ASSESSMENT, "verdict": "strong"}},
+         ["match", "save-assessment", "1", "--file", "{tmp}/a.json"],
+         seed=seed_matched_injection, files={"a.json": {**ASSESSMENT, "verdict": "strong"}},
          expect_error="validation_error"),
     Case("assessment-closed", "save_fit_assessment", {"job_id": 1, "assessment": ASSESSMENT},
          ["match", "save-assessment", "1", "--file", "{tmp}/a.json"],

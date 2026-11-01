@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from sqlalchemy import case, func, or_, select
 from sqlalchemy.orm import Session, aliased, defer
 
-from app.models import Application, Company, Job, Match
+from app.models import Application, Company, Event, Job, Match
 from app.models import JobExtraction as JobExtractionRow
 from app.schemas.llm_io import JobExtraction, Salary
 from app.services import application_archive, extractions, network
@@ -39,6 +39,8 @@ class JobSummary(BaseModel):
     duplicate_of: int | None
     first_seen_at: datetime
     score: int | None  # del último match; None si aún no se ha puntuado
+    # El código o el agente vieron texto dirigido a una IA (evento `injection_suspected`).
+    injection_suspected: bool
     # Posible cierre y republicación (fase 16): observaciones del código, no veredictos.
     signals: JobSignals = JobSignals()
 
@@ -60,8 +62,13 @@ def _summary_query(with_text: bool = True):
     leer `raw_text` de ellas haría una consulta por oferta.
     """
     last = last_match_subquery()
+    injection = (
+        select(Event.id)
+        .where(Event.job_id == Job.id, Event.type == EventType.INJECTION_SUSPECTED.value)
+        .exists()
+    )
     return (
-        select(Job, Company.name, Application.stage, Match.score)
+        select(Job, Company.name, Application.stage, Match.score, injection)
         .join(Company, Company.id == Job.company_id)
         .outerjoin(Application, Application.job_id == Job.id)
         .outerjoin(last, last.c.job_id == Job.id)
@@ -107,8 +114,9 @@ def list_jobs(
             duplicate_of=job.duplicate_of,
             first_seen_at=job.first_seen_at,
             score=score,
+            injection_suspected=suspected,
         )
-        for job, company, job_stage, score in session.execute(query).all()
+        for job, company, job_stage, score, suspected in session.execute(query).all()
     ]
 
 
@@ -122,7 +130,7 @@ def get_job(session: Session, job_id: int) -> JobDetail:
     row = session.execute(_summary_query().where(Job.id == job_id)).first()
     if row is None:
         raise JobNotFoundError(f"No existe la oferta {job_id}.")
-    job, company, job_stage, score = row
+    job, company, job_stage, score, suspected = row
     return JobDetail(
         id=job.id,
         title=job.title,
@@ -135,6 +143,7 @@ def get_job(session: Session, job_id: int) -> JobDetail:
         duplicate_of=job.duplicate_of,
         first_seen_at=job.first_seen_at,
         score=score,
+        injection_suspected=suspected,
         posted_at=job.posted_at,
         text=wrap_untrusted(job.id, job.raw_text, job.risk_flags),
     )
@@ -275,7 +284,7 @@ def search_jobs(
     latest = extractions.latest_rows(session, [job.id for job, *_ in rows])
     known = network.known_counts(session, [job.id for job, *_ in rows])
     items = []
-    for job, company, job_stage, score, closed_at, closed_by in rows:
+    for job, company, job_stage, score, suspected, closed_at, closed_by in rows:
         extraction = latest.get(job.id)
         items.append(
             JobRow(
@@ -290,6 +299,7 @@ def search_jobs(
                 duplicate_of=job.duplicate_of,
                 first_seen_at=job.first_seen_at,
                 score=score,
+                injection_suspected=suspected,
                 remote_mode=extraction.data.get("remote_mode") if extraction else None,
                 salary=_row_salary(extraction.data if extraction else None),
                 known_contacts=known.get(job.id, 0),
@@ -338,7 +348,7 @@ def get_job_view(session: Session, job_id: int) -> JobView:
     row = session.execute(_summary_query().where(Job.id == job_id)).first()
     if row is None:
         raise JobNotFoundError(f"No existe la oferta {job_id}.")
-    job, company, job_stage, score = row
+    job, company, job_stage, score, suspected = row
     extraction_row = extractions.latest_rows(session, [job.id]).get(job.id)
     events = job_events(session, job_id)
     reports = [
@@ -368,6 +378,7 @@ def get_job_view(session: Session, job_id: int) -> JobView:
         duplicate_of=job.duplicate_of,
         first_seen_at=job.first_seen_at,
         score=score,
+        injection_suspected=suspected,
         posted_at=job.posted_at,
         raw_text=job.raw_text,
         # Solo mira el disco si se envió (etapa posterior a `applied` o cerrada después).

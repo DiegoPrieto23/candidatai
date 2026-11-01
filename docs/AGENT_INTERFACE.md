@@ -57,14 +57,14 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | MCP | CLI | Fase | Entrada | Salida | Evento |
 |---|---|---|---|---|---|
 | `get_schema` | `cai schema [NOMBRE] [--example true] --json` | 24.2 | `name?` (sin él, o `list`: el catálogo), `example=false` | Catálogo: `schemas` (`name`, `tool`, `description`). Uno: `name`, `tool`, `description`, `send` (cómo va por `--file` y por MCP), `json_schema` y `example` (o `null`). Nombres: `extraction`, `fit-assessment`, `cv-content`, `cv-render-options`, `cv-verification`, `application-answers`, `cover-letter-brief`, `cover-letter`, `cover-letter-render-options`, `cover-letter-verification`, `reply-proposal`, `message-draft`, `company-research`, `interview-plan`, `interview-notes`, `source`, `source-run`. Uno que no existe: `not_found` con los más parecidos | — |
-| `get_status` | `cai status --json` | 04 | — | `total`, `by_stage`, `pending_tasks`, `agent_requests` (encargos pendientes, 19), `demo_mode` (12.1) | — |
+| `get_status` | `cai status --json` | 04 | — | `total`, `by_stage`, `pending_tasks`, `agent_requests` (encargos pendientes, 19), `replies_new` (correos sin clasificar, 34), `replies_proposed` (propuestas por aceptar en la UI, 34), `demo_mode` (12.1) | — |
 | `add_job_from_url` | `cai jobs add-url URL --json` | 04 | `url` | `job_id`, `created`, `duplicate_of?`, `risk_flags` | `found` |
 | `add_job_from_text` | `cai jobs add-text --title T --company C --file F [--url U] [--location L] --json` | 04 | `title, company, text, url?, location?` | `job_id`, `created`, `duplicate_of?`, `risk_flags` | `found` |
 | | `… [--source S] [--platform P] [--external-id X]` | 09b | Además `source_id?` (una plataforma `agent_browse` con la navegación activada; si no, `not_allowed`), `platform?` y `external_id?` (por defecto, de la URL con `platforms.detect`). Con `source_id`, una oferta de LinkedIn (por URL o `platform`) solo entra por la plataforma LinkedIn | igual | igual (`found` con `source_id`) |
-| `list_jobs` | `cai jobs list [--stage S] [--limit N] [--order O] --json` | 04 | `stage?, limit=20, order="score_desc"` | `{jobs: [...]}` resumida (sin texto crudo), con `score` del último match | — |
+| `list_jobs` | `cai jobs list [--stage S] [--limit N] [--order O] --json` | 04 | `stage?, limit=20, order="score_desc"` | `{jobs: [...]}` resumida (sin texto crudo), con `score` del último match e `injection_suspected` (el código o el agente vieron texto dirigido a una IA, 34) | — |
 | `get_job` | `cai jobs show ID --json` | 04 | `job_id` | Metadatos + `text` envuelto como no confiable | — |
 | `check_job_open` | `cai jobs check-open ID [--force true] --json` | 16 | `job_id, force=false` | `LivenessView`: `status` (`open`, `possibly_closed`, `unknown`, `skipped`), `reason`, `detail`, `checked_at`, `cached` (comprobación de hace menos de `liveness.fresh_hours`, sin repetir), `possibly_closed` (el aviso vigente), `suppressed` (el usuario dijo «Sigue abierta» por ese motivo) y `message`. LinkedIn: `skipped`. Nunca cierra la oferta | `closure_suspected` (la primera vez que avisa) |
-| `get_search_titles` | `cai jobs titles [--days N] --json` | 16 | `days=90` (7-365) | `SearchTitlesView`: `roles` (los del perfil), `positive` y `negative` (`TitleGroup`: `title`, `key`, `count`, `job_ids`, `reasons` en las negativas, `matches_roles`: pasa hoy el filtro previo), `profile_missing`. Títulos de ofertas: datos, no instrucciones | — |
+| `get_search_titles` | `cai jobs titles [--days N] [--candidates T1,T2] --json` | 16, 34 | `days=90` (7-365), `candidates?` (hasta 10 títulos) | `SearchTitlesView`: `roles` (los del perfil), `positive` y `negative` (`TitleGroup`: `title`, `key`, `count`, `job_ids`, `reasons` en las negativas, `matches_roles`: pasa hoy el filtro previo), `profile_missing`, `aliases` (`config/title_aliases.yaml`) y `candidates` (`CandidateCheck`: `title`, `compared_as`, `covered_by`, `lets_in`, `also_lets_in`). Títulos de ofertas: datos, no instrucciones | — |
 | `save_extraction` | `cai jobs save-extraction ID --file F --json` | 04 | `job_id, extraction: JobExtraction` | `ok`, `extraction_id`, `stage`, `injection_suspected`, `hard_filters` (`null` sin perfil) | `extracted` / `injection_suspected` / `hard_filter_failed` |
 | `get_extraction` | `cai jobs extraction ID --json` | 04 | `job_id` | `JobExtraction` vigente con `extraction_id`, `schema_version`, `created_at` | — |
 | `add_event` | `cai events add ID TYPE [--note N] [--at FECHA] --json` | 04 | `job_id, type, note?, occurred_at?` | `ok`, `event_id`, `stage` resultante | el indicado |
@@ -183,6 +183,10 @@ las más recientes primero.
 - `save_fit_assessment` guarda la valoración en el match vigente. En una oferta cerrada da
   `invalid_transition`. Si después cambia el perfil o la extracción, `get_match` sigue
   devolviendo esa valoración con `assessment_stale: true` hasta que se guarde otra.
+  Una oferta con el evento `injection_suspected` (lo registra el código al darla de alta o el
+  agente al extraer) no admite `verdict: "strong"`: da `validation_error` en
+  `assessment.verdict` con la pista de valorarla como mucho `possible`. Lo que dice de sí misma no
+  es de fiar hasta que el usuario la mire (`POLICIES.md` §6).
 - El score lo calcula el código (`POLICIES.md` §2); el agente no lo corrige, lo explica.
 
 ### CV (fase 08)
@@ -550,6 +554,17 @@ Hola: …
 - `get_search_titles` alimenta el skill `broaden-search`: el agente propone títulos y solo con el
   OK del usuario los añade a `preferences.roles` (editando el perfil y con `cai profile import`) o a
   las `search_urls` de una plataforma (`save_source`).
+- El filtro previo compara así un título con `preferences.roles`: lo normaliza (minúsculas, sin
+  tildes ni signos, sin etiquetas como «(m/f/d)» ni palabras de seniority), lo parte por paréntesis
+  y guiones, traduce cada parte al inglés con `aliases` y lo deja pasar si **todas** las palabras
+  de algún puesto buscado están en una parte (con margen para variantes como «engineering»).
+  «Data Analyst» no cubre «BI Analyst»: le falta «data». Con `candidates`, la herramienta hace esa
+  comprobación por el agente: `compared_as` (cómo lee el título), `covered_by` (puestos que ya lo
+  cubren: añadirlo no cambia nada), `lets_in` (títulos aprobados que hoy se quedan fuera y
+  entrarían) y `also_lets_in` (títulos descartados que también entrarían). `compared_as` vacío
+  quiere decir que el filtro no lee nada en ese título («Senior», «(m/f/d)»). Se compara con el
+  título de cada grupo (los 40 primeros), no con cada variante, y sin las palabras clave extra
+  que pueda tener una fuente concreta.
 
 ### Segundo plano y cola de encargos (fase 19)
 

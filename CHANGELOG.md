@@ -43,6 +43,11 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 - **Aviso al aceptar o ignorar una respuesta:** en «Respuestas», antes de pasar al siguiente
   correo, un aviso dice en qué oferta ha quedado registrada, con su enlace. «Ignorar» se puede
   deshacer desde el aviso.
+- **El resumen del día cuenta las respuestas de las empresas:** dice cuántos correos quedan por
+  clasificar (con `review-replies`) y cuántas propuestas te esperan en Procesos, como Inicio.
+- **Ampliar la búsqueda comprueba los títulos antes de proponerlos:** `broaden-search` sabe, sin
+  mirar el código, cómo casa un título con tus puestos buscados, qué ofertas aprobadas dejaría
+  entrar y cuáles descartadas colaría. Va más rápido y gasta menos.
 
 ### Cambiado
 - **Lenguaje claro en el encaje y las etapas:** el número de cada oferta se llama ahora «encaje» y
@@ -129,6 +134,12 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   búsqueda de Windows.
 - En «Nueva oferta», el menú ya no marca «Bandeja de ofertas»: el activo es el botón «Nueva
   oferta».
+
+### Seguridad
+- **Las ofertas con texto dirigido a una IA nunca salen como encaje fuerte:** tu agente avisa
+  siempre de ellas al valorarlas y en el resumen del día, y la app rechaza una valoración «fuerte»
+  hasta que la revises. Su salario y su modalidad salen solo de los datos extraídos, nunca de lo
+  que pida el texto.
 
 ## [0.3.0] - 2026-10-28
 

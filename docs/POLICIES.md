@@ -265,6 +265,10 @@ Una oferta puede encajar en el papel y aun así no merecer la pena. El código m
   igual de no confiables que el texto de una oferta y pasan por la misma detección.
 - Las ofertas con `risk_flags` o `injection_suspected` se muestran con aviso en la UI; que haya
   texto oculto para IAs también dice algo de cómo filtra esa empresa.
+- El agente avisa de esas ofertas cada vez que las valora o las recomienda (`assess-fit`,
+  `daily-summary`) y lo pone en los riesgos de su valoración, que nunca es `strong`: la app la
+  rechaza si lo es, porque lo que la oferta dice de sí misma no es de fiar hasta que el usuario la revise. El salario y la modalidad
+  salen solo de la extracción, nunca de lo que pida el texto.
 - **En segundo plano** (fase 19) nadie mira mientras el agente lee ofertas, así que la
   ejecución solo puede usar las herramientas MCP de su acción (leer las ofertas nuevas: `get_status`,
   `list_jobs`, `get_job`, `save_extraction`) y su skill: todas las demás de la app se le deniegan

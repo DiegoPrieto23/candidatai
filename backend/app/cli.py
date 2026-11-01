@@ -261,6 +261,11 @@ def _render_status(report: Any) -> None:
         typer.echo(f"\nTareas pendientes del worker: {report.pending_tasks}")
     if report.agent_requests:
         typer.echo(f"Encargos para tu agente: {report.agent_requests} (`cai requests list`)")
+    if report.replies_new or report.replies_proposed:
+        typer.echo(
+            f"Respuestas de empresas: {report.replies_new} sin clasificar, "
+            f"{report.replies_proposed} por aceptar (`cai replies list`)"
+        )
 
 
 def _render_added(result: Any) -> None:
@@ -1637,6 +1642,14 @@ def _render_search_titles(result: Any) -> None:
             if group.reasons:
                 extra += "  " + ", ".join(f"{k} ×{v}" for k, v in group.reasons.items())
             typer.echo(f"  {group.count:>3}  {group.title}{extra}")
+    for check in result.candidates:
+        typer.echo("")
+        typer.echo(f"Si añades «{check.title}» (se lee como: {', '.join(check.compared_as)}):")
+        if check.covered_by:
+            typer.echo(f"  ya lo cubre: {', '.join(check.covered_by)}")
+        typer.echo(f"  dejaría pasar: {', '.join(check.lets_in) or '(nada nuevo)'}")
+        if check.also_lets_in:
+            typer.echo(f"  colaría también: {', '.join(check.also_lets_in)}")
 
 
 def _render_prompt(result: Any) -> None:

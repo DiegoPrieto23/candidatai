@@ -24285,6 +24285,10 @@
             ],
             "title": "Score"
           },
+          "injection_suspected": {
+            "type": "boolean",
+            "title": "Injection Suspected"
+          },
           "signals": {
             "$ref": "#/components/schemas/JobSignals",
             "default": {}
@@ -24357,6 +24361,7 @@
           "duplicate_of",
           "first_seen_at",
           "score",
+          "injection_suspected",
           "remote_mode",
           "salary"
         ],
@@ -24602,6 +24607,10 @@
             ],
             "title": "Score"
           },
+          "injection_suspected": {
+            "type": "boolean",
+            "title": "Injection Suspected"
+          },
           "signals": {
             "$ref": "#/components/schemas/JobSignals",
             "default": {}
@@ -24673,6 +24682,7 @@
           "duplicate_of",
           "first_seen_at",
           "score",
+          "injection_suspected",
           "posted_at",
           "raw_text",
           "extraction",
@@ -32178,6 +32188,14 @@
             "type": "integer",
             "title": "Agent Requests"
           },
+          "replies_new": {
+            "type": "integer",
+            "title": "Replies New"
+          },
+          "replies_proposed": {
+            "type": "integer",
+            "title": "Replies Proposed"
+          },
           "demo_mode": {
             "type": "boolean",
             "title": "Demo Mode"
@@ -32189,6 +32207,8 @@
           "by_stage",
           "pending_tasks",
           "agent_requests",
+          "replies_new",
+          "replies_proposed",
           "demo_mode"
         ],
         "title": "StatusReport"
