@@ -14,7 +14,7 @@ from app.models import Event, Job, JobExtraction, ProfileVersion
 from app.services import events, profile, received_offers
 from app.services.pipeline import InvalidTransitionError
 from app.services.received_offers import ReceivedOfferFields, ReceivedOfferNotFoundError
-from tests.replies_support import add_applied_job
+from tests.applied_support import add_applied_job
 
 FLOOR = 41_000
 

@@ -49,7 +49,6 @@ CATALOG: tuple[SchemaEntry, ...] = (
         "save_cover_letter_verification",
         "Resultado del rol verifier (carta)",
     ),
-    SchemaEntry("reply-proposal", "save_reply_proposal", "Clasificación de un correo"),
     SchemaEntry("message-draft", "save_message_draft", "Borrador de mensaje o correo"),
     SchemaEntry("company-research", "save_company_research", "Dosier de la empresa"),
     SchemaEntry("interview-plan", "save_interview_plan", "Plan de preparación de entrevista"),

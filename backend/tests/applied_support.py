@@ -1,32 +1,16 @@
-"""Ayudas de los tests de respuestas por correo (fase 15): ofertas enviadas y correos de ejemplo.
+"""Ayudas de los tests de seguimiento y entrevistas: una oferta ya enviada y sus fechas."""
 
-Los correos son los ficticios de `demo/emails/respuestas/` (ver su README).
-"""
-
-import shutil
 from datetime import UTC, datetime
-from pathlib import Path
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.core.config import REPO_ROOT, get_settings
 from app.models import Company, Job, Source
 from app.services import events
 from app.services.normalize import normalize_company
 
-DEMO = REPO_ROOT / "demo" / "emails" / "respuestas"
 NOW = datetime(2026, 10, 11, 9, 0, tzinfo=UTC)
 APPLIED = datetime(2026, 10, 1, 9, 0, tzinfo=UTC)
-
-# Empresa -> URL de la oferta. Brétema y Lonxa publican en un ATS (su dominio no cuenta).
-DEMO_COMPANIES = {
-    "Brétema Analytics": "https://boards.greenhouse.io/bretema/jobs/1",
-    "Lonxa Retail Tech": "https://jobs.lever.co/lonxa/2",
-    "Néboa Data": "https://neboa.example/empleo/ae",
-    "Rías Software S.L.": "https://careers.riassoftware.example/data-engineer",
-    "Castro Labs": "https://castrolabs.example/jobs/de",
-}
 
 
 def add_applied_job(
@@ -57,18 +41,3 @@ def add_applied_job(
     events.record(session, job.id, "applied_manually", "user", occurred_at=applied_at)
     session.flush()
     return job
-
-
-def add_demo_jobs(session: Session) -> dict[str, Job]:
-    return {
-        company: add_applied_job(session, company, url) for company, url in DEMO_COMPANIES.items()
-    }
-
-
-def copy_to_inbox(files: list[Path]) -> Path:
-    """Deja los `.eml` en `data/inbox/respuestas/` (la alternativa local a IMAP)."""
-    folder = get_settings().replies_inbox_dir
-    folder.mkdir(parents=True, exist_ok=True)
-    for path in files:
-        shutil.copy(path, folder / path.name)
-    return folder

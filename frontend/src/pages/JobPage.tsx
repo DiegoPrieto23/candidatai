@@ -24,7 +24,6 @@ import { ArchivedApplication } from '@/components/ArchivedApplication'
 import { CoverLetterSection } from '@/components/CoverLetterSection'
 import { CompanyResearchSection } from '@/components/CompanyResearchSection'
 import { CvSection } from '@/components/CvSection'
-import { JobReplyNotice } from '@/components/JobReplyNotice'
 import { ClosedNotice, DoubtfulNote, RepostNote } from '@/components/JobSignals'
 import { DiscardDialog } from '@/components/DiscardDialog'
 import { DraftsSection } from '@/components/DraftsSection'
@@ -760,7 +759,6 @@ export function JobPage() {
           <div className="mb-6 space-y-4 empty:hidden">
             {job.stage === 'pending_detail' && <MissingDetail job={job} />}
             {job.injection && <InjectionAlert injection={job.injection} />}
-            {wasSent(job) && <JobReplyNotice jobId={job.id} />}
             <ClosedNotice job={job} />
             <RepostNote job={job} />
             <DoubtfulNote job={job} />

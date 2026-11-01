@@ -170,11 +170,6 @@ enviar nada. Encima, cada agente añade lo que permite:
 Recomendación para todos: ejecuta `process-jobs` en su propia sesión y revisa en la UI las
 ofertas marcadas con riesgo antes de aprobarlas.
 
-El rol `classifier` (fase 15, skill `review-replies`) lee correos de empresas, igual de no
-confiables, y tiene el mismo aislamiento por nivel: en Claude Code solo `get_reply` y
-`save_reply_proposal`. Además, lo que guarda es una propuesta: no cambia nada hasta que la
-aceptas en la UI, y aceptar no tiene herramienta ni comando.
-
 ## Notas por agente
 
 ### Claude Code
@@ -370,7 +365,7 @@ avisa de usar una sesión dedicada solo a eso.
 ### Botones «en tu agente» de la UI
 «Buscar ofertas», «Leer las ofertas nuevas», «Valorar las pendientes» (y «Valorar esta oferta» de una oferta),
 «Generar CV», en la página Skills (fase 14) «Añadir al perfil las que tengo» (`update-profile`)
-y «Plan de formación», y desde la fase 15 «Revisar respuestas» (Inicio y «Respuestas»), «Redactar borradores» (Procesos) y
+y «Plan de formación», y desde la fase 15 «Redactar borradores» (Procesos) y
 «Redactar seguimiento» (ficha de una candidatura enviada), desde la fase 16 «Ampliar búsqueda»
 («Dónde buscar»), desde la 17 los de las entrevistas y desde la 18 «Redactar mensaje» e «Investigar
 empresa» (ficha), desde la 25.2 «Ampliar perfil desde mis enlaces» y «Crear mi perfil desde mi CV»
@@ -383,7 +378,7 @@ página «Agente» (fase 24.4): agente por defecto, agente y modelo por acción 
 «con Claude Code ▾» para usar otro solo esa vez. Sin preferencias guardadas manda `CAI_AGENT`
 (`claude`, `codex`…) y, si no, el primero habilitado e instalado. Una acción que necesita una
 capacidad que el agente no tiene (navegador, web) no se lanza con él; las que leen contenido no
-confiable (`process-jobs`, `review-replies`, `search-jobs`) con un agente de nivel C se abren en
+confiable (`process-jobs`, `search-jobs`) con un agente de nivel C se abren en
 terminal con un aviso y nunca en segundo plano. El agente lanzado lleva `CAI_CLIENT_NAME` con su
 nombre, para que lo que haga por la CLI quede a su nombre. En Windows se abre Windows Terminal o
 PowerShell; en macOS, Terminal.app (o iTerm2), y en Linux, la terminal del escritorio (fase 26.1;

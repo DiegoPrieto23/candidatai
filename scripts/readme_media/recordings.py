@@ -201,7 +201,7 @@ def goto(page: Page, path: str, wait: int = 1500, base: str = UI) -> None:
 
 
 def scene_triage(page: Page) -> None:
-    goto(page, "/por-revisar")
+    goto(page, "/bandeja/revision")
     caption(page, 0)
     pause(page, 1800)
     caption(page, 1)
@@ -228,7 +228,7 @@ def scene_discard(page: Page) -> None:
 
 
 def scene_mailbox(page: Page) -> None:
-    goto(page, "/alertas")
+    goto(page, "/fuentes/correo")
     caption(page, 0)
     pause(page, 1500)
     page.get_by_role("button", name=text("mailboxes:add")).first.click()

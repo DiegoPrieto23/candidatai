@@ -126,7 +126,7 @@ function page(data: AgentsOverview = overview(), extra: Record<string, unknown> 
 const pref = (agent: string, model: string | null = null, preset: string | null = null) => ({ agent, model, preset })
 
 function tiers(changes: Partial<SpendTiers> = {}): SpendTiers {
-  const closed = ['process-jobs', 'assess-fit', 'review-replies'] as const
+  const closed = ['process-jobs', 'assess-fit'] as const
   const make = (id: SpendTier['id'], label: string, closedPref: ReturnType<typeof pref>, extra: Partial<SpendTier> = {}) => ({
     id,
     label,
@@ -345,10 +345,10 @@ describe('Niveles de gasto y modelos locales (fase 24.6)', () => {
     await openAgents()
     await openFineTune()
     const economy = await screen.findByRole('listitem', { name: 'Económico' })
-    expect(within(economy).getAllByText('OpenCode')).toHaveLength(3)
+    expect(within(economy).getAllByText('OpenCode')).toHaveLength(2)
     expect(within(economy).getByText(/Pon el modelo local/)).toBeInTheDocument()
     const balanced = screen.getByRole('listitem', { name: 'Equilibrado' })
-    expect(within(balanced).getAllByText('Claude Code · haiku')).toHaveLength(3)
+    expect(within(balanced).getAllByText('Claude Code · haiku')).toHaveLength(2)
     await userEvent.click(within(balanced).getByRole('button', { name: 'Aplicar' }))
     await waitFor(() =>
       expect(calls.some((c) => c.method === 'POST' && c.path === '/agent/tiers/balanced/apply')).toBe(true),

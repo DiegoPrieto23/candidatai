@@ -150,19 +150,6 @@ class FollowupsPolicy(BaseModel):
     thank_you_days: int = Field(default=3, ge=1)
 
 
-class RepliesPolicy(BaseModel):
-    """Respuestas de las empresas por correo (fase 15)."""
-
-    max_days: int = Field(gt=0)  # como mucho, correos de los últimos N días
-    max_body_chars: int = Field(gt=0)  # el cuerpo que se guarda, recortado
-    # Remitentes de ATS: casan si la empresa aparece en el nombre del remitente o en el asunto.
-    ats_sender_domains: list[str]
-    # Avisos de portales («tu candidatura ha sido vista»): igual que los ATS. Vacío por defecto.
-    portal_sender_domains: list[str] = Field(default_factory=list)
-    # Proveedores de correo personal: con ellos solo casa la dirección exacta de un contacto.
-    personal_mail_domains: list[str]
-
-
 class CalendarPolicy(BaseModel):
     """Hitos y calendario `.ics` (fase 10)."""
 
@@ -271,7 +258,6 @@ class Policies(BaseModel):
     agent_browse: AgentBrowsePolicy
     linkedin_public: LinkedInPublicPolicy = Field(default_factory=LinkedInPublicPolicy)
     followups: FollowupsPolicy
-    replies: RepliesPolicy
     calendar: CalendarPolicy
     applier: ApplierPolicy
     liveness: LivenessPolicy = Field(default_factory=LivenessPolicy)

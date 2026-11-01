@@ -182,7 +182,7 @@ found ─► pending_detail ─(detail_captured)─► pending_extraction ─►
   cada oferta, no el HTML del correo: casi todas las alertas llevan texto oculto legítimo (el
   «preheader») y marcarían `hidden_text` en todas.
 - Frecuencia: la del worker (`email_alerts.poll_minutes`). A mano: `cai alerts poll` o «Revisar
-  correo ahora» en la pantalla «Alertas», que lista los resúmenes con su prefiltro y permite
+  correo ahora» en «Dónde buscar → Alertas por correo»; «Por completar», en la Bandeja, lista los resúmenes con su prefiltro y permite
   abrirlos en su portal (`O`) o descartarlos (`D`).
 
 ## Botón «Enviar a CandidatAI»
@@ -326,7 +326,7 @@ ofertas de LinkedIn sin depender del correo. Es **contrario a las condiciones de
   aviso de esa búsqueda, no un bloqueo.
 - **Entrada:** las ofertas pasan el **filtro previo de resúmenes** (título, ubicación y seniority del
   título) **antes** de guardarse: lo que no pasa no entra. Lo nuevo entra como **resumen**
-  (`pending_detail`, `platform: linkedin`, `external_id`) en «Alertas», igual que las del correo, y
+  (`pending_detail`, `platform: linkedin`, `external_id`) en «Por completar», igual que las del correo, y
   se completa con el botón «Enviar a CandidatAI». Lo ya visto (por `platform` + `external_id`) no
   se duplica.
 - **Descripción por el endpoint público** (`jobs-guest/jobs/api/jobPosting/{id}`): otro interruptor,

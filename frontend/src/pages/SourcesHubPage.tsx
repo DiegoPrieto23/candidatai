@@ -1,49 +1,28 @@
-import { NavLink, Outlet } from 'react-router'
+import { Outlet } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { BuildingsIcon, CompassIcon, PuzzlePieceIcon } from '@phosphor-icons/react'
-import { cn } from '@/lib/utils'
-
-const TABS = [
-  { to: '/fuentes/plataformas', label: 'platforms', icon: CompassIcon },
-  { to: '/fuentes/empresas', label: 'companies', icon: BuildingsIcon },
-  { to: '/fuentes/extension', label: 'extension', icon: PuzzlePieceIcon },
-] as const
+import { BuildingsIcon, CompassIcon, EnvelopeSimpleIcon, PuzzlePieceIcon } from '@phosphor-icons/react'
+import { PageTabs } from '@/components/PageTabs'
 
 /**
  * «Dónde buscar» (fase 23.3; antes «Fuentes»): de dónde salen tus ofertas. Une las plataformas que recorre tu agente,
- * las empresas objetivo (APIs de ATS y portales) y el botón del navegador, cada uno en su pestaña con su propia URL.
+ * las empresas objetivo (APIs de ATS y portales), las alertas por correo y el botón del navegador, cada uno en su
+ * pestaña con su propia URL.
  */
 export function SourcesHubPage() {
   const { t } = useTranslation('platforms', { keyPrefix: 'hub' })
+  const { t: tNav } = useTranslation('nav')
   return (
-    <div className="grid gap-6">
-      <nav aria-label={t('label')} className="mx-auto w-full max-w-3xl">
-        <ul className="inline-flex gap-1 rounded-lg border bg-card p-1">
-          {TABS.map(({ to, label, icon: Icon }) => (
-            <li key={to}>
-              <NavLink
-                to={to}
-                className={({ isActive }) =>
-                  cn(
-                    'flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                    isActive
-                      ? 'bg-foreground/[0.07] font-medium text-foreground dark:bg-foreground/10'
-                      : 'text-muted-foreground hover:text-foreground',
-                  )
-                }
-              >
-                {({ isActive }) => (
-                  <>
-                    <Icon className="size-4" weight={isActive ? 'fill' : 'regular'} aria-hidden />
-                    {t(label)}
-                  </>
-                )}
-              </NavLink>
-            </li>
-          ))}
-        </ul>
-      </nav>
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
+      <PageTabs
+        label={t('label')}
+        className="mx-auto max-w-3xl"
+        tabs={[
+          { to: '/fuentes/plataformas', label: t('platforms'), icon: CompassIcon },
+          { to: '/fuentes/empresas', label: t('companies'), icon: BuildingsIcon },
+          { to: '/fuentes/correo', label: tNav('tabs.email'), icon: EnvelopeSimpleIcon },
+          { to: '/fuentes/extension', label: t('extension'), icon: PuzzlePieceIcon },
+        ]}
+      />
       <Outlet />
     </div>
   )

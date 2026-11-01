@@ -10,7 +10,7 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
-- **«Cómo funciona»:** una página nueva en el menú, debajo de Inicio, que cuenta quién hace qué (tú,
+- **«Cómo funciona»:** una página nueva, con su enlace al pie del menú, que cuenta quién hace qué (tú,
   tu agente y la app) y el recorrido completo en cinco pasos, de preparar tu búsqueda a seguir tus
   procesos, con un enlace a cada pantalla y a las guías. «Primeros pasos» enlaza a ella.
 - **Crear tu perfil sin agente:** en «Mi perfil», **Empezar a mano** pide tu nombre, tu titular, el
@@ -56,6 +56,16 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   vez de 23).
 
 ### Cambiado
+- **Un menú más corto:** de 13 entradas a 7: Inicio, Mi perfil, Bandeja de ofertas, Dónde buscar,
+  Procesos, Embudo y Agente. Lo demás sigue ahí, en pestañas, y tus enlaces guardados te llevan a su
+  sitio nuevo:
+  - **Bandeja de ofertas**: «Revisión rápida» (antes «Por revisar») y «Por completar» (antes
+    «Alertas»), con los mismos atajos de teclado. La entrada del menú cuenta lo que tienes por revisar.
+  - **Dónde buscar**: «Alertas por correo», con tus buzones, la guía para añadir uno y «Revisar correo
+    ahora».
+  - **Procesos**: «Tablero» y «Calendario».
+  - **Mi perfil**: ahora es la segunda entrada, con «Skills que te faltan» y «Plantillas de CV». Un
+    punto en el menú te avisa si aún no tienes perfil o hay cambios sin guardar.
 - **El Embudo ya tiene forma de embudo:** una franja por etapa y, al lado, su cifra, el porcentaje
   sobre la etapa anterior y el porcentaje sobre el total. Las etapas a 0 también se ven, en gris y
   con su cifra real. Con lector de pantalla, los mismos datos llegan como tabla.
@@ -122,6 +132,13 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   resto, y los iconos pesan un tercio menos. Con una conexión lenta, Inicio se ve un 20 % antes.
 - **El embudo va más rápido con muchas ofertas:** «Por semana» y «Por puesto» se calculan sin
   leer cada oferta una a una.
+
+### Eliminado
+- **«Respuestas»:** la app ya no lee los correos de las empresas ni tu agente los clasifica. Cuando
+  una empresa te conteste, anótalo en su ficha o en «Procesos» con «Actualizar estado». Se van la
+  página, el aviso en la ficha, el botón de Inicio, la opción «Leer aquí también las respuestas» de
+  los buzones, el skill `review-replies` y el comando `cai replies`. Lo que ya tenías guardado no se
+  borra. Si la usabas, `CAI_IMAP_REPLIES_FOLDER` ya no hace nada y puedes quitarla de tu `.env`.
 
 ### Corregido
 - **El foco de teclado se ve siempre:** en «Respuestas», el correo con el foco lleva un anillo y

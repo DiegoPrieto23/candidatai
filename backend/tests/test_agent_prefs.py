@@ -166,7 +166,7 @@ def test_level_c_with_untrusted_content_warns_in_terminal_and_never_runs_unatten
     manifest: Any,
 ) -> None:
     manifest(lambda targets: targets["qwen"]["capabilities"].update(isolation_level="C"))
-    for action in ("process-jobs", "review-replies", "search-jobs", "expand"):
+    for action in ("process-jobs", "search-jobs", "expand"):
         terminal = resolve(action=action, agent="qwen")
         assert terminal.usable and "sesión dedicada" in (terminal.warning or ""), action
         background = resolve(action=action, agent="qwen", mode="background")

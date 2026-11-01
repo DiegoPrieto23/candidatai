@@ -55,7 +55,7 @@ describe('Procesos (kanban)', () => {
     expect(within(screen.getByRole('region', { name: 'Cerrada' })).getByText('Rechazada')).toBeInTheDocument()
     const upcoming = screen.getByRole('region', { name: 'Próximos 7 días' })
     expect(await within(upcoming).findByText(/Oferta 3 \(Empresa 3\)/)).toBeInTheDocument()
-    expect(within(upcoming).getByRole('link', { name: 'Ver el calendario' })).toHaveAttribute('href', '/calendario')
+    expect(within(upcoming).getByRole('link', { name: 'Ver el calendario' })).toHaveAttribute('href', '/procesos/calendario')
   })
 
   it('registra el envío con canal y fecha desde «Mover»', async () => {

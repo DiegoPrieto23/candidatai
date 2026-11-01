@@ -355,7 +355,7 @@ export function ProcessesPage() {
           <Trans
             t={t}
             i18nKey="none.body"
-            components={{ to: <Link to="/por-revisar" className="underline underline-offset-4" /> }}
+            components={{ to: <Link to="/bandeja/revision" className="underline underline-offset-4" /> }}
           />
         </EmptyState>
       ) : (
@@ -367,7 +367,7 @@ export function ProcessesPage() {
           <div className="mb-3 flex items-baseline justify-between gap-3">
             <h2 className="font-medium">{t('next7')}</h2>
             <Link
-              to="/calendario"
+              to="/procesos/calendario"
               className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
             >
               {t('seeCalendar')}

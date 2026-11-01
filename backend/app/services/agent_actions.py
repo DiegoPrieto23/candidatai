@@ -19,7 +19,6 @@ ActionId = Literal[
     "generate-cover-letter",
     "add-skills",
     "training-plan",
-    "review-replies",
     "draft-follow-ups",
     "draft-follow-up",
     "broaden-search",
@@ -221,11 +220,6 @@ ACTIONS: dict[ActionId, Action] = {
         "Plan de formación",
         "Usa el skill training-plan de CandidatAI con los huecos de skills que he marcado como "
         "«No la tengo».",
-    ),
-    # Inicio y «Respuestas» (fase 15): el agente propone; el usuario acepta en la UI.
-    "review-replies": Action(
-        "Revisar respuestas",
-        "Usa el skill review-replies de CandidatAI con los correos de empresas sin clasificar.",
     ),
     # Procesos y ficha (fase 15): el agente redacta; el usuario copia y envía desde su correo.
     "draft-follow-ups": Action(

@@ -14,10 +14,10 @@ const mainRegion = async () => {
 }
 
 describe('Cómo funciona', () => {
-  it('está en el menú, justo debajo de Inicio', async () => {
+  it('está al pie de la barra lateral', async () => {
     open()
-    const nav = screen.getByRole('navigation', { name: 'Navegación principal' })
-    const entry = within(nav).getByRole('link', { name: 'Cómo funciona' })
+    const bar = screen.getByRole('complementary', { name: 'Barra lateral' })
+    const entry = within(bar).getByRole('link', { name: 'Cómo funciona' })
     expect(entry).toHaveAttribute('href', '/como-funciona')
     expect(await screen.findByRole('heading', { level: 1, name: 'Cómo funciona' })).toBeInTheDocument()
     expect(entry).toHaveAttribute('aria-current', 'page')
@@ -60,17 +60,16 @@ describe('Cómo funciona', () => {
       '/fuentes',
       '/agente',
       '/nueva',
-      '/alertas',
+      '/fuentes/correo',
       '/bandeja',
       '/',
-      '/por-revisar',
+      '/bandeja/revision',
       '/bandeja?stage=approved',
-      '/plantillas',
+      '/perfil/plantillas',
       '/procesos',
-      '/respuestas',
-      '/calendario',
+      '/procesos/calendario',
       '/embudo',
-      '/skills',
+      '/perfil/skills',
     ])
   })
 

@@ -37,7 +37,7 @@
     },
     "follow": {
       "title": "Sigue tus procesos y aprende",
-      "body": "«{{processes}}» te enseña en qué punto está cada candidatura y cuáles llevan días sin respuesta. «{{replies}}» reúne los correos de las empresas, «{{calendar}}» tus entrevistas y otras fechas, «{{funnel}}» dónde se quedan tus candidaturas y «{{skills}}» lo que te piden y aún no tienes."
+      "body": "«{{processes}}» te enseña en qué punto está cada candidatura y cuáles llevan días sin respuesta. Cuando una empresa te conteste, lo anotas en su ficha. «{{calendar}}» reúne tus entrevistas y otras fechas, «{{funnel}}» dónde se quedan tus candidaturas y «{{skills}}» lo que te piden y aún no tienes."
     }
   },
   "guides": {

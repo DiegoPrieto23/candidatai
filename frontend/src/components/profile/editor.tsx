@@ -13,6 +13,7 @@ import { ApiError } from '@/api/client'
 import { useSaveProfileSection, type EditableProfile, type ProfileSectionName } from '@/api/queries'
 import { errorMessage } from '@/lib/errors'
 import type { ProfileData } from './types'
+import { setProfileUnsaved } from '@/lib/profileUnsaved'
 
 interface EditorState {
   state: EditableProfile
@@ -66,6 +67,10 @@ function useUnsavedGuard(dirty: boolean, message: string) {
 export function ProfileEditorProvider({ state, reload, children }: { state: EditableProfile; reload: () => void; children: ReactNode }) {
   const { t } = useTranslation('profileEditor')
   const [dirty, setDirtySet] = useState<ReadonlySet<string>>(new Set())
+  useEffect(() => {
+    setProfileUnsaved(dirty.size)
+    return () => setProfileUnsaved(0)
+  }, [dirty])
   const setDirty = useCallback((block: string, value: boolean) => {
     setDirtySet((prev) => {
       if (prev.has(block) === value) return prev

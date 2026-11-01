@@ -96,14 +96,13 @@ SHOTS = {
     "home": ("/", False, []),
     "how-it-works": ("/como-funciona", False, []),
     "inbox": ("/bandeja", False, []),
-    "triage": ("/por-revisar", False, []),
-    "alerts": ("/alertas", False, [button("mailboxes:panel.title")]),
+    "triage": ("/bandeja/revision", False, []),
+    "alerts": ("/bandeja/por-completar", False, []),
     "processes": ("/procesos", False, []),
-    "calendar": ("/calendario", False, []),
-    "replies": ("/respuestas", False, []),
+    "calendar": ("/procesos/calendario", False, []),
     "funnel": ("/embudo", False, []),
-    "skills": ("/skills", False, []),
-    "templates": ("/plantillas", False, []),
+    "skills": ("/perfil/skills", False, []),
+    "templates": ("/perfil/plantillas", False, []),
     "profile-experience": ("/perfil", False, [tab("profileEditor:tabs.career"), anchor("[role=tablist]", 30)]),
     "profile-search": ("/perfil", False, [tab("profileEditor:tabs.search"), anchor("[role=tablist]", 30)]),
     "sources-companies": ("/fuentes/empresas", False, []),
@@ -119,7 +118,7 @@ SHOTS = {
     "job-research": (f"/jobs/{CV_JOB}", False, [tab("job:tabs.company"), heading("research:title")]),
     "job-interview": (f"/jobs/{INTERVIEW_JOB}", False, [open_details, heading("process:title")]),
     "job-offer": (f"/jobs/{OFFER_JOB}", False, [heading("offers:received.title")]),
-    "sidebar-collapsed": ("/por-revisar", True, []),
+    "sidebar-collapsed": ("/bandeja/revision", True, []),
 }
 
 

@@ -42,7 +42,6 @@ CLOSED_ACTIONS: tuple[ActionId, ...] = (
     "process-jobs",
     "assess-fit",
     "assess-fit-job",
-    "review-replies",
 )
 WRITING_ACTIONS: tuple[ActionId, ...] = ("generate-cv", "generate-cover-letter")
 TIER_ACTIONS: tuple[ActionId, ...] = CLOSED_ACTIONS + WRITING_ACTIONS

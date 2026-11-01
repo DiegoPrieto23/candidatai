@@ -16,7 +16,7 @@ from app.models.base import utcnow
 from app.services import agent_launch, events, process, terminals
 from app.services.agent_launch import LaunchError
 from app.services.pipeline import Stage
-from tests.replies_support import add_applied_job
+from tests.applied_support import add_applied_job
 from tests.test_api_triage import add_extracted, import_profile
 
 JSON = {"Origin": UI_ORIGIN, "Content-Type": "application/json"}
@@ -58,13 +58,6 @@ def test_skills_page_prompts_carry_no_skill_names() -> None:
     assert agent_launch.prompt_for("training-plan").startswith("Usa el skill training-plan")
     for action in ("add-skills", "training-plan"):
         assert agent_launch.ACTIONS[action].needs_job is False
-
-
-def test_replies_prompt_carries_no_mail_text() -> None:
-    """Fase 15: el agente lee los correos con `list_replies`; la orden no lleva nada de ellos."""
-    prompt = agent_launch.prompt_for("review-replies")
-    assert prompt.startswith("Usa el skill review-replies")
-    assert agent_launch.ACTIONS["review-replies"].needs_job is False
 
 
 def test_followup_prompts() -> None:
@@ -205,7 +198,6 @@ def test_get_lists_agent_and_actions(client: TestClient, opened: list[tuple[str,
         "generate-cover-letter",
         "add-skills",
         "training-plan",
-        "review-replies",
         "draft-follow-ups",
         "draft-follow-up",
         "broaden-search",

@@ -17,28 +17,20 @@
   "groups": {
     "search": "Búsqueda",
     "processes": "Procesos",
-    "analysis": "Análisis",
-    "configure": "Configurar"
+    "settings": "Ajustes"
   },
   "entries": {
     "home": "Inicio",
     "howItWorks": "Cómo funciona",
     "inbox": "Bandeja de ofertas",
-    "triage": "Por revisar",
-    "alerts": "Alertas",
     "processes": "Procesos",
-    "calendar": "Calendario",
-    "replies": "Respuestas",
     "funnel": "Embudo",
-    "skills": "Skills",
     "sources": "Dónde buscar",
-    "templates": "Plantillas",
     "profile": "Mi perfil",
     "agent": "Agente"
   },
   "counts": {
     "toReview": "por revisar",
-    "toComplete": "por completar",
     "agent": "en curso o pendientes",
     "followUp": "sin respuesta"
   },
@@ -69,5 +61,25 @@
     "label": "Modo demo",
     "title": "Modo demo: datos ficticios.",
     "body": "Personas, empresas y ofertas son inventadas; tus datos reales no se tocan."
+  },
+  "signals": {
+    "noProfile": "aún sin crear",
+    "unsaved": "con cambios sin guardar"
+  },
+  "entryWithSignal": "{{label}} ({{what}})",
+  "tabs": {
+    "inboxLabel": "Vistas de la bandeja",
+    "inbox": "Ofertas",
+    "review": "Revisión rápida",
+    "complete": "Por completar",
+    "withCount": "{{label}} ({{count}})",
+    "processesLabel": "Vistas de los procesos",
+    "board": "Tablero",
+    "calendar": "Calendario",
+    "profileLabel": "Apartados de tu perfil",
+    "profile": "Mi perfil",
+    "skills": "Skills que te faltan",
+    "templates": "Plantillas de CV",
+    "email": "Alertas por correo"
   }
 }

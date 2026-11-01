@@ -33,7 +33,6 @@ import type processes from '@/locales/es/processes.json'
 import type profile from '@/locales/es/profile.json'
 import type profileEditor from '@/locales/es/profileEditor.json'
 import type prompts from '@/locales/es/prompts.json'
-import type replies from '@/locales/es/replies.json'
 import type research from '@/locales/es/research.json'
 import type signals from '@/locales/es/signals.json'
 import type skills from '@/locales/es/skills.json'
@@ -78,7 +77,6 @@ declare module 'i18next' {
       profile: typeof profile
       profileEditor: typeof profileEditor
       prompts: typeof prompts
-      replies: typeof replies
       research: typeof research
       signals: typeof signals
       skills: typeof skills

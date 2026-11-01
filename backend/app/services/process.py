@@ -616,11 +616,8 @@ def followup_status(
     days_without_reply: int,
     now: datetime,
     followups_sent: int = 0,
-    reply_pending: bool = False,
 ) -> FollowupStatus | None:
-    """Con `followups.max_followups` seguimientos enviados (fase 15) ya no toca otro. Tampoco si
-    la empresa ya contestó y su correo está por revisar (`reply_pending`): sería pedir noticias a
-    quien ya te las ha dado (un rechazo, una entrevista)."""
+    """Con `followups.max_followups` seguimientos enviados (fase 15) ya no toca otro."""
     if application is None or application.stage != Stage.APPLIED:
         return None
     anchors = [d for d in (application.applied_at, last_followup_at) if d is not None]
@@ -629,30 +626,10 @@ def followup_status(
     days = (now - max(anchors)).days
     capped = followups_sent >= get_policies().followups.max_followups
     return FollowupStatus(
-        due=days >= days_without_reply and not capped and not reply_pending,
+        due=days >= days_without_reply and not capped,
         days_waiting=days,
         days_without_reply=days_without_reply,
     )
-
-
-REPLY_OPEN_STATUSES = ("new", "proposed")  # recibidas y aún sin aceptar ni ignorar
-
-
-def jobs_with_pending_replies(session: Session, job_ids: list[int]) -> set[int]:
-    """De `job_ids`, las ofertas con un correo de la empresa por revisar (nuevo o con propuesta).
-
-    Cuenta la oferta que propuso el agente y, si aún no hay propuesta, todas las candidatas con
-    las que casó el correo."""
-    if not job_ids:
-        return set()
-    wanted = set(job_ids)
-    found: set[int] = set()
-    rows = session.scalars(select(Reply).where(Reply.status.in_(REPLY_OPEN_STATUSES)))
-    for reply in rows:
-        ids = {reply.job_id} if reply.job_id is not None else set()
-        ids |= {int(c["job_id"]) for c in reply.candidates if "job_id" in c}
-        found |= ids & wanted
-    return found
 
 
 def last_followup_at(session: Session, job_id: int) -> datetime | None:
@@ -710,7 +687,6 @@ def get_process(session: Session, job_id: int, now: datetime | None = None) -> P
             get_policies().followups.days_without_reply,
             now or utcnow(),
             followups_sent(session, [job_id]).get(job_id, 0),
-            reply_pending=bool(jobs_with_pending_replies(session, [job_id])),
         ),
         milestones=job_milestones(session, job_id),
         contacts=[contact_out(c) for c in contacts],

@@ -28,7 +28,7 @@ const STEPS = [
     actors: ['you', 'agent', 'app'],
     links: [
       { to: '/nueva', label: 'header.newJob' },
-      { to: '/alertas', label: 'entries.alerts' },
+      { to: '/fuentes/correo', label: 'tabs.email' },
       { to: '/bandeja', label: 'entries.inbox' },
     ],
   },
@@ -37,7 +37,7 @@ const STEPS = [
     actors: ['agent', 'app', 'you'],
     links: [
       { to: '/', label: 'entries.home' },
-      { to: '/por-revisar', label: 'entries.triage' },
+      { to: '/bandeja/revision', label: 'tabs.review' },
     ],
   },
   {
@@ -45,7 +45,7 @@ const STEPS = [
     actors: ['agent', 'app', 'you'],
     links: [
       { to: '/bandeja?stage=approved', label: 'entries.inbox' },
-      { to: '/plantillas', label: 'entries.templates' },
+      { to: '/perfil/plantillas', label: 'tabs.templates' },
     ],
   },
   {
@@ -53,10 +53,9 @@ const STEPS = [
     actors: ['you', 'agent'],
     links: [
       { to: '/procesos', label: 'entries.processes' },
-      { to: '/respuestas', label: 'entries.replies' },
-      { to: '/calendario', label: 'entries.calendar' },
+      { to: '/procesos/calendario', label: 'tabs.calendar' },
       { to: '/embudo', label: 'entries.funnel' },
-      { to: '/skills', label: 'entries.skills' },
+      { to: '/perfil/skills', label: 'tabs.skills' },
     ],
   },
 ] as const satisfies readonly {
@@ -83,12 +82,11 @@ export function HowItWorksPage() {
     newJob: tNav('header.newJob'),
     home: tNav('entries.home'),
     inbox: tNav('entries.inbox'),
-    triage: tNav('entries.triage'),
+    triage: tNav('tabs.review'),
     processes: tNav('entries.processes'),
-    replies: tNav('entries.replies'),
-    calendar: tNav('entries.calendar'),
+    calendar: tNav('tabs.calendar'),
     funnel: tNav('entries.funnel'),
-    skills: tNav('entries.skills'),
+    skills: tNav('tabs.skills'),
     searchJobs: tHome('today.searchJobs'),
     processJobs: tHome('today.processJobs'),
     assessFit: tHome('today.assessFit'),

@@ -8,8 +8,7 @@ pasos. Los detalles técnicos están en `FUENTES_OFERTAS.md` §Alertas por corre
 ## Qué hace y qué no
 
 - Se conecta por **IMAP en solo lectura** a **una carpeta o etiqueta** de cada buzón para las
-  alertas y, si se lo pides, a su bandeja de entrada para las **respuestas** de las empresas (ver
-  §Respuestas de las empresas).
+  alertas. No lee nada más de tu correo: lo que te conteste una empresa lo anotas tú en su ficha.
 - **No** marca nada como leído, **no** mueve ni borra correos y **no** envía nada.
 - De cada alerta guarda solo su `Message-ID` (para no procesarla dos veces), nunca el cuerpo. Si
   la misma alerta te llega a dos buzones, cuenta una vez.
@@ -207,49 +206,3 @@ Reinicia la app para que lea el `.env` nuevo.
 - Si una alerta de un portal conocido no produce ninguna oferta, verás el aviso `no_jobs_found`:
   suele significar que el portal ha cambiado el formato del correo. Deja un correo de ejemplo
   exportado (`.eml`) en `data/inbox/samples/` para ajustar el lector.
-
-## Respuestas de las empresas (fase 15)
-
-En los buzones que lo tengan marcado («Leer aquí también las respuestas de las empresas»; la
-cuenta de `.env`, siempre), la app lee también las **respuestas de las empresas** a tus
-candidaturas (entrevista, prueba, oferta, rechazo) y las deja como propuesta en la ficha de la
-oferta. Tú decides: nada cambia de etapa hasta que pulsas «Aceptar».
-
-- **Carpeta:** la bandeja de entrada (`INBOX`). En la cuenta de `.env` se cambia con
-  `CAI_IMAP_REPLIES_FOLDER`: si prefieres limitarla, crea una etiqueta (p. ej. «Procesos») con un
-  filtro de Gmail y pon su nombre: `CAI_IMAP_REPLIES_FOLDER="Procesos"`.
-- **Qué lee:** solo si tienes alguna candidatura enviada abierta (`applied` o `in_process`); si no,
-  ni se conecta. De cada correo desde el envío más antiguo (como mucho `replies.max_days` días,
-  120) pide primero **solo las cabeceras** (remitente, fecha, asunto y `Message-ID`): de todos
-  los correos de ese periodo, esas cuatro cabeceras pasan por la memoria de la app al leer,
-  aunque no se guarden.
-- **Qué guarda:** solo los correos posteriores al envío cuyo remitente casa con una de esas
-  candidaturas:
-  - un contacto de la ficha (su dirección exacta, aunque sea de Gmail);
-  - el dominio de la empresa (el de sus contactos o el de la URL de la oferta, si no es un ATS ni
-    un portal);
-  - un dominio cuyo nombre es el de la empresa (`acme.com` ↔ «Acme S.L.»);
-  - un ATS (Greenhouse, Lever, Workday, Teamtailor… lista en `config/policies.yaml` →
-    `replies.ats_sender_domains`) cuyo remitente o asunto nombra a la empresa.
-
-  Un dominio que solo empieza como la empresa no cuenta (`metaphor.com` no es «Meta»), y un correo
-  sin fecha tampoco. De esos descarga el cuerpo y guarda el texto visible. **De los demás no
-  guarda nada**: tu correo
-  personal, boletines o alertas no salen de tu buzón.
-- **Avisos de portales** («InfoJobs: tu candidatura ha sido vista»): no se leen por defecto. Si los
-  quieres, añade el dominio a `replies.portal_sender_domains` en `config/policies.yaml`.
-- **Alternativa sin credenciales:** deja los correos exportados (`.eml`) en
-  `data/inbox/respuestas/`. Se aplica el mismo filtro.
-- **Cuándo:** con `cai worker`, cada `email_alerts.poll_minutes`, y a mano con
-  `uv run --directory backend cai replies poll` o «Revisar correo ahora» en la pantalla
-  «Respuestas».
-- **Clasificarlos:** el skill `review-replies` de tu agente propone para cada correo el evento
-  (entrevista con su fecha, prueba, oferta, rechazo, respuesta o nada) y tú lo aceptas, cambias o
-  ignoras en la pantalla «Respuestas» o en el aviso de la ficha de la oferta. Si hay correos sin
-  clasificar, Inicio y «Respuestas» muestran el botón «Revisar respuestas», que abre tu agente con
-  la orden. El texto de los correos es contenido no confiable: si trae instrucciones para una IA, se
-  marca y no se obedece.
-- **Contestar:** la app no envía correo. Los seguimientos (como mucho 2 por candidatura) y los
-  agradecimientos tras una entrevista los redacta tu agente con `draft-follow-up` como
-  borradores en la ficha de la oferta; los copias, los mandas desde tu correo y pulsas «Ya lo he
-  enviado».

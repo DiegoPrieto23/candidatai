@@ -17,28 +17,20 @@
   "groups": {
     "search": "Search",
     "processes": "Processes",
-    "analysis": "Analysis",
-    "configure": "Configure"
+    "settings": "Settings"
   },
   "entries": {
     "home": "Home",
     "howItWorks": "How it works",
     "inbox": "Job inbox",
-    "triage": "To review",
-    "alerts": "Alerts",
     "processes": "Processes",
-    "calendar": "Calendar",
-    "replies": "Replies",
     "funnel": "Funnel",
-    "skills": "Skills",
     "sources": "Where to search",
-    "templates": "Templates",
     "profile": "My profile",
     "agent": "Agent"
   },
   "counts": {
     "toReview": "to review",
-    "toComplete": "to complete",
     "agent": "running or pending",
     "followUp": "without a reply"
   },
@@ -69,5 +61,25 @@
     "label": "Demo mode",
     "title": "Demo mode: fictitious data.",
     "body": "People, companies and jobs are made up; your real data is not touched."
+  },
+  "signals": {
+    "noProfile": "not created yet",
+    "unsaved": "with unsaved changes"
+  },
+  "entryWithSignal": "{{label}} ({{what}})",
+  "tabs": {
+    "inboxLabel": "Inbox views",
+    "inbox": "Jobs",
+    "review": "Quick review",
+    "complete": "To complete",
+    "withCount": "{{label}} ({{count}})",
+    "processesLabel": "Process views",
+    "board": "Board",
+    "calendar": "Calendar",
+    "profileLabel": "Sections of your profile",
+    "profile": "My profile",
+    "skills": "Skills you lack",
+    "templates": "CV templates",
+    "email": "Email alerts"
   }
 }

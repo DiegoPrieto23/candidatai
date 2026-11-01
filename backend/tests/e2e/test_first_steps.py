@@ -111,12 +111,13 @@ def test_the_profile_saved_from_the_ui_stays_and_is_valid(page: Page, empty_app:
 EMPTY_STATES = {
     "/": "home.firstSteps.title",
     "/bandeja": "inbox.empty.title",
-    "/por-revisar": "triage.empty.title",
+    "/bandeja/revision": "triage.empty.title",
     "/procesos": "processes.none.title",
     "/embudo": "funnel.empty.title",
     "/fuentes/plataformas": "platforms.empty.title",
     "/fuentes/empresas": "sources.empty.title",
-    "/alertas": "alerts.empty.title",
+    "/bandeja/por-completar": "alerts.empty.title",
+    "/fuentes/correo": "alerts.email.emptyTitle",
 }
 
 

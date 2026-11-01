@@ -42,7 +42,10 @@ sources_app = typer.Typer(
     no_args_is_help=True,
 )
 mail_sources_app = typer.Typer(
-    help="Buzones de las alertas por correo (fase 27.4). Se añaden y cambian en la UI, en Alertas.",
+    help=(
+        "Buzones de las alertas por correo (fase 27.4). Se añaden y cambian en la UI, en Alertas "
+        "por correo."
+    ),
     no_args_is_help=True,
 )
 calendar_app = typer.Typer(help="Calendario .ics de los procesos.", no_args_is_help=True)
@@ -71,10 +74,6 @@ interviews_app = typer.Typer(
 )
 received_offers_app = typer.Typer(
     help="La oferta que te ha hecho la empresa (lo que ve el agente; los datos, en la ficha).",
-    no_args_is_help=True,
-)
-replies_app = typer.Typer(
-    help="Respuestas de las empresas por correo: ingesta y propuestas del agente.",
     no_args_is_help=True,
 )
 prompts_app = typer.Typer(
@@ -107,7 +106,6 @@ app.add_typer(letter_app, name="letter")
 app.add_typer(context_app, name="context")
 app.add_typer(prompts_app, name="prompts")
 app.add_typer(skills_app, name="skills")
-app.add_typer(replies_app, name="replies")
 app.add_typer(drafts_app, name="drafts")
 app.add_typer(interviews_app, name="interviews")
 app.add_typer(contacts_app, name="contacts")
@@ -192,11 +190,6 @@ def _render_status(report: Any) -> None:
         typer.echo(f"\nTareas pendientes del worker: {report.pending_tasks}")
     if report.agent_requests:
         typer.echo(f"Encargos para tu agente: {report.agent_requests} (`cai requests list`)")
-    if report.replies_new or report.replies_proposed:
-        typer.echo(
-            f"Respuestas de empresas: {report.replies_new} sin clasificar, "
-            f"{report.replies_proposed} por aceptar (`cai replies list`)"
-        )
 
 
 def _render_added(result: Any) -> None:
@@ -2306,55 +2299,6 @@ def _local_models_section() -> None:
         typer.secho(f"  ! {warning.text}", fg="yellow")
 
 
-# --- Respuestas de las empresas (fase 15) ---------------------------------------------------
-
-
-@replies_app.command("poll")
-def replies_poll(as_json: bool = JSON_OPTION) -> None:
-    """Lee ahora los correos de las empresas de tus procesos (IMAP en solo lectura y
-    `data/inbox/respuestas/`). Solo guarda los que casan con una candidatura enviada."""
-    from app.services.replies import poll_replies
-
-    try:
-        migrations.ensure_current()
-        with session_scope() as session:
-            result = poll_replies(session)
-    except Exception as exc:
-        _profile_fail(exc, as_json)
-    if as_json:
-        typer.echo(dump_json(result))
-    else:
-        typer.secho(result.message, fg="yellow" if result.errors else None)
-        for issue in result.errors:
-            where = f" ({issue.item})" if issue.item else ""
-            typer.secho(f"  ! {issue.message}{where}", fg="yellow")
-        if result.created:
-            typer.echo("  Clasifícalos con review-replies y revísalos en «Respuestas».")
-    if result.errors and not result.created:
-        raise typer.Exit(code=1)
-
-
-def _render_replies(result: Any) -> None:
-    from app.services.process import local_zone
-
-    if not result.replies:
-        typer.echo("No hay respuestas.")
-        return
-    for item in result.replies:
-        when = (
-            item.received_at.astimezone(local_zone()).strftime("%d/%m/%Y %H:%M")
-            if item.received_at
-            else "?"
-        )
-        jobs = ", ".join(str(j) for j in item.candidate_job_ids)
-        proposal = f" → {item.proposal_event} ({item.confidence})" if item.proposal_event else ""
-        flags = " [riesgo]" if item.risk_flags else ""
-        typer.echo(
-            f"  {item.reply_id:>5}  {item.status:<9} {when}  {item.sender}  ofertas {jobs}"
-            f"{proposal}{flags}"
-        )
-
-
 # --- Red de LinkedIn (fase 18) --------------------------------------------------------------
 
 CONNECTIONS_ARG = typer.Argument(
@@ -2489,7 +2433,6 @@ register_tools(
         "prompts": prompts_app,
         "context": context_app,
         "skills": skills_app,
-        "replies": replies_app,
         "drafts": drafts_app,
         "interviews": interviews_app,
         "contacts": contacts_app,
@@ -2530,8 +2473,6 @@ register_tools(
         "request_user_action": _render_prompt,
         "wait_user_action": _render_prompt,
         "list_followups_due": _render_followups,
-        "list_replies": _render_replies,
-        "save_reply_proposal": _render_message,
         "save_message_draft": _render_message,
         "get_interviews": _render_interviews,
         "save_interview_plan": _render_message,

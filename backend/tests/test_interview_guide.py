@@ -14,7 +14,7 @@ from app.models import Job
 from app.schemas.interview_guide import InterviewGuideInput
 from app.services import interview_guide, interviews, process
 from app.services.interviews import InterviewNotAllowedError
-from tests.replies_support import APPLIED, NOW, add_applied_job
+from tests.applied_support import APPLIED, NOW, add_applied_job
 
 GUIDE: dict[str, Any] = {
     "language": "es",

@@ -71,15 +71,6 @@ approval_mode = "approve"
 [mcp_servers.candidatai.tools.get_skill_gaps]
 approval_mode = "approve"
 
-[mcp_servers.candidatai.tools.list_replies]
-approval_mode = "approve"
-
-[mcp_servers.candidatai.tools.get_reply]
-approval_mode = "approve"
-
-[mcp_servers.candidatai.tools.save_reply_proposal]
-approval_mode = "approve"
-
 [mcp_servers.candidatai.tools.save_message_draft]
 approval_mode = "approve"
 

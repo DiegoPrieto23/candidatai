@@ -14,9 +14,7 @@ function mailbox(id: number, overrides: Partial<MailSourceView> = {}): MailSourc
     security: 'ssl',
     user: 'ana@example.com',
     folder: 'Alertas empleo',
-    replies_folder: 'INBOX',
     enabled: true,
-    read_replies: false,
     allow_private: false,
     from_env: false,
     has_password: true,
@@ -53,7 +51,7 @@ describe('Buzones de las alertas (fase 27.4)', () => {
         'POST /mail-sources': { status: 201, body: { source: mailbox(1), message: 'ok', env_line: null } },
       }),
     )
-    renderApp('/alertas')
+    renderApp('/fuentes/correo')
     const dialog = await openWizard()
     expect(within(dialog).getByRole('tab', { name: 'Gmail', selected: true })).toBeInTheDocument()
     expect(within(dialog).getByRole('link', { name: /Contraseñas de aplicación/ })).toHaveAttribute(
@@ -93,7 +91,7 @@ describe('Buzones de las alertas (fase 27.4)', () => {
         },
       }),
     )
-    renderApp('/alertas')
+    renderApp('/fuentes/correo')
     const dialog = await openWizard()
     const host = () => within(dialog).getByLabelText('Servidor IMAP')
 
@@ -131,7 +129,7 @@ describe('Buzones de las alertas (fase 27.4)', () => {
         },
       }),
     )
-    renderApp('/alertas')
+    renderApp('/fuentes/correo')
     const dialog = await openWizard()
     await userEvent.type(within(dialog).getByLabelText('Usuario (tu dirección)'), 'ana@gmail.com')
     await userEvent.type(within(dialog).getByLabelText('Contraseña de aplicación'), 'x')
@@ -141,7 +139,7 @@ describe('Buzones de las alertas (fase 27.4)', () => {
   })
 
   it('el panel enseña el estado, se abre solo con un error y prueba, desactiva y quita', async () => {
-    const principal = mailbox(1, { label: 'Principal', from_env: true, read_replies: true, secret_ref: 'CAI_IMAP_PASSWORD' })
+    const principal = mailbox(1, { label: 'Principal', from_env: true, secret_ref: 'CAI_IMAP_PASSWORD' })
     const broken = mailbox(2, {
       label: 'Trabajo',
       has_password: false,
@@ -155,7 +153,7 @@ describe('Buzones de las alertas (fase 27.4)', () => {
         'DELETE /mail-sources/2': { status: 200, body: { message: 'Buzón «Trabajo» quitado.' } },
       }),
     )
-    renderApp('/alertas')
+    renderApp('/fuentes/correo')
 
     // Abierto de entrada porque uno tiene un error.
     expect(await screen.findByText(/2 buzones/)).toBeInTheDocument()
@@ -185,23 +183,22 @@ describe('Buzones de las alertas (fase 27.4)', () => {
     expect(calls.some((c) => c.method === 'DELETE' && c.path === '/mail-sources/2')).toBe(true)
   })
 
-  it('editar la cuenta de .env solo deja cambiar el nombre, la contraseña y si lee respuestas', async () => {
+  it('editar la cuenta de .env solo deja cambiar el nombre y la contraseña', async () => {
     const principal = mailbox(1, { label: 'Principal', from_env: true, has_password: false, secret_ref: 'CAI_IMAP_PASSWORD' })
     const calls = mockApi(
       routes([principal], {
         'PATCH /mail-sources/1': { status: 200, body: { source: principal, message: 'ok', env_line: null } },
       }),
     )
-    renderApp('/alertas')
+    renderApp('/fuentes/correo')
     // Sin contraseña, el panel se abre solo y el aviso lleva directo a escribirla.
     await userEvent.click(await screen.findByRole('button', { name: 'Escribir la contraseña' }))
     const dialog = await screen.findByRole('dialog')
     expect(within(dialog).queryByLabelText('Servidor IMAP')).not.toBeInTheDocument()
     expect(within(dialog).queryByLabelText('Usuario (tu dirección)')).not.toBeInTheDocument()
     await userEvent.type(within(dialog).getByLabelText('Contraseña de aplicación'), 'abcd')
-    await userEvent.click(within(dialog).getByLabelText('Leer aquí también las respuestas de las empresas'))
     await userEvent.click(within(dialog).getByRole('button', { name: 'Guardar' }))
-    expect(calls.find((c) => c.method === 'PATCH')?.body).toEqual({ label: 'Principal', read_replies: true, password: 'abcd' })
+    expect(calls.find((c) => c.method === 'PATCH')?.body).toEqual({ label: 'Principal', password: 'abcd' })
   })
 
   it('con la contraseña ya guardada, editar la cuenta de .env sin escribirla no la toca', async () => {
@@ -211,34 +208,32 @@ describe('Buzones de las alertas (fase 27.4)', () => {
         'PATCH /mail-sources/1': { status: 200, body: { source: principal, message: 'ok', env_line: null } },
       }),
     )
-    renderApp('/alertas')
-    await userEvent.click(await screen.findByText(/1 buzón/))
+    renderApp('/fuentes/correo')
     expect(screen.queryByRole('button', { name: 'Escribir la contraseña' })).not.toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: 'Editar Principal' }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Editar Principal' }))
     const dialog = await screen.findByRole('dialog')
     expect(within(dialog).getByText('Déjala vacía para no cambiarla')).toBeInTheDocument()
     await userEvent.click(within(dialog).getByRole('button', { name: 'Guardar' }))
-    expect(calls.find((c) => c.method === 'PATCH')?.body).toEqual({ label: 'Principal', read_replies: false })
+    expect(calls.find((c) => c.method === 'PATCH')?.body).toEqual({ label: 'Principal' })
   })
 
-  it('la pantalla vacía lleva a «Añadir buzón» y con el diálogo abierto las teclas no descartan', async () => {
+  it('«Por completar» no enseña los buzones y sus teclas siguen funcionando', async () => {
     mockApi({
       ...routes([]),
       'GET /alerts': { jobs: [alertJob(1)], total: 1, passed: 1, filters_applied: true },
     })
-    renderApp('/alertas')
+    renderApp('/bandeja/por-completar')
     await screen.findByText('Alerta 1')
-    const dialog = await openWizard()
-    await userEvent.click(within(dialog).getByRole('tab', { name: 'Yahoo' }))
+    // Los buzones ya no están aquí: esta lista solo tiene sus propias teclas.
+    expect(screen.queryByRole('button', { name: 'Añadir buzón' })).not.toBeInTheDocument()
     await userEvent.keyboard('d')
-    expect(screen.queryByText(/Descartar «/)).not.toBeInTheDocument()
-    expect(screen.getAllByRole('dialog')).toHaveLength(1)
+    expect(await screen.findByRole('dialog')).toHaveTextContent('Descartar')
   })
 
   it('sin alertas ni buzones, la pantalla vacía ofrece añadir uno', async () => {
     mockApi(routes([]))
-    renderApp('/alertas')
-    const empty = await screen.findByText('Sin alertas pendientes')
+    renderApp('/fuentes/correo')
+    const empty = await screen.findByText('Aún no hay ningún buzón')
     const section = empty.closest('section')
     expect(section).not.toBeNull()
     await userEvent.click(within(section as HTMLElement).getByRole('button', { name: 'Añadir buzón' }))

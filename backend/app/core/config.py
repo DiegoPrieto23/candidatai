@@ -133,9 +133,6 @@ class Settings(BaseSettings):
     imap_user: str | None = Field(default=None, validation_alias=_env("IMAP_USER"))
     imap_password: SecretStr | None = Field(default=None, validation_alias=_env("IMAP_PASSWORD"))
     imap_folder: str = Field(default="INBOX", validation_alias=_env("IMAP_FOLDER"))
-    # Respuestas de las empresas (fase 15): misma cuenta, otra carpeta (por defecto, la bandeja de
-    # entrada). Solo se descargan los correos que casan con una candidatura enviada.
-    imap_replies_folder: str = Field(default="INBOX", validation_alias=_env("IMAP_REPLIES_FOLDER"))
     # Botón «Enviar a CandidatAI» (fase 09b): id de la extensión cuyo origen acepta `POST /capture`.
     # Por defecto, el que fija la clave pública de `extension/manifest.json`.
     capture_extension_id: str = Field(
@@ -201,7 +198,7 @@ class Settings(BaseSettings):
     @property
     def imap_configured(self) -> bool:
         """Hay IMAP en `.env` y se puede usar. Nunca en una demo: su worker leería tu buzón real
-        y mezclaría tus alertas y respuestas con los datos inventados (fase 23.5b). En la demo, el
+        y mezclaría tus alertas con los datos inventados (fase 23.5b). En la demo, el
         correo se prueba con `.eml` en su `inbox/`."""
         if self.demo_mode:
             return False
@@ -221,11 +218,6 @@ class Settings(BaseSettings):
     def inbox_dir(self) -> Path:
         """Correos exportados (`.eml`, `.mbox`) para las alertas sin IMAP. `samples/` no se lee."""
         return self.data_dir / "inbox"
-
-    @property
-    def replies_inbox_dir(self) -> Path:
-        """Respuestas de empresas exportadas (`.eml`, `.mbox`), alternativa sin IMAP (fase 15)."""
-        return self.inbox_dir / "respuestas"
 
     @property
     def logs_dir(self) -> Path:
