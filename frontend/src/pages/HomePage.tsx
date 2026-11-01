@@ -287,7 +287,7 @@ function JobItem({ job }: { job: JobRow }) {
     <li>
       <Link
         to={`/jobs/${job.id}`}
-        className="flex items-center justify-between gap-4 px-4 py-3 transition-colors hover:bg-foreground/[0.03] focus-visible:bg-foreground/[0.03] focus-visible:outline-none"
+        className="flex items-center justify-between gap-4 px-4 py-3 transition-colors hover:bg-foreground/[0.03] focus-visible:bg-foreground/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
       >
         <span className="min-w-0">
           <span className="block truncate text-sm font-medium">{job.title}</span>
@@ -313,7 +313,7 @@ function Upcoming() {
         <li key={`${item.kind}-${item.milestone_id ?? item.job_id}-${item.starts_at}`}>
           <Link
             to={`/jobs/${item.job_id}`}
-            className="block px-4 py-3 transition-colors hover:bg-foreground/[0.03] focus-visible:bg-foreground/[0.03] focus-visible:outline-none"
+            className="block px-4 py-3 transition-colors hover:bg-foreground/[0.03] focus-visible:bg-foreground/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
           >
             <span className="block text-xs text-primary">{formatWhen(item.starts_at, item.all_day)}</span>
             <span className="block truncate text-sm font-medium">{item.title || UPCOMING_KIND_LABEL[item.kind]}</span>
@@ -338,7 +338,7 @@ function Followups() {
           <li key={f.job_id}>
             <Link
               to={`/jobs/${f.job_id}`}
-              className="flex items-center justify-between gap-4 px-4 py-3 transition-colors hover:bg-foreground/[0.03] focus-visible:bg-foreground/[0.03] focus-visible:outline-none"
+              className="flex items-center justify-between gap-4 px-4 py-3 transition-colors hover:bg-foreground/[0.03] focus-visible:bg-foreground/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
             >
               <span className="min-w-0">
                 <span className="block truncate text-sm font-medium">{f.title}</span>

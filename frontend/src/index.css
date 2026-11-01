@@ -108,6 +108,15 @@
   --color-chart-2: var(--chart-2);
 }
 
+/*
+ * Lo que recibe el foco al llegar desde un enlace o un aviso (`lib/focus.ts`): un anillo suave,
+ * también tras un clic. Fuera de las capas para ganar al `outline-none` de cada componente.
+ */
+[data-arrived] {
+  outline: 2px solid color-mix(in oklch, var(--ring) 70%, transparent);
+  outline-offset: 2px;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

@@ -90,11 +90,34 @@ function PageFallback() {
   )
 }
 
+const MAIN_ID = 'contenido'
+
+/**
+ * El primer Tab de cada página: salta el menú y deja el foco en el contenido. Oculto hasta que lo
+ * enfocas. Sin cambiar la URL, que el `#` no es una ruta de la app.
+ */
+function SkipLink() {
+  const { t } = useTranslation('nav')
+  return (
+    <a
+      href={`#${MAIN_ID}`}
+      onClick={(e) => {
+        e.preventDefault()
+        document.getElementById(MAIN_ID)?.focus()
+      }}
+      className="sr-only rounded-md bg-background text-sm font-medium shadow-md outline-none focus:not-sr-only focus:fixed focus:px-3 focus:py-2 focus:top-3 focus:left-3 focus:z-50 focus-visible:ring-2 focus-visible:ring-ring"
+    >
+      {t('skipToContent')}
+    </a>
+  )
+}
+
 export function AppShell() {
   const { t } = useTranslation('nav')
   const { pathname } = useLocation()
   return (
     <div className="flex min-h-[100dvh]">
+      <SkipLink />
       <Sidebar />
       <div className="min-w-0 flex-1">
         {/* En escritorio la navegación y «Nueva oferta» van en la barra lateral: arriba, solo el aviso de demo. */}
@@ -111,7 +134,8 @@ export function AppShell() {
             </Button>
           </div>
         </header>
-        <main className="mx-auto max-w-6xl px-4 pb-24 pt-6 sm:px-6 sm:pt-8">
+        {/* Destino de «Saltar al contenido»: sin anillo, que enmarcaría la página entera. */}
+        <main id={MAIN_ID} tabIndex={-1} className="mx-auto max-w-6xl px-4 pb-24 pt-6 outline-none sm:px-6 sm:pt-8">
           <div className="mb-6 empty:hidden">
             <BackgroundRunReminder />
           </div>

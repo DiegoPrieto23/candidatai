@@ -21,6 +21,22 @@ describe('Banner del modo demo', () => {
   })
 })
 
+describe('Saltar al contenido (fase 36)', () => {
+  it('es lo primero con Tab y deja el foco en el contenido', async () => {
+    mockApi({ 'GET /status': status(), 'GET /jobs': emptyPage })
+    renderApp('/bandeja')
+    await screen.findByText('Tu bandeja está vacía')
+
+    await userEvent.tab()
+    const skip = screen.getByRole('link', { name: 'Saltar al contenido' })
+    expect(skip).toHaveFocus()
+    await userEvent.keyboard('{Enter}')
+    expect(screen.getByRole('main')).toHaveFocus()
+    // Sin tocar la URL: el `#` no es una ruta de la app.
+    expect(window.location.hash).toBe('')
+  })
+})
+
 describe('Barra lateral (fase 23.3)', () => {
   const routes = () => ({
     'GET /status': status(0, 3, 2),

@@ -69,7 +69,8 @@ function ReplyRow({ item, selected, onSelect }: { item: ReplyInboxItem; selected
         aria-current={selected ? 'true' : undefined}
         onClick={onSelect}
         className={cn(
-          'relative flex w-full flex-col gap-1 px-4 py-3 text-left transition-colors outline-none focus-visible:bg-foreground/[0.04]',
+          // El foco, un anillo; la selección, el fondo y la barra: con teclado se distinguen.
+          'relative flex w-full flex-col gap-1 px-4 py-3 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset',
           selected ? 'bg-accent/70' : 'hover:bg-foreground/[0.03]',
         )}
       >
