@@ -8,12 +8,12 @@ envío. Después espera la página de confirmación y la captura. Sin reintentos
 Un test comprueba que ningún otro módulo de la app pulsa el envío ni retira el bloqueo.
 """
 
+from __future__ import annotations
+
 import re
 import time
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
-from playwright.sync_api import Error as PlaywrightError
-from playwright.sync_api import Page
 from pydantic import BaseModel
 
 from app.services.applier import guard
@@ -21,6 +21,9 @@ from app.services.applier.fields import check_box, field_locator
 from app.services.applier.guard import Blocker
 from app.services.applier.log import AttemptLog
 from app.services.applier.tokens import SubmitConfirmation, TokenError
+
+if TYPE_CHECKING:
+    from playwright.sync_api import Page
 
 SubmitResult = Literal["confirmed", "unconfirmed", "blocked", "failed"]
 
@@ -74,6 +77,8 @@ class SubmitOutcome(BaseModel):
 
 
 def _body_text(page: Page) -> str:
+    from playwright.sync_api import Error as PlaywrightError
+
     try:
         return str(page.evaluate("() => document.body ? document.body.innerText : ''"))
     except PlaywrightError:  # navegando: el contexto de la página aún no existe
@@ -124,6 +129,8 @@ UNCONFIRMED = (
 def _wait_confirmation(
     page: Page, before_url: str, already: bool, log: AttemptLog, wait_seconds: float
 ) -> SubmitOutcome:
+    from playwright.sync_api import Error as PlaywrightError
+
     deadline = time.monotonic() + wait_seconds
     while time.monotonic() < deadline:
         page.wait_for_timeout(500)

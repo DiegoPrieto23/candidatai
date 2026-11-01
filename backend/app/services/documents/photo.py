@@ -10,12 +10,16 @@
 
 import hashlib
 from pathlib import Path
-
-from PIL import Image, ImageDraw, ImageOps, UnidentifiedImageError
+from typing import TYPE_CHECKING
 
 from app.core.config import get_settings
 from app.schemas.cv import PhotoShape
 from app.schemas.profile import CandidateProfile
+
+if TYPE_CHECKING:
+    from PIL import Image
+
+# Pillow se importa al usarlo, como lo demás pesado de documentos: la API arranca sin cargarlo.
 
 PHOTO_EXTENSIONS = (".jpg", ".jpeg", ".png", ".webp", ".heic")
 DPI = 300
@@ -34,6 +38,8 @@ def _inside(path: Path, root: Path) -> bool:
 
 
 def _opens(path: Path) -> bool:
+    from PIL import Image, UnidentifiedImageError
+
     try:
         with Image.open(path) as img:
             img.verify()
@@ -64,8 +70,10 @@ def size_px(size_mm: float) -> int:
     return round(size_mm / 25.4 * DPI)
 
 
-def crop(source: Path, shape: PhotoShape, side: int) -> Image.Image:
+def crop(source: Path, shape: PhotoShape, side: int) -> "Image.Image":
     """Recorte cuadrado centrado de `side` px con la forma pedida."""
+    from PIL import Image, ImageDraw, ImageOps, UnidentifiedImageError
+
     try:
         with Image.open(source) as original:
             img = ImageOps.exif_transpose(original)

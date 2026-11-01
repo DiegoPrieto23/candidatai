@@ -147,6 +147,56 @@ describe('Respuestas', () => {
     expect(calls.some((c) => c.path.endsWith('/accept'))).toBe(false)
   })
 
+  it('con teclado: J/K cambian de correo, A acepta e I ignora el seleccionado', async () => {
+    const calls = mockReplies([reply(1), reply(2, { sender_name: 'Iago Souto', subject: 'Prueba técnica' })], {
+      'POST /replies/1/accept': decided('accepted'),
+      'POST /replies/2/ignore': { ...decided('ignored'), reply_id: 2 },
+    })
+    renderApp('/respuestas')
+    const accept = await screen.findByRole('button', { name: 'Aceptar' })
+    expect(accept).toHaveAttribute('aria-keyshortcuts', 'A')
+    expect(screen.getByRole('button', { name: 'Ignorar' })).toHaveAttribute('aria-keyshortcuts', 'I')
+
+    await userEvent.keyboard('j')
+    expect(await screen.findByRole('heading', { name: 'Prueba técnica' })).toBeInTheDocument()
+    await userEvent.keyboard('k')
+    expect(await screen.findByRole('heading', { name: 'Entrevista para Data Engineer' })).toBeInTheDocument()
+    await userEvent.keyboard('a')
+    await waitFor(() => expect(calls.some((c) => c.path === '/replies/1/accept')).toBe(true))
+
+    await userEvent.keyboard('j')
+    expect(await screen.findByRole('heading', { name: 'Prueba técnica' })).toBeInTheDocument()
+    await userEvent.keyboard('i')
+    await waitFor(() => expect(calls.some((c) => c.path === '/replies/2/ignore')).toBe(true))
+    expect(calls.filter((c) => c.method === 'POST')).toHaveLength(2)
+  })
+
+  it('los atajos no actúan escribiendo ni con el diálogo de «Cambiar» abierto', async () => {
+    const calls = mockReplies([reply(1)], { 'POST /replies/1/accept': decided('accepted') })
+    renderApp('/respuestas')
+    await userEvent.click(await screen.findByRole('button', { name: 'Cambiar' }))
+    const dialog = await screen.findByRole('dialog')
+    await userEvent.type(within(dialog).getByLabelText('Nota (opcional)'), 'ai')
+    expect(within(dialog).getByLabelText('Nota (opcional)')).toHaveValue('ai')
+    await userEvent.keyboard('{Escape}')
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    expect(calls.some((c) => c.method === 'POST')).toBe(false)
+  })
+
+  it('los filtros de estado son una sola parada de Tab, con flechas', async () => {
+    mockReplies([reply(1), reply(2, { status: 'accepted' })])
+    renderApp('/respuestas')
+    const filters = await screen.findByRole('radiogroup', { name: 'Filtrar por estado' })
+    const pending = within(filters).getByRole('radio', { name: /Pendientes/ })
+    expect(pending).toHaveAttribute('aria-checked', 'true')
+    expect(within(filters).getAllByRole('radio').filter((r) => r.tabIndex === 0)).toEqual([pending])
+    pending.focus()
+    await userEvent.keyboard('{ArrowRight}')
+    const accepted = within(filters).getByRole('radio', { name: /Aceptadas/ })
+    expect(accepted).toHaveAttribute('aria-checked', 'true')
+    expect(accepted).toHaveFocus()
+  })
+
   it('tras aceptar avisa de dónde ha quedado registrada antes de pasar al siguiente (H-008)', async () => {
     let first = reply(1)
     const second = reply(2, { subject: 'Otra cosa de Brétema' })

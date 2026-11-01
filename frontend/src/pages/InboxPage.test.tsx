@@ -126,15 +126,40 @@ describe('Cabecera', () => {
     const calls = mockApi({ 'GET /status': status(3, 2), 'GET /jobs': page() })
     renderApp('/bandeja')
 
-    const filters = await screen.findByRole('navigation', { name: 'Filtrar por etapa' })
-    await waitFor(() => expect(within(filters).getByRole('button', { name: /Por leer\s*3/ })).toBeInTheDocument())
-    expect(within(filters).getByRole('button', { name: /Todas\s*5/ })).toHaveAttribute('aria-pressed', 'true')
-    await userEvent.click(within(filters).getByRole('button', { name: /Por revisar\s*2/ }))
+    const filters = await screen.findByRole('radiogroup', { name: 'Filtrar por etapa' })
+    await waitFor(() => expect(within(filters).getByRole('radio', { name: /Por leer\s*3/ })).toBeInTheDocument())
+    expect(within(filters).getByRole('radio', { name: /Todas\s*5/ })).toHaveAttribute('aria-checked', 'true')
+    await userEvent.click(within(filters).getByRole('radio', { name: /Por revisar\s*2/ }))
     await waitFor(() => expect(calls.some((c) => c.path === '/jobs' && c.search.get('stage') === 'pending_triage')).toBe(true))
     // De 25 en 25.
     expect(calls.find((c) => c.path === '/jobs')?.search.get('limit')).toBe('25')
     // Sin avisos fijos arriba: lo que espera se cuenta en Inicio y en la barra lateral.
     expect(screen.queryByText(/por leer\./)).not.toBeInTheDocument()
+  })
+
+  it('los filtros de etapa son una sola parada de Tab y se recorren con flechas', async () => {
+    const calls = mockApi({ 'GET /status': status(3, 2), 'GET /jobs': page() })
+    renderApp('/bandeja')
+    const filters = await screen.findByRole('radiogroup', { name: 'Filtrar por etapa' })
+    const all = within(filters).getByRole('radio', { name: /Todas/ })
+    const radios = within(filters).getAllByRole('radio')
+    expect(radios).toHaveLength(9)
+    // Solo la elegida entra en el orden de Tab.
+    expect(radios.filter((r) => r.tabIndex === 0)).toEqual([all])
+
+    all.focus()
+    await userEvent.keyboard('{ArrowRight}')
+    const next = radios[1]!
+    await waitFor(() => expect(next).toHaveAttribute('aria-checked', 'true'))
+    expect(next).toHaveFocus()
+    await waitFor(() => expect(calls.some((c) => c.path === '/jobs' && c.search.get('stage') === 'pending_detail')).toBe(true))
+    await userEvent.keyboard('{End}')
+    await waitFor(() => expect(radios[8]).toHaveAttribute('aria-checked', 'true'))
+    await userEvent.keyboard('{ArrowRight}') // vuelve al principio
+    await waitFor(() => expect(all).toHaveAttribute('aria-checked', 'true'))
+    // Un Tab sale del grupo.
+    await userEvent.tab()
+    expect(filters).not.toContainElement(document.activeElement as HTMLElement)
   })
 
   it('cambia entre tema del sistema, claro y oscuro', async () => {

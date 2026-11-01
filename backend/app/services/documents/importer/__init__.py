@@ -24,3 +24,8 @@ class TemplateImportError(ValueError):
     def __init__(self, message: str, issues: list[ImportIssue] | None = None) -> None:
         self.issues = issues or []
         super().__init__(message)
+
+
+class TemplateExistsError(ValueError):
+    """Ya hay una plantilla con ese id (y no se pidió sobrescribirla). Aquí y no en `build`: la
+    interfaz para agentes la reconoce sin cargar python-docx al arrancar."""

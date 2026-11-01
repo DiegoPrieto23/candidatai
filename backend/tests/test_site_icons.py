@@ -1,6 +1,8 @@
 """Iconos de «Dónde buscar» servidos por la app: se descargan una vez y se sirven de disco."""
 
 import os
+import threading
+import time
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -21,6 +23,12 @@ PNG = b"\x89PNG\r\n\x1a\n" + b"\x00" * 40
 ICO = b"\x00\x00\x01\x00" + b"\x00" * 40
 WEBP = b"RIFF\x00\x00\x00\x00WEBPVP8 " + b"\x00" * 20
 DAY = 24 * 3600.0
+
+
+@pytest.fixture(autouse=True)
+def _no_download_left_behind() -> Iterator[None]:
+    yield
+    site_icons.wait_downloads()
 
 
 def test_image_type_accepts_only_known_images() -> None:
@@ -178,6 +186,69 @@ def test_without_network_it_gives_up_at_the_first_failure() -> None:
     assert len(asked) == 1  # no espera a que fallen las otras tres
 
 
+def test_icon_now_does_not_wait_and_asks_each_site_once() -> None:
+    """Sin icono en disco, `None` enseguida; la descarga va aparte y una sola vez por web."""
+    release = threading.Event()
+    calls: list[str] = []
+
+    def slow(url: str) -> bytes:
+        calls.append(url)
+        release.wait(5)
+        return PNG
+
+    started = time.monotonic()
+    assert [site_icons.icon_now("https://acme.com", fetch=slow) for _ in range(5)] == [None] * 5
+    assert time.monotonic() - started < 1
+    release.set()
+    site_icons.wait_downloads()
+    assert calls == ["https://acme.com/favicon.ico"]
+    assert site_icons.icon_now("https://acme.com", fetch=slow) == site_icons.Icon(PNG, "image/png")
+    assert len(calls) == 1
+
+
+def test_many_sites_do_not_start_many_threads() -> None:
+    release = threading.Event()
+
+    def slow(_url: str) -> bytes:
+        release.wait(5)
+        return PNG
+
+    for n in range(12):
+        assert site_icons.icon_now(f"https://empresa{n}.example", fetch=slow) is None
+    icon_threads = [t for t in threading.enumerate() if t.name == "cai-icons"]
+    assert 0 < len(icon_threads) <= site_icons.MAX_DOWNLOADS
+    release.set()
+    site_icons.wait_downloads()
+    assert len(list(get_settings().icons_dir.glob("*.png"))) == 12
+
+
+def test_icon_now_serves_the_expired_one_while_it_refreshes() -> None:
+    site_icons.get_icon("https://acme.com", fetch=lambda _url: PNG)
+    later = time.time() + 31 * DAY
+    assert site_icons.icon_now("https://acme.com", fetch=lambda _url: ICO, now=later).content == PNG
+    site_icons.wait_downloads()
+    assert site_icons.icon_now("https://acme.com", fetch=lambda _url: PNG).content == ICO
+
+
+def test_icon_now_does_not_ask_again_a_site_without_icon() -> None:
+    site_icons.get_icon("https://acme.com", fetch=lambda _url: None)
+    calls: list[str] = []
+    assert site_icons.icon_now("https://acme.com", fetch=lambda url: calls.append(url)) is None
+    site_icons.wait_downloads()
+    assert calls == []
+
+
+def test_a_failed_background_download_can_be_retried() -> None:
+    def broken(_url: str) -> bytes:
+        raise RuntimeError("fallo inesperado")
+
+    assert site_icons.icon_now("https://acme.com", fetch=broken) is None
+    site_icons.wait_downloads()
+    site_icons.icon_now("https://acme.com", fetch=lambda _url: PNG)
+    site_icons.wait_downloads()
+    assert site_icons.icon_now("https://acme.com") == site_icons.Icon(PNG, "image/png")
+
+
 # --- API ---------------------------------------------------------------------------------------
 
 
@@ -201,6 +272,10 @@ def test_the_api_serves_the_icon_of_each_source(client: TestClient) -> None:
     # Sin web todavía: nada que descargar.
     assert client.get(f"/sources/{company}/icon").status_code == 204
     client.post(f"/sources/{company}/website", json={"website": "acmedatos.example"})
+    # La primera vez no espera a la descarga: 204 sin caché, y la UI lo vuelve a pedir.
+    pending = client.get(f"/sources/{company}/icon", params={"v": "acmedatos.example"})
+    assert pending.status_code == 204 and pending.headers["cache-control"] == "no-store"
+    site_icons.wait_downloads()
     icon = client.get(f"/sources/{company}/icon", params={"v": "acmedatos.example"})
     assert icon.status_code == 200 and icon.content == ICO
     assert icon.headers["content-type"] == "image/x-icon"
@@ -214,6 +289,8 @@ def test_the_api_serves_the_icon_of_each_source(client: TestClient) -> None:
             }
         )
         platform_id = browse.save_source(session, platform).source_id
+    client.get(f"/sources/{platform_id}/icon")
+    site_icons.wait_downloads()
     assert client.get(f"/sources/{platform_id}/icon").content == PNG
     assert client.get("/sources/9999/icon").status_code == 404
 
@@ -233,4 +310,28 @@ def test_the_linkedin_platform_never_asks_linkedin(client: TestClient) -> None:
         )
         source_id = browse.save_source(session, linkedin).source_id
     assert client.get(f"/sources/{source_id}/icon").status_code == 204
+    site_icons.wait_downloads()
     assert route.call_count == 0
+
+
+@respx.mock
+def test_a_slow_site_does_not_hold_the_request(client: TestClient) -> None:
+    """Una web que tarda no retiene la petición, y cinco peticiones la piden una sola vez."""
+    release = threading.Event()
+
+    def slow(_request: httpx.Request) -> httpx.Response:
+        release.wait(5)
+        return httpx.Response(200, content=PNG)
+
+    route = respx.get("https://lenta.example/favicon.ico").mock(side_effect=slow)
+    body = {"kind": "greenhouse", "name": "Lenta", "slug": "lenta"}
+    company = client.post("/sources", json=body).json()["id"]
+    client.post(f"/sources/{company}/website", json={"website": "lenta.example"})
+    started = time.monotonic()
+    statuses = [client.get(f"/sources/{company}/icon").status_code for _ in range(5)]
+    assert statuses == [204] * 5
+    assert time.monotonic() - started < 2
+    release.set()
+    site_icons.wait_downloads()
+    assert route.call_count == 1
+    assert client.get(f"/sources/{company}/icon").content == PNG

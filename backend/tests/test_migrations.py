@@ -519,3 +519,49 @@ def test_0031_undoes_interviews_marked_done_before_their_day(db_url: str) -> Non
         assert str(last[1][2]).startswith("2026-01-04 09:00:00")
     finally:
         engine.dispose()
+
+
+def test_0033_copies_the_title_of_each_extraction_and_back(db_url: str) -> None:
+    """El título normalizado pasa a su columna; lo que no es texto se queda en `NULL`."""
+    migrations.upgrade(db_url, "0032")
+    engine = create_engine(db_url)
+    try:
+        with engine.begin() as conn:
+            conn.exec_driver_sql(
+                "INSERT INTO sources (id, kind, name, config, active) "
+                "VALUES (1, 'manual_text', 'x', '{}', 1)"
+            )
+            conn.exec_driver_sql(
+                "INSERT INTO companies (id, name, normalized_name, watchlist) "
+                "VALUES (1, 'Acme', 'acme', 0)"
+            )
+            conn.exec_driver_sql(
+                "INSERT INTO jobs (id, source_id, company_id, url, title, raw_text, risk_flags, "
+                "fingerprint, first_seen_at) "
+                "VALUES (1, 1, 1, '', 'T', 'x', '[]', 'f1', '2026-10-01 09:00:00')"
+            )
+            for extraction_id, data in (
+                (1, {"title_normalized": "data engineer", "skills": []}),
+                (2, {"title_normalized": 7}),
+                (3, {"skills": []}),
+            ):
+                conn.exec_driver_sql(
+                    "INSERT INTO job_extractions (id, job_id, schema_version, data, created_at) "
+                    "VALUES (?, 1, 1, ?, '2026-10-01 09:00:00')",
+                    (extraction_id, json.dumps(data)),
+                )
+        engine.dispose()
+
+        migrations.upgrade(db_url)
+        with engine.connect() as conn:
+            titles = conn.exec_driver_sql(
+                "SELECT id, title_normalized FROM job_extractions ORDER BY id"
+            ).all()
+        assert titles == [(1, "data engineer"), (2, None), (3, None)]
+        engine.dispose()
+
+        migrations.downgrade(db_url, "0032")
+        columns = {c["name"] for c in inspect(engine).get_columns("job_extractions")}
+        assert "title_normalized" not in columns
+    finally:
+        engine.dispose()

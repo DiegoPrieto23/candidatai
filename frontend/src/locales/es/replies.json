@@ -116,6 +116,12 @@
       "ignored": "Ignorada: no se ha registrado nada.",
       "undo": "Deshacer",
       "undoFailed": "No se pudo deshacer: {{error}}"
+    },
+    "shortcuts": {
+      "label": "Atajos de teclado",
+      "move": "mover",
+      "accept": "aceptar",
+      "ignore": "ignorar"
     }
   }
 }

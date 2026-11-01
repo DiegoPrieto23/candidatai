@@ -7,6 +7,7 @@ import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { visualizer } from 'rollup-plugin-visualizer'
 import { defineConfig, searchForWorkspaceRoot, type Plugin } from 'vite'
+import { UNUSED_ICON_WEIGHTS } from './src/lib/iconWeights.ts'
 
 /**
  * Junto a cada fichero de texto de `dist/assets`, su versión `.gz`: la API la sirve tal cual a quien
@@ -23,6 +24,62 @@ function precompress(): Plugin {
         const path = join(options.dir ?? 'dist', fileName)
         writeFileSync(`${path}.gz`, gzipSync(readFileSync(path), { level: 9 }))
       }
+    },
+  }
+}
+
+// La entrada de un peso en la definición de un icono de Phosphor (`dist/defs/<Icono>.es.js`):
+// `[ "light", <svg> ]` dentro de su `new Map([...])`.
+const ICON_WEIGHT_ENTRY = new RegExp(
+  String.raw`\r?\n  \[\r?\n    "(${UNUSED_ICON_WEIGHTS.join('|')})",[\s\S]*?\r?\n  \],?`,
+  'g',
+)
+
+/**
+ * Quita de cada icono de Phosphor los pesos que la app no usa (`src/lib/iconWeights.ts`): los iconos
+ * de la barra lateral y de Inicio, que se descargan al arrancar, pesan un tercio menos. Si la
+ * librería cambia el formato y no se encuentran, el build falla en vez de no quitar nada.
+ */
+function pruneIconWeights(): Plugin {
+  return {
+    name: 'candidatai-prune-icon-weights',
+    apply: 'build',
+    transform(code, id) {
+      if (!/[\\/]@phosphor-icons[\\/]react[\\/]dist[\\/]defs[\\/]/.test(id)) return null
+      const removed = (code.match(ICON_WEIGHT_ENTRY) ?? []).length
+      const pruned = code.replace(ICON_WEIGHT_ENTRY, '')
+      if (removed !== UNUSED_ICON_WEIGHTS.length) {
+        throw new Error(`No se reconocen los pesos de ${id}: ¿ha cambiado el formato de Phosphor?`)
+      }
+      return { code: pruned, map: null }
+    },
+  }
+}
+
+/**
+ * En `index.html`, un `modulepreload` del chunk de textos del idioma con el que arrancará la app:
+ * así se descarga a la vez que el `index` y no cuando este ya ha llegado y lo pide. Solo el del
+ * idioma en uso (el otro pesa lo mismo y no hace falta). Elige igual que `detectLanguage` de
+ * `src/lib/i18n.ts`: el guardado, si no el del navegador, si no inglés.
+ */
+function preloadLanguage(): Plugin {
+  return {
+    name: 'candidatai-preload-language',
+    apply: 'build',
+    transformIndexHtml: {
+      order: 'post',
+      handler(_html, { bundle }) {
+        const chunks: Record<string, string> = {}
+        for (const file of Object.values(bundle ?? {})) {
+          const language = file.type === 'chunk' ? /^locale-(.+)$/.exec(file.name)?.[1] : undefined
+          if (language) chunks[language] = `/${file.fileName}`
+        }
+        if (Object.keys(chunks).length === 0) return
+        const script = `(function(){var c=${JSON.stringify(chunks)},l;try{l=localStorage.getItem('cai-language')}catch(e){}
+if(!c[l]){var b=((navigator.languages&&navigator.languages[0])||navigator.language||'').toLowerCase().split('-')[0];l=c[b]?b:'en'}
+var k=document.createElement('link');k.rel='modulepreload';k.crossOrigin='';k.href=c[l];document.head.appendChild(k)})()`
+        return [{ tag: 'script', children: script, injectTo: 'head' }]
+      },
     },
   }
 }
@@ -50,6 +107,8 @@ export default defineConfig({
     react(),
     tailwindcss(),
     precompress(),
+    preloadLanguage(),
+    pruneIconWeights(),
     !!analyze &&
       visualizer({
         filename: analyze === 'json' ? 'stats.json' : 'stats.html',

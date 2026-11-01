@@ -20,7 +20,6 @@ from app.schemas.profile import CandidateProfile
 from app.services import profile as profile_service
 from app.services.documents import context, photo
 from app.services.documents.engines import render_files
-from app.services.documents.engines.docx import render_docx
 from app.services.documents.templates import (
     Template,
     TemplateInvalidError,
@@ -203,6 +202,8 @@ def check_renders(template: Template) -> None:
 
             render_string(template, ctx, photo_file)
         else:
+            from app.services.documents.engines.docx import render_docx
+
             render_docx(template, ctx, workdir / "check.docx", template.meta.page.size, photo_file)
     except Exception as exc:
         issue = TemplateIssue(field=template.engine_file.name, reason=f"No renderiza: {exc}")
@@ -326,6 +327,8 @@ def check_letter_renders(template: Template) -> None:
 
             render_string(template, ctx, photo_file, template.letter_file.name)
         else:
+            from app.services.documents.engines.docx import render_docx
+
             render_docx(
                 template,
                 ctx,

@@ -142,11 +142,16 @@ def get_source_icon(session: SessionDep, source_id: int) -> Response:
     """Icono del portal o de la empresa, descargado una vez por la app y guardado en `data/`: así
     tu navegador no visita cada web al abrir «Dónde buscar». `v` en la URL solo sirve para que el
     navegador no use el de antes al cambiar la web. Sin icono, 204 y no 404: la imagen falla igual
-    (la UI pone la inicial) sin un error en la consola del navegador por cada empresa."""
+    (la UI pone la inicial) sin un error en la consola del navegador por cada empresa.
+
+    No espera a descargarlo: si aún no está, 204 enseguida y se descarga aparte (la UI vuelve a
+    pedirlo una vez, al rato). El 204 no se guarda en caché, para que ese reintento llegue."""
     home = sources.icon_home(session, source_id)
-    icon = site_icons.get_icon(home) if home else None
+    icon = site_icons.icon_now(home) if home else None
     if icon is None:
-        return Response(status_code=status.HTTP_204_NO_CONTENT)
+        return Response(
+            status_code=status.HTTP_204_NO_CONTENT, headers={"Cache-Control": "no-store"}
+        )
     return Response(
         icon.content,
         media_type=icon.media_type,

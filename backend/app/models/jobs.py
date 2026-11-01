@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Any
 
 from sqlalchemy import JSON, ForeignKey, Index, String, Text, UniqueConstraint, text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, validates
 
 from app.models.base import Base, UTCDateTime, utcnow
 
@@ -75,4 +75,13 @@ class JobExtraction(Base):
     job_id: Mapped[int] = mapped_column(ForeignKey("jobs.id"), index=True)
     schema_version: Mapped[int]
     data: Mapped[dict[str, Any]] = mapped_column(JSON)
+    # Copia de `data["title_normalized"]`: el embudo agrupa por puesto sin leer el JSON de cada
+    # extracción. Se rellena sola al dar `data`.
+    title_normalized: Mapped[str | None] = mapped_column(Text, default=None)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
+
+    @validates("data")
+    def _copy_title(self, _key: str, data: dict[str, Any]) -> dict[str, Any]:
+        title = data.get("title_normalized") if isinstance(data, dict) else None
+        self.title_normalized = title if isinstance(title, str) else None
+        return data

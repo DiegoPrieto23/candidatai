@@ -426,7 +426,8 @@ def _job(
                 "id": extraction_id,
                 "job_id": job_id,
                 "schema_version": 1,
-                "data": _extraction(rng, role, city),
+                "data": (data := _extraction(rng, role, city)),
+                "title_normalized": data["title_normalized"],
                 "created_at": when,
             }
         )

@@ -4688,7 +4688,7 @@
           "sources"
         ],
         "summary": "Get Source Icon",
-        "description": "Icono del portal o de la empresa, descargado una vez por la app y guardado en `data/`: así\ntu navegador no visita cada web al abrir «Dónde buscar». `v` en la URL solo sirve para que el\nnavegador no use el de antes al cambiar la web. Sin icono, 204 y no 404: la imagen falla igual\n(la UI pone la inicial) sin un error en la consola del navegador por cada empresa.",
+        "description": "Icono del portal o de la empresa, descargado una vez por la app y guardado en `data/`: así\ntu navegador no visita cada web al abrir «Dónde buscar». `v` en la URL solo sirve para que el\nnavegador no use el de antes al cambiar la web. Sin icono, 204 y no 404: la imagen falla igual\n(la UI pone la inicial) sin un error en la consola del navegador por cada empresa.\n\nNo espera a descargarlo: si aún no está, 204 enseguida y se descarga aparte (la UI vuelve a\npedirlo una vez, al rato). El 204 no se guarda en caché, para que ese reintento llegue.",
         "operationId": "get_source_icon",
         "parameters": [
           {

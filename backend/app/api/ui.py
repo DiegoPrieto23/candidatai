@@ -19,8 +19,7 @@ from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from starlette.datastructures import Headers
 from starlette.exceptions import HTTPException
-from starlette.middleware.base import RequestResponseEndpoint
-from starlette.types import Scope
+from starlette.types import ASGIApp, Receive, Scope, Send
 
 # Rutas de la UI (`frontend/src/App.tsx`). Un test comprueba que no falta ninguna.
 UI_ROUTES = re.compile(
@@ -78,6 +77,29 @@ def is_ui_navigation(request: Request) -> bool:
     )
 
 
+class _SpaMiddleware:
+    """Una navegación a una ruta de la UI recibe `index.html`; lo demás pasa tal cual a la API.
+
+    ASGI puro y no `@app.middleware("http")`: ese pasa todas las respuestas de la API por trozos
+    (y el gzip de fuera no veía su tamaño). Este solo mira la petición."""
+
+    def __init__(self, app: ASGIApp, index: Path) -> None:
+        self.app = app
+        self.index = index
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        # Solo se mira la petición entera si puede ser una navegación (un GET a una ruta de la UI).
+        if (
+            scope["type"] == "http"
+            and scope["method"] == "GET"
+            and UI_ROUTES.match(scope["path"])
+            and is_ui_navigation(Request(scope))
+        ):
+            await FileResponse(self.index, headers=_NO_CACHE)(scope, receive, send)
+            return
+        await self.app(scope, receive, send)
+
+
 def _file_endpoint(path: Path) -> Callable[[], FileResponse]:
     """Una ruta sin parámetros por fichero: la ruta del fichero no puede venir de la petición."""
 
@@ -104,10 +126,5 @@ def install_ui(app: FastAPI, ui_dir: Path) -> bool:
                 f"/{path.name}", _file_endpoint(path), methods=["GET"], include_in_schema=False
             )
 
-    @app.middleware("http")
-    async def spa(request: Request, call_next: RequestResponseEndpoint) -> Response:
-        if is_ui_navigation(request):
-            return FileResponse(index, headers=_NO_CACHE)
-        return await call_next(request)
-
+    app.add_middleware(_SpaMiddleware, index=index)
     return True

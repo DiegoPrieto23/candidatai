@@ -14,7 +14,6 @@ from app.api.deps import SessionDep
 from app.schemas.cv import CvRenderOptions
 from app.services import profile as profile_service
 from app.services.documents import (
-    authoring,
     cover_letter,
     cv_brief,
     default_template,
@@ -57,6 +56,10 @@ def get_template_preview(template_id: str) -> FileResponse:
 )
 def get_template_source(template_id: str) -> FileResponse:
     """Primera página del CV original del que se creó la plantilla («Mi CV»)."""
+    # La autoría de plantillas trae python-docx, numpy y Pillow: se carga al usarla, no al
+    # arrancar la API.
+    from app.services.documents import authoring
+
     png = authoring.source_png(template_id)
     if png is None:
         raise FileNotAvailableError("Esta plantilla no tiene vista del original.")
@@ -71,6 +74,8 @@ def get_template_source(template_id: str) -> FileResponse:
 )
 def get_template_real_preview(session: SessionDep, template_id: str) -> FileResponse:
     """La plantilla con tu perfil (sin agente). La primera vez tarda lo que la conversión a PDF."""
+    from app.services.documents import authoring
+
     return FileResponse(authoring.real_preview_png(session, template_id), media_type="image/png")
 
 
