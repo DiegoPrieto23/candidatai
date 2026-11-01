@@ -148,8 +148,13 @@ def _write(path: Path, content: bytes) -> None:
         partial.unlink(missing_ok=True)
 
 
-def _icon(path: Path) -> Icon:
-    return Icon(path.read_bytes(), _MEDIA_TYPES[path.suffix.lstrip(".")])
+def _icon(path: Path) -> Icon | None:
+    """El icono guardado, o `None` si no se puede leer: en Windows, mientras otro hilo lo renombra
+    (`_write`), abrirlo falla con «acceso denegado»."""
+    try:
+        return Icon(path.read_bytes(), _MEDIA_TYPES[path.suffix.lstrip(".")])
+    except OSError:
+        return None
 
 
 def get_icon(home: str, *, fetch: Download = download, now: float | None = None) -> Icon | None:
@@ -161,8 +166,8 @@ def get_icon(home: str, *, fetch: Download = download, now: float | None = None)
     now = time.time() if now is None else now
     folder = get_settings().icons_dir
     cached = _cached(folder, key)
-    if cached is not None and _age(cached, now) < ICON_TTL:
-        return _icon(cached)
+    if cached is not None and _age(cached, now) < ICON_TTL and (icon := _icon(cached)):
+        return icon
     miss = folder / f"{key}.miss"
     if cached is None and miss.is_file() and _age(miss, now) < MISS_TTL:
         return None
@@ -175,11 +180,12 @@ def get_icon(home: str, *, fetch: Download = download, now: float | None = None)
         answered = True
         ext = image_type(content) if content else None
         if content and ext:
-            if cached is not None and cached.suffix != f".{ext}":
-                cached.unlink(missing_ok=True)
-            path = folder / f"{key}.{ext}"
-            _write(path, content)
-            miss.unlink(missing_ok=True)
+            # Lo que otro hilo tenga abierto no se puede borrar en Windows: se queda para luego.
+            with contextlib.suppress(OSError):
+                if cached is not None and cached.suffix != f".{ext}":
+                    cached.unlink(missing_ok=True)
+                miss.unlink(missing_ok=True)
+            _write(folder / f"{key}.{ext}", content)
             return Icon(content, _MEDIA_TYPES[ext])
     if cached is not None:
         # Caducado y sin uno nuevo: sirve el que había y no lo reintenta hasta pasado `MISS_TTL`.
