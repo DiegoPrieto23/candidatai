@@ -2,6 +2,7 @@
 
 import os
 from collections.abc import Iterator
+from pathlib import Path
 
 import httpx
 import pytest
@@ -146,6 +147,24 @@ def test_concurrent_requests_for_the_same_site_do_not_clash() -> None:
         )
     assert all(icon == site_icons.Icon(PNG, "image/png") for icon in icons)
     assert sorted(p.name for p in get_settings().icons_dir.iterdir()) == ["acme.com.png"]
+
+
+def test_an_icon_that_cannot_be_read_is_downloaded_again(monkeypatch: pytest.MonkeyPatch) -> None:
+    """En Windows, leerlo mientras otro hilo lo renombra da «acceso denegado»: no es un 500."""
+    site_icons.get_icon("https://acme.com", fetch=lambda _u: PNG)
+
+    def locked(self: Path) -> bytes:
+        raise PermissionError(13, "Permission denied", str(self))
+
+    monkeypatch.setattr(Path, "read_bytes", locked)
+    asked: list[str] = []
+
+    def fetch(url: str) -> bytes:
+        asked.append(url)
+        return PNG
+
+    assert site_icons.get_icon("https://acme.com", fetch=fetch) == site_icons.Icon(PNG, "image/png")
+    assert asked
 
 
 def test_without_network_it_gives_up_at_the_first_failure() -> None:
