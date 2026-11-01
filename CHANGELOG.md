@@ -43,6 +43,9 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 - **Aviso al aceptar o ignorar una respuesta:** en «Respuestas», antes de pasar al siguiente
   correo, un aviso dice en qué oferta ha quedado registrada, con su enlace. «Ignorar» se puede
   deshacer desde el aviso.
+- **Navegar con teclado:** el primer Tab de cada página enseña **Saltar al contenido**, que se
+  salta el menú y te deja en la página: la acción principal queda a unos pocos Tab (en Inicio, 6 en
+  vez de 23).
 
 ### Cambiado
 - **Lenguaje claro en el encaje y las etapas:** el número de cada oferta se llama ahora «encaje» y
@@ -92,6 +95,10 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   el detalle y dónde avisar.
 
 ### Corregido
+- **El foco de teclado se ve siempre:** en «Respuestas», el correo con el foco lleva un anillo y
+  ya no se confunde con el seleccionado. Las pestañas de la ficha, de «Mi perfil» y de «Nueva
+  oferta» y los títulos de la Bandeja lo enseñan también, igual que los apartados de «Mi perfil»
+  cuando llegas a ellos desde su índice o desde el aviso «Sin guardar», en claro y en oscuro.
 - **Generar un CV o una carta con LibreOffice ya no cierra la app:** mientras se convertía a PDF,
   el resto de la app no podía escribir en tu base y, si la conversión pasaba de 5 segundos, el
   proceso de segundo plano se caía y con él toda la app. Ahora, si la base está ocupada, cada

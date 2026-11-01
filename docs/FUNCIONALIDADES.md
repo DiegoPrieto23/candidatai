@@ -104,6 +104,7 @@ FEATURES.md dejan de coincidir fila a fila. -->
 |---|---|---|
 | **Agente**: arriba, si tu agente está listo o cómo instalar uno, y qué distingue a Claude (el chat) de Claude Code; plegados, agente por defecto y uno por acción, ejecuciones en segundo plano con progreso, preguntas y Cancelar, coste por acción y modelo, niveles de gasto y la comparación por significado del score | `/agente` | [Agente](img/es/agent.webp) |
 | **Cada botón de agente se explica**: qué hace el skill, qué cambia y qué necesita, al pasar el ratón o con el foco del teclado | Todas las páginas | |
+| **Navegar con teclado**: el primer Tab enseña «Saltar al contenido», que se salta el menú, y el foco se ve siempre, también en claro y en oscuro | Todas las páginas | |
 | **Dejar para tu próxima sesión**: cualquier botón guarda la orden para tu agente | `handle-requests` | |
 | **Resumen del día**: ofertas pendientes, seguimientos vencidos y próximos hitos | `daily-summary` | |
 | **Barra lateral** agrupada y plegable con lo que te espera, tema claro y oscuro, español e inglés | `/` | [Barra lateral](img/es/sidebar-collapsed.webp) |

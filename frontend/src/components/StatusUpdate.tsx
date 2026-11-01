@@ -15,6 +15,7 @@ import { useBoard } from '@/api/queries'
 import { MoveDialog } from '@/components/MoveDialog'
 import { Button } from '@/components/ui/button'
 import { errorMessage } from '@/lib/errors'
+import { focusArrival } from '@/lib/focus'
 import { eventLabel, STAGE_LABEL } from '@/lib/labels'
 import { stepOptions, type MoveOption } from '@/lib/moves'
 import { cn } from '@/lib/utils'
@@ -44,7 +45,7 @@ export const RECEIVED_OFFER_ID = 'job-received-offer'
 function goTo(id: string) {
   const target = document.getElementById(id)
   target?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  target?.querySelector<HTMLElement>('button')?.focus({ preventScroll: true })
+  focusArrival(target?.querySelector<HTMLElement>('button'))
 }
 
 /**

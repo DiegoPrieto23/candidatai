@@ -71,6 +71,24 @@ function mockReplies(replies: ReplyInboxItem[], extra: Record<string, unknown> =
 }
 
 describe('Respuestas', () => {
+  it('con teclado, el correo con el foco se distingue del seleccionado (fase 36)', async () => {
+    mockReplies([reply(1), reply(2, { sender_name: 'Iago Souto', subject: 'Prueba técnica' })])
+    renderApp('/respuestas')
+    const row = (name: string) => screen.getAllByText(name).map((el) => el.closest<HTMLButtonElement>('li > button')).find(Boolean)!
+    await screen.findAllByText('Iago Souto')
+    const selected = row('Laura Pazos')
+    const other = row('Iago Souto')
+    expect(selected).toHaveAttribute('aria-current', 'true')
+
+    other.focus()
+    expect(other).toHaveFocus()
+    // El foco es un anillo; la selección, el fondo: no comparten clase.
+    expect(other).toHaveClass('focus-visible:ring-2')
+    expect(other).not.toHaveClass('bg-accent/70')
+    expect(selected).toHaveClass('bg-accent/70')
+    expect(other.className).not.toMatch(/focus-visible:bg-/)
+  })
+
   it('enseña la propuesta en una frase y el correo como texto', async () => {
     mockReplies([reply(1)])
     renderApp('/respuestas')

@@ -104,6 +104,7 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 |---|---|---|
 | **Agent**: at the top, whether your agent is ready or how to install one, and what sets Claude (the chat) apart from Claude Code; folded away, default agent and one per action, background runs with progress, questions and Cancel, cost by action and model, spending levels and the score's meaning-based comparison | `/agente` | [Agent](img/en/agent.webp) |
 | **Every agent button explains itself**: what the skill does, what it changes and what it needs, on hover or keyboard focus | Every page | |
+| **Keyboard navigation**: the first Tab shows “Skip to content”, which skips the menu, and focus is always visible, in light and dark | Every page | |
 | **Leave it for your next session**: any button saves the order for your agent | `handle-requests` | |
 | **Daily summary**: pending jobs, overdue follow-ups and next milestones | `daily-summary` | |
 | **Sidebar** grouped and collapsible with what's waiting, light and dark theme, English and Spanish | `/` | [Sidebar](img/en/sidebar-collapsed.webp) |

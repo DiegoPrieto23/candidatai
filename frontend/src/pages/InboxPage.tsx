@@ -350,7 +350,7 @@ function JobTable({
                   <Link
                     to={`/jobs/${job.id}`}
                     onClick={(e) => e.stopPropagation()}
-                    className="font-medium text-foreground underline-offset-4 outline-none group-hover:underline focus-visible:underline"
+                    className="rounded-sm font-medium text-foreground underline-offset-4 outline-none group-hover:underline focus-visible:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card"
                   >
                     {job.title}
                   </Link>

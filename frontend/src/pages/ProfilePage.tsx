@@ -35,6 +35,7 @@ import { StartByHand } from '@/components/profile/StartByHand'
 import { StartFromCv } from '@/components/profile/StartFromCv'
 import { StoriesBlock } from '@/components/profile/StoriesBlock'
 import { errorMessage } from '@/lib/errors'
+import { focusArrival } from '@/lib/focus'
 import { dateFormatter, formatNumber } from '@/lib/labels'
 import { cn } from '@/lib/utils'
 
@@ -60,7 +61,7 @@ function FileState({ file }: { file: ContextFileInfo }) {
 function goToEditor(section: ContextSectionName) {
   const block = document.getElementById(blockAnchor(`context-${section}`))
   block?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  block?.focus({ preventScroll: true })
+  focusArrival(block)
 }
 
 /**
@@ -288,7 +289,7 @@ function useGoTo(setTab: (tab: Tab) => void) {
       if (!target) return
       const smooth = !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
       target.scrollIntoView?.({ behavior: smooth ? 'smooth' : 'auto', block: 'start' })
-      target.focus({ preventScroll: true })
+      focusArrival(target)
     })
   }
 }
