@@ -91,7 +91,7 @@ describe('Sección CV de la ficha', () => {
     renderApp('/jobs/1?tab=application')
     const section = await screen.findByRole('region', { name: 'CV' })
     const render = await within(section).findByRole('listitem', { name: 'Diseño 1' })
-    expect(within(render).getByText('Página 1 · Prueba otra plantilla abajo, sin agente.')).toBeInTheDocument()
+    expect(within(render).getByText('Página 1 · Prueba otra plantilla en «Diseño», sin agente.')).toBeInTheDocument()
     expect(within(render).getByText(/Página 1 · Hay que recortar contenido/)).toBeInTheDocument()
     expect(within(render).getAllByText(/^Página \d/)).toHaveLength(2) // `pdf_only` no lleva página
     expect(within(render).getByText('Para enviar')).toBeInTheDocument() // no bloquea la selección
@@ -128,9 +128,13 @@ describe('Sección CV de la ficha', () => {
       'http://127.0.0.1:8000/renders/1/pdf',
     )
 
-    // A la vista, solo el que se envía; los demás, plegados.
+    // A la vista, el que se envía, a tamaño de lectura; los demás, en «Diseño».
+    expect(within(section).getByRole('img', { name: 'Página 1 de 1 del CV' })).toHaveAttribute(
+      'src',
+      'http://127.0.0.1:8000/renders/1/pages/1.png',
+    )
     expect(within(section).queryByRole('listitem', { name: 'Diseño 2' })).not.toBeInTheDocument()
-    await userEvent.click(within(section).getByRole('button', { name: 'Ver 1 diseño más' }))
+    await userEvent.click(within(section).getByRole('tab', { name: 'Diseño' }))
     const second = within(section).getByRole('listitem', { name: 'Diseño 2' })
     expect(within(second).getByText('ATS sencilla')).toBeInTheDocument()
     expect(within(second).getByText('2/1')).toBeInTheDocument()
@@ -156,9 +160,9 @@ describe('Sección CV de la ficha', () => {
     })
     renderApp('/jobs/1?tab=application')
     // Las opciones de diseño van plegadas.
-    expect(await screen.findByRole('button', { name: 'Cambiar diseño' })).toBeInTheDocument()
+    expect(await screen.findByRole('tab', { name: 'Diseño' })).toBeInTheDocument()
     expect(screen.queryByRole('form', { name: 'Generar el CV' })).not.toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: 'Cambiar diseño' }))
+    await userEvent.click(screen.getByRole('tab', { name: 'Diseño' }))
     const form = await screen.findByRole('form', { name: 'Generar el CV' })
 
     // Parte de la plantilla del render seleccionado: ats-simple no lleva foto ni color.
@@ -182,8 +186,11 @@ describe('Sección CV de la ficha', () => {
       accent_color: '#7A2E39',
       hidden_sections: ['projects'],
     })
-    // El nuevo no se envía hasta que lo eliges: queda con los demás, plegado.
-    expect(await screen.findByRole('button', { name: 'Ver 1 diseño más' })).toBeInTheDocument()
+    // El nuevo pasa a verse para decidir, pero no se envía hasta que lo eliges.
+    await waitFor(() =>
+      expect(screen.getByRole('img', { name: 'Página 1 de 1 del CV' }).getAttribute('src')).toMatch(/renders\/2\/pages\/1\.png$/),
+    )
+    expect(within(screen.getByRole('listitem', { name: 'Diseño 2' })).getByRole('button', { name: /Usar este para enviar/ })).toBeInTheDocument()
   })
 
   it('enseña el error de la API al renderizar', async () => {
@@ -202,7 +209,7 @@ describe('Sección CV de la ficha', () => {
       },
     })
     renderApp('/jobs/1?tab=application')
-    await userEvent.click(await screen.findByRole('button', { name: 'Cambiar diseño' }))
+    await userEvent.click(await screen.findByRole('tab', { name: 'Diseño' }))
     await userEvent.click(await screen.findByRole('button', { name: 'Generar' }))
     expect(await screen.findByRole('alert')).toHaveTextContent('No hay LibreOffice ni Word.')
   })
@@ -221,7 +228,7 @@ describe('Sección CV de la ficha', () => {
       },
     })
     renderApp('/jobs/1?tab=application')
-    await userEvent.click(await screen.findByRole('button', { name: 'Ver 1 diseño más' }))
+    await userEvent.click(await screen.findByRole('tab', { name: 'Diseño' }))
     const second = screen.getByRole('listitem', { name: 'Diseño 2' })
     await userEvent.click(within(second).getByRole('button', { name: /Usar este para enviar/ }))
 
@@ -246,7 +253,7 @@ describe('Sección CV de la ficha', () => {
       within(screen.getByRole('listitem', { name: `Diseño ${id}` })).getByRole('checkbox', { name: 'Comparar' })
 
     await screen.findByRole('listitem', { name: 'Diseño 1' })
-    await userEvent.click(screen.getByRole('button', { name: 'Ver 2 diseños más' }))
+    await userEvent.click(screen.getByRole('tab', { name: 'Diseño' }))
     await userEvent.click(box(1))
     expect(screen.getByText('Marca otro diseño para verlos lado a lado.')).toBeInTheDocument()
     await userEvent.click(box(3))

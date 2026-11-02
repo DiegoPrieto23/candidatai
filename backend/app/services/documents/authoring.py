@@ -136,6 +136,19 @@ def pdf_thumbnail(pdf_file: Path, stem: str) -> Path:
     return png
 
 
+PAGE_PX = 1400  # la vista previa del CV se ve a ~600 px: nítida en pantallas 2x
+
+
+def pdf_page(pdf_file: Path, stem: str, page: int) -> Path:
+    """Una página de un PDF a tamaño de lectura, en la caché de vistas previas. `FileNotFoundError`
+    (404) si el PDF no tiene esa página."""
+    stat = pdf_file.stat()
+    png = previews_dir() / f"{stem}-p{page}-{stat.st_mtime_ns}-{stat.st_size}.png"
+    if not png.is_file():
+        preview.pdf_to_png(pdf_file, png, width_px=PAGE_PX, page_index=page - 1)
+    return png
+
+
 def _output_paths(
     template: templates.Template, which: ProfileChoice, letter: bool = False
 ) -> tuple[Path, Path]:

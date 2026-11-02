@@ -48,6 +48,7 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 | Feature | Where | Screenshot |
 |---|---|---|
 | **Tailored CV**: with your instructions for that job if you want (what to highlight, the language…); your agent writes it citing evidence from your profile for every line; the code rejects what isn't there and a separate role verifies it; the job page shows a notice with the PDF as soon as it's ready | `generate-cv` | |
+| **CV editor**: the CV at reading size next to a panel to ask for changes, edit the text or change the design | | |
 | **Correct a CV you already have**: say what to change and your agent touches only that, without inventing anything and verifying the result, or edit the text yourself (the app warns about what your profile doesn't back); every version is kept, with what changed and “Go back to this version” | `correct-cv`, `verify-cv` | |
 | **Same content, any design**: template, photo, colour and sections in the job page, rendered in seconds without the agent; compare renders and mark the one you send; the PDF layout is checked | `/jobs/:id` | [CV](img/en/job-cv.webp) · [▶ Another design](img/en/anim/cv.webp) |
 | **Cover letter** following your general and per-job instructions, verified, as TXT and PDF matching the CV design; edit it by hand if you want. On the job page, **Write letter** asks for it like **Generate CV**: in a terminal, in the background or for your next session | `generate-cover-letter` | [Letter](img/en/job-letter.webp) |

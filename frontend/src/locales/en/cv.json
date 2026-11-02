@@ -51,7 +51,6 @@
   "sideBySide": "Side by side",
   "closeComparison": "Close comparison",
   "pdfOf": "PDF of design {{id}}",
-  "changeDesign": "Change design",
   "otherRenders_one": "Show {{count}} more design",
   "otherRenders_other": "Show {{count}} more designs",
   "pickAnother": "Tick another design to see them side by side.",
@@ -81,7 +80,7 @@
   "layout": {
     "page": "Page {{page}}",
     "fix": {
-      "template": "Try another template below, no agent needed.",
+      "template": "Try another template in “Design”, no agent needed.",
       "content": "Content needs trimming: \"Generate CV\" with your agent trims what matters least for the job."
     }
   },
@@ -99,7 +98,12 @@
     "submit": "Request correction",
     "pending": "Waiting for your agent:",
     "cancel": "Cancel",
-    "declined": "Your agent couldn’t apply it:"
+    "declined": "Your agent couldn’t apply it:",
+    "suggest": {
+      "shorter": "Shorten the summary",
+      "focus": "Prioritize what the job asks for",
+      "keyword": "Mention {{keyword}}"
+    }
   },
   "history": {
     "title": "Text versions",
@@ -134,7 +138,6 @@
     }
   },
   "edit": {
-    "open": "Edit the text yourself",
     "form": "Edit the CV text",
     "hint": "Changes text only and saves a new version with the same design, with no agent and not verified. To add, remove or reorder, request a correction.",
     "subtitle": "Subtitle",
@@ -150,5 +153,17 @@
       "skill": "“{{value}}” isn’t in your profile, or it’s a basic skill this job doesn’t ask for.",
       "number": "The figure “{{value}}” doesn’t appear in your profile."
     }
+  },
+  "panel": {
+    "label": "Change the CV",
+    "ask": "Ask for changes",
+    "text": "Edit text",
+    "design": "Design"
+  },
+  "preview": {
+    "page": "Page {{page}} of {{total}} of the CV",
+    "failed": "The preview couldn’t be shown. You can open the PDF with “View PDF”.",
+    "show": "Show here",
+    "others": "Other designs of this CV"
   }
 }

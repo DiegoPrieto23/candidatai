@@ -68,7 +68,7 @@ def test_correct_go_back_and_edit(page: Page, fresh_demo_app: AppServer) -> None
     assert len(api(server, f"/jobs/{job_id}/cv/history")["versions"]) == 2
 
     # Edición directa: versión nueva, sin agente, sin verificar y avisando de la cifra nueva.
-    section.get_by_role("button", name=t("cv.edit.open")).click()
+    section.get_by_role("tab", name=t("cv.panel.text")).click()
     form = section.get_by_role("form", name=t("cv.edit.form"))
     form.get_by_label(t("cv.edit.summary")).fill("Resumen editado a mano: 987654 clientes.")
     form.get_by_role("button", name=t("cv.edit.save")).click()

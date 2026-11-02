@@ -15,7 +15,11 @@ import { errorMessage } from '@/lib/errors'
 
 const MAX_INSTRUCTION = 2000
 
-export function CvCorrection({ jobId }: { jobId: number }) {
+/** Las keywords de la oferta que faltan en el CV, para las sugerencias. Muy largas no caben. */
+const MAX_SUGGESTED_KEYWORDS = 2
+const MAX_KEYWORD = 40
+
+export function CvCorrection({ jobId, missingKeywords = [] }: { jobId: number; missingKeywords?: string[] }) {
   const { t } = useTranslation('cv', { keyPrefix: 'correction' })
   const history = useCvHistory(jobId)
   const request = useRequestCvCorrection(jobId)
@@ -33,6 +37,15 @@ export function CvCorrection({ jobId }: { jobId: number }) {
   }, [pending, refresh])
 
   const instruction = text.trim()
+  // Solo rellenan la caja: lo envías tú, y lo que tu perfil no respalde tu agente no lo añade.
+  const suggestions = [
+    t('suggest.shorter'),
+    t('suggest.focus'),
+    ...missingKeywords
+      .filter((keyword) => keyword.length <= MAX_KEYWORD)
+      .slice(0, MAX_SUGGESTED_KEYWORDS)
+      .map((keyword) => t('suggest.keyword', { keyword })),
+  ]
   const prepare = async () => {
     if (!instruction) return
     await request.mutateAsync(instruction)
@@ -41,6 +54,20 @@ export function CvCorrection({ jobId }: { jobId: number }) {
 
   return (
     <div className="grid w-full max-w-xl gap-3">
+      <div className="flex flex-wrap gap-1.5">
+        {suggestions.map((suggestion) => (
+          <Button
+            key={suggestion}
+            type="button"
+            variant="outline"
+            size="xs"
+            className="h-auto rounded-full py-1 text-left whitespace-normal"
+            onClick={() => setText((current) => (current.trim() ? `${current.trimEnd()}\n${suggestion}` : suggestion))}
+          >
+            {suggestion}
+          </Button>
+        ))}
+      </div>
       <div className="grid gap-1.5">
         <Label htmlFor={id}>{t('label')}</Label>
         <Textarea

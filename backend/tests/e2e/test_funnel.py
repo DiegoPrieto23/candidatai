@@ -327,7 +327,7 @@ def test_cv_changes_template_and_the_letter_is_verified_and_downloads(
     expect(cv.get_by_text(t("cv.verification.passed"))).to_be_visible()
 
     if other is not None:  # sin conversor a PDF solo hay una plantilla que lo saque
-        cv.get_by_text(t("cv.changeDesign")).click()
+        cv.get_by_role("tab", name=t("cv.panel.design")).click()
         form = cv.get_by_role("form", name=t("cv.renderForm"))
         form.locator(f'input[name="template"][value="{other}"]').check(force=True)
         form.get_by_role("button", name=t("cv.render"), exact=True).click()

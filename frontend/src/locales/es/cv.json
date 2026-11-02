@@ -51,7 +51,6 @@
   "sideBySide": "Lado a lado",
   "closeComparison": "Cerrar comparación",
   "pdfOf": "PDF del diseño {{id}}",
-  "changeDesign": "Cambiar diseño",
   "otherRenders_one": "Ver {{count}} diseño más",
   "otherRenders_other": "Ver {{count}} diseños más",
   "pickAnother": "Marca otro diseño para verlos lado a lado.",
@@ -81,7 +80,7 @@
   "layout": {
     "page": "Página {{page}}",
     "fix": {
-      "template": "Prueba otra plantilla abajo, sin agente.",
+      "template": "Prueba otra plantilla en «Diseño», sin agente.",
       "content": "Hay que recortar contenido: «Generar CV» con tu agente recorta lo menos relevante para la oferta."
     }
   },
@@ -99,7 +98,12 @@
     "submit": "Pedir corrección",
     "pending": "Esperando a tu agente:",
     "cancel": "Cancelar",
-    "declined": "Tu agente no ha podido aplicarla:"
+    "declined": "Tu agente no ha podido aplicarla:",
+    "suggest": {
+      "shorter": "Acorta el resumen",
+      "focus": "Da prioridad a lo que pide la oferta",
+      "keyword": "Menciona {{keyword}}"
+    }
   },
   "history": {
     "title": "Versiones del texto",
@@ -134,7 +138,6 @@
     }
   },
   "edit": {
-    "open": "Editar el texto tú",
     "form": "Editar el texto del CV",
     "hint": "Cambia solo textos y guarda una versión nueva con el mismo diseño, sin agente y sin verificar. Para añadir, quitar o reordenar, pide una corrección.",
     "subtitle": "Subtítulo",
@@ -150,5 +153,17 @@
       "skill": "«{{value}}» no está en tu perfil, o es una skill básica que esta oferta no pide.",
       "number": "La cifra «{{value}}» no aparece en tu perfil."
     }
+  },
+  "panel": {
+    "label": "Cambiar el CV",
+    "ask": "Pedir cambios",
+    "text": "Editar texto",
+    "design": "Diseño"
+  },
+  "preview": {
+    "page": "Página {{page}} de {{total}} del CV",
+    "failed": "No se ha podido mostrar la vista previa. Puedes abrir el PDF con «Ver PDF».",
+    "show": "Ver aquí",
+    "others": "Otros diseños de este CV"
   }
 }

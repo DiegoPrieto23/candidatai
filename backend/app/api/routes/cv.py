@@ -4,9 +4,9 @@ Renderizar desde aquí no usa IA: combina el contenido ya guardado con otra plan
 Los ficheros solo se sirven desde `data/` (renders) y desde las carpetas de plantillas (previews).
 """
 
-from typing import Literal
+from typing import Annotated, Literal
 
-from fastapi import APIRouter, File, Response, UploadFile, status
+from fastapi import APIRouter, File, Path, Response, UploadFile, status
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
@@ -233,6 +233,22 @@ def get_render_cover(session: SessionDep, render_id: int) -> FileResponse:
 
     pdf = service.render_file(session, render_id, "pdf")
     return FileResponse(pdf_thumbnail(pdf, f"render-{render_id}"), media_type="image/png")
+
+
+@router.get(
+    "/renders/{render_id}/pages/{page}.png",
+    operation_id="get_render_page",
+    response_class=FileResponse,
+    responses={200: {"content": {"image/png": {}}}},
+)
+def get_render_page(
+    session: SessionDep, render_id: int, page: Annotated[int, Path(ge=1)]
+) -> FileResponse:
+    """Una página del PDF de un render, como imagen (la vista previa de la ficha)."""
+    from app.services.documents.authoring import pdf_page
+
+    pdf = service.render_file(session, render_id, "pdf")
+    return FileResponse(pdf_page(pdf, f"render-{render_id}", page), media_type="image/png")
 
 
 @router.get(

@@ -113,6 +113,7 @@ export const API_URL: string =
 export const fileUrls = {
   renderPdf: (renderId: number) => `${API_URL}/renders/${renderId}/pdf`,
   renderCover: (renderId: number) => `${API_URL}/renders/${renderId}/cover.png`,
+  renderPage: (renderId: number, page: number) => `${API_URL}/renders/${renderId}/pages/${page}.png`,
   renderDocx: (renderId: number) => `${API_URL}/renders/${renderId}/docx`,
   /** La carta en TXT (UTF-8, saltos de Windows) para descargar. */
   letterText: (documentId: number) => `${API_URL}/cover-letters/${documentId}/text`,

@@ -111,6 +111,8 @@ def pdf_to_png(
 
     document = pypdfium2.PdfDocument(pdf_file)
     try:
+        if page_index >= len(document):
+            raise FileNotFoundError(f"El PDF no tiene la página {page_index + 1}.")
         page = document[page_index]
         image = page.render(scale=width_px / page.get_width()).to_pil()
         page.close()

@@ -708,7 +708,7 @@ export function JobPage() {
   const { data: job, isPending, isError, error, refetch } = useJob(id)
 
   return (
-    <div className="mx-auto max-w-4xl animate-in fade-in duration-300">
+    <div className="mx-auto max-w-5xl animate-in fade-in duration-300">
       <Link
         to="/bandeja"
         className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"

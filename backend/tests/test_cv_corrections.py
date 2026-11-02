@@ -262,9 +262,13 @@ def test_retry_needs_the_current_version_to_be_its_own(client: TestClient, job_i
 
 
 def test_render_cover_is_a_png_of_the_pdf(client: TestClient, job_id: int) -> None:
+    from io import BytesIO
+
     import pypdfium2
+    from PIL import Image
 
     from app.core.config import get_settings
+    from app.services.documents.authoring import PAGE_PX
 
     with session_scope() as session:
         render_id = service.selected_render_id(session, job_id)
@@ -281,6 +285,12 @@ def test_render_cover_is_a_png_of_the_pdf(client: TestClient, job_id: int) -> No
     assert response.headers["content-type"] == "image/png"
     assert response.content.startswith(b"\x89PNG")
     assert client.get("/renders/999999/cover.png").status_code == 404
+
+    page = client.get(f"/renders/{render_id}/pages/1.png")
+    assert page.status_code == 200 and page.content.startswith(b"\x89PNG")
+    assert Image.open(BytesIO(page.content)).width == PAGE_PX  # no la miniatura
+    assert client.get(f"/renders/{render_id}/pages/2.png").status_code == 404
+    assert client.get(f"/renders/{render_id}/pages/0.png").status_code == 422
 
 
 # --- Volver ---------------------------------------------------------------------------------

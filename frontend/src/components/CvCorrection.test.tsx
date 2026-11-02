@@ -207,10 +207,29 @@ describe('Versiones del CV', () => {
   })
 })
 
+describe('Panel de cambios', () => {
+  it('las sugerencias solo rellenan la caja y cambiar de pestaña no pierde lo escrito', async () => {
+    const coverage = { present: ['Python'], missing: ['dbt'] }
+    const calls = mockApi(routes({ 'GET /jobs/1/cv': jobCv([renderResult(1, { keyword_coverage: coverage })]) }))
+    const cv = await section()
+    await userEvent.click(await within(cv).findByRole('button', { name: 'Menciona dbt' }))
+    const box = within(cv).getByLabelText('Qué quieres corregir')
+    expect(box).toHaveValue('Menciona dbt')
+    await userEvent.click(within(cv).getByRole('button', { name: 'Acorta el resumen' }))
+    expect(box).toHaveValue('Menciona dbt\nAcorta el resumen')
+    expect(calls.some((c) => c.path === '/jobs/1/cv/corrections')).toBe(false)
+
+    await userEvent.click(within(cv).getByRole('tab', { name: 'Diseño' }))
+    expect(box).not.toBeVisible()
+    await userEvent.click(within(cv).getByRole('tab', { name: 'Pedir cambios' }))
+    expect(within(cv).getByLabelText('Qué quieres corregir')).toHaveValue('Menciona dbt\nAcorta el resumen')
+  })
+})
+
 describe('Editar el texto del CV', () => {
   async function openEditor() {
     const cv = await section()
-    await userEvent.click(await within(cv).findByRole('button', { name: 'Editar el texto tú' }))
+    await userEvent.click(await within(cv).findByRole('tab', { name: 'Editar texto' }))
     return within(cv).findByRole('form', { name: 'Editar el texto del CV' })
   }
 

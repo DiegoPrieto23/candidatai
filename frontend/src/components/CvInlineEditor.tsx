@@ -161,7 +161,7 @@ function EditForm({ cv, jobId, onSaved }: { cv: CvView; jobId: number; onSaved: 
             onChange={(e) => setGroup(b, e.target.value)}
             maxLength={MAX_GROUP}
           />
-          <div className="grid gap-2 sm:grid-cols-2">
+          <div className="grid gap-2">
             {group.items.map((skill, i) => (
               <Input
                 key={i}
