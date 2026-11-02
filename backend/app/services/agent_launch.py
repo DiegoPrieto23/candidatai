@@ -511,6 +511,10 @@ def _check_milestone(
     try:
         if rule == "upcoming":
             interviews.check_can_prepare(session, row, utcnow())
+        elif rule == "guide":
+            interviews.check_can_correct_guide(session, row)
+            if not (row.prep_guide or {}).get("correction"):
+                raise LaunchError("invalid_request", "Escribe primero qué quieres cambiar.")
         else:
             interviews.check_can_debrief(row, utcnow())
     except interviews.InterviewNotAllowedError as exc:

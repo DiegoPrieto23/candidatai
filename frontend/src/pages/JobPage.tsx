@@ -655,9 +655,9 @@ function JobTabs({ job }: { job: JobView }) {
 
       <TabsContent value="application" className="space-y-6">
         {sent && <ArchivedApplication job={job} />}
+        <CvSection job={job} />
         <PackageSection job={job} />
         <ApplySection job={job} />
-        <CvSection job={job} />
         <CoverLetterSection job={job} />
       </TabsContent>
 

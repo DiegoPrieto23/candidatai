@@ -30,6 +30,7 @@ import { CvCorrection } from '@/components/CvCorrection'
 import { CvInlineEditor } from '@/components/CvInlineEditor'
 import { CvVersions } from '@/components/CvVersions'
 import { ClosedHint } from '@/components/JobSignals'
+import { PdfCover } from '@/components/PdfCover'
 import { RenderWarnings } from '@/components/RenderWarnings'
 import { Reveal } from '@/components/Reveal'
 import { ErrorState, InlineCode } from '@/components/States'
@@ -407,6 +408,7 @@ function RenderCard({
   onCompare,
   canCompare,
   jobId,
+  sent,
 }: {
   render: RenderResult
   templateName: string
@@ -414,6 +416,7 @@ function RenderCard({
   onCompare: (on: boolean) => void
   canCompare: boolean
   jobId: number
+  sent: boolean
 }) {
   const { t } = useTranslation('cv')
   const select = useSelectRender(jobId)
@@ -425,90 +428,99 @@ function RenderCard({
       aria-label={t('renderAria', { id: render.render_id })}
       className={cn('rounded-lg border bg-background p-4', render.selected && 'border-primary/50 ring-1 ring-primary/30')}
     >
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="flex flex-wrap items-center gap-2 text-sm font-medium">
-            {templateName}
-            {render.selected && (
-              <Chip tone="primary">
-                <PaperPlaneTiltIcon weight="fill" /> {t('toSend')}
-              </Chip>
-            )}
-            {render.template_changed && <Chip tone="warning">{t('templateChanged')}</Chip>}
-          </p>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            {optionsSummary(render)} · {formatDateTime(render.created_at)}
-          </p>
-        </div>
-        <dl className="flex gap-4 text-right text-xs">
-          <div>
-            <dt className="text-muted-foreground">{t('pages')}</dt>
-            <dd className={cn('tabular font-medium', tooLong && 'text-destructive')}>
-              {render.pages}/{render.max_pages}
-            </dd>
-          </div>
-          {total > 0 && (
-            <div>
-              <dt className="text-muted-foreground">{t('keywords')}</dt>
-              <dd
-                className="tabular font-medium"
-                title={coverage.missing.length ? t('missingKeywords', { list: coverage.missing.join(', ') }) : undefined}
-              >
-                {t('keywordsOf', { present: coverage.present.length, total })}
-              </dd>
+      <div className="flex items-start gap-4">
+        <PdfCover
+          href={fileUrls.renderPdf(render.render_id)}
+          src={fileUrls.renderCover(render.render_id)}
+          className="w-16 sm:w-20"
+        />
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="flex flex-wrap items-center gap-2 text-sm font-medium">
+                {templateName}
+                {render.selected && (
+                  <Chip tone="primary">
+                    <PaperPlaneTiltIcon weight="fill" /> {sent ? t('sentOne') : t('toSend')}
+                  </Chip>
+                )}
+                {render.template_changed && <Chip tone="warning">{t('templateChanged')}</Chip>}
+              </p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                {optionsSummary(render)} · {formatDateTime(render.created_at)}
+              </p>
             </div>
+            <dl className="flex gap-4 text-right text-xs">
+              <div>
+                <dt className="text-muted-foreground">{t('pages')}</dt>
+                <dd className={cn('tabular font-medium', tooLong && 'text-destructive')}>
+                  {render.pages}/{render.max_pages}
+                </dd>
+              </div>
+              {total > 0 && (
+                <div>
+                  <dt className="text-muted-foreground">{t('keywords')}</dt>
+                  <dd
+                    className="tabular font-medium"
+                    title={coverage.missing.length ? t('missingKeywords', { list: coverage.missing.join(', ') }) : undefined}
+                  >
+                    {t('keywordsOf', { present: coverage.present.length, total })}
+                  </dd>
+                </div>
+              )}
+            </dl>
+          </div>
+
+          {render.template_changed && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              {t('templateChangedHint')}
+            </p>
           )}
-        </dl>
-      </div>
+          <RenderWarnings warnings={render.warnings} />
 
-      {render.template_changed && (
-        <p className="mt-2 text-xs text-muted-foreground">
-          {t('templateChangedHint')}
-        </p>
-      )}
-      <RenderWarnings warnings={render.warnings} />
-
-      <div className="mt-3 flex flex-wrap items-center gap-2">
-        <Button asChild variant="outline" size="xs">
-          <a href={fileUrls.renderPdf(render.render_id)} target="_blank" rel="noopener noreferrer">
-            <FilePdfIcon /> {t('viewPdf')}
-          </a>
-        </Button>
-        {render.docx_path && (
-          <Button asChild variant="ghost" size="xs">
-            <a href={fileUrls.renderDocx(render.render_id)} download>
-              <DownloadSimpleIcon /> DOCX
-            </a>
-          </Button>
-        )}
-        {canCompare && (
-          <label className="flex cursor-pointer items-center gap-1.5 px-1 text-xs text-muted-foreground">
-            <input
-              type="checkbox"
-              checked={comparing}
-              onChange={(e) => onCompare(e.target.checked)}
-              className="size-3.5 accent-[var(--primary)]"
-            />
-            {t('compare')}
-          </label>
-        )}
-        {!render.selected && (
-          <Button
-            size="xs"
-            variant="secondary"
-            className="ml-auto"
-            disabled={select.isPending}
-            onClick={() => select.mutate(render.render_id)}
-          >
-            <PaperPlaneTiltIcon /> {t('useThis')}
-          </Button>
-        )}
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <Button asChild variant="outline" size="xs">
+              <a href={fileUrls.renderPdf(render.render_id)} target="_blank" rel="noopener noreferrer">
+                <FilePdfIcon /> {t('viewPdf')}
+              </a>
+            </Button>
+            {render.docx_path && (
+              <Button asChild variant="ghost" size="xs">
+                <a href={fileUrls.renderDocx(render.render_id)} download>
+                  <DownloadSimpleIcon /> DOCX
+                </a>
+              </Button>
+            )}
+            {canCompare && (
+              <label className="flex cursor-pointer items-center gap-1.5 px-1 text-xs text-muted-foreground">
+                <input
+                  type="checkbox"
+                  checked={comparing}
+                  onChange={(e) => onCompare(e.target.checked)}
+                  className="size-3.5 accent-[var(--primary)]"
+                />
+                {t('compare')}
+              </label>
+            )}
+            {!render.selected && (
+              <Button
+                size="xs"
+                variant="secondary"
+                className="ml-auto"
+                disabled={select.isPending}
+                onClick={() => select.mutate(render.render_id)}
+              >
+                <PaperPlaneTiltIcon /> {t('useThis')}
+              </Button>
+            )}
+          </div>
+          {select.isError && (
+            <p role="alert" className="mt-2 text-xs text-destructive">
+              {errorMessage(select.error)}
+            </p>
+          )}
+        </div>
       </div>
-      {select.isError && (
-        <p role="alert" className="mt-2 text-xs text-destructive">
-          {errorMessage(select.error)}
-        </p>
-      )}
     </li>
   )
 }
@@ -544,7 +556,7 @@ function Compare({ renders, names, onClose }: { renders: RenderResult[]; names: 
 }
 
 /** A la vista, el render que se enviará (o el último); los demás, plegados. */
-function Renders({ cv, jobId, names }: { cv: CvView; jobId: number; names: Map<string, string> }) {
+function Renders({ cv, jobId, names, sent }: { cv: CvView; jobId: number; names: Map<string, string>; sent: boolean }) {
   const { t } = useTranslation('cv')
   const [compare, setCompare] = useState<number[]>([])
   const newest = [...cv.renders].reverse()
@@ -564,6 +576,7 @@ function Renders({ cv, jobId, names }: { cv: CvView; jobId: number; names: Map<s
       onCompare={(on) => toggle(render.render_id, on)}
       canCompare={others.length > 0}
       jobId={jobId}
+      sent={sent}
     />
   )
   if (!main) return null
@@ -591,11 +604,13 @@ function CvBody({
   jobId,
   signals,
   templatesQuery,
+  sent,
 }: {
   data: JobCv
   jobId: number
   signals?: JobView['signals']
   templatesQuery: ReturnType<typeof useTemplates>
+  sent: boolean
 }) {
   const { t } = useTranslation('cv')
   const text = useTemplateText()
@@ -630,9 +645,8 @@ function CvBody({
   return (
     <div className="space-y-6">
       <Verification cv={data.cv} jobId={jobId} canVerify={data.can_render} />
-      <Renders cv={data.cv} jobId={jobId} names={names} />
+      <Renders cv={data.cv} jobId={jobId} names={names} sent={sent} />
       {data.can_render && <CvCorrection jobId={jobId} />}
-      <CvVersions jobId={jobId} canRestore={data.can_render} />
       {data.can_render && (
         <div className="flex flex-col items-start gap-4">
           <Reveal label={t('edit.open')} className="w-full max-w-2xl">
@@ -656,6 +670,7 @@ function CvBody({
           </AgentButton>
         </div>
       )}
+      <CvVersions jobId={jobId} canRestore={data.can_render} />
     </div>
   )
 }
@@ -675,7 +690,7 @@ export function CvSection({ job }: { job: JobView }) {
       ) : cvQuery.isError ? (
         <ErrorState error={cvQuery.error} onRetry={() => cvQuery.refetch()} className="border-0 p-0" />
       ) : (
-        <CvBody data={cvQuery.data} jobId={job.id} signals={job.signals} templatesQuery={templatesQuery} />
+        <CvBody data={cvQuery.data} jobId={job.id} signals={job.signals} templatesQuery={templatesQuery} sent={job.stage === 'applied' || job.stage === 'in_process'} />
       )}
     </section>
   )

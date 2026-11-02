@@ -14,6 +14,7 @@
   "draft-follow-up": "Redacta un recordatorio o un agradecimiento para esta empresa y lo deja en la ficha. Lo copias y lo envías tú: la app no envía nada.",
   "broaden-search": "Propone títulos de puesto parecidos a los que ya apruebas (p. ej. «BI Engineer») y, con tu OK, los añade a tus búsquedas. No cambia nada sin preguntarte.",
   "prepare-interview": "Prepara una guía en PDF (el puesto, tu encaje, la empresa, preguntas probables con idea de respuesta y qué preguntar tú) y un plan por días hasta la entrevista.",
+  "correct-interview-guide": "Aplica solo los cambios que has pedido a la guía, sin rehacerla ni añadir nada que no esté en tu perfil. El PDF nuevo sustituye al anterior.",
   "mock-interview": "Te hace las preguntas de una en una, comenta cada respuesta y te propone una mejor basada en tu perfil. Necesita que contestes en la terminal.",
   "debrief-interview": "Le cuentas cómo fue y guarda notas y próximos pasos en la ficha, anticipa la siguiente ronda y propone historias nuevas para tu perfil, que añade si le das el OK.",
   "offer-questions": "Repasa la oferta recibida y lista lo que conviene aclarar con la empresa antes de aceptar (condiciones, puesto, equipo…).",

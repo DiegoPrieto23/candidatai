@@ -165,6 +165,9 @@ targets:
       prepare-interview:
         argument-hint: "[job_id] [milestone_id] [rrhh|tecnica|caso|final] [idioma]"
         allowed-tools: ["web", "mcp:get_interviews", "mcp:get_extraction", "mcp:get_profile", "mcp:get_context", "mcp:get_timeline", "mcp:get_company_research", "mcp:get_application_answers", "mcp:get_cv_content", "mcp:get_cover_letter", "mcp:get_interview_guide", "mcp:save_interview_plan", "mcp:save_interview_guide"]
+      correct-interview-guide:
+        argument-hint: "[job_id] [milestone_id]"
+        allowed-tools: ["mcp:get_interview_guide", "mcp:get_extraction", "mcp:get_profile", "mcp:get_context", "mcp:get_company_research", "mcp:save_interview_guide"]
       mock-interview:
         argument-hint: "[job_id] [milestone_id] [rrhh|tecnica|caso|final]"
         allowed-tools: ["read", "mcp:get_interviews", "mcp:get_interview_guide", "mcp:get_extraction", "mcp:get_profile", "mcp:get_context"]

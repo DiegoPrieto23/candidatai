@@ -12,6 +12,7 @@ from app.api.deps import UI_ORIGIN
 from app.api.main import create_app
 from app.core import migrations
 from app.core.db import session_scope
+from app.models import Milestone
 from app.models.base import utcnow
 from app.services import agent_launch, events, process, terminals
 from app.services.agent_launch import LaunchError
@@ -204,6 +205,7 @@ def test_get_lists_agent_and_actions(client: TestClient, opened: list[tuple[str,
         "draft-follow-up",
         "broaden-search",
         "prepare-interview",
+        "correct-interview-guide",
         "mock-interview",
         "debrief-interview",
         "offer-questions",
@@ -345,6 +347,36 @@ def test_prepare_and_mock_need_an_upcoming_interview(
     )
     assert response.status_code == 422
     assert "programada" in response.json()["error"]["message"]
+
+
+def test_correct_guide_needs_a_guide_and_something_to_change(
+    client: TestClient, opened: list[tuple[str, str]]
+) -> None:
+    """También tras la entrevista, y la orden nunca lleva lo que escribió el usuario."""
+    job_id, past = _interview(-2)
+    body = {"action": "correct-interview-guide", "milestone_id": past}
+
+    response = client.post("/agent/launch", json=body, headers=JSON)
+    assert response.status_code == 422
+    assert "no tiene guía" in response.json()["error"]["message"]
+
+    with session_scope() as session:
+        session.get(Milestone, past).prep_guide = {
+            "file": "x.pdf",
+            "saved_at": utcnow().isoformat(),
+        }
+    response = client.post("/agent/launch", json=body, headers=JSON)
+    assert response.status_code == 422
+    assert "qué quieres cambiar" in response.json()["error"]["message"]
+
+    secret = "Quita lo de la competencia"
+    asked = client.post(f"/milestones/{past}/guide/correction", json={"instruction": secret})
+    assert asked.status_code == 200, asked.text
+    assert asked.json()["guide"]["correction"] == secret
+    response = client.post("/agent/launch", json=body, headers=JSON)
+    assert response.status_code == 202, response.text
+    assert opened[-1][1].endswith(f"entrevista {past} de la oferta {job_id}.'")
+    assert secret not in opened[-1][1]
 
 
 def test_debrief_needs_a_started_interview_of_that_job(

@@ -27,6 +27,15 @@
     "prepare": "Preparar",
     "guide": "Guía de preparación (PDF)",
     "guideSaved": "Guardada el {{date}}",
+    "correction": {
+      "open": "Pedir cambios a la guía",
+      "label": "Qué quieres cambiar",
+      "placeholder": "P. ej.: quita la sección de código y añade más preguntas sobre liderazgo.",
+      "hint": "Tu agente toca solo esto y no añade nada que no esté en tu perfil. El PDF se sustituye.",
+      "pending": "Cambios pedidos, aún sin aplicar:",
+      "cancel": "Cancelar",
+      "submit": "Aplicar cambios"
+    },
     "mock": "Simulacro",
     "debrief": "Repasar",
     "debriefAgain": "Repasar otra vez",

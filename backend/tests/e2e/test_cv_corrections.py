@@ -52,7 +52,9 @@ def test_correct_go_back_and_edit(page: Page, fresh_demo_app: AppServer) -> None
     )  # fmt: skip
 
     # La ficha se entera sola: versión nueva vigente, qué cambió y la anterior conservada.
+    # Las versiones van plegadas al final de la sección.
     versions = section.get_by_role("region", name=t("cv.history.title"), exact=True)
+    versions.get_by_role("button", name=re.compile(t("cv.history.title"))).click(timeout=15_000)
     expect(versions.get_by_text(t("cv.history.origin.correction"))).to_be_visible(timeout=15_000)
     expect(versions.get_by_text(SHORTER)).to_be_visible()
     assert _current_document(server, job_id) == saved["document_id"]

@@ -27,6 +27,7 @@ from app.schemas.interview_guide import (
     CalloutBlock,
     CodeBlock,
     GuideBlock,
+    GuideCorrectionInput,
     GuideInfo,
     HeadingBlock,
     InterviewGuideInput,
@@ -37,8 +38,8 @@ from app.schemas.interview_guide import (
     guide_info,
 )
 from app.services.documents.engines.html import html_to_pdf
-from app.services.interviews import check_can_prepare, interviews_dir
-from app.services.process import local_zone, milestone_row
+from app.services.interviews import check_can_correct_guide, check_can_prepare, interviews_dir
+from app.services.process import MilestoneOut, local_zone, milestone_out, milestone_row
 
 # Textos fijos del PDF, en el idioma de la guía.
 LABELS: dict[Language, dict[str, str]] = {
@@ -367,21 +368,36 @@ def guide_file(session: Session, milestone_id: int) -> Path:
     return path
 
 
-GUIDE_THUMBNAIL_PX = 240  # la miniatura de la ficha se ve a ~80 px: nítida en pantallas 2x y 3x
-
-
 def guide_thumbnail(session: Session, milestone_id: int) -> Path:
     """La portada de la guía en PNG, para la miniatura de la ficha. Se guarda en la caché de vistas
     previas con la fecha y el tamaño del PDF en el nombre: si se vuelve a preparar, se rehace."""
-    from app.services.documents.authoring import previews_dir
-    from app.services.documents.preview import pdf_to_png
+    from app.services.documents.authoring import pdf_thumbnail
 
-    pdf = guide_file(session, milestone_id)
-    stat = pdf.stat()
-    png = previews_dir() / f"guide-{milestone_id}-{stat.st_mtime_ns}-{stat.st_size}.png"
-    if not png.is_file():
-        pdf_to_png(pdf, png, width_px=GUIDE_THUMBNAIL_PX)
-    return png
+    return pdf_thumbnail(guide_file(session, milestone_id), f"guide-{milestone_id}")
+
+
+def request_correction(
+    session: Session, milestone_id: int, data: GuideCorrectionInput
+) -> MilestoneOut:
+    """Anota qué cambiar de la guía. El texto se queda aquí: la orden del agente solo lleva ids, y
+    guardar la guía nueva lo borra. No es un cambio de estado de la oferta: no registra evento."""
+    row = milestone_row(session, milestone_id)
+    check_can_correct_guide(session, row)
+    row.prep_guide = {**(row.prep_guide or {}), "correction": data.instruction}
+    row.updated_at = utcnow()
+    session.flush()
+    return milestone_out(row)
+
+
+def cancel_correction(session: Session, milestone_id: int) -> MilestoneOut:
+    """Retira los cambios pedidos que aún no se han aplicado."""
+    row = milestone_row(session, milestone_id)
+    stored = dict(row.prep_guide or {})
+    if stored.pop("correction", None) is not None:
+        row.prep_guide = stored
+        row.updated_at = utcnow()
+        session.flush()
+    return milestone_out(row)
 
 
 def save_interview_guide(
@@ -393,11 +409,15 @@ def save_interview_guide(
 ) -> SaveGuideResult:
     """Maqueta la guía, la imprime a PDF y la apunta en la entrevista (sustituye a la anterior).
 
-    Solo con una entrevista programada que aún no ha empezado, como el plan. Si Chromium no está,
-    falla (`pdf_unavailable`) y no se guarda nada."""
+    Solo con una entrevista programada que aún no ha empezado, como el plan, salvo que el usuario
+    haya pedido cambios a una guía ya hecha, que puede ser después. Si Chromium no está, falla
+    (`pdf_unavailable`) y no se guarda nada."""
     row = milestone_row(session, milestone_id)
     now = now or utcnow()
-    check_can_prepare(session, row, now)
+    if (row.prep_guide or {}).get("correction"):
+        check_can_correct_guide(session, row)
+    else:
+        check_can_prepare(session, row, now)
     company = session.execute(
         select(Company.name).join(Job, Job.company_id == Company.id).where(Job.id == row.job_id)
     ).scalar_one()

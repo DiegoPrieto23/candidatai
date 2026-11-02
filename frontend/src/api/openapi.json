@@ -3906,6 +3906,115 @@
         }
       }
     },
+    "/renders/{render_id}/cover.png": {
+      "get": {
+        "tags": [
+          "cv"
+        ],
+        "summary": "Get Render Cover",
+        "description": "La portada del PDF de un render, en pequeño (la miniatura de la ficha).",
+        "operationId": "get_render_cover",
+        "parameters": [
+          {
+            "name": "render_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Render Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "image/png": {}
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
     "/renders/{render_id}/docx": {
       "get": {
         "tags": [
@@ -8209,6 +8318,242 @@
             "description": "Successful Response",
             "content": {
               "application/pdf": {}
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/milestones/{milestone_id}/guide/correction": {
+      "post": {
+        "tags": [
+          "process"
+        ],
+        "summary": "Request Guide Correction",
+        "description": "Anota qué cambiar de una guía ya hecha, para que lo aplique tu agente.",
+        "operationId": "request_guide_correction",
+        "parameters": [
+          {
+            "name": "milestone_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Milestone Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GuideCorrectionInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MilestoneOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/milestones/{milestone_id}/guide/correction/cancel": {
+      "post": {
+        "tags": [
+          "process"
+        ],
+        "summary": "Cancel Guide Correction",
+        "description": "Retira los cambios pedidos a la guía que aún no se han aplicado.",
+        "operationId": "cancel_guide_correction",
+        "parameters": [
+          {
+            "name": "milestone_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Milestone Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MilestoneOut"
+                }
+              }
             }
           },
           "401": {
@@ -17556,6 +17901,7 @@
               "draft-follow-up",
               "broaden-search",
               "prepare-interview",
+              "correct-interview-guide",
               "mock-interview",
               "debrief-interview",
               "offer-questions",
@@ -18316,6 +18662,7 @@
               "draft-follow-up",
               "broaden-search",
               "prepare-interview",
+              "correct-interview-guide",
               "mock-interview",
               "debrief-interview",
               "offer-questions",
@@ -18472,6 +18819,7 @@
               "draft-follow-up",
               "broaden-search",
               "prepare-interview",
+              "correct-interview-guide",
               "mock-interview",
               "debrief-interview",
               "offer-questions",
@@ -22519,6 +22867,7 @@
               "draft-follow-up",
               "broaden-search",
               "prepare-interview",
+              "correct-interview-guide",
               "mock-interview",
               "debrief-interview",
               "offer-questions",
@@ -23598,6 +23947,22 @@
         ],
         "title": "GapExample"
       },
+      "GuideCorrectionInput": {
+        "properties": {
+          "instruction": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Instruction"
+          }
+        },
+        "type": "object",
+        "required": [
+          "instruction"
+        ],
+        "title": "GuideCorrectionInput",
+        "description": "Qué cambiar de una guía ya generada, en palabras del usuario."
+      },
       "GuideInfo": {
         "properties": {
           "file": {
@@ -23631,6 +23996,17 @@
               }
             ],
             "title": "Agent Name"
+          },
+          "correction": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Correction"
           }
         },
         "type": "object",
@@ -25005,6 +25381,7 @@
               "draft-follow-up",
               "broaden-search",
               "prepare-interview",
+              "correct-interview-guide",
               "mock-interview",
               "debrief-interview",
               "offer-questions",
@@ -28361,6 +28738,7 @@
                 "draft-follow-up",
                 "broaden-search",
                 "prepare-interview",
+                "correct-interview-guide",
                 "mock-interview",
                 "debrief-interview",
                 "offer-questions",
@@ -29615,6 +29993,7 @@
               "draft-follow-up",
               "broaden-search",
               "prepare-interview",
+              "correct-interview-guide",
               "mock-interview",
               "debrief-interview",
               "offer-questions",
@@ -32104,6 +32483,7 @@
                 "draft-follow-up",
                 "broaden-search",
                 "prepare-interview",
+                "correct-interview-guide",
                 "mock-interview",
                 "debrief-interview",
                 "offer-questions",
@@ -32167,6 +32547,7 @@
                 "draft-follow-up",
                 "broaden-search",
                 "prepare-interview",
+                "correct-interview-guide",
                 "mock-interview",
                 "debrief-interview",
                 "offer-questions",
@@ -32238,6 +32619,7 @@
                 "draft-follow-up",
                 "broaden-search",
                 "prepare-interview",
+                "correct-interview-guide",
                 "mock-interview",
                 "debrief-interview",
                 "offer-questions",

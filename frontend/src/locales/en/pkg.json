@@ -24,17 +24,6 @@
     "pending_other": "{{count}} answers need your input (salary, availability…).",
     "none": "No answers yet. Paste the form's questions to your agent and ask it to prepare the application, or add them yourself."
   },
-  "cv": {
-    "title": "CV",
-    "openPdf": "Open PDF",
-    "sent": "The one you sent",
-    "selected": "Selected to send",
-    "pages_one": "{{count}} page",
-    "pages_other": "{{count}} pages",
-    "verified": "Verified",
-    "change": "Change it in the CV section",
-    "none": "No CV selected to send yet."
-  },
   "letter": {
     "title": "Cover letter",
     "editedByYou": "Edited by you",

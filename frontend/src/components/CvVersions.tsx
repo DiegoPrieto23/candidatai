@@ -110,13 +110,14 @@ export function CvVersions({ jobId, canRestore }: { jobId: number; canRestore: b
   // Con una sola no hay historia que contar. Si falla, el resto de la sección sigue sirviendo.
   if (versions.length < 2) return null
   return (
-    <section aria-label={t('title')} className="space-y-3">
-      <h3 className="text-sm font-semibold">{t('title')}</h3>
-      <ul className="space-y-3">
-        {versions.map((version) => (
-          <Version key={version.document_id} version={version} jobId={jobId} canRestore={canRestore} />
-        ))}
-      </ul>
+    <section aria-label={t('title')}>
+      <Reveal label={`${t('title')} (${versions.length})`}>
+        <ul className="space-y-3">
+          {versions.map((version) => (
+            <Version key={version.document_id} version={version} jobId={jobId} canRestore={canRestore} />
+          ))}
+        </ul>
+      </Reveal>
     </section>
   )
 }

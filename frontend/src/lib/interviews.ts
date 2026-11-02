@@ -24,6 +24,16 @@ export function interviewPhase(
   return milestone.status === 'scheduled' && stage !== 'closed' ? 'upcoming' : null
 }
 
+/** Se pueden pedir cambios a una guía ya hecha, también tras la entrevista, como en el backend. */
+export function canCorrectGuide(milestone: MilestoneOut, stage: Stage | null): boolean {
+  return (
+    Boolean(milestone.guide) &&
+    milestone.kind === 'interview' &&
+    milestone.status !== 'cancelled' &&
+    stage !== 'closed'
+  )
+}
+
 /** `AAAA-MM-DD` del día de la entrevista en la zona del navegador (Madrid). */
 function localDay(iso: string): string {
   const d = new Date(iso)

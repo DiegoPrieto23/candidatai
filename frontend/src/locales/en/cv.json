@@ -37,6 +37,7 @@
   },
   "renderAria": "Design {{id}}",
   "toSend": "To send",
+  "sentOne": "The one you sent",
   "templateChanged": "Template changed",
   "pages": "Pages",
   "keywords": "Keywords",

@@ -750,6 +750,33 @@ export function useSavePrepInstructions(jobId: number) {
   })
 }
 
+export function useRequestGuideCorrection(jobId: number) {
+  const invalidate = useInvalidateProcess()
+  return useMutation({
+    mutationFn: ({ milestoneId, instruction }: { milestoneId: number; instruction: string }) =>
+      unwrap(
+        api.POST('/milestones/{milestone_id}/guide/correction', {
+          params: { path: { milestone_id: milestoneId } },
+          body: { instruction },
+        }),
+      ),
+    onSuccess: () => invalidate(jobId),
+  })
+}
+
+export function useCancelGuideCorrection(jobId: number) {
+  const invalidate = useInvalidateProcess()
+  return useMutation({
+    mutationFn: (milestoneId: number) =>
+      unwrap(
+        api.POST('/milestones/{milestone_id}/guide/correction/cancel', {
+          params: { path: { milestone_id: milestoneId } },
+        }),
+      ),
+    onSuccess: () => invalidate(jobId),
+  })
+}
+
 export function useMilestoneStatus(jobId: number) {
   const invalidate = useInvalidateProcess()
   return useMutation({

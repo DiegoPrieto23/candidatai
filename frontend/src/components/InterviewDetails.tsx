@@ -1,15 +1,17 @@
 import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { FilePdfIcon } from '@phosphor-icons/react'
+import { InfoIcon, XIcon } from '@phosphor-icons/react'
 import { fileUrls, type MilestoneOut, type Stage } from '@/api/client'
-import { useSavePrepInstructions } from '@/api/queries'
+import { useCancelGuideCorrection, useRequestGuideCorrection, useSavePrepInstructions } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
 import { OpenFolderButton } from '@/components/OpenFolderButton'
+import { PdfCover } from '@/components/PdfCover'
+import { Reveal } from '@/components/Reveal'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { errorMessage } from '@/lib/errors'
-import { interviewPhase, planIsStale } from '@/lib/interviews'
+import { canCorrectGuide, interviewPhase, planIsStale } from '@/lib/interviews'
 import { dateFormatter, formatDateTime } from '@/lib/labels'
 
 type PrepBlock = NonNullable<MilestoneOut['prep_plan']>['blocks'][number]
@@ -28,6 +30,7 @@ function byDay(blocks: PrepBlock[]): [string, PrepBlock[]][] {
 }
 
 const MAX_INSTRUCTIONS = 4000
+const MAX_CORRECTION = 2000
 
 /**
  * Lo que quieres que tengan en cuenta la guía y el simulacro de esta entrevista. Se guarda en el
@@ -119,23 +122,10 @@ export function InterviewActions({ milestone, stage }: { milestone: MilestoneOut
  *  pestaña. Si la portada no llega (PDF borrado), queda el icono. */
 function GuideCard({ milestoneId, savedAt }: { milestoneId: number; savedAt: string }) {
   const { t } = useTranslation('status', { keyPrefix: 'interview' })
-  const [coverFailed, setCoverFailed] = useState(false)
   const href = fileUrls.interviewGuide(milestoneId)
   return (
     <div className="flex items-center gap-3 rounded-md border bg-muted/30 px-3 py-2 text-xs">
-      <a href={href} target="_blank" rel="noreferrer" tabIndex={-1} aria-hidden className="shrink-0">
-        {coverFailed ? (
-          <FilePdfIcon className="size-8 text-primary" weight="duotone" />
-        ) : (
-          <img
-            src={fileUrls.interviewGuideCover(milestoneId)}
-            alt=""
-            loading="lazy"
-            onError={() => setCoverFailed(true)}
-            className="aspect-[1/1.414] w-14 rounded-sm border bg-white object-cover object-top shadow-sm transition-shadow hover:shadow-md"
-          />
-        )}
-      </a>
+      <PdfCover href={href} src={fileUrls.interviewGuideCover(milestoneId)} className="w-14" />
       <div className="min-w-0 space-y-0.5">
         <a href={href} target="_blank" rel="noreferrer" className="font-medium underline-offset-4 hover:underline">
           {t('guide')}
@@ -146,8 +136,77 @@ function GuideCard({ milestoneId, savedAt }: { milestoneId: number; savedAt: str
   )
 }
 
+/**
+ * Pedir cambios a la guía ya hecha. El texto se guarda al pulsar el botón del agente, cuya orden solo
+ * lleva ids: tu agente lo lee después y, al guardar la guía nueva, deja de estar pendiente.
+ */
+function GuideCorrection({ milestone }: { milestone: MilestoneOut }) {
+  const { t } = useTranslation('status', { keyPrefix: 'interview.correction' })
+  const id = useId()
+  const request = useRequestGuideCorrection(milestone.job_id)
+  const cancel = useCancelGuideCorrection(milestone.job_id)
+  const [text, setText] = useState('')
+  const pending = milestone.guide?.correction ?? null
+  const instruction = text.trim()
+  const prepare = async () => {
+    if (!instruction) return
+    await request.mutateAsync({ milestoneId: milestone.id, instruction })
+    setText('')
+  }
+  return (
+    <Reveal label={t('open')} defaultOpen={pending !== null} className="space-y-2">
+      <div className="grid gap-1.5">
+        <Label htmlFor={id} className="text-xs">
+          {t('label')}
+        </Label>
+        <Textarea
+          id={id}
+          rows={2}
+          maxLength={MAX_CORRECTION}
+          value={text}
+          placeholder={t('placeholder')}
+          onChange={(e) => setText(e.target.value)}
+          className="resize-y text-sm"
+        />
+        <p className="text-xs text-muted-foreground">{t('hint')}</p>
+      </div>
+      {pending && (
+        <div role="status" className="flex items-start gap-2 rounded-md bg-muted/70 px-3 py-2 text-xs">
+          <InfoIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
+          <span className="min-w-0 flex-1 break-words">
+            <span className="block font-medium">{t('pending')}</span>
+            <span className="block text-foreground/85">{pending}</span>
+          </span>
+          <Button
+            type="button"
+            variant="ghost"
+            size="xs"
+            disabled={cancel.isPending}
+            onClick={() => cancel.mutate(milestone.id)}
+          >
+            <XIcon /> {t('cancel')}
+          </Button>
+        </div>
+      )}
+      {(request.error || cancel.error) && (
+        <p role="alert" className="text-xs text-destructive">
+          {errorMessage(request.error ?? cancel.error)}
+        </p>
+      )}
+      <AgentButton
+        action="correct-interview-guide"
+        milestoneId={milestone.id}
+        prepare={prepare}
+        disabled={request.isPending || (!instruction && !pending)}
+      >
+        {t('submit')}
+      </AgentButton>
+    </Reveal>
+  )
+}
+
 /** Guía en PDF, plan de preparación y repaso de una entrevista, si los hay. */
-export function InterviewDetails({ milestone }: { milestone: MilestoneOut }) {
+export function InterviewDetails({ milestone, stage }: { milestone: MilestoneOut; stage: Stage | null }) {
   const { t } = useTranslation('status', { keyPrefix: 'interview' })
   const plan = milestone.prep_plan
   const guide = milestone.guide
@@ -156,6 +215,7 @@ export function InterviewDetails({ milestone }: { milestone: MilestoneOut }) {
   return (
     <div className="mt-2 space-y-2">
       {guide && <GuideCard milestoneId={milestone.id} savedAt={guide.saved_at} />}
+      {canCorrectGuide(milestone, stage) && <GuideCorrection milestone={milestone} />}
       {plan && (
         <details className="rounded-md border bg-muted/30 px-3 py-2 text-xs">
           <summary className="cursor-pointer font-medium">

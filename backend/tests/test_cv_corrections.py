@@ -261,6 +261,28 @@ def test_retry_needs_the_current_version_to_be_its_own(client: TestClient, job_i
         corrections.save_corrected(session, job_id, correction["id"], demo_content())
 
 
+def test_render_cover_is_a_png_of_the_pdf(client: TestClient, job_id: int) -> None:
+    import pypdfium2
+
+    from app.core.config import get_settings
+
+    with session_scope() as session:
+        render_id = service.selected_render_id(session, job_id)
+        assert render_id is not None
+        pdf = service.render_file(session, render_id, "pdf")
+    assert pdf.is_relative_to(get_settings().data_dir.resolve())
+    document = pypdfium2.PdfDocument.new()
+    document.new_page(595, 842)
+    document.save(pdf)
+    document.close()
+
+    response = client.get(f"/renders/{render_id}/cover.png")
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "image/png"
+    assert response.content.startswith(b"\x89PNG")
+    assert client.get("/renders/999999/cover.png").status_code == 404
+
+
 # --- Volver ---------------------------------------------------------------------------------
 
 

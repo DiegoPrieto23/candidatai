@@ -134,6 +134,14 @@ describe('Corregir el CV', () => {
 })
 
 describe('Versiones del CV', () => {
+  /** Plegadas por defecto: el botón dice cuántas hay. */
+  const openVersions = async (cv: HTMLElement) => {
+    const list = await within(cv).findByRole('region', { name: 'Versiones del texto' })
+    expect(within(list).queryByRole('listitem')).not.toBeInTheDocument()
+    await userEvent.click(within(list).getByRole('button', { name: /^Versiones del texto \(\d+\)$/ }))
+    return list
+  }
+
   const history = {
     job_id: 1,
     correction: null,
@@ -164,7 +172,7 @@ describe('Versiones del CV', () => {
   it('enseña origen, corrección, nota y qué cambió', async () => {
     mockApi(routes({ 'GET /jobs/1/cv/history': history }))
     const cv = await section()
-    const list = await within(cv).findByRole('region', { name: 'Versiones del texto' })
+    const list = await openVersions(cv)
     expect(within(list).getByText('Corregida por tu agente')).toBeInTheDocument()
     expect(within(list).getByText('Vigente')).toBeInTheDocument()
     expect(within(list).getByText('El resumen más corto')).toBeInTheDocument()
@@ -178,7 +186,7 @@ describe('Versiones del CV', () => {
   it('vuelve a una versión anterior; la vigente no lo ofrece', async () => {
     const calls = mockApi(routes({ 'GET /jobs/1/cv/history': history, 'POST /documents/1/restore': jobCv([renderResult(1)]) }))
     const cv = await section()
-    const list = await within(cv).findByRole('region', { name: 'Versiones del texto' })
+    const list = await openVersions(cv)
     const buttons = within(list).getAllByRole('button', { name: 'Volver a esta versión' })
     expect(buttons).toHaveLength(1)
     await userEvent.click(buttons[0])
@@ -194,7 +202,7 @@ describe('Versiones del CV', () => {
       }),
     )
     const cv = await section()
-    const list = await within(cv).findByRole('region', { name: 'Versiones del texto' })
+    const list = await openVersions(cv)
     expect(within(list).queryByRole('button', { name: 'Volver a esta versión' })).not.toBeInTheDocument()
   })
 })

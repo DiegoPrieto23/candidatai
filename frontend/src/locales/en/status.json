@@ -27,6 +27,15 @@
     "prepare": "Prepare",
     "guide": "Preparation guide (PDF)",
     "guideSaved": "Saved on {{date}}",
+    "correction": {
+      "open": "Ask for changes to the guide",
+      "label": "What you want to change",
+      "placeholder": "E.g.: remove the code section and add more questions on leadership.",
+      "hint": "Your agent touches only this and adds nothing that isn’t in your profile. The PDF is replaced.",
+      "pending": "Changes requested, not applied yet:",
+      "cancel": "Cancel",
+      "submit": "Apply changes"
+    },
     "mock": "Mock interview",
     "debrief": "Debrief",
     "debriefAgain": "Debrief again",

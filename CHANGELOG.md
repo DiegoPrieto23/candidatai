@@ -19,6 +19,9 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   Esa versión queda sin verificar, con un botón **Verificar esta versión**.
 - **Versiones del CV:** cada corrección o edición es una versión nueva. La ficha enseña de dónde
   sale cada una y qué cambió, sección a sección, y **Volver a esta versión** no borra ninguna.
+- **Miniatura del CV:** la ficha enseña la portada del PDF, como en la guía de entrevista.
+- **Cambiar una guía de entrevista:** bajo la guía, **Pedir cambios a la guía** deja escribir qué
+  cambiar y tu agente toca solo eso, también después de la entrevista.
 - **«Cómo funciona»:** una página nueva, con su enlace al pie del menú, que cuenta quién hace qué (tú,
   tu agente y la app) y el recorrido completo en cinco pasos, de preparar tu búsqueda a seguir tus
   procesos, con un enlace a cada pantalla y a las guías. «Primeros pasos» enlaza a ella.

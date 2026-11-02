@@ -222,6 +222,20 @@ def get_render_pdf(session: SessionDep, render_id: int) -> FileResponse:
 
 
 @router.get(
+    "/renders/{render_id}/cover.png",
+    operation_id="get_render_cover",
+    response_class=FileResponse,
+    responses={200: {"content": {"image/png": {}}}},
+)
+def get_render_cover(session: SessionDep, render_id: int) -> FileResponse:
+    """La portada del PDF de un render, en pequeño (la miniatura de la ficha)."""
+    from app.services.documents.authoring import pdf_thumbnail
+
+    pdf = service.render_file(session, render_id, "pdf")
+    return FileResponse(pdf_thumbnail(pdf, f"render-{render_id}"), media_type="image/png")
+
+
+@router.get(
     "/renders/{render_id}/docx",
     operation_id="get_render_docx",
     response_class=FileResponse,

@@ -172,6 +172,20 @@ class GuideInfo(BaseModel):
     title: str
     saved_at: datetime
     agent_name: str | None = None
+    correction: str | None = None  # los cambios que ha pedido el usuario y aún no se han aplicado
+
+
+class GuideCorrectionInput(BaseModel):
+    """Qué cambiar de una guía ya generada, en palabras del usuario."""
+
+    instruction: str = Field(min_length=1, max_length=2000)
+
+    @model_validator(mode="before")
+    @classmethod
+    def _strip(cls, data: Any) -> Any:
+        if isinstance(data, dict) and isinstance(data.get("instruction"), str):
+            return {**data, "instruction": data["instruction"].strip()}
+        return data
 
 
 def guide_info(prep_guide: dict[str, Any] | None) -> GuideInfo | None:
@@ -185,4 +199,5 @@ def guide_info(prep_guide: dict[str, Any] | None) -> GuideInfo | None:
         title=guide.get("title", ""),
         saved_at=prep_guide["saved_at"],
         agent_name=prep_guide.get("agent_name"),
+        correction=prep_guide.get("correction"),
     )

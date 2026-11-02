@@ -11,7 +11,7 @@ from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from app.models import Job
-from app.schemas.interview_guide import InterviewGuideInput
+from app.schemas.interview_guide import GuideCorrectionInput, InterviewGuideInput
 from app.services import interview_guide, interviews, process
 from app.services.interviews import InterviewNotAllowedError
 from tests.applied_support import APPLIED, NOW, add_applied_job
@@ -245,3 +245,80 @@ def test_api_serves_the_cover_and_redoes_it_when_the_guide_changes(fake_pdf: lis
         real_pdf(pdf, 842)  # otra guía (apaisada): otra portada
         assert client.get(f"/milestones/{milestone_id}/guide.png").content != first
         assert client.get("/milestones/999/guide.png").status_code == 404
+
+
+# --- Pedir cambios a una guía ya hecha ----------------------------------------------------------
+
+
+def _with_guide(session: Session, fake_pdf: list[str]) -> tuple[Job, int]:
+    """Una entrevista con guía, hecha cuando aún no había empezado."""
+    job = add_applied_job(session, "Brétema Analytics")
+    milestone_id = _interview(session, job, NOW + timedelta(days=3))
+    interview_guide.save_interview_guide(session, milestone_id, _guide(), now=NOW)
+    return job, milestone_id
+
+
+def test_changes_are_kept_until_the_new_guide_is_saved(
+    session: Session, fake_pdf: list[str]
+) -> None:
+    job, milestone_id = _with_guide(session, fake_pdf)
+    out = interview_guide.request_correction(
+        session, milestone_id, GuideCorrectionInput(instruction="  Quita el código.  ")
+    )
+    assert out.guide is not None and out.guide.correction == "Quita el código."
+    stored = interview_guide.get_interview_guide(session, milestone_id)
+    assert stored.info is not None and stored.info.correction == "Quita el código."
+    assert stored.guide is not None  # el contenido sigue ahí, para aplicarlo encima
+
+    interview_guide.save_interview_guide(session, milestone_id, _guide(), now=NOW)
+    view = interviews.get_interviews(session, job.id, now=NOW)
+    assert view.interviews[0].guide is not None and view.interviews[0].guide.correction is None
+
+
+def test_changes_can_be_saved_after_the_interview_only_if_requested(
+    session: Session, fake_pdf: list[str]
+) -> None:
+    _, milestone_id = _with_guide(session, fake_pdf)
+    after = NOW + timedelta(days=5)
+    with pytest.raises(InterviewNotAllowedError):
+        interview_guide.save_interview_guide(session, milestone_id, _guide(), now=after)
+
+    interview_guide.request_correction(
+        session, milestone_id, GuideCorrectionInput(instruction="Quita el código.")
+    )
+    result = interview_guide.save_interview_guide(session, milestone_id, _guide(), now=after)
+    assert result.replaced is True
+    # Ya atendida, vuelve a la regla de siempre.
+    with pytest.raises(InterviewNotAllowedError):
+        interview_guide.save_interview_guide(session, milestone_id, _guide(), now=after)
+
+
+def test_cancelling_keeps_the_guide(session: Session, fake_pdf: list[str]) -> None:
+    _, milestone_id = _with_guide(session, fake_pdf)
+    interview_guide.request_correction(
+        session, milestone_id, GuideCorrectionInput(instruction="Quita el código.")
+    )
+    out = interview_guide.cancel_correction(session, milestone_id)
+    assert out.guide is not None and out.guide.correction is None
+    assert interview_guide.get_interview_guide(session, milestone_id).guide is not None
+    # Cancelar lo que ya no está no falla.
+    interview_guide.cancel_correction(session, milestone_id)
+
+
+def test_changes_need_a_guide_and_an_open_interview(session: Session, fake_pdf: list[str]) -> None:
+    job = add_applied_job(session, "Otra Empresa")
+    without_guide = _interview(session, job, NOW + timedelta(days=3))
+    data = GuideCorrectionInput(instruction="Quita el código.")
+    with pytest.raises(InterviewNotAllowedError, match="no tiene guía"):
+        interview_guide.request_correction(session, without_guide, data)
+
+    _, milestone_id = _with_guide(session, fake_pdf)
+    row = process.milestone_row(session, milestone_id)
+    row.status = "cancelled"
+    with pytest.raises(InterviewNotAllowedError, match="cancelada"):
+        interview_guide.request_correction(session, milestone_id, data)
+
+
+def test_instruction_cannot_be_blank() -> None:
+    with pytest.raises(ValidationError):
+        GuideCorrectionInput(instruction="   ")

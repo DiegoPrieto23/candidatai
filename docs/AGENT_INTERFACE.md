@@ -290,6 +290,9 @@ las más recientes primero.
   `milestones.prep_guide`; la ficha la enlaza (`GET /milestones/{id}/guide.pdf`). Sustituye a la
   anterior. `get_interview_guide` la lee (el simulacro saca de ahí las preguntas probables) y
   `get_application_answers` da las respuestas de screening ya enviadas.
+- Los cambios que el usuario pide a una guía ya hecha llegan en `info.correction` de
+  `get_interview_guide`; los aplica `correct-interview-guide`, cuya orden solo lleva ids. Con cambios
+  pendientes, `save_interview_guide` también vale tras la entrevista, y guardar los da por atendidos.
 - `save_interview_notes`: el repaso de `debrief-interview` (`debrief_notes`, `next_steps`).
   Sustituye al anterior.
 - Ninguna registra eventos ni cambia el estado del hito: marcar la entrevista como hecha

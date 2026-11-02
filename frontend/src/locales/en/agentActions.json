@@ -14,6 +14,7 @@
   "draft-follow-up": "Drafts a reminder or a thank-you note for this company and leaves it on the job page. You copy and send it yourself: the app sends nothing.",
   "broaden-search": "Suggests job titles similar to the ones you already approve (e.g. «BI Engineer») and, with your OK, adds them to your searches. Changes nothing without asking.",
   "prepare-interview": "Prepares a PDF guide (the role, your fit, the company, likely questions with answer ideas and what to ask) and a day-by-day plan until the interview.",
+  "correct-interview-guide": "Applies only the changes you asked for, without rewriting the guide or adding anything that isn’t in your profile. The new PDF replaces the previous one.",
   "mock-interview": "Asks you questions one at a time, comments on each answer and suggests a better one based on your profile. You answer in the terminal.",
   "debrief-interview": "You tell it how it went: it saves notes and next steps on the job page, anticipates the next round and suggests new stories for your profile, added only with your OK.",
   "offer-questions": "Goes over the offer you received and lists what to clarify with the company before accepting (terms, role, team…).",

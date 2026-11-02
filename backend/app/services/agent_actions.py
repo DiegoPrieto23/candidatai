@@ -25,6 +25,7 @@ ActionId = Literal[
     "draft-follow-up",
     "broaden-search",
     "prepare-interview",
+    "correct-interview-guide",
     "mock-interview",
     "debrief-interview",
     "offer-questions",
@@ -41,8 +42,8 @@ ActionId = Literal[
 ]
 
 # Hitos de entrevista (fase 17): `upcoming`, programada y por empezar; `past`, ya empezada y no
-# cancelada.
-MilestoneRule = Literal["upcoming", "past"]
+# cancelada; `guide`, con guía ya hecha y cambios pedidos, también tras la entrevista.
+MilestoneRule = Literal["upcoming", "past", "guide"]
 
 
 # Etapas en las que tiene sentido redactar el CV de una oferta (también para rehacerlo).
@@ -296,6 +297,14 @@ ACTIONS: dict[ActionId, Action] = {
         "oferta {job_id}.",
         needs_job=True,
         milestone="upcoming",
+    ),
+    # Aplica lo que el usuario pidió en la ficha, sin rehacer la guía. La orden no lleva su texto.
+    "correct-interview-guide": Action(
+        "Cambiar guía",
+        "Usa el skill correct-interview-guide de CandidatAI para la entrevista {milestone_id} de "
+        "la oferta {job_id}.",
+        needs_job=True,
+        milestone="guide",
     ),
     "mock-interview": Action(
         "Simulacro",

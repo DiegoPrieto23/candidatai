@@ -112,6 +112,7 @@ export const API_URL: string =
 /** Ficheros que sirve la API (PDF y DOCX de un render, preview de una plantilla). */
 export const fileUrls = {
   renderPdf: (renderId: number) => `${API_URL}/renders/${renderId}/pdf`,
+  renderCover: (renderId: number) => `${API_URL}/renders/${renderId}/cover.png`,
   renderDocx: (renderId: number) => `${API_URL}/renders/${renderId}/docx`,
   /** La carta en TXT (UTF-8, saltos de Windows) para descargar. */
   letterText: (documentId: number) => `${API_URL}/cover-letters/${documentId}/text`,

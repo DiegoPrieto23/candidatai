@@ -123,6 +123,19 @@ def previews_dir() -> Path:
     return get_settings().data_dir / "cache" / "previews"
 
 
+THUMBNAIL_PX = 240  # las miniaturas se ven a ~80 px: nítidas en pantallas 2x y 3x
+
+
+def pdf_thumbnail(pdf_file: Path, stem: str) -> Path:
+    """La portada de un PDF en pequeño, en la caché de vistas previas. La fecha y el tamaño van en
+    el nombre: si el PDF cambia, se rehace."""
+    stat = pdf_file.stat()
+    png = previews_dir() / f"{stem}-{stat.st_mtime_ns}-{stat.st_size}.png"
+    if not png.is_file():
+        preview.pdf_to_png(pdf_file, png, width_px=THUMBNAIL_PX)
+    return png
+
+
 def _output_paths(
     template: templates.Template, which: ProfileChoice, letter: bool = False
 ) -> tuple[Path, Path]:

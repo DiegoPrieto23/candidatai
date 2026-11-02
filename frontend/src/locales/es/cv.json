@@ -37,6 +37,7 @@
   },
   "renderAria": "Diseño {{id}}",
   "toSend": "Para enviar",
+  "sentOne": "El que enviaste",
   "templateChanged": "Plantilla cambiada",
   "pages": "Páginas",
   "keywords": "Keywords",
