@@ -1,9 +1,16 @@
 import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { InfoIcon, XIcon } from '@phosphor-icons/react'
+import { ArrowCounterClockwiseIcon, InfoIcon, XIcon } from '@phosphor-icons/react'
 import { fileUrls, type MilestoneOut, type Stage } from '@/api/client'
-import { useCancelGuideCorrection, useRequestGuideCorrection, useSavePrepInstructions } from '@/api/queries'
+import {
+  useCancelGuideCorrection,
+  useGuideChanges,
+  useRequestGuideCorrection,
+  useRestoreGuide,
+  useSavePrepInstructions,
+} from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
+import { ChangeLines } from '@/components/ChangeLines'
 import { OpenFolderButton } from '@/components/OpenFolderButton'
 import { PdfCover } from '@/components/PdfCover'
 import { Reveal } from '@/components/Reveal'
@@ -205,6 +212,85 @@ function GuideCorrection({ milestone }: { milestone: MilestoneOut }) {
   )
 }
 
+/** Qué cambió entre las dos versiones de la guía. Va aparte para pedirlo solo al abrir el bloque. */
+function GuideChanges({ milestoneId, savedAt, otherSavedAt }: { milestoneId: number; savedAt: string; otherSavedAt: string }) {
+  const { t } = useTranslation('status', { keyPrefix: 'interview.versions' })
+  const changes = useGuideChanges(milestoneId, savedAt, otherSavedAt)
+  if (changes.isPending) return <p className="text-xs text-muted-foreground">{t('loading')}</p>
+  if (changes.error) {
+    return (
+      <p role="alert" className="text-xs text-destructive">
+        {errorMessage(changes.error)}
+      </p>
+    )
+  }
+  return (
+    <>
+      {changes.data.instruction && (
+        <p className="break-words text-xs">
+          <span className="text-muted-foreground">{t('asked')} </span>
+          {changes.data.instruction}
+        </p>
+      )}
+      {changes.data.changes.length === 0 ? (
+        <p className="text-xs text-muted-foreground">{t('noChanges')}</p>
+      ) : (
+        <ul className="space-y-2 text-xs">
+          {changes.data.changes.map((change, i) => (
+            <li key={i} className="space-y-1">
+              <p className="font-medium">{change.section ?? t(`parts.${change.part}`)}</p>
+              {change.reordered && <p className="text-muted-foreground">{t('reordered')}</p>}
+              <ChangeLines
+                removed={change.removed}
+                added={change.added}
+                removedLabel={t('removed')}
+                addedLabel={t('added')}
+              />
+            </li>
+          ))}
+        </ul>
+      )}
+    </>
+  )
+}
+
+/**
+ * La otra versión conservada de la guía: qué cambió y volver a ella, sin agente. Volver se puede
+ * deshacer. Con cambios pedidos no se puede: tu agente podría estar aplicándolos sobre la vigente.
+ */
+function GuideVersions({ milestone, canRestore }: { milestone: MilestoneOut; canRestore: boolean }) {
+  const { t } = useTranslation('status', { keyPrefix: 'interview.versions' })
+  const restore = useRestoreGuide(milestone.job_id)
+  const guide = milestone.guide
+  if (!guide?.other_saved_at) return null
+  const which = guide.restored ? 'newer' : 'older'
+  const pending = Boolean(guide.correction)
+  return (
+    <Reveal label={t(`${which}.title`, { date: formatDateTime(guide.other_saved_at) })} className="space-y-2">
+      <GuideChanges milestoneId={milestone.id} savedAt={guide.saved_at} otherSavedAt={guide.other_saved_at} />
+      {canRestore && (
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            variant="secondary"
+            size="xs"
+            disabled={pending || restore.isPending}
+            onClick={() => restore.mutate(milestone.id)}
+          >
+            <ArrowCounterClockwiseIcon /> {restore.isPending ? t('restoring') : t(`${which}.restore`)}
+          </Button>
+          {pending && <span className="text-xs text-muted-foreground">{t('pendingHint')}</span>}
+        </div>
+      )}
+      {restore.error && (
+        <p role="alert" className="text-xs text-destructive">
+          {errorMessage(restore.error)}
+        </p>
+      )}
+    </Reveal>
+  )
+}
+
 /** Guía en PDF, plan de preparación y repaso de una entrevista, si los hay. */
 export function InterviewDetails({ milestone, stage }: { milestone: MilestoneOut; stage: Stage | null }) {
   const { t } = useTranslation('status', { keyPrefix: 'interview' })
@@ -212,10 +298,18 @@ export function InterviewDetails({ milestone, stage }: { milestone: MilestoneOut
   const guide = milestone.guide
   if (!plan && !milestone.debrief_notes && !guide) return null
   const minutes = plan ? plan.blocks.reduce((sum, b) => sum + b.minutes, 0) : 0
+  const canCorrect = canCorrectGuide(milestone, stage)
   return (
     <div className="mt-2 space-y-2">
       {guide && <GuideCard milestoneId={milestone.id} savedAt={guide.saved_at} />}
-      {canCorrectGuide(milestone, stage) && <GuideCorrection milestone={milestone} />}
+      {canCorrect && <GuideCorrection milestone={milestone} />}
+      {guide && !canCorrect && (
+        <p className="flex items-start gap-2 text-xs text-muted-foreground">
+          <InfoIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
+          {t(milestone.status === 'cancelled' ? 'correction.cancelled' : 'correction.closed')}
+        </p>
+      )}
+      <GuideVersions milestone={milestone} canRestore={canCorrect} />
       {plan && (
         <details className="rounded-md border bg-muted/30 px-3 py-2 text-xs">
           <summary className="cursor-pointer font-medium">

@@ -6,6 +6,7 @@ El agente se simula con los comandos `cai … --json` (`tests/e2e/agent.py`).
 """
 
 import re
+from copy import deepcopy
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
@@ -144,6 +145,21 @@ def test_an_interview_is_scheduled_prepared_and_debriefed(
     assert href is not None
     response = page.request.get(href)
     assert response.ok and response.body().startswith(b"%PDF"), href
+
+    # Una guía nueva conserva la anterior: se ve qué cambió, se vuelve a ella y se puede deshacer.
+    changed = deepcopy(GUIDE)
+    changed["sections"][0]["blocks"] = [{"type": "paragraph", "text": "Un rol más corto."}]
+    cai(server, "interviews", "guide", str(milestone_id), payload=changed)
+    section = _process_section_of(page, job_id)
+    older = t("status.interview.versions.older.title", date="").split(" ·")[0]
+    section.get_by_role("button", name=_starts(older)).click()
+    expect(section.get_by_text("Un rol más corto.")).to_be_visible()
+    section.get_by_role("button", name=t("status.interview.versions.older.restore")).click()
+    # El bloque sigue abierto, y ahora ofrece deshacerlo.
+    section.get_by_role("button", name=t("status.interview.versions.newer.restore")).click()
+    expect(
+        section.get_by_role("button", name=t("status.interview.versions.older.restore"))
+    ).to_be_visible()
 
     # Antes de su día no se puede dar por hecha; después, sí, y el repaso queda en la ficha.
     done = section.get_by_role("button", name=t("process.milestone.doneLater"))

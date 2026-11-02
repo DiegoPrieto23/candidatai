@@ -40,6 +40,7 @@ describe('Entrevistas en la ficha (fase 17)', () => {
     title: 'Data Engineer',
     saved_at: '2026-10-20T10:00:00Z',
     agent_name: 'codex',
+    restored: false,
   } as const
   const past = new Date(Date.now() - 4 * 86_400_000).toISOString()
 
@@ -85,6 +86,96 @@ describe('Entrevistas en la ficha (fase 17)', () => {
     expect(within(section).getByRole('button', { name: 'Aplicar cambios' })).toBeEnabled()
     await userEvent.click(within(section).getByRole('button', { name: 'Cancelar' }))
     await waitFor(() => expect(calls.some((c) => c.path === '/milestones/5/guide/correction/cancel')).toBe(true))
+  })
+
+  const versioned = { ...guide, other_saved_at: '2026-10-19T10:00:00Z', restored: false }
+  const changes = {
+    milestone_id: 5,
+    older_saved_at: '2026-10-19T10:00:00Z',
+    newer_saved_at: '2026-10-20T10:00:00Z',
+    instruction: 'Sin código.',
+    changes: [
+      { part: 'section', section: 'Posibles preguntas', removed: ['SQL: SELECT 1;'], added: [], reordered: false },
+      { part: 'sources', section: null, removed: [], added: ['Web — https://example.com'], reordered: false },
+    ],
+  }
+
+  it('la versión anterior enseña qué cambió y se puede volver a ella', async () => {
+    const calls = mockApi({
+      'GET /status': status(),
+      'GET /jobs/1': jobView({ stage: 'in_process' }),
+      'GET /jobs/1/process': processView({
+        stage: 'in_process',
+        milestones: [milestone(5, { starts_at: past, guide: versioned })],
+      }),
+      'GET /agent': launcher,
+      'GET /milestones/5/guide/changes': changes,
+      'POST /milestones/5/guide/restore': milestone(5, { starts_at: past, guide: { ...versioned, restored: true } }),
+    })
+    renderApp('/jobs/1')
+    const section = await screen.findByRole('region', { name: 'Proceso' })
+    await userEvent.click(await within(section).findByRole('button', { name: /^Versión anterior/ }))
+    expect(await within(section).findByText('Sin código.')).toBeInTheDocument()
+    expect(within(section).getByText('Posibles preguntas')).toBeInTheDocument()
+    expect(within(section).getByText('SQL: SELECT 1;')).toBeInTheDocument()
+    expect(within(section).getByText('Fuentes')).toBeInTheDocument()
+    await userEvent.click(within(section).getByRole('button', { name: 'Volver a la versión anterior' }))
+    await waitFor(() => expect(calls.some((c) => c.path === '/milestones/5/guide/restore')).toBe(true))
+  })
+
+  it('tras volver, se ofrece la versión más reciente', async () => {
+    mockApi({
+      'GET /status': status(),
+      'GET /jobs/1': jobView({ stage: 'in_process' }),
+      'GET /jobs/1/process': processView({
+        stage: 'in_process',
+        milestones: [milestone(5, { starts_at: past, guide: { ...versioned, restored: true } })],
+      }),
+      'GET /agent': launcher,
+      'GET /milestones/5/guide/changes': changes,
+    })
+    renderApp('/jobs/1')
+    const section = await screen.findByRole('region', { name: 'Proceso' })
+    await userEvent.click(await within(section).findByRole('button', { name: /^Versión más reciente/ }))
+    expect(await within(section).findByRole('button', { name: 'Volver a la versión más reciente' })).toBeEnabled()
+  })
+
+  it('con cambios pedidos no se puede volver, y dice por qué', async () => {
+    mockApi({
+      'GET /status': status(),
+      'GET /jobs/1': jobView({ stage: 'in_process' }),
+      'GET /jobs/1/process': processView({
+        stage: 'in_process',
+        milestones: [milestone(5, { starts_at: past, guide: { ...versioned, correction: 'Otra cosa.' } })],
+      }),
+      'GET /agent': launcher,
+      'GET /milestones/5/guide/changes': changes,
+    })
+    renderApp('/jobs/1')
+    const section = await screen.findByRole('region', { name: 'Proceso' })
+    await userEvent.click(await within(section).findByRole('button', { name: /^Versión anterior/ }))
+    expect(await within(section).findByRole('button', { name: 'Volver a la versión anterior' })).toBeDisabled()
+    expect(within(section).getByText(/Primero cancela los cambios pedidos/)).toBeInTheDocument()
+  })
+
+  it('con la entrevista cancelada explica por qué no se piden cambios, y se ve sin poder volver', async () => {
+    mockApi({
+      'GET /status': status(),
+      'GET /jobs/1': jobView({ stage: 'in_process' }),
+      'GET /jobs/1/process': processView({
+        stage: 'in_process',
+        milestones: [milestone(5, { starts_at: past, status: 'cancelled', guide: versioned })],
+      }),
+      'GET /agent': launcher,
+      'GET /milestones/5/guide/changes': changes,
+    })
+    renderApp('/jobs/1')
+    const section = await screen.findByRole('region', { name: 'Proceso' })
+    expect(await within(section).findByText(/porque la entrevista está cancelada/)).toBeInTheDocument()
+    expect(within(section).queryByRole('button', { name: 'Pedir cambios a la guía' })).not.toBeInTheDocument()
+    await userEvent.click(within(section).getByRole('button', { name: /^Versión anterior/ }))
+    expect(await within(section).findByText('Sin código.')).toBeInTheDocument()
+    expect(within(section).queryByRole('button', { name: 'Volver a la versión anterior' })).not.toBeInTheDocument()
   })
 
   it('sin guía, cancelada o con el proceso cerrado no se piden cambios', () => {
@@ -165,6 +256,7 @@ describe('Entrevistas en la ficha (fase 17)', () => {
           language: 'es',
           title: 'Data Engineer',
           saved_at: '2026-10-20T10:00:00Z',
+          restored: false,
           agent_name: 'codex',
         },
       }),

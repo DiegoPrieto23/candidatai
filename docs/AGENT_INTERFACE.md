@@ -288,11 +288,15 @@ las más recientes primero.
   estructurado (secciones de bloques tipados, sin HTML). La app la maqueta con el color de la
   marca, la imprime a PDF en `entrevistas/` de la carpeta de datos y la apunta en
   `milestones.prep_guide`; la ficha la enlaza (`GET /milestones/{id}/guide.pdf`). Sustituye a la
-  anterior. `get_interview_guide` la lee (el simulacro saca de ahí las preguntas probables) y
+  vigente. `get_interview_guide` la lee (el simulacro saca de ahí las preguntas probables) y
   `get_application_answers` da las respuestas de screening ya enviadas.
 - Los cambios que el usuario pide a una guía ya hecha llegan en `info.correction` de
   `get_interview_guide`; los aplica `correct-interview-guide`, cuya orden solo lleva ids. Con cambios
   pendientes, `save_interview_guide` también vale tras la entrevista, y guardar los da por atendidos.
+- Guardar una guía conserva la anterior (solo esa) en el hito. Ver qué cambió y volver a ella es de la
+  UI (`GET /milestones/{id}/guide/changes` y `POST /milestones/{id}/guide/restore`), sin herramienta
+  para el agente: volver rehace el PDF y, con cambios pendientes o sin Chromium, no cambia nada. En
+  `info`, `other_saved_at` dice la fecha de la otra versión y `restored` que la vigente es la antigua.
 - `save_interview_notes`: el repaso de `debrief-interview` (`debrief_notes`, `next_steps`).
   Sustituye al anterior.
 - Ninguna registra eventos ni cambia el estado del hito: marcar la entrevista como hecha

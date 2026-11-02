@@ -288,7 +288,7 @@ cambia la etapa.
 | sequence | int | `SEQUENCE` del iCalendar: sube con cada cambio |
 | created_at / updated_at | datetime | |
 | prep_plan | json? | Fase 17. Plan de preparación de una entrevista (`save_interview_plan`): `dossier?` (nombre del fichero en `data/entrevistas/`), `blocks` (`date`, `minutes`, `topic`, `detail?`), `saved_at`, `agent_name` |
-| prep_guide | json? | Guía de preparación en PDF (`save_interview_guide`): `file` (el PDF en `entrevistas/` de la carpeta de datos), `saved_at`, `agent_name` y `guide` (el contenido estructurado que maqueta la app) |
+| prep_guide | json? | Guía de preparación en PDF (`save_interview_guide`): `file` (el PDF en `entrevistas/` de la carpeta de datos), `saved_at`, `agent_name`, `guide` (el contenido estructurado que maqueta la app), `correction` (los cambios pedidos, aún sin aplicar), `instruction` (los que originaron esta versión), `previous` (la versión anterior, solo esa y sin PDF: `saved_at`, `agent_name`, `guide`, `instruction`) y `restored` (la vigente es la más antigua, porque se volvió a ella). Sin migración, y volver no registra evento |
 | debrief_notes / next_steps | text? / text? | Fase 17. Repaso de la entrevista (`save_interview_notes`). Aparte de `notes`, que es lo que anota el usuario |
 | debriefed_at | datetime? | Cuándo se guardó el repaso |
 | interview_type | str? | Solo en entrevistas: qué ronda es (`hr`: RR. HH. o encaje cultural, `technical`, `case`, `final`, `other`). Lo elige el usuario al crearla o editarla |

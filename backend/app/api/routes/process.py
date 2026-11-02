@@ -154,6 +154,24 @@ def cancel_guide_correction(session: SessionDep, milestone_id: int) -> process.M
 
 
 @router.get(
+    "/milestones/{milestone_id}/guide/changes",
+    operation_id="get_guide_changes",
+)
+def get_guide_changes(session: SessionDep, milestone_id: int) -> interview_guide.GuideChanges:
+    """Qué cambió entre las dos versiones conservadas de la guía."""
+    return interview_guide.guide_changes(session, milestone_id)
+
+
+@router.post(
+    "/milestones/{milestone_id}/guide/restore",
+    operation_id="restore_guide",
+)
+def restore_guide(session: SessionDep, milestone_id: int) -> process.MilestoneOut:
+    """Vuelve a la otra versión conservada de la guía y rehace su PDF."""
+    return interview_guide.restore_guide(session, milestone_id)
+
+
+@router.get(
     "/milestones/{milestone_id}/guide.png",
     operation_id="get_interview_guide_cover",
     response_class=FileResponse,

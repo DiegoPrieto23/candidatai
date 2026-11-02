@@ -6,6 +6,7 @@ import { ArrowCounterClockwiseIcon, FilePdfIcon } from '@phosphor-icons/react'
 import { useTranslation } from 'react-i18next'
 import { fileUrls, type CvVersion, type SectionChange } from '@/api/client'
 import { useCvHistory, useRestoreCvVersion } from '@/api/queries'
+import { ChangeLines } from '@/components/ChangeLines'
 import { Reveal } from '@/components/Reveal'
 import { Button } from '@/components/ui/button'
 import { errorMessage } from '@/lib/errors'
@@ -18,18 +19,12 @@ function Change({ change }: { change: SectionChange }) {
     <li className="space-y-1 text-sm">
       <p className="font-medium">{change.item ? `${section} · ${change.item}` : section}</p>
       {change.reordered && <p className="text-muted-foreground">{t('reordered')}</p>}
-      {change.removed.map((text, i) => (
-        <p key={`r${i}`} className="break-words rounded-sm bg-destructive/10 px-2 py-1">
-          <span className="font-mono text-muted-foreground" aria-label={t('removed')}>− </span>
-          <span className="line-through decoration-foreground/40">{text}</span>
-        </p>
-      ))}
-      {change.added.map((text, i) => (
-        <p key={`a${i}`} className="break-words rounded-sm bg-primary/10 px-2 py-1">
-          <span className="font-mono text-muted-foreground" aria-label={t('added')}>+ </span>
-          {text}
-        </p>
-      ))}
+      <ChangeLines
+        removed={change.removed}
+        added={change.added}
+        removedLabel={t('removed')}
+        addedLabel={t('added')}
+      />
     </li>
   )
 }

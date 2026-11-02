@@ -23,7 +23,10 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   con **Pedir cambios** (con sugerencias), **Editar texto** y **Diseño**. Un diseño recién generado
   pasa a verse solo, y los demás salen con su miniatura.
 - **Cambiar una guía de entrevista:** bajo la guía, **Pedir cambios a la guía** deja escribir qué
-  cambiar y tu agente toca solo eso, también después de la entrevista.
+  cambiar y tu agente toca solo eso, también después de la entrevista. La versión anterior se
+  conserva: ves qué cambió, sección a sección, y **Volver a la versión anterior** rehace el PDF sin
+  agente y se puede deshacer. Si la entrevista está cancelada o el proceso cerrado, te dice por qué no
+  se pueden pedir cambios.
 - **«Cómo funciona»:** una página nueva, con su enlace al pie del menú, que cuenta quién hace qué (tú,
   tu agente y la app) y el recorrido completo en cinco pasos, de preparar tu búsqueda a seguir tus
   procesos, con un enlace a cada pantalla y a las guías. «Primeros pasos» enlaza a ella.

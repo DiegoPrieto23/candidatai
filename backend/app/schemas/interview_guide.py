@@ -173,6 +173,8 @@ class GuideInfo(BaseModel):
     saved_at: datetime
     agent_name: str | None = None
     correction: str | None = None  # los cambios que ha pedido el usuario y aún no se han aplicado
+    other_saved_at: datetime | None = None  # la otra versión conservada, si la hay
+    restored: bool = False  # la vigente es la más antigua: se ha vuelto a ella
 
 
 class GuideCorrectionInput(BaseModel):
@@ -200,4 +202,6 @@ def guide_info(prep_guide: dict[str, Any] | None) -> GuideInfo | None:
         saved_at=prep_guide["saved_at"],
         agent_name=prep_guide.get("agent_name"),
         correction=prep_guide.get("correction"),
+        other_saved_at=(prep_guide.get("previous") or {}).get("saved_at"),
+        restored=bool(prep_guide.get("restored")),
     )

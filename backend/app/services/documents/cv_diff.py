@@ -30,7 +30,7 @@ class SectionChange(BaseModel):
     reordered: bool = False  # mismo texto, en otro orden
 
 
-def _delta(old: Iterable[str], new: Iterable[str]) -> tuple[list[str], list[str]]:
+def delta(old: Iterable[str], new: Iterable[str]) -> tuple[list[str], list[str]]:
     """Lo que solo está en `old` y lo que solo está en `new`, cada uno en su orden."""
     old_list, new_list = list(old), list(new)
     only_old = Counter(old_list) - Counter(new_list)
@@ -50,7 +50,7 @@ def _delta(old: Iterable[str], new: Iterable[str]) -> tuple[list[str], list[str]
 def _list_change(
     section: ChangeSection, old: list[str], new: list[str], item: str | None = None
 ) -> list[SectionChange]:
-    removed, added = _delta(old, new)
+    removed, added = delta(old, new)
     if removed or added:
         return [SectionChange(section=section, item=item, removed=removed, added=added)]
     if old != new:

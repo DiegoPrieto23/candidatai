@@ -15,8 +15,9 @@ Sigue `docs/POLICIES.md` §1 y §6. Trabajas con la entrevista (`milestone_id`) 
    por palabra, con sus `sources`. No aproveches para mejorar otras partes. Lo que el perfil no
    respalda **no se inventa** aunque lo pida: déjalo fuera y dilo en el resumen. Tampoco saques su
    expectativa salarial si no consta que quiere.
-4. `save_interview_guide(milestone_id, guide)` con la guía entera. Sustituye al PDF anterior y da por
-   atendida la petición; un error de validación dice qué arreglar. Si no se puede aplicar nada, no
+4. `save_interview_guide(milestone_id, guide)` con la guía entera. La versión anterior queda guardada,
+   el usuario ve qué cambió y puede volver a ella; guardar da por atendida la petición, y un error de
+   validación dice qué arreglar. Si no se puede aplicar nada, no
    guardes: explícalo, y el usuario puede cancelar la petición en la ficha.
 5. Resume en 1-3 frases qué has cambiado, qué no y por qué. Si vienes de un encargo, ese es el resumen
    con el que se cierra.

@@ -777,6 +777,24 @@ export function useCancelGuideCorrection(jobId: number) {
   })
 }
 
+/** Qué cambió entre las versiones de la guía. La clave lleva las fechas: otra versión, otra consulta. */
+export function useGuideChanges(milestoneId: number, savedAt: string, otherSavedAt: string) {
+  return useQuery({
+    queryKey: ['guide-changes', milestoneId, savedAt, otherSavedAt] as const,
+    queryFn: () =>
+      unwrap(api.GET('/milestones/{milestone_id}/guide/changes', { params: { path: { milestone_id: milestoneId } } })),
+  })
+}
+
+export function useRestoreGuide(jobId: number) {
+  const invalidate = useInvalidateProcess()
+  return useMutation({
+    mutationFn: (milestoneId: number) =>
+      unwrap(api.POST('/milestones/{milestone_id}/guide/restore', { params: { path: { milestone_id: milestoneId } } })),
+    onSuccess: () => invalidate(jobId),
+  })
+}
+
 export function useMilestoneStatus(jobId: number) {
   const invalidate = useInvalidateProcess()
   return useMutation({
