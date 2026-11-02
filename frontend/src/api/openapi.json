@@ -2970,6 +2970,590 @@
         }
       }
     },
+    "/jobs/{job_id}/cv/history": {
+      "get": {
+        "tags": [
+          "cv"
+        ],
+        "summary": "Get Cv History",
+        "description": "Las versiones del CV, con qué cambió cada una, y la última corrección pedida.",
+        "operationId": "get_cv_history",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CvHistory"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/jobs/{job_id}/cv/corrections": {
+      "post": {
+        "tags": [
+          "cv"
+        ],
+        "summary": "Request Cv Correction",
+        "description": "Guarda qué corregir para que lo lea tu agente; sustituye a la que siga pendiente.",
+        "operationId": "request_cv_correction",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CorrectionInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CorrectionView"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/cv-corrections/{correction_id}/cancel": {
+      "post": {
+        "tags": [
+          "cv"
+        ],
+        "summary": "Cancel Cv Correction",
+        "operationId": "cancel_cv_correction",
+        "parameters": [
+          {
+            "name": "correction_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Correction Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CorrectionView"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/jobs/{job_id}/cv/edit": {
+      "post": {
+        "tags": [
+          "cv"
+        ],
+        "summary": "Edit Cv",
+        "description": "Versión nueva con los textos que has cambiado, sin agente y con el mismo estilo.",
+        "operationId": "edit_cv",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CvEditInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EditResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/documents/{document_id}/restore": {
+      "post": {
+        "tags": [
+          "cv"
+        ],
+        "summary": "Restore Cv Version",
+        "description": "Vuelve a una versión del CV. No borra ninguna.",
+        "operationId": "restore_cv_version",
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Document Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobCv"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
     "/documents/{document_id}/renders": {
       "post": {
         "tags": [
@@ -16963,6 +17547,8 @@
               "assess-fit",
               "assess-fit-job",
               "generate-cv",
+              "correct-cv",
+              "verify-cv",
               "generate-cover-letter",
               "add-skills",
               "training-plan",
@@ -17721,6 +18307,8 @@
               "assess-fit",
               "assess-fit-job",
               "generate-cv",
+              "correct-cv",
+              "verify-cv",
               "generate-cover-letter",
               "add-skills",
               "training-plan",
@@ -17875,6 +18463,8 @@
               "assess-fit",
               "assess-fit-job",
               "generate-cv",
+              "correct-cv",
+              "verify-cv",
               "generate-cover-letter",
               "add-skills",
               "training-plan",
@@ -20214,6 +20804,87 @@
         "title": "ContextStatus",
         "description": "Estado para la UI («Mi perfil»): sin el texto de los ficheros."
       },
+      "CorrectionInput": {
+        "properties": {
+          "instruction": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Instruction"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "instruction"
+        ],
+        "title": "CorrectionInput"
+      },
+      "CorrectionView": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "job_id": {
+            "type": "integer",
+            "title": "Job Id"
+          },
+          "instruction": {
+            "type": "string",
+            "title": "Instruction"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "applied",
+              "declined",
+              "cancelled"
+            ],
+            "title": "Status"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "closed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "job_id",
+          "instruction",
+          "status",
+          "note",
+          "created_at",
+          "closed_at"
+        ],
+        "title": "CorrectionView"
+      },
       "CostGroup": {
         "properties": {
           "runs": {
@@ -21039,6 +21710,25 @@
         "title": "CvContent",
         "description": "Contenido de un CV, independiente de la plantilla (`docs/AGENT_INTERFACE.md`)."
       },
+      "CvEditInput": {
+        "properties": {
+          "base_document_id": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Base Document Id"
+          },
+          "content": {
+            "$ref": "#/components/schemas/CvContent"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "base_document_id",
+          "content"
+        ],
+        "title": "CvEditInput"
+      },
       "CvExperience": {
         "properties": {
           "experience_id": {
@@ -21089,6 +21779,38 @@
         ],
         "title": "CvExtraSection",
         "description": "Items de una sección extra del perfil; salen tal cual, sin reescribir."
+      },
+      "CvHistory": {
+        "properties": {
+          "job_id": {
+            "type": "integer",
+            "title": "Job Id"
+          },
+          "versions": {
+            "items": {
+              "$ref": "#/components/schemas/CvVersion"
+            },
+            "type": "array",
+            "title": "Versions"
+          },
+          "correction": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CorrectionView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "versions",
+          "correction"
+        ],
+        "title": "CvHistory"
       },
       "CvLanguageItem": {
         "properties": {
@@ -21273,6 +21995,95 @@
         ],
         "title": "CvVerification"
       },
+      "CvVersion": {
+        "properties": {
+          "document_id": {
+            "type": "integer",
+            "title": "Document Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "current": {
+            "type": "boolean",
+            "title": "Current"
+          },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "generated",
+              "correction",
+              "edit"
+            ],
+            "title": "Origin"
+          },
+          "instruction": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instruction"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "verified": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verified"
+          },
+          "render": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RenderResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "changes": {
+            "items": {
+              "$ref": "#/components/schemas/SectionChange"
+            },
+            "type": "array",
+            "title": "Changes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "document_id",
+          "created_at",
+          "current",
+          "origin",
+          "instruction",
+          "note",
+          "verified",
+          "render",
+          "changes"
+        ],
+        "title": "CvVersion"
+      },
       "CvView": {
         "properties": {
           "job_id": {
@@ -21301,6 +22112,14 @@
             },
             "type": "object",
             "title": "Evidence"
+          },
+          "labels": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Labels",
+            "default": {}
           },
           "verification": {
             "anyOf": [
@@ -21541,6 +22360,68 @@
         ],
         "title": "EditPlatformBody"
       },
+      "EditResult": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok",
+            "default": true
+          },
+          "job_id": {
+            "type": "integer",
+            "title": "Job Id"
+          },
+          "document_id": {
+            "type": "integer",
+            "title": "Document Id"
+          },
+          "render": {
+            "$ref": "#/components/schemas/RenderResult"
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/EditWarning"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "document_id",
+          "render",
+          "warnings"
+        ],
+        "title": "EditResult"
+      },
+      "EditWarning": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "skill",
+              "number"
+            ],
+            "title": "Code"
+          },
+          "field": {
+            "type": "string",
+            "title": "Field"
+          },
+          "value": {
+            "type": "string",
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "field",
+          "value"
+        ],
+        "title": "EditWarning"
+      },
       "EditableProfile": {
         "properties": {
           "exists": {
@@ -21629,6 +22510,8 @@
               "assess-fit",
               "assess-fit-job",
               "generate-cv",
+              "correct-cv",
+              "verify-cv",
               "generate-cover-letter",
               "add-skills",
               "training-plan",
@@ -24113,6 +24996,8 @@
               "assess-fit",
               "assess-fit-job",
               "generate-cv",
+              "correct-cv",
+              "verify-cv",
               "generate-cover-letter",
               "add-skills",
               "training-plan",
@@ -27467,6 +28352,8 @@
                 "assess-fit",
                 "assess-fit-job",
                 "generate-cv",
+                "correct-cv",
+                "verify-cv",
                 "generate-cover-letter",
                 "add-skills",
                 "training-plan",
@@ -28719,6 +29606,8 @@
               "assess-fit",
               "assess-fit-job",
               "generate-cv",
+              "correct-cv",
+              "verify-cv",
               "generate-cover-letter",
               "add-skills",
               "training-plan",
@@ -29926,6 +30815,62 @@
         ],
         "title": "SearchStory",
         "description": "Toda la búsqueda en números agregados, para contarla (p. ej. en el README).\n\nSolo recuentos y fechas: ni empresas, ni puestos, ni fuentes, ni importes. Es lo que el usuario\npuede publicar si quiere; la app no lo publica nunca."
+      },
+      "SectionChange": {
+        "properties": {
+          "section": {
+            "type": "string",
+            "enum": [
+              "subtitle",
+              "summary",
+              "experience",
+              "projects",
+              "skills",
+              "education",
+              "certifications",
+              "extra_sections",
+              "languages"
+            ],
+            "title": "Section"
+          },
+          "item": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Item"
+          },
+          "removed": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Removed",
+            "default": []
+          },
+          "added": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Added",
+            "default": []
+          },
+          "reordered": {
+            "type": "boolean",
+            "title": "Reordered",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "section"
+        ],
+        "title": "SectionChange"
       },
       "SemanticResult": {
         "properties": {
@@ -31150,6 +32095,8 @@
                 "assess-fit",
                 "assess-fit-job",
                 "generate-cv",
+                "correct-cv",
+                "verify-cv",
                 "generate-cover-letter",
                 "add-skills",
                 "training-plan",
@@ -31211,6 +32158,8 @@
                 "assess-fit",
                 "assess-fit-job",
                 "generate-cv",
+                "correct-cv",
+                "verify-cv",
                 "generate-cover-letter",
                 "add-skills",
                 "training-plan",
@@ -31280,6 +32229,8 @@
                 "assess-fit",
                 "assess-fit-job",
                 "generate-cv",
+                "correct-cv",
+                "verify-cv",
                 "generate-cover-letter",
                 "add-skills",
                 "training-plan",

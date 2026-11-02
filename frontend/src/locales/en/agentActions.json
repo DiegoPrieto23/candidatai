@@ -5,6 +5,8 @@
   "assess-fit": "Compares each processed job with your profile and leaves an explained assessment on its page. You decide whether to approve or discard it in «To review».",
   "assess-fit-job": "Compares this job with your profile and leaves an explained assessment here. If it had an outdated one, it replaces it.",
   "generate-cv": "Writes a CV tailored to this job, using only your profile, and checks that nothing is made up. The Word and PDF files are left on the job page.",
+  "correct-cv": "Applies only what you asked to correct, without rewriting the CV or adding anything that isn’t in your profile, and verifies the new version. The previous one is kept.",
+  "verify-cv": "Independently checks that this version of the CV has nothing made up. It doesn’t change the text.",
   "generate-cover-letter": "Writes the cover letter for this job following your instructions and using only your profile, and checks that nothing is made up. It is left on the job page, matching your CV.",
   "add-skills": "Adds to your profile the skills you marked as «I have it». It shows you the changes and asks before saving.",
   "training-plan": "Turns the skills you marked as «I don't have it» into a study plan with verified resources, estimated time and order.",

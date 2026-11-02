@@ -47,6 +47,12 @@ approval_mode = "approve"
 [mcp_servers.candidatai.tools.get_cv_brief]
 approval_mode = "approve"
 
+[mcp_servers.candidatai.tools.get_cv_correction]
+approval_mode = "approve"
+
+[mcp_servers.candidatai.tools.decline_cv_correction]
+approval_mode = "approve"
+
 [mcp_servers.candidatai.tools.list_cv_templates]
 approval_mode = "approve"
 

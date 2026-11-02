@@ -1,5 +1,6 @@
+import { useCallback } from 'react'
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ApiError, api, unwrap, type CvRenderOptions, type ReferralStatus, type Schemas, type Stage } from './client'
+import { ApiError, api, unwrap, type CvEditInput, type CvRenderOptions, type ReferralStatus, type Schemas, type Stage } from './client'
 import type { operations } from './schema'
 
 /** Ofertas por página en la Bandeja: 25, como el resto de listas largas. */
@@ -267,6 +268,65 @@ export function useSaveCvBrief(jobId: number) {
     mutationFn: (instructions: string) =>
       unwrap(api.POST('/jobs/{job_id}/cv/brief', { params: { path: { job_id: jobId } }, body: { instructions } })),
     onSuccess: (brief) => client.setQueryData([...keys.cv(jobId), 'brief'], brief),
+  })
+}
+
+/** Versiones del CV y la última corrección. Con una corrección pendiente, pregunta cada poco. */
+export function useCvHistory(jobId: number) {
+  return useQuery({
+    queryKey: [...keys.cv(jobId), 'history'] as const,
+    queryFn: () => unwrap(api.GET('/jobs/{job_id}/cv/history', { params: { path: { job_id: jobId } } })),
+    refetchInterval: (query) => (query.state.data?.correction?.status === 'pending' ? 5000 : false),
+  })
+}
+
+/** Lo que cambia con otra versión del CV: el propio CV (y su historia), la ficha y los recuentos. */
+export function useRefreshCv(jobId: number) {
+  const client = useQueryClient()
+  return useCallback(
+    () =>
+      Promise.all([
+        client.invalidateQueries({ queryKey: keys.cv(jobId) }),
+        client.invalidateQueries({ queryKey: keys.job(jobId) }),
+        client.invalidateQueries({ queryKey: keys.status }),
+      ]),
+    [client, jobId],
+  )
+}
+
+export function useRequestCvCorrection(jobId: number) {
+  const refresh = useRefreshCv(jobId)
+  return useMutation({
+    mutationFn: (instruction: string) =>
+      unwrap(api.POST('/jobs/{job_id}/cv/corrections', { params: { path: { job_id: jobId } }, body: { instruction } })),
+    onSuccess: refresh,
+  })
+}
+
+export function useCancelCvCorrection(jobId: number) {
+  const refresh = useRefreshCv(jobId)
+  return useMutation({
+    mutationFn: (correctionId: number) =>
+      unwrap(api.POST('/cv-corrections/{correction_id}/cancel', { params: { path: { correction_id: correctionId } } })),
+    onSuccess: refresh,
+  })
+}
+
+export function useRestoreCvVersion(jobId: number) {
+  const refresh = useRefreshCv(jobId)
+  return useMutation({
+    mutationFn: (documentId: number) =>
+      unwrap(api.POST('/documents/{document_id}/restore', { params: { path: { document_id: documentId } } })),
+    onSuccess: refresh,
+  })
+}
+
+export function useEditCv(jobId: number) {
+  const refresh = useRefreshCv(jobId)
+  return useMutation({
+    mutationFn: (body: CvEditInput) =>
+      unwrap(api.POST('/jobs/{job_id}/cv/edit', { params: { path: { job_id: jobId } }, body })),
+    onSuccess: refresh,
   })
 }
 

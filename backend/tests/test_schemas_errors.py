@@ -72,7 +72,12 @@ def test_cv_example_fits_the_demo_profile() -> None:
 
 def test_schema_of_file_keys_is_the_file_object() -> None:
     schema = schemas.json_schema("cv-content")
-    assert set(schema["properties"]) == {"content", "render_options"}
+    assert set(schema["properties"]) == {
+        "content",
+        "render_options",
+        "correction_id",
+        "correction_note",
+    }
     assert schema["required"] == ["content"]
     assert schema["additionalProperties"] is False
 

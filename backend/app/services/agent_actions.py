@@ -16,6 +16,8 @@ ActionId = Literal[
     "assess-fit",
     "assess-fit-job",
     "generate-cv",
+    "correct-cv",
+    "verify-cv",
     "generate-cover-letter",
     "add-skills",
     "training-plan",
@@ -62,6 +64,9 @@ class Action:
     wrong_stage: str = ""  # el motivo si la oferta no está en ellas
     milestone: MilestoneRule | None = None  # acción de un hito de entrevista (y de su oferta)
     needs_offer: bool = False  # solo si la oferta tiene un `offer_received`
+    needs_cv: bool = False  # solo si la oferta ya tiene CV
+    # Solo con una corrección pendiente: la orden no lleva su texto, lo lee el skill.
+    needs_correction: bool = False
     # Fase 19: herramientas MCP (sin prefijo) con las que se puede lanzar en segundo plano. Vacío:
     # la acción solo se abre en una terminal (pregunta, usa tu navegador o la web).
     background: tuple[str, ...] = ()
@@ -152,6 +157,43 @@ ACTIONS: dict[ActionId, Action] = {
             "save_cv_verification",
         ),
         roles=("writer", "verifier"),
+    ),
+    # Aplica lo que el usuario pidió en la ficha y lo verifica. Quien corrige es el propio skill.
+    "correct-cv": Action(
+        "Corregir CV",
+        "Usa el skill correct-cv de CandidatAI para la oferta {job_id}.",
+        needs_job=True,
+        stages=CV_STAGES,
+        wrong_stage="Solo se corrige el CV de una oferta aprobada.",
+        needs_correction=True,
+        background=(
+            "get_cv_correction",
+            "decline_cv_correction",
+            "get_cv_content",
+            "get_extraction",
+            "get_profile",
+            "get_context",
+            "save_cv_content",
+            "save_cv_verification",
+        ),
+        roles=("verifier",),
+    ),
+    # Sobre todo tras editar a mano: esa versión queda sin verificar.
+    "verify-cv": Action(
+        "Verificar CV",
+        "Usa el skill verify-cv de CandidatAI para la oferta {job_id}.",
+        needs_job=True,
+        stages=CV_STAGES,
+        wrong_stage="Solo se verifica el CV de una oferta aprobada.",
+        needs_cv=True,
+        background=(
+            "get_cv_content",
+            "get_extraction",
+            "get_profile",
+            "get_context",
+            "save_cv_verification",
+        ),
+        roles=("verifier",),
     ),
     # Sin indicaciones, el skill pregunta una vez qué destacar; en segundo plano sigue con las de
     # por defecto (su sección «En segundo plano»). La verificación la hace el rol `verifier`.

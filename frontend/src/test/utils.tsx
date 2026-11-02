@@ -345,6 +345,7 @@ export function jobCv(renders: RenderResult[], changes: Partial<CvView> = {}): J
         keywords_targeted: [],
       },
       evidence: { 'exp-1/a1': 'Logro ficticio.' },
+      labels: { 'exp-1': 'Data Engineer · Acme' },
       verification: { passed: true, issues: [] },
       renders,
       ...changes,

@@ -38,7 +38,7 @@ from app.services import (
     profile,
     received_offers,
 )
-from app.services.documents import cover_letter, pdf
+from app.services.documents import corrections, cover_letter, pdf
 from app.services.documents import service as cv_service
 from app.services.ingestion import browse
 from tests.agent_support import POSTING_TEXT, cli_call, extraction, mcp_call, write_tmp
@@ -127,6 +127,15 @@ def seed_cv() -> None:
     seed_approved()
     with session_scope() as session:
         cv_service.save_content(session, 1, CvContent.model_validate(CV_CONTENT))
+
+
+def seed_correction() -> None:
+    """Como `seed_cv`, con la corrección 1 pendiente."""
+    seed_cv()
+    with session_scope() as session:
+        corrections.request_correction(
+            session, 1, corrections.CorrectionInput(instruction="El resumen más corto")
+        )
 
 
 def seed_letter() -> None:
@@ -759,6 +768,26 @@ CASES = [
          seed=seed_approved, expect_error="not_found"),
     Case("cv-brief-empty", "get_cv_brief", {"job_id": 1}, ["cv", "brief", "1"],
          seed=seed_approved),
+    Case("cv-correction-empty", "get_cv_correction", {"job_id": 1}, ["cv", "correction", "1"],
+         seed=seed_cv),
+    Case("cv-correction-pending", "get_cv_correction", {"job_id": 1}, ["cv", "correction", "1"],
+         seed=seed_correction),
+    Case("cv-correction-unknown", "get_cv_correction", {"job_id": 9}, ["cv", "correction", "9"],
+         seed=seed_cv, expect_error="not_found"),
+    Case("cv-correction-decline", "decline_cv_correction",
+         {"correction_id": 1, "reason": "No está en el perfil."},
+         ["cv", "correction-decline", "1", "--reason", "No está en el perfil."],
+         seed=seed_correction),
+    Case("cv-correction-decline-unknown", "decline_cv_correction",
+         {"correction_id": 9, "reason": "No."},
+         ["cv", "correction-decline", "9", "--reason", "No."],
+         seed=seed_correction, expect_error="not_found"),
+    Case("cv-save-correction", "save_cv_content",
+         {"job_id": 1, "content": CV_CONTENT, "correction_id": 1, "correction_note": "Nota."},
+         ["cv", "save", "1", "--file", "{tmp}/cv.json"],
+         seed=seed_correction,
+         files={"cv.json": {"content": CV_CONTENT, "correction_id": 1,
+                            "correction_note": "Nota."}}),
     Case("cv-brief-unknown", "get_cv_brief", {"job_id": 9}, ["cv", "brief", "9"],
          seed=seed_approved, expect_error="not_found"),
     Case("cv-verify", "save_cv_verification", {"document_id": 1, "verification": VERIFICATION},

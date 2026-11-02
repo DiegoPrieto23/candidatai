@@ -26,6 +26,9 @@ import {
 import { useJobCv, useRenderCv, useSelectRender, useTemplates } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
 import { CvBrief } from '@/components/CvBrief'
+import { CvCorrection } from '@/components/CvCorrection'
+import { CvInlineEditor } from '@/components/CvInlineEditor'
+import { CvVersions } from '@/components/CvVersions'
 import { ClosedHint } from '@/components/JobSignals'
 import { RenderWarnings } from '@/components/RenderWarnings'
 import { Reveal } from '@/components/Reveal'
@@ -71,17 +74,25 @@ function Chip({ children, tone = 'plain' }: { children: ReactNode; tone?: 'plain
 
 // --- Verificación --------------------------------------------------------------------------------
 
-function Verification({ cv }: { cv: CvView }) {
+function Verification({ cv, jobId, canVerify }: { cv: CvView; jobId: number; canVerify: boolean }) {
   const { t } = useTranslation('cv', { keyPrefix: 'verification' })
   const verification = cv.verification
+  const verify = canVerify && (
+    <AgentButton action="verify-cv" jobId={jobId}>
+      {t('verify')}
+    </AgentButton>
+  )
   if (!verification) {
     return (
-      <p className="flex items-start gap-2 text-sm text-muted-foreground">
-        <SealWarningIcon className="mt-0.5 size-4 shrink-0" />
-        <span>
-          <Trans t={t} i18nKey="pending" components={{ code: <Code /> }} />
-        </span>
-      </p>
+      <div className="space-y-2">
+        <p className="flex items-start gap-2 text-sm text-muted-foreground">
+          <SealWarningIcon className="mt-0.5 size-4 shrink-0" />
+          <span>
+            <Trans t={t} i18nKey="pending" components={{ code: <Code /> }} />
+          </span>
+        </p>
+        {verify}
+      </div>
     )
   }
   return (
@@ -103,6 +114,7 @@ function Verification({ cv }: { cv: CvView }) {
         ) : (
           <Issues issues={verification.issues} />
         ))}
+      {!verification.passed && verify}
     </div>
   )
 }
@@ -617,10 +629,15 @@ function CvBody({
   const names = new Map(templates.map((tpl) => [tpl.id, text.name(tpl)]))
   return (
     <div className="space-y-6">
-      <Verification cv={data.cv} />
+      <Verification cv={data.cv} jobId={jobId} canVerify={data.can_render} />
       <Renders cv={data.cv} jobId={jobId} names={names} />
+      {data.can_render && <CvCorrection jobId={jobId} />}
+      <CvVersions jobId={jobId} canRestore={data.can_render} />
       {data.can_render && (
         <div className="flex flex-col items-start gap-4">
+          <Reveal label={t('edit.open')} className="w-full max-w-2xl">
+            <CvInlineEditor cv={data.cv} jobId={jobId} />
+          </Reveal>
           <Reveal label={t('changeDesign')} className="w-full">
             {templatesQuery.isPending ? (
               <Skeleton className="h-40" />

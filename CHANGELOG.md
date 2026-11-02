@@ -10,6 +10,15 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Corregir un CV ya generado:** en la ficha, escribe qué quieres cambiar («el resumen más corto»,
+  «quita el proyecto X») y tu agente toca solo eso, sin inventar nada, y verifica el resultado. Si
+  el perfil no respalda algo, no lo añade y te lo dice. Se abre al momento, en segundo plano o queda
+  para tu próxima sesión.
+- **Editar tú el texto del CV:** resumen, subtítulo, viñetas y skills, sin agente y sin gastar
+  cuota. La app avisa de las skills y las cifras que tu perfil no respalda, pero la decisión es tuya.
+  Esa versión queda sin verificar, con un botón **Verificar esta versión**.
+- **Versiones del CV:** cada corrección o edición es una versión nueva. La ficha enseña de dónde
+  sale cada una y qué cambió, sección a sección, y **Volver a esta versión** no borra ninguna.
 - **«Cómo funciona»:** una página nueva, con su enlace al pie del menú, que cuenta quién hace qué (tú,
   tu agente y la app) y el recorrido completo en cinco pasos, de preparar tu búsqueda a seguir tus
   procesos, con un enlace a cada pantalla y a las guías. «Primeros pasos» enlaza a ella.

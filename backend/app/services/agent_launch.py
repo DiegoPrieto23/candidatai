@@ -544,6 +544,14 @@ def check_target(
             raise LaunchError("invalid_request", spec.wrong_stage)
         if spec.needs_offer and not process.offer_received(session, job_id):
             raise LaunchError("invalid_request", "Esta oferta no tiene una propuesta recibida.")
+        if spec.needs_cv or spec.needs_correction:
+            # Se importa aquí: el CV trae plantillas y conversión, que el resto de acciones no usa.
+            from app.services.documents import corrections, service
+
+            if service.latest_document(session, job_id) is None:
+                raise LaunchError("invalid_request", "Esta oferta aún no tiene CV.")
+            if spec.needs_correction and corrections.pending_row(session, job_id) is None:
+                raise LaunchError("invalid_request", "Escribe primero qué quieres corregir.")
     job_id = job_id if spec.needs_job else None
     milestone_id = milestone_id if spec.milestone else None
     return prompt_for(action, job_id, milestone_id, item, path), job_id, milestone_id

@@ -5,6 +5,8 @@
   "assess-fit": "Compara cada oferta procesada con tu perfil y deja una valoración explicada en su ficha. Aprobar o descartar lo decides tú en «Por revisar».",
   "assess-fit-job": "Compara esta oferta con tu perfil y deja una valoración explicada aquí. Si ya tenía una desfasada, la sustituye.",
   "generate-cv": "Redacta un CV a medida para esta oferta, solo con datos de tu perfil, y lo verifica para que no lleve nada inventado. Quedan el Word y el PDF en la ficha.",
+  "correct-cv": "Aplica solo lo que has pedido corregir, sin rehacer el CV ni añadir nada que no esté en tu perfil, y verifica la versión nueva. La anterior se conserva.",
+  "verify-cv": "Comprueba de forma independiente que esta versión del CV no lleva nada inventado. No cambia el texto.",
   "generate-cover-letter": "Redacta la carta de presentación de esta oferta con tus indicaciones y solo con datos de tu perfil, y la verifica para que no lleve nada inventado. Queda en la ficha, a juego con tu CV.",
   "add-skills": "Añade a tu perfil las skills que marcaste como «La tengo». Te enseña los cambios y te pregunta antes de guardar.",
   "training-plan": "Convierte las skills que marcaste como «No la tengo» en un plan de estudio con recursos comprobados, tiempo estimado y orden.",

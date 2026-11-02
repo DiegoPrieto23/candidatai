@@ -36,6 +36,12 @@ Las reglas con valores ajustables tienen su parámetro en `config/policies.yaml`
    El perfil y el contexto también se editan en «Mi perfil» de la UI. Ahí escribe el
    usuario, que es quien pulsa «Guardar»; el agente sigue sin herramientas para escribir el
    perfil.
+   **Tu propia edición del CV.** En la ficha puedes cambiar a mano los textos de un CV ya
+   generado. Es lo único que puede quedar sin respaldo del perfil, porque lo escribes y lo decides
+   tú: la app avisa de las skills fuera del perfil y de las cifras nuevas que no están en él (si
+   una frase dice lo mismo que su evidencia no lo puede saber) y guarda una versión sin verificar.
+   El agente nunca tiene esa excepción: `correct-cv` no aplica lo que el perfil no respalda y lo
+   dice, y el texto de una corrección no respalda ningún hecho.
 6. **Entrevistas** (fase 17). Los esquemas de respuesta del dosier y la «versión mejor» del
    simulacro solo usan hechos del perfil. Lo que el usuario cuente en un simulacro o en un repaso
    (un logro, una cifra, una historia) se queda en las notas del hito hasta que él confirme

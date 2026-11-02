@@ -1,13 +1,14 @@
 {
   "title": "CV",
   "verification": {
-    "pending": "Sin verificar todavía: «Generar CV» lo verifica tras redactarlo.",
+    "pending": "Sin verificar todavía. Las versiones que redacta o corrige tu agente se verifican solas; las que editas tú, con este botón.",
     "passed": "Verificado: nada inventado ni exagerado",
     "failed": "El verificador encontró problemas",
     "blocker": "Bloqueante",
     "warning": "Aviso",
     "showWarnings_one": "Ver {{count}} aviso del verificador",
-    "showWarnings_other": "Ver {{count}} avisos del verificador"
+    "showWarnings_other": "Ver {{count}} avisos del verificador",
+    "verify": "Verificar esta versión"
   },
   "template": {
     "legend": "Plantilla",
@@ -34,25 +35,25 @@
     "noPhoto": "Sin foto",
     "without": "sin {{sections}}"
   },
-  "renderAria": "Versión {{id}}",
+  "renderAria": "Diseño {{id}}",
   "toSend": "Para enviar",
   "templateChanged": "Plantilla cambiada",
   "pages": "Páginas",
   "keywords": "Keywords",
   "missingKeywords": "Faltan: {{list}}",
   "keywordsOf": "{{present}} de {{total}}",
-  "templateChangedHint": "La plantilla ha cambiado desde esta versión: vuelve a generarlo para ver cómo queda ahora.",
+  "templateChangedHint": "La plantilla ha cambiado desde este diseño: vuelve a generarlo para ver cómo queda ahora.",
   "viewPdf": "Ver PDF",
   "compare": "Comparar",
   "useThis": "Usar este para enviar",
-  "comparison": "Comparar versiones",
+  "comparison": "Comparar diseños",
   "sideBySide": "Lado a lado",
   "closeComparison": "Cerrar comparación",
-  "pdfOf": "PDF de la versión {{id}}",
+  "pdfOf": "PDF del diseño {{id}}",
   "changeDesign": "Cambiar diseño",
-  "otherRenders_one": "Ver {{count}} versión más",
-  "otherRenders_other": "Ver {{count}} versiones más",
-  "pickAnother": "Marca otra versión para verlas lado a lado.",
+  "otherRenders_one": "Ver {{count}} diseño más",
+  "otherRenders_other": "Ver {{count}} diseños más",
+  "pickAnother": "Marca otro diseño para verlos lado a lado.",
   "none": {
     "title": "Aún sin CV",
     "hint": "Tu agente redacta el CV desde tu perfil, lo verifica y le da formato. Después podrás cambiar plantilla, foto y color aquí, sin IA.",
@@ -89,5 +90,64 @@
     "hint": "Se guardan solas y tu agente las usa cada vez que redacta este CV. Solo orientan: lo que diga el CV sale de tu perfil.",
     "saving": "Guardando…",
     "saved": "Guardadas: tu agente las usará al redactar este CV."
+  },
+  "correction": {
+    "label": "Qué quieres corregir",
+    "placeholder": "Por ejemplo: quita el proyecto X, el resumen más corto, cambia «lideré» por «participé»…",
+    "hint": "Tu agente cambia solo esto, sin rehacer el CV, y conserva la versión anterior. Nada que no esté en tu perfil.",
+    "submit": "Pedir corrección",
+    "pending": "Esperando a tu agente:",
+    "cancel": "Cancelar",
+    "declined": "Tu agente no ha podido aplicarla:"
+  },
+  "history": {
+    "title": "Versiones del texto",
+    "aria": "Versión del {{date}}",
+    "current": "Vigente",
+    "restore": "Volver a esta versión",
+    "viewPdf": "Ver PDF",
+    "asked": "Pediste:",
+    "verified": "Verificada",
+    "rejected": "No pasó la verificación",
+    "unverified": "Sin verificar",
+    "changes_one": "Qué cambió ({{count}})",
+    "changes_other": "Qué cambió ({{count}})",
+    "reordered": "Mismo texto, en otro orden.",
+    "removed": "Quitado:",
+    "added": "Añadido:",
+    "origin": {
+      "generated": "Redactada por tu agente",
+      "correction": "Corregida por tu agente",
+      "edit": "Editada por ti"
+    },
+    "sections": {
+      "subtitle": "Subtítulo",
+      "summary": "Resumen",
+      "experience": "Experiencia",
+      "projects": "Proyectos",
+      "skills": "Skills",
+      "education": "Formación",
+      "certifications": "Certificaciones",
+      "extra_sections": "Otras secciones",
+      "languages": "Idiomas"
+    }
+  },
+  "edit": {
+    "open": "Editar el texto tú",
+    "form": "Editar el texto del CV",
+    "hint": "Cambia solo textos y guarda una versión nueva con el mismo diseño, sin agente y sin verificar. Para añadir, quitar o reordenar, pide una corrección.",
+    "subtitle": "Subtítulo",
+    "summary": "Resumen",
+    "bulletAria": "{{title}}, viñeta {{position}}",
+    "skillGroup": "Skills, grupo {{position}}",
+    "groupName": "Nombre del grupo {{position}}",
+    "skillAria": "{{group}}, skill {{position}}",
+    "save": "Guardar versión nueva",
+    "saving": "Guardando y generando el PDF…",
+    "warningsTitle": "Guardado, pero revisa esto: la app no puede comprobar que cada frase diga lo mismo que tu perfil.",
+    "warning": {
+      "skill": "«{{value}}» no está en tu perfil, o es una skill básica que esta oferta no pide.",
+      "number": "La cifra «{{value}}» no aparece en tu perfil."
+    }
   }
 }

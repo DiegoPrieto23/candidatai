@@ -14,6 +14,7 @@ from app.api.deps import SessionDep
 from app.schemas.cv import CvRenderOptions
 from app.services import profile as profile_service
 from app.services.documents import (
+    corrections,
     cover_letter,
     cv_brief,
     default_template,
@@ -139,6 +140,43 @@ def save_cv_brief(
 def get_job_cv(session: SessionDep, job_id: int) -> service.JobCv:
     """CV vigente de la oferta: contenido, verificación y renders con sus avisos."""
     return service.get_job_cv(session, job_id)
+
+
+@router.get("/jobs/{job_id}/cv/history", operation_id="get_cv_history")
+def get_cv_history(session: SessionDep, job_id: int) -> corrections.CvHistory:
+    """Las versiones del CV, con qué cambió cada una, y la última corrección pedida."""
+    return corrections.get_history(session, job_id)
+
+
+@router.post(
+    "/jobs/{job_id}/cv/corrections",
+    operation_id="request_cv_correction",
+    status_code=status.HTTP_201_CREATED,
+)
+def request_cv_correction(
+    session: SessionDep, job_id: int, body: corrections.CorrectionInput
+) -> corrections.CorrectionView:
+    """Guarda qué corregir para que lo lea tu agente; sustituye a la que siga pendiente."""
+    return corrections.request_correction(session, job_id, body)
+
+
+@router.post("/cv-corrections/{correction_id}/cancel", operation_id="cancel_cv_correction")
+def cancel_cv_correction(session: SessionDep, correction_id: int) -> corrections.CorrectionView:
+    return corrections.cancel(session, correction_id)
+
+
+@router.post("/jobs/{job_id}/cv/edit", operation_id="edit_cv", status_code=status.HTTP_201_CREATED)
+def edit_cv(
+    session: SessionDep, job_id: int, body: corrections.CvEditInput
+) -> corrections.EditResult:
+    """Versión nueva con los textos que has cambiado, sin agente y con el mismo estilo."""
+    return corrections.save_user_edit(session, job_id, body)
+
+
+@router.post("/documents/{document_id}/restore", operation_id="restore_cv_version")
+def restore_cv_version(session: SessionDep, document_id: int) -> service.JobCv:
+    """Vuelve a una versión del CV. No borra ninguna."""
+    return corrections.restore_version(session, document_id)
 
 
 @router.post(

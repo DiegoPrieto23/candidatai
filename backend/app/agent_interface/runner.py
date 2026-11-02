@@ -21,6 +21,11 @@ from app.services.answers import AnswersContentError
 from app.services.audit import record_call, summarize_args
 from app.services.context import ContextTooLargeError
 from app.services.documents.checks import CvContentError
+from app.services.documents.corrections import (
+    CorrectionClosedError,
+    CorrectionNotFoundError,
+    CvVersionConflictError,
+)
 from app.services.documents.cover_letter import CoverLetterContentError, LetterNotFoundError
 from app.services.documents.importer import TemplateExistsError, TemplateImportError
 from app.services.documents.importer.paths import OutsideDataError
@@ -86,6 +91,9 @@ _ERROR_TYPES: tuple[tuple[type[Exception], str], ...] = (
     (ReceivedOfferNotFoundError, "not_found"),
     (NetworkContactNotFoundError, "not_found"),
     (DocumentNotFoundError, "not_found"),
+    (CorrectionNotFoundError, "not_found"),
+    (CorrectionClosedError, "not_allowed"),
+    (CvVersionConflictError, "conflict"),
     (LetterNotFoundError, "not_found"),
     (RenderNotFoundError, "not_found"),
     (FileNotAvailableError, "not_found"),

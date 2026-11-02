@@ -71,6 +71,8 @@ export function AgentButton({
   children,
   size = 'sm',
   primary = false,
+  prepare,
+  disabled = false,
   className,
 }: {
   action: AgentAction
@@ -85,6 +87,9 @@ export function AgentButton({
   size?: 'sm' | 'default'
   /** La acción principal de la pantalla: rellena. Una como mucho por pantalla. */
   primary?: boolean
+  /** Lo que hay que guardar antes de lanzar (p. ej. el texto de una corrección), en cualquier modo. */
+  prepare?: () => Promise<unknown>
+  disabled?: boolean
   className?: string
 }) {
   const { t } = useTranslation('agentButton')
@@ -112,7 +117,13 @@ export function AgentButton({
   const failed = (error: unknown, fallback: string) =>
     show({ tone: 'error', text: error instanceof Error ? errorMessage(error) : fallback })
 
-  const run = (agentName?: string) =>
+  /** Primero `prepare`; si falla, se queda en el error de quien lo pasa y no se lanza nada. */
+  const prepared = (go: () => void) => {
+    if (!prepare) return go()
+    prepare().then(go, () => undefined)
+  }
+
+  const run = (agentName?: string) => prepared(() =>
     launch.mutate(agentName ? { ...target, agent: agentName } : target, {
       onSuccess: (result) => {
         const opened = t('opened', { agent: result.agent })
@@ -131,9 +142,9 @@ export function AgentButton({
           failed(error, t('openFailed'))
         }
       },
-    })
+    }))
 
-  const runInBackground = (agentName?: string) =>
+  const runInBackground = (agentName?: string) => prepared(() =>
     startRun.mutate(agentName ? { ...target, agent: agentName } : target, {
       onSuccess: (result) => {
         show({
@@ -144,13 +155,13 @@ export function AgentButton({
         watchFor(action, result.job_id ?? jobId, milestoneId)
       },
       onError: (error) => failed(error, t('backgroundFailed')),
-    })
+    }))
 
-  const leaveForLater = () =>
+  const leaveForLater = () => prepared(() =>
     leave.mutate(target, {
       onSuccess: () => show({ tone: 'ok', text: t('requestSaved'), link: true }),
       onError: (error) => failed(error, t('requestFailed')),
-    })
+    }))
 
   const spec = launcher.data?.actions.find((a) => a.id === action)
   const agent = launcher.data?.available ? launcher.data.agent : null
@@ -194,7 +205,7 @@ export function AgentButton({
               variant={variant}
               size={size}
               onClick={() => run()}
-              disabled={busy || blocked !== null}
+              disabled={busy || disabled || blocked !== null}
               className="rounded-r-none"
               aria-describedby={hintId}
             >
@@ -212,7 +223,7 @@ export function AgentButton({
               type="button"
               variant={variant}
               size={size}
-              disabled={busy}
+              disabled={busy || disabled}
               aria-label={shownAgent ? t('moreWith', { agent: shownAgent }) : t('more')}
               className={cn(
                 'rounded-l-none px-2',

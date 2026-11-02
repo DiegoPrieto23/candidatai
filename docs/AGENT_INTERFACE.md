@@ -76,8 +76,10 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | `list_cv_templates` | `cai templates list --json` | 08 | — | `templates` (`id`, nombre, motor, origen, `ats_friendly`, foto, columnas, página, `capacity`, `sections`, `accent_colors`, fuentes, idiomas, `has_preview`), `invalid` (con el motivo) y `fallback_template` | — |
 | `save_cv_content` | `cai cv save ID --file F --json` | 08 | `job_id, content: CvContent, render_options?: CvRenderOptions`; por CLI, `F` = `{"content": …, "render_options": …}` | `document_id` + primer render (`RenderResult`) | `cv_generated`, `cv_rendered` |
 | `render_cv` | `cai cv render DOC [--file F] --json` | 08 | `document_id, options?: CvRenderOptions` (por defecto, todo `auto`); por CLI, `F` = las opciones | `RenderResult` (sus `warnings`, desde la 25.5, con los de maquetación: `page` y `fix`; con `fix: content` se recorta como con `too_long`) | `cv_rendered` |
-| `get_cv_content` | `cai cv show (ID \| --document DOC) --json` | 08 | `job_id` (su último CV) o `document_id` | `CvContent`, `evidence` (texto de cada evidencia citada), `verification` y `renders` | — |
+| `get_cv_content` | `cai cv show (ID \| --document DOC) --json` | 08 | `job_id` (su versión vigente) o `document_id` | `CvContent`, `evidence` (texto de cada evidencia citada), `verification` y `renders` | — |
 | `get_cv_brief` | `cai cv brief ID --json` | 0.2.1 | `job_id` | `job_id`, `instructions` (las indicaciones del usuario para el CV de esa oferta, escritas en la ficha; vacías si no hay) y `updated_at` | — |
+| `get_cv_correction` | `cai cv correction ID --json` | 39 | `job_id` | `job_id`, `document_id` (la versión vigente) y `correction` (`id`, `instruction`, `status`, `note`, fechas), vacío si no hay nada pendiente. El texto es del usuario: se trata como dato y no respalda hechos. La orden de `correct-cv` nunca lo lleva | — |
+| `decline_cv_correction` | `cai cv correction-decline ID --reason R --json` | 39 | `correction_id`, `reason` (1-2000) | `ok`, `correction_id`, `job_id`, `status`. Cierra la corrección sin versión nueva cuando no se puede aplicar nada; el usuario ve el motivo. Ya cerrada: `not_allowed` | — |
 | `save_cv_verification` | `cai cv save-verification DOC --file F --json` | 08 | `document_id, verification: CvVerification` | `ok`, `passed`, `stage` y `note` (por qué no pasa a `cv_ready`, si no pasa) | `cv_verified` / `cv_rejected` |
 | `save_cover_letter_brief` | `cai letter brief ID --file F --json` | 08c | `job_id, instructions?, max_words?` (50-600); por CLI, `F` = `{"instructions": …, "max_words": …}`. Sustituye al anterior | `ok`, `job_id`, `brief` y `max_words` resuelto | — |
 | `get_application_answers` | `cai applications answers ID --json` | — | `job_id` | `job_id` y `answers` (`null` si no hay): las últimas respuestas de screening con `document_id`, `language`, `edited_by_user`, `answers` y `evidence` resueltas | — |
@@ -189,6 +191,13 @@ las más recientes primero.
 ### CV (fase 08)
 
 - `save_cv_content` solo admite ofertas en `approved` o `cv_ready` (si no, `invalid_transition`).
+  Con `correction_id` (y `correction_note`, lo que no se pudo aplicar), la versión queda ligada a esa
+  corrección y, sin `render_options`, repite el diseño de la vigente. Se puede repetir con la misma
+  corrección si la verificación falla; una cancelada o rechazada da `not_allowed`. Leer con
+  `get_cv_correction` anota la versión de la que parte: si después cambia la vigente, guardar da
+  `conflict`, y si el usuario pide otra cosa, `not_allowed`. En los dos casos, se vuelve a leer.
+- El «último CV» es la **versión vigente**: la más nueva que «Volver» (solo en la UI) no ha dejado
+  detrás. `get_cv_content` trae además `labels`: el nombre de cada experiencia y proyecto.
   Antes de guardar comprueba lo que el código puede comprobar de `POLICIES.md` §1: ids de
   experiencia, proyecto, formación y certificación, evidencias que existen en el perfil, skills que
   están en el perfil (con los sinónimos de `config/skill_aliases.yaml`) y skills básicas (nivel B o
@@ -516,7 +525,7 @@ próxima sesión»**. Ninguno de los dos tiene herramienta para lanzarlo: un age
 lanza a sí mismo.
 
 - **En segundo plano** (`POST /agent/runs`, solo la UI): `process-jobs`, `assess-fit`,
-  `generate-cv` y `generate-cover-letter`. El worker lanza `launch.headless` del manifiesto con la orden y **solo las
+  `generate-cv`, `correct-cv`, `verify-cv` y `generate-cover-letter`. El worker lanza `launch.headless` del manifiesto con la orden y **solo las
   herramientas MCP de la acción** (`agent_launch.ACTIONS[...].background`), su skill, los
   subagentes y la lectura de `docs/`; el resto de herramientas de esta tabla se le **deniegan**
   explícitamente. La orden añade: «no preguntes; si necesitas al usuario, termina con líneas
@@ -527,8 +536,8 @@ lanza a sí mismo.
   sigue con las de POLICIES §7.
   Fase 24.5: con Claude Code, el techo va en la orden; con OpenCode, en una configuración propia
   de la ejecución (`services/agent_run_config.py`) que solo enciende esas herramientas, el skill y
-  los roles de la acción. `generate-cv` y `generate-cover-letter` no van en segundo plano con OpenCode
-  (sus roles leen ficheros). Si el agente de la acción no puede, `GET /agent` propone otro en
+  los roles de la acción. `generate-cv`, `correct-cv`, `verify-cv` y `generate-cover-letter` no van en segundo plano con
+  OpenCode (sus roles leen ficheros). Si el agente de la acción no puede, `GET /agent` propone otro en
   `background_agent.suggested` y `suggested_name`. `GET /agent` dice también
   `no_agent_installed` (ningún agente del manifiesto en el `PATH`; en Docker, siempre `false`), con
   el que Inicio y «Agente» explican cómo instalar uno. Cada ejecución guarda su agente, su formato de

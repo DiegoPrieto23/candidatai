@@ -159,5 +159,10 @@ def cancel(session: Session, request_id: int) -> AgentRequestView:
     row = _pending(session, request_id)
     row.status = "cancelled"
     row.completed_at = utcnow()
+    if row.action == "correct-cv" and row.job_id is not None:
+        # Sin encargo, la corrección pendiente se queda sin quien la atienda.
+        from app.services.documents import corrections
+
+        corrections.cancel_pending(session, row.job_id)
     session.flush()
     return view(row)

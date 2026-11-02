@@ -46,6 +46,8 @@ policy:
     - mcp:get_match
     - mcp:get_cv_content
     - mcp:get_cv_brief
+    - mcp:get_cv_correction
+    - mcp:decline_cv_correction
     - mcp:list_cv_templates
     - mcp:list_sources
     - mcp:list_mail_sources

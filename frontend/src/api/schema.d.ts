@@ -488,6 +488,103 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/jobs/{job_id}/cv/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Cv History
+         * @description Las versiones del CV, con qué cambió cada una, y la última corrección pedida.
+         */
+        get: operations["get_cv_history"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/jobs/{job_id}/cv/corrections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Request Cv Correction
+         * @description Guarda qué corregir para que lo lea tu agente; sustituye a la que siga pendiente.
+         */
+        post: operations["request_cv_correction"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cv-corrections/{correction_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel Cv Correction */
+        post: operations["cancel_cv_correction"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/jobs/{job_id}/cv/edit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Edit Cv
+         * @description Versión nueva con los textos que has cambiado, sin agente y con el mismo estilo.
+         */
+        post: operations["edit_cv"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/documents/{document_id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Restore Cv Version
+         * @description Vuelve a una versión del CV. No borra ninguna.
+         */
+        post: operations["restore_cv_version"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/documents/{document_id}/renders": {
         parameters: {
             query?: never;
@@ -2752,7 +2849,7 @@ export interface components {
              * Id
              * @enum {string}
              */
-            id: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "improve-profile-item" | "propose-stories" | "import-cv-template";
+            id: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "improve-profile-item" | "propose-stories" | "import-cv-template";
             /** Label */
             label: string;
             /** Needs Job */
@@ -3010,7 +3107,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "improve-profile-item" | "propose-stories" | "import-cv-template";
+            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "improve-profile-item" | "propose-stories" | "import-cv-template";
             /** Label */
             label: string;
             /** Job Id */
@@ -3051,7 +3148,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "improve-profile-item" | "propose-stories" | "import-cv-template";
+            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "improve-profile-item" | "propose-stories" | "import-cv-template";
             /** Label */
             label: string;
             /** Job Id */
@@ -3810,6 +3907,34 @@ export interface components {
             /** Folders */
             folders: components["schemas"]["DocumentFolderInfo"][];
         };
+        /** CorrectionInput */
+        CorrectionInput: {
+            /** Instruction */
+            instruction: string;
+        };
+        /** CorrectionView */
+        CorrectionView: {
+            /** Id */
+            id: number;
+            /** Job Id */
+            job_id: number;
+            /** Instruction */
+            instruction: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "applied" | "declined" | "cancelled";
+            /** Note */
+            note: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Closed At */
+            closed_at: string | null;
+        };
         /** CostGroup */
         CostGroup: {
             /**
@@ -4149,6 +4274,12 @@ export interface components {
              */
             keywords_targeted: string[];
         };
+        /** CvEditInput */
+        CvEditInput: {
+            /** Base Document Id */
+            base_document_id: number;
+            content: components["schemas"]["CvContent"];
+        };
         /** CvExperience */
         CvExperience: {
             /** Experience Id */
@@ -4165,6 +4296,14 @@ export interface components {
             section_id: string;
             /** Item Ids */
             item_ids: string[];
+        };
+        /** CvHistory */
+        CvHistory: {
+            /** Job Id */
+            job_id: number;
+            /** Versions */
+            versions: components["schemas"]["CvVersion"][];
+            correction: components["schemas"]["CorrectionView"] | null;
         };
         /** CvLanguageItem */
         CvLanguageItem: {
@@ -4222,6 +4361,32 @@ export interface components {
              */
             issues: components["schemas"]["VerificationIssue"][];
         };
+        /** CvVersion */
+        CvVersion: {
+            /** Document Id */
+            document_id: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Current */
+            current: boolean;
+            /**
+             * Origin
+             * @enum {string}
+             */
+            origin: "generated" | "correction" | "edit";
+            /** Instruction */
+            instruction: string | null;
+            /** Note */
+            note: string | null;
+            /** Verified */
+            verified: boolean | null;
+            render: components["schemas"]["RenderResult"] | null;
+            /** Changes */
+            changes: components["schemas"]["SectionChange"][];
+        };
         /** CvView */
         CvView: {
             /** Job Id */
@@ -4238,6 +4403,13 @@ export interface components {
             content: components["schemas"]["CvContent"];
             /** Evidence */
             evidence: {
+                [key: string]: string;
+            };
+            /**
+             * Labels
+             * @default {}
+             */
+            labels: {
                 [key: string]: string;
             };
             verification: components["schemas"]["CvVerification"] | null;
@@ -4318,6 +4490,33 @@ export interface components {
             /** Search Urls */
             search_urls: string[];
         };
+        /** EditResult */
+        EditResult: {
+            /**
+             * Ok
+             * @default true
+             */
+            ok: boolean;
+            /** Job Id */
+            job_id: number;
+            /** Document Id */
+            document_id: number;
+            render: components["schemas"]["RenderResult"];
+            /** Warnings */
+            warnings: components["schemas"]["EditWarning"][];
+        };
+        /** EditWarning */
+        EditWarning: {
+            /**
+             * Code
+             * @enum {string}
+             */
+            code: "skill" | "number";
+            /** Field */
+            field: string;
+            /** Value */
+            value: string;
+        };
         /**
          * EditableProfile
          * @description Lo que ve el editor de la UI: el perfil del fichero tal cual, con email y teléfono.
@@ -4358,7 +4557,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "improve-profile-item" | "propose-stories" | "import-cv-template";
+            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "improve-profile-item" | "propose-stories" | "import-cv-template";
             /** Label */
             label: string;
             terminal: components["schemas"]["Resolution"];
@@ -5124,7 +5323,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "improve-profile-item" | "propose-stories" | "import-cv-template";
+            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "improve-profile-item" | "propose-stories" | "import-cv-template";
             /** Job Id */
             job_id?: number | null;
             /** Milestone Id */
@@ -6655,7 +6854,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "improve-profile-item" | "propose-stories" | "import-cv-template";
+            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "improve-profile-item" | "propose-stories" | "import-cv-template";
             /** Job Id */
             job_id?: number | null;
             /** Milestone Id */
@@ -7030,6 +7229,31 @@ export interface components {
             markdown: {
                 [key: string]: string;
             };
+        };
+        /** SectionChange */
+        SectionChange: {
+            /**
+             * Section
+             * @enum {string}
+             */
+            section: "subtitle" | "summary" | "experience" | "projects" | "skills" | "education" | "certifications" | "extra_sections" | "languages";
+            /** Item */
+            item?: string | null;
+            /**
+             * Removed
+             * @default []
+             */
+            removed: string[];
+            /**
+             * Added
+             * @default []
+             */
+            added: string[];
+            /**
+             * Reordered
+             * @default false
+             */
+            reordered: boolean;
         };
         /** SemanticResult */
         SemanticResult: {
@@ -7497,7 +7721,7 @@ export interface components {
         /** TiersView */
         TiersView: {
             /** Actions */
-            actions: ("search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "improve-profile-item" | "propose-stories" | "import-cv-template")[];
+            actions: ("search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "improve-profile-item" | "propose-stories" | "import-cv-template")[];
             /** Tiers */
             tiers: components["schemas"]["TierView"][];
             /** Can Undo */
@@ -10047,6 +10271,484 @@ export interface operations {
             header?: never;
             path: {
                 job_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobCv"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_cv_history: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CvHistory"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    request_cv_correction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CorrectionInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CorrectionView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    cancel_cv_correction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                correction_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CorrectionView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    edit_cv: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CvEditInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EditResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    restore_cv_version: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                document_id: number;
             };
             cookie?: never;
         };

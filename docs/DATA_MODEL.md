@@ -117,7 +117,10 @@ Contenido de un documento (lo que escribe el agente). La presentación va en `do
 | language | str | `es`, `en` |
 | content | JSON | `CvContent`; en las cartas, `{letter: CoverLetterContent, instructions: {brief, preferences, max_words}}` (las indicaciones vigentes al guardar, respaldo de `user`); o `ApplicationAnswers` (`kind = answers`, fase 10.3). Con referencias a evidencias |
 | verification | JSON? | `{passed, issues[]}` del verificador |
-| edited_by_user | bool | Editado por el usuario en la UI (respuestas; cartas desde la 08c). Cada edición es un documento nuevo: el anterior se conserva y manda el último |
+| edited_by_user | bool | Editado por el usuario en la UI (respuestas; cartas desde la 08c; CVs desde la 39). Cada edición es un documento nuevo: el anterior se conserva y manda el último |
+| base_document_id | FK documents? | CV: la versión de la que sale (al rehacerlo, corregirlo o editarlo), para decir qué cambió. Vacía en los anteriores a esta columna |
+| correction_id | FK cv_corrections? | CV: la corrección que lo originó |
+| superseded | bool | CV: «Volver» lo dejó detrás. La versión vigente es la más nueva sin esta marca; nada se borra |
 | created_at | datetime | |
 
 ### `document_renders`
@@ -213,7 +216,7 @@ Nunca guarda texto crudo de ofertas ni datos del perfil en `args_summary`.
 | `scored` / `fit_assessed` | system / agent | sin cambio; `payload`: `match_id` y `score`/`passed` o `verdict` |
 | `approved` | user | `approved` |
 | `discarded` | user | `closed`; desde la UI, `payload.reason` (`skills`, `seniority`, `location`, `salary`, `company`, `closed` (ya no está publicada, fase 16), `not_interested` (descarte rápido de la Bandeja antes de completar o extraer, por el título o la empresa, fase 27.6), `other`) y `note` opcional (obligatoria con `other`) |
-| `cv_generated` | agent | sin cambio; `payload.document_id` |
+| `cv_generated` | agent / user | sin cambio; `payload.document_id` y, si lo editó el usuario, `edited_by_user` |
 | `cv_rendered` | system / user / agent | `cv_ready` si el render no es `too_long` y su documento ya está verificado con `passed`; si no, sin cambio. `payload`: `document_id`, `render_id`, `template_id`, `too_long`. Solo lo registra el servicio de render |
 | `cv_verified` | agent | `cv_ready` si `passed` y ese documento tiene un render sin `too_long`; `payload`: `document_id`, `passed` |
 | `cv_rejected` | agent | sin cambio; `payload`: `document_id`, `blockers` |
@@ -241,6 +244,7 @@ se rechaza con error claro.
 - Tabla `cover_letter_briefs` (migración 0010): `job_id` (PK/FK), `instructions` (texto), `max_words` (int?),
   `updated_at`. Las indicaciones de la carta para esa oferta; no guarda historial (el documento
   copia las que usó).
+- Tabla `cv_corrections` (migración 0034): `id`, `job_id`, `instruction` (lo que el usuario pide cambiar, hasta 2000 caracteres), `status` (`pending`, `applied`, `declined`, `cancelled`), `note` (lo que el agente no pudo hacer y por qué), `base_document_id` (la versión vigente cuando el agente la leyó, para no pisar lo que cambie después) y fechas. Una pendiente por oferta como mucho: pedir otra la sustituye o, si el agente ya la leyó, la cancela y crea una nueva. Sin evento: la etapa no cambia hasta que se guarde y verifique otra versión; «Volver» tampoco la cambia.
 - Tabla `cv_briefs` (migración 0032): `job_id` (PK/FK), `instructions` (texto) y `updated_at`. Las
   indicaciones del usuario para el CV de esa oferta, que escribe en la ficha y lee `generate-cv`
   con `get_cv_brief`. Sin historial ni evento: no cambian la etapa de la oferta.

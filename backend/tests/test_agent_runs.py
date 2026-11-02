@@ -114,6 +114,8 @@ def test_only_these_actions_run_in_background() -> None:
         "assess-fit",
         "assess-fit-job",
         "generate-cv",
+        "correct-cv",
+        "verify-cv",
         "generate-cover-letter",
     }
 

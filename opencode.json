@@ -29,6 +29,8 @@
     "candidatai_get_match": "allow",
     "candidatai_get_cv_content": "allow",
     "candidatai_get_cv_brief": "allow",
+    "candidatai_get_cv_correction": "allow",
+    "candidatai_decline_cv_correction": "allow",
     "candidatai_list_cv_templates": "allow",
     "candidatai_list_sources": "allow",
     "candidatai_list_mail_sources": "allow",

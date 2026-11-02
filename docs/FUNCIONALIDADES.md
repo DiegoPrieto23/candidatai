@@ -48,6 +48,7 @@ FEATURES.md dejan de coincidir fila a fila. -->
 | Funcionalidad | Dónde | Captura |
 |---|---|---|
 | **CV a medida**: con tus indicaciones para esa oferta, si quieres (qué destacar, el idioma…); tu agente lo redacta citando la evidencia de tu perfil de cada línea; el código rechaza lo que no está y otro rol lo verifica; la ficha avisa con el PDF en cuanto está | `generate-cv` | |
+| **Corregir un CV ya hecho**: di qué cambiar y tu agente toca solo eso, sin inventar nada y verificando el resultado, o edita tú el texto (la app avisa de lo que tu perfil no respalda); se conservan todas las versiones, con qué cambió y «Volver a esta versión» | `correct-cv`, `verify-cv` | |
 | **El mismo contenido, cualquier diseño**: plantilla, foto, color y secciones en la ficha, renderizado en segundos sin agente; comparas renders y marcas el que envías; la maquetación del PDF se revisa | `/jobs/:id` | [CV](img/es/job-cv.webp) · [▶ Otro diseño](img/es/anim/cv.webp) |
 | **Carta de presentación** según tus indicaciones generales y las de cada oferta, verificada, en TXT y PDF a juego con el CV; la puedes retocar a mano. En la ficha, «Escribir carta» la pide como «Generar CV»: en terminal, en segundo plano o para tu próxima sesión | `generate-cover-letter` | [Carta](img/es/job-letter.webp) |
 | **Plantillas de CV**: integradas (Word y HTML) y las tuyas; «Mi CV» al lado de tu perfil | `/perfil/plantillas` | [Plantillas](img/es/templates.webp) |
