@@ -7,6 +7,7 @@ from datetime import timedelta
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy.orm import Session
 
 from app.api.main import create_app
 from app.core import migrations
@@ -112,3 +113,30 @@ def test_api_lists_and_answers(db: None) -> None:
         assert again.status_code in (400, 409, 422)
         missing = client.post("/prompts/99/answer", json={"outcome": "done"})
         assert missing.status_code == 404
+
+
+def test_a_question_returns_the_answer(session: Session) -> None:
+    asked = prompts.ask(session, "¿Has trabajado con Airflow?", options=["Sí", "No"], job_id=None)
+    assert (asked.kind, asked.title, asked.options) == (
+        "question",
+        "Tu agente te pregunta",
+        ["Sí", "No"],
+    )
+    assert asked.seconds_left > 300
+
+    answered = prompts.answer(session, asked.id, "done", " No, nunca ")
+    assert (answered.status, answered.answer) == ("done", "No, nunca")
+    assert prompts.get(session, asked.id).answer == "No, nunca"
+
+
+def test_a_question_needs_an_answer_to_be_done(session: Session) -> None:
+    asked = prompts.ask(session, "¿Con foto?")
+    with pytest.raises(ValueError, match="respuesta"):
+        prompts.answer(session, asked.id, "done", "   ")
+    assert prompts.get(session, asked.id).status == "pending"
+
+
+def test_skipping_a_question_sends_it_back_to_the_terminal(session: Session) -> None:
+    asked = prompts.ask(session, "¿Con foto?")
+    skipped = prompts.answer(session, asked.id, "skipped")
+    assert (skipped.status, skipped.answer) == ("skipped", None)

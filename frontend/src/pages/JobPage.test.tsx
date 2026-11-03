@@ -205,6 +205,48 @@ describe('Ficha de oferta', () => {
     expect(calls.find((c) => c.method === 'POST')?.body).toEqual({ type: 'discarded', reason: 'salary' })
   })
 
+  it.each(['approved', 'cv_ready', 'pending_extraction'] as const)('en «%s» se descarta con motivo', async (stage) => {
+    const calls = mockApi({
+      'GET /status': status(),
+      'GET /jobs/1': jobView({ stage }),
+      'POST /jobs/1/events': { ok: true, event_id: 1, stage: 'closed' },
+    })
+    renderApp('/jobs/1')
+    await userEvent.click(await screen.findByRole('button', { name: 'Descartar' }))
+    const dialog = await screen.findByRole('dialog')
+    await userEvent.click(within(dialog).getByRole('radio', { name: /ya no está|cerrada/i }))
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Descartar' }))
+    await waitFor(() =>
+      expect(calls.find((c) => c.method === 'POST' && c.path === '/jobs/1/events')?.body).toMatchObject({
+        type: 'discarded',
+        reason: 'closed',
+      }),
+    )
+    expect(screen.queryByRole('button', { name: 'Aprobar' })).not.toBeInTheDocument()
+  })
+
+  it.each(['applied', 'in_process'] as const)('en «%s» se cierra la candidatura con su motivo, no se descarta', async (stage) => {
+    const calls = mockApi({
+      'GET /status': status(),
+      'GET /jobs/1': jobView({ stage }),
+      'POST /jobs/1/events': { ok: true, event_id: 1, stage: 'closed' },
+    })
+    renderApp('/jobs/1')
+    await userEvent.click(await screen.findByRole('button', { name: 'Cerrar candidatura' }))
+    expect(screen.queryByRole('button', { name: 'Descartar' })).not.toBeInTheDocument()
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getByRole('heading', { name: 'Cerrar candidatura' })).toBeInTheDocument()
+    await userEvent.click(within(dialog).getByRole('radio', { name: /Te retiras del proceso/ }))
+    await userEvent.type(within(dialog).getByRole('textbox', { name: /Nota/ }), 'Acepté otra')
+    await userEvent.click(within(dialog).getByRole('button', { name: /Registrar|Guardar|Confirmar|Mover/ }))
+    await waitFor(() =>
+      expect(calls.find((c) => c.method === 'POST' && c.path === '/jobs/1/events')?.body).toMatchObject({
+        type: 'withdrawn',
+        note: 'Acepté otra',
+      }),
+    )
+  })
+
   it('reabre una oferta cerrada por los filtros y explica por qué se cerró', async () => {
     const now = new Date().toISOString()
     const view = jobView({

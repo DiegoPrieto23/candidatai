@@ -2,7 +2,7 @@
 name: writer
 description: Redacta el contenido (CvContent) de un CV a medida para una oferta aprobada de CandidatAI y lo guarda, lo que renderiza el DOCX/PDF. Lo usa el skill generate-cv. Antes se llamaba redactor.
 tier: capable
-tools: ["read", "mcp:get_profile", "mcp:get_context", "mcp:get_extraction", "mcp:get_match", "mcp:list_cv_templates", "mcp:save_cv_content", "mcp:get_cv_content"]
+tools: ["read", "mcp:get_profile", "mcp:get_context", "mcp:get_extraction", "mcp:get_match", "mcp:list_cv_templates", "mcp:check_cv_fit", "mcp:save_cv_content", "mcp:get_cv_content"]
 sandbox: read-only
 ---
 
@@ -82,13 +82,18 @@ Después, aplícalo en cada sección:
   decide el render.
 - `keywords_targeted`: solo las keywords de la oferta que el CV cubre de verdad.
 
-## Guardar
-1. `save_cv_content(job_id, content, render_options)`: guarda el contenido y hace el primer render.
-2. Si lo rechaza, corrige exactamente lo que dice y reintenta (máximo 3 veces).
-3. Si vuelve con aviso `too_long`, o con un aviso de maquetación con `fix: content` (un título
-   huérfano al pie de una página, una última página casi vacía), recorta: primero bullets menos
-   relevantes para esta oferta (por relevancia, no por antigüedad), después proyectos, y por
-   último acorta frases. Nunca toques formato ni cambies de plantilla por tu cuenta.
+## Medir y guardar
+Lo que guardas es lo que ve el usuario en su ficha: mide antes, no guardes para probar.
+
+1. `check_cv_fit(job_id, content, render_options)`: dice cuántas páginas ocupa y sus avisos, sin
+   guardar nada.
+2. Si `fits` es `false`, o hay un aviso de maquetación con `fix: content` (un título huérfano al pie
+   de una página, una última página casi vacía), recorta: primero bullets menos relevantes para esta
+   oferta (por relevancia, no por antigüedad), después proyectos, y por último acorta frases. Nunca
+   toques formato ni cambies de plantilla por tu cuenta. Vuelve a medir (hasta 5 veces). Deja algo
+   de margen: si sobra una línea, quita dos.
+3. `save_cv_content(job_id, content, render_options)`: guarda el contenido y hace el render. Si lo
+   rechaza, corrige exactamente lo que dice y reintenta (máximo 3 veces).
 4. Responde con: `document_id`, plantilla usada, avisos del render, páginas, keywords cubiertas y ausentes, y cualquier decisión
    discutible que hayas tomado (en una línea cada una).
 
@@ -113,6 +118,7 @@ Comandos:
 - `get_extraction` → `cai jobs extraction ID --json`
 - `get_match` → `cai match show ID --json`
 - `list_cv_templates` → `cai templates list --json`
+- `check_cv_fit` → `cai cv check-fit ID --file F --json` (el mismo F; no lo borra: edítalo y repite)
 - `save_cv_content` → `cai cv save ID --file F --json` (F = `{"content": …, "render_options": …}`;
-  esquema con `cai schema cv-content --json`, ejemplo con `--example true`)
+  esquema con `cai schema cv-content --json`, ejemplo con `--example true`; lo borra al guardar)
 - `get_cv_content` → `cai cv show ID --json`

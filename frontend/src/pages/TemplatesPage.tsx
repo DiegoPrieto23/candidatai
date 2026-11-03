@@ -1,11 +1,29 @@
-import type { ReactNode } from 'react'
+import { useState, type FormEvent, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ImageIcon, WarningIcon } from '@phosphor-icons/react'
+import { CheckIcon, ImageIcon, PencilSimpleIcon, StarIcon, TrashIcon, WarningIcon, XIcon } from '@phosphor-icons/react'
 import { fileUrls, type TemplateInfo } from '@/api/client'
-import { useTemplates } from '@/api/queries'
+import {
+  useDefaultTemplate,
+  useDeleteTemplate,
+  useRenameTemplate,
+  useSetDefaultTemplate,
+  useTemplates,
+} from '@/api/queries'
 import { MyCv } from '@/components/MyCv'
-import { ErrorState } from '@/components/States'
+import { BusyLabel } from '@/components/StableLabel'
+import { ErrorState, InlineCode } from '@/components/States'
+import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
+import { errorMessage } from '@/lib/errors'
 import { cn } from '@/lib/utils'
 import { useTemplateText } from '@/lib/templateText'
 
@@ -60,7 +78,138 @@ function OriginalAndTemplate({ template }: { template: TemplateInfo }) {
   )
 }
 
-function TemplateCard({ template }: { template: TemplateInfo }) {
+/** El nombre de la plantilla; en las tuyas, con el lápiz para cambiarlo. */
+function TemplateName({ template }: { template: TemplateInfo }) {
+  const { t } = useTranslation('templates', { keyPrefix: 'actions' })
+  const text = useTemplateText()
+  const rename = useRenameTemplate()
+  const name = text.name(template)
+  const [draft, setDraft] = useState<string | null>(null)
+  const save = (event: FormEvent) => {
+    event.preventDefault()
+    const value = (draft ?? '').trim()
+    if (!value || value === name) return setDraft(null)
+    rename.mutate({ templateId: template.id, name: value }, { onSuccess: () => setDraft(null) })
+  }
+  if (draft === null) {
+    return (
+      <div className="flex items-start justify-between gap-2">
+        <h2 className="min-w-0 font-semibold tracking-tight break-words">{name}</h2>
+        {template.editable && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            className="-mt-1 -mr-1 shrink-0"
+            aria-label={t('rename', { name })}
+            onClick={() => setDraft(name)}
+          >
+            <PencilSimpleIcon />
+          </Button>
+        )}
+      </div>
+    )
+  }
+  return (
+    <form onSubmit={save} className="space-y-1">
+      <div className="flex items-center gap-1">
+        <Input
+          autoFocus
+          value={draft}
+          maxLength={80}
+          aria-label={t('nameLabel')}
+          onChange={(event) => setDraft(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === 'Escape') setDraft(null)
+          }}
+          className="h-8"
+        />
+        <Button type="submit" variant="ghost" size="icon-sm" disabled={rename.isPending} aria-label={t('saveName')}>
+          <CheckIcon />
+        </Button>
+        <Button type="button" variant="ghost" size="icon-sm" aria-label={t('cancel')} onClick={() => setDraft(null)}>
+          <XIcon />
+        </Button>
+      </div>
+      {rename.isError && (
+        <p role="alert" className="text-xs text-destructive">
+          {errorMessage(rename.error)}
+        </p>
+      )}
+    </form>
+  )
+}
+
+/** Usar por defecto y eliminar: solo en las tuyas. */
+function TemplateActions({ template, isDefault }: { template: TemplateInfo; isDefault: boolean }) {
+  const { t } = useTranslation('templates', { keyPrefix: 'actions' })
+  const text = useTemplateText()
+  const setDefault = useSetDefaultTemplate()
+  const remove = useDeleteTemplate()
+  const [confirming, setConfirming] = useState(false)
+  const conflicts = setDefault.data?.conflicts ?? []
+  const name = text.name(template)
+  return (
+    <div className="space-y-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        {isDefault ? (
+          <span className="inline-flex items-center gap-1 text-xs font-medium text-primary">
+            <StarIcon weight="fill" /> {t('default')}
+          </span>
+        ) : (
+          <Button size="xs" variant="outline" onClick={() => setDefault.mutate(template.id)} disabled={setDefault.isPending}>
+            <StarIcon /> <BusyLabel busy={setDefault.isPending} busyText={t('saving')} text={t('useDefault')} />
+          </Button>
+        )}
+        <Button size="xs" variant="ghost" aria-label={t('deleteAria', { name })} onClick={() => setConfirming(true)}>
+          <TrashIcon /> {t('delete')}
+        </Button>
+      </div>
+      {setDefault.isError && (
+        <p role="alert" className="text-sm text-destructive">
+          <InlineCode text={errorMessage(setDefault.error)} />
+        </p>
+      )}
+      {conflicts.length > 0 && (
+        <ul aria-label={t('conflicts')} className="space-y-1 text-xs text-muted-foreground">
+          {conflicts.map((conflict) => (
+            <li key={conflict}>
+              <InlineCode text={conflict} />
+            </li>
+          ))}
+        </ul>
+      )}
+      <Dialog open={confirming} onOpenChange={setConfirming}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('confirmTitle', { name })}</DialogTitle>
+            <DialogDescription>{isDefault ? t('confirmDefault') : t('confirmBody')}</DialogDescription>
+          </DialogHeader>
+          {remove.isError && (
+            <p role="alert" className="text-sm text-destructive">
+              {errorMessage(remove.error)}
+            </p>
+          )}
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setConfirming(false)}>
+              {t('cancel')}
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={remove.isPending}
+              onClick={() => remove.mutate(template.id, { onSuccess: () => setConfirming(false) })}
+            >
+              {t('confirmDelete')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+}
+
+function TemplateCard({ template, isDefault }: { template: TemplateInfo; isDefault: boolean }) {
   const { t } = useTranslation('templates')
   const text = useTemplateText()
   const columns = t('columns', { count: template.columns })
@@ -88,9 +237,7 @@ function TemplateCard({ template }: { template: TemplateInfo }) {
         )}
       </div>
       <div className="flex flex-1 flex-col gap-3 p-4">
-        <div>
-          <h2 className="font-semibold tracking-tight">{text.name(template)}</h2>
-        </div>
+        <TemplateName template={template} />
         {template.description && (
           <p className="text-sm leading-relaxed text-foreground/80">{text.description(template)}</p>
         )}
@@ -102,6 +249,15 @@ function TemplateCard({ template }: { template: TemplateInfo }) {
           {template.accent_colors && <Tag>{t('colors', { count: template.accent_colors.choices.length })}</Tag>}
           <Tag>{template.from_user_cv ? t('yourCv') : template.origin === 'builtin' ? t('builtin') : t('yours')}</Tag>
         </ul>
+        {template.editable ? (
+          <TemplateActions template={template} isDefault={isDefault} />
+        ) : (
+          isDefault && (
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-primary">
+              <StarIcon weight="fill" /> {t('actions.default')}
+            </span>
+          )
+        )}
       </div>
     </article>
   )
@@ -110,6 +266,7 @@ function TemplateCard({ template }: { template: TemplateInfo }) {
 export function TemplatesPage() {
   const { t } = useTranslation('templates')
   const { data, isPending, isError, error, refetch } = useTemplates()
+  const defaultTemplate = useDefaultTemplate()
   return (
     <div className="animate-in fade-in duration-300">
       <header className="mb-8 max-w-[65ch]">
@@ -135,7 +292,7 @@ export function TemplatesPage() {
         <div className="space-y-8">
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {data.templates.map((template) => (
-              <TemplateCard key={template.id} template={template} />
+              <TemplateCard key={template.id} template={template} isDefault={defaultTemplate.data?.template_id === template.id} />
             ))}
           </div>
           {data.invalid.length > 0 && (

@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowSquareOutIcon, BellRingingIcon, ShieldWarningIcon } from '@phosphor-icons/react'
+import { ArrowSquareOutIcon, BellRingingIcon, RobotIcon, ShieldWarningIcon } from '@phosphor-icons/react'
 import { useTranslation } from 'react-i18next'
 import type { PromptView } from '@/api/client'
 import { useAnswerPrompt, usePendingPrompts } from '@/api/queries'
 import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
 import { errorMessage } from '@/lib/errors'
 import {
   Dialog,
@@ -80,6 +81,77 @@ function EnableNotifications() {
 }
 
 /**
+ * Una pregunta de tu agente (`ask_user`), para contestar sin ir a su ventana. Si la cierras, se queda
+ * en una pastilla; «Contestar en la terminal» o que se acabe el tiempo hacen que te la pregunte allí.
+ */
+function QuestionPrompt({ prompt, left }: { prompt: PromptView; left: number }) {
+  const { t } = useTranslation('prompts', { keyPrefix: 'question' })
+  const answer = useAnswerPrompt()
+  const [text, setText] = useState('')
+  const [open, setOpen] = useState(true)
+  const send = (value: string) => answer.mutate({ promptId: prompt.id, outcome: 'done', answer: value })
+  return (
+    <>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <RobotIcon className="size-5 text-primary" weight="duotone" />
+              {prompt.title}
+            </DialogTitle>
+            <DialogDescription>{t('description')}</DialogDescription>
+          </DialogHeader>
+          <p className="max-h-72 overflow-y-auto text-sm break-words whitespace-pre-line">{prompt.message}</p>
+          {prompt.options.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {prompt.options.map((option) => (
+                <Button key={option} type="button" variant="outline" size="sm" disabled={answer.isPending} onClick={() => send(option)}>
+                  {option}
+                </Button>
+              ))}
+            </div>
+          )}
+          <Textarea
+            aria-label={t('label')}
+            placeholder={prompt.options.length > 0 ? t('placeholderOther') : t('placeholder')}
+            value={text}
+            maxLength={2000}
+            rows={3}
+            onChange={(event) => setText(event.target.value)}
+          />
+          <p role="timer" aria-live="off" className="text-sm text-muted-foreground">
+            {left > 0 ? t('expires', { time: clock(left) }) : t('timeUp')}
+          </p>
+          {answer.error && (
+            <p role="alert" className="text-sm text-destructive">
+              {errorMessage(answer.error)}
+            </p>
+          )}
+          <DialogFooter className="flex-wrap gap-2 sm:justify-between">
+            <Button type="button" variant="ghost" disabled={answer.isPending} onClick={() => answer.mutate({ promptId: prompt.id, outcome: 'skipped' })}>
+              {t('inTerminal')}
+            </Button>
+            <Button type="button" disabled={answer.isPending || !text.trim()} onClick={() => send(text)}>
+              {t('send')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {!open && (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="pointer-events-auto inline-flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm font-medium shadow-lg"
+        >
+          <RobotIcon className="size-4 text-primary" weight="duotone" />
+          {prompt.title} · {clock(left)}
+        </button>
+      )}
+    </>
+  )
+}
+
+/**
  * Pop-up de los avisos que te pide el agente o el worker: «Completa el captcha en InfoJobs»,
  * «Inicia sesión…». Lo resuelves tú en el navegador y contestas «Ya está» o «Saltar». Si no
  * contestas a tiempo, el agente sigue sin ello. Nunca se resuelve un captcha por ti.
@@ -111,6 +183,9 @@ export function UserPrompts() {
   }, [prompt?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!prompt) return null
+  if (prompt.kind === 'question') {
+    return <QuestionPrompt key={prompt.id} prompt={prompt} left={left} />
+  }
   const send = (outcome: 'done' | 'skipped') => answer.mutate({ promptId: prompt.id, outcome })
   const open = hidden !== prompt.id
   const where = prompt.attempt_id

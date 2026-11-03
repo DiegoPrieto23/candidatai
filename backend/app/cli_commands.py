@@ -2488,6 +2488,7 @@ register_tools(
         "applications": applications_app,
         "letter": letter_app,
         "prompts": prompts_app,
+        "agents": agents_app,
         "context": context_app,
         "skills": skills_app,
         "replies": replies_app,

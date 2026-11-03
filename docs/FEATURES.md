@@ -22,6 +22,8 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 | **Target companies**: their jobs come in every day from Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters and Recruitee (public APIs, no scraping); "Test" shows how many pass your filters | `/fuentes/empresas` | [Companies](img/en/sources-companies.webp) |
 | **Job boards** (in “Search jobs → Where to search”): **Set up with my agent** recommends job boards and prepares their searches; when you add a known one (InfoJobs, Tecnoempleo, Indeed, LinkedIn), the searches come from the roles and locations in your profile, and each job board can be edited. The ones your agent browses, with a unique priority each, access type and jobs per run, each explained with its ⓘ; InfoJobs and Adzuna with keys, Manfred and freehire.me without | `/fuentes/plataformas` | [Platforms](img/en/sources-platforms.webp) |
 | **Search jobs**: choose which job boards to search, refine with role and location just that once and launch your agent. A notice says “Searching…” on every page and changes when your agent finishes, with what it brought | `/buscar` | [Search jobs](img/en/search.webp) |
+| **Discard or close from the job page**: at any stage, without going through the Board. Until you send it you discard with a reason; once sent you close the application (rejected, you withdraw or expired). **Reopen** undoes it | `/jobs/:id` | |
+| **Notices from your agent**: whatever you launch with a button shows in a notice on every page, with what it has done so far, and changes when it finishes. If it needs to know something to continue, it asks in a notice and you answer there | all | |
 | **What you're after**: roles, experience, minimum salary, place, contract and what you discard, right where they're used; each block saves separately | `/buscar/ajustes` | [What you're after](img/en/search-settings.webp) |
 | **Search portals with your browser**: your agent walks your saved searches, with page limits and pauses, adds what fits and stops at captchas | `search-jobs` | |
 | **Job alerts by email**: LinkedIn, InfoJobs, Indeed… alerts come in by themselves, read-only over IMAP or from `.eml` files; **several mailboxes**, with a step-by-step guide for Gmail, Outlook, Yahoo and iCloud; summary jobs expire after 21 days | `/fuentes/correo` | [▶ Add a mailbox](img/en/anim/mailbox.webp) |
@@ -54,7 +56,7 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 | **Correct a CV you already have**: say what to change and your agent touches only that, without inventing anything and verifying the result, or edit the text yourself (the app warns about what your profile doesn't back); every version is kept, with what changed and “Go back to this version” | `correct-cv`, `verify-cv` | |
 | **Same content, any design**: template, photo, colour and sections in the job page, rendered in seconds without the agent; compare renders and mark the one you send; the PDF layout is checked | `/jobs/:id` | [CV](img/en/job-cv.webp) · [▶ Another design](img/en/anim/cv.webp) |
 | **Cover letter** following your general and per-job instructions, verified, as TXT and PDF matching the CV design; edit it by hand if you want. On the job page, **Write letter** asks for it like **Generate CV**: in a terminal, in the background or for your next session | `generate-cover-letter` | [Letter](img/en/job-letter.webp) |
-| **CV templates**: built-in (Word and HTML) and yours; "My CV" side by side with your profile | `/perfil/plantillas` | [Templates](img/en/templates.webp) |
+| **CV templates**: built-in (Word and HTML) and yours, which you can rename, delete or use as default; "My CV" side by side with your profile | `/perfil/plantillas` | [Templates](img/en/templates.webp) |
 | **Import your own CV design** from Word, PDF, an image, HTML, Canva or Google Docs as a template | `import-cv-template` | |
 
 ## 4. Apply
@@ -81,7 +83,7 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 
 | Feature | Where | Screenshot |
 |---|---|---|
-| **Company research** with sources: product, news, engineering culture, stack and red flags | `research-company` | [Dossier](img/en/job-research.webp) |
+| **Company research** with sources: product, news, engineering culture, stack and red flags. It asks nothing: it lets you know when it finishes and you see it in the job page | `research-company` | [Dossier](img/en/job-research.webp) |
 | **Interview prep**: a PDF guide and a day-by-day plan, shown under the interview; each round with its type (HR, technical, case, final) and your instructions, which the mock interview uses too; ask for changes to a guide you already have, even after the interview, and your agent touches only that; the previous version is kept, with what changed and **Go back to the previous version** | `prepare-interview`, `correct-interview-guide` | [Plan](img/en/job-interview.webp) |
 | **Mock interview**: one question at a time, concrete feedback and a better answer from your profile only | `mock-interview` | |
 | **Debrief**: notes and next steps, the next round predicted and new STAR stories proposed; with a received offer, what to clarify before accepting | `debrief-interview` | |

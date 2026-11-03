@@ -177,7 +177,7 @@ def make_command(spec: ToolSpec, render: Callable[[Any], None] | None) -> Callab
             result = call_tool(spec, raw_args, ctx)
         except ToolError as error:
             _fail(error, as_json)
-        if file is not None:
+        if file is not None and not spec.cli.keep_file:
             file.unlink(missing_ok=True)
         if as_json:
             typer.echo(dump_json(result))

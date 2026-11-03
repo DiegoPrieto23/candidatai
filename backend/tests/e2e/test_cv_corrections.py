@@ -56,6 +56,9 @@ def test_correct_go_back_and_edit(page: Page, fresh_demo_app: AppServer) -> None
     versions = section.get_by_role("region", name=t("cv.history.title"), exact=True)
     versions.get_by_role("button", name=re.compile(t("cv.history.title"))).click(timeout=15_000)
     expect(versions.get_by_text(t("cv.history.origin.correction"))).to_be_visible(timeout=15_000)
+    # «Qué cambió» sale plegado: se abre si quieres verlo.
+    expect(versions.get_by_text(SHORTER)).to_have_count(0)
+    versions.get_by_role("button", name=re.compile(r"^Qué cambió")).first.click()
     expect(versions.get_by_text(SHORTER)).to_be_visible()
     assert _current_document(server, job_id) == saved["document_id"]
 

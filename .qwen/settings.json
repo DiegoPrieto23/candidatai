@@ -7,9 +7,12 @@
       "command": "uv",
       "args": [
         "run",
+        "--no-sync",
         "--directory",
         "backend",
-        "cai-mcp"
+        "python",
+        "-m",
+        "app.mcp.server"
       ]
     }
   },
@@ -29,6 +32,7 @@
       "mcp__candidatai__get_match",
       "mcp__candidatai__get_cv_content",
       "mcp__candidatai__get_cv_brief",
+      "mcp__candidatai__check_cv_fit",
       "mcp__candidatai__get_cv_correction",
       "mcp__candidatai__decline_cv_correction",
       "mcp__candidatai__list_cv_templates",
@@ -45,8 +49,11 @@
       "mcp__candidatai__save_message_draft",
       "mcp__candidatai__get_job_contacts",
       "mcp__candidatai__get_company_research",
+      "mcp__candidatai__save_company_research",
       "mcp__candidatai__get_received_offer",
       "mcp__candidatai__wait_user_action",
+      "mcp__candidatai__ask_user",
+      "mcp__candidatai__finish_task",
       "mcp__candidatai__finish_search",
       "mcp__candidatai__list_agent_requests"
     ],

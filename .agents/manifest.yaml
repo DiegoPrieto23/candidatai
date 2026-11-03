@@ -19,7 +19,10 @@
 mcp_server:
   name: candidatai
   command: uv
-  args: [run, --directory, backend, cai-mcp]
+  # La app en marcha tiene abierto `cai.exe`. En Windows, si uv decide reinstalar el paquete falla con
+  # «fichero en uso», y a veces deja borrado `cai-mcp.exe` a medias. Por eso sin sincronizar y como
+  # módulo: no depende de ese ejecutable ni lo mantiene abierto.
+  args: [run, --no-sync, --directory, backend, python, -m, app.mcp.server]
   env: {}
   # Variables del entorno del agente que el servidor necesita: `CAI_DATA_DIR` elige la carpeta de
   # datos (la demo). Casi todos los agentes pasan su entorno entero; Codex solo una lista blanca, y
@@ -46,6 +49,7 @@ policy:
     - mcp:get_match
     - mcp:get_cv_content
     - mcp:get_cv_brief
+    - mcp:check_cv_fit
     - mcp:get_cv_correction
     - mcp:decline_cv_correction
     - mcp:list_cv_templates
@@ -62,8 +66,11 @@ policy:
     - mcp:save_message_draft
     - mcp:get_job_contacts
     - mcp:get_company_research
+    - mcp:save_company_research
     - mcp:get_received_offer
     - mcp:wait_user_action
+    - mcp:ask_user
+    - mcp:finish_task
     - mcp:finish_search
     - mcp:list_agent_requests
   # Rutas (relativas a la raíz, con comodines) que ningún agente lee o edita.

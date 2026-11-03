@@ -16,6 +16,7 @@ import {
 } from '@phosphor-icons/react'
 import { Trans, useTranslation } from 'react-i18next'
 import { SafeTrans } from '@/components/SafeTrans'
+import type { BoardCard } from '@/api/client'
 import type { AddJobResult, EventOut, JobView, Schemas } from '@/api/client'
 import { useAddNote, useAssessThreshold, useJob, useJobEvent, useJobMatch, type UserEventBody } from '@/api/queries'
 import { JobCostPanel } from '@/components/JobCostPanel'
@@ -27,6 +28,8 @@ import { CvSection } from '@/components/CvSection'
 import { JobReplyNotice } from '@/components/JobReplyNotice'
 import { ClosedNotice, DoubtfulNote, RepostNote } from '@/components/JobSignals'
 import { DiscardDialog } from '@/components/DiscardDialog'
+import { MoveDialog } from '@/components/MoveDialog'
+import type { MoveOption } from '@/lib/moves'
 import { DraftsSection } from '@/components/DraftsSection'
 import { FitSteps } from '@/components/FitSteps'
 import { MatchDetails, ScoreBadge } from '@/components/MatchDetails'
@@ -475,11 +478,23 @@ function MatchPanel({ job }: { job: JobView }) {
   )
 }
 
-/** Aprobar o descartar (por revisar), descartar un resumen de una alerta y reabrir (si está cerrada). */
+/** Los motivos para cerrar una candidatura ya enviada. Son eventos propios, no un descarte: el
+ * embudo distingue que la empresa te rechace, que te retires o que caduque. */
+const CLOSE_SENT: MoveOption[] = [
+  { event: 'rejected', to: 'closed' },
+  { event: 'withdrawn', to: 'closed' },
+  { event: 'expired', to: 'closed' },
+]
+
+/**
+ * Lo que se decide sobre la oferta, en cualquier etapa: aprobar (por revisar), descartar con motivo
+ * (hasta enviarla), cerrar la candidatura (ya enviada) y reabrir (si está cerrada).
+ */
 function Decision({ job }: { job: JobView }) {
   const { t } = useTranslation('job', { keyPrefix: 'decision' })
   const event = useJobEvent()
   const [discarding, setDiscarding] = useState(false)
+  const [closing, setClosing] = useState(false)
   const send = (body: UserEventBody) =>
     event.mutate({ jobId: job.id, body }, { onSuccess: () => setDiscarding(false) })
   if (job.stage === 'closed') {
@@ -493,7 +508,24 @@ function Decision({ job }: { job: JobView }) {
       </div>
     )
   }
-  if (job.stage !== 'pending_triage' && job.stage !== 'pending_detail') return null
+  if (job.stage === 'applied' || job.stage === 'in_process') {
+    const card = { job_id: job.id, title: job.title, company: job.company, stage: job.stage, reopen_to: null } as unknown as BoardCard
+    return (
+      <>
+        <Button variant="outline" size="sm" onClick={() => setClosing(true)}>
+          <XIcon weight="bold" />
+          {t('closeSent')}
+        </Button>
+        <MoveDialog
+          card={closing ? card : null}
+          options={CLOSE_SENT}
+          title={t('closeSent')}
+          onOpenChange={(open) => !open && setClosing(false)}
+        />
+      </>
+    )
+  }
+  if (!job.stage) return null
   return (
     <div className="flex flex-col items-end gap-1">
       <div className="flex gap-2">

@@ -20,6 +20,8 @@ const later = () => new Date(Date.now() + 1000).toISOString()
 // La ficha vuelve a pedir el CV o la guía cada 5 s: se espera algo más.
 const POLL = { timeout: 8000 }
 
+const VERIFIED = { passed: true, issues: [] }
+
 beforeEach(() => resetWatches())
 
 describe('Aviso de «listo» tras abrir el agente', () => {
@@ -40,7 +42,7 @@ describe('Aviso de «listo» tras abrir el agente', () => {
     expect(screen.queryByText('Tu CV está listo')).not.toBeInTheDocument()
 
     // Un render anterior al clic no cuenta; uno nuevo, sí.
-    cv = jobCv([renderResult(1, { selected: true, created_at: later() })])
+    cv = jobCv([renderResult(1, { selected: true, created_at: later() })], { verification: VERIFIED })
     const notice = (await screen.findByText('Tu CV está listo', {}, POLL)).closest('[role="status"]') as HTMLElement
     expect(within(notice).getByText('Data Engineer · Brétema Analytics')).toBeInTheDocument()
     expect(within(notice).getByRole('link', { name: 'Abrir PDF' })).toHaveAttribute(
@@ -51,6 +53,31 @@ describe('Aviso de «listo» tras abrir el agente', () => {
     await userEvent.click(within(notice).getByRole('button', { name: 'Cerrar aviso' }))
     expect(screen.queryByText('Tu CV está listo')).not.toBeInTheDocument()
   }, 15_000)
+
+  it('no avisa de un CV que no cabe o que aún no está verificado', async () => {
+    let cv = { job_id: 1, stage: 'approved', can_render: true, cv: null } as ReturnType<typeof jobCv> | object
+    mockApi({
+      'GET /status': status(),
+      'GET /jobs/1': jobView({ stage: 'approved' }),
+      'GET /jobs/1/cv': () => cv,
+      'GET /templates': templateList(),
+      'GET /agent': launcher,
+      'POST /agent/launch': launched,
+    })
+    renderApp('/jobs/1?tab=application')
+    const section = await screen.findByRole('region', { name: 'CV' })
+    await userEvent.click(await within(section).findByRole('button', { name: 'Generar CV' }))
+    await screen.findByText(/Te aviso aquí en cuanto esté/)
+
+    const tooLong = { code: 'too_long', message: 'El CV ocupa 2 páginas y el máximo es 1.' }
+    cv = jobCv([renderResult(1, { selected: false, created_at: later(), warnings: [tooLong] })], { verification: VERIFIED })
+    await new Promise((resolve) => setTimeout(resolve, 5500))
+    expect(screen.queryByText('Tu CV está listo')).not.toBeInTheDocument()
+
+    cv = jobCv([renderResult(2, { selected: true, created_at: later() })], { verification: null })
+    await new Promise((resolve) => setTimeout(resolve, 5500))
+    expect(screen.queryByText('Tu CV está listo')).not.toBeInTheDocument()
+  }, 20_000)
 
   it('avisa cuando está la guía de la entrevista', async () => {
     const future = new Date(Date.now() + 2 * 86_400_000).toISOString()

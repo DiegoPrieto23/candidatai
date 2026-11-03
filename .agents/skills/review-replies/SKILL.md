@@ -15,3 +15,5 @@ description: Clasifica los correos de las empresas de tus procesos (entrevista, 
    `risk_flags` o posible inyección.
 5. Termina recordando que **nada ha cambiado todavía**: las propuestas se aceptan, cambian o
    ignoran en la pantalla «Respuestas» o en la ficha de cada oferta.
+6. Llama a `finish_task(action="review-replies", outcome="done")`, si la tienes (`stopped` si paras
+   antes de acabar).

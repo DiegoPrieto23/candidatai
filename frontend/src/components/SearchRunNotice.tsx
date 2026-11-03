@@ -5,22 +5,8 @@ import { useTranslation } from 'react-i18next'
 import { CheckCircleIcon, CircleNotchIcon, MinusIcon, WarningIcon, XIcon } from '@phosphor-icons/react'
 import { keys, useDismissSearchRun, useSearchRun } from '@/api/queries'
 import { Button } from '@/components/ui/button'
+import { notifyIfHidden } from '@/lib/notify'
 import { cn } from '@/lib/utils'
-
-/** Notificación del sistema si la pestaña no está a la vista (y el permiso ya está dado). */
-function notify(title: string, body: string) {
-  if (typeof window === 'undefined' || !('Notification' in window)) return
-  if (Notification.permission !== 'granted' || document.visibilityState === 'visible') return
-  try {
-    const n = new Notification(title, { body })
-    n.onclick = () => {
-      window.focus()
-      n.close()
-    }
-  } catch {
-    // Algunos navegadores no dejan crearlas fuera de un service worker: queda el aviso de la página.
-  }
-}
 
 /** Un tramo por portal: se ve de un vistazo cuánto queda sin leer ninguna cifra. */
 function PortalProgress({ done, total }: { done: number; total: number }) {
@@ -61,7 +47,7 @@ export function SearchRunNotice() {
   useEffect(() => {
     if (!run || !finishedTitle || notified.current === run.id) return
     // Al abrir la app con un aviso antiguo no hay nada nuevo que notificar: solo si lo viste buscando.
-    if (previous.current?.startsWith(`${run.id}:running`)) notify(finishedTitle, t('notification'))
+    if (previous.current?.startsWith(`${run.id}:running`)) notifyIfHidden(finishedTitle, t('notification'))
     notified.current = run.id
   }, [run, finishedTitle, t])
 

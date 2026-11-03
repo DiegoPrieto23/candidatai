@@ -270,6 +270,7 @@ export function templateInfo(changes: Partial<TemplateInfo> = {}): TemplateInfo 
     has_preview: true,
     from_user_cv: false,
     has_source_preview: false,
+    editable: false,
     ...changes,
   }
 }

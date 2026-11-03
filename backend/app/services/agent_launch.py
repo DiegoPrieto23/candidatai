@@ -42,6 +42,7 @@ from app.services import (
     agent_prefs,
     agent_registry,
     agent_run_config,
+    agent_tasks,
     container,
     events,
     interviews,
@@ -635,6 +636,7 @@ def launch(
     result.job_id = job_id
     if action == "search-jobs":
         search_runs.start(session, search.platform_ids if search else [])
+    agent_tasks.start(session, action, job_id, milestone_id)
     return result
 
 

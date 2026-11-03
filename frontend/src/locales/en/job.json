@@ -63,7 +63,8 @@
   "decision": {
     "reopen": "Reopen",
     "approve": "Approve",
-    "discard": "Discard"
+    "discard": "Discard",
+    "closeSent": "Close application"
   },
   "tabs": {
     "overview": "Posting",

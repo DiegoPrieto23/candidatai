@@ -36,6 +36,7 @@ CATALOG: tuple[SchemaEntry, ...] = (
     SchemaEntry("extraction", "save_extraction", "Datos estructurados de una oferta"),
     SchemaEntry("fit-assessment", "save_fit_assessment", "Valoración explicada del encaje"),
     SchemaEntry("cv-content", "save_cv_content", "Contenido del CV y opciones de render"),
+    SchemaEntry("cv-fit-check", "check_cv_fit", "Lo que se mide antes de guardar un CV"),
     SchemaEntry("cv-render-options", "render_cv", "Opciones para volver a renderizar un CV"),
     SchemaEntry("cv-verification", "save_cv_verification", "Resultado del rol verifier (CV)"),
     SchemaEntry("application-answers", "save_application_answers", "Respuestas de screening"),

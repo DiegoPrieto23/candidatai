@@ -12,12 +12,19 @@ puede, dilo y para.
 
 Argumentos: `job_id` y, opcional, en qué fijarte («stack», «si hay despidos»…).
 
+**No preguntes nada, ni antes ni después.** Haber lanzado el skill ya es la orden: investigas, guardas
+el dosier, dices que has terminado y paras. El usuario lo lee en la app, sin necesidad de contestarte.
+
 ## 1. Antes de buscar
-`get_company_research(job_id)`: si ya hay dosier y tiene menos de 30 días (`age_days`), enséñale el
-resumen y pregunta si quiere actualizarlo. `get_extraction(job_id)`: nombre, sector (`domain`) y lo
-que pide la oferta, para saber qué buscar.
+`get_company_research(job_id)`: si ya hay dosier, lo sustituyes por uno al día (si los argumentos
+piden algo concreto, céntrate en eso y conserva lo demás que siga vigente).
+`get_extraction(job_id)`: nombre, sector (`domain`) y lo que pide la oferta, para saber qué buscar.
 
 ## 2. Buscar
+- **Un dosier, no un informe.** Como mucho 8 búsquedas y 10 páginas leídas: elige las que más
+  aporten, léelas en paralelo y para en cuanto tengas con qué rellenar cada apartado. Lo que no
+  aparezca rápido se deja fuera o va en `notes` como algo por comprobar: no sigas buscando para
+  completarlo. Debería llevar unos 2 minutos.
 - Fuentes en este orden: la web de la empresa (quiénes somos, producto, blog de ingeniería),
   sus ofertas públicas (stack), prensa y notas de prensa de los últimos 12 meses (financiación,
   adquisiciones, despidos, lanzamientos), charlas o repositorios públicos del equipo. Para las
@@ -28,7 +35,7 @@ que pide la oferta, para saber qué buscar.
 - Nada de LinkedIn ni de páginas con login: solo web pública. No rellenes formularios ni aceptes
   nada.
 - Comprueba que hablas de **esta** empresa (mismo nombre, sector y país): las homónimas son el
-  error típico. Si dudas, dilo.
+  error típico. Si dudas, dilo en `notes`.
 
 ## 3. Dosier
 `save_company_research(job_id, research)` con:
@@ -48,16 +55,15 @@ ir sin cita). Si
 falta una cita o el número no existe, la herramienta lo rechaza: corrígelo. Las fuentes de LinkedIn
 también se rechazan.
 
-**Antes de guardar**, enséñale el resumen, lo más relevante de cada apartado, las banderas rojas
-(si las hay) y la lista de fuentes, y guárdalo solo con su OK (o con sus cambios). Lo leerán después otros skills, así que lo
-que no quiera, fuera. Guardar sustituye al dosier anterior de la empresa (lo comparten todas sus
-ofertas).
+Guárdalo directamente, sin enseñárselo antes ni pedir su OK: lo revisa en la ficha, con sus fuentes.
+Guardar sustituye al dosier anterior de la empresa (lo comparten todas sus ofertas).
 
 ## 4. Cierre
-Dile dónde está el dosier (ficha › «Empresa» y el fichero de `data/documentos/empresas/`).
-Recuérdale que **la carta no usa el dosier** (§7): si
-quiere que mencione algo, que lo copie a las indicaciones de la carta de esa oferta. Ofrece
-`draft-message` o, con una entrevista, `prepare-interview`.
+En dos líneas: que está listo y dónde verlo (ficha › «Empresa»), y las banderas rojas si las hay. La
+carta no usa el dosier (§7). No ofrezcas nada más ni preguntes si le vale.
+
+Si no puedes terminarlo (sin web, por ejemplo), llama a
+`finish_task(action="research-company", outcome="stopped")`, si la tienes, y explica por qué.
 
 ## Esquema y errores
 Con MCP, el esquema de lo que guardas viene en la propia herramienta. Sin MCP:

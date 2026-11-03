@@ -5,7 +5,7 @@ una candidatura asistida; aquí solo se leen y se contestan.
 """
 
 from fastapi import APIRouter
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.api.deps import SessionDep
 from app.services import prompts
@@ -17,6 +17,7 @@ class AnswerBody(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     outcome: prompts.Outcome  # `done` («Ya está») o `skipped` («Saltar»)
+    answer: str | None = Field(default=None, max_length=prompts.MAX_ANSWER)  # preguntas del agente
 
 
 @router.get("/pending", operation_id="list_pending_prompts")
@@ -28,4 +29,4 @@ def list_pending_prompts(session: SessionDep) -> prompts.PendingPrompts:
 @router.post("/{prompt_id}/answer", operation_id="answer_prompt")
 def answer_prompt(session: SessionDep, prompt_id: int, body: AnswerBody) -> prompts.PromptView:
     """«Ya está» o «Saltar». En una candidatura asistida, «Ya está» vuelve a rellenar la página."""
-    return prompts.answer(session, prompt_id, body.outcome)
+    return prompts.answer(session, prompt_id, body.outcome, body.answer)

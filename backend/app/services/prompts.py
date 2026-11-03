@@ -6,6 +6,10 @@ contestas «Ya está» o «Saltar». Quien lo pidió espera como mucho hasta `ex
 defecto, `wait_user_action` en tramos cortos) y luego sigue: si no contestaste, ese paso se salta.
 
 Nada aquí resuelve ni esquiva un captcha: solo te avisa para que lo hagas tú (POLICIES §5.3).
+
+Las preguntas del agente (`ask_user`) van por el mismo camino: así no tienes que ir a su ventana.
+Contestas en el pop-up y `wait_user_action` le devuelve `answer`. «Saltar» o que caduque le dice que
+te lo pregunte en la terminal, donde siempre puedes contestar también.
 """
 
 import time
@@ -21,10 +25,13 @@ from app.models import ApplicationAttempt, Source, UserPrompt
 from app.models.base import utcnow
 
 PromptKind = Literal["captcha", "anti_bot", "login_required"]
+PromptViewKind = Literal["captcha", "anti_bot", "login_required", "question"]
 PromptStatus = Literal["pending", "done", "skipped", "expired"]
 Outcome = Literal["done", "skipped"]
 
 DEFAULT_TIMEOUT_SECONDS = 300
+QUESTION_TIMEOUT_SECONDS = 600
+MAX_ANSWER = 2000
 MAX_WAIT_SECONDS = 55  # cada llamada a `wait`: por debajo del timeout de una herramienta MCP
 _POLL_SECONDS = 2.0
 
@@ -32,6 +39,7 @@ _TITLES: dict[str, str] = {
     "captcha": "Completa el captcha",
     "anti_bot": "La web pide comprobar que eres una persona",
     "login_required": "Inicia sesión",
+    "question": "Tu agente te pregunta",
 }
 
 
@@ -41,7 +49,7 @@ class PromptNotFoundError(LookupError):
 
 class PromptView(BaseModel):
     id: int
-    kind: PromptKind
+    kind: PromptViewKind
     title: str
     message: str
     url: str | None
@@ -53,6 +61,9 @@ class PromptView(BaseModel):
     expires_at: datetime
     answered_at: datetime | None
     seconds_left: int  # hasta que caduca; 0 si ya no está pendiente
+    options: list[str] = []  # preguntas: respuestas para elegir
+    answer: str | None = None  # preguntas: lo que ha contestado
+    job_id: int | None = None
 
 
 class PendingPrompts(BaseModel):
@@ -82,6 +93,9 @@ def _view(session: Session, prompt: UserPrompt, now: datetime | None = None) -> 
         expires_at=prompt.expires_at,
         answered_at=prompt.answered_at,
         seconds_left=max(0, int((prompt.expires_at - now).total_seconds())) if pending else 0,
+        options=prompt.options or [],
+        answer=prompt.answer,
+        job_id=prompt.job_id,
     )
 
 
@@ -127,6 +141,29 @@ def request(
     return _view(session, prompt, now)
 
 
+def ask(
+    session: Session,
+    question: str,
+    options: list[str] | None = None,
+    job_id: int | None = None,
+    timeout_seconds: int = QUESTION_TIMEOUT_SECONDS,
+) -> PromptView:
+    """Una pregunta del agente que se contesta en la app."""
+    now = utcnow()
+    prompt = UserPrompt(
+        kind="question",
+        message=question.strip(),
+        options=[option.strip() for option in options or [] if option.strip()] or None,
+        job_id=job_id,
+        status="pending",
+        created_at=now,
+        expires_at=now + timedelta(seconds=timeout_seconds),
+    )
+    session.add(prompt)
+    session.flush()
+    return _view(session, prompt, now)
+
+
 def get(session: Session, prompt_id: int) -> PromptView:
     prompt = _get(session, prompt_id)
     now = utcnow()
@@ -159,14 +196,22 @@ def list_pending(session: Session) -> PendingPrompts:
     return PendingPrompts(prompts=[_view(session, r, now) for r in rows if r.status == "pending"])
 
 
-def answer(session: Session, prompt_id: int, outcome: Outcome) -> PromptView:
+def answer(
+    session: Session, prompt_id: int, outcome: Outcome, text: str | None = None
+) -> PromptView:
     """Tu respuesta en la UI: «Ya está» (`done`) o «Saltar» (`skipped`). En una candidatura
-    asistida, «Ya está» vuelve a rellenar la página que tienes delante."""
+    asistida, «Ya está» vuelve a rellenar la página que tienes delante. Una pregunta contestada
+    lleva su texto."""
     prompt = _get(session, prompt_id)
     now = utcnow()
     _expire(prompt, now)
     if prompt.status != "pending":
         raise ValueError(f"Este aviso ya no está pendiente («{prompt.status}»).")
+    if prompt.kind == "question" and outcome == "done":
+        clean = (text or "").strip()
+        if not clean:
+            raise ValueError("Escribe o elige una respuesta.")
+        prompt.answer = clean[:MAX_ANSWER]
     prompt.status = outcome
     prompt.answered_at = now
     session.flush()

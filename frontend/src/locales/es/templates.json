@@ -3,22 +3,10 @@
     "copyAria": "Copiar la petición para tu agente",
     "copied": "Copiado",
     "copy": "Copiar",
-    "noPreview": "Sin vista",
     "askAgent": "Tu agente lo convierte en plantilla una sola vez (después no gasta cuota). Se abre en una terminal, donde ves y apruebas lo que hace.",
     "convert": "Convertir en plantilla",
     "orCopy": "¿Prefieres pedírselo tú a tu agente?",
     "recreated": "Desde {{format}} el agente recrea el diseño: se parecerá mucho, pero no será exacto, y solo dará PDF. Necesita un agente que vea imágenes. Si tienes el Word, súbelo: se conserva tal cual.",
-    "original": "Original",
-    "noOriginal": "Sin vista del original",
-    "recreation": "Recreación con tu perfil",
-    "withProfile": "Con tu perfil",
-    "htmlOnly": "Esta plantilla solo da PDF. Si un portal pide Word, genera ese CV con una plantilla que dé Word.",
-    "previewHint": "La vista con tu perfil es orientativa (los primeros logros de cada experiencia); la primera vez tarda unos segundos. Cada CV a medida lo redacta tu agente para la oferta.",
-    "default": "Plantilla por defecto",
-    "saving": "Guardando…",
-    "useDefault": "Usar por defecto",
-    "conflicts": "Reglas que eligen otra plantilla",
-    "yourCv": "Tu CV",
     "pending": "Pendiente de importar",
     "removeAria": "Quitar {{name}}",
     "remove": "Quitar",
@@ -28,8 +16,7 @@
     "uploading": "Subiendo…",
     "upload": "Subir mi CV",
     "none": "Aún no has subido tu CV",
-    "noneHint": "Mejor en Word (.docx): el diseño se conserva exacto. Máximo 10 MB.",
-    "noRealPreview": "No se ha podido hacer la vista con tu perfil. Comprueba que lo tienes creado en «Mi perfil»."
+    "noneHint": "Mejor en Word (.docx): el diseño se conserva exacto. Máximo 10 MB."
   },
   "recreation": "Recreación",
   "template": "Plantilla",
@@ -74,5 +61,21 @@
       "name": "Moderna a dos columnas",
       "description": "Dos columnas con barra lateral de color (foto circular, contacto, habilidades, idiomas y certificaciones) y la experiencia en la columna principal. Solo PDF. No apta para ATS (dos columnas)."
     }
+  },
+  "actions": {
+    "rename": "Cambiar el nombre de {{name}}",
+    "nameLabel": "Nombre de la plantilla",
+    "saveName": "Guardar el nombre",
+    "cancel": "Cancelar",
+    "default": "Plantilla por defecto",
+    "saving": "Guardando…",
+    "useDefault": "Usar por defecto",
+    "conflicts": "Reglas que eligen otra plantilla",
+    "delete": "Eliminar",
+    "deleteAria": "Eliminar {{name}}",
+    "confirmTitle": "¿Eliminar «{{name}}»?",
+    "confirmBody": "Se borran la plantilla y el CV que subiste para crearla. Los CVs ya generados conservan sus PDF y su Word.",
+    "confirmDefault": "Es tu plantilla por defecto: a partir de ahora la elegirá la app. Se borran la plantilla y el CV que subiste para crearla. Los CVs ya generados conservan sus PDF y su Word.",
+    "confirmDelete": "Eliminar"
   }
 }

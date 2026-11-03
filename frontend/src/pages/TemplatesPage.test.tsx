@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { mockApi, renderApp, status, templateInfo, templateList } from '@/test/utils'
@@ -171,7 +171,7 @@ describe('Galería de plantillas', () => {
       )
     })
 
-    it('un CV importado desde PDF muestra original y recreación y avisa de que solo da PDF', async () => {
+    it('un CV ya convertido no sale en «Mi CV»: es una plantilla más de la lista', async () => {
       const canva = templateInfo({
         id: 'canva',
         name: 'Canva',
@@ -180,6 +180,7 @@ describe('Galería de plantillas', () => {
         columns: 2,
         from_user_cv: true,
         has_source_preview: true,
+        editable: true,
       })
       mockApi({
         'GET /status': status(),
@@ -188,22 +189,14 @@ describe('Galería de plantillas', () => {
         'GET /templates/default': { template_id: null },
       })
       renderApp('/plantillas')
-      const card = await screen.findByRole('listitem', { name: 'canva.pdf' })
-      expect(within(card).getByRole('img', { name: 'Recreación con tu perfil' })).toHaveAttribute(
-        'src',
-        'http://127.0.0.1:8000/templates/canva/preview-real.png',
-      )
-      expect(within(card).getByText(/solo da PDF/)).toBeInTheDocument()
+      const gallery = await screen.findByRole('article', { name: 'Canva' })
+      expect(screen.queryByRole('listitem', { name: 'canva.pdf' })).not.toBeInTheDocument()
+      expect(screen.queryByRole('img', { name: 'Con tu perfil' })).not.toBeInTheDocument()
 
-      const gallery = screen.getByRole('article', { name: 'Canva' })
       const pair = within(gallery).getByLabelText('Original y recreación')
       expect(within(pair).getByRole('img', { name: 'Original de Canva' })).toHaveAttribute(
         'src',
         'http://127.0.0.1:8000/templates/canva/source.png',
-      )
-      expect(within(pair).getByRole('img', { name: 'Recreación de Canva' })).toHaveAttribute(
-        'src',
-        'http://127.0.0.1:8000/templates/canva/preview.png',
       )
       const tags = within(within(gallery).getByRole('list', { name: 'Características' })).getAllByRole('listitem')
       expect(tags.map((t) => t.textContent)).toContain('Solo PDF')
@@ -211,11 +204,11 @@ describe('Galería de plantillas', () => {
       expect(within(builtin).queryByText('Solo PDF')).not.toBeInTheDocument()
     })
 
-    it('un CV importado se compara con el original y se marca por defecto', async () => {
+    it('una plantilla tuya se marca por defecto desde la lista y explica las reglas', async () => {
       const calls = mockApi({
         'GET /status': status(),
-        'GET /templates': templateList({ templates: [templateInfo(), mine] }),
-        'GET /uploads': [{ ...pending, template_id: 'mi-cv' }],
+        'GET /templates': templateList({ templates: [templateInfo(), { ...mine, editable: true }] }),
+        'GET /uploads': [],
         'GET /templates/default': { template_id: 'clasica-foto' },
         'POST /templates/mi-cv/default': {
           template_id: 'mi-cv',
@@ -225,36 +218,84 @@ describe('Galería de plantillas', () => {
         },
       })
       renderApp('/plantillas')
-      const card = await screen.findByRole('listitem', { name: 'mi-cv.docx' })
-      expect(within(card).getByRole('img', { name: 'Original' })).toHaveAttribute(
-        'src',
-        'http://127.0.0.1:8000/templates/mi-cv/source.png',
-      )
-      expect(within(card).getByRole('img', { name: 'Con tu perfil' })).toHaveAttribute(
-        'src',
-        'http://127.0.0.1:8000/templates/mi-cv/preview-real.png',
-      )
+      const card = await screen.findByRole('article', { name: 'Mi CV' })
+      expect(within(card).getByText('Tu CV')).toBeInTheDocument()
       await userEvent.click(within(card).getByRole('button', { name: /Usar por defecto/ }))
       expect(calls.some((c) => c.method === 'POST' && c.path === '/templates/mi-cv/default')).toBe(true)
       const rules = await within(card).findByRole('list', { name: 'Reglas que eligen otra plantilla' })
       expect(within(rules).getByText(/ATS workday/)).toBeInTheDocument()
-
-      const gallery = screen.getByRole('article', { name: 'Mi CV' })
-      expect(within(gallery).getByText('Tu CV')).toBeInTheDocument()
     })
 
-    it('si no se puede hacer la vista con tu perfil, lo dice en vez de enseñar una imagen rota', async () => {
+    it('una integrada no se puede renombrar ni eliminar', async () => {
       mockApi({
         'GET /status': status(),
-        'GET /templates': templateList({ templates: [templateInfo(), mine] }),
-        'GET /uploads': [{ ...pending, template_id: 'mi-cv' }],
+        'GET /templates': templateList({ templates: [templateInfo()] }),
+        'GET /uploads': [],
+        'GET /templates/default': { template_id: 'ats-simple' },
+      })
+      renderApp('/plantillas')
+      const card = await screen.findByRole('article', { name: 'ATS sencilla' })
+      expect(within(card).queryByRole('button', { name: /Eliminar/ })).not.toBeInTheDocument()
+      expect(within(card).queryByRole('button', { name: /Cambiar el nombre/ })).not.toBeInTheDocument()
+      expect(await within(card).findByText('Plantilla por defecto')).toBeInTheDocument()
+    })
+
+    it('renombra una plantilla tuya', async () => {
+      const calls = mockApi({
+        'GET /status': status(),
+        'GET /templates': templateList({ templates: [{ ...mine, editable: true }] }),
+        'GET /uploads': [],
+        'GET /templates/default': { template_id: null },
+        'PATCH /templates/mi-cv': { ...mine, name: 'CV en inglés' },
+      })
+      renderApp('/plantillas')
+      const card = await screen.findByRole('article', { name: 'Mi CV' })
+      await userEvent.click(within(card).getByRole('button', { name: 'Cambiar el nombre de Mi CV' }))
+      const input = within(card).getByRole('textbox', { name: 'Nombre de la plantilla' })
+      await userEvent.clear(input)
+      await userEvent.type(input, 'CV en inglés{Enter}')
+      await waitFor(() =>
+        expect(calls.find((c) => c.method === 'PATCH' && c.path === '/templates/mi-cv')?.body).toEqual({
+          name: 'CV en inglés',
+        }),
+      )
+    })
+
+    it('eliminar pide confirmación y dice qué pasa si es la de por defecto', async () => {
+      const calls = mockApi({
+        'GET /status': status(),
+        'GET /templates': templateList({ templates: [{ ...mine, editable: true }] }),
+        'GET /uploads': [],
+        'GET /templates/default': { template_id: 'mi-cv' },
+        'DELETE /templates/mi-cv': { template_id: 'mi-cv', default_cleared: true },
+      })
+      renderApp('/plantillas')
+      const card = await screen.findByRole('article', { name: 'Mi CV' })
+      await within(card).findByText('Plantilla por defecto')
+      await userEvent.click(within(card).getByRole('button', { name: 'Eliminar Mi CV' }))
+      const dialog = await screen.findByRole('dialog')
+      expect(within(dialog).getByText(/Es tu plantilla por defecto/)).toBeInTheDocument()
+      expect(calls.some((c) => c.method === 'DELETE')).toBe(false)
+
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Eliminar' }))
+      await waitFor(() =>
+        expect(calls.some((c) => c.method === 'DELETE' && c.path === '/templates/mi-cv')).toBe(true),
+      )
+    })
+
+    it('cancelar no elimina nada', async () => {
+      const calls = mockApi({
+        'GET /status': status(),
+        'GET /templates': templateList({ templates: [{ ...mine, editable: true }] }),
+        'GET /uploads': [],
         'GET /templates/default': { template_id: null },
       })
       renderApp('/plantillas')
-      const card = await screen.findByRole('listitem', { name: 'mi-cv.docx' })
-      fireEvent.error(within(card).getByRole('img', { name: 'Con tu perfil' }))
-      expect(within(card).queryByRole('img', { name: 'Con tu perfil' })).not.toBeInTheDocument()
-      expect(within(card).getByText(/No se ha podido hacer la vista con tu perfil/)).toBeInTheDocument()
+      const card = await screen.findByRole('article', { name: 'Mi CV' })
+      await userEvent.click(within(card).getByRole('button', { name: 'Eliminar Mi CV' }))
+      const dialog = await screen.findByRole('dialog')
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Cancelar' }))
+      expect(calls.some((c) => c.method === 'DELETE')).toBe(false)
     })
   })
 })

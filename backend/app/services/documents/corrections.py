@@ -7,6 +7,10 @@ versiones que van quedando.
 - Leerla anota qué versión tenía delante el agente: si el CV cambia mientras trabaja, o el usuario
   pide otra cosa, su versión se rechaza en lugar de pisar lo nuevo.
 - `save_corrected`: la versión nueva del agente, con el estilo de la vigente salvo que pida otro.
+  Si no cabe en las páginas, no se crea: en la ficha nunca aparece una corrección a medias. Las
+  páginas que pide el texto del usuario («que ocupe 1 página») mandan sobre lo que pase el agente:
+  es lo que se le ha pedido y no depende de que lo interprete bien.
+- `check_fit`: lo mismo sin guardar, para que el agente ajuste el texto antes.
 - `save_user_edit`: la edición directa del usuario, sin agente. Solo cambia textos; lo que el perfil
   no respalde se avisa pero se guarda, porque lo decide quien lo escribe.
 - `restore_version`: «Volver». No borra ni renderiza: cambia cuál es la vigente.
@@ -79,6 +83,9 @@ class PendingCorrection(BaseModel):
     job_id: int
     document_id: int | None
     correction: CorrectionView | None
+    # Páginas que pide su texto («que ocupe 1 página»), si las pide: la app las exige al guardar.
+    max_pages: int | None = None
+    current_pages: int | None = None  # las que ocupa ahora la versión vigente
 
 
 class DeclineResult(BaseModel):
@@ -149,6 +156,39 @@ def pending_row(session: Session, job_id: int) -> CvCorrection | None:
     return session.scalars(stmt.order_by(CvCorrection.id.desc())).first()
 
 
+_NUMBERS = {"una": 1, "un": 1, "one": 1, "dos": 2, "two": 2, "tres": 3, "three": 3}
+_PAGES = re.compile(
+    r"\b(\d{1,2}|una|un|one|dos|two|tres|three)(?:\s+sola)?[\s-]+(?:p[aá]ginas?|hojas?|pages?)\b",
+    re.IGNORECASE,
+)
+_ONE_PAGER = re.compile(r"\bone[\s-]?pager\b", re.IGNORECASE)
+
+
+def requested_pages(instruction: str) -> int | None:
+    """Las páginas que pide el texto del usuario. Si nombra varias («de 2 hojas a 1 página»), la
+    menor: de un CV ya hecho solo se pide acortar. «La página 2» no es una longitud."""
+    found = [
+        _NUMBERS.get(match.group(1).casefold()) or int(match.group(1))
+        for match in _PAGES.finditer(instruction)
+    ]
+    if _ONE_PAGER.search(instruction):
+        found.append(1)
+    pages = [n for n in found if n >= 1]
+    return min(pages) if pages else None
+
+
+def _target_options(
+    session: Session, row: CvCorrection, current: Document | None, given: CvRenderOptions | None
+) -> CvRenderOptions:
+    """Con qué se renderiza la versión corregida: lo que pase el agente o, si no, el estilo de la
+    vigente. Las páginas que pide el texto del usuario mandan sobre las dos."""
+    options = given
+    if options is None:
+        options = service.render_options_of(session, current) if current else CvRenderOptions()
+    pages = requested_pages(row.instruction)
+    return options.model_copy(update={"max_pages": pages}) if pages else options
+
+
 def request_correction(session: Session, job_id: int, data: CorrectionInput) -> CorrectionView:
     """Guarda lo que hay que corregir; si ya había algo pendiente en esta oferta, lo sustituye."""
     service._job(session, job_id)
@@ -177,11 +217,31 @@ def get_pending(session: Session, job_id: int) -> PendingCorrection:
     if row is not None and current is not None:
         row.base_document_id = current.id
         session.flush()
+    renders = service._renders(session, current.id) if current else []
+    shown = next((r for r in renders if r.selected), renders[-1] if renders else None)
     return PendingCorrection(
         job_id=job_id,
         document_id=current.id if current else None,
         correction=_view(row) if row else None,
+        max_pages=requested_pages(row.instruction) if row else None,
+        current_pages=shown.pages if shown else None,
     )
+
+
+def check_fit(
+    session: Session,
+    job_id: int,
+    correction_id: int,
+    content: CvContent,
+    render_options: CvRenderOptions | None = None,
+) -> service.CvFitCheck:
+    """Cómo quedaría esta corrección, con las mismas opciones que usará `save_corrected`."""
+    row = _row(session, correction_id)
+    if row.job_id != job_id:
+        raise CorrectionNotFoundError(f"La corrección {correction_id} no es de la oferta {job_id}.")
+    current = service.latest_document(session, job_id)
+    options = _target_options(session, row, current, render_options)
+    return service.check_fit(session, job_id, content, options)
 
 
 def _row(session: Session, correction_id: int) -> CvCorrection:
@@ -247,7 +307,8 @@ def save_corrected(
     agent_name: str | None = None,
 ) -> service.SaveContentResult:
     """Guarda la versión corregida. Se puede repetir con la misma corrección si la verificación
-    falla: todas sus versiones se comparan con la que había antes de corregir."""
+    falla: todas sus versiones se comparan con la que había antes de corregir. Si no cabe en las
+    páginas no se crea la versión ni se cierra la corrección (`service.CvTooLongError`)."""
     row = _row(session, correction_id)
     if row.job_id != job_id:
         raise CorrectionNotFoundError(f"La corrección {correction_id} no es de la oferta {job_id}.")
@@ -272,9 +333,10 @@ def save_corrected(
             "El CV ha cambiado mientras trabajabas: vuelve a leerlo con `get_cv_correction` y "
             "`get_cv_content`, y aplica la corrección sobre la versión vigente."
         )
-    if render_options is None and current is not None:
-        render_options = service.render_options_of(session, current)
-    result = service.save_content(session, job_id, content, render_options, agent_name=agent_name)
+    options = _target_options(session, row, current, render_options)
+    result = service.save_content(
+        session, job_id, content, options, agent_name=agent_name, require_fit=True
+    )
     doc = session.get(Document, result.document_id)
     assert doc is not None
     doc.correction_id = row.id

@@ -635,6 +635,15 @@ CASES = [
          ["sources", "finish-search", "--outcome", "done"]),
     Case("finish-search-invalid", "finish_search", {"outcome": "x"},
          ["sources", "finish-search", "--outcome", "x"], expect_error="validation_error"),
+    Case("finish-task-no-open", "finish_task", {"action": "process-jobs", "outcome": "done"},
+         ["agents", "finish-task", "--action", "process-jobs", "--outcome", "done"]),
+    Case("finish-task-invalid", "finish_task", {"action": "process-jobs", "outcome": "x"},
+         ["agents", "finish-task", "--action", "process-jobs", "--outcome", "x"],
+         expect_error="validation_error"),
+    Case("ask-user", "ask_user", {"question": "¿Has trabajado con Airflow?"},
+         ["prompts", "ask", "--question", "¿Has trabajado con Airflow?"]),
+    Case("ask-user-empty", "ask_user", {"question": ""}, ["prompts", "ask", "--question", ""],
+         expect_error="validation_error"),
     Case("prompt-request", "request_user_action",
          {"kind": "captcha", "message": "Completa el captcha en Tecnoempleo.", "source_id": 1},
          ["prompts", "request", "--kind", "captcha", "--message",
@@ -760,6 +769,9 @@ CASES = [
     Case("templates", "list_cv_templates", {}, ["templates", "list"], seed=None),
     Case("cv-save", "save_cv_content", {"job_id": 1, "content": CV_CONTENT},
          ["cv", "save", "1", "--file", "{tmp}/cv.json"],
+         seed=seed_approved, files={"cv.json": {"content": CV_CONTENT}}),
+    Case("cv-check-fit", "check_cv_fit", {"job_id": 1, "content": CV_CONTENT},
+         ["cv", "check-fit", "1", "--file", "{tmp}/cv.json"],
          seed=seed_approved, files={"cv.json": {"content": CV_CONTENT}}),
     Case("cv-save-options", "save_cv_content",
          {"job_id": 1, "content": CV_CONTENT, "render_options": CV_OPTIONS},
@@ -1070,7 +1082,8 @@ def _run_cli(case: Case) -> tuple[bool, dict[str, Any]]:
     argv = [arg.replace("{tmp}", tmp) for arg in case.cli_argv]
     result = cli_call([*argv, "--json"])
     if not result[0]:
-        assert not any(p.exists() for p in paths.values()), "--file debe borrarse tras el éxito"
+        kept = TOOLS_BY_NAME[case.tool].cli.keep_file
+        assert kept or not any(p.exists() for p in paths.values()), "--file debe borrarse"
     return result
 
 

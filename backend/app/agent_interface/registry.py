@@ -35,6 +35,8 @@ class CliSpec:
     # Alternativa a `file_field`: el `--file` es un objeto JSON con estos campos (los que falten
     # toman su valor por defecto), p. ej. `{"content": …, "render_options": …}`.
     file_keys: tuple[str, ...] = ()
+    # Solo mide o comprueba: el `--file` se queda para poder ajustarlo y repetir.
+    keep_file: bool = False
 
 
 Handler = Callable[[Session, Any, CallContext], BaseModel]

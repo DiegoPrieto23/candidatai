@@ -34,6 +34,21 @@ Una fila por ejecución de una fuente; la usan los conectores y, desde la 09b, a
 | completed | int | Resúmenes completados (09b) |
 | errors | JSON | `[{code, message, item?}]`: fallo de la fuente o de una oferta suelta |
 
+### `agent_tasks` (fase 39g)
+Lo que acaba de lanzar un botón de la app: de ella salen los avisos «Leyendo ofertas…», «Generando el
+CV…». Cómo va se calcula con `mcp_calls` (un guardado correcto posterior) y, en segundo plano, con
+`agent_runs`. Las conversaciones no se siguen: no tienen un final que avisar.
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | int PK | |
+| action | str | La acción del botón |
+| job_id / milestone_id | int? | De qué oferta o entrevista |
+| run_id | FK agent_runs? | La ejecución, si va en segundo plano |
+| total | int | Lo pendiente al pulsar, en las acciones por lotes; 0 en las demás |
+| outcome | str? | `done` o `stopped`, lo que dijo el agente con `finish_task` |
+| started_at / finished_at | datetime | |
+| dismissed_at | datetime? | Aviso cerrado por el usuario, o sustituido por uno nuevo de lo mismo |
+
 ### `search_runs` (fase 39d)
 Una búsqueda abierta desde «Buscar ahora» en la terminal del agente: de ella sale el aviso «Buscando…».
 Lo demás (portales recorridos, ofertas nuevas, problemas) se calcula con `source_runs` y `jobs`.
@@ -448,12 +463,16 @@ Registro por paso en `data/logs/applier/<intento>.jsonl` (sin valores personales
 ### `user_prompts`
 Avisos para que el usuario haga algo en el navegador (migración 0012): un captcha, una
 comprobación anti-bot o un login. Los crea el agente (`request_user_action`) al buscar ofertas o
-el worker cuando una candidatura asistida se para. La UI los enseña en un pop-up.
+el worker cuando una candidatura asistida se para. También las preguntas del agente (`ask_user`,
+migración 0036). La UI los enseña en un pop-up.
 
 | Columna | Tipo | Notas |
 |---|---|---|
 | id | int PK | |
-| kind | str | `captcha`, `anti_bot`, `login_required` |
+| kind | str | `captcha`, `anti_bot`, `login_required`, `question` |
+| options | JSON? | Pregunta: las respuestas para elegir |
+| answer | text? | Pregunta: lo que contestó el usuario |
+| job_id | int? | Pregunta: la oferta de la que va |
 | message | text | Qué hacer y dónde |
 | url | str? | La página afectada |
 | source_id | FK sources? | La plataforma (búsqueda con navegador) |

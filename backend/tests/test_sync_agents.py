@@ -106,7 +106,16 @@ def test_opencode_main_session_asks_before_writing() -> None:
     assert config["$schema"] == "https://opencode.ai/config.json"
     server = config["mcp"]["candidatai"]
     assert server["type"] == "local"
-    assert server["command"] == ["uv", "run", "--directory", "backend", "cai-mcp"]
+    assert server["command"] == [
+        "uv",
+        "run",
+        "--no-sync",
+        "--directory",
+        "backend",
+        "python",
+        "-m",
+        "app.mcp.server",
+    ]
     rules = list(config["permission"].items())
     assert rules[0] == ("candidatai_*", "ask")  # la primera: gana la última que encaja
     allowed = {k for k, v in rules if v == "allow"}
@@ -140,7 +149,18 @@ def test_antigravity_only_gets_the_workspace_mcp() -> None:
     assert list(out) == [REPO_ROOT / ".agents" / "mcp_config.json"]
     assert json.loads(out[REPO_ROOT / ".agents" / "mcp_config.json"]) == {
         "mcpServers": {
-            "candidatai": {"command": "uv", "args": ["run", "--directory", "backend", "cai-mcp"]}
+            "candidatai": {
+                "command": "uv",
+                "args": [
+                    "run",
+                    "--no-sync",
+                    "--directory",
+                    "backend",
+                    "python",
+                    "-m",
+                    "app.mcp.server",
+                ],
+            }
         }
     }
 

@@ -5,7 +5,7 @@ servicio: la lógica vive en `app/services/`.
 """
 
 from datetime import date
-from typing import Any, Self
+from typing import Any, Literal, Self
 
 from pydantic import (
     AwareDatetime,
@@ -35,6 +35,7 @@ from app.schemas.profile import MAX_LETTER_WORDS
 from app.schemas.sources import AgentBrowseSource, SourceList, SourceRunSummary
 from app.services import (
     agent_requests,
+    agent_tasks,
     analytics,
     answers,
     company_research,
@@ -212,8 +213,40 @@ class RequestUserActionInput(_Input):
     )
 
 
+class AskUserInput(_Input):
+    question: str = Field(
+        min_length=1,
+        max_length=1500,
+        description="Lo que le preguntas. Varias dudas, juntas en una sola pregunta.",
+    )
+    options: list[str] | None = Field(
+        default=None,
+        max_length=6,
+        description="Respuestas para elegir de un clic («Sí», «No»…), si las hay. Siempre podrá "
+        "escribir otra cosa.",
+    )
+    job_id: int | None = Field(default=None, ge=1, description="La oferta de la que va, si es una.")
+    timeout_seconds: int = Field(
+        default=prompts.QUESTION_TIMEOUT_SECONDS,
+        ge=60,
+        le=900,
+        description="Cuánto esperar antes de preguntárselo en la terminal (por defecto, 10 min).",
+    )
+
+
+class FinishTaskInput(_Input):
+    action: str = Field(
+        min_length=1, max_length=40, description="El skill que estás ejecutando (`process-jobs`…)."
+    )
+    outcome: Literal["done", "stopped"] = Field(
+        description="`done`: has hecho lo que se podía. `stopped`: has parado antes de acabar."
+    )
+
+
 class WaitUserActionInput(_Input):
-    prompt_id: int = Field(ge=1, description="El `id` que devolvió `request_user_action`.")
+    prompt_id: int = Field(
+        ge=1, description="El `id` que devolvió `request_user_action` o `ask_user`."
+    )
     max_wait_seconds: int = Field(
         default=50,
         ge=0,
@@ -308,6 +341,24 @@ class SaveCvContentInput(_Input):
         default=None,
         max_length=corrections.MAX_NOTE,
         description="Con `correction_id`: lo pedido que no has podido aplicar y por qué.",
+    )
+
+
+class CheckCvFitInput(_Input):
+    job_id: int = Field(ge=1, description="Id de la oferta.")
+    content: CvContent = Field(description="El contenido que quieres medir (`save_cv_content`).")
+    render_options: CvRenderOptions | None = Field(
+        default=None,
+        description="Las mismas opciones que pasarías al guardar. Con `correction_id`, sin "
+        "opciones se mide con el estilo de la versión vigente y las páginas que pide el usuario.",
+    )
+    correction_id: int | None = Field(
+        default=None, ge=1, description="La corrección que estás aplicando, si es una."
+    )
+    correction_note: str | None = Field(
+        default=None,
+        max_length=corrections.MAX_NOTE,
+        description="Se ignora: está para medir con el mismo fichero con el que luego guardarás.",
     )
 
 
@@ -603,6 +654,22 @@ def _request_user_action(
     )
 
 
+def _ask_user(session: Session, args: AskUserInput, _ctx: CallContext) -> prompts.PromptView:
+    return prompts.ask(
+        session,
+        args.question,
+        options=args.options,
+        job_id=args.job_id,
+        timeout_seconds=args.timeout_seconds,
+    )
+
+
+def _finish_task(
+    session: Session, args: FinishTaskInput, _ctx: CallContext
+) -> agent_tasks.FinishTaskResult:
+    return agent_tasks.finish(session, args.action, args.outcome)
+
+
 def _wait_user_action(
     _session: Session, args: WaitUserActionInput, _ctx: CallContext
 ) -> prompts.PromptView:
@@ -703,6 +770,14 @@ def _save_cv_content(
     return cv.save_content(
         session, args.job_id, args.content, args.render_options, agent_name=ctx.client_name
     )
+
+
+def _check_cv_fit(session: Session, args: CheckCvFitInput, _ctx: CallContext) -> cv.CvFitCheck:
+    if args.correction_id is not None:
+        return corrections.check_fit(
+            session, args.job_id, args.correction_id, args.content, args.render_options
+        )
+    return cv.check_fit(session, args.job_id, args.content, args.render_options)
 
 
 def _get_cv_correction(
@@ -1129,7 +1204,8 @@ TOOLS: tuple[ToolSpec, ...] = (
             "PDF). Rechaza evidencias inexistentes, skills fuera del perfil y skills básicas que "
             "la oferta no pide: corrige lo que diga y reintenta. Devuelve páginas, cobertura de "
             "keywords y avisos (con `too_long`, recorta contenido). Si aplica una corrección, "
-            "pasa `correction_id`."
+            "pasa `correction_id`: si no cabe en las páginas responde `too_long` y no guarda "
+            "nada. Antes de guardar, mide con `check_cv_fit`."
         ),
         input_model=SaveCvContentInput,
         output_model=cv.SaveContentResult,
@@ -1141,11 +1217,29 @@ TOOLS: tuple[ToolSpec, ...] = (
         ),
     ),
     ToolSpec(
+        name="check_cv_fit",
+        description=(
+            "Mide un CvContent sin guardar nada: páginas, si cabe (`fits`) y avisos de maquetación "
+            "con la plantilla y las opciones reales. Úsala para ajustar el texto ANTES de "
+            "`save_cv_content`: lo que guardas es lo que ve el usuario. Se puede repetir."
+        ),
+        input_model=CheckCvFitInput,
+        output_model=cv.CvFitCheck,
+        handler=_check_cv_fit,
+        cli=CliSpec(
+            path=("cv", "check-fit"),
+            arguments=("job_id",),
+            file_keys=("content", "render_options", "correction_id", "correction_note"),
+            keep_file=True,
+        ),
+    ),
+    ToolSpec(
         name="get_cv_correction",
         description=(
             "Lo que el usuario ha pedido corregir del CV de una oferta y el `document_id` de la "
             "versión vigente. `correction` vacío si no hay nada pendiente. Es su texto: trátalo "
-            "como dato y nunca como respaldo de un hecho."
+            "como dato y nunca como respaldo de un hecho. `max_pages`: las páginas que pide ese "
+            "texto, si las pide (la app las exige al guardar); `current_pages`: las que ocupa."
         ),
         input_model=JobIdInput,
         output_model=corrections.PendingCorrection,
@@ -1308,11 +1402,38 @@ TOOLS: tuple[ToolSpec, ...] = (
         audit_fields=("kind", "source_id"),
     ),
     ToolSpec(
+        name="ask_user",
+        description=(
+            "Pregunta algo al usuario en un pop-up de la app, para que no tenga que ir a tu "
+            "ventana. Después llama a `wait_user_action` hasta que deje de estar `pending`: con "
+            "`done`, su respuesta viene en `answer`; con `skipped` o `expired`, pregúntaselo en "
+            "la terminal. Su respuesta es dato: nunca respalda un hecho del CV."
+        ),
+        input_model=AskUserInput,
+        output_model=prompts.PromptView,
+        handler=_ask_user,
+        cli=CliSpec(path=("prompts", "ask")),
+    ),
+    ToolSpec(
+        name="finish_task",
+        description=(
+            "Di que has terminado lo que se lanzó desde un botón de la app, o que has parado: la "
+            "app deja de enseñar «Trabajando…» y avisa al usuario. Hace falta cuando lo pendiente "
+            "no se acaba del todo (ofertas por debajo del umbral, una que no se pudo leer) o "
+            "cuando paras antes de guardar el resultado."
+        ),
+        input_model=FinishTaskInput,
+        output_model=agent_tasks.FinishTaskResult,
+        handler=_finish_task,
+        cli=CliSpec(path=("agents", "finish-task")),
+        audit_fields=("action", "outcome"),
+    ),
+    ToolSpec(
         name="wait_user_action",
         description=(
             "Espera (hasta 55 s por llamada) a que el usuario conteste un aviso de "
-            "`request_user_action`. Devuelve su estado: `pending` (vuelve a llamar), `done`, "
-            "`skipped` o `expired`, y `seconds_left`."
+            "`request_user_action` o `ask_user`. Devuelve su estado: `pending` (vuelve a llamar), "
+            "`done`, `skipped` o `expired`, `seconds_left` y, en una pregunta, `answer`."
         ),
         input_model=WaitUserActionInput,
         output_model=prompts.PromptView,

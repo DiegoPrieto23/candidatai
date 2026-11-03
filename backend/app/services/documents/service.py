@@ -83,6 +83,30 @@ class SaveContentResult(BaseModel):
     render: RenderResult
 
 
+class CvFitCheck(BaseModel):
+    """Cómo quedaría un CV, sin guardar nada: para ajustarlo antes de que exista la versión."""
+
+    job_id: int
+    fits: bool  # cabe en `max_pages`
+    pages: int
+    max_pages: int
+    template_id: str
+    warnings: list[RenderWarning]  # `too_long` y los de maquetación, con su `fix`
+
+
+class CvTooLongError(ValueError):
+    """El CV no cabe en las páginas pedidas: no se guarda. Nunca se publica una versión así."""
+
+    def __init__(self, pages: int, max_pages: int) -> None:
+        self.pages = pages
+        self.max_pages = max_pages
+        super().__init__(
+            f"El CV ocupa {pages} páginas y el máximo es {max_pages}: no se ha guardado y la "
+            "versión vigente sigue igual. Recorta contenido (nunca márgenes ni fuente), comprueba "
+            "con `check_cv_fit` y vuelve a guardar."
+        )
+
+
 class CvView(BaseModel):
     job_id: int
     document_id: int
@@ -596,14 +620,55 @@ def item_labels(profile: CandidateProfile) -> dict[str, str]:
     return labels
 
 
+def check_fit(
+    session: Session,
+    job_id: int,
+    content: CvContent,
+    render_options: CvRenderOptions | None = None,
+) -> CvFitCheck:
+    """Prepara el PDF como lo haría `save_content`, lo mide y lo tira: no escribe nada."""
+    job = _job(session, job_id)
+    _require_cv_stage(session, job_id)
+    stored = profile_service.current(session)
+    extraction = _extraction(session, job_id)
+    checks.validate_content(content, stored.profile, extraction)
+    prepared = _prepare_render(
+        job, content, stored.profile, extraction, render_options or CvRenderOptions()
+    )
+    files = prepared.files
+    try:
+        template = templates.get(prepared.template_id)
+        warnings = checks.render_warnings(
+            content,
+            template,
+            prepared.resolved,
+            files.pages,
+            pdf.missing_fonts(template.meta.fonts, files.fonts),
+        )
+        warnings += files.layout_warnings
+        return CvFitCheck(
+            job_id=job_id,
+            fits=files.pages <= prepared.resolved.max_pages,
+            pages=files.pages,
+            max_pages=prepared.resolved.max_pages,
+            template_id=prepared.template_id,
+            warnings=warnings,
+        )
+    finally:
+        discard(files)
+
+
 def save_content(
     session: Session,
     job_id: int,
     content: CvContent,
     render_options: CvRenderOptions | None = None,
     agent_name: str | None = None,
+    *,
+    require_fit: bool = False,
 ) -> SaveContentResult:
-    """Valida y guarda el contenido de un CV y hace su primer render."""
+    """Valida y guarda el contenido de un CV y hace su primer render. `require_fit`: si no cabe en
+    las páginas, no crea la versión (`CvTooLongError`)."""
     job = _job(session, job_id)
     _require_cv_stage(session, job_id)
     stored = profile_service.current(session)
@@ -613,6 +678,10 @@ def save_content(
     prepared = _prepare_render(
         job, content, stored.profile, extraction, render_options or CvRenderOptions()
     )
+    pages, limit = prepared.files.pages, prepared.resolved.max_pages
+    if require_fit and pages > limit:
+        discard(prepared.files)
+        raise CvTooLongError(pages, limit)
 
     base = latest_document(session, job_id)
     doc = Document(
@@ -774,6 +843,7 @@ class TemplateInfo(BaseModel):
     has_preview: bool  # hay `preview.png` para la galería
     from_user_cv: bool  # creada desde un CV propio (tiene su original): etiqueta «Tu CV»
     has_source_preview: bool  # hay `source.png` (primera página del original)
+    editable: bool = False  # es tuya (`data/templates/`): se puede renombrar y eliminar
 
 
 class TemplateList(BaseModel):
@@ -810,6 +880,7 @@ def template_info(template: templates.Template) -> TemplateInfo:
         and meta.source_file is not None
         and (template.path / meta.source_file).is_file(),
         has_source_preview=(template.path / SOURCE_PNG).is_file(),
+        editable=template.path.resolve().parent == get_settings().user_templates_dir.resolve(),
     )
 
 

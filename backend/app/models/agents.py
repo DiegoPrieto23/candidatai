@@ -47,6 +47,27 @@ class AgentRun(Base):
     finished_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
 
 
+class AgentTask(Base):
+    """Lo que un botón acaba de lanzar y de lo que hay que avisar (`services/agent_tasks.py`).
+
+    `total`: lo pendiente al pulsar, en las acciones por lotes. `run_id`: la ejecución, si va en
+    segundo plano. `outcome`: lo que dijo el agente con `finish_task`. `dismissed_at`: ya cerrado.
+    """
+
+    __tablename__ = "agent_tasks"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    action: Mapped[str] = mapped_column(String(40))
+    job_id: Mapped[int | None] = mapped_column(ForeignKey("jobs.id"))
+    milestone_id: Mapped[int | None]
+    run_id: Mapped[int | None] = mapped_column(ForeignKey("agent_runs.id"))
+    total: Mapped[int] = mapped_column(default=0)
+    outcome: Mapped[str | None] = mapped_column(String(16))
+    started_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
+    finished_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
+    dismissed_at: Mapped[datetime | None] = mapped_column(UTCDateTime, index=True)
+
+
 class AgentRequest(Base):
     """Un encargo que la UI deja para la próxima sesión interactiva del agente (fase 19).
 
