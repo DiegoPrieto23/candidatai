@@ -105,10 +105,10 @@ function Today() {
         )}
       </h1>
       {agent.length > 0 && (
-        <p className="mt-4 text-base text-muted-foreground">{t('today.forAgent', { list: formatList(agent) })}</p>
+        <p className="mt-2 text-sm text-muted-foreground">{t('today.forAgent', { list: formatList(agent) })}</p>
       )}
       {/* Abren tu agente en una terminal con la orden escrita: lo que haga lo ves y lo apruebas tú. */}
-      <div className="mt-6 flex flex-wrap items-start gap-2">
+      <div className="mt-4 flex flex-wrap items-start gap-2">
         <AgentButton action="search-jobs" size="default" primary={primary === 'search-jobs'}>
           {t('today.searchJobs')}
         </AgentButton>
@@ -142,8 +142,8 @@ const TRACK: { stage: Stage; actor: Actor; to: string }[] = [
   { stage: 'pending_triage', actor: 'you', to: '/bandeja/revision' },
   { stage: 'approved', actor: 'agent', to: '/bandeja?stage=approved' },
   { stage: 'cv_ready', actor: 'you', to: '/bandeja?stage=cv_ready' },
-  { stage: 'applied', actor: 'company', to: '/procesos' },
-  { stage: 'in_process', actor: 'you', to: '/procesos' },
+  { stage: 'applied', actor: 'company', to: '/bandeja?stage=applied' },
+  { stage: 'in_process', actor: 'you', to: '/bandeja?stage=in_process' },
 ]
 
 function Track() {
@@ -151,11 +151,10 @@ function Track() {
   const { data, isPending, isError, error, refetch } = useStatus()
   if (isError) return <ErrorState error={error} onRetry={() => void refetch()} />
   const counts = data?.by_stage
-  const max = Math.max(1, ...TRACK.map((step) => counts?.[step.stage] ?? 0))
 
   return (
     <section aria-labelledby="recorrido">
-      <div className="mb-3 flex items-baseline justify-between gap-4">
+      <div className="mb-2 flex items-baseline justify-between gap-4">
         <h2 id="recorrido" className="text-sm font-medium">
           {t('track.title')}
         </h2>
@@ -176,7 +175,7 @@ function Track() {
               <Link
                 to={to}
                 className={cn(
-                  'group relative flex flex-col gap-3 p-4 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset',
+                  'group relative flex flex-col gap-1 px-4 py-3 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset',
                   last && 'col-span-2 lg:col-span-1',
                   yours ? 'bg-accent/70 hover:bg-accent' : 'bg-background hover:bg-foreground/[0.03]',
                 )}
@@ -190,26 +189,17 @@ function Track() {
                   {t(`track.actor.${actor}`)}
                 </span>
                 {isPending ? (
-                  <Skeleton className="h-8 w-10" />
+                  <Skeleton className="h-7 w-10" />
                 ) : (
                   <span
                     className={cn(
-                      'tabular text-3xl leading-none font-semibold tracking-tight',
+                      'tabular text-2xl leading-7 font-semibold tracking-tight',
                       count ? 'text-foreground' : 'text-muted-foreground/50',
                     )}
                   >
                     {count}
                   </span>
                 )}
-                <span className="h-1 w-full overflow-hidden rounded-full bg-foreground/[0.07]" aria-hidden>
-                  <span
-                    className={cn(
-                      'block h-full rounded-full transition-[width] duration-700 ease-out motion-reduce:transition-none',
-                      yours ? 'bg-primary' : 'bg-foreground/25',
-                    )}
-                    style={{ width: `${(count / max) * 100}%` }}
-                  />
-                </span>
                 <span className="text-sm text-muted-foreground group-hover:text-foreground">
                   {STAGE_LABEL[stage]}
                 </span>
@@ -310,7 +300,7 @@ function Upcoming() {
   if (!data.items.length) return <Empty>{t('upcomingEmpty')}</Empty>
   return (
     <ul className="divide-y">
-      {data.items.slice(0, 4).map((item: UpcomingItem) => (
+      {data.items.slice(0, 3).map((item: UpcomingItem) => (
         <li key={`${item.kind}-${item.milestone_id ?? item.job_id}-${item.starts_at}`}>
           <Link
             to={`/jobs/${item.job_id}`}
@@ -360,7 +350,7 @@ export function HomePage() {
   const { t } = useTranslation('home')
   const launcher = useAgentLauncher()
   return (
-    <div className="space-y-12 animate-in fade-in duration-300 sm:space-y-14">
+    <div className="space-y-6 animate-in fade-in duration-300">
       {/* Sin ningún agente instalado, lo primero: sin él la app no lee ofertas ni escribe CVs. */}
       {launcher.data?.no_agent_installed && <GetAnAgent />}
       {/* Con la app recién instalada: perfil y dónde buscar. Se va sola con los dos hechos. */}

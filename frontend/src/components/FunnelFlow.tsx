@@ -104,7 +104,7 @@ function Chart({ flow, counts }: { flow: Flow; counts: Record<FlowStep, number> 
   })
 
   return (
-    <div ref={ref} className="relative mt-6">
+    <div ref={ref} className="relative mt-4">
       {/* Cada paso, encima de su columna. */}
       <div className="relative h-[4.75rem]">
         {layout.nodes.map((node, index) => {
@@ -130,7 +130,7 @@ function Chart({ flow, counts }: { flow: Flow; counts: Record<FlowStep, number> 
         })}
       </div>
 
-      <svg role="img" aria-label={summary} width={width} height={layout.height} className="mt-2 block overflow-visible">
+      <svg role="img" aria-label={summary} width={width} height={layout.height} className="mt-1 block overflow-visible">
         {layout.ribbons.map((r) => {
           const next = FLOW_STEPS[FLOW_STEPS.indexOf(r.step) + 1]
           const text = r.outcome
@@ -270,13 +270,31 @@ export function FunnelFlow({ since, more = false }: { since?: string | null; mor
   const biggest = biggestStop(flow?.stops ?? [])
 
   return (
-    <section aria-labelledby="funnel-flow" className="rounded-xl border bg-card p-5 sm:p-6">
+    <section aria-labelledby="funnel-flow" className="rounded-xl border bg-card p-5">
       <div className="flex flex-wrap items-start justify-between gap-x-8 gap-y-4">
-        <div className="min-w-0 max-w-[60ch]">
-          <h2 id="funnel-flow" className="text-lg font-semibold tracking-tight">{t('title')}</h2>
+        <div className="min-w-0 max-w-[75ch]">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+            <h2 id="funnel-flow" className="text-lg font-semibold tracking-tight">{t('title')}</h2>
+            {ownPeriod && (
+              <div role="group" aria-label={tRoot('period')} className="flex gap-1">
+                {PERIODS.map((p) => (
+                  <Button
+                    key={p.id}
+                    size="xs"
+                    variant="ghost"
+                    aria-pressed={period === p.id}
+                    className={cn(period === p.id ? 'bg-foreground/[0.07] text-foreground' : 'font-normal text-muted-foreground')}
+                    onClick={() => setPeriod(p.id)}
+                  >
+                    {tRoot(`presets.${p.id}`)}
+                  </Button>
+                ))}
+              </div>
+            )}
+          </div>
           <p className="mt-0.5 text-sm text-muted-foreground">
             {t('hint')}
-            {!!flow?.duplicates_excluded && tRoot('funnel.duplicates', { count: flow.duplicates_excluded })}
+            {!ownPeriod && !!flow?.duplicates_excluded && tRoot('funnel.duplicates', { count: flow.duplicates_excluded })}
           </p>
         </div>
         {/* En «Embudo», estas cifras ya están en las tarjetas de arriba. */}
@@ -296,26 +314,6 @@ export function FunnelFlow({ since, more = false }: { since?: string | null; mor
         )}
       </div>
 
-      {ownPeriod && (
-        <div role="group" aria-label={tRoot('period')} className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
-          <span>{t('showing')}</span>
-          <div className="flex gap-1">
-            {PERIODS.map((p) => (
-              <Button
-                key={p.id}
-                size="xs"
-                variant="ghost"
-                aria-pressed={period === p.id}
-                className={cn(period === p.id ? 'bg-foreground/[0.07] text-foreground' : 'font-normal')}
-                onClick={() => setPeriod(p.id)}
-              >
-                {tRoot(`presets.${p.id}`)}
-              </Button>
-            ))}
-          </div>
-        </div>
-      )}
-
       {query.isPending ? (
         <Skeleton className="mt-6 h-64" />
       ) : query.isError ? (
@@ -332,7 +330,7 @@ export function FunnelFlow({ since, more = false }: { since?: string | null; mor
       ) : (
         <>
           <Chart flow={flow!} counts={counts} />
-          <div className="mt-5 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+          <div className="mt-3 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
             {biggest && counts.applied >= 5 && (
               <p className="text-sm text-muted-foreground">
                 {t('biggest', {

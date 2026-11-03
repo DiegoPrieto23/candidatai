@@ -233,7 +233,6 @@
   "flow": {
     "title": "Your funnel",
     "hint": "How far each application you've sent has made it, and where the ones that stopped are now.",
-    "showing": "Showing",
     "everything": "Everything you've sent",
     "noneYet": "None yet",
     "ofPrevious": "{{pct}} of {{step}}",

@@ -37,6 +37,20 @@ describe('Saltar al contenido (fase 36)', () => {
   })
 })
 
+describe('Al cambiar de página', () => {
+  it('empieza por arriba, también si venías con scroll', async () => {
+    mockApi({ 'GET /status': status(), 'GET /jobs': { items: [], total: 0, limit: 50, offset: 0 } })
+    const scroll = vi.spyOn(window, 'scrollTo')
+    renderApp('/como-funciona')
+    const nav = await screen.findByRole('navigation', { name: 'Navegación principal' })
+    expect(scroll).not.toHaveBeenCalled()
+    await userEvent.click(within(nav).getByRole('link', { name: 'Bandeja de ofertas' }))
+    await screen.findByRole('heading', { level: 1, name: 'Bandeja de ofertas' })
+    expect(scroll).toHaveBeenCalledWith(0, 0)
+    scroll.mockRestore()
+  })
+})
+
 describe('Barra lateral (fase 23.3)', () => {
   const routes = () => ({
     'GET /status': status(0, 3, 2),

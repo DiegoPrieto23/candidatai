@@ -113,3 +113,37 @@ def test_every_page_starts_at_the_same_distance_from_the_sidebar(
         assert box is not None
         lefts[route] = box["x"]
     assert len(set(lefts.values())) == 1, lefts
+
+
+def test_the_funnel_is_seen_on_the_home_page_without_scrolling(
+    page: Page, demo_app: AppServer
+) -> None:
+    page.goto("/")
+    chart = page.locator("section[aria-labelledby=funnel-flow] svg[role=img]")
+    expect(chart).to_be_visible()
+    box = chart.bounding_box()
+    assert box is not None
+    assert box["y"] + box["height"] <= page.viewport_size["height"]  # type: ignore[index]
+
+
+@pytest.mark.parametrize(
+    ("link", "url", "title"),
+    [
+        ("home.panels.all", r"/bandeja\?stage=cv_ready", "CV listo"),
+        ("home.panels.review", r"/bandeja/revision", "triage.title"),
+    ],
+)
+def test_a_link_opens_the_next_page_from_the_top(
+    page: Page, demo_app: AppServer, link: str, url: str, title: str
+) -> None:
+    page.goto("/")
+    target = page.get_by_role("link", name=t(link), exact=True).first
+    target.scroll_into_view_if_needed()
+    page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+    assert page.evaluate("window.scrollY") > 0
+    target.click()
+    expect(page).to_have_url(re.compile(url))
+    # El título de la página nueva: mientras carga su código, la anterior sigue a la vista.
+    name = t(title) if "." in title else title
+    expect(page.get_by_role("heading", level=1, name=name)).to_be_visible()
+    assert page.evaluate("window.scrollY") == 0

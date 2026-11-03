@@ -49,7 +49,7 @@ describe('Inicio', () => {
     renderApp('/')
     const triage = await screen.findByRole('link', { name: /Te toca\s*4\s*Por revisar/ })
     expect(triage).toHaveAttribute('href', '/bandeja/revision')
-    expect(screen.getByRole('link', { name: /Empresa\s*2\s*Enviada/ })).toHaveAttribute('href', '/procesos')
+    expect(screen.getByRole('link', { name: /Empresa\s*2\s*Enviada/ })).toHaveAttribute('href', '/bandeja?stage=applied')
     // En Inicio no sale la fila de recuentos de la cabecera.
     expect(screen.queryByRole('navigation', { name: 'Ofertas por etapa' })).not.toBeInTheDocument()
   })

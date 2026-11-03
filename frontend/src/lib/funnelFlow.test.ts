@@ -61,7 +61,7 @@ describe('layoutFlow', () => {
 describe('stopLink', () => {
   it('lleva a donde están esas candidaturas', () => {
     expect(stopLink('applied', 'open')).toBe('/bandeja?stage=applied')
-    expect(stopLink('interview', 'open')).toBe('/procesos')
+    expect(stopLink('interview', 'open')).toBe('/bandeja?stage=in_process')
     expect(stopLink('replied', 'rejected')).toBe('/bandeja?stage=closed')
   })
 })
