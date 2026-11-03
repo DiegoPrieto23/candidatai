@@ -3,7 +3,7 @@
 import re
 
 import pytest
-from playwright.sync_api import Page, expect
+from playwright.sync_api import Page, Route, expect
 
 from tests.e2e.harness import AppServer, t
 
@@ -118,6 +118,12 @@ def test_every_page_starts_at_the_same_distance_from_the_sidebar(
 def test_the_funnel_is_seen_on_the_home_page_without_scrolling(
     page: Page, demo_app: AppServer
 ) -> None:
+    # Con agente, sea cual sea el equipo: sin él, lo primero es explicar cómo instalarlo.
+    def with_agent(route: Route) -> None:
+        response = route.fetch()
+        route.fulfill(response=response, json={**response.json(), "no_agent_installed": False})
+
+    page.route("**/agent", with_agent)
     page.goto("/")
     chart = page.locator("section[aria-labelledby=funnel-flow] svg[role=img]")
     expect(chart).to_be_visible()
