@@ -9,8 +9,11 @@
 """
 
 import hashlib
+from io import BytesIO
 from pathlib import Path
 from typing import TYPE_CHECKING
+
+from pydantic import BaseModel
 
 from app.core.config import get_settings
 from app.schemas.cv import PhotoShape
@@ -111,3 +114,98 @@ def prepared_photo(
     image.save(tmp, format="PNG", dpi=(DPI, DPI))
     tmp.replace(target)
     return target
+
+
+# --- Subir la foto desde «Mi perfil» -----------------------------------------------------------
+
+MAX_PHOTO_BYTES = 10 * 1024 * 1024
+# Se mira el contenido, no la extensión: nada de SVG ni de un `.jpg` que no lo es.
+_FORMATS = {"JPEG": ".jpg", "PNG": ".png", "WEBP": ".webp"}
+
+
+class PhotoInfo(BaseModel):
+    exists: bool
+    filename: str | None = None
+    size_bytes: int | None = None
+    version: str | None = None  # cambia con la foto: para que el navegador no enseñe la anterior
+
+
+def _named_photo(data_dir: Path) -> list[Path]:
+    if not data_dir.is_dir():
+        return []
+    return [
+        p
+        for p in data_dir.iterdir()
+        if p.is_file() and p.stem.lower() == "photo" and p.suffix.lower() in PHOTO_EXTENSIONS
+    ]
+
+
+def current_photo(profile: CandidateProfile | None, data_dir: Path | None = None) -> Path | None:
+    """Como `find_photo`, también sin perfil todavía (entonces, solo `data/photo.*`)."""
+    data_dir = data_dir or get_settings().data_dir
+    if profile is not None:
+        return find_photo(profile, data_dir)
+    return next((p for p in sorted(_named_photo(data_dir)) if _opens(p)), None)
+
+
+def photo_info(path: Path | None) -> PhotoInfo:
+    if path is None:
+        return PhotoInfo(exists=False)
+    stat = path.stat()
+    return PhotoInfo(
+        exists=True, filename=path.name, size_bytes=stat.st_size, version=f"{stat.st_mtime_ns:x}"
+    )
+
+
+def save_photo(
+    content: bytes, profile: CandidateProfile | None, data_dir: Path | None = None
+) -> PhotoInfo:
+    """Guarda la foto como `data/photo.<ext>` y quita la anterior. `PhotoError` si no es un JPEG,
+    PNG o WebP de hasta 10 MB, o si el perfil apunta a otro fichero (seguiría mandando ese)."""
+    from PIL import Image, UnidentifiedImageError
+
+    data_dir = data_dir or get_settings().data_dir
+    if len(content) > MAX_PHOTO_BYTES:
+        raise PhotoError("La foto pasa de 10 MB: prueba con una más pequeña.")
+    try:
+        with Image.open(BytesIO(content)) as img:
+            suffix = _FORMATS.get(img.format or "")
+            img.verify()
+    except (OSError, ValueError, SyntaxError, UnidentifiedImageError) as exc:
+        raise PhotoError("No parece una imagen válida: usa un JPG, PNG o WebP.") from exc
+    except Image.DecompressionBombError as exc:
+        raise PhotoError("La imagen es demasiado grande: prueba con una más pequeña.") from exc
+    if suffix is None:
+        raise PhotoError("Formato no admitido: usa un JPG, PNG o WebP.")
+    if profile is not None:
+        configured = data_dir / profile.preferences.cv.photo_file
+        if configured.is_file() and configured not in _named_photo(data_dir):
+            raise PhotoError(
+                f"Tu perfil usa otra foto (`{profile.preferences.cv.photo_file}`): "
+                "quítala antes de subir una nueva."
+            )
+    data_dir.mkdir(parents=True, exist_ok=True)
+    target = data_dir / f"photo{suffix}"
+    tmp = target.with_name(f"{target.name}.tmp")
+    tmp.write_bytes(content)
+    tmp.replace(target)
+    for old in _named_photo(data_dir):
+        if old != target:
+            old.unlink(missing_ok=True)
+    return photo_info(target)
+
+
+def delete_photo(profile: CandidateProfile | None, data_dir: Path | None = None) -> PhotoInfo:
+    """Quita la foto (también la que indique el perfil, dentro de `data/`) y sus recortes."""
+    data_dir = data_dir or get_settings().data_dir
+    found = current_photo(profile, data_dir)
+    if found is not None:
+        found.unlink(missing_ok=True)
+    for old in _named_photo(data_dir):
+        old.unlink(missing_ok=True)
+    cache = data_dir / "cache" / "photo"
+    if cache.is_dir():
+        for cached in cache.iterdir():
+            if cached.is_file():
+                cached.unlink(missing_ok=True)
+    return PhotoInfo(exists=False)

@@ -1,0 +1,33 @@
+{
+  "title": "Search jobs",
+  "intro": "Your agent browses these job boards with your browser and looks for what fits your profile. It only reads: it never applies for you. What it finds lands in the Inbox.",
+  "platforms": "Job boards to search",
+  "never": "Not searched yet",
+  "created_one": "{{count}} new",
+  "created_other": "{{count}} new",
+  "unusable_one": "{{count}} more job board is turned off. Turn it on in <to>Where to search</to>.",
+  "unusable_other": "{{count}} more job boards are turned off. Turn them on in <to>Where to search</to>.",
+  "noneChosen": "Choose at least one job board.",
+  "searchNow": "Search now",
+  "refine": {
+    "toggle": "Refine this search (optional)",
+    "hint": "Just this once: your agent will use these instead of your saved searches. Your profile doesn't change.",
+    "role": "Role",
+    "rolePlaceholder": "For example, Data Engineer",
+    "location": "Where",
+    "locationPlaceholder": "For example, Madrid or remote",
+    "badText": "Use only letters, numbers and simple signs (. , + # / & ( ) -)."
+  },
+  "recent": {
+    "title": "Latest found by your agent",
+    "all": "See all in the Inbox",
+    "empty": "It hasn't brought any jobs from the boards yet."
+  },
+  "empty": {
+    "title": "No job boards to search yet",
+    "body": "Tell your agent where you usually search or add a job board yourself.",
+    "configure": "Choose job boards with my agent",
+    "manage": "Go to “Where to search”"
+  },
+  "others": "Target companies and email alerts don't need launching: the app checks them on its own. Set them up in <to>Where to search</to>."
+}

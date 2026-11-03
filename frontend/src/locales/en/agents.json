@@ -76,7 +76,7 @@
     "intro": "Agent and model for the main actions, in three tiers. Fill them in once and apply one with a click: it changes your “By action” table and can be undone.",
     "economy": {
       "label": "Economy",
-      "help": "Closed actions (process and assess) with a local model; the CV with your most capable agent."
+      "help": "Closed actions (process, assess, replies) with a local model; the CV with your most capable agent."
     },
     "balanced": {
       "label": "Balanced",
@@ -119,5 +119,10 @@
     "guide": "The step-by-step guide",
     "otherAgents": "Other agents, in “Agent”"
   },
-  "details": "Your agents in detail: versions, models and which one opens what"
+  "configure": {
+    "title": "Versions, models and which one opens what",
+    "body": "Check what you have installed, choose the models and decide which agent each action uses.",
+    "open": "Configure agents",
+    "close": "Hide the settings"
+  }
 }

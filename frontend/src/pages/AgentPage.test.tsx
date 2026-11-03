@@ -84,7 +84,7 @@ describe('Lo primero de «Agente» (fase 31)', () => {
     renderApp('/agente')
     expect(await screen.findByRole('heading', { name: 'Tu agente: Claude Code, listo' })).toBeInTheDocument()
     expect(screen.getByText(/Claude no es lo mismo que Claude Code/)).toBeInTheDocument()
-    const details = screen.getByRole('button', { name: /^Tus agentes en detalle/ })
+    const details = screen.getByRole('button', { name: /^Configurar agentes/ })
     expect(details).toHaveAttribute('aria-expanded', 'false')
     expect(screen.queryByLabelText('Agente por defecto')).not.toBeInTheDocument()
   })
@@ -100,7 +100,7 @@ describe('Lo primero de «Agente» (fase 31)', () => {
     expect(await within(notice).findByLabelText('Orden para instalar Claude Code')).toHaveTextContent('instala claude')
     // Ya está en «Agente»: no se enlaza a sí misma.
     expect(within(notice).queryByRole('link', { name: /Otros agentes/ })).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /^Tus agentes en detalle/ })).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByRole('button', { name: /^Ocultar la configuración/ })).toHaveAttribute('aria-expanded', 'true')
   })
 })
 

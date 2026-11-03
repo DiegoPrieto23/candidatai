@@ -52,6 +52,7 @@ def list_jobs(
     offset: Annotated[int, Query(ge=0)] = 0,
     sort: jobs.JobSort = "date",
     dir: jobs.SortDirection = "desc",
+    source_kind: Annotated[str | None, Query(max_length=32)] = None,
 ) -> jobs.JobPage:
     """Bandeja: filtrada por etapa y texto (título o empresa), ordenada por fecha de alta, score
     o salario anualizado (por defecto, las más recientes primero; sin el dato, al final)."""
@@ -63,6 +64,7 @@ def list_jobs(
         offset=offset,
         sort=sort,
         direction=dir,
+        source_kind=source_kind,
     )
 
 

@@ -245,7 +245,7 @@ guarda en tu carpeta de datos, así que abrir la página no vuelve a avisar a na
 candidatura a candidatura. Los mensajes y correos son borradores que copias y envías tú.
 
 **¿Es seguro conectar mi correo?** La app abre solo la carpeta o etiqueta que elijas, en solo
-lectura (IMAP): lee alertas y nunca envía, mueve, borra ni marca nada como
+lectura (IMAP): lee alertas y, si lo activas, respuestas de empresas, y nunca envía, mueve, borra ni marca nada como
 leído. Le das una **contraseña de aplicación**, no la tuya normal, y la puedes revocar cuando
 quieras. Ten en cuenta que en Gmail una contraseña de aplicación puede llegar a todo el buzón (Google
 no ofrece nada más limitado); el límite a una etiqueta lo pone la app. La contraseña se queda en el

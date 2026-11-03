@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { ArrowSquareOutIcon, ClockIcon, CompassIcon, GlobeIcon, WarningIcon } from '@phosphor-icons/react'
+import { Link } from 'react-router'
 import type { AgentBrowseLimits, BrowseAccess, LinkedInPublicView, SourceView } from '@/api/client'
 import {
   useLinkedInPublic,
@@ -703,9 +704,9 @@ export function PlatformsPage() {
               <AddPlatformButton />
               <AgentButton action="configure-platforms">{tAgent('actions.configure-platforms')}</AgentButton>
               <AgentButton action="broaden-search">{t('broaden')}</AgentButton>
-              <AgentButton action="search-jobs" primary>
-                {t('search')}
-              </AgentButton>
+              <Button asChild size="sm">
+                <Link to="/buscar">{t('search')}</Link>
+              </Button>
             </div>
           )}
         </div>

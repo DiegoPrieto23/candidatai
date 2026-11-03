@@ -10,6 +10,7 @@
   "generate-cover-letter": "Writes the cover letter for this job following your instructions and using only your profile, and checks that nothing is made up. It is left on the job page, matching your CV.",
   "add-skills": "Adds to your profile the skills you marked as «I have it». It shows you the changes and asks before saving.",
   "training-plan": "Turns the skills you marked as «I don't have it» into a study plan with verified resources, estimated time and order.",
+  "review-replies": "Classifies emails from companies (interview, assignment, offer, rejection…) and leaves a proposal on each. The status only changes when you accept it.",
   "draft-follow-ups": "Drafts reminders for applications without a reply and thank-you notes after interviews. You copy and send them yourself: the app sends nothing.",
   "draft-follow-up": "Drafts a reminder or a thank-you note for this company and leaves it on the job page. You copy and send it yourself: the app sends nothing.",
   "broaden-search": "Suggests job titles similar to the ones you already approve (e.g. «BI Engineer») and, with your OK, adds them to your searches. Changes nothing without asking.",

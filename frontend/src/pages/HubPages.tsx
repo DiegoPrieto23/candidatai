@@ -1,10 +1,8 @@
 import { Outlet } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import {
-  CalendarDotsIcon,
   FileTextIcon,
   GraduationCapIcon,
-  KanbanIcon,
   LightningIcon,
   ListChecksIcon,
   TrayIcon,
@@ -44,25 +42,6 @@ export function InboxHubPage() {
             count: toComplete,
             countLabel: t('withCount', { label: t('complete'), count: toComplete }),
           },
-        ]}
-      />
-      <div className="min-w-0">
-        <Outlet />
-      </div>
-    </div>
-  )
-}
-
-/** «Procesos»: el tablero y el calendario son dos vistas de lo mismo. */
-export function ProcessesHubPage() {
-  const { t } = useTranslation('nav', { keyPrefix: 'tabs' })
-  return (
-    <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
-      <PageTabs
-        label={t('processesLabel')}
-        tabs={[
-          { to: '/procesos', label: t('board'), icon: KanbanIcon, end: true },
-          { to: '/procesos/calendario', label: t('calendar'), icon: CalendarDotsIcon },
         ]}
       />
       <div className="min-w-0">

@@ -85,6 +85,11 @@
     "open": "Abrir carpeta",
     "openAria": "Abrir la carpeta archivada de la candidatura"
   },
+  "replyNotice": {
+    "label": "Respuesta de la empresa por revisar",
+    "from": "Correo de {{sender}}",
+    "see": "Ver el correo"
+  },
   "missingDetail": {
     "title": "Falta el texto de la oferta",
     "body": "Llegó como resumen desde una alerta por correo y trae poco más que el título y la empresa. Por seguridad tu agente no entra en LinkedIn, así que la completas tú con el botón «Enviar a CandidatAI» del navegador. Después tu agente ya puede leerla.",

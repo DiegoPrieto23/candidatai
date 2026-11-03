@@ -231,8 +231,12 @@ def test_cli_demo_seed(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
 
 def _assert_extras(session: Session, target: Path) -> None:
     """Cada pantalla del portal tiene algo que enseñar (fase 26.5)."""
-    # La demo ya no trae correos de empresas: la app no los lee.
-    assert session.scalars(select(Reply)).all() == []
+    inbox = session.scalars(select(Reply).order_by(Reply.id)).all()
+    assert [r.status for r in inbox] == ["proposed", "proposed", "new"]
+    assert inbox[2].risk_flags == ["hidden_text", "injection_phrase"]
+    # Cada correo, de una empresa con un solo proceso abierto: su única candidata es la suya.
+    assert all(len(r.candidates) == 1 for r in inbox)
+    assert all(r.proposal is None or r.job_id == r.candidates[0]["job_id"] for r in inbox)
     assert sorted(d.kind for d in session.scalars(select(MessageDraft))) == ["followup", "linkedin"]
     dossiers = session.scalars(select(CompanyResearch)).all()
     assert len(dossiers) == 2
@@ -312,8 +316,8 @@ def test_demo_never_uses_the_real_mailbox(tmp_path: Path, monkeypatch: pytest.Mo
             # Ni se lee ni aparece como buzón «Principal» (fase 27.4).
             assert not worker.email_alerts_enabled(session)
             assert mail_sources.list_mail_sources(session).sources == []
-        check = doctor.check_email_alerts(settings)
-        assert check.detail.startswith("demo: el IMAP de `.env` no se usa")
+        for check in (doctor.check_email_alerts(settings), doctor.check_email_replies(settings)):
+            assert check.detail.startswith("demo: el IMAP de `.env` no se usa")
     get_settings.cache_clear()
     assert get_settings().imap_configured  # fuera de la demo, sí
 

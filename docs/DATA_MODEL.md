@@ -485,9 +485,9 @@ contraseña**: vive en `.env`, en la variable que nombra `secret_ref`.
 | security | str | `ssl` o `starttls` |
 | user | str? | |
 | folder | str | Carpeta IMAP de las alertas, o el nombre de la carpeta de `data/inbox/` |
-| replies_folder | str | Sin uso: la app ya no lee los correos de las empresas |
+| replies_folder | str | Carpeta IMAP de las respuestas (`INBOX`) |
 | enabled | bool | |
-| read_replies | bool | Sin uso: la app ya no lee los correos de las empresas |
+| read_replies | bool | Si se leen de aquí las respuestas de las empresas. Se activa a propósito, también en la «Principal» |
 | secret_ref | str? | Nombre de la variable de `.env` con la contraseña (`CAI_IMAP_<ALIAS>_PASSWORD`) |
 | from_env | bool | La cuenta `CAI_IMAP_*` de `.env`: servidor, usuario y carpetas salen de ahí |
 | allow_private | bool | «Servidor en mi equipo o mi red» (un servidor propio) |
@@ -565,21 +565,21 @@ cubre (migración 0013). No es estado de una oferta: no lleva evento.
 ## Ampliaciones de la fase 15
 
 ### `replies`
-Correos de las empresas de tus procesos (migración 0014). **Sin uso:** la app ya no lee esos correos ni
-los enseña, y la tabla se conserva con lo que ya tuvieras. Contenido no confiable.
+Correos de las empresas de tus procesos (migración 0014). Solo se guardan los que casan con una
+candidatura enviada; de los demás no queda nada. Contenido no confiable.
 
 | Columna | Tipo | Notas |
 |---|---|---|
 | id | int PK | |
 | message_id | str único | `Message-ID` o, si falta, `<sha256:…>` del correo |
-| origin | str | `imap` o `local` |
+| origin | str | `imap` o `local` (`data/inbox/respuestas/`) |
 | sender, sender_name, subject | str | Remitente en minúsculas; nombre y asunto en una línea |
 | received_at | datetime? | Cabecera `Date` |
-| body_text | text | Texto visible (sin lo oculto del HTML), recortado |
+| body_text | text | Texto visible (sin lo oculto del HTML), hasta `replies.max_body_chars` |
 | risk_flags, risk_excerpt | JSON, str? | `injection_phrase` (visible u oculta) y `hidden_text` si la frase estaba oculta |
 | candidates | JSON | `[{job_id, reason}]`, de la coincidencia más fiable a la menos: `contact`, `domain`, `ats`, `company_name` |
 | status | str | `new` → `proposed` (agente) → `accepted` / `ignored` (usuario); «Deshacer» devuelve una `ignored` a `proposed` o `new` |
-| proposal | JSON? | La propuesta que dejó el agente |
+| proposal | JSON? | `ReplyProposal` (`AGENT_INTERFACE.md` §Respuestas) |
 | proposed_at, proposed_by | datetime?, str? | Cliente del agente |
 | job_id | FK? | La oferta de la propuesta (o la que eligió el usuario al aceptar) |
 | event_id | FK? | Evento registrado al aceptar |

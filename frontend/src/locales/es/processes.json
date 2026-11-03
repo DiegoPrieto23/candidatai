@@ -20,8 +20,9 @@
     "end": "Soltada en «{{stage}}». Confirma el evento en el diálogo.",
     "endNone": "Soltada sin moverla.",
     "cancel": "Movimiento cancelado.",
-    "instructions": "Pulsa espacio para coger la tarjeta, muévela con las flechas y suéltala con espacio. Esc cancela. También puedes usar «Mover»."
+    "instructions": "Pulsa espacio para coger la tarjeta, muévela con las flechas y suéltala con espacio. Esc cancela. También puedes usar «Actualizar estado»."
   },
+  "onlyForward": "La tarjeta vuelve a su sitio: las tarjetas solo se arrastran hacia la derecha. Para volver atrás, usa «Actualizar estado».",
   "noMoves": "Esta oferta no tiene movimientos posibles desde aquí.",
   "refused": "La tarjeta vuelve a su sitio. {{reason}}",
   "upcomingEmpty": "Nada en los próximos 7 días.",
@@ -33,7 +34,7 @@
     "copy": "Copiar dirección"
   },
   "title": "Procesos",
-  "intro": "Arrastra una tarjeta o pulsa «Actualizar estado» para anotar lo que ha pasado: una respuesta, una entrevista, un rechazo…",
+  "intro": "Arrastra una tarjeta hacia la derecha o pulsa «Actualizar estado» para anotar lo que ha pasado: una respuesta, una entrevista, un rechazo…",
   "followups_one": "{{count}} seguimiento pendiente",
   "followups_other": "{{count}} seguimientos pendientes",
   "thanks_one": "{{count}} entrevista por agradecer",

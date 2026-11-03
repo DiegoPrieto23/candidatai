@@ -225,7 +225,8 @@ English (a candidate in Dublin) and in Spanish (a candidate in Galicia).
 It also brings what she and her agent would have left, so no screen is empty: fit assessments, a
 cover letter and screening answers for one job, a LinkedIn message and a follow-up, two company
 dossiers (one with a red flag), the prep plan of one interview and the debrief of two, the details
-of the received offer, two gaps in "Skills", a pending request, the context, a
+of the received offer, three company emails in "Replies" (two with a proposal and one
+unclassified, with text hidden for an AI), two gaps in "Skills", a pending request, the context, a
 style sample and a salary table.
 
 ```powershell
@@ -395,8 +396,11 @@ The worker runs the automatic sources every day at `connectors.daily_at`
   by month, week, day or agenda. Click one to see its details and open the job.
 - **Follow-ups:** it reminds you of applications without a reply; `draft-follow-up` leaves
   the drafts (max. 2 per application) and the thank-you note after an interview. You send them.
-- **Replies:** when a company answers, note it on its job page or in **Processes** with **Update status**: a
-  reply, an interview, a test, an offer or a rejection. The app does not read those emails.
+- **Replies:** if you turn it on in a mailbox, the app reads emails from the companies in your
+  processes; `review-replies` proposes what happened and you accept it in **Replies**. When you
+  accept or ignore one, a notice says which job it ended up on, with its link; **Ignore** can be undone
+  from there. With the keyboard: `J`/`K` to move between emails, `A` to accept, `I` to ignore. If you
+  leave it off, note it on the job page or on the board with **Update status**.
 - **Funnel:** conversion by step, source, week and referral, and the discard reasons. Under
   **More analysis**, folded at the end: "Is the fit right?" (by fit, verdict, template, cover
   letter…), by role, the agent's cost and **Your search in numbers** (or `cai stats story`): your

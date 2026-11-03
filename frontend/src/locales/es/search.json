@@ -1,0 +1,33 @@
+{
+  "title": "Buscar ofertas",
+  "intro": "Tu agente recorre estos portales con tu navegador y busca lo que encaja con tu perfil. Solo lee: nunca se postula por ti. Lo que encuentra entra en la Bandeja.",
+  "platforms": "Portales en los que buscar",
+  "never": "Sin buscar aún",
+  "created_one": "{{count}} nueva",
+  "created_other": "{{count}} nuevas",
+  "unusable_one": "{{count}} portal más desactivado. Se activa en <to>Dónde buscar</to>.",
+  "unusable_other": "{{count}} portales más desactivados. Se activan en <to>Dónde buscar</to>.",
+  "noneChosen": "Elige al menos un portal.",
+  "searchNow": "Buscar ahora",
+  "refine": {
+    "toggle": "Afinar esta búsqueda (opcional)",
+    "hint": "Solo para esta vez: tu agente usará estos datos en vez de tus búsquedas guardadas. Tu perfil no cambia.",
+    "role": "Puesto",
+    "rolePlaceholder": "Por ejemplo, Data Engineer",
+    "location": "Dónde",
+    "locationPlaceholder": "Por ejemplo, Madrid o remoto",
+    "badText": "Usa solo letras, números y signos sencillos (. , + # / & ( ) -)."
+  },
+  "recent": {
+    "title": "Lo último que ha encontrado tu agente",
+    "all": "Ver todas en la Bandeja",
+    "empty": "Aún no ha traído ninguna oferta de los portales."
+  },
+  "empty": {
+    "title": "Aún no hay portales en los que buscar",
+    "body": "Dile a tu agente dónde sueles buscar o añade un portal tú mismo.",
+    "configure": "Elegir portales con mi agente",
+    "manage": "Ir a «Dónde buscar»"
+  },
+  "others": "Las empresas objetivo y las alertas por correo no hace falta lanzarlas: la app las consulta sola. Se configuran en <to>Dónde buscar</to>."
+}

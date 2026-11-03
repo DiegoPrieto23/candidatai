@@ -101,7 +101,7 @@
     },
     "applied": {
       "what": "Candidaturas enviadas, a la espera de que la empresa conteste.",
-      "next": "cuando te llamen para una entrevista o una prueba, anótalo en la pestaña «Proceso» de la oferta y pasa a «En proceso». Si tardan en contestar, la app te recuerda hacer un seguimiento."
+      "next": "cuando te llamen para una entrevista o una prueba, anótalo en la pestaña «Proceso» de la oferta, o acepta la propuesta en <replies>Respuestas</replies> si la app leyó el correo, y pasa a «En proceso». Si tardan en contestar, la app te recuerda hacer un seguimiento."
     },
     "in_process": {
       "what": "Procesos con entrevistas o pruebas en marcha.",

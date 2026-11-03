@@ -96,6 +96,10 @@ export type JobCost = Schemas['JobCost']
 export type AgentRequestView = Schemas['AgentRequestView']
 export type AgentRequestList = Schemas['AgentRequestList']
 export type OpenFolderResult = Schemas['OpenFolderResult']
+export type ReplyInboxItem = Schemas['ReplyInboxItem']
+export type ReplyView = Schemas['ReplyView']
+export type ReplyProposal = Schemas['ReplyProposal']
+export type RepliesPollResult = Schemas['RepliesPollResult']
 export type MessageDraftOut = Schemas['MessageDraftOut']
 export type JobNetwork = Schemas['JobNetwork']
 export type NetworkPerson = Schemas['NetworkPerson']
@@ -112,6 +116,7 @@ export const API_URL: string =
 
 /** Ficheros que sirve la API (PDF y DOCX de un render, preview de una plantilla). */
 export const fileUrls = {
+  profilePhoto: (version: string) => `${API_URL}/profile/photo/file?v=${encodeURIComponent(version)}`,
   renderPdf: (renderId: number) => `${API_URL}/renders/${renderId}/pdf`,
   renderCover: (renderId: number) => `${API_URL}/renders/${renderId}/cover.png`,
   renderPage: (renderId: number, page: number) => `${API_URL}/renders/${renderId}/pages/${page}.png`,

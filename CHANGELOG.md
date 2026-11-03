@@ -10,6 +10,13 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Buscar ofertas:** una página nueva, con su lupa en el menú. Eliges en qué portales buscar, ves
+  cuándo se buscó por última vez y cuántas salieron, afinas con puesto y ubicación solo para esa vez, y
+  lanzas a tu agente. Debajo, lo último que ha traído.
+- **Foto para el CV en «Mi perfil»:** en «Sobre ti» la subes, la cambias o la quitas sin tocar ficheros.
+  Es opcional, y se queda en tu equipo.
+- **Filtro de skills:** en «Experiencia y formación», todas, solo las F, las C+… con su recuento. Cada
+  skill ocupa una línea, para no tener que hacer tanto scroll.
 - **Corregir un CV ya generado:** en la ficha, escribe qué quieres cambiar («el resumen más corto»,
   «quita el proyecto X») y tu agente toca solo eso, sin inventar nada, y verifica el resultado. Si
   el perfil no respalda algo, no lo añade y te lo dice. Se abre al momento, en segundo plano o queda
@@ -73,14 +80,19 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   vez de 23).
 
 ### Cambiado
-- **Un menú más corto:** de 13 entradas a 7: Inicio, Mi perfil, Bandeja de ofertas, Dónde buscar,
-  Procesos, Embudo y Agente. Lo demás sigue ahí, en pestañas, y tus enlaces guardados te llevan a su
-  sitio nuevo:
+- **Tablero de procesos:** las tarjetas solo se arrastran hacia la derecha, y al arrastrar se ve a qué
+  columnas puedes soltarlas. Reabrir una oferta cerrada sigue en «Actualizar estado».
+- **«Experiencia y formación»** empieza por Experiencia y sigue con Skills.
+- **«Agente»:** la configuración se abre con un botón «Configurar agentes» que dice lo que hay dentro.
+- **Leer las respuestas de las empresas se activa a propósito** en cada buzón, también en la cuenta de
+  `.env`. La guía de configurar el correo explica exactamente qué puede leer la app y qué lee.
+- **Un menú más claro:** Inicio y Mi perfil; en Búsqueda, Bandeja de ofertas, Buscar ofertas y Dónde
+  buscar; en Procesos, Tablero, Calendario, Respuestas y Embudo; y Agente. Lo demás sigue ahí, en
+  pestañas, y tus enlaces guardados te llevan a su sitio nuevo:
   - **Bandeja de ofertas**: «Revisión rápida» (antes «Por revisar») y «Por completar» (antes
     «Alertas»), con los mismos atajos de teclado. La entrada del menú cuenta lo que tienes por revisar.
   - **Dónde buscar**: «Alertas por correo», con tus buzones, la guía para añadir uno y «Revisar correo
     ahora».
-  - **Procesos**: «Tablero» y «Calendario».
   - **Mi perfil**: ahora es la segunda entrada, con «Skills que te faltan» y «Plantillas de CV». Un
     punto en el menú te avisa si aún no tienes perfil o hay cambios sin guardar.
 - **El Embudo ya tiene forma de embudo:** una franja por etapa y, al lado, su cifra, el porcentaje
@@ -149,13 +161,6 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   resto, y los iconos pesan un tercio menos. Con una conexión lenta, Inicio se ve un 20 % antes.
 - **El embudo va más rápido con muchas ofertas:** «Por semana» y «Por puesto» se calculan sin
   leer cada oferta una a una.
-
-### Eliminado
-- **«Respuestas»:** la app ya no lee los correos de las empresas ni tu agente los clasifica. Cuando
-  una empresa te conteste, anótalo en su ficha o en «Procesos» con «Actualizar estado». Se van la
-  página, el aviso en la ficha, el botón de Inicio, la opción «Leer aquí también las respuestas» de
-  los buzones, el skill `review-replies` y el comando `cai replies`. Lo que ya tenías guardado no se
-  borra. Si la usabas, `CAI_IMAP_REPLIES_FOLDER` ya no hace nada y puedes quitarla de tu `.env`.
 
 ### Corregido
 - **El foco de teclado se ve siempre:** en «Respuestas», el correo con el foco lleva un anillo y

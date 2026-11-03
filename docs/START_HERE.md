@@ -246,7 +246,7 @@ is saved in your data folder, so opening the page doesn't notify anyone again.
 one application at a time. Messages and emails are drafts that you copy and send.
 
 **Is it safe to connect my email?** The app opens only the folder or label you choose, read-only
-(IMAP): it reads alerts and never sends, moves, deletes or marks anything as
+(IMAP): it reads alerts and, if you turn it on, company replies, and never sends, moves, deletes or marks anything as
 read. You give it an **app password**, not your normal one, and you can revoke it at any moment. Be
 aware that with Gmail an app password can reach the whole mailbox (Google offers nothing narrower);
 the limit to one label is set by the app. The password stays in the `.env` file on your computer

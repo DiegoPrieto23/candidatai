@@ -63,7 +63,7 @@ pulses Enviar**, y después sigue el proceso hasta la oferta.
 | 🎯 **Revisión con score explicado** | Filtros duros y un score de 0 a 100 por cobertura de skills y tus preferencias; tu agente añade un veredicto razonado, y «¿Acierta el encaje?» lo contrasta con lo que pasó de verdad |
 | 📄 **CV y carta a medida** | El agente cita **una evidencia de tu perfil para cada línea**; el código la comprueba, lo renderiza con tu plantilla, foto y color, y un rol aparte lo verifica. **Importa el diseño de tu propio CV** como plantilla |
 | 📝 **Candidatura asistida** | Rellena formularios de Greenhouse, Lever, Ashby o genéricos, se para ante captchas e inicios de sesión y **solo envía cuando tú confirmas** |
-| 📊 **Seguimiento y analítica** | Un kanban que solo se mueve con eventos registrados, un calendario, recordatorios de seguimiento y un embudo por fuente, puesto, plantilla y referencia |
+| 📊 **Seguimiento y analítica** | Un kanban que solo se mueve con eventos registrados, un calendario, recordatorios de seguimiento, las respuestas de las empresas clasificadas y un embudo por fuente, puesto, plantilla y referencia |
 | 🎤 **Entrevistas y ofertas** | Guías y planes de preparación, simulacros, repasos, investigación de la empresa con fuentes y ofertas comparadas con tu mínimo **sin que el agente lo vea nunca** |
 
 **Todas las funcionalidades, página a página y skill a skill:** [`docs/FUNCIONALIDADES.md`](docs/FUNCIONALIDADES.md).

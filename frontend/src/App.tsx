@@ -25,9 +25,10 @@ const {
   newJob: { Page: NewJobPage },
   platforms: { Page: PlatformsPage },
   processes: { Page: ProcessesPage },
-  processesHub: { Page: ProcessesHubPage },
   profile: { Page: ProfilePage },
   profileHub: { Page: ProfileHubPage },
+  replies: { Page: RepliesPage },
+  search: { Page: SearchPage },
   skills: { Page: SkillsPage },
   sources: { Page: SourcesPage },
   sourcesHub: { Page: SourcesHubPage },
@@ -69,10 +70,10 @@ export function AppRoutes() {
         </Route>
         <Route path="jobs/:id" element={<JobPage />} />
         <Route path="nueva" element={<NewJobPage />} />
-        <Route path="procesos" element={<ProcessesHubPage />}>
-          <Route index element={<ProcessesPage />} />
-          <Route path="calendario" element={<CalendarPage />} />
-        </Route>
+        <Route path="buscar" element={<SearchPage />} />
+        <Route path="procesos" element={<ProcessesPage />} />
+        <Route path="calendario" element={<CalendarPage />} />
+        <Route path="respuestas" element={<RepliesPage />} />
         <Route path="embudo" element={<FunnelPage />} />
         <Route path="perfil" element={<ProfileHubPage />}>
           <Route index element={<ProfilePage />} />
@@ -83,8 +84,7 @@ export function AppRoutes() {
         <Route path="por-revisar" element={<MovedTo to="/bandeja/revision" />} />
         <Route path="triaje" element={<MovedTo to="/bandeja/revision" />} />
         <Route path="alertas" element={<MovedTo to="/bandeja/por-completar" />} />
-        <Route path="calendario" element={<MovedTo to="/procesos/calendario" />} />
-        <Route path="respuestas" element={<MovedTo to="/procesos" />} />
+        <Route path="procesos/calendario" element={<MovedTo to="/calendario" />} />
         <Route path="skills" element={<MovedTo to="/perfil/skills" />} />
         <Route path="plantillas" element={<MovedTo to="/perfil/plantillas" />} />
         <Route path="fuentes" element={<SourcesHubPage />}>

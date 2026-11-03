@@ -11,6 +11,9 @@ programada (el portátil estaba apagado): así no se pierde ningún día.
 Alertas por correo (fase 09b): cada `email_alerts.poll_minutes` se encola `poll_email` si hay IMAP
 configurado o correos en `data/inbox/`, y cada día, con la ingesta, `expire_summaries`.
 
+Respuestas de las empresas (fase 15): con la misma frecuencia se encola `poll_replies` si hay de
+dónde leer y alguna candidatura enviada abierta.
+
 ¿Sigue abierta? (fase 16): cada día, con la ingesta, y al arrancar se encola `check_open` para
 cada oferta aprobada o con CV listo sin comprobación reciente. Una tarea por oferta: cada una en su
 transacción, sin bloquear SQLite mientras espera a la red.
@@ -49,6 +52,7 @@ from app.services import (
     container,
     liveness,
     mail_sources,
+    replies,
     summaries,
     tasks,
 )
@@ -94,10 +98,12 @@ def _poll_email(session: Session, _payload: dict[str, Any]) -> dict[str, Any]:
     return data
 
 
-def _retired_poll_replies(_session: Session, _payload: dict[str, Any]) -> dict[str, Any]:
-    """La app ya no lee los correos de las empresas: una tarea que quedó en cola de una versión
-    anterior termina sin hacer nada, en vez de fallar."""
-    return {}
+def _poll_replies(session: Session, _payload: dict[str, Any]) -> dict[str, Any]:
+    result = replies.poll_replies(session)
+    data = result.model_dump(mode="json")
+    if any(e.code == "network" for e in result.errors):
+        data[RETRY_KEY] = next(e.message for e in result.errors if e.code == "network")
+    return data
 
 
 def _expire_summaries(session: Session, _payload: dict[str, Any]) -> dict[str, Any]:
@@ -176,7 +182,7 @@ HANDLERS: dict[str, Handler] = {
     "run_source": _run_source,
     "poll_email": _poll_email,
     "run_linkedin_public": _run_linkedin_public,
-    "poll_replies": _retired_poll_replies,
+    "poll_replies": _poll_replies,
     "expire_summaries": _expire_summaries,
     "browser_open": _browser_open,
     "apply_open": _apply_open,
@@ -315,6 +321,13 @@ def enqueue_linkedin_public(session: Session) -> bool:
     return True
 
 
+def enqueue_replies_poll(session: Session) -> bool:
+    if not replies.replies_enabled(session) or not replies.has_open_processes(session):
+        return False
+    tasks.enqueue(session, "poll_replies")
+    return True
+
+
 def enqueue_liveness_checks(session: Session) -> int:
     """Encola `check_open` para las aprobadas y con CV listo sin comprobación reciente."""
     due = liveness.due_for_check(session)
@@ -326,7 +339,7 @@ def enqueue_liveness_checks(session: Session) -> int:
 def describe(outcome: TaskOutcome) -> str:
     """Una línea legible para el log del worker."""
     result = outcome.result or {}
-    kinds = ("run_source", "poll_email", "expire_summaries", "run_linkedin_public")
+    kinds = ("run_source", "poll_email", "poll_replies", "expire_summaries", "run_linkedin_public")
     if outcome.kind in kinds and result.get("message"):
         line = str(result["message"])
         if outcome.error:
@@ -395,6 +408,7 @@ def _startup_queue(on_message: Callable[[str], None]) -> tuple[bool, list[int], 
         queued = enqueue_due_sources(session)
         linkedin = enqueue_linkedin_public(session)
         email = enqueue_email_poll(session)
+        email = enqueue_replies_poll(session) or email
         tasks.enqueue(session, "expire_summaries")
         checks = enqueue_liveness_checks(session)
         reinstall = matching_extra.ensure_installed(session)
@@ -460,6 +474,7 @@ def run_scheduler(
         try:
             with session_scope() as session:
                 queued = enqueue_email_poll(session)
+                queued = enqueue_replies_poll(session) or queued
         except Exception as exc:
             logger.exception("Fallo al encolar la lectura de alertas")
             on_message(f"Error al encolar la lectura de alertas: {type(exc).__name__}: {exc}")

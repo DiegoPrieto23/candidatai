@@ -187,7 +187,12 @@ def test_env_account_appears_as_principal(
     assert mail_sources.list_mail_sources(session).sources == []  # sin IMAP: lista vacía
     _configure_env(monkeypatch, 993)
     (principal,) = mail_sources.list_mail_sources(session).sources
-    assert (principal.label, principal.from_env) == ("Principal", True)
+    # Abrir la bandeja de entrada se activa a propósito: ni la cuenta de `.env` lo hace sola.
+    assert (principal.label, principal.from_env, principal.read_replies) == (
+        "Principal",
+        True,
+        False,
+    )
     assert (principal.host, principal.user, principal.folder) == ("127.0.0.1", USER, FOLDER)
     assert principal.has_password and principal.secret_ref == "CAI_IMAP_PASSWORD"
     # Se cambia en `.env`; aquí solo activarla, el nombre o si lee respuestas.
@@ -267,6 +272,12 @@ def test_demo_reads_no_imap_mailbox(session: Session, monkeypatch: pytest.Monkey
     assert mail_sources.active_sources(session) == []
     result = mail_sources.probe_new_mail_source(_imap("X", 993), _plain)
     assert (result.ok, result.code) == (False, "demo")
+
+
+def test_replies_only_from_mailboxes_that_read_them(session: Session) -> None:
+    mail_sources.create_mail_source(session, _imap("Alertas", 993))
+    mail_sources.create_mail_source(session, _imap("Personal", 994, read_replies=True))
+    assert [r.label for r in mail_sources.active_sources(session, "replies")] == ["Personal"]
 
 
 def test_probe_reports_errors_without_the_password() -> None:

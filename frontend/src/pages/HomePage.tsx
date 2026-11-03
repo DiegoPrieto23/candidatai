@@ -3,7 +3,7 @@ import { Link } from 'react-router'
 import { ArrowRightIcon } from '@phosphor-icons/react'
 import { Trans, useTranslation } from 'react-i18next'
 import type { JobRow, Stage, UpcomingItem } from '@/api/client'
-import { useAgentLauncher, useFollowups, useJobs, useStatus, useUpcoming } from '@/api/queries'
+import { useAgentLauncher, useFollowups, useJobs, useReplies, useStatus, useUpcoming } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
 import { FirstSteps } from '@/components/FirstSteps'
 import { GetAnAgent } from '@/components/GetAnAgent'
@@ -35,6 +35,7 @@ function Today() {
   const { t } = useTranslation('home')
   const status = useStatus()
   const followups = useFollowups()
+  const replies = useReplies()
   // Con los primeros pasos sin hacer, lo que toca es eso: el titular lo dice y la acción principal
   // es la del paso, en «Primeros pasos».
   const stepsLeft = useFirstStepsLeft()
@@ -42,6 +43,8 @@ function Today() {
   const [now] = useState(() => new Date())
   const s = status.data?.by_stage
   const due = followups.data?.followups.length ?? 0
+  const proposed = replies.data?.counts.proposed ?? 0
+  const unclassified = replies.data?.counts.new ?? 0
 
   const yours: ReactNode[] = []
   if (s?.pending_triage)
@@ -56,6 +59,12 @@ function Today() {
         {t('today.cvReady', { count: s.cv_ready })}
       </Pending>,
     )
+  if (proposed)
+    yours.push(
+      <Pending key="replies" to="/respuestas">
+        {t('today.replies', { count: proposed })}
+      </Pending>,
+    )
   if (due)
     yours.push(
       <Pending key="followups" to="/procesos">
@@ -66,6 +75,7 @@ function Today() {
   const agent: string[] = []
   if (s?.pending_extraction) agent.push(t('today.agentToExtract', { count: s.pending_extraction }))
   if (s?.approved) agent.push(t('today.agentApproved', { count: s.approved }))
+  if (unclassified) agent.push(t('today.agentUnclassified', { count: unclassified }))
 
   // Solo una acción destacada: la que más desbloquea ahora. Las demás, con borde.
   // Mientras no se sabe (`null`), ninguna: así no parpadea la destacada.
@@ -73,9 +83,11 @@ function Today() {
     ? null
     : s?.pending_extraction
       ? 'process-jobs'
-      : s?.pending_triage
-        ? 'assess-fit'
-        : 'search-jobs'
+      : unclassified
+        ? 'review-replies'
+        : s?.pending_triage
+          ? 'assess-fit'
+          : 'search-jobs'
 
   return (
     <section aria-labelledby="hoy" className="max-w-3xl">
@@ -107,6 +119,11 @@ function Today() {
         {!!s?.pending_triage && (
           <AgentButton action="assess-fit" size="default" primary={primary === 'assess-fit'}>
             {t('today.assessFit')}
+          </AgentButton>
+        )}
+        {unclassified > 0 && (
+          <AgentButton action="review-replies" size="default" primary={primary === 'review-replies'}>
+            {t('today.reviewReplies')}
           </AgentButton>
         )}
       </div>
@@ -350,7 +367,7 @@ export function HomePage() {
       {/* Lo más inmediato, arriba: lo pendiente a la izquierda y la agenda a la derecha. */}
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <Today />
-        <Panel title={t('panels.next7')} more={{ to: '/procesos', label: t('panels.calendar') }}>
+        <Panel title={t('panels.next7')} more={{ to: '/calendario', label: t('panels.calendar') }}>
           <Upcoming />
         </Panel>
       </div>

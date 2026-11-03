@@ -2,12 +2,15 @@ import { useEffect, useState, type ComponentType } from 'react'
 import { Link, useLocation } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import {
+  CalendarDotsIcon,
+  ChatsCircleIcon,
   DesktopIcon,
   FunnelIcon,
   GlobeIcon,
   HouseIcon,
   KanbanIcon,
   ListIcon,
+  MagnifyingGlassIcon,
   MoonIcon,
   PlusIcon,
   PlugsConnectedIcon,
@@ -22,7 +25,7 @@ import {
 } from '@phosphor-icons/react'
 import { Dialog as DialogPrimitive } from 'radix-ui'
 import type { Stage } from '@/api/client'
-import { useAgentRuns, useEditableProfile, useFollowups, useStatus } from '@/api/queries'
+import { useAgentRuns, useEditableProfile, useFollowups, useReplies, useStatus } from '@/api/queries'
 import { LanguageFlag } from '@/components/LanguageFlag'
 import { Button } from '@/components/ui/button'
 import {
@@ -57,6 +60,12 @@ function useStageCount(stage: Stage, label: CountLabel, strong = true): Count {
 function useFollowupsCount(): Count {
   const { data } = useFollowups()
   return { value: data?.followups.length ?? 0, strong: true, label: 'followUp' }
+}
+
+/** Correos de empresas con una propuesta que espera a que la aceptes o la ignores. */
+function useRepliesCount(): Count {
+  const { data } = useReplies()
+  return { value: data?.counts.proposed ?? 0, strong: true, label: 'toReview' }
 }
 
 /** Ejecuciones en curso (fase 19), las que esperan una respuesta tuya y los encargos pendientes. */
@@ -98,8 +107,11 @@ type EntryKey =
   | 'home'
   | 'profile'
   | 'inbox'
+  | 'search'
   | 'sources'
   | 'processes'
+  | 'calendar'
+  | 'replies'
   | 'funnel'
   | 'agent'
 
@@ -130,6 +142,7 @@ const NAV_GROUPS: { title: GroupKey | null; entries: Entry[] }[] = [
     title: 'search',
     entries: [
       { to: '/bandeja', label: 'inbox', icon: TrayIcon, alsoActive: ['/jobs/'], useCount: usePendingTriage },
+      { to: '/buscar', label: 'search', icon: MagnifyingGlassIcon },
       { to: '/fuentes', label: 'sources', icon: PlugsConnectedIcon },
     ],
   },
@@ -137,6 +150,8 @@ const NAV_GROUPS: { title: GroupKey | null; entries: Entry[] }[] = [
     title: 'processes',
     entries: [
       { to: '/procesos', label: 'processes', icon: KanbanIcon, useCount: useFollowupsCount },
+      { to: '/calendario', label: 'calendar', icon: CalendarDotsIcon },
+      { to: '/respuestas', label: 'replies', icon: ChatsCircleIcon, useCount: useRepliesCount },
       { to: '/embudo', label: 'funnel', icon: FunnelIcon },
     ],
   },

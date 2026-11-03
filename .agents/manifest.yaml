@@ -56,6 +56,9 @@ policy:
     - mcp:get_funnel_stats
     - mcp:get_calibration
     - mcp:get_skill_gaps
+    - mcp:list_replies
+    - mcp:get_reply
+    - mcp:save_reply_proposal
     - mcp:save_message_draft
     - mcp:get_job_contacts
     - mcp:get_company_research
@@ -194,6 +197,9 @@ targets:
       review-linkedin:
         argument-hint: "[ruta al PDF de LinkedIn o nada para pegar el texto]"
         allowed-tools: ["read", "mcp:get_profile", "mcp:list_jobs", "mcp:get_extraction"]
+      review-replies:
+        argument-hint: "[nada para todas, o un reply_id]"
+        allowed-tools: ["mcp:list_replies"]
       draft-follow-up:
         argument-hint: "[nada para todo lo pendiente, o un job_id]"
         allowed-tools: ["mcp:list_followups_due", "mcp:get_profile", "mcp:get_context", "mcp:get_extraction", "mcp:get_timeline", "mcp:save_message_draft"]

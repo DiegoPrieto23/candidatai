@@ -85,6 +85,11 @@
     "open": "Open folder",
     "openAria": "Open the application's archived folder"
   },
+  "replyNotice": {
+    "label": "Company reply to review",
+    "from": "Email from {{sender}}",
+    "see": "See the email"
+  },
   "missingDetail": {
     "title": "The job description is missing",
     "body": "It came as a summary from an email alert and carries little more than the title and company. For safety your agent doesn't go into LinkedIn, so you complete it yourself with the browser's “Send to CandidatAI” button. Then your agent can read it.",

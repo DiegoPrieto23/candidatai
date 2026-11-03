@@ -109,6 +109,8 @@ export function status(pendingExtraction = 0, pendingTriage = 0, pendingDetail =
     total: pendingExtraction + pendingTriage + pendingDetail,
     pending_tasks: 0,
     agent_requests: 0,
+    replies_new: 0,
+    replies_proposed: 0,
     demo_mode: false,
     by_stage: {
       pending_detail: pendingDetail,

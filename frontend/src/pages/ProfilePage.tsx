@@ -22,6 +22,7 @@ import { HistoryBlock } from '@/components/profile/HistoryBlock'
 import { blockAnchor } from '@/components/profile/editor'
 import { CertificationsBlock, EducationBlock, ExtraSectionsBlock, ProjectsBlock } from '@/components/profile/ItemsBlocks'
 import { PersonalBlock } from '@/components/profile/PersonalBlock'
+import { PhotoBlock } from '@/components/profile/PhotoBlock'
 import {
   CvPreferencesBlock,
   LetterPreferencesBlock,
@@ -263,7 +264,7 @@ const PLACES: Record<string, { tab: Tab; anchor?: string; title: string }> = {
 }
 
 /** Los apartados de «Experiencia y formación», en el orden en que salen. */
-const CAREER_BLOCKS = ['skills', 'languages', 'experience', 'projects', 'education', 'certifications', 'extra_sections', 'stories'] as const
+const CAREER_BLOCKS = ['experience', 'skills', 'languages', 'projects', 'education', 'certifications', 'extra_sections', 'stories'] as const
 
 function usePlace() {
   const { t } = useTranslation('profileEditor')
@@ -392,14 +393,15 @@ function Editor() {
         ))}
       </TabsList>
       {/* `forceMount`: cambiar de pestaña no pierde lo que no se ha guardado. */}
-      <TabsContent value="about" forceMount className={hidden}>
+      <TabsContent value="about" forceMount className={cn('grid gap-6', hidden)}>
         <PersonalBlock />
+        <PhotoBlock />
       </TabsContent>
       <TabsContent value="career" forceMount className={cn('grid gap-6', hidden)}>
         <SectionNav onGo={goTo} />
+        <ExperienceBlock />
         <SkillsBlock />
         <LanguagesBlock />
-        <ExperienceBlock />
         <ProjectsBlock />
         <EducationBlock />
         <CertificationsBlock />

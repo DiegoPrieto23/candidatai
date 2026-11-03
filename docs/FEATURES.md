@@ -21,6 +21,7 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 | **Inbox**: every job with filters, search, signals and stage; each stage explains what it is and what to do to move on, with its button; drop the ones to complete or to read with **Discard** and **Undo**; "Closed" with its date, sortable | `/bandeja` | [Inbox](img/en/inbox.webp) · [▶ Discard](img/en/anim/discard.webp) |
 | **Target companies**: their jobs come in every day from Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters and Recruitee (public APIs, no scraping); "Test" shows how many pass your filters | `/fuentes/empresas` | [Companies](img/en/sources-companies.webp) |
 | **Job boards** (in “Where to search”): **Set up with my agent** recommends job boards and prepares their searches; when you add a known one (InfoJobs, Tecnoempleo, Indeed, LinkedIn), the searches come from the roles and locations in your profile, and each job board can be edited. The ones your agent browses, with a unique priority each, access type and jobs per run, each explained with its ⓘ; InfoJobs and Adzuna with keys, Manfred and freehire.me without | `/fuentes/plataformas` | [Platforms](img/en/sources-platforms.webp) |
+| **Search jobs**: choose which job boards to search, refine with role and location just that once, launch your agent and see the latest it brought | `/buscar` | [Search jobs](img/en/search.webp) |
 | **Search portals with your browser**: your agent walks your saved searches, with page limits and pauses, adds what fits and stops at captchas | `search-jobs` | |
 | **Job alerts by email**: LinkedIn, InfoJobs, Indeed… alerts come in by themselves, read-only over IMAP or from `.eml` files; **several mailboxes**, with a step-by-step guide for Gmail, Outlook, Yahoo and iCloud; summary jobs expire after 21 days | `/fuentes/correo` | [▶ Add a mailbox](img/en/anim/mailbox.webp) |
 | **Complete summary jobs**: jobs that arrive as a summary, one by one: open them on their portal, send them with the browser button or discard them, with `J`/`K`, `O`, `D` and Undo; those that fail your filters stay folded away | `/bandeja/por-completar` | [To complete](img/en/alerts.webp) |
@@ -70,7 +71,9 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 |---|---|---|
 | **Processes**: a kanban that only moves through recorded events (mouse, keyboard or touch), received offers side by side and follow-up reminders | `/procesos` | [Processes](img/en/processes.webp) |
 | **Process page**: milestones with date and time (edit, cancel or, if added by mistake, delete them), contacts and referrals, drafts and **What happened?**, which once in process records another interview, a test or the offer, and only lets you accept once there's an offer | `/jobs/:id` | [Process](img/en/job-interview.webp) |
-| **Calendar**: interviews, tests and deadlines, with an `.ics` per milestone and a feed for Google Calendar | `/procesos/calendario` | [Calendar](img/en/calendar.webp) |
+| **Calendar**: interviews, tests and deadlines, with an `.ics` per milestone and a feed for Google Calendar | `/calendario` | [Calendar](img/en/calendar.webp) |
+| **Company replies**: the app reads your email read-only and keeps only messages from companies you applied to. When you accept or ignore one, a notice says which job it was logged on; **Ignore** can be undone from it. With the keyboard: `J`/`K` to move, `A` accept, `I` ignore | `/respuestas` | [Replies](img/en/replies.webp) |
+| **Classify replies**: your agent proposes interview (with its date), test, offer, rejection or nothing; nothing changes stage until you accept | `review-replies` | |
 | **Follow-ups and thank-you notes** as drafts (at most 2 follow-ups per application) | `draft-follow-up` | |
 
 ## 6. Interviews and offers
@@ -96,6 +99,7 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 | **Training plan** with verified resources for your real gaps, and an assessment of a course or project | `training-plan` | |
 | **Widen the search** with adjacent job titles from what you approve and discard | `broaden-search` | |
 | **My profile, editable**: with no profile yet, you upload your CV and your agent builds it from it, or you start it by hand (name, headline, role and levels); context files are created from their template even before you have a profile; an index to jump to each section; skills and languages at the top; collapsible experience, projects, education, certifications and STAR stories; **Search** preferences (years, private minimum salary, words that discard, contract, company type), CV and letter preferences, context and style samples; the unsaved-changes notice names the blocks and takes you to them; keeps your file's comments, with Undo | `/perfil` | [Experience](img/en/profile-experience.webp) · [Search](img/en/profile-search.webp) · [▶ Collapsible](img/en/anim/profile.webp) |
+| **CV photo (optional)**: upload, change or remove it in "My profile → About you"; it stays on your computer and your agent doesn't read it | `/perfil` | |
 | **Create or update your profile** from your CV or what you tell your agent | `update-profile` | |
 | **Expand your profile** from your public GitHub, portfolio, Kaggle or Scholar, each item with its source and only with your OK | `expand` | |
 | **LinkedIn profile review** against your profile and the jobs you approve | `review-linkedin` | |

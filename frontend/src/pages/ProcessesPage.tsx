@@ -35,7 +35,7 @@ import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Skeleton } from '@/components/ui/skeleton'
 import { eventLabel, STAGE_LABEL, UPCOMING_KIND_LABEL } from '@/lib/labels'
-import { moveOptions, noMoveReason, type MoveOption } from '@/lib/moves'
+import { isForward, moveOptions, noMoveReason, type MoveOption } from '@/lib/moves'
 import { formatWhen } from '@/lib/time'
 import { i18n } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
@@ -124,11 +124,14 @@ function Column({
   total,
   children,
   empty,
+  dropHint,
 }: {
   stage: Stage
   total: number
   children: ReactNode
   empty: boolean
+  /** Mientras arrastras: `target`, se puede soltar aquí; `blocked`, no. */
+  dropHint?: 'target' | 'blocked'
 }) {
   const { t } = useTranslation('processes')
   const { setNodeRef, isOver } = useDroppable({ id: stage })
@@ -137,8 +140,10 @@ function Column({
       ref={setNodeRef}
       aria-label={STAGE_LABEL[stage]}
       className={cn(
-        'flex w-[17rem] shrink-0 flex-col rounded-xl border bg-muted/40 p-2 transition-colors lg:w-auto',
-        isOver && 'border-primary/50 bg-accent/60',
+        'flex w-[17rem] shrink-0 flex-col rounded-xl border bg-muted/40 p-2 transition lg:w-auto',
+        dropHint === 'target' && 'border-dashed border-primary/50',
+        dropHint === 'blocked' && 'opacity-50',
+        isOver && dropHint !== 'blocked' && 'border-primary/50 bg-accent/60',
       )}
     >
       <header className="flex items-baseline justify-between px-1.5 pt-1 pb-2.5">
@@ -180,6 +185,13 @@ function Board({ columns, moves }: { columns: { stage: Stage; cards: BoardCard[]
   const [moving, setMoving] = useState<{ card: BoardCard; options: MoveOption[] } | null>(null)
   const [refused, setRefused] = useState<string | null>(null)
 
+  // Las tarjetas avanzan: se arrastran solo hacia la derecha. Reabrir una cerrada, con su botón.
+  const order = columns.map((column) => column.stage)
+  const dropHint = (stage: Stage) => {
+    if (!dragging || stage === dragging.stage) return undefined
+    return isForward(order, dragging.stage, stage) && moveOptions(dragging, moves, stage).length > 0 ? 'target' : 'blocked'
+  }
+
   const openMove = (card: BoardCard, target?: Stage) => {
     const options = moveOptions(card, moves, target)
     if (options.length === 0) {
@@ -195,7 +207,9 @@ function Board({ columns, moves }: { columns: { stage: Stage; cards: BoardCard[]
     setDragging(null)
     const card = e.active.data.current?.card as BoardCard | undefined
     const target = e.over?.id as Stage | undefined
-    if (card && target && target !== card.stage) openMove(card, target)
+    if (!card || !target || target === card.stage) return
+    if (isForward(order, card.stage, target)) openMove(card, target)
+    else setRefused(t('onlyForward'))
   }
 
   return (
@@ -220,7 +234,7 @@ function Board({ columns, moves }: { columns: { stage: Stage; cards: BoardCard[]
         <div className="-mx-4 overflow-x-auto overflow-y-hidden px-4 pb-2 sm:mx-0 sm:px-0">
           <div className="flex min-w-max gap-3 lg:grid lg:min-w-0 lg:grid-cols-5">
             {columns.map((column) => (
-              <Column key={column.stage} stage={column.stage} total={column.total} empty={column.cards.length === 0}>
+              <Column key={column.stage} stage={column.stage} total={column.total} empty={column.cards.length === 0} dropHint={dropHint(column.stage)}>
                 {column.cards.map((card) => (
                   <DraggableCard key={card.job_id} card={card} onMove={() => openMove(card)} />
                 ))}
@@ -367,7 +381,7 @@ export function ProcessesPage() {
           <div className="mb-3 flex items-baseline justify-between gap-3">
             <h2 className="font-medium">{t('next7')}</h2>
             <Link
-              to="/procesos/calendario"
+              to="/calendario"
               className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
             >
               {t('seeCalendar')}

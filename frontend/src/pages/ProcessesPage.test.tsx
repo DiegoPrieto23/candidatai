@@ -1,6 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
+import { isForward } from '@/lib/moves'
 import { board, boardCard, jobView, mockApi, renderApp, status } from '@/test/utils'
 
 const CARDS = [
@@ -44,6 +45,18 @@ function routes(extra: Record<string, unknown> = {}) {
   }
 }
 
+describe('Mover tarjetas', () => {
+  const ORDER = ['approved', 'cv_ready', 'applied', 'in_process', 'closed'] as const
+
+  it('solo hacia la derecha', () => {
+    expect(isForward(ORDER, 'applied', 'in_process')).toBe(true)
+    expect(isForward(ORDER, 'applied', 'closed')).toBe(true)
+    expect(isForward(ORDER, 'applied', 'cv_ready')).toBe(false)
+    expect(isForward(ORDER, 'closed', 'in_process')).toBe(false)
+    expect(isForward(ORDER, 'applied', 'applied')).toBe(false)
+  })
+})
+
 describe('Procesos (kanban)', () => {
   it('reparte las tarjetas por columna con seguimiento, hito y cierre', async () => {
     mockApi(routes())
@@ -55,7 +68,7 @@ describe('Procesos (kanban)', () => {
     expect(within(screen.getByRole('region', { name: 'Cerrada' })).getByText('Rechazada')).toBeInTheDocument()
     const upcoming = screen.getByRole('region', { name: 'Próximos 7 días' })
     expect(await within(upcoming).findByText(/Oferta 3 \(Empresa 3\)/)).toBeInTheDocument()
-    expect(within(upcoming).getByRole('link', { name: 'Ver el calendario' })).toHaveAttribute('href', '/procesos/calendario')
+    expect(within(upcoming).getByRole('link', { name: 'Ver el calendario' })).toHaveAttribute('href', '/calendario')
   })
 
   it('registra el envío con canal y fecha desde «Mover»', async () => {
@@ -155,7 +168,7 @@ describe('Procesos (kanban)', () => {
     expect(options[0]).toHaveTextContent('→ Enviada')
   })
 
-  it('los seguimientos vencidos se cuentan en «Procesos» de la barra lateral', async () => {
+  it('los seguimientos vencidos se cuentan en «Tablero» de la barra lateral', async () => {
     mockApi({
       'GET /status': status(),
       'GET /jobs/1': jobView(),
@@ -176,7 +189,7 @@ describe('Procesos (kanban)', () => {
       },
     })
     renderApp('/jobs/1')
-    expect(await screen.findByRole('link', { name: 'Procesos (1 sin respuesta)' })).toHaveAttribute('href', '/procesos')
+    expect(await screen.findByRole('link', { name: 'Tablero (1 sin respuesta)' })).toHaveAttribute('href', '/procesos')
   })
 
   it('ofrece redactar los borradores con tu agente si hay seguimientos o agradecimientos', async () => {

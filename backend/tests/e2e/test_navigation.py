@@ -1,4 +1,4 @@
-"""La barra lateral: siete entradas, y lo que salió de ella se alcanza desde su sección nueva."""
+"""La barra lateral: sus entradas, y lo que salió de ella se alcanza desde su sección nueva."""
 
 import re
 
@@ -10,10 +10,21 @@ from tests.e2e.harness import AppServer, t
 pytestmark = pytest.mark.e2e
 
 
-def test_seven_entries_and_each_section_opens_its_tabs(page: Page, demo_app: AppServer) -> None:
+def test_the_entries_and_each_section_opens_its_tabs(page: Page, demo_app: AppServer) -> None:
     page.goto("/")
     nav = page.get_by_role("navigation", name=t("nav.mainNav"))
-    expected = ["home", "profile", "inbox", "sources", "processes", "funnel", "agent"]
+    expected = [
+        "home",
+        "profile",
+        "inbox",
+        "search",
+        "sources",
+        "processes",
+        "calendar",
+        "replies",
+        "funnel",
+        "agent",
+    ]
     links = nav.get_by_role("link")
     expect(links).to_have_count(len(expected))
     for index, entry in enumerate(expected):
@@ -51,11 +62,15 @@ def test_seven_entries_and_each_section_opens_its_tabs(page: Page, demo_app: App
     expect(page.get_by_role("heading", level=1, name=t("alerts.email.title"))).to_be_visible()
     expect(page.get_by_role("button", name=t("alerts.addMailbox")).first).to_be_visible()
 
-    # Procesos: el tablero y el calendario.
+    # Procesos: el tablero y, en su propia entrada, el calendario, sin pestañas.
     nav.get_by_role("link", name=re.compile(t("nav.entries.processes"))).first.click()
-    tabs = page.get_by_role("navigation", name=t("nav.tabs.processesLabel"))
-    tabs.get_by_role("link", name=t("nav.tabs.calendar")).click()
+    expect(page.get_by_role("heading", level=1, name=t("processes.title"))).to_be_visible()
+    nav.get_by_role("link", name=t("nav.entries.calendar")).click()
     expect(page.get_by_role("heading", level=1, name=t("calendar.title"))).to_be_visible()
+
+    # Buscar ofertas.
+    nav.get_by_role("link", name=t("nav.entries.search")).click()
+    expect(page.get_by_role("heading", level=1, name=t("search.title"))).to_be_visible()
 
     # Y la ayuda, al pie.
     page.get_by_role("complementary", name=t("nav.sidebar")).get_by_role(

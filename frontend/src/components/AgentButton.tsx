@@ -17,6 +17,7 @@ import {
   useLaunchAgent,
   useStartAgentRun,
   type AgentAction,
+  type SearchScope,
 } from '@/api/queries'
 import { CommandBox } from '@/components/CommandBox'
 import { Hint } from '@/components/Hint'
@@ -68,6 +69,7 @@ export function AgentButton({
   milestoneId,
   profileItem,
   upload,
+  search,
   children,
   size = 'sm',
   primary = false,
@@ -83,6 +85,8 @@ export function AgentButton({
   profileItem?: string
   /** Plantillas: el nombre de un CV subido (`data/uploads/<nombre>`). Solo en terminal. */
   upload?: string
+  /** «Buscar ofertas»: en qué portales y, si quieres, una búsqueda puntual. */
+  search?: SearchScope
   children: ReactNode
   size?: 'sm' | 'default'
   /** La acción principal de la pantalla: rellena. Una como mucho por pantalla. */
@@ -113,7 +117,7 @@ export function AgentButton({
     clearTimeout(timer.current)
     timer.current = setTimeout(() => setFeedback(null), 8000)
   }
-  const target = { action, job_id: jobId, milestone_id: milestoneId, profile_item: profileItem, upload }
+  const target = { action, job_id: jobId, milestone_id: milestoneId, profile_item: profileItem, upload, search }
   const failed = (error: unknown, fallback: string) =>
     show({ tone: 'error', text: error instanceof Error ? errorMessage(error) : fallback })
 

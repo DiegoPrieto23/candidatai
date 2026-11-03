@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from sqlalchemy import case, func, or_, select
 from sqlalchemy.orm import Session, aliased, defer
 
-from app.models import Application, Company, Event, Job, Match
+from app.models import Application, Company, Event, Job, Match, Source
 from app.models import JobExtraction as JobExtractionRow
 from app.schemas.llm_io import JobExtraction, Salary
 from app.services import application_archive, extractions, network
@@ -226,6 +226,7 @@ def search_jobs(
     offset: int = 0,
     sort: JobSort = "date",
     direction: SortDirection = "desc",
+    source_kind: str | None = None,
 ) -> JobPage:
     """Página de ofertas para la bandeja: filtro por etapa, búsqueda en título y empresa, y orden
     por fecha de alta, score, salario o fecha de cierre."""
@@ -243,6 +244,8 @@ def search_jobs(
     filters = []
     if stage is not None:
         filters.append(Application.stage == parse_stage(stage).value)
+    if source_kind is not None:
+        filters.append(Job.source_id.in_(select(Source.id).where(Source.kind == source_kind)))
     searching = q is not None and bool(q.strip())
     if q is not None and searching:
         pattern = f"%{_escape_like(q.strip())}%"

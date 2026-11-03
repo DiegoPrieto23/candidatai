@@ -24,6 +24,7 @@ export function StageGuide({ stage }: { stage: Stage | undefined }) {
     extension: <Link to="/fuentes/extension" className={link} />,
     alerts: <Link to="/bandeja/por-completar" className={link} />,
     triage: <Link to="/bandeja/revision" className={link} />,
+    replies: <Link to="/respuestas" className={link} />,
     processes: <Link to="/procesos" className={link} />,
   }
 

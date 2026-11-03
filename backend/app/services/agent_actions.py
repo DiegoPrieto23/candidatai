@@ -21,6 +21,7 @@ ActionId = Literal[
     "generate-cover-letter",
     "add-skills",
     "training-plan",
+    "review-replies",
     "draft-follow-ups",
     "draft-follow-up",
     "broaden-search",
@@ -82,12 +83,15 @@ class Action:
     # Plantillas: convertir en plantilla un CV subido; la orden lleva su ruta (`{upload}`,
     # `data/uploads/<nombre>`), validada contra los ficheros subidos antes de lanzar.
     upload: bool = False
+    # «Buscar ofertas»: admite elegir plataformas y una búsqueda puntual (`SearchScope`).
+    search_scope: bool = False
 
 
 ACTIONS: dict[ActionId, Action] = {
     "search-jobs": Action(
         "Buscar ofertas",
         "Usa el skill search-jobs de CandidatAI para buscar ofertas en las plataformas activas.",
+        search_scope=True,
     ),
     # «Dónde buscar»: el modo configurar del mismo skill. Pregunta dónde buscas y te recomienda
     # portales antes de guardar nada, así que solo en terminal.
@@ -263,6 +267,11 @@ ACTIONS: dict[ActionId, Action] = {
         "Plan de formación",
         "Usa el skill training-plan de CandidatAI con los huecos de skills que he marcado como "
         "«No la tengo».",
+    ),
+    # Inicio y «Respuestas» (fase 15): el agente propone; el usuario acepta en la UI.
+    "review-replies": Action(
+        "Revisar respuestas",
+        "Usa el skill review-replies de CandidatAI con los correos de empresas sin clasificar.",
     ),
     # Procesos y ficha (fase 15): el agente redacta; el usuario copia y envía desde su correo.
     "draft-follow-ups": Action(
